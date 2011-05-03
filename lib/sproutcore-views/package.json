@@ -1,0 +1,20 @@
+{
+  "name": "sproutcore-views",
+  "summary": "SproutCore Views",
+  "description": "The SproutCore view system",
+  "homepage": "http://sproutcore.com",
+  "authors": ["Yehuda Katz", "Tom Dale"],
+  "version": "2.0",
+  "dependencies": {
+    "sproutcore-runtime": "2.0",
+    "sproutcore-preprocessor": "~> 0.0.2"
+  },
+  "plugin:preprocessors": [
+    "sproutcore-preprocessor/preprocessor"
+  ],
+  "directories": {
+    "lib"       : "./lib",
+    "tests"     : "./tests"
+  }
+}
+
