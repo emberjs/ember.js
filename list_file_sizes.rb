@@ -1,4 +1,4 @@
-files = Dir["lib/sproutcore-runtime/lib/**/*.js"] + Dir["lib/sproutcore-views/**/*.js"]
+files = Dir["lib/sproutcore-*/lib/**/*.js"]
 
 def uglify(string)
   IO.popen("uglifyjs", "r+") do |io|
