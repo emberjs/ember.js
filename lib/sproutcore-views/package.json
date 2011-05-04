@@ -3,7 +3,7 @@
   "summary": "SproutCore Views",
   "description": "The SproutCore view system",
   "homepage": "http://sproutcore.com",
-  "authors": ["Yehuda Katz", "Tom Dale"],
+  "author": "Yehuda Katz",
   "version": "2.0",
   "dependencies": {
     "sproutcore-runtime": "2.0",
