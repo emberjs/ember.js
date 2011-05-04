@@ -1,0 +1,12 @@
+{
+  "name": "handlebars",
+  "summary": "Handlebars template engine",
+  "description": "A semantic templating language for JavaScript",
+  "homepage": "http://www.handlebarsjs.com",
+  "author": "Yehuda Katz",
+  "version": "0.9.pre6",
+  "directories": {
+    "lib"       : "./lib"
+  }
+}
+
