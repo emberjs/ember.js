@@ -1,0 +1,2 @@
+#!/usr/bin/env ruby
+system('./jsdoc/app/run.js -c=sc.conf');

@@ -3,3 +3,5 @@ spade-boot.js
 *.spd
 Gemfile.lock
 spade-boot.js
+docs/jsdoc
+docs/output
