@@ -66,5 +66,65 @@ file "tmp/sproutcore.js" => "tmp/static/sproutcore.stripped.js" do
   end
 end
 
+$threads = []
+
+trap "INT" do
+  $threads.each(&:kill)
+end
+
+VERSION = "2.0"
+
+def spade_update_task(package)
+  path = "lib/#{package}"
+  dest = "#{path}/spade-boot.js"
+  source = Dir["#{path}/**/*.js"] - ["#{path}/spade-boot.js"]
+
+  file dest => source do
+    Dir.chdir(path) { sh "spade update" }
+  end
+end
+
+def spade_build_task(package)
+  path = "lib/#{package}"
+  dest = "#{path}/#{package}-#{VERSION}.spd"
+  source = Dir["#{path}/**/*.js"] - ["#{path}/spade-boot.js"]
+
+  file dest => source do
+    Dir.chdir(path) { sh "spade build" }
+  end
+end
+
+def spade_install_task(build_task)
+  package = File.basename(build_task.name)
+  dest = File.expand_path("~/.spade/gems/#{package}-#{VERSION}/package.json")
+
+  file dest => build_task do
+    Dir.chdir(File.dirname(build_task.name)) do
+      sh "spade install #{package}"
+    end
+  end
+end
+
+def spade_preview_task(package, deps)
+  task package => deps do
+    $threads << Thread.new { sh "cd lib/#{package} && spade preview" }
+    sleep 5
+    sh "open http://localhost:4020/tests.html"
+    $threads.each(&:join)
+  end
+end
+
+namespace :test do
+  runtime_spade_boot = spade_update_task "sproutcore-runtime"
+  views_spade_boot   = spade_update_task "sproutcore-views"
+
+  runtime_package    = spade_build_task "sproutcore-runtime"
+
+  runtime_installed  = spade_install_task(runtime_package)
+
+  spade_preview_task "sproutcore-runtime", [runtime_spade_boot]
+  spade_preview_task "sproutcore-views", [runtime_installed, views_spade_boot]
+end
+
 task :default => "tmp/sproutcore.js"
 
