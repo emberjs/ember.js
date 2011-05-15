@@ -95,8 +95,9 @@ def spade_build_task(package)
 end
 
 def spade_install_task(build_task)
-  package = File.basename(build_task.name)
-  dest = File.expand_path("~/.spade/gems/#{package}-#{VERSION}/package.json")
+  package = File.basename(build_task.name).sub(/\.spd$/, '')
+
+  dest = File.expand_path("~/.spade/gems/#{package}/package.json")
 
   file dest => build_task do
     Dir.chdir(File.dirname(build_task.name)) do
@@ -115,15 +116,19 @@ def spade_preview_task(package, deps)
 end
 
 namespace :test do
-  runtime_spade_boot = spade_update_task "sproutcore-runtime"
-  views_spade_boot   = spade_update_task "sproutcore-views"
+  runtime_spade_boot    = spade_update_task "sproutcore-runtime"
+  views_spade_boot      = spade_update_task "sproutcore-views"
+  handlebars_spade_boot = spade_update_task "sproutcore-handlebars"
 
-  runtime_package    = spade_build_task "sproutcore-runtime"
+  runtime_package       = spade_build_task "sproutcore-runtime"
+  runtime_installed     = spade_install_task(runtime_package)
 
-  runtime_installed  = spade_install_task(runtime_package)
+  views_package         = spade_build_task "sproutcore-views"
+  views_installed       = spade_install_task(views_package)
 
-  spade_preview_task "sproutcore-runtime", [runtime_spade_boot]
-  spade_preview_task "sproutcore-views", [runtime_installed, views_spade_boot]
+  spade_preview_task "sproutcore-runtime",    [runtime_spade_boot]
+  spade_preview_task "sproutcore-views",      [runtime_installed, views_spade_boot]
+  spade_preview_task "sproutcore-handlebars", [runtime_installed, views_installed, handlebars_spade_boot]
 end
 
 task :default => "tmp/sproutcore.js"
