@@ -1,5 +1,6 @@
 require "bundler/setup"
 require "sproutcore"
+require "erb"
 
 def uglify(string)
   IO.popen("uglifyjs", "r+") do |io|
@@ -110,8 +111,21 @@ def spade_preview_task(package, deps)
   task package => deps do
     $threads << Thread.new { sh "cd lib/#{package} && spade preview" }
     sleep 5
-    sh "open http://localhost:4020/tests.html"
+    sh "open http://localhost:4020/test_#{package}.html"
     $threads.each(&:join)
+  end
+end
+
+def generate_test_files(package)
+  dest = "lib/#{package}/test_#{package}.html"
+
+  file dest do
+    html_template = File.read("generators/tests.html.erb")
+    erb = ERB.new(html_template)
+
+    File.open(dest, "w") do |file|
+      file.puts erb.result(binding)
+    end
   end
 end
 
@@ -121,14 +135,18 @@ namespace :test do
   handlebars_spade_boot = spade_update_task "sproutcore-handlebars"
 
   runtime_package       = spade_build_task "sproutcore-runtime"
-  runtime_installed     = spade_install_task(runtime_package)
+  runtime_installed     = spade_install_task runtime_package
+  runtime_test_files    = generate_test_files "sproutcore-runtime"
 
   views_package         = spade_build_task "sproutcore-views"
-  views_installed       = spade_install_task(views_package)
+  views_installed       = spade_install_task views_package
+  views_test_files      = generate_test_files "sproutcore-views"
 
-  spade_preview_task "sproutcore-runtime",    [runtime_spade_boot]
-  spade_preview_task "sproutcore-views",      [runtime_installed, views_spade_boot]
-  spade_preview_task "sproutcore-handlebars", [runtime_installed, views_installed, handlebars_spade_boot]
+  handlebars_test_files = generate_test_files "sproutcore-handlebars"
+
+  spade_preview_task "sproutcore-runtime",    [runtime_spade_boot, runtime_test_files]
+  spade_preview_task "sproutcore-views",      [runtime_installed, views_spade_boot, views_test_files]
+  spade_preview_task "sproutcore-handlebars", [runtime_installed, views_installed, handlebars_spade_boot, handlebars_test_files]
 end
 
 task :default => "tmp/sproutcore.js"
