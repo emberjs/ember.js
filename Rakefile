@@ -134,13 +134,29 @@ def generate_test_files(package)
     end
   end
 
-  [js_dest, html_dest]
+  qunit_dest = "lib/#{package}/tests/qunit.js"
+  qunit_css_dest = "lib/#{package}/tests/qunit-style.css"
+
+  file qunit_dest => "generators/qunit.js" do
+    File.open(qunit_dest, "w") do |file|
+      file.puts File.read("generators/qunit.js")
+    end
+  end
+
+  file qunit_css_dest => "generators/qunit-style.css" do
+    File.open(qunit_css_dest, "w") do |file|
+      file.puts File.read("generators/qunit-style.css")
+    end
+  end
+
+  [js_dest, html_dest, qunit_dest, qunit_css_dest]
 end
 
 namespace :test do
   runtime_spade_boot    = spade_update_task "sproutcore-runtime"
   views_spade_boot      = spade_update_task "sproutcore-views"
   handlebars_spade_boot = spade_update_task "sproutcore-handlebars"
+  datastore_spade_boot  = spade_update_task "sproutcore-datastore"
 
   runtime_package       = spade_build_task "sproutcore-runtime"
   runtime_installed     = spade_install_task runtime_package
@@ -152,9 +168,12 @@ namespace :test do
 
   handlebars_test_files = generate_test_files "sproutcore-handlebars"
 
+  datastore_test_files  = generate_test_files "sproutcore-datastore"
+
   spade_preview_task "sproutcore-runtime",    [runtime_spade_boot] + runtime_test_files
   spade_preview_task "sproutcore-views",      [runtime_installed, views_spade_boot] + views_test_files
   spade_preview_task "sproutcore-handlebars", [runtime_installed, views_installed, handlebars_spade_boot] + handlebars_test_files
+  spade_preview_task "sproutcore-datastore",  [runtime_installed, datastore_spade_boot] + datastore_test_files
 end
 
 task :default => "tmp/sproutcore.js"

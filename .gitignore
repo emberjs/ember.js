@@ -6,4 +6,5 @@ spade-boot.js
 docs/jsdoc
 docs/output
 lib/*/tests/all.js
+lib/*/tests/qunit*
 test_*.html
