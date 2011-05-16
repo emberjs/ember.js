@@ -110,7 +110,7 @@ end
 def spade_preview_task(package, deps)
   task package => deps do
     $threads << Thread.new { sh "cd lib/#{package} && spade preview" }
-    sleep 5
+    sleep 3
     sh "open http://localhost:4020/test_#{package}.html"
     $threads.each(&:join)
   end
