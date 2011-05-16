@@ -117,16 +117,24 @@ def spade_preview_task(package, deps)
 end
 
 def generate_test_files(package)
-  dest = "lib/#{package}/test_#{package}.html"
+  html_dest = "lib/#{package}/test_#{package}.html"
+  html_source = "generators/tests.html.erb"
 
-  file dest do
-    html_template = File.read("generators/tests.html.erb")
-    erb = ERB.new(html_template)
+  js_dest = "lib/#{package}/tests/all.js"
+  js_source = "generators/all.js.erb"
 
-    File.open(dest, "w") do |file|
-      file.puts erb.result(binding)
+  { js_source => js_dest, html_source => html_dest }.each do |source, dest|
+    file dest => source do
+      template = File.read(source)
+      erb = ERB.new(template)
+
+      File.open(dest, "w") do |file|
+        file.puts erb.result(binding)
+      end
     end
   end
+
+  [js_dest, html_dest]
 end
 
 namespace :test do
@@ -144,9 +152,9 @@ namespace :test do
 
   handlebars_test_files = generate_test_files "sproutcore-handlebars"
 
-  spade_preview_task "sproutcore-runtime",    [runtime_spade_boot, runtime_test_files]
-  spade_preview_task "sproutcore-views",      [runtime_installed, views_spade_boot, views_test_files]
-  spade_preview_task "sproutcore-handlebars", [runtime_installed, views_installed, handlebars_spade_boot, handlebars_test_files]
+  spade_preview_task "sproutcore-runtime",    [runtime_spade_boot] + runtime_test_files
+  spade_preview_task "sproutcore-views",      [runtime_installed, views_spade_boot] + views_test_files
+  spade_preview_task "sproutcore-handlebars", [runtime_installed, views_installed, handlebars_spade_boot] + handlebars_test_files
 end
 
 task :default => "tmp/sproutcore.js"

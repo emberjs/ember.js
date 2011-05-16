@@ -1,6 +1,6 @@
-require("sproutcore-handlebars");
+require("<%= package %>");
 
-var qunit = require("sproutcore-handlebars/~tests/qunit");
+var qunit = require("<%= package %>/~tests/qunit");
 
 SC.mixin(window, qunit);
 
@@ -10,14 +10,14 @@ QUnit.jsDump.setParser('object', function(obj) {
   return obj.toString();
 });
 
-var runtime = spade["package"]('sproutcore-handlebars');
+var runtime = spade["package"]('<%= package %>');
 var files = runtime.files, file;
 
 for(var i=0, l=files.length; i<l; i++) {
   file = files[i];
 
   if (file.match(/tests\/.*\.js$/)) {
-    require("sproutcore-handlebars/~" + file);
+    require("<%= package %>/~" + file);
   }
 }
 
