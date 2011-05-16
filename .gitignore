@@ -5,5 +5,5 @@ Gemfile.lock
 spade-boot.js
 docs/jsdoc
 docs/output
-tests/all.js
+lib/*/tests/all.js
 test_*.html
