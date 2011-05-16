@@ -20,34 +20,28 @@ SproutCore::Compiler.output       = "tmp/static"
 # SproutCore::Compiler.import_package "lib/sproutcore"
 # SproutCore::Compiler.root "sproutcore"
 
-sc_runtime = SproutCore::Compiler::Preprocessors::JavaScriptTask.with_input "lib/sproutcore-runtime/lib/**/*.js", "."
-sc_runtime = SproutCore::Compiler::CombineTask.with_tasks sc_runtime, "#{SproutCore::Compiler.intermediate}/sproutcore-runtime"
-
-sc_handlebars = SproutCore::Compiler::Preprocessors::JavaScriptTask.with_input "lib/sproutcore-handlebars/lib/**/*.js", "."
-sc_handlebars = SproutCore::Compiler::CombineTask.with_tasks sc_handlebars, "#{SproutCore::Compiler.intermediate}/sproutcore-handlebars"
-
-sc_views = SproutCore::Compiler::Preprocessors::JavaScriptTask.with_input "lib/sproutcore-views/lib/**/*.js", "."
-sc_views = SproutCore::Compiler::CombineTask.with_tasks sc_views, "#{SproutCore::Compiler.intermediate}/sproutcore-views"
-
-handlebars = SproutCore::Compiler::Preprocessors::JavaScriptTask.with_input "lib/handlebars/lib/**/*.js", "."
-handlebars = SproutCore::Compiler::CombineTask.with_tasks handlebars, "#{SproutCore::Compiler.intermediate}/handlebars"
-
-namespace :sproutcore do
-  task :runtime => sc_runtime
-  task :handlebars => sc_handlebars
-  task :views => sc_views
+def compile_package_task(package)
+  js_tasks = SproutCore::Compiler::Preprocessors::JavaScriptTask.with_input "lib/#{package}/lib/**/*.js", "."
+  SproutCore::Compiler::CombineTask.with_tasks js_tasks, "#{SproutCore::Compiler.intermediate}/#{package}"
 end
 
-task :handlebars => handlebars
+namespace :sproutcore do
+  %w(runtime handlebars views datastore).each do |package|
+    task package => compile_package_task("sproutcore-#{package}")
+  end
+end
 
-task :build => ["sproutcore:runtime", "sproutcore:handlebars", "sproutcore:views", :handlebars]
+task :handlebars => compile_package_task("handlebars")
 
-file "tmp/static/sproutcore.js"=> :build do
+task :build => ["sproutcore:runtime", "sproutcore:handlebars", "sproutcore:views", "sproutcore:datastore", :handlebars]
+
+file "tmp/static/sproutcore.js" => :build do
   File.open("tmp/static/sproutcore.js", "w") do |file|
     file.puts File.read("tmp/static/handlebars.js")
     file.puts File.read("tmp/static/sproutcore-runtime.js")
     file.puts File.read("tmp/static/sproutcore-views.js")
     file.puts File.read("tmp/static/sproutcore-handlebars.js")
+    file.puts File.read("tmp/static/sproutcore-datastore.js")
   end
 end
 
@@ -61,9 +55,13 @@ end
 
 file "tmp/sproutcore.js" => "tmp/static/sproutcore.stripped.js" do
   File.open("tmp/sproutcore.js", "w") do |file|
-    sproutcore = File.read("tmp/static/sproutcore.stripped.js")
-    file.puts sproutcore
-    # file.puts uglify(File.read("tmp/static/sproutcore.stripped.js"))
+    file.puts File.read("tmp/static/sproutcore.stripped.js")
+  end
+end
+
+file "tmp/sproutcore.min.js" => "tmp/sproutcore.js" do
+  File.open("tmp/sproutcore.min.js", "w") do |file|
+    file.puts uglify(File.read("tmp/sproutcore.js"))
   end
 end
 
@@ -176,5 +174,5 @@ namespace :test do
   spade_preview_task "sproutcore-datastore",  [runtime_installed, datastore_spade_boot] + datastore_test_files
 end
 
-task :default => "tmp/sproutcore.js"
+task :default => "tmp/sproutcore.min.js"
 
