@@ -14,6 +14,7 @@ require('sproutcore-metal/system/mixin');
 
 var rewatch = SC.rewatch;
 var classToString = SC.Mixin.prototype.toString;
+var set = SC.set, get = SC.get;
 
 function makeCtor() {
 
@@ -60,6 +61,13 @@ Object.PrototypeMixin = SC.Mixin.create({
   },
   
   init: function() {},
+  
+  isDestroyed: false,
+  
+  destroy: function() {
+    set(this, 'isDestroyed', true);
+    return this;  
+  },
   
   bind: function(to, from) {
     if (!(from instanceof SC.Binding)) from = SC.Binding.from(from);
