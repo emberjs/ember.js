@@ -3,7 +3,11 @@
 require('jquery');
 var qunit = require('./qunit');
 
-var packageName = location.search.match(/package=([^&]+)&?/)[1];
+var packageName = location.search.match(/package=([^&]+)&?/);
+packageName = packageName && packageName[1];
+
+var prefix = location.search.match(/prefix=([^&]+)&?/);
+prefix = prefix && prefix[1];
 
 if (!packageName) {
   $('#qunit-header').text('Pass package=foo on URL to test package');
@@ -11,6 +15,7 @@ if (!packageName) {
   require(packageName);
   $.extend(window, qunit);
 
+  QUnit.config.autostart = false;
   QUnit.onload();
 
   QUnit.jsDump.setParser('object', function(obj) {
@@ -24,11 +29,12 @@ if (!packageName) {
     file = files[i];
 
     if (file.match(/tests\/.*\.js$/)) {
-      require(packageName+"/~" + file);
+      if (!prefix || file.indexOf('tests/'+prefix)===0) {
+        require(packageName+"/~" + file);
+      }
     }
   }
 
-  QUnit.start();
 }
 
 
