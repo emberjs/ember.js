@@ -11,6 +11,9 @@ var application;
 module("SC.EventDispatcher", {
   setup: function() {
     application = SC.Application.create();
+    
+    // force setup since document may not be ready yet.
+    application.get('eventDispatcher').setup();
   },
 
   teardown: function() {
