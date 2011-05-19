@@ -1,7 +1,6 @@
 // ==========================================================================
-// Project:   SproutCore - JavaScript Application Framework
-// Copyright: ©2006-2011 Strobe Inc. and contributors.
-//            Portions ©2008-2011 Apple Inc. All rights reserved.
+// Project:   SproutCore Handlebar Views
+// Copyright: ©2011 Strobe Inc. and contributors.
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 /*globals Handlebars */
@@ -39,11 +38,11 @@ require("sproutcore-views/system/render_buffer");
 SC.Handlebars = {};
 
 SC.Handlebars.Compiler = function() {};
-SC.Handlebars.Compiler.prototype = SC.beget(Handlebars.Compiler.prototype);
+SC.Handlebars.Compiler.prototype = SC.create(Handlebars.Compiler.prototype);
 SC.Handlebars.Compiler.prototype.compiler = SC.Handlebars.Compiler;
 
 SC.Handlebars.JavaScriptCompiler = function() {};
-SC.Handlebars.JavaScriptCompiler.prototype = SC.beget(Handlebars.JavaScriptCompiler.prototype);
+SC.Handlebars.JavaScriptCompiler.prototype = SC.create(Handlebars.JavaScriptCompiler.prototype);
 SC.Handlebars.JavaScriptCompiler.prototype.compiler = SC.Handlebars.JavaScriptCompiler;
 
 SC.Handlebars.JavaScriptCompiler.prototype.nameLookup = function(parent, name, type) {

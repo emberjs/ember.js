@@ -1,7 +1,17 @@
+// ==========================================================================
+// Project:   SproutCore Handlebar Views
+// Copyright: ©2011 Strobe Inc. and contributors.
+// License:   Licensed under MIT license (see license.js)
+// ==========================================================================
+
+var get = SC.get, set = SC.set;
+
 SC.Button = SC.View.extend({
   classNames: ['sc-button'],
   classNameBindings: ['isActive'],
 
+  tagName: 'button',
+  
   targetObject: function() {
     var target = this.get('target');
 
@@ -13,29 +23,31 @@ SC.Button = SC.View.extend({
   }.property('target').cacheable(),
 
   mouseDown: function() {
-    this.set('isActive', true);
+    console.log('MOUSE DOWN');
+    set(this, 'isActive', true);
     this._mouseDown = true;
     this._mouseEntered = true;
   },
 
   mouseLeave: function() {
     if (this._mouseDown) {
-      this.set('isActive', false);
+      set(this, 'isActive', false);
       this._mouseEntered = false;
     }
   },
 
   mouseEnter: function() {
     if (this._mouseDown) {
-      this.set('isActive', true);
+      set(this, 'isActive', true);
       this._mouseEntered = true;
     }
   },
 
   mouseUp: function(event) {
-    if (this.get('isActive')) {
-      var action = this.get('action'),
-          target = this.get('targetObject');
+    console.log('MOUSE UP');
+    if (get(this, 'isActive')) {
+      var action = get(this, 'action'),
+          target = get(this, 'targetObject');
 
       if (target && action) {
         if (typeof action === 'string') {
@@ -44,12 +56,16 @@ SC.Button = SC.View.extend({
         action.call(target, this);
       }
 
-      this.set('isActive', false);
+      set(this, 'isActive', false);
     }
 
     this._mouseDown = false;
     this._mouseEntered = false;
   },
+
+  // TODO: Handle proper touch behavior.  Including should make inactive when
+  // finger moves more than 20x outside of the edge of the button (vs mouse
+  // which goes inactive as soon as mouse goes out of edges.)
 
   touchStart: function(touch) {
     this.mouseDown(touch);

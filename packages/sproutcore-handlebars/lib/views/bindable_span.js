@@ -1,10 +1,11 @@
 // ==========================================================================
-// Project:   SproutCore - JavaScript Application Framework
-// Copyright: ©2006-2011 Strobe Inc. and contributors.
-//            Portions ©2008-2011 Apple Inc. All rights reserved.
+// Project:   SproutCore Handlebar Views
+// Copyright: ©2011 Strobe Inc. and contributors.
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 /*globals Handlebars */
+
+var get = SC.get, set = SC.set, getPath = SC.getPath;
 
 require('sproutcore-views/views/view');
 
@@ -49,10 +50,11 @@ SC._BindableSpanView = SC.View.extend(
     of its parent template, or gets passed the value of retrieving `property`
     from the previous context.
 
-    For example, this is true when using the `{{#if}}` helper, because the template
-    inside the helper should look up properties relative to the same object as
-    outside the block. This would be NO when used with `{{#with foo}}` because
-    the template should receive the object found by evaluating `foo`.
+    For example, this is true when using the `{{#if}}` helper, because the 
+    template inside the helper should look up properties relative to the same 
+    object as outside the block. This would be NO when used with `{{#with 
+    foo}}` because the template should receive the object found by evaluating 
+    `foo`.
 
     @type Boolean
     @default false
@@ -79,8 +81,8 @@ SC._BindableSpanView = SC.View.extend(
     The key to look up on `previousContext` that is passed to
     `shouldDisplayFunc` to determine which template to render.
 
-    In addition, if `preserveContext` is false, this object will be passed to the
-    template when rendering.
+    In addition, if `preserveContext` is false, this object will be passed to 
+    the template when rendering.
 
     @type String
     @default null
@@ -96,42 +98,42 @@ SC._BindableSpanView = SC.View.extend(
     true, the `displayTemplate` function will be rendered to DOM. Otherwise,
     `inverseTemplate`, if specified, will be rendered.
 
-    For example, if this SC._BindableSpan represented the {{#with foo}} helper,
-    it would look up the `foo` property of its context, and `shouldDisplayFunc`
-    would always return true. The object found by looking up `foo` would be
-    passed to `displayTemplate`.
+    For example, if this SC._BindableSpan represented the {{#with foo}} 
+    helper, it would look up the `foo` property of its context, and 
+    `shouldDisplayFunc` would always return true. The object found by looking 
+    up `foo` would be passed to `displayTemplate`.
 
     @param {SC.RenderBuffer} buffer
   */
   render: function(buffer) {
     // If not invoked via a triple-mustache ({{{foo}}}), escape
     // the content of the template.
-    if(this.get('isEscaped')) { buffer.set('escapeContent', true); }
+    if(get(this, 'isEscaped')) { set(buffer, 'escapeContent', true); }
 
-    var shouldDisplay = this.get('shouldDisplayFunc'),
-        property = this.get('property'),
-        preserveContext = this.get('preserveContext'),
-        context = this.get('previousContext');
+    var shouldDisplay = get(this, 'shouldDisplayFunc'),
+        property = get(this, 'property'),
+        preserveContext = get(this, 'preserveContext'),
+        context = get(this, 'previousContext');
 
-    var inverseTemplate = this.get('inverseTemplate'),
-        displayTemplate = this.get('displayTemplate');
+    var inverseTemplate = get(this, 'inverseTemplate'),
+        displayTemplate = get(this, 'displayTemplate');
 
-    var result = context.getPath(property);
+    var result = getPath(context, property);
 
     // First, test the conditional to see if we should
     // render the template or not.
     if (shouldDisplay(result)) {
-      this.set('template', displayTemplate);
+      set(this, 'template', displayTemplate);
 
       // If we are preserving the context (for example, if this
       // is an #if block, call the template with the same object.
       if (preserveContext) {
-        this.set('templateContext', context);
+        set(this, 'templateContext', context);
       } else {
       // Otherwise, determine if this is a block bind or not.
       // If so, pass the specified object to the template
         if (displayTemplate) {
-          this.set('templateContext', result);
+          set(this, 'templateContext', result);
         } else {
         // This is not a bind block, just push the result of the
         // expression to the render context and return.
@@ -140,18 +142,18 @@ SC._BindableSpanView = SC.View.extend(
         }
       }
     } else if (inverseTemplate) {
-      this.set('template', inverseTemplate);
+      set(this, 'template', inverseTemplate);
 
       if (preserveContext) {
-        this.set('templateContext', context);
+        set(this, 'templateContext', context);
       } else {
-        this.set('templateContext', result);
+        set(this, 'templateContext', result);
       }
     } else {
-      this.set('template', function() { return ''; });
+      set(this, 'template', function() { return ''; });
     }
 
-    return sc_super();
+    return this._super(buffer);
   },
 
   /**
@@ -169,13 +171,13 @@ SC._BindableSpanView = SC.View.extend(
     // a new element by re-running the render method.
     // This is used instead of calling destroyElement()/createElement()
     // to maintain position in the DOM.
-    var buffer = this.renderBuffer(this.get('tagName'));
-    if(this.get('isEscaped')) { buffer.set('escapeContent', true); }
+    var buffer = this.renderBuffer(get(this, 'tagName'));
+    if(get(this, 'isEscaped')) { set(buffer, 'escapeContent', true); }
     this.renderToBuffer(buffer);
 
     elem = buffer.element();
     this.$().replaceWith(elem);
-    this.set('element', elem);
+    set(this, 'element', elem);
 
     this._notifyDidCreateElement();
   }

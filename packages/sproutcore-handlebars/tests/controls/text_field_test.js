@@ -1,4 +1,11 @@
+// ==========================================================================
+// Project:   SproutCore Handlebar Views
+// Copyright: ©2011 Strobe Inc. and contributors.
+// License:   Licensed under MIT license (see license.js)
+// ==========================================================================
+
 var textField, TestObject;
+var get = SC.get, set = SC.set;
 
 module("SC.TextField", {
   setup: function() {
@@ -17,33 +24,33 @@ module("SC.TextField", {
 
 test("input value is updated when setting value property of view", function() {
   SC.run(function() {
-    textField.set('value', 'foo');
+    set(textField, 'value', 'foo');
     textField.append();
   });
 
   equals(textField.$('input').val(), "foo", "renders text field with value");
 
-  SC.run(function() { textField.set('value', 'bar'); });
+  SC.run(function() { set(textField, 'value', 'bar'); });
 
   equals(textField.$('input').val(), "bar", "updates text field after value changes");
 });
 
 test("input placeholder is updated when setting placeholder property of view", function() {
   SC.run(function() {
-    textField.set('placeholder', 'foo');
+    set(textField, 'placeholder', 'foo');
     textField.append();
   });
 
   equals(textField.$('input').attr('placeholder'), "foo", "renders text field with placeholder");
 
-  SC.run(function() { textField.set('placeholder', 'bar'); });
+  SC.run(function() { set(textField, 'placeholder', 'bar'); });
 
   equals(textField.$('input').attr('placeholder'), "bar", "updates text field after placeholder changes");
 });
 
 test("input type is configurable when creating view", function() {
   SC.run(function() {
-    textField.set('type', 'password');
+    set(textField, 'type', 'password');
     textField.append();
   });
 
@@ -55,16 +62,16 @@ test("value binding works properly for inputs that haven't been created", functi
     valueBinding: 'TestObject.value'
   });
 
-  equals(textField.get('value'), "", "precond - default value is null");
+  equals(get(textField, 'value'), "", "precond - default value is null");
   equals(textField.$('input').length, 0, "precond - view doesn't have its layer created yet, thus no input element");
 
-  SC.run(function() { TestObject.set('value', 'ohai'); });
+  SC.run(function() { set(TestObject, 'value', 'ohai'); });
 
-  equals(textField.get('value'), 'ohai', "value property was properly updated");
+  equals(get(textField, 'value'), 'ohai', "value property was properly updated");
 
   SC.run(function() { textField.append(); });
 
-  equals(textField.get('value'), 'ohai', "value property remains the same once the view has been appended");
+  equals(get(textField, 'value'), 'ohai', "value property remains the same once the view has been appended");
   equals(textField.$('input').val(), 'ohai', "value is reflected in the input element once it is created");
 });
 
@@ -76,7 +83,7 @@ test("should call the insertNewline method when return key is pressed", function
 
   textField.insertNewline = function() {
     wasCalled = true;
-  }
+  };
 
   textField.keyUp(event);
   ok(wasCalled, "invokes insertNewline method");
@@ -90,7 +97,7 @@ test("should call the cancel method when escape key is pressed", function() {
 
   textField.cancel = function() {
     wasCalled = true;
-  }
+  };
 
   textField.keyUp(event);
   ok(wasCalled, "invokes cancel method");

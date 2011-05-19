@@ -1,9 +1,12 @@
 // ==========================================================================
-// Project:   SproutCore - JavaScript Application Framework
-// Copyright: ©2006-2011 Strobe Inc. and contributors.
-//            ©2008-2011 Apple Inc. All rights reserved.
+// Project:   SproutCore Handlebar Views
+// Copyright: ©2011 Strobe Inc. and contributors.
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
+/*globals TemplateTests */
+
+var getPath = SC.getPath, setPath = SC.setPath, get = SC.get, set = SC.set;
+
 /**
   This module specifically tests integration with Handlebars and SproutCore-specific
   Handlebars extensions.
@@ -75,7 +78,7 @@ test("should escape HTML in normal mustaches", function() {
   view.createElement();
   equals(view.$('b').length, 0, "does not create an element");
 
-  view.set('output', "you are so <i>super</i>");
+  set(view, 'output', "you are so <i>super</i>");
   equals(view.$('i').length, 0, "does not create an element when value is updated");
 });
 
@@ -89,7 +92,7 @@ test("should not escape HTML in triple mustaches", function() {
   equals(view.$('b').length, 1, "creates an element");
 
   SC.run(function() {
-    view.set('output', "you are so <i>super</i>");
+    set(view, 'output', "you are so <i>super</i>");
   });
   equals(view.$('i').length, 1, "creates an element when value is updated");
 });
@@ -192,7 +195,7 @@ test("SC.View should update when a property changes and the bind helper is used"
 
   equals(view.$('#first').text(), "bam", "precond - view renders Handlebars template");
 
-  SC.run(function() { view.get('content').set('wham', 'bazam'); });
+  SC.run(function() { set(get(view, 'content'), 'wham', 'bazam'); });
   equals(view.$('#first').text(), "bazam", "view updates when a bound property changes");
 });
 
@@ -215,7 +218,7 @@ test("SC.View should update when a property changes and no bind helper is used",
 
   equals(view.$('#first').text(), "bam", "precond - view renders Handlebars template");
 
-  SC.run(function() { view.get('content').set('wham', 'bazam'); });
+  SC.run(function() { set(get(view, 'content'), 'wham', 'bazam'); });
 
   equals(view.$('#first').text(), "bazam", "view updates when a bound property changes");
 });
@@ -240,7 +243,7 @@ test("SC.View should update when the property used with the #with helper changes
   equals(view.$('#first').text(), "bam", "precond - view renders Handlebars template");
 
   SC.run(function() {
-    view.set('content', SC.Object.create({
+    set(view, 'content', SC.Object.create({
       wham: 'bazam'
     }));
   });
@@ -263,7 +266,7 @@ test("should not update when a property is removed from the view", function() {
         baz: "unicorns",
 
         removeObserver: function(property, func) {
-          sc_super();
+          this._super(property, func);
           removeCalled++;
         }
       })
@@ -274,10 +277,10 @@ test("should not update when a property is removed from the view", function() {
 
   equals(view.$('#first').text(), "unicorns", "precond - renders the bound value");
 
-  var oldContent = view.get('content');
+  var oldContent = get(view, 'content');
 
   SC.run(function() {
-    view.set('content', SC.Object.create({
+    set(view, 'content', SC.Object.create({
       foo: SC.Object.create({
         baz: "ninjas"
       })
@@ -287,11 +290,11 @@ test("should not update when a property is removed from the view", function() {
   equals(view.$('#first').text(), 'ninjas', "updates to new content value");
 
   SC.run(function() {
-    oldContent.setPath('foo.baz', 'rockstars');
+    setPath(oldContent, 'foo.baz', 'rockstars');
   });
 
   SC.run(function() {
-    oldContent.setPath('foo.baz', 'ewoks');
+    setPath(oldContent, 'foo.baz', 'ewoks');
   });
 
   equals(removeCalled, 1, "does not try to remove observer more than once");
@@ -321,7 +324,7 @@ test("Handlebars templates update properties if a content object changes", funct
   equals(view.$('#price').text(), '$4', "precond - renders price correctly");
 
   SC.run(function() {
-    view.set('coffee', SC.Object.create({
+    set(view, 'coffee', SC.Object.create({
       color: "mauve",
       price: "$4.50"
     }));
@@ -331,7 +334,7 @@ test("Handlebars templates update properties if a content object changes", funct
   equals(view.$('#price').text(), "$4.50", "should update price field when content changes");
 
   SC.run(function() {
-    view.set('coffee', SC.Object.create({
+    set(view, 'coffee', SC.Object.create({
       color: "mauve",
       price: "$5.50"
     }));
@@ -341,7 +344,7 @@ test("Handlebars templates update properties if a content object changes", funct
   equals(view.$('#price').text(), "$5.50", "should update price field when content changes");
 
   SC.run(function() {
-    view.setPath('coffee.price', "$5");
+    setPath(view, 'coffee.price', "$5");
   });
 
   equals(view.$('#price').text(), "$5", "should update price field when price property is changed");
@@ -368,13 +371,13 @@ test("Template updates correctly if a path is passed to the bind helper", functi
   equals(view.$('h1').text(), "$4", "precond - renders price");
 
   SC.run(function() {
-    view.setPath('coffee.price', "$5");
+    setPath(view, 'coffee.price', "$5");
   });
 
   equals(view.$('h1').text(), "$5", "updates when property changes");
 
   SC.run(function() {
-    view.set('coffee', { price: "$6" });
+    set(view, 'coffee', { price: "$6" });
   });
 
   equals(view.$('h1').text(), "$6", "updates when parent property changes");
@@ -392,7 +395,7 @@ test("Template updates correctly if a path is passed to the bind helper", functi
 //     price: "$4"
 //   });
 
-//   controller.set('content', realObject);
+//   set(controller, 'content', realObject);
 
 //   var view = SC.View.create({
 //     templateName: 'menu',
@@ -405,12 +408,12 @@ test("Template updates correctly if a path is passed to the bind helper", functi
 
 //   equals(view.$('h1').text(), "$4", "precond - renders price");
 
-//   realObject.set('price', "$5");
+//   set(realObject, 'price', "$5");
 
 //   equals(view.$('h1').text(), "$5", "updates when property is set on real object");
 
 //   SC.run(function() {
-//     controller.set('price', "$6" );
+//     set(controller, 'price', "$6" );
 //   });
 
 //   equals(view.$('h1').text(), "$6", "updates when property is set on object controller");
@@ -439,13 +442,13 @@ test("should update the block when object passed to #if helper changes", functio
 
   tests.forEach(function(val) {
     SC.run(function() {
-      view.set('inception', val);
+      set(view, 'inception', val);
     });
 
     equals(view.$('h1').text(), '', "hides block when conditional is '%@'".fmt(val));
 
     SC.run(function() {
-      view.set('inception', true);
+      set(view, 'inception', true);
     });
 
     equals(view.$('h1').text(), "BOOOOOOOONG doodoodoodoodooodoodoodoo", "precond - renders block when conditional is true");
@@ -475,13 +478,13 @@ test("should update the block when object passed to #unless helper changes", fun
 
   tests.forEach(function(val) {
     SC.run(function() {
-      view.set('onDrugs', val);
+      set(view, 'onDrugs', val);
     });
 
     equals(view.$('h1').text(), 'Eat your vegetables', "renders block when conditional is '%@'; %@".fmt(val, SC.typeOf(val)));
 
     SC.run(function() {
-      view.set('onDrugs', true);
+      set(view, 'onDrugs', true);
     });
 
     equals(view.$('h1').text(), "", "precond - hides block when conditional is true");
@@ -508,19 +511,19 @@ test("should update the block when object passed to #if helper changes and an in
 
   equals(view.$('h1').text(), "BOONG?", "renders alternate if false");
 
-  SC.run(function() { view.set('inception', true); });
+  SC.run(function() { set(view, 'inception', true); });
 
   var tests = [false, null, undefined, [], '', 0];
 
   tests.forEach(function(val) {
     SC.run(function() {
-      view.set('inception', val);
+      set(view, 'inception', val);
     });
 
     equals(view.$('h1').text(), 'BOONG?', "renders alternate if %@".fmt(val));
 
     SC.run(function() {
-      view.set('inception', true);
+      set(view, 'inception', true);
     });
 
     equals(view.$('h1').text(), "BOOOOOOOONG doodoodoodoodooodoodoodoo", "precond - renders block when conditional is true");
@@ -553,7 +556,7 @@ test("Template views return a no-op function if their template cannot be found",
   });
 
   raises(function() {
-    var template = view.get('template');
+    var template = get(view, 'template');
 
     ok(SC.typeOf(template) === 'function', 'template should be a function');
     equals(template(), '', 'should return an empty string');
@@ -577,8 +580,8 @@ test("Template views add an elementId to child views created using the view help
   });
 
   view.createElement();
-  var childView = view.getPath('childViews.firstObject');
-  equals(view.$().children().first().children().first().attr('id'), childView.get('elementId'));
+  var childView = getPath(view, 'childViews.firstObject');
+  equals(view.$().children().first().children().first().attr('id'), get(childView, 'elementId'));
 });
 
 test("Template views set the template of their children to a passed block", function() {
@@ -594,7 +597,7 @@ test("Template views set the template of their children to a passed block", func
   });
 
   view.createElement();
-  ok(view.$().html().match(/<h1>.*<span>.*<\/span>.*<\/h1>/), "renders the passed template inside the parent template");
+  ok(view.$().html().match(/\<h1>.*\<span>.*\<\/span>.*\<\/h1>/), "renders the passed template inside the parent template");
 });
 
 test("should pass hash arguments to the view object", function() {
@@ -615,7 +618,7 @@ test("should pass hash arguments to the view object", function() {
 
   equals(view.$().text(), "bat", "prints initial bound value");
 
-  SC.run(function() { TemplateTests.bindTestObject.set('bar', 'brains'); });
+  SC.run(function() { set(TemplateTests.bindTestObject, 'bar', 'brains'); });
 
   equals(view.$().text(), "brains", "prints updated bound value");
 });
@@ -696,11 +699,15 @@ test("should update boundIf blocks if the conditional changes", function() {
 
   equals(view.$('#first').text(), "bam", "renders block when condition is true");
 
-  SC.run(function() { view.get('content').setPath('myApp.isEnabled', NO); });
+  SC.run(function() { 
+    setPath(get(view, 'content'), 'myApp.isEnabled', NO); 
+  });
 
   equals(view.$('#first').text(), "", "re-renders without block when condition is false");
 
-  SC.run(function() { view.get('content').setPath('myApp.isEnabled', YES); });
+  SC.run(function() { 
+    setPath(get(view, 'content'), 'myApp.isEnabled', YES); 
+  });
 
   equals(view.$('#first').text(), "bam", "re-renders block when condition changes to true");
 });
@@ -774,7 +781,7 @@ test("should be able to bind view class names to properties", function() {
   equals(view.$('.is-done').length, 1, "dasherizes property and sets class name");
 
   SC.run(function() {
-    view.childViews[0].set('isDone', NO);
+    set(view.childViews[0], 'isDone', NO);
   });
 
   equals(view.$('.is-done').length, 0, "removes class name if bound property is set to false");
@@ -797,13 +804,13 @@ test("should be able to bind element attributes using {{bindAttr}}", function() 
   equals(view.$('img').attr('alt'), "The SproutCore Logo", "sets alt attribute");
 
   SC.run(function() {
-    view.setPath('content.title', "El logo de Esproutcore");
+    setPath(view, 'content.title', "El logo de Esproutcore");
   });
 
   equals(view.$('img').attr('alt'), "El logo de Esproutcore", "updates alt attribute when content's title attribute changes");
 
   SC.run(function() {
-    view.set('content', SC.Object.create({
+    set(view, 'content', SC.Object.create({
       url: "http://www.thegooglez.com/theydonnothing",
       title: "I CAN HAZ SEARCH"
     }));
@@ -812,7 +819,7 @@ test("should be able to bind element attributes using {{bindAttr}}", function() 
   equals(view.$('img').attr('alt'), "I CAN HAZ SEARCH", "updates alt attribute when content object changes");
 
   SC.run(function() {
-    view.set('content', {
+    set(view, 'content', {
       url: "http://www.sproutcore.com/assets/images/logo.png",
       title: "The SproutCore Logo"
     });
@@ -821,7 +828,7 @@ test("should be able to bind element attributes using {{bindAttr}}", function() 
   equals(view.$('img').attr('alt'), "The SproutCore Logo", "updates alt attribute when content object is a hash");
 
   SC.run(function() {
-    view.set('content', {
+    set(view, 'content', {
       url: "http://www.sproutcore.com/assets/images/logo.png",
       title: function() {
         return "Nanananana SproutCore!";
@@ -849,7 +856,7 @@ test("should be able to bind element attributes using {{bindAttr}} inside a bloc
   equals(view.$('img').attr('alt'), "The SproutCore Logo", "sets alt attribute");
 
   SC.run(function() {
-    view.setPath('content.title', "El logo de Esproutcore");
+    setPath(view, 'content.title', "El logo de Esproutcore");
   });
 
   equals(view.$('img').attr('alt'), "El logo de Esproutcore", "updates alt attribute when content's title attribute changes");
@@ -868,7 +875,7 @@ test("should be able to bind class attribute with {{bindAttr}}", function() {
   equals(view.$('img').attr('class'), 'bar', "renders class");
 
   SC.run(function() {
-    view.set('foo', 'baz');
+    set(view, 'foo', 'baz');
   });
 
   equals(view.$('img').attr('class'), 'baz', "updates class");
@@ -892,8 +899,8 @@ test("should be able to bind boolean element attributes using {{bindAttr}}", fun
   ok(view.$('input').attr('checked'), 'attribute is present upon initial render');
 
   SC.run(function() {
-    content.set('isDisabled', true);
-    content.set('isChecked', false);
+    set(content, 'isDisabled', true);
+    set(content, 'isChecked', false);
   });
 
   ok(view.$('input').attr('disabled'), 'attribute exists after update');
@@ -918,7 +925,7 @@ test("should be able to add multiple classes using {{bindAttr class}}", function
   ok(view.$('div').hasClass('is-also-cool'), "dasherizes second property and sets classname");
 
   SC.run(function() {
-    content.set('isAwesomeSauce', false);
+    set(content, 'isAwesomeSauce', false);
   });
 
   ok(!view.$('div').hasClass('is-awesome-sauce'), "removes dasherized class when property is set to false");

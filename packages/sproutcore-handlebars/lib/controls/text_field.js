@@ -1,21 +1,29 @@
+// ==========================================================================
+// Project:   SproutCore Handlebar Views
+// Copyright: ©2011 Strobe Inc. and contributors.
+// License:   Licensed under MIT license (see license.js)
+// ==========================================================================
+
 require("sproutcore-handlebars/ext");
 require("sproutcore-views/views/view");
 /** @class */
+
+var get = SC.get, set = SC.set;
 
 SC.TextField = SC.View.extend(
   /** @scope SC.TextField.prototype */ {
 
   classNames: ['sc-text-field'],
 
-  insertNewline: function(event) { },
-  cancel: function(event) { },
+  insertNewline: SC.K,
+  cancel: SC.K,
 
   type: "text",
   value: "",
   placeholder: null,
 
   defaultTemplate: function() {
-    var type = this.get('type');
+    var type = get(this, 'type');
     return SC.Handlebars.compile('<input type="%@" {{bindAttr value="value" placeholder="placeholder"}}>'.fmt(type));
   }.property(),
 
@@ -48,16 +56,16 @@ SC.TextField = SC.View.extend(
   _elementValueDidChange: function() {
     var input = this.$('input');
 
-    this.set('value', input.val());
+    set(this, 'value', input.val());
   },
 
   _valueDidChange: function() {
-    this.invokeOnce(this._updateElementValue);
+    SC.run.once(this, this._updateElementValue);
   },
 
   _updateElementValue: function() {
     var input = this.$('input');
-    input.val(this.get('value'));
+    input.val(get(this, 'value'));
   }
 });
 

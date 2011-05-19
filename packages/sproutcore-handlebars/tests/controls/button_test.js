@@ -1,4 +1,12 @@
+// ==========================================================================
+// Project:   SproutCore Handlebar Views
+// Copyright: ©2011 Strobe Inc. and contributors.
+// License:   Licensed under MIT license (see license.js)
+// ==========================================================================
+
 var button, application;
+
+var get = SC.get, set = SC.set;
 
 module("SC.Button", {
   setup: function() {
@@ -32,7 +40,7 @@ test("should trigger an action when clicked", function() {
 
   synthesizeEvent('mousedown', button);
   synthesizeEvent('mouseup', button);
-
+  
   ok(wasClicked);
 });
 
@@ -76,10 +84,10 @@ test("should not trigger action if mouse leaves area before mouseup", function()
   button.append();
 
   synthesizeEvent('mousedown', button);
-  ok(button.get('isActive'), "becomes active when hovered");
+  ok(get(button, 'isActive'), "becomes active when hovered");
   ok(button.$().hasClass('is-active'));
   synthesizeEvent('mouseleave', button);
-  ok(!button.get('isActive'), "loses active state if mouse exits");
+  ok(!get(button, 'isActive'), "loses active state if mouse exits");
   ok(!button.$().hasClass('is-active'));
   synthesizeEvent('mouseup', button);
 

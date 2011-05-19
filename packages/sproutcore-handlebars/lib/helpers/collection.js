@@ -1,14 +1,15 @@
 // ==========================================================================
-// Project:   SproutCore - JavaScript Application Framework
-// Copyright: ©2006-2011 Strobe Inc. and contributors.
-//            Portions ©2008-2011 Apple Inc. All rights reserved.
+// Project:   SproutCore Handlebar Views
+// Copyright: ©2011 Strobe Inc. and contributors.
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
-/*globals Handlebars */
+/*globals Handlebars sc_assert */
 
 // TODO: Don't require all of this module
 require('sproutcore-handlebars');
 require('sproutcore-handlebars/helpers/view');
+
+var get = SC.get;
 
 /**
   @static
@@ -50,11 +51,8 @@ Handlebars.registerHelper('collection', function(path, options) {
   // If passed a path string, convert that into an object.
   // Otherwise, just default to the standard class.
   var collectionClass;
-  collectionClass = path ? SC.objectForPropertyPath(path) : SC.CollectionView;
-
-  if (!collectionClass) {
-    throw new SC.Error("%@ #collection: Could not find %@".fmt(data.view, path));
-  }
+  collectionClass = path ? SC.getPath(path) : SC.CollectionView;
+  sc_assert("%@ #collection: Could not find %@".fmt(data.view, path), !!collectionClass);
 
   var hash = options.hash, itemHash = {}, match;
 
@@ -74,7 +72,7 @@ Handlebars.registerHelper('collection', function(path, options) {
     }
   }
 
-  var tagName = hash.tagName || collectionClass.prototype.tagName;
+  var tagName = hash.tagName || get(collectionClass, 'proto').tagName;
   var childTag = SC.Handlebars.CONTAINER_MAP[tagName];
 
   if (childTag) {
@@ -94,12 +92,12 @@ Handlebars.registerHelper('collection', function(path, options) {
 
   if (hash.preserveContext) {
     itemHash.templateContext = function() {
-      return this.get('content');
+      return get(this, 'content');
     }.property('content');
     delete hash.preserveContext;
   }
 
-  var itemViewClass = collectionClass.prototype.itemViewClass;
+  var itemViewClass = get(collectionClass, 'proto').itemViewClass;
   hash.itemViewClass = SC.Handlebars.ViewHelper.viewClassFromHTMLOptions(itemViewClass, itemHash);
 
   return Handlebars.helpers.view.call(this, collectionClass, options);
@@ -112,8 +110,7 @@ Handlebars.registerHelper('collection', function(path, options) {
   @returns {String} HTML string
 */
 Handlebars.registerHelper('each', function(path, options) {
-  options.hash.contentBinding = SC.Binding.from('*'+path, this);
-  options.hash.contentBinding = SC.Binding.from('*'+path, this).oneWay();
+  options.hash.contentBinding = SC.Binding.from(path).oneWay();
   options.hash.preserveContext = true;
   return Handlebars.helpers.collection.call(this, null, options);
 });

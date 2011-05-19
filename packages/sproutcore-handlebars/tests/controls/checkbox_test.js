@@ -1,14 +1,22 @@
+// ==========================================================================
+// Project:   SproutCore Handlebar Views
+// Copyright: ©2011 Strobe Inc. and contributors.
+// License:   Licensed under MIT license (see license.js)
+// ==========================================================================
+
+var get = SC.get, set = SC.set, checkboxView;
+
 module("SC.Checkbox", {
   teardown: function() {
     checkboxView.destroy();
   }
 });
 
-SC.Object.prototype.setAndFlush = function() {
+SC.Object.prototype.setAndFlush = function(key, value) {
   var args = arguments, self = this;
 
   SC.run(function() {
-    self.set.apply(self, args);
+    SC.set(self, key, value);
   });
 };
 
@@ -16,7 +24,7 @@ test("value property mirrors input value", function() {
   checkboxView = SC.Checkbox.create({});
   checkboxView.append();
 
-  equals(checkboxView.get('value'), false, "initially starts with a false value");
+  equals(get(checkboxView, 'value'), false, "initially starts with a false value");
   equals(!!checkboxView.$('input').prop('checked'), false, "the initial checked property is false");
 
   checkboxView.setAndFlush('value', true);
@@ -29,7 +37,7 @@ test("value property mirrors input value", function() {
   equals(checkboxView.$('input').prop('checked'), true, "changing the value property changes the DOM");
 
   checkboxView.remove();
-  checkboxView.set('value', false);
+  set(checkboxView, 'value', false);
   checkboxView.append();
 
   equals(checkboxView.$('input').prop('checked'), false, "changing the value property changes the DOM");
@@ -39,7 +47,7 @@ test("value property mirrors input value", function() {
   checkboxView = SC.Checkbox.create({ value: true });
   checkboxView.append();
 
-  equals(checkboxView.get('value'), true, "precond - initially starts with a true value");
+  equals(get(checkboxView, 'value'), true, "precond - initially starts with a true value");
   equals(!!checkboxView.$('input').prop('checked'), true, "the initial checked property is true");
 
   checkboxView.setAndFlush('value', false);
@@ -52,7 +60,7 @@ test("value property mirrors input value", function() {
   equals(checkboxView.$('input').prop('checked'), false, "changing the value property changes the DOM");
 
   checkboxView.remove();
-  checkboxView.set('value', true);
+  set(checkboxView, 'value', true);
   checkboxView.append();
 
   equals(checkboxView.$('input').prop('checked'), true, "changing the value property changes the DOM");

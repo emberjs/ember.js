@@ -1,3 +1,14 @@
+// ==========================================================================
+// Project:   SproutCore Handlebar Views
+// Copyright: ©2011 Strobe Inc. and contributors.
+// License:   Licensed under MIT license (see license.js)
+// ==========================================================================
+/*globals TemplateTests */
+
+var set = SC.set, setPath = SC.setPath;
+
+TemplateTests = {};
+
 module("SC.HandlebarsCollectionView");
 
 test("passing a block to the collection helper sets it as the template for example views", function() {
@@ -43,7 +54,7 @@ test("a block passed to a collection helper defaults to the view", function() {
   equals(view.$('li:has(aside:contains("foo")) + li:has(aside:contains("bar")) + li:has(aside:contains("baz"))').length, 1, 'precond - one aside element is created for each content item');
 
   SC.run(function() {
-    view.childViews[0].set('content', []);
+    set(view.childViews[0], 'content', []);
   });
   equals(view.$('aside').length, 0, "all list item views should be removed from DOM");
 });
@@ -84,13 +95,13 @@ test("should give its item views the classBinding specified by itemClassBinding"
   equals(view.$('ul li.is-baz').length, 2, "adds class on initial rendering");
 
   SC.run(function() {
-    view.childViews[0].setPath('content.0.isBaz', true);
+    setPath(view.childViews[0], 'content.0.isBaz', true);
   });
 
   equals(view.$('ul li.is-baz').length, 3, "adds class when property changes");
 
   SC.run(function() {
-    view.childViews[0].setPath('content.0.isBaz', false);
+    setPath(view.childViews[0], 'content.0.isBaz', false);
   });
 
   equals(view.$('ul li.is-baz').length, 2, "removes class when property changes");
@@ -111,10 +122,10 @@ test("should work inside a bound {{#if}}", function() {
   view.createElement();
   equals(view.$('ul li').length, 3, "renders collection when conditional is true");
 
-  SC.run(function() { view.set('shouldDisplay', NO); });
+  SC.run(function() { set(view, 'shouldDisplay', NO); });
   equals(view.$('ul li').length, 0, "removes collection when conditional changes to false");
 
-  SC.run(function() { view.set('shouldDisplay', YES); });
+  SC.run(function() { set(view, 'shouldDisplay', YES); });
   equals(view.$('ul li').length, 3, "collection renders when conditional changes to true");
 });
 
@@ -148,11 +159,11 @@ test("should re-render when the content object changes", function() {
   view.createElement();
 
   SC.run(function() {
-    view.childViews[0].set('content', ['bing', 'bat', 'bang']);
+    set(view.childViews[0], 'content', ['bing', 'bat', 'bang']);
   });
 
   SC.run(function() {
-    view.childViews[0].set('content', ['ramalamadingdong']);
+    set(view.childViews[0], 'content', ['ramalamadingdong']);
   });
 
   equals(view.$('li').length, 1, "rerenders with correct number of items");

@@ -1,38 +1,47 @@
 // ==========================================================================
-// Project:   SproutCore - JavaScript Application Framework
-// Copyright: ©2006-2011 Strobe Inc. and contributors.
-//            Portions ©2008-2011 Apple Inc. All rights reserved.
+// Project:   SproutCore Handlebar Views
+// Copyright: ©2011 Strobe Inc. and contributors.
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
-/*globals Handlebars */
+/*globals Handlebars sc_assert */
 
 // TODO: Don't require the entire module
 require("sproutcore-handlebars");
 
+var get = SC.get, set = SC.set;
+
 /** @private */
 SC.Handlebars.ViewHelper = SC.Object.create({
+  
   viewClassFromHTMLOptions: function(viewClass, options) {
-    var extensions = SC.clone(options),
-        classes = extensions['class'];
+    var extensions = {},
+        classes = options['class'],
+        dup = false;
 
-    if (extensions.id) {
-      extensions.elementId = extensions.id;
+    if (options.id) {
+      extensions.elementId = options.id;
+      dup = true;
     }
 
     if (classes) {
       classes = classes.split(' ');
       extensions.classNames = classes;
+      dup = true;
     }
 
-    if (extensions.classBinding) {
-      extensions.classNameBindings = extensions.classBinding.split(' ');
+    if (options.classBinding) {
+      extensions.classNameBindings = options.classBinding.split(' ');
+      dup = true;
     }
 
-    delete extensions.id;
-    delete extensions['class'];
-    delete extensions.classBinding;
+    if (dup) {
+      options = jQuery.extend({}, options);
+      delete options.id;
+      delete options['class'];
+      delete options.classBinding;
+    }
 
-    return viewClass.extend(extensions);
+    return viewClass.extend(options, extensions);
   },
 
   helper: function(thisContext, path, options) {
@@ -43,29 +52,22 @@ SC.Handlebars.ViewHelper = SC.Object.create({
         hash = options.hash,
         newView;
 
-    if (path.isClass) {
-      newView = path;
-      if (!newView) {
-        throw new SC.Error("Null or undefined object was passed to the #view helper. Did you mean to pass a property path string?");
+    if ('string' === typeof path) {
+      newView = SC.getPath(thisContext, path);
+      if (!newView) { 
+        throw new SC.Error("Unable to find view at path '" + path + "'"); 
       }
     } else {
-      // Path is relative, look it up with this view as the root
-      if (path.charAt(0) === '.') {
-        newView = SC.objectForPropertyPath(path.slice(1), view);
-      } else {
-        // Path is absolute, look up path on global (window) object
-        newView = SC.getPath(thisContext, path);
-        if (!newView) {
-          newView = SC.getPath(path);
-        }
-      }
-      if (!newView) { throw new SC.Error("Unable to find view at path '" + path + "'"); }
+      sc_assert('You must pass a string or a view class to the #view helper', SC.View.detect(path));
+      newView = path;
     }
+
+    sc_assert("Null or undefined object was passed to the #view helper. Did you mean to pass a property path string?", !!newView);
 
     newView = this.viewClassFromHTMLOptions(newView, hash);
     var currentView = data.view;
 
-    var childViews = currentView.get('childViews');
+    var childViews = get(currentView, 'childViews');
     var childView = currentView.createChildView(newView);
 
     // Set the template of the view to the passed block if we got one
@@ -73,7 +75,7 @@ SC.Handlebars.ViewHelper = SC.Object.create({
 
     childViews.pushObject(childView);
 
-    var buffer = SC.RenderBuffer(childView.get('tagName'));
+    var buffer = SC.RenderBuffer(get(childView, 'tagName'));
     childView.renderToBuffer(buffer);
 
     return new Handlebars.SafeString(buffer.string());
