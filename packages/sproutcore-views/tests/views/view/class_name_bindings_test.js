@@ -1,3 +1,11 @@
+// ==========================================================================
+// Project:   SproutCore Views
+// Copyright: ©2006-2011 Strobe Inc. and contributors.
+// License:   Licensed under MIT license (see license.js)
+// ==========================================================================
+
+var set = SC.set, get = SC.get;
+
 require('sproutcore-views/views/view');
 
 module("SC.View - Bound Class Names");
@@ -30,9 +38,9 @@ test("should add, remove, or change class names if changed after element is crea
 
   view.createElement();
 
-  view.set('priority', 'orange');
-  view.set('isUrgent', false);
-  view.set('canIgnore', true);
+  set(view, 'priority', 'orange');
+  set(view, 'isUrgent', false);
+  set(view, 'canIgnore', true);
 
   ok(view.$().hasClass('orange'), "updates string values");
   ok(!view.$().hasClass('high'), "removes old string value");

@@ -3,8 +3,9 @@
 // Copyright: ©2006-2011 Apple Inc. and contributors.
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
-
 /*global module test equals context ok same */
+
+var set = SC.set, get = SC.get;
 
 // .......................................................
 //  render()
@@ -111,7 +112,7 @@ test("should hide views when isVisible is false", function() {
   view.append();
   ok(view.$().is(':hidden'), "the view is hidden");
 
-  view.set('isVisible', true);
+  set(view, 'isVisible', true);
   ok(view.$().is(':visible'), "the view is visible");
   view.remove();
 });
@@ -121,16 +122,16 @@ test("should hide element if isVisible is false before element is created", func
     isVisible: false
   });
 
-  ok(!view.get('isVisible'), "precond - view is not visible");
+  ok(!get(view, 'isVisible'), "precond - view is not visible");
 
-  view.set('template', function() { return "foo"; });
+  set(view, 'template', function() { return "foo"; });
 
   view.append();
 
   ok(view.$().is(':hidden'), "should be hidden");
 
   view.remove();
-  view.set('isVisible', true);
+  set(view, 'isVisible', true);
   view.append();
 
   ok(view.$().is(':visible'), "view should be visible");

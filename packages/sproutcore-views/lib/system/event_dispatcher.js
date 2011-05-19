@@ -5,6 +5,8 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
+var get = SC.get, set = SC.set;
+
 /**
   @ignore
 
@@ -84,7 +86,7 @@ SC.EventDispatcher = SC.Object.extend(
     @param {String} eventName the name of the method to call on the view
   */
   setupHandler: function(event, eventName) {
-    var rootElement = this.get('rootElement');
+    var rootElement = get(this, 'rootElement');
 
     SC.$(rootElement).delegate('.sc-view', event + '.sproutcore', function(evt) {
       var view = SC.View.views[this.id],
@@ -93,11 +95,11 @@ SC.EventDispatcher = SC.Object.extend(
       SC.run(function() {
         while (result !== false && view) {
           handler = view[eventName];
-          if (SC.typeOf(handler) === SC.T_FUNCTION) {
+          if (SC.typeOf(handler) === 'function') {
             result = handler.call(view, evt);
           }
 
-          view = view.get('parentView');
+          view = get(view, 'parentView');
         }
       });
 
@@ -107,7 +109,7 @@ SC.EventDispatcher = SC.Object.extend(
 
   /** @private */
   destroy: function() {
-    var rootElement = this.get('rootElement');
+    var rootElement = get(this, 'rootElement');
 
     SC.$(rootElement).undelegate('.sproutcore');
   }

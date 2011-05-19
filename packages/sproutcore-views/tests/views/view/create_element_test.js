@@ -1,3 +1,11 @@
+// ==========================================================================
+// Project:   SproutCore Views
+// Copyright: ©2006-2011 Strobe Inc. and contributors.
+// License:   Licensed under MIT license (see license.js)
+// ==========================================================================
+
+var set = SC.set, get = SC.get;
+
 module("SC.View#createElement");
 
 test("returns the receiver", function() {
@@ -14,10 +22,10 @@ test("calls render and turns resultant string into element", function() {
     }
   });
 
-  equals(view.get('element'), null, 'precondition - has no element');
+  equals(get(view, 'element'), null, 'precondition - has no element');
   view.createElement();
 
-  var elem = view.get('element');
+  var elem = get(view, 'element');
   ok(elem, 'has element now');
   equals(elem.innerHTML, 'foo', 'has innerHTML from context');
   equals(elem.tagName.toString().toLowerCase(), 'span', 'has tagName from view');
@@ -41,7 +49,7 @@ test("invokes didCreateElement() on receiver and all child views", function() {
   ok(view.didCreateElement, 'precondition - has root');
   ok(view.childViews[0].didCreateElement, 'precondition - has firstChild');
   ok(view.childViews[0].childViews[0].didCreateElement, 'precondition - has nested child');
-  ok(!view.get('element'), 'has no element');
+  ok(!get(view, 'element'), 'has no element');
 
   view.createElement();
   equals(callCount, 3, 'did invoke all methods');

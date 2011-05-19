@@ -4,10 +4,12 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
+var set = SC.set, get = SC.get;
+
 module("SC.View.create");
 
 test("registers view in the global views hash using layerId for event targeted", function() {
   var v = SC.View.create();
-  equals(SC.View.views[v.get('elementId')], v, 'registers view');
+  equals(SC.View.views[get(v, 'elementId')], v, 'registers view');
 });
 

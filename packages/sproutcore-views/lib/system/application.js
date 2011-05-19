@@ -7,6 +7,8 @@
 
 require("sproutcore-views/system/event_dispatcher");
 
+var get = SC.get, set = SC.set;
+
 /**
   @class
 
@@ -28,8 +30,8 @@ require("sproutcore-views/system/event_dispatcher");
   entire page, and are not embedding any third-party SproutCore applications
   in your page, use the default document root for your application.
 
-  You only need to specify the root if your page contains multiple instances of
-  SC.Application.
+  You only need to specify the root if your page contains multiple instances 
+  of SC.Application.
 
   @since SproutCore 2.0
   @extends SC.Object
@@ -52,13 +54,13 @@ SC.Application = SC.Object.extend(
   /** @private */
   init: function() {
     var eventDispatcher,
-        rootElement = this.get('rootElement');
+        rootElement = get(this, 'rootElement');
 
     eventDispatcher = SC.EventDispatcher.create({
       rootElement: rootElement
     });
 
-    this.set('eventDispatcher', eventDispatcher);
+    set(this, 'eventDispatcher', eventDispatcher);
 
     SC.$(document).ready(function() {
       eventDispatcher.setup();
@@ -67,9 +69,7 @@ SC.Application = SC.Object.extend(
 
   /** @private */
   destroy: function() {
-    sc_super();
-
-    this.get('eventDispatcher').destroy();
+    get(this, 'eventDispatcher').destroy();
   }
 });
 

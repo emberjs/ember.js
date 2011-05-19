@@ -4,6 +4,9 @@
 //            ©2008-2011 Apple Inc. All rights reserved.
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
+
+var set = SC.set, get = SC.get;
+
 module("SC.View - Template Functionality");
 
 test("should call the function of the associated template", function() {
@@ -34,7 +37,7 @@ test("should call the function of the associated template with itself as the con
 
     templates: SC.Object.create({
       test_template: function(dataSource) {
-        return "<h1 id='twas-called'>template was called for " + dataSource.get('personName') + "</h1>";
+        return "<h1 id='twas-called'>template was called for " + get(dataSource, 'personName') + "</h1>";
       }
     })
   });
@@ -48,11 +51,11 @@ test("should fall back to defaultTemplate if neither template nor templateName a
   var View, view;
 
   View = SC.View.extend({
-    defaultTemplate: function(dataSource) { return "<h1 id='twas-called'>template was called for " + dataSource.get('personName') + "</h1>" },
+    defaultTemplate: function(dataSource) { return "<h1 id='twas-called'>template was called for " + get(dataSource, 'personName') + "</h1>"; }
   });
 
   view = View.create({
-    personName: "Tom DAAAALE",
+    personName: "Tom DAAAALE"
   });
 
   view.createElement();
@@ -65,7 +68,7 @@ test("should not use defaultTemplate if template is provided", function() {
 
   View = SC.View.extend({
     template:  function() { return "foo"; },
-    defaultTemplate: function(dataSource) { return "<h1 id='twas-called'>template was called for " + dataSource.get('personName') + "</h1>" },
+    defaultTemplate: function(dataSource) { return "<h1 id='twas-called'>template was called for " + get(dataSource, 'personName') + "</h1>"; }
   });
 
   view = View.create();
@@ -82,7 +85,7 @@ test("should not use defaultTemplate if template is provided", function() {
     templates: SC.Object.create({
       foobar: function() { return "foo"; }
     }),
-    defaultTemplate: function(dataSource) { return "<h1 id='twas-called'>template was called for " + dataSource.get('personName') + "</h1>" },
+    defaultTemplate: function(dataSource) { return "<h1 id='twas-called'>template was called for " + get(dataSource, 'personName') + "</h1>"; }
   });
 
   view = View.create();

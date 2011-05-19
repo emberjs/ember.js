@@ -1,3 +1,11 @@
+// ==========================================================================
+// Project:   SproutCore Views
+// Copyright: ©2006-2011 Strobe Inc. and contributors.
+// License:   Licensed under MIT license (see license.js)
+// ==========================================================================
+
+var set = SC.set, get = SC.get;
+
 var view, myViewClass ;
 
 module("SC.View#createChildView", {
@@ -10,13 +18,13 @@ module("SC.View#createChildView", {
 test("should create view from class with any passed attributes", function() {
   var attrs = { foo: "baz" };
   var newView = view.createChildView(myViewClass, attrs);
-  ok(newView.get('isMyView'), 'newView is instance of myView');
-  equals(newView.get('foo'), 'baz', 'view did get custom attributes');
+  ok(get(newView, 'isMyView'), 'newView is instance of myView');
+  equals(get(newView, 'foo'), 'baz', 'view did get custom attributes');
   ok(!attrs.parentView, "the original attributes hash was not mutated");
 });
 
 test("should set newView.parentView to receiver", function() {
   var newView = view.createChildView(myViewClass) ;
-  equals(newView.get('parentView'), view, 'newView.parentView == view');
+  equals(get(newView, 'parentView'), view, 'newView.parentView == view');
 });
 

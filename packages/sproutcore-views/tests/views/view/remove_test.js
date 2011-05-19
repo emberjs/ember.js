@@ -4,6 +4,8 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
+var set = SC.set, get = SC.get;
+
 // .......................................................
 // removeChild()
 //
@@ -27,9 +29,9 @@ test("removes child from parent.childViews array", function() {
 });
 
 test("sets parentView property to null", function() {
-  ok(child.get('parentView'), 'precond - has parentView');
+  ok(get(child, 'parentView'), 'precond - has parentView');
   parent.removeChild(child);
-  ok(!child.get('parentView'), 'parentView is now null');
+  ok(!get(child, 'parentView'), 'parentView is now null');
 });
 
 // .......................................................
@@ -63,10 +65,10 @@ module("SC.View#removeFromParent");
 test("removes view from parent view", function() {
   var parent = SC.View.create({ childViews: [SC.View] });
   var child = parent.childViews[0];
-  ok(child.get('parentView'), 'precond - has parentView');
+  ok(get(child, 'parentView'), 'precond - has parentView');
 
   child.removeFromParent();
-  ok(!child.get('parentView'), 'no longer has parentView');
+  ok(!get(child, 'parentView'), 'no longer has parentView');
   ok(parent.childViews.indexOf(child)<0, 'no longer in parent childViews');
 });
 
@@ -79,7 +81,7 @@ test("does nothing if not in parentView", function() {
   var child = SC.View.create();
 
   // monkey patch for testing...
-  ok(!child.get('parentView'), 'precond - has no parent');
+  ok(!get(child, 'parentView'), 'precond - has no parent');
 
   child.removeFromParent();
 });

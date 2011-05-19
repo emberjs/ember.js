@@ -4,6 +4,8 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
+var set = SC.set, get = SC.get;
+
 module("SC.View#destroyElement");
 
 test("it if has no element, does nothing", function() {
@@ -12,7 +14,7 @@ test("it if has no element, does nothing", function() {
     willDestroyElement: function() { callCount++; }
   });
 
-  ok(!view.get('element'), 'precond - does NOT have element');
+  ok(!get(view, 'element'), 'precond - does NOT have element');
 
   view.destroyElement();
   equals(callCount, 0, 'did not invoke callback');
@@ -32,13 +34,13 @@ test("if it has a element, calls willDestroyElement on receiver and child views 
   });
 
   view.createElement();
-  ok(view.get('element'), 'precond - view has element');
+  ok(get(view, 'element'), 'precond - view has element');
 
   view.destroyElement();
   equals(parentCount, 1, 'invoked destroy element on the parent');
   equals(childCount, 1, 'invoked destroy element on the child');
-  ok(!view.get('element'), 'view no longer has element');
-  ok(!view.get('childViews').objectAt(0).get('element'), 'child no longer has an element');
+  ok(!get(view, 'element'), 'view no longer has element');
+  ok(!get(get(view, 'childViews').objectAt(0), 'element'), 'child no longer has an element');
 });
 
 test("returns receiver", function() {
@@ -50,7 +52,7 @@ test("removes element from parentNode if in DOM", function() {
   var view = SC.View.create();
 
   view.append();
-  ok(view.get('element'), 'precond - has element');
+  ok(get(view, 'element'), 'precond - has element');
 
   view.destroyElement();
 

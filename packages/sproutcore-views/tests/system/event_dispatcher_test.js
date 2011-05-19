@@ -7,13 +7,14 @@
 
 var view;
 var application;
+var set = SC.set, get = SC.get;
 
 module("SC.EventDispatcher", {
   setup: function() {
     application = SC.Application.create();
     
     // force setup since document may not be ready yet.
-    application.get('eventDispatcher').setup();
+    get(application, 'eventDispatcher').setup();
   },
 
   teardown: function() {

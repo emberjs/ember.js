@@ -5,6 +5,8 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
+var get = SC.get, set = SC.set;
+
 /*
   TODO Document SC.RenderBuffer class itself
 */
@@ -81,12 +83,12 @@ SC._RenderBuffer = SC.Object.extend(
 
   /** @private */
   init: function() {
-    sc_super();
+    this._super();
 
-    this.set('elementClasses', []);
-    this.set('elementAttributes', {});
-    this.set('elementStyle', {});
-    this.set('elementContent', []);
+    set(this ,'elementClasses', []);
+    set(this, 'elementAttributes', {});
+    set(this, 'elementStyle', {});
+    set(this, 'elementContent', []);
   },
 
   /**
@@ -96,7 +98,7 @@ SC._RenderBuffer = SC.Object.extend(
     @returns {SC.RenderBuffer} this
   */
   push: function(string) {
-    this.get('elementContent').push(string);
+    get(this, 'elementContent').pushObject(string);
     return this;
   },
 
@@ -107,7 +109,7 @@ SC._RenderBuffer = SC.Object.extend(
     @returns {SC.RenderBuffer} this
   */
   addClass: function(className) {
-    this.get('elementClasses').pushObject(className);
+    get(this, 'elementClasses').pushObject(className);
     return this;
   },
 
@@ -118,7 +120,7 @@ SC._RenderBuffer = SC.Object.extend(
     @returns {SC.RenderBuffer} this
   */
   id: function(id) {
-    this.set('elementId', id);
+    set(this, 'elementId', id);
     return this;
   },
 
@@ -130,7 +132,7 @@ SC._RenderBuffer = SC.Object.extend(
     @returns {SC.RenderBuffer} this
   */
   attr: function(name, value) {
-    this.get('elementAttributes')[name] = value;
+    get(this, 'elementAttributes')[name] = value;
     return this;
   },
 
@@ -142,7 +144,7 @@ SC._RenderBuffer = SC.Object.extend(
     @returns {SC.RenderBuffer} this
   */
   style: function(name, value) {
-    this.get('elementStyle')[name] = value;
+    get(this, 'elementStyle')[name] = value;
     return this;
   },
 
@@ -167,7 +169,7 @@ SC._RenderBuffer = SC.Object.extend(
     @returns {SC.RenderBuffer} The parentBuffer, if one exists. Otherwise, this
   */
   end: function() {
-    var parent = this.get('parentBuffer');
+    var parent = get(this, 'parentBuffer');
 
     if (parent) {
       var string = this.string();
@@ -192,12 +194,12 @@ SC._RenderBuffer = SC.Object.extend(
     @returns {String} The generated HTMl
   */
   string: function() {
-    var id = this.get('elementId'),
-        classes = this.get('elementClasses'),
-        attrs = this.get('elementAttributes'),
-        style = this.get('elementStyle'),
-        content = this.get('elementContent'),
-        tag = this.get('elementTag'),
+    var id = get(this, 'elementId'),
+        classes = get(this, 'elementClasses'),
+        attrs = get(this, 'elementAttributes'),
+        style = get(this, 'elementStyle'),
+        content = get(this, 'elementContent'),
+        tag = get(this, 'elementTag'),
         styleBuffer = [], prop;
 
     var openTag = ["<" + tag];
@@ -226,8 +228,8 @@ SC._RenderBuffer = SC.Object.extend(
 
     content = content.join();
 
-    if (this.get('escapeContent')) {
-      content = this.get('escapeFunction')(content);
+    if (get(this, 'escapeContent')) {
+      content = get(this, 'escapeFunction')(content);
     }
 
     return openTag + content + "</" + tag + ">";

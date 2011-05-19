@@ -1,3 +1,11 @@
+// ==========================================================================
+// Project:   SproutCore Views
+// Copyright: ©2006-2011 Strobe Inc. and contributors.
+// License:   Licensed under MIT license (see license.js)
+// ==========================================================================
+
+var set = SC.set, get = SC.get;
+
 var View, view, willDestroyCalled, childView;
 
 module("SC.View - append() and appendTo()", {
@@ -15,7 +23,7 @@ test("should be added to the specified element when calling append()", function(
 
   view = View.create();
 
-  ok(!view.get('element'), "precond - should not have an element");
+  ok(!get(view, 'element'), "precond - should not have an element");
   view.appendTo('#menu');
 
   var viewElem = SC.$('#menu').children();
@@ -29,7 +37,7 @@ test("should be added to the document body when calling appendTo()", function() 
     }
   });
 
-  ok(!view.get('element'), "precond - should not have an element");
+  ok(!get(view, 'element'), "precond - should not have an element");
   view.append();
 
   var viewElem = SC.$(document.body).find(':contains("foo bar baz")');
@@ -45,14 +53,14 @@ test("remove removes an element from the DOM", function() {
     }
   });
 
-  ok(!view.get('element'), "precond - should not have an element");
+  ok(!get(view, 'element'), "precond - should not have an element");
   view.append();
 
-  ok(SC.$("#" + view.get('elementId')).length === 1, "precond - element was inserted");
+  ok(SC.$("#" + get(view, 'elementId')).length === 1, "precond - element was inserted");
   view.remove();
-  ok(SC.$("#" + view.get('elementId')).length === 0, "remove removes an element from the DOM");
-  ok(SC.View.views[view.get('elementId')] === view, "remove does not remove the view from the view hash");
-  ok(!view.get('element'), "remove nulls out the element");
+  ok(SC.$("#" + get(view, 'elementId')).length === 0, "remove removes an element from the DOM");
+  ok(SC.View.views[get(view, 'elementId')] === view, "remove does not remove the view from the view hash");
+  ok(!get(view, 'element'), "remove nulls out the element");
   equals(willDestroyCalled, 1, "the willDestroyElement hook was called once");
 });
 
@@ -65,17 +73,17 @@ test("destroy more forcibly removes the view", function() {
     }
   });
 
-  ok(!view.get('element'), "precond - should not have an element");
+  ok(!get(view, 'element'), "precond - should not have an element");
   view.append();
 
-  ok(SC.$("#" + view.get('elementId')).length === 1, "precond - element was inserted");
+  ok(SC.$("#" + get(view, 'elementId')).length === 1, "precond - element was inserted");
 
   view.destroy();
 
-  ok(SC.$("#" + view.get('elementId')).length === 0, "destroy removes an element from the DOM");
-  ok(SC.View.views[view.get('elementId')] === undefined, "destroy removes a view from the global views hash");
-  equals(view.get('isDestroyed'), true, "the view is marked as destroyed");
-  ok(!view.get('element'), "the view no longer has an element");
+  ok(SC.$("#" + get(view, 'elementId')).length === 0, "destroy removes an element from the DOM");
+  ok(SC.View.views[get(view, 'elementId')] === undefined, "destroy removes a view from the global views hash");
+  equals(get(view, 'isDestroyed'), true, "the view is marked as destroyed");
+  ok(!get(view, 'element'), "the view no longer has an element");
   equals(willDestroyCalled, 1, "the willDestroyElement hook was called once");
 });
 
@@ -99,7 +107,7 @@ test("should be added to the specified element when calling appendTo()", functio
 
   view = View.create();
 
-  ok(!view.get('element'), "precond - should not have an element");
+  ok(!get(view, 'element'), "precond - should not have an element");
   view.appendTo('#menu');
 
   var viewElem = SC.$('#menu #child');
@@ -111,7 +119,7 @@ test("should be added to the document body when calling append()", function() {
 
   view = View.create();
 
-  ok(!view.get('element'), "precond - should not have an element");
+  ok(!get(view, 'element'), "precond - should not have an element");
   view.append();
 
   var viewElem = SC.$('#child');
@@ -131,7 +139,7 @@ module("SC.View - removing views in a view hierarchy", {
       })
     });
 
-    childView = view.get('child');
+    childView = get(view, 'child');
   },
 
   teardown: function() {
@@ -140,43 +148,43 @@ module("SC.View - removing views in a view hierarchy", {
 });
 
 test("remove removes child elements from the DOM", function() {
-  ok(!childView.get('element'), "precond - should not have an element");
+  ok(!get(childView, 'element'), "precond - should not have an element");
   view.append();
 
-  ok(SC.$("#" + childView.get('elementId')).length === 1, "precond - element was inserted");
+  ok(SC.$("#" + get(childView, 'elementId')).length === 1, "precond - element was inserted");
 
   // remove parent view
   view.remove();
 
-  ok(SC.$("#" + childView.get('elementId')).length === 0, "remove removes child elements the DOM");
-  ok(SC.View.views[childView.get('elementId')] === childView, "remove does not remove child views from the view hash");
-  ok(!childView.get('element'), "remove nulls out child elements");
+  ok(SC.$("#" + get(childView, 'elementId')).length === 0, "remove removes child elements the DOM");
+  ok(SC.View.views[get(childView, 'elementId')] === childView, "remove does not remove child views from the view hash");
+  ok(!get(childView, 'element'), "remove nulls out child elements");
   equals(willDestroyCalled, 1, "the willDestroyElement hook was called once");
 });
 
 test("destroy more forcibly removes child views", function() {
-  ok(!childView.get('element'), "precond - should not have an element");
+  ok(!get(childView, 'element'), "precond - should not have an element");
   view.append();
 
-  ok(SC.$("#" + childView.get('elementId')).length === 1, "precond - child element was inserted");
+  ok(SC.$("#" + get(childView, 'elementId')).length === 1, "precond - child element was inserted");
 
   view.destroy();
 
-  ok(SC.$("#" + childView.get('elementId')).length === 0, "destroy removes child elements from the DOM");
-  ok(SC.View.views[childView.get('elementId')] === undefined, "destroy removes a child views from the global views hash");
-  equals(childView.get('isDestroyed'), true, "child views are marked as destroyed");
-  ok(!childView.get('element'), "child views no longer have an element");
+  ok(SC.$("#" + get(childView, 'elementId')).length === 0, "destroy removes child elements from the DOM");
+  ok(SC.View.views[get(childView, 'elementId')] === undefined, "destroy removes a child views from the global views hash");
+  equals(get(childView, 'isDestroyed'), true, "child views are marked as destroyed");
+  ok(!get(childView, 'element'), "child views no longer have an element");
   equals(willDestroyCalled, 1, "the willDestroyElement hook was called once on children");
 });
 
 test("destroy removes a child view from its parent", function() {
-  ok(!childView.get('element'), "precond - should not have an element");
+  ok(!get(childView, 'element'), "precond - should not have an element");
   view.append();
 
-  ok(SC.$("#" + childView.get('elementId')).length === 1, "precond - child element was inserted");
+  ok(SC.$("#" + get(childView, 'elementId')).length === 1, "precond - child element was inserted");
 
   childView.destroy();
 
-  ok(view.getPath('childViews.length') === 0, "Destroyed child views should be removed from their parent");
+  ok(SC.getPath(view, 'childViews.length') === 0, "Destroyed child views should be removed from their parent");
 });
 

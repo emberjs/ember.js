@@ -5,7 +5,7 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
-require("sproutcore-runtime");
+require("sproutcore-metal");
 
 SC.$ = jQuery;
 

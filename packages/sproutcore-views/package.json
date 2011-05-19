@@ -7,7 +7,7 @@
   "version": "2.0",
   "dependencies": {
     "jquery": "1.6",
-    "sproutcore-runtime": "2.0",
+    "sproutcore-metal": "2.0",
     "sproutcore-preprocessor": "~> 0.0.2"
   },
   "plugin:preprocessors": [

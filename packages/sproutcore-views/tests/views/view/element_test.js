@@ -4,12 +4,14 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
+var set = SC.set, get = SC.get;
+
 module("SC.View#element");
 
 test("returns null if the view has no element and no parent view", function() {
   var view = SC.View.create() ;
-  equals(view.get('parentView'), null, 'precond - has no parentView');
-  equals(view.get('element'), null, 'has no element');
+  equals(get(view, 'parentView'), null, 'precond - has no parentView');
+  equals(get(view, 'element'), null, 'has no element');
 });
 
 test("returns null if the view has no element and parent view has no element", function() {
@@ -18,19 +20,19 @@ test("returns null if the view has no element and parent view has no element", f
   });
   var view = parent.childViews[0];
 
-  equals(view.get('parentView'), parent, 'precond - has parent view');
-  equals(parent.get('element'), null, 'parentView has no element');
-  equals(view.get('element'), null, ' has no element');
+  equals(get(view, 'parentView'), parent, 'precond - has parent view');
+  equals(get(parent, 'element'), null, 'parentView has no element');
+  equals(get(view, 'element'), null, ' has no element');
 });
 
 test("returns element if you set the value", function() {
   var view = SC.View.create();
-  equals(view.get('element'), null, 'precond- has no element');
+  equals(get(view, 'element'), null, 'precond- has no element');
 
   var dom = document.createElement('div');
-  view.set('element', dom);
+  set(view, 'element', dom);
 
-  equals(view.get('element'), dom, 'now has set element');
+  equals(get(view, 'element'), dom, 'now has set element');
 });
 
 var parent, child, parentDom, childDom ;
@@ -50,7 +52,7 @@ module("SC.View#element - autodiscovery", {
     parentDom = SC.$("<div><div id='child-view'></div></div>")[0];
 
     // set parent element...
-    parent.set('element', parentDom);
+    set(parent, 'element', parentDom);
   },
 
   teardown: function() {
@@ -59,7 +61,7 @@ module("SC.View#element - autodiscovery", {
 });
 
 test("discovers element if has no element but parent view does have element", function() {
-  equals(parent.get('element'), parentDom, 'precond - parent has element');
+  equals(get(parent, 'element'), parentDom, 'precond - parent has element');
   ok(parentDom.firstChild, 'precond - parentDom has first child');
 
   equals(child.$().attr('id'), 'child-view', 'view discovered child');

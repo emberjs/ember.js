@@ -4,6 +4,9 @@
 //            ©2008-2011 Apple Inc. All rights reserved.
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
+
+var set = SC.set, get = SC.get;
+
 module("SC.CollectionView");
 
 test("should render a view for each item in its content array", function() {
@@ -38,14 +41,14 @@ test("should allow custom item views by setting itemViewClass", function() {
 
     itemViewClass: SC.View.extend({
       render: function(buf) {
-        passedContents.push(this.get('content'));
-        buf.push(this.get('content'));
+        passedContents.push(get(this, 'content'));
+        buf.push(get(this, 'content'));
       }
     })
   });
 
   view.createElement();
-  ok(passedContents.isEqual(['foo', 'bar', 'baz']), "sets the content property on each item view");
+  same(passedContents, ['foo', 'bar', 'baz'], "sets the content property on each item view");
 
   passedContents.forEach(function(item) {
     equals(view.$(':contains("'+item+'")').length, 1);
@@ -60,7 +63,7 @@ test("should insert a new item in DOM when an item is added to the content array
 
     itemViewClass: SC.View.extend({
       render: function(buf) {
-        buf.push(this.get('content'));
+        buf.push(get(this, 'content'));
       }
     })
   });
@@ -83,7 +86,7 @@ test("should remove an item from DOM when an item is removed from the content ar
 
     itemViewClass: SC.View.extend({
       render: function(buf) {
-        buf.push(this.get('content'));
+        buf.push(get(this, 'content'));
       }
     })
   });
@@ -95,6 +98,7 @@ test("should remove an item from DOM when an item is removed from the content ar
   });
 
   content.removeAt(1);
+  console.log(get(view, 'element'));
   content.forEach(function(item, idx) {
     equals(view.$(':nth-child(%@)'.fmt(idx+1)).text(), item);
   });
@@ -105,9 +109,9 @@ test("should allow changes to content object before layer is created", function(
     content: null
   });
 
-  view.set('content', []);
-  view.set('content', [1, 2, 3]);
-  view.set('content', [1, 2]);
+  set(view, 'content', []);
+  set(view, 'content', [1, 2, 3]);
+  set(view, 'content', [1, 2]);
 
   view.createElement();
   ok(view.$().children().length);
@@ -125,7 +129,7 @@ test("should allow changing content property to be null", function() {
   view.createElement();
   equals(view.$().children().length, 3, "precond - creates three elements");
 
-  view.set('content', null);
+  set(view, 'content', null);
   equals(view.$().children().text(), "(empty)", "should display empty view");
 });
 

@@ -6,6 +6,7 @@
 // ==========================================================================
 
 require('sproutcore-views/views/view');
+var get = SC.get, set = SC.set;
 
 /**
   @class
@@ -45,7 +46,7 @@ SC.CollectionView = SC.View.extend(
     @returns {SC.TemplateCollectionView}
   */
   init: function() {
-    var collectionView = sc_super();
+    var collectionView = this._super();
     this._sctcv_contentDidChange();
     return collectionView;
   },
@@ -57,9 +58,11 @@ SC.CollectionView = SC.View.extend(
     as soon as the empty layer was created
   */
   didCreateElement: function() {
-    var content = this.get('content');
+    var content = get(this, 'content');
     if (content) {
-      this.arrayContentDidChange(0, 0, content.get('length'));
+      var len = get(content, 'length');
+      this.arrayWillChange(content, 0, 0, len);
+      this.arrayDidChange(content, 0, 0, len);
     }
   },
 
@@ -73,56 +76,46 @@ SC.CollectionView = SC.View.extend(
   _sctcv_contentDidChange: function() {
     this.$().empty();
 
-    var oldContent = this._content,
-        content = this.get('content'),
+    var oldContent = this._sccv_content,
+        content = get(this, 'content'),
         oldLen = 0, newLen = 0;
 
     if (oldContent) {
-      oldContent.removeArrayObservers({
-        target: this,
-        willChange: 'arrayContentWillChange',
-        didChange: 'arrayContentDidChange'
-      });
-
-      oldLen = oldContent.get('length');
+      oldContent.removeArrayObserver(this);
+      oldLen = get(oldContent, 'length');
     }
 
     if (content) {
-      content.addArrayObservers({
-        target: this,
-        willChange: 'arrayContentWillChange',
-        didChange: 'arrayContentDidChange'
-      });
-
-      newLen = content.get('length');
+      content.addArrayObserver(this);
+      newLen = get(content, 'length');
     }
 
-    this.arrayContentWillChange(0, oldLen, newLen);
-    this._content = this.get('content');
-    this.arrayContentDidChange(0, oldLen, newLen);
+    this.arrayWillChange(oldContent, 0, oldLen, newLen);
+    this._sccv_content = content;
+    this.arrayDidChange(content, 0, oldLen, newLen);
   }.observes('content'),
 
   destroy: function() {
-    this.set('content', null);
-    return sc_super();
+    set(this, 'content', null);
+    return this._super();
   },
 
-  arrayContentWillChange: function(start, removedCount, addedCount) {
-    if (!this.get('element')) { return; }
+  arrayWillChange: function(content, start, removedCount, addedCount) {
+    if (!get(this, 'element')) { return; }
 
-    // If the contents were empty before and this template collection has an empty view
-    // remove it now.
-    var emptyView = this.get('emptyView');
-    if (emptyView && !emptyView.isClass) {
+    // If the contents were empty before and this template collection has an 
+    // empty view remove it now.
+    var emptyView = get(this, 'emptyView');
+    if (emptyView && !SC.Object.detect(emptyView)) {
       emptyView.removeFromParent();
     }
 
     // Loop through child views that correspond with the removed items.
     // Note that we loop from the end of the array to the beginning because
     // we are mutating it as we go.
-    var childViews = this.get('childViews'), childView, idx, len;
+    var childViews = get(this, 'childViews'), childView, idx, len;
 
-    len = childViews.get('length');
+    len = get(childViews, 'length');
     for (idx = start + removedCount - 1; idx >= start; idx--) {
       childViews[idx].destroy();
     }
@@ -136,16 +129,20 @@ SC.CollectionView = SC.View.extend(
 
     This array observer is added in contentDidChange.
 
-    @param {Array} addedObjects the objects that were added to the content
-    @param {Array} removedObjects the objects that were removed from the content
-    @param {Number} changeIndex the index at which the changes occurred
-  */
-  arrayContentDidChange: function(start, removedCount, addedCount) {
-    if (!this.get('element')) { return; }
+    @param {Array} addedObjects 
+      the objects that were added to the content
 
-    var content = this.get('content'),
-        itemViewClass = this.get('itemViewClass'),
-        childViews = this.get('childViews'),
+    @param {Array} removedObjects 
+      the objects that were removed from the content
+    
+    @param {Number} changeIndex 
+      the index at which the changes occurred
+  */
+  arrayDidChange: function(content, start, removedCount, addedCount) {
+    if (!get(this, 'element')) { return; }
+
+    var itemViewClass = get(this, 'itemViewClass'),
+        childViews = get(this, 'childViews'),
         addedViews = [],
         renderFunc, view, childView, itemOptions, elem,
         insertAtElement, item, itemElem, idx, len;
@@ -158,7 +155,7 @@ SC.CollectionView = SC.View.extend(
       childView = childViews.objectAt(start - 1);
       insertAtElement = childView ? childView.$() : null;
 
-      len = addedObjects.get('length');
+      len = get(addedObjects, 'length');
 
       for (idx = 0; idx < len; idx++) {
         item = addedObjects.objectAt(idx);
@@ -180,15 +177,15 @@ SC.CollectionView = SC.View.extend(
       childViews.replace(start, 0, addedViews);
     }
 
-    var emptyView = this.get('emptyView');
-    if (childViews.get('length') === 0 && emptyView) {
-      if (emptyView.isClass) {
+    var emptyView = get(this, 'emptyView');
+    if (get(childViews, 'length') === 0 && emptyView) {
+      if (SC.Object.detect(emptyView)) {
         emptyView = this.createChildView(emptyView);
       }
 
-      this.set('emptyView', emptyView);
+      set(this, 'emptyView', emptyView);
       emptyView.createElement().$().appendTo(elem);
-      this.childViews = [emptyView];
+      set(this, 'childViews', [emptyView]);
     }
   }
 });
