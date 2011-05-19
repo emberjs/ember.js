@@ -25,12 +25,7 @@ function makeCtor() {
   var isPrepared = false, initMixins, init = false, hasChains = false;
   
   var Class = function() {
-    if (!isPrepared) {
-      isPrepared = true;
-      Class.PrototypeMixin.applyPartial(Class.prototype);
-      hasChains = !!SC.meta(this, false).chains; // avoid rewatch unless req.
-    }
-    
+    if (!isPrepared) get(Class, 'proto'); // prepare prototype...
     if (initMixins) {
       this.reopen.apply(this, initMixins);
       initMixins = null;
@@ -46,6 +41,15 @@ function makeCtor() {
   Class.toString = classToString;
   Class._prototypeMixinDidChange = function() { isPrepared = false; };
   Class._initMixins = function(args) { initMixins = args; };
+
+  SC.defineProperty(Class, 'proto', SC.computed(function() {
+    if (!isPrepared) {
+      isPrepared = true;
+      Class.PrototypeMixin.applyPartial(Class.prototype);
+      hasChains = !!SC.meta(this, false).chains; // avoid rewatch unless req.
+    }
+    return this.prototype;
+  }));
   
   return Class;
   
