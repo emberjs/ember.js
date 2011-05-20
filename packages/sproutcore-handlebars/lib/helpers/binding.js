@@ -17,7 +17,8 @@ var get = SC.get, getPath = SC.getPath;
     var data = options.data,
         fn = options.fn,
         inverse = options.inverse,
-        view = data.view;
+        view = data.view,
+        ctx  = this;
 
     // Set up observers for observable objects
     if ('object' === typeof this) {
@@ -30,7 +31,7 @@ var get = SC.get, getPath = SC.getPath;
         displayTemplate: fn,
         inverseTemplate: inverse,
         property: property,
-        previousContext: this,
+        previousContext: ctx,
         isEscaped: options.hash.escaped
       });
 
@@ -45,7 +46,7 @@ var get = SC.get, getPath = SC.getPath;
           // If no layer can be found, we can assume somewhere
           // above it has been re-rendered, so remove the
           // observer.
-          SC.removeObserver(this, property, invoker);
+          SC.removeObserver(ctx, property, invoker);
         }
       };
 
@@ -55,7 +56,7 @@ var get = SC.get, getPath = SC.getPath;
 
       // Observes the given property on the context and
       // tells the SC._BindableSpan to re-render.
-      SC.addObserver(this, property, invoker);
+      SC.addObserver(ctx, property, invoker);
 
       var buffer = bindView.renderBuffer(get(bindView, 'tagName'));
       bindView.renderToBuffer(buffer);
@@ -93,8 +94,8 @@ var get = SC.get, getPath = SC.getPath;
   });
 
   /**
-    Use the `boundIf` helper to create a conditional that re-evaluates whenever
-    the bound value changes.
+    Use the `boundIf` helper to create a conditional that re-evaluates 
+    whenever the bound value changes.
 
         {{#boundIf "content.shouldDisplayTitle"}}
           {{content.title}}
@@ -167,9 +168,11 @@ Handlebars.registerHelper('unless', function(context, options) {
   @returns {String} HTML string
 */
 Handlebars.registerHelper('bindAttr', function(options) {
+  
   var attrs = options.hash;
   var view = options.data.view;
   var ret = [];
+  var ctx = this;
 
   // Generate a unique id for this element. This will be added as a
   // data attribute to the element so it can be looked up when
@@ -190,12 +193,12 @@ Handlebars.registerHelper('bindAttr', function(options) {
   // current value of the property as an attribute.
   attrKeys.forEach(function(attr) {
     var property = attrs[attr];
-    var value = getPath(this, property);
+    var value = getPath(ctx, property);
 
     var observer, invoker;
 
     observer = function observer() {
-      var result = getPath(this, property);
+      var result = getPath(ctx, property);
       var elem = view.$("[data-handlebars-id='" + dataId + "']");
 
       // If we aren't able to find the element, it means the element
@@ -203,7 +206,7 @@ Handlebars.registerHelper('bindAttr', function(options) {
       // In that case, we can assume the template has been re-rendered
       // and we need to clean up the observer.
       if (elem.length === 0) {
-        SC.removeObserver(this, property, invoker);
+        SC.removeObserver(ctx, property, invoker);
         return;
       }
 
@@ -228,7 +231,7 @@ Handlebars.registerHelper('bindAttr', function(options) {
     // Add an observer to the view for when the property changes.
     // When the observer fires, find the element using the
     // unique data id and update the attribute to the new value.
-    SC.addObserver(this, property, invoker);
+    SC.addObserver(ctx, property, invoker);
 
     // Use the attribute's name as the value when it is YES
     if (value === YES) {

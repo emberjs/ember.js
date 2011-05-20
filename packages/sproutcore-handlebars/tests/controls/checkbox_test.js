@@ -12,13 +12,11 @@ module("SC.Checkbox", {
   }
 });
 
-SC.Object.prototype.setAndFlush = function(key, value) {
-  var args = arguments, self = this;
-
+function setAndFlush(view, key, value) {
   SC.run(function() {
-    SC.set(self, key, value);
+    SC.set(view, key, value);
   });
-};
+}
 
 test("value property mirrors input value", function() {
   checkboxView = SC.Checkbox.create({});
@@ -27,7 +25,7 @@ test("value property mirrors input value", function() {
   equals(get(checkboxView, 'value'), false, "initially starts with a false value");
   equals(!!checkboxView.$('input').prop('checked'), false, "the initial checked property is false");
 
-  checkboxView.setAndFlush('value', true);
+  setAndFlush(checkboxView, 'value', true);
 
   equals(checkboxView.$('input').prop('checked'), true, "changing the value property changes the DOM");
 
@@ -50,7 +48,7 @@ test("value property mirrors input value", function() {
   equals(get(checkboxView, 'value'), true, "precond - initially starts with a true value");
   equals(!!checkboxView.$('input').prop('checked'), true, "the initial checked property is true");
 
-  checkboxView.setAndFlush('value', false);
+  setAndFlush(checkboxView, 'value', false);
 
   equals(!!checkboxView.$('input').prop('checked'), false, "changing the value property changes the DOM");
 

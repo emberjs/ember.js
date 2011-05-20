@@ -256,6 +256,21 @@ test("should not update when a property is removed from the view", function() {
     foo: SC.Handlebars.compile('<h1 id="first">{{#bind "content"}}{{#bind "foo"}}{{bind "baz"}}{{/bind}}{{/bind}}</h1>')
   });
   var removeCalled = 0;
+  var origRemove;
+  function swapRemove() {
+    if (origRemove) {
+      SC.removeObserver = origRemove;
+      origRemove = null;
+    } else {
+      origRemove = SC.removeObserver;
+      SC.removeObserver = function(property, func) {
+        removeCalled++;
+        return origRemove.apply(this, arguments);
+      };
+    }
+  }
+
+  swapRemove();
 
   var view = SC.View.create({
     templateName: 'foo',
@@ -263,12 +278,7 @@ test("should not update when a property is removed from the view", function() {
 
     content: SC.Object.create({
       foo: SC.Object.create({
-        baz: "unicorns",
-
-        removeObserver: function(property, func) {
-          this._super(property, func);
-          removeCalled++;
-        }
+        baz: "unicorns"
       })
     })
   });
@@ -296,6 +306,8 @@ test("should not update when a property is removed from the view", function() {
   SC.run(function() {
     setPath(oldContent, 'foo.baz', 'ewoks');
   });
+  
+  swapRemove();
 
   equals(removeCalled, 1, "does not try to remove observer more than once");
   equals(view.$('#first').text(), "ninjas", "does not update removed object");
@@ -608,17 +620,21 @@ test("should pass hash arguments to the view object", function() {
   TemplateTests.HashArgTemplateView = SC.View.extend({
   });
 
-  var view = SC.View.create({
-    template: SC.Handlebars.compile('{{#view TemplateTests.HashArgTemplateView fooBinding="TemplateTests.bindTestObject.bar"}}{{foo}}{{/view}}')
+  var view ;
+  
+  SC.run(function() {
+    view = SC.View.create({
+      template: SC.Handlebars.compile('{{#view TemplateTests.HashArgTemplateView fooBinding="TemplateTests.bindTestObject.bar"}}{{foo}}{{/view}}')
+    });
+
+    view.createElement();
   });
-
-  view.createElement();
-
-  SC.run();
 
   equals(view.$().text(), "bat", "prints initial bound value");
 
-  SC.run(function() { set(TemplateTests.bindTestObject, 'bar', 'brains'); });
+  SC.run(function() { 
+    set(TemplateTests.bindTestObject, 'bar', 'brains'); 
+  });
 
   equals(view.$().text(), "brains", "prints updated bound value");
 });

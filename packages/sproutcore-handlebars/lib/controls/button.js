@@ -23,7 +23,6 @@ SC.Button = SC.View.extend({
   }.property('target').cacheable(),
 
   mouseDown: function() {
-    console.log('MOUSE DOWN');
     set(this, 'isActive', true);
     this._mouseDown = true;
     this._mouseEntered = true;
@@ -44,7 +43,6 @@ SC.Button = SC.View.extend({
   },
 
   mouseUp: function(event) {
-    console.log('MOUSE UP');
     if (get(this, 'isActive')) {
       var action = get(this, 'action'),
           target = get(this, 'targetObject');

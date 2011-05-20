@@ -14,13 +14,13 @@ require('sproutcore-views/views/view');
   @private
   @class
 
-  SC._BindableSpanView is a private view created by the Handlebars `{{bind}}` helpers
-  that is used to keep track of bound properties.
+  SC._BindableSpanView is a private view created by the Handlebars `{{bind}}` 
+  helpers that is used to keep track of bound properties.
 
-  Every time a property is bound using a `{{mustache}}`, an anonymous subclass of
-  SC._BindableSpanView is created with the appropriate sub-template and context
-  set up. When the associated property changes, just the template for this view
-  will re-render.
+  Every time a property is bound using a `{{mustache}}`, an anonymous subclass 
+  of SC._BindableSpanView is created with the appropriate sub-template and 
+  context set up. When the associated property changes, just the template for 
+  this view will re-render.
 */
 SC._BindableSpanView = SC.View.extend(
 /** @scope SC._BindableSpanView.prototype */{

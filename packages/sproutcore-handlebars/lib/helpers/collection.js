@@ -110,7 +110,7 @@ Handlebars.registerHelper('collection', function(path, options) {
   @returns {String} HTML string
 */
 Handlebars.registerHelper('each', function(path, options) {
-  options.hash.contentBinding = SC.Binding.from(path).oneWay();
+  options.hash.contentBinding = SC.Binding.from('parentView.'+path).oneWay();
   options.hash.preserveContext = true;
   return Handlebars.helpers.collection.call(this, null, options);
 });

@@ -3,13 +3,14 @@
 // Copyright: ©2011 Strobe Inc. and contributors.
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
+/*globals TestObject */
 
-var textField, TestObject;
+var textField;
 var get = SC.get, set = SC.set;
 
 module("SC.TextField", {
   setup: function() {
-    TestObject = window.TestObject = SC.Object.create({
+    TestObject = SC.Object.create({
       value: null
     });
 
@@ -18,7 +19,7 @@ module("SC.TextField", {
 
   teardown: function() {
     textField.destroy();
-    TestObject = window.TestObject = textField = null;
+    TestObject = textField = null;
   }
 });
 
@@ -58,14 +59,19 @@ test("input type is configurable when creating view", function() {
 });
 
 test("value binding works properly for inputs that haven't been created", function() {
-  textField = SC.TextField.create({
-    valueBinding: 'TestObject.value'
+
+  SC.run(function() {
+    textField = SC.TextField.create({
+      valueBinding: 'TestObject.value'
+    });
   });
 
   equals(get(textField, 'value'), "", "precond - default value is null");
   equals(textField.$('input').length, 0, "precond - view doesn't have its layer created yet, thus no input element");
 
-  SC.run(function() { set(TestObject, 'value', 'ohai'); });
+  SC.run(function() {
+    set(TestObject, 'value', 'ohai');
+  });
 
   equals(get(textField, 'value'), 'ohai', "value property was properly updated");
 

@@ -12,6 +12,9 @@ module("SC.Button", {
   setup: function() {
     application = SC.Application.create();
     button = SC.Button.create();
+
+    // force setup since document may not be ready yet.
+    get(application, 'eventDispatcher').setup();
   },
 
   teardown: function() {
