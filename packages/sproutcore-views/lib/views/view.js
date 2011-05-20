@@ -369,7 +369,8 @@ SC.View = SC.Object.extend(
   */
   remove: function() {
     // What we should really do here is wait until the end of the run loop
-    // to determine if the element has been re-appended to a different element.
+    // to determine if the element has been re-appended to a different 
+    // element.
     // In the interim, we will just re-render if that happens. It is more
     // important than elements get garbage collected.
     this.destroyElement();
@@ -391,8 +392,8 @@ SC.View = SC.Object.extend(
     Attempts to discover the element in the parent element. The default
     implementation looks for an element with an ID of elementId (or the view's
     guid if elementId is null). You can override this method to provide your
-    own form of lookup. For example, if you want to discover your element using
-    a CSS class name instead of an ID.
+    own form of lookup. For example, if you want to discover your element 
+    using a CSS class name instead of an ID.
 
     @param {DOMElement} parentElement The parent's DOM element
     @returns {DOMElement} The discovered element
@@ -404,8 +405,8 @@ SC.View = SC.Object.extend(
 
   /**
     Creates a new renderBuffer with the passed tagName. You can override this
-    method to provide further customization to the buffer if needed. Normally you
-    will not need to call or override this method.
+    method to provide further customization to the buffer if needed. Normally 
+    you will not need to call or override this method.
 
     @returns {SC.RenderBuffer}
   */
@@ -458,14 +459,13 @@ SC.View = SC.Object.extend(
   },
 
   /**
-    Destroys any existing element along with the element for any child views as
-    well. If the view does not currently have a element, then this method will
-    do nothing.
+    Destroys any existing element along with the element for any child views 
+    as well. If the view does not currently have a element, then this method 
+    will do nothing.
 
-    If you implement willDestroyElement() on your view or if any mixins
-    implement willDestroElementMixin(), then this method will be invoked on your
-    view before your element is destroyed to give you a chance to clean up any
-    event handlers, etc.
+    If you implement willDestroyElement() on your view, then this method will 
+    be invoked on your view before your element is destroyed to give you a 
+    chance to clean up any event handlers, etc.
 
     If you write a willDestroyElement() handler, you can assume that your
     didCreateElement() handler was called earlier for the same element.
@@ -491,9 +491,9 @@ SC.View = SC.Object.extend(
   },
 
   /**
-    Called when the element of the view is going to be destroyed. Override this
-    function to do any teardown that requires an element, like removing event
-    listeners.
+    Called when the element of the view is going to be destroyed. Override 
+    this function to do any teardown that requires an element, like removing 
+    event listeners.
   */
   willDestroyElement: function() {},
 
@@ -543,11 +543,11 @@ SC.View = SC.Object.extend(
     @private
 
     Renders to a buffer.
-    Rendering only happens for the initial rendering. Further updates happen in updateElement,
-    and are not done to buffers, but to elements.
-    Note: You should not generally override nor directly call this method. This method is only
-    called by createElement to set up the element initially, and by renderChildViews, to write to
-    a buffer.
+    Rendering only happens for the initial rendering. Further updates happen 
+    in updateElement, and are not done to buffers, but to elements.
+    Note: You should not generally override nor directly call this method. 
+    This method is only called by createElement to set up the element 
+    initially, and by renderChildViews, to write to a buffer.
 
     @param {SC.RenderBuffer} buffer the render buffer.
   */
@@ -564,7 +564,8 @@ SC.View = SC.Object.extend(
     // render any child views now.
     if (!this._didRenderChildViews) { this.renderChildViews(buffer); }
 
-    // Reset the flag so that if the element is recreated we re-render the child views
+    // Reset the flag so that if the element is recreated we re-render the 
+    // child views
     this._didRenderChildViews = NO;
 
     SC.endPropertyChanges(this);
