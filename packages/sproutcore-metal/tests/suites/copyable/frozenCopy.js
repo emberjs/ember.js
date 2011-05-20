@@ -4,7 +4,7 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
-require('sproutcore-metal/~tests/suites/copyable/suite');
+require('sproutcore-metal/~tests/suites/copyable');
 
 var suite = SC.CopyableTests;
 
