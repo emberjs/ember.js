@@ -535,7 +535,7 @@ var Binding = SC.Object.extend({
     SC.addObserver(obj, this._from, this, this.fromDidChange); 
     if (from2) SC.addObserver(obj, from2, this, this.fromDidChange); 
     if (!oneWay) SC.addObserver(obj, this._to, this, this.toDidChange);
-    this._scheduleSync(obj, 'fwd');
+    if (SC.meta(obj,false).proto !== obj) this._scheduleSync(obj, 'fwd');
     this._readyToSync = true; 
     return this;
   },

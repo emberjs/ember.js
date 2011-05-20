@@ -105,6 +105,3 @@ SC.Suite.reopenClass({
   notest: function() {}
   
 });
-
-SC.STOP = true;
-

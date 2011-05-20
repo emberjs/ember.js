@@ -3,7 +3,7 @@
 // Copyright: ©2011 Strobe Inc. and contributors.
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
-/*globals raises */
+/*globals raises TestObject */
 
 module('SC.Object.create');
 
@@ -115,4 +115,57 @@ test('create should not break observed values', function() {
   
   SC.set(obj, 'value', 'BAR');
   equals(obj._count, 1, 'should fire');
+});
+
+test('bindings on a class should only sync on instances', function() {
+  TestObject = SC.Object.create({
+    foo: 'FOO'
+  });
+
+  var Class, inst;
+  
+  SC.run(function() {
+    Class = SC.Object.extend({
+      fooBinding: 'TestObject.foo'
+    });
+
+    inst = Class.create();
+  });
+  
+  equals(SC.get(Class.prototype, 'foo'), undefined, 'should not sync binding');
+  equals(SC.get(inst, 'foo'), 'FOO', 'should sync binding');
+
+});
+
+
+test('inherited bindings should only sync on instances', function() {
+  TestObject = SC.Object.create({
+    foo: 'FOO'
+  });
+
+  var Class, Subclass, inst;
+
+  SC.run(function() {
+    Class = SC.Object.extend({
+      fooBinding: 'TestObject.foo'
+    });
+  });
+  
+  SC.run(function() {
+    Subclass = Class.extend();
+    inst = Subclass.create();
+  });
+  
+  equals(SC.get(Class.prototype, 'foo'), undefined, 'should not sync binding on Class');
+  equals(SC.get(Subclass.prototype, 'foo'), undefined, 'should not sync binding on Subclass');
+  equals(SC.get(inst, 'foo'), 'FOO', 'should sync binding on inst');
+  
+  SC.run(function() {
+    SC.set(TestObject, 'foo', 'BAR');
+  });
+  
+  equals(SC.get(Class.prototype, 'foo'), undefined, 'should not sync binding on Class');
+  equals(SC.get(Subclass.prototype, 'foo'), undefined, 'should not sync binding on Subclass');
+  equals(SC.get(inst, 'foo'), 'BAR', 'should sync binding on inst');
+  
 });

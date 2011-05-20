@@ -15,6 +15,8 @@ require('sproutcore-metal/system/mixin');
 var rewatch = SC.rewatch;
 var classToString = SC.Mixin.prototype.toString;
 var set = SC.set, get = SC.get;
+var o_create = SC.create.primitive,
+    meta = SC.meta;
 
 function makeCtor() {
 
@@ -46,7 +48,7 @@ function makeCtor() {
     if (!isPrepared) {
       isPrepared = true;
       Class.PrototypeMixin.applyPartial(Class.prototype);
-      hasChains = !!SC.meta(this, false).chains; // avoid rewatch unless req.
+      hasChains = !!meta(Class.prototype, false).chains; // avoid rewatch 
     }
     return this.prototype;
   }));
@@ -95,7 +97,7 @@ var ClassMixin = SC.Mixin.create({
   isMethod: false,
   
   extend: function() {
-    var Class = makeCtor();
+    var Class = makeCtor(), proto;
     Class.ClassMixin = SC.Mixin.create(this.ClassMixin);
     Class.PrototypeMixin = SC.Mixin.create(this.PrototypeMixin);
     
@@ -104,10 +106,15 @@ var ClassMixin = SC.Mixin.create({
     
     Class.superclass = this;
     Class.__super__  = this.prototype;
-    Class.prototype = SC.create(this.prototype);
-    Class.prototype.constructor = Class;
-    Class.subclasses = SC.Set ? new SC.Set() : null;
+
+    proto = Class.prototype = o_create(this.prototype);
+    proto.constructor = Class;
+    SC.generateGuid(proto, 'sc');
+    meta(proto).proto = proto; // this will disable observers on prototype
+    SC.rewatch(proto); // setup watch chains if needed.
     
+
+    Class.subclasses = SC.Set ? new SC.Set() : null;
     if (this.subclasses) this.subclasses.add(Class);
     
     Class.ClassMixin.apply(Class);

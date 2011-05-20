@@ -551,13 +551,13 @@ test("nested dependent keys should propagate after they update", function() {
     priceBinding: "DepObj.price"
   });
 
-  SC.run();
+  SC.run.sync();
 
   equals(bindObj.get('price'), 5, "precond - binding propagates");
 
   DepObj.setPath('restaurant.menu.price', 10);
 
-  SC.run();
+  SC.run.sync();
 
   equals(bindObj.get('price'), 10, "binding propagates after a nested dependent keys updates");
 
@@ -565,7 +565,7 @@ test("nested dependent keys should propagate after they update", function() {
     price: 15
   }));
 
-  SC.run();
+  SC.run.sync();
 
   equals(bindObj.get('price'), 15, "binding propagates after a middle dependent keys updates");
 });
@@ -583,7 +583,7 @@ test("cacheable nested dependent keys should clear after their dependencies upda
     }.property('restaurant.menu.price').cacheable()
   });
 
-  SC.run();
+  SC.run.sync();
 
   equals(DepObj.get('price'), 5, "precond - computed property is correct");
 
@@ -594,7 +594,7 @@ test("cacheable nested dependent keys should clear after their dependencies upda
 
   equals(DepObj.get('price'), 20, "cacheable computed properties are invalidated after a second get before a run loop");
 
-  SC.run();
+  SC.run.sync();
 
   equals(DepObj.get('price'), 20, "precond - computed properties remain correct after a run loop");
 

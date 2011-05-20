@@ -1121,7 +1121,7 @@ SC.rewatch = function(obj) {
   if (chains && chains._value !== obj) chainsFor(obj);
 
   // if the object has bindings then sync them..
-  if (bindings) {
+  if (bindings && m.proto!==obj) {
     for (key in bindings) {
       b = !DEP_SKIP[key] && obj[key];
       if (b && b instanceof SC.Binding) b.fromDidChange(obj);
@@ -1440,7 +1440,8 @@ SC.wrap = function(func, superFunc) {
 
 
 SC.propertyWillChange = function(obj, keyName) {
-  var desc = meta(obj,false).descs[keyName];
+  var m = meta(obj, false), proto = m.proto, desc = m.descs[keyName];
+  if (proto === obj) return ;
   if (desc && desc.willChange) desc.willChange(obj, keyName);
   dependentKeysWillChange(obj, keyName);
   chainsWillChange(obj, keyName);
@@ -1448,7 +1449,8 @@ SC.propertyWillChange = function(obj, keyName) {
 };
 
 SC.propertyDidChange = function(obj, keyName) {
-  var desc = meta(obj,false).descs[keyName];
+  var m = meta(obj, false), proto = m.proto, desc = m.descs[keyName];
+  if (proto === obj) return ;
   if (desc && desc.didChange) desc.didChange(obj, keyName);
   dependentKeysDidChange(obj, keyName);
   chainsDidChange(obj, keyName);

@@ -68,7 +68,6 @@ var RunLoop = SC.Object.extend({
   },
   
   flush: function(queueName) {
-
     var queues = this._queues, queueNames, idx, len, queue, log;
 
     if (!queues) return this; // nothing to do
@@ -106,7 +105,8 @@ var RunLoop = SC.Object.extend({
       do {
         this._queues = null;
         for(idx=0;idx<len;idx++) {
-          queue = queues[queueNames[idx]];
+          queueName = queueNames[idx];
+          queue = queues[queueName];
           
           //@if (debug)
           log = SC.LOG_BINDINGS && queueName==='sync';
@@ -164,11 +164,9 @@ var run;
   @returns {Object} return value from invoking the passed function.
 */
 SC.run = run = function(target, method) {
-  if (!target && !method) return SC.run.sync();
-  
   var ret, loop;
   run.begin();
-  ret = invoke(target, method);
+  if (target || method) ret = invoke(target, method);
   run.end();
   return ret;
 };
