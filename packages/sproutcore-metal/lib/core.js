@@ -353,6 +353,17 @@ SC.compare = function (v, w) {
   var type1 = SC.typeOf(v);
   var type2 = SC.typeOf(w);
 
+  var Comparable = SC.Comparable;
+  if (Comparable) {
+    if (type1==='instance' && Comparable.detect(v.constructor)) {
+      return v.constructor.compare(v, w);
+    }
+    
+    if (type2 === 'instance' && Comparable.detect(w.constructor)) {
+      return 1-w.constructor.compare(w, v);
+    }
+  }
+
   // If we haven't yet generated a reverse-mapping of SC.ORDER_DEFINITION,
   // do so now.
   var mapping = SC.ORDER_DEFINITION_MAPPING;
