@@ -2,8 +2,10 @@ require "bundler/setup"
 require "sproutcore"
 require "erb"
 
+LICENSE = File.read("generators/license.js")
+
 def uglify(string)
-  IO.popen("uglifyjs", "r+") do |io|
+  IO.popen("uglifyjs -nc", "r+") do |io|
     io.puts string
     io.close_write
     return io.read
@@ -41,7 +43,6 @@ file "tmp/static/sproutcore.js" => :build do
     file.puts File.read("tmp/static/sproutcore-runtime.js")
     file.puts File.read("tmp/static/sproutcore-views.js")
     file.puts File.read("tmp/static/sproutcore-handlebars.js")
-    file.puts File.read("tmp/static/sproutcore-datastore.js")
   end
 end
 
@@ -59,9 +60,31 @@ file "tmp/sproutcore.js" => "tmp/static/sproutcore.stripped.js" do
   end
 end
 
+file "tmp/static/sproutcore-datastore.stripped.js" => "tmp/static/sproutcore-datastore.js" do
+  File.open("tmp/static/sproutcore-datastore.stripped.js", "w") do |file|
+    sproutcore = File.read("tmp/static/sproutcore-datastore.js")
+    sproutcore.gsub!(%r{^\s*require\(['"]([^'"])*['"]\);?\s*$}, "")
+    file.puts sproutcore
+  end
+end
+
+file "tmp/sproutcore-datastore.js" => "tmp/static/sproutcore-datastore.stripped.js" do
+  File.open("tmp/sproutcore-datastore.js", "w") do |file|
+    file.puts File.read("tmp/static/sproutcore-datastore.stripped.js")
+  end
+end
+
 file "tmp/sproutcore.min.js" => "tmp/sproutcore.js" do
   File.open("tmp/sproutcore.min.js", "w") do |file|
-    file.puts uglify(File.read("tmp/sproutcore.js"))
+    uglified = uglify(File.read("tmp/sproutcore.js"))
+    file.puts "#{LICENSE}\n#{uglified}"
+  end
+end
+
+file "tmp/sproutcore-datastore.min.js" => "tmp/sproutcore-datastore.js" do
+  File.open("tmp/sproutcore-datastore.min.js", "w") do |file|
+    uglified = uglify(File.read("tmp/sproutcore-datastore.js"))
+    file.puts "#{LICENSE}\n#{uglified}"
   end
 end
 
@@ -83,9 +106,9 @@ def spade_update_task(package)
   end
 end
 
-def spade_build_task(package)
+def spade_build_task(package, version=VERSION)
   path = "lib/#{package}"
-  dest = "#{path}/#{package}-#{VERSION}.spd"
+  dest = "#{path}/#{package}-#{version}.spd"
   source = Dir["#{path}/**/*.js"] - ["#{path}/spade-boot.js"]
 
   file dest => source do
@@ -156,6 +179,9 @@ namespace :test do
   handlebars_spade_boot = spade_update_task "sproutcore-handlebars"
   datastore_spade_boot  = spade_update_task "sproutcore-datastore"
 
+  handlebars_package    = spade_build_task "handlebars", '1.0.0.beta.2'
+  handlebars_installed  = spade_install_task handlebars_package
+
   runtime_package       = spade_build_task "sproutcore-runtime"
   runtime_installed     = spade_install_task runtime_package
   runtime_test_files    = generate_test_files "sproutcore-runtime"
@@ -170,9 +196,9 @@ namespace :test do
 
   spade_preview_task "sproutcore-runtime",    [runtime_spade_boot] + runtime_test_files
   spade_preview_task "sproutcore-views",      [runtime_installed, views_spade_boot] + views_test_files
-  spade_preview_task "sproutcore-handlebars", [runtime_installed, views_installed, handlebars_spade_boot] + handlebars_test_files
+  spade_preview_task "sproutcore-handlebars", [runtime_installed, views_installed, handlebars_spade_boot, handlebars_installed] + handlebars_test_files
   spade_preview_task "sproutcore-datastore",  [runtime_installed, datastore_spade_boot] + datastore_test_files
 end
 
-task :default => "tmp/sproutcore.min.js"
+task :default => ["tmp/sproutcore.min.js", "tmp/sproutcore-datastore.min.js"]
 
