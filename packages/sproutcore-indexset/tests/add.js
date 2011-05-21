@@ -6,9 +6,12 @@
 
 /*global module test equals context ok same should_throw*/
 var set ;
+
+var sc_get = SC.get, sc_set = SC.set;
+
 module("SC.IndexSet#add", {
   setup: function() {
-    set = SC.IndexSet.create();
+    set = new SC.IndexSet();
   }
 });
 
@@ -24,8 +27,8 @@ function iter(s) {
 
 test("add range to end of set", function() {
   set.add(1000,5);
-  equals(set.get('length'), 5, 'should have correct index count');  
-  equals(set.get('max'), 1005, 'max should return 1 past last index');
+  equals(sc_get(set, 'length'), 5, 'should have correct index count');  
+  equals(sc_get(set, 'max'), 1005, 'max should return 1 past last index');
   same(iter(set), [1000,1001,1002,1003,1004]);
 });
 
@@ -35,8 +38,8 @@ test("add range into middle of empty range", function() {
   
   // now add second range
   set.add(10,1);
-  equals(set.get('length'), 3, 'should have extra length');
-  equals(set.get('max'), 102, 'max should return 1 past last index');
+  equals(sc_get(set, 'length'), 3, 'should have extra length');
+  equals(sc_get(set, 'max'), 102, 'max should return 1 past last index');
   same(iter(set), [10, 100, 101]);
 });
 
@@ -46,8 +49,8 @@ test("add range overlapping front edge of range", function() {
   
   // now add second range
   set.add(99,2);
-  equals(set.get('length'), 3, 'should have extra length');
-  equals(set.get('max'), 102, 'max should return 1 past last index');
+  equals(sc_get(set, 'length'), 3, 'should have extra length');
+  equals(sc_get(set, 'max'), 102, 'max should return 1 past last index');
   same(iter(set), [99, 100, 101]);
 });
 
@@ -57,8 +60,8 @@ test("add range overlapping last edge of range", function() {
   
   // now add overlapping range
   set.add(101,2);
-  equals(set.get('length'), 5, 'new set.length');
-  equals(set.get('max'), 202, 'max should return 1 past last index');
+  equals(sc_get(set, 'length'), 5, 'new set.length');
+  equals(sc_get(set, 'max'), 202, 'max should return 1 past last index');
   same(iter(set), [100,101,102,200,201], 'should include 101-102');
 });
 
@@ -68,8 +71,8 @@ test("add range overlapping two ranges, merging into one", function() {
   
   // now add overlapping range
   set.add(101,10);
-  equals(set.get('length'), 12, 'new set.length');
-  equals(set.get('max'), 112, 'max should return 1 past last index');
+  equals(sc_get(set, 'length'), 12, 'new set.length');
+  equals(sc_get(set, 'max'), 112, 'max should return 1 past last index');
   same(iter(set), [100,101,102,103,104,105,106,107,108,109,110,111], 'should include one range 100-111');
 });
 
@@ -79,8 +82,8 @@ test("add range overlapping three ranges, merging into one", function() {
   
   // now add overlapping range
   set.add(101,10);
-  equals(set.get('length'), 12, 'new set.length');
-  equals(set.get('max'), 112, 'max should return 1 past last index');
+  equals(sc_get(set, 'length'), 12, 'new set.length');
+  equals(sc_get(set, 'max'), 112, 'max should return 1 past last index');
   same(iter(set), [100,101,102,103,104,105,106,107,108,109,110,111], 'should include one range 100-111');
 });
 
@@ -90,9 +93,9 @@ test("add range partially overlapping one range and replaing another range, merg
   
   // now add overlapping range
   set.add(101,10);
-  equals(set.get('length'), 11, 'new set.length');
+  equals(sc_get(set, 'length'), 11, 'new set.length');
 
-  equals(set.get('max'), 111, 'max should return 1 past last index');
+  equals(sc_get(set, 'max'), 111, 'max should return 1 past last index');
   same(iter(set), [100,101,102,103,104,105,106,107,108,109,110], 'should include one range 100-110');
 });
 
@@ -102,8 +105,8 @@ test("add range overlapping last index", function() {
   
   // now add second range
   set.add(101,2);
-  equals(set.get('length'), 3, 'should have extra length');
-  equals(set.get('max'), 103, 'max should return 1 past last index');
+  equals(sc_get(set, 'length'), 3, 'should have extra length');
+  equals(sc_get(set, 'max'), 103, 'max should return 1 past last index');
   same(iter(set), [100, 101, 102]);
 });
 
@@ -113,8 +116,8 @@ test("add range matching existing range", function() {
   
   // now add second range
   set.add(100,5);
-  equals(set.get('length'), 5, 'should not change');
-  equals(set.get('max'), 105, 'max should return 1 past last index');
+  equals(sc_get(set, 'length'), 5, 'should not change');
+  equals(sc_get(set, 'max'), 105, 'max should return 1 past last index');
   same(iter(set), [100, 101, 102, 103, 104]);  
 });
 
@@ -138,7 +141,8 @@ test("add with range object should add range only", function() {
 });
 
 test("add with index set should add indexes in set", function() {
-  set.add(SC.IndexSet.create().add(2,2).add(10,2));
+  var ranges = SC.IndexSet.create().add(2,2).add(10,2);
+  set.add(ranges);
   same(iter(set), [2,3,10,11]);
 });
 
@@ -148,7 +152,7 @@ test("add with index set should add indexes in set", function() {
 
 test("adding a range should trigger an observer notification", function() {
   var callCnt = 0;
-  set.addObserver('[]', function() { callCnt++; });
+  SC.addObserver(set, '[]', function() { callCnt++; });
   set.add(10,10);
   equals(callCnt, 1, 'should have called observer once');
 });
@@ -156,7 +160,7 @@ test("adding a range should trigger an observer notification", function() {
 test("adding a range over an existing range should not trigger an observer notification", function() {
   var callCnt = 0;
   set.add(10,10);
-  set.addObserver('[]', function() { callCnt++; });
+  SC.addObserver(set, '[]', function() { callCnt++; });
   set.add(15,5);
   equals(callCnt, 0, 'should not have called observer');
 });
@@ -164,26 +168,26 @@ test("adding a range over an existing range should not trigger an observer notif
 test("appending a range to end should merge into last range", function() {
   set = SC.IndexSet.create(2).add(3);
   equals(set.rangeStartForIndex(3), 2, 'last two range should merge together (%@)'.fmt(set.inspect()));
-  equals(set.get('max'), 4, 'should have max');
-  equals(set.get('length'), 2, 'should have length');
+  equals(sc_get(set, 'max'), 4, 'should have max');
+  equals(sc_get(set, 'length'), 2, 'should have length');
 
   set = SC.IndexSet.create(2000, 1000).add(3000, 1000);
   equals(set.rangeStartForIndex(3990), 2000, 'last two range should merge together (%@)'.fmt(set.inspect()));
-  equals(set.get('max'), 4000, 'should have max');
-  equals(set.get('length'), 2000, 'should have length');
+  equals(sc_get(set, 'max'), 4000, 'should have max');
+  equals(sc_get(set, 'length'), 2000, 'should have length');
   
 });
 
 test("appending range to start of empty set should create a single range", function() {
   set = SC.IndexSet.create().add(0,2);
   equals(set.rangeStartForIndex(1), 0, 'should have single range (%@)'.fmt(set.inspect()));
-  equals(set.get('length'), 2, 'should have length');
-  equals(set.get('max'), 2, 'should have max');
+  equals(sc_get(set, 'length'), 2, 'should have length');
+  equals(sc_get(set, 'max'), 2, 'should have max');
   
   set = SC.IndexSet.create().add(0,2000);
   equals(set.rangeStartForIndex(1998), 0, 'should have single range (%@)'.fmt(set.inspect()));
-  equals(set.get('length'), 2000, 'should have length');
-  equals(set.get('max'), 2000, 'should have max');
+  equals(sc_get(set, 'length'), 2000, 'should have length');
+  equals(sc_get(set, 'max'), 2000, 'should have max');
   
 });
 

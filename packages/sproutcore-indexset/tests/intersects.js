@@ -7,6 +7,8 @@
 /*global module test equals context ok same notest */
 
 var set ;
+var sc_get = SC.get, sc_set = SC.set;
+
 module("SC.IndexSet#intersects", {
   setup: function() {
     set = SC.IndexSet.create().add(1000, 10).add(2000,1);

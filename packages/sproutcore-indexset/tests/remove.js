@@ -6,6 +6,8 @@
 
 /*global module test equals context ok same notest should_throw*/
 var set ;
+var sc_get = SC.get, sc_set = SC.set;
+
 module("SC.IndexSet#remove", {
   setup: function() {
     set = SC.IndexSet.create();
@@ -23,11 +25,11 @@ function iter(s) {
 // 
 
 test("remove a range after end of set", function() {
-  equals(set.get('length'), 0, 'precond - should be empty');  
+  equals(sc_get(set, 'length'), 0, 'precond - should be empty');  
 
   set.remove(1000, 5);
-  equals(set.get('length'), 0, 'should still be empty');  
-  equals(set.get('max'), 0, 'max should return 1 past last index');
+  equals(sc_get(set, 'length'), 0, 'should still be empty');  
+  equals(sc_get(set, 'max'), 0, 'max should return 1 past last index');
   same(iter(set), [], 'should be empty');
 });
 
@@ -36,8 +38,8 @@ test("remove range in middle of an existing range", function() {
   same(iter(set), [100, 101, 102, 103], 'precond - should have range');
   
   set.remove(101,2);
-  equals(set.get('length'), 2, 'new length should not include removed range');
-  equals(set.get('max'), 104, 'max should return 1 past last index');
+  equals(sc_get(set, 'length'), 2, 'new length should not include removed range');
+  equals(sc_get(set, 'max'), 104, 'max should return 1 past last index');
   same(iter(set), [100,103], 'should remove range in the middle'); 
 });
 
@@ -47,8 +49,8 @@ test("remove range overlapping front edge of range", function() {
   
   // now add second range
   set.remove(99,2);
-  equals(set.get('length'), 1, 'should have extra length');
-  equals(set.get('max'), 102, 'max should return 1 past last index');
+  equals(sc_get(set, 'length'), 1, 'should have extra length');
+  equals(sc_get(set, 'max'), 102, 'max should return 1 past last index');
   same(iter(set), [101]);
 });
 
@@ -58,8 +60,8 @@ test("remove range overlapping last edge of range", function() {
   
   // now add overlapping range
   set.remove(101,2);
-  equals(set.get('length'), 3, 'new set.length');
-  equals(set.get('max'), 202, 'max should return 1 past last index');
+  equals(sc_get(set, 'length'), 3, 'new set.length');
+  equals(sc_get(set, 'max'), 202, 'max should return 1 past last index');
   same(iter(set), [100,200,201], 'should remove 101-102');
 });
 
@@ -69,8 +71,8 @@ test("remove range overlapping two ranges, remove parts of both", function() {
   
   // now add overlapping range
   set.remove(101,10);
-  equals(set.get('length'), 2, 'new set.length');
-  equals(set.get('max'), 112, 'max should return 1 past last index');
+  equals(sc_get(set, 'length'), 2, 'new set.length');
+  equals(sc_get(set, 'max'), 112, 'max should return 1 past last index');
   same(iter(set), [100,111], 'should remove range 101-110');
 });
 
@@ -80,8 +82,8 @@ test("remove range overlapping three ranges, removing one and parts of the other
   
   // now add overlapping range
   set.remove(101,10);
-  equals(set.get('length'), 2, 'new set.length');
-  equals(set.get('max'), 112, 'max should return 1 past last index');
+  equals(sc_get(set, 'length'), 2, 'new set.length');
+  equals(sc_get(set, 'max'), 112, 'max should return 1 past last index');
   same(iter(set), [100,111], 'should remove range 101-110');
 });
 
@@ -91,9 +93,9 @@ test("remove range partially overlapping one range and replacing another range",
   
   // now add overlapping range
   set.remove(101,10);
-  equals(set.get('length'), 1, 'new set.length');
+  equals(sc_get(set, 'length'), 1, 'new set.length');
 
-  equals(set.get('max'), 101, 'max should return 1 past last index');
+  equals(sc_get(set, 'max'), 101, 'max should return 1 past last index');
   same(iter(set), [100], 'should include one range 100-110');
 });
 
@@ -103,8 +105,8 @@ test("remove range overlapping last index", function() {
   
   // now add second range
   set.remove(101,2);
-  equals(set.get('length'), 1, 'should have extra length');
-  equals(set.get('max'), 101, 'max should return 1 past last index');
+  equals(sc_get(set, 'length'), 1, 'should have extra length');
+  equals(sc_get(set, 'max'), 101, 'max should return 1 past last index');
   same(iter(set), [100]);
 });
 
@@ -114,8 +116,8 @@ test("remove range matching existing range", function() {
   
   // now add second range
   set.remove(100,5);
-  equals(set.get('length'), 0, 'should be empty');
-  equals(set.get('max'), 0, 'max should return 1 past last index');
+  equals(sc_get(set, 'length'), 0, 'should be empty');
+  equals(sc_get(set, 'max'), 0, 'max should return 1 past last index');
   same(iter(set), []);  
 });
 
@@ -151,7 +153,7 @@ test("remove a range should trigger an observer notification", function() {
   var callCnt = 0;
   set.add(10, 20);
   
-  set.addObserver('[]', function() { callCnt++; });
+  SC.addObserver(set, '[]', function() { callCnt++; });
   set.remove(10,10);
   equals(callCnt, 1, 'should have called observer once');
 });
@@ -159,7 +161,7 @@ test("remove a range should trigger an observer notification", function() {
 test("removing a non-existant range should not trigger observer notification", function() {
   var callCnt = 0;
   
-  set.addObserver('[]', function() { callCnt++; });
+  SC.addObserver(set, '[]', function() { callCnt++; });
   set.remove(10,10); // 10-20 are already empty
   equals(callCnt, 0, 'should NOT have called observer');
 });
@@ -168,7 +170,7 @@ test("removing a clone of the same index set should leave an empty set", functio
   var set = SC.IndexSet.create(0,2), set2 = set.clone();
   ok(set.isEqual(set2), 'precond - clone is equal to receiver');
   set.remove(set2);
-  equals(set.get('length'), 0, 'set should now be empty');
+  equals(sc_get(set, 'length'), 0, 'set should now be empty');
 });
 
 test("removing an index range outside of target range (specific bug)", function() {
@@ -179,7 +181,7 @@ test("removing an index range outside of target range (specific bug)", function(
   // removing set2 from set should not changed set at all beceause it is 
   // before the first range, but it causes a problem with the length.
   set.remove(set2);
-  equals(set.get('length'), 3, 'length should not change');
+  equals(sc_get(set, 'length'), 3, 'length should not change');
 });
 
 test("remove() raises exception when frozen", function() {

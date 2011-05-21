@@ -6,6 +6,8 @@
 
 /*global module test equals context ok same notest */
 var set, ret ;
+var sc_get = SC.get, sc_set = SC.set;
+
 module("SC.IndexSet#without", {
   setup: function() {
     set = SC.IndexSet.create(1,9);

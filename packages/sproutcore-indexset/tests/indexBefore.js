@@ -6,6 +6,7 @@
 // ==========================================================================
 
 var set ;
+var sc_get = SC.get, sc_set = SC.set;
 
 module("SC.IndexSet.indexBefore", {
   setup: function() {

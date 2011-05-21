@@ -6,6 +6,8 @@
 
 /*global module test equals context ok same */
 var set, start, len ;
+var sc_get = SC.get, sc_set = SC.set;
+
 module("SC.IndexSet#rangeStartForIndex", {
   setup: function() {
     start = SC.IndexSet.HINT_SIZE*2 + 10 ;
