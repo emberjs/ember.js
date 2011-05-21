@@ -8,7 +8,7 @@
 require('sproutcore-runtime');
 require('sproutcore-datastore/system/record');
 require('sproutcore-datastore/system/query');
-require('sproutcore-datastore/system/index_set');
+require('sproutcore-indexset');
 
 /**
   @class
