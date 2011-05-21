@@ -66,7 +66,7 @@ test("value binding works properly for inputs that haven't been created", functi
     });
   });
 
-  equals(get(textField, 'value'), "", "precond - default value is null");
+  equals(get(textField, 'value'), null, "precond - default value is null");
   equals(textField.$('input').length, 0, "precond - view doesn't have its layer created yet, thus no input element");
 
   SC.run(function() {

@@ -68,11 +68,12 @@ test("checking the checkbox updates the value", function() {
   checkboxView = SC.Checkbox.create({ value: true });
   checkboxView.append();
 
-  equals(checkboxView.get('value'), true, "precond - initially starts with a true value");
+  equals(get(checkboxView, 'value'), true, "precond - initially starts with a true value");
   equals(!!checkboxView.$('input').prop('checked'), true, "precond - the initial checked property is true");
 
   checkboxView.$('input:checkbox').change();
 
   equals(checkboxView.$('input').prop('checked'), true, "precond - after clicking a checkbox, the checked property changed");
-  equals(checkboxView.get('value'), true, "changing the checkbox causes the view's value to get updated");
-})
+  equals(get(checkboxView, 'value'), true, "changing the checkbox causes the view's value to get updated");
+});
+

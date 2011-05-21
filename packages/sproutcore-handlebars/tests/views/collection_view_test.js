@@ -186,7 +186,7 @@ test("tagName works in the #collection helper", function() {
   equals(view.$('li').length, 2, "rerenders with correct number of items");
 
   SC.run(function() {
-    view.childViews[0].set('content', ['bing', 'bat', 'bang']);
+    set(view.childViews[0], 'content', ['bing', 'bat', 'bang']);
   });
 
   equals(view.$('li').length, 3, "rerenders with correct number of items");

@@ -7,6 +7,8 @@
 require("sproutcore-views/views/view");
 require("sproutcore-handlebars/ext");
 
+var set = SC.set, get = SC.get;
+
 // TODO: Be explicit in the class documentation that you
 // *MUST* set the value of a checkbox through SproutCore.
 // Updating the value of a checkbox directly via jQuery objects
@@ -21,13 +23,13 @@ SC.Checkbox = SC.View.extend({
   defaultTemplate: SC.Handlebars.compile('<label><input type="checkbox" {{bindAttr checked="value"}}>{{title}}</label>'),
 
   change: function() {
-    this.invokeOnce(this._updateElementValue)
+    SC.run.once(this, this._updateElementValue);
     return false;
   },
 
   _updateElementValue: function() {
     var input = this.$('input:checkbox');
-    this.set('value', input.prop('checked'));
+    set(this, 'value', input.prop('checked'));
   }
 });
 

@@ -13,7 +13,7 @@ SC.Button = SC.View.extend({
   tagName: 'button',
   
   targetObject: function() {
-    var target = this.get('target');
+    var target = get(this, 'target');
 
     if (SC.typeOf(target) === "string") {
       return SC.getPath(target);
