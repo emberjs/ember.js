@@ -7,9 +7,7 @@
 
 require('sproutcore-runtime');
 require('sproutcore-datastore/system/record');
-
-// TODO: Move DateTime into a separate package
-require('sproutcore-datastore/datetime');
+require('sproutcore-datetime');
 
 /** @class
 

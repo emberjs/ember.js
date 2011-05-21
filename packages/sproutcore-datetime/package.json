@@ -1,14 +1,12 @@
 {
-  "name": "sproutcore-datastore",
-  "summary": "SproutCore Data Store",
-  "description": "The SproutCore data store",
+  "name": "sproutcore-datetime",
+  "summary": "SproutCore DateTime",
+  "description": "A rich date time class with utilities",
   "homepage": "http://sproutcore.com",
   "author": "Strobe Inc., Apple, Inc., and contributors",
   "version": "2.0",
   "dependencies": {
     "sproutcore-runtime": "2.0",
-    "sproutcore-datetime": "2.0",
-    "sproutcore-indexset": "2.0",
     "sproutcore-preprocessor": "~> 0.0.2"
   },
   "plugin:preprocessors": [
