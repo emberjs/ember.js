@@ -6,6 +6,7 @@
 // ==========================================================================
 
 require("sproutcore-metal");
+if ('undefined' === typeof jQuery) require('jquery');
 
 SC.$ = jQuery;
 
