@@ -23,24 +23,24 @@ SproutCore::Compiler.output       = "tmp/static"
 # SproutCore::Compiler.root "sproutcore"
 
 def compile_package_task(package)
-  js_tasks = SproutCore::Compiler::Preprocessors::JavaScriptTask.with_input "lib/#{package}/lib/**/*.js", "."
+  js_tasks = SproutCore::Compiler::Preprocessors::JavaScriptTask.with_input "packages/#{package}/lib/**/*.js", "."
   SproutCore::Compiler::CombineTask.with_tasks js_tasks, "#{SproutCore::Compiler.intermediate}/#{package}"
 end
 
 namespace :sproutcore do
-  %w(runtime handlebars views datastore).each do |package|
+  %w(metal handlebars views datastore).each do |package|
     task package => compile_package_task("sproutcore-#{package}")
   end
 end
 
 task :handlebars => compile_package_task("handlebars")
 
-task :build => ["sproutcore:runtime", "sproutcore:handlebars", "sproutcore:views", "sproutcore:datastore", :handlebars]
+task :build => ["sproutcore:metal", "sproutcore:handlebars", "sproutcore:views", "sproutcore:datastore", :handlebars]
 
 file "tmp/static/sproutcore.js" => :build do
   File.open("tmp/static/sproutcore.js", "w") do |file|
     file.puts File.read("tmp/static/handlebars.js")
-    file.puts File.read("tmp/static/sproutcore-runtime.js")
+    file.puts File.read("tmp/static/sproutcore-metal.js")
     file.puts File.read("tmp/static/sproutcore-views.js")
     file.puts File.read("tmp/static/sproutcore-handlebars.js")
   end
@@ -97,7 +97,7 @@ end
 VERSION = "2.0"
 
 def spade_update_task(package)
-  path = "lib/#{package}"
+  path = "packages/#{package}"
   dest = "#{path}/spade-boot.js"
   source = Dir["#{path}/**/*.js"] - ["#{path}/spade-boot.js"]
 
@@ -107,7 +107,7 @@ def spade_update_task(package)
 end
 
 def spade_build_task(package, version=VERSION)
-  path = "lib/#{package}"
+  path = "packages/#{package}"
   dest = "#{path}/#{package}-#{version}.spd"
   source = Dir["#{path}/**/*.js"] - ["#{path}/spade-boot.js"]
 
@@ -130,7 +130,7 @@ end
 
 def spade_preview_task(package, deps)
   task package => deps do
-    $threads << Thread.new { sh "cd lib/#{package} && spade preview" }
+    $threads << Thread.new { sh "cd packages/#{package} && spade preview" }
     sleep 3
     sh "open http://localhost:4020/test_#{package}.html"
     $threads.each(&:join)
@@ -138,10 +138,10 @@ def spade_preview_task(package, deps)
 end
 
 def generate_test_files(package)
-  html_dest = "lib/#{package}/test_#{package}.html"
+  html_dest = "packages/#{package}/test_#{package}.html"
   html_source = "generators/tests.html.erb"
 
-  js_dest = "lib/#{package}/tests/all.js"
+  js_dest = "packages/#{package}/tests/all.js"
   js_source = "generators/all.js.erb"
 
   { js_source => js_dest, html_source => html_dest }.each do |source, dest|
@@ -155,8 +155,8 @@ def generate_test_files(package)
     end
   end
 
-  qunit_dest = "lib/#{package}/tests/qunit.js"
-  qunit_css_dest = "lib/#{package}/tests/qunit-style.css"
+  qunit_dest = "packages/#{package}/tests/qunit.js"
+  qunit_css_dest = "packages/#{package}/tests/qunit-style.css"
 
   file qunit_dest => "generators/qunit.js" do
     File.open(qunit_dest, "w") do |file|
@@ -174,7 +174,7 @@ def generate_test_files(package)
 end
 
 namespace :test do
-  runtime_spade_boot    = spade_update_task "sproutcore-runtime"
+  metal_spade_boot      = spade_update_task "sproutcore-metal"
   views_spade_boot      = spade_update_task "sproutcore-views"
   handlebars_spade_boot = spade_update_task "sproutcore-handlebars"
   datastore_spade_boot  = spade_update_task "sproutcore-datastore"
@@ -182,9 +182,9 @@ namespace :test do
   handlebars_package    = spade_build_task "handlebars", '1.0.0.beta.2'
   handlebars_installed  = spade_install_task handlebars_package
 
-  runtime_package       = spade_build_task "sproutcore-runtime"
-  runtime_installed     = spade_install_task runtime_package
-  runtime_test_files    = generate_test_files "sproutcore-runtime"
+  metal_package         = spade_build_task "sproutcore-metal"
+  metal_installed       = spade_install_task metal_package
+  metal_test_files      = generate_test_files "sproutcore-metal"
 
   views_package         = spade_build_task "sproutcore-views"
   views_installed       = spade_install_task views_package
@@ -194,10 +194,10 @@ namespace :test do
 
   datastore_test_files  = generate_test_files "sproutcore-datastore"
 
-  spade_preview_task "sproutcore-runtime",    [runtime_spade_boot] + runtime_test_files
-  spade_preview_task "sproutcore-views",      [runtime_installed, views_spade_boot] + views_test_files
-  spade_preview_task "sproutcore-handlebars", [runtime_installed, views_installed, handlebars_spade_boot, handlebars_installed] + handlebars_test_files
-  spade_preview_task "sproutcore-datastore",  [runtime_installed, datastore_spade_boot] + datastore_test_files
+  spade_preview_task "sproutcore-metal",      [metal_spade_boot] + metal_test_files
+  spade_preview_task "sproutcore-views",      [metal_installed, views_spade_boot] + views_test_files
+  spade_preview_task "sproutcore-handlebars", [metal_installed, views_installed, handlebars_spade_boot, handlebars_installed] + handlebars_test_files
+  spade_preview_task "sproutcore-datastore",  [metal_installed, datastore_spade_boot] + datastore_test_files
 end
 
 task :default => ["tmp/sproutcore.min.js", "tmp/sproutcore-datastore.min.js"]
