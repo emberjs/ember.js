@@ -5,6 +5,8 @@
 // ==========================================================================
 /*globals module ok equals same test MyApp */
 
+var set = SC.set, get = SC.get;
+
 // NOTE: The test below are based on the Data Hashes state chart.  This models
 // the "did_change" event in the NestedStore portion of the diagram.
 
@@ -21,9 +23,9 @@ module("SC.NestedStore#dataHashDidChange", {
     
     storeKey = SC.Store.generateStoreKey();
     
-    SC.RunLoop.begin();
+    SC.run.begin();
     parent.writeDataHash(storeKey, json, SC.Record.READY_CLEAN);
-    SC.RunLoop.end();
+    SC.run.end();
     
     parent.editables = null; // manually patch to setup test state
     
@@ -40,7 +42,7 @@ module("SC.NestedStore#dataHashDidChange", {
 function testStateTransition(fromState, toState) {
 
   // verify preconditions
-  equals(store.get('hasChanges'), NO, 'should not have changes');
+  equals(get(store, 'hasChanges'), NO, 'should not have changes');
   equals(store.storeKeyEditState(storeKey), fromState, 'precond - storeKey edit state');
   if (store.chainedChanges) {
     ok(!store.chainedChanges.contains(storeKey), 'changedChanges should NOT include storeKey');
@@ -58,7 +60,7 @@ function testStateTransition(fromState, toState) {
   ok(oldrev !== store.revisions[storeKey], 'revisions should change. was: %@ - now: %@'.fmt(oldrev, store.revisions[storeKey]));
   ok(store.chainedChanges.contains(storeKey), 'changedChanges should now include storeKey');
   
-  equals(store.get('hasChanges'), YES, 'should have changes');
+  equals(get(store, 'hasChanges'), YES, 'should have changes');
 } 
 
 test("edit state = INHERITED, parent editable = NO", function() {

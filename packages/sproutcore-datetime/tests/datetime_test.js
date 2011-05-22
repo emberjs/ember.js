@@ -5,6 +5,8 @@
 
 /*globals module test ok equals same stop start */
 
+var get =SC.get, set= SC.set;
+
 module('Time');
 
 var dt, options, ms, timezone, startTime, timezones;
@@ -31,14 +33,14 @@ function timeShouldBeEqualToHash(t, h, message) {
     return;
   }
     
-  equals(t.get('year'), h.year , message.fmt('year'));
-  equals(t.get('month'), h.month, message.fmt('month'));
-  equals(t.get('day'), h.day, message.fmt('day'));
-  equals(t.get('hour'), h.hour, message.fmt('hour'));
-  equals(t.get('minute'), h.minute, message.fmt('minute'));
-  equals(t.get('second'), h.second, message.fmt('second'));
-  equals(t.get('millisecond'), h.millisecond, message.fmt('millisecond'));
-  equals(t.get('timezone'), h.timezone, message.fmt('timezone'));
+  equals(get(t, 'year'), h.year , message.fmt('year'));
+  equals(get(t, 'month'), h.month, message.fmt('month'));
+  equals(get(t, 'day'), h.day, message.fmt('day'));
+  equals(get(t, 'hour'), h.hour, message.fmt('hour'));
+  equals(get(t, 'minute'), h.minute, message.fmt('minute'));
+  equals(get(t, 'second'), h.second, message.fmt('second'));
+  equals(get(t, 'millisecond'), h.millisecond, message.fmt('millisecond'));
+  equals(get(t, 'timezone'), h.timezone, message.fmt('timezone'));
 }
 
 function formatTimezone(offset) {
@@ -104,7 +106,7 @@ test('create with local time milliseconds', function() {
   timeShouldBeEqualToHash(dt, hash);
 
   // Now try creating with 0 milliseconds
-  equals(SC.DateTime.create(0).get('milliseconds'), 0, "Can create with 0 milliseconds");
+  equals(get(SC.DateTime.create(0), 'milliseconds'), 0, "Can create with 0 milliseconds");
 });
 
 test('create with default time zone', function() {
@@ -113,7 +115,7 @@ test('create with default time zone', function() {
   // Check that the default creation time zone is local
   timezone = d.getTimezoneOffset(); // get the current location's time zone.
   dt = SC.DateTime.create();
-  equals(dt.get('timezone'), timezone, "Default time zone should be local");
+  equals(get(dt, 'timezone'), timezone, "Default time zone should be local");
 });
 
 test('create with a hash containing milliseconds and a specified time zone', function() {
@@ -136,7 +138,7 @@ test('create with default time zone', function() {
   // Check that the default creation time zone is local
   timezone = d.getTimezoneOffset(); // get the current location's time zone.
   dt = SC.DateTime.create();
-  equals(dt.get('timezone'), timezone, "Default time zone should be local");
+  equals(get(dt, 'timezone'), timezone, "Default time zone should be local");
 });
 
 test('create with a hash containing milliseconds and a specified time zone', function() {
@@ -166,7 +168,7 @@ test('Adjust with hashes expressed in various time zones', function() {
     // Test taking each to time zone 0.  Manually calculate what the hour should be
     // then test that a call to get() returns that value.
     newHour = Math.floor((options.hour + 48 + (timezone / 60)) % 24); // small hack -- add 48 hours to ensure positive results when adding negative time zone offsets (doesn't affect the calculation since we mod by 24)
-    equals(dt.adjust({ timezone: 0 }).get('hour'), newHour);
+    equals(get(dt.adjust({ timezone: 0 }), 'hour'), newHour);
   });
 });
 
@@ -232,43 +234,43 @@ test('Format', function() {
     dt.toFormattedString('%a %A %b %B %d %D %h %H %I %j %m %M %p %S %w %y %Y %%a'),
     'Sat Saturday Jun June 08 8 4 04 04 159 06 00 AM 22 6 85 1985 %a');
   
-  equals(dt.toFormattedString('%Z'), formatTimezone(dt.get('timezone')));
+  equals(dt.toFormattedString('%Z'), formatTimezone(get(dt, 'timezone')));
   equals(dt.adjust({ timezone:    0 }).toFormattedString('%Y-%m-%d %H:%M:%S %Z'), '1985-06-08 05:00:22 +00:00');
   equals(dt.adjust({ timezone: -120 }).toFormattedString('%Y-%m-%d %H:%M:%S %Z'), '1985-06-08 07:00:22 +02:00');
   equals(dt.adjust({ timezone:  420 }).toFormattedString('%Y-%m-%d %H:%M:%S %Z'), '1985-06-07 22:00:22 -07:00'); // the previous day
 });
 
 test('fancy getters', function() {
-  equals(dt.get('isLeapYear'), NO);
+  equals(get(dt, 'isLeapYear'), NO);
 
   // (note must set all three components of a date
   // in order to get predictable results, per JS Date object spec)
-  equals(SC.DateTime.create({ year: 1900, month: 1, day: 1 }).get('isLeapYear'), NO);
-  equals(SC.DateTime.create({ year: 2000, month: 1, day: 1 }).get('isLeapYear'), YES);
-  equals(SC.DateTime.create({ year: 2004, month: 1, day: 1 }).get('isLeapYear'), YES);
+  equals(get(SC.DateTime.create({ year: 1900, month: 1, day: 1 }), 'isLeapYear'), NO);
+  equals(get(SC.DateTime.create({ year: 2000, month: 1, day: 1 }), 'isLeapYear'), YES);
+  equals(get(SC.DateTime.create({ year: 2004, month: 1, day: 1 }), 'isLeapYear'), YES);
   
-  equals(dt.get('daysInMonth'), 30); // june
-  equals(SC.DateTime.create({ year: 2000, month: 2, day: 1 }).get('daysInMonth'), 29);
-  equals(SC.DateTime.create({ year: 2001, month: 2, day: 1 }).get('daysInMonth'), 28);
+  equals(get(dt, 'daysInMonth'), 30); // june
+  equals(get(SC.DateTime.create({ year: 2000, month: 2, day: 1 }), 'daysInMonth'), 29);
+  equals(get(SC.DateTime.create({ year: 2001, month: 2, day: 1 }), 'daysInMonth'), 28);
   
-  equals(dt.get('dayOfYear'), 159);
-  equals(SC.DateTime.create({ year: 2000, month: 12, day: 31 }).get('dayOfYear'), 366);
-  equals(SC.DateTime.create({ year: 2001, month: 12, day: 31 }).get('dayOfYear'), 365);
+  equals(get(dt, 'dayOfYear'), 159);
+  equals(get(SC.DateTime.create({ year: 2000, month: 12, day: 31 }), 'dayOfYear'), 366);
+  equals(get(SC.DateTime.create({ year: 2001, month: 12, day: 31 }), 'dayOfYear'), 365);
 
-  equals(dt.get('week'), 22);
-  equals(SC.DateTime.create({ year: 2006, month:  1, day:  1 }).get('week0'),  1);
-  equals(SC.DateTime.create({ year: 2006, month:  1, day:  1 }).get('week1'),  0);
-  equals(SC.DateTime.create({ year: 2006, month:  1, day:  8 }).get('week0'),  2);
-  equals(SC.DateTime.create({ year: 2006, month:  1, day:  8 }).get('week1'),  1);
-  equals(SC.DateTime.create({ year: 2006, month: 12, day: 31 }).get('week0'), 53);
-  equals(SC.DateTime.create({ year: 2006, month: 12, day: 31 }).get('week1'), 52);
+  equals(get(dt, 'week'), 22);
+  equals(get(SC.DateTime.create({ year: 2006, month:  1, day:  1 }), 'week0'),  1);
+  equals(get(SC.DateTime.create({ year: 2006, month:  1, day:  1 }), 'week1'),  0);
+  equals(get(SC.DateTime.create({ year: 2006, month:  1, day:  8 }), 'week0'),  2);
+  equals(get(SC.DateTime.create({ year: 2006, month:  1, day:  8 }), 'week1'),  1);
+  equals(get(SC.DateTime.create({ year: 2006, month: 12, day: 31 }), 'week0'), 53);
+  equals(get(SC.DateTime.create({ year: 2006, month: 12, day: 31 }), 'week1'), 52);
 
-  equals(dt.get('lastMonday'), dt.advance({ day: -5 }), 'dt.advance(day: -5)');
-  equals(dt.get('nextFriday'), dt.advance({ day: 6 }), 'dt.advance(day: 6)');
-  equals(dt.get('lastWednesday'), dt.advance({ day: -3 }), 'dt.advance(day: -3)');
+  equals(get(dt, 'lastMonday'), dt.advance({ day: -5 }), 'dt.advance(day: -5)');
+  equals(get(dt, 'nextFriday'), dt.advance({ day: 6 }), 'dt.advance(day: 6)');
+  equals(get(dt, 'lastWednesday'), dt.advance({ day: -3 }), 'dt.advance(day: -3)');
   
   equals(
-    SC.DateTime.create({ year: 2010, month: 9, day: 29, hour: 0, minute: 30, timezone: -120 }).adjust({ day: 1 }).get('lastMonday').toISO8601(),
+    get(SC.DateTime.create({ year: 2010, month: 9, day: 29, hour: 0, minute: 30, timezone: -120 }).adjust({ day: 1 }), 'lastMonday').toISO8601(),
     "2010-08-30T00:30:00+02:00");
 });
  
@@ -339,10 +341,11 @@ test('bad parsing', function() {
 test('binding', function() {
   var fromObject = SC.Object.create({value: dt});
   var toObject = SC.Object.create({value: ''});
+  var root = { fromObject: fromObject, toObject: toObject };
   var format = '%Y-%m-%d %H:%M:%S';
-  var binding = SC.Binding.dateTime(format).from('value', fromObject).to('value', toObject).connect();
-  SC.Binding.flushPendingChanges();
-  equals(toObject.get('value'), dt.toFormattedString(format));
+  var binding = SC.Binding.dateTime(format).from('fromObject.value').to('toObject.value').connect(root);
+  SC.run.sync();
+  equals(get(toObject, 'value'), dt.toFormattedString(format));
 });
 
 test('cache', function() {

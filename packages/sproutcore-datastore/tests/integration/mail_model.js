@@ -6,6 +6,8 @@
 // ==========================================================================
 /*globals module test ok equals same */
 
+var set = SC.set, get = SC.get;
+
 var Mail;
 module("Sample Model from a webmail app", { 
   setup: function() {

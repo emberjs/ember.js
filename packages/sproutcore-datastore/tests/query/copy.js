@@ -4,7 +4,9 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 /*globals module ok equals same test MyApp */
- 
+
+var set = SC.set, get = SC.get;
+
 // test parsing of query string
 module("SC.Query#copy");
 
@@ -16,7 +18,7 @@ test("basic copy", function() {
     recordType: SC.Record,
     recordTypes: [SC.Record],
     location: SC.Query.REMOTE,
-    scope: SC.CoreSet.create()
+    scope: SC.Set.create()
   }).freeze();
   
   var keys = 'conditions orderBy recordType recordTypes parameters location scope'.w();
@@ -24,7 +26,7 @@ test("basic copy", function() {
   
   equals(copy.isFrozen, NO, 'copy should not be frozen');
   keys.forEach(function(key) {
-    equals(copy.get(key), q.get(key), 'copy.%@ should = original.%@'.fmt(key, key));
+    equals(get(copy, key), get(q, key), 'copy.%@ should = original.%@'.fmt(key, key));
   }, this);
   
 });

@@ -5,8 +5,10 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
-require('sproutcore-runtime');
+require('sproutcore-metal');
 require('sproutcore-datastore/data_sources/data_source');
+
+var get = SC.get, set = SC.set;
 
 /** @class
 
@@ -31,7 +33,7 @@ require('sproutcore-datastore/data_sources/data_source');
 
       });
 
-      MyApp.store.set('dataSource', MyApp.dataSource);
+      set(MyApp.store, 'dataSource', MyApp.dataSource);
 
   Note that the order you define your dataSources property will determine the
   order in which requests will cascade from the store.
@@ -44,7 +46,7 @@ require('sproutcore-datastore/data_sources/data_source');
         .from(YouTube.YouTubeDataSource.create({ apiKey: "123456" }))
         .from(MyApp.PhotosDataSource.create({ root: "photos" }));
 
-      MyApp.store.set('dataSource', MyApp.dataSource);
+      set(MyApp.store, 'dataSource', MyApp.dataSource);
 
   In this case, the order you call from() will determine the order the request
   will cascade.
@@ -72,8 +74,8 @@ SC.CascadeDataSource = SC.DataSource.extend(
     @returns {SC.CascadeDataSource} receiver
   */
   from: function(dataSource) {
-    var dataSources = this.get('dataSources');
-    if (!dataSources) this.set('dataSources', dataSources = []);
+    var dataSources = get(this, 'dataSources');
+    if (!dataSources) set(this, 'dataSources', dataSources = []);
     dataSources.push(dataSource);
     return this ;
   },
@@ -84,7 +86,7 @@ SC.CascadeDataSource = SC.DataSource.extend(
 
   /** @private - just cascades */
   fetch: function(store, query) {
-    var sources = this.get('dataSources'),
+    var sources = get(this, 'dataSources'),
         len     = sources ? sources.length : 0,
         ret     = NO,
         cur, source, idx;
@@ -101,7 +103,7 @@ SC.CascadeDataSource = SC.DataSource.extend(
 
   /** @private - just cascades */
   retrieveRecords: function(store, storeKeys, ids) {
-    var sources = this.get('dataSources'),
+    var sources = get(this, 'dataSources'),
         len     = sources ? sources.length : 0,
         ret     = NO,
         cur, source, idx;
@@ -117,7 +119,7 @@ SC.CascadeDataSource = SC.DataSource.extend(
 
   /** @private - just cascades */
   commitRecords: function(store, createStoreKeys, updateStoreKeys, destroyStoreKeys, params) {
-    var sources = this.get('dataSources'),
+    var sources = get(this, 'dataSources'),
         len     = sources ? sources.length : 0,
         ret     = NO,
         cur, source, idx;
@@ -133,7 +135,7 @@ SC.CascadeDataSource = SC.DataSource.extend(
 
   /** @private - just cascades */
   cancel: function(store, storeKeys) {
-    var sources = this.get('dataSources'),
+    var sources = get(this, 'dataSources'),
         len     = sources ? sources.length : 0,
         ret     = NO,
         cur, source, idx;
@@ -153,16 +155,16 @@ SC.CascadeDataSource = SC.DataSource.extend(
 
   /** @private */
   init: function() {
-    sc_super();
+    this._super();
 
     // if a dataSources array is defined, look for any strings and lookup
     // the same on the data source.  Replace.
-    var sources = this.get('dataSources'),
-        idx     = sources ? sources.get('length') : 0,
+    var sources = get(this, 'dataSources'),
+        idx     = sources ? get(sources, 'length') : 0,
         source;
     while(--idx>=0) {
       source = sources[idx];
-      if (SC.typeOf(source) === SC.T_STRING) sources[idx] = this.get(source);
+      if (SC.typeOf(source) === 'string') sources[idx] = get(this, source);
     }
 
   },

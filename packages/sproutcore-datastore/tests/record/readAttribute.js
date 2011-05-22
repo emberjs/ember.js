@@ -5,10 +5,12 @@
 // ==========================================================================
 /*globals module ok equals same test MyApp */
 
+var set = SC.set, get = SC.get;
+
 var store, Foo, json, foo ;
 module("SC.Record#readAttribute", {
   setup: function() {
-    SC.RunLoop.begin();
+    SC.run.begin();
     store = SC.Store.create();
     Foo = SC.Record.extend();
     json = { 
@@ -23,7 +25,7 @@ module("SC.Record#readAttribute", {
   },
   
   teardown: function() {
-    SC.RunLoop.end();
+    SC.run.end();
   }
 });
 
@@ -31,12 +33,12 @@ test("returns unaltered JSON value for existing attributes", function() {
   var key ;
   for(key in json) {
     if (!json.hasOwnProperty(key)) continue;
-    equals(foo.get(key), json[key], 'should return value for predefined key %@'.fmt(key));
+    equals(get(foo, key), json[key], 'should return value for predefined key %@'.fmt(key));
   }
 });
 
 test("returns undefined for unknown JSON attributes", function() {
-  equals(foo.get('imaginary'), undefined, 'should return undefined for unknown key "imaginary"');
+  equals(get(foo, 'imaginary'), undefined, 'should return undefined for unknown key "imaginary"');
 });
 
 test("returns new value if edited via writeAttribute", function() {

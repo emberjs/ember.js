@@ -5,7 +5,18 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
-require('sproutcore-runtime');
+require('sproutcore-metal');
+
+var get = SC.get, set = SC.set;
+
+// simple copy op needed for just this code.
+function copy(opts) {
+  var ret = {};
+  for(var key in opts) {
+    if (opts.hasOwnProperty(key)) ret[key] = opts[key];
+  }
+  return ret;
+}
 
 /**
   Standard error thrown by `SC.Scanner` when it runs out of bounds
@@ -14,7 +25,7 @@ require('sproutcore-runtime');
   @constant
   @type Error
 */
-SC.SCANNER_OUT_OF_BOUNDS_ERROR = new Error("Out of bounds.");
+SC.SCANNER_OUT_OF_BOUNDS_ERROR = "Out of bounds.";
 
 /**
   Standard error thrown by `SC.Scanner` when  you pass a value not an integer.
@@ -23,16 +34,16 @@ SC.SCANNER_OUT_OF_BOUNDS_ERROR = new Error("Out of bounds.");
   @constant
   @type Error
 */
-SC.SCANNER_INT_ERROR = new Error("Not an int.");
+SC.SCANNER_INT_ERROR = "Not an int.";
 
 /**
-  Standard error thrown by `SC.SCanner` when it cannot find a string to skip.
+  Standard error thrown by `SC.Scanner` when it cannot find a string to skip.
 
   @static
   @constant
   @type Error
 */
-SC.SCANNER_SKIP_ERROR = new Error("Did not find the string to skip.");
+SC.SCANNER_SKIP_ERROR = "Did not find the string to skip.";
 
 /**
   Standard error thrown by `SC.Scanner` when it can any kind a string in the
@@ -42,7 +53,7 @@ SC.SCANNER_SKIP_ERROR = new Error("Did not find the string to skip.");
   @constant
   @type Error
 */
-SC.SCANNER_SCAN_ARRAY_ERROR = new Error("Did not find any string of the given array to scan.");
+SC.SCANNER_SCAN_ARRAY_ERROR = "Did not find any string of the given array to scan.";
 
 /**
   Standard error thrown when trying to compare two dates in different
@@ -52,7 +63,7 @@ SC.SCANNER_SCAN_ARRAY_ERROR = new Error("Did not find any string of the given ar
   @constant
   @type Error
 */
-SC.DATETIME_COMPAREDATE_TIMEZONE_ERROR = new Error("Can't compare the dates of two DateTimes that don't have the same timezone.");
+SC.DATETIME_COMPAREDATE_TIMEZONE_ERROR = "Can't compare the dates of two DateTimes that don't have the same timezone.";
 
 /**
   Standard ISO8601 date format
@@ -108,7 +119,9 @@ SC.Scanner = SC.Object.extend(
     @returns {String} The characters
   */
   scan: function(len) {
-    if (this.scanLocation + len > this.length) throw SC.SCANNER_OUT_OF_BOUNDS_ERROR;
+    if (this.scanLocation + len > this.length) {
+      throw new Error(SC.SCANNER_OUT_OF_BOUNDS_ERROR);
+    }
     var str = this.string.substr(this.scanLocation, len);
     this.scanLocation += len;
     return str;
@@ -127,7 +140,7 @@ SC.Scanner = SC.Object.extend(
     var str = this.scan(max_len);
     var re = new RegExp("^\\d{" + min_len + "," + max_len + "}");
     var match = str.match(re);
-    if (!match) throw SC.SCANNER_INT_ERROR;
+    if (!match) throw new Error(SC.SCANNER_INT_ERROR);
     if (match[0].length < max_len) {
       this.scanLocation += match[0].length - max_len;
     }
@@ -142,7 +155,10 @@ SC.Scanner = SC.Object.extend(
     @returns {Boolean} YES if the given string was successfully scanned, NO otherwise
   */
   skipString: function(str) {
-    if (this.scan(str.length) !== str) throw SC.SCANNER_SKIP_ERROR;
+    if (this.scan(str.length) !== str) {
+      throw new Error(SC.SCANNER_SKIP_ERROR);
+    }
+    
     return YES;
   },
 
@@ -160,7 +176,7 @@ SC.Scanner = SC.Object.extend(
       }
       this.scanLocation -= ary[i].length;
     }
-    throw SC.SCANNER_SCAN_ARRAY_ERROR;
+    throw new Error(SC.SCANNER_SCAN_ARRAY_ERROR);
   }
 
 });
@@ -177,7 +193,8 @@ SC.Scanner = SC.Object.extend(
   it is running.  Any time zone can be specified when creating an
   `SC.DateTime` object, e.g.
 
-      // Creates a DateTime representing 5am in Washington, DC and 10am in London
+      // Creates a DateTime representing 5am in Washington, DC and 10am in 
+      // London
       var d = SC.DateTime.create({ hour: 5, timezone: 300 }); // -5 hours from UTC
       var e = SC.DateTime.create({ hour: 10, timezone: 0 }); // same time, specified in UTC
 
@@ -186,12 +203,12 @@ SC.Scanner = SC.Object.extend(
   The time zone specified upon creation is permanent, and any calls to
   `get()` on that instance will return values expressed in that time zone. So,
 
-      d.get('hour') returns 5.
-      e.get('hour') returns 10.
+      d.hour returns 5.
+      e.hour returns 10.
 
   but
 
-      d.get('milliseconds') === e.get('milliseconds')
+      d.milliseconds === e.milliseconds
 
   is true, since they are technically the same position in time.
 
@@ -234,18 +251,19 @@ SC.DateTime = SC.Object.extend(SC.Freezable, SC.Copyable,
   isFrozen: YES,
 
   /**
-    Returns a new `SC.DateTime` object where one or more of the elements have been
-    changed according to the options parameter. The time options (hour,
+    Returns a new `SC.DateTime` object where one or more of the elements have 
+    been changed according to the options parameter. The time options (hour,
     minute, sec, usec) reset cascadingly, so if only the hour is passed, then
     minute, sec, and usec is set to 0. If the hour and minute is passed, then
     sec and usec is set to 0.
 
-    If a time zone is passed in the options hash, all dates and times are assumed
-    to be local to it, and the returned `SC.DateTime` instance has that time zone. If
-    none is passed, it defaults to `SC.DateTime.timezone`.
+    If a time zone is passed in the options hash, all dates and times are 
+    assumed to be local to it, and the returned `SC.DateTime` instance has 
+    that time zone. If none is passed, it defaults to `SC.DateTime.timezone`.
 
-    Note that passing only a time zone does not affect the actual milliseconds since
-    Jan 1, 1970, only the time zone in which it is expressed when displayed.
+    Note that passing only a time zone does not affect the actual milliseconds 
+    since Jan 1, 1970, only the time zone in which it is expressed when 
+    displayed.
 
     @see SC.DateTime#create for the list of options you can pass
     @returns {SC.DateTime} copy of receiver
@@ -253,15 +271,15 @@ SC.DateTime = SC.Object.extend(SC.Freezable, SC.Copyable,
   adjust: function(options, resetCascadingly) {
     var timezone;
 
-    options = options ? SC.clone(options) : {};
+    options = options ? copy(options) : {};
     timezone = (options.timezone !== undefined) ? options.timezone : (this.timezone !== undefined) ? this.timezone : 0;
 
     return this.constructor._adjust(options, this._ms, timezone, resetCascadingly)._createFromCurrentState();
   },
 
   /**
-    Returns a new `SC.DateTime` object advanced according the the given parameters.
-    Don't use floating point values, it might give unpredicatble results.
+    Returns a new `SC.DateTime` object advanced according the the given 
+    parameters. Don't use floating point values, it might give unpredicatble results.
 
     @see SC.DateTime#create for the list of options you can pass
     @param {Hash} options the amount of date/time to advance the receiver
@@ -420,7 +438,7 @@ SC.DateTime = SC.Object.extend(SC.Freezable, SC.Copyable,
 
 });
 
-SC.DateTime.mixin(SC.Comparable,
+SC.DateTime.reopenClass(SC.Comparable,
 /** @scope SC.DateTime */ {
 
   /**
@@ -730,7 +748,7 @@ SC.DateTime.mixin(SC.Comparable,
     Sets the internal calculation state to something specified.
   */
   _adjust: function(options, start, timezone, resetCascadingly) {
-    var opts = options ? SC.clone(options) : {};
+    var opts = options ? copy(options) : {};
     var ms = this._toMilliseconds(options, start, timezone, resetCascadingly);
     this._setCalcState(ms, timezone);
     return this; // for chaining
@@ -741,7 +759,7 @@ SC.DateTime.mixin(SC.Comparable,
     @see SC.DateTime#advance
   */
   _advance: function(options, start, timezone) {
-    var opts = options ? SC.clone(options) : {};
+    var opts = options ? copy(options) : {};
     var tz;
 
     for (var key in opts) {
@@ -762,7 +780,7 @@ SC.DateTime.mixin(SC.Comparable,
     in time relative to Jan 1, 1970
   */
   _toMilliseconds: function(options, start, timezone, resetCascadingly) {
-    var opts = options ? SC.clone(options) : {};
+    var opts = options ? copy(options) : {};
     var d = this._date;
     var previousMilliseconds = d.getTime(); // rather than create a new Date object, we'll reuse the instance we have for calculations, then restore it
     var ms, tz;
@@ -862,7 +880,7 @@ SC.DateTime.mixin(SC.Comparable,
     var timezone;
 
     // if simply milliseconds since Jan 1, 1970 are given, just use those
-    if (SC.typeOf(arg) === SC.T_NUMBER) {
+    if (SC.typeOf(arg) === 'number') {
       arg = { milliseconds: arg };
     }
 
@@ -878,8 +896,8 @@ SC.DateTime.mixin(SC.Comparable,
       var key = 'nu' + arg.milliseconds + timezone, cache = this._dt_cache;
       var ret = cache[key];
       if (!ret) {
-        var previousKey, idx = this._dt_cache_index, C = this;
-        ret = cache[key] = new C([{ _ms: arg.milliseconds, timezone: timezone }]);
+        var previousKey, idx = this._dt_cache_index;
+        ret = cache[key] = this._super({ _ms: arg.milliseconds, timezone: timezone });
         idx = this._dt_cache_index = (idx + 1) % this._DT_CACHE_MAX_LENGTH;
         previousKey = cache[idx];
         if (previousKey !== undefined && cache[previousKey]) delete cache[previousKey];
@@ -936,24 +954,24 @@ SC.DateTime.mixin(SC.Comparable,
           case 'A': check.dayOfWeek = scanner.scanArray(this.dayNames); break;
           case 'b': opts.month = scanner.scanArray(this.abbreviatedMonthNames) + 1; break;
           case 'B': opts.month = scanner.scanArray(this.monthNames) + 1; break;
-          case 'c': throw "%c is not implemented";
+          case 'c': throw new Error("%c is not implemented");
           case 'd':
           case 'D': opts.day = scanner.scanInt(1, 2); break;
           case 'h':
           case 'H': opts.hour = scanner.scanInt(1, 2); break;
           case 'i':
           case 'I': opts.hour = scanner.scanInt(1, 2); break;
-          case 'j': throw "%j is not implemented";
+          case 'j': throw new Error("%j is not implemented");
           case 'm': opts.month = scanner.scanInt(1, 2); break;
           case 'M': opts.minute = scanner.scanInt(1, 2); break;
           case 'p': opts.meridian = scanner.scanArray(['AM', 'PM']); break;
           case 'S': opts.second = scanner.scanInt(1, 2); break;
           case 's': opts.millisecond = scanner.scanInt(1, 3); break;
-          case 'U': throw "%U is not implemented";
-          case 'W': throw "%W is not implemented";
-          case 'w': throw "%w is not implemented";
-          case 'x': throw "%x is not implemented";
-          case 'X': throw "%X is not implemented";
+          case 'U': throw new Error("%U is not implemented");
+          case 'W': throw new Error("%W is not implemented");
+          case 'w': throw new Error("%w is not implemented");
+          case 'x': throw new Error("%x is not implemented");
+          case 'X': throw new Error("%X is not implemented");
           case 'y': opts.year = scanner.scanInt(2); opts.year += (opts.year > 70 ? 1900 : 2000); break;
           case 'Y': opts.year = scanner.scanInt(4); break;
           case 'Z':
@@ -983,7 +1001,7 @@ SC.DateTime.mixin(SC.Comparable,
 
     d = SC.DateTime.create(opts);
 
-    if (!SC.none(check.dayOfWeek) && d.get('dayOfWeek') !== check.dayOfWeek) {
+    if (!SC.none(check.dayOfWeek) && get(d,'dayOfWeek') !== check.dayOfWeek) {
       return null;
     }
 
@@ -1091,8 +1109,8 @@ SC.DateTime.mixin(SC.Comparable,
                        0 if a == b
   */
   compare: function(a, b) {
-    var ma = a.get('milliseconds');
-    var mb = b.get('milliseconds');
+    var ma = get(a, 'milliseconds');
+    var mb = get(b, 'milliseconds');
     return ma < mb ? -1 : ma === mb ? 0 : 1;
   },
 
@@ -1110,9 +1128,12 @@ SC.DateTime.mixin(SC.Comparable,
       don't have the same timezone
   */
   compareDate: function(a, b) {
-    if (a.get('timezone') !== b.get('timezone')) throw SC.DATETIME_COMPAREDATE_TIMEZONE_ERROR;
-    var ma = a.adjust({hour: 0}).get('milliseconds');
-    var mb = b.adjust({hour: 0}).get('milliseconds');
+    if (get(a, 'timezone') !== get(b,'timezone')) {
+      throw new Error(SC.DATETIME_COMPAREDATE_TIMEZONE_ERROR);
+    }
+    
+    var ma = get(a.adjust({hour: 0}), 'milliseconds');
+    var mb = get(b.adjust({hour: 0}), 'milliseconds');
     return ma < mb ? -1 : ma === mb ? 0 : 1;
   }
 

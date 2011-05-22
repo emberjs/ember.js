@@ -5,8 +5,10 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
-require('sproutcore-runtime');
+require('sproutcore-metal');
 require('sproutcore-datastore/system/record');
+
+var get = SC.get, set = SC.set, getPath = SC.getPath;
 
 /**
   @class
@@ -202,17 +204,17 @@ SC.Query = SC.Object.extend(SC.Copyable, SC.Freezable,
     @type SC.Enumerable
   */
   expandedRecordTypes: function() {
-    var ret = SC.CoreSet.create(), rt, q  ;
+    var ret = SC.Set.create(), rt, q  ;
 
-    if (rt = this.get('recordType')) this._scq_expandRecordType(rt, ret);
-    else if (rt = this.get('recordTypes')) {
+    if (rt = get(this, 'recordType')) this._scq_expandRecordType(rt, ret);
+    else if (rt = get(this, 'recordTypes')) {
       rt.forEach(function(t) { this._scq_expandRecordType(t, ret); }, this);
     } else this._scq_expandRecordType(SC.Record, ret);
 
     // save in queue.  if a new recordtype is defined, we will be notified.
     q = SC.Query._scq_queriesWithExpandedRecordTypes;
     if (!q) {
-      q = SC.Query._scq_queriesWithExpandedRecordTypes = SC.CoreSet.create();
+      q = SC.Query._scq_queriesWithExpandedRecordTypes = SC.Set.create();
     }
     q.add(this);
 
@@ -226,8 +228,8 @@ SC.Query = SC.Object.extend(SC.Copyable, SC.Freezable,
     if (set.contains(recordType)) return; // nothing to do
     set.add(recordType);
 
-    if (SC.typeOf(recordType)===SC.T_STRING) {
-      recordType = SC.objectForPropertyPath(recordType);
+    if (SC.typeOf(recordType)==='string') {
+      recordType = getPath( recordType);
     }
 
     recordType.subclasses.forEach(function(t) {
@@ -287,7 +289,7 @@ SC.Query = SC.Object.extend(SC.Copyable, SC.Freezable,
     @type Boolean
   */
   isRemote: function() {
-    return this.get('location') === SC.Query.REMOTE;
+    return get(this, 'location') === SC.Query.REMOTE;
   }.property('location').cacheable(),
 
   /**
@@ -298,7 +300,7 @@ SC.Query = SC.Object.extend(SC.Copyable, SC.Freezable,
     @type Boolean
   */
   isLocal: function() {
-    return this.get('location') === SC.Query.LOCAL;
+    return get(this, 'location') === SC.Query.LOCAL;
   }.property('location').cacheable(),
 
   /**
@@ -324,16 +326,16 @@ SC.Query = SC.Object.extend(SC.Copyable, SC.Freezable,
 
     // check the recordType if specified
     var rtype, ret = YES ;
-    if (rtype = this.get('recordTypes')) { // plural form
-      ret = rtype.find(function(t) { return SC.kindOf(record, t); });
-    } else if (rtype = this.get('recordType')) { // singular
-      ret = SC.kindOf(record, rtype);
+    if (rtype = get(this, 'recordTypes')) { // plural form
+      ret = rtype.find(function(t) { return (record instanceof  t); });
+    } else if (rtype = get(this, 'recordType')) { // singular
+      ret = (record instanceof  rtype);
     }
 
     if (!ret) return NO ; // if either did not pass, does not contain
 
     // if we have a scope - check for that as well
-    var scope = this.get('scope');
+    var scope = get(this, 'scope');
     if (scope && !scope.contains(record)) return NO ;
 
     // now try parsing
@@ -354,13 +356,13 @@ SC.Query = SC.Object.extend(SC.Copyable, SC.Freezable,
     @returns {Boolean} YES if record types match
   */
   containsRecordTypes: function(types) {
-    var rtype = this.get('recordType');
+    var rtype = get(this, 'recordType');
     if (rtype) {
-      return !!types.find(function(t) { return SC.kindOf(t, rtype); });
+      return !!types.find(function(t) { return rtype.detect(t); });
 
-    } else if (rtype = this.get('recordTypes')) {
+    } else if (rtype = get(this, 'recordTypes')) {
       return !!rtype.find(function(t) {
-        return !!types.find(function(t2) { return SC.kindOf(t2,t); });
+        return !!types.find(function(t2) { return t.detect(t2); });
       });
 
     } else return YES; // allow anything through
@@ -385,7 +387,7 @@ SC.Query = SC.Object.extend(SC.Copyable, SC.Freezable,
     //
     // (Any clients overriding this method will have their version called,
     // however.  That's why we'll keep this here; clients might want to
-    // override it and call sc_super()).
+    // override it and call this._super()).
 
     var result = 0,
         propertyName, order, len, i;
@@ -396,14 +398,14 @@ SC.Query = SC.Object.extend(SC.Copyable, SC.Freezable,
     // if called for the first time we have to build the order array
     if (!this._isReady) this.parse();
     if (!this._isReady) { // can't parse. guid is wrong but consistent
-      return SC.compare(record1.get('id'),record2.get('id'));
+      return SC.compare(get(record1, 'id'),get(record2, 'id'));
     }
 
     // For every property specified in orderBy until non-eql result is found.
     // Or, if orderBy is a comparison function, simply invoke it with the
     // records.
     order = this._order;
-    if (SC.typeOf(order) === SC.T_FUNCTION) {
+    if (SC.typeOf(order) === 'function') {
       result = order.call(null, record1, record2);
     }
     else {
@@ -413,12 +415,12 @@ SC.Query = SC.Object.extend(SC.Copyable, SC.Freezable,
         // if this property has a registered comparison use that
         if (SC.Query.comparisons[propertyName]) {
           result = SC.Query.comparisons[propertyName](
-                    record1.get(propertyName),record2.get(propertyName));
+                    get(record1, propertyName),get(record2, propertyName));
 
         // if not use default SC.compare()
         } else {
           result = SC.compare(
-                    record1.get(propertyName), record2.get(propertyName) );
+                    get(record1, propertyName), get(record2, propertyName) );
         }
 
         if ((result!==0) && order[i].descending) result = (-1) * result;
@@ -427,7 +429,7 @@ SC.Query = SC.Object.extend(SC.Copyable, SC.Freezable,
 
     // return result or compare by guid
     if (result !== 0) return result ;
-    else return SC.compare(record1.get('id'),record2.get('id'));
+    else return SC.compare(get(record1, 'id'),get(record2, 'id'));
   },
 
   /** @private
@@ -444,13 +446,13 @@ SC.Query = SC.Object.extend(SC.Copyable, SC.Freezable,
     @returns {Boolean} true if parsing succeeded, false otherwise
   */
   parse: function() {
-    var conditions = this.get('conditions'),
-        lang       = this.get('queryLanguage'),
+    var conditions = get(this, 'conditions'),
+        lang       = get(this, 'queryLanguage'),
         tokens, tree;
 
     tokens = this._tokenList = this.tokenizeString(conditions, lang);
     tree = this._tokenTree = this.buildTokenTree(tokens, lang);
-    this._order = this.buildOrder(this.get('orderBy'));
+    this._order = this.buildOrder(get(this, 'orderBy'));
 
     this._isReady = !!tree && !tree.error;
     if (tree && tree.error) throw tree.error;
@@ -467,12 +469,12 @@ SC.Query = SC.Object.extend(SC.Copyable, SC.Freezable,
   */
   queryWithScope: function(recordArray) {
     // look for a cached query on record array.
-    var key = SC.keyFor('__query__', SC.guidFor(this)),
+    var key = '__query__'+SC.guidFor(this),
         ret = recordArray[key];
 
     if (!ret) {
       recordArray[key] = ret = this.copy();
-      ret.set('scope', recordArray);
+      set(ret, 'scope', recordArray);
       ret.freeze();
     }
 
@@ -497,13 +499,13 @@ SC.Query = SC.Object.extend(SC.Copyable, SC.Freezable,
   */
   copy: function() {
     var opts = {},
-        keys = this.get('copyKeys'),
+        keys = get(this, 'copyKeys'),
         loc  = keys ? keys.length : 0,
         key, value, ret;
 
     while(--loc >= 0) {
       key = keys[loc];
-      value = this.get(key);
+      value = get(this, key);
       if (value !== undefined) opts[key] = value ;
     }
 
@@ -535,21 +537,7 @@ SC.Query = SC.Object.extend(SC.Copyable, SC.Freezable,
 
       /** @ignore */
       evaluate:         function (r,w) {
-                          var tokens = this.tokenValue.split('.');
-
-                          var len = tokens.length;
-                          if (len < 2) return r.get(this.tokenValue);
-
-                          var ret = r;
-                          for (var i = 0; i < len; i++) {
-                            if (!ret) return;
-                            if (ret.get) {
-                              ret = ret.get(tokens[i]);
-                            } else {
-                              ret = ret[tokens[i]];
-                            }
-                          }
-                          return ret;
+                          return SC.getPath(r, this.tokenValue);
                         }
     },
 
@@ -765,10 +753,10 @@ SC.Query = SC.Object.extend(SC.Copyable, SC.Freezable,
                           var value = this.rightSide.evaluate(r,w);
 
                           var allType = SC.typeOf(all);
-                          if (allType === SC.T_STRING) {
+                          if (allType === 'string') {
                             return (all.indexOf(value) !== -1);
-                          } else if (allType === SC.T_ARRAY || all.toArray) {
-                            if (allType !== SC.T_ARRAY) all = all.toArray();
+                          } else if (allType === 'array' || all.toArray) {
+                            if (allType !== 'array') all = all.toArray();
                             var found  = false;
                             var i      = 0;
                             while ( found===false && i<all.length ) {
@@ -823,7 +811,7 @@ SC.Query = SC.Object.extend(SC.Copyable, SC.Freezable,
       evaluate:         function (r,w) {
                           var actualType = SC.Store.recordTypeFor(r.storeKey);
                           var right      = this.rightSide.evaluate(r,w);
-                          var expectType = SC.objectForPropertyPath(right);
+                          var expectType = getPath( right);
                           return actualType == expectType;
                         }
     },
@@ -1208,7 +1196,7 @@ SC.Query = SC.Object.extend(SC.Copyable, SC.Freezable,
     if (!orderOp) {
       return [];
     }
-    else if (SC.typeOf(orderOp) === SC.T_FUNCTION) {
+    else if (SC.typeOf(orderOp) === 'function') {
       return orderOp;
     }
     else {
@@ -1231,7 +1219,7 @@ SC.Query = SC.Object.extend(SC.Copyable, SC.Freezable,
 
 
 // Class Methods
-SC.Query.mixin( /** @scope SC.Query */ {
+SC.Query.reopenClass( /** @scope SC.Query */ {
 
   /**
     Constant used for `SC.Query#location`
@@ -1255,7 +1243,7 @@ SC.Query.mixin( /** @scope SC.Query */ {
     @returns {Number} a storeKey.
   */
   storeKeyFor: function(query) {
-    return query ? query.get('storeKey') : null;
+    return query ? get(query, 'storeKey') : null;
   },
 
   /**
@@ -1269,10 +1257,10 @@ SC.Query.mixin( /** @scope SC.Query */ {
   */
   containsRecords: function(query, records, store) {
     var ret = [];
-    for(var idx=0,len=records.get('length');idx<len;idx++) {
+    for(var idx=0,len=get(records, 'length');idx<len;idx++) {
       var record = records.objectAt(idx);
       if(record && query.contains(record)) {
-        ret.push(record.get('storeKey'));
+        ret.push(get(record, 'storeKey'));
       }
     }
 
@@ -1368,19 +1356,24 @@ SC.Query.mixin( /** @scope SC.Query */ {
 
     // fast case for query objects.
     if (recordType && recordType.isQuery) {
-      if (recordType.get('location') === location) return recordType;
-      else return recordType.copy().set('location', location).freeze();
+      if (get(recordType, 'location') === location) {
+        return recordType;
+      } else {
+        ret = recordType.copy();
+        set(ret, 'location', location);
+        return ret.freeze();
+      }
     }
 
     // normalize recordType
-    if (typeof recordType === SC.T_STRING) {
-      ret = SC.objectForPropertyPath(recordType);
+    if (typeof recordType === 'string') {
+      ret = getPath( recordType);
       if (!ret) throw "%@ did not resolve to a class".fmt(recordType);
       recordType = ret ;
     } else if (recordType && recordType.isEnumerable) {
       ret = [];
       recordType.forEach(function(t) {
-        if (typeof t === SC.T_STRING) t = SC.objectForPropertyPath(t);
+        if (typeof t === 'string') t = getPath( t);
         if (!t) throw "cannot resolve record types: %@".fmt(recordType);
         ret.push(t);
       }, this);
@@ -1391,7 +1384,7 @@ SC.Query.mixin( /** @scope SC.Query */ {
     if (conditions === undefined) conditions = null;
 
     // normalize other params. if conditions is just a hash, treat as opts
-    if (!params && (typeof conditions !== SC.T_STRING)) {
+    if (!params && (typeof conditions !== 'string')) {
       opts = conditions;
       conditions = null ;
     }
@@ -1475,7 +1468,8 @@ SC.Query.mixin( /** @scope SC.Query */ {
     var q = SC.Query._scq_queriesWithExpandedRecordTypes;
     if (q) {
       q.forEach(function(query) {
-        query.notifyPropertyChange('expandedRecordTypes');
+        SC.propertyWillChange(query, 'expandedRecordTypes');
+        SC.propertyDidChange(query, 'expandedRecordTypes');
       }, this);
       q.clear();
     }
@@ -1518,6 +1512,6 @@ SC.Query.registerComparison = function(propertyName, comparison) {
   @returns {SC.Query} receiver
 */
 SC.Query.registerQueryExtension = function(tokenName, token) {
-  SC.Query.prototype.queryLanguage[tokenName] = token;
+  get(SC.Query, 'proto').queryLanguage[tokenName] = token;
 };
 

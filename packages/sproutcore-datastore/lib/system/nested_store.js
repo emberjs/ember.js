@@ -4,8 +4,13 @@
 //            Portions ©2008-2011 Apple Inc. All rights reserved.
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
+/*globals sc_assert */
 
 require('sproutcore-datastore/system/store');
+
+var get = SC.get, set = SC.set;
+
+var o_create = SC.create.primitive;
 
 /**
   @class
@@ -117,10 +122,9 @@ SC.NestedStore = SC.Store.extend(
     @returns {SC.Record|SC.RecordArray}
   */
   find: function(query) {
-    if (query && query.isQuery && query.get('location') !== SC.Query.LOCAL) {
-      throw "SC.Store#find() can only accept LOCAL queries in nested stores";
-    }
-    return sc_super();
+    sc_assert("SC.Store#find() can only accept LOCAL queries in nested stores",
+      !query || !(query instanceof SC.Query) || get(query, 'location') === SC.Query.LOCAL);
+    return this._super.apply(this, arguments);
   },
 
   /**
@@ -131,8 +135,8 @@ SC.NestedStore = SC.Store.extend(
     @returns {SC.Store} receiver
   */
   commitChanges: function(force) {
-    if (this.get('hasChanges')) {
-      var pstore = this.get('parentStore');
+    if (get(this, 'hasChanges')) {
+      var pstore = get(this, 'parentStore');
       pstore.commitChangesFromNestedStore(this, this.chainedChanges, force);
     }
 
@@ -151,7 +155,7 @@ SC.NestedStore = SC.Store.extend(
     // be notified.
     var records, locks;
     if ((records = this.records) && (locks = this.locks)) {
-      var pstore = this.get('parentStore'), psRevisions = pstore.revisions;
+      var pstore = get(this, 'parentStore'), psRevisions = pstore.revisions;
       var revisions = this.revisions, storeKey, lock, rev;
       for (storeKey in records) {
         if (!records.hasOwnProperty(storeKey)) continue ;
@@ -178,10 +182,10 @@ SC.NestedStore = SC.Store.extend(
   destroy: function() {
     this.discardChanges();
 
-    var parentStore = this.get('parentStore');
+    var parentStore = get(this, 'parentStore');
     if (parentStore) parentStore.willDestroyNestedStore(this);
 
-    sc_super();
+    this._super();
     return this ;
   },
 
@@ -191,25 +195,24 @@ SC.NestedStore = SC.Store.extend(
   reset: function() {
     var nRecords, nr, sk;
     // requires a pstore to reset
-    var parentStore = this.get('parentStore');
+    var parentStore = get(this, 'parentStore');
     if (!parentStore) throw SC.Store.NO_PARENT_STORE_ERROR;
 
     // inherit data store from parent store.
-    this.dataHashes = SC.beget(parentStore.dataHashes);
-    this.revisions  = SC.beget(parentStore.revisions);
-    this.statuses   = SC.beget(parentStore.statuses);
+    this.dataHashes = SC.create.primitive(parentStore.dataHashes);
+    this.revisions  = SC.create.primitive(parentStore.revisions);
+    this.statuses   = SC.create.primitive(parentStore.statuses);
 
     // beget nested records references
-    this.childRecords = parentStore.childRecords ? SC.beget(parentStore.childRecords) : {};
-    this.parentRecords = parentStore.parentRecords ? SC.beget(parentStore.parentRecords) : {};
+    this.childRecords = parentStore.childRecords ? SC.create.primitive(parentStore.childRecords) : {};
+    this.parentRecords = parentStore.parentRecords ? SC.create.primitive(parentStore.parentRecords) : {};
 
     // also, reset private temporary objects
     this.chainedChanges = this.locks = this.editables = null;
     this.changelog = null ;
 
     // TODO: Notify record instances
-
-    this.set('hasChanges', NO);
+    set(this, 'hasChanges', NO);
   },
 
   /** @private
@@ -217,7 +220,7 @@ SC.NestedStore = SC.Store.extend(
     Chain to parentstore
   */
   refreshQuery: function(query) {
-    var parentStore = this.get('parentStore');
+    var parentStore = get(this, 'parentStore');
     if (parentStore) parentStore.refreshQuery(query);
     return this ;
   },
@@ -232,7 +235,7 @@ SC.NestedStore = SC.Store.extend(
     @returns {SC.StoreError} SC.StoreError or null if no error associated with the record.
   */
   readError: function(storeKey) {
-    var parentStore = this.get('parentStore');
+    var parentStore = get(this, 'parentStore');
     return parentStore ? parentStore.readError(storeKey) : null;
   },
 
@@ -246,7 +249,7 @@ SC.NestedStore = SC.Store.extend(
     @returns {SC.StoreError} SC.StoreError or null if no error associated with the query.
   */
   readQueryError: function(query) {
-    var parentStore = this.get('parentStore');
+    var parentStore = get(this, 'parentStore');
     return parentStore ? parentStore.readQueryError(query) : null;
   },
 
@@ -279,7 +282,7 @@ SC.NestedStore = SC.Store.extend(
 
     // already locked -- nothing to do
     if (locks && locks[storeKey]) return this;
-
+    
     // create locks if needed
     if (!locks) locks = this.locks = [];
 
@@ -291,29 +294,27 @@ SC.NestedStore = SC.Store.extend(
     // if the data hash in the parent store is editable, then clone the hash
     // for our own use.  Otherwise, just copy a reference to the data hash
     // in the parent store. -- find first non-inherited state
-    var pstore = this.get('parentStore'), editState;
+    var pstore = get(this, 'parentStore'), editState;
     while(pstore && (editState=pstore.storeKeyEditState(storeKey)) === SC.Store.INHERITED) {
-      pstore = pstore.get('parentStore');
+      pstore = get(pstore, 'parentStore');
     }
 
     if (pstore && editState === SC.Store.EDITABLE) {
 
       pk = this.childRecords[storeKey];
-      if (pk){
-        // Since this is a nested record we have to actually walk up the parent chain
-        // to get to the root parent and clone that hash. And then reconstruct the
-        // memory space linking.
+      if (pk){        
+        // Since this is a nested record we have to actually walk up the 
+        // parent chain to get to the root parent and clone that hash. And 
+        // then reconstruct the memory space linking.
         this._lock(pk);
         pr = this.parentRecords[pk];
         if (pr) {
           path = pr[storeKey];
-          tup = path ? SC.tupleForPropertyPath(path, this.dataHashes[pk]) : null;
-          if (tup){ obj = tup[0]; key = tup[1]; }
-          this.dataHashes[storeKey] = obj && key ? obj[key] : null;
+          this.dataHashes[storeKey] = path ? SC.getPath(this.dataHashes[pk], path) : null;
         }
       }
       else {
-        this.dataHashes[storeKey] = SC.clone(pstore.dataHashes[storeKey], YES);
+        this.dataHashes[storeKey] = SC.copy(pstore.dataHashes[storeKey], YES);
       }
       if (!editables) editables = this.editables = [];
       editables[storeKey] = 1 ; // mark as editable
@@ -332,7 +333,7 @@ SC.NestedStore = SC.Store.extend(
 
   /** @private - adds chaining support */
   readDataHash: function(storeKey) {
-    if (this.get('lockOnRead')) this._lock(storeKey);
+    if (get(this, 'lockOnRead')) this._lock(storeKey);
     return this.dataHashes[storeKey];
   },
 
@@ -342,7 +343,7 @@ SC.NestedStore = SC.Store.extend(
     // lock the data hash if needed
     this._lock(storeKey);
 
-    return sc_super();
+    return this._super(storeKey);
   },
 
   /** @private - adds chaining support -
@@ -396,18 +397,19 @@ SC.NestedStore = SC.Store.extend(
     if (!locks) locks = this.locks = [];
     if (!locks[storeKey]) locks[storeKey] = this.revisions[storeKey] || 1;
 
-    return sc_super();
+    return this._super(storeKey, status);
   },
 
   /** @private - bookkeeping for a single data hash. */
   dataHashDidChange: function(storeKeys, rev, statusOnly, key) {
+    
     // update the revision for storeKey.  Use generateStoreKey() because that
     // gaurantees a universally (to this store hierarchy anyway) unique
     // key value.
     if (!rev) rev = SC.Store.generateStoreKey();
     var isArray, len, idx, storeKey;
 
-    isArray = SC.typeOf(storeKeys) === SC.T_ARRAY;
+    isArray = SC.typeOf(storeKeys) === 'array';
     if (isArray) {
       len = storeKeys.length;
     } else {
@@ -426,7 +428,7 @@ SC.NestedStore = SC.Store.extend(
       this._notifyRecordPropertyChange(storeKey, statusOnly, key);
     }
 
-    this.setIfChanged('hasChanges', YES);
+    set(this, 'hasChanges', YES);
     return this ;
   },
 
@@ -437,11 +439,11 @@ SC.NestedStore = SC.Store.extend(
   /** @private - adapt for nested store */
   commitChangesFromNestedStore: function(nestedStore, changes, force) {
 
-    sc_super();
+    this._super(nestedStore, changes, force);
 
     // save a lock for each store key if it does not have one already
     // also add each storeKey to my own changes set.
-    var pstore = this.get('parentStore'), psRevisions = pstore.revisions, i;
+    var pstore = get(this, 'parentStore'), psRevisions = pstore.revisions, i;
     var myLocks = this.locks, myChanges = this.chainedChanges,len,storeKey;
     if (!myLocks) myLocks = this.locks = [];
     if (!myChanges) myChanges = this.chainedChanges = SC.Set.create();
@@ -454,7 +456,7 @@ SC.NestedStore = SC.Store.extend(
     }
 
     // Finally, mark store as dirty if we have changes
-    this.setIfChanged('hasChanges', myChanges.get('length')>0);
+    set(this, 'hasChanges', get(myChanges, 'length')>0);
     this.flush();
 
     return this ;
@@ -467,13 +469,13 @@ SC.NestedStore = SC.Store.extend(
 
   /** @private - adapt for nested store */
   queryFor: function(recordType, conditions, params) {
-    return this.get('parentStore').queryFor(recordType, conditions, params);
+    return get(this, 'parentStore').queryFor(recordType, conditions, params);
   },
 
   /** @private - adapt for nested store */
   findAll: function(recordType, conditions, params, recordArray, _store) {
     if (!_store) _store = this;
-    return this.get('parentStore').findAll(recordType, conditions, params, recordArray, _store);
+    return get(this, 'parentStore').findAll(recordType, conditions, params, recordArray, _store);
   },
 
   // ..........................................................
@@ -489,7 +491,7 @@ SC.NestedStore = SC.Store.extend(
     because that can disconnect us from upper and/or lower stores.
   */
   retrieveRecords: function(recordTypes, ids, storeKeys, isRefresh) {
-    var pstore = this.get('parentStore'), idx, storeKey, newStatus,
+    var pstore = get(this, 'parentStore'), idx, storeKey, newStatus,
       len = (!storeKeys) ? ids.length : storeKeys.length,
       K = SC.Record, status;
 

@@ -4,8 +4,65 @@
 //            Portions ©2008-2011 Apple Inc. All rights reserved.
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
+/*globals sc_assert */
 
-require('sproutcore-runtime');
+require('sproutcore-metal');
+
+var get = SC.get, set = SC.set, abs = Math.abs;
+
+function isIndexSet(obj) {
+  return obj instanceof SC.IndexSet;
+}
+
+/** @private
+  iterates through a named range, setting hints every HINT_SIZE indexes
+  pointing to the nearest range start.  The passed range must start on a
+  range boundary.  It can end anywhere.
+*/
+function _hint(indexSet, start, length, content) {
+  if (content === undefined) content = indexSet._content;
+
+  var skip    = SC.IndexSet.HINT_SIZE,
+      next    = abs(content[start]), // start of next range
+      loc     = start - (start % skip) + skip, // next hint loc
+      lim     = start + length ; // stop
+
+  while (loc < lim) {
+    // make sure we are in current rnage
+    while ((next !== 0) && (next <= loc)) {
+      start = next ;
+      next  = abs(content[start]) ;
+    }
+
+    // past end
+    if (next === 0) {
+      delete content[loc];
+
+    // do not change if on actual boundary
+    } else if (loc !== start) {
+      content[loc] = start ;  // set hint
+    }
+
+    loc += skip;
+  }
+}
+
+/** @private
+  Walks a content array and copies its contents to a new array.  For large
+  content arrays this is faster than using slice()
+*/
+function _sliceContent(c) {
+  if (c.length < 1000) return c.slice(); // use native when faster
+  var cur = 0, ret = [], next = c[0];
+  while(next !== 0) {
+    ret[cur] = next ;
+    cur = (next<0) ? (0-next) : next ;
+    next = c[cur];
+  }
+  ret[cur] = 0;
+  _hint(this, 0, cur, ret); // hints are not copied manually - add them
+  return ret ;
+}
 
 /**
   @class
@@ -40,72 +97,22 @@ require('sproutcore-runtime');
   accelerator.  It tells you the start of the nearest range.
 
   @extends SC.Enumerable
-  @extends SC.Observable
+  @extends SC.MutableEnumerable
   @extends SC.Copyable
   @extends SC.Freezable
   @since SproutCore 1.0
 */
-SC.IndexSet = SC.mixin({},
-  SC.Enumerable, SC.Observable, SC.Freezable, SC.Copyable,
+SC.IndexSet = SC.Object.extend(SC.Enumerable, SC.MutableEnumerable, SC.Freezable, SC.Copyable,
 /** @scope SC.IndexSet.prototype */ {
 
-  /** @private
-    Walks a content array and copies its contents to a new array.  For large
-    content arrays this is faster than using slice()
-  */
-  _sc_sliceContent: function(c) {
-    if (c.length < 1000) return c.slice(); // use native when faster
-    var cur = 0, ret = [], next = c[0];
-    while(next !== 0) {
-      ret[cur] = next ;
-      cur = (next<0) ? (0-next) : next ;
-      next = c[cur];
-    }
-    ret[cur] = 0;
-    this._hint(0, cur, ret); // hints are not copied manually - add them
-    return ret ;
-  },
-
   /**
-    To create a set, pass either a start and index or another IndexSet.
+    Walk like a duck.  You should use instanceof instead.
 
-    @param {Number} start
-    @param {Number} length
-    @returns {SC.IndexSet}
-  */
-  create: function(start, length) {
-    var ret = SC.beget(this);
-    ret.initObservable();
-    ret.registerDependentKey('min', '[]');
-
-    // optimized method to clone an index set.
-    if (start && start.isIndexSet) {
-      ret._content = this._sc_sliceContent(start._content);
-      ret.max = start.max;
-      ret.length = start.length;
-      ret.source = start.source ;
-
-    // otherwise just do a regular add
-    } else {
-      ret._content = [0];
-      if (start !== undefined) ret.add(start, length);
-    }
-    return ret ;
-  },
-
-  /**
-    Walk like a duck.
-
+    @deprecated
     @type Boolean
+    @default YES
   */
   isIndexSet: YES,
-
-  /**  @private
-    Internal setting determines the preferred skip size for hinting sets.
-
-    @type Number
-  */
-  HINT_SIZE: 256,
 
   /**
     Total number of indexes contained in the set
@@ -131,17 +138,39 @@ SC.IndexSet = SC.mixin({},
   min: function() {
     var content = this._content,
         cur = content[0];
-    return (cur === 0) ? -1 : (cur>0) ? 0 : Math.abs(cur);
+    return (cur === 0) ? -1 : (cur>0) ? 0 : abs(cur);
 
   }.property('[]').cacheable(),
 
+  /**
+    When you create a new index set you can optional pass another index set
+    or a starting range to be added to the set.
+  */
+  init: function(start, length) {
+    this._super();
+    
+    // optimized method to clone an index set.
+    if (start && isIndexSet(start)) {
+      this._content = _sliceContent(start._content);
+      set(this, 'max', get(start, 'max'));
+      set(this, 'length', get(start, 'length'));
+      set(this, 'source', get(start, 'source'));
+
+    // otherwise just do a regular add
+    } else {
+      this._content = [0];
+      if (start !== undefined) this.add(start, length);
+    }
+
+  },
+  
   /**
     Returns the first index in the set .
 
     @type Number
   */
   firstObject: function() {
-    return (this.get('length')>0) ? this.get('min') : undefined;
+    return get(this, 'length')>0 ? get(this, 'min') : undefined;
   }.property(),
 
   /**
@@ -153,24 +182,24 @@ SC.IndexSet = SC.mixin({},
   */
   rangeStartForIndex: function(index) {
     var content = this._content,
-        max     = this.get('max'),
+        max     = get(this, 'max'),
         ret, next, accel;
 
     // fast cases
     if (index >= max) return max ;
-    if (Math.abs(content[index]) > index) return index ; // we hit a border
+    if (abs(content[index]) > index) return index ; // we hit a border
 
     // use accelerator to find nearest content range
     accel = index - (index % SC.IndexSet.HINT_SIZE);
     ret = content[accel];
     if (ret<0 || ret>index) ret = accel;
-    next = Math.abs(content[ret]);
+    next = abs(content[ret]);
 
     // now step forward through ranges until we find one that includes the
     // index.
     while (next < index) {
       ret = next ;
-      next = Math.abs(content[ret]);
+      next = abs(content[ret]);
     }
     return ret ;
   },
@@ -186,7 +215,7 @@ SC.IndexSet = SC.mixin({},
 
     // optimize for some special cases
     if (obj === this) return YES ;
-    if (!obj || !obj.isIndexSet || (obj.max !== this.max) || (obj.length !== this.length)) return NO;
+    if (!obj || !isIndexSet(obj) || (get(obj, 'max') !== get(this, 'max')) || (get(obj, 'length') !== get(this, 'length'))) return NO;
 
     // ok, now we need to actually compare the ranges of the two.
     var lcontent = this._content,
@@ -196,7 +225,7 @@ SC.IndexSet = SC.mixin({},
 
     do {
       if (rcontent[cur] !== next) return NO ;
-      cur = Math.abs(next) ;
+      cur = abs(next) ;
       next = lcontent[cur];
     } while (cur !== 0);
     return YES ;
@@ -215,7 +244,7 @@ SC.IndexSet = SC.mixin({},
     index--; // start with previous index
 
     var content = this._content,
-        max     = this.get('max'),
+        max     = get(this, 'max'),
         start   = this.rangeStartForIndex(index);
     if (!content) return null;
 
@@ -238,7 +267,7 @@ SC.IndexSet = SC.mixin({},
   */
   indexAfter: function(index) {
     var content = this._content,
-        max     = this.get('max'),
+        max     = get(this, 'max'),
         start, next ;
     if (!content || (index>=max)) return -1; // fast path
     index++; // start with next index
@@ -249,7 +278,7 @@ SC.IndexSet = SC.mixin({},
     next  = content[start];
     while(next<0) {
       if (next === 0) return -1 ; //nothing after; just quit
-      index = start = Math.abs(next);
+      index = start = abs(next);
       next  = content[start];
     }
 
@@ -270,11 +299,11 @@ SC.IndexSet = SC.mixin({},
     if (length === undefined) {
       if (start === null || start === undefined) return NO ;
 
-      if (typeof start === SC.T_NUMBER) {
+      if ('number' === typeof start) {
         length = 1 ;
 
       // if passed an index set, check each receiver range
-      } else if (start && start.isIndexSet) {
+      } else if (start && isIndexSet(start)) {
         if (start === this) return YES ; // optimization
 
         content = start._content ;
@@ -282,11 +311,12 @@ SC.IndexSet = SC.mixin({},
         next = content[cur];
         while (next !== 0) {
           if ((next>0) && !this.contains(cur, next-cur)) return NO ;
-          cur = Math.abs(next);
+          cur = abs(next);
           next = content[cur];
         }
         return YES ;
 
+      // passed just a hash range
       } else {
         length = start.length;
         start = start.start;
@@ -312,11 +342,11 @@ SC.IndexSet = SC.mixin({},
 
     // normalize input
     if (length === undefined) {
-      if (typeof start === SC.T_NUMBER) {
+      if ('number' === typeof start) {
         length = 1 ;
 
       // if passed an index set, check each receiver range
-      } else if (start && start.isIndexSet) {
+      } else if (start && isIndexSet(start)) {
         if (start === this) return YES ; // optimization
 
         content = start._content ;
@@ -324,7 +354,7 @@ SC.IndexSet = SC.mixin({},
         next = content[cur];
         while (next !== 0) {
           if ((next>0) && this.intersects(cur, next-cur)) return YES ;
-          cur = Math.abs(next);
+          cur = abs(next);
           next = content[cur];
         }
         return NO ;
@@ -342,7 +372,7 @@ SC.IndexSet = SC.mixin({},
     while (cur < lim) {
       if (next === 0) return NO; // no match and at end!
       if ((next > 0) && (next > start)) return YES ; // found a match
-      cur = Math.abs(next);
+      cur = abs(next);
       next = content[cur];
     }
     return NO ; // no match
@@ -357,13 +387,14 @@ SC.IndexSet = SC.mixin({},
     @returns {SC.IndexSet} new index set
   */
   without: function(start, length) {
-    if (start === this) return SC.IndexSet.create(); // just need empty set
-    return this.clone().remove(start, length);
+    if (start === this) return new SC.IndexSet(); // just need empty set
+    return this.copy().remove(start, length);
   },
 
   /**
     Replace the index set's current content with the passed index set.  This
-    is faster than clearing the index set adding the values again.
+    is faster than clearing the index set adding the values again.  It is 
+    useful for when you want to reuse an existing index set.
 
     @param {Number} start index, Range, or another IndexSet
     @param {Number} length optional length of range.
@@ -372,16 +403,18 @@ SC.IndexSet = SC.mixin({},
   replace: function(start, length) {
 
     if (length === undefined) {
-      if (typeof start === SC.T_NUMBER) {
+      if ('number' === typeof start) {
         length = 1 ;
-      } else if (start && start.isIndexSet) {
-        this._content = this._sc_sliceContent(start._content);
-        this.beginPropertyChanges()
-          .set('max', start.max)
-          .set('length', start.length)
-          .set('source', start.source)
-          .enumerableContentDidChange()
-        .endPropertyChanges();
+      } else if (start && isIndexSet(start)) {
+        var oldLen = get(this, 'length'), newLen = get(start, 'length');
+        this.enumerableContentWillChange(oldLen, newLen);
+        SC.beginPropertyChanges(this);
+        this._content = _sliceContent(start._content);
+        set(this, 'max', get(start, 'max'));
+        set(this, 'length', newLen);
+        set(this, 'source', get(start, 'source'));
+        SC.endPropertyChanges(this);
+        this.enumerableContentDidChange(oldLen, newLen);
         return this ;
 
       } else {
@@ -407,31 +440,20 @@ SC.IndexSet = SC.mixin({},
   */
   add: function(start, length) {
 
-    if (this.isFrozen) throw SC.FROZEN_ERROR;
+    if (get(this, 'isFrozen')) throw new Error(SC.FROZEN_ERROR);
 
-    var content, cur, next;
+    var content, cur, next, notified;
 
     // normalize IndexSet input
-    if (start && start.isIndexSet) {
-
-      content = start._content;
-
-      if (!content) return this; // nothing to do
-
-      cur = 0 ;
-      next = content[0];
-      while(next !== 0) {
-        if (next>0) this.add(cur, next-cur);
-        cur = next<0 ? 0-next : next;
-        next = content[cur];
-      }
+    if (start && isIndexSet(start)) {
+      start.forEachRange(this.add, this);
       return this ;
 
     } else if (length === undefined) {
 
       if (start === null || start === undefined) {
         return this; // nothing to do
-      } else if (typeof start === SC.T_NUMBER) {
+      } else if ('number' === typeof start) {
         length = 1 ;
       } else {
         length = start.length;
@@ -439,17 +461,21 @@ SC.IndexSet = SC.mixin({},
       }
     } else if (length === null) length = 1 ;
 
-    // if no length - do nothing.
-    if (length <= 0) return this;
+    // if no length - do nothing. - note captures when length != number
+    if (!(length > 0)) return this;
 
+    
     // special case - appending to end of set
-    var max     = this.get('max'),
+    var max     = get(this, 'max'),
         oldmax  = max,
         delta, value ;
 
     content = this._content ;
 
     if (start === max) {
+
+      this.enumerableContentWillChange();
+      notified = true;
 
       // if adding to the end and the end is in set, merge.
       if (start > 0) {
@@ -471,16 +497,20 @@ SC.IndexSet = SC.mixin({},
       }
 
       content[max] = 0 ;
-      this.set('max', max);
-      this.set('length', this.length + length) ;
+      set(this, 'max', max);
+      set(this, 'length', get(this, 'length') + length) ;
       length = max - start ;
 
+    // past end of last range, just add as a new range.
     } else if (start > max) {
+      this.enumerableContentWillChange();
+      notified = true;
+
       content[max] = 0-start; // empty!
       content[start] = start+length ;
       content[start+length] = 0; // set end
-      this.set('max', start + length) ;
-      this.set('length', this.length + length) ;
+      set(this, 'max', start + length) ;
+      set(this, 'length', this.length + length) ;
 
       // affected range goes from starting range to end of content.
       length = start + length - max ;
@@ -507,7 +537,7 @@ SC.IndexSet = SC.mixin({},
         content[cur] = 0-start ;
 
         // if previous range extends beyond this range, splice afterwards also
-        if (Math.abs(next) > max) {
+        if (abs(next) > max) {
           content[start] = 0-max;
           content[max] = next ;
         } else content[start] = next;
@@ -533,8 +563,14 @@ SC.IndexSet = SC.mixin({},
           content[max] = 0;
           next = max ;
           delta += max - cur ;
+
+          if (!notified && delta>0) {
+            this.enumerableContentWillChange();
+            notified = true;
+          }
+
         } else {
-          next  = Math.abs(value);
+          next  = abs(value);
           if (next > max) {
             content[max] = value ;
             next = max ;
@@ -542,7 +578,13 @@ SC.IndexSet = SC.mixin({},
 
           // ok, cur range is entirely inside top range.
           // add to delta if needed
-          if (value < 0) delta += next - cur ;
+          if (value < 0) {
+            delta += next - cur ;
+            if (!notified && delta>0) {
+              this.enumerableContentWillChange();
+              notified = true;
+            }
+          }
         }
 
         delete content[cur] ; // and remove range
@@ -558,17 +600,17 @@ SC.IndexSet = SC.mixin({},
 
       // finally set my own range.
       content[start] = max ;
-      if (max > oldmax) this.set('max', max) ;
+      if (max > oldmax) set(this, 'max', max) ;
 
       // adjust length
-      this.set('length', this.get('length') + delta);
+      set(this, 'length', get(this, 'length') + delta);
 
       // compute hint range
       length = max - start ;
     }
 
-    this._hint(start, length);
-    if (delta !== 0) this.enumerableContentDidChange();
+    _hint(this, start, length);
+    if (notified) this.enumerableContentDidChange();
     return this;
   },
 
@@ -581,18 +623,18 @@ SC.IndexSet = SC.mixin({},
   */
   remove: function(start, length) {
 
-    if (this.isFrozen) throw SC.FROZEN_ERROR;
+    if (get(this, 'isFrozen')) throw new Error(SC.FROZEN_ERROR);
 
     // normalize input
     if (length === undefined) {
       if (start === null || start === undefined) {
         return this; // nothing to do
 
-      } else if (typeof start === SC.T_NUMBER) {
+      } else if ('number' === typeof start) {
         length = 1 ;
 
       // if passed an index set, just add each range in the index set.
-      } else if (start.isIndexSet) {
+      } else if (isIndexSet(start)) {
         start.forEachRange(this.remove, this);
         return this;
 
@@ -602,10 +644,12 @@ SC.IndexSet = SC.mixin({},
       }
     }
 
-    if (length <= 0) return this; // nothing to do
+    if (!(length > 0)) return this; // handles when length != number
+
+    this.enumerableContentWillChange();
 
     // special case - appending to end of set
-    var max     = this.get('max'),
+    var max     = get(this, 'max'),
         oldmax  = max,
         content = this._content,
         cur, next, delta, value, last ;
@@ -639,7 +683,7 @@ SC.IndexSet = SC.mixin({},
     // previous range is not in set.  merge the ranges
     } else {
       start = cur ;
-      next  = Math.abs(next);
+      next  = abs(next);
       if (next > last) {
         last = next ;
       }
@@ -658,7 +702,7 @@ SC.IndexSet = SC.mixin({},
         next = last ;
 
       } else {
-        next  = Math.abs(value);
+        next  = abs(value);
         if (next > last) {
           content[last] = value ;
           next = last ;
@@ -677,74 +721,45 @@ SC.IndexSet = SC.mixin({},
     // merge in also - don't adjust delta because these aren't new indexes
     if ((cur = content[last]) < 0) {
       delete content[last];
-      last = Math.abs(cur) ;
+      last = abs(cur) ;
     }
 
     // set my own range - if the next item is 0, then clear it.
     if (content[last] === 0) {
       delete content[last];
       content[start] = 0 ;
-      this.set('max', start); //max has changed
+      set(this, 'max', start); //max has changed
 
     } else {
       content[start] = 0-last ;
     }
 
     // adjust length
-    this.set('length', this.get('length') - delta);
+    set(this, 'length', get(this, 'length') - delta);
 
     // compute hint range
     length = last - start ;
 
-    this._hint(start, length);
-    if (delta !== 0) this.enumerableContentDidChange();
+    _hint(this, start, length);
+    this.enumerableContentDidChange();
     return this;
-  },
-
-  /** @private
-    iterates through a named range, setting hints every HINT_SIZE indexes
-    pointing to the nearest range start.  The passed range must start on a
-    range boundary.  It can end anywhere.
-  */
-  _hint: function(start, length, content) {
-    if (content === undefined) content = this._content;
-
-    var skip    = SC.IndexSet.HINT_SIZE,
-        next    = Math.abs(content[start]), // start of next range
-        loc     = start - (start % skip) + skip, // next hint loc
-        lim     = start + length ; // stop
-
-    while (loc < lim) {
-      // make sure we are in current rnage
-      while ((next !== 0) && (next <= loc)) {
-        start = next ;
-        next  = Math.abs(content[start]) ;
-      }
-
-      // past end
-      if (next === 0) {
-        delete content[loc];
-
-      // do not change if on actual boundary
-      } else if (loc !== start) {
-        content[loc] = start ;  // set hint
-      }
-
-      loc += skip;
-    }
   },
 
   /**
     Clears the set
   */
   clear: function() {
-    if (this.isFrozen) throw SC.FROZEN_ERROR;
+    if (get(this, 'isFrozen')) throw new Error(SC.FROZEN_ERROR);
 
-    var oldlen = this.length;
+    var oldLen = get(this, 'length');
+    if (oldLen>0) this.enumerableContentWillChange();
+    SC.beginPropertyChanges(this);
     this._content.length=1;
     this._content[0] = 0;
-    this.set('length', 0).set('max', 0);
-    if (oldlen > 0) this.enumerableContentDidChange();
+    set(this, 'length', 0);
+    set(this, 'max', 0);
+    SC.endPropertyChanges(this);
+    if (oldLen > 0) this.enumerableContentDidChange();
   },
 
   /**
@@ -753,17 +768,10 @@ SC.IndexSet = SC.mixin({},
     @param {Enumerable} objects The list of ranges you want to add
   */
   addEach: function(objects) {
-    if (this.isFrozen) throw SC.FROZEN_ERROR;
-
-    this.beginPropertyChanges();
-    var idx = objects.get('length') ;
-    if (objects.isSCArray) {
-      while(--idx >= 0) this.add(objects.objectAt(idx)) ;
-    } else if (objects.isEnumerable) {
-      objects.forEach(function(idx) { this.add(idx); }, this);
-    }
-    this.endPropertyChanges();
-
+    if (get(this, 'isFrozen')) throw new Error(SC.FROZEN_ERROR);
+    SC.beginPropertyChanges(this);
+    objects.forEach(function(idx) { this.add(idx); }, this);
+    SC.endPropertyChanges(this);
     return this ;
   },
 
@@ -773,29 +781,26 @@ SC.IndexSet = SC.mixin({},
     @param {Object...} objects The list of objects you want to remove
   */
   removeEach: function(objects) {
-    if (this.isFrozen) throw SC.FROZEN_ERROR;
-
-    this.beginPropertyChanges();
-
-    var idx = objects.get('length') ;
-    if (objects.isSCArray) {
-      while(--idx >= 0) this.remove(objects.objectAt(idx)) ;
-    } else if (objects.isEnumerable) {
-      objects.forEach(function(idx) { this.remove(idx); }, this);
-    }
-
-    this.endPropertyChanges();
-
+    if (get(this, 'isFrozen')) throw new Error(SC.FROZEN_ERROR);
+    SC.beginPropertyChanges(this);
+    objects.forEach(function(idx) { this.remove(idx); }, this);
+    SC.endPropertyChanges(this);
     return this ;
   },
 
   /**
    Clones the set into a new set.
   */
-  clone: function() {
-    return SC.IndexSet.create(this);
+  copy: function() {
+    return new SC.IndexSet(this);
   },
 
+  /** @private (nodoc) */
+  clone: SC.alias('copy'),
+  
+  /** @private (nodoc) */
+  slice: SC.alias('copy'),
+  
   /**
     Returns a string describing the internal range structure.  Useful for
     debugging.
@@ -839,7 +844,7 @@ SC.IndexSet = SC.mixin({},
     if (target === undefined) target = null ;
     while (next !== 0) {
       if (next > 0) callback.call(target, cur, next - cur, this, source);
-      cur  = Math.abs(next);
+      cur  = abs(next);
       next = content[cur];
     }
 
@@ -874,7 +879,7 @@ SC.IndexSet = SC.mixin({},
       if (cur >= lim) {
         cur = next = 0 ;
       } else {
-        cur  = Math.abs(next);
+        cur  = abs(next);
         next = content[cur];
       }
     }
@@ -897,11 +902,11 @@ SC.IndexSet = SC.mixin({},
       if (start === null || start === undefined) {
         return 0; // nothing to do
 
-      } else if (typeof start === SC.T_NUMBER) {
+      } else if ('number' === typeof start) {
         length = 1 ;
 
       // if passed an index set, just add each range in the index set.
-      } else if (start.isIndexSet) {
+      } else if (isIndexSet(start)) {
         start.forEachRange(function(start, length) {
           ret += this.lengthIn(start, length);
         }, this);
@@ -914,7 +919,7 @@ SC.IndexSet = SC.mixin({},
     }
 
     // fast path
-    if (this.get('length') === 0) return 0;
+    if (get(this, 'length') === 0) return 0;
 
     var content = this._content,
         cur     = 0,
@@ -925,7 +930,7 @@ SC.IndexSet = SC.mixin({},
       if (next>0) {
         ret += (next>lim) ? lim-cur : next-cur;
       }
-      cur  = Math.abs(next);
+      cur  = abs(next);
       next = content[cur];
     }
 
@@ -952,14 +957,14 @@ SC.IndexSet = SC.mixin({},
     @returns {Number} found index or -1 if not in set
   */
   indexOf: function(object, startAt) {
-    var source  = this.source;
+    var source  = get(this, 'source');
     if (!source) throw "%@.indexOf() requires source".fmt(this);
 
-    var len     = source.get('length'),
+    var len     = get(source, 'length'),
 
         // start with the first index in the set
         content = this._content,
-        cur     = content[0]<0 ? Math.abs(content[0]) : 0,
+        cur     = content[0]<0 ? abs(content[0]) : 0,
         idx ;
 
     while(cur>=0 && cur<len) {
@@ -981,12 +986,12 @@ SC.IndexSet = SC.mixin({},
     @returns {Number} found index or -1 if not in set
   */
   lastIndexOf: function(object, startAt) {
-    var source  = this.source;
+    var source  = get(this, 'source');
     if (!source) throw "%@.lastIndexOf() requires source".fmt(this);
 
     // start with the last index in the set
-    var len     = source.get('length'),
-        cur     = this.max-1,
+    var len     = get(source, 'length'),
+        cur     = get(this, 'max')-1,
         idx ;
 
     if (cur >= len) cur = len-1;
@@ -1014,7 +1019,7 @@ SC.IndexSet = SC.mixin({},
     @returns {SC.IndexSet} receiver
   */
   forEachObject: function(callback, target) {
-    var source  = this.source;
+    var source  = get(this, 'source');
     if (!source) throw "%@.forEachObject() requires source".fmt(this);
 
     var content = this._content,
@@ -1030,7 +1035,7 @@ SC.IndexSet = SC.mixin({},
         cur++;
       }
 
-      cur  = Math.abs(next);
+      cur  = abs(next);
       next = content[cur];
     }
     return this ;
@@ -1050,10 +1055,10 @@ SC.IndexSet = SC.mixin({},
     @returns {SC.IndexSet} receiver
   */
   addObject: function(object, firstOnly) {
-    var source  = this.source;
-    if (!source) throw "%@.addObject() requires source".fmt(this);
+    var source  = get(this, 'source');
+    sc_assert("%@.addObject() requires source".fmt(this), !!source);
 
-    var len = source.get('length'),
+    var len = get(source, 'length'),
         cur = 0, idx;
 
     while(cur>=0 && cur<len) {
@@ -1097,8 +1102,8 @@ SC.IndexSet = SC.mixin({},
     @returns {SC.IndexSet} receiver
   */
   removeObject: function(object, firstOnly) {
-    var source  = this.source;
-    if (!source) throw "%@.removeObject() requires source".fmt(this);
+    var source  = get(this, 'source');
+    sc_assert("%@.removeObject() requires source".fmt(this), !!source);
 
     var len = source.get('length'),
         cur = 0, idx;
@@ -1140,6 +1145,7 @@ SC.IndexSet = SC.mixin({},
     supress them by default.
 
     @type Boolean
+    @default NO
   */
   LOG_OBSERVING: NO,
 
@@ -1148,7 +1154,7 @@ SC.IndexSet = SC.mixin({},
     var content = this._content,
         cur     = 0,
         idx     = 0,
-        source  = this.source,
+        source  = get(this, 'source'),
         next    = content[cur];
 
     if (target === undefined) target = null ;
@@ -1156,7 +1162,7 @@ SC.IndexSet = SC.mixin({},
       while(cur < next) {
         callback.call(target, cur++, idx++, this, source);
       }
-      cur  = Math.abs(next);
+      cur  = abs(next);
       next = content[cur];
     }
     return this ;
@@ -1166,7 +1172,7 @@ SC.IndexSet = SC.mixin({},
   nextObject: function(ignore, idx, context) {
     var content = this._content,
         next    = context.next,
-        max     = this.get('max'); // next boundary
+        max     = get(this, 'max'); // next boundary
 
     // seed.
     if (idx === null) {
@@ -1181,7 +1187,7 @@ SC.IndexSet = SC.mixin({},
     // look for next non-empty range if needed.
     if (idx === next) {
       do {
-        idx = Math.abs(next);
+        idx = abs(next);
         next = content[idx];
       } while(next < 0);
       context.next = next;
@@ -1196,12 +1202,37 @@ SC.IndexSet = SC.mixin({},
       str.push(length === 1 ? start : "%@..%@".fmt(start, start + length - 1));
     }, this);
     return "SC.IndexSet<%@>".fmt(str.join(',')) ;
-  },
-
-  max: 0
+  }  
 
 }) ;
 
-SC.IndexSet.slice = SC.IndexSet.copy = SC.IndexSet.clone ;
-SC.IndexSet.EMPTY = SC.IndexSet.create().freeze();
+SC.IndexSet.reopenClass({
+  
+  /**
+    Create can take a simple range as well..
+  */
+  create: function(start, length) {
+    if ('number' === typeof start || isIndexSet(start)) {
+      var C = this;
+      return new C(start, length);
+    } else {
+      return this._super.apply(this, arguments);
+    }
+  },
+  
+  /**  @private
+    Internal setting determines the preferred skip size for hinting sets.
+
+    @type Number
+  */
+  HINT_SIZE: 256,
+  
+  /**
+    A empty index set.  Useful for common comparisons.
+    
+    @type SC.IndexSet
+  */
+  EMPTY: new SC.IndexSet().freeze()
+  
+});
 

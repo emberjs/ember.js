@@ -6,6 +6,8 @@
 
 /*global module test equals context ok same notest */
 var set ;
+var sc_get = SC.get, sc_set = SC.set;
+
 module("SC.IndexSet#clone", {
   setup: function() {
     set = SC.IndexSet.create();
@@ -21,16 +23,16 @@ test("clone should return new object with same key properties", function() {
   ok(set2 !== set, 'cloned set should not be same instance as set');
   ok(set.isEqual(set2), 'set.isEqual(set2) should be true');
   
-  equals(set2.get('length'), set.get('length'), 'clone should have same length');
-  equals(set2.get('min'), set.get('min'), 'clone should have same min');
-  equals(set2.get('max'), set.get('max'), 'clone should have same max');
-  equals(set2.get('source'), set.get('source'), 'clone should have same source');
+  equals(sc_get(set2, 'length'), sc_get(set, 'length'), 'clone should have same length');
+  equals(sc_get(set2, 'min'), sc_get(set, 'min'), 'clone should have same min');
+  equals(sc_get(set2, 'max'), sc_get(set, 'max'), 'clone should have same max');
+  equals(sc_get(set2, 'source'), sc_get(set, 'source'), 'clone should have same source');
 
 });
 
 test("cloning frozen object returns unfrozen", function() {
   var set2 = set.freeze().clone();
-  equals(set2.get('isFrozen'), NO, 'set2.isFrozen should be NO');
+  equals(sc_get(set2, 'isFrozen'), NO, 'set2.isFrozen should be NO');
 });
 
 test("copy works like clone", function() {

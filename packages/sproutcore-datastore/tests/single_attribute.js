@@ -5,6 +5,8 @@
 // ==========================================================================
 /*globals module ok equals same test MyApp */
 
+var set = SC.set, get = SC.get;
+
 // test core array-mapping methods for RecordArray with RecordAttribute
 var storeKeys, rec, rec2, bar, bar2 ;
 
@@ -27,7 +29,7 @@ module("SC.RecordAttribute core methods", {
       
       // test toOne relationship with computed type
       relatedToComputed: SC.Record.toOne(function() {
-        // not using .get() to avoid another transform which will 
+        // not using get() to avoid another transform which will 
         // trigger an infinite loop
         return (this.readAttribute('relatedToComputed').indexOf("foo")===0) ? MyApp.Foo : MyApp.Bar;
       }),
@@ -42,7 +44,7 @@ module("SC.RecordAttribute core methods", {
       foo: SC.Record.toOne('MyApp.Foo', { inverse: 'bar', isMaster: NO })
     });
     
-    SC.RunLoop.begin();
+    SC.run.begin();
     storeKeys = MyApp.store.loadRecords(MyApp.Foo, [
       { 
         guid: 'foo1', 
@@ -95,7 +97,7 @@ module("SC.RecordAttribute core methods", {
       { guid: "bar2", city: "New York", foo: 'foo3' }
     ]);
     
-    SC.RunLoop.end();
+    SC.run.end();
     
     rec = MyApp.store.find(MyApp.Foo, 'foo1');
     rec2 = MyApp.store.find(MyApp.Foo, 'foo2');
@@ -118,24 +120,24 @@ module("SC.RecordAttribute core methods", {
 
 test("getting toOne relationship should map guid to a real record", function() {
   var rec2 = MyApp.store.find(MyApp.Foo, 'foo2');
-  equals(rec2.get('id'), 'foo2', 'precond - should find record 2');
-  equals(rec2.get('relatedTo'), rec, 'should get rec1 instance for rec2.relatedTo');
+  equals(get(rec2, 'id'), 'foo2', 'precond - should find record 2');
+  equals(get(rec2, 'relatedTo'), rec, 'should get rec1 instance for rec2.relatedTo');
 });
 
 test("getting toOne relationship from computed attribute should map guid to a real record", function() {
   var rec3 = MyApp.store.find(MyApp.Foo, 'foo3');
-  equals(rec3.get('id'), 'foo3', 'precond - should find record 3');
-  equals(rec3.get('relatedToComputed'), bar, 'should get bar1 instance for rec3.relatedToComputed');
+  equals(get(rec3, 'id'), 'foo3', 'precond - should find record 3');
+  equals(get(rec3, 'relatedToComputed'), bar, 'should get bar1 instance for rec3.relatedToComputed');
 });
 
 test("reading an inverse relationship", function() {
-  equals(rec.get('bar'), bar, 'foo1.bar should == bar');
-  equals(bar.get('foo'), rec, 'bar.foo should == foo1');  
+  equals(get(rec, 'bar'), bar, 'foo1.bar should == bar');
+  equals(get(bar, 'foo'), rec, 'bar.foo should == foo1');  
 });
 
 test("reading a keyed relationship", function(){
   var rec4 = MyApp.store.find(MyApp.Foo, 'foo4');
-  equals(rec4.get('barKeyed'), bar, 'foo4.barKeyed should == bar');
+  equals(get(rec4, 'barKeyed'), bar, 'foo4.barKeyed should == bar');
 });
 
 // ..........................................................
@@ -144,70 +146,70 @@ test("reading a keyed relationship", function(){
 
 test("writing to a to-one relationship should update set guid", function() {
   var rec2 = MyApp.store.find(MyApp.Foo, 'foo2');
-  equals(rec2.get('id'), 'foo2', 'precond - should find record 2');
+  equals(get(rec2, 'id'), 'foo2', 'precond - should find record 2');
 
-  equals(rec2.get('relatedTo'), rec, 'precond - should get rec1 instance for rec2.relatedTo');
+  equals(get(rec2, 'relatedTo'), rec, 'precond - should get rec1 instance for rec2.relatedTo');
 
-  rec2.set('relatedTo', rec2);
+  set(rec2, 'relatedTo', rec2);
 
   equals(rec2.readAttribute('relatedTo'), 'foo2', 'should write ID for set record to relatedTo attribute');
   
-  equals(rec2.get('relatedTo'), rec2, 'should get foo record that was just set');
+  equals(get(rec2, 'relatedTo'), rec2, 'should get foo record that was just set');
 
 });
 
 test("writing to a to-one computed relationship should update set guid", function() {
   var rec3 = MyApp.store.find(MyApp.Foo, 'foo3');
-  equals(rec3.get('id'), 'foo3', 'precond - should find record 2');
-  equals(rec3.get('relatedToComputed'), bar, 'precond - should get bar1 instance for rec3.relatedToComputed');
+  equals(get(rec3, 'id'), 'foo3', 'precond - should find record 2');
+  equals(get(rec3, 'relatedToComputed'), bar, 'precond - should get bar1 instance for rec3.relatedToComputed');
   
-  rec3.set('relatedToComputed', rec);
+  set(rec3, 'relatedToComputed', rec);
   equals(rec3.readAttribute('relatedToComputed'), 'foo1', 'should write ID for set record to relatedTo attribute');
 });
 
 test("clearing a toOne relationship", function() {
-  ok(rec2.get('relatedTo') !== null, 'precond - rec.relatedTo should have a value');
+  ok(get(rec2, 'relatedTo') !== null, 'precond - rec.relatedTo should have a value');
   
-  rec2.set('relatedTo', null);
-  equals(rec2.get('relatedTo'), null, 'rec.relatedTo should be null');
+  set(rec2, 'relatedTo', null);
+  equals(get(rec2, 'relatedTo'), null, 'rec.relatedTo should be null');
   equals(rec2.readAttribute('relatedTo'), null, 'rec.relatedTo attribute should be null');
 });
 
 test("clearing a toOne relationship with an inverse - foo isMaster", function() {
-  equals(rec.get('bar'), bar, 'precond - foo1.bar should eq bar');
-  equals(bar.get('foo'), rec, 'precond - bar.foo should eq foo1');
+  equals(get(rec, 'bar'), bar, 'precond - foo1.bar should eq bar');
+  equals(get(bar, 'foo'), rec, 'precond - bar.foo should eq foo1');
 
-  equals(rec.get('status'), SC.Record.READY_CLEAN, 'precond - foo1.status should be READY_CLEAN');
-  equals(bar.get('status'), SC.Record.READY_CLEAN, 'precond - bar1.status should be READY_CLEAN');
+  equals(get(rec, 'status'), SC.Record.READY_CLEAN, 'precond - foo1.status should be READY_CLEAN');
+  equals(get(bar, 'status'), SC.Record.READY_CLEAN, 'precond - bar1.status should be READY_CLEAN');
   
-  rec.set('bar', null);
+  set(rec, 'bar', null);
   
-  equals(rec.get('bar'), null, 'foo1.bar should be null after change');
-  equals(bar.get('foo'), null, 'bar.foo should also be null after change');
+  equals(get(rec, 'bar'), null, 'foo1.bar should be null after change');
+  equals(get(bar, 'foo'), null, 'bar.foo should also be null after change');
   
-  equals(rec.get('status'), SC.Record.READY_DIRTY, 'foo1.status should be READY_DIRTY');
-  equals(bar.get('status'), SC.Record.READY_CLEAN, 'bar1.status should be READY_CLEAN');
+  equals(get(rec, 'status'), SC.Record.READY_DIRTY, 'foo1.status should be READY_DIRTY');
+  equals(get(bar, 'status'), SC.Record.READY_CLEAN, 'bar1.status should be READY_CLEAN');
   
 });
 
 test("modifying a toOne relationship with an inverse from null", function() {
-  equals(rec.get('bar'), bar, 'precond - foo1.bar should eq bar');
-  equals(bar.get('foo'), rec, 'precond - bar.foo should eq foo1');
-  equals(rec2.get('bar'), null, 'precond - foo2.bar should eq null');
+  equals(get(rec, 'bar'), bar, 'precond - foo1.bar should eq bar');
+  equals(get(bar, 'foo'), rec, 'precond - bar.foo should eq foo1');
+  equals(get(rec2, 'bar'), null, 'precond - foo2.bar should eq null');
   
   [rec, rec2, bar].forEach(function(r) {
-    equals(r.get('status'), SC.Record.READY_CLEAN, 'precond - %@.status should be READY_CLEAN'.fmt(r.get('id')));
+    equals(get(r, 'status'), SC.Record.READY_CLEAN, 'precond - %@.status should be READY_CLEAN'.fmt(get(r, 'id')));
   }, this);
   
-  bar.set('foo', rec2);
+  set(bar, 'foo', rec2);
   
-  equals(rec.get('bar'), null, 'foo1.bar should be null after change');
-  equals(bar.get('foo'), rec2, 'bar.foo should eq foo2 after change');
-  equals(rec2.get('bar'), bar, 'foo2.bar should eq bar after change');
+  equals(get(rec, 'bar'), null, 'foo1.bar should be null after change');
+  equals(get(bar, 'foo'), rec2, 'bar.foo should eq foo2 after change');
+  equals(get(rec2, 'bar'), bar, 'foo2.bar should eq bar after change');
   
-  equals(rec.get('status'), SC.Record.READY_DIRTY, 'foo1.status should be READY_DIRTY');
-  equals(rec2.get('status'), SC.Record.READY_DIRTY, 'foo1.status should be READY_DIRTY');
-  equals(bar.get('status'), SC.Record.READY_CLEAN, 'bar1.status should be READY_CLEAN');
+  equals(get(rec, 'status'), SC.Record.READY_DIRTY, 'foo1.status should be READY_DIRTY');
+  equals(get(rec2, 'status'), SC.Record.READY_DIRTY, 'foo1.status should be READY_DIRTY');
+  equals(get(bar, 'status'), SC.Record.READY_CLEAN, 'bar1.status should be READY_CLEAN');
   
 });
 
@@ -217,39 +219,39 @@ test("modifying a toOne relationship with an inverse from other", function() {
       foo3 = MyApp.store.find(MyApp.Foo, 'foo3'),
       bar1 = bar;
   
-  equals(foo1.get('bar'), bar1, 'precond - foo1.bar should eq bar1');
-  equals(bar1.get('foo'), foo1, 'precond - bar.foo should eq foo1');
+  equals(get(foo1, 'bar'), bar1, 'precond - foo1.bar should eq bar1');
+  equals(get(bar1, 'foo'), foo1, 'precond - bar.foo should eq foo1');
   
-  equals(foo3.get('bar'), bar2, 'precond - foo3.bar should eq null');
-  equals(bar2.get('foo'), foo3, 'precond - bar2.foo should eq foo3');
+  equals(get(foo3, 'bar'), bar2, 'precond - foo3.bar should eq null');
+  equals(get(bar2, 'foo'), foo3, 'precond - bar2.foo should eq foo3');
   
   
   [foo1, foo3, bar1, bar2].forEach(function(r) {
-    equals(r.get('status'), SC.Record.READY_CLEAN, 'precond - %@.status should be READY_CLEAN'.fmt(r.get('id')));
+    equals(get(r, 'status'), SC.Record.READY_CLEAN, 'precond - %@.status should be READY_CLEAN'.fmt(get(r, 'id')));
   }, this);
   
-  bar1.set('foo', foo3);
+  set(bar1, 'foo', foo3);
   
-  equals(foo1.get('bar'), null, 'foo1.bar should be null after change');
-  equals(bar1.get('foo'), foo3, 'bar.foo should eq foo3 after change');
+  equals(get(foo1, 'bar'), null, 'foo1.bar should be null after change');
+  equals(get(bar1, 'foo'), foo3, 'bar.foo should eq foo3 after change');
 
-  equals(foo3.get('bar'), bar1, 'foo3.bar should be bar after change');
-  equals(bar2.get('foo'), null, 'bar2.foo should eq null after change');
+  equals(get(foo3, 'bar'), bar1, 'foo3.bar should be bar after change');
+  equals(get(bar2, 'foo'), null, 'bar2.foo should eq null after change');
   
-  equals(foo1.get('status'), SC.Record.READY_DIRTY, 'foo1.status should be READY_DIRTY');
-  equals(foo1.get('status'), SC.Record.READY_DIRTY, 'foo1.status should be READY_DIRTY');
+  equals(get(foo1, 'status'), SC.Record.READY_DIRTY, 'foo1.status should be READY_DIRTY');
+  equals(get(foo1, 'status'), SC.Record.READY_DIRTY, 'foo1.status should be READY_DIRTY');
 
-  equals(bar1.get('status'), SC.Record.READY_CLEAN, 'bar1.status should be READY_CLEAN');
-  equals(bar2.get('status'), SC.Record.READY_CLEAN, 'bar1.status should be READY_CLEAN');
+  equals(get(bar1, 'status'), SC.Record.READY_CLEAN, 'bar1.status should be READY_CLEAN');
+  equals(get(bar2, 'status'), SC.Record.READY_CLEAN, 'bar1.status should be READY_CLEAN');
   
 });
 
 test("modifying a keyed toOne relationship", function(){
   var rec4 = MyApp.store.find(MyApp.Foo, 'foo4');
 
-  rec4.set('barKeyed', bar2);
+  set(rec4, 'barKeyed', bar2);
 
-  equals(rec4.get('barId'), 'bar2', 'foo4.barId should == bar2');
+  equals(get(rec4, 'barId'), 'bar2', 'foo4.barId should == bar2');
 });
 
 test("isEditable NO should not allow editing", function() {
@@ -257,32 +259,12 @@ test("isEditable NO should not allow editing", function() {
   var bar2 = MyApp.store.find(MyApp.Bar, 'bar2');
   var rec5 = MyApp.store.find(MyApp.Foo, 'foo5');
 
-  equals(rec5.get('readOnlyRelatedTo'), bar1, 'precond - should find bar1');
-  equals(rec5.get('status'), SC.Record.READY_CLEAN, 'precond - foo5 should be READY_CLEAN');
+  equals(get(rec5, 'readOnlyRelatedTo'), bar1, 'precond - should find bar1');
+  equals(get(rec5, 'status'), SC.Record.READY_CLEAN, 'precond - foo5 should be READY_CLEAN');
   
-  rec5.set('readOnlyRelatedTo', bar2);
+  set(rec5, 'readOnlyRelatedTo', bar2);
   
-  equals(rec5.get('readOnlyRelatedTo'), bar1, 'should still find bar1 after setting');
-  equals(rec5.get('status'), SC.Record.READY_CLEAN, 'foo5 status is still READY_CLEAN');
-});
-
-test("isEditable NO should not fire property change observer", function() {
-  var bar1 = MyApp.store.find(MyApp.Bar, 'bar1');
-  var bar2 = MyApp.store.find(MyApp.Bar, 'bar2');
-  var rec5 = MyApp.store.find(MyApp.Foo, 'foo5');
-
-  equals(rec5.get('readOnlyRelatedTo'), bar1, 'precond - should find bar1');
-  
-  var readOnlyWasModified = NO;
-  var modifierListener = function() {
-    readOnlyWasModified = YES;
-  };
-  rec5.addObserver('readOnlyRelatedTo', modifierListener);
-  
-  rec5.set('readOnlyRelatedTo', bar2);
-  
-  equals(readOnlyWasModified, NO, 'property change observer should not have fired');
-  
-  rec5.removeObserver('readOnlyRelatedTo', modifierListener);
+  equals(get(rec5, 'readOnlyRelatedTo'), bar1, 'should still find bar1 after setting');
+  equals(get(rec5, 'status'), SC.Record.READY_CLEAN, 'foo5 status is still READY_CLEAN');
 });
 

@@ -5,13 +5,15 @@
 // ==========================================================================
 /*globals module ok equals same test MyApp Sample */
 
+var set = SC.set, get = SC.get;
+
 var store, fds, storeKey1,storeKey2;
 
 module("SC.FixturesDataSource", {
   setup: function() {
-    SC.RunLoop.begin();
+    SC.run.begin();
     
-    var Sample = (window.Sample= SC.Object.create());
+    Sample = SC.Object.create();
     Sample.File = SC.Record.extend({ test:'hello'});
 
     // files
@@ -31,7 +33,7 @@ module("SC.FixturesDataSource", {
   },
   
   teardown: function() {
-    SC.RunLoop.end();
+    SC.run.end();
   }
 });
 
@@ -41,13 +43,13 @@ test("Verify find() loads all fixture data", function() {
       rec, storeKey, dataHash;
   
   ok(result, 'should return a result');
-  equals(result.get('length'), Sample.File.FIXTURES.get('length'), 'should return records for each item in FIXTURES');
+  equals(get(result, 'length'), get(Sample.File.FIXTURES, 'length'), 'should return records for each item in FIXTURES');
   
   // verify storeKeys actually return Records
-  var idx, len = result.get('length'), expected = [];
+  var idx, len = get(result, 'length'), expected = [];
   for(idx=0;idx<len;idx++) {
     rec = result.objectAt(idx);
-    storeKey = rec ? rec.get('storeKey') : null;
+    storeKey = rec ? get(rec, 'storeKey') : null;
     dataHash = storeKey ? store.readDataHash(storeKey) : null;
 
     ok(!!dataHash, 'storeKey at result[%@] (%@) should return dataHash'.fmt(idx, storeKey));
@@ -58,8 +60,8 @@ test("Verify find() loads all fixture data", function() {
   // verify multiple calls to findAll() returns SAME data
   result = store.find(Sample.File);
   
-  equals(result.get('length'), expected.length, 'second result should have same length as first');
-  len = result.get('length');
+  equals(get(result, 'length'), expected.length, 'second result should have same length as first');
+  len = get(result, 'length');
   for(idx=0;idx<len;idx++) {
     rec = result.objectAt(idx);
     equals(rec, expected[idx], 'record returned at index %@ should be same as previous'.fmt(idx));
@@ -68,14 +70,14 @@ test("Verify find() loads all fixture data", function() {
 
 test("Verify find() loads data from store", function() {
   var sk=store.find(Sample.File, "150");
-  equals(sk.get('name'), 'Birthday Invitation.pdf', 'returns record should have name from fixture');
+  equals(get(sk, 'name'), 'Birthday Invitation.pdf', 'returns record should have name from fixture');
 });
 
 
 test("Destroy a record and commit", function() {
   var ret      = store.find(Sample.File, "136"),
-      storeKey = ret.get('storeKey'),
-      fixtures = store.get('dataSource');
+      storeKey = get(ret, 'storeKey'),
+      fixtures = get(store, 'dataSource');
       
   ok(ret, 'precond - must have record in store');
   ok(fixtures.fixtureForStoreKey(store, storeKey), 'precond - fixtures should have data for record');
@@ -87,7 +89,7 @@ test("Destroy a record and commit", function() {
 
 test("Create a record and commit it", function() {
 
-  var fixtures = store.get('dataSource'),
+  var fixtures = get(store, 'dataSource'),
       dataHash = { guid: '200', name: 'Software', fileType: 'software', url: '/emily_parker/Software', isDirectory: true, parent: '10', children: 'Collection', createdAt: 'June 15, 2007', modifiedAt: 'June 15, 2007', filetype: 'directory', isShared: true, sharedAt: 'October 15, 2007', sharedUntil: 'March 31, 2008', sharedUrl: '2fhty', isPasswordRequired: true },
       storeKey ;
   
@@ -103,20 +105,20 @@ test("Update and commit a record", function() {
 
   var rec      = store.find(Sample.File, "10"),
       storeKey = Sample.File.storeKeyFor("10"),
-      fixtures = store.get('dataSource'), 
+      fixtures = get(store, 'dataSource'), 
       fixture = fixtures.fixtureForStoreKey(store, storeKey);
 
-  equals(fixture.name, rec.get('name'), 'precond - fixture state should match name');
-  equals(rec.get('status'), SC.Record.READY_CLEAN, "Status should be READY_CLEAN because no changes have been made");
+  equals(fixture.name, get(rec, 'name'), 'precond - fixture state should match name');
+  equals(get(rec, 'status'), SC.Record.READY_CLEAN, "Status should be READY_CLEAN because no changes have been made");
 
-  rec.set('name', 'foo');
-  equals(rec.get('status'), SC.Record.READY_DIRTY, "Status should be READY_DIRTY after changing name");
+  set(rec, 'name', 'foo');
+  equals(get(rec, 'status'), SC.Record.READY_DIRTY, "Status should be READY_DIRTY after changing name "+rec.toString());
 
   store.commitRecords();
   equals(store.readStatus(storeKey), SC.Record.READY_CLEAN, "Status in store should be READY_CLEAN after save");
-  equals(rec.get('status'), SC.Record.READY_CLEAN, "Status in record should be READY_CLEAN after save");
+  equals(get(rec, 'status'), SC.Record.READY_CLEAN, "Status in record should be READY_CLEAN after save");
 
   fixture = fixtures.fixtureForStoreKey(store, storeKey);
-  equals(fixture.name, rec.get('name'), 'fixture state should update to match new name');
+  equals(fixture.name, get(rec, 'name'), 'fixture state should update to match new name');
     
 });

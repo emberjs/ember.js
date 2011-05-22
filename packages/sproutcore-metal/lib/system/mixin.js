@@ -44,6 +44,12 @@ function initMixin(mixin, args) {
   return mixin;
 } 
 
+var NATIVES = [Boolean, Object, Number, Array, Date, String];
+function isMethod(obj) {
+  if ('function' !== typeof obj || obj.isMethod===false) return false;
+  return NATIVES.indexOf(obj)<0;
+}
+
 function mergeMixins(mixins, m, descs, values, base) {
   var len = mixins.length, idx, mixin, guid, props, value, key, ovalue, concats;
   
@@ -85,7 +91,7 @@ function mergeMixins(mixins, m, descs, values, base) {
         } else {
           
           // impl super if needed...
-          if (('function' === typeof value) && value.isMethod!==false) {
+          if (isMethod(value)) {
             ovalue = (descs[key] === SC.SIMPLE_PROPERTY) && values[key];
             if (!ovalue) ovalue = base[key];
             if ('function' !== typeof ovalue) ovalue = null;

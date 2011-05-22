@@ -5,10 +5,12 @@
 // ==========================================================================
 /*globals module ok equals same test MyApp */
 
+var set = SC.set, get = SC.get;
+
 var store, child, storeKey, json;
 module("SC.Store#commitChangesFromNestedStore", {
   setup: function() {
-    SC.RunLoop.begin();
+    SC.run.begin();
 
     store = SC.Store.create();
     
@@ -28,13 +30,13 @@ module("SC.Store#commitChangesFromNestedStore", {
     child.changelog = SC.Set.create();
     child.changelog.add(storeKey);
 
-    SC.RunLoop.end();
+    SC.run.end();
   }
 });
 
 test("copies changed data hashes, statuses, and revisions", function() {
   
-  SC.RunLoop.begin();
+  SC.run.begin();
   
   // verify preconditions
   equals(store.readDataHash(storeKey), null, 'precond - should not have data yet');
@@ -48,14 +50,14 @@ test("copies changed data hashes, statuses, and revisions", function() {
   equals(store.readStatus(storeKey), SC.Record.READY_DIRTY, 'now should have status');
   equals(store.revisions[storeKey], child.revisions[storeKey], 'now shoulave have revision from child');  
     
-  SC.RunLoop.end();
+  SC.run.end();
 });
 
 test("adds items in changelog to reciever changelog", function() {
 
   var key1 = SC.Store.generateStoreKey();
 
-  SC.RunLoop.begin();
+  SC.run.begin();
   
   store.changelog = SC.Set.create();
   store.changelog.add(key1);
@@ -68,7 +70,7 @@ test("adds items in changelog to reciever changelog", function() {
   ok(store.changelog.contains(key1), 'changelog should still contain key1');
   ok(store.changelog.contains(storeKey), 'changelog should also contain storeKey');
   
-  SC.RunLoop.end();
+  SC.run.end();
 });
 
 test("ignores changed data hashes not passed in changes set", function() {

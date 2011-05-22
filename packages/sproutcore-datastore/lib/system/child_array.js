@@ -5,6 +5,8 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
+var get = SC.get, set = SC.set, getPath = SC.getPath;
+
 /**
   @class
 
@@ -15,7 +17,7 @@
   @since SproutCore 1.0
 */
 
-SC.ChildArray = SC.Object.extend(SC.Enumerable, SC.Array,
+SC.ChildArray = SC.Object.extend(SC.Enumerable, SC.Array, SC.MutableEnumerable, SC.MutableArray,
   /** @scope SC.ChildArray.prototype */ {
 
   /**
@@ -60,7 +62,7 @@ SC.ChildArray = SC.Object.extend(SC.Enumerable, SC.Array,
     @property
   */
   store: function() {
-    return this.getPath('record.store');
+    return getPath(this, 'record.store');
   }.property('record').cacheable(),
 
   /**
@@ -71,7 +73,7 @@ SC.ChildArray = SC.Object.extend(SC.Enumerable, SC.Array,
     @property
   */
   storeKey: function() {
-    return this.getPath('record.storeKey');
+    return getPath(this, 'record.storeKey');
   }.property('record').cacheable(),
 
   /**
@@ -82,7 +84,7 @@ SC.ChildArray = SC.Object.extend(SC.Enumerable, SC.Array,
     @property
   */
   readOnlyChildren: function() {
-    return this.get('record').readAttribute(this.get('propertyName'));
+    return get(this, 'record').readAttribute(get(this, 'propertyName'));
   }.property(),
 
   /**
@@ -93,9 +95,9 @@ SC.ChildArray = SC.Object.extend(SC.Enumerable, SC.Array,
     @property
   */
   editableChildren: function() {
-    var store    = this.get('store'),
-        storeKey = this.get('storeKey'),
-        pname    = this.get('propertyName'),
+    var store    = get(this, 'store'),
+        storeKey = get(this, 'storeKey'),
+        pname    = get(this, 'propertyName'),
         ret, hash;
 
     ret = store.readEditableProperty(storeKey, pname);
@@ -119,7 +121,7 @@ SC.ChildArray = SC.Object.extend(SC.Enumerable, SC.Array,
     @property
   */
   length: function() {
-    var children = this.get('readOnlyChildren');
+    var children = get(this, 'readOnlyChildren');
     return children ? children.length : 0;
   }.property('readOnlyChildren'),
 
@@ -132,9 +134,9 @@ SC.ChildArray = SC.Object.extend(SC.Enumerable, SC.Array,
   */
   objectAt: function(idx) {
     var recs      = this._records,
-        children = this.get('readOnlyChildren'),
-        hash, ret, pname = this.get('propertyName'),
-        parent = this.get('record');
+        children = get(this, 'readOnlyChildren'),
+        hash, ret, pname = get(this, 'propertyName'),
+        parent = get(this, 'record');
     var len = children ? children.length : 0;
 
     if (!children) return undefined; // nothing to do
@@ -163,11 +165,11 @@ SC.ChildArray = SC.Object.extend(SC.Enumerable, SC.Array,
 
   */
   replace: function(idx, amt, recs) {
-    var children = this.get('editableChildren'),
-        len      = recs ? (recs.get ? recs.get('length') : recs.length) : 0,
-        record   = this.get('record'), newRecs,
+    var children = get(this, 'editableChildren'),
+        len      = recs ? get(recs, 'length') : 0,
+        record   = get(this, 'record'), newRecs,
 
-        pname    = this.get('propertyName'),
+        pname    = get(this, 'propertyName'),
         cr, recordType;
     newRecs = this._processRecordsToHashes(recs);
     children.replace(idx, amt, newRecs);
@@ -187,11 +189,11 @@ SC.ChildArray = SC.Object.extend(SC.Enumerable, SC.Array,
   _processRecordsToHashes: function(recs){
     var store, sk;
     recs = recs || [];
-    recs.forEach( function(me, idx){
-      if (me.isNestedRecord){
-        store = me.get('store');
-        sk = me.storeKey;
-        recs[idx] = store.readDataHash(sk);
+    recs.forEach( function(me, idx) {
+      if (me instanceof SC.Record) {
+        store = get(me, 'store');
+        sk = get(me, 'storeKey');
+        if (sk) recs[idx] = store.readDataHash(sk);
       }
     });
 
@@ -218,31 +220,29 @@ SC.ChildArray = SC.Object.extend(SC.Enumerable, SC.Array,
     @returns {SC.ChildArray} itself.
   */
   recordPropertyDidChange: function(keys) {
-    if (keys && !keys.contains(this.get('propertyName'))) return this;
+    if (keys && !keys.contains(get(this, 'propertyName'))) return this;
 
-    var children = this.get('readOnlyChildren'), oldLen = 0, newLen = 0;
+    var children = get(this, 'readOnlyChildren'), oldLen = 0, newLen = 0;
     var prev = this._prevChildren, f = this._childrenContentDidChange;
 
     if (children === prev) return this; // nothing to do
 
     if (prev) {
-      prev.removeArrayObservers({
-        target: this,
+      prev.removeArrayObserver(this, {
         willChange: this.arrayContentWillChange,
         didChange: f
       });
 
-      oldLen = prev.get('length');
+      oldLen = get(prev, 'length');
     }
 
     if (children) {
-      children.addArrayObservers({
-        target: this,
+      children.addArrayObserver(this, {
         willChange: this.arrayContentWillChange,
         didChange: f
       });
 
-      newLen = children.get('length');
+      newLen = get(children, 'length');
     }
 
 
@@ -270,7 +270,7 @@ SC.ChildArray = SC.Object.extend(SC.Enumerable, SC.Array,
 
   /** @private */
   init: function() {
-    sc_super();
+    this._super();
     this.recordPropertyDidChange();
   }
 

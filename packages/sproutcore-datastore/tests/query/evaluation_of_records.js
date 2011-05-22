@@ -5,12 +5,14 @@
 // ==========================================================================
 /*globals module ok equals same test MyApp */
 
+var set = SC.set, get = SC.get;
+
 // test parsing of query string
-var store, storeKey, rec1, rec2, rec3, rec4, rec5, rec6, rec7, MyApp, q;
+var store, storeKey, rec1, rec2, rec3, rec4, rec5, rec6, rec7, q;
 module("SC.Query evaluation of records", {
   setup: function() {
     
-    SC.RunLoop.begin();
+    SC.run.begin();
     
     // setup dummy app and store
     MyApp = SC.Object.create({
@@ -42,7 +44,7 @@ module("SC.Query evaluation of records", {
     rec6 = MyApp.store.find(MyApp.Person,6);
     rec7 = MyApp.store.find(MyApp.Person,7);
     
-    SC.RunLoop.end();
+    SC.run.end();
     
     q = SC.Query.create();
   },

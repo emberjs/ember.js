@@ -8,6 +8,10 @@
 require('sproutcore-datastore/system/record');
 require('sproutcore-datastore/attributes/record_attribute');
 
+var get = SC.get, set = SC.set;
+var RecordAttribute_call = get(SC.RecordAttribute, 'proto').call;
+var attrFor = SC.RecordAttribute.attrFor;
+
 /** @class
 
   `SingleAttribute` is a subclass of `RecordAttribute` and handles to-one
@@ -52,24 +56,24 @@ SC.SingleAttribute = SC.RecordAttribute.extend(
     @private - implements support for handling inverse relationships.
   */
   call: function(record, key, newRec) {
-    var attrKey = this.get('key') || key,
+    var attrKey = get(this, 'key') || key,
         inverseKey, isMaster, oldRec, attr, ret, nvalue;
 
     // WRITE
-    if (newRec !== undefined && this.get('isEditable')) {
+    if (newRec !== undefined && get(this, 'isEditable')) {
 
       // can only take other records or null
-      if (newRec && !SC.kindOf(newRec, SC.Record)) {
+      if (newRec && !(newRec instanceof  SC.Record)) {
         throw "%@ is not an instance of SC.Record".fmt(newRec);
       }
 
-      inverseKey = this.get('inverse');
-      if (inverseKey) oldRec = this._scsa_call(record, key);
+      inverseKey = get(this, 'inverse');
+      if (inverseKey) oldRec = this._super(record, key);
 
       // careful: don't overwrite value here.  we want the return value to
       // cache.
       nvalue = this.fromType(record, key, newRec) ; // convert to attribute.
-      record.writeAttribute(attrKey, nvalue, !this.get('isMaster'));
+      record.writeAttribute(attrKey, nvalue, !get(this, 'isMaster'));
       ret = newRec ;
 
       // ok, now if we have an inverse relationship, get the inverse
@@ -78,23 +82,20 @@ SC.SingleAttribute = SC.RecordAttribute.extend(
       // supported by both SingleAttribute and ManyAttribute.
       //
       if (inverseKey && (oldRec !== newRec)) {
-        if (oldRec && (attr = oldRec[inverseKey])) {
+        if (oldRec && (attr = attrFor(oldRec, inverseKey))) {
           attr.inverseDidRemoveRecord(oldRec, inverseKey, record, key);
         }
 
-        if (newRec && (attr = newRec[inverseKey])) {
+        if (newRec && (attr = attrFor(newRec, inverseKey))) {
           attr.inverseDidAddRecord(newRec, inverseKey, record, key);
         }
       }
 
     // READ
-    } else ret = this._scsa_call(record, key, newRec);
+    } else ret = this._super(record, key, newRec);
 
     return ret ;
   },
-
-  /** @private - save original call() impl */
-  _scsa_call: SC.RecordAttribute.prototype.call,
 
   /**
     Called by an inverse relationship whenever the receiver is no longer part
@@ -108,9 +109,9 @@ SC.SingleAttribute = SC.RecordAttribute.extend(
   */
   inverseDidRemoveRecord: function(record, key, inverseRecord, inverseKey) {
 
-    var myInverseKey  = this.get('inverse'),
-        curRec   = this._scsa_call(record, key),
-        isMaster = this.get('isMaster'), attr;
+    var myInverseKey  = get(this, 'inverse'),
+        curRec   = RecordAttribute_call.call(this, record, key),
+        isMaster = get(this, 'isMaster'), attr;
 
     // ok, you removed me, I'll remove you...  if isMaster, notify change.
     record.writeAttribute(key, null, !isMaster);
@@ -118,7 +119,7 @@ SC.SingleAttribute = SC.RecordAttribute.extend(
 
     // if we have another value, notify them as well...
     if ((curRec !== inverseRecord) || (inverseKey !== myInverseKey)) {
-      if (curRec && (attr = curRec[myInverseKey])) {
+      if (curRec && (attr = attrFor(curRec, myInverseKey))) {
         attr.inverseDidRemoveRecord(curRec, myInverseKey, record, key);
       }
     }
@@ -136,9 +137,9 @@ SC.SingleAttribute = SC.RecordAttribute.extend(
   */
   inverseDidAddRecord: function(record, key, inverseRecord, inverseKey) {
 
-    var myInverseKey  = this.get('inverse'),
-        curRec   = this._scsa_call(record, key),
-        isMaster = this.get('isMaster'),
+    var myInverseKey  = get(this, 'inverse'),
+        curRec   = RecordAttribute_call.call(this, record, key),
+        isMaster = get(this, 'isMaster'),
         attr, nvalue;
 
     // ok, replace myself with the new value...
@@ -148,7 +149,7 @@ SC.SingleAttribute = SC.RecordAttribute.extend(
 
     // if we have another value, notify them as well...
     if ((curRec !== inverseRecord) || (inverseKey !== myInverseKey)) {
-      if (curRec && (attr = curRec[myInverseKey])) {
+      if (curRec && (attr = attrFor(curRec, myInverseKey))) {
         attr.inverseDidRemoveRecord(curRec, myInverseKey, record, key);
       }
     }

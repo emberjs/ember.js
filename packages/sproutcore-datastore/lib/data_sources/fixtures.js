@@ -5,10 +5,12 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
-require('sproutcore-runtime');
+require('sproutcore-metal');
 require('sproutcore-datastore/data_sources/data_source');
 require('sproutcore-datastore/system/record');
 require('sproutcore-datastore/system/store_error');
+
+var get = SC.get, set = SC.set, getPath = SC.getPath;
 
 /** @class
 
@@ -68,16 +70,16 @@ SC.FixturesDataSource = SC.DataSource.extend(
   fetch: function(store, query) {
 
     // can only handle local queries out of the box
-    if (query.get('location') !== SC.Query.LOCAL) {
+    if (get(query, 'location') !== SC.Query.LOCAL) {
       throw SC.$error('SC.Fixture data source can only fetch local queries');
     }
 
-    if (!query.get('recordType') && !query.get('recordTypes')) {
+    if (!get(query, 'recordType') && !get(query, 'recordTypes')) {
       throw SC.$error('SC.Fixture data source can only fetch queries with one or more record types');
     }
 
-    if (this.get('simulateRemoteResponse')) {
-      this.invokeLater(this._fetch, this.get('latency'), store, query);
+    if (get(this, 'simulateRemoteResponse')) {
+      this.invokeLater(this._fetch, get(this, 'latency'), store, query);
 
     } else this._fetch(store, query);
   },
@@ -88,13 +90,13 @@ SC.FixturesDataSource = SC.DataSource.extend(
   _fetch: function(store, query) {
 
     // NOTE: Assumes recordType or recordTypes is defined.  checked in fetch()
-    var recordType = query.get('recordType'),
-        recordTypes = query.get('recordTypes') || [recordType];
+    var recordType = get(query, 'recordType'),
+        recordTypes = get(query, 'recordTypes') || [recordType];
 
     // load fixtures for each recordType
     recordTypes.forEach(function(recordType) {
-      if (SC.typeOf(recordType) === SC.T_STRING) {
-        recordType = SC.objectForPropertyPath(recordType);
+      if (SC.typeOf(recordType) === 'string') {
+        recordType = getPath(recordType);
       }
 
       if (recordType) this.loadFixturesFor(store, recordType);
@@ -112,11 +114,11 @@ SC.FixturesDataSource = SC.DataSource.extend(
   retrieveRecords: function(store, storeKeys) {
     // first let's see if the fixture data source can handle any of the
     // storeKeys
-    var latency = this.get('latency'),
+    var latency = get(this, 'latency'),
         ret     = this.hasFixturesFor(storeKeys) ;
     if (!ret) return ret ;
 
-    if (this.get('simulateRemoteResponse')) {
+    if (get(this, 'simulateRemoteResponse')) {
       this.invokeLater(this._retrieveRecords, latency, store, storeKeys);
     } else this._retrieveRecords(store, storeKeys);
 
@@ -143,11 +145,11 @@ SC.FixturesDataSource = SC.DataSource.extend(
   updateRecords: function(store, storeKeys, params) {
     // first let's see if the fixture data source can handle any of the
     // storeKeys
-    var latency = this.get('latency'),
+    var latency = get(this, 'latency'),
         ret     = this.hasFixturesFor(storeKeys) ;
     if (!ret) return ret ;
 
-    if (this.get('simulateRemoteResponse')) {
+    if (get(this, 'simulateRemoteResponse')) {
       this.invokeLater(this._updateRecords, latency, store, storeKeys);
     } else this._updateRecords(store, storeKeys);
 
@@ -171,9 +173,9 @@ SC.FixturesDataSource = SC.DataSource.extend(
   createRecords: function(store, storeKeys, params) {
     // first let's see if the fixture data source can handle any of the
     // storeKeys
-    var latency = this.get('latency');
+    var latency = get(this, 'latency');
 
-    if (this.get('simulateRemoteResponse')) {
+    if (get(this, 'simulateRemoteResponse')) {
       this.invokeLater(this._createRecords, latency, store, storeKeys);
     } else this._createRecords(store, storeKeys);
 
@@ -203,11 +205,11 @@ SC.FixturesDataSource = SC.DataSource.extend(
   destroyRecords: function(store, storeKeys, params) {
     // first let's see if the fixture data source can handle any of the
     // storeKeys
-    var latency = this.get('latency'),
+    var latency = get(this, 'latency'),
         ret     = this.hasFixturesFor(storeKeys) ;
     if (!ret) return ret ;
 
-    if (this.get('simulateRemoteResponse')) {
+    if (get(this, 'simulateRemoteResponse')) {
       this.invokeLater(this._destroyRecords, latency, store, storeKeys);
     } else this._destroyRecords(store, storeKeys);
 
@@ -322,7 +324,7 @@ SC.FixturesDataSource = SC.DataSource.extend(
     // need to load fixtures.
     var dataHashes = recordType ? recordType.FIXTURES : null,
         len        = dataHashes ? dataHashes.length : 0,
-        primaryKey = recordType ? recordType.prototype.primaryKey : 'guid',
+        primaryKey = recordType ? get(recordType, 'proto').primaryKey:'guid',
         idx, dataHash, id ;
 
     this._fixtures[SC.guidFor(recordType)] = fixtures = {} ;

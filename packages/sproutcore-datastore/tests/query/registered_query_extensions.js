@@ -4,11 +4,13 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 /*globals module ok equals same test MyApp */
- 
+
+var set = SC.set, get = SC.get;
+
 var store, storeKey, rec1, rec2, rec3, rec4, rec5, MyApp, q;
 module("SC.Query registered query extensions", {
   setup: function() {
-    SC.RunLoop.begin();
+    SC.run.begin();
 
     // setup dummy app and store
     MyApp = SC.Object.create({
@@ -36,7 +38,7 @@ module("SC.Query registered query extensions", {
     
     q = SC.Query.create();
 
-    SC.RunLoop.end();
+    SC.run.end();
   },
 
   teardown: function() {

@@ -5,10 +5,12 @@
 // ==========================================================================
 /*globals module ok equals same test MyApp */
 
+var set = SC.set, get = SC.get;
+
 // test querying through find() on the store
 module("SC.Query querying find() on a store", {
   setup: function() {
-    SC.RunLoop.begin();
+    SC.run.begin();
     // setup dummy app and store
     MyApp = SC.Object.create({});
     
@@ -25,9 +27,9 @@ module("SC.Query querying find() on a store", {
         this.fetchCount++ ;
         
         // used by tests to verify remote queries
-        if (query.get('location') === SC.Query.REMOTE) {
-          if (query.get('recordType') === MyApp.Foo) {
-            store.loadQueryResults(query, this.get('storeKeys'));    
+        if (get(query, 'location') === SC.Query.REMOTE) {
+          if (get(query, 'recordType') === MyApp.Foo) {
+            store.loadQueryResults(query, get(this, 'storeKeys'));    
           }
         }
         
@@ -69,12 +71,12 @@ module("SC.Query querying find() on a store", {
     
     // load some data
     MyApp.DataSource.storeKeys = MyApp.store.loadRecords(MyApp.Foo, records);
-    SC.RunLoop.end();
+    SC.run.end();
     
-    SC.RunLoop.begin();
+    SC.run.begin();
     // for sanity check, load two record types
     MyApp.store.loadRecords(MyApp.Bar, records);
-    SC.RunLoop.end();
+    SC.run.end();
     
   },
   
@@ -91,8 +93,8 @@ module("SC.Query querying find() on a store", {
 
 test("find(recordType, id)", function() {
   
-  equals(MyApp.store.find('MyApp.Foo', 1).get('firstName'), 'John', 'should return foo(1)');
-  equals(MyApp.store.find(MyApp.Foo, 1).get('firstName'), 'John', 'should return foo(1)');  
+  equals(get(MyApp.store.find('MyApp.Foo', 1), 'firstName'), 'John', 'should return foo(1)');
+  equals(get(MyApp.store.find(MyApp.Foo, 1), 'firstName'), 'John', 'should return foo(1)');  
 });
 
 test("find(record)", function() {
@@ -102,7 +104,7 @@ test("find(record)", function() {
   
   var rec2 = MyApp.store.chain().find(rec1);
   ok(rec2 !== rec1, 'nested.find(rec1) should not return same instance');
-  equals(rec2.get('storeKey'), rec1.get('storeKey'), 'nested.find(rec1) should return same record in nested store');
+  equals(get(rec2, 'storeKey'), get(rec1, 'storeKey'), 'nested.find(rec1) should return same record in nested store');
 });
 
 // ..........................................................
@@ -114,7 +116,7 @@ test("caching for a single store", function() {
   var r2 = MyApp.store.find(MyApp.Foo);
   ok(!!r1, 'should return a record array');
   ok(r1.isEnumerable, 'returned item should be enumerable');
-  equals(r1.get('store'), MyApp.store, 'return object should be owned by store');
+  equals(get(r1, 'store'), MyApp.store, 'return object should be owned by store');
   equals(r2, r1, 'should return same record array for multiple calls');
 });
 
@@ -126,21 +128,21 @@ test("find() caching for a chained store", function() {
   var r3 = child.find(MyApp.Foo);
 
   ok(!!r1, 'should return a record array from base store');
-  equals(r1.get('store'), MyApp.store, 'return object should be owned by store');
+  equals(get(r1, 'store'), MyApp.store, 'return object should be owned by store');
   
   ok(!!r2, 'should return a recurd array from child store');
-  equals(r2.get('store'), child, 'return object should be owned by child store');
+  equals(get(r2, 'store'), child, 'return object should be owned by child store');
   
   ok(r2 !== r1, 'return value for child store should not be same as parent');
   equals(r3, r2, 'return value from child store should be the same after multiple calls');
   
   // check underlying queries
-  ok(!!r1.get('query'), 'record array should have a query');
-  equals(r2.get('query'), r1.get('query'), 'record arrays from parent and child stores should share the same query');
+  ok(!!get(r1, 'query'), 'record array should have a query');
+  equals(get(r2, 'query'), get(r1, 'query'), 'record arrays from parent and child stores should share the same query');
 });
 
 test("data source must get the right calls", function() {
-  var ds = MyApp.store.get('dataSource');
+  var ds = get(MyApp.store, 'dataSource');
   
   ds.reset();  
   var records = MyApp.store.find(MyApp.Foo);
@@ -153,21 +155,21 @@ test("data source must get the right calls", function() {
 // 
 
 test("should find records based on boolean", function() {
-  SC.RunLoop.begin();
+  SC.run.begin();
   var q = SC.Query.local(MyApp.Foo, "married=YES");
   var records = MyApp.store.find(q);
-  equals(records.get('length'), 4, 'record length should be 4');
-  SC.RunLoop.end();
+  equals(get(records, 'length'), 4, 'record length should be 4');
+  SC.run.end();
 });
 
 test("should find records based on query string", function() {
   
-  SC.RunLoop.begin();
+  SC.run.begin();
   var q = SC.Query.local(MyApp.Foo, { conditions:"firstName = 'John'" });
   var records = MyApp.store.find(q);
-  equals(records.get('length'), 1, 'record length should be 1');
-  equals(records.objectAt(0).get('firstName'), 'John', 'name should be John');
-  SC.RunLoop.end();
+  equals(get(records, 'length'), 1, 'record length should be 1');
+  equals(get(records.objectAt(0), 'firstName'), 'John', 'name should be John');
+  SC.run.end();
 });
 
 test("should find records based on SC.Query", function() {
@@ -178,34 +180,34 @@ test("should find records based on SC.Query", function() {
   
   var records = MyApp.store.find(q);
   
-  equals(records.get('length'), 1, 'record length should be 1');
-  equals(records.objectAt(0).get('firstName'), 'Jane', 'name should be Jane');
+  equals(get(records, 'length'), 1, 'record length should be 1');
+  equals(get(records.objectAt(0), 'firstName'), 'Jane', 'name should be Jane');
 });
 
 test("modifying a record should update RecordArray automatically", function() {
   var q    = SC.Query.local(MyApp.Foo, "firstName = 'Jane'"),
       recs = MyApp.store.find(q);
       
-  equals(recs.get('length'), 1, 'record length should be 1');
-  equals(recs.objectAt(0).get('firstName'), 'Jane', 'name should be Jane');
+  equals(get(recs, 'length'), 1, 'record length should be 1');
+  equals(get(recs.objectAt(0), 'firstName'), 'Jane', 'name should be Jane');
   
-  SC.RunLoop.begin();
+  SC.run.begin();
 
   var r2 = MyApp.store.find(MyApp.Foo, 3);
-  ok(r2.get('firstName') !== 'Jane', 'precond - firstName is not Jane');
-  r2.set('firstName', 'Jane');
+  ok(get(r2, 'firstName') !== 'Jane', 'precond - firstName is not Jane');
+  set(r2, 'firstName', 'Jane');
 
-  SC.RunLoop.end();
+  SC.run.end();
   
-  equals(recs.get('length'), 2, 'record length should increase');
+  equals(get(recs, 'length'), 2, 'record length should increase');
   same(recs.getEach('firstName'), ['Jane', 'Jane'], 'check all firstNames are Jane');
   
   // try the other direction...
-  SC.RunLoop.begin();
-  r2.set('firstName', 'Ester');
-  SC.RunLoop.end(); 
+  SC.run.begin();
+  set(r2, 'firstName', 'Ester');
+  SC.run.end(); 
   
-  equals(recs.get('length'), 1, 'record length should decrease');
+  equals(get(recs, 'length'), 1, 'record length should decrease');
 
 });
 
@@ -214,14 +216,14 @@ test("should find records based on SC.Query without recordType", function() {
   var q = SC.Query.local(SC.Record, "lastName = 'Doe'");
   
   var records = MyApp.store.find(q);
-  equals(records.get('length'), 4, 'record length should be 2');
+  equals(get(records, 'length'), 4, 'record length should be 2');
 
   same(records.getEach('firstName'), 'John John Jane Jane'.w(), 'firstNames should match');
 });
 
 test("should find records within a passed record array", function() {
 
-  SC.RunLoop.begin();
+  SC.run.begin();
   
   var q = SC.Query.create({ 
     recordType: MyApp.Foo, 
@@ -231,10 +233,10 @@ test("should find records within a passed record array", function() {
   var recArray = MyApp.store.find(MyApp.Foo);
   var records  = recArray.find(q);
   
-  equals(records.get('length'), 1, 'record length should be 1');
-  equals(records.objectAt(0).get('firstName'), 'Emily', 'name should be Emily');
+  equals(get(records, 'length'), 1, 'record length should be 1');
+  equals(get(records.objectAt(0), 'firstName'), 'Emily', 'name should be Emily');
 
-  SC.RunLoop.end();
+  SC.run.end();
   
 });
 
@@ -243,19 +245,19 @@ test("sending a new store key array from the data source should update record ar
   var q       = SC.Query.remote(MyApp.Foo),
       records = MyApp.store.find(q);
   
-  SC.RunLoop.begin();
-  equals(records.get('length'), 5, 'record length should be 5');
-  SC.RunLoop.end();
+  SC.run.begin();
+  equals(get(records, 'length'), 5, 'record length should be 5');
+  SC.run.end();
   
   var newStoreKeys = MyApp.DataSource.storeKeys.copy();
   newStoreKeys.pop();
   
   // .replace() will call .enumerableContentDidChange()
-  SC.RunLoop.begin();
+  SC.run.begin();
   MyApp.store.loadQueryResults(q, newStoreKeys);
-  SC.RunLoop.end();
+  SC.run.end();
   
-  equals(records.get('length'), 4, 'record length should be 4');
+  equals(get(records, 'length'), 4, 'record length should be 4');
 
 });
 
@@ -264,17 +266,17 @@ test("loading more data into the store should propagate to record array", functi
   
   var records = MyApp.store.find(MyApp.Foo);
   
-  equals(records.get('length'), 5, 'record length before should be 5');
+  equals(get(records, 'length'), 5, 'record length before should be 5');
 
-  SC.RunLoop.begin();
+  SC.run.begin();
   
   var newStoreKeys = MyApp.store.loadRecords(MyApp.Foo, [
     { guid: 10, firstName: "John", lastName: "Johnson" }
   ]);
   
-  SC.RunLoop.end();
+  SC.run.end();
   
-  equals(records.get('length'), 6, 'record length after should be 6');
+  equals(get(records, 'length'), 6, 'record length after should be 6');
 });
 
 test("loading more data into the store should propagate to record array with query", function() {
@@ -282,26 +284,26 @@ test("loading more data into the store should propagate to record array with que
   var q = SC.Query.local(MyApp.Foo, "firstName = 'John'"),
       records = MyApp.store.find(q);
   
-  equals(records.get('length'), 1, 'record length before should be 1');
+  equals(get(records, 'length'), 1, 'record length before should be 1');
 
-  SC.RunLoop.begin();
+  SC.run.begin();
   var newStoreKeys = MyApp.store.loadRecords(MyApp.Foo, [
     { guid: 10, firstName: "John", lastName: "Johnson" }
   ]);
-  SC.RunLoop.end();
+  SC.run.end();
   
   // .replace() will call .enumerableContentDidChange()
   // and should fire original SC.Query again
-  equals(records.get('length'), 2, 'record length after should be 2');
+  equals(get(records, 'length'), 2, 'record length after should be 2');
   
   // subsequent updates to store keys should also work
-  SC.RunLoop.begin();
+  SC.run.begin();
   var newStoreKeys2 = MyApp.store.loadRecords(MyApp.Foo, [
     { guid: 11, firstName: "John", lastName: "Norman" }
   ]);
-  SC.RunLoop.end();
+  SC.run.end();
   
-  equals(records.get('length'), 3, 'record length after should be 3');
+  equals(get(records, 'length'), 3, 'record length after should be 3');
 });
 
 test("Loading records after SC.Query should show up", function() {
@@ -309,8 +311,8 @@ test("Loading records after SC.Query should show up", function() {
   var q = SC.Query.local(MyApp.Foo, "firstName = 'John'"),
       records = MyApp.store.find(q);
       
-  equals(records.get('length'), 1, 'record length should be 1');
-  equals(records.objectAt(0).get('firstName'), 'John', 'name should be John');
+  equals(get(records, 'length'), 1, 'record length should be 1');
+  equals(get(records.objectAt(0), 'firstName'), 'John', 'name should be John');
   
   var recordsToLoad = [
     { guid: 20, firstName: "John", lastName: "Johnson" },
@@ -318,34 +320,34 @@ test("Loading records after SC.Query should show up", function() {
     { guid: 22, firstName: "Barbara", lastName: "Jones" }
   ];
   
-  SC.RunLoop.begin();
+  SC.run.begin();
   MyApp.store.loadRecords(MyApp.Foo, recordsToLoad);
-  SC.RunLoop.end();
+  SC.run.end();
   
-  equals(records.get('length'), 3, 'record length should be 3');
+  equals(get(records, 'length'), 3, 'record length should be 3');
   
-  equals(records.objectAt(0).get('firstName'), 'John', 'name should be John');
-  equals(records.objectAt(1).get('firstName'), 'John', 'name should be John');
-  equals(records.objectAt(2).get('firstName'), 'John', 'name should be John');
+  equals(get(records.objectAt(0), 'firstName'), 'John', 'name should be John');
+  equals(get(records.objectAt(1), 'firstName'), 'John', 'name should be John');
+  equals(get(records.objectAt(2), 'firstName'), 'John', 'name should be John');
 });
 
 test("Loading records after getting empty record array based on SC.Query should update", function() {
   
   var q = SC.Query.local(MyApp.Foo, "firstName = 'Maria'");
   var records = MyApp.store.find(q);
-  equals(records.get('length'), 0, 'record length should be 0');
+  equals(get(records, 'length'), 0, 'record length should be 0');
   
   var recordsToLoad = [
     { guid: 20, firstName: "Maria", lastName: "Johnson" }
   ];
   
-  SC.RunLoop.begin();
+  SC.run.begin();
   MyApp.store.loadRecords(MyApp.Foo, recordsToLoad);
-  SC.RunLoop.end();
+  SC.run.end();
   
-  equals(records.get('length'), 1, 'record length should be 1');
+  equals(get(records, 'length'), 1, 'record length should be 1');
   
-  equals(records.objectAt(0).get('firstName'), 'Maria', 'name should be Maria');  
+  equals(get(records.objectAt(0), 'firstName'), 'Maria', 'name should be Maria');  
 });
 
 test("Changing a record should make it show up in RecordArrays based on SC.Query", function() {
@@ -354,15 +356,15 @@ test("Changing a record should make it show up in RecordArrays based on SC.Query
   
   q = SC.Query.local(MyApp.Foo, "firstName = 'Maria'");
   records = MyApp.store.find(q);
-  equals(records.get('length'), 0, 'record length should be 0');
+  equals(get(records, 'length'), 0, 'record length should be 0');
   
-  SC.RunLoop.begin();
+  SC.run.begin();
   record = MyApp.store.find(MyApp.Foo, 1);
-  record.set('firstName', 'Maria');
-  SC.RunLoop.end();
+  set(record, 'firstName', 'Maria');
+  SC.run.end();
   
-  equals(records.get('length'), 1, 'record length should be 1');
-  equals(records.objectAt(0).get('firstName'), 'Maria', 'name should be Maria');
+  equals(get(records, 'length'), 1, 'record length should be 1');
+  equals(get(records.objectAt(0), 'firstName'), 'Maria', 'name should be Maria');
 });
 
 test("Deleting a record should make the RecordArray based on SC.Query update accordingly", function() {
@@ -371,27 +373,27 @@ test("Deleting a record should make the RecordArray based on SC.Query update acc
 
   q = SC.Query.local(MyApp.Foo, "firstName = 'John'");
   records = MyApp.store.find(q);
-  equals(records.get('length'), 1, 'record length should be 1');
+  equals(get(records, 'length'), 1, 'record length should be 1');
   
-  SC.RunLoop.begin();
+  SC.run.begin();
   records.objectAt(0).destroy();
-  SC.RunLoop.end();
+  SC.run.end();
   
-  equals(records.get('length'), 0, 'record length should be 0');
+  equals(get(records, 'length'), 0, 'record length should be 0');
 });
 
 test("Using find() with SC.Query on store with no data source should work", function() {
 
   var q, records, recordsToLoad;
   
-  SC.RunLoop.begin();
+  SC.run.begin();
   
   // create a store with no data source
   MyApp.store3 = SC.Store.create();
   
   q = SC.Query.local(MyApp.Foo, "firstName = 'John'");
   records = MyApp.store3.find(q);
-  equals(records.get('length'), 0, 'record length should be 0');
+  equals(get(records, 'length'), 0, 'record length should be 0');
   
   recordsToLoad = [
     { guid: 20, firstName: "John", lastName: "Johnson" },
@@ -401,9 +403,9 @@ test("Using find() with SC.Query on store with no data source should work", func
 
   MyApp.store3.loadRecords(MyApp.Foo, recordsToLoad);
   
-  SC.RunLoop.end();
+  SC.run.end();
   
-  equals(records.get('length'), 2, 'record length should be 2');  
+  equals(get(records, 'length'), 2, 'record length should be 2');  
 });
 
 test("Using orderBy in SC.Query returned from find()", function() {
@@ -412,7 +414,7 @@ test("Using orderBy in SC.Query returned from find()", function() {
   
   q = SC.Query.local(MyApp.Foo, { orderBy: "firstName ASC" });
   records = MyApp.store.find(q);
-  equals(records.get('length'), 5, 'record length should be 5');
+  equals(get(records, 'length'), 5, 'record length should be 5');
   
   same(records.getEach('firstName'), ["Bert", "Emily", "Jane", "John", "Johnny"], 'first name should be properly sorted');  
 });
@@ -423,20 +425,20 @@ test("Using orderBy in SC.Query returned from find() and loading more records to
   
   q = SC.Query.local(MyApp.Foo, { orderBy:"firstName ASC" });
   records = MyApp.store.find(q);
-  equals(records.get('length'), 5, 'record length should be 5');
+  equals(get(records, 'length'), 5, 'record length should be 5');
   
-  equals(records.objectAt(0).get('firstName'), 'Bert', 'name should be Bert');
-  equals(records.objectAt(4).get('firstName'), 'Johnny', 'name should be Johnny');
+  equals(get(records.objectAt(0), 'firstName'), 'Bert', 'name should be Bert');
+  equals(get(records.objectAt(4), 'firstName'), 'Johnny', 'name should be Johnny');
   
-  SC.RunLoop.begin();
+  SC.run.begin();
   newStoreKeys2 = MyApp.store.loadRecords(MyApp.Foo, [
     { guid: 11, firstName: "Anna", lastName: "Petterson" }
   ]);
-  SC.RunLoop.end();
+  SC.run.end();
   
-  equals(records.objectAt(0).get('firstName'), 'Anna', 'name should be Anna');
-  equals(records.objectAt(1).get('firstName'), 'Bert', 'name should be Bert');
-  equals(records.objectAt(5).get('firstName'), 'Johnny', 'name should be Johnny');
+  equals(get(records.objectAt(0), 'firstName'), 'Anna', 'name should be Anna');
+  equals(get(records.objectAt(1), 'firstName'), 'Bert', 'name should be Bert');
+  equals(get(records.objectAt(5), 'firstName'), 'Johnny', 'name should be Johnny');
   
 });
 
@@ -445,21 +447,21 @@ test("Using orderBy in SC.Query and loading more records to the store", function
 
   var q, records;
   
-  SC.RunLoop.begin();
+  SC.run.begin();
   q = SC.Query.local(MyApp.Foo, { orderBy:"firstName ASC" });
   records = MyApp.store.find(q);
-  equals(records.get('length'), 5, 'record length should be 5');
-  equals(records.objectAt(0).get('firstName'), 'Bert', 'name should be Bert');
+  equals(get(records, 'length'), 5, 'record length should be 5');
+  equals(get(records.objectAt(0), 'firstName'), 'Bert', 'name should be Bert');
   
   MyApp.store.loadRecords(MyApp.Foo, [
     { guid: 11, firstName: "Anna", lastName: "Petterson" }
   ]);
-  SC.RunLoop.end();
+  SC.run.end();
   
-  equals(records.get('length'), 6, 'record length should be 6');
+  equals(get(records, 'length'), 6, 'record length should be 6');
   
-  equals(records.objectAt(0).get('firstName'), 'Anna', 'name should be Anna');
-  equals(records.objectAt(5).get('firstName'), 'Johnny', 'name should be Johnny');
+  equals(get(records.objectAt(0), 'firstName'), 'Anna', 'name should be Anna');
+  equals(get(records.objectAt(5), 'firstName'), 'Johnny', 'name should be Johnny');
   
 });
 
@@ -469,13 +471,13 @@ test("Chaining find() queries", function() {
   
   q = SC.Query.local(MyApp.Foo, "lastName='Doe'");
   records = MyApp.store.find(q);
-  equals(records.get('length'), 2, 'record length should be 2');
+  equals(get(records, 'length'), 2, 'record length should be 2');
   
   q2 = SC.Query.local(MyApp.Foo, "firstName='John'");
   records2 = records.find(q2);
 
-  equals(records2.get('length'), 1, 'record length should be 1');  
-  equals(records2.objectAt(0).get('firstName'), 'John', 'name should be John');
+  equals(get(records2, 'length'), 1, 'record length should be 1');  
+  equals(get(records2.objectAt(0), 'firstName'), 'John', 'name should be John');
   
 });
 
@@ -483,19 +485,19 @@ test("Chaining find() queries and loading more records", function() {
 
   var q, q2, records;
   
-  SC.RunLoop.begin();
+  SC.run.begin();
   q = SC.Query.local(MyApp.Foo, "lastName='Doe'");
   q2 = SC.Query.local(MyApp.Foo, "firstName='John'");
   
   records = MyApp.store.find(q).find(q2);
-  equals(records.get('length'), 1, 'record length should be 1');
+  equals(get(records, 'length'), 1, 'record length should be 1');
   
   MyApp.store.loadRecords(MyApp.Foo, [
     { guid: 11, firstName: "John", lastName: "Doe" }
   ]);
-  SC.RunLoop.end();
+  SC.run.end();
   
-  equals(records.get('length'), 2, 'record length should be 2');  
+  equals(get(records, 'length'), 2, 'record length should be 2');  
 });
 
 
@@ -513,7 +515,7 @@ test("creating record appears in future find()", function() {
         { title: "B", guid: 2 } ]);
   });
   
-  equals(store.find(Rec).get('length'), 2, 'should have two initial record');
+  equals(get(store.find(Rec), 'length'), 2, 'should have two initial record');
 
   SC.run(function() {
     store.createRecord(Rec, { title: "C" });
@@ -521,10 +523,10 @@ test("creating record appears in future find()", function() {
     // NOTE: calling find() here should flush changes to the record arrays
     // so that find() always returns an accurate result
     r = store.find(Rec);
-    equals(r.get('length'), 3, 'should return additional record');
+    equals(get(r, 'length'), 3, 'should return additional record');
   });
 
   r = store.find(Rec);
-  equals(r.get('length'), 3, 'should return additional record');  
+  equals(get(r, 'length'), 3, 'should return additional record');  
 });
 

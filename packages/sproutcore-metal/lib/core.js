@@ -353,6 +353,17 @@ SC.compare = function (v, w) {
   var type1 = SC.typeOf(v);
   var type2 = SC.typeOf(w);
 
+  var Comparable = SC.Comparable;
+  if (Comparable) {
+    if (type1==='instance' && Comparable.detect(v.constructor)) {
+      return v.constructor.compare(v, w);
+    }
+    
+    if (type2 === 'instance' && Comparable.detect(w.constructor)) {
+      return 1-w.constructor.compare(w, v);
+    }
+  }
+
   // If we haven't yet generated a reverse-mapping of SC.ORDER_DEFINITION,
   // do so now.
   var mapping = SC.ORDER_DEFINITION_MAPPING;
@@ -417,6 +428,98 @@ SC.compare = function (v, w) {
     default:
       return 0;
   }
+};
+
+function _copy(obj, deep, seen, copies) {
+  var ret, loc, key;
+
+  // primitive data types are immutable, just return them.
+  if ('object' !== typeof obj) return obj;
+
+  // avoid cyclical loops
+  if (deep && (loc=seen.indexOf(obj))>=0) return copies[loc];
+  
+  sc_assert('Cannot clone an SC.Object that does not implement SC.Copyable', 
+    !(obj instanceof SC.Object) || (SC.Copyable && SC.Copyable.detect(obj)));
+
+  // IMPORTANT: this specific test will detect a native array only.  Any other
+  // object will need to implement Copyable.
+  if (SC.typeOf(obj) === 'array') {
+    ret = obj.slice();
+    if (deep) {
+      loc = ret.length;
+      while(--loc>=0) ret[loc] = _copy(ret[loc], deep, seen, copies);
+    }
+  } else if (SC.Copyable && SC.Copyable.detect(obj)) {
+    ret = obj.copy(deep, seen, copies);
+  } else {
+    ret = {};
+    for(key in obj) {
+      if (!obj.hasOwnProperty(key)) continue;
+      ret[key] = deep ? _copy(obj[key], deep, seen, copies) : obj[key];
+    }
+  }
+  
+  if (deep) {
+    seen.push(obj);
+    copies.push(ret);
+  }
+
+  return ret;
+}
+
+/**
+  Creates a clone of the passed object. This function can take just about
+  any type of object and create a clone of it, including primitive values
+  (which are not actually cloned because they are immutable).
+
+  If the passed object implements the clone() method, then this function
+  will simply call that method and return the result.
+
+  @param {Object} object The object to clone
+  @param {Boolean} deep If true, a deep copy of the object is made
+  @returns {Object} The cloned object
+*/
+SC.copy = function(obj, deep) {
+  // fast paths
+  if ('object' !== typeof obj) return obj; // can't copy primitives
+  if (SC.Copyable && SC.Copyable.detect(obj)) return obj.copy(deep);
+  return _copy(obj, deep, deep ? [] : null, deep ? [] : null);
+};
+
+/**
+  Convenience method to inspect an object. This method will attempt to
+  convert the object into a useful string description.
+
+  @param {Object} obj The object you want to inspec.
+  @returns {String} A description of the object
+*/
+SC.inspect = function(obj) {
+  var v, ret = [];
+  for(var key in obj) {
+    if (obj.hasOwnProperty(key)) {
+      v = obj[key];
+      if (v === 'toString') { continue; } // ignore useless items
+      if (SC.typeOf(v) === SC.T_FUNCTION) { v = "function() { ... }"; }
+      ret.push(key + ": " + v);
+    }
+  }
+  return "{" + ret.join(" , ") + "}";
+};
+
+/**
+  Compares two objects, returning true if they are logically equal.  This is 
+  a deeper comparison than a simple triple equal.  For arrays and enumerables
+  it will compare the internal objects.  For any other object that implements
+  `isEqual()` it will respect that method.
+  
+  @param {Object} a first object to compare
+  @param {Object} b second object to compare
+  @returns {Boolean}
+*/
+SC.isEqual = function(a, b) {
+  if (a && 'function'===typeof a.isEqual) return a.isEqual(b);
+  return a === b;
 };
 
 /**

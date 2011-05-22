@@ -5,6 +5,8 @@
 // ==========================================================================
 /*globals module ok equals same test MyApp */
 
+var set = SC.set, get = SC.get;
+
 var store, storeKey1,storeKey2;
 var json1, json2;
 var storeKey6, storeKey7;

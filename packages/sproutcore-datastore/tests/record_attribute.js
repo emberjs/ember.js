@@ -5,6 +5,8 @@
 // ==========================================================================
 /*globals module ok equals same test MyApp */
 
+var set = SC.set, get = SC.get;
+
 // test core array-mapping methods for RecordArray with RecordAttribute
 var storeKeys, rec, rec2, rec3, bar, MyApp;
 
@@ -59,7 +61,7 @@ module("SC.RecordAttribute core methods", {
       
       // test toOne relationship with computed type
       relatedToComputed: SC.Record.toOne(function() {
-        // not using .get() to avoid another transform which will 
+        // not using get() to avoid another transform which will 
         // trigger an infinite loop
         return (this.readAttribute('relatedToComputed').indexOf("foo")===0) ? MyApp.Foo : MyApp.Bar;
       }),
@@ -74,7 +76,7 @@ module("SC.RecordAttribute core methods", {
       relatedMany: SC.Record.toMany('MyApp.Foo', { aggregate: YES })
     });
 
-    SC.RunLoop.begin();
+    SC.run.begin();
     storeKeys = MyApp.store.loadRecords(MyApp.Foo, [
       { 
         guid: 'foo1', 
@@ -118,7 +120,7 @@ module("SC.RecordAttribute core methods", {
       { guid: 'bar1', city: "Chicago", parent: 'foo2', relatedMany: ['foo1', 'foo2'] }
     ]);
     
-    SC.RunLoop.end();
+    SC.run.end();
     
     rec = MyApp.store.find(MyApp.Foo, 'foo1');
     rec2 = MyApp.store.find(MyApp.Foo, 'foo2');
@@ -139,55 +141,55 @@ module("SC.RecordAttribute core methods", {
 // 
 
 test("pass-through should return builtin value" ,function() {
-  equals(rec.get('firstName'), 'John', 'reading prop should get attr value');
+  equals(get(rec, 'firstName'), 'John', 'reading prop should get attr value');
 });
 
 test("returns default value if underyling value is empty", function() {
-  equals(rec.get('defaultValue'), 'default', 'reading prop should return default value');
+  equals(get(rec, 'defaultValue'), 'default', 'reading prop should return default value');
 });
 
 test("naming a key should read alternate attribute", function() {
-  equals(rec.get('otherName'), 'John', 'reading prop otherName should get attr from firstName');
+  equals(get(rec, 'otherName'), 'John', 'reading prop otherName should get attr from firstName');
 });
 
 test("getting a number", function() {
-  equals((typeof rec.get('aNumber')), 'number', 'reading prop aNumber should get attr as number');
+  equals((typeof get(rec, 'aNumber')), 'number', 'reading prop aNumber should get attr as number');
 });
 
 test("getting an array and object", function() {
-  equals(rec.get('anArray').length, 3, 'reading prop anArray should get attr as array');
-  equals((typeof rec.get('anObject')), 'object', 'reading prop anObject should get attr as object');
+  equals(get(rec, 'anArray').length, 3, 'reading prop anArray should get attr as array');
+  equals((typeof get(rec, 'anObject')), 'object', 'reading prop anObject should get attr as object');
 });
 
 test("getting an array and object attributes where underlying value is not", function() {
-  equals(rec2.get('anArray').length, 0, 'reading prop anArray should return empty array');
-  equals((typeof rec2.get('anObject')), 'object', 'reading prop anObject should return empty object');
+  equals(get(rec2, 'anArray').length, 0, 'reading prop anArray should return empty array');
+  equals((typeof get(rec2, 'anObject')), 'object', 'reading prop anObject should return empty object');
 });
 
 test("reading date should parse ISO date", function() {
   var d = new Date(1235968200000); // should be proper date
-  equals(rec.get('date').toString(), d.toString(), 'should have matched date');
+  equals(get(rec, 'date').toString(), d.toString(), 'should have matched date');
 });
 
 test("reading dateTime should parse ISO date", function() {
   var ms = 1235939425000;
-  equals(rec.getPath('dateTime.milliseconds'), ms, 'should have parsed Date properly');
-  equals(rec2.getPath('dateTime.milliseconds'), ms, 'should have parsed String properly');
-  equals(rec3.getPath('dateTime.milliseconds'), ms, 'should have parsed SC.DateTime properly');
+  equals(SC.getPath(rec, 'dateTime.milliseconds'), ms, 'should have parsed Date properly');
+  equals(SC.getPath(rec2, 'dateTime.milliseconds'), ms, 'should have parsed String properly');
+  equals(SC.getPath(rec3, 'dateTime.milliseconds'), ms, 'should have parsed SC.DateTime properly');
 });
 
 test("reading date should parse non-ISO date", function() {
   var d = new Date(1244624150000);
-  equals(rec2.get('nonIsoDate').toString(), d.toString(), 'should have matched date');
+  equals(get(rec2, 'nonIsoDate').toString(), d.toString(), 'should have matched date');
 });
 
 test("reading no date should produce null", function() {
   var d = new Date(1235968200000); // should be proper date
-  equals(rec2.get('date'), null, 'should have yielded null');
+  equals(get(rec2, 'date'), null, 'should have yielded null');
 });
 
 test("reading computed default value", function() {
-  var value = rec.get('defaultComputedValue');
+  var value = get(rec, 'defaultComputedValue');
   var validValues = [1,2,3,4];
   ok(validValues.indexOf(value)!==-1, 'should have a value from 1 through 4');
 });
@@ -197,33 +199,33 @@ test("reading computed default value", function() {
 // 
 
 test("writing pass-through should simply set value", function() {
-  rec.set("firstName", "Foo");
+  set(rec, "firstName", "Foo");
   equals(rec.readAttribute("firstName"), "Foo", "should write string");
 
-  rec.set("firstName", 23);
+  set(rec, "firstName", 23);
   equals(rec.readAttribute("firstName"), 23, "should write number");
 
-  rec.set("firstName", YES);
+  set(rec, "firstName", YES);
   equals(rec.readAttribute("firstName"), YES, "should write bool");
   
 });
 
 test("writing when isEditable is NO should ignore", function() {
-  var v = rec.get('readOnly');
-  rec.set('readOnly', 'NEW VALUE');
-  equals(rec.get('readOnly'), v, 'read only value should not change');
+  var v = get(rec, 'readOnly');
+  set(rec, 'readOnly', 'NEW VALUE');
+  equals(get(rec, 'readOnly'), v, 'read only value should not change');
 });
 
 test("writing a value should override default value", function() {
-  equals(rec.get('defaultValue'), 'default', 'precond - returns default');
-  rec.set('defaultValue', 'not-default');
-  equals(rec.get('defaultValue'), 'not-default', 'newly written value should replace default value');
+  equals(get(rec, 'defaultValue'), 'default', 'precond - returns default');
+  set(rec, 'defaultValue', 'not-default');
+  equals(get(rec, 'defaultValue'), 'not-default', 'newly written value should replace default value');
 });
 
 test("writing a string to a number attribute should store a number" ,function() {
-     equals(rec.set('aNumber', "456"), rec, 'returns reciever');
-     equals(rec.get('aNumber'), 456, 'should have new value');
-     equals(typeof rec.get('aNumber'), 'number', 'new value should be a number');
+     equals(set(rec, 'aNumber', "456"), "456", 'returns reciever');
+     equals(get(rec, 'aNumber'), 456, 'should have new value');
+     equals(typeof get(rec, 'aNumber'), 'number', 'new value should be a number');
 });
 
 test("writing a date should generate an ISO date" ,function() {
@@ -233,38 +235,38 @@ test("writing a date should generate an ISO date" ,function() {
   var utcDate = new Date(Number(date) + (date.getTimezoneOffset() * 60000)); // Adjust for timezone offset
   utcDate.getTimezoneOffset = function(){ return 0; }; // Hack the offset to respond 0
 
-  equals(rec.set('date', utcDate), rec, 'returns reciever');
+  equals(set(rec, 'date', utcDate), utcDate, 'returns reciever');
   equals(rec.readAttribute('date'), '2009-04-02T05:28:03Z', 'should have time in ISO format');
 });
 
 test("writing an attribute should make relationship aggregate dirty" ,function() {
-  equals(bar.get('status'), SC.Record.READY_CLEAN, "precond - bar should be READY_CLEAN");
-  equals(rec2.get('status'), SC.Record.READY_CLEAN, "precond - rec2 should be READY_CLEAN");
+  equals(get(bar, 'status'), SC.Record.READY_CLEAN, "precond - bar should be READY_CLEAN");
+  equals(get(rec2, 'status'), SC.Record.READY_CLEAN, "precond - rec2 should be READY_CLEAN");
   
-  bar.set('city', 'Oslo');
-  bar.get('store').flush();
+  set(bar, 'city', 'Oslo');
+  get(bar, 'store').flush();
   
-  equals(rec2.get('status'), SC.Record.READY_DIRTY, "foo2 should be READY_DIRTY");
+  equals(get(rec2, 'status'), SC.Record.READY_DIRTY, "foo2 should be READY_DIRTY");
 });
 
 test("writing an attribute should make many relationship aggregate dirty" ,function() {
-  equals(bar.get('status'), SC.Record.READY_CLEAN, "precond - bar should be READY_CLEAN");
-  equals(rec2.get('status'), SC.Record.READY_CLEAN, "precond - rec2 should be READY_CLEAN");
+  equals(get(bar, 'status'), SC.Record.READY_CLEAN, "precond - bar should be READY_CLEAN");
+  equals(get(rec2, 'status'), SC.Record.READY_CLEAN, "precond - rec2 should be READY_CLEAN");
+
+  set(bar, 'city', 'Oslo');
+  get(bar, 'store').flush();
   
-  bar.set('city', 'Oslo');
-  bar.get('store').flush();
-  
-  equals(rec.get('status'), SC.Record.READY_DIRTY, "foo1 should be READY_DIRTY");
-  equals(rec2.get('status'), SC.Record.READY_DIRTY, "foo2 should be READY_DIRTY");
+  equals(get(rec, 'status'), SC.Record.READY_DIRTY, "foo1 should be READY_DIRTY");
+  equals(get(rec2, 'status'), SC.Record.READY_DIRTY, "foo2 should be READY_DIRTY");
 });
 
 test("writing an attribute should make many relationship aggregate dirty and add the aggregate to the store" ,function() {
-  equals(bar.get('status'), SC.Record.READY_CLEAN, "precond - bar should be READY_CLEAN");
-  equals(rec2.get('status'), SC.Record.READY_CLEAN, "precond - rec2 should be READY_CLEAN");
+  equals(get(bar, 'status'), SC.Record.READY_CLEAN, "precond - bar should be READY_CLEAN");
+  equals(get(rec2, 'status'), SC.Record.READY_CLEAN, "precond - rec2 should be READY_CLEAN");
   
-  bar.set('city', 'Oslo');
+  set(bar, 'city', 'Oslo');
 
-  var store = bar.get('store');
-  ok(store.changelog.contains(rec.get('storeKey')), "foo1 should be in the store's changelog");
-  ok(store.changelog.contains(rec2.get('storeKey')), "foo2 should be in the store's changelog");
+  var store = get(bar, 'store');
+  ok(store.changelog.contains(get(rec, 'storeKey')), "foo1 should be in the store's changelog");
+  ok(store.changelog.contains(get(rec2, 'storeKey')), "foo2 should be in the store's changelog");
 });

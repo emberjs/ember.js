@@ -4,6 +4,8 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
+var set = SC.set, get = SC.get;
+
 (function() {
   var store, Person, Place;
 
@@ -17,7 +19,7 @@
         name: SC.Record.attr(String)
       });
 
-      SC.RunLoop.begin();
+      SC.run.begin();
 
       store = SC.Store.create();
 
@@ -32,7 +34,7 @@
         {guid: 5, name: "St. John's"}
       ]);
 
-      SC.RunLoop.end();
+      SC.run.end();
     },
     teardown: function() {
       store = Person = Place = null;
@@ -43,12 +45,12 @@
     var people = store.find(Person),
         record = store.find(Person, 1);
 
-    equals(people.get('length'), 3, "precond - there are 3 People records in the store");
+    equals(get(people, 'length'), 3, "precond - there are 3 People records in the store");
 
     store.unloadRecord(Person, 1);
 
     people = store.find(Person);
-    equals(people.get('length'), 2, "there are 2 People records in the store after calling unloadRecord");
+    equals(get(people, 'length'), 2, "there are 2 People records in the store after calling unloadRecord");
     ok(store.peekStatus(record) & SC.Record.EMPTY, "Record now has status of SC.Record.EMPTY");
   });
 

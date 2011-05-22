@@ -5,10 +5,12 @@
 // ==========================================================================
 /*globals module ok equals same test MyApp */
 
+var set = SC.set, get = SC.get;
+
 var store, Foo, json, foo ;
 module("SC.Record#writeAttribute", {
   setup: function() {
-    SC.RunLoop.begin();
+    SC.run.begin();
     store = SC.Store.create();
     Foo = SC.Record.extend();
     json = { 
@@ -21,7 +23,7 @@ module("SC.Record#writeAttribute", {
     
     foo = store.createRecord(Foo, json);
     store.writeStatus(foo.storeKey, SC.Record.READY_CLEAN);
-    SC.RunLoop.end();
+    SC.run.end();
   }
 });
 
@@ -31,36 +33,36 @@ test("returns receiver", function() {
 
 test("first time writing should mark record as dirty", function() {
   // precondition
-  equals(foo.get('status'), SC.Record.READY_CLEAN, 'precond - start clean');
+  equals(get(foo, 'status'), SC.Record.READY_CLEAN, 'precond - start clean');
 
-  SC.RunLoop.begin();
+  SC.run.begin();
   // action
   foo.writeAttribute("bar", "baz");
-  SC.RunLoop.end();
+  SC.run.end();
   
   // evaluate
-  equals(foo.get('status'), SC.Record.READY_DIRTY, 'should make READY_DIRTY after write');
+  equals(get(foo, 'status'), SC.Record.READY_DIRTY, 'should make READY_DIRTY after write');
 });
 
 test("state change should be deferred if writing inside of a beginEditing()/endEditing() pair", function() {
 
   // precondition
-  equals(foo.get('status'), SC.Record.READY_CLEAN, 'precond - start clean');
+  equals(get(foo, 'status'), SC.Record.READY_CLEAN, 'precond - start clean');
 
-  SC.RunLoop.begin();
+  SC.run.begin();
   // action
   foo.beginEditing();
   
   foo.writeAttribute("bar", "baz");
   
-  equals(foo.get('status'), SC.Record.READY_CLEAN, 'should not change state yet');
+  equals(get(foo, 'status'), SC.Record.READY_CLEAN, 'should not change state yet');
 
   foo.endEditing();
   
-  SC.RunLoop.end();
+  SC.run.end();
   
   // evaluate
-  equals(foo.get('status'), SC.Record.READY_DIRTY, 'should make READY_DIRTY after write');
+  equals(get(foo, 'status'), SC.Record.READY_DIRTY, 'should make READY_DIRTY after write');
   
 }) ;
 
@@ -83,30 +85,30 @@ test("Writing to an attribute in chained store sets correct status", function() 
   
   var chainedStore = store.chain() ;
   
-  var chainedRecord = chainedStore.find(Foo, foo.get('id'));
-  equals(chainedRecord.get('status'), SC.Record.READY_CLEAN, 'precon - status should be READY_CLEAN');
+  var chainedRecord = chainedStore.find(Foo, get(foo, 'id'));
+  equals(get(chainedRecord, 'status'), SC.Record.READY_CLEAN, 'precon - status should be READY_CLEAN');
   
-  SC.RunLoop.begin();
+  SC.run.begin();
   chainedRecord.writeAttribute('foo', 'newValue');
-  SC.RunLoop.end();
-  //chainedRecord.set('foo', 'newValue');
+  SC.run.end();
+  //set(chainedRecord, 'foo', 'newValue');
   
-  equals(chainedRecord.get('status'), SC.Record.READY_DIRTY, 'status should be READY_DIRTY');
+  equals(get(chainedRecord, 'status'), SC.Record.READY_DIRTY, 'status should be READY_DIRTY');
   
 });
 
 
 test("Writing a new guid", function(){
-  equals(foo.get('id'), 1, 'foo.id should be 1');
-  foo.set('guid', 2);
-  equals(foo.get('id'), 2, 'foo.id should be 2');
+  equals(get(foo, 'id'), 1, 'foo.id should be 1');
+  set(foo, 'guid', 2);
+  equals(get(foo, 'id'), 2, 'foo.id should be 2');
 });
 
 test("Writing primaryKey of 'id'", function(){
   PrimaryKeyId = SC.Record.extend({ primaryKey: 'id' });
   var foo2 = store.createRecord(PrimaryKeyId, { id: 1 });
 
-  equals(foo2.get('id'), 1, 'foo2.id should be 1');
-  foo2.set('id', 2);
-  equals(foo2.get('id'), 2, 'foo2.id should be 2');
+  equals(get(foo2, 'id'), 1, 'foo2.id should be 1');
+  set(foo2, 'id', 2);
+  equals(get(foo2, 'id'), 2, 'foo2.id should be 2');
 });

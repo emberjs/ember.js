@@ -5,6 +5,8 @@
 // ==========================================================================
 /*globals module ok equals same test MyApp */
 
+var set = SC.set, get = SC.get;
+
 // test parsing of query string
 var q;
 module("SC.Query parsing", {

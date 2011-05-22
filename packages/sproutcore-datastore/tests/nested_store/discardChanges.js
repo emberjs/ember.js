@@ -5,13 +5,15 @@
 // ==========================================================================
 /*globals module ok equals same test MyApp */
 
+var set = SC.set, get = SC.get;
+
 // NOTE: The test below are based on the Data Hashes state chart.  This models
 // the "discard" event in the NestedStore portion of the diagram.
 
 var parent, store, child, storeKey, json, args;
 module("SC.NestedStore#discardChanges", {
   setup: function() {
-    SC.RunLoop.begin();
+    SC.run.begin();
 
     parent = SC.Store.create();
     
@@ -44,7 +46,7 @@ module("SC.NestedStore#discardChanges", {
       });
     };
 
-    SC.RunLoop.end();
+    SC.run.end();
   }
 });
 
@@ -59,7 +61,7 @@ function testStateTransition() {
   
   // verify result
   equals(store.storeKeyEditState(storeKey), SC.Store.INHERITED, 'data edit state');
-  equals(store.get('hasChanges'), NO, 'hasChanges should be NO');
+  equals(get(store, 'hasChanges'), NO, 'hasChanges should be NO');
   equals(store.readDataHash(storeKey), json, 'data hash should return parent hash again');
   equals(store.readStatus(storeKey), parent.readStatus(storeKey), 'should return record status from parent');
   ok(!store.chainedChanges || !store.chainedChanges.length, 'should have no chainedChanges queued');

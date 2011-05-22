@@ -5,6 +5,8 @@
 // ==========================================================================
 /*globals JN module test ok equals same stop start */
 
+var set = SC.set, get = SC.get;
+
 var MyApp, wasCalled;
 module("SC.DataSource", {
   setup: function () {
@@ -43,11 +45,11 @@ module("SC.DataSource", {
         return YES;
       }
     });
-    SC.RunLoop.begin();
+    SC.run.begin();
   },
 
   teardown: function () {
-    SC.RunLoop.end();
+    SC.run.end();
     window.MyApp = MyApp = undefined;
     delete window.MyApp;
   }
@@ -55,7 +57,7 @@ module("SC.DataSource", {
 
 test("The dataSource will forward calls to the appropriate methods", function () {
   var ds = MyApp.DataSource.create();
-  MyApp.store.set('dataSource', ds);
+  set(MyApp.store, 'dataSource', ds);
   ok(MyApp.store.find(SC.Query.remote(MyApp.Foo)),
      "the fetch should return a record array");
   ok(wasCalled, "`fetch` should have been called");
@@ -68,24 +70,24 @@ test("The dataSource will forward calls to the appropriate methods", function ()
 
   var rec = MyApp.store.createRecord(MyApp.Foo, {});
 
-  equals(MyApp.store.commitRecord(MyApp.Foo, 'foo', rec.get('storeKey')), YES,
+  equals(MyApp.store.commitRecord(MyApp.Foo, 'foo', get(rec, 'storeKey')), YES,
          "commiting a new record should return YES");
   ok(wasCalled, "`createRecord` should have been called");
   wasCalled = NO;
 
-  MyApp.store.writeStatus(rec.get('storeKey'), SC.Record.READY_CLEAN);
+  MyApp.store.writeStatus(get(rec, 'storeKey'), SC.Record.READY_CLEAN);
 
-  rec.set('zero', 0);
-  equals(MyApp.store.commitRecord(MyApp.Foo, 'foo', rec.get('storeKey')), YES,
+  set(rec, 'zero', 0);
+  equals(MyApp.store.commitRecord(MyApp.Foo, 'foo', get(rec, 'storeKey')), YES,
          "updating a record should return YES");
   ok(wasCalled, "`updateRecord` should have been called");
   wasCalled = NO;
 
-  MyApp.store.writeStatus(rec.get('storeKey'), SC.Record.READY_CLEAN);
+  MyApp.store.writeStatus(get(rec, 'storeKey'), SC.Record.READY_CLEAN);
 
   rec.destroy();
   // broken in SC.Store
-  equals(MyApp.store.commitRecord(MyApp.Foo, 'foo', rec.get('storeKey')), YES,
+  equals(MyApp.store.commitRecord(MyApp.Foo, 'foo', get(rec, 'storeKey')), YES,
      "destroying the record should return YES");
   ok(wasCalled, "`destroyRecord` should have been called");
 });
@@ -97,7 +99,7 @@ test("The dataSource will return YES when all records committed return YES", fun
     destroyRecord: function () { return YES; }
   });
 
-  MyApp.store.set('dataSource', ds);
+  set(MyApp.store, 'dataSource', ds);
 
   var rec1 = MyApp.store.createRecord(MyApp.Foo, {}),
       rec2, rec3;
@@ -105,19 +107,19 @@ test("The dataSource will return YES when all records committed return YES", fun
   equals(MyApp.store.commitRecords(), YES,
          "commiting a single new record should return YES");
 
-  MyApp.store.writeStatus(rec1.get('storeKey'), SC.Record.READY_CLEAN);
+  MyApp.store.writeStatus(get(rec1, 'storeKey'), SC.Record.READY_CLEAN);
 
-  rec1.set('zero', 0);
+  set(rec1, 'zero', 0);
   rec2 = MyApp.store.createRecord(MyApp.Foo, {});
 
   equals(MyApp.store.commitRecords(), YES,
          "commiting records for an 'update' and 'create' should return YES");
 
-  MyApp.store.writeStatus(rec1.get('storeKey'), SC.Record.READY_CLEAN);
-  MyApp.store.writeStatus(rec2.get('storeKey'), SC.Record.READY_CLEAN);
+  MyApp.store.writeStatus(get(rec1, 'storeKey'), SC.Record.READY_CLEAN);
+  MyApp.store.writeStatus(get(rec2, 'storeKey'), SC.Record.READY_CLEAN);
 
   rec1.destroy();
-  rec2.set('one', 1);
+  set(rec2, 'one', 1);
   rec3 = MyApp.store.createRecord(MyApp.Foo, {});
 
   equals(MyApp.store.commitRecords(), YES,
@@ -131,7 +133,7 @@ test("The dataSource will return SC.MIXED_STATE when all records committed retur
     destroyRecord: function () { return NO; }
   });
 
-  MyApp.store.set('dataSource', ds);
+  set(MyApp.store, 'dataSource', ds);
 
   var rec1 = MyApp.store.createRecord(MyApp.Foo, {}),
       rec2, rec3;
@@ -139,19 +141,19 @@ test("The dataSource will return SC.MIXED_STATE when all records committed retur
   equals(MyApp.store.commitRecords(), NO,
          "commiting a single new record should return NO");
 
-  MyApp.store.writeStatus(rec1.get('storeKey'), SC.Record.READY_CLEAN);
+  MyApp.store.writeStatus(get(rec1, 'storeKey'), SC.Record.READY_CLEAN);
 
-  rec1.set('zero', 0);
+  set(rec1, 'zero', 0);
   rec2 = MyApp.store.createRecord(MyApp.Foo, {});
 
   equals(MyApp.store.commitRecords(), SC.MIXED_STATE,
          "commiting records for an 'update' and 'create' should return %@".fmt(SC.MIXED_STATE));
 
-  MyApp.store.writeStatus(rec1.get('storeKey'), SC.Record.READY_CLEAN);
-  MyApp.store.writeStatus(rec2.get('storeKey'), SC.Record.READY_CLEAN);
+  MyApp.store.writeStatus(get(rec1, 'storeKey'), SC.Record.READY_CLEAN);
+  MyApp.store.writeStatus(get(rec2, 'storeKey'), SC.Record.READY_CLEAN);
 
   rec1.destroy();
-  rec2.set('one', 1);
+  set(rec2, 'one', 1);
   rec3 = MyApp.store.createRecord(MyApp.Foo, {});
 
   equals(MyApp.store.commitRecords(), SC.MIXED_STATE,
@@ -164,7 +166,7 @@ test("The dataSource will return NO when all records committed return NO", funct
     updateRecord: function () { return NO; },
     destroyRecord: function () { return NO; }
   });
-  MyApp.store.set('dataSource', ds);
+  set(MyApp.store, 'dataSource', ds);
 
   var rec1 = MyApp.store.createRecord(MyApp.Foo, {}),
       rec2, rec3;
@@ -172,19 +174,19 @@ test("The dataSource will return NO when all records committed return NO", funct
   equals(MyApp.store.commitRecords(), NO,
          "commiting a single new record should return NO");
 
-  MyApp.store.writeStatus(rec1.get('storeKey'), SC.Record.READY_CLEAN);
+  MyApp.store.writeStatus(get(rec1, 'storeKey'), SC.Record.READY_CLEAN);
 
-  rec1.set('zero', 0);
+  set(rec1, 'zero', 0);
   rec2 = MyApp.store.createRecord(MyApp.Foo, {});
 
   equals(MyApp.store.commitRecords(), NO,
          "commiting records for an 'update' and 'create' should return NO");
 
-  MyApp.store.writeStatus(rec1.get('storeKey'), SC.Record.READY_CLEAN);
-  MyApp.store.writeStatus(rec2.get('storeKey'), SC.Record.READY_CLEAN);
+  MyApp.store.writeStatus(get(rec1, 'storeKey'), SC.Record.READY_CLEAN);
+  MyApp.store.writeStatus(get(rec2, 'storeKey'), SC.Record.READY_CLEAN);
 
   rec1.destroy();
-  rec2.set('one', 1);
+  set(rec2, 'one', 1);
   rec3 = MyApp.store.createRecord(MyApp.Foo, {});
 
   equals(MyApp.store.commitRecords(), NO,

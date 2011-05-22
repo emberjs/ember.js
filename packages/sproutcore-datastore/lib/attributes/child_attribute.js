@@ -8,12 +8,14 @@
 require('sproutcore-datastore/system/record');
 require('sproutcore-datastore/attributes/record_attribute');
 
+var get = SC.get, set = SC.set;
+
 /** @class
 
   ChildAttribute is a subclass of `RecordAttribute` and handles to-one
   relationships for child records.
 
-  When setting ( `.set()` ) the value of a toMany attribute, make sure
+  When setting ( `set()` ) the value of a toMany attribute, make sure
   to pass in an array of `SC.Record` objects.
 
   There are many ways you can configure a ManyAttribute:
@@ -35,7 +37,7 @@ SC.ChildAttribute = SC.RecordAttribute.extend(
   /**  @private - adapted for to one relationship */
   toType: function(record, key, value) {
     var ret   = null, rel,
-        recordType  = this.get('typeClass');
+        recordType  = get(this, 'typeClass');
 
     if (!record) {
       throw 'SC.Child: Error during transform: Unable to retrieve parent record.';
@@ -60,8 +62,8 @@ SC.ChildAttribute = SC.RecordAttribute.extend(
 
         if (ret) {
           // Write the data hash of the nested record to the store.
-          sk = ret.get('storeKey');
-          store = ret.get('store');
+          sk = get(ret, 'storeKey');
+          store = get(ret, 'store');
           record.writeAttribute(key, store.readDataHash(sk));
         } else if (value) {
           // If registration failed, just write the value.
@@ -81,19 +83,19 @@ SC.ChildAttribute = SC.RecordAttribute.extend(
     @returns {Object} property value
   */
   call: function(record, key, value) {
-    var attrKey = this.get('key') || key, cRef,
-        cacheKey = SC.keyFor('__kid__', SC.guidFor(this));
+    var attrKey = get(this, 'key') || key, cRef,
+        cacheKey = '__kid__'+SC.guidFor(this);
     if (value !== undefined) {
       // this.orphan(record, cacheKey, value);
       value = this.fromType(record, key, value) ; // convert to attribute.
       // record[cacheKey] = value;
     } else {
       value = record.readAttribute(attrKey);
-      if (SC.none(value) && (value = this.get('defaultValue'))) {
-        if (typeof value === SC.T_FUNCTION) {
+      if (SC.none(value) && (value = get(this, 'defaultValue'))) {
+        if (typeof value === 'function') {
           value = this.defaultValue(record, key, this);
           // write default value so it doesn't have to be executed again
-          if(record.attributes()) record.writeAttribute(attrKey, value, true);
+          if(get(record, 'attributes')) record.writeAttribute(attrKey, value, true);
         }
       } else value = this.toType(record, key, value);
     }

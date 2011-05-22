@@ -1,3 +1,7 @@
+/*globals MyRecord */
+
+var set = SC.set, get = SC.get;
+
 (function(root) {
   var store;
   var query;
@@ -23,9 +27,8 @@
       query = SC.Query.local(MyRecord);
 
       recordArray = store.find(query);
-
-      recordArray.addArrayObservers({
-        didChange: function(start, removedCount, addedCount) {
+      recordArray.addArrayObserver(this, {
+        didChange: function(target, start, removedCount, addedCount) {
           lastRemovedCount = removedCount;
           lastAddedCount = addedCount;
         },
@@ -38,7 +41,7 @@
 
     equals(lastAddedCount, 1);
     equals(lastRemovedCount, 0);
-    equals(recordArray.get('length'), 1);
+    equals(get(recordArray, 'length'), 1);
   });
 
   test("notifies when a record is removed from the store that matches a query", function() {
@@ -54,8 +57,8 @@
 
       recordArray = store.find(query);
 
-      recordArray.addArrayObservers({
-        didChange: function(start, removedCount, addedCount) {
+      recordArray.addArrayObserver(this, {
+        didChange: function(target, start, removedCount, addedCount) {
           lastRemovedCount = removedCount;
           lastAddedCount = addedCount;
         },
@@ -77,6 +80,6 @@
 
     equals(lastAddedCount, 0);
     equals(lastRemovedCount, 1);
-    equals(recordArray.get('length'), 0);
+    equals(get(recordArray, 'length'), 0);
   });
 })(this);

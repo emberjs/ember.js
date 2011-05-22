@@ -5,13 +5,15 @@
 // ==========================================================================
 /*globals module ok equals same test MyApp */
 
+var set = SC.set, get = SC.get;
+
 // test core array-mapping methods for ManyArray with ManyAttribute
 var storeKeys, rec, rec2, rec3, rec4;
 var foo1, foo2, foo3, bar1, bar2, bar3;
 
 module("SC.ManyAttribute core methods", {
   setup: function() {
-    SC.RunLoop.begin();
+    SC.run.begin();
     MyApp = SC.Object.create({
       store: SC.Store.create()
     });
@@ -111,7 +113,7 @@ module("SC.ManyAttribute core methods", {
     bar2 = MyApp.store.find(MyApp.Bar, 'bar2');
     bar3 = MyApp.store.find(MyApp.Bar, 'bar3');
     
-    SC.RunLoop.end();
+    SC.run.end();
   },
   
   teardown: function() {
@@ -125,39 +127,39 @@ module("SC.ManyAttribute core methods", {
 // 
 
 test("pass-through should return builtin value" ,function() {
-  equals(rec.get('firstName'), 'John', 'reading prop should get attr value');
+  equals(get(rec, 'firstName'), 'John', 'reading prop should get attr value');
 });
 
 test("getting toMany relationship should map guid to real records", function() {
   var rec3 = MyApp.store.find(MyApp.Foo, 3);
-  equals(rec3.get('id'), 3, 'precond - should find record 3');
-  equals(rec3.get('fooMany').objectAt(0), rec, 'should get rec1 instance for rec3.fooMany');
-  equals(rec3.get('fooMany').objectAt(1), rec2, 'should get rec2 instance for rec3.fooMany');
+  equals(get(rec3, 'id'), 3, 'precond - should find record 3');
+  equals(get(rec3, 'fooMany').objectAt(0), rec, 'should get rec1 instance for rec3.fooMany');
+  equals(get(rec3, 'fooMany').objectAt(1), rec2, 'should get rec2 instance for rec3.fooMany');
 });
 
 test("getting toMany relationship should map guid to real records when using different key", function() {
   var rec4 = MyApp.store.find(MyApp.Foo, 4);
-  equals(rec4.get('id'), 4, 'precond - should find record 4');
-  equals(rec4.get('fooManyKeyed').objectAt(0), rec, 'should get rec1 instance for rec4.fooManyKeyed');
-  equals(rec4.get('fooManyKeyed').objectAt(1), rec2, 'should get rec2 instance for rec4.fooManyKeyed');
+  equals(get(rec4, 'id'), 4, 'precond - should find record 4');
+  equals(get(rec4, 'fooManyKeyed').objectAt(0), rec, 'should get rec1 instance for rec4.fooManyKeyed');
+  equals(get(rec4, 'fooManyKeyed').objectAt(1), rec2, 'should get rec2 instance for rec4.fooManyKeyed');
 });
  
 test("getting toMany relation should not change record state", function() {
-  equals(rec3.get('status'), SC.Record.READY_CLEAN, 'precond - status should be READY_CLEAN');
+  equals(get(rec3, 'status'), SC.Record.READY_CLEAN, 'precond - status should be READY_CLEAN');
   
-  var recs = rec3.get('fooMany');
-  ok(recs, 'rec3.get(fooMany) should return records');
-  equals(rec3.get('status'), SC.Record.READY_CLEAN, 'getting toMany should not change state');
+  var recs = get(rec3, 'fooMany');
+  ok(recs, 'get(rec3, fooMany) should return records');
+  equals(get(rec3, 'status'), SC.Record.READY_CLEAN, 'getting toMany should not change state');
 });
 
 test("reading toMany in chained store", function() {
   var recs1, recs2, store, rec3a;
   
-  recs1 = rec3.get('fooMany');
+  recs1 = get(rec3, 'fooMany');
   store = MyApp.store.chain();
   
   rec3a = store.find(rec3);
-  recs2 = rec3a.get('fooMany');
+  recs2 = get(rec3a, 'fooMany');
       
   same(recs2.getEach('storeKey'), recs1.getEach('storeKey'), 'returns arrays from chained and parent should be same');
   ok(recs2 !== recs1, 'returned arrays should not be same instance');
@@ -169,9 +171,9 @@ test("reading a null relation", function() {
   // note: rec1 hash has NO array
   equals(rec.readAttribute('fooMany'), null, 'rec1.fooMany attr should be null');
   
-  var ret = rec.get('fooMany');
-  equals(ret.get('length'), 0, 'rec1.get(fooMany).length should be 0'); 
-  same(ret.getEach('storeKey'), [], 'rec1.get(fooMany) should return empty array');
+  var ret = get(rec, 'fooMany');
+  equals(get(ret, 'length'), 0, 'get(rec1, fooMany).length should be 0'); 
+  same(ret.getEach('storeKey'), [], 'get(rec1, fooMany) should return empty array');
 });
 
 // ..........................................................
@@ -180,108 +182,108 @@ test("reading a null relation", function() {
 
 test("writing to a to-many relationship should update set guids", function() {
   var rec3 = MyApp.store.find(MyApp.Foo, 3);
-  equals(rec3.get('id'), 3, 'precond - should find record 3');
-  equals(rec3.get('fooMany').objectAt(0), rec, 'should get rec1 instance for rec3.fooMany');
+  equals(get(rec3, 'id'), 3, 'precond - should find record 3');
+  equals(get(rec3, 'fooMany').objectAt(0), rec, 'should get rec1 instance for rec3.fooMany');
   
-  SC.RunLoop.begin();
-  rec3.set('fooMany', [rec2, rec4]);
-  SC.RunLoop.end();
+  SC.run.begin();
+  set(rec3, 'fooMany', [rec2, rec4]);
+  SC.run.end();
   
-  equals(rec3.get('fooMany').objectAt(0), rec2, 'should get rec2 instance for rec3.fooMany');
-  equals(rec3.get('fooMany').objectAt(1), rec4, 'should get rec4 instance for rec3.fooMany');
+  equals(get(rec3, 'fooMany').objectAt(0), rec2, 'should get rec2 instance for rec3.fooMany');
+  equals(get(rec3, 'fooMany').objectAt(1), rec4, 'should get rec4 instance for rec3.fooMany');
 });
 
 test("writing to a to-many relationship should update set guids when using a different key", function() {
   var rec4 = MyApp.store.find(MyApp.Foo, 4);
-  equals(rec4.get('id'), 4, 'precond - should find record 4');
-  equals(rec4.get('fooManyKeyed').objectAt(0), rec, 'should get rec1 instance for rec4.fooManyKeyed');
+  equals(get(rec4, 'id'), 4, 'precond - should find record 4');
+  equals(get(rec4, 'fooManyKeyed').objectAt(0), rec, 'should get rec1 instance for rec4.fooManyKeyed');
 
-  SC.RunLoop.begin();
-  rec4.set('fooManyKeyed', [rec2, rec3]);
-  SC.RunLoop.end();
+  SC.run.begin();
+  set(rec4, 'fooManyKeyed', [rec2, rec3]);
+  SC.run.end();
 
-  ok(rec4.get('fooIds').isEqual([2,3]), 'should get array of guids (2, 3) for rec4.fooIds');
+  same(get(rec4, 'fooIds').toArray(), [2,3], 'should get array of guids (2, 3) for rec4.fooIds');
 });
 
 test("pushing an object to a to-many relationship attribute should update set guids", function() {
   var rec3 = MyApp.store.find(MyApp.Foo, 3);
-  equals(rec3.get('id'), 3, 'precond - should find record 3');
-  equals(rec3.get('fooMany').length(), 2, 'should be 2 foo instances related');
+  equals(get(rec3, 'id'), 3, 'precond - should find record 3');
+  equals(get(get(rec3, 'fooMany'), 'length'), 2, 'should be 2 foo instances related');
   
-  rec3.get('fooMany').pushObject(rec4);
+  get(rec3, 'fooMany').pushObject(rec4);
   
-  equals(rec3.get('fooMany').length(), 3, 'should be 3 foo instances related');
+  equals(get(get(rec3, 'fooMany'), 'length'), 3, 'should be 3 foo instances related');
   
-  equals(rec3.get('fooMany').objectAt(0), rec, 'should get rec instance for rec3.fooMany');
-  equals(rec3.get('fooMany').objectAt(1), rec2, 'should get rec2 instance for rec3.fooMany');
-  equals(rec3.get('fooMany').objectAt(2), rec4, 'should get rec4 instance for rec3.fooMany');
+  equals(get(rec3, 'fooMany').objectAt(0), rec, 'should get rec instance for rec3.fooMany');
+  equals(get(rec3, 'fooMany').objectAt(1), rec2, 'should get rec2 instance for rec3.fooMany');
+  equals(get(rec3, 'fooMany').objectAt(2), rec4, 'should get rec4 instance for rec3.fooMany');
 });
  
 test("modifying a toMany array should mark the record as changed", function() {
-  var recs = rec3.get('fooMany');
-  equals(rec3.get('status'), SC.Record.READY_CLEAN, 'precond - rec3.status should be READY_CLEAN');
+  var recs = get(rec3, 'fooMany');
+  equals(get(rec3, 'status'), SC.Record.READY_CLEAN, 'precond - rec3.status should be READY_CLEAN');
   ok(!!rec4, 'precond - rec4 should be defined');
   
-  SC.RunLoop.begin();
+  SC.run.begin();
   recs.pushObject(rec4);
-  SC.RunLoop.end();
+  SC.run.end();
   
-  equals(rec3.get('status'), SC.Record.READY_DIRTY, 'record status should have changed to dirty');
+  equals(get(rec3, 'status'), SC.Record.READY_DIRTY, 'record status should have changed to dirty');
 
 });
 
 test("Modifying a toMany array using replace", function() {
-  var recs = rec.get('barToOne'),
+  var recs = get(rec, 'barToOne'),
       objectForRemoval = recs.objectAt(1);
-  
+
   recs.replace(1, 1, null); // the object should be removed
   
   ok(objectForRemoval !== recs.objectAt(1), "record should not be present after a replace");
-  equals(bar2.get('fooToOne'), null, "record should have notified attribute of change");
+  equals(get(bar2, 'fooToOne'), null, "record should have notified attribute of change");
 });
 
 
 test("modifying a toMany array within a nested store", function() {
 
   var child = MyApp.store.chain() ; // get a chained store
-  var parentFooMany = rec3.get('fooMany'); // base foo many
+  var parentFooMany = get(rec3, 'fooMany'); // base foo many
   
   var childRec3 = child.find(rec3); 
-  var childFooMany = childRec3.get('fooMany'); // get the nested fooMany
+  var childFooMany = get(childRec3, 'fooMany'); // get the nested fooMany
   
   // save store keys before modifying for easy testing
   var expected = parentFooMany.getEach('storeKey');
   
   // now trying modifying...
   var childRec4 = child.find(rec4);
-  equals(childFooMany.get('length'), 2, 'precond - childFooMany should be like parent');
+  equals(get(childFooMany, 'length'), 2, 'precond - childFooMany should be like parent');
   childFooMany.pushObject(childRec4);
-  equals(childFooMany.get('length'), 3, 'childFooMany should have 1 more item');
+  equals(get(childFooMany, 'length'), 3, 'childFooMany should have 1 more item');
   
-  SC.RunLoop.end(); // allow notifications to process, if there were any...
+  SC.run.end(); // allow notifications to process, if there were any...
   
   same(parentFooMany.getEach('storeKey'), expected, 'parent.fooMany should not have changed yet');
-  equals(rec3.get('status'), SC.Record.READY_CLEAN, 'parent rec3 should still be READY_CLEAN');
+  equals(get(rec3, 'status'), SC.Record.READY_CLEAN, 'parent rec3 should still be READY_CLEAN');
   
   expected = childFooMany.getEach('storeKey'); // update for after commit
 
-  SC.RunLoop.begin();
+  SC.run.begin();
   child.commitChanges();
-  SC.RunLoop.end();
+  SC.run.end();
   
   // NOTE: not getting fooMany from parent again also tests changing an array
   // underneath.  Does it clear caches, etc?
-  equals(parentFooMany.get('length'), 3, 'parent.fooMany length should have changed');
+  equals(get(parentFooMany, 'length'), 3, 'parent.fooMany length should have changed');
   same(parentFooMany.getEach('storeKey'), expected, 'parent.fooMany should now have changed form child store');
-  equals(rec3.get('status'), SC.Record.READY_DIRTY, 'parent rec3 should now be READY_DIRTY');
+  equals(get(rec3, 'status'), SC.Record.READY_DIRTY, 'parent rec3 should now be READY_DIRTY');
   
 });
 
 test("should be able to modify an initially empty record", function() {
   
-  same(rec.get('fooMany').getEach('storeKey'), [], 'precond - fooMany should be empty');
-  rec.get('fooMany').pushObject(rec4);
-  same(rec.get('fooMany').getEach('storeKey'), [rec4.get('storeKey')], 'after edit should have new array');
+  same(get(rec, 'fooMany').getEach('storeKey'), [], 'precond - fooMany should be empty');
+  get(rec, 'fooMany').pushObject(rec4);
+  same(get(rec, 'fooMany').getEach('storeKey'), [get(rec4, 'storeKey')], 'after edit should have new array');
 });
 
 
@@ -290,69 +292,69 @@ test("should be able to modify an initially empty record", function() {
 // 
 
 function checkAllClean() {
-  SC.A(arguments).forEach(function(r) {
-    equals(r.get('status'), SC.Record.READY_CLEAN, 'PRECOND - %@.status should be READY_CLEAN'.fmt(r.get('id')));
+  Array.prototype.slice.call(arguments).forEach(function(r) {
+    equals(get(r, 'status'), SC.Record.READY_CLEAN, 'PRECOND - %@.status should be READY_CLEAN'.fmt(get(r, 'id')));
   }, this);
 }
 
 test("removing a record from a many-to-many", function() {
-  ok(foo1.get('barToMany').indexOf(bar1) >= 0, 'PRECOND - foo1.barToMany should contain bar1');
-  ok(bar1.get('fooToMany').indexOf(foo1) >= 0, 'PRECOND - bar1.fooToMany should contain foo1');
+  ok(get(foo1, 'barToMany').indexOf(bar1) >= 0, 'PRECOND - foo1.barToMany should contain bar1');
+  ok(get(bar1, 'fooToMany').indexOf(foo1) >= 0, 'PRECOND - bar1.fooToMany should contain foo1');
   checkAllClean(foo1, bar1);
   
-  foo1.get('barToMany').removeObject(bar1);
+  get(foo1, 'barToMany').removeObject(bar1);
 
-  ok(foo1.get('barToMany').indexOf(bar1) < 0, 'foo1.barToMany should NOT contain bar1');
-  ok(bar1.get('fooToMany').indexOf(foo1) < 0, 'bar1.fooToMany should NOT contain foo1');
+  ok(get(foo1, 'barToMany').indexOf(bar1) < 0, 'foo1.barToMany should NOT contain bar1');
+  ok(get(bar1, 'fooToMany').indexOf(foo1) < 0, 'bar1.fooToMany should NOT contain foo1');
 
-  equals(foo1.get('status'), SC.Record.READY_DIRTY, 'foo1.status should be READY_DIRTY');
-  equals(bar1.get('status'), SC.Record.READY_CLEAN, 'bar1.status should be READY_CLEAN');
+  equals(get(foo1, 'status'), SC.Record.READY_DIRTY, 'foo1.status should be READY_DIRTY');
+  equals(get(bar1, 'status'), SC.Record.READY_CLEAN, 'bar1.status should be READY_CLEAN');
   
 });
 
 test("removing a record from a many-to-many; other side", function() {
-  ok(foo1.get('barToMany').indexOf(bar1) >= 0, 'PRECOND - foo1.barToMany should contain bar1');
-  ok(bar1.get('fooToMany').indexOf(foo1) >= 0, 'PRECOND - bar1.fooToMany should contain foo1');
+  ok(get(foo1, 'barToMany').indexOf(bar1) >= 0, 'PRECOND - foo1.barToMany should contain bar1');
+  ok(get(bar1, 'fooToMany').indexOf(foo1) >= 0, 'PRECOND - bar1.fooToMany should contain foo1');
   checkAllClean(foo1, bar1);
   
-  bar1.get('fooToMany').removeObject(foo1);
+  get(bar1, 'fooToMany').removeObject(foo1);
 
-  ok(foo1.get('barToMany').indexOf(bar1) < 0, 'foo1.barToMany should NOT contain bar1');
-  ok(bar1.get('fooToMany').indexOf(foo1) < 0, 'bar1.fooToMany should NOT contain foo1');
+  ok(get(foo1, 'barToMany').indexOf(bar1) < 0, 'foo1.barToMany should NOT contain bar1');
+  ok(get(bar1, 'fooToMany').indexOf(foo1) < 0, 'bar1.fooToMany should NOT contain foo1');
 
-  equals(foo1.get('status'), SC.Record.READY_DIRTY, 'foo1.status should be READY_DIRTY');
-  equals(bar1.get('status'), SC.Record.READY_CLEAN, 'bar1.status should be READY_CLEAN');
+  equals(get(foo1, 'status'), SC.Record.READY_DIRTY, 'foo1.status should be READY_DIRTY');
+  equals(get(bar1, 'status'), SC.Record.READY_CLEAN, 'bar1.status should be READY_CLEAN');
   
 });
 
 test("adding a record to a many-to-many; bar side", function() {
-  ok(foo2.get('barToMany').indexOf(bar3) < 0, 'PRECOND - foo1.barToMany should NOT contain bar1');
-  ok(bar3.get('fooToMany').indexOf(foo2) < 0, 'PRECOND - bar3.fooToMany should NOT contain foo1');
+  ok(get(foo2, 'barToMany').indexOf(bar3) < 0, 'PRECOND - foo1.barToMany should NOT contain bar1');
+  ok(get(bar3, 'fooToMany').indexOf(foo2) < 0, 'PRECOND - bar3.fooToMany should NOT contain foo1');
   checkAllClean(foo2, bar3);
   
-  bar3.get('fooToMany').pushObject(foo2);
+  get(bar3, 'fooToMany').pushObject(foo2);
 
   // v-- since bar3 is added throught inverse, it should follow orderBy
-  equals(foo2.get('barToMany').indexOf(bar3), 1, 'foo1.barToMany should contain bar1');
-  ok(bar3.get('fooToMany').indexOf(foo2) >= 0, 'bar1.fooToMany should contain foo1');
+  equals(get(foo2, 'barToMany').indexOf(bar3), 1, 'foo1.barToMany should contain bar1');
+  ok(get(bar3, 'fooToMany').indexOf(foo2) >= 0, 'bar1.fooToMany should contain foo1');
 
-  equals(foo2.get('status'), SC.Record.READY_DIRTY, 'foo1.status should be READY_DIRTY');
-  equals(bar1.get('status'), SC.Record.READY_CLEAN, 'bar1.status should be READY_CLEAN');
+  equals(get(foo2, 'status'), SC.Record.READY_DIRTY, 'foo1.status should be READY_DIRTY');
+  equals(get(bar1, 'status'), SC.Record.READY_CLEAN, 'bar1.status should be READY_CLEAN');
 });
 
 
 test("adding a record to a many-to-many; foo side", function() {
-  ok(foo2.get('barToMany').indexOf(bar3) < 0, 'PRECOND - foo1.barToMany should NOT contain bar3');
-  ok(bar3.get('fooToMany').indexOf(foo2) < 0, 'PRECOND - bar3.fooToMany should NOT contain foo1');
+  ok(get(foo2, 'barToMany').indexOf(bar3) < 0, 'PRECOND - foo1.barToMany should NOT contain bar3');
+  ok(get(bar3, 'fooToMany').indexOf(foo2) < 0, 'PRECOND - bar3.fooToMany should NOT contain foo1');
   checkAllClean(foo2, bar3);
   
-  foo2.get('barToMany').pushObject(bar3);
+  get(foo2, 'barToMany').pushObject(bar3);
 
-  ok(foo2.get('barToMany').indexOf(bar3) >= 0, 'foo1.barToMany should contain bar3');
-  ok(bar3.get('fooToMany').indexOf(foo2) >= 0, 'bar1.fooToMany should contain foo3');
+  ok(get(foo2, 'barToMany').indexOf(bar3) >= 0, 'foo1.barToMany should contain bar3');
+  ok(get(bar3, 'fooToMany').indexOf(foo2) >= 0, 'bar1.fooToMany should contain foo3');
 
-  equals(foo2.get('status'), SC.Record.READY_DIRTY, 'foo1.status should be READY_DIRTY');
-  equals(bar1.get('status'), SC.Record.READY_CLEAN, 'bar3.status should be READY_CLEAN');
+  equals(get(foo2, 'status'), SC.Record.READY_DIRTY, 'foo1.status should be READY_DIRTY');
+  equals(get(bar1, 'status'), SC.Record.READY_CLEAN, 'bar3.status should be READY_CLEAN');
 });
 
 // ..........................................................
@@ -360,64 +362,64 @@ test("adding a record to a many-to-many; foo side", function() {
 // 
 
 test("removing a record from a one-to-many", function() {
-  ok(foo1.get('barToOne').indexOf(bar1) >= 0, 'PRECOND - foo1.barToOne should contain bar1');
-  equals(bar1.get('fooToOne'), foo1, 'PRECOND - bar1.fooToOne should eq foo1');
+  ok(get(foo1, 'barToOne').indexOf(bar1) >= 0, 'PRECOND - foo1.barToOne should contain bar1');
+  equals(get(bar1, 'fooToOne'), foo1, 'PRECOND - bar1.fooToOne should eq foo1');
   checkAllClean(foo1, bar1);
   
-  foo1.get('barToOne').removeObject(bar1);
+  get(foo1, 'barToOne').removeObject(bar1);
 
-  ok(foo1.get('barToOne').indexOf(bar1) < 0, 'foo1.barToOne should NOT contain bar1');
-  equals(bar1.get('fooToOne'), null, 'bar1.fooToOne should eq null');
+  ok(get(foo1, 'barToOne').indexOf(bar1) < 0, 'foo1.barToOne should NOT contain bar1');
+  equals(get(bar1, 'fooToOne'), null, 'bar1.fooToOne should eq null');
 
-  equals(foo1.get('status'), SC.Record.READY_CLEAN, 'foo1.status should be READY_CLEAN');
-  equals(bar1.get('status'), SC.Record.READY_DIRTY, 'bar1.status should be READY_DIRTY');
+  equals(get(foo1, 'status'), SC.Record.READY_CLEAN, 'foo1.status should be READY_CLEAN');
+  equals(get(bar1, 'status'), SC.Record.READY_DIRTY, 'bar1.status should be READY_DIRTY');
   
 });
 
 
 test("removing a record from a one-to-many; other-side", function() {
-  ok(foo1.get('barToOne').indexOf(bar1) >= 0, 'PRECOND - foo1.barToOne should contain bar1');
-  equals(bar1.get('fooToOne'), foo1, 'PRECOND - bar1.fooToOne should eq foo1');
+  ok(get(foo1, 'barToOne').indexOf(bar1) >= 0, 'PRECOND - foo1.barToOne should contain bar1');
+  equals(get(bar1, 'fooToOne'), foo1, 'PRECOND - bar1.fooToOne should eq foo1');
   checkAllClean(foo1, bar1);
   
-  bar1.set('fooToOne', null);
+  set(bar1, 'fooToOne', null);
 
-  ok(foo1.get('barToOne').indexOf(bar1) < 0, 'foo1.barToOne should NOT contain bar1');
-  equals(bar1.get('fooToOne'), null, 'bar1.fooToOne should eq null');
+  ok(get(foo1, 'barToOne').indexOf(bar1) < 0, 'foo1.barToOne should NOT contain bar1');
+  equals(get(bar1, 'fooToOne'), null, 'bar1.fooToOne should eq null');
 
-  equals(foo1.get('status'), SC.Record.READY_CLEAN, 'foo1.status should be READY_CLEAN');
-  equals(bar1.get('status'), SC.Record.READY_DIRTY, 'bar1.status should be READY_DIRTY');
+  equals(get(foo1, 'status'), SC.Record.READY_CLEAN, 'foo1.status should be READY_CLEAN');
+  equals(get(bar1, 'status'), SC.Record.READY_DIRTY, 'bar1.status should be READY_DIRTY');
   
 });
 
 
 test("add a record to a one-to-many; many-side", function() {
-  ok(foo1.get('barToOne').indexOf(bar3) < 0, 'PRECOND - foo1.barToOne should NOT contain bar3');
-  equals(bar3.get('fooToOne'), null, 'PRECOND - bar3.fooToOne should eq null');
+  ok(get(foo1, 'barToOne').indexOf(bar3) < 0, 'PRECOND - foo1.barToOne should NOT contain bar3');
+  equals(get(bar3, 'fooToOne'), null, 'PRECOND - bar3.fooToOne should eq null');
   checkAllClean(foo1, bar1);
   
-  foo1.get('barToOne').pushObject(bar3);
+  get(foo1, 'barToOne').pushObject(bar3);
 
-  ok(foo1.get('barToOne').indexOf(bar3) >= 0, 'foo1.barToOne should contain bar3');
-  equals(bar3.get('fooToOne'), foo1, 'bar3.fooToOne should eq foo1');
+  ok(get(foo1, 'barToOne').indexOf(bar3) >= 0, 'foo1.barToOne should contain bar3');
+  equals(get(bar3, 'fooToOne'), foo1, 'bar3.fooToOne should eq foo1');
 
-  equals(foo1.get('status'), SC.Record.READY_CLEAN, 'foo1.status should be READY_CLEAN');
-  equals(bar3.get('status'), SC.Record.READY_DIRTY, 'bar3.status should be READY_DIRTY');
+  equals(get(foo1, 'status'), SC.Record.READY_CLEAN, 'foo1.status should be READY_CLEAN');
+  equals(get(bar3, 'status'), SC.Record.READY_DIRTY, 'bar3.status should be READY_DIRTY');
   
 });
 
 
 test("add a record to a one-to-many; one-side", function() {
-  ok(foo1.get('barToOne').indexOf(bar3) < 0, 'PRECOND - foo1.barToOne should NOT contain bar3');
-  equals(bar3.get('fooToOne'), null, 'PRECOND - bar3.fooToOne should eq null');
+  ok(get(foo1, 'barToOne').indexOf(bar3) < 0, 'PRECOND - foo1.barToOne should NOT contain bar3');
+  equals(get(bar3, 'fooToOne'), null, 'PRECOND - bar3.fooToOne should eq null');
   checkAllClean(foo1, bar1);
   
-  bar3.set('fooToOne', foo1);
+  set(bar3, 'fooToOne', foo1);
 
-  ok(foo1.get('barToOne').indexOf(bar3) >= 0, 'foo1.barToOne should contain bar3');
-  equals(bar3.get('fooToOne'), foo1, 'bar3.fooToOne should eq foo1');
+  ok(get(foo1, 'barToOne').indexOf(bar3) >= 0, 'foo1.barToOne should contain bar3');
+  equals(get(bar3, 'fooToOne'), foo1, 'bar3.fooToOne should eq foo1');
 
-  equals(foo1.get('status'), SC.Record.READY_CLEAN, 'foo1.status should be READY_CLEAN');
-  equals(bar3.get('status'), SC.Record.READY_DIRTY, 'bar3.status should be READY_DIRTY');
+  equals(get(foo1, 'status'), SC.Record.READY_CLEAN, 'foo1.status should be READY_CLEAN');
+  equals(get(bar3, 'status'), SC.Record.READY_DIRTY, 'bar3.status should be READY_DIRTY');
   
 });

@@ -5,11 +5,13 @@
 // ==========================================================================
 /*globals module ok equals same test MyApp */
 
+var set = SC.set, get = SC.get;
+
 // test parsing of query string
 var rec, q;
 module("SC.Query comparison of record types", {
   setup: function() {
-    SC.RunLoop.begin();
+    SC.run.begin();
 
     // setup dummy app and store
     window.MyApp = SC.Object.create({
@@ -28,7 +30,7 @@ module("SC.Query comparison of record types", {
     
     q = SC.Query.create();
 
-    SC.RunLoop.end();
+    SC.run.end();
   },
 
   teardown: function() {
@@ -42,7 +44,7 @@ test("should handle record types", function() {
   
   q.conditions = "TYPE_IS 'MyApp.Foo'";
   q.parse();
-  equals(SC.Store.recordTypeFor(rec.storeKey), SC.objectForPropertyPath('MyApp.Foo'), 'record type should be MyApp.Foo');
+  equals(SC.Store.recordTypeFor(rec.storeKey), SC.getPath('MyApp.Foo'), 'record type should be MyApp.Foo');
   ok(q.contains(rec), 'record with proper type should match');
   
   q.conditions = "TYPE_IS 'MyApp.Baz'";

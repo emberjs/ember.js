@@ -4,13 +4,15 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 /*globals module ok equals same test MyApp */
- 
+
+var set = SC.set, get = SC.get;
+
 // test parsing of query string
 var store, storeKey, rec1, rec2, rec3, rec4, rec5, MyApp, q;
 module("SC.Query comparison of records", {
   setup: function() {
     
-    SC.RunLoop.begin();
+    SC.run.begin();
     
     // setup dummy app and store
     MyApp = SC.Object.create({
@@ -29,7 +31,7 @@ module("SC.Query comparison of records", {
       { guid: 5, firstName: "Bert", lastName: "Berthold", active: true }
     ]);
     
-    SC.RunLoop.end();
+    SC.run.end();
     
     rec1 = MyApp.store.find(MyApp.Foo,1);
     rec2 = MyApp.store.find(MyApp.Foo,2);
@@ -140,7 +142,7 @@ test("specifying a custom orderBy comparison function", function() {
     // We'll be explicit about our use of a custom comparison function, in
     // addition to returning later years first.
     usedCustomFunction = YES;
-    return SC.compare(rec2.get('year'), rec1.get('year'));
+    return SC.compare(get(rec2, 'year'), get(rec1, 'year'));
   };
   q.parse();
   equals(q.compare(rec1,rec2), 1, 'guid 2 should be before guid 1');

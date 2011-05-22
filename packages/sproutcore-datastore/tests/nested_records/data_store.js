@@ -4,6 +4,8 @@
  * @author Evin Grano
  */
 
+ var set = SC.set, get = SC.get;
+
 // ..........................................................
 // Basic Set up needs to move to the setup and teardown
 // 
@@ -34,7 +36,7 @@ module("Data Store Tests for Nested Records", {
     });
     store = NestedRecord.store;
     initModels();
-    SC.RunLoop.begin();
+    SC.run.begin();
     storeKeys = store.loadRecords([NestedRecord.Directory, NestedRecord.File], [
       {
         type: 'Directory',
@@ -66,7 +68,7 @@ module("Data Store Tests for Nested Records", {
         name: 'File 3'
       }
     ]);
-    SC.RunLoop.end();
+    SC.run.end();
   },
 
   teardown: function() {
@@ -79,17 +81,17 @@ module("Data Store Tests for Nested Records", {
 
 test("Proper Initialization",function() {
   var first, second;
-  equals(storeKeys.get('length'), 2, "number of primary store keys should be 2");
+  equals(get(storeKeys, 'length'), 2, "number of primary store keys should be 2");
   
   // First
   first = store.materializeRecord(storeKeys[0]);
-  ok(SC.kindOf(first, SC.Record), "first record is a kind of a SC.Record Object");
-  ok(SC.instanceOf(first, NestedRecord.Directory), "first record is a instance of a NestedRecord.Directory Object");
+  ok((first instanceof  SC.Record), "first record is a kind of a SC.Record Object");
+  ok((first instanceof NestedRecord.Directory), "first record is a instance of a NestedRecord.Directory Object");
   
   // Second
   second = store.materializeRecord(storeKeys[1]);
-  ok(SC.kindOf(second, SC.Record), "second record is a kind of a SC.Record Object");
-  ok(SC.instanceOf(second, NestedRecord.File), "second record is a instance of a NestedRecord.File Object");
+  ok((second instanceof  SC.Record), "second record is a kind of a SC.Record Object");
+  ok((second instanceof NestedRecord.File), "second record is a instance of a NestedRecord.File Object");
 });
 
 test("Proper Status",function() {
@@ -97,11 +99,11 @@ test("Proper Status",function() {
   
   // First
   first = store.materializeRecord(storeKeys[0]);
-  equals(first.get('status'), SC.Record.READY_CLEAN, 'first record has a READY_CLEAN State');
+  equals(get(first, 'status'), SC.Record.READY_CLEAN, 'first record has a READY_CLEAN State');
   
   // Second
   second = store.materializeRecord(storeKeys[1]);
-  equals(second.get('status'), SC.Record.READY_CLEAN, 'second record has a READY_CLEAN State');
+  equals(get(second, 'status'), SC.Record.READY_CLEAN, 'second record has a READY_CLEAN State');
 });
 
 test("Can Push onto child array",function() {
@@ -109,21 +111,21 @@ test("Can Push onto child array",function() {
   
   // First
   first = store.materializeRecord(storeKeys[0]);
-  first = first.get('contents').objectAt(0);
-  contents = first.get('contents');
-  equals(contents.get('length'), 2, "should have two items");
+  first = get(first, 'contents').objectAt(0);
+  contents = get(first, 'contents');
+  equals(get(contents, 'length'), 2, "should have two items");
   contents.forEach(function(f){
-    ok(SC.instanceOf(f, NestedRecord.File), "should be a NestedRecord.File");
-    ok(f.get('name'), "should have a name property");
+    ok((f instanceof NestedRecord.File), "should be a NestedRecord.File");
+    ok(get(f, 'name'), "should have a name property");
   });
   
   contents.pushObject({type: 'File', name: 'File 4', id: 12});
   
-  equals(contents.get('length'), 3, "should have three items");
+  equals(get(contents, 'length'), 3, "should have three items");
   contents.forEach(function(f){
-    ok(SC.instanceOf(f, NestedRecord.File), "should be a NestedRecord.File");
-    ok(f.get('name'), "should have a name property");
-    equals(f.get('status'), SC.Record.READY_DIRTY, 'second record has a READY_CLEAN State');
+    ok((f instanceof NestedRecord.File), "should be a NestedRecord.File");
+    ok(get(f, 'name'), "should have a name property");
+    equals(get(f, 'status'), SC.Record.READY_DIRTY, 'second record has a READY_CLEAN State');
     
   });
 
@@ -132,49 +134,49 @@ test("Can Push onto child array",function() {
 test("Use in Nested Store", function(){
   var nstore, dir, c, file,
       pk, id, nFile, nDir;
-  
+    
   // First, find the first file
   dir = store.find(NestedRecord.Directory, 1);
   ok(dir, "Directory id:1 exists"); 
-  equals(dir.get('name'), 'Dir 1', "Directory id:1 has a name of 'Dir 1'");
-  c = dir.get('contents');
+  equals(get(dir, 'name'), 'Dir 1', "Directory id:1 has a name of 'Dir 1'");
+  c = get(dir, 'contents');
   ok(c, "Content of Directory id:1 exists");
   dir = c.objectAt(0);
   ok(dir, "Directory id:2 exists"); 
-  equals(dir.get('name'), 'Dir 2', "Directory id:2 has a name of 'Dir 2'");
-  c = dir.get('contents');
+  equals(get(dir, 'name'), 'Dir 2', "Directory id:2 has a name of 'Dir 2'");
+  c = get(dir, 'contents');
   ok(c, "Content of Directory id:2 exists");
   file = c.objectAt(0);
   ok(file, "File id:1 exists"); 
-  equals(file.get('name'), 'File 1', "File id:1 has a name of 'File 1'");
+  equals(get(file, 'name'), 'File 1', "File id:1 has a name of 'File 1'");
   
   // Second, create nested store
   nstore = store.chain();
-  SC.RunLoop.begin();
-  pk = file.get('primaryKey');
-  id = file.get(pk);
+  SC.run.begin();
+  pk = get(file, 'primaryKey');
+  id = get(file, pk);
   nFile = nstore.find(NestedRecord.File, id);
-  SC.RunLoop.end();
+  SC.run.end();
   ok(nFile, "Nested > File id:1 exists"); 
-  equals(nFile.get('name'), 'File 1', "Nested > File id:1 has a name of 'File 1'");
+  equals(get(nFile, 'name'), 'File 1', "Nested > File id:1 has a name of 'File 1'");
   
   // Third, change the name of the nested store and see what happens
-  nFile.set('name', 'Change Name');
-  equals(nFile.get('name'), 'Change Name', "Nested > File id:1 has changed the name to 'Changed Name'");
-  equals(file.get('name'), 'File 1', "Base > File id:1 still has the name of 'File 1'");
+  set(nFile, 'name', 'Change Name');
+  equals(get(nFile, 'name'), 'Change Name', "Nested > File id:1 has changed the name to 'Changed Name'");
+  equals(get(file, 'name'), 'File 1', "Base > File id:1 still has the name of 'File 1'");
   nDir = nstore.find(NestedRecord.Directory, 1);
   
   // Fourth, commit the changes
   nstore.commitChanges();
   nstore.destroy();
   nstore = null;
-  equals(file.get('name'), 'Change Name', "Base > File id:1 has changed to name of 'Changed Name'");
+  equals(get(file, 'name'), 'Change Name', "Base > File id:1 has changed to name of 'Changed Name'");
   
   // Fifth, double check that the change exists
   dir = store.find(NestedRecord.Directory, 1);
-  file = dir.get('contents').objectAt(0).get('contents').objectAt(0);
-  equals(dir.get('status'), SC.Record.READY_DIRTY, 'Base > Directory id:1 has a READY_DIRTY State');
-  equals(file.get('status'), SC.Record.READY_DIRTY, 'Base > File id:1 has a READY_DIRTY State');
-  equals(file.get('name'), 'Change Name', "Base > File id:1 has actually changed to name of 'Changed Name'");
+  file = get(get(dir, 'contents').objectAt(0), 'contents').objectAt(0);
+  equals(get(dir, 'status'), SC.Record.READY_DIRTY, 'Base > Directory id:1 has a READY_DIRTY State');
+  equals(get(file, 'status'), SC.Record.READY_DIRTY, 'Base > File id:1 has a READY_DIRTY State');
+  equals(get(file, 'name'), 'Change Name', "Base > File id:1 has actually changed to name of 'Changed Name'");
   
 });

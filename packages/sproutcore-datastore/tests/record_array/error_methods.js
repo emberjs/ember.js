@@ -5,6 +5,8 @@
 // ==========================================================================
 /*globals module ok equals same test MyApp */
 
+var set = SC.set, get = SC.get;
+
 var store, Application;
 module("SC.RecordArray Error Methods", {
   setup: function() {
@@ -14,7 +16,7 @@ module("SC.RecordArray Error Methods", {
       name: SC.Record.attr(String)
     });
 
-    SC.RunLoop.begin();
+    SC.run.begin();
     store = SC.Store.create();
 
     var records = [
@@ -25,7 +27,7 @@ module("SC.RecordArray Error Methods", {
     var types = [ Application.Thing, Application.Thing ];
 
     store.loadRecords(types, records);
-    SC.RunLoop.end();
+    SC.run.end();
   },
 
   teardown: function() {
@@ -38,13 +40,13 @@ test("Verify error methods behave correctly", function() {
   var q = SC.Query.local(Application.Thing);
   var things = store.find(q);
 
-  SC.RunLoop.begin();
-  things.set('status', SC.Record.BUSY_LOADING);
+  SC.run.begin();
+  set(things, 'status', SC.Record.BUSY_LOADING);
   store.dataSourceDidErrorQuery(q, SC.Record.GENERIC_ERROR);
-  SC.RunLoop.end();
+  SC.run.end();
 
-  ok(things.get('isError'), "isError on things array should be YES");
+  ok(get(things, 'isError'), "isError on things array should be YES");
 
-  equals(things.get('errorObject'), SC.Record.GENERIC_ERROR,
+  equals(get(things, 'errorObject'), SC.Record.GENERIC_ERROR,
     "get('errorObject') on things array should return the correct error object");
 });

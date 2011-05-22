@@ -5,6 +5,8 @@
 // ==========================================================================
 /*globals module ok equals same test MyApp */
 
+var set = SC.set, get = SC.get;
+
 // test core array-mapping methods for RecordArray
 var store, storeKey, json, rec, storeKeys, recs;
 module("SC.RecordArray core methods", {
@@ -18,7 +20,7 @@ module("SC.RecordArray core methods", {
     
     // get record
     rec = store.materializeRecord(storeKey);
-    equals(rec.get('foo'), 'bar', 'record should have json');
+    equals(get(rec, 'foo'), 'bar', 'record should have json');
     
     // get record array.
     storeKeys = [storeKey];
@@ -27,7 +29,7 @@ module("SC.RecordArray core methods", {
 });
 
 test("initial status", function() {
-  equals(recs.get('status'), SC.Record.EMPTY, 'status should be SC.Record.EMPTY');
+  equals(get(recs, 'status'), SC.Record.EMPTY, 'status should be SC.Record.EMPTY');
 });
 
 // ..........................................................
@@ -35,17 +37,17 @@ test("initial status", function() {
 // 
 
 test("should pass through length", function() {
-  equals(recs.get('length'), storeKeys.length, 'rec should pass through length');  
+  equals(get(recs, 'length'), storeKeys.length, 'rec should pass through length');  
 });
 
 test("changing storeKeys length should change length of rec array also", function() {
 
-  var oldlen = recs.get('length');
+  var oldlen = get(recs, 'length');
   
   storeKeys.pushObject(SC.Store.generateStoreKey()); // change length
   
   ok(storeKeys.length > oldlen, 'precond - storeKeys.length should have changed');
-  equals(recs.get('length'), storeKeys.length, 'rec should pass through length');    
+  equals(get(recs, 'length'), storeKeys.length, 'rec should pass through length');    
 });
 
 // ..........................................................
@@ -66,15 +68,15 @@ test("modifying the underlying storeKey should change the returned materialized 
   equals(recs.objectAt(0), rec, 'recs.objectAt(0) should materialize record');  
   
   // create a new record.
-  SC.RunLoop.begin();
+  SC.run.begin();
   var rec2 = store.createRecord(SC.Record, { foo: "rec2" });
-  SC.RunLoop.end();
+  SC.run.end();
 
-  var storeKey2 = rec2.get('storeKey');
+  var storeKey2 = get(rec2, 'storeKey');
   
   // add to beginning of storeKey array
   storeKeys.unshiftObject(storeKey2);
-  equals(recs.get('length'), 2, 'should now have length of 2');
+  equals(get(recs, 'length'), 2, 'should now have length of 2');
   equals(recs.objectAt(0), rec2, 'objectAt(0) should return new record');
   equals(recs.objectAt(1), rec, 'objectAt(1) should return old record');
 });
@@ -102,17 +104,17 @@ test("adding a record to the record array should pass through storeKeys", functi
   equals(recs.objectAt(0), rec, 'recs.objectAt(0) should materialize record');  
   
   // create a new record.
-  SC.RunLoop.begin();
+  SC.run.begin();
   var rec2 = store.createRecord(SC.Record, { foo: "rec2" });
-  SC.RunLoop.end();
+  SC.run.end();
   
-  var storeKey2 = rec2.get('storeKey');
+  var storeKey2 = get(rec2, 'storeKey');
   
   // add record to beginning of record array
   recs.unshiftObject(rec2);
   
   // verify record array
-  equals(recs.get('length'), 2, 'should now have length of 2');
+  equals(get(recs, 'length'), 2, 'should now have length of 2');
   equals(recs.objectAt(0), rec2, 'recs.objectAt(0) should return new record');
   equals(recs.objectAt(1), rec, 'recs.objectAt(1) should return old record');
   
@@ -132,7 +134,7 @@ test("changing the underlying storeKeys should notify observers of records", fun
     cnt: 0,
     observer: function() { this.cnt++; }
   });
-  recs.addObserver('[]', obj, obj.observer); 
+  SC.addObserver(recs, '[]', obj, obj.observer); 
   
   // now modify storeKeys
   storeKeys.pushObject(SC.Store.generateStoreKey());
@@ -142,11 +144,11 @@ test("changing the underlying storeKeys should notify observers of records", fun
 test("swapping storeKey array should change recordArray and observers", function() {
 
   // setup alternate storeKeys
-  SC.RunLoop.begin();
+  SC.run.begin();
   var rec2 = store.createRecord(SC.Record, { foo: "rec2" });
-  SC.RunLoop.end();
+  SC.run.end();
   
-  var storeKey2 = rec2.get('storeKey');
+  var storeKey2 = get(rec2, 'storeKey');
   var storeKeys2 = [storeKey2];
 
   // setup observer
@@ -154,14 +156,14 @@ test("swapping storeKey array should change recordArray and observers", function
     cnt: 0,
     observer: function() { this.cnt++; }
   });
-  recs.addObserver('[]', obj, obj.observer); 
+  SC.addObserver(recs, '[]', obj, obj.observer); 
   
   // read record once to make it materialized
   equals(recs.objectAt(0), rec, 'recs.objectAt(0) should materialize record');  
   
   // now swap storeKeys
   obj.cnt = 0 ;
-  recs.set('storeKeys', storeKeys2);
+  set(recs, 'storeKeys', storeKeys2);
   
   // verify observer fired and record changed
   equals(obj.cnt, 1, 'observer should have fired after swap');
@@ -171,7 +173,7 @@ test("swapping storeKey array should change recordArray and observers", function
   obj.cnt = 0;
   storeKeys2.unshiftObject(storeKey);
   equals(obj.cnt, 1, 'observer should have fired after edit');
-  equals(recs.get('length'), 2, 'should reflect new length');
+  equals(get(recs, 'length'), 2, 'should reflect new length');
   equals(recs.objectAt(0), rec, 'recs.objectAt(0) should return pushed rec');  
 
 });
