@@ -10,7 +10,7 @@ require('sproutcore-datastore/system/store');
 
 var get = SC.get, set = SC.set;
 
-var o_create = SC.create.primitive;
+var o_create = SC.platform.create;
 
 /**
   @class
@@ -199,13 +199,13 @@ SC.NestedStore = SC.Store.extend(
     if (!parentStore) throw SC.Store.NO_PARENT_STORE_ERROR;
 
     // inherit data store from parent store.
-    this.dataHashes = SC.create.primitive(parentStore.dataHashes);
-    this.revisions  = SC.create.primitive(parentStore.revisions);
-    this.statuses   = SC.create.primitive(parentStore.statuses);
+    this.dataHashes = o_create(parentStore.dataHashes);
+    this.revisions  = o_create(parentStore.revisions);
+    this.statuses   = o_create(parentStore.statuses);
 
     // beget nested records references
-    this.childRecords = parentStore.childRecords ? SC.create.primitive(parentStore.childRecords) : {};
-    this.parentRecords = parentStore.parentRecords ? SC.create.primitive(parentStore.parentRecords) : {};
+    this.childRecords = parentStore.childRecords ? o_create(parentStore.childRecords) : {};
+    this.parentRecords = parentStore.parentRecords ? o_create(parentStore.parentRecords) : {};
 
     // also, reset private temporary objects
     this.chainedChanges = this.locks = this.editables = null;

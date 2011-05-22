@@ -4,10 +4,13 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
-require('sproutcore-runtime/license');
+require('sproutcore-runtime/system/core_object');
+require('sproutcore-runtime/system/set');
 
-require('sproutcore-metal');
-require('sproutcore-runtime/core');
-require('sproutcore-runtime/ext');
-require('sproutcore-runtime/mixins');
-require('sproutcore-runtime/system');
+
+
+SC.CoreObject.subclasses = new SC.Set();
+SC.Object = SC.CoreObject.extend(); // allows Observable to be added.
+
+
+

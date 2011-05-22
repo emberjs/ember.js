@@ -4,10 +4,8 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
-require('sproutcore-runtime/license');
+module('SC.Namepsace');
 
-require('sproutcore-metal');
-require('sproutcore-runtime/core');
-require('sproutcore-runtime/ext');
-require('sproutcore-runtime/mixins');
-require('sproutcore-runtime/system');
+test('SC.Namespace should be a subclass of SC.Object', function() {
+  ok(SC.Object.detect(SC.Namespace));
+});

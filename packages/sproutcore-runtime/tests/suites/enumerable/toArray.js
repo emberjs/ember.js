@@ -4,10 +4,14 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
-require('sproutcore-runtime/license');
+require('sproutcore-runtime/~tests/suites/enumerable');
 
-require('sproutcore-metal');
-require('sproutcore-runtime/core');
-require('sproutcore-runtime/ext');
-require('sproutcore-runtime/mixins');
-require('sproutcore-runtime/system');
+var suite = SC.EnumerableTests;
+
+suite.module('toArray');
+
+suite.test('toArray should convert to an array', function() {
+  var obj = this.newObject();
+  same(obj.toArray(), this.toArray(obj));
+});
+

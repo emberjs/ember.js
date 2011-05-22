@@ -4,10 +4,11 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
-require('sproutcore-runtime/license');
+module('SC.defineProperty');
 
-require('sproutcore-metal');
-require('sproutcore-runtime/core');
-require('sproutcore-runtime/ext');
-require('sproutcore-runtime/mixins');
-require('sproutcore-runtime/system');
+test('toString', function() {
+
+  var obj = {};
+  SC.defineProperty(obj, 'toString', SC.SIMPLE_PROPERTY, function() { return 'FOO'; });
+  equals(obj.toString(), 'FOO', 'should replace toString');
+});

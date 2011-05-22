@@ -4,10 +4,10 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
-require('sproutcore-runtime/license');
+module('SC.Application');
 
-require('sproutcore-metal');
-require('sproutcore-runtime/core');
-require('sproutcore-runtime/ext');
-require('sproutcore-runtime/mixins');
-require('sproutcore-runtime/system');
+test('SC.Application should be a subclass of SC.Namespace', function() {
+
+  ok(SC.Namespace.detect(SC.Application), 'SC.Application subclass of SC.Namespace');
+  
+});
