@@ -134,6 +134,19 @@ var GUID_DESC = {
 */
 SC.GUID_KEY = GUID_KEY;
 
+try {
+  var div = document.createElement('div');
+  Object.defineProperty(div, 'test', GUID_DESC);
+
+  var setNonEnumerableProperty = function(obj, key, desc) {
+    Object.defineProperty(obj, key, desc);
+  };
+} catch(e) {
+  var setNonEnumerableProperty = function(obj, key, desc) {
+    obj[key] = desc.value;
+  };
+}
+
 /**
   Generates a new guid, optionally saving the guid to the object that you
   pass in.  You will rarely need to use this method.  Instead you should
@@ -157,7 +170,7 @@ SC.generateGuid = function(obj, prefix) {
   var ret = (prefix + (uuid++));
   if (obj) {
     GUID_DESC.value = ret;
-    Object.defineProperty(obj, GUID_KEY, GUID_DESC);
+    setNonEnumerableProperty(obj, GUID_KEY, GUID_DESC);
     GUID_DESC.value = null;
   }
 
