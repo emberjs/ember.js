@@ -6,7 +6,9 @@
 // ==========================================================================
 // @global SC
 
-require('sproutcore-runtime');
+require('sproutcore-metal');
+
+var get = SC.get, set = SC.set;
 
 /**
   @class
@@ -82,7 +84,7 @@ SC.StoreError = SC.Object.extend(
 
   /** @private */
   toString: function() {
-    return "SC.StoreError:%@:%@ (%@)".fmt(SC.guidFor(this), this.get('message'), this.get('code'));
+    return "SC.StoreError:%@:%@ (%@)".fmt(SC.guidFor(this), get(this, 'message'), get(this, 'code'));
   },
 
   /**
@@ -145,7 +147,7 @@ SC.$ok = SC.ok;
 */
 SC.val = function(obj) {
   if (obj && obj.isError) {
-    return obj.get ? obj.get('errorValue') : null ; // Error has no value
+    return get(obj, 'errorValue') ; // Error has no value
   } else return obj ;
 };
 

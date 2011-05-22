@@ -5,6 +5,8 @@
 // ==========================================================================
 /*globals module ok equals same test MyApp */
 
+var set = SC.set, get = SC.get;
+
 var store, dataHashes;
 var Person;
 
@@ -19,7 +21,7 @@ module("SC.Store#loadRecord", {
       isAlive: SC.Record.attr(Boolean)
     });
     
-    SC.RunLoop.begin();
+    SC.run.begin();
 
     store = SC.Store.create();
     
@@ -39,7 +41,7 @@ module("SC.Store#loadRecord", {
       age: 28,
       isAlive: YES })];
 
-    SC.RunLoop.end();
+    SC.run.end();
   }
 });
 
@@ -48,7 +50,7 @@ test("loadRecord loads new / update existing record in store", function() {
   var storeKey = store.loadRecord(Person, aDataHash);
   ok(storeKey, "A store key is generated for a new record.");
   
-  var doesStoreKeyResolveToPK = aDataHash.get('guid') === store.idFor(storeKey);
+  var doesStoreKeyResolveToPK = get(aDataHash, 'guid') === store.idFor(storeKey);
   ok(doesStoreKeyResolveToPK, "The storeKey resolves to the correct Primary Key");
   
   var isStatusCorrect = store.peekStatus(storeKey) & SC.Record.READY_CLEAN;
@@ -60,5 +62,5 @@ test("loadRecord loads new / update existing record in store", function() {
   ok(storeKey === storeKeyAfterUpdate, "When the same record is loaded a second time its store key remains unchanged.");
   
   var record = store.materializeRecord(storeKey);
-  ok(record.get('age') === 40, "Record in store is updated with new values from data hash.");  
+  ok(get(record, 'age') === 40, "Record in store is updated with new values from data hash.");  
 });

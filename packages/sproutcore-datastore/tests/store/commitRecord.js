@@ -5,6 +5,8 @@
 // ==========================================================================
 /*globals module ok equals same test MyApp */
 
+var set = SC.set, get = SC.get;
+
 var store, storeKey1, storeKey2, storeKey3, storeKey4, storeKey5, storeKey6;
 var storeKey7, json, json1, json2, json3, json4, json5, json6, json7;
 var ds ;
@@ -98,7 +100,7 @@ module("SC.Store#commitRecord", {
       bool:   YES
     };
     
-    SC.RunLoop.begin();
+    SC.run.begin();
     storeKey1 = SC.Store.generateStoreKey();
     store.writeDataHash(storeKey1, json1, SC.Record.READY_CLEAN);
     storeKey2 = SC.Store.generateStoreKey();
@@ -113,7 +115,7 @@ module("SC.Store#commitRecord", {
     store.writeDataHash(storeKey6, json6, SC.Record.READY_ERROR);
     storeKey7 = SC.Store.generateStoreKey();
     store.writeDataHash(storeKey7, json7, SC.Record.READY_DESTROYED_CLEAN);
-    SC.RunLoop.end();
+    SC.run.end();
   }
 });
 

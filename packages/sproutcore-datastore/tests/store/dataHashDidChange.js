@@ -5,6 +5,8 @@
 // ==========================================================================
 /*globals module ok equals same test MyApp */
 
+var set = SC.set, get = SC.get;
+
 // NOTE: The test below are based on the Data Hashes state chart.  This models
 // the "did_change" event in the Store portion of the diagram.
 
@@ -69,21 +71,21 @@ function testStateTransition(fromState, toState) {
 } 
 
 test("edit state = LOCKED", function() {
-  SC.RunLoop.begin();
+  SC.run.begin();
   
   store.readDataHash(storeKey); // lock
   testStateTransition(SC.Store.LOCKED, SC.Store.LOCKED);
   
-  SC.RunLoop.end();
+  SC.run.end();
 }) ;
 
 test("edit state = EDITABLE", function() {
-  SC.RunLoop.begin();
+  SC.run.begin();
   
   store.readEditableDataHash(storeKey); // make editable
   testStateTransition(SC.Store.EDITABLE, SC.Store.EDITABLE);
   
-  SC.RunLoop.end();
+  SC.run.end();
 }) ;
 
 // ..........................................................
@@ -91,7 +93,7 @@ test("edit state = EDITABLE", function() {
 // 
 
 test("calling with array of storeKeys will edit all store keys", function() {
-  SC.RunLoop.begin();
+  SC.run.begin();
   
   var storeKeys = [storeKey, SC.Store.generateStoreKey()], idx ;
   store.dataHashDidChange(storeKeys, 2000) ;
@@ -99,11 +101,11 @@ test("calling with array of storeKeys will edit all store keys", function() {
     equals(store.revisions[storeKeys[idx]], 2000, 'storeKey at index %@ should have new revision'.fmt(idx));
   }
   
-  SC.RunLoop.end();
+  SC.run.end();
 });
 
 test("calling dataHashDidChange twice with different statusOnly values before flush is called should trigger a non-statusOnly flush if any of the statusOnly values were NO", function() {
-  SC.RunLoop.begin();
+  SC.run.begin();
 
   // Create a phony record because that's the only way the 'hasDataChanges'
   // data structure will be used.
@@ -115,20 +117,20 @@ test("calling dataHashDidChange twice with different statusOnly values before fl
   
   ok(store.recordPropertyChanges.hasDataChanges.contains(storeKey), 'recordPropertyChanges.hasDataChanges should contain the storeKey %@'.fmt(storeKey)) ;
 
-  SC.RunLoop.end();
+  SC.run.end();
 });
 
 test("calling _notifyRecordPropertyChange twice, once with a key and once without, before flush is called should invalidate all cached properties when flush is finally called", function() {
-  SC.RunLoop.begin();
+  SC.run.begin();
 
   var mainStore = SC.Store.create();
   var record    = mainStore.createRecord(MyApp.Foo, {});
   
   // Make sure the property values get cached.
-  var cacheIt = record.get('prop1');
-  cacheIt     = record.get('prop2');
+  var cacheIt = get(record, 'prop1');
+  cacheIt     = get(record, 'prop2');
   
-  var storeKey = record.get('storeKey');
+  var storeKey = get(record, 'storeKey');
   
   // Send an innocuous "prop2 changed" notification, because we want to be sure
   // that if we notify about a change to one property and later also change all
@@ -141,7 +143,7 @@ test("calling _notifyRecordPropertyChange twice, once with a key and once withou
   
   // Now, set the values of prop1 and prop2 to be different for the records in
   // the nested store.
-  nestedRecord.set('prop1', 'New value');
+  set(nestedRecord, 'prop1', 'New value');
   
   // Now, when we commit, we'll be changing the dataHash of the main store and
   // should notify that all properties have changed.
@@ -153,10 +155,10 @@ test("calling _notifyRecordPropertyChange twice, once with a key and once withou
   mainStore._notifyRecordPropertyChange(storeKey, NO, 'prop3');
 
   // Let the flush happen.
-  SC.RunLoop.end();
+  SC.run.end();
 
 
   // Finally, read 'prop1' from the main store's object.  It should be the new
   // value!
-  equals(record.get('prop1'), 'New value', 'The main store’s record should return the correct value for prop1, not the stale cached version') ;
+  equals(get(record, 'prop1'), 'New value', 'The main store’s record should return the correct value for prop1, not the stale cached version') ;
 });

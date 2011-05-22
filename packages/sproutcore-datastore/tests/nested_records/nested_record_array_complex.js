@@ -4,6 +4,8 @@
  * @author Evin Grano
  */
 
+ var set = SC.set, get = SC.get;
+
 // ..........................................................
 // Basic Set up needs to move to the setup and teardown
 // 
@@ -44,7 +46,7 @@ module("Complex SC.Record: Parent > Array of Children > Array of Children", {
     });
     store = NestedRecord.store;
     initModels();
-    SC.RunLoop.begin();
+    SC.run.begin();
     testParent = store.createRecord(NestedRecord.Group, {
       name: 'Test Group',
       people: [
@@ -74,7 +76,7 @@ module("Complex SC.Record: Parent > Array of Children > Array of Children", {
         }
       ]
     });
-    SC.RunLoop.end();
+    SC.run.end();
     // Second Array for testings
     peopleData2 = [
       {
@@ -174,39 +176,39 @@ test("Function: writeAttribute()", function() {
 test("Basic Read, Testing the First Child Array", function() {
   var pm, ppl, pplAttr, pplDup, p, pDup, pStore, key, oldKey;
   // Test general gets
-  equals(testParent.get('name'), 'Test Group', "get should be correct for name attribute: Test Group");
-  equals(testParent.get('nothing'), null, "get should be correct for invalid key");
+  equals(get(testParent, 'name'), 'Test Group', "get should be correct for name attribute: Test Group");
+  equals(get(testParent, 'nothing'), null, "get should be correct for invalid key");
   
   // Test Person (Child Record) creation
-  ppl = testParent.get('people');
+  ppl = get(testParent, 'people');
   // Check Model Class information
   
-  ok(SC.instanceOf(ppl, SC.ChildArray), "check that get() creates an actual instance of a SC.ChildArray");
-  equals(ppl.get('length'), 3, "check that the length of the array of child records is 3");
+  ok((ppl instanceof SC.ChildArray), "check that get() creates an actual instance of a SC.ChildArray");
+  equals(get(ppl, 'length'), 3, "check that the length of the array of child records is 3");
   p = ppl.objectAt(0);
-  ok(SC.kindOf(p, SC.Record), "check that first ChildRecord from the get() creates an actual instance that is a kind of a SC.Record Object");
-  ok(SC.instanceOf(p, NestedRecord.Person), "check that first ChildRecord from the get() creates an actual instance of a Person Object");
+  ok((p instanceof  SC.Record), "check that first ChildRecord from the get() creates an actual instance that is a kind of a SC.Record Object");
+  ok((p instanceof NestedRecord.Person), "check that first ChildRecord from the get() creates an actual instance of a Person Object");
   
   // Check reference information
-  pm = p.get('primaryKey');
-  key = p.get(pm);
+  pm = get(p, 'primaryKey');
+  key = get(p, pm);
   pStore = store.find(NestedRecord.Person, key);
   ok(pStore, 'check that first ChildRecord that the store has the instance of the child record with proper primary key');
   equals(p, pStore, "check the parent reference to the first child is the same as the direct store reference");
   
   // Check to see if the attributes of a Child Record match the refrence of the parent
   pplAttr = testParent.readAttribute('people');
-  ok(!SC.instanceOf(pplAttr, SC.ChildArray), "check that readAttribute() does not create an actual instance of a SC.ChildArray");
-  same(pplAttr[0], pStore.get('attributes'), "check that the ChildRecord's attributes are the same as the ParentRecord's readAttribute for the reference");
+  ok(!(pplAttr instanceof SC.ChildArray), "check that readAttribute() does not create an actual instance of a SC.ChildArray");
+  same(pplAttr[0], get(pStore, 'attributes'), "check that the ChildRecord's attributes are the same as the ParentRecord's readAttribute for the reference");
   
   // Duplication check
-  pplDup = testParent.get('people');
+  pplDup = get(testParent, 'people');
   ok(pplDup, 'check to see that we get an array on the second call to the parent for the child records');
-  equals(pplDup.get('length'), 3, "check that the length of the array of child records is still 3");
+  equals(get(pplDup, 'length'), 3, "check that the length of the array of child records is still 3");
   pDup = pplDup.objectAt(0);
   ok(pDup, "check to see if we have an instance of a child record again");
-  oldKey = p.get(pm);
-  key = pDup.get(pm);
+  oldKey = get(p, pm);
+  key = get(pDup, pm);
   equals(key, oldKey, "check to see if the primary keys are the same");
   equals(SC.guidFor(pDup), SC.guidFor(p), "check to see if the guid are the same");
   same(pDup, p, "check to see that it is the same child record as before");
@@ -217,40 +219,40 @@ test("Basic Read, Testing the Second Child Array", function() {
   var pm, ppl, pplAttr, p, addrs, addrsDup, addrsAttr, a, aDup, aStore, key, oldKey;
   
   // Test Addresses (Child Record) creation
-  ppl = testParent.get('people');
+  ppl = get(testParent, 'people');
   p = ppl.objectAt(0);
-  addrs = p.get('addresses');
+  addrs = get(p, 'addresses');
   // Check Model Class information
   
-  ok(SC.instanceOf(addrs, SC.ChildArray), "check that get() creates an actual instance of a SC.ChildArray");
-  equals(addrs.get('length'), 2, "check that the length of the array of child records is 2");
+  ok((addrs instanceof SC.ChildArray), "check that get() creates an actual instance of a SC.ChildArray");
+  equals(get(addrs, 'length'), 2, "check that the length of the array of child records is 2");
   a = addrs.objectAt(0);
-  ok(SC.kindOf(a, SC.Record), "check that first ChildRecord from the get() creates an actual instance that is a kind of a SC.Record Object");
-  ok(SC.instanceOf(a, NestedRecord.Address), "check that first ChildRecord from the get() creates an actual instance of a Address Object");
+  ok((a instanceof  SC.Record), "check that first ChildRecord from the get() creates an actual instance that is a kind of a SC.Record Object");
+  ok((a instanceof NestedRecord.Address), "check that first ChildRecord from the get() creates an actual instance of a Address Object");
   
   // Check reference information
-  pm = a.get('primaryKey');
-  key = a.get(pm);
+  pm = get(a, 'primaryKey');
+  key = get(a, pm);
   aStore = store.find(NestedRecord.Address, key);
   ok(aStore, 'check that first ChildRecord that the store has the instance of the child record with proper primary key');
   equals(a, aStore, "check the parent reference to the first child is the same as the direct store reference");
   
   // Check to see if the attributes of a Child Record match the refrence of the parent
   addrsAttr = p.readAttribute('addresses');
-  ok(!SC.instanceOf(addrsAttr, SC.ChildArray), "check that readAttribute() does not create an actual instance of a SC.ChildArray");
-  same(addrsAttr[0], aStore.get('attributes'), "check that the ChildRecord's attributes are the same as the ParentRecord's readAttribute for the reference");
+  ok(!(addrsAttr instanceof SC.ChildArray), "check that readAttribute() does not create an actual instance of a SC.ChildArray");
+  same(addrsAttr[0], get(aStore, 'attributes'), "check that the ChildRecord's attributes are the same as the ParentRecord's readAttribute for the reference");
   pplAttr = testParent.readAttribute('people');
-  ok(!SC.instanceOf(pplAttr[0].addresses, SC.ChildArray), "check from the Group (parent Record) that readAttribute() does not create an actual instance of a SC.ChildArray");
-  same(pplAttr[0].addresses[0], aStore.get('attributes'), "check from the Group (parent Record) that the ChildRecord's attributes are the same as the ParentRecord's readAttribute for the reference");
+  ok(!(pplAttr[0].addresses instanceof SC.ChildArray), "check from the Group (parent Record) that readAttribute() does not create an actual instance of a SC.ChildArray");
+  same(pplAttr[0].addresses[0], get(aStore, 'attributes'), "check from the Group (parent Record) that the ChildRecord's attributes are the same as the ParentRecord's readAttribute for the reference");
   
   // Duplication check
-  addrsDup = p.get('addresses');
+  addrsDup = get(p, 'addresses');
   ok(addrsDup, 'check to see that we get an array on the second call to the parent for the child records');
-  equals(addrsDup.get('length'), 2, "check that the length of the array of child records is still 2");
+  equals(get(addrsDup, 'length'), 2, "check that the length of the array of child records is still 2");
   aDup = addrsDup.objectAt(0);
   ok(aDup, "check to see if we have an instance of a child record again");
-  oldKey = a.get(pm);
-  key = aDup.get(pm);
+  oldKey = get(a, pm);
+  key = get(aDup, pm);
   equals(key, oldKey, "check to see if the primary key are the same");
   equals(SC.guidFor(aDup), SC.guidFor(a), "check to see if the guid are the same");
   same(aDup, a, "check to see that it is the same child record as before");
@@ -259,162 +261,163 @@ test("Basic Read, Testing the Second Child Array", function() {
 test("Basic Write: Testing the First Child Array", function() {
   var pm, ppl, p, pAddrs, pAddrsAttr, pStore, key, oldKey, aFirst, aLast;
   // Test general gets
-  testParent.set('name', 'New Group');
-  equals(testParent.get('name'), 'New Group', "set() should change name attribute");
-  testParent.set('nothing', 'nothing');
-  equals(testParent.get('nothing'), 'nothing', "set should change non-existent property to a new property");
+  set(testParent, 'name', 'New Group');
+  equals(get(testParent, 'name'), 'New Group', "set() should change name attribute");
+  set(testParent, 'nothing', 'nothing');
+  equals(get(testParent, 'nothing'), 'nothing', "set should change non-existent property to a new property");
   
-   testParent.set('people', peopleData2);
-   ppl = testParent.get('people');
-   ok(SC.instanceOf(ppl, SC.ChildArray), "check that get() creates an actual instance of a SC.ChildArray");
-   equals(ppl.get('length'), 2, "after set() on parent, check that the length of the array of child records is 2");
+   set(testParent, 'people', peopleData2);
+   ppl = get(testParent, 'people');
+   ok((ppl instanceof SC.ChildArray), "check that get() creates an actual instance of a SC.ChildArray");
+   equals(get(ppl, 'length'), 2, "after set() on parent, check that the length of the array of child records is 2");
    p = ppl.objectAt(0);
-   ok(SC.kindOf(p, SC.Record), "check that first ChildRecord from the get() creates an actual instance that is a kind of a SC.Record Object");
-   ok(SC.instanceOf(p, NestedRecord.Person), "check that first ChildRecord from the get() creates an actual instance of a Person Object");
+   ok((p instanceof  SC.Record), "check that first ChildRecord from the get() creates an actual instance that is a kind of a SC.Record Object");
+   ok((p instanceof NestedRecord.Person), "check that first ChildRecord from the get() creates an actual instance of a Person Object");
    
    // TODO: [EG] Add test to make sure the number of ChildRecords in store is correct when we add store recored clearing
    
    // Check reference information
-   pm = p.get('primaryKey');
-   key = p.get(pm);
+   pm = get(p, 'primaryKey');
+   key = get(p, pm);
    pStore = store.find(NestedRecord.Person, key);
    ok(pStore, 'after a set() with an object, checking that the store has the instance of the child record with proper primary key');
    equals(pStore, p, "after a set with an object, checking the parent reference is the same as the direct store reference");
    
    // Check for changes on the child bubble to the parent.
-   p.set('addresses', addressData1);
-   pAddrs = p.get('addresses');
-   ok(SC.kindOf(pAddrs, SC.ChildArray), "check to see that the set('addresses') has returned a SC.ChildArray");
-   equals(pAddrs.get('length'), 4, "check with a get() that the new address length is 4");
+   set(p, 'addresses', addressData1);
+   pAddrs = get(p, 'addresses');
+   ok((pAddrs instanceof  SC.ChildArray), "check to see that the set('addresses') has returned a SC.ChildArray");
+   equals(get(pAddrs, 'length'), 4, "check with a get() that the new address length is 4");
    pAddrsAttr = p.readAttribute('addresses');
    equals(pAddrsAttr.length, 4, "check with a readAttribute() that the new address length is 4");
    aFirst = pAddrs.objectAt(0);
    aLast = pAddrs.objectAt(3);
-   same(pAddrsAttr[0], aFirst.get('attributes'), "check from the Person (parent Record) that the first Address's attributes are the same as the Person's readAttribute for the reference");
-   same(pAddrsAttr[3], aLast.get('attributes'), "check from the Person (parent Record) that the last Address's attributes are the same as the Person's readAttribute for the reference");
-   ok(p.get('status') & SC.Record.DIRTY, 'check that the person (child record) is dirty');
-   ok(testParent.get('status') & SC.Record.DIRTY, 'check that the group (parent record) is dirty');
+   same(pAddrsAttr[0], get(aFirst, 'attributes'), "check from the Person (parent Record) that the first Address's attributes are the same as the Person's readAttribute for the reference");
+   same(pAddrsAttr[3], get(aLast, 'attributes'), "check from the Person (parent Record) that the last Address's attributes are the same as the Person's readAttribute for the reference");
+   ok(get(p, 'status') & SC.Record.DIRTY, 'check that the person (child record) is dirty');
+   ok(get(testParent, 'status') & SC.Record.DIRTY, 'check that the group (parent record) is dirty');
 });
 
 test("Basic Write: Testing the Second Child Array", function() {
   var ppl, pplAttr, p, addrsAttr, addrs, a;
   
-  ppl = testParent.get('people');
+  ppl = get(testParent, 'people');
   p = ppl.objectAt(0);
-  addrs = p.get('addresses');
+  addrs = get(p, 'addresses');
   a = addrs.objectAt('0');
   
   // New do the test on the address
-  a.set('street', '123 New Street');
-  ok(a.get('status') & SC.Record.DIRTY, 'check that the address (child record) is dirty');
-  ok(p.get('status') & SC.Record.DIRTY, 'check that the person (child record) is dirty');
-  ok(testParent.get('status') & SC.Record.DIRTY, 'check that the group (parent record) is dirty');
+  set(a, 'street', '123 New Street');
+  ok(get(a, 'status') & SC.Record.DIRTY, 'check that the address (child record) is dirty');
+  ok(get(p, 'status') & SC.Record.DIRTY, 'check that the person (child record) is dirty');
+  ok(get(testParent, 'status') & SC.Record.DIRTY, 'check that the group (parent record) is dirty');
 
   // Check for changes on the child bubble to the parent.
   addrsAttr = p.readAttribute('addresses');
   equals(addrsAttr.length, 2, "check the length of the address attribute is still 2");
-  equals(addrsAttr[0], a.get('attributes'), "check to see if the person's address attribute is the same as the address's attributes");
+  equals(addrsAttr[0], get(a, 'attributes'), "check to see if the person's address attribute is the same as the address's attributes");
   
   // Check the group people stuff
   pplAttr = testParent.readAttribute('people');
-  equals(pplAttr[0].addresses[0], a.get('attributes'), "check to see if the groups reference's address attribute is the same as the address's attributes");
+  equals(pplAttr[0].addresses[0], get(a, 'attributes'), "check to see if the groups reference's address attribute is the same as the address's attributes");
 });
 
 test("Basic Array Functionality: pushObject", function() {   
   var ppl, pplAttr, p, pFirst, pLast;
   // Add something to the array
-  ppl = testParent.get('people');
+  ppl = get(testParent, 'people');
   // PushObject Tests
   ppl.pushObject(personData1);
-  ppl = testParent.get('people');
-  equals(ppl.get('length'), 4, "after pushObject() on parent, check that the length of the array of child records is 4");
+  ppl = get(testParent, 'people');
+  equals(get(ppl, 'length'), 4, "after pushObject() on parent, check that the length of the array of child records is 4");
   p = ppl.objectAt(3);
-  ok(SC.kindOf(p, SC.Record), "check that newly added ChildRecord creates an actual instance that is a kind of a SC.Record Object");
-  ok(SC.instanceOf(p, NestedRecord.Person), "check that newly added ChildRecord creates an actual instance of a Person Object");
-  equals(p.get('name'), 'Testikles, God Of Fertility', "after a pushObject on parent, check to see if it has all the right values for the attributes");
-  ok(p.get('status') & SC.Record.DIRTY, 'check that the child record is dirty');
-  ok(testParent.get('status') & SC.Record.DIRTY, 'check that the parent record is dirty'); 
+  ok((p instanceof  SC.Record), "check that newly added ChildRecord creates an actual instance that is a kind of a SC.Record Object");
+  ok((p instanceof NestedRecord.Person), "check that newly added ChildRecord creates an actual instance of a Person Object");
+  equals(get(p, 'name'), 'Testikles, God Of Fertility', "after a pushObject on parent, check to see if it has all the right values for the attributes");
+  ok(get(p, 'status') & SC.Record.DIRTY, 'check that the child record is dirty');
+  ok(get(testParent, 'status') & SC.Record.DIRTY, 'check that the parent record is dirty'); 
   
   // Verify the Attrs
   pplAttr = testParent.readAttribute('people');
   equals(pplAttr.length, 4, "after pushObject() on parent, check that the length of the attribute array of child records is 4");
   pFirst = ppl.objectAt(0);
   pLast = ppl.objectAt(3);
-  same(pplAttr[0], pFirst.get('attributes'), "verify that parent attributes are the same as the first individual child attributes");
-  same(pplAttr[3], pLast.get('attributes'), "verify that parent attributes are the same as the last individual child attributes");  
+  same(pplAttr[0], get(pFirst, 'attributes'), "verify that parent attributes are the same as the first individual child attributes");
+  same(pplAttr[3], get(pLast, 'attributes'), "verify that parent attributes are the same as the last individual child attributes");  
 });
 
 test("Basic Array Functionality: popObject", function() {   
   var ppl, pplAttr, p, pFirst, pLast;
   // Add something to the array
-  ppl = testParent.get('people');
+  ppl = get(testParent, 'people');
   // popObject Tests
   ppl.popObject();
-  ppl = testParent.get('people');
-  equals(ppl.get('length'), 2, "after popObject() on parent, check that the length of the array of child records is 2");
+  ppl = get(testParent, 'people');
+  equals(get(ppl, 'length'), 2, "after popObject() on parent, check that the length of the array of child records is 2");
   p = ppl.objectAt(0);
-  ok(SC.kindOf(p, SC.Record), "check that newly added ChildRecord creates an actual instance that is a kind of a SC.Record Object");
-  ok(SC.instanceOf(p, NestedRecord.Person), "check that newly added ChildRecord creates an actual instance of a Person Object");
-  equals(p.get('name'), 'Barack Obama', "after a pushObject on parent, check to see if it has all the right values for the attributes");
-  ok(p.get('status') & SC.Record.DIRTY, 'check that the child record is dirty');
-  ok(testParent.get('status') & SC.Record.DIRTY, 'check that the parent record is dirty'); 
+  ok((p instanceof  SC.Record), "check that newly added ChildRecord creates an actual instance that is a kind of a SC.Record Object");
+  ok((p instanceof NestedRecord.Person), "check that newly added ChildRecord creates an actual instance of a Person Object");
+  equals(get(p, 'name'), 'Barack Obama', "after a pushObject on parent, check to see if it has all the right values for the attributes");
+  ok(get(p, 'status') & SC.Record.DIRTY, 'check that the child record is dirty');
+  ok(get(testParent, 'status') & SC.Record.DIRTY, 'check that the parent record is dirty'); 
   
   // Verify the Attrs
   pplAttr = testParent.readAttribute('people');
   equals(pplAttr.length, 2, "after pushObject() on parent, check that the length of the attribute array of child records is 2");
   pFirst = ppl.objectAt(0);
   pLast = ppl.objectAt(1);
-  same(pplAttr[0], pFirst.get('attributes'), "verify that parent attributes are the same as the first individual child attributes");
-  same(pplAttr[1], pLast.get('attributes'), "verify that parent attributes are the same as the last individual child attributes");  
+  same(pplAttr[0], get(pFirst, 'attributes'), "verify that parent attributes are the same as the first individual child attributes");
+  same(pplAttr[1], get(pLast, 'attributes'), "verify that parent attributes are the same as the last individual child attributes");  
 });
 
 test("Basic Array Functionality: shiftObject", function() {   
   var ppl, p;
   // Add something to the array
-  ppl = testParent.get('people');
+  ppl = get(testParent, 'people');
   // PushObject Tests
   ppl.shiftObject();
-  ppl = testParent.get('people');
-  equals(ppl.get('length'), 2, "after shiftObject() on parent, check that the length of the array of child records is 2");
+  ppl = get(testParent, 'people');
+  equals(get(ppl, 'length'), 2, "after shiftObject() on parent, check that the length of the array of child records is 2");
   p = ppl.objectAt('0');
-  equals(p.get('name'), 'John Doe', "after a shiftObject on parent, check to see if it has all the right values for the attributes");
-  ok(testParent.get('status') & SC.Record.DIRTY, 'check that the parent record is dirty'); 
+  equals(get(p, 'name'), 'John Doe', "after a shiftObject on parent, check to see if it has all the right values for the attributes");
+  ok(get(testParent, 'status') & SC.Record.DIRTY, 'check that the parent record is dirty'); 
 });
 
 test("Basic Array Functionality: unshiftObject", function() {   
   var ppl, pplAttr, p, pFirst, pLast;
   // Add something to the array
-  ppl = testParent.get('people');
+  ppl = get(testParent, 'people');
   // PushObject Tests
   ppl.unshiftObject(personData1);
-  ppl = testParent.get('people');
-  equals(ppl.get('length'), 4, "after unshiftObject() on parent, check that the length of the array of child records is 4");
+  ppl = get(testParent, 'people');
+  equals(get(ppl, 'length'), 4, "after unshiftObject() on parent, check that the length of the array of child records is 4");
   p = ppl.objectAt(0);
-  ok(SC.kindOf(p, SC.Record), "check that newly added ChildRecord creates an actual instance that is a kind of a SC.Record Object");
-  ok(SC.instanceOf(p, NestedRecord.Person), "check that newly added ChildRecord creates an actual instance of a Person Object");
-  equals(p.get('name'), 'Testikles, God Of Fertility', "after a pushObject on parent, check to see if it has all the right values for the attributes");
-  ok(p.get('status') & SC.Record.DIRTY, 'check that the child record is dirty');
-  ok(testParent.get('status') & SC.Record.DIRTY, 'check that the parent record is dirty'); 
+  ok((p instanceof  SC.Record), "check that newly added ChildRecord creates an actual instance that is a kind of a SC.Record Object");
+  ok((p instanceof NestedRecord.Person), "check that newly added ChildRecord creates an actual instance of a Person Object");
+  equals(get(p, 'name'), 'Testikles, God Of Fertility', "after a pushObject on parent, check to see if it has all the right values for the attributes");
+  ok(get(p, 'status') & SC.Record.DIRTY, 'check that the child record is dirty');
+  ok(get(testParent, 'status') & SC.Record.DIRTY, 'check that the parent record is dirty'); 
   
   // Verify the Attrs
   pplAttr = testParent.readAttribute('people');
   equals(pplAttr.length, 4, "after unshiftObject() on parent, check that the length of the attribute array of child records is 4");
   pFirst = ppl.objectAt(0);
   pLast = ppl.objectAt(3);
-  same(pplAttr[0], pFirst.get('attributes'), "verify that parent attributes are the same as the first individual child attributes");
-  same(pplAttr[3], pLast.get('attributes'), "verify that parent attributes are the same as the last individual child attributes");  
+  same(pplAttr[0], get(pFirst, 'attributes'), "verify that parent attributes are the same as the first individual child attributes");
+  same(pplAttr[3], get(pLast, 'attributes'), "verify that parent attributes are the same as the last individual child attributes");  
 });
 
 test("Test: normalization on complex nested records", function() {
   var ppl, addresses, pAttrs;
   // Add something to the array
-  ppl = testParent.get('people');
-  addresses = ppl.objectAt(0).get('addresses');
+  ppl = get(testParent, 'people');
+  addresses = get(ppl.objectAt(0), 'addresses');
   
   // PushObject Tests
   addresses.pushObject({ type: 'Address', street: '2 Main Street', city: 'Awesome'});
+  
   testParent.normalize();
-  pAttrs = testParent.get('attributes');
+  pAttrs = get(testParent, 'attributes');
   equals(pAttrs.people[0].addresses[2].state, 'VA', "test normalization is the default value of VA");
 });
 

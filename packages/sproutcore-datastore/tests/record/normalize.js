@@ -5,12 +5,14 @@
 // ==========================================================================
 /*globals module ok equals same test MyApp */
 
+var set = SC.set, get = SC.get;
+
 // test normalize method for SC.Record
 var storeKeys, rec, rec2, rec3, rec4;
 module("SC.Record normalize method", {
   setup: function() {
 
-    SC.RunLoop.begin();
+    SC.run.begin();
  
     window.MyApp = SC.Object.create({
       store: SC.Store.create()
@@ -112,7 +114,7 @@ module("SC.Record normalize method", {
   },
   
   teardown: function() {
-    SC.RunLoop.end();
+    SC.run.end();
     window.MyApp = undefined;
   }
   
@@ -124,14 +126,14 @@ module("SC.Record normalize method", {
 
 test("normalizing a pre-populated record" ,function() {
   
-  equals(rec.attributes()['firstName'], 123, 'hash value of firstName is 123');
-  equals(rec.get('firstName'), '123', 'get value of firstName is 123 string');
+  equals(get(rec, 'attributes')['firstName'], 123, 'hash value of firstName is 123');
+  equals(get(rec, 'firstName'), '123', 'get value of firstName is 123 string');
   
   rec.normalize();
   
-  var sameValue = rec.attributes()['firstName'] === '123';
-  var relatedTo = rec.attributes()['relatedTo'] === '1';
-  var relatedToComputed = rec.attributes()['relatedToComputed'];
+  var sameValue = get(rec, 'attributes')['firstName'] === '123';
+  var relatedTo = get(rec, 'attributes')['relatedTo'] === '1';
+  var relatedToComputed = get(rec, 'attributes')['relatedToComputed'];
   
   var computedValues = ['foo1', 'foo2', 'foo3'];
   
@@ -139,31 +141,31 @@ test("normalizing a pre-populated record" ,function() {
   ok(sameValue, 'hash value of relatedTo should be 1');
   ok(computedValues.indexOf(relatedToComputed)!==-1, 'hash value of relatedToComputed should be either foo1, foo2 or foo3');
   
-  equals(rec.get('firstName'), '123', 'get value of firstName after normalizing is 123 string');
+  equals(get(rec, 'firstName'), '123', 'get value of firstName after normalizing is 123 string');
   
 });
 
 test("normalizing an empty record" ,function() {
   
-  equals(rec3.attributes()['defaultValue'], undefined, 'hash value of defaultValue is undefined');
-  equals(rec3.get('defaultValue'), 'default', 'get value of defaultValue is default');
+  equals(get(rec3, 'attributes')['defaultValue'], undefined, 'hash value of defaultValue is undefined');
+  equals(get(rec3, 'defaultValue'), 'default', 'get value of defaultValue is default');
   
   rec3.normalize();
   
-  equals(rec3.attributes()['defaultValue'], 'default', 'hash value of defaultValue after normalizing is default');
-  equals(rec3.get('defaultValue'), 'default', 'get value of defaultValue after normalizing is default');
+  equals(get(rec3, 'attributes')['defaultValue'], 'default', 'hash value of defaultValue after normalizing is default');
+  equals(get(rec3, 'defaultValue'), 'default', 'get value of defaultValue after normalizing is default');
   
 });
 
 test("normalizing with includeNull flag" ,function() {
   
-  equals(rec3.attributes()['firstName'], undefined, 'hash value of firstName is undefined');
-  equals(rec3.get('firstName'), null, 'get value of firstName is null');
+  equals(get(rec3, 'attributes')['firstName'], undefined, 'hash value of firstName is undefined');
+  equals(get(rec3, 'firstName'), null, 'get value of firstName is null');
   
   rec3.normalize(YES);
   
-  equals(rec3.attributes()['firstName'], null, 'hash value of firstName after normalizing is null');
-  equals(rec3.get('firstName'), null, 'get value of firstName after normalizing is null');
+  equals(get(rec3, 'attributes')['firstName'], null, 'hash value of firstName after normalizing is null');
+  equals(get(rec3, 'firstName'), null, 'get value of firstName after normalizing is null');
   
 });
 
@@ -178,13 +180,13 @@ test("normalizing a new record with toOne should reflect id in data hash" ,funct
   var newRecord = MyApp.store.createRecord(MyApp.Foo, recHash);
   MyApp.store.commitRecords();
   
-  equals(newRecord.attributes()['relatedTo'], 'foo1', 'hash value of relatedTo is foo1');
-  equals(newRecord.get('relatedTo'), rec, 'get value of relatedTo is foo1');
+  equals(get(newRecord, 'attributes')['relatedTo'], 'foo1', 'hash value of relatedTo is foo1');
+  equals(get(newRecord, 'relatedTo'), rec, 'get value of relatedTo is foo1');
 
   newRecord.normalize();
   
-  equals(newRecord.attributes()['relatedTo'], 'foo1', 'hash value of relatedTo after normalizing is still foo1');
-  equals(newRecord.get('relatedTo'), rec, 'get value of relatedTo after normalizing remains foo1');
+  equals(get(newRecord, 'attributes')['relatedTo'], 'foo1', 'hash value of relatedTo after normalizing is still foo1');
+  equals(get(newRecord, 'relatedTo'), rec, 'get value of relatedTo after normalizing remains foo1');
   
 });
 
@@ -199,13 +201,13 @@ test("normalizing a new record with toMany should reflect id in data hash" ,func
   var newRecord = MyApp.store.createRecord(MyApp.Foo, recHash);
   MyApp.store.commitRecords();
   
-  ok(SC.typeOf(newRecord.attributes()['relatedToMany'])===SC.T_ARRAY, 'should be a hash');
-  equals(newRecord.get('relatedToMany').get('length'), 2, 'number of relatedToMany is 2');
+  ok(SC.typeOf(get(newRecord, 'attributes')['relatedToMany'])==='array', 'should be a hash');
+  equals(get(get(newRecord, 'relatedToMany'), 'length'), 2, 'number of relatedToMany is 2');
   
   newRecord.normalize();
   
-  ok(SC.typeOf(newRecord.attributes()['relatedToMany'])===SC.T_ARRAY, 'should still be a hash after normalizing');
-  equals(newRecord.get('relatedToMany').get('length'), 2, 'number of relatedToMany is still 2');
+  ok(SC.typeOf(get(newRecord, 'attributes')['relatedToMany'])==='array', 'should still be a hash after normalizing');
+  equals(get(get(newRecord, 'relatedToMany'), 'length'), 2, 'number of relatedToMany is still 2');
   
 });
 
@@ -220,11 +222,11 @@ test("normalizing a new record with toOne that has broken relationship" ,functio
   var newRecord = MyApp.store.createRecord(MyApp.Foo, recHash);
   MyApp.store.commitRecords();
   
-  equals(newRecord.attributes()['relatedTo'], 'foo10', 'should be foo10');
+  equals(get(newRecord, 'attributes')['relatedTo'], 'foo10', 'should be foo10');
   
   newRecord.normalize();
   
-  equals(newRecord.attributes()['relatedTo'], 'foo10', 'should remain foo10');
+  equals(get(newRecord, 'attributes')['relatedTo'], 'foo10', 'should remain foo10');
   
 });
 
@@ -239,11 +241,11 @@ test("normalizing a new record with toOne with relationship to wrong recordType"
   var newRecord = MyApp.store.createRecord(MyApp.Bar, recHash);
   MyApp.store.commitRecords();
   
-  equals(newRecord.attributes()['relatedTo'], 'foo1', 'should be foo1');
+  equals(get(newRecord, 'attributes')['relatedTo'], 'foo1', 'should be foo1');
   
   newRecord.normalize();
   
-  equals(newRecord.attributes()['relatedTo'], 'foo1', 'should remain foo1');
+  equals(get(newRecord, 'attributes')['relatedTo'], 'foo1', 'should remain foo1');
   
 });
 
@@ -257,15 +259,15 @@ test("normalizing a new record with no guid should work with defaultValue" ,func
   var newRecord = MyApp.store.createRecord(MyApp.Foo, recHash);
   MyApp.store.commitRecords();
   
-  var firstGuid = newRecord.get('guid');
+  var firstGuid = get(newRecord, 'guid');
   
-  equals(newRecord.get('firstName'), 'Andrew', 'firstName should be Andrew');
+  equals(get(newRecord, 'firstName'), 'Andrew', 'firstName should be Andrew');
   
   newRecord.normalize();
   
   var findRecord = MyApp.store.find(MyApp.Foo, firstGuid);
   
-  equals(findRecord.get('guid'), firstGuid, 'guid should be the same as first');
+  equals(get(findRecord, 'guid'), firstGuid, 'guid should be the same as first');
   
 });
 
@@ -280,11 +282,11 @@ test("normalizing a new record with a null child reference", function() {
   var newRecordId, findRecord;
   
   MyApp.store.commitRecords();
-  newRecordId = newRecord.get('id');
+  newRecordId = get(newRecord, 'id');
   newRecord.normalize();
 
   findRecord = MyApp.store.find(MyApp.FooParent, newRecordId);
-  equals(findRecord.get('id'), newRecordId, 'id should be the same as the first');
+  equals(get(findRecord, 'id'), newRecordId, 'id should be the same as the first');
 });
 
 test("normalizing a new record with toOne without defaultValue" ,function() {
@@ -292,7 +294,7 @@ test("normalizing a new record with toOne without defaultValue" ,function() {
   var oneBarHash = {
     guid: 1,
     many_foos: [1]
-  }
+  };
   
   var oneBarRecord = MyApp.store.createRecord(MyApp.OneBar, oneBarHash);
 
@@ -304,13 +306,13 @@ test("normalizing a new record with toOne without defaultValue" ,function() {
   var fooRecord = MyApp.store.createRecord(MyApp.ManyFoo, fooHash);
   MyApp.store.commitRecords();
     
-  equals(fooRecord.attributes()['bar_id'], 1, 'hash value of oneBar is 1');
-  equals(fooRecord.get('oneBar'), oneBarRecord, 'get value of oneBar is 1');
+  equals(get(fooRecord, 'attributes')['bar_id'], 1, 'hash value of oneBar is 1');
+  equals(get(fooRecord, 'oneBar'), oneBarRecord, 'get value of oneBar is 1');
 
   fooRecord.normalize();
   
-  equals(fooRecord.attributes()['bar_id'], 1, 'hash value of oneBar after normalizing is still 1');
-  equals(fooRecord.get('oneBar'), oneBarRecord, 'get value of oneBar after normalizing remains 1');
+  equals(get(fooRecord, 'attributes')['bar_id'], 1, 'hash value of oneBar after normalizing is still 1');
+  equals(get(fooRecord, 'oneBar'), oneBarRecord, 'get value of oneBar after normalizing remains 1');
   
 });
 
@@ -332,6 +334,6 @@ test("normalizing an undefined Date value", function () {
 
   message.normalize();
 
-  equals(message.get('timestamp'), null, "normalizes to null");
+  equals(get(message, 'timestamp'), null, "normalizes to null");
 });
 

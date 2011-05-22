@@ -5,9 +5,11 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
-require('sproutcore-runtime');
+require('sproutcore-metal');
 require('sproutcore-datastore/system/record');
 require('sproutcore-datetime');
+
+var get = SC.get, set = SC.set, getPath = SC.getPath;
 
 /** @class
 
@@ -33,7 +35,7 @@ require('sproutcore-datetime');
         return (this.readAttribute('relatedToComputed').indexOf("foo")==0) ? MyApp.Foo : MyApp.Bar;
       })
 
-  Notice that we are not using .get() to avoid another transform which would
+  Notice that we are not using get() to avoid another transform which would
   trigger an infinite loop.
 
   You usually will not work with RecordAttribute objects directly, though you
@@ -150,8 +152,8 @@ SC.RecordAttribute = SC.Object.extend(
     @default String
   */
   typeClass: function() {
-    var ret = this.get('type');
-    if (SC.typeOf(ret) === SC.T_STRING) ret = SC.objectForPropertyPath(ret);
+    var ret = get(this, 'type');
+    if (SC.typeOf(ret) === 'string') ret = getPath(ret);
     return ret ;
   }.property('type').cacheable(),
 
@@ -164,16 +166,19 @@ SC.RecordAttribute = SC.Object.extend(
     @type Transform
   */
   transform: function() {
-    var klass      = this.get('typeClass') || String,
+    var klass      = get(this, 'typeClass') || String,
         transforms = SC.RecordAttribute.transforms,
         ret ;
 
     // walk up class hierarchy looking for a transform handler
     while(klass && !(ret = transforms[SC.guidFor(klass)])) {
       // check if super has create property to detect SC.Object's
-      if(klass.superclass.hasOwnProperty('create')) klass = klass.superclass ;
+      if(klass.superclass && klass.superclass.hasOwnProperty('create')) {
+        klass = klass.superclass ;
+      }
+      
       // otherwise return the function transform handler
-      else klass = SC.T_FUNCTION ;
+      else klass = 'function' ;
     }
 
     return ret ;
@@ -195,8 +200,8 @@ SC.RecordAttribute = SC.Object.extend(
     @returns {Object} The transformed value
   */
   toType: function(record, key, value) {
-    var transform = this.get('transform'),
-        type      = this.get('typeClass'),
+    var transform = get(this, 'transform'),
+        type      = get(this, 'typeClass'),
         children;
 
     if (transform && transform.to) {
@@ -211,7 +216,7 @@ SC.RecordAttribute = SC.Object.extend(
           key: key
         };
 
-        for(i = 0; i < len; i++) value.addObserver(children[i], this, this._SCRA_childObserver, context);
+        for(i = 0; i < len; i++) SC.addObserver(value, children[i], this, this._SCRA_childObserver, context);
       }
     }
 
@@ -256,8 +261,8 @@ SC.RecordAttribute = SC.Object.extend(
     @returns {Object} The value converted back to attribute format
   */
   fromType: function(record, key, value) {
-    var transform = this.get('transform'),
-        type      = this.get('typeClass');
+    var transform = get(this, 'transform'),
+        type      = get(this, 'typeClass');
 
     if (transform && transform.from) {
       value = transform.from(value, this, type, record, key);
@@ -277,9 +282,9 @@ SC.RecordAttribute = SC.Object.extend(
     @returns {Object} property value
   */
   call: function(record, key, value) {
-    var attrKey = this.get('key') || key, nvalue;
+    var attrKey = get(this, 'key') || key, nvalue;
 
-    if ((value !== undefined) && this.get('isEditable')) {
+    if ((value !== undefined) && get(this, 'isEditable')) {
       // careful: don't overwrite value here.  we want the return value to
       // cache.
       nvalue = this.fromType(record, key, value) ; // convert to attribute.
@@ -287,11 +292,11 @@ SC.RecordAttribute = SC.Object.extend(
     }
 
     nvalue = value = record.readAttribute(attrKey);
-    if (SC.none(value) && (value = this.get('defaultValue'))) {
-       if (typeof value === SC.T_FUNCTION) {
+    if (SC.none(value) && (value = get(this, 'defaultValue'))) {
+       if (typeof value === 'function') {
         value = this.defaultValue(record, key, this);
         // write default value so it doesn't have to be executed again
-        if ((nvalue !== value)  &&  record.get('store').readDataHash(record.get('storeKey'))) {
+        if ((nvalue !== value)  &&  get(record, 'store').readDataHash(get(record, 'storeKey'))) {
           record.writeAttribute(attrKey, value, true);
         }
       }
@@ -315,10 +320,25 @@ SC.RecordAttribute = SC.Object.extend(
 
   /** @private */
   init: function() {
-    sc_super();
+    this._super();
     // setup some internal properties needed for KVO - faking 'cacheable'
     this.cacheKey = "__cache__" + SC.guidFor(this) ;
     this.lastSetValueKey = "__lastValue__" + SC.guidFor(this) ;
+  },
+  
+  /** 
+    @private 
+    
+    Returns a computed property value that can be assigned directly to a 
+    property on a record for this attribute.
+  */
+  computed: function() {
+    var attr = this;
+    var ret  = SC.computed(function(key, value) {
+      return attr.call(this, key, value);
+    });
+    ret.attr = attr;
+    return ret ;
   }
 }) ;
 
@@ -326,7 +346,7 @@ SC.RecordAttribute = SC.Object.extend(
 // CLASS METHODS
 //
 
-SC.RecordAttribute.mixin(
+SC.RecordAttribute.reopenClass(
   /** @scope SC.RecordAttribute.prototype */{
   /**
     The default method used to create a record attribute instance.  Unlike
@@ -385,6 +405,20 @@ SC.RecordAttribute.mixin(
   */
   registerTransform: function(klass, transform) {
     SC.RecordAttribute.transforms[SC.guidFor(klass)] = transform;
+  },
+  
+  /**
+    Retrieves the original record attribute for the passed key.  You can't 
+    use get() to retrieve record attributes because that will invoke the 
+    property instead.
+  
+    @param {SC.Record} rec record instance to inspect
+    @param {String} keyName key name to retrieve
+    @returns {SC.RecordAttribute} the attribute or null if none defined
+  */
+  attrFor: function(rec, keyName) {
+    var ret = SC.meta(rec, false).descs[keyName];
+    return ret && ret.attr;
   }
 });
 
@@ -417,7 +451,7 @@ SC.RecordAttribute.registerTransform(String, {
     allow null through as that will be checked separately
   */
   to: function(obj) {
-    if (!(typeof obj === SC.T_STRING) && !SC.none(obj) && obj.toString) {
+    if (!(typeof obj === 'string') && !SC.none(obj) && obj.toString) {
       obj = obj.toString();
     }
     return obj;
@@ -454,27 +488,27 @@ SC.RecordAttribute.registerTransform(SC.Record, {
 
   /** @private - convert a record id to a record instance */
   to: function(id, attr, recordType, parentRecord) {
-    var store = parentRecord.get('store');
+    var store = get(parentRecord, 'store');
     if (SC.none(id) || (id==="")) return null;
     else return store.find(recordType, id);
   },
 
   /** @private - convert a record instance to a record id */
-  from: function(record) { return record ? record.get('id') : null; }
+  from: function(record) { return record ? get(record, 'id') : null; }
 });
 
 /** @private - generic converter for transforming computed record attributes */
-SC.RecordAttribute.registerTransform(SC.T_FUNCTION, {
+SC.RecordAttribute.registerTransform('function', {
 
   /** @private - convert a record id to a record instance */
   to: function(id, attr, recordType, parentRecord) {
     recordType = recordType.apply(parentRecord);
-    var store = parentRecord.get('store');
+    var store = get(parentRecord, 'store');
     return store.find(recordType, id);
   },
 
   /** @private - convert a record instance to a record id */
-  from: function(record) { return record.get('id'); }
+  from: function(record) { return get(record, 'id'); }
 });
 
 /** @private - generic converter for Date records */
@@ -490,7 +524,7 @@ SC.RecordAttribute.registerTransform(Date, {
     var ret ;
     str = str.toString() || '';
 
-    if (attr.get('useIsoDate')) {
+    if (get(attr, 'useIsoDate')) {
       var regexp = "([0-9]{4})(-([0-9]{2})(-([0-9]{2})" +
              "(T([0-9]{2}):([0-9]{2})(:([0-9]{2})(\\.([0-9]+))?)?" +
              "(Z|(([-+])([0-9]{2}):([0-9]{2})))?)?)?)?",
@@ -573,9 +607,9 @@ if (SC.DateTime && !SC.RecordAttribute.transforms[SC.guidFor(SC.DateTime)]) {
       Convert a String to a DateTime
     */
     to: function(str, attr) {
-      if (SC.none(str) || SC.instanceOf(str, SC.DateTime)) return str;
-      if (SC.none(str) || SC.instanceOf(str, Date)) return SC.DateTime.create(str.getTime());
-      var format = attr.get('format');
+      if (SC.none(str) || (str instanceof SC.DateTime)) return str;
+      if (SC.none(str) || (str instanceof Date)) return SC.DateTime.create(str.getTime());
+      var format = get(attr, 'format');
       return SC.DateTime.parse(str, format ? format : SC.DateTime.recordFormat);
     },
 
@@ -584,7 +618,7 @@ if (SC.DateTime && !SC.RecordAttribute.transforms[SC.guidFor(SC.DateTime)]) {
     */
     from: function(dt, attr) {
       if (SC.none(dt)) return dt;
-      var format = attr.get('format');
+      var format = get(attr, 'format');
       return dt.toFormattedString(format ? format : SC.DateTime.recordFormat);
     }
   });

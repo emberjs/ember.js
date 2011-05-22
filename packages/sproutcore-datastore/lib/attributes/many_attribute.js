@@ -9,12 +9,14 @@ require('sproutcore-datastore/system/record');
 require('sproutcore-datastore/attributes/record_attribute');
 require('sproutcore-datastore/system/many_array');
 
+var get = SC.get, set = SC.set;
+
 /** @class
 
   ManyAttribute is a subclass of `RecordAttribute` and handles to-many
   relationships.
 
-  When setting ( `.set()` ) the value of a `toMany` attribute, make sure
+  When setting ( `set()` ) the value of a `toMany` attribute, make sure
   to pass in an array of `SC.Record` objects.
 
   There are many ways you can configure a `ManyAttribute`:
@@ -69,9 +71,9 @@ SC.ManyAttribute = SC.RecordAttribute.extend(
 
   /**  @private - adapted for to many relationship */
   toType: function(record, key, value) {
-    var type      = this.get('typeClass'),
-        attrKey   = this.get('key') || key,
-        arrayKey  = SC.keyFor('__manyArray__', SC.guidFor(this)),
+    var type      = get(this, 'typeClass'),
+        attrKey   = get(this, 'key') || key,
+        arrayKey  = '__manyArray__'+SC.guidFor(this),
         ret       = record[arrayKey],
         rel;
 
@@ -86,8 +88,8 @@ SC.ManyAttribute = SC.RecordAttribute.extend(
       });
 
       record[arrayKey] = ret ; // save on record
-      rel = record.get('relationships');
-      if (!rel) record.set('relationships', rel = []);
+      rel = get(record, 'relationships');
+      if (!rel) set(record, 'relationships', rel = []);
       rel.push(ret); // make sure we get notified of changes...
 
     }
@@ -101,9 +103,9 @@ SC.ManyAttribute = SC.RecordAttribute.extend(
 
     if(!SC.isArray(value)) throw "Expects toMany attribute to be an array";
 
-    var len = value.get('length');
+    var len = get(value, 'length');
     for(var i=0;i<len;i++) {
-      ret[i] = value.objectAt(i).get('id');
+      ret[i] = get(value.objectAt(i), 'id');
     }
 
     return ret;
@@ -123,7 +125,7 @@ SC.ManyAttribute = SC.RecordAttribute.extend(
     @returns {void}
   */
   inverseDidRemoveRecord: function(record, key, inverseRecord, inverseKey) {
-    var manyArray = record.get(key);
+    var manyArray = get(record, key);
     if (manyArray) {
       manyArray.removeInverseRecord(inverseRecord);
     }
@@ -143,7 +145,7 @@ SC.ManyAttribute = SC.RecordAttribute.extend(
     @returns {void}
   */
   inverseDidAddRecord: function(record, key, inverseRecord, inverseKey) {
-    var manyArray = record.get(key);
+    var manyArray = get(record, key);
     if (manyArray) {
       manyArray.addInverseRecord(inverseRecord);
     }

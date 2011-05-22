@@ -5,10 +5,12 @@
 // ==========================================================================
 /*globals module ok equals same test MyApp */
 
+var set = SC.set, get = SC.get;
+
 var store, storeKey, json;
 module("SC.Store#pushChanges", {
   setup: function() {
-    SC.RunLoop.begin();
+    SC.run.begin();
     store = SC.Store.create();
     
     json = {
@@ -34,7 +36,7 @@ module("SC.Store#pushChanges", {
 
     storeKey6 = SC.Store.generateStoreKey();
     store.writeDataHash(storeKey6, json, SC.Record.BUSY_LOADING);
-    SC.RunLoop.end();
+    SC.run.end();
   }
 });
 

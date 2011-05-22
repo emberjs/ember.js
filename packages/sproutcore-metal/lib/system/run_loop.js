@@ -19,7 +19,7 @@ var slice = Array.prototype.slice;
 // invokes passed params - normalizing so you can pass target/func, 
 // target/string or just func
 function invoke(target, method, args, ignore) {
-  
+
   if (method===undefined) {
     method = target;
     target = undefined;
@@ -45,6 +45,7 @@ var RunLoop = SC.Object.extend({
   
   init: function(prev) {
     this._prev = prev;
+    this.onceTimers = {};
   },
   
   end: function() {
@@ -164,6 +165,7 @@ var run;
   @returns {Object} return value from invoking the passed function.
 */
 SC.run = run = function(target, method) {
+  
   var ret, loop;
   run.begin();
   if (target || method) ret = invoke(target, method);
@@ -348,9 +350,7 @@ SC.run.later = function(target, method) {
   return guid;
 };
 
-var onceTimers = {};
-
-function invokeOnceTimer(guid) {
+function invokeOnceTimer(guid, onceTimers) {
   if (onceTimers[this.tguid]) delete onceTimers[this.tguid][this.mguid];
   if (timers[guid]) invoke(this.target, this.method, this.args, 2);
   delete timers[guid];
@@ -380,6 +380,7 @@ function invokeOnceTimer(guid) {
 SC.run.once = function(target, method) {
   var tguid = SC.guidFor(target), mguid = SC.guidFor(method), guid, timer;
 
+  var onceTimers = run.autorun().onceTimers;
   guid = onceTimers[tguid] && onceTimers[tguid][mguid];
   if (guid && timers[guid]) {
     timers[guid].args = slice.call(arguments); // replace args
@@ -398,7 +399,7 @@ SC.run.once = function(target, method) {
     if (!onceTimers[tguid]) onceTimers[tguid] = {};
     onceTimers[tguid][mguid] = guid; // so it isn't scheduled more than once
 
-    run.schedule('timers', timer, invokeOnceTimer, guid);
+    run.schedule('timers', timer, invokeOnceTimer, guid, onceTimers);
   }
   
   return guid;

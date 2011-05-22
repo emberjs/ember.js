@@ -5,6 +5,8 @@
 // ==========================================================================
 /*globals module ok equals same test MyApp */
 
+var set = SC.set, get = SC.get;
+
 // test core array-mapping methods for ManyArray
 var store, storeKey, storeId, rec, storeIds, recs, arrayRec;
 module("SC.ManyArray core methods", {
@@ -18,7 +20,7 @@ module("SC.ManyArray core methods", {
     // setup a dummy model
     MyApp.Foo = SC.Record.extend({});
     
-    SC.RunLoop.begin();
+    SC.run.begin();
     
     // load some data
     storeIds = [1,2,3,4];
@@ -34,7 +36,7 @@ module("SC.ManyArray core methods", {
     
     // get record
     rec = MyApp.store.materializeRecord(storeKey);
-    storeId = rec.get('id');
+    storeId = get(rec, 'id');
     
     // get many array.
     arrayRec = MyApp.store.materializeRecord(MyApp.store.storeKeyFor(MyApp.Foo, 50));
@@ -49,7 +51,7 @@ module("SC.ManyArray core methods", {
   },
   
   teardown: function() {
-    SC.RunLoop.end();
+    SC.run.end();
   }
 });
 
@@ -58,17 +60,17 @@ module("SC.ManyArray core methods", {
 // 
 
 test("should pass through length", function() {
-  equals(recs.get('length'), storeIds.length, 'rec should pass through length');  
+  equals(get(recs, 'length'), storeIds.length, 'rec should pass through length');  
 });
 
 test("changing storeIds length should change length of rec array also", function() {
 
-  var oldlen = recs.get('length');
+  var oldlen = get(recs, 'length');
   
   storeIds.pushObject(SC.Store.generateStoreKey()); // change length
   
   ok(storeIds.length > oldlen, 'precond - storeKeys.length should have changed');
-  equals(recs.get('length'), storeIds.length, 'rec should pass through length');    
+  equals(get(recs, 'length'), storeIds.length, 'rec should pass through length');    
 });
 
 // ..........................................................
@@ -90,11 +92,11 @@ test("modifying the underlying storeId should change the returned materialized r
   
   // create a new record.
   var rec2 = MyApp.store.createRecord(MyApp.Foo, { guid: 5, firstName: "Fred" });
-  var storeId2 = rec2.get('id');
+  var storeId2 = get(rec2, 'id');
   
   // add to beginning of storeKey array
   storeIds.unshiftObject(storeId2);
-  equals(recs.get('length'), 5, 'should now have length of 5');
+  equals(get(recs, 'length'), 5, 'should now have length of 5');
   equals(recs.objectAt(0), rec2, 'objectAt(0) should return new record');
   equals(recs.objectAt(1), rec, 'objectAt(1) should return old record');
 });
@@ -125,13 +127,13 @@ test("adding a record to the ManyArray should pass through storeIds", function()
   
   // create a new record.
   var rec2 = MyApp.store.createRecord(MyApp.Foo, { guid: 5, firstName: "rec2" });
-  var storeId2 = rec2.get('id');
+  var storeId2 = get(rec2, 'id');
   
   // add record to beginning of record array
   recs.unshiftObject(rec2);
   
   // verify record array
-  equals(recs.get('length'), 5, 'should now have length of 2');
+  equals(get(recs, 'length'), 5, 'should now have length of 2');
   equals(recs.objectAt(0), rec2, 'recs.objectAt(0) should return new record');
   equals(recs.objectAt(1), rec, 'recs.objectAt(1) should return old record');
   
@@ -152,7 +154,7 @@ test("changing the underlying storeIds should notify observers of records", func
     cnt: 0,
     observer: function() { this.cnt++; }
   });
-  recs.addObserver('[]', obj, obj.observer); 
+  SC.addObserver(recs, '[]', obj, obj.observer); 
   
   // now modify storeKeys
   storeIds.pushObject(5);
@@ -163,7 +165,7 @@ test("swapping storeIds array should change ManyArray and observers", function()
 
   // setup alternate storeKeys
   var rec2 = MyApp.store.createRecord(MyApp.Foo, { guid: 5, firstName: "rec2" });
-  var storeId2 = rec2.get('id');
+  var storeId2 = get(rec2, 'id');
   var storeIds2 = [storeId2];
   
   // setup observer
@@ -171,7 +173,7 @@ test("swapping storeIds array should change ManyArray and observers", function()
     cnt: 0,
     observer: function() { this.cnt++; }
   });
-  recs.addObserver('[]', obj, obj.observer); 
+  SC.addObserver(recs, '[]', obj, obj.observer); 
   
   // read record once to make it materialized
   equals(recs.objectAt(0), rec, 'recs.objectAt(0) should materialize record');  
@@ -180,8 +182,8 @@ test("swapping storeIds array should change ManyArray and observers", function()
   obj.cnt = 0 ;
   arrayRec.writeAttribute('fooMany', storeIds2);
 
-  SC.RunLoop.end();
-  SC.RunLoop.begin();
+  SC.run.end();
+  SC.run.begin();
   
   // verify observer fired and record changed
   equals(obj.cnt, 1, 'observer should have fired after swap');
@@ -191,7 +193,7 @@ test("swapping storeIds array should change ManyArray and observers", function()
   obj.cnt = 0;
   storeIds2.unshiftObject(storeId);
   equals(obj.cnt, 1, 'observer should have fired after edit');
-  equals(recs.get('length'), 2, 'should reflect new length');
+  equals(get(recs, 'length'), 2, 'should reflect new length');
   equals(recs.objectAt(0), rec, 'recs.objectAt(0) should return pushed rec');  
 
 });

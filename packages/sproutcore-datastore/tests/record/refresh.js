@@ -5,10 +5,12 @@
 // ==========================================================================
 /*globals module ok equals same test MyApp */
 
+var set = SC.set, get = SC.get;
+
 var MyFoo = null, callInfo ;
 module("SC.Record#refresh", {
   setup: function() {
-    SC.RunLoop.begin();
+    SC.run.begin();
     window.MyApp = SC.Object.create({
       store: SC.Store.create()
     })  ;
@@ -27,12 +29,12 @@ module("SC.Record#refresh", {
     // callInfo
     callInfo = null ;
     MyApp.store.refreshRecord = function(records) {
-      callInfo = SC.A(arguments) ; // save method call
+      callInfo = Array.prototype.slice.call(arguments) ; // save method call
     };
   },
   
   teardown: function() {
-    SC.RunLoop.end();
+    SC.run.end();
     window.MyApp = undefined;
   }
   

@@ -5,6 +5,8 @@
 // ==========================================================================
 /*globals module ok equals same test MyApp */
 
+var set = SC.set, get = SC.get;
+
 var MyApp, dataSource;
 module("SC.Record core methods", {
   setup: function() {
@@ -31,9 +33,9 @@ module("SC.Record core methods", {
       guid: 1
     };
     
-    SC.RunLoop.begin();
+    SC.run.begin();
     MyApp.foo = MyApp.store.createRecord(MyApp.Foo, MyApp.json);
-    SC.RunLoop.end();
+    SC.run.end();
     
   },
 
@@ -48,7 +50,7 @@ test("statusString", function() {
 
 test("Can commitRecord() specific SC.Record instance", function() {
   
-  MyApp.foo.set('foo', 'foobar');
+  set(MyApp.foo, 'foo', 'foobar');
   
   // commit the new record
   MyApp.foo.commitRecord({ param1: 'value1' });

@@ -5,6 +5,8 @@
 // ==========================================================================
 /*globals module ok equals same test MyApp */
 
+var set = SC.set, get = SC.get;
+
 // NOTE: The test below are based on the Data Hashes state chart.  This models
 // the "read" event in the NestedStore portion of the diagram.
 
@@ -35,7 +37,7 @@ module("SC.NestedStore#readDataHash", {
 
 test("data state=INHERITED, lockOnRead=YES, parent editable=NO", function() {
   // preconditions
-  equals(store.get('lockOnRead'), YES, 'precond - lockOnRead should be YES');
+  equals(get(store, 'lockOnRead'), YES, 'precond - lockOnRead should be YES');
   equals(store.storeKeyEditState(storeKey), SC.Store.INHERITED, 'precond - storeKey should be inherited from parent');
   var oldrev = store.revisions[storeKey]; // save old rev for testing later
 
@@ -56,9 +58,9 @@ test("data state=INHERITED, lockOnRead=YES, parent editable=NO", function() {
 
 test("data state=INHERITED, lockOnRead=NO, parent editable=NO", function() {
   // preconditions
-  store.set('lockOnRead', NO);
+  set(store, 'lockOnRead', NO);
   
-  equals(store.get('lockOnRead'), NO, 'precond - lockOnRead should be NO');
+  equals(get(store, 'lockOnRead'), NO, 'precond - lockOnRead should be NO');
   equals(store.storeKeyEditState(storeKey), SC.Store.INHERITED, 'precond - storeKey should be inherited from parent');
   var oldrev = store.revisions[storeKey]; // save old rev for testing later
 
@@ -85,7 +87,7 @@ test("data state=INHERITED, lockOnRead=YES, parent editable=YES", function() {
   // cloned into nested stores on lock to avoid un-monitored edits
   parent.readEditableDataHash(storeKey);
   equals(parent.storeKeyEditState(storeKey), SC.Store.EDITABLE, 'precond - parent storeKey should be editable');
-  equals(store.get('lockOnRead'), YES, 'precond - lockOnRead should be YES');
+  equals(get(store, 'lockOnRead'), YES, 'precond - lockOnRead should be YES');
   equals(store.storeKeyEditState(storeKey), SC.Store.INHERITED, 'precond - storeKey should be inherited from parent');
   var oldrev = store.revisions[storeKey]; // save old rev for testing later
 
@@ -108,7 +110,7 @@ test("data state=INHERITED, lockOnRead=YES, parent editable=YES", function() {
 test("data state=LOCKED", function() {
   
   // preconditions
-  store.set('lockOnRead', YES); // make sure reading will lock
+  set(store, 'lockOnRead', YES); // make sure reading will lock
   var ret1 = store.readDataHash(storeKey);
   equals(store.storeKeyEditState(storeKey), SC.Store.LOCKED, 'precond - data state should be LOCKED');
   var oldrev = store.revisions[storeKey];
@@ -130,7 +132,7 @@ test("data state=LOCKED", function() {
 test("data state=EDITABLE", function() {
   
   // preconditions
-  store.set('lockOnRead', YES); // make sure reading will lock
+  set(store, 'lockOnRead', YES); // make sure reading will lock
   var ret1 = store.readEditableDataHash(storeKey);
   equals(store.storeKeyEditState(storeKey), SC.Store.EDITABLE, 'precond - data state should be EDITABLE');
   var oldrev = store.revisions[storeKey];

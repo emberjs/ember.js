@@ -4,7 +4,9 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 /*globals module ok equals same test MyApp */
- 
+
+var set = SC.set, get = SC.get;
+
 // test parsing of query string
 var store, storeKey, rec1, rec2, rec3, rec4, rec5, MyApp, q;
 

@@ -667,8 +667,16 @@ function normalizeTuple(target, path) {
   
   var idx = path.indexOf('*');
   if (idx>0 && path[idx-1]!=='.') {
-    target = getPath(target, path.slice(0, idx));
+    
+    // should not do lookup on a prototype object because the object isn't
+    // really live yet.
+    if (target && meta(target,false).proto!==target) {
+      target = getPath(target, path.slice(0, idx));
+    } else {
+      target = null;
+    }
     path   = path.slice(idx+1);
+
   } else if (target === window) {
     key = firstKey(path);
     target = get(target, key);
@@ -813,6 +821,10 @@ function flushPendingChains(reschedule) {
   }
 }
 
+function isProto(pvalue) {
+  return meta(pvalue, false).proto === pvalue;
+}
+
 // A ChainNode watches a single key on an object.  If you provide a starting
 // value for the key then the node won't actually watch it.  For a root node 
 // pass null for parent and key and object for value.
@@ -822,7 +834,7 @@ var ChainNode = function(parent, key, value, separator) {
   this._parent = parent;
   this._key    = key;
   this._watching = value===undefined;
-  this._value  = value || (parent._value && get(parent._value, key));
+  this._value  = value || (parent._value && !isProto(parent._value) && get(parent._value, key));
   this._separator = separator || '.';
   this._paths = {};
 
@@ -990,7 +1002,7 @@ Wp.didChange = function() {
       this._object = obj;
       addChainWatcher(obj, this._key, this);
     }
-    this._value  = obj ? get(obj, this._key) : undefined;
+    this._value  = obj && !isProto(obj) ? get(obj, this._key) : undefined;
   }
   
   // then notify chains...
@@ -1425,13 +1437,16 @@ SC.wrap = function(func, superFunc) {
   
   function K() {}
   
-  return function() {
+  var newFunc = function() {
     var ret, sup = this._super;
     this._super = superFunc || K;
     ret = func.apply(this, arguments);
     this._super = sup;
     return ret;
   };
+  
+  newFunc.base = func;
+  return newFunc;
 };
 
 // ..........................................................

@@ -5,13 +5,15 @@
 // ==========================================================================
 /*globals module ok equals same test MyApp */
 
+var set = SC.set, get = SC.get;
+
 // NOTE: The test below are based on the Data Hashes state chart.  This models
 // the "commit" event in the NestedStore portion of the diagram.
 
 var parent, store, child, storeKey, json, args;
 module("SC.NestedStore#commitChanges", {
   setup: function() {
-    SC.RunLoop.begin();
+    SC.run.begin();
 
     parent = SC.Store.create();
     
@@ -40,7 +42,7 @@ module("SC.NestedStore#commitChanges", {
       });
     };
 
-    SC.RunLoop.end();
+    SC.run.end();
   }
 });
 
@@ -74,7 +76,7 @@ function testStateTransition(shouldIncludeStoreKey, shouldCallParent) {
     }
   }
   
-  equals(store.get('hasChanges'), NO, 'hasChanges should be cleared');
+  equals(get(store, 'hasChanges'), NO, 'hasChanges should be cleared');
   ok(!store.chainedChanges || store.chainedChanges.length===0, 'should have empty chainedChanges set');
 }
 
@@ -126,6 +128,7 @@ test("commiting a changed record should immediately notify outstanding records i
 
   var Rec = SC.Record.extend({
     
+    foo: SC.Record.attr(String),
     fooCnt: 0,
     fooDidChange: function() { this.fooCnt++; }.observes('foo'),
     
@@ -136,36 +139,36 @@ test("commiting a changed record should immediately notify outstanding records i
     
     equals: function(fooCnt, statusCnt, str) {
       if (!str) str = '' ;
-      equals(this.get('fooCnt'), fooCnt, str + ':fooCnt');
-      equals(this.get('statusCnt'), statusCnt, str + ':statusCnt');
+      equals(get(this, 'fooCnt'), fooCnt, str + ':fooCnt');
+      equals(get(this, 'statusCnt'), statusCnt, str + ':statusCnt');
     }
     
   });
 
-  SC.RunLoop.begin();
+  SC.run.begin();
     
   var store = SC.Store.create();
   var prec  = store.createRecord(Rec, { foo: "bar", guid: 1 });
   
   var child = store.chain();
-  var crec  = child.find(Rec, prec.get('id'));
+  var crec  = child.find(Rec, get(prec, 'id'));
   
   // check assumptions
   ok(!!crec, 'prerec - should find child record');
-  equals(crec.get('foo'), 'bar', 'prerec - child record should have foo');
+  equals(get(crec, 'foo'), 'bar', 'prerec - child record should have foo');
   
   // modify child record - should not modify parent
   prec.reset();
-  crec.set('foo', 'baz');
-  equals(prec.get('foo'), 'bar', 'should not modify parent before commit');
+  set(crec, 'foo', 'baz');
+  equals(get(prec, 'foo'), 'bar', 'should not modify parent before commit');
   prec.equals(0,0, 'before commitChanges');
   
   // commit changes - note: still inside runloop
   child.commitChanges();
-  equals(prec.get('foo'), 'baz', 'should push data to parent');
+  equals(get(prec, 'foo'), 'baz', 'should push data to parent');
   prec.equals(1,1, 'after commitChanges'); // should notify immediately
   
-  SC.RunLoop.end();
+  SC.run.end();
   
   // should not notify again after runloop - nothing to do
   prec.equals(1,1,'after runloop ends - should not notify again');

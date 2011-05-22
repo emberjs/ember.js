@@ -5,6 +5,8 @@
 // ==========================================================================
 /*globals module ok equals same test MyApp Sample */
 
+var set = SC.set, get = SC.get;
+
 var store, nestedStore, Application, dataSource;
 
 module("SC.NestedStore Core Methods", {
@@ -42,12 +44,12 @@ module("SC.NestedStore Core Methods", {
       ]
     };
     
-    SC.RunLoop.begin();
+    SC.run.begin();
     store = SC.Store.create({ name: 'Test nested store'} ).from(dataSource);
     for(var i in Application.Data) {
       store.loadRecords(Application[i], Application.Data[i]);
     }
-    SC.RunLoop.end();
+    SC.run.end();
     
     // make sure RecordType by String can map
     window.Application = Application;
@@ -65,9 +67,9 @@ test("Make sure that setting an attribute on a record will only notify respectiv
   var file = nestedStore.find(Application.File, '14');
   Application._nameDidChange = 0 ;
   
-  SC.RunLoop.begin();
+  SC.run.begin();
   file.writeAttribute('name', 'My Great New Name');
-  SC.RunLoop.end();
+  SC.run.end();
   
   equals(Application._nameDidChange, 1, 'observer was only fired once');
 

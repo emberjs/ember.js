@@ -263,9 +263,10 @@ SC.Set = SC.CoreObject.extend(SC.MutableEnumerable, SC.Copyable, SC.Freezable,
     
     var guid = guidFor(obj),
         idx  = this[guid],
-        len, added ;
+        len  = get(this, 'length'),
+        added ;
         
-    if (idx>=0) return this; // nothing to do
+    if (idx>=0 && idx<len && (this[idx] === obj)) return this; // added
     
     added = [obj];
     this.enumerableContentWillChange(null, added);
@@ -285,11 +286,11 @@ SC.Set = SC.CoreObject.extend(SC.MutableEnumerable, SC.Copyable, SC.Freezable,
     
     var guid = guidFor(obj),
         idx  = this[guid],
-        len, last, removed;
+        len = get(this, 'length'),
+        last, removed;
         
     
-    if (idx>=0) {
-      len = get(this, 'length');
+    if (idx>=0 && idx<len && (this[idx] === obj)) {
       removed = [obj];
 
       this.enumerableContentWillChange(removed, null);

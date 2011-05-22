@@ -5,10 +5,12 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
-require('sproutcore-runtime');
+require('sproutcore-metal');
 require('sproutcore-datastore/system/record');
 require('sproutcore-datastore/system/query');
 require('sproutcore-indexset');
+
+var get = SC.get, set = SC.set;
 
 /**
   @class
@@ -56,7 +58,7 @@ require('sproutcore-indexset');
   @since SproutCore 1.0
 */
 
-SC.RecordArray = SC.Object.extend(SC.Enumerable, SC.Array,
+SC.RecordArray = SC.Object.extend(SC.Enumerable, SC.Array, SC.MutableEnumerable, SC.MutableArray,
   /** @scope SC.RecordArray.prototype */ {
 
   /**
@@ -105,8 +107,8 @@ SC.RecordArray = SC.Object.extend(SC.Enumerable, SC.Array,
     @type Boolean
   */
   isEditable: function() {
-    var query = this.get('query');
-    return query ? query.get('isEditable') : YES;
+    var query = get(this, 'query');
+    return query ? get(query, 'isEditable') : YES;
   }.property('query').cacheable(),
 
   // ..........................................................
@@ -119,8 +121,8 @@ SC.RecordArray = SC.Object.extend(SC.Enumerable, SC.Array,
   */
   length: function() {
     this.flush(); // cleanup pending changes
-    var storeKeys = this.get('storeKeys');
-    return storeKeys ? storeKeys.get('length') : 0;
+    var storeKeys = get(this, 'storeKeys');
+    return storeKeys ? get(storeKeys, 'length') : 0;
   }.property('storeKeys').cacheable(),
 
   /** @private
@@ -145,8 +147,8 @@ SC.RecordArray = SC.Object.extend(SC.Enumerable, SC.Array,
     this.flush(); // cleanup pending if needed
 
     var recs      = this._scra_records,
-        storeKeys = this.get('storeKeys'),
-        store     = this.get('store'),
+        storeKeys = get(this, 'storeKeys'),
+        store     = get(this, 'store'),
         storeKey, ret ;
 
     if (!storeKeys || !store) return undefined; // nothing to do
@@ -172,9 +174,9 @@ SC.RecordArray = SC.Object.extend(SC.Enumerable, SC.Array,
     this.flush();
 
     var recs      = this._scra_records,
-        storeKeys = this.get('storeKeys'),
-        store     = this.get('store'),
-        len       = storeKeys ? storeKeys.get('length') : 0,
+        storeKeys = get(this, 'storeKeys'),
+        store     = get(this, 'store'),
+        len       = storeKeys ? get(storeKeys, 'length') : 0,
         idx, storeKey, rec;
 
     if (!storeKeys || !store) return this; // nothing to do
@@ -211,17 +213,17 @@ SC.RecordArray = SC.Object.extend(SC.Enumerable, SC.Array,
 
     this.flush(); // cleanup pending if needed
 
-    var storeKeys = this.get('storeKeys'),
-        len       = recs ? (recs.get ? recs.get('length') : recs.length) : 0,
+    var storeKeys = get(this, 'storeKeys'),
+        len       = recs ? get(recs, 'length') : 0,
         i, keys;
 
     if (!storeKeys) throw "Unable to edit an SC.RecordArray that does not have its storeKeys property set.";
 
-    if (!this.get('isEditable')) throw SC.RecordArray.NOT_EDITABLE;
+    if (!get(this, 'isEditable')) throw SC.RecordArray.NOT_EDITABLE;
 
     // map to store keys
     keys = [] ;
-    for(i=0;i<len;i++) keys[i] = recs.objectAt(i).get('storeKey');
+    for(i=0;i<len;i++) keys[i] = get(recs.objectAt(i), 'storeKey');
 
     // pass along - if allowed, this should trigger the content observer
     storeKeys.replace(idx, amt, keys);
@@ -247,15 +249,15 @@ SC.RecordArray = SC.Object.extend(SC.Enumerable, SC.Array,
     @returns {Number} index
   */
   indexOf: function(record, startAt) {
-    if (!SC.kindOf(record, SC.Record)) {
+    if (!(record instanceof  SC.Record)) {
       SC.Logger.warn("Using indexOf on %@ with an object that is not an SC.Record".fmt(record));
       return -1; // only takes records
     }
 
     this.flush();
 
-    var storeKey  = record.get('storeKey'),
-        storeKeys = this.get('storeKeys');
+    var storeKey  = get(record, 'storeKey'),
+        storeKeys = get(this, 'storeKeys');
 
     return storeKeys ? storeKeys.indexOf(storeKey, startAt) : -1;
   },
@@ -268,15 +270,15 @@ SC.RecordArray = SC.Object.extend(SC.Enumerable, SC.Array,
     @returns {Number} index
   */
   lastIndexOf: function(record, startAt) {
-    if (!SC.kindOf(record, SC.Record)) {
+    if (!(record instanceof  SC.Record)) {
       SC.Logger.warn("Using lastIndexOf on %@ with an object that is not an SC.Record".fmt(record));
       return -1; // only takes records
     }
 
     this.flush();
 
-    var storeKey  = record.get('storeKey'),
-        storeKeys = this.get('storeKeys');
+    var storeKey  = get(record, 'storeKey'),
+        storeKeys = get(this, 'storeKeys');
     return storeKeys ? storeKeys.lastIndexOf(storeKey, startAt) : -1;
   },
 
@@ -288,7 +290,7 @@ SC.RecordArray = SC.Object.extend(SC.Enumerable, SC.Array,
     @returns {SC.RecordArray} receiver
   */
   add: function(record) {
-    if (!SC.kindOf(record, SC.Record)) return this ;
+    if (!(record instanceof  SC.Record)) return this ;
     if (this.indexOf(record)<0) this.pushObject(record);
     return this ;
   },
@@ -301,7 +303,7 @@ SC.RecordArray = SC.Object.extend(SC.Enumerable, SC.Array,
     @returns {SC.RecordArray} receiver
   */
   remove: function(record) {
-    if (!SC.kindOf(record, SC.Record)) return this ;
+    if (!(record instanceof  SC.Record)) return this ;
     this.removeObject(record);
     return this ;
   },
@@ -321,8 +323,8 @@ SC.RecordArray = SC.Object.extend(SC.Enumerable, SC.Array,
   */
   find: function(query, target) {
     if (query && query.isQuery) {
-      return this.get('store').find(query.queryWithScope(this));
-    } else return sc_super();
+      return get(this, 'store').find(query.queryWithScope(this));
+    } else return this._super(query, target);
   },
 
   /**
@@ -332,7 +334,7 @@ SC.RecordArray = SC.Object.extend(SC.Enumerable, SC.Array,
     @returns {SC.RecordArray} receiver
   */
   refresh: function() {
-    this.get('store').refreshQuery(this.get('query'));
+    get(this, 'store').refreshQuery(get(this, 'query'));
     return this;
   },
 
@@ -357,11 +359,11 @@ SC.RecordArray = SC.Object.extend(SC.Enumerable, SC.Array,
     @returns {SC.RecordArray} receiver
   */
   destroy: function() {
-    if (!this.get('isDestroyed')) {
-      this.get('store').recordArrayWillDestroy(this);
+    if (!get(this, 'isDestroyed')) {
+      get(this, 'store').recordArrayWillDestroy(this);
     }
 
-    sc_super();
+    this._super();
   },
 
   // ..........................................................
@@ -382,11 +384,11 @@ SC.RecordArray = SC.Object.extend(SC.Enumerable, SC.Array,
     @returns {SC.RecordArray} receiver
   */
   storeWillFetchQuery: function(query) {
-    var status = this.get('status'),
+    var status = get(this, 'status'),
         K      = SC.Record;
     if ((status === K.EMPTY) || (status === K.ERROR)) status = K.BUSY_LOADING;
     if (status & K.READY) status = K.BUSY_REFRESH;
-    this.setIfChanged('status', status);
+    set(this, 'status', status);
     return this ;
   },
 
@@ -397,7 +399,7 @@ SC.RecordArray = SC.Object.extend(SC.Enumerable, SC.Array,
     @returns {SC.RecordArray} receiver
   */
   storeDidFetchQuery: function(query) {
-    this.setIfChanged('status', SC.Record.READY_CLEAN);
+    set(this, 'status', SC.Record.READY_CLEAN);
     return this ;
   },
 
@@ -409,11 +411,11 @@ SC.RecordArray = SC.Object.extend(SC.Enumerable, SC.Array,
     @returns {SC.RecordArray} receiver
   */
   storeDidCancelQuery: function(query) {
-    var status = this.get('status'),
+    var status = get(this, 'status'),
         K      = SC.Record;
     if (status === K.BUSY_LOADING) status = K.EMPTY;
     else if (status === K.BUSY_REFRESH) status = K.READY_CLEAN;
-    this.setIfChanged('status', status);
+    set(this, 'status', status);
     return this ;
   },
 
@@ -425,7 +427,7 @@ SC.RecordArray = SC.Object.extend(SC.Enumerable, SC.Array,
     @returns {SC.RecordArray} receiver
   */
   storeDidErrorQuery: function(query) {
-    this.setIfChanged('status', SC.Record.ERROR);
+    set(this, 'status', SC.Record.ERROR);
     return this ;
   },
 
@@ -443,9 +445,9 @@ SC.RecordArray = SC.Object.extend(SC.Enumerable, SC.Array,
     @returns {SC.RecordArray} receiver
   */
   storeDidChangeStoreKeys: function(storeKeys, recordTypes) {
-    var query =  this.get('query');
+    var query =  get(this, 'query');
     // fast path exits
-    if (query.get('location') !== SC.Query.LOCAL) return this;
+    if (get(query, 'location') !== SC.Query.LOCAL) return this;
     if (!query.containsRecordTypes(recordTypes)) return this;
 
     // ok - we're interested.  mark as dirty and save storeKeys.
@@ -453,8 +455,8 @@ SC.RecordArray = SC.Object.extend(SC.Enumerable, SC.Array,
     if (!changed) changed = this._scq_changedStoreKeys = SC.IndexSet.create();
     changed.addEach(storeKeys);
 
-    this.set('needsFlush', YES);
-    if (this.get('storeKeys')) {
+    set(this, 'needsFlush', YES);
+    if (get(this, 'storeKeys')) {
       this.flush();
     }
 
@@ -476,28 +478,29 @@ SC.RecordArray = SC.Object.extend(SC.Enumerable, SC.Array,
     @returns {SC.RecordArray} receiver
   */
   flush: function(_flush) {
+    
     // Are we already inside a flush?  If so, then don't do it again, to avoid
     // never-ending recursive flush calls.  Instead, we'll simply mark
     // ourselves as needing a flush again when we're done.
     if (this._insideFlush) {
-      this.set('needsFlush', YES);
+      set(this, 'needsFlush', YES);
       return this;
     }
 
-    if (!this.get('needsFlush') && !_flush) return this; // nothing to do
-    this.set('needsFlush', NO); // avoid running again.
-
+    if (!get(this, 'needsFlush') && !_flush) return this; // nothing to do
+    set(this, 'needsFlush', NO); // avoid running again.
+    
     // fast exit
-    var query = this.get('query'),
-        store = this.get('store');
-    if (!store || !query || query.get('location') !== SC.Query.LOCAL) {
+    var query = get(this, 'query'),
+        store = get(this, 'store');
+    if (!store || !query || get(query, 'location') !== SC.Query.LOCAL) {
       return this;
     }
 
     this._insideFlush = YES;
 
     // OK, actually generate some results
-    var storeKeys = this.get('storeKeys'),
+    var storeKeys = get(this, 'storeKeys'),
         changed   = this._scq_changedStoreKeys,
         didChange = NO,
         K         = SC.Record,
@@ -549,10 +552,10 @@ SC.RecordArray = SC.Object.extend(SC.Enumerable, SC.Array,
     } else {
 
       // collect the base set of keys.  if query has a parent scope, use that
-      if (scope = query.get('scope')) {
-        sourceKeys = scope.flush().get('storeKeys');
+      if (scope = get(query, 'scope')) {
+        sourceKeys = get(scope.flush(), 'storeKeys');
       // otherwise, lookup all storeKeys for the named recordType...
-      } else if (recordType = query.get('expandedRecordTypes')) {
+      } else if (recordType = get(query, 'expandedRecordTypes')) {
         sourceKeys = SC.IndexSet.create();
         recordType.forEach(function(cur) {
           sourceKeys.addEach(store.storeKeysFor(recordType));
@@ -588,8 +591,8 @@ SC.RecordArray = SC.Object.extend(SC.Enumerable, SC.Array,
       // and not the same runloop which the invoke* methods do not guarantee
       window.setTimeout(function() {
         SC.run(function() {
-          if(!self || self.get('isDestroyed')) return;
-          self.set('needsFlush', YES);
+          if(!self || get(self, 'isDestroyed')) return;
+          set(self, 'needsFlush', YES);
           self._scq_changedStoreKeys = SC.IndexSet.create().addEach(storeKeysToPace);
           self.flush();
         });
@@ -609,7 +612,7 @@ SC.RecordArray = SC.Object.extend(SC.Enumerable, SC.Array,
 
       storeKeys = SC.Query.orderStoreKeys(storeKeys, query, store);
       if (SC.compare(oldStoreKeys, storeKeys) !== 0){
-        this.set('storeKeys', SC.clone(storeKeys)); // replace content
+        set(this, 'storeKeys', SC.copy(storeKeys)); // replace content
       }
     }
 
@@ -638,7 +641,7 @@ SC.RecordArray = SC.Object.extend(SC.Enumerable, SC.Array,
     @type Boolean
   */
   isError: function() {
-    return this.get('status') & SC.Record.ERROR;
+    return get(this, 'status') & SC.Record.ERROR;
   }.property('status').cacheable(),
 
   /**
@@ -649,7 +652,7 @@ SC.RecordArray = SC.Object.extend(SC.Enumerable, SC.Array,
     @type SC.Record
   */
   errorValue: function() {
-    return this.get('isError') ? SC.val(this.get('errorObject')) : null ;
+    return get(this, 'isError') ? SC.val(get(this, 'errorObject')) : null ;
   }.property('isError').cacheable(),
 
   /**
@@ -661,9 +664,9 @@ SC.RecordArray = SC.Object.extend(SC.Enumerable, SC.Array,
     @type SC.StoreError
   */
   errorObject: function() {
-    if (this.get('isError')) {
-      var store = this.get('store');
-      return store.readQueryError(this.get('query')) || SC.Record.GENERIC_ERROR;
+    if (get(this, 'isError')) {
+      var store = get(this, 'store');
+      return store.readQueryError(get(this, 'query')) || SC.Record.GENERIC_ERROR;
     } else return null ;
   }.property('isError').cacheable(),
 
@@ -673,53 +676,47 @@ SC.RecordArray = SC.Object.extend(SC.Enumerable, SC.Array,
 
   propertyWillChange: function(key) {
     if (key === 'storeKeys') {
-      var storeKeys = this.get('storeKeys');
-      var len = storeKeys ? storeKeys.get('length') : 0;
+      var storeKeys = get(this, 'storeKeys');
+      var len = storeKeys ? get(storeKeys, 'length') : 0;
 
       this.arrayContentWillChange(0, len, 0);
     }
 
-    return sc_super();
+    return this._super(key);
   },
 
   /** @private
     Invoked whenever the `storeKeys` array changes.  Observes changes.
   */
   _storeKeysDidChange: function() {
-    var storeKeys = this.get('storeKeys');
+    var storeKeys = get(this, 'storeKeys');
 
     var prev = this._prevStoreKeys, oldLen, newLen,
         f    = this._storeKeysContentDidChange,
         fs   = this._storeKeysStateDidChange;
 
     if (storeKeys === prev) { return; } // nothing to do
+    oldLen = prev ? get(prev, 'length') : 0;
+    newLen = storeKeys ? get(storeKeys, 'length') : 0;
+
+    this._storeKeysContentWillChange(prev, 0, oldLen, newLen);
 
     if (prev) {
-      prev.removeArrayObservers({
-        target: this,
-        willChange: this.arrayContentWillChange,
+      prev.removeArrayObserver(this, {
+        willChange: this._storeKeysContentWillChange,
         didChange: this._storeKeysContentDidChange
       });
-
-      oldLen = prev.get('length');
-    } else {
-      oldLen = 0;
     }
 
     this._prevStoreKeys = storeKeys;
     if (storeKeys) {
-      storeKeys.addArrayObservers({
-        target: this,
-        willChange: this.arrayContentWillChange,
+      storeKeys.addArrayObserver(this, {
+        willChange: this._storeKeysContentWillChange,
         didChange: this._storeKeysContentDidChange
       });
-
-      newLen = storeKeys.get('length');
-    } else {
-      newLen = 0;
     }
 
-    this._storeKeysContentDidChange(0, oldLen, newLen);
+    this._storeKeysContentDidChange(storeKeys, 0, oldLen, newLen);
 
   }.observes('storeKeys'),
 
@@ -728,17 +725,21 @@ SC.RecordArray = SC.Object.extend(SC.Enumerable, SC.Array,
     we flush so that the observers don't fire the first time length is
     calculated.
   */
-  addArrayObservers: function() {
+  addArrayObserver: function() {
     this.flush();
-    return SC.Array.addArrayObservers.apply(this, arguments);
+    return this._super.apply(this, arguments);
   },
 
+  _storeKeysContentWillChange: function(target, start, removedCount, addedCount) {
+    this.arrayContentWillChange(start, removedCount, addedCount);
+  },
+  
   /** @private
     Invoked whenever the content of the `storeKeys` array changes.  This will
     dump any cached record lookup and then notify that the enumerable content
     has changed.
   */
-  _storeKeysContentDidChange: function(start, removedCount, addedCount) {
+  _storeKeysContentDidChange: function(target, start, removedCount, addedCount) {
     if (this._scra_records) this._scra_records.length=0 ; // clear cache
 
     this.arrayContentDidChange(start, removedCount, addedCount);
@@ -746,13 +747,13 @@ SC.RecordArray = SC.Object.extend(SC.Enumerable, SC.Array,
 
   /** @private */
   init: function() {
-    sc_super();
+    this._super();
     this._storeKeysDidChange();
   }
 
 });
 
-SC.RecordArray.mixin(/** @scope SC.RecordArray.prototype */{
+SC.RecordArray.reopenClass(/** @scope SC.RecordArray.prototype */{
 
   /**
     Standard error throw when you try to modify a record that is not editable

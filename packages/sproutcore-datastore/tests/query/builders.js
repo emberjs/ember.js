@@ -5,6 +5,8 @@
 // ==========================================================================
 /*globals module ok equals same test MyApp */
 
+var set = SC.set, get = SC.get;
+
 // This file tests the initial state of the store when it is first created
 // either independently or as a chained store.
 
@@ -12,8 +14,11 @@
 // UTILITIES
 //
 
+MyApp = {};
 var TestRecord = SC.Record.extend();
 var TestRecord2 = SC.Record.extend();
+
+var q3;
 
 function queryEquals(q, location, recordType, conditions, extra, desc) {
   if (desc===undefined && typeof extra === 'string') {
@@ -22,25 +27,25 @@ function queryEquals(q, location, recordType, conditions, extra, desc) {
   if (!desc) desc = '';
 
   ok(!!q, desc + ': should have a query');
-  equals(q.get('isFrozen'), YES, desc + ": should be frozen");
+  equals(get(q, 'isFrozen'), YES, desc + ": should be frozen");
 
   if (q) {
     if (location) {
-      equals(q.get('location'), location, desc + ": should have location");
+      equals(get(q, 'location'), location, desc + ": should have location");
     }
 
     if (recordType && recordType.isEnumerable) {
-      same(q.get('recordTypes'), recordType, desc + ': should have recordTypes (plural)');
+      same(get(q, 'recordTypes'), recordType, desc + ': should have recordTypes (plural)');
     } else {
-      equals(q.get('recordType'), recordType, desc + ': should have recordType (singular)');
+      equals(get(q, 'recordType'), recordType, desc + ': should have recordType (singular)');
     }
 
-    equals(q.get('conditions'), conditions, desc + ': should have conditions');
+    equals(get(q, 'conditions'), conditions, desc + ': should have conditions');
 
     if (extra) {
       for (var key in extra) {
         if (!extra.hasOwnProperty(key)) continue;
-        equals(q.get(key), extra[key], desc + ': should have extra key ' + key);
+        equals(get(q, key), extra[key], desc + ': should have extra key ' + key);
       }
     }
   }
@@ -58,12 +63,12 @@ function performBasicTests(methodName, loc) {
 
   module("SC.Query.%@()".fmt(methodName), {
     setup: function() {
-      window.TestRecord = TestRecord;
-      window.TestRecord2 = TestRecord2;
+      MyApp.TestRecord = TestRecord;
+      MyApp.TestRecord2 = TestRecord2;
     },
 
     teardown: function() {
-      window.TestRecord = window.TestRecord2 = null; // cleanup
+      MyApp.TestRecord = MyApp.TestRecord2 = null; // cleanup
     }
   });
 
@@ -75,29 +80,29 @@ function performBasicTests(methodName, loc) {
     var q, q1, q2, q3, q4;
 
     // local
-    q = invokeWith(TestRecord);
+    q = invokeWith(MyApp.TestRecord);
     queryEquals(q, loc, TestRecord, null, 'first query');
 
-    q1 = invokeWith(TestRecord);
+    q1 = invokeWith(MyApp.TestRecord);
     equals(q1, q, 'second call should return cached value');
 
     // using string for record type name should work
-    q2 = invokeWith("TestRecord");
+    q2 = invokeWith("MyApp.TestRecord");
     equals(q2, q, 'queryFor with string should return cached value');
 
     // using an array of a single item should be treated as a single item
-    q3 = invokeWith([TestRecord]);
+    q3 = invokeWith([MyApp.TestRecord]);
     equals(q3, q, 'queryFor([TestRecord]) should return cached value');
 
     // ditto w/ strings
-    q4 = invokeWith(['TestRecord']);
+    q4 = invokeWith(['MyApp.TestRecord']);
     equals(q4, q, 'queryFor(["TestRecord"]) with string should return cached value');
 
   });
 
   test("query with multiple recordtypes", function() {
 
-    var types = [TestRecord, TestRecord2],
+    var types = [MyApp.TestRecord, MyApp.TestRecord2],
         q1, q2, a3, q4, q5, set;
 
     // create first query
@@ -109,16 +114,16 @@ function performBasicTests(methodName, loc) {
     equals(q2, q1, 'second queryFor call should return cached value');
 
     // try again - different order
-    q3 = invokeWith([TestRecord2, TestRecord]);
+    q3 = invokeWith([MyApp.TestRecord2, MyApp.TestRecord]);
     equals(q3, q1, 'queryFor with different order of record types should return same cached value');
 
     // try again - using a set
-    set = SC.Set.create().add(TestRecord).add(TestRecord2);
+    set = SC.Set.create().add(MyApp.TestRecord).add(MyApp.TestRecord2);
     q4  = invokeWith(set);
     equals(q4, q1, 'should return cached query even if using an enumerable for types');
 
     // try again using strings
-    q5 = invokeWith('TestRecord TestRecord2'.w());
+    q5 = invokeWith('MyApp.TestRecord MyApp.TestRecord2'.w());
     equals(q5, q1, 'should return cached query even if string record names are used');
   });
 
@@ -126,21 +131,21 @@ function performBasicTests(methodName, loc) {
 
     var q1, q2, q3, q4, q5, q6, q7;
 
-    q1 = invokeWith(TestRecord, 'foobar');
+    q1 = invokeWith(MyApp.TestRecord, 'foobar');
     queryEquals(q1, loc, TestRecord, 'foobar', 'first query');
 
-    q2 = invokeWith(TestRecord, 'foobar');
+    q2 = invokeWith(MyApp.TestRecord, 'foobar');
     equals(q2, q1, 'second call to queryFor(TestRecord, foobar) should return cached instance');
 
-    q3 = invokeWith(TestRecord2, 'foobar');
+    q3 = invokeWith(MyApp.TestRecord2, 'foobar');
     queryEquals(q3, loc, TestRecord2, 'foobar', 'query(TestRecord2, foobar)');
     ok(q3 !== q1, 'different recordType same conditions should return new query');
 
-    q4 = invokeWith(TestRecord, 'baz');
+    q4 = invokeWith(MyApp.TestRecord, 'baz');
     queryEquals(q4, loc, TestRecord, 'baz', 'query(TestRecord2, baz)');
     ok(q4 !== q1, 'different conditions should return new query');
 
-    q5 = invokeWith(TestRecord, 'baz');
+    q5 = invokeWith(MyApp.TestRecord, 'baz');
     equals(q5, q4, 'second call for different conditions should return cache');
   });
 
@@ -158,10 +163,10 @@ function performBasicTests(methodName, loc) {
     var opts  = { opt1: 'bar', opt2: 'baz' },
         q1, q2;
 
-    q1 = invokeWith(TestRecord, 'foo', opts);
+    q1 = invokeWith(MyApp.TestRecord, 'foo', opts);
     queryEquals(q1, loc, TestRecord, 'foo', { parameters: opts }, 'first query');
 
-    q2 = invokeWith(TestRecord, 'foo', opts);
+    q2 = invokeWith(MyApp.TestRecord, 'foo', opts);
     ok(q1 !== q2, 'second call to queryFor with opts cannot be cached');
     queryEquals(q1, loc, TestRecord, 'foo', { parameters: opts }, 'second query');
   });
@@ -170,12 +175,12 @@ function performBasicTests(methodName, loc) {
     var opts  = ['foo', 'bar'],
         q1, q2;
 
-    q1 = invokeWith(TestRecord, 'foo', opts);
-    queryEquals(q1, loc, TestRecord, 'foo', { parameters: opts }, 'first query should include parameters prop');
+    q1 = invokeWith(MyApp.TestRecord, 'foo', opts);
+    queryEquals(q1, loc, MyApp.TestRecord, 'foo', { parameters: opts }, 'first query should include parameters prop');
 
-    q2 = invokeWith(TestRecord, 'foo', opts);
+    q2 = invokeWith(MyApp.TestRecord, 'foo', opts);
     ok(q1 !== q2, 'second call to queryFor with opts cannot be cached');
-    queryEquals(q1, loc, TestRecord, 'foo', { parameters: opts }, 'second query');
+    queryEquals(q1, loc, MyApp.TestRecord, 'foo', { parameters: opts }, 'second query');
   });
 
   test("passing query object", function() {
@@ -190,7 +195,7 @@ function performBasicTests(methodName, loc) {
     } else {
       ok(q !== local, 'invoke with local query should return new instance');
     }
-    equals(q.get('location'), loc, 'query should have expected location');
+    equals(get(q, 'location'), loc, 'query should have expected location');
 
     q = invokeWith(remote);
     if (loc === SC.Query.REMOTE) {
@@ -198,7 +203,7 @@ function performBasicTests(methodName, loc) {
     } else {
       ok(q !== remote, 'invoke with remote query should return new instance');
     }
-    equals(q.get('location'), loc, 'query should have expected location');
+    equals(get(q, 'location'), loc, 'query should have expected location');
   });
 
   test("no options (matches everything)", function() {

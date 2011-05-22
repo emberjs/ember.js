@@ -5,6 +5,8 @@
 // ==========================================================================
 /*globals module ok equals same test MyApp */
 
+var set = SC.set, get = SC.get;
+
 var store, storeKey, json;
 module("SC.Store#dataSourceCallbacks", {
   setup: function() {
@@ -144,12 +146,12 @@ module("SC.Store#dataSourceCallbacks", {
     storeKey16 = SC.Store.generateStoreKey();
     store.writeDataHash(storeKey16, json16, SC.Record.BUSY_LOADING);
   
-    SC.RunLoop.begin();
+    SC.run.begin();
   
   },
   
   teardown: function() {
-    SC.RunLoop.end();
+    SC.run.end();
   }
 });
 

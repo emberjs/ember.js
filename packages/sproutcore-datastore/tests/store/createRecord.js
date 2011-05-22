@@ -5,6 +5,8 @@
 // ==========================================================================
 /*globals module ok equals same test MyApp */
 
+var set = SC.set, get = SC.get;
+
 var store, storeKey, json, hash, hash2;
 
 module("SC.Store#createRecord", {
@@ -16,7 +18,7 @@ module("SC.Store#createRecord", {
       bool: SC.Record.attr(Boolean, { defaultValue: YES })
     });
 
-    SC.RunLoop.begin();
+    SC.run.begin();
 
     store = SC.Store.create();
     
@@ -30,7 +32,7 @@ module("SC.Store#createRecord", {
 
     store.writeDataHash(storeKey, json, SC.Record.READY_CLEAN);
 
-    SC.RunLoop.end();
+    SC.run.end();
   }
 });
 
@@ -51,15 +53,15 @@ test("create a record", function() {
 
   rec = store.createRecord(SC.Record, hash);
   ok(rec, "a record was created");
-  sk=store.storeKeyFor(SC.Record, rec.id());
+  sk=store.storeKeyFor(SC.Record, get(rec, 'id'));
   equals(store.readDataHash(sk), hash, "data hashes are equivalent");
-  equals(rec.id(), "1234abcd", "guids are the same");
+  equals(get(rec, 'id'), "1234abcd", "guids are the same");
 
   rec = store.createRecord(SC.Record, hash2, "priKey");
   ok(rec, "a record with a custom id was created");
   sk=store.storeKeyFor(SC.Record, "priKey");
   equals(store.readDataHash(sk), hash2, "data hashes are equivalent");
-  equals(rec.id(), "priKey", "guids are the same");
+  equals(get(rec, 'id'), "priKey", "guids are the same");
   
   equals(store.changelog.length, 2, "The changelog has the following number of entries:");
   

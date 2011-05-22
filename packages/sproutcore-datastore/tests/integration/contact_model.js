@@ -6,6 +6,8 @@
 // ==========================================================================
 /*globals module test ok equals same AB */
 
+var set = SC.set, get = SC.get;
+
 var AB;
 module("Sample Model from an address book app", { 
   setup: function() {
@@ -107,7 +109,7 @@ module("Sample Model from an address book app", {
           this.writeAttribute('groups', groups.getEach('guid')) ;
           groups.invoke('notifyPropertyChange', 'contacts');
         }
-        return this.get('store').records(this.readAttribute('groups'));
+        return get(this, 'store').records(this.readAttribute('groups'));
       }.property().cacheable()
       
     });
@@ -123,7 +125,7 @@ module("Sample Model from an address book app", {
       
       // the contact the address belongs to.
       contact: function() {
-        this.get('store').record(this.readAttribute('contact'));
+        get(this, 'store').record(this.readAttribute('contact'));
       }
     });
     

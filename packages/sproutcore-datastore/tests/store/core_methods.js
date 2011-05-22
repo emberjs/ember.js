@@ -5,6 +5,8 @@
 // ==========================================================================
 /*globals module ok equals same test MyApp Sample */
 
+var set = SC.set, get = SC.get;
+
 var store, Application, dataSource;
 
 module("SC.Store Core Methods", {
@@ -23,6 +25,8 @@ module("SC.Store Core Methods", {
 
     Application.File = SC.Record.extend({
 
+      name: SC.Record.attr(String),
+      
       nameDidChange: function(object, key) {
         Application._nameDidChange++;
       }.observes('name', 'url', 'isDirectory')
@@ -49,12 +53,12 @@ module("SC.Store Core Methods", {
       ]
     };
 
-    SC.RunLoop.begin();
+    SC.run.begin();
     store = SC.Store.create({ name: 'Test store'} ).from(dataSource);
     for(var i in Application.Data) {
       store.loadRecords(Application[i], Application.Data[i]);
     }
-    SC.RunLoop.end();
+    SC.run.end();
 
     // make sure RecordType by String can map
     window.Application = Application;
@@ -70,8 +74,8 @@ test("Verify that SC.Store's toString() includes the store's name, if it was spe
 
 test("Verify loadRecords() loads data", function() {
 
-  equals(store.find(Application.File, '14').get('name'), 'Birthday Invitation.pdf', 'should return File 14');
-  equals(store.find(Application.FileDisk, '14').get('name'), 'Main Drive', 'should return FileDisk 14');
+  equals(get(store.find(Application.File, '14'), 'name'), 'Birthday Invitation.pdf', 'should return File 14');
+  equals(get(store.find(Application.FileDisk, '14'), 'name'), 'Main Drive', 'should return FileDisk 14');
 
 });
 
@@ -89,8 +93,8 @@ test("Verify storeKeys() gets all store keys", function() {
 
 test("find() should take both SC.Record object and SC.Record string as recordtype argument", function() {
 
-  equals(store.find('Application.File', '14').get('name'), 'Birthday Invitation.pdf', 'should return File 14');
-  equals(store.find(Application.File, '14').get('name'), 'Birthday Invitation.pdf', 'should return FileDisk 14');
+  equals(get(store.find('Application.File', '14'), 'name'), 'Birthday Invitation.pdf', 'should return File 14');
+  equals(get(store.find(Application.File, '14'), 'name'), 'Birthday Invitation.pdf', 'should return FileDisk 14');
 
 });
 
@@ -102,13 +106,13 @@ test("loading more records should not sending _flushRecordChanges() until the en
       { guid: '57',name: 'Library', fileType: 'library', url: '/emily_parker/Library', isDirectory: true, parent: '10', children: 'Collection', createdAt: 'June 15, 2007', modifiedAt: 'October 21, 2007', filetype: 'directory', isShared: false}
   ];
 
-  SC.RunLoop.begin();
+  SC.run.begin();
 
   var storeKeys = store.loadRecords(Application.File, moreData);
   equals(storeKeys.length, 3, 'precon - should have loaded three records');
   equals(store.recordPropertyChanges.storeKeys.length, 3, 'should be three storeKeys in changelog');
 
-  SC.RunLoop.end();
+  SC.run.end();
 
   // recordPropertyChanges may not exist after notifications have gone out.
   // treat that like having len=0
@@ -121,7 +125,7 @@ test("loading more records should not sending _flushRecordChanges() until the en
 test("Passing params through commitRecords()", function() {
 
   var file = store.find(Application.File, '14');
-  file.set('name', 'My Great New Name');
+  set(file, 'name', 'My Great New Name');
 
   store.commitRecords(null, null, null, { param1: 'value1' });
 
@@ -134,9 +138,9 @@ test("Make sure that setting an attribute on a record will only notify respectiv
   var file = store.find(Application.File, '14');
   Application._nameDidChange = 0 ;
 
-  SC.RunLoop.begin();
+  SC.run.begin();
   file.writeAttribute('name', 'My Great New Name');
-  SC.RunLoop.end();
+  SC.run.end();
 
   equals(Application._nameDidChange, 1, 'observer should have been fired only once');
 
@@ -147,10 +151,10 @@ test("Make sure that setting an attribute on a record will only notify respectiv
 //
 //   var file = store.find(Application.File, '14');
 //
-//   file.get('id'); // Just getting the id, so it gets cached.
+//   get(file, 'id'); // Just getting the id, so it gets cached.
 //
-//   SC.Store.replaceIdFor(file.get('storeKey'), 999);
-//   equals(file.get('id'), 999, 'the record should have the new id');
+//   SC.Store.replaceIdFor(get(file, 'storeKey'), 999);
+//   equals(get(file, 'id'), 999, 'the record should have the new id');
 //
 // });
 

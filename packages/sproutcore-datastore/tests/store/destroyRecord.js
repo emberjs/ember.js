@@ -5,13 +5,15 @@
 // ==========================================================================
 /*globals module ok equals same test MyApp */
 
+var set = SC.set, get = SC.get;
+
 var store, storeKey1,storeKey2,storeKey3,storeKey4,storeKey5, storeKey6, json;
 var json1, json2, json3, json4, json5, json6;
 
 module("SC.Store#destroyRecord", {
   setup: function() {
 
-    SC.RunLoop.begin();
+    SC.run.begin();
 
     store = SC.Store.create();
     
@@ -65,7 +67,7 @@ module("SC.Store#destroyRecord", {
     storeKey6 = SC.Store.generateStoreKey();
     store.writeDataHash(storeKey6, json6, SC.Record.READY_CLEAN);
 
-    SC.RunLoop.end();
+    SC.run.end();
   }
 });
 

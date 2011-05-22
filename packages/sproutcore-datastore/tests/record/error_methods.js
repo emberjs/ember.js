@@ -5,6 +5,8 @@
 // ==========================================================================
 /*globals module ok equals same test MyApp */
 
+var set = SC.set, get = SC.get;
+
 var store, Application;
 module("SC.Record Error Methods", {
   setup: function() {
@@ -14,7 +16,7 @@ module("SC.Record Error Methods", {
       name: SC.Record.attr(String)
     });
 
-    SC.RunLoop.begin();
+    SC.run.begin();
     store = SC.Store.create();
 
     var records = [
@@ -25,7 +27,7 @@ module("SC.Record Error Methods", {
     var types = [ Application.Thing, Application.Thing ];
 
     store.loadRecords(types, records);
-    SC.RunLoop.end();
+    SC.run.end();
   },
 
   teardown: function() {
@@ -36,21 +38,21 @@ module("SC.Record Error Methods", {
 
 test("Verify error methods behave correctly", function() {
   var thing1 = store.find(Application.Thing, 1);
-  var storeKey = thing1.get('storeKey');
+  var storeKey = get(thing1, 'storeKey');
 
   var thing2 = store.find(Application.Thing, 2);
 
-  SC.RunLoop.begin();
+  SC.run.begin();
   store.writeStatus(storeKey, SC.Record.BUSY_LOADING);
   store.dataSourceDidError(storeKey, SC.Record.GENERIC_ERROR);
-  SC.RunLoop.end();
+  SC.run.end();
 
-  ok(thing1.get('isError'), "isError on thing1 should be YES");
-  ok(!thing2.get('isError'), "isError on thing2 should be NO");
+  ok(get(thing1, 'isError'), "isError on thing1 should be YES");
+  ok(!get(thing2, 'isError'), "isError on thing2 should be NO");
 
-  equals(thing1.get('errorObject'), SC.Record.GENERIC_ERROR,
+  equals(get(thing1, 'errorObject'), SC.Record.GENERIC_ERROR,
     "get('errorObject') on thing1 should return the correct error object");
 
-  equals(thing2.get('errorObject'), null,
+  equals(get(thing2, 'errorObject'), null,
     "get('errorObject') on thing2 should return null");
 });

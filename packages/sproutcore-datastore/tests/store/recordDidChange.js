@@ -5,10 +5,12 @@
 // ==========================================================================
 /*globals module ok equals same test MyApp */
 
+var set = SC.set, get = SC.get;
+
 var store, storeKey, json;
 module("SC.Store#recordDidChange", {
   setup: function() {
-    SC.RunLoop.begin();
+    SC.run.begin();
 
     store = SC.Store.create();
 
@@ -47,7 +49,7 @@ module("SC.Store#recordDidChange", {
     storeKey4 = SC.Store.generateStoreKey();
     store.writeDataHash(storeKey4, json4, SC.Record.READY_CLEAN);
 
-    SC.RunLoop.end();
+    SC.run.end();
   }
 });
 

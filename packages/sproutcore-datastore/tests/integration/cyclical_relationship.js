@@ -6,6 +6,8 @@
 // ==========================================================================
 /*globals module test ok equals same AB */
 
+var set = SC.set, get = SC.get;
+
 module("Cyclical relationships", { 
   setup: function() {
 
@@ -33,19 +35,13 @@ module("Cyclical relationships", {
         var q = SC.Query.local(AB.Contact, "group = {record}", {
           record: this
         });  
-        return this.get('store').find(q);
+        return get(this, 'store').find(q);
       }.property().cacheable(),
       
       // discover favorite contacts only
       favoriteContacts: function() {
-        return this.get('contacts').filterProperty('isFavorite', YES);
-      }.property('contacts').cacheable(),
-      
-      // we need to reset favoriteContacts whenever the contacts themselves
-      // change
-      contactsContentDidChange: function() {
-        this.notifyPropertyChange('favoriteContacts');
-      }.observes('.contacts*[]')
+        return get(this, 'contacts').filterProperty('isFavorite', YES);
+      }.property('contacts.[]').cacheable()
       
     });
     
@@ -82,12 +78,12 @@ module("Cyclical relationships", {
     ];
     
     
-    SC.RunLoop.begin();
+    SC.run.begin();
     
   },
   
   teardown: function() {
-    SC.RunLoop.end(); 
+    SC.run.end(); 
     AB = null;
   }
 });
@@ -95,7 +91,7 @@ module("Cyclical relationships", {
 test("getting all contacts in a group", function() {
   var group  = AB.store.find(AB.Group, 100);
   var expected = AB.store.find(AB.Contact).filterProperty('group', group);
-  same(group.get('contacts').toArray(), expected, 'contacts');
+  same(get(group, 'contacts').toArray(), expected, 'contacts');
 });
 
 test("finding favoriteContacts", function() {
@@ -104,15 +100,15 @@ test("finding favoriteContacts", function() {
     .filterProperty('group', group)
     .filterProperty('isFavorite', YES);
     
-  same(group.get('favoriteContacts'), expected, 'contacts');
+  same(get(group, 'favoriteContacts'), expected, 'contacts');
   
   var c = AB.store.find(AB.Contact, 4) ;
-  c.set('group', group); // move to group...
-  SC.RunLoop.end();
-  SC.RunLoop.begin();
+  set(c, 'group', group); // move to group...
+  SC.run.end();
+  SC.run.begin();
   
   expected.push(c);
-  same(group.get('favoriteContacts'), expected, 'favoriteContacts after adding extra');
+  same(get(group, 'favoriteContacts'), expected, 'favoriteContacts after adding extra');
   
 });
 

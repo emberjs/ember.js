@@ -5,11 +5,13 @@
 // ==========================================================================
 /*globals module ok equals same test Sample */
 
+var set = SC.set, get = SC.get;
+
 var store;
 
 module("SC.CascadeDataSource", {
   setup: function () {
-    SC.RunLoop.begin();
+    SC.run.begin();
 
     var Sample = (window.Sample = SC.Object.create());
 
@@ -92,7 +94,7 @@ module("SC.CascadeDataSource", {
   },
 
   teardown: function () {
-    SC.RunLoop.end();
+    SC.run.end();
   }
 });
 

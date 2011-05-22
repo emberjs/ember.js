@@ -5,6 +5,8 @@
 // ==========================================================================
 /*globals module ok equals same test MyApp */
 
+var set = SC.set, get = SC.get;
+
 
 var store, storeKey1, storeKey2, storeKey3, storeKey4, storeKey5, storeKey6;
 var storeKey7, storeKey8, json, json1, json2, json3, json4, json5, json6 ;
@@ -86,7 +88,7 @@ module("SC.Store#retrieveRecord", {
 function testStates(canLoad) {
   var msg, status;
   
-  SC.RunLoop.begin();
+  SC.run.begin();
   
   store.retrieveRecord(undefined, undefined, storeKey1, YES);
   status = store.readStatus( storeKey1);
@@ -154,7 +156,7 @@ function testStates(canLoad) {
     equals(status, SC.Record.READY_CLEAN, "the status should remain ready clean");
   }
   
-  SC.RunLoop.end();
+  SC.run.end();
 }  
 
 test("Retrieve a record without a data source", function() {
@@ -166,7 +168,7 @@ test("Retrieve a record without a working data source and check for different er
   var source = SC.DataSource.create({
     retrieveRecords: function() { return NO ; }
   });
-  store.set('dataSource', source);
+  set(store, 'dataSource', source);
 
   testStates(NO);
 
@@ -177,7 +179,7 @@ test("Retrieve a record with working data source and check for different errors 
   var source = SC.DataSource.create({
     retrieveRecords: function() { return YES ; }
   });
-  store.set('dataSource', source);
+  set(store, 'dataSource', source);
 
   testStates(YES);
 
@@ -188,7 +190,7 @@ test("Retrieve a record with callback", function() {
   var source = SC.DataSource.create({
     retrieveRecords: function() { return YES ; }
   });
-  store.set('dataSource', source);
+  set(store, 'dataSource', source);
   var callback = NO;
   store.retrieveRecord(undefined, undefined, storeKey1, YES, function(){callback = YES;});
   

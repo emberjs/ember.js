@@ -5,6 +5,8 @@
 // ==========================================================================
 /*globals module ok equals same test MyApp */
 
+var set = SC.set, get = SC.get;
+
 (function() {
   var store, people, places, Person, Place;
 
@@ -21,7 +23,7 @@
         name: SC.Record.attr(String)
       });
 
-      SC.RunLoop.begin();
+      SC.run.begin();
 
       store = SC.Store.create();
 
@@ -53,7 +55,7 @@
         })
       ];
 
-      SC.RunLoop.end();
+      SC.run.end();
     },
     teardown: function() {
       store = people = places = Person = Place = null;
@@ -67,7 +69,7 @@
     ok(SC.isArray(storeKeys), "An array of store keys is returned");
 
     storeKeys.forEach(function(storeKey, index) {
-      equals(store.idFor(storeKeys[index]), people[index].get('guid'), "The storeKey resolves to the correct Primary Key for index %@".fmt(index));
+      equals(store.idFor(storeKeys[index]), get(people[index], 'guid'), "The storeKey resolves to the correct Primary Key for index %@".fmt(index));
 
       ok(store.peekStatus(storeKey) & SC.Record.READY_CLEAN, "Record is in SC.Record.READY_CLEAN state after loading into store for index %@".fmt(index));
     });
@@ -82,7 +84,7 @@
     things.pushObjects(places);
 
     things.forEach(function(thing, index) {
-      ok(SC.kindOf(thing, types[index]), "precond - types array contains correct record type for index %@".fmt(index));
+      ok((thing instanceof  types[index]), "precond - types array contains correct record type for index %@".fmt(index));
     });
 
     storeKeys = store.loadRecords(types, things);
@@ -92,8 +94,8 @@
     storeKeys.forEach(function(storeKey, index) {
       record = store.materializeRecord(storeKey);
       
-      equals(store.idFor(storeKeys[index]), things[index].get('guid'), "The storeKey resolves to the correct Primary Key for index %@".fmt(index));
-      ok(SC.kindOf(record, types[index]), "store returns a record of the correct type for index %@".fmt(index));
+      equals(store.idFor(storeKeys[index]), get(things[index], 'guid'), "The storeKey resolves to the correct Primary Key for index %@".fmt(index));
+      ok((record instanceof  types[index]), "store returns a record of the correct type for index %@".fmt(index));
       ok(store.peekStatus(storeKey) & SC.Record.READY_CLEAN, "Record is in SC.Record.READY_CLEAN state after loading into store for index %@".fmt(index));
     });
   });

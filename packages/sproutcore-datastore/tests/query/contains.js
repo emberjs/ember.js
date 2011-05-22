@@ -4,13 +4,15 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 /*globals module ok equals same test MyApp */
- 
+
+var set = SC.set, get = SC.get;
+
 // test parsing of query string
 var store, storeKey, foo1, foo2, bar1, bar2, baz, barChild, MyApp, q;
 module("SC.Query comparison of records", {
   setup: function() {
     
-    SC.RunLoop.begin();
+    SC.run.begin();
     
     // setup dummy app and store
     MyApp = SC.Object.create({
@@ -42,7 +44,7 @@ module("SC.Query comparison of records", {
       { guid: 6, firstName: "Bert", lastName: "Ernie", active: true }
     ]);
     
-    SC.RunLoop.end();
+    SC.run.end();
     
     foo1 = MyApp.store.find(MyApp.Foo,1);
     foo2 = MyApp.store.find(MyApp.Foo,2);
@@ -74,7 +76,7 @@ test("should only contain records matching recordType or recordTypes", function(
   q = SC.Query.create({ recordTypes: [MyApp.Foo, MyApp.Bar] });
   equals(q.contains(foo1), YES, 'q with recordTypes=Foo,Bar should contain record of type Foo');
   equals(q.contains(bar1), YES, 'q with recordTypes=Foo,Bar should contain record of type Bar');
-  equals(SC.kindOf(barChild, MyApp.Bar), YES, 'SC.kindOf(barChild, MyApp.Bar)');
+  equals((barChild instanceof  MyApp.Bar), YES, '(barChild instanceof  MyApp.Bar)');
   
   equals(q.contains(barChild), YES, 'q with recordTypes=Foo,Bar should contain record of type BarChild');
 

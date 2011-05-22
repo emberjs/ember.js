@@ -5,18 +5,20 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
-require('sproutcore-runtime');
+require('sproutcore-metal');
 require('sproutcore-datastore/system/record');
 require('sproutcore-datastore/attributes/record_attribute');
 require('sproutcore-datastore/attributes/child_attribute');
 require('sproutcore-datastore/system/child_array');
+
+var get = SC.get, set = SC.set;
 
 /** @class
   
   ChildrenAttribute is a subclass of ChildAttribute and handles to-many 
   relationships for child records.
   
-  When setting ( `.set()` ) the value of a toMany attribute, make sure
+  When setting ( `set()` ) the value of a toMany attribute, make sure
   to pass in an array of SC.Record objects.
   
   There are many ways you can configure a ChildrenAttribute:
@@ -35,10 +37,10 @@ SC.ChildrenAttribute = SC.ChildAttribute.extend(
   
   /**  @private - adapted for to many relationship */
   toType: function(record, key, value) {
-    var attrKey   = this.get('key') || key,
-        arrayKey  = SC.keyFor('__kidsArray__', SC.guidFor(this)),
+    var attrKey   = get(this, 'key') || key,
+        arrayKey  = '__kidsArray__'+SC.guidFor(this),
         ret       = record[arrayKey],
-        recordType  = this.get('typeClass'), rel;
+        recordType  = get(this, 'typeClass'), rel;
 
     // lazily create a ManyArray one time.  after that always return the 
     // same object.
@@ -50,8 +52,8 @@ SC.ChildrenAttribute = SC.ChildAttribute.extend(
       });
 
       record[arrayKey] = ret ; // save on record
-      rel = record.get('relationships');
-      if (!rel) record.set('relationships', rel = []);
+      rel = get(record, 'relationships');
+      if (!rel) set(record, 'relationships', rel = []);
       rel.push(ret); // make sure we get notified of changes...
     }
 
@@ -61,7 +63,7 @@ SC.ChildrenAttribute = SC.ChildAttribute.extend(
   // Default fromType is just returning itself
   fromType: function(record, key, value){
     var sk, store, 
-        arrayKey = SC.keyFor('__kidsArray__', SC.guidFor(this)),
+        arrayKey = '__kidsArray__'+SC.guidFor(this),
         ret = record[arrayKey];
     if (record) {
       record.writeAttribute(key, value);
