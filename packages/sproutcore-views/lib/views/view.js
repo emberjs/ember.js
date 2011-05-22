@@ -581,7 +581,11 @@ SC.View = SC.Object.extend(
 
     buffer.addClass(get(this, 'classNames').join(' '));
     buffer.id(get(this, 'elementId'));
-    buffer.attr('role', get(this, 'ariaRole'));
+
+    var role = get(this, 'ariaRole');
+    if (role) {
+      buffer.attr('role', role);
+    }
 
     if (!get(this, 'isVisible')) {
       buffer.style('display', 'none');

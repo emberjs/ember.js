@@ -145,3 +145,10 @@ test("should add sc-view to views", function() {
   view.createElement();
   ok(view.$().hasClass('sc-view'), "the view has sc-view");
 });
+
+test("should not add role attribute unless one is specified", function() {
+  var view = SC.View.create();
+
+  view.createElement();
+  ok(view.$().attr('role') === undefined, "does not have a role attribute");
+});
