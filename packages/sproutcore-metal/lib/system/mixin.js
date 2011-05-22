@@ -78,6 +78,8 @@ function mergeMixins(mixins, m, descs, values, base) {
         if (!props.hasOwnProperty(key)) continue;
         value = props[key];
         if (value instanceof SC.Descriptor) {
+          if (value === REQUIRED && descs[key]) { continue; }
+
           descs[key]  = value;
           values[key] = undefined;
         } else {
