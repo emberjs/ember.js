@@ -116,7 +116,9 @@ SC.ArrayProxy = SC.Object.extend(SC.MutableArray, {
   
   init: function(content) {
     this._super();
+    // TODO: Why is init getting called with a parameter? --TD
     if (content) set(this, 'content', content);
+    this.contentDidChange();
   }
   
 });
