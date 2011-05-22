@@ -1,8 +1,7 @@
-require("sproutcore-runtime/runtime");
-require("sproutcore-runtime/mixins");
-require("sproutcore-runtime/system");
+// ==========================================================================
+// Project:   SproutCore Runtime
+// Copyright: ©2011 Strobe Inc. and contributors.
+// License:   Licensed under MIT license (see license.js)
+// ==========================================================================
 
-// TODO: Make this optional
-require("sproutcore-runtime/ext");
-
-require("sproutcore-runtime/private/property_chain");
+require('sproutcore-metal');

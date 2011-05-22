@@ -6,7 +6,7 @@
 // ==========================================================================
 /*globals sc_assert */
 
-require('sproutcore-metal');
+require('sproutcore-runtime');
 
 var get = SC.get, set = SC.set, abs = Math.abs;
 

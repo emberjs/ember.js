@@ -2,15 +2,20 @@
   "name": "sproutcore-runtime",
   "summary": "SproutCore Runtime",
   "description": "The base SproutCore runtime. Essential for all SproutCore apps.",
+
   "homepage": "http://sproutcore.com",
   "author": "Charles Jolley",
   "version": "2.0",
+
   "dependencies": {
+    "sproutcore-metal": "2.0",
     "sproutcore-preprocessor": "~> 0.0.2"
   },
+
   "plugin:preprocessors": [
     "sproutcore-preprocessor/preprocessor"
   ],
+
   "directories": {
     "lib"       : "./lib",
     "tests"     : "./tests"

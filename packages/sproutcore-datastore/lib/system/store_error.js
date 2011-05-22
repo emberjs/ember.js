@@ -6,7 +6,7 @@
 // ==========================================================================
 // @global SC
 
-require('sproutcore-metal');
+require('sproutcore-runtime');
 
 var get = SC.get, set = SC.set;
 

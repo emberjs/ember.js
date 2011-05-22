@@ -5,7 +5,7 @@
 // ==========================================================================
 
 require("handlebars");
-require("sproutcore-metal");
+require("sproutcore-runtime");
 require("sproutcore-views");
 require("sproutcore-handlebars/ext");
 require("sproutcore-handlebars/helpers");
