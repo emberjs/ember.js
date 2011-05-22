@@ -7,10 +7,11 @@
 
 require("sproutcore-handlebars/ext");
 
-// Find templates stored in the DOM as script tags and make them available to
-// SC.CoreView in the global SC.TEMPLATES object.
+// Find templates stored in the head tag as script tags and make them available
+// to SC.CoreView in the global SC.TEMPLATES object.
+
 SC.$(document).ready(function() {
-  SC.$('script[type="text/x-handlebars-template"]').each(function() {
+  SC.$('head script[type="text/html"]').each(function() {
     // Get a reference to the script tag
     var script = SC.$(this);
 
@@ -29,5 +30,27 @@ SC.$(document).ready(function() {
 
     // Remove script tag from DOM
     script.remove();
+  });
+
+  // Finds templates stored inline in the HTML document, instantiates a new
+  // view, and replaces the script tag holding the template with the new
+  // view's DOM representation.
+  //
+  // Users can optionally specify a custom view subclass to use by setting the
+  // data-view attribute of the script tag.
+
+  SC.$('body script[type="text/html"]').each(function() {
+    var script = SC.$(this),
+        template = SC.Handlebars.compile(script.html()),
+        viewPath = script.attr('data-view');
+
+    var view = viewPath ? SC.getPath(viewPath) : SC.View;
+
+    view = view.create({
+      template: template
+    });
+
+    view.createElement();
+    script.replaceWith(view.$());
   });
 });
