@@ -650,7 +650,7 @@ SC.Error.prototype = SC.create(Error.prototype);
     will be executed.  If the function returns false an exception will be
     thrown.
 */
-sc_assert = function sc_assert(desc, test) {
+window.sc_assert = function sc_assert(desc, test) {
   if ('function' === typeof test) test = test()!==false;
   if (!test) throw new SC.Error("assertion failed: "+desc);
 };   
