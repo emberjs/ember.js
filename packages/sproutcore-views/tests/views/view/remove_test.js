@@ -67,9 +67,14 @@ test("removes view from parent view", function() {
   var child = parent.childViews[0];
   ok(get(child, 'parentView'), 'precond - has parentView');
 
+  parent.createElement();
+
+  ok(parent.$('div').length, "precond - has a child DOM element");
+
   child.removeFromParent();
   ok(!get(child, 'parentView'), 'no longer has parentView');
   ok(parent.childViews.indexOf(child)<0, 'no longer in parent childViews');
+  equals(parent.$('div').length, 0, "removes DOM element from parent");
 });
 
 test("returns receiver", function() {

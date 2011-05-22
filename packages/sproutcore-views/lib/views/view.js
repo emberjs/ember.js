@@ -762,6 +762,10 @@ SC.View = SC.Object.extend(
   */
   removeFromParent: function() {
     var parent = get(this, 'parentView');
+
+    // Remove DOM element from parent
+    this.remove();
+
     if (parent) { parent.removeChild(this); }
     return this;
   },
