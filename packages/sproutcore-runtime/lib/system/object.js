@@ -7,10 +7,8 @@
 require('sproutcore-runtime/system/core_object');
 require('sproutcore-runtime/system/set');
 
-
-
 SC.CoreObject.subclasses = new SC.Set();
-SC.Object = SC.CoreObject.extend(); // allows Observable to be added.
+SC.Object = SC.CoreObject.extend(SC.Observable);
 
 
 

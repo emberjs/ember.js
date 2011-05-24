@@ -9,7 +9,7 @@ require('sproutcore-runtime/system/array_proxy');
 require('sproutcore-runtime/system/binding');
 require('sproutcore-runtime/system/core_object');
 require('sproutcore-runtime/system/each_proxy');
-require('sproutcore-runtime/system/mixin');
+
 require('sproutcore-runtime/system/namespace');
 require('sproutcore-runtime/system/native_array');
 require('sproutcore-runtime/system/object');

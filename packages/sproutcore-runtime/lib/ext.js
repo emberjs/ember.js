@@ -6,3 +6,4 @@
 
 require('sproutcore-runtime/ext/string');
 require('sproutcore-runtime/ext/function');
+require('sproutcore-runtime/ext/mixin');

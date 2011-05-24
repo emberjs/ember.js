@@ -4,7 +4,7 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
-require('sproutcore-runtime/system/mixin');
+
 
 // NOTE: this object should never be included directly.  Instead use SC.
 // SC.Object.  We only define this separately so that SC.Set can depend on it

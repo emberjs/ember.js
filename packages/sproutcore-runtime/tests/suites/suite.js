@@ -5,7 +5,7 @@
 // ==========================================================================
 
 require('sproutcore-runtime/system/object');
-require('sproutcore-runtime/system/mixin');
+
 
 /**
   A Suite can be used to define a reusable set of unit tests that can be 

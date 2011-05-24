@@ -4,6 +4,13 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
+require('./core');
+require('./accessors');
+require('./computed');
+require('./properties');
+require('./observer');
+require('./utils');
+
 var Mixin, MixinDelegate, REQUIRED, Alias;
 var classToString;
 
@@ -57,7 +64,7 @@ function mergeMixins(mixins, m, descs, values, base) {
   for(idx=0;idx<len;idx++) {
     
     mixin = mixins[idx];
-    if (!mixin) throw new Error('Null value found in SC.Mixin.apply()');
+    if (!mixin) throw new Error('Null value found in SC.mixin()');
 
     if (mixin instanceof Mixin) {
       guid = SC.guidFor(mixin);
@@ -134,11 +141,15 @@ function getBeforeObserverPaths(value) {
   return ('function' === typeof value) && value.__sc_observesBefore__;
 }
 
-var IS_BINDING = /^.+Binding$/;
+SC._mixinBindings = function(obj, key, value, m) {
+  return value;
+};
 
 function applyMixin(obj, mixins, partial) {
   var descs = {}, values = {}, m = SC.meta(obj), req = m.required;
-  var key, willApply, didApply, value, desc, bindings;
+  var key, willApply, didApply, value, desc;
+  
+  var mixinBindings = SC._mixinBindings;
   
   mergeMixins(mixins, meta(obj), descs, values, obj);
 
@@ -202,29 +213,8 @@ function applyMixin(obj, mixins, partial) {
         }
       }
 
-      // handle bindings
-      if (IS_BINDING.test(key)) {
-        if (!(value instanceof SC.Binding)) {
-          value = new SC.Binding(key.slice(0,-7), value); // make binding
-        } else {
-          value.to(key.slice(0, -7));
-        }
-        value.connect(obj);
-        
-        // keep a set of bindings in the meta so that when we rewatch we can
-        // resync them...
-        if (!bindings) {
-          bindings = m.bindings;
-          if (!bindings) {
-            bindings = m.bindings = { __scproto__: obj };
-          } else if (bindings.__scproto__ !== obj) {
-            bindings = m.bindings = SC.create(m.bindings);
-            bindings.__scproto__ = obj;
-          }
-        }
-        
-        bindings[key] = true;
-      }
+      // TODO: less hacky way for sproutcore-runtime to add bindings.
+      value = mixinBindings(obj, key, value, m);
       
       defineProperty(obj, key, desc, value);
       
@@ -265,12 +255,13 @@ function applyMixin(obj, mixins, partial) {
   return obj;
 }
 
-Mixin = function() { return initMixin(this, arguments); };
-
-Mixin.apply = function(obj) {
+SC.mixin = function(obj) {
   var args = Array.prototype.slice.call(arguments, 1);
   return applyMixin(obj, args, false);
 };
+
+
+Mixin = function() { return initMixin(this, arguments); };
 
 Mixin._apply = applyMixin;
 

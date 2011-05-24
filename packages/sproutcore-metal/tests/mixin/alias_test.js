@@ -89,7 +89,7 @@ test('should copy from other mixins applied at same time', function() {
     barMethod: SC.alias('fooMethod')
   });
   
-  var obj = SC.Mixin.apply({}, BaseMixin, MyMixin);
+  var obj = SC.mixin({}, BaseMixin, MyMixin);
   validateAlias(obj);
 });
 

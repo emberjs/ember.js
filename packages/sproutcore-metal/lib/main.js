@@ -13,4 +13,4 @@ require('./computed');
 require('./watching');
 require('./events');
 require('./observer');
-
+require('./mixin');

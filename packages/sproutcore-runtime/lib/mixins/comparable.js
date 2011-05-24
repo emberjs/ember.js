@@ -6,7 +6,7 @@
 // ==========================================================================
 
 require('sproutcore-runtime/core');
-require('sproutcore-runtime/system/mixin');
+
 
 /**
   @namespace

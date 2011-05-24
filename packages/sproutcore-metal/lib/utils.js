@@ -221,3 +221,42 @@ SC.wrap = function(func, superFunc) {
   return newFunc;
 };
 
+/**
+  @function
+  
+  Returns YES if the passed object is an array or Array-like.
+
+  SproutCore Array Protocol:
+
+    - the object has an objectAt property
+    - the object is a native Array
+    - the object is an Object, and has a length property
+
+  Unlike SC.typeOf this method returns true even if the passed object is
+  not formally array but appears to be array-like (i.e. implements SC.Array)
+
+  @param {Object} obj The object to test
+  @returns {Boolean}
+*/
+SC.isArray = function(obj) {
+  if (!obj || obj.setInterval) { return false; }
+  if (Array.isArray && Array.isArray(obj)) { return true; }
+  if (SC.Array && SC.Array.detect(obj)) { return true; }
+  if ((obj.length !== undefined) && 'object'===typeof obj) { return true; }
+  return false;
+};
+
+/**
+  Forces the passed object to be part of an array.  If the object is already
+  an array or array-like, returns the object.  Otherwise adds the object to
+  an array.  If obj is null or undefined, returns an empty array.
+  
+  @param {Object} obj the object
+  @returns {Array}
+*/
+SC.makeArray = function(obj) {
+  if (obj==null) return [];
+  return SC.isArray(obj) ? obj : [obj];
+};
+
+

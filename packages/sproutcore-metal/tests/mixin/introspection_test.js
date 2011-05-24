@@ -41,7 +41,7 @@ var obj ;
 module('Basic introspection', {
   setup: function() {
     obj = {};
-    SC.Mixin.apply(obj, PrivateProperty, PublicProperty, PrivateMethod, PublicMethod, Combined);
+    SC.mixin(obj, PrivateProperty, PublicProperty, PrivateMethod, PublicMethod, Combined);
   }
 });
 

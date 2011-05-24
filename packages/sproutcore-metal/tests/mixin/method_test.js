@@ -134,7 +134,7 @@ test('overriding toString', function() {
   equals(obj.toString(), 'FOO', 'should override toString w/o error');
   
   obj = {};
-  SC.Mixin.apply(obj, { toString: function() { return 'FOO'; } });
+  SC.mixin(obj, { toString: function() { return 'FOO'; } });
   equals(obj.toString(), 'FOO', 'should override toString w/o error');
 });
 
@@ -160,8 +160,8 @@ test('applying several mixins at once with sup already defined causes infinite l
   });
 
   var obj = {};
-  SC.Mixin.apply(obj, MixinA); // sup already exists
-  SC.Mixin.apply(obj, MixinB, MixinC); // must be more than one mixin
+  SC.mixin(obj, MixinA); // sup already exists
+  SC.mixin(obj, MixinB, MixinC); // must be more than one mixin
 
   cnt = 0;
   obj.foo();

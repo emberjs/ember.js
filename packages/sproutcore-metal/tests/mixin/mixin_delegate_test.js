@@ -8,7 +8,7 @@ module('SC.MixinDelegate');
 
 test('Basic usage', function() {
   var obj = {};
-  SC.Mixin.apply(obj, SC.MixinDelegate, {
+  SC.mixin(obj, SC.MixinDelegate, {
        
     foo: 'BAR',
      
@@ -29,7 +29,7 @@ test('Basic usage', function() {
   ok(!!obj._before, 'should have called with props');
   ok(!!obj._after,  'should have called with props');
 
-  SC.Mixin.apply(obj, { foo: 'FOO' });
+  SC.mixin(obj, { foo: 'FOO' });
   same(obj._before, ['foo', 'BAR'], 'should have called before apply');
   same(obj._after,  ['foo', 'FOO'], 'should have called after apply');
   
@@ -39,7 +39,7 @@ test('Only invokes callbacks once mixin is applied', function() {
   var obj = {};
   
   // NOTE: does not apply mixin
-  SC.Mixin.apply(obj, SC.MixinDelegate, {
+  SC.mixin(obj, SC.MixinDelegate, {
     foo: 'BAR',
 
     _before: null, 
@@ -54,7 +54,7 @@ test('Only invokes callbacks once mixin is applied', function() {
     }
   });
   
-  SC.Mixin.apply(obj, { foo: 'FOO' });
+  SC.mixin(obj, { foo: 'FOO' });
   equals(obj._before, 'BAR', 'should not have called yet');
   equals(obj._after,  'FOO', 'should not have called yet');
   
@@ -63,8 +63,8 @@ test('Only invokes callbacks once mixin is applied', function() {
 
 // test('Uses existing callbacks until mixin applied', function() {
 //   var obj = {};
-//   SC.Mixin.apply(obj, SC.Accessors);
-//   SC.Mixin.apply(obj, SC.MixinDelegate, {
+//   SC.mixin(obj, SC.Accessors);
+//   SC.mixin(obj, SC.MixinDelegate, {
 //     
 //     _before: null, 
 //     _after: null,
@@ -90,7 +90,7 @@ test('Only invokes callbacks once mixin is applied', function() {
 //   
 //   var secondBefore, secondAfter;
 //   
-//   SC.Mixin.apply(obj, { 
+//   SC.mixin(obj, { 
 //     
 //     willApplyProperty: function(keyName, desc) {
 //       if (!secondBefore) secondBefore = {};
@@ -117,7 +117,7 @@ test('Only invokes callbacks once mixin is applied', function() {
 //   
 //   
 //   // Third mixin...
-//   SC.Mixin.apply(obj, { baz: 'BAZ' });
+//   SC.mixin(obj, { baz: 'BAZ' });
 // 
 //   ok('baz' in obj._before, 'should have called first willApply');
 //   ok('baz' in obj._after, 'should have called first didApply');

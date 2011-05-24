@@ -18,7 +18,7 @@ test('defining concatenated properties should concat future version', function()
     foo: ['d', 'e', 'f']
   });
   
-  var obj = SC.Mixin.apply({}, MixinA, MixinB);
+  var obj = SC.mixin({}, MixinA, MixinB);
   same(SC.get(obj, 'foo'), ['a', 'b', 'c', 'd', 'e', 'f']);
 });
 
@@ -39,7 +39,7 @@ test('concatenatedProperties should be concatenated', function() {
     bar: [4,5,6]
   });
   
-  var obj = SC.Mixin.apply({}, MixinA, MixinB, MixinC);
+  var obj = SC.mixin({}, MixinA, MixinB, MixinC);
   same(SC.get(obj, 'concatenatedProperties'), ['foo', 'bar'], 'get concatenatedProperties');
   same(SC.get(obj, 'foo'), ['a', 'b', 'c', 'd', 'e', 'f'], 'get foo');
   same(SC.get(obj, 'bar'), [1,2,3,4,5,6], 'get bar');
@@ -56,7 +56,7 @@ test('adding a prop that is not an array should make array', function() {
     foo: 4
   });
 
-  var obj = SC.Mixin.apply({}, MixinA, MixinB);
+  var obj = SC.mixin({}, MixinA, MixinB);
   same(SC.get(obj, 'foo'), [1,2,3,4]);
 });
 
@@ -67,6 +67,6 @@ test('adding a prop that is not an array should make array', function() {
     foo: 'bar'
   });
 
-  var obj = SC.Mixin.apply({}, MixinA);
+  var obj = SC.mixin({}, MixinA);
   same(SC.get(obj, 'foo'), ['bar']);
 });

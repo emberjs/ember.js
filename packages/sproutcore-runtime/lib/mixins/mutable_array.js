@@ -4,7 +4,7 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
-require('sproutcore-runtime/system/mixin');
+
 require('sproutcore-runtime/mixins/array');
 require('sproutcore-runtime/mixins/mutable_enumerable');
 

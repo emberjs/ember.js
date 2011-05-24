@@ -12,7 +12,7 @@ function K() {}
 test('using apply() should apply properties', function() {
   var MixinA = SC.Mixin.create({ foo: 'FOO', baz: K });
   var obj = {};
-  SC.Mixin.apply(obj, MixinA);
+  SC.mixin(obj, MixinA);
 
   equals(SC.get(obj, 'foo'), "FOO", 'should apply foo');
   equals(SC.get(obj, 'baz'), K, 'should apply foo');
@@ -20,7 +20,7 @@ test('using apply() should apply properties', function() {
 
 test('applying anonymous properties', function() {
   var obj = {};
-  SC.Mixin.apply(obj, {
+  SC.mixin(obj, {
     foo: 'FOO',
     baz: K
   });
@@ -31,6 +31,6 @@ test('applying anonymous properties', function() {
 
 test('applying null values', function() {
   raises(function() {
-    SC.Mixin.apply({}, null);
+    SC.mixin({}, null);
   }, Error);
 });

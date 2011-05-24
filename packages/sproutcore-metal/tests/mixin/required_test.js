@@ -65,7 +65,7 @@ test('define property on source object', function() {
 });
 
 test('using apply', function() {
-  SC.Mixin.apply(obj, PartialMixin, { foo: 'FOO' });
+  SC.mixin(obj, PartialMixin, { foo: 'FOO' });
   equals(SC.get(obj, 'foo'), 'FOO', 'should now be defined');
 });
 

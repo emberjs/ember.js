@@ -4,10 +4,6 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
-require('sproutcore-runtime/system/mixin');
-
-
-
 var get = SC.get, set = SC.set;
   
 /**
@@ -293,14 +289,6 @@ SC.Observable = SC.Mixin.create(/** @scope SC.Observable.prototype */ {
     return SC.hasListeners(this, key+':change');
   },
 
-  /**
-    @deprecated
-    @method
-    
-    No longer required.  Included only for compatibility.
-  */
-  initObservable: SC.K,
-  
   unknownProperty: function(key) {
     return undefined;
   },

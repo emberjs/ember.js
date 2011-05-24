@@ -158,19 +158,6 @@ SC.isArray = function(obj) {
 };
 
 /**
-  Forces the passed object to be part of an array.  If the object is already
-  an array or array-like, returns the object.  Otherwise adds the object to
-  an array.  If obj is null or undefined, returns an empty array.
-  
-  @param {Object} obj the object
-  @returns {Array}
-*/
-SC.makeArray = function(obj) {
-  if (SC.none(obj)) return [];
-  return SC.isArray(obj) ? obj : [obj];
-};
-
-/**
  This will compare two javascript values of possibly different types.
  It will tell you which one is greater than the other by returning:
 
