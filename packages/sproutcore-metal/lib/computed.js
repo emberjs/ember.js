@@ -63,6 +63,11 @@ function removeDependentKey(obj, keyName, depKey) {
   SC.unwatch(obj, depKey);
 }
 
+function addDependentKeys(desc, obj, keyName) {
+  var keys = desc._dependentKeys, 
+      len  = keys ? keys.length : 0;
+  for(var idx=0;idx<len;idx++) addDependentKey(obj, keyName, keys[idx]);
+}
 
 // ..........................................................
 // COMPUTED PROPERTY
@@ -80,7 +85,7 @@ ComputedProperty.prototype = new SC.Descriptor();
 var CP_DESC = {
   configurable: true,
   enumerable:   true,
-  get: SC.Descriptor.MUST_USE_GETTER, // for when use_accessors is false.
+  get: function() { return undefined; }, // for when use_accessors is false.
   set: SC.Descriptor.MUST_USE_SETTER  // for when use_accessors is false
 };
 
@@ -162,10 +167,7 @@ Cp.setup = function(obj, keyName, value) {
   CP_DESC.set = mkCpSetter(keyName, this);
   o_defineProperty(obj, keyName, CP_DESC);
   CP_DESC.get = CP_DESC.set = null;
-  
-  var keys = this._dependentKeys, 
-      len  = keys ? keys.length : 0;
-  for(var idx=0;idx<len;idx++) addDependentKey(obj, keyName, keys[idx]);
+  addDependentKeys(this, obj, keyName);
 };
 
 /** @private - impl descriptor API */
@@ -188,24 +190,60 @@ Cp.didChange = function(obj, keyName) {
 
 /** @private - impl descriptor API */
 Cp.get = function(obj, keyName) {
-  return this.func.call(obj, keyName);
+  var ret, cache;
+  
+  if (this._cacheable) {
+    cache = meta(obj).cache;
+    if (keyName in cache) return cache[keyName];
+    ret = cache[keyName] = this.func.call(obj, keyName);
+  } else {
+    ret = this.func.call(obj, keyName);
+  }
+  return ret ;
 };
 
 /** @private - impl descriptor API */
 Cp.set = function(obj, keyName, value) {
-  return this.func.call(obj, keyName, value);
+  var cacheable = this._cacheable;
+  
+  var m = meta(obj, cacheable),
+      watched = (m.source===obj) && m.watching[keyName]>0,
+      ret, oldSuspended, lastSetValues;
+
+  oldSuspended = this._suspended;
+  this._suspended = obj;
+
+  watched = watched && m.lastSetValues[keyName]!==guidFor(value);
+  if (watched) {
+    m.lastSetValues[keyName] = guidFor(value);
+    SC.propertyWillChange(obj, keyName);
+  }
+  
+  if (cacheable) delete m.cache[keyName];
+  ret = this.func.call(obj, keyName, value);
+  if (cacheable) m.cache[keyName] = ret;
+  if (watched) SC.propertyDidChange(obj, keyName);
+  this._suspended = oldSuspended;
+  return ret;
 };
 
 Cp.val = function(obj, keyName) {
   return meta(obj, false).values[keyName];
 };
 
-if (!USE_ACCESSORS) {
-  Cp.defineProperty = function(obj, keyName) {
+if (!SC.platform.hasPropertyAccessors) {
+  Cp.setup = function(obj, keyName, value) {
+    obj[keyName] = undefined; // so it shows up in key iteration
+    addDependentKeys(this, obj, keyName);
+  };
+  
+} else if (!USE_ACCESSORS) {
+  Cp.setup = function(obj, keyName) {
     // throw exception if not using SC.get() and SC.set() when supported
     o_defineProperty(obj, keyName, CP_DESC);
+    addDependentKeys(this, obj, keyName);
   };
-}
+} 
 
 /**
   This helper returns a new property descriptor that wraps the passed 

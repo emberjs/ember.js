@@ -299,8 +299,8 @@ module("AND binding", {
   setup: function() {
     // temporarily set up two source objects in the SC namespace so we can
     // use property paths to access them
-    SC.testControllerA = SC.Object.create({ value: NO });
-    SC.testControllerB = SC.Object.create({ value: NO });
+    SC.set(SC, 'testControllerA', SC.Object.create({ value: NO }));
+    SC.set(SC, 'testControllerB', SC.Object.create({ value: NO }));
 
     toObject = SC.Object.create({
       value: null,
@@ -309,7 +309,8 @@ module("AND binding", {
   },
 
   teardown: function() {
-    SC.testControllerA = SC.testControllerB = null;
+    set(SC, 'testControllerA', null);
+    set(SC, 'testControllerB', null);
   }
 
 });
@@ -359,8 +360,8 @@ module("OR binding", {
   setup: function() {
     // temporarily set up two source objects in the SC namespace so we can
     // use property paths to access them
-    SC.testControllerA = SC.Object.create({ value: NO });
-    SC.testControllerB = SC.Object.create({ value: null });
+    SC.set(SC, 'testControllerA', SC.Object.create({ value: NO }));
+    SC.set(SC, 'testControllerB', SC.Object.create({ value: null }));
 
     toObject = SC.Object.create({
       value: null,
@@ -369,7 +370,8 @@ module("OR binding", {
   },
 
   teardown: function() {
-    SC.testControllerA = SC.testControllerB = null;
+    set(SC, 'testControllerA', null);
+    set(SC, 'testControllerB', null);
   }
 
 });

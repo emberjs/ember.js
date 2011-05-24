@@ -38,7 +38,7 @@ test('should call unknownProperty if defined and value is undefined', function()
     }
   };
   
-  equals(SC.set(obj, 'foo', "BAR"), 'FOO', 'should return set value');
+  equals(SC.set(obj, 'foo', "BAR"), 'BAR', 'should return set value');
   equals(obj.count, 1, 'should have invoked');
 });
 
@@ -59,7 +59,7 @@ test('should call setUnknownProperty if defined and value is undefined', functio
     }
   };
   
-  equals(SC.set(obj, 'foo', "BAR"), 'FOO', 'should return set value');
+  equals(SC.set(obj, 'foo', "BAR"), 'BAR', 'should return set value');
   equals(obj.count, 1, 'should have invoked');
 });
 

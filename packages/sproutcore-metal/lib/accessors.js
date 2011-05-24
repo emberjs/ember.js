@@ -9,8 +9,8 @@ require('./core');
 require('./platform');
 require('./utils');
 
-var USE_ACCESSORS = SC.platform.hasPropertyAccessors && (SC.ENV.USE_ACCESSORS !== false);
-SC.USE_ACCESSORS = USE_ACCESSORS;
+var USE_ACCESSORS = SC.platform.hasPropertyAccessors && SC.ENV.USE_ACCESSORS;
+SC.USE_ACCESSORS = !!USE_ACCESSORS;
 
 var meta = SC.meta;
 
@@ -40,9 +40,9 @@ get = function get(obj, keyName) {
 set = function set(obj, keyName, value) {
   if (('object'===typeof obj) && !(keyName in obj)) {
     if ('function' === typeof obj.setUnknownProperty) {
-      value = obj.setUnknownProperty(keyName, value);
+      obj.setUnknownProperty(keyName, value);
     } else if ('function' === typeof obj.unknownProperty) {
-      value = obj.unknownProperty(keyName, value);
+      obj.unknownProperty(keyName, value);
     } else obj[keyName] = value;
   } else {
     obj[keyName] = value;
@@ -55,6 +55,12 @@ if (!USE_ACCESSORS) {
   var o_get = get, o_set = set;
   
   get = function(obj, keyName) {
+
+    if (keyName === undefined && 'string' === typeof obj) {
+      keyName = obj;
+      obj = SC;
+    }
+
     if (!obj) return undefined;
     var desc = meta(obj, false).descs[keyName];
     if (desc) return desc.get(obj, keyName);
@@ -63,8 +69,8 @@ if (!USE_ACCESSORS) {
 
   set = function(obj, keyName, value) {
     var desc = meta(obj, false).descs[keyName];
-    if (desc) value = desc.set(obj, keyName, value);
-    else value = o_set(obj, keyName, value);
+    if (desc) desc.set(obj, keyName, value);
+    else o_set(obj, keyName, value);
     return value;
   };
 

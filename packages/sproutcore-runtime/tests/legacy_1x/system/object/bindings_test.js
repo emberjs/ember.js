@@ -253,7 +253,7 @@ test('fooBinding: should disconnect bindings when destroyed', function () {
   SC.destroy(testObject);
   set(TestNamespace.fromObject, 'bar', 'BIFF');
   SC.run.sync();
-  equals(get(testObject, 'foo'), false, 'binding should not have synced');
+  ok(get(testObject, 'foo') !== 'bar', 'binding should not have synced');
 });
 
 module("fooBindingDefault: SC.Binding.Bool (old style)", {

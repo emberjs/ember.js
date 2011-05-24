@@ -29,7 +29,7 @@ test('defining computed property should invoke property on get', function() {
   
   if (SC.USES_ACCESSORS) {
     count = 0;
-    equals(obj.foo, 'computed foo', 'should return value');
+    equals(SC.get(obj, 'foo'), 'computed foo', 'should return value');
     equals(count, 1, 'should have invoked computed property');
   }
 });
@@ -54,7 +54,7 @@ test('defining computed property should invoke property on set', function() {
     count = 0;
     equals(obj.foo = 'bar', 'bar', 'shoudl return set value');
     equals(count, 1, 'should have invoked computed property');
-    equals(obj.foo, 'computed bar', 'should return value');
+    equals(SC.get(obj, 'foo'), 'computed bar', 'should return value');
   }
 });
 
@@ -356,23 +356,23 @@ testBoth('depending on simple chain', function(get, set) {
 
   equals(get(obj, 'prop'), 'BIFF 1');
   
-  set(obj.foo.bar.baz, 'biff', 'BUZZ');
+  set(SC.getPath(obj, 'foo.bar.baz'), 'biff', 'BUZZ');
   equals(get(obj, 'prop'), 'BUZZ 2');
   equals(get(obj, 'prop'), 'BUZZ 2');
   
-  set(obj.foo.bar, 'baz', { biff: 'BLOB' });
+  set(SC.getPath(obj, 'foo.bar'),  'baz', { biff: 'BLOB' });
   equals(get(obj, 'prop'), 'BLOB 3');
   equals(get(obj, 'prop'), 'BLOB 3');
   
-  set(obj.foo.bar.baz, 'biff', 'BUZZ');
+  set(SC.getPath(obj, 'foo.bar.baz'), 'biff', 'BUZZ');
   equals(get(obj, 'prop'), 'BUZZ 4');
   equals(get(obj, 'prop'), 'BUZZ 4');
   
-  set(obj.foo, 'bar', { baz: { biff: 'BOOM' } });
+  set(SC.get(obj, 'foo'), 'bar', { baz: { biff: 'BOOM' } });
   equals(get(obj, 'prop'), 'BOOM 5');
   equals(get(obj, 'prop'), 'BOOM 5');
   
-  set(obj.foo.bar.baz, 'biff', 'BUZZ');
+  set(SC.getPath(obj, 'foo.bar.baz'), 'biff', 'BUZZ');
   equals(get(obj, 'prop'), 'BUZZ 6');
   equals(get(obj, 'prop'), 'BUZZ 6');
   
@@ -380,7 +380,7 @@ testBoth('depending on simple chain', function(get, set) {
   equals(get(obj, 'prop'), 'BLARG 7');
   equals(get(obj, 'prop'), 'BLARG 7');
   
-  set(obj.foo.bar.baz, 'biff', 'BUZZ');
+  set(SC.getPath(obj, 'foo.bar.baz'), 'biff', 'BUZZ');
   equals(get(obj, 'prop'), 'BUZZ 8');
   equals(get(obj, 'prop'), 'BUZZ 8');
   
@@ -402,25 +402,25 @@ testBoth('depending on complex chain', function(get, set) {
 
   equals(get(obj, 'prop'), 'BIFF 1');
   
-  set(obj.foo.bar.baz, 'biff', 'BUZZ');
+  set(SC.getPath(obj, 'foo.bar.baz'), 'biff', 'BUZZ');
   equals(get(obj, 'prop'), 'BUZZ 2');
   equals(get(obj, 'prop'), 'BUZZ 2');
   
-  set(obj.foo.bar, 'baz', { biff: 'BLOB' });
+  set(SC.getPath(obj, 'foo.bar'),  'baz', { biff: 'BLOB' });
   equals(get(obj, 'prop'), 'BLOB 3');
   equals(get(obj, 'prop'), 'BLOB 3');
   
-  set(obj.foo.bar.baz, 'biff', 'BUZZ');
+  set(SC.getPath(obj, 'foo.bar.baz'), 'biff', 'BUZZ');
   equals(get(obj, 'prop'), 'BUZZ 4');
   equals(get(obj, 'prop'), 'BUZZ 4');
 
   // NOTHING SHOULD CHANGE AFTER THIS POINT BECAUSE OF THE CHAINED *
   
-  set(obj.foo, 'bar', { baz: { biff: 'BOOM' } });
+  set(SC.get(obj, 'foo'), 'bar', { baz: { biff: 'BOOM' } });
   equals(get(obj, 'prop'), 'BUZZ 4');
   equals(get(obj, 'prop'), 'BUZZ 4');
   
-  set(obj.foo.bar.baz, 'biff', 'BUZZ');
+  set(SC.getPath(obj, 'foo.bar.baz'), 'biff', 'BUZZ');
   equals(get(obj, 'prop'), 'BUZZ 4');
   equals(get(obj, 'prop'), 'BUZZ 4');
   
@@ -428,7 +428,7 @@ testBoth('depending on complex chain', function(get, set) {
   equals(get(obj, 'prop'), 'BUZZ 4');
   equals(get(obj, 'prop'), 'BUZZ 4');
   
-  set(obj.foo.bar.baz, 'biff', 'BUZZ');
+  set(SC.getPath(obj, 'foo.bar.baz'), 'biff', 'BUZZ');
   equals(get(obj, 'prop'), 'BUZZ 4');
   equals(get(obj, 'prop'), 'BUZZ 4');
   
@@ -452,23 +452,23 @@ testBoth('depending on Global chain', function(get, set) {
 
   equals(get(obj, 'prop'), 'BIFF 1');
   
-  set(Global.foo.bar.baz, 'biff', 'BUZZ');
+  set(SC.getPath(Global, 'foo.bar.baz'), 'biff', 'BUZZ');
   equals(get(obj, 'prop'), 'BUZZ 2');
   equals(get(obj, 'prop'), 'BUZZ 2');
   
-  set(Global.foo.bar, 'baz', { biff: 'BLOB' });
+  set(SC.getPath(Global, 'foo.bar'), 'baz', { biff: 'BLOB' });
   equals(get(obj, 'prop'), 'BLOB 3');
   equals(get(obj, 'prop'), 'BLOB 3');
   
-  set(Global.foo.bar.baz, 'biff', 'BUZZ');
+  set(SC.getPath(Global, 'foo.bar.baz'), 'biff', 'BUZZ');
   equals(get(obj, 'prop'), 'BUZZ 4');
   equals(get(obj, 'prop'), 'BUZZ 4');
   
-  set(Global.foo, 'bar', { baz: { biff: 'BOOM' } });
+  set(SC.get(Global, 'foo'), 'bar', { baz: { biff: 'BOOM' } });
   equals(get(obj, 'prop'), 'BOOM 5');
   equals(get(obj, 'prop'), 'BOOM 5');
   
-  set(Global.foo.bar.baz, 'biff', 'BUZZ');
+  set(SC.getPath(Global, 'foo.bar.baz'), 'biff', 'BUZZ');
   equals(get(obj, 'prop'), 'BUZZ 6');
   equals(get(obj, 'prop'), 'BUZZ 6');
   
@@ -476,7 +476,7 @@ testBoth('depending on Global chain', function(get, set) {
   equals(get(obj, 'prop'), 'BLARG 7');
   equals(get(obj, 'prop'), 'BLARG 7');
   
-  set(Global.foo.bar.baz, 'biff', 'BUZZ');
+  set(SC.getPath(Global, 'foo.bar.baz'), 'biff', 'BUZZ');
   equals(get(obj, 'prop'), 'BUZZ 8');
   equals(get(obj, 'prop'), 'BUZZ 8');
   
@@ -500,25 +500,25 @@ testBoth('depending on complex Global chain', function(get, set) {
 
   equals(get(obj, 'prop'), 'BIFF 1');
   
-  set(Global.foo.bar.baz, 'biff', 'BUZZ');
+  set(SC.getPath(Global, 'foo.bar.baz'), 'biff', 'BUZZ');
   equals(get(obj, 'prop'), 'BUZZ 2');
   equals(get(obj, 'prop'), 'BUZZ 2');
   
-  set(Global.foo.bar, 'baz', { biff: 'BLOB' });
+  set(SC.getPath(Global, 'foo.bar'), 'baz', { biff: 'BLOB' });
   equals(get(obj, 'prop'), 'BLOB 3');
   equals(get(obj, 'prop'), 'BLOB 3');
   
-  set(Global.foo.bar.baz, 'biff', 'BUZZ');
+  set(SC.getPath(Global, 'foo.bar.baz'), 'biff', 'BUZZ');
   equals(get(obj, 'prop'), 'BUZZ 4');
   equals(get(obj, 'prop'), 'BUZZ 4');
 
   // NOTHING SHOULD CHANGE AFTER THIS POINT BECAUSE OF THE CHAINED *
   
-  set(Global.foo, 'bar', { baz: { biff: 'BOOM' } });
+  set(SC.get(Global, 'foo'), 'bar', { baz: { biff: 'BOOM' } });
   equals(get(obj, 'prop'), 'BUZZ 4');
   equals(get(obj, 'prop'), 'BUZZ 4');
   
-  set(Global.foo.bar.baz, 'biff', 'BUZZ');
+  set(SC.getPath(Global, 'foo.bar.baz'), 'biff', 'BUZZ');
   equals(get(obj, 'prop'), 'BUZZ 4');
   equals(get(obj, 'prop'), 'BUZZ 4');
   
@@ -526,7 +526,7 @@ testBoth('depending on complex Global chain', function(get, set) {
   equals(get(obj, 'prop'), 'BUZZ 4');
   equals(get(obj, 'prop'), 'BUZZ 4');
   
-  set(Global.foo.bar.baz, 'biff', 'BUZZ');
+  set(SC.getPath(Global, 'foo.bar.baz'), 'biff', 'BUZZ');
   equals(get(obj, 'prop'), 'BUZZ 4');
   equals(get(obj, 'prop'), 'BUZZ 4');
   
@@ -539,3 +539,21 @@ testBoth('depending on complex Global chain', function(get, set) {
   equals(count, 4, 'should be not have invoked computed again');
 
 });
+
+// ..........................................................
+// BUGS
+// 
+
+module('computed edge cases');
+
+test('adding a computed property should show up in key iteration',function() {
+
+  var obj = {};
+  SC.defineProperty(obj, 'foo', SC.computed(function() {}));
+  
+  var found = [];
+  for(var key in obj) found.push(key);
+  ok(found.indexOf('foo')>=0, 'should find computed property in iteration found='+found);
+  ok('foo' in obj, 'foo in obj should pass');
+});
+

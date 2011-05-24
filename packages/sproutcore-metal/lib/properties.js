@@ -8,6 +8,7 @@
 require('./core');
 require('./platform');
 require('./utils');
+require('./accessors');
 
 var USE_ACCESSORS = SC.USE_ACCESSORS;
 var GUID_KEY = SC.GUID_KEY;
@@ -150,7 +151,6 @@ if (!USE_ACCESSORS) {
 var WATCHED_DESC = {
   configurable: true,
   enumerable:   true,
-  get: SC.Descriptor.MUST_USE_GETTER,
   set: SC.Descriptor.MUST_USE_SETTER
 };
 
@@ -198,31 +198,49 @@ function mkWatchedSetter(keyName) {
 */
 WATCHED_PROPERTY = new SC.Descriptor();
 
-WATCHED_PROPERTY.get = w_get ;
-WATCHED_PROPERTY.set = w_set ;
-  
-// throw exception if accessed w/o SC.get/SC.set
-if (USE_ACCESSORS) {
-  WATCHED_PROPERTY.setup = function(obj, keyName, value) {
-    WATCHED_DESC.get = mkWatchedGetter(keyName);
-    WATCHED_DESC.set = mkWatchedSetter(keyName);
-    o_defineProperty(obj, keyName, WATCHED_DESC);
-    WATCHED_DESC.get = WATCHED_DESC.set = null;
-    if (value !== undefined) meta(obj).values[keyName] = value;
+if (SC.platform.hasPropertyAccessors) {
+  WATCHED_PROPERTY.get = w_get ;
+  WATCHED_PROPERTY.set = w_set ;
+
+  if (USE_ACCESSORS) {
+    WATCHED_PROPERTY.setup = function(obj, keyName, value) {
+      WATCHED_DESC.get = mkWatchedGetter(keyName);
+      WATCHED_DESC.set = mkWatchedSetter(keyName);
+      o_defineProperty(obj, keyName, WATCHED_DESC);
+      WATCHED_DESC.get = WATCHED_DESC.set = null;
+      if (value !== undefined) meta(obj).values[keyName] = value;
+    };
+
+  } else {
+    WATCHED_PROPERTY.setup = function(obj, keyName, value) {
+      WATCHED_DESC.get = mkWatchedGetter(keyName);
+      o_defineProperty(obj, keyName, WATCHED_DESC);
+      WATCHED_DESC.get = null;
+      if (value !== undefined) meta(obj).values[keyName] = value;
+    };
+  }
+
+  WATCHED_PROPERTY.teardown = function(obj, keyName) {
+    var ret = meta(obj).values[keyName];
+    delete meta(obj).values[keyName];
+    return ret;
   };
 
+// NOTE: if platform does not have property accessors then we just have to 
+// set values and hope for the best.  You just won't get any warnings...
 } else {
-  WATCHED_PROPERTY.setup = function(obj, keyName, value) {
-    o_defineProperty(obj, keyName, WATCHED_DESC);
-    if (value !== undefined) meta(obj).values[keyName] = value;
-  };
-}
   
-WATCHED_PROPERTY.teardown = function(obj, keyName) {
-  var ret = meta(obj).values[keyName];
-  delete meta(obj).values[keyName];
-  return ret;
-};
+  WATCHED_PROPERTY.set = function(obj, keyName, value) {
+    var m = meta(obj), watching;
+
+    watching = m.watching[keyName]>0 && value!==obj[keyName];  
+    if (watching) SC.propertyWillChange(obj, keyName);
+    obj[keyName] = value;
+    if (watching) SC.propertyDidChange(obj, keyName);
+    return value;
+  };
+  
+}
   
 /**
   The default descriptor for simple properties.  Pass as the third argument

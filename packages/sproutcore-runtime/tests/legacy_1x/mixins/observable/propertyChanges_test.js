@@ -36,18 +36,18 @@ module("object.propertyChanges", {
       prop : 'propValue',
             
       action: function() {
-        this.prop= 'changedPropValue';
+        this.set('prop', 'changedPropValue');
       }.observes('foo'),
       
       newFoo : 'newFooValue',
       newProp: 'newPropValue',
       
       notifyAction: function() {
-        this.newProp = 'changedNewPropValue';
+        this.set('newProp', 'changedNewPropValue');
       }.observes('newFoo'),
       
       notifyAllAction: function() {
-        this.newFoo = 'changedNewFooValue';
+        this.set('newFoo', 'changedNewFooValue');
       }.observes('prop'),
 
       starProp: null,
@@ -101,7 +101,7 @@ test("should indicate that the property of an object has just changed", function
   equals(ObjectA.prop, 'propValue' ) ;
   
   //change the value of foo.
-  ObjectA.foo = 'changeFooValue';
+  ObjectA.set('foo', 'changeFooValue');
   
   // Indicate the subscribers of foo that the value has just changed
   ObjectA.propertyDidChange('foo', null) ;

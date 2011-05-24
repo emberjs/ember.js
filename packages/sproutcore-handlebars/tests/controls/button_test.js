@@ -36,8 +36,8 @@ test("should trigger an action when clicked", function() {
     }
   });
 
-  button.target = actionObject;
-  button.action = 'myAction';
+  button.set('target', actionObject);
+  button.set('action', 'myAction');
 
   button.append();
 
@@ -82,8 +82,8 @@ test("should not trigger action if mouse leaves area before mouseup", function()
     }
   });
 
-  button.target = actionObject;
-  button.action = 'myAction';
+  button.set('target', actionObject);
+  button.set('action', 'myAction');
   button.append();
 
   synthesizeEvent('mousedown', button);

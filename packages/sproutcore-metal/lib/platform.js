@@ -59,29 +59,12 @@ SC.platform.hasPropertyAccessors = true;
 
 //@if (legacy)
 if (!SC.platform.defineProperty) {
-  SC.platform.hasPropertyAccessors = !!Object.prototype.__defineGetter__;
-  if (SC.platform.hasPropertyAccessors) {
-    SC.platform.defineProperty = function(obj, keyName, desc) {
-      delete obj[keyName]; // reset getters/setters
+  SC.platform.hasPropertyAccessors = !!SC.platform.defineProperty;
 
-      if (desc.get || desc.set) {
-        sc_assert('descriptor with `get` or `set` must not have a value', 
-          !desc.value);
-        sc_assert('descriptor with `get` or `set` must not have writable', 
-          !desc.writable);
-
-        if (desc.get) obj.__defineGetter__(keyName, desc.get);
-        if (desc.set) obj.__defineSetter__(keyName, desc.set);
-      } else {
-        obj[keyName] = desc.value;
-      }
-    };
-  } else {
-    SC.platform.defineProperty = function(obj, keyName, desc) {
-      sc_assert("property descriptor cannot have `get` or `set` on this platform", !desc.get && !desc.set);
-      obj[keyName] = desc.value;
-    };
-  }
+  SC.platform.defineProperty = function(obj, keyName, desc) {
+    sc_assert("property descriptor cannot have `get` or `set` on this platform", !desc.get && !desc.set);
+    obj[keyName] = desc.value;
+  };
   
   SC.platform.defineProperty.isSimulated = true;
 }

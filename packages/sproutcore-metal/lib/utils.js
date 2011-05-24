@@ -180,6 +180,9 @@ SC.meta = function meta(obj, writable) {
       source: obj
     };
     
+    // make sure we don't accidentally try to create constructor like desc
+    ret.descs.constructor = null;
+    
   } else if (ret.source !== obj) {
     ret = obj[META_KEY] = o_create(ret);
     ret.descs    = o_create(ret.descs);

@@ -314,15 +314,15 @@ testBoth('depending on a simple chain', function(get, set) {
     count++; 
   });
   
-  set(obj.foo.bar.baz, 'biff', 'BUZZ');
+  set(SC.getPath(obj, 'foo.bar.baz'), 'biff', 'BUZZ');
   equals(val, 'BUZZ');
   equals(count, 1);
 
-  set(obj.foo.bar, 'baz', { biff: 'BLARG' });
+  set(SC.getPath(obj, 'foo.bar'), 'baz', { biff: 'BLARG' });
   equals(val, 'BLARG');
   equals(count, 2);
 
-  set(obj.foo, 'bar', { baz: { biff: 'BOOM' } });
+  set(SC.get(obj, 'foo'), 'bar', { baz: { biff: 'BOOM' } });
   equals(val, 'BOOM');
   equals(count, 3);
   
@@ -330,7 +330,7 @@ testBoth('depending on a simple chain', function(get, set) {
   equals(val, 'BLARG');
   equals(count, 4);
   
-  set(obj.foo.bar.baz, 'biff', 'BUZZ');
+  set(SC.getPath(obj, 'foo.bar.baz'), 'biff', 'BUZZ');
   equals(val, 'BUZZ');
   equals(count, 5);
 
@@ -352,17 +352,17 @@ testBoth('depending on complex chain', function(get, set) {
     count++; 
   });
   
-  set(obj.foo.bar.baz, 'biff', 'BUZZ');
+  set(SC.getPath(obj, 'foo.bar.baz'), 'biff', 'BUZZ');
   equals(val, 'BUZZ');
   equals(count, 1);
 
-  set(obj.foo.bar, 'baz', { biff: 'BLARG' });
+  set(SC.getPath(obj, 'foo.bar'), 'baz', { biff: 'BLARG' });
   equals(val, 'BLARG');
   equals(count, 2);
 
   // // NOTHING SHOULD CHANGE AFTER THIS POINT BECAUSE OF THE CHAINED *
 
-  set(obj.foo, 'bar', { baz: { biff: 'BOOM' } });
+  set(SC.get(obj, 'foo'), 'bar', { baz: { biff: 'BOOM' } });
   equals(val, 'BLARG');
   equals(count, 2);
   
@@ -381,15 +381,15 @@ testBoth('depending on a Global chain', function(get, set) {
     count++; 
   });
   
-  set(Global.foo.bar.baz, 'biff', 'BUZZ');
+  set(SC.getPath(Global, 'foo.bar.baz'),  'biff', 'BUZZ');
   equals(val, 'BUZZ');
   equals(count, 1);
 
-  set(Global.foo.bar, 'baz', { biff: 'BLARG' });
+  set(SC.getPath(Global, 'foo.bar'),  'baz', { biff: 'BLARG' });
   equals(val, 'BLARG');
   equals(count, 2);
 
-  set(Global.foo, 'bar', { baz: { biff: 'BOOM' } });
+  set(SC.get(Global, 'foo'),  'bar', { baz: { biff: 'BOOM' } });
   equals(val, 'BOOM');
   equals(count, 3);
   
@@ -397,7 +397,7 @@ testBoth('depending on a Global chain', function(get, set) {
   equals(val, 'BLARG');
   equals(count, 4);
   
-  set(Global.foo.bar.baz, 'biff', 'BUZZ');
+  set(SC.getPath(Global, 'foo.bar.baz'),  'biff', 'BUZZ');
   equals(val, 'BUZZ');
   equals(count, 5);
 
@@ -419,17 +419,17 @@ testBoth('depending on complex chain', function(get, set) {
     count++; 
   });
   
-  set(Global.foo.bar.baz, 'biff', 'BUZZ');
+  set(SC.getPath(Global, 'foo.bar.baz'),  'biff', 'BUZZ');
   equals(val, 'BUZZ');
   equals(count, 1);
 
-  set(Global.foo.bar, 'baz', { biff: 'BLARG' });
+  set(SC.getPath(Global, 'foo.bar'),  'baz', { biff: 'BLARG' });
   equals(val, 'BLARG');
   equals(count, 2);
 
   // // NOTHING SHOULD CHANGE AFTER THIS POINT BECAUSE OF THE CHAINED *
 
-  set(Global.foo, 'bar', { baz: { biff: 'BOOM' } });
+  set(SC.get(Global, 'foo'),  'bar', { baz: { biff: 'BOOM' } });
   equals(val, 'BLARG');
   equals(count, 2);
   
