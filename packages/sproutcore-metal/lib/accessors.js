@@ -5,9 +5,9 @@
 // ==========================================================================
 /*globals sc_assert */
 
-require('./core');
-require('./platform');
-require('./utils');
+require('sproutcore-metal/core');
+require('sproutcore-metal/platform');
+require('sproutcore-metal/utils');
 
 var USE_ACCESSORS = SC.platform.hasPropertyAccessors && SC.ENV.USE_ACCESSORS;
 SC.USE_ACCESSORS = !!USE_ACCESSORS;

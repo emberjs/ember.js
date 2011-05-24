@@ -5,11 +5,11 @@
 // ==========================================================================
 /*globals sc_assert */
 
-require('./core');
-require('./platform');
-require('./utils');
-require('./accessors');
-require('./observer');
+require('sproutcore-metal/core');
+require('sproutcore-metal/platform');
+require('sproutcore-metal/utils');
+require('sproutcore-metal/accessors');
+require('sproutcore-metal/observer');
 
 var guidFor = SC.guidFor;
 var meta    = SC.meta;

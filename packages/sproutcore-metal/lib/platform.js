@@ -5,7 +5,7 @@
 // ==========================================================================
 /*globals sc_assert */
 
-require('./core');
+require('sproutcore-metal/core');
 
 /**
   Platform specific methods and feature detectors needed by the framework.

@@ -4,12 +4,12 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
-require('./core');
-require('./accessors');
-require('./computed');
-require('./properties');
-require('./observer');
-require('./utils');
+require('sproutcore-metal/core');
+require('sproutcore-metal/accessors');
+require('sproutcore-metal/computed');
+require('sproutcore-metal/properties');
+require('sproutcore-metal/observer');
+require('sproutcore-metal/utils');
 
 var Mixin, MixinDelegate, REQUIRED, Alias;
 var classToString;

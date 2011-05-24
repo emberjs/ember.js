@@ -5,10 +5,10 @@
 // ==========================================================================
 /*globals sc_assert */
 
-require('./core');
-require('./platform');
-require('./utils');
-require('./accessors');
+require('sproutcore-metal/core');
+require('sproutcore-metal/platform');
+require('sproutcore-metal/utils');
+require('sproutcore-metal/accessors');
 
 var AFTER_OBSERVERS = ':change';
 var BEFORE_OBSERVERS = ':before';

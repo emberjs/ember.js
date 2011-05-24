@@ -4,13 +4,13 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
-require('./core');
-require('./platform');
-require('./utils');
-require('./accessors');
-require('./properties');
-require('./computed');
-require('./watching');
-require('./events');
-require('./observer');
-require('./mixin');
+require('sproutcore-metal/core');
+require('sproutcore-metal/platform');
+require('sproutcore-metal/utils');
+require('sproutcore-metal/accessors');
+require('sproutcore-metal/properties');
+require('sproutcore-metal/computed');
+require('sproutcore-metal/watching');
+require('sproutcore-metal/events');
+require('sproutcore-metal/observer');
+require('sproutcore-metal/mixin');

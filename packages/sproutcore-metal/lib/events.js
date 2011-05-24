@@ -5,9 +5,9 @@
 // ==========================================================================
 /*globals sc_assert */
 
-require('./core');
-require('./platform');
-require('./utils');
+require('sproutcore-metal/core');
+require('sproutcore-metal/platform');
+require('sproutcore-metal/utils');
 
 var o_create = SC.platform.create;
 var meta = SC.meta;

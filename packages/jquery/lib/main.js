@@ -1,1 +1,1 @@
-require('./jquery');
+require('jquery/jquery');

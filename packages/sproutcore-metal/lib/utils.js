@@ -4,8 +4,8 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
-require('./core');
-require('./platform');
+require('sproutcore-metal/core');
+require('sproutcore-metal/platform');
     
 // ..........................................................
 // GUIDS
