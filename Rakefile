@@ -187,8 +187,9 @@ task :closure_docs do
     end
   end
 
-  sh "rm -rf packages_docs/packages/{handlebars,jquery}"
-  sh "rm -rf packages_docs/packages/sproutcore-{datetime,datastore,indexset}"
+  rm_rf Dir["packages_docs/packages/{handlebars,jquery}"]
+  rm_rf Dir["packages_docs/packages/**/tests"]
+  rm_rf Dir["packages_docs/packages/sproutcore-{datetime,datastore,indexset}"]
 end
 
 namespace :test do
