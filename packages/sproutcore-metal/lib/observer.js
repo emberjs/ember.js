@@ -87,6 +87,7 @@ SC.addObserver = function(obj, path, target, method) {
   return this;
 };
 
+/** @private */
 SC.observersFor = function(obj, path) {
   return SC.listenersFor(obj, changeEvent(path));
 };
@@ -105,6 +106,7 @@ SC.addBeforeObserver = function(obj, path, target, method) {
   return this;
 };
 
+/** @private */
 SC.beforeObserversFor = function(obj, path) {
   return SC.listenersFor(obj, beforeEvent(path));
 };
@@ -116,11 +118,12 @@ SC.removeBeforeObserver = function(obj, path, target, method) {
   return this;
 };
 
-
+/** @private */
 SC.notifyObservers = function(obj, keyName) {
   notifyObservers(obj, changeEvent(keyName));
 };
 
+/** @private */
 SC.notifyBeforeObservers = function(obj, keyName) {
   notifyObservers(obj, beforeEvent(keyName));
 };

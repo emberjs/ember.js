@@ -29,6 +29,7 @@ var o_defineProperty = SC.platform.defineProperty;
 var o_create = SC.platform.create;
 
 /**
+  @private
   @static
   @type String
   @constant
@@ -43,6 +44,8 @@ var o_create = SC.platform.create;
 SC.GUID_KEY = GUID_KEY;
 
 /**
+  @private
+
   Generates a new guid, optionally saving the guid to the object that you
   pass in.  You will rarely need to use this method.  Instead you should
   call SC.guidFor(obj), which return an existing guid if available.
@@ -73,6 +76,8 @@ SC.generateGuid = function(obj, prefix) {
 };
 
 /**
+  @private
+
   Returns a unique id for the object.  If the object does not yet have
   a guid, one will be assigned to it.  You can call this on any object,
   SC.Object-based or not, but be aware that it will add a _guid property.
@@ -146,6 +151,7 @@ var EMPTY_META = {
 if (Object.freeze) Object.freeze(EMPTY_META);
 
 /**
+  @private
   @function
   
   Retrieves the meta hash for an object.  If 'writable' is true ensures the
@@ -196,6 +202,8 @@ SC.meta = function meta(obj, writable) {
 };
 
 /**
+  @private
+
   Wraps the passed function so that `this._super` will point to the superFunc
   when the function is invoked.  This is the primitive we use to implement
   calls to super.

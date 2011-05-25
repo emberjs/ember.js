@@ -369,6 +369,7 @@ SC.ORDER_DEFINITION = SC.ENV.ORDER_DEFINITION || [
   when inspecting objects for debugging.  On browsers that support it, this
   uses the native Object.keys implementation.
 
+  @function
   @param {Object} obj
   @returns {Array} Array containing keys of obj
 */
@@ -389,6 +390,7 @@ if (!SC.keys) {
   Empty function.  Useful for some operations.
 
   @returns {Object}
+  @private
 */
 SC.K = function() { return this; };
 

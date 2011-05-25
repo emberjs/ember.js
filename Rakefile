@@ -174,6 +174,23 @@ def generate_test_files(package)
   [js_dest, html_dest, qunit_dest, qunit_css_dest]
 end
 
+task :closure_docs do
+  rm_rf "packages_docs"
+  mkdir_p "packages_docs"
+  cp_r "packages", "packages_docs"
+
+  Dir["packages_docs/**/*.js"].each do |file|
+    body = File.read(file)
+
+    File.open(file, "w") do |f|
+      f.puts "(function() {\n#{body}\n})()\n"
+    end
+  end
+
+  sh "rm -rf packages_docs/packages/{handlebars,jquery}"
+  sh "rm -rf packages_docs/packages/sproutcore-{datetime,datastore,indexset}"
+end
+
 namespace :test do
   metal_spade_boot      = spade_update_task "sproutcore-metal"
   views_spade_boot      = spade_update_task "sproutcore-views"

@@ -218,16 +218,19 @@ function normalizeTuple(target, path) {
 }
 
 /**
-  Normalizes a path to support older-style property paths beginning with . or
-  *
+  @private
 
-  @method
+  Normalizes a path to support older-style property paths beginning with . or
+
+  @function
   @param {String} path path to normalize
   @returns {String} normalized path  
 */
 SC.normalizePath = normalizePath;
 
 /**
+  @private
+
   Normalizes a target/path pair to reflect that actual target/path that should
   be observed, etc.  This takes into account passing in global property 
   paths (i.e. a path beginning with a captial letter not defined on the 

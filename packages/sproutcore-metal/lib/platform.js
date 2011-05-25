@@ -8,6 +8,8 @@
 require('sproutcore-metal/core');
 
 /**
+  @class
+
   Platform specific methods and feature detectors needed by the framework.
 */
 SC.platform = {} ;

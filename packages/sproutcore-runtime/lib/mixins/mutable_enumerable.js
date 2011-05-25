@@ -8,6 +8,8 @@
 require('sproutcore-runtime/mixins/enumerable');
 
 /**
+  @class
+
   This mixin defines the API for modifying generic enumerables.  These methods
   can be applied to an object regardless of whether it is ordered or 
   unordered.

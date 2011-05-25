@@ -357,6 +357,8 @@ function chainsDidChange(obj, keyName) {
 var WATCHED_PROPERTY = SC.SIMPLE_PROPERTY.watched;
 
 /**
+  @private
+
   Starts watching a property on an object.  Whenever the property changes,
   invokes SC.propertyWillChange and SC.propertyDidChange.  This is the 
   primitive used by observers and dependent keys; usually you will never call
@@ -390,6 +392,7 @@ SC.watch = function(obj, keyName) {
 
 SC.watch.flushPending = flushPendingChains;
 
+/** @private */
 SC.unwatch = function(obj, keyName) {
   // can't watch length on Array - it is special...
   if (keyName === 'length' && SC.typeOf(obj)==='array') return this;
@@ -414,6 +417,8 @@ SC.unwatch = function(obj, keyName) {
 };
 
 /**
+  @private
+
   Call on an object when you first beget it from another object.  This will
   setup any chained watchers on the object instance as needed.  This method is
   safe to call multiple times.

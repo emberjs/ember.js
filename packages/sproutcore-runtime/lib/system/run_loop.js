@@ -151,7 +151,8 @@ var run;
   you are implementing raw event handlers when interfacing with other 
   libraries or plugins, you should probably wrap all of your code inside this
   call.
-  
+
+  @function
   @param {Object} target
     (Optional) target of method to call
     

@@ -22,6 +22,8 @@ var EMPTY = [];
 var get = SC.get, set = SC.set;
 
 /**
+  @class
+
   This mixin defines the API for modifying array-like objects.  These methods
   can be applied only to a collection that keeps its items in an ordered set.
   

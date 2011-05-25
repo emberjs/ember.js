@@ -72,6 +72,9 @@ function removeObserverForContentKey(content, keyName, proxy, idx, loc) {
 }
 
 /**
+  @private
+  @class
+
   This is the object instance returned when you get the @each property on an
   array.  It uses the unknownProperty handler to automatically create 
   EachArray instances for property names.

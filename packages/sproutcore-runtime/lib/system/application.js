@@ -7,6 +7,8 @@
 require('sproutcore-runtime/system/namespace');
 
 /**
+  @private
+
   Defines a namespace that will contain an executable application.  This is
   very similar to a normal namespace except that it is expected to include at
   least a 'main' function which can be run to initialize the application.

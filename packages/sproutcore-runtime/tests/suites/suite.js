@@ -8,6 +8,7 @@ require('sproutcore-runtime/system/object');
 
 
 /**
+  @class
   A Suite can be used to define a reusable set of unit tests that can be 
   applied to any object.  Suites are most useful for defining tests that 
   work against a mixin or plugin API.  Developers implementing objects that 
@@ -36,6 +37,7 @@ require('sproutcore-runtime/system/object');
   will create an instance of your class and then defining the unit tests.
   
   @extends SC.Object
+  @private
 */
 SC.Suite = SC.Object.extend(
   /** @scope SC.Suite.prototype */ {

@@ -30,6 +30,7 @@ var SIMPLE_DESC = {
 };
 
 /**
+  @private
   @constructor
   
   Objects of this type can implement an interface to responds requests to
@@ -266,6 +267,8 @@ function hasDesc(descs, keyName) {
 }
 
 /**
+  @private
+
   NOTE: This is a low-level method used by other parts of the API.  You almost
   never want to call this method directly.  Instead you should use SC.mixin()
   to define new properties.
@@ -347,6 +350,8 @@ SC.create = function(obj, props) {
 };
 
 /**
+  @private
+
   Creates a new object using the passed object as its prototype.  This method
   acts like `SC.create()` in every way except that bindings, observers, and
   computed properties will be activated on the object.  

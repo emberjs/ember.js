@@ -12,6 +12,8 @@ require('sproutcore-runtime/system/object');
 var get = SC.get, set = SC.set;
 
 /**
+  @class
+
   An ArrayProxy wraps any other object that implements SC.Array and/or 
   SC.MutableArray, forwarding all requests.  ArrayProxy isn't useful by itself
   but you can extend it to do specialized things like transforming values,

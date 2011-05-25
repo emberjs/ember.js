@@ -37,7 +37,7 @@ function xform(target, method, params) {
 }
 
 /**
-  @namespace
+  @class
 
   This mixin defines the common interface implemented by enumerable objects
   in SproutCore.  Most of these methods follow the standard Array iteration
@@ -73,7 +73,7 @@ function xform(target, method, params) {
 
   @since SproutCore 1.0
 */
-SC.Enumerable = SC.Mixin.create({
+SC.Enumerable = SC.Mixin.create( /** @lends SC.Enumerable */ {
   
   /** @private - compatibility */
   isEnumerable: true,

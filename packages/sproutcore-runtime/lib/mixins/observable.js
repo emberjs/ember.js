@@ -7,6 +7,8 @@
 var get = SC.get, set = SC.set;
   
 /**
+  @class
+
   Restores some of the SC 1.x SC.Observable mixin API.  The new property 
   observing system does not require SC.Observable to be applied anymore.
   Instead, on most browsers you can just access properties directly.  For
