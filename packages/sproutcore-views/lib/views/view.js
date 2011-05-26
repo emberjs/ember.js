@@ -698,8 +698,6 @@ SC.View = SC.Object.extend(
 
     Setup a view, but do not finish waking it up.
     - configure childViews
-    - Determine the view's theme
-    - Fetch a render delegate from the theme, if necessary
     - register the view with the global views hash, which is used for event
       dispatch
   */
