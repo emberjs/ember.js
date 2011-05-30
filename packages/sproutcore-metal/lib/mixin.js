@@ -18,6 +18,8 @@ var a_map = Array.prototype.map;
 var EMPTY_META = {}; // dummy for non-writable meta
 var META_SKIP = { __scproto__: true, __sc_count__: true };
 
+var o_create = SC.platform.create;
+
 function meta(obj, writable) {
   var m = SC.meta(obj, writable!==false), ret = m.mixins;
   if (writable===false) return ret || EMPTY_META;
@@ -25,7 +27,7 @@ function meta(obj, writable) {
   if (!ret) {
     ret = m.mixins = { __scproto__: obj };
   } else if (ret.__scproto__ !== obj) {
-    ret = m.mixins = Object.create(ret);
+    ret = m.mixins = o_create(ret);
     ret.__scproto__ = obj;
   }
   return ret;
@@ -127,7 +129,7 @@ var defineProperty = SC.defineProperty;
 function writableReq(obj) {
   var m = SC.meta(obj), req = m.required;
   if (!req || (req.__scproto__ !== obj)) {
-    req = m.required = req ? Object.create(req) : { __sc_count__: 0 };
+    req = m.required = req ? o_create(req) : { __sc_count__: 0 };
     req.__scproto__ = obj;
   }
   return req;
