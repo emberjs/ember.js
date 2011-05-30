@@ -1,10 +1,18 @@
 # How to Run Unit Tests
 
-    cd amber
-    spade update
-    spade preview
+1. Install Ruby and Rubygems. There are many resources on the web can help you to do so, one of the best ways may be [rvm](http://rvm.beginrescueend.com/).
+
+2. Install spade. Follow instructions on [its project page](http://github.com/strobecorp/spade).
+
+3. Install sproutcore-preprocessor via `spade install sproutcore-preprocessor`.
+
+3. Enter the following commands in your command shell:
+
+        cd sproutcore20
+        spade update
+        spade preview
     
-Then visit: http://localhost:4020/tests.html?package=PACKAGE_NAME.  Please 'PACKAGE_NAME' with the name of the package you want to run.  For example:
+4. Then visit: http://localhost:4020/tests.html?package=PACKAGE_NAME.  Replace 'PACKAGE_NAME' with the name of the package you want to run.  For example:
 
   * [SproutCore Runtime](http://localhost:4020/tests.html?package=sproutcore-runtime)
   * [SproutCore Views](http://localhost:4020/tests.html?package=sproutcore-views)
