@@ -285,7 +285,7 @@ var timers = {}; // active timers...
 
 var laterScheduled = false;
 function invokeLaterTimers() {
-  var now = Date.now(), earliest = -1;
+  var now = (+ new Date()), earliest = -1;
   for(var key in timers) {
     if (!timers.hasOwnProperty(key)) continue;
     var timer = timers[key];
@@ -300,7 +300,7 @@ function invokeLaterTimers() {
   }
   
   // schedule next timeout to fire...
-  if (earliest>0) setTimeout(invokeLaterTimers, earliest-Date.now()); 
+  if (earliest>0) setTimeout(invokeLaterTimers, earliest-(+ new Date())); 
 }
 
 /**
@@ -343,7 +343,7 @@ SC.run.later = function(target, method) {
     wait = args.pop();
   }
   
-  expires = Date.now()+wait;
+  expires = (+ new Date())+wait;
   timer   = { target: target, method: method, expires: expires, args: args };
   guid    = SC.guidFor(timer);
   timers[guid] = timer;
