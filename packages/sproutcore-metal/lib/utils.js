@@ -12,7 +12,7 @@ require('sproutcore-metal/platform');
 // 
 
 // Used for guid generation...
-var GUID_KEY = '__sc'+Date.now();
+var GUID_KEY = '__sc'+ (+ new Date());
 var uuid, numberCache, stringCache;
 
 uuid         = 0;
