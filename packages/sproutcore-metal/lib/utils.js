@@ -127,7 +127,7 @@ SC.guidFor = function(obj) {
 
 var META_DESC = {
   writable:    true,
-  confgurable: false,
+  configurable: false,
   enumerable:  false,
   value: null
 };
