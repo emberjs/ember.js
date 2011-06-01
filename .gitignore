@@ -9,3 +9,4 @@ lib/*/tests/all.js
 lib/*/tests/qunit*
 test_*.html
 tmp
+.DS_Store
