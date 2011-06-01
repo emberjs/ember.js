@@ -59,6 +59,7 @@ SC.Button = SC.View.extend({
 
     this._mouseDown = false;
     this._mouseEntered = false;
+    return false;
   },
 
   // TODO: Handle proper touch behavior.  Including should make inactive when
