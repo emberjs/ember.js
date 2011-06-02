@@ -54,7 +54,7 @@ Once you create an object and add some properties to it, you usually can
 access those properties directly using normal dot notation.  Occasionally,
 however, dot notation won't do the trick.  In those cases Metal defines some
 _universal accessors_ that can get at properties for you without having to
-write exta code.
+write extra code.
 
 You should consider using universal accessors when one of the following is true:
 
@@ -66,9 +66,9 @@ You should consider using universal accessors when one of the following is true:
     
   * __You need to support unknownProperty.__ Some metaprogramming techniques
     rely on being able to access a property on an object that isn't actually 
-    created until the first time you try to access it.  This is usally done 
+    created until the first time you try to access it.  This is usually done 
     by implementing an _unknown property handler_ that will be invoked when 
-    you try to access the non-existant property.  Since JavaScript getters and
+    you try to access the non-existent property.  Since JavaScript getters and
     setters don't support this directly, you can use `SC.get()` and `SC.set()`
     instead.
     
@@ -456,7 +456,7 @@ the same way according to the following rules:
 ## Internals: How It Works
 
   * All data about an object is stored on a special meta property that you can retrieve with the `SC.meta()` method.  You almost never work with this meta property directly. 
-  * On various objects in the meta object you will see a property called `__scproto__`.  This property is used to detect when a given meta object was inherited from a parent object.  When you create an object via prototype inheritence, all the `__scproto__` properties will point to the parent object.  When metal notices this it will clone the object before using it.
+  * On various objects in the meta object you will see a property called `__scproto__`.  This property is used to detect when a given meta object was inherited from a parent object.  When you create an object via prototype inheritance, all the `__scproto__` properties will point to the parent object.  When metal notices this it will clone the object before using it.
   * Whenever an observer is added on an object, metal will "watch" that property.  Adding a watch on a property will convert it from a regular property to a getter/setter, which is how metal is able to notice changes and do something about it.  If you are on a platform that doesn't support getters/setters, we can't do this automatically.  That is why you have to use SC.get() and SC.set() instead.
   * Whenever a computed property is added on an object, metal will set a getter/setter on the property as well that will invoke the computed property.
   * Metal will "watch" any properties a computed property depends on.  This will convert that property to a getter/setter also.
