@@ -355,7 +355,7 @@ notifications and other actions.  In order to do this it relies on a newer
 feature in JavaScript environments called __getters and setters__.
 
 All browsers in common usage support getters and setters except for IE7 and 8.
-In particular, all mobile browsers support the, which is why we think now is 
+In particular, all mobile browsers support them, which is why we think now is 
 the time to start to use them.
 
 If you need to support IE7 and 8 however, you cannot rely on the getter and 
