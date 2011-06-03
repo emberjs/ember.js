@@ -38,7 +38,7 @@ SC.EventDispatcher = SC.Object.extend(
     would like to register the listeners on different element, set the event
     dispatcher's `root` property.
   */
-  setup: function() {
+  setup: function(addedEvents) {
     var event, events = {
       touchstart  : 'touchStart',
       touchmove   : 'touchMove',
@@ -59,6 +59,8 @@ SC.EventDispatcher = SC.Object.extend(
       submit      : 'submit',
       change      : 'change'
     };
+
+    jQuery.extend(events, addedEvents || {})
 
     for (event in events) {
       if (events.hasOwnProperty(event)) {
