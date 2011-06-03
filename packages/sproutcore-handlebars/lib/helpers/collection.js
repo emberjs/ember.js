@@ -86,7 +86,8 @@ Handlebars.registerHelper('collection', function(path, options) {
 
   if (inverse) {
     hash.emptyView = SC.View.extend({
-      template: inverse
+      template: inverse,
+      tagName: itemHash.tagName || childTag
     });
   }
 
