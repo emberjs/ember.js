@@ -473,7 +473,7 @@ if (typeof module !== 'undefined' && require.main === module) {
 };
 ;
 // lib/handlebars/base.js
-var Handlebars = {};
+Handlebars = {};
 
 Handlebars.VERSION = "1.0.beta.2";
 
