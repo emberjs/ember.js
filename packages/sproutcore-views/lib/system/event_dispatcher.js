@@ -56,6 +56,7 @@ SC.EventDispatcher = SC.Object.extend(
       focusout    : 'focusOut',
       mouseenter  : 'mouseEnter',
       mouseleave  : 'mouseLeave',
+      submit      : 'submit',
       change      : 'change'
     };
 
