@@ -29,10 +29,12 @@ Note that unless you are adding new __tests__ or adding a new package you should
 
 1. Follow the installation instructions for running the unit tests.
 
-2. Install Node.js and npm. Refer to the Node.js instructions [here](https://github.com/joyent/node/wiki/Installation).
+2. Install Bundler via `gem install bundler`
 
-3. Install uglify-js via `npm install -g uglify-js`.
+3. Install Node.js and npm. Refer to the Node.js instructions [here](https://github.com/joyent/node/wiki/Installation).
 
-4. Run `bundle install` to pull in Ruby dependencies.
+4. Install uglify-js via `npm install -g uglify-js`.
 
-5. Run `rake` to build SproutCore. The build will be placed in the tmp directory.
+5. Run `bundle install` to pull in Ruby dependencies.
+
+6. Run `rake` to build SproutCore. The build will be placed in the tmp directory.
