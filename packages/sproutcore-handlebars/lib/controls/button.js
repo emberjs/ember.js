@@ -15,7 +15,7 @@ SC.Button = SC.View.extend({
   
   renderBuffer: function(tagName) {
     return SC.RenderBuffer(tagName).attr('type', get(this, 'type'));
-  }
+  },
   
   targetObject: function() {
     var target = get(this, 'target');
