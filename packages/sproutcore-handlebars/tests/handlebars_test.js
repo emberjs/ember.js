@@ -950,4 +950,22 @@ test("should be able to add multiple classes using {{bindAttr class}}", function
   ok(!view.$('div').hasClass('is-awesome-sauce'), "removes dasherized class when property is set to false");
 });
 
+test("should use the childView's renderBuffer", function() {
+  var calledRenderBuffer = false;
+  var template = SC.Handlebars.compile('{{view TemplateTests.RenderBufferView}}')
+  
+  TemplateTests.RenderBufferView = SC.View.extend({
+    renderBuffer: function() {
+      calledRenderBuffer = true;
+      return this._super();
+    }
+  });
 
+  var view = SC.View.create({
+    template: template
+  });
+  
+  view.createElement();
+  
+  ok(calledRenderBuffer);
+});
