@@ -31,14 +31,14 @@ def compile_package_task(package)
 end
 
 namespace :sproutcore do
-  %w(metal runtime handlebars views datastore).each do |package|
+  %w(metal indexset runtime handlebars views datastore).each do |package|
     task package => compile_package_task("sproutcore-#{package}")
   end
 end
 
 task :handlebars => compile_package_task("handlebars")
 
-task :build => ["sproutcore:metal", "sproutcore:runtime", "sproutcore:handlebars", "sproutcore:views", "sproutcore:datastore", :handlebars]
+task :build => ["sproutcore:metal", "sproutcore:indexset", "sproutcore:runtime", "sproutcore:handlebars", "sproutcore:views", "sproutcore:datastore", :handlebars]
 
 file "tmp/static/sproutcore.js" => :build do
   File.open("tmp/static/sproutcore.js", "w") do |file|
@@ -68,6 +68,7 @@ file "tmp/static/sproutcore-datastore.stripped.js" => "tmp/static/sproutcore-dat
   File.open("tmp/static/sproutcore-datastore.stripped.js", "w") do |file|
     sproutcore = File.read("tmp/static/sproutcore-datastore.js")
     sproutcore.gsub!(%r{^\s*require\(['"]([^'"])*['"]\);?\s*$}, "")
+    file.puts File.read("tmp/static/sproutcore-indexset.js")
     file.puts sproutcore
   end
 end
