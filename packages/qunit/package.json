@@ -1,7 +1,12 @@
 {
   "name": "qunit",
+  "description": "Lightweight JavaScript Testing Framework",
+  "summary": "Lightweight JavaScript Testing Framework",
+  "homepage": "http://jquery.com",
+  "author": "qUnit Team",
   "version": "1.0.0",
   "dependencies": {
     "jquery": "1.6"
-  }
+  },
+  "directories": { "lib": "lib" }
 }

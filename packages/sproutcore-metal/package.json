@@ -1,5 +1,9 @@
 {
   "name": "sproutcore-metal",
   "description": "JavaScript on Steroids",
-  "version": "2.0"
+  "summary": "JavaScript on Steroids",
+  "homepage": "http://github.com/sproutcore/sproutcore20",
+  "author": "Charles Jolley",
+  "version": "2.0",
+  "directories": { "lib": "lib" }
 }

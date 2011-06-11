@@ -1,11 +1,15 @@
 {
   "name": "sproutcore",
   "description": "SproutCore - JavaScript Application Framework",
+  "summary": "SproutCore - JavaScript Application Framework",
+  "homepage": "http://github.com/sproutcore/sproutcore20",
+  "author": "Charles Jolley",
   "version": "2.0",
   "dependencies": {
     "sproutcore-runtime": "2.0",
     "sproutcore-views": "2.0",
     "sproutcore-datastore": "2.0",
     "sproutcore-handlebars": "2.0"
-  }
+  },
+  "directories": { "lib": "lib" }
 }
