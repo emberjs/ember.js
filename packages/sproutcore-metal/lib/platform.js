@@ -54,6 +54,32 @@ if (!SC.platform.create) {
 */
 SC.platform.defineProperty = Object.defineProperty;
 
+// This is for Safari 5.0. Not sure if we should do anything else special.
+
+SC.platform.definePropertyOnDOM = (function(){
+  if (Object.defineProperty) {
+    try {
+      Object.defineProperty(document.body, 'definePropertyOnDOM', {});
+      return true;
+    } catch(e) {};
+  }
+  return false;
+})();
+
+if (SC.platform.defineProperty && !SC.platform.definePropertyOnDOM) {
+  SC.platform.defineProperty = function(obj, keyName, desc){
+    if ( // Is DOM Node
+      typeof Node === "object" ? obj instanceof Node :
+      typeof obj === "object" && typeof obj.nodeType === "number" && typeof obj.nodeName==="string"
+    ) {
+      // TODO: Should we have a warning here?
+      return obj[keyName] = desc.value;
+    } else {
+      return Object.defineProperty(obj, keyName, desc);
+    }
+  };
+}
+
 /**
   Set to true if the platform supports native getters and setters.
 */
