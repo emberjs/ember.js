@@ -28,7 +28,8 @@ SC.Handlebars.CONTAINER_MAP = {
   thead: 'tr',
   tbody: 'tr',
   tfoot: 'tr',
-  tr: 'td'
+  tr: 'td',
+  select: 'option'
 };
 
 /**

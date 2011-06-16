@@ -171,6 +171,21 @@ test("should re-render when the content object changes", function() {
 
 });
 
+test("select tagName on collection helper automatically sets child tagName to option", function() {
+  TemplateTests.RerenderTest = SC.CollectionView.extend({
+    content: ['foo']
+  });
+  
+  var view = SC.View.create({
+    template: SC.Handlebars.compile('{{#collection TemplateTests.RerenderTest tagName="select"}}{{content}}{{/collection}}')
+  });
+  
+  view.createElement();
+  
+  equals(view.$('option').length, 1, "renders the correct child tag name");
+  
+});
+
 test("tagName works in the #collection helper", function() {
   TemplateTests.RerenderTest = SC.CollectionView.extend({
     content: ['foo', 'bar']
