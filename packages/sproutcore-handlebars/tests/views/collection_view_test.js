@@ -25,6 +25,40 @@ test("passing a block to the collection helper sets it as the template for examp
   equals(view.$('aside').length, 3, 'one aside element is created for each content item');
 });
 
+test("if no content is passed, and no 'else' is specified, nothing is rendered", function() {
+  TemplateTests.CollectionTestView = SC.CollectionView.extend({
+    tagName: 'ul',
+    content: []
+  });
+
+  view = SC.View.create({
+    template: SC.Handlebars.compile('{{#collection "TemplateTests.CollectionTestView"}} <aside></aside> {{/collection}}')
+  });
+
+  SC.run(function() {
+    view.append();
+  });
+
+  equals(view.$('li').length, 0, 'if no "else" is specified, nothing is rendered');
+});
+
+test("if no content is passed, and 'else' is specified, the else block is rendered", function() {
+  TemplateTests.CollectionTestView = SC.CollectionView.extend({
+    tagName: 'ul',
+    content: []
+  });
+
+  view = SC.View.create({
+    template: SC.Handlebars.compile('{{#collection "TemplateTests.CollectionTestView"}} <aside></aside> {{ else }} <del></del> {{/collection}}')
+  });
+
+  SC.run(function() {
+    view.append();
+  });
+
+  equals(view.$('li:has(del)').length, 1, 'the else block is rendered');
+});
+
 test("a block passed to a collection helper defaults to the content property of the context", function() {
   TemplateTests.CollectionTestView = SC.CollectionView.extend({
     tagName: 'ul',
