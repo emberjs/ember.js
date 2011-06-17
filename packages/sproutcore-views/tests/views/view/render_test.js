@@ -109,7 +109,10 @@ test("should hide views when isVisible is false", function() {
     isVisible: false
   });
 
-  view.append();
+  SC.run(function() {
+    view.append();
+  });
+
   ok(view.$().is(':hidden'), "the view is hidden");
 
   set(view, 'isVisible', true);
@@ -126,17 +129,24 @@ test("should hide element if isVisible is false before element is created", func
 
   set(view, 'template', function() { return "foo"; });
 
-  view.append();
+  SC.run(function() {
+    view.append();
+  });
 
   ok(view.$().is(':hidden'), "should be hidden");
 
   view.remove();
   set(view, 'isVisible', true);
-  view.append();
+
+  SC.run(function() {
+    view.append();
+  });
 
   ok(view.$().is(':visible'), "view should be visible");
 
-  view.remove();
+  SC.run(function() {
+    view.remove();
+  });
 });
 
 test("should add sc-view to views", function() {

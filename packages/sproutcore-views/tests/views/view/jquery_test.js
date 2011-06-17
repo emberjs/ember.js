@@ -15,7 +15,9 @@ module("SC.View#$", {
       }
     }).create();
 
-    view.append();
+    SC.run(function() {
+      view.append();
+    });
   },
 
   teardown: function() {

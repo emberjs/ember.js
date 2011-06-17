@@ -94,6 +94,7 @@ test("should not escape HTML in triple mustaches", function() {
   SC.run(function() {
     set(view, 'output', "you are so <i>super</i>");
   });
+
   equals(view.$('i').length, 1, "creates an element when value is updated");
 });
 
@@ -688,7 +689,9 @@ test("Collection views that specify an example view class have their children be
     template: SC.Handlebars.compile('{{#collection "TemplateTests.ExampleViewCollection"}}OHAI{{/collection}}')
   });
 
-  parentView.createElement();
+  SC.run(function() {
+    parentView.append();
+  });
 
   ok(parentView.childViews[0].childViews[0].isCustom, "uses the example view class");
 });

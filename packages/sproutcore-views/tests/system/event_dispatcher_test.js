@@ -12,9 +12,7 @@ var set = SC.set, get = SC.get;
 module("SC.EventDispatcher", {
   setup: function() {
     application = SC.Application.create();
-    
-    // force setup since document may not be ready yet.
-    get(application, 'eventDispatcher').setup();
+    application.ready();
   },
 
   teardown: function() {
@@ -56,7 +54,10 @@ test("should dispatch events to views", function() {
     }
   });
 
-  view.append();
+  SC.run(function() {
+    view.append();
+  });
+
   view.$().trigger('mousedown');
 
   ok(receivedEvent, "passes event to associated event method");
@@ -87,7 +88,10 @@ test("should send change events up view hierarchy if view contains form elements
     }
   });
 
-  view.append();
+  SC.run(function() {
+    view.append();
+  });
+
   SC.$('#is-done').trigger('change');
   ok(receivedEvent, "calls change method when a child element is changed");
   equals(receivedEvent.target, SC.$('#is-done')[0], "target property is the element that was clicked");

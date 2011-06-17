@@ -163,22 +163,15 @@ SC._BindableSpanView = SC.View.extend(
     it into DOM.
   */
   rerender: function() {
-    var elem;
-
     this.destroyAllChildren();
 
-    // Destroy the existing element and replace it with
-    // a new element by re-running the render method.
-    // This is used instead of calling destroyElement()/createElement()
-    // to maintain position in the DOM.
-    var buffer = this.renderBuffer(get(this, 'tagName'));
-    if(get(this, 'isEscaped')) { set(buffer, 'escapeContent', true); }
-    this.renderToBuffer(buffer);
+    // Store a reference to the current element so that
+    // it can be replaced in-line in the DOM.
+    var oldElem = this.$();
+    set(this, 'element', null);
 
-    elem = buffer.element();
-    this.$().replaceWith(elem);
-    set(this, 'element', elem);
-
-    this._notifyDidCreateElement();
+    this._insertElementLater(function() {
+      oldElem.replaceWith(get(this, 'element'));
+    });
   }
 });

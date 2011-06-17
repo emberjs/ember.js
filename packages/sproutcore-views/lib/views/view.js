@@ -382,14 +382,54 @@ SC.View = SC.Object.extend(
     If the view does not have an HTML representation yet, `createElement()`
     will be called automatically.
 
+    Note that this method just schedules the view to be appended; the DOM
+    element will not be appended to the given element until all bindings have
+    finished synchronizing.
+
     @param {String|DOMElement|jQuery} A selector, element, HTML string, or jQuery object
     @returns {SC.View} receiver
   */
   appendTo: function(target) {
-    var elem = get(this, 'element');
-    if (!elem) { this.createElement(); }
+    // Schedule the DOM element to be created and appended to the given
+    // element after bindings have synchronized.
+    this._insertElementLater(function() {
+      this.$().appendTo(target);
+    });
 
-    this.$().appendTo(target);
+    return this;
+  },
+
+  /**
+    @private
+
+    Schedules a DOM operation to occur during the next render phase. This
+    ensures that all bindings have finished synchronizing before the view is
+    rendered.
+
+    To use, pass a function that performs a DOM operation..
+
+    Before your function is called, this view and all child views will receive
+    the `willInsertElement` event. After your function is invoked, this view
+    and all of its child views will receive the `didInsertElement` event.
+
+        view._insertElementLater(function() {
+          this.createElement();
+          this.$().appendTo('body');
+        });
+
+    @param {Function} fn the function that inserts the element into the DOM
+  */
+  _insertElementLater: function(fn) {
+    SC.run.schedule('render', this, function() {
+      // If we don't have an element, guarantee that it exists before
+      // invoking the willInsertElement event.
+      this.createElement();
+
+      this._notifyWillInsertElement();
+      fn.call(this);
+      this._notifyDidInsertElement();
+    });
+
     return this;
   },
 
@@ -397,6 +437,10 @@ SC.View = SC.Object.extend(
     Appends the view's element to the document body. If the view does
     not have an HTML representation yet, `createElement()` will be called
     automatically.
+
+    Note that this method just schedules the view to be appended; the DOM
+    element will not be appended to the document body until all bindings have
+    finished synchronizing.
 
     @returns {SC.View} receiver
   */
@@ -453,7 +497,7 @@ SC.View = SC.Object.extend(
     @returns {SC.RenderBuffer}
   */
   renderBuffer: function(tagName) {
-    return SC.RenderBuffer(tagName);
+    return SC.RenderBuffer(tagName || get(this, 'tagName'));
   },
 
   /**
@@ -468,35 +512,51 @@ SC.View = SC.Object.extend(
   createElement: function() {
     if (get(this, 'element')) { return this; }
 
-    var buffer = this.renderBuffer(get(this, 'tagName'));
-
-    // now prepare the content like normal.
-    this.renderToBuffer(buffer);
+    var buffer = this.renderToBuffer();
     set(this, 'element', buffer.element());
-
-    // now notify the view and its child views..
-    this._notifyDidCreateElement();
 
     return this;
   },
 
   /**
-    Called when the element of the view is created. Override this function
-    to do any set up that requires an element.
+    Called when the element of the view is created but before it is inserted
+    into the DOM.  Override this function to do any set up that requires an
+    element.
   */
-  didCreateElement: function() {},
+  willInsertElement: SC.K,
+
+  /**
+    Called when the element of the view has been inserted into the DOM.
+    Override this function to do any set up that requires an element in the
+    document body.
+  */
+  didInsertElement: SC.K,
 
   /**
     @private
 
-    Invokes the receivers didCreateElement() method if it exists and then
+    Invokes the receiver's willInsertElement() method if it exists and then
     invokes the same on all child views.
   */
-  _notifyDidCreateElement: function() {
-    this.didCreateElement();
+  _notifyWillInsertElement: function() {
+    this.willInsertElement();
 
     this.forEachChildView(function(view) {
-      view._notifyDidCreateElement();
+      view._notifyWillInsertElement();
+    });
+  },
+
+  /**
+    @private
+
+    Invokes the receiver's didInsertElement() method if it exists and then
+    invokes the same on all child views.
+  */
+  _notifyDidInsertElement: function() {
+    this.didInsertElement();
+
+    this.forEachChildView(function(view) {
+      view._notifyDidInsertElement();
     });
   },
 
@@ -585,19 +645,23 @@ SC.View = SC.Object.extend(
     @private
 
     Renders to a buffer.
+
     Rendering only happens for the initial rendering. Further updates happen 
     in updateElement, and are not done to buffers, but to elements.
     Note: You should not generally override nor directly call this method. 
     This method is only called by createElement to set up the element 
     initially, and by renderChildViews, to write to a buffer.
 
-    @param {SC.RenderBuffer} buffer the render buffer.
+    @param {SC.RenderBuffer} buffer the render buffer. If no buffer is
+      passed, a default buffer, using the current view's `tagName`, will
+      be used.
   */
   renderToBuffer: function(buffer) {
+    buffer = buffer || this.renderBuffer();
+
     var mixins, idx, len;
 
     SC.beginPropertyChanges(this);
-    set(this, 'elementNeedsUpdate', NO);
 
     this.applyAttributesToBuffer(buffer);
     this.render(buffer);
@@ -606,11 +670,13 @@ SC.View = SC.Object.extend(
     // render any child views now.
     if (!this._didRenderChildViews) { this.renderChildViews(buffer); }
 
-    // Reset the flag so that if the element is recreated we re-render the 
+    // Reset the flag so that if the element is recreated we re-render the
     // child views
-    this._didRenderChildViews = NO;
+    this._didRenderChildViews = false;
 
     SC.endPropertyChanges(this);
+
+    return buffer;
   },
 
   /**
