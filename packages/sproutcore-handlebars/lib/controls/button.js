@@ -11,11 +11,8 @@ SC.Button = SC.View.extend({
   classNameBindings: ['isActive'],
 
   tagName: 'button',
+  attributeBindings: ['type'],
   type: 'button',
-  
-  renderBuffer: function(tagName) {
-    return SC.RenderBuffer(tagName).attr('type', get(this, 'type'));
-  },
   
   targetObject: function() {
     var target = get(this, 'target');
