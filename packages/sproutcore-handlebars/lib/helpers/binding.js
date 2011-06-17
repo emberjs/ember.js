@@ -247,7 +247,7 @@ Handlebars.registerHelper('bindAttr', function(options) {
 
   // Add the unique identifier
   ret.push('data-handlebars-id="' + dataId + '"');
-  return ret.join(' ');
+  return new Handlebars.SafeString(ret.join(' '));
 });
 
 /**
