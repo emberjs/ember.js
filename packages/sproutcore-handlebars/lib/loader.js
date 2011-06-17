@@ -50,7 +50,11 @@ SC.$(document).ready(function() {
       template: template
     });
 
-    view.createElement();
-    script.replaceWith(view.$());
+    view._insertElementLater(function() {
+      script.replaceWith(this.$());
+
+      // Avoid memory leak in IE
+      script = null;
+    });
   });
 });
