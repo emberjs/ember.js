@@ -7,7 +7,7 @@
 /*globals sc_assert */
 
 require("sproutcore-views/system/render_buffer");
-var get = SC.get, set = SC.set;
+var get = SC.get, set = SC.set, addObserver = SC.addObserver;
 
 /**
   @static
@@ -29,7 +29,7 @@ SC.View = SC.Object.extend(
 /** @scope SC.View.prototype */ {
 
   /** @private */
-  concatenatedProperties: ['classNames', 'classNameBindings'],
+  concatenatedProperties: ['classNames', 'classNameBindings', 'attributeBindings'],
 
   /**
     @type Boolean
@@ -208,7 +208,7 @@ SC.View = SC.Object.extend(
         }
       };
 
-      SC.addObserver(this, property, observer);
+      addObserver(this, property, observer);
 
       // Get the class name for the property at its current value
       dasherizedClass = this._classStringForProperty(property);
@@ -222,6 +222,48 @@ SC.View = SC.Object.extend(
         // if the observer fires. Remember that this variable has
         // been closed over by the observer.
         oldClass = dasherizedClass;
+      }
+    }, this);
+  },
+
+  /**
+    Iterates through the view's attribute bindings, sets up observers for each,
+    then applies the current value of the attributes to the passed render buffer.
+
+    @param {SC.RenderBuffer} buffer
+  */
+  _applyAttributeBindings: function(buffer) {
+    var attributeBindings = get(this, 'attributeBindings'),
+        attributeValue, elem;
+
+    if (!attributeBindings) { return; }
+
+    attributeBindings.forEach(function(attribute) {
+      // Create an observer to add/remove/change the attribute if the
+      // JavaScript property changes.
+      var observer = function() {
+        elem = this.$();
+        attributeValue = get(this, attribute);
+
+        if (typeof attributeValue === 'string') {
+          elem.attr(attribute, attributeValue);
+        } else if (attributeValue && typeof attributeValue === 'boolean') {
+          elem.attr(attribute, attribute);
+        } else {
+          elem.removeAttr(attribute);
+        }
+      };
+
+      addObserver(this, attribute, observer);
+
+      // Determine the current value and add it to the render buffer
+      // if necessary.
+      attributeValue = get(this, attribute);
+      if (typeof attributeValue === 'string') {
+        buffer.attr(attribute, attributeValue);
+      } else if (attributeValue && typeof attributeValue === 'boolean') {
+        // Apply boolean attributes in the form attribute="attribute"
+        buffer.attr(attribute, attribute);
       }
     }, this);
   },
@@ -575,9 +617,15 @@ SC.View = SC.Object.extend(
     @private
   */
   applyAttributesToBuffer: function(buffer) {
-    // Creates observers for all registered class name bindings,
-    // then adds them to the classNames array.
+    // Creates observers for all registered class name and attribute bindings,
+    // then adds them to the element.
     this._applyClassNameBindings();
+
+    // Pass the render buffer so the method can apply attributes directly.
+    // This isn't needed for class name bindings because they use the
+    // existing classNames infrastructure.
+    this._applyAttributeBindings(buffer);
+
 
     buffer.addClass(get(this, 'classNames').join(' '));
     buffer.id(get(this, 'elementId'));
@@ -688,6 +736,28 @@ SC.View = SC.Object.extend(
     @default []
   */
   classNameBindings: [],
+
+  /**
+    A list of properties of the view to apply as attributes. If the property is
+    a string value, the value of that string will be applied as the attribute.
+
+        // Applies the type attribute to the element
+        // with the value "button", like <div type="button">
+        SC.View.create({
+          attributeBindings: ['type'],
+          type: 'button'
+        });
+
+    If the value of the property is a Boolean, the name of that property is
+    added as an attribute.
+
+        // Renders something like <div enabled="enabled">
+        SC.View.create({
+          attributeBindings: ['enabled'],
+          enabled: true
+        });
+  */
+  attributeBindings: [],
 
   // .......................................................
   // CORE DISPLAY METHODS

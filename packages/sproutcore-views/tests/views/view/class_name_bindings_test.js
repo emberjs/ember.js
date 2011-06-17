@@ -8,7 +8,7 @@ var set = SC.set, get = SC.get;
 
 require('sproutcore-views/views/view');
 
-module("SC.View - Bound Class Names");
+module("SC.View - Class Name Bindings");
 
 test("should apply bound class names to the element", function() {
   var view = SC.View.create({

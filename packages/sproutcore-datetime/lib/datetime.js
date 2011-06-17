@@ -76,7 +76,9 @@ SC.DATETIME_COMPAREDATE_TIMEZONE_ERROR = "Can't compare the dates of two DateTim
 SC.DATETIME_ISO8601 = '%Y-%m-%dT%H:%M:%S%Z';
 
 
-/** @class
+/**
+  @ignore
+  @private
 
   A Scanner reads a string and interprets the characters into numbers. You
   assign the scanner's string on initialization and the scanner progresses
@@ -89,13 +91,12 @@ SC.DATETIME_ISO8601 = '%Y-%m-%dT%H:%M:%S%Z';
   @since SproutCore 1.0
   @author Martin Ottenwaelter
 */
-SC.Scanner = SC.Object.extend(
-/** @scope SC.Scanner.prototype */ {
+var Scanner = SC.Object.extend({
 
   /**
     The string to scan. You usually pass it to the create method:
 
-        SC.Scanner.create({string: 'May, 8th'});
+        Scanner.create({string: 'May, 8th'});
 
     @type String
   */
@@ -943,7 +944,7 @@ SC.DateTime.reopenClass(SC.Comparable,
     // Declared as an object not a literal since in some browsers the literal
     // retains state across function calls
     var re = new RegExp('(?:%([aAbBcdDhHiIjmMpsSUWwxXyYZ%])|(.))', "g");
-    var d, parts, opts = {}, check = {}, scanner = SC.Scanner.create({string: str});
+    var d, parts, opts = {}, check = {}, scanner = Scanner.create({string: str});
 
     if (SC.none(fmt)) fmt = SC.DATETIME_ISO8601;
 

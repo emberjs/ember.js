@@ -12,7 +12,7 @@ require('sproutcore-metal/platform');
 // 
 
 // Used for guid generation...
-var GUID_KEY = '__sc'+Date.now();
+var GUID_KEY = '__sc'+ (+ new Date());
 var uuid, numberCache, stringCache;
 
 uuid         = 0;
@@ -68,7 +68,13 @@ SC.generateGuid = function(obj, prefix) {
   var ret = (prefix + (uuid++));
   if (obj) {
     GUID_DESC.value = ret;
-    o_defineProperty(obj, GUID_KEY, GUID_DESC);
+    // In Safari 5.0.5, calling Object.defineProperty on a DOM element
+    // causes an error to be thrown. In that case, just set directly.
+    try {
+      o_defineProperty(obj, GUID_KEY, GUID_DESC);
+    } catch (e) {
+      obj[GUID_KEY] = ret;
+    }
     GUID_DESC.value = null;
   }
 
