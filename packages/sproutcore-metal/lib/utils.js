@@ -68,13 +68,7 @@ SC.generateGuid = function(obj, prefix) {
   var ret = (prefix + (uuid++));
   if (obj) {
     GUID_DESC.value = ret;
-    // In Safari 5.0.5, calling Object.defineProperty on a DOM element
-    // causes an error to be thrown. In that case, just set directly.
-    try {
-      o_defineProperty(obj, GUID_KEY, GUID_DESC);
-    } catch (e) {
-      obj[GUID_KEY] = ret;
-    }
+    o_defineProperty(obj, GUID_KEY, GUID_DESC);
     GUID_DESC.value = null;
   }
 
