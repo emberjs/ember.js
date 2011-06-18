@@ -168,7 +168,7 @@ Handlebars.registerHelper('unless', function(context, options) {
   @returns {String} HTML string
 */
 Handlebars.registerHelper('bindAttr', function(options) {
-  
+
   var attrs = options.hash;
   var view = options.data.view;
   var ret = [];
