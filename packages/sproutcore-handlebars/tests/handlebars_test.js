@@ -7,6 +7,48 @@
 
 var getPath = SC.getPath, setPath = SC.setPath, get = SC.get, set = SC.set;
 
+(function() {
+
+  jQuery.fn.caretPosition = function() {
+      var ctrl = this[0];
+
+      var CaretPos = 0;
+      // IE Support
+      if (document.selection) {
+
+          ctrl.focus();
+          var Sel = document.selection.createRange ();
+
+          Sel.moveStart ('character', -ctrl.value.length);
+
+          CaretPos = Sel.text.length;
+      }
+      // Firefox support
+      else if (ctrl.selectionStart || ctrl.selectionStart == '0') {
+          CaretPos = ctrl.selectionStart;
+      }
+
+      return (CaretPos);
+  };
+
+
+  jQuery.fn.setCaretPosition = function(pos) {
+      var ctrl = this[0];
+
+      if(ctrl.setSelectionRange) {
+          ctrl.focus();
+          ctrl.setSelectionRange(pos,pos);
+      } else if (ctrl.createTextRange) {
+          var range = ctrl.createTextRange();
+          range.collapse(true);
+          range.moveEnd('character', pos);
+          range.moveStart('character', pos);
+          range.select();
+      }
+  }
+
+})();
+
 /**
   This module specifically tests integration with Handlebars and SproutCore-specific
   Handlebars extensions.
@@ -694,6 +736,8 @@ test("Collection views that specify an example view class have their children be
   });
 
   ok(parentView.childViews[0].childViews[0].isCustom, "uses the example view class");
+
+  parentView.destroy();
 });
 
 test("should update boundIf blocks if the conditional changes", function() {
@@ -856,6 +900,25 @@ test("should be able to bind element attributes using {{bindAttr}}", function() 
   });
 
   equals(view.$('img').attr('alt'), "Nanananana SproutCore!", "updates alt attribute when title property is computed");
+});
+
+test("should not reset cursor position when text field receives keyUp event", function() {
+  var view = SC.TextField.create({
+    value: "Broseidon, King of the Brocean"
+  });
+
+  SC.run(function() {
+    view.append();
+  });
+
+  view.$('input').val('Brosiedoon, King of the Brocean');
+  view.$('input').setCaretPosition(5);
+
+  SC.run(function() {
+    view.keyUp({});
+  });
+
+  equals(view.$('input').caretPosition(), 5, "The keyUp event should not result in the cursor being reset due to the bindAttr observers");
 });
 
 test("should be able to bind element attributes using {{bindAttr}} inside a block", function() {

@@ -210,16 +210,18 @@ Handlebars.registerHelper('bindAttr', function(options) {
         return;
       }
 
+      var currentValue = elem.attr(attr);
+
       // A false result will remove the attribute from the element. This is
       // to support attributes such as disabled, whose presence is meaningful.
-      if (result === NO) {
+      if (result === NO && currentValue) {
         elem.removeAttr(attr);
 
       // Likewise, a true result will set the attribute's name as the value.
-      } else if (result === YES) {
+      } else if (result === YES && currentValue !== attr) {
         elem.attr(attr, attr);
 
-      } else {
+      } else if (currentValue !== result) {
         elem.attr(attr, result);
       }
     };
