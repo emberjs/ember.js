@@ -11,6 +11,8 @@ SC.Button = SC.View.extend({
   classNameBindings: ['isActive'],
 
   tagName: 'button',
+  attributeBindings: ['type'],
+  type: 'button',
   
   targetObject: function() {
     var target = get(this, 'target');
