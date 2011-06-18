@@ -214,7 +214,7 @@ SC._RenderBuffer = SC.Object.extend(
         }
       }
 
-      openTag.push('style="' + styleBuffer.join() + '"');
+      openTag.push('style="' + styleBuffer.join("") + '"');
     }
 
     for (prop in attrs) {
@@ -222,11 +222,10 @@ SC._RenderBuffer = SC.Object.extend(
         openTag.push(prop + '="' + attrs[prop] + '"');
       }
     }
-    openTag.push('>');
 
-    openTag = openTag.join(" ");
+    openTag = openTag.join(" ") + '>';
 
-    content = content.join();
+    content = content.join("");
 
     if (get(this, 'escapeContent')) {
       content = get(this, 'escapeFunction')(content);
