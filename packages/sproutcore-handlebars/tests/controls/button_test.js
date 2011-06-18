@@ -112,3 +112,21 @@ test("should not trigger action if mouse leaves area before mouseup", function()
 
   ok(wasClicked);
 });
+
+test("should by default be of type='button'", function() {
+  SC.run(function() {
+    button.append();
+  });
+
+  equals(button.$().attr('type'), 'button');
+});
+
+test("should have a configurable type", function() {
+  button.set('type', 'submit');
+
+  SC.run(function() {
+    button.append();
+  });
+  
+  equals(button.$().attr('type'), 'submit');
+});
