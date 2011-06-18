@@ -4,7 +4,7 @@
   "description": "The SproutCore view system",
   "homepage": "http://sproutcore.com",
   "author": "Yehuda Katz",
-  "version": "2.0",
+  "version": "2.0.beta.1",
   "dependencies": {
     "jquery": "1.6",
     "sproutcore-runtime": "2.0",

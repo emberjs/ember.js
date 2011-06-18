@@ -95,7 +95,7 @@ trap "INT" do
   $threads.each(&:kill)
 end
 
-VERSION = "2.0"
+VERSION = File.read("VERSION")
 
 def spade_update_task(package)
   path = "packages/#{package}"
@@ -217,6 +217,67 @@ namespace :test do
   spade_preview_task "sproutcore-views",      [metal_installed, views_spade_boot] + views_test_files
   spade_preview_task "sproutcore-handlebars", [metal_installed, views_installed, handlebars_spade_boot, handlebars_installed] + handlebars_test_files
   spade_preview_task "sproutcore-datastore",  [metal_installed, datastore_spade_boot] + datastore_test_files
+end
+
+task :bump_version, :version do |t, args|
+  File.open("VERSION", "w") { |file| file.write args[:version] }
+
+  Dir["packages/sproutcore-*/package.json"].each do |package|
+    contents = File.read(package)
+    contents.gsub! %r{"version": .*$}, %{"version": "#{args[:version]}",}
+
+    File.open(package, "w") { |file| file.write contents }
+  end
+end
+
+namespace :starter_kit do
+  sproutcore_output = "tmp/starter-kit/js/libs/sproutcore-#{VERSION}.js"
+  sproutcore_min_output = "tmp/starter-kit/js/libs/sproutcore-#{VERSION}.min.js"
+
+  task :pull => "tmp/starter-kit" do
+    Dir.chdir("tmp/starter-kit") do
+      sh "git pull origin master"
+    end
+  end
+
+  task :clean => :pull do
+    Dir.chdir("tmp/starter-kit") do
+      rm_rf Dir["js/libs/sproutcore*.js"]
+    end
+  end
+
+  task "tmp/starter-kit.#{VERSION}.zip" => "tmp/starter-kit/index.html" do
+    Dir.chdir("tmp") do
+      sh %{zip -r starter-kit.#{VERSION}.zip starter-kit -x "starter-kit/.git/*"}
+    end
+  end
+
+  file sproutcore_output => [:clean, "tmp/starter-kit", "tmp/sproutcore.js"] do
+    sh "cp tmp/sproutcore.js #{sproutcore_output}"
+  end
+
+  file sproutcore_min_output => [:clean, "tmp/starter-kit", "tmp/sproutcore.min.js"] do
+    sh "cp tmp/sproutcore.min.js #{sproutcore_min_output}"
+  end
+
+  file "tmp/starter-kit" do
+    mkdir_p "tmp"
+
+    Dir.chdir("tmp") do
+      sh "git clone git://github.com/sproutcore/starter-kit.git"
+    end
+  end
+
+  file "tmp/starter-kit/index.html" => [sproutcore_output, sproutcore_min_output] do
+    index = File.read("tmp/starter-kit/index.html")
+    index.gsub! %r{<script src="js/libs/sproutcore-\d\.\d.*</script>},
+      %{<script src="js/libs/sproutcore-#{VERSION}.min.js"></script>}
+
+    File.open("tmp/starter-kit/index.html", "w") { |f| f.write index }
+  end
+
+  task :build => "tmp/starter-kit/index.html"
+  task :deploy => "tmp/starter-kit.#{VERSION}.zip"
 end
 
 task :default => ["tmp/sproutcore.min.js", "tmp/sproutcore-datastore.min.js"]
