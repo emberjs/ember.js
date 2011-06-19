@@ -380,7 +380,7 @@ function processNames(paths, root, seen) {
 
     if (obj && obj.toString === classToString) {
       obj[NAME_KEY] = paths.join('.');
-    } else if (key==='SC' || (obj instanceof SC.Namespace)) {
+    } else if (key==='SC' || (SC.Namespace && obj instanceof SC.Namespace)) {
       if (seen[SC.guidFor(obj)]) continue;
       seen[SC.guidFor(obj)] = true;
       processNames(paths, obj, seen);

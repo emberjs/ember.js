@@ -57,7 +57,7 @@ SC.CollectionView = SC.View.extend(
     In case a default content was set, trigger the child view creation
     as soon as the empty layer was created
   */
-  didCreateElement: function() {
+  willInsertElement: function() {
     var content = get(this, 'content');
     if (content) {
       var len = get(content, 'length');
@@ -138,24 +138,32 @@ SC.CollectionView = SC.View.extend(
     @param {Number} changeIndex 
       the index at which the changes occurred
   */
-  arrayDidChange: function(content, start, removedCount, addedCount) {
+  arrayDidChange: function(content, start, removed, added) {
     if (!get(this, 'element')) { return; }
 
+    SC.run.schedule('render', this, function() {
+      this._updateElements(content, start, removed, added)
+    });
+  },
+
+  _updateElements: function(content, start, removed, added) {
     var itemViewClass = get(this, 'itemViewClass'),
         childViews = get(this, 'childViews'),
         addedViews = [],
         renderFunc, view, childView, itemOptions, elem,
-        insertAtElement, item, itemElem, idx, len;
+        insertAtElement, item, fragment, idx, len;
 
     elem = this.$();
 
     if (content) {
-      var addedObjects = content.slice(start, start+addedCount);
+      var addedObjects = content.slice(start, start+added);
 
       childView = childViews.objectAt(start - 1);
       insertAtElement = childView ? childView.$() : null;
 
       len = get(addedObjects, 'length');
+
+      var buffer = "";
 
       for (idx = 0; idx < len; idx++) {
         item = addedObjects.objectAt(idx);
@@ -163,15 +171,17 @@ SC.CollectionView = SC.View.extend(
           content: item
         });
 
-        itemElem = view.createElement().$();
-        if (!insertAtElement) {
-          elem.append(itemElem);
-        } else {
-          itemElem.insertAfter(insertAtElement);
-        }
-        insertAtElement = itemElem;
+        buffer = buffer + view.renderToBuffer().string();
 
         addedViews.push(view);
+      }
+
+      fragment = SC.$(buffer);
+
+      if (!insertAtElement) {
+        elem.append(fragment);
+      } else {
+        fragment.insertAfter(insertAtElement);
       }
 
       childViews.replace(start, 0, addedViews);

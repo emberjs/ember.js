@@ -68,9 +68,17 @@ SC.Application = SC.Object.extend(
 
     set(this, 'eventDispatcher', eventDispatcher);
 
+    var self = this;
     SC.$(document).ready(function() {
-      eventDispatcher.setup(this.get('customEvents'));
+      self.ready();
     });
+  },
+
+  ready: function() {
+    var eventDispatcher = get(this, 'eventDispatcher'),
+        customEvents    = get(this, 'customEvents');
+
+    eventDispatcher.setup(customEvents);
   },
 
   /** @private */

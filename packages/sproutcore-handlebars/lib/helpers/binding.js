@@ -58,8 +58,8 @@ var get = SC.get, getPath = SC.getPath;
       // tells the SC._BindableSpan to re-render.
       SC.addObserver(ctx, property, invoker);
 
-      var buffer = bindView.renderBuffer(get(bindView, 'tagName'));
-      bindView.renderToBuffer(buffer);
+
+      var buffer = bindView.renderToBuffer();
       return new Handlebars.SafeString(buffer.string());
     } else {
       // The object is not observable, so just render it out and
@@ -168,7 +168,7 @@ Handlebars.registerHelper('unless', function(context, options) {
   @returns {String} HTML string
 */
 Handlebars.registerHelper('bindAttr', function(options) {
-  
+
   var attrs = options.hash;
   var view = options.data.view;
   var ret = [];
@@ -210,16 +210,18 @@ Handlebars.registerHelper('bindAttr', function(options) {
         return;
       }
 
+      var currentValue = elem.attr(attr);
+
       // A false result will remove the attribute from the element. This is
       // to support attributes such as disabled, whose presence is meaningful.
-      if (result === NO) {
+      if (result === NO && currentValue) {
         elem.removeAttr(attr);
 
       // Likewise, a true result will set the attribute's name as the value.
-      } else if (result === YES) {
+      } else if (result === YES && currentValue !== attr) {
         elem.attr(attr, attr);
 
-      } else {
+      } else if (currentValue !== result) {
         elem.attr(attr, result);
       }
     };
@@ -247,7 +249,7 @@ Handlebars.registerHelper('bindAttr', function(options) {
 
   // Add the unique identifier
   ret.push('data-handlebars-id="' + dataId + '"');
-  return ret.join(' ');
+  return new Handlebars.SafeString(ret.join(' '));
 });
 
 /**

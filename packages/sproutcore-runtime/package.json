@@ -5,7 +5,7 @@
 
   "homepage": "http://sproutcore.com",
   "author": "Charles Jolley",
-  "version": "2.0",
+  "version": "2.0.beta.1",
 
   "dependencies": {
     "sproutcore-metal": "2.0",

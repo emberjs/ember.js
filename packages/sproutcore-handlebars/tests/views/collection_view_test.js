@@ -7,9 +7,16 @@
 
 var set = SC.set, setPath = SC.setPath;
 
-TemplateTests = {};
+window.TemplateTests = {};
+var view;
 
-module("SC.HandlebarsCollectionView");
+module("SC.HandlebarsCollectionView", {
+  teardown: function() {
+    if (view) {
+      view.destroy();
+    }
+  }
+});
 
 test("passing a block to the collection helper sets it as the template for example views", function() {
   TemplateTests.CollectionTestView = SC.CollectionView.extend({
@@ -17,12 +24,49 @@ test("passing a block to the collection helper sets it as the template for examp
     content: ['foo', 'bar', 'baz']
   });
 
-  var view = SC.View.create({
+  view = SC.View.create({
     template: SC.Handlebars.compile('{{#collection "TemplateTests.CollectionTestView"}} <aside></aside> {{/collection}}')
   });
 
-  view.createElement();
+  SC.run(function() {
+    view.append();
+  });
+
   equals(view.$('aside').length, 3, 'one aside element is created for each content item');
+});
+
+test("if no content is passed, and no 'else' is specified, nothing is rendered", function() {
+  TemplateTests.CollectionTestView = SC.CollectionView.extend({
+    tagName: 'ul',
+    content: []
+  });
+
+  view = SC.View.create({
+    template: SC.Handlebars.compile('{{#collection "TemplateTests.CollectionTestView"}} <aside></aside> {{/collection}}')
+  });
+
+  SC.run(function() {
+    view.append();
+  });
+
+  equals(view.$('li').length, 0, 'if no "else" is specified, nothing is rendered');
+});
+
+test("if no content is passed, and 'else' is specified, the else block is rendered", function() {
+  TemplateTests.CollectionTestView = SC.CollectionView.extend({
+    tagName: 'ul',
+    content: []
+  });
+
+  view = SC.View.create({
+    template: SC.Handlebars.compile('{{#collection "TemplateTests.CollectionTestView"}} <aside></aside> {{ else }} <del></del> {{/collection}}')
+  });
+
+  SC.run(function() {
+    view.append();
+  });
+
+  equals(view.$('li:has(del)').length, 1, 'the else block is rendered');
 });
 
 test("a block passed to a collection helper defaults to the content property of the context", function() {
@@ -31,11 +75,13 @@ test("a block passed to a collection helper defaults to the content property of 
     content: ['foo', 'bar', 'baz']
   });
 
-  var view = SC.View.create({
+  view = SC.View.create({
     template: SC.Handlebars.compile('{{#collection "TemplateTests.CollectionTestView"}} <aside>{{content}}</aside> {{/collection}}')
   });
 
-  view.createElement();
+  SC.run(function() {
+    view.append();
+  });
 
   equals(view.$('li:has(aside:contains("foo")) + li:has(aside:contains("bar")) + li:has(aside:contains("baz"))').length, 1, 'one aside element is created for each content item');
 });
@@ -46,11 +92,13 @@ test("a block passed to a collection helper defaults to the view", function() {
     content: ['foo', 'bar', 'baz']
   });
 
-  var view = SC.View.create({
+  view = SC.View.create({
     template: SC.Handlebars.compile('{{#collection "TemplateTests.CollectionTestView"}} <aside>{{content}}</aside> {{/collection}}')
   });
 
-  view.createElement();
+  SC.run(function() {
+    view.append();
+  });
   equals(view.$('li:has(aside:contains("foo")) + li:has(aside:contains("bar")) + li:has(aside:contains("baz"))').length, 1, 'precond - one aside element is created for each content item');
 
   SC.run(function() {
@@ -64,7 +112,10 @@ test("should include an id attribute if id is set in the options hash", function
     template: SC.Handlebars.compile('{{#collection "TemplateTests.CollectionTestView" id="baz"}}foo{{/collection}}')
   });
 
-  view.createElement();
+  SC.run(function() {
+    view.append();
+  });
+
   equals(view.$('ul#baz').length, 1, "adds an id attribute");
 });
 
@@ -77,7 +128,10 @@ test("should give its item views the class specified by itemClass", function() {
     template: SC.Handlebars.compile('{{#collection "TemplateTests.itemClassTestCollectionView" itemClass="baz"}}foo{{/collection}}')
   });
 
-  view.createElement();
+  SC.run(function() {
+    view.append();
+  });
+
   equals(view.$('ul li.baz').length, 3, "adds class attribute");
 });
 
@@ -91,7 +145,10 @@ test("should give its item views the classBinding specified by itemClassBinding"
     template: SC.Handlebars.compile('{{#collection "TemplateTests.itemClassBindingTestCollectionView" itemClassBinding="content.isBaz"}}foo{{/collection}}')
   });
 
-  view.createElement();
+  SC.run(function() {
+    view.append();
+  });
+
   equals(view.$('ul li.is-baz').length, 2, "adds class on initial rendering");
 
   SC.run(function() {
@@ -119,7 +176,10 @@ test("should work inside a bound {{#if}}", function() {
     shouldDisplay: true
   });
 
-  view.createElement();
+  SC.run(function() {
+    view.append();
+  });
+
   equals(view.$('ul li').length, 3, "renders collection when conditional is true");
 
   SC.run(function() { set(view, 'shouldDisplay', NO); });
@@ -141,7 +201,7 @@ test("should pass content as context when using {{#each}} helper", function() {
                   name: 'Leopard' } ]
   });
 
-  SC.run(function() { view.createElement(); });
+  SC.run(function() { view.append(); });
 
   equals(view.$().text(), "Mac OS X 10.7: Lion Mac OS X 10.6: Snow Leopard Mac OS X 10.5: Leopard ", "prints each item in sequence");
 });
@@ -156,7 +216,9 @@ test("should re-render when the content object changes", function() {
     template: SC.Handlebars.compile('{{#collection TemplateTests.RerenderTest}}{{content}}{{/collection}}')
   });
 
-  view.createElement();
+  SC.run(function() {
+    view.append();
+  });
 
   SC.run(function() {
     set(view.childViews[0], 'content', ['bing', 'bat', 'bang']);
@@ -195,7 +257,9 @@ test("tagName works in the #collection helper", function() {
     template: SC.Handlebars.compile('{{#collection TemplateTests.RerenderTest tagName="ol"}}{{content}}{{/collection}}')
   });
 
-  view.createElement();
+  SC.run(function() {
+    view.append();
+  });
 
   equals(view.$('ol').length, 1, "renders the correct tag name");
   equals(view.$('li').length, 2, "rerenders with correct number of items");

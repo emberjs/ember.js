@@ -5,7 +5,7 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
-require("sproutcore-views/system/render_buffer");
-require("sproutcore-views/system/application");
-require("sproutcore-views/system/event_dispatcher");
-require("sproutcore-views/system/ext");
+// Add a new named queue for rendering views that happens
+// after bindings have synced.
+var queues = SC.run.queues;
+queues.insertAt(queues.indexOf('actions')+1, 'render');

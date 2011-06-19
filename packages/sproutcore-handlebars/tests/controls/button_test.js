@@ -39,11 +39,13 @@ test("should trigger an action when clicked", function() {
   button.set('target', actionObject);
   button.set('action', 'myAction');
 
-  button.append();
+  SC.run(function() {
+    button.append();
+  });
 
   synthesizeEvent('mousedown', button);
   synthesizeEvent('mouseup', button);
-  
+
   ok(wasClicked);
 });
 
@@ -63,7 +65,9 @@ test("should trigger an action on a String target when clicked", function() {
     action: 'myAction'
   });
 
-  button.append();
+  SC.run(function() {
+    button.append();
+  });
 
   synthesizeEvent('mousedown', button);
   synthesizeEvent('mouseup', button);
@@ -84,7 +88,10 @@ test("should not trigger action if mouse leaves area before mouseup", function()
 
   button.set('target', actionObject);
   button.set('action', 'myAction');
-  button.append();
+
+  SC.run(function() {
+    button.append();
+  });
 
   synthesizeEvent('mousedown', button);
   ok(get(button, 'isActive'), "becomes active when hovered");
@@ -104,4 +111,22 @@ test("should not trigger action if mouse leaves area before mouseup", function()
   synthesizeEvent('mouseup', button);
 
   ok(wasClicked);
+});
+
+test("should by default be of type='button'", function() {
+  SC.run(function() {
+    button.append();
+  });
+
+  equals(button.$().attr('type'), 'button');
+});
+
+test("should have a configurable type", function() {
+  button.set('type', 'submit');
+
+  SC.run(function() {
+    button.append();
+  });
+  
+  equals(button.$().attr('type'), 'submit');
 });

@@ -6,20 +6,27 @@
 // ==========================================================================
 
 var set = SC.set, get = SC.get;
+var view;
 
-module("SC.CollectionView");
+module("SC.CollectionView", {
+  teardown: function() {
+    if (view) { view.destroy(); }
+  }
+});
 
 test("should render a view for each item in its content array", function() {
   var view = SC.CollectionView.create({
     content: [1, 2, 3, 4]
   });
 
-  view.createElement();
+  SC.run(function() {
+    view.append();
+  });
   equals(view.$('div').length, 4);
 });
 
 test("should render the emptyView if content array is empty", function() {
-  var view = SC.CollectionView.create({
+  view = SC.CollectionView.create({
     content: [],
 
     emptyView: SC.View.extend({
@@ -29,14 +36,16 @@ test("should render the emptyView if content array is empty", function() {
     })
   });
 
-  view.createElement();
+  SC.run(function() {
+    view.append();
+  });
 
   ok(view.$().find(':contains("OY SORRY GUVNAH")').length, "displays empty view");
 });
 
 test("should allow custom item views by setting itemViewClass", function() {
   var passedContents = [];
-  var view = SC.CollectionView.create({
+  view = SC.CollectionView.create({
     content: ['foo', 'bar', 'baz'],
 
     itemViewClass: SC.View.extend({
@@ -47,7 +56,10 @@ test("should allow custom item views by setting itemViewClass", function() {
     })
   });
 
-  view.createElement();
+  SC.run(function() {
+    view.append();
+  });
+
   same(passedContents, ['foo', 'bar', 'baz'], "sets the content property on each item view");
 
   passedContents.forEach(function(item) {
@@ -58,7 +70,7 @@ test("should allow custom item views by setting itemViewClass", function() {
 test("should insert a new item in DOM when an item is added to the content array", function() {
   var content = ['foo', 'bar', 'baz'];
 
-  var view = SC.CollectionView.create({
+  view = SC.CollectionView.create({
     content: content,
 
     itemViewClass: SC.View.extend({
@@ -68,20 +80,25 @@ test("should insert a new item in DOM when an item is added to the content array
     })
   });
 
-  view.createElement();
+  SC.run(function() {
+    view.append();
+  });
 
   content.forEach(function(item) {
     equals(view.$(':contains("'+item+'")').length, 1, "precond - generates pre-existing items");
   });
 
-  content.insertAt(1, 'quux');
+  SC.run(function() {
+    content.insertAt(1, 'quux');
+  });
+
   equals(view.$(':nth-child(2)').text(), 'quux');
 });
 
 test("should remove an item from DOM when an item is removed from the content array", function() {
   var content = ['foo', 'bar', 'baz'];
 
-  var view = SC.CollectionView.create({
+  view = SC.CollectionView.create({
     content: content,
 
     itemViewClass: SC.View.extend({
@@ -91,21 +108,22 @@ test("should remove an item from DOM when an item is removed from the content ar
     })
   });
 
-  view.createElement();
+  SC.run(function() {
+    view.append();
+  });
 
   content.forEach(function(item) {
     equals(view.$(':contains("'+item+'")').length, 1, "precond - generates pre-existing items");
   });
 
   content.removeAt(1);
-  console.log(get(view, 'element'));
   content.forEach(function(item, idx) {
     equals(view.$(':nth-child(%@)'.fmt(idx+1)).text(), item);
   });
 });
 
 test("should allow changes to content object before layer is created", function() {
-  var view = SC.CollectionView.create({
+  view = SC.CollectionView.create({
     content: null
   });
 
@@ -113,12 +131,15 @@ test("should allow changes to content object before layer is created", function(
   set(view, 'content', [1, 2, 3]);
   set(view, 'content', [1, 2]);
 
-  view.createElement();
+  SC.run(function() {
+    view.append();
+  });
+
   ok(view.$().children().length);
 });
 
 test("should allow changing content property to be null", function() {
-  var view = SC.CollectionView.create({
+  view = SC.CollectionView.create({
     content: [1, 2, 3],
 
     emptyView: SC.View.extend({
@@ -126,10 +147,16 @@ test("should allow changing content property to be null", function() {
     })
   });
 
-  view.createElement();
+  SC.run(function() {
+    view.append();
+  });
+
   equals(view.$().children().length, 3, "precond - creates three elements");
 
-  set(view, 'content', null);
+  SC.run(function() {
+    set(view, 'content', null);
+  });
+
   equals(view.$().children().text(), "(empty)", "should display empty view");
 });
 

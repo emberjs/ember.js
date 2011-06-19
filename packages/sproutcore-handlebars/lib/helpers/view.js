@@ -75,8 +75,7 @@ SC.Handlebars.ViewHelper = SC.Object.create({
 
     childViews.pushObject(childView);
 
-    var buffer = SC.RenderBuffer(get(childView, 'tagName'));
-    childView.renderToBuffer(buffer);
+    var buffer = childView.renderToBuffer();
 
     return new Handlebars.SafeString(buffer.string());
   }

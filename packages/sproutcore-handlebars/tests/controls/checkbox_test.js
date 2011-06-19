@@ -20,7 +20,7 @@ function setAndFlush(view, key, value) {
 
 test("value property mirrors input value", function() {
   checkboxView = SC.Checkbox.create({});
-  checkboxView.append();
+  SC.run(function() { checkboxView.append(); });
 
   equals(get(checkboxView, 'value'), false, "initially starts with a false value");
   equals(!!checkboxView.$('input').prop('checked'), false, "the initial checked property is false");
@@ -30,20 +30,20 @@ test("value property mirrors input value", function() {
   equals(checkboxView.$('input').prop('checked'), true, "changing the value property changes the DOM");
 
   checkboxView.remove();
-  checkboxView.append();
+  SC.run(function() { checkboxView.append(); });
 
   equals(checkboxView.$('input').prop('checked'), true, "changing the value property changes the DOM");
 
-  checkboxView.remove();
-  set(checkboxView, 'value', false);
-  checkboxView.append();
+  SC.run(function() { checkboxView.remove(); });
+  SC.run(function() { set(checkboxView, 'value', false); });
+  SC.run(function() { checkboxView.append(); });
 
   equals(checkboxView.$('input').prop('checked'), false, "changing the value property changes the DOM");
 });
 
 test("value property mirrors input value", function() {
   checkboxView = SC.Checkbox.create({ value: true });
-  checkboxView.append();
+  SC.run(function() { checkboxView.append(); });
 
   equals(get(checkboxView, 'value'), true, "precond - initially starts with a true value");
   equals(!!checkboxView.$('input').prop('checked'), true, "the initial checked property is true");
@@ -52,21 +52,21 @@ test("value property mirrors input value", function() {
 
   equals(!!checkboxView.$('input').prop('checked'), false, "changing the value property changes the DOM");
 
-  checkboxView.remove();
-  checkboxView.append();
+  SC.run(function() { checkboxView.remove(); });
+  SC.run(function() { checkboxView.append(); });
 
   equals(checkboxView.$('input').prop('checked'), false, "changing the value property changes the DOM");
 
-  checkboxView.remove();
+  SC.run(function() { checkboxView.remove(); });
   set(checkboxView, 'value', true);
-  checkboxView.append();
+  SC.run(function() { checkboxView.append(); });
 
   equals(checkboxView.$('input').prop('checked'), true, "changing the value property changes the DOM");
 });
 
 test("checking the checkbox updates the value", function() {
   checkboxView = SC.Checkbox.create({ value: true });
-  checkboxView.append();
+  SC.run(function() { checkboxView.append(); });
 
   equals(get(checkboxView, 'value'), true, "precond - initially starts with a true value");
   equals(!!checkboxView.$('input').prop('checked'), true, "precond - the initial checked property is true");

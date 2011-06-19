@@ -4,7 +4,7 @@
   "description": "The SproutCore data store",
   "homepage": "http://sproutcore.com",
   "author": "Strobe Inc., Apple, Inc., and contributors",
-  "version": "2.0",
+  "version": "2.0.beta.1",
   "dependencies": {
     "sproutcore-runtime": "2.0",
     "sproutcore-datetime": "2.0",
