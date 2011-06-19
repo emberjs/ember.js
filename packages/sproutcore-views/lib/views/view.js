@@ -243,9 +243,10 @@ SC.View = SC.Object.extend(
       // JavaScript property changes.
       var observer = function() {
         elem = this.$();
+        var currentValue = elem.attr(attribute);
         attributeValue = get(this, attribute);
 
-        if (typeof attributeValue === 'string') {
+        if (typeof attributeValue === 'string' && attributeValue !== currentValue) {
           elem.attr(attribute, attributeValue);
         } else if (attributeValue && typeof attributeValue === 'boolean') {
           elem.attr(attribute, attribute);

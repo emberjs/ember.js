@@ -29,11 +29,11 @@ test("input value is updated when setting value property of view", function() {
     textField.append();
   });
 
-  equals(textField.$('input').val(), "foo", "renders text field with value");
+  equals(textField.$().val(), "foo", "renders text field with value");
 
   SC.run(function() { set(textField, 'value', 'bar'); });
 
-  equals(textField.$('input').val(), "bar", "updates text field after value changes");
+  equals(textField.$().val(), "bar", "updates text field after value changes");
 });
 
 test("input placeholder is updated when setting placeholder property of view", function() {
@@ -42,11 +42,11 @@ test("input placeholder is updated when setting placeholder property of view", f
     textField.append();
   });
 
-  equals(textField.$('input').attr('placeholder'), "foo", "renders text field with placeholder");
+  equals(textField.$().attr('placeholder'), "foo", "renders text field with placeholder");
 
   SC.run(function() { set(textField, 'placeholder', 'bar'); });
 
-  equals(textField.$('input').attr('placeholder'), "bar", "updates text field after placeholder changes");
+  equals(textField.$().attr('placeholder'), "bar", "updates text field after placeholder changes");
 });
 
 test("input type is configurable when creating view", function() {
@@ -55,7 +55,7 @@ test("input type is configurable when creating view", function() {
     textField.append();
   });
 
-  equals(textField.$('input').attr('type'), 'password', "renders text field with type");
+  equals(textField.$().attr('type'), 'password', "renders text field with type");
 });
 
 test("value binding works properly for inputs that haven't been created", function() {
@@ -67,7 +67,7 @@ test("value binding works properly for inputs that haven't been created", functi
   });
 
   equals(get(textField, 'value'), null, "precond - default value is null");
-  equals(textField.$('input').length, 0, "precond - view doesn't have its layer created yet, thus no input element");
+  equals(textField.$().length, 0, "precond - view doesn't have its layer created yet, thus no input element");
 
   SC.run(function() {
     set(TestObject, 'value', 'ohai');
@@ -78,7 +78,7 @@ test("value binding works properly for inputs that haven't been created", functi
   SC.run(function() { textField.append(); });
 
   equals(get(textField, 'value'), 'ohai', "value property remains the same once the view has been appended");
-  equals(textField.$('input').val(), 'ohai', "value is reflected in the input element once it is created");
+  equals(textField.$().val(), 'ohai', "value is reflected in the input element once it is created");
 });
 
 test("should call the insertNewline method when return key is pressed", function() {
@@ -122,10 +122,10 @@ test("should call the cancel method when escape key is pressed", function() {
 
 //   equals(focusCalled+blurCalled, 0, "precond - no callbacks called yet");
 
-//   textField.$('input').focus();
+//   textField.$().focus();
 //   equals(focusCalled, 1, "focus called after field receives focus");
 
-//   textField.$('input').blur();
+//   textField.$().blur();
 //   equals(blurCalled, 1, "blur alled after field blurs");
 // });
 
@@ -142,7 +142,7 @@ test("should call the cancel method when escape key is pressed", function() {
 //     return YES;
 //   };
 
-//   textField.$('input').focus();
+//   textField.$().focus();
 //   equals(insertNewlineCalled+cancelCalled, 0, "precond - no callbacks called yet");
 
 //   SC.RootResponder.responder.keyup(new SC.Event({ type: 'keyup', keyCode: 13 }));
