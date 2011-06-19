@@ -242,7 +242,9 @@ test("select tagName on collection helper automatically sets child tagName to op
     template: SC.Handlebars.compile('{{#collection TemplateTests.RerenderTest tagName="select"}}{{content}}{{/collection}}')
   });
   
-  view.createElement();
+  SC.run(function() {
+    view.append();
+  });
   
   equals(view.$('option').length, 1, "renders the correct child tag name");
   
