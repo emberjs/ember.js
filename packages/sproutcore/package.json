@@ -11,5 +11,9 @@
     "sproutcore-datastore": "2.0",
     "sproutcore-handlebars": "2.0"
   },
-  "directories": { "lib": "lib" }
+  "directories": { "lib": "lib" },
+  
+  "plugin:formats": {
+    "handlebars": "sproutcore-handlebars/handlebars-format"
+  }
 }

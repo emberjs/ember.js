@@ -80,9 +80,15 @@ SC.View = SC.Object.extend(
         template = get(get(this, 'templates'), templateName);
 
     // If there is no template but a templateName has been specified,
-    // alert the developer.
+    // try to lookup as a module
     if (!template && templateName) {
-      throw new SC.Error('%@ - Unable to find template "%@".'.fmt(this, templateName));
+      if ('undefined' !== require && require.exists) {
+        if (require.exists(templateName)) template = require(templateName);
+      }
+      
+      if (!template) {
+        throw new SC.Error('%@ - Unable to find template "%@".'.fmt(this, templateName));
+      }
     }
 
     // return the template, or undefined if no template was found

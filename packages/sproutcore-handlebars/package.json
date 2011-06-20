@@ -13,6 +13,11 @@
   "directories": {
     "lib"       : "./lib",
     "tests"     : "./tests"
+  },
+  
+  "plugin:formats": {
+    "handlebars": "sproutcore-handlebars/handlebars-format"
   }
+  
 }
 
