@@ -99,7 +99,9 @@ Handlebars.registerHelper('collection', function(path, options) {
     delete hash.preserveContext;
   }
 
-  var itemViewClass = get(collectionClass, 'proto').itemViewClass;
+  var itemViewClass, itemViewPath = itemHash.viewClass;
+  itemViewClass = itemViewPath ? SC.getPath(itemViewPath) : get(collectionClass, 'proto').itemViewClass;
+  sc_assert("%@ #collection: Could not find %@".fmt(data.view, itemViewPath), !!itemViewClass);
   hash.itemViewClass = SC.Handlebars.ViewHelper.viewClassFromHTMLOptions(itemViewClass, itemHash);
 
   return Handlebars.helpers.view.call(this, collectionClass, options);
