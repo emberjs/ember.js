@@ -18,7 +18,11 @@ SC.Button = SC.View.extend({
     var target = get(this, 'target');
 
     if (SC.typeOf(target) === "string") {
-      return SC.getPath(target);
+      if (target === 'parentView') {
+        return get(this, 'parentView');
+      } else {
+        return SC.getPath(target);
+      }
     } else {
       return target;
     }
