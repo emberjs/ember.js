@@ -59,10 +59,10 @@ SC.CollectionView = SC.View.extend(
   */
   willInsertElement: function() {
     var content = get(this, 'content');
+
     if (content) {
       var len = get(content, 'length');
-      this.arrayWillChange(content, 0, 0, len);
-      this.arrayDidChange(content, 0, 0, len);
+      this._insertChildElements();
     }
   },
 
@@ -74,6 +74,12 @@ SC.CollectionView = SC.View.extend(
     needed.
   */
   _sctcv_contentDidChange: function() {
+    if (!get(this, 'element')) { return; }
+
+    SC.run.schedule('render', this, this._insertChildElements);
+  }.observes('content'),
+
+  _insertChildElements: function() {
     this.$().empty();
 
     var oldContent = this._sccv_content,
@@ -93,7 +99,7 @@ SC.CollectionView = SC.View.extend(
     this.arrayWillChange(oldContent, 0, oldLen, newLen);
     this._sccv_content = content;
     this.arrayDidChange(content, 0, oldLen, newLen);
-  }.observes('content'),
+  },
 
   destroy: function() {
     set(this, 'content', null);
@@ -103,22 +109,24 @@ SC.CollectionView = SC.View.extend(
   arrayWillChange: function(content, start, removedCount, addedCount) {
     if (!get(this, 'element')) { return; }
 
-    // If the contents were empty before and this template collection has an 
-    // empty view remove it now.
-    var emptyView = get(this, 'emptyView');
-    if (emptyView && !SC.Object.detect(emptyView)) {
-      emptyView.removeFromParent();
-    }
+    SC.run.schedule('render', this, function() {
+      // If the contents were empty before and this template collection has an
+      // empty view remove it now.
+      var emptyView = get(this, 'emptyView');
+      if (emptyView && !SC.Object.detect(emptyView)) {
+        emptyView.removeFromParent();
+      }
 
-    // Loop through child views that correspond with the removed items.
-    // Note that we loop from the end of the array to the beginning because
-    // we are mutating it as we go.
-    var childViews = get(this, 'childViews'), childView, idx, len;
+      // Loop through child views that correspond with the removed items.
+      // Note that we loop from the end of the array to the beginning because
+      // we are mutating it as we go.
+      var childViews = get(this, 'childViews'), childView, idx, len;
 
-    len = get(childViews, 'length');
-    for (idx = start + removedCount - 1; idx >= start; idx--) {
-      childViews[idx].destroy();
-    }
+      len = get(childViews, 'length');
+      for (idx = start + removedCount - 1; idx >= start; idx--) {
+        childViews[idx].destroy();
+      }
+    });
   },
 
   /**
@@ -129,20 +137,20 @@ SC.CollectionView = SC.View.extend(
 
     This array observer is added in contentDidChange.
 
-    @param {Array} addedObjects 
+    @param {Array} addedObjects
       the objects that were added to the content
 
-    @param {Array} removedObjects 
+    @param {Array} removedObjects
       the objects that were removed from the content
-    
-    @param {Number} changeIndex 
+
+    @param {Number} changeIndex
       the index at which the changes occurred
   */
   arrayDidChange: function(content, start, removed, added) {
     if (!get(this, 'element')) { return; }
 
     SC.run.schedule('render', this, function() {
-      this._updateElements(content, start, removed, added)
+      this._updateElements(content, start, removed, added);
     });
   },
 

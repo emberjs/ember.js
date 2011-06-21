@@ -116,7 +116,10 @@ test("should remove an item from DOM when an item is removed from the content ar
     equals(view.$(':contains("'+item+'")').length, 1, "precond - generates pre-existing items");
   });
 
-  content.removeAt(1);
+  SC.run(function() {
+    content.removeAt(1);
+  });
+
   content.forEach(function(item, idx) {
     equals(view.$(':nth-child(%@)'.fmt(idx+1)).text(), item);
   });
