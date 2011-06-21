@@ -4,13 +4,13 @@
 
 2. Install spade. Follow instructions on [its project page](http://github.com/strobecorp/spade).
 
-3. Install sproutcore-preprocessor via `spade install sproutcore-preprocessor`.
+3. Install sproutcore-preprocessor via `spadepkg install sproutcore-preprocessor`.
 
 3. Enter the following commands in your command shell:
 
         cd sproutcore20
-        spade update
-        spade preview
+        spaderun update
+        spaderun preview
     
 4. Then visit: http://localhost:4020/tests.html?package=PACKAGE_NAME.  Replace 'PACKAGE_NAME' with the name of the package you want to run.  For example:
 
@@ -21,9 +21,9 @@
   
 # Adding New Packages
 
-Be sure you include the new package as a dependency in the global `package.json` and run `spade update`.
+Be sure you include the new package as a dependency in the global `package.json` and run `spaderun update`.
 
-Note that unless you are adding new __tests__ or adding a new package you should not need to run `spade update`.
+Note that unless you are adding new __tests__ or adding a new package you should not need to run `spaderun update`.
 
 
   
