@@ -191,6 +191,10 @@ SC.CollectionView = SC.View.extend(
 
       fragment = SC.$(buffer);
 
+      addedViews.forEach(function(view) {
+        view._notifyWillInsertElement();
+      });
+
       if (!insertAtElement) {
         elem.append(fragment);
       } else {
@@ -198,6 +202,10 @@ SC.CollectionView = SC.View.extend(
       }
 
       childViews.replace(start, 0, addedViews);
+
+      addedViews.forEach(function(view) {
+        view._notifyDidInsertElement();
+      });
     }
 
     var emptyView = get(this, 'emptyView');

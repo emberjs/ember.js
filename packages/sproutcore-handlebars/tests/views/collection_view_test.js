@@ -272,3 +272,29 @@ test("tagName works in the #collection helper", function() {
   equals(view.$('li:eq(0)').text(), "bing");
 });
 
+test("should render nested collections", function() {
+
+  TemplateTests.InnerList = SC.CollectionView.extend({
+    tagName: 'ul',
+    content: ['one','two','three']
+  });
+
+  TemplateTests.OuterList = SC.CollectionView.extend({
+    tagName: 'ul',
+    content: ['foo']
+  });
+
+  var view = SC.View.create({
+    template: SC.Handlebars.compile('{{#collection TemplateTests.OuterList class="outer"}}{{content}}{{#collection TemplateTests.InnerList class="inner"}}{{content}}{{/collection}}{{/collection}}')
+  });
+
+  SC.run(function() {
+    view.append();
+  });
+
+  equals(view.$('ul.outer > li').length, 1, "renders the outer list with correct number of items");
+  equals(view.$('ul.inner').length, 1, "the inner list exsits");
+  equals(view.$('ul.inner > li').length, 3, "renders the inner list with correct number of items");
+
+});
+
