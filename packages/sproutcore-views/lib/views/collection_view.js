@@ -41,50 +41,55 @@ SC.CollectionView = SC.View.extend(
   /**
     @private
 
-    When the view is initialized, set up array observers on the content array.
-
-    @returns {SC.TemplateCollectionView}
+    Once the element was inserted, schedule the child elements
+    to be updated. In this case, they will be inserted for the
+    first time. Defer this to give any content binding a chance
+    to sync.
   */
-  init: function() {
-    var collectionView = this._super();
-    this._sctcv_contentDidChange();
-    return collectionView;
+  didInsertElement: function() {
+    SC.run.schedule('render', this, this._updateChildrenIfNeeded);
   },
 
   /**
     @private
 
-    In case a default content was set, trigger the child view creation
-    as soon as the empty layer was created
-  */
-  willInsertElement: function() {
-    var content = get(this, 'content');
-
-    if (content) {
-      var len = get(content, 'length');
-      this._insertChildElements();
-    }
-  },
-
-  /**
-    @private
-
-    When the content property of the collection changes, remove any existing
-    child views and observers, then set up an observer on the new content, if
-    needed.
+    When the content property changes, schedule the child elements
+    to be updated. Schedule it to give the element a chance to
+    be inserted.
   */
   _sctcv_contentDidChange: function() {
-    if (!get(this, 'element')) { return; }
-
-    SC.run.schedule('render', this, this._insertChildElements);
+    SC.run.schedule('render', this, this._updateChildrenIfNeeded);
   }.observes('content'),
 
-  _insertChildElements: function() {
-    this.$().empty();
+  /**
+    @private
 
+    Check to make sure that the content has changed, and if so,
+    update the children directly. This is always scheduled
+    asynchronously, to allow the element to be created before
+    bindings have synchronized and vice versa.
+  */
+  _updateChildrenIfNeeded: function() {
+    var oldContent = this._sccv_content,
+        content = get(this, 'content');
+
+    if (oldContent === content) { return; }
+
+    this._updateChildren();
+  },
+
+  /**
+    @private
+
+    Replace the current children, if any, by creating an
+    instance of the item view for each element in the Array.
+  */
+  _updateChildren: function() {
     var oldContent = this._sccv_content,
         content = get(this, 'content'),
         oldLen = 0, newLen = 0;
+
+    this.$().empty();
 
     if (oldContent) {
       oldContent.removeArrayObserver(this);
@@ -207,3 +212,4 @@ SC.CollectionView = SC.View.extend(
     }
   }
 });
+
