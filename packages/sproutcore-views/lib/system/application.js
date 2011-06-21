@@ -36,7 +36,7 @@ var get = SC.get, set = SC.set;
   @since SproutCore 2.0
   @extends SC.Object
 */
-SC.Application = SC.Object.extend(
+SC.Application = SC.Namespace.extend(
 /** @scope SC.Application.prototype */{
 
   /**
