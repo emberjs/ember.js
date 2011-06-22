@@ -163,3 +163,21 @@ test("should allow changing content property to be null", function() {
   equals(view.$().children().text(), "(empty)", "should display empty view");
 });
 
+test("should allow items to access to the CollectionView's current index in the content array", function() {
+  view = SC.CollectionView.create({
+    content: ['zero', 'one', 'two'],
+    itemViewClass: SC.View.extend({
+      render: function(buf) {
+        buf.push(get(this, 'index'));
+      }
+    })
+  });
+
+  SC.run(function() {
+    view.append();
+  });
+
+  same(view.$(':nth-child(1)').text(), "0");
+  same(view.$(':nth-child(2)').text(), "1");
+  same(view.$(':nth-child(3)').text(), "2");
+});

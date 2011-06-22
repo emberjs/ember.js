@@ -181,7 +181,8 @@ SC.CollectionView = SC.View.extend(
       for (idx = 0; idx < len; idx++) {
         item = addedObjects.objectAt(idx);
         view = this.createChildView(itemViewClass, {
-          content: item
+          content: item,
+          index: idx
         });
 
         buffer = buffer + view.renderToBuffer().string();
