@@ -94,8 +94,9 @@ if (SC.platform.defineProperty && !SC.platform.definePropertyOnDOM) {
 SC.platform.hasPropertyAccessors = true;
 
 //@if (legacy)
-if (!SC.platform.defineProperty) {
-  SC.platform.hasPropertyAccessors = !!SC.platform.defineProperty;
+if (!SC.platform.defineProperty || !Object.prototype.__defineGetter__) {
+  // IE8: check the __defineGetter__
+  SC.platform.hasPropertyAccessors = !!SC.platform.defineProperty && Object.prototype.__defineGetter__;
 
   SC.platform.defineProperty = function(obj, keyName, desc) {
     sc_assert("property descriptor cannot have `get` or `set` on this platform", !desc.get && !desc.set);
