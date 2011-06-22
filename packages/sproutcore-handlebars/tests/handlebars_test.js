@@ -911,14 +911,14 @@ test("should not reset cursor position when text field receives keyUp event", fu
     view.append();
   });
 
-  view.$('input').val('Brosiedoon, King of the Brocean');
-  view.$('input').setCaretPosition(5);
+  view.$().val('Brosiedoon, King of the Brocean');
+  view.$().setCaretPosition(5);
 
   SC.run(function() {
     view.keyUp({});
   });
 
-  equals(view.$('input').caretPosition(), 5, "The keyUp event should not result in the cursor being reset due to the bindAttr observers");
+  equals(view.$().caretPosition(), 5, "The keyUp event should not result in the cursor being reset due to the bindAttr observers");
 });
 
 test("should be able to bind element attributes using {{bindAttr}} inside a block", function() {
