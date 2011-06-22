@@ -374,7 +374,7 @@ var NAME_KEY = SC.GUID_KEY+'_name';
 function processNames(paths, root, seen) {
   var idx = paths.length;
   for(var key in root) {
-    if (!root.hasOwnProperty(key)) continue;
+    if (!root.hasOwnProperty || !root.hasOwnProperty(key)) continue;
     var obj = root[key];
     paths[idx] = key;
 
