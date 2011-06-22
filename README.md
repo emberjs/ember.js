@@ -2,7 +2,7 @@
 
 1. Install Ruby and Rubygems. There are many resources on the web can help you to do so, one of the best ways may be [rvm](http://rvm.beginrescueend.com/).
 
-2. Install spade. Follow instructions on [its project page](http://github.com/strobecorp/spade).
+2. Install spade: `gem install spade` (WARNING: There is a bug in RubyGems 1.7.2, please upgrade to 1.8.5+ or downgrade.)
 
 3. Install sproutcore-preprocessor via `spadepkg install sproutcore-preprocessor`.
 
