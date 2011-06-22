@@ -50,6 +50,29 @@ test("should be added to the document body when calling appendTo()", function() 
   ok(viewElem.length > 0, "creates and appends the view's element");
 });
 
+test("append calls willInsertElement and didInsertElement callbacks", function(){
+  var willInsertElementCalled = false;
+  var didInsertElementCalled = false;
+  
+  var ViewWithCallback = View.extend({
+    willInsertElement: function(){
+      willInsertElementCalled = true;
+    },
+    didInsertElement: function(){
+      didInsertElementCalled = true;
+    }
+  });
+  
+  view = ViewWithCallback.create()
+
+  SC.run(function() {
+    view.append();
+  });
+
+  ok(willInsertElementCalled, "willInsertElement called");
+  ok(didInsertElementCalled, "didInsertElement called");
+});
+
 test("remove removes an element from the DOM", function() {
   willDestroyCalled = 0;
 
