@@ -5,6 +5,16 @@ require "uglifier"
 
 LICENSE = File.read("generators/license.js")
 
+module SproutCore
+  module Compiler
+    class Entry
+      def body
+        "\n(function(exports) {\n#{@raw_body}\n})({});\n"
+      end
+    end
+  end
+end
+
 SproutCore::Compiler.intermediate = "tmp/intermediate"
 SproutCore::Compiler.output       = "tmp/static"
 
