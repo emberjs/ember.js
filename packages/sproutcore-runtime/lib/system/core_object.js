@@ -64,6 +64,8 @@ Object.PrototypeMixin = SC.Mixin.create({
     SC.Mixin._apply(this, arguments, true);
     return this;
   },
+
+  isInstance: true,
   
   init: function() {},
   
@@ -93,7 +95,7 @@ var ClassMixin = SC.Mixin.create({
   
   PrototypeMixin: SC.required(),
 
-  isInstance: false,
+  isClass: true,
   
   isMethod: false,
   
@@ -124,7 +126,6 @@ var ClassMixin = SC.Mixin.create({
   
   create: function() {
     var C = this;
-    C.isInstance = true;
     if (arguments.length>0) this._initMixins(arguments);
     return new C();
   },
