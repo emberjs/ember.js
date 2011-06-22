@@ -130,3 +130,9 @@ test("should have a configurable type", function() {
   
   equals(button.$().attr('type'), 'submit');
 });
+
+test("should allow the target to be the parentView", function() {
+  button.set('target', 'parentView');
+  
+  equals(button.parentView, button.get('targetObject'));
+});
