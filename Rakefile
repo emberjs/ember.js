@@ -4,14 +4,6 @@ require "erb"
 
 LICENSE = File.read("generators/license.js")
 
-def uglify(string)
-  IO.popen("uglifyjs -nc", "r+") do |io|
-    io.puts string
-    io.close_write
-    return io.read
-  end
-end
-
 SproutCore::Compiler.intermediate = "tmp/intermediate"
 SproutCore::Compiler.output       = "tmp/static"
 
@@ -77,14 +69,14 @@ end
 
 file "tmp/sproutcore.min.js" => "tmp/sproutcore.js" do
   File.open("tmp/sproutcore.min.js", "w") do |file|
-    uglified = uglify(File.read("tmp/sproutcore.js"))
+    uglified = Uglifier.compile(File.read("tmp/sproutcore.js"))
     file.puts "#{LICENSE}\n#{uglified}"
   end
 end
 
 file "tmp/sproutcore-datastore.min.js" => "tmp/sproutcore-datastore.js" do
   File.open("tmp/sproutcore-datastore.min.js", "w") do |file|
-    uglified = uglify(File.read("tmp/sproutcore-datastore.js"))
+    uglified = Uglifier.compile(File.read("tmp/sproutcore-datastore.js"))
     file.puts "#{LICENSE}\n#{uglified}"
   end
 end

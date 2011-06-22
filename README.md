@@ -31,10 +31,6 @@ Note that unless you are adding new __tests__ or adding a new package you should
 
 2. Install Bundler via `gem install bundler`
 
-3. Install Node.js and npm. Refer to the Node.js instructions [here](https://github.com/joyent/node/wiki/Installation).
+3. Run `bundle install` to pull in Ruby dependencies.
 
-4. Install uglify-js via `npm install -g uglify-js`.
-
-5. Run `bundle install` to pull in Ruby dependencies.
-
-6. Run `rake` to build SproutCore. The build will be placed in the tmp directory.
+4. Run `bundle exec rake` to build SproutCore. The build will be placed in the tmp directory.
