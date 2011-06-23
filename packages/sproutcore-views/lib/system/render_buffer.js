@@ -7,12 +7,13 @@
 
 var get = SC.get, set = SC.set;
 
-/*
-  TODO Document SC.RenderBuffer class itself
-*/
-
 /**
   @class
+
+  SC.RenderBuffer gathers information regarding the a view and generates the 
+  final representation. SC.RenderBuffer will generate HTML which can be pushed
+  to the DOM.
+
   @extends SC.Object
 */
 SC.RenderBuffer = function(tagName) {
@@ -25,36 +26,74 @@ SC._RenderBuffer = SC.Object.extend(
 /** @scope SC.RenderBuffer.prototype */ {
 
   /**
+    Array of class-names which will be applied in the class="" attribute
+
+    You should not maintain this array yourself, rather, you should use
+    the addClass() method of SC.RenderBuffer.
+    
     @type Array
     @default []
   */
   elementClasses: null,
 
   /**
+    The id in of the element, to be applied in the id="" attribute
+
+    You should not set this property yourself, rather, you should use
+    the id() method of SC.RenderBuffer.
+    
     @type String
     @default null
   */
   elementId: null,
 
   /**
+    A hash keyed on the name of the attribute and whose value will be 
+    applied to that attribute. For example, if you wanted to apply a 
+    data-view="Foo.bar" property to an element, you would set the 
+    elementAttributes hash to {'data-view':'Foo.bar'}
+
+    You should not maintain this hash yourself, rather, you should use
+    the attr() method of SC.RenderBuffer.
+    
     @type Hash
     @default {}
   */
   elementAttributes: null,
 
   /**
+    An array of strings which defines the body of the element.
+
+    You should not maintain this array yourself, rather, you should use
+    the push() method of SC.RenderBuffer.
+
     @type Array
     @default []
   */
   elementContent: null,
 
   /**
+    The tagname of the element an instance of SC.RenderBuffer represents.
+    
+    Usually, this gets set as the first parameter to SC.RenderBuffer. For
+    example, if you wanted to create a `p` tag, then you would call
+    
+      SC.RenderBuffer('p')  
+
     @type String
     @default null
   */
   elementTag: null,
 
   /**
+    A hash keyed on the name of the style attribute and whose value will 
+    be applied to that attribute. For example, if you wanted to apply a 
+    background-color:black;" style to an element, you would set the 
+    elementStyle hash to {'background-color':'black'}
+
+    You should not maintain this hash yourself, rather, you should use
+    the style() method of SC.RenderBuffer.
+
     @type Hash
     @default {}
   */
@@ -74,11 +113,22 @@ SC._RenderBuffer = SC.Object.extend(
   escapeContent: false,
 
   /**
+    If escapeContent is set to true, escapeFunction will be called
+    to escape the content. Set this property to a function that
+    takes a content string as its parameter, and return a sanitized
+    string.
+    
     @type Function
     @see SC.RenderBuffer.prototype.escapeContent
   */
   escapeFunction: null,
 
+  /**
+    Nested RenderBuffers will set this to their parent RenderBuffer
+    instance.
+ 
+    @type SC._RenderBuffer
+  */
   parentBuffer: null,
 
   /** @private */
