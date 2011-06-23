@@ -30,11 +30,11 @@ SC.$(document).ready(function() {
     } else {
       if (script.parents('head').length !== 0) {
         // don't allow inline templates in the head
-        throw new SC.Error("Template found in \<head\> without a name specified." +
+        throw new SC.Error("Template found in \<head\> without a name specified. " +
                          "Please provide a data-template-name attribute.\n" +
                          script.html());
       }
-      viewPath = script.attr('data-view')
+      viewPath = script.attr('data-view');
       view = viewPath ? SC.getPath(viewPath) : SC.View;
 
       view = view.create({
