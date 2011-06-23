@@ -38,3 +38,22 @@ test('should call unknownProperty if defined and value is undefined', function()
   equals(obj.count, 1, 'should have invoked');
 });
 
+// ..........................................................
+// BUGS
+// 
+
+test('(regression) watched properties on unmodified inherited objects should still return their original value', function() {
+
+  var MyMixin = SC.Mixin.create({
+    someProperty: 'foo',
+    propertyDidChange: SC.observer(function() {
+      // NOTHING TO DO
+    }, 'someProperty')
+  });
+
+  var baseObject = MyMixin.apply({});
+  var theRealObject = SC.create(baseObject);
+  
+  equals(SC.get(theRealObject, 'someProperty'), 'foo', 'should return the set value, not false');  
+});
+
