@@ -10,6 +10,8 @@
     "sproutcore-views": "2.0",
     "sproutcore-datastore": "2.0",
     "sproutcore-handlebars": "2.0"
+    "sproutcore-utils": "2.0",
+    "sproutcore-statechart": "2.0"
   },
   "directories": { "lib": "lib" },
   
