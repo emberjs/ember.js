@@ -1032,3 +1032,19 @@ test("should use the childView's renderBuffer", function() {
   
   ok(calledRenderBuffer);
 });
+
+test("should be able to output a property without binding", function(){
+  var template = SC.Handlebars.compile('<div>{{raw content.aRawString}}</div>');
+  var content = SC.Object.create({
+    aRawString: "No spans here, son."
+  });
+
+  var view = SC.View.create({
+    template: template,
+    content: content
+  });
+
+  view.createElement();
+
+  equals(view.$('div').html(), "No spans here, son.");
+});
