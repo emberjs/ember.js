@@ -106,6 +106,7 @@ SC.EventDispatcher = SC.Object.extend(
         }
       });
 
+      evt.stopPropagation();
       return result;
     });
   },

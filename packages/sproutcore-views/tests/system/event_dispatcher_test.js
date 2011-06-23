@@ -23,6 +23,7 @@ module("SC.EventDispatcher", {
 
 test("should dispatch events to views", function() {
   var receivedEvent;
+  var parentMouseDownCalled = 0;
   var childKeyDownCalled = 0;
   var parentKeyDownCalled = 0;
 
@@ -42,10 +43,11 @@ test("should dispatch events to views", function() {
     }),
 
     render: function(buffer) {
-      buffer.push('some <span>awesome</span> content');
+      buffer.push('some <span id="awesome">awesome</span> content');
     },
 
     mouseDown: function(evt) {
+      parentMouseDownCalled++;
       receivedEvent = evt;
     },
 
@@ -62,9 +64,11 @@ test("should dispatch events to views", function() {
 
   ok(receivedEvent, "passes event to associated event method");
   receivedEvent = null;
+  parentMouseDownCalled = 0;
 
-  view.$('span').trigger('mousedown');
+  view.$('span#awesome').trigger('mousedown');
   ok(receivedEvent, "event bubbles up to nearest SC.View");
+  equals(parentMouseDownCalled, 1, "does not trigger the parent handlers twice because of browser bubbling");
   receivedEvent = null;
 
   SC.$('#wot').trigger('mousedown');
