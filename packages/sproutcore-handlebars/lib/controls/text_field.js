@@ -18,14 +18,11 @@ SC.TextField = SC.View.extend(
   insertNewline: SC.K,
   cancel: SC.K,
 
+  tagName: "input",
+  attributeBindings: ['type', 'placeholder', 'value'],
   type: "text",
   value: "",
   placeholder: null,
-
-  defaultTemplate: function() {
-    var type = get(this, 'type');
-    return SC.Handlebars.compile('<input type="%@" {{bindAttr value="value" placeholder="placeholder"}}>'.fmt(type));
-  }.property(),
 
   focusOut: function(event) {
     this._elementValueDidChange();
@@ -54,9 +51,7 @@ SC.TextField = SC.View.extend(
   },
 
   _elementValueDidChange: function() {
-    var input = this.$('input');
-
-    set(this, 'value', input.val());
+    set(this, 'value', this.$().val());
   },
 
   _valueDidChange: function() {
@@ -64,8 +59,7 @@ SC.TextField = SC.View.extend(
   },
 
   _updateElementValue: function() {
-    var input = this.$('input');
-    input.val(get(this, 'value'));
+    this.$().val(get(this, 'value'));
   }
 });
 
