@@ -620,7 +620,7 @@ SC.View = SC.Object.extend(
   },
 
   /** @private (nodoc) */
-  _sccv_elementWillChange: function() {
+  _elementWillChange: function() {
     this.forEachChildView(function(view) {
       SC.propertyWillChange(view, 'element');
     });
@@ -635,7 +635,7 @@ SC.View = SC.Object.extend(
 
     @observes element
   */
-  _sccv_elementDidChange: function() {
+  _elementDidChange: function() {
     this.forEachChildView(function(view) {
       SC.propertyDidChange(view, 'element');
     });
