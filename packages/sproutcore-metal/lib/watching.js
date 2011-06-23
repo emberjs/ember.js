@@ -9,6 +9,7 @@ require('sproutcore-metal/core');
 require('sproutcore-metal/platform');
 require('sproutcore-metal/utils');
 require('sproutcore-metal/accessors');
+require('sproutcore-metal/properties');
 require('sproutcore-metal/observer');
 
 var guidFor = SC.guidFor;

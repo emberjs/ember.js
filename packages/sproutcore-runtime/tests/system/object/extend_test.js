@@ -8,8 +8,10 @@ module('SC.Object.extend');
 
 test('Basic extend', function() {
   var SomeClass = SC.Object.extend({ foo: 'BAR' });
+  ok(SomeClass.isClass, "A class has isClass of true");
   var obj = new SomeClass();
   equals(obj.foo, 'BAR');
+  ok(obj.isInstance, "An instance of a class has isInstance of true");
 });
 
 test('Sub-subclass', function() {
