@@ -109,6 +109,19 @@ test("should call the cancel method when escape key is pressed", function() {
   ok(wasCalled, "invokes cancel method");
 });
 
+test("input value is updated when setting value property of view to a number", function() {
+  SC.run(function() {
+    set(textField, 'value', 'foo');
+    textField.append();
+  });
+
+  equals(textField.$().val(), "foo", "renders text field with value");
+
+  SC.run(function() { set(textField, 'value', 42); });
+
+  equals(textField.$().val(), "42", "updates text field after value changes");
+});
+
 // test("listens for focus and blur events", function() {
 //   var focusCalled = 0;
 //   var blurCalled = 0;

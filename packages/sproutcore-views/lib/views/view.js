@@ -252,7 +252,7 @@ SC.View = SC.Object.extend(
         var currentValue = elem.attr(attribute);
         attributeValue = get(this, attribute);
 
-        if (typeof attributeValue === 'string' && attributeValue !== currentValue) {
+        if ((typeof attributeValue === 'string' || typeof attributeValue === 'number') && attributeValue !== currentValue) {
           elem.attr(attribute, attributeValue);
         } else if (attributeValue && typeof attributeValue === 'boolean') {
           elem.attr(attribute, attribute);
@@ -266,7 +266,7 @@ SC.View = SC.Object.extend(
       // Determine the current value and add it to the render buffer
       // if necessary.
       attributeValue = get(this, attribute);
-      if (typeof attributeValue === 'string') {
+      if (typeof attributeValue === 'string' || typeof attributeValue === 'number') {
         buffer.attr(attribute, attributeValue);
       } else if (attributeValue && typeof attributeValue === 'boolean') {
         // Apply boolean attributes in the form attribute="attribute"
