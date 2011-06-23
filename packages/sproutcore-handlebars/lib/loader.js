@@ -23,6 +23,7 @@ SC.$(document).ready(function() {
       view, viewPath;
 
     if (templateName) {
+      // For templates which have a name, we save them and then remove them from the DOM
       SC.TEMPLATES[templateName] = template;
 
       // Remove script tag from DOM
@@ -34,6 +35,13 @@ SC.$(document).ready(function() {
                          "Please provide a data-template-name attribute.\n" +
                          script.html());
       }
+
+      // For templates which will be evaluated inline in the HTML document, instantiates a new
+      // view, and replaces the script tag holding the template with the new
+      // view's DOM representation.
+      //
+      // Users can optionally specify a custom view subclass to use by setting the
+      // data-view attribute of the script tag.
       viewPath = script.attr('data-view');
       view = viewPath ? SC.getPath(viewPath) : SC.View;
 
