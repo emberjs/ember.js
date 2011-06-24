@@ -13,12 +13,13 @@ module("SC.View - Attribute Bindings");
 test("should render and update attribute bindings", function() {
   var view = SC.View.create({
     classNameBindings: ['priority', 'isUrgent', 'isClassified:classified', 'canIgnore'],
-    attributeBindings: ['type', 'exploded', 'destroyed', 'exists'],
+    attributeBindings: ['type', 'exploded', 'destroyed', 'exists', 'explosions'],
 
     type: 'reset',
     exploded: true,
     destroyed: true,
-    exists: false
+    exists: false,
+    explosions: 15
   });
 
   view.createElement();
@@ -26,6 +27,7 @@ test("should render and update attribute bindings", function() {
   ok(view.$().attr('exploded'), "adds exploded attribute when true");
   ok(view.$().attr('destroyed'), "adds destroyed attribute when true");
   ok(!view.$().attr('exists'), "does not add exists attribute when false");
+  equals(view.$().attr('explosions'), "15", "adds integer attributes");
 
   view.set('type', 'submit');
   view.set('exploded', false);
