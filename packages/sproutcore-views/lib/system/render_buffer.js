@@ -18,7 +18,8 @@ var get = SC.get, set = SC.set;
 */
 SC.RenderBuffer = function(tagName) {
   return SC._RenderBuffer.create({
-    elementTag: tagName
+    elementTag: tagName,
+    elementMap: {}
   });
 };
 
@@ -123,6 +124,8 @@ SC._RenderBuffer = SC.Object.extend(
   */
   escapeFunction: null,
 
+  elementMap: null,
+
   /**
     Nested RenderBuffers will set this to their parent RenderBuffer
     instance.
@@ -139,6 +142,8 @@ SC._RenderBuffer = SC.Object.extend(
     set(this, 'elementAttributes', {});
     set(this, 'elementStyle', {});
     set(this, 'elementContent', []);
+    set(this, 'childBuffers', []);
+    set(this, 'elements', {});
   },
 
   /**
@@ -148,7 +153,7 @@ SC._RenderBuffer = SC.Object.extend(
     @returns {SC.RenderBuffer} this
   */
   push: function(string) {
-    get(this, 'elementContent').pushObject(string);
+    get(this, 'childBuffers').pushObject(string);
     return this;
   },
 
@@ -198,6 +203,19 @@ SC._RenderBuffer = SC.Object.extend(
     return this;
   },
 
+  newBuffer: function(tagName, parent, fn, other) {
+    var buffer = SC._RenderBuffer.create({
+      parentBuffer: parent,
+      elementTag: tagName,
+      elementMap: get(this, 'elementMap')
+    });
+
+    if (other) { buffer.setProperties(other); }
+    if (fn) { fn.call(this, buffer); }
+
+    return buffer;
+  },
+
   /**
     Creates a new SC.RenderBuffer object with the provided tagName as
     the element tag and with its parentBuffer property set to the current
@@ -207,9 +225,32 @@ SC._RenderBuffer = SC.Object.extend(
     @returns {SC.RenderBuffer} A new RenderBuffer object
   */
   begin: function(tagName) {
-    return SC._RenderBuffer.create({
-      parentBuffer: this,
-      elementTag: tagName
+    return this.newBuffer(tagName, this, function(buffer) {
+      get(this, 'childBuffers').pushObject(buffer);
+    });
+  },
+
+  prepend: function(tagName) {
+    return this.newBuffer(tagName, this, function(buffer) {
+      get(this, 'childBuffers').insertAt(0, buffer);
+    });
+  },
+
+  replaceWith: function(tagName) {
+    var parentBuffer = get(this, 'parentBuffer');
+
+    return this.newBuffer(tagName, parentBuffer, function(buffer) {
+      this.replaceWithBuffer(buffer);
+    });
+  },
+
+  insertAfter: function(tagName) {
+    var parentBuffer = get(this, 'parentBuffer');
+
+    return this.newBuffer(tagName, parentBuffer, function(buffer) {
+      var siblings = get(parentBuffer, 'childBuffers');
+      var index = siblings.indexOf(this);
+      siblings.insertAt(index + 1, buffer);
     });
   },
 
@@ -220,14 +261,33 @@ SC._RenderBuffer = SC.Object.extend(
   */
   end: function() {
     var parent = get(this, 'parentBuffer');
+    var elementMap = get(this, 'elementMap'), elementId = get(this, 'elementId');
 
-    if (parent) {
-      var string = this.string();
-      parent.push(string);
-      return parent;
+    elementMap[elementId] = this;
+
+    return parent || this;
+  },
+
+  remove: function() {
+    this.replaceWithBuffer(null);
+  },
+
+  replaceWithBuffer: function(newBuffer) {
+    var elementMap = get(this, 'elementMap');
+    delete elementMap[get(this, 'elementId')];
+
+    var parent = get(this, 'parentBuffer');
+    var childBuffers = get(parent, 'childBuffers');
+
+    var index = childBuffers.indexOf(this);
+
+    if (newBuffer) {
+      childBuffers.splice(index, 1, newBuffer);
     } else {
-      return this;
+      childBuffers.splice(index, 1);
     }
+
+    return index;
   },
 
   /**
@@ -280,6 +340,13 @@ SC._RenderBuffer = SC.Object.extend(
     if (get(this, 'escapeContent')) {
       content = get(this, 'escapeFunction')(content);
     }
+
+    var childBuffers = get(this, 'childBuffers');
+
+    childBuffers.forEach(function(buffer) {
+      var stringy = typeof buffer === 'string';
+      content = content + (stringy ? buffer : buffer.string());
+    });
 
     return openTag + content + "</" + tag + ">";
   }
