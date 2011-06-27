@@ -22,19 +22,19 @@ function makeCtor() {
   // Note: avoid accessing any properties on the object since it makes the
   // method a lot faster.  This is glue code so we want it to be as fast as
   // possible.
-  
+
   var isPrepared = false, initMixins, init = false, hasChains = false;
-  
+
   var Class = function() {
-    if (!isPrepared) get(Class, 'proto'); // prepare prototype...
+    if (!isPrepared) { get(Class, 'proto'); } // prepare prototype...
     if (initMixins) {
       this.reopen.apply(this, initMixins);
       initMixins = null;
       rewatch(this); // ålways rewatch just in case
       this.init.apply(this, arguments);
     } else {
-      if (hasChains) rewatch(this);
-      if (init===false) init = this.init; // cache for later instantiations
+      if (hasChains) { rewatch(this); }
+      if (init===false) { init = this.init; } // cache for later instantiations
       init.apply(this, arguments);
     }
   };
@@ -47,37 +47,37 @@ function makeCtor() {
     if (!isPrepared) {
       isPrepared = true;
       Class.PrototypeMixin.applyPartial(Class.prototype);
-      hasChains = !!meta(Class.prototype, false).chains; // avoid rewatch 
+      hasChains = !!meta(Class.prototype, false).chains; // avoid rewatch
     }
     return this.prototype;
   }));
-  
+
   return Class;
-  
+
 }
 
-var Object = makeCtor();
+var CoreObject = makeCtor();
 
-Object.PrototypeMixin = SC.Mixin.create({
-  
+CoreObject.PrototypeMixin = SC.Mixin.create({
+
   reopen: function() {
     SC.Mixin._apply(this, arguments, true);
     return this;
   },
 
   isInstance: true,
-  
+
   init: function() {},
-  
+
   isDestroyed: false,
-  
+
   destroy: function() {
     set(this, 'isDestroyed', true);
-    return this;  
+    return this;
   },
-  
+
   bind: function(to, from) {
-    if (!(from instanceof SC.Binding)) from = SC.Binding.from(from);
+    if (!(from instanceof SC.Binding)) { from = SC.Binding.from(from); }
     from.to(to).connect(this);
     return from;
   },
@@ -87,26 +87,26 @@ Object.PrototypeMixin = SC.Mixin.create({
   }
 });
 
-Object.__super__ = null;
+CoreObject.__super__ = null;
 
 var ClassMixin = SC.Mixin.create({
-    
+
   ClassMixin: SC.required(),
-  
+
   PrototypeMixin: SC.required(),
 
   isClass: true,
-  
+
   isMethod: false,
-  
+
   extend: function() {
     var Class = makeCtor(), proto;
     Class.ClassMixin = SC.Mixin.create(this.ClassMixin);
     Class.PrototypeMixin = SC.Mixin.create(this.PrototypeMixin);
-    
+
     var PrototypeMixin = Class.PrototypeMixin;
     PrototypeMixin.reopen.apply(PrototypeMixin, arguments);
-    
+
     Class.superclass = this;
     Class.__super__  = this.prototype;
 
@@ -115,50 +115,50 @@ var ClassMixin = SC.Mixin.create({
     SC.generateGuid(proto, 'sc');
     meta(proto).proto = proto; // this will disable observers on prototype
     SC.rewatch(proto); // setup watch chains if needed.
-    
+
 
     Class.subclasses = SC.Set ? new SC.Set() : null;
-    if (this.subclasses) this.subclasses.add(Class);
-    
+    if (this.subclasses) { this.subclasses.add(Class); }
+
     Class.ClassMixin.apply(Class);
     return Class;
   },
-  
+
   create: function() {
     var C = this;
-    if (arguments.length>0) this._initMixins(arguments);
+    if (arguments.length>0) { this._initMixins(arguments); }
     return new C();
   },
-  
+
   reopen: function() {
     var PrototypeMixin = this.PrototypeMixin;
     PrototypeMixin.reopen.apply(PrototypeMixin, arguments);
     this._prototypeMixinDidChange();
     return this;
   },
-  
+
   reopenClass: function() {
     var ClassMixin = this.ClassMixin;
     ClassMixin.reopen.apply(ClassMixin, arguments);
     SC.Mixin._apply(this, arguments, false);
     return this;
   },
-  
+
   detect: function(obj) {
-    if ('function' !== typeof obj) return false;
+    if ('function' !== typeof obj) { return false; }
     while(obj) {
-      if (obj===this) return true;
+      if (obj===this) { return true; }
       obj = obj.superclass;
     }
     return false;
   }
-  
+
 });
 
-Object.ClassMixin = ClassMixin;
-ClassMixin.apply(Object);
+CoreObject.ClassMixin = ClassMixin;
+ClassMixin.apply(CoreObject);
 
-SC.CoreObject = Object;
+SC.CoreObject = CoreObject;
 
 
 
