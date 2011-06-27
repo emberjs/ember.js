@@ -143,6 +143,10 @@ test('[obj, $foo.bar.baz] -> $foo.bar.baz', function() {
 // NO TARGET
 // 
 
+test('[null, Foo] -> Foo', function() {
+  same(SC.getPath('Foo'), Foo);
+});
+
 test('[null, Foo.bar] -> Foo.bar', function() {
   same(SC.getPath('Foo.bar'), Foo.bar);
 });
