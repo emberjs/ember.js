@@ -17,6 +17,7 @@ if (!packageName) {
 
   QUnit.config.autostart = false;
   QUnit.onload();
+  $('h1 > a').text(packageName);
 
   QUnit.jsDump.setParser('object', function(obj) {
     return obj.toString();
