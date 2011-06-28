@@ -168,7 +168,7 @@ test("should allow items to access to the CollectionView's current index in the 
     content: ['zero', 'one', 'two'],
     itemViewClass: SC.View.extend({
       render: function(buf) {
-        buf.push(get(this, 'index'));
+        buf.push(get(this, 'contentIndex'));
       }
     })
   });
