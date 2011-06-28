@@ -56,7 +56,15 @@ var getPath = SC.getPath, setPath = SC.setPath, get = SC.get, set = SC.set;
   If you add additional template support to SC.View, you should create a new
   file in which to test.
 */
-module("SC.View - handlebars integration");
+module("SC.View - handlebars integration", {
+  setup: function() {
+    window.TemplateTests = SC.Namespace.create();
+  },
+
+  teardown: function() {
+    window.TemplateTests = undefined;
+  }
+});
 
 test("template view should call the function of the associated template", function() {
   var view = SC.View.create({
@@ -762,6 +770,32 @@ test("itemViewClass works in the #collection helper", function() {
   parentView.destroy();
 });
 
+test("itemViewClass works in the #collection helper relatively", function() {
+  TemplateTests.ExampleController = SC.ArrayProxy.create({
+    content: ['alpha']
+  });
+
+  TemplateTests.ExampleItemView = SC.View.extend({
+    isAlsoCustom: true
+  });
+
+  TemplateTests.CollectionView = SC.CollectionView.extend({
+    possibleItemView: TemplateTests.ExampleItemView
+  });
+
+  var parentView = SC.View.create({
+    template: SC.Handlebars.compile('{{#collection TemplateTests.CollectionView contentBinding="TemplateTests.ExampleController" itemViewClass="possibleItemView"}}beta{{/collection}}')
+  });
+
+  SC.run(function() {
+    parentView.append();
+  });
+
+  ok(parentView.childViews[0].childViews[0].isAlsoCustom, "uses the example view class specified in the #collection helper");
+
+  parentView.destroy();
+});
+
 test("should update boundIf blocks if the conditional changes", function() {
   var templates = SC.Object.create({
    foo: SC.Handlebars.compile('<h1 id="first">{{#boundIf "content.myApp.isEnabled"}}{{content.wham}}{{/boundIf}}</h1>')
@@ -941,6 +975,8 @@ test("should not reset cursor position when text field receives keyUp event", fu
   });
 
   equals(view.$().caretPosition(), 5, "The keyUp event should not result in the cursor being reset due to the bindAttr observers");
+
+  view.destroy();
 });
 
 test("should be able to bind element attributes using {{bindAttr}} inside a block", function() {
