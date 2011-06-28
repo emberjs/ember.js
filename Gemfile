@@ -2,7 +2,11 @@
 source "http://rubygems.org"
 
 gem "rake"
-gem "spade"
+if spade_path = ENV["SPADE_PATH"]
+  gem "spade", :path => spade_path
+else
+  gem "spade"
+end
 gem "uglifier"
 
 if abbot_path = ENV["ABBOT_PATH"]

@@ -10,6 +10,7 @@ require('sproutcore-metal/computed');
 require('sproutcore-metal/properties');
 require('sproutcore-metal/observer');
 require('sproutcore-metal/utils');
+require('sproutcore-metal/array');
 
 var Mixin, MixinDelegate, REQUIRED, Alias;
 var classToString;
