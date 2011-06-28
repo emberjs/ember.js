@@ -57,6 +57,12 @@ Handlebars.registerHelper('collection', function(path, options) {
 
   var hash = options.hash, itemHash = {}, match;
 
+  // Extract item view class if provided else default to the standard class
+  var itemViewClass, itemViewPath = hash.itemViewClass;
+  delete hash.itemViewClass;
+  itemViewClass = itemViewPath ? SC.getPath(itemViewPath) : get(collectionClass, 'proto').itemViewClass;
+  sc_assert("%@ #collection: Could not find %@".fmt(data.view, itemViewPath), !!itemViewClass);
+
   // Go through options passed to the {{collection}} helper and extract options
   // that configure item views instead of the collection itself.
   for (var prop in hash) {
@@ -99,7 +105,6 @@ Handlebars.registerHelper('collection', function(path, options) {
     delete hash.preserveContext;
   }
 
-  var itemViewClass = get(collectionClass, 'proto').itemViewClass;
   hash.itemViewClass = SC.Handlebars.ViewHelper.viewClassFromHTMLOptions(itemViewClass, itemHash);
 
   return Handlebars.helpers.view.call(this, collectionClass, options);

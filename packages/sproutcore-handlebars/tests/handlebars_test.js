@@ -740,6 +740,28 @@ test("Collection views that specify an example view class have their children be
   parentView.destroy();
 });
 
+test("itemViewClass works in the #collection helper", function() {
+  TemplateTests.ExampleController = SC.ArrayProxy.create({
+    content: ['alpha']
+  });
+
+  TemplateTests.ExampleItemView = SC.View.extend({
+    isAlsoCustom: true
+  });
+
+  var parentView = SC.View.create({
+    template: SC.Handlebars.compile('{{#collection contentBinding="TemplateTests.ExampleController" itemViewClass="TemplateTests.ExampleItemView"}}beta{{/collection}}')
+  });
+
+  SC.run(function() {
+    parentView.append();
+  });
+
+  ok(parentView.childViews[0].childViews[0].isAlsoCustom, "uses the example view class specified in the #collection helper");
+
+  parentView.destroy();
+});
+
 test("should update boundIf blocks if the conditional changes", function() {
   var templates = SC.Object.create({
    foo: SC.Handlebars.compile('<h1 id="first">{{#boundIf "content.myApp.isEnabled"}}{{content.wham}}{{/boundIf}}</h1>')
