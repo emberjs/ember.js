@@ -11,7 +11,7 @@ require('sproutcore-runtime/system/namespace');
 
   Defines a namespace that will contain an executable application.  This is
   very similar to a normal namespace except that it is expected to include at
-  least a 'main' function which can be run to initialize the application.
+  least a 'ready' function which can be run to initialize the application.
   
   Currently SC.Application is very similar to SC.Namespace.  However, this
   class may be augmented by additional frameworks so it is important to use
@@ -24,7 +24,7 @@ require('sproutcore-runtime/system/namespace');
         store: SC.Store.create().from(SC.fixtures)
       });
       
-      MyApp.main = function() { 
+      MyApp.ready = function() { 
         //..init code goes here...
       }
       
