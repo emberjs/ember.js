@@ -11,7 +11,7 @@ require("sproutcore-handlebars/ext");
 // to SC.CoreView in the global SC.TEMPLATES object.
 
 SC.$(document).ready(function() {
-  SC.$('script[type="text/html"]')
+  SC.$('script[type="text/html"], script[type="text/x-handlebars"]')
     .each(function() {
     // Get a reference to the script tag
     var script = SC.$(this),
