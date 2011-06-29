@@ -652,7 +652,7 @@ test("Template views add an elementId to child views created using the view help
 
 test("Template views set the template of their children to a passed block", function() {
   var templates = SC.Object.create({
-    parent: SC.Handlebars.compile('<h1>{{#view "TemplateTests.NoTemplateView"}}<span>It worked!</span>{{/view}}')
+    parent: SC.Handlebars.compile('<h1>{{#view "TemplateTests.NoTemplateView"}}<span>It worked!</span>{{/view}}</h1>')
   });
 
   TemplateTests.NoTemplateView = SC.View.extend();
@@ -663,7 +663,7 @@ test("Template views set the template of their children to a passed block", func
   });
 
   view.createElement();
-  ok(view.$().html().match(/\<h1>.*\<span>.*\<\/span>.*\<\/h1>/), "renders the passed template inside the parent template");
+  ok(view.$('h1:has(span)').length === 1, "renders the passed template inside the parent template");
 });
 
 test("should pass hash arguments to the view object", function() {
