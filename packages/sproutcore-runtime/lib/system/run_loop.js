@@ -15,7 +15,6 @@ require('sproutcore-runtime/system/object');
 //
 
 var slice = Array.prototype.slice;
-var argsEmpty = [];
 
 // invokes passed params - normalizing so you can pass target/func,
 // target/string or just func
@@ -28,9 +27,10 @@ function invoke(target, method, args, ignore) {
 
   if ('string'===typeof method) method = target[method];
   if (args && ignore>0) {
-    args = args.length>ignore ? slice.call(args, ignore) : argsEmpty;
+    args = args.length>ignore ? slice.call(args, ignore) : null;
   }
-  return method.apply(target, args);
+  // IE8's Function.prototype.apply doesn't accept undefined/null arguments.
+  return method.apply(target || this, args || []);
 }
 
 
