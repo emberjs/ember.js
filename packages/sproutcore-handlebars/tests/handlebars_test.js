@@ -226,7 +226,7 @@ test("child views can be inserted inside a bind block", function() {
   view.createElement();
 
   ok(view.$("#hello-world:contains('Hello world!')").length, "The parent view renders its contents");
-  ok(view.$("label").text().match(/Goodbye.*wot.*cruel.*world\?/)), "The child view renders its content once");
+  ok(view.$("label").text().match(/Goodbye.*wot.*cruel.*world\?/), "The child view renders its content once");
   ok(view.$().text().match(/Hello world!.*Goodbye.*wot.*cruel.*world\?/), "parent view should appear before the child view");
 });
 
