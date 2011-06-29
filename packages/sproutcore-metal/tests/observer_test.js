@@ -63,16 +63,30 @@ testBoth('nested observers should fire in order', function(get,set) {
 testBoth('suspending property changes will defer', function(get,set) {
   var obj = { foo: 'foo' };
   var fooCount = 0;
-  
+
   SC.addObserver(obj, 'foo' ,function() { fooCount++; });
 
   SC.beginPropertyChanges(obj);
   set(obj, 'foo', 'BIFF');
   set(obj, 'foo', 'BAZ');
   SC.endPropertyChanges(obj);
-  
+
   equals(fooCount, 1, 'foo should have fired once');
-  
+});
+
+testBoth('suspending property changes will not defer before observers', function(get,set) {
+  var obj = { foo: 'foo' };
+  var fooCount = 0;
+
+  SC.addBeforeObserver(obj, 'foo' ,function() { fooCount++; });
+
+  SC.beginPropertyChanges(obj);
+  set(obj, 'foo', 'BIFF');
+  equals(fooCount, 1, 'should fire before observer immediately');
+  set(obj, 'foo', 'BAZ');
+  SC.endPropertyChanges(obj);
+
+  equals(fooCount, 1, 'should not fire before observer twice');
 });
 
 testBoth('addObserver should propogate through prototype', function(get,set) {

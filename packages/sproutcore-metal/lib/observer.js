@@ -17,17 +17,48 @@ var normalizePath = SC.normalizePath;
 
 var suspended = 0;
 
-var queue = [], queueSet = {};
-function notifyObservers(obj, eventName) {
-  if (suspended) {
-    
+var ObserverSet = function(iterateable) {
+  this.set = {};
+  if (iterateable) { this.array = []; }
+}
+
+ObserverSet.prototype.add = function(target, name) {
+  var set = this.set, guid = SC.guidFor(target), array;
+
+  if (!set[guid]) { set[guid] = {}; }
+  set[guid][name] = true;
+  if (array = this.array) {
+    array.push([target, name]);
+  }
+};
+
+ObserverSet.prototype.contains = function(target, name) {
+  var set = this.set, guid = SC.guidFor(target), nameSet = set[guid];
+  return nameSet && nameSet[name];
+};
+
+ObserverSet.prototype.empty = function() {
+  this.set = {};
+  this.array = [];
+};
+
+ObserverSet.prototype.forEach = function(fn) {
+  var q = this.array;
+  this.empty();
+  q.forEach(function(item) {
+    fn(item[0], item[1]);
+  });
+};
+
+var queue = new ObserverSet(true), beforeObserverSet = new ObserverSet();
+
+function notifyObservers(obj, eventName, forceNotification) {
+  if (suspended && !forceNotification) {
+
     // if suspended add to the queue to send event later - but only send 
     // event once.
-    var guid = guidFor(obj);
-    if (!queueSet[guid]) queueSet[guid] = {};
-    if (!queueSet[guid][eventName]) {
-      queueSet[guid][eventName] = true;
-      queue.push([obj, eventName]);
+    if (!queue.contains(obj, eventName)) {
+      queue.add(obj, eventName);
     }
 
   } else {
@@ -36,10 +67,10 @@ function notifyObservers(obj, eventName) {
 }
 
 function flushObserverQueue() {
-  if (!queue || queue.length===0) return ;
-  var q = queue;
-  queue = []; queueSet = {};
-  q.forEach(function(x){ SC.sendEvent(x[0], x[1]); });
+  beforeObserverSet.empty();
+
+  if (!queue || queue.array.length===0) return ;
+  queue.forEach(function(target, event){ SC.sendEvent(target, event); });
 }
 
 SC.beginPropertyChanges = function() {
@@ -125,6 +156,17 @@ SC.notifyObservers = function(obj, keyName) {
 
 /** @private */
 SC.notifyBeforeObservers = function(obj, keyName) {
-  notifyObservers(obj, beforeEvent(keyName));
+  var guid, set, forceNotification = false;
+
+  if (suspended) {
+    if (!beforeObserverSet.contains(obj, keyName)) {
+      beforeObserverSet.add(obj, keyName);
+      forceNotification = true;
+    } else {
+      return;
+    }
+  }
+
+  notifyObservers(obj, beforeEvent(keyName), forceNotification);
 };
 
