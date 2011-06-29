@@ -138,7 +138,10 @@ test("should not escape HTML in triple mustaches", function() {
     output: "you need to be more <b>bold</b>"
   });
 
-  view.createElement();
+  SC.run(function() {
+    view.createElement();
+  });
+
   equals(view.$('b').length, 1, "creates an element");
 
   SC.run(function() {
@@ -1069,26 +1072,6 @@ test("should be able to add multiple classes using {{bindAttr class}}", function
   });
 
   ok(!view.$('div').hasClass('is-awesome-sauce'), "removes dasherized class when property is set to false");
-});
-
-test("should use the childView's renderBuffer", function() {
-  var calledRenderBuffer = false;
-  var template = SC.Handlebars.compile('{{view TemplateTests.RenderBufferView}}')
-  
-  TemplateTests.RenderBufferView = SC.View.extend({
-    renderBuffer: function() {
-      calledRenderBuffer = true;
-      return this._super();
-    }
-  });
-
-  var view = SC.View.create({
-    template: template
-  });
-  
-  view.createElement();
-  
-  ok(calledRenderBuffer);
 });
 
 test("should be able to output a property without binding", function(){

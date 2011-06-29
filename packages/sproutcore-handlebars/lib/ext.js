@@ -35,8 +35,17 @@ require("handlebars");
 require("handlebars");
 require("sproutcore-views/system/render_buffer");
 
+/**
+  @namespace
+
+  SproutCore Handlebars is an extension to Handlebars that makes the built-in
+  Handlebars helpers and {{mustaches}} binding-aware.
+*/
 SC.Handlebars = {};
 
+/**
+  Override the the opcode compiler and JavaScript compiler for Handlebars.
+*/
 SC.Handlebars.Compiler = function() {};
 SC.Handlebars.Compiler.prototype = SC.create(Handlebars.Compiler.prototype);
 SC.Handlebars.Compiler.prototype.compiler = SC.Handlebars.Compiler;
@@ -45,6 +54,14 @@ SC.Handlebars.JavaScriptCompiler = function() {};
 SC.Handlebars.JavaScriptCompiler.prototype = SC.create(Handlebars.JavaScriptCompiler.prototype);
 SC.Handlebars.JavaScriptCompiler.prototype.compiler = SC.Handlebars.JavaScriptCompiler;
 
+/**
+  Override the default property lookup semantics of Handlebars.
+
+  By default, Handlebars uses object[property] to look up properties. SproutCore's Handlebars
+  uses SC.get().
+
+  @private
+*/
 SC.Handlebars.JavaScriptCompiler.prototype.nameLookup = function(parent, name, type) {
   if (type === 'context') {
     return "SC.get(" + parent + ", " + this.quotedString(name) + ");";
@@ -53,6 +70,28 @@ SC.Handlebars.JavaScriptCompiler.prototype.nameLookup = function(parent, name, t
   }
 };
 
+SC.Handlebars.JavaScriptCompiler.prototype.initializeBuffer = function() {
+  return "''";
+};
+
+/**
+  Override the default buffer for SproutCore Handlebars. By default, Handlebars creates
+  an empty String at the beginning of each invocation and appends to it. SproutCore's
+  Handlebars overrides this to append to a single shared buffer.
+
+  @private
+*/
+SC.Handlebars.JavaScriptCompiler.prototype.appendToBuffer = function(string) {
+  return "data.buffer.push("+string+");";
+};
+
+/**
+  Rewrite simple mustaches from {{foo}} to {{bind "foo"}}. This means that all simple
+  mustaches in SproutCore's Handlebars will also set up an observer to keep the DOM
+  up to date when the underlying property changes.
+
+  @private
+*/
 SC.Handlebars.Compiler.prototype.mustache = function(mustache) {
   if (mustache.params.length || mustache.hash) {
     return Handlebars.Compiler.prototype.mustache.call(this, mustache);
@@ -71,12 +110,18 @@ SC.Handlebars.Compiler.prototype.mustache = function(mustache) {
   }
 };
 
+/**
+  The entry point for SproutCore Handlebars. This replaces the default Handlebars.compile and turns on
+  template-local data and String parameters.
+
+  @param {String} string The template to compile
+*/
 SC.Handlebars.compile = function(string) {
   var ast = Handlebars.parse(string);
   var environment = new SC.Handlebars.Compiler().compile(ast, {data: true, stringParams: true});
-  var ret = new SC.Handlebars.JavaScriptCompiler().compile(environment, {data: true, stringParams: true});
-  ret.rawTemplate = string;
-  return ret;
+  var compiled = new SC.Handlebars.JavaScriptCompiler().compile(environment, {data: true, stringParams: true});
+
+  return compiled;
 };
 
 /**
@@ -98,6 +143,3 @@ Handlebars.registerHelper('helperMissing', function(path, options) {
   throw new SC.Error(SC.String.fmt(error, options.data.view, path, this));
 });
 
-SC._RenderBuffer.reopen({
-  escapeFunction: Handlebars.Utils.escapeExpression
-});

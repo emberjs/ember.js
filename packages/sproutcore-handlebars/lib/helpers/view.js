@@ -74,10 +74,7 @@ SC.Handlebars.ViewHelper = SC.Object.create({
     if (fn) { set(childView, 'template', fn); }
 
     childViews.pushObject(childView);
-
-    var buffer = childView.renderToBuffer();
-
-    return new Handlebars.SafeString(buffer.string());
+    childView.renderToBuffer(data.buffer);
   }
 });
 

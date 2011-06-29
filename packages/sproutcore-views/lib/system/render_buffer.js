@@ -10,17 +10,14 @@ var get = SC.get, set = SC.set;
 /**
   @class
 
-  SC.RenderBuffer gathers information regarding the a view and generates the 
+  SC.RenderBuffer gathers information regarding the a view and generates the
   final representation. SC.RenderBuffer will generate HTML which can be pushed
   to the DOM.
 
   @extends SC.Object
 */
 SC.RenderBuffer = function(tagName) {
-  return SC._RenderBuffer.create({
-    elementTag: tagName,
-    elementMap: {}
-  });
+  return SC._RenderBuffer.create({ elementTag: tagName });
 };
 
 SC._RenderBuffer = SC.Object.extend(
@@ -31,7 +28,7 @@ SC._RenderBuffer = SC.Object.extend(
 
     You should not maintain this array yourself, rather, you should use
     the addClass() method of SC.RenderBuffer.
-    
+
     @type Array
     @default []
   */
@@ -42,21 +39,21 @@ SC._RenderBuffer = SC.Object.extend(
 
     You should not set this property yourself, rather, you should use
     the id() method of SC.RenderBuffer.
-    
+
     @type String
     @default null
   */
   elementId: null,
 
   /**
-    A hash keyed on the name of the attribute and whose value will be 
-    applied to that attribute. For example, if you wanted to apply a 
-    data-view="Foo.bar" property to an element, you would set the 
+    A hash keyed on the name of the attribute and whose value will be
+    applied to that attribute. For example, if you wanted to apply a
+    data-view="Foo.bar" property to an element, you would set the
     elementAttributes hash to {'data-view':'Foo.bar'}
 
     You should not maintain this hash yourself, rather, you should use
     the attr() method of SC.RenderBuffer.
-    
+
     @type Hash
     @default {}
   */
@@ -75,11 +72,11 @@ SC._RenderBuffer = SC.Object.extend(
 
   /**
     The tagname of the element an instance of SC.RenderBuffer represents.
-    
+
     Usually, this gets set as the first parameter to SC.RenderBuffer. For
     example, if you wanted to create a `p` tag, then you would call
-    
-      SC.RenderBuffer('p')  
+
+      SC.RenderBuffer('p')
 
     @type String
     @default null
@@ -87,9 +84,9 @@ SC._RenderBuffer = SC.Object.extend(
   elementTag: null,
 
   /**
-    A hash keyed on the name of the style attribute and whose value will 
-    be applied to that attribute. For example, if you wanted to apply a 
-    background-color:black;" style to an element, you would set the 
+    A hash keyed on the name of the style attribute and whose value will
+    be applied to that attribute. For example, if you wanted to apply a
+    background-color:black;" style to an element, you would set the
     elementStyle hash to {'background-color':'black'}
 
     You should not maintain this hash yourself, rather, you should use
@@ -101,35 +98,9 @@ SC._RenderBuffer = SC.Object.extend(
   elementStyle: null,
 
   /**
-    RenderBuffer supports plugging in escaping functionality via
-    the boolean `escapeContent` property and the `escapeFunction`
-    property.
-
-    If `escapeContent` is set to true, the RenderBuffer will escape
-    the value of the `elementContent` property when `string()` is
-    called using `escapeFunction`, passing in the content.
-
-    @type Boolean
-  */
-  escapeContent: false,
-
-  /**
-    If escapeContent is set to true, escapeFunction will be called
-    to escape the content. Set this property to a function that
-    takes a content string as its parameter, and return a sanitized
-    string.
-    
-    @type Function
-    @see SC.RenderBuffer.prototype.escapeContent
-  */
-  escapeFunction: null,
-
-  elementMap: null,
-
-  /**
     Nested RenderBuffers will set this to their parent RenderBuffer
     instance.
- 
+
     @type SC._RenderBuffer
   */
   parentBuffer: null,
@@ -153,7 +124,7 @@ SC._RenderBuffer = SC.Object.extend(
     @returns {SC.RenderBuffer} this
   */
   push: function(string) {
-    get(this, 'childBuffers').pushObject(string);
+    get(this, 'childBuffers').pushObject(String(string));
     return this;
   },
 
@@ -203,17 +174,54 @@ SC._RenderBuffer = SC.Object.extend(
     return this;
   },
 
+  /**
+    Create a new child render buffer from a parent buffer. Optionally set
+    additional properties on the buffer. Optionally invoke a callback
+    with the newly created buffer.
+
+    This is a primitive method used by other public methods: `begin`,
+    `prepend`, `replaceWith`, `insertAfter`.
+
+    @private
+    @param {String} tagName Tag name to use for the child buffer's element
+    @param {SC._RenderBuffer} parent The parent render buffer that this
+      buffer should be appended to.
+    @param {Function} fn A callback to invoke with the newly created buffer.
+    @param {Object} other Additional properties to add to the newly created
+      buffer.
+  */
   newBuffer: function(tagName, parent, fn, other) {
     var buffer = SC._RenderBuffer.create({
       parentBuffer: parent,
-      elementTag: tagName,
-      elementMap: get(this, 'elementMap')
+      elementTag: tagName
     });
 
     if (other) { buffer.setProperties(other); }
     if (fn) { fn.call(this, buffer); }
 
     return buffer;
+  },
+
+  /**
+    Replace the current buffer with a new buffer. This is a primitive
+    used by `remove`, which passes `null` for `newBuffer`, and `replaceWith`,
+    which passes the new buffer it created.
+
+    @private
+    @param {SC._RenderBuffer} buffer The buffer to insert in place of
+      the existing buffer.
+  */
+  replaceWithBuffer: function(newBuffer) {
+    var parent = get(this, 'parentBuffer');
+    var childBuffers = get(parent, 'childBuffers');
+
+    var index = childBuffers.indexOf(this);
+
+    if (newBuffer) {
+      childBuffers.splice(index, 1, newBuffer);
+    } else {
+      childBuffers.splice(index, 1);
+    }
   },
 
   /**
@@ -230,12 +238,22 @@ SC._RenderBuffer = SC.Object.extend(
     });
   },
 
+  /**
+    Prepend a new child buffer to the current render buffer.
+
+    @param {String} tagName Tag name to use for the child buffer's element
+  */
   prepend: function(tagName) {
     return this.newBuffer(tagName, this, function(buffer) {
       get(this, 'childBuffers').insertAt(0, buffer);
     });
   },
 
+  /**
+    Replace the current buffer with a new render buffer.
+
+    @param {String} tagName Tag name to use for the new buffer's element
+  */
   replaceWith: function(tagName) {
     var parentBuffer = get(this, 'parentBuffer');
 
@@ -244,6 +262,11 @@ SC._RenderBuffer = SC.Object.extend(
     });
   },
 
+  /**
+    Insert a new render buffer after the current render buffer.
+
+    @param {String} tagName Tag name to use for the new buffer's element
+  */
   insertAfter: function(tagName) {
     var parentBuffer = get(this, 'parentBuffer');
 
@@ -261,33 +284,11 @@ SC._RenderBuffer = SC.Object.extend(
   */
   end: function() {
     var parent = get(this, 'parentBuffer');
-    var elementMap = get(this, 'elementMap'), elementId = get(this, 'elementId');
-
-    elementMap[elementId] = this;
-
     return parent || this;
   },
 
   remove: function() {
     this.replaceWithBuffer(null);
-  },
-
-  replaceWithBuffer: function(newBuffer) {
-    var elementMap = get(this, 'elementMap');
-    delete elementMap[get(this, 'elementId')];
-
-    var parent = get(this, 'parentBuffer');
-    var childBuffers = get(parent, 'childBuffers');
-
-    var index = childBuffers.indexOf(this);
-
-    if (newBuffer) {
-      childBuffers.splice(index, 1, newBuffer);
-    } else {
-      childBuffers.splice(index, 1);
-    }
-
-    return index;
   },
 
   /**
@@ -336,10 +337,6 @@ SC._RenderBuffer = SC.Object.extend(
     openTag = openTag.join(" ") + '>';
 
     content = content.join("");
-
-    if (get(this, 'escapeContent')) {
-      content = get(this, 'escapeFunction')(content);
-    }
 
     var childBuffers = get(this, 'childBuffers');
 

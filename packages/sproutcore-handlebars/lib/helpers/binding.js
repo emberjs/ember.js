@@ -58,13 +58,11 @@ var get = SC.get, getPath = SC.getPath;
       // tells the SC._BindableSpan to re-render.
       SC.addObserver(ctx, property, invoker);
 
-
-      var buffer = bindView.renderToBuffer();
-      return new Handlebars.SafeString(buffer.string());
+      bindView.renderToBuffer(data.buffer);
     } else {
       // The object is not observable, so just render it out and
       // be done with it.
-      return getPath(this, property);
+      data.buffer.push(getPath(this, property));
     }
   };
 

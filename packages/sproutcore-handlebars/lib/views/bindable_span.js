@@ -108,7 +108,7 @@ SC._BindableSpanView = SC.View.extend(
   render: function(buffer) {
     // If not invoked via a triple-mustache ({{{foo}}}), escape
     // the content of the template.
-    if(get(this, 'isEscaped')) { set(buffer, 'escapeContent', true); }
+    var escape = get(this, 'isEscaped');
 
     var shouldDisplay = get(this, 'shouldDisplayFunc'),
         property = get(this, 'property'),
@@ -137,6 +137,8 @@ SC._BindableSpanView = SC.View.extend(
         } else {
         // This is not a bind block, just push the result of the
         // expression to the render context and return.
+          if (result == null) { result = ""; } else { result = String(result); }
+          if (escape) { result = Handlebars.Utils.escapeExpression(result); }
           buffer.push(result);
           return;
         }
