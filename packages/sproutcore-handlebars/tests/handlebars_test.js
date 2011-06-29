@@ -631,7 +631,7 @@ test("Template views return a no-op function if their template cannot be found",
 
 test("Template views add an elementId to child views created using the view helper", function() {
   var templates = SC.Object.create({
-    parent: SC.Handlebars.compile('<aside>{{view "TemplateTests.ChildView"}}</aside>'),
+    parent: SC.Handlebars.compile('<label>{{view "TemplateTests.ChildView"}}</label>'),
     child: SC.Handlebars.compile("I can't believe it's not butter.")
   });
 
