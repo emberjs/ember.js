@@ -1025,7 +1025,7 @@ test("should be able to bind class attribute with {{bindAttr}}", function() {
 });
 
 test("should be able to bind boolean element attributes using {{bindAttr}}", function() {
-  var template = SC.Handlebars.compile('<input type="check" {{bindAttr disabled="content.isDisabled" checked="content.isChecked"}} />');
+  var template = SC.Handlebars.compile('<input type="checkbox" {{bindAttr disabled="content.isDisabled" checked="content.isChecked"}} />');
   var content = SC.Object.create({
     isDisabled: false,
     isChecked: true
