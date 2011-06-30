@@ -173,6 +173,26 @@ SC.View = SC.Object.extend(
     if (output !== undefined) { buffer.push(output); }
   },
 
+  rerender: function() {
+    var buffer = this._buffer, element = get(this, 'element');
+
+    // if we have no buffer and no element, this is a noop
+    if (!buffer && !element) {
+      return;
+    // we have a buffer but no element yet
+    } else if (buffer) {
+      buffer = buffer.replaceWith(get(this, 'tagName'));
+      this.renderToBuffer(buffer);
+    // this view is already in the DOM
+    } else {
+      set(this, 'element', null);
+
+      this._insertElementLater(function() {
+        this.$().appendTo(target);
+      });
+    }
+  },
+
   /**
     @private
 
@@ -357,6 +377,11 @@ SC.View = SC.Object.extend(
     var elem = get(this, 'element');
 
     if (!elem) {
+      // if we don't have an element yet, someone calling this.$() is
+      // trying to update an element that isn't in the DOM. Instead,
+      // rerender the view to allow the render method to reflect the
+      // changes.
+      this.rerender();
       return SC.$();
     } else if (sel === undefined) {
       return SC.$(elem);
@@ -373,7 +398,7 @@ SC.View = SC.Object.extend(
 
     while(--idx >= 0) {
       view = childViews[idx];
-      callback.call(this, view);
+      callback.call(this, view, idx);
     }
 
     return this;
@@ -570,6 +595,7 @@ SC.View = SC.Object.extend(
     invokes the same on all child views.
   */
   _notifyDidInsertElement: function() {
+    this._buffer = null;
     this.didInsertElement();
 
     this.forEachChildView(function(view) {
@@ -673,12 +699,16 @@ SC.View = SC.Object.extend(
       passed, a default buffer, using the current view's `tagName`, will
       be used.
   */
-  renderToBuffer: function(parentBuffer) {
+  renderToBuffer: function(parentBuffer, bufferOperation) {
+    bufferOperation = bufferOperation || 'begin'
+
     if (parentBuffer) {
-      var buffer = parentBuffer.begin(get(this, 'tagName'));
+      var buffer = parentBuffer[bufferOperation](get(this, 'tagName'));
     } else {
       var buffer = this.renderBuffer();
     }
+
+    this._buffer = buffer;
 
     var mixins, idx, len;
 
@@ -696,8 +726,6 @@ SC.View = SC.Object.extend(
     this._didRenderChildViews = false;
 
     SC.endPropertyChanges(this);
-
-    if (parentBuffer) { buffer.end(); }
 
     return buffer;
   },
@@ -867,12 +895,106 @@ SC.View = SC.Object.extend(
     // SC.RootResponder to dispatch incoming events.
     SC.View.views[get(this, 'elementId')] = this;
 
+    var childViews = get(this, 'childViews').slice();
     // setup child views. be sure to clone the child views array first
-    this.childViews = get(this, 'childViews').slice();
+    set(this, 'childViews', childViews);
+
+    this.mutateChildViews(function(viewName, idx) {
+      var view;
+
+      if ('string' === typeof viewName) {
+        view = this[viewName];
+        view = this.createChildView(view);
+        childViews[idx] = this[viewName] = view;
+      } else if (viewName.isClass) {
+        view = this.createChildView(viewName);
+        childViews[idx] = view;
+      }
+    });
+
+    // Set up observers on the child views array. When this array is modified,
+    // we will ensure that the DOM gets updated to reflect the new view.
+    childViews.addArrayObserver(this, {
+      willChange: "childViewsWillChange",
+      didChange: "childViewsDidChange"
+    });
+
     this.classNameBindings = get(this, 'classNameBindings').slice();
     this.classNames = get(this, 'classNames').slice();
+  },
 
-    this.createChildViews(); // setup child Views
+  /**
+    When a child view is removed, 
+  **/
+  childViewsWillChange: function(views, start, removed) {
+    var element = get(this, 'element'), buffer = this._buffer, view;
+
+    if (!buffer && !element) {
+      return;
+    } else if (buffer) {
+      for (var i=start; i<start+removed; i++) {
+        view = views[i];
+        view._buffer.remove();
+        view._buffer = null;
+      }
+    } else {
+      for (var i=start; i<start+removed; i++) {
+        view = views[i];
+        set(view, 'element', null);
+        view.$().remove();
+      }
+    }
+  },
+
+  childViewsDidChange: function(views, start, removed, added) {
+    var element = get(this, 'element'), buffer = this._buffer, view;
+    var len = get(views, 'length'), startWith, prev;
+
+    if (window.billy) debugger;
+    if (added === 0) return;
+
+    if (!buffer && !element) {
+      return;
+    } else if (buffer) {
+      if (added === 1 && removed === 0 && start === len) {
+        view = views[start];
+        view.renderToBuffer(buffer);
+        return;
+      } else if (start === 0) {
+        view = views[start];
+        startWith = start + 1;
+        view.renderToBuffer(buffer, 'prepend');
+      } else {
+        view = views[start - 1];
+        startWith = start;
+      }
+
+      for (var i=startWith; i<start+added; i++) {
+        prev = view;
+        view = views[i];
+        view.renderToBuffer(prev, 'insertAfter');
+      }
+    } else {
+      prev = start === 0 ? null : views[start-1];
+
+      for (var i=start; i<start+added; i++) {
+        view = views[i];
+        this._scheduleInsertion(view, prev);
+        prev = view;
+      }
+    }
+  },
+
+  _scheduleInsertion: function(view, prev) {
+    var parent = this;
+
+    view._insertElementLater(function() {
+      if (prev) {
+        prev.$().after(view.$());
+      } else {
+        parent.$().prepend(view.$());
+      }
+    });
   },
 
   /**
@@ -937,6 +1059,7 @@ SC.View = SC.Object.extend(
     // destroy the element -- this will avoid each child view destroying
     // the element over and over again...
     this.destroyElement();
+    this._buffer = null;
 
     // first destroy any children.
     this.mutateChildViews(function(view) {
@@ -952,65 +1075,6 @@ SC.View = SC.Object.extend(
     //Do generic destroy. It takes care of mixins and sets isDestroyed to YES.
     this._super();
     return this; // done with cleanup
-  },
-
-  /**
-    This method is called when your view is first created to setup any  child
-    views that are already defined on your class. If any are found, it will
-    instantiate them for you.
-
-    The default implementation of this method simply steps through your
-    childViews array, which is expects to either be empty or to contain View
-    designs that can be instantiated
-
-    Alternatively, you can implement this method yourself in your own
-    subclasses to look for views defined on specific properties and then build
-     a childViews array yourself.
-
-    Note that when you implement this method yourself, you should never
-    instantiate views directly. Instead, you should use
-    this.createChildView() method instead. This method can be much faster in
-    a production environment than creating views yourself.
-
-    @returns {SC.View} receiver
-  */
-  createChildViews: function() {
-    var childViews = get(this, 'childViews'),
-        len        = get(childViews, 'length'),
-        idx, key, views, view;
-
-    SC.beginPropertyChanges(this);
-
-    // swap the array
-    for (idx=0; idx<len; ++idx) {
-      key = view = childViews[idx];
-      if (key) {
-
-        // is this is a key name, lookup view class
-        if (typeof key === 'string') {
-          view = this[key];
-        } else {
-          key = null;
-        }
-
-        if (!view) {
-          //@if (debug)
-          SC.Logger.error ("No view with name " + key + " has been found in " + this.toString());
-          //@endif
-          // skip this one.
-          continue;
-        }
-
-        // createChildView creates the view if necessary, but also sets
-        // important properties, such as parentView
-        view = this.createChildView(view);
-        if (key) { this[key] = view; } // save on key name if passed
-      }
-      childViews[idx] = view;
-    }
-
-    SC.endPropertyChanges(this);
-    return this;
   },
 
   /**
