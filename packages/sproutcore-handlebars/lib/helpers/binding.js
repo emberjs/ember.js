@@ -57,8 +57,6 @@ var get = SC.get, getPath = SC.getPath;
       // Observes the given property on the context and
       // tells the SC._BindableSpan to re-render.
       SC.addObserver(ctx, property, invoker);
-
-      bindView.renderToBuffer(data.buffer);
     } else {
       // The object is not observable, so just render it out and
       // be done with it.
