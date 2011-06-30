@@ -102,17 +102,12 @@ SC.EventDispatcher = SC.Object.extend(
           result = true, handler;
 
       SC.run(function() {
-        while (result !== false && view) {
-          handler = view[eventName];
-          if (SC.typeOf(handler) === 'function') {
-            result = handler.call(view, evt);
-          }
-
-          view = get(view, 'parentView');
+        handler = view[eventName];
+        if (SC.typeOf(handler) === 'function') {
+          result = handler.call(view, evt);
         }
       });
 
-      evt.stopPropagation();
       return result;
     });
   },
