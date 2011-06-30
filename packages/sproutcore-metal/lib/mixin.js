@@ -116,7 +116,11 @@ function mergeMixins(mixins, m, descs, values, base) {
           values[key] = value;
         }
       }
-      
+
+      // manually copy toString() because some JS engines do not enumerate it
+      if (props.hasOwnProperty('toString')) {
+        base.toString = props.toString;
+      }
       
     } else if (mixin.mixins) {
       mergeMixins(mixin.mixins, m, descs, values, base);
