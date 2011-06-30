@@ -73,7 +73,7 @@ test("checking the checkbox updates the value", function() {
 
   checkboxView.$('input:checkbox').change();
 
-  equals(checkboxView.$('input').prop('checked'), true, "precond - after clicking a checkbox, the checked property changed");
-  equals(get(checkboxView, 'value'), true, "changing the checkbox causes the view's value to get updated");
+  equals(checkboxView.$('input').prop('checked'), false, "after clicking a checkbox, the checked property changed");
+  equals(get(checkboxView, 'value'), false, "changing the checkbox causes the view's value to get updated");
 });
 
