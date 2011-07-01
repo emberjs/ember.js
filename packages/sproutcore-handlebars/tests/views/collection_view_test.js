@@ -25,14 +25,14 @@ test("passing a block to the collection helper sets it as the template for examp
   });
 
   view = SC.View.create({
-    template: SC.Handlebars.compile('{{#collection "TemplateTests.CollectionTestView"}} <aside></aside> {{/collection}}')
+    template: SC.Handlebars.compile('{{#collection "TemplateTests.CollectionTestView"}} <label></label> {{/collection}}')
   });
 
   SC.run(function() {
     view.append();
   });
 
-  equals(view.$('aside').length, 3, 'one aside element is created for each content item');
+  equals(view.$('label').length, 3, 'one label element is created for each content item');
 });
 
 test("if no content is passed, and no 'else' is specified, nothing is rendered", function() {
@@ -76,14 +76,14 @@ test("a block passed to a collection helper defaults to the content property of 
   });
 
   view = SC.View.create({
-    template: SC.Handlebars.compile('{{#collection "TemplateTests.CollectionTestView"}} <aside>{{content}}</aside> {{/collection}}')
+    template: SC.Handlebars.compile('{{#collection "TemplateTests.CollectionTestView"}} <label>{{content}}</label> {{/collection}}')
   });
 
   SC.run(function() {
     view.append();
   });
 
-  equals(view.$('li:has(aside:contains("foo")) + li:has(aside:contains("bar")) + li:has(aside:contains("baz"))').length, 1, 'one aside element is created for each content item');
+  equals(view.$('li:has(label:contains("foo")) + li:has(label:contains("bar")) + li:has(label:contains("baz"))').length, 1, 'one label element is created for each content item');
 });
 
 test("a block passed to a collection helper defaults to the view", function() {
@@ -93,18 +93,18 @@ test("a block passed to a collection helper defaults to the view", function() {
   });
 
   view = SC.View.create({
-    template: SC.Handlebars.compile('{{#collection "TemplateTests.CollectionTestView"}} <aside>{{content}}</aside> {{/collection}}')
+    template: SC.Handlebars.compile('{{#collection "TemplateTests.CollectionTestView"}} <label>{{content}}</label> {{/collection}}')
   });
 
   SC.run(function() {
     view.append();
   });
-  equals(view.$('li:has(aside:contains("foo")) + li:has(aside:contains("bar")) + li:has(aside:contains("baz"))').length, 1, 'precond - one aside element is created for each content item');
+  equals(view.$('li:has(label:contains("foo")) + li:has(label:contains("bar")) + li:has(label:contains("baz"))').length, 1, 'precond - one aside element is created for each content item');
 
   SC.run(function() {
     set(view.childViews[0], 'content', []);
   });
-  equals(view.$('aside').length, 0, "all list item views should be removed from DOM");
+  equals(view.$('label').length, 0, "all list item views should be removed from DOM");
 });
 
 test("should include an id attribute if id is set in the options hash", function() {

@@ -6,7 +6,7 @@
 /*global testBoth */
 
 // used by unit tests to test both accessor mode and non-accessor mode
-testBoth = function testBoth(testname, callback) {
+testBoth = function(testname, callback) {
   
   function scget(x,y) { return SC.get(x,y); }
   function scset(x,y,z) { return SC.set(x,y,z); }

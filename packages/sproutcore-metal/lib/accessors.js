@@ -146,9 +146,9 @@ function normalizePath(path) {
     path && path!=='');
     
   if (path==='*') return path; //special case...
-  var first = path[0];
+  var first = path.charAt(0);
   if(first==='.') return 'this'+path;
-  if (first==='*' && path[1]!=='.') return 'this.'+path.slice(1);
+  if (first==='*' && path.charAt(1)!=='.') return 'this.'+path.slice(1);
   return path;
 }
 
@@ -192,7 +192,7 @@ function normalizeTuple(target, path) {
   if (hasThis) path = path.slice(5);
   
   var idx = path.indexOf('*');
-  if (idx>0 && path[idx-1]!=='.') {
+  if (idx>0 && path.charAt(idx-1)!=='.') {
     
     // should not do lookup on a prototype object because the object isn't
     // really live yet.
