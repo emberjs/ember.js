@@ -45,6 +45,7 @@ file "tmp/static/sproutcore.js" => :build do
     file.puts File.read("tmp/static/handlebars.js")
     file.puts File.read("tmp/static/sproutcore-metal.js")
     file.puts File.read("tmp/static/sproutcore-runtime.js")
+    file.puts File.read("tmp/static/sproutcore-indexset.js")
     file.puts File.read("tmp/static/sproutcore-views.js")
     file.puts File.read("tmp/static/sproutcore-handlebars.js")
   end
