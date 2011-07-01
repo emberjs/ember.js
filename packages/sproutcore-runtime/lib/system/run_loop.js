@@ -29,7 +29,8 @@ function invoke(target, method, args, ignore) {
   if (args && ignore>0) {
     args = args.length>ignore ? slice.call(args, ignore) : null;
   }
-  return method.apply(target, args);
+  // IE8's Function.prototype.apply doesn't accept undefined/null arguments.
+  return method.apply(target || this, args || []);
 }
 
 
