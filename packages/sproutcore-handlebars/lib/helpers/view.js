@@ -66,14 +66,10 @@ SC.Handlebars.ViewHelper = SC.Object.create({
 
     newView = this.viewClassFromHTMLOptions(newView, hash);
     var currentView = data.view;
+    var viewOptions = {};
+    if (fn) { viewOptions.template = fn; }
 
-    var childViews = get(currentView, 'childViews');
-    var childView = currentView.createChildView(newView);
-
-    // Set the template of the view to the passed block if we got one
-    if (fn) { set(childView, 'template', fn); }
-
-    childViews.pushObject(childView);
+    currentView.appendChildView(newView, viewOptions);
   }
 });
 

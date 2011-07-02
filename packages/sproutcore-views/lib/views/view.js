@@ -150,27 +150,27 @@ SC.View = SC.Object.extend(
   */
   render: function(buffer) {
     var template = get(this, 'template');
-    if (!template) { return; }
 
-    var context = get(this, 'templateContext'),
-        data = {
-          view: this,
-          buffer: buffer,
-          isRenderData: true
-        };
+    if (template) {
+      var context = get(this, 'templateContext'),
+          data = {
+            view: this,
+            buffer: buffer,
+            isRenderData: true
+          };
 
-    // The template should take care of rendering child views.
-    this._didRenderChildViews = YES;
+      // Invoke the template with the provided template context, which
+      // is the view by default. A hash of data is also passed that provides
+      // the template with access to the view and render buffer.
+      //
+      // The template should write directly to the render buffer instead
+      // of returning a string.
+      var output = template(context, { data: data });
 
-    // Invoke the template with the provided template context, which
-    // is the view by default. A hash of data is also passed that provides
-    // the template with access to the view and render buffer.
-    //
-    // The template should write directly to the render buffer instead
-    // of returning a string.
-    var output = template(context, { data: data });
-
-    if (output !== undefined) { buffer.push(output); }
+      if (output !== undefined) { buffer.push(output); }
+    } else {
+      this.renderChildViews(buffer);
+    }
   },
 
   rerender: function() {
@@ -186,9 +186,11 @@ SC.View = SC.Object.extend(
     // this view is already in the DOM
     } else {
       set(this, 'element', null);
+      var childViews = get(this, 'childViews');
+      childViews.replace(0, get(childViews, 'length'));
 
       this._insertElementLater(function() {
-        this.$().appendTo(target);
+        SC.$(element).replaceWith(get(this, 'element'));
       });
     }
   },
@@ -557,6 +559,8 @@ SC.View = SC.Object.extend(
     var buffer = this.renderToBuffer();
     set(this, 'element', buffer.element());
 
+    this._recursivelyClearBuffer();
+
     return this;
   },
 
@@ -573,6 +577,22 @@ SC.View = SC.Object.extend(
     document body.
   */
   didInsertElement: SC.K,
+
+  invokeRecursively: function(fn) {
+    fn.call(this, this);
+
+    this.forEachChildView(function(view) {
+      view.invokeRecursively(fn);
+    });
+  },
+
+  _recursivelyClearBuffer: function() {
+    this._buffer = null;
+
+    this.forEachChildView(function(view) {
+      view._recursivelyClearBuffer();
+    });
+  },
 
   /**
     @private
@@ -595,7 +615,6 @@ SC.View = SC.Object.extend(
     invokes the same on all child views.
   */
   _notifyDidInsertElement: function() {
-    this._buffer = null;
     this.didInsertElement();
 
     this.forEachChildView(function(view) {
@@ -702,6 +721,11 @@ SC.View = SC.Object.extend(
   renderToBuffer: function(parentBuffer, bufferOperation) {
     bufferOperation = bufferOperation || 'begin'
 
+    get(this, 'childViews').removeArrayObserver(this, {
+      willChange: "childViewsWillChange",
+      didChange: "childViewsDidChange"
+    });
+
     if (parentBuffer) {
       var buffer = parentBuffer[bufferOperation](get(this, 'tagName'));
     } else {
@@ -717,13 +741,12 @@ SC.View = SC.Object.extend(
     this.applyAttributesToBuffer(buffer);
     this.render(buffer);
 
-    // If we've made it this far and renderChildViews() was never called,
-    // render any child views now.
-    if (!this._didRenderChildViews) { this.renderChildViews(buffer); }
-
-    // Reset the flag so that if the element is recreated we re-render the
-    // child views
-    this._didRenderChildViews = false;
+    // Set up observers on the child views array. When this array is modified,
+    // we will ensure that the DOM gets updated to reflect the new view.
+    get(this, 'childViews').addArrayObserver(this, {
+      willChange: "childViewsWillChange",
+      didChange: "childViewsDidChange"
+    });
 
     SC.endPropertyChanges(this);
 
@@ -912,13 +935,6 @@ SC.View = SC.Object.extend(
       }
     });
 
-    // Set up observers on the child views array. When this array is modified,
-    // we will ensure that the DOM gets updated to reflect the new view.
-    childViews.addArrayObserver(this, {
-      willChange: "childViewsWillChange",
-      didChange: "childViewsDidChange"
-    });
-
     this.classNameBindings = get(this, 'classNameBindings').slice();
     this.classNames = get(this, 'classNames').slice();
   },
@@ -929,9 +945,7 @@ SC.View = SC.Object.extend(
   childViewsWillChange: function(views, start, removed) {
     var element = get(this, 'element'), buffer = this._buffer, view;
 
-    if (!buffer && !element) {
-      return;
-    } else if (buffer) {
+    if (buffer) {
       for (var i=start; i<start+removed; i++) {
         view = views[i];
         view._buffer.remove();
@@ -946,16 +960,25 @@ SC.View = SC.Object.extend(
     }
   },
 
+  appendChildView: function(view, options) {
+    var buffer = this._buffer;
+
+    if (!buffer) {
+      throw "You can't use appendChildView outside of the rendering process";
+    }
+
+    view = this.createChildView(view, options);
+    this.childViews.pushObject(view);
+    view.renderToBuffer(buffer);
+  },
+
   childViewsDidChange: function(views, start, removed, added) {
     var element = get(this, 'element'), buffer = this._buffer, view;
     var len = get(views, 'length'), startWith, prev;
 
-    if (window.billy) debugger;
     if (added === 0) return;
 
-    if (!buffer && !element) {
-      return;
-    } else if (buffer) {
+    if (buffer) {
       if (added === 1 && removed === 0 && start === len) {
         view = views[start];
         view.renderToBuffer(buffer);
@@ -972,7 +995,7 @@ SC.View = SC.Object.extend(
       for (var i=startWith; i<start+added; i++) {
         prev = view;
         view = views[i];
-        view.renderToBuffer(prev, 'insertAfter');
+        view.renderToBuffer(prev._buffer, 'insertAfter');
       }
     } else {
       prev = start === 0 ? null : views[start-1];

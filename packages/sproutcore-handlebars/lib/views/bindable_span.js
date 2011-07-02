@@ -156,24 +156,5 @@ SC._BindableSpanView = SC.View.extend(
     }
 
     return this._super(buffer);
-  },
-
-  /**
-    Called when the property associated with this `<span>` changes.
-
-    We destroy all registered children, then render the view again and insert
-    it into DOM.
-  */
-  rerender: function() {
-    this.destroyAllChildren();
-
-    // Store a reference to the current element so that
-    // it can be replaced in-line in the DOM.
-    var oldElem = this.$();
-    set(this, 'element', null);
-
-    this._insertElementLater(function() {
-      oldElem.replaceWith(get(this, 'element'));
-    });
   }
 });
