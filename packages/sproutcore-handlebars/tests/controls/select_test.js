@@ -34,7 +34,49 @@ test("should render options", function() {
   
   equals(select.$().find('option').length, 3);
   equals(select.$().find('option:eq(2)').text(), 'C');
+  equals(select.get('selected'), 'A');
 });
 
-// test("should render options with attributeBindings", function() {
-// });
+test("should render options with attributeBindings", function() {
+  var options = [{label: 'California', value: 'CA'}]
+
+  select.set('content', options);
+
+  SC.run(function() {
+    select.append();
+  });
+  
+  equals(select.$().find('option').length, 1);
+  equals(select.$().find('option:eq(0)').text(), 'California');
+  equals(select.$().find('option:eq(0)').val(), 'CA');
+});
+
+test("should have a selected option", function() {
+  var options = [{label: 'California', value: 'CA'},
+                 {label: 'Oregon', value: 'OR', selected: true}]
+
+  select.set('content', options);
+
+  SC.run(function() {
+    select.append();
+  });
+  
+  equals(select.$().val(), 'OR');
+  equals(select.get('selected'), options[1]);
+});
+
+test("selected option should be updateable", function() {
+  var options = [{label: 'California', value: 'CA'},
+                 {label: 'Oregon', value: 'OR', selected: true}]
+
+  select.set('content', options);
+
+  SC.run(function() {
+    select.append();
+  });
+
+  select.get('content').objectAt(0).selected = true;
+
+  equals(select.$().val(), 'CA');
+  equals(select.get('selected'), options[0]);
+});
