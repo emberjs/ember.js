@@ -8,12 +8,100 @@
 require('sproutcore-views/views/view');
 var get = SC.get, set = SC.set;
 
+SC.ContainerView = SC.View.extend({
+  renderToBuffer: function() {
+    var ret = this._super.apply(this, arguments);
+
+    get(this, 'childViews').addArrayObserver(this, {
+      willChange: 'childViewsWillChange',
+      didChange: 'childViewsDidChange'
+    });
+
+    return ret;
+  },
+
+  render: function(buffer) {
+    this.forEachChildView(function(view) {
+      view.renderToBuffer(buffer);
+    });
+  },
+
+  /**
+    When a child view is removed, 
+  **/
+  childViewsWillChange: function(views, start, removed) {
+    var element = get(this, 'element'), buffer = this._buffer, view;
+
+    if (buffer) {
+      for (var i=start; i<start+removed; i++) {
+        view = views[i];
+        view._buffer.remove();
+        view._buffer = null;
+      }
+    } else {
+      for (var i=start; i<start+removed; i++) {
+        view = views[i];
+        set(view, 'element', null);
+        view.$().remove();
+      }
+    }
+  },
+
+  childViewsDidChange: function(views, start, removed, added) {
+    var element = get(this, 'element'), buffer = this._buffer, view;
+    var len = get(views, 'length'), startWith, prev;
+
+    if (added === 0) return;
+
+    if (buffer) {
+      if (added === 1 && removed === 0 && start === len) {
+        view = views[start];
+        view.renderToBuffer(buffer);
+        return;
+      } else if (start === 0) {
+        view = views[start];
+        startWith = start + 1;
+        view.renderToBuffer(buffer, 'prepend');
+      } else {
+        view = views[start - 1];
+        startWith = start;
+      }
+
+      for (var i=startWith; i<start+added; i++) {
+        prev = view;
+        view = views[i];
+        view.renderToBuffer(prev._buffer, 'insertAfter');
+      }
+    } else {
+      prev = start === 0 ? null : views[start-1];
+
+      for (var i=start; i<start+added; i++) {
+        view = views[i];
+        this._scheduleInsertion(view, prev);
+        prev = view;
+      }
+    }
+  },
+
+  _scheduleInsertion: function(view, prev) {
+    var parent = this;
+
+    view._insertElementLater(function() {
+      if (prev) {
+        prev.$().after(view.$());
+      } else {
+        parent.$().prepend(view.$());
+      }
+    });
+  },
+});
+
 /**
   @class
   @since SproutCore 2.0
   @extends SC.View
 */
-SC.CollectionView = SC.View.extend(
+SC.CollectionView = SC.ContainerView.extend(
 /** @scope SC.CollectionView.prototype */ {
 
   /**

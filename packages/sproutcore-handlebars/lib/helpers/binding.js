@@ -37,7 +37,7 @@ var get = SC.get, getPath = SC.getPath;
 
       var observer, invoker;
 
-      view.appendChildView(bindView);
+      view.appendChild(bindView);
 
       observer = function() {
         if (get(bindView, 'element')) {

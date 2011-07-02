@@ -7,15 +7,13 @@
       parentView = SC.View.create({
         render: function(buffer) {
           buffer.push('Sprout');
-          this._super(buffer);
+          this.appendChild(childView);
         }
       });
 
       childView = SC.View.create({
         template: function() { return 'Core'; }
       });
-
-      childViews = get(parentView, 'childViews');
     },
 
     teardown: function() {
@@ -30,8 +28,6 @@
 
   // no parent element, no buffer, no element
   test("should render an inserted child view when the child is inserted before a DOM element is created", function() {
-    childViews.pushObject(childView);
-
     SC.run(function() {
       parentView.append();
     });

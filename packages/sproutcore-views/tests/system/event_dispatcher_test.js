@@ -27,7 +27,7 @@ test("should dispatch events to views", function() {
   var childKeyDownCalled = 0;
   var parentKeyDownCalled = 0;
 
-  view = SC.View.create({
+  view = SC.ContainerView.create({
     childViews: ['child'],
 
     child: SC.View.extend({

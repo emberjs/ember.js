@@ -69,7 +69,7 @@ SC.Handlebars.ViewHelper = SC.Object.create({
     var viewOptions = {};
     if (fn) { viewOptions.template = fn; }
 
-    currentView.appendChildView(newView, viewOptions);
+    currentView.appendChild(newView, viewOptions);
   }
 });
 
