@@ -12,23 +12,22 @@ SC.SelectOption = SC.View.extend({
   attributeBindings: ['value', 'selected'],
   label: function() {
     var content = get(this, 'content');
+    var ret = content;
 
-    if (content) {
-      if (typeof content !== "string") {
-        return content.label;
-      } else {
-        return content;
-      }
+    if (typeof content === "object") {
+       ret = content.label;
     }
+
+    return ret;
   }.property(),
   value: function() {
-    var ret, content = get(this, 'content');
-    
+    var content = get(this, 'content');
+    var ret = content;
+
     if (typeof content === "object") {
-      ret = content.value;
-    } else {
-      ret = content;
+       ret = content.value;
     }
+
     return ret;
   }.property(),
   selected: function() {
