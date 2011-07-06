@@ -89,17 +89,14 @@ To learn more about what we're up to, follow [@sproutcore on Twitter](http://twi
 
 1. Install Ruby and Rubygems. There are many resources on the web can help you to do so, one of the best ways may be [rvm](http://rvm.beginrescueend.com/).
 
-2. Install spade: `gem install spade` (WARNING: There is a bug in RubyGems 1.7.2, please upgrade to 1.8.5+ or downgrade.)
+2. Install Bundler via `gem install bundler`
 
-3. Install sproutcore-preprocessor via `spadepkg install sproutcore-preprocessor`.
+3. Run `bundle install` to pull in Ruby dependencies.
 
-3. Enter the following commands in your command shell:
+4. To start the development web server, run `bpm autocompile` or `bpm
+   preview` (depending on your version of BPM).
 
-        cd sproutcore20
-        spaderun update
-        spaderun preview
-
-4. Then visit: http://localhost:4020/tests.html?package=PACKAGE_NAME.  Replace 'PACKAGE_NAME' with the name of the package you want to run.  For example:
+5. Then visit: http://localhost:4020/tests.html?package=PACKAGE_NAME.  Replace 'PACKAGE_NAME' with the name of the package you want to run.  For example:
 
   * [SproutCore Runtime](http://localhost:4020/tests.html?package=sproutcore-runtime)
   * [SproutCore Views](http://localhost:4020/tests.html?package=sproutcore-views)
@@ -116,8 +113,4 @@ Note that unless you are adding new __tests__ or adding a new package you should
 
 1. Follow the installation instructions for running the unit tests.
 
-2. Install Bundler via `gem install bundler`
-
-3. Run `bundle install` to pull in Ruby dependencies.
-
-4. Run `bundle exec rake` to build SproutCore. The build will be placed in the tmp directory.
+2. Run `bundle exec rake` to build SproutCore. The build will be placed in the tmp directory.
