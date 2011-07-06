@@ -104,6 +104,9 @@ var ClassMixin = SC.Mixin.create({
     Class.ClassMixin = SC.Mixin.create(this.ClassMixin);
     Class.PrototypeMixin = SC.Mixin.create(this.PrototypeMixin);
 
+    Class.ClassMixin.ownerConstructor = Class;
+    Class.PrototypeMixin.ownerConstructor = Class;
+
     var PrototypeMixin = Class.PrototypeMixin;
     PrototypeMixin.reopen.apply(PrototypeMixin, arguments);
 
