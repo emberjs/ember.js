@@ -23,10 +23,10 @@ test('defining computed property should invoke property on get', function() {
     count++;
     return 'computed '+key;
   }));
-  
+
   equals(SC.get(obj, 'foo'), 'computed foo', 'should return value');
   equals(count, 1, 'should have invoked computed property');
-  
+
   if (SC.USES_ACCESSORS) {
     count = 0;
     equals(SC.get(obj, 'foo'), 'computed foo', 'should return value');

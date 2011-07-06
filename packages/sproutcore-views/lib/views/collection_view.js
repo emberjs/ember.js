@@ -6,7 +6,7 @@
 // ==========================================================================
 
 require('sproutcore-views/views/view');
-var get = SC.get, set = SC.set;
+var get = SC.get, set = SC.set, meta = SC.meta;
 
 SC.ContainerView = SC.View.extend({
   renderToBuffer: function() {
@@ -26,39 +26,38 @@ SC.ContainerView = SC.View.extend({
     });
   },
 
+  destroy: function() {
+    get(this, 'childViews').removeArrayObserver(this, {
+      willChange: 'childViewsWillChange',
+      didChange: 'childViewsDidChange'
+    });
+
+    this._super();
+  },
+
   /**
     When a child view is removed, 
   **/
   childViewsWillChange: function(views, start, removed) {
-    var element = get(this, 'element'), buffer = this._buffer, view;
+    var element = get(this, 'element'), view, viewMeta;
+    var buffer = meta(this)['SC.View'].buffer;
 
-    if (buffer) {
+    if (element || buffer) {
       for (var i=start; i<start+removed; i++) {
-        view = views[i];
-        view._buffer.remove();
-        view._buffer = null;
-      }
-    } else {
-      for (var i=start; i<start+removed; i++) {
-        view = views[i];
-        set(view, 'element', null);
-        view.$().remove();
+        if (get(views[i], 'element')) { views[i].destroyElement(); }
       }
     }
   },
 
   childViewsDidChange: function(views, start, removed, added) {
-    var element = get(this, 'element'), buffer = this._buffer, view;
+    var element = get(this, 'element'), view;
+    var buffer = meta(this)['SC.View'].buffer;
     var len = get(views, 'length'), startWith, prev;
 
     if (added === 0) return;
 
     if (buffer) {
-      if (added === 1 && removed === 0 && start === len) {
-        view = views[start];
-        view.renderToBuffer(buffer);
-        return;
-      } else if (start === 0) {
+      if (start === 0) {
         view = views[start];
         startWith = start + 1;
         view.renderToBuffer(buffer, 'prepend');
@@ -70,7 +69,8 @@ SC.ContainerView = SC.View.extend({
       for (var i=startWith; i<start+added; i++) {
         prev = view;
         view = views[i];
-        view.renderToBuffer(prev._buffer, 'insertAfter');
+        prevBuffer = meta(prev)['SC.View'].buffer;
+        view.renderToBuffer(prevBuffer, 'insertAfter');
       }
     } else {
       prev = start === 0 ? null : views[start-1];
@@ -133,10 +133,12 @@ SC.CollectionView = SC.ContainerView.extend(
   },
 
   _contentWillChange: function() {
-    var content = this.get('content');
+    if (!this.isDestroying) {
+      var content = this.get('content');
 
-    if (content) { content.removeArrayObserver(this); }
-    this.arrayWillChange(content, 0, get(content, 'length'));
+      if (content) { content.removeArrayObserver(this); }
+      this.arrayWillChange(content, 0, get(content, 'length'));
+    }
   }.observesBefore('content'),
 
   /**
@@ -148,15 +150,22 @@ SC.CollectionView = SC.ContainerView.extend(
     bindings have synchronized and vice versa.
   */
   _contentDidChange: function() {
-    var content = get(this, 'content');
+    if (!this.isDestroying) {
+      var content = get(this, 'content');
 
-    if (content) { content.addArrayObserver(this); }
-    this.arrayDidChange(content, 0, null, get(content, 'length'));
+      if (content) { content.addArrayObserver(this); }
+      this.arrayDidChange(content, 0, null, get(content, 'length'));
+    }
   }.observes('content'),
 
   destroy: function() {
+    var content = get(this, 'content');
+    if (content) { content.removeArrayObserver(this); }
+    var ret = this._super();
+
     set(this, 'content', null);
-    return this._super();
+
+    return ret;
   },
 
   arrayWillChange: function(content, start, removedCount) {

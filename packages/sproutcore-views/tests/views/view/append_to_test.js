@@ -223,6 +223,8 @@ test("destroy more forcibly removes child views", function() {
 
   ok(SC.$("#" + get(childView, 'elementId')).length === 1, "precond - child element was inserted");
 
+  willDestroyCalled = 0;
+
   SC.run(function() {
     view.destroy();
   });

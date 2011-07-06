@@ -8,6 +8,9 @@
 
 require("sproutcore-views/system/render_buffer");
 var get = SC.get, set = SC.set, addObserver = SC.addObserver;
+var getPath = SC.getPath, meta = SC.meta, fmt = SC.String.fmt;
+
+var destroyedError = "You can't call %@ on a destroyed view";
 
 /**
   @static
@@ -80,10 +83,10 @@ SC.View = SC.Object.extend(
         template = get(get(this, 'templates'), templateName);
 
     // If there is no template but a templateName has been specified,
-    // try to lookup as a module
+    // try to lookup as a spade module
     if (!template && templateName) {
       if ('undefined' !== require && require.exists) {
-        if (require.exists(templateName)) template = require(templateName);
+        if (require.exists(templateName)) { template = require(templateName); }
       }
 
       if (!template) {
@@ -139,11 +142,12 @@ SC.View = SC.Object.extend(
 
   /**
     Called on your view when it should push strings of HTML into a
-    SC.RenderBuffer.
+    SC.RenderBuffer. Most users will want to override the `template`
+    or `templateName` properties instead of this method.
 
     By default, SC.View will look for a function in the `template`
-    property and invoke it with the value of `templateContext`. By default,
-    `templateContext` will be the view itself.
+    property and invoke it with the value of `templateContext`. The value of
+    `templateContext` will be the view itself unless you override it.
 
     @param {SC.RenderBuffer} buffer The render buffer
   */
@@ -157,51 +161,147 @@ SC.View = SC.Object.extend(
       // Invoke the template with the provided template context, which
       // is the view by default. A hash of data is also passed that provides
       // the template with access to the view and render buffer.
-      //
+
       // The template should write directly to the render buffer instead
       // of returning a string.
       var output = template(context, { data: data });
 
+      // If the template returned a string instead of writing to the buffer,
+      // push the string onto the buffer.
       if (output !== undefined) { buffer.push(output); }
     }
   },
 
+  states: {
+    // appendChild is only legal while rendering the buffer.
+    appendChild: function() {
+      throw "You can't use appendChild outside of the rendering process";
+    },
+
+    // in the destroyed state, everything is illegal
+    destroyed: {
+      appendChild: function() {
+        throw fmt(destroyedError, ['appendChild']);
+      },
+      rerender: function() {
+        throw fmt(destroyedError, ['rerender']);
+      },
+      destroyElement: function() {
+        throw fmt(destroyedError, ['destroyElement']);
+      }
+    },
+
+    // before rendering has begun, all legal manipulations are noops.
+    preRender: {},
+
+    // inside the buffer, legal manipulations are done on the buffer
+    inBuffer: {
+      rerender: function(view) {
+        var viewMeta = meta(view)['SC.View'],
+            buffer = viewMeta.buffer;
+
+        buffer = buffer.replaceWith(get(view, 'tagName'));
+        view.renderToBuffer(buffer);
+      },
+      appendChild: function(view, childView, options) {
+        var buffer = meta(view)['SC.View'].buffer;
+
+        childView = this.createChildView(childView, options);
+        view.childViews.pushObject(childView);
+        childView.renderToBuffer(buffer);
+      },
+      destroyElement: function(view) {
+        meta(view)['SC.View'].buffer.remove();
+
+        view.invokeRecursively(function(view) {
+          var viewMeta = meta(view)['SC.View'];
+          viewMeta.buffer = null;
+
+          view.willDestroyElement();
+
+          this.invokeRecursively(function(view) {
+            view.state = view.states.preRender;
+          });
+        });
+
+        return view;
+      }
+    },
+
+    // once the view has been inserted into the DOM, legal manipulations
+    // are done on the DOM element.
+    inDOM: {
+
+      // once the view has been inserted into the DOM, rerendering is
+      // deferred to allow bindings to synchronize.
+      rerender: function(view) {
+        var viewMeta = meta(this)['SC.View'], element = get(view, 'element');
+
+        set(view, 'element', null);
+        view.state = view.states.preRender;
+
+        var lengthBefore = viewMeta.lengthBeforeRender,
+            lengthAfter  = viewMeta.lengthAfterRender;
+
+        // If there were child views created during the last call to render(),
+        // remove them under the assumption that they will be re-created when
+        // we re-render.
+
+        // VIEW-TODO: Unit test this path.
+        if (lengthBefore < lengthAfter) {
+          var childViews = get(view, 'childViews');
+          childViews.replace(lengthBefore, lengthAfter - lengthBefore);
+        }
+
+        view._insertElementLater(function() {
+          SC.$(element).replaceWith(get(this, 'element'));
+        });
+      },
+      destroyElement: function(view) {
+        var elem = get(this, 'element');
+
+        view.invokeRecursively(function(view) {
+          var elem = get(this, 'element');
+          this.willDestroyElement();
+
+          view.state = view.states.preRender;
+          set(view, 'element', null);
+        });
+
+        SC.$(elem).remove();
+        return view;
+      }
+    }
+  },
+
+  invokeForState: function(name) {
+    var state = this.state,
+        fn = state && state[name] || this.states[name];
+
+    if (fn) {
+      var args = Array.prototype.slice.call(arguments, 1);
+      args.unshift(this);
+
+      return fn.apply(this, args);
+    }
+  },
+
   /**
-    Render the view again. This will work regardless of whether the
-    view is already in the DOM. If the view is already in the DOM,
-    the rendering process will be deferred to give bindings a chance
+    Renders the view again. This will work regardless of whether the
+    view is already in the DOM or not. If the view is in the DOM, the
+    rendering process will be deferred to give bindings a chance
     to synchronize.
 
-    If children were added during the rendering process using appendChild,
+    If children were added during the rendering process using `appendChild`,
     `rerender` will remove them, because they will be added again
     if needed by the next `render`.
+
+    In general, if the display of your view changes, you should modify
+    the DOM element directly instead of manually calling `rerender`, which can
+    be slow.
   */
   rerender: function() {
-    var buffer = this._buffer, element = get(this, 'element');
-
-    // if we have no buffer and no element, this is a noop
-    if (!buffer && !element) {
-      return;
-    // we have a buffer but no element yet
-    } else if (buffer) {
-      buffer = buffer.replaceWith(get(this, 'tagName'));
-      this.renderToBuffer(buffer);
-    // this view is already in the DOM
-    } else {
-      set(this, 'element', null);
-
-      // if the view used appendChild, the children were created
-      // during render, and we want to nuke them because the
-      // re-render will create them again.
-      if (this._appendedChildDuringRender) {
-        var childViews = get(this, 'childViews');
-        childViews.replace(0, get(childViews, 'length'));
-      }
-
-      this._insertElementLater(function() {
-        SC.$(element).replaceWith(get(this, 'element'));
-      });
-    }
+    return this.invokeForState('rerender');
   },
 
   /**
@@ -568,7 +668,10 @@ SC.View = SC.Object.extend(
     var buffer = this.renderToBuffer();
     set(this, 'element', buffer.element());
 
-    this._recursivelyClearBuffer();
+    this.invokeRecursively(function(view) {
+      meta(view)['SC.View'].buffer = null;
+      view.state = view.states.inDOM;
+    });
 
     return this;
   },
@@ -597,17 +700,6 @@ SC.View = SC.Object.extend(
 
     this.forEachChildView(function(view) {
       view.invokeRecursively(fn);
-    });
-  },
-
-  /**
-    Clear the buffer on the current view and all descendent views.
-
-    @private
-  */
-  _recursivelyClearBuffer: function() {
-    this.invokeRecursively(function(view) {
-      view._buffer = null;
     });
   },
 
@@ -653,18 +745,7 @@ SC.View = SC.Object.extend(
     @returns {SC.View} receiver
   */
   destroyElement: function() {
-    var elem = get(this, 'element');
-    if (elem) {
-      // Notify the view and its child views that the element is about to be
-      // destroyed.
-      this._notifyWillDestroyElement();
-
-      // Remove this DOM element from its parent.
-      SC.$(elem).remove();
-      set(this, 'element', null);
-    }
-
-    return this;
+    return this.invokeForState('destroyElement');
   },
 
   /**
@@ -717,31 +798,44 @@ SC.View = SC.Object.extend(
   /**
     @private
 
-    Renders to a buffer.
+    Invoked by the view system when this view needs to produce an HTML
+    representation. This method will create a new render buffer, if needed,
+    then apply any default attributes, such as class names and visibility.
+    Finally, the `render()` method is invoked, which is responsible for
+    doing the bulk of the rendering.
 
-    Rendering only happens for the initial rendering. Further updates happen
-    in updateElement, and are not done to buffers, but to elements.
-    Note: You should not generally override nor directly call this method.
-    This method is only called by createElement to set up the element
-    initially, and by renderChildViews, to write to a buffer.
+    You should not need to override this method; instead, implement the
+    `template` property, or if you need more control, override the `render`
+    method.
 
     @param {SC.RenderBuffer} buffer the render buffer. If no buffer is
       passed, a default buffer, using the current view's `tagName`, will
       be used.
   */
   renderToBuffer: function(parentBuffer, bufferOperation) {
-    bufferOperation = bufferOperation || 'begin';
+    var viewMeta = meta(this)['SC.View'];
     var buffer;
 
+    // Determine where in the parent buffer to start the new buffer.
+    // By default, a new buffer will be appended to the parent buffer.
+    // The buffer operation may be changed if the child views array is
+    // mutated by SC.ContainerView.
+    bufferOperation = bufferOperation || 'begin';
+
+    // If this is the top-most view, start a new buffer. Otherwise,
+    // create a new buffer relative to the original using the
+    // provided buffer operation (for example, `insertAfter` will
+    // insert a new buffer after the "parent buffer").
     if (parentBuffer) {
       buffer = parentBuffer[bufferOperation](get(this, 'tagName'));
     } else {
       buffer = this.renderBuffer();
     }
 
-    this._buffer = buffer;
+    viewMeta.buffer = buffer;
+    this.state = this.states.inBuffer;
 
-    var mixins, idx, len;
+    viewMeta.lengthBeforeRender = getPath(this, 'childViews.length');
 
     SC.beginPropertyChanges(this);
 
@@ -749,6 +843,8 @@ SC.View = SC.Object.extend(
     this.render(buffer);
 
     SC.endPropertyChanges(this);
+
+    viewMeta.lengthAfterRender = getPath(this, 'childViews.length');
 
     return buffer;
   },
@@ -889,6 +985,8 @@ SC.View = SC.Object.extend(
       dispatch
   */
   init: function() {
+    this.state = this.states.preRender;
+
     var parentView = get(this, 'parentView');
 
     this._super();
@@ -916,19 +1014,12 @@ SC.View = SC.Object.extend(
 
     this.classNameBindings = get(this, 'classNameBindings').slice();
     this.classNames = get(this, 'classNames').slice();
+
+    meta(this)["SC.View"] = {};
   },
 
   appendChild: function(view, options) {
-    var buffer = this._buffer;
-
-    if (!buffer) {
-      throw "You can't use appendChild outside of the rendering process";
-    }
-
-    view = this.createChildView(view, options);
-    this.childViews.pushObject(view);
-    this._appendedChildDuringRender = true;
-    view.renderToBuffer(buffer);
+    this.invokeForState('appendChild', view, options);
   },
 
   /**
@@ -990,10 +1081,12 @@ SC.View = SC.Object.extend(
   destroy: function() {
     if (get(this, 'isDestroyed')) { return this; }
 
+    this.isDestroying = true;
+
     // destroy the element -- this will avoid each child view destroying
     // the element over and over again...
     this.destroyElement();
-    this._buffer = null;
+    this.state = this.states.destroyed;
 
     // first destroy any children.
     this.mutateChildViews(function(view) {
@@ -1003,11 +1096,15 @@ SC.View = SC.Object.extend(
     // next remove view from global hash
     delete SC.View.views[get(this, 'elementId')];
 
-    // remove from parent if found
-    if (get(this, 'parentView')) { this.removeFromParent(); }
+    // remove from parent if found. Don't call removeFromParent,
+    // as removeFromParent will try to remove the element from
+    // the DOM again.
+    var parent = get(this, 'parentView');
+    if (parent) { parent.removeChild(this); }
 
-    //Do generic destroy. It takes care of mixins and sets isDestroyed to YES.
+    // Do generic destroy. It takes care of mixins and sets isDestroyed to YES.
     this._super();
+
     return this; // done with cleanup
   },
 

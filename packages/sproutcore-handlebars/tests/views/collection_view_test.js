@@ -29,7 +29,7 @@ test("passing a block to the collection helper sets it as the template for examp
   });
 
   SC.run(function() {
-    view.append();
+    view.appendTo('#qunit-fixture');
   });
 
   equals(view.$('aside').length, 3, 'one aside element is created for each content item');
@@ -46,7 +46,7 @@ test("if no content is passed, and no 'else' is specified, nothing is rendered",
   });
 
   SC.run(function() {
-    view.append();
+    view.appendTo('#qunit-fixture');
   });
 
   equals(view.$('li').length, 0, 'if no "else" is specified, nothing is rendered');
@@ -63,7 +63,7 @@ test("if no content is passed, and 'else' is specified, the else block is render
   });
 
   SC.run(function() {
-    view.append();
+    view.appendTo('#qunit-fixture');
   });
 
   equals(view.$('li:has(del)').length, 1, 'the else block is rendered');
@@ -80,7 +80,7 @@ test("a block passed to a collection helper defaults to the content property of 
   });
 
   SC.run(function() {
-    view.append();
+    view.appendTo('#qunit-fixture');
   });
 
   equals(view.$('li:has(aside:contains("foo")) + li:has(aside:contains("bar")) + li:has(aside:contains("baz"))').length, 1, 'one aside element is created for each content item');
@@ -97,7 +97,7 @@ test("a block passed to a collection helper defaults to the view", function() {
   });
 
   SC.run(function() {
-    view.append();
+    view.appendTo('#qunit-fixture');
   });
   equals(view.$('li:has(aside:contains("foo")) + li:has(aside:contains("bar")) + li:has(aside:contains("baz"))').length, 1, 'precond - one aside element is created for each content item');
 
@@ -113,7 +113,7 @@ test("should include an id attribute if id is set in the options hash", function
   });
 
   SC.run(function() {
-    view.append();
+    view.appendTo('#qunit-fixture');
   });
 
   equals(view.$('ul#baz').length, 1, "adds an id attribute");
@@ -129,7 +129,7 @@ test("should give its item views the class specified by itemClass", function() {
   });
 
   SC.run(function() {
-    view.append();
+    view.appendTo('#qunit-fixture');
   });
 
   equals(view.$('ul li.baz').length, 3, "adds class attribute");
@@ -146,7 +146,7 @@ test("should give its item views the classBinding specified by itemClassBinding"
   });
 
   SC.run(function() {
-    view.append();
+    view.appendTo('#qunit-fixture');
   });
 
   equals(view.$('ul li.is-baz').length, 2, "adds class on initial rendering");
@@ -177,7 +177,7 @@ test("should work inside a bound {{#if}}", function() {
   });
 
   SC.run(function() {
-    view.append();
+    view.appendTo('#qunit-fixture');
   });
 
   equals(view.$('ul li').length, 3, "renders collection when conditional is true");
@@ -201,7 +201,7 @@ test("should pass content as context when using {{#each}} helper", function() {
                   name: 'Leopard' } ]
   });
 
-  SC.run(function() { view.append(); });
+  SC.run(function() { view.appendTo('#qunit-fixture'); });
 
   equals(view.$().text(), "Mac OS X 10.7: Lion Mac OS X 10.6: Snow Leopard Mac OS X 10.5: Leopard ", "prints each item in sequence");
 });
@@ -217,7 +217,7 @@ test("should re-render when the content object changes", function() {
   });
 
   SC.run(function() {
-    view.append();
+    view.appendTo('#qunit-fixture');
   });
 
   SC.run(function() {
@@ -243,7 +243,7 @@ test("select tagName on collection helper automatically sets child tagName to op
   });
   
   SC.run(function() {
-    view.append();
+    view.appendTo('qunit-fixture');
   });
   
   equals(view.$('option').length, 1, "renders the correct child tag name");
@@ -260,7 +260,7 @@ test("tagName works in the #collection helper", function() {
   });
 
   SC.run(function() {
-    view.append();
+    view.appendTo('#qunit-fixture');
   });
 
   equals(view.$('ol').length, 1, "renders the correct tag name");
@@ -291,7 +291,7 @@ test("should render nested collections", function() {
   });
 
   SC.run(function() {
-    view.append();
+    view.appendTo('#qunit-fixture');
   });
 
   equals(view.$('ul.outer > li').length, 1, "renders the outer list with correct number of items");
