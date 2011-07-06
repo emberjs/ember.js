@@ -1081,8 +1081,6 @@ SC.View = SC.Object.extend(
   destroy: function() {
     if (get(this, 'isDestroyed')) { return this; }
 
-    this.isDestroying = true;
-
     // destroy the element -- this will avoid each child view destroying
     // the element over and over again...
     this.destroyElement();

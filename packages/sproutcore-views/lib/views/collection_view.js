@@ -27,11 +27,7 @@ SC.ContainerView = SC.View.extend({
   },
 
   destroy: function() {
-    get(this, 'childViews').removeArrayObserver(this, {
-      willChange: 'childViewsWillChange',
-      didChange: 'childViewsDidChange'
-    });
-
+    get(this, 'childViews').forEach(this.removeFromParent, this);
     this._super();
   },
 
@@ -133,12 +129,10 @@ SC.CollectionView = SC.ContainerView.extend(
   },
 
   _contentWillChange: function() {
-    if (!this.isDestroying) {
-      var content = this.get('content');
+    var content = this.get('content');
 
-      if (content) { content.removeArrayObserver(this); }
-      this.arrayWillChange(content, 0, get(content, 'length'));
-    }
+    if (content) { content.removeArrayObserver(this); }
+    this.arrayWillChange(content, 0, get(content, 'length'));
   }.observesBefore('content'),
 
   /**
@@ -150,22 +144,17 @@ SC.CollectionView = SC.ContainerView.extend(
     bindings have synchronized and vice versa.
   */
   _contentDidChange: function() {
-    if (!this.isDestroying) {
-      var content = get(this, 'content');
+    var content = get(this, 'content');
 
-      if (content) { content.addArrayObserver(this); }
-      this.arrayDidChange(content, 0, null, get(content, 'length'));
-    }
+    if (content) { content.addArrayObserver(this); }
+    this.arrayDidChange(content, 0, null, get(content, 'length'));
   }.observes('content'),
 
   destroy: function() {
     var content = get(this, 'content');
     if (content) { content.removeArrayObserver(this); }
-    var ret = this._super();
-
     set(this, 'content', null);
-
-    return ret;
+    return this._super();
   },
 
   arrayWillChange: function(content, start, removedCount) {
