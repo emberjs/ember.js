@@ -87,7 +87,7 @@ To learn more about what we're up to, follow [@sproutcore on Twitter](http://twi
 
 # How to Run Unit Tests
 
-1. Install Ruby and Rubygems. There are many resources on the web can help you to do so, one of the best ways may be [rvm](http://rvm.beginrescueend.com/).
+1. Install Ruby and Rubygems. There are many resources on the web can help you to do so, one of the best ways may be [rvm](http://rvm.beginrescueend.com/). (WARNING: There is a bug in RubyGems 1.7.2, please upgrade to 1.8.5+ or downgrade.)
 
 2. Install Bundler via `gem install bundler`
 
