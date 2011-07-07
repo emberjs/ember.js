@@ -5,92 +5,8 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
-require('sproutcore-views/views/view');
-var get = SC.get, set = SC.set, meta = SC.meta;
-
-SC.ContainerView = SC.View.extend({
-  renderToBuffer: function() {
-    var ret = this._super.apply(this, arguments);
-
-    get(this, 'childViews').addArrayObserver(this, {
-      willChange: 'childViewsWillChange',
-      didChange: 'childViewsDidChange'
-    });
-
-    return ret;
-  },
-
-  render: function(buffer) {
-    this.forEachChildView(function(view) {
-      view.renderToBuffer(buffer);
-    });
-  },
-
-  destroy: function() {
-    get(this, 'childViews').forEach(this.removeFromParent, this);
-    this._super();
-  },
-
-  /**
-    When a child view is removed, 
-  **/
-  childViewsWillChange: function(views, start, removed) {
-    var element = get(this, 'element'), view, viewMeta;
-    var buffer = meta(this)['SC.View'].buffer;
-
-    if (element || buffer) {
-      for (var i=start; i<start+removed; i++) {
-        if (get(views[i], 'element')) { views[i].destroyElement(); }
-      }
-    }
-  },
-
-  childViewsDidChange: function(views, start, removed, added) {
-    var element = get(this, 'element'), view;
-    var buffer = meta(this)['SC.View'].buffer;
-    var len = get(views, 'length'), startWith, prev;
-
-    if (added === 0) return;
-
-    if (buffer) {
-      if (start === 0) {
-        view = views[start];
-        startWith = start + 1;
-        view.renderToBuffer(buffer, 'prepend');
-      } else {
-        view = views[start - 1];
-        startWith = start;
-      }
-
-      for (var i=startWith; i<start+added; i++) {
-        prev = view;
-        view = views[i];
-        prevBuffer = meta(prev)['SC.View'].buffer;
-        view.renderToBuffer(prevBuffer, 'insertAfter');
-      }
-    } else {
-      prev = start === 0 ? null : views[start-1];
-
-      for (var i=start; i<start+added; i++) {
-        view = views[i];
-        this._scheduleInsertion(view, prev);
-        prev = view;
-      }
-    }
-  },
-
-  _scheduleInsertion: function(view, prev) {
-    var parent = this;
-
-    view._insertElementLater(function() {
-      if (prev) {
-        prev.$().after(view.$());
-      } else {
-        parent.$().prepend(view.$());
-      }
-    });
-  },
-});
+require('sproutcore-views/views/container_view');
+var get = SC.get, set = SC.set;
 
 /**
   @class
@@ -129,10 +45,12 @@ SC.CollectionView = SC.ContainerView.extend(
   },
 
   _contentWillChange: function() {
-    var content = this.get('content');
+    if (!this.isDestroying) {
+      var content = this.get('content');
 
-    if (content) { content.removeArrayObserver(this); }
-    this.arrayWillChange(content, 0, get(content, 'length'));
+      if (content) { content.removeArrayObserver(this); }
+      this.arrayWillChange(content, 0, get(content, 'length'));
+    }
   }.observesBefore('content'),
 
   /**
@@ -144,17 +62,23 @@ SC.CollectionView = SC.ContainerView.extend(
     bindings have synchronized and vice versa.
   */
   _contentDidChange: function() {
-    var content = get(this, 'content');
+    if (!this.isDestroying) {
+      var content = get(this, 'content');
 
-    if (content) { content.addArrayObserver(this); }
-    this.arrayDidChange(content, 0, null, get(content, 'length'));
+      if (content) { content.addArrayObserver(this); }
+      this.arrayDidChange(content, 0, null, get(content, 'length'));
+    }
   }.observes('content'),
 
   destroy: function() {
     var content = get(this, 'content');
     if (content) { content.removeArrayObserver(this); }
-    set(this, 'content', null);
-    return this._super();
+
+    this._super();
+
+    // set(this, 'content', null);
+
+    return this;
   },
 
   arrayWillChange: function(content, start, removedCount) {
@@ -220,7 +144,7 @@ SC.CollectionView = SC.ContainerView.extend(
         }
 
         set(this, 'emptyView', emptyView);
-        childViews.replace(0, get(childViews, 'length'), [emptyView])
+        childViews.replace(0, get(childViews, 'length'), [emptyView]);
       }
     }
   }
