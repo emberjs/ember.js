@@ -187,6 +187,33 @@ testBoth('removing observer should stop firing', function(get,set) {
   SC.removeObserver(obj, 'foo', F);
 });
 
+testBoth('local observers can be removed', function(get, set) {
+  var barObserved = 0;
+
+  var MyMixin = SC.Mixin.create({
+    foo1: SC.observer(function() {
+      barObserved++;
+    }, 'bar'),
+
+    foo2: SC.observer(function() {
+      barObserved++;
+    }, 'bar')
+  });
+
+  var obj = {};
+  MyMixin.apply(obj);
+
+  set(obj, 'bar', 'HI!');
+  equals(barObserved, 2, 'precond - observers should be fired');
+
+  SC.removeObserver(obj, 'bar', null, 'foo1');
+
+  barObserved = 0;
+  set(obj, 'bar', 'HI AGAIN!');
+
+  equals(barObserved, 1, 'removed observers should not be called');
+});
+
 testBoth('removeObserver should respect targets with methods', function(get,set){
   var observed = { foo: 'foo' };
   
@@ -524,31 +551,4 @@ testBoth('setting computed prop with same value should not trigger', function(ge
   
   set(obj, 'foo', 'baz');
   equals(count, 2, 'should not trigger observer again');
-});
-
-testBoth('local observers can be removed', function(get, set) {
-  var barObserved = 0;
-
-  var MyMixin = SC.Mixin.create({
-    foo1: SC.observer(function() {
-      barObserved++;
-    }, 'bar'),
-
-    foo2: SC.observer(function() {
-      barObserved++;
-    }, 'bar')
-  });
-
-  var obj = {};
-  MyMixin.apply(obj);
-
-  set(obj, 'bar', 'HI!');
-  equals(barObserved, 2, 'precond - observers should be fired');
-
-  SC.removeObserver(obj, 'bar', null, 'foo1');
-
-  barObserved = 0;
-  set(obj, 'bar', 'HI AGAIN!');
-
-  equals(barObserved, 1, 'removed observers should not be called');
 });
