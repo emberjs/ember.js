@@ -38,7 +38,8 @@ function objectFor(m, obj, writable) {
 }
 
 function listenerSetFor(obj, eventName, target, writable) {
-  return objectFor(meta(obj, writable), obj, writable, 'listeners', eventName, target);
+  var targetGuid = guidFor(target);
+  return objectFor(meta(obj, writable), obj, writable, 'listeners', eventName, targetGuid);
 }
 
 var EV_SKIP = { __scproto__: true };
