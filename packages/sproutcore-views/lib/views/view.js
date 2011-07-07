@@ -303,7 +303,7 @@ SC.View = SC.Object.extend(
           elem.attr(attribute, attributeValue);
         } else if (attributeValue && type === 'boolean') {
           elem.attr(attribute, attribute);
-        } else {
+        } else if (attributeValue === NO) {
           elem.removeAttr(attribute);
         }
       };

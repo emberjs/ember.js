@@ -6,12 +6,8 @@
   "author": "Strobe Inc., Apple, Inc., and contributors",
   "version": "2.0.beta.1",
   "dependencies": {
-    "sproutcore-runtime": "2.0",
-    "sproutcore-preprocessor": "~> 0.0.2"
+    "sproutcore-runtime": "2.0"
   },
-  "plugin:preprocessors": [
-    "sproutcore-preprocessor/preprocessor"
-  ],
   "directories": {
     "lib"       : "./lib",
     "tests"     : "./tests"

@@ -45,12 +45,10 @@ SC.CollectionView = SC.ContainerView.extend(
   },
 
   _contentWillChange: function() {
-    if (!this.isDestroying) {
-      var content = this.get('content');
+    var content = this.get('content');
 
-      if (content) { content.removeArrayObserver(this); }
-      this.arrayWillChange(content, 0, get(content, 'length'));
-    }
+    if (content) { content.removeArrayObserver(this); }
+    this.arrayWillChange(content, 0, get(content, 'length'));
   }.observesBefore('content'),
 
   /**
@@ -62,12 +60,10 @@ SC.CollectionView = SC.ContainerView.extend(
     bindings have synchronized and vice versa.
   */
   _contentDidChange: function() {
-    if (!this.isDestroying) {
-      var content = get(this, 'content');
+    var content = get(this, 'content');
 
-      if (content) { content.addArrayObserver(this); }
-      this.arrayDidChange(content, 0, null, get(content, 'length'));
-    }
+    if (content) { content.addArrayObserver(this); }
+    this.arrayDidChange(content, 0, null, get(content, 'length'));
   }.observes('content'),
 
   destroy: function() {

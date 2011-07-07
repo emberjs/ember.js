@@ -5,5 +5,5 @@
   "homepage": "http://github.com/sproutcore/sproutcore20",
   "author": "Charles Jolley",
   "version": "2.0.beta.1",
-  "directories": { "lib": "lib" }
+  "directories": { "lib": "lib", "tests": "tests" }
 }
