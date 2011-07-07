@@ -127,8 +127,10 @@ test("should escape HTML in normal mustaches", function() {
 
   view.createElement();
   equals(view.$('b').length, 0, "does not create an element");
+  equals(view.$().text(), 'you need to be more <b>bold</b>', "inserts entities, not elements");
 
-  set(view, 'output', "you are so <i>super</i>");
+  SC.run(function() { set(view, 'output', "you are so <i>super</i>"); });
+  equals(view.$().text(), 'you are so <i>super</i>', "updates with entities, not elements");
   equals(view.$('i').length, 0, "does not create an element when value is updated");
 });
 

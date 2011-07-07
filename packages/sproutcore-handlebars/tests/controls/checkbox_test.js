@@ -58,7 +58,7 @@ test("value property mirrors input value", function() {
   equals(checkboxView.$('input').prop('checked'), false, "changing the value property changes the DOM");
 
   SC.run(function() { checkboxView.remove(); });
-  set(checkboxView, 'value', true);
+  setAndFlush(checkboxView, 'value', true);
   SC.run(function() { checkboxView.append(); });
 
   equals(checkboxView.$('input').prop('checked'), true, "changing the value property changes the DOM");
