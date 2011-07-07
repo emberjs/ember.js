@@ -73,6 +73,7 @@ CoreObject.PrototypeMixin = SC.Mixin.create({
 
   destroy: function() {
     set(this, 'isDestroyed', true);
+    this[SC.META_KEY] = null;
     return this;
   },
 

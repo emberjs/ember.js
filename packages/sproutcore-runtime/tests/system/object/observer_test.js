@@ -105,6 +105,25 @@ testBoth('observer on instance overridding class', function(get, set) {
 
 });
 
+testBoth('observer should not fire after being destroyed', function(get, set) {
+
+  var obj = SC.Object.create({
+    count: 0,
+    foo: SC.observer(function() {
+      set(this, 'count', get(this, 'count')+1);
+    }, 'bar')
+  });
+
+  equals(get(obj, 'count'), 0, 'precond - should not invoke observer immediately');
+
+  obj.destroy();
+
+  raises(function() {
+    set(obj, 'bar', "BAZ");
+  });
+
+  equals(get(obj, 'count'), 0, 'should not invoke observer after change');
+});
 // ..........................................................
 // COMPLEX PROPERTIES
 // 
