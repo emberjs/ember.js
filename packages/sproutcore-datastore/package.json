@@ -8,12 +8,9 @@
   "dependencies": {
     "sproutcore-runtime": "2.0",
     "sproutcore-datetime": "2.0",
-    "sproutcore-indexset": "2.0",
-    "sproutcore-preprocessor": "~> 0.0.2"
+    "sproutcore-indexset": "2.0"
   },
-  "plugin:preprocessors": [
-    "sproutcore-preprocessor/preprocessor"
-  ],
+
   "directories": {
     "lib"       : "./lib",
     "tests"     : "./tests"
