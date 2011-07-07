@@ -2,6 +2,7 @@
 source "http://rubygems.org"
 
 gem "rake"
+gem "bpm"
 gem "spade"
 gem "uglifier"
 
