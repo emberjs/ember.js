@@ -256,8 +256,13 @@ function autorun() {
 */
 SC.run.autorun = function() {
 
-  if (!run.currentRunLoop) run.begin();
-  if (!autorunTimer) autorunTimer = setTimeout(autorun, 1);
+  if (!run.currentRunLoop) {
+    run.begin();
+    // TODO: throw during tests
+    if (!autorunTimer) {
+      autorunTimer = setTimeout(autorun, 1);
+    }
+  }
 
   return run.currentRunLoop;
 };
