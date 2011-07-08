@@ -714,6 +714,8 @@ SC.View = SC.Object.extend(
     var viewMeta = meta(this)['SC.View'];
     var buffer;
 
+    SC.run.sync();
+
     // Determine where in the parent buffer to start the new buffer.
     // By default, a new buffer will be appended to the parent buffer.
     // The buffer operation may be changed if the child views array is
@@ -917,7 +919,7 @@ SC.View = SC.Object.extend(
   },
 
   appendChild: function(view, options) {
-    this.invokeForState('appendChild', view, options);
+    return this.invokeForState('appendChild', view, options);
   },
 
   /**
@@ -1107,8 +1109,7 @@ SC.View.states = {
       var viewMeta = meta(view)['SC.View'],
           buffer = viewMeta.buffer;
 
-      buffer = buffer.replaceWith(get(view, 'tagName'));
-      view.renderToBuffer(buffer);
+      view.renderToBuffer(buffer, 'replaceWith');
     },
 
     // when a view is rendered in a buffer, appending a child
@@ -1120,6 +1121,7 @@ SC.View.states = {
       childView = this.createChildView(childView, options);
       view.childViews.pushObject(childView);
       childView.renderToBuffer(buffer);
+      return childView;
     },
 
     // when a view is rendered in a buffer, destroying the
