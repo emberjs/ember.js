@@ -453,25 +453,7 @@ lexer.conditions = {"mu":{"rules":[2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19
 parser.lexer = lexer;
 return parser;
 })();
-if (typeof require !== 'undefined' && typeof exports !== 'undefined') {
-exports.parser = handlebars;
-exports.parse = function () { return handlebars.parse.apply(handlebars, arguments); }
-exports.main = function commonjsMain(args) {
-    if (!args[1])
-        throw new Error('Usage: '+args[0]+' FILE');
-    if (typeof process !== 'undefined') {
-        var source = require('fs').readFileSync(require('path').join(process.cwd(), args[1]), "utf8");
-    } else {
-        var cwd = require("file").path(require("file").cwd());
-        var source = cwd.join(args[1]).read({charset: "utf-8"});
-    }
-    return exports.parser.parse(source);
-}
-if (typeof module !== 'undefined' && require.main === module) {
-  exports.main(typeof process !== 'undefined' ? process.argv.slice(1) : require("system").args);
-}
-};
-;
+
 // lib/handlebars/base.js
 Handlebars = {};
 
@@ -508,8 +490,9 @@ Handlebars.registerHelper('helperMissing', function(arg) {
   }
 });
 
-Handlebars.registerHelper('blockHelperMissing', function(context, fn, inverse) {
-  inverse = inverse || function() {};
+Handlebars.registerHelper('blockHelperMissing', function(context, options) {
+  var inverse = options.inverse || function() {}, fn = options.fn;
+
 
   var ret = "";
   var type = Object.prototype.toString.call(context);
@@ -534,11 +517,10 @@ Handlebars.registerHelper('blockHelperMissing', function(context, fn, inverse) {
   } else {
     return fn(context);
   }
-}, function(context, fn) {
-  return fn(context);
 });
 
-Handlebars.registerHelper('each', function(context, fn, inverse) {
+Handlebars.registerHelper('each', function(context, options) {
+  var fn = options.fn, inverse = options.inverse;
   var ret = "";
 
   if(context && context.length > 0) {
@@ -551,20 +533,24 @@ Handlebars.registerHelper('each', function(context, fn, inverse) {
   return ret;
 });
 
-Handlebars.registerHelper('if', function(context, fn, inverse) {
-  if(!context || context == []) {
-    return inverse(this);
+Handlebars.registerHelper('if', function(context, options) {
+  if(!context || Handlebars.Utils.isEmpty(context)) {
+    return options.inverse(this);
   } else {
-    return fn(this);
+    return options.fn(this);
   }
 });
 
-Handlebars.registerHelper('unless', function(context, fn, inverse) {
-  return Handlebars.helpers['if'].call(this, context, inverse, fn);
+Handlebars.registerHelper('unless', function(context, options) {
+  var fn = options.fn, inverse = options.inverse;
+  options.fn = inverse;
+  options.inverse = fn;
+
+  return Handlebars.helpers['if'].call(this, context, options);
 });
 
-Handlebars.registerHelper('with', function(context, fn) {
-  return fn(context);
+Handlebars.registerHelper('with', function(context, options) {
+  return options.fn(context);
 });
 
 Handlebars.logger = {
@@ -664,9 +650,9 @@ Handlebars.log = function(level, str) { Handlebars.logger.log(level, str); };
     this.integer = integer;
   };
 
-  Handlebars.AST.BooleanNode = function(boolean) {
+  Handlebars.AST.BooleanNode = function(bool) {
     this.type = "BOOLEAN";
-    this.boolean = boolean;
+    this.bool = bool;
   };
 
   Handlebars.AST.CommentNode = function(comment) {
@@ -686,8 +672,13 @@ Handlebars.Visitor.prototype = {
 };;
 // lib/handlebars/utils.js
 Handlebars.Exception = function(message) {
-  this.message = message;
+  var tmp = Error.prototype.constructor.apply(this, arguments);
+
+  for (var p in tmp) {
+    if (tmp.hasOwnProperty(p)) { this[p] = tmp[p]; }
+  }
 };
+Handlebars.Exception.prototype = new Error;
 
 // Build out our basic SafeString type
 Handlebars.SafeString = function(string) {
@@ -710,7 +701,7 @@ Handlebars.SafeString.prototype.toString = function() {
   var possible = /[&<>"'`]/;
 
   var escapeChar = function(chr) {
-    return escape[chr] || "&amp;"
+    return escape[chr] || "&amp;";
   };
 
   Handlebars.Utils = {
@@ -760,7 +751,6 @@ Handlebars.JavaScriptCompiler = function() {};
     invokeProgram: 11,
     invokePartial: 12,
     push: 13,
-    invokeInverse: 14,
     assignToHash: 15,
     pushStringParam: 16
   };
@@ -777,7 +767,6 @@ Handlebars.JavaScriptCompiler = function() {};
     invokeProgram: 2,
     invokePartial: 1,
     push: 1,
-    invokeInverse: 1,
     assignToHash: 1,
     pushStringParam: 1
   };
@@ -898,10 +887,13 @@ Handlebars.JavaScriptCompiler = function() {};
     },
 
     inverse: function(block) {
-      this.ID(block.mustache.id);
+      var params = this.setupStackForMustache(block.mustache);
+
       var programGuid = this.compileProgram(block.program);
 
-      this.opcode('invokeInverse', programGuid);
+      this.declare('inverse', programGuid);
+
+      this.opcode('invokeProgram', null, params.length);
       this.opcode('append');
     },
 
@@ -969,8 +961,8 @@ Handlebars.JavaScriptCompiler = function() {};
       this.opcode('push', integer.integer);
     },
 
-    BOOLEAN: function(boolean) {
-      this.opcode('push', boolean.boolean);
+    BOOLEAN: function(bool) {
+      this.opcode('push', bool.bool);
     },
 
     comment: function() {},
@@ -1179,15 +1171,11 @@ Handlebars.JavaScriptCompiler = function() {};
       container.children = this.environment.children;
 
       return function(context, options, $depth) {
-        try {
-          options = options || {};
-          var args = [Handlebars, context, options.helpers, options.partials, options.data];
-          var depth = Array.prototype.slice.call(arguments, 2);
-          args = args.concat(depth);
-          return container.render.apply(container, args);
-        } catch(e) {
-          throw e;
-        }
+        options = options || {};
+        var args = [Handlebars, context, options.helpers, options.partials, options.data];
+        var depth = Array.prototype.slice.call(arguments, 2);
+        args = args.concat(depth);
+        return container.render.apply(container, args);
       };
     },
 
@@ -1306,11 +1294,6 @@ Handlebars.JavaScriptCompiler = function() {};
 
       params.push('tmp1');
 
-      // TODO: This is legacy behavior. Deprecate and remove.
-      if(inverse) {
-        params.push(inverse);
-      }
-
       this.populateCall(params, id, helperId || id, fn);
     },
 
@@ -1322,13 +1305,6 @@ Handlebars.JavaScriptCompiler = function() {};
 
       this.source.push("if(typeof " + id + " === 'function') { " + nextStack + " = " + id + ".call(" + paramString + "); }");
       fn.call(this, nextStack, helperMissingString, id);
-    },
-
-    invokeInverse: function(guid) {
-      var program = this.programExpression(guid);
-
-      var blockMissingParams = ["context", this.topStack(), "this.noop", program];
-      this.pushStack("helpers.blockHelperMissing.call(" + blockMissingParams.join(", ") + ")");
     },
 
     invokePartial: function(context) {
