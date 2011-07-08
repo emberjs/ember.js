@@ -161,7 +161,11 @@ var WATCHED_DESC = {
 
 function w_get(obj, keyName) {
   var m = meta(obj, false);
-  return m.values ? m.values[keyName] : undefined;
+  if (m.values) {
+    if (m.values[keyName] !== undefined) { return m.values[keyName]; }
+    obj.unknownProperty(keyName);
+  };
+  return undefined;
 }
 
 function w_set(obj, keyName, value) {
