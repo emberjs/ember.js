@@ -952,12 +952,12 @@ test("should be able to bind element attributes using {{bindAttr}}", function() 
   equals(view.$('img').attr('alt'), "The SproutCore Logo", "updates alt attribute when content object is a hash");
 
   SC.run(function() {
-    set(view, 'content', {
+    set(view, 'content', SC.Object.create({
       url: "http://www.sproutcore.com/assets/images/logo.png",
-      title: function() {
+      title: SC.computed(function() {
         return "Nanananana SproutCore!";
-      }
-    });
+      })
+    }));
   });
 
   equals(view.$('img').attr('alt'), "Nanananana SproutCore!", "updates alt attribute when title property is computed");

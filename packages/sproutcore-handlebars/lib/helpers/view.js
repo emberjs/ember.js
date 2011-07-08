@@ -12,7 +12,7 @@ var get = SC.get, set = SC.set;
 
 /** @private */
 SC.Handlebars.ViewHelper = SC.Object.create({
-  
+
   viewClassFromHTMLOptions: function(viewClass, options) {
     var extensions = {},
         classes = options['class'],
@@ -54,20 +54,21 @@ SC.Handlebars.ViewHelper = SC.Object.create({
 
     if ('string' === typeof path) {
       newView = SC.getPath(thisContext, path);
-      if (!newView) { 
-        throw new SC.Error("Unable to find view at path '" + path + "'"); 
-      }
+      sc_assert("Unable to find view at path '" + path + "'", !!newView);
     } else {
-      sc_assert('You must pass a string or a view class to the #view helper', SC.View.detect(path));
       newView = path;
     }
 
-    sc_assert("Null or undefined object was passed to the #view helper. Did you mean to pass a property path string?", !!newView);
+    sc_assert(SC.String.fmt('You must pass a view class to the #view helper, not %@ (%@)', [path, newView]), SC.View.detect(newView));
 
     newView = this.viewClassFromHTMLOptions(newView, hash);
     var currentView = data.view;
     var viewOptions = {};
-    if (fn) { viewOptions.template = fn; }
+
+    if (fn) {
+      sc_assert("You cannot provide a template block if you also specified a templateName", !get(viewOptions, 'templateName') && !newView.PrototypeMixin.keys().indexOf('templateName') >= 0);
+      viewOptions.template = fn;
+    }
 
     currentView.appendChild(newView, viewOptions);
   }
@@ -80,6 +81,8 @@ SC.Handlebars.ViewHelper = SC.Object.create({
   @returns {String} HTML string
 */
 Handlebars.registerHelper('view', function(path, options) {
+  sc_assert("The view helper only takes a single argument", arguments.length <= 2);
+
   // If no path is provided, treat path param as options.
   if (path && path.data && path.data.isRenderData) {
     options = path;
