@@ -31,14 +31,14 @@ def compile_package_task(package)
 end
 
 namespace :sproutcore do
-  %w(metal indexset runtime handlebars views datastore).each do |package|
+  %w(metal indexset runtime handlebars views datastore statechart).each do |package|
     task package => compile_package_task("sproutcore-#{package}")
   end
 end
 
 task :handlebars => compile_package_task("handlebars")
 
-task :build => ["sproutcore:metal", "sproutcore:indexset", "sproutcore:runtime", "sproutcore:handlebars", "sproutcore:views", "sproutcore:datastore", :handlebars]
+task :build => ["sproutcore:metal", "sproutcore:indexset", "sproutcore:runtime", "sproutcore:handlebars", "sproutcore:views", "sproutcore:datastore", "sproutcore:statechart", :handlebars]
 
 file "tmp/static/sproutcore.js" => :build do
   File.open("tmp/static/sproutcore.js", "w") do |file|
@@ -83,6 +83,21 @@ file "tmp/sproutcore-datastore.js" => "tmp/static/sproutcore-datastore.stripped.
   end
 end
 
+file "tmp/static/sproutcore-statechart.stripped.js" => "tmp/static/sproutcore-statechart.js" do
+  File.open("tmp/static/sproutcore-statechart.stripped.js", "w") do |file|
+    sproutcore = File.read("tmp/static/sproutcore-statechart.js")
+    sproutcore.gsub!(%r{^\s*require\(['"]([^'"])*['"]\);?\s*$}, "")
+    file.puts sproutcore
+  end
+end
+
+file "tmp/sproutcore-statechart.js" => "tmp/static/sproutcore-statechart.stripped.js" do
+  File.open("tmp/sproutcore-statechart.js", "w") do |file|
+    file.puts File.read("tmp/static/sproutcore-statechart.stripped.js")
+  end
+end
+
+
 file "tmp/sproutcore.min.js" => "tmp/sproutcore.js" do
   File.open("tmp/sproutcore.min.js", "w") do |file|
     uglified = Uglifier.compile(File.read("tmp/sproutcore.js"))
@@ -93,6 +108,13 @@ end
 file "tmp/sproutcore-datastore.min.js" => "tmp/sproutcore-datastore.js" do
   File.open("tmp/sproutcore-datastore.min.js", "w") do |file|
     uglified = Uglifier.compile(File.read("tmp/sproutcore-datastore.js"))
+    file.puts "#{LICENSE}\n#{uglified}"
+  end
+end
+
+file "tmp/sproutcore-statechart.min.js" => "tmp/sproutcore-statechart.js" do
+  File.open("tmp/sproutcore-statechart.min.js", "w") do |file|
+    uglified = Uglifier.compile(File.read("tmp/sproutcore-statechart.js"))
     file.puts "#{LICENSE}\n#{uglified}"
   end
 end
@@ -288,5 +310,5 @@ namespace :starter_kit do
   task :deploy => "tmp/starter-kit.#{VERSION}.zip"
 end
 
-task :default => ["tmp/sproutcore.min.js", "tmp/sproutcore-datastore.min.js"]
+task :default => ["tmp/sproutcore.min.js", "tmp/sproutcore-datastore.min.js", "tmp/sproutcore-statechart.min.js"]
 
