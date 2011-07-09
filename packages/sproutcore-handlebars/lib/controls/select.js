@@ -8,12 +8,17 @@ var get = SC.get, set = SC.set;
 
 SC.SelectOption = SC.View.extend({
   tagName: 'option',
-  template: SC.Handlebars.compile("{{label}}"),
+  template: function(context, options) {
+    options.data.buffer.push(context.get('label'));
+  },
   attributeBindings: ['value', 'selected'],
 
   labelBinding: '*content.label',
-  valueBinding: '*content.value'
+  valueBinding: '*content.value',
   
+  _labelDidChange: function() {
+    this.rerender();
+  }.observes('*content.label')
 });
 
 SC.Select = SC.CollectionView.extend({

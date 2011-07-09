@@ -11,27 +11,22 @@ var get = SC.get, set = SC.set;
 module("SC.Select", {
   setup: function() {
     application = SC.Application.create();
-    select = SC.Select.create();
-
     // force setup since document may not be ready yet.
     get(application, 'eventDispatcher').setup();
   },
 
   teardown: function() {
-    select.destroy();
     application.destroy();
   }
 });
 
-test("should render options", function() {
-
-  //select = SC.Select.create({itemLabelBinding: 'content', itemValueBinding: 'content'});
-  select = SC.Select.create({itemViewClass: SC.SelectOption.extend({labelBinding: 'content', valueBinding: 'content'})});
-  var options = ['Broseidon', 'Brotankhamen', 'Rambro'];
-
-  select.set('content', options);
+test("should render simple options", function() {
+  var select, options = ['Broseidon', 'Brotankhamen', 'Rambro'];
 
   SC.run(function() {
+    //select = SC.Select.create({itemLabelBinding: 'content', itemValueBinding: 'content'});
+    select = SC.Select.create({itemViewClass: SC.SelectOption.extend({labelBinding: 'content', valueBinding: 'content'})});
+    select.set('content', options);
     select.append();
   });
   
@@ -40,12 +35,13 @@ test("should render options", function() {
 });
 
 test("should render options with attributeBindings", function() {
-  var options = [SC.Object.create({label: 'California', value: 'CA'}),
-                 SC.Object.create({label: 'Oregon', value: 'OR'})]
+  var select, options = [SC.Object.create({label: 'California', value: 'CA'}),
+                         SC.Object.create({label: 'Oregon', value: 'OR'})]
 
-  select.set('content', options);
-
+  // Tests won't pass unless you wrap creation/appending in the same run loop
   SC.run(function() {
+    select = SC.Select.create();
+    select.set('content', options);
     select.append();
   });
   
@@ -55,11 +51,11 @@ test("should render options with attributeBindings", function() {
 });
 
 test("should have a default selected option", function() {
-  var options = [SC.Object.create({label: 'California', value: 'CA'})];
-
-  select.set('content', options);
+  var select, options = [SC.Object.create({label: 'California', value: 'CA'})];
 
   SC.run(function() {
+    select = SC.Select.create();
+    select.set('content', options);
     select.append();
   });
   
@@ -69,9 +65,9 @@ test("should have a default selected option", function() {
 test("should trigger event upon change", function() {
   var options = ['Broseidon', 'Brotankhamen', 'Rambro'];
 
-  select.set('content', options);
-
   SC.run(function() {
+    select = SC.Select.create({itemViewClass: SC.SelectOption.extend({labelBinding: 'content', valueBinding: 'content'})});
+    select.set('content', options);
     select.append();
   });
   
@@ -81,22 +77,24 @@ test("should trigger event upon change", function() {
   });
 
   equals(select.get('value'), 'Rambro');
-
 });
 
-test("option value should be updateable", function() {
+test("option label and value should be updateable", function() {
   var option = SC.Object.create({label: 'California', value: 'CA'});
 
-  select.set('content', [option]);
 
   SC.run(function() {
+    select = SC.Select.create();
+    select.set('content', [option]);
     select.append();
   });
 
   SC.run(function() {
-    option.set('value', 'CALI!');
+    option.set('label', 'CALI!');
+    option.set('value', 'CA!');
   });
   
-  equals(select.get('value'), 'CALI!');
+  equals(select.$().text(), 'CALI!');
+  equals(select.$().val(), 'CA!');
 });
 
