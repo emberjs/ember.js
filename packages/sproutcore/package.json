@@ -8,6 +8,7 @@
   "dependencies": {
     "sproutcore-runtime": "2.0",
     "sproutcore-views": "2.0",
+    "sproutcore-touch": "2.0",
     "sproutcore-datastore": "2.0",
     "sproutcore-handlebars": "2.0"
   },
