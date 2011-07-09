@@ -37,8 +37,8 @@ test("should render options", function() {
 });
 
 test("should render options with attributeBindings", function() {
-  var options = [{label: 'California', value: 'CA'},
-                 {label: 'Oregon', value: 'OR'}]
+  var options = [SC.Object.create({label: 'California', value: 'CA'}),
+                 SC.Object.create({label: 'Oregon', value: 'OR'})]
 
   select.set('content', options);
 
@@ -52,8 +52,8 @@ test("should render options with attributeBindings", function() {
 });
 
 test("should have a default selected option", function() {
-  var options = [{label: 'California', value: 'CA'},
-                 {label: 'Oregon', value: 'OR'}]
+  var options = [SC.Object.create({label: 'California', value: 'CA'}),
+                 SC.Object.create({label: 'Oregon', value: 'OR'})]
 
   select.set('content', options);
 

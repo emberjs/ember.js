@@ -11,25 +11,30 @@ SC.SelectOption = SC.View.extend({
   template: SC.Handlebars.compile("{{label}}"),
   attributeBindings: ['value', 'selected'],
 
+  labelKey: 'label',
+  valueKey: 'value',
+
   label: function() {
-    var content = get(this, 'content'), ret = content;
+    var content = get(this, 'content'), ret = content,
+        labelKey = get(this, 'labelKey');
 
     if (typeof content === "object") {
-       ret = content.label;
+       ret = content.get(labelKey);
     }
 
     return ret;
-  }.property(),
+  }.property().cacheable(),
 
   value: function() {
-    var content = get(this, 'content'), ret = content;
+    var content = get(this, 'content'), ret = content,
+        valueKey = get(this, 'valueKey');
 
     if (typeof content === "object") {
-       ret = content.value;
+       ret = content.get(valueKey);
     }
 
     return ret;
-  }.property()
+  }.property().cacheable()
 });
 
 SC.Select = SC.CollectionView.extend({
