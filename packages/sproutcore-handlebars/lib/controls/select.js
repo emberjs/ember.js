@@ -8,6 +8,11 @@ var get = SC.get, set = SC.set;
 
 SC.SelectOption = SC.View.extend({
   tagName: 'option',
+  /*
+    Note: we can't use a template with {{label}} here because it
+    uses a BindableSpan. The browser will eat the span inside of
+    an option tag.
+  */
   template: function(context, options) {
     options.data.buffer.push(context.get('label'));
   },
