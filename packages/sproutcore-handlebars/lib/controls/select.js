@@ -8,6 +8,8 @@ var get = SC.get, set = SC.set;
 
 SC.SelectOption = SC.View.extend({
   tagName: 'option',
+  classNames: ['sc-select-option'],
+
   /*
     Note: we can't use a template with {{label}} here because it
     uses a BindableSpan. The browser will eat the span inside of
@@ -28,6 +30,8 @@ SC.SelectOption = SC.View.extend({
 
 SC.Select = SC.CollectionView.extend({
   tagName: 'select',
+  classNames: ['sc-select'],
+
   itemViewClass: SC.SelectOption,
 
   value: null,
