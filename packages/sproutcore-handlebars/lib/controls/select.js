@@ -10,9 +10,9 @@ SC.SelectOption = SC.View.extend({
   tagName: 'option',
   template: SC.Handlebars.compile("{{label}}"),
   attributeBindings: ['value', 'selected'],
+
   label: function() {
-    var content = get(this, 'content');
-    var ret = content;
+    var content = get(this, 'content'), ret = content;
 
     if (typeof content === "object") {
        ret = content.label;
@@ -20,9 +20,9 @@ SC.SelectOption = SC.View.extend({
 
     return ret;
   }.property(),
+
   value: function() {
-    var content = get(this, 'content');
-    var ret = content;
+    var content = get(this, 'content'), ret = content;
 
     if (typeof content === "object") {
        ret = content.value;
@@ -36,11 +36,17 @@ SC.Select = SC.CollectionView.extend({
   tagName: 'select',
   itemViewClass: SC.SelectOption,
 
-  value: function() {
-    return this.$().val();
-  }.property(),
+  value: null,
+
+  willInsertElement: function() {
+    this._elementValueDidChange();
+  },
 
   change: function() {
-    set(this, this.$().val());
+    this._elementValueDidChange();
+  },
+
+  _elementValueDidChange: function() {
+    set(this, 'value', this.$().val());
   }
 });
