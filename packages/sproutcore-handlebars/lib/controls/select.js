@@ -32,6 +32,7 @@ SC.SelectOption = SC.View.extend({
 SC.Select = SC.CollectionView.extend({
   tagName: 'select',
   classNames: ['sc-select'],
+  attributeBindings: ['multiple'],
 
   itemViewClass: SC.SelectOption,
 

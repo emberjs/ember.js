@@ -111,3 +111,22 @@ test("option label and value should be updateable", function() {
   select.destroy();
 });
 
+test("should allow multiple selection", function() {
+  var select, options = [SC.Object.create({label: 'California', value: 'CA'}),
+                         SC.Object.create({label: 'Oregon', value: 'OR', selected: true}),
+                         SC.Object.create({label: 'Illinois', value: 'IL', selected: true}),
+                         SC.Object.create({label: 'Washington', value: 'WA'})]
+
+  SC.run(function() {
+    select = SC.Select.create({multiple: true})
+    select.set('content', options);
+    select.append();
+  });
+  
+  console.log(select.get('value'));
+  ok(select.get('value').length == 2);
+  equals(select.get('value')[0], 'OR');
+  equals(select.get('value')[1], 'IL');
+
+  select.destroy();
+});
