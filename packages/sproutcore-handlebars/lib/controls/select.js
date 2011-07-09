@@ -22,6 +22,7 @@ SC.SelectOption = SC.View.extend({
 
   labelBinding: '*content.label',
   valueBinding: '*content.value',
+  selectedBinding: '*content.selected',
   
   _labelDidChange: function() {
     this.rerender();
