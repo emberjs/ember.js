@@ -32,6 +32,8 @@ test("should render simple options", function() {
   
   equals(select.$().find('option').length, 3);
   equals(select.$().find('option:eq(2)').text(), 'Rambro');
+
+  select.destroy();
 });
 
 test("should render options with attributeBindings", function() {
@@ -48,6 +50,8 @@ test("should render options with attributeBindings", function() {
   equals(select.$().find('option').length, 2);
   equals(select.$().find('option:eq(0)').text(), 'California');
   equals(select.$().find('option:eq(0)').val(), 'CA');
+
+  select.destroy();
 });
 
 test("should have a default selected option", function() {
@@ -60,6 +64,8 @@ test("should have a default selected option", function() {
   });
   
   equals(select.get('value'), 'CA');
+
+  select.destroy();
 });
 
 test("should trigger event upon change", function() {
@@ -77,6 +83,8 @@ test("should trigger event upon change", function() {
   });
 
   equals(select.get('value'), 'Rambro');
+
+  select.destroy();
 });
 
 test("option label and value should be updateable", function() {
@@ -96,5 +104,7 @@ test("option label and value should be updateable", function() {
   
   equals(select.$().text(), 'CALI!');
   equals(select.$().val(), 'CA!');
+
+  select.destroy();
 });
 
