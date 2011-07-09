@@ -4,7 +4,7 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
-var select, application;
+var application;
 
 var get = SC.get, set = SC.set;
 
@@ -69,7 +69,7 @@ test("should have a default selected option", function() {
 });
 
 test("should trigger event upon change", function() {
-  var options = ['Broseidon', 'Brotankhamen', 'Rambro'];
+  var select, options = ['Broseidon', 'Brotankhamen', 'Rambro'];
 
   SC.run(function() {
     select = SC.Select.create({itemViewClass: SC.SelectOption.extend({labelBinding: 'content', valueBinding: 'content'})});
@@ -88,7 +88,7 @@ test("should trigger event upon change", function() {
 });
 
 test("option label and value should be updateable", function() {
-  var option = SC.Object.create({label: 'California', value: 'CA'});
+  var select, option = SC.Object.create({label: 'California', value: 'CA'});
 
 
   SC.run(function() {
