@@ -24,6 +24,9 @@ module("SC.Select", {
 });
 
 test("should render options", function() {
+
+  //select = SC.Select.create({itemLabelBinding: 'content', itemValueBinding: 'content'});
+  select = SC.Select.create({itemViewClass: SC.SelectOption.extend({labelBinding: 'content', valueBinding: 'content'})});
   var options = ['Broseidon', 'Brotankhamen', 'Rambro'];
 
   select.set('content', options);
@@ -52,8 +55,7 @@ test("should render options with attributeBindings", function() {
 });
 
 test("should have a default selected option", function() {
-  var options = [SC.Object.create({label: 'California', value: 'CA'}),
-                 SC.Object.create({label: 'Oregon', value: 'OR'})]
+  var options = [SC.Object.create({label: 'California', value: 'CA'})];
 
   select.set('content', options);
 
@@ -81,3 +83,20 @@ test("should trigger event upon change", function() {
   equals(select.get('value'), 'Rambro');
 
 });
+
+test("option value should be updateable", function() {
+  var option = SC.Object.create({label: 'California', value: 'CA'});
+
+  select.set('content', [option]);
+
+  SC.run(function() {
+    select.append();
+  });
+
+  SC.run(function() {
+    option.set('value', 'CALI!');
+  });
+  
+  equals(select.get('value'), 'CALI!');
+});
+
