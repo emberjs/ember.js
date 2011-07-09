@@ -24,7 +24,7 @@ module("SC.Select", {
 });
 
 test("should render options", function() {
-  var options = ['A', 'B', 'C'];
+  var options = ['Broseidon', 'Brotankhamen', 'Rambro'];
 
   select.set('content', options);
 
@@ -33,12 +33,12 @@ test("should render options", function() {
   });
   
   equals(select.$().find('option').length, 3);
-  equals(select.$().find('option:eq(2)').text(), 'C');
-  equals(select.get('selected'), 'A');
+  equals(select.$().find('option:eq(2)').text(), 'Rambro');
 });
 
 test("should render options with attributeBindings", function() {
-  var options = [{label: 'California', value: 'CA'}]
+  var options = [{label: 'California', value: 'CA'},
+                 {label: 'Oregon', value: 'OR'}]
 
   select.set('content', options);
 
@@ -46,14 +46,14 @@ test("should render options with attributeBindings", function() {
     select.append();
   });
   
-  equals(select.$().find('option').length, 1);
+  equals(select.$().find('option').length, 2);
   equals(select.$().find('option:eq(0)').text(), 'California');
   equals(select.$().find('option:eq(0)').val(), 'CA');
 });
 
-test("should have a selected option", function() {
+test("should have a default selected option", function() {
   var options = [{label: 'California', value: 'CA'},
-                 {label: 'Oregon', value: 'OR', selected: true}]
+                 {label: 'Oregon', value: 'OR'}]
 
   select.set('content', options);
 
@@ -61,22 +61,23 @@ test("should have a selected option", function() {
     select.append();
   });
   
-  equals(select.$().val(), 'OR');
-  equals(select.get('selected'), options[1]);
+  equals(select.get('value'), 'CA');
 });
 
-test("selected option should be updateable", function() {
-  var options = [{label: 'California', value: 'CA'},
-                 {label: 'Oregon', value: 'OR', selected: true}]
+test("should trigger event upon change", function() {
+  var options = ['Broseidon', 'Brotankhamen', 'Rambro'];
 
   select.set('content', options);
 
   SC.run(function() {
     select.append();
   });
+  
+  SC.run(function() {
+    select.$().prop('selectedIndex', 2);
+    select.change();
+  });
 
-  select.get('content').objectAt(0).selected = true;
+  equals(select.get('value'), 'Rambro');
 
-  equals(select.$().val(), 'CA');
-  equals(select.get('selected'), options[0]);
 });

@@ -29,17 +29,18 @@ SC.SelectOption = SC.View.extend({
     }
 
     return ret;
-  }.property(),
-  selected: function() {
-    return !!get(this, 'content').selected;
   }.property()
 });
 
 SC.Select = SC.CollectionView.extend({
   tagName: 'select',
   itemViewClass: SC.SelectOption,
-  selected: function() {
-    var content = get(this, 'content');
-    return content.filterProperty('selected').objectAt(0) || content.objectAt(0);
-  }.property('content.@each.selected')
+
+  value: function() {
+    return this.$().val();
+  }.property(),
+
+  change: function() {
+    set(this, this.$().val());
+  }
 });
