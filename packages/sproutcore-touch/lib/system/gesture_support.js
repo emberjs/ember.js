@@ -7,6 +7,34 @@
 var get = SC.get;
 var set = SC.set;
 
+SC.Gesturable = SC.Mixin.create({
+  isGesturable: true
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 SC.Gestures = SC.Object.create({
   
   _registeredGestures: null,
@@ -104,6 +132,8 @@ SC.Gestures.register(SC.Object.create(SC.GestureSupport, {
 
     if(touches.length === get(this, 'numberOfTouches')) {
       this._state = SC.Gestures.POSSIBLE_STATE;
+      //set(this, 'state', );
+      
       this._currentDistanceBetweenTouches = Math.round(this.distance(touches[0],touches[1])*10)/10
     }
   },
