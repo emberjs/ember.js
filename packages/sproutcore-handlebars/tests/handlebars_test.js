@@ -1101,13 +1101,13 @@ module("Templates redrawing and bindings", {
   }
 })
 test("should be able to update when bound property updates", function(){
-  MyApp.set('Controller', SC.Object.create({name: 'first'}))
+  MyApp.set('controller', SC.Object.create({name: 'first'}))
   
   var View = SC.View.extend({
     template: SC.Handlebars.compile('<i>{{value.name}}, {{computed}}</i>'),
-    valueBinding: 'MyApp.Controller',
+    valueBinding: 'MyApp.controller',
     computed: function(){
-      return this.value ? this.value.get('name') +' - computed' : 'no value';
+      return this.getPath('value.name') + ' - computed';
     }.property('value')
   });
   
@@ -1117,12 +1117,11 @@ test("should be able to update when bound property updates", function(){
   SC.run.sync();
   
   SC.run(function(){
-    MyApp.set('Controller', SC.Object.create({
+    MyApp.set('controller', SC.Object.create({
       name: 'second'
     }))
   })
   
-  SC.run.sync();
   
   equals(view.get('computed'), "second - computed", "view computed properties correctly update");
   equals(view.$('i').text(), 'second, second - computed', "view rerenders when bound properties change");
