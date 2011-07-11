@@ -7,47 +7,18 @@
 var get = SC.get;
 var set = SC.set;
 
-SC.Gesturable = SC.Mixin.create({
-  isGesturable: true
-});
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 SC.Gestures = SC.Object.create({
   
   _registeredGestures: null,
 
   init: function() {
-    this._registeredGestures = [];
+    this._registeredGestures = {};
 
     return this._super();
   },
 
-  register: function(recognizer) {
+  register: function(name, recognizer) {
     var registeredGestures = this._registeredGestures;
-    var name = get(recognizer, 'name');
 
     if (registeredGestures[name] !== undefined) {
       throw new SC.Error(name+" already exists as a registered gesture recognizers. Gesture recognizers must have globally unique names.");
@@ -56,6 +27,12 @@ SC.Gestures = SC.Object.create({
     registeredGestures[name] = recognizer;
     
     this._attachListeners(recognizer);
+  },
+
+  knownGestures: function() {
+    var registeredGestures = this._registeredGestures;
+
+    return (registeredGestures)? registeredGestures : {};
   },
 
   _attachListeners: function(recognizer) {
@@ -83,6 +60,7 @@ SC.Gestures = SC.Object.create({
 });
 
 SC.GestureSupport = SC.Mixin.create({
+  isGesturable: true,
   name: null,
   state: null,
 
@@ -97,7 +75,7 @@ SC.GestureSupport = SC.Mixin.create({
   },
 
   toString: function() {
-    return 'SC.Gesture<'+name+'>'
+    return 'SC.Gesture<'+name+':'+SC.guidFor(this)+'>'
   }
 });
 
@@ -115,8 +93,7 @@ SC.Gestures.CANCELLED_STATE = 4;
     calculate scale from change in distance
  
  */
-SC.Gestures.register(SC.Object.create(SC.GestureSupport, {
-  name: 'pinch',
+SC.PinchGestureRecognizer = SC.Object.extend(SC.GestureSupport, {
   numberOfTouches: 2,
 
   _currentDistanceBetweenTouches: null,
@@ -171,4 +148,6 @@ SC.Gestures.register(SC.Object.create(SC.GestureSupport, {
 
     console.groupEnd();
   }
-}));
+});
+
+SC.Gestures.register('pinch', SC.PinchGestureRecognizer);

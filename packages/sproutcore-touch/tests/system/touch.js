@@ -51,11 +51,11 @@ module("touch",{
   }
 });
 
-test('foobar',function() {
+//test('foobar',function() {
 
-  $('body').append('<div id="message0" style="overflow:scroll;height:40px;width:400px;z-index:100">a</div>');
-  $('body').append('<div id="message1" style="overflow:scroll;height:40px;width:400px;z-index:100">a</div>');
-  $('body').append('<div id="message2" style="overflow:scroll;height:40px;width:400px;z-index:100">b</div>');
+  //$('body').append('<div id="message0" style="overflow:scroll;height:40px;width:400px;z-index:100">a</div>');
+  //$('body').append('<div id="message1" style="overflow:scroll;height:40px;width:400px;z-index:100">a</div>');
+  //$('body').append('<div id="message2" style="overflow:scroll;height:40px;width:400px;z-index:100">b</div>');
 
   //var leftview = generateView({
 
@@ -160,4 +160,4 @@ test('foobar',function() {
     //bottom:50
   //}).text(nestedView.elementId);
   
-});
+//});
