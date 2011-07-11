@@ -85,18 +85,17 @@ test("watching an object THEN defining it should work also", function() {
   
 });
 
-test('watching an object value then unwatching should restore old value', function() {
+testBoth('watching an object value then unwatching should restore old value', function(get, set) {
 
   var obj = { foo: { bar: { baz: { biff: 'BIFF' } } } };
   SC.watch(obj, 'foo.bar.baz.biff');
-  
+
   var foo = SC.get(obj, 'foo');
-  equals(SC.getPath(foo, 'bar.baz.biff'), 'BIFF', 'biff should exist');
+  equals(get(get(get(foo, 'bar'), 'baz'), 'biff'), 'BIFF', 'biff should exist');
 
   SC.unwatch(obj, 'foo.bar.baz.biff');
-  equals(SC.getPath(foo, 'bar.baz.biff'), 'BIFF', 'biff should exist');
+  equals(get(get(get(foo, 'bar'), 'baz'), 'biff'), 'BIFF', 'biff should exist');
 });
-
 
 testBoth('watching a global object that does not yet exist should queue', function(get, set) {
 
@@ -104,7 +103,7 @@ testBoth('watching a global object that does not yet exist should queue', functi
 
   var obj = {};
   SC.watch(obj, 'Global.foo'); // only works on global chained props
-  
+
   equals(willCount, 0, 'should not have fired yet');
   equals(didCount, 0, 'should not have fired yet');
 
@@ -115,12 +114,12 @@ testBoth('watching a global object that does not yet exist should queue', functi
   equals(didCount, 0, 'should not have fired yet');
 
   set(Global, 'foo', 'baz');
-  
+
   // should fire twice because this is a chained property (once on key, once
   // on path)
   equals(willCount, 2, 'should be watching');
   equals(didCount, 2, 'should be watching');
-  
+
   Global = null; // reset
 });
 
