@@ -106,7 +106,7 @@ test("appendChild should work inside a template", function() {
     view.appendTo("#qunit-fixture");
   });
 
-  ok(view.$().html().match(/<h1>Hi!<\/h1><div.*Inception reached<\/div><div.*Wait for the kick/i),
+  ok(view.$('h1').length == 1 && view.$('div').length == 2,
      "The appended child is visible");
 });
 
@@ -136,7 +136,7 @@ test("rerender should work inside a template", function() {
     view.appendTo("#qunit-fixture");
   });
 
-  ok(view.$().html().match(/<div.*2<\/div><div.*Inside child2<\/div>/),
+  ok(view.$('div:contains(2), div:contains(Inside child2').length == 2,
      "Rerendering a view causes it to rerender");
 });
 
