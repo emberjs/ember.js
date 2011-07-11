@@ -85,18 +85,18 @@ test("watching an object THEN defining it should work also", function() {
   
 });
 
-test("accessing a watched unknown property triggers call to unknownProperty", function(){
+testBoth("accessing a watched unknown property triggers call to unknownProperty", function(get, set){
   var unknownPropertyWasCalled = false;
   var watchedPropertyName = 'foo'
-  
+
   var obj = {
     unknownProperty: function(propName){
       if (propName === watchedPropertyName) { unknownPropertyWasCalled = true };
     }
   };
   SC.watch(obj, watchedPropertyName);
-  SC.get(obj, watchedPropertyName)
-  
+  get(obj, watchedPropertyName)
+
   ok(unknownPropertyWasCalled);
 });
 
