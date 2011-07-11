@@ -83,19 +83,5 @@ test("checking the checkbox updates the value", function() {
 
   equals(checkboxView.$('input').prop('checked'), false, "after clicking a checkbox, the checked property changed");
   equals(get(checkboxView, 'value'), false, "changing the checkbox causes the view's value to get updated");
-
-  checkboxView.destroy();
-
-  checkboxView = SC.Checkbox.create({ value: false });
-  SC.run(function() { checkboxView.append(); });
-
-  equals(get(checkboxView, 'value'), false, "precond - initially starts with a false value");
-  equals(checkboxView.$('input').prop('checked'), false, "precond - the initial checked property is false");
-
-  // click will trigger change event. can't call change event directly because that won't modify the checkbox's value.
-  checkboxView.$('input').click();
-
-  equals(checkboxView.$('input').prop('checked'), true, "after clicking a checkbox, the checked property changed");
-  equals(get(checkboxView, 'value'), true, "changing the checkbox causes the view's value to get updated");
 });
 
