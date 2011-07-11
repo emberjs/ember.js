@@ -28,7 +28,7 @@ SC.Checkbox = SC.View.extend({
   },
 
   _updateElementValue: function() {
-    var input = this.$('input');
+    var input = this.$('input:checkbox');
     set(this, 'value', input.prop('checked'));
   }
 });
