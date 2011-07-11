@@ -345,7 +345,6 @@ var obj, count;
 
 module('SC.computed - dependentkey with chained properties', {
   setup: function() {
-    console.log("SETTING UP BRO")
     obj = { 
       foo: {
         bar: {
@@ -370,7 +369,6 @@ module('SC.computed - dependentkey with chained properties', {
   },
   
   teardown: function() {
-    console.log("TEARING DOWN BRO")
     obj = count = Global = null;
   } 
 });
