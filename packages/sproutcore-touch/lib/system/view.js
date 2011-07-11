@@ -4,13 +4,36 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
+var get = SC.get;
+var set = SC.set;
+
 SC.View.reopen(
 /** @scope SC.View.prototype */{
 
+  gestures: null,
+
   init: function() {
-    //var keys = this.keys();
-    //console.log(key);
-    return this._super();
+    var knownGestures = SC.Gestures.knownGestures();
+
+    if (knownGestures) {
+      var gestures = [];
+      
+      for (var gesture in knownGestures) {
+
+        if (knownGestures.hasOwnProperty(gesture)) {
+          if (this[gesture+'Start'] || this[gesture+'Change'] || this[gesture+'End']) {
+            gestures.push(knownGestures[gesture].create({
+              view: this
+            }));
+          }
+        }
+      }
+
+      console.log('setting gestures property to ',gestures);
+      set(this, 'gestures', gestures);  
+    }
+
+    return;
   }
   
 });
