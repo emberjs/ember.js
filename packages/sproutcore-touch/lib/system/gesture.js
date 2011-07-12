@@ -29,6 +29,14 @@ SC.Gesture = SC.Object.extend({
 
   redispatchEventToView: function(view, eventName) {
     view.$().trigger(eventName,true);
+  },
+
+  notifyViewOfPinchEvent: function(view, eventName, data) {
+    var handler = view[eventName];
+
+    if (SC.typeOf(handler) === 'function') {
+      handler.call(view, this, data);
+    }
   }
 
 });
