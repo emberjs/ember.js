@@ -20,7 +20,7 @@ SC.PinchGestureRecognizer = SC.Gesture.extend({
 
   _currentDistanceBetweenTouches: null,
   _previousDistanceBetweenTouches: null,
-  _scaleThreshold: 0,
+  _deltaThreshold: 10,
 
   scale: 0,
 
@@ -35,25 +35,53 @@ SC.PinchGestureRecognizer = SC.Gesture.extend({
       this.state = SC.Gesture.WAITING_FOR_TOUCHES;
     }
     else {
-      touches = touches.slice(0,2);
       this.state = SC.Gesture.POSSIBLE;
+      this._currentDistanceBetweenTouches = Math.round(this.distance(touches[0],touches[1])*10)/10
     }
-
+    
     this.redispatchEventToView(view,'touchstart');
   },
 
   touchMove: function(evt, view) {
+    var touches = evt.originalEvent.targetTouches;
 
+    console.log('Pinch got touchMove');
+    if(touches.length !== get(this, 'numberOfTouches')) {
+      return;
+    }
+
+    var state = this._state;
+
+    this._previousDistanceBetweenTouches = this._currentDistanceBetweenTouches;
+    this._currentDistanceBetweenTouches = Math.round(this.distance(touches[0],touches[1])*10)/10 
+
+    var differenceInDistance = this._currentDistanceBetweenTouches - this._previousDistanceBetweenTouches;
+
+    this.scale = Math.round((this._currentDistanceBetweenTouches / this._previousDistanceBetweenTouches)*100)/100;
+
+    console.log(this.scale);
+
+    if (this.state === SC.Gesture.POSSIBLE && Math.abs(differenceInDistance) >= this._deltaThreshold) {
+      this.state = SC.Gesture.BEGAN;
+      this.notifyViewOfPinchEvent(view,'pinchStart', this.scale);
+    }
+    else if (this.state === SC.Gesture.BEGAN) {
+      this.state = SC.Gesture.CHANGED;
+      this.notifyViewOfPinchEvent(view,'pinchChange', this.scale);
+    }
+    else {
+      this.redispatchEventToView(view,'touchmove');
+    }
   },
 
   touchEnd: function(evt, view) {
-    this._state = SC.Gestures.ENDED_STATE;
+    this.state = SC.Gesture.ENDED;
 
     console.groupEnd();
   },
 
   touchCancel: function(evt, view) {
-    this._state = SC.Gestures.CANCELLED_STATE;
+    this.state = SC.Gesture.CANCELLED;
 
     console.groupEnd();
   }
