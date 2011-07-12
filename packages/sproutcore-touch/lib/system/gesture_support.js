@@ -60,7 +60,13 @@ SC.Gestures = SC.Object.create({
 
 });
 
-SC.GestureSupport = SC.Mixin.create({
+SC.GestureManager = SC.Object.extend({
+
+  gestures: null
+
+});
+
+SC.Gesture = SC.Object.extend({
   isGesturable: true,
   name: null,
   state: null,
@@ -76,7 +82,7 @@ SC.GestureSupport = SC.Mixin.create({
   },
 
   toString: function() {
-    return this._super()+' with SC.GestureSupport';
+    return SC.Gesture+'<'+SC.guidFor(this)+'>';
   }
 });
 
@@ -94,7 +100,7 @@ SC.Gestures.CANCELLED_STATE = 4;
     calculate scale from change in distance
  
  */
-SC.PinchGestureRecognizer = SC.Object.extend(SC.GestureSupport, {
+SC.PinchGestureRecognizer = SC.Gesture.extend({
   numberOfTouches: 2,
 
   _currentDistanceBetweenTouches: null,

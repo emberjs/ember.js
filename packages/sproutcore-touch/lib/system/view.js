@@ -15,6 +15,8 @@ SC.View.reopen(
   eventManager: null,
 
   init: function() {
+    this._super();
+
     var knownGestures = SC.Gestures.knownGestures();
 
     if (knownGestures) {
@@ -35,8 +37,6 @@ SC.View.reopen(
       set(this, 'eventManager', manager);
       
     }
-
-    return this._super();
   }
   
 });

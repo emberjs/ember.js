@@ -24,13 +24,13 @@ module("Test Gesture Recognizer",{
 });
 
 test("views can mix in SC.Gesturable", function() {
-  var view = SC.View.create(SC.GestureSupport);
+  var view = SC.View.create();
   ok(view.isGesturable);
   view.destroy();
 });
 
 test("gesturable views that implement pinch methods get a pinch recognizer", function() {
-  var view = SC.View.create(SC.GestureSupport, {
+  var view = SC.View.create({
     pinchStart: function(evt) {
       
     },      
@@ -51,7 +51,7 @@ test("gesturable views that implement pinch methods get a pinch recognizer", fun
 
 test("when finger touches inside, gesture should be in waiting state", function() {
   var numStart = 0;
-  var view = SC.View.create(SC.GestureSupport, {
+  var view = SC.View.create({
     elementId: 'gestureTest',
 
     pinchStart: function(evt) {
@@ -61,11 +61,6 @@ test("when finger touches inside, gesture should be in waiting state", function(
     touchStart: function(evt) {
       console.log('touchStart in view');
       numStart++;
-    },
-
-    mouseDown: function(evt) {
-      console.log('mouseDown');
-      numStart++;
     }
   });
 
@@ -73,8 +68,6 @@ test("when finger touches inside, gesture should be in waiting state", function(
     view.append();
   });
 
-  var gesture = get(view, 'gestures')[0]; 
-  
   var touchEvent = {
     originalEvent: {
       targetTouches: [{
@@ -86,4 +79,8 @@ test("when finger touches inside, gesture should be in waiting state", function(
 
   equals(numStart,1,"touchStart called once")
 
+  var gesture = get(view, 'gestures')[0]; 
+  equals(get(gesture, 'state'),SC.Gesture.WAITING, "gesture should be waiting");
+  
+  
 });

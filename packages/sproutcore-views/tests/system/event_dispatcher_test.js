@@ -154,24 +154,36 @@ test("event manager should be able to re-dispatch events to view", function() {
     elementId: 'containerView',
 
     eventManager: SC.Object.create({
-      mouseDown: function() {
+      mouseDown: function(evt, view) {
+        // Re-dispatch event when you get it.
+        //
+        // The second parameter tells the dispatcher
+        // that this event has been handled. This
+        // API will clearly need to be reworked since
+        // multiple eventManagers in a single view 
+        // hierarchy would break, but it shows that 
+        // re-dispatching works
+        view.$().trigger('mousedown',true);
+      }
+    }),
+
+    childViews: ['child'],
+
+    child: SC.View.extend({
+      elementId: 'nestedView',
+
+      mouseDown: function(evt) {
         receivedEvent++;
       }
     }),
 
-    mouseDown: function() {}
+    mouseDown: function(evt) {
+      receivedEvent++;
+    }
   });
 
-  SC.run(function() {
-    view.append();
-  });
+  SC.run(function() { view.append(); });
 
-  var childViews = get(view,'childViews');
-  
-  childViews.append(SC.View.create({
-    elementId: 'nestedView'
-  }));
-
-  SC.$('#containerView').trigger('mousedown');
-  equals(receivedEvent, 1, "event should go to manager and not view");
+  SC.$('#nestedView').trigger('mousedown');
+  equals(receivedEvent, 2, "event should go to manager and not view");
 });

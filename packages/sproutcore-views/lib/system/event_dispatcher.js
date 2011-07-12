@@ -97,15 +97,17 @@ SC.EventDispatcher = SC.Object.extend(
     @param {String} eventName the name of the method to call on the view
   */
   setupHandler: function(rootElement, event, eventName) {
-    rootElement.delegate('.sc-view', event + '.sproutcore', function(evt) {
+    rootElement.delegate('.sc-view', event + '.sproutcore', function(evt, handled) {
       var view = SC.View.views[this.id],
           result = true, manager = null,
           self = this;
 
-      manager = self._findNearestEventManager(view,eventName);
+      if (!handled) {
+        manager = self._findNearestEventManager(view,eventName);
+      }
 
       if (manager) {
-        result = self._dispatchEvent(manager, evt, eventName);
+        result = self._dispatchEvent(manager, evt, eventName, view);
       }
       else {
         result = self._bubbleEvent(view,evt,eventName);
@@ -132,10 +134,10 @@ SC.EventDispatcher = SC.Object.extend(
   },
 
   /** @private */
-  _dispatchEvent: function(object, evt, eventName) {
+  _dispatchEvent: function(object, evt, eventName, view) {
     handler = object[eventName];
     if (SC.typeOf(handler) === 'function') {
-      result = handler.call(object, evt);
+      result = handler.call(object, evt, view);
     }
 
     return result;
