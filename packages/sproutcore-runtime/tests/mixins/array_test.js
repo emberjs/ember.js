@@ -466,6 +466,9 @@ test('modifying the array should also indicate the isDone prop itself has change
   
   SC.addObserver(each, 'isDone', function() { count++; });
   
+  // access the property once so it becomes defined
+  get(each, 'isDone');
+  
   count = 0;
   var item = ary.objectAt(2);
   set(item, 'isDone', !get(item, 'isDone'));
