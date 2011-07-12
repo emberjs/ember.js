@@ -6,6 +6,7 @@
 
 var set = SC.set;
 var get = SC.get;
+var application = null;
 
 function generateTouchEvent(touches) {
 
@@ -13,11 +14,12 @@ function generateTouchEvent(touches) {
 
 module("Test Gesture Recognizer",{
   setup: function() {
-
+    application = SC.Application.create();
+    application.ready();
   },
 
   teardown: function() {
-
+    application.destroy();
   }  
 });
 
@@ -48,10 +50,27 @@ test("gesturable views that implement pinch methods get a pinch recognizer", fun
 });
 
 test("when finger touches inside, gesture should be in waiting state", function() {
+  var numStart = 0;
   var view = SC.View.create(SC.GestureSupport, {
+    elementId: 'gestureTest',
+
     pinchStart: function(evt) {
-      
+      console.log('pinchstart in view');
+    },
+
+    touchStart: function(evt) {
+      console.log('touchStart in view');
+      numStart++;
+    },
+
+    mouseDown: function(evt) {
+      console.log('mouseDown');
+      numStart++;
     }
+  });
+
+  SC.run(function(){
+    view.append();
   });
 
   var gesture = get(view, 'gestures')[0]; 
@@ -62,4 +81,9 @@ test("when finger touches inside, gesture should be in waiting state", function(
       }]
     }
   };
+
+  view.$().trigger('touchstart');
+
+  equals(numStart,1,"touchStart called once")
+
 });

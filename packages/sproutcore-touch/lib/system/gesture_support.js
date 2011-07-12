@@ -26,7 +26,7 @@ SC.Gestures = SC.Object.create({
 
     registeredGestures[name] = recognizer;
     
-    this._attachListeners(recognizer);
+    this._attachListeners(recognizer, name);
   },
 
   knownGestures: function() {
@@ -35,26 +35,27 @@ SC.Gestures = SC.Object.create({
     return (registeredGestures)? registeredGestures : {};
   },
 
-  _attachListeners: function(recognizer) {
+  _attachListeners: function(recognizer, name) {
     var events = ['start','move','end','cancel'];
-    var name = get(recognizer, 'name');
-    var that = this;
 
     for (var i=0, l=events.length; i<l; i++) {
       var event = events[i];
-
-      (function(eventName){
-        $("body").delegate("."+name, "touch"+event, function(e){
-          that.eventFired(recognizer,eventName,e);
-        })
-      })(event);
+      this._setupHandler(recognizer, name, event);
     }
   },
 
+  _setupHandler: function(recognizer, name, event) {
+    var that = this;
+
+    console.log('$(document.body).delegate(".'+name+'", "touch'+event+'", function(e){');
+    $(document.body).delegate("."+name, "touch"+event, function(e){
+      console.log('hever');
+      that.eventFired(recognizer,eventName,e);
+    })
+  },
+
   eventFired: function(recognizer, eventName, evt) {
-    var view = SC.View.views[evt.target.id];
-    recognizer[eventName](evt);
-    console.log('key');
+    console.log('Event',eventName,'fired on recognizer',recognizer);
   }
 
 });
@@ -75,7 +76,20 @@ SC.GestureSupport = SC.Mixin.create({
   },
 
   toString: function() {
-    return 'SC.Gesture<'+name+':'+SC.guidFor(this)+'>'
+    return this._super()+' with SC.GestureSupport';
+  },
+
+  touchStart: function(evt) {
+    console.log('touchstart in mixin');
+  },
+
+  touchMove: function(evt) {
+    console.log('touchmove in mixin');
+  },
+
+  touchEnd: function(evt) {
+    console.log('touchend in mixin');
+
   }
 });
 
@@ -104,37 +118,10 @@ SC.PinchGestureRecognizer = SC.Object.extend(SC.GestureSupport, {
 
   start: function(evt) {
     console.group('Pinch');
-
-    var touches = evt.originalEvent.touches;
-
-    if(touches.length === get(this, 'numberOfTouches')) {
-      this._state = SC.Gestures.POSSIBLE_STATE;
-      //set(this, 'state', );
-      
-      this._currentDistanceBetweenTouches = Math.round(this.distance(touches[0],touches[1])*10)/10
-    }
   },
 
   move: function(evt) {
-    var touches = evt.originalEvent.touches;
 
-    if(touches.length !== get(this, 'numberOfTouches')) {
-      return;
-    }
-
-    var state = this._state;
-
-    this._previousDistanceBetweenTouches = this._currentDistanceBetweenTouches;
-    this._currentDistanceBetweenTouches = Math.round(this.distance(touches[0],touches[1])*10)/10 
-
-    this.scale = Math.round((this._currentDistanceBetweenTouches / this._previousDistanceBetweenTouches)*100)/100;
-
-    if (state === SC.Gestures.POSSIBLE_STATE && this.scale >= this._scaleThreshold) {
-      this._state = SC.Gestures.BEGAN_STATE;
-    }
-    else if (state === SC.Gestures.BEGAN_STATE) {
-      this._state = SC.Gestures.CHANGED_STATE;
-    }
   },
 
   end: function(evt) {
