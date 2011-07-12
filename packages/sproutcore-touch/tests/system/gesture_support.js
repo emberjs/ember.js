@@ -84,6 +84,8 @@ test("when finger touches inside, gesture should be in waiting state", function(
   ok(gestures);
   equals(gestures.length,1);
   equals(get(gestures[0], 'state'),SC.Gesture.WAITING_FOR_TOUCHES, "gesture should be waiting");
+
+  view.$().trigger('touchend')
 });
 
 test("when 2 fingers touch inside, gesture should be in possible state", function() {
@@ -112,7 +114,7 @@ test("when 2 fingers touch inside, gesture should be in possible state", functio
   touchEvent['originalEvent'] = {
     targetTouches: [{
       pageX: 0,
-      pageY: 0
+      pageY: 10
     },
     {
       pageX: 10,
@@ -122,8 +124,100 @@ test("when 2 fingers touch inside, gesture should be in possible state", functio
   view.$().trigger(touchEvent);
 
   var gestures = get(get(view, 'eventManager'), 'gestures'); 
+  window.gestures = gestures;
 
   ok(gestures);
   equals(gestures.length,1);
   equals(get(gestures[0], 'state'),SC.Gesture.POSSIBLE, "gesture should be possible");
+
+  view.$().trigger('touchend')
+});
+
+test("when 2 fingers move closer together, gesture should be in BEGAN state", function() {
+  var numStart = 0, startScale, changeScale;
+  view = SC.View.create({
+    elementId: 'gestureTest',
+
+    pinchStart: function(recognizer, scale) {
+      console.log('pinchstart in view');
+      numStart++;
+      startScale = scale;
+    },
+
+    pinchChange: function(recognizer, scale) {
+      console.log('pinchchange in view');
+      changeScale = scale;
+    },
+
+    touchStart: function(evt) {
+      console.log('2: touchStart in view');
+    }
+  });
+
+  SC.run(function(){
+    view.append();
+  });
+
+  var touchEvent = new jQuery.Event();
+  
+  touchEvent.type='touchstart';
+  touchEvent['originalEvent'] = {
+    targetTouches: [{
+      pageX: 50,
+      pageY: 100
+    },
+    {
+      pageX: 100,
+      pageY: 100
+    }]
+  };
+  view.$().trigger(touchEvent);
+
+
+  var gestures = get(get(view, 'eventManager'), 'gestures'); 
+  window.gestures = gestures;
+
+  ok(gestures);
+  equals(gestures.length,1);
+  equals(get(gestures[0], 'state'),SC.Gesture.POSSIBLE, "gesture should be possible");
+
+  touchEvent = new jQuery.Event();
+  
+  touchEvent.type='touchmove';
+  touchEvent['originalEvent'] = {
+    targetTouches: [{
+      pageX: 0,
+      pageY: 100
+    },
+    {
+      pageX: 100,
+      pageY: 100
+    }]
+  };
+
+  console.log('gesture should be in began state after this');
+  view.$().trigger(touchEvent);
+
+  equals(get(gestures[0], 'state'),SC.Gesture.BEGAN, "gesture should be began");
+  equals(numStart,1,"touchStart called once")
+  equals(startScale,2,"scale should be doubled");
+
+  touchEvent = new jQuery.Event();
+  touchEvent.type='touchmove';
+  touchEvent['originalEvent'] = {
+    targetTouches: [{
+      pageX: 50,
+      pageY: 100
+    },
+    {
+      pageX: 100,
+      pageY: 100
+    }]
+  };
+
+  view.$().trigger(touchEvent);
+
+  equals(changeScale,0.5,"scale should be halved");
+
+  view.$().trigger('touchend')
 });
