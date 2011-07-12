@@ -81,7 +81,7 @@ SC.CollectionView = SC.ContainerView.extend(
     // If the contents were empty before and this template collection has an
     // empty view remove it now.
     var emptyView = get(this, 'emptyView');
-    if (emptyView && !SC.Object.detect(emptyView)) {
+    if (emptyView && emptyView instanceof SC.View) {
       emptyView.removeFromParent();
     }
 
@@ -135,11 +135,12 @@ SC.CollectionView = SC.ContainerView.extend(
     } else {
       var emptyView = get(this, 'emptyView');
       if (get(childViews, 'length') === 0 && emptyView) {
+        emptyView = this.createChildView(emptyView);
+
         if (SC.Object.detect(emptyView)) {
-          emptyView = this.createChildView(emptyView);
+          set(this, 'emptyView', emptyView);
         }
 
-        set(this, 'emptyView', emptyView);
         childViews.replace(0, get(childViews, 'length'), [emptyView]);
       }
     }
