@@ -5,8 +5,6 @@
 // ==========================================================================
 /*globals Handlebars */
 
-require("handlebars");
-
 /**
   @class
 
@@ -31,9 +29,6 @@ require("handlebars");
   Note that you won't usually need to use SC.Handlebars yourself. Instead, use
   SC.View, which takes care of integration into the view layer for you.
 */
-
-require("handlebars");
-require("sproutcore-views/system/render_buffer");
 
 /**
   @namespace

@@ -5,8 +5,6 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
-require('sproutcore-metal/mixin');
-
 var IS_BINDING = /^.+Binding$/;
 
 SC._mixinBindings = function(obj, key, value, m) {

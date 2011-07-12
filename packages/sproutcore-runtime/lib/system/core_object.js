@@ -4,6 +4,9 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
+require('sproutcore-runtime/core');
+require('sproutcore-runtime/ext');
+require('sproutcore-runtime/mixins');
 
 
 // NOTE: this object should never be included directly.  Instead use SC.

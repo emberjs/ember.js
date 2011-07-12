@@ -5,9 +5,6 @@
 // ==========================================================================
 /*globals Handlebars sc_assert */
 
-// TODO: Don't require the entire module
-require("sproutcore-handlebars");
-
 var get = SC.get, set = SC.set;
 
 /** @private */

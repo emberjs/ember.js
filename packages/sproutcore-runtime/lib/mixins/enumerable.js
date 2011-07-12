@@ -4,9 +4,7 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
-
-
-
+require('sproutcore-runtime/ext');
 
 // ..........................................................
 // HELPERS

@@ -4,7 +4,6 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
-require("sproutcore-views/views/view");
 require("sproutcore-handlebars/ext");
 
 var set = SC.set, get = SC.get;
