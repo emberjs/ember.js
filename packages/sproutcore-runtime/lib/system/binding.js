@@ -660,14 +660,6 @@ Binding.reopenClass(/** @scope SC.Binding */ {
   },
 
   /**
-    @see SC.Binding.prototype.oneWay
-  */
-  oneWay: function(from, flag) {
-    var C = this, binding = new C(null, from);
-    return binding.oneWay(flag);
-  },
-
-  /**
     @see SC.Binding.prototype.transform
   */
   transform: function(func) {

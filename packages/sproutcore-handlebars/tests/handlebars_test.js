@@ -127,8 +127,10 @@ test("should escape HTML in normal mustaches", function() {
 
   view.createElement();
   equals(view.$('b').length, 0, "does not create an element");
+  equals(view.$().text(), 'you need to be more <b>bold</b>', "inserts entities, not elements");
 
-  set(view, 'output', "you are so <i>super</i>");
+  SC.run(function() { set(view, 'output', "you are so <i>super</i>"); });
+  equals(view.$().text(), 'you are so <i>super</i>', "updates with entities, not elements");
   equals(view.$('i').length, 0, "does not create an element when value is updated");
 });
 
@@ -204,7 +206,7 @@ test("child views can be inserted inside a bind block", function() {
   });
 
   TemplateTests.LabelView = SC.View.extend({
-    tagName: "aside",
+    tagName: "label",
     cruel: "cruel",
     world: "world?",
     content: SC.Object.create({ blah: "wot" }),
@@ -226,7 +228,7 @@ test("child views can be inserted inside a bind block", function() {
   view.createElement();
 
   ok(view.$("#hello-world:contains('Hello world!')").length, "The parent view renders its contents");
-  ok(view.$("aside:contains('Goodbye wot cruel world?')").length === 1, "The child view renders its content once");
+  ok(view.$("label").text().match(/Goodbye.*wot.*cruel.*world\?/), "The child view renders its content once");
   ok(view.$().text().match(/Hello world!.*Goodbye.*wot.*cruel.*world\?/), "parent view should appear before the child view");
 });
 
@@ -631,7 +633,7 @@ test("Template views return a no-op function if their template cannot be found",
 
 test("Template views add an elementId to child views created using the view helper", function() {
   var templates = SC.Object.create({
-    parent: SC.Handlebars.compile('<aside>{{view "TemplateTests.ChildView"}}</aside>'),
+    parent: SC.Handlebars.compile('<label>{{view "TemplateTests.ChildView"}}</label>'),
     child: SC.Handlebars.compile("I can't believe it's not butter.")
   });
 
@@ -652,7 +654,7 @@ test("Template views add an elementId to child views created using the view help
 
 test("Template views set the template of their children to a passed block", function() {
   var templates = SC.Object.create({
-    parent: SC.Handlebars.compile('<h1>{{#view "TemplateTests.NoTemplateView"}}<span>It worked!</span>{{/view}}')
+    parent: SC.Handlebars.compile('<h1>{{#view "TemplateTests.NoTemplateView"}}<span>It worked!</span>{{/view}}</h1>')
   });
 
   TemplateTests.NoTemplateView = SC.View.extend();
@@ -663,7 +665,7 @@ test("Template views set the template of their children to a passed block", func
   });
 
   view.createElement();
-  ok(view.$().html().match(/\<h1>.*\<span>.*\<\/span>.*\<\/h1>/), "renders the passed template inside the parent template");
+  ok(view.$('h1:has(span)').length === 1, "renders the passed template inside the parent template");
 });
 
 test("should pass hash arguments to the view object", function() {
@@ -950,12 +952,12 @@ test("should be able to bind element attributes using {{bindAttr}}", function() 
   equals(view.$('img').attr('alt'), "The SproutCore Logo", "updates alt attribute when content object is a hash");
 
   SC.run(function() {
-    set(view, 'content', {
+    set(view, 'content', SC.Object.create({
       url: "http://www.sproutcore.com/assets/images/logo.png",
-      title: function() {
+      title: SC.computed(function() {
         return "Nanananana SproutCore!";
-      }
-    });
+      })
+    }));
   });
 
   equals(view.$('img').attr('alt'), "Nanananana SproutCore!", "updates alt attribute when title property is computed");
@@ -1025,7 +1027,7 @@ test("should be able to bind class attribute with {{bindAttr}}", function() {
 });
 
 test("should be able to bind boolean element attributes using {{bindAttr}}", function() {
-  var template = SC.Handlebars.compile('<input type="check" {{bindAttr disabled="content.isDisabled" checked="content.isChecked"}} />');
+  var template = SC.Handlebars.compile('<input type="checkbox" {{bindAttr disabled="content.isDisabled" checked="content.isChecked"}} />');
   var content = SC.Object.create({
     isDisabled: false,
     isChecked: true

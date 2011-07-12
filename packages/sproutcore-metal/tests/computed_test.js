@@ -23,10 +23,10 @@ test('defining computed property should invoke property on get', function() {
     count++;
     return 'computed '+key;
   }));
-  
+
   equals(SC.get(obj, 'foo'), 'computed foo', 'should return value');
   equals(count, 1, 'should have invoked computed property');
-  
+
   if (SC.USES_ACCESSORS) {
     count = 0;
     equals(SC.get(obj, 'foo'), 'computed foo', 'should return value');
@@ -209,7 +209,7 @@ testBoth('modifying a cacheable property should update cache', function(get, set
 });
 
 testBoth('inherited property should not pick up cache', function(get, set) {
-  var objB = Object.create(obj);
+  var objB = SC.create(obj);
 
   equals(get(obj, 'foo'), 'bar 1', 'obj first get');
   equals(get(objB, 'foo'), 'bar 2', 'objB first get');

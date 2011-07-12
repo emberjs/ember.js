@@ -144,7 +144,11 @@ if (!USE_ACCESSORS) {
   };
 
   SC.Descriptor.MUST_USE_SETTER = function() {
-    sc_assert('Must use SC.set() to access this property', false);
+    if (this.isDestroyed) {
+      sc_assert('You cannot set observed properties on destroyed objects', false);
+    } else {
+      sc_assert('Must use SC.set() to access this property', false);
+    }
   };
 }
 //@endif

@@ -22,6 +22,12 @@ SC.Checkbox = SC.View.extend({
 
   defaultTemplate: SC.Handlebars.compile('<label><input type="checkbox" {{bindAttr checked="value"}}>{{title}}</label>'),
 
+  click: function() {
+    if (jQuery.browser.msie) {
+      this.change();
+    }
+  },
+
   change: function() {
     SC.run.once(this, this._updateElementValue);
     return false;

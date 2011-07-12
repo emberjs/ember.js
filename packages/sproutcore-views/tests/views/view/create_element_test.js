@@ -32,8 +32,8 @@ test("calls render and turns resultant string into element", function() {
 });
 
 test("generated element include HTML from child views as well", function() {
-  var view = SC.View.create({
-    childViews: [ SC.View.extend({ elementId: "foo" })]
+  var view = SC.ContainerView.create({
+    childViews: [ SC.View.create({ elementId: "foo" })]
   });
 
   view.createElement();

@@ -356,7 +356,7 @@ SC.Enumerable = SC.Mixin.create( /** @lends SC.Enumerable */ {
     var len = get(this, 'length') ;
     if (target === undefined) target = null;
 
-    var last = null, next, found = false, ret = undefined ;
+    var last = null, next, found = false, ret ;
     var context = popCtx();
     for(var idx=0;idx<len && !found;idx++) {
       next = this.nextObject(idx, last, context) ;

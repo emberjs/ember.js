@@ -10,6 +10,7 @@ require('sproutcore-metal/computed');
 require('sproutcore-metal/properties');
 require('sproutcore-metal/observer');
 require('sproutcore-metal/utils');
+require('sproutcore-metal/array');
 
 var Mixin, MixinDelegate, REQUIRED, Alias;
 var classToString;
@@ -115,7 +116,11 @@ function mergeMixins(mixins, m, descs, values, base) {
           values[key] = value;
         }
       }
-      
+
+      // manually copy toString() because some JS engines do not enumerate it
+      if (props.hasOwnProperty('toString')) {
+        base.toString = props.toString;
+      }
       
     } else if (mixin.mixins) {
       mergeMixins(mixin.mixins, m, descs, values, base);
@@ -374,7 +379,7 @@ var NAME_KEY = SC.GUID_KEY+'_name';
 function processNames(paths, root, seen) {
   var idx = paths.length;
   for(var key in root) {
-    if (!root.hasOwnProperty(key)) continue;
+    if (!root.hasOwnProperty || !root.hasOwnProperty(key)) continue;
     var obj = root[key];
     paths[idx] = key;
 

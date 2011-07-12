@@ -15,7 +15,7 @@ module("SC.CollectionView", {
 });
 
 test("should render a view for each item in its content array", function() {
-  var view = SC.CollectionView.create({
+  view = SC.CollectionView.create({
     content: [1, 2, 3, 4]
   });
 

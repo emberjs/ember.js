@@ -1141,7 +1141,7 @@ SC.Store = SC.Object.extend( /** @scope SC.Store.prototype */ {
 
     // if commit records is enabled
     if(get(this, 'commitRecordsAutomatically')){
-      this.invokeLast(this.commitRecords);
+      SC.run.schedule('actions', this, this.commitRecords);
     }
 
     // Finally return materialized record, after we propagate the status to
@@ -1315,7 +1315,7 @@ SC.Store = SC.Object.extend( /** @scope SC.Store.prototype */ {
 
     // if commit records is enabled
     if(get(this, 'commitRecordsAutomatically')){
-      this.invokeLast(this.commitRecords);
+      SC.run.schedule('actions', this, this.commitRecords);
     }
 
     var that = this;
@@ -1472,7 +1472,7 @@ SC.Store = SC.Object.extend( /** @scope SC.Store.prototype */ {
 
     // if commit records is enabled
     if(get(this, 'commitRecordsAutomatically')){
-      this.invokeLast(this.commitRecords);
+      SC.run.schedule('actions', this, this.commitRecords);
     }
 
     return this ;

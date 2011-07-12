@@ -60,7 +60,7 @@ SC.EventDispatcher = SC.Object.extend(
       change      : 'change'
     };
 
-    jQuery.extend(events, addedEvents || {})
+    jQuery.extend(events, addedEvents || {});
 
     for (event in events) {
       if (events.hasOwnProperty(event)) {

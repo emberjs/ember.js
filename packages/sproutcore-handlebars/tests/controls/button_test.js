@@ -40,7 +40,7 @@ test("should trigger an action when clicked", function() {
   button.set('action', 'myAction');
 
   SC.run(function() {
-    button.append();
+    button.appendTo('#qunit-fixture');
   });
 
   synthesizeEvent('mousedown', button);
@@ -66,7 +66,7 @@ test("should trigger an action on a String target when clicked", function() {
   });
 
   SC.run(function() {
-    button.append();
+    button.appendTo('#qunit-fixture');
   });
 
   synthesizeEvent('mousedown', button);
@@ -90,7 +90,7 @@ test("should not trigger action if mouse leaves area before mouseup", function()
   button.set('action', 'myAction');
 
   SC.run(function() {
-    button.append();
+    button.appendTo('#qunit-fixture');
   });
 
   synthesizeEvent('mousedown', button);
@@ -115,7 +115,7 @@ test("should not trigger action if mouse leaves area before mouseup", function()
 
 test("should by default be of type='button'", function() {
   SC.run(function() {
-    button.append();
+    button.appendTo('#qunit-fixture');
   });
 
   equals(button.$().attr('type'), 'button');
@@ -125,7 +125,7 @@ test("should have a configurable type", function() {
   button.set('type', 'submit');
 
   SC.run(function() {
-    button.append();
+    button.appendTo('#qunit-fixture');
   });
   
   equals(button.$().attr('type'), 'submit');
