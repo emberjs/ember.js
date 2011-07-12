@@ -135,6 +135,8 @@ SC.EventDispatcher = SC.Object.extend(
 
   /** @private */
   _dispatchEvent: function(object, evt, eventName, view) {
+    var result = true;
+
     handler = object[eventName];
     if (SC.typeOf(handler) === 'function') {
       result = handler.call(object, evt, view);
@@ -145,8 +147,8 @@ SC.EventDispatcher = SC.Object.extend(
 
   /** @private */
   _bubbleEvent: function(view, evt, eventName) {
-      var result = true, handler,
-          self = this;
+    var result = true, handler,
+        self = this;
 
       SC.run(function() {
         handler = view[eventName];
@@ -155,7 +157,7 @@ SC.EventDispatcher = SC.Object.extend(
         }
       });
 
-      return result;
+    return result;
   },
 
   /** @private */
