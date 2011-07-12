@@ -29,11 +29,10 @@ SC.View.reopen(
         }
       }
 
-      console.log('setting gestures property to ',gestures);
       set(this, 'gestures', gestures);  
     }
 
-    return;
+    return this._super();
   }
   
 });
