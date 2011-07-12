@@ -12,6 +12,8 @@ SC.View.reopen(
 
   gestures: null,
 
+  eventManager: null,
+
   init: function() {
     var knownGestures = SC.Gestures.knownGestures();
 
@@ -19,17 +21,19 @@ SC.View.reopen(
       var gestures = [];
       
       for (var gesture in knownGestures) {
-
-        if (knownGestures.hasOwnProperty(gesture)) {
-          if (this[gesture+'Start'] || this[gesture+'Change'] || this[gesture+'End']) {
-            gestures.push(knownGestures[gesture].create({
-              view: this
-            }));
-          }
+        if (this[gesture+'Start'] || this[gesture+'Change'] || this[gesture+'End']) {
+          gestures.push(knownGestures[gesture].create({
+            view: this
+          }));
         }
       }
 
-      set(this, 'gestures', gestures);  
+      var manager = SC.GestureManager.create({
+        gestures: gestures
+      });
+
+      set(this, 'eventManager', manager);
+      
     }
 
     return this._super();
