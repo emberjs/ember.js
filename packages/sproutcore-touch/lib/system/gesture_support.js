@@ -77,19 +77,6 @@ SC.GestureSupport = SC.Mixin.create({
 
   toString: function() {
     return this._super()+' with SC.GestureSupport';
-  },
-
-  touchStart: function(evt) {
-    console.log('touchstart in mixin');
-  },
-
-  touchMove: function(evt) {
-    console.log('touchmove in mixin');
-  },
-
-  touchEnd: function(evt) {
-    console.log('touchend in mixin');
-
   }
 });
 
