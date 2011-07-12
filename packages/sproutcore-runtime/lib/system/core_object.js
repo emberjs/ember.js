@@ -33,7 +33,11 @@ function makeCtor() {
       rewatch(this); // ålways rewatch just in case
       this.init.apply(this, arguments);
     } else {
-      if (hasChains) { rewatch(this); }
+      if (hasChains) {
+        rewatch(this);
+      } else {
+        this[SC.GUID_KEY] = undefined;
+      }
       if (init===false) { init = this.init; } // cache for later instantiations
       init.apply(this, arguments);
     }
