@@ -52,7 +52,7 @@ Handlebars.registerHelper('collection', function(path, options) {
   // If passed a path string, convert that into an object.
   // Otherwise, just default to the standard class.
   var collectionClass;
-  collectionClass = path ? SC.getPath(path) : SC.CollectionView;
+  collectionClass = path ? SC.getPath(this, path) : SC.CollectionView;
   sc_assert("%@ #collection: Could not find %@".fmt(data.view, path), !!collectionClass);
 
   var hash = options.hash, itemHash = {}, match;
