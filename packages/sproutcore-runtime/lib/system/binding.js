@@ -585,6 +585,8 @@ var Binding = SC.Object.extend({
     //@if (debug)
     var log = SC.LOG_BINDINGS;
     //@endif
+
+    if (obj.isDestroyed) { return; }
     
     var guid = guidFor(obj), direction = this[guid], val, tv;
     if (!this._readyToSync) return; // not connected.
@@ -599,10 +601,11 @@ var Binding = SC.Object.extend({
       //@endif
       
       // apply changes
-      SC.setPath(obj, this._to, tv);
+      SC.trySetPath(obj, this._to, tv);
 
     } else if (direction === 'back' && !this._oneWay) {
       val = getPath(obj, this._to);
+
       tv  = transformedValue(this, fromValue(obj, this), obj);
       if (val !== tv) {
 
@@ -610,7 +613,7 @@ var Binding = SC.Object.extend({
         if (log) { SC.Logger.log(' ', this.toString(), val, '<-', tv, obj); }
         //@endif
 
-        SC.setPath(obj, this._from, val);
+        SC.trySetPath(obj, this._from, val);
       }
     }
   }

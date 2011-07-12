@@ -125,6 +125,17 @@ test('[obj, Foo] -> EXCEPTION', function() {
   }, Error);
 });
 
+test('[obj, foo.baz.bat] -> EXCEPTION', function() {
+  raises(function() {
+    SC.setPath(obj, 'foo.baz.bat', "BAM");
+  }, Error);
+});
+
+test('[obj, foo.baz.bat] -> EXCEPTION', function() {
+  SC.trySetPath(obj, 'foo.baz.bat', "BAM");
+  // does not raise
+});
+
 test('[obj, Foo.bar] -> Foo.bar', function() {
   SC.setPath(obj, 'Foo.bar', "BAM");
   equals(SC.getPath(Foo, 'bar'), "BAM");
@@ -149,6 +160,8 @@ test('[obj, $foo.bar.baz] -> $foo.bar.baz', function() {
   SC.setPath(obj, '$foo.bar.baz', "BAM");
   equals(SC.getPath($foo, 'bar.baz'), "BAM");
 });
+
+
 
 // ..........................................................
 // NO TARGET
