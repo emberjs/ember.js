@@ -99,7 +99,52 @@ SC.EventDispatcher = SC.Object.extend(
   setupHandler: function(rootElement, event, eventName) {
     rootElement.delegate('.sc-view', event + '.sproutcore', function(evt) {
       var view = SC.View.views[this.id],
-          result = true, handler;
+          result = true, manager = null,
+          self = this;
+
+      manager = self._findNearestEventManager(view,eventName);
+
+      if (manager) {
+        result = self._dispatchEvent(manager, evt, eventName);
+      }
+      else {
+        result = self._bubbleEvent(view,evt,eventName);
+      }
+
+      evt.stopPropagation();
+
+      return result;
+    });
+  },
+
+  /** @private */
+  _findNearestEventManager: function(view, eventName) {
+    var manager = null;
+
+    while (view) {
+      manager = get(view, 'eventManager');
+      if (manager && manager[eventName]) { break; }
+
+      view = get(view, 'parentView');
+    }
+
+    return manager;
+  },
+
+  /** @private */
+  _dispatchEvent: function(object, evt, eventName) {
+    handler = object[eventName];
+    if (SC.typeOf(handler) === 'function') {
+      result = handler.call(object, evt);
+    }
+
+    return result;
+  },
+
+  /** @private */
+  _bubbleEvent: function(view, evt, eventName) {
+      var result = true, handler,
+          self = this;
 
       SC.run(function() {
         handler = view[eventName];
@@ -109,7 +154,6 @@ SC.EventDispatcher = SC.Object.extend(
       });
 
       return result;
-    });
   },
 
   /** @private */
