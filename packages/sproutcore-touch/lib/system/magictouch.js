@@ -1,4 +1,3 @@
-console.log('here!');
 // Framework for simulating touch events without a mobile device
 // Trying to be compatible with
 //  http://dvcs.w3.org/hg/webevents/raw-file/tip/touchevents.html
