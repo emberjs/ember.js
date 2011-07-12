@@ -365,14 +365,6 @@ if (!SC.keys) {
   };
 }
 
-/**
-  Empty function.  Useful for some operations.
-
-  @returns {Object}
-  @private
-*/
-SC.K = function() { return this; };
-
 // ..........................................................
 // ERROR
 // 
@@ -403,8 +395,3 @@ SC.Error.prototype = SC.create(Error.prototype);
   Override this to provide more robust logging functionality.
 */
 SC.Logger = window.console;
-
-//if ('undefined' === typeof sc_require) sc_require = SC.K;
-if ('undefined' === typeof require) require = SC.K;
-
-
