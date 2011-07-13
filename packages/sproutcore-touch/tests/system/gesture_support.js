@@ -221,3 +221,26 @@ test("when 2 fingers move closer together, gesture should be in BEGAN state", fu
 
   view.$().trigger('touchend')
 });
+
+test("foo",function() {
+
+  var myview = SC.View.create({
+    elementId: 'gestureTest',
+    pinchChange: function(recognizer, scale) {
+      $('#gestureTest').css('-webkit-transform','scaleZ('+scale+')');
+    }
+  });
+
+  SC.run(function(){
+    myview.append();
+  });
+
+   $('#gestureTest').css({
+      background: 'red',
+      position: 'absolute',
+      top: 10,
+      left: 10,
+      width: 200,
+      height: 200
+   })
+});
