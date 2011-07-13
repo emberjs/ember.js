@@ -263,9 +263,9 @@ namespace :starter_kit do
     end
   end
 
-  task "tmp/starter-kit.#{VERSION}.zip" => "tmp/starter-kit/index.html" do
+  task "tmp/starter-kit.#{SC_VERSION}.zip" => "tmp/starter-kit/index.html" do
     Dir.chdir("tmp") do
-      sh %{zip -r starter-kit.#{VERSION}.zip starter-kit -x "starter-kit/.git/*"}
+      sh %{zip -r starter-kit.#{SC_VERSION}.zip starter-kit -x "starter-kit/.git/*"}
     end
   end
 
