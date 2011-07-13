@@ -2,47 +2,49 @@
 
 packages="handlebars sproutcore-metal sproutcore-runtime sproutcore-datetime sproutcore-indexset sproutcore-datastore sproutcore-views sproutcore-handlebars"
 
-for framework in $packages
+for package in $packages
 do
-    cd packages/${framework}/lib
+    cd packages/${package}/lib
 
     # get all js files except those in the tests
-    subs=`find . -name "*\.js"   ! -path "*test*"`
+    sourcefiles=`find . -name "*\.js" ! -path "*test*"`
 
-    # for every file
-    for sub in ${subs}
+    # for every source file in package/lib
+    for sourcefile in ${sourcefiles}
     do
-        # pulled the files dependencies out of the sc_require statement
-        deps=`sed -n "s/^.*require([\"']\([^\"']*\).*/\1/p" ${sub} | tr "\\n" " "`
+        # pull the files dependencies out of the require() statements
+        dependencies=`sed -n "s/^.*require([\"']\([^\"']*\).*/\1/p" ${sourcefile} | tr "\\n" " "`
 
-        theFile=`echo $sub | sed s:./::`
-        theFile=${theFile%.js}
+        relativepath=`echo $sourcefile | sed s:./::`
+        relativepath=${relativepath%.js}
 
-        # set all the dependencies in a file
-        if [[ -z $deps ]] ; then
-            echo "${framework}/${theFile} ${framework}/${theFile}" >> .tsort
+        # output all the dependencies to a file for tsort
+        if [[ -z $dependencies ]] ; then
+            echo "${package}/${relativepath} ${package}/${relativepath}" >> .tsort
         else
-            for dep in $deps
+            for dependency in $dependencies
             do
-                if [ ${theFile} != "mixins/inline_text_field" ] ; then
-                    echo "${framework}/${theFile} ${dep}" >> .tsort
-                fi
+                echo "${package}/${relativepath} ${dependency}" >> .tsort
             done
         fi
 
     done
 
+    # topologically sort based on the dependencies
     ordered=`tsort .tsort | sed -n '1!G;h;$p'`
 
+    # output the filenames in the correct order for our one-line build script, below
     for file in ${ordered}
     do
-        filepath=`echo ${file} | sed s:${framework}:${framework}/lib:`
+        filepath=`echo ${file} | sed s:${package}:${package}/lib:`
         echo packages/${filepath}.js >> ../../../.build
     done
+
+    # cleanup
     rm .tsort
     cd ../../..
 done
 
 rm -f sproutcore2.js
 cat .build | grep "^[A-Za-z0-9_/-]*.js$" | xargs -n 1 -P 1 ./export.sh | grep -x -v "require(.*);" > sproutcore2.js
-rm .build
+rm -f .build
