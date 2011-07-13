@@ -112,7 +112,7 @@ trap "INT" do
   $threads.each(&:kill)
 end
 
-VERSION = File.read("VERSION")
+SC_VERSION = File.read("VERSION")
 
 def spade_update_task(package)
   path = "packages/#{package}"
@@ -124,7 +124,7 @@ def spade_update_task(package)
   end
 end
 
-def spade_build_task(package, version=VERSION)
+def spade_build_task(package, version=SC_VERSION)
   path = "packages/#{package}"
   dest = "#{path}/#{package}-#{version}.spd"
   source = Dir["#{path}/**/*.js"] - ["#{path}/spade-boot.js"]
@@ -248,8 +248,8 @@ task :bump_version, :version do |t, args|
 end
 
 namespace :starter_kit do
-  sproutcore_output = "tmp/starter-kit/js/libs/sproutcore-#{VERSION}.js"
-  sproutcore_min_output = "tmp/starter-kit/js/libs/sproutcore-#{VERSION}.min.js"
+  sproutcore_output = "tmp/starter-kit/js/libs/sproutcore-#{SC_VERSION}.js"
+  sproutcore_min_output = "tmp/starter-kit/js/libs/sproutcore-#{SC_VERSION}.min.js"
 
   task :pull => "tmp/starter-kit" do
     Dir.chdir("tmp/starter-kit") do
