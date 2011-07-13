@@ -84,6 +84,7 @@ SC.Application = SC.Namespace.extend(
   /** @private */
   destroy: function() {
     get(this, 'eventDispatcher').destroy();
+    return this._super();
   }
 });
 

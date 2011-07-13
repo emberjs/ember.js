@@ -12,7 +12,6 @@ var set = SC.set, get = SC.get;
 module("SC.EventDispatcher", {
   setup: function() {
     application = SC.Application.create();
-    application.ready();
   },
 
   teardown: function() {
