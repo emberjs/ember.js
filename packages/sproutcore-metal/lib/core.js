@@ -55,6 +55,14 @@ SC.VERSION = '2.0.alpha';
 SC.ENV = 'undefined' === typeof ENV ? {} : ENV;
 
 /**
+  Empty function.  Useful for some operations.
+
+  @returns {Object}
+  @private
+*/
+SC.K = function() { return this; };
+
+/**
   Define an assertion that will throw an exception if the condition is not 
   met.  SproutCore build tools will remove any calls to sc_assert() when 
   doing a production build.
@@ -89,3 +97,6 @@ window.sc_assert = function sc_assert(desc, test) {
   if ('function' === typeof test) test = test()!==false;
   if (!test) throw new Error("assertion failed: "+desc);
 };
+
+//if ('undefined' === typeof sc_require) sc_require = SC.K;
+if ('undefined' === typeof require) require = SC.K;
