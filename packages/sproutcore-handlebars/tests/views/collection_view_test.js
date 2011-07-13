@@ -6,15 +6,18 @@
 /*globals TemplateTests */
 
 var set = SC.set, setPath = SC.setPath;
-
-window.TemplateTests = {};
 var view;
 
 module("SC.HandlebarsCollectionView", {
+  setup: function() {
+    window.TemplateTests = SC.Namespace.create();
+  },
   teardown: function() {
     if (view) {
       view.destroy();
     }
+
+    window.TemplateTests = undefined;
   }
 });
 
@@ -108,6 +111,11 @@ test("a block passed to a collection helper defaults to the view", function() {
 });
 
 test("should include an id attribute if id is set in the options hash", function() {
+  TemplateTests.CollectionTestView = SC.CollectionView.extend({
+    tagName: 'ul',
+    content: ['foo', 'bar', 'baz']
+  });
+
   var view = SC.View.create({
     template: SC.Handlebars.compile('{{#collection "TemplateTests.CollectionTestView" id="baz"}}foo{{/collection}}')
   });

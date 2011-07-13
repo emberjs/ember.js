@@ -69,8 +69,6 @@ test("should invoke renderChildViews if layer is destroyed then re-rendered", fu
     view.rerender();
   });
 
-  // view.destroyElement();
-  // view.createElement();
   equals(rendered, 2, 'rendered the child twice');
   equals(parentRendered, 2);
   equals(view.$('div').length, 1);
