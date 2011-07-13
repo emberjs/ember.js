@@ -97,13 +97,14 @@ SC.EventDispatcher = SC.Object.extend(
     @param {String} eventName the name of the method to call on the view
   */
   setupHandler: function(rootElement, event, eventName) {
+    var self = this;
     rootElement.delegate('.sc-view', event + '.sproutcore', function(evt, handled) {
       var view = SC.View.views[this.id],
-          result = true, manager = null,
-          self = this;
+          result = true, manager = null;
 
-      if(window.foo) debugger;
-      console.log('IN DISPATCHER with event type ',evt.type);
+      //if(window.foo) debugger;
+      //console.log('IN DISPATCHER with event type ',evt.type);
+      debugger
       if (!handled) {
         manager = self._findNearestEventManager(view,eventName);
       }

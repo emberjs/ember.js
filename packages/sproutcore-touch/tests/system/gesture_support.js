@@ -51,10 +51,12 @@ test("when finger touches inside, gesture should be in waiting state", function(
     elementId: 'gestureTest',
 
     pinchStart: function(evt) {
-      numStart++;
+      console.log('pinchStart called');
+      //numStart++;
     },
 
     touchStart: function(evt) {
+      console.log('touchStart on test view for one finder called');
       numStart++;
     }
   });
@@ -235,16 +237,16 @@ test("foo",function() {
     }
   });
 
-  SC.run(function(){
-    myview.append();
-  });
+  //SC.run(function(){
+    //myview.append();
+  //});
 
-   $('#gestureTest').css({
-      background: 'red',
-      position: 'absolute',
-      top: 10,
-      left: 10,
-      width: 200,
-      height: 200
-   })
+   //$('#gestureTest').css({
+      //background: 'red',
+      //position: 'absolute',
+      //top: 10,
+      //left: 10,
+      //width: 400,
+      //height: 400
+   //})
 });
