@@ -22,7 +22,8 @@ if (!packageName) {
   $.extend(window, qunit);
 
   QUnit.config.autostart = false;
-  QUnit.onload();
+  QUnit.config.autorun = false;
+
   $('h1 > a').text(packageName);
 
   QUnit.jsDump.setParser('object', function(obj) {
@@ -43,6 +44,9 @@ if (!packageName) {
       }
     }
   }
+
+  QUnit.onload();
+  QUnit.start();
 
 }
 
