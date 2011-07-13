@@ -2,6 +2,9 @@
 
 read -r -d '' TMP <<BUILD
 
+# jquery
+packages/jquery/lib/jquery.js
+
 # handlebars
 packages/handlebars/lib/main.js
 
@@ -83,4 +86,4 @@ packages/sproutcore-handlebars/lib/loader.js
 BUILD
 
 rm -f sproutcore2.js
-echo "$TMP" | grep "^[A-Za-z0-9_/-]*.js$" | xargs -n 1 -P 1 ./export.sh > sproutcore2.js
+echo "$TMP" | grep "^[A-Za-z0-9_/-]*.js$" | xargs -n 1 -P 1 ./export.sh | grep -x -v "require(.*);" > sproutcore2.js
