@@ -1,6 +1,6 @@
 #!/bin/sh
 
-packages="handlebars sproutcore-metal sproutcore-runtime sproutcore-views sproutcore-handlebars"
+packages="handlebars sproutcore-metal sproutcore-runtime sproutcore-datetime sproutcore-indexset sproutcore-datastore sproutcore-views sproutcore-handlebars"
 
 for framework in $packages
 do

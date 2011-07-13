@@ -5,9 +5,7 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
-require('sproutcore-runtime');
 require('sproutcore-datastore/system/record');
-require('sproutcore-datetime');
 
 var get = SC.get, set = SC.set, getPath = SC.getPath;
 

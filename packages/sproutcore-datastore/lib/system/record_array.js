@@ -5,10 +5,8 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
-require('sproutcore-runtime');
 require('sproutcore-datastore/system/record');
 require('sproutcore-datastore/system/query');
-require('sproutcore-indexset');
 
 var get = SC.get, set = SC.set;
 

@@ -5,8 +5,6 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
-require('sproutcore-runtime');
-
 var get = SC.get, set = SC.set;
 
 // simple copy op needed for just this code.

@@ -5,8 +5,6 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
-require('sproutcore-runtime');
-
 /**
   Indicates a value has a mixed state of both on and off.
 
