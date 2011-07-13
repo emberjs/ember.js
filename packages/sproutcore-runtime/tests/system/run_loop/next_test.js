@@ -21,7 +21,6 @@ test('should invoke immediately on next timeout', function() {
   
   setTimeout(function() {
     start();
-    equals(false, true, 'FAIL');
     equals(invoked, true, 'should have invoked later item');
   }, 20);
   
