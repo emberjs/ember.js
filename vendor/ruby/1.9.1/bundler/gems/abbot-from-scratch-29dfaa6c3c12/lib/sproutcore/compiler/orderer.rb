@@ -1,3 +1,5 @@
+require "set"
+
 module SproutCore
   module Compiler
     # The purpose of this class is to create a sorting algorithm that approximates
