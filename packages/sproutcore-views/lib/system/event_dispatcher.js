@@ -102,6 +102,8 @@ SC.EventDispatcher = SC.Object.extend(
           result = true, manager = null,
           self = this;
 
+      if(window.foo) debugger;
+      console.log('IN DISPATCHER with event type ',evt.type);
       if (!handled) {
         manager = self._findNearestEventManager(view,eventName);
       }

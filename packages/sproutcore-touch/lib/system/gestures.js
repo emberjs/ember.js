@@ -26,36 +26,12 @@ SC.Gestures = SC.Object.create({
     }
 
     registeredGestures[name] = recognizer;
-    
-    this._attachListeners(recognizer, name);
   },
 
   knownGestures: function() {
     var registeredGestures = this._registeredGestures;
 
     return (registeredGestures)? registeredGestures : {};
-  },
-
-  _attachListeners: function(recognizer, name) {
-    var events = ['start','move','end','cancel'];
-
-    for (var i=0, l=events.length; i<l; i++) {
-      var event = events[i];
-      this._setupHandler(recognizer, name, event);
-    }
-  },
-
-  _setupHandler: function(recognizer, name, event) {
-    var that = this;
-
-    $(document.body).delegate("."+name, "touch"+event, function(e){
-      console.log('hever');
-      that.eventFired(recognizer,eventName,e);
-    })
-  },
-
-  eventFired: function(recognizer, eventName, evt) {
-    console.log('Event',eventName,'fired on recognizer',recognizer);
   }
 
 });

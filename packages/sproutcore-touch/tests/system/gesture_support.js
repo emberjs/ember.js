@@ -51,12 +51,10 @@ test("when finger touches inside, gesture should be in waiting state", function(
     elementId: 'gestureTest',
 
     pinchStart: function(evt) {
-      console.log('pinchstart in view');
       numStart++;
     },
 
     touchStart: function(evt) {
-      console.log('2: touchStart in view');
       numStart++;
     }
   });
@@ -94,12 +92,10 @@ test("when 2 fingers touch inside, gesture should be in possible state", functio
     elementId: 'gestureTest',
 
     pinchStart: function(evt) {
-      console.log('pinchstart in view');
       numStart++;
     },
 
     touchStart: function(evt) {
-      console.log('2: touchStart in view');
       numStart++;
     }
   });
@@ -139,18 +135,15 @@ test("when 2 fingers move closer together, gesture should be in BEGAN state", fu
     elementId: 'gestureTest',
 
     pinchStart: function(recognizer, scale) {
-      console.log('pinchstart in view');
       numStart++;
       startScale = scale;
     },
 
     pinchChange: function(recognizer, scale) {
-      console.log('pinchchange in view');
       changeScale = scale;
     },
 
     touchStart: function(evt) {
-      console.log('2: touchStart in view');
     }
   });
 
@@ -195,7 +188,6 @@ test("when 2 fingers move closer together, gesture should be in BEGAN state", fu
     }]
   };
 
-  console.log('gesture should be in began state after this');
   view.$().trigger(touchEvent);
 
   equals(get(gestures[0], 'state'),SC.Gesture.BEGAN, "gesture should be began");
@@ -227,7 +219,19 @@ test("foo",function() {
   var myview = SC.View.create({
     elementId: 'gestureTest',
     pinchChange: function(recognizer, scale) {
-      $('#gestureTest').css('-webkit-transform','scaleZ('+scale+')');
+      $('#gestureTest').css('-webkit-transform','scale('+scale+')');
+    },
+
+    tapStart: function(recognizer) {
+      $('#gestureTest').css('background','green');
+    },
+
+    tapEnd: function(recognizer) {
+      $('#gestureTest').css('background','yellow');
+    },
+
+    tapCancel: function(recognizer) {
+      $('#gestureTest').css('background','red');
     }
   });
 
