@@ -8,7 +8,7 @@
 var set = SC.set, setPath = SC.setPath;
 var view;
 
-module("SC.HandlebarsCollectionView", {
+module("sproutcore-handlebars/tests/views/collection_view_test", {
   setup: function() {
     window.TemplateTests = SC.Namespace.create();
   },
@@ -28,7 +28,24 @@ test("passing a block to the collection helper sets it as the template for examp
   });
 
   view = SC.View.create({
-    template: SC.Handlebars.compile('{{#collection "TemplateTests.CollectionTestView"}} <label></label> {{/collection}}')
+    template: SC.Handlebars.compile('{{#collection TemplateTests.CollectionTestView}} <label></label> {{/collection}}')
+  });
+
+  SC.run(function() {
+    view.appendTo('#qunit-fixture');
+  });
+
+  equals(view.$('label').length, 3, 'one label element is created for each content item');
+});
+
+test("collection helper should accept relative paths", function() {
+
+  view = SC.View.create({
+    template: SC.Handlebars.compile('{{#collection collection}} <label></label> {{/collection}}'),
+    collection: SC.CollectionView.extend({
+      tagName: 'ul',
+      content: ['foo', 'bar', 'baz']
+    })
   });
 
   SC.run(function() {
