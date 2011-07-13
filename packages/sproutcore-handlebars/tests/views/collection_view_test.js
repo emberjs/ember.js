@@ -300,3 +300,42 @@ test("should render nested collections", function() {
 
 });
 
+test("should render multiple, bound nested collections (#68)", function() {
+  var view;
+
+  SC.run(function() {
+    TemplateTests.contentController = SC.ArrayProxy.create({
+      content: ['foo','bar']
+    });
+
+    TemplateTests.InnerList = SC.CollectionView.extend({
+      tagName: 'ul',
+      contentBinding: 'parentView.innerListContent'
+    });
+
+    TemplateTests.OuterListItem = SC.View.extend({
+      template: SC.Handlebars.compile('{{#collection TemplateTests.InnerList class="inner"}}{{content}}{{/collection}}{{content}}'),
+      innerListContent: function() { return [1,2,3]; }.property().cacheable()
+    });
+
+    TemplateTests.OuterList = SC.CollectionView.extend({
+      tagName: 'ul',
+      contentBinding: 'TemplateTests.contentController',
+      itemViewClass: TemplateTests.OuterListItem
+    });
+
+    view = SC.View.create({
+      template: SC.Handlebars.compile('{{collection TemplateTests.OuterList class="outer"}}')
+    });
+  });
+
+  SC.run(function() {
+    view.appendTo('#qunit-fixture');
+  });
+
+  equals(view.$('ul.outer > li').length, 2, "renders the outer list with correct number of items");
+  equals(view.$('ul.inner').length, 2, "renders the correct number of inner lists");
+  equals(view.$('ul.inner:first > li').length, 3, "renders the first inner list with correct number of items");
+  equals(view.$('ul.inner:last > li').length, 3, "renders the second list with correct number of items");
+
+});

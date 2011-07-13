@@ -132,7 +132,7 @@ SC.ContainerView.states = {
   inBuffer: {
     childViewsDidChange: function(parentView, views, start, added) {
       var buffer = meta(parentView)['SC.View'].buffer,
-          startWith, prev, prevBuffer;
+          startWith, prev, prevBuffer, view;
 
       // Determine where to begin inserting the child view(s) in the
       // render buffer.
