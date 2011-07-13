@@ -288,13 +288,13 @@ namespace :starter_kit do
   file "tmp/starter-kit/index.html" => [sproutcore_output, sproutcore_min_output] do
     index = File.read("tmp/starter-kit/index.html")
     index.gsub! %r{<script src="js/libs/sproutcore-\d\.\d.*</script>},
-      %{<script src="js/libs/sproutcore-#{VERSION}.min.js"></script>}
+      %{<script src="js/libs/sproutcore-#{SC_VERSION}.min.js"></script>}
 
     File.open("tmp/starter-kit/index.html", "w") { |f| f.write index }
   end
 
   task :build => "tmp/starter-kit/index.html"
-  task :deploy => "tmp/starter-kit.#{VERSION}.zip"
+  task :deploy => "tmp/starter-kit.#{SC_VERSION}.zip"
 end
 
 task :default => ["dist/sproutcore.min.js", "dist/sproutcore-datastore.min.js"]
