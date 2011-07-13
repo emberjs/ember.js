@@ -1,7 +1,7 @@
-require "bundler/setup"
-require "sproutcore"
+require File.expand_path("../vendor/bundler/setup", __FILE__)
 require "erb"
 require "uglifier"
+require "sproutcore"
 
 LICENSE = File.read("generators/license.js")
 
@@ -40,6 +40,8 @@ task :handlebars => compile_package_task("handlebars")
 
 task :build => ["sproutcore:metal", "sproutcore:indexset", "sproutcore:runtime", "sproutcore:handlebars", "sproutcore:views", "sproutcore:datastore", :handlebars]
 
+directory "dist"
+
 file "tmp/static/sproutcore.js" => :build do
   File.open("tmp/static/sproutcore.js", "w") do |file|
     file.puts File.read("tmp/static/handlebars.js")
@@ -58,12 +60,6 @@ file "tmp/static/sproutcore.stripped.js" => "tmp/static/sproutcore.js" do
   end
 end
 
-file "tmp/sproutcore.js" => "tmp/static/sproutcore.stripped.js" do
-  File.open("tmp/sproutcore.js", "w") do |file|
-    file.puts File.read("tmp/static/sproutcore.stripped.js")
-  end
-end
-
 file "tmp/static/sproutcore-datastore.stripped.js" => "tmp/static/sproutcore-datastore.js" do
   File.open("tmp/static/sproutcore-datastore.stripped.js", "w") do |file|
     indexset = File.read("tmp/static/sproutcore-indexset.js")
@@ -77,22 +73,35 @@ file "tmp/static/sproutcore-datastore.stripped.js" => "tmp/static/sproutcore-dat
   end
 end
 
-file "tmp/sproutcore-datastore.js" => "tmp/static/sproutcore-datastore.stripped.js" do
-  File.open("tmp/sproutcore-datastore.js", "w") do |file|
+file "dist/sproutcore.js" => ["dist", "tmp/static/sproutcore.stripped.js"] do
+  puts "Generating sproutcore.js"
+
+  File.open("dist/sproutcore.js", "w") do |file|
+    file.puts File.read("tmp/static/sproutcore.stripped.js")
+  end
+end
+
+file "dist/sproutcore-datastore.js" => ["dist", "tmp/static/sproutcore-datastore.stripped.js"] do
+  puts "Generating sproutcore-datastore.js"
+
+  File.open("dist/sproutcore-datastore.js", "w") do |file|
     file.puts File.read("tmp/static/sproutcore-datastore.stripped.js")
   end
 end
 
-file "tmp/sproutcore.min.js" => "tmp/sproutcore.js" do
-  File.open("tmp/sproutcore.min.js", "w") do |file|
-    uglified = Uglifier.compile(File.read("tmp/sproutcore.js"))
+file "dist/sproutcore.min.js" => "dist/sproutcore.js" do
+  puts "Generating sproutcore.min.js"
+  File.open("dist/sproutcore.min.js", "w") do |file|
+    uglified = Uglifier.compile(File.read("dist/sproutcore.js"))
     file.puts "#{LICENSE}\n#{uglified}"
   end
 end
 
-file "tmp/sproutcore-datastore.min.js" => "tmp/sproutcore-datastore.js" do
-  File.open("tmp/sproutcore-datastore.min.js", "w") do |file|
-    uglified = Uglifier.compile(File.read("tmp/sproutcore-datastore.js"))
+file "dist/sproutcore-datastore.min.js" => "dist/sproutcore-datastore.js" do
+  puts "Generating sproutcore-datastore.min.js"
+
+  File.open("dist/sproutcore-datastore.min.js", "w") do |file|
+    uglified = Uglifier.compile(File.read("dist/sproutcore-datastore.js"))
     file.puts "#{LICENSE}\n#{uglified}"
   end
 end
@@ -288,5 +297,5 @@ namespace :starter_kit do
   task :deploy => "tmp/starter-kit.#{VERSION}.zip"
 end
 
-task :default => ["tmp/sproutcore.min.js", "tmp/sproutcore-datastore.min.js"]
+task :default => ["dist/sproutcore.min.js", "dist/sproutcore-datastore.min.js"]
 

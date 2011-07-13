@@ -85,6 +85,18 @@ We also recommend that you check out the [annotated Todos example](http://annota
 
 To learn more about what we're up to, follow [@sproutcore on Twitter](http://twitter.com/sproutcore), [subscribe to the blog](http://blog.sproutcore.com), or [read the original SproutCore 2.0 announcement](http://blog.sproutcore.com/announcing-sproutcore-2-0/).
 
+# Building SproutCore 2.0
+
+1. Run `rake` to build SproutCore. Two builds will be placed in the `dist/` directory.
+  * `sproutcore.js` and `sproutcore.min.js` - unminified and minified
+    builds of SproutCore 2.0
+  * `sproutcore-datastore.js` and `sproutcore-datastore.min.js` -
+    unminified and minified of the data store framework
+
+If you are building under Linux, you will need a JavaScript runtime for
+minification. You can either install nodejs or `gem install
+therubyracer`.
+
 # How to Run Unit Tests
 
 1. Install Ruby and Rubygems. There are many resources on the web can help you to do so, one of the best ways may be [rvm](http://rvm.beginrescueend.com/). (WARNING: There is a bug in RubyGems 1.7.2, please upgrade to 1.8.5+ or downgrade.)
@@ -109,8 +121,3 @@ Be sure you include the new package as a dependency in the global `package.json`
 
 Note that unless you are adding new __tests__ or adding a new package you should not need to run `spaderun update`.
 
-# Building SproutCore 2.0
-
-1. Follow the installation instructions for running the unit tests.
-
-2. Run `bundle exec rake` to build SproutCore. The build will be placed in the tmp directory.

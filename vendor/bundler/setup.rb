@@ -1,0 +1,6 @@
+path = File.expand_path('..', __FILE__)
+$:.unshift File.expand_path("#{path}/../../vendor/ruby/1.9.1/gems/rake-0.9.2/lib")
+$:.unshift File.expand_path("#{path}/../../vendor/ruby/1.9.1/gems/multi_json-1.0.3/lib")
+$:.unshift File.expand_path("#{path}/../../vendor/ruby/1.9.1/gems/execjs-1.2.0/lib")
+$:.unshift File.expand_path("#{path}/../../vendor/ruby/1.9.1/bundler/gems/abbot-from-scratch-754164ff560e/lib")
+$:.unshift File.expand_path("#{path}/../../vendor/ruby/1.9.1/gems/uglifier-1.0.0/lib")
