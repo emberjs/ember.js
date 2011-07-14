@@ -56,7 +56,6 @@ test("when finger touches inside, gesture should be in waiting state", function(
     },
 
     touchStart: function(evt) {
-      console.log('touchStart on test view for one finder called');
       numStart++;
     }
   });
@@ -153,6 +152,9 @@ test("when 2 fingers move closer together, gesture should be in BEGAN state", fu
     view.append();
   });
 
+  // =====================================
+  // Start
+
   var touchEvent = new jQuery.Event();
   
   touchEvent.type='touchstart';
@@ -168,13 +170,15 @@ test("when 2 fingers move closer together, gesture should be in BEGAN state", fu
   };
   view.$().trigger(touchEvent);
 
-
   var gestures = get(get(view, 'eventManager'), 'gestures'); 
   window.gestures = gestures;
 
   ok(gestures);
   equals(gestures.length,1);
   equals(get(gestures[0], 'state'),SC.Gesture.POSSIBLE, "gesture should be possible");
+
+  // =====================================
+  // Double its size
 
   touchEvent = new jQuery.Event();
   
@@ -193,8 +197,11 @@ test("when 2 fingers move closer together, gesture should be in BEGAN state", fu
   view.$().trigger(touchEvent);
 
   equals(get(gestures[0], 'state'),SC.Gesture.BEGAN, "gesture should be began");
-  equals(numStart,1,"touchStart called once")
+  equals(numStart,1,"pinchStart called once")
   equals(startScale,2,"scale should be doubled");
+
+  // =====================================
+  // Halve its size
 
   touchEvent = new jQuery.Event();
   touchEvent.type='touchmove';
@@ -211,9 +218,77 @@ test("when 2 fingers move closer together, gesture should be in BEGAN state", fu
 
   view.$().trigger(touchEvent);
 
-  equals(changeScale,0.5,"scale should be halved");
+  equals(changeScale,1,"scale should be back to 1");
+
+  // =====================================
+  // End gesture
 
   view.$().trigger('touchend')
+
+  equals(get(gestures[0], 'state'),SC.Gesture.ENDED, "gesture should be ended");
+
+  // =====================================
+  // Start again
+
+  numStart = 0;
+
+  console.group('testing re-gesturing');
+
+  touchEvent = new jQuery.Event();
+  touchEvent.type='touchstart';
+  touchEvent['originalEvent'] = {
+    targetTouches: [{
+      pageX: 50,
+      pageY: 100
+    },
+    {
+      pageX: 100,
+      pageY: 100
+    }]
+  };
+  view.$().trigger(touchEvent);
+
+  touchEvent = new jQuery.Event();
+  touchEvent.type='touchmove';
+  touchEvent['originalEvent'] = {
+    targetTouches: [{
+      pageX: 50,
+      pageY: 100
+    },
+    {
+      pageX: 100,
+      pageY: 100
+    }]
+  };
+  view.$().trigger(touchEvent);
+
+  equals(numStart,1,"pinchStart called once")
+  equals(get(gestures[0], 'state'),SC.Gesture.BEGAN, "gesture should be began");
+  equals(startScale,1,"scale should still be 1");
+  
+  // =====================================
+  // Double in a bit
+
+  touchEvent = new jQuery.Event();
+  touchEvent.type='touchmove';
+  touchEvent['originalEvent'] = {
+    targetTouches: [{
+      pageX: 75,
+      pageY: 100
+    },
+    {
+      pageX: 100,
+      pageY: 100
+    }]
+  };
+
+  view.$().trigger(touchEvent);
+
+  equals(get(gestures[0], 'state'),SC.Gesture.CHANGED, "gesture should be changed");
+  equals(changeScale,0.5,"scale should be halved");
+
+  console.groupEnd();
+
 });
 
 window.shit = function () {
@@ -227,9 +302,9 @@ window.shit = function () {
       scale: 1,
 
       pinchChange: function(recognizer, scale) {
-        this.scale *= scale;
+        this.scale = scale;
         var string = 'scale3d('+this.scale+','+this.scale+',1)';
-        console.log(string);
+        //console.log(this.scale);
         this.$().css('-webkit-transform',string);
       },
    
@@ -250,7 +325,7 @@ window.shit = function () {
    $('#gestureTest').css({
       background: 'red',
       position: 'absolute',
-      top: 10,
+      top: 100,
       left: 100,
       width: 400,
       height: 400,

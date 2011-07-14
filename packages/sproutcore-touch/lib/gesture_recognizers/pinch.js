@@ -7,6 +7,8 @@
 var get = SC.get;
 var set = SC.set;
 
+var sigFigs = 100;
+
 /**
 
   If there are two touches
@@ -18,11 +20,16 @@ var set = SC.set;
 SC.PinchGestureRecognizer = SC.Gesture.extend({
   numberOfTouches: 2,
 
-  _currentDistanceBetweenTouches: null,
+  // Initial is global, starting is per-gesture event
+  _initialDistanceBetweenTouches: null,
   _startingDistanceBetweenTouches: null,
-  _deltaThreshold: 0,
 
-  scale: 0,
+  _initialDistanceBetweenTouches: null,
+  _deltaThreshold: 0,
+  _multiplier: 1,
+
+  _initialScale: 1,
+  scale: 1,
 
   touchStart: function(evt, view) {
     var touches = evt.originalEvent.targetTouches;
@@ -33,26 +40,34 @@ SC.PinchGestureRecognizer = SC.Gesture.extend({
     }
     else {
       this.state = SC.Gesture.POSSIBLE;
-      this._startingDistanceBetweenTouches = this._currentDistanceBetweenTouches = Math.round(this.distance(touches[0],touches[1])*10)/10
+
+      this._startingDistanceBetweenTouches = this.distance(touches[0],touches[1]);
+
+      if (!this._initialDistanceBetweenTouches) {
+        this._initialDistanceBetweenTouches = this._startingDistanceBetweenTouches
+      }
+
+      this._initialScale = this.scale;
+
     }
     
     this.redispatchEventToView(view,'touchstart');
   },
 
   touchMove: function(evt, view) {
-    var touches = evt.originalEvent.targetTouches;
-
-    if(touches.length !== get(this, 'numberOfTouches')) {
-      return;
-    }
-
     var state = this._state;
+    var touches = evt.originalEvent.targetTouches;
+    if(touches.length !== get(this, 'numberOfTouches')) { return; }
 
-    this._currentDistanceBetweenTouches = Math.round(this.distance(touches[0],touches[1])*10)/10 
+    var currentDistanceBetweenTouches = this.distance(touches[0],touches[1]) 
 
-    var differenceInDistance = this._currentDistanceBetweenTouches - this._startingDistanceBetweenTouches;
+    if(window.billy) debugger
 
-    this.scale = Math.round((this._currentDistanceBetweenTouches / this._startingDistanceBetweenTouches)*100)/100;
+    var nominator = currentDistanceBetweenTouches;
+    var denominator = this._startingDistanceBetweenTouches;
+    this.scale = this._initialScale * Math.round((nominator/denominator)*sigFigs)/sigFigs;
+
+    var differenceInDistance = currentDistanceBetweenTouches - this._startingDistanceBetweenTouches;
 
     if (this.state === SC.Gesture.POSSIBLE && Math.abs(differenceInDistance) >= this._deltaThreshold) {
       this.state = SC.Gesture.BEGAN;
@@ -73,8 +88,7 @@ SC.PinchGestureRecognizer = SC.Gesture.extend({
 
   touchEnd: function(evt, view) {
     this.state = SC.Gesture.ENDED;
-    this._startingDistanceBetweenTouches = 0;
-    this.scale = 0;
+    //this.scale = 0;
     this.redispatchEventToView(view,'touchend');
   },
 
