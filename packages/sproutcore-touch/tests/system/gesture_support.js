@@ -227,6 +227,18 @@ window.shit = function () {
         var string = 'scale3d('+scale+','+scale+',1)';
         console.log(string);
         this.$().css('-webkit-transform',string);
+      },
+   
+      tapStart: function(recognizer) {
+        $('#gestureTest').css('background','green');
+      },
+   
+      tapEnd: function(recognizer) {
+        $('#gestureTest').css('background','yellow');
+      },
+   
+      tapCancel: function(recognizer) {
+        $('#gestureTest').css('background','red');
       }
     }).append();
   });

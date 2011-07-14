@@ -101,7 +101,6 @@ SC.EventDispatcher = SC.Object.extend(
 
     rootElement.delegate('.sc-view', event + '.sproutcore', function(evt, handled) {
 
-      console.log(evt.type);
       var view = SC.View.views[this.id],
           result = true, manager = null;
 

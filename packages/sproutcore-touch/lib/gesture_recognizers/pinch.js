@@ -59,18 +59,15 @@ SC.PinchGestureRecognizer = SC.Gesture.extend({
       this.state = SC.Gesture.BEGAN;
       this.notifyViewOfGestureEvent(view,'pinchStart', this.scale);
 
-      console.log('prevent default 1');
       evt.preventDefault();
     }
     else if (this.state === SC.Gesture.BEGAN) {
       this.state = SC.Gesture.CHANGED;
       this.notifyViewOfGestureEvent(view,'pinchChange', this.scale);
 
-      console.log('prevent default 2');
       evt.preventDefault();
     }
     else {
-      console.log('just redispatch');
       this.redispatchEventToView(view,'touchmove');
     }
   },
