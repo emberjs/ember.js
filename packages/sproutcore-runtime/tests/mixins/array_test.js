@@ -413,13 +413,58 @@ test('adding an object and then modifying it should notify', function() {
   equals(obs.didCount, 1, 'should have invoked didChange observer');
 });
 
+test('adding an object should notify (@each)', function() {
+
+  var get = SC.get, set = SC.set;
+  var called = 0;
+
+  var observerObject = SC.Object.create({
+    wasCalled: function() {
+      called++;
+    }
+  });
+
+  // SC.get(ary, '@each');
+  SC.addObserver(ary, '@each', observerObject, 'wasCalled');
+
+  ary.addObject(SC.Object.create({
+    desc: "foo",
+    isDone: false
+  }));
+
+  equals(called, 1, "calls observer when object is pushed");
+
+});
+
+test('adding an object should notify (@each.isDone)', function() {
+
+  var get = SC.get, set = SC.set;
+  var called = 0;
+
+  var observerObject = SC.Object.create({
+    wasCalled: function() {
+      called++;
+    }
+  });
+
+  SC.addObserver(ary, '@each.isDone', observerObject, 'wasCalled');
+
+  ary.addObject(SC.Object.create({
+    desc: "foo",
+    isDone: false
+  }));
+
+  equals(called, 1, "calls observer when object is pushed");
+
+});
+
 test('removing an object should no longer notify', function() {
 
   var get = SC.get, set = SC.set;
-  
+
   var each = SC.getPath(ary, '@each.isDone');
   var item = ary.objectAt(0);
-  
+
   var obs = {
     willCount: 0,
     didCount: 0,

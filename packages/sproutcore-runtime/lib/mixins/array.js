@@ -13,7 +13,7 @@ require('sproutcore-runtime/mixins/enumerable');
 // HELPERS
 // 
 
-var get = SC.get, set = SC.set;
+var get = SC.get, set = SC.set, meta = SC.meta;
 
 function none(obj) { return obj===null || obj===undefined; }
 
@@ -282,6 +282,9 @@ SC.Array = SC.Mixin.create(SC.Enumerable, /** @scope SC.Array.prototype */ {
     }
     
     this.enumerableContentWillChange(removing, addAmt);
+
+    // Make sure the @each proxy is set up if anyone is observing @each
+    if (SC.isWatching(this, '@each')) { get(this, '@each'); }
     return this;
   },
   

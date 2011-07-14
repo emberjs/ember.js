@@ -114,8 +114,6 @@ SC.EachProxy = SC.Object.extend({
   arrayWillChange: function(content, idx, removedCnt, addedCnt) {
     var keys = this._keys, key, array, lim;
     
-    if (!keys) return ; // nothing to do
-    
     lim = removedCnt>0 ? idx+removedCnt : -1;
     SC.beginPropertyChanges(this);
     for(key in keys) {
@@ -127,13 +125,13 @@ SC.EachProxy = SC.Object.extend({
       SC.propertyWillChange(this, key);
       if (array) array.arrayContentWillChange(idx, removedCnt, addedCnt);
     }
+
+    SC.propertyWillChange(this._content, '@each');
     SC.endPropertyChanges(this);
   },
   
   arrayDidChange: function(content, idx, removedCnt, addedCnt) {
     var keys = this._keys, key, array, lim;
-    
-    if (!keys) return ; // nothing to do
 
     lim = addedCnt>0 ? idx+addedCnt : -1;
     SC.beginPropertyChanges(this);
@@ -146,6 +144,7 @@ SC.EachProxy = SC.Object.extend({
       if (array) array.arrayContentDidChange(idx, removedCnt, addedCnt);
       SC.propertyDidChange(this, key);
     }
+    SC.propertyDidChange(this._content, '@each');
     SC.endPropertyChanges(this);
   },
   
