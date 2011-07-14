@@ -24,7 +24,9 @@ if (!packageName) {
   QUnit.config.autostart = false;
   QUnit.config.autorun = false;
 
-  $('h1 > a').text(packageName);
+  jQuery(function() {
+    $('h1 > a').text(packageName);
+  });
 
   QUnit.jsDump.setParser('object', function(obj) {
     return obj.toString();

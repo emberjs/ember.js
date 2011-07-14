@@ -6,7 +6,9 @@
 // ==========================================================================
 
 require('sproutcore-views/views/container_view');
-var get = SC.get, set = SC.set;
+require('sproutcore-runtime/system/string');
+
+var get = SC.get, set = SC.set, fmt = SC.String.fmt;
 
 /**
   @class
@@ -114,7 +116,9 @@ SC.CollectionView = SC.ContainerView.extend(
   arrayDidChange: function(content, start, removed, added) {
     var itemViewClass = get(this, 'itemViewClass'),
         childViews = get(this, 'childViews'),
-        addedViews = [], view, item, idx, len;
+        addedViews = [], view, item, idx, len, itemTagName;
+
+    sc_assert(fmt("itemViewClass must be a subclass of SC.View, not %@", [itemViewClass]), SC.View.detect(itemViewClass));
 
     len = content ? get(content, 'length') : 0;
     if (len) {
@@ -128,17 +132,47 @@ SC.CollectionView = SC.ContainerView.extend(
 
         addedViews.push(view);
       }
-
-      childViews.replace(start, 0, addedViews);
     } else {
       var emptyView = get(this, 'emptyView');
-      if (get(childViews, 'length') === 0 && emptyView) {
-        emptyView = this.createChildView(emptyView);
-        set(this, 'emptyView', emptyView);
+      if (!emptyView) { return; }
 
-        childViews.replace(0, get(childViews, 'length'), [emptyView]);
-      }
+      emptyView = this.createChildView(emptyView)
+      addedViews.push(emptyView);
+      set(this, 'emptyView', emptyView);
     }
+
+    childViews.replace(start, 0, addedViews);
+  },
+
+  createChildView: function(view, attrs) {
+    var view = this._super(view, attrs);
+
+    var itemTagName = get(view, 'tagName');
+    var tagName = itemTagName || SC.CollectionView.CONTAINER_MAP[get(this, 'tagName')];
+
+    set(view, 'tagName', tagName);
+
+    return view;
   }
 });
 
+/**
+  @static
+
+  A map of parent tags to their default child tags. You can add
+  additional parent tags if you want collection views that use
+  a particular parent tag to default to a child tag.
+
+  @type Hash
+  @constant
+*/
+SC.CollectionView.CONTAINER_MAP = {
+  ul: 'li',
+  ol: 'li',
+  table: 'tr',
+  thead: 'tr',
+  tbody: 'tr',
+  tfoot: 'tr',
+  tr: 'td',
+  select: 'option'
+};

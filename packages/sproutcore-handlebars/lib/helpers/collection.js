@@ -12,27 +12,6 @@ require('sproutcore-handlebars/helpers/view');
 var get = SC.get;
 
 /**
-  @static
-
-  A map of parent tags to their default child tags. You can add
-  additional parent tags if you want collection views that use
-  a particular parent tag to default to a child tag.
-
-  @type Hash
-  @constant
-*/
-SC.Handlebars.CONTAINER_MAP = {
-  ul: 'li',
-  ol: 'li',
-  table: 'tr',
-  thead: 'tr',
-  tbody: 'tr',
-  tfoot: 'tr',
-  tr: 'td',
-  select: 'option'
-};
-
-/**
   @name Handlebars.helpers.collection
   @param {String} path
   @param {Hash} options
@@ -81,11 +60,6 @@ Handlebars.registerHelper('collection', function(path, options) {
   }
 
   var tagName = hash.tagName || get(collectionClass, 'proto').tagName;
-  var childTag = SC.Handlebars.CONTAINER_MAP[tagName];
-
-  if (childTag) {
-    itemHash.tagName = itemHash.tagName || childTag;
-  }
 
   if (fn) {
     itemHash.template = fn;
@@ -95,7 +69,7 @@ Handlebars.registerHelper('collection', function(path, options) {
   if (inverse !== Handlebars.VM.noop) {
     hash.emptyView = SC.View.extend({
       template: inverse,
-      tagName: itemHash.tagName || childTag
+      tagName: itemHash.tagName
     });
   }
 

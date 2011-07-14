@@ -548,7 +548,7 @@ SC.View = SC.Object.extend(
     @returns {SC.RenderBuffer}
   */
   renderBuffer: function(tagName) {
-    return SC.RenderBuffer(tagName || get(this, 'tagName'));
+    return SC.RenderBuffer(tagName || get(this, 'tagName') || 'div');
   },
 
   /**
@@ -727,7 +727,7 @@ SC.View = SC.Object.extend(
     // provided buffer operation (for example, `insertAfter` will
     // insert a new buffer after the "parent buffer").
     if (parentBuffer) {
-      buffer = parentBuffer[bufferOperation](get(this, 'tagName'));
+      buffer = parentBuffer[bufferOperation](get(this, 'tagName') || 'div');
     } else {
       buffer = this.renderBuffer();
     }
@@ -785,10 +785,15 @@ SC.View = SC.Object.extend(
     an element is first created. If you change the tagName for an element, you
     must destroy and recreate the view element.
 
+    By default, the render buffer will use a `<div>` tag for views.
+
     @type String
-    @default 'div'
+    @default null
   */
-  tagName: 'div',
+
+  // We leave this null by default so we can tell the difference between
+  // the default case and a user-specified tag.
+  tagName: null,
 
   /**
     The WAI-ARIA role of the control represented by this view. For example, a
