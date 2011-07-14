@@ -42,7 +42,6 @@ SC.PinchGestureRecognizer = SC.Gesture.extend({
   touchMove: function(evt, view) {
     var touches = evt.originalEvent.targetTouches;
 
-    console.log('Pinch got touchMove');
     if(touches.length !== get(this, 'numberOfTouches')) {
       return;
     }
@@ -53,7 +52,7 @@ SC.PinchGestureRecognizer = SC.Gesture.extend({
 
     var differenceInDistance = this._currentDistanceBetweenTouches - this._startingDistanceBetweenTouches;
 
-    this.scale = Math.floor((this._currentDistanceBetweenTouches / this._startingDistanceBetweenTouches)*100)/100;
+    this.scale = Math.round((this._currentDistanceBetweenTouches / this._startingDistanceBetweenTouches)*100)/100;
 
     if (this.state === SC.Gesture.POSSIBLE && Math.abs(differenceInDistance) >= this._deltaThreshold) {
       this.state = SC.Gesture.BEGAN;
@@ -61,7 +60,7 @@ SC.PinchGestureRecognizer = SC.Gesture.extend({
 
       evt.preventDefault();
     }
-    else if (this.state === SC.Gesture.BEGAN) {
+    else if (this.state === SC.Gesture.BEGAN || this.state === SC.Gesture.CHANGED) {
       this.state = SC.Gesture.CHANGED;
       this.notifyViewOfGestureEvent(view,'pinchChange', this.scale);
 
@@ -74,6 +73,8 @@ SC.PinchGestureRecognizer = SC.Gesture.extend({
 
   touchEnd: function(evt, view) {
     this.state = SC.Gesture.ENDED;
+    this._startingDistanceBetweenTouches = 0;
+    this.scale = 0;
     this.redispatchEventToView(view,'touchend');
   },
 

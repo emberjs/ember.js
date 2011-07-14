@@ -223,8 +223,12 @@ window.shit = function () {
   SC.run(function(){
     var myview = SC.View.create({
       elementId: 'gestureTest',
+
+      scale: 1,
+
       pinchChange: function(recognizer, scale) {
-        var string = 'scale3d('+scale+','+scale+',1)';
+        this.scale *= scale;
+        var string = 'scale3d('+this.scale+','+this.scale+',1)';
         console.log(string);
         this.$().css('-webkit-transform',string);
       },

@@ -115,8 +115,6 @@ SC.EventDispatcher = SC.Object.extend(
         result = self._bubbleEvent(view,evt,eventName);
       }
 
-      evt.stopPropagation();
-
       return result;
     });
   },
@@ -143,6 +141,8 @@ SC.EventDispatcher = SC.Object.extend(
     if (SC.typeOf(handler) === 'function') {
       result = handler.call(object, evt, view);
     }
+
+    evt.stopPropagation();
 
     return result;
   },

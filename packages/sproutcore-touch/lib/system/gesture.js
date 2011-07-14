@@ -31,7 +31,7 @@ SC.Gesture = SC.Object.extend({
     view.$().trigger(eventName,true);
   },
 
-  notifyViewOfPinchEvent: function(view, eventName, data) {
+  notifyViewOfGestureEvent: function(view, eventName, data) {
     var handler = view[eventName];
 
     if (SC.typeOf(handler) === 'function') {
