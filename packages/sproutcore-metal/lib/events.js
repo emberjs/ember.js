@@ -62,6 +62,12 @@ function invokeEvents(targets, params) {
   }
 }
 
+/**
+  The parameters passed to an event listener are not exactly the
+  parameters passed to an observer. if you pass an xform function, it will
+  be invoked and is able to translate event listener parameters into the form
+  that observers are expecting.
+*/
 function addListener(obj, eventName, target, method, xform) {
   if (!method && 'function'===typeof target) {
     method = target;
