@@ -60,17 +60,6 @@ SC._RenderBuffer = SC.Object.extend(
   elementAttributes: null,
 
   /**
-    An array of strings which defines the body of the element.
-
-    You should not maintain this array yourself, rather, you should use
-    the push() method of SC.RenderBuffer.
-
-    @type Array
-    @default []
-  */
-  elementContent: null,
-
-  /**
     The tagname of the element an instance of SC.RenderBuffer represents.
 
     Usually, this gets set as the first parameter to SC.RenderBuffer. For
@@ -112,7 +101,6 @@ SC._RenderBuffer = SC.Object.extend(
     set(this ,'elementClasses', []);
     set(this, 'elementAttributes', {});
     set(this, 'elementStyle', {});
-    set(this, 'elementContent', []);
     set(this, 'childBuffers', []);
     set(this, 'elements', {});
   },
@@ -309,8 +297,8 @@ SC._RenderBuffer = SC.Object.extend(
         classes = get(this, 'elementClasses'),
         attrs = get(this, 'elementAttributes'),
         style = get(this, 'elementStyle'),
-        content = get(this, 'elementContent'),
         tag = get(this, 'elementTag'),
+        content = '',
         styleBuffer = [], prop;
 
     var openTag = ["<" + tag];
@@ -335,8 +323,6 @@ SC._RenderBuffer = SC.Object.extend(
     }
 
     openTag = openTag.join(" ") + '>';
-
-    content = content.join("");
 
     var childBuffers = get(this, 'childBuffers');
 
