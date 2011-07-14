@@ -1166,7 +1166,9 @@ SC.View.states = {
       var viewMeta = meta(this)['SC.View'], element = get(view, 'element');
 
       set(view, 'element', null);
-      view.state = 'preRender';
+      this.invokeRecursively(function(view) {
+        view.state = 'preRender';
+      });
 
       var lengthBefore = viewMeta.lengthBeforeRender,
           lengthAfter  = viewMeta.lengthAfterRender;
