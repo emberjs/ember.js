@@ -291,6 +291,60 @@ test("when 2 fingers move closer together, gesture should be in BEGAN state", fu
 
 });
 
+test("pan test", function() {
+  view = SC.View.create({
+    elementId: 'gestureTest',
+
+    pinchStart: function(recognizer, scale) {
+      numStart++;
+      startScale = scale;
+    },
+
+    pinchChange: function(recognizer, scale) {
+      changeScale = scale;
+    },
+
+    panChange: function(recognizer, translation) {
+      
+    }
+  });
+
+  SC.run(function(){
+    view.append();
+  });
+
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 window.shit = function () {
 
   var app = SC.Application.create();
@@ -300,11 +354,25 @@ window.shit = function () {
       elementId: 'gestureTest',
 
       scale: 1,
+      translate: {
+        x: 0,
+        y: 0
+      },
 
       pinchChange: function(recognizer, scale) {
         this.scale = scale;
-        var string = 'scale3d('+this.scale+','+this.scale+',1)';
-        //console.log(this.scale);
+        this._applyTransforms();
+      },
+
+      panChange: function(recognizer, translation) {
+        this.translate = translation;
+        this._applyTransforms();
+      },
+
+      _applyTransforms: function() {
+        var string = 'translate3d('+this.translate.x+'px,'+this.translate.y+'px,0)';
+            string += ' scale3d('+this.scale+','+this.scale+',1)';
+
         this.$().css('-webkit-transform',string);
       },
    

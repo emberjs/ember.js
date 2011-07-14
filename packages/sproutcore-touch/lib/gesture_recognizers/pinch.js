@@ -88,7 +88,6 @@ SC.PinchGestureRecognizer = SC.Gesture.extend({
 
   touchEnd: function(evt, view) {
     this.state = SC.Gesture.ENDED;
-    //this.scale = 0;
     this.redispatchEventToView(view,'touchend');
   },
 
