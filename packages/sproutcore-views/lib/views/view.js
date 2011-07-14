@@ -1180,6 +1180,8 @@ SC.View.states = {
         childViews.replace(lengthBefore, lengthAfter - lengthBefore);
       }
 
+      // Set element to null after the childViews.replace() call to prevent
+      // a call to $() from inside _scheduleInsertion triggering a rerender.
       set(view, 'element', null);
 
       view._insertElementLater(function() {
