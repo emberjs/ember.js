@@ -1165,10 +1165,7 @@ SC.View.states = {
     rerender: function(view) {
       var viewMeta = meta(this)['SC.View'], element = get(view, 'element');
 
-      set(view, 'element', null);
-      this.invokeRecursively(function(view) {
-        view.state = 'preRender';
-      });
+      view.state = 'preRender';
 
       var lengthBefore = viewMeta.lengthBeforeRender,
           lengthAfter  = viewMeta.lengthAfterRender;
@@ -1182,6 +1179,8 @@ SC.View.states = {
         var childViews = get(view, 'childViews');
         childViews.replace(lengthBefore, lengthAfter - lengthBefore);
       }
+
+      set(view, 'element', null);
 
       view._insertElementLater(function() {
         SC.$(element).replaceWith(get(this, 'element'));
