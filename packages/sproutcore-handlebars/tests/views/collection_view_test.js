@@ -55,6 +55,38 @@ test("collection helper should accept relative paths", function() {
   equals(view.$('label').length, 3, 'one label element is created for each content item');
 });
 
+test("empty views should be removed when content is added to the collection (regression, ht: msofaer)", function() {
+  window.App = SC.Application.create();
+
+  App.EmptyView = SC.View.extend({
+    template : SC.Handlebars.compile("<td>No Rows Yet</td>")
+  });
+
+  App.ListView = SC.CollectionView.extend({
+    emptyView: App.EmptyView
+  });
+
+  App.ListController = SC.ArrayProxy.create({
+    content : []
+  });
+
+  view = SC.View.create({
+    template: SC.Handlebars.compile('{{#collection App.ListView contentBinding="App.ListController" tagName="table"}} <td>{{content.title}}</td> {{/collection}}')
+  });
+
+  SC.run(function() {
+    view.appendTo('#qunit-fixture');
+  });
+
+  SC.run(function() {
+    App.ListController.pushObject({title : "Go Away, Placeholder Row!"})
+  });
+
+  equals(view.$('tr').length, 1, 'has one row');
+
+  window.App = undefined;
+});
+
 test("if no content is passed, and no 'else' is specified, nothing is rendered", function() {
   TemplateTests.CollectionTestView = SC.CollectionView.extend({
     tagName: 'ul',
