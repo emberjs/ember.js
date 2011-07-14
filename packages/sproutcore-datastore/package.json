@@ -6,9 +6,9 @@
   "author": "Strobe Inc., Apple, Inc., and contributors",
   "version": "2.0.beta.2.pre",
   "dependencies": {
-    "sproutcore-runtime": "2.0",
-    "sproutcore-datetime": "2.0",
-    "sproutcore-indexset": "2.0"
+    "sproutcore-runtime": ">= 2.0.beta.2.pre",
+    "sproutcore-datetime": ">= 2.0.beta.2.pre",
+    "sproutcore-indexset": ">= 2.0.beta.2.pre"
   },
 
   "directories": {
