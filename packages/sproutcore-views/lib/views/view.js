@@ -1165,7 +1165,6 @@ SC.View.states = {
     rerender: function(view) {
       var viewMeta = meta(this)['SC.View'], element = get(view, 'element');
 
-      set(view, 'element', null);
       view.state = 'preRender';
 
       var lengthBefore = viewMeta.lengthBeforeRender,
@@ -1180,6 +1179,10 @@ SC.View.states = {
         var childViews = get(view, 'childViews');
         childViews.replace(lengthBefore, lengthAfter - lengthBefore);
       }
+
+      // Set element to null after the childViews.replace() call to prevent
+      // a call to $() from inside _scheduleInsertion triggering a rerender.
+      set(view, 'element', null);
 
       view._insertElementLater(function() {
         SC.$(element).replaceWith(get(this, 'element'));

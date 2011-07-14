@@ -396,3 +396,51 @@ test("should render multiple, bound nested collections (#68)", function() {
   equals(view.$('ul.inner:last > li').length, 3, "renders the second list with correct number of items");
 
 });
+
+test("should allow view objects to be swapped out without throwing an error (#78)", function() {
+  var view, dataset, secondDataset;
+
+  SC.run(function() {
+    TemplateTests.datasetController = SC.Object.create();
+
+    TemplateTests.ReportingView = SC.View.extend({
+      datasetBinding: 'TemplateTests.datasetController*dataset',
+      readyBinding: 'dataset.ready',
+      itemsBinding: 'dataset.items',
+      template: SC.Handlebars.compile("{{#if ready}}{{collection TemplateTests.CollectionView}}{{else}}Loading{{/if}}")
+    });
+
+    TemplateTests.CollectionView = SC.CollectionView.extend({
+      contentBinding: 'parentView.parentView.items',
+      tagName: 'ul',
+      template: SC.Handlebars.compile("{{content}}")
+    });
+
+    view = TemplateTests.ReportingView.create();
+  });
+
+  SC.run(function() {
+    view.appendTo('#qunit-fixture');
+  });
+
+  equals(view.$().text(), "Loading", "renders the loading text when the dataset is not ready");
+
+  SC.run(function() {
+    dataset = SC.Object.create({
+      ready: true,
+      items: [1,2,3]
+    });
+    TemplateTests.datasetController.set('dataset',dataset);
+  });
+
+  equals(view.$('ul > li').length, 3, "renders the collection with the correct number of items when the dataset is ready");
+
+  SC.run(function() {
+    secondDataset = SC.Object.create({ready: false});
+    TemplateTests.datasetController.set('dataset',secondDataset);
+  });
+
+  equals(view.$().text(), "Loading", "renders the loading text when the second dataset is not ready");
+
+});
+
