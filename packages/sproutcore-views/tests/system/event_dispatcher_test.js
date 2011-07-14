@@ -101,3 +101,25 @@ test("should send change events up view hierarchy if view contains form elements
   equals(receivedEvent.target, SC.$('#is-done')[0], "target property is the element that was clicked");
 });
 
+test("should not interfere with event propagation", function() {
+  var receivedEvent;
+  view = SC.View.create({
+    render: function(buffer) {
+      buffer.push('<div id="propagate-test-div"></div>')
+    }
+  });
+
+  SC.run(function() {
+    view.append();
+  });
+
+  SC.$(window).bind('click', function(evt) {
+    receivedEvent = evt;
+  });
+
+  SC.$('#propagate-test-div').click();
+
+  ok(receivedEvent, "allowed event to propagate outside SC")
+  same(receivedEvent.target, SC.$('#propagate-test-div')[0], "target property is the element that was clicked");
+});
+
