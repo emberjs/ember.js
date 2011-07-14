@@ -72,6 +72,7 @@ SC.Application = SC.Namespace.extend(
     SC.$(document).ready(function() {
       self.ready();
     });
+    window.num++;
   },
 
   ready: function() {
@@ -84,8 +85,11 @@ SC.Application = SC.Namespace.extend(
   /** @private */
   destroy: function() {
     get(this, 'eventDispatcher').destroy();
+    window.num--;
     return this._super();
   }
 });
+
+window.num = 0;
 
 

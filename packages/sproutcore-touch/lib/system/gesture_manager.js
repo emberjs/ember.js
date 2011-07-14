@@ -28,8 +28,7 @@ SC.GestureManager = SC.Object.extend({
     var gestures = get(this, 'gestures'),
         gesture;
 
-    //console.log('IN MANAGER, DISPATCHING '+eventName+' TO '+gestures.length+' GRs');
-    //if (window.foo) debugger
+    if(window.bar === true) console.log('2: Gesture Manager: Dispatch '+eventName+' to '+gestures.length+' gesture recognizers');
     for (var i=0, l=gestures.length; i < l; i++) {
       gesture = gestures[i];
       handler = gesture[eventName];

@@ -19,7 +19,7 @@ SC.PinchGestureRecognizer = SC.Gesture.extend({
   numberOfTouches: 2,
 
   _currentDistanceBetweenTouches: null,
-  _previousDistanceBetweenTouches: null,
+  _startingDistanceBetweenTouches: null,
   _deltaThreshold: 0,
 
   scale: 0,
@@ -33,7 +33,7 @@ SC.PinchGestureRecognizer = SC.Gesture.extend({
     }
     else {
       this.state = SC.Gesture.POSSIBLE;
-      this._currentDistanceBetweenTouches = Math.round(this.distance(touches[0],touches[1])*10)/10
+      this._startingDistanceBetweenTouches = this._currentDistanceBetweenTouches = Math.round(this.distance(touches[0],touches[1])*10)/10
     }
     
     this.redispatchEventToView(view,'touchstart');
@@ -51,19 +51,26 @@ SC.PinchGestureRecognizer = SC.Gesture.extend({
 
     this._currentDistanceBetweenTouches = Math.round(this.distance(touches[0],touches[1])*10)/10 
 
-    var differenceInDistance = this._currentDistanceBetweenTouches - this._previousDistanceBetweenTouches;
+    var differenceInDistance = this._currentDistanceBetweenTouches - this._startingDistanceBetweenTouches;
 
-    this.scale = Math.round((this._currentDistanceBetweenTouches / this._previousDistanceBetweenTouches)*100)/100;
+    this.scale = Math.floor((this._currentDistanceBetweenTouches / this._startingDistanceBetweenTouches)*100)/100;
 
     if (this.state === SC.Gesture.POSSIBLE && Math.abs(differenceInDistance) >= this._deltaThreshold) {
       this.state = SC.Gesture.BEGAN;
-      this.notifyViewOfPinchEvent(view,'pinchStart', this.scale);
+      this.notifyViewOfGestureEvent(view,'pinchStart', this.scale);
+
+      console.log('prevent default 1');
+      evt.preventDefault();
     }
     else if (this.state === SC.Gesture.BEGAN) {
       this.state = SC.Gesture.CHANGED;
-      this.notifyViewOfPinchEvent(view,'pinchChange', this.scale);
+      this.notifyViewOfGestureEvent(view,'pinchChange', this.scale);
+
+      console.log('prevent default 2');
+      evt.preventDefault();
     }
     else {
+      console.log('just redispatch');
       this.redispatchEventToView(view,'touchmove');
     }
   },

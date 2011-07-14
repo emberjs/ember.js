@@ -16,12 +16,12 @@ function generateTouchEvent(touches) {
 module("Test Gesture Recognizer",{
   setup: function() {
     application = SC.Application.create();
-    application.ready();
+    //application.ready();
   },
 
   teardown: function() {
-    application.destroy();
     if(view) view.destroy();
+    application.destroy();
   }  
 });
 
@@ -216,37 +216,28 @@ test("when 2 fingers move closer together, gesture should be in BEGAN state", fu
   view.$().trigger('touchend')
 });
 
-test("foo",function() {
+window.shit = function () {
 
-  var myview = SC.View.create({
-    elementId: 'gestureTest',
-    pinchChange: function(recognizer, scale) {
-      $('#gestureTest').css('-webkit-transform','scale('+scale+')');
-    },
+  var app = SC.Application.create();
 
-    tapStart: function(recognizer) {
-      $('#gestureTest').css('background','green');
-    },
-
-    tapEnd: function(recognizer) {
-      $('#gestureTest').css('background','yellow');
-    },
-
-    tapCancel: function(recognizer) {
-      $('#gestureTest').css('background','red');
-    }
+  SC.run(function(){
+    var myview = SC.View.create({
+      elementId: 'gestureTest',
+      pinchChange: function(recognizer, scale) {
+        var string = 'scale3d('+scale+','+scale+',1)';
+        console.log(string);
+        this.$().css('-webkit-transform',string);
+      }
+    }).append();
   });
 
-  //SC.run(function(){
-    //myview.append();
-  //});
-
-   //$('#gestureTest').css({
-      //background: 'red',
-      //position: 'absolute',
-      //top: 10,
-      //left: 10,
-      //width: 400,
-      //height: 400
-   //})
-});
+   $('#gestureTest').css({
+      background: 'red',
+      position: 'absolute',
+      top: 10,
+      left: 100,
+      width: 400,
+      height: 400,
+      '-webkit-tranform': 'translate3d(0,0,0)'
+   });
+};

@@ -26,10 +26,7 @@ SC.TapGestureRecognizer = SC.Gesture.extend({
       this.notifyViewOfGestureEvent(view,'tapStart');
     }
 
-    console.log('  TAP RECOGNIZER: redispatching touchstart to view');
-    window.foo=true;
     this.redispatchEventToView(view,'touchstart');
-    console.log('  TAP RECOGNIZER: finished redispatching');
   },
 
   touchEnd: function(evt, view) {
