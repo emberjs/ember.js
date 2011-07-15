@@ -63,6 +63,14 @@ SC.ENV = 'undefined' === typeof ENV ? {} : ENV;
 SC.K = function() { return this; };
 
 /**
+  Set to YES to have all observing activity logged to the SC.Logger.  This
+  should be used for debugging only.
+
+  @property {Boolean}
+*/
+SC.LOG_OBSERVERS = true;
+
+/**
   Define an assertion that will throw an exception if the condition is not 
   met.  SproutCore build tools will remove any calls to sc_assert() when 
   doing a production build.
