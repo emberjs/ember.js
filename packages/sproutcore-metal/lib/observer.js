@@ -81,7 +81,7 @@ function notifyObservers(obj, eventName, forceNotification) {
   } else {
     //@if (debug)
     if (SC.LOG_OBSERVERS) {
-      SC.Logger.log('LOG_OBSERVERS: %@: notifying observers - sendEvent: "%@"'.fmt(obj, eventName));
+      SC.Logger.log('LOG_OBSERVERS: %@: notifying observers - sendEvent: %@'.fmt(obj, eventName));
     }
     //@endif
     
