@@ -9,9 +9,6 @@ var get = SC.get, set = SC.set, checkboxView, application;
 module("SC.Checkbox", {
   setup: function() {
     application = SC.Application.create();
-
-    // force setup since document may not be ready yet.
-    get(application, 'eventDispatcher').setup();
   },
   teardown: function() {
     checkboxView.destroy();
