@@ -71,6 +71,15 @@ SC.K = function() { return this; };
 SC.LOG_OBSERVERS = true;
 
 /**
+  Debug parameter you can turn on.  This will log all bindings that fire to
+  the console.  This should be disabled in production code.  Note that you
+  can also enable this from the console or temporarily.
+
+  @property {Boolean}
+*/
+SC.ENV.LOG_BINDINGS = false;
+
+/**
   Define an assertion that will throw an exception if the condition is not 
   met.  SproutCore build tools will remove any calls to sc_assert() when 
   doing a production build.
