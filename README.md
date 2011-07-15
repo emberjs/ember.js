@@ -83,6 +83,8 @@ For new users, we recommend downloading the [SproutCore Starter Kit](https://git
 
 We also recommend that you check out the [annotated Todos example](http://annotated-todos.strobeapp.com/), which shows you the best practices for architecting an MVC-based web application.
 
+The [SproutCore Guides are available](http://guides.sproutcore20.com/) for SproutCore 2.0. If you find an error, please [fork the guides on GitHub](https://github.com/sproutcore/sproutguides/tree/v2.0) and submit a pull request. (Note that 2.0 guides are on the `v2.0` branch.)
+
 To learn more about what we're up to, follow [@sproutcore on Twitter](http://twitter.com/sproutcore), [subscribe to the blog](http://blog.sproutcore.com), or [read the original SproutCore 2.0 announcement](http://blog.sproutcore.com/announcing-sproutcore-2-0/).
 
 # Building SproutCore 2.0
