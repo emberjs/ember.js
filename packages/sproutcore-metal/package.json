@@ -4,6 +4,6 @@
   "summary": "JavaScript on Steroids",
   "homepage": "http://github.com/sproutcore/sproutcore20",
   "author": "Charles Jolley",
-  "version": "2.0.beta.1",
+  "version": "2.0.beta.2.pre",
   "directories": { "lib": "lib", "tests": "tests" }
 }

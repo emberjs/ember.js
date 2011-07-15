@@ -1,0 +1,3 @@
+[submodule "vendor/uglifyjs"]
+	path = vendor/uglifyjs
+	url = http://github.com/lautis/UglifyJS.git

@@ -54,10 +54,6 @@ SC.TextField = SC.View.extend(
     set(this, 'value', this.$().val());
   },
 
-  _valueDidChange: function() {
-    SC.run.once(this, this._updateElementValue);
-  },
-
   _updateElementValue: function() {
     this.$().val(get(this, 'value'));
   }
