@@ -69,7 +69,7 @@ var queue = new ObserverSet(true), beforeObserverSet = new ObserverSet();
 function notifyObservers(obj, eventName, forceNotification) {
   if (suspended && !forceNotification) {
     //@if (debug)
-    if (SC.LOG_OBSERVERS) SC.Logger.log("LOG_OBSERVERS: %@: will not notify observers because observing is suspended".fmt(this));
+    if (SC.LOG_OBSERVERS) SC.Logger.log("LOG_OBSERVERS: %@: will not notify observers because observing is suspended - eventName: %@".fmt(obj, eventName));
     //@endif
     
     // if suspended add to the queue to send event later - but only send 
@@ -81,7 +81,7 @@ function notifyObservers(obj, eventName, forceNotification) {
   } else {
     //@if (debug)
     if (SC.LOG_OBSERVERS) {
-      SC.Logger.log('LOG_OBSERVERS: %@: notifying observers after change to key "%@"'.fmt(this, key));
+      SC.Logger.log('LOG_OBSERVERS: %@: notifying observers - sendEvent: "%@"'.fmt(obj, eventName));
     }
     //@endif
     
