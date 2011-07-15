@@ -70,8 +70,11 @@ var RunLoop = SC.Object.extend({
   },
 
   flush: function(queueName) {
-    var queues = this._queues, queueNames, idx, len, queue, log;
-
+    var queues = this._queues, queueNames, idx, len, queue;
+    //@if (debug)
+    var log = SC.LOG_BINDINGS;
+    //@endif
+    
     if (!queues) return this; // nothing to do
 
     function iter(item) {
@@ -85,7 +88,7 @@ var RunLoop = SC.Object.extend({
         this._queues[queueName] = null;
 
         //@if (debug)
-        if (SC.LOG_BINDINGS) SC.Logger.log('Begin: Flush Queue: %@'.fmt(queueName));
+        if (log) { SC.Logger.log('Begin: Flush Queue: %@'.fmt(queueName)); }
         //@endif
 
         // the sync phase is to allow property changes to propogate.  don't
@@ -95,7 +98,7 @@ var RunLoop = SC.Object.extend({
         if (queueName === 'sync') SC.endPropertyChanges();
 
         //@if (debug)
-        if (SC.LOG_BINDINGS) SC.Logger.log('End: Flush Queue: %@'.fmt(queueName));
+        if (log) { SC.Logger.log('End: Flush Queue: %@'.fmt(queueName)); }
         //@endif
 
       }
@@ -110,7 +113,7 @@ var RunLoop = SC.Object.extend({
           queue = queues[queueName];
 
           //@if (debug)
-          if (SC.LOG_BINDINGS) SC.Logger.log('Begin: Flush Queue: %@'.fmt(queueName));
+          if (log) { SC.Logger.log('Begin: Flush Queue: %@'.fmt(queueName)); }
           //@endif
 
           if (queueName === 'sync') SC.beginPropertyChanges();
@@ -118,7 +121,7 @@ var RunLoop = SC.Object.extend({
           if (queueName === 'sync') SC.endPropertyChanges();
 
           //@if (debug)
-          if (SC.LOG_BINDINGS) SC.Logger.log('End: Flush Queue: %@'.fmt(queueName));
+          if (log) { SC.Logger.log('End: Flush Queue: %@'.fmt(queueName)); }
           //@endif
 
         }
@@ -181,10 +184,11 @@ SC.run = run = function(target, method) {
   @returns {void}
 */
 SC.run.begin = function() {
-  if (SC.LOG_BINDINGS || SC.LOG_OBSERVERS) {
-    SC.Logger.log("-- SC.run.begin");
-  }
-
+  //@if (debug)
+  var log = SC.LOG_BINDINGS || SC.LOG_OBSERVERS;
+  if (log) { SC.Logger.log("-- SC.run.begin"); }
+  //@endif
+  
   run.currentRunLoop = new RunLoop(run.currentRunLoop);
 };
 
@@ -196,12 +200,16 @@ SC.run.begin = function() {
   @returns {void}
 */
 SC.run.end = function() {
+  //@if (debug)
+  var log = SC.LOG_BINDINGS || SC.LOG_OBSERVERS;
+  //@endif
+  
   sc_assert('must have a current run loop', run.currentRunLoop);
   run.currentRunLoop = run.currentRunLoop.end();
 
-  if (SC.LOG_BINDINGS || SC.LOG_OBSERVERS) {
-    SC.Logger.log("-- SC.run.end");
-  }
+  //@if (debug)
+  if (log) { SC.Logger.log("-- SC.run.end"); }
+  //@endif
 };
 
 /**
