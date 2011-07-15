@@ -10,6 +10,19 @@ require('sproutcore-metal/platform');
 require('sproutcore-metal/utils');
 require('sproutcore-metal/accessors');
 
+//@if (debug)
+
+/**
+  Set to YES to have all observing activity logged to the SC.Logger.  This
+  should be used for debugging only. Note that you can also enable this 
+  from the console or temporarily.
+
+  @property {Boolean}
+*/
+SC.LOG_OBSERVERS = false || !!SC.ENV.LOG_OBSERVERS;
+
+//@endif
+
 var AFTER_OBSERVERS = ':change';
 var BEFORE_OBSERVERS = ':before';
 var guidFor = SC.guidFor;
@@ -55,7 +68,10 @@ var queue = new ObserverSet(true), beforeObserverSet = new ObserverSet();
 
 function notifyObservers(obj, eventName, forceNotification) {
   if (suspended && !forceNotification) {
-
+    //@if (debug)
+    if (SC.LOG_OBSERVERS) SC.Logger.log("LOG_OBSERVERS: %@: will not notify observers because observing is suspended".fmt(this));
+    //@endif
+    
     // if suspended add to the queue to send event later - but only send 
     // event once.
     if (!queue.contains(obj, eventName)) {
@@ -63,6 +79,12 @@ function notifyObservers(obj, eventName, forceNotification) {
     }
 
   } else {
+    //@if (debug)
+    if (SC.LOG_OBSERVERS) {
+      SC.Logger.log('LOG_OBSERVERS: %@: notifying observers after change to key "%@"'.fmt(this, key));
+    }
+    //@endif
+    
     SC.sendEvent(obj, eventName);
   }
 }

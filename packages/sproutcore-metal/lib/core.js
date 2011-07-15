@@ -64,11 +64,12 @@ SC.K = function() { return this; };
 
 /**
   Set to YES to have all observing activity logged to the SC.Logger.  This
-  should be used for debugging only.
+  should be used for debugging only. Note that you can also enable this 
+  from the console or temporarily.
 
   @property {Boolean}
 */
-SC.LOG_OBSERVERS = true;
+SC.ENV.LOG_OBSERVERS = false;
 
 /**
   Debug parameter you can turn on.  This will log all bindings that fire to
