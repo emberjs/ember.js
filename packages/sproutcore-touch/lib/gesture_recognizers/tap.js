@@ -14,7 +14,7 @@ SC.TapGestureRecognizer = SC.Gesture.extend({
   startLocation: null,
   _moveThreshold: 10,
 
-  touchStart: function(evt, view) {
+  touchStart: function(evt, view, manager) {
     var touches = evt.originalEvent.targetTouches,
         numberOfTouches = this.numberOfTouches;
 
@@ -26,10 +26,10 @@ SC.TapGestureRecognizer = SC.Gesture.extend({
       this.notifyViewOfGestureEvent(view,'tapStart');
     }
 
-    this.redispatchEventToView(view,'touchstart');
+    manager.redispatchEventToView(view,'touchstart');
   },
 
-  touchEnd: function(evt, view) {
+  touchEnd: function(evt, view, manager) {
     var touches = evt.originalEvent.changedTouches;
     if(touches.length !== get(this, 'numberOfTouches')) {
       return;
@@ -48,8 +48,8 @@ SC.TapGestureRecognizer = SC.Gesture.extend({
 
   },
 
-  touchCancel: function(evt, view) {
-    this.redispatchEventToView(view,'touchcancel');
+  touchCancel: function(evt, view, manager) {
+    manager.redispatchEventToView(view,'touchcancel');
   }
 });
 

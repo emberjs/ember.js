@@ -31,7 +31,7 @@ SC.PinchGestureRecognizer = SC.Gesture.extend({
   _initialScale: 1,
   scale: 1,
 
-  touchStart: function(evt, view) {
+  touchStart: function(evt, view, manager) {
     var touches = evt.originalEvent.targetTouches;
     var len = touches.length;
 
@@ -51,10 +51,10 @@ SC.PinchGestureRecognizer = SC.Gesture.extend({
 
     }
     
-    this.redispatchEventToView(view,'touchstart');
+    manager.redispatchEventToView(view,'touchstart');
   },
 
-  touchMove: function(evt, view) {
+  touchMove: function(evt, view, manager) {
     var state = this._state;
     var touches = evt.originalEvent.targetTouches;
     if(touches.length !== get(this, 'numberOfTouches')) { return; }
@@ -82,19 +82,19 @@ SC.PinchGestureRecognizer = SC.Gesture.extend({
       evt.preventDefault();
     }
     else {
-      this.redispatchEventToView(view,'touchmove');
+      manager.redispatchEventToView(view,'touchmove');
     }
   },
 
-  touchEnd: function(evt, view) {
+  touchEnd: function(evt, view, manager) {
     this.state = SC.Gesture.ENDED;
-    this.redispatchEventToView(view,'touchend');
+    manager.redispatchEventToView(view,'touchend');
   },
 
-  touchCancel: function(evt, view) {
+  touchCancel: function(evt, view, manager) {
     this.state = SC.Gesture.CANCELLED;
 
-    this.redispatchEventToView(view,'touchcancel');
+    manager.redispatchEventToView(view,'touchcancel');
   }
 });
 

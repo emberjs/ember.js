@@ -27,10 +27,6 @@ SC.Gesture = SC.Object.extend({
     return SC.Gesture+'<'+SC.guidFor(this)+'>';
   },
 
-  redispatchEventToView: function(view, eventName) {
-    view.$().trigger(eventName,true);
-  },
-
   notifyViewOfGestureEvent: function(view, eventName, data) {
     var handler = view[eventName];
 

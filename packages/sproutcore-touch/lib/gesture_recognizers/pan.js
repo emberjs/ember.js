@@ -22,7 +22,6 @@ SC.PanGestureRecognizer = SC.Gesture.extend({
     this._super();
 
     this._totalTranslation = {x:0,y:0};
-    this._accumulated = {x:0,y:0};
   },
 
   _centerPointForTouches: function(first, second) {
@@ -38,7 +37,7 @@ SC.PanGestureRecognizer = SC.Gesture.extend({
       console.log(pre+' ('+point.x+','+point.y+')');
   },
 
-  touchStart: function(evt, view) {
+  touchStart: function(evt, view, manager) {
     var touches = evt.originalEvent.targetTouches;
     var len = touches.length;
 
@@ -50,10 +49,10 @@ SC.PanGestureRecognizer = SC.Gesture.extend({
       this._initialLocation = this._centerPointForTouches(touches[0],touches[1]);
     }
     
-    this.redispatchEventToView(view,'touchstart');
+    manager.redispatchEventToView(view,'touchstart');
   },
 
-  touchMove: function(evt, view) {
+  touchMove: function(evt, view, manager) {
     var touches = evt.originalEvent.targetTouches;
     if(touches.length !== get(this, 'numberOfTouches')) { return; }
 
@@ -66,6 +65,10 @@ SC.PanGestureRecognizer = SC.Gesture.extend({
     
     current.x = this._totalTranslation.x + current.x;
     current.y = this._totalTranslation.y + current.y;
+
+    if (this._accumulated === null) {
+      this._accumulated = {x:0,y:0};
+    }
 
     this._accumulated.x = current.x;
     this._accumulated.y = current.y;
@@ -83,30 +86,35 @@ SC.PanGestureRecognizer = SC.Gesture.extend({
       evt.preventDefault();
     }
     else {
-      this.redispatchEventToView(view,'touchmove');
+      manager.redispatchEventToView(view,'touchmove');
     }
   },
 
-  touchEnd: function(evt, view) {
+  touchEnd: function(evt, view, manager) {
     var touches = evt.originalEvent.targetTouches;
+    window.poop = this;
 
     if(touches.length !== 0) {
-      this.redispatchEventToView(view,'touchend');
+      manager.redispatchEventToView(view,'touchend');
       return;
     }
 
-    this._totalTranslation.x = this._accumulated.x;
-    this._totalTranslation.y = this._accumulated.y;
+    if (this._accumulated) {
 
-    this._accumulated.x = 0;
-    this._accumulated.y = 0;
+      this._totalTranslation.x = this._accumulated.x;
+      this._totalTranslation.y = this._accumulated.y;
+
+      //this._accumulated.x = 0;
+      //this._accumulated.y = 0;
+
+    }
 
     this.state = SC.Gesture.ENDED;
   },
 
-  touchCancel: function(evt, view) {
+  touchCancel: function(evt, view, manager) {
     this.state = SC.Gesture.CANCELLED;
-    this.redispatchEventToView(view,'touchcancel');
+    manager.redispatchEventToView(view,'touchcancel');
   }
 });
 

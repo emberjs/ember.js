@@ -9,14 +9,9 @@ var get = SC.get;
 var application = null;
 var view;
 
-function generateTouchEvent(touches) {
-
-}
-
 module("Test Gesture Recognizer",{
   setup: function() {
     application = SC.Application.create();
-    //application.ready();
   },
 
   teardown: function() {
@@ -51,7 +46,6 @@ test("when finger touches inside, gesture should be in waiting state", function(
     elementId: 'gestureTest',
 
     pinchStart: function(evt) {
-      console.log('pinchStart called');
       //numStart++;
     },
 
@@ -232,8 +226,6 @@ test("when 2 fingers move closer together, gesture should be in BEGAN state", fu
 
   numStart = 0;
 
-  console.group('testing re-gesturing');
-
   touchEvent = new jQuery.Event();
   touchEvent.type='touchstart';
   touchEvent['originalEvent'] = {
@@ -267,7 +259,7 @@ test("when 2 fingers move closer together, gesture should be in BEGAN state", fu
   equals(startScale,1,"scale should still be 1");
   
   // =====================================
-  // Double in a bit
+  // Half its size
 
   touchEvent = new jQuery.Event();
   touchEvent.type='touchmove';
@@ -286,32 +278,6 @@ test("when 2 fingers move closer together, gesture should be in BEGAN state", fu
 
   equals(get(gestures[0], 'state'),SC.Gesture.CHANGED, "gesture should be changed");
   equals(changeScale,0.5,"scale should be halved");
-
-  console.groupEnd();
-
-});
-
-test("pan test", function() {
-  view = SC.View.create({
-    elementId: 'gestureTest',
-
-    pinchStart: function(recognizer, scale) {
-      numStart++;
-      startScale = scale;
-    },
-
-    pinchChange: function(recognizer, scale) {
-      changeScale = scale;
-    },
-
-    panChange: function(recognizer, translation) {
-      
-    }
-  });
-
-  SC.run(function(){
-    view.append();
-  });
 
 });
 
