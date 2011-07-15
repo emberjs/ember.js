@@ -181,7 +181,7 @@ SC.run = run = function(target, method) {
   @returns {void}
 */
 SC.run.begin = function() {
-  if (SC.LOG_OBSERVERS) {
+  if (SC.LOG_BINDINGS || SC.LOG_OBSERVERS) {
     SC.Logger.log("-- SC.run.begin");
   }
 
@@ -199,7 +199,7 @@ SC.run.end = function() {
   sc_assert('must have a current run loop', run.currentRunLoop);
   run.currentRunLoop = run.currentRunLoop.end();
 
-  if (SC.LOG_OBSERVERS) {
+  if (SC.LOG_BINDINGS || SC.LOG_OBSERVERS) {
     SC.Logger.log("-- SC.run.end");
   }
 };
