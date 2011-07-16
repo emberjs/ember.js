@@ -9,14 +9,14 @@ var set = SC.set;
 
 var sigFigs = 100;
 
-/**
+/** 
+  @class
+  
+  Base class for all gesture recognizers. Provides some utility methods and
+  some required methods all gesture recognizers are expected to implement.
 
-  If there are two touches
-    at start, calculate distance
-    when the touches move, recalculate distance
-    calculate scale from change in distance
- 
- */
+  @extends SC.Gesture
+*/
 SC.PinchGestureRecognizer = SC.Gesture.extend({
   numberOfTouches: 2,
 

@@ -92,6 +92,8 @@ SC.GestureManager = SC.Object.extend({
   _invokeEvent: function(eventName, eventObject, view) {
     var gestures = get(this, 'gestures'),
         gesture, result = true;
+
+    this._redispatchQueue = {};
         
     for (var i=0, l=gestures.length; i < l; i++) {
       gesture = gestures[i];
@@ -146,8 +148,6 @@ SC.GestureManager = SC.Object.extend({
         view.$().trigger(eventName,true);
       }
     }
-
-    this._redispatchQueue = {};
   }
 
 });

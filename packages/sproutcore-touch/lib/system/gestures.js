@@ -20,7 +20,7 @@ var set = SC.set;
   @private
   @extends SC.Object
 */
-SC.Gestures = SC.Object.create({
+SC.Gestures = SC.Object.create(
 /** @scope SC.Gestures.prototype */{
   
   _registeredGestures: null,

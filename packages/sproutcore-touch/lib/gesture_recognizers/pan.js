@@ -8,8 +8,14 @@ var get = SC.get;
 var set = SC.set;
 var x = 0;
 
-var sigFigs = 100;
+/** 
+  @class
+  
+  Base class for all gesture recognizers. Provides some utility methods and
+  some required methods all gesture recognizers are expected to implement.
 
+  @extends SC.Gesture
+*/
 SC.PanGestureRecognizer = SC.Gesture.extend({
   numberOfTouches: 2,
 

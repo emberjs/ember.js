@@ -7,11 +7,16 @@
 var get = SC.get;
 var set = SC.set;
 
+var sigFigs = 100;
+
 /** 
   @class
   
   Base class for all gesture recognizers. Provides some utility methods and
   some required methods all gesture recognizers are expected to implement.
+
+  Gestures coalesce multiple touch events to a single higher-level gesture 
+  event.
 
   @extends SC.Object
 */

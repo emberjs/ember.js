@@ -9,6 +9,8 @@ var set = SC.set;
 
 /** 
   @class
+
+  Implements a multi-touch tap gesture.
   
   @extends SC.Gesture
 */
