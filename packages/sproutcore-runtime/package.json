@@ -5,16 +5,11 @@
 
   "homepage": "http://sproutcore.com",
   "author": "Charles Jolley",
-  "version": "2.0.beta.1",
+  "version": "2.0.beta.2.pre",
 
   "dependencies": {
-    "sproutcore-metal": "2.0",
-    "sproutcore-preprocessor": "~> 0.0.2"
+    "sproutcore-metal": "2.0"
   },
-
-  "plugin:preprocessors": [
-    "sproutcore-preprocessor/preprocessor"
-  ],
 
   "directories": {
     "lib"       : "./lib",

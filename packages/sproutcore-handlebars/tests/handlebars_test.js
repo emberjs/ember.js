@@ -127,8 +127,10 @@ test("should escape HTML in normal mustaches", function() {
 
   view.createElement();
   equals(view.$('b').length, 0, "does not create an element");
+  equals(view.$().text(), 'you need to be more <b>bold</b>', "inserts entities, not elements");
 
-  set(view, 'output', "you are so <i>super</i>");
+  SC.run(function() { set(view, 'output', "you are so <i>super</i>"); });
+  equals(view.$().text(), 'you are so <i>super</i>', "updates with entities, not elements");
   equals(view.$('i').length, 0, "does not create an element when value is updated");
 });
 
@@ -950,12 +952,12 @@ test("should be able to bind element attributes using {{bindAttr}}", function() 
   equals(view.$('img').attr('alt'), "The SproutCore Logo", "updates alt attribute when content object is a hash");
 
   SC.run(function() {
-    set(view, 'content', {
+    set(view, 'content', SC.Object.create({
       url: "http://www.sproutcore.com/assets/images/logo.png",
-      title: function() {
+      title: SC.computed(function() {
         return "Nanananana SproutCore!";
-      }
-    });
+      })
+    }));
   });
 
   equals(view.$('img').attr('alt'), "Nanananana SproutCore!", "updates alt attribute when title property is computed");

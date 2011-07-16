@@ -12,42 +12,21 @@ var set = SC.set, get = SC.get;
 //
 module("SC.View#render");
 
-test("default implementation invokes renderChildViews if firstTime = YES", function() {
+test("default implementation does not render child views", function() {
 
   var rendered = 0, updated = 0, parentRendered = 0, parentUpdated = 0 ;
-  var view = SC.View.create({
+  var view = SC.ContainerView.create({
     childViews: ["child"],
 
-    render: function(context) {
+    render: function(buffer) {
       parentRendered++;
+      this._super(buffer);
     },
 
     child: SC.View.create({
-      render: function(context) {
+      render: function(buffer) {
         rendered++;
-      }
-    })
-  });
-
-  view.createElement();
-  equals(rendered, 1, 'rendered the child');
-  equals(parentRendered, 1);
-});
-
-test("default implementation does not invoke renderChildViews if explicitly rendered in render method", function() {
-
-  var rendered = 0, updated = 0, parentRendered = 0, parentUpdated = 0 ;
-  var view = SC.View.create({
-    childViews: ["child"],
-
-    render: function(context) {
-      this.renderChildViews(context);
-      parentRendered++;
-    },
-
-    child: SC.View.create({
-      render: function(context) {
-        rendered++;
+        this._super(buffer);
       }
     })
   });
@@ -62,37 +41,45 @@ test("default implementation does not invoke renderChildViews if explicitly rend
 test("should invoke renderChildViews if layer is destroyed then re-rendered", function() {
 
   var rendered = 0, parentRendered = 0, parentUpdated = 0 ;
-  var view = SC.View.create({
+  var view = SC.ContainerView.create({
     childViews: ["child"],
 
-    render: function(context) {
+    render: function(buffer) {
       parentRendered++;
+      this._super(buffer);
     },
 
     child: SC.View.create({
-      render: function(context) {
+      render: function(buffer) {
         rendered++;
+        this._super(buffer);
       }
     })
   });
 
-  view.createElement();
+  SC.run(function() {
+    view.append();
+  });
+
   equals(rendered, 1, 'rendered the child once');
   equals(parentRendered, 1);
   equals(view.$('div').length, 1);
 
-  view.destroyElement();
-  view.createElement();
+  SC.run(function() {
+    view.rerender();
+  });
+
   equals(rendered, 2, 'rendered the child twice');
   equals(parentRendered, 2);
   equals(view.$('div').length, 1);
 
+  view.destroy();
 });
 
 test("should render child views with a different tagName", function() {
   var rendered = 0, parentRendered = 0, parentUpdated = 0 ;
 
-  var view = SC.View.create({
+  var view = SC.ContainerView.create({
     childViews: ["child"],
 
     child: SC.View.create({

@@ -243,8 +243,7 @@ function _copy(obj, deep, seen, copies) {
   // avoid cyclical loops
   if (deep && (loc=seen.indexOf(obj))>=0) return copies[loc];
   
-  sc_assert('Cannot clone an SC.Object that does not implement SC.Copyable', 
-    !(obj instanceof SC.Object) || (SC.Copyable && SC.Copyable.detect(obj)));
+  sc_assert('Cannot clone an SC.Object that does not implement SC.Copyable', !(obj instanceof SC.Object) || (SC.Copyable && SC.Copyable.detect(obj)));
 
   // IMPORTANT: this specific test will detect a native array only.  Any other
   // object will need to implement Copyable.
@@ -365,14 +364,6 @@ if (!SC.keys) {
   };
 }
 
-/**
-  Empty function.  Useful for some operations.
-
-  @returns {Object}
-  @private
-*/
-SC.K = function() { return this; };
-
 // ..........................................................
 // ERROR
 // 
@@ -403,8 +394,3 @@ SC.Error.prototype = SC.create(Error.prototype);
   Override this to provide more robust logging functionality.
 */
 SC.Logger = window.console;
-
-//if ('undefined' === typeof sc_require) sc_require = SC.K;
-if ('undefined' === typeof require) require = SC.K;
-
-

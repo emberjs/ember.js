@@ -130,7 +130,7 @@ test("destroy more forcibly removes the view", function() {
 
 module("SC.View - append() and appendTo() in a view hierarchy", {
   setup: function() {
-    View = SC.View.extend({
+    View = SC.ContainerView.extend({
       childViews: ['child'],
       child: SC.View.extend({
         elementId: 'child'
@@ -177,7 +177,7 @@ module("SC.View - removing views in a view hierarchy", {
   setup: function() {
     willDestroyCalled = 0;
 
-    view = SC.View.create({
+    view = SC.ContainerView.create({
       childViews: ['child'],
       child: SC.View.create({
         willDestroyElement: function() {
@@ -222,6 +222,8 @@ test("destroy more forcibly removes child views", function() {
   });
 
   ok(SC.$("#" + get(childView, 'elementId')).length === 1, "precond - child element was inserted");
+
+  willDestroyCalled = 0;
 
   SC.run(function() {
     view.destroy();

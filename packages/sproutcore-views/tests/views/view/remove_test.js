@@ -63,7 +63,7 @@ test("returns receiver", function() {
 module("SC.View#removeFromParent");
 
 test("removes view from parent view", function() {
-  var parent = SC.View.create({ childViews: [SC.View] });
+  var parent = SC.ContainerView.create({ childViews: [SC.View] });
   var child = parent.childViews[0];
   ok(get(child, 'parentView'), 'precond - has parentView');
 

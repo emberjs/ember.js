@@ -12,29 +12,43 @@ prefix = prefix && prefix[1];
 if (!packageName) {
   $('#qunit-header').text('Pass package=foo on URL to test package');
 } else {
-  require(packageName);
+  packageName = decodeURIComponent(packageName);
+  var packages = packageName.split(','), runtime, files, file, i, j, l, len;
+
+  for(i=0, l=packages.length; i<l; i++) {
+    require(packages[i]);
+  }
+
   $.extend(window, qunit);
 
   QUnit.config.autostart = false;
-  QUnit.onload();
-  $('h1 > a').text(packageName);
+  QUnit.config.autorun = false;
+
+  jQuery(function() {
+    $('h1 > a').text(packageName);
+  });
 
   QUnit.jsDump.setParser('object', function(obj) {
     return obj.toString();
   });
 
-  var runtime = spade["package"](packageName);
-  var files = runtime.files, file;
+  for (i=0, l=packages.length; i<l; i++) {
+    runtime = spade["package"](packages[i]);
+    files = runtime.files;
 
-  for(var i=0, l=files.length; i<l; i++) {
-    file = files[i];
+    for(j=0, len=files.length; j<len; j++) {
+      file = files[j];
 
-    if (file.match(/tests\/.*\.js$/)) {
-      if (!prefix || file.indexOf('tests/'+prefix)===0) {
-        require(packageName+"/~" + file);
+      if (file.match(/tests\/.*\.js$/)) {
+        if (!prefix || file.indexOf('tests/'+prefix)===0) {
+          require(packages[i]+"/~" + file);
+        }
       }
     }
   }
+
+  QUnit.onload();
+  QUnit.start();
 
 }
 

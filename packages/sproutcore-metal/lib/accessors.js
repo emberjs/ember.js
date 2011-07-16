@@ -142,8 +142,7 @@ SC.set = set;
 // 
 
 function normalizePath(path) {
-  sc_assert('must pass non-empty string to normalizePath()', 
-    path && path!=='');
+  sc_assert('must pass non-empty string to normalizePath()', path && path!=='');
     
   if (path==='*') return path; //special case...
   var first = path.charAt(0);
@@ -167,6 +166,9 @@ function getPath(target, path) {
     if (next<0) next = len;
     key = path.slice(idx, next);
     target = key==='*' ? target : get(target, key);
+
+    if (target && target.isDestroyed) { return undefined; }
+
     idx = next+1;
   }
   return target ;
@@ -278,7 +280,7 @@ SC.getPath = function(root, path) {
   return getPath(root, path);
 };
 
-SC.setPath = function(root, path, value) {
+SC.setPath = function(root, path, value, tolerant) {
   var keyName;
   
   if (arguments.length===2 && 'string' === typeof root) {
@@ -311,7 +313,29 @@ SC.setPath = function(root, path, value) {
   if (!keyName || keyName.length===0 || keyName==='*') {
     throw new Error('Invalid Path');
   }
-  
+
+  if (!root) {
+    if (tolerant) { return; }
+    else { throw new Error('Object in path '+path+' could not be found or was destroyed.'); }
+  }
+
   return SC.set(root, keyName, value);
+};
+
+/**
+  Error-tolerant form of SC.setPath. Will not blow up if any part of the
+  chain is undefined, null, or destroyed.
+
+  This is primarily used when syncing bindings, which may try to update after
+  an object has been destroyed.
+*/
+SC.trySetPath = function(root, path, value) {
+  if (arguments.length===2 && 'string' === typeof root) {
+    value = path;
+    path = root;
+    root = null;
+  }
+
+  return SC.setPath(root, path, value, true);
 };
 

@@ -8,7 +8,7 @@
 require('sproutcore-handlebars/ext');
 require('sproutcore-handlebars/views/bindable_span');
 
-var get = SC.get, getPath = SC.getPath;
+var get = SC.get, getPath = SC.getPath, fmt = SC.String.fmt;
 
 (function() {
   // Binds a property into the DOM. This will create a hook in DOM that the
@@ -38,7 +38,7 @@ var get = SC.get, getPath = SC.getPath;
 
       var observer, invoker;
 
-      get(view, 'childViews').pushObject(bindView);
+      view.appendChild(bindView);
 
       observer = function() {
         if (get(bindView, 'element')) {
@@ -58,8 +58,6 @@ var get = SC.get, getPath = SC.getPath;
       // Observes the given property on the context and
       // tells the SC._BindableSpan to re-render.
       SC.addObserver(ctx, property, invoker);
-
-      bindView.renderToBuffer(data.buffer);
     } else {
       // The object is not observable, so just render it out and
       // be done with it.
@@ -79,14 +77,17 @@ var get = SC.get, getPath = SC.getPath;
     DOM. Note that if you need to support IE7 and IE8 you must modify the 
     model objects properties using SC.get() and SC.set() for this to work as 
     it relies on SC's KVO system.  For all other browsers this will be handled
-    for you automatically.  
+    for you automatically.
 
+    @private
     @name Handlebars.helpers.bind
     @param {String} property Property to bind
     @param {Function} fn Context to provide for rendering
     @returns {String} HTML string
   */
   Handlebars.registerHelper('bind', function(property, fn) {
+    sc_assert("You cannot pass more than one argument to the bind helper", arguments.length <= 2);
+
     return bind.call(this, property, fn, false, function(result) {
       return !SC.none(result);
     });
@@ -100,23 +101,20 @@ var get = SC.get, getPath = SC.getPath;
           {{content.title}}
         {{/boundIf}}
 
+    @private
     @name Handlebars.helpers.boundIf
     @param {String} property Property to bind
     @param {Function} fn Context to provide for rendering
     @returns {String} HTML string
   */
   Handlebars.registerHelper('boundIf', function(property, fn) {
-    if(fn) {
-      return bind.call(this, property, fn, true, function(result) {
-        if (SC.typeOf(result) === 'array') {
-          return get(result, 'length') !== 0;
-        } else {
-          return !!result;
-        }
-      } );
-    } else {
-      throw new SC.Error("Cannot use boundIf helper without a block.");
-    }
+    return bind.call(this, property, fn, true, function(result) {
+      if (SC.typeOf(result) === 'array') {
+        return get(result, 'length') !== 0;
+      } else {
+        return !!result;
+      }
+    } );
   });
 })();
 
@@ -127,6 +125,9 @@ var get = SC.get, getPath = SC.getPath;
   @returns {String} HTML string
 */
 Handlebars.registerHelper('with', function(context, options) {
+  sc_assert("You must pass exactly one argument to the with helper", arguments.length == 2);
+  sc_assert("You must pass a block to the with helper", options.fn && options.fn !== Handlebars.VM.noop);
+
   return Handlebars.helpers.bind.call(options.contexts[0], context, options);
 });
 
@@ -138,6 +139,9 @@ Handlebars.registerHelper('with', function(context, options) {
   @returns {String} HTML string
 */
 Handlebars.registerHelper('if', function(context, options) {
+  sc_assert("You must pass exactly one argument to the if helper", arguments.length == 2);
+  sc_assert("You must pass a block to the if helper", options.fn && options.fn !== Handlebars.VM.noop);
+
   return Handlebars.helpers.boundIf.call(options.contexts[0], context, options);
 });
 
@@ -148,6 +152,9 @@ Handlebars.registerHelper('if', function(context, options) {
   @returns {String} HTML string
 */
 Handlebars.registerHelper('unless', function(context, options) {
+  sc_assert("You must pass exactly one argument to the unless helper", arguments.length == 2);
+  sc_assert("You must pass a block to the unless helper", options.fn && options.fn !== Handlebars.VM.noop);
+
   var fn = options.fn, inverse = options.inverse;
 
   options.fn = inverse;
@@ -169,6 +176,9 @@ Handlebars.registerHelper('unless', function(context, options) {
 Handlebars.registerHelper('bindAttr', function(options) {
 
   var attrs = options.hash;
+
+  sc_assert("You must specify at least one hash argument to bindAttr", !!SC.keys(attrs).length);
+
   var view = options.data.view;
   var ret = [];
   var ctx = this;
@@ -192,12 +202,20 @@ Handlebars.registerHelper('bindAttr', function(options) {
   // current value of the property as an attribute.
   attrKeys.forEach(function(attr) {
     var property = attrs[attr];
+
+    sc_assert(fmt("You must provide a String for a bound attribute, not %@", [property]), typeof property === 'string');
+
     var value = getPath(ctx, property);
+
+    sc_assert(fmt("Attributes must be numbers, strings or booleans, not %@", [value]), value == null || typeof value === 'number' || typeof value === 'string' || typeof value === 'boolean');
 
     var observer, invoker;
 
     observer = function observer() {
       var result = getPath(ctx, property);
+
+      sc_assert(fmt("Attributes must be numbers, strings or booleans, not %@", [result]), result == null || typeof result === 'number' || typeof result === 'string' || typeof result === 'boolean');
+
       var elem = view.$("[data-handlebars-id='" + dataId + "']");
 
       // If we aren't able to find the element, it means the element
@@ -213,11 +231,11 @@ Handlebars.registerHelper('bindAttr', function(options) {
 
       // A false result will remove the attribute from the element. This is
       // to support attributes such as disabled, whose presence is meaningful.
-      if (result === NO && currentValue) {
+      if (result === false && currentValue) {
         elem.removeAttr(attr);
 
       // Likewise, a true result will set the attribute's name as the value.
-      } else if (result === YES && currentValue !== attr) {
+      } else if (result === true && currentValue !== attr) {
         elem.attr(attr, attr);
 
       } else if (currentValue !== result) {
@@ -235,12 +253,12 @@ Handlebars.registerHelper('bindAttr', function(options) {
     SC.addObserver(ctx, property, invoker);
 
     // Use the attribute's name as the value when it is YES
-    if (value === YES) {
+    if (value === true) {
       value = attr;
     }
 
     // Do not add the attribute when the value is false
-    if (value !== NO) {
+    if (value !== false) {
       // Return the current value, in the form src="foo.jpg"
       ret.push(attr + '="' + value + '"');
     }

@@ -30,15 +30,16 @@ function objectFor(m, obj, writable) {
     } else if (!ret || (ret.__scproto__ !== obj)) {
       return undefined;
     }
-    
+
     m = ret;
   }
-  
+
   return ret;
 }
 
 function listenerSetFor(obj, eventName, target, writable) {
-  return objectFor(meta(obj, writable), obj, writable, 'listeners', eventName, target);
+  var targetGuid = guidFor(target);
+  return objectFor(meta(obj, writable), obj, writable, 'listeners', eventName, targetGuid);
 }
 
 var EV_SKIP = { __scproto__: true };
@@ -61,6 +62,12 @@ function invokeEvents(targets, params) {
   }
 }
 
+/**
+  The parameters passed to an event listener are not exactly the
+  parameters passed to an observer. if you pass an xform function, it will
+  be invoked and is able to translate event listener parameters into the form
+  that observers are expecting.
+*/
 function addListener(obj, eventName, target, method, xform) {
   if (!method && 'function'===typeof target) {
     method = target;
@@ -152,10 +159,10 @@ function hasListeners(obj, eventName) {
 function listenersFor(obj, eventName) {
   var targets = meta(obj, false).listeners, 
       ret = [];
-      
+
   if (targets) targets = targets[eventName];
   if (!targets) return ret;
-  
+
   var tguid, mguid, methods, info;
   for(tguid in targets) {
     if (EV_SKIP[tguid] || !targets[tguid]) continue;

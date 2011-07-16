@@ -6,4 +6,5 @@
 // ==========================================================================
 
 require("sproutcore-views/views/view");
+require("sproutcore-views/views/container_view");
 require("sproutcore-views/views/collection_view");

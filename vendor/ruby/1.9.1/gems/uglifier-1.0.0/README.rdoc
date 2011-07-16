@@ -1,0 +1,65 @@
+= Uglifier
+
+Ruby wrapper for UglifyJS[https://github.com/mishoo/UglifyJS] JavaScript compressor.
+
+http://travis-ci.org/lautis/uglifier.png
+
+== Installation
+
+Uglifier is available as ruby gem.
+
+  $ gem install uglifier
+
+Ensure that your environment has a JavaScript interpreter supported by ExecJS[https://github.com/sstephenson/execjs]. Usually, installing therubyracer gem is the best alternative.
+
+== Usage
+
+  require 'uglifier'
+
+  Uglifier.new.compile(File.read("source.js"))
+  # => js file minified
+
+  # Or alternatively
+  Uglifier.compile(File.read("source.js"))
+
+When initializing UglifyJS, you can tune the behavior of UglifyJS by passing options. For example, if you want top-level variable names to be mangled:
+
+  Uglifier.new(:toplevel => true).compile(source)
+
+  # Or
+  Uglifier.compile(source, :toplevel => true)
+
+Available options and their defaults are
+  {
+    :mangle => true, # Mangle variables names
+    :toplevel => false, # Mangle top-level variable names
+    :except => [], # Variable names to be excluded from mangling
+    :max_line_length => 32 * 1024, # Maximum line length
+    :squeeze => true, # Squeeze code resulting in smaller, but less-readable code
+    :seqs => true, # Reduce consecutive statements in blocks into single statement
+    :dead_code => true, # Remove dead code (e.g. after return)
+    :unsafe => false, # Optimizations known to be unsafe in some situations
+    :copyright => true, # Show copyright message
+    :beautify => false, # Ouput indented code
+    :beautify_options => {
+      :indent_level => 4,
+      :indent_start => 0,
+      :quote_keys => false,
+      :space_colon => 0,
+      :ascii_only => false
+    }
+  }
+
+== Submitting an issue
+
+Uglifier uses the {GitHub issue tracker}[https://github.com/lautis/uglifier/issues] to track bugs and features. Before submitting a bug report or feature request, check to make sure it hasn't already been submitted. You can indicate support for an existing issuse by voting it up. When submitting a bug report, please include a Gist that includes a stack trace and any details that may be necessary to reproduce the bug, including your gem version, Ruby version, <b>MultiJSON engine</b> and <b>ExecJS runtime</b>. Ideally, a bug report should include a pull request with failing specs.
+
+== Contributing to uglifier
+ 
+* Check out the latest master to make sure the feature hasn't been implemented or the bug hasn't been fixed yet
+* Check out the issue tracker to make sure someone already hasn't requested it and/or contributed it
+* Fork the project
+* Start a feature/bugfix branch
+* Commit and push until you are happy with your contribution
+* Make sure to add tests for it. This is important so I don't break it in a future version unintentionally.
+* Please try not to mess with the Rakefile, version, or history. If you want to have your own version, or is otherwise necessary, that is fine, but please isolate to its own commit so I can cherry-pick around it.

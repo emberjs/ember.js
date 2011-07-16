@@ -33,7 +33,11 @@ function makeCtor() {
       rewatch(this); // ålways rewatch just in case
       this.init.apply(this, arguments);
     } else {
-      if (hasChains) { rewatch(this); }
+      if (hasChains) {
+        rewatch(this);
+      } else {
+        this[SC.GUID_KEY] = undefined;
+      }
       if (init===false) { init = this.init; } // cache for later instantiations
       init.apply(this, arguments);
     }
@@ -73,6 +77,7 @@ CoreObject.PrototypeMixin = SC.Mixin.create({
 
   destroy: function() {
     set(this, 'isDestroyed', true);
+    this[SC.META_KEY] = null;
     return this;
   },
 
@@ -103,6 +108,9 @@ var ClassMixin = SC.Mixin.create({
     var Class = makeCtor(), proto;
     Class.ClassMixin = SC.Mixin.create(this.ClassMixin);
     Class.PrototypeMixin = SC.Mixin.create(this.PrototypeMixin);
+
+    Class.ClassMixin.ownerConstructor = Class;
+    Class.PrototypeMixin.ownerConstructor = Class;
 
     var PrototypeMixin = Class.PrototypeMixin;
     PrototypeMixin.reopen.apply(PrototypeMixin, arguments);

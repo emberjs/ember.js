@@ -5,7 +5,7 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
-var get = SC.get, set = SC.set;
+var get = SC.get, set = SC.set, fmt = SC.String.fmt;
 
 /**
   @ignore
@@ -60,11 +60,19 @@ SC.EventDispatcher = SC.Object.extend(
       change      : 'change'
     };
 
-    jQuery.extend(events, addedEvents || {})
+    jQuery.extend(events, addedEvents || {});
+
+    var rootElement = SC.$(get(this, 'rootElement'));
+
+    sc_assert(fmt('You cannot use the same root element (%@) multiple times in an SC.Application', [rootElement.selector || rootElement[0].tagName]), !rootElement.is('.sc-application'));
+    sc_assert('You cannot make a new SC.Application using a root element that is a descendent of an existing SC.Application', !rootElement.closest('.sc-application').length);
+    sc_assert('You cannot make a new SC.Application using a root element that is an ancestor of an existing SC.Application', !rootElement.find('.sc-application').length);
+
+    rootElement.addClass('sc-application')
 
     for (event in events) {
       if (events.hasOwnProperty(event)) {
-        this.setupHandler(event, events[event]);
+        this.setupHandler(rootElement, event, events[event]);
       }
     }
   },
@@ -88,25 +96,18 @@ SC.EventDispatcher = SC.Object.extend(
     @param {String} event the browser-originated event to listen to
     @param {String} eventName the name of the method to call on the view
   */
-  setupHandler: function(event, eventName) {
-    var rootElement = get(this, 'rootElement');
-
-    SC.$(rootElement).delegate('.sc-view', event + '.sproutcore', function(evt) {
+  setupHandler: function(rootElement, event, eventName) {
+    rootElement.delegate('.sc-view', event + '.sproutcore', function(evt) {
       var view = SC.View.views[this.id],
           result = true, handler;
 
       SC.run(function() {
-        while (result !== false && view) {
-          handler = view[eventName];
-          if (SC.typeOf(handler) === 'function') {
-            result = handler.call(view, evt);
-          }
-
-          view = get(view, 'parentView');
+        handler = view[eventName];
+        if (SC.typeOf(handler) === 'function') {
+          result = handler.call(view, evt);
         }
       });
 
-      evt.stopPropagation();
       return result;
     });
   },
@@ -114,7 +115,7 @@ SC.EventDispatcher = SC.Object.extend(
   /** @private */
   destroy: function() {
     var rootElement = get(this, 'rootElement');
-
-    SC.$(rootElement).undelegate('.sproutcore');
+    SC.$(rootElement).undelegate('.sproutcore').removeClass('sc-application');
+    return this._super();
   }
 });

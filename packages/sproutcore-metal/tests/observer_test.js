@@ -139,7 +139,33 @@ testBoth('addObserver should respect targets with methods', function(get,set){
   set(observed, 'foo', 'BAZ');
   equals(target1.count, 1, 'target1 observer should have fired');
   equals(target2.count, 1, 'target2 observer should have fired');
-  
+
+});
+
+testBoth('addObserver should allow multiple objects to observe a property', function(get, set) { var observed = { foo: 'foo' };
+
+  var target1 = {
+    count: 0,
+
+    didChange: function(obj, keyName, value) {
+      this.count++;
+    }
+  };
+
+  var target2 = {
+    count: 0,
+
+    didChange: function(obj, keyName, value) {
+      this.count++;
+    }
+  };
+
+  SC.addObserver(observed, 'foo', target1, 'didChange');
+  SC.addObserver(observed, 'foo', target2, 'didChange');
+
+  set(observed, 'foo', 'BAZ');
+  equals(target1.count, 1, 'target1 observer should have fired');
+  equals(target2.count, 1, 'target2 observer should have fired');
 });
 
 // ..........................................................
@@ -159,6 +185,33 @@ testBoth('removing observer should stop firing', function(get,set) {
   equals(count, 1, 'should have invoked observer');
   
   SC.removeObserver(obj, 'foo', F);
+});
+
+testBoth('local observers can be removed', function(get, set) {
+  var barObserved = 0;
+
+  var MyMixin = SC.Mixin.create({
+    foo1: SC.observer(function() {
+      barObserved++;
+    }, 'bar'),
+
+    foo2: SC.observer(function() {
+      barObserved++;
+    }, 'bar')
+  });
+
+  var obj = {};
+  MyMixin.apply(obj);
+
+  set(obj, 'bar', 'HI!');
+  equals(barObserved, 2, 'precond - observers should be fired');
+
+  SC.removeObserver(obj, 'bar', null, 'foo1');
+
+  barObserved = 0;
+  set(obj, 'bar', 'HI AGAIN!');
+
+  equals(barObserved, 1, 'removed observers should not be called');
 });
 
 testBoth('removeObserver should respect targets with methods', function(get,set){
@@ -497,5 +550,3 @@ testBoth('setting computed prop with same value should not trigger', function(ge
   set(obj, 'foo', 'baz');
   equals(count, 2, 'should not trigger observer again');
 });
-
-

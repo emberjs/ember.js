@@ -169,3 +169,12 @@ test('inherited bindings should only sync on instances', function() {
   equals(SC.get(inst, 'foo'), 'BAR', 'should sync binding on inst');
   
 });
+
+test("created objects should not share a guid with their superclass", function() {
+  ok(SC.guidFor(SC.Object), "SC.Object has a guid");
+
+  var objA = SC.Object.create(),
+      objB = SC.Object.create();
+
+  ok(SC.guidFor(objA) !== SC.guidFor(objB), "two instances do not share a guid");
+});

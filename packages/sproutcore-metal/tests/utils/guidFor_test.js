@@ -30,6 +30,22 @@ test("Object", function() {
   nanGuid( a );
 });
 
+test("Object with prototype", function() {
+  var Class = function() { };
+
+  SC.guidFor(Class.prototype);
+
+  var a = new Class();
+  var b = new Class();
+
+  sameGuid( a, b , "without calling rewatch, objects copy the guid from their prototype");
+
+  SC.rewatch(a);
+  SC.rewatch(b);
+
+  diffGuid( a, b, "after calling rewatch, objects don't share guids" );
+});
+
 test("strings", function() {
   var a = "string A", aprime = "string A", b = "String B";
 

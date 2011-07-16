@@ -12,7 +12,6 @@ var set = SC.set, get = SC.get;
 module("SC.EventDispatcher", {
   setup: function() {
     application = SC.Application.create();
-    application.ready();
   },
 
   teardown: function() {
@@ -27,7 +26,7 @@ test("should dispatch events to views", function() {
   var childKeyDownCalled = 0;
   var parentKeyDownCalled = 0;
 
-  view = SC.View.create({
+  view = SC.ContainerView.create({
     childViews: ['child'],
 
     child: SC.View.extend({
@@ -44,6 +43,7 @@ test("should dispatch events to views", function() {
 
     render: function(buffer) {
       buffer.push('some <span id="awesome">awesome</span> content');
+      this._super(buffer);
     },
 
     mouseDown: function(evt) {
@@ -99,5 +99,27 @@ test("should send change events up view hierarchy if view contains form elements
   SC.$('#is-done').trigger('change');
   ok(receivedEvent, "calls change method when a child element is changed");
   equals(receivedEvent.target, SC.$('#is-done')[0], "target property is the element that was clicked");
+});
+
+test("should not interfere with event propagation", function() {
+  var receivedEvent;
+  view = SC.View.create({
+    render: function(buffer) {
+      buffer.push('<div id="propagate-test-div"></div>')
+    }
+  });
+
+  SC.run(function() {
+    view.append();
+  });
+
+  SC.$(window).bind('click', function(evt) {
+    receivedEvent = evt;
+  });
+
+  SC.$('#propagate-test-div').click();
+
+  ok(receivedEvent, "allowed event to propagate outside SC")
+  same(receivedEvent.target, SC.$('#propagate-test-div')[0], "target property is the element that was clicked");
 });
 
