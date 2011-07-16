@@ -6,8 +6,6 @@
 // ==========================================================================
 // @global SC
 
-require('sproutcore-runtime');
-
 var get = SC.get, set = SC.set;
 
 /**

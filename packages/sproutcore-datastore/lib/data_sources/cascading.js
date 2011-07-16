@@ -5,7 +5,6 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
-require('sproutcore-runtime');
 require('sproutcore-datastore/data_sources/data_source');
 
 var get = SC.get, set = SC.set;

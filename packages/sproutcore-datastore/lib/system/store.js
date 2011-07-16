@@ -7,7 +7,6 @@
 /*globals sc_assert */
 
 require('sproutcore-datastore/system/record');
-require('sproutcore-datastore/system/nested_store');
 require('sproutcore-datastore/system/query');
 require('sproutcore-datastore/system/record_array');
 

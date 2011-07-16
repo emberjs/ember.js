@@ -6,7 +6,6 @@
 
 require('sproutcore-runtime/license');
 
-require('sproutcore-metal');
 require('sproutcore-runtime/core');
 require('sproutcore-runtime/ext');
 require('sproutcore-runtime/mixins');

@@ -7,8 +7,6 @@
 
 var get = SC.get, set = SC.set, getPath = SC.getPath;
 
-require('sproutcore-views/views/view');
-
 /**
   @ignore
   @private

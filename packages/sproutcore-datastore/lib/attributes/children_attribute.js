@@ -5,7 +5,6 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
-require('sproutcore-runtime');
 require('sproutcore-datastore/system/record');
 require('sproutcore-datastore/attributes/record_attribute');
 require('sproutcore-datastore/attributes/child_attribute');

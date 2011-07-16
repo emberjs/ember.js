@@ -6,7 +6,6 @@
 /*globals Handlebars sc_assert */
 
 // TODO: Don't require all of this module
-require('sproutcore-handlebars');
 require('sproutcore-handlebars/helpers/view');
 
 var get = SC.get;

@@ -5,9 +5,6 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
-require("sproutcore-runtime");
-if ('undefined' === typeof jQuery) require('jquery');
-
 SC.$ = jQuery;
 
 require("sproutcore-views/system");

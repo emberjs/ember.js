@@ -5,7 +5,6 @@
 // ==========================================================================
 
 require("sproutcore-handlebars/ext");
-require("sproutcore-views/views/view");
 /** @class */
 
 var get = SC.get, set = SC.set;
