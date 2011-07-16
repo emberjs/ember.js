@@ -7,8 +7,8 @@
   "version": "2.0.beta.2.pre",
   "dependencies": {
     "handlebars": "~> 1.0.0.beta.2",
-    "sproutcore-views": "2.0",
-    "sproutcore-runtime": "2.0"
+    "sproutcore-views": ">= 2.0.beta.2.pre",
+    "sproutcore-runtime": ">= 2.0.beta.2.pre"
   },
   "directories": {
     "lib"       : "./lib",
