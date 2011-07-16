@@ -26,6 +26,12 @@ def strip_require(file)
   result
 end
 
+def strip_sc_assert(file)
+  result = File.read(file)
+  result.gsub!(%r{^(\s)+sc_assert\((.*)\).*$}, "")
+  result
+end
+
 def uglify(file)
   uglified = Uglifier.compile(File.read(file))
   "#{LICENSE}\n#{uglified}"
@@ -91,9 +97,15 @@ end
 file "dist/sproutcore.min.js" => "dist/sproutcore.js" do
   puts "Generating sproutcore.min.js"
 
-  File.open("dist/sproutcore.min.js", "w") do |file|
-    file.puts uglify("dist/sproutcore.js")
+  File.open("dist/sproutcore.prod.js", "w") do |file|
+    file.puts strip_sc_assert("dist/sproutcore.js")
   end
+
+  File.open("dist/sproutcore.min.js", "w") do |file|
+    file.puts uglify("dist/sproutcore.prod.js")
+  end
+
+  rm "dist/sproutcore.prod.js"
 end
 
 # Minify dist/sproutcore-datastore.js to dist/sproutcore-datastore.min.js
