@@ -7,13 +7,29 @@
 var get = SC.get;
 var set = SC.set;
 
+/** 
+  @class
+  
+  Extends SC.View by making the init method gesture-aware.
+
+  @extends SC.Object
+*/
 SC.View.reopen(
 /** @scope SC.View.prototype */{
 
-  gestures: null,
-
+  /**
+    The SC.GestureManager instance which will manager the gestures of the view.    
+    This object is automatically created and set at init-time.
+  
+    @default null
+    @type Array
+  */
   eventManager: null,
 
+  /**
+    Inspects the properties on the view instance and create gestures if they're 
+    used.
+  */
   init: function() {
     this._super();
 

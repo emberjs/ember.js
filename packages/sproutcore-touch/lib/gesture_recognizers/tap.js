@@ -7,6 +7,11 @@
 var get = SC.get;
 var set = SC.set;
 
+/** 
+  @class
+  
+  @extends SC.Gesture
+*/
 SC.TapGestureRecognizer = SC.Gesture.extend({
 
   numberOfTouches: 1,

@@ -24,17 +24,9 @@ SC.PanGestureRecognizer = SC.Gesture.extend({
     this._totalTranslation = {x:0,y:0};
   },
 
-  _centerPointForTouches: function(first, second) {
-    var location = {x: null, y: null};
-
-    location.x = Math.round(((first.pageX + second.pageX) / 2)*sigFigs)/sigFigs;
-    location.y = Math.round(((first.pageY + second.pageY) / 2)*sigFigs)/sigFigs;
-
-    return location;
-  },
 
   _logPoint: function(pre, point) {
-      console.log(pre+' ('+point.x+','+point.y+')');
+    console.log(pre+' ('+point.x+','+point.y+')');
   },
 
   touchStart: function(evt, view, manager) {
@@ -46,7 +38,7 @@ SC.PanGestureRecognizer = SC.Gesture.extend({
     }
     else {
       this.state = SC.Gesture.POSSIBLE;
-      this._initialLocation = this._centerPointForTouches(touches[0],touches[1]);
+      this._initialLocation = this.centerPointForTouches(touches[0],touches[1]);
     }
     
     manager.redispatchEventToView(view,'touchstart');
@@ -58,7 +50,7 @@ SC.PanGestureRecognizer = SC.Gesture.extend({
 
     var initial = this._initialLocation;
 
-    var current = this._centerPointForTouches(touches[0],touches[1]);
+    var current = this.centerPointForTouches(touches[0],touches[1]);
 
     current.x -= initial.x; 
     current.y -= initial.y; 
@@ -100,13 +92,8 @@ SC.PanGestureRecognizer = SC.Gesture.extend({
     }
 
     if (this._accumulated) {
-
       this._totalTranslation.x = this._accumulated.x;
       this._totalTranslation.y = this._accumulated.y;
-
-      //this._accumulated.x = 0;
-      //this._accumulated.y = 0;
-
     }
 
     this.state = SC.Gesture.ENDED;
