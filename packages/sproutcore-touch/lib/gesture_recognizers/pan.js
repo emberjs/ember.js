@@ -102,9 +102,8 @@ SC.PanGestureRecognizer = SC.Gesture.extend({
 
   touchEnd: function(evt, view, manager) {
     var touches = evt.originalEvent.targetTouches;
-    window.poop = this;
 
-    if(touches.length !== 0) {
+    if(touches.length !== 0 || this.state === SC.Gesture.ENDED) {
       manager.redispatchEventToView(view,'touchend');
       return;
     }
@@ -115,11 +114,17 @@ SC.PanGestureRecognizer = SC.Gesture.extend({
     }
 
     this.state = SC.Gesture.ENDED;
+    this.notifyViewOfGestureEvent(view,'panEnd');
   },
 
   touchCancel: function(evt, view, manager) {
-    this.state = SC.Gesture.CANCELLED;
-    manager.redispatchEventToView(view,'touchcancel');
+    if (this.state !== SC.Gesture.CANCELLED) {
+      this.state = SC.Gesture.CANCELLED;
+      this.notifyViewOfGestureEvent(view,'panCancel');
+    }
+    else {
+      manager.redispatchEventToView(view,'touchcancel');
+    }
   }
 });
 

@@ -95,14 +95,23 @@ SC.PinchGestureRecognizer = SC.Gesture.extend({
   },
 
   touchEnd: function(evt, view, manager) {
-    this.state = SC.Gesture.ENDED;
-    manager.redispatchEventToView(view,'touchend');
+    if (this.state !== SC.Gesture.ENDED) {
+      this.state = SC.Gesture.ENDED;
+      this.notifyViewOfGestureEvent(view,'pinchEnd');
+    }
+    else {
+      manager.redispatchEventToView(view,'touchmove');
+    }
   },
 
   touchCancel: function(evt, view, manager) {
-    this.state = SC.Gesture.CANCELLED;
-
-    manager.redispatchEventToView(view,'touchcancel');
+    if (this.state !== SC.Gesture.CANCELLED) {
+      this.state = SC.Gesture.CANCELLED;
+      this.notifyViewOfGestureEvent(view,'pinchCancel');
+    }
+    else {
+      manager.redispatchEventToView(view,'touchcancel');
+    }
   }
 });
 
