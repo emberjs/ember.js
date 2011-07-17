@@ -10,8 +10,21 @@ var set = SC.set;
 /** 
   @class
 
-  Implements a multi-touch tap gesture.
-  
+  Recognizes a multi-touch tap gesture. Tap gestures allow for a certain amount
+  of wiggle-room between a start and end of a touch. Taps are discrete gestures
+  so only tapStart() and tapEnd() will get fired on a view.
+
+    var myview = SC.View.create({
+      elementId: 'gestureTest',
+      tapStart: function(recognizer) {
+        $('#gestureTest').css('background','green');
+      },
+   
+      tapEnd: function(recognizer) {
+        $('#gestureTest').css('background','yellow');
+      }
+    })
+
   @extends SC.Gesture
 */
 SC.TapGestureRecognizer = SC.Gesture.extend({

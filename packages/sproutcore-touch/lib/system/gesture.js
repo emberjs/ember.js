@@ -15,8 +15,61 @@ var sigFigs = 100;
   Base class for all gesture recognizers. Provides some utility methods and
   some required methods all gesture recognizers are expected to implement.
 
+  Overview
+  =========
+
   Gestures coalesce multiple touch events to a single higher-level gesture 
-  event.
+  event. For example, a tap gesture recognizer takes information about a 
+  touchstart event, a few touchmove events, and a touchend event and uses
+  some heuristics to decide whether or not that sequence of events qualifies
+  as an event. If it does, then it will notify the view of the higher-level
+  tap events.
+
+  Gesture events follow the format: 
+  
+    * [GESTURE_NAME]Start - Sent when a gesture has gathered enough information
+        to begin tracking the gesture
+
+    * [GESTURE_NAME]Change - Sent when a gesture has already started and has
+        received touchmove events that cause its state to change
+
+    * [GESTURE_NAME]End - Sent when a touchend event is received and the gesture
+        recognizer decides that the gesture is finished.
+
+    * [GESTURE_NAME]Cancel - Sent when a touchcancel event is received.
+
+  There are two types of gesturess: Discrete and Continuous gestures. In contrast
+  to continuous gestures, discrete gestures don't have any change events. Rather,
+  the start and end events are the only one that gets sent.
+
+  Usage
+  =======
+
+  While you wouldn't use SC.Gesture directly, all its subclasses have the same
+  API. For example, to implement pinch on a view, you implement pinchChange and
+  optionally pinchStart and pinchEnd.
+
+    var myView = SC.View.create({
+      pinchStart: function(recognizer) {
+        this.$().css('background','red');
+      },
+      
+      pinchChange: function(recognizer, scale) {
+        this.$().css('-webkit-transform','scale3d('+scale+','+scale+',1)');
+      },
+
+      pinchEnd: function(recognizer) {
+        this.$().css('background','blue');
+      },
+
+      pinchCancel: function(recognizer) {
+        this.$().css('background','blue');
+      }
+    });
+
+  pinchStart(), pinchEnd() and pinchCancel() will only get called once per
+  gesture, but pinchChange() will get called repeatedly called every time
+  one of the touches moves.
 
   @extends SC.Object
 */

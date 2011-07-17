@@ -11,9 +11,19 @@ var sigFigs = 100;
 
 /** 
   @class
-  
-  Base class for all gesture recognizers. Provides some utility methods and
-  some required methods all gesture recognizers are expected to implement.
+ 
+  Recognizes a multi-touch pinch gesture. Pinch gestures require two fingers
+  to move closer to each other or further apart.
+
+  For pinchChange events, the pinch gesture recognizer passes in a scale value
+  which can be applied as a CSS transform directly.  
+
+    var myview = SC.View.create({
+      elementId: 'gestureTest',
+      pinchChange: function(recognizer, scale) {
+        this.$().css('-webkit-transform','scale3d('+scale+','+scale+',1)');
+      }
+    })
 
   @extends SC.Gesture
 */
@@ -60,8 +70,6 @@ SC.PinchGestureRecognizer = SC.Gesture.extend({
     if(touches.length !== get(this, 'numberOfTouches')) { return; }
 
     var currentDistanceBetweenTouches = this.distance(touches[0],touches[1]) 
-
-    if(window.billy) debugger
 
     var nominator = currentDistanceBetweenTouches;
     var denominator = this._startingDistanceBetweenTouches;

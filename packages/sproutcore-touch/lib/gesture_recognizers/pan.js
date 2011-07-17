@@ -11,8 +11,20 @@ var x = 0;
 /** 
   @class
   
-  Base class for all gesture recognizers. Provides some utility methods and
-  some required methods all gesture recognizers are expected to implement.
+  Recognizes a multi-touch pan gesture. Pan gestures require a specified number
+  of fingers to move and will record and update the center point between the 
+  touches.
+
+  For pahChange events, the pan gesture recognizer passes in a translation value
+  which can be applied as a CSS transform directly. Translation values are hashes
+  which contain an x and a y value.  
+
+    var myview = SC.View.create({
+      elementId: 'gestureTest',
+      panChange: function(recognizer, translation) {
+        this.$().css('-webkit-transform','translate3d('+translate.x+'px,'+translate.y+'px,0)');
+      }
+    })
 
   @extends SC.Gesture
 */
