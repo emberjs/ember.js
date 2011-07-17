@@ -10,10 +10,33 @@ var get = SC.get;
 module("SC.Gestures");
 
 test("register new gestures", function() {
-
   var myGesture = SC.Gesture.create({
     isMyGesture: true
   });
 
+  SC.Gestures.register('myGesture',myGesture);
+
+  var newGestures = SC.Gestures.knownGestures();
+
+  equals(newGestures['myGesture'],myGesture, "registered gesture is added");
+});
+
+
+test("register new gestures", function() {
+  var myGesture = SC.Gesture.create({
+    isMyGesture: true
+  });
+
+  SC.Gestures.register('myNewGesture',myGesture);
+
+  var caught = false;
+
+  try {
+    SC.Gestures.register('myNewGesture',myGesture);
+  } catch (e) {
+    caught = true;
+  }
+
+  ok(caught);
 });
 
