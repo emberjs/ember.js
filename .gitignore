@@ -1,6 +1,5 @@
-.spade
-spade-boot.js
-*.spd
+.bpm
+*.bpkg
 Gemfile.lock
 spade-boot.js
 docs/jsdoc
@@ -11,3 +10,4 @@ test_*.html
 tmp
 dist
 .DS_Store
+assets

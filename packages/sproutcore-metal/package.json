@@ -5,5 +5,26 @@
   "homepage": "http://github.com/sproutcore/sproutcore20",
   "author": "Charles Jolley",
   "version": "2.0.beta.2.pre",
-  "directories": { "lib": "lib", "tests": "tests" }
+
+  "dependencies": {
+    "spade": "~> 1.0.0"
+  },
+  
+  "dependencies:development": {
+    "qunit": "~> 1.0.0"
+  },
+  
+  "bpm:build": {
+    
+    "bpm_libs.js": {
+      "directories": ["lib"],
+      "modes":        "*"
+    },
+    
+    "sproutcore-metal/bpm_tests.js": {
+      "directories": ["tests"],
+      "modes": ["debug"]
+    }
+  }
+
 }

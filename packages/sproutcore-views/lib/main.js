@@ -6,7 +6,6 @@
 // ==========================================================================
 
 require("sproutcore-runtime");
-if ('undefined' === typeof jQuery) require('jquery');
 
 SC.$ = jQuery;
 

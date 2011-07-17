@@ -6,16 +6,30 @@
   "author": "Yehuda Katz",
   "version": "2.0.beta.2.pre",
   "dependencies": {
-    "handlebars": "~> 1.0.0.beta.2",
-    "sproutcore-views": "2.0",
-    "sproutcore-runtime": "2.0"
+    "spade":              "~> 1.0.0",
+    "handlebars":         "~> 1.0.0.beta.2",
+    "sproutcore-views":   "2.0.beta.2.pre",
+    "sproutcore-runtime": "2.0.beta.2.pre"
   },
-  "directories": {
-    "lib"       : "./lib",
-    "tests"     : "./tests"
+
+  "dependencies:developer": {
+    "qunit": "1.0.0"
   },
   
-  "plugin:formats": {
+  "bpm:build": {
+    
+    "bpm_libs.js": {
+      "directories": ["lib"],
+      "modes":        "*"
+    },
+    
+    "sproutcore-handlebars/bpm_tests.js": {
+      "directories": ["tests"],
+      "modes": ["debug"]
+    }
+  },
+  
+  "bpm:formats": {
     "handlebars": "sproutcore-handlebars/handlebars-format"
   }
   
