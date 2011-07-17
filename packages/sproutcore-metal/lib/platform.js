@@ -54,6 +54,33 @@ if (!SC.platform.create) {
 */
 SC.platform.defineProperty = Object.defineProperty;
 
+// Detects a bug in Android <3.2 where you cannot redefine a property using
+// Object.defineProperty once accessors have already been set.
+var canRedefineProperties = (function() {
+  var obj = {}, defineProperty = Object.defineProperty;
+
+  defineProperty(obj, 'a', {
+    configurable: true,
+    enumerable: true,
+    get: function() { },
+    set: function() { }
+  });
+
+  defineProperty(obj, 'a', {
+    configurable: true,
+    enumerable: true,
+    writable: true,
+    value: true
+  });
+
+  return obj.a === true;
+})();
+
+// Disable using defineProperty if it exhibits the bug above.
+if (!canRedefineProperties) {
+  SC.platform.defineProperty = null;
+}
+
 // This is for Safari 5.0, which supports Object.defineProperty, but not
 // on DOM nodes.
 
