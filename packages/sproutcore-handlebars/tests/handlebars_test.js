@@ -1091,3 +1091,40 @@ test("should be able to output a property without binding", function(){
 
   equals(view.$('div').html(), "No spans here, son.");
 });
+
+module("Templates redrawing and bindings", {
+  setup: function(){
+    MyApp = SC.Object.create({});
+  },
+  teardown: function(){
+    window.MyApp = null;
+  }
+})
+test("should be able to update when bound property updates", function(){
+  MyApp.set('controller', SC.Object.create({name: 'first'}))
+  
+  var View = SC.View.extend({
+    template: SC.Handlebars.compile('<i>{{value.name}}, {{computed}}</i>'),
+    valueBinding: 'MyApp.controller',
+    computed: function(){
+      return this.getPath('value.name') + ' - computed';
+    }.property('value')
+  });
+  
+  var view = View.create();
+  view.createElement();
+  
+  SC.run.sync();
+  
+  SC.run(function(){
+    MyApp.set('controller', SC.Object.create({
+      name: 'second'
+    }))
+  })
+  
+  
+  equals(view.get('computed'), "second - computed", "view computed properties correctly update");
+  equals(view.$('i').text(), 'second, second - computed', "view rerenders when bound properties change");
+  
+})
+

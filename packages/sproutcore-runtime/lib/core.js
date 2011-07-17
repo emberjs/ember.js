@@ -243,8 +243,7 @@ function _copy(obj, deep, seen, copies) {
   // avoid cyclical loops
   if (deep && (loc=seen.indexOf(obj))>=0) return copies[loc];
   
-  sc_assert('Cannot clone an SC.Object that does not implement SC.Copyable', 
-    !(obj instanceof SC.Object) || (SC.Copyable && SC.Copyable.detect(obj)));
+  sc_assert('Cannot clone an SC.Object that does not implement SC.Copyable', !(obj instanceof SC.Object) || (SC.Copyable && SC.Copyable.detect(obj)));
 
   // IMPORTANT: this specific test will detect a native array only.  Any other
   // object will need to implement Copyable.
