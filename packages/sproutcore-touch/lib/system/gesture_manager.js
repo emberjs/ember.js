@@ -7,7 +7,7 @@
 var get = SC.get;
 var set = SC.set;
 
-/** 
+/**
   @class
 
   Manages multiplegesture recognizers that are associated with a view.
@@ -16,7 +16,7 @@ var set = SC.set;
 
   SC.GestureManager mainly acts as a composite for the multiple gesture
   recognizers associated with a view. Whenever it gets a touch event, it
-  relays it to the gestures. The other main resposibility of 
+  relays it to the gestures. The other main resposibility of
   SC.GestureManager is to handle re-dispatching of events to the view.
 
   @extends SC.Object
@@ -25,8 +25,8 @@ SC.GestureManager = SC.Object.extend({
 
   /**
     An array containing all the gesture recognizers associated with a
-    view. This is set automatically by SC.View.    
-  
+    view. This is set automatically by SC.View.
+
     @default null
     @type Array
   */
@@ -35,17 +35,17 @@ SC.GestureManager = SC.Object.extend({
   /**
     Internal hash used to keep a list of the events that need to be
     re-dispatched to the views. It's used so we don't re-dispatch
-    the same event multiple times to the same view.    
-  
+    the same event multiple times to the same view.
+
     @default null
     @type Array
   */
   _redispatchQueue: null,
 
   /**
-    Relays touchStart events to all the gesture recognizers to the 
+    Relays touchStart events to all the gesture recognizers to the
     specified view
-  
+
     @return Boolen
   */
   touchStart: function(evt, view) {
@@ -53,9 +53,9 @@ SC.GestureManager = SC.Object.extend({
   },
 
   /**
-    Relays touchMove events to all the gesture recognizers to the 
+    Relays touchMove events to all the gesture recognizers to the
     specified view
-  
+
     @return Boolen
   */
   touchMove: function(evt, view) {
@@ -63,9 +63,9 @@ SC.GestureManager = SC.Object.extend({
   },
 
   /**
-    Relays touchEnd events to all the gesture recognizers to the 
+    Relays touchEnd events to all the gesture recognizers to the
     specified view
-  
+
     @return Boolen
   */
   touchEnd: function(evt, view) {
@@ -73,19 +73,19 @@ SC.GestureManager = SC.Object.extend({
   },
 
   /**
-    Relays touchCancel events to all the gesture recognizers to the 
+    Relays touchCancel events to all the gesture recognizers to the
     specified view
-  
+
     @return Boolen
   */
   touchCancel: function(evt, view) {
-    return this._invokeEvent('touchCancelEnd',evt, view);
+    return this._invokeEvent('touchCancel',evt, view);
   },
 
   /**
     Relays an event to the gesture recognizers. Used internally
-    by the touch event listeners.    
-  
+    by the touch event listeners.
+
     @private
     @return Boolean
   */
@@ -94,7 +94,7 @@ SC.GestureManager = SC.Object.extend({
         gesture, result = true;
 
     this._redispatchQueue = {};
-        
+
     for (var i=0, l=gestures.length; i < l; i++) {
       gesture = gestures[i];
       handler = gesture[eventName];
@@ -111,7 +111,7 @@ SC.GestureManager = SC.Object.extend({
 
   /**
     Similar to _invokeEvent, but instead of invoking the event
-    to the gesture recognizers, it re-dispatches the event to the 
+    to the gesture recognizers, it re-dispatches the event to the
     view. This method is used by the gesture recognizers when they
     want to let the view respond to the original events.
   */
@@ -145,6 +145,7 @@ SC.GestureManager = SC.Object.extend({
 
       for (var i=0, l=views.length; i<l; i++) {
         var view = views[i];
+        // Trigger event so it bubbles up the hierarchy
         view.$().trigger(eventName,true);
       }
     }

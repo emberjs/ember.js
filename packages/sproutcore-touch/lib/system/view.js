@@ -34,8 +34,9 @@ SC.View.reopen(
     this._super();
 
     var knownGestures = SC.Gestures.knownGestures();
-
-    if (knownGestures) {
+    var eventManager = get(this, 'eventManager');
+    
+    if (knownGestures && !eventManager) {
       var gestures = [];
       
       for (var gesture in knownGestures) {
