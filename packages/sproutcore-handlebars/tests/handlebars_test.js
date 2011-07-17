@@ -1092,6 +1092,38 @@ test("should be able to output a property without binding", function(){
   equals(view.$('div').html(), "No spans here, son.");
 });
 
+test("should be able to choose a tagName other than span", function(){
+  var template = SC.Handlebars.compile('{{#if content.underwater tagName="abbr"}}Hold your breath.{{/if}}');
+  var content = SC.Object.create({
+      underwater: true
+  });
+
+  var view = SC.View.create({
+    template: template,
+    content: content
+  });
+
+  view.createElement();
+
+  equals(view.$('abbr').length, 1);
+});
+
+test("should still get a span by default if tagName isn't specified", function(){
+  var template = SC.Handlebars.compile('{{#if content.underwater}}Hold your breath.{{/if}}');
+  var content = SC.Object.create({
+      underwater: true
+  });
+
+  var view = SC.View.create({
+    template: template,
+    content: content
+  });
+
+  view.createElement();
+
+  equals(view.$('span').length, 1);
+});
+
 module("Templates redrawing and bindings", {
   setup: function(){
     MyApp = SC.Object.create({});
@@ -1099,7 +1131,8 @@ module("Templates redrawing and bindings", {
   teardown: function(){
     window.MyApp = null;
   }
-})
+});
+
 test("should be able to update when bound property updates", function(){
   MyApp.set('controller', SC.Object.create({name: 'first'}))
   
@@ -1126,5 +1159,5 @@ test("should be able to update when bound property updates", function(){
   equals(view.get('computed'), "second - computed", "view computed properties correctly update");
   equals(view.$('i').text(), 'second, second - computed', "view rerenders when bound properties change");
   
-})
+});
 
