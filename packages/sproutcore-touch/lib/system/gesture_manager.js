@@ -104,7 +104,7 @@ SC.GestureManager = SC.Object.extend({
       }
     };
 
-    this._redispatchIfNecessary();
+    this._flushReDispatchQueue();
 
     return result;
   },
@@ -137,7 +137,7 @@ SC.GestureManager = SC.Object.extend({
     This method is used internally by _invokeEvent. It re-dispatches
     events to the view if the gestures decided they want to.
   */
-  _redispatchIfNecessary: function() {
+  _flushReDispatchQueue: function() {
     var queue = this._redispatchQueue;
 
     for (var eventName in queue) {
