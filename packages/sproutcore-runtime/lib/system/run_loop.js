@@ -409,7 +409,7 @@ SC.run.once = function(target, method) {
     if (!onceTimers[tguid]) onceTimers[tguid] = {};
     onceTimers[tguid][mguid] = guid; // so it isn't scheduled more than once
 
-    run.schedule('timers', timer, invokeOnceTimer, guid, onceTimers);
+    run.schedule('actions', timer, invokeOnceTimer, guid, onceTimers);
   }
 
   return guid;
