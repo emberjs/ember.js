@@ -3,7 +3,7 @@
   "bpm":  "0.1.4",
 
   "dependencies": {
-    "sproutcore": "2.0.beta.2.pre"
+    "sproutcore": "2.0.beta.2.1.pre"
   },
 
   "dependencies:development": {
