@@ -5,7 +5,7 @@
 // ==========================================================================
 /*globals testBoth */
 
-require('sproutcore-metal/~tests/props_helper');
+require('sproutcore-runtime/~tests/props_helper');
 
 module('SC.Object computed property');
 
