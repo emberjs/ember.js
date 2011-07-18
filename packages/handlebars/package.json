@@ -5,7 +5,11 @@
   "homepage": "http://www.handlebarsjs.com",
   "author": "Yehuda Katz",
   "version": "1.0.0.beta.2",
-  
+
+  "directories": {
+    "lib": "lib"
+  },
+
   "dependencies:developer": {
     "qunit": "1.0.0"
   },

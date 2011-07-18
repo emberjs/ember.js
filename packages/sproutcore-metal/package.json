@@ -9,6 +9,10 @@
   "dependencies": {
     "spade": "~> 1.0.0"
   },
+
+  "directories": {
+    "lib": "lib"
+  },
   
   "dependencies:development": {
     "qunit": "~> 1.0.0"

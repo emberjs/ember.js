@@ -14,7 +14,11 @@
     "sproutcore-handlebars": "2.0.beta.2.pre",
     "sproutcore-touch":      "2.0.beta.2.pre"
   },
-  
+
+  "directories": {
+    "lib": "lib"
+  },
+
   "bpm:build": {
     "bpm_libs.js": {
       "directories": ["lib"],
