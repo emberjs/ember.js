@@ -105,14 +105,15 @@ SC.EventDispatcher = SC.Object.extend(
           result = true, manager = null;
 
       if (!handled) {
-        manager = self._findNearestEventManager(view,eventName);
+        manager = self._findNearestEventManager(view, eventName);
       }
 
       if (manager) {
         result = self._dispatchEvent(manager, evt, eventName, view);
-      }
-      else {
-        result = self._bubbleEvent(view,evt,eventName);
+      } else if (view) {
+        result = self._bubbleEvent(view, evt, eventName);
+      } else {
+        evt.stopPropagation();
       }
 
       return result;

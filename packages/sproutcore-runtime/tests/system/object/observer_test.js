@@ -116,7 +116,7 @@ testBoth('observer should not fire after being destroyed', function(get, set) {
 
   equals(get(obj, 'count'), 0, 'precond - should not invoke observer immediately');
 
-  obj.destroy();
+  SC.run(function() { obj.destroy(); });
 
   raises(function() {
     set(obj, 'bar', "BAZ");

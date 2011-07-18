@@ -395,7 +395,7 @@ SC.View = SC.Object.extend(
   $: function(sel) {
     var elem = get(this, 'element');
 
-    if (!elem) {
+    if (!elem && !get(this, 'isDestroyed')) {
       // if we don't have an element yet, someone calling this.$() is
       // trying to update an element that isn't in the DOM. Instead,
       // rerender the view to allow the render method to reflect the

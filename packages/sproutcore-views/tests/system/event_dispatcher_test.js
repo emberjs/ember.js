@@ -79,7 +79,6 @@ test("should dispatch events to views", function() {
   equals(parentKeyDownCalled, 0, "does not call keyDown on parent if child handles event");
 });
 
-
 test("should send change events up view hierarchy if view contains form elements", function() {
   var receivedEvent;
   view = SC.View.create({
@@ -99,6 +98,39 @@ test("should send change events up view hierarchy if view contains form elements
   SC.$('#is-done').trigger('change');
   ok(receivedEvent, "calls change method when a child element is changed");
   equals(receivedEvent.target, SC.$('#is-done')[0], "target property is the element that was clicked");
+});
+
+test("events should stop propagating if the view is destroyed", function() {
+  var parentViewReceived, receivedEvent;
+
+  var parentView = SC.ContainerView.create({
+    change: function(evt) {
+      parentViewReceived = true;
+    }
+  });
+
+  view = parentView.createChildView(SC.View, {
+    render: function(buffer) {
+      buffer.push('<input id="is-done" type="checkbox">');
+    },
+
+    change: function(evt) {
+      receivedEvent = true;
+      get(this, 'parentView').destroy();
+    }
+  });
+
+  SC.get(parentView, 'childViews').pushObject(view);
+
+  SC.run(function() {
+    parentView.append();
+  });
+
+  ok(SC.$('#is-done').length, "precond - view is in the DOM");
+  SC.$('#is-done').trigger('change');
+  ok(!SC.$('#is-done').length, "precond - view is not in the DOM");
+  ok(receivedEvent, "calls change method when a child element is changed");
+  ok(!parentViewReceived, "parent view does not receive the event");
 });
 
 test("should not interfere with event propagation", function() {

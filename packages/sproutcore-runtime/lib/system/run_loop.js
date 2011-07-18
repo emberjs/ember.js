@@ -206,7 +206,7 @@ SC.run.end = function() {
 
   @property {String}
 */
-SC.run.queues = ['sync', 'actions', 'timers'];
+SC.run.queues = ['sync', 'actions', 'destroy', 'timers'];
 
 /**
   Adds the passed target/method and any optional arguments to the named

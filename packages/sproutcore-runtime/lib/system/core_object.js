@@ -75,10 +75,32 @@ CoreObject.PrototypeMixin = SC.Mixin.create({
 
   isDestroyed: false,
 
+  /**
+    Destroys an object by setting the isDestroyed flag and removing its
+    metadata, which effectively destroys observers and bindings.
+
+    If you try to set a property on a destroyed object, an exception will be
+    raised.
+
+    Note that destruction is scheduled for the end of the run loop and does not
+    happen immediately.
+
+    @returns {SC.Object} receiver
+  */
   destroy: function() {
     set(this, 'isDestroyed', true);
-    this[SC.META_KEY] = null;
+    SC.run.schedule('destroy', this, this._scheduledDestroy);
     return this;
+  },
+
+  /**
+    Invoked by the run loop to actually destroy the object. This is
+    scheduled for execution by the `destroy` method.
+
+    @private
+  */
+  _scheduledDestroy: function() {
+    this[SC.META_KEY] = null;
   },
 
   bind: function(to, from) {
