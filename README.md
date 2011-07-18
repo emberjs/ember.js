@@ -101,21 +101,24 @@ therubyracer`.
 
 # How to Run Unit Tests
 
-1. Install Ruby and Rubygems. There are many resources on the web can help you to do so, one of the best ways may be [rvm](http://rvm.beginrescueend.com/). (WARNING: There is a bug in RubyGems 1.7.2, please upgrade to 1.8.5+ or downgrade.)
+1. Install Ruby 1.9.2. There are many resources on the web can help; one of the best is [rvm](http://rvm.beginrescueend.com/).
 
-2. Install Bundler via `gem install bundler`
+3. Run `gem install bpm --pre` to install bpm, the browser package
+   manager.
 
-3. Run `bundle install` to pull in Ruby dependencies.
+4. To start the development server, run `bpm preview`.
 
-4. To start the development web server, run `bpm autocompile` or `bpm
-   preview` (depending on your version of BPM).
+5. Then visit: `http://localhost:4020/assets/spade-qunit/index.html?package=PACKAGE_NAME`.  Replace `PACKAGE_NAME` with the name of the package you want to run.  For example:
 
-5. Then visit: http://localhost:4020/tests.html?package=PACKAGE_NAME.  Replace 'PACKAGE_NAME' with the name of the package you want to run.  For example:
+  * [SproutCore Runtime](http://localhost:4020/assets/spade-qunit/index.html?package=sproutcore-runtime)
+  * [SproutCore Views](http://localhost:4020/assets/spade-qunit/index.html?package=sproutcore-views)
+  * [SproutCore DataStore](http://localhost:4020/assets/spade-qunit/index.html?package=sproutcore-datastore)
+  * [SproutCore Handlebars](http://localhost:4020/assets/spade-qunit/index.html?package=sproutcore-handlebars)
 
-  * [SproutCore Runtime](http://localhost:4020/tests.html?package=sproutcore-runtime)
-  * [SproutCore Views](http://localhost:4020/tests.html?package=sproutcore-views)
-  * [SproutCore DataStore](http://localhost:4020/tests.html?package=sproutcore-datastore)
-  * [SproutCore Handlebars](http://localhost:4020/tests.html?package=sproutcore-handlebars)
+To run multiple packages, you can separate them with commas. For
+example, to run all of the unit tests together:
+
+[http://localhost:4020/assets/spade-qunit/index.html?package=sproutcore-metal,sproutcore-runtime,sproutcore-views,sproutcore-handlebars](http://localhost:4020/assets/spade-qunit/index.html?package=sproutcore-metal,sproutcore-runtime,sproutcore-views,sproutcore-handlebars)
 
 # Adding New Packages
 
