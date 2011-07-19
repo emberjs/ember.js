@@ -13,7 +13,6 @@ var numStart, numMove, numEnd, numCancel;
 
 var gesture = SC.Object.extend({
   touchStart: function(evt, view, manager) {
-    if(window.foo) debugger;
     numStart++;            
     if (view) manager.redispatchEventToView(view, 'touchstart')
   },
