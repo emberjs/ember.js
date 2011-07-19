@@ -195,7 +195,7 @@ test("event manager should be able to re-dispatch events to view", function() {
         // multiple eventManagers in a single view 
         // hierarchy would break, but it shows that 
         // re-dispatching works
-        view.$().trigger('mousedown',true);
+        view.$().trigger('mousedown',this);
       }
     }),
 
