@@ -84,7 +84,7 @@ test("empty views should be removed when content is added to the collection (reg
 
   equals(view.$('tr').length, 1, 'has one row');
 
-  window.App = undefined;
+  window.App.destroy();
 });
 
 test("if no content is passed, and no 'else' is specified, nothing is rendered", function() {
