@@ -106,7 +106,7 @@ SC.EventDispatcher = SC.Object.extend(
 
       manager = self._findNearestEventManager(view,eventName);
 
-      if (manager && triggeringManager !== manager) {
+      if (manager && manager !== triggeringManager) {
         result = self._dispatchEvent(manager, evt, eventName, view);
       } else if (view) {
         result = self._bubbleEvent(view,evt,eventName);
