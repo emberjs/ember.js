@@ -400,7 +400,7 @@ SC.View = SC.Object.extend(
       // trying to update an element that isn't in the DOM. Instead,
       // rerender the view to allow the render method to reflect the
       // changes.
-      this.rerender();
+      if (this.state === 'inBuffer') { this.rerender(); }
       return SC.$();
     } else if (sel === undefined) {
       return SC.$(elem);
@@ -1165,7 +1165,7 @@ SC.View.states = {
     rerender: function(view) {
       var viewMeta = meta(this)['SC.View'], element = get(view, 'element');
 
-      view.state = 'preRender';
+      view.invokeRecursively(function(v) { v.state = 'preRender'; })
 
       var lengthBefore = viewMeta.lengthBeforeRender,
           lengthAfter  = viewMeta.lengthAfterRender;
@@ -1182,7 +1182,7 @@ SC.View.states = {
 
       // Set element to null after the childViews.replace() call to prevent
       // a call to $() from inside _scheduleInsertion triggering a rerender.
-      set(view, 'element', null);
+      view.invokeRecursively(function(v) { set(v, 'element', null); })
 
       view._insertElementLater(function() {
         SC.$(element).replaceWith(get(this, 'element'));

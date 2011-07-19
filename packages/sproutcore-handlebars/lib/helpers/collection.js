@@ -66,7 +66,7 @@ Handlebars.registerHelper('collection', function(path, options) {
     delete options.fn;
   }
 
-  if (inverse !== Handlebars.VM.noop) {
+  if (inverse && inverse !== Handlebars.VM.noop) {
     hash.emptyView = SC.View.extend({
       template: inverse,
       tagName: itemHash.tagName
