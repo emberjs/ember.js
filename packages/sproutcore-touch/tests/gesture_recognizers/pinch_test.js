@@ -44,7 +44,7 @@ module("Pinch Test",{
     var touchEvent = new jQuery.Event();
     touchEvent.type='touchend';
     touchEvent['originalEvent'] = {
-      targetTouches: []
+      changedTouches: []
     };
     view.$().trigger(touchEvent)
     view.destroy();
@@ -80,10 +80,12 @@ test("two start events should put it in possible state", function() {
   touchEvent.type='touchstart';
   touchEvent['originalEvent'] = {
     targetTouches: [{
+      identifier: 0,
       pageX: 0,
       pageY: 10
     },
     {
+      identifier: 1,
       pageX: 10,
       pageY: 10
     }]
@@ -102,45 +104,75 @@ test("If the touches move, the scale should reflect the change", function() {
   var touchEvent = new jQuery.Event();
   touchEvent.type='touchstart';
   touchEvent['originalEvent'] = {
-    targetTouches: [
-      { pageX: 0, pageY: 10 }, 
-      { pageX: 10, pageY: 10 }
-    ]
+    targetTouches: [{
+      identifier: 0,
+      pageX: 0,
+      pageY: 10
+    },
+    {
+      identifier: 1,
+      pageX: 10,
+      pageY: 10
+    }]
   };
 
   view.$().trigger(touchEvent);
+
+  var gestures = get(get(view, 'eventManager'), 'gestures'); 
+
+  ok(gestures);
+  equals(gestures.length,1);
+  equals(get(gestures[0], 'state'),SC.Gesture.POSSIBLE, "gesture should be ended");
 
   touchEvent = new jQuery.Event();
   touchEvent.type='touchmove';
   touchEvent['originalEvent'] = {
-    targetTouches: [
-      { pageX: 5, pageY: 10 }, 
-      { pageX: 10, pageY: 10 }
-    ]
+    changedTouches: [{
+      identifier: 0,
+      pageX: 5, 
+      pageY: 10 
+    }, 
+    { 
+      identifier: 1,
+      pageX: 10, 
+      pageY: 10 
+    }]
   };
 
   view.$().trigger(touchEvent);
+
+  gestures = get(get(view, 'eventManager'), 'gestures'); 
+  equals(get(gestures[0], 'state'),SC.Gesture.BEGAN, "gesture should be began");
 
   equals(scale,0.5,'scale should be halved');
 
   touchEvent = new jQuery.Event();
   touchEvent.type='touchmove';
   touchEvent['originalEvent'] = {
-    targetTouches: [
-      { pageX: 0, pageY: 20 }, 
-      { pageX: 10, pageY: 20 }
-    ]
+    changedTouches: [{
+      identifier: 0,
+      pageX: 0, 
+      pageY: 20 
+    }, 
+    { 
+      identifier: 1,
+      pageX: 10, 
+      pageY: 20 
+    }]
   };
 
   view.$().trigger(touchEvent);
+
+  gestures = get(get(view, 'eventManager'), 'gestures'); 
+  equals(get(gestures[0], 'state'),SC.Gesture.CHANGED, "gesture should be changed");
 
   equals(scale,1,'scale should be doubled again');
 
   touchEvent = new jQuery.Event();
   touchEvent.type='touchend';
   touchEvent['originalEvent'] = {
-    targetTouches: [
-      { pageX: 10, pageY: 20 }
+    changedTouches: [
+      { identifier: 0,pageX: 10, pageY: 20 }
     ]
   };
 
@@ -149,10 +181,15 @@ test("If the touches move, the scale should reflect the change", function() {
   touchEvent = new jQuery.Event();
   touchEvent.type='touchend';
   touchEvent['originalEvent'] = {
-    targetTouches: []
+    changedTouches: [
+      { identifier: 1,pageX: 10, pageY: 20 }
+    ]
   };
 
   view.$().trigger(touchEvent);
+
+  gestures = get(get(view, 'eventManager'), 'gestures'); 
+  equals(get(gestures[0], 'state'),SC.Gesture.ENDED, "gesture should be ended");
 
   equals(numEnded,1,"pinchEnd should be called once");
 
@@ -160,8 +197,8 @@ test("If the touches move, the scale should reflect the change", function() {
   touchEvent.type='touchstart';
   touchEvent['originalEvent'] = {
     targetTouches: [
-      { pageX: 0, pageY: 10 }, 
-      { pageX: 10, pageY: 10 }
+      { identifier: 0, pageX: 0, pageY: 10 }, 
+      { identifier: 1, pageX: 10, pageY: 10 }
     ]
   };
 
@@ -170,10 +207,16 @@ test("If the touches move, the scale should reflect the change", function() {
   touchEvent = new jQuery.Event();
   touchEvent.type='touchmove';
   touchEvent['originalEvent'] = {
-    targetTouches: [
-      { pageX: 5, pageY: 10 }, 
-      { pageX: 10, pageY: 10 }
-    ]
+    changedTouches: [{
+      identifier: 0,
+      pageX: 5, 
+      pageY: 10 
+    }, 
+    { 
+      identifier: 1,
+      pageX: 10, 
+      pageY: 10 
+    }]
   };
 
   view.$().trigger(touchEvent);

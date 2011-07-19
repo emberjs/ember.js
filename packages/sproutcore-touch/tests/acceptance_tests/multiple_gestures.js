@@ -104,10 +104,12 @@ test("when 2 fingers touch inside, gesture should be in possible state", functio
   touchEvent.type='touchstart';
   touchEvent['originalEvent'] = {
     targetTouches: [{
+      identifier: 0,
       pageX: 0,
       pageY: 10
     },
     {
+      identifier: 1,
       pageX: 10,
       pageY: 10
     }]
@@ -154,10 +156,12 @@ test("when 2 fingers move closer together, gesture should be in BEGAN state", fu
   touchEvent.type='touchstart';
   touchEvent['originalEvent'] = {
     targetTouches: [{
+      identifier: 0,
       pageX: 50,
       pageY: 100
     },
     {
+      identifier: 1,
       pageX: 100,
       pageY: 100
     }]
@@ -178,11 +182,13 @@ test("when 2 fingers move closer together, gesture should be in BEGAN state", fu
   
   touchEvent.type='touchmove';
   touchEvent['originalEvent'] = {
-    targetTouches: [{
+    changedTouches: [{
+      identifier: 0,
       pageX: 0,
       pageY: 100
     },
     {
+      identifier: 1,
       pageX: 100,
       pageY: 100
     }]
@@ -200,11 +206,13 @@ test("when 2 fingers move closer together, gesture should be in BEGAN state", fu
   touchEvent = new jQuery.Event();
   touchEvent.type='touchmove';
   touchEvent['originalEvent'] = {
-    targetTouches: [{
+    changedTouches: [{
+      identifier: 0,
       pageX: 50,
       pageY: 100
     },
     {
+      identifier: 1,
       pageX: 100,
       pageY: 100
     }]
@@ -217,7 +225,21 @@ test("when 2 fingers move closer together, gesture should be in BEGAN state", fu
   // =====================================
   // End gesture
 
-  view.$().trigger('touchend')
+  touchEvent = new jQuery.Event();
+  touchEvent.type='touchend';
+  touchEvent['originalEvent'] = {
+    changedTouches: [{
+      identifier: 0,
+      pageX: 50,
+      pageY: 100
+    },
+    {
+      identifier: 1,
+      pageX: 100,
+      pageY: 100
+    }]
+  };
+  view.$().trigger(touchEvent)
 
   equals(get(gestures[0], 'state'),SC.Gesture.ENDED, "gesture should be ended");
 
@@ -230,10 +252,12 @@ test("when 2 fingers move closer together, gesture should be in BEGAN state", fu
   touchEvent.type='touchstart';
   touchEvent['originalEvent'] = {
     targetTouches: [{
+      identifier: 0,
       pageX: 50,
       pageY: 100
     },
     {
+      identifier: 1,
       pageX: 100,
       pageY: 100
     }]
@@ -243,11 +267,13 @@ test("when 2 fingers move closer together, gesture should be in BEGAN state", fu
   touchEvent = new jQuery.Event();
   touchEvent.type='touchmove';
   touchEvent['originalEvent'] = {
-    targetTouches: [{
+    changedTouches: [{
+      identifier: 0,
       pageX: 50,
       pageY: 100
     },
     {
+      identifier: 1,
       pageX: 100,
       pageY: 100
     }]
@@ -264,11 +290,13 @@ test("when 2 fingers move closer together, gesture should be in BEGAN state", fu
   touchEvent = new jQuery.Event();
   touchEvent.type='touchmove';
   touchEvent['originalEvent'] = {
-    targetTouches: [{
+    changedTouches: [{
+      identifier: 0,
       pageX: 75,
       pageY: 100
     },
     {
+      identifier: 1,
       pageX: 100,
       pageY: 100
     }]
@@ -335,7 +363,6 @@ window.shit = function () {
 
         _applyTransforms: function() {
           var string = 'translate3d('+this.translate.x+'px,'+this.translate.y+'px,0)';
-
           this.$().css('-webkit-transform',string);
         }
         
@@ -350,7 +377,6 @@ window.shit = function () {
 
       _applyTransforms: function() {
         var string = ' scale3d('+this.scale+','+this.scale+',1)';
-
         this.$().css('-webkit-transform',string);
       },
    
@@ -374,7 +400,7 @@ window.shit = function () {
       top: 100,
       left: 100,
       width: 400,
-      height: 400,
+      height: 800,
       '-webkit-tranform': 'translate3d(0,0,0)'
    });
 

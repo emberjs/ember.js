@@ -14,13 +14,13 @@ module("SC.Gesture");
 test("distance", function() {
   var distance;
 
-  distance = gesture.distance({pageX:0,pageY:0},{pageX:10,pageY:0});
+  distance = gesture.distance([{pageX:0,pageY:0},{pageX:10,pageY:0}]);
   equals(distance,10,'x distance');
 
-  distance = gesture.distance({pageX:0,pageY:0},{pageX:0,pageY:10});
+  distance = gesture.distance([{pageX:0,pageY:0},{pageX:0,pageY:10}]);
   equals(distance,10,'y distance');
 
-  distance = gesture.distance({pageX:0,pageY:0},{pageX:0,pageY:0});
+  distance = gesture.distance([{pageX:0,pageY:0},{pageX:0,pageY:0}]);
   equals(distance,0,'0 distance');
 });
 
