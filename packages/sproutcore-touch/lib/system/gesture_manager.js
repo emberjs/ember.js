@@ -115,7 +115,7 @@ SC.GestureManager = SC.Object.extend({
     view. This method is used by the gesture recognizers when they
     want to let the view respond to the original events.
   */
-  redispatchEventToView: function(view, eventName) {
+  redispatchEventToView: function(view, eventName, eventObject) {
     var queue = this._redispatchQueue;
 
     if (queue[eventName] === undefined) {
@@ -123,14 +123,21 @@ SC.GestureManager = SC.Object.extend({
     }
     else {
       var views = queue[eventName];
+
       for (var i=0, l=views.length; i<l; i++) {
-        if (view === views[i]) {
+        if (view === views[i].view) {
           return;
         }
       }
     }
 
-    queue[eventName].push(view);
+    var originalEvent = null;
+    if (eventObject && eventObject.originalEvent) originalEvent = eventObject.originalEvent;
+
+    queue[eventName].push({
+      view: view,
+      originalEvent: originalEvent
+    });
   },
 
   /**
@@ -144,9 +151,13 @@ SC.GestureManager = SC.Object.extend({
       var views = queue[eventName];
 
       for (var i=0, l=views.length; i<l; i++) {
-        var view = views[i];
+        var view = views[i].view;
+        var event = jQuery.Event(eventName);
+
+        event.originalEvent = views[i].originalEvent;
+        
         // Trigger event so it bubbles up the hierarchy
-        view.$().trigger(eventName,true);
+        view.$().trigger(event, this);
       }
     }
   }

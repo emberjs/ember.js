@@ -61,7 +61,7 @@ SC.PinchGestureRecognizer = SC.Gesture.extend({
 
     }
     
-    manager.redispatchEventToView(view,'touchstart');
+    manager.redispatchEventToView(view,'touchstart', evt);
   },
 
   touchMove: function(evt, view, manager) {
@@ -90,7 +90,7 @@ SC.PinchGestureRecognizer = SC.Gesture.extend({
       evt.preventDefault();
     }
     else {
-      manager.redispatchEventToView(view,'touchmove');
+      manager.redispatchEventToView(view,'touchmove', evt);
     }
   },
 
@@ -100,7 +100,7 @@ SC.PinchGestureRecognizer = SC.Gesture.extend({
       this.notifyViewOfGestureEvent(view,'pinchEnd');
     }
     else {
-      manager.redispatchEventToView(view,'touchmove');
+      manager.redispatchEventToView(view,'touchmove', evt);
     }
   },
 
@@ -110,7 +110,7 @@ SC.PinchGestureRecognizer = SC.Gesture.extend({
       this.notifyViewOfGestureEvent(view,'pinchCancel');
     }
     else {
-      manager.redispatchEventToView(view,'touchcancel');
+      manager.redispatchEventToView(view,'touchcancel', evt);
     }
   }
 });

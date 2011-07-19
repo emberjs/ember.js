@@ -99,19 +99,17 @@ SC.EventDispatcher = SC.Object.extend(
   setupHandler: function(rootElement, event, eventName) {
     var self = this;
 
-    rootElement.delegate('.sc-view', event + '.sproutcore', function(evt, handled) {
+    rootElement.delegate('.sc-view', event + '.sproutcore', function(evt, triggeringManager) {
 
       var view = SC.View.views[this.id],
           result = true, manager = null;
 
-      if (!handled) {
-        manager = self._findNearestEventManager(view, eventName);
-      }
+      manager = self._findNearestEventManager(view,eventName);
 
-      if (manager) {
+      if (manager && triggeringManager !== manager) {
         result = self._dispatchEvent(manager, evt, eventName, view);
       } else if (view) {
-        result = self._bubbleEvent(view, evt, eventName);
+        result = self._bubbleEvent(view,evt,eventName);
       } else {
         evt.stopPropagation();
       }

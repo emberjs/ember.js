@@ -59,7 +59,7 @@ SC.PanGestureRecognizer = SC.Gesture.extend({
       this._initialLocation = this.centerPointForTouches(touches[0],touches[1]);
     }
     
-    manager.redispatchEventToView(view,'touchstart');
+    manager.redispatchEventToView(view,'touchstart', evt);
   },
 
   touchMove: function(evt, view, manager) {
@@ -96,7 +96,7 @@ SC.PanGestureRecognizer = SC.Gesture.extend({
       evt.preventDefault();
     }
     else {
-      manager.redispatchEventToView(view,'touchmove');
+      manager.redispatchEventToView(view,'touchmove', evt);
     }
   },
 
@@ -104,7 +104,7 @@ SC.PanGestureRecognizer = SC.Gesture.extend({
     var touches = evt.originalEvent.targetTouches;
 
     if(touches.length !== 0 || this.state === SC.Gesture.ENDED) {
-      manager.redispatchEventToView(view,'touchend');
+      manager.redispatchEventToView(view,'touchend', evt);
       return;
     }
 
@@ -123,7 +123,7 @@ SC.PanGestureRecognizer = SC.Gesture.extend({
       this.notifyViewOfGestureEvent(view,'panCancel');
     }
     else {
-      manager.redispatchEventToView(view,'touchcancel');
+      manager.redispatchEventToView(view,'touchcancel', evt);
     }
   }
 });
