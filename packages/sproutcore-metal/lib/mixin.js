@@ -13,7 +13,7 @@ require('sproutcore-metal/utils');
 require('sproutcore-metal/array');
 
 var Mixin, MixinDelegate, REQUIRED, Alias;
-var classToString;
+var classToString, superClassString;
 
 var a_map = Array.prototype.map;
 var EMPTY_META = {}; // dummy for non-writable meta
@@ -395,11 +395,33 @@ function processNames(paths, root, seen) {
   paths.length = idx; // cut out last item
 }
 
+superClassString = function(mixin) {
+  var superclass = mixin.superclass;
+  if (superclass) {
+    if (superclass[NAME_KEY]) { return superclass[NAME_KEY] }
+    else { return superClassString(superclass); }
+  } else {
+    return;
+  }
+}
+
 classToString = function() {
   if (!this[NAME_KEY] && !classToString.processed) {
     classToString.processed = true;
     processNames([], window, {});
   }
+
+  if (this[NAME_KEY]) {
+    return this[NAME_KEY];
+  } else {
+    var super = superClassString(this);
+    if (super) {
+      return "(subclass of " + super + ")";
+    } else {
+      return "(unknown mixin)";
+    }
+  }
+
   return this[NAME_KEY] || "(unknown mixin)";
 };
 
