@@ -100,14 +100,18 @@ SC.PinchGestureRecognizer = SC.Gesture.extend({
   },
 
   touchMove: function(evt, view, manager) {
+    if (this.state === SC.Gesture.ENDED || this.state === SC.Gesture.CANCELLED) {
+      manager.redispatchEventToView(view,'touchmove', evt);
+      return;
+    }
     var changedTouches = evt.originalEvent.changedTouches;
     var _touches = this._touches;
 
     for (var i=0, l=changedTouches.length; i<l; i++) {
       var touch = changedTouches[i];
-      if (_touches[touch.identifier] === undefined) {
-        throw new SC.Error('touchMove somehow got a changedTouch that was not being tracked');
-      }
+      //if (_touches[touch.identifier] === undefined) {
+        //throw new SC.Error('touchMove somehow got a changedTouch that was not being tracked');
+      //}
 
       _touches[touch.identifier] = touch;
     }
@@ -122,7 +126,6 @@ SC.PinchGestureRecognizer = SC.Gesture.extend({
     }
 
     var currentDistanceBetweenTouches = this.distance(touches);
-    console.log(currentDistanceBetweenTouches);
 
     var nominator = currentDistanceBetweenTouches;
     var denominator = this._startingDistanceBetweenTouches;
@@ -152,7 +155,7 @@ SC.PinchGestureRecognizer = SC.Gesture.extend({
       this.notifyViewOfGestureEvent(view,'pinchEnd');
     }
 
-    manager.redispatchEventToView(view,'touchmove', evt);
+    manager.redispatchEventToView(view,'touchend', evt);
   },
 
   touchCancel: function(evt, view, manager) {
