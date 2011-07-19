@@ -316,28 +316,40 @@ window.shit = function () {
   var app = SC.Application.create();
 
   SC.run(function(){
-    var myview = SC.View.create({
+    var myview = SC.ContainerView.create({
       elementId: 'gestureTest',
+      childViews: ['nestedView'],
+
+      nestedView: SC.View.extend({ 
+        elementId: 'nestedView',
+
+        translate: {
+          x: 0,
+          y: 0
+        },
+
+        panChange: function(recognizer, translation) {
+          this.translate = translation;
+          this._applyTransforms();
+        },
+
+        _applyTransforms: function() {
+          var string = 'translate3d('+this.translate.x+'px,'+this.translate.y+'px,0)';
+
+          this.$().css('-webkit-transform',string);
+        }
+        
+      }),
 
       scale: 1,
-      translate: {
-        x: 0,
-        y: 0
-      },
 
       pinchChange: function(recognizer, scale) {
         this.scale = scale;
         this._applyTransforms();
       },
 
-      panChange: function(recognizer, translation) {
-        this.translate = translation;
-        this._applyTransforms();
-      },
-
       _applyTransforms: function() {
-        var string = 'translate3d('+this.translate.x+'px,'+this.translate.y+'px,0)';
-            string += ' scale3d('+this.scale+','+this.scale+',1)';
+        var string = ' scale3d('+this.scale+','+this.scale+',1)';
 
         this.$().css('-webkit-transform',string);
       },
@@ -363,6 +375,16 @@ window.shit = function () {
       left: 100,
       width: 400,
       height: 400,
+      '-webkit-tranform': 'translate3d(0,0,0)'
+   });
+
+   $('#nestedView').css({
+      background: 'blue',
+      position: 'absolute',
+      top: 100,
+      left: 100,
+      width: 200,
+      height: 200,
       '-webkit-tranform': 'translate3d(0,0,0)'
    });
 };
