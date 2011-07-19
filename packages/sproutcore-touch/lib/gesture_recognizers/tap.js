@@ -57,7 +57,7 @@ SC.TapGestureRecognizer = SC.Gesture.extend({
       return;
     }
 
-    var distance = this.distance(this.startLocation,touches[0]);
+    var distance = this.distance([this.startLocation,touches[0]]);
 
     if (this.state === SC.Gesture.POSSIBLE && distance <= this._moveThreshold) {
       this.state = SC.Gesture.ENDED;

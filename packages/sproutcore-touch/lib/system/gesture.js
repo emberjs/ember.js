@@ -89,8 +89,14 @@ SC.Gesture = SC.Object.extend(
   
     @return Number
   */
-  distance: function(first, second) {
+  distance: function(touches) {
 
+    if (touches.length !== 2) {
+      throw new SC.Error('trying to get the distance between more than two points is not defined');
+    }
+
+    var first = touches[0];
+    var second = touches[1];
     var x = first.pageX;
     var y = first.pageY;
     var x0 = second.pageX;
