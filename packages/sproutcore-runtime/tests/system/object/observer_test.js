@@ -118,9 +118,13 @@ testBoth('observer should not fire after being destroyed', function(get, set) {
 
   SC.run(function() { obj.destroy(); });
 
-  raises(function() {
+  if (SC.platform.hasPropertyAccessors) {
+    raises(function() {
+      set(obj, 'bar', "BAZ");
+    }, Error, "raises error when setting a property");
+  } else {
     set(obj, 'bar', "BAZ");
-  });
+  }
 
   equals(get(obj, 'count'), 0, 'should not invoke observer after change');
 });

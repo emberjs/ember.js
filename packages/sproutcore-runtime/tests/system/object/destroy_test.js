@@ -21,16 +21,18 @@ test("should schedule objects to be destroyed at the end of the run loop", funct
 });
 
 test("should raise an exception when modifying watched properties on a destroyed object", function() {
-  var obj = SC.Object.create({
-    foo: "bar",
-    fooDidChange: SC.observer(function() { }, 'foo')
-  });
+  if (SC.platform.hasAccessors) {
+    var obj = SC.Object.create({
+      foo: "bar",
+      fooDidChange: SC.observer(function() { }, 'foo')
+    });
 
-  SC.run(function() {
-    obj.destroy();
-  });
+    SC.run(function() {
+      obj.destroy();
+    });
 
-  raises(function() {
-    SC.set(obj, 'foo', 'baz');
-  }, Error, "raises an exception");
+    raises(function() {
+      SC.set(obj, 'foo', 'baz');
+    }, Error, "raises an exception");
+  }
 });
