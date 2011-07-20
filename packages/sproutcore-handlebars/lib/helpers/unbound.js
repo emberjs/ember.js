@@ -10,15 +10,15 @@ require('sproutcore-handlebars/ext');
 var get = SC.get, getPath = SC.getPath;
 
 /**
-  `raw` allows you to output a property without binding. *Important:* The 
+  `unbound` allows you to output a property without binding. *Important:* The 
   output will not be updated if the property changes. Use with caution.
 
-      <div>{{raw somePropertyThatDoesntChange}}</div>
+      <div>{{unbound somePropertyThatDoesntChange}}</div>
 
-  @name Handlebars.helpers.raw
+  @name Handlebars.helpers.unbound
   @param {String} property
   @returns {String} HTML string
 */
-Handlebars.registerHelper('raw', function(property) {
+Handlebars.registerHelper('unbound', function(property) {
   return getPath(this, property);
 });
