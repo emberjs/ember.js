@@ -1077,9 +1077,9 @@ test("should be able to add multiple classes using {{bindAttr class}}", function
 });
 
 test("should be able to output a property without binding", function(){
-  var template = SC.Handlebars.compile('<div>{{raw content.aRawString}}</div>');
+  var template = SC.Handlebars.compile('<div>{{unbound content.anUnboundString}}</div>');
   var content = SC.Object.create({
-    aRawString: "No spans here, son."
+    anUnboundString: "No spans here, son."
   });
 
   var view = SC.View.create({
