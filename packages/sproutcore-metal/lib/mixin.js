@@ -414,9 +414,9 @@ classToString = function() {
   if (this[NAME_KEY]) {
     return this[NAME_KEY];
   } else {
-    var super = superClassString(this);
-    if (super) {
-      return "(subclass of " + super + ")";
+    var str = superClassString(this);
+    if (str) {
+      return "(subclass of " + str + ")";
     } else {
       return "(unknown mixin)";
     }
