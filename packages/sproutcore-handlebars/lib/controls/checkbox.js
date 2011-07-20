@@ -24,7 +24,7 @@ SC.Checkbox = SC.View.extend({
 
   change: function() {
     SC.run.once(this, this._updateElementValue);
-    // returning false here causes problems in IE
+    // returning false will cause IE to not change checkbox state
   },
 
   _updateElementValue: function() {
