@@ -70,13 +70,13 @@ test("value property mirrors input value", function() {
 
 test("checking the checkbox updates the value", function() {
   checkboxView = SC.Checkbox.create({ value: true });
-  SC.run(function() { checkboxView.append(); });
+  SC.run(function() { checkboxView.appendTo('#qunit-fixture'); });
 
   equals(get(checkboxView, 'value'), true, "precond - initially starts with a true value");
   equals(checkboxView.$('input').prop('checked'), true, "precond - the initial checked property is true");
 
   // click will trigger change event. can't call change event directly because that won't modify the checkbox's value.
-  checkboxView.$('input').click();
+  checkboxView.$('input')[0].click();
 
   equals(checkboxView.$('input').prop('checked'), false, "after clicking a checkbox, the checked property changed");
   equals(get(checkboxView, 'value'), false, "changing the checkbox causes the view's value to get updated");
