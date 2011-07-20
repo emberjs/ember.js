@@ -401,20 +401,7 @@ SC.View = SC.Object.extend(
     @returns {SC.CoreQuery} the CoreQuery object for the DOM node
   */
   $: function(sel) {
-    var elem = get(this, 'element');
-
-    if (!elem && !get(this, 'isDestroyed')) {
-      // if we don't have an element yet, someone calling this.$() is
-      // trying to update an element that isn't in the DOM. Instead,
-      // rerender the view to allow the render method to reflect the
-      // changes.
-      if (this.state === 'inBuffer') { this.rerender(); }
-      return SC.$();
-    } else if (sel === undefined) {
-      return SC.$(elem);
-    } else {
-      return SC.$(sel, elem);
-    }
+    return this.invokeForState('$', sel);
   },
 
   /** @private */
@@ -1074,6 +1061,10 @@ SC.View.states = {
     // appendChild is only legal while rendering the buffer.
     appendChild: function() {
       throw "You can't use appendChild outside of the rendering process";
+    },
+
+    $: function() {
+      return SC.$();
     }
   },
 
@@ -1111,6 +1102,15 @@ SC.View.states = {
 
   // inside the buffer, legal manipulations are done on the buffer
   inBuffer: {
+    $: function(view, sel) {
+      // if we don't have an element yet, someone calling this.$() is
+      // trying to update an element that isn't in the DOM. Instead,
+      // rerender the view to allow the render method to reflect the
+      // changes.
+      view.rerender();
+      return SC.$();
+    },
+
     // when a view is rendered in a buffer, rerendering it simply
     // replaces the existing buffer with a new one
     rerender: function(view) {
@@ -1162,6 +1162,11 @@ SC.View.states = {
   // once the view has been inserted into the DOM, legal manipulations
   // are done on the DOM element.
   inDOM: {
+
+    $: function(view, sel) {
+      var elem = get(view, 'element');
+      return sel ? SC.$(sel, elem) : SC.$(elem);
+    },
 
     // once the view has been inserted into the DOM, rerendering is
     // deferred to allow bindings to synchronize.
