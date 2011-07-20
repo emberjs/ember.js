@@ -374,7 +374,15 @@ SC.View = SC.Object.extend(
   element: function(key, value) {
     // If the value of element is being set, just return it. SproutCore
     // will cache it for further `get` calls.
-    if (value !== undefined) { return value; }
+    if (value !== undefined) {
+      if (value !== null) {
+        this.invokeRecursively(function(view) {
+          meta(view)['SC.View'].buffer = null;
+          view.state = 'inDOM';
+        });
+      }
+      return value;
+    }
 
     var parent = get(this, 'parentView');
     if (parent) { parent = get(parent, 'element'); }
@@ -565,11 +573,6 @@ SC.View = SC.Object.extend(
 
     var buffer = this.renderToBuffer();
     set(this, 'element', buffer.element());
-
-    this.invokeRecursively(function(view) {
-      meta(view)['SC.View'].buffer = null;
-      view.state = 'inDOM';
-    });
 
     return this;
   },
