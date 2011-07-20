@@ -22,8 +22,9 @@ SC.Checkbox = SC.View.extend({
 
   defaultTemplate: SC.Handlebars.compile('<label><input type="checkbox" {{bindAttr checked="value"}}>{{title}}</label>'),
 
-  click: function() {
+  change: function() {
     SC.run.once(this, this._updateElementValue);
+    // returning false here causes problems in IE
   },
 
   _updateElementValue: function() {
