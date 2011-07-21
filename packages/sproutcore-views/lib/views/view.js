@@ -374,7 +374,15 @@ SC.View = SC.Object.extend(
   element: function(key, value) {
     // If the value of element is being set, just return it. SproutCore
     // will cache it for further `get` calls.
-    if (value !== undefined) { return value; }
+    if (value !== undefined) {
+      if (value !== null) {
+        this.invokeRecursively(function(view) {
+          meta(view)['SC.View'].buffer = null;
+          view.state = 'inDOM';
+        });
+      }
+      return value;
+    }
 
     var parent = get(this, 'parentView');
     if (parent) { parent = get(parent, 'element'); }
@@ -393,20 +401,7 @@ SC.View = SC.Object.extend(
     @returns {SC.CoreQuery} the CoreQuery object for the DOM node
   */
   $: function(sel) {
-    var elem = get(this, 'element');
-
-    if (!elem) {
-      // if we don't have an element yet, someone calling this.$() is
-      // trying to update an element that isn't in the DOM. Instead,
-      // rerender the view to allow the render method to reflect the
-      // changes.
-      this.rerender();
-      return SC.$();
-    } else if (sel === undefined) {
-      return SC.$(elem);
-    } else {
-      return SC.$(sel, elem);
-    }
+    return this.invokeForState('$', sel);
   },
 
   /** @private */
@@ -548,7 +543,7 @@ SC.View = SC.Object.extend(
     @returns {SC.RenderBuffer}
   */
   renderBuffer: function(tagName) {
-    return SC.RenderBuffer(tagName || get(this, 'tagName'));
+    return SC.RenderBuffer(tagName || get(this, 'tagName') || 'div');
   },
 
   /**
@@ -565,11 +560,6 @@ SC.View = SC.Object.extend(
 
     var buffer = this.renderToBuffer();
     set(this, 'element', buffer.element());
-
-    this.invokeRecursively(function(view) {
-      meta(view)['SC.View'].buffer = null;
-      view.state = 'inDOM';
-    });
 
     return this;
   },
@@ -727,7 +717,7 @@ SC.View = SC.Object.extend(
     // provided buffer operation (for example, `insertAfter` will
     // insert a new buffer after the "parent buffer").
     if (parentBuffer) {
-      buffer = parentBuffer[bufferOperation](get(this, 'tagName'));
+      buffer = parentBuffer[bufferOperation](get(this, 'tagName') || 'div');
     } else {
       buffer = this.renderBuffer();
     }
@@ -785,10 +775,15 @@ SC.View = SC.Object.extend(
     an element is first created. If you change the tagName for an element, you
     must destroy and recreate the view element.
 
+    By default, the render buffer will use a `<div>` tag for views.
+
     @type String
-    @default 'div'
+    @default null
   */
-  tagName: 'div',
+
+  // We leave this null by default so we can tell the difference between
+  // the default case and a user-specified tag.
+  tagName: null,
 
   /**
     The WAI-ARIA role of the control represented by this view. For example, a
@@ -1066,6 +1061,10 @@ SC.View.states = {
     // appendChild is only legal while rendering the buffer.
     appendChild: function() {
       throw "You can't use appendChild outside of the rendering process";
+    },
+
+    $: function() {
+      return SC.$();
     }
   },
 
@@ -1103,6 +1102,15 @@ SC.View.states = {
 
   // inside the buffer, legal manipulations are done on the buffer
   inBuffer: {
+    $: function(view, sel) {
+      // if we don't have an element yet, someone calling this.$() is
+      // trying to update an element that isn't in the DOM. Instead,
+      // rerender the view to allow the render method to reflect the
+      // changes.
+      view.rerender();
+      return SC.$();
+    },
+
     // when a view is rendered in a buffer, rerendering it simply
     // replaces the existing buffer with a new one
     rerender: function(view) {
@@ -1155,13 +1163,17 @@ SC.View.states = {
   // are done on the DOM element.
   inDOM: {
 
+    $: function(view, sel) {
+      var elem = get(view, 'element');
+      return sel ? SC.$(sel, elem) : SC.$(elem);
+    },
+
     // once the view has been inserted into the DOM, rerendering is
     // deferred to allow bindings to synchronize.
     rerender: function(view) {
       var viewMeta = meta(this)['SC.View'], element = get(view, 'element');
 
-      set(view, 'element', null);
-      view.state = 'preRender';
+      view.invokeRecursively(function(v) { v.state = 'preRender'; })
 
       var lengthBefore = viewMeta.lengthBeforeRender,
           lengthAfter  = viewMeta.lengthAfterRender;
@@ -1175,6 +1187,10 @@ SC.View.states = {
         var childViews = get(view, 'childViews');
         childViews.replace(lengthBefore, lengthAfter - lengthBefore);
       }
+
+      // Set element to null after the childViews.replace() call to prevent
+      // a call to $() from inside _scheduleInsertion triggering a rerender.
+      view.invokeRecursively(function(v) { set(v, 'element', null); })
 
       view._insertElementLater(function() {
         SC.$(element).replaceWith(get(this, 'element'));

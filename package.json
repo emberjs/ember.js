@@ -1,16 +1,36 @@
 {
-  "name": "amber",
-  "description": "SproutCore 2.0 Bootstrap",
-  "summary": "SproutCore 2.0 Bootstrap",
-  "homepage": "http://github.com/sproutcore/sproutcore20",
-  "author": "Charles Jolley",
-  "version": "2.0",
+  "name": "sproutcore",
+  "bpm":  "0.1.4",
+
   "dependencies": {
-    "qunit": "1.0",
-    "sproutcore": "2.0"
+    "sproutcore": "2.0.beta.2",
+    "sproutcore-touch": "2.0.beta.2"
   },
-  "directories": {
-    "docs": "docs",
-    "generators": "generators"
+
+  "dependencies:development": {
+    "spade-qunit": "~> 1.0.0"
+  },
+
+  "bpm:build": {
+
+    "bpm_libs.js": {
+      "minifier": "uglify-js"
+    },
+
+    "jquery.js": {
+      "minifier": "uglify-js",
+      "include": ["jquery"]
+    },
+
+    "sproutcore.js": {
+      "minifier": "uglify-js",
+      "include": ["spade", "sproutcore-metal", "sproutcore-runtime", "handlebars", "sproutcore-views", "sproutcore-handlebars"]
+    },
+
+    "sproutcore-datastore.js": {
+      "minifier": "uglify-js",
+      "include": ["sproutcore-datastore", "sproutcore-indexset", "sproutcore-datetime"]
+    }
+
   }
 }

@@ -8,7 +8,7 @@
 var set = SC.set, setPath = SC.setPath;
 var view;
 
-module("SC.HandlebarsCollectionView", {
+module("sproutcore-handlebars/tests/views/collection_view_test", {
   setup: function() {
     window.TemplateTests = SC.Namespace.create();
   },
@@ -28,7 +28,7 @@ test("passing a block to the collection helper sets it as the template for examp
   });
 
   view = SC.View.create({
-    template: SC.Handlebars.compile('{{#collection "TemplateTests.CollectionTestView"}} <label></label> {{/collection}}')
+    template: SC.Handlebars.compile('{{#collection TemplateTests.CollectionTestView}} <label></label> {{/collection}}')
   });
 
   SC.run(function() {
@@ -36,6 +36,55 @@ test("passing a block to the collection helper sets it as the template for examp
   });
 
   equals(view.$('label').length, 3, 'one label element is created for each content item');
+});
+
+test("collection helper should accept relative paths", function() {
+
+  view = SC.View.create({
+    template: SC.Handlebars.compile('{{#collection collection}} <label></label> {{/collection}}'),
+    collection: SC.CollectionView.extend({
+      tagName: 'ul',
+      content: ['foo', 'bar', 'baz']
+    })
+  });
+
+  SC.run(function() {
+    view.appendTo('#qunit-fixture');
+  });
+
+  equals(view.$('label').length, 3, 'one label element is created for each content item');
+});
+
+test("empty views should be removed when content is added to the collection (regression, ht: msofaer)", function() {
+  window.App = SC.Application.create();
+
+  App.EmptyView = SC.View.extend({
+    template : SC.Handlebars.compile("<td>No Rows Yet</td>")
+  });
+
+  App.ListView = SC.CollectionView.extend({
+    emptyView: App.EmptyView
+  });
+
+  App.ListController = SC.ArrayProxy.create({
+    content : []
+  });
+
+  view = SC.View.create({
+    template: SC.Handlebars.compile('{{#collection App.ListView contentBinding="App.ListController" tagName="table"}} <td>{{content.title}}</td> {{/collection}}')
+  });
+
+  SC.run(function() {
+    view.appendTo('#qunit-fixture');
+  });
+
+  SC.run(function() {
+    App.ListController.pushObject({title : "Go Away, Placeholder Row!"})
+  });
+
+  equals(view.$('tr').length, 1, 'has one row');
+
+  window.App.destroy();
 });
 
 test("if no content is passed, and no 'else' is specified, nothing is rendered", function() {
@@ -347,3 +396,51 @@ test("should render multiple, bound nested collections (#68)", function() {
   equals(view.$('ul.inner:last > li').length, 3, "renders the second list with correct number of items");
 
 });
+
+test("should allow view objects to be swapped out without throwing an error (#78)", function() {
+  var view, dataset, secondDataset;
+
+  SC.run(function() {
+    TemplateTests.datasetController = SC.Object.create();
+
+    TemplateTests.ReportingView = SC.View.extend({
+      datasetBinding: 'TemplateTests.datasetController*dataset',
+      readyBinding: 'dataset.ready',
+      itemsBinding: 'dataset.items',
+      template: SC.Handlebars.compile("{{#if ready}}{{collection TemplateTests.CollectionView}}{{else}}Loading{{/if}}")
+    });
+
+    TemplateTests.CollectionView = SC.CollectionView.extend({
+      contentBinding: 'parentView.parentView.items',
+      tagName: 'ul',
+      template: SC.Handlebars.compile("{{content}}")
+    });
+
+    view = TemplateTests.ReportingView.create();
+  });
+
+  SC.run(function() {
+    view.appendTo('#qunit-fixture');
+  });
+
+  equals(view.$().text(), "Loading", "renders the loading text when the dataset is not ready");
+
+  SC.run(function() {
+    dataset = SC.Object.create({
+      ready: true,
+      items: [1,2,3]
+    });
+    TemplateTests.datasetController.set('dataset',dataset);
+  });
+
+  equals(view.$('ul > li').length, 3, "renders the collection with the correct number of items when the dataset is ready");
+
+  SC.run(function() {
+    secondDataset = SC.Object.create({ready: false});
+    TemplateTests.datasetController.set('dataset',secondDataset);
+  });
+
+  equals(view.$().text(), "Loading", "renders the loading text when the second dataset is not ready");
+
+});
+

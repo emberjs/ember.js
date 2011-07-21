@@ -1,9 +1,0 @@
-{
-  "name": "jquery",
-  "description": "Simple DOM iteration",
-  "summary": "Simple DOM iteration",
-  "homepage": "http://jquery.com",
-  "author": "jQuery Team",
-  "version": "1.6",
-  "directories": { "lib": "lib" }
-}

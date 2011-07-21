@@ -4,7 +4,6 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
-require("handlebars");
 require("sproutcore-runtime");
 require("sproutcore-views");
 require("sproutcore-handlebars/ext");

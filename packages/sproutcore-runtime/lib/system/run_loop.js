@@ -206,7 +206,7 @@ SC.run.end = function() {
 
   @property {String}
 */
-SC.run.queues = ['sync', 'actions', 'timers'];
+SC.run.queues = ['sync', 'actions', 'destroy', 'timers'];
 
 /**
   Adds the passed target/method and any optional arguments to the named
@@ -409,7 +409,7 @@ SC.run.once = function(target, method) {
     if (!onceTimers[tguid]) onceTimers[tguid] = {};
     onceTimers[tguid][mguid] = guid; // so it isn't scheduled more than once
 
-    run.schedule('timers', timer, invokeOnceTimer, guid, onceTimers);
+    run.schedule('actions', timer, invokeOnceTimer, guid, onceTimers);
   }
 
   return guid;

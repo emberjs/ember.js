@@ -5,7 +5,7 @@
 // ==========================================================================
 /*globals GlobalA GlobalB testBoth */
 
-require('sproutcore-metal/~tests/props_helper');
+require('sproutcore-runtime/~tests/props_helper');
 
 module('system/mixin/binding/connect_test');
 

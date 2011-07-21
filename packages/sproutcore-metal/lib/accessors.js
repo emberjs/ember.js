@@ -142,8 +142,7 @@ SC.set = set;
 // 
 
 function normalizePath(path) {
-  sc_assert('must pass non-empty string to normalizePath()', 
-    path && path!=='');
+  sc_assert('must pass non-empty string to normalizePath()', path && path!=='');
     
   if (path==='*') return path; //special case...
   var first = path.charAt(0);
@@ -338,5 +337,5 @@ SC.trySetPath = function(root, path, value) {
   }
 
   return SC.setPath(root, path, value, true);
-}
+};
 

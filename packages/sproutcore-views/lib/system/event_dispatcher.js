@@ -97,24 +97,68 @@ SC.EventDispatcher = SC.Object.extend(
     @param {String} eventName the name of the method to call on the view
   */
   setupHandler: function(rootElement, event, eventName) {
-    rootElement.delegate('.sc-view', event + '.sproutcore', function(evt) {
+    var self = this;
+
+    rootElement.delegate('.sc-view', event + '.sproutcore', function(evt, triggeringManager) {
+
       var view = SC.View.views[this.id],
-          result = true, handler;
+          result = true, manager = null;
+
+      manager = self._findNearestEventManager(view,eventName);
+
+      if (manager && manager !== triggeringManager) {
+        result = self._dispatchEvent(manager, evt, eventName, view);
+      } else if (view) {
+        result = self._bubbleEvent(view,evt,eventName);
+      } else {
+        evt.stopPropagation();
+      }
+
+      return result;
+    });
+  },
+
+  /** @private */
+  _findNearestEventManager: function(view, eventName) {
+    var manager = null;
+
+    while (view) {
+      manager = get(view, 'eventManager');
+      if (manager && manager[eventName]) { break; }
+
+      view = get(view, 'parentView');
+    }
+
+    return manager;
+  },
+
+  /** @private */
+  _dispatchEvent: function(object, evt, eventName, view) {
+    var result = true;
+
+    handler = object[eventName];
+    if (SC.typeOf(handler) === 'function') {
+      result = handler.call(object, evt, view);
+    }
+
+    evt.stopPropagation();
+
+    return result;
+  },
+
+  /** @private */
+  _bubbleEvent: function(view, evt, eventName) {
+    var result = true, handler,
+        self = this;
 
       SC.run(function() {
-        while (result !== false && view) {
-          handler = view[eventName];
-          if (SC.typeOf(handler) === 'function') {
-            result = handler.call(view, evt);
-          }
-
-          view = get(view, 'parentView');
+        handler = view[eventName];
+        if (SC.typeOf(handler) === 'function') {
+          result = handler.call(view, evt);
         }
       });
 
-      evt.stopPropagation();
-      return result;
-    });
+    return result;
   },
 
   /** @private */

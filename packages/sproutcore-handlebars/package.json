@@ -4,18 +4,36 @@
   "description": "Extensions to the Handlebars templating engine for use with SproutCore. These extensions make Handlebars aware of property observing, which allows it to automatically update the DOM when the referenced properties change. It also provides Handlebars helpers for creating SproutCore views and working with collections.",
   "homepage": "http://sproutcore.com",
   "author": "Yehuda Katz",
-  "version": "2.0.beta.1",
+  "version": "2.0.beta.2",
   "dependencies": {
-    "handlebars": "~> 1.0.0.beta.2",
-    "sproutcore-views": "2.0",
-    "sproutcore-runtime": "2.0"
+    "spade":              "~> 1.0.0",
+    "handlebars":         "~> 1.0.0.beta.2",
+    "sproutcore-views":   "2.0.beta.2",
+    "sproutcore-runtime": "2.0.beta.2"
   },
+
   "directories": {
-    "lib"       : "./lib",
-    "tests"     : "./tests"
+    "lib": "lib"
+  },
+
+  "dependencies:developer": {
+    "qunit": "1.0.0"
   },
   
-  "plugin:formats": {
+  "bpm:build": {
+    
+    "bpm_libs.js": {
+      "directories": ["lib"],
+      "modes":        "*"
+    },
+    
+    "sproutcore-handlebars/bpm_tests.js": {
+      "directories": ["tests"],
+      "modes": ["debug"]
+    }
+  },
+  
+  "bpm:formats": {
     "handlebars": "sproutcore-handlebars/handlebars-format"
   }
   

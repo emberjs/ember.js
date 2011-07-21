@@ -5,7 +5,7 @@
 // ==========================================================================
 /*globals testBoth */
 
-require('sproutcore-metal/~tests/props_helper');
+require('sproutcore-runtime/~tests/props_helper');
 
 module('SC.Object observer');
 
@@ -116,11 +116,15 @@ testBoth('observer should not fire after being destroyed', function(get, set) {
 
   equals(get(obj, 'count'), 0, 'precond - should not invoke observer immediately');
 
-  obj.destroy();
+  SC.run(function() { obj.destroy(); });
 
-  raises(function() {
+  if (SC.platform.hasPropertyAccessors) {
+    raises(function() {
+      set(obj, 'bar', "BAZ");
+    }, Error, "raises error when setting a property");
+  } else {
     set(obj, 'bar', "BAZ");
-  });
+  }
 
   equals(get(obj, 'count'), 0, 'should not invoke observer after change');
 });
