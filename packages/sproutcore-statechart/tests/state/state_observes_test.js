@@ -166,7 +166,7 @@ test("check state observe handlers when state A's testProp2.mah is changed", fun
 
   stateA.notifyPropertyChange('testProp2');
 
-  ok(!stateA.testProp2ChangedInvoked, "state A's testProp2Changed should not be invoked");
+  ok(stateA.testProp2ChangedInvoked, "state A's testProp2Changed should be invoked");
 
   stateA.get('testProp2').notifyPropertyChange('mah');
 
