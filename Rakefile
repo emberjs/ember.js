@@ -157,12 +157,12 @@ namespace :starter_kit do
     end
   end
 
-  file sproutcore_output => [:clean, "tmp/starter-kit", "tmp/sproutcore.js"] do
-    sh "cp tmp/sproutcore.js #{sproutcore_output}"
+  file sproutcore_output => [:clean, "tmp/starter-kit", "dist/sproutcore.js"] do
+    sh "cp dist/sproutcore.js #{sproutcore_output}"
   end
 
-  file sproutcore_min_output => [:clean, "tmp/starter-kit", "tmp/sproutcore.min.js"] do
-    sh "cp tmp/sproutcore.min.js #{sproutcore_min_output}"
+  file sproutcore_min_output => [:clean, "tmp/starter-kit", "dist/sproutcore.min.js"] do
+    sh "cp dist/sproutcore.min.js #{sproutcore_min_output}"
   end
 
   file "tmp/starter-kit" do
