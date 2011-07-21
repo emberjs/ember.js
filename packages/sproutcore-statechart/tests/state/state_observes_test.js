@@ -10,30 +10,30 @@ var statechart1, statechart2, TestState;
 var stateA, stateB, stateC, stateD;
 
 module("SC.Statechart: stateObserves Tests", {
-	
+
   setup: function() {
 
     Obj1 = SC.Object.create({
       foo: 'abc'
     });
-    
+
     Obj2 = SC.Object.create({
       bar: 'xyz'
     });
-    
+
     Obj3 = SC.Object.create({
       mah: 123
     });
-    
+
     TestState = SC.State.extend({
-      
+
       notifyStateObserveHandlerInvoked: function(handler, target, key) {
         this['%@Invoked'.fmt(handler)] = {
           target: target,
           key: key
         };
       }
-      
+
     });
 
     statechart1 = SC.Statechart.create({
