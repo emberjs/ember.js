@@ -4,17 +4,32 @@
   "description": "The SproutCore Statechart library",
   "homepage": "http://sproutcore.com",
   "author": "Strobe Inc., Apple, Inc., and contributors",
-  "version": "2.0.beta.2.pre",
-  "dependencies": {
-    "sproutcore-runtime": "2.0.beta.2.pre",
-    "sproutcore-preprocessor": "~> 0.0.2"
-  },
-  "plugin:preprocessors": [
-    "sproutcore-preprocessor/preprocessor"
-  ],
+  "version": "2.0.beta.2",
+  
   "directories": {
-    "lib"       : "./lib",
-    "tests"     : "./tests"
+    "lib": "lib"
+  },
+  
+  "dependencies": {
+    "spade":               "~> 1.0",
+    "sproutcore-runtime":  "2.0.beta.2"
+  },
+  
+  "dependencies:developer": {
+    "qunit": "1.0.0"
+  },
+
+  "bpm:build": {
+
+    "bpm_libs.js": {
+      "directories": ["lib"],
+      "modes":        "*"
+    },
+
+    "sproutcore-statechart/bpm_tests.js": {
+      "directories": ["tests"],
+      "modes": ["debug"]
+    }
   }
 }
 
