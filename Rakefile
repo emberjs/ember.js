@@ -129,6 +129,9 @@ task :bump_version, :version do |t, args|
 
     File.open(package, "w") { |file| file.write contents }
   end
+
+  sh %{git add VERSION **/package.json}
+  sh %{git commit -m "Bump version to #{args[:version]}"}
 end
 
 ## STARTER KIT ##
