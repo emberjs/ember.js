@@ -18,6 +18,9 @@ SC.TextArea = SC.View.extend({
   value: "",
   attributeBindings: ['placeholder'],
   placeholder: null,
+
+  insertNewline: SC.K,
+  cancel: SC.K,
   
   focusOut: function(event) {
     this._elementValueDidChange();
@@ -30,7 +33,7 @@ SC.TextArea = SC.View.extend({
   },
 
   keyUp: function(event) {
-    this._elementValueDidChange();
+    this.interpretKeyEvents(event);
     return false;
   },
 
@@ -41,6 +44,14 @@ SC.TextArea = SC.View.extend({
     this._updateElementValue();
   },
 
+  interpretKeyEvents: function(event) {
+    var map = SC.TextArea.KEY_EVENTS;
+    var method = map[event.keyCode];
+
+    if (method) { return this[method](event); }
+    else { this._elementValueDidChange(); }
+  },
+
   _elementValueDidChange: function() {
     set(this, 'value', this.$().val());
   },
@@ -49,3 +60,8 @@ SC.TextArea = SC.View.extend({
     this.$().val(get(this, 'value'));
   }.observes('value')
 });
+
+SC.TextArea.KEY_EVENTS = {
+  13: 'insertNewline',
+  27: 'cancel'
+};
