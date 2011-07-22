@@ -8,3 +8,4 @@ require('sproutcore-metal');
 require('sproutcore-views');
 require('sproutcore-handlebars');
 require('sproutcore-datastore');
+require('sproutcore-statechart');
