@@ -48,8 +48,8 @@ SC.TextArea = SC.View.extend({
     var map = SC.TextArea.KEY_EVENTS;
     var method = map[event.keyCode];
 
+    this._elementValueDidChange();
     if (method) { return this[method](event); }
-    else { this._elementValueDidChange(); }
   },
 
   _elementValueDidChange: function() {
