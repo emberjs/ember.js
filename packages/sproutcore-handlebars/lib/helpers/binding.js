@@ -32,7 +32,8 @@ var get = SC.get, getPath = SC.getPath, fmt = SC.String.fmt;
         inverseTemplate: inverse,
         property: property,
         previousContext: ctx,
-        isEscaped: options.hash.escaped
+        isEscaped: options.hash.escaped,
+	tagName: options.hash.tagName || 'span'
       });
 
       var observer, invoker;

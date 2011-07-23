@@ -391,6 +391,10 @@ SC.watch = function(obj, keyName) {
   return this;
 };
 
+SC.isWatching = function(obj, keyName) {
+  return !!meta(obj).watching[keyName];
+};
+
 SC.watch.flushPending = flushPendingChains;
 
 /** @private */

@@ -5,15 +5,33 @@
 
   "homepage": "http://sproutcore.com",
   "author": "Charles Jolley",
-  "version": "2.0.beta.1",
-
-  "dependencies": {
-    "sproutcore-metal": "2.0"
-  },
+  "version": "2.0.beta.2",
 
   "directories": {
-    "lib"       : "./lib",
-    "tests"     : "./tests"
+    "lib": "lib"
+  },
+
+  "dependencies": {
+    "spade":            "~> 1.0",
+    "sproutcore-metal": "2.0.beta.2"
+  },
+
+  "dependencies:developer": {
+    "qunit": "1.0.0"
+  },
+  
+  "bpm:build": {
+    
+    "bpm_libs.js": {
+      "directories": ["lib"],
+      "modes":        "*"
+    },
+    
+    "sproutcore-runtime/bpm_tests.js": {
+      "directories": ["tests"],
+      "modes": ["debug"]
+    }
   }
+
 }
 

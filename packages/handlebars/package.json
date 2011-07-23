@@ -5,8 +5,27 @@
   "homepage": "http://www.handlebarsjs.com",
   "author": "Yehuda Katz",
   "version": "1.0.0.beta.2",
+
   "directories": {
-    "lib"       : "./lib"
+    "lib": "lib"
+  },
+
+  "dependencies:developer": {
+    "qunit": "1.0.0"
+  },
+  
+  "bpm:build": {
+    
+    "bpm_libs.js": {
+      "directories": ["lib"],
+      "modes":        "*"
+    },
+    
+    "handlebars/bpm_tests.js": {
+      "directories": ["tests"],
+      "modes": ["debug"]
+    }
   }
+  
 }
 
