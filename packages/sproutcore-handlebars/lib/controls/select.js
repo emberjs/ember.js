@@ -46,6 +46,7 @@ SC.Select = SC.CollectionView.extend({
   },
 
   _elementValueDidChange: function() {
-    set(this, 'value', this.$().val());
+    var childView = SC.View.views[this.$('option:selected').prop('id')];
+    set(this, 'value', childView.get('content'));
   }
 });
