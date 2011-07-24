@@ -124,8 +124,8 @@ test("should allow multiple selection", function() {
   });
   
   ok(select.get('value').length == 2);
-  equals(select.get('value')[0], 'OR');
-  equals(select.get('value')[1], 'IL');
+  equals(select.get('value')[0], options[1]);
+  equals(select.get('value')[1], options[2]);
 
   select.destroy();
 });
@@ -146,7 +146,6 @@ test("selected option(s) should be updateable", function() {
     options.forEach(function(el) { el.set('selected', false); });
     options[0].set('selected', true);
     select.change();
-    options.forEach(function(el) { console.log(el.get('selected')); });
   });
 
   SC.run(function() {
@@ -154,10 +153,9 @@ test("selected option(s) should be updateable", function() {
     select.change();
   });
 
-  console.log(select.get('value'));
-    ok(select.get('value').length == 2);
-    equals(select.get('value')[0], 'CA');
-    equals(select.get('value')[1], 'OR');
+  equals(select.get('value').length, 2);
+  equals(select.get('value')[0], options[0]);
+  equals(select.get('value')[1], options[1]);
 
   //select.destroy();
 

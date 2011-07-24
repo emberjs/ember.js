@@ -47,8 +47,17 @@ SC.Select = SC.CollectionView.extend({
   },
 
   _elementValueDidChange: function() {
-    var childView = SC.View.views[this.$('option:selected').prop('id')];
-    set(this, 'value', childView.get('content'));
-    set(get(this, 'content'), 'selection', childView.get('content'));
+    var views = SC.View.views,
+        selectedOptions = this.$('option:selected'),
+        childView, value;
+
+    if (selectedOptions.length > 1) {
+      value = selectedOptions.map(function() { return get(views[this.id], 'content'); });
+    } else if (selectedOptions.length !== 0) {
+      value = get(views[selectedOptions[0].id], 'content');
+    }
+
+    set(this, 'value', value);
+    set(get(this, 'content'), 'selection', value);
   }
 });
