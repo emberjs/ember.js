@@ -28,7 +28,7 @@ Handlebars.registerHelper('log', function(property) {
 
     {{debugger}}
 
-  @name Handlebars.helpers.log
+  @name Handlebars.helpers.debugger
   @param {String} property
 */
 Handlebars.registerHelper('debugger', function() {
