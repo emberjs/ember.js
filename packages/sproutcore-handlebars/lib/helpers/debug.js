@@ -26,7 +26,7 @@ Handlebars.registerHelper('log', function(property) {
   The `debugger` helper executes the `debugger` statement in the current
   context.
 
-    {{log myVariable}}
+    {{debugger}}
 
   @name Handlebars.helpers.log
   @param {String} property
