@@ -7,7 +7,7 @@
 
 require('sproutcore-handlebars/ext');
 
-var get = SC.get, getPath = SC.getPath;
+var getPath = SC.getPath;
 
 /**
   `log` allows you to output the value of a value in the current rendering
