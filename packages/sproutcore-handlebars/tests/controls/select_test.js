@@ -55,15 +55,18 @@ test("should render options with attributeBindings", function() {
 });
 
 test("should have a default selected option", function() {
-  var select, option = [SC.Object.create({label: 'California', value: 'CA'})];
+  var select, arrayProxy, option = [SC.Object.create({label: 'California', value: 'CA'})];
+
+  arrayProxy = SC.ArrayProxy.create({content: [option]});
 
   SC.run(function() {
     select = SC.Select.create();
-    select.set('content', [option]);
+    select.set('content', arrayProxy);
     select.append();
   });
   
   equals(select.get('value'), option);
+  equals(arrayProxy.get('selection'), option);
 
   select.destroy();
 });
