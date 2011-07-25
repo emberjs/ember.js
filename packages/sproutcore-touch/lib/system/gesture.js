@@ -97,6 +97,7 @@ SC.Gesture = SC.Object.extend(
 
     var first = touches[0];
     var second = touches[1];
+
     var x = first.pageX;
     var y = first.pageY;
     var x0 = second.pageX;
@@ -110,13 +111,35 @@ SC.Gesture = SC.Object.extend(
   
     @return Number
   */
-  centerPointForTouches: function(first, second) {
-    var location = {x: null, y: null};
+  centerPointForTouches: function(touches) {
+    var sumX = sumY = 0;
 
-    location.x = Math.round(((first.pageX + second.pageX) / 2)*sigFigs)/sigFigs;
-    location.y = Math.round(((first.pageY + second.pageY) / 2)*sigFigs)/sigFigs;
+    for (var i=0, l=touches.length; i<l; i++) {
+      var touch = touches[i];
+      sumX += touch.pageX;
+      sumY += touch.pageY;
+    }
+
+    var location = {
+      x: sumX / touches.length, 
+      y: sumY / touches.length
+    };
 
     return location;
+  },
+
+  convertPointToView: function(location, view) {
+    var x = y = 0;
+    var element = view.$()[0];
+
+    if (element.offsetParent) {
+      do {
+        x += element.offsetLeft;
+        y += element.offsetTop;
+      } while (element = element.offsetParent);
+    }
+
+    return {x: location.x - x, y: location.y - y};
   },
 
   /**

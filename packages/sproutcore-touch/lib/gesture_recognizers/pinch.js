@@ -104,18 +104,14 @@ SC.PinchGestureRecognizer = SC.Gesture.extend({
       manager.redispatchEventToView(view,'touchmove', evt);
       return;
     }
+
     var changedTouches = evt.originalEvent.changedTouches;
     var _touches = this._touches;
 
     for (var i=0, l=changedTouches.length; i<l; i++) {
       var touch = changedTouches[i];
-      //if (_touches[touch.identifier] === undefined) {
-        //throw new SC.Error('touchMove somehow got a changedTouch that was not being tracked');
-      //}
-
       _touches[touch.identifier] = touch;
     }
-    
 
     var touches = [];
 
@@ -126,23 +122,23 @@ SC.PinchGestureRecognizer = SC.Gesture.extend({
     }
 
     var currentDistanceBetweenTouches = this.distance(touches);
-
     var nominator = currentDistanceBetweenTouches;
     var denominator = this._startingDistanceBetweenTouches;
-    this.scale = this._initialScale * Math.round((nominator/denominator)*sigFigs)/sigFigs;
 
+    this.scale = this._initialScale * Math.round((nominator/denominator)*sigFigs)/sigFigs;
+    this.locationInView = this.convertPointToView(this.centerPointForTouches(touches), view);
     var differenceInDistance = currentDistanceBetweenTouches - this._startingDistanceBetweenTouches;
 
     if (this.state === SC.Gesture.POSSIBLE && Math.abs(differenceInDistance) >= this._deltaThreshold) {
       this.state = SC.Gesture.BEGAN;
       this.notifyViewOfGestureEvent(view,'pinchStart', this.scale);
-
       evt.preventDefault();
+
     } else if (this.state === SC.Gesture.BEGAN || this.state === SC.Gesture.CHANGED) {
       this.state = SC.Gesture.CHANGED;
       this.notifyViewOfGestureEvent(view,'pinchChange', this.scale);
-
       evt.preventDefault();
+
     } else {
       manager.redispatchEventToView(view,'touchmove', evt);
     }

@@ -56,7 +56,7 @@ SC.PanGestureRecognizer = SC.Gesture.extend({
     }
     else {
       this.state = SC.Gesture.POSSIBLE;
-      this._initialLocation = this.centerPointForTouches(touches[0],touches[1]);
+      this._initialLocation = this.centerPointForTouches(touches);
     }
     
     manager.redispatchEventToView(view,'touchstart', evt);
@@ -68,7 +68,7 @@ SC.PanGestureRecognizer = SC.Gesture.extend({
 
     var initial = this._initialLocation;
 
-    var current = this.centerPointForTouches(touches[0],touches[1]);
+    var current = this.centerPointForTouches(touches);
 
     current.x -= initial.x; 
     current.y -= initial.y; 
