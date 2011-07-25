@@ -54,8 +54,8 @@ test("should render options with attributeBindings", function() {
   select.destroy();
 });
 
-test("should have a default selected option", function() {
-  var select, arrayProxy, option = [SC.Object.create({label: 'California', value: 'CA'})];
+test("should have a default selected option if multiple is false", function() {
+  var select, arrayProxy, option = SC.Object.create({label: 'California', value: 'CA'});
 
   arrayProxy = SC.ArrayProxy.create({content: [option]});
 
@@ -67,6 +67,23 @@ test("should have a default selected option", function() {
   
   equals(select.get('value'), option);
   equals(arrayProxy.get('selection'), option);
+
+  select.destroy();
+});
+
+test("should not have a default selected option if multiple is true", function() {
+  var select, arrayProxy, option = [SC.Object.create({label: 'California', value: 'CA'})];
+
+  arrayProxy = SC.ArrayProxy.create({content: [option]});
+
+  SC.run(function() {
+    select = SC.Select.create({multiple: true});
+    select.set('content', arrayProxy);
+    select.append();
+  });
+  
+  equals(select.get('value').length, 0);
+  equals(arrayProxy.get('selection').length, 0);
 
   select.destroy();
 });
@@ -123,7 +140,7 @@ test("should allow multiple selection", function() {
     select.append();
   });
   
-  ok(select.get('value').length == 2);
+  equals(select.get('value').length, 2);
   equals(select.get('value')[0], options[1]);
   equals(select.get('value')[1], options[2]);
 
@@ -157,6 +174,5 @@ test("selected option(s) should be updateable", function() {
   equals(select.get('value')[0], options[0]);
   equals(select.get('value')[1], options[1]);
 
-  //select.destroy();
-
+  select.destroy();
 });

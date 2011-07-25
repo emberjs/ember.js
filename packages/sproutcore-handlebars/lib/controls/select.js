@@ -51,10 +51,10 @@ SC.Select = SC.CollectionView.extend({
         selectedOptions = this.$('option:selected'),
         childView, value;
 
-    if (selectedOptions.length > 1) {
+    if (get(this, 'multiple')) {
       value = selectedOptions.map(function() { return get(views[this.id], 'content'); });
-    } else if (selectedOptions.length !== 0) {
-      value = get(views[selectedOptions[0].id], 'content');
+    } else {
+      value = get(views[selectedOptions.prop('id')], 'content');
     }
 
     set(this, 'value', value);
