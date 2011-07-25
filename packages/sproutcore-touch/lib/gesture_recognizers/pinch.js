@@ -30,7 +30,7 @@ var sigFigs = 100;
 SC.PinchGestureRecognizer = SC.Gesture.extend({
   numberOfTouches: 2,
   
-  _touches: {},
+  _touches: null,
   _numActiveTouches: 0,
 
   // Initial is global, starting is per-gesture event
@@ -100,7 +100,7 @@ SC.PinchGestureRecognizer = SC.Gesture.extend({
   },
 
   touchMove: function(evt, view, manager) {
-    if (this.state === SC.Gesture.ENDED || this.state === SC.Gesture.CANCELLED) {
+    if (this.state === SC.Gesture.WAITING_FOR_TOUCHES || this.state === SC.Gesture.ENDED || this.state === SC.Gesture.CANCELLED) {
       manager.redispatchEventToView(view,'touchmove', evt);
       return;
     }
@@ -125,19 +125,33 @@ SC.PinchGestureRecognizer = SC.Gesture.extend({
     var nominator = currentDistanceBetweenTouches;
     var denominator = this._startingDistanceBetweenTouches;
 
+    var previousScale = this.scale;
     this.scale = this._initialScale * Math.round((nominator/denominator)*sigFigs)/sigFigs;
+
+    var previousLocation = this.locationInView;
     this.locationInView = this.convertPointToView(this.centerPointForTouches(touches), view);
     var differenceInDistance = currentDistanceBetweenTouches - this._startingDistanceBetweenTouches;
 
     if (this.state === SC.Gesture.POSSIBLE && Math.abs(differenceInDistance) >= this._deltaThreshold) {
       this.state = SC.Gesture.BEGAN;
-      this.notifyViewOfGestureEvent(view,'pinchStart', this.scale);
-      evt.preventDefault();
+
+      if (this.notifyViewOfGestureEvent(view,'pinchStart', this.scale) === false) {
+        this.scale = previousScale;
+        this.locationInView = previousLocation;
+      }
+      else {
+        evt.preventDefault();
+      }
 
     } else if (this.state === SC.Gesture.BEGAN || this.state === SC.Gesture.CHANGED) {
       this.state = SC.Gesture.CHANGED;
-      this.notifyViewOfGestureEvent(view,'pinchChange', this.scale);
-      evt.preventDefault();
+      if (this.notifyViewOfGestureEvent(view,'pinchChange', this.scale) === false) {
+        this.scale = previousScale;
+        this.locationInView = previousLocation;
+      }
+      else {
+        evt.preventDefault();
+      }
 
     } else {
       manager.redispatchEventToView(view,'touchmove', evt);

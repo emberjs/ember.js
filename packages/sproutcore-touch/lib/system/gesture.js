@@ -148,10 +148,13 @@ SC.Gesture = SC.Object.extend(
   */
   notifyViewOfGestureEvent: function(view, eventName, data) {
     var handler = view[eventName];
+    var result = true;
 
     if (SC.typeOf(handler) === 'function') {
-      handler.call(view, this, data);
+      result = handler.call(view, this, data);
     }
+    
+    return result;
   },
 
   toString: function() {

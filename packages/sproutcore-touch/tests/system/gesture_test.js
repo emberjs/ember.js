@@ -56,4 +56,3 @@ test("notifyViewOfGestureEvent", function() {
   equals(dataCalled,10,'data passed through');
   equals(gestureCalled,gesture,'gesture passed through');
 });
-

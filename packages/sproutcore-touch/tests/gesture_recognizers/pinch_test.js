@@ -22,10 +22,12 @@ module("Pinch Test",{
       elementId: 'gestureTest',
 
       pinchStart: function(recognizer, change) {
+        if (change < 0.5) return false;
         scale = change;
       },
 
       pinchChange: function(recognizer, change) {
+        if (scale < 0.5) return false;
         scale = change;
       },
 
@@ -224,3 +226,39 @@ test("If the touches move, the scale should reflect the change", function() {
   equals(scale,0.5,'scale should be halved');
 });
 
+test("If a gesture event returns false, reject the change", function() {
+  var touchEvent = jQuery.Event('touchstart');
+  touchEvent['originalEvent'] = {
+    targetTouches: [{
+      identifier: 0,
+      pageX: 0,
+      pageY: 10
+    },
+    {
+      identifier: 1,
+      pageX: 10,
+      pageY: 10
+    }]
+  };
+
+  view.$().trigger(touchEvent);
+
+  touchEvent = jQuery.Event('touchmove');
+  touchEvent['originalEvent'] = {
+    changedTouches: [{
+      identifier: 0,
+      pageX: 7.5, 
+      pageY: 10 
+    }, 
+    { 
+      identifier: 1,
+      pageX: 10, 
+      pageY: 10 
+    }]
+  };
+
+  view.$().trigger(touchEvent);
+
+  var gestures = get(get(view, 'eventManager'), 'gestures'); 
+  equals(get(gestures[0], 'scale'),1, "state should not change");
+});
