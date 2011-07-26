@@ -14,7 +14,6 @@ require('sproutcore-runtime/system/run_loop');
 // CONSTANTS
 // 
 
-//@if (debug)
 
 /**
   @static
@@ -48,7 +47,6 @@ SC.BENCHMARK_BINDING_NOTIFICATIONS = !!SC.ENV.BENCHMARK_BINDING_NOTIFICATIONS;
 */
 SC.BENCHMARK_BINDING_SETUP = !!SC.ENV.BENCHMARK_BINDING_SETUP;
 
-//@endif
 
 /**
   @static
@@ -582,9 +580,7 @@ var Binding = SC.Object.extend({
   /** @private */
   _sync: function(obj) {
 
-    //@if (debug)
     var log = SC.LOG_BINDINGS;
-    //@endif
 
     if (obj.isDestroyed) { return; }
     
@@ -596,9 +592,7 @@ var Binding = SC.Object.extend({
       val = fromValue(obj, this);
       tv  = transformedValue(this, val, obj);
 
-      //@if (debug)
       if (log) { SC.Logger.log(' ', this.toString(), val, '->', tv, obj); }
-      //@endif
       
       // apply changes
       SC.trySetPath(obj, this._to, tv);
@@ -609,9 +603,7 @@ var Binding = SC.Object.extend({
       tv  = transformedValue(this, fromValue(obj, this), obj);
       if (val !== tv) {
 
-        //@if (debug)
         if (log) { SC.Logger.log(' ', this.toString(), val, '<-', tv, obj); }
-        //@endif
 
         SC.trySetPath(obj, this._from, val);
       }

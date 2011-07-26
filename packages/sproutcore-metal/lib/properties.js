@@ -137,7 +137,6 @@ Dp.val = function(obj, keyName) {
 // testing on browsers that do support accessors.  It will throw an exception
 // if you do foo.bar instead of SC.get(foo, 'bar')
 
-//@if (legacy)
 if (!USE_ACCESSORS) {
   SC.Descriptor.MUST_USE_GETTER = function() {
     sc_assert('Must use SC.get() to access this property', false);
@@ -151,7 +150,6 @@ if (!USE_ACCESSORS) {
     }
   };
 }
-//@endif
 
 var WATCHED_DESC = {
   configurable: true,
