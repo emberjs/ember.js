@@ -134,9 +134,12 @@ SC.Handlebars.compile = function(string) {
   @param {Hash} options
 */
 Handlebars.registerHelper('helperMissing', function(path, options) {
-  var error;
+  var error, view = "";
 
   error = "%@ Handlebars error: Could not find property '%@' on object %@.";
-  throw new SC.Error(SC.String.fmt(error, options.data.view, path, this));
+  if (options.data){
+    view = options.data.view;
+  }
+  throw new SC.Error(SC.String.fmt(error, [view, path, this]));
 });
 
