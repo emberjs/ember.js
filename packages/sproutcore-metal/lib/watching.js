@@ -85,7 +85,7 @@ function addChainWatcher(obj, keyName, node) {
   if (!nodes || nodes.__scproto__ !== obj) {
     nodes = m.chainWatchers = { __scproto__: obj };
   }
-  
+
   if (!nodes[keyName]) nodes[keyName] = {};
   nodes[keyName][guidFor(node)] = node;
   SC.watch(obj, keyName);
@@ -166,10 +166,10 @@ Wp.copy = function(obj) {
 // path.
 Wp.add = function(path) {
   var obj, tuple, key, src, separator, paths;
-  
+
   paths = this._paths;
   paths[path] = (paths[path] || 0) + 1 ;
-  
+
   obj = this._value;
   tuple = normalizeTuple(obj, path);
   if (tuple[0] && (tuple[0] === obj)) {
@@ -182,14 +182,14 @@ Wp.add = function(path) {
   } else if (!tuple[0]) {
     pendingQueue.push([this, path]);
     return;
-    
+
   } else {
     src  = tuple[0];
     key  = path.slice(0, 0-(tuple[1].length+1));
     separator = path.slice(key.length, key.length+1);
     path = tuple[1];
   }
-  
+
   this.chain(key, path, src, separator);
 };
 
@@ -207,13 +207,13 @@ Wp.remove = function(path) {
     path = tuple[1];
     key  = firstKey(path);
     path = path.slice(key.length+1);
-    
+
   } else {
     src  = tuple[0];
     key  = path.slice(0, 0-(tuple[1].length+1));
     path = tuple[1];
   }
-  
+
   this.unchain(key, path);
 };
 
@@ -268,7 +268,7 @@ Wp.willChange = function() {
 
 Wp.chainWillChange = function(chain, path, depth) {
   if (this._key) path = this._key+this._separator+path;
-  
+
   if (this._parent) {
     this._parent.chainWillChange(this, path, depth+1);
   } else {

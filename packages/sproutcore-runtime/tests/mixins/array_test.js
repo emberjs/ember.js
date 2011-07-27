@@ -518,9 +518,23 @@ test('modifying the array should also indicate the isDone prop itself has change
 });
 
 
+testBoth("should be clear caches for computed properties that have dependent keys on arrays that are changed after object initialization", function(get, set) {
+  var obj = SC.Object.create({
+    init: function() {
+      set(this, 'resources', SC.MutableArray.apply([]));
+    },
 
+    common: SC.computed(function() {
+      return get(get(this, 'resources').objectAt(0), 'common');
+    }).property('resources.@each.common').cacheable(),
+  });
 
+  get(obj, 'resources').pushObject(SC.Object.create({ common: "HI!" }));
+  equals("HI!", get(obj, 'common'));
 
+  set(get(obj, 'resources').objectAt(0), 'common', "BYE!");
+  equals("BYE!", get(obj, 'common'));
+});
 
 
 
