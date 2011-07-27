@@ -38,7 +38,13 @@ var SIMPLE_DESC = {
   
   You generally won't need to create or subclass this directly.
 */
-SC.Descriptor = function() {};
+var Dc = SC.Descriptor = function() {};
+
+var setup = Dc.setup = function(obj, keyName, value) {
+  SIMPLE_DESC.value = value;
+  o_defineProperty(obj, keyName, SIMPLE_DESC);
+  SIMPLE_DESC.value = null;
+};
 
 var Dp = SC.Descriptor.prototype;
 
@@ -98,11 +104,7 @@ Dp.get = function(obj, keyName) {
   
   @returns {void}
 */
-Dp.setup = function(obj, keyName, value) {
-  SIMPLE_DESC.value = value;
-  o_defineProperty(obj, keyName, SIMPLE_DESC);
-  SIMPLE_DESC.value = null;
-};
+Dp.setup = setup;
 
 /**
   This is called on the descriptor just before another descriptor takes its
