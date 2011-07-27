@@ -128,6 +128,27 @@ test("option label and value should be updateable", function() {
   select.destroy();
 });
 
+test("option label and value should be updateable with custom property names", function() {
+  var select, option = SC.Object.create({name: 'California', abbr: 'CA'});
+
+
+  SC.run(function() {
+    select = SC.Select.create({itemViewClass: SC.SelectOption.extend({labelBinding: 'content.name', valueBinding: 'content.abbr'})});
+    select.set('content', [option]);
+    select.append();
+  });
+
+  SC.run(function() {
+    option.set('name', 'CALI!');
+    option.set('abbr', 'CA!');
+  });
+  
+  equals(select.$().text(), 'CALI!');
+  equals(select.$().val(), 'CA!');
+
+  select.destroy();
+});
+
 test("should allow multiple selection", function() {
   var select, options = [SC.Object.create({label: 'California', value: 'CA'}),
                          SC.Object.create({label: 'Oregon', value: 'OR', selected: true}),

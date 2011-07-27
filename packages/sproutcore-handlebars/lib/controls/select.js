@@ -26,7 +26,7 @@ SC.SelectOption = SC.View.extend({
   
   _labelDidChange: function() {
     this.rerender();
-  }.observes('*content.label')
+  }.observes('label')
 });
 
 SC.Select = SC.CollectionView.extend({
