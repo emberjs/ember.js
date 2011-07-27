@@ -540,6 +540,31 @@ testBoth('depending on complex Global chain', function(get, set) {
 
 });
 
+testBoth('chained dependent keys should respect SC.beginPropertyChanges', function(get,set){
+  var run_count;
+
+  set(obj.foo, 'a', 1);
+  set(obj.foo, 'b', 2);
+
+  SC.defineProperty(obj.foo, 'c', SC.computed(function(){
+    run_count++;
+    return get(obj.foo, 'a') + get(obj.foo, 'b')
+  }).property('a', 'b').cacheable());
+
+  SC.addObserver(obj, 'foo.c', this, function(){});
+
+  run_count = 0;
+
+  SC.beginPropertyChanges();
+  set(obj.foo, 'a', 10);
+  set(obj.foo, 'b', 20);
+  SC.endPropertyChanges();
+
+  equals(run_count, 1, 'should only run once');
+});
+
+
+
 // ..........................................................
 // BUGS
 // 
