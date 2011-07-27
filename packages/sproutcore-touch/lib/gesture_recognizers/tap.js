@@ -31,47 +31,26 @@ SC.TapGestureRecognizer = SC.Gesture.extend({
 
   numberOfTouches: 1,
 
-  startLocation: null,
+  _initialLocation: null,
   _moveThreshold: 10,
 
-  touchStart: function(evt, view, manager) {
-    var touches = evt.originalEvent.targetTouches,
-        numberOfTouches = this.numberOfTouches;
-
-    if (touches.length === numberOfTouches) {
-      var touch = touches[0];
-
-      this.startLocation = {pageX:touch.pageX,pageY:touch.pageY};
-      this.state = SC.Gesture.POSSIBLE;
-      this.notifyViewOfGestureEvent(view,'tapStart');
-    }
-
-    manager.redispatchEventToView(view,'touchstart', evt);
+  gestureBecamePossible: function() {
+    this._initialLocation = this.centerPointForTouches(this._touches);
   },
 
   touchEnd: function(evt, view, manager) {
-    var touches = evt.originalEvent.changedTouches;
+    var currentLocation = this.centerPointForTouches(this._touches);
 
-    if(touches.length !== get(this, 'numberOfTouches')) {
-      manager.redispatchEventToView(view,'touchend', evt);
-      return;
-    }
-
-    var distance = this.distance([this.startLocation,touches[0]]);
+    var distance = this.distance([this._initialLocation,currentLocation]);
 
     if (this.state === SC.Gesture.POSSIBLE && distance <= this._moveThreshold) {
       this.state = SC.Gesture.ENDED;
       this.notifyViewOfGestureEvent(view,'tapEnd');
-    }
-    else {
+    } else {
       this.state = SC.Gesture.CANCELLED;
       this.notifyViewOfGestureEvent(view,'tapCancel');
     }
 
-  },
-
-  touchCancel: function(evt, view, manager) {
-    manager.redispatchEventToView(view,'touchcancel', evt);
   }
 });
 

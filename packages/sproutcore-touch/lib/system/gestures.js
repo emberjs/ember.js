@@ -7,9 +7,9 @@
 var get = SC.get;
 var set = SC.set;
 
-/** 
+/**
   @class
-  
+
   Registry of known gestures in the system. This is a singleton class, and is
   used by SC.View to analyze instances of SC.View for gesture support.
 
@@ -22,7 +22,7 @@ var set = SC.set;
 */
 SC.Gestures = SC.Object.create(
 /** @scope SC.Gestures.prototype */{
-  
+
   _registeredGestures: null,
 
   init: function() {
@@ -32,8 +32,8 @@ SC.Gestures = SC.Object.create(
   },
 
   /**
-    Registers a gesture recognizer to the system. The gesture recognizer is 
-    identified by the name parameter, which must be unique across the system.    
+    Registers a gesture recognizer to the system. The gesture recognizer is
+    identified by the name parameter, which must be unique across the system.
   */
   register: function(name, /** SC.Gesture */recognizer) {
     var registeredGestures = this._registeredGestures;
@@ -46,8 +46,8 @@ SC.Gestures = SC.Object.create(
   },
 
   /**
-    Registers a gesture recognizer to the system. The gesture recognizer is 
-    identified by the name parameter, which must be unique across the system.    
+    Registers a gesture recognizer to the system. The gesture recognizer is
+    identified by the name parameter, which must be unique across the system.
   */
   knownGestures: function() {
     var registeredGestures = this._registeredGestures;

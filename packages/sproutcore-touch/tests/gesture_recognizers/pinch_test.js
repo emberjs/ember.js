@@ -21,17 +21,19 @@ module("Pinch Test",{
     view = SC.View.create({
       elementId: 'gestureTest',
 
-      pinchStart: function(recognizer, change) {
+      pinchStart: function(recognizer) {
+        change = get(recognizer, 'scale')
         if (change < 0.5) return false;
         scale = change;
       },
 
-      pinchChange: function(recognizer, change) {
+      pinchChange: function(recognizer) {
+        change = get(recognizer, 'scale')
         if (scale < 0.5) return false;
         scale = change;
       },
 
-      pinchEnd: function(recognizer, change) {
+      pinchEnd: function(recognizer) {
         numEnded++;
       }
     });

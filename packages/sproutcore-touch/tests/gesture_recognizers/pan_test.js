@@ -21,17 +21,19 @@ module("Pan Test",{
     view = SC.View.create({
       elementId: 'gestureTest',
 
-      panStart: function(recognizer, change) {
+      panStart: function(recognizer) {
+        change = get(recognizer, 'translation')
         if (change.x > 10) return false;
         translation = change;
       },
 
-      panChange: function(recognizer, change) {
+      panChange: function(recognizer) {
+        change = get(recognizer, 'translation')
         if (change.x > 10) return false;
         translation = change;
       },
 
-      panEnd: function(recognizer, change) {
+      panEnd: function(recognizer) {
         numEnded++;
       }
     });
@@ -213,7 +215,9 @@ test("If a gesture event returns false, reject the change", function() {
     }]
   };
 
+  console.log('start');
   view.$().trigger(touchEvent);
+  console.log('end');
 
   var gestures = get(get(view, 'eventManager'), 'gestures'); 
   equals(get(gestures[0], 'translation').x,0, "state should not change");
