@@ -7,7 +7,7 @@
 var get = SC.get;
 var set = SC.set;
 
-/** 
+/**
   @class
 
   Recognizes a multi-touch tap gesture. Tap gestures allow for a certain amount
@@ -19,7 +19,7 @@ var set = SC.set;
       tapStart: function(recognizer) {
         $('#gestureTest').css('background','green');
       },
-   
+
       tapEnd: function(recognizer) {
         $('#gestureTest').css('background','yellow');
       }
@@ -31,6 +31,8 @@ SC.TapGestureRecognizer = SC.Gesture.extend({
 
   numberOfTouches: 1,
 
+  gestureIsDiscrete: true,
+
   _initialLocation: null,
   _moveThreshold: 10,
 
@@ -38,19 +40,11 @@ SC.TapGestureRecognizer = SC.Gesture.extend({
     this._initialLocation = this.centerPointForTouches(this._touches);
   },
 
-  touchEnd: function(evt, view, manager) {
+  gestureShouldAccept: function() {
     var currentLocation = this.centerPointForTouches(this._touches);
-
     var distance = this.distance([this._initialLocation,currentLocation]);
 
-    if (this.state === SC.Gesture.POSSIBLE && distance <= this._moveThreshold) {
-      this.state = SC.Gesture.ENDED;
-      this.notifyViewOfGestureEvent(view,'tapEnd');
-    } else {
-      this.state = SC.Gesture.CANCELLED;
-      this.notifyViewOfGestureEvent(view,'tapCancel');
-    }
-
+    return distance <= this._moveThreshold;
   }
 });
 

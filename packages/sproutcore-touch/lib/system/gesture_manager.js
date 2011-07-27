@@ -155,7 +155,7 @@ SC.GestureManager = SC.Object.extend({
         var event = jQuery.Event(eventName);
 
         event.originalEvent = views[i].originalEvent;
-        
+
         // Trigger event so it bubbles up the hierarchy
         view.$().trigger(event, this);
       }

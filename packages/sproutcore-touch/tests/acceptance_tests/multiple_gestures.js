@@ -138,10 +138,8 @@ test("when 2 fingers move closer together, gesture should be in BEGAN state", fu
 
     pinchChange: function(recognizer) {
       changeScale = get(recognizer, 'scale');
-    },
-
-    touchStart: function(evt) {
     }
+
   });
 
   SC.run(function(){
@@ -194,9 +192,7 @@ test("when 2 fingers move closer together, gesture should be in BEGAN state", fu
     }]
   };
 
-  window.foo=true;
   view.$().trigger(touchEvent);
-  window.foo=false;
 
   equals(get(gestures[0], 'state'),SC.Gesture.BEGAN, "gesture should be began");
   equals(numStart,1,"pinchStart called once")

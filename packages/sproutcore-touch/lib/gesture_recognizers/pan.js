@@ -38,7 +38,7 @@ SC.PanGestureRecognizer = SC.Gesture.extend({
 
   init: function() {
     this._super();
-    this._totalTranslation = {x:0,y:0};
+    this._currentTranslation = this._totalTranslation = {x:0,y:0};
   },
 
   gestureBecamePossible: function() {
@@ -52,8 +52,8 @@ SC.PanGestureRecognizer = SC.Gesture.extend({
   gestureChanged: function() {
     var initial = this._initialLocation;
 
+    this._previousTranslation = this._currentTranslation;
     var current = this.centerPointForTouches(this._touches);
-    this._previousTranslation = current;
 
     current.x = (current.x - initial.x) + this._totalTranslation.x;
     current.y = (current.y - initial.y) + this._totalTranslation.y;
@@ -66,7 +66,6 @@ SC.PanGestureRecognizer = SC.Gesture.extend({
   },
 
   gestureEventWasRejected: function() {
-    console.log('rejecting back to ',this._previousTranslation);
     set(this, 'translation', this._previousTranslation);
   },
 

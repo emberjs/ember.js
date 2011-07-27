@@ -84,6 +84,10 @@ SC.Gesture = SC.Object.extend(
   */
   state: null,
 
+  name: null,
+
+  gestureIsDiscrete: false,
+
   _touches: null,
   _numActiveTouches: 0,
 
@@ -92,6 +96,14 @@ SC.Gesture = SC.Object.extend(
   init: function() {
     this._super();
     this._touches = {};
+  },
+
+  attemptGestureEventDelivery: function(evt, view, eventName) {
+    if (this.notifyViewOfGestureEvent(view, eventName) === false) {
+      this.gestureEventWasRejected();
+    } else {
+      evt.preventDefault();
+    }
   },
 
   touchStart: function(evt, view, manager) {
@@ -112,21 +124,18 @@ SC.Gesture = SC.Object.extend(
     if (this._numActiveTouches < get(this, 'numberOfTouches')) {
       set(this ,'state', SC.Gesture.WAITING_FOR_TOUCHES);
 
-    // We have enough touches to switch to a possible state
     } else {
-      set(this ,'state', SC.Gesture.POSSIBLE);
-      this.gestureBecamePossible();
+      // We have enough touches to switch to a possible state
+      if (get(this, 'gestureIsDiscrete')) {
+        set(this, 'state', SC.Gesture.BEGAN);
+        this.attemptGestureEventDelivery(evt, view, get(this, 'name')+'Start');
+      } else {
+        set(this, 'state', SC.Gesture.POSSIBLE);
+        this.gestureBecamePossible();
+      }
     }
 
     manager.redispatchEventToView(view,'touchstart', evt);
-  },
-
-  gestureBecamePossible: function() {
-
-  },
-
-  gestureShouldBegin: function() {
-    return true;
   },
 
   touchMove: function(evt, view, manager) {
@@ -142,22 +151,12 @@ SC.Gesture = SC.Object.extend(
     if (state === SC.Gesture.POSSIBLE && this.gestureShouldBegin()) {
       set(this, 'state', SC.Gesture.BEGAN);
       this.gestureChanged();
-
-      if (this.notifyViewOfGestureEvent(view,get(this, 'name')+'Start') === false) {
-        this.gestureEventWasRejected();
-      } else {
-        evt.preventDefault();
-      }
+      this.attemptGestureEventDelivery(evt, view, get(this, 'name')+'Start');
 
     } else if (state === SC.Gesture.BEGAN || state === SC.Gesture.CHANGED) {
       set(this, 'state', SC.Gesture.CHANGED);
       this.gestureChanged();
-
-      if (this.notifyViewOfGestureEvent(view,get(this, 'name')+'Change') === false) {
-        this.gestureEventWasRejected();
-      } else {
-        evt.preventDefault();
-      }
+      this.attemptGestureEventDelivery(evt, view, get(this, 'name')+'Change');
 
     } else {
       manager.redispatchEventToView(view,'touchmove', evt);
@@ -165,13 +164,23 @@ SC.Gesture = SC.Object.extend(
   },
 
   touchEnd: function(evt, view, manager) {
-    if (this.state !== SC.Gesture.ENDED) {
-      this._resetState();
-      set(this, 'state', SC.Gesture.ENDED);
-      this.notifyViewOfGestureEvent(view,get(this, 'name')+'End');
-    }
+    if (get(this, 'gestureIsDiscrete')) {
+      if (this.state === SC.Gesture.BEGAN && this.gestureShouldEnd()) {
+        set(this, 'state', SC.Gesture.ENDED);
+        this.attemptGestureEventDelivery(evt, view, get(this, 'name')+'End');
+      } else {
+        set(this, 'state', SC.Gesture.CANCELLED);
+        this.attemptGestureEventDelivery(evt, view, get(this, 'name')+'Cancel');
+      }
+    } else {
+      if (this.state !== SC.Gesture.ENDED) {
+        this._resetState();
+        set(this, 'state', SC.Gesture.ENDED);
+        this.notifyViewOfGestureEvent(view,get(this, 'name')+'End');
+      }
 
-    manager.redispatchEventToView(view,'touchend', evt);
+      manager.redispatchEventToView(view,'touchend', evt);
+    }
   },
 
   touchCancel: function(evt, view, manager) {
@@ -182,6 +191,16 @@ SC.Gesture = SC.Object.extend(
     } else {
       manager.redispatchEventToView(view,'touchcancel', evt);
     }
+  },
+
+  gestureBecamePossible: function() {},
+
+  gestureShouldBegin: function() {
+    return true;
+  },
+
+  gestureShouldEnd: function() {
+    return true;
   },
 
   _objectValues: function(object) {

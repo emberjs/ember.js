@@ -215,9 +215,7 @@ test("If a gesture event returns false, reject the change", function() {
     }]
   };
 
-  console.log('start');
   view.$().trigger(touchEvent);
-  console.log('end');
 
   var gestures = get(get(view, 'eventManager'), 'gestures'); 
   equals(get(gestures[0], 'translation').x,0, "state should not change");
