@@ -33,6 +33,12 @@ SC.ArrayProxy = SC.Object.extend(SC.MutableArray, {
   */
   content: null,
 
+  /**
+    The selected object(s). Can be either an object or an array of objects.
+    Used by SC.Select.
+
+    @property {SC.Object|SC.Array}
+  */
   selection: null,
 
   /**
