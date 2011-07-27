@@ -172,10 +172,10 @@ test("selected option(s) should be updateable", function() {
   var select, options = [SC.Object.create({label: 'California', value: 'CA'}),
                          SC.Object.create({label: 'Oregon', value: 'OR', selected: true}),
                          SC.Object.create({label: 'Illinois', value: 'IL', selected: true}),
-                         SC.Object.create({label: 'Washington', value: 'WA'})]
+                         SC.Object.create({label: 'Washington', value: 'WA'})];
 
   SC.run(function() {
-    select = SC.Select.create({multiple: true})
+    select = SC.Select.create({multiple: true});
     select.set('content', options);
     select.append();
   });
@@ -194,6 +194,24 @@ test("selected option(s) should be updateable", function() {
   equals(select.get('value').length, 2);
   equals(select.get('value')[0], options[0]);
   equals(select.get('value')[1], options[1]);
+
+  select.destroy();
+});
+
+test("should remove object from selection when removed from collection", function() {
+  var select, arrayProxy, option = SC.Object.create({label: 'California', value: 'CA', selected: true});
+
+  arrayProxy = SC.ArrayProxy.create({content: [option]});
+
+  SC.run(function() {
+    select = SC.Select.create({multiple: true});
+    select.set('content', arrayProxy);
+    select.append();
+  });
+  
+  equals(arrayProxy.get('selection').length, 1);
+  arrayProxy.removeAt(0);
+  equals(arrayProxy.get('selection').length, 0);
 
   select.destroy();
 });
