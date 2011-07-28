@@ -115,7 +115,7 @@ SC.Gesture = SC.Object.extend(
     for (var i=0, l=targetTouches.length; i<l; i++) {
       var touch = targetTouches[i];
 
-      if(_touches[touch.identifier] === undefined) {
+      if(_touches[touch.identifier] === undefined && this._numActiveTouches < get(this, 'numberOfTouches')) {
         _touches[touch.identifier] = touch;
         this._numActiveTouches++;
       }
@@ -146,7 +146,17 @@ SC.Gesture = SC.Object.extend(
       return;
     }
 
-    this._touches = evt.originalEvent.changedTouches;
+    var changedTouches = evt.originalEvent.changedTouches;
+    var _touches = this._touches;
+
+    for (var i=0, l=changedTouches.length; i<l; i++) {
+      var touch = changedTouches[i];
+      var identifier = changedTouches[i].identifier;
+
+      if (_touches[identifier] !== undefined) {
+          _touches[identifier] = touch;
+       }
+    }
 
     if (state === SC.Gesture.POSSIBLE && this.gestureShouldBegin()) {
       set(this, 'state', SC.Gesture.BEGAN);
@@ -194,6 +204,7 @@ SC.Gesture = SC.Object.extend(
   },
 
   gestureBecamePossible: function() {},
+  gestureChanged: function() {},
 
   gestureShouldBegin: function() {
     return true;
@@ -227,6 +238,7 @@ SC.Gesture = SC.Object.extend(
 
     if (touches.length !== 2) {
       throw new SC.Error('trying to get the distance between more than two points is not defined. Touches length: '+touches.length);
+      return;
     }
 
     var first = touches[0];

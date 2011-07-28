@@ -135,11 +135,6 @@ test("If the touches move, the scale should reflect the change", function() {
       identifier: 0,
       pageX: 5, 
       pageY: 10 
-    }, 
-    { 
-      identifier: 1,
-      pageX: 10, 
-      pageY: 10 
     }]
   };
 
@@ -215,11 +210,6 @@ test("If the touches move, the scale should reflect the change", function() {
       identifier: 0,
       pageX: 5, 
       pageY: 10 
-    }, 
-    { 
-      identifier: 1,
-      pageX: 10, 
-      pageY: 10 
     }]
   };
 
@@ -250,11 +240,6 @@ test("If a gesture event returns false, reject the change", function() {
     changedTouches: [{
       identifier: 0,
       pageX: 7.5, 
-      pageY: 10 
-    }, 
-    { 
-      identifier: 1,
-      pageX: 10, 
       pageY: 10 
     }]
   };

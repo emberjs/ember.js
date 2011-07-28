@@ -184,11 +184,6 @@ test("when 2 fingers move closer together, gesture should be in BEGAN state", fu
       identifier: 0,
       pageX: 0,
       pageY: 100
-    },
-    {
-      identifier: 1,
-      pageX: 100,
-      pageY: 100
     }]
   };
 
@@ -208,11 +203,6 @@ test("when 2 fingers move closer together, gesture should be in BEGAN state", fu
       identifier: 0,
       pageX: 50,
       pageY: 100
-    },
-    {
-      identifier: 1,
-      pageX: 100,
-      pageY: 100
     }]
   };
 
@@ -229,11 +219,6 @@ test("when 2 fingers move closer together, gesture should be in BEGAN state", fu
     changedTouches: [{
       identifier: 0,
       pageX: 50,
-      pageY: 100
-    },
-    {
-      identifier: 1,
-      pageX: 100,
       pageY: 100
     }]
   };
@@ -269,11 +254,6 @@ test("when 2 fingers move closer together, gesture should be in BEGAN state", fu
       identifier: 0,
       pageX: 50,
       pageY: 100
-    },
-    {
-      identifier: 1,
-      pageX: 100,
-      pageY: 100
     }]
   };
   view.$().trigger(touchEvent);
@@ -291,11 +271,6 @@ test("when 2 fingers move closer together, gesture should be in BEGAN state", fu
     changedTouches: [{
       identifier: 0,
       pageX: 75,
-      pageY: 100
-    },
-    {
-      identifier: 1,
-      pageX: 100,
       pageY: 100
     }]
   };

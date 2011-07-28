@@ -55,12 +55,11 @@ SC.PanGestureRecognizer = SC.Gesture.extend({
     this._previousTranslation = this._currentTranslation;
     var current = this.centerPointForTouches(this._touches);
 
+    // We add total translation because css3 transforms are absolute not relative
     current.x = (current.x - initial.x) + this._totalTranslation.x;
     current.y = (current.y - initial.y) + this._totalTranslation.y;
 
-    if (this._currentTranslation === null) {
-      this._currentTranslation = {x:0,y:0};
-    }
+    this._currentTranslation = current;
 
     set(this, 'translation', current);
   },
@@ -72,10 +71,8 @@ SC.PanGestureRecognizer = SC.Gesture.extend({
   touchEnd: function(evt, view, manager) {
     this._super(evt, view, manager);
 
-    if (this.translation) {
-      this._totalTranslation.x = this._currentTranslation.x;
-      this._totalTranslation.y = this._currentTranslation.y;
-    }
+    this._totalTranslation.x = this._currentTranslation.x;
+    this._totalTranslation.y = this._currentTranslation.y;
   },
 });
 
