@@ -136,6 +136,11 @@ var ChainNode = function(parent, key, value, separator) {
     this._object = parent.value();
     if (this._object) addChainWatcher(this._object, this._key, this);
   }
+
+  // Special-case: the EachProxy relies on immediate evaluation to
+  // establish its observers.
+  if (this._parent && this._parent._key === '@each')
+    this.value();
 };
 
 
@@ -305,6 +310,11 @@ Wp.didChange = function() {
       addChainWatcher(obj, this._key, this);
     }
     this._value  = undefined;
+
+    // Special-case: the EachProxy relies on immediate evaluation to
+    // establish its observers.
+    if (this._parent && this._parent._key === '@each')
+      this.value();
   }
   
   // then notify chains...
