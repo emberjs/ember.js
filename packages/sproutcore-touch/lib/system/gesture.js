@@ -125,14 +125,8 @@ SC.Gesture = SC.Object.extend(
       set(this ,'state', SC.Gesture.WAITING_FOR_TOUCHES);
 
     } else {
-      // We have enough touches to switch to a possible state
-      if (get(this, 'gestureIsDiscrete')) {
-        set(this, 'state', SC.Gesture.BEGAN);
-        this.attemptGestureEventDelivery(evt, view, get(this, 'name')+'Start');
-      } else {
-        set(this, 'state', SC.Gesture.POSSIBLE);
-        this.gestureBecamePossible();
-      }
+      set(this, 'state', SC.Gesture.POSSIBLE);
+      this.gestureBecamePossible();
     }
 
     manager.redispatchEventToView(view,'touchstart', evt);
