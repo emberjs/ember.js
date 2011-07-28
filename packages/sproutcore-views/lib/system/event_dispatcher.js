@@ -139,9 +139,11 @@ SC.EventDispatcher = SC.Object.extend(
     handler = object[eventName];
     if (SC.typeOf(handler) === 'function') {
       result = handler.call(object, evt, view);
+      evt.stopPropagation();
     }
-
-    evt.stopPropagation();
+    else {
+      result = this._bubbleEvent(view, evt, eventName);
+    }
 
     return result;
   },
