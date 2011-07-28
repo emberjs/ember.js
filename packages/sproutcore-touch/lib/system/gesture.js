@@ -9,24 +9,24 @@ var set = SC.set;
 
 var sigFigs = 100;
 
-/** 
+/**
   @class
-  
+
   Base class for all gesture recognizers. Provides some utility methods and
   some required methods all gesture recognizers are expected to implement.
 
   Overview
   =========
 
-  Gestures coalesce multiple touch events to a single higher-level gesture 
-  event. For example, a tap gesture recognizer takes information about a 
+  Gestures coalesce multiple touch events to a single higher-level gesture
+  event. For example, a tap gesture recognizer takes information about a
   touchstart event, a few touchmove events, and a touchend event and uses
   some heuristics to decide whether or not that sequence of events qualifies
   as an event. If it does, then it will notify the view of the higher-level
   tap events.
 
-  Gesture events follow the format: 
-  
+  Gesture events follow the format:
+
     * [GESTURE_NAME]Start - Sent when a gesture has gathered enough information
         to begin tracking the gesture
 
@@ -53,7 +53,7 @@ var sigFigs = 100;
       pinchStart: function(recognizer) {
         this.$().css('background','red');
       },
-      
+
       pinchChange: function(recognizer, scale) {
         this.$().css('-webkit-transform','scale3d('+scale+','+scale+',1)');
       },
@@ -75,24 +75,170 @@ var sigFigs = 100;
 */
 SC.Gesture = SC.Object.extend(
   /** @scope SC.Gesture.prototype */{
-  
+
   /**
     The current state of the gesture recognizer. This value can be any one
-    of the states defined at the end of this file.    
-  
+    of the states defined at the end of this file.
+
     @type Number
   */
   state: null,
 
+  name: null,
+
+  gestureIsDiscrete: false,
+
+  _touches: null,
+  _numActiveTouches: 0,
+
+  numberOfTouches: 2,
+
+  init: function() {
+    this._super();
+    this._touches = {};
+  },
+
+  attemptGestureEventDelivery: function(evt, view, eventName) {
+    if (this.notifyViewOfGestureEvent(view, eventName) === false) {
+      this.gestureEventWasRejected();
+    } else {
+      evt.preventDefault();
+    }
+  },
+
+  touchStart: function(evt, view, manager) {
+    var targetTouches = evt.originalEvent.targetTouches;
+    var _touches = this._touches;
+    var state = get(this, 'state');
+
+    //Collect touches by their identifiers
+    for (var i=0, l=targetTouches.length; i<l; i++) {
+      var touch = targetTouches[i];
+
+      if(_touches[touch.identifier] === undefined && this._numActiveTouches < get(this, 'numberOfTouches')) {
+        _touches[touch.identifier] = touch;
+        this._numActiveTouches++;
+      }
+    }
+
+    if (this._numActiveTouches < get(this, 'numberOfTouches')) {
+      set(this ,'state', SC.Gesture.WAITING_FOR_TOUCHES);
+
+    } else {
+      // We have enough touches to switch to a possible state
+      if (get(this, 'gestureIsDiscrete')) {
+        set(this, 'state', SC.Gesture.BEGAN);
+        this.attemptGestureEventDelivery(evt, view, get(this, 'name')+'Start');
+      } else {
+        set(this, 'state', SC.Gesture.POSSIBLE);
+        this.gestureBecamePossible();
+      }
+    }
+
+    manager.redispatchEventToView(view,'touchstart', evt);
+  },
+
+  touchMove: function(evt, view, manager) {
+    var state = get(this, 'state');
+
+    if (state === SC.Gesture.WAITING_FOR_TOUCHES || state === SC.Gesture.ENDED || state === SC.Gesture.CANCELLED) {
+      manager.redispatchEventToView(view,'touchmove', evt);
+      return;
+    }
+
+    var changedTouches = evt.originalEvent.changedTouches;
+    var _touches = this._touches;
+
+    for (var i=0, l=changedTouches.length; i<l; i++) {
+      var touch = changedTouches[i];
+      var identifier = changedTouches[i].identifier;
+
+      if (_touches[identifier] !== undefined) {
+          _touches[identifier] = touch;
+       }
+    }
+
+    if (state === SC.Gesture.POSSIBLE && this.gestureShouldBegin()) {
+      set(this, 'state', SC.Gesture.BEGAN);
+      this.gestureChanged();
+      this.attemptGestureEventDelivery(evt, view, get(this, 'name')+'Start');
+
+    } else if (state === SC.Gesture.BEGAN || state === SC.Gesture.CHANGED) {
+      set(this, 'state', SC.Gesture.CHANGED);
+      this.gestureChanged();
+      this.attemptGestureEventDelivery(evt, view, get(this, 'name')+'Change');
+
+    } else {
+      manager.redispatchEventToView(view,'touchmove', evt);
+    }
+  },
+
+  touchEnd: function(evt, view, manager) {
+    if (get(this, 'gestureIsDiscrete')) {
+      if (this.state === SC.Gesture.BEGAN && this.gestureShouldEnd()) {
+        set(this, 'state', SC.Gesture.ENDED);
+        this.attemptGestureEventDelivery(evt, view, get(this, 'name')+'End');
+      } else {
+        set(this, 'state', SC.Gesture.CANCELLED);
+        this.attemptGestureEventDelivery(evt, view, get(this, 'name')+'Cancel');
+      }
+    } else {
+      if (this.state !== SC.Gesture.ENDED) {
+        this._resetState();
+        set(this, 'state', SC.Gesture.ENDED);
+        this.notifyViewOfGestureEvent(view,get(this, 'name')+'End');
+      }
+
+      manager.redispatchEventToView(view,'touchend', evt);
+    }
+  },
+
+  touchCancel: function(evt, view, manager) {
+    if (this.state !== SC.Gesture.CANCELLED) {
+      this._resetState();
+      set(this, 'state', SC.Gesture.CANCELLED);
+      this.notifyViewOfGestureEvent(view,get(this, 'name')+'Cancel');
+    } else {
+      manager.redispatchEventToView(view,'touchcancel', evt);
+    }
+  },
+
+  gestureBecamePossible: function() {},
+  gestureChanged: function() {},
+
+  gestureShouldBegin: function() {
+    return true;
+  },
+
+  gestureShouldEnd: function() {
+    return true;
+  },
+
+  _objectValues: function(object) {
+    var ret = [];
+
+    for (var item in object ) {
+      if (object.hasOwnProperty(item)) {
+        ret.push(object[item]);
+      }
+    }
+
+    return ret;
+  },
+
   /**
-    Given two Touch objects, this method returns the distance between them.    
-  
+    Given two Touch objects, this method returns the distance between them.
+
     @return Number
   */
   distance: function(touches) {
+    if (!(touches instanceof Array)) {
+      touches = this._objectValues(touches);
+    }
 
     if (touches.length !== 2) {
       throw new SC.Error('trying to get the distance between more than two points is not defined. Touches length: '+touches.length);
+      return;
     }
 
     var first = touches[0];
@@ -107,12 +253,13 @@ SC.Gesture = SC.Object.extend(
   },
 
   /**
-    Given two Touch objects, this method returns the midpoint between them.    
-  
+    Given two Touch objects, this method returns the midpoint between them.
+
     @return Number
   */
   centerPointForTouches: function(touches) {
-    var sumX = sumY = 0;
+    var touches = this._objectValues(touches),
+        sumX = sumY = 0;
 
     for (var i=0, l=touches.length; i<l; i++) {
       var touch = touches[i];
@@ -121,7 +268,7 @@ SC.Gesture = SC.Object.extend(
     }
 
     var location = {
-      x: sumX / touches.length, 
+      x: sumX / touches.length,
       y: sumY / touches.length
     };
 
@@ -153,12 +300,17 @@ SC.Gesture = SC.Object.extend(
     if (SC.typeOf(handler) === 'function') {
       result = handler.call(view, this, data);
     }
-    
+
     return result;
   },
 
   toString: function() {
     return SC.Gesture+'<'+SC.guidFor(this)+'>';
+  },
+
+  _resetState: function() {
+    this._touches = {};
+    this._numActiveTouches = 0;
   }
 
 });

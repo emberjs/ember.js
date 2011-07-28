@@ -42,6 +42,7 @@ SC.View.reopen(
       for (var gesture in knownGestures) {
         if (this[gesture+'Start'] || this[gesture+'Change'] || this[gesture+'End']) {
           gestures.push(knownGestures[gesture].create({
+            name: gesture,
             view: this
           }));
         }

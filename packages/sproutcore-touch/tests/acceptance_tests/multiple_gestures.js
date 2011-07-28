@@ -17,24 +17,24 @@ module("Test Gesture Recognizer",{
   teardown: function() {
     if(view) view.destroy();
     application.destroy();
-  }  
+  }
 });
 
 test("gesturable views that implement pinch methods get a pinch recognizer", function() {
   var view = SC.View.create({
     pinchStart: function(evt) {
-      
-    },      
+
+    },
     pinchChange: function(evt) {
 
-    },      
+    },
     pinchEnd: function(evt) {
 
     }
   });
 
-  var gestures = get(get(view, 'eventManager'), 'gestures'); 
-  
+  var gestures = get(get(view, 'eventManager'), 'gestures');
+
   ok(gestures,'Should have a gestures property');
   equals(gestures.length,1,'Should have one gesture');
   ok(gestures[0] instanceof SC.PinchGestureRecognizer,'gesture should be pinch');
@@ -59,7 +59,7 @@ test("when finger touches inside, gesture should be in waiting state", function(
   });
 
   var touchEvent = new jQuery.Event();
-  
+
   touchEvent.type='touchstart';
   touchEvent['originalEvent'] = {
     targetTouches: [{
@@ -72,7 +72,7 @@ test("when finger touches inside, gesture should be in waiting state", function(
 
   equals(numStart,1,"touchStart called once")
 
-  var gestures = get(get(view, 'eventManager'), 'gestures'); 
+  var gestures = get(get(view, 'eventManager'), 'gestures');
 
   ok(gestures);
   equals(gestures.length,1);
@@ -100,7 +100,7 @@ test("when 2 fingers touch inside, gesture should be in possible state", functio
   });
 
   var touchEvent = new jQuery.Event();
-  
+
   touchEvent.type='touchstart';
   touchEvent['originalEvent'] = {
     targetTouches: [{
@@ -116,7 +116,7 @@ test("when 2 fingers touch inside, gesture should be in possible state", functio
   };
   view.$().trigger(touchEvent);
 
-  var gestures = get(get(view, 'eventManager'), 'gestures'); 
+  var gestures = get(get(view, 'eventManager'), 'gestures');
   window.gestures = gestures;
 
   ok(gestures);
@@ -131,17 +131,15 @@ test("when 2 fingers move closer together, gesture should be in BEGAN state", fu
   view = SC.View.create({
     elementId: 'gestureTest',
 
-    pinchStart: function(recognizer, scale) {
+    pinchStart: function(recognizer) {
       numStart++;
-      startScale = scale;
+      startScale = get(recognizer, 'scale');
     },
 
-    pinchChange: function(recognizer, scale) {
-      changeScale = scale;
-    },
-
-    touchStart: function(evt) {
+    pinchChange: function(recognizer) {
+      changeScale = get(recognizer, 'scale');
     }
+
   });
 
   SC.run(function(){
@@ -152,7 +150,7 @@ test("when 2 fingers move closer together, gesture should be in BEGAN state", fu
   // Start
 
   var touchEvent = new jQuery.Event();
-  
+
   touchEvent.type='touchstart';
   touchEvent['originalEvent'] = {
     targetTouches: [{
@@ -168,7 +166,7 @@ test("when 2 fingers move closer together, gesture should be in BEGAN state", fu
   };
   view.$().trigger(touchEvent);
 
-  var gestures = get(get(view, 'eventManager'), 'gestures'); 
+  var gestures = get(get(view, 'eventManager'), 'gestures');
   window.gestures = gestures;
 
   ok(gestures);
@@ -179,17 +177,12 @@ test("when 2 fingers move closer together, gesture should be in BEGAN state", fu
   // Double its size
 
   touchEvent = new jQuery.Event();
-  
+
   touchEvent.type='touchmove';
   touchEvent['originalEvent'] = {
     changedTouches: [{
       identifier: 0,
       pageX: 0,
-      pageY: 100
-    },
-    {
-      identifier: 1,
-      pageX: 100,
       pageY: 100
     }]
   };
@@ -210,11 +203,6 @@ test("when 2 fingers move closer together, gesture should be in BEGAN state", fu
       identifier: 0,
       pageX: 50,
       pageY: 100
-    },
-    {
-      identifier: 1,
-      pageX: 100,
-      pageY: 100
     }]
   };
 
@@ -231,11 +219,6 @@ test("when 2 fingers move closer together, gesture should be in BEGAN state", fu
     changedTouches: [{
       identifier: 0,
       pageX: 50,
-      pageY: 100
-    },
-    {
-      identifier: 1,
-      pageX: 100,
       pageY: 100
     }]
   };
@@ -271,11 +254,6 @@ test("when 2 fingers move closer together, gesture should be in BEGAN state", fu
       identifier: 0,
       pageX: 50,
       pageY: 100
-    },
-    {
-      identifier: 1,
-      pageX: 100,
-      pageY: 100
     }]
   };
   view.$().trigger(touchEvent);
@@ -283,7 +261,7 @@ test("when 2 fingers move closer together, gesture should be in BEGAN state", fu
   equals(numStart,1,"pinchStart called once")
   equals(get(gestures[0], 'state'),SC.Gesture.BEGAN, "gesture should be began");
   equals(startScale,1,"scale should still be 1");
-  
+
   // =====================================
   // Half its size
 
@@ -293,11 +271,6 @@ test("when 2 fingers move closer together, gesture should be in BEGAN state", fu
     changedTouches: [{
       identifier: 0,
       pageX: 75,
-      pageY: 100
-    },
-    {
-      identifier: 1,
-      pageX: 100,
       pageY: 100
     }]
   };
@@ -348,7 +321,7 @@ window.shit = function () {
       elementId: 'gestureTest',
       childViews: ['nestedView'],
 
-      nestedView: SC.View.extend({ 
+      nestedView: SC.View.extend({
         elementId: 'nestedView',
 
         translate: {
@@ -356,8 +329,8 @@ window.shit = function () {
           y: 0
         },
 
-        panChange: function(recognizer, translation) {
-          this.translate = translation;
+        panChange: function(recognizer) {
+          this.translate = get(recognizer, 'translation');
           this._applyTransforms();
         },
 
@@ -365,13 +338,13 @@ window.shit = function () {
           var string = 'translate3d('+this.translate.x+'px,'+this.translate.y+'px,0)';
           this.$().css('-webkit-transform',string);
         }
-        
+
       }),
 
       scale: 1,
 
-      pinchChange: function(recognizer, scale) {
-        this.scale = scale;
+      pinchChange: function(recognizer) {
+        this.scale = get(recognizer, 'scale');
         this._applyTransforms();
       },
 
@@ -379,15 +352,15 @@ window.shit = function () {
         var string = ' scale3d('+this.scale+','+this.scale+',1)';
         this.$().css('-webkit-transform',string);
       },
-   
+
       tapStart: function(recognizer) {
         $('#gestureTest').css('background','green');
       },
-   
+
       tapEnd: function(recognizer) {
         $('#gestureTest').css('background','yellow');
       },
-   
+
       tapCancel: function(recognizer) {
         $('#gestureTest').css('background','red');
       }

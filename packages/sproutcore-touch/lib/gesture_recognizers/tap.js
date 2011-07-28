@@ -7,7 +7,7 @@
 var get = SC.get;
 var set = SC.set;
 
-/** 
+/**
   @class
 
   Recognizes a multi-touch tap gesture. Tap gestures allow for a certain amount
@@ -19,7 +19,7 @@ var set = SC.set;
       tapStart: function(recognizer) {
         $('#gestureTest').css('background','green');
       },
-   
+
       tapEnd: function(recognizer) {
         $('#gestureTest').css('background','yellow');
       }
@@ -31,47 +31,20 @@ SC.TapGestureRecognizer = SC.Gesture.extend({
 
   numberOfTouches: 1,
 
-  startLocation: null,
+  gestureIsDiscrete: true,
+
+  _initialLocation: null,
   _moveThreshold: 10,
 
-  touchStart: function(evt, view, manager) {
-    var touches = evt.originalEvent.targetTouches,
-        numberOfTouches = this.numberOfTouches;
-
-    if (touches.length === numberOfTouches) {
-      var touch = touches[0];
-
-      this.startLocation = {pageX:touch.pageX,pageY:touch.pageY};
-      this.state = SC.Gesture.POSSIBLE;
-      this.notifyViewOfGestureEvent(view,'tapStart');
-    }
-
-    manager.redispatchEventToView(view,'touchstart', evt);
+  gestureBecamePossible: function() {
+    this._initialLocation = this.centerPointForTouches(this._touches);
   },
 
-  touchEnd: function(evt, view, manager) {
-    var touches = evt.originalEvent.changedTouches;
+  gestureShouldAccept: function() {
+    var currentLocation = this.centerPointForTouches(this._touches);
+    var distance = this.distance([this._initialLocation,currentLocation]);
 
-    if(touches.length !== get(this, 'numberOfTouches')) {
-      manager.redispatchEventToView(view,'touchend', evt);
-      return;
-    }
-
-    var distance = this.distance([this.startLocation,touches[0]]);
-
-    if (this.state === SC.Gesture.POSSIBLE && distance <= this._moveThreshold) {
-      this.state = SC.Gesture.ENDED;
-      this.notifyViewOfGestureEvent(view,'tapEnd');
-    }
-    else {
-      this.state = SC.Gesture.CANCELLED;
-      this.notifyViewOfGestureEvent(view,'tapCancel');
-    }
-
-  },
-
-  touchCancel: function(evt, view, manager) {
-    manager.redispatchEventToView(view,'touchcancel', evt);
+    return distance <= this._moveThreshold;
   }
 });
 

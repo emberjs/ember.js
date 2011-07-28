@@ -21,17 +21,19 @@ module("Pan Test",{
     view = SC.View.create({
       elementId: 'gestureTest',
 
-      panStart: function(recognizer, change) {
+      panStart: function(recognizer) {
+        change = get(recognizer, 'translation')
         if (change.x > 10) return false;
         translation = change;
       },
 
-      panChange: function(recognizer, change) {
+      panChange: function(recognizer) {
+        change = get(recognizer, 'translation')
         if (change.x > 10) return false;
         translation = change;
       },
 
-      panEnd: function(recognizer, change) {
+      panEnd: function(recognizer) {
         numEnded++;
       }
     });
@@ -51,13 +53,13 @@ module("Pan Test",{
     view.$().trigger(touchEvent)
     view.destroy();
     application.destroy();
-  }  
+  }
 });
 
 test("one start event should put it in waiting state", function() {
   var numStart = 0;
   var touchEvent = new jQuery.Event();
-  
+
   touchEvent.type='touchstart';
   touchEvent['originalEvent'] = {
     targetTouches: [{
@@ -69,7 +71,7 @@ test("one start event should put it in waiting state", function() {
 
   view.$().trigger(touchEvent);
 
-  var gestures = get(get(view, 'eventManager'), 'gestures'); 
+  var gestures = get(get(view, 'eventManager'), 'gestures');
 
   ok(gestures);
   equals(gestures.length,1);
@@ -79,7 +81,7 @@ test("one start event should put it in waiting state", function() {
 test("two start events should put it in possible state", function() {
   var numStart = 0;
   var touchEvent = new jQuery.Event();
-  
+
   touchEvent.type='touchstart';
   touchEvent['originalEvent'] = {
     targetTouches: [{
@@ -96,7 +98,7 @@ test("two start events should put it in possible state", function() {
 
   view.$().trigger(touchEvent);
 
-  var gestures = get(get(view, 'eventManager'), 'gestures'); 
+  var gestures = get(get(view, 'eventManager'), 'gestures');
 
   ok(gestures);
   equals(gestures.length,1);
@@ -111,7 +113,7 @@ test("If the touches move, the translation should reflect the change", function(
       identifier: 0,
       pageX: 0,
       pageY: 10
-    }, 
+    },
     {
       identifier: 1,
       pageX: 0,
@@ -143,15 +145,15 @@ test("If the touches move, the translation should reflect the change", function(
   touchEvent = new jQuery.Event();
   touchEvent.type='touchmove';
   touchEvent['originalEvent'] = {
-    changedTouches: [ { 
+    changedTouches: [ {
       identifier: 0,
-      pageX: 10, 
-      pageY: 20 
-    }, 
-    { 
+      pageX: 10,
+      pageY: 20
+    },
+    {
       identifier: 1,
-      pageX: 10, 
-      pageY: 20 
+      pageX: 10,
+      pageY: 20
     }]
   };
 
@@ -162,10 +164,10 @@ test("If the touches move, the translation should reflect the change", function(
   touchEvent = new jQuery.Event();
   touchEvent.type='touchend';
   touchEvent['originalEvent'] = {
-    targetTouches: [{ 
+    targetTouches: [{
       identifier: 0,
-      pageX: 10, 
-      pageY: 20 
+      pageX: 10,
+      pageY: 20
     }]
   };
 
@@ -203,19 +205,104 @@ test("If a gesture event returns false, reject the change", function() {
   touchEvent['originalEvent'] = {
     changedTouches: [{
       identifier: 0,
-      pageX: 20, 
-      pageY: 10 
-    }, 
-    { 
+      pageX: 20,
+      pageY: 10
+    },
+    {
       identifier: 1,
-      pageX: 20, 
-      pageY: 10 
+      pageX: 20,
+      pageY: 10
     }]
   };
 
   view.$().trigger(touchEvent);
 
-  var gestures = get(get(view, 'eventManager'), 'gestures'); 
+  var gestures = get(get(view, 'eventManager'), 'gestures');
   equals(get(gestures[0], 'translation').x,0, "state should not change");
   equals(get(gestures[0], 'translation').y,0, "state should not change");
+});
+
+test("Subsequent pan gestures should be relative to previous ones", function() {
+
+
+  // ======================================
+  // START
+  //
+  var touchEvent = jQuery.Event('touchstart');
+  touchEvent['originalEvent'] = {
+    targetTouches: [{
+      identifier: 0,
+      pageX: 0,
+      pageY: 10
+    },
+    {
+      identifier: 1,
+      pageX: 0,
+      pageY: 10
+    }]
+  };
+
+  view.$().trigger(touchEvent);
+
+
+  // ======================================
+  // MOVE TO THE RIGHT 5px
+  //
+  touchEvent = jQuery.Event('touchmove');
+  touchEvent['originalEvent'] = {
+    changedTouches: [{
+      identifier: 0,
+      pageX: 5,
+      pageY: 10
+    },
+    {
+      identifier: 1,
+      pageX: 5,
+      pageY: 10
+    }]
+  };
+
+  view.$().trigger(touchEvent);
+
+  equals(translation.x,5,'changed x value');
+  equals(translation.y,0,'changed y value');
+
+
+  // ======================================
+  // END
+  //
+  touchEvent = new jQuery.Event();
+  touchEvent.type='touchend';
+  touchEvent['originalEvent'] = {
+    targetTouches: []
+  };
+
+  window.foo=true;
+  view.$().trigger(touchEvent);
+  window.foo=false;
+
+
+  // ======================================
+  // MOVE TO THE RIGHT ANOTHER 5px
+  //
+
+  touchEvent = jQuery.Event('touchmove');
+  touchEvent['originalEvent'] = {
+    changedTouches: [{
+      identifier: 0,
+      pageX: 10,
+      pageY: 10
+    },
+    {
+      identifier: 1,
+      pageX: 10,
+      pageY: 10
+    }]
+  };
+
+  view.$().trigger(touchEvent);
+
+  equals(translation.x,10,'changed x value');
+  equals(translation.y,0,'changed y value');
+
 });
