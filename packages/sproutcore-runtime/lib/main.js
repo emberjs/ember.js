@@ -11,3 +11,4 @@ require('sproutcore-runtime/core');
 require('sproutcore-runtime/ext');
 require('sproutcore-runtime/mixins');
 require('sproutcore-runtime/system');
+require('sproutcore-runtime/controllers');
