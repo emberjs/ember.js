@@ -175,14 +175,17 @@ SC.Gesture = SC.Object.extend(
 
   touchEnd: function(evt, view, manager) {
     if (get(this, 'gestureIsDiscrete')) {
+
       if (this.state === SC.Gesture.BEGAN && this.gestureShouldEnd()) {
         set(this, 'state', SC.Gesture.ENDED);
         this.attemptGestureEventDelivery(evt, view, get(this, 'name')+'End');
+
       } else {
         set(this, 'state', SC.Gesture.CANCELLED);
         this.attemptGestureEventDelivery(evt, view, get(this, 'name')+'Cancel');
       }
     } else {
+
       if (this.state !== SC.Gesture.ENDED) {
         this._resetState();
         set(this, 'state', SC.Gesture.ENDED);
@@ -203,12 +206,18 @@ SC.Gesture = SC.Object.extend(
     }
   },
 
-  gestureBecamePossible: function() {},
-  gestureChanged: function() {},
-
   gestureShouldBegin: function() {
     return true;
   },
+
+  gestureBecamePossible: function() {
+
+  },
+
+  gestureChanged: function() {
+
+  },
+
 
   gestureShouldEnd: function() {
     return true;
