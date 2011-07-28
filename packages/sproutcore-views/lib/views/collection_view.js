@@ -65,7 +65,7 @@ SC.CollectionView = SC.ContainerView.extend(
     var content = get(this, 'content');
 
     if (content) {
-      sc_assert(fmt("an ArrayController's content must implement SC.Array. You passed %@", [content]), content.addArrayObserver);
+      sc_assert(fmt("an ArrayController's content must implement SC.Array. You passed %@", [content]), content.addArrayObserver != null);
       content.addArrayObserver(this);
     }
     this.arrayDidChange(content, 0, null, get(content, 'length'));
