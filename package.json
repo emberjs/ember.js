@@ -1,36 +1,41 @@
 {
   "name": "sproutcore",
-  "bpm":  "0.1.4",
-
+  "bpm": "1.0.0",
   "dependencies": {
-    "sproutcore": "2.0.beta.2.1.pre",
-    "sproutcore-touch": "2.0.beta.2.1.pre"
+    "sproutcore": "2.0.beta.2",
+    "sproutcore-touch": "2.0.beta.2"
   },
-
   "dependencies:development": {
     "spade-qunit": "~> 1.0.0"
   },
-
   "bpm:build": {
-
     "bpm_libs.js": {
       "minifier": "uglify-js"
     },
-
     "jquery.js": {
       "minifier": "uglify-js",
-      "include": ["jquery"]
+      "include": [
+        "jquery"
+      ]
     },
-
     "sproutcore.js": {
       "minifier": "uglify-js",
-      "include": ["spade", "sproutcore-metal", "sproutcore-runtime", "handlebars", "sproutcore-views", "sproutcore-handlebars"]
+      "include": [
+        "spade",
+        "sproutcore-metal",
+        "sproutcore-runtime",
+        "handlebars",
+        "sproutcore-views",
+        "sproutcore-handlebars"
+      ]
     },
-
     "sproutcore-datastore.js": {
       "minifier": "uglify-js",
-      "include": ["sproutcore-datastore", "sproutcore-indexset", "sproutcore-datetime"]
+      "include": [
+        "sproutcore-datastore",
+        "sproutcore-indexset",
+        "sproutcore-datetime"
+      ]
     }
-
   }
 }

@@ -7,7 +7,7 @@
 
 require('sproutcore-handlebars/ext');
 
-var get = SC.get, getPath = SC.getPath;
+var getPath = SC.getPath;
 
 /**
   `unbound` allows you to output a property without binding. *Important:* The 

@@ -53,7 +53,7 @@ end
 
 # Create sproutcore:package tasks for each of the SproutCore packages
 namespace :sproutcore do
-  %w(metal indexset runtime handlebars views datastore).each do |package|
+  %w(metal indexset runtime handlebars views datastore statechart).each do |package|
     task package => compile_package_task("sproutcore-#{package}")
   end
 end
@@ -62,7 +62,7 @@ end
 task :handlebars => compile_package_task("handlebars")
 
 # Create a build task that depends on all of the package dependencies
-task :build => ["sproutcore:metal", "sproutcore:indexset", "sproutcore:runtime", "sproutcore:handlebars", "sproutcore:views", "sproutcore:datastore", :handlebars]
+task :build => ["sproutcore:metal", "sproutcore:indexset", "sproutcore:runtime", "sproutcore:handlebars", "sproutcore:views", "sproutcore:datastore", "sproutcore:statechart", :handlebars]
 
 # Strip out require lines from sproutcore.js. For the interim, requires are
 # precomputed by the compiler so they are no longer necessary at runtime.
@@ -93,6 +93,18 @@ file "dist/sproutcore-datastore.js" => [:build] do
   end
 end
 
+# Strip out require lines from sproutcore-statechart.js. For the interim, requires are
+# precomputed by the compiler so they are no longer necessary at runtime.
+file "dist/sproutcore-statechart.js" => [:build] do
+  puts "Generating sproutcore-statechart.js"
+
+  mkdir_p "dist"
+
+  File.open("dist/sproutcore-statechart.js", "w") do |file|
+    file.puts strip_require("tmp/static/sproutcore-statechart.js")
+  end
+end
+
 # Minify dist/sproutcore.js to dist/sproutcore.min.js
 file "dist/sproutcore.min.js" => "dist/sproutcore.js" do
   puts "Generating sproutcore.min.js"
@@ -114,6 +126,15 @@ file "dist/sproutcore-datastore.min.js" => "dist/sproutcore-datastore.js" do
 
   File.open("dist/sproutcore-datastore.min.js", "w") do |file|
     file.puts uglify("dist/sproutcore-datastore.js")
+  end
+end
+
+# Minify dist/sproutcore-statechart.js to dist/sproutcore-statechart.min.js
+file "dist/sproutcore-statechart.min.js" => "dist/sproutcore-statechart.js" do
+  puts "Generating sproutcore-statechart.min.js"
+
+  File.open("dist/sproutcore-statechart.min.js", "w") do |file|
+    file.puts uglify("dist/sproutcore-statechart.js")
   end
 end
 
@@ -191,7 +212,7 @@ namespace :starter_kit do
 end
 
 desc "Build SproutCore and SproutCore Datastore"
-task :dist => ["dist/sproutcore.min.js", "dist/sproutcore-datastore.min.js"]
+task :dist => ["dist/sproutcore.min.js", "dist/sproutcore-datastore.min.js", "dist/sproutcore-statechart.min.js"]
 
 desc "Clean build artifacts from previous builds"
 task :clean do

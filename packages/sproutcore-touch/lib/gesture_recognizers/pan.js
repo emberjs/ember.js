@@ -8,16 +8,16 @@ var get = SC.get;
 var set = SC.set;
 var x = 0;
 
-/** 
+/**
   @class
-  
+
   Recognizes a multi-touch pan gesture. Pan gestures require a specified number
-  of fingers to move and will record and update the center point between the 
+  of fingers to move and will record and update the center point between the
   touches.
 
   For pahChange events, the pan gesture recognizer passes in a translation value
   which can be applied as a CSS transform directly. Translation values are hashes
-  which contain an x and a y value.  
+  which contain an x and a y value.
 
     var myview = SC.View.create({
       elementId: 'gestureTest',
@@ -32,100 +32,48 @@ SC.PanGestureRecognizer = SC.Gesture.extend({
   numberOfTouches: 2,
 
   _initialLocation: null,
+  _previousTranslation: null,
+  _currentTranslation: null,
   _totalTranslation: null,
-  _accumulated: null,
-  _deltaThreshold: 0,
 
   init: function() {
     this._super();
-
-    this._totalTranslation = {x:0,y:0};
+    this._currentTranslation = this._totalTranslation = {x:0,y:0};
   },
 
-
-  _logPoint: function(pre, point) {
-    console.log(pre+' ('+point.x+','+point.y+')');
+  gestureBecamePossible: function() {
+    this._initialLocation = this.centerPointForTouches(this._touches);
   },
 
-  touchStart: function(evt, view, manager) {
-    var touches = evt.originalEvent.targetTouches;
-    var len = touches.length;
-
-    if (len < get(this, 'numberOfTouches')) {
-      this.state = SC.Gesture.WAITING_FOR_TOUCHES;
-    }
-    else {
-      this.state = SC.Gesture.POSSIBLE;
-      this._initialLocation = this.centerPointForTouches(touches[0],touches[1]);
-    }
-    
-    manager.redispatchEventToView(view,'touchstart', evt);
+  gestureShouldBegin: function() {
+    return true;
   },
 
-  touchMove: function(evt, view, manager) {
-    var touches = evt.originalEvent.targetTouches;
-    if(touches.length !== get(this, 'numberOfTouches')) { return; }
-
+  gestureChanged: function() {
     var initial = this._initialLocation;
 
-    var current = this.centerPointForTouches(touches[0],touches[1]);
+    this._previousTranslation = this._currentTranslation;
+    var current = this.centerPointForTouches(this._touches);
 
-    current.x -= initial.x; 
-    current.y -= initial.y; 
-    
-    current.x = this._totalTranslation.x + current.x;
-    current.y = this._totalTranslation.y + current.y;
+    // We add total translation because css3 transforms are absolute not relative
+    current.x = (current.x - initial.x) + this._totalTranslation.x;
+    current.y = (current.y - initial.y) + this._totalTranslation.y;
 
-    if (this._accumulated === null) {
-      this._accumulated = {x:0,y:0};
-    }
+    this._currentTranslation = current;
 
-    this._accumulated.x = current.x;
-    this._accumulated.y = current.y;
+    set(this, 'translation', current);
+  },
 
-    if (this.state === SC.Gesture.POSSIBLE) {
-      this.state = SC.Gesture.BEGAN;
-      this.notifyViewOfGestureEvent(view,'panStart', current);
-
-      evt.preventDefault();
-    }
-    else if (this.state === SC.Gesture.BEGAN || this.state === SC.Gesture.CHANGED) {
-      this.state = SC.Gesture.CHANGED;
-      this.notifyViewOfGestureEvent(view,'panChange', current);
-
-      evt.preventDefault();
-    }
-    else {
-      manager.redispatchEventToView(view,'touchmove', evt);
-    }
+  gestureEventWasRejected: function() {
+    set(this, 'translation', this._previousTranslation);
   },
 
   touchEnd: function(evt, view, manager) {
-    var touches = evt.originalEvent.targetTouches;
+    this._super(evt, view, manager);
 
-    if(touches.length !== 0 || this.state === SC.Gesture.ENDED) {
-      manager.redispatchEventToView(view,'touchend', evt);
-      return;
-    }
-
-    if (this._accumulated) {
-      this._totalTranslation.x = this._accumulated.x;
-      this._totalTranslation.y = this._accumulated.y;
-    }
-
-    this.state = SC.Gesture.ENDED;
-    this.notifyViewOfGestureEvent(view,'panEnd');
+    this._totalTranslation.x = this._currentTranslation.x;
+    this._totalTranslation.y = this._currentTranslation.y;
   },
-
-  touchCancel: function(evt, view, manager) {
-    if (this.state !== SC.Gesture.CANCELLED) {
-      this.state = SC.Gesture.CANCELLED;
-      this.notifyViewOfGestureEvent(view,'panCancel');
-    }
-    else {
-      manager.redispatchEventToView(view,'touchcancel', evt);
-    }
-  }
 });
 
 SC.Gestures.register('pan', SC.PanGestureRecognizer);

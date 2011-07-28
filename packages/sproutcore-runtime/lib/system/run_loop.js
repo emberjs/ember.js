@@ -84,10 +84,8 @@ var RunLoop = SC.Object.extend({
       while (this._queues && (queue = this._queues[queueName])) {
         this._queues[queueName] = null;
 
-        //@if (debug)
         log = SC.LOG_BINDINGS && queueName==='sync';
         if (log) SC.Logger.log('Begin: Flush Sync Queue');
-        //@endif
 
         // the sync phase is to allow property changes to propogate.  don't
         // invoke observers until that is finished.
@@ -95,9 +93,7 @@ var RunLoop = SC.Object.extend({
         queue.forEach(iter);
         if (queueName === 'sync') SC.endPropertyChanges();
 
-        //@if (debug)
         if (log) SC.Logger.log('End: Flush Sync Queue');
-        //@endif
 
       }
 
@@ -110,18 +106,14 @@ var RunLoop = SC.Object.extend({
           queueName = queueNames[idx];
           queue = queues[queueName];
 
-          //@if (debug)
           log = SC.LOG_BINDINGS && queueName==='sync';
           if (log) SC.Logger.log('Begin: Flush Sync Queue');
-          //@endif
 
           if (queueName === 'sync') SC.beginPropertyChanges();
           if (queue) queue.forEach(iter);
           if (queueName === 'sync') SC.endPropertyChanges();
 
-          //@if (debug)
           if (log) SC.Logger.log('End: Flush Sync Queue');
-          //@endif
 
         }
 

@@ -29,13 +29,11 @@ YES = true;
 */
 NO = false;
 
-//@if (legacy)
 // ensure no undefined errors in browsers where console doesn't exist
 if (typeof console === 'undefined') {
   window.console = {};
   console.log = console.info = console.warn = console.error = function() {};
 }
-//@endif
 
 // ..........................................................
 // BOOTSTRAP
@@ -353,7 +351,6 @@ SC.ORDER_DEFINITION = SC.ENV.ORDER_DEFINITION || [
 */
 SC.keys = Object.keys;
 
-//@if (legacy)
 if (!SC.keys) {
   SC.keys = function(obj) {
     var ret = [];
