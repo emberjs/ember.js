@@ -9,15 +9,16 @@
     "spade":              "~> 1.0.0",
     "handlebars":         "~> 1.0.0.beta.2",
     "sproutcore-views":   "2.0.beta.2",
-    "sproutcore-runtime": "2.0.beta.2"
+    "sproutcore-runtime": "2.0.beta.2",
+    "sproutcore-handlebars-format": "~> 1.0.0"
   },
 
   "directories": {
     "lib": "lib"
   },
 
-  "dependencies:developer": {
-    "qunit": "1.0.0"
+  "dependencies:development": {
+    "spade-qunit": "~> 1.0.0"
   },
   
   "bpm:build": {
@@ -33,8 +34,11 @@
     }
   },
   
-  "bpm:formats": {
-    "handlebars": "sproutcore-handlebars/handlebars-format"
+  "bpm:provides": {
+    "format:handlebars": {
+      "default:mime": "application/javascript",
+      "main": "sproutcore-handlebars-format/format" 
+    }
   }
   
 }

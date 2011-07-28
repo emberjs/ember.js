@@ -1,0 +1,19 @@
+{
+  "name": "sproutcore-handlebars-format",
+  "version": "1.0.0",
+  "description": "Adds format support for handlebars templates",
+  "homepage": "http://www.sproutcore.com",
+  
+  "bpm:build": {
+    "bpm_libs.js": {
+      "directories": []
+    }
+  },
+  
+  "bpm:provides": {
+    "format": {
+      "mime:default": "application/javascript",
+      "main": "sproutcore-handlebars-format/format"
+    }
+  }
+}

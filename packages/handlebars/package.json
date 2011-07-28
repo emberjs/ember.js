@@ -10,10 +10,6 @@
     "lib": "lib"
   },
 
-  "dependencies:developer": {
-    "qunit": "1.0.0"
-  },
-  
   "bpm:build": {
     
     "bpm_libs.js": {
