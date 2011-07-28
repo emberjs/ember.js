@@ -364,9 +364,7 @@ SC.Set = SC.CoreObject.extend(SC.MutableEnumerable, SC.Copyable, SC.Freezable,
 var o_create = SC.Set.create;
 SC.Set.create = function(items) {
   if (items && SC.Enumerable.detect(items)) {
-//@if (debug)
     SC.Logger.warn('Passing an enumerable to SC.Set.create() is deprecated and will be removed in a future version of SproutCore.  Use new SC.Set(items) instead');
-//@endif
     return new SC.Set(items);
   } else {
     return o_create.apply(this, arguments);

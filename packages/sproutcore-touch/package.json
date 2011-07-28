@@ -13,7 +13,7 @@
   "dependencies": {
     "spade"            : "~> 1.0",
     "jquery"           : "~> 1.6",
-    "sproutcore-views" : "2.0.beta.2.pre"
+    "sproutcore-views" : "2.0.beta.2"
   },
 
   "bpm:build": {

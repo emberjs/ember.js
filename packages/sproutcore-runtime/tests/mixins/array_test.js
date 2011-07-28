@@ -499,7 +499,6 @@ test('removing an object should no longer notify', function() {
 
 
 test('modifying the array should also indicate the isDone prop itself has changed', function() {
-
   // NOTE: we never actually get the '@each.isDone' property here.  This is
   // important because it tests the case where we don't have an isDone
   // EachArray materialized but just want to know when the property has
@@ -518,9 +517,42 @@ test('modifying the array should also indicate the isDone prop itself has change
 });
 
 
+testBoth("should be clear caches for computed properties that have dependent keys on arrays that are changed after object initialization", function(get, set) {
+  var obj = SC.Object.create({
+    init: function() {
+      set(this, 'resources', SC.MutableArray.apply([]));
+    },
 
+    common: SC.computed(function() {
+      return get(get(this, 'resources').objectAt(0), 'common');
+    }).property('resources.@each.common').cacheable(),
+  });
 
+  get(obj, 'resources').pushObject(SC.Object.create({ common: "HI!" }));
+  equals("HI!", get(obj, 'common'));
 
+  set(get(obj, 'resources').objectAt(0), 'common', "BYE!");
+  equals("BYE!", get(obj, 'common'));
+});
 
+testBoth("observers that contain @each in the path should fire only once the first time they are accessed", function(get, set) {
+  count = 0;
 
+  var obj = SC.Object.create({
+    init: function() {
+      // Observer fires once when resources changes
+      set(this, 'resources', SC.MutableArray.apply([]));
+    },
 
+    commonDidChange: function() {
+      count++;
+    }.observes('resources.@each.common')
+  })
+
+  // Observer fires second time when new object is added
+  get(obj, 'resources').pushObject(SC.Object.create({ common: "HI!" }));
+  // Observer fires third time when property on an object is changed
+  set(get(obj, 'resources').objectAt(0), 'common', "BYE!");
+
+  equals(count, 3, "observers should only be called once");
+});

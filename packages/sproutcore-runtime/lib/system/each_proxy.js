@@ -99,10 +99,10 @@ SC.EachProxy = SC.Object.extend({
     You can directly access mapped properties by simply requesting them.
     The unknownProperty handler will generate an EachArray of each item.
   */
-  unknownProperty: function(keyName) {
+  unknownProperty: function(keyName, value) {
     var ret;
     ret = new EachArray(this._content, keyName, this);
-    set(this, keyName, ret);
+    new SC.Descriptor().setup(this, keyName, ret);
     this.beginObservingContentKey(keyName);
     return ret;
   },

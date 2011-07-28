@@ -38,7 +38,13 @@ var SIMPLE_DESC = {
   
   You generally won't need to create or subclass this directly.
 */
-SC.Descriptor = function() {};
+var Dc = SC.Descriptor = function() {};
+
+var setup = Dc.setup = function(obj, keyName, value) {
+  SIMPLE_DESC.value = value;
+  o_defineProperty(obj, keyName, SIMPLE_DESC);
+  SIMPLE_DESC.value = null;
+};
 
 var Dp = SC.Descriptor.prototype;
 
@@ -98,11 +104,7 @@ Dp.get = function(obj, keyName) {
   
   @returns {void}
 */
-Dp.setup = function(obj, keyName, value) {
-  SIMPLE_DESC.value = value;
-  o_defineProperty(obj, keyName, SIMPLE_DESC);
-  SIMPLE_DESC.value = null;
-};
+Dp.setup = setup;
 
 /**
   This is called on the descriptor just before another descriptor takes its
@@ -137,7 +139,6 @@ Dp.val = function(obj, keyName) {
 // testing on browsers that do support accessors.  It will throw an exception
 // if you do foo.bar instead of SC.get(foo, 'bar')
 
-//@if (legacy)
 if (!USE_ACCESSORS) {
   SC.Descriptor.MUST_USE_GETTER = function() {
     sc_assert('Must use SC.get() to access this property', false);
@@ -151,7 +152,6 @@ if (!USE_ACCESSORS) {
     }
   };
 }
-//@endif
 
 var WATCHED_DESC = {
   configurable: true,
@@ -160,8 +160,13 @@ var WATCHED_DESC = {
 };
 
 function w_get(obj, keyName) {
-  var m = meta(obj, false);
-  return m.values ? m.values[keyName] : undefined;
+  var m = meta(obj, false), values = m.values;
+
+  if (values) {
+    if (keyName in values) { return values[keyName]; }
+    if (obj.unknownProperty) { return obj.unknownProperty(keyName); }
+  }
+
 }
 
 function w_set(obj, keyName, value) {

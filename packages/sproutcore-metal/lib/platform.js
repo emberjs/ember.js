@@ -19,7 +19,6 @@ var platform = SC.platform = {} ;
 */
 platform.create = Object.create;
 
-//@if (legacy)
 if (!platform.create) {
   var O_ctor = function() {},
       O_proto = O_ctor.prototype;
@@ -41,7 +40,6 @@ if (!platform.create) {
 
   platform.create.isSimulated = true;
 }
-//@endif
 
 var defineProperty = Object.defineProperty, canRedefineProperties, canDefinePropertyOnDOM;
 
@@ -127,7 +125,6 @@ platform.defineProperty = defineProperty;
 */
 platform.hasPropertyAccessors = true;
 
-//@if (legacy)
 if (!platform.defineProperty) {
   platform.hasPropertyAccessors = false;
 
@@ -138,4 +135,3 @@ if (!platform.defineProperty) {
 
   platform.defineProperty.isSimulated = true;
 }
-//@endif
