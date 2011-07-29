@@ -28,20 +28,21 @@ var sigFigs = 100;
   @extends SC.Gesture
 */
 SC.PinchGestureRecognizer = SC.Gesture.extend({
-  // Initial is global, starting is per-gesture event
+  // Initial is global to view, starting is per-gesture
   _initialDistanceBetweenTouches: null,
   _startingDistanceBetweenTouches: null,
 
-  _deltaThreshold: 0,
+  _deltaThreshold: 10,
   _initialScale: 1,
+
   scale: 1,
 
-  gestureBecamePossible: function() {
+  didBecomePossible: function() {
     this._startingDistanceBetweenTouches = this.distance(this._touches);
 
     if (!this._initialDistanceBetweenTouches) {
       // We only want to save the initial distance between touches the first time
-      // and not subsequent times. This is because the css3 scale3d transform
+      // and not subsequent gestures. This is because the css3 scale3d transform
       // requires the value of scale to be relative to its original size, so if
       // we want the scaling to be smooth when the user tries to pinch a second
       // time, we need to remember what the first distance was and compare
@@ -54,13 +55,13 @@ SC.PinchGestureRecognizer = SC.Gesture.extend({
     this._initialScale = get(this, 'scale');
   },
 
-  gestureShouldBegin: function() {
+  shouldBegin: function() {
     var currentDistanceBetweenTouches = this.distance(this._touches);
 
     return Math.abs(currentDistanceBetweenTouches - this._startingDistanceBetweenTouches) >= this._deltaThreshold;
   },
 
-  gestureChanged: function() {
+  didChange: function() {
     var currentDistanceBetweenTouches = this.distance(this._touches);
     var scale = get(this, 'scale');
 
@@ -73,7 +74,11 @@ SC.PinchGestureRecognizer = SC.Gesture.extend({
     set(this, 'scale', scale);
   },
 
-  gestureEventWasRejected: function() {
+  didEnd: function() {
+    this._initialScale = 1;
+  },
+
+  eventWasRejected: function() {
     set(this, 'scale', this._previousScale);
   }
 });

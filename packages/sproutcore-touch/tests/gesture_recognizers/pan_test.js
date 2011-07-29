@@ -277,9 +277,7 @@ test("Subsequent pan gestures should be relative to previous ones", function() {
     targetTouches: []
   };
 
-  window.foo=true;
   view.$().trigger(touchEvent);
-  window.foo=false;
 
 
   // ======================================

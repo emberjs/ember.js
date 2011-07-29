@@ -245,7 +245,27 @@ test("when 2 fingers move closer together, gesture should be in BEGAN state", fu
       pageY: 100
     }]
   };
+
   view.$().trigger(touchEvent);
+
+  touchEvent = new jQuery.Event();
+  touchEvent.type='touchmove';
+  touchEvent['originalEvent'] = {
+    changedTouches: [{
+      identifier: 0,
+      pageX: 0,
+      pageY: 100
+    }]
+  };
+
+  view.$().trigger(touchEvent);
+
+  equals(numStart,1,"pinchStart called once")
+  equals(get(gestures[0], 'state'),SC.Gesture.BEGAN, "gesture should be began");
+  equals(startScale,2,"scale should be doubled again");
+
+  // =====================================
+  // Half its size
 
   touchEvent = new jQuery.Event();
   touchEvent.type='touchmove';
@@ -256,29 +276,11 @@ test("when 2 fingers move closer together, gesture should be in BEGAN state", fu
       pageY: 100
     }]
   };
-  view.$().trigger(touchEvent);
-
-  equals(numStart,1,"pinchStart called once")
-  equals(get(gestures[0], 'state'),SC.Gesture.BEGAN, "gesture should be began");
-  equals(startScale,1,"scale should still be 1");
-
-  // =====================================
-  // Half its size
-
-  touchEvent = new jQuery.Event();
-  touchEvent.type='touchmove';
-  touchEvent['originalEvent'] = {
-    changedTouches: [{
-      identifier: 0,
-      pageX: 75,
-      pageY: 100
-    }]
-  };
 
   view.$().trigger(touchEvent);
 
   equals(get(gestures[0], 'state'),SC.Gesture.CHANGED, "gesture should be changed");
-  equals(changeScale,0.5,"scale should be halved");
+  equals(changeScale,1,"scale should be halved");
 
 });
 

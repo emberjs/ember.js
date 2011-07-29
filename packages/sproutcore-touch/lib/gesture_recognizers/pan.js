@@ -33,47 +33,43 @@ SC.PanGestureRecognizer = SC.Gesture.extend({
 
   _initialLocation: null,
   _previousTranslation: null,
-  _currentTranslation: null,
   _totalTranslation: null,
+  
+  translation: null,
 
   init: function() {
     this._super();
-    this._currentTranslation = this._totalTranslation = {x:0,y:0};
+    var translation = this._totalTranslation = {x:0,y:0};
+    set(this, 'translation', translation);
   },
 
-  gestureBecamePossible: function() {
+  didBegin: function() {
     this._initialLocation = this.centerPointForTouches(this._touches);
   },
 
-  gestureShouldBegin: function() {
-    return true;
-  },
-
-  gestureChanged: function() {
+  didChange: function() {
     var initial = this._initialLocation;
 
-    this._previousTranslation = this._currentTranslation;
+    this._previousTranslation = get(this, 'translation');
     var current = this.centerPointForTouches(this._touches);
 
     // We add total translation because css3 transforms are absolute not relative
     current.x = (current.x - initial.x) + this._totalTranslation.x;
     current.y = (current.y - initial.y) + this._totalTranslation.y;
 
-    this._currentTranslation = current;
-
     set(this, 'translation', current);
   },
 
-  gestureEventWasRejected: function() {
+  eventWasRejected: function() {
     set(this, 'translation', this._previousTranslation);
   },
 
-  touchEnd: function(evt, view, manager) {
-    this._super(evt, view, manager);
+  didEnd: function(evt, view, manager) {
+    var translation = get(this, 'translation');
 
-    this._totalTranslation.x = this._currentTranslation.x;
-    this._totalTranslation.y = this._currentTranslation.y;
-  },
+    this._totalTranslation.x = translation.x;
+    this._totalTranslation.y = translation.y;
+  }
 });
 
 SC.Gestures.register('pan', SC.PanGestureRecognizer);

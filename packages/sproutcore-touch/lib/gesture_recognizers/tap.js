@@ -30,36 +30,45 @@ var set = SC.set;
 SC.TapGestureRecognizer = SC.Gesture.extend({
 
   numberOfTouches: 1,
-  numberOfTaps: 2,
+  numberOfTaps: 1,
   MULTITAP_DELAY: 150,
 
   gestureIsDiscrete: true,
+  _initialLocation: null,
 
   _waitingInterval: null,
   _waitingForMoreTouches: false,
   _moveThreshold: 10,
 
-  gestureBecamePossible: function() {
+  shouldBegin: function() {
+    return this._numActiveTouches === get(this, 'numberOfTaps');
+  },
+
+  didBegin: function() {
     this._initialLocation = this.centerPointForTouches(this._touches);
 
     this._waitingForMoreTouches = true;
     this._waitingInterval = window.setInterval(this._intervalFired,this.MULTITAP_DELAY);
   },
 
-  gestureShouldBegin: function() {
-    return true;
+  shouldEnd: function() {
+    var currentLocation = this.centerPointForTouches(this._touches);
+    var distance = this.distance([this._initialLocation,currentLocation]);
+
+    return (distance <= this._moveThreshold) && !this._waitingForMoreTouches;
+  },
+
+  didEnd: function() {
+    this._initialLocation = null;
+  },
+
+  didCancel: function() {
+    this._initialLocation = null;
   },
 
   _intervalFired: function() {
     window.clearInterval(this._waitingInterval);
     _waitingForMoreTouches = false;
-  },
-
-  gestureShouldEnd: function() {
-    var currentLocation = this.centerPointForTouches(this._touches);
-    var distance = this.distance([this._initialLocation,currentLocation]);
-
-    return (distance <= this._moveThreshold) && !this._waitingForMoreTouches;
   }
 });
 
