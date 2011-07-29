@@ -194,7 +194,7 @@ namespace :starter_kit do
     mkdir_p "dist"
 
     Dir.chdir("tmp") do
-      sh %{zip -r starter-kit.#{SC_VERSION}.zip starter-kit -x "starter-kit/.git/*"}
+      sh %{zip -r ../dist/starter-kit.#{SC_VERSION}.zip starter-kit -x "starter-kit/.git/*"}
     end
   end
 
