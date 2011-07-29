@@ -122,25 +122,30 @@ test("If the touches move, the translation should reflect the change", function(
   };
 
   view.$().trigger(touchEvent);
+  equals(get(get(get(view, 'eventManager'), 'gestures')[0], 'state'),SC.Gesture.POSSIBLE, "gesture should be possible");
 
   touchEvent = new jQuery.Event();
   touchEvent.type='touchmove';
   touchEvent['originalEvent'] = {
     changedTouches: [{
       identifier: 0,
-      pageX: 10,
+      pageX: 5,
       pageY: 10
     },
     {
       identifier: 1,
-      pageX: 10,
+      pageX: 5,
       pageY: 10
     }]
   };
 
+  window.foo=true;
   view.$().trigger(touchEvent);
+  window.foo=false;
 
-  equals(translation.x,10,'changed x value');
+  equals(get(get(get(view, 'eventManager'), 'gestures')[0], 'state'),SC.Gesture.BEGAN, "gesture should be BEGAN");
+
+  equals(translation.x,5,'changed x value');
 
   touchEvent = new jQuery.Event();
   touchEvent.type='touchmove';
@@ -148,18 +153,19 @@ test("If the touches move, the translation should reflect the change", function(
     changedTouches: [ {
       identifier: 0,
       pageX: 10,
-      pageY: 20
+      pageY: 15
     },
     {
       identifier: 1,
       pageX: 10,
-      pageY: 20
+      pageY: 15
     }]
   };
 
   view.$().trigger(touchEvent);
+  equals(get(get(get(view, 'eventManager'), 'gestures')[0], 'state'),SC.Gesture.CHANGED, "gesture should be CHANGED");
 
-  equals(translation.y,10,'changed y value');
+  equals(translation.y,5,'changed y value');
 
   touchEvent = new jQuery.Event();
   touchEvent.type='touchend';
@@ -172,6 +178,7 @@ test("If the touches move, the translation should reflect the change", function(
   };
 
   view.$().trigger(touchEvent);
+  equals(get(get(get(view, 'eventManager'), 'gestures')[0], 'state'),SC.Gesture.ENDED, "gesture should be ENDED");
 
   touchEvent = new jQuery.Event();
   touchEvent.type='touchend';
@@ -180,6 +187,7 @@ test("If the touches move, the translation should reflect the change", function(
   };
 
   view.$().trigger(touchEvent);
+  equals(get(get(get(view, 'eventManager'), 'gestures')[0], 'state'),SC.Gesture.ENDED, "gesture should be ENDED");
 
   equals(numEnded,1,"panEnd should be called once");
 });
@@ -205,12 +213,12 @@ test("If a gesture event returns false, reject the change", function() {
   touchEvent['originalEvent'] = {
     changedTouches: [{
       identifier: 0,
-      pageX: 20,
+      pageX: 11,
       pageY: 10
     },
     {
       identifier: 1,
-      pageX: 20,
+      pageX: 11,
       pageY: 10
     }]
   };
@@ -279,6 +287,24 @@ test("Subsequent pan gestures should be relative to previous ones", function() {
 
   view.$().trigger(touchEvent);
 
+  // ======================================
+  // START AGAIN
+  //
+  touchEvent = jQuery.Event('touchstart');
+  touchEvent['originalEvent'] = {
+    targetTouches: [{
+      identifier: 0,
+      pageX: 0,
+      pageY: 10
+    },
+    {
+      identifier: 1,
+      pageX: 0,
+      pageY: 10
+    }]
+  };
+
+  view.$().trigger(touchEvent);
 
   // ======================================
   // MOVE TO THE RIGHT ANOTHER 5px
@@ -288,12 +314,12 @@ test("Subsequent pan gestures should be relative to previous ones", function() {
   touchEvent['originalEvent'] = {
     changedTouches: [{
       identifier: 0,
-      pageX: 10,
+      pageX: 5,
       pageY: 10
     },
     {
       identifier: 1,
-      pageX: 10,
+      pageX: 5,
       pageY: 10
     }]
   };

@@ -34,7 +34,7 @@ SC.PanGestureRecognizer = SC.Gesture.extend({
   _initialLocation: null,
   _previousTranslation: null,
   _totalTranslation: null,
-  
+
   translation: null,
 
   init: function() {
@@ -43,7 +43,7 @@ SC.PanGestureRecognizer = SC.Gesture.extend({
     set(this, 'translation', translation);
   },
 
-  didBegin: function() {
+  didBecomePossible: function() {
     this._initialLocation = this.centerPointForTouches(this._touches);
   },
 
