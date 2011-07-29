@@ -63,7 +63,7 @@ SC.TapGestureRecognizer = SC.Gesture.extend({
 
     var distance = Math.sqrt((x -= x0) * x + (y -= y0) * y);
 
-    return (distance <= this._moveThreshold) && !this._waitingForMoreTouches;
+    return (Math.abs(distance) < this._moveThreshold) && !this._waitingForMoreTouches;
   },
 
   didEnd: function() {

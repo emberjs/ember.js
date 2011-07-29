@@ -32,7 +32,7 @@ SC.PinchGestureRecognizer = SC.Gesture.extend({
   _initialDistanceBetweenTouches: null,
   _startingDistanceBetweenTouches: null,
 
-  _deltaThreshold: 10,
+  _deltaThreshold: 5,
   _initialScale: 1,
 
   scale: 1,

@@ -24,14 +24,14 @@ test("Nested event managers should get called appropriately", function() {
     touchStart: function(evt, view, manager) {
       this.notifyViewOfGestureEvent(view, 'nestedEventManagerTestGestureStart');
       manager.redispatchEventToView(view,'touchstart');
-    }      
+    }
   }));
-  
+
   SC.Gestures.register('nestedViewTestGesture',SC.Gesture.extend({
     touchStart: function(evt, view, manager) {
       this.notifyViewOfGestureEvent(view, 'nestedViewTestGestureStart');
       manager.redispatchEventToView(view,'touchstart');
-    }      
+    }
   }));
 
   var callNumber = 0;
@@ -43,7 +43,7 @@ test("Nested event managers should get called appropriately", function() {
     nestedView: SC.View.extend({
       elementId: 'nestedTestView',
 
-      nestedViewTestGestureStart: function() { 
+      nestedViewTestGestureStart: function() {
         equals(callNumber,0,'nested manager called first');
         callNumber++;
       },
@@ -65,16 +65,16 @@ test("Nested event managers should get called appropriately", function() {
     }
   });
 
-  SC.run(function(){ 
+  SC.run(function(){
     view.append();
   });
 
-  var gestures = get(get(view, 'eventManager'), 'gestures'); 
+  var gestures = get(get(view, 'eventManager'), 'gestures');
 
   ok(gestures);
   equals(gestures.length,1);
 
   $('#nestedTestView').trigger('touchstart');
-  
+
 });
 
