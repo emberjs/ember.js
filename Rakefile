@@ -142,17 +142,34 @@ SC_VERSION = File.read("VERSION")
 
 desc "bump the version to the specified version"
 task :bump_version, :version do |t, args|
-  File.open("VERSION", "w") { |file| file.write args[:version] }
+  version = args[:version]
 
-  Dir["packages/sproutcore-*/package.json"].each do |package|
+  File.open("VERSION", "w") { |file| file.write version }
+
+  # Bump the version of subcomponents required by the "umbrella" sproutcore
+  # package.
+  contents = File.read("packages/sproutcore/package.json")
+  contents.gsub! %r{"sproutcore-(\w+)": .*$} do
+    %{"sproutcore-#{$1}": "#{version}"}
+  end
+
+  File.open("packages/sproutcore/package.json", "w") do |file|
+    file.write contents
+  end
+
+  # Bump the version of each component package
+  Dir["packages/sproutcore*/package.json", "package.json"].each do |package|
     contents = File.read(package)
-    contents.gsub! %r{"version": .*$}, %{"version": "#{args[:version]}",}
+    contents.gsub! %r{"version": .*$}, %{"version": "#{version}",}
+    contents.gsub! %r{"(sproutcore-?\w*)": [^\n\{,]*(,?)$} do
+      %{"#{$1}": "#{version}"#{$2}}
+    end
 
     File.open(package, "w") { |file| file.write contents }
   end
 
-  sh %{git add VERSION **/package.json}
-  sh %{git commit -m "Bump version to #{args[:version]}"}
+  sh %{git add VERSION package.json packages/**/package.json}
+  sh %{git commit -m "Bump version to #{version}"}
 end
 
 ## STARTER KIT ##
