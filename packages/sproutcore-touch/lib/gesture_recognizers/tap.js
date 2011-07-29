@@ -47,13 +47,21 @@ SC.TapGestureRecognizer = SC.Gesture.extend({
   didBegin: function() {
     this._initialLocation = this.centerPointForTouches(this._touches);
 
-    this._waitingForMoreTouches = true;
-    this._waitingInterval = window.setInterval(this._intervalFired,this.MULTITAP_DELAY);
+    if (this._numActiveTouches < get(this, 'numberOfTaps')) {
+      this._waitingForMoreTouches = true;
+      this._waitingInterval = window.setInterval(this._intervalFired,this.MULTITAP_DELAY);
+    }
   },
 
   shouldEnd: function() {
     var currentLocation = this.centerPointForTouches(this._touches);
-    var distance = this.distance([this._initialLocation,currentLocation]);
+
+    var x = this._initialLocation.x;
+    var y = this._initialLocation.y;
+    var x0 = currentLocation.x;
+    var y0 = currentLocation.y;
+
+    var distance = Math.sqrt((x -= x0) * x + (y -= y0) * y);
 
     return (distance <= this._moveThreshold) && !this._waitingForMoreTouches;
   },

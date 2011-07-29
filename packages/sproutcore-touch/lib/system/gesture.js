@@ -129,6 +129,7 @@ SC.Gesture = SC.Object.extend(
       if (get(this, 'gestureIsDiscrete') && this.shouldBegin()) {
         set(this, 'state', SC.Gesture.BEGAN);
         this.didBegin();
+        this.attemptGestureEventDelivery(evt, view, get(this, 'name')+'Start');
       } else {
         set(this, 'state', SC.Gesture.POSSIBLE);
         this.didBecomePossible();

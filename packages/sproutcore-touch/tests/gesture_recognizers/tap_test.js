@@ -53,7 +53,7 @@ module("Tap Test",{
   }
 });
 
-test("one start event should put it in possible state", function() {
+test("one start event should put it in began state", function() {
   var numStart = 0;
   var touchEvent = jQuery.Event('touchstart');
   touchEvent['originalEvent'] = {
@@ -69,7 +69,7 @@ test("one start event should put it in possible state", function() {
 
   ok(gestures);
   equals(gestures.length,1);
-  equals(get(gestures[0], 'state'),SC.Gesture.POSSIBLE, "gesture should be possible");
+  equals(get(gestures[0], 'state'),SC.Gesture.BEGAN, "gesture should be began");
 });
 
 test("when touch ends, tap should fire", function() {
@@ -83,22 +83,28 @@ test("when touch ends, tap should fire", function() {
       pageY: 10
     }]
   };
+
   view.$().trigger(touchEvent);
 
+  var gestures = get(get(view, 'eventManager'), 'gestures');
+
   ok(startCalled, 'tapStart should be called on the view');
+  ok(gestures, "gestures should exist");
+  equals(gestures.length,1);
+  equals(get(gestures[0], 'state'),SC.Gesture.BEGAN, "gesture should be began");
 
   touchEvent = new jQuery.Event();
   touchEvent.type='touchend';
   touchEvent['originalEvent'] = {
     changedTouches: [{
-      pageX: 20,
+      pageX: 5,
       pageY: 10
     }]
   };
 
   view.$().trigger(touchEvent);
 
-  var gestures = get(get(view, 'eventManager'), 'gestures');
+  gestures = get(get(view, 'eventManager'), 'gestures');
 
   ok(endCalled,'tap should be ended');
   ok(gestures, "gestures should exist");
