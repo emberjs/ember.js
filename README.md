@@ -69,7 +69,7 @@ Make sure you list these dependencies so SproutCore knows when to update binding
 
 SproutCore uses Handlebars, a semantic templating library. To take data from your JavaScript application and put it into the DOM, create a `<script>` tag and put it into your HTML, wherever you'd like the value to appear:
 
-    <script type="text/html">
+    <script type="text/x-handlebars">
       The President of the United States is {{MyApp.president.fullName}}.
     </script>
 
