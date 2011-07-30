@@ -212,6 +212,22 @@ SC.View = SC.Object.extend(
     return this.invokeForState('rerender');
   },
 
+  clearRenderedChildren: function() {
+    var viewMeta = meta(this)['SC.View'],
+        lengthBefore = viewMeta.lengthBeforeRender,
+        lengthAfter  = viewMeta.lengthAfterRender;
+
+    // If there were child views created during the last call to render(),
+    // remove them under the assumption that they will be re-created when
+    // we re-render.
+
+    // VIEW-TODO: Unit test this path.
+    if (lengthBefore < lengthAfter) {
+      var childViews = get(this, 'childViews');
+      childViews.replace(lengthBefore, lengthAfter - lengthBefore);
+    }
+  },
+
   /**
     @private
 
@@ -1117,6 +1133,7 @@ SC.View.states = {
       var viewMeta = meta(view)['SC.View'],
           buffer = viewMeta.buffer;
 
+      view.clearRenderedChildren();
       view.renderToBuffer(buffer, 'replaceWith');
     },
 
@@ -1175,18 +1192,7 @@ SC.View.states = {
 
       view.invokeRecursively(function(v) { v.state = 'preRender'; })
 
-      var lengthBefore = viewMeta.lengthBeforeRender,
-          lengthAfter  = viewMeta.lengthAfterRender;
-
-      // If there were child views created during the last call to render(),
-      // remove them under the assumption that they will be re-created when
-      // we re-render.
-
-      // VIEW-TODO: Unit test this path.
-      if (lengthBefore < lengthAfter) {
-        var childViews = get(view, 'childViews');
-        childViews.replace(lengthBefore, lengthAfter - lengthBefore);
-      }
+      view.clearRenderedChildren();
 
       // Set element to null after the childViews.replace() call to prevent
       // a call to $() from inside _scheduleInsertion triggering a rerender.
