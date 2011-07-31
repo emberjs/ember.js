@@ -222,9 +222,9 @@ SC.View = SC.Object.extend(
     // we re-render.
 
     // VIEW-TODO: Unit test this path.
-    if (lengthBefore < lengthAfter) {
-      var childViews = get(this, 'childViews');
-      childViews.replace(lengthBefore, lengthAfter - lengthBefore);
+    var childViews = get(this, 'childViews');
+    for (var i=lengthBefore; i<lengthAfter; i++) {
+      childViews[i] && childViews[i].destroy();
     }
   },
 
