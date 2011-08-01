@@ -236,7 +236,7 @@ function _copy(obj, deep, seen, copies) {
   var ret, loc, key;
 
   // primitive data types are immutable, just return them.
-  if ('object' !== typeof obj) return obj;
+  if ('object' !== typeof obj || obj===null) return obj;
 
   // avoid cyclical loops
   if (deep && (loc=seen.indexOf(obj))>=0) return copies[loc];
@@ -283,7 +283,7 @@ function _copy(obj, deep, seen, copies) {
 */
 SC.copy = function(obj, deep) {
   // fast paths
-  if ('object' !== typeof obj) return obj; // can't copy primitives
+  if ('object' !== typeof obj || obj===null) return obj; // can't copy primitives
   if (SC.Copyable && SC.Copyable.detect(obj)) return obj.copy(deep);
   return _copy(obj, deep, deep ? [] : null, deep ? [] : null);
 };
