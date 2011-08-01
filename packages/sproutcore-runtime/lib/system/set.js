@@ -4,13 +4,14 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
+require('sproutcore-runtime/core');
 require('sproutcore-runtime/system/core_object');
 require('sproutcore-runtime/mixins/mutable_enumerable');
 require('sproutcore-runtime/mixins/copyable');
 require('sproutcore-runtime/mixins/freezable');
 
 
-  
+
 var get = SC.get, set = SC.set, guidFor = SC.guidFor, none = SC.none;
 
 /**
@@ -28,7 +29,7 @@ var get = SC.get, set = SC.set, guidFor = SC.guidFor, none = SC.none;
   specialized Set Observer API in favor of the more generic Enumerable 
   Observer API - which works on any enumerable object including both Sets and
   Arrays.
-  
+
   ## Creating a Set
 
   You can create a set like you would most objects using 
@@ -92,20 +93,20 @@ var get = SC.get, set = SC.set, guidFor = SC.guidFor, none = SC.none;
   sets, as well.
 
   ## Other Methods
-  
+
   `SC.Set` primary implements other mixin APIs.  For a complete reference
   on the methods you will use with `SC.Set`, please consult these mixins.
   The most useful ones will be `SC.Enumerable` and 
   `SC.MutableEnumerable` which implement most of the common iterator 
   methods you are used to on Array.
-  
+
   Note that you can also use the `SC.Copyable` and `SC.Freezable`
   APIs on `SC.Set` as well.  Once a set is frozen it can no longer be 
   modified.  The benefit of this is that when you call frozenCopy() on it,
   SproutCore will avoid making copies of the set.  This allows you to write
   code that can know with certainty when the underlying set data will or 
   will not be modified.
-  
+
   @extends SC.Enumerable
   @extends SC.MutableEnumerable
   @extends SC.Copyable
@@ -118,8 +119,8 @@ SC.Set = SC.CoreObject.extend(SC.MutableEnumerable, SC.Copyable, SC.Freezable,
 
   // ..........................................................
   // IMPLEMENT ENUMERABLE APIS
-  // 
-  
+  //
+
   /**
     This property will change as the number of objects in the set changes.
 
@@ -144,7 +145,7 @@ SC.Set = SC.CoreObject.extend(SC.MutableEnumerable, SC.Copyable, SC.Freezable,
   },
 
   /**
-    Returns YES if the passed object is also an enumerable that contains the 
+    Returns true if the passed object is also an enumerable that contains the 
     same objects as the receiver.
 
     @param {SC.Set} obj the other object
@@ -229,33 +230,33 @@ SC.Set = SC.CoreObject.extend(SC.MutableEnumerable, SC.Copyable, SC.Freezable,
     This is an alias of `SC.MutableEnumerable.removeObjects()`
     @function
   */
-  removeEach: SC.alias('removeObjects'),  
-  
+  removeEach: SC.alias('removeObjects'),
+
   // ..........................................................
   // PRIVATE ENUMERABLE SUPPORT
-  // 
-  
+  //
+
   /** @private */
   init: function(items) {
     this._super();
     if (items) this.addObjects(items);
   },
-  
+
   /** @private (nodoc) - implement SC.Enumerable */
   nextObject: function(idx) {
     return this[idx];
   },
 
   /** @private - more optimized version */
-  firstObject: function() {
+  firstObject: SC.computed(function() {
     return this.length > 0 ? this[0] : undefined;  
-  }.property('[]').cacheable(),
-  
+  }).property('[]').cacheable(),
+
   /** @private - more optimized version */
-  lastObject: function() {
+  lastObject: SC.computed(function() {
     return this.length > 0 ? this[this.length-1] : undefined;
-  }.property('[]').cacheable(),
-  
+  }).property('[]').cacheable(),
+
   /** @private (nodoc) - implements SC.MutableEnumerable */
   addObject: function(obj) {
     if (get(this, 'isFrozen')) throw new Error(SC.FROZEN_ERROR);
@@ -354,9 +355,9 @@ SC.Set = SC.CoreObject.extend(SC.MutableEnumerable, SC.Copyable, SC.Freezable,
         isSet = myobject instanceof SC.Set
 
     @type Boolean
-    @default YES
+    @default true
   */
-  isSet: YES
+  isSet: true
     
 });
 

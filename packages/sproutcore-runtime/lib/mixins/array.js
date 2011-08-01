@@ -98,10 +98,10 @@ SC.Array = SC.Mixin.create(SC.Enumerable, /** @scope SC.Array.prototype */ {
 
     This property overrides the default property defined in SC.Enumerable.
   */
-  '[]': function(key, value) {
+  '[]': SC.computed(function(key, value) {
     if (value !== undefined) this.replace(0, get(this, 'length'), value) ;
     return this ;
-  }.property().cacheable(),
+  }).property().cacheable(),
 
   /** @private (nodoc) - optimized version from Enumerable */
   contains: function(obj){
@@ -238,9 +238,9 @@ SC.Array = SC.Mixin.create(SC.Enumerable, /** @scope SC.Array.prototype */ {
     
     @property {Boolean}
   */
-  hasArrayObservers: function() {
+  hasArrayObservers: SC.computed(function() {
     return SC.hasListeners(this, '@array:change') || SC.hasListeners(this, '@array:before');
-  }.property().cacheable(),
+  }).property().cacheable(),
   
   /**
     If you are implementing an object that supports SC.Array, call this 
@@ -323,10 +323,10 @@ SC.Array = SC.Mixin.create(SC.Enumerable, /** @scope SC.Array.prototype */ {
     return an enumerable that maps automatically to the named key on the 
     member objects.
   */
-  '@each': function() {
+  '@each': SC.computed(function() {
     if (!this.__each) this.__each = new SC.EachProxy(this);
     return this.__each;
-  }.property().cacheable()
+  }).property().cacheable()
   
   
   

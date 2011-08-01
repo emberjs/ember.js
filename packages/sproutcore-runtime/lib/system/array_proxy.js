@@ -71,23 +71,23 @@ SC.ArrayProxy = SC.Object.extend(SC.MutableArray, {
     get(this, 'content').replace(idx, amt, objects);
   },
   
-  contentWillChange: function() {
+  contentWillChange: SC.beforeObserver(function() {
     var content = get(this, 'content'),
         len     = content ? get(content, 'length') : 0;
     this.arrayWillChange(content, 0, len, undefined);
     if (content) content.removeArrayObserver(this);
-  }.observesBefore('content'),
+  }, 'content'),
   
   /**
     Invoked when the content property changes.  Notifies observers that the
     entire array content has changed.
   */
-  contentDidChange: function() {
+  contentDidChange: SC.observer(function() {
     var content = get(this, 'content'),
         len     = content ? get(content, 'length') : 0;
     if (content) content.addArrayObserver(this);
     this.arrayDidChange(content, 0, undefined, len);
-  }.observes('content'),
+  }, 'content'),
   
   /** @private (nodoc) */
   objectAt: function(idx) {
@@ -95,10 +95,10 @@ SC.ArrayProxy = SC.Object.extend(SC.MutableArray, {
   },
   
   /** @private (nodoc) */
-  length: function() {
+  length: SC.computed(function() {
     var content = get(this, 'content');
     return content ? get(content, 'length') : 0;
-  }.property('content.length').cacheable(),
+  }).property('content.length').cacheable(),
   
   /** @private (nodoc) */
   replace: function(idx, amt, objects) {

@@ -602,9 +602,9 @@ SC.Enumerable = SC.Mixin.create( /** @lends SC.Enumerable */ {
 
     @property {SC.Array}
   */
-  '[]': function(key, value) { 
+  '[]': SC.computed(function(key, value) { 
     return this; 
-  }.property().cacheable(),
+  }).property().cacheable(),
 
   // ..........................................................
   // ENUMERABLE OBSERVERS
@@ -647,9 +647,9 @@ SC.Enumerable = SC.Mixin.create( /** @lends SC.Enumerable */ {
     
     @property {Boolean}
   */
-  hasEnumerableObservers: function() {
+  hasEnumerableObservers: SC.computed(function() {
     return SC.hasListeners(this, '@enumerable:change') || SC.hasListeners(this, '@enumerable:before');
-  }.property().cacheable(),
+  }).property().cacheable(),
   
   
   /**
