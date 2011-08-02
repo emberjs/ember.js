@@ -160,12 +160,14 @@ SC.Gesture = SC.Object.extend(
        }
     }
 
-    if (state === SC.Gesture.POSSIBLE && this.shouldBegin()) {
-      set(this, 'state', SC.Gesture.BEGAN);
-      this.didBegin();
-      this.didChange();
+    if (state === SC.Gesture.POSSIBLE) {
+      if (this.shouldBegin()) {
+        set(this, 'state', SC.Gesture.BEGAN);
+        this.didBegin();
+        this.didChange();
 
-      this.attemptGestureEventDelivery(evt, view, get(this, 'name')+'Start');
+        this.attemptGestureEventDelivery(evt, view, get(this, 'name')+'Start');
+      }
 
     // Discrete gestures don't fire changed events
     } else if ((state === SC.Gesture.BEGAN || state === SC.Gesture.CHANGED) && !get(this, 'gestureIsDiscrete')) {
