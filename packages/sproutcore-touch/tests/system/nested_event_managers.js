@@ -75,6 +75,8 @@ test("Nested event managers should get called appropriately", function() {
   equals(gestures.length,1);
 
   $('#nestedTestView').trigger('touchstart');
+  SC.Gestures.unregister('nestedViewTestGesture');
+  SC.Gestures.unregister('nestedEventManagerTestGestureStart');
 
 });
 
