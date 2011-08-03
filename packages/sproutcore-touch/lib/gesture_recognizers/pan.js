@@ -40,7 +40,6 @@ var x = 0;
   @extends SC.Gesture
 */
 SC.PanGestureRecognizer = SC.Gesture.extend({
-  numberOfTouches: 2,
 
   /**
     The translation value which represents the current amount of movement that has been applied
