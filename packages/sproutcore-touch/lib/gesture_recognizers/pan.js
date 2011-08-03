@@ -15,15 +15,26 @@ var x = 0;
   of fingers to move and will record and update the center point between the
   touches.
 
-  For pahChange events, the pan gesture recognizer passes in a translation value
+  For panChange events, the pan gesture recognizer includes a translation property
   which can be applied as a CSS transform directly. Translation values are hashes
   which contain an x and a y value.
 
     var myview = SC.View.create({
       elementId: 'gestureTest',
-      panChange: function(recognizer, translation) {
+      panChange: function(recognizer) {
+        var translation = recognizer.get('translation');
         this.$().css('-webkit-transform','translate3d('+translate.x+'px,'+translate.y+'px,0)');
       }
+    })
+
+  You can specify how many touches the gesture requires to start using the numberOfRequiredTouches
+  property, which you can set in the panOptions hash:
+
+    var myview = SC.View.create({
+      panOptions: {
+        numberOfRequiredTouches: 3
+      }
+      ...
     })
 
   @extends SC.Gesture
@@ -31,12 +42,51 @@ var x = 0;
 SC.PanGestureRecognizer = SC.Gesture.extend({
   numberOfTouches: 2,
 
+  /**
+    The translation value which represents the current amount of movement that has been applied
+    to the view. You would normally apply this value directly to your element as a 3D
+    transform.
+
+    @type Location
+  */
+  translation: null,
+
+  //..................................................
+  // Private Methods and Properties
+
+  /**
+    Track initial centerpoint between touches so we can make calculations based off
+    of it.
+
+    @private
+    @type Number
+  */
   _initialLocation: null,
+
+  /**
+    Used to measure offsets
+
+    @private
+    @type Number
+  */
   _previousTranslation: null,
+
+  /**
+    Used to make translations relative to current position, rather than starting position.
+
+    @private
+    @type Number
+  */
   _totalTranslation: null,
 
+
+  /**
+    The pixel distance that the fingers need to move before this gesture is recognized.
+
+    @private
+    @type Number
+  */
   _translationThreshold: 5,
-  translation: null,
 
   init: function() {
     this._super();

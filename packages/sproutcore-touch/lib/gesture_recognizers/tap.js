@@ -25,19 +25,51 @@ var set = SC.set;
       }
     })
 
+  You can specify how many touches the gesture requires to start using the numberOfRequiredTouches
+  property, which you can set in the panOptions hash:
+
+    var myview = SC.View.create({
+      panOptions: {
+        numberOfRequiredTouches: 3
+      }
+      ...
+    })
+
+  And you can also specify the number of taps required for the gesture to fire using the numberOfTaps
+  property.
+
   @extends SC.Gesture
 */
 SC.TapGestureRecognizer = SC.Gesture.extend({
 
-  numberOfTouches: 1,
+  /**
+    The translation value which represents the current amount of movement that has been applied
+    to the view. You would normally apply this value directly to your element as a 3D
+    transform.
+
+    @type Location
+  */
   numberOfTaps: 1,
+
+  //..................................................
+  // Private Methods and Properties
+
+  /** @private */
   MULTITAP_DELAY: 150,
 
+  /** @private */
   gestureIsDiscrete: true,
+
+  /** @private */
   _initialLocation: null,
 
+  /** @private */
   _waitingInterval: null,
+
+  /** @private */
   _waitingForMoreTouches: false,
+
+  /** @private */
   _moveThreshold: 10,
 
   shouldBegin: function() {
