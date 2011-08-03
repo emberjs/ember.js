@@ -94,11 +94,11 @@ SC.PanGestureRecognizer = SC.Gesture.extend({
   },
 
   didBecomePossible: function() {
-    this._initialLocation = this.centerPointForTouches(this.touches);
+    this._initialLocation = this.centerPointForTouches(get(this.touches,'touches'));
   },
 
   shouldBegin: function() {
-    var currentLocation = this.centerPointForTouches(this.touches);
+    var currentLocation = this.centerPointForTouches(get(this.touches,'touches'));
 
     var x = this._initialLocation.x;
     var y = this._initialLocation.y;
@@ -113,7 +113,7 @@ SC.PanGestureRecognizer = SC.Gesture.extend({
     var initial = this._initialLocation;
 
     this._previousTranslation = get(this, 'translation');
-    var current = this.centerPointForTouches(this.touches);
+    var current = this.centerPointForTouches(get(this.touches,'touches'));
 
     // We add total translation because css3 transforms are absolute not relative
     current.x = (current.x - initial.x) + this._totalTranslation.x;

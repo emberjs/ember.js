@@ -72,6 +72,15 @@ SC.PinchGestureRecognizer = SC.Gesture.extend({
   */
   _startingDistanceBetweenTouches: null,
 
+  /**
+    Used for measuring velocity
+
+    @private
+    @type Number
+  */
+  _previousTimestamp: null,
+  _previousDistance: 0,
+
 
   /**
     The pixel distance that the fingers need to get closer/farther away by before
@@ -95,23 +104,25 @@ SC.PinchGestureRecognizer = SC.Gesture.extend({
     @private
   */
   didBecomePossible: function() {
-    this._startingDistanceBetweenTouches = this.distance(this.touches);
+    this._startingDistanceBetweenTouches = this.distance(get(this.touches,'touches'));
+    this._previousDistance = this._startingDistanceBetweenTouches;
 
     if (!this._initialDistanceBetweenTouches) {
       this._initialDistanceBetweenTouches = this._startingDistanceBetweenTouches
     }
 
     this._initialScale = get(this, 'scale');
+    this._previousTimestamp = get(this.touches,'timestamp');
   },
 
   shouldBegin: function() {
-    var currentDistanceBetweenTouches = this.distance(this.touches);
+    var currentDistanceBetweenTouches = this.distance(get(this.touches,'touches'));
 
     return Math.abs(currentDistanceBetweenTouches - this._startingDistanceBetweenTouches) >= this._deltaThreshold;
   },
 
   didChange: function() {
-    var currentDistanceBetweenTouches = this.distance(this.touches);
+    var currentDistanceBetweenTouches = this.distance(get(this.touches,'touches'));
     var scale = get(this, 'scale');
 
     var nominator = currentDistanceBetweenTouches;
@@ -120,6 +131,14 @@ SC.PinchGestureRecognizer = SC.Gesture.extend({
     this._previousScale = scale;
     scale = Math.round((this._initialScale * (nominator/denominator))*sigFigs)/sigFigs;
 
+    var timeDifference = this.touches.timestamp - this._previousTimestamp;
+    this._previousTimestamp = this.touches.timestamp;
+
+    //console.log(timeDifference);
+    var velocity = (currentDistanceBetweenTouches - this._previousDistance) / timeDifference;
+    this._previousDistance = currentDistanceBetweenTouches;
+
+    set(this, 'velocity', velocity);
     set(this, 'scale', scale);
   },
 

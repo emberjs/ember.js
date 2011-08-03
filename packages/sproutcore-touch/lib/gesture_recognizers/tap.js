@@ -73,20 +73,20 @@ SC.TapGestureRecognizer = SC.Gesture.extend({
   _moveThreshold: 10,
 
   shouldBegin: function() {
-    return this.numberOfActiveTouches === get(this, 'numberOfRequiredTouches');
+    return get(this.touches,'length') === get(this, 'numberOfRequiredTouches');
   },
 
   didBegin: function() {
-    this._initialLocation = this.centerPointForTouches(this.touches);
+    this._initialLocation = this.centerPointForTouches(get(this.touches,'touches'));
 
-    if (this.numberOfActiveTouches < get(this, 'numberOfTaps')) {
+    if (get(this.touches,'length') < get(this, 'numberOfTaps')) {
       this._waitingForMoreTouches = true;
       this._waitingInterval = window.setInterval(this._intervalFired,this.MULTITAP_DELAY);
     }
   },
 
   shouldEnd: function() {
-    var currentLocation = this.centerPointForTouches(this.touches);
+    var currentLocation = this.centerPointForTouches(get(this.touches,'touches'));
 
     var x = this._initialLocation.x;
     var y = this._initialLocation.y;

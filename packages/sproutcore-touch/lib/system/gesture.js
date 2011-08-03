@@ -9,6 +9,77 @@ var set = SC.set;
 
 var sigFigs = 100;
 
+SC.TouchList = SC.Object.extend({
+  touches: null,
+
+  timestamp: null,
+
+  init: function() {
+    this._super();
+
+    set(this, 'touches', []);
+  },
+
+  addTouch: function(touch) {
+    var touches = get(this, 'touches');
+    touches.push(touch);
+    this.notifyPropertyChange('touches');
+  },
+
+  updateTouch: function(touch) {
+    var touches = get(this, 'touches');
+
+    for (var i=0, l=touches.length; i<l; i++) {
+      var _t = touches[i];
+
+      if (_t.identifier === touch.identifier) {
+        touches[i] = touch;
+        this.notifyPropertyChange('touches');
+        break;
+      }
+    }
+  },
+
+  removeTouch: function(touch) {
+    var touches = get(this, 'touches');
+
+    for (var i=0, l=touches.length; i<l; i++) {
+      var _t = touches[i];
+
+      if (_t.identifier === touch.identifier) {
+        touches.splice(i,1);
+        this.notifyPropertyChange('touches');
+        break;
+      }
+    }
+  },
+
+  removeAllTouches: function() {
+    set(this, 'touches', []);
+  },
+
+  touchWithId: function(id) {
+    var ret = null,
+        touches = get(this, 'touches');
+
+    for (var i=0, l=touches.length; i<l; i++) {
+      var _t = touches[i];
+
+      if (_t.identifier === id) {
+        ret = _t;
+        break;
+      }
+    }
+
+    return ret;
+  },
+
+  length: function() {
+    var touches = get(this, 'touches');
+    return touches.length;
+  }.property('touches').cacheable()
+});
+
 /**
   @class
 
@@ -190,7 +261,7 @@ SC.Gesture = SC.Object.extend(
 
   init: function() {
     this._super();
-    this.touches = {};
+    this.touches = SC.TouchList.create();
   },
 
   //..............................................
@@ -242,13 +313,9 @@ SC.Gesture = SC.Object.extend(
     @return Number
   */
   distance: function(touches) {
-    if (!(touches instanceof Array)) {
-      touches = this._objectValues(touches);
-    }
 
-    if (touches.length !== 2) {
-      throw new SC.Error('trying to get the distance between more than two points is not defined. Touches length: '+touches.length);
-      return;
+    if (touches.length < 2) {
+      return 0;
     }
 
     var first = touches[0];
@@ -268,8 +335,8 @@ SC.Gesture = SC.Object.extend(
     @return Number
   */
   centerPointForTouches: function(touches) {
-    var touches = this._objectValues(touches),
-        sumX = sumY = 0;
+    var sumX = 0,
+        sumY = 0;
 
     for (var i=0, l=touches.length; i<l; i++) {
       var touch = touches[i];
@@ -321,8 +388,7 @@ SC.Gesture = SC.Object.extend(
 
   /** @private */
   _resetState: function() {
-    this.touches = {};
-    this.numberOfActiveTouches = 0;
+    this.touches.removeAllTouches();
   },
 
   //..............................................
@@ -334,17 +400,18 @@ SC.Gesture = SC.Object.extend(
     var _touches = this.touches;
     var state = get(this, 'state');
 
+    set(_touches, 'timestamp', Date.now());
+
     //Collect touches by their identifiers
     for (var i=0, l=targetTouches.length; i<l; i++) {
       var touch = targetTouches[i];
 
-      if(_touches[touch.identifier] === undefined && this.numberOfActiveTouches < get(this, 'numberOfRequiredTouches')) {
-        _touches[touch.identifier] = touch;
-        this.numberOfActiveTouches++;
+      if(_touches.touchWithId(touch.identifier) === null && _touches.get('length') < get(this, 'numberOfRequiredTouches')) {
+        _touches.addTouch(touch);
       }
     }
 
-    if (this.numberOfActiveTouches < get(this, 'numberOfRequiredTouches')) {
+    if (_touches.get('length') < get(this, 'numberOfRequiredTouches')) {
       set(this ,'state', SC.Gesture.WAITING_FOR_TOUCHES);
 
     } else {
@@ -375,14 +442,12 @@ SC.Gesture = SC.Object.extend(
     var changedTouches = evt.originalEvent.changedTouches;
     var _touches = this.touches;
 
+    set(_touches, 'timestamp', Date.now());
+
     // Update touches hash
     for (var i=0, l=changedTouches.length; i<l; i++) {
       var touch = changedTouches[i];
-      var identifier = changedTouches[i].identifier;
-
-      if (_touches[identifier] !== undefined) {
-          _touches[identifier] = touch;
-       }
+      _touches.updateTouch(touch);
     }
 
     if (state === SC.Gesture.POSSIBLE) {
@@ -448,8 +513,7 @@ SC.Gesture = SC.Object.extend(
     } else {
       manager.redispatchEventToView(view,'touchcancel', evt);
     }
-  },
-
+  }
 });
 
 SC.Gesture.WAITING_FOR_TOUCHES = 0;
