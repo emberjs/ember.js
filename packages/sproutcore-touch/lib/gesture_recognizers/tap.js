@@ -73,7 +73,7 @@ SC.TapGestureRecognizer = SC.Gesture.extend({
   _moveThreshold: 10,
 
   shouldBegin: function() {
-    return this.numberOfActiveTouches === get(this, 'numberOfTaps');
+    return this.numberOfActiveTouches === get(this, 'numberOfRequiredTouches');
   },
 
   didBegin: function() {
