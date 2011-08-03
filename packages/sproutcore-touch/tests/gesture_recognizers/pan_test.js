@@ -62,11 +62,7 @@ test("one start event should put it in waiting state", function() {
 
   touchEvent.type='touchstart';
   touchEvent['originalEvent'] = {
-    targetTouches: [{
-      identifier: 0,
-      pageX: 0,
-      pageY: 10
-    }]
+    targetTouches: []
   };
 
   view.$().trigger(touchEvent);
