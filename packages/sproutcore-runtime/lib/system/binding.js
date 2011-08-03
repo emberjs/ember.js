@@ -73,12 +73,15 @@ SC.EMPTY_PLACEHOLDER = '@@EMPTY@@';
 // HELPERS
 // 
 
+// Coerces a non-array value into an array.
 function MULTIPLE(val) {
   if (val instanceof Array) return val;
   if (val === undefined || val === null) return [];
   return [val];
 }
 
+// Treats a single-element array as the element. Otherwise
+// returns a placeholder.
 function SINGLE(val, placeholder) {
   if (val instanceof Array) {
     if (val.length>1) return placeholder;
@@ -87,10 +90,12 @@ function SINGLE(val, placeholder) {
   return val;
 }
 
+// Coerces the binding value into a Boolean.
 function BOOL(val) {
   return !!val;
 }
 
+// Returns the Boolean inverse of the value.
 function NOT(val) {
   return !val;
 }
@@ -100,13 +105,17 @@ var get     = SC.get,
     setPath = SC.setPath, 
     guidFor = SC.guidFor;
 
-function transformedValue(b, val, obj) {
-  // handle multiple/single
-  var forceKind = b._forceKind;
-  if (forceKind) val = forceKind(val, b._placeholder);
+function transformedValue(binding, val, obj) {
+
+  // First run a type transform, if it exists, that changes the fundamental
+  // type of the value. For example, some transforms convert an array to a
+  // single object.
+
+  var typeTransform = binding._typeTransform;
+  if (typeTransform) { val = typeTransform(val, binding._placeholder); }
 
   // handle transforms
-  var transforms = b._transforms,
+  var transforms = binding._transforms,
       len        = transforms ? transforms.length : 0,
       idx;
 
@@ -418,7 +427,7 @@ var Binding = SC.Object.extend({
   */
   single: function(placeholder) {
     if (placeholder===undefined) placeholder = SC.MULTIPLE_PLACEHOLDER; 
-    this._forceKind = SINGLE;
+    this._typeTransform = SINGLE;
     this._placeholder = placeholder;
     return this; 
   },
@@ -431,7 +440,7 @@ var Binding = SC.Object.extend({
     @returns {SC.Binding} this
   */
   multiple: function() {
-    this._forceKind = MULTIPLE;
+    this._typeTransform = MULTIPLE;
     this._placeholder = null;
     return this; 
   },
