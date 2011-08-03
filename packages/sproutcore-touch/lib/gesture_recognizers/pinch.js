@@ -95,7 +95,7 @@ SC.PinchGestureRecognizer = SC.Gesture.extend({
     @private
   */
   didBecomePossible: function() {
-    this._startingDistanceBetweenTouches = this.distance(this._touches);
+    this._startingDistanceBetweenTouches = this.distance(this.touches);
 
     if (!this._initialDistanceBetweenTouches) {
       this._initialDistanceBetweenTouches = this._startingDistanceBetweenTouches
@@ -105,13 +105,13 @@ SC.PinchGestureRecognizer = SC.Gesture.extend({
   },
 
   shouldBegin: function() {
-    var currentDistanceBetweenTouches = this.distance(this._touches);
+    var currentDistanceBetweenTouches = this.distance(this.touches);
 
     return Math.abs(currentDistanceBetweenTouches - this._startingDistanceBetweenTouches) >= this._deltaThreshold;
   },
 
   didChange: function() {
-    var currentDistanceBetweenTouches = this.distance(this._touches);
+    var currentDistanceBetweenTouches = this.distance(this.touches);
     var scale = get(this, 'scale');
 
     var nominator = currentDistanceBetweenTouches;

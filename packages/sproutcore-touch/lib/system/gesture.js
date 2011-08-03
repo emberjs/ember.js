@@ -158,7 +158,6 @@ SC.Gesture = SC.Object.extend(
   */
   gestureIsDiscrete: false,
 
-  _touches: null,
   _numActiveTouches: 0,
   /** 
     You can use the `touches` protected property to access the touches hash. The touches 
@@ -192,7 +191,7 @@ SC.Gesture = SC.Object.extend(
 
   init: function() {
     this._super();
-    this._touches = {};
+    this.touches = {};
   },
 
   //..............................................
@@ -333,7 +332,7 @@ SC.Gesture = SC.Object.extend(
   /** @private */
   touchStart: function(evt, view, manager) {
     var targetTouches = evt.originalEvent.targetTouches;
-    var _touches = this._touches;
+    var _touches = this.touches;
     var state = get(this, 'state');
 
     //Collect touches by their identifiers
@@ -375,7 +374,7 @@ SC.Gesture = SC.Object.extend(
     }
 
     var changedTouches = evt.originalEvent.changedTouches;
-    var _touches = this._touches;
+    var _touches = this.touches;
 
     // Update touches hash
     for (var i=0, l=changedTouches.length; i<l; i++) {
