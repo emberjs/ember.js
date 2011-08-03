@@ -158,7 +158,6 @@ SC.Gesture = SC.Object.extend(
   */
   gestureIsDiscrete: false,
 
-  _numActiveTouches: 0,
   /** 
     You can use the `touches` protected property to access the touches hash. The touches 
     hash is keyed on the identifiers of the touches, and the values are the jQuery.Event 
@@ -175,7 +174,6 @@ SC.Gesture = SC.Object.extend(
     assume that there are as many active touches as specified in the 
     numberOfRequiredTouches property.
 
-  numberOfTouches: 2,
     @private 
     @type Number
   */
@@ -188,6 +186,7 @@ SC.Gesture = SC.Object.extend(
     @private 
     @type Number
   */
+  numberOfRequiredTouches: 1,
 
   init: function() {
     this._super();
@@ -339,13 +338,13 @@ SC.Gesture = SC.Object.extend(
     for (var i=0, l=targetTouches.length; i<l; i++) {
       var touch = targetTouches[i];
 
-      if(_touches[touch.identifier] === undefined && this._numActiveTouches < get(this, 'numberOfTouches')) {
+      if(_touches[touch.identifier] === undefined && this.numberOfActiveTouches < get(this, 'numberOfRequiredTouches')) {
         _touches[touch.identifier] = touch;
-        this._numActiveTouches++;
+        this.numberOfActiveTouches++;
       }
     }
 
-    if (this._numActiveTouches < get(this, 'numberOfTouches')) {
+    if (this.numberOfActiveTouches < get(this, 'numberOfRequiredTouches')) {
       set(this ,'state', SC.Gesture.WAITING_FOR_TOUCHES);
 
     } else {
