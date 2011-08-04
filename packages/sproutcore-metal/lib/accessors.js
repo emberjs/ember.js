@@ -55,11 +55,12 @@ if (!USE_ACCESSORS) {
   var o_get = get, o_set = set;
   
   get = function(obj, keyName) {
-
     if (keyName === undefined && 'string' === typeof obj) {
       keyName = obj;
       obj = SC;
     }
+
+    sc_assert("You need to provide an object and key to `get`.", obj && keyName);
 
     if (!obj) return undefined;
     var desc = meta(obj, false).descs[keyName];
@@ -68,6 +69,7 @@ if (!USE_ACCESSORS) {
   };
 
   set = function(obj, keyName, value) {
+    sc_assert("You need to provide an object, key and value to `set`.", obj && keyName && value !== undefined);
     var desc = meta(obj, false).descs[keyName];
     if (desc) desc.set(obj, keyName, value);
     else o_set(obj, keyName, value);
