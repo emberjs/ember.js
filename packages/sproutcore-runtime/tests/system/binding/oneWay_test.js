@@ -19,7 +19,7 @@ module('system/mixin/binding/oneWay_test', {
 });
 
 test('oneWay(true) should only sync one way', function() {
-  var binding = SC.bind(MyApp, 'bar.value', 'foo.value').oneWay();
+  var binding = SC.oneWay(MyApp, 'bar.value', 'foo.value');
   SC.run.sync();
   
   equals(SC.getPath('MyApp.foo.value'), 'FOO', 'foo synced');
