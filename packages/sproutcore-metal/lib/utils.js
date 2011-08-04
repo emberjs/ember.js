@@ -172,7 +172,8 @@ if (Object.freeze) Object.freeze(EMPTY_META);
   @returns {Hash}
 */
 SC.meta = function meta(obj, writable) {
-  sc_assert("You must pass an object to SC.meta. This was probably called from SproutCore internals, so you probably called a SproutCore method with undefined that was expecting an object", obj);
+  
+  sc_assert("You must pass an object to SC.meta. This was probably called from SproutCore internals, so you probably called a SproutCore method with undefined that was expecting an object", obj != undefined);
 
   var ret = obj[META_KEY];
   if (writable===false) return ret || EMPTY_META;
