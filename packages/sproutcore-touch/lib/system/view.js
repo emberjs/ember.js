@@ -20,7 +20,7 @@ SC.View.reopen(
   /**
     The SC.GestureManager instance which will manager the gestures of the view.    
     This object is automatically created and set at init-time.
-  
+
     @default null
     @type Array
   */
@@ -35,16 +35,24 @@ SC.View.reopen(
 
     var knownGestures = SC.Gestures.knownGestures();
     var eventManager = get(this, 'eventManager');
-    
+
     if (knownGestures && !eventManager) {
       var gestures = [];
-      
+
       for (var gesture in knownGestures) {
         if (this[gesture+'Start'] || this[gesture+'Change'] || this[gesture+'End']) {
-          gestures.push(knownGestures[gesture].create({
-            name: gesture,
-            view: this
-          }));
+
+          var optionsHash;
+          if (this[gesture+'Options'] !== undefined && typeof this[gesture+'Options'] === 'object') {
+            optionsHash = this[gesture+'Options'];
+          } else {
+            optionsHash = {};
+          }
+
+          optionsHash.name = gesture;
+          optionsHash.view = this;
+
+          gestures.push(knownGestures[gesture].create(optionsHash));
         }
       }
 
@@ -53,9 +61,9 @@ SC.View.reopen(
       });
 
       set(this, 'eventManager', manager);
-      
+ 
     }
   }
-  
+
 });
 

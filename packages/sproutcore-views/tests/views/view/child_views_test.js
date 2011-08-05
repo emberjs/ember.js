@@ -34,4 +34,37 @@
 
     equals(parentView.$().text(), 'SproutCore', 'renders the child view after the parent view');
   });
+
+  test("should not duplicate childViews when rerendering in buffer", function() {
+
+    var inner = SC.View.create({
+      template: function() { return ''; }
+    });
+
+    var middle = SC.View.create({
+      render: function(buffer) {
+        this.appendChild(inner);
+      }
+    });
+
+    var outer = SC.View.create({
+      render: function(buffer) {
+        this.appendChild(middle);
+      }
+    });
+
+    SC.run(function() {
+      outer.renderToBuffer();
+    });
+
+    equals(middle.getPath('childViews.length'), 1);
+
+    SC.run(function() {
+      middle.rerender();
+    });
+
+    equals(middle.getPath('childViews.length'), 1);
+
+  });
+
 })();

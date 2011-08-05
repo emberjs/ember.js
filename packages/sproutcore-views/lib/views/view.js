@@ -79,8 +79,9 @@ SC.View = SC.Object.extend(
   template: function(key, value) {
     if (value !== undefined) { return value; }
 
-    var templateName = get(this, 'templateName'),
-        template = get(get(this, 'templates'), templateName);
+    var templateName = get(this, 'templateName'), template;
+
+    if (templateName) { template = get(get(this, 'templates'), templateName); }
 
     // If there is no template but a templateName has been specified,
     // try to lookup as a spade module
@@ -139,6 +140,96 @@ SC.View = SC.Object.extend(
     @default []
   */
   childViews: [],
+
+  /**
+    Return the nearest ancestor that is an instance of the provided
+    class.
+
+    @param {Class} klass Subclass of SC.View (or SC.View itself)
+    @returns SC.View
+  */
+  nearestInstanceOf: function(klass) {
+    var view = this.parentView;
+
+    while (view) {
+      if(view instanceof klass) { return view; }
+      view = view.parentView;
+    }
+  },
+
+  /**
+    Return the nearest ancestor that has a given property.
+
+    @param {String} property A property name
+    @returns SC.View
+  */
+  nearestWithProperty: function(property) {
+    var view = this.parentView;
+
+    while (view) {
+      if (property in view.parentView) { return view; }
+      view = view.parentView;
+    }
+  },
+
+  /**
+    Return the nearest ancestor that is a direct child of a
+    view of.
+
+    @param {Class} klass Subclass of SC.View (or SC.View itself)
+    @returns SC.View
+  */
+  nearestChildOf: function(klass) {
+    var view = this.parentView;
+
+    while (view) {
+      if(view.parentView instanceof klass) { return view; }
+      view = view.parentView;
+    }
+  },
+
+  /**
+    Return the nearest ancestor that is an SC.CollectionView
+
+    @returns SC.CollectionView
+  */
+  collectionView: function() {
+    return this.nearestInstanceOf(SC.CollectionView);
+  }.property().cacheable(),
+
+  /**
+    Return the nearest ancestor that is a direct child of
+    an SC.CollectionView
+
+    @returns SC.View
+  */
+  itemView: function() {
+    return this.nearestChildOf(SC.CollectionView);
+  }.property().cacheable(),
+
+  /**
+    Return the nearest ancestor that has the property
+    `content`.
+
+    @returns SC.View
+  */
+  contentView: function() {
+    return this.nearestWithProperty('content');
+  }.property().cacheable(),
+
+  /**
+    @private
+
+    When the parent view changes, recursively invalidate
+    collectionView, itemView, and contentView
+  */
+  _parentViewDidChange: function() {
+    this.invokeRecursively(function(view) {
+      view.propertyDidChange('collectionView');
+      view.propertyDidChange('itemView');
+      view.propertyDidChange('contentView');
+    });
+  }.observes('parentView'),
 
   /**
     Called on your view when it should push strings of HTML into a
@@ -210,6 +301,22 @@ SC.View = SC.Object.extend(
   */
   rerender: function() {
     return this.invokeForState('rerender');
+  },
+
+  clearRenderedChildren: function() {
+    var viewMeta = meta(this)['SC.View'],
+        lengthBefore = viewMeta.lengthBeforeRender,
+        lengthAfter  = viewMeta.lengthAfterRender;
+
+    // If there were child views created during the last call to render(),
+    // remove them under the assumption that they will be re-created when
+    // we re-render.
+
+    // VIEW-TODO: Unit test this path.
+    var childViews = get(this, 'childViews');
+    for (var i=lengthBefore; i<lengthAfter; i++) {
+      childViews[i] && childViews[i].destroy();
+    }
   },
 
   /**
@@ -1117,6 +1224,7 @@ SC.View.states = {
       var viewMeta = meta(view)['SC.View'],
           buffer = viewMeta.buffer;
 
+      view.clearRenderedChildren();
       view.renderToBuffer(buffer, 'replaceWith');
     },
 
@@ -1175,18 +1283,7 @@ SC.View.states = {
 
       view.invokeRecursively(function(v) { v.state = 'preRender'; })
 
-      var lengthBefore = viewMeta.lengthBeforeRender,
-          lengthAfter  = viewMeta.lengthAfterRender;
-
-      // If there were child views created during the last call to render(),
-      // remove them under the assumption that they will be re-created when
-      // we re-render.
-
-      // VIEW-TODO: Unit test this path.
-      if (lengthBefore < lengthAfter) {
-        var childViews = get(view, 'childViews');
-        childViews.replace(lengthBefore, lengthAfter - lengthBefore);
-      }
+      view.clearRenderedChildren();
 
       // Set element to null after the childViews.replace() call to prevent
       // a call to $() from inside _scheduleInsertion triggering a rerender.

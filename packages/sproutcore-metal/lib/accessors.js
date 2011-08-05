@@ -55,11 +55,12 @@ if (!USE_ACCESSORS) {
   var o_get = get, o_set = set;
   
   get = function(obj, keyName) {
-
     if (keyName === undefined && 'string' === typeof obj) {
       keyName = obj;
       obj = SC;
     }
+
+    sc_assert("You need to provide an object and key to `get`.", !!obj && keyName);
 
     if (!obj) return undefined;
     var desc = meta(obj, false).descs[keyName];
@@ -68,6 +69,7 @@ if (!USE_ACCESSORS) {
   };
 
   set = function(obj, keyName, value) {
+    sc_assert("You need to provide an object and key to `set`.", !!obj && keyName !== undefined);
     var desc = meta(obj, false).descs[keyName];
     if (desc) desc.set(obj, keyName, value);
     else o_set(obj, keyName, value);
@@ -338,4 +340,15 @@ SC.trySetPath = function(root, path, value) {
 
   return SC.setPath(root, path, value, true);
 };
+
+/**
+  Returns true if the provided path is global (e.g., "MyApp.fooController.bar")
+  instead of local ("foo.bar.baz").
+
+  @param {String} path
+  @returns Boolean
+*/
+SC.isGlobalPath = function(path) {
+  return !HAS_THIS.test(path) && IS_GLOBAL.test(path);
+}
 

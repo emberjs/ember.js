@@ -115,10 +115,11 @@ SC.Handlebars.Compiler.prototype.mustache = function(mustache) {
 */
 SC.Handlebars.compile = function(string) {
   var ast = Handlebars.parse(string);
-  var environment = new SC.Handlebars.Compiler().compile(ast, {data: true, stringParams: true});
-  var compiled = new SC.Handlebars.JavaScriptCompiler().compile(environment, {data: true, stringParams: true});
+  var options = { data: true, stringParams: true };
+  var environment = new SC.Handlebars.Compiler().compile(ast, options);
+  var templateSpec = new SC.Handlebars.JavaScriptCompiler().compile(environment, options, undefined, true);
 
-  return compiled;
+  return Handlebars.template(templateSpec);
 };
 
 /**

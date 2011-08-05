@@ -7,7 +7,7 @@
 
 require('sproutcore-metal/mixin');
 
-var IS_BINDING = /^.+Binding$/;
+var IS_BINDING = SC.IS_BINDING = /^.+Binding$/;
 
 SC._mixinBindings = function(obj, key, value, m) {
   if (IS_BINDING.test(key)) {

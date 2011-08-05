@@ -9,10 +9,10 @@ require('sproutcore-runtime/system/object');
 require('sproutcore-runtime/system/run_loop');
 
 
-  
+
 // ..........................................................
 // CONSTANTS
-// 
+//
 
 
 /**
@@ -70,15 +70,18 @@ SC.MULTIPLE_PLACEHOLDER = '@@MULT@@';
 SC.EMPTY_PLACEHOLDER = '@@EMPTY@@';
 
 // ..........................................................
-// HELPERS
-// 
+// TYPE COERCION HELPERS
+//
 
+// Coerces a non-array value into an array.
 function MULTIPLE(val) {
   if (val instanceof Array) return val;
   if (val === undefined || val === null) return [];
   return [val];
 }
 
+// Treats a single-element array as the element. Otherwise
+// returns a placeholder.
 function SINGLE(val, placeholder) {
   if (val instanceof Array) {
     if (val.length>1) return placeholder;
@@ -87,30 +90,37 @@ function SINGLE(val, placeholder) {
   return val;
 }
 
+// Coerces the binding value into a Boolean.
 function BOOL(val) {
   return !!val;
 }
 
+// Returns the Boolean inverse of the value.
 function NOT(val) {
   return !val;
 }
 
-var get     = SC.get, 
-    getPath = SC.getPath, 
-    setPath = SC.setPath, 
+var get     = SC.get,
+    getPath = SC.getPath,
+    setPath = SC.setPath,
     guidFor = SC.guidFor;
 
-function transformedValue(b, val, obj) {
-  // handle multiple/single
-  var forceKind = b._forceKind;
-  if (forceKind) val = forceKind(val, b._placeholder);
+// Applies a binding's transformations against a value.
+function getTransformedValue(binding, val, obj) {
+
+  // First run a type transform, if it exists, that changes the fundamental
+  // type of the value. For example, some transforms convert an array to a
+  // single object.
+
+  var typeTransform = binding._typeTransform;
+  if (typeTransform) { val = typeTransform(val, binding._placeholder); }
 
   // handle transforms
-  var transforms = b._transforms,
+  var transforms = binding._transforms,
       len        = transforms ? transforms.length : 0,
       idx;
 
-  for(idx=0;idx<len;idx++) val = transforms[idx].call(this, val, obj);
+  for(idx=0;idx<len;idx++) { val = transforms[idx].call(this, val, obj); }
   return val;
 }
 
@@ -118,22 +128,23 @@ function empty(val) {
   return val===undefined || val===null || val==='' || (SC.isArray(val) && get(val, 'length')===0) ;
 }
 
-function fromValue(obj, b) {
-  var logic = b._logic;
-  return logic ? logic(obj, b._from, b._from2) : getPath(obj, b._from);
+function getTransformedFromValue(obj, binding) {
+  var operation = binding._operation;
+  var fromValue = operation ? operation(obj, binding._from, binding._operand) : getPath(obj, binding._from);
+  return getTransformedValue(binding, fromValue, obj);
 }
 
-var AND_LOGIC = function(obj, left, right) {
+var AND_OPERATION = function(obj, left, right) {
   return getPath(obj, left) && getPath(obj, right);
 };
 
-var OR_LOGIC = function(obj, left, right) {
+var OR_OPERATION = function(obj, left, right) {
   return getPath(obj, left) || getPath(obj, right);
 };
 
 // ..........................................................
 // BINDING
-// 
+//
 
 /**
   @class
@@ -230,7 +241,7 @@ var OR_LOGIC = function(obj, left, right) {
 
         valueBinding: SC.Binding.from("MyApp.someController.value").notLessThan(10)
 
-  Also, remember that helpers are chained so you can use your helper along 
+  Also, remember that helpers are chained so you can use your helper along
   with any other helpers. The example below will create a one way binding that
   does not allow empty values or values less than 10:
 
@@ -266,15 +277,15 @@ var OR_LOGIC = function(obj, left, right) {
 
   Note that when you connect a binding you pass the object you want it to be
   connected to.  This object will be used as the root for both the from and
-  to side of the binding when inspecting relative paths.  This allows the 
+  to side of the binding when inspecting relative paths.  This allows the
   binding to be automatically inherited by subclassed objects as well.
-  
+
   Now that the binding is connected, it will observe both the from and to side
   and relay changes.
 
   If you ever needed to do so (you almost never will, but it is useful to
   understand this anyway), you could manually create an active binding by
-  using the SC.bind() helper method. (This is the same method used by 
+  using the SC.bind() helper method. (This is the same method used by
   to setup your bindings on objects):
 
         SC.bind(MyApp.anotherObject, "value", "MyApp.someController.value");
@@ -303,37 +314,40 @@ var Binding = SC.Object.extend({
   /** @private */
   init: function(toPath, fromPath) {
     this._from = fromPath;
-    this._to   = toPath; 
+    this._to   = toPath;
   },
-  
+
   // ..........................................................
   // CONFIG
-  // 
-  
+  //
+
   /**
     This will set "from" property path to the specified value. It will not
-    attempt to resolve this property path to an actual object until you 
+    attempt to resolve this property path to an actual object until you
     connect the binding.
 
     The binding will search for the property path starting at the root object
-    you pass when you connect() the binding.  It follows the same rules as 
+    you pass when you connect() the binding.  It follows the same rules as
     `getPath()` - see that method for more information.
 
     @param {String} propertyPath the property path to connect to
     @returns {SC.Binding} receiver
   */
-  from: function(path) {
+  from: function(object, path) {
+    if (!path) { path = object; object = null; }
+
     this._from = path;
+    this._object = object;
     return this;
   },
-  
+
   /**
     This will set the "to" property path to the specified value. It will not
-    attempt to reoslve this property path to an actual object until you 
+    attempt to reoslve this property path to an actual object until you
     connect the binding.
 
     The binding will search for the property path starting at the root object
-    you pass when you connect() the binding.  It follows the same rules as 
+    you pass when you connect() the binding.  It follows the same rules as
     `getPath()` - see that method for more information.
 
     @param {String|Tuple} propertyPath A property path or tuple
@@ -345,7 +359,6 @@ var Binding = SC.Object.extend({
     return this;
   },
 
-  
   /**
     Configures the binding as one way. A one-way binding will relay changes
     on the "from" side to the "to" side, but not the other way around. This
@@ -355,7 +368,7 @@ var Binding = SC.Object.extend({
     @param {Boolean} flag
       (Optional) passing nothing here will make the binding oneWay.  You can
       instead pass NO to disable oneWay, making the binding two way again.
-      
+
     @returns {SC.Binding} receiver
   */
   oneWay: function(flag) {
@@ -384,7 +397,7 @@ var Binding = SC.Object.extend({
     this._transforms.push(func);
     return this;
   },
-  
+
   /**
     Resets the transforms for the binding. After calling this method the
     binding will no longer transform values. You can then add new transforms
@@ -394,9 +407,9 @@ var Binding = SC.Object.extend({
   */
   resetTransforms: function() {
     this._transforms = null;
-    return this;  
+    return this;
   },
-  
+
   /**
     Adds a transform to the chain that will allow only single values to pass.
     This will allow single values and nulls to pass through. If you pass an
@@ -417,10 +430,10 @@ var Binding = SC.Object.extend({
     @returns {SC.Binding} this
   */
   single: function(placeholder) {
-    if (placeholder===undefined) placeholder = SC.MULTIPLE_PLACEHOLDER; 
-    this._forceKind = SINGLE;
+    if (placeholder===undefined) placeholder = SC.MULTIPLE_PLACEHOLDER;
+    this._typeTransform = SINGLE;
     this._placeholder = placeholder;
-    return this; 
+    return this;
   },
 
   /**
@@ -431,14 +444,14 @@ var Binding = SC.Object.extend({
     @returns {SC.Binding} this
   */
   multiple: function() {
-    this._forceKind = MULTIPLE;
+    this._typeTransform = MULTIPLE;
     this._placeholder = null;
-    return this; 
+    return this;
   },
-  
+
   /**
     Adds a transform to convert the value to a bool value. If the value is
-    an array it will return YES if array is not empty. If the value is a 
+    an array it will return YES if array is not empty. If the value is a
     string it will return YES if the string is not empty.
 
     @returns {SC.Binding} this
@@ -452,21 +465,17 @@ var Binding = SC.Object.extend({
     Adds a transform that will return the placeholder value if the value is
     null, undefined, an empty array or an empty string. See also notNull().
 
-    @param {String} fromPath from path or null
     @param {Object} [placeholder] Placeholder value.
     @returns {SC.Binding} this
   */
-  notEmpty: function(placeholder, extra) {
-    // for compatibility...
-    if (extra) {
-      if (placeholder) this.from(placeholder);
-      placeholder = extra;
-    }
-    
-    if (!placeholder) placeholder = SC.EMPTY_PLACEHOLDER;
-    this.transform(function(val) {
-      return empty(val) ? placeholder : val;
-    });
+  notEmpty: function(placeholder) {
+    // Display warning for users using the SC 1.x-style API.
+    sc_assert("notEmpty should only take a placeholder as a parameter. You no longer need to pass null as the first parameter.", arguments.length < 2);
+
+    if (!placeholder) { placeholder = SC.EMPTY_PLACEHOLDER; }
+
+    this.transform(function(val) { return empty(val) ? placeholder : val; });
+
     return this;
   },
 
@@ -479,8 +488,11 @@ var Binding = SC.Object.extend({
     @returns {SC.Binding} this
   */
   notNull: function(placeholder) {
-    // TODO: IMPLEMENT notNull
-    throw new Error('SC.Binding.notNull not yet implemented');
+    if (!placeholder) { placeholder = SC.EMPTY_PLACEHOLDER; }
+
+    this.transform(function(val) { return val == null ? placeholder : val; });
+
+    return this;
   },
 
   /**
@@ -497,24 +509,23 @@ var Binding = SC.Object.extend({
   /**
     Adds a transform that will return YES if the value is null or undefined, NO otherwise.
 
-    @param {String} [fromPath]
     @returns {SC.Binding} this
   */
-  isNull: function(fromPath) {
-    // TODO: IMPLEMENT isNull
-    throw new Error('SC.Binding.isNull not yet implemented');
+  isNull: function() {
+    this.transform(function(val) { return val == null; });
+    return this;
   },
-  
+
   /** @private */
   toString: function() {
     var oneWay = this._oneWay ? '[oneWay]' : '';
     return SC.String.fmt("SC.Binding<%@>(%@ -> %@)%@", [guidFor(this), this._from, this._to, oneWay]);
   },
-  
+
   // ..........................................................
   // CONNECT AND SYNC
-  // 
-  
+  //
+
   /**
     Attempts to connect this binding instance so that it can receive and relay
     changes. This method will raise an exception if you have not set the
@@ -522,18 +533,35 @@ var Binding = SC.Object.extend({
 
     @param {Object} obj
       The root object for this binding.
-      
+
+    @param {Boolean} preferFromParam
+      private: Normally, `connect` cannot take an object if `from` already set
+      an object. Internally, we would like to be able to provide a default object
+      to be used if no object was provided via `from`, so this parameter turns
+      off the assertion.
+
     @returns {SC.Binding} this
   */
-  connect: function(obj) {
-    sc_assert('Must pass a valid object to SC.Binding.connect()', !!obj);
-    
-    var oneWay = this._oneWay, from2 = this._from2;
-    SC.addObserver(obj, this._from, this, this.fromDidChange); 
-    if (from2) SC.addObserver(obj, from2, this, this.fromDidChange); 
-    if (!oneWay) SC.addObserver(obj, this._to, this, this.toDidChange);
-    if (SC.meta(obj,false).proto !== obj) this._scheduleSync(obj, 'fwd');
-    this._readyToSync = true; 
+  connect: function(toObj, fromObj) {
+    sc_assert('Must pass a valid object to SC.Binding.connect()', !!toObj);
+
+    fromObj = fromObj || toObj;
+
+    var oneWay = this._oneWay, operand = this._operand;
+
+    // add an observer on the object to be notified when the binding should be updated
+    SC.addObserver(fromObj, this._from, this, this.fromDidChange);
+
+    // if there is an operand, add an observer onto it as well
+    if (operand) { SC.addObserver(fromObj, operand, this, this.fromDidChange); }
+
+    // if the binding is a two-way binding, also set up an observer on the target
+    // object.
+    if (!oneWay) { SC.addObserver(toObj, this._to, this, this.toDidChange); }
+
+    if (SC.meta(toObj,false).proto !== toObj) { this._scheduleSync(toObj, 'fwd'); }
+
+    this._readyToSync = true;
     return this;
   },
 
@@ -543,28 +571,37 @@ var Binding = SC.Object.extend({
 
     @param {Object} obj
       The root object you passed when connecting the binding.
-      
+
     @returns {SC.Binding} this
   */
   disconnect: function(obj) {
     sc_assert('Must pass a valid object to SC.Binding.disconnect()', !!obj);
-    var oneWay = this._oneWay, from2 = this._from2;
+
+    var oneWay = this._oneWay, operand = this._operand;
+
+    // remove an observer on the object so we're no longer notified of
+    // changes that should update bindings.
     SC.removeObserver(obj, this._from, this, this.fromDidChange);
-    if (from2) SC.removeObserver(obj, from2, this, this.fromDidChange);
+
+    // if there is an operand, remove the observer from it as well
+    if (operand) SC.removeObserver(obj, operand, this, this.fromDidChange);
+
+    // if the binding is two-way, remove the observer from the target as well
     if (!oneWay) SC.removeObserver(obj, this._to, this, this.toDidChange);
-    this._readyToSync = false; // disable scheduled syncs... 
+
+    this._readyToSync = false; // disable scheduled syncs...
     return this;
   },
-  
+
   // ..........................................................
   // PRIVATE
-  // 
-  
+  //
+
   /** @private - called when the from side changes */
   fromDidChange: function(target) {
-    this._scheduleSync(target, 'fwd');  
+    this._scheduleSync(target, 'fwd');
   },
-  
+
   /** @private - called when the to side changes */
   toDidChange: function(target) {
     this._scheduleSync(target, 'back');
@@ -572,44 +609,54 @@ var Binding = SC.Object.extend({
 
   /** @private */
   _scheduleSync: function(obj, dir) {
-    var guid = guidFor(obj);
-    if (!this[guid]) SC.run.schedule('sync', this, this._sync, obj);
-    this[guid] = (this[guid]==='fwd' || !dir) ? 'fwd' : dir;
+    var guid = guidFor(obj), existingDir = this[guid];
+
+    // if we haven't scheduled the binding yet, schedule it
+    if (!existingDir) {
+      SC.run.schedule('sync', this, this._sync, obj);
+      this[guid] = dir;
+    }
+
+    // If both a 'back' and 'fwd' sync have been scheduled on the same object,
+    // default to a 'fwd' sync so that it remains deterministic.
+    if (existingDir === 'back' && dir === 'fwd') {
+      this[guid] = 'fwd';
+    }
   },
 
   /** @private */
   _sync: function(obj) {
-
     var log = SC.LOG_BINDINGS;
 
-    if (obj.isDestroyed) { return; }
-    
-    var guid = guidFor(obj), direction = this[guid], val, tv;
-    if (!this._readyToSync) return; // not connected.
+    // don't synchronize destroyed objects or disconnected bindings
+    if (obj.isDestroyed || !this._readyToSync) { return; }
+
+    // get the direction of the binding for the object we are
+    // synchronizing from
+    var guid = guidFor(obj), direction = this[guid], val, transformedValue;
+
+    var fromPath = this._from, toPath = this._to;
 
     delete this[guid];
+
+    // apply any operations to the object, then apply transforms
+    var fromValue = getTransformedFromValue(obj, this);
+    var toValue = getPath(obj, toPath);
+
+    if (toValue === fromValue) { return; }
+
+    // if we're synchronizing from the remote object...
     if (direction === 'fwd') {
-      val = fromValue(obj, this);
-      tv  = transformedValue(this, val, obj);
+      if (log) { SC.Logger.log(' ', this.toString(), val, '->', fromValue, obj); }
+      SC.trySetPath(obj, toPath, fromValue);
 
-      if (log) { SC.Logger.log(' ', this.toString(), val, '->', tv, obj); }
-      
-      // apply changes
-      SC.trySetPath(obj, this._to, tv);
-
-    } else if (direction === 'back' && !this._oneWay) {
-      val = getPath(obj, this._to);
-
-      tv  = transformedValue(this, fromValue(obj, this), obj);
-      if (val !== tv) {
-
-        if (log) { SC.Logger.log(' ', this.toString(), val, '<-', tv, obj); }
-
-        SC.trySetPath(obj, this._from, val);
-      }
+    // if we're synchronizing *to* the remote object
+    } else if (direction === 'back') {// && !this._oneWay) {
+      if (log) { SC.Logger.log(' ', this.toString(), val, '<-', fromValue, obj); }
+      SC.trySetPath(obj, fromPath, toValue);
     }
   }
-  
+
 });
 
 Binding.reopenClass(/** @scope SC.Binding */ {
@@ -621,7 +668,7 @@ Binding.reopenClass(/** @scope SC.Binding */ {
     var C = this, binding = new C();
     return binding.from.apply(binding, arguments);
   },
-  
+
   /**
     @see SC.Binding.prototype.to
   */
@@ -629,7 +676,7 @@ Binding.reopenClass(/** @scope SC.Binding */ {
     var C = this, binding = new C();
     return binding.to.apply(binding, arguments);
   },
-  
+
   /**
     @see SC.Binding.prototype.oneWay
   */
@@ -637,7 +684,7 @@ Binding.reopenClass(/** @scope SC.Binding */ {
     var C = this, binding = new C(null, from);
     return binding.oneWay(flag);
   },
-  
+
   /**
     @see SC.Binding.prototype.single
   */
@@ -688,13 +735,13 @@ Binding.reopenClass(/** @scope SC.Binding */ {
 
   /**
     Adds a transform that forwards the logical 'AND' of values at 'pathA' and
-    'pathB' whenever either source changes. Note that the transform acts 
+    'pathB' whenever either source changes. Note that the transform acts
     strictly as a one-way binding, working only in the direction
 
         'pathA' AND 'pathB' --> value  (value returned is the result of ('pathA' && 'pathB'))
 
-    Usage example where a delete button's `isEnabled` value is determined by 
-    whether something is selected in a list and whether the current user is 
+    Usage example where a delete button's `isEnabled` value is determined by
+    whether something is selected in a list and whether the current user is
     allowed to delete:
 
         deleteButton: SC.ButtonView.design({
@@ -706,14 +753,14 @@ Binding.reopenClass(/** @scope SC.Binding */ {
   */
   and: function(pathA, pathB) {
     var C = this, binding = new C(null, pathA).oneWay();
-    binding._from2 = pathB;
-    binding._logic = AND_LOGIC;
+    binding._operand = pathB;
+    binding._operation = AND_OPERATION;
     return binding;
   },
 
   /**
     Adds a transform that forwards the 'OR' of values at 'pathA' and
-    'pathB' whenever either source changes. Note that the transform acts 
+    'pathB' whenever either source changes. Note that the transform acts
     strictly as a one-way binding, working only in the direction
 
         'pathA' AND 'pathB' --> value  (value returned is the result of ('pathA' || 'pathB'))
@@ -723,11 +770,11 @@ Binding.reopenClass(/** @scope SC.Binding */ {
   */
   or: function(pathA, pathB) {
     var C = this, binding = new C(null, pathA).oneWay();
-    binding._from2 = pathB;
-    binding._logic = OR_LOGIC;
+    binding._operand = pathB;
+    binding._operation = OR_OPERATION;
     return binding;
   }
-    
+
 });
 
 SC.Binding = Binding;
@@ -735,15 +782,15 @@ SC.Binding = Binding;
 /**
   Global helper method to create a new binding.  Just pass the root object
   along with a to and from path to create and connect the binding.  The new
-  binding object will be returned which you can further configure with 
+  binding object will be returned which you can further configure with
   transforms and other conditions.
-  
+
   @param {Object} obj
     The root object of the transform.
-    
+
   @param {String} to
     The path to the 'to' side of the binding.  Must be relative to obj.
-    
+
   @param {String} from
     The path to the 'from' side of the binding.  Must be relative to obj or
     a global path.
@@ -754,4 +801,6 @@ SC.bind = function(obj, to, from) {
   return new SC.Binding(to, from).connect(obj);
 };
 
-
+SC.oneWay = function(obj, to, from) {
+  return new SC.Binding(to, from).oneWay().connect(obj);
+}

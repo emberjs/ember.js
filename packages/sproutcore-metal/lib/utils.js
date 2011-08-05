@@ -172,6 +172,9 @@ if (Object.freeze) Object.freeze(EMPTY_META);
   @returns {Hash}
 */
 SC.meta = function meta(obj, writable) {
+  
+  sc_assert("You must pass an object to SC.meta. This was probably called from SproutCore internals, so you probably called a SproutCore method with undefined that was expecting an object", obj != undefined);
+
   var ret = obj[META_KEY];
   if (writable===false) return ret || EMPTY_META;
 
@@ -199,6 +202,58 @@ SC.meta = function meta(obj, writable) {
     ret.source   = obj;
   }
   return ret;
+};
+
+/**
+  @private
+
+  In order to store defaults for a class, a prototype may need to create
+  a default meta object, which will be inherited by any objects instantiated
+  from the class's constructor.
+
+  However, the properties of that meta object are only shallow-cloned,
+  so if a property is a hash (like the event system's `listeners` hash),
+  it will by default be shared across all instances of that class.
+
+  This method allows extensions to deeply clone a series of nested hashes or
+  other complex objects. For instance, the event system might pass
+  ['listeners', 'foo:change', 'sc157'] to `prepareMetaPath`, which will
+  walk down the keys provided.
+
+  For each key, if the key does not exist, it is created. If it already
+  exists and it was inherited from its constructor, the constructor's
+  key is cloned.
+
+  You can also pass false for `writable`, which will simply return
+  undefined if `prepareMetaPath` discovers any part of the path that
+  shared or undefined.
+
+  @param {Object} obj The object whose meta we are examining
+  @param {Array} path An array of keys to walk down
+  @param {Boolean} writable whether or not to create a new meta
+    (or meta property) if one does not already exist or if it's
+    shared with its constructor
+*/
+SC.metaPath = function(obj, path, writable) {
+  var meta = SC.meta(obj, writable), keyName, value;
+
+  for (var i=0, l=path.length; i<l; i++) {
+    keyName = path[i];
+    value = meta[keyName];
+
+    if (!value) {
+      if (!writable) { return undefined; }
+      value = meta[keyName] = { __sc_source__: obj };
+    } else if (value.__sc_source__ !== obj) {
+      if (!writable) { return undefined; }
+      value = meta[keyName] = o_create(value);
+      value.__sc_source__ = obj;
+    }
+
+    meta = value;
+  }
+
+  return value;
 };
 
 /**

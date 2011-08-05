@@ -42,6 +42,36 @@ SC.GestureManager = SC.Object.extend({
   */
   _redispatchQueue: null,
 
+  _redispatchToNearestParentViewWaitingForTouches: function(evt, view) {
+    var foundManager = null,
+        successful = false;
+    var view = get(view, 'parentView');
+
+    while(view) {
+      var manager = get(view, 'eventManager');
+
+      if (manager !== undefined && manager !== null) {
+        var gestures = get(manager, 'gestures');
+
+        for (var i=0, l=gestures.length; i<l; i++) {
+          if (get(gestures[i], 'state') === SC.Gesture.WAITING_FOR_TOUCHES) {
+            foundManager = manager;
+          }
+        }
+
+        if (foundManager) {
+          successful = true;
+          foundManager.touchStart(evt, view);
+          break;
+        }
+      }
+      
+      view = get(view, 'parentView');
+    }
+
+    return successful;
+  },
+
   /**
     Relays touchStart events to all the gesture recognizers to the
     specified view
@@ -49,6 +79,10 @@ SC.GestureManager = SC.Object.extend({
     @return Boolen
   */
   touchStart: function(evt, view) {
+    if (this._redispatchToNearestParentViewWaitingForTouches(evt, view)) {
+      return;
+    }
+
     return this._invokeEvent('touchStart',evt, view);
   },
 

@@ -127,7 +127,7 @@ module("one way binding", {
     fromObject = SC.Object.create({ value: 'start' }) ;
     toObject = SC.Object.create({ value: 'end' }) ;
     root = { fromObject: fromObject, toObject: toObject };
-    binding = SC.bind(root, 'toObject.value', 'fromObject.value').oneWay();
+    binding = SC.oneWay(root, 'toObject.value', 'fromObject.value');
     SC.run.sync() ; // actually sets up up the connection
   }
 
@@ -236,13 +236,13 @@ test("Binding value1 such that it will recieve only single values", function() {
 });
 
 test("Single binding using notEmpty function.", function() {
-	var bond = Bon1.create ({
-	  array1Binding: SC.Binding.single("TestNamespace.bon2.arr").notEmpty(null,'(EMPTY)')
-	});
-	SC.run.sync();
-	set(bon2, "arr", []);
-	SC.run.sync();
-	equals("(EMPTY)",get(bond, "array1"));
+  // This should raise an exception for SC 1.x developers who are using
+  // the old syntax.
+  raises(function() {
+    var bond = Bon1.create ({
+      array1Binding: SC.Binding.single("TestNamespace.bon2.arr").notEmpty(null,'(EMPTY)')
+    });
+  });
 });
 
 test("Binding with transforms, function to check the type of value", function() {

@@ -1161,3 +1161,25 @@ test("should be able to update when bound property updates", function(){
   
 });
 
+test("bindings should be relative to the current context", function() {
+  var view = SC.View.create({
+    museumOpen: true,
+
+    museumDetails: SC.Object.create({
+      name: "SFMoMA",
+      price: 20
+    }),
+
+    museumView: SC.View.extend({
+      template: SC.Handlebars.compile('Name: {{name}} Price: ${{dollars}}')
+    }),
+
+    template: SC.Handlebars.compile('{{#if museumOpen}} {{view museumView nameBinding="museumDetails.name" dollarsBinding="museumDetails.price"}} {{/if}}')
+  });
+
+  SC.run(function() {
+    view.appendTo('#qunit-fixture');
+  });
+
+  equals($.trim(view.$().text()), "Name: SFMoMA Price: $20", "should print baz twice");
+});

@@ -153,12 +153,16 @@ test("should return null when property is null on standard objects", function() 
   equals(SC.get(objectB, 'nullProperty'), null);
 });
 
-test("should return undefined if the provided object is null", function() {
-  equals(SC.get(null, 'key'), undefined);
+test("raise if the provided object is null", function() {
+  raises(function() {
+    SC.get(null, 'key');
+  })
 });
 
-test("should return undefined if the provided object is undefined", function() {
-  equals(SC.get(undefined, 'key'), undefined);
+test("raise if the provided object is undefined", function() {
+  raises(function() {
+    SC.get(undefined, 'key');
+  })
 });
 
 test("should work when object is SC (used in SC.getPath)", function() {

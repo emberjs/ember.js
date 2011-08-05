@@ -40,3 +40,20 @@ test("register new gestures", function() {
   ok(caught);
 });
 
+test("unregister a gesture", function() {
+  var myGesture = SC.Gesture.create({
+    isMyGesture: true
+  });
+
+  SC.Gestures.register('myGesture2',myGesture);
+
+  var newGestures = SC.Gestures.knownGestures();
+
+  equals(newGestures['myGesture2'],myGesture, "registered gesture is added");
+
+  SC.Gestures.unregister('myGesture2');
+
+  newGestures = SC.Gestures.knownGestures();
+  equals(newGestures['myGesture2'],undefined, "registered gesture is unregistered");
+});
+

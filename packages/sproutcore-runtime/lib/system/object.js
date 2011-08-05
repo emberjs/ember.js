@@ -4,6 +4,7 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
+require('sproutcore-runtime/mixins/observable');
 require('sproutcore-runtime/system/core_object');
 require('sproutcore-runtime/system/set');
 

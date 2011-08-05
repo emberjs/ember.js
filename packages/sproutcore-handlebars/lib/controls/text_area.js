@@ -53,7 +53,7 @@ SC.TextArea = SC.View.extend({
   },
 
   _elementValueDidChange: function() {
-    set(this, 'value', this.$().val());
+    set(this, 'value', this.$().val() || null);
   },
 
   _updateElementValue: function() {
