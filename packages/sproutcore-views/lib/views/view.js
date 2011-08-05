@@ -79,8 +79,9 @@ SC.View = SC.Object.extend(
   template: function(key, value) {
     if (value !== undefined) { return value; }
 
-    var templateName = get(this, 'templateName'),
-        template = get(get(this, 'templates'), templateName);
+    var templateName = get(this, 'templateName'), template;
+
+    if (templateName) { template = get(get(this, 'templates'), templateName); }
 
     // If there is no template but a templateName has been specified,
     // try to lookup as a spade module

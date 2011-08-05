@@ -50,7 +50,8 @@ SC.CollectionView = SC.ContainerView.extend(
     var content = this.get('content');
 
     if (content) { content.removeArrayObserver(this); }
-    this.arrayWillChange(content, 0, get(content, 'length'));
+    var len = content ? get(content, 'length') : 0;
+    this.arrayWillChange(content, 0, len);
   }.observesBefore('content'),
 
   /**
@@ -68,7 +69,9 @@ SC.CollectionView = SC.ContainerView.extend(
       sc_assert(fmt("an ArrayController's content must implement SC.Array. You passed %@", [content]), content.addArrayObserver != null);
       content.addArrayObserver(this);
     }
-    this.arrayDidChange(content, 0, null, get(content, 'length'));
+
+    var len = content ? get(content, 'length') : 0;
+    this.arrayDidChange(content, 0, null, len);
   }.observes('content'),
 
   destroy: function() {
@@ -153,7 +156,7 @@ SC.CollectionView = SC.ContainerView.extend(
     var itemTagName = get(view, 'tagName');
     var tagName = itemTagName || SC.CollectionView.CONTAINER_MAP[get(this, 'tagName')];
 
-    set(view, 'tagName', tagName);
+    set(view, 'tagName', tagName || null);
 
     return view;
   }

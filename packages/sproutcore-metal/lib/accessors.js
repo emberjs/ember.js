@@ -60,7 +60,7 @@ if (!USE_ACCESSORS) {
       obj = SC;
     }
 
-    sc_assert("You need to provide an object and key to `get`.", obj && keyName);
+    sc_assert("You need to provide an object and key to `get`.", !!obj && keyName);
 
     if (!obj) return undefined;
     var desc = meta(obj, false).descs[keyName];
@@ -69,7 +69,7 @@ if (!USE_ACCESSORS) {
   };
 
   set = function(obj, keyName, value) {
-    sc_assert("You need to provide an object and key to `set`.", obj && keyName !== undefined);
+    sc_assert("You need to provide an object and key to `set`.", !!obj && keyName !== undefined);
     var desc = meta(obj, false).descs[keyName];
     if (desc) desc.set(obj, keyName, value);
     else o_set(obj, keyName, value);
