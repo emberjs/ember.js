@@ -142,6 +142,96 @@ SC.View = SC.Object.extend(
   childViews: [],
 
   /**
+    Return the nearest ancestor that is an instance of the provided
+    class.
+
+    @param {Class} klass Subclass of SC.View (or SC.View itself)
+    @returns SC.View
+  */
+  nearestInstanceOf: function(klass) {
+    var view = this.parentView;
+
+    while (view) {
+      if(view instanceof klass) { return view; }
+      view = view.parentView;
+    }
+  },
+
+  /**
+    Return the nearest ancestor that has a given property.
+
+    @param {String} property A property name
+    @returns SC.View
+  */
+  nearestWithProperty: function(property) {
+    var view = this.parentView;
+
+    while (view) {
+      if (property in view.parentView) { return view; }
+      view = view.parentView;
+    }
+  },
+
+  /**
+    Return the nearest ancestor that is a direct child of a
+    view of.
+
+    @param {Class} klass Subclass of SC.View (or SC.View itself)
+    @returns SC.View
+  */
+  nearestChildOf: function(klass) {
+    var view = this.parentView;
+
+    while (view) {
+      if(view.parentView instanceof klass) { return view; }
+      view = view.parentView;
+    }
+  },
+
+  /**
+    Return the nearest ancestor that is an SC.CollectionView
+
+    @returns SC.CollectionView
+  */
+  collectionView: function() {
+    return this.nearestInstanceOf(SC.CollectionView);
+  }.property().cacheable(),
+
+  /**
+    Return the nearest ancestor that is a direct child of
+    an SC.CollectionView
+
+    @returns SC.View
+  */
+  itemView: function() {
+    return this.nearestChildOf(SC.CollectionView);
+  }.property().cacheable(),
+
+  /**
+    Return the nearest ancestor that has the property
+    `content`.
+
+    @returns SC.View
+  */
+  contentView: function() {
+    return this.nearestWithProperty('content');
+  }.property().cacheable(),
+
+  /**
+    @private
+
+    When the parent view changes, recursively invalidate
+    collectionView, itemView, and contentView
+  */
+  _parentViewDidChange: function() {
+    this.invokeRecursively(function(view) {
+      view.propertyDidChange('collectionView');
+      view.propertyDidChange('itemView');
+      view.propertyDidChange('contentView');
+    });
+  }.observes('parentView'),
+
+  /**
     Called on your view when it should push strings of HTML into a
     SC.RenderBuffer. Most users will want to override the `template`
     or `templateName` properties instead of this method.
