@@ -69,7 +69,7 @@ if (!USE_ACCESSORS) {
   };
 
   set = function(obj, keyName, value) {
-    sc_assert("You need to provide an object, key and value to `set`.", obj && keyName && value !== undefined);
+    sc_assert("You need to provide an object and key to `set`.", obj && keyName !== undefined);
     var desc = meta(obj, false).descs[keyName];
     if (desc) desc.set(obj, keyName, value);
     else o_set(obj, keyName, value);
