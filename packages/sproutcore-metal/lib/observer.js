@@ -16,6 +16,7 @@ var guidFor = SC.guidFor;
 var normalizePath = SC.normalizePath;
 
 var suspended = 0;
+var array_Slice = Array.prototype.slice;
 
 var ObserverSet = function(iterateable) {
   this.set = {};
@@ -99,11 +100,16 @@ function beforeKey(eventName) {
   return eventName.slice(0, -7);
 }
 
-function xformChange(target, method, params) {
-  var obj = params[0], keyName = changeKey(params[1]), val;
-  if (method.length>2) val = SC.getPath(obj, keyName);
-  method.call(target, obj, keyName, val);
+function xformForArgs(args) {
+  return function (target, method, params) {
+    var obj = params[0], keyName = changeKey(params[1]), val;
+    if (method.length>2) val = SC.getPath(obj, keyName);
+    args.unshift(obj, keyName, val);
+    method.apply(target, args);
+  }
 }
+
+var xformChange = xformForArgs([]);
 
 function xformBefore(target, method, params) {
   var obj = params[0], keyName = beforeKey(params[1]), val;
@@ -113,7 +119,15 @@ function xformBefore(target, method, params) {
 
 SC.addObserver = function(obj, path, target, method) {
   path = normalizePath(path);
-  SC.addListener(obj, changeEvent(path), target, method, xformChange);
+
+  var xform;
+  if (arguments.length > 4) {
+    var args = array_Slice.call(arguments, 4);
+    xform = xformForArgs(args);
+  } else {
+    xform = xformChange;
+  }
+  SC.addListener(obj, changeEvent(path), target, method, xform);
   SC.watch(obj, path);
   return this;
 };

@@ -142,6 +142,26 @@ testBoth('addObserver should respect targets with methods', function(get,set){
 
 });
 
+testBoth('addObserver should preserve additional context passed when firing the observer', function(get, set) {
+  var observed = { foo: 'foo' };
+
+  var target1 = {
+    count: 0,
+
+    didChange: function(obj, keyName, value, ctx1, ctx2) {
+      equals(ctx1, "biff", "first context is passed");
+      equals(ctx2, "bang", "second context is passed");
+      this.count++;
+    }
+  };
+
+  SC.addObserver(observed, 'foo', target1, 'didChange', "biff", "bang");
+
+  set(observed, 'foo', 'BAZ');
+  equals(target1.count, 1, 'target1 observer should have fired');
+});
+
+
 testBoth('addObserver should allow multiple objects to observe a property', function(get, set) { var observed = { foo: 'foo' };
 
   var target1 = {
