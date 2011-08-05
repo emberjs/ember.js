@@ -341,3 +341,14 @@ SC.trySetPath = function(root, path, value) {
   return SC.setPath(root, path, value, true);
 };
 
+/**
+  Returns true if the provided path is global (e.g., "MyApp.fooController.bar")
+  instead of local ("foo.bar.baz").
+
+  @param {String} path
+  @returns Boolean
+*/
+SC.isGlobalPath = function(path) {
+  return !HAS_THIS.test(path) && IS_GLOBAL.test(path);
+}
+
