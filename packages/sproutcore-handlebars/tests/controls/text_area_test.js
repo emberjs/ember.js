@@ -72,6 +72,34 @@ test("value binding works properly for inputs that haven't been created", functi
   equals(textArea.$().val(), 'ohai', "value is reflected in the input element once it is created");
 });
 
+test("should call the insertNewline method when return key is pressed", function() {
+  var wasCalled;
+  var event = SC.Object.create({
+    keyCode: 13
+  });
+
+  textArea.insertNewline = function() {
+    wasCalled = true;
+  };
+
+  textArea.keyUp(event);
+  ok(wasCalled, "invokes insertNewline method");
+});
+
+test("should call the cancel method when escape key is pressed", function() {
+  var wasCalled;
+  var event = SC.Object.create({
+    keyCode: 27
+  });
+
+  textArea.cancel = function() {
+    wasCalled = true;
+  };
+
+  textArea.keyUp(event);
+  ok(wasCalled, "invokes cancel method");
+});
+
 // test("listens for focus and blur events", function() {
 //   var focusCalled = 0;
 //   var blurCalled = 0;
