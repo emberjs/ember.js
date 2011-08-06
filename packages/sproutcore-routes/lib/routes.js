@@ -374,7 +374,7 @@ SC.routes = SC.Object.create(
   */
   add: function(route, target, method) {
     if (!this._didSetup) {
-      this.invokeLast(this.ping);
+      SC.run.schedule('sync', this, this.ping);
     }
     
     if (method === undefined && SC.typeOf(target) === SC.T_FUNCTION) {
