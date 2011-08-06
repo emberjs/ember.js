@@ -447,7 +447,7 @@ SC.routes = SC.Object.create(
       var part, nextRoute;
 
       // clone the parts array because we are going to alter it
-      parts = SC.clone(parts);
+      parts = Array.prototype.slice.call(parts);
 
       if (!parts || parts.length === 0) {
         this.target = target;
@@ -490,7 +490,7 @@ SC.routes = SC.Object.create(
       var part, key, route;
 
       // clone the parts array because we are going to alter it
-      parts = SC.clone(parts);
+      parts = Array.prototype.slice.call(parts);
 
       // if parts is empty, we are done
       if (!parts || parts.length === 0) {
