@@ -325,9 +325,9 @@ SC.routes = SC.Object.create(
     }
     
     if (this.get('location') !== loc && !this._skipRoute) {
-      SC.run(function() {
+      SC.run(this, function() {
         this.set('location', loc);
-      }, this);
+      });
     }
     this._skipRoute = false;
   },
@@ -342,9 +342,9 @@ SC.routes = SC.Object.create(
       loc = loc.slice(base.length + 1, loc.length);
       
       if (this.get('location') !== loc && !this._skipRoute) {
-        SC.run(function() {
+        SC.run(this, function() {
           this.set('location', loc);
-        }, this);
+        });
       }
     }
     this._skipRoute = false;
