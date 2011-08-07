@@ -12,7 +12,6 @@
     "sproutcore-views":      "2.0.beta.2",
     "sproutcore-datastore":  "2.0.beta.2",
     "sproutcore-handlebars": "2.0.beta.2",
-    "sproutcore-statechart": "2.0.beta.2",
     "sproutcore-handlebars-format": "~> 1.0.0"
   },
 
