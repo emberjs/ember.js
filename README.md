@@ -92,8 +92,6 @@ To learn more about what we're up to, follow [@sproutcore on Twitter](http://twi
 1. Run `rake` to build SproutCore. Two builds will be placed in the `dist/` directory.
   * `sproutcore.js` and `sproutcore.min.js` - unminified and minified
     builds of SproutCore 2.0
-  * `sproutcore-datastore.js` and `sproutcore-datastore.min.js` -
-    unminified and minified of the data store framework
 
 If you are building under Linux, you will need a JavaScript runtime for
 minification. You can either install nodejs or `gem install
@@ -112,7 +110,6 @@ therubyracer`.
 
   * [SproutCore Runtime](http://localhost:4020/assets/spade-qunit/index.html?package=sproutcore-runtime)
   * [SproutCore Views](http://localhost:4020/assets/spade-qunit/index.html?package=sproutcore-views)
-  * [SproutCore DataStore](http://localhost:4020/assets/spade-qunit/index.html?package=sproutcore-datastore)
   * [SproutCore Handlebars](http://localhost:4020/assets/spade-qunit/index.html?package=sproutcore-handlebars)
 
 To run multiple packages, you can separate them with commas. For

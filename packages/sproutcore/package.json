@@ -10,7 +10,6 @@
     "spade":                 "~> 1.0.0",
     "sproutcore-runtime":    "2.0.beta.2",
     "sproutcore-views":      "2.0.beta.2",
-    "sproutcore-datastore":  "2.0.beta.2",
     "sproutcore-handlebars": "2.0.beta.2",
     "sproutcore-handlebars-format": "~> 1.0.0"
   },

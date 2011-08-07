@@ -28,14 +28,6 @@
         "sproutcore-views",
         "sproutcore-handlebars"
       ]
-    },
-    "sproutcore-datastore.js": {
-      "minifier": "uglify-js",
-      "include": [
-        "sproutcore-datastore",
-        "sproutcore-indexset",
-        "sproutcore-datetime"
-      ]
     }
   }
 }
