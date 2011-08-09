@@ -40,13 +40,15 @@ module('system/mixin/binding/transform_test', {
 
 test('returns this', function() {
   var binding = new SC.Binding('foo.value', 'bar.value');
-  equals(binding.transform(function() {}), binding);
+
+  var ret = binding.transform({ from: function() {}, to: function() {} });
+  equals(ret, binding);
 });
 
 test('transform function should be invoked on fwd change', function() {
   
   var binding = SC.bind(MyApp, 'foo.value', 'bar.value');
-  binding.transform(function(value) { return 'TRANSFORMED'; });
+  binding.transform({ to: function(value) { return 'TRANSFORMED'; }});
   SC.run.sync();
   
   // should have transformed...
@@ -59,10 +61,12 @@ test('transform function should NOT be invoked on fwd change', function() {
   var count = 0;
   var binding = SC.bind(MyApp, 'foo.value', 'bar.value');
   var lastSeenValue;
-  binding.transform(function(value) {
-    if (value !== lastSeenValue) count++; // transform must be consistent
-    lastSeenValue = value;
-    return 'TRANSFORMED '+count;
+  binding.transform({
+    to: function(value) {
+      if (value !== lastSeenValue) count++; // transform must be consistent
+      lastSeenValue = value;
+      return 'TRANSFORMED '+count;
+    }
   });
 
   SC.run.sync();
@@ -83,8 +87,12 @@ test('transform function should NOT be invoked on fwd change', function() {
 
 test('transforms should chain', function() {
   var binding = SC.bind(MyApp, 'foo.value', 'bar.value');
-  binding.transform(function(value) { return value+' T1'; });
-  binding.transform(function(value) { return value+' T2'; });
+  binding.transform({
+    to: function(value) { return value+' T1'; }
+  });
+  binding.transform({
+    to: function(value) { return value+' T2'; }
+  });
   SC.run.sync();
 
   // should have transformed...
@@ -94,9 +102,13 @@ test('transforms should chain', function() {
 
 test('resetTransforms() should clear', function() {
   var binding = SC.bind(MyApp, 'foo.value', 'bar.value');
-  binding.transform(function(value) { return value+' T1'; });
+  binding.transform({
+    to: function(value) { return value+' T1'; }
+  });
   binding.resetTransforms();
-  binding.transform(function(value) { return value+' T2'; });
+  binding.transform({
+    to: function(value) { return value+' T2'; }
+  });
   SC.run.sync();
 
   // should have transformed...

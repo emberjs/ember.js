@@ -40,3 +40,48 @@ test("should render and update attribute bindings", function() {
   ok(view.$().attr('exists'), "adds exists attribute when true");
 });
 
+test("should allow attributes to be set in the inBuffer state", function() {
+  var parentView, childViews;
+  SC.run(function() {
+    window.Test = SC.Namespace.create();
+    Test.controller = SC.Object.create({
+      foo: 'bar'
+    });
+
+    parentView = SC.ContainerView.create();
+
+    childViews = parentView.get('childViews');
+    childViews.pushObject(parentView.createChildView(SC.View, {
+      template: function() {
+        return "foo";
+      },
+
+      fooBinding: 'Test.controller.foo',
+      attributeBindings: ['foo']
+    }));
+
+    childViews.pushObject(parentView.createChildView(SC.View, {
+      template: function() {
+        Test.controller.set('foo', 'baz');
+        return "bar";
+      }
+    }));
+
+    childViews.pushObject(parentView.createChildView(SC.View, {
+      template: function() {
+        return "bat";
+      }
+    }));
+  });
+
+  SC.run(function() {
+    parentView.append();
+  });
+
+  window.billy = true;
+  equals(parentView.get('childViews')[0].$().attr('foo'), 'baz');
+  window.billy = false;
+
+  parentView.destroy();
+
+});

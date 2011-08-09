@@ -62,12 +62,13 @@ module("SC.View - handlebars integration", {
   },
 
   teardown: function() {
+    if (view) view.destroy();
     window.TemplateTests = undefined;
   }
 });
 
 test("template view should call the function of the associated template", function() {
-  var view = SC.View.create({
+  view = SC.View.create({
     templateName: 'test_template',
     templates: SC.Object.create({
       test_template: SC.Handlebars.compile("<h1 id='twas-called'>template was called</h1>")
@@ -80,7 +81,7 @@ test("template view should call the function of the associated template", functi
 });
 
 test("template view should call the function of the associated template with itself as the context", function() {
-  var view = SC.View.create({
+  view = SC.View.create({
     templateName: 'test_template',
 
     _personName: "Tom DAAAALE",
@@ -102,7 +103,7 @@ test("template view should call the function of the associated template with its
 });
 
 test("should allow values from normal JavaScript hash objects to be used", function() {
-  var view = SC.View.create({
+  view = SC.View.create({
     template: SC.Handlebars.compile('{{#with person}}{{firstName}} {{lastName}} (and {{pet.name}}){{/with}}'),
 
     person: {
@@ -120,7 +121,7 @@ test("should allow values from normal JavaScript hash objects to be used", funct
 });
 
 test("should escape HTML in normal mustaches", function() {
-  var view = SC.View.create({
+  view = SC.View.create({
     template: SC.Handlebars.compile('{{output}}'),
     output: "you need to be more <b>bold</b>"
   });
@@ -135,7 +136,7 @@ test("should escape HTML in normal mustaches", function() {
 });
 
 test("should not escape HTML in triple mustaches", function() {
-  var view = SC.View.create({
+  view = SC.View.create({
     template: SC.Handlebars.compile('{{{output}}}'),
     output: "you need to be more <b>bold</b>"
   });
@@ -169,7 +170,7 @@ test("child views can be inserted using the {{view}} Handlebars helper", functio
     templates: templates
   });
 
-  var view = SC.View.create({
+  view = SC.View.create({
     world: "world!",
     templateName: 'nester',
     templates: templates
@@ -183,7 +184,7 @@ test("child views can be inserted using the {{view}} Handlebars helper", functio
 });
 
 test("should accept relative paths to views", function() {
-  var view = SC.View.create({
+  view = SC.View.create({
     template: SC.Handlebars.compile('Hey look, at {{view ".myCool.view"}}'),
 
     myCool: SC.Object.create({
@@ -219,7 +220,7 @@ test("child views can be inserted inside a bind block", function() {
     templateName: 'other'
   });
 
-  var view = SC.View.create({
+  view = SC.View.create({
     world: "world!",
     templateName: 'nester',
     templates: templates
@@ -237,7 +238,7 @@ test("SC.View should update when a property changes and the bind helper is used"
    foo: SC.Handlebars.compile('<h1 id="first">{{#with content}}{{bind "wham"}}{{/with}}</h1>')
   });
 
-  var view = SC.View.create({
+  view = SC.View.create({
     templateName: 'foo',
     templates: templates,
 
@@ -247,7 +248,9 @@ test("SC.View should update when a property changes and the bind helper is used"
     })
   });
 
-  view.createElement();
+  SC.run(function() {
+    view.append();
+  });
 
   equals(view.$('#first').text(), "bam", "precond - view renders Handlebars template");
 
@@ -260,7 +263,7 @@ test("SC.View should update when a property changes and no bind helper is used",
    foo: SC.Handlebars.compile('<h1 id="first">{{#with content}}{{wham}}{{/with}}</h1>')
   });
 
-  var view = SC.View.create({
+  view = SC.View.create({
     templateName: 'foo',
     templates: templates,
 
@@ -284,7 +287,7 @@ test("SC.View should update when the property used with the #with helper changes
    foo: SC.Handlebars.compile('<h1 id="first">{{#with content}}{{wham}}{{/with}}</h1>')
   });
 
-  var view = SC.View.create({
+  view = SC.View.create({
     templateName: 'foo',
     templates: templates,
 
@@ -328,7 +331,7 @@ test("should not update when a property is removed from the view", function() {
 
   swapRemove();
 
-  var view = SC.View.create({
+  view = SC.View.create({
     templateName: 'foo',
     templates: templates,
 
@@ -362,7 +365,7 @@ test("should not update when a property is removed from the view", function() {
   SC.run(function() {
     setPath(oldContent, 'foo.baz', 'ewoks');
   });
-  
+
   swapRemove();
 
   equals(removeCalled, 1, "does not try to remove observer more than once");
@@ -376,17 +379,21 @@ test("Handlebars templates update properties if a content object changes", funct
     menu: SC.Handlebars.compile('<h1>Today\'s Menu</h1>{{#bind "coffee"}}<h2>{{color}} coffee</h2><span id="price">{{bind "price"}}</span>{{/bind}}')
   });
 
-  var view = SC.View.create({
-    templateName: 'menu',
-    templates: templates,
+  SC.run(function() {
+    view = SC.View.create({
+      templateName: 'menu',
+      templates: templates,
 
-    coffee: SC.Object.create({
-      color: 'brown',
-      price: '$4'
-    })
+      coffee: SC.Object.create({
+        color: 'brown',
+        price: '$4'
+      })
+    });
   });
 
-  view.createElement();
+  SC.run(function() {
+    view.append();
+  });
 
   equals(view.$('h2').text(), "brown coffee", "precond - renders color correctly");
   equals(view.$('#price').text(), '$4', "precond - renders price correctly");
@@ -416,6 +423,8 @@ test("Handlebars templates update properties if a content object changes", funct
   });
 
   equals(view.$('#price').text(), "$5", "should update price field when price property is changed");
+
+  view.destroy();
 });
 
 test("Template updates correctly if a path is passed to the bind helper", function() {
@@ -425,7 +434,7 @@ test("Template updates correctly if a path is passed to the bind helper", functi
     menu: SC.Handlebars.compile('<h1>{{bind "coffee.price"}}</h1>')
   });
 
-  var view = SC.View.create({
+  view = SC.View.create({
     templateName: 'menu',
     templates: templates,
 
@@ -530,7 +539,7 @@ test("should update the block when object passed to #unless helper changes", fun
     advice: SC.Handlebars.compile('<h1>{{#unless onDrugs}}{{doWellInSchool}}{{/unless}}</h1>')
   });
 
-  var view = SC.View.create({
+  view = SC.View.create({
     templateName: 'advice',
     templates: templates,
 
@@ -566,7 +575,7 @@ test("should update the block when object passed to #if helper changes and an in
     menu: SC.Handlebars.compile('<h1>{{#if inception}}{{INCEPTION}}{{else}}{{SAD}}{{/if}}</h1>')
   });
 
-  var view = SC.View.create({
+  view = SC.View.create({
     templateName: 'menu',
     templates: templates,
 
@@ -619,7 +628,7 @@ test("should update the block when object passed to #if helper changes and an in
 // });
 
 test("Template views return a no-op function if their template cannot be found", function() {
-  var view = SC.View.create({
+  view = SC.View.create({
     templateName: 'cantBeFound'
   });
 
@@ -676,8 +685,6 @@ test("should pass hash arguments to the view object", function() {
   TemplateTests.HashArgTemplateView = SC.View.extend({
   });
 
-  var view ;
-  
   SC.run(function() {
     view = SC.View.create({
       template: SC.Handlebars.compile('{{#view TemplateTests.HashArgTemplateView fooBinding="TemplateTests.bindTestObject.bar"}}{{foo}}{{/view}}')
@@ -700,7 +707,7 @@ test("Child views created using the view helper should have their parent view se
 
   var template = '{{#view "SC.View"}}{{#view "SC.View"}}{{view "SC.View"}}{{/view}}{{/view}}';
 
-  var view = SC.View.create({
+  view = SC.View.create({
     template: SC.Handlebars.compile(template)
   });
 
@@ -715,7 +722,7 @@ test("Child views created using the view helper should have their IDs registered
 
   var template = '{{view "SC.View"}}{{view "SC.View" id="templateViewTest"}}';
 
-  var view = SC.View.create({
+  view = SC.View.create({
     template: SC.Handlebars.compile(template)
   });
 
@@ -806,7 +813,7 @@ test("should update boundIf blocks if the conditional changes", function() {
    foo: SC.Handlebars.compile('<h1 id="first">{{#boundIf "content.myApp.isEnabled"}}{{content.wham}}{{/boundIf}}</h1>')
   });
 
-  var view = SC.View.create({
+  view = SC.View.create({
     templateName: 'foo',
     templates: templates,
 
@@ -843,7 +850,7 @@ test("{{view}} id attribute should set id on layer", function() {
 
   TemplateTests.IdView = SC.View;
 
-  var view = SC.View.create({
+  view = SC.View.create({
     templateName: 'foo',
     templates: templates
   });
@@ -861,7 +868,7 @@ test("{{view}} class attribute should set class on layer", function() {
 
   TemplateTests.IdView = SC.View;
 
-  var view = SC.View.create({
+  view = SC.View.create({
     templateName: 'foo',
     templates: templates
   });
@@ -873,7 +880,7 @@ test("{{view}} class attribute should set class on layer", function() {
 });
 
 test("{{view}} should be able to point to a local view", function() {
-  var view = SC.View.create({
+  view = SC.View.create({
     template: SC.Handlebars.compile("{{view common}}"),
 
     common: SC.View.extend({
@@ -895,7 +902,7 @@ test("should be able to bind view class names to properties", function() {
     isDone: YES
   });
 
-  var view = SC.View.create({
+  view = SC.View.create({
     templateName: 'template',
     templates: templates
   });
@@ -914,7 +921,7 @@ test("should be able to bind view class names to properties", function() {
 test("should be able to bind element attributes using {{bindAttr}}", function() {
   var template = SC.Handlebars.compile('<img {{bindAttr src="content.url" alt="content.title"}}>');
 
-  var view = SC.View.create({
+  view = SC.View.create({
     template: template,
     content: SC.Object.create({
       url: "http://www.sproutcore.com/assets/images/logo.png",
@@ -964,7 +971,7 @@ test("should be able to bind element attributes using {{bindAttr}}", function() 
 });
 
 test("should not reset cursor position when text field receives keyUp event", function() {
-  var view = SC.TextField.create({
+  view = SC.TextField.create({
     value: "Broseidon, King of the Brocean"
   });
 
@@ -987,7 +994,7 @@ test("should not reset cursor position when text field receives keyUp event", fu
 test("should be able to bind element attributes using {{bindAttr}} inside a block", function() {
   var template = SC.Handlebars.compile('{{#with content}}<img {{bindAttr src="url" alt="title"}}>{{/with}}');
 
-  var view = SC.View.create({
+  view = SC.View.create({
     template: template,
     content: SC.Object.create({
       url: "http://www.sproutcore.com/assets/images/logo.png",
@@ -1010,7 +1017,7 @@ test("should be able to bind element attributes using {{bindAttr}} inside a bloc
 test("should be able to bind class attribute with {{bindAttr}}", function() {
   var template = SC.Handlebars.compile('<img {{bindAttr class="foo"}}>');
 
-  var view = SC.View.create({
+  view = SC.View.create({
     template: template,
     foo: 'bar'
   });
@@ -1033,7 +1040,7 @@ test("should be able to bind boolean element attributes using {{bindAttr}}", fun
     isChecked: true
   });
 
-  var view = SC.View.create({
+  view = SC.View.create({
     template: template,
     content: content
   });
@@ -1059,7 +1066,7 @@ test("should be able to add multiple classes using {{bindAttr class}}", function
     isAlsoCool: true
   });
 
-  var view = SC.View.create({
+  view = SC.View.create({
     template: template,
     content: content
   });
@@ -1082,7 +1089,7 @@ test("should be able to output a property without binding", function(){
     anUnboundString: "No spans here, son."
   });
 
-  var view = SC.View.create({
+  view = SC.View.create({
     template: template,
     content: content
   });
@@ -1098,7 +1105,7 @@ test("should be able to choose a tagName other than span", function(){
       underwater: true
   });
 
-  var view = SC.View.create({
+  view = SC.View.create({
     template: template,
     content: content
   });
@@ -1114,7 +1121,7 @@ test("should still get a span by default if tagName isn't specified", function()
       underwater: true
   });
 
-  var view = SC.View.create({
+  view = SC.View.create({
     template: template,
     content: content
   });
@@ -1124,11 +1131,14 @@ test("should still get a span by default if tagName isn't specified", function()
   equals(view.$('span').length, 1);
 });
 
+var view;
+
 module("Templates redrawing and bindings", {
   setup: function(){
     MyApp = SC.Object.create({});
   },
   teardown: function(){
+    if (view) view.destroy();
     window.MyApp = null;
   }
 });
@@ -1144,7 +1154,7 @@ test("should be able to update when bound property updates", function(){
     }.property('value')
   });
   
-  var view = View.create();
+  view = View.create();
   view.createElement();
   
   SC.run.sync();
@@ -1162,7 +1172,7 @@ test("should be able to update when bound property updates", function(){
 });
 
 test("bindings should be relative to the current context", function() {
-  var view = SC.View.create({
+  view = SC.View.create({
     museumOpen: true,
 
     museumDetails: SC.Object.create({
