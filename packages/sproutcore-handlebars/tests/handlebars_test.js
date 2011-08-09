@@ -1193,3 +1193,38 @@ test("bindings should be relative to the current context", function() {
 
   equals($.trim(view.$().text()), "Name: SFMoMA Price: $20", "should print baz twice");
 });
+
+
+// https://github.com/sproutcore/sproutcore20/issues/120
+
+test("should not enter an infinite loop when binding an attribute in Handlebars", function() {
+  App = SC.Application.create();
+  App.test = SC.Object.create({ href: 'test' });
+  App.Link = SC.View.extend({
+    classNames: ['app-link'],
+    tagName: 'a',
+    attributeBindings: ['href'],
+    // href: '#none',
+    href: function(key, value) {
+      debugger;
+    }.property(),
+    click: function() {
+      return false;
+    }
+  });
+
+  var parentView = SC.View.create({
+    template: SC.Handlebars.compile('{{#view App.Link hrefBinding="App.test.href"}} Test {{/view}}')
+  });
+
+
+  SC.run(function() {
+    parentView.appendTo('#qunit-fixture');
+    // App.Link.create().appendTo('#qunit-fixture');
+  });
+  // equals(view.$().attr('href'), 'test');
+
+  parentView.destroy();
+
+  App = undefined;
+});
