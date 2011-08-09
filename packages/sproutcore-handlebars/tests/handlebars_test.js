@@ -1204,10 +1204,8 @@ test("should not enter an infinite loop when binding an attribute in Handlebars"
     classNames: ['app-link'],
     tagName: 'a',
     attributeBindings: ['href'],
-    // href: '#none',
-    href: function(key, value) {
-      debugger;
-    }.property(),
+    href: '#none',
+
     click: function() {
       return false;
     }
