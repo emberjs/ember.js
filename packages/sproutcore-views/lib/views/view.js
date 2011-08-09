@@ -10,8 +10,6 @@ require("sproutcore-views/system/render_buffer");
 var get = SC.get, set = SC.set, addObserver = SC.addObserver;
 var getPath = SC.getPath, meta = SC.meta, fmt = SC.String.fmt;
 
-var destroyedError = "You can't call %@ on a destroyed view";
-
 /**
   @static
 
@@ -267,7 +265,7 @@ SC.View = SC.Object.extend(
     var parent = this, states = parent.states;
 
     while (states) {
-      var stateName = this.state,
+      var stateName = get(this, 'state'),
           state     = states[stateName];
 
       if (state) {
@@ -479,22 +477,12 @@ SC.View = SC.Object.extend(
     @type DOMElement
   */
   element: function(key, value) {
-    // If the value of element is being set, just return it. SproutCore
-    // will cache it for further `get` calls.
     if (value !== undefined) {
-      if (value !== null) {
-        this.invokeRecursively(function(view) {
-          meta(view)['SC.View'].buffer = null;
-          view.state = 'inDOM';
-        });
-      }
-      return value;
+      return this.invokeForState('setElement', value);
+    } else {
+      return this.invokeForState('getElement');
     }
-
-    var parent = get(this, 'parentView');
-    if (parent) { parent = get(parent, 'element'); }
-    if (parent) { return this.findElementInParentElement(parent); }
-  }.property('parentView').cacheable(),
+  }.property('parentView', 'state').cacheable(),
 
   /**
     Returns a jQuery object for this view's element. If you pass in a selector
@@ -699,6 +687,15 @@ SC.View = SC.Object.extend(
   },
 
   /**
+    Invalidates the cache for a property on all child views.
+  */
+  invalidateRecursively: function(key) {
+    this.forEachChildView(function(view) {
+      view.propertyDidChange(key);
+    });
+  },
+
+  /**
     @private
 
     Invokes the receiver's willInsertElement() method if it exists and then
@@ -830,7 +827,7 @@ SC.View = SC.Object.extend(
     }
 
     viewMeta.buffer = buffer;
-    this.state = 'inBuffer';
+    this.transitionTo('inBuffer');
 
     viewMeta.lengthBeforeRender = getPath(this, 'childViews.length');
 
@@ -987,7 +984,7 @@ SC.View = SC.Object.extend(
       dispatch
   */
   init: function() {
-    this.state = 'preRender';
+    set(this, 'state', 'preRender');
 
     var parentView = get(this, 'parentView');
 
@@ -1099,6 +1096,7 @@ SC.View = SC.Object.extend(
     // as removeFromParent will try to remove the element from
     // the DOM again.
     if (parent) { parent.removeChild(this); }
+    SC.Descriptor.setup(this, 'state', 'destroyed');
 
     this._super();
 
@@ -1108,8 +1106,6 @@ SC.View = SC.Object.extend(
 
     // next remove view from global hash
     delete SC.View.views[get(this, 'elementId')];
-
-    this.state = 'destroyed';
 
     return this; // done with cleanup
   },
@@ -1144,7 +1140,23 @@ SC.View = SC.Object.extend(
   */
   _isVisibleDidChange: function() {
     this.$().toggle(get(this, 'isVisible'));
-  }.observes('isVisible')
+  }.observes('isVisible'),
+
+  clearBuffer: function() {
+    this.invokeRecursively(function(view) {
+      meta(view)['SC.View'].buffer = null;
+    });
+  },
+
+  transitionTo: function(state, children) {
+    set(this, 'state', state);
+
+    if (children !== false) {
+      this.forEachChildView(function(view) {
+        view.transitionTo(state);
+      });
+    }
+  }
 
 });
 
@@ -1163,162 +1175,15 @@ SC.View = SC.Object.extend(
     method), it is in this state. No further actions can be invoked
     on a destroyed view.
 */
-SC.View.states = {
-  "default": {
-    // appendChild is only legal while rendering the buffer.
-    appendChild: function() {
-      throw "You can't use appendChild outside of the rendering process";
-    },
-
-    $: function() {
-      return SC.$();
-    }
-  },
 
   // in the destroyed state, everything is illegal
-  destroyed: {
-    appendChild: function() {
-      throw fmt(destroyedError, ['appendChild']);
-    },
-    rerender: function() {
-      throw fmt(destroyedError, ['rerender']);
-    },
-    destroyElement: function() {
-      throw fmt(destroyedError, ['destroyElement']);
-    },
-
-    // Since element insertion is scheduled, don't do anything if
-    // the view has been destroyed between scheduling and execution
-    insertElement: SC.K
-  },
 
   // before rendering has begun, all legal manipulations are noops.
-  preRender: {
-    // a view leaves the preRender state once its element has been
-    // created (createElement).
-    insertElement: function(view, fn) {
-      // If we don't have an element, guarantee that it exists before
-      // invoking the willInsertElement event.
-      view.createElement();
-
-      view._notifyWillInsertElement();
-      fn.call(view);
-      view._notifyDidInsertElement();
-    }
-  },
 
   // inside the buffer, legal manipulations are done on the buffer
-  inBuffer: {
-    $: function(view, sel) {
-      // if we don't have an element yet, someone calling this.$() is
-      // trying to update an element that isn't in the DOM. Instead,
-      // rerender the view to allow the render method to reflect the
-      // changes.
-      view.rerender();
-      return SC.$();
-    },
-
-    // when a view is rendered in a buffer, rerendering it simply
-    // replaces the existing buffer with a new one
-    rerender: function(view) {
-      var viewMeta = meta(view)['SC.View'],
-          buffer = viewMeta.buffer;
-
-      view.clearRenderedChildren();
-      view.renderToBuffer(buffer, 'replaceWith');
-    },
-
-    // when a view is rendered in a buffer, appending a child
-    // view will render that view and append the resulting
-    // buffer into its buffer.
-    appendChild: function(view, childView, options) {
-      var buffer = meta(view)['SC.View'].buffer;
-
-      childView = this.createChildView(childView, options);
-      view.childViews.pushObject(childView);
-      childView.renderToBuffer(buffer);
-      return childView;
-    },
-
-    // when a view is rendered in a buffer, destroying the
-    // element will simply destroy the buffer and put the
-    // state back into the preRender state.
-    destroyElement: function(view) {
-      meta(view)['SC.View'].buffer.remove();
-
-      view.invokeRecursively(function(view) {
-        var viewMeta = meta(view)['SC.View'];
-        viewMeta.buffer = null;
-
-        view.willDestroyElement();
-
-        this.invokeRecursively(function(view) {
-          view.state = 'preRender';
-        });
-      });
-
-      return view;
-    },
-
-    // It should be impossible for a rendered view to be scheduled for
-    // insertion.
-    insertElement: function() {
-      throw "You can't insert an element that has already been rendered";
-    }
-  },
 
   // once the view has been inserted into the DOM, legal manipulations
   // are done on the DOM element.
-  inDOM: {
-
-    $: function(view, sel) {
-      var elem = get(view, 'element');
-      return sel ? SC.$(sel, elem) : SC.$(elem);
-    },
-
-    // once the view has been inserted into the DOM, rerendering is
-    // deferred to allow bindings to synchronize.
-    rerender: function(view) {
-      var viewMeta = meta(this)['SC.View'], element = get(view, 'element');
-
-      view.invokeRecursively(function(v) { v.state = 'preRender'; })
-
-      view.clearRenderedChildren();
-
-      // Set element to null after the childViews.replace() call to prevent
-      // a call to $() from inside _scheduleInsertion triggering a rerender.
-      view.invokeRecursively(function(v) { set(v, 'element', null); })
-
-      view._insertElementLater(function() {
-        SC.$(element).replaceWith(get(this, 'element'));
-      });
-    },
-
-    // once the view is already in the DOM, destroying it removes it
-    // from the DOM, nukes its element, and puts it back into the
-    // preRender state.
-    destroyElement: function(view) {
-      var elem = get(this, 'element');
-
-      view.invokeRecursively(function(view) {
-        var elem = get(this, 'element');
-        this.willDestroyElement();
-
-        view.state = 'preRender';
-        set(view, 'element', null);
-      });
-
-      SC.$(elem).remove();
-      return view;
-    },
-
-    // You shouldn't insert an element into the DOM that was already
-    // inserted into the DOM.
-    insertElement: function() {
-      throw "You can't insert an element into the DOM that has already been inserted";
-    }
-  }
-};
 
 SC.View.reopen({
   states: SC.View.states

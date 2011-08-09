@@ -40,7 +40,7 @@ var parent, child, parentDom, childDom ;
 module("SC.View#element - autodiscovery", {
   setup: function() {
 
-    parent = SC.View.create({
+    parent = SC.ContainerView.create({
       childViews: [ SC.View.extend({
         elementId: 'child-view'
       }) ]

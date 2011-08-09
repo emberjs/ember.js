@@ -5,7 +5,8 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
-require("sproutcore-views/views/view");
-require("sproutcore-views/views/states");
-require("sproutcore-views/views/container_view");
-require("sproutcore-views/views/collection_view");
+require("sproutcore-views/views/states/default");
+require("sproutcore-views/views/states/pre_render");
+require("sproutcore-views/views/states/in_buffer");
+require("sproutcore-views/views/states/in_dom");
+require("sproutcore-views/views/states/destroyed");

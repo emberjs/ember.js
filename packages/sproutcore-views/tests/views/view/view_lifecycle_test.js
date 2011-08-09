@@ -6,7 +6,7 @@ module("views/view/view_lifecycle_test - pre-render", {
   },
 
   teardown: function() {
-    if (view) { view.remove(); }
+    if (view) { view.destroy(); }
   }
 });
 
@@ -83,7 +83,7 @@ module("views/view/view_lifecycle_test - in render", {
   },
 
   teardown: function() {
-    if (view) { view.remove(); }
+    if (view) { view.destroy(); }
   }
 });
 
@@ -142,7 +142,7 @@ test("rerender should work inside a template", function() {
 
 module("views/view/view_lifecycle_test - in DOM", {
   teardown: function() {
-    if (view) { view.remove(); }
+    if (view) { view.destroy(); }
   }
 });
 
@@ -206,6 +206,24 @@ test("should destroy DOM representation when destroyElement is called", function
   ok(!view.get('element'), "destroys view when destroyElement() is called");
 });
 
+test("should destroy DOM representation when destroy is called", function() {
+  SC.run(function() {
+    view = SC.View.create({
+      template: tmpl("<div id='warning'>Don't fear the reaper</div>")
+    });
+
+    view.append();
+  });
+
+  ok(view.get('element'), "precond - generates a DOM element");
+
+  SC.run(function() {
+    view.destroy();
+  });
+
+  ok(SC.$('#warning').length === 0, "destroys element when destroy() is called");
+});
+
 test("should throw an exception if trying to append an element that is already in DOM", function() {
   SC.run(function() {
     view = SC.View.create({
@@ -233,6 +251,9 @@ test("should throw an exception when calling appendChild after view is destroyed
     });
 
     view.append();
+  });
+
+  SC.run(function() {
     view.destroy();
   });
 
@@ -250,9 +271,11 @@ test("should throw an exception when rerender is called after view is destroyed"
     });
 
     view.append();
-    view.destroy();
   });
 
+  SC.run(function() {
+    view.destroy();
+  });
 
   raises(function() {
     view.rerender();
@@ -266,9 +289,11 @@ test("should throw an exception when rerender is called after view is destroyed"
     });
 
     view.append();
-    view.destroy();
   });
 
+  SC.run(function() {
+    view.destroy();
+  });
 
   raises(function() {
     view.destroyElement();

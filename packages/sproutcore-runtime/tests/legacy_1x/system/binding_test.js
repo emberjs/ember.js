@@ -247,9 +247,11 @@ test("Single binding using notEmpty function.", function() {
 
 test("Binding with transforms, function to check the type of value", function() {
 	var jon = Bon1.create({
-		value1Binding: SC.Binding.transform(function(val1) {
-			return (SC.typeOf(val1) == 'string')? val1 : "";
-		}).from("TestNamespace.bon2.val1")
+		value1Binding: SC.Binding.transform({
+      to: function(val1) {
+        return (SC.typeOf(val1) == 'string')? val1 : "";
+      }
+    }).from("TestNamespace.bon2.val1")
 	});
 	SC.run.sync();
 	set(bon2, "val1","changed");

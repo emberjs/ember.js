@@ -91,14 +91,19 @@ function SINGLE(val, placeholder) {
 }
 
 // Coerces the binding value into a Boolean.
-function BOOL(val) {
-  return !!val;
-}
+
+var BOOL = {
+  to: function (val) {
+    return !!val;
+  }
+};
 
 // Returns the Boolean inverse of the value.
-function NOT(val) {
-  return !val;
-}
+var NOT = {
+  to: function NOT(val) {
+    return !val;
+  }
+};
 
 var get     = SC.get,
     getPath = SC.getPath,
@@ -106,7 +111,7 @@ var get     = SC.get,
     guidFor = SC.guidFor;
 
 // Applies a binding's transformations against a value.
-function getTransformedValue(binding, val, obj) {
+function getTransformedValue(binding, val, obj, dir) {
 
   // First run a type transform, if it exists, that changes the fundamental
   // type of the value. For example, some transforms convert an array to a
@@ -120,7 +125,7 @@ function getTransformedValue(binding, val, obj) {
       len        = transforms ? transforms.length : 0,
       idx;
 
-  for(idx=0;idx<len;idx++) { val = transforms[idx].call(this, val, obj); }
+  for(idx=0;idx<len;idx++) { val = transforms[idx][dir].call(this, val, obj); }
   return val;
 }
 
@@ -131,7 +136,7 @@ function empty(val) {
 function getTransformedFromValue(obj, binding) {
   var operation = binding._operation;
   var fromValue = operation ? operation(obj, binding._from, binding._operand) : getPath(obj, binding._from);
-  return getTransformedValue(binding, fromValue, obj);
+  return getTransformedValue(binding, fromValue, obj, 'to');
 }
 
 var AND_OPERATION = function(obj, left, right) {
@@ -377,24 +382,30 @@ var Binding = SC.Object.extend({
   },
 
   /**
-    Adds the specified transform function to the array of transform functions.
+    Adds the specified transform to the array of transform functions.
 
-    The function you pass must have the following signature:
+    A transform is a hash with `to` and `from` properties. Each property
+    should be a function that performs a transformation in either the
+    forward or back direction.
+
+    The functions you pass must have the following signature:
 
           function(value) {};
 
-    It must return the transformed value.
+    They must also return the transformed value.
 
-    Transform functions are called in the order they were added. If you are
+    Transforms are invoked in the order they were added. If you are
     extending a binding and want to reset the transforms, you can call
     `resetTransform()` first.
 
     @param {Function} transformFunc the transform function.
     @returns {SC.Binding} this
   */
-  transform: function(func) {
+  transform: function(transform) {
+    sc_assert("Binding transforms must be a hash with a `to` and optional `from` property", transform && transform.to);
+
     if (!this._transforms) this._transforms = [];
-    this._transforms.push(func);
+    this._transforms.push(transform);
     return this;
   },
 
@@ -474,7 +485,9 @@ var Binding = SC.Object.extend({
 
     if (!placeholder) { placeholder = SC.EMPTY_PLACEHOLDER; }
 
-    this.transform(function(val) { return empty(val) ? placeholder : val; });
+    this.transform({
+      to: function(val) { return empty(val) ? placeholder : val; }
+    });
 
     return this;
   },
@@ -490,7 +503,9 @@ var Binding = SC.Object.extend({
   notNull: function(placeholder) {
     if (!placeholder) { placeholder = SC.EMPTY_PLACEHOLDER; }
 
-    this.transform(function(val) { return val == null ? placeholder : val; });
+    this.transform({
+      to: function(val) { return val == null ? placeholder : val; }
+    });
 
     return this;
   },
@@ -542,24 +557,22 @@ var Binding = SC.Object.extend({
 
     @returns {SC.Binding} this
   */
-  connect: function(toObj, fromObj) {
-    sc_assert('Must pass a valid object to SC.Binding.connect()', !!toObj);
-
-    fromObj = fromObj || toObj;
+  connect: function(obj) {
+    sc_assert('Must pass a valid object to SC.Binding.connect()', !!obj);
 
     var oneWay = this._oneWay, operand = this._operand;
 
     // add an observer on the object to be notified when the binding should be updated
-    SC.addObserver(fromObj, this._from, this, this.fromDidChange);
+    SC.addObserver(obj, this._from, this, this.fromDidChange);
 
     // if there is an operand, add an observer onto it as well
-    if (operand) { SC.addObserver(fromObj, operand, this, this.fromDidChange); }
+    if (operand) { SC.addObserver(obj, operand, this, this.fromDidChange); }
 
     // if the binding is a two-way binding, also set up an observer on the target
     // object.
-    if (!oneWay) { SC.addObserver(toObj, this._to, this, this.toDidChange); }
+    if (!oneWay) { SC.addObserver(obj, this._to, this, this.toDidChange); }
 
-    if (SC.meta(toObj,false).proto !== toObj) { this._scheduleSync(toObj, 'fwd'); }
+    if (SC.meta(obj,false).proto !== obj) { this._scheduleSync(obj, 'fwd'); }
 
     this._readyToSync = true;
     return this;
