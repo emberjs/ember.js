@@ -831,12 +831,8 @@ SC.View = SC.Object.extend(
 
     viewMeta.lengthBeforeRender = getPath(this, 'childViews.length');
 
-    SC.beginPropertyChanges(this);
-
     this.applyAttributesToBuffer(buffer);
     this.render(buffer);
-
-    SC.endPropertyChanges(this);
 
     viewMeta.lengthAfterRender = getPath(this, 'childViews.length');
 
