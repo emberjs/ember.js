@@ -1,6 +1,6 @@
 {
   "name": "sproutcore-handlebars-format",
-  "version": "1.0.0",
+  "version": "2.0.beta.3",
   "description": "Adds format support for handlebars templates",
   "homepage": "http://www.sproutcore.com",
   
