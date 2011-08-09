@@ -8,8 +8,6 @@
 require('sproutcore-runtime/system/object');
 require('sproutcore-runtime/system/run_loop');
 
-
-
 // ..........................................................
 // CONSTANTS
 //
@@ -125,7 +123,10 @@ function getTransformedValue(binding, val, obj, dir) {
       len        = transforms ? transforms.length : 0,
       idx;
 
-  for(idx=0;idx<len;idx++) { val = transforms[idx][dir].call(this, val, obj); }
+  for(idx=0;idx<len;idx++) {
+    var transform = transforms[idx][dir];
+    if (transform) { val = transform.call(this, val, obj); }
+  }
   return val;
 }
 
@@ -137,6 +138,11 @@ function getTransformedFromValue(obj, binding) {
   var operation = binding._operation;
   var fromValue = operation ? operation(obj, binding._from, binding._operand) : getPath(obj, binding._from);
   return getTransformedValue(binding, fromValue, obj, 'to');
+}
+
+function getTransformedToValue(obj, binding) {
+  var toValue = getPath(obj, binding._to);
+  return getTransformedValue(binding, toValue, obj, 'from');
 }
 
 var AND_OPERATION = function(obj, left, right) {
@@ -402,7 +408,9 @@ var Binding = SC.Object.extend({
     @returns {SC.Binding} this
   */
   transform: function(transform) {
-    sc_assert("Binding transforms must be a hash with a `to` and optional `from` property", transform && transform.to);
+    if ('function' === typeof transform) {
+      transform = { to: transform };
+    }
 
     if (!this._transforms) this._transforms = [];
     this._transforms.push(transform);
@@ -654,7 +662,7 @@ var Binding = SC.Object.extend({
 
     // apply any operations to the object, then apply transforms
     var fromValue = getTransformedFromValue(obj, this);
-    var toValue = getPath(obj, toPath);
+    var toValue   = getTransformedToValue(obj, this);
 
     if (toValue === fromValue) { return; }
 
