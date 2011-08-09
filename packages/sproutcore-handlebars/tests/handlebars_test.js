@@ -201,13 +201,13 @@ test("should accept relative paths to views", function() {
 
 test("child views can be inserted inside a bind block", function() {
   var templates = SC.Object.create({
-    nester: SC.Handlebars.compile("<h1 id='hello-world'>Hello {{world}}</h1>{{view \"TemplateTests.LabelView\"}}"),
+    nester: SC.Handlebars.compile("<h1 id='hello-world'>Hello {{world}}</h1>{{view \"TemplateTests.BQView\"}}"),
     nested: SC.Handlebars.compile("<div id='child-view'>Goodbye {{#with content}}{{blah}} {{view \"TemplateTests.OtherView\"}}{{/with}} {{world}}</div>"),
     other: SC.Handlebars.compile("cruel")
   });
 
-  TemplateTests.LabelView = SC.View.extend({
-    tagName: "label",
+  TemplateTests.BQView = SC.View.extend({
+    tagName: "blockquote",
     cruel: "cruel",
     world: "world?",
     content: SC.Object.create({ blah: "wot" }),
@@ -229,7 +229,7 @@ test("child views can be inserted inside a bind block", function() {
   view.createElement();
 
   ok(view.$("#hello-world:contains('Hello world!')").length, "The parent view renders its contents");
-  ok(view.$("label").text().match(/Goodbye.*wot.*cruel.*world\?/), "The child view renders its content once");
+  ok(view.$("blockquote").text().match(/Goodbye.*wot.*cruel.*world\?/), "The child view renders its content once");
   ok(view.$().text().match(/Hello world!.*Goodbye.*wot.*cruel.*world\?/), "parent view should appear before the child view");
 });
 
@@ -642,7 +642,7 @@ test("Template views return a no-op function if their template cannot be found",
 
 test("Template views add an elementId to child views created using the view helper", function() {
   var templates = SC.Object.create({
-    parent: SC.Handlebars.compile('<label>{{view "TemplateTests.ChildView"}}</label>'),
+    parent: SC.Handlebars.compile('<div>{{view "TemplateTests.ChildView"}}</div>'),
     child: SC.Handlebars.compile("I can't believe it's not butter.")
   });
 
