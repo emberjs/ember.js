@@ -6,6 +6,30 @@
 
 require('sproutcore-touch/system/sylvester');
 
+var properties = {
+  rotateX: {
+    defaultValue: 0
+  },
+  rotateY: {
+    defaultValue: 0
+  },
+  rotateZ: {
+    defaultValue: 0
+  },
+  translateX: {
+    defaultValue: 0
+  },
+  translateY: {
+    defaultValue: 0
+  },
+  translateZ: {
+    defaultValue: 0
+  },
+  scale: {
+    defaultValue: 1
+  }
+};
+
 var RotationXMatrix = function(a) {
   return $M([
     [1,0,0,0],
@@ -59,14 +83,14 @@ var ScaleMatrix = function(s) {
   
   var applyMatrix = function(elem) {
       var transforms = $(elem).data('transforms');
-      
-      var rotX = parseInt(transforms.rotateX,10) || 0,
-          rotY = parseInt(transforms.rotateY,10) || 0,
-          rotZ = parseInt(transforms.rotateZ,10) || 0,
-          scale = parseInt(transforms.scale,10) || 1,
-          translateX = parseInt(transforms.translateX,10) || 0,
-          translateY = parseInt(transforms.translateY,10) || 0,
-          translateZ = parseInt(transforms.translateZ,10) || 0;
+
+      var rotX = transforms.rotateX || properties.rotateX.defaultValue,
+          rotY = transforms.rotateY || properties.rotateY.defaultValue,
+          rotZ = transforms.rotateZ || properties.rotateZ.defaultValue,
+          scale = transforms.scale || properties.scale.defaultValue,
+          translateX = transforms.translateX || properties.translateX.defaultValue,
+          translateY = transforms.translateY || properties.translateY.defaultValue,
+          translateZ = transforms.translateZ || properties.translateZ.defaultValue;
 
       var tM = RotationXMatrix(rotX)
                 .x(RotationYMatrix(rotY))
@@ -81,22 +105,29 @@ var ScaleMatrix = function(s) {
         s += tM.e(4,1).toFixed(10) + "," + tM.e(4,2).toFixed(10) + "," + tM.e(4,3).toFixed(10) + "," + tM.e(4,4).toFixed(10);
       s += ")";
       
-      console.log(elem, s);
       elem.style.WebkitTransform = s;
   }
   
   var hookFor = function(name) {
+    
+    $.fx.step[name] = function(fx){
+      $.cssHooks[name].set( fx.elem, fx.now + fx.unit );
+    };
+    
     return {
       get: function( elem, computed, extra ) {
-        console.log(elem);
         var transforms = $(elem).data('transforms');
-        return transforms[name] || 0;
+        if (transforms === undefined) {
+          transforms = {};
+          $(elem).data('transforms',transforms);
+        }
+        
+        return transforms[name] || properties[name].defaultValue;
       },
       set: function( elem, value) {
-        console.log(elem);
         var transforms = $(elem).data('transforms');
         if (transforms === undefined) transforms = {};
-        
+
         transforms[name] = value;
         
         $(elem).data('transforms',transforms);
@@ -105,19 +136,9 @@ var ScaleMatrix = function(s) {
     }
   }
   
-  var properties = [
-    'rotateX',
-    'rotateY',
-    'rotateZ',
-    'translateX',
-    'translateY',
-    'translateZ',
-    'scale'
-  ];
-  
-  for (var i=0, l=properties.length; i<l; i++) {
-    var name = properties[i];
+  for (var name in properties) {
     $.cssHooks[name] = hookFor(name);
+    $.cssNumber[name] = true;
   }
 
 })(jQuery);
