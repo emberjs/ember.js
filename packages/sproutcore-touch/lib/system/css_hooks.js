@@ -42,7 +42,7 @@ var TranslationMatrix = function(tx,ty,tz) {
   ]);
 };
 
-var ScaleMatrix = function(s) {
+var ScaleMatrix = function(s) {  
   return $M([
     [s,0,0,0],
     [0,s,0,0],
@@ -57,22 +57,22 @@ var ScaleMatrix = function(s) {
     return;
   }
   
-  var applyMatrix = function(elm) {
-      var transforms = elm.data('transforms');
+  var applyMatrix = function(elem) {
+      var transforms = $(elem).data('transforms');
       
-      var rotX = transforms.rotateX,
-          rotY = transforms.rotateY,
-          rotZ = transforms.rotateZ,
-          scale = transforms.scale,
-          translateX = transforms.translateX,
-          translateY = transforms.translateY,
-          translateZ = transforms.translateZ;
-          
-      var transformMatrix = RotationXMatrix(rotX)
-                            .x(RotationYMatrix(rotY))
-                            .x(RotationZMatrix(rotZ))
-                            .x(ScaleMatrix(scale))
-                            .x(TranslationMatrix(translateX,translateY,translateZ));
+      var rotX = parseInt(transforms.rotateX,10) || 0,
+          rotY = parseInt(transforms.rotateY,10) || 0,
+          rotZ = parseInt(transforms.rotateZ,10) || 0,
+          scale = parseInt(transforms.scale,10) || 1,
+          translateX = parseInt(transforms.translateX,10) || 0,
+          translateY = parseInt(transforms.translateY,10) || 0,
+          translateZ = parseInt(transforms.translateZ,10) || 0;
+
+      var tM = RotationXMatrix(rotX)
+                .x(RotationYMatrix(rotY))
+                .x(RotationZMatrix(rotZ))
+                .x(ScaleMatrix(scale))
+                .x(TranslationMatrix(translateX,translateY,translateZ));
       
       s  = "matrix3d(";
         s += tM.e(1,1).toFixed(10) + "," + tM.e(1,2).toFixed(10) + "," + tM.e(1,3).toFixed(10) + "," + tM.e(1,4).toFixed(10) + ",";
@@ -81,22 +81,25 @@ var ScaleMatrix = function(s) {
         s += tM.e(4,1).toFixed(10) + "," + tM.e(4,2).toFixed(10) + "," + tM.e(4,3).toFixed(10) + "," + tM.e(4,4).toFixed(10);
       s += ")";
       
-      elm.style.WebkitTransform = s;
+      console.log(elem, s);
+      elem.style.WebkitTransform = s;
   }
   
   var hookFor = function(name) {
     return {
       get: function( elem, computed, extra ) {
-        var transforms = elem.data('transforms');
+        console.log(elem);
+        var transforms = $(elem).data('transforms');
         return transforms[name] || 0;
       },
       set: function( elem, value) {
-        var transforms = elem.data('transforms');
+        console.log(elem);
+        var transforms = $(elem).data('transforms');
         if (transforms === undefined) transforms = {};
         
         transforms[name] = value;
         
-        elem.data('transforms',transforms);
+        $(elem).data('transforms',transforms);
         applyMatrix(elem);
       }
     }

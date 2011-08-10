@@ -1,4 +1,3 @@
-// === Sylvester ===
 // Vector and Matrix mathematics modules for JavaScript
 // Copyright (c) 2007 James Coglan
 // 
