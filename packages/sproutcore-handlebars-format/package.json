@@ -1,9 +1,15 @@
 {
   "name": "sproutcore-handlebars-format",
+  "author": "Yehuda Katz",
   "version": "2.0.beta.3",
   "description": "Adds format support for handlebars templates",
+  "summary": "Adds format support for handlebars templates",
   "homepage": "http://www.sproutcore.com",
-  
+
+  "directories": {
+    "lib": "."
+  },
+
   "bpm:build": {
     "bpm_libs.js": {
       "directories": []
