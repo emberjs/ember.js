@@ -87,11 +87,11 @@ SC.PanGestureRecognizer = SC.Gesture.extend({
   },
 
   shouldBegin: function() {
-    var previous = this._previousLocation;
-    var current = this.centerPointForTouches(get(this.touches,'touches'));
+    var previousLocation = this._previousLocation;
+    var currentLocation = this.centerPointForTouches(get(this.touches,'touches'));
 
-    var x = this._previousLocation.x;
-    var y = this._previousLocation.y;
+    var x = previousLocation.x;
+    var y = previousLocation.y;
     var x0 = currentLocation.x;
     var y0 = currentLocation.y;
 
@@ -100,16 +100,16 @@ SC.PanGestureRecognizer = SC.Gesture.extend({
   },
 
   didChange: function() {
-    var previous = this._previousLocation;
-    var current = this.centerPointForTouches(get(this.touches,'touches'));
-    var translation = {x:current.x,y:current.y};
+    var previousLocation = this._previousLocation;
+    var currentLocation = this.centerPointForTouches(get(this.touches,'touches'));
+    var translation = {x:currentLocation.x, y:currentLocation.y};
 
-    translation.x = current.x - previous.x;
-    translation.y = current.y - previous.y;
+    translation.x = currentLocation.x - previousLocation.x;
+    translation.y = currentLocation.y - previousLocation.y;
 
     this._previousTranslation = get(this, 'translation');
     set(this, 'translation', translation);
-    this._previousLocation = current;
+    this._previousLocation = currentLocation;
   },
 
   eventWasRejected: function() {
