@@ -35,7 +35,7 @@ SC.Gestures = SC.Object.create(
 
   /**
     Registers a gesture recognizer to the system. The gesture recognizer is
-    identified by the name parameter, which must be unique across the system.
+    identified by the name parameter, which must be globally unique.
   */
   register: function(name, /** SC.Gesture */recognizer) {
     var registeredGestures = this._registeredGestures;
