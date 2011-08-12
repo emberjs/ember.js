@@ -135,9 +135,7 @@ test("If the touches move, the translation should reflect the change", function(
     }]
   };
 
-  window.foo=true;
   view.$().trigger(touchEvent);
-  window.foo=false;
 
   equals(get(get(get(view, 'eventManager'), 'gestures')[0], 'state'),SC.Gesture.BEGAN, "gesture should be BEGAN");
 
