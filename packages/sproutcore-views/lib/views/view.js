@@ -1000,9 +1000,10 @@ SC.View = SC.Object.extend(
       var view;
 
       if ('string' === typeof viewName) {
-        view = this[viewName];
+        view = get(this, viewName);
         view = this.createChildView(view);
-        childViews[idx] = this[viewName] = view;
+        childViews[idx] = view;
+        set(this, viewName, view);
       } else if (viewName.isClass) {
         view = this.createChildView(viewName);
         childViews[idx] = view;
