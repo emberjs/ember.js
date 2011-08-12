@@ -127,8 +127,13 @@ var ScaleMatrix = function(s) {
       set: function( elem, value) {
         var transforms = $(elem).data('transforms');
         if (transforms === undefined) transforms = {};
+        var propInfo = properties[name];
 
-        transforms[name] = value;
+        if (typeof propInfo.apply === 'function') {
+          transforms[name] = propInfo.apply(transforms[name] || propInfo.defaultValue, value);
+        } else {
+          transforms[name] = value
+        }
         
         $(elem).data('transforms',transforms);
         applyMatrix(elem);
