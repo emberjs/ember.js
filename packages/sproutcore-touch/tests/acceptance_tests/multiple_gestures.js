@@ -209,7 +209,7 @@ test("when 2 fingers move closer together, gesture should be in BEGAN state", fu
 
   view.$().trigger(touchEvent);
 
-  equals(changeScale,1,"scale should be back to 1");
+  equals(changeScale,0.5,"scale should be halved");
 
   // =====================================
   // End gesture
@@ -281,7 +281,7 @@ test("when 2 fingers move closer together, gesture should be in BEGAN state", fu
   view.$().trigger(touchEvent);
 
   equals(get(gestures[0], 'state'),SC.Gesture.CHANGED, "gesture should be changed");
-  equals(changeScale,1,"scale should be halved");
+  equals(changeScale,0.5,"scale should be halved");
 
 });
 
