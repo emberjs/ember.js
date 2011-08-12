@@ -118,7 +118,7 @@ SC.PinchGestureRecognizer = SC.Gesture.extend({
     var distanceDifference = (currentDistanceBetweenTouches - this._previousDistance);
 
     set(this, 'velocity', distanceDifference / timeDifference);
-    set(this, 'scale', distanceDifference / this._previousDistance);
+    set(this, 'scale', currentDistanceBetweenTouches / this._previousDistance);
     
     this._previousTimestamp = get(this.touches,'timestamp');
     this._previousDistance = currentDistanceBetweenTouches;
