@@ -320,7 +320,7 @@ test("Subsequent pan gestures should be relative to previous ones", function() {
 
   view.$().trigger(touchEvent);
 
-  equals(translation.x,10,'changed x value');
+  equals(translation.x,5,'changed x value');
   equals(translation.y,0,'changed y value');
 
 });
