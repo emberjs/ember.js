@@ -17,7 +17,7 @@ var get = SC.get;
   @param {Hash} options
   @returns {String} HTML string
 */
-Handlebars.registerHelper('collection', function(path, options) {
+SC.Handlebars.registerHelper('collection', function(path, options) {
   // If no path is provided, treat path param as options.
   if (path && path.data && path.data.isRenderData) {
     options = path;
@@ -85,7 +85,7 @@ Handlebars.registerHelper('collection', function(path, options) {
 
   hash.itemViewClass = SC.Handlebars.ViewHelper.viewClassFromHTMLOptions(itemViewClass, itemHash);
 
-  return Handlebars.helpers.view.call(this, collectionClass, options);
+  return SC.Handlebars.helpers.view.call(this, collectionClass, options);
 });
 
 /**
@@ -94,10 +94,10 @@ Handlebars.registerHelper('collection', function(path, options) {
   @param {Hash} options
   @returns {String} HTML string
 */
-Handlebars.registerHelper('each', function(path, options) {
+SC.Handlebars.registerHelper('each', function(path, options) {
   options.hash.contentBinding = SC.Binding.from('parentView.'+path).oneWay();
   options.hash.preserveContext = true;
-  return Handlebars.helpers.collection.call(this, null, options);
+  return SC.Handlebars.helpers.collection.call(this, null, options);
 });
 
 
