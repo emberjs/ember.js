@@ -104,8 +104,7 @@ function xformForArgs(args) {
   return function (target, method, params) {
     var obj = params[0], keyName = changeKey(params[1]), val;
     if (method.length>2) val = SC.getPath(obj, keyName);
-    args.unshift(obj, keyName, val);
-    method.apply(target, args);
+    method.apply(target, [obj, keyName, val].concat(args));
   }
 }
 
