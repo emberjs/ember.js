@@ -76,3 +76,23 @@ test("itemView should return the nearest child of a collection view", function()
   equals(itemViewChild.getPath('contentView.isAnItemView'), true, "finds a view with a content property in the hierarchy");
 });
 
+test("nearestWithProperty should search immediate parent", function(){
+  var childView;
+
+  var view = SC.View.create({
+    myProp: true,
+
+    render: function(buffer) {
+      this.appendChild(SC.View.create());
+    }
+  });
+
+  SC.run(function() {
+    view.appendTo('#qunit-fixture');
+  });
+
+  childView = view.get('childViews')[0];
+  equals(childView.nearestWithProperty('myProp'), view);
+
+});
+

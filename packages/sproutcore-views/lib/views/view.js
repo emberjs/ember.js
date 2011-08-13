@@ -165,7 +165,7 @@ SC.View = SC.Object.extend(
     var view = this.parentView;
 
     while (view) {
-      if (property in view.parentView) { return view; }
+      if (property in view) { return view; }
       view = view.parentView;
     }
   },
