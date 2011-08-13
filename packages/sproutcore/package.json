@@ -4,14 +4,14 @@
   "summary": "SproutCore - JavaScript Application Framework",
   "homepage": "http://github.com/sproutcore/sproutcore20",
   "author": "Charles Jolley",
-  "version": "2.0.beta.2",
+  "version": "2.0.beta.3",
 
   "dependencies": {
     "spade":                 "~> 1.0.0",
-    "sproutcore-runtime":    "2.0.beta.2",
-    "sproutcore-views":      "2.0.beta.2",
-    "sproutcore-handlebars": "2.0.beta.2",
-    "sproutcore-handlebars-format": "~> 1.0.0"
+    "sproutcore-runtime": "2.0.beta.3",
+    "sproutcore-views": "2.0.beta.3",
+    "sproutcore-handlebars": "2.0.beta.3",
+    "sproutcore-handlebars-format": "~> 2.0.beta.3"
   },
 
   "directories": {
@@ -31,5 +31,4 @@
       "main": "sproutcore-handlebars-format/format" 
     }
   }
-
 }

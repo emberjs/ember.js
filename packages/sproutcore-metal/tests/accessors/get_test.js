@@ -25,7 +25,7 @@ test('should get arbitrary properties on an object', function() {
 });
 
 test('should call unknownProperty if defined and value is undefined', function() {
-  
+
   var obj = {
     count: 0,
     unknownProperty: function(key) {
@@ -34,7 +34,7 @@ test('should call unknownProperty if defined and value is undefined', function()
       return 'FOO';
     }
   };
-  
+
   equals(SC.get(obj, 'foo'), 'FOO', 'should return value from unknown');
   equals(obj.count, 1, 'should have invoked');
 });

@@ -165,7 +165,7 @@ test("If the touches move, the scale should reflect the change", function() {
   gestures = get(get(view, 'eventManager'), 'gestures');
   equals(get(gestures[0], 'state'),SC.Gesture.CHANGED, "gesture should be changed");
 
-  equals(scale,1,'scale should be doubled again');
+  equals(scale,2,'scale should be doubled again');
 
   touchEvent = new jQuery.Event();
   touchEvent.type='touchend';

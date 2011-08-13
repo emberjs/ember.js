@@ -119,7 +119,4 @@ example, to run all of the unit tests together:
 
 # Adding New Packages
 
-Be sure you include the new package as a dependency in the global `package.json` and run `spaderun update`.
-
-Note that unless you are adding new __tests__ or adding a new package you should not need to run `spaderun update`.
-
+Be sure you include the new package as a dependency in the global `package.json`.

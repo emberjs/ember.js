@@ -127,7 +127,7 @@ test("when 2 fingers touch inside, gesture should be in possible state", functio
 });
 
 test("when 2 fingers move closer together, gesture should be in BEGAN state", function() {
-  var numStart = 0, startScale, changeScale;
+  var numStart = 0, numChange = 0,startScale, changeScale;
   view = SC.View.create({
     elementId: 'gestureTest',
 
@@ -137,6 +137,7 @@ test("when 2 fingers move closer together, gesture should be in BEGAN state", fu
     },
 
     pinchChange: function(recognizer) {
+      numChange++;
       changeScale = get(recognizer, 'scale');
     }
 
@@ -190,7 +191,7 @@ test("when 2 fingers move closer together, gesture should be in BEGAN state", fu
   view.$().trigger(touchEvent);
 
   equals(get(gestures[0], 'state'),SC.Gesture.BEGAN, "gesture should be began");
-  equals(numStart,1,"pinchStart called once")
+  equals(numStart,1,"pinchStart called once");
   equals(startScale,2,"scale should be doubled");
 
   // =====================================
@@ -208,7 +209,7 @@ test("when 2 fingers move closer together, gesture should be in BEGAN state", fu
 
   view.$().trigger(touchEvent);
 
-  equals(changeScale,1,"scale should be back to 1");
+  equals(changeScale,0.5,"scale should be halved");
 
   // =====================================
   // End gesture
@@ -280,7 +281,7 @@ test("when 2 fingers move closer together, gesture should be in BEGAN state", fu
   view.$().trigger(touchEvent);
 
   equals(get(gestures[0], 'state'),SC.Gesture.CHANGED, "gesture should be changed");
-  equals(changeScale,1,"scale should be halved");
+  equals(changeScale,0.5,"scale should be halved");
 
 });
 

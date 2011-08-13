@@ -25,3 +25,22 @@ test("should be able to insert views after the DOM representation is created", f
 
   container.destroy();
 });
+
+test("should be able to observe properties that contain child views", function() {
+  var container;
+
+  SC.run(function() {
+    container = SC.ContainerView.create({
+      childViews: ['displayView'],
+      displayIsDisplayedBinding: 'displayView.isDisplayed',
+
+      displayView: SC.View.extend({
+        isDisplayed: true
+      })
+    });
+
+    container.appendTo('#qunit-fixture');
+  });
+
+  ok(container.get('displayIsDisplayed'), "can bind to child view");
+});

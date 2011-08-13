@@ -2,8 +2,8 @@
   "name": "sproutcore",
   "bpm": "1.0.0",
   "dependencies": {
-    "sproutcore": "2.0.beta.2",
-    "sproutcore-touch": "2.0.beta.2"
+    "sproutcore": "2.0.beta.3",
+    "sproutcore-touch": "2.0.beta.3"
   },
   "dependencies:development": {
     "spade-qunit": "~> 1.0.0"

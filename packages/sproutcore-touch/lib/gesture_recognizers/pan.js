@@ -4,6 +4,8 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
+require('sproutcore-touch/system/gesture');
+
 var get = SC.get;
 var set = SC.set;
 var x = 0;
@@ -54,30 +56,20 @@ SC.PanGestureRecognizer = SC.Gesture.extend({
   // Private Methods and Properties
 
   /**
-    Track initial centerpoint between touches so we can make calculations based off
-    of it.
-
-    @private
-    @type Number
-  */
-  _initialLocation: null,
-
-  /**
     Used to measure offsets
 
     @private
     @type Number
   */
-  _previousTranslation: null,
+  _previousLocation: null,
 
   /**
-    Used to make translations relative to current position, rather than starting position.
+    Used for rejected events
 
     @private
-    @type Number
+    @type Hash
   */
-  _totalTranslation: null,
-
+  _previousTranslation: null,
 
   /**
     The pixel distance that the fingers need to move before this gesture is recognized.
@@ -89,19 +81,19 @@ SC.PanGestureRecognizer = SC.Gesture.extend({
 
   init: function() {
     this._super();
-    var translation = this._totalTranslation = {x:0,y:0};
-    set(this, 'translation', translation);
+    set(this, 'translation', {x:0,y:0});
   },
 
   didBecomePossible: function() {
-    this._initialLocation = this.centerPointForTouches(get(this.touches,'touches'));
+    this._previousLocation = this.centerPointForTouches(get(this.touches,'touches'));
   },
 
   shouldBegin: function() {
+    var previousLocation = this._previousLocation;
     var currentLocation = this.centerPointForTouches(get(this.touches,'touches'));
 
-    var x = this._initialLocation.x;
-    var y = this._initialLocation.y;
+    var x = previousLocation.x;
+    var y = previousLocation.y;
     var x0 = currentLocation.x;
     var y0 = currentLocation.y;
 
@@ -110,27 +102,20 @@ SC.PanGestureRecognizer = SC.Gesture.extend({
   },
 
   didChange: function() {
-    var initial = this._initialLocation;
+    var previousLocation = this._previousLocation;
+    var currentLocation = this.centerPointForTouches(get(this.touches,'touches'));
+    var translation = {x:currentLocation.x, y:currentLocation.y};
+
+    translation.x = currentLocation.x - previousLocation.x;
+    translation.y = currentLocation.y - previousLocation.y;
 
     this._previousTranslation = get(this, 'translation');
-    var current = this.centerPointForTouches(get(this.touches,'touches'));
-
-    // We add total translation because css3 transforms are absolute not relative
-    current.x = (current.x - initial.x) + this._totalTranslation.x;
-    current.y = (current.y - initial.y) + this._totalTranslation.y;
-
-    set(this, 'translation', current);
+    set(this, 'translation', translation);
+    this._previousLocation = currentLocation;
   },
 
   eventWasRejected: function() {
     set(this, 'translation', this._previousTranslation);
-  },
-
-  didEnd: function(evt, view, manager) {
-    var translation = get(this, 'translation');
-
-    this._totalTranslation.x = translation.x;
-    this._totalTranslation.y = translation.y;
   }
 });
 

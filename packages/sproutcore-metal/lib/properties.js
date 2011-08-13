@@ -82,7 +82,7 @@ Dp.set = function(obj, keyName, value) {
   @returns {Object} the current value
 */
 Dp.get = function(obj, keyName) {
-  return obj[keyName];
+  return w_get(obj, keyName, obj);
 };
 
 /**
@@ -159,11 +159,12 @@ var WATCHED_DESC = {
   set: SC.Descriptor.MUST_USE_SETTER
 };
 
-function w_get(obj, keyName) {
-  var m = meta(obj, false), values = m.values;
+function w_get(obj, keyName, values) {
+  values = values || meta(obj, false).values;
 
   if (values) {
-    if (keyName in values) { return values[keyName]; }
+    var ret = values[keyName];
+    if (ret !== undefined) { return ret; }
     if (obj.unknownProperty) { return obj.unknownProperty(keyName); }
   }
 
@@ -251,7 +252,7 @@ if (SC.platform.hasPropertyAccessors) {
   };
   
 }
-  
+
 /**
   The default descriptor for simple properties.  Pass as the third argument
   to SC.defineProperty() along with a value to set a simple value.

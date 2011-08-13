@@ -91,7 +91,7 @@ SC.Enumerable = SC.Mixin.create( /** @lends SC.Enumerable */ {
     to nextObject for the current iteration.  This is a useful way to
     manage iteration if you are tracing a linked list, for example.
 
-    Finally the context paramter will always contain a hash you can use as
+    Finally the context parameter will always contain a hash you can use as
     a "scratchpad" to maintain any other state you need in order to iterate
     properly.  The context object is reused and is not reset between
     iterations so make sure you setup the context with a fresh state whenever
