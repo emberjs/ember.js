@@ -491,7 +491,7 @@ var Binding = SC.Object.extend({
     // Display warning for users using the SC 1.x-style API.
     sc_assert("notEmpty should only take a placeholder as a parameter. You no longer need to pass null as the first parameter.", arguments.length < 2);
 
-    if (!placeholder) { placeholder = SC.EMPTY_PLACEHOLDER; }
+    if (placeholder == undefined) { placeholder = SC.EMPTY_PLACEHOLDER; }
 
     this.transform({
       to: function(val) { return empty(val) ? placeholder : val; }
@@ -509,7 +509,7 @@ var Binding = SC.Object.extend({
     @returns {SC.Binding} this
   */
   notNull: function(placeholder) {
-    if (!placeholder) { placeholder = SC.EMPTY_PLACEHOLDER; }
+    if (placeholder == undefined) { placeholder = SC.EMPTY_PLACEHOLDER; }
 
     this.transform({
       to: function(val) { return val == null ? placeholder : val; }
