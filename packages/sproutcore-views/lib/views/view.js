@@ -312,7 +312,7 @@ SC.View = SC.Object.extend(
 
     // VIEW-TODO: Unit test this path.
     var childViews = get(this, 'childViews');
-    for (var i=lengthBefore; i<lengthAfter; i++) {
+    for (var i=lengthAfter-1; i>=lengthBefore; i--) {
       childViews[i] && childViews[i].destroy();
     }
   },
