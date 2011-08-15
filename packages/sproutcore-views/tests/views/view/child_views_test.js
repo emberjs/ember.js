@@ -41,9 +41,14 @@
       template: function() { return ''; }
     });
 
+     var inner2 = SC.View.create({
+       template: function() { return ''; }
+     });
+
     var middle = SC.View.create({
       render: function(buffer) {
         this.appendChild(inner);
+        this.appendChild(inner2);
       }
     });
 
@@ -57,13 +62,13 @@
       outer.renderToBuffer();
     });
 
-    equals(middle.getPath('childViews.length'), 1);
+    equals(middle.getPath('childViews.length'), 2);
 
     SC.run(function() {
       middle.rerender();
     });
 
-    equals(middle.getPath('childViews.length'), 1);
+    equals(middle.getPath('childViews.length'), 2);
 
   });
 
