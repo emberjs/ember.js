@@ -53,7 +53,7 @@ end
 
 # Create sproutcore:package tasks for each of the SproutCore packages
 namespace :sproutcore do
-  %w(metal indexset runtime handlebars views).each do |package|
+  %w(metal runtime handlebars views).each do |package|
     task package => compile_package_task("sproutcore-#{package}")
   end
 end
@@ -62,7 +62,7 @@ end
 task :handlebars => compile_package_task("handlebars")
 
 # Create a build task that depends on all of the package dependencies
-task :build => ["sproutcore:metal", "sproutcore:indexset", "sproutcore:runtime", "sproutcore:handlebars", "sproutcore:views", :handlebars]
+task :build => ["sproutcore:metal", "sproutcore:runtime", "sproutcore:handlebars", "sproutcore:views", :handlebars]
 
 # Strip out require lines from sproutcore.js. For the interim, requires are
 # precomputed by the compiler so they are no longer necessary at runtime.
