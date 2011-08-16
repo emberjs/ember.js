@@ -1,0 +1,18 @@
+{
+  "name": "jquery",
+  "version": "1.6.2",
+  "description": "The write less, do more JavaScript library.",
+  "summary": "jQuery JavaScript Library",
+  "homepage": "http://jquery.com",
+  "author": "John Resig",
+  "directories": {
+    "lib": "lib"
+  },
+
+  "bpm:build": {
+    "bpm_libs.js": {
+      "directories": ["lib"],
+      "modes": "*"
+    }
+  }
+}
