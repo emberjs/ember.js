@@ -84,6 +84,15 @@ SC.endPropertyChanges = function() {
   if (suspended<=0) flushObserverQueue();
 };
 
+SC.batchPropertyChanges = function(cb){
+  SC.beginPropertyChanges();
+  try {
+    cb()
+  } finally {
+    SC.endPropertyChanges();
+  }
+}
+
 function changeEvent(keyName) {
   return keyName+AFTER_OBSERVERS;
 }
