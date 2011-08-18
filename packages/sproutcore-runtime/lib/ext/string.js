@@ -49,7 +49,7 @@ if (SC.EXTEND_PROTOTYPES) {
   /**
     @see SC.String.dasherize
   */
-  String.prototype.dashersize = function() {
+  String.prototype.dasherize = function() {
     return dasherize(this);
   };
 }
