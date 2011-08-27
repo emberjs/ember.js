@@ -62,14 +62,18 @@ SC.Select = SC.CollectionView.extend({
   },
 
   arrayWillChange: function(content, start, removed) {
-    var selected = get(content, 'selection'), idx, obj;
+    var selected, idx, obj;
 
     if (content && removed) {
       for (idx = start; idx < start+removed; idx++) {
         obj = content.objectAt(idx);
 
-        if (selected.contains(obj)) {
-          selected.removeObject(obj);
+        if (selected = get(content, 'selection')) {
+          if (SC.isArray(selected) && selected.contains(obj)) {
+            selected.removeObject(obj);
+          } else if (selected === obj) {
+            set(content, 'selection', null);
+          }
         }
       }
     }
