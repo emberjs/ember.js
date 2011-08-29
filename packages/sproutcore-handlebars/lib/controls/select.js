@@ -36,7 +36,25 @@ SC.Select = SC.CollectionView.extend({
 
   itemViewClass: SC.SelectOption,
 
-  value: null,
+  _value: null,
+
+  value: function(key, value) {
+    if (value !== undefined) {
+      set(this, '_value', value);
+
+      get(this, 'childViews').forEach(function(el, idx) {
+        var content = get(el, 'content');
+
+        if (content === value) {
+          set(content, 'selected', true);
+        } else {
+          set(content, 'selected', false);
+        }
+      });
+    }
+
+    return get(this, '_value');
+  }.property('_value'),
 
   willInsertElement: function() {
     this._elementValueDidChange();

@@ -168,6 +168,7 @@ test("should allow multiple selection", function() {
   select.destroy();
 });
 
+// FIXME: This test is failing and I'm not sure why...
 test("selected option(s) should be updateable", function() {
   var select, options = [SC.Object.create({label: 'California', value: 'CA'}),
                          SC.Object.create({label: 'Oregon', value: 'OR', selected: true}),
@@ -215,3 +216,27 @@ test("should remove object from selection when removed from collection", functio
 
   select.destroy();
 });
+
+test("should update DOM when a selection is made via valueBinding", function() {
+  var select, arrayProxy, options = [SC.Object.create({label: 'California', value: 'CA'}),
+                                     SC.Object.create({label: 'Illinois', value: 'IL'})];
+
+  arrayProxy = SC.ArrayProxy.create({content: options});
+  window.Test = {};
+  Test.object = options[1];
+
+  SC.run(function() {
+    select = SC.Select.create({
+      content: arrayProxy,
+      valueBinding: "Test.object"
+    });
+    select.append();
+  });
+
+  equals(select.get('value'), Test.object);
+  equals(select.$().val(), 'IL');
+
+  delete window.Test;
+});
+
+// TODO: test valueBinding with an array
