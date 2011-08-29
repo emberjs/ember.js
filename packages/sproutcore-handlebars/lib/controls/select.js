@@ -54,7 +54,7 @@ SC.Select = SC.CollectionView.extend({
     }
 
     return get(this, '_value');
-  }.property('_value'),
+  }.property('_value').cacheable(),
 
   willInsertElement: function() {
     this._elementValueDidChange();
