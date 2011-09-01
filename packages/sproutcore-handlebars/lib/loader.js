@@ -8,9 +8,9 @@
 require("sproutcore-handlebars/ext");
 
 // Find templates stored in the head tag as script tags and make them available
-// to SC.CoreView in the global SC.TEMPLATES object.
-
-SC.$(document).ready(function() {
+// to SC.CoreView in the global SC.TEMPLATES object. This will be run as as
+// jQuery DOM-ready callback.
+SC.Handlebars.bootstrap = function() {
   SC.$('script[type="text/html"], script[type="text/x-handlebars"]')
     .each(function() {
     // Get a reference to the script tag
@@ -57,4 +57,6 @@ SC.$(document).ready(function() {
       });
     }
   });
-});
+};
+
+SC.$(document).ready(SC.Handlebars.bootstrap);
