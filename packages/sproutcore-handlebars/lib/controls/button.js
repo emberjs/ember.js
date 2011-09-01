@@ -16,12 +16,13 @@ SC.Button = SC.View.extend(SC.TargetActionSupport, {
   attributeBindings: ['type', 'disabled'],
   type: 'button',
   disabled: false,
-
+  propagateEvents: false,
 
   mouseDown: function() {
     set(this, 'isActive', true);
     this._mouseDown = true;
     this._mouseEntered = true;
+    return this.get('propagateEvents');
   },
 
   mouseLeave: function() {
@@ -49,6 +50,7 @@ SC.Button = SC.View.extend(SC.TargetActionSupport, {
 
     this._mouseDown = false;
     this._mouseEntered = false;
+    return this.get('propagateEvents');
   },
 
   // TODO: Handle proper touch behavior.  Including should make inactive when
