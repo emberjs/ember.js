@@ -11,8 +11,9 @@ SC.Button = SC.View.extend({
   classNameBindings: ['isActive'],
 
   tagName: 'button',
-  attributeBindings: ['type'],
+  attributeBindings: ['type', 'disabled'],
   type: 'button',
+  disabled: false,
   propagateEvents: false,
   
   targetObject: function() {
