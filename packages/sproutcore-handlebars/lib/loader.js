@@ -11,8 +11,7 @@ require("sproutcore-handlebars/ext");
 // to SC.CoreView in the global SC.TEMPLATES object. This will be run as as
 // jQuery DOM-ready callback.
 SC.Handlebars.bootstrap = function() {
-  SC.$('script[type="text/html"], script[type="text/x-handlebars"]')
-    .each(function() {
+  var bootstrap_method = function() {
     // Get a reference to the script tag
     var script = SC.$(this),
       // Get the name of the script, used by SC.View's templateName property.
@@ -56,7 +55,11 @@ SC.Handlebars.bootstrap = function() {
         script = null;
       });
     }
-  });
+  };
+
+  SC.$('script[type="text/html"], script[type="text/x-handlebars"]')
+    .live('DOMNodeInserted', bootstrap_method)
+    .each(bootstrap_method);
 };
 
 SC.$(document).ready(SC.Handlebars.bootstrap);
