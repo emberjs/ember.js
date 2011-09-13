@@ -103,9 +103,10 @@ function beforeKey(eventName) {
 function xformForArgs(args) {
   return function (target, method, params) {
     var obj = params[0], keyName = changeKey(params[1]), val;
+    var copy_args = args.slice();
     if (method.length>2) val = SC.getPath(obj, keyName);
-    args.unshift(obj, keyName, val);
-    method.apply(target, args);
+    copy_args.unshift(obj, keyName, val);
+    method.apply(target, copy_args);
   }
 }
 
