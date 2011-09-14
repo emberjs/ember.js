@@ -151,6 +151,7 @@ testBoth('addObserver should preserve additional context passed when firing the 
     didChange: function(obj, keyName, value, ctx1, ctx2) {
       equals(ctx1, "biff", "first context is passed");
       equals(ctx2, "bang", "second context is passed");
+      equals(5, arguments.length);
       this.count++;
     }
   };
@@ -159,6 +160,9 @@ testBoth('addObserver should preserve additional context passed when firing the 
 
   set(observed, 'foo', 'BAZ');
   equals(target1.count, 1, 'target1 observer should have fired');
+
+  set(observed, 'foo', 'BAZ2');
+  equals(target1.count, 2, 'target1 observer should have fired');
 });
 
 
