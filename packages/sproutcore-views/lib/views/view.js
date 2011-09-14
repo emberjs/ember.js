@@ -553,6 +553,28 @@ SC.View = SC.Object.extend(
   },
 
   /**
+    Replaces the view's element to the specified parent element.
+    If the view does not have an HTML representation yet, `createElement()`
+    will be called automatically.
+    If the parent element already has some content, it will be removed.
+
+    Note that this method just schedules the view to be appended; the DOM
+    element will not be appended to the given element until all bindings have
+    finished synchronizing
+
+    @param {String|DOMElement|jQuery} A selector, element, HTML string, or jQuery object
+    @returns {SC.View} received
+  */
+  replaceIn: function(target) {
+    this._insertElementLater(function() {
+      SC.$(target).empty();
+      this.$().appendTo(target);
+    });
+
+    return this;
+  },
+
+  /**
     @private
 
     Schedules a DOM operation to occur during the next render phase. This
