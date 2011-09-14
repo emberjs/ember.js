@@ -20,7 +20,7 @@
 
   "bpm:build": {
     "bpm_libs.js": {
-      "directories": ["lib"],
+      "files": ["lib"],
       "modes": "*"
     }
   },

@@ -21,12 +21,12 @@
   "bpm:build": {
     
     "bpm_libs.js": {
-      "directories": ["lib"],
+      "files": ["lib"],
       "modes":        "*"
     },
     
     "sproutcore-datetime/bpm_tests.js": {
-      "directories": ["tests"],
+      "files": ["tests"],
       "modes": ["debug"]
     }
   }
