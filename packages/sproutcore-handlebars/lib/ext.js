@@ -40,6 +40,12 @@ require("sproutcore-views/system/render_buffer");
 */
 SC.Handlebars = {};
 
+SC.Handlebars.helpers = SC.create(Handlebars.helpers);
+
+SC.Handlebars.registerHelper = function(name, fn, inverse) {
+  if(inverse) { fn.not = inverse; }
+  this.helpers[name] = fn;
+};
 /**
   Override the the opcode compiler and JavaScript compiler for Handlebars.
 */
@@ -69,6 +75,29 @@ SC.Handlebars.JavaScriptCompiler.prototype.nameLookup = function(parent, name, t
 
 SC.Handlebars.JavaScriptCompiler.prototype.initializeBuffer = function() {
   return "''";
+};
+
+SC.Handlebars.JavaScriptCompiler.prototype.preamble = function() {
+  var out = [];
+
+  if (!this.isChild) {
+    var copies = "helpers = helpers || SC.Handlebars.helpers;";
+    if(this.environment.usePartial) { copies = copies + " partials = partials || Handlebars.partials;"; }
+    out.push(copies);
+  } else {
+    out.push('');
+  }
+
+  if (!this.environment.isSimple) {
+    out.push(", buffer = " + this.initializeBuffer());
+  } else {
+    out.push("");
+  }
+
+  // track the last context pushed into place to allow skipping the
+  // getContext opcode when it would be a noop
+  this.lastContext = 0;
+  this.source = out;
 };
 
 /**
@@ -134,7 +163,7 @@ SC.Handlebars.compile = function(string) {
   @param {String} path
   @param {Hash} options
 */
-Handlebars.registerHelper('helperMissing', function(path, options) {
+SC.Handlebars.registerHelper('helperMissing', function(path, options) {
   var error, view = "";
 
   error = "%@ Handlebars error: Could not find property '%@' on object %@.";

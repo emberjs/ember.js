@@ -1131,6 +1131,36 @@ test("should still get a span by default if tagName isn't specified", function()
   equals(view.$('span').length, 1);
 });
 
+test("should allow standard Handlebars template usage", function() {
+  TemplateTests.StandardTemplate = SC.View.extend({
+    name: "Erik",
+    template: Handlebars.compile("Hello, {{name}}")
+  });
+
+  view = SC.View.create({
+    template: SC.Handlebars.compile("{{view TemplateTests.StandardTemplate}}")
+  });
+
+  SC.run(function() {
+    view.appendTo('#qunit-fixture');
+  });
+
+  equals(view.$().text(), "Hello, Erik");
+});
+
+test("should be able to use standard Handlebars #each helper", function() {
+  view = SC.View.create({
+    items: ['a', 'b', 'c'],
+    template: Handlebars.compile("{{#each items}}{{this}}{{/each}}")
+  });
+
+  SC.run(function() {
+    view.appendTo('#qunit-fixture');
+  });
+
+  equals(view.$().text(), "abc");
+});
+
 var view;
 
 module("Templates redrawing and bindings", {
