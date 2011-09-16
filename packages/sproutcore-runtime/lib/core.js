@@ -301,7 +301,7 @@ SC.inspect = function(obj) {
     if (obj.hasOwnProperty(key)) {
       v = obj[key];
       if (v === 'toString') { continue; } // ignore useless items
-      if (SC.typeOf(v) === SC.T_FUNCTION) { v = "function() { ... }"; }
+      if (SC.typeOf(v) === 'function') { v = "function() { ... }"; }
       ret.push(key + ": " + v);
     }
   }
