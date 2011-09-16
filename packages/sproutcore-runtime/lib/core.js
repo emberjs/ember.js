@@ -292,7 +292,7 @@ SC.copy = function(obj, deep) {
   Convenience method to inspect an object. This method will attempt to
   convert the object into a useful string description.
 
-  @param {Object} obj The object you want to inspec.
+  @param {Object} obj The object you want to inspect.
   @returns {String} A description of the object
 */
 SC.inspect = function(obj) {
