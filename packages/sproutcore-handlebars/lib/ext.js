@@ -108,6 +108,19 @@ SC.Handlebars.Compiler.prototype.mustache = function(mustache) {
 };
 
 /**
+  SproutCore equivalent of Handlebars.precompile. This replaces the default Handlebars.precompile and
+  enables precompiling of SproutCore Handlebars templates to pure Javascript.
+
+  @param {String} string The template to compile
+*/
+SC.Handlebars.precompile = function(string) {
+  var ast = Handlebars.parse(string);
+  var options = { data: true, stringParams: true };
+  var environment = new SC.Handlebars.Compiler().compile(ast, options);
+  return new SC.Handlebars.JavaScriptCompiler().compile(environment, options);
+};
+
+/**
   The entry point for SproutCore Handlebars. This replaces the default Handlebars.compile and turns on
   template-local data and String parameters.
 
