@@ -1000,6 +1000,25 @@ SC.DateTime.reopenClass(SC.Comparable,
       delete opts.meridian;
     }
 
+   if (!SC.none(opts.day) && (opts.day < 1 || opts.day > 31)){
+     return null;
+   }
+
+   // Check the month and day are valid and within bounds
+   if (!SC.none(opts.month)){
+     if (opts.month < 1 || opts.month > 12){
+       return null;
+     }
+     if (!SC.none(opts.day)){
+       if ( opts.month === 2 && opts.day > 29 ){
+         return null;
+       }
+       if ([4,6,9,11].contains(opts.month) && opts.day > 30) {
+         return null;
+       }
+     }
+   }
+
     d = SC.DateTime.create(opts);
 
     if (!SC.none(check.dayOfWeek) && get(d,'dayOfWeek') !== check.dayOfWeek) {
