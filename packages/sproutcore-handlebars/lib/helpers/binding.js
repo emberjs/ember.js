@@ -22,7 +22,7 @@ var get = SC.get, getPath = SC.getPath, fmt = SC.String.fmt;
 
     // Set up observers for observable objects
     if ('object' === typeof this) {
-      // Create the view that will wrap the output of this template/property 
+      // Create the view that will wrap the output of this template/property
       // and add it to the nearest view's childViews array.
       // See the documentation of SC._BindableSpanView for more.
       var bindView = view.createChildView(SC._BindableSpanView, {
@@ -33,7 +33,11 @@ var get = SC.get, getPath = SC.getPath, fmt = SC.String.fmt;
         property: property,
         previousContext: ctx,
         isEscaped: options.hash.escaped,
-	tagName: options.hash.tagName || 'span'
+	      tagName: options.hash.tagName || 'span',
+	      destroy: function() {
+          SC.removeObserver(this.previousContext, property, invoker);
+          this._super();
+        }
       });
 
       var observer, invoker;
@@ -66,16 +70,16 @@ var get = SC.get, getPath = SC.getPath, fmt = SC.String.fmt;
   };
 
   /**
-    `bind` can be used to display a value, then update that value if it 
-    changes. For example, if you wanted to print the `title` property of 
+    `bind` can be used to display a value, then update that value if it
+    changes. For example, if you wanted to print the `title` property of
     `content`:
 
         {{bind "content.title"}}
 
-    This will return the `title` property as a string, then create a new 
-    observer at the specified path. If it changes, it will update the value in 
-    DOM. Note that if you need to support IE7 and IE8 you must modify the 
-    model objects properties using SC.get() and SC.set() for this to work as 
+    This will return the `title` property as a string, then create a new
+    observer at the specified path. If it changes, it will update the value in
+    DOM. Note that if you need to support IE7 and IE8 you must modify the
+    model objects properties using SC.get() and SC.set() for this to work as
     it relies on SC's KVO system.  For all other browsers this will be handled
     for you automatically.
 
@@ -94,7 +98,7 @@ var get = SC.get, getPath = SC.getPath, fmt = SC.String.fmt;
   });
 
   /**
-    Use the `boundIf` helper to create a conditional that re-evaluates 
+    Use the `boundIf` helper to create a conditional that re-evaluates
     whenever the bound value changes.
 
         {{#boundIf "content.shouldDisplayTitle"}}
@@ -271,26 +275,26 @@ Handlebars.registerHelper('bindAttr', function(options) {
 
 /**
   Helper that, given a space-separated string of property paths and a context,
-  returns an array of class names. Calling this method also has the side 
-  effect of setting up observers at those property paths, such that if they 
+  returns an array of class names. Calling this method also has the side
+  effect of setting up observers at those property paths, such that if they
   change, the correct class name will be reapplied to the DOM element.
 
-  For example, if you pass the string "fooBar", it will first look up the 
-  "fooBar" value of the context. If that value is YES, it will add the 
-  "foo-bar" class to the current element (i.e., the dasherized form of 
-  "fooBar"). If the value is a string, it will add that string as the class. 
+  For example, if you pass the string "fooBar", it will first look up the
+  "fooBar" value of the context. If that value is YES, it will add the
+  "foo-bar" class to the current element (i.e., the dasherized form of
+  "fooBar"). If the value is a string, it will add that string as the class.
   Otherwise, it will not add any new class name.
 
-  @param {SC.Object} context 
+  @param {SC.Object} context
     The context from which to lookup properties
 
-  @param {String} classBindings 
+  @param {String} classBindings
     A string, space-separated, of class bindings to use
 
   @param {SC.View} view
     The view in which observers should look for the element to update
 
-  @param {String} id 
+  @param {String} id
     Optional id use to lookup elements
 
   @returns {Array} An array of class names to add
@@ -369,14 +373,14 @@ SC.Handlebars.bindClasses = function(context, classBindings, view, id) {
 
     SC.addObserver(context, property, invoker);
 
-    // We've already setup the observer; now we just need to figure out the 
+    // We've already setup the observer; now we just need to figure out the
     // correct behavior right now on the first pass through.
     value = classStringForProperty(property);
 
     if (value) {
       ret.push(value);
 
-      // Make sure we save the current value so that it can be removed if the 
+      // Make sure we save the current value so that it can be removed if the
       // observer fires.
       oldClass = value;
     }
