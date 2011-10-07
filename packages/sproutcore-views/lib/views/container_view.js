@@ -9,6 +9,31 @@ require('sproutcore-views/views/view');
 var get = SC.get, set = SC.set, meta = SC.meta;
 
 SC.ContainerView = SC.View.extend({
+
+  init: function() {
+    var childViews = get(this, 'childViews');
+    SC.defineProperty(this, 'childViews', SC.View.CHILD_VIEWS_CP);
+
+    this._super();
+
+    var _childViews = get(this, '_childViews');
+
+
+    childViews.forEach(function(viewName, idx) {
+      var view;
+
+      if ('string' === typeof viewName) {
+        view = get(this, viewName);
+        view = this.createChildView(view);
+        set(this, viewName, view);
+      } else {
+        view = this.createChildView(viewName);
+      }
+
+      _childViews[idx] = view;
+    }, this);
+  },
+
   /**
     Extends SC.View's implementation of renderToBuffer to
     set up an array observer on the child views array. This

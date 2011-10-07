@@ -9,6 +9,9 @@
 require("sproutcore-views/system/render_buffer");
 var get = SC.get, set = SC.set, addObserver = SC.addObserver;
 var getPath = SC.getPath, meta = SC.meta, fmt = SC.String.fmt;
+var childViewsProperty = SC.computed(function() {
+  return get(this, '_childViews');
+}).property('_childViews.@each')
 
 /**
   @static
@@ -137,7 +140,9 @@ SC.View = SC.Object.extend(
     @type Array
     @default []
   */
-  childViews: [],
+  childViews: CHILD_VIEWS_CP,
+
+  _childViews: [],
 
   /**
     Return the nearest ancestor that is an instance of the provided
@@ -992,23 +997,10 @@ SC.View = SC.Object.extend(
     // SC.RootResponder to dispatch incoming events.
     SC.View.views[get(this, 'elementId')] = this;
 
-    var childViews = get(this, 'childViews').slice();
+    var childViews = get(this, '_childViews').slice();
     // setup child views. be sure to clone the child views array first
-    set(this, 'childViews', childViews);
+    set(this, '_childViews', childViews);
 
-    this.mutateChildViews(function(viewName, idx) {
-      var view;
-
-      if ('string' === typeof viewName) {
-        view = get(this, viewName);
-        view = this.createChildView(view);
-        childViews[idx] = view;
-        set(this, viewName, view);
-      } else if (viewName.isClass) {
-        view = this.createChildView(viewName);
-        childViews[idx] = view;
-      }
-    });
 
     this.classNameBindings = get(this, 'classNameBindings').slice();
     this.classNames = get(this, 'classNames').slice();
@@ -1185,9 +1177,15 @@ SC.View = SC.Object.extend(
   // are done on the DOM element.
 
 SC.View.reopen({
-  states: SC.View.states
+  states: SC.View.states,
 });
 
 // Create a global view hash.
 SC.View.views = {};
 
+// If someone overrides the child views computed property when
+// defining their class, we want to be able to process the user's
+// supplied childViews and then restore the original computed property
+// at view initialization time. This happens in SC.ContainerView's init
+// method.
+SC.View.childViewsProperty = childViewsProperty;

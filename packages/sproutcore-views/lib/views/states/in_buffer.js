@@ -35,7 +35,7 @@ SC.View.states.inBuffer = {
     var buffer = meta(view)['SC.View'].buffer;
 
     childView = this.createChildView(childView, options);
-    view.childViews.pushObject(childView);
+    get(view, '_childViews').pushObject(childView);
     childView.renderToBuffer(buffer);
     return childView;
   },
