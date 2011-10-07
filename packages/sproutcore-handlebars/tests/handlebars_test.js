@@ -6,6 +6,13 @@
 /*globals TemplateTests */
 
 var getPath = SC.getPath, setPath = SC.setPath, get = SC.get, set = SC.set;
+var firstGrandchild = function(view) {
+  return get(get(view, 'childViews').objectAt(0), 'childViews').objectAt(0);
+};
+var nthChild = function(view, nth) {
+  return get(view, 'childViews').objectAt(nth || 0);
+};
+var firstChild = nthChild;
 
 (function() {
 
@@ -713,8 +720,8 @@ test("Child views created using the view helper should have their parent view se
 
   view.createElement();
 
-  var childView = view.childViews[0].childViews[0];
-  equals(childView, childView.childViews[0].parentView, 'parent view is correct');
+  var childView = firstGrandchild(view);
+  equals(childView, firstChild(childView).parentView, 'parent view is correct');
 });
 
 test("Child views created using the view helper should have their IDs registered for events", function() {
@@ -728,11 +735,11 @@ test("Child views created using the view helper should have their IDs registered
 
   view.createElement();
 
-  var childView = view.childViews[0];
+  var childView = firstChild(view);
   var id = childView.$()[0].id;
   equals(SC.View.views[id], childView, 'childView without passed ID is registered with SC.View.views so that it can properly receive events from RootResponder');
 
-  childView = view.childViews[1];
+  childView = nthChild(view, 1);
   id = childView.$()[0].id;
   equals(id, 'templateViewTest', 'precond -- id of childView should be set correctly');
   equals(SC.View.views[id], childView, 'childView with passed ID is registered with SC.View.views so that it can properly receive events from RootResponder');
@@ -755,7 +762,7 @@ test("Collection views that specify an example view class have their children be
     parentView.append();
   });
 
-  ok(parentView.childViews[0].childViews[0].isCustom, "uses the example view class");
+  ok(firstGrandchild(parentView).isCustom, "uses the example view class");
 
   parentView.destroy();
 });
@@ -777,7 +784,7 @@ test("itemViewClass works in the #collection helper", function() {
     parentView.append();
   });
 
-  ok(parentView.childViews[0].childViews[0].isAlsoCustom, "uses the example view class specified in the #collection helper");
+  ok(firstGrandchild(parentView).isAlsoCustom, "uses the example view class specified in the #collection helper");
 
   parentView.destroy();
 });
@@ -803,7 +810,7 @@ test("itemViewClass works in the #collection helper relatively", function() {
     parentView.append();
   });
 
-  ok(parentView.childViews[0].childViews[0].isAlsoCustom, "uses the example view class specified in the #collection helper");
+  ok(firstGrandchild(parentView).isAlsoCustom, "uses the example view class specified in the #collection helper");
 
   parentView.destroy();
 });
@@ -912,7 +919,7 @@ test("should be able to bind view class names to properties", function() {
   equals(view.$('.is-done').length, 1, "dasherizes property and sets class name");
 
   SC.run(function() {
-    set(view.childViews[0], 'isDone', NO);
+    set(firstChild(view), 'isDone', NO);
   });
 
   equals(view.$('.is-done').length, 0, "removes class name if bound property is set to false");

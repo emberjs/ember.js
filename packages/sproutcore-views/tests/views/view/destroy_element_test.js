@@ -26,9 +26,9 @@ test("it if has no element, does nothing", function() {
 test("if it has a element, calls willDestroyElement on receiver and child views then deletes the element", function() {
   var parentCount = 0, childCount = 0;
 
-  var view = SC.View.create({
+  var view = SC.ContainerView.create({
     willDestroyElement: function() { parentCount++; },
-    childViews: [SC.View.extend({
+    childViews: [SC.ContainerView.extend({
       // no willDestroyElement here... make sure no errors are thrown
       childViews: [SC.View.extend({
         willDestroyElement: function() { childCount++; }

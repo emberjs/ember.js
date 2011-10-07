@@ -15,10 +15,10 @@ test("returns null if the view has no element and no parent view", function() {
 });
 
 test("returns null if the view has no element and parent view has no element", function() {
-  var parent = SC.View.create({
+  var parent = SC.ContainerView.create({
     childViews: [ SC.View.extend() ]
   });
-  var view = parent.childViews[0];
+  var view = get(parent, 'childViews').objectAt(0);
 
   equals(get(view, 'parentView'), parent, 'precond - has parent view');
   equals(get(parent, 'element'), null, 'parentView has no element');
@@ -46,7 +46,7 @@ module("SC.View#element - autodiscovery", {
       }) ]
     });
 
-    child = parent.childViews[0];
+    child = get(parent, 'childViews').objectAt(0);
 
     // setup parent/child dom
     parentDom = SC.$("<div><div id='child-view'></div></div>")[0];
