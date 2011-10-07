@@ -102,4 +102,46 @@ test("It is possible to prepend a child RenderBuffer", function() {
   equals(buffer.string(), '<div><aside>prepended!</aside>a<span>zomg</span>b<span>wotwot</span>c</div>', 'Prepended buffers are prepended to the final output');
 });
 
+module("RenderBuffers without tagName");
+
+test("It is possible to create a RenderBuffer without a tagName", function() {
+  var buffer = new SC.RenderBuffer();
+  buffer.push('a');
+  buffer.push('b');
+  buffer.push('c');
+
+  equals(buffer.string(), "abc", "Buffers without tagNames do not wrap the content in a tag");
+});
+
+test("it is possible to create a child render buffer without a tagName", function() {
+  var buffer = new SC.RenderBuffer('div');
+
+  buffer.push('a');
+
+  second = buffer.begin().push('middle').end();
+
+  buffer.push('b');
+  buffer.push('c');
+
+  equals(buffer.string(), "<div>amiddlebc</div>", "Buffers without tagNames do not wrap the content in a tag");
+});
+
+test("it is possible to replace a child render buffer initially created without a tagName", function() {
+  var buffer = new SC.RenderBuffer('div');
+
+  buffer.push('a');
+
+  second = buffer.begin().push('middle');
+  second.end();
+
+  buffer.push('b');
+  buffer.push('c');
+
+  equals(buffer.string(), "<div>amiddlebc</div>", "precond - Buffers without tagNames do not wrap the content in a tag");
+
+  var replacement = second.replaceWith().push('new-mid')
+  replacement.end();
+
+  equals(buffer.string(), "<div>anew-midbc</div>", "Replacements can operate on tagName-less buffers");
+});
 
