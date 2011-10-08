@@ -131,5 +131,5 @@ test("should have a configurable type", function() {
 test("should allow the target to be the parentView", function() {
   button.set('target', 'parentView');
   
-  equals(button.parentView, button.get('targetObject'));
+  equals(get(button, 'parentView'), button.get('targetObject'));
 });

@@ -721,7 +721,7 @@ test("Child views created using the view helper should have their parent view se
   view.createElement();
 
   var childView = firstGrandchild(view);
-  equals(childView, firstChild(childView).parentView, 'parent view is correct');
+  equals(childView, get(firstChild(childView), 'parentView'), 'parent view is correct');
 });
 
 test("Child views created using the view helper should have their IDs registered for events", function() {
