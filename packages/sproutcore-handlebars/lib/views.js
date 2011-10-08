@@ -5,3 +5,4 @@
 // ==========================================================================
 
 require("sproutcore-handlebars/views/bindable_span");
+require("sproutcore-handlebars/views/metamorph_view");

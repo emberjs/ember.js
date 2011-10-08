@@ -1,0 +1,29 @@
+{
+  "name": "metamorph",
+  "summary": "A library for performing DOM updates on arbitrary text",
+  "description": "A library that can insert and update arbitrary text in the DOM, even inside tables and other restricted elements",
+  "homepage": "https://github.com/tomhuda/metamorph.js",
+  "authors": ["Yehuda Katz", "Tom Dale"],
+  "version": "1.0.0",
+
+  "dependencies": {
+    "spade": "~> 1.0.0"
+  },
+
+  "directories": {
+    "lib": "lib"
+  },
+
+  "bpm:build": {
+    "bpm_libs.js": {
+      "files": ["lib"],
+      "modes": "*"
+    },
+
+    "handlebars/bpm_tests.js": {
+      "files": ["tests"],
+      "modes": ["debug"]
+    }
+  }
+}
+

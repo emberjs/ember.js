@@ -545,7 +545,7 @@ SC.View = SC.Object.extend(
 
   /** @private */
   forEachChildView: function(callback) {
-    var childViews = get(this, 'childViews'),
+    var childViews = get(this, '_childViews'),
         len = get(childViews, 'length'),
         view, idx;
 
@@ -867,13 +867,20 @@ SC.View = SC.Object.extend(
 
     viewMeta.lengthBeforeRender = getPath(this, 'childViews.length');
 
-    this.applyAttributesToBuffer(buffer);
+    this.beforeRender(buffer);
     this.render(buffer);
+    this.afterRender(buffer);
 
     viewMeta.lengthAfterRender = getPath(this, 'childViews.length');
 
     return buffer;
   },
+
+  beforeRender: function(buffer) {
+    this.applyAttributesToBuffer(buffer);
+  },
+
+  afterRender: SC.K,
 
   /**
     @private
