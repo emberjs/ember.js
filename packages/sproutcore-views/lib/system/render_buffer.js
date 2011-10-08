@@ -201,6 +201,8 @@ SC._RenderBuffer = SC.Object.extend(
   */
   replaceWithBuffer: function(newBuffer) {
     var parent = get(this, 'parentBuffer');
+    if (!parent) { return; }
+
     var childBuffers = get(parent, 'childBuffers');
 
     var index = childBuffers.indexOf(this);

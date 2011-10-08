@@ -865,13 +865,13 @@ SC.View = SC.Object.extend(
     viewMeta.buffer = buffer;
     this.transitionTo('inBuffer');
 
-    viewMeta.lengthBeforeRender = getPath(this, 'childViews.length');
+    viewMeta.lengthBeforeRender = getPath(this, '_childViews.length');
 
     this.beforeRender(buffer);
     this.render(buffer);
     this.afterRender(buffer);
 
-    viewMeta.lengthAfterRender = getPath(this, 'childViews.length');
+    viewMeta.lengthAfterRender = getPath(this, '_childViews.length');
 
     return buffer;
   },
@@ -1112,7 +1112,7 @@ SC.View = SC.Object.extend(
     // calling this._super() will nuke computed properties and observers,
     // so collect any information we need before calling super.
     var viewMeta   = meta(this)['SC.View'],
-        childViews = get(this, 'childViews'),
+        childViews = get(this, '_childViews'),
         parent     = get(this, '_parentView'),
         elementId  = get(this, 'elementId'),
         childLen   = childViews.length;

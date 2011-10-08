@@ -56,6 +56,12 @@ var firstChild = nthChild;
 
 })();
 
+var view;
+
+var appendView = function() {
+  SC.run(function() { view.appendTo('#qunit-fixture'); });
+};
+
 /**
   This module specifically tests integration with Handlebars and SproutCore-specific
   Handlebars extensions.
@@ -82,7 +88,7 @@ test("template view should call the function of the associated template", functi
     })
   });
 
-  view.createElement();
+  appendView();
 
   ok(view.$('#twas-called').length, "the named template was called");
 });
@@ -104,7 +110,7 @@ test("template view should call the function of the associated template with its
     })
   });
 
-  view.createElement();
+  appendView();
 
   equals("template was called for Tom DAAAALE1. Yea Tom DAAAALE1", view.$('#twas-called').text(), "the named template was called with the view as the data source");
 });
@@ -122,7 +128,7 @@ test("should allow values from normal JavaScript hash objects to be used", funct
     }
   });
 
-  view.createElement();
+  appendView();
 
   equals(view.$().text(), "Señor CFC (and Fido)", "prints out values from a hash");
 });
@@ -133,7 +139,7 @@ test("should escape HTML in normal mustaches", function() {
     output: "you need to be more <b>bold</b>"
   });
 
-  view.createElement();
+  SC.run(function() { view.appendTo('#qunit-fixture'); });
   equals(view.$('b').length, 0, "does not create an element");
   equals(view.$().text(), 'you need to be more <b>bold</b>', "inserts entities, not elements");
 
@@ -149,7 +155,7 @@ test("should not escape HTML in triple mustaches", function() {
   });
 
   SC.run(function() {
-    view.createElement();
+    view.appendTo('#qunit-fixture');
   });
 
   equals(view.$('b').length, 1, "creates an element");
@@ -183,7 +189,7 @@ test("child views can be inserted using the {{view}} Handlebars helper", functio
     templates: templates
   });
 
-  view.createElement();
+  appendView();
 
   ok(view.$("#hello-world:contains('Hello world!')").length, "The parent view renders its contents");
   ok(view.$("#child-view:contains('Goodbye cruel world?')").length === 1, "The child view renders its content once");
@@ -201,7 +207,7 @@ test("should accept relative paths to views", function() {
     })
   });
 
-  view.createElement();
+  appendView();
 
   equals(view.$().text(), "Hey look, at my cool view");
 });
@@ -233,7 +239,7 @@ test("child views can be inserted inside a bind block", function() {
     templates: templates
   });
 
-  view.createElement();
+  appendView();
 
   ok(view.$("#hello-world:contains('Hello world!')").length, "The parent view renders its contents");
   ok(view.$("blockquote").text().match(/Goodbye.*wot.*cruel.*world\?/), "The child view renders its content once");
@@ -256,7 +262,7 @@ test("SC.View should update when a property changes and the bind helper is used"
   });
 
   SC.run(function() {
-    view.append();
+    view.appendTo('#qunit-fixture');
   });
 
   equals(view.$('#first').text(), "bam", "precond - view renders Handlebars template");
@@ -280,7 +286,9 @@ test("SC.View should update when a property changes and no bind helper is used",
     })
   });
 
-  view.createElement();
+  SC.run(function() {
+    view.appendTo('#qunit-fixture');
+  });
 
   equals(view.$('#first').text(), "bam", "precond - view renders Handlebars template");
 
@@ -304,7 +312,7 @@ test("SC.View should update when the property used with the #with helper changes
     })
   });
 
-  view.createElement();
+  appendView();
 
   equals(view.$('#first').text(), "bam", "precond - view renders Handlebars template");
 
@@ -321,22 +329,6 @@ test("should not update when a property is removed from the view", function() {
   var templates = SC.Object.create({
     foo: SC.Handlebars.compile('<h1 id="first">{{#bind "content"}}{{#bind "foo"}}{{bind "baz"}}{{/bind}}{{/bind}}</h1>')
   });
-  var removeCalled = 0;
-  var origRemove;
-  function swapRemove() {
-    if (origRemove) {
-      SC.removeObserver = origRemove;
-      origRemove = null;
-    } else {
-      origRemove = SC.removeObserver;
-      SC.removeObserver = function(property, func) {
-        removeCalled++;
-        return origRemove.apply(this, arguments);
-      };
-    }
-  }
-
-  swapRemove();
 
   view = SC.View.create({
     templateName: 'foo',
@@ -349,7 +341,7 @@ test("should not update when a property is removed from the view", function() {
     })
   });
 
-  view.createElement();
+  appendView();
 
   equals(view.$('#first').text(), "unicorns", "precond - renders the bound value");
 
@@ -373,9 +365,6 @@ test("should not update when a property is removed from the view", function() {
     setPath(oldContent, 'foo.baz', 'ewoks');
   });
 
-  swapRemove();
-
-  equals(removeCalled, 1, "does not try to remove observer more than once");
   equals(view.$('#first').text(), "ninjas", "does not update removed object");
 });
 
@@ -398,9 +387,7 @@ test("Handlebars templates update properties if a content object changes", funct
     });
   });
 
-  SC.run(function() {
-    view.append();
-  });
+  appendView();
 
   equals(view.$('h2').text(), "brown coffee", "precond - renders color correctly");
   equals(view.$('#price').text(), '$4', "precond - renders price correctly");
@@ -450,7 +437,7 @@ test("Template updates correctly if a path is passed to the bind helper", functi
     })
   });
 
-  view.createElement();
+  appendView();
 
   equals(view.$('h1').text(), "$4", "precond - renders price");
 
@@ -510,7 +497,7 @@ test("should update the block when object passed to #if helper changes", functio
     menu: SC.Handlebars.compile('<h1>{{#if inception}}{{INCEPTION}}{{/if}}</h1>')
   });
 
-  var view = SC.View.create({
+  view = SC.View.create({
     templateName: 'menu',
     templates: templates,
 
@@ -518,7 +505,7 @@ test("should update the block when object passed to #if helper changes", functio
     inception: 'OOOOoooooOOOOOOooooooo'
   });
 
-  view.createElement();
+  appendView();
 
   equals(view.$('h1').text(), "BOOOOOOOONG doodoodoodoodooodoodoodoo", "renders block if a string");
 
@@ -554,7 +541,7 @@ test("should update the block when object passed to #unless helper changes", fun
     doWellInSchool: "Eat your vegetables"
   });
 
-  view.createElement();
+  appendView();
 
   equals(view.$('h1').text(), "", "hides block if true");
 
@@ -591,7 +578,7 @@ test("should update the block when object passed to #if helper changes and an in
     SAD: 'BOONG?'
   });
 
-  view.createElement();
+  appendView();
 
   equals(view.$('h1').text(), "BOONG?", "renders alternate if false");
 
@@ -658,12 +645,12 @@ test("Template views add an elementId to child views created using the view help
     templateName: 'child'
   });
 
-  var view = SC.View.create({
+  view = SC.View.create({
     templates: templates,
     templateName: 'parent'
   });
 
-  view.createElement();
+  appendView();
   var childView = getPath(view, 'childViews.firstObject');
   equals(view.$().children().first().children().first().attr('id'), get(childView, 'elementId'));
 });
@@ -675,12 +662,12 @@ test("Template views set the template of their children to a passed block", func
 
   TemplateTests.NoTemplateView = SC.View.extend();
 
-  var view = SC.View.create({
+  view = SC.View.create({
     templates: templates,
     templateName: 'parent'
   });
 
-  view.createElement();
+  appendView();
   ok(view.$('h1:has(span)').length === 1, "renders the passed template inside the parent template");
 });
 
@@ -697,7 +684,7 @@ test("should pass hash arguments to the view object", function() {
       template: SC.Handlebars.compile('{{#view TemplateTests.HashArgTemplateView fooBinding="TemplateTests.bindTestObject.bar"}}{{foo}}{{/view}}')
     });
 
-    view.createElement();
+    appendView();
   });
 
   equals(view.$().text(), "bat", "prints initial bound value");
@@ -718,7 +705,7 @@ test("Child views created using the view helper should have their parent view se
     template: SC.Handlebars.compile(template)
   });
 
-  view.createElement();
+  appendView();
 
   var childView = firstGrandchild(view);
   equals(childView, get(firstChild(childView), 'parentView'), 'parent view is correct');
@@ -733,7 +720,7 @@ test("Child views created using the view helper should have their IDs registered
     template: SC.Handlebars.compile(template)
   });
 
-  view.createElement();
+  appendView();
 
   var childView = firstChild(view);
   var id = childView.$()[0].id;
@@ -833,7 +820,7 @@ test("should update boundIf blocks if the conditional changes", function() {
     })
   });
 
-  view.createElement();
+  appendView();
 
   equals(view.$('#first').text(), "bam", "renders block when condition is true");
 
@@ -862,7 +849,7 @@ test("{{view}} id attribute should set id on layer", function() {
     templates: templates
   });
 
-  view.createElement();
+  appendView();
 
   equals(view.$('#bar').length, 1, "adds id attribute to layer");
   equals(view.$('#bar').text(), 'baz', "emits content");
@@ -880,7 +867,7 @@ test("{{view}} class attribute should set class on layer", function() {
     templates: templates
   });
 
-  view.createElement();
+  appendView();
 
   equals(view.$('.bar').length, 1, "adds class attribute to layer");
   equals(view.$('.bar').text(), 'baz', "emits content");
@@ -895,7 +882,7 @@ test("{{view}} should be able to point to a local view", function() {
     })
   });
 
-  view.createElement();
+  appendView();
 
   equals(view.$().text(), "common", "tries to look up view name locally");
 });
@@ -914,7 +901,7 @@ test("should be able to bind view class names to properties", function() {
     templates: templates
   });
 
-  view.createElement();
+  appendView();
 
   equals(view.$('.is-done').length, 1, "dasherizes property and sets class name");
 
@@ -936,7 +923,7 @@ test("should be able to bind element attributes using {{bindAttr}}", function() 
     })
   });
 
-  view.createElement();
+  appendView();
 
   equals(view.$('img').attr('src'), "http://www.sproutcore.com/assets/images/logo.png", "sets src attribute");
   equals(view.$('img').attr('alt'), "The SproutCore Logo", "sets alt attribute");
@@ -1009,7 +996,7 @@ test("should be able to bind element attributes using {{bindAttr}} inside a bloc
     })
   });
 
-  view.createElement();
+  appendView();
 
   equals(view.$('img').attr('src'), "http://www.sproutcore.com/assets/images/logo.png", "sets src attribute");
   equals(view.$('img').attr('alt'), "The SproutCore Logo", "sets alt attribute");
@@ -1029,7 +1016,7 @@ test("should be able to bind class attribute with {{bindAttr}}", function() {
     foo: 'bar'
   });
 
-  view.createElement();
+  appendView();
 
   equals(view.$('img').attr('class'), 'bar', "renders class");
 
@@ -1052,7 +1039,7 @@ test("should be able to bind boolean element attributes using {{bindAttr}}", fun
     content: content
   });
 
-  view.createElement();
+  appendView();
 
   ok(!view.$('input').attr('disabled'), 'attribute does not exist upon initial render');
   ok(view.$('input').attr('checked'), 'attribute is present upon initial render');
@@ -1078,7 +1065,7 @@ test("should be able to add multiple classes using {{bindAttr class}}", function
     content: content
   });
 
-  view.createElement();
+  appendView();
 
   ok(view.$('div').hasClass('is-awesome-sauce'), "dasherizes first property and sets classname");
   ok(view.$('div').hasClass('is-also-cool'), "dasherizes second property and sets classname");
@@ -1101,41 +1088,9 @@ test("should be able to output a property without binding", function(){
     content: content
   });
 
-  view.createElement();
+  appendView();
 
   equals(view.$('div').html(), "No spans here, son.");
-});
-
-test("should be able to choose a tagName other than span", function(){
-  var template = SC.Handlebars.compile('{{#if content.underwater tagName="abbr"}}Hold your breath.{{/if}}');
-  var content = SC.Object.create({
-      underwater: true
-  });
-
-  view = SC.View.create({
-    template: template,
-    content: content
-  });
-
-  view.createElement();
-
-  equals(view.$('abbr').length, 1);
-});
-
-test("should still get a span by default if tagName isn't specified", function(){
-  var template = SC.Handlebars.compile('{{#if content.underwater}}Hold your breath.{{/if}}');
-  var content = SC.Object.create({
-      underwater: true
-  });
-
-  view = SC.View.create({
-    template: template,
-    content: content
-  });
-
-  view.createElement();
-
-  equals(view.$('span').length, 1);
 });
 
 var view;
@@ -1162,7 +1117,7 @@ test("should be able to update when bound property updates", function(){
   });
   
   view = View.create();
-  view.createElement();
+  appendView();
   
   SC.run.sync();
   

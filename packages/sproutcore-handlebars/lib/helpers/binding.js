@@ -7,8 +7,9 @@
 
 require('sproutcore-handlebars/ext');
 require('sproutcore-handlebars/views/bindable_span');
+require('sproutcore-handlebars/views/metamorph_view');
 
-var get = SC.get, getPath = SC.getPath, fmt = SC.String.fmt;
+var get = SC.get, getPath = SC.getPath, set = SC.set, fmt = SC.String.fmt;
 
 (function() {
   // Binds a property into the DOM. This will create a hook in DOM that the
@@ -32,32 +33,22 @@ var get = SC.get, getPath = SC.getPath, fmt = SC.String.fmt;
         inverseTemplate: inverse,
         property: property,
         previousContext: ctx,
-        isEscaped: options.hash.escaped,
-	tagName: options.hash.tagName || 'span'
+        isEscaped: options.hash.escaped
       });
-
-      var observer, invoker;
 
       view.appendChild(bindView);
 
-      observer = function() {
-        if (get(bindView, 'element')) {
-          bindView.rerender();
-        } else {
-          // If no layer can be found, we can assume somewhere
-          // above it has been re-rendered, so remove the
-          // observer.
-          SC.removeObserver(ctx, property, invoker);
-        }
+      var observer = function() {
+        SC.run.once(function() { bindView.rerender(); });
       };
 
-      invoker = function() {
-        SC.run.once(observer);
-      };
+      set(bindView, 'removeObserver', function() {
+        SC.removeObserver(ctx, property, observer);
+      });
 
       // Observes the given property on the context and
       // tells the SC._BindableSpan to re-render.
-      SC.addObserver(ctx, property, invoker);
+      SC.addObserver(ctx, property, observer);
     } else {
       // The object is not observable, so just render it out and
       // be done with it.

@@ -8,6 +8,7 @@
 var get = SC.get, set = SC.set, getPath = SC.getPath;
 
 require('sproutcore-views/views/view');
+require('sproutcore-handlebars/views/metamorph_view');
 
 /**
   @ignore
@@ -22,18 +23,8 @@ require('sproutcore-views/views/view');
   context set up. When the associated property changes, just the template for 
   this view will re-render.
 */
-SC._BindableSpanView = SC.View.extend(
+SC._BindableSpanView = SC.MetamorphView.extend(
 /** @scope SC._BindableSpanView.prototype */{
-
-  /**
-   The type of HTML tag to use. To ensure compatibility with
-   Internet Explorer 7, a `<span>` tag is used to ensure that inline elements are
-   not rendered with display: block.
-
-   @type String
-   @default 'span'
-  */
-  tagName: 'span',
 
   /**
     The function used to determine if the `displayTemplate` or
@@ -156,5 +147,12 @@ SC._BindableSpanView = SC.View.extend(
     }
 
     return this._super(buffer);
+  },
+
+  destroy: function() {
+    var removeObserver = get(this, 'removeObserver');
+    removeObserver();
+
+    this._super();
   }
 });

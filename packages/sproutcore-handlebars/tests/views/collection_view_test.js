@@ -419,7 +419,7 @@ test("should allow view objects to be swapped out without throwing an error (#78
     });
 
     TemplateTests.CollectionView = SC.CollectionView.extend({
-      contentBinding: 'parentView.parentView.items',
+      contentBinding: 'parentView.items',
       tagName: 'ul',
       template: SC.Handlebars.compile("{{content}}")
     });

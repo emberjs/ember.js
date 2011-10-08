@@ -23,19 +23,22 @@ SC.MetamorphView = SC.View.extend({
   },
 
   domManagerClass: SC.Object.extend({
-    remove: function() {
-      var morph = getPath(this, 'view.morph');
-      morph.remove();
-    },
+    // It is not possible for a user to directly remove
+    // a metamorph view as it is not in the view hierarchy.
+    remove: SC.K,
 
     replace: function() {
       var view = get(this, 'view');
       var morph = getPath(this, 'view.morph');
 
+      view.transitionTo('preRender');
       view.clearRenderedChildren();
-
       var buffer = view.renderToBuffer();
-      morph.replaceWith(buffer.string());
+
+      SC.run.schedule('render', this, function() {
+        morph.replaceWith(buffer.string());
+        view.transitionTo('inDOM');
+      });
     }
   })
 });
