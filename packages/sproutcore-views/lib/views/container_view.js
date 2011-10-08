@@ -8,16 +8,19 @@
 require('sproutcore-views/views/view');
 var get = SC.get, set = SC.set, meta = SC.meta;
 
+var childViewsProperty = SC.computed(function() {
+  return get(this, '_childViews');
+}).property('_childViews').cacheable();
+
 SC.ContainerView = SC.View.extend({
 
   init: function() {
     var childViews = get(this, 'childViews');
-    SC.defineProperty(this, 'childViews', SC.View.CHILD_VIEWS_CP);
+    SC.defineProperty(this, 'childViews', childViewsProperty);
 
     this._super();
 
     var _childViews = get(this, '_childViews');
-
 
     childViews.forEach(function(viewName, idx) {
       var view;
