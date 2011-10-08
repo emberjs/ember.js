@@ -19,7 +19,7 @@ SC.View.states.inDOM = {
   getElement: function(view) {
     var parent = get(view, 'parentView');
     if (parent) { parent = get(parent, 'element'); }
-    if (parent) { return ret = view.findElementInParentElement(parent); }
+    if (parent) { return view.findElementInParentElement(parent); }
   },
 
   setElement: function(view, value) {
@@ -28,7 +28,7 @@ SC.View.states.inDOM = {
       view.invalidateRecursively('element');
       view.transitionTo('preRender');
     } else {
-      throw "You cannot set an element to a non-null value when the element is already in the DOM."
+      throw "You cannot set an element to a non-null value when the element is already in the DOM.";
     }
 
     return value;
@@ -37,29 +37,21 @@ SC.View.states.inDOM = {
   // once the view has been inserted into the DOM, rerendering is
   // deferred to allow bindings to synchronize.
   rerender: function(view) {
-    var element = get(view, 'element');
-
     view.clearRenderedChildren();
-    set(view, 'element', null);
 
-    view._insertElementLater(function() {
-      SC.$(element).replaceWith(get(view, 'element'));
-    });
+    get(view, 'domManager').replace();
+    return view;
   },
 
   // once the view is already in the DOM, destroying it removes it
   // from the DOM, nukes its element, and puts it back into the
   // preRender state.
   destroyElement: function(view) {
-    var elem = get(this, 'element');
-
     view.invokeRecursively(function(view) {
       this.willDestroyElement();
     });
 
-    set(view, 'element', null);
-
-    SC.$(elem).remove();
+    get(view, 'domManager').remove();
     return view;
   },
 

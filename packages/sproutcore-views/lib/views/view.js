@@ -9,9 +9,22 @@
 require("sproutcore-views/system/render_buffer");
 var get = SC.get, set = SC.set, addObserver = SC.addObserver;
 var getPath = SC.getPath, meta = SC.meta, fmt = SC.String.fmt;
+
 var childViewsProperty = SC.computed(function() {
-  return get(this, '_childViews');
-}).property('_childViews.@each')
+  var childViews = get(this, '_childViews');
+
+  var ret = [];
+
+  childViews.forEach(function(view) {
+    if (view.isVirtual) {
+      ret = ret.concat(get(view, 'childViews'));
+    } else {
+      ret.push(view);
+    }
+  });
+
+  return ret;
+}).property('_childViews.@each').cacheable();
 
 /**
   @static
@@ -122,7 +135,17 @@ SC.View = SC.Object.extend(
     @type SC.View
     @default null
   */
-  parentView: null,
+  _parentView: null,
+
+  parentView: function() {
+    var parent = get(this, '_parentView');
+
+    if (parent && parent.isVirtual) {
+      return get(parent, 'parentView');
+    } else {
+      return parent;
+    }
+  }.property('_parentView'),
 
   /**
     If false, the view will appear hidden in DOM.
@@ -140,7 +163,7 @@ SC.View = SC.Object.extend(
     @type Array
     @default []
   */
-  childViews: CHILD_VIEWS_CP,
+  childViews: childViewsProperty,
 
   _childViews: [],
 
@@ -152,11 +175,11 @@ SC.View = SC.Object.extend(
     @returns SC.View
   */
   nearestInstanceOf: function(klass) {
-    var view = this.parentView;
+    var view = get(this, 'parentView');
 
     while (view) {
       if(view instanceof klass) { return view; }
-      view = view.parentView;
+      view = get(view, 'parentView');
     }
   },
 
@@ -167,11 +190,11 @@ SC.View = SC.Object.extend(
     @returns SC.View
   */
   nearestWithProperty: function(property) {
-    var view = this.parentView;
+    var view = get(this, 'parentView');
 
     while (view) {
       if (property in view) { return view; }
-      view = view.parentView;
+      view = get(view, 'parentView');
     }
   },
 
@@ -183,11 +206,11 @@ SC.View = SC.Object.extend(
     @returns SC.View
   */
   nearestChildOf: function(klass) {
-    var view = this.parentView;
+    var view = get(this, 'parentView');
 
     while (view) {
-      if(view.parentView instanceof klass) { return view; }
-      view = view.parentView;
+      if(get(view, 'parentView') instanceof klass) { return view; }
+      view = get(view, 'parentView');
     }
   },
 
@@ -232,7 +255,7 @@ SC.View = SC.Object.extend(
       view.propertyDidChange('itemView');
       view.propertyDidChange('contentView');
     });
-  }.observes('parentView'),
+  }.observes('_parentView'),
 
   /**
     Called on your view when it should push strings of HTML into a
@@ -316,9 +339,9 @@ SC.View = SC.Object.extend(
     // we re-render.
 
     // VIEW-TODO: Unit test this path.
-    var childViews = get(this, 'childViews');
+    var childViews = get(this, '_childViews');
     for (var i=lengthAfter-1; i>=lengthBefore; i--) {
-      childViews[i] && childViews[i].destroy();
+      if (childViews[i]) { childViews[i].destroy(); }
     }
   },
 
@@ -489,7 +512,7 @@ SC.View = SC.Object.extend(
     } else {
       return this.invokeForState('getElement');
     }
-  }.property('parentView', 'state').cacheable(),
+  }.property('_parentView', 'state').cacheable(),
 
   /**
     Returns a jQuery object for this view's element. If you pass in a selector
@@ -508,7 +531,7 @@ SC.View = SC.Object.extend(
 
   /** @private */
   mutateChildViews: function(callback) {
-    var childViews = get(this, 'childViews'),
+    var childViews = get(this, '_childViews'),
         idx = get(childViews, 'length'),
         view;
 
@@ -645,7 +668,10 @@ SC.View = SC.Object.extend(
     @returns {SC.RenderBuffer}
   */
   renderBuffer: function(tagName) {
-    return SC.RenderBuffer(tagName || get(this, 'tagName') || 'div');
+    tagName = tagName || get(this, 'tagName');
+    if (tagName == null) { tagName = tagName || 'div'; }
+
+    return SC.RenderBuffer(tagName);
   },
 
   /**
@@ -828,7 +854,10 @@ SC.View = SC.Object.extend(
     // provided buffer operation (for example, `insertAfter` will
     // insert a new buffer after the "parent buffer").
     if (parentBuffer) {
-      buffer = parentBuffer[bufferOperation](get(this, 'tagName') || 'div');
+      var tagName = get(this, 'tagName');
+      tagName = tagName == null ? 'div' : tagName;
+
+      buffer = parentBuffer[bufferOperation](tagName);
     } else {
       buffer = this.renderBuffer();
     }
@@ -989,7 +1018,7 @@ SC.View = SC.Object.extend(
   init: function() {
     set(this, 'state', 'preRender');
 
-    var parentView = get(this, 'parentView');
+    var parentView = get(this, '_parentView');
 
     this._super();
 
@@ -1004,6 +1033,8 @@ SC.View = SC.Object.extend(
 
     this.classNameBindings = get(this, 'classNameBindings').slice();
     this.classNames = get(this, 'classNames').slice();
+
+    this.set('domManager', this.domManagerClass.create({ view: this }));
 
     meta(this)["SC.View"] = {};
   },
@@ -1020,10 +1051,10 @@ SC.View = SC.Object.extend(
   */
   removeChild: function(view) {
     // update parent node
-    set(view, 'parentView', null);
+    set(view, '_parentView', null);
 
     // remove view from childViews array.
-    var childViews = get(this, 'childViews');
+    var childViews = get(this, '_childViews');
     childViews.removeObject(view);
 
     return this;
@@ -1053,7 +1084,7 @@ SC.View = SC.Object.extend(
     @returns {SC.View} receiver
   */
   removeFromParent: function() {
-    var parent = get(this, 'parentView');
+    var parent = get(this, '_parentView');
 
     // Remove DOM element from parent
     this.remove();
@@ -1075,7 +1106,7 @@ SC.View = SC.Object.extend(
     // so collect any information we need before calling super.
     var viewMeta   = meta(this)['SC.View'],
         childViews = get(this, 'childViews'),
-        parent     = get(this, 'parentView'),
+        parent     = get(this, '_parentView'),
         elementId  = get(this, 'elementId'),
         childLen   = childViews.length;
 
@@ -1115,10 +1146,10 @@ SC.View = SC.Object.extend(
   */
   createChildView: function(view, attrs) {
     if (SC.View.detect(view)) {
-      view = view.create(attrs || {}, { parentView: this });
+      view = view.create(attrs || {}, { _parentView: this });
     } else {
       sc_assert('must pass instance of View', view instanceof SC.View);
-      set(view, 'parentView', this);
+      set(view, '_parentView', this);
     }
     return view;
   },
@@ -1178,6 +1209,29 @@ SC.View = SC.Object.extend(
 
 SC.View.reopen({
   states: SC.View.states,
+  domManagerClass: SC.Object.extend({
+    view: this,
+
+    replace: function() {
+      var view = get(this, 'view');
+      var element = get(view, 'element');
+
+      set(view, 'element', null);
+
+      view._insertElementLater(function() {
+        SC.$(element).replaceWith(get(view, 'element'));
+      });
+    },
+
+    remove: function() {
+      var view = get(this, 'view');
+      var elem = get(view, 'element');
+
+      set(view, 'element', null);
+
+      SC.$(elem).remove();
+    }
+  })
 });
 
 // Create a global view hash.
