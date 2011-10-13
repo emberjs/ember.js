@@ -63,6 +63,24 @@ SC.ENV = 'undefined' === typeof ENV ? {} : ENV;
 SC.K = function() { return this; };
 
 /**
+  Set to YES to have all observing activity logged to the SC.Logger.  This
+  should be used for debugging only. Note that you can also enable this 
+  from the console or temporarily.
+
+  @property {Boolean}
+*/
+SC.ENV.LOG_OBSERVERS = false;
+
+/**
+  Debug parameter you can turn on.  This will log all bindings that fire to
+  the console.  This should be disabled in production code.  Note that you
+  can also enable this from the console or temporarily.
+
+  @property {Boolean}
+*/
+SC.ENV.LOG_BINDINGS = false;
+
+/**
   Define an assertion that will throw an exception if the condition is not 
   met.  SproutCore build tools will remove any calls to sc_assert() when 
   doing a production build.
