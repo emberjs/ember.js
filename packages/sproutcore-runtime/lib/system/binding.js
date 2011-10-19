@@ -692,15 +692,15 @@ Binding.prototype = {
 
 };
 
-Binding.reopenClass = function(classMethods) {
+function mixinClassMethods(obj, classMethods) {
   for (var key in classMethods) {
     if (typeof classMethods[key] === 'function') {
-      Binding[key] = classMethods[key];
+      obj[key] = classMethods[key];
     }
   }
 };
 
-Binding.reopenClass(/** @scope SC.Binding */ {
+mixinClassMethods(Binding, {
 
   /**
     @see SC.Binding.prototype.from
