@@ -317,17 +317,29 @@ var OR_OPERATION = function(obj, left, right) {
 
   @since SproutCore 1.0
 */
-var Binding = SC.Object.extend({
+var K = function() {};
+var Binding = function(toPath, fromPath) {
+  var self;
+  
+  if (this instanceof Binding) {
+    self = this;
+  } else {
+    self = new K();
+  }
+  
+  /** @private */
+  self._direction = 'fwd';
 
   /** @private */
-  _direction: 'fwd',
+  self._from = fromPath;
+  self._to   = toPath;
+  
+  return self;
+};
 
-  /** @private */
-  init: function(toPath, fromPath) {
-    this._from = fromPath;
-    this._to   = toPath;
-  },
+K.prototype = Binding.prototype;
 
+Binding.prototype = {
   // ..........................................................
   // CONFIG
   //
@@ -678,7 +690,15 @@ var Binding = SC.Object.extend({
     }
   }
 
-});
+};
+
+Binding.reopenClass = function(classMethods) {
+  for (var key in classMethods) {
+    if (typeof classMethods[key] === 'function') {
+      Binding[key] = classMethods[key];
+    }
+  }
+};
 
 Binding.reopenClass(/** @scope SC.Binding */ {
 
