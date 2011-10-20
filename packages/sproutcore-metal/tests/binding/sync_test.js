@@ -4,36 +4,36 @@ testBoth("bindings should not try to sync destroyed objects", function(get, set)
   var a, b;
 
   SC.run(function() {
-    a = SC.Object.create({
+    a = {
       foo: 'trololol'
-    });
+    };
 
-    b = SC.Object.create({
-      a: a,
-      fooBinding: 'a.foo'
-    });
+    b = {
+      a: a
+    };
+    SC.bind(b, 'foo', 'a.foo');
   });
 
   SC.run(function() {
     set(a, 'foo', 'trollface');
-    b.destroy();
+    set(b, 'isDestroyed', true);
     // should not raise
   });
 
   SC.run(function() {
-    a = SC.Object.create({
+    a = {
       foo: 'trololol'
-    });
+    };
 
-    b = SC.Object.create({
-      a: a,
-      fooBinding: 'a.foo'
-    });
+    b = {
+      a: a
+    };
+    SC.bind(b, 'foo', 'a.foo');
   });
 
   SC.run(function() {
     set(b, 'foo', 'trollface');
-    a.destroy();
+    set(a, 'isDestroyed', true);
     // should not raise
   });
 });
