@@ -10,7 +10,7 @@ module('system/mixin/binding/oneWay_test', {
     MyApp = {
       foo: { value: 'FOO' },
       bar: { value: 'BAR' }
-    });
+    };
   },
   
   teardown: function() {
