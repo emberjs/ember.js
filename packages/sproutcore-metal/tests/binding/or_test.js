@@ -12,7 +12,7 @@ module('binding/or', {
       foo: false,
       bar: false,
     };
-    SC.Binding.or("foo", "bar").to("baz").connect(MyApp)
+    SC.Binding.or("foo", "bar").to("baz").connect(MyApp);
   },
   
   teardown: function() {
