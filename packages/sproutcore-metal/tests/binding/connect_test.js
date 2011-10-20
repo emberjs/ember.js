@@ -36,7 +36,7 @@ function performTest(binding, a, b, get, set, skipFirst) {
 }
 
 testBoth('Connecting a binding between two properties', function(get, set) {
-  var a = SC.Object.create({ foo: 'FOO', bar: 'BAR' });
+  var a = { foo: 'FOO', bar: 'BAR' };
   
   // a.bar -> a.foo
   var binding = new SC.Binding('foo', 'bar');
@@ -45,8 +45,8 @@ testBoth('Connecting a binding between two properties', function(get, set) {
 });
 
 testBoth('Connecting a binding between two objects', function(get, set) {
-  var b = SC.Object.create({ bar: 'BAR' });
-  var a = SC.Object.create({ foo: 'FOO', b: b });
+  var b = { bar: 'BAR' };
+  var a = { foo: 'FOO', b: b };
   
   // b.bar -> a.foo
   var binding = new SC.Binding('foo', 'b.bar');
@@ -55,10 +55,10 @@ testBoth('Connecting a binding between two objects', function(get, set) {
 });
 
 testBoth('Connecting a binding to path', function(get, set) {
-  var a = SC.Object.create({ foo: 'FOO' });
-  GlobalB = SC.Object.create({
-    b: SC.Object.create({ bar: 'BAR' })
-  }) ;
+  var a = { foo: 'FOO' };
+  GlobalB = {
+    b: { bar: 'BAR' }
+  };
   
   var b = get(GlobalB, 'b');
   
@@ -68,7 +68,7 @@ testBoth('Connecting a binding to path', function(get, set) {
   performTest(binding, a, b, get, set);
 
   // make sure modifications update
-  b = SC.Object.create({ bar: 'BIFF' });
+  b = { bar: 'BIFF' };
   set(GlobalB, 'b', b);
   SC.run.sync();
   equals(get(a, 'foo'), 'BIFF', 'a should have changed');
@@ -76,8 +76,8 @@ testBoth('Connecting a binding to path', function(get, set) {
 });
 
 testBoth('Calling connect more than once', function(get, set) {
-  var b = SC.Object.create({ bar: 'BAR' });
-  var a = SC.Object.create({ foo: 'FOO', b: b });
+  var b = { bar: 'BAR' };
+  var a = { foo: 'FOO', b: b };
   
   // b.bar -> a.foo
   var binding = new SC.Binding('foo', 'b.bar');
@@ -107,13 +107,12 @@ testBoth('Bindings should be inherited', function(get, set) {
 
 test('inherited bindings should sync on create', function() {
 
-  var A = SC.Object.extend({
-    fooBinding: 'bar.baz'
-  });
+  var A = function() {
+    SC.bind(this, 'foo', 'bar.baz');
+  };
   
-  var a = A.create({
-    bar: SC.Object.create({ baz: 'BAZ' })
-  });
+  var a = new A();
+  SC.set(a, 'bar', { baz: 'BAZ' });
   
   SC.run.sync();
   equals(SC.get(a, 'foo'), 'BAZ', 'should have synced binding on new obj');

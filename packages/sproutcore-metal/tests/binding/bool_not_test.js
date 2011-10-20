@@ -15,10 +15,10 @@ function testBool(val, expected) {
 
 module('system/binding/bool', {
   setup: function() {
-    MyApp = SC.Object.create({
-      foo: SC.Object.create({ value: 'FOO' }),
-      bar: SC.Object.create({ value: 'BAR' })
-    });
+    MyApp = {
+      foo: { value: 'FOO' },
+      bar: { value: 'BAR' }
+    };
     
     SC.bind(MyApp, 'bar.value', 'foo.value').bool();
   },
@@ -44,10 +44,10 @@ testBool('', false);
 
 module('system/binding/not', {
   setup: function() {
-    MyApp = SC.Object.create({
-      foo: SC.Object.create({ value: 'FOO' }),
-      bar: SC.Object.create({ value: 'BAR' })
-    });
+    MyApp = {
+      foo: { value: 'FOO' },
+      bar: { value: 'BAR' }
+    };
     
     SC.bind(MyApp, 'bar.value', 'foo.value').not();
   },
