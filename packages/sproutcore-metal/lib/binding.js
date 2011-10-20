@@ -5,12 +5,11 @@
 // ==========================================================================
 /*globals sc_assert */
 
+require('sproutcore-metal/core'); // SC.Logger
 require('sproutcore-metal/accessors'); // get, getPath, setPath, trySetPath
 require('sproutcore-metal/utils'); // guidFor, isArray, meta
 require('sproutcore-metal/observer'); // addObserver, removeObserver
 require('sproutcore-metal/run_loop'); // SC.run.schedule
-require('sproutcore-runtime/core'); // SC.Logger
-require('sproutcore-runtime/system/string'); // fmt
 
 // ..........................................................
 // CONSTANTS
@@ -558,7 +557,7 @@ Binding.prototype = {
   /** @private */
   toString: function() {
     var oneWay = this._oneWay ? '[oneWay]' : '';
-    return SC.String.fmt("SC.Binding<%@>(%@ -> %@)%@", [guidFor(this), this._from, this._to, oneWay]);
+    return "SC.Binding<" + guidFor(this) + ">(" + this._from + " -> " + this._to + ")" + oneWay;
   },
 
   // ..........................................................

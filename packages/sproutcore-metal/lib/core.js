@@ -100,3 +100,15 @@ window.sc_assert = function sc_assert(desc, test) {
 
 //if ('undefined' === typeof sc_require) sc_require = SC.K;
 if ('undefined' === typeof require) require = SC.K;
+
+// ..........................................................
+// LOGGER
+// 
+
+/**
+  @class
+
+  Inside SproutCore-Metal, simply uses the window.console object.
+  Override this to provide more robust logging functionality.
+*/
+SC.Logger = window.console;
