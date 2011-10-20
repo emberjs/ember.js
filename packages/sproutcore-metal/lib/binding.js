@@ -8,9 +8,9 @@
 require('sproutcore-metal/accessors'); // get, getPath, setPath, trySetPath
 require('sproutcore-metal/utils'); // guidFor, isArray, meta
 require('sproutcore-metal/observer'); // addObserver, removeObserver
+require('sproutcore-metal/run_loop'); // SC.run.schedule
 require('sproutcore-runtime/core'); // SC.Logger
 require('sproutcore-runtime/system/string'); // fmt
-require('sproutcore-runtime/system/run_loop'); // SC.run.schedule
 
 // ..........................................................
 // CONSTANTS
