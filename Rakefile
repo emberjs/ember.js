@@ -22,7 +22,7 @@ end
 
 def strip_require(file)
   result = File.read(file)
-  result.gsub!(%r{^\s*require\(['"]([^'"])*['"]\);?\s*$}, "")
+  result.gsub!(%r{^\s*require\(['"]([^'"])*['"]\);?\s*}, "")
   result
 end
 
