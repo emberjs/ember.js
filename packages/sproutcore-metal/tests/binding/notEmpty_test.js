@@ -7,10 +7,10 @@
 
 module('system/binding/notEmpty', {
   setup: function() {
-    MyApp = SC.Object.create({
-      foo: SC.Object.create({ value: 'FOO' }),
-      bar: SC.Object.create({ value: 'BAR' })
-    });
+    MyApp = {
+      foo: { value: 'FOO' },
+      bar: { value: 'BAR' }
+    };
   },
 
   teardown: function() {

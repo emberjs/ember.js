@@ -5,8 +5,11 @@
 // ==========================================================================
 /*globals sc_assert */
 
-require('sproutcore-runtime/system/object');
-require('sproutcore-runtime/system/run_loop');
+require('sproutcore-metal/core'); // SC.Logger
+require('sproutcore-metal/accessors'); // get, getPath, setPath, trySetPath
+require('sproutcore-metal/utils'); // guidFor, isArray, meta
+require('sproutcore-metal/observer'); // addObserver, removeObserver
+require('sproutcore-metal/run_loop'); // SC.run.schedule
 
 // ..........................................................
 // CONSTANTS
@@ -317,17 +320,29 @@ var OR_OPERATION = function(obj, left, right) {
 
   @since SproutCore 1.0
 */
-var Binding = SC.Object.extend({
+var K = function() {};
+var Binding = function(toPath, fromPath) {
+  var self;
+  
+  if (this instanceof Binding) {
+    self = this;
+  } else {
+    self = new K();
+  }
+  
+  /** @private */
+  self._direction = 'fwd';
 
   /** @private */
-  _direction: 'fwd',
+  self._from = fromPath;
+  self._to   = toPath;
+  
+  return self;
+};
 
-  /** @private */
-  init: function(toPath, fromPath) {
-    this._from = fromPath;
-    this._to   = toPath;
-  },
+K.prototype = Binding.prototype;
 
+Binding.prototype = {
   // ..........................................................
   // CONFIG
   //
@@ -542,7 +557,7 @@ var Binding = SC.Object.extend({
   /** @private */
   toString: function() {
     var oneWay = this._oneWay ? '[oneWay]' : '';
-    return SC.String.fmt("SC.Binding<%@>(%@ -> %@)%@", [guidFor(this), this._from, this._to, oneWay]);
+    return "SC.Binding<" + guidFor(this) + ">(" + this._from + " -> " + this._to + ")" + oneWay;
   },
 
   // ..........................................................
@@ -678,9 +693,17 @@ var Binding = SC.Object.extend({
     }
   }
 
-});
+};
 
-Binding.reopenClass(/** @scope SC.Binding */ {
+function mixinProperties(to, from) {
+  for (var key in from) {
+    if (from.hasOwnProperty(key)) {
+      to[key] = from[key];
+    }
+  }
+};
+
+mixinProperties(Binding, {
 
   /**
     @see SC.Binding.prototype.from
