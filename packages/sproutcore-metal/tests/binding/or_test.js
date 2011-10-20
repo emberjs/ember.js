@@ -8,11 +8,11 @@ var MyApp, set = SC.set, get = SC.get;
 
 module('binding/or', {
   setup: function() {
-    MyApp = SC.Object.create({
+    MyApp = {
       foo: false,
       bar: false,
-      bazBinding: SC.Binding.or('foo', 'bar')
-    });
+    };
+    SC.Binding.or("foo", "bar").to("baz").connect(MyApp);
   },
   
   teardown: function() {
