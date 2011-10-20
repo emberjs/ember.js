@@ -6,9 +6,10 @@
 // ==========================================================================
 /*globals sc_assert */
 
-require('sproutcore-runtime/system/object');
-
-
+require('sproutcore-metal/core'); // SC.Logger
+require('sproutcore-metal/watching'); // SC.watch.flushPending
+require('sproutcore-metal/observer'); // SC.beginPropertyChanges, SC.endPropertyChanges
+require('sproutcore-metal/utils'); // SC.guidFor
 
 // ..........................................................
 // HELPERS
@@ -40,15 +41,25 @@ function invoke(target, method, args, ignore) {
 
 var timerMark; // used by timers...
 
-var RunLoop = SC.Object.extend({
+var K = function() {};
+var RunLoop = function(prev) {
+  var self;
+  
+  if (this instanceof RunLoop) {
+    self = this;
+  } else {
+    self = new K();
+  }
 
-  _prev: null,
+  self._prev = prev || null;
+  self.onceTimers = {};
+  
+  return self;
+}
 
-  init: function(prev) {
-    this._prev = prev;
-    this.onceTimers = {};
-  },
+K.prototype = RunLoop.prototype;
 
+RunLoop.prototype = {
   end: function() {
     this.flush();
     return this._prev;
@@ -125,7 +136,7 @@ var RunLoop = SC.Object.extend({
     return this;
   }
 
-});
+};
 
 SC.RunLoop = RunLoop;
 
