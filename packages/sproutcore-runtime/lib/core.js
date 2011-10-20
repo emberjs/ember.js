@@ -379,15 +379,3 @@ SC.Error = function() {
 };
 
 SC.Error.prototype = SC.create(Error.prototype);
-
-// ..........................................................
-// LOGGER
-// 
-
-/**
-  @class
-
-  Inside SproutCore-Runtime, simply uses the window.console object.
-  Override this to provide more robust logging functionality.
-*/
-SC.Logger = window.console;

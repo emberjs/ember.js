@@ -14,3 +14,5 @@ require('sproutcore-metal/watching');
 require('sproutcore-metal/events');
 require('sproutcore-metal/observer');
 require('sproutcore-metal/mixin');
+require('sproutcore-metal/binding');
+require('sproutcore-metal/run_loop');
