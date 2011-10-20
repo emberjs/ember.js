@@ -5,7 +5,6 @@
 // ==========================================================================
 /*globals sc_assert */
 
-require('sproutcore-runtime/system/object');
 require('sproutcore-runtime/system/run_loop');
 
 // ..........................................................
@@ -692,15 +691,15 @@ Binding.prototype = {
 
 };
 
-function mixinClassMethods(obj, classMethods) {
-  for (var key in classMethods) {
-    if (typeof classMethods[key] === 'function') {
-      obj[key] = classMethods[key];
+function mixinProperties(to, from) {
+  for (var key in from) {
+    if (from.hasOwnProperty(key)) {
+      to[key] = from[key];
     }
   }
 };
 
-mixinClassMethods(Binding, {
+mixinProperties(Binding, {
 
   /**
     @see SC.Binding.prototype.from
