@@ -64,6 +64,23 @@ SC.Observable = SC.Mixin.create(/** @scope SC.Observable.prototype */ {
   get: function(keyName) {
     return get(this, keyName);
   },
+
+  /**
+    To get multiple properties at once, call getProperties
+    with an Array:
+
+          record.getProperties(['firstName', 'lastName', 'zipCode']);
+
+    @param {Array} array of keys to get
+    @returns {Hash}
+  */
+  getProperties: function(keyNames) {
+    var ret = {};
+    for(var i = 0; i < keyNames.length; i++) {
+      ret[keyNames[i]] = get(this, keyNames[i]);
+    }
+    return ret;
+  },
   
   /**
     Sets the key equal to value.
