@@ -8,6 +8,8 @@
 require('sproutcore-views/views/states/default');
 
 SC.View.states.preRender = {
+  parentState: SC.View.states.default,
+
   // a view leaves the preRender state once its element has been
   // created (createElement).
   insertElement: function(view, fn) {
@@ -15,8 +17,11 @@ SC.View.states.preRender = {
     // invoking the willInsertElement event.
     view.createElement();
 
+    // after createElement, the view will be in the hasElement state.
+
     view._notifyWillInsertElement();
     fn.call(view);
+    view.transitionTo('inDOM');
     view._notifyDidInsertElement();
   },
 
@@ -25,11 +30,11 @@ SC.View.states.preRender = {
     view.invalidateRecursively('element');
 
     if (value !== null) {
-      view.transitionTo('inDOM');
+      view.transitionTo('hasElement');
     }
 
     view.endPropertyChanges();
 
     return value;
   }
-}
+};

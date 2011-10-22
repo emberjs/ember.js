@@ -151,8 +151,6 @@ SC.ContainerView = SC.View.extend({
 SC.ContainerView.states = {
   parent: SC.View.states,
 
-  "default": {},
-
   inBuffer: {
     childViewsDidChange: function(parentView, views, start, added) {
       var buffer = meta(parentView)['SC.View'].buffer,
@@ -183,7 +181,7 @@ SC.ContainerView.states = {
     }
   },
 
-  inDOM: {
+  hasElement: {
     childViewsWillChange: function(view, views, start, removed) {
       for (var i=start; i<start+removed; i++) {
         views[i].destroyElement();
@@ -204,6 +202,10 @@ SC.ContainerView.states = {
     }
   }
 };
+
+SC.ContainerView.states.inDOM = {
+  parentState: SC.ContainerView.states.hasElement
+}
 
 SC.ContainerView.reopen({
   states: SC.ContainerView.states
