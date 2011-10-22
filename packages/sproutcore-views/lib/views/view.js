@@ -1219,6 +1219,24 @@ SC.View.reopen({
   domManagerClass: SC.Object.extend({
     view: this,
 
+    prepend: function(childView) {
+      var view = get(this, 'view');
+
+      childView._insertElementLater(function() {
+        var element = view.$();
+        element.prepend(childView.$());
+      });
+    },
+
+    after: function(nextView) {
+      var view = get(this, 'view');
+
+      nextView._insertElementLater(function() {
+        var element = view.$();
+        element.after(nextView.$());
+      });
+    },
+
     replace: function() {
       var view = get(this, 'view');
       var element = get(view, 'element');

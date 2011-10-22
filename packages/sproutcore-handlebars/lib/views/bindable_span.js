@@ -23,7 +23,7 @@ require('sproutcore-handlebars/views/metamorph_view');
   context set up. When the associated property changes, just the template for 
   this view will re-render.
 */
-SC._BindableSpanView = SC.MetamorphView.extend(
+SC._BindableSpanView = SC.View.extend(SC.Metamorph,
 /** @scope SC._BindableSpanView.prototype */{
 
   /**

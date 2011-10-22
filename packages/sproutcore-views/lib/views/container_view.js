@@ -138,15 +138,11 @@ SC.ContainerView = SC.View.extend({
     @private
   */
   _scheduleInsertion: function(view, prev) {
-    var parent = this;
-
-    view._insertElementLater(function() {
-      if (prev) {
-        prev.$().after(view.$());
-      } else {
-        parent.$().prepend(view.$());
-      }
-    });
+    if (prev) {
+      prev.get('domManager').after(view);
+    } else {
+      this.get('domManager').prepend(view);
+    }
   }
 });
 
