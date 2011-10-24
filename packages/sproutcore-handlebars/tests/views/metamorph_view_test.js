@@ -105,3 +105,42 @@ test("a metamorph view can be rerendered", function() {
 
   equals(SC.$('#from-meta').text(), "Trini", "updates value when re-rendering");
 });
+
+
+test("a metamorph view calls its childrens' willInsertElement and didInsertElement", function(){
+  var parentView;
+  var willInsertElementCalled = false;
+  var didInsertElementCalled = false;
+  var didInsertElementSawElement = false;
+
+  parentView = SC.View.create({
+    ViewWithCallback: SC.View.extend({
+      template: SC.Handlebars.compile('<div id="do-i-exist"></div>'),
+
+      willInsertElement: function(){
+	willInsertElementCalled = true;
+      },
+      didInsertElement: function(){
+	didInsertElementCalled = true;
+	didInsertElementSawElement = (this.$('div').length == 1)
+      }
+    }),
+
+    template: SC.Handlebars.compile('{{#if condition}}{{view "ViewWithCallback"}}{{/if}}'),
+    condition: false
+  });
+
+  SC.run(function() {
+    parentView.append();
+  });
+  SC.run(function() {
+    parentView.set('condition', true);
+  });
+
+  ok(willInsertElementCalled, "willInsertElement called");
+  ok(didInsertElementCalled, "didInsertElement called");
+  ok(didInsertElementSawElement, "didInsertElement saw element");
+
+  parentView.destroy();
+
+});
