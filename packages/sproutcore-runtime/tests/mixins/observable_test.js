@@ -10,10 +10,10 @@ test('should be able to use getProperties to get a POJO of provided keys', funct
   var obj = SC.Object.create({
     firstName: "Steve",
     lastName: "Jobs",
-    zipCode: 94301
+    companyName: "Apple, Inc."
   });
   
-  var pojo = obj.getProperties("firstName lastName".w());
+  var pojo = obj.getProperties("firstName", "lastName");
   equals("Steve", pojo.firstName);
   equals("Jobs", pojo.lastName);
 });
