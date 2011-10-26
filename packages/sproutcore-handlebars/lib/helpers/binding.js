@@ -47,8 +47,12 @@ var get = SC.get, getPath = SC.getPath, set = SC.set, fmt = SC.String.fmt;
       });
 
       // Observes the given property on the context and
-      // tells the SC._BindableSpan to re-render.
-      SC.addObserver(ctx, property, observer);
+      // tells the SC._BindableSpan to re-render. If property
+      // is an empty string, we are printing the current context
+      // object ({{this}}) so updating it is not our responsibility.
+      if (property !== '') {
+        SC.addObserver(ctx, property, observer);
+      }
     } else {
       // The object is not observable, so just render it out and
       // be done with it.

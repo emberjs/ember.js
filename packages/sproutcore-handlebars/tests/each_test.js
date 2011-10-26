@@ -41,5 +41,16 @@ test("it updates the view if an item is added", function() {
     people.pushObject({ name: "Tom Dale" });
   });
 
-  assertHTML(view, "Steve HoltAnnabelleTom Dale")
+  assertHTML(view, "Steve HoltAnnabelleTom Dale");
+});
+
+test("it allows you to access the current context using {{this}}", function() {
+  view = SC.View.create({
+    template: templateFor("{{#each people}}{{this}}{{/each}}"),
+    people: ['Black Francis', 'Joey Santiago', 'Kim Deal', 'David Lovering']
+  });
+
+  append(view);
+
+  assertHTML(view, "Black FrancisJoey SantiagoKim DealDavid Lovering");
 });

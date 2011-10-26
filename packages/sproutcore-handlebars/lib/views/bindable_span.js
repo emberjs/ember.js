@@ -109,7 +109,16 @@ SC._BindableSpanView = SC.View.extend(SC.Metamorph,
     var inverseTemplate = get(this, 'inverseTemplate'),
         displayTemplate = get(this, 'displayTemplate');
 
-    var result = getPath(context, property);
+    var result;
+
+
+    // Use the current context as the result if no
+    // property is provided.
+    if (property === '') {
+      result = context;
+    } else {
+      result = getPath(context, property);
+    }
 
     // First, test the conditional to see if we should
     // render the template or not.
