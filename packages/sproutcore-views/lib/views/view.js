@@ -678,7 +678,7 @@ SC.View = SC.Object.extend(
     Creates a DOM representation of the view and all of its
     child views by recursively calling the `render()` method.
 
-    After the element has been created, `didCreateElement` will
+    After the element has been created, `didInsertElement` will
     be called on this view and all of its child views.
 
     @returns {SC.View} receiver
@@ -762,7 +762,7 @@ SC.View = SC.Object.extend(
     chance to clean up any event handlers, etc.
 
     If you write a willDestroyElement() handler, you can assume that your
-    didCreateElement() handler was called earlier for the same element.
+    didInsertElement() handler was called earlier for the same element.
 
     Normally you will not call or override this method yourself, but you may
     want to implement the above callbacks when it is run.
