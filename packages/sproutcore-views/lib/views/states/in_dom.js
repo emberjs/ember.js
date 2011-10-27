@@ -9,7 +9,8 @@ require('sproutcore-views/views/states/default');
 
 var get = SC.get, set = SC.set, meta = SC.meta;
 
-SC.View.states.inDOM = {
+SC.View.states.hasElement = {
+  parentState: SC.View.states.default,
 
   $: function(view, sel) {
     var elem = get(view, 'element');
@@ -20,10 +21,10 @@ SC.View.states.inDOM = {
     var parent = get(view, 'parentView');
     if (parent) { parent = get(parent, 'element'); }
     if (parent) { return view.findElementInParentElement(parent); }
+    return SC.$("#" + get(view, 'elementId'))[0];
   },
 
   setElement: function(view, value) {
-
     if (value === null) {
       view.invalidateRecursively('element');
       view.transitionTo('preRender');
@@ -53,10 +54,12 @@ SC.View.states.inDOM = {
 
     get(view, 'domManager').remove();
     return view;
-  },
+  }
+};
 
-  // You shouldn't insert an element into the DOM that was already
-  // inserted into the DOM.
+SC.View.states.inDOM = {
+  parentState: SC.View.states.hasElement,
+
   insertElement: function() {
     throw "You can't insert an element into the DOM that has already been inserted";
   }

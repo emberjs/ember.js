@@ -31,7 +31,7 @@ test("a Metamorph view is not a view's parentView", function() {
     }
   });
 
-  metamorphView = SC.MetamorphView.create({
+  metamorphView = SC.View.create(SC.Metamorph, {
     render: function(buffer) {
       buffer.push("<h2>Meta</h2>");
       this.appendChild(childView);
@@ -59,7 +59,7 @@ module("Metamorph views correctly handle DOM", {
       }
     });
 
-    metamorphView = SC.MetamorphView.create({
+    metamorphView = SC.View.create(SC.Metamorph, {
       powerRanger: "Jason",
 
       render: function(buffer) {

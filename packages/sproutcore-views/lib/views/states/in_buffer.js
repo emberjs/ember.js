@@ -10,6 +10,8 @@ require('sproutcore-views/views/states/default');
 var get = SC.get, set = SC.set, meta = SC.meta;
 
 SC.View.states.inBuffer = {
+  parentState: SC.View.states.default,
+
   $: function(view, sel) {
     // if we don't have an element yet, someone calling this.$() is
     // trying to update an element that isn't in the DOM. Instead,
@@ -64,7 +66,7 @@ SC.View.states.inBuffer = {
       view.transitionTo('preRender');
     } else {
       view.clearBuffer();
-      view.transitionTo('inDOM');
+      view.transitionTo('hasElement');
     }
 
     return value;

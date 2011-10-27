@@ -88,16 +88,5 @@ Handlebars.registerHelper('collection', function(path, options) {
   return Handlebars.helpers.view.call(this, collectionClass, options);
 });
 
-/**
-  @name Handlebars.helpers.each
-  @param {String} path
-  @param {Hash} options
-  @returns {String} HTML string
-*/
-Handlebars.registerHelper('each', function(path, options) {
-  options.hash.contentBinding = SC.Binding.from('parentView.'+path).oneWay();
-  options.hash.preserveContext = true;
-  return Handlebars.helpers.collection.call(this, null, options);
-});
 
 

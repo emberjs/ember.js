@@ -291,13 +291,13 @@ SC.View = SC.Object.extend(
 
   invokeForState: function(name) {
     var parent = this, states = parent.states;
+    var stateName = get(this, 'state'), state;
 
     while (states) {
-      var stateName = get(this, 'state'),
-          state     = states[stateName];
+      state = states[stateName];
 
-      if (state) {
-        var fn = state[name] || states["default"][name];
+      while (state) {
+        var fn = state[name];
 
         if (fn) {
           var args = Array.prototype.slice.call(arguments, 1);
@@ -305,6 +305,8 @@ SC.View = SC.Object.extend(
 
           return fn.apply(this, args);
         }
+
+        state = state.parentState;
       }
 
       states = states.parent;
@@ -512,7 +514,7 @@ SC.View = SC.Object.extend(
     } else {
       return this.invokeForState('getElement');
     }
-  }.property('_parentView', 'state').cacheable(),
+  }.property('_parentView').cacheable(),
 
   /**
     Returns a jQuery object for this view's element. If you pass in a selector
@@ -1218,6 +1220,24 @@ SC.View.reopen({
   states: SC.View.states,
   domManagerClass: SC.Object.extend({
     view: this,
+
+    prepend: function(childView) {
+      var view = get(this, 'view');
+
+      childView._insertElementLater(function() {
+        var element = view.$();
+        element.prepend(childView.$());
+      });
+    },
+
+    after: function(nextView) {
+      var view = get(this, 'view');
+
+      nextView._insertElementLater(function() {
+        var element = view.$();
+        element.after(nextView.$());
+      });
+    },
 
     replace: function() {
       var view = get(this, 'view');

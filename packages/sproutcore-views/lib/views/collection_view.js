@@ -154,9 +154,9 @@ SC.CollectionView = SC.ContainerView.extend(
     var view = this._super(view, attrs);
 
     var itemTagName = get(view, 'tagName');
-    var tagName = itemTagName || SC.CollectionView.CONTAINER_MAP[get(this, 'tagName')];
+    var tagName = itemTagName == null ? SC.CollectionView.CONTAINER_MAP[get(this, 'tagName')] : itemTagName;
 
-    set(view, 'tagName', tagName || null);
+    set(view, 'tagName', tagName);
 
     return view;
   }
