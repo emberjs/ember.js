@@ -57,7 +57,14 @@ SC.EventDispatcher = SC.Object.extend(
       mouseenter  : 'mouseEnter',
       mouseleave  : 'mouseLeave',
       submit      : 'submit',
-      change      : 'change'
+      change      : 'change',
+      dragstart   : 'dragStart',
+      drag        : 'drag',
+      dragenter   : 'dragEnter',
+      dragleave   : 'dragLeave',
+      dragover    : 'dragOver',
+      drop        : 'drop',
+      dragend     : 'dragEnd'
     };
 
     jQuery.extend(events, addedEvents || {});
