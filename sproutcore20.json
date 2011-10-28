@@ -3,7 +3,7 @@
   "bpm": "1.0.0",
   "dependencies": {
     "sproutcore": "2.0.beta.3",
-    "sproutcore-datetime": ">= 0"
+    "sproutcore-datetime": "2.0.beta.3"
   },
   "dependencies:development": {
     "spade-qunit": "~> 1.0.0"
