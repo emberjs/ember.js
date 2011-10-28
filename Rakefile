@@ -1,4 +1,4 @@
-require File.expand_path("../vendor/bundler/setup", __FILE__)
+require "bundler/setup"
 require "erb"
 require "uglifier"
 require "sproutcore"
