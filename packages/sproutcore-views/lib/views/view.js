@@ -547,8 +547,11 @@ SC.View = SC.Object.extend(
 
   /** @private */
   forEachChildView: function(callback) {
-    var childViews = get(this, '_childViews'),
-        len = get(childViews, 'length'),
+    var childViews = get(this, '_childViews');
+
+    if (!childViews) { return this; }
+
+    var len = get(childViews, 'length'),
         view, idx;
 
     for(idx = 0; idx < len; idx++) {
@@ -1121,17 +1124,19 @@ SC.View = SC.Object.extend(
 
     // destroy the element -- this will avoid each child view destroying
     // the element over and over again...
-    this.destroyElement();
+    if (!this.removedFromDOM) { this.destroyElement(); }
 
     // remove from parent if found. Don't call removeFromParent,
     // as removeFromParent will try to remove the element from
     // the DOM again.
     if (parent) { parent.removeChild(this); }
+
     SC.Descriptor.setup(this, 'state', 'destroyed');
 
     this._super();
 
     for (var i=childLen-1; i>=0; i--) {
+      childViews[i].removedFromDOM = true;
       childViews[i].destroy();
     }
 

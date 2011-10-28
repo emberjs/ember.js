@@ -54,3 +54,12 @@ test("it allows you to access the current context using {{this}}", function() {
 
   assertHTML(view, "Black FrancisJoey SantiagoKim DealDavid Lovering");
 });
+
+test("it updates the view if an item is removed", function() {
+  SC.run(function() {
+    people.removeAt(0);
+  });
+
+  assertHTML(view, "Annabelle")
+  view.destroy();
+});

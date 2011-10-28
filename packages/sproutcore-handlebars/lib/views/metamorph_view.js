@@ -29,9 +29,10 @@ SC.Metamorph = SC.Mixin.create({
   },
 
   domManagerClass: SC.Object.extend({
-    // It is not possible for a user to directly remove
-    // a metamorph view as it is not in the view hierarchy.
-    remove: SC.K,
+    remove: function(view) {
+      var morph = getPath(this, 'view.morph');
+      getPath(this, 'view.morph').remove();
+    },
 
     prepend: function(childView) {
       var view = get(this, 'view');
