@@ -1204,8 +1204,6 @@ Handlebars.JavaScriptCompiler = function() {};
         params.push("depth" + this.environment.depths.list[i]);
       }
 
-      if(params.length === 4 && !this.environment.usePartial) { params.pop(); }
-
       if (asObject) {
         params.push(this.source.join("\n  "));
 
