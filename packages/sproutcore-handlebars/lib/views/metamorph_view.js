@@ -64,10 +64,10 @@ SC.Metamorph = SC.Mixin.create({
       var buffer = view.renderToBuffer();
 
       SC.run.schedule('render', this, function() {
-	view._notifyWillInsertElement();
+        view._notifyWillInsertElement();
         morph.replaceWith(buffer.string());
         view.transitionTo('inDOM');
-	view._notifyDidInsertElement();
+        view._notifyDidInsertElement();
       });
     }
   })

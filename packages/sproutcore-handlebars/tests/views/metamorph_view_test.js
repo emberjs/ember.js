@@ -118,11 +118,11 @@ test("a metamorph view calls its childrens' willInsertElement and didInsertEleme
       template: SC.Handlebars.compile('<div id="do-i-exist"></div>'),
 
       willInsertElement: function(){
-	willInsertElementCalled = true;
+    willInsertElementCalled = true;
       },
       didInsertElement: function(){
-	didInsertElementCalled = true;
-	didInsertElementSawElement = (this.$('div').length == 1)
+    didInsertElementCalled = true;
+    didInsertElementSawElement = (this.$('div').length == 1)
       }
     }),
 
