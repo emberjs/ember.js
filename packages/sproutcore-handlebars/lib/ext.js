@@ -51,21 +51,6 @@ SC.Handlebars.JavaScriptCompiler = function() {};
 SC.Handlebars.JavaScriptCompiler.prototype = SC.create(Handlebars.JavaScriptCompiler.prototype);
 SC.Handlebars.JavaScriptCompiler.prototype.compiler = SC.Handlebars.JavaScriptCompiler;
 
-/**
-  Override the default property lookup semantics of Handlebars.
-
-  By default, Handlebars uses object[property] to look up properties. SproutCore's Handlebars
-  uses SC.get().
-
-  @private
-*/
-SC.Handlebars.JavaScriptCompiler.prototype.nameLookup = function(parent, name, type) {
-  if (type === 'context') {
-    return "SC.get(" + parent + ", " + this.quotedString(name) + ");";
-  } else {
-    return Handlebars.JavaScriptCompiler.prototype.nameLookup.call(this, parent, name, type);
-  }
-};
 
 SC.Handlebars.JavaScriptCompiler.prototype.initializeBuffer = function() {
   return "''";

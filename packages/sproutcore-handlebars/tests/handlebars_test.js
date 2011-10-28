@@ -62,6 +62,8 @@ var appendView = function() {
   SC.run(function() { view.appendTo('#qunit-fixture'); });
 };
 
+var additionalTeardown;
+
 /**
   This module specifically tests integration with Handlebars and SproutCore-specific
   Handlebars extensions.
@@ -77,6 +79,9 @@ module("SC.View - handlebars integration", {
   teardown: function() {
     if (view) view.destroy();
     window.TemplateTests = undefined;
+
+    if (additionalTeardown) { additionalTeardown(); }
+    additionalTeardown = null;
   }
 });
 
@@ -244,6 +249,46 @@ test("child views can be inserted inside a bind block", function() {
   ok(view.$("#hello-world:contains('Hello world!')").length, "The parent view renders its contents");
   ok(view.$("blockquote").text().match(/Goodbye.*wot.*cruel.*world\?/), "The child view renders its content once");
   ok(view.$().text().match(/Hello world!.*Goodbye.*wot.*cruel.*world\?/), "parent view should appear before the child view");
+});
+
+test("SC.View should bind properties in the parent context", function() {
+  view = SC.View.create({
+    template: SC.Handlebars.compile('<h1 id="first">{{#with content}}{{wham}}-{{../blam}}{{/with}}</h1>'),
+
+    content: SC.Object.create({
+      wham: 'bam'
+    }),
+
+    blam: "shazam"
+  });
+
+  SC.run(function() {
+    view.appendTo('#qunit-fixture');
+  });
+
+  equals(view.$('#first').text(), "bam-shazam", "renders parent properties");
+});
+
+
+test("SC.View should bind properties in the grandparent context", function() {
+  view = SC.View.create({
+    template: SC.Handlebars.compile('<h1 id="first">{{#with content}}{{#with thankYou}}{{value}}-{{../wham}}-{{../../blam}}{{/with}}{{/with}}</h1>'),
+
+    content: SC.Object.create({
+      wham: 'bam',
+      thankYou: SC.Object.create({
+        value: "ma'am"
+      })
+    }),
+
+    blam: "shazam"
+  });
+
+  SC.run(function() {
+    view.appendTo('#qunit-fixture');
+  });
+
+  equals(view.$('#first').text(), "ma'am-bam-shazam", "renders grandparent properties");
 });
 
 test("SC.View should update when a property changes and the bind helper is used", function() {
@@ -837,6 +882,27 @@ test("should update boundIf blocks if the conditional changes", function() {
   equals(view.$('#first').text(), "bam", "re-renders block when condition changes to true");
 });
 
+test("boundIf should support parent access", function(){
+  view = SC.View.create({
+    template: SC.Handlebars.compile(
+      '<h1 id="first">{{#with content}}{{#with thankYou}}'+
+        '{{#boundIf ../show}}parent{{/boundIf}}-{{#boundIf ../../show}}grandparent{{/boundIf}}'+
+      '{{/with}}{{/with}}</h1>'
+    ),
+
+    content: SC.Object.create({
+      show: true,
+      thankYou: SC.Object.create()
+    }),
+
+    show: true
+  });
+
+  appendView();
+
+  equals(view.$('#first').text(), "parent-grandparent", "renders boundIfs using ..");
+});
+
 test("{{view}} id attribute should set id on layer", function() {
   var templates = SC.Object.create({
     foo: SC.Handlebars.compile('{{#view "TemplateTests.IdView" id="bar"}}baz{{/view}}')
@@ -1078,20 +1144,48 @@ test("should be able to add multiple classes using {{bindAttr class}}", function
 });
 
 test("should be able to output a property without binding", function(){
-  var template = SC.Handlebars.compile('<div>{{unbound content.anUnboundString}}</div>');
-  var content = SC.Object.create({
-    anUnboundString: "No spans here, son."
-  });
-
   view = SC.View.create({
-    template: template,
-    content: content
+    template: SC.Handlebars.compile(
+      '<div id="first">{{unbound content.anUnboundString}}</div>'+
+      '{{#with content}}<div id="second">{{unbound ../anotherUnboundString}}</div>{{/with}}'
+    ),
+
+    content: SC.Object.create({
+      anUnboundString: "No spans here, son."
+    }),
+
+    anotherUnboundString: "Not here, either."
   });
 
   appendView();
 
-  equals(view.$('div').html(), "No spans here, son.");
+  equals(view.$('#first').html(), "No spans here, son.");
+  equals(view.$('#second').html(), "Not here, either.");
 });
+
+test("should be able to log a property", function(){
+  var originalLogger = SC.Logger;
+  additionalTeardown = function(){ SC.Logger = originalLogger; }
+
+  var logCalls = [];
+  SC.Logger = { log: function(arg){ logCalls.push(arg); } };
+
+  view = SC.View.create({
+    template: SC.Handlebars.compile('{{log value}}{{#with content}}{{log ../valueTwo}}{{/with}}'),
+
+    value: 'one',
+    valueTwo: 'two',
+
+    content: SC.Object.create({})
+  });
+
+  appendView();
+
+  equals(view.$().text(), "", "shouldn't render any text");
+  equals(logCalls[0], 'one', "should call log with value");
+  equals(logCalls[1], 'two', "should call log with valueTwo");
+});
+
 
 var view;
 

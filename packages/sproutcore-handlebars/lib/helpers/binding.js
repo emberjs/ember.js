@@ -83,7 +83,9 @@ var get = SC.get, getPath = SC.getPath, set = SC.set, fmt = SC.String.fmt;
   Handlebars.registerHelper('bind', function(property, fn) {
     sc_assert("You cannot pass more than one argument to the bind helper", arguments.length <= 2);
 
-    return bind.call(this, property, fn, false, function(result) {
+    var context = (fn.contexts && fn.contexts[0]) || this;
+
+    return bind.call(context, property, fn, false, function(result) {
       return !SC.none(result);
     });
   });
@@ -103,7 +105,9 @@ var get = SC.get, getPath = SC.getPath, set = SC.set, fmt = SC.String.fmt;
     @returns {String} HTML string
   */
   Handlebars.registerHelper('boundIf', function(property, fn) {
-    return bind.call(this, property, fn, true, function(result) {
+    var context = (fn.contexts && fn.contexts[0]) || this;
+
+    return bind.call(context, property, fn, true, function(result) {
       if (SC.typeOf(result) === 'array') {
         return get(result, 'length') !== 0;
       } else {
