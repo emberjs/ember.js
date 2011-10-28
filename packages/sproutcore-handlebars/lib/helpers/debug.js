@@ -18,8 +18,9 @@ var getPath = SC.getPath;
   @name Handlebars.helpers.log
   @param {String} property
 */
-Handlebars.registerHelper('log', function(property) {
-  console.log(getPath(this, property));
+Handlebars.registerHelper('log', function(property, fn) {
+  var context = (fn.contexts && fn.contexts[0]) || this;
+  SC.Logger.log(getPath(context, property));
 });
 
 /**
