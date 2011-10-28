@@ -1,4 +1,5 @@
 // ==========================================================================
+// g
 // Project:   SproutCore - JavaScript Application Framework
 // Copyright: ©2006-2011 Strobe Inc. and contributors.
 //            Portions ©2008-2011 Apple Inc. All rights reserved.
@@ -97,7 +98,7 @@ SC.CollectionView = SC.ContainerView.extend(
     var childViews = get(this, 'childViews'), childView, idx, len;
 
     len = get(childViews, 'length');
-    for (idx = start + removedCount - 1; idx >= start; idx--) {
+    for (idx = start + removedCount - 1; idx >= start && len >= idx; idx--) {
       childViews[idx].destroy();
     }
   },
