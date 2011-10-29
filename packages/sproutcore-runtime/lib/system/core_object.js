@@ -181,6 +181,14 @@ var ClassMixin = SC.Mixin.create({
       obj = obj.superclass;
     }
     return false;
+  },
+  
+  detectInstance: function(obj) {
+    if (obj !== null && typeof obj === 'object' && obj.constructor) {
+      return this.detect(obj.constructor);
+    } else {
+      return false;
+    }
   }
 
 });
