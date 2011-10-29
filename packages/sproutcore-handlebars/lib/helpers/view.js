@@ -111,7 +111,7 @@ SC.Handlebars.ViewHelper = SC.Object.create({
   @param {Hash} options
   @returns {String} HTML string
 */
-Handlebars.registerHelper('view', function(path, options) {
+SC.Handlebars.registerHelper('view', function(path, options) {
   sc_assert("The view helper only takes a single argument", arguments.length <= 2);
 
   // If no path is provided, treat path param as options.

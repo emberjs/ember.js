@@ -80,7 +80,7 @@ var get = SC.get, getPath = SC.getPath, set = SC.set, fmt = SC.String.fmt;
     @param {Function} fn Context to provide for rendering
     @returns {String} HTML string
   */
-  Handlebars.registerHelper('bind', function(property, fn) {
+  SC.Handlebars.registerHelper('bind', function(property, fn) {
     sc_assert("You cannot pass more than one argument to the bind helper", arguments.length <= 2);
 
     var context = (fn.contexts && fn.contexts[0]) || this;
@@ -104,7 +104,7 @@ var get = SC.get, getPath = SC.getPath, set = SC.set, fmt = SC.String.fmt;
     @param {Function} fn Context to provide for rendering
     @returns {String} HTML string
   */
-  Handlebars.registerHelper('boundIf', function(property, fn) {
+  SC.Handlebars.registerHelper('boundIf', function(property, fn) {
     var context = (fn.contexts && fn.contexts[0]) || this;
 
     return bind.call(context, property, fn, true, function(result) {
@@ -123,11 +123,11 @@ var get = SC.get, getPath = SC.getPath, set = SC.set, fmt = SC.String.fmt;
   @param {Hash} options
   @returns {String} HTML string
 */
-Handlebars.registerHelper('with', function(context, options) {
+SC.Handlebars.registerHelper('with', function(context, options) {
   sc_assert("You must pass exactly one argument to the with helper", arguments.length == 2);
   sc_assert("You must pass a block to the with helper", options.fn && options.fn !== Handlebars.VM.noop);
 
-  return Handlebars.helpers.bind.call(options.contexts[0], context, options);
+  return SC.Handlebars.helpers.bind.call(options.contexts[0], context, options);
 });
 
 
@@ -137,11 +137,11 @@ Handlebars.registerHelper('with', function(context, options) {
   @param {Hash} options
   @returns {String} HTML string
 */
-Handlebars.registerHelper('if', function(context, options) {
+SC.Handlebars.registerHelper('if', function(context, options) {
   sc_assert("You must pass exactly one argument to the if helper", arguments.length == 2);
   sc_assert("You must pass a block to the if helper", options.fn && options.fn !== Handlebars.VM.noop);
 
-  return Handlebars.helpers.boundIf.call(options.contexts[0], context, options);
+  return SC.Handlebars.helpers.boundIf.call(options.contexts[0], context, options);
 });
 
 /**
@@ -150,7 +150,7 @@ Handlebars.registerHelper('if', function(context, options) {
   @param {Hash} options
   @returns {String} HTML string
 */
-Handlebars.registerHelper('unless', function(context, options) {
+SC.Handlebars.registerHelper('unless', function(context, options) {
   sc_assert("You must pass exactly one argument to the unless helper", arguments.length == 2);
   sc_assert("You must pass a block to the unless helper", options.fn && options.fn !== Handlebars.VM.noop);
 
@@ -159,7 +159,7 @@ Handlebars.registerHelper('unless', function(context, options) {
   options.fn = inverse;
   options.inverse = fn;
 
-  return Handlebars.helpers.boundIf.call(options.contexts[0], context, options);
+  return SC.Handlebars.helpers.boundIf.call(options.contexts[0], context, options);
 });
 
 /**
@@ -172,7 +172,7 @@ Handlebars.registerHelper('unless', function(context, options) {
   @param {Hash} options
   @returns {String} HTML string
 */
-Handlebars.registerHelper('bindAttr', function(options) {
+SC.Handlebars.registerHelper('bindAttr', function(options) {
 
   var attrs = options.hash;
 
@@ -265,7 +265,7 @@ Handlebars.registerHelper('bindAttr', function(options) {
 
   // Add the unique identifier
   ret.push('data-handlebars-id="' + dataId + '"');
-  return new Handlebars.SafeString(ret.join(' '));
+  return new SC.Handlebars.SafeString(ret.join(' '));
 });
 
 /**

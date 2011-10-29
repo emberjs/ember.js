@@ -1186,6 +1186,35 @@ test("should be able to log a property", function(){
   equals(logCalls[1], 'two', "should call log with valueTwo");
 });
 
+test("should allow standard Handlebars template usage", function() {
+  TemplateTests.StandardTemplate = SC.View.extend({
+    name: "Erik",
+    template: Handlebars.compile("Hello, {{name}}")
+  });
+
+  view = SC.View.create({
+    template: SC.Handlebars.compile("{{view TemplateTests.StandardTemplate}}")
+  });
+
+  SC.run(function() {
+    view.appendTo('#qunit-fixture');
+  });
+
+  equals(view.$().text(), "Hello, Erik");
+});
+
+test("should be able to use standard Handlebars #each helper", function() {
+  view = SC.View.create({
+    items: ['a', 'b', 'c'],
+    template: Handlebars.compile("{{#each items}}{{this}}{{/each}}")
+  });
+
+  SC.run(function() {
+    view.appendTo('#qunit-fixture');
+  });
+
+  equals(view.$().html(), "abc");
+});
 
 var view;
 
