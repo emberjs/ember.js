@@ -83,7 +83,7 @@ testBoth('suspending property changes safely despite exceptions', function(get,s
   SC.addObserver(obj, 'foo' ,function() { fooCount++; });
 
   try {
-    SC.batchPropertyChanges(function(){
+    SC.changeProperties(function(){
       set(obj, 'foo', 'BIFF');
       set(obj, 'foo', 'BAZ');
       throw exc;
@@ -95,7 +95,7 @@ testBoth('suspending property changes safely despite exceptions', function(get,s
 
   equals(fooCount, 1, 'foo should have fired once');
 
-  SC.batchPropertyChanges(function(){
+  SC.changeProperties(function(){
     set(obj, 'foo', 'BIFF2');
     set(obj, 'foo', 'BAZ2');
   });

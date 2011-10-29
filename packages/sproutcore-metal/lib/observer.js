@@ -84,7 +84,16 @@ SC.endPropertyChanges = function() {
   if (suspended<=0) flushObserverQueue();
 };
 
-SC.batchPropertyChanges = function(cb){
+/**
+  Make a series of property changes together in an
+  exception-safe way.
+
+      SC.changeProperties(function() {
+        obj1.set('foo', mayBlowUpWhenSet);
+        obj2.set('bar', baz);
+      });
+*/
+SC.changeProperties = function(cb){
   SC.beginPropertyChanges();
   try {
     cb()
