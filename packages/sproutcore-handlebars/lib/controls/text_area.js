@@ -16,8 +16,9 @@ SC.TextArea = SC.View.extend({
 
   tagName: "textarea",
   value: "",
-  attributeBindings: ['placeholder'],
+  attributeBindings: ['placeholder', 'disabled'],
   placeholder: null,
+  disabled: false,
 
   insertNewline: SC.K,
   cancel: SC.K,

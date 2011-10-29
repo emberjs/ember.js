@@ -22,6 +22,34 @@ function setAndFlush(view, key, value) {
   });
 }
 
+function append() {
+  SC.run(function() {
+    checkboxView.appendTo('#qunit-fixture');
+  });
+}
+
+test("should become disabled if the disabled attribute is true", function() {
+  checkboxView = SC.Checkbox.create({});
+
+  checkboxView.set('disabled', true);
+  append();
+
+  ok(checkboxView.$("input").is(":disabled"));
+});
+
+test("should become disabled if the disabled attribute is true", function() {
+  checkboxView = SC.Checkbox.create({});
+
+  append();
+  ok(checkboxView.$("input").is(":not(:disabled)"));
+
+  SC.run(function() { checkboxView.set('disabled', true); });
+  ok(checkboxView.$("input").is(":disabled"));
+
+  SC.run(function() { checkboxView.set('disabled', false); });
+  ok(checkboxView.$("input").is(":not(:disabled)"));
+});
+
 test("value property mirrors input value", function() {
   checkboxView = SC.Checkbox.create({});
   SC.run(function() { checkboxView.append(); });

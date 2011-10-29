@@ -31,6 +31,7 @@ SC.Metamorph = SC.Mixin.create({
   domManagerClass: SC.Object.extend({
     remove: function(view) {
       var morph = getPath(this, 'view.morph');
+      if (morph.isRemoved()) { return; }
       getPath(this, 'view.morph').remove();
     },
 

@@ -24,6 +24,30 @@ function synthesizeEvent(type, view) {
   view.$().trigger(type);
 }
 
+function append() {
+  SC.run(function() {
+    button.appendTo('#qunit-fixture');
+  });
+}
+
+test("should become disabled if the disabled attribute is true", function() {
+  button.set('disabled', true);
+  append();
+
+  ok(button.$().is(":disabled"));
+});
+
+test("should become disabled if the disabled attribute is true", function() {
+  append();
+  ok(button.$().is(":not(:disabled)"));
+
+  SC.run(function() { button.set('disabled', true); });
+  ok(button.$().is(":disabled"));
+
+  SC.run(function() { button.set('disabled', false); });
+  ok(button.$().is(":not(:disabled)"));
+});
+
 test("should trigger an action when clicked", function() {
   var wasClicked = false;
 

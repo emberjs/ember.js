@@ -23,6 +23,30 @@ module("SC.TextArea", {
   }
 });
 
+function append() {
+  SC.run(function() {
+    textArea.appendTo('#qunit-fixture');
+  });
+}
+
+test("should become disabled if the disabled attribute is true", function() {
+  textArea.set('disabled', true);
+  append();
+
+  ok(textArea.$().is(":disabled"));
+});
+
+test("should become disabled if the disabled attribute is true", function() {
+  append();
+  ok(textArea.$().is(":not(:disabled)"));
+
+  SC.run(function() { textArea.set('disabled', true); });
+  ok(textArea.$().is(":disabled"));
+
+  SC.run(function() { textArea.set('disabled', false); });
+  ok(textArea.$().is(":not(:disabled)"));
+});
+
 test("input value is updated when setting value property of view", function() {
   SC.run(function() {
     set(textArea, 'value', 'foo');
