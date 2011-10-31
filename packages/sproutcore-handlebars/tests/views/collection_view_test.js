@@ -5,7 +5,15 @@
 // ==========================================================================
 /*globals TemplateTests */
 
-var set = SC.set, setPath = SC.setPath;
+var set = SC.set, get = SC.get, setPath = SC.setPath;
+var firstGrandchild = function(view) {
+  return get(get(view, 'childViews').objectAt(0), 'childViews').objectAt(0);
+};
+var nthChild = function(view, nth) {
+  return get(view, 'childViews').objectAt(nth || 0);
+};
+var firstChild = nthChild;
+
 var view;
 
 module("sproutcore-handlebars/tests/views/collection_view_test", {
@@ -154,7 +162,7 @@ test("a block passed to a collection helper defaults to the view", function() {
   equals(view.$('li:has(label:contains("foo")) + li:has(label:contains("bar")) + li:has(label:contains("baz"))').length, 1, 'precond - one aside element is created for each content item');
 
   SC.run(function() {
-    set(view.childViews[0], 'content', []);
+    set(firstChild(view), 'content', []);
   });
   equals(view.$('label').length, 0, "all list item views should be removed from DOM");
 });
@@ -209,13 +217,13 @@ test("should give its item views the classBinding specified by itemClassBinding"
   equals(view.$('ul li.is-baz').length, 2, "adds class on initial rendering");
 
   SC.run(function() {
-    setPath(view.childViews[0], 'content.0.isBaz', true);
+    setPath(firstChild(view), 'content.0.isBaz', true);
   });
 
   equals(view.$('ul li.is-baz').length, 3, "adds class when property changes");
 
   SC.run(function() {
-    setPath(view.childViews[0], 'content.0.isBaz', false);
+    setPath(firstChild(view), 'content.0.isBaz', false);
   });
 
   equals(view.$('ul li.is-baz').length, 2, "removes class when property changes");
@@ -278,11 +286,11 @@ test("should re-render when the content object changes", function() {
   });
 
   SC.run(function() {
-    set(view.childViews[0], 'content', ['bing', 'bat', 'bang']);
+    set(firstChild(view), 'content', ['bing', 'bat', 'bang']);
   });
 
   SC.run(function() {
-    set(view.childViews[0], 'content', ['ramalamadingdong']);
+    set(firstChild(view), 'content', ['ramalamadingdong']);
   });
 
   equals(view.$('li').length, 1, "rerenders with correct number of items");
@@ -324,7 +332,7 @@ test("tagName works in the #collection helper", function() {
   equals(view.$('li').length, 2, "rerenders with correct number of items");
 
   SC.run(function() {
-    set(view.childViews[0], 'content', ['bing', 'bat', 'bang']);
+    set(firstChild(view), 'content', ['bing', 'bat', 'bang']);
   });
 
   equals(view.$('li').length, 3, "rerenders with correct number of items");
@@ -411,7 +419,7 @@ test("should allow view objects to be swapped out without throwing an error (#78
     });
 
     TemplateTests.CollectionView = SC.CollectionView.extend({
-      contentBinding: 'parentView.parentView.items',
+      contentBinding: 'parentView.items',
       tagName: 'ul',
       template: SC.Handlebars.compile("{{content}}")
     });

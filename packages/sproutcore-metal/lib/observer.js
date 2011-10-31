@@ -84,6 +84,24 @@ SC.endPropertyChanges = function() {
   if (suspended<=0) flushObserverQueue();
 };
 
+/**
+  Make a series of property changes together in an
+  exception-safe way.
+
+      SC.changeProperties(function() {
+        obj1.set('foo', mayBlowUpWhenSet);
+        obj2.set('bar', baz);
+      });
+*/
+SC.changeProperties = function(cb){
+  SC.beginPropertyChanges();
+  try {
+    cb()
+  } finally {
+    SC.endPropertyChanges();
+  }
+}
+
 function changeEvent(keyName) {
   return keyName+AFTER_OBSERVERS;
 }

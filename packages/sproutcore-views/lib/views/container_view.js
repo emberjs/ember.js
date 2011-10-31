@@ -8,7 +8,35 @@
 require('sproutcore-views/views/view');
 var get = SC.get, set = SC.set, meta = SC.meta;
 
+var childViewsProperty = SC.computed(function() {
+  return get(this, '_childViews');
+}).property('_childViews').cacheable();
+
 SC.ContainerView = SC.View.extend({
+
+  init: function() {
+    var childViews = get(this, 'childViews');
+    SC.defineProperty(this, 'childViews', childViewsProperty);
+
+    this._super();
+
+    var _childViews = get(this, '_childViews');
+
+    childViews.forEach(function(viewName, idx) {
+      var view;
+
+      if ('string' === typeof viewName) {
+        view = get(this, viewName);
+        view = this.createChildView(view);
+        set(this, viewName, view);
+      } else {
+        view = this.createChildView(viewName);
+      }
+
+      _childViews[idx] = view;
+    }, this);
+  },
+
   /**
     Extends SC.View's implementation of renderToBuffer to
     set up an array observer on the child views array. This
@@ -110,15 +138,11 @@ SC.ContainerView = SC.View.extend({
     @private
   */
   _scheduleInsertion: function(view, prev) {
-    var parent = this;
-
-    view._insertElementLater(function() {
-      if (prev) {
-        prev.$().after(view.$());
-      } else {
-        parent.$().prepend(view.$());
-      }
-    });
+    if (prev) {
+      prev.get('domManager').after(view);
+    } else {
+      this.get('domManager').prepend(view);
+    }
   }
 });
 
@@ -126,8 +150,6 @@ SC.ContainerView = SC.View.extend({
 // behavior for childViewsWillChange and childViewsDidChange.
 SC.ContainerView.states = {
   parent: SC.View.states,
-
-  "default": {},
 
   inBuffer: {
     childViewsDidChange: function(parentView, views, start, added) {
@@ -159,7 +181,7 @@ SC.ContainerView.states = {
     }
   },
 
-  inDOM: {
+  hasElement: {
     childViewsWillChange: function(view, views, start, removed) {
       for (var i=start; i<start+removed; i++) {
         views[i].destroyElement();
@@ -180,6 +202,10 @@ SC.ContainerView.states = {
     }
   }
 };
+
+SC.ContainerView.states.inDOM = {
+  parentState: SC.ContainerView.states.hasElement
+}
 
 SC.ContainerView.reopen({
   states: SC.ContainerView.states

@@ -292,7 +292,7 @@ SC.copy = function(obj, deep) {
   Convenience method to inspect an object. This method will attempt to
   convert the object into a useful string description.
 
-  @param {Object} obj The object you want to inspec.
+  @param {Object} obj The object you want to inspect.
   @returns {String} A description of the object
 */
 SC.inspect = function(obj) {
@@ -301,7 +301,7 @@ SC.inspect = function(obj) {
     if (obj.hasOwnProperty(key)) {
       v = obj[key];
       if (v === 'toString') { continue; } // ignore useless items
-      if (SC.typeOf(v) === SC.T_FUNCTION) { v = "function() { ... }"; }
+      if (SC.typeOf(v) === 'function') { v = "function() { ... }"; }
       ret.push(key + ": " + v);
     }
   }
@@ -379,15 +379,3 @@ SC.Error = function() {
 };
 
 SC.Error.prototype = SC.create(Error.prototype);
-
-// ..........................................................
-// LOGGER
-// 
-
-/**
-  @class
-
-  Inside SproutCore-Runtime, simply uses the window.console object.
-  Override this to provide more robust logging functionality.
-*/
-SC.Logger = window.console;

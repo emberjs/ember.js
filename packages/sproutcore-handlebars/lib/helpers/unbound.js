@@ -19,6 +19,7 @@ var getPath = SC.getPath;
   @param {String} property
   @returns {String} HTML string
 */
-Handlebars.registerHelper('unbound', function(property) {
-  return getPath(this, property);
+SC.Handlebars.registerHelper('unbound', function(property, fn) {
+  var context = (fn.contexts && fn.contexts[0]) || this;
+  return getPath(context, property);
 });

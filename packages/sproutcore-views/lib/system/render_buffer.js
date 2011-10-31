@@ -201,6 +201,8 @@ SC._RenderBuffer = SC.Object.extend(
   */
   replaceWithBuffer: function(newBuffer) {
     var parent = get(this, 'parentBuffer');
+    if (!parent) { return; }
+
     var childBuffers = get(parent, 'childBuffers');
 
     var index = childBuffers.indexOf(this);
@@ -301,37 +303,43 @@ SC._RenderBuffer = SC.Object.extend(
         content = '',
         styleBuffer = [], prop;
 
-    var openTag = ["<" + tag];
+    if (tag) {
+      var openTag = ["<" + tag];
 
-    if (id) { openTag.push('id="' + id + '"'); }
-    if (classes.length) { openTag.push('class="' + classes.join(" ") + '"'); }
+      if (id) { openTag.push('id="' + id + '"'); }
+      if (classes.length) { openTag.push('class="' + classes.join(" ") + '"'); }
 
-    if (!jQuery.isEmptyObject(style)) {
-      for (prop in style) {
-        if (style.hasOwnProperty(prop)) {
-          styleBuffer.push(prop + ':' + style[prop] + ';');
+      if (!jQuery.isEmptyObject(style)) {
+        for (prop in style) {
+          if (style.hasOwnProperty(prop)) {
+            styleBuffer.push(prop + ':' + style[prop] + ';');
+          }
+        }
+
+        openTag.push('style="' + styleBuffer.join("") + '"');
+      }
+
+      for (prop in attrs) {
+        if (attrs.hasOwnProperty(prop)) {
+          openTag.push(prop + '="' + attrs[prop] + '"');
         }
       }
 
-      openTag.push('style="' + styleBuffer.join("") + '"');
+      openTag = openTag.join(" ") + '>';
     }
-
-    for (prop in attrs) {
-      if (attrs.hasOwnProperty(prop)) {
-        openTag.push(prop + '="' + attrs[prop] + '"');
-      }
-    }
-
-    openTag = openTag.join(" ") + '>';
 
     var childBuffers = get(this, 'childBuffers');
 
     childBuffers.forEach(function(buffer) {
       var stringy = typeof buffer === 'string';
-      content = content + (stringy ? buffer : buffer.string());
+      content += (stringy ? buffer : buffer.string());
     });
 
-    return openTag + content + "</" + tag + ">";
+    if (tag) {
+      return openTag + content + "</" + tag + ">";
+    } else {
+      return content;
+    }
   }
 
 });

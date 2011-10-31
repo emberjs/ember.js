@@ -17,10 +17,11 @@ var set = SC.set, get = SC.get;
 SC.Checkbox = SC.View.extend({
   title: null,
   value: false,
+  disabled: false,
 
   classNames: ['sc-checkbox'],
 
-  defaultTemplate: SC.Handlebars.compile('<label><input type="checkbox" {{bindAttr checked="value"}}>{{title}}</label>'),
+  defaultTemplate: SC.Handlebars.compile('<label><input type="checkbox" {{bindAttr checked="value" disabled="disabled"}}>{{title}}</label>'),
 
   change: function() {
     SC.run.once(this, this._updateElementValue);

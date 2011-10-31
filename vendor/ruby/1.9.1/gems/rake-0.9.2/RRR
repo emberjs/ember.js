@@ -1,9 +1,0 @@
-class Zippy
-  def initialize
-    task :a
-    task :b
-    file "x"
-  end
-end
-
-Zippy.new

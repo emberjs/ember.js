@@ -74,6 +74,35 @@ testBoth('suspending property changes will defer', function(get,set) {
   equals(fooCount, 1, 'foo should have fired once');
 });
 
+testBoth('suspending property changes safely despite exceptions', function(get,set) {
+  var obj = { foo: 'foo' };
+  var fooCount = 0;
+  var exc = new Error("Something unexpected happened!");
+
+  expect(2);
+  SC.addObserver(obj, 'foo' ,function() { fooCount++; });
+
+  try {
+    SC.changeProperties(function(){
+      set(obj, 'foo', 'BIFF');
+      set(obj, 'foo', 'BAZ');
+      throw exc;
+    });
+  } catch(err) {
+    if (err != exc)
+      throw err;
+  }
+
+  equals(fooCount, 1, 'foo should have fired once');
+
+  SC.changeProperties(function(){
+    set(obj, 'foo', 'BIFF2');
+    set(obj, 'foo', 'BAZ2');
+  });
+
+  equals(fooCount, 2, 'foo should have fired again once');
+});
+
 testBoth('suspending property changes will not defer before observers', function(get,set) {
   var obj = { foo: 'foo' };
   var fooCount = 0;

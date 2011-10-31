@@ -139,16 +139,26 @@ Dp.val = function(obj, keyName) {
 // testing on browsers that do support accessors.  It will throw an exception
 // if you do foo.bar instead of SC.get(foo, 'bar')
 
+// The exception to this is that any objects managed by SC but not a descendant
+// of SC.Object will not throw an exception, instead failing silently. This
+// prevent errors with other libraries that may attempt to access special
+// properties on standard objects like Array. Usually this happens when copying
+// an object by looping over all properties.
+
 if (!USE_ACCESSORS) {
   SC.Descriptor.MUST_USE_GETTER = function() {
-    sc_assert('Must use SC.get() to access this property', false);
+    if (this instanceof SC.Object) {
+      sc_assert('Must use SC.get() to access this property', false);
+    }
   };
 
   SC.Descriptor.MUST_USE_SETTER = function() {
-    if (this.isDestroyed) {
-      sc_assert('You cannot set observed properties on destroyed objects', false);
-    } else {
-      sc_assert('Must use SC.set() to access this property', false);
+    if (this instanceof SC.Object) {
+      if (this.isDestroyed) {
+        sc_assert('You cannot set observed properties on destroyed objects', false);
+      } else {
+        sc_assert('Must use SC.set() to access this property', false);
+      }
     }
   };
 }

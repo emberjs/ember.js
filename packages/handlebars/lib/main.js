@@ -87,10 +87,15 @@ Handlebars.registerHelper('unless', function(context, options) {
 Handlebars.registerHelper('with', function(context, options) {
   return options.fn(context);
 });
+
+Handlebars.registerHelper('log', function(context) {
+  Handlebars.log(context);
+});
 ;
 // lib/handlebars/compiler/parser.js
 /* Jison generated parser */
 var handlebars = (function(){
+
 var parser = {trace: function trace() { },
 yy: {},
 symbols_: {"error":2,"root":3,"program":4,"EOF":5,"statements":6,"simpleInverse":7,"statement":8,"openInverse":9,"closeBlock":10,"openBlock":11,"mustache":12,"partial":13,"CONTENT":14,"COMMENT":15,"OPEN_BLOCK":16,"inMustache":17,"CLOSE":18,"OPEN_INVERSE":19,"OPEN_ENDBLOCK":20,"path":21,"OPEN":22,"OPEN_UNESCAPED":23,"OPEN_PARTIAL":24,"params":25,"hash":26,"param":27,"STRING":28,"INTEGER":29,"BOOLEAN":30,"hashSegments":31,"hashSegment":32,"ID":33,"EQUALS":34,"pathSegments":35,"SEP":36,"$accept":0,"$end":1},
@@ -370,7 +375,9 @@ parse: function parse(input) {
 
     return true;
 }};/* Jison generated lexer */
-var lexer = (function(){var lexer = ({EOF:1,
+var lexer = (function(){
+
+var lexer = ({EOF:1,
 parseError:function parseError(str, hash) {
         if (this.yy.parseError) {
             this.yy.parseError(str, hash);
@@ -532,14 +539,16 @@ case 21: return 29;
 break;
 case 22: return 33; 
 break;
-case 23: return 'INVALID'; 
+case 23: yy_.yytext = yy_.yytext.substr(1, yy_.yyleng-2); return 33; 
 break;
-case 24: return 5; 
+case 24: return 'INVALID'; 
+break;
+case 25: return 5; 
 break;
 }
 };
-lexer.rules = [/^[^\x00]*?(?=(\{\{))/,/^[^\x00]+/,/^\{\{>/,/^\{\{#/,/^\{\{\//,/^\{\{\^/,/^\{\{\s*else\b/,/^\{\{\{/,/^\{\{&/,/^\{\{![\s\S]*?\}\}/,/^\{\{/,/^=/,/^\.(?=[} ])/,/^\.\./,/^[/.]/,/^\s+/,/^\}\}\}/,/^\}\}/,/^"(\\["]|[^"])*"/,/^true(?=[}\s])/,/^false(?=[}\s])/,/^[0-9]+(?=[}\s])/,/^[a-zA-Z0-9_$-]+(?=[=}\s/.])/,/^./,/^$/];
-lexer.conditions = {"mu":{"rules":[2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24],"inclusive":false},"INITIAL":{"rules":[0,1,24],"inclusive":true}};return lexer;})()
+lexer.rules = [/^[^\x00]*?(?=(\{\{))/,/^[^\x00]+/,/^\{\{>/,/^\{\{#/,/^\{\{\//,/^\{\{\^/,/^\{\{\s*else\b/,/^\{\{\{/,/^\{\{&/,/^\{\{![\s\S]*?\}\}/,/^\{\{/,/^=/,/^\.(?=[} ])/,/^\.\./,/^[/.]/,/^\s+/,/^\}\}\}/,/^\}\}/,/^"(\\["]|[^"])*"/,/^true(?=[}\s])/,/^false(?=[}\s])/,/^[0-9]+(?=[}\s])/,/^[a-zA-Z0-9_$-]+(?=[=}\s/.])/,/^\[.*\]/,/^./,/^$/];
+lexer.conditions = {"mu":{"rules":[2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25],"inclusive":false},"INITIAL":{"rules":[0,1,25],"inclusive":true}};return lexer;})()
 parser.lexer = lexer;
 return parser;
 })();
@@ -848,7 +857,8 @@ Handlebars.JavaScriptCompiler = function() {};
         'each': true,
         'if': true,
         'unless': true,
-        'with': true
+        'with': true,
+        'log': true
       };
       if (knownHelpers) {
         for (var name in knownHelpers) {
@@ -1058,12 +1068,13 @@ Handlebars.JavaScriptCompiler = function() {};
     // PUBLIC API: You can override these methods in a subclass to provide
     // alternative compiled forms for name lookup and buffering semantics
     nameLookup: function(parent, name, type) {
-      if(JavaScriptCompiler.RESERVED_WORDS[name] || name.indexOf('-') !== -1 || !isNaN(name)) {
-        return parent + "['" + name + "']";
-      } else if (/^[0-9]+$/.test(name)) {
+			if (/^[0-9]+$/.test(name)) {
         return parent + "[" + name + "]";
-      } else {
-        return parent + "." + name;
+      } else if (JavaScriptCompiler.isValidJavaScriptVariableName(name)) {
+	    	return parent + "." + name;
+			}
+			else {
+				return parent + "['" + name + "']";
       }
     },
 
@@ -1078,6 +1089,8 @@ Handlebars.JavaScriptCompiler = function() {};
     initializeBuffer: function() {
       return this.quotedString("");
     },
+
+    namespace: "Handlebars",
     // END PUBLIC API
 
     compile: function(environment, options, context, asObject) {
@@ -1148,8 +1161,9 @@ Handlebars.JavaScriptCompiler = function() {};
       var out = [];
 
       if (!this.isChild) {
-        var copies = "helpers = helpers || Handlebars.helpers;";
-        if(this.environment.usePartial) { copies = copies + " partials = partials || Handlebars.partials;"; }
+        var namespace = this.namespace;
+        var copies = "helpers = helpers || " + namespace + ".helpers;";
+        if(this.environment.usePartial) { copies = copies + " partials = partials || " + namespace + ".partials;"; }
         out.push(copies);
       } else {
         out.push('');
@@ -1203,8 +1217,6 @@ Handlebars.JavaScriptCompiler = function() {};
       for(var i=0, l=this.environment.depths.list.length; i<l; i++) {
         params.push("depth" + this.environment.depths.list[i]);
       }
-
-      if(params.length === 4 && !this.environment.usePartial) { params.pop(); }
 
       if (asObject) {
         params.push(this.source.join("\n  "));
@@ -1266,6 +1278,7 @@ Handlebars.JavaScriptCompiler = function() {};
               + this.nameLookup('depth' + this.lastContext, name, 'context');
         }
 
+        toPush += ';';
         this.source.push(toPush);
       } else {
         this.pushStack('depth' + this.lastContext);
@@ -1274,7 +1287,8 @@ Handlebars.JavaScriptCompiler = function() {};
 
     lookup: function(name) {
       var topStack = this.topStack();
-      this.source.push(topStack + " = " + this.nameLookup(topStack, name, 'context') + ";");
+      this.source.push(topStack + " = (" + topStack + " === null || " + topStack + " === undefined || " + topStack + " === false ? " +
+ 				topStack + " : " + this.nameLookup(topStack, name, 'context') + ");");
     },
 
     pushStringParam: function(string) {
@@ -1468,14 +1482,21 @@ Handlebars.JavaScriptCompiler = function() {};
   };
 
   var reservedWords = ("break case catch continue default delete do else finally " +
-                       "for function if in instanceof new return switch this throw " + 
+                       "for function if in instanceof new return switch this throw " +
                        "try typeof var void while with null true false").split(" ");
 
-  compilerWords = JavaScriptCompiler.RESERVED_WORDS = {};
+  var compilerWords = JavaScriptCompiler.RESERVED_WORDS = {};
 
   for(var i=0, l=reservedWords.length; i<l; i++) {
     compilerWords[reservedWords[i]] = true;
   }
+
+	JavaScriptCompiler.isValidJavaScriptVariableName = function(name) {
+		if(!JavaScriptCompiler.RESERVED_WORDS[name] && /^[a-zA-Z_$][0-9a-zA-Z_$]+$/.test(name)) {
+			return true;
+		}
+		return false;
+	}
 
 })(Handlebars.Compiler, Handlebars.JavaScriptCompiler);
 
@@ -1490,10 +1511,21 @@ Handlebars.precompile = function(string, options) {
 Handlebars.compile = function(string, options) {
   options = options || {};
 
-  var ast = Handlebars.parse(string);
-  var environment = new Handlebars.Compiler().compile(ast, options);
-  var templateSpec = new Handlebars.JavaScriptCompiler().compile(environment, options, undefined, true);
-  return Handlebars.template(templateSpec);
+  var compiled;
+  function compile() {
+    var ast = Handlebars.parse(string);
+    var environment = new Handlebars.Compiler().compile(ast, options);
+    var templateSpec = new Handlebars.JavaScriptCompiler().compile(environment, options, undefined, true);
+    return Handlebars.template(templateSpec);
+  }
+
+  // Template is only compiled on first use and cached after that point.
+  return function(context, options) {
+    if (!compiled) {
+      compiled = compile();
+    }
+    return compiled.call(this, context, options);
+  };
 };
 ;
 // lib/handlebars/vm.js
@@ -1558,3 +1590,4 @@ Handlebars.VM = {
 
 Handlebars.template = Handlebars.VM.template;
 ;
+

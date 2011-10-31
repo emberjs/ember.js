@@ -129,9 +129,7 @@ SC.MutableArray = SC.Mixin.create(SC.Array, SC.MutableEnumerable,
     @returns {SC.Array} receiver
   */
   pushObjects: function(objects) {
-    this.beginPropertyChanges();
-    objects.forEach(function(obj) { this.pushObject(obj); }, this);
-    this.endPropertyChanges();
+    this.replace(get(this, 'length'), 0, objects);
     return this;
   },
 

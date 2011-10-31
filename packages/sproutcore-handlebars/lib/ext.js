@@ -38,7 +38,9 @@ require("sproutcore-views/system/render_buffer");
   SproutCore Handlebars is an extension to Handlebars that makes the built-in
   Handlebars helpers and {{mustaches}} binding-aware.
 */
-SC.Handlebars = {};
+SC.Handlebars = SC.create(Handlebars);
+
+SC.Handlebars.helpers = SC.create(Handlebars.helpers);
 
 /**
   Override the the opcode compiler and JavaScript compiler for Handlebars.
@@ -50,22 +52,8 @@ SC.Handlebars.Compiler.prototype.compiler = SC.Handlebars.Compiler;
 SC.Handlebars.JavaScriptCompiler = function() {};
 SC.Handlebars.JavaScriptCompiler.prototype = SC.create(Handlebars.JavaScriptCompiler.prototype);
 SC.Handlebars.JavaScriptCompiler.prototype.compiler = SC.Handlebars.JavaScriptCompiler;
+SC.Handlebars.JavaScriptCompiler.prototype.namespace = "SC.Handlebars";
 
-/**
-  Override the default property lookup semantics of Handlebars.
-
-  By default, Handlebars uses object[property] to look up properties. SproutCore's Handlebars
-  uses SC.get().
-
-  @private
-*/
-SC.Handlebars.JavaScriptCompiler.prototype.nameLookup = function(parent, name, type) {
-  if (type === 'context') {
-    return "SC.get(" + parent + ", " + this.quotedString(name) + ");";
-  } else {
-    return Handlebars.JavaScriptCompiler.prototype.nameLookup.call(this, parent, name, type);
-  }
-};
 
 SC.Handlebars.JavaScriptCompiler.prototype.initializeBuffer = function() {
   return "''";
@@ -134,7 +122,7 @@ SC.Handlebars.compile = function(string) {
   @param {String} path
   @param {Hash} options
 */
-Handlebars.registerHelper('helperMissing', function(path, options) {
+SC.Handlebars.registerHelper('helperMissing', function(path, options) {
   var error, view = "";
 
   error = "%@ Handlebars error: Could not find property '%@' on object %@.";

@@ -1,4 +1,4 @@
-require File.expand_path("../vendor/bundler/setup", __FILE__)
+require "bundler/setup"
 require "erb"
 require "uglifier"
 require "sproutcore"
@@ -22,7 +22,7 @@ end
 
 def strip_require(file)
   result = File.read(file)
-  result.gsub!(%r{^\s*require\(['"]([^'"])*['"]\);?\s*$}, "")
+  result.gsub!(%r{^\s*require\(['"]([^'"])*['"]\);?\s*}, "")
   result
 end
 
@@ -61,8 +61,11 @@ end
 # Create a handlebars task
 task :handlebars => compile_package_task("handlebars")
 
+# Create a metamorph task
+task :metamorph => compile_package_task("metamorph")
+
 # Create a build task that depends on all of the package dependencies
-task :build => ["sproutcore:metal", "sproutcore:runtime", "sproutcore:handlebars", "sproutcore:views", :handlebars]
+task :build => ["sproutcore:metal", "sproutcore:runtime", "sproutcore:handlebars", "sproutcore:views", :handlebars, :metamorph]
 
 # Strip out require lines from sproutcore.js. For the interim, requires are
 # precomputed by the compiler so they are no longer necessary at runtime.
@@ -76,6 +79,7 @@ file "dist/sproutcore.js" => :build do
     file.puts strip_require("tmp/static/sproutcore-metal.js")
     file.puts strip_require("tmp/static/sproutcore-runtime.js")
     file.puts strip_require("tmp/static/sproutcore-views.js")
+    file.puts strip_require("tmp/static/metamorph.js")
     file.puts strip_require("tmp/static/sproutcore-handlebars.js")
   end
 end

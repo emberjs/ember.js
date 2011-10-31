@@ -1,5 +1,0 @@
-rvm:
-  - 1.8.7
-  - 1.9.2
-env: "EXECJS_RUNTIME='RubyRacer'"
-before_script: "git submodule update --init --recursive"

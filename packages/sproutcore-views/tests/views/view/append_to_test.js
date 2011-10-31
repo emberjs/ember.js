@@ -14,7 +14,7 @@ module("SC.View - append() and appendTo()", {
   },
 
   teardown: function() {
-    view.destroy();
+    if (!view.isDestroyed) { view.destroy(); }
   }
 });
 
@@ -139,7 +139,7 @@ module("SC.View - append() and appendTo() in a view hierarchy", {
   },
 
   teardown: function() {
-    view.destroy();
+    if (!view.isDestroyed) { view.destroy(); }
   }
 });
 
@@ -190,7 +190,7 @@ module("SC.View - removing views in a view hierarchy", {
   },
 
   teardown: function() {
-    view.destroy();
+    if (!view.isDestroyed) { view.destroy(); }
   }
 });
 

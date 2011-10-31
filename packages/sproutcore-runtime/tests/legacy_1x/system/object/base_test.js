@@ -145,6 +145,11 @@ test("Checking the detect() function on an object and its subclass", function(){
 	equals(obj1.detect(obj), NO);
 });
 
+test("Checking the detectInstance() function on an object and its subclass", function() {
+  ok(SC.Object.detectInstance(obj.create()));
+  ok(obj.detectInstance(obj.create()));
+});
+
 test("subclasses should contain defined subclasses", function() {
   ok(obj.subclasses.contains(obj1), 'obj.subclasses should contain obj1');
 

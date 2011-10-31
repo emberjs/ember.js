@@ -22,17 +22,6 @@ SC.View.states = {
 
     getElement: function() {
       return null;
-    },
-
-    setElement: function(value) {
-      if (value) {
-        view.clearBuffer();
-        view.transitionTo('inDOM');
-      } else {
-        throw "You can't set an element to null when the view has not yet been inserted into the DOM";
-      }
-
-      return value;
     }
   }
 };

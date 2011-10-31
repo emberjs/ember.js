@@ -23,6 +23,30 @@ module("SC.TextField", {
   }
 });
 
+function append() {
+  SC.run(function() {
+    textField.appendTo('#qunit-fixture');
+  });
+}
+
+test("should become disabled if the disabled attribute is true", function() {
+  textField.set('disabled', true);
+  append();
+
+  ok(textField.$().is(":disabled"));
+});
+
+test("should become disabled if the disabled attribute is true", function() {
+  append();
+  ok(textField.$().is(":not(:disabled)"));
+
+  SC.run(function() { textField.set('disabled', true); });
+  ok(textField.$().is(":disabled"));
+
+  SC.run(function() { textField.set('disabled', false); });
+  ok(textField.$().is(":not(:disabled)"));
+});
+
 test("input value is updated when setting value property of view", function() {
   SC.run(function() {
     set(textField, 'value', 'foo');
