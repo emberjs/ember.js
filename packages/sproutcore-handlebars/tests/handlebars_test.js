@@ -1256,6 +1256,29 @@ test("should be able to update when bound property updates", function(){
   
 });
 
+test("properties within an if statement should not fail on re-render", function(){
+  view = SC.View.create({
+    template: SC.Handlebars.compile('{{#if value}}{{value}}{{/if}}'),
+    value: null
+  });
+
+  appendView();
+
+  equals(view.$().text(), '');
+
+  SC.run(function(){
+    view.set('value', 'test');
+  });
+
+  equals(view.$().text(), 'test');
+
+  SC.run(function(){
+    view.set('value', null);
+  });
+
+  equals(view.$().text(), '');
+});
+
 test("bindings should be relative to the current context", function() {
   view = SC.View.create({
     museumOpen: true,
