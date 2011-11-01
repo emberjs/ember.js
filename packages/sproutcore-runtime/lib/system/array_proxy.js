@@ -34,6 +34,14 @@ SC.ArrayProxy = SC.Object.extend(SC.MutableArray, {
   content: null,
 
   /**
+    The selected object(s). Can be either an object or an array of objects.
+    Used by SC.Select.
+
+    @property {SC.Object|SC.Array}
+  */
+  selection: null,
+
+  /**
     Should actually retrieve the object at the specified index from the 
     content.  You can override this method in subclasses to transform the 
     content item to something new.
