@@ -63,9 +63,9 @@ SC.Metamorph = SC.Mixin.create({
 
       view.transitionTo('preRender');
       view.clearRenderedChildren();
-      var buffer = view.renderToBuffer();
 
       SC.run.schedule('render', this, function() {
+        var buffer = view.renderToBuffer();
         view._notifyWillInsertElement();
         morph.replaceWith(buffer.string());
         view.transitionTo('inDOM');
