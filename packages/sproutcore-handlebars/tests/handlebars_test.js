@@ -1302,6 +1302,28 @@ test("bindings should be relative to the current context", function() {
   equals($.trim(view.$().text()), "Name: SFMoMA Price: $20", "should print baz twice");
 });
 
+test("bindings can be 'this', in which case they *are* the current context", function() {
+  view = SC.View.create({
+    museumOpen: true,
+
+    museumDetails: SC.Object.create({
+      name: "SFMoMA",
+      price: 20,
+      museumView: SC.View.extend({
+        template: SC.Handlebars.compile('Name: {{museum.name}} Price: ${{museum.price}}')
+      }),
+    }),
+
+
+    template: SC.Handlebars.compile('{{#if museumOpen}} {{#with museumDetails}}{{view museumView museumBinding="this"}} {{/with}}{{/if}}')
+  });
+
+  SC.run(function() {
+    view.appendTo('#qunit-fixture');
+  });
+
+  equals($.trim(view.$().text()), "Name: SFMoMA Price: $20", "should print baz twice");
+});
 
 // https://github.com/sproutcore/sproutcore20/issues/120
 
