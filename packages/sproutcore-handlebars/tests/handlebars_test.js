@@ -1356,3 +1356,27 @@ test("should not enter an infinite loop when binding an attribute in Handlebars"
 
   App = undefined;
 });
+
+test("should render other templates using the {{template}} helper", function() {
+  // save a reference to the current global templates hash so we can restore it
+  // after the test.
+  var oldTemplates = SC.TEMPLATES;
+
+  try {
+    SC.TEMPLATES = {
+      sub_template: SC.Handlebars.compile("sub-template")
+    };
+
+    view = SC.View.create({
+      template: SC.Handlebars.compile('This {{template "sub_template"}} is pretty great.')
+    });
+
+    SC.run(function() {
+      view.appendTo('#qunit-fixture');
+    });
+
+    equals($.trim(view.$().text()), "This sub-template is pretty great.");
+  } finally {
+   SC.TEMPLATES = oldTemplates;
+  }
+});
