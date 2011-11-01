@@ -24,10 +24,10 @@ require('sproutcore-handlebars/ext');
 
       SC.TEMPLATES["my_cool_template"] = SC.Handlebars.compile('<b>{{user}}</b>');
 
-  @name Handlebars.helpers.unbound
-  @param {String} property
-  @returns {String} HTML string
+  @name Handlebars.helpers.template
+  @param {String} templateName the template to render
 */
+
 SC.Handlebars.registerHelper('template', function(name, options) {
   var template = SC.TEMPLATES[name];
 
