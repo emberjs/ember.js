@@ -1279,6 +1279,24 @@ test("properties within an if statement should not fail on re-render", function(
   equals(view.$().text(), '');
 });
 
+test("the {{this}} helper should not fail on removal", function(){
+  view = SC.View.create({
+    template: SC.Handlebars.compile('{{#if show}}{{#each list}}{{this}}{{/each}}{{/if}}'),
+    show: true,
+    list: ['a', 'b', 'c']
+  });
+
+  appendView();
+
+  equals(view.$().text(), 'abc', "should start property - precond");
+
+  SC.run(function(){
+    view.set('show', false);
+  });
+
+  equals(view.$().text(), '');
+});
+
 test("bindings should be relative to the current context", function() {
   view = SC.View.create({
     museumOpen: true,
