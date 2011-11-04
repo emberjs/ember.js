@@ -156,12 +156,5 @@ SC._BindableSpanView = SC.View.extend(SC.Metamorph,
     }
 
     return this._super(buffer);
-  },
-
-  destroy: function() {
-    var removeObserver = get(this, 'removeObserver');
-    removeObserver();
-
-    this._super();
   }
 });
