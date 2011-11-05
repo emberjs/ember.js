@@ -40,7 +40,7 @@ SC.TextArea = SC.View.extend({
   /**
     @private
   */
-  willInsertElement: function() {
+  didInsertElement: function() {
     this._updateElementValue();
   },
 
