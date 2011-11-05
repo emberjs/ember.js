@@ -39,18 +39,21 @@ var get = SC.get, getPath = SC.getPath, set = SC.set, fmt = SC.String.fmt;
       view.appendChild(bindView);
 
       var observer = function() {
-        SC.run.once(function() { bindView.rerender(); });
+        SC.run.once(function() {
+          // Double check since sometimes the view gets destroyed after this observer is already queued
+          if (!get(bindView, 'isDestroyed')) { bindView.rerender(); }
+        });
       };
-
-      set(bindView, 'removeObserver', function() {
-        SC.removeObserver(ctx, property, observer);
-      });
 
       // Observes the given property on the context and
       // tells the SC._BindableSpan to re-render. If property
       // is an empty string, we are printing the current context
       // object ({{this}}) so updating it is not our responsibility.
       if (property !== '') {
+        set(bindView, 'removeObserver', function() {
+          SC.removeObserver(ctx, property, observer);
+        });
+
         SC.addObserver(ctx, property, observer);
       }
     } else {

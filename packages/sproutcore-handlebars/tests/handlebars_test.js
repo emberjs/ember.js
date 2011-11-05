@@ -1256,6 +1256,47 @@ test("should be able to update when bound property updates", function(){
   
 });
 
+test("properties within an if statement should not fail on re-render", function(){
+  view = SC.View.create({
+    template: SC.Handlebars.compile('{{#if value}}{{value}}{{/if}}'),
+    value: null
+  });
+
+  appendView();
+
+  equals(view.$().text(), '');
+
+  SC.run(function(){
+    view.set('value', 'test');
+  });
+
+  equals(view.$().text(), 'test');
+
+  SC.run(function(){
+    view.set('value', null);
+  });
+
+  equals(view.$().text(), '');
+});
+
+test("the {{this}} helper should not fail on removal", function(){
+  view = SC.View.create({
+    template: SC.Handlebars.compile('{{#if show}}{{#each list}}{{this}}{{/each}}{{/if}}'),
+    show: true,
+    list: ['a', 'b', 'c']
+  });
+
+  appendView();
+
+  equals(view.$().text(), 'abc', "should start property - precond");
+
+  SC.run(function(){
+    view.set('show', false);
+  });
+
+  equals(view.$().text(), '');
+});
+
 test("bindings should be relative to the current context", function() {
   view = SC.View.create({
     museumOpen: true,
@@ -1279,6 +1320,28 @@ test("bindings should be relative to the current context", function() {
   equals($.trim(view.$().text()), "Name: SFMoMA Price: $20", "should print baz twice");
 });
 
+test("bindings can be 'this', in which case they *are* the current context", function() {
+  view = SC.View.create({
+    museumOpen: true,
+
+    museumDetails: SC.Object.create({
+      name: "SFMoMA",
+      price: 20,
+      museumView: SC.View.extend({
+        template: SC.Handlebars.compile('Name: {{museum.name}} Price: ${{museum.price}}')
+      }),
+    }),
+
+
+    template: SC.Handlebars.compile('{{#if museumOpen}} {{#with museumDetails}}{{view museumView museumBinding="this"}} {{/with}}{{/if}}')
+  });
+
+  SC.run(function() {
+    view.appendTo('#qunit-fixture');
+  });
+
+  equals($.trim(view.$().text()), "Name: SFMoMA Price: $20", "should print baz twice");
+});
 
 // https://github.com/sproutcore/sproutcore20/issues/120
 
@@ -1310,4 +1373,28 @@ test("should not enter an infinite loop when binding an attribute in Handlebars"
   parentView.destroy();
 
   App = undefined;
+});
+
+test("should render other templates using the {{template}} helper", function() {
+  // save a reference to the current global templates hash so we can restore it
+  // after the test.
+  var oldTemplates = SC.TEMPLATES;
+
+  try {
+    SC.TEMPLATES = {
+      sub_template: SC.Handlebars.compile("sub-template")
+    };
+
+    view = SC.View.create({
+      template: SC.Handlebars.compile('This {{template "sub_template"}} is pretty great.')
+    });
+
+    SC.run(function() {
+      view.appendTo('#qunit-fixture');
+    });
+
+    equals($.trim(view.$().text()), "This sub-template is pretty great.");
+  } finally {
+   SC.TEMPLATES = oldTemplates;
+  }
 });

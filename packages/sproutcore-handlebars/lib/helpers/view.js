@@ -62,7 +62,11 @@ SC.Handlebars.ViewHelper = SC.Object.create({
           if (PARENT_VIEW_PATH.test(path)) {
             SC.Logger.warn("As of SproutCore 2.0 beta 3, it is no longer necessary to bind to parentViews. Instead, please provide binding paths relative to the current Handlebars context.");
           } else {
-            options[prop] = 'bindingContext.'+path;
+            if (path === 'this') {
+              options[prop] = 'bindingContext';
+            } else {
+              options[prop] = 'bindingContext.'+path;
+            }
           }
         }
       }
