@@ -10,7 +10,7 @@ require('sproutcore-views/views/states/default');
 var get = SC.get, set = SC.set, meta = SC.meta;
 
 SC.View.states.hasElement = {
-  parentState: SC.View.states.default,
+  parentState: SC.View.states['default'],
 
   $: function(view, sel) {
     var elem = get(view, 'element');
