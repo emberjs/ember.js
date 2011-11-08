@@ -66,6 +66,7 @@ SC.Metamorph = SC.Mixin.create({
       var buffer = view.renderToBuffer();
 
       SC.run.schedule('render', this, function() {
+        if (get(view, 'isDestroyed')) { return; }
         view._notifyWillInsertElement();
         morph.replaceWith(buffer.string());
         view.transitionTo('inDOM');
