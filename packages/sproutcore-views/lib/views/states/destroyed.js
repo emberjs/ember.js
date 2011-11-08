@@ -10,7 +10,7 @@ require('sproutcore-views/views/states/default');
 var destroyedError = "You can't call %@ on a destroyed view", fmt = SC.String.fmt;
 
 SC.View.states.destroyed = {
-  parentState: SC.View.states.default,
+  parentState: SC.View.states['default'],
 
   appendChild: function() {
     throw fmt(destroyedError, ['appendChild']);
