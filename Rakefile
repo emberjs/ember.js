@@ -53,7 +53,7 @@ end
 
 # Create sproutcore:package tasks for each of the SproutCore packages
 namespace :sproutcore do
-  %w(metal runtime handlebars views).each do |package|
+  %w(metal runtime handlebars views datetime).each do |package|
     task package => compile_package_task("sproutcore-#{package}")
   end
 end
@@ -65,38 +65,42 @@ task :handlebars => compile_package_task("handlebars")
 task :metamorph => compile_package_task("metamorph")
 
 # Create a build task that depends on all of the package dependencies
-task :build => ["sproutcore:metal", "sproutcore:runtime", "sproutcore:handlebars", "sproutcore:views", :handlebars, :metamorph]
+task :build => ["sproutcore:metal", "sproutcore:runtime", "sproutcore:handlebars", "sproutcore:views", "sproutcore:datetime", :handlebars, :metamorph]
 
-# Strip out require lines from sproutcore.js. For the interim, requires are
-# precomputed by the compiler so they are no longer necessary at runtime.
-file "dist/sproutcore.js" => :build do
-  puts "Generating sproutcore.js"
+distributions = {
+  "sproutcore" => ["handlebars", "sproutcore-metal", "sproutcore-runtime", "sproutcore-views", "metamorph", "sproutcore-handlebars"],
+  "sproutcore-datetime" => ["sproutcore-datetime"]
+}
 
-  mkdir_p "dist"
+distributions.each do |name, libraries|
+  # Strip out require lines. For the interim, requires are
+  # precomputed by the compiler so they are no longer necessary at runtime.
+  file "dist/#{name}.js" => :build do
+    puts "Generating #{name}.js"
 
-  File.open("dist/sproutcore.js", "w") do |file|
-    file.puts strip_require("tmp/static/handlebars.js")
-    file.puts strip_require("tmp/static/sproutcore-metal.js")
-    file.puts strip_require("tmp/static/sproutcore-runtime.js")
-    file.puts strip_require("tmp/static/sproutcore-views.js")
-    file.puts strip_require("tmp/static/metamorph.js")
-    file.puts strip_require("tmp/static/sproutcore-handlebars.js")
-  end
-end
+    mkdir_p "dist"
 
-# Minify dist/sproutcore.js to dist/sproutcore.min.js
-file "dist/sproutcore.min.js" => "dist/sproutcore.js" do
-  puts "Generating sproutcore.min.js"
-
-  File.open("dist/sproutcore.prod.js", "w") do |file|
-    file.puts strip_sc_assert("dist/sproutcore.js")
+    File.open("dist/#{name}.js", "w") do |file|
+      libraries.each do |library|
+        file.puts strip_require("tmp/static/#{library}.js")
+      end
+    end
   end
 
-  File.open("dist/sproutcore.min.js", "w") do |file|
-    file.puts uglify("dist/sproutcore.prod.js")
-  end
+  # Minified distribution
+  file "dist/#{name}.min.js" => "dist/#{name}.js" do
+    puts "Generating #{name}.min.js"
 
-  rm "dist/sproutcore.prod.js"
+    File.open("dist/#{name}.prod.js", "w") do |file|
+      file.puts strip_sc_assert("dist/#{name}.js")
+    end
+
+    File.open("dist/#{name}.min.js", "w") do |file|
+      file.puts uglify("dist/#{name}.prod.js")
+    end
+
+    rm "dist/#{name}.prod.js"
+  end
 end
 
 SC_VERSION = File.read("VERSION")
@@ -190,7 +194,7 @@ namespace :starter_kit do
 end
 
 desc "Build SproutCore"
-task :dist => ["dist/sproutcore.min.js"]
+task :dist => ["dist/sproutcore.min.js", "dist/sproutcore-datetime.min.js"]
 
 desc "Clean build artifacts from previous builds"
 task :clean do
