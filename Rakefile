@@ -194,7 +194,7 @@ namespace :starter_kit do
 end
 
 desc "Build SproutCore"
-task :dist => ["dist/sproutcore.min.js", "dist/sproutcore-datetime.min.js"]
+task :dist => distributions.keys.map {|name| "dist/#{name}.min.js"}
 
 desc "Clean build artifacts from previous builds"
 task :clean do
