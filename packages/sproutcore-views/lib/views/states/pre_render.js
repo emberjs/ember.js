@@ -8,7 +8,7 @@
 require('sproutcore-views/views/states/default');
 
 SC.View.states.preRender = {
-  parentState: SC.View.states.default,
+  parentState: SC.View.states['default'],
 
   // a view leaves the preRender state once its element has been
   // created (createElement).
