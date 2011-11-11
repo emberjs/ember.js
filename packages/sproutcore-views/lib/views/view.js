@@ -436,11 +436,11 @@ SC.View = SC.Object.extend(
 
         type = typeof attributeValue;
 
-        if ((type === 'string' || type === 'number') && attributeValue !== currentValue) {
+        if ((type === 'string' || (type === 'number' && !isNaN(attributeValue))) && attributeValue !== currentValue) {
           elem.attr(attribute, attributeValue);
         } else if (attributeValue && type === 'boolean') {
           elem.attr(attribute, attribute);
-        } else if (attributeValue === NO) {
+        } else if (!attributeValue) {
           elem.removeAttr(attribute);
         }
       };

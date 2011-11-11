@@ -13,12 +13,15 @@ module("SC.View - Attribute Bindings");
 test("should render and update attribute bindings", function() {
   var view = SC.View.create({
     classNameBindings: ['priority', 'isUrgent', 'isClassified:classified', 'canIgnore'],
-    attributeBindings: ['type', 'exploded', 'destroyed', 'exists', 'explosions'],
+    attributeBindings: ['type', 'exploded', 'destroyed', 'exists', 'nothing', 'notDefined', 'notNumber', 'explosions'],
 
     type: 'reset',
     exploded: true,
     destroyed: true,
     exists: false,
+    nothing: true,
+    notDefined: true,
+    notNumber: true,
     explosions: 15
   });
 
@@ -27,17 +30,26 @@ test("should render and update attribute bindings", function() {
   ok(view.$().attr('exploded'), "adds exploded attribute when true");
   ok(view.$().attr('destroyed'), "adds destroyed attribute when true");
   ok(!view.$().attr('exists'), "does not add exists attribute when false");
+  ok(view.$().attr('nothing'), "adds nothing attribute when true");
+  ok(view.$().attr('notDefined'), "adds notDefined attribute when true");
+  ok(view.$().attr('notNumber'), "adds notNumber attribute when true");
   equals(view.$().attr('explosions'), "15", "adds integer attributes");
 
   view.set('type', 'submit');
   view.set('exploded', false);
   view.set('destroyed', false);
   view.set('exists', true);
+  view.set('nothing', null);
+  view.set('notDefined', undefined);
+  view.set('notNumber', NaN);
 
   equals(view.$().attr('type'), 'submit', "updates type attribute");
   ok(!view.$().attr('exploded'), "removes exploded attribute when false");
   ok(!view.$().attr('destroyed'), "removes destroyed attribute when false");
   ok(view.$().attr('exists'), "adds exists attribute when true");
+  ok(!view.$().attr('nothing'), "removes nothing attribute when null");
+  ok(!view.$().attr('notDefined'), "removes notDefined attribute when undefined");
+  ok(!view.$().attr('notNumber'), "removes notNumber attribute when NaN");
 });
 
 test("should allow attributes to be set in the inBuffer state", function() {
