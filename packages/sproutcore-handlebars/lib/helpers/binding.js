@@ -38,11 +38,15 @@ var get = SC.get, getPath = SC.getPath, set = SC.set, fmt = SC.String.fmt;
 
       view.appendChild(bindView);
 
-      var observer = function() {
-        SC.run.once(function() {
-          // Double check since sometimes the view gets destroyed after this observer is already queued
-          if (!get(bindView, 'isDestroyed')) { bindView.rerender(); }
-        });
+      var observer, invoker;
+
+      observer = function(){
+        // Double check since sometimes the view gets destroyed after this observer is already queued
+        if (!get(bindView, 'isDestroyed')) { bindView.rerender(); }
+      };
+
+      invoker = function() {
+        SC.run.once(observer);
       };
 
       // Observes the given property on the context and
@@ -51,10 +55,10 @@ var get = SC.get, getPath = SC.getPath, set = SC.set, fmt = SC.String.fmt;
       // object ({{this}}) so updating it is not our responsibility.
       if (property !== '') {
         set(bindView, 'removeObserver', function() {
-          SC.removeObserver(ctx, property, observer);
+          SC.removeObserver(ctx, property, invoker);
         });
 
-        SC.addObserver(ctx, property, observer);
+        SC.addObserver(ctx, property, invoker);
       }
     } else {
       // The object is not observable, so just render it out and

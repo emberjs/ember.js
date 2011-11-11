@@ -1279,6 +1279,29 @@ test("properties within an if statement should not fail on re-render", function(
   equals(view.$().text(), '');
 });
 
+test("views within an if statement should be sane on re-render", function(){
+  view = SC.View.create({
+    template: SC.Handlebars.compile('{{#if display}}{{view SC.Button}}{{/if}}'),
+    display: false
+  });
+
+  appendView();
+
+  equals(view.$('button').length, 0);
+
+  SC.run(function(){
+    // Setting twice will trigger the observer twice, this is intentional
+    view.set('display', true);
+    view.set('display', 'yes');
+  });
+
+  var button = view.$('button');
+  equals(button.length, 1);
+
+  // Make sure the view is still registered in SC.View.views
+  ok(SC.View.views[button.attr('id')]);
+});
+
 test("the {{this}} helper should not fail on removal", function(){
   view = SC.View.create({
     template: SC.Handlebars.compile('{{#if show}}{{#each list}}{{this}}{{/each}}{{/if}}'),
