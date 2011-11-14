@@ -10,7 +10,7 @@ require('sproutcore-views/views/view');
 var get = SC.get, set = SC.set;
 
 SC.View.states = {
-  "default": {
+  _default: {
     // appendChild is only legal while rendering the buffer.
     appendChild: function() {
       throw "You can't use appendChild outside of the rendering process";
