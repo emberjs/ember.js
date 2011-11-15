@@ -12,3 +12,4 @@ require('sproutcore-runtime/mixins/freezable');
 require('sproutcore-runtime/mixins/mutable_array');
 require('sproutcore-runtime/mixins/mutable_enumerable');
 require('sproutcore-runtime/mixins/observable');
+require('sproutcore-runtime/mixins/target_action_support');

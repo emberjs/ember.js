@@ -4,9 +4,11 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
+require('sproutcore-runtime/mixins/target_action_support');
+
 var get = SC.get, set = SC.set;
 
-SC.Button = SC.View.extend({
+SC.Button = SC.View.extend(SC.TargetActionSupport, {
   classNames: ['sc-button'],
   classNameBindings: ['isActive'],
 
@@ -15,15 +17,6 @@ SC.Button = SC.View.extend({
   type: 'button',
   disabled: false,
 
-  targetObject: function() {
-    var target = get(this, 'target');
-
-    if (SC.typeOf(target) === "string") {
-      return SC.getPath(this, target);
-    } else {
-      return target;
-    }
-  }.property('target').cacheable(),
 
   mouseDown: function() {
     set(this, 'isActive', true);
@@ -47,16 +40,10 @@ SC.Button = SC.View.extend({
 
   mouseUp: function(event) {
     if (get(this, 'isActive')) {
-      var action = get(this, 'action'),
-          target = get(this, 'targetObject');
 
-      if (target && action) {
-        if (typeof action === 'string') {
-          action = target[action];
-        }
-        action.call(target, this);
-      }
-
+      // Actually invoke the button's target and action.
+      // This method comes from the SC.TargetActionSupport mixin.
+      this.triggerAction();
       set(this, 'isActive', false);
     }
 
