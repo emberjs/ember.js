@@ -44,7 +44,7 @@ var timerMark; // used by timers...
 var K = function() {};
 var RunLoop = function(prev) {
   var self;
-  
+
   if (this instanceof RunLoop) {
     self = this;
   } else {
@@ -53,7 +53,7 @@ var RunLoop = function(prev) {
 
   self._prev = prev || null;
   self.onceTimers = {};
-  
+
   return self;
 }
 
@@ -251,7 +251,7 @@ function autorun() {
 }
 
 /**
-  Begins a new RunLoop is necessary and schedules a timer to flush the
+  Begins a new RunLoop if necessary and schedules a timer to flush the
   RunLoop at a later time.  This method is used by parts of SproutCore to
   ensure the RunLoop always finishes.  You normally do not need to call this
   method directly.  Instead use SC.run().
@@ -312,7 +312,7 @@ function invokeLaterTimers() {
   }
 
   // schedule next timeout to fire...
-  if (earliest>0) setTimeout(invokeLaterTimers, earliest-(+ new Date())); 
+  if (earliest>0) setTimeout(invokeLaterTimers, earliest-(+ new Date()));
 }
 
 /**
@@ -354,7 +354,7 @@ SC.run.later = function(target, method) {
     args = slice.call(arguments);
     wait = args.pop();
   }
-  
+
   expires = (+ new Date())+wait;
   timer   = { target: target, method: method, expires: expires, args: args };
   guid    = SC.guidFor(timer);
