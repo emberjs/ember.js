@@ -28,3 +28,9 @@ test("should set newView.parentView to receiver", function() {
   equals(get(newView, 'parentView'), view, 'newView.parentView == view');
 });
 
+test("should create property on parentView to a childView instance if provided a viewName", function() {
+  var attrs = { viewName: "someChildView" };
+  var newView = view.createChildView(myViewClass, attrs);
+
+  equals(get(view, 'someChildView'), newView);
+});
