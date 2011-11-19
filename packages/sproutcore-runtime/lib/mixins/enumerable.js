@@ -583,13 +583,11 @@ SC.Enumerable = SC.Mixin.create( /** @lends SC.Enumerable */ {
     @returns {SC.Enumerable}
   */
   uniq: function() {
-    var ret = [], hasDups = false;
+    var ret = [];
     this.forEach(function(k){
-      if (ret.indexOf(k)<0) ret[ret.length] = k;
-      else hasDups = true;
+      if (ret.indexOf(k)<0) ret.push(k);
     });
-    
-    return hasDups ? ret : this ;
+    return ret;
   },
 
   /**
