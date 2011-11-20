@@ -20,7 +20,7 @@ module("SC.CollectionView", {
 
 test("should render a view for each item in its content array", function() {
   view = SC.CollectionView.create({
-    content: [1, 2, 3, 4]
+    content: SC.NativeArray.apply([1, 2, 3, 4])
   });
 
   SC.run(function() {
@@ -32,7 +32,7 @@ test("should render a view for each item in its content array", function() {
 test("should render the emptyView if content array is empty (view class)", function() {
   view = SC.CollectionView.create({
     tagName: 'del',
-    content: [],
+    content: SC.NativeArray.apply([]),
 
     emptyView: SC.View.extend({
       tagName: 'kbd',
@@ -52,7 +52,7 @@ test("should render the emptyView if content array is empty (view class)", funct
 test("should render the emptyView if content array is empty (view instance)", function() {
   view = SC.CollectionView.create({
     tagName: 'del',
-    content: [],
+    content: SC.NativeArray.apply([]),
 
     emptyView: SC.View.create({
       tagName: 'kbd',
@@ -72,7 +72,7 @@ test("should render the emptyView if content array is empty (view instance)", fu
 test("should be able to override the tag name of itemViewClass even if tag is in default mapping", function() {
   view = SC.CollectionView.create({
     tagName: 'del',
-    content: ['NEWS GUVNAH'],
+    content: SC.NativeArray.apply(['NEWS GUVNAH']),
 
     itemViewClass: SC.View.extend({
       tagName: 'kbd',
@@ -92,7 +92,7 @@ test("should be able to override the tag name of itemViewClass even if tag is in
 test("should allow custom item views by setting itemViewClass", function() {
   var passedContents = [];
   view = SC.CollectionView.create({
-    content: ['foo', 'bar', 'baz'],
+    content: SC.NativeArray.apply(['foo', 'bar', 'baz']),
 
     itemViewClass: SC.View.extend({
       render: function(buf) {
@@ -114,7 +114,7 @@ test("should allow custom item views by setting itemViewClass", function() {
 });
 
 test("should insert a new item in DOM when an item is added to the content array", function() {
-  var content = ['foo', 'bar', 'baz'];
+  var content = SC.NativeArray.apply(['foo', 'bar', 'baz']);
 
   view = SC.CollectionView.create({
     content: content,
@@ -142,7 +142,7 @@ test("should insert a new item in DOM when an item is added to the content array
 });
 
 test("should remove an item from DOM when an item is removed from the content array", function() {
-  var content = ['foo', 'bar', 'baz'];
+  var content = SC.NativeArray.apply(['foo', 'bar', 'baz']);
 
   view = SC.CollectionView.create({
     content: content,
@@ -167,7 +167,7 @@ test("should remove an item from DOM when an item is removed from the content ar
   });
 
   content.forEach(function(item, idx) {
-    equals(view.$(':nth-child(%@)'.fmt(idx+1)).text(), item);
+    equals(view.$(SC.String.fmt(':nth-child(%@)', String(idx+1))).text(), item);
   });
 });
 
@@ -176,9 +176,9 @@ test("should allow changes to content object before layer is created", function(
     content: null
   });
 
-  set(view, 'content', []);
-  set(view, 'content', [1, 2, 3]);
-  set(view, 'content', [1, 2]);
+  set(view, 'content', SC.NativeArray.apply([]));
+  set(view, 'content', SC.NativeArray.apply([1, 2, 3]));
+  set(view, 'content', SC.NativeArray.apply([1, 2]));
 
   SC.run(function() {
     view.append();
@@ -189,7 +189,7 @@ test("should allow changes to content object before layer is created", function(
 
 test("should allow changing content property to be null", function() {
   view = SC.CollectionView.create({
-    content: [1, 2, 3],
+    content: SC.NativeArray.apply([1, 2, 3]),
 
     emptyView: SC.View.extend({
       template: function() { return "(empty)"; }
@@ -211,7 +211,7 @@ test("should allow changing content property to be null", function() {
 
 test("should allow items to access to the CollectionView's current index in the content array", function() {
   view = SC.CollectionView.create({
-    content: ['zero', 'one', 'two'],
+    content: SC.NativeArray.apply(['zero', 'one', 'two']),
     itemViewClass: SC.View.extend({
       render: function(buf) {
         buf.push(get(this, 'contentIndex'));

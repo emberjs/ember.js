@@ -13,11 +13,11 @@ var getPath = SC.getPath, meta = SC.meta, fmt = SC.String.fmt;
 var childViewsProperty = SC.computed(function() {
   var childViews = get(this, '_childViews');
 
-  var ret = [];
+  var ret = SC.NativeArray.apply([]);
 
   childViews.forEach(function(view) {
     if (view.isVirtual) {
-      ret = ret.concat(get(view, 'childViews'));
+      ret.pushObjects(get(view, 'childViews'));
     } else {
       ret.push(view);
     }
@@ -105,7 +105,7 @@ SC.View = SC.Object.extend(
       }
 
       if (!template) {
-        throw new SC.Error('%@ - Unable to find template "%@".'.fmt(this, templateName));
+        throw new SC.Error(fmt('%@ - Unable to find template "%@".', this, templateName));
       }
     }
 
@@ -165,7 +165,7 @@ SC.View = SC.Object.extend(
   */
   childViews: childViewsProperty,
 
-  _childViews: [],
+  _childViews: SC.NativeArray.apply([]),
 
   /**
     Return the nearest ancestor that is an instance of the provided
@@ -484,7 +484,8 @@ SC.View = SC.Object.extend(
       // Normalize property path to be suitable for use
       // as a class name. For exaple, content.foo.barBaz
       // becomes bar-baz.
-      return SC.String.dasherize(get(property.split('.'), 'lastObject'));
+      parts = property.split('.');
+      return SC.String.dasherize(parts[parts.length-1]);
 
     // If the value is not NO, undefined, or null, return the current
     // value of the property.
@@ -1038,13 +1039,13 @@ SC.View = SC.Object.extend(
     // SC.RootResponder to dispatch incoming events.
     SC.View.views[get(this, 'elementId')] = this;
 
-    var childViews = get(this, '_childViews').slice();
+    var childViews = SC.NativeArray.apply(get(this, '_childViews').slice());
     // setup child views. be sure to clone the child views array first
     set(this, '_childViews', childViews);
 
 
-    this.classNameBindings = get(this, 'classNameBindings').slice();
-    this.classNames = get(this, 'classNames').slice();
+    this.classNameBindings = SC.NativeArray.apply(get(this, 'classNameBindings').slice());
+    this.classNames = SC.NativeArray.apply(get(this, 'classNames').slice());
 
     this.set('domManager', this.domManagerClass.create({ view: this }));
 

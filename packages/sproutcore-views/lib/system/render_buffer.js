@@ -98,10 +98,10 @@ SC._RenderBuffer = SC.Object.extend(
   init: function() {
     this._super();
 
-    set(this ,'elementClasses', []);
+    set(this ,'elementClasses', SC.NativeArray.apply([]));
     set(this, 'elementAttributes', {});
     set(this, 'elementStyle', {});
-    set(this, 'childBuffers', []);
+    set(this, 'childBuffers', SC.NativeArray.apply([]));
     set(this, 'elements', {});
   },
 
