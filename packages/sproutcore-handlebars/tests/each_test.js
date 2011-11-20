@@ -47,7 +47,7 @@ test("it updates the view if an item is added", function() {
 test("it allows you to access the current context using {{this}}", function() {
   view = SC.View.create({
     template: templateFor("{{#each people}}{{this}}{{/each}}"),
-    people: ['Black Francis', 'Joey Santiago', 'Kim Deal', 'David Lovering']
+    people: SC.NativeArray.apply(['Black Francis', 'Joey Santiago', 'Kim Deal', 'David Lovering'])
   });
 
   append(view);
