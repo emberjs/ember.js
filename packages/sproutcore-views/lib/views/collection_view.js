@@ -46,13 +46,13 @@ SC.CollectionView = SC.ContainerView.extend(
     return ret;
   },
 
-  _contentWillChange: function() {
+  _contentWillChange: SC.beforeObserver(function() {
     var content = this.get('content');
 
     if (content) { content.removeArrayObserver(this); }
     var len = content ? get(content, 'length') : 0;
     this.arrayWillChange(content, 0, len);
-  }.observesBefore('content'),
+  }, 'content'),
 
   /**
     @private
@@ -62,7 +62,7 @@ SC.CollectionView = SC.ContainerView.extend(
     asynchronously, to allow the element to be created before
     bindings have synchronized and vice versa.
   */
-  _contentDidChange: function() {
+  _contentDidChange: SC.observer(function() {
     var content = get(this, 'content');
 
     if (content) {
@@ -72,7 +72,7 @@ SC.CollectionView = SC.ContainerView.extend(
 
     var len = content ? get(content, 'length') : 0;
     this.arrayDidChange(content, 0, null, len);
-  }.observes('content'),
+  }, 'content'),
 
   destroy: function() {
     var content = get(this, 'content');
