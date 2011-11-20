@@ -1047,7 +1047,7 @@ SC.View = SC.Object.extend(
     this.classNameBindings = SC.NativeArray.apply(get(this, 'classNameBindings').slice());
     this.classNames = SC.NativeArray.apply(get(this, 'classNames').slice());
 
-    this.set('domManager', this.domManagerClass.create({ view: this }));
+    set(this, 'domManager', this.domManagerClass.create({ view: this }));
 
     meta(this)["SC.View"] = {};
   },
