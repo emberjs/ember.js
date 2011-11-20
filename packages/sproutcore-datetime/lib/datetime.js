@@ -1013,7 +1013,7 @@ SC.DateTime.reopenClass(SC.Comparable,
        if ( opts.month === 2 && opts.day > 29 ){
          return null;
        }
-       if ([4,6,9,11].contains(opts.month) && opts.day > 30) {
+       if (jQuery.inArray(opts.month, [4,6,9,11]) > -1 && opts.day > 30) {
          return null;
        }
      }
