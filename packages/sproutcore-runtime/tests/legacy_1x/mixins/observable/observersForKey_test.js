@@ -26,9 +26,7 @@ var ObservableObject = SC.Object.extend(SC.Observable);
 // GET()
 //
 
-module("object.observesForKey()", {
-
-});
+module("object.observesForKey()");
 
 test("should get observers", function() {
   var o1 = ObservableObject.create({ foo: 100 }),
