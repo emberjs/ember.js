@@ -77,9 +77,9 @@ SC.Handlebars.registerHelper('collection', function(path, options) {
   }
 
   if (hash.preserveContext) {
-    itemHash.templateContext = function() {
+    itemHash.templateContext = SC.computed(function() {
       return get(this, 'content');
-    }.property('content');
+    }).property('content');
     delete hash.preserveContext;
   }
 

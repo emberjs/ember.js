@@ -382,7 +382,9 @@ test("should render multiple, bound nested collections (#68)", function() {
 
     TemplateTests.OuterListItem = SC.View.extend({
       template: SC.Handlebars.compile('{{#collection TemplateTests.InnerList class="inner"}}{{content}}{{/collection}}{{content}}'),
-      innerListContent: function() { return SC.NativeArray.apply([1,2,3]); }.property().cacheable()
+      innerListContent: SC.computed(function() {
+        return SC.NativeArray.apply([1,2,3]);
+      }).cacheable()
     });
 
     TemplateTests.OuterList = SC.CollectionView.extend({

@@ -105,10 +105,10 @@ test("template view should call the function of the associated template with its
     _personName: "Tom DAAAALE",
     _i: 0,
 
-    personName: function() {
+    personName: SC.computed(function() {
       this._i++;
       return this._personName + this._i;
-    }.property().cacheable(),
+    }).cacheable(),
 
     templates: SC.Object.create({
       test_template: SC.Handlebars.compile("<h1 id='twas-called'>template was called for {{personName}}. Yea {{personName}}</h1>")
@@ -1234,9 +1234,9 @@ test("should be able to update when bound property updates", function(){
   var View = SC.View.extend({
     template: SC.Handlebars.compile('<i>{{value.name}}, {{computed}}</i>'),
     valueBinding: 'MyApp.controller',
-    computed: function(){
+    computed: SC.computed(function(){
       return this.getPath('value.name') + ' - computed';
-    }.property('value')
+    }).property('value')
   });
   
   view = View.create();
