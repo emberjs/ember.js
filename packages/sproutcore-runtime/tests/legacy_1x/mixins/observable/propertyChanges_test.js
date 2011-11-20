@@ -35,20 +35,20 @@ module("object.propertyChanges", {
       foo  : 'fooValue',
       prop : 'propValue',
             
-      action: function() {
+      action: SC.observer(function() {
         this.set('prop', 'changedPropValue');
-      }.observes('foo'),
+      }, 'foo'),
       
       newFoo : 'newFooValue',
       newProp: 'newPropValue',
       
-      notifyAction: function() {
+      notifyAction: SC.observer(function() {
         this.set('newProp', 'changedNewPropValue');
-      }.observes('newFoo'),
+      }, 'newFoo'),
       
-      notifyAllAction: function() {
+      notifyAllAction: SC.observer(function() {
         this.set('newFoo', 'changedNewFooValue');
-      }.observes('prop'),
+      }, 'prop'),
 
       starProp: null,
       starObserver: function(target, key, value, rev) {
@@ -124,13 +124,13 @@ test("should invalidate function property cache when notifyPropertyChange is cal
   
   var a = ObservableObject.create({
     _b: null,
-    b: function(key, value) {
+    b: SC.computed(function(key, value) {
       if (value !== undefined) {
         this._b = value;
         return this;
       }
       return this._b;
-    }.property()
+    })
   });
   
   a.set('b', 'foo');

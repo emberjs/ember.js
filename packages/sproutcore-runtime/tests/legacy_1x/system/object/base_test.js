@@ -82,17 +82,17 @@ module("SC.Object observers", {
       prop1: null,
 
       // normal observer
-      observer: function(){
+      observer: SC.observer(function(){
         this._normal = YES;
-      }.observes("prop1"),
+      }, "prop1"),
 
-      globalObserver: function() {
+      globalObserver: SC.observer(function() {
         this._global = YES;
-      }.observes("TestNamespace.obj.value"),
+      }, "TestNamespace.obj.value"),
 
-      bothObserver: function() {
+      bothObserver: SC.observer(function() {
         this._both = YES;
-      }.observes("prop1", "TestNamespace.obj.value")
+      }, "prop1", "TestNamespace.obj.value")
     });
 
   }

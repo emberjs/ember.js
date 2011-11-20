@@ -40,9 +40,9 @@ var TestArray = SC.Object.extend(SC.Array, {
     return this._content[idx];
   },
 
-  length: function() {
+  length: SC.computed(function() {
     return this._content.length;
-  }.property('[]').cacheable(),
+  }).property('[]').cacheable(),
 
   slice: function() {
     return this._content.slice();
@@ -94,9 +94,9 @@ test('should notify observers of []', function() {
 
   obj = DummyArray.create({
     _count: 0,
-    enumerablePropertyDidChange: function() {
+    enumerablePropertyDidChange: SC.observer(function() {
       this._count++;
-    }.observes('[]')
+    }, '[]')
   });
 
   equals(obj._count, 0, 'should not have invoked yet');
@@ -116,9 +116,9 @@ module('notify observers of length', {
   setup: function() {
     obj = DummyArray.create({
       _after: 0,
-      lengthDidChange: function() {
+      lengthDidChange: SC.observer(function() {
         this._after++;
-      }.observes('length')
+      }, 'length')
 
     });
 
@@ -544,9 +544,9 @@ testBoth("observers that contain @each in the path should fire only once the fir
       set(this, 'resources', SC.NativeArray.apply([]));
     },
 
-    commonDidChange: function() {
+    commonDidChange: SC.observer(function() {
       count++;
-    }.observes('resources.@each.common')
+    }, 'resources.@each.common')
   })
 
   // Observer fires second time when new object is added

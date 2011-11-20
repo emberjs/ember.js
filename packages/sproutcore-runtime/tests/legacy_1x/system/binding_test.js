@@ -90,11 +90,11 @@ test("suspended observing during bindings", function() {
 
     callCount: 0,
 
-    observer: function() {
+    observer: SC.observer(function() {
       equals(get(this, 'value1'), 'CHANGED', 'value1 when observer fires');
       equals(get(this, 'value2'), 'CHANGED', 'value2 when observer fires');
       this.callCount++;
-    }.observes('value1', 'value2')
+    }, 'value1', 'value2')
   });
 
   var root = { fromObject: fromObject, toObject: toObject };
@@ -162,9 +162,9 @@ module("chained binding", {
       input: 'second',
       output: 'second',
 
-      inputDidChange: function() {
+      inputDidChange: SC.observer(function() {
         set(this, "output", get(this, "input")) ;
-      }.observes("input")
+      }, "input")
     }) ;
 
     third = SC.Object.create({ input: "third" }) ;

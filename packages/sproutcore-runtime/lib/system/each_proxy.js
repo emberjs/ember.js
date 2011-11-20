@@ -25,10 +25,10 @@ var EachArray = SC.Object.extend(SC.Array, {
     return item && get(item, this._keyName);
   },
 
-  length: function() {
+  length: SC.computed(function() {
     var content = this._content;
     return content ? get(content, 'length') : 0;
-  }.property('[]').cacheable()
+  }).property('[]').cacheable()
 
 });
 

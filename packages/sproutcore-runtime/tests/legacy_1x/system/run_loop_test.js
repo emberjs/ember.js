@@ -32,9 +32,9 @@ module("System:run_loop() - chained binding", {
       input: 'MyApp.second',
       output: 'MyApp.second',
     
-      inputDidChange: function() {
+      inputDidChange: SC.observer(function() {
         this.set("output", this.get("input")) ;
-      }.observes("input") 
+      }, "input") 
 
     }) ;
   
@@ -44,7 +44,7 @@ module("System:run_loop() - chained binding", {
   }
 });
 
-test("Should propograte bindings after the RunLoop completes (using SC.RunLoop)", function() {
+test("Should propagate bindings after the RunLoop completes (using SC.RunLoop)", function() {
   SC.RunLoop.begin();
     //Binding of output of MyApp.first object to input of MyApp.second object
       binding1 = SC.Binding.from("first.output")
@@ -75,7 +75,7 @@ test("Should propograte bindings after the RunLoop completes (using SC.RunLoop)"
   equals(MyApp.second.get("output"), "change") ;
 });
 
-test("Should propograte bindings after the RunLoop completes (using SC.beginRunLoop)", function() {
+test("Should propagate bindings after the RunLoop completes (using SC.beginRunLoop)", function() {
     //Binding of output of MyApp.first object to input of MyApp.second object
       binding1 = SC.Binding.from("first.output")
         .to("second.input").connect(MyApp) ;
@@ -104,7 +104,7 @@ test("Should propograte bindings after the RunLoop completes (using SC.beginRunL
   equals(MyApp.second.get("output"), "change") ;
 });
 
-test("Should propograte bindings after the RunLoop completes (checking invokeOnce() function)", function() {
+test("Should propagate bindings after the RunLoop completes (checking invokeOnce() function)", function() {
   SC.RunLoop.begin();
     //Binding of output of MyApp.first object to input of MyApp.second object
       binding1 = SC.Binding.from("first.output")

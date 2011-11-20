@@ -39,9 +39,9 @@ var TestMutableEnumerable = SC.Object.extend(SC.MutableEnumerable, {
     return idx>=SC.get(this, 'length') ? undefined : this._content[idx];
   },
   
-  length: function() {
+  length: SC.computed(function() {
     return this._content.length;
-  }.property('[]').cacheable(),
+  }).property('[]').cacheable(),
   
   slice: function() {
     return this._content.slice();
