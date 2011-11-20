@@ -10,7 +10,7 @@ SC.MutableArrayTests.extend({
   
   newObject: function(ary) {
     var ret = ary ? ary.slice() : this.newFixture(3);
-    return new SC.ArrayProxy(ret);
+    return new SC.ArrayProxy(SC.NativeArray.apply(ret));
   },
 
   mutate: function(obj) {

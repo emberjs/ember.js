@@ -15,7 +15,7 @@ var TestMutableArray = SC.Object.extend(SC.MutableArray, {
   _content: null,
 
   init: function(ary) {
-    this._content = ary || [];
+    this._content = SC.NativeArray.apply(ary || []);
   },
 
   replace: function(idx, amt, objects) {

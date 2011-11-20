@@ -9,7 +9,7 @@ SC.MutableArrayTests.extend({
   name: 'Native Array',
   
   newObject: function(ary) {
-    return ary ? ary.slice() : this.newFixture(3);
+    return SC.NativeArray.apply(ary ? ary.slice() : this.newFixture(3));
   },
 
   mutate: function(obj) {

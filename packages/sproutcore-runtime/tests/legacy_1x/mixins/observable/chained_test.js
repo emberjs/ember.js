@@ -30,7 +30,7 @@ test("chained observers on enumerable properties are triggered when the observed
   var child4 = SC.Object.create({ name: "Nancy" });
 
   set(family, 'momma', momma);
-  set(momma, 'children', [child1, child2, child3]);
+  set(momma, 'children', SC.NativeArray.apply([child1, child2, child3]));
 
   var observerFiredCount = 0;
   SC.addObserver(family, 'momma.children.@each.name', this, function() {

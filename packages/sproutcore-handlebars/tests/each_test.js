@@ -3,7 +3,7 @@ var people, view;
 module("the #each helper", {
   setup: function() {
     template = templateFor("{{#each people}}{{name}}{{/each}}");
-    people = SC.Array.apply([{ name: "Steve Holt" }, { name: "Annabelle" }]);
+    people = SC.NativeArray.apply([{ name: "Steve Holt" }, { name: "Annabelle" }]);
 
     view = SC.View.create({
       template: template,

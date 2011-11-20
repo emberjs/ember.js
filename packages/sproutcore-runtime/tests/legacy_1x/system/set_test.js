@@ -41,7 +41,7 @@ test("SC.Set.create() should create empty set", function() {
 });
 
 test("SC.Set.create([1,2,3]) should create set with three items in them", function() {
-  var set = SC.Set.create([a,b,c]) ;
+  var set = SC.Set.create(SC.NativeArray.apply([a,b,c])) ;
   equals(set.length, 3) ;
   equals(set.contains(a), YES) ;
   equals(set.contains(b), YES) ;
@@ -174,11 +174,11 @@ module("SC.Set.remove + SC.Set.contains", {
   // generate a set with every type of object, but none of the specific
   // ones we add in the tests below...
   setup: function() {
-    set = SC.Set.create([
+    set = SC.Set.create(SC.NativeArray.apply([
       SC.Object.create({ dummy: YES }),
       { isHash: YES },
       "Not the String",
-      16, true, false, 0]) ;
+      16, true, false, 0])) ;
   },
   
   teardown: function() {
@@ -292,11 +292,11 @@ module("SC.Set.pop + SC.Set.copy", {
 // generate a set with every type of object, but none of the specific
 // ones we add in the tests below...
 	setup: function() {
-		set = SC.Set.create([
+		set = SC.Set.create(SC.NativeArray.apply([
 			SC.Object.create({ dummy: YES }),
 			{ isHash: YES },
 			"Not the String",
-			16, false]) ;
+			16, false])) ;
 		},
 		
 		teardown: function() {
@@ -312,10 +312,10 @@ test("the pop() should remove an arbitrary object from the set", function() {
 });
 
 test("should pop false and 0", function(){
-  set = SC.Set.create([false]);
+  set = SC.Set.create(SC.NativeArray.apply([false]));
   ok(set.pop() === false, "should pop false");
 
-  set = SC.Set.create([0]);
+  set = SC.Set.create(SC.NativeArray.apply([0]));
   ok(set.pop() === 0, "should pop 0");
 });
 

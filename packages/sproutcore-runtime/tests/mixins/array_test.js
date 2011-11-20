@@ -520,7 +520,7 @@ test('modifying the array should also indicate the isDone prop itself has change
 testBoth("should be clear caches for computed properties that have dependent keys on arrays that are changed after object initialization", function(get, set) {
   var obj = SC.Object.create({
     init: function() {
-      set(this, 'resources', SC.MutableArray.apply([]));
+      set(this, 'resources', SC.NativeArray.apply([]));
     },
 
     common: SC.computed(function() {
@@ -541,7 +541,7 @@ testBoth("observers that contain @each in the path should fire only once the fir
   var obj = SC.Object.create({
     init: function() {
       // Observer fires once when resources changes
-      set(this, 'resources', SC.MutableArray.apply([]));
+      set(this, 'resources', SC.NativeArray.apply([]));
     },
 
     commonDidChange: function() {
