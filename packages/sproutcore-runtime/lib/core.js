@@ -52,7 +52,7 @@ if (typeof console === 'undefined') {
   
   In general we recommend leaving this option set to true since it rarely
   conflicts with other code.  If you need to turn it off however, you can
-  define an ENV.ENHANCE_PROTOTYPES config to disable it.
+  define an ENV.EXTEND_PROTOTYPES config to disable it.
 */  
 SC.EXTEND_PROTOTYPES = (SC.ENV.EXTEND_PROTOTYPES !== false);
 
