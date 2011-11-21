@@ -32,3 +32,11 @@ test("should create nested objects if writable is true", function() {
   equals(typeof SC.metaPath(obj, ['foo', 'bar', 'baz'], true), "object", "should return hash when writable is true and doesn't already exist") ;
   ok(SC.meta(obj).foo.bar.baz['bat'] = true, "can set a property on the newly created hash");
 });
+
+test("getMeta and setMeta", function() {
+  var obj = {};
+
+  ok(!SC.getMeta(obj, 'foo'), "precond - foo property on meta does not yet exist");
+  SC.setMeta(obj, 'foo', "bar");
+  equal(SC.getMeta(obj, 'foo'), "bar", "foo property on meta now exists");
+});

@@ -204,6 +204,17 @@ SC.meta = function meta(obj, writable) {
   return ret;
 };
 
+SC.getMeta = function getMeta(obj, property) {
+  var meta = SC.meta(obj, false);
+  return meta[property];
+};
+
+SC.setMeta = function setMeta(obj, property, value) {
+  var meta = SC.meta(obj, true);
+  meta[property] = value;
+  return value;
+};
+
 /**
   @private
 
