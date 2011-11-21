@@ -93,6 +93,6 @@ test("should allow attributes to be set in the inBuffer state", function() {
   equals(parentView.get('childViews')[0].$().attr('foo'), 'baz');
 
   parentView.destroy();
-
+  Test.destroy();
 });
 

@@ -395,6 +395,24 @@ function processNames(paths, root, seen) {
   paths.length = idx; // cut out last item
 }
 
+function findNamespaces() {
+  var Namespace = SC.Namespace, obj;
+
+  if (Namespace.PROCESSED) { return; }
+
+  for (var prop in window) {
+    if (!window.hasOwnProperty(prop)) { continue; }
+
+    obj = window[prop];
+
+    if (obj instanceof Namespace) {
+      obj[NAME_KEY] = prop;
+    }
+  }
+}
+
+SC.identifyNamespaces = findNamespaces;
+
 superClassString = function(mixin) {
   var superclass = mixin.superclass;
   if (superclass) {
@@ -406,9 +424,24 @@ superClassString = function(mixin) {
 }
 
 classToString = function() {
-  if (!this[NAME_KEY] && !classToString.processed) {
-    classToString.processed = true;
-    processNames([], window, {});
+  var Namespace = SC.Namespace, namespace;
+
+  // TODO: Namespace should really be in Metal
+  if (Namespace) {
+    if (!this[NAME_KEY] && !classToString.processed) {
+      if (!Namespace.PROCESSED) {
+        findNamespaces();
+        Namespace.PROCESSED = true;
+      }
+
+      classToString.processed = true;
+
+      var namespaces = Namespace.NAMESPACES;
+      for (var i=0, l=namespaces.length; i<l; i++) {
+        namespace = namespaces[i];
+        processNames([namespace.toString()], namespace, {});
+      }
+    }
   }
 
   if (this[NAME_KEY]) {
@@ -421,8 +454,6 @@ classToString = function() {
       return "(unknown mixin)";
     }
   }
-
-  return this[NAME_KEY] || "(unknown mixin)";
 };
 
 Mixin.prototype.toString = classToString;
