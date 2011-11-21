@@ -374,6 +374,8 @@ Mixin.prototype.keys = function() {
 
 /** @private - make Mixin's have nice displayNames */
 
+SC.NICE_NAMES = (SC.ENV.NICE_NAMES === undefined) ? true : SC.ENV.NICE_NAMES;
+
 var NAME_KEY = SC.GUID_KEY+'_name';
 
 function processNames(paths, root, seen) {
@@ -406,6 +408,8 @@ superClassString = function(mixin) {
 }
 
 classToString = function() {
+  if (!SC.NICE_NAMES) return "<class>";
+
   if (!this[NAME_KEY] && !classToString.processed) {
     classToString.processed = true;
     processNames([], window, {});
