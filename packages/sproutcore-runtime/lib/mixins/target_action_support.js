@@ -4,7 +4,7 @@ SC.TargetActionSupport = SC.Mixin.create({
   target: null,
   action: null,
 
-  targetObject: function() {
+  targetObject: SC.computed(function() {
     var target = get(this, 'target');
 
     if (SC.typeOf(target) === "string") {
@@ -12,7 +12,7 @@ SC.TargetActionSupport = SC.Mixin.create({
     } else {
       return target;
     }
-  }.property('target').cacheable(),
+  }).property('target').cacheable(),
 
   triggerAction: function() {
     var action = get(this, 'action'),

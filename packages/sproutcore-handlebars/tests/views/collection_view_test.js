@@ -32,7 +32,7 @@ module("sproutcore-handlebars/tests/views/collection_view_test", {
 test("passing a block to the collection helper sets it as the template for example views", function() {
   TemplateTests.CollectionTestView = SC.CollectionView.extend({
     tagName: 'ul',
-    content: ['foo', 'bar', 'baz']
+    content: SC.NativeArray.apply(['foo', 'bar', 'baz'])
   });
 
   view = SC.View.create({
@@ -52,7 +52,7 @@ test("collection helper should accept relative paths", function() {
     template: SC.Handlebars.compile('{{#collection collection}} <label></label> {{/collection}}'),
     collection: SC.CollectionView.extend({
       tagName: 'ul',
-      content: ['foo', 'bar', 'baz']
+      content: SC.NativeArray.apply(['foo', 'bar', 'baz'])
     })
   });
 
@@ -75,7 +75,7 @@ test("empty views should be removed when content is added to the collection (reg
   });
 
   App.ListController = SC.ArrayProxy.create({
-    content : []
+    content : SC.NativeArray.apply([])
   });
 
   view = SC.View.create({
@@ -98,7 +98,7 @@ test("empty views should be removed when content is added to the collection (reg
 test("if no content is passed, and no 'else' is specified, nothing is rendered", function() {
   TemplateTests.CollectionTestView = SC.CollectionView.extend({
     tagName: 'ul',
-    content: []
+    content: SC.NativeArray.apply([])
   });
 
   view = SC.View.create({
@@ -115,7 +115,7 @@ test("if no content is passed, and no 'else' is specified, nothing is rendered",
 test("if no content is passed, and 'else' is specified, the else block is rendered", function() {
   TemplateTests.CollectionTestView = SC.CollectionView.extend({
     tagName: 'ul',
-    content: []
+    content: SC.NativeArray.apply([])
   });
 
   view = SC.View.create({
@@ -132,7 +132,7 @@ test("if no content is passed, and 'else' is specified, the else block is render
 test("a block passed to a collection helper defaults to the content property of the context", function() {
   TemplateTests.CollectionTestView = SC.CollectionView.extend({
     tagName: 'ul',
-    content: ['foo', 'bar', 'baz']
+    content: SC.NativeArray.apply(['foo', 'bar', 'baz'])
   });
 
   view = SC.View.create({
@@ -149,7 +149,7 @@ test("a block passed to a collection helper defaults to the content property of 
 test("a block passed to a collection helper defaults to the view", function() {
   TemplateTests.CollectionTestView = SC.CollectionView.extend({
     tagName: 'ul',
-    content: ['foo', 'bar', 'baz']
+    content: SC.NativeArray.apply(['foo', 'bar', 'baz'])
   });
 
   view = SC.View.create({
@@ -162,7 +162,7 @@ test("a block passed to a collection helper defaults to the view", function() {
   equals(view.$('li:has(label:contains("foo")) + li:has(label:contains("bar")) + li:has(label:contains("baz"))').length, 1, 'precond - one aside element is created for each content item');
 
   SC.run(function() {
-    set(firstChild(view), 'content', []);
+    set(firstChild(view), 'content', SC.NativeArray.apply([]));
   });
   equals(view.$('label').length, 0, "all list item views should be removed from DOM");
 });
@@ -170,7 +170,7 @@ test("a block passed to a collection helper defaults to the view", function() {
 test("should include an id attribute if id is set in the options hash", function() {
   TemplateTests.CollectionTestView = SC.CollectionView.extend({
     tagName: 'ul',
-    content: ['foo', 'bar', 'baz']
+    content: SC.NativeArray.apply(['foo', 'bar', 'baz'])
   });
 
   var view = SC.View.create({
@@ -187,7 +187,7 @@ test("should include an id attribute if id is set in the options hash", function
 test("should give its item views the class specified by itemClass", function() {
   TemplateTests.itemClassTestCollectionView = SC.CollectionView.extend({
     tagName: 'ul',
-    content: ['foo', 'bar', 'baz']
+    content: SC.NativeArray.apply(['foo', 'bar', 'baz'])
   });
   var view = SC.View.create({
     template: SC.Handlebars.compile('{{#collection "TemplateTests.itemClassTestCollectionView" itemClass="baz"}}foo{{/collection}}')
@@ -203,7 +203,7 @@ test("should give its item views the class specified by itemClass", function() {
 test("should give its item views the classBinding specified by itemClassBinding", function() {
   TemplateTests.itemClassBindingTestCollectionView = SC.CollectionView.extend({
     tagName: 'ul',
-    content: [SC.Object.create({ isBaz: false }), SC.Object.create({ isBaz: true }), SC.Object.create({ isBaz: true })]
+    content: SC.NativeArray.apply([SC.Object.create({ isBaz: false }), SC.Object.create({ isBaz: true }), SC.Object.create({ isBaz: true })])
   });
 
   var view = SC.View.create({
@@ -230,7 +230,7 @@ test("should give its item views the classBinding specified by itemClassBinding"
 });
 
 test("should work inside a bound {{#if}}", function() {
-  var testData = [SC.Object.create({ isBaz: false }), SC.Object.create({ isBaz: true }), SC.Object.create({ isBaz: true })];
+  var testData = SC.NativeArray.apply([SC.Object.create({ isBaz: false }), SC.Object.create({ isBaz: true }), SC.Object.create({ isBaz: true })]);
   TemplateTests.ifTestCollectionView = SC.CollectionView.extend({
     tagName: 'ul',
     content: testData
@@ -258,12 +258,14 @@ test("should pass content as context when using {{#each}} helper", function() {
   var view = SC.View.create({
     template: SC.Handlebars.compile('{{#each releases}}Mac OS X {{version}}: {{name}} {{/each}}'),
 
-    releases: [ { version: '10.7',
+    releases: SC.NativeArray.apply([
+                { version: '10.7',
                   name: 'Lion' },
                 { version: '10.6',
                   name: 'Snow Leopard' },
                 { version: '10.5',
-                  name: 'Leopard' } ]
+                  name: 'Leopard' }
+              ])
   });
 
   SC.run(function() { view.appendTo('#qunit-fixture'); });
@@ -274,7 +276,7 @@ test("should pass content as context when using {{#each}} helper", function() {
 test("should re-render when the content object changes", function() {
   TemplateTests.RerenderTest = SC.CollectionView.extend({
     tagName: 'ul',
-    content: []
+    content: SC.NativeArray.apply([])
   });
 
   var view = SC.View.create({
@@ -286,11 +288,11 @@ test("should re-render when the content object changes", function() {
   });
 
   SC.run(function() {
-    set(firstChild(view), 'content', ['bing', 'bat', 'bang']);
+    set(firstChild(view), 'content', SC.NativeArray.apply(['bing', 'bat', 'bang']));
   });
 
   SC.run(function() {
-    set(firstChild(view), 'content', ['ramalamadingdong']);
+    set(firstChild(view), 'content', SC.NativeArray.apply(['ramalamadingdong']));
   });
 
   equals(view.$('li').length, 1, "rerenders with correct number of items");
@@ -300,7 +302,7 @@ test("should re-render when the content object changes", function() {
 
 test("select tagName on collection helper automatically sets child tagName to option", function() {
   TemplateTests.RerenderTest = SC.CollectionView.extend({
-    content: ['foo']
+    content: SC.NativeArray.apply(['foo'])
   });
   
   var view = SC.View.create({
@@ -317,7 +319,7 @@ test("select tagName on collection helper automatically sets child tagName to op
 
 test("tagName works in the #collection helper", function() {
   TemplateTests.RerenderTest = SC.CollectionView.extend({
-    content: ['foo', 'bar']
+    content: SC.NativeArray.apply(['foo', 'bar'])
   });
 
   var view = SC.View.create({
@@ -332,7 +334,7 @@ test("tagName works in the #collection helper", function() {
   equals(view.$('li').length, 2, "rerenders with correct number of items");
 
   SC.run(function() {
-    set(firstChild(view), 'content', ['bing', 'bat', 'bang']);
+    set(firstChild(view), 'content', SC.NativeArray.apply(['bing', 'bat', 'bang']));
   });
 
   equals(view.$('li').length, 3, "rerenders with correct number of items");
@@ -343,12 +345,12 @@ test("should render nested collections", function() {
 
   TemplateTests.InnerList = SC.CollectionView.extend({
     tagName: 'ul',
-    content: ['one','two','three']
+    content: SC.NativeArray.apply(['one','two','three'])
   });
 
   TemplateTests.OuterList = SC.CollectionView.extend({
     tagName: 'ul',
-    content: ['foo']
+    content: SC.NativeArray.apply(['foo'])
   });
 
   var view = SC.View.create({
@@ -370,7 +372,7 @@ test("should render multiple, bound nested collections (#68)", function() {
 
   SC.run(function() {
     TemplateTests.contentController = SC.ArrayProxy.create({
-      content: ['foo','bar']
+      content: SC.NativeArray.apply(['foo','bar'])
     });
 
     TemplateTests.InnerList = SC.CollectionView.extend({
@@ -380,7 +382,9 @@ test("should render multiple, bound nested collections (#68)", function() {
 
     TemplateTests.OuterListItem = SC.View.extend({
       template: SC.Handlebars.compile('{{#collection TemplateTests.InnerList class="inner"}}{{content}}{{/collection}}{{content}}'),
-      innerListContent: function() { return [1,2,3]; }.property().cacheable()
+      innerListContent: SC.computed(function() {
+        return SC.NativeArray.apply([1,2,3]);
+      }).cacheable()
     });
 
     TemplateTests.OuterList = SC.CollectionView.extend({
@@ -436,7 +440,7 @@ test("should allow view objects to be swapped out without throwing an error (#78
   SC.run(function() {
     dataset = SC.Object.create({
       ready: true,
-      items: [1,2,3]
+      items: SC.NativeArray.apply([1,2,3])
     });
     TemplateTests.datasetController.set('dataset',dataset);
   });

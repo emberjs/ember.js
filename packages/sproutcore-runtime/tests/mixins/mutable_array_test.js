@@ -15,7 +15,7 @@ var TestMutableArray = SC.Object.extend(SC.MutableArray, {
   _content: null,
 
   init: function(ary) {
-    this._content = ary || [];
+    this._content = SC.NativeArray.apply(ary || []);
   },
 
   replace: function(idx, amt, objects) {
@@ -37,9 +37,9 @@ var TestMutableArray = SC.Object.extend(SC.MutableArray, {
     return this._content[idx];
   },
 
-  length: function() {
+  length: SC.computed(function() {
     return this._content.length;
-  }.property('[]').cacheable(),
+  }).property('[]').cacheable(),
 
   slice: function() {
     return this._content.slice();

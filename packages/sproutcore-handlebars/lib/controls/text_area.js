@@ -25,8 +25,8 @@ SC.TextArea = SC.View.extend(SC.TextSupport, {
     this._updateElementValue();
   },
 
-  _updateElementValue: function() {
+  _updateElementValue: SC.observer(function() {
     this.$().val(get(this, 'value'));
-  }.observes('value')
+  }, 'value')
 
 });

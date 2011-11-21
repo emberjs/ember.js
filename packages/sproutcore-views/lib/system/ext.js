@@ -8,4 +8,4 @@
 // Add a new named queue for rendering views that happens
 // after bindings have synced.
 var queues = SC.run.queues;
-queues.insertAt(queues.indexOf('actions')+1, 'render');
+queues.splice(jQuery.inArray('actions', queues)+1, 0, 'render');

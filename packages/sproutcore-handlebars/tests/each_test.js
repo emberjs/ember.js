@@ -3,7 +3,7 @@ var people, view;
 module("the #each helper", {
   setup: function() {
     template = templateFor("{{#each people}}{{name}}{{/each}}");
-    people = SC.Array.apply([{ name: "Steve Holt" }, { name: "Annabelle" }]);
+    people = SC.NativeArray.apply([{ name: "Steve Holt" }, { name: "Annabelle" }]);
 
     view = SC.View.create({
       template: template,
@@ -47,7 +47,7 @@ test("it updates the view if an item is added", function() {
 test("it allows you to access the current context using {{this}}", function() {
   view = SC.View.create({
     template: templateFor("{{#each people}}{{this}}{{/each}}"),
-    people: ['Black Francis', 'Joey Santiago', 'Kim Deal', 'David Lovering']
+    people: SC.NativeArray.apply(['Black Francis', 'Joey Santiago', 'Kim Deal', 'David Lovering'])
   });
 
   append(view);

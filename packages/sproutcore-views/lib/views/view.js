@@ -13,11 +13,11 @@ var getPath = SC.getPath, meta = SC.meta, fmt = SC.String.fmt;
 var childViewsProperty = SC.computed(function() {
   var childViews = get(this, '_childViews');
 
-  var ret = [];
+  var ret = SC.NativeArray.apply([]);
 
   childViews.forEach(function(view) {
     if (view.isVirtual) {
-      ret = ret.concat(get(view, 'childViews'));
+      ret.pushObjects(get(view, 'childViews'));
     } else {
       ret.push(view);
     }
@@ -90,7 +90,7 @@ SC.View = SC.Object.extend(
     @field
     @type Function
   */
-  template: function(key, value) {
+  template: SC.computed(function(key, value) {
     if (value !== undefined) { return value; }
 
     var templateName = get(this, 'templateName'), template;
@@ -105,13 +105,13 @@ SC.View = SC.Object.extend(
       }
 
       if (!template) {
-        throw new SC.Error('%@ - Unable to find template "%@".'.fmt(this, templateName));
+        throw new SC.Error(fmt('%@ - Unable to find template "%@".', this, templateName));
       }
     }
 
     // return the template, or undefined if no template was found
     return template || get(this, 'defaultTemplate');
-  }.property('templateName').cacheable(),
+  }).property('templateName').cacheable(),
 
   /**
     The object from which templates should access properties.
@@ -124,9 +124,9 @@ SC.View = SC.Object.extend(
 
     @type Object
   */
-  templateContext: function(key, value) {
+  templateContext: SC.computed(function(key, value) {
     return value !== undefined ? value : this;
-  }.property().cacheable(),
+  }).cacheable(),
 
   /**
     If the view is currently inserted into the DOM of a parent view, this
@@ -137,7 +137,7 @@ SC.View = SC.Object.extend(
   */
   _parentView: null,
 
-  parentView: function() {
+  parentView: SC.computed(function() {
     var parent = get(this, '_parentView');
 
     if (parent && parent.isVirtual) {
@@ -145,7 +145,7 @@ SC.View = SC.Object.extend(
     } else {
       return parent;
     }
-  }.property('_parentView'),
+  }).property('_parentView'),
 
   /**
     If false, the view will appear hidden in DOM.
@@ -165,7 +165,7 @@ SC.View = SC.Object.extend(
   */
   childViews: childViewsProperty,
 
-  _childViews: [],
+  _childViews: SC.NativeArray.apply([]),
 
   /**
     Return the nearest ancestor that is an instance of the provided
@@ -219,9 +219,9 @@ SC.View = SC.Object.extend(
 
     @returns SC.CollectionView
   */
-  collectionView: function() {
+  collectionView: SC.computed(function() {
     return this.nearestInstanceOf(SC.CollectionView);
-  }.property().cacheable(),
+  }).cacheable(),
 
   /**
     Return the nearest ancestor that is a direct child of
@@ -229,9 +229,9 @@ SC.View = SC.Object.extend(
 
     @returns SC.View
   */
-  itemView: function() {
+  itemView: SC.computed(function() {
     return this.nearestChildOf(SC.CollectionView);
-  }.property().cacheable(),
+  }).cacheable(),
 
   /**
     Return the nearest ancestor that has the property
@@ -239,9 +239,9 @@ SC.View = SC.Object.extend(
 
     @returns SC.View
   */
-  contentView: function() {
+  contentView: SC.computed(function() {
     return this.nearestWithProperty('content');
-  }.property().cacheable(),
+  }).cacheable(),
 
   /**
     @private
@@ -249,13 +249,13 @@ SC.View = SC.Object.extend(
     When the parent view changes, recursively invalidate
     collectionView, itemView, and contentView
   */
-  _parentViewDidChange: function() {
+  _parentViewDidChange: SC.observer(function() {
     this.invokeRecursively(function(view) {
       view.propertyDidChange('collectionView');
       view.propertyDidChange('itemView');
       view.propertyDidChange('contentView');
     });
-  }.observes('_parentView'),
+  }, '_parentView'),
 
   /**
     Called on your view when it should push strings of HTML into a
@@ -484,7 +484,8 @@ SC.View = SC.Object.extend(
       // Normalize property path to be suitable for use
       // as a class name. For exaple, content.foo.barBaz
       // becomes bar-baz.
-      return SC.String.dasherize(get(property.split('.'), 'lastObject'));
+      parts = property.split('.');
+      return SC.String.dasherize(parts[parts.length-1]);
 
     // If the value is not NO, undefined, or null, return the current
     // value of the property.
@@ -508,13 +509,13 @@ SC.View = SC.Object.extend(
     @field
     @type DOMElement
   */
-  element: function(key, value) {
+  element: SC.computed(function(key, value) {
     if (value !== undefined) {
       return this.invokeForState('setElement', value);
     } else {
       return this.invokeForState('getElement');
     }
-  }.property('_parentView').cacheable(),
+  }).property('_parentView').cacheable(),
 
   /**
     Returns a jQuery object for this view's element. If you pass in a selector
@@ -646,9 +647,9 @@ SC.View = SC.Object.extend(
     @type String
     @readOnly
   */
-  elementId: function(key, value) {
+  elementId: SC.computed(function(key, value) {
     return value !== undefined ? value : SC.guidFor(this);
-  }.property().cacheable(),
+  }).cacheable(),
 
   /**
     Attempts to discover the element in the parent element. The default
@@ -797,11 +798,11 @@ SC.View = SC.Object.extend(
   },
 
   /** @private (nodoc) */
-  _elementWillChange: function() {
+  _elementWillChange: SC.beforeObserver(function() {
     this.forEachChildView(function(view) {
       SC.propertyWillChange(view, 'element');
     });
-  }.observesBefore('element'),
+  }, 'element'),
 
   /**
     @private
@@ -812,11 +813,11 @@ SC.View = SC.Object.extend(
 
     @observes element
   */
-  _elementDidChange: function() {
+  _elementDidChange: SC.observer(function() {
     this.forEachChildView(function(view) {
       SC.propertyDidChange(view, 'element');
     });
-  }.observes('element'),
+  }, 'element'),
 
   /**
     Called when the parentView property has changed.
@@ -1038,15 +1039,15 @@ SC.View = SC.Object.extend(
     // SC.RootResponder to dispatch incoming events.
     SC.View.views[get(this, 'elementId')] = this;
 
-    var childViews = get(this, '_childViews').slice();
+    var childViews = SC.NativeArray.apply(get(this, '_childViews').slice());
     // setup child views. be sure to clone the child views array first
     set(this, '_childViews', childViews);
 
 
-    this.classNameBindings = get(this, 'classNameBindings').slice();
-    this.classNames = get(this, 'classNames').slice();
+    this.classNameBindings = SC.NativeArray.apply(get(this, 'classNameBindings').slice());
+    this.classNames = SC.NativeArray.apply(get(this, 'classNames').slice());
 
-    this.set('domManager', this.domManagerClass.create({ view: this }));
+    set(this, 'domManager', this.domManagerClass.create({ view: this }));
 
     meta(this)["SC.View"] = {};
   },
@@ -1178,9 +1179,9 @@ SC.View = SC.Object.extend(
     When the view's `isVisible` property changes, toggle the visibility
     element of the actual DOM element.
   */
-  _isVisibleDidChange: function() {
+  _isVisibleDidChange: SC.observer(function() {
     this.$().toggle(get(this, 'isVisible'));
-  }.observes('isVisible'),
+  }, 'isVisible'),
 
   clearBuffer: function() {
     this.invokeRecursively(function(view) {

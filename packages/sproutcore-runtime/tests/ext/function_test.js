@@ -11,7 +11,7 @@ module('Function.prototype.observes() helper');
 
 testBoth('global observer helper takes multiple params', function(get, set) {
 
-  if (SC.ENHANCE_PROTOTYPES === false) {
+  if (SC.EXTEND_PROTOTYPES === false) {
     ok('Function.prototype helper disabled');
     return ;
   }

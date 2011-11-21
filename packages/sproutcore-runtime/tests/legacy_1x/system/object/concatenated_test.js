@@ -37,7 +37,7 @@
 
     var values = get(obj, 'values'),
         expected = ['a', 'b', 'c', 'd', 'e', 'f'];
-    same(values, expected, "should concatenate values property (expected: %@, got: %@)".fmt(expected, values));
+    same(values, expected, SC.String.fmt("should concatenate values property (expected: %@, got: %@)", expected, values));
   });
 
   test("concatenates subclasses", function() {
@@ -48,7 +48,7 @@
 
     var values = get(obj, 'values'),
         expected = ['a', 'b', 'c', 'd', 'e', 'f'];
-    same(values, expected, "should concatenate values property (expected: %@, got: %@)".fmt(expected, values));
+    same(values, expected, SC.String.fmt("should concatenate values property (expected: %@, got: %@)", expected, values));
   });
 
   test("concatenates reopen", function() {
@@ -59,7 +59,7 @@
 
     var values = get(obj, 'values'),
         expected = ['a', 'b', 'c', 'd', 'e', 'f'];
-    same(values, expected, "should concatenate values property (expected: %@, got: %@)".fmt(expected, values));
+    same(values, expected, SC.String.fmt("should concatenate values property (expected: %@, got: %@)", expected, values));
   });
 
   test("concatenates mixin", function() {
@@ -73,7 +73,7 @@
 
     var values = get(obj, 'values'),
         expected = ['a', 'b', 'c', 'd', 'e', 'f'];
-    same(values, expected, "should concatenate values property (expected: %@, got: %@)".fmt(expected, values));
+    same(values, expected, SC.String.fmt("should concatenate values property (expected: %@, got: %@)", expected, values));
   });
 
   test("concatenates reopen, subclass, and instance", function() {
@@ -83,7 +83,7 @@
 
     var values = get(obj, 'values'),
         expected = ['a', 'b', 'c', 'd', 'e', 'f'];
-    same(values, expected, "should concatenate values property (expected: %@, got: %@)".fmt(expected, values));
+    same(values, expected, SC.String.fmt("should concatenate values property (expected: %@, got: %@)", expected, values));
   });
 
 

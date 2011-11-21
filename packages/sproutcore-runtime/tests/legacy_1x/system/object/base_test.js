@@ -82,17 +82,17 @@ module("SC.Object observers", {
       prop1: null,
 
       // normal observer
-      observer: function(){
+      observer: SC.observer(function(){
         this._normal = YES;
-      }.observes("prop1"),
+      }, "prop1"),
 
-      globalObserver: function() {
+      globalObserver: SC.observer(function() {
         this._global = YES;
-      }.observes("TestNamespace.obj.value"),
+      }, "TestNamespace.obj.value"),
 
-      bothObserver: function() {
+      bothObserver: SC.observer(function() {
         this._both = YES;
-      }.observes("prop1", "TestNamespace.obj.value")
+      }, "prop1", "TestNamespace.obj.value")
     });
 
   }
@@ -151,10 +151,10 @@ test("Checking the detectInstance() function on an object and its subclass", fun
 });
 
 test("subclasses should contain defined subclasses", function() {
-  ok(obj.subclasses.contains(obj1), 'obj.subclasses should contain obj1');
+  ok(jQuery.inArray(obj1, obj.subclasses) > -1, 'obj.subclasses should contain obj1');
 
   equals(get(obj1.subclasses, 'length'),0,'obj1.subclasses should be empty');
 
   var kls2 = obj1.extend();
-  ok(obj1.subclasses.contains(kls2), 'obj1.subclasses should contain kls2');
+  ok(jQuery.inArray(kls2, obj1.subclasses) > -1, 'obj1.subclasses should contain kls2');
 });

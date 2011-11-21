@@ -11,7 +11,7 @@ SC.CopyableTests.extend({
   name: 'NativeArray Copyable',
   
   newObject: function() {
-    return [SC.generateGuid()];
+    return SC.NativeArray.apply([SC.generateGuid()]);
   },
   
   isEqual: function(a,b) {
