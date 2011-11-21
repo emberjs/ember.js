@@ -156,6 +156,15 @@ SC.View = SC.Object.extend(
   isVisible: true,
 
   /**
+    Returns true if the view is visible in the windo.
+
+    @type Boolean
+  */
+  isVisibleInWindow: function(){
+    return this.$().is(':visible');
+  }.property().cacheable(),
+
+  /**
     Array of child views. You should never edit this array directly.
     Instead, use appendChild and removeFromParent.
 
@@ -753,6 +762,7 @@ SC.View = SC.Object.extend(
   */
   _notifyDidInsertElement: function() {
     this.invokeRecursively(function(view) {
+      view.propertyDidChange('isVisibleInWindow');
       view.didInsertElement();
     });
   },
@@ -1180,6 +1190,9 @@ SC.View = SC.Object.extend(
   */
   _isVisibleDidChange: function() {
     this.$().toggle(get(this, 'isVisible'));
+    this.invokeRecursively(function(view){
+      view.propertyDidChange('isVisibleInWindow');
+    });
   }.observes('isVisible'),
 
   clearBuffer: function() {

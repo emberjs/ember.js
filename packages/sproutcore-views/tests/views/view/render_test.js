@@ -136,6 +136,59 @@ test("should hide element if isVisible is false before element is created", func
   });
 });
 
+test("should not set isVisibleInWindow to true until rendered in DOM", function(){
+  var view = SC.View.create();
+
+  ok(!get(view, 'isVisibleInWindow'), "isVisibleInWindow is false");
+
+  SC.run(function() {
+    view.append();
+  });
+
+  ok(get(view, 'isVisibleInWindow'), "isVisibleInWindow is true");
+  view.remove();
+});
+
+test("should set isVisibleInWindow to false when isVisible is false", function(){
+  var view = SC.View.create({
+    isVisible: false
+  });
+
+  SC.run(function() {
+    view.append();
+  });
+
+  ok(!get(view, 'isVisibleInWindow'), "isVisibleInWindow is false");
+
+  set(view, 'isVisible', true);
+  ok(get(view, 'isVisibleInWindow'), "isVisibleInWindow is true");
+  view.remove();
+});
+
+test("should set isVisibleInWindow to false when parentView.isVisible is false", function(){
+  var view = SC.ContainerView.create({
+    isVisible: false,
+
+    childViews: [
+      SC.View.create({
+        isVisible: true
+      })
+    ]
+  });
+
+  var childView = get(view, 'childViews').objectAt(0);
+
+  SC.run(function() {
+    view.append();
+  });
+
+  ok(!get(childView, 'isVisibleInWindow'), "child isVisibleInWindow is false");
+
+  set(view, 'isVisible', true);
+  ok(get(childView, 'isVisibleInWindow'), "child isVisibleInWindow is true");
+  view.remove();
+});
+
 test("should add sc-view to views", function() {
   var view = SC.View.create();
 
