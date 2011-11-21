@@ -9,7 +9,7 @@
 require('sproutcore-handlebars');
 require('sproutcore-handlebars/helpers/view');
 
-var get = SC.get;
+var get = SC.get, fmt = SC.String.fmt;
 
 /**
   @name Handlebars.helpers.collection
@@ -35,7 +35,7 @@ SC.Handlebars.registerHelper('collection', function(path, options) {
   // Otherwise, just default to the standard class.
   var collectionClass;
   collectionClass = path ? SC.getPath(this, path) : SC.CollectionView;
-  sc_assert("%@ #collection: Could not find %@".fmt(data.view, path), !!collectionClass);
+  sc_assert(fmt("%@ #collection: Could not find %@", data.view, path), !!collectionClass);
 
   var hash = options.hash, itemHash = {}, match;
 
@@ -44,7 +44,7 @@ SC.Handlebars.registerHelper('collection', function(path, options) {
   var collectionPrototype = get(collectionClass, 'proto');
   delete hash.itemViewClass;
   itemViewClass = itemViewPath ? SC.getPath(collectionPrototype, itemViewPath) : collectionPrototype.itemViewClass;
-  sc_assert("%@ #collection: Could not find %@".fmt(data.view, itemViewPath), !!itemViewClass);
+  sc_assert(fmt("%@ #collection: Could not find %@", data.view, itemViewPath), !!itemViewClass);
 
   // Go through options passed to the {{collection}} helper and extract options
   // that configure item views instead of the collection itself.
@@ -77,9 +77,9 @@ SC.Handlebars.registerHelper('collection', function(path, options) {
   }
 
   if (hash.preserveContext) {
-    itemHash.templateContext = function() {
+    itemHash.templateContext = SC.computed(function() {
       return get(this, 'content');
-    }.property('content');
+    }).property('content');
     delete hash.preserveContext;
   }
 

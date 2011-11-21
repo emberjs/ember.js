@@ -51,7 +51,7 @@ module("object.get()", {
       numberVal: 24,
       toggleVal: true,
 
-      computed: function() { return 'value'; }.property(),
+      computed: SC.computed(function() { return 'value'; }).property(),
 
       method: function() { return "value"; },
 
@@ -101,7 +101,7 @@ module("SC.get()", {
       numberVal: 24,
       toggleVal: true,
 
-      computed: function() { return 'value'; }.property(),
+      computed: SC.computed(function() { return 'value'; }).property(),
 
       method: function() { return "value"; },
 
@@ -176,7 +176,7 @@ module("SC.getPath()");
 test("should return a property at a given path relative to the window", function() {
   window.Foo = ObservableObject.create({
     Bar: ObservableObject.create({
-      Baz: function() { return "blargh"; }.property()
+      Baz: SC.computed(function() { return "blargh"; }).property()
     })
   });
 
@@ -190,7 +190,7 @@ test("should return a property at a given path relative to the window", function
 test("should return a property at a given path relative to the passed object", function() {
   var foo = ObservableObject.create({
     bar: ObservableObject.create({
-      baz: function() { return "blargh"; }.property()
+      baz: SC.computed(function() { return "blargh"; }).property()
     })
   });
 
@@ -235,12 +235,12 @@ module("object.set()", {
 
       // computed property
       _computed: "computed",
-      computed: function(key, value) {
+      computed: SC.computed(function(key, value) {
         if (value !== undefined) {
           this._computed = value ;
         }
         return this._computed ;
-      }.property(),
+      }).property(),
 
       // method, but not a property
       _method: "method",
@@ -323,16 +323,16 @@ module("Computed properties", {
       // REGULAR
 
       computedCalls: [],
-      computed: function(key, value) {
+      computed: SC.computed(function(key, value) {
         this.computedCalls.push(value);
         return 'computed';
-      }.property(),
+      }).property(),
 
       computedCachedCalls: [],
-      computedCached: function(key, value) {
+      computedCached: SC.computed(function(key, value) {
         this.computedCachedCalls.push(value);
         return 'computedCached';
-      }.property().cacheable(),
+      }).property().cacheable(),
 
 
       // DEPENDENT KEYS
@@ -340,40 +340,40 @@ module("Computed properties", {
       changer: 'foo',
 
       dependentCalls: [],
-      dependent: function(key, value) {
+      dependent: SC.computed(function(key, value) {
         this.dependentCalls.push(value);
         return 'dependent';
-      }.property('changer'),
+      }).property('changer'),
 
       dependentCachedCalls: [],
-      dependentCached: function(key, value) {
+      dependentCached: SC.computed(function(key, value) {
         this.dependentCachedCalls.push(value);
         return 'dependentCached';
-      }.property('changer').cacheable(),
+      }).property('changer').cacheable(),
 
       // everytime it is recomputed, increments call
       incCallCount: 0,
-      inc: function() {
+      inc: SC.computed(function() {
         return this.incCallCount++;
-      }.property('changer').cacheable(),
+      }).property('changer').cacheable(),
 
       // depends on cached property which depends on another property...
       nestedIncCallCount: 0,
-      nestedInc: function(key, value) {
+      nestedInc: SC.computed(function(key, value) {
         return this.nestedIncCallCount++;
-      }.property('inc').cacheable(),
+      }).property('inc').cacheable(),
 
       // two computed properties that depend on a third property
       state: 'on',
-      isOn: function(key, value) {
+      isOn: SC.computed(function(key, value) {
         if (value !== undefined) this.set('state', 'on');
         return this.get('state') === 'on';
-      }.property('state'),
+      }).property('state'),
 
-      isOff: function(key, value) {
+      isOff: SC.computed(function(key, value) {
         if (value !== undefined) this.set('state', 'off');
         return this.get('state') === 'off';
-      }.property('state')
+      }).property('state')
 
     }) ;
   }
@@ -382,20 +382,20 @@ module("Computed properties", {
 test("getting values should call function return value", function() {
 
   // get each property twice. Verify return.
-  var keys = 'computed computedCached dependent dependentCached'.w();
+  var keys = SC.String.w('computed computedCached dependent dependentCached');
 
   keys.forEach(function(key) {
-    equals(object.get(key), key, 'Try #1: object.get(%@) should run function'.fmt(key));
-    equals(object.get(key), key, 'Try #2: object.get(%@) should run function'.fmt(key));
+    equals(object.get(key), key, SC.String.fmt('Try #1: object.get(%@) should run function', key));
+    equals(object.get(key), key, SC.String.fmt('Try #2: object.get(%@) should run function', key));
   });
 
   // verify each call count.  cached should only be called once
-  'computedCalls dependentCalls'.w().forEach(function(key) {
-    equals(object[key].length, 2, 'non-cached property %@ should be called 2x'.fmt(key));
+  SC.String.w('computedCalls dependentCalls').forEach(function(key) {
+    equals(object[key].length, 2, SC.String.fmt('non-cached property %@ should be called 2x', key));
   });
 
-  'computedCachedCalls dependentCachedCalls'.w().forEach(function(key) {
-    equals(object[key].length, 1, 'non-cached property %@ should be called 1x'.fmt(key));
+  SC.String.w('computedCachedCalls dependentCachedCalls').forEach(function(key) {
+    equals(object[key].length, 1, SC.String.fmt('non-cached property %@ should be called 1x', key));
   });
 
 });
@@ -403,16 +403,16 @@ test("getting values should call function return value", function() {
 test("setting values should call function return value", function() {
 
   // get each property twice. Verify return.
-  var keys = 'computed dependent computedCached dependentCached'.w();
-  var values = 'value1 value2'.w();
+  var keys = SC.String.w('computed dependent computedCached dependentCached');
+  var values = SC.String.w('value1 value2');
 
   keys.forEach(function(key) {
 
-    equals(object.set(key, values[0]), object, 'Try #1: object.set(%@, %@) should run function'.fmt(key, values[0]));
+    equals(object.set(key, values[0]), object, SC.String.fmt('Try #1: object.set(%@, %@) should run function', key, values[0]));
 
-    equals(object.set(key, values[1]), object, 'Try #2: object.set(%@, %@) should run function'.fmt(key, values[1]));
+    equals(object.set(key, values[1]), object, SC.String.fmt('Try #2: object.set(%@, %@) should run function', key, values[1]));
     
-    equals(object.set(key, values[1]), object, 'Try #3: object.set(%@, %@) should not run function since it is setting same value as before'.fmt(key, values[1]));
+    equals(object.set(key, values[1]), object, SC.String.fmt('Try #3: object.set(%@, %@) should not run function since it is setting same value as before', key, values[1]));
 
   });
 
@@ -425,9 +425,9 @@ test("setting values should call function return value", function() {
     // Cached properties first check their cached value before setting the
     // property. Other properties blindly call set.
     expectedLength = 3;
-    equals(calls.length, expectedLength, 'set(%@) should be called the right amount of times'.fmt(key));
+    equals(calls.length, expectedLength, SC.String.fmt('set(%@) should be called the right amount of times', key));
     for(idx=0;idx<2;idx++) {
-      equals(calls[idx], values[idx], 'call #%@ to set(%@) should have passed value %@'.fmt(idx+1, key, values[idx]));
+      equals(calls[idx], values[idx], SC.String.fmt('call #%@ to set(%@) should have passed value %@', idx+1, key, values[idx]));
     }
   });
 
@@ -528,9 +528,9 @@ test("dependent keys should be able to be specified as property paths", function
       price: 5
     }),
 
-    menuPrice: function() {
+    menuPrice: SC.computed(function() {
       return this.getPath('menu.price');
-    }.property('menu.price').cacheable()
+    }).property('menu.price').cacheable()
   });
 
   equals(depObj.get('menuPrice'), 5, "precond - initial value returns 5");
@@ -548,9 +548,9 @@ test("nested dependent keys should propagate after they update", function() {
       })
     }),
 
-    price: function() {
+    price: SC.computed(function() {
       return this.getPath('restaurant.menu.price');
-    }.property('restaurant.menu.price')
+    }).property('restaurant.menu.price')
   });
 
   var bindObj = ObservableObject.create({
@@ -584,9 +584,9 @@ test("cacheable nested dependent keys should clear after their dependencies upda
       })
     }),
 
-    price: function() {
+    price: SC.computed(function() {
       return this.getPath('restaurant.menu.price');
-    }.property('restaurant.menu.price').cacheable()
+    }).property('restaurant.menu.price').cacheable()
   });
 
   SC.run.sync();
@@ -634,7 +634,7 @@ module("Observable objects & object properties ", {
       toggleVal: true,
       observedProperty: 'beingWatched',
       testRemove: 'observerToBeRemoved',
-      normalArray: [1,2,3,4,5],
+      normalArray: SC.NativeArray.apply([1,2,3,4,5]),
 
       getEach: function() {
         var keys = ['normal','abnormal'];
@@ -649,13 +649,13 @@ module("Observable objects & object properties ", {
         this.abnormal = 'changedValueObserved';
       },
 
-      testObserver:function(){
+      testObserver: SC.observer(function(){
         this.abnormal = 'removedObserver';
-      }.observes('normal'),
+      }, 'normal'),
 
-      testArrayObserver:function(){
+      testArrayObserver: SC.observer(function(){
         this.abnormal = 'notifiedObserver';
-      }.observes('*normalArray.[]')
+      }, '*normalArray.[]')
 
     });
   }

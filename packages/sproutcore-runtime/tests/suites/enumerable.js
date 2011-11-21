@@ -190,9 +190,9 @@ var EnumerableTests = SC.Object.extend({
     
     @property {Boolean}
   */
-  canTestMutation: function() {
+  canTestMutation: SC.computed(function() {
     return this.mutate !== EnumerableTests.prototype.mutate;  
-  }.property().cacheable(),
+  }).property().cacheable(),
   
   /**
     Invoked to actually run the test - overridden by mixins

@@ -7,7 +7,15 @@
 
 var foo, bar, binding, set = SC.set, get = SC.get, setPath = SC.setPath;
 
-var CountObject = SC.Object.extend({
+var CountObject = function(data){
+  for (item in data){
+    this[item] = data[item];
+  }
+
+  SC.addObserver(this, 'value', this.valueDidChange);
+};
+
+CountObject.prototype = {
   value: null,
 
   _count: 0,
@@ -16,18 +24,18 @@ var CountObject = SC.Object.extend({
     this._count = 0;
     return this;
   },
-  
+
   valueDidChange: function() {
     this._count++;
-  }.observes('value')
-});
+  }
+};
 
 module('system/mixin/binding/transform_test', {
   setup: function() {
-    MyApp = SC.Object.create({
-      foo: CountObject.create({ value: 'FOO' }),
-      bar: CountObject.create({ value: 'BAR' })
-    });
+    MyApp = {
+      foo: new CountObject({ value: 'FOO' }),
+      bar: new CountObject({ value: 'BAR' })
+    };
     
     foo = SC.getPath('MyApp.foo');
     bar = SC.getPath('MyApp.bar');

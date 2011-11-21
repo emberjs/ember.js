@@ -17,7 +17,7 @@ suite.test("should return index of object", function() {
       idx;
       
   for(idx=0;idx<len;idx++) {
-    equals(obj.indexOf(expected[idx]), idx, 'obj.indexOf(%@) should match idx'.fmt(expected[idx]));
+    equals(obj.indexOf(expected[idx]), idx, SC.String.fmt('obj.indexOf(%@) should match idx', expected[idx]));
   }
   
 });

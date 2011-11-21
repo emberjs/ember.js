@@ -28,9 +28,9 @@ var TestEnumerable = SC.Object.extend(SC.Enumerable, {
     return idx >= SC.get(this, 'length') ? undefined : this._content[idx];
   },
   
-  length: function() {
+  length: SC.computed(function() {
     return this._content.length;
-  }.property('[]').cacheable(),
+  }).property('[]').cacheable(),
   
   slice: function() {
     return this._content.slice();
@@ -82,9 +82,9 @@ test('should notify observers of []', function() {
     nextObject: function() {}, // avoid exceptions
     
     _count: 0,
-    enumerablePropertyDidChange: function() {
+    enumerablePropertyDidChange: SC.observer(function() {
       this._count++;
-    }.observes('[]')
+    }, '[]')
   });
   
   equals(obj._count, 0, 'should not have invoked yet');
@@ -102,9 +102,9 @@ module('notify observers of length', {
   setup: function() {
     obj = DummyEnum.create({
       _after: 0,
-      lengthDidChange: function() {
+      lengthDidChange: SC.observer(function() {
         this._after++;
-      }.observes('length')
+      }, 'length')
       
     });
     

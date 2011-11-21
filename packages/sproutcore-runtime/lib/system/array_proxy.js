@@ -116,9 +116,8 @@ SC.ArrayProxy = SC.Object.extend(SC.MutableArray, {
     this.arrayContentDidChange(idx, removedCnt, addedCnt);
   },
   
-  init: function(content) {
+  init: function() {
     this._super();
-    if (content) set(this, 'content', content);
     this.contentDidChange();
   }
   

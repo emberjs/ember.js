@@ -17,7 +17,7 @@ suite.test("should return object at specified index", function() {
       idx;
       
   for(idx=0;idx<len;idx++) {
-    equals(obj.objectAt(idx), expected[idx], 'obj.objectAt(%@) should match'.fmt(idx));
+    equals(obj.objectAt(idx), expected[idx], SC.String.fmt('obj.objectAt(%@) should match', idx));
   }
   
 });

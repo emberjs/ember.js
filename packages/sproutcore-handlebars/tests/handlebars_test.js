@@ -105,10 +105,10 @@ test("template view should call the function of the associated template with its
     _personName: "Tom DAAAALE",
     _i: 0,
 
-    personName: function() {
+    personName: SC.computed(function() {
       this._i++;
       return this._personName + this._i;
-    }.property().cacheable(),
+    }).cacheable(),
 
     templates: SC.Object.create({
       test_template: SC.Handlebars.compile("<h1 id='twas-called'>template was called for {{personName}}. Yea {{personName}}</h1>")
@@ -561,7 +561,7 @@ test("should update the block when object passed to #if helper changes", functio
       set(view, 'inception', val);
     });
 
-    equals(view.$('h1').text(), '', "hides block when conditional is '%@'".fmt(val));
+    equals(view.$('h1').text(), '', SC.String.fmt("hides block when conditional is '%@'", String(val)));
 
     SC.run(function() {
       set(view, 'inception', true);
@@ -597,7 +597,7 @@ test("should update the block when object passed to #unless helper changes", fun
       set(view, 'onDrugs', val);
     });
 
-    equals(view.$('h1').text(), 'Eat your vegetables', "renders block when conditional is '%@'; %@".fmt(val, SC.typeOf(val)));
+    equals(view.$('h1').text(), 'Eat your vegetables', SC.String.fmt("renders block when conditional is '%@'; %@", String(val), SC.typeOf(val)));
 
     SC.run(function() {
       set(view, 'onDrugs', true);
@@ -636,7 +636,7 @@ test("should update the block when object passed to #if helper changes and an in
       set(view, 'inception', val);
     });
 
-    equals(view.$('h1').text(), 'BOONG?', "renders alternate if %@".fmt(val));
+    equals(view.$('h1').text(), 'BOONG?', SC.String.fmt("renders alternate if %@", String(val)));
 
     SC.run(function() {
       set(view, 'inception', true);
@@ -783,7 +783,7 @@ test("Collection views that specify an example view class have their children be
       isCustom: true
     }),
 
-    content: ['foo']
+    content: SC.NativeArray.apply(['foo'])
   });
 
   var parentView = SC.View.create({
@@ -801,7 +801,7 @@ test("Collection views that specify an example view class have their children be
 
 test("itemViewClass works in the #collection helper", function() {
   TemplateTests.ExampleController = SC.ArrayProxy.create({
-    content: ['alpha']
+    content: SC.NativeArray.apply(['alpha'])
   });
 
   TemplateTests.ExampleItemView = SC.View.extend({
@@ -823,7 +823,7 @@ test("itemViewClass works in the #collection helper", function() {
 
 test("itemViewClass works in the #collection helper relatively", function() {
   TemplateTests.ExampleController = SC.ArrayProxy.create({
-    content: ['alpha']
+    content: SC.NativeArray.apply(['alpha'])
   });
 
   TemplateTests.ExampleItemView = SC.View.extend({
@@ -1234,9 +1234,9 @@ test("should be able to update when bound property updates", function(){
   var View = SC.View.extend({
     template: SC.Handlebars.compile('<i>{{value.name}}, {{computed}}</i>'),
     valueBinding: 'MyApp.controller',
-    computed: function(){
+    computed: SC.computed(function(){
       return this.getPath('value.name') + ' - computed';
-    }.property('value')
+    }).property('value')
   });
   
   view = View.create();
@@ -1306,7 +1306,7 @@ test("the {{this}} helper should not fail on removal", function(){
   view = SC.View.create({
     template: SC.Handlebars.compile('{{#if show}}{{#each list}}{{this}}{{/each}}{{/if}}'),
     show: true,
-    list: ['a', 'b', 'c']
+    list: SC.NativeArray.apply(['a', 'b', 'c'])
   });
 
   appendView();
