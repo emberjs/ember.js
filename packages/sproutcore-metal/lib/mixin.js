@@ -24,7 +24,7 @@ var o_create = SC.platform.create;
 function meta(obj, writable) {
   var m = SC.meta(obj, writable!==false), ret = m.mixins;
   if (writable===false) return ret || EMPTY_META;
-  
+
   if (!ret) {
     ret = m.mixins = { __scproto__: obj };
   } else if (ret.__scproto__ !== obj) {
@@ -38,8 +38,8 @@ function initMixin(mixin, args) {
   if (args && args.length > 0) {
     mixin.mixins = a_map.call(args, function(x) {
       if (x instanceof Mixin) return x;
-      
-      // Note: Manually setup a primitive mixin here.  This is the only 
+
+      // Note: Manually setup a primitive mixin here.  This is the only
       // way to actually get a primitive mixin.  This way normal creation
       // of mixins will give you combined mixins...
       var mixin = new Mixin();
@@ -48,7 +48,7 @@ function initMixin(mixin, args) {
     });
   }
   return mixin;
-} 
+}
 
 var NATIVES = [Boolean, Object, Number, Array, Date, String];
 function isMethod(obj) {
@@ -58,14 +58,14 @@ function isMethod(obj) {
 
 function mergeMixins(mixins, m, descs, values, base) {
   var len = mixins.length, idx, mixin, guid, props, value, key, ovalue, concats;
-  
+
   function removeKeys(keyName) {
     delete descs[keyName];
     delete values[keyName];
   }
-  
+
   for(idx=0;idx<len;idx++) {
-    
+
     mixin = mixins[idx];
     if (!mixin) throw new Error('Null value found in SC.mixin()');
 
@@ -73,13 +73,13 @@ function mergeMixins(mixins, m, descs, values, base) {
       guid = SC.guidFor(mixin);
       if (m[guid]) continue;
       m[guid] = mixin;
-      props = mixin.properties; 
+      props = mixin.properties;
     } else {
       props = mixin; // apply anonymous mixin properties
     }
 
     if (props) {
-      
+
       // reset before adding each new mixin to pickup concats from previous
       concats = values.concatenatedProperties || base.concatenatedProperties;
       if (props.concatenatedProperties) {
@@ -95,14 +95,14 @@ function mergeMixins(mixins, m, descs, values, base) {
           descs[key]  = value;
           values[key] = undefined;
         } else {
-          
+
           // impl super if needed...
           if (isMethod(value)) {
             ovalue = (descs[key] === SC.SIMPLE_PROPERTY) && values[key];
             if (!ovalue) ovalue = base[key];
             if ('function' !== typeof ovalue) ovalue = null;
             if (ovalue) {
-              var o = value.__sc_observes__, ob = value.__sc_observesBefore__; 
+              var o = value.__sc_observes__, ob = value.__sc_observesBefore__;
               value = SC.wrap(value, ovalue);
               value.__sc_observes__ = o;
               value.__sc_observesBefore__ = ob;
@@ -111,7 +111,7 @@ function mergeMixins(mixins, m, descs, values, base) {
             var baseValue = values[key] || base[key];
             value = baseValue ? baseValue.concat(value) : SC.makeArray(value);
           }
-          
+
           descs[key]  = SC.SIMPLE_PROPERTY;
           values[key] = value;
         }
@@ -121,7 +121,7 @@ function mergeMixins(mixins, m, descs, values, base) {
       if (props.hasOwnProperty('toString')) {
         base.toString = props.toString;
       }
-      
+
     } else if (mixin.mixins) {
       mergeMixins(mixin.mixins, m, descs, values, base);
       if (mixin._without) mixin._without.forEach(removeKeys);
@@ -155,9 +155,9 @@ SC._mixinBindings = function(obj, key, value, m) {
 function applyMixin(obj, mixins, partial) {
   var descs = {}, values = {}, m = SC.meta(obj), req = m.required;
   var key, willApply, didApply, value, desc;
-  
+
   var mixinBindings = SC._mixinBindings;
-  
+
   mergeMixins(mixins, meta(obj), descs, values, obj);
 
   if (MixinDelegate.detect(obj)) {
@@ -167,25 +167,25 @@ function applyMixin(obj, mixins, partial) {
 
   for(key in descs) {
     if (!descs.hasOwnProperty(key)) continue;
-    
+
     desc = descs[key];
     value = values[key];
-     
+
     if (desc === REQUIRED) {
       if (!(key in obj)) {
         if (!partial) throw new Error('Required property not defined: '+key);
-        
+
         // for partial applies add to hash of required keys
         req = writableReq(obj);
         req.__sc_count__++;
         req[key] = true;
       }
-      
+
     } else {
-      
+
       while (desc instanceof Alias) {
-        
-        var altKey = desc.methodName; 
+
+        var altKey = desc.methodName;
         if (descs[altKey]) {
           value = values[altKey];
           desc  = descs[altKey];
@@ -197,15 +197,15 @@ function applyMixin(obj, mixins, partial) {
           desc  = SC.SIMPLE_PROPERTY;
         }
       }
-      
+
       if (willApply) willApply.call(obj, key);
-      
+
       var observerPaths = getObserverPaths(value),
           curObserverPaths = observerPaths && getObserverPaths(obj[key]),
           beforeObserverPaths = getBeforeObserverPaths(value),
           curBeforeObserverPaths = beforeObserverPaths && getBeforeObserverPaths(obj[key]),
           len, idx;
-          
+
       if (curObserverPaths) {
         len = curObserverPaths.length;
         for(idx=0;idx<len;idx++) {
@@ -222,9 +222,9 @@ function applyMixin(obj, mixins, partial) {
 
       // TODO: less hacky way for sproutcore-runtime to add bindings.
       value = mixinBindings(obj, key, value, m);
-      
+
       defineProperty(obj, key, desc, value);
-      
+
       if (observerPaths) {
         len = observerPaths.length;
         for(idx=0;idx<len;idx++) {
@@ -238,7 +238,7 @@ function applyMixin(obj, mixins, partial) {
           SC.addBeforeObserver(obj, beforeObserverPaths[idx], null, key);
         }
       }
-      
+
       if (req && req[key]) {
         req = writableReq(obj);
         req.__sc_count__--;
@@ -249,7 +249,7 @@ function applyMixin(obj, mixins, partial) {
 
     }
   }
-  
+
   // Make sure no required attrs remain
   if (!partial && req && req.__sc_count__>0) {
     var keys = [];
@@ -284,16 +284,16 @@ Mixin.create = function() {
 };
 
 Mixin.prototype.reopen = function() {
-  
+
   var mixin, tmp;
-  
+
   if (this.properties) {
     mixin = Mixin.create();
     mixin.properties = this.properties;
     delete this.properties;
     this.mixins = [mixin];
   }
-  
+
   var len = arguments.length, mixins = this.mixins, idx;
 
   for(idx=0;idx<len;idx++) {
@@ -306,7 +306,7 @@ Mixin.prototype.reopen = function() {
       mixins.push(tmp);
     }
   }
-  
+
   return this;
 };
 
@@ -328,7 +328,7 @@ function _detect(curMixin, targetMixin, seen) {
 
   if (seen[guid]) return false;
   seen[guid] = true;
-  
+
   if (curMixin === targetMixin) return true;
   var mixins = curMixin.mixins, loc = mixins ? mixins.length : 0;
   while(--loc >= 0) {
@@ -352,7 +352,7 @@ Mixin.prototype.without = function() {
 function _keys(ret, mixin, seen) {
   if (seen[SC.guidFor(mixin)]) return;
   seen[SC.guidFor(mixin)] = true;
-  
+
   if (mixin.properties) {
     var props = mixin.properties;
     for(var key in props) {
@@ -465,7 +465,7 @@ Mixin.mixins = function(obj) {
   for(key in mixins) {
     if (META_SKIP[key]) continue;
     mixin = mixins[key];
-    
+
     // skip primitive mixins since these are always anonymous
     if (!mixin.properties) ret.push(mixins[key]);
   }
@@ -494,7 +494,7 @@ MixinDelegate = Mixin.create({
 
   willApplyProperty: SC.required(),
   didApplyProperty:  SC.required()
-  
+
 });
 
 SC.MixinDelegate = MixinDelegate;
@@ -502,7 +502,7 @@ SC.MixinDelegate = MixinDelegate;
 
 // ..........................................................
 // OBSERVER HELPER
-// 
+//
 
 SC.observer = function(func) {
   var paths = Array.prototype.slice.call(arguments, 1);
