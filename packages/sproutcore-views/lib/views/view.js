@@ -699,9 +699,7 @@ SC.View = SC.Object.extend(
   },
 
   /**
-    Called when the element of the view is created but before it is inserted
-    into the DOM.  Override this function to do any set up that requires an
-    element.
+    Called when a view is going to insert an element into the DOM.
   */
   willInsertElement: SC.K,
 
