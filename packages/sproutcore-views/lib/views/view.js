@@ -739,10 +739,15 @@ SC.View = SC.Object.extend(
 
     Invokes the receiver's willInsertElement() method if it exists and then
     invokes the same on all child views.
+
+    NOTE: In some cases this was called when the element existed. This no longer
+    works so we let people know. We can remove this warning code later.
   */
-  _notifyWillInsertElement: function() {
+  _notifyWillInsertElement: function(fromPreRender) {
     this.invokeRecursively(function(view) {
+      if (fromPreRender) { view._willInsertElementAccessUnsupported = true; }
       view.willInsertElement();
+      view._willInsertElementAccessUnsupported = false;
     });
   },
 

@@ -13,16 +13,28 @@ SC.View.states.preRender = {
   // a view leaves the preRender state once its element has been
   // created (createElement).
   insertElement: function(view, fn) {
-    // If we don't have an element, guarantee that it exists before
-    // invoking the willInsertElement event.
+    view._notifyWillInsertElement(true);
     view.createElement();
-
     // after createElement, the view will be in the hasElement state.
-
-    view._notifyWillInsertElement();
     fn.call(view);
     view.transitionTo('inDOM');
     view._notifyDidInsertElement();
+  },
+
+  // This exists for the removal warning, remove later
+  $: function(view){
+    if (view._willInsertElementAccessUnsupported) {
+      console.error("Getting element from willInsertElement is unreliable and no longer supported.");
+    }
+    return SC.$();
+  },
+
+  // This exists for the removal warning, remove later
+  getElement: function(view){
+    if (view._willInsertElementAccessUnsupported) {
+      console.error("Getting element from willInsertElement is unreliable and no longer supported.");
+    }
+    return null;
   },
 
   setElement: function(view, value) {
