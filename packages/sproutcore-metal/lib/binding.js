@@ -359,11 +359,8 @@ Binding.prototype = {
     @param {String} propertyPath the property path to connect to
     @returns {SC.Binding} receiver
   */
-  from: function(object, path) {
-    if (!path) { path = object; object = null; }
-
+  from: function(path) {
     this._from = path;
-    this._object = object;
     return this;
   },
 
