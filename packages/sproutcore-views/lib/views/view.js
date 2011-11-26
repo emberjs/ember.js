@@ -13,7 +13,7 @@ var getPath = SC.getPath, meta = SC.meta, fmt = SC.String.fmt;
 var childViewsProperty = SC.computed(function() {
   var childViews = get(this, '_childViews');
 
-  var ret = SC.NativeArray.apply([]);
+  var ret = SC.A();
 
   childViews.forEach(function(view) {
     if (view.isVirtual) {
@@ -165,7 +165,7 @@ SC.View = SC.Object.extend(
   */
   childViews: childViewsProperty,
 
-  _childViews: SC.NativeArray.apply([]),
+  _childViews: SC.A(),
 
   /**
     Return the nearest ancestor that is an instance of the provided
@@ -1042,13 +1042,13 @@ SC.View = SC.Object.extend(
     // SC.RootResponder to dispatch incoming events.
     SC.View.views[get(this, 'elementId')] = this;
 
-    var childViews = SC.NativeArray.apply(get(this, '_childViews').slice());
+    var childViews = SC.A(get(this, '_childViews').slice());
     // setup child views. be sure to clone the child views array first
     set(this, '_childViews', childViews);
 
 
-    this.classNameBindings = SC.NativeArray.apply(get(this, 'classNameBindings').slice());
-    this.classNames = SC.NativeArray.apply(get(this, 'classNames').slice());
+    this.classNameBindings = SC.A(get(this, 'classNameBindings').slice());
+    this.classNames = SC.A(get(this, 'classNames').slice());
 
     set(this, 'domManager', this.domManagerClass.create({ view: this }));
 

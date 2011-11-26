@@ -123,6 +123,17 @@ if (ignore.length>0) {
 SC.NativeArray = NativeArray;
 
 /**
+  Creates an SC.NativeArray from an Array like object.
+  Does not modify the original object.
+
+  @returns {SC.NativeArray}
+*/
+SC.A = function(arr){
+  if (arr === undefined) { arr = []; }
+  return SC.NativeArray.apply(Array.prototype.slice.apply(arr));
+};
+
+/**
   Activates the mixin on the Array.prototype if not already applied.  Calling
   this method more than once is safe.
   

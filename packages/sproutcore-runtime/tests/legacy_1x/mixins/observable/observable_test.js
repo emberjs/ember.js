@@ -634,7 +634,7 @@ module("Observable objects & object properties ", {
       toggleVal: true,
       observedProperty: 'beingWatched',
       testRemove: 'observerToBeRemoved',
-      normalArray: SC.NativeArray.apply([1,2,3,4,5]),
+      normalArray: SC.A([1,2,3,4,5]),
 
       getEach: function() {
         var keys = ['normal','abnormal'];

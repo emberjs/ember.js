@@ -404,7 +404,7 @@ test("toObject.value should be second value if first is falsy", function() {
 
 module("Binding with '[]'", {
   setup: function() {
-    fromObject = SC.Object.create({ value: SC.NativeArray.apply([]) });
+    fromObject = SC.Object.create({ value: SC.A() });
     toObject = SC.Object.create({ value: '' });
     root = { toObject: toObject, fromObject: fromObject };
     

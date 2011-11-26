@@ -12,7 +12,7 @@ test("collectionView should return the nearest collection view", function() {
   var itemViewChild;
 
   var view = SC.CollectionView.create({
-    content: SC.NativeArray.apply([1, 2, 3]),
+    content: SC.A([1, 2, 3]),
     isARealCollection: true,
 
     itemViewClass: SC.View.extend({
@@ -34,7 +34,7 @@ test("itemView should return the nearest child of a collection view", function()
   var itemViewChild;
 
   var view = SC.CollectionView.create({
-    content: SC.NativeArray.apply([1, 2, 3]),
+    content: SC.A([1, 2, 3]),
 
     itemViewClass: SC.View.extend({
       isAnItemView: true,
@@ -57,7 +57,7 @@ test("itemView should return the nearest child of a collection view", function()
   var itemViewChild;
 
   var view = SC.CollectionView.create({
-    content: SC.NativeArray.apply([1, 2, 3]),
+    content: SC.A([1, 2, 3]),
 
     itemViewClass: SC.View.extend({
       isAnItemView: true,

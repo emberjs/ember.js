@@ -783,7 +783,7 @@ test("Collection views that specify an example view class have their children be
       isCustom: true
     }),
 
-    content: SC.NativeArray.apply(['foo'])
+    content: SC.A(['foo'])
   });
 
   var parentView = SC.View.create({
@@ -801,7 +801,7 @@ test("Collection views that specify an example view class have their children be
 
 test("itemViewClass works in the #collection helper", function() {
   TemplateTests.ExampleController = SC.ArrayProxy.create({
-    content: SC.NativeArray.apply(['alpha'])
+    content: SC.A(['alpha'])
   });
 
   TemplateTests.ExampleItemView = SC.View.extend({
@@ -823,7 +823,7 @@ test("itemViewClass works in the #collection helper", function() {
 
 test("itemViewClass works in the #collection helper relatively", function() {
   TemplateTests.ExampleController = SC.ArrayProxy.create({
-    content: SC.NativeArray.apply(['alpha'])
+    content: SC.A(['alpha'])
   });
 
   TemplateTests.ExampleItemView = SC.View.extend({
@@ -1306,7 +1306,7 @@ test("the {{this}} helper should not fail on removal", function(){
   view = SC.View.create({
     template: SC.Handlebars.compile('{{#if show}}{{#each list}}{{this}}{{/each}}{{/if}}'),
     show: true,
-    list: SC.NativeArray.apply(['a', 'b', 'c'])
+    list: SC.A(['a', 'b', 'c'])
   });
 
   appendView();
