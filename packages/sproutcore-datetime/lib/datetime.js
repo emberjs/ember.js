@@ -405,7 +405,7 @@ SC.DateTime = SC.Object.extend(SC.Freezable, SC.Copyable,
     @returns {Boolean}
   */
   isEqual: function(aDateTime) {
-    return SC.DateTime.compare(this, aDateTime) === 0;
+    return this.constructor.compare(this, aDateTime) === 0;
   },
 
   /**
@@ -1019,7 +1019,7 @@ SC.DateTime.reopenClass(SC.Comparable,
      }
    }
 
-    d = SC.DateTime.create(opts);
+    d = this.create(opts);
 
     if (!SC.none(check.dayOfWeek) && get(d,'dayOfWeek') !== check.dayOfWeek) {
       return null;
