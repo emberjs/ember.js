@@ -50,7 +50,7 @@ test("it appends and removes a view when it is entered and exited", function() {
     storyboard.goToState('other');
   });
 
-  equals(SC.$('#test-view').length, 0, "found view with custom id in DOM");
+  equals(SC.$('#test-view').length, 0, "can't find view with custom id in DOM");
 });
 
 test("it appends and removes a view to the element specified in its storyboard", function() {
@@ -84,5 +84,5 @@ test("it appends and removes a view to the element specified in its storyboard",
     storyboard.goToState('other');
   });
 
-  equals(SC.$('#test-view').length, 0, "found view with custom id in DOM");
+  equals(SC.$('#test-view').length, 0, "can't find view with custom id in DOM");
 });
