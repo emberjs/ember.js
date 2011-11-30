@@ -87,3 +87,26 @@ test("classNames should not be duplicated on rerender", function(){
 
   equals(view.$().attr('class'), 'sc-view high');
 });
+
+test("classNames removed by a classNameBindings observer should not re-appear on rerender", function(){
+  var view = SC.View.create({
+    classNameBindings: ['isUrgent'],
+    isUrgent: true
+  });
+
+  view.createElement();
+
+  equals(view.$().attr('class'), 'sc-view is-urgent');
+
+  SC.run(function(){
+    view.set('isUrgent', false);
+  });
+
+  equals(view.$().attr('class'), 'sc-view');
+
+  SC.run(function(){
+    view.rerender();
+  });
+
+  equals(view.$().attr('class'), 'sc-view');
+});
