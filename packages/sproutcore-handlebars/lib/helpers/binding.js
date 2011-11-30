@@ -54,10 +54,6 @@ var get = SC.get, getPath = SC.getPath, set = SC.set, fmt = SC.String.fmt;
       // is an empty string, we are printing the current context
       // object ({{this}}) so updating it is not our responsibility.
       if (property !== '') {
-        set(bindView, 'removeObserver', function() {
-          SC.removeObserver(ctx, property, invoker);
-        });
-
         SC.addObserver(ctx, property, invoker);
       }
     } else {
