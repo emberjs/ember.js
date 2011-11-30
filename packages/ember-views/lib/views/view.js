@@ -641,7 +641,9 @@ Ember.View = Ember.Object.extend(
     // In the interim, we will just re-render if that happens. It is more
     // important than elements get garbage collected.
     this.destroyElement();
-    this.clearRenderedChildren();
+    this.invokeRecursively(function(view) {
+      view.clearRenderedChildren();
+    });
   },
 
   /**

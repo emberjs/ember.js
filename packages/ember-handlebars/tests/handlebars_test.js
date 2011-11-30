@@ -1480,3 +1480,46 @@ test("should update bound values after the view is removed and then re-appended"
   });
   equal($.trim(view.$().text()), "bar");
 });
+
+test("should update bound values after view's parent is removed and then re-appended", function() {
+  var parentView = SC.ContainerView.create({
+    childViews: ['testView'],
+    testView: SC.View.create({
+      template: SC.Handlebars.compile("{{#if showStuff}}{{boundValue}}{{else}}Not true.{{/if}}"),
+      showStuff: true,
+      boundValue: "foo"
+    })
+  });
+
+  SC.run(function() {
+    parentView.appendTo('#qunit-fixture');
+  });
+  view = parentView.get('testView');
+
+  equal($.trim(view.$().text()), "foo");
+  SC.run(function() {
+    set(view, 'showStuff', false);
+  });
+  equal($.trim(view.$().text()), "Not true.");
+
+  SC.run(function() {
+    set(view, 'showStuff', true);
+  });
+  equal($.trim(view.$().text()), "foo");
+
+  parentView.remove();
+  SC.run(function() {
+    set(view, 'showStuff', false);
+  });
+  SC.run(function() {
+    set(view, 'showStuff', true);
+  });
+  SC.run(function() {
+    parentView.appendTo('#qunit-fixture');
+  });
+
+  SC.run(function() {
+    set(view, 'boundValue', "bar");
+  });
+  equal($.trim(view.$().text()), "bar");
+});
