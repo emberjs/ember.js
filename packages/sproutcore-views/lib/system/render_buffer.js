@@ -130,7 +130,7 @@ SC._RenderBuffer = SC.Object.extend(
   /**
     Sets the elementID to be used for the element.
 
-    @param {Strign} id
+    @param {String} id
     @returns {SC.RenderBuffer} this
   */
   id: function(id) {
