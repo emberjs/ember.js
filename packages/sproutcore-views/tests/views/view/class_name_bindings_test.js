@@ -71,7 +71,7 @@ test("should add, remove, or change class names if changed after element is crea
   ok(view.$().hasClass('is-resent'), "adds customized class name when path changes");
 });
 
-test("whee", function(){
+test("classNames should not be duplicated on rerender", function(){
   var view = SC.View.create({
     classNameBindings: ['priority'],
     priority: 'high'
