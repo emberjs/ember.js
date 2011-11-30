@@ -123,14 +123,14 @@ SC._RenderBuffer = SC.Object.extend(
     @returns {SC.RenderBuffer} this
   */
   addClass: function(className) {
-    get(this, 'elementClasses').pushObject(className);
+    get(this, 'elementClasses').addObject(className);
     return this;
   },
 
   /**
     Sets the elementID to be used for the element.
 
-    @param {Strign} id
+    @param {String} id
     @returns {SC.RenderBuffer} this
   */
   id: function(id) {

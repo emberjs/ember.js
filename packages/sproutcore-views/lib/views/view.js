@@ -906,7 +906,7 @@ SC.View = SC.Object.extend(
     this._applyAttributeBindings(buffer);
 
 
-    buffer.addClass(get(this, 'classNames').join(' '));
+    get(this, 'classNames').forEach(function(name){ buffer.addClass(name); });
     buffer.id(get(this, 'elementId'));
 
     var role = get(this, 'ariaRole');
