@@ -123,7 +123,7 @@ SC._RenderBuffer = SC.Object.extend(
     @returns {SC.RenderBuffer} this
   */
   addClass: function(className) {
-    get(this, 'elementClasses').pushObject(className);
+    get(this, 'elementClasses').addObject(className);
     return this;
   },
 
