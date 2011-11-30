@@ -36,7 +36,7 @@ test("a state finds its sheet", function() {
   });
 
   equals(getPath(storyboard, 'start.start.storyboard'), storyboard, "A state's storyboard is its nearest storyboard");
-  equals(getPath(storyboard, 'start.start.sheet'), get(storyboard, 'start'), "A state's storyboard is its nearest storyboard");
+  equals(getPath(storyboard, 'start.start.sheet'), get(storyboard, 'start'), "A state's sheet is its nearest sheet");
 });
 
 module("SC.State#goToState");
