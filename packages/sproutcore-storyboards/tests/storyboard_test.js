@@ -65,9 +65,9 @@ test("it sends enter and exit events during state transitions", function() {
   loadedState.reset();
 
   storyboard.goToState('loadedState');
-  equals(loadingState.entered, 0, "state should receive one enter event");
-  equals(loadingState.exited, 1, "state should not have received an exit event");
-  equals(loadedState.entered, 1, "sibling state should not have received enter event");
+  equals(loadingState.entered, 0, "state should not receive an enter event");
+  equals(loadingState.exited, 1, "state should receive one exit event");
+  equals(loadedState.entered, 1, "sibling state should receive one enter event");
   equals(loadedState.exited, 0, "sibling state should not have received exited event");
 
   loadingState.reset();
@@ -78,7 +78,7 @@ test("it sends enter and exit events during state transitions", function() {
   equals(loadingState.entered, 1, "state should receive one enter event");
   equals(loadingState.exited, 0, "state should not have received an exit event");
   equals(loadedState.entered, 0, "sibling state should not have received enter event");
-  equals(loadedState.exited, 1, "sibling state should not have received exited event");
+  equals(loadedState.exited, 1, "sibling state should receive one exit event");
 });
 
 test("it accepts absolute paths when changing states", function() {
