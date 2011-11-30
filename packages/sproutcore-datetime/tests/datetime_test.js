@@ -405,3 +405,11 @@ test('timezones', function() {
   timeShouldBeEqualToHash(dt.toTimezone(-120), {year: o.year, month: o.month, day: o.day, hour: 6, minute: o.minute, second: o.second, millisecond: o.millisecond, timezone: -120 });
   timeShouldBeEqualToHash(dt.toTimezone(-330), {year: o.year, month: o.month, day: o.day, hour: 9, minute: 30, second: o.second, millisecond: o.millisecond, timezone: -330 });
 });
+
+test('extend', function() {
+  var dateTimeExt = SC.DateTime.extend();
+
+  // Should parse and produce a date object that is an instance of 'dateTimeExt'
+  var parsedDateTimeExt = dateTimeExt.parse('2011-10-15T21:30:00Z');
+  ok(parsedDateTimeExt instanceof dateTimeExt, 'Correctly produced an instance of the extended type.');
+});
