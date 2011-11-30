@@ -1421,3 +1421,42 @@ test("should render other templates using the {{template}} helper", function() {
    SC.TEMPLATES = oldTemplates;
   }
 });
+
+test("should update bound values after the view is removed and then re-appended", function() {
+  view = SC.View.create({
+    template: SC.Handlebars.compile("{{#if showStuff}}{{boundValue}}{{else}}Not true.{{/if}}"),
+    showStuff: true,
+    boundValue: "foo"
+  });
+
+  SC.run(function() {
+    view.appendTo('#qunit-fixture');
+  });
+
+  equal($.trim(view.$().text()), "foo");
+  SC.run(function() {
+    set(view, 'showStuff', false);
+  });
+  equal($.trim(view.$().text()), "Not true.");
+
+  SC.run(function() {
+    set(view, 'showStuff', true);
+  });
+  equal($.trim(view.$().text()), "foo");
+
+  view.remove();
+  SC.run(function() {
+    set(view, 'showStuff', false);
+  });
+  SC.run(function() {
+    set(view, 'showStuff', true);
+  });
+  SC.run(function() {
+    view.appendTo('#qunit-fixture');
+  });
+
+  SC.run(function() {
+    set(view, 'boundValue', "bar");
+  });
+  equal($.trim(view.$().text()), "bar");
+});
