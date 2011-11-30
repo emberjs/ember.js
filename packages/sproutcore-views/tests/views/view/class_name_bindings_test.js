@@ -70,3 +70,20 @@ test("should add, remove, or change class names if changed after element is crea
 
   ok(view.$().hasClass('is-resent'), "adds customized class name when path changes");
 });
+
+test("whee", function(){
+  var view = SC.View.create({
+    classNameBindings: ['priority'],
+    priority: 'high'
+  });
+
+  view.createElement();
+
+  equals(view.$().attr('class'), 'sc-view high');
+
+  SC.run(function(){
+    view.rerender();
+  });
+
+  equals(view.$().attr('class'), 'sc-view high');
+});
