@@ -48,7 +48,7 @@ SC.TextSupport = SC.Mixin.create({
   },
 
   _elementValueDidChange: function() {
-    set(this, 'value', this.$().val() || null);
+    set(this, 'value', this.$().val() || '');
   }
 
 });
