@@ -134,6 +134,28 @@ test("should not trigger action if mouse leaves area before mouseup", function()
   ok(wasClicked);
 });
 
+test("should not trigger action if disabled and a non-standard input", function() {
+  var wasClicked = false;
+
+  var actionObject = SC.Object.create({
+    myAction: function() {
+      wasClicked = true;
+    }
+  });
+
+  button.set('tagName', 'span');
+  button.set('disabled', true);
+  button.set('target', actionObject);
+  button.set('action', 'myAction');
+
+  SC.run(function() {
+    button.appendTo('#qunit-fixture');
+  });
+
+  synthesizeEvent('mousedown', button);
+  ok(!get(button, 'isActive'), "button does not become active when pushed");
+});
+
 test("should by default be of type='button'", function() {
   SC.run(function() {
     button.appendTo('#qunit-fixture');

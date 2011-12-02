@@ -19,9 +19,11 @@ SC.Button = SC.View.extend(SC.TargetActionSupport, {
   propagateEvents: false,
 
   mouseDown: function() {
-    set(this, 'isActive', true);
-    this._mouseDown = true;
-    this._mouseEntered = true;
+    if (!get(this, 'disabled')) {
+      set(this, 'isActive', true);
+      this._mouseDown = true;
+      this._mouseEntered = true;
+    }
     return get(this, 'propagateEvents');
   },
 
