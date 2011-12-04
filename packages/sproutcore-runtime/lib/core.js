@@ -69,7 +69,7 @@ t.forEach(function(name) {
 var toString = Object.prototype.toString;
 
 /**
-  Returns a consistant type for the passed item.
+  Returns a consistent type for the passed item.
 
   Use this instead of the built-in SC.typeOf() to get the type of an item.
   It will return the same result across all browsers and includes a bit
@@ -84,9 +84,9 @@ var toString = Object.prototype.toString;
   | 'function' | A function |
   | 'array' | An instance of Array |
   | 'class' | A SproutCore class (created using SC.Object.extend()) |
-  | 'object' | A SproutCore object instance |
+  | 'instance' | A SproutCore object instance |
   | 'error' | An instance of the Error object |
-  | 'hash' | A JavaScript object not inheriting from SC.Object |
+  | 'object' | A JavaScript object not inheriting from SC.Object |
 
   @param item {Object} the item to check
   @returns {String} the type
