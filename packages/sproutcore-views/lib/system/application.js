@@ -72,6 +72,8 @@ SC.Application = SC.Namespace.extend(
     SC.$(document).ready(function() {
       self.ready();
     });
+
+    this._super();
   },
 
   ready: function() {
