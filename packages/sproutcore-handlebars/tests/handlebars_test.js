@@ -777,6 +777,22 @@ test("Child views created using the view helper should have their IDs registered
   equals(SC.View.views[id], childView, 'childView with passed ID is registered with SC.View.views so that it can properly receive events from RootResponder');
 });
 
+test("Child views created using the view helper and that have a viewName should be registered as properties on their parentView", function() {
+  TemplateTests = {};
+
+  var template = '{{#view SC.View}}{{view SC.View viewName="ohai"}}{{/view}}';
+
+  view = SC.View.create({
+    template: SC.Handlebars.compile(template)
+  });
+
+  appendView();
+
+  var parentView = firstChild(view),
+      childView  = firstGrandchild(view);
+  equals(get(parentView, 'ohai'), childView);
+});
+
 test("Collection views that specify an example view class have their children be of that class", function() {
   TemplateTests.ExampleViewCollection = SC.CollectionView.extend({
     itemViewClass: SC.View.extend({
