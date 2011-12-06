@@ -61,6 +61,7 @@ SC.Application = SC.Namespace.extend(
   init: function() {
     var eventDispatcher,
         rootElement = get(this, 'rootElement');
+    this._super();
 
     eventDispatcher = SC.EventDispatcher.create({
       rootElement: rootElement
