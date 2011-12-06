@@ -8,7 +8,7 @@
 var foo, bar, binding, set = SC.set, get = SC.get, setPath = SC.setPath;
 
 var CountObject = function(data){
-  for (item in data){
+  for (var item in data){
     this[item] = data[item];
   }
 
