@@ -43,3 +43,10 @@ test("you cannot make a new application that is a duplicate of an existing appli
   }, Error);
 });
 
+test("acts like a namespace", function() {
+  var app = window.TestApp = SC.Application.create({rootElement: '#two'});
+  app.Foo = SC.Object.extend();
+  equal(app.Foo.toString(), "TestApp.Foo", "Classes pick up their parent namespace");
+  app.destroy();
+  window.TestApp = undefined;
+});
