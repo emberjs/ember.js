@@ -1169,10 +1169,9 @@ SC.View = SC.Object.extend(
   createChildView: function(view, attrs) {
     if (SC.View.detect(view)) {
       view = view.create(attrs || {}, { _parentView: this });
-      
-      if (attrs && attrs.viewName) {
-        set(this, attrs.viewName, view);
-      }
+
+      var viewName = attrs && attrs.viewName || view.viewName;
+      if (viewName) { set(this, viewName, view); }
     } else {
       sc_assert('must pass instance of View', view instanceof SC.View);
       set(view, '_parentView', this);
