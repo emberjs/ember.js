@@ -7,6 +7,7 @@
 
   var K = function(){},
       guid = 0,
+      document = window.document,
 
       // Feature-detect the W3C range API
       supportsRange = ('createRange' in document);
@@ -22,7 +23,7 @@
     if (this instanceof Metamorph) {
       self = this;
     } else {
-      self = new K;
+      self = new K();
     }
 
     self.innerHTML = html;
@@ -129,7 +130,7 @@
      *
      * We need to do this because innerHTML in IE does not really parse the nodes.
      **/
-    function firstNodeFor(parentNode, html) {
+     var firstNodeFor = function(parentNode, html) {
       var arr = wrapMap[parentNode.tagName.toLowerCase()] || wrapMap._default;
         var depth = arr[0], start = arr[1], end = arr[2];
 
@@ -141,7 +142,7 @@
       }
 
       return element;
-    }
+    };
 
     /**
      * Internet Explorer does not allow setting innerHTML if the first element
@@ -166,7 +167,7 @@
      * node and use *it* as the marker.
      **/
     var realNode = function(start) {
-      while (start.parentNode.tagName == "") {
+      while (start.parentNode.tagName === "") {
         start = start.parentNode;
       }
 
@@ -223,6 +224,7 @@
 
       // remove all of the nodes after the starting placeholder and
       // before the ending placeholder.
+      node = start.nextSibling;
       while (node) {
         nextSibling = node.nextSibling;
         last = node === end;
