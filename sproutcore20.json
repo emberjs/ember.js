@@ -26,6 +26,7 @@
         "sproutcore-runtime",
         "handlebars",
         "sproutcore-views",
+        "sproutcore-states",
         "sproutcore-handlebars"
       ]
     }
