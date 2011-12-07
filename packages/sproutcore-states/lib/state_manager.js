@@ -1,14 +1,10 @@
 var get = SC.get, set = SC.set, getPath = SC.getPath, fmt = SC.String.fmt;
 
-require('sproutcore-storyboards/state');
+require('sproutcore-states/state');
 
 SC.LOG_STATE_TRANSITIONS = false;
 
-SC.Storyboard = SC.State.extend({
-  rootElement: 'body',
-
-  isStoryboard: true,
-
+SC.StateManager = SC.State.extend({
   /**
     When creating a new storyboard, look for a default state to transition
     into. This state can either be named `start`, or can be specified using the
@@ -16,6 +12,20 @@ SC.Storyboard = SC.State.extend({
   */
   init: function() {
     this._super();
+
+    var states = get(this, 'states');
+    if (!states) {
+      states = {};
+      SC.keys(this).forEach(function(name) {
+        var value = get(this, name);
+
+        if (value && value.isState) {
+          states[name] = value;
+        }
+      }, this);
+
+      set(this, 'states', states);
+    }
 
     var initialState = get(this, 'initialState');
 
@@ -41,7 +51,7 @@ SC.Storyboard = SC.State.extend({
 
     if (action) {
       if (log) { console.log("STORYBOARDS: Sending event '%@' to state %@.".fmt(event, currentState.name)); }
-      action.call(currentState, context);
+      action.call(currentState, this, context);
     } else {
       var parentState = get(currentState, 'parentState');
       if (parentState) { this.sendRecursively(event, parentState, context); }
@@ -62,6 +72,9 @@ SC.Storyboard = SC.State.extend({
         exitStates.push(state)
 
         state = get(state, 'parentState')
+        if (!state) {
+          state = get(this, 'states');
+        }
         newState = getPath(state, name);
       }
     }
@@ -121,19 +134,21 @@ SC.Storyboard = SC.State.extend({
       }
     });
 
+    var stateManager = this;
+
     this.asyncEach(exitStates, function(state, transition) {
-      state.exit(transition);
+      state.exit(stateManager, transition);
     }, function() {
       this.asyncEach(enterStates, function(state, transition) {
         if (log) { console.log("STORYBOARDS: Entering " + state.name); }
-        state.enter(transition);
+        state.enter(stateManager, transition);
       }, function() {
         var startState = state, enteredState;
 
         // right now, start states cannot be entered asynchronously
         while (startState = get(startState, 'start')) {
           enteredState = startState;
-          startState.enter();
+          startState.enter(stateManager);
         }
 
         set(this, 'currentState', enteredState || state);

@@ -4,7 +4,8 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
-require('sproutcore-storyboards/sheet');
-require('sproutcore-storyboards/state');
-require('sproutcore-storyboards/storyboard');
+require('sproutcore-views');
+require('sproutcore-states/state_manager');
+require('sproutcore-states/state');
+require('sproutcore-states/view_state');
 

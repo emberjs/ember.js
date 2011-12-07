@@ -1,5 +1,5 @@
 {
-  "name": "sproutcore-storyboards",
+  "name": "sproutcore-states",
   "summary": "SproutCore Storyboards",
   "description": "The SproutCore state management system",
   "homepage": "http://sproutcore.com",
@@ -13,7 +13,7 @@
   "dependencies": {
     "spade":              "~> 1.0",
     "jquery":             "~> 1.6",
-    "sproutcore-runtime": "2.0.beta.3"
+    "sproutcore-views": "2.0.beta.3"
   },
 
   "dependencies:development": {

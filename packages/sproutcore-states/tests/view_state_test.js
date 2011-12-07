@@ -1,15 +1,15 @@
-require('sproutcore-storyboards/sheet');
+require('sproutcore-states/view_state');
 
 var get = SC.get, set = SC.set, getPath = SC.getPath, setPath = SC.setPath;
 
-module("SC.Sheet");
+module("SC.ViewState");
 
 test("it inherits from SC.State", function() {
-  ok(SC.State.detect(SC.Sheet), "SC.Sheet is an SC.State");
+  ok(SC.State.detect(SC.ViewState), "SC.ViewState is an SC.State");
 });
 
-test("it can act like a state in a storyboard", function() {
-  var sheet = SC.Sheet.create({
+test("it can act like a state in a state manager", function() {
+  var viewState = SC.ViewState.create({
     entered: 0,
 
     enter: function() {
@@ -17,12 +17,12 @@ test("it can act like a state in a storyboard", function() {
     }
   });
 
-  var storyboard = SC.Storyboard.create({
-    start: sheet
+  var stateManager = SC.StateManager.create({
+    start: viewState
   });
 
-  ok(get(storyboard, 'currentState') === sheet, "automatically transitions to the sheet");
-  equals(sheet.entered, 1, "sheet receives enter event when transitioning to current state");
+  ok(get(stateManager, 'currentState') === viewState, "automatically transitions to the view state");
+  equals(viewState.entered, 1, "viewState receives enter event when transitioning to current state");
 });
 
 test("it appends and removes a view when it is entered and exited", function() {
@@ -30,50 +30,50 @@ test("it appends and removes a view when it is entered and exited", function() {
     elementId: 'test-view'
   });
 
-  var sheet = SC.Sheet.create({
+  var viewState = SC.ViewState.create({
     view: view
   });
 
-  var storyboard;
+  var stateManager;
 
   SC.run(function() {
-    storyboard = SC.Storyboard.create({
-      start: sheet,
+    stateManager = SC.StateManager.create({
+      start: viewState,
 
-      other: SC.Sheet.create()
+      other: SC.ViewState.create()
     });
   });
 
   equals(SC.$('#test-view').length, 1, "found view with custom id in DOM");
 
   SC.run(function() {
-    storyboard.goToState('other');
+    stateManager.goToState('other');
   });
 
   equals(SC.$('#test-view').length, 0, "can't find view with custom id in DOM");
 });
 
-test("it appends and removes a view to the element specified in its storyboard", function() {
+test("it appends and removes a view to the element specified in its state manager", function() {
   var view = SC.View.create({
     elementId: 'test-view'
   });
 
-  var sheet = SC.Sheet.create({
+  var viewState = SC.ViewState.create({
     view: view
   });
 
-  var storyboard;
+  var stateManager;
 
   $('<div id="my-container"></div>').appendTo($('#qunit-fixture'));
 
   equals($('#qunit-fixture > #my-container')[0].childNodes.length, 0, "precond - container does not have any child nodes");
 
   SC.run(function() {
-    storyboard = SC.Storyboard.create({
+    stateManager = SC.StateManager.create({
       rootElement: '#qunit-fixture > #my-container',
-      start: sheet,
+      start: viewState,
 
-      other: SC.Sheet.create()
+      other: SC.ViewState.create()
     });
   });
 
@@ -81,7 +81,7 @@ test("it appends and removes a view to the element specified in its storyboard",
   equals($("#test-view").parent().attr('id'), "my-container", "appends view to the correct element");
 
   SC.run(function() {
-    storyboard.goToState('other');
+    stateManager.goToState('other');
   });
 
   equals(SC.$('#test-view').length, 0, "can't find view with custom id in DOM");
