@@ -401,11 +401,12 @@ function findNamespaces() {
   if (Namespace.PROCESSED) { return; }
 
   for (var prop in window) {
-    if (!window.hasOwnProperty(prop)) { continue; }
+    // Unforutnately, some versions of IE don't support window.hasProperty
+    if (window.hasOwnProperty && window.hasOwnProperty(prop)) { continue; }
 
     obj = window[prop];
 
-    if (obj instanceof Namespace) {
+    if (obj && obj instanceof Namespace) {
       obj[NAME_KEY] = prop;
     }
   }
