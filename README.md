@@ -21,7 +21,7 @@ Here's how you create a binding between two objects:
     });
 
     MyApp.country = SC.Object.create({
-      // Ending a property with 'Binding' tells SproutCore to
+      // Ending a property with 'Binding' tells Amber.js to
       // create a binding to the presidentName property.
       presidentNameBinding: 'MyApp.president.name'
     });
@@ -51,7 +51,7 @@ Computed properties allow you to treat a function like a property:
 
 Treating a function like a property is useful because they can work with bindings, just like any other property.
 
-Many computed properties have dependencies on other properties. For example, in the above example, the `fullName` property depends on `firstName` and `lastName` to determine its value. You can tell SproutCore about these dependencies like this:
+Many computed properties have dependencies on other properties. For example, in the above example, the `fullName` property depends on `firstName` and `lastName` to determine its value. You can tell Amber.js about these dependencies like this:
 
     MyApp.president = SC.Object.create({
       firstName: "Barack",
@@ -60,16 +60,16 @@ Many computed properties have dependencies on other properties. For example, in 
       fullName: function() {
         return this.get('firstName') + ' ' + this.get('lastName');
 
-        // Tell SproutCore that this computed property depends on firstName
+        // Tell Amber.js that this computed property depends on firstName
         // and lastName
       }.property('firstName', 'lastName')
     });
 
-Make sure you list these dependencies so SproutCore knows when to update bindings that connect to a computed property.
+Make sure you list these dependencies so Amber.js knows when to update bindings that connect to a computed property.
 
 ## Auto-updating Templates
 
-SproutCore uses Handlebars, a semantic templating library. To take data from your JavaScript application and put it into the DOM, create a `<script>` tag and put it into your HTML, wherever you'd like the value to appear:
+Amber.js uses Handlebars, a semantic templating library. To take data from your JavaScript application and put it into the DOM, create a `<script>` tag and put it into your HTML, wherever you'd like the value to appear:
 
     <script type="text/x-handlebars">
       The President of the United States is {{MyApp.president.fullName}}.
@@ -77,7 +77,7 @@ SproutCore uses Handlebars, a semantic templating library. To take data from you
 
 Here's the best part: templates are bindings-aware. That means that if you ever change the value of the property that you told us to display, we'll update it for you automatically. And because you've specified dependencies, changes to *those* properties are reflected as well.
 
-Hopefully you can see how all three of these powerful tools work together: start with some primitive properties, then start building up more sophisticated properties and their dependencies using computed properties. Once you've described the data, you only have to say how it gets displayed once, and SproutCore takes care of the rest. It doesn't matter how the underlying data changes, whether from an XHR request or the user performing an action; your user interface always stays up-to-date. This eliminates entire categories of edge cases that developers struggle with every day.
+Hopefully you can see how all three of these powerful tools work together: start with some primitive properties, then start building up more sophisticated properties and their dependencies using computed properties. Once you've described the data, you only have to say how it gets displayed once, and Amber.js takes care of the rest. It doesn't matter how the underlying data changes, whether from an XHR request or the user performing an action; your user interface always stays up-to-date. This eliminates entire categories of edge cases that developers struggle with every day.
 
 # Getting Started
 
@@ -85,9 +85,7 @@ For new users, we recommend downloading the [Amber.js Starter Kit](https://githu
 
 We also recommend that you check out the [annotated Todos example](http://annotated-todos.strobeapp.com/), which shows you the best practices for architecting an MVC-based web application. You can also [browse or fork the code on Github](https://github.com/amberjs/todos).
 
-The [SproutCore Guides are available](http://guides.sproutcore20.com/) for SproutCore 2.0. If you find an error, please [fork the guides on GitHub](https://github.com/sproutcore/sproutguides/tree/v2.0) and submit a pull request. (Note that 2.0 guides are on the `v2.0` branch.)
-
-To learn more about what we're up to, follow [@sproutcore on Twitter](http://twitter.com/sproutcore), [subscribe to the blog](http://blog.sproutcore.com), or [read the original SproutCore 2.0 announcement](http://blog.sproutcore.com/announcing-sproutcore-2-0/).
+[Guides are available](http://guides.sproutcore20.com/) for Amber.js. If you find an error, please [fork the guides on GitHub](https://github.com/sproutcore/sproutguides/tree/v2.0) and submit a pull request. (Note that Amber.js guides are on the `v2.0` branch.)
 
 # Building Amber.js
 
