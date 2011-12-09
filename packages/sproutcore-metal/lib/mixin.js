@@ -401,8 +401,8 @@ function findNamespaces() {
   if (Namespace.PROCESSED) { return; }
 
   for (var prop in window) {
-    // Unforutnately, some versions of IE don't support window.hasProperty
-    if (window.hasOwnProperty && window.hasOwnProperty(prop)) { continue; }
+    // Unfortunately, some versions of IE don't support window.hasOwnProperty
+    if (window.hasOwnProperty && !window.hasOwnProperty(prop)) { continue; }
 
     obj = window[prop];
 
