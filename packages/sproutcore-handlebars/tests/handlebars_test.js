@@ -1368,7 +1368,7 @@ test("bindings can be 'this', in which case they *are* the current context", fun
       price: 20,
       museumView: SC.View.extend({
         template: SC.Handlebars.compile('Name: {{museum.name}} Price: ${{museum.price}}')
-      }),
+      })
     }),
 
 

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>QUnit Test Suite</title>
+  <link rel="stylesheet" href="qunit/qunit.css" type="text/css" media="screen">
+  <script type="text/javascript" src="qunit/qunit.js"></script>
+  <script type="text/javascript" src="minispade.js"></script>
+  <script type="text/javascript" src="source/sproutcore.js"></script>
+  <script type="text/javascript" src="source/sproutcore-tests.js"></script>
+</head>
+<body>
+  <h1 id="qunit-header">QUnit Test Suite</h1>
+  <h2 id="qunit-banner"></h2>
+  <div id="qunit-testrunner-toolbar"></div>
+  <h2 id="qunit-userAgent"></h2>
+  <ol id="qunit-tests"></ol>
+  <div id="qunit-fixture">test markup</div>
+
+  <script type="text/javascript">
+    // TODO: Handle extending prototypes
+
+    // hack qunit to not suck for SC objects
+    var originalTypeof = QUnit.jsDump.typeOf;
+
+    QUnit.jsDump.typeOf = function(obj) {
+      if (SC && SC.Object && SC.Object.detectInstance(obj)) {
+        return "scObject";
+      }
+
+      return originalTypeof.call(this, obj);
+    };
+
+    QUnit.jsDump.parsers.scObject = function(obj) {
+      return obj.toString();
+    }
+
+    var packages = location.search.match(/package=([^&]+)/),
+        packageName, el, idx, len, re, match, moduleName;
+
+    if (!packages) {
+      el = document.getElementById('qunit-header');
+      el.innerHTML = 'Add package=package1,package2 in the URL to test packages';
+    } else {
+      packages = packages[1].split(',');
+      len = packages.length;
+
+      // There are no requires for these in the code
+      minispade.require('jquery-1.6.2/main');
+      minispade.require('handlebars/main');
+
+      for (idx=0; idx<len; idx++) {
+        packageName = packages[idx];
+        re = new RegExp('^'+packageName+'/([^/]+)');
+
+        minispade.require(packageName+'/main');
+
+        for (moduleName in minispade.modules) {
+          if (!minispade.modules.hasOwnProperty(moduleName)) { continue; }
+
+          match = moduleName.match(re);
+          if (match && match[1] === 'tests') {
+            minispade.require(moduleName);
+          }
+        }
+      }
+    }
+  </script>
+</body>
+</html>
