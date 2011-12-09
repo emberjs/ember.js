@@ -53,7 +53,7 @@ end
 
 # Create sproutcore:package tasks for each of the SproutCore packages
 namespace :sproutcore do
-  %w(metal runtime handlebars views).each do |package|
+  %w(metal runtime handlebars views states).each do |package|
     task package => compile_package_task("sproutcore-#{package}")
   end
 end
@@ -65,7 +65,7 @@ task :handlebars => compile_package_task("handlebars")
 task :metamorph => compile_package_task("metamorph")
 
 # Create a build task that depends on all of the package dependencies
-task :build => ["sproutcore:metal", "sproutcore:runtime", "sproutcore:handlebars", "sproutcore:views", :handlebars, :metamorph]
+task :build => ["sproutcore:metal", "sproutcore:runtime", "sproutcore:handlebars", "sproutcore:views", "sproutcore:states", :handlebars, :metamorph]
 
 # Strip out require lines from sproutcore.js. For the interim, requires are
 # precomputed by the compiler so they are no longer necessary at runtime.
@@ -79,6 +79,7 @@ file "dist/sproutcore.js" => :build do
     file.puts strip_require("tmp/static/sproutcore-metal.js")
     file.puts strip_require("tmp/static/sproutcore-runtime.js")
     file.puts strip_require("tmp/static/sproutcore-views.js")
+    file.puts strip_require("tmp/static/sproutcore-states.js")
     file.puts strip_require("tmp/static/metamorph.js")
     file.puts strip_require("tmp/static/sproutcore-handlebars.js")
   end
