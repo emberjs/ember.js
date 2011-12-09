@@ -1,16 +1,18 @@
-# SproutCore
+# Amber.js
 
-SproutCore is a JavaScript framework that does all of the heavy lifting that you'd normally have to do by hand. There are tasks that are common to every web app; SproutCore does those things for you, so you can focus on building killer features and UI.
+Amber.js (formerly SproutCore 2.0) is a JavaScript framework that does all of the heavy lifting that you'd normally have to do by hand. There are tasks that are common to every web app; Amber.js does those things for you, so you can focus on building killer features and UI.
 
-These are the three features that make SproutCore a joy to use:
+These are the three features that make Amber.js a joy to use:
 
 1. Bindings
 2. Computed properties
 3. Auto-updating templates
 
+Amber.js has strong roots in SproutCore; you can read more about its evolution in [the Amber.js launch announcement](http://yehudakatz.com/2011/12/08/announcing-amber-js/).
+
 ## Bindings
 
-Use bindings to keep properties between two different objects in sync. You just declare a binding once, and SproutCore will make sure changes get propagated in either direction.
+Use bindings to keep properties between two different objects in sync. You just declare a binding once, and Amber.js will make sure changes get propagated in either direction.
 
 Here's how you create a binding between two objects:
 
@@ -79,19 +81,19 @@ Hopefully you can see how all three of these powerful tools work together: start
 
 # Getting Started
 
-For new users, we recommend downloading the [SproutCore Starter Kit](https://github.com/sproutcore/starter-kit/downloads), which includes everything you need to get started.
+For new users, we recommend downloading the [Amber.js Starter Kit](https://github.com/amberjs/starter-kit/downloads), which includes everything you need to get started.
 
-We also recommend that you check out the [annotated Todos example](http://annotated-todos.strobeapp.com/), which shows you the best practices for architecting an MVC-based web application.
+We also recommend that you check out the [annotated Todos example](http://annotated-todos.strobeapp.com/), which shows you the best practices for architecting an MVC-based web application. You can also [browse or fork the code on Github](https://github.com/amberjs/todos).
 
 The [SproutCore Guides are available](http://guides.sproutcore20.com/) for SproutCore 2.0. If you find an error, please [fork the guides on GitHub](https://github.com/sproutcore/sproutguides/tree/v2.0) and submit a pull request. (Note that 2.0 guides are on the `v2.0` branch.)
 
 To learn more about what we're up to, follow [@sproutcore on Twitter](http://twitter.com/sproutcore), [subscribe to the blog](http://blog.sproutcore.com), or [read the original SproutCore 2.0 announcement](http://blog.sproutcore.com/announcing-sproutcore-2-0/).
 
-# Building SproutCore 2.0
+# Building Amber.js
 
-1. Run `rake` to build SproutCore. Two builds will be placed in the `dist/` directory.
-  * `sproutcore.js` and `sproutcore.min.js` - unminified and minified
-    builds of SproutCore 2.0
+1. Run `rake` to build Amber.js. Two builds will be placed in the `dist/` directory.
+  * `amber.js` and `amber.min.js` - unminified and minified
+    builds of Amber.js
 
 If you are building under Linux, you will need a JavaScript runtime for
 minification. You can either install nodejs or `gem install
@@ -108,9 +110,9 @@ therubyracer`.
 
 5. Then visit: `http://localhost:4020/assets/spade-qunit/index.html?package=PACKAGE_NAME`.  Replace `PACKAGE_NAME` with the name of the package you want to run.  For example:
 
-  * [SproutCore Runtime](http://localhost:4020/assets/spade-qunit/index.html?package=sproutcore-runtime)
-  * [SproutCore Views](http://localhost:4020/assets/spade-qunit/index.html?package=sproutcore-views)
-  * [SproutCore Handlebars](http://localhost:4020/assets/spade-qunit/index.html?package=sproutcore-handlebars)
+  * [Amber.js Runtime](http://localhost:4020/assets/spade-qunit/index.html?package=sproutcore-runtime)
+  * [Amber.js Views](http://localhost:4020/assets/spade-qunit/index.html?package=sproutcore-views)
+  * [Amber.js Handlebars](http://localhost:4020/assets/spade-qunit/index.html?package=sproutcore-handlebars)
 
 To run multiple packages, you can separate them with commas. For
 example, to run all of the unit tests together:
