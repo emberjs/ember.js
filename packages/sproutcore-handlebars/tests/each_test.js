@@ -27,9 +27,11 @@ var append = function(view) {
 
 var assertHTML = function(view, expectedHTML) {
   var html = view.$().html();
-  html = html.replace(/<script[^>]*><\/script>/ig, '');
 
-  equal(expectedHTML, html);
+  // IE 8 (and prior?) adds the \r\n
+  html = html.replace(/<script[^>]*><\/script>/ig, '').replace(/[\r\n]/g, '');
+
+  equal(html, expectedHTML);
 }
 
 test("it renders the template for each item in an array", function() {

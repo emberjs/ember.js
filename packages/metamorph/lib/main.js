@@ -9,8 +9,18 @@
       guid = 0,
       document = window.document,
 
-      // Feature-detect the W3C range API
-      supportsRange = ('createRange' in document);
+      // Feature-detect the W3C range API, the extended check is for IE9 which only partially supports ranges
+      supportsRange = ('createRange' in document) && (typeof Range !== 'undefined') && Range.prototype.createContextualFragment,
+
+      // Internet Explorer prior to 9 does not allow setting innerHTML if the first element
+      // is a "zero-scope" element. This problem can be worked around by making
+      // the first node an invisible text node. We, like Modernizr, use &shy;
+      needsShy = (function(){
+        var testEl = document.createElement('div');
+        testEl.innerHTML = "<div></div>";
+        testEl.firstChild.innerHTML = "<script></script>";
+        return testEl.firstChild.innerHTML === '';
+      })();
 
   // Constructor that supports either Metamorph('foo') or new
   // Metamorph('foo');
@@ -38,8 +48,6 @@
 
   var rangeFor, htmlFunc, removeFunc, outerHTMLFunc, appendToFunc, startTagFunc, endTagFunc;
 
-  // create the outer HTML for the current metamorph. this function will be
-  // extended by the Internet Explorer version to work around a bug.
   outerHTMLFunc = function() {
     return this.startTag() + this.innerHTML + this.endTag();
   };
@@ -54,6 +62,17 @@
 
   // If we have the W3C range API, this process is relatively straight forward.
   if (supportsRange) {
+
+    // IE 9 supports ranges but doesn't define createContextualFragment
+    if (!Range.prototype.createContextualFragment) {
+      Range.prototype.createContextualFragment = function(html) {
+        var frag = document.createDocumentFragment(),
+             div = document.createElement("div");
+        frag.appendChild(div);
+        div.outerHTML = html;
+        return frag;
+      };
+    }
 
     // Get a range for the current morph. Optionally include the starting and
     // ending placeholders.
@@ -130,30 +149,36 @@
      *
      * We need to do this because innerHTML in IE does not really parse the nodes.
      **/
-     var firstNodeFor = function(parentNode, html) {
+    var firstNodeFor = function(parentNode, html) {
       var arr = wrapMap[parentNode.tagName.toLowerCase()] || wrapMap._default;
-        var depth = arr[0], start = arr[1], end = arr[2];
+      var depth = arr[0], start = arr[1], end = arr[2];
 
-        var element = document.createElement('div');
+      if (needsShy) { html = '&shy;'+html; }
+
+      var element = document.createElement('div');
       element.innerHTML = start + html + end;
 
       for (var i=0; i<=depth; i++) {
         element = element.firstChild;
       }
 
+      // Look for &shy; to remove it.
+      if (needsShy) {
+        var shyElement = element;
+
+        // Sometimes we get nameless elements with the shy inside
+        while (shyElement.nodeType === 1 && !shyElement.nodeName && shyElement.childNodes.length === 1) {
+          shyElement = shyElement.firstChild;
+        }
+
+        // At this point it's the actual unicode character.
+        if (shyElement.nodeType === 3 && shyElement.nodeValue.charAt(0) === "\u00AD") {
+          shyElement.nodeValue = shyElement.nodeValue.slice(1);
+        }
+      }
+
       return element;
     };
-
-    /**
-     * Internet Explorer does not allow setting innerHTML if the first element
-     * is a "zero-scope" element. This problem can be worked around by making
-     * the first node an invisible text node. We, like Modernizr, use &shy;
-     **/
-    var startTagFuncWithoutShy = startTagFunc;
-
-    startTagFunc = function() {
-      return "&shy;" + startTagFuncWithoutShy.call(this);
-    }
 
     /**
      * In some cases, Internet Explorer can create an anonymous node in
@@ -213,14 +238,11 @@
       var start = realNode(document.getElementById(this.start));
       var end = document.getElementById(this.end);
       var parentNode = end.parentNode;
-      var nextSibling, last;
+      var node, nextSibling, last;
 
       // make sure that the start and end nodes share the same
       // parent. If not, fix it.
       fixParentage(start, end);
-
-      var node = start;
-      if (!outerToo) { node = node.nextSibling; }
 
       // remove all of the nodes after the starting placeholder and
       // before the ending placeholder.
