@@ -525,7 +525,7 @@ testBoth("should be clear caches for computed properties that have dependent key
 
     common: SC.computed(function() {
       return get(get(this, 'resources').objectAt(0), 'common');
-    }).property('resources.@each.common').cacheable(),
+    }).property('resources.@each.common').cacheable()
   });
 
   get(obj, 'resources').pushObject(SC.Object.create({ common: "HI!" }));
