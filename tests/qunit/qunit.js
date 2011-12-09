@@ -340,7 +340,6 @@ var QUnit = {
 	 * @param String message (optional)
 	 */
 	equal: function(actual, expected, message) {
-          console.log('equal', actual, expected, message);
 		QUnit.push(expected == actual, actual, expected, message);
 	},
 
@@ -639,7 +638,6 @@ extend(QUnit, {
 	},
 
 	push: function(result, actual, expected, message) {
-          console.log('push', result, actual, expected, message);
 		var details = {
 			result: result,
 			message: message,
