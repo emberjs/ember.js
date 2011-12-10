@@ -158,7 +158,7 @@ function getPath(target, path) {
   var len = path.length, idx, next, key;
   
   idx = path.indexOf('*');
-  if (idx>0 && path[idx-1]!=='.') {
+  if (idx>0 && path.charAt(idx-1)!=='.') {
     return getPath(getPath(target, path.slice(0, idx)), path.slice(idx+1));
   }
 
