@@ -6,6 +6,7 @@
 .bundle
 .config
 .yardoc
+.rvmrc
 InstalledFiles
 _site
 _yardoc
