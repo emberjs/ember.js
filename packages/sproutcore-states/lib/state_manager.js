@@ -61,7 +61,7 @@ SC.StateManager = SC.State.extend({
   goToState: function(name) {
     var currentState = get(this, 'currentState') || this, state, newState;
 
-    var exitStates = [];
+    var exitStates = SC.A();
 
     newState = getPath(currentState, name);
     state = currentState;
@@ -119,7 +119,7 @@ SC.StateManager = SC.State.extend({
   enterState: function(parent, name, exitStates) {
     var log = SC.LOG_STATE_TRANSITIONS;
 
-    var parts = name.split("."), state = parent, enterStates = [];
+    var parts = name.split("."), state = parent, enterStates = SC.A();
 
     parts.forEach(function(name) {
       state = state[name];
