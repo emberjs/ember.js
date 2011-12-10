@@ -99,24 +99,20 @@ therubyracer`.
 
 # How to Run Unit Tests
 
-1. Install Ruby 1.9.2. There are many resources on the web can help; one of the best is [rvm](http://rvm.beginrescueend.com/).
+1. Install Ruby 1.9.2+. There are many resources on the web can help; one of the best is [rvm](http://rvm.beginrescueend.com/).
 
-3. Run `gem install bpm --pre` to install bpm, the browser package
-   manager.
+2. Install Bundler: `gem install bundler`
 
-4. To start the development server, run `bpm preview`.
+3. Run `bundle` inside the project root to install the gem dependencies.
 
-5. Then visit: `http://localhost:4020/assets/spade-qunit/index.html?package=PACKAGE_NAME`.  Replace `PACKAGE_NAME` with the name of the package you want to run.  For example:
+4. To start the development server, run `bundle exec rackup`.
 
-  * [Amber.js Runtime](http://localhost:4020/assets/spade-qunit/index.html?package=sproutcore-runtime)
-  * [Amber.js Views](http://localhost:4020/assets/spade-qunit/index.html?package=sproutcore-views)
-  * [Amber.js Handlebars](http://localhost:4020/assets/spade-qunit/index.html?package=sproutcore-handlebars)
+5. Then visit: `http://localhost:9292/tests/index.html?package=PACKAGE_NAME`.  Replace `PACKAGE_NAME` with the name of the package you want to run.  For example:
 
-To run multiple packages, you can separate them with commas. For
-example, to run all of the unit tests together:
+  * [Amber.js Runtime](http://localhost:9292/tests/index.html?package=sproutcore-runtime)
+  * [Amber.js Views](http://localhost:9292/tests/index.html?package=sproutcore-views)
+  * [Amber.js Handlebars](http://localhost:9292/tests/index.html?package=sproutcore-handlebars)
 
-[http://localhost:4020/assets/spade-qunit/index.html?package=sproutcore-metal,sproutcore-runtime,sproutcore-views,sproutcore-handlebars](http://localhost:4020/assets/spade-qunit/index.html?package=sproutcore-metal,sproutcore-runtime,sproutcore-views,sproutcore-handlebars)
+To run multiple packages, you can separate them with commas. You can run all the tests using the `all` package:
 
-# Adding New Packages
-
-Be sure you include the new package as a dependency in the global `package.json`.
+[http://localhost:9292/tests/index.html?package=all](http://localhost:9292/tests/index.html?package=all)
