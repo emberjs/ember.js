@@ -561,7 +561,7 @@ test("should update the block when object passed to #if helper changes", functio
       set(view, 'inception', val);
     });
 
-    equals(view.$('h1').text(), '', SC.String.fmt("hides block when conditional is '%@'", String(val)));
+    equals(view.$('h1').text(), '', SC.String.fmt("hides block when conditional is '%@'", [String(val)]));
 
     SC.run(function() {
       set(view, 'inception', true);
@@ -597,7 +597,7 @@ test("should update the block when object passed to #unless helper changes", fun
       set(view, 'onDrugs', val);
     });
 
-    equals(view.$('h1').text(), 'Eat your vegetables', SC.String.fmt("renders block when conditional is '%@'; %@", String(val), SC.typeOf(val)));
+    equals(view.$('h1').text(), 'Eat your vegetables', SC.String.fmt("renders block when conditional is '%@'; %@", [String(val), SC.typeOf(val)]));
 
     SC.run(function() {
       set(view, 'onDrugs', true);
@@ -636,7 +636,7 @@ test("should update the block when object passed to #if helper changes and an in
       set(view, 'inception', val);
     });
 
-    equals(view.$('h1').text(), 'BOONG?', SC.String.fmt("renders alternate if %@", String(val)));
+    equals(view.$('h1').text(), 'BOONG?', SC.String.fmt("renders alternate if %@", [String(val)]));
 
     SC.run(function() {
       set(view, 'inception', true);

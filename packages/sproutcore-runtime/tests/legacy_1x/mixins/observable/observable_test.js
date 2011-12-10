@@ -385,17 +385,17 @@ test("getting values should call function return value", function() {
   var keys = SC.String.w('computed computedCached dependent dependentCached');
 
   keys.forEach(function(key) {
-    equals(object.get(key), key, SC.String.fmt('Try #1: object.get(%@) should run function', key));
-    equals(object.get(key), key, SC.String.fmt('Try #2: object.get(%@) should run function', key));
+    equals(object.get(key), key, SC.String.fmt('Try #1: object.get(%@) should run function', [key]));
+    equals(object.get(key), key, SC.String.fmt('Try #2: object.get(%@) should run function', [key]));
   });
 
   // verify each call count.  cached should only be called once
   SC.String.w('computedCalls dependentCalls').forEach(function(key) {
-    equals(object[key].length, 2, SC.String.fmt('non-cached property %@ should be called 2x', key));
+    equals(object[key].length, 2, SC.String.fmt('non-cached property %@ should be called 2x', [key]));
   });
 
   SC.String.w('computedCachedCalls dependentCachedCalls').forEach(function(key) {
-    equals(object[key].length, 1, SC.String.fmt('non-cached property %@ should be called 1x', key));
+    equals(object[key].length, 1, SC.String.fmt('non-cached property %@ should be called 1x', [key]));
   });
 
 });
@@ -408,11 +408,11 @@ test("setting values should call function return value", function() {
 
   keys.forEach(function(key) {
 
-    equals(object.set(key, values[0]), object, SC.String.fmt('Try #1: object.set(%@, %@) should run function', key, values[0]));
+    equals(object.set(key, values[0]), object, SC.String.fmt('Try #1: object.set(%@, %@) should run function', [key, values[0]]));
 
-    equals(object.set(key, values[1]), object, SC.String.fmt('Try #2: object.set(%@, %@) should run function', key, values[1]));
+    equals(object.set(key, values[1]), object, SC.String.fmt('Try #2: object.set(%@, %@) should run function', [key, values[1]]));
     
-    equals(object.set(key, values[1]), object, SC.String.fmt('Try #3: object.set(%@, %@) should not run function since it is setting same value as before', key, values[1]));
+    equals(object.set(key, values[1]), object, SC.String.fmt('Try #3: object.set(%@, %@) should not run function since it is setting same value as before', [key, values[1]]));
 
   });
 
@@ -425,9 +425,9 @@ test("setting values should call function return value", function() {
     // Cached properties first check their cached value before setting the
     // property. Other properties blindly call set.
     expectedLength = 3;
-    equals(calls.length, expectedLength, SC.String.fmt('set(%@) should be called the right amount of times', key));
+    equals(calls.length, expectedLength, SC.String.fmt('set(%@) should be called the right amount of times', [key]));
     for(idx=0;idx<2;idx++) {
-      equals(calls[idx], values[idx], SC.String.fmt('call #%@ to set(%@) should have passed value %@', idx+1, key, values[idx]));
+      equals(calls[idx], values[idx], SC.String.fmt('call #%@ to set(%@) should have passed value %@', [idx+1, key, values[idx]]));
     }
   });
 

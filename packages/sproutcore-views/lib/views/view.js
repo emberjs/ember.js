@@ -105,7 +105,7 @@ SC.View = SC.Object.extend(
       }
 
       if (!template) {
-        throw new SC.Error(fmt('%@ - Unable to find template "%@".', this, templateName));
+        throw new SC.Error(fmt('%@ - Unable to find template "%@".', [this, templateName]));
       }
     }
 
