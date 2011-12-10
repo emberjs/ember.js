@@ -18,7 +18,13 @@
   <div id="qunit-fixture">test markup</div>
 
   <script type="text/javascript">
-    // TODO: Handle extending prototypes
+    // Handle extending prototypes
+    QUnit.config.urlConfig.push('extendprototypes');
+
+    window.ENV = window.ENV || {};
+    var extendPrototypes = location.search.match(/extendprototypes=([^&]+)/);
+    ENV['EXTEND_PROTOTYPES'] = !!(extendPrototypes && extendPrototypes[1] === '1');
+
 
     // hack qunit to not suck for SC objects
     var originalTypeof = QUnit.jsDump.typeOf;
@@ -35,6 +41,8 @@
       return obj.toString();
     }
 
+
+    // Load Tests and Depenencies
     var packages = location.search.match(/package=([^&]+)/),
         packageName, el, idx, len, re, match, moduleName;
 
