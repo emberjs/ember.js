@@ -111,4 +111,4 @@ if ('undefined' === typeof require) require = SC.K;
   Inside SproutCore-Metal, simply uses the window.console object.
   Override this to provide more robust logging functionality.
 */
-SC.Logger = window.console || SC.K;
+SC.Logger = window.console || { log: SC.K, warn: SC.K, error: SC.K };
