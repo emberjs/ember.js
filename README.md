@@ -101,7 +101,7 @@ therubyracer`.
 
 1. Install Ruby 1.9.2. There are many resources on the web can help; one of the best is [rvm](http://rvm.beginrescueend.com/).
 
-3. Run `gem install bpm --pre` to install bpm, the browser package
+3. Run `gem install bpm` to install bpm, the browser package
    manager.
 
 4. To start the development server, run `bpm preview`.
