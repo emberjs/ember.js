@@ -23,7 +23,7 @@
 
     window.ENV = window.ENV || {};
     var extendPrototypes = location.search.match(/extendprototypes=([^&]+)/);
-    ENV['EXTEND_PROTOTYPES'] = !!(extendPrototypes && extendPrototypes[1] === '1');
+    ENV['EXTEND_PROTOTYPES'] = !!(extendPrototypes && decodeURIComponent(extendPrototypes[1]));
 
 
     // hack qunit to not suck for SC objects
@@ -50,7 +50,13 @@
       el = document.getElementById('qunit-header');
       el.innerHTML = 'Add package=package1,package2 in the URL to test packages';
     } else {
-      packages = packages[1].split(',');
+      if (packages[1] === 'all') {
+        packages = ['sproutcore-datetime', 'sproutcore-handlebars', 'sproutcore-metal', 'sproutcore-runtime',
+                    'sproutcore-states', 'sproutcore-views'];
+      } else {
+        packages = packages[1].split(',');
+      }
+
       len = packages.length;
 
       // There are no requires for these in the code
