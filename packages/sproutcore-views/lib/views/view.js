@@ -487,7 +487,7 @@ SC.View = SC.Object.extend(
       // Normalize property path to be suitable for use
       // as a class name. For exaple, content.foo.barBaz
       // becomes bar-baz.
-      parts = property.split('.');
+      var parts = property.split('.');
       return SC.String.dasherize(parts[parts.length-1]);
 
     // If the value is not NO, undefined, or null, return the current
