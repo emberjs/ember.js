@@ -474,8 +474,9 @@ SC.View = SC.Object.extend(
     passing `isUrgent` to this method will return `"is-urgent"`.
   */
   _classStringForProperty: function(property) {
-    var split = property.split(':'), className = split[1];
-    property = split[0];
+    var split = property.split(':'),
+        property = split[0],
+        className = split[1];
 
     var val = SC.getPath(this, property);
 
@@ -487,7 +488,7 @@ SC.View = SC.Object.extend(
       // Normalize property path to be suitable for use
       // as a class name. For exaple, content.foo.barBaz
       // becomes bar-baz.
-      parts = property.split('.');
+      var parts = property.split('.');
       return SC.String.dasherize(parts[parts.length-1]);
 
     // If the value is not NO, undefined, or null, return the current

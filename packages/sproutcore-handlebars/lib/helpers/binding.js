@@ -304,11 +304,17 @@ SC.Handlebars.bindClasses = function(context, classBindings, view, id) {
   // determine which class string to return, based on whether it is
   // a Boolean or not.
   var classStringForProperty = function(property) {
+    var split = property.split(':'),
+        property = split[0],
+        className = split[1];
+
     var val = getPath(context, property);
 
     // If value is a Boolean and true, return the dasherized property
     // name.
     if (val === YES) {
+      if (className) { return className; }
+
       // Normalize property path to be suitable for use
       // as a class name. For exaple, content.foo.barBaz
       // becomes bar-baz.
@@ -329,7 +335,7 @@ SC.Handlebars.bindClasses = function(context, classBindings, view, id) {
 
   // For each property passed, loop through and setup
   // an observer.
-  classBindings.split(' ').forEach(function(property) {
+  classBindings.split(' ').forEach(function(binding) {
 
     // Variable in which the old class value is saved. The observer function
     // closes over this variable, so it knows which string to remove when
@@ -342,13 +348,13 @@ SC.Handlebars.bindClasses = function(context, classBindings, view, id) {
     // class name.
     observer = function() {
       // Get the current value of the property
-      newClass = classStringForProperty(property);
+      newClass = classStringForProperty(binding);
       elem = id ? view.$("[data-handlebars-id='" + id + "']") : view.$();
 
       // If we can't find the element anymore, a parent template has been
       // re-rendered and we've been nuked. Remove the observer.
       if (elem.length === 0) {
-        SC.removeObserver(context, property, invoker);
+        SC.removeObserver(context, binding, invoker);
       } else {
         // If we had previously added a class to the element, remove it.
         if (oldClass) {
@@ -370,11 +376,12 @@ SC.Handlebars.bindClasses = function(context, classBindings, view, id) {
       SC.run.once(observer);
     };
 
+    property = binding.split(':')[0];
     SC.addObserver(context, property, invoker);
 
     // We've already setup the observer; now we just need to figure out the 
     // correct behavior right now on the first pass through.
-    value = classStringForProperty(property);
+    value = classStringForProperty(binding);
 
     if (value) {
       ret.push(value);
