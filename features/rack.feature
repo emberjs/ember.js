@@ -1,7 +1,4 @@
 Feature: Interaction with Rack
-  Background:
-    Given cleaned build artifacts
-
   Scenario: Run "dist" task
     When I run rake "dist"
     Then I should have "amber.js" file in "dist" directory

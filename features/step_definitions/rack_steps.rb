@@ -1,7 +1,3 @@
-Given /^cleaned build artifacts$/ do
-  `rm -rf tmp && rm -rf dist`
-end
-
 Given /^existed "([^"]*)" directory$/ do |arg1|
   Dir.mkdir(arg1)
 end
