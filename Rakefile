@@ -87,7 +87,7 @@ file "dist/amber.js" => :build do
   end
 end
 
-# Minify dist/sproutcore.js to dist/sproutcore.min.js
+# Minify dist/amber.js to dist/amber.min.js
 file "dist/amber.min.js" => "dist/amber.js" do
   puts "Generating amber.min.js"
 
@@ -139,8 +139,8 @@ end
 ## STARTER KIT ##
 
 namespace :starter_kit do
-  sproutcore_output = "tmp/starter-kit/js/libs/sproutcore-#{SC_VERSION}.js"
-  sproutcore_min_output = "tmp/starter-kit/js/libs/sproutcore-#{SC_VERSION}.min.js"
+  amber_output     = "tmp/starter-kit/js/libs/sproutcore-#{SC_VERSION}.js"
+  amber_min_output = "tmp/starter-kit/js/libs/sproutcore-#{SC_VERSION}.min.js"
 
   task :pull => "tmp/starter-kit" do
     Dir.chdir("tmp/starter-kit") do
@@ -162,23 +162,23 @@ namespace :starter_kit do
     end
   end
 
-  file sproutcore_output => [:clean, "tmp/starter-kit", "dist/sproutcore.js"] do
-    sh "cp dist/sproutcore.js #{sproutcore_output}"
+  file amber_output => [:clean, "tmp/starter-kit", "dist/amber.js"] do
+    sh "cp dist/amber.js #{amber_output}"
   end
 
-  file sproutcore_min_output => [:clean, "tmp/starter-kit", "dist/sproutcore.min.js"] do
-    sh "cp dist/sproutcore.min.js #{sproutcore_min_output}"
+  file amber_min_output => [:clean, "tmp/starter-kit", "dist/amber.min.js"] do
+    sh "cp dist/amber.min.js #{amber_min_output}"
   end
 
   file "tmp/starter-kit" do
     mkdir_p "tmp"
 
     Dir.chdir("tmp") do
-      sh "git clone git://github.com/sproutcore/starter-kit.git"
+      sh "git clone git://github.com/amberjs/starter-kit.git"
     end
   end
 
-  file "tmp/starter-kit/index.html" => [sproutcore_output, sproutcore_min_output] do
+  file "tmp/starter-kit/index.html" => [amber_output, amber_min_output] do
     index = File.read("tmp/starter-kit/index.html")
     index.gsub! %r{<script src="js/libs/sproutcore-\d\.\d.*</script>},
       %{<script src="js/libs/sproutcore-#{SC_VERSION}.min.js"></script>}
@@ -188,11 +188,11 @@ namespace :starter_kit do
 
   task :index => "tmp/starter-kit/index.html"
 
-  desc "Build the SproutCore starter kit"
+  desc "Build the Amber.js starter kit"
   task :build => "dist/starter-kit.#{SC_VERSION}.zip"
 end
 
-desc "Build SproutCore"
+desc "Build Amber.js"
 task :dist => ["dist/amber.min.js"]
 
 desc "Clean build artifacts from previous builds"
