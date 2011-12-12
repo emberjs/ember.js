@@ -1136,10 +1136,11 @@ test("should be able to bind boolean element attributes using {{bindAttr}}", fun
 });
 
 test("should be able to add multiple classes using {{bindAttr class}}", function() {
-  var template = SC.Handlebars.compile('<div {{bindAttr class="content.isAwesomeSauce content.isAlsoCool"}}></div>');
+  var template = SC.Handlebars.compile('<div {{bindAttr class="content.isAwesomeSauce content.isAlsoCool content.isAmazing:amazing"}}></div>');
   var content = SC.Object.create({
     isAwesomeSauce: true,
-    isAlsoCool: true
+    isAlsoCool: true,
+    isAmazing: true
   });
 
   view = SC.View.create({
@@ -1151,12 +1152,15 @@ test("should be able to add multiple classes using {{bindAttr class}}", function
 
   ok(view.$('div').hasClass('is-awesome-sauce'), "dasherizes first property and sets classname");
   ok(view.$('div').hasClass('is-also-cool'), "dasherizes second property and sets classname");
+  ok(view.$('div').hasClass('amazing'), "uses alias for third property and sets classname");
 
   SC.run(function() {
     set(content, 'isAwesomeSauce', false);
+    set(content, 'isAmazing', false);
   });
 
   ok(!view.$('div').hasClass('is-awesome-sauce'), "removes dasherized class when property is set to false");
+  ok(!view.$('div').hasClass('amazing'), "removes aliased class when property is set to false");
 });
 
 test("should be able to output a property without binding", function(){
