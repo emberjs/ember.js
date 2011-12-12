@@ -71,12 +71,12 @@ task :build => ["sproutcore:metal", "sproutcore:runtime", "sproutcore:handlebars
 
 # Strip out require lines from sproutcore.js. For the interim, requires are
 # precomputed by the compiler so they are no longer necessary at runtime.
-file "dist/sproutcore.js" => :build do
-  puts "Generating sproutcore.js"
+file "dist/amber.js" => :build do
+  puts "Generating amber.js"
 
   mkdir_p "dist"
 
-  File.open("dist/sproutcore.js", "w") do |file|
+  File.open("dist/amber.js", "w") do |file|
     file.puts strip_require("tmp/static/handlebars.js")
     file.puts strip_require("tmp/static/sproutcore-metal.js")
     file.puts strip_require("tmp/static/sproutcore-runtime.js")
@@ -87,19 +87,19 @@ file "dist/sproutcore.js" => :build do
   end
 end
 
-# Minify dist/sproutcore.js to dist/sproutcore.min.js
-file "dist/sproutcore.min.js" => "dist/sproutcore.js" do
-  puts "Generating sproutcore.min.js"
+# Minify dist/amber.js to dist/amber.min.js
+file "dist/amber.min.js" => "dist/amber.js" do
+  puts "Generating amber.min.js"
 
-  File.open("dist/sproutcore.prod.js", "w") do |file|
-    file.puts strip_sc_assert("dist/sproutcore.js")
+  File.open("dist/amber.prod.js", "w") do |file|
+    file.puts strip_sc_assert("dist/amber.js")
   end
 
-  File.open("dist/sproutcore.min.js", "w") do |file|
-    file.puts uglify("dist/sproutcore.prod.js")
+  File.open("dist/amber.min.js", "w") do |file|
+    file.puts uglify("dist/amber.prod.js")
   end
 
-  rm "dist/sproutcore.prod.js"
+  rm "dist/amber.prod.js"
 end
 
 SC_VERSION = File.read("VERSION")
@@ -139,8 +139,8 @@ end
 ## STARTER KIT ##
 
 namespace :starter_kit do
-  sproutcore_output = "tmp/starter-kit/js/libs/sproutcore-#{SC_VERSION}.js"
-  sproutcore_min_output = "tmp/starter-kit/js/libs/sproutcore-#{SC_VERSION}.min.js"
+  amber_output     = "tmp/starter-kit/js/libs/sproutcore-#{SC_VERSION}.js"
+  amber_min_output = "tmp/starter-kit/js/libs/sproutcore-#{SC_VERSION}.min.js"
 
   task :pull => "tmp/starter-kit" do
     Dir.chdir("tmp/starter-kit") do
@@ -162,23 +162,23 @@ namespace :starter_kit do
     end
   end
 
-  file sproutcore_output => [:clean, "tmp/starter-kit", "dist/sproutcore.js"] do
-    sh "cp dist/sproutcore.js #{sproutcore_output}"
+  file amber_output => [:clean, "tmp/starter-kit", "dist/amber.js"] do
+    sh "cp dist/amber.js #{amber_output}"
   end
 
-  file sproutcore_min_output => [:clean, "tmp/starter-kit", "dist/sproutcore.min.js"] do
-    sh "cp dist/sproutcore.min.js #{sproutcore_min_output}"
+  file amber_min_output => [:clean, "tmp/starter-kit", "dist/amber.min.js"] do
+    sh "cp dist/amber.min.js #{amber_min_output}"
   end
 
   file "tmp/starter-kit" do
     mkdir_p "tmp"
 
     Dir.chdir("tmp") do
-      sh "git clone git://github.com/sproutcore/starter-kit.git"
+      sh "git clone git://github.com/amberjs/starter-kit.git"
     end
   end
 
-  file "tmp/starter-kit/index.html" => [sproutcore_output, sproutcore_min_output] do
+  file "tmp/starter-kit/index.html" => [amber_output, amber_min_output] do
     index = File.read("tmp/starter-kit/index.html")
     index.gsub! %r{<script src="js/libs/sproutcore-\d\.\d.*</script>},
       %{<script src="js/libs/sproutcore-#{SC_VERSION}.min.js"></script>}
@@ -188,12 +188,12 @@ namespace :starter_kit do
 
   task :index => "tmp/starter-kit/index.html"
 
-  desc "Build the SproutCore starter kit"
+  desc "Build the Amber.js starter kit"
   task :build => "dist/starter-kit.#{SC_VERSION}.zip"
 end
 
-desc "Build SproutCore"
-task :dist => ["dist/sproutcore.min.js"]
+desc "Build Amber.js"
+task :dist => ["dist/amber.min.js"]
 
 desc "Clean build artifacts from previous builds"
 task :clean do
