@@ -1,5 +1,5 @@
 // ==========================================================================
-// Project:  SproutCore Metal
+// Project:  Ember Metal
 // Copyright: ©2011 Strobe Inc. and contributors.
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
@@ -173,7 +173,7 @@ if (Object.freeze) Object.freeze(EMPTY_META);
 */
 Ember.meta = function meta(obj, writable) {
   
-  sc_assert("You must pass an object to Ember.meta. This was probably called from SproutCore internals, so you probably called a SproutCore method with undefined that was expecting an object", obj != undefined);
+  sc_assert("You must pass an object to Ember.meta. This was probably called from Ember internals, so you probably called a Ember method with undefined that was expecting an object", obj != undefined);
 
   var ret = obj[META_KEY];
   if (writable===false) return ret || EMPTY_META;
@@ -303,7 +303,7 @@ Ember.wrap = function(func, superFunc) {
   
   Returns YES if the passed object is an array or Array-like.
 
-  SproutCore Array Protocol:
+  Ember Array Protocol:
 
     - the object has an objectAt property
     - the object is a native Array

@@ -1,5 +1,5 @@
 // ==========================================================================
-// Project:  SproutCore Metal
+// Project:  Ember Metal
 // Copyright: ©2011 Strobe Inc. and contributors.
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
@@ -11,14 +11,14 @@ if ('undefined' === typeof Ember) {
   @name Ember
   @version 0.9
 
-  All SproutCore methods and functions are defined inside of this namespace.
+  All Ember methods and functions are defined inside of this namespace.
   You generally should not add new properties to this namespace as it may be
-  overwritten by future versions of SproutCore.
+  overwritten by future versions of Ember.
 
   You can also use the shorthand "Em" instead of "Ember".
 
-  SproutCore-Runtime is a framework that provides core functions for 
-  SproutCore including cross-platform functions, support for property 
+  Ember-Runtime is a framework that provides core functions for 
+  Ember including cross-platform functions, support for property 
   observing and objects. Its focus is on small size and performance. You can 
   use this in place of or along-side other cross-platform libraries such as 
   jQuery.
@@ -49,7 +49,7 @@ Ember.VERSION = '0.9';
   @constant
   
   Standard environmental variables.  You can define these in a global `ENV`
-  variable before loading SproutCore to control various configuration 
+  variable before loading Ember to control various configuration 
   settings.
 */
 Ember.ENV = 'undefined' === typeof ENV ? {} : ENV;
@@ -64,7 +64,7 @@ Ember.K = function() { return this; };
 
 /**
   Define an assertion that will throw an exception if the condition is not 
-  met.  SproutCore build tools will remove any calls to sc_assert() when 
+  met.  Ember build tools will remove any calls to sc_assert() when 
   doing a production build.
   
   ## Examples
@@ -108,7 +108,7 @@ if ('undefined' === typeof require) require = Ember.K;
 /**
   @class
 
-  Inside SproutCore-Metal, simply uses the window.console object.
+  Inside Ember-Metal, simply uses the window.console object.
   Override this to provide more robust logging functionality.
 */
 Ember.Logger = window.console || { log: Ember.K, warn: Ember.K, error: Ember.K };

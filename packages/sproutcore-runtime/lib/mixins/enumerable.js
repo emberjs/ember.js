@@ -1,5 +1,5 @@
 // ==========================================================================
-// Project:  SproutCore Runtime
+// Project:  Ember Runtime
 // Copyright: ©2011 Strobe Inc. and contributors.
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
@@ -40,7 +40,7 @@ function xform(target, method, params) {
   @class
 
   This mixin defines the common interface implemented by enumerable objects
-  in SproutCore.  Most of these methods follow the standard Array iteration
+  in Ember.  Most of these methods follow the standard Array iteration
   API defined up to JavaScript 1.8 (excluding language-specific features that
   cannot be emulated in older versions of JavaScript).
 
@@ -63,15 +63,15 @@ function xform(target, method, params) {
   to your class and you will be able to enumerate the contents of your object
   like any other collection.
 
-  h3. Using SproutCore Enumeration with Other Libraries
+  h3. Using Ember Enumeration with Other Libraries
 
   Many other libraries provide some kind of iterator or enumeration like
   facility.  This is often where the most common API conflicts occur.
-  SproutCore's API is designed to be as friendly as possible with other
+  Ember's API is designed to be as friendly as possible with other
   libraries by implementing only methods that mostly correspond to the
   JavaScript 1.8 API.
 
-  @since SproutCore 1.0
+  @since Ember 0.9
 */
 Ember.Enumerable = Ember.Mixin.create( /** @lends Ember.Enumerable */ {
   

@@ -1,5 +1,5 @@
 // ==========================================================================
-// Project:  SproutCore Runtime
+// Project:  Ember Runtime
 // Copyright: ©2006-2011 Strobe Inc. and contributors.
 //            Portions ©2008-2010 Apple Inc. All rights reserved.
 // License:   Licensed under MIT license (see license.js)
@@ -65,7 +65,7 @@ var get = Ember.get, set = Ember.set;
   Ember.Copyable protocol, which defines a frozenCopy() method that will return
   a frozen object, if the object implements this method as well.
 
-  @since SproutCore 1.0
+  @since Ember 0.9
 */
 Ember.Freezable = Ember.Mixin.create({
 

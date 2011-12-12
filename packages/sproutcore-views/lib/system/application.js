@@ -1,5 +1,5 @@
 // ==========================================================================
-// Project:   SproutCore - JavaScript Application Framework
+// Project:   Ember - JavaScript Application Framework
 // Copyright: ©2006-2011 Strobe Inc. and contributors.
 //            Portions ©2008-2011 Apple Inc. All rights reserved.
 // License:   Licensed under MIT license (see license.js)
@@ -27,13 +27,13 @@ var get = Ember.get, set = Ember.set;
 
   The root of an Ember.Application must not be removed during the course of the
   page's lifetime. If you have only a single conceptual application for the
-  entire page, and are not embedding any third-party SproutCore applications
+  entire page, and are not embedding any third-party Ember applications
   in your page, use the default document root for your application.
 
   You only need to specify the root if your page contains multiple instances 
   of Ember.Application.
 
-  @since SproutCore 2.0
+  @since Ember 2.0
   @extends Ember.Object
 */
 Ember.Application = Ember.Namespace.extend(

@@ -1,5 +1,5 @@
 // ==========================================================================
-// Project:  SproutCore Runtime
+// Project:  Ember Runtime
 // Copyright: ©2011 Strobe Inc. and contributors.
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
@@ -15,7 +15,7 @@ var get = Ember.get, set = Ember.set;
   code that needs to run on IE7 or IE8 you should use Ember.get() and Ember.set()
   instead.
   
-  If you have older code and you want to bring back the older SproutCore 1.x observable
+  If you have older code and you want to bring back the older Ember 1.x observable
   API, you can do so by readding Ember.Observable to Ember.Object like so:
   
       Ember.Object.reopen(Ember.Observable);

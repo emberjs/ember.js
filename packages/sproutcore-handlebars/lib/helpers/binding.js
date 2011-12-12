@@ -1,5 +1,5 @@
 // ==========================================================================
-// Project:   SproutCore Handlebar Views
+// Project:   Ember Handlebar Views
 // Copyright: ©2011 Strobe Inc. and contributors.
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
@@ -167,7 +167,7 @@ Ember.Handlebars.registerHelper('unless', function(context, options) {
 
 /**
   `bindAttr` allows you to create a binding between DOM element attributes and
-  SproutCore objects. For example:
+  Ember objects. For example:
 
       <img {{bindAttr src="imageUrl" alt="imageTitle"}}>
 

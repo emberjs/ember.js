@@ -1,6 +1,6 @@
 {
   "name": "sproutcore-datetime",
-  "summary": "SproutCore DateTime",
+  "summary": "Ember DateTime",
   "description": "A rich date time class with utilities",
   "homepage": "http://sproutcore.com",
   "author": "Strobe Inc., Apple, Inc., and contributors",

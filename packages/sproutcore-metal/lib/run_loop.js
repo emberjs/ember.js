@@ -1,5 +1,5 @@
 // ==========================================================================
-// Project:  SproutCore Runtime
+// Project:  Ember Runtime
 // Copyright: ©2006-2011 Strobe Inc. and contributors.
 //            Portions ©2008-2010 Apple Inc. All rights reserved.
 // License:   Licensed under MIT license (see license.js)
@@ -252,7 +252,7 @@ function autorun() {
 
 /**
   Begins a new RunLoop if necessary and schedules a timer to flush the
-  RunLoop at a later time.  This method is used by parts of SproutCore to
+  RunLoop at a later time.  This method is used by parts of Ember to
   ensure the RunLoop always finishes.  You normally do not need to call this
   method directly.  Instead use Ember.run().
 

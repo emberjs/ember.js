@@ -1,5 +1,5 @@
 // ==========================================================================
-// Project:  SproutCore Runtime
+// Project:  Ember Runtime
 // Copyright: ©2011 Strobe Inc. and contributors.
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
@@ -24,7 +24,7 @@ var get = Ember.get, set = Ember.set, guidFor = Ember.guidFor, none = Ember.none
   can also iterate through a set just like an array, even accessing objects
   by index, however there is no gaurantee as to their order.
 
-  Starting with SproutCore 2.0 all Sets are now observable since there is no
+  Starting with Ember 2.0 all Sets are now observable since there is no
   added cost to providing this support.  Sets also do away with the more
   specialized Set Observer API in favor of the more generic Enumerable 
   Observer API - which works on any enumerable object including both Sets and
@@ -103,7 +103,7 @@ var get = Ember.get, set = Ember.set, guidFor = Ember.guidFor, none = Ember.none
   Note that you can also use the `Ember.Copyable` and `Ember.Freezable`
   APIs on `Ember.Set` as well.  Once a set is frozen it can no longer be 
   modified.  The benefit of this is that when you call frozenCopy() on it,
-  SproutCore will avoid making copies of the set.  This allows you to write
+  Ember will avoid making copies of the set.  This allows you to write
   code that can know with certainty when the underlying set data will or 
   will not be modified.
 
@@ -112,7 +112,7 @@ var get = Ember.get, set = Ember.set, guidFor = Ember.guidFor, none = Ember.none
   @extends Ember.Copyable
   @extends Ember.Freezable
 
-  @since SproutCore 1.0
+  @since Ember 0.9
 */
 Ember.Set = Ember.CoreObject.extend(Ember.MutableEnumerable, Ember.Copyable, Ember.Freezable,
   /** @scope Ember.Set.prototype */ {
@@ -351,7 +351,7 @@ Ember.Set = Ember.CoreObject.extend(Ember.MutableEnumerable, Ember.Copyable, Emb
         // SproutCore 1.x:
         isSet = myobject && myobject.isSet;
 
-        // SproutCore 2.0 and later:
+        // Ember:
         isSet = myobject instanceof Ember.Set
 
     @type Boolean
@@ -365,7 +365,7 @@ Ember.Set = Ember.CoreObject.extend(Ember.MutableEnumerable, Ember.Copyable, Emb
 var o_create = Ember.Set.create;
 Ember.Set.create = function(items) {
   if (items && Ember.Enumerable.detect(items)) {
-    Ember.Logger.warn('Passing an enumerable to Ember.Set.create() is deprecated and will be removed in a future version of SproutCore.  Use new Ember.Set(items) instead');
+    Ember.Logger.warn('Passing an enumerable to Ember.Set.create() is deprecated and will be removed in a future version of Ember.  Use new Ember.Set(items) instead');
     return new Ember.Set(items);
   } else {
     return o_create.apply(this, arguments);

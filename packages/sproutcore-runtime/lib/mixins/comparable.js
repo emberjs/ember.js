@@ -1,5 +1,5 @@
 // ==========================================================================
-// Project:  SproutCore Runtime
+// Project:  Ember Runtime
 // Copyright: ©2006-2011 Strobe Inc. and contributors.
 //            Portions ©2008-2011 Apple Inc. All rights reserved.
 // License:   Licensed under MIT license (see license.js)
@@ -16,7 +16,7 @@ require('sproutcore-runtime/core');
 
   You should implement the compare() method.
 
-  @since SproutCore 1.0
+  @since Ember 0.9
 */
 Ember.Comparable = Ember.Mixin.create( /** @scope Ember.Comparable.prototype */{
 

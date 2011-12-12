@@ -1,4 +1,4 @@
-# SproutCore Metal
+# Ember Metal
 
 Metal adds Key-Value Observing and Computed Properties to JavaScript.  These are some preliminary notes on the API.  Note that this still needs a lot of cleanup.
 

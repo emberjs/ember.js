@@ -1,5 +1,5 @@
 // ==========================================================================
-// Project:  SproutCore Runtime
+// Project:  Ember Runtime
 // Copyright: ©2011 Strobe Inc. and contributors.
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
@@ -45,7 +45,7 @@ if (typeof console === 'undefined') {
   @default YES
   @constant
   
-  Determines whether SproutCore should enhances some built-in object 
+  Determines whether Ember should enhances some built-in object 
   prototypes to provide a more friendly API.  If enabled, a few methods 
   will be added to Function, String, and Array.  Object.prototype will not be
   enhanced, which is the one that causes most troubles for people.
@@ -83,8 +83,8 @@ var toString = Object.prototype.toString;
   | 'undefined' | Undefined value |
   | 'function' | A function |
   | 'array' | An instance of Array |
-  | 'class' | A SproutCore class (created using Ember.Object.extend()) |
-  | 'instance' | A SproutCore object instance |
+  | 'class' | A Ember class (created using Ember.Object.extend()) |
+  | 'instance' | A Ember object instance |
   | 'error' | An instance of the Error object |
   | 'object' | A JavaScript object not inheriting from Ember.Object |
 
@@ -368,7 +368,7 @@ if (!Ember.keys) {
 /**
   @class
 
-  A subclass of the JavaScript Error object for use in SproutCore.
+  A subclass of the JavaScript Error object for use in Ember.
 */
 Ember.Error = function() {
   var tmp = Error.prototype.constructor.apply(this, arguments);

@@ -1,7 +1,7 @@
 {
   "name": "sproutcore-states",
-  "summary": "SproutCore Storyboards",
-  "description": "The SproutCore state management system",
+  "summary": "Ember Storyboards",
+  "description": "The Ember state management system",
   "homepage": "http://sproutcore.com",
   "author": "Yehuda Katz",
   "version": "2.0.beta.3",

@@ -1,5 +1,5 @@
 // ==========================================================================
-// Project:  SproutCore Runtime
+// Project:  Ember Runtime
 // Copyright: ©2011 Strobe Inc.
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================

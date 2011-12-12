@@ -1,5 +1,5 @@
 // ==========================================================================
-// Project:   SproutCore - JavaScript Application Framework
+// Project:   Ember - JavaScript Application Framework
 // Copyright: ©2006-2011 Strobe Inc. and contributors.
 //            Portions ©2008-2011 Apple Inc. All rights reserved.
 // License:   Licensed under MIT license (see license.js)
@@ -88,7 +88,7 @@ Ember.DATETIME_ISO8601 = '%Y-%m-%dT%H:%M:%S%Z';
   Scanners are used by `DateTime` to convert strings into `DateTime` objects.
 
   @extends Ember.Object
-  @since SproutCore 1.0
+  @since Ember 0.9
   @author Martin Ottenwaelter
 */
 var Scanner = Ember.Object.extend({
@@ -219,7 +219,7 @@ var Scanner = Ember.Object.extend({
   @author Martin Ottenwaelter
   @author Jonathan Lewis
   @author Josh Holt
-  @since SproutCore 1.0
+  @since Ember 1.0
 */
 Ember.DateTime = Ember.Object.extend(Ember.Freezable, Ember.Copyable,
 /** @scope Ember.DateTime.prototype */ {

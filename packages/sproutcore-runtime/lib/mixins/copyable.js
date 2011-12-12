@@ -1,5 +1,5 @@
 // ==========================================================================
-// Project:  SproutCore Runtime
+// Project:  Ember Runtime
 // Copyright: ©2006-2011 Strobe Inc. and contributors.
 //            Portions ©2008-2010 Apple Inc. All rights reserved.
 // License:   Licensed under MIT license (see license.js)
@@ -24,7 +24,7 @@ var get = Ember.get, set = Ember.set;
 
   Note that frozenCopy() will only work if you also implement Ember.Freezable.
 
-  @since SproutCore 1.0
+  @since Ember 0.9
 */
 Ember.Copyable = Ember.Mixin.create({
 

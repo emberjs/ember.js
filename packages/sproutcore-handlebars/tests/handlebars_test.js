@@ -1,5 +1,5 @@
 // ==========================================================================
-// Project:   SproutCore Handlebar Views
+// Project:   Ember Handlebar Views
 // Copyright: ©2011 Strobe Inc. and contributors.
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
@@ -65,7 +65,7 @@ var appendView = function() {
 var additionalTeardown;
 
 /**
-  This module specifically tests integration with Handlebars and SproutCore-specific
+  This module specifically tests integration with Handlebars and Ember-specific
   Handlebars extensions.
 
   If you add additional template support to Ember.View, you should create a new
@@ -1038,12 +1038,12 @@ test("should be able to bind element attributes using {{bindAttr}}", function() 
     set(view, 'content', Ember.Object.create({
       url: "http://www.sproutcore.com/assets/images/logo.png",
       title: Ember.computed(function() {
-        return "Nanananana SproutCore!";
+        return "Nanananana Ember!";
       })
     }));
   });
 
-  equals(view.$('img').attr('alt'), "Nanananana SproutCore!", "updates alt attribute when title property is computed");
+  equals(view.$('img').attr('alt'), "Nanananana Ember!", "updates alt attribute when title property is computed");
 });
 
 test("should not reset cursor position when text field receives keyUp event", function() {

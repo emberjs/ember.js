@@ -1,7 +1,7 @@
 /**
  * @license
  * ==========================================================================
- * SproutCore
+ * Ember
  * Copyright ©2006-2011, Strobe Inc. and contributors.
  * Portions copyright ©2008-2011 Apple Inc. All rights reserved.
  * 
@@ -23,7 +23,7 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
  * DEALINGS IN THE SOFTWARE.
  * 
- * For more information about SproutCore, visit http://www.sproutcore.com
+ * For more information about Ember, visit http://www.emberjs.com
  * 
  * ==========================================================================
  */

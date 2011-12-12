@@ -1,7 +1,7 @@
 {
   "name": "sproutcore-views",
-  "summary": "SproutCore Views",
-  "description": "The SproutCore view system",
+  "summary": "Ember Views",
+  "description": "The Ember view system",
   "homepage": "http://sproutcore.com",
   "author": "Yehuda Katz",
   "version": "2.0.beta.3",

@@ -1,5 +1,5 @@
 // ==========================================================================
-// Project:  SproutCore Runtime
+// Project:  Ember Runtime
 // Copyright: ©2011 Strobe Inc. and contributors.
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
@@ -54,7 +54,7 @@ function xform(target, method, params) {
   Ember.Array-like objects are also enumerable.
 
   @extends Ember.Enumerable
-  @since SproutCore 0.9.0
+  @since Ember 0.9.0
 */
 Ember.Array = Ember.Mixin.create(Ember.Enumerable, /** @scope Ember.Array.prototype */ {
 

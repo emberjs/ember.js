@@ -32,7 +32,7 @@
       parentView.append();
     });
 
-    equals(parentView.$().text(), 'SproutCore', 'renders the child view after the parent view');
+    equals(parentView.$().text(), 'Ember', 'renders the child view after the parent view');
   });
 
   test("should not duplicate childViews when rerendering in buffer", function() {

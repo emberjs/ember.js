@@ -1,7 +1,7 @@
 {
   "name": "sproutcore-runtime",
-  "summary": "SproutCore Runtime",
-  "description": "The base SproutCore runtime. Essential for all SproutCore apps.",
+  "summary": "Ember Runtime",
+  "description": "The base Ember runtime. Essential for all Ember apps.",
 
   "homepage": "http://sproutcore.com",
   "author": "Charles Jolley",

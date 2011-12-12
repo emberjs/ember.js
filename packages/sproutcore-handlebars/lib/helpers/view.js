@@ -1,5 +1,5 @@
 // ==========================================================================
-// Project:   SproutCore Handlebar Views
+// Project:   Ember Handlebar Views
 // Copyright: ©2011 Strobe Inc. and contributors.
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================

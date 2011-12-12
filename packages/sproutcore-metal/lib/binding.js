@@ -1,5 +1,5 @@
 // ==========================================================================
-// Project:  SproutCore Runtime
+// Project:  Ember Runtime
 // Copyright: ©2011 Strobe Inc. and contributors.
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
@@ -203,7 +203,7 @@ var OR_OPERATION = function(obj, left, right) {
   ## One Way Bindings
 
   One especially useful binding customization you can use is the `oneWay()`
-  helper. This helper tells SproutCore that you are only interested in
+  helper. This helper tells Ember that you are only interested in
   receiving changes on the object you are binding from. For example, if you
   are binding to a preference and you want to be notified if the preference
   has changed, but your object will not be changing the preference itself, you
@@ -225,7 +225,7 @@ var OR_OPERATION = function(obj, left, right) {
 
   ## Adding Custom Transforms
 
-  In addition to using the standard helpers provided by SproutCore, you can
+  In addition to using the standard helpers provided by Ember, you can
   also defined your own custom transform functions which will be used to
   convert the value. To do this, just define your transform function and add
   it to the binding with the transform() helper. The following example will
@@ -277,7 +277,7 @@ var OR_OPERATION = function(obj, left, right) {
   you want to bind from (such as "MyApp.someController.value" in the examples
   above). When your object is created, it will automatically assign the value
   you want to bind "to" based on the name of your binding key. In the
-  examples above, during init, SproutCore objects will effectively call
+  examples above, during init, Ember objects will effectively call
   something like this on your binding:
 
         binding = Ember.Binding.from(this.valueBinding).to("value");
@@ -314,11 +314,11 @@ var OR_OPERATION = function(obj, left, right) {
 
         });
 
-  SproutCore's built in binding creation method makes it easy to automatically
+  Ember's built in binding creation method makes it easy to automatically
   create bindings for you. You should always use the highest-level APIs
   available, even if you understand how to it works underneath.
 
-  @since SproutCore 1.0
+  @since Ember 0.9
 */
 var K = function() {};
 var Binding = function(toPath, fromPath) {

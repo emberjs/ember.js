@@ -1,5 +1,5 @@
 // ==========================================================================
-// Project:   SproutCore Handlebar Views
+// Project:   Ember Handlebar Views
 // Copyright: ©2011 Strobe Inc. and contributors.
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
@@ -10,7 +10,7 @@ require("sproutcore-handlebars/ext");
 var set = Ember.set, get = Ember.get;
 
 // TODO: Be explicit in the class documentation that you
-// *MUST* set the value of a checkbox through SproutCore.
+// *MUST* set the value of a checkbox through Ember.
 // Updating the value of a checkbox directly via jQuery objects
 // will not work.
 
