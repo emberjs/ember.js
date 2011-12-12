@@ -71,12 +71,12 @@ task :build => ["sproutcore:metal", "sproutcore:runtime", "sproutcore:handlebars
 
 # Strip out require lines from sproutcore.js. For the interim, requires are
 # precomputed by the compiler so they are no longer necessary at runtime.
-file "dist/sproutcore.js" => :build do
-  puts "Generating sproutcore.js"
+file "dist/amber.js" => :build do
+  puts "Generating amber.js"
 
   mkdir_p "dist"
 
-  File.open("dist/sproutcore.js", "w") do |file|
+  File.open("dist/amber.js", "w") do |file|
     file.puts strip_require("tmp/static/handlebars.js")
     file.puts strip_require("tmp/static/sproutcore-metal.js")
     file.puts strip_require("tmp/static/sproutcore-runtime.js")
@@ -88,18 +88,18 @@ file "dist/sproutcore.js" => :build do
 end
 
 # Minify dist/sproutcore.js to dist/sproutcore.min.js
-file "dist/sproutcore.min.js" => "dist/sproutcore.js" do
-  puts "Generating sproutcore.min.js"
+file "dist/amber.min.js" => "dist/amber.js" do
+  puts "Generating amber.min.js"
 
-  File.open("dist/sproutcore.prod.js", "w") do |file|
-    file.puts strip_sc_assert("dist/sproutcore.js")
+  File.open("dist/amber.prod.js", "w") do |file|
+    file.puts strip_sc_assert("dist/amber.js")
   end
 
-  File.open("dist/sproutcore.min.js", "w") do |file|
-    file.puts uglify("dist/sproutcore.prod.js")
+  File.open("dist/amber.min.js", "w") do |file|
+    file.puts uglify("dist/amber.prod.js")
   end
 
-  rm "dist/sproutcore.prod.js"
+  rm "dist/amber.prod.js"
 end
 
 SC_VERSION = File.read("VERSION")
@@ -193,7 +193,7 @@ namespace :starter_kit do
 end
 
 desc "Build SproutCore"
-task :dist => ["dist/sproutcore.min.js"]
+task :dist => ["dist/amber.min.js"]
 
 desc "Clean build artifacts from previous builds"
 task :clean do
