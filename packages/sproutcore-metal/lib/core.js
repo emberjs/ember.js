@@ -30,7 +30,7 @@ SC = {};
 
 // aliases needed to keep minifiers from removing the global context
 if ('undefined' !== typeof window) {
-  window.SC = window.SproutCore = SproutCore = SC;
+  window.Em = window.Ember = window.SC = window.SproutCore = Em = Ember = SproutCore = SC;
 }
 
 }
