@@ -1,0 +1,37 @@
+{
+  "name": "ember-runtime",
+  "summary": "Ember Runtime",
+  "description": "The base Ember runtime. Essential for all Ember apps.",
+
+  "homepage": "http://emberjs.com",
+  "author": "Charles Jolley",
+  "version": "0.9",
+
+  "directories": {
+    "lib": "lib"
+  },
+
+  "dependencies": {
+    "spade":            "~> 1.0",
+    "ember-metal": "0.9"
+  },
+
+  "dependencies:development": {
+    "spade-qunit": "~> 1.0.0"
+  },
+  
+  "bpm:build": {
+    
+    "bpm_libs.js": {
+      "files": ["lib"],
+      "modes":        "*"
+    },
+    
+    "ember-runtime/bpm_tests.js": {
+      "files": ["tests"],
+      "modes": ["debug"]
+    }
+  }
+
+}
+

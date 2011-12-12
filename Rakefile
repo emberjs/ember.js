@@ -57,7 +57,7 @@ end
 # Create ember:package tasks for each of the Ember packages
 namespace :ember do
   %w(metal runtime handlebars views states).each do |package|
-    task package => compile_package_task("sproutcore-#{package}", "ember-#{package}")
+    task package => compile_package_task("ember-#{package}", "ember-#{package}")
   end
 end
 
@@ -118,15 +118,15 @@ task :bump_version, :version do |t, args|
     %{"ember-#{$1}": "#{version}"}
   end
 
-  File.open("packages/sproutcore/package.json", "w") do |file|
+  File.open("packages/ember/package.json", "w") do |file|
     file.write contents
   end
 
   # Bump the version of each component package
-  Dir["packages/sproutcore*/package.json", "package.json"].each do |package|
+  Dir["packages/ember*/package.json", "package.json"].each do |package|
     contents = File.read(package)
     contents.gsub! %r{"version": .*$}, %{"version": "#{version}",}
-    contents.gsub! %r{"(sproutcore-?\w*)": [^\n\{,]*(,?)$} do
+    contents.gsub! %r{"(ember-?\w*)": [^\n\{,]*(,?)$} do
       %{"#{$1}": "#{version}"#{$2}}
     end
 

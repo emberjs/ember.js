@@ -1,9 +1,9 @@
 {
-  "name": "sproutcore",
+  "name": "ember",
   "bpm": "1.0.0",
   "dependencies": {
-    "sproutcore": "2.0.beta.3",
-    "sproutcore-datetime": "2.0.beta.3"
+    "ember": "0.9",
+    "ember-datetime": "0.9"
   },
   "dependencies:development": {
     "spade-qunit": "~> 1.0.0"
@@ -18,16 +18,16 @@
         "jquery"
       ]
     },
-    "sproutcore.js": {
+    "ember.js": {
       "minifier": "uglify-js",
       "include": [
         "spade",
-        "sproutcore-metal",
-        "sproutcore-runtime",
+        "ember-metal",
+        "ember-runtime",
         "handlebars",
-        "sproutcore-views",
-        "sproutcore-states",
-        "sproutcore-handlebars"
+        "ember-views",
+        "ember-states",
+        "ember-handlebars"
       ]
     }
   }

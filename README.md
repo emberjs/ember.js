@@ -111,9 +111,9 @@ therubyracer`.
 
 5. Then visit: `http://localhost:9292/tests/index.html?package=PACKAGE_NAME`.  Replace `PACKAGE_NAME` with the name of the package you want to run.  For example:
 
-  * [Ember.js Runtime](http://localhost:9292/tests/index.html?package=sproutcore-runtime)
-  * [Ember.js Views](http://localhost:9292/tests/index.html?package=sproutcore-views)
-  * [Ember.js Handlebars](http://localhost:9292/tests/index.html?package=sproutcore-handlebars)
+  * [Ember.js Runtime](http://localhost:9292/tests/index.html?package=ember-runtime)
+  * [Ember.js Views](http://localhost:9292/tests/index.html?package=ember-views)
+  * [Ember.js Handlebars](http://localhost:9292/tests/index.html?package=ember-handlebars)
 
 To run multiple packages, you can separate them with commas. You can run all the tests using the `all` package:
 
