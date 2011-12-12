@@ -16,54 +16,59 @@ Use bindings to keep properties between two different objects in sync. You just 
 
 Here's how you create a binding between two objects:
 
-    MyApp.president = SC.Object.create({
-      name: "Barack Obama"
-    });
+``` javascript
+MyApp.president = SC.Object.create({
+  name: "Barack Obama"
+});
 
-    MyApp.country = SC.Object.create({
-      // Ending a property with 'Binding' tells Amber.js to
-      // create a binding to the presidentName property.
-      presidentNameBinding: 'MyApp.president.name'
-    });
+MyApp.country = SC.Object.create({
+  // Ending a property with 'Binding' tells Amber.js to
+  // create a binding to the presidentName property.
+  presidentNameBinding: 'MyApp.president.name'
+});
 
-    MyApp.country.get('presidentName');
-    // "Barack Obama"
-
+MyApp.country.get('presidentName');
+// "Barack Obama"
+```
 Bindings allow you to architect your application using the MVC (Model-View-Controller) pattern, then rest easy knowing that data will always flow correctly from layer to layer.
 
 ## Computed Properties
 
 Computed properties allow you to treat a function like a property:
 
-    MyApp.president = SC.Object.create({
-      firstName: "Barack",
-      lastName: "Obama",
+``` javascript
+MyApp.president = SC.Object.create({
+  firstName: "Barack",
+  lastName: "Obama",
 
-      fullName: function() {
-        return this.get('firstName') + ' ' + this.get('lastName');
+  fullName: function() {
+    return this.get('firstName') + ' ' + this.get('lastName');
 
-        // Call this flag to mark the function as a property
-      }.property()
-    });
+    // Call this flag to mark the function as a property
+  }.property()
+});
 
-    MyApp.president.get('fullName');
-    // "Barack Obama"
+MyApp.president.get('fullName');
+// "Barack Obama"
+```
 
 Treating a function like a property is useful because they can work with bindings, just like any other property.
 
 Many computed properties have dependencies on other properties. For example, in the above example, the `fullName` property depends on `firstName` and `lastName` to determine its value. You can tell Amber.js about these dependencies like this:
 
-    MyApp.president = SC.Object.create({
-      firstName: "Barack",
-      lastName: "Obama",
+``` javascript
+MyApp.president = SC.Object.create({
+  firstName: "Barack",
+  lastName: "Obama",
 
-      fullName: function() {
-        return this.get('firstName') + ' ' + this.get('lastName');
+  fullName: function() {
+    return this.get('firstName') + ' ' + this.get('lastName');
 
-        // Tell Amber.js that this computed property depends on firstName
-        // and lastName
-      }.property('firstName', 'lastName')
-    });
+    // Tell Amber.js that this computed property depends on firstName
+    // and lastName
+  }.property('firstName', 'lastName')
+});
+```
 
 Make sure you list these dependencies so Amber.js knows when to update bindings that connect to a computed property.
 
@@ -71,9 +76,11 @@ Make sure you list these dependencies so Amber.js knows when to update bindings 
 
 Amber.js uses Handlebars, a semantic templating library. To take data from your JavaScript application and put it into the DOM, create a `<script>` tag and put it into your HTML, wherever you'd like the value to appear:
 
-    <script type="text/x-handlebars">
-      The President of the United States is {{MyApp.president.fullName}}.
-    </script>
+``` html
+<script type="text/x-handlebars">
+  The President of the United States is {{MyApp.president.fullName}}.
+</script>
+```
 
 Here's the best part: templates are bindings-aware. That means that if you ever change the value of the property that you told us to display, we'll update it for you automatically. And because you've specified dependencies, changes to *those* properties are reflected as well.
 
