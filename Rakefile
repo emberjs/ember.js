@@ -3,12 +3,13 @@ abort "Please use Ruby 1.9 to build Amber.js!" if RUBY_VERSION !~ /^1\.9/
 require "bundler/setup"
 require "erb"
 require "uglifier"
+
+# for now, the SproutCore compiler will be used to compile Ember.js
 require "sproutcore"
 
 LICENSE = File.read("generators/license.js")
 
-## Some SproutCore modules expect an exports object to exist. Until bpm exists,
-## just mock this out for now.
+## Some Ember modules expect an exports object to exist. Mock it out.
 
 module SproutCore
   module Compiler
@@ -44,19 +45,19 @@ end
 SproutCore::Compiler.intermediate = "tmp/intermediate"
 SproutCore::Compiler.output       = "tmp/static"
 
-# Create a compile task for a SproutCore package. This task will compute
+# Create a compile task for an Ember package. This task will compute
 # dependencies and output a single JS file for a package.
-def compile_package_task(package)
-  js_tasks = SproutCore::Compiler::Preprocessors::JavaScriptTask.with_input "packages/#{package}/lib/**/*.js", "."
-  SproutCore::Compiler::CombineTask.with_tasks js_tasks, "#{SproutCore::Compiler.intermediate}/#{package}"
+def compile_package_task(input, output=input)
+  js_tasks = SproutCore::Compiler::Preprocessors::JavaScriptTask.with_input "packages/#{input}/lib/**/*.js", "."
+  SproutCore::Compiler::CombineTask.with_tasks js_tasks, "#{SproutCore::Compiler.intermediate}/#{output}"
 end
 
 ## TASKS ##
 
-# Create sproutcore:package tasks for each of the SproutCore packages
-namespace :sproutcore do
+# Create ember:package tasks for each of the Ember packages
+namespace :ember do
   %w(metal runtime handlebars views states).each do |package|
-    task package => compile_package_task("sproutcore-#{package}")
+    task package => compile_package_task("sproutcore-#{package}", "ember-#{package}")
   end
 end
 
@@ -67,42 +68,42 @@ task :handlebars => compile_package_task("handlebars")
 task :metamorph => compile_package_task("metamorph")
 
 # Create a build task that depends on all of the package dependencies
-task :build => ["sproutcore:metal", "sproutcore:runtime", "sproutcore:handlebars", "sproutcore:views", "sproutcore:states", :handlebars, :metamorph]
+task :build => ["ember:metal", "ember:runtime", "ember:handlebars", "ember:views", "ember:states", :handlebars, :metamorph]
 
-# Strip out require lines from sproutcore.js. For the interim, requires are
+# Strip out require lines from ember.js. For the interim, requires are
 # precomputed by the compiler so they are no longer necessary at runtime.
-file "dist/sproutcore.js" => :build do
-  puts "Generating sproutcore.js"
+file "dist/ember.js" => :build do
+  puts "Generating ember.js"
 
   mkdir_p "dist"
 
-  File.open("dist/sproutcore.js", "w") do |file|
+  File.open("dist/ember.js", "w") do |file|
     file.puts strip_require("tmp/static/handlebars.js")
-    file.puts strip_require("tmp/static/sproutcore-metal.js")
-    file.puts strip_require("tmp/static/sproutcore-runtime.js")
-    file.puts strip_require("tmp/static/sproutcore-views.js")
-    file.puts strip_require("tmp/static/sproutcore-states.js")
+    file.puts strip_require("tmp/static/ember-metal.js")
+    file.puts strip_require("tmp/static/ember-runtime.js")
+    file.puts strip_require("tmp/static/ember-views.js")
+    file.puts strip_require("tmp/static/ember-states.js")
     file.puts strip_require("tmp/static/metamorph.js")
-    file.puts strip_require("tmp/static/sproutcore-handlebars.js")
+    file.puts strip_require("tmp/static/ember-handlebars.js")
   end
 end
 
-# Minify dist/sproutcore.js to dist/sproutcore.min.js
-file "dist/sproutcore.min.js" => "dist/sproutcore.js" do
-  puts "Generating sproutcore.min.js"
+# Minify dist/ember.js to dist/ember.min.js
+file "dist/ember.min.js" => "dist/ember.js" do
+  puts "Generating ember.min.js"
 
-  File.open("dist/sproutcore.prod.js", "w") do |file|
-    file.puts strip_sc_assert("dist/sproutcore.js")
+  File.open("dist/ember.prod.js", "w") do |file|
+    file.puts strip_sc_assert("dist/ember.js")
   end
 
-  File.open("dist/sproutcore.min.js", "w") do |file|
-    file.puts uglify("dist/sproutcore.prod.js")
+  File.open("dist/ember.min.js", "w") do |file|
+    file.puts uglify("dist/ember.prod.js")
   end
 
-  rm "dist/sproutcore.prod.js"
+  rm "dist/ember.prod.js"
 end
 
-SC_VERSION = File.read("VERSION")
+SC_VERSION = File.read("VERSION").strip
 
 desc "bump the version to the specified version"
 task :bump_version, :version do |t, args|
@@ -110,11 +111,11 @@ task :bump_version, :version do |t, args|
 
   File.open("VERSION", "w") { |file| file.write version }
 
-  # Bump the version of subcomponents required by the "umbrella" sproutcore
+  # Bump the version of subcomponents required by the "umbrella" ember
   # package.
-  contents = File.read("packages/sproutcore/package.json")
-  contents.gsub! %r{"sproutcore-(\w+)": .*$} do
-    %{"sproutcore-#{$1}": "#{version}"}
+  contents = File.read("packages/ember/package.json")
+  contents.gsub! %r{"ember-(\w+)": .*$} do
+    %{"ember-#{$1}": "#{version}"}
   end
 
   File.open("packages/sproutcore/package.json", "w") do |file|
@@ -139,8 +140,8 @@ end
 ## STARTER KIT ##
 
 namespace :starter_kit do
-  sproutcore_output = "tmp/starter-kit/js/libs/sproutcore-#{SC_VERSION}.js"
-  sproutcore_min_output = "tmp/starter-kit/js/libs/sproutcore-#{SC_VERSION}.min.js"
+  ember_output = "tmp/starter-kit/js/libs/ember-#{SC_VERSION}.js"
+  ember_min_output = "tmp/starter-kit/js/libs/ember-#{SC_VERSION}.min.js"
 
   task :pull => "tmp/starter-kit" do
     Dir.chdir("tmp/starter-kit") do
@@ -150,7 +151,7 @@ namespace :starter_kit do
 
   task :clean => :pull do
     Dir.chdir("tmp/starter-kit") do
-      rm_rf Dir["js/libs/sproutcore*.js"]
+      rm_rf Dir["js/libs/ember*.js"]
     end
   end
 
@@ -162,38 +163,38 @@ namespace :starter_kit do
     end
   end
 
-  file sproutcore_output => [:clean, "tmp/starter-kit", "dist/sproutcore.js"] do
-    sh "cp dist/sproutcore.js #{sproutcore_output}"
+  file ember_output => [:clean, "tmp/starter-kit", "dist/ember.js"] do
+    sh "cp dist/ember.js #{ember_output}"
   end
 
-  file sproutcore_min_output => [:clean, "tmp/starter-kit", "dist/sproutcore.min.js"] do
-    sh "cp dist/sproutcore.min.js #{sproutcore_min_output}"
+  file ember_min_output => [:clean, "tmp/starter-kit", "dist/ember.min.js"] do
+    sh "cp dist/ember.min.js #{ember_min_output}"
   end
 
   file "tmp/starter-kit" do
     mkdir_p "tmp"
 
     Dir.chdir("tmp") do
-      sh "git clone git://github.com/sproutcore/starter-kit.git"
+      sh "git clone git://github.com/emberjs/starter-kit.git"
     end
   end
 
-  file "tmp/starter-kit/index.html" => [sproutcore_output, sproutcore_min_output] do
+  file "tmp/starter-kit/index.html" => [ember_output, ember_min_output] do
     index = File.read("tmp/starter-kit/index.html")
-    index.gsub! %r{<script src="js/libs/sproutcore-\d\.\d.*</script>},
-      %{<script src="js/libs/sproutcore-#{SC_VERSION}.min.js"></script>}
+    index.gsub! %r{<script src="js/libs/ember-\d\.\d.*</script>},
+      %{<script src="js/libs/ember-#{SC_VERSION}.min.js"></script>}
 
     File.open("tmp/starter-kit/index.html", "w") { |f| f.write index }
   end
 
   task :index => "tmp/starter-kit/index.html"
 
-  desc "Build the SproutCore starter kit"
+  desc "Build the Ember.js starter kit"
   task :build => "dist/starter-kit.#{SC_VERSION}.zip"
 end
 
-desc "Build SproutCore"
-task :dist => ["dist/sproutcore.min.js"]
+desc "Build Ember.js"
+task :dist => ["dist/ember.min.js"]
 
 desc "Clean build artifacts from previous builds"
 task :clean do
