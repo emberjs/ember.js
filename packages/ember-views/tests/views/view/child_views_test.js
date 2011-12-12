@@ -6,13 +6,13 @@
     setup: function() {
       parentView = Ember.View.create({
         render: function(buffer) {
-          buffer.push('Sprout');
+          buffer.push('Em');
           this.appendChild(childView);
         }
       });
 
       childView = Ember.View.create({
-        template: function() { return 'Core'; }
+        template: function() { return 'ber'; }
       });
     },
 
