@@ -540,6 +540,14 @@ testBoth('depending on complex Global chain', function(get, set) {
 
 });
 
+testBoth('chained dependent keys should evaluate computed properties lazily', function(get,set){
+  SC.defineProperty(obj.foo.bar, 'b', SC.computed(func).property().cacheable());
+  SC.defineProperty(obj.foo, 'c', SC.computed(function(){}).property('bar.b').cacheable());
+  equals(count, 0, 'b should not run');
+});
+
+
+
 // ..........................................................
 // BUGS
 // 
