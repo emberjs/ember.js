@@ -9,7 +9,7 @@ if ('undefined' === typeof SC) {
 /**
   @namespace
   @name SC
-  @version 2.0.beta.3
+  @version 0.9
 
   All SproutCore methods and functions are defined inside of this namespace.
   You generally should not add new properties to this namespace as it may be
@@ -38,10 +38,10 @@ if ('undefined' !== typeof window) {
 /**
   @static
   @type String
-  @default '2.0.beta.3'
+  @default '0.9'
   @constant
 */
-SC.VERSION = '2.0.beta.3';
+SC.VERSION = '0.9';
 
 /**
   @static
