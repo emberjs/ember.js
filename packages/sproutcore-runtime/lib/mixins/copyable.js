@@ -54,7 +54,7 @@ SC.Copyable = SC.Mixin.create({
     if (SC.Freezable && SC.Freezable.detect(this)) {
       return get(this, 'isFrozen') ? this : this.copy().freeze();
     } else {
-      throw new Error(SC.String.fmt("%@ does not support freezing",this));
+      throw new Error(SC.String.fmt("%@ does not support freezing", [this]));
     }
   }
 });

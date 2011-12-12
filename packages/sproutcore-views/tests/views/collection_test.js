@@ -167,7 +167,7 @@ test("should remove an item from DOM when an item is removed from the content ar
   });
 
   content.forEach(function(item, idx) {
-    equals(view.$(SC.String.fmt(':nth-child(%@)', String(idx+1))).text(), item);
+    equals(view.$(SC.String.fmt(':nth-child(%@)', [String(idx+1)])).text(), item);
   });
 });
 

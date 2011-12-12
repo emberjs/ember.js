@@ -50,7 +50,7 @@ SC.StateManager = SC.State.extend({
     var action = currentState[event];
 
     if (action) {
-      if (log) { console.log("STORYBOARDS: Sending event '%@' to state %@.".fmt(event, currentState.name)); }
+      if (log) { console.log(fmt("STORYBOARDS: Sending event '%@' to state %@.", [event, currentState.name])); }
       action.call(currentState, this, context);
     } else {
       var parentState = get(currentState, 'parentState');
@@ -61,7 +61,7 @@ SC.StateManager = SC.State.extend({
   goToState: function(name) {
     var currentState = get(this, 'currentState') || this, state, newState;
 
-    var exitStates = [];
+    var exitStates = SC.A();
 
     newState = getPath(currentState, name);
     state = currentState;
@@ -119,7 +119,7 @@ SC.StateManager = SC.State.extend({
   enterState: function(parent, name, exitStates) {
     var log = SC.LOG_STATE_TRANSITIONS;
 
-    var parts = name.split("."), state = parent, enterStates = [];
+    var parts = name.split("."), state = parent, enterStates = SC.A();
 
     parts.forEach(function(name) {
       state = state[name];

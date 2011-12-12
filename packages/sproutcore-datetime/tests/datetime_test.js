@@ -33,14 +33,14 @@ function timeShouldBeEqualToHash(t, h, message) {
     return;
   }
     
-  equals(get(t, 'year'), h.year , SC.String.fmt(message, 'year'));
-  equals(get(t, 'month'), h.month, SC.String.fmt(message, 'month'));
-  equals(get(t, 'day'), h.day, SC.String.fmt(message, 'day'));
-  equals(get(t, 'hour'), h.hour, SC.String.fmt(message, 'hour'));
-  equals(get(t, 'minute'), h.minute, SC.String.fmt(message, 'minute'));
-  equals(get(t, 'second'), h.second, SC.String.fmt(message, 'second'));
-  equals(get(t, 'millisecond'), h.millisecond, SC.String.fmt(message, 'millisecond'));
-  equals(get(t, 'timezone'), h.timezone, SC.String.fmt(message, 'timezone'));
+  equals(get(t, 'year'), h.year , SC.String.fmt(message, ['year']));
+  equals(get(t, 'month'), h.month, SC.String.fmt(message, ['month']));
+  equals(get(t, 'day'), h.day, SC.String.fmt(message, ['day']));
+  equals(get(t, 'hour'), h.hour, SC.String.fmt(message, ['hour']));
+  equals(get(t, 'minute'), h.minute, SC.String.fmt(message, ['minute']));
+  equals(get(t, 'second'), h.second, SC.String.fmt(message, ['second']));
+  equals(get(t, 'millisecond'), h.millisecond, SC.String.fmt(message, ['millisecond']));
+  equals(get(t, 'timezone'), h.timezone, SC.String.fmt(message, ['timezone']));
 }
 
 function formatTimezone(offset) {

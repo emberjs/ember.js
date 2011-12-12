@@ -9,7 +9,7 @@ if ('undefined' === typeof SC) {
 /**
   @namespace
   @name SC
-  @version 2.0.beta.3
+  @version 0.9
 
   All SproutCore methods and functions are defined inside of this namespace.
   You generally should not add new properties to this namespace as it may be
@@ -30,7 +30,7 @@ SC = {};
 
 // aliases needed to keep minifiers from removing the global context
 if ('undefined' !== typeof window) {
-  window.SC = window.SproutCore = SproutCore = SC;
+  window.Em = window.Ember = window.SC = window.SproutCore = Em = Ember = SproutCore = SC;
 }
 
 }
@@ -38,10 +38,10 @@ if ('undefined' !== typeof window) {
 /**
   @static
   @type String
-  @default '2.0.beta.3'
+  @default '0.9'
   @constant
 */
-SC.VERSION = '2.0.beta.3';
+SC.VERSION = '0.9';
 
 /**
   @static
@@ -111,4 +111,4 @@ if ('undefined' === typeof require) require = SC.K;
   Inside SproutCore-Metal, simply uses the window.console object.
   Override this to provide more robust logging functionality.
 */
-SC.Logger = window.console;
+SC.Logger = window.console || { log: SC.K, warn: SC.K, error: SC.K };
