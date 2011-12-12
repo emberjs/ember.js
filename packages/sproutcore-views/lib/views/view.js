@@ -7,13 +7,13 @@
 /*globals sc_assert */
 
 require("sproutcore-views/system/render_buffer");
-var get = SC.get, set = SC.set, addObserver = SC.addObserver;
-var getPath = SC.getPath, meta = SC.meta, fmt = SC.String.fmt;
+var get = Ember.get, set = Ember.set, addObserver = Ember.addObserver;
+var getPath = Ember.getPath, meta = Ember.meta, fmt = Ember.String.fmt;
 
-var childViewsProperty = SC.computed(function() {
+var childViewsProperty = Ember.computed(function() {
   var childViews = get(this, '_childViews');
 
-  var ret = SC.A();
+  var ret = Ember.A();
 
   childViews.forEach(function(view) {
     if (view.isVirtual) {
@@ -35,15 +35,15 @@ var childViewsProperty = SC.computed(function() {
 
   @type Hash
 */
-SC.TEMPLATES = {};
+Ember.TEMPLATES = {};
 
 /**
   @class
   @since SproutCore 2.0
-  @extends SC.Object
+  @extends Ember.Object
 */
-SC.View = SC.Object.extend(
-/** @scope SC.View.prototype */ {
+Ember.View = Ember.Object.extend(
+/** @scope Ember.View.prototype */ {
 
   /** @private */
   concatenatedProperties: ['classNames', 'classNameBindings', 'attributeBindings'],
@@ -62,9 +62,9 @@ SC.View = SC.Object.extend(
   /**
     The name of the template to lookup if no template is provided.
 
-    SC.View will look for a template with this name in this view's
+    Ember.View will look for a template with this name in this view's
     `templates` object. By default, this will be a global object
-    shared in `SC.TEMPLATES`.
+    shared in `Ember.TEMPLATES`.
 
     @type String
     @default null
@@ -74,10 +74,10 @@ SC.View = SC.Object.extend(
   /**
     The hash in which to look for `templateName`.
 
-    @type SC.Object
-    @default SC.TEMPLATES
+    @type Ember.Object
+    @default Ember.TEMPLATES
   */
-  templates: SC.TEMPLATES,
+  templates: Ember.TEMPLATES,
 
   /**
     The template used to render the view. This should be a function that
@@ -90,7 +90,7 @@ SC.View = SC.Object.extend(
     @field
     @type Function
   */
-  template: SC.computed(function(key, value) {
+  template: Ember.computed(function(key, value) {
     if (value !== undefined) { return value; }
 
     var templateName = get(this, 'templateName'), template;
@@ -105,7 +105,7 @@ SC.View = SC.Object.extend(
       }
 
       if (!template) {
-        throw new SC.Error(fmt('%@ - Unable to find template "%@".', [this, templateName]));
+        throw new Ember.Error(fmt('%@ - Unable to find template "%@".', [this, templateName]));
       }
     }
 
@@ -124,7 +124,7 @@ SC.View = SC.Object.extend(
 
     @type Object
   */
-  templateContext: SC.computed(function(key, value) {
+  templateContext: Ember.computed(function(key, value) {
     return value !== undefined ? value : this;
   }).cacheable(),
 
@@ -132,12 +132,12 @@ SC.View = SC.Object.extend(
     If the view is currently inserted into the DOM of a parent view, this
     property will point to the parent of the view.
 
-    @type SC.View
+    @type Ember.View
     @default null
   */
   _parentView: null,
 
-  parentView: SC.computed(function() {
+  parentView: Ember.computed(function() {
     var parent = get(this, '_parentView');
 
     if (parent && parent.isVirtual) {
@@ -165,14 +165,14 @@ SC.View = SC.Object.extend(
   */
   childViews: childViewsProperty,
 
-  _childViews: SC.A(),
+  _childViews: Ember.A(),
 
   /**
     Return the nearest ancestor that is an instance of the provided
     class.
 
-    @param {Class} klass Subclass of SC.View (or SC.View itself)
-    @returns SC.View
+    @param {Class} klass Subclass of Ember.View (or Ember.View itself)
+    @returns Ember.View
   */
   nearestInstanceOf: function(klass) {
     var view = get(this, 'parentView');
@@ -187,7 +187,7 @@ SC.View = SC.Object.extend(
     Return the nearest ancestor that has a given property.
 
     @param {String} property A property name
-    @returns SC.View
+    @returns Ember.View
   */
   nearestWithProperty: function(property) {
     var view = get(this, 'parentView');
@@ -202,8 +202,8 @@ SC.View = SC.Object.extend(
     Return the nearest ancestor that is a direct child of a
     view of.
 
-    @param {Class} klass Subclass of SC.View (or SC.View itself)
-    @returns SC.View
+    @param {Class} klass Subclass of Ember.View (or Ember.View itself)
+    @returns Ember.View
   */
   nearestChildOf: function(klass) {
     var view = get(this, 'parentView');
@@ -215,31 +215,31 @@ SC.View = SC.Object.extend(
   },
 
   /**
-    Return the nearest ancestor that is an SC.CollectionView
+    Return the nearest ancestor that is an Ember.CollectionView
 
-    @returns SC.CollectionView
+    @returns Ember.CollectionView
   */
-  collectionView: SC.computed(function() {
-    return this.nearestInstanceOf(SC.CollectionView);
+  collectionView: Ember.computed(function() {
+    return this.nearestInstanceOf(Ember.CollectionView);
   }).cacheable(),
 
   /**
     Return the nearest ancestor that is a direct child of
-    an SC.CollectionView
+    an Ember.CollectionView
 
-    @returns SC.View
+    @returns Ember.View
   */
-  itemView: SC.computed(function() {
-    return this.nearestChildOf(SC.CollectionView);
+  itemView: Ember.computed(function() {
+    return this.nearestChildOf(Ember.CollectionView);
   }).cacheable(),
 
   /**
     Return the nearest ancestor that has the property
     `content`.
 
-    @returns SC.View
+    @returns Ember.View
   */
-  contentView: SC.computed(function() {
+  contentView: Ember.computed(function() {
     return this.nearestWithProperty('content');
   }).cacheable(),
 
@@ -249,7 +249,7 @@ SC.View = SC.Object.extend(
     When the parent view changes, recursively invalidate
     collectionView, itemView, and contentView
   */
-  _parentViewDidChange: SC.observer(function() {
+  _parentViewDidChange: Ember.observer(function() {
     this.invokeRecursively(function(view) {
       view.propertyDidChange('collectionView');
       view.propertyDidChange('itemView');
@@ -259,14 +259,14 @@ SC.View = SC.Object.extend(
 
   /**
     Called on your view when it should push strings of HTML into a
-    SC.RenderBuffer. Most users will want to override the `template`
+    Ember.RenderBuffer. Most users will want to override the `template`
     or `templateName` properties instead of this method.
 
-    By default, SC.View will look for a function in the `template`
+    By default, Ember.View will look for a function in the `template`
     property and invoke it with the value of `templateContext`. The value of
     `templateContext` will be the view itself unless you override it.
 
-    @param {SC.RenderBuffer} buffer The render buffer
+    @param {Ember.RenderBuffer} buffer The render buffer
   */
   render: function(buffer) {
     var template = get(this, 'template');
@@ -332,7 +332,7 @@ SC.View = SC.Object.extend(
   },
 
   clearRenderedChildren: function() {
-    var viewMeta = meta(this)['SC.View'],
+    var viewMeta = meta(this)['Ember.View'],
         lengthBefore = viewMeta.lengthBeforeRender,
         lengthAfter  = viewMeta.lengthAfterRender;
 
@@ -421,7 +421,7 @@ SC.View = SC.Object.extend(
     Iterates through the view's attribute bindings, sets up observers for each,
     then applies the current value of the attributes to the passed render buffer.
 
-    @param {SC.RenderBuffer} buffer
+    @param {Ember.RenderBuffer} buffer
   */
   _applyAttributeBindings: function(buffer) {
     var attributeBindings = get(this, 'attributeBindings'),
@@ -478,7 +478,7 @@ SC.View = SC.Object.extend(
         property = split[0],
         className = split[1];
 
-    var val = SC.getPath(this, property);
+    var val = Ember.getPath(this, property);
 
     // If value is a Boolean and true, return the dasherized property
     // name.
@@ -489,7 +489,7 @@ SC.View = SC.Object.extend(
       // as a class name. For exaple, content.foo.barBaz
       // becomes bar-baz.
       var parts = property.split('.');
-      return SC.String.dasherize(parts[parts.length-1]);
+      return Ember.String.dasherize(parts[parts.length-1]);
 
     // If the value is not NO, undefined, or null, return the current
     // value of the property.
@@ -513,7 +513,7 @@ SC.View = SC.Object.extend(
     @field
     @type DOMElement
   */
-  element: SC.computed(function(key, value) {
+  element: Ember.computed(function(key, value) {
     if (value !== undefined) {
       return this.invokeForState('setElement', value);
     } else {
@@ -530,7 +530,7 @@ SC.View = SC.Object.extend(
     all of the `li` elements inside the DOM element of this view.
 
     @param {String} [selector] a jQuery-compatible selector string
-    @returns {SC.CoreQuery} the CoreQuery object for the DOM node
+    @returns {Ember.CoreQuery} the CoreQuery object for the DOM node
   */
   $: function(sel) {
     return this.invokeForState('$', sel);
@@ -578,7 +578,7 @@ SC.View = SC.Object.extend(
     finished synchronizing.
 
     @param {String|DOMElement|jQuery} A selector, element, HTML string, or jQuery object
-    @returns {SC.View} receiver
+    @returns {Ember.View} receiver
   */
   appendTo: function(target) {
     // Schedule the DOM element to be created and appended to the given
@@ -611,7 +611,7 @@ SC.View = SC.Object.extend(
     @param {Function} fn the function that inserts the element into the DOM
   */
   _insertElementLater: function(fn) {
-    SC.run.schedule('render', this, 'invokeForState', 'insertElement', fn);
+    Ember.run.schedule('render', this, 'invokeForState', 'insertElement', fn);
   },
 
   /**
@@ -623,7 +623,7 @@ SC.View = SC.Object.extend(
     element will not be appended to the document body until all bindings have
     finished synchronizing.
 
-    @returns {SC.View} receiver
+    @returns {Ember.View} receiver
   */
   append: function() {
     return this.appendTo(document.body);
@@ -632,7 +632,7 @@ SC.View = SC.Object.extend(
   /**
     Removes the view's element from the element to which it is attached.
 
-    @returns {SC.View} receiver
+    @returns {Ember.View} receiver
   */
   remove: function() {
     // What we should really do here is wait until the end of the run loop
@@ -652,8 +652,8 @@ SC.View = SC.Object.extend(
     @type String
     @readOnly
   */
-  elementId: SC.computed(function(key, value) {
-    return value !== undefined ? value : SC.guidFor(this);
+  elementId: Ember.computed(function(key, value) {
+    return value !== undefined ? value : Ember.guidFor(this);
   }).cacheable(),
 
   /**
@@ -676,13 +676,13 @@ SC.View = SC.Object.extend(
     method to provide further customization to the buffer if needed. Normally
     you will not need to call or override this method.
 
-    @returns {SC.RenderBuffer}
+    @returns {Ember.RenderBuffer}
   */
   renderBuffer: function(tagName) {
     tagName = tagName || get(this, 'tagName');
     if (tagName == null) { tagName = tagName || 'div'; }
 
-    return SC.RenderBuffer(tagName);
+    return Ember.RenderBuffer(tagName);
   },
 
   /**
@@ -692,7 +692,7 @@ SC.View = SC.Object.extend(
     After the element has been created, `didInsertElement` will
     be called on this view and all of its child views.
 
-    @returns {SC.View} receiver
+    @returns {Ember.View} receiver
   */
   createElement: function() {
     if (get(this, 'element')) { return this; }
@@ -706,14 +706,14 @@ SC.View = SC.Object.extend(
   /**
     Called when a view is going to insert an element into the DOM.
   */
-  willInsertElement: SC.K,
+  willInsertElement: Ember.K,
 
   /**
     Called when the element of the view has been inserted into the DOM.
     Override this function to do any set up that requires an element in the
     document body.
   */
-  didInsertElement: SC.K,
+  didInsertElement: Ember.K,
 
   /**
     Run this callback on the current view and recursively on child views.
@@ -781,7 +781,7 @@ SC.View = SC.Object.extend(
     Normally you will not call or override this method yourself, but you may
     want to implement the above callbacks when it is run.
 
-    @returns {SC.View} receiver
+    @returns {Ember.View} receiver
   */
   destroyElement: function() {
     return this.invokeForState('destroyElement');
@@ -806,9 +806,9 @@ SC.View = SC.Object.extend(
   },
 
   /** @private (nodoc) */
-  _elementWillChange: SC.beforeObserver(function() {
+  _elementWillChange: Ember.beforeObserver(function() {
     this.forEachChildView(function(view) {
-      SC.propertyWillChange(view, 'element');
+      Ember.propertyWillChange(view, 'element');
     });
   }, 'element'),
 
@@ -821,9 +821,9 @@ SC.View = SC.Object.extend(
 
     @observes element
   */
-  _elementDidChange: SC.observer(function() {
+  _elementDidChange: Ember.observer(function() {
     this.forEachChildView(function(view) {
-      SC.propertyDidChange(view, 'element');
+      Ember.propertyDidChange(view, 'element');
     });
   }, 'element'),
 
@@ -832,7 +832,7 @@ SC.View = SC.Object.extend(
 
     @function
   */
-  parentViewDidChange: SC.K,
+  parentViewDidChange: Ember.K,
 
   /**
     @private
@@ -847,20 +847,20 @@ SC.View = SC.Object.extend(
     `template` property, or if you need more control, override the `render`
     method.
 
-    @param {SC.RenderBuffer} buffer the render buffer. If no buffer is
+    @param {Ember.RenderBuffer} buffer the render buffer. If no buffer is
       passed, a default buffer, using the current view's `tagName`, will
       be used.
   */
   renderToBuffer: function(parentBuffer, bufferOperation) {
-    var viewMeta = meta(this)['SC.View'];
+    var viewMeta = meta(this)['Ember.View'];
     var buffer;
 
-    SC.run.sync();
+    Ember.run.sync();
 
     // Determine where in the parent buffer to start the new buffer.
     // By default, a new buffer will be appended to the parent buffer.
     // The buffer operation may be changed if the child views array is
-    // mutated by SC.ContainerView.
+    // mutated by Ember.ContainerView.
     bufferOperation = bufferOperation || 'begin';
 
     // If this is the top-most view, start a new buffer. Otherwise,
@@ -894,7 +894,7 @@ SC.View = SC.Object.extend(
     this.applyAttributesToBuffer(buffer);
   },
 
-  afterRender: SC.K,
+  afterRender: Ember.K,
 
   /**
     @private
@@ -972,7 +972,7 @@ SC.View = SC.Object.extend(
     name.
 
         // Applies the 'high' class to the view element
-        SC.View.create({
+        Ember.View.create({
           classNameBindings: ['priority']
           priority: 'high'
         });
@@ -981,7 +981,7 @@ SC.View = SC.Object.extend(
     added as a dasherized class name.
 
         // Applies the 'is-urgent' class to the view element
-        SC.View.create({
+        Ember.View.create({
           classNameBindings: ['isUrgent']
           isUrgent: true
         });
@@ -990,7 +990,7 @@ SC.View = SC.Object.extend(
     property name, you can pass a binding like this:
 
         // Applies the 'urgent' class to the view element
-        SC.View.create({
+        Ember.View.create({
           classNameBindings: ['isUrgent:urgent']
           isUrgent: true
         });
@@ -1008,7 +1008,7 @@ SC.View = SC.Object.extend(
 
         // Applies the type attribute to the element
         // with the value "button", like <div type="button">
-        SC.View.create({
+        Ember.View.create({
           attributeBindings: ['type'],
           type: 'button'
         });
@@ -1017,7 +1017,7 @@ SC.View = SC.Object.extend(
     added as an attribute.
 
         // Renders something like <div enabled="enabled">
-        SC.View.create({
+        Ember.View.create({
           attributeBindings: ['enabled'],
           enabled: true
         });
@@ -1044,20 +1044,20 @@ SC.View = SC.Object.extend(
     this._super();
 
     // Register the view for event handling. This hash is used by
-    // SC.RootResponder to dispatch incoming events.
-    SC.View.views[get(this, 'elementId')] = this;
+    // Ember.RootResponder to dispatch incoming events.
+    Ember.View.views[get(this, 'elementId')] = this;
 
-    var childViews = SC.A(get(this, '_childViews').slice());
+    var childViews = Ember.A(get(this, '_childViews').slice());
     // setup child views. be sure to clone the child views array first
     set(this, '_childViews', childViews);
 
 
-    this.classNameBindings = SC.A(get(this, 'classNameBindings').slice());
-    this.classNames = SC.A(get(this, 'classNames').slice());
+    this.classNameBindings = Ember.A(get(this, 'classNameBindings').slice());
+    this.classNames = Ember.A(get(this, 'classNames').slice());
 
     set(this, 'domManager', this.domManagerClass.create({ view: this }));
 
-    meta(this)["SC.View"] = {};
+    meta(this)["Ember.View"] = {};
   },
 
   appendChild: function(view, options) {
@@ -1067,8 +1067,8 @@ SC.View = SC.Object.extend(
   /**
     Removes the child view from the parent view.
 
-    @param {SC.View} view
-    @returns {SC.View} receiver
+    @param {Ember.View} view
+    @returns {Ember.View} receiver
   */
   removeChild: function(view) {
     // update parent node
@@ -1084,7 +1084,7 @@ SC.View = SC.Object.extend(
   /**
     Removes all children from the parentView.
 
-    @returns {SC.View} receiver
+    @returns {Ember.View} receiver
   */
   removeAllChildren: function() {
     return this.mutateChildViews(function(view) {
@@ -1102,7 +1102,7 @@ SC.View = SC.Object.extend(
     Removes the view from its parentView, if one is found. Otherwise
     does nothing.
 
-    @returns {SC.View} receiver
+    @returns {Ember.View} receiver
   */
   removeFromParent: function() {
     var parent = get(this, '_parentView');
@@ -1125,7 +1125,7 @@ SC.View = SC.Object.extend(
 
     // calling this._super() will nuke computed properties and observers,
     // so collect any information we need before calling super.
-    var viewMeta   = meta(this)['SC.View'],
+    var viewMeta   = meta(this)['Ember.View'],
         childViews = get(this, '_childViews'),
         parent     = get(this, '_parentView'),
         elementId  = get(this, 'elementId'),
@@ -1140,7 +1140,7 @@ SC.View = SC.Object.extend(
     // the DOM again.
     if (parent) { parent.removeChild(this); }
 
-    SC.Descriptor.setup(this, 'state', 'destroyed');
+    Ember.Descriptor.setup(this, 'state', 'destroyed');
 
     this._super();
 
@@ -1150,7 +1150,7 @@ SC.View = SC.Object.extend(
     }
 
     // next remove view from global hash
-    delete SC.View.views[get(this, 'elementId')];
+    delete Ember.View.views[get(this, 'elementId')];
 
     return this; // done with cleanup
   },
@@ -1164,17 +1164,17 @@ SC.View = SC.Object.extend(
 
     @param {Class} viewClass
     @param {Hash} [attrs] Attributes to add
-    @returns {SC.View} new instance
+    @returns {Ember.View} new instance
     @test in createChildViews
   */
   createChildView: function(view, attrs) {
-    if (SC.View.detect(view)) {
+    if (Ember.View.detect(view)) {
       view = view.create(attrs || {}, { _parentView: this });
 
       var viewName = attrs && attrs.viewName || view.viewName;
       if (viewName) { set(this, viewName, view); }
     } else {
-      sc_assert('must pass instance of View', view instanceof SC.View);
+      sc_assert('must pass instance of View', view instanceof Ember.View);
       set(view, '_parentView', this);
     }
     return view;
@@ -1186,13 +1186,13 @@ SC.View = SC.Object.extend(
     When the view's `isVisible` property changes, toggle the visibility
     element of the actual DOM element.
   */
-  _isVisibleDidChange: SC.observer(function() {
+  _isVisibleDidChange: Ember.observer(function() {
     this.$().toggle(get(this, 'isVisible'));
   }, 'isVisible'),
 
   clearBuffer: function() {
     this.invokeRecursively(function(view) {
-      meta(view)['SC.View'].buffer = null;
+      meta(view)['Ember.View'].buffer = null;
     });
   },
 
@@ -1233,9 +1233,9 @@ SC.View = SC.Object.extend(
   // once the view has been inserted into the DOM, legal manipulations
   // are done on the DOM element.
 
-SC.View.reopen({
-  states: SC.View.states,
-  domManagerClass: SC.Object.extend({
+Ember.View.reopen({
+  states: Ember.View.states,
+  domManagerClass: Ember.Object.extend({
     view: this,
 
     prepend: function(childView) {
@@ -1263,7 +1263,7 @@ SC.View.reopen({
       set(view, 'element', null);
 
       view._insertElementLater(function() {
-        SC.$(element).replaceWith(get(view, 'element'));
+        Ember.$(element).replaceWith(get(view, 'element'));
       });
     },
 
@@ -1273,17 +1273,17 @@ SC.View.reopen({
 
       set(view, 'element', null);
 
-      SC.$(elem).remove();
+      Ember.$(elem).remove();
     }
   })
 });
 
 // Create a global view hash.
-SC.View.views = {};
+Ember.View.views = {};
 
 // If someone overrides the child views computed property when
 // defining their class, we want to be able to process the user's
 // supplied childViews and then restore the original computed property
-// at view initialization time. This happens in SC.ContainerView's init
+// at view initialization time. This happens in Ember.ContainerView's init
 // method.
-SC.View.childViewsProperty = childViewsProperty;
+Ember.View.childViewsProperty = childViewsProperty;

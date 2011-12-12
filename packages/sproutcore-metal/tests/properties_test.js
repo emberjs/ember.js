@@ -4,11 +4,11 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
-module('SC.defineProperty');
+module('Ember.defineProperty');
 
 test('toString', function() {
 
   var obj = {};
-  SC.defineProperty(obj, 'toString', SC.SIMPLE_PROPERTY, function() { return 'FOO'; });
+  Ember.defineProperty(obj, 'toString', Ember.SIMPLE_PROPERTY, function() { return 'FOO'; });
   equals(obj.toString(), 'FOO', 'should replace toString');
 });

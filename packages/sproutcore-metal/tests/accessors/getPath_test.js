@@ -6,7 +6,7 @@
 /*globals Foo raises $foo */
 
 var obj;
-module('SC.getPath', {
+module('Ember.getPath', {
   setup: function() {
     obj = { 
       foo: { 
@@ -42,73 +42,73 @@ module('SC.getPath', {
 // 
 
 test('[obj, foo] -> obj.foo', function() {
-  same(SC.getPath(obj, 'foo'), obj.foo);
+  same(Ember.getPath(obj, 'foo'), obj.foo);
 });
 
 test('[obj, *] -> obj', function() {
-  same(SC.getPath(obj, '*'), obj);
+  same(Ember.getPath(obj, '*'), obj);
 });
 
 test('[obj, foo.bar] -> obj.foo.bar', function() {
-  same(SC.getPath(obj, 'foo.bar'), obj.foo.bar);
+  same(Ember.getPath(obj, 'foo.bar'), obj.foo.bar);
 });
 
 test('[obj, foo.*] -> obj.foo', function() {
-  same(SC.getPath(obj, 'foo.*'), obj.foo);
+  same(Ember.getPath(obj, 'foo.*'), obj.foo);
 });
 
 test('[obj, foo.*.baz] -> obj.foo.baz', function() {
-  same(SC.getPath(obj, 'foo.*.baz'), obj.foo.baz);
+  same(Ember.getPath(obj, 'foo.*.baz'), obj.foo.baz);
 });
 
 
 test('[obj, foo*bar] -> obj.foo.bar', function() {
-  same(SC.getPath(obj, 'foo*bar'), obj.foo.bar);
+  same(Ember.getPath(obj, 'foo*bar'), obj.foo.bar);
 });
 
 test('[obj, foo*bar.*] -> obj.foo.bar', function() {
-  same(SC.getPath(obj, 'foo*bar.*'), obj.foo.bar);
+  same(Ember.getPath(obj, 'foo*bar.*'), obj.foo.bar);
 });
 
 test('[obj, foo.bar*baz.biff] -> obj.foo.bar.baz.biff', function() {
-  same(SC.getPath(obj, 'foo.bar*baz.biff'), obj.foo.bar.baz.biff);
+  same(Ember.getPath(obj, 'foo.bar*baz.biff'), obj.foo.bar.baz.biff);
 });
 
 test('[obj, foo.bar*baz.biff] -> obj.foo.bar.baz.biff', function() {
-  same(SC.getPath(obj, 'foo.bar*baz.biff'), obj.foo.bar.baz.biff);
+  same(Ember.getPath(obj, 'foo.bar*baz.biff'), obj.foo.bar.baz.biff);
 });
 
 
 test('[obj, this.foo] -> obj.foo', function() {
-  same(SC.getPath(obj, 'this.foo'), obj.foo);
+  same(Ember.getPath(obj, 'this.foo'), obj.foo);
 });
 
 test('[obj, this.foo.bar] -> obj.foo.bar', function() {
-  same(SC.getPath(obj, 'this.foo.bar'), obj.foo.bar);
+  same(Ember.getPath(obj, 'this.foo.bar'), obj.foo.bar);
 });
 
 test('[obj, .foo.bar] -> obj.foo.bar', function() {
-  same(SC.getPath(obj, 'this.foo.bar'), obj.foo.bar);
+  same(Ember.getPath(obj, 'this.foo.bar'), obj.foo.bar);
 });
 
 test('[obj, *foo.bar] -> obj.foo.bar', function() {
-  same(SC.getPath(obj, 'this.foo.bar'), obj.foo.bar);
+  same(Ember.getPath(obj, 'this.foo.bar'), obj.foo.bar);
 });
 
 test('[obj, this.foo*bar] -> obj.foo.bar', function() {
-  same(SC.getPath(obj, 'this.foo*bar'), obj.foo.bar);
+  same(Ember.getPath(obj, 'this.foo*bar'), obj.foo.bar);
 });
 
 test('[obj, this.foo.bar*baz.biff] -> obj.foo.bar.baz.biff', function() {
-  same(SC.getPath(obj, 'this.foo.bar*baz.biff'), obj.foo.bar.baz.biff);
+  same(Ember.getPath(obj, 'this.foo.bar*baz.biff'), obj.foo.bar.baz.biff);
 });
 
 test('[obj, this.foo.bar*baz.biff] -> obj.foo.bar.baz.biff', function() {
-  same(SC.getPath(obj, 'foo.bar*baz.biff'), obj.foo.bar.baz.biff);
+  same(Ember.getPath(obj, 'foo.bar*baz.biff'), obj.foo.bar.baz.biff);
 });
 
 test('[obj, this.Foo.bar] -> (null)', function() {
-  same(SC.getPath(obj, 'this.Foo.bar'), undefined);
+  same(Ember.getPath(obj, 'this.Foo.bar'), undefined);
 });
 
 // ..........................................................
@@ -116,27 +116,27 @@ test('[obj, this.Foo.bar] -> (null)', function() {
 // 
 
 test('[obj, Foo] -> undefined', function() {
-  same(SC.getPath(obj, 'Foo'), undefined);
+  same(Ember.getPath(obj, 'Foo'), undefined);
 });
 
 test('[obj, Foo.bar] -> Foo.bar', function() {
-  same(SC.getPath(obj, 'Foo.bar'), Foo.bar);
+  same(Ember.getPath(obj, 'Foo.bar'), Foo.bar);
 });
 
 test('[obj, Foo*bar] -> Foo.bar', function() {
-  same(SC.getPath(obj, 'Foo*bar'), Foo.bar);
+  same(Ember.getPath(obj, 'Foo*bar'), Foo.bar);
 });
 
 test('[obj, Foo.bar*baz.biff] -> Foo.bar.baz.biff', function() {
-  same(SC.getPath(obj, 'Foo.bar*baz.biff'), Foo.bar.baz.biff);
+  same(Ember.getPath(obj, 'Foo.bar*baz.biff'), Foo.bar.baz.biff);
 });
 
 test('[obj, Foo.bar.baz*biff] -> Foo.bar.baz.biff', function() {
-  same(SC.getPath(obj, 'Foo.bar.baz*biff'), Foo.bar.baz.biff);
+  same(Ember.getPath(obj, 'Foo.bar.baz*biff'), Foo.bar.baz.biff);
 });
 
 test('[obj, $foo.bar.baz] -> $foo.bar.baz', function() {
-  same(SC.getPath(obj, '$foo.bar.baz'), $foo.bar.baz);
+  same(Ember.getPath(obj, '$foo.bar.baz'), $foo.bar.baz);
 });
 
 // ..........................................................
@@ -144,21 +144,21 @@ test('[obj, $foo.bar.baz] -> $foo.bar.baz', function() {
 // 
 
 test('[null, Foo] -> Foo', function() {
-  same(SC.getPath('Foo'), Foo);
+  same(Ember.getPath('Foo'), Foo);
 });
 
 test('[null, Foo.bar] -> Foo.bar', function() {
-  same(SC.getPath('Foo.bar'), Foo.bar);
+  same(Ember.getPath('Foo.bar'), Foo.bar);
 });
 
 test('[null, Foo*bar] -> Foo.bar', function() {
-  same(SC.getPath('Foo*bar'), Foo.bar);
+  same(Ember.getPath('Foo*bar'), Foo.bar);
 });
 
 test('[null, Foo.bar*baz.biff] -> Foo.bar.baz.biff', function() {
-  same(SC.getPath('Foo.bar*baz.biff'), Foo.bar.baz.biff);
+  same(Ember.getPath('Foo.bar*baz.biff'), Foo.bar.baz.biff);
 });
 
 test('[null, Foo.bar.baz*biff] -> Foo.bar.baz.biff', function() {
-  same(SC.getPath('Foo.bar.baz*biff'), Foo.bar.baz.biff);
+  same(Ember.getPath('Foo.bar.baz*biff'), Foo.bar.baz.biff);
 });

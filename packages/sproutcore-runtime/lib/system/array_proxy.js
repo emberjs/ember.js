@@ -9,27 +9,27 @@ require('sproutcore-runtime/system/object');
 
 
   
-var get = SC.get, set = SC.set;
+var get = Ember.get, set = Ember.set;
 
 /**
   @class
 
-  An ArrayProxy wraps any other object that implements SC.Array and/or 
-  SC.MutableArray, forwarding all requests.  ArrayProxy isn't useful by itself
+  An ArrayProxy wraps any other object that implements Ember.Array and/or 
+  Ember.MutableArray, forwarding all requests.  ArrayProxy isn't useful by itself
   but you can extend it to do specialized things like transforming values,
   etc.
 
-  @extends SC.Object
-  @extends SC.Array
-  @extends SC.MutableArray
+  @extends Ember.Object
+  @extends Ember.Array
+  @extends Ember.MutableArray
 */
-SC.ArrayProxy = SC.Object.extend(SC.MutableArray, {
+Ember.ArrayProxy = Ember.Object.extend(Ember.MutableArray, {
   
   /**
-    The content array.  Must be an object that implements SC.Array and or
-    SC.MutableArray.
+    The content array.  Must be an object that implements Ember.Array and or
+    Ember.MutableArray.
     
-    @property {SC.Array}
+    @property {Ember.Array}
   */
   content: null,
 
@@ -71,7 +71,7 @@ SC.ArrayProxy = SC.Object.extend(SC.MutableArray, {
     get(this, 'content').replace(idx, amt, objects);
   },
   
-  contentWillChange: SC.beforeObserver(function() {
+  contentWillChange: Ember.beforeObserver(function() {
     var content = get(this, 'content'),
         len     = content ? get(content, 'length') : 0;
     this.arrayWillChange(content, 0, len, undefined);
@@ -82,7 +82,7 @@ SC.ArrayProxy = SC.Object.extend(SC.MutableArray, {
     Invoked when the content property changes.  Notifies observers that the
     entire array content has changed.
   */
-  contentDidChange: SC.observer(function() {
+  contentDidChange: Ember.observer(function() {
     var content = get(this, 'content'),
         len     = content ? get(content, 'length') : 0;
     if (content) content.addArrayObserver(this);
@@ -95,7 +95,7 @@ SC.ArrayProxy = SC.Object.extend(SC.MutableArray, {
   },
   
   /** @private (nodoc) */
-  length: SC.computed(function() {
+  length: Ember.computed(function() {
     var content = get(this, 'content');
     return content ? get(content, 'length') : 0;
   }).property('content.length').cacheable(),

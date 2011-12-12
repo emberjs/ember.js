@@ -7,16 +7,16 @@
 
 /*globals module test ok isObj equals expects */
 
-var Rectangle = SC.Object.extend(SC.Comparable, {
+var Rectangle = Ember.Object.extend(Ember.Comparable, {
   length: 0,
   width: 0,
   
   area: function() {
-    return SC.get(this,'length') * SC.get(this, 'width');
+    return Ember.get(this,'length') * Ember.get(this, 'width');
   },
   
   compare: function(a, b) {
-    return SC.compare(a.area(), b.area());
+    return Ember.compare(a.area(), b.area());
   }
   
 });
@@ -36,8 +36,8 @@ module("Comparable", {
 });
 
 test("should be comparable and return the correct result", function() {
-  equals(SC.Comparable.detect(r1), true);
-  equals(SC.compare(r1, r1), 0);
-  equals(SC.compare(r1, r2), -1);
-  equals(SC.compare(r2, r1), 1);
+  equals(Ember.Comparable.detect(r1), true);
+  equals(Ember.compare(r1, r1), 0);
+  equals(Ember.compare(r1, r2), -1);
+  equals(Ember.compare(r2, r1), 1);
 });

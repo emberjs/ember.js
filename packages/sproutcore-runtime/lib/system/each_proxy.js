@@ -9,9 +9,9 @@ require('sproutcore-runtime/mixins/array');
 
 
 
-var set = SC.set, get = SC.get, guidFor = SC.guidFor;
+var set = Ember.set, get = Ember.get, guidFor = Ember.guidFor;
 
-var EachArray = SC.Object.extend(SC.Array, {
+var EachArray = Ember.Object.extend(Ember.Array, {
 
   init: function(content, keyName, owner) {
     this._super();
@@ -25,7 +25,7 @@ var EachArray = SC.Object.extend(SC.Array, {
     return item && get(item, this._keyName);
   },
 
-  length: SC.computed(function() {
+  length: Ember.computed(function() {
     var content = this._content;
     return content ? get(content, 'length') : 0;
   }).property('[]').cacheable()
@@ -41,8 +41,8 @@ function addObserverForContentKey(content, keyName, proxy, idx, loc) {
   while(--loc>=idx) {
     var item = content.objectAt(loc);
     if (item) {
-      SC.addBeforeObserver(item, keyName, proxy, 'contentKeyWillChange');
-      SC.addObserver(item, keyName, proxy, 'contentKeyDidChange');
+      Ember.addBeforeObserver(item, keyName, proxy, 'contentKeyWillChange');
+      Ember.addObserver(item, keyName, proxy, 'contentKeyDidChange');
 
       // keep track of the indicies each item was found at so we can map
       // it back when the obj changes.
@@ -61,8 +61,8 @@ function removeObserverForContentKey(content, keyName, proxy, idx, loc) {
   while(--loc>=idx) {
     var item = content.objectAt(loc);
     if (item) {
-      SC.removeBeforeObserver(item, keyName, proxy, 'contentKeyWillChange');
-      SC.removeObserver(item, keyName, proxy, 'contentKeyDidChange');
+      Ember.removeBeforeObserver(item, keyName, proxy, 'contentKeyWillChange');
+      Ember.removeObserver(item, keyName, proxy, 'contentKeyDidChange');
 
       guid = guidFor(item);
       indicies = objects[guid];
@@ -79,9 +79,9 @@ function removeObserverForContentKey(content, keyName, proxy, idx, loc) {
   array.  It uses the unknownProperty handler to automatically create
   EachArray instances for property names.
 
-  @extends SC.Object
+  @extends Ember.Object
 */
-SC.EachProxy = SC.Object.extend({
+Ember.EachProxy = Ember.Object.extend({
 
   init: function(content) {
     this._super();
@@ -90,7 +90,7 @@ SC.EachProxy = SC.Object.extend({
 
     // in case someone is already observing some keys make sure they are
     // added
-    SC.watchedEvents(this).forEach(function(eventName) {
+    Ember.watchedEvents(this).forEach(function(eventName) {
       this.didAddListener(eventName);
     }, this);
   },
@@ -102,7 +102,7 @@ SC.EachProxy = SC.Object.extend({
   unknownProperty: function(keyName, value) {
     var ret;
     ret = new EachArray(this._content, keyName, this);
-    new SC.Descriptor().setup(this, keyName, ret);
+    new Ember.Descriptor().setup(this, keyName, ret);
     this.beginObservingContentKey(keyName);
     return ret;
   },
@@ -115,26 +115,26 @@ SC.EachProxy = SC.Object.extend({
     var keys = this._keys, key, array, lim;
 
     lim = removedCnt>0 ? idx+removedCnt : -1;
-    SC.beginPropertyChanges(this);
+    Ember.beginPropertyChanges(this);
     for(key in keys) {
       if (!keys.hasOwnProperty(key)) continue;
 
       if (lim>0) removeObserverForContentKey(content, key, this, idx, lim);
 
       array = get(this, key);
-      SC.propertyWillChange(this, key);
+      Ember.propertyWillChange(this, key);
       if (array) array.arrayContentWillChange(idx, removedCnt, addedCnt);
     }
 
-    SC.propertyWillChange(this._content, '@each');
-    SC.endPropertyChanges(this);
+    Ember.propertyWillChange(this._content, '@each');
+    Ember.endPropertyChanges(this);
   },
 
   arrayDidChange: function(content, idx, removedCnt, addedCnt) {
     var keys = this._keys, key, array, lim;
 
     lim = addedCnt>0 ? idx+addedCnt : -1;
-    SC.beginPropertyChanges(this);
+    Ember.beginPropertyChanges(this);
     for(key in keys) {
       if (!keys.hasOwnProperty(key)) continue;
 
@@ -142,10 +142,10 @@ SC.EachProxy = SC.Object.extend({
 
       array = get(this, key);
       if (array) array.arrayContentDidChange(idx, removedCnt, addedCnt);
-      SC.propertyDidChange(this, key);
+      Ember.propertyDidChange(this, key);
     }
-    SC.propertyDidChange(this._content, '@each');
-    SC.endPropertyChanges(this);
+    Ember.propertyDidChange(this._content, '@each');
+    Ember.endPropertyChanges(this);
   },
 
   // ..........................................................
@@ -211,7 +211,7 @@ SC.EachProxy = SC.Object.extend({
       array.arrayContentDidChange(indexes[idx], 1, 1);
     }
 
-    SC.propertyDidChange(this, keyName);
+    Ember.propertyDidChange(this, keyName);
   }
 
 });

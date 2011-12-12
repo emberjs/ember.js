@@ -8,7 +8,7 @@ require('sproutcore-runtime/~tests/suites/enumerable');
 
 
 
-var ObserverClass =   SC.EnumerableTests.ObserverClass.extend({
+var ObserverClass =   Ember.EnumerableTests.ObserverClass.extend({
     
    observeArray: function(obj) {
     obj.addArrayObserver(this);
@@ -32,13 +32,13 @@ var ObserverClass =   SC.EnumerableTests.ObserverClass.extend({
   
 });
 
-SC.ArrayTests = SC.EnumerableTests.extend({
+Ember.ArrayTests = Ember.EnumerableTests.extend({
   
   observerClass: ObserverClass
   
 });
 
-SC.ArrayTests.ObserverClass = ObserverClass;
+Ember.ArrayTests.ObserverClass = ObserverClass;
 
 require('./array/indexOf');
 require('./array/objectAt');

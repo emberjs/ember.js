@@ -12,7 +12,7 @@ require('sproutcore-runtime/mixins/freezable');
 
 
 
-var get = SC.get, set = SC.set, guidFor = SC.guidFor, none = SC.none;
+var get = Ember.get, set = Ember.set, guidFor = Ember.guidFor, none = Ember.none;
 
 /**
   @class
@@ -33,22 +33,22 @@ var get = SC.get, set = SC.set, guidFor = SC.guidFor, none = SC.none;
   ## Creating a Set
 
   You can create a set like you would most objects using 
-  `new SC.Set()`.  Most new sets you create will be empty, but you can 
+  `new Ember.Set()`.  Most new sets you create will be empty, but you can 
   also initialize the set with some content by passing an array or other 
   enumerable of objects to the constructor.
 
   Finally, you can pass in an existing set and the set will be copied. You
-  can also create a copy of a set by calling `SC.Set#copy()`.
+  can also create a copy of a set by calling `Ember.Set#copy()`.
 
       #js
       // creates a new empty set
-      var foundNames = new SC.Set();
+      var foundNames = new Ember.Set();
 
       // creates a set with four names in it.
-      var names = new SC.Set(["Charles", "Tom", "Juan", "Alex"]); // :P
+      var names = new Ember.Set(["Charles", "Tom", "Juan", "Alex"]); // :P
 
       // creates a copy of the names set.
-      var namesCopy = new SC.Set(names);
+      var namesCopy = new Ember.Set(names);
 
       // same as above.
       var anotherNamesCopy = names.copy();
@@ -76,14 +76,14 @@ var get = SC.get, set = SC.set, guidFor = SC.guidFor, none = SC.none;
   ## Testing for an Object
 
   To test for an object's presence in a set you simply call 
-  `SC.Set#contains()`.
+  `Ember.Set#contains()`.
 
   ## Observing changes
 
-  When using `SC.Set`, you can observe the `"[]"` property to be 
+  When using `Ember.Set`, you can observe the `"[]"` property to be 
   alerted whenever the content changes.  You can also add an enumerable 
   observer to the set to be notified of specific objects that are added and
-  removed from the set.  See `SC.Enumerable` for more information on 
+  removed from the set.  See `Ember.Enumerable` for more information on 
   enumerables.
 
   This is often unhelpful. If you are filtering sets of objects, for instance,
@@ -94,28 +94,28 @@ var get = SC.get, set = SC.set, guidFor = SC.guidFor, none = SC.none;
 
   ## Other Methods
 
-  `SC.Set` primary implements other mixin APIs.  For a complete reference
-  on the methods you will use with `SC.Set`, please consult these mixins.
-  The most useful ones will be `SC.Enumerable` and 
-  `SC.MutableEnumerable` which implement most of the common iterator 
+  `Ember.Set` primary implements other mixin APIs.  For a complete reference
+  on the methods you will use with `Ember.Set`, please consult these mixins.
+  The most useful ones will be `Ember.Enumerable` and 
+  `Ember.MutableEnumerable` which implement most of the common iterator 
   methods you are used to on Array.
 
-  Note that you can also use the `SC.Copyable` and `SC.Freezable`
-  APIs on `SC.Set` as well.  Once a set is frozen it can no longer be 
+  Note that you can also use the `Ember.Copyable` and `Ember.Freezable`
+  APIs on `Ember.Set` as well.  Once a set is frozen it can no longer be 
   modified.  The benefit of this is that when you call frozenCopy() on it,
   SproutCore will avoid making copies of the set.  This allows you to write
   code that can know with certainty when the underlying set data will or 
   will not be modified.
 
-  @extends SC.Enumerable
-  @extends SC.MutableEnumerable
-  @extends SC.Copyable
-  @extends SC.Freezable
+  @extends Ember.Enumerable
+  @extends Ember.MutableEnumerable
+  @extends Ember.Copyable
+  @extends Ember.Freezable
 
   @since SproutCore 1.0
 */
-SC.Set = SC.CoreObject.extend(SC.MutableEnumerable, SC.Copyable, SC.Freezable,
-  /** @scope SC.Set.prototype */ {
+Ember.Set = Ember.CoreObject.extend(Ember.MutableEnumerable, Ember.Copyable, Ember.Freezable,
+  /** @scope Ember.Set.prototype */ {
 
   // ..........................................................
   // IMPLEMENT ENUMERABLE APIS
@@ -133,10 +133,10 @@ SC.Set = SC.CoreObject.extend(SC.MutableEnumerable, SC.Copyable, SC.Freezable,
     Clears the set.  This is useful if you want to reuse an existing set
     without having to recreate it.
 
-    @returns {SC.Set}
+    @returns {Ember.Set}
   */
   clear: function() {
-    if (this.isFrozen) { throw new Error(SC.FROZEN_ERROR); }
+    if (this.isFrozen) { throw new Error(Ember.FROZEN_ERROR); }
     var len = get(this, 'length');
     this.enumerableContentWillChange(len, 0);
     set(this, 'length', 0);
@@ -148,12 +148,12 @@ SC.Set = SC.CoreObject.extend(SC.MutableEnumerable, SC.Copyable, SC.Freezable,
     Returns true if the passed object is also an enumerable that contains the 
     same objects as the receiver.
 
-    @param {SC.Set} obj the other object
+    @param {Ember.Set} obj the other object
     @returns {Boolean}
   */
   isEqual: function(obj) {
     // fail fast
-    if (!SC.Enumerable.detect(obj)) return false;
+    if (!Ember.Enumerable.detect(obj)) return false;
     
     var loc = get(this, 'length');
     if (get(obj, 'length') !== loc) return false;
@@ -170,24 +170,24 @@ SC.Set = SC.CoreObject.extend(SC.MutableEnumerable, SC.Copyable, SC.Freezable,
     and those can only be added once. If the object is already in the set or
     the passed value is null this method will have no effect.
 
-    This is an alias for `SC.MutableEnumerable.addObject()`.
+    This is an alias for `Ember.MutableEnumerable.addObject()`.
 
     @function
     @param {Object} obj The object to add
-    @returns {SC.Set} receiver
+    @returns {Ember.Set} receiver
   */
-  add: SC.alias('addObject'),
+  add: Ember.alias('addObject'),
 
   /**
     Removes the object from the set if it is found.  If you pass a null value
     or an object that is already not in the set, this method will have no
-    effect. This is an alias for `SC.MutableEnumerable.removeObject()`.
+    effect. This is an alias for `Ember.MutableEnumerable.removeObject()`.
 
     @function
     @param {Object} obj The object to remove
-    @returns {SC.Set} receiver
+    @returns {Ember.Set} receiver
   */
-  remove: SC.alias('removeObject'),
+  remove: Ember.alias('removeObject'),
   
   /**
     Removes an arbitrary object from the set and returns it.
@@ -195,42 +195,42 @@ SC.Set = SC.CoreObject.extend(SC.MutableEnumerable, SC.Copyable, SC.Freezable,
     @returns {Object} An object from the set or null
   */
   pop: function() {
-    if (get(this, 'isFrozen')) throw new Error(SC.FROZEN_ERROR);
+    if (get(this, 'isFrozen')) throw new Error(Ember.FROZEN_ERROR);
     var obj = this.length > 0 ? this[this.length-1] : null;
     this.remove(obj);
     return obj;
   },
 
   /**
-    This is an alias for `SC.MutableEnumerable.addObject()`.
+    This is an alias for `Ember.MutableEnumerable.addObject()`.
 
     @function
   */
-  push: SC.alias('addObject'),
+  push: Ember.alias('addObject'),
   
   /**
-    This is an alias for `SC.Set.pop()`.
+    This is an alias for `Ember.Set.pop()`.
     @function
   */
-  shift: SC.alias('pop'),
+  shift: Ember.alias('pop'),
 
   /**
-    This is an alias of `SC.Set.push()`
+    This is an alias of `Ember.Set.push()`
     @function
   */
-  unshift: SC.alias('push'),
+  unshift: Ember.alias('push'),
 
   /**
-    This is an alias of `SC.MutableEnumerable.addObjects()`
+    This is an alias of `Ember.MutableEnumerable.addObjects()`
     @function
   */
-  addEach: SC.alias('addObjects'),
+  addEach: Ember.alias('addObjects'),
 
   /**
-    This is an alias of `SC.MutableEnumerable.removeObjects()`
+    This is an alias of `Ember.MutableEnumerable.removeObjects()`
     @function
   */
-  removeEach: SC.alias('removeObjects'),
+  removeEach: Ember.alias('removeObjects'),
 
   // ..........................................................
   // PRIVATE ENUMERABLE SUPPORT
@@ -242,24 +242,24 @@ SC.Set = SC.CoreObject.extend(SC.MutableEnumerable, SC.Copyable, SC.Freezable,
     if (items) this.addObjects(items);
   },
 
-  /** @private (nodoc) - implement SC.Enumerable */
+  /** @private (nodoc) - implement Ember.Enumerable */
   nextObject: function(idx) {
     return this[idx];
   },
 
   /** @private - more optimized version */
-  firstObject: SC.computed(function() {
+  firstObject: Ember.computed(function() {
     return this.length > 0 ? this[0] : undefined;  
   }).property('[]').cacheable(),
 
   /** @private - more optimized version */
-  lastObject: SC.computed(function() {
+  lastObject: Ember.computed(function() {
     return this.length > 0 ? this[this.length-1] : undefined;
   }).property('[]').cacheable(),
 
-  /** @private (nodoc) - implements SC.MutableEnumerable */
+  /** @private (nodoc) - implements Ember.MutableEnumerable */
   addObject: function(obj) {
-    if (get(this, 'isFrozen')) throw new Error(SC.FROZEN_ERROR);
+    if (get(this, 'isFrozen')) throw new Error(Ember.FROZEN_ERROR);
     if (none(obj)) return this; // nothing to do
     
     var guid = guidFor(obj),
@@ -280,9 +280,9 @@ SC.Set = SC.CoreObject.extend(SC.MutableEnumerable, SC.Copyable, SC.Freezable,
     return this;
   },
   
-  /** @private (nodoc) - implements SC.MutableEnumerable */
+  /** @private (nodoc) - implements Ember.MutableEnumerable */
   removeObject: function(obj) {
-    if (get(this, 'isFrozen')) throw new Error(SC.FROZEN_ERROR);
+    if (get(this, 'isFrozen')) throw new Error(Ember.FROZEN_ERROR);
     if (none(obj)) return this; // nothing to do
     
     var guid = guidFor(obj),
@@ -335,7 +335,7 @@ SC.Set = SC.CoreObject.extend(SC.MutableEnumerable, SC.Copyable, SC.Freezable,
     for(idx = 0; idx < len; idx++) {
       array[idx] = this[idx];
     }
-    return "SC.Set<%@>".fmt(array.join(','));
+    return "Ember.Set<%@>".fmt(array.join(','));
   },
   
   // ..........................................................
@@ -352,7 +352,7 @@ SC.Set = SC.CoreObject.extend(SC.MutableEnumerable, SC.Copyable, SC.Freezable,
         isSet = myobject && myobject.isSet;
 
         // SproutCore 2.0 and later:
-        isSet = myobject instanceof SC.Set
+        isSet = myobject instanceof Ember.Set
 
     @type Boolean
     @default true
@@ -362,11 +362,11 @@ SC.Set = SC.CoreObject.extend(SC.MutableEnumerable, SC.Copyable, SC.Freezable,
 });
 
 // Support the older API 
-var o_create = SC.Set.create;
-SC.Set.create = function(items) {
-  if (items && SC.Enumerable.detect(items)) {
-    SC.Logger.warn('Passing an enumerable to SC.Set.create() is deprecated and will be removed in a future version of SproutCore.  Use new SC.Set(items) instead');
-    return new SC.Set(items);
+var o_create = Ember.Set.create;
+Ember.Set.create = function(items) {
+  if (items && Ember.Enumerable.detect(items)) {
+    Ember.Logger.warn('Passing an enumerable to Ember.Set.create() is deprecated and will be removed in a future version of SproutCore.  Use new Ember.Set(items) instead');
+    return new Ember.Set(items);
   } else {
     return o_create.apply(this, arguments);
   }

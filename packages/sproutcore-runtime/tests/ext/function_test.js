@@ -11,12 +11,12 @@ module('Function.prototype.observes() helper');
 
 testBoth('global observer helper takes multiple params', function(get, set) {
 
-  if (SC.EXTEND_PROTOTYPES === false) {
+  if (Ember.EXTEND_PROTOTYPES === false) {
     ok('Function.prototype helper disabled');
     return ;
   }
   
-  var MyMixin = SC.Mixin.create({
+  var MyMixin = Ember.Mixin.create({
     
     count: 0,
     
@@ -26,7 +26,7 @@ testBoth('global observer helper takes multiple params', function(get, set) {
 
   });
 
-  var obj = SC.mixin({}, MyMixin);
+  var obj = Ember.mixin({}, MyMixin);
   equals(get(obj, 'count'), 0, 'should not invoke observer immediately');
 
   set(obj, 'bar', "BAZ");

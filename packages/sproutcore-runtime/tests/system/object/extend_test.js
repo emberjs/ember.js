@@ -4,10 +4,10 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
-module('SC.Object.extend');
+module('Ember.Object.extend');
 
 test('Basic extend', function() {
-  var SomeClass = SC.Object.extend({ foo: 'BAR' });
+  var SomeClass = Ember.Object.extend({ foo: 'BAR' });
   ok(SomeClass.isClass, "A class has isClass of true");
   var obj = new SomeClass();
   equals(obj.foo, 'BAR');
@@ -15,7 +15,7 @@ test('Basic extend', function() {
 });
 
 test('Sub-subclass', function() {
-  var SomeClass = SC.Object.extend({ foo: 'BAR' });
+  var SomeClass = Ember.Object.extend({ foo: 'BAR' });
   var AnotherClass = SomeClass.extend({ bar: 'FOO' });
   var obj = new AnotherClass();
   equals(obj.foo, 'BAR');
@@ -23,7 +23,7 @@ test('Sub-subclass', function() {
 });
 
 test('Overriding a method several layers deep', function() {
-  var SomeClass = SC.Object.extend({
+  var SomeClass = Ember.Object.extend({
     fooCnt: 0,
     foo: function() { this.fooCnt++; },
 

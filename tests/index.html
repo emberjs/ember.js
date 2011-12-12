@@ -26,11 +26,11 @@
     ENV['EXTEND_PROTOTYPES'] = !!(extendPrototypes && decodeURIComponent(extendPrototypes[1]));
 
 
-    // hack qunit to not suck for SC objects
+    // hack qunit to not suck for Ember objects
     var originalTypeof = QUnit.jsDump.typeOf;
 
     QUnit.jsDump.typeOf = function(obj) {
-      if (SC && SC.Object && SC.Object.detectInstance(obj)) {
+      if (Ember && Ember.Object && Ember.Object.detectInstance(obj)) {
         return "scObject";
       }
 

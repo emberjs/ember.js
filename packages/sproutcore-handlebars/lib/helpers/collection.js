@@ -9,7 +9,7 @@
 require('sproutcore-handlebars');
 require('sproutcore-handlebars/helpers/view');
 
-var get = SC.get, fmt = SC.String.fmt;
+var get = Ember.get, fmt = Ember.String.fmt;
 
 /**
   @name Handlebars.helpers.collection
@@ -17,7 +17,7 @@ var get = SC.get, fmt = SC.String.fmt;
   @param {Hash} options
   @returns {String} HTML string
 */
-SC.Handlebars.registerHelper('collection', function(path, options) {
+Ember.Handlebars.registerHelper('collection', function(path, options) {
   // If no path is provided, treat path param as options.
   if (path && path.data && path.data.isRenderData) {
     options = path;
@@ -34,7 +34,7 @@ SC.Handlebars.registerHelper('collection', function(path, options) {
   // If passed a path string, convert that into an object.
   // Otherwise, just default to the standard class.
   var collectionClass;
-  collectionClass = path ? SC.getPath(this, path) : SC.CollectionView;
+  collectionClass = path ? Ember.getPath(this, path) : Ember.CollectionView;
   sc_assert(fmt("%@ #collection: Could not find %@", data.view, path), !!collectionClass);
 
   var hash = options.hash, itemHash = {}, match;
@@ -43,7 +43,7 @@ SC.Handlebars.registerHelper('collection', function(path, options) {
   var itemViewClass, itemViewPath = hash.itemViewClass;
   var collectionPrototype = get(collectionClass, 'proto');
   delete hash.itemViewClass;
-  itemViewClass = itemViewPath ? SC.getPath(collectionPrototype, itemViewPath) : collectionPrototype.itemViewClass;
+  itemViewClass = itemViewPath ? Ember.getPath(collectionPrototype, itemViewPath) : collectionPrototype.itemViewClass;
   sc_assert(fmt("%@ #collection: Could not find %@", data.view, itemViewPath), !!itemViewClass);
 
   // Go through options passed to the {{collection}} helper and extract options
@@ -70,22 +70,22 @@ SC.Handlebars.registerHelper('collection', function(path, options) {
   }
 
   if (inverse && inverse !== Handlebars.VM.noop) {
-    hash.emptyView = SC.View.extend({
+    hash.emptyView = Ember.View.extend({
       template: inverse,
       tagName: itemHash.tagName
     });
   }
 
   if (hash.preserveContext) {
-    itemHash.templateContext = SC.computed(function() {
+    itemHash.templateContext = Ember.computed(function() {
       return get(this, 'content');
     }).property('content');
     delete hash.preserveContext;
   }
 
-  hash.itemViewClass = SC.Handlebars.ViewHelper.viewClassFromHTMLOptions(itemViewClass, itemHash);
+  hash.itemViewClass = Ember.Handlebars.ViewHelper.viewClassFromHTMLOptions(itemViewClass, itemHash);
 
-  return SC.Handlebars.helpers.view.call(this, collectionClass, options);
+  return Ember.Handlebars.helpers.view.call(this, collectionClass, options);
 });
 
 

@@ -7,9 +7,9 @@
 
 function testBool(val, expected) {
   test('Forces '+Object.prototype.toString.call(val)+' value to '+expected, function() {
-    SC.set(MyApp.foo, 'value', val);
-    SC.run.sync();
-    equals(SC.get(MyApp.bar, 'value'), expected);
+    Ember.set(MyApp.foo, 'value', val);
+    Ember.run.sync();
+    equals(Ember.get(MyApp.bar, 'value'), expected);
   });
 }
 
@@ -20,7 +20,7 @@ module('system/binding/bool', {
       bar: { value: 'BAR' }
     };
     
-    SC.bind(MyApp, 'bar.value', 'foo.value').bool();
+    Ember.bind(MyApp, 'bar.value', 'foo.value').bool();
   },
 
   teardown: function() {
@@ -49,7 +49,7 @@ module('system/binding/not', {
       bar: { value: 'BAR' }
     };
     
-    SC.bind(MyApp, 'bar.value', 'foo.value').not();
+    Ember.bind(MyApp, 'bar.value', 'foo.value').not();
   },
 
   teardown: function() {

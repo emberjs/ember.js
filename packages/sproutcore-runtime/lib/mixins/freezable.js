@@ -9,12 +9,12 @@
 
 
   
-var get = SC.get, set = SC.set;
+var get = Ember.get, set = Ember.set;
 
 /**
   @namespace
 
-  The SC.Freezable mixin implements some basic methods for marking an object
+  The Ember.Freezable mixin implements some basic methods for marking an object
   as frozen. Once an object is frozen it should be read only. No changes
   may be made the internal state of the object.
 
@@ -34,10 +34,10 @@ var get = SC.get, set = SC.set;
 
   ## Example Usage
 
-  The example below shows a simple object that implement the SC.Freezable
+  The example below shows a simple object that implement the Ember.Freezable
   protocol.
 
-        Contact = SC.Object.extend(SC.Freezable, {
+        Contact = Ember.Object.extend(Ember.Freezable, {
 
           firstName: null,
 
@@ -45,7 +45,7 @@ var get = SC.get, set = SC.set;
 
           // swaps the names
           swapNames: function() {
-            if (this.get('isFrozen')) throw SC.FROZEN_ERROR;
+            if (this.get('isFrozen')) throw Ember.FROZEN_ERROR;
             var tmp = this.get('firstName');
             this.set('firstName', this.get('lastName'));
             this.set('lastName', tmp);
@@ -61,13 +61,13 @@ var get = SC.get, set = SC.set;
 
   ## Copying
 
-  Usually the SC.Freezable protocol is implemented in cooperation with the
-  SC.Copyable protocol, which defines a frozenCopy() method that will return
+  Usually the Ember.Freezable protocol is implemented in cooperation with the
+  Ember.Copyable protocol, which defines a frozenCopy() method that will return
   a frozen object, if the object implements this method as well.
 
   @since SproutCore 1.0
 */
-SC.Freezable = SC.Mixin.create({
+Ember.Freezable = Ember.Mixin.create({
 
   /**
     Set to YES when the object is frozen.  Use this property to detect whether
@@ -91,7 +91,7 @@ SC.Freezable = SC.Mixin.create({
 
 });
 
-SC.FROZEN_ERROR = "Frozen object cannot be modified.";
+Ember.FROZEN_ERROR = "Frozen object cannot be modified.";
 
 
 

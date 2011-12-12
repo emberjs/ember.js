@@ -1,15 +1,15 @@
 require('sproutcore-states/view_state');
 
-var get = SC.get, set = SC.set, getPath = SC.getPath, setPath = SC.setPath;
+var get = Ember.get, set = Ember.set, getPath = Ember.getPath, setPath = Ember.setPath;
 
-module("SC.ViewState");
+module("Ember.ViewState");
 
-test("it inherits from SC.State", function() {
-  ok(SC.State.detect(SC.ViewState), "SC.ViewState is an SC.State");
+test("it inherits from Ember.State", function() {
+  ok(Ember.State.detect(Ember.ViewState), "Ember.ViewState is an Ember.State");
 });
 
 test("it can act like a state in a state manager", function() {
-  var viewState = SC.ViewState.create({
+  var viewState = Ember.ViewState.create({
     entered: 0,
 
     enter: function() {
@@ -17,7 +17,7 @@ test("it can act like a state in a state manager", function() {
     }
   });
 
-  var stateManager = SC.StateManager.create({
+  var stateManager = Ember.StateManager.create({
     start: viewState
   });
 
@@ -26,39 +26,39 @@ test("it can act like a state in a state manager", function() {
 });
 
 test("it appends and removes a view when it is entered and exited", function() {
-  var view = SC.View.create({
+  var view = Ember.View.create({
     elementId: 'test-view'
   });
 
-  var viewState = SC.ViewState.create({
+  var viewState = Ember.ViewState.create({
     view: view
   });
 
   var stateManager;
 
-  SC.run(function() {
-    stateManager = SC.StateManager.create({
+  Ember.run(function() {
+    stateManager = Ember.StateManager.create({
       start: viewState,
 
-      other: SC.ViewState.create()
+      other: Ember.ViewState.create()
     });
   });
 
-  equals(SC.$('#test-view').length, 1, "found view with custom id in DOM");
+  equals(Ember.$('#test-view').length, 1, "found view with custom id in DOM");
 
-  SC.run(function() {
+  Ember.run(function() {
     stateManager.goToState('other');
   });
 
-  equals(SC.$('#test-view').length, 0, "can't find view with custom id in DOM");
+  equals(Ember.$('#test-view').length, 0, "can't find view with custom id in DOM");
 });
 
 test("it appends and removes a view to the element specified in its state manager", function() {
-  var view = SC.View.create({
+  var view = Ember.View.create({
     elementId: 'test-view'
   });
 
-  var viewState = SC.ViewState.create({
+  var viewState = Ember.ViewState.create({
     view: view
   });
 
@@ -68,21 +68,21 @@ test("it appends and removes a view to the element specified in its state manage
 
   equals($('#qunit-fixture > #my-container')[0].childNodes.length, 0, "precond - container does not have any child nodes");
 
-  SC.run(function() {
-    stateManager = SC.StateManager.create({
+  Ember.run(function() {
+    stateManager = Ember.StateManager.create({
       rootElement: '#qunit-fixture > #my-container',
       start: viewState,
 
-      other: SC.ViewState.create()
+      other: Ember.ViewState.create()
     });
   });
 
-  equals(SC.$('#test-view').length, 1, "found view with custom id in DOM");
+  equals(Ember.$('#test-view').length, 1, "found view with custom id in DOM");
   equals($("#test-view").parent().attr('id'), "my-container", "appends view to the correct element");
 
-  SC.run(function() {
+  Ember.run(function() {
     stateManager.goToState('other');
   });
 
-  equals(SC.$('#test-view').length, 0, "can't find view with custom id in DOM");
+  equals(Ember.$('#test-view').length, 0, "can't find view with custom id in DOM");
 });

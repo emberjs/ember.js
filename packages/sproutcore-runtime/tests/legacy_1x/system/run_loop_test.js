@@ -12,7 +12,7 @@
   
   CHANGES FROM 1.6:
   
-  * Updated the API usage for setting up and syncing SC.Binding since these 
+  * Updated the API usage for setting up and syncing Ember.Binding since these 
     are not the APIs this file is testing.
     
   * Disabled a call to invokeOnce() around line 127 because it appeared to be
@@ -24,37 +24,37 @@ var MyApp, binding1, binding2;
 module("System:run_loop() - chained binding", {
   setup: function() {
     MyApp = {};
-    MyApp.first = SC.Object.create(SC.Observable, { 
+    MyApp.first = Ember.Object.create(Ember.Observable, { 
       output: 'MyApp.first' 
     }) ;
     
-    MyApp.second = SC.Object.create(SC.Observable, { 
+    MyApp.second = Ember.Object.create(Ember.Observable, { 
       input: 'MyApp.second',
       output: 'MyApp.second',
     
-      inputDidChange: SC.observer(function() {
+      inputDidChange: Ember.observer(function() {
         this.set("output", this.get("input")) ;
       }, "input") 
 
     }) ;
   
-    MyApp.third = SC.Object.create(SC.Observable, { 
+    MyApp.third = Ember.Object.create(Ember.Observable, { 
       input: "MyApp.third" 
     }) ;
   }
 });
 
-test("Should propagate bindings after the RunLoop completes (using SC.RunLoop)", function() {
-  SC.RunLoop.begin();
+test("Should propagate bindings after the RunLoop completes (using Ember.RunLoop)", function() {
+  Ember.RunLoop.begin();
     //Binding of output of MyApp.first object to input of MyApp.second object
-      binding1 = SC.Binding.from("first.output")
+      binding1 = Ember.Binding.from("first.output")
         .to("second.input").connect(MyApp) ;
       
     //Binding of output of MyApp.second object to input of MyApp.third object
-    binding2 = SC.Binding.from("second.output")
+    binding2 = Ember.Binding.from("second.output")
       .to("third.input").connect(MyApp) ;
 
-    SC.run.sync();
+    Ember.run.sync();
     
     // Based on the above binding if you change the output of MyApp.first 
     // object it should change the all the variable of 
@@ -66,7 +66,7 @@ test("Should propagate bindings after the RunLoop completes (using SC.RunLoop)",
     
     //since binding has not taken into effect the value still remains as change.
     equals(MyApp.second.get("output"), "MyApp.first") ;
-  SC.RunLoop.end(); // allows bindings to trigger...
+  Ember.RunLoop.end(); // allows bindings to trigger...
   
   //Value of the output variable changed to 'change'
   equals(MyApp.first.get("output"), "change") ;
@@ -75,16 +75,16 @@ test("Should propagate bindings after the RunLoop completes (using SC.RunLoop)",
   equals(MyApp.second.get("output"), "change") ;
 });
 
-test("Should propagate bindings after the RunLoop completes (using SC.beginRunLoop)", function() {
+test("Should propagate bindings after the RunLoop completes (using Ember.beginRunLoop)", function() {
     //Binding of output of MyApp.first object to input of MyApp.second object
-      binding1 = SC.Binding.from("first.output")
+      binding1 = Ember.Binding.from("first.output")
         .to("second.input").connect(MyApp) ;
       
     //Binding of output of MyApp.second object to input of MyApp.third object
-    binding2 = SC.Binding.from("second.output")
+    binding2 = Ember.Binding.from("second.output")
         .to("third.input").connect(MyApp) ;
 
-    SC.run.sync();
+    Ember.run.sync();
     
     //Based on the above binding if you change the output of MyApp.first object it should
     //change the all the variable of MyApp.first,MyApp.second and MyApp.third object
@@ -95,7 +95,7 @@ test("Should propagate bindings after the RunLoop completes (using SC.beginRunLo
     
     //since binding has not taken into effect the value still remains as change.
     equals(MyApp.second.get("output"), "MyApp.first") ;
-  SC.run.sync() ; // actually sets up the connection
+  Ember.run.sync() ; // actually sets up the connection
   
   //Value of the output variable changed to 'change'
   equals(MyApp.first.get("output"), "change") ;
@@ -105,16 +105,16 @@ test("Should propagate bindings after the RunLoop completes (using SC.beginRunLo
 });
 
 test("Should propagate bindings after the RunLoop completes (checking invokeOnce() function)", function() {
-  SC.RunLoop.begin();
+  Ember.RunLoop.begin();
     //Binding of output of MyApp.first object to input of MyApp.second object
-      binding1 = SC.Binding.from("first.output")
+      binding1 = Ember.Binding.from("first.output")
         .to("second.input").connect(MyApp) ;
       
     //Binding of output of MyApp.second object to input of MyApp.third object
-    binding2 = SC.Binding.from("second.output")
+    binding2 = Ember.Binding.from("second.output")
       .to("third.input").connect(MyApp) ;
     
-    SC.run.sync() ; // actually sets up the connection
+    Ember.run.sync() ; // actually sets up the connection
     
     //Based on the above binding if you change the output of MyApp.first object it should
     //change the all the variable of MyApp.first,MyApp.second and MyApp.third object
@@ -129,7 +129,7 @@ test("Should propagate bindings after the RunLoop completes (checking invokeOnce
     // Call the invokeOnce function to set the function which needs to be called once
     // MyApp.second.invokeOnce('MyApp.second','inputDidChange'); <-- Broken?
     
-  SC.RunLoop.end(); // allows bindings to trigger...
+  Ember.RunLoop.end(); // allows bindings to trigger...
   
   //Value of the output variable changed to 'change'
   equals(MyApp.first.get("output"), "change") ;

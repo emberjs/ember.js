@@ -4,25 +4,25 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
-var set = SC.set, get = SC.get;
+var set = Ember.set, get = Ember.get;
 
-module("SC.View nearest view helpers");
+module("Ember.View nearest view helpers");
 
 test("collectionView should return the nearest collection view", function() {
   var itemViewChild;
 
-  var view = SC.CollectionView.create({
-    content: SC.A([1, 2, 3]),
+  var view = Ember.CollectionView.create({
+    content: Ember.A([1, 2, 3]),
     isARealCollection: true,
 
-    itemViewClass: SC.View.extend({
+    itemViewClass: Ember.View.extend({
       render: function(buffer) {
-        this.appendChild(SC.View.create());
+        this.appendChild(Ember.View.create());
       }
     })
   });
 
-  SC.run(function() {
+  Ember.run(function() {
     view.appendTo('#qunit-fixture');
   });
 
@@ -33,19 +33,19 @@ test("collectionView should return the nearest collection view", function() {
 test("itemView should return the nearest child of a collection view", function() {
   var itemViewChild;
 
-  var view = SC.CollectionView.create({
-    content: SC.A([1, 2, 3]),
+  var view = Ember.CollectionView.create({
+    content: Ember.A([1, 2, 3]),
 
-    itemViewClass: SC.View.extend({
+    itemViewClass: Ember.View.extend({
       isAnItemView: true,
 
       render: function(buffer) {
-        this.appendChild(SC.View.create());
+        this.appendChild(Ember.View.create());
       }
     })
   });
 
-  SC.run(function() {
+  Ember.run(function() {
     view.appendTo('#qunit-fixture');
   });
 
@@ -56,19 +56,19 @@ test("itemView should return the nearest child of a collection view", function()
 test("itemView should return the nearest child of a collection view", function() {
   var itemViewChild;
 
-  var view = SC.CollectionView.create({
-    content: SC.A([1, 2, 3]),
+  var view = Ember.CollectionView.create({
+    content: Ember.A([1, 2, 3]),
 
-    itemViewClass: SC.View.extend({
+    itemViewClass: Ember.View.extend({
       isAnItemView: true,
 
       render: function(buffer) {
-        this.appendChild(SC.View.create());
+        this.appendChild(Ember.View.create());
       }
     })
   });
 
-  SC.run(function() {
+  Ember.run(function() {
     view.appendTo('#qunit-fixture');
   });
 
@@ -79,15 +79,15 @@ test("itemView should return the nearest child of a collection view", function()
 test("nearestWithProperty should search immediate parent", function(){
   var childView;
 
-  var view = SC.View.create({
+  var view = Ember.View.create({
     myProp: true,
 
     render: function(buffer) {
-      this.appendChild(SC.View.create());
+      this.appendChild(Ember.View.create());
     }
   });
 
-  SC.run(function() {
+  Ember.run(function() {
     view.appendTo('#qunit-fixture');
   });
 

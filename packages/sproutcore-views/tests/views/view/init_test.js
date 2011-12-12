@@ -4,12 +4,12 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
-var set = SC.set, get = SC.get;
+var set = Ember.set, get = Ember.get;
 
-module("SC.View.create");
+module("Ember.View.create");
 
 test("registers view in the global views hash using layerId for event targeted", function() {
-  var v = SC.View.create();
-  equals(SC.View.views[get(v, 'elementId')], v, 'registers view');
+  var v = Ember.View.create();
+  equals(Ember.View.views[get(v, 'elementId')], v, 'registers view');
 });
 

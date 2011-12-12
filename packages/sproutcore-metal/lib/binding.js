@@ -5,11 +5,11 @@
 // ==========================================================================
 /*globals sc_assert */
 
-require('sproutcore-metal/core'); // SC.Logger
+require('sproutcore-metal/core'); // Ember.Logger
 require('sproutcore-metal/accessors'); // get, getPath, setPath, trySetPath
 require('sproutcore-metal/utils'); // guidFor, isArray, meta
 require('sproutcore-metal/observer'); // addObserver, removeObserver
-require('sproutcore-metal/run_loop'); // SC.run.schedule
+require('sproutcore-metal/run_loop'); // Ember.run.schedule
 
 // ..........................................................
 // CONSTANTS
@@ -26,7 +26,7 @@ require('sproutcore-metal/run_loop'); // SC.run.schedule
   @type Boolean
   @default NO
 */
-SC.LOG_BINDINGS = false || !!SC.ENV.LOG_BINDINGS;
+Ember.LOG_BINDINGS = false || !!Ember.ENV.LOG_BINDINGS;
 
 /**
   @static
@@ -36,7 +36,7 @@ SC.LOG_BINDINGS = false || !!SC.ENV.LOG_BINDINGS;
 
   @type Boolean
 */
-SC.BENCHMARK_BINDING_NOTIFICATIONS = !!SC.ENV.BENCHMARK_BINDING_NOTIFICATIONS;
+Ember.BENCHMARK_BINDING_NOTIFICATIONS = !!Ember.ENV.BENCHMARK_BINDING_NOTIFICATIONS;
 
 /**
   @static
@@ -46,7 +46,7 @@ SC.BENCHMARK_BINDING_NOTIFICATIONS = !!SC.ENV.BENCHMARK_BINDING_NOTIFICATIONS;
 
   @type Boolean
 */
-SC.BENCHMARK_BINDING_SETUP = !!SC.ENV.BENCHMARK_BINDING_SETUP;
+Ember.BENCHMARK_BINDING_SETUP = !!Ember.ENV.BENCHMARK_BINDING_SETUP;
 
 
 /**
@@ -57,7 +57,7 @@ SC.BENCHMARK_BINDING_SETUP = !!SC.ENV.BENCHMARK_BINDING_SETUP;
   @type String
   @default '@@MULT@@'
 */
-SC.MULTIPLE_PLACEHOLDER = '@@MULT@@';
+Ember.MULTIPLE_PLACEHOLDER = '@@MULT@@';
 
 /**
   @static
@@ -68,7 +68,7 @@ SC.MULTIPLE_PLACEHOLDER = '@@MULT@@';
   @type String
   @default '@@EMPTY@@'
 */
-SC.EMPTY_PLACEHOLDER = '@@EMPTY@@';
+Ember.EMPTY_PLACEHOLDER = '@@EMPTY@@';
 
 // ..........................................................
 // TYPE COERCION HELPERS
@@ -106,10 +106,10 @@ var NOT = {
   }
 };
 
-var get     = SC.get,
-    getPath = SC.getPath,
-    setPath = SC.setPath,
-    guidFor = SC.guidFor;
+var get     = Ember.get,
+    getPath = Ember.getPath,
+    setPath = Ember.setPath,
+    guidFor = Ember.guidFor;
 
 // Applies a binding's transformations against a value.
 function getTransformedValue(binding, val, obj, dir) {
@@ -134,7 +134,7 @@ function getTransformedValue(binding, val, obj, dir) {
 }
 
 function empty(val) {
-  return val===undefined || val===null || val==='' || (SC.isArray(val) && get(val, 'length')===0) ;
+  return val===undefined || val===null || val==='' || (Ember.isArray(val) && get(val, 'length')===0) ;
 }
 
 function getTransformedFromValue(obj, binding) {
@@ -182,9 +182,9 @@ var OR_OPERATION = function(obj, left, right) {
   what the other object outputs.
 
   To customize a binding, you can use one of the many helper methods defined
-  on SC.Binding like so:
+  on Ember.Binding like so:
 
-        valueBinding: SC.Binding.single("MyApp.someController.title")
+        valueBinding: Ember.Binding.single("MyApp.someController.title")
 
   This will create a binding just like the example above, except that now the
   binding will convert the value of `MyApp.someController.title` to a single
@@ -193,7 +193,7 @@ var OR_OPERATION = function(obj, left, right) {
 
   You can also chain helper methods to build custom bindings like so:
 
-        valueBinding: SC.Binding.single("MyApp.someController.title").notEmpty("(EMPTY)")
+        valueBinding: Ember.Binding.single("MyApp.someController.title").notEmpty("(EMPTY)")
 
   This will force the value of MyApp.someController.title to be a single value
   and then check to see if the value is "empty" (null, undefined, empty array,
@@ -209,7 +209,7 @@ var OR_OPERATION = function(obj, left, right) {
   has changed, but your object will not be changing the preference itself, you
   could do:
 
-        bigTitlesBinding: SC.Binding.oneWay("MyApp.preferencesController.bigTitles")
+        bigTitlesBinding: Ember.Binding.oneWay("MyApp.preferencesController.bigTitles")
 
   This way if the value of MyApp.preferencesController.bigTitles changes the
   "bigTitles" property of your object will change also. However, if you
@@ -232,20 +232,20 @@ var OR_OPERATION = function(obj, left, right) {
   not allow Integers less than ten. Note that it checks the value of the
   bindings and allows all other values to pass:
 
-        valueBinding: SC.Binding.transform(function(value, binding) {
-          return ((SC.typeOf(value) === 'number') && (value < 10)) ? 10 : value;
+        valueBinding: Ember.Binding.transform(function(value, binding) {
+          return ((Ember.typeOf(value) === 'number') && (value < 10)) ? 10 : value;
         }).from("MyApp.someController.value")
 
   If you would like to instead use this transform on a number of bindings,
-  you can also optionally add your own helper method to SC.Binding. This
+  you can also optionally add your own helper method to Ember.Binding. This
   method should simply return the value of `this.transform()`. The example
   below adds a new helper called `notLessThan()` which will limit the value to
   be not less than the passed minimum:
 
-      SC.Binding.reopen({
+      Ember.Binding.reopen({
         notLessThan: function(minValue) {
           return this.transform(function(value, binding) {
-            return ((SC.typeOf(value) === 'number') && (value < minValue)) ? minValue : value;
+            return ((Ember.typeOf(value) === 'number') && (value < minValue)) ? minValue : value;
           });
         }
       });
@@ -253,13 +253,13 @@ var OR_OPERATION = function(obj, left, right) {
   You could specify this in your core.js file, for example. Then anywhere in
   your application you can use it to define bindings like so:
 
-        valueBinding: SC.Binding.from("MyApp.someController.value").notLessThan(10)
+        valueBinding: Ember.Binding.from("MyApp.someController.value").notLessThan(10)
 
   Also, remember that helpers are chained so you can use your helper along
   with any other helpers. The example below will create a one way binding that
   does not allow empty values or values less than 10:
 
-        valueBinding: SC.Binding.oneWay("MyApp.someController.value").notEmpty().notLessThan(10)
+        valueBinding: Ember.Binding.oneWay("MyApp.someController.value").notEmpty().notLessThan(10)
 
   ## How to Manually Adding Binding
 
@@ -280,7 +280,7 @@ var OR_OPERATION = function(obj, left, right) {
   examples above, during init, SproutCore objects will effectively call
   something like this on your binding:
 
-        binding = SC.Binding.from(this.valueBinding).to("value");
+        binding = Ember.Binding.from(this.valueBinding).to("value");
 
   This creates a new binding instance based on the template you provide, and
   sets the to path to the "value" property of the new object. Now that the
@@ -299,15 +299,15 @@ var OR_OPERATION = function(obj, left, right) {
 
   If you ever needed to do so (you almost never will, but it is useful to
   understand this anyway), you could manually create an active binding by
-  using the SC.bind() helper method. (This is the same method used by
+  using the Ember.bind() helper method. (This is the same method used by
   to setup your bindings on objects):
 
-        SC.bind(MyApp.anotherObject, "value", "MyApp.someController.value");
+        Ember.bind(MyApp.anotherObject, "value", "MyApp.someController.value");
 
   Both of these code fragments have the same effect as doing the most friendly
   form of binding creation like so:
 
-        MyApp.anotherObject = SC.Object.create({
+        MyApp.anotherObject = Ember.Object.create({
           valueBinding: "MyApp.someController.value",
 
           // OTHER CODE FOR THIS OBJECT...
@@ -357,7 +357,7 @@ Binding.prototype = {
     `getPath()` - see that method for more information.
 
     @param {String} propertyPath the property path to connect to
-    @returns {SC.Binding} receiver
+    @returns {Ember.Binding} receiver
   */
   from: function(path) {
     this._from = path;
@@ -375,7 +375,7 @@ Binding.prototype = {
 
     @param {String|Tuple} propertyPath A property path or tuple
     @param {Object} [root] Root object to use when resolving the path.
-    @returns {SC.Binding} this
+    @returns {Ember.Binding} this
   */
   to: function(path) {
     this._to = path;
@@ -392,7 +392,7 @@ Binding.prototype = {
       (Optional) passing nothing here will make the binding oneWay.  You can
       instead pass NO to disable oneWay, making the binding two way again.
 
-    @returns {SC.Binding} receiver
+    @returns {Ember.Binding} receiver
   */
   oneWay: function(flag) {
     this._oneWay = flag===undefined ? true : !!flag;
@@ -417,7 +417,7 @@ Binding.prototype = {
     `resetTransform()` first.
 
     @param {Function} transformFunc the transform function.
-    @returns {SC.Binding} this
+    @returns {Ember.Binding} this
   */
   transform: function(transform) {
     if ('function' === typeof transform) {
@@ -434,7 +434,7 @@ Binding.prototype = {
     binding will no longer transform values. You can then add new transforms
     as needed.
 
-    @returns {SC.Binding} this
+    @returns {Ember.Binding} this
   */
   resetTransforms: function() {
     this._transforms = null;
@@ -458,10 +458,10 @@ Binding.prototype = {
 
     @param {String} fromPath from path or null
     @param {Object} [placeholder] Placeholder value.
-    @returns {SC.Binding} this
+    @returns {Ember.Binding} this
   */
   single: function(placeholder) {
-    if (placeholder===undefined) placeholder = SC.MULTIPLE_PLACEHOLDER;
+    if (placeholder===undefined) placeholder = Ember.MULTIPLE_PLACEHOLDER;
     this._typeTransform = SINGLE;
     this._placeholder = placeholder;
     return this;
@@ -472,7 +472,7 @@ Binding.prototype = {
     the value is null or undefined, it will be converted to an empty array.
 
     @param {String} [fromPath]
-    @returns {SC.Binding} this
+    @returns {Ember.Binding} this
   */
   multiple: function() {
     this._typeTransform = MULTIPLE;
@@ -485,7 +485,7 @@ Binding.prototype = {
     an array it will return YES if array is not empty. If the value is a
     string it will return YES if the string is not empty.
 
-    @returns {SC.Binding} this
+    @returns {Ember.Binding} this
   */
   bool: function() {
     this.transform(BOOL);
@@ -497,13 +497,13 @@ Binding.prototype = {
     null, undefined, an empty array or an empty string. See also notNull().
 
     @param {Object} [placeholder] Placeholder value.
-    @returns {SC.Binding} this
+    @returns {Ember.Binding} this
   */
   notEmpty: function(placeholder) {
-    // Display warning for users using the SC 1.x-style API.
+    // Display warning for users using the SproutCore 1.x-style API.
     sc_assert("notEmpty should only take a placeholder as a parameter. You no longer need to pass null as the first parameter.", arguments.length < 2);
 
-    if (placeholder == undefined) { placeholder = SC.EMPTY_PLACEHOLDER; }
+    if (placeholder == undefined) { placeholder = Ember.EMPTY_PLACEHOLDER; }
 
     this.transform({
       to: function(val) { return empty(val) ? placeholder : val; }
@@ -518,10 +518,10 @@ Binding.prototype = {
 
     @param {String} fromPath from path or null
     @param {Object} [placeholder] Placeholder value.
-    @returns {SC.Binding} this
+    @returns {Ember.Binding} this
   */
   notNull: function(placeholder) {
-    if (placeholder == undefined) { placeholder = SC.EMPTY_PLACEHOLDER; }
+    if (placeholder == undefined) { placeholder = Ember.EMPTY_PLACEHOLDER; }
 
     this.transform({
       to: function(val) { return val == null ? placeholder : val; }
@@ -534,7 +534,7 @@ Binding.prototype = {
     Adds a transform to convert the value to the inverse of a bool value. This
     uses the same transform as bool() but inverts it.
 
-    @returns {SC.Binding} this
+    @returns {Ember.Binding} this
   */
   not: function() {
     this.transform(NOT);
@@ -544,7 +544,7 @@ Binding.prototype = {
   /**
     Adds a transform that will return YES if the value is null or undefined, NO otherwise.
 
-    @returns {SC.Binding} this
+    @returns {Ember.Binding} this
   */
   isNull: function() {
     this.transform(function(val) { return val == null; });
@@ -554,7 +554,7 @@ Binding.prototype = {
   /** @private */
   toString: function() {
     var oneWay = this._oneWay ? '[oneWay]' : '';
-    return "SC.Binding<" + guidFor(this) + ">(" + this._from + " -> " + this._to + ")" + oneWay;
+    return "Ember.Binding<" + guidFor(this) + ">(" + this._from + " -> " + this._to + ")" + oneWay;
   },
 
   // ..........................................................
@@ -575,24 +575,24 @@ Binding.prototype = {
       to be used if no object was provided via `from`, so this parameter turns
       off the assertion.
 
-    @returns {SC.Binding} this
+    @returns {Ember.Binding} this
   */
   connect: function(obj) {
-    sc_assert('Must pass a valid object to SC.Binding.connect()', !!obj);
+    sc_assert('Must pass a valid object to Ember.Binding.connect()', !!obj);
 
     var oneWay = this._oneWay, operand = this._operand;
 
     // add an observer on the object to be notified when the binding should be updated
-    SC.addObserver(obj, this._from, this, this.fromDidChange);
+    Ember.addObserver(obj, this._from, this, this.fromDidChange);
 
     // if there is an operand, add an observer onto it as well
-    if (operand) { SC.addObserver(obj, operand, this, this.fromDidChange); }
+    if (operand) { Ember.addObserver(obj, operand, this, this.fromDidChange); }
 
     // if the binding is a two-way binding, also set up an observer on the target
     // object.
-    if (!oneWay) { SC.addObserver(obj, this._to, this, this.toDidChange); }
+    if (!oneWay) { Ember.addObserver(obj, this._to, this, this.toDidChange); }
 
-    if (SC.meta(obj,false).proto !== obj) { this._scheduleSync(obj, 'fwd'); }
+    if (Ember.meta(obj,false).proto !== obj) { this._scheduleSync(obj, 'fwd'); }
 
     this._readyToSync = true;
     return this;
@@ -605,22 +605,22 @@ Binding.prototype = {
     @param {Object} obj
       The root object you passed when connecting the binding.
 
-    @returns {SC.Binding} this
+    @returns {Ember.Binding} this
   */
   disconnect: function(obj) {
-    sc_assert('Must pass a valid object to SC.Binding.disconnect()', !!obj);
+    sc_assert('Must pass a valid object to Ember.Binding.disconnect()', !!obj);
 
     var oneWay = this._oneWay, operand = this._operand;
 
     // remove an observer on the object so we're no longer notified of
     // changes that should update bindings.
-    SC.removeObserver(obj, this._from, this, this.fromDidChange);
+    Ember.removeObserver(obj, this._from, this, this.fromDidChange);
 
     // if there is an operand, remove the observer from it as well
-    if (operand) SC.removeObserver(obj, operand, this, this.fromDidChange);
+    if (operand) Ember.removeObserver(obj, operand, this, this.fromDidChange);
 
     // if the binding is two-way, remove the observer from the target as well
-    if (!oneWay) SC.removeObserver(obj, this._to, this, this.toDidChange);
+    if (!oneWay) Ember.removeObserver(obj, this._to, this, this.toDidChange);
 
     this._readyToSync = false; // disable scheduled syncs...
     return this;
@@ -646,7 +646,7 @@ Binding.prototype = {
 
     // if we haven't scheduled the binding yet, schedule it
     if (!existingDir) {
-      SC.run.schedule('sync', this, this._sync, obj);
+      Ember.run.schedule('sync', this, this._sync, obj);
       this[guid] = dir;
     }
 
@@ -659,7 +659,7 @@ Binding.prototype = {
 
   /** @private */
   _sync: function(obj) {
-    var log = SC.LOG_BINDINGS;
+    var log = Ember.LOG_BINDINGS;
 
     // don't synchronize destroyed objects or disconnected bindings
     if (obj.isDestroyed || !this._readyToSync) { return; }
@@ -680,13 +680,13 @@ Binding.prototype = {
 
     // if we're synchronizing from the remote object...
     if (direction === 'fwd') {
-      if (log) { SC.Logger.log(' ', this.toString(), val, '->', fromValue, obj); }
-      SC.trySetPath(obj, toPath, fromValue);
+      if (log) { Ember.Logger.log(' ', this.toString(), val, '->', fromValue, obj); }
+      Ember.trySetPath(obj, toPath, fromValue);
 
     // if we're synchronizing *to* the remote object
     } else if (direction === 'back') {// && !this._oneWay) {
-      if (log) { SC.Logger.log(' ', this.toString(), val, '<-', fromValue, obj); }
-      SC.trySetPath(obj, fromPath, toValue);
+      if (log) { Ember.Logger.log(' ', this.toString(), val, '<-', fromValue, obj); }
+      Ember.trySetPath(obj, fromPath, toValue);
     }
   }
 
@@ -703,7 +703,7 @@ function mixinProperties(to, from) {
 mixinProperties(Binding, {
 
   /**
-    @see SC.Binding.prototype.from
+    @see Ember.Binding.prototype.from
   */
   from: function() {
     var C = this, binding = new C();
@@ -711,7 +711,7 @@ mixinProperties(Binding, {
   },
 
   /**
-    @see SC.Binding.prototype.to
+    @see Ember.Binding.prototype.to
   */
   to: function() {
     var C = this, binding = new C();
@@ -719,7 +719,7 @@ mixinProperties(Binding, {
   },
 
   /**
-    @see SC.Binding.prototype.oneWay
+    @see Ember.Binding.prototype.oneWay
   */
   oneWay: function(from, flag) {
     var C = this, binding = new C(null, from);
@@ -727,7 +727,7 @@ mixinProperties(Binding, {
   },
 
   /**
-    @see SC.Binding.prototype.single
+    @see Ember.Binding.prototype.single
   */
   single: function(from) {
     var C = this, binding = new C(null, from);
@@ -735,7 +735,7 @@ mixinProperties(Binding, {
   },
 
   /**
-    @see SC.Binding.prototype.multiple
+    @see Ember.Binding.prototype.multiple
   */
   multiple: function(from) {
     var C = this, binding = new C(null, from);
@@ -743,7 +743,7 @@ mixinProperties(Binding, {
   },
 
   /**
-    @see SC.Binding.prototype.transform
+    @see Ember.Binding.prototype.transform
   */
   transform: function(func) {
     var C = this, binding = new C();
@@ -751,7 +751,7 @@ mixinProperties(Binding, {
   },
 
   /**
-    @see SC.Binding.prototype.notEmpty
+    @see Ember.Binding.prototype.notEmpty
   */
   notEmpty: function(from, placeholder) {
     var C = this, binding = new C(null, from);
@@ -759,7 +759,7 @@ mixinProperties(Binding, {
   },
 
   /**
-    @see SC.Binding.prototype.bool
+    @see Ember.Binding.prototype.bool
   */
   bool: function(from) {
     var C = this, binding = new C(null, from);
@@ -767,7 +767,7 @@ mixinProperties(Binding, {
   },
 
   /**
-    @see SC.Binding.prototype.not
+    @see Ember.Binding.prototype.not
   */
   not: function(from) {
     var C = this, binding = new C(null, from);
@@ -785,8 +785,8 @@ mixinProperties(Binding, {
     whether something is selected in a list and whether the current user is
     allowed to delete:
 
-        deleteButton: SC.ButtonView.design({
-          isEnabledBinding: SC.Binding.and('MyApp.itemsController.hasSelection', 'MyApp.userController.canDelete')
+        deleteButton: Ember.ButtonView.design({
+          isEnabledBinding: Ember.Binding.and('MyApp.itemsController.hasSelection', 'MyApp.userController.canDelete')
         })
 
     @param {String} pathA The first part of the conditional
@@ -818,7 +818,7 @@ mixinProperties(Binding, {
 
 });
 
-SC.Binding = Binding;
+Ember.Binding = Binding;
 
 /**
   Global helper method to create a new binding.  Just pass the root object
@@ -836,12 +836,12 @@ SC.Binding = Binding;
     The path to the 'from' side of the binding.  Must be relative to obj or
     a global path.
 
-  @returns {SC.Binding} binding instance
+  @returns {Ember.Binding} binding instance
 */
-SC.bind = function(obj, to, from) {
-  return new SC.Binding(to, from).connect(obj);
+Ember.bind = function(obj, to, from) {
+  return new Ember.Binding(to, from).connect(obj);
 };
 
-SC.oneWay = function(obj, to, from) {
-  return new SC.Binding(to, from).oneWay().connect(obj);
+Ember.oneWay = function(obj, to, from) {
+  return new Ember.Binding(to, from).oneWay().connect(obj);
 }

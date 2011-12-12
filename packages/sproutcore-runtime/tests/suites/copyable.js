@@ -6,14 +6,14 @@
 
 require('sproutcore-runtime/~tests/suites/suite');
 
-SC.CopyableTests = SC.Suite.extend({
+Ember.CopyableTests = Ember.Suite.extend({
 
   /**
     Must be able to create a new object for testing.
     
     @returns {Object} object
   */
-  newObject: SC.required(Function),
+  newObject: Ember.required(Function),
   
   /**
     Compares the two passed in objects.  Returns true if the two objects 
@@ -27,7 +27,7 @@ SC.CopyableTests = SC.Suite.extend({
       
     @returns {Boolean}
   */
-  isEqual: SC.required(Function),
+  isEqual: Ember.required(Function),
   
   /**
     Set this to true if you expect the objects you test to be freezable.

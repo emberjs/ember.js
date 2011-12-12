@@ -1,6 +1,6 @@
 require('sproutcore-states/state_manager');
 
-var get = SC.get, set = SC.set, getPath = SC.getPath, setPath = SC.setPath;
+var get = Ember.get, set = Ember.set, getPath = Ember.getPath, setPath = Ember.setPath;
 
 var stateManager, loadingState, loadedState, stateEventStub = {
   entered: 0,
@@ -19,14 +19,14 @@ var stateManager, loadingState, loadedState, stateEventStub = {
   }
 };
 
-module("SC.StateManager", {
+module("Ember.StateManager", {
   setup: function() {
-    loadingState = SC.State.create(stateEventStub);
-    loadedState = SC.State.create(stateEventStub, {
-      empty: SC.State.create(stateEventStub)
+    loadingState = Ember.State.create(stateEventStub);
+    loadedState = Ember.State.create(stateEventStub, {
+      empty: Ember.State.create(stateEventStub)
     });
 
-    stateManager = SC.StateManager.create({
+    stateManager = Ember.StateManager.create({
       loadingState: loadingState,
       loadedState: loadedState
     });
@@ -40,16 +40,16 @@ module("SC.StateManager", {
 });
 
 test("it exists", function() {
-  ok(SC.Object.detect(SC.StateManager), "SC.StateManager is an SC.Object");
+  ok(Ember.Object.detect(Ember.StateManager), "Ember.StateManager is an Ember.Object");
 });
 
 test("it discovers states set in its state property", function() {
   var states = {
-    loading: SC.State.create(),
-    loaded: SC.State.create()
+    loading: Ember.State.create(),
+    loaded: Ember.State.create()
   };
 
-  stateManager = SC.StateManager.create({
+  stateManager = Ember.StateManager.create({
     states: states
   });
 
@@ -57,9 +57,9 @@ test("it discovers states set in its state property", function() {
 });
 
 test("it discovers states that are properties of the state manager", function() {
-  stateManager = SC.StateManager.create({
-    loading: SC.State.create(),
-    loaded: SC.State.create()
+  stateManager = Ember.StateManager.create({
+    loading: Ember.State.create(),
+    loaded: Ember.State.create()
   });
 
   var states = stateManager.get('states');
@@ -109,8 +109,8 @@ test("a transition can be asynchronous", function() {
   expect(1);
 
   var counter = 0;
-  var stateManager = SC.StateManager.create({
-    start: SC.State.create({
+  var stateManager = Ember.StateManager.create({
+    start: Ember.State.create({
       finish: function(manager) {
         manager.goToState('finished');
       },
@@ -128,7 +128,7 @@ test("a transition can be asynchronous", function() {
       }
     }),
 
-    finished: SC.State.create({
+    finished: Ember.State.create({
       enter: function() {
         equals(counter, 1, "increments counter and executes transition after specified timeout");
         start();
@@ -156,8 +156,8 @@ test("it accepts absolute paths when changing states", function() {
 });
 
 test("it automatically transitions to a default state", function() {
-  stateManager = SC.StateManager.create({
-    start: SC.State.create({
+  stateManager = Ember.StateManager.create({
+    start: Ember.State.create({
       isStart: true
     })
   });
@@ -166,10 +166,10 @@ test("it automatically transitions to a default state", function() {
 });
 
 test("it automatically transitions to a default state specified using the initialState property", function() {
-  stateManager = SC.StateManager.create({
+  stateManager = Ember.StateManager.create({
     initialState: 'beginning',
 
-    beginning: SC.State.create({
+    beginning: Ember.State.create({
       isStart: true
     })
   });
@@ -177,7 +177,7 @@ test("it automatically transitions to a default state specified using the initia
   ok(get(stateManager, 'currentState').isStart, "automatically transitions to beginning state");
 });
 
-module("SC.StateManager - Transitions on Complex State Managers");
+module("Ember.StateManager - Transitions on Complex State Managers");
 
 /**
             SB
@@ -192,16 +192,16 @@ module("SC.StateManager - Transitions on Complex State Managers");
 */
 
 test("it sends exit events to nested states when changing to a top-level state", function() {
-  var stateManager = SC.StateManager.create({
-    login: SC.State.create(stateEventStub, {
-      start: SC.State.create(stateEventStub),
-      pending: SC.State.create(stateEventStub)
+  var stateManager = Ember.StateManager.create({
+    login: Ember.State.create(stateEventStub, {
+      start: Ember.State.create(stateEventStub),
+      pending: Ember.State.create(stateEventStub)
     }),
 
-    redeem: SC.State.create(stateEventStub, {
+    redeem: Ember.State.create(stateEventStub, {
       isRedeem: true,
-      start: SC.State.create(),
-      pending: SC.State.create()
+      start: Ember.State.create(),
+      pending: Ember.State.create()
     })
   });
 
@@ -224,17 +224,17 @@ test("it sends exit events to nested states when changing to a top-level state",
 var stateManager, passedContext, loadingEventCalled, loadedEventCalled, eventInChildCalled;
 loadingEventCalled = loadedEventCalled = eventInChildCalled = 0;
 
-module("SC.StateManager - Event Dispatching", {
+module("Ember.StateManager - Event Dispatching", {
   setup: function() {
-    stateManager = SC.StateManager.create({
-      loading: SC.State.create({
+    stateManager = Ember.StateManager.create({
+      loading: Ember.State.create({
         anEvent: function(manager, context) {
           loadingEventCalled++;
           passedContext = context;
         }
       }),
 
-      loaded: SC.State.create({
+      loaded: Ember.State.create({
         anEvent: function() {
           loadedEventCalled++;
         },
@@ -243,7 +243,7 @@ module("SC.StateManager - Event Dispatching", {
           eventInChildCalled++;
         },
 
-        empty: SC.State.create({
+        empty: Ember.State.create({
           eventInChild: function() {
             eventInChildCalled++;
           }
@@ -281,11 +281,11 @@ test("it supports arguments to events", function() {
   equals(passedContext.context, true, "send passes along a context");
 });
 
-module("SC.Statemanager - Pivot states", {
+module("Ember.Statemanager - Pivot states", {
   setup: function() {
-    var State = SC.State.extend(stateEventStub);
+    var State = Ember.State.extend(stateEventStub);
 
-    stateManager = SC.StateManager.create(stateEventStub, {
+    stateManager = Ember.StateManager.create(stateEventStub, {
       grandparent: State.create({
         parent: State.create({
           child: State.create(),

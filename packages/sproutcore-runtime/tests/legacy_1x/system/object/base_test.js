@@ -12,7 +12,7 @@
   
   CHANGES FROM 1.6:
 
-  * Changed get(obj, ) and set(obj, ) to SC.get() and SC.set()
+  * Changed get(obj, ) and set(obj, ) to Ember.get() and Ember.set()
   * Removed obj.instanceOf() and obj.kindOf() tests.  use obj instanceof Foo 
     instead
   * Removed respondsTo() and tryToPerform() tests.  Can be brought back in a 
@@ -24,18 +24,18 @@
 */
 
 // ========================================================================
-// SC.Object Base Tests
+// Ember.Object Base Tests
 // ========================================================================
 /*globals module test ok isObj equals expects same plan TestNamespace*/
 
 var obj, obj1, don, don1 ; // global variables
 
-var get = SC.get, set = SC.set;
+var get = Ember.get, set = Ember.set;
 
-module("A new SC.Object instance", {
+module("A new Ember.Object instance", {
 
   setup: function() {
-    obj = SC.Object.create({
+    obj = Ember.Object.create({
       foo: "bar",
       total: 12345,
       aMethodThatExists: function() {},
@@ -51,12 +51,12 @@ module("A new SC.Object instance", {
 
 });
 
-test("Should return it's properties when requested using SC.Object#get", function() {
+test("Should return it's properties when requested using Ember.Object#get", function() {
   equals(get(obj, 'foo'), 'bar') ;
   equals(get(obj, 'total'), 12345) ;
 });
 
-test("Should allow changing of those properties by calling SC.Object#set", function() {
+test("Should allow changing of those properties by calling Ember.Object#set", function() {
   equals(get(obj,'foo'), 'bar') ;
   equals(get(obj, 'total'), 12345) ;
 
@@ -68,29 +68,29 @@ test("Should allow changing of those properties by calling SC.Object#set", funct
 });
 
 
-module("SC.Object observers", {
+module("Ember.Object observers", {
   setup: function() {
     // create a namespace
     TestNamespace = {
-      obj: SC.Object.create({
+      obj: Ember.Object.create({
         value: "test"
       })
     };
 
     // create an object
-    obj = SC.Object.create({
+    obj = Ember.Object.create({
       prop1: null,
 
       // normal observer
-      observer: SC.observer(function(){
+      observer: Ember.observer(function(){
         this._normal = YES;
       }, "prop1"),
 
-      globalObserver: SC.observer(function() {
+      globalObserver: Ember.observer(function() {
         this._global = YES;
       }, "TestNamespace.obj.value"),
 
-      bothObserver: SC.observer(function() {
+      bothObserver: Ember.observer(function() {
         this._both = YES;
       }, "prop1", "TestNamespace.obj.value")
     });
@@ -118,9 +118,9 @@ test("Global+Local observer works", function() {
 
 
 
-module("SC.Object superclass and subclasses", {
+module("Ember.Object superclass and subclasses", {
   setup: function() {
-    obj = SC.Object.extend ({
+    obj = Ember.Object.extend ({
 	  method1: function() {
 		return "hello";
 	  }
@@ -146,7 +146,7 @@ test("Checking the detect() function on an object and its subclass", function(){
 });
 
 test("Checking the detectInstance() function on an object and its subclass", function() {
-  ok(SC.Object.detectInstance(obj.create()));
+  ok(Ember.Object.detectInstance(obj.create()));
   ok(obj.detectInstance(obj.create()));
 });
 

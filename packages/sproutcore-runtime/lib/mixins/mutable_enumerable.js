@@ -40,13 +40,13 @@ require('sproutcore-runtime/mixins/enumerable');
   
   If you are implementing an object and want to support this API, just include
   this mixin in your class and implement the required methods.  In your unit
-  tests, be sure to apply the SC.MutableEnumerableTests to your object.
+  tests, be sure to apply the Ember.MutableEnumerableTests to your object.
   
-  @extends SC.Mixin
-  @extends SC.Enumerable
+  @extends Ember.Mixin
+  @extends Ember.Enumerable
 */
-SC.MutableEnumerable = SC.Mixin.create(SC.Enumerable, 
-  /** @scope SC.MutableEnumerable.prototype */ {
+Ember.MutableEnumerable = Ember.Mixin.create(Ember.Enumerable, 
+  /** @scope Ember.MutableEnumerable.prototype */ {
   
   /**
     __Required.__ You must implement this method to apply this mixin.
@@ -64,18 +64,18 @@ SC.MutableEnumerable = SC.Mixin.create(SC.Enumerable,
       
     @returns {Object} the passed object
   */
-  addObject: SC.required(Function),
+  addObject: Ember.required(Function),
 
   /**
     Adds each object in the passed enumerable to the receiver.
 
-    @param {SC.Enumerable} objects the objects to remove
+    @param {Ember.Enumerable} objects the objects to remove
     @returns {Object} receiver
   */
   addObjects: function(objects) {
-    SC.beginPropertyChanges(this);
+    Ember.beginPropertyChanges(this);
     objects.forEach(function(obj) { this.addObject(obj); }, this);
-    SC.endPropertyChanges(this);
+    Ember.endPropertyChanges(this);
     return this;
   },
 
@@ -95,19 +95,19 @@ SC.MutableEnumerable = SC.Mixin.create(SC.Enumerable,
       
     @returns {Object} the passed object
   */
-  removeObject: SC.required(Function),
+  removeObject: Ember.required(Function),
   
   
   /**
     Removes each objects in the passed enumerable from the receiver.
 
-    @param {SC.Enumerable} objects the objects to remove
+    @param {Ember.Enumerable} objects the objects to remove
     @returns {Object} receiver
   */
   removeObjects: function(objects) {
-    SC.beginPropertyChanges(this);
+    Ember.beginPropertyChanges(this);
     objects.forEach(function(obj) { this.removeObject(obj); }, this);
-    SC.endPropertyChanges(this);
+    Ember.endPropertyChanges(this);
     return this;
   }
     

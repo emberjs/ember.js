@@ -4,19 +4,19 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
-var set = SC.set, get = SC.get;
+var set = Ember.set, get = Ember.get;
 
-module("SC.View#element");
+module("Ember.View#element");
 
 test("returns null if the view has no element and no parent view", function() {
-  var view = SC.View.create() ;
+  var view = Ember.View.create() ;
   equals(get(view, 'parentView'), null, 'precond - has no parentView');
   equals(get(view, 'element'), null, 'has no element');
 });
 
 test("returns null if the view has no element and parent view has no element", function() {
-  var parent = SC.ContainerView.create({
-    childViews: [ SC.View.extend() ]
+  var parent = Ember.ContainerView.create({
+    childViews: [ Ember.View.extend() ]
   });
   var view = get(parent, 'childViews').objectAt(0);
 
@@ -26,7 +26,7 @@ test("returns null if the view has no element and parent view has no element", f
 });
 
 test("returns element if you set the value", function() {
-  var view = SC.View.create();
+  var view = Ember.View.create();
   equals(get(view, 'element'), null, 'precond- has no element');
 
   var dom = document.createElement('div');
@@ -37,11 +37,11 @@ test("returns element if you set the value", function() {
 
 var parent, child, parentDom, childDom ;
 
-module("SC.View#element - autodiscovery", {
+module("Ember.View#element - autodiscovery", {
   setup: function() {
 
-    parent = SC.ContainerView.create({
-      childViews: [ SC.View.extend({
+    parent = Ember.ContainerView.create({
+      childViews: [ Ember.View.extend({
         elementId: 'child-view'
       }) ]
     });
@@ -49,7 +49,7 @@ module("SC.View#element - autodiscovery", {
     child = get(parent, 'childViews').objectAt(0);
 
     // setup parent/child dom
-    parentDom = SC.$("<div><div id='child-view'></div></div>")[0];
+    parentDom = Ember.$("<div><div id='child-view'></div></div>")[0];
 
     // set parent element...
     set(parent, 'element', parentDom);

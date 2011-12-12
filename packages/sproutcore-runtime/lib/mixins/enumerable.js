@@ -12,7 +12,7 @@
 // HELPERS
 // 
 
-var get = SC.get, set = SC.set;
+var get = Ember.get, set = Ember.set;
 
 var contexts = [];
 function popCtx() {
@@ -54,12 +54,12 @@ function xform(target, method, params) {
 
   1. You must have a length property.  This property should change whenever
      the number of items in your enumerable object changes.  If you using this
-     with an SC.Object subclass, you should be sure to change the length
+     with an Ember.Object subclass, you should be sure to change the length
      property using set().
 
   2. If you must implement nextObject().  See documentation.
 
-  Once you have these two methods implement, apply the SC.Enumerable mixin
+  Once you have these two methods implement, apply the Ember.Enumerable mixin
   to your class and you will be able to enumerate the contents of your object
   like any other collection.
 
@@ -73,7 +73,7 @@ function xform(target, method, params) {
 
   @since SproutCore 1.0
 */
-SC.Enumerable = SC.Mixin.create( /** @lends SC.Enumerable */ {
+Ember.Enumerable = Ember.Mixin.create( /** @lends Ember.Enumerable */ {
   
   /** @private - compatibility */
   isEnumerable: true,
@@ -109,7 +109,7 @@ SC.Enumerable = SC.Mixin.create( /** @lends SC.Enumerable */ {
     @param context {Object} a context object you can use to maintain state.
     @returns {Object} the next object in the iteration or undefined
   */
-  nextObject: SC.required(Function),
+  nextObject: Ember.required(Function),
 
   /**
     Helper method returns the first object from a collection.  This is usually
@@ -123,9 +123,9 @@ SC.Enumerable = SC.Mixin.create( /** @lends SC.Enumerable */ {
 
     @returns {Object} the object or undefined
   */
-  firstObject: SC.computed(function() {
+  firstObject: Ember.computed(function() {
     if (get(this, 'length')===0) return undefined ;
-    if (SC.Array && SC.Array.detect(this)) return this.objectAt(0); 
+    if (Ember.Array && Ember.Array.detect(this)) return this.objectAt(0); 
 
     // handle generic enumerables
     var context = popCtx(), ret;
@@ -139,10 +139,10 @@ SC.Enumerable = SC.Mixin.create( /** @lends SC.Enumerable */ {
 
     @returns {Object} the object or undefined
   */
-  lastObject: SC.computed(function() {
+  lastObject: Ember.computed(function() {
     var len = get(this, 'length');
     if (len===0) return undefined ;
-    if (SC.Array && SC.Array.detect(this)) {
+    if (Ember.Array && Ember.Array.detect(this)) {
       return this.objectAt(len-1);
     } else {
       var context = popCtx(), idx=0, cur, last = null;
@@ -211,7 +211,7 @@ SC.Enumerable = SC.Mixin.create( /** @lends SC.Enumerable */ {
   /**
     Retrieves the named value on each member object. This is more efficient
     than using one of the wrapper methods defined here. Objects that
-    implement SC.Observable will use the get() method, otherwise the property
+    implement Ember.Observable will use the get() method, otherwise the property
     will be accessed directly.
 
     @param {String} key The key to retrieve
@@ -226,7 +226,7 @@ SC.Enumerable = SC.Mixin.create( /** @lends SC.Enumerable */ {
   /**
     Sets the value on the named property for each member. This is more
     efficient than using other methods defined on this helper. If the object
-    implements SC.Observable, the value will be changed to set(), otherwise
+    implements Ember.Observable, the value will be changed to set(), otherwise
     it will be set directly. null objects are skipped.
 
     @param {String} key The key to set
@@ -565,7 +565,7 @@ SC.Enumerable = SC.Mixin.create( /** @lends SC.Enumerable */ {
     the receiver does not contain the value.
 
     @param {Object} value
-    @returns {SC.Enumerable}
+    @returns {Ember.Enumerable}
   */
   without: function(value) {
     if (!this.contains(value)) return this; // nothing to do
@@ -580,7 +580,7 @@ SC.Enumerable = SC.Mixin.create( /** @lends SC.Enumerable */ {
     Returns a new enumerable that contains only unique values.  The default
     implementation returns an array regardless of the receiver type.
     
-    @returns {SC.Enumerable}
+    @returns {Ember.Enumerable}
   */
   uniq: function() {
     var ret = [];
@@ -595,12 +595,12 @@ SC.Enumerable = SC.Mixin.create( /** @lends SC.Enumerable */ {
     You can observe this property to be notified of changes to the enumerables
     content.
 
-    For plain enumerables, this property is read only.  SC.Array overrides
+    For plain enumerables, this property is read only.  Ember.Array overrides
     this method.
 
-    @property {SC.Array}
+    @property {Ember.Array}
   */
-  '[]': SC.computed(function(key, value) { 
+  '[]': Ember.computed(function(key, value) { 
     return this; 
   }).property().cacheable(),
 
@@ -609,7 +609,7 @@ SC.Enumerable = SC.Mixin.create( /** @lends SC.Enumerable */ {
   // 
   
   /**
-    Registers an enumerable observer.   Must implement SC.EnumerableObserver
+    Registers an enumerable observer.   Must implement Ember.EnumerableObserver
     mixin.
   */
   addEnumerableObserver: function(target, opts) {
@@ -617,10 +617,10 @@ SC.Enumerable = SC.Mixin.create( /** @lends SC.Enumerable */ {
         didChange  = (opts && opts.didChange) || 'enumerableDidChange';
 
     var hasObservers = get(this, 'hasEnumerableObservers');
-    if (!hasObservers) SC.propertyWillChange(this, 'hasEnumerableObservers');
-    SC.addListener(this, '@enumerable:before', target, willChange, xform);
-    SC.addListener(this, '@enumerable:change', target, didChange, xform);
-    if (!hasObservers) SC.propertyDidChange(this, 'hasEnumerableObservers');
+    if (!hasObservers) Ember.propertyWillChange(this, 'hasEnumerableObservers');
+    Ember.addListener(this, '@enumerable:before', target, willChange, xform);
+    Ember.addListener(this, '@enumerable:change', target, didChange, xform);
+    if (!hasObservers) Ember.propertyDidChange(this, 'hasEnumerableObservers');
     return this;
   },
 
@@ -632,10 +632,10 @@ SC.Enumerable = SC.Mixin.create( /** @lends SC.Enumerable */ {
         didChange  = (opts && opts.didChange) || 'enumerableDidChange';
 
     var hasObservers = get(this, 'hasEnumerableObservers');
-    if (hasObservers) SC.propertyWillChange(this, 'hasEnumerableObservers');
-    SC.removeListener(this, '@enumerable:before', target, willChange);
-    SC.removeListener(this, '@enumerable:change', target, didChange);
-    if (hasObservers) SC.propertyDidChange(this, 'hasEnumerableObservers');
+    if (hasObservers) Ember.propertyWillChange(this, 'hasEnumerableObservers');
+    Ember.removeListener(this, '@enumerable:before', target, willChange);
+    Ember.removeListener(this, '@enumerable:change', target, didChange);
+    if (hasObservers) Ember.propertyDidChange(this, 'hasEnumerableObservers');
     return this;
   },
   
@@ -645,8 +645,8 @@ SC.Enumerable = SC.Mixin.create( /** @lends SC.Enumerable */ {
     
     @property {Boolean}
   */
-  hasEnumerableObservers: SC.computed(function() {
-    return SC.hasListeners(this, '@enumerable:change') || SC.hasListeners(this, '@enumerable:before');
+  hasEnumerableObservers: Ember.computed(function() {
+    return Ember.hasListeners(this, '@enumerable:change') || Ember.hasListeners(this, '@enumerable:before');
   }).property().cacheable(),
   
   
@@ -655,15 +655,15 @@ SC.Enumerable = SC.Mixin.create( /** @lends SC.Enumerable */ {
     change.  You can either omit the parameters completely or pass the objects
     to be removed or added if available or just a count.
     
-    @param {SC.Enumerable|Number} removing
+    @param {Ember.Enumerable|Number} removing
       An enumerable of the objects to be removed or the number of items to
       be removed.
       
-    @param {SC.Enumerable|Number} adding
+    @param {Ember.Enumerable|Number} adding
       An enumerable of the objects to be added or the number of items to be
       added.
     
-    @returns {SC.Enumerable} receiver
+    @returns {Ember.Enumerable} receiver
   */
   enumerableContentWillChange: function(removing, adding) {
     
@@ -682,9 +682,9 @@ SC.Enumerable = SC.Mixin.create( /** @lends SC.Enumerable */ {
     if (removing === -1) removing = null;
     if (adding   === -1) adding   = null;
     
-    SC.propertyWillChange(this, '[]');
-    if (hasDelta) SC.propertyWillChange(this, 'length');
-    SC.sendEvent(this, '@enumerable:before', removing, adding);
+    Ember.propertyWillChange(this, '[]');
+    if (hasDelta) Ember.propertyWillChange(this, 'length');
+    Ember.sendEvent(this, '@enumerable:before', removing, adding);
 
     return this;
   },
@@ -728,9 +728,9 @@ SC.Enumerable = SC.Mixin.create( /** @lends SC.Enumerable */ {
     if (removing === -1) removing = null;
     if (adding   === -1) adding   = null;
     
-    SC.sendEvent(this, '@enumerable:change', removing, adding);
-    if (hasDelta) SC.propertyDidChange(this, 'length');
-    SC.propertyDidChange(this, '[]');
+    Ember.sendEvent(this, '@enumerable:change', removing, adding);
+    if (hasDelta) Ember.propertyDidChange(this, 'length');
+    Ember.propertyDidChange(this, '[]');
 
     return this ;
   }

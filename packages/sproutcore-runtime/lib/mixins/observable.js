@@ -4,28 +4,28 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
-var get = SC.get, set = SC.set;
+var get = Ember.get, set = Ember.set;
   
 /**
   @class
 
-  Restores some of the SC 1.x SC.Observable mixin API.  The new property 
-  observing system does not require SC.Observable to be applied anymore.
+  Restores some of the Ember 1.x Ember.Observable mixin API.  The new property 
+  observing system does not require Ember.Observable to be applied anymore.
   Instead, on most browsers you can just access properties directly.  For
-  code that needs to run on IE7 or IE8 you should use SC.get() and SC.set()
+  code that needs to run on IE7 or IE8 you should use Ember.get() and Ember.set()
   instead.
   
-  If you have older code and you want to bring back the older 1.x observable
-  API, you can do so by readding SC.Observable to SC.Object like so:
+  If you have older code and you want to bring back the older SproutCore 1.x observable
+  API, you can do so by readding Ember.Observable to Ember.Object like so:
   
-      SC.Object.reopen(SC.Observable);
+      Ember.Object.reopen(Ember.Observable);
     
   You will then be able to use the traditional get(), set() and other 
   observable methods on your objects.
 
-  @extends SC.Mixin
+  @extends Ember.Mixin
 */
-SC.Observable = SC.Mixin.create(/** @scope SC.Observable.prototype */ {
+Ember.Observable = Ember.Mixin.create(/** @scope Ember.Observable.prototype */ {
 
   /** @private - compatibility */
   isObserverable: true,
@@ -125,7 +125,7 @@ SC.Observable = SC.Mixin.create(/** @scope SC.Observable.prototype */ {
 
     @param {String} key The property to set
     @param {Object} value The value to set or null.
-    @returns {SC.Observable}
+    @returns {Ember.Observable}
   */
   set: function(keyName, value) {
     set(this, keyName, value);
@@ -139,14 +139,14 @@ SC.Observable = SC.Mixin.create(/** @scope SC.Observable.prototype */ {
           record.setProperties({ firstName: 'Charles', lastName: 'Jolley' });
 
     @param {Hash} hash the hash of keys and values to set
-    @returns {SC.Observable}
+    @returns {Ember.Observable}
   */
   setProperties: function(hash) {
-    SC.beginPropertyChanges(this);
+    Ember.beginPropertyChanges(this);
     for(var prop in hash) {
       if (hash.hasOwnProperty(prop)) set(this, prop, hash[prop]);
     }
-    SC.endPropertyChanges(this);
+    Ember.endPropertyChanges(this);
     return this;
   },
 
@@ -160,10 +160,10 @@ SC.Observable = SC.Mixin.create(/** @scope SC.Observable.prototype */ {
     When you are done making changes, call endPropertyChanges() to allow
     notification to resume.
 
-    @returns {SC.Observable}
+    @returns {Ember.Observable}
   */
   beginPropertyChanges: function() {
-    SC.beginPropertyChanges();
+    Ember.beginPropertyChanges();
     return this;
   },
   
@@ -177,10 +177,10 @@ SC.Observable = SC.Mixin.create(/** @scope SC.Observable.prototype */ {
     notifications. When you are done making changes, call this method to allow
     notification to resume.
 
-    @returns {SC.Observable}
+    @returns {Ember.Observable}
   */
   endPropertyChanges: function() {
-    SC.endPropertyChanges();
+    Ember.endPropertyChanges();
     return this;
   },
   
@@ -198,10 +198,10 @@ SC.Observable = SC.Mixin.create(/** @scope SC.Observable.prototype */ {
     and cause notifications to be delivered more often than you would like.
 
     @param {String} key The property key that is about to change.
-    @returns {SC.Observable}
+    @returns {Ember.Observable}
   */
   propertyWillChange: function(keyName){
-    SC.propertyWillChange(this, keyName);
+    Ember.propertyWillChange(this, keyName);
     return this;
   },
   
@@ -221,10 +221,10 @@ SC.Observable = SC.Mixin.create(/** @scope SC.Observable.prototype */ {
     @param {String} key The property key that has just changed.
     @param {Object} value The new value of the key. May be null.
     @param {Boolean} _keepCache Private property
-    @returns {SC.Observable}
+    @returns {Ember.Observable}
   */
   propertyDidChange: function(keyName) {
-    SC.propertyDidChange(this, keyName);
+    Ember.propertyDidChange(this, keyName);
     return this;
   },
   
@@ -275,10 +275,10 @@ SC.Observable = SC.Mixin.create(/** @scope SC.Observable.prototype */ {
     @param {String} key The key to observer
     @param {Object} target The target object to invoke
     @param {String|Function} method The method to invoke.
-    @returns {SC.Object} self
+    @returns {Ember.Object} self
   */
   addObserver: function(key, target, method) {
-    SC.addObserver(this, key, target, method);
+    Ember.addObserver(this, key, target, method);
   },
   
   /**
@@ -289,10 +289,10 @@ SC.Observable = SC.Mixin.create(/** @scope SC.Observable.prototype */ {
     @param {String} key The key to observer
     @param {Object} target The target object to invoke
     @param {String|Function} method The method to invoke.
-    @returns {SC.Observable} reciever
+    @returns {Ember.Observable} reciever
   */
   removeObserver: function(key, target, method) {
-    SC.removeObserver(this, key, target, method);
+    Ember.removeObserver(this, key, target, method);
   },
   
   /**
@@ -305,7 +305,7 @@ SC.Observable = SC.Mixin.create(/** @scope SC.Observable.prototype */ {
     @returns {Boolean}
   */
   hasObserverFor: function(key) {
-    return SC.hasListeners(this, key+':change');
+    return Ember.hasListeners(this, key+':change');
   },
 
   unknownProperty: function(key) {
@@ -317,11 +317,11 @@ SC.Observable = SC.Mixin.create(/** @scope SC.Observable.prototype */ {
   },
   
   getPath: function(path) {
-    return SC.getPath(this, path);
+    return Ember.getPath(this, path);
   },
   
   setPath: function(path, value) {
-    SC.setPath(this, path, value);
+    Ember.setPath(this, path, value);
     return this;
   },
   
@@ -343,7 +343,7 @@ SC.Observable = SC.Mixin.create(/** @scope SC.Observable.prototype */ {
   },
   
   observersForKey: function(keyName) {
-    return SC.observersFor(this, keyName);
+    return Ember.observersFor(this, keyName);
   }
     
 });

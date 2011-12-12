@@ -9,12 +9,12 @@ var PartialMixin, FinalMixin, obj;
 
 module('Module.required', {
   setup: function() {
-    PartialMixin = SC.Mixin.create({
-      foo: SC.required(),
+    PartialMixin = Ember.Mixin.create({
+      foo: Ember.required(),
       bar: 'BAR'
     });
   
-    FinalMixin = SC.Mixin.create({
+    FinalMixin = Ember.Mixin.create({
       foo: 'FOO'
     });
   
@@ -38,7 +38,7 @@ test('applying a mixin with unmet requirement using applyPartial', function() {
   
   // applying regularly to object should throw
   raises(function() {
-    SC.Mixin.create({ bar: 'BAR' }).apply(obj);
+    Ember.Mixin.create({ bar: 'BAR' }).apply(obj);
   }, Error, 'should raise error for unmet requirement');
   
 });
@@ -46,26 +46,26 @@ test('applying a mixin with unmet requirement using applyPartial', function() {
 test('applying a mixin to meet requirement', function() {
   FinalMixin.apply(obj);
   PartialMixin.apply(obj);
-  equals(SC.get(obj, 'foo'), 'FOO', 'should now be defined');
+  equals(Ember.get(obj, 'foo'), 'FOO', 'should now be defined');
 });
 
 test('combined mixins to meet requirement', function() {
-  SC.Mixin.create(PartialMixin, FinalMixin).apply(obj);
-  equals(SC.get(obj, 'foo'), 'FOO', 'should now be defined');
+  Ember.Mixin.create(PartialMixin, FinalMixin).apply(obj);
+  equals(Ember.get(obj, 'foo'), 'FOO', 'should now be defined');
 });
 
 test('merged mixin', function() {
-  SC.Mixin.create(PartialMixin, { foo: 'FOO' }).apply(obj);
+  Ember.Mixin.create(PartialMixin, { foo: 'FOO' }).apply(obj);
 });
 
 test('define property on source object', function() {
   obj.foo = 'FOO';
   PartialMixin.apply(obj);
-  equals(SC.get(obj, 'foo'), 'FOO', 'should now be defined');
+  equals(Ember.get(obj, 'foo'), 'FOO', 'should now be defined');
 });
 
 test('using apply', function() {
-  SC.mixin(obj, PartialMixin, { foo: 'FOO' });
-  equals(SC.get(obj, 'foo'), 'FOO', 'should now be defined');
+  Ember.mixin(obj, PartialMixin, { foo: 'FOO' });
+  equals(Ember.get(obj, 'foo'), 'FOO', 'should now be defined');
 });
 

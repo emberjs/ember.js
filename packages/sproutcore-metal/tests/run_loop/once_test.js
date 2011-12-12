@@ -9,11 +9,11 @@ module('system/run_loop/once_test');
 test('calling invokeOnce more than once invokes only once', function() {
 
   var count = 0;
-  SC.run(function() {
+  Ember.run(function() {
     var F = function() { count++; };
-    SC.run.once(F);
-    SC.run.once(F);
-    SC.run.once(F);
+    Ember.run.once(F);
+    Ember.run.once(F);
+    Ember.run.once(F);
   });
   
   equals(count, 1, 'should have invoked once');
@@ -22,12 +22,12 @@ test('calling invokeOnce more than once invokes only once', function() {
 test('should differentiate based on target', function() {
 
   var A = { count: 0 }, B = { count: 0 };
-  SC.run(function() {
+  Ember.run(function() {
     var F = function() { this.count++; };
-    SC.run.once(A, F);
-    SC.run.once(B, F);
-    SC.run.once(A, F);
-    SC.run.once(B, F);
+    Ember.run.once(A, F);
+    Ember.run.once(B, F);
+    Ember.run.once(A, F);
+    Ember.run.once(B, F);
   });
   
   equals(A.count, 1, 'should have invoked once on A');
@@ -38,12 +38,12 @@ test('should differentiate based on target', function() {
 test('should ignore other arguments - replacing previous ones', function() {
 
   var A = { count: 0 }, B = { count: 0 };
-  SC.run(function() {
+  Ember.run(function() {
     var F = function(amt) { this.count += amt; };
-    SC.run.once(A, F, 10);
-    SC.run.once(B, F, 20);
-    SC.run.once(A, F, 30);
-    SC.run.once(B, F, 40);
+    Ember.run.once(A, F, 10);
+    Ember.run.once(B, F, 20);
+    Ember.run.once(A, F, 30);
+    Ember.run.once(B, F, 40);
   });
   
   equals(A.count, 30, 'should have invoked once on A');
@@ -52,9 +52,9 @@ test('should ignore other arguments - replacing previous ones', function() {
 
 test('should be inside of a runloop when running', function() {
 
-  SC.run(function() {
-    SC.run.once(function() {
-      ok(!!SC.run.currentRunLoop, 'should have a runloop');
+  Ember.run(function() {
+    Ember.run.once(function() {
+      ok(!!Ember.run.currentRunLoop, 'should have a runloop');
     });
   });
 });

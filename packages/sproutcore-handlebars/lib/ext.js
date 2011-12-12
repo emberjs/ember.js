@@ -11,23 +11,23 @@
   Prepares the Handlebars templating library for use inside SproutCore's view
   system.
 
-  The SC.Handlebars object is the standard Handlebars library, extended to use
+  The Ember.Handlebars object is the standard Handlebars library, extended to use
   SproutCore's get() method instead of direct property access, which allows
   computed properties to be used inside templates.
 
-  To use SC.Handlebars, call SC.Handlebars.compile().  This will return a
+  To use Ember.Handlebars, call Ember.Handlebars.compile().  This will return a
   function that you can call multiple times, with a context object as the first
   parameter:
 
-      var template = SC.Handlebars.compile("my {{cool}} template");
+      var template = Ember.Handlebars.compile("my {{cool}} template");
       var result = template({
         cool: "awesome"
       });
 
       console.log(result); // prints "my awesome template"
 
-  Note that you won't usually need to use SC.Handlebars yourself. Instead, use
-  SC.View, which takes care of integration into the view layer for you.
+  Note that you won't usually need to use Ember.Handlebars yourself. Instead, use
+  Ember.View, which takes care of integration into the view layer for you.
 */
 
 require("sproutcore-views/system/render_buffer");
@@ -38,24 +38,24 @@ require("sproutcore-views/system/render_buffer");
   SproutCore Handlebars is an extension to Handlebars that makes the built-in
   Handlebars helpers and {{mustaches}} binding-aware.
 */
-SC.Handlebars = SC.create(Handlebars);
+Ember.Handlebars = Ember.create(Handlebars);
 
-SC.Handlebars.helpers = SC.create(Handlebars.helpers);
+Ember.Handlebars.helpers = Ember.create(Handlebars.helpers);
 
 /**
   Override the the opcode compiler and JavaScript compiler for Handlebars.
 */
-SC.Handlebars.Compiler = function() {};
-SC.Handlebars.Compiler.prototype = SC.create(Handlebars.Compiler.prototype);
-SC.Handlebars.Compiler.prototype.compiler = SC.Handlebars.Compiler;
+Ember.Handlebars.Compiler = function() {};
+Ember.Handlebars.Compiler.prototype = Ember.create(Handlebars.Compiler.prototype);
+Ember.Handlebars.Compiler.prototype.compiler = Ember.Handlebars.Compiler;
 
-SC.Handlebars.JavaScriptCompiler = function() {};
-SC.Handlebars.JavaScriptCompiler.prototype = SC.create(Handlebars.JavaScriptCompiler.prototype);
-SC.Handlebars.JavaScriptCompiler.prototype.compiler = SC.Handlebars.JavaScriptCompiler;
-SC.Handlebars.JavaScriptCompiler.prototype.namespace = "SC.Handlebars";
+Ember.Handlebars.JavaScriptCompiler = function() {};
+Ember.Handlebars.JavaScriptCompiler.prototype = Ember.create(Handlebars.JavaScriptCompiler.prototype);
+Ember.Handlebars.JavaScriptCompiler.prototype.compiler = Ember.Handlebars.JavaScriptCompiler;
+Ember.Handlebars.JavaScriptCompiler.prototype.namespace = "Ember.Handlebars";
 
 
-SC.Handlebars.JavaScriptCompiler.prototype.initializeBuffer = function() {
+Ember.Handlebars.JavaScriptCompiler.prototype.initializeBuffer = function() {
   return "''";
 };
 
@@ -66,7 +66,7 @@ SC.Handlebars.JavaScriptCompiler.prototype.initializeBuffer = function() {
 
   @private
 */
-SC.Handlebars.JavaScriptCompiler.prototype.appendToBuffer = function(string) {
+Ember.Handlebars.JavaScriptCompiler.prototype.appendToBuffer = function(string) {
   return "data.buffer.push("+string+");";
 };
 
@@ -77,7 +77,7 @@ SC.Handlebars.JavaScriptCompiler.prototype.appendToBuffer = function(string) {
 
   @private
 */
-SC.Handlebars.Compiler.prototype.mustache = function(mustache) {
+Ember.Handlebars.Compiler.prototype.mustache = function(mustache) {
   if (mustache.params.length || mustache.hash) {
     return Handlebars.Compiler.prototype.mustache.call(this, mustache);
   } else {
@@ -101,11 +101,11 @@ SC.Handlebars.Compiler.prototype.mustache = function(mustache) {
 
   @param {String} string The template to compile
 */
-SC.Handlebars.compile = function(string) {
+Ember.Handlebars.compile = function(string) {
   var ast = Handlebars.parse(string);
   var options = { data: true, stringParams: true };
-  var environment = new SC.Handlebars.Compiler().compile(ast, options);
-  var templateSpec = new SC.Handlebars.JavaScriptCompiler().compile(environment, options, undefined, true);
+  var environment = new Ember.Handlebars.Compiler().compile(ast, options);
+  var templateSpec = new Ember.Handlebars.JavaScriptCompiler().compile(environment, options, undefined, true);
 
   return Handlebars.template(templateSpec);
 };
@@ -122,13 +122,13 @@ SC.Handlebars.compile = function(string) {
   @param {String} path
   @param {Hash} options
 */
-SC.Handlebars.registerHelper('helperMissing', function(path, options) {
+Ember.Handlebars.registerHelper('helperMissing', function(path, options) {
   var error, view = "";
 
   error = "%@ Handlebars error: Could not find property '%@' on object %@.";
   if (options.data){
     view = options.data.view;
   }
-  throw new SC.Error(SC.String.fmt(error, [view, path, this]));
+  throw new Ember.Error(Ember.String.fmt(error, [view, path, this]));
 });
 

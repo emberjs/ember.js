@@ -7,15 +7,15 @@
 
 require('sproutcore-runtime/~tests/props_helper');
 
-module('SC.Object observer');
+module('Ember.Object observer');
 
 testBoth('observer on class', function(get, set) {
 
-  var MyClass = SC.Object.extend({
+  var MyClass = Ember.Object.extend({
     
     count: 0,
     
-    foo: SC.observer(function() {
+    foo: Ember.observer(function() {
       set(this, 'count', get(this, 'count')+1);
     }, 'bar')
 
@@ -31,18 +31,18 @@ testBoth('observer on class', function(get, set) {
 
 testBoth('observer on subclass', function(get, set) {
 
-  var MyClass = SC.Object.extend({
+  var MyClass = Ember.Object.extend({
     
     count: 0,
     
-    foo: SC.observer(function() {
+    foo: Ember.observer(function() {
       set(this, 'count', get(this, 'count')+1);
     }, 'bar')
 
   });
 
   var Subclass = MyClass.extend({
-    foo: SC.observer(function() {
+    foo: Ember.observer(function() {
       set(this, 'count', get(this, 'count')+1);
     }, 'baz')
   });
@@ -60,11 +60,11 @@ testBoth('observer on subclass', function(get, set) {
 
 testBoth('observer on instance', function(get, set) {
 
-  var obj = SC.Object.create({
+  var obj = Ember.Object.create({
     
     count: 0,
     
-    foo: SC.observer(function() {
+    foo: Ember.observer(function() {
       set(this, 'count', get(this, 'count')+1);
     }, 'bar')
 
@@ -79,18 +79,18 @@ testBoth('observer on instance', function(get, set) {
 
 testBoth('observer on instance overridding class', function(get, set) {
 
-  var MyClass = SC.Object.extend({
+  var MyClass = Ember.Object.extend({
     
     count: 0,
     
-    foo: SC.observer(function() {
+    foo: Ember.observer(function() {
       set(this, 'count', get(this, 'count')+1);
     }, 'bar')
 
   });
 
   var obj = MyClass.create({
-    foo: SC.observer(function() {
+    foo: Ember.observer(function() {
       set(this, 'count', get(this, 'count')+1);
     }, 'baz') // <-- change property we observe
   });
@@ -107,18 +107,18 @@ testBoth('observer on instance overridding class', function(get, set) {
 
 testBoth('observer should not fire after being destroyed', function(get, set) {
 
-  var obj = SC.Object.create({
+  var obj = Ember.Object.create({
     count: 0,
-    foo: SC.observer(function() {
+    foo: Ember.observer(function() {
       set(this, 'count', get(this, 'count')+1);
     }, 'bar')
   });
 
   equals(get(obj, 'count'), 0, 'precond - should not invoke observer immediately');
 
-  SC.run(function() { obj.destroy(); });
+  Ember.run(function() { obj.destroy(); });
 
-  if (SC.platform.hasPropertyAccessors) {
+  if (Ember.platform.hasPropertyAccessors) {
     raises(function() {
       set(obj, 'bar', "BAZ");
     }, Error, "raises error when setting a property");
@@ -135,10 +135,10 @@ testBoth('observer should not fire after being destroyed', function(get, set) {
 
 testBoth('chain observer on class', function(get, set) {
 
-  var MyClass = SC.Object.extend({
+  var MyClass = Ember.Object.extend({
     count: 0,
     
-    foo: SC.observer(function() {
+    foo: Ember.observer(function() {
       set(this, 'count', get(this, 'count')+1);
     }, 'bar.baz')
   });
@@ -166,10 +166,10 @@ testBoth('chain observer on class', function(get, set) {
 
 testBoth('chain observer on class', function(get, set) {
 
-  var MyClass = SC.Object.extend({
+  var MyClass = Ember.Object.extend({
     count: 0,
     
-    foo: SC.observer(function() {
+    foo: Ember.observer(function() {
       set(this, 'count', get(this, 'count')+1);
     }, 'bar.baz')
   });
@@ -182,7 +182,7 @@ testBoth('chain observer on class', function(get, set) {
     bar: { baz: 'biff2' },
     bar2: { baz: 'biff3' },
     
-    foo: SC.observer(function() {
+    foo: Ember.observer(function() {
       set(this, 'count', get(this, 'count')+1);
     }, 'bar2.baz')
   });

@@ -6,11 +6,11 @@
 
 require('sproutcore-runtime/~tests/suites/enumerable');
 
-var suite = SC.EnumerableTests;
+var suite = Ember.EnumerableTests;
 
 suite.module('firstObject');
 
 suite.test('firstObject return first item in enumerable', function() {
   var obj = this.newObject();
-  equals(SC.get(obj, 'firstObject'), this.toArray(obj)[0]);
+  equals(Ember.get(obj, 'firstObject'), this.toArray(obj)[0]);
 });

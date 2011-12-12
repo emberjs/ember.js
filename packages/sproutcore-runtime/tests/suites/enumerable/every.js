@@ -7,7 +7,7 @@
 require('sproutcore-runtime/~tests/suites/enumerable');
 require('sproutcore-runtime/mixins/comparable');
 
-var suite = SC.EnumerableTests;
+var suite = Ember.EnumerableTests;
 
 // ..........................................................
 // every()
@@ -47,7 +47,7 @@ suite.module('everyProperty');
 suite.test('should return true of every property matches', function() {
   var obj = this.newObject([
     { foo: 'foo', bar: 'BAZ' }, 
-    SC.Object.create({ foo: 'foo', bar: 'bar' })
+    Ember.Object.create({ foo: 'foo', bar: 'bar' })
   ]);
   
   equals(obj.everyProperty('foo', 'foo'), true, 'everyProperty(foo)');
@@ -57,7 +57,7 @@ suite.test('should return true of every property matches', function() {
 suite.test('should return true of every property is true', function() {
   var obj = this.newObject([
     { foo: 'foo', bar: true }, 
-    SC.Object.create({ foo: 'bar', bar: false })
+    Ember.Object.create({ foo: 'bar', bar: false })
   ]);
 
   // different values - all eval to true

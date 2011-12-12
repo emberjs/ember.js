@@ -7,7 +7,7 @@
 
 test('without should create a new mixin excluding named properties', function() {
 
-  var MixinA = SC.Mixin.create({
+  var MixinA = Ember.Mixin.create({
     foo: 'FOO',
     bar: 'BAR'
   });

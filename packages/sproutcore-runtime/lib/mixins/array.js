@@ -13,7 +13,7 @@ require('sproutcore-runtime/mixins/enumerable');
 // HELPERS
 // 
 
-var get = SC.get, set = SC.set, meta = SC.meta;
+var get = Ember.get, set = Ember.set, meta = Ember.meta;
 
 function none(obj) { return obj===null || obj===undefined; }
 
@@ -31,7 +31,7 @@ function xform(target, method, params) {
   picked up by the Array class as well as other controllers, etc. that want to
   appear to be arrays.
 
-  Unlike SC.Enumerable, this mixin defines methods specifically for
+  Unlike Ember.Enumerable, this mixin defines methods specifically for
   collections that provide index-ordered access to their contents.  When you
   are designing code that needs to accept any kind of Array-like object, you
   should use these methods instead of Array primitives because these will
@@ -47,16 +47,16 @@ function xform(target, method, params) {
   membership if an array changes by changing the syntax of the property to
   .observes('*myProperty.[]') .
 
-  To support SC.Array in your own class, you must override two
+  To support Ember.Array in your own class, you must override two
   primitives to use it: replace() and objectAt().
 
-  Note that the SC.Array mixin also incorporates the SC.Enumerable mixin.  All
-  SC.Array-like objects are also enumerable.
+  Note that the Ember.Array mixin also incorporates the Ember.Enumerable mixin.  All
+  Ember.Array-like objects are also enumerable.
 
-  @extends SC.Enumerable
+  @extends Ember.Enumerable
   @since SproutCore 0.9.0
 */
-SC.Array = SC.Mixin.create(SC.Enumerable, /** @scope SC.Array.prototype */ {
+Ember.Array = Ember.Mixin.create(Ember.Enumerable, /** @scope Ember.Array.prototype */ {
 
   /** @private - compatibility */
   isSCArray: true,
@@ -67,10 +67,10 @@ SC.Array = SC.Mixin.create(SC.Enumerable, /** @scope SC.Array.prototype */ {
     Your array must support the length property.  Your replace methods should
     set this property whenever it changes.
   */
-  length: SC.required(),
+  length: Ember.required(),
 
   /**
-    This is one of the primitives you must implement to support SC.Array.
+    This is one of the primitives you must implement to support Ember.Array.
     Returns the object at the named index.  If your object supports retrieving
     the value of an array item using get() (i.e. myArray.get(0)), then you do
     not need to implement this method yourself.
@@ -84,7 +84,7 @@ SC.Array = SC.Mixin.create(SC.Enumerable, /** @scope SC.Array.prototype */ {
     return get(this, idx);
   },
 
-  /** @private (nodoc) - overrides SC.Enumerable version */
+  /** @private (nodoc) - overrides Ember.Enumerable version */
   nextObject: function(idx) {
     return this.objectAt(idx);
   },
@@ -96,9 +96,9 @@ SC.Array = SC.Mixin.create(SC.Enumerable, /** @scope SC.Array.prototype */ {
     this property, it will return this.  If you set this property it a new
     array, it will replace the current content.
 
-    This property overrides the default property defined in SC.Enumerable.
+    This property overrides the default property defined in Ember.Enumerable.
   */
-  '[]': SC.computed(function(key, value) {
+  '[]': Ember.computed(function(key, value) {
     if (value !== undefined) this.replace(0, get(this, 'length'), value) ;
     return this ;
   }).property().cacheable(),
@@ -108,7 +108,7 @@ SC.Array = SC.Mixin.create(SC.Enumerable, /** @scope SC.Array.prototype */ {
     return this.indexOf(obj) >= 0;
   },
 
-  // Add any extra methods to SC.Array that are native to the built-in Array.
+  // Add any extra methods to Ember.Array that are native to the built-in Array.
   /**
     Returns a new array that is a slice of the receiver.  This implementation
     uses the observable array methods to retrieve the objects for the new
@@ -196,17 +196,17 @@ SC.Array = SC.Mixin.create(SC.Enumerable, /** @scope SC.Array.prototype */ {
       Optional hash of configuration options including willChange, didChange,
       and a context option.
       
-    @returns {SC.Array} receiver
+    @returns {Ember.Array} receiver
   */
   addArrayObserver: function(target, opts) {
     var willChange = (opts && opts.willChange) || 'arrayWillChange',
         didChange  = (opts && opts.didChange) || 'arrayDidChange';
 
     var hasObservers = get(this, 'hasArrayObservers');
-    if (!hasObservers) SC.propertyWillChange(this, 'hasArrayObservers');
-    SC.addListener(this, '@array:before', target, willChange, xform);
-    SC.addListener(this, '@array:change', target, didChange, xform);
-    if (!hasObservers) SC.propertyDidChange(this, 'hasArrayObservers');
+    if (!hasObservers) Ember.propertyWillChange(this, 'hasArrayObservers');
+    Ember.addListener(this, '@array:before', target, willChange, xform);
+    Ember.addListener(this, '@array:change', target, didChange, xform);
+    if (!hasObservers) Ember.propertyDidChange(this, 'hasArrayObservers');
     return this;
   },
   
@@ -218,17 +218,17 @@ SC.Array = SC.Mixin.create(SC.Enumerable, /** @scope SC.Array.prototype */ {
     @param {Object} target
       The object observing the array.
     
-    @returns {SC.Array} receiver
+    @returns {Ember.Array} receiver
   */
   removeArrayObserver: function(target, opts) {
     var willChange = (opts && opts.willChange) || 'arrayWillChange',
         didChange  = (opts && opts.didChange) || 'arrayDidChange';
 
     var hasObservers = get(this, 'hasArrayObservers');
-    if (hasObservers) SC.propertyWillChange(this, 'hasArrayObservers');
-    SC.removeListener(this, '@array:before', target, willChange, xform);
-    SC.removeListener(this, '@array:change', target, didChange, xform);
-    if (hasObservers) SC.propertyDidChange(this, 'hasArrayObservers');
+    if (hasObservers) Ember.propertyWillChange(this, 'hasArrayObservers');
+    Ember.removeListener(this, '@array:before', target, willChange, xform);
+    Ember.removeListener(this, '@array:change', target, didChange, xform);
+    if (hasObservers) Ember.propertyDidChange(this, 'hasArrayObservers');
     return this;
   },
   
@@ -238,12 +238,12 @@ SC.Array = SC.Mixin.create(SC.Enumerable, /** @scope SC.Array.prototype */ {
     
     @property {Boolean}
   */
-  hasArrayObservers: SC.computed(function() {
-    return SC.hasListeners(this, '@array:change') || SC.hasListeners(this, '@array:before');
+  hasArrayObservers: Ember.computed(function() {
+    return Ember.hasListeners(this, '@array:change') || Ember.hasListeners(this, '@array:before');
   }).property().cacheable(),
   
   /**
-    If you are implementing an object that supports SC.Array, call this 
+    If you are implementing an object that supports Ember.Array, call this 
     method just before the array content changes to notify any observers and
     invalidate any related properties.  Pass the starting index of the change
     as well as a delta of the amounts to change.
@@ -257,7 +257,7 @@ SC.Array = SC.Mixin.create(SC.Enumerable, /** @scope SC.Array.prototype */ {
     @param {Number} addAmt
       The number of items that will be added.  If you pass null assumes 0.
       
-    @returns {SC.Array} receiver
+    @returns {Ember.Array} receiver
   */
   arrayContentWillChange: function(startIdx, removeAmt, addAmt) {
 
@@ -270,7 +270,7 @@ SC.Array = SC.Mixin.create(SC.Enumerable, /** @scope SC.Array.prototype */ {
       if (!addAmt) addAmt=0;
     }
 
-    SC.sendEvent(this, '@array:before', startIdx, removeAmt, addAmt);
+    Ember.sendEvent(this, '@array:before', startIdx, removeAmt, addAmt);
 
     var removing, lim;
     if (startIdx>=0 && removeAmt>=0 && get(this, 'hasEnumerableObservers')) {
@@ -284,7 +284,7 @@ SC.Array = SC.Mixin.create(SC.Enumerable, /** @scope SC.Array.prototype */ {
     this.enumerableContentWillChange(removing, addAmt);
 
     // Make sure the @each proxy is set up if anyone is observing @each
-    if (SC.isWatching(this, '@each')) { get(this, '@each'); }
+    if (Ember.isWatching(this, '@each')) { get(this, '@each'); }
     return this;
   },
   
@@ -309,7 +309,7 @@ SC.Array = SC.Mixin.create(SC.Enumerable, /** @scope SC.Array.prototype */ {
     }
 
     this.enumerableContentDidChange(removeAmt, adding);
-    SC.sendEvent(this, '@array:change', startIdx, removeAmt, addAmt);
+    Ember.sendEvent(this, '@array:change', startIdx, removeAmt, addAmt);
     return this;
   },
   
@@ -323,8 +323,8 @@ SC.Array = SC.Mixin.create(SC.Enumerable, /** @scope SC.Array.prototype */ {
     return an enumerable that maps automatically to the named key on the 
     member objects.
   */
-  '@each': SC.computed(function() {
-    if (!this.__each) this.__each = new SC.EachProxy(this);
+  '@each': Ember.computed(function() {
+    if (!this.__each) this.__each = new Ember.EachProxy(this);
     return this.__each;
   }).property().cacheable()
   

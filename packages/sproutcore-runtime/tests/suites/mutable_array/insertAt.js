@@ -7,7 +7,7 @@
 
 require('sproutcore-runtime/~tests/suites/mutable_array');
 
-var suite = SC.MutableArrayTests;
+var suite = Ember.MutableArrayTests;
 
 suite.module('insertAt');
 
@@ -21,7 +21,7 @@ suite.test("[].insertAt(0, X) => [X] + notify", function() {
   obj.insertAt(0, after[0]);
 
   same(this.toArray(obj), after, 'post item results');
-  equals(SC.get(obj, 'length'), after.length, 'length');
+  equals(Ember.get(obj, 'length'), after.length, 'length');
 
   if (observer.isEnabled) {
     equals(observer.validate('[]'), true, 'should have notified []');
@@ -48,7 +48,7 @@ suite.test("[A].insertAt(0, X) => [X,A] + notify", function() {
   obj.insertAt(0, item);
 
   same(this.toArray(obj), after, 'post item results');
-  equals(SC.get(obj, 'length'), after.length, 'length');
+  equals(Ember.get(obj, 'length'), after.length, 'length');
 
   if (observer.isEnabled) {
     equals(observer.validate('[]'), true, 'should have notified []');
@@ -68,7 +68,7 @@ suite.test("[A].insertAt(1, X) => [A,X] + notify", function() {
   obj.insertAt(1, item);
 
   same(this.toArray(obj), after, 'post item results');
-  equals(SC.get(obj, 'length'), after.length, 'length');
+  equals(Ember.get(obj, 'length'), after.length, 'length');
 
   if (observer.isEnabled) {
     equals(observer.validate('[]'), true, 'should have notified []');
@@ -95,7 +95,7 @@ suite.test("[A,B,C].insertAt(0,X) => [X,A,B,C] + notify", function() {
   obj.insertAt(0, item);
 
   same(this.toArray(obj), after, 'post item results');
-  equals(SC.get(obj, 'length'), after.length, 'length');
+  equals(Ember.get(obj, 'length'), after.length, 'length');
 
   if (observer.isEnabled) {
     equals(observer.validate('[]'), true, 'should have notified []');
@@ -115,7 +115,7 @@ suite.test("[A,B,C].insertAt(1,X) => [A,X,B,C] + notify", function() {
   obj.insertAt(1, item);
 
   same(this.toArray(obj), after, 'post item results');
-  equals(SC.get(obj, 'length'), after.length, 'length');
+  equals(Ember.get(obj, 'length'), after.length, 'length');
 
   if (observer.isEnabled) {
     equals(observer.validate('[]'), true, 'should have notified []');
@@ -135,7 +135,7 @@ suite.test("[A,B,C].insertAt(3,X) => [A,B,C,X] + notify", function() {
   obj.insertAt(3, item);
 
   same(this.toArray(obj), after, 'post item results');
-  equals(SC.get(obj, 'length'), after.length, 'length');
+  equals(Ember.get(obj, 'length'), after.length, 'length');
 
   if (observer.isEnabled) {
     equals(observer.validate('[]'), true, 'should have notified []');

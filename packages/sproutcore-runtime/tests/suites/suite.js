@@ -21,7 +21,7 @@ require('sproutcore-runtime/system/object');
   ## Defining a Callback API
   
   To define the callback API, just extend this class and add your properties
-  or methods that must be provided.  Use SC.required() placeholders for
+  or methods that must be provided.  Use Ember.required() placeholders for
   any properties that implementors must define themselves.
   
   ## Defining Unit Tests
@@ -36,18 +36,18 @@ require('sproutcore-runtime/system/object');
   define any required methods.  Then call run() on the new subclass.  This
   will create an instance of your class and then defining the unit tests.
   
-  @extends SC.Object
+  @extends Ember.Object
   @private
 */
-SC.Suite = SC.Object.extend(
-  /** @scope SC.Suite.prototype */ {
+Ember.Suite = Ember.Object.extend(
+  /** @scope Ember.Suite.prototype */ {
   
   /**
     Define a name for these tests - all modules are prefixed w/ it.
     
     @property {String}
   */
-  name: SC.required(String),
+  name: Ember.required(String),
   
   /**
     Invoked to actually run the test - overridden by mixins
@@ -56,7 +56,7 @@ SC.Suite = SC.Object.extend(
 
 });
 
-SC.Suite.reopenClass({
+Ember.Suite.reopenClass({
   
   plan: null,
   
@@ -71,7 +71,7 @@ SC.Suite.reopenClass({
     this.reopen({
       run: function() {
         this._super();
-        var title = SC.get(this, 'name')+': '+desc, ctx = this;
+        var title = Ember.get(this, 'name')+': '+desc, ctx = this;
         module(title, {
           setup: function() {
             if (setup) setup.call(ctx);
@@ -98,8 +98,8 @@ SC.Suite.reopenClass({
   
   // convert to guids to minimize logging.
   same: function(actual, exp, message) {
-    actual = (actual && actual.map) ? actual.map(function(x) { return SC.guidFor(x); }) : actual;
-    exp = (exp && exp.map) ? exp.map(function(x) { return SC.guidFor(x); }) : exp;
+    actual = (actual && actual.map) ? actual.map(function(x) { return Ember.guidFor(x); }) : actual;
+    exp = (exp && exp.map) ? exp.map(function(x) { return Ember.guidFor(x); }) : exp;
     return same(actual, exp, message);
   },
   

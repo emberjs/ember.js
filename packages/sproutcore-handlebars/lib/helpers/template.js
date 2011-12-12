@@ -16,22 +16,22 @@ require('sproutcore-handlebars/ext');
         Karma: <em>{{karma}}</em>
       </script>
 
-  This helper looks for templates in the global SC.TEMPLATES hash. If you
+  This helper looks for templates in the global Ember.TEMPLATES hash. If you
   add <script> tags to your page with the `data-template-name` attribute set,
   they will be compiled and placed in this hash automatically.
 
   You can also manually register templates by adding them to the hash:
 
-      SC.TEMPLATES["my_cool_template"] = SC.Handlebars.compile('<b>{{user}}</b>');
+      Ember.TEMPLATES["my_cool_template"] = Ember.Handlebars.compile('<b>{{user}}</b>');
 
   @name Handlebars.helpers.template
   @param {String} templateName the template to render
 */
 
-SC.Handlebars.registerHelper('template', function(name, options) {
-  var template = SC.TEMPLATES[name];
+Ember.Handlebars.registerHelper('template', function(name, options) {
+  var template = Ember.TEMPLATES[name];
 
   sc_assert("Unable to find template with name '"+name+"'.", !!template);
 
-  SC.TEMPLATES[name](this, { data: options.data });
+  Ember.TEMPLATES[name](this, { data: options.data });
 });

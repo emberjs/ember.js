@@ -19,10 +19,10 @@ var a_map = Array.prototype.map;
 var EMPTY_META = {}; // dummy for non-writable meta
 var META_SKIP = { __scproto__: true, __sc_count__: true };
 
-var o_create = SC.platform.create;
+var o_create = Ember.platform.create;
 
 function meta(obj, writable) {
-  var m = SC.meta(obj, writable!==false), ret = m.mixins;
+  var m = Ember.meta(obj, writable!==false), ret = m.mixins;
   if (writable===false) return ret || EMPTY_META;
 
   if (!ret) {
@@ -67,10 +67,10 @@ function mergeMixins(mixins, m, descs, values, base) {
   for(idx=0;idx<len;idx++) {
 
     mixin = mixins[idx];
-    if (!mixin) throw new Error('Null value found in SC.mixin()');
+    if (!mixin) throw new Error('Null value found in Ember.mixin()');
 
     if (mixin instanceof Mixin) {
-      guid = SC.guidFor(mixin);
+      guid = Ember.guidFor(mixin);
       if (m[guid]) continue;
       m[guid] = mixin;
       props = mixin.properties;
@@ -89,7 +89,7 @@ function mergeMixins(mixins, m, descs, values, base) {
       for (key in props) {
         if (!props.hasOwnProperty(key)) continue;
         value = props[key];
-        if (value instanceof SC.Descriptor) {
+        if (value instanceof Ember.Descriptor) {
           if (value === REQUIRED && descs[key]) { continue; }
 
           descs[key]  = value;
@@ -98,21 +98,21 @@ function mergeMixins(mixins, m, descs, values, base) {
 
           // impl super if needed...
           if (isMethod(value)) {
-            ovalue = (descs[key] === SC.SIMPLE_PROPERTY) && values[key];
+            ovalue = (descs[key] === Ember.SIMPLE_PROPERTY) && values[key];
             if (!ovalue) ovalue = base[key];
             if ('function' !== typeof ovalue) ovalue = null;
             if (ovalue) {
               var o = value.__sc_observes__, ob = value.__sc_observesBefore__;
-              value = SC.wrap(value, ovalue);
+              value = Ember.wrap(value, ovalue);
               value.__sc_observes__ = o;
               value.__sc_observesBefore__ = ob;
             }
           } else if ((concats && concats.indexOf(key)>=0) || key === 'concatenatedProperties') {
             var baseValue = values[key] || base[key];
-            value = baseValue ? baseValue.concat(value) : SC.makeArray(value);
+            value = baseValue ? baseValue.concat(value) : Ember.makeArray(value);
           }
 
-          descs[key]  = SC.SIMPLE_PROPERTY;
+          descs[key]  = Ember.SIMPLE_PROPERTY;
           values[key] = value;
         }
       }
@@ -129,10 +129,10 @@ function mergeMixins(mixins, m, descs, values, base) {
   }
 }
 
-var defineProperty = SC.defineProperty;
+var defineProperty = Ember.defineProperty;
 
 function writableReq(obj) {
-  var m = SC.meta(obj), req = m.required;
+  var m = Ember.meta(obj), req = m.required;
   if (!req || (req.__scproto__ !== obj)) {
     req = m.required = req ? o_create(req) : { __sc_count__: 0 };
     req.__scproto__ = obj;
@@ -148,15 +148,15 @@ function getBeforeObserverPaths(value) {
   return ('function' === typeof value) && value.__sc_observesBefore__;
 }
 
-SC._mixinBindings = function(obj, key, value, m) {
+Ember._mixinBindings = function(obj, key, value, m) {
   return value;
 };
 
 function applyMixin(obj, mixins, partial) {
-  var descs = {}, values = {}, m = SC.meta(obj), req = m.required;
+  var descs = {}, values = {}, m = Ember.meta(obj), req = m.required;
   var key, willApply, didApply, value, desc;
 
-  var mixinBindings = SC._mixinBindings;
+  var mixinBindings = Ember._mixinBindings;
 
   mergeMixins(mixins, meta(obj), descs, values, obj);
 
@@ -194,7 +194,7 @@ function applyMixin(obj, mixins, partial) {
           value = desc.val(obj, altKey);
         } else {
           value = obj[altKey];
-          desc  = SC.SIMPLE_PROPERTY;
+          desc  = Ember.SIMPLE_PROPERTY;
         }
       }
 
@@ -209,14 +209,14 @@ function applyMixin(obj, mixins, partial) {
       if (curObserverPaths) {
         len = curObserverPaths.length;
         for(idx=0;idx<len;idx++) {
-          SC.removeObserver(obj, curObserverPaths[idx], null, key);
+          Ember.removeObserver(obj, curObserverPaths[idx], null, key);
         }
       }
 
       if (curBeforeObserverPaths) {
         len = curBeforeObserverPaths.length;
         for(idx=0;idx<len;idx++) {
-          SC.removeBeforeObserver(obj, curBeforeObserverPaths[idx], null,key);
+          Ember.removeBeforeObserver(obj, curBeforeObserverPaths[idx], null,key);
         }
       }
 
@@ -228,14 +228,14 @@ function applyMixin(obj, mixins, partial) {
       if (observerPaths) {
         len = observerPaths.length;
         for(idx=0;idx<len;idx++) {
-          SC.addObserver(obj, observerPaths[idx], null, key);
+          Ember.addObserver(obj, observerPaths[idx], null, key);
         }
       }
 
       if (beforeObserverPaths) {
         len = beforeObserverPaths.length;
         for(idx=0;idx<len;idx++) {
-          SC.addBeforeObserver(obj, beforeObserverPaths[idx], null, key);
+          Ember.addBeforeObserver(obj, beforeObserverPaths[idx], null, key);
         }
       }
 
@@ -262,7 +262,7 @@ function applyMixin(obj, mixins, partial) {
   return obj;
 }
 
-SC.mixin = function(obj) {
+Ember.mixin = function(obj) {
   var args = Array.prototype.slice.call(arguments, 1);
   return applyMixin(obj, args, false);
 };
@@ -324,7 +324,7 @@ Mixin.prototype.applyPartial = function(obj) {
 };
 
 function _detect(curMixin, targetMixin, seen) {
-  var guid = SC.guidFor(curMixin);
+  var guid = Ember.guidFor(curMixin);
 
   if (seen[guid]) return false;
   seen[guid] = true;
@@ -340,7 +340,7 @@ function _detect(curMixin, targetMixin, seen) {
 Mixin.prototype.detect = function(obj) {
   if (!obj) return false;
   if (obj instanceof Mixin) return _detect(obj, this, {});
-  return !!meta(obj, false)[SC.guidFor(this)];
+  return !!meta(obj, false)[Ember.guidFor(this)];
 };
 
 Mixin.prototype.without = function() {
@@ -350,8 +350,8 @@ Mixin.prototype.without = function() {
 };
 
 function _keys(ret, mixin, seen) {
-  if (seen[SC.guidFor(mixin)]) return;
-  seen[SC.guidFor(mixin)] = true;
+  if (seen[Ember.guidFor(mixin)]) return;
+  seen[Ember.guidFor(mixin)] = true;
 
   if (mixin.properties) {
     var props = mixin.properties;
@@ -374,7 +374,7 @@ Mixin.prototype.keys = function() {
 
 /** @private - make Mixin's have nice displayNames */
 
-var NAME_KEY = SC.GUID_KEY+'_name';
+var NAME_KEY = Ember.GUID_KEY+'_name';
 
 function processNames(paths, root, seen) {
   var idx = paths.length;
@@ -385,9 +385,9 @@ function processNames(paths, root, seen) {
 
     if (obj && obj.toString === classToString) {
       obj[NAME_KEY] = paths.join('.');
-    } else if (key==='SC' || (SC.Namespace && obj instanceof SC.Namespace)) {
-      if (seen[SC.guidFor(obj)]) continue;
-      seen[SC.guidFor(obj)] = true;
+    } else if (key==='Ember' || (Ember.Namespace && obj instanceof Ember.Namespace)) {
+      if (seen[Ember.guidFor(obj)]) continue;
+      seen[Ember.guidFor(obj)] = true;
       processNames(paths, obj, seen);
     }
 
@@ -396,7 +396,7 @@ function processNames(paths, root, seen) {
 }
 
 function findNamespaces() {
-  var Namespace = SC.Namespace, obj;
+  var Namespace = Ember.Namespace, obj;
 
   if (Namespace.PROCESSED) { return; }
 
@@ -412,7 +412,7 @@ function findNamespaces() {
   }
 }
 
-SC.identifyNamespaces = findNamespaces;
+Ember.identifyNamespaces = findNamespaces;
 
 superClassString = function(mixin) {
   var superclass = mixin.superclass;
@@ -425,7 +425,7 @@ superClassString = function(mixin) {
 }
 
 classToString = function() {
-  var Namespace = SC.Namespace, namespace;
+  var Namespace = Ember.Namespace, namespace;
 
   // TODO: Namespace should really be in Metal
   if (Namespace) {
@@ -460,7 +460,7 @@ classToString = function() {
 Mixin.prototype.toString = classToString;
 
 // returns the mixins currently applied to the specified object
-// TODO: Make SC.mixin
+// TODO: Make Ember.mixin
 Mixin.mixins = function(obj) {
   var ret = [], mixins = meta(obj, false), key, mixin;
   for(key in mixins) {
@@ -473,45 +473,45 @@ Mixin.mixins = function(obj) {
   return ret;
 };
 
-REQUIRED = new SC.Descriptor();
+REQUIRED = new Ember.Descriptor();
 REQUIRED.toString = function() { return '(Required Property)'; };
 
-SC.required = function() {
+Ember.required = function() {
   return REQUIRED;
 };
 
 Alias = function(methodName) {
   this.methodName = methodName;
 };
-Alias.prototype = new SC.Descriptor();
+Alias.prototype = new Ember.Descriptor();
 
-SC.alias = function(methodName) {
+Ember.alias = function(methodName) {
   return new Alias(methodName);
 };
 
-SC.Mixin = Mixin;
+Ember.Mixin = Mixin;
 
 MixinDelegate = Mixin.create({
 
-  willApplyProperty: SC.required(),
-  didApplyProperty:  SC.required()
+  willApplyProperty: Ember.required(),
+  didApplyProperty:  Ember.required()
 
 });
 
-SC.MixinDelegate = MixinDelegate;
+Ember.MixinDelegate = MixinDelegate;
 
 
 // ..........................................................
 // OBSERVER HELPER
 //
 
-SC.observer = function(func) {
+Ember.observer = function(func) {
   var paths = Array.prototype.slice.call(arguments, 1);
   func.__sc_observes__ = paths;
   return func;
 };
 
-SC.beforeObserver = function(func) {
+Ember.beforeObserver = function(func) {
   var paths = Array.prototype.slice.call(arguments, 1);
   func.__sc_observesBefore__ = paths;
   return func;

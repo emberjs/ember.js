@@ -15,21 +15,21 @@ var STRING_DECAMELIZE_REGEXP = (/([a-z])([A-Z])/g);
   
 /**
   Defines the hash of localized strings for the current language.  Used by 
-  the `SC.String.loc()` helper.  To localize, add string values to this
+  the `Ember.String.loc()` helper.  To localize, add string values to this
   hash.
   
   @property {String}
 */
-SC.STRINGS = {};
+Ember.STRINGS = {};
 
 /**
   Defines string helper methods including string formatting and localization.
-  Unless SC.EXTEND_PROTOTYPES = false these methods will also be added to the
+  Unless Ember.EXTEND_PROTOTYPES = false these methods will also be added to the
   String.prototype as well.
   
   @namespace
 */
-SC.String = {
+Ember.String = {
 
   /**
     Apply formatting options to the string.  This will look for occurrences
@@ -62,7 +62,7 @@ SC.String = {
   /**
     Formats the passed string, but first looks up the string in the localized
     strings hash.  This is a convenient way to localize text.  See 
-    `SC.String.fmt()` for more information on formatting.
+    `Ember.String.fmt()` for more information on formatting.
     
     Note that it is traditional but not required to prefix localized string
     keys with an underscore or other character so you can easily identify
@@ -71,15 +71,15 @@ SC.String = {
     # Example Usage
     
         @javascript@
-        SC.STRINGS = {
+        Ember.STRINGS = {
           '_Hello World': 'Bonjour le monde',
           '_Hello %@ %@': 'Bonjour %@ %@'
         };
         
-        SC.String.loc("_Hello World");
+        Ember.String.loc("_Hello World");
         => 'Bonjour le monde';
         
-        SC.String.loc("_Hello %@ %@", ["John", "Smith"]);
+        Ember.String.loc("_Hello %@ %@", ["John", "Smith"]);
         => "Bonjour John Smith";
         
         
@@ -93,8 +93,8 @@ SC.String = {
     @returns {String} formatted string
   */
   loc: function(str, formats) {
-    str = SC.STRINGS[str] || str;
-    return SC.String.fmt(str, formats) ;
+    str = Ember.STRINGS[str] || str;
+    return Ember.String.fmt(str, formats) ;
   },
 
   /**
@@ -105,7 +105,7 @@ SC.String = {
     # Example Usage
     
         @javascript@
-        SC.String.w("alpha beta gamma").forEach(function(key) { 
+        Ember.String.w("alpha beta gamma").forEach(function(key) { 
           console.log(key); 
         });
         > alpha
@@ -157,7 +157,7 @@ SC.String = {
     if (ret) {
       return ret;
     } else {
-      ret = SC.String.decamelize(str).replace(STRING_DASHERIZE_REGEXP,'-');
+      ret = Ember.String.decamelize(str).replace(STRING_DASHERIZE_REGEXP,'-');
       cache[str] = ret;
     }
 

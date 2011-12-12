@@ -7,8 +7,8 @@
 
 module("SproutCore Copy Method");
 
-test("SC.copy null", function() {
+test("Ember.copy null", function() {
   var obj = {field: null};
-  equal(SC.copy(obj, true).field, null, "null should still be null")
+  equal(Ember.copy(obj, true).field, null, "null should still be null")
 });
 

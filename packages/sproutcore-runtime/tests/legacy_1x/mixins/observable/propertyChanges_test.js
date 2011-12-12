@@ -12,7 +12,7 @@
   
   CHANGES FROM 1.6:
 
-  * Create ObservableObject which includes SC.Observable
+  * Create ObservableObject which includes Ember.Observable
   * Remove test that tests internal _kvo_changeLevel property.  This is an
     implementation detail.
   * Remove test for allPropertiesDidChange
@@ -21,11 +21,11 @@
 */
 
 // ========================================================================
-// SC.Observable Tests
+// Ember.Observable Tests
 // ========================================================================
 /*globals module test ok isObj equals expects */
 
-var ObservableObject = SC.Object.extend(SC.Observable);
+var ObservableObject = Ember.Object.extend(Ember.Observable);
 
 var revMatches = NO , ObjectA;
 
@@ -35,18 +35,18 @@ module("object.propertyChanges", {
       foo  : 'fooValue',
       prop : 'propValue',
             
-      action: SC.observer(function() {
+      action: Ember.observer(function() {
         this.set('prop', 'changedPropValue');
       }, 'foo'),
       
       newFoo : 'newFooValue',
       newProp: 'newPropValue',
       
-      notifyAction: SC.observer(function() {
+      notifyAction: Ember.observer(function() {
         this.set('newProp', 'changedNewPropValue');
       }, 'newFoo'),
       
-      notifyAllAction: SC.observer(function() {
+      notifyAllAction: Ember.observer(function() {
         this.set('newFoo', 'changedNewFooValue');
       }, 'prop'),
 
@@ -124,7 +124,7 @@ test("should invalidate function property cache when notifyPropertyChange is cal
   
   var a = ObservableObject.create({
     _b: null,
-    b: SC.computed(function(key, value) {
+    b: Ember.computed(function(key, value) {
       if (value !== undefined) {
         this._b = value;
         return this;

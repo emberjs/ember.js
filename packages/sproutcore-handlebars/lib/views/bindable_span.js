@@ -5,7 +5,7 @@
 // ==========================================================================
 /*globals Handlebars */
 
-var get = SC.get, set = SC.set, getPath = SC.getPath;
+var get = Ember.get, set = Ember.set, getPath = Ember.getPath;
 
 require('sproutcore-views/views/view');
 require('sproutcore-handlebars/views/metamorph_view');
@@ -15,16 +15,16 @@ require('sproutcore-handlebars/views/metamorph_view');
   @private
   @class
 
-  SC._BindableSpanView is a private view created by the Handlebars `{{bind}}` 
+  Ember._BindableSpanView is a private view created by the Handlebars `{{bind}}` 
   helpers that is used to keep track of bound properties.
 
   Every time a property is bound using a `{{mustache}}`, an anonymous subclass 
-  of SC._BindableSpanView is created with the appropriate sub-template and 
+  of Ember._BindableSpanView is created with the appropriate sub-template and 
   context set up. When the associated property changes, just the template for 
   this view will re-render.
 */
-SC._BindableSpanView = SC.View.extend(SC.Metamorph,
-/** @scope SC._BindableSpanView.prototype */{
+Ember._BindableSpanView = Ember.View.extend(Ember.Metamorph,
+/** @scope Ember._BindableSpanView.prototype */{
 
   /**
     The function used to determine if the `displayTemplate` or
@@ -82,19 +82,19 @@ SC._BindableSpanView = SC.View.extend(SC.Metamorph,
 
   /**
     Determines which template to invoke, sets up the correct state based on
-    that logic, then invokes the default SC.View `render` implementation.
+    that logic, then invokes the default Ember.View `render` implementation.
 
     This method will first look up the `property` key on `previousContext`,
     then pass that value to the `shouldDisplayFunc` function. If that returns
     true, the `displayTemplate` function will be rendered to DOM. Otherwise,
     `inverseTemplate`, if specified, will be rendered.
 
-    For example, if this SC._BindableSpan represented the {{#with foo}} 
+    For example, if this Ember._BindableSpan represented the {{#with foo}} 
     helper, it would look up the `foo` property of its context, and 
     `shouldDisplayFunc` would always return true. The object found by looking 
     up `foo` would be passed to `displayTemplate`.
 
-    @param {SC.RenderBuffer} buffer
+    @param {Ember.RenderBuffer} buffer
   */
   render: function(buffer) {
     // If not invoked via a triple-mustache ({{{foo}}}), escape

@@ -6,7 +6,7 @@
 
 require('sproutcore-runtime/~tests/suites/enumerable');
 
-var suite = SC.EnumerableTests;
+var suite = Ember.EnumerableTests;
 
 suite.module('forEach');
 
@@ -21,7 +21,7 @@ suite.test('forEach should iterate over list', function() {
 
 
 suite.test('forEach should iterate over list after mutation', function() {
-  if (SC.get(this, 'canTestMutation')) return ;
+  if (Ember.get(this, 'canTestMutation')) return ;
   
   var obj = this.newObject(),
       ary = this.toArray(obj),
@@ -43,11 +43,11 @@ suite.test('2nd target parameter', function() {
   
   
   obj.forEach(function() { 
-    equals(SC.guidFor(this), SC.guidFor(window), 'should pass window as this if no context');
+    equals(Ember.guidFor(this), Ember.guidFor(window), 'should pass window as this if no context');
   });
 
   obj.forEach(function() { 
-    equals(SC.guidFor(this), SC.guidFor(target), 'should pass target as this if context');
+    equals(Ember.guidFor(this), Ember.guidFor(target), 'should pass target as this if context');
   }, target);
 
 });
@@ -62,7 +62,7 @@ suite.test('callback params', function() {
   obj.forEach(function(item, idx, enumerable) { 
     equals(item, ary[loc], 'item param');
     equals(idx, loc, 'idx param');
-    equals(SC.guidFor(enumerable), SC.guidFor(obj), 'enumerable param');
+    equals(Ember.guidFor(enumerable), Ember.guidFor(obj), 'enumerable param');
     loc++;
   });
 

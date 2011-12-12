@@ -10,7 +10,7 @@ require('sproutcore-runtime/system/string');
 
 
   
-var get = SC.get, set = SC.set;
+var get = Ember.get, set = Ember.set;
 
 /**
   @namespace
@@ -22,11 +22,11 @@ var get = SC.get, set = SC.set;
   You should generally implement the copy() method to return a copy of the
   receiver.
 
-  Note that frozenCopy() will only work if you also implement SC.Freezable.
+  Note that frozenCopy() will only work if you also implement Ember.Freezable.
 
   @since SproutCore 1.0
 */
-SC.Copyable = SC.Mixin.create({
+Ember.Copyable = Ember.Mixin.create({
 
   /**
     Override to return a copy of the receiver.  Default implementation raises
@@ -35,10 +35,10 @@ SC.Copyable = SC.Mixin.create({
     @param deep {Boolean} if true, a deep copy of the object should be made
     @returns {Object} copy of receiver
   */
-  copy: SC.required(Function),
+  copy: Ember.required(Function),
 
   /**
-    If the object implements SC.Freezable, then this will return a new copy
+    If the object implements Ember.Freezable, then this will return a new copy
     if the object is not frozen and the receiver if the object is frozen.
 
     Raises an exception if you try to call this method on a object that does
@@ -51,10 +51,10 @@ SC.Copyable = SC.Mixin.create({
     @returns {Object} copy of receiver or receiver
   */
   frozenCopy: function() {
-    if (SC.Freezable && SC.Freezable.detect(this)) {
+    if (Ember.Freezable && Ember.Freezable.detect(this)) {
       return get(this, 'isFrozen') ? this : this.copy().freeze();
     } else {
-      throw new Error(SC.String.fmt("%@ does not support freezing", [this]));
+      throw new Error(Ember.String.fmt("%@ does not support freezing", [this]));
     }
   }
 });

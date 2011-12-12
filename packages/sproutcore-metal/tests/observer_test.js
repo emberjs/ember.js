@@ -11,14 +11,14 @@ require('sproutcore-metal/~tests/props_helper');
 // ADD OBSERVER
 // 
 
-module('SC.addObserver');
+module('Ember.addObserver');
 
 testBoth('observer should fire when property is modified', function(get,set) {
   
   var obj = {};
   var count = 0;
   
-  SC.addObserver(obj, 'foo', function() { 
+  Ember.addObserver(obj, 'foo', function() { 
     equals(get(obj, 'foo'), 'bar', 'should invoke AFTER value changed');
     count++; 
   });
@@ -29,12 +29,12 @@ testBoth('observer should fire when property is modified', function(get,set) {
 
 testBoth('observer should fire when dependent property is modified', function(get, set) {
   var obj = { bar: 'bar' };
-  SC.defineProperty(obj, 'foo', SC.computed(function() {
+  Ember.defineProperty(obj, 'foo', Ember.computed(function() {
     return get(this,'bar').toUpperCase();
   }).property('bar'));
   
   var count = 0;
-  SC.addObserver(obj, 'foo', function() { 
+  Ember.addObserver(obj, 'foo', function() { 
     equals(get(obj, 'foo'), 'BAZ', 'should have invoked after prop change');
     count++; 
   });
@@ -47,8 +47,8 @@ testBoth('nested observers should fire in order', function(get,set) {
   var obj = { foo: 'foo', bar: 'bar' };
   var fooCount = 0, barCount = 0;
   
-  SC.addObserver(obj, 'foo' ,function() { fooCount++; });
-  SC.addObserver(obj, 'bar', function() {
+  Ember.addObserver(obj, 'foo' ,function() { fooCount++; });
+  Ember.addObserver(obj, 'bar', function() {
     set(obj, 'foo', 'BAZ');
     equals(fooCount, 1, 'fooCount should have fired already');
     barCount++;
@@ -64,12 +64,12 @@ testBoth('suspending property changes will defer', function(get,set) {
   var obj = { foo: 'foo' };
   var fooCount = 0;
 
-  SC.addObserver(obj, 'foo' ,function() { fooCount++; });
+  Ember.addObserver(obj, 'foo' ,function() { fooCount++; });
 
-  SC.beginPropertyChanges(obj);
+  Ember.beginPropertyChanges(obj);
   set(obj, 'foo', 'BIFF');
   set(obj, 'foo', 'BAZ');
-  SC.endPropertyChanges(obj);
+  Ember.endPropertyChanges(obj);
 
   equals(fooCount, 1, 'foo should have fired once');
 });
@@ -80,10 +80,10 @@ testBoth('suspending property changes safely despite exceptions', function(get,s
   var exc = new Error("Something unexpected happened!");
 
   expect(2);
-  SC.addObserver(obj, 'foo' ,function() { fooCount++; });
+  Ember.addObserver(obj, 'foo' ,function() { fooCount++; });
 
   try {
-    SC.changeProperties(function(){
+    Ember.changeProperties(function(){
       set(obj, 'foo', 'BIFF');
       set(obj, 'foo', 'BAZ');
       throw exc;
@@ -95,7 +95,7 @@ testBoth('suspending property changes safely despite exceptions', function(get,s
 
   equals(fooCount, 1, 'foo should have fired once');
 
-  SC.changeProperties(function(){
+  Ember.changeProperties(function(){
     set(obj, 'foo', 'BIFF2');
     set(obj, 'foo', 'BAZ2');
   });
@@ -107,13 +107,13 @@ testBoth('suspending property changes will not defer before observers', function
   var obj = { foo: 'foo' };
   var fooCount = 0;
 
-  SC.addBeforeObserver(obj, 'foo' ,function() { fooCount++; });
+  Ember.addBeforeObserver(obj, 'foo' ,function() { fooCount++; });
 
-  SC.beginPropertyChanges(obj);
+  Ember.beginPropertyChanges(obj);
   set(obj, 'foo', 'BIFF');
   equals(fooCount, 1, 'should fire before observer immediately');
   set(obj, 'foo', 'BAZ');
-  SC.endPropertyChanges(obj);
+  Ember.endPropertyChanges(obj);
 
   equals(fooCount, 1, 'should not fire before observer twice');
 });
@@ -121,8 +121,8 @@ testBoth('suspending property changes will not defer before observers', function
 testBoth('addObserver should propogate through prototype', function(get,set) {
   var obj = { foo: 'foo', count: 0 }, obj2;
   
-  SC.addObserver(obj, 'foo', function() { this.count++; });
-  obj2 = SC.create(obj);
+  Ember.addObserver(obj, 'foo', function() { this.count++; });
+  obj2 = Ember.create(obj);
   
   set(obj2, 'foo', 'bar');
 
@@ -162,8 +162,8 @@ testBoth('addObserver should respect targets with methods', function(get,set){
     }
   };
 
-  SC.addObserver(observed, 'foo', target1, 'didChange');
-  SC.addObserver(observed, 'foo', target2, target2.didChange);
+  Ember.addObserver(observed, 'foo', target1, 'didChange');
+  Ember.addObserver(observed, 'foo', target2, target2.didChange);
   
   set(observed, 'foo', 'BAZ');
   equals(target1.count, 1, 'target1 observer should have fired');
@@ -185,7 +185,7 @@ testBoth('addObserver should preserve additional context passed when firing the 
     }
   };
 
-  SC.addObserver(observed, 'foo', target1, 'didChange', "biff", "bang");
+  Ember.addObserver(observed, 'foo', target1, 'didChange', "biff", "bang");
 
   set(observed, 'foo', 'BAZ');
   equals(target1.count, 1, 'target1 observer should have fired');
@@ -213,8 +213,8 @@ testBoth('addObserver should allow multiple objects to observe a property', func
     }
   };
 
-  SC.addObserver(observed, 'foo', target1, 'didChange');
-  SC.addObserver(observed, 'foo', target2, 'didChange');
+  Ember.addObserver(observed, 'foo', target1, 'didChange');
+  Ember.addObserver(observed, 'foo', target2, 'didChange');
 
   set(observed, 'foo', 'BAZ');
   equals(target1.count, 1, 'target1 observer should have fired');
@@ -225,30 +225,30 @@ testBoth('addObserver should allow multiple objects to observe a property', func
 // REMOVE OBSERVER
 // 
 
-module('SC.removeObserver');
+module('Ember.removeObserver');
 
 testBoth('removing observer should stop firing', function(get,set) {
   
   var obj = {};
   var count = 0;
   function F() { count++; }
-  SC.addObserver(obj, 'foo', F);
+  Ember.addObserver(obj, 'foo', F);
   
   set(obj, 'foo', 'bar');
   equals(count, 1, 'should have invoked observer');
   
-  SC.removeObserver(obj, 'foo', F);
+  Ember.removeObserver(obj, 'foo', F);
 });
 
 testBoth('local observers can be removed', function(get, set) {
   var barObserved = 0;
 
-  var MyMixin = SC.Mixin.create({
-    foo1: SC.observer(function() {
+  var MyMixin = Ember.Mixin.create({
+    foo1: Ember.observer(function() {
       barObserved++;
     }, 'bar'),
 
-    foo2: SC.observer(function() {
+    foo2: Ember.observer(function() {
       barObserved++;
     }, 'bar')
   });
@@ -259,7 +259,7 @@ testBoth('local observers can be removed', function(get, set) {
   set(obj, 'bar', 'HI!');
   equals(barObserved, 2, 'precond - observers should be fired');
 
-  SC.removeObserver(obj, 'bar', null, 'foo1');
+  Ember.removeObserver(obj, 'bar', null, 'foo1');
 
   barObserved = 0;
   set(obj, 'bar', 'HI AGAIN!');
@@ -286,15 +286,15 @@ testBoth('removeObserver should respect targets with methods', function(get,set)
     }
   };
 
-  SC.addObserver(observed, 'foo', target1, 'didChange');
-  SC.addObserver(observed, 'foo', target2, target2.didChange);
+  Ember.addObserver(observed, 'foo', target1, 'didChange');
+  Ember.addObserver(observed, 'foo', target2, target2.didChange);
   
   set(observed, 'foo', 'BAZ');
   equals(target1.count, 1, 'target1 observer should have fired');
   equals(target2.count, 1, 'target2 observer should have fired');
 
-  SC.removeObserver(observed, 'foo', target1, 'didChange');
-  SC.removeObserver(observed, 'foo', target2, target2.didChange);
+  Ember.removeObserver(observed, 'foo', target1, 'didChange');
+  Ember.removeObserver(observed, 'foo', target2, target2.didChange);
 
   target1.count = target2.count = 0;
   set(observed, 'foo', 'BAZ');
@@ -306,14 +306,14 @@ testBoth('removeObserver should respect targets with methods', function(get,set)
 // BEFORE OBSERVER
 // 
 
-module('SC.addBeforeObserver');
+module('Ember.addBeforeObserver');
 
 testBoth('observer should fire before a property is modified', function(get,set) {
   
   var obj = { foo: 'foo' };
   var count = 0;
   
-  SC.addBeforeObserver(obj, 'foo', function() { 
+  Ember.addBeforeObserver(obj, 'foo', function() { 
     equals(get(obj, 'foo'), 'foo', 'should invoke before value changed');
     count++; 
   });
@@ -324,12 +324,12 @@ testBoth('observer should fire before a property is modified', function(get,set)
 
 testBoth('observer should fire before dependent property is modified', function(get, set) {
   var obj = { bar: 'bar' };
-  SC.defineProperty(obj, 'foo', SC.computed(function() {
+  Ember.defineProperty(obj, 'foo', Ember.computed(function() {
     return get(this,'bar').toUpperCase();
   }).property('bar'));
   
   var count = 0;
-  SC.addBeforeObserver(obj, 'foo', function() { 
+  Ember.addBeforeObserver(obj, 'foo', function() { 
     equals(get(obj, 'foo'), 'BAR', 'should have invoked after prop change');
     count++; 
   });
@@ -341,8 +341,8 @@ testBoth('observer should fire before dependent property is modified', function(
 testBoth('addBeforeObserver should propogate through prototype', function(get,set) {
   var obj = { foo: 'foo', count: 0 }, obj2;
   
-  SC.addBeforeObserver(obj, 'foo', function() { this.count++; });
-  obj2 = SC.create(obj);
+  Ember.addBeforeObserver(obj, 'foo', function() { this.count++; });
+  obj2 = Ember.create(obj);
 
   set(obj2, 'foo', 'bar');
   equals(obj2.count, 1, 'should have invoked observer on inherited');
@@ -381,8 +381,8 @@ testBoth('addBeforeObserver should respect targets with methods', function(get,s
     }
   };
 
-  SC.addBeforeObserver(observed, 'foo', target1, 'willChange');
-  SC.addBeforeObserver(observed, 'foo', target2, target2.willChange);
+  Ember.addBeforeObserver(observed, 'foo', target1, 'willChange');
+  Ember.addBeforeObserver(observed, 'foo', target2, target2.willChange);
   
   set(observed, 'foo', 'BAZ');
   equals(target1.count, 1, 'target1 observer should have fired');
@@ -396,7 +396,7 @@ testBoth('addBeforeObserver should respect targets with methods', function(get,s
 
 var obj, count;
 
-module('SC.computed - dependentkey with chained properties', {
+module('Ember.computed - dependentkey with chained properties', {
   setup: function() {
     obj = { 
       foo: {
@@ -429,20 +429,20 @@ module('SC.computed - dependentkey with chained properties', {
 testBoth('depending on a simple chain', function(get, set) { 
 
   var val ;
-  SC.addObserver(obj, 'foo.bar.baz.biff', function(target, key, value) { 
+  Ember.addObserver(obj, 'foo.bar.baz.biff', function(target, key, value) { 
     val = value;
     count++; 
   });
   
-  set(SC.getPath(obj, 'foo.bar.baz'), 'biff', 'BUZZ');
+  set(Ember.getPath(obj, 'foo.bar.baz'), 'biff', 'BUZZ');
   equals(val, 'BUZZ');
   equals(count, 1);
 
-  set(SC.getPath(obj, 'foo.bar'), 'baz', { biff: 'BLARG' });
+  set(Ember.getPath(obj, 'foo.bar'), 'baz', { biff: 'BLARG' });
   equals(val, 'BLARG');
   equals(count, 2);
 
-  set(SC.get(obj, 'foo'), 'bar', { baz: { biff: 'BOOM' } });
+  set(Ember.get(obj, 'foo'), 'bar', { baz: { biff: 'BOOM' } });
   equals(val, 'BOOM');
   equals(count, 3);
   
@@ -450,7 +450,7 @@ testBoth('depending on a simple chain', function(get, set) {
   equals(val, 'BLARG');
   equals(count, 4);
   
-  set(SC.getPath(obj, 'foo.bar.baz'), 'biff', 'BUZZ');
+  set(Ember.getPath(obj, 'foo.bar.baz'), 'biff', 'BUZZ');
   equals(val, 'BUZZ');
   equals(count, 5);
 
@@ -467,22 +467,22 @@ testBoth('depending on a simple chain', function(get, set) {
 testBoth('depending on complex chain', function(get, set) {
   
   var val ;
-  SC.addObserver(obj, 'foo.bar*baz.biff', function(target, key, value) { 
+  Ember.addObserver(obj, 'foo.bar*baz.biff', function(target, key, value) { 
     val = value;
     count++; 
   });
   
-  set(SC.getPath(obj, 'foo.bar.baz'), 'biff', 'BUZZ');
+  set(Ember.getPath(obj, 'foo.bar.baz'), 'biff', 'BUZZ');
   equals(val, 'BUZZ');
   equals(count, 1);
 
-  set(SC.getPath(obj, 'foo.bar'), 'baz', { biff: 'BLARG' });
+  set(Ember.getPath(obj, 'foo.bar'), 'baz', { biff: 'BLARG' });
   equals(val, 'BLARG');
   equals(count, 2);
 
   // // NOTHING SHOULD CHANGE AFTER THIS POINT BECAUSE OF THE CHAINED *
 
-  set(SC.get(obj, 'foo'), 'bar', { baz: { biff: 'BOOM' } });
+  set(Ember.get(obj, 'foo'), 'bar', { baz: { biff: 'BOOM' } });
   equals(val, 'BLARG');
   equals(count, 2);
   
@@ -496,20 +496,20 @@ testBoth('depending on complex chain', function(get, set) {
 testBoth('depending on a Global chain', function(get, set) { 
 
   var val ;
-  SC.addObserver(obj, 'Global.foo.bar.baz.biff', function(target, key, value){ 
+  Ember.addObserver(obj, 'Global.foo.bar.baz.biff', function(target, key, value){ 
     val = value;
     count++; 
   });
   
-  set(SC.getPath(Global, 'foo.bar.baz'),  'biff', 'BUZZ');
+  set(Ember.getPath(Global, 'foo.bar.baz'),  'biff', 'BUZZ');
   equals(val, 'BUZZ');
   equals(count, 1);
 
-  set(SC.getPath(Global, 'foo.bar'),  'baz', { biff: 'BLARG' });
+  set(Ember.getPath(Global, 'foo.bar'),  'baz', { biff: 'BLARG' });
   equals(val, 'BLARG');
   equals(count, 2);
 
-  set(SC.get(Global, 'foo'),  'bar', { baz: { biff: 'BOOM' } });
+  set(Ember.get(Global, 'foo'),  'bar', { baz: { biff: 'BOOM' } });
   equals(val, 'BOOM');
   equals(count, 3);
   
@@ -517,7 +517,7 @@ testBoth('depending on a Global chain', function(get, set) {
   equals(val, 'BLARG');
   equals(count, 4);
   
-  set(SC.getPath(Global, 'foo.bar.baz'),  'biff', 'BUZZ');
+  set(Ember.getPath(Global, 'foo.bar.baz'),  'biff', 'BUZZ');
   equals(val, 'BUZZ');
   equals(count, 5);
 
@@ -534,22 +534,22 @@ testBoth('depending on a Global chain', function(get, set) {
 testBoth('depending on complex chain', function(get, set) {
   
   var val ;
-  SC.addObserver(obj, 'Global.foo.bar*baz.biff', function(target, key, value){ 
+  Ember.addObserver(obj, 'Global.foo.bar*baz.biff', function(target, key, value){ 
     val = value;
     count++; 
   });
   
-  set(SC.getPath(Global, 'foo.bar.baz'),  'biff', 'BUZZ');
+  set(Ember.getPath(Global, 'foo.bar.baz'),  'biff', 'BUZZ');
   equals(val, 'BUZZ');
   equals(count, 1);
 
-  set(SC.getPath(Global, 'foo.bar'),  'baz', { biff: 'BLARG' });
+  set(Ember.getPath(Global, 'foo.bar'),  'baz', { biff: 'BLARG' });
   equals(val, 'BLARG');
   equals(count, 2);
 
   // // NOTHING SHOULD CHANGE AFTER THIS POINT BECAUSE OF THE CHAINED *
 
-  set(SC.get(Global, 'foo'),  'bar', { baz: { biff: 'BOOM' } });
+  set(Ember.get(Global, 'foo'),  'bar', { baz: { biff: 'BOOM' } });
   equals(val, 'BLARG');
   equals(count, 2);
   
@@ -570,7 +570,7 @@ testBoth('setting simple prop should not trigger', function(get, set) {
   var obj = { foo: 'bar' };
   var count = 0;
   
-  SC.addObserver(obj, 'foo', function() { count++; });
+  Ember.addObserver(obj, 'foo', function() { count++; });
   
   set(obj, 'foo', 'bar');
   equals(count, 0, 'should not trigger observer');
@@ -585,14 +585,14 @@ testBoth('setting simple prop should not trigger', function(get, set) {
 testBoth('setting computed prop with same value should not trigger', function(get, set) {
   
   var obj = {};
-  SC.defineProperty(obj, 'foo', SC.computed(function(key, value) {
+  Ember.defineProperty(obj, 'foo', Ember.computed(function(key, value) {
     if (value !== undefined) this._value = value+' X';
     return this._value;
   }));
   
   var count = 0;
   
-  SC.addObserver(obj, 'foo', function() { count++; });
+  Ember.addObserver(obj, 'foo', function() { count++; });
   
   set(obj, 'foo', 'bar');
   equals(count, 1, 'should trigger observer since we do not have existing val');

@@ -1,14 +1,14 @@
-var get = SC.get, set = SC.set;
+var get = Ember.get, set = Ember.set;
 
-SC.TargetActionSupport = SC.Mixin.create({
+Ember.TargetActionSupport = Ember.Mixin.create({
   target: null,
   action: null,
 
-  targetObject: SC.computed(function() {
+  targetObject: Ember.computed(function() {
     var target = get(this, 'target');
 
-    if (SC.typeOf(target) === "string") {
-      return SC.getPath(this, target);
+    if (Ember.typeOf(target) === "string") {
+      return Ember.getPath(this, target);
     } else {
       return target;
     }

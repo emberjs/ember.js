@@ -9,9 +9,9 @@ require('sproutcore-metal/core');
 require('sproutcore-metal/platform');
 require('sproutcore-metal/utils');
 
-var o_create = SC.platform.create;
-var meta = SC.meta;
-var guidFor = SC.guidFor;
+var o_create = Ember.platform.create;
+var meta = Ember.meta;
+var guidFor = Ember.guidFor;
 var array_Slice = Array.prototype.slice;
 
 /**
@@ -38,7 +38,7 @@ var array_Slice = Array.prototype.slice;
 
 */
 
-var metaPath = SC.metaPath;
+var metaPath = Ember.metaPath;
 
 // Gets the set of all actions, keyed on the guid of each action's
 // method property.
@@ -111,7 +111,7 @@ function invokeEvents(targetSet, params) {
   that observers are expecting.
 */
 function addListener(obj, eventName, target, method, xform) {
-  sc_assert("You must pass at least an object and event name to SC.addListener", !!obj && !!eventName);
+  sc_assert("You must pass at least an object and event name to Ember.addListener", !!obj && !!eventName);
 
   if (!method && 'function' === typeof target) {
     method = target;
@@ -167,10 +167,10 @@ function watchedEvents(obj) {
 }
 
 function sendEvent(obj, eventName) {
-  sc_assert("You must pass an object and event name to SC.sendEvent", !!obj && !!eventName);
+  sc_assert("You must pass an object and event name to Ember.sendEvent", !!obj && !!eventName);
 
   // first give object a chance to handle it
-  if (obj !== SC && 'function' === typeof obj.sendEvent) {
+  if (obj !== Ember && 'function' === typeof obj.sendEvent) {
     obj.sendEvent.apply(obj, array_Slice.call(arguments, 1));
   }
 
@@ -223,9 +223,9 @@ function listenersFor(obj, eventName) {
   return ret;
 }
 
-SC.addListener = addListener;
-SC.removeListener = removeListener;
-SC.sendEvent = sendEvent;
-SC.hasListeners = hasListeners;
-SC.watchedEvents = watchedEvents;
-SC.listenersFor = listenersFor;
+Ember.addListener = addListener;
+Ember.removeListener = removeListener;
+Ember.sendEvent = sendEvent;
+Ember.hasListeners = hasListeners;
+Ember.watchedEvents = watchedEvents;
+Ember.listenersFor = listenersFor;

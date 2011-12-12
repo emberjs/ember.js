@@ -6,10 +6,10 @@
 // ==========================================================================
 /*globals sc_assert */
 
-require('sproutcore-metal/core'); // SC.Logger
-require('sproutcore-metal/watching'); // SC.watch.flushPending
-require('sproutcore-metal/observer'); // SC.beginPropertyChanges, SC.endPropertyChanges
-require('sproutcore-metal/utils'); // SC.guidFor
+require('sproutcore-metal/core'); // Ember.Logger
+require('sproutcore-metal/watching'); // Ember.watch.flushPending
+require('sproutcore-metal/observer'); // Ember.beginPropertyChanges, Ember.endPropertyChanges
+require('sproutcore-metal/utils'); // Ember.guidFor
 
 // ..........................................................
 // HELPERS
@@ -89,27 +89,27 @@ RunLoop.prototype = {
       invoke(item.target, item.method, item.args);
     }
 
-    SC.watch.flushPending(); // make sure all chained watchers are setup
+    Ember.watch.flushPending(); // make sure all chained watchers are setup
 
     if (queueName) {
       while (this._queues && (queue = this._queues[queueName])) {
         this._queues[queueName] = null;
 
-        log = SC.LOG_BINDINGS && queueName==='sync';
-        if (log) SC.Logger.log('Begin: Flush Sync Queue');
+        log = Ember.LOG_BINDINGS && queueName==='sync';
+        if (log) Ember.Logger.log('Begin: Flush Sync Queue');
 
         // the sync phase is to allow property changes to propogate.  don't
         // invoke observers until that is finished.
-        if (queueName === 'sync') SC.beginPropertyChanges();
+        if (queueName === 'sync') Ember.beginPropertyChanges();
         queue.forEach(iter);
-        if (queueName === 'sync') SC.endPropertyChanges();
+        if (queueName === 'sync') Ember.endPropertyChanges();
 
-        if (log) SC.Logger.log('End: Flush Sync Queue');
+        if (log) Ember.Logger.log('End: Flush Sync Queue');
 
       }
 
     } else {
-      queueNames = SC.run.queues;
+      queueNames = Ember.run.queues;
       len = queueNames.length;
       do {
         this._queues = null;
@@ -117,14 +117,14 @@ RunLoop.prototype = {
           queueName = queueNames[idx];
           queue = queues[queueName];
 
-          log = SC.LOG_BINDINGS && queueName==='sync';
-          if (log) SC.Logger.log('Begin: Flush Sync Queue');
+          log = Ember.LOG_BINDINGS && queueName==='sync';
+          if (log) Ember.Logger.log('Begin: Flush Sync Queue');
 
-          if (queueName === 'sync') SC.beginPropertyChanges();
+          if (queueName === 'sync') Ember.beginPropertyChanges();
           if (queue) queue.forEach(iter);
-          if (queueName === 'sync') SC.endPropertyChanges();
+          if (queueName === 'sync') Ember.endPropertyChanges();
 
-          if (log) SC.Logger.log('End: Flush Sync Queue');
+          if (log) Ember.Logger.log('End: Flush Sync Queue');
 
         }
 
@@ -138,10 +138,10 @@ RunLoop.prototype = {
 
 };
 
-SC.RunLoop = RunLoop;
+Ember.RunLoop = RunLoop;
 
 // ..........................................................
-// SC.run - this is ideally the only public API the dev sees
+// Ember.run - this is ideally the only public API the dev sees
 //
 
 var run;
@@ -169,7 +169,7 @@ var run;
 
   @returns {Object} return value from invoking the passed function.
 */
-SC.run = run = function(target, method) {
+Ember.run = run = function(target, method) {
 
   var ret, loop;
   run.begin();
@@ -180,23 +180,23 @@ SC.run = run = function(target, method) {
 
 /**
   Begins a new RunLoop.  Any deferred actions invoked after the begin will
-  be buffered until you invoke a matching call to SC.run.end().  This is
-  an lower-level way to use a RunLoop instead of using SC.run().
+  be buffered until you invoke a matching call to Ember.run.end().  This is
+  an lower-level way to use a RunLoop instead of using Ember.run().
 
   @returns {void}
 */
-SC.run.begin = function() {
+Ember.run.begin = function() {
   run.currentRunLoop = new RunLoop(run.currentRunLoop);
 };
 
 /**
-  Ends a RunLoop.  This must be called sometime after you call SC.run.begin()
+  Ends a RunLoop.  This must be called sometime after you call Ember.run.begin()
   to flush any deferred actions.  This is a lower-level way to use a RunLoop
-  instead of using SC.run().
+  instead of using Ember.run().
 
   @returns {void}
 */
-SC.run.end = function() {
+Ember.run.end = function() {
   sc_assert('must have a current run loop', run.currentRunLoop);
   run.currentRunLoop = run.currentRunLoop.end();
 };
@@ -209,7 +209,7 @@ SC.run.end = function() {
 
   @property {String}
 */
-SC.run.queues = ['sync', 'actions', 'destroy', 'timers'];
+Ember.run.queues = ['sync', 'actions', 'destroy', 'timers'];
 
 /**
   Adds the passed target/method and any optional arguments to the named
@@ -238,7 +238,7 @@ SC.run.queues = ['sync', 'actions', 'destroy', 'timers'];
 
   @returns {void}
 */
-SC.run.schedule = function(queue, target, method) {
+Ember.run.schedule = function(queue, target, method) {
   var loop = run.autorun();
   loop.schedule.apply(loop, arguments);
 };
@@ -254,17 +254,17 @@ function autorun() {
   Begins a new RunLoop if necessary and schedules a timer to flush the
   RunLoop at a later time.  This method is used by parts of SproutCore to
   ensure the RunLoop always finishes.  You normally do not need to call this
-  method directly.  Instead use SC.run().
+  method directly.  Instead use Ember.run().
 
-  @returns {SC.RunLoop} the new current RunLoop
+  @returns {Ember.RunLoop} the new current RunLoop
 */
-SC.run.autorun = function() {
+Ember.run.autorun = function() {
 
   if (!run.currentRunLoop) {
     run.begin();
 
     // TODO: throw during tests
-    if (SC.testing) {
+    if (Ember.testing) {
       run.end();
     } else if (!autorunTimer) {
       autorunTimer = setTimeout(autorun, 1);
@@ -284,7 +284,7 @@ SC.run.autorun = function() {
 
   @returns {void}
 */
-SC.run.sync = function() {
+Ember.run.sync = function() {
   run.autorun();
   run.currentRunLoop.flush('sync');
 };
@@ -340,7 +340,7 @@ function invokeLaterTimers() {
 
   @returns {Timer} an object you can use to cancel a timer at a later time.
 */
-SC.run.later = function(target, method) {
+Ember.run.later = function(target, method) {
   var args, expires, timer, guid, wait;
 
   // setTimeout compatibility...
@@ -357,7 +357,7 @@ SC.run.later = function(target, method) {
 
   expires = (+ new Date())+wait;
   timer   = { target: target, method: method, expires: expires, args: args };
-  guid    = SC.guidFor(timer);
+  guid    = Ember.guidFor(timer);
   timers[guid] = timer;
   run.once(timers, invokeLaterTimers);
   return guid;
@@ -390,8 +390,8 @@ function invokeOnceTimer(guid, onceTimers) {
 
   @returns {Object} timer
 */
-SC.run.once = function(target, method) {
-  var tguid = SC.guidFor(target), mguid = SC.guidFor(method), guid, timer;
+Ember.run.once = function(target, method) {
+  var tguid = Ember.guidFor(target), mguid = Ember.guidFor(method), guid, timer;
 
   var onceTimers = run.autorun().onceTimers;
   guid = onceTimers[tguid] && onceTimers[tguid][mguid];
@@ -407,7 +407,7 @@ SC.run.once = function(target, method) {
       mguid:  mguid
     };
 
-    guid  = SC.guidFor(timer);
+    guid  = Ember.guidFor(timer);
     timers[guid] = timer;
     if (!onceTimers[tguid]) onceTimers[tguid] = {};
     onceTimers[tguid][mguid] = guid; // so it isn't scheduled more than once
@@ -447,7 +447,7 @@ function invokeNextTimers() {
 
   @returns {Object} timer
 */
-SC.run.next = function(target, method) {
+Ember.run.next = function(target, method) {
   var timer, guid;
 
   timer = {
@@ -457,7 +457,7 @@ SC.run.next = function(target, method) {
     next: true
   };
 
-  guid = SC.guidFor(timer);
+  guid = Ember.guidFor(timer);
   timers[guid] = timer;
 
   if (!scheduledNext) scheduledNext = setTimeout(invokeNextTimers, 1);
@@ -465,15 +465,15 @@ SC.run.next = function(target, method) {
 };
 
 /**
-  Cancels a scheduled item.  Must be a value returned by `SC.run.later()`,
-  `SC.run.once()`, or `SC.run.next()`.
+  Cancels a scheduled item.  Must be a value returned by `Ember.run.later()`,
+  `Ember.run.once()`, or `Ember.run.next()`.
 
   @param {Object} timer
     Timer object to cancel
 
   @returns {void}
 */
-SC.run.cancel = function(timer) {
+Ember.run.cancel = function(timer) {
   delete timers[timer];
 };
 
@@ -486,16 +486,16 @@ SC.run.cancel = function(timer) {
   @deprecated
   @method
 
-  Use `#js:SC.run.begin()` instead
+  Use `#js:Ember.run.begin()` instead
 */
-SC.RunLoop.begin = SC.run.begin;
+Ember.RunLoop.begin = Ember.run.begin;
 
 /**
   @deprecated
   @method
 
-  Use `#js:SC.run.end()` instead
+  Use `#js:Ember.run.end()` instead
 */
-SC.RunLoop.end = SC.run.end;
+Ember.RunLoop.end = Ember.run.end;
 
 

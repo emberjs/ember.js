@@ -5,7 +5,7 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 // ========================================================================
-// SC.keys Tests
+// Ember.keys Tests
 // ========================================================================
 /*globals module test */
 
@@ -19,7 +19,7 @@ test("should get a key array for a specified object ",function(){
 	object1.place = "Mangalore";
 
 	var object2 = [];
-	object2 = SC.keys(object1);
+	object2 = Ember.keys(object1);
 	same(object2,['names','age','place']);
 });
 

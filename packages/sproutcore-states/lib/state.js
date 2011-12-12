@@ -1,12 +1,12 @@
-var get = SC.get, set = SC.set;
+var get = Ember.get, set = Ember.set;
 
-SC.State = SC.Object.extend({
+Ember.State = Ember.Object.extend({
   isState: true,
   parentState: null,
   start: null,
 
   init: function() {
-    SC.keys(this).forEach(function(name) {
+    Ember.keys(this).forEach(function(name) {
       var value = this[name];
 
       if (value && value.isState) {
@@ -16,6 +16,6 @@ SC.State = SC.Object.extend({
     }, this);
   },
 
-  enter: SC.K,
-  exit: SC.K
+  enter: Ember.K,
+  exit: Ember.K
 });

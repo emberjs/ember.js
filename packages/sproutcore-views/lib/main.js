@@ -7,7 +7,7 @@
 
 require("sproutcore-runtime");
 
-SC.$ = jQuery;
+Ember.$ = jQuery;
 
 require("sproutcore-views/system");
 require("sproutcore-views/views");

@@ -10,12 +10,12 @@ require('sproutcore-metal/platform');
 require('sproutcore-metal/utils');
 require('sproutcore-metal/properties');
 
-var meta = SC.meta;
-var guidFor = SC.guidFor;
-var USE_ACCESSORS = SC.USE_ACCESSORS;
+var meta = Ember.meta;
+var guidFor = Ember.guidFor;
+var USE_ACCESSORS = Ember.USE_ACCESSORS;
 var a_slice = Array.prototype.slice;
-var o_create = SC.platform.create;
-var o_defineProperty = SC.platform.defineProperty;
+var o_create = Ember.platform.create;
+var o_defineProperty = Ember.platform.defineProperty;
 
 // ..........................................................
 // DEPENDENT KEYS
@@ -54,13 +54,13 @@ function uniqDeps(obj, depKey) {
 function addDependentKey(obj, keyName, depKey) {
   var deps = uniqDeps(obj, depKey);
   deps[keyName] = (deps[keyName] || 0) + 1;
-  SC.watch(obj, depKey);
+  Ember.watch(obj, depKey);
 }
 
 function removeDependentKey(obj, keyName, depKey) {
   var deps = uniqDeps(obj, depKey);
   deps[keyName] = (deps[keyName] || 0) - 1;
-  SC.unwatch(obj, depKey);
+  Ember.unwatch(obj, depKey);
 }
 
 function addDependentKeys(desc, obj, keyName) {
@@ -79,14 +79,14 @@ function ComputedProperty(func, opts) {
   this._dependentKeys = opts && opts.dependentKeys;
 }
 
-SC.ComputedProperty = ComputedProperty;
-ComputedProperty.prototype = new SC.Descriptor();
+Ember.ComputedProperty = ComputedProperty;
+ComputedProperty.prototype = new Ember.Descriptor();
 
 var CP_DESC = {
   configurable: true,
   enumerable:   true,
   get: function() { return undefined; }, // for when use_accessors is false.
-  set: SC.Descriptor.MUST_USE_SETTER  // for when use_accessors is false
+  set: Ember.Descriptor.MUST_USE_SETTER  // for when use_accessors is false
 };
 
 function mkCpGetter(keyName, desc) {
@@ -122,13 +122,13 @@ function mkCpSetter(keyName, desc) {
     watched = watched && m.lastSetValues[keyName]!==guidFor(value);
     if (watched) {
       m.lastSetValues[keyName] = guidFor(value);
-      SC.propertyWillChange(this, keyName);
+      Ember.propertyWillChange(this, keyName);
     }
     
     if (cacheable) delete m.cache[keyName];
     ret = func.call(this, keyName, value);
     if (cacheable) m.cache[keyName] = ret;
-    if (watched) SC.propertyDidChange(this, keyName);
+    if (watched) Ember.propertyDidChange(this, keyName);
     desc._suspended = oldSuspended;
     return ret;
   };
@@ -142,7 +142,7 @@ var Cp = ComputedProperty.prototype;
   your function until one of the dependent keys changes.
 
   @param {Boolean} aFlag optional set to false to disable cacheing
-  @returns {SC.ComputedProperty} receiver
+  @returns {Ember.ComputedProperty} receiver
 */
 Cp.cacheable = function(aFlag) {
   this._cacheable = aFlag!==false;
@@ -154,7 +154,7 @@ Cp.cacheable = function(aFlag) {
   arguments containing key paths that this computed property depends on.
   
   @param {String} path... zero or more property paths
-  @returns {SC.ComputedProperty} receiver
+  @returns {Ember.ComputedProperty} receiver
 */
 Cp.property = function() {
   this._dependentKeys = a_slice.call(arguments);
@@ -216,13 +216,13 @@ Cp.set = function(obj, keyName, value) {
   watched = watched && m.lastSetValues[keyName]!==guidFor(value);
   if (watched) {
     m.lastSetValues[keyName] = guidFor(value);
-    SC.propertyWillChange(obj, keyName);
+    Ember.propertyWillChange(obj, keyName);
   }
   
   if (cacheable) delete m.cache[keyName];
   ret = this.func.call(obj, keyName, value);
   if (cacheable) m.cache[keyName] = ret;
-  if (watched) SC.propertyDidChange(obj, keyName);
+  if (watched) Ember.propertyDidChange(obj, keyName);
   this._suspended = oldSuspended;
   return ret;
 };
@@ -231,7 +231,7 @@ Cp.val = function(obj, keyName) {
   return meta(obj, false).values[keyName];
 };
 
-if (!SC.platform.hasPropertyAccessors) {
+if (!Ember.platform.hasPropertyAccessors) {
   Cp.setup = function(obj, keyName, value) {
     obj[keyName] = undefined; // so it shows up in key iteration
     addDependentKeys(this, obj, keyName);
@@ -239,7 +239,7 @@ if (!SC.platform.hasPropertyAccessors) {
   
 } else if (!USE_ACCESSORS) {
   Cp.setup = function(obj, keyName) {
-    // throw exception if not using SC.get() and SC.set() when supported
+    // throw exception if not using Ember.get() and Ember.set() when supported
     o_defineProperty(obj, keyName, CP_DESC);
     addDependentKeys(this, obj, keyName);
   };
@@ -248,7 +248,7 @@ if (!SC.platform.hasPropertyAccessors) {
 /**
   This helper returns a new property descriptor that wraps the passed 
   computed property function.  You can use this helper to define properties
-  with mixins or via SC.defineProperty().
+  with mixins or via Ember.defineProperty().
   
   The function you pass will be used to both get and set property values.
   The function should accept two parameters, key and value.  If value is not
@@ -258,8 +258,8 @@ if (!SC.platform.hasPropertyAccessors) {
   @param {Function} func
     The computed property function.
     
-  @returns {SC.ComputedProperty} property descriptor instance
+  @returns {Ember.ComputedProperty} property descriptor instance
 */
-SC.computed = function(func) {
+Ember.computed = function(func) {
   return new ComputedProperty(func);
 };

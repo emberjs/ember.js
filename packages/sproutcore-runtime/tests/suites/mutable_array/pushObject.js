@@ -6,7 +6,7 @@
 
 require('sproutcore-runtime/~tests/suites/mutable_array');
 
-var suite = SC.MutableArrayTests;
+var suite = Ember.MutableArrayTests;
 
 suite.module('pushObject');
 
@@ -27,7 +27,7 @@ suite.test("[].pushObject(X) => [X] + notify", function() {
   obj.pushObject(after[0]);
 
   same(this.toArray(obj), after, 'post item results');
-  equals(SC.get(obj, 'length'), after.length, 'length');
+  equals(Ember.get(obj, 'length'), after.length, 'length');
 
   if (observer.isEnabled) {
     equals(observer.validate('[]'), true, 'should have notified []');
@@ -47,7 +47,7 @@ suite.test("[A,B,C].pushObject(X) => [A,B,C,X] + notify", function() {
   obj.pushObject(item);
 
   same(this.toArray(obj), after, 'post item results');
-  equals(SC.get(obj, 'length'), after.length, 'length');
+  equals(Ember.get(obj, 'length'), after.length, 'length');
 
   if (observer.isEnabled) {
     equals(observer.validate('[]'), true, 'should have notified []');

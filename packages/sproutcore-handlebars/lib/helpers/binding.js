@@ -9,7 +9,7 @@ require('sproutcore-handlebars/ext');
 require('sproutcore-handlebars/views/bindable_span');
 require('sproutcore-handlebars/views/metamorph_view');
 
-var get = SC.get, getPath = SC.getPath, set = SC.set, fmt = SC.String.fmt;
+var get = Ember.get, getPath = Ember.getPath, set = Ember.set, fmt = Ember.String.fmt;
 
 (function() {
   // Binds a property into the DOM. This will create a hook in DOM that the
@@ -25,8 +25,8 @@ var get = SC.get, getPath = SC.getPath, set = SC.set, fmt = SC.String.fmt;
     if ('object' === typeof this) {
       // Create the view that will wrap the output of this template/property 
       // and add it to the nearest view's childViews array.
-      // See the documentation of SC._BindableSpanView for more.
-      var bindView = view.createChildView(SC._BindableSpanView, {
+      // See the documentation of Ember._BindableSpanView for more.
+      var bindView = view.createChildView(Ember._BindableSpanView, {
         preserveContext: preserveContext,
         shouldDisplayFunc: shouldDisplay,
         displayTemplate: fn,
@@ -46,15 +46,15 @@ var get = SC.get, getPath = SC.getPath, set = SC.set, fmt = SC.String.fmt;
       };
 
       invoker = function() {
-        SC.run.once(observer);
+        Ember.run.once(observer);
       };
 
       // Observes the given property on the context and
-      // tells the SC._BindableSpan to re-render. If property
+      // tells the Ember._BindableSpan to re-render. If property
       // is an empty string, we are printing the current context
       // object ({{this}}) so updating it is not our responsibility.
       if (property !== '') {
-        SC.addObserver(ctx, property, invoker);
+        Ember.addObserver(ctx, property, invoker);
       }
     } else {
       // The object is not observable, so just render it out and
@@ -73,8 +73,8 @@ var get = SC.get, getPath = SC.getPath, set = SC.set, fmt = SC.String.fmt;
     This will return the `title` property as a string, then create a new 
     observer at the specified path. If it changes, it will update the value in 
     DOM. Note that if you need to support IE7 and IE8 you must modify the 
-    model objects properties using SC.get() and SC.set() for this to work as 
-    it relies on SC's KVO system.  For all other browsers this will be handled
+    model objects properties using Ember.get() and Ember.set() for this to work as 
+    it relies on Ember's KVO system.  For all other browsers this will be handled
     for you automatically.
 
     @private
@@ -83,13 +83,13 @@ var get = SC.get, getPath = SC.getPath, set = SC.set, fmt = SC.String.fmt;
     @param {Function} fn Context to provide for rendering
     @returns {String} HTML string
   */
-  SC.Handlebars.registerHelper('bind', function(property, fn) {
+  Ember.Handlebars.registerHelper('bind', function(property, fn) {
     sc_assert("You cannot pass more than one argument to the bind helper", arguments.length <= 2);
 
     var context = (fn.contexts && fn.contexts[0]) || this;
 
     return bind.call(context, property, fn, false, function(result) {
-      return !SC.none(result);
+      return !Ember.none(result);
     });
   });
 
@@ -107,11 +107,11 @@ var get = SC.get, getPath = SC.getPath, set = SC.set, fmt = SC.String.fmt;
     @param {Function} fn Context to provide for rendering
     @returns {String} HTML string
   */
-  SC.Handlebars.registerHelper('boundIf', function(property, fn) {
+  Ember.Handlebars.registerHelper('boundIf', function(property, fn) {
     var context = (fn.contexts && fn.contexts[0]) || this;
 
     return bind.call(context, property, fn, true, function(result) {
-      if (SC.typeOf(result) === 'array') {
+      if (Ember.typeOf(result) === 'array') {
         return get(result, 'length') !== 0;
       } else {
         return !!result;
@@ -126,11 +126,11 @@ var get = SC.get, getPath = SC.getPath, set = SC.set, fmt = SC.String.fmt;
   @param {Hash} options
   @returns {String} HTML string
 */
-SC.Handlebars.registerHelper('with', function(context, options) {
+Ember.Handlebars.registerHelper('with', function(context, options) {
   sc_assert("You must pass exactly one argument to the with helper", arguments.length == 2);
   sc_assert("You must pass a block to the with helper", options.fn && options.fn !== Handlebars.VM.noop);
 
-  return SC.Handlebars.helpers.bind.call(options.contexts[0], context, options);
+  return Ember.Handlebars.helpers.bind.call(options.contexts[0], context, options);
 });
 
 
@@ -140,11 +140,11 @@ SC.Handlebars.registerHelper('with', function(context, options) {
   @param {Hash} options
   @returns {String} HTML string
 */
-SC.Handlebars.registerHelper('if', function(context, options) {
+Ember.Handlebars.registerHelper('if', function(context, options) {
   sc_assert("You must pass exactly one argument to the if helper", arguments.length == 2);
   sc_assert("You must pass a block to the if helper", options.fn && options.fn !== Handlebars.VM.noop);
 
-  return SC.Handlebars.helpers.boundIf.call(options.contexts[0], context, options);
+  return Ember.Handlebars.helpers.boundIf.call(options.contexts[0], context, options);
 });
 
 /**
@@ -153,7 +153,7 @@ SC.Handlebars.registerHelper('if', function(context, options) {
   @param {Hash} options
   @returns {String} HTML string
 */
-SC.Handlebars.registerHelper('unless', function(context, options) {
+Ember.Handlebars.registerHelper('unless', function(context, options) {
   sc_assert("You must pass exactly one argument to the unless helper", arguments.length == 2);
   sc_assert("You must pass a block to the unless helper", options.fn && options.fn !== Handlebars.VM.noop);
 
@@ -162,7 +162,7 @@ SC.Handlebars.registerHelper('unless', function(context, options) {
   options.fn = inverse;
   options.inverse = fn;
 
-  return SC.Handlebars.helpers.boundIf.call(options.contexts[0], context, options);
+  return Ember.Handlebars.helpers.boundIf.call(options.contexts[0], context, options);
 });
 
 /**
@@ -175,11 +175,11 @@ SC.Handlebars.registerHelper('unless', function(context, options) {
   @param {Hash} options
   @returns {String} HTML string
 */
-SC.Handlebars.registerHelper('bindAttr', function(options) {
+Ember.Handlebars.registerHelper('bindAttr', function(options) {
 
   var attrs = options.hash;
 
-  sc_assert("You must specify at least one hash argument to bindAttr", !!SC.keys(attrs).length);
+  sc_assert("You must specify at least one hash argument to bindAttr", !!Ember.keys(attrs).length);
 
   var view = options.data.view;
   var ret = [];
@@ -193,12 +193,12 @@ SC.Handlebars.registerHelper('bindAttr', function(options) {
   // Handle classes differently, as we can bind multiple classes
   var classBindings = attrs['class'];
   if (classBindings !== null && classBindings !== undefined) {
-    var classResults = SC.Handlebars.bindClasses(this, classBindings, view, dataId);
+    var classResults = Ember.Handlebars.bindClasses(this, classBindings, view, dataId);
     ret.push('class="' + classResults.join(' ') + '"');
     delete attrs['class'];
   }
 
-  var attrKeys = SC.keys(attrs);
+  var attrKeys = Ember.keys(attrs);
 
   // For each attribute passed, create an observer and emit the
   // current value of the property as an attribute.
@@ -225,7 +225,7 @@ SC.Handlebars.registerHelper('bindAttr', function(options) {
       // In that case, we can assume the template has been re-rendered
       // and we need to clean up the observer.
       if (elem.length === 0) {
-        SC.removeObserver(ctx, property, invoker);
+        Ember.removeObserver(ctx, property, invoker);
         return;
       }
 
@@ -246,13 +246,13 @@ SC.Handlebars.registerHelper('bindAttr', function(options) {
     };
 
     invoker = function() {
-      SC.run.once(observer);
+      Ember.run.once(observer);
     };
 
     // Add an observer to the view for when the property changes.
     // When the observer fires, find the element using the
     // unique data id and update the attribute to the new value.
-    SC.addObserver(ctx, property, invoker);
+    Ember.addObserver(ctx, property, invoker);
 
     // Use the attribute's name as the value when it is YES
     if (value === true) {
@@ -268,7 +268,7 @@ SC.Handlebars.registerHelper('bindAttr', function(options) {
 
   // Add the unique identifier
   ret.push('data-handlebars-id="' + dataId + '"');
-  return new SC.Handlebars.SafeString(ret.join(' '));
+  return new Ember.Handlebars.SafeString(ret.join(' '));
 });
 
 /**
@@ -283,13 +283,13 @@ SC.Handlebars.registerHelper('bindAttr', function(options) {
   "fooBar"). If the value is a string, it will add that string as the class. 
   Otherwise, it will not add any new class name.
 
-  @param {SC.Object} context 
+  @param {Ember.Object} context 
     The context from which to lookup properties
 
   @param {String} classBindings 
     A string, space-separated, of class bindings to use
 
-  @param {SC.View} view
+  @param {Ember.View} view
     The view in which observers should look for the element to update
 
   @param {String} id 
@@ -297,7 +297,7 @@ SC.Handlebars.registerHelper('bindAttr', function(options) {
 
   @returns {Array} An array of class names to add
 */
-SC.Handlebars.bindClasses = function(context, classBindings, view, id) {
+Ember.Handlebars.bindClasses = function(context, classBindings, view, id) {
   var ret = [], newClass, value, elem;
 
   // Helper method to retrieve the property from the context and
@@ -319,7 +319,7 @@ SC.Handlebars.bindClasses = function(context, classBindings, view, id) {
       // as a class name. For exaple, content.foo.barBaz
       // becomes bar-baz.
       var parts = property.split('.');
-      return SC.String.dasherize(parts[parts.length-1]);
+      return Ember.String.dasherize(parts[parts.length-1]);
 
     // If the value is not NO, undefined, or null, return the current
     // value of the property.
@@ -354,7 +354,7 @@ SC.Handlebars.bindClasses = function(context, classBindings, view, id) {
       // If we can't find the element anymore, a parent template has been
       // re-rendered and we've been nuked. Remove the observer.
       if (elem.length === 0) {
-        SC.removeObserver(context, binding, invoker);
+        Ember.removeObserver(context, binding, invoker);
       } else {
         // If we had previously added a class to the element, remove it.
         if (oldClass) {
@@ -373,11 +373,11 @@ SC.Handlebars.bindClasses = function(context, classBindings, view, id) {
     };
 
     invoker = function() {
-      SC.run.once(observer);
+      Ember.run.once(observer);
     };
 
     property = binding.split(':')[0];
-    SC.addObserver(context, property, invoker);
+    Ember.addObserver(context, property, invoker);
 
     // We've already setup the observer; now we just need to figure out the 
     // correct behavior right now on the first pass through.

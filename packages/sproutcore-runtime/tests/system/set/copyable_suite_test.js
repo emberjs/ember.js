@@ -7,19 +7,19 @@
 // ..........................................................
 // COPYABLE TESTS
 // 
-SC.CopyableTests.extend({
-  name: 'SC.Set Copyable',
+Ember.CopyableTests.extend({
+  name: 'Ember.Set Copyable',
   
   newObject: function() {
-    var set = new SC.Set();
-    set.addObject(SC.generateGuid());
+    var set = new Ember.Set();
+    set.addObject(Ember.generateGuid());
     return set;
   },
   
   isEqual: function(a,b) {
-    if (!(a instanceof SC.Set)) return false;
-    if (!(b instanceof SC.Set)) return false;
-    return SC.get(a, 'firstObject') === SC.get(b, 'firstObject');
+    if (!(a instanceof Ember.Set)) return false;
+    if (!(b instanceof Ember.Set)) return false;
+    return Ember.get(a, 'firstObject') === Ember.get(b, 'firstObject');
   },
   
   shouldBeFreezable: true

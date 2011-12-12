@@ -10,7 +10,7 @@ require('sproutcore-runtime/~tests/suites/suite');
 
 
   
-var ObserverClass = SC.Object.extend({
+var ObserverClass = Ember.Object.extend({
   
   _keys: null,
   _values: null,
@@ -50,13 +50,13 @@ var ObserverClass = SC.Object.extend({
     Begins observing the passed key names on the passed object.  Any changes
     on the named properties will be recorded.
     
-    @param {SC.Enumerable} obj 
+    @param {Ember.Enumerable} obj 
       The enumerable to observe.
       
     @returns {Object} receiver
   */
   observe: function(obj) {
-    if (SC.Observer && SC.Observer.detect(obj)) {
+    if (Ember.Observer && Ember.Observer.detect(obj)) {
       var keys = Array.prototype.slice.call(arguments, 1),
           loc  = keys.length;
       while(--loc>=0) obj.addObserver(keys[loc], this, 'propertyDidChange');
@@ -119,14 +119,14 @@ var ObserverClass = SC.Object.extend({
   You can also add your own tests by defining new methods beginning with the
   word 'test'
 */
-var EnumerableTests = SC.Object.extend({
+var EnumerableTests = Ember.Object.extend({
   
   /**
     Define a name for these tests - all modules are prefixed w/ it.
     
     @property {String}
   */
-  name: SC.required(String),
+  name: Ember.required(String),
   
   /**
     Implement to return a new enumerable object for testing.  Should accept
@@ -136,9 +136,9 @@ var EnumerableTests = SC.Object.extend({
     @param {Array} content
       An array of items to include in the enumerable optionally.  
       
-    @returns {SC.Enumerable} a new enumerable
+    @returns {Ember.Enumerable} a new enumerable
   */
-  newObject: SC.required(Function),
+  newObject: Ember.required(Function),
   
   /**
     Implement to return a set of new fixture objects that can be applied to
@@ -151,7 +151,7 @@ var EnumerableTests = SC.Object.extend({
   */
   newFixture: function(cnt) {
     var ret = [];
-    while(--cnt>=0) ret.push(SC.generateGuid());
+    while(--cnt>=0) ret.push(Ember.generateGuid());
     return ret;
   },
   
@@ -160,12 +160,12 @@ var EnumerableTests = SC.Object.extend({
     containing the objects in the enumerable.  This is used only for testing
     so performance is not important.
     
-    @param {SC.Enumerable} enumerable
+    @param {Ember.Enumerable} enumerable
       The enumerable to convert.
       
     @returns {Array} array of items
   */
-  toArray: SC.required(Function),
+  toArray: Ember.required(Function),
 
   /**
     Implement this method if your object can mutate internally (even if it 
@@ -177,7 +177,7 @@ var EnumerableTests = SC.Object.extend({
     If you do not define this optional method, then mutation-related tests
     will be skipped.
     
-    @param {SC.Enumerable} enumerable
+    @param {Ember.Enumerable} enumerable
       The enumerable to mutate
       
     @returns {void}
@@ -190,7 +190,7 @@ var EnumerableTests = SC.Object.extend({
     
     @property {Boolean}
   */
-  canTestMutation: SC.computed(function() {
+  canTestMutation: Ember.computed(function() {
     return this.mutate !== EnumerableTests.prototype.mutate;  
   }).property().cacheable(),
   
@@ -207,7 +207,7 @@ var EnumerableTests = SC.Object.extend({
     validate the results.
   */
   newObserver: function(obj) {
-    var ret = SC.get(this, 'observerClass').create();
+    var ret = Ember.get(this, 'observerClass').create();
     if (arguments.length>0) ret.observe.apply(ret, arguments);
     return ret;
   },
@@ -231,7 +231,7 @@ EnumerableTests.reopenClass({
     this.reopen({
       run: function() {
         this._super();
-        var title = SC.get(this,'name')+': '+desc, ctx = this;
+        var title = Ember.get(this,'name')+': '+desc, ctx = this;
         module(title, {
           setup: function() {
             if (setup) setup.call(ctx);
@@ -258,8 +258,8 @@ EnumerableTests.reopenClass({
   
   // convert to guids to minimize logging.
   same: function(actual, exp, message) {
-    actual = (actual && actual.map) ? actual.map(function(x) { return SC.guidFor(x); }) : actual;
-    exp = (exp && exp.map) ? exp.map(function(x) { return SC.guidFor(x); }) : exp;
+    actual = (actual && actual.map) ? actual.map(function(x) { return Ember.guidFor(x); }) : actual;
+    exp = (exp && exp.map) ? exp.map(function(x) { return Ember.guidFor(x); }) : exp;
     return same(actual, exp, message);
   },
   
@@ -268,8 +268,8 @@ EnumerableTests.reopenClass({
   
 });
 
-SC.EnumerableTests = EnumerableTests;
-SC.EnumerableTests.ObserverClass = ObserverClass;
+Ember.EnumerableTests = EnumerableTests;
+Ember.EnumerableTests.ObserverClass = ObserverClass;
 
 require('./enumerable/contains');
 require('./enumerable/every');

@@ -4,12 +4,12 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
-SC.MutableArrayTests.extend({
+Ember.MutableArrayTests.extend({
   
   name: 'Native Array',
   
   newObject: function(ary) {
-    return SC.A(ary ? ary.slice() : this.newFixture(3));
+    return Ember.A(ary ? ary.slice() : this.newFixture(3));
   },
 
   mutate: function(obj) {

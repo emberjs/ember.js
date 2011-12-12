@@ -7,7 +7,7 @@
 
 require('sproutcore-runtime');
 
-var get = SC.get, set = SC.set;
+var get = Ember.get, set = Ember.set;
 
 // simple copy op needed for just this code.
 function copy(opts) {
@@ -19,41 +19,41 @@ function copy(opts) {
 }
 
 /**
-  Standard error thrown by `SC.Scanner` when it runs out of bounds
+  Standard error thrown by `Ember.Scanner` when it runs out of bounds
 
   @static
   @constant
   @type Error
 */
-SC.SCANNER_OUT_OF_BOUNDS_ERROR = "Out of bounds.";
+Ember.SCANNER_OUT_OF_BOUNDS_ERROR = "Out of bounds.";
 
 /**
-  Standard error thrown by `SC.Scanner` when  you pass a value not an integer.
+  Standard error thrown by `Ember.Scanner` when  you pass a value not an integer.
 
   @static
   @constant
   @type Error
 */
-SC.SCANNER_INT_ERROR = "Not an int.";
+Ember.SCANNER_INT_ERROR = "Not an int.";
 
 /**
-  Standard error thrown by `SC.Scanner` when it cannot find a string to skip.
+  Standard error thrown by `Ember.Scanner` when it cannot find a string to skip.
 
   @static
   @constant
   @type Error
 */
-SC.SCANNER_SKIP_ERROR = "Did not find the string to skip.";
+Ember.SCANNER_SKIP_ERROR = "Did not find the string to skip.";
 
 /**
-  Standard error thrown by `SC.Scanner` when it can any kind a string in the
+  Standard error thrown by `Ember.Scanner` when it can any kind a string in the
   matching array.
 
   @static
   @constant
   @type Error
 */
-SC.SCANNER_SCAN_ARRAY_ERROR = "Did not find any string of the given array to scan.";
+Ember.SCANNER_SCAN_ARRAY_ERROR = "Did not find any string of the given array to scan.";
 
 /**
   Standard error thrown when trying to compare two dates in different
@@ -63,7 +63,7 @@ SC.SCANNER_SCAN_ARRAY_ERROR = "Did not find any string of the given array to sca
   @constant
   @type Error
 */
-SC.DATETIME_COMPAREDATE_TIMEZONE_ERROR = "Can't compare the dates of two DateTimes that don't have the same timezone.";
+Ember.DATETIME_COMPAREDATE_TIMEZONE_ERROR = "Can't compare the dates of two DateTimes that don't have the same timezone.";
 
 /**
   Standard ISO8601 date format
@@ -73,7 +73,7 @@ SC.DATETIME_COMPAREDATE_TIMEZONE_ERROR = "Can't compare the dates of two DateTim
   @default '%Y-%m-%dT%H:%M:%S%Z'
   @constant
 */
-SC.DATETIME_ISO8601 = '%Y-%m-%dT%H:%M:%S%Z';
+Ember.DATETIME_ISO8601 = '%Y-%m-%dT%H:%M:%S%Z';
 
 
 /**
@@ -87,11 +87,11 @@ SC.DATETIME_ISO8601 = '%Y-%m-%dT%H:%M:%S%Z';
 
   Scanners are used by `DateTime` to convert strings into `DateTime` objects.
 
-  @extends SC.Object
+  @extends Ember.Object
   @since SproutCore 1.0
   @author Martin Ottenwaelter
 */
-var Scanner = SC.Object.extend({
+var Scanner = Ember.Object.extend({
 
   /**
     The string to scan. You usually pass it to the create method:
@@ -116,12 +116,12 @@ var Scanner = SC.Object.extend({
     accordingly.
 
     @param {Integer} len The amount of characters to read
-    @throws {SC.SCANNER_OUT_OF_BOUNDS_ERROR} If asked to read too many characters
+    @throws {Ember.SCANNER_OUT_OF_BOUNDS_ERROR} If asked to read too many characters
     @returns {String} The characters
   */
   scan: function(len) {
     if (this.scanLocation + len > this.length) {
-      throw new Error(SC.SCANNER_OUT_OF_BOUNDS_ERROR);
+      throw new Error(Ember.SCANNER_OUT_OF_BOUNDS_ERROR);
     }
     var str = this.string.substr(this.scanLocation, len);
     this.scanLocation += len;
@@ -133,7 +133,7 @@ var Scanner = SC.Object.extend({
 
     @param {Integer} min_len The minimum amount of characters to read
     @param {Integer} [max_len] The maximum amount of characters to read (defaults to the minimum)
-    @throws {SC.SCANNER_INT_ERROR} If asked to read non numeric characters
+    @throws {Ember.SCANNER_INT_ERROR} If asked to read non numeric characters
     @returns {Integer} The scanned integer
   */
   scanInt: function(min_len, max_len) {
@@ -141,7 +141,7 @@ var Scanner = SC.Object.extend({
     var str = this.scan(max_len);
     var re = new RegExp("^\\d{" + min_len + "," + max_len + "}");
     var match = str.match(re);
-    if (!match) throw new Error(SC.SCANNER_INT_ERROR);
+    if (!match) throw new Error(Ember.SCANNER_INT_ERROR);
     if (match[0].length < max_len) {
       this.scanLocation += match[0].length - max_len;
     }
@@ -152,12 +152,12 @@ var Scanner = SC.Object.extend({
     Attempts to skip a given string.
 
     @param {String} str The string to skip
-    @throws {SC.SCANNER_SKIP_ERROR} If the given string could not be scanned
+    @throws {Ember.SCANNER_SKIP_ERROR} If the given string could not be scanned
     @returns {Boolean} YES if the given string was successfully scanned, NO otherwise
   */
   skipString: function(str) {
     if (this.scan(str.length) !== str) {
-      throw new Error(SC.SCANNER_SKIP_ERROR);
+      throw new Error(Ember.SCANNER_SKIP_ERROR);
     }
     
     return YES;
@@ -167,7 +167,7 @@ var Scanner = SC.Object.extend({
     Attempts to scan any string in a given array.
 
     @param {Array} ary the array of strings to scan
-    @throws {SC.SCANNER_SCAN_ARRAY_ERROR} If no string of the given array is found
+    @throws {Ember.SCANNER_SCAN_ARRAY_ERROR} If no string of the given array is found
     @returns {Integer} The index of the scanned string of the given array
   */
   scanArray: function(ary) {
@@ -177,7 +177,7 @@ var Scanner = SC.Object.extend({
       }
       this.scanLocation -= ary[i].length;
     }
-    throw new Error(SC.SCANNER_SCAN_ARRAY_ERROR);
+    throw new Error(Ember.SCANNER_SCAN_ARRAY_ERROR);
   }
 
 });
@@ -192,12 +192,12 @@ var Scanner = SC.Object.extend({
   This object differs from the standard JS Date object, however, in that it
   supports time zones other than UTC and that local to the machine on which
   it is running.  Any time zone can be specified when creating an
-  `SC.DateTime` object, e.g.
+  `Ember.DateTime` object, e.g.
 
       // Creates a DateTime representing 5am in Washington, DC and 10am in 
       // London
-      var d = SC.DateTime.create({ hour: 5, timezone: 300 }); // -5 hours from UTC
-      var e = SC.DateTime.create({ hour: 10, timezone: 0 }); // same time, specified in UTC
+      var d = Ember.DateTime.create({ hour: 5, timezone: 300 }); // -5 hours from UTC
+      var e = Ember.DateTime.create({ hour: 10, timezone: 0 }); // same time, specified in UTC
 
   and it is true that `d.isEqual(e)`.
 
@@ -213,16 +213,16 @@ var Scanner = SC.Object.extend({
 
   is true, since they are technically the same position in time.
 
-  @extends SC.Object
-  @extends SC.Freezable
-  @extends SC.Copyable
+  @extends Ember.Object
+  @extends Ember.Freezable
+  @extends Ember.Copyable
   @author Martin Ottenwaelter
   @author Jonathan Lewis
   @author Josh Holt
   @since SproutCore 1.0
 */
-SC.DateTime = SC.Object.extend(SC.Freezable, SC.Copyable,
-/** @scope SC.DateTime.prototype */ {
+Ember.DateTime = Ember.Object.extend(Ember.Freezable, Ember.Copyable,
+/** @scope Ember.DateTime.prototype */ {
 
   /**
     @private
@@ -245,29 +245,29 @@ SC.DateTime = SC.Object.extend(SC.Freezable, SC.Copyable,
   timezone: 0,
 
   /**
-    A `SC.DateTime` instance is frozen by default for better performance.
+    A `Ember.DateTime` instance is frozen by default for better performance.
 
     @type Boolean
   */
   isFrozen: YES,
 
   /**
-    Returns a new `SC.DateTime` object where one or more of the elements have 
+    Returns a new `Ember.DateTime` object where one or more of the elements have 
     been changed according to the options parameter. The time options (hour,
     minute, sec, usec) reset cascadingly, so if only the hour is passed, then
     minute, sec, and usec is set to 0. If the hour and minute is passed, then
     sec and usec is set to 0.
 
     If a time zone is passed in the options hash, all dates and times are 
-    assumed to be local to it, and the returned `SC.DateTime` instance has 
-    that time zone. If none is passed, it defaults to `SC.DateTime.timezone`.
+    assumed to be local to it, and the returned `Ember.DateTime` instance has 
+    that time zone. If none is passed, it defaults to `Ember.DateTime.timezone`.
 
     Note that passing only a time zone does not affect the actual milliseconds 
     since Jan 1, 1970, only the time zone in which it is expressed when 
     displayed.
 
-    @see SC.DateTime#create for the list of options you can pass
-    @returns {SC.DateTime} copy of receiver
+    @see Ember.DateTime#create for the list of options you can pass
+    @returns {Ember.DateTime} copy of receiver
   */
   adjust: function(options, resetCascadingly) {
     var timezone;
@@ -279,10 +279,10 @@ SC.DateTime = SC.Object.extend(SC.Freezable, SC.Copyable,
   },
 
   /**
-    Returns a new `SC.DateTime` object advanced according the the given 
+    Returns a new `Ember.DateTime` object advanced according the the given 
     parameters. Don't use floating point values, it might give unpredicatble results.
 
-    @see SC.DateTime#create for the list of options you can pass
+    @see Ember.DateTime#create for the list of options you can pass
     @param {Hash} options the amount of date/time to advance the receiver
     @returns {DateTime} copy of the receiver
   */
@@ -373,7 +373,7 @@ SC.DateTime = SC.Object.extend(SC.Freezable, SC.Copyable,
     @return {String} the formatted string
   */
   toISO8601: function(){
-    return this.constructor._toFormattedString(SC.DATETIME_ISO8601, this._ms, this.timezone);
+    return this.constructor._toFormattedString(Ember.DATETIME_ISO8601, this._ms, this.timezone);
   },
 
   /**
@@ -382,9 +382,9 @@ SC.DateTime = SC.Object.extend(SC.Freezable, SC.Copyable,
     Creates a string representation of the receiver.
 
     (Debuggers often call the `toString` method. Because of the way
-    `SC.DateTime` is designed, calling `SC.DateTime._toFormattedString` would
+    `Ember.DateTime` is designed, calling `Ember.DateTime._toFormattedString` would
     have a nasty side effect. We shouldn't therefore call any of
-    `SC.DateTime`'s methods from `toString`)
+    `Ember.DateTime`'s methods from `toString`)
 
     @returns {String}
   */
@@ -396,12 +396,12 @@ SC.DateTime = SC.Object.extend(SC.Freezable, SC.Copyable,
   },
 
   /**
-    Returns `YES` if the passed `SC.DateTime` is equal to the receiver, ie: if their
+    Returns `YES` if the passed `Ember.DateTime` is equal to the receiver, ie: if their
     number of milliseconds since January, 1st 1970 00:00:00.0 UTC are equal.
     This is the preferred method for testing equality.
 
-    @see SC.DateTime#compare
-    @param {SC.DateTime} aDateTime the DateTime to compare to
+    @see Ember.DateTime#compare
+    @param {Ember.DateTime} aDateTime the DateTime to compare to
     @returns {Boolean}
   */
   isEqual: function(aDateTime) {
@@ -409,10 +409,10 @@ SC.DateTime = SC.Object.extend(SC.Freezable, SC.Copyable,
   },
 
   /**
-    Returns a copy of the receiver. Because of the way `SC.DateTime` is designed,
+    Returns a copy of the receiver. Because of the way `Ember.DateTime` is designed,
     it just returns the receiver.
 
-    @returns {SC.DateTime}
+    @returns {Ember.DateTime}
   */
   copy: function() {
     return this;
@@ -420,7 +420,7 @@ SC.DateTime = SC.Object.extend(SC.Freezable, SC.Copyable,
 
   /**
     Returns a copy of the receiver with the timezone set to the passed
-    timezone. The returned value is equal to the receiver (ie `SC.Compare`
+    timezone. The returned value is equal to the receiver (ie `Ember.Compare`
     returns 0), it is just the timezone representation that changes.
 
     If you don't pass any argument, the target timezone is assumed to be 0,
@@ -430,7 +430,7 @@ SC.DateTime = SC.Object.extend(SC.Freezable, SC.Copyable,
     but only the time zone in which it is displayed. In other words, the underlying
     number of milliseconds since Jan 1, 1970 does not change.
 
-    @return {SC.DateTime}
+    @return {Ember.DateTime}
   */
   toTimezone: function(timezone) {
     if (timezone === undefined) timezone = 0;
@@ -439,8 +439,8 @@ SC.DateTime = SC.Object.extend(SC.Freezable, SC.Copyable,
 
 });
 
-SC.DateTime.reopenClass(SC.Comparable,
-/** @scope SC.DateTime */ {
+Ember.DateTime.reopenClass(Ember.Comparable,
+/** @scope Ember.DateTime */ {
 
   /**
     The default format (ISO 8601) in which DateTimes are stored in a record.
@@ -450,12 +450,12 @@ SC.DateTime.reopenClass(SC.Comparable,
     This value can also be customized on a per-attribute basis with the format
     property. For example:
 
-        SC.Record.attr(SC.DateTime, { format: '%d/%m/%Y %H:%M:%S' })
+        Ember.Record.attr(Ember.DateTime, { format: '%d/%m/%Y %H:%M:%S' })
 
     @type String
-    @default SC.DATETIME_ISO8601
+    @default Ember.DATETIME_ISO8601
   */
-  recordFormat: SC.DATETIME_ISO8601,
+  recordFormat: Ember.DATETIME_ISO8601,
 
   /**
     @type Array
@@ -498,8 +498,8 @@ SC.DateTime.reopenClass(SC.Comparable,
     application and manipulating it with `setTime()` and `getTime()`.
 
     Note that since this is used for internal calculations across many
-    `SC.DateTime` instances, it is not guaranteed to store the date/time that
-    any one `SC.DateTime` instance represents.  So it might be that
+    `Ember.DateTime` instances, it is not guaranteed to store the date/time that
+    any one `Ember.DateTime` instance represents.  So it might be that
 
         this._date.getTime() !== this._ms
 
@@ -513,7 +513,7 @@ SC.DateTime.reopenClass(SC.Comparable,
     @private
 
     The offset, in minutes, between UTC and the currently manipulated
-    `SC.DateTime` instance.
+    `Ember.DateTime` instance.
 
     @type Integer
   */
@@ -532,7 +532,7 @@ SC.DateTime.reopenClass(SC.Comparable,
   /**
     @private
 
-    A cache of `SC.DateTime` instances. If you attempt to create a `SC.DateTime`
+    A cache of `Ember.DateTime` instances. If you attempt to create a `Ember.DateTime`
     instance that has already been created, then it will return the cached
     value.
 
@@ -603,7 +603,7 @@ SC.DateTime.reopenClass(SC.Comparable,
 
   /**
     @private
-    @see SC.DateTime#unknownProperty
+    @see Ember.DateTime#unknownProperty
   */
   _get: function(key, start, timezone) {
     var ms, tz, doy, m, y, firstDayOfWeek, dayOfWeek, dayOfYear, prefix, suffix;
@@ -757,7 +757,7 @@ SC.DateTime.reopenClass(SC.Comparable,
 
   /**
     @private
-    @see SC.DateTime#advance
+    @see Ember.DateTime#advance
   */
   _advance: function(options, start, timezone) {
     var opts = options ? copy(options) : {};
@@ -790,7 +790,7 @@ SC.DateTime.reopenClass(SC.Comparable,
     // Note that this object was created in the local machine time zone, so when we set
     // its params later, it will be assuming these values to be in the same time zone as it is.
     // It's ok for start to be null, in which case we'll just keep whatever we had in 'd' before.
-    if (!SC.none(start)) {
+    if (!Ember.none(start)) {
       d.setTime(start); // using milliseconds here specifies an absolute location in time, regardless of time zone, so that's nice
     }
 
@@ -808,15 +808,15 @@ SC.DateTime.reopenClass(SC.Comparable,
     // the time options (hour, minute, sec, millisecond)
     // reset cascadingly (see documentation)
     if (resetCascadingly === undefined || resetCascadingly === YES) {
-      if ( !SC.none(opts.hour) && SC.none(opts.minute)) {
+      if ( !Ember.none(opts.hour) && Ember.none(opts.minute)) {
         opts.minute = 0;
       }
-      if (!(SC.none(opts.hour) && SC.none(opts.minute))
-          && SC.none(opts.second)) {
+      if (!(Ember.none(opts.hour) && Ember.none(opts.minute))
+          && Ember.none(opts.second)) {
         opts.second = 0;
       }
-      if (!(SC.none(opts.hour) && SC.none(opts.minute) && SC.none(opts.second))
-          && SC.none(opts.millisecond)) {
+      if (!(Ember.none(opts.hour) && Ember.none(opts.minute) && Ember.none(opts.second))
+          && Ember.none(opts.millisecond)) {
         opts.millisecond = 0;
       }
     }
@@ -826,13 +826,13 @@ SC.DateTime.reopenClass(SC.Comparable,
     // according to javascript Date spec, you have to set year, month, and day together
     // if you're setting any one of them.  So we'll use the provided Date.UTC() method
     // to get milliseconds, and we need to get any missing values first...
-    if (SC.none(opts.year))        opts.year = d.getUTCFullYear();
-    if (SC.none(opts.month))       opts.month = d.getUTCMonth() + 1; // January is 0 in JavaScript
-    if (SC.none(opts.day))         opts.day = d.getUTCDate();
-    if (SC.none(opts.hour))        opts.hour = d.getUTCHours();
-    if (SC.none(opts.minute))      opts.minute = d.getUTCMinutes();
-    if (SC.none(opts.second))      opts.second = d.getUTCSeconds();
-    if (SC.none(opts.millisecond)) opts.millisecond = d.getUTCMilliseconds();
+    if (Ember.none(opts.year))        opts.year = d.getUTCFullYear();
+    if (Ember.none(opts.month))       opts.month = d.getUTCMonth() + 1; // January is 0 in JavaScript
+    if (Ember.none(opts.day))         opts.day = d.getUTCDate();
+    if (Ember.none(opts.hour))        opts.hour = d.getUTCHours();
+    if (Ember.none(opts.minute))      opts.minute = d.getUTCMinutes();
+    if (Ember.none(opts.second))      opts.second = d.getUTCSeconds();
+    if (Ember.none(opts.millisecond)) opts.millisecond = d.getUTCMilliseconds();
 
     // Ask the JS Date to calculate milliseconds for us (still in redefined UTC).  It
     // is best to set them all together because, for example, a day value means different things
@@ -853,17 +853,17 @@ SC.DateTime.reopenClass(SC.Comparable,
   },
 
   /**
-    Returns a new `SC.DateTime` object advanced according the the given parameters.
+    Returns a new `Ember.DateTime` object advanced according the the given parameters.
     The parameters can be:
 
-     - none, to create a `SC.DateTime` instance initialized to the current
+     - none, to create a `Ember.DateTime` instance initialized to the current
        date and time in the local timezone,
      - a integer, the number of milliseconds since
        January, 1st 1970 00:00:00.0 UTC
      - a options hash that can contain any of the following properties: year,
        month, day, hour, minute, second, millisecond, timezone
 
-    Note that if you attempt to create a `SC.DateTime` instance that has already
+    Note that if you attempt to create a `Ember.DateTime` instance that has already
     been created, then, for performance reasons, a cached value may be
     returned.
 
@@ -873,7 +873,7 @@ SC.DateTime.reopenClass(SC.Comparable,
     then you should pass a timezone of -120.
 
     @param options one of the three kind of parameters descibed above
-    @returns {SC.DateTime} the SC.DateTime instance that corresponds to the
+    @returns {Ember.DateTime} the Ember.DateTime instance that corresponds to the
       passed parameters, possibly fetched from cache
   */
   create: function() {
@@ -881,7 +881,7 @@ SC.DateTime.reopenClass(SC.Comparable,
     var timezone;
 
     // if simply milliseconds since Jan 1, 1970 are given, just use those
-    if (SC.typeOf(arg) === 'number') {
+    if (Ember.typeOf(arg) === 'number') {
       arg = { milliseconds: arg };
     }
 
@@ -891,7 +891,7 @@ SC.DateTime.reopenClass(SC.Comparable,
 
     // Desired case: create with milliseconds if we have them.
     // If we don't, convert what we have to milliseconds and recurse.
-    if (!SC.none(arg.milliseconds)) {
+    if (!Ember.none(arg.milliseconds)) {
 
       // quick implementation of a FIFO set for the cache
       var key = 'nu' + arg.milliseconds + timezone, cache = this._dt_cache;
@@ -922,7 +922,7 @@ SC.DateTime.reopenClass(SC.Comparable,
 
     Calls the `create()` method with the current internal `_date` value.
 
-    @return {SC.DateTime} the SC.DateTime instance returned by create()
+    @return {Ember.DateTime} the Ember.DateTime instance returned by create()
   */
   _createFromCurrentState: function() {
     return this.create({
@@ -932,10 +932,10 @@ SC.DateTime.reopenClass(SC.Comparable,
   },
 
   /**
-    Returns a `SC.DateTime` object created from a given string parsed with a given
+    Returns a `Ember.DateTime` object created from a given string parsed with a given
     format. Returns `null` if the parsing fails.
 
-    @see SC.DateTime#toFormattedString for a description of the format parameter
+    @see Ember.DateTime#toFormattedString for a description of the format parameter
     @param {String} str the string to parse
     @param {String} fmt the format to parse the string with
     @returns {DateTime} the DateTime corresponding to the string parameter
@@ -946,7 +946,7 @@ SC.DateTime.reopenClass(SC.Comparable,
     var re = new RegExp('(?:%([aAbBcdDhHiIjmMpsSUWwxXyYZ%])|(.))', "g");
     var d, parts, opts = {}, check = {}, scanner = Scanner.create({string: str});
 
-    if (SC.none(fmt)) fmt = SC.DATETIME_ISO8601;
+    if (Ember.none(fmt)) fmt = Ember.DATETIME_ISO8601;
 
     try {
       while ((parts = re.exec(fmt)) !== null) {
@@ -991,25 +991,25 @@ SC.DateTime.reopenClass(SC.Comparable,
         }
       }
     } catch (e) {
-      SC.Logger.log('SC.DateTime.createFromString ' + e.toString());
+      Ember.Logger.log('Ember.DateTime.createFromString ' + e.toString());
       return null;
     }
 
-    if (!SC.none(opts.meridian) && !SC.none(opts.hour)) {
+    if (!Ember.none(opts.meridian) && !Ember.none(opts.hour)) {
       if (opts.meridian === 1) opts.hour = (opts.hour + 12) % 24;
       delete opts.meridian;
     }
 
-   if (!SC.none(opts.day) && (opts.day < 1 || opts.day > 31)){
+   if (!Ember.none(opts.day) && (opts.day < 1 || opts.day > 31)){
      return null;
    }
 
    // Check the month and day are valid and within bounds
-   if (!SC.none(opts.month)){
+   if (!Ember.none(opts.month)){
      if (opts.month < 1 || opts.month > 12){
        return null;
      }
-     if (!SC.none(opts.day)){
+     if (!Ember.none(opts.day)){
        if ( opts.month === 2 && opts.day > 29 ){
          return null;
        }
@@ -1021,7 +1021,7 @@ SC.DateTime.reopenClass(SC.Comparable,
 
     d = this.create(opts);
 
-    if (!SC.none(check.dayOfWeek) && get(d,'dayOfWeek') !== check.dayOfWeek) {
+    if (!Ember.none(check.dayOfWeek) && get(d,'dayOfWeek') !== check.dayOfWeek) {
       return null;
     }
 
@@ -1047,7 +1047,7 @@ SC.DateTime.reopenClass(SC.Comparable,
 
   /**
     @private
-    @see SC.DateTime#_toFormattedString
+    @see Ember.DateTime#_toFormattedString
   */
   __toFormattedString: function(part, start, timezone) {
     var hour, offset;
@@ -1102,7 +1102,7 @@ SC.DateTime.reopenClass(SC.Comparable,
 
   /**
     @private
-    @see SC.DateTime#toFormattedString
+    @see Ember.DateTime#toFormattedString
   */
   _toFormattedString: function(format, start, timezone) {
     var that = this;
@@ -1122,8 +1122,8 @@ SC.DateTime.reopenClass(SC.Comparable,
     comparing their number of milliseconds since
     January, 1st 1970 00:00:00.0 UTC.
 
-    @param {SC.DateTime} a the first DateTime instance
-    @param {SC.DateTime} b the second DateTime instance
+    @param {Ember.DateTime} a the first DateTime instance
+    @param {Ember.DateTime} b the second DateTime instance
     @returns {Integer} -1 if a < b,
                        +1 if a > b,
                        0 if a == b
@@ -1139,17 +1139,17 @@ SC.DateTime.reopenClass(SC.Comparable,
     by only comparing the date parts of the passed objects. Only dates
     with the same timezone can be compared.
 
-    @param {SC.DateTime} a the first DateTime instance
-    @param {SC.DateTime} b the second DateTime instance
+    @param {Ember.DateTime} a the first DateTime instance
+    @param {Ember.DateTime} b the second DateTime instance
     @returns {Integer} -1 if a < b,
                        +1 if a > b,
                        0 if a == b
-    @throws {SC.DATETIME_COMPAREDATE_TIMEZONE_ERROR} if the passed arguments
+    @throws {Ember.DATETIME_COMPAREDATE_TIMEZONE_ERROR} if the passed arguments
       don't have the same timezone
   */
   compareDate: function(a, b) {
     if (get(a, 'timezone') !== get(b,'timezone')) {
-      throw new Error(SC.DATETIME_COMPAREDATE_TIMEZONE_ERROR);
+      throw new Error(Ember.DATETIME_COMPAREDATE_TIMEZONE_ERROR);
     }
     
     var ma = get(a.adjust({hour: 0}), 'milliseconds');
@@ -1163,13 +1163,13 @@ SC.DateTime.reopenClass(SC.Comparable,
   Adds a transform to format the DateTime value to a String value according
   to the passed format string.
 
-      valueBinding: SC.Binding.dateTime('%Y-%m-%d %H:%M:%S')
+      valueBinding: Ember.Binding.dateTime('%Y-%m-%d %H:%M:%S')
                               .from('MyApp.myController.myDateTime');
 
   @param {String} format format string
-  @returns {SC.Binding} this
+  @returns {Ember.Binding} this
 */
-SC.Binding.dateTime = function(format) {
+Ember.Binding.dateTime = function(format) {
   return this.transform(function(value, binding) {
     return value ? value.toFormattedString(format) : null;
   });

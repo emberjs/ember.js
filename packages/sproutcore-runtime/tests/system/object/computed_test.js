@@ -7,12 +7,12 @@
 
 require('sproutcore-runtime/~tests/props_helper');
 
-module('SC.Object computed property');
+module('Ember.Object computed property');
 
 testBoth('computed property on instance', function(get, set) {
 
-  var MyClass = SC.Object.extend({
-    foo: SC.computed(function() { return 'FOO'; }).cacheable()
+  var MyClass = Ember.Object.extend({
+    foo: Ember.computed(function() { return 'FOO'; }).cacheable()
   });
   
   equals(get(new MyClass(), 'foo'), 'FOO');
@@ -22,12 +22,12 @@ testBoth('computed property on instance', function(get, set) {
 
 testBoth('computed property on subclass', function(get, set) {
 
-  var MyClass = SC.Object.extend({
-    foo: SC.computed(function() { return 'FOO'; }).cacheable()
+  var MyClass = Ember.Object.extend({
+    foo: Ember.computed(function() { return 'FOO'; }).cacheable()
   });
   
   var Subclass = MyClass.extend({
-    foo: SC.computed(function() { return 'BAR'; }).cacheable()
+    foo: Ember.computed(function() { return 'BAR'; }).cacheable()
   });
   
   equals(get(new Subclass(), 'foo'), 'BAR');
@@ -37,8 +37,8 @@ testBoth('computed property on subclass', function(get, set) {
 
 testBoth('replacing computed property with regular val', function(get, set) {
 
-  var MyClass = SC.Object.extend({
-    foo: SC.computed(function() { return 'FOO'; }).cacheable()
+  var MyClass = Ember.Object.extend({
+    foo: Ember.computed(function() { return 'FOO'; }).cacheable()
   });
   
   var Subclass = MyClass.extend({
@@ -51,7 +51,7 @@ testBoth('replacing computed property with regular val', function(get, set) {
 
 testBoth('complex depndent keys', function(get, set) {
 
-  var MyClass = SC.Object.extend({
+  var MyClass = Ember.Object.extend({
     
     init: function() {
       this._super();
@@ -60,7 +60,7 @@ testBoth('complex depndent keys', function(get, set) {
 
     count: 0, 
     
-    foo: SC.computed(function() { 
+    foo: Ember.computed(function() { 
       set(this, 'count', get(this, 'count')+1);
       return get(get(this, 'bar'), 'baz') + ' ' + get(this, 'count'); 
     }).property('bar.baz').cacheable()
@@ -90,7 +90,7 @@ testBoth('complex depndent keys', function(get, set) {
 
 testBoth('complex depndent keys changing complex dependent keys', function(get, set) {
 
-  var MyClass = SC.Object.extend({
+  var MyClass = Ember.Object.extend({
     
     init: function() {
       this._super();
@@ -99,7 +99,7 @@ testBoth('complex depndent keys changing complex dependent keys', function(get, 
 
     count: 0, 
     
-    foo: SC.computed(function() { 
+    foo: Ember.computed(function() { 
       set(this, 'count', get(this, 'count')+1);
       return get(get(this, 'bar'), 'baz') + ' ' + get(this, 'count'); 
     }).property('bar.baz').cacheable()
@@ -115,7 +115,7 @@ testBoth('complex depndent keys changing complex dependent keys', function(get, 
     
     count: 0,
     
-    foo: SC.computed(function() {
+    foo: Ember.computed(function() {
       set(this, 'count', get(this, 'count')+1);
       return get(get(this, 'bar2'), 'baz') + ' ' + get(this, 'count');
     }).property('bar2.baz').cacheable()

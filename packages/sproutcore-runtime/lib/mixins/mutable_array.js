@@ -19,7 +19,7 @@ var EMPTY = [];
 // HELPERS
 // 
 
-var get = SC.get, set = SC.set;
+var get = Ember.get, set = Ember.set;
 
 /**
   @class
@@ -31,17 +31,17 @@ var get = SC.get, set = SC.set;
   For example, a SparyArray may not be directly modified but if its 
   underlying enumerable changes, it will change also.
 
-  @extends SC.Mixin
-  @extends SC.Array
-  @extends SC.MutableEnumerable
+  @extends Ember.Mixin
+  @extends Ember.Array
+  @extends Ember.MutableEnumerable
 */
-SC.MutableArray = SC.Mixin.create(SC.Array, SC.MutableEnumerable,
-  /** @scope SC.MutableArray.prototype */ {
+Ember.MutableArray = Ember.Mixin.create(Ember.Array, Ember.MutableEnumerable,
+  /** @scope Ember.MutableArray.prototype */ {
 
   /**
     __Required.__ You must implement this method to apply this mixin.
 
-    This is one of the primitves you must implement to support SC.Array.  You
+    This is one of the primitves you must implement to support Ember.Array.  You
     should replace amt objects started at idx with the objects in the passed
     array.  You should also call this.enumerableContentDidChange() ;
 
@@ -57,7 +57,7 @@ SC.MutableArray = SC.Mixin.create(SC.Array, SC.MutableEnumerable,
       An array of zero or more objects that should be inserted into the array 
       at *idx*
   */
-  replace: SC.required(),
+  replace: Ember.required(),
 
   /**
     This will use the primitive replace() method to insert an object at the
@@ -78,9 +78,9 @@ SC.MutableArray = SC.Mixin.create(SC.Array, SC.MutableEnumerable,
     index set.
 
     If you pass a single index or a start and length that is beyond the
-    length this method will throw an SC.OUT_OF_RANGE_EXCEPTION
+    length this method will throw an Ember.OUT_OF_RANGE_EXCEPTION
 
-    @param {Number|SC.IndexSet} start index, start of range, or index set
+    @param {Number|Ember.IndexSet} start index, start of range, or index set
     @param {Number} len length of passing range
     @returns {Object} receiver
   */
@@ -99,7 +99,7 @@ SC.MutableArray = SC.Mixin.create(SC.Array, SC.MutableEnumerable,
       this.replace(start, len, EMPTY);
     }
 
-    // TODO: Reintroduce SC.IndexSet support
+    // TODO: Reintroduce Ember.IndexSet support
     // this.beginPropertyChanges();
     // start.forEachRange(function(start, length) {
     //   start -= delta ;
@@ -125,8 +125,8 @@ SC.MutableArray = SC.Mixin.create(SC.Array, SC.MutableEnumerable,
     Add the objects in the passed numerable to the end of the array.  Defers
     notifying observers of the change until all objects are added.
 
-    @param {SC.Enumerable} objects the objects to add
-    @returns {SC.Array} receiver
+    @param {Ember.Enumerable} objects the objects to add
+    @returns {Ember.Array} receiver
   */
   pushObjects: function(objects) {
     this.replace(get(this, 'length'), 0, objects);
@@ -171,8 +171,8 @@ SC.MutableArray = SC.Mixin.create(SC.Array, SC.MutableEnumerable,
     Adds the named objects to the beginning of the array.  Defers notifying
     observers until all objects have been added.
 
-    @param {SC.Enumerable} objects the objects to add
-    @returns {SC.Array} receiver
+    @param {Ember.Enumerable} objects the objects to add
+    @returns {Ember.Array} receiver
   */
   unshiftObjects: function(objects) {
     this.beginPropertyChanges();
@@ -182,7 +182,7 @@ SC.MutableArray = SC.Mixin.create(SC.Array, SC.MutableEnumerable,
   },
   
   // ..........................................................
-  // IMPLEMENT SC.MutableEnumerable
+  // IMPLEMENT Ember.MutableEnumerable
   // 
 
   /** @private (nodoc) */

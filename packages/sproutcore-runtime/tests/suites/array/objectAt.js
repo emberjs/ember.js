@@ -6,7 +6,7 @@
 
 require('sproutcore-runtime/~tests/suites/array');
 
-var suite = SC.ArrayTests;
+var suite = Ember.ArrayTests;
 
 suite.module('objectAt');
 
@@ -17,7 +17,7 @@ suite.test("should return object at specified index", function() {
       idx;
       
   for(idx=0;idx<len;idx++) {
-    equals(obj.objectAt(idx), expected[idx], SC.String.fmt('obj.objectAt(%@) should match', [idx]));
+    equals(obj.objectAt(idx), expected[idx], Ember.String.fmt('obj.objectAt(%@) should match', [idx]));
   }
   
 });

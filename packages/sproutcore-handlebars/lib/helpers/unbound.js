@@ -7,7 +7,7 @@
 
 require('sproutcore-handlebars/ext');
 
-var getPath = SC.getPath;
+var getPath = Ember.getPath;
 
 /**
   `unbound` allows you to output a property without binding. *Important:* The 
@@ -19,7 +19,7 @@ var getPath = SC.getPath;
   @param {String} property
   @returns {String} HTML string
 */
-SC.Handlebars.registerHelper('unbound', function(property, fn) {
+Ember.Handlebars.registerHelper('unbound', function(property, fn) {
   var context = (fn.contexts && fn.contexts[0]) || this;
   return getPath(context, property);
 });

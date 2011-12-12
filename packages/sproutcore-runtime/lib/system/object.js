@@ -8,8 +8,8 @@ require('sproutcore-runtime/mixins/observable');
 require('sproutcore-runtime/system/core_object');
 require('sproutcore-runtime/system/set');
 
-SC.CoreObject.subclasses = new SC.Set();
-SC.Object = SC.CoreObject.extend(SC.Observable);
+Ember.CoreObject.subclasses = new Ember.Set();
+Ember.Object = Ember.CoreObject.extend(Ember.Observable);
 
 
 

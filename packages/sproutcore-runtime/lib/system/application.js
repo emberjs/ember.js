@@ -13,15 +13,15 @@ require('sproutcore-runtime/system/namespace');
   very similar to a normal namespace except that it is expected to include at
   least a 'ready' function which can be run to initialize the application.
   
-  Currently SC.Application is very similar to SC.Namespace.  However, this
+  Currently Ember.Application is very similar to Ember.Namespace.  However, this
   class may be augmented by additional frameworks so it is important to use
   this instance when building new applications.
   
   # Example Usage
   
-      MyApp = SC.Application.create({
+      MyApp = Ember.Application.create({
         VERSION: '1.0.0',
-        store: SC.Store.create().from(SC.fixtures)
+        store: Ember.Store.create().from(Ember.fixtures)
       });
       
       MyApp.ready = function() { 
@@ -29,5 +29,5 @@ require('sproutcore-runtime/system/namespace');
       }
       
 */
-SC.Application = SC.Namespace.extend();
+Ember.Application = Ember.Namespace.extend();
 

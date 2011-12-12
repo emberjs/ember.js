@@ -6,12 +6,12 @@
 
 var button, application;
 
-var get = SC.get, set = SC.set;
+var get = Ember.get, set = Ember.set;
 
-module("SC.Button", {
+module("Ember.Button", {
   setup: function() {
-    application = SC.Application.create();
-    button = SC.Button.create();
+    application = Ember.Application.create();
+    button = Ember.Button.create();
   },
 
   teardown: function() {
@@ -25,7 +25,7 @@ function synthesizeEvent(type, view) {
 }
 
 function append() {
-  SC.run(function() {
+  Ember.run(function() {
     button.appendTo('#qunit-fixture');
   });
 }
@@ -41,17 +41,17 @@ test("should become disabled if the disabled attribute is true", function() {
   append();
   ok(button.$().is(":not(:disabled)"));
 
-  SC.run(function() { button.set('disabled', true); });
+  Ember.run(function() { button.set('disabled', true); });
   ok(button.$().is(":disabled"));
 
-  SC.run(function() { button.set('disabled', false); });
+  Ember.run(function() { button.set('disabled', false); });
   ok(button.$().is(":not(:disabled)"));
 });
 
 test("should trigger an action when clicked", function() {
   var wasClicked = false;
 
-  var actionObject = SC.Object.create({
+  var actionObject = Ember.Object.create({
     myAction: function() {
       wasClicked = true;
     }
@@ -60,7 +60,7 @@ test("should trigger an action when clicked", function() {
   button.set('target', actionObject);
   button.set('action', 'myAction');
 
-  SC.run(function() {
+  Ember.run(function() {
     button.appendTo('#qunit-fixture');
   });
 
@@ -74,19 +74,19 @@ test("should trigger an action on a String target when clicked", function() {
   var wasClicked = false;
 
   window.MyApp = {
-    myActionObject: SC.Object.create({
+    myActionObject: Ember.Object.create({
       myAction: function() {
         wasClicked = true;
       }
     })
   };
 
-  var button = SC.Button.create({
+  var button = Ember.Button.create({
     target: 'MyApp.myActionObject',
     action: 'myAction'
   });
 
-  SC.run(function() {
+  Ember.run(function() {
     button.appendTo('#qunit-fixture');
   });
 
@@ -101,7 +101,7 @@ test("should trigger an action on a String target when clicked", function() {
 test("should not trigger action if mouse leaves area before mouseup", function() {
   var wasClicked = false;
 
-  var actionObject = SC.Object.create({
+  var actionObject = Ember.Object.create({
     myAction: function() {
       wasClicked = true;
     }
@@ -110,7 +110,7 @@ test("should not trigger action if mouse leaves area before mouseup", function()
   button.set('target', actionObject);
   button.set('action', 'myAction');
 
-  SC.run(function() {
+  Ember.run(function() {
     button.appendTo('#qunit-fixture');
   });
 
@@ -137,7 +137,7 @@ test("should not trigger action if mouse leaves area before mouseup", function()
 test("should not trigger action if disabled and a non-standard input", function() {
   var wasClicked = false;
 
-  var actionObject = SC.Object.create({
+  var actionObject = Ember.Object.create({
     myAction: function() {
       wasClicked = true;
     }
@@ -148,7 +148,7 @@ test("should not trigger action if disabled and a non-standard input", function(
   button.set('target', actionObject);
   button.set('action', 'myAction');
 
-  SC.run(function() {
+  Ember.run(function() {
     button.appendTo('#qunit-fixture');
   });
 
@@ -157,7 +157,7 @@ test("should not trigger action if disabled and a non-standard input", function(
 });
 
 test("should by default be of type='button'", function() {
-  SC.run(function() {
+  Ember.run(function() {
     button.appendTo('#qunit-fixture');
   });
 
@@ -167,7 +167,7 @@ test("should by default be of type='button'", function() {
 test("should have a configurable type", function() {
   button.set('type', 'submit');
 
-  SC.run(function() {
+  Ember.run(function() {
     button.appendTo('#qunit-fixture');
   });
   

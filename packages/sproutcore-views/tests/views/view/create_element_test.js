@@ -4,17 +4,17 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
-var set = SC.set, get = SC.get;
+var set = Ember.set, get = Ember.get;
 
-module("SC.View#createElement");
+module("Ember.View#createElement");
 
 test("returns the receiver", function() {
-  var view = SC.View.create();
+  var view = Ember.View.create();
   equals(view.createElement(), view, 'returns receiver');
 });
 
 test("calls render and turns resultant string into element", function() {
-  var view = SC.View.create({
+  var view = Ember.View.create({
     tagName: 'span',
 
     render: function(buffer) {
@@ -32,8 +32,8 @@ test("calls render and turns resultant string into element", function() {
 });
 
 test("generated element include HTML from child views as well", function() {
-  var view = SC.ContainerView.create({
-    childViews: [ SC.View.create({ elementId: "foo" })]
+  var view = Ember.ContainerView.create({
+    childViews: [ Ember.View.create({ elementId: "foo" })]
   });
 
   view.createElement();

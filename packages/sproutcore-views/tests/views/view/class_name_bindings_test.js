@@ -4,14 +4,14 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
-var set = SC.set, get = SC.get, setPath = SC.setPath;
+var set = Ember.set, get = Ember.get, setPath = Ember.setPath;
 
 require('sproutcore-views/views/view');
 
-module("SC.View - Class Name Bindings");
+module("Ember.View - Class Name Bindings");
 
 test("should apply bound class names to the element", function() {
-  var view = SC.View.create({
+  var view = Ember.View.create({
     classNameBindings: ['priority', 'isUrgent', 'isClassified:classified',
                         'canIgnore', 'messages.count', 'messages.resent:is-resent'],
 
@@ -36,7 +36,7 @@ test("should apply bound class names to the element", function() {
 });
 
 test("should add, remove, or change class names if changed after element is created", function() {
-  var view = SC.View.create({
+  var view = Ember.View.create({
     classNameBindings: ['priority', 'isUrgent', 'isClassified:classified',
                         'canIgnore', 'messages.count', 'messages.resent:is-resent'],
 
@@ -45,7 +45,7 @@ test("should add, remove, or change class names if changed after element is crea
     isClassified: true,
     canIgnore: false,
 
-    messages: SC.Object.create({
+    messages: Ember.Object.create({
       count: 'five-messages',
       resent: false
     })
@@ -72,7 +72,7 @@ test("should add, remove, or change class names if changed after element is crea
 });
 
 test("classNames should not be duplicated on rerender", function(){
-  var view = SC.View.create({
+  var view = Ember.View.create({
     classNameBindings: ['priority'],
     priority: 'high'
   });
@@ -81,7 +81,7 @@ test("classNames should not be duplicated on rerender", function(){
 
   equals(view.$().attr('class'), 'sc-view high');
 
-  SC.run(function(){
+  Ember.run(function(){
     view.rerender();
   });
 
@@ -89,7 +89,7 @@ test("classNames should not be duplicated on rerender", function(){
 });
 
 test("classNames removed by a classNameBindings observer should not re-appear on rerender", function(){
-  var view = SC.View.create({
+  var view = Ember.View.create({
     classNameBindings: ['isUrgent'],
     isUrgent: true
   });
@@ -98,13 +98,13 @@ test("classNames removed by a classNameBindings observer should not re-appear on
 
   equals(view.$().attr('class'), 'sc-view is-urgent');
 
-  SC.run(function(){
+  Ember.run(function(){
     view.set('isUrgent', false);
   });
 
   equals(view.$().attr('class'), 'sc-view');
 
-  SC.run(function(){
+  Ember.run(function(){
     view.rerender();
   });
 

@@ -6,7 +6,7 @@
 
 require('sproutcore-runtime/~tests/suites/enumerable');
 
-var suite = SC.EnumerableTests;
+var suite = Ember.EnumerableTests;
 
 suite.module('invoke');
 
@@ -19,10 +19,10 @@ suite.test('invoke should call on each object that implements', function() {
   cnt = 0;
   ary = [
     { foo: F },
-    SC.Object.create({ foo: F }),
+    Ember.Object.create({ foo: F }),
     
     // NOTE: does not impl foo - invoke should just skip
-    SC.Object.create({ bar: F }),
+    Ember.Object.create({ bar: F }),
 
     { foo: F }
   ];

@@ -10,7 +10,7 @@ require('sproutcore-runtime/~tests/suites/enumerable');
   Implement a basic fake enumerable.  This validates that any non-native
   enumerable can impl this API.
 */
-var TestEnumerable = SC.Object.extend(SC.Enumerable, {
+var TestEnumerable = Ember.Object.extend(Ember.Enumerable, {
 
   _content: null,
   
@@ -25,10 +25,10 @@ var TestEnumerable = SC.Object.extend(SC.Enumerable, {
   },
   
   nextObject: function(idx) {
-    return idx >= SC.get(this, 'length') ? undefined : this._content[idx];
+    return idx >= Ember.get(this, 'length') ? undefined : this._content[idx];
   },
   
-  length: SC.computed(function() {
+  length: Ember.computed(function() {
     return this._content.length;
   }).property('[]').cacheable(),
   
@@ -39,7 +39,7 @@ var TestEnumerable = SC.Object.extend(SC.Enumerable, {
 });
 
 
-SC.EnumerableTests.extend({
+Ember.EnumerableTests.extend({
   
   name: 'Basic Enumerable',
     
@@ -63,7 +63,7 @@ SC.EnumerableTests.extend({
 // CONTENT DID CHANGE
 // 
 
-var DummyEnum = SC.Object.extend(SC.Enumerable, {
+var DummyEnum = Ember.Object.extend(Ember.Enumerable, {
   nextObject: function() {},
   length: 0
 });
@@ -78,11 +78,11 @@ module('mixins/enumerable/enumerableContentDidChange');
 
 test('should notify observers of []', function() {
 
-  var obj = SC.Object.create(SC.Enumerable, {
+  var obj = Ember.Object.create(Ember.Enumerable, {
     nextObject: function() {}, // avoid exceptions
     
     _count: 0,
-    enumerablePropertyDidChange: SC.observer(function() {
+    enumerablePropertyDidChange: Ember.observer(function() {
       this._count++;
     }, '[]')
   });
@@ -102,7 +102,7 @@ module('notify observers of length', {
   setup: function() {
     obj = DummyEnum.create({
       _after: 0,
-      lengthDidChange: SC.observer(function() {
+      lengthDidChange: Ember.observer(function() {
         this._after++;
       }, 'length')
       
@@ -169,7 +169,7 @@ module('notify enumerable observers', {
   setup: function() {
     obj = DummyEnum.create();
     
-    observer = SC.Object.create({
+    observer = Ember.Object.create({
       _before: null,
       _after: null,
       

@@ -10,44 +10,44 @@ require('sproutcore-runtime/system/string');
 
 
 
-var fmt = SC.String.fmt,
-    w   = SC.String.w,
-    loc = SC.String.loc,
-    decamelize = SC.String.decamelize,
-    dasherize = SC.String.dasherize;
+var fmt = Ember.String.fmt,
+    w   = Ember.String.w,
+    loc = Ember.String.loc,
+    decamelize = Ember.String.decamelize,
+    dasherize = Ember.String.dasherize;
   
-if (SC.EXTEND_PROTOTYPES) {
+if (Ember.EXTEND_PROTOTYPES) {
 
   /**
-    @see SC.String.fmt
+    @see Ember.String.fmt
   */
   String.prototype.fmt = function() {
     return fmt(this, arguments);
   };
   
   /**
-    @see SC.String.w
+    @see Ember.String.w
   */
   String.prototype.w = function() {
     return w(this);
   };
   
   /**
-    @see SC.String.loc
+    @see Ember.String.loc
   */
   String.prototype.loc = function() {
     return loc(this, arguments);
   };
   
   /**
-    @see SC.String.decamelize
+    @see Ember.String.decamelize
   */
   String.prototype.decamelize = function() {
     return decamelize(this);
   };
   
   /**
-    @see SC.String.dasherize
+    @see Ember.String.dasherize
   */
   String.prototype.dasherize = function() {
     return dasherize(this);

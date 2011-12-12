@@ -8,11 +8,11 @@
 // TODO: Don't require the entire module
 require("sproutcore-handlebars");
 
-var get = SC.get, set = SC.set;
+var get = Ember.get, set = Ember.set;
 var PARENT_VIEW_PATH = /^parentView\./;
 
 /** @private */
-SC.Handlebars.ViewHelper = SC.Object.create({
+Ember.Handlebars.ViewHelper = Ember.Object.create({
 
   viewClassFromHTMLOptions: function(viewClass, options, thisContext) {
     var extensions = {},
@@ -51,16 +51,16 @@ SC.Handlebars.ViewHelper = SC.Object.create({
       if (!options.hasOwnProperty(prop)) { continue; }
 
       // Test if the property ends in "Binding"
-      if (SC.IS_BINDING.test(prop)) {
+      if (Ember.IS_BINDING.test(prop)) {
         path = options[prop];
-        if (!SC.isGlobalPath(path)) {
+        if (!Ember.isGlobalPath(path)) {
 
           // Deprecation warning for users of beta 2 and lower, where
           // this facility was not available. The workaround was to bind
           // to parentViews; since this is no longer necessary, issue
           // a notice.
           if (PARENT_VIEW_PATH.test(path)) {
-            SC.Logger.warn("As of SproutCore 2.0 beta 3, it is no longer necessary to bind to parentViews. Instead, please provide binding paths relative to the current Handlebars context.");
+            Ember.Logger.warn("As of SproutCore 2.0 beta 3, it is no longer necessary to bind to parentViews. Instead, please provide binding paths relative to the current Handlebars context.");
           } else {
             if (path === 'this') {
               options[prop] = 'bindingContext';
@@ -88,13 +88,13 @@ SC.Handlebars.ViewHelper = SC.Object.create({
         newView;
 
     if ('string' === typeof path) {
-      newView = SC.getPath(thisContext, path);
+      newView = Ember.getPath(thisContext, path);
       sc_assert("Unable to find view at path '" + path + "'", !!newView);
     } else {
       newView = path;
     }
 
-    sc_assert(SC.String.fmt('You must pass a view class to the #view helper, not %@ (%@)', [path, newView]), SC.View.detect(newView));
+    sc_assert(Ember.String.fmt('You must pass a view class to the #view helper, not %@ (%@)', [path, newView]), Ember.View.detect(newView));
 
     newView = this.viewClassFromHTMLOptions(newView, hash, thisContext);
     var currentView = data.view;
@@ -115,15 +115,15 @@ SC.Handlebars.ViewHelper = SC.Object.create({
   @param {Hash} options
   @returns {String} HTML string
 */
-SC.Handlebars.registerHelper('view', function(path, options) {
+Ember.Handlebars.registerHelper('view', function(path, options) {
   sc_assert("The view helper only takes a single argument", arguments.length <= 2);
 
   // If no path is provided, treat path param as options.
   if (path && path.data && path.data.isRenderData) {
     options = path;
-    path = "SC.View";
+    path = "Ember.View";
   }
 
-  return SC.Handlebars.ViewHelper.helper(this, path, options);
+  return Ember.Handlebars.ViewHelper.helper(this, path, options);
 });
 

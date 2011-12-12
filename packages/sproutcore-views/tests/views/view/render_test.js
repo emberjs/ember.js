@@ -5,17 +5,17 @@
 // ==========================================================================
 /*global module test equals context ok same */
 
-var set = SC.set, get = SC.get;
+var set = Ember.set, get = Ember.get;
 
 // .......................................................
 //  render()
 //
-module("SC.View#render");
+module("Ember.View#render");
 
 test("default implementation does not render child views", function() {
 
   var rendered = 0, updated = 0, parentRendered = 0, parentUpdated = 0 ;
-  var view = SC.ContainerView.create({
+  var view = Ember.ContainerView.create({
     childViews: ["child"],
 
     render: function(buffer) {
@@ -23,7 +23,7 @@ test("default implementation does not render child views", function() {
       this._super(buffer);
     },
 
-    child: SC.View.create({
+    child: Ember.View.create({
       render: function(buffer) {
         rendered++;
         this._super(buffer);
@@ -41,7 +41,7 @@ test("default implementation does not render child views", function() {
 test("should invoke renderChildViews if layer is destroyed then re-rendered", function() {
 
   var rendered = 0, parentRendered = 0, parentUpdated = 0 ;
-  var view = SC.ContainerView.create({
+  var view = Ember.ContainerView.create({
     childViews: ["child"],
 
     render: function(buffer) {
@@ -49,7 +49,7 @@ test("should invoke renderChildViews if layer is destroyed then re-rendered", fu
       this._super(buffer);
     },
 
-    child: SC.View.create({
+    child: Ember.View.create({
       render: function(buffer) {
         rendered++;
         this._super(buffer);
@@ -57,7 +57,7 @@ test("should invoke renderChildViews if layer is destroyed then re-rendered", fu
     })
   });
 
-  SC.run(function() {
+  Ember.run(function() {
     view.append();
   });
 
@@ -65,7 +65,7 @@ test("should invoke renderChildViews if layer is destroyed then re-rendered", fu
   equals(parentRendered, 1);
   equals(view.$('div').length, 1);
 
-  SC.run(function() {
+  Ember.run(function() {
     view.rerender();
   });
 
@@ -79,10 +79,10 @@ test("should invoke renderChildViews if layer is destroyed then re-rendered", fu
 test("should render child views with a different tagName", function() {
   var rendered = 0, parentRendered = 0, parentUpdated = 0 ;
 
-  var view = SC.ContainerView.create({
+  var view = Ember.ContainerView.create({
     childViews: ["child"],
 
-    child: SC.View.create({
+    child: Ember.View.create({
       tagName: 'aside'
     })
   });
@@ -92,11 +92,11 @@ test("should render child views with a different tagName", function() {
 });
 
 test("should hide views when isVisible is false", function() {
-  var view = SC.View.create({
+  var view = Ember.View.create({
     isVisible: false
   });
 
-  SC.run(function() {
+  Ember.run(function() {
     view.append();
   });
 
@@ -108,7 +108,7 @@ test("should hide views when isVisible is false", function() {
 });
 
 test("should hide element if isVisible is false before element is created", function() {
-  var view = SC.View.create({
+  var view = Ember.View.create({
     isVisible: false
   });
 
@@ -116,7 +116,7 @@ test("should hide element if isVisible is false before element is created", func
 
   set(view, 'template', function() { return "foo"; });
 
-  SC.run(function() {
+  Ember.run(function() {
     view.append();
   });
 
@@ -125,26 +125,26 @@ test("should hide element if isVisible is false before element is created", func
   view.remove();
   set(view, 'isVisible', true);
 
-  SC.run(function() {
+  Ember.run(function() {
     view.append();
   });
 
   ok(view.$().is(':visible'), "view should be visible");
 
-  SC.run(function() {
+  Ember.run(function() {
     view.remove();
   });
 });
 
 test("should add sc-view to views", function() {
-  var view = SC.View.create();
+  var view = Ember.View.create();
 
   view.createElement();
   ok(view.$().hasClass('sc-view'), "the view has sc-view");
 });
 
 test("should not add role attribute unless one is specified", function() {
-  var view = SC.View.create();
+  var view = Ember.View.create();
 
   view.createElement();
   ok(view.$().attr('role') === undefined, "does not have a role attribute");

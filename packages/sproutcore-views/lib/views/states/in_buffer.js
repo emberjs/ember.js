@@ -7,10 +7,10 @@
 
 require('sproutcore-views/views/states/default');
 
-var get = SC.get, set = SC.set, meta = SC.meta;
+var get = Ember.get, set = Ember.set, meta = Ember.meta;
 
-SC.View.states.inBuffer = {
-  parentState: SC.View.states._default,
+Ember.View.states.inBuffer = {
+  parentState: Ember.View.states._default,
 
   $: function(view, sel) {
     // if we don't have an element yet, someone calling this.$() is
@@ -18,13 +18,13 @@ SC.View.states.inBuffer = {
     // rerender the view to allow the render method to reflect the
     // changes.
     view.rerender();
-    return SC.$();
+    return Ember.$();
   },
 
   // when a view is rendered in a buffer, rerendering it simply
   // replaces the existing buffer with a new one
   rerender: function(view) {
-    var buffer = meta(view)['SC.View'].buffer;
+    var buffer = meta(view)['Ember.View'].buffer;
 
     view.clearRenderedChildren();
     view.renderToBuffer(buffer, 'replaceWith');
@@ -34,7 +34,7 @@ SC.View.states.inBuffer = {
   // view will render that view and append the resulting
   // buffer into its buffer.
   appendChild: function(view, childView, options) {
-    var buffer = meta(view)['SC.View'].buffer;
+    var buffer = meta(view)['Ember.View'].buffer;
 
     childView = this.createChildView(childView, options);
     get(view, '_childViews').pushObject(childView);

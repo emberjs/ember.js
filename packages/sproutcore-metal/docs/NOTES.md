@@ -9,19 +9,19 @@ properties to them.  These methods are very similar to the standard ES5
 methods (so you can use this as a polyfill library if you like) but they also
 understand how to support computed properties, observers, and other magic.
 
-### `SC.create(obj, props)`
+### `Ember.create(obj, props)`
 
 Creates a new object with the passed object as its prototype.  Similar to 
 Object.create() except that it is available on all browsers and also activates
 computed properties and observers as needed.
 
-### `SC.createPrototype(obj, props)`
+### `Ember.createPrototype(obj, props)`
 
-Just like `SC.create()` except that properties and observers are not activated
+Just like `Ember.create()` except that properties and observers are not activated
 (they are still inherited).  Use this method when creating objects to be used
 as part of a prototype inheritence chain.
 
-### `SC.mixin(obj, props...)`
+### `Ember.mixin(obj, props...)`
 
 This is the primary way you should add new properties to an existing object.
 The first parameter is always the object you want to apply properties to.  The
@@ -38,12 +38,12 @@ In addition to copying basic properties, this also embues the object with some s
     when they are invoked `this._super()` will point to the previous method
     so you can easily invoke it.
 
-### `SC.defineProperty(obj, key, desc, value)`
+### `Ember.defineProperty(obj, key, desc, value)`
 
 This method works just like the ES5 standard `Object.defineProperty()` except
 that it can also take descriptors like a ComputedProperty and define them 
 here.  Most of the time you won't work with this method directly.  Instead you
-should use `SC.mixin()` to add new properties to an object.
+should use `Ember.mixin()` to add new properties to an object.
 
 
 
@@ -60,7 +60,7 @@ You should consider using universal accessors when one of the following is true:
 
   * __You want to work with paths instead of keys.__  Walking down a path 
     (like 'foo.bar') is a fairly common task in many meta-programming models.
-    In these cases, the `SC.getPath()` and `SC.setPath()` accessors can walk
+    In these cases, the `Ember.getPath()` and `Ember.setPath()` accessors can walk
     the path for you.  They will also handle cases like null objects in the 
     path more elegantly.
     
@@ -69,7 +69,7 @@ You should consider using universal accessors when one of the following is true:
     created until the first time you try to access it.  This is usually done 
     by implementing an _unknown property handler_ that will be invoked when 
     you try to access the non-existent property.  Since JavaScript getters and
-    setters don't support this directly, you can use `SC.get()` and `SC.set()`
+    setters don't support this directly, you can use `Ember.get()` and `Ember.set()`
     instead.
     
   * __You are writing code for IE7 and 8.__  Versions of IE older than IE9 do
@@ -79,38 +79,38 @@ You should consider using universal accessors when one of the following is true:
     instead.
     
     
-### `SC.get(obj, keyName)`, `SC.getPath(obj, path)`
+### `Ember.get(obj, keyName)`, `Ember.getPath(obj, path)`
 
-These two methods will retrieve a value on the passed object.  `SC.get()` is
-the most simple, looking up just a key on the receiver object.  `SC.getPath()`
+These two methods will retrieve a value on the passed object.  `Ember.get()` is
+the most simple, looking up just a key on the receiver object.  `Ember.getPath()`
 accepts a full property path, which it will walk down until it gets to the 
 end (and returns the value) or until it reaches a null object in which case it
 will return __undefined__.
 
-`SC.getPath()` also can take just the path with no object in front.  In that
+`Ember.getPath()` also can take just the path with no object in front.  In that
 case it will search from the top level instead of starting at a root object.
 
 Unless you are coding for IE7-8 or you need to walk a path, you normally
 will not need to use these methods.  Instead you can just access properties
 using the normal dot syntax.  If you do want to work on IE7-8 then you should
-_always_ use SC.get() to retrieve a property since it will enable support for
+_always_ use Ember.get() to retrieve a property since it will enable support for
 computed properties and other features.
 
-### `SC.set(obj, keyName, value)`, `SC.setPath(obj, path, value)`
+### `Ember.set(obj, keyName, value)`, `Ember.setPath(obj, path, value)`
 
-These two methods will set a value on the passed object.  `SC.set()` is the 
-most simple, setting the value on a simple key.  `SC.setPath()` will actually
+These two methods will set a value on the passed object.  `Ember.set()` is the 
+most simple, setting the value on a simple key.  `Ember.setPath()` will actually
 walk down a property path until it gets to the end and then set the value for
-the last key in the chain.  If `SC.setPath()` encounters a null object while
+the last key in the chain.  If `Ember.setPath()` encounters a null object while
 walking the path it will throw an exception.
 
 Unless you are coding for IE7-8 or you need to walk a path, you normally
 will not need to use these methods.  Instead you can just set properties
 using the normal dot syntax.  If you do want to work on IE7-8 then you should
-_always_ use SC.set() to modify a property since it will enable support for
+_always_ use Ember.set() to modify a property since it will enable support for
 computed properties and observers.
 
-### `SC.propertyWillChange(obj, keyName)`, `SC.propertyDidChange(obj, keyName)`
+### `Ember.propertyWillChange(obj, keyName)`, `Ember.propertyDidChange(obj, keyName)`
 
 Sometimes you know the value of a particular key is about to or has changed
 but for whatever reason Metal may not be able to observe it.  In this case you
@@ -136,8 +136,8 @@ it would be nice if your contact record just had a method to do this and keep
 it up to date:
 
     var contact = { firstName: 'John', lastName: 'Doe' };
-    SC.mixin(contact, {
-      fullName: SC.computed(function() {
+    Ember.mixin(contact, {
+      fullName: Ember.computed(function() {
         return [this.firstName, this.lastName].join(' ');
       }).property('firstName', 'lastName').cacheable()
     });
@@ -148,11 +148,11 @@ it up to date:
     
 In the example above there are a few key things to notice.  
 
-First, you indicate that the function is a computed property by wrapping it in the `SC.computed()` call.  This actually returns a new special type of object 
-called a __computed property descriptor__.  `SC.mixin()` will recognize this
+First, you indicate that the function is a computed property by wrapping it in the `Ember.computed()` call.  This actually returns a new special type of object 
+called a __computed property descriptor__.  `Ember.mixin()` will recognize this
 descriptor when applying properties and setup the computed property.
 
-Second, after the call to `SC.computed()` this method also uses a helper
+Second, after the call to `Ember.computed()` this method also uses a helper
 function called `property()`. The property helper tells Metal which other key paths on the current object this property depends on.  Anytime those dependent keys change, metal will automatically notify observers of this property as well.
 
 The property helper pairs nicely with the final `cacheable()` helper function
@@ -182,10 +182,10 @@ These functions always take two parameters. When used as a getter, the second
 parameter (`value`) will be undefined.  When used as a setter it will have a
 value other than undefined (possibly including `null`).
 
-### `SC.computed(func)`
+### `Ember.computed(func)`
 
 Takes the passed function and returns a `ComputedProperty` descriptor that 
-can be applied to an object using `SC.mixin()`.
+can be applied to an object using `Ember.mixin()`.
 
 ### `ComputedProperty#property(key...)` 
 
@@ -193,7 +193,7 @@ This will set the dependent keys for the property. Any key paths you pass here w
 
 ### `ComputedProperty#cacheable(flag)`
 
-Calling this with no parameters or with flag set to true will make the property cacheable.  This means getting the property will only invoke the function one time until a dependent key changes or you manually call `SC.propertyWillChange()`/`SC.propertyDidChange()`.
+Calling this with no parameters or with flag set to true will make the property cacheable.  This means getting the property will only invoke the function one time until a dependent key changes or you manually call `Ember.propertyWillChange()`/`Ember.propertyDidChange()`.
     
     
     
@@ -204,7 +204,7 @@ can take action on it.  Metal gives you the ability to be notified both just
 before and after a property value is changed.  This is called _observing_ a
 property.
 
-### `SC.addBeforeObserver(obj, path, target, method)`, `SC.addObserver(obj, path, target, method)`
+### `Ember.addBeforeObserver(obj, path, target, method)`, `Ember.addObserver(obj, path, target, method)`
 
 These two methods add new property observers that will be invoked just before or after the named path on the object changes.  You can pass either a single key or a property path to these methods.  If you pass a complex path then your observer will be notified if any property in the path changes
 
@@ -213,70 +213,70 @@ first two will always echo back the same object and path that you passed in
 (so you can create generic observers).  If you accept a third argument then
 the most recent value of the property will be passed as well.
 
-### `SC.removeBeforeObserver(obj, path, target, method)`, `SC.removeObserver(obj, path, target, method)`
+### `Ember.removeBeforeObserver(obj, path, target, method)`, `Ember.removeObserver(obj, path, target, method)`
 
 Removes a previously registered observer so that it will no longer receive
 property notifications.
 
-### `SC.beginPropertyChanges()`
+### `Ember.beginPropertyChanges()`
 
-Temporarily suspends delivering observer notifications until you call `SC.endPropertyChanges()` a matching number of times.  This is useful for
+Temporarily suspends delivering observer notifications until you call `Ember.endPropertyChanges()` a matching number of times.  This is useful for
 bunching together many updates.
 
-### `SC.endPropertyChanges()`
+### `Ember.endPropertyChanges()`
 
-Resumes property observing.  See `SC.beginPropertyChanges()`
+Resumes property observing.  See `Ember.beginPropertyChanges()`
 
 ## Mixins
 
 __TODO:  Explain mixins__
 
-### `SC.mixin(obj, props...)`
+### `Ember.mixin(obj, props...)`
 
 Applies the passed properties or mixins to the object.
 
-### `SC.Mixin.create(props...)`
+### `Ember.Mixin.create(props...)`
 
 Creates a new mixin instance.  Pass any number of property hashes or other
 mixins.  These will become the dependencies used to apply the mixin with 
-`SC.mixin()`.
+`Ember.mixin()`.
 
-### `SC.Mixin#detect(obj)`
+### `Ember.Mixin#detect(obj)`
 
 Returns true if the passed object has the passed mixin already applied.
 
-### `SC.Mixin#keys()`
+### `Ember.Mixin#keys()`
 
 Returns all the property keys defined on the mixin.
 
-### `SC.Mixin#without(keyName...)`
+### `Ember.Mixin#without(keyName...)`
 
 Returns a new mixin that will include the passed mixin and any dependents but
 exclude the passed key names.
 
-### `SC.included(obj)`
+### `Ember.included(obj)`
 
 Returns an array of all the mixins currently applied to the passed object.
 
-### `SC.alias(keyName)`
+### `Ember.alias(keyName)`
 
 Returns an object you can set as the value of a property on a mixin to alias 
 another method.  For example:
 
-    SC.mixin(myObject, {
+    Ember.mixin(myObject, {
       foo: 'FOO',
-      bar: SC.alias('foo')
+      bar: Ember.alias('foo')
     });
     
 Will make `bar` equal to `'FOO'`.
 
-### `SC.observer(func, paths...)`, `SC.beforeObserver(func, paths...)`
+### `Ember.observer(func, paths...)`, `Ember.beforeObserver(func, paths...)`
 
 Returns a function that when applied during mixin will be automatically setup
 as an observer on the passed paths.
 
-    SC.mixin(myObject, {
-      fooDidChange: SC.observer(function() {
+    Ember.mixin(myObject, {
+      fooDidChange: Ember.observer(function() {
         //...code
       }, 'foo')
     });
@@ -284,7 +284,7 @@ as an observer on the passed paths.
 This example will cause the fooDidChange() method to be invoked anytime the 
 'foo' property is modified.
 
-The `SC.beforeObserver()` method will do the same thing but will fire before
+The `Ember.beforeObserver()` method will do the same thing but will fire before
 a property value changes.
 
 ## Events
@@ -294,7 +294,7 @@ used for property observing and descriptors.  This event system is used to
 implement property observing but it is generic enough it can be used for 
 any kind of event that you want.
 
-### `SC.addListener(obj, eventName, target, method, xform)`
+### `Ember.addListener(obj, eventName, target, method, xform)`
 
 Adds a listener for an event on the passed object.  This method can accept
 a target and method pair.  See "Invoking Callbacks" for more information on
@@ -303,17 +303,17 @@ what you can pass to methods like this.
 The xform parameter is a transform function used by some internal features.
 You can omit it.
 
-### `SC.removeListener(obj, eventName, target, method)`
+### `Ember.removeListener(obj, eventName, target, method)`
 
 Removes a listener for an event on the passed object.  You must pass the 
 exact same options (including the same target/method pair) as you passed to
-`SC.addListener()` to disable this.
+`Ember.addListener()` to disable this.
 
-### `SC.hasListeners(obj, eventName)`
+### `Ember.hasListeners(obj, eventName)`
 
 Returns true if the object has listeners on the passed eventName.
 
-### `SC.sendEvent(obj, eventName, params...)`
+### `Ember.sendEvent(obj, eventName, params...)`
 
 Sends the named event on the target object.  Any listeners on the event will
 be invoked with essentially the same parameters that you pass here (including
@@ -324,7 +324,7 @@ implementing the `sendEvent()` method on the target object.  If Metal finds
 this method implemented it will invoke it first and then deliver to any 
 listeners unless you return `true` (indicating that you handled the event).
 
-### `SC.listenersFor(obj, eventName)`
+### `Ember.listenersFor(obj, eventName)`
 
 Returns an array of any listeners registered for the given event.  Each item
 in the array with itself be another array with the target and method to be 
@@ -333,7 +333,7 @@ so you will need to resolve any method names, etc.
 
 This method is mostly intended for debugging purposes.
 
-### `SC.watchedEvents(obj)`
+### `Ember.watchedEvents(obj)`
 
 Returns an array of all the events that currently have listeners on them for
 the given object.  This is most often used for debugging.
@@ -360,7 +360,7 @@ the time to start to use them.
 
 If you need to support IE7 and 8 however, you cannot rely on the getter and 
 setter feature in order for your app to work.  In this case, you will need to
-use the manual `SC.get()` and `SC.set()` method anytime you want to retrieve
+use the manual `Ember.get()` and `Ember.set()` method anytime you want to retrieve
 or modify a property on an object.  If you use this throughout your code then
 you can take advantage of all the same features found in metal.
 
@@ -382,10 +382,10 @@ Keeping with how most asynchronous libraries function, you can always pass a fun
     
     // invokes fooDidChange() whenever 'foo' changes.
     // "this" will point to the global object
-    SC.addObserver(myObject, 'foo', fooDidChange);
+    Ember.addObserver(myObject, 'foo', fooDidChange);
     
     // stop invoking fooDidChange()
-    SC.removeObserver(myObject, 'foo', fooDidChange);
+    Ember.removeObserver(myObject, 'foo', fooDidChange);
     
 ### Target and Method
 
@@ -402,10 +402,10 @@ easy for you to later deregister them:
     
     // invokes myController.fooDidChange() whenever 'foo' changes
     // "this" will be myController
-    SC.addObserver(myObject, 'foo', myController, myController.fooDidChange);
+    Ember.addObserver(myObject, 'foo', myController, myController.fooDidChange);
 
     // stops invoking myController.fooDidChange()
-    SC.removeObserver(myObject,'foo',myController, myController.fooDidChange);
+    Ember.removeObserver(myObject,'foo',myController, myController.fooDidChange);
     
 ### Target and Method Name
 
@@ -422,10 +422,10 @@ actually swap out the method function in the interim if you want.
 
     // invokes myController.fooDidChange() whenever 'foo' changes
     // "this" will be myController
-    SC.addObserver(myObject, 'foo', myController, 'fooDidChange');
+    Ember.addObserver(myObject, 'foo', myController, 'fooDidChange');
 
     // stops invoking myController.fooDidChange()
-    SC.removeObserver(myObject,'foo',myController, 'fooDidChange');
+    Ember.removeObserver(myObject,'foo',myController, 'fooDidChange');
 
 
 
@@ -436,8 +436,8 @@ Most functions in Metal that work with properties accept __property paths__,
 not just key names.  A property path allows you to navigate objects multiple
 levels deep.  For example, a computed property like this:
 
-    SC.mixin(contact, {
-      streetAddress: SC.computed(function() {
+    Ember.mixin(contact, {
+      streetAddress: Ember.computed(function() {
           // computed streetAddress..
       }).property('address.houseNumber', 'address.streetName')
     });
@@ -455,9 +455,9 @@ the same way according to the following rules:
 
 ## Internals: How It Works
 
-  * All data about an object is stored on a special meta property that you can retrieve with the `SC.meta()` method.  You almost never work with this meta property directly. 
+  * All data about an object is stored on a special meta property that you can retrieve with the `Ember.meta()` method.  You almost never work with this meta property directly. 
   * On various objects in the meta object you will see a property called `__scproto__`.  This property is used to detect when a given meta object was inherited from a parent object.  When you create an object via prototype inheritance, all the `__scproto__` properties will point to the parent object.  When metal notices this it will clone the object before using it.
-  * Whenever an observer is added on an object, metal will "watch" that property.  Adding a watch on a property will convert it from a regular property to a getter/setter, which is how metal is able to notice changes and do something about it.  If you are on a platform that doesn't support getters/setters, we can't do this automatically.  That is why you have to use SC.get() and SC.set() instead.
+  * Whenever an observer is added on an object, metal will "watch" that property.  Adding a watch on a property will convert it from a regular property to a getter/setter, which is how metal is able to notice changes and do something about it.  If you are on a platform that doesn't support getters/setters, we can't do this automatically.  That is why you have to use Ember.get() and Ember.set() instead.
   * Whenever a computed property is added on an object, metal will set a getter/setter on the property as well that will invoke the computed property.
   * Metal will "watch" any properties a computed property depends on.  This will convert that property to a getter/setter also.
   * Property paths (i.e. paths with more than one key) are called "chained properties" internally.  Whenever you add a dependent property or observer on a chained property, metal actually observes that path but then it also sets up a series of 'ChainNodes' that watch each property in the path and update their parent whenever it changes.

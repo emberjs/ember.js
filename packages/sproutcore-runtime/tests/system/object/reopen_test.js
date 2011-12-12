@@ -8,19 +8,19 @@ module('system/core_object/reopenClass');
 
 test('adds new properties to subclass instance', function() {
   
-  var Subclass = SC.Object.extend();
+  var Subclass = Ember.Object.extend();
   Subclass.reopen({
     foo: function() { return 'FOO'; },
     bar: 'BAR'
   });
   
   equals( new Subclass().foo(), 'FOO', 'Adds method');
-  equals(SC.get(new Subclass(), 'bar'), 'BAR', 'Adds property');
+  equals(Ember.get(new Subclass(), 'bar'), 'BAR', 'Adds property');
 });
 
 test('reopened properties inherited by subclasses', function() {
   
-  var Subclass = SC.Object.extend();
+  var Subclass = Ember.Object.extend();
   var SubSub = Subclass.extend();
 
   Subclass.reopen({
@@ -30,6 +30,6 @@ test('reopened properties inherited by subclasses', function() {
 
   
   equals( new SubSub().foo(), 'FOO', 'Adds method');
-  equals(SC.get(new SubSub(), 'bar'), 'BAR', 'Adds property');
+  equals(Ember.get(new SubSub(), 'bar'), 'BAR', 'Adds property');
 });
 

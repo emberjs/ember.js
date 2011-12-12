@@ -19,23 +19,23 @@ module('system/binding/multiple', {
 });
 
 test('forces binding values to be multiple', function() {
-  var binding = SC.bind(MyApp, 'bar.value', 'foo.value').multiple();
+  var binding = Ember.bind(MyApp, 'bar.value', 'foo.value').multiple();
 
-  SC.run.sync();
-  same(SC.getPath('MyApp.bar.value'), ['FOO'], '1 MyApp.bar.value');
+  Ember.run.sync();
+  same(Ember.getPath('MyApp.bar.value'), ['FOO'], '1 MyApp.bar.value');
   
-  SC.setPath('MyApp.foo.value', ['BAR']);
-  SC.run.sync();
-  same(SC.getPath('MyApp.foo.value'), ['BAR'], '2 MyApp.foo.value');
-  same(SC.getPath('MyApp.bar.value'), ['BAR'], '2 MyApp.bar.value');
+  Ember.setPath('MyApp.foo.value', ['BAR']);
+  Ember.run.sync();
+  same(Ember.getPath('MyApp.foo.value'), ['BAR'], '2 MyApp.foo.value');
+  same(Ember.getPath('MyApp.bar.value'), ['BAR'], '2 MyApp.bar.value');
 
-  SC.setPath('MyApp.foo.value', ['BAR', 'BAZ']);
-  SC.run.sync();
-  same(SC.getPath('MyApp.foo.value'), ['BAR', 'BAZ'], '3 MyApp.foo.value');
-  same(SC.getPath('MyApp.bar.value'), ['BAR', 'BAZ'], '3 MyApp.bar.value');
+  Ember.setPath('MyApp.foo.value', ['BAR', 'BAZ']);
+  Ember.run.sync();
+  same(Ember.getPath('MyApp.foo.value'), ['BAR', 'BAZ'], '3 MyApp.foo.value');
+  same(Ember.getPath('MyApp.bar.value'), ['BAR', 'BAZ'], '3 MyApp.bar.value');
 
-  SC.setPath('MyApp.foo.value', null);
-  SC.run.sync();
-  same(SC.getPath('MyApp.bar.value'), [], '4 MyApp.bar.value');
+  Ember.setPath('MyApp.foo.value', null);
+  Ember.run.sync();
+  same(Ember.getPath('MyApp.bar.value'), [], '4 MyApp.bar.value');
   
 });

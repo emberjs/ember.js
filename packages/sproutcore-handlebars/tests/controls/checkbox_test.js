@@ -4,11 +4,11 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
-var get = SC.get, set = SC.set, checkboxView, application;
+var get = Ember.get, set = Ember.set, checkboxView, application;
 
-module("SC.Checkbox", {
+module("Ember.Checkbox", {
   setup: function() {
-    application = SC.Application.create();
+    application = Ember.Application.create();
   },
   teardown: function() {
     checkboxView.destroy();
@@ -17,19 +17,19 @@ module("SC.Checkbox", {
 });
 
 function setAndFlush(view, key, value) {
-  SC.run(function() {
-    SC.set(view, key, value);
+  Ember.run(function() {
+    Ember.set(view, key, value);
   });
 }
 
 function append() {
-  SC.run(function() {
+  Ember.run(function() {
     checkboxView.appendTo('#qunit-fixture');
   });
 }
 
 test("should become disabled if the disabled attribute is true", function() {
-  checkboxView = SC.Checkbox.create({});
+  checkboxView = Ember.Checkbox.create({});
 
   checkboxView.set('disabled', true);
   append();
@@ -38,21 +38,21 @@ test("should become disabled if the disabled attribute is true", function() {
 });
 
 test("should become disabled if the disabled attribute is true", function() {
-  checkboxView = SC.Checkbox.create({});
+  checkboxView = Ember.Checkbox.create({});
 
   append();
   ok(checkboxView.$("input").is(":not(:disabled)"));
 
-  SC.run(function() { checkboxView.set('disabled', true); });
+  Ember.run(function() { checkboxView.set('disabled', true); });
   ok(checkboxView.$("input").is(":disabled"));
 
-  SC.run(function() { checkboxView.set('disabled', false); });
+  Ember.run(function() { checkboxView.set('disabled', false); });
   ok(checkboxView.$("input").is(":not(:disabled)"));
 });
 
 test("value property mirrors input value", function() {
-  checkboxView = SC.Checkbox.create({});
-  SC.run(function() { checkboxView.append(); });
+  checkboxView = Ember.Checkbox.create({});
+  Ember.run(function() { checkboxView.append(); });
 
   equals(get(checkboxView, 'value'), false, "initially starts with a false value");
   equals(!!checkboxView.$('input').prop('checked'), false, "the initial checked property is false");
@@ -62,20 +62,20 @@ test("value property mirrors input value", function() {
   equals(checkboxView.$('input').prop('checked'), true, "changing the value property changes the DOM");
 
   checkboxView.remove();
-  SC.run(function() { checkboxView.append(); });
+  Ember.run(function() { checkboxView.append(); });
 
   equals(checkboxView.$('input').prop('checked'), true, "changing the value property changes the DOM");
 
-  SC.run(function() { checkboxView.remove(); });
-  SC.run(function() { set(checkboxView, 'value', false); });
-  SC.run(function() { checkboxView.append(); });
+  Ember.run(function() { checkboxView.remove(); });
+  Ember.run(function() { set(checkboxView, 'value', false); });
+  Ember.run(function() { checkboxView.append(); });
 
   equals(checkboxView.$('input').prop('checked'), false, "changing the value property changes the DOM");
 });
 
 test("value property mirrors input value", function() {
-  checkboxView = SC.Checkbox.create({ value: true });
-  SC.run(function() { checkboxView.append(); });
+  checkboxView = Ember.Checkbox.create({ value: true });
+  Ember.run(function() { checkboxView.append(); });
 
   equals(get(checkboxView, 'value'), true, "precond - initially starts with a true value");
   equals(!!checkboxView.$('input').prop('checked'), true, "the initial checked property is true");
@@ -84,21 +84,21 @@ test("value property mirrors input value", function() {
 
   equals(!!checkboxView.$('input').prop('checked'), false, "changing the value property changes the DOM");
 
-  SC.run(function() { checkboxView.remove(); });
-  SC.run(function() { checkboxView.append(); });
+  Ember.run(function() { checkboxView.remove(); });
+  Ember.run(function() { checkboxView.append(); });
 
   equals(checkboxView.$('input').prop('checked'), false, "changing the value property changes the DOM");
 
-  SC.run(function() { checkboxView.remove(); });
+  Ember.run(function() { checkboxView.remove(); });
   setAndFlush(checkboxView, 'value', true);
-  SC.run(function() { checkboxView.append(); });
+  Ember.run(function() { checkboxView.append(); });
 
   equals(checkboxView.$('input').prop('checked'), true, "changing the value property changes the DOM");
 });
 
 test("checking the checkbox updates the value", function() {
-  checkboxView = SC.Checkbox.create({ value: true });
-  SC.run(function() { checkboxView.appendTo('#qunit-fixture'); });
+  checkboxView = Ember.Checkbox.create({ value: true });
+  Ember.run(function() { checkboxView.appendTo('#qunit-fixture'); });
 
   equals(get(checkboxView, 'value'), true, "precond - initially starts with a true value");
   equals(!!checkboxView.$('input').attr('checked'), true, "precond - the initial checked property is true");

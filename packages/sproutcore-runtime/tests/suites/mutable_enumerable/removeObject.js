@@ -6,7 +6,7 @@
 
 require('sproutcore-runtime/~tests/suites/mutable_enumerable');
 
-var suite = SC.MutableEnumerableTests;
+var suite = Ember.MutableEnumerableTests;
 
 suite.module('removeObject');
 
@@ -28,7 +28,7 @@ suite.test("[A,B,C].removeObject(B) => [A,C] + notify", function() {
   obj.removeObject(before[1]);
 
   same(this.toArray(obj), after, 'post item results');
-  equals(SC.get(obj, 'length'), after.length, 'length');
+  equals(Ember.get(obj, 'length'), after.length, 'length');
 
   if (observer.isEnabled) {
     equals(observer.validate('[]'), true, 'should NOT have notified []');
@@ -48,7 +48,7 @@ suite.test("[A,B,C].removeObject(D) => [A,B,C]", function() {
   obj.removeObject(item); // note: item not in set
 
   same(this.toArray(obj), after, 'post item results');
-  equals(SC.get(obj, 'length'), after.length, 'length');
+  equals(Ember.get(obj, 'length'), after.length, 'length');
 
   if (observer.isEnabled) {
     equals(observer.validate('[]'), false, 'should NOT have notified []');

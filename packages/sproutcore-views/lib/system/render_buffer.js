@@ -5,29 +5,29 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
-var get = SC.get, set = SC.set;
+var get = Ember.get, set = Ember.set;
 
 /**
   @class
 
-  SC.RenderBuffer gathers information regarding the a view and generates the
-  final representation. SC.RenderBuffer will generate HTML which can be pushed
+  Ember.RenderBuffer gathers information regarding the a view and generates the
+  final representation. Ember.RenderBuffer will generate HTML which can be pushed
   to the DOM.
 
-  @extends SC.Object
+  @extends Ember.Object
 */
-SC.RenderBuffer = function(tagName) {
-  return SC._RenderBuffer.create({ elementTag: tagName });
+Ember.RenderBuffer = function(tagName) {
+  return Ember._RenderBuffer.create({ elementTag: tagName });
 };
 
-SC._RenderBuffer = SC.Object.extend(
-/** @scope SC.RenderBuffer.prototype */ {
+Ember._RenderBuffer = Ember.Object.extend(
+/** @scope Ember.RenderBuffer.prototype */ {
 
   /**
     Array of class-names which will be applied in the class="" attribute
 
     You should not maintain this array yourself, rather, you should use
-    the addClass() method of SC.RenderBuffer.
+    the addClass() method of Ember.RenderBuffer.
 
     @type Array
     @default []
@@ -38,7 +38,7 @@ SC._RenderBuffer = SC.Object.extend(
     The id in of the element, to be applied in the id="" attribute
 
     You should not set this property yourself, rather, you should use
-    the id() method of SC.RenderBuffer.
+    the id() method of Ember.RenderBuffer.
 
     @type String
     @default null
@@ -52,7 +52,7 @@ SC._RenderBuffer = SC.Object.extend(
     elementAttributes hash to {'data-view':'Foo.bar'}
 
     You should not maintain this hash yourself, rather, you should use
-    the attr() method of SC.RenderBuffer.
+    the attr() method of Ember.RenderBuffer.
 
     @type Hash
     @default {}
@@ -60,12 +60,12 @@ SC._RenderBuffer = SC.Object.extend(
   elementAttributes: null,
 
   /**
-    The tagname of the element an instance of SC.RenderBuffer represents.
+    The tagname of the element an instance of Ember.RenderBuffer represents.
 
-    Usually, this gets set as the first parameter to SC.RenderBuffer. For
+    Usually, this gets set as the first parameter to Ember.RenderBuffer. For
     example, if you wanted to create a `p` tag, then you would call
 
-      SC.RenderBuffer('p')
+      Ember.RenderBuffer('p')
 
     @type String
     @default null
@@ -79,7 +79,7 @@ SC._RenderBuffer = SC.Object.extend(
     elementStyle hash to {'background-color':'black'}
 
     You should not maintain this hash yourself, rather, you should use
-    the style() method of SC.RenderBuffer.
+    the style() method of Ember.RenderBuffer.
 
     @type Hash
     @default {}
@@ -90,7 +90,7 @@ SC._RenderBuffer = SC.Object.extend(
     Nested RenderBuffers will set this to their parent RenderBuffer
     instance.
 
-    @type SC._RenderBuffer
+    @type Ember._RenderBuffer
   */
   parentBuffer: null,
 
@@ -98,10 +98,10 @@ SC._RenderBuffer = SC.Object.extend(
   init: function() {
     this._super();
 
-    set(this ,'elementClasses', SC.A());
+    set(this ,'elementClasses', Ember.A());
     set(this, 'elementAttributes', {});
     set(this, 'elementStyle', {});
-    set(this, 'childBuffers', SC.A());
+    set(this, 'childBuffers', Ember.A());
     set(this, 'elements', {});
   },
 
@@ -109,7 +109,7 @@ SC._RenderBuffer = SC.Object.extend(
     Adds a string of HTML to the RenderBuffer.
 
     @param {String} string HTML to push into the buffer
-    @returns {SC.RenderBuffer} this
+    @returns {Ember.RenderBuffer} this
   */
   push: function(string) {
     get(this, 'childBuffers').pushObject(String(string));
@@ -120,7 +120,7 @@ SC._RenderBuffer = SC.Object.extend(
     Adds a class to the buffer, which will be rendered to the class attribute.
 
     @param {String} className Class name to add to the buffer
-    @returns {SC.RenderBuffer} this
+    @returns {Ember.RenderBuffer} this
   */
   addClass: function(className) {
     get(this, 'elementClasses').addObject(className);
@@ -131,7 +131,7 @@ SC._RenderBuffer = SC.Object.extend(
     Sets the elementID to be used for the element.
 
     @param {String} id
-    @returns {SC.RenderBuffer} this
+    @returns {Ember.RenderBuffer} this
   */
   id: function(id) {
     set(this, 'elementId', id);
@@ -143,7 +143,7 @@ SC._RenderBuffer = SC.Object.extend(
 
     @param {String} name The name of the attribute
     @param {String} value The value to add to the attribute
-    @returns {SC.RenderBuffer} this
+    @returns {Ember.RenderBuffer} this
   */
   attr: function(name, value) {
     get(this, 'elementAttributes')[name] = value;
@@ -155,7 +155,7 @@ SC._RenderBuffer = SC.Object.extend(
 
     @param {String} name Name of the style
     @param {String} value
-    @returns {SC.RenderBuffer} this
+    @returns {Ember.RenderBuffer} this
   */
   style: function(name, value) {
     get(this, 'elementStyle')[name] = value;
@@ -172,14 +172,14 @@ SC._RenderBuffer = SC.Object.extend(
 
     @private
     @param {String} tagName Tag name to use for the child buffer's element
-    @param {SC._RenderBuffer} parent The parent render buffer that this
+    @param {Ember._RenderBuffer} parent The parent render buffer that this
       buffer should be appended to.
     @param {Function} fn A callback to invoke with the newly created buffer.
     @param {Object} other Additional properties to add to the newly created
       buffer.
   */
   newBuffer: function(tagName, parent, fn, other) {
-    var buffer = SC._RenderBuffer.create({
+    var buffer = Ember._RenderBuffer.create({
       parentBuffer: parent,
       elementTag: tagName
     });
@@ -196,7 +196,7 @@ SC._RenderBuffer = SC.Object.extend(
     which passes the new buffer it created.
 
     @private
-    @param {SC._RenderBuffer} buffer The buffer to insert in place of
+    @param {Ember._RenderBuffer} buffer The buffer to insert in place of
       the existing buffer.
   */
   replaceWithBuffer: function(newBuffer) {
@@ -215,12 +215,12 @@ SC._RenderBuffer = SC.Object.extend(
   },
 
   /**
-    Creates a new SC.RenderBuffer object with the provided tagName as
+    Creates a new Ember.RenderBuffer object with the provided tagName as
     the element tag and with its parentBuffer property set to the current
-    SC.RenderBuffer.
+    Ember.RenderBuffer.
 
     @param {String} tagName Tag name to use for the child buffer's element
-    @returns {SC.RenderBuffer} A new RenderBuffer object
+    @returns {Ember.RenderBuffer} A new RenderBuffer object
   */
   begin: function(tagName) {
     return this.newBuffer(tagName, this, function(buffer) {
@@ -270,7 +270,7 @@ SC._RenderBuffer = SC.Object.extend(
   /**
     Closes the current buffer and adds its content to the parentBuffer.
 
-    @returns {SC.RenderBuffer} The parentBuffer, if one exists. Otherwise, this
+    @returns {Ember.RenderBuffer} The parentBuffer, if one exists. Otherwise, this
   */
   end: function() {
     var parent = get(this, 'parentBuffer');
@@ -286,7 +286,7 @@ SC._RenderBuffer = SC.Object.extend(
       of this buffer
   */
   element: function() {
-    return SC.$(this.string())[0];
+    return Ember.$(this.string())[0];
   },
 
   /**

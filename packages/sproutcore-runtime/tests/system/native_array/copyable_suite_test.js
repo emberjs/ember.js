@@ -7,11 +7,11 @@
 // ..........................................................
 // COPYABLE TESTS
 // 
-SC.CopyableTests.extend({
+Ember.CopyableTests.extend({
   name: 'NativeArray Copyable',
   
   newObject: function() {
-    return SC.A([SC.generateGuid()]);
+    return Ember.A([Ember.generateGuid()]);
   },
   
   isEqual: function(a,b) {

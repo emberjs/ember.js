@@ -1,17 +1,17 @@
 (function() {
   var parentView, childView, childViews;
-  var get = SC.get;
+  var get = Ember.get;
 
   module('tests/views/view/child_views_tests.js', {
     setup: function() {
-      parentView = SC.View.create({
+      parentView = Ember.View.create({
         render: function(buffer) {
           buffer.push('Sprout');
           this.appendChild(childView);
         }
       });
 
-      childView = SC.View.create({
+      childView = Ember.View.create({
         template: function() { return 'Core'; }
       });
     },
@@ -28,7 +28,7 @@
 
   // no parent element, no buffer, no element
   test("should render an inserted child view when the child is inserted before a DOM element is created", function() {
-    SC.run(function() {
+    Ember.run(function() {
       parentView.append();
     });
 
@@ -37,34 +37,34 @@
 
   test("should not duplicate childViews when rerendering in buffer", function() {
 
-    var inner = SC.View.create({
+    var inner = Ember.View.create({
       template: function() { return ''; }
     });
 
-     var inner2 = SC.View.create({
+     var inner2 = Ember.View.create({
        template: function() { return ''; }
      });
 
-    var middle = SC.View.create({
+    var middle = Ember.View.create({
       render: function(buffer) {
         this.appendChild(inner);
         this.appendChild(inner2);
       }
     });
 
-    var outer = SC.View.create({
+    var outer = Ember.View.create({
       render: function(buffer) {
         this.appendChild(middle);
       }
     });
 
-    SC.run(function() {
+    Ember.run(function() {
       outer.renderToBuffer();
     });
 
     equals(middle.getPath('childViews.length'), 2);
 
-    SC.run(function() {
+    Ember.run(function() {
       middle.rerender();
     });
 

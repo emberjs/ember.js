@@ -7,9 +7,9 @@
 
 require('sproutcore-views/views/view');
 
-var get = SC.get, set = SC.set;
+var get = Ember.get, set = Ember.set;
 
-SC.View.states = {
+Ember.View.states = {
   _default: {
     // appendChild is only legal while rendering the buffer.
     appendChild: function() {
@@ -17,7 +17,7 @@ SC.View.states = {
     },
 
     $: function() {
-      return SC.$();
+      return Ember.$();
     },
 
     getElement: function() {
@@ -26,6 +26,6 @@ SC.View.states = {
   }
 };
 
-SC.View.reopen({
-  states: SC.View.states
+Ember.View.reopen({
+  states: Ember.View.states
 });

@@ -4,14 +4,14 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
-var set = SC.set, get = SC.get;
+var set = Ember.set, get = Ember.get;
 
 var view, myViewClass ;
 
-module("SC.View#createChildView", {
+module("Ember.View#createChildView", {
   setup: function() {
-    view = SC.View.create();
-    myViewClass = SC.View.extend({ isMyView: YES, foo: 'bar' });
+    view = Ember.View.create();
+    myViewClass = Ember.View.extend({ isMyView: YES, foo: 'bar' });
   }
 });
 

@@ -4,10 +4,10 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
-module('SC.alias');
+module('Ember.alias');
 
 function validateAlias(obj) {
-  var get = SC.get;
+  var get = Ember.get;
   equals(get(obj, 'foo'), 'foo', 'obj.foo');
   equals(get(obj, 'bar'), 'foo', 'obj.bar should be a copy of foo');
 
@@ -20,18 +20,18 @@ function validateAlias(obj) {
 
 test('copies the property values from another key when the mixin is applied', function() {
 
-  var MyMixin = SC.Mixin.create({
+  var MyMixin = Ember.Mixin.create({
     foo: 'foo',
-    bar: SC.alias('foo'),
+    bar: Ember.alias('foo'),
 
-    computedFoo: SC.computed(function() {
+    computedFoo: Ember.computed(function() {
       return 'cfoo';
     }),
 
-    computedBar: SC.alias('computedFoo'),
+    computedBar: Ember.alias('computedFoo'),
     
     fooMethod: function() { return 'FOO'; },
-    barMethod: SC.alias('fooMethod')
+    barMethod: Ember.alias('fooMethod')
   });
   
   var obj = MyMixin.apply({});
@@ -39,32 +39,32 @@ test('copies the property values from another key when the mixin is applied', fu
 });
 
 test('should follow aliases all the way down', function() {
-  var MyMixin = SC.Mixin.create({
-    bar: SC.alias('foo'), // put first to break ordered iteration
+  var MyMixin = Ember.Mixin.create({
+    bar: Ember.alias('foo'), // put first to break ordered iteration
     baz: 'baz',
-    foo: SC.alias('baz')
+    foo: Ember.alias('baz')
   });
   
   var obj = MyMixin.apply({});
-  equals(SC.get(obj, 'bar'), 'baz', 'should have followed aliases');
+  equals(Ember.get(obj, 'bar'), 'baz', 'should have followed aliases');
 });
 
 test('should copy from other dependent mixins', function() {
 
-  var BaseMixin = SC.Mixin.create({
+  var BaseMixin = Ember.Mixin.create({
     foo: 'foo',
 
-    computedFoo: SC.computed(function() {
+    computedFoo: Ember.computed(function() {
       return 'cfoo';
     }),
 
     fooMethod: function() { return 'FOO'; }
   });
   
-  var MyMixin = SC.Mixin.create(BaseMixin, {
-    bar: SC.alias('foo'),
-    computedBar: SC.alias('computedFoo'),
-    barMethod: SC.alias('fooMethod')
+  var MyMixin = Ember.Mixin.create(BaseMixin, {
+    bar: Ember.alias('foo'),
+    computedBar: Ember.alias('computedFoo'),
+    barMethod: Ember.alias('fooMethod')
   });
   
   var obj = MyMixin.apply({});
@@ -73,41 +73,41 @@ test('should copy from other dependent mixins', function() {
 
 test('should copy from other mixins applied at same time', function() {
 
-  var BaseMixin = SC.Mixin.create({
+  var BaseMixin = Ember.Mixin.create({
     foo: 'foo',
 
-    computedFoo: SC.computed(function() {
+    computedFoo: Ember.computed(function() {
       return 'cfoo';
     }),
 
     fooMethod: function() { return 'FOO'; }
   });
   
-  var MyMixin = SC.Mixin.create({
-    bar: SC.alias('foo'),
-    computedBar: SC.alias('computedFoo'),
-    barMethod: SC.alias('fooMethod')
+  var MyMixin = Ember.Mixin.create({
+    bar: Ember.alias('foo'),
+    computedBar: Ember.alias('computedFoo'),
+    barMethod: Ember.alias('fooMethod')
   });
   
-  var obj = SC.mixin({}, BaseMixin, MyMixin);
+  var obj = Ember.mixin({}, BaseMixin, MyMixin);
   validateAlias(obj);
 });
 
 test('should copy from properties already applied on object', function() {
 
-  var BaseMixin = SC.Mixin.create({
+  var BaseMixin = Ember.Mixin.create({
     foo: 'foo',
     
-    computedFoo: SC.computed(function() {
+    computedFoo: Ember.computed(function() {
       return 'cfoo';
     })
     
   });
   
-  var MyMixin = SC.Mixin.create({
-    bar: SC.alias('foo'),
-    computedBar: SC.alias('computedFoo'),
-    barMethod: SC.alias('fooMethod')
+  var MyMixin = Ember.Mixin.create({
+    bar: Ember.alias('foo'),
+    computedBar: Ember.alias('computedFoo'),
+    barMethod: Ember.alias('fooMethod')
   });
 
   var obj = {

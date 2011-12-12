@@ -8,20 +8,20 @@
 require('sproutcore-views/views/container_view');
 require('sproutcore-runtime/system/string');
 
-var get = SC.get, set = SC.set, fmt = SC.String.fmt;
+var get = Ember.get, set = Ember.set, fmt = Ember.String.fmt;
 
 /**
   @class
   @since SproutCore 2.0
-  @extends SC.View
+  @extends Ember.View
 */
-SC.CollectionView = SC.ContainerView.extend(
-/** @scope SC.CollectionView.prototype */ {
+Ember.CollectionView = Ember.ContainerView.extend(
+/** @scope Ember.CollectionView.prototype */ {
 
   /**
-    A list of items to be displayed by the SC.CollectionView.
+    A list of items to be displayed by the Ember.CollectionView.
 
-    @type SC.Array
+    @type Ember.Array
     @default null
   */
   content: null,
@@ -29,16 +29,16 @@ SC.CollectionView = SC.ContainerView.extend(
   /**
     An optional view to display if content is set to an empty array.
 
-    @type SC.View
+    @type Ember.View
     @default null
   */
   emptyView: null,
 
   /**
-    @type SC.View
-    @default SC.View
+    @type Ember.View
+    @default Ember.View
   */
-  itemViewClass: SC.View,
+  itemViewClass: Ember.View,
 
   init: function() {
     var ret = this._super();
@@ -46,7 +46,7 @@ SC.CollectionView = SC.ContainerView.extend(
     return ret;
   },
 
-  _contentWillChange: SC.beforeObserver(function() {
+  _contentWillChange: Ember.beforeObserver(function() {
     var content = this.get('content');
 
     if (content) { content.removeArrayObserver(this); }
@@ -62,11 +62,11 @@ SC.CollectionView = SC.ContainerView.extend(
     asynchronously, to allow the element to be created before
     bindings have synchronized and vice versa.
   */
-  _contentDidChange: SC.observer(function() {
+  _contentDidChange: Ember.observer(function() {
     var content = get(this, 'content');
 
     if (content) {
-      sc_assert(fmt("an SC.CollectionView's content must implement SC.Array. You passed %@", [content]), content.addArrayObserver != null);
+      sc_assert(fmt("an Ember.CollectionView's content must implement Ember.Array. You passed %@", [content]), content.addArrayObserver != null);
       content.addArrayObserver(this);
     }
 
@@ -87,7 +87,7 @@ SC.CollectionView = SC.ContainerView.extend(
     // If the contents were empty before and this template collection has an
     // empty view remove it now.
     var emptyView = get(this, 'emptyView');
-    if (emptyView && emptyView instanceof SC.View) {
+    if (emptyView && emptyView instanceof Ember.View) {
       emptyView.removeFromParent();
     }
 
@@ -106,7 +106,7 @@ SC.CollectionView = SC.ContainerView.extend(
     Called when a mutation to the underlying content array occurs.
 
     This method will replay that mutation against the views that compose the
-    SC.CollectionView, ensuring that the view reflects the model.
+    Ember.CollectionView, ensuring that the view reflects the model.
 
     This array observer is added in contentDidChange.
 
@@ -124,7 +124,7 @@ SC.CollectionView = SC.ContainerView.extend(
         childViews = get(this, 'childViews'),
         addedViews = [], view, item, idx, len, itemTagName;
 
-    sc_assert(fmt("itemViewClass must be a subclass of SC.View, not %@", [itemViewClass]), SC.View.detect(itemViewClass));
+    sc_assert(fmt("itemViewClass must be a subclass of Ember.View, not %@", [itemViewClass]), Ember.View.detect(itemViewClass));
 
     len = content ? get(content, 'length') : 0;
     if (len) {
@@ -154,7 +154,7 @@ SC.CollectionView = SC.ContainerView.extend(
     var view = this._super(view, attrs);
 
     var itemTagName = get(view, 'tagName');
-    var tagName = itemTagName == null ? SC.CollectionView.CONTAINER_MAP[get(this, 'tagName')] : itemTagName;
+    var tagName = itemTagName == null ? Ember.CollectionView.CONTAINER_MAP[get(this, 'tagName')] : itemTagName;
 
     set(view, 'tagName', tagName);
 
@@ -172,7 +172,7 @@ SC.CollectionView = SC.ContainerView.extend(
   @type Hash
   @constant
 */
-SC.CollectionView.CONTAINER_MAP = {
+Ember.CollectionView.CONTAINER_MAP = {
   ul: 'li',
   ol: 'li',
   table: 'tr',

@@ -6,7 +6,7 @@
 
 require('sproutcore-metal/~tests/props_helper');
 
-module('SC.get');
+module('Ember.get');
 
 test('should get arbitrary properties on an object', function() {
   var obj = {
@@ -19,7 +19,7 @@ test('should get arbitrary properties on an object', function() {
   
   for(var key in obj) {
     if (!obj.hasOwnProperty(key)) continue;
-    equals(SC.get(obj, key), obj[key], key);
+    equals(Ember.get(obj, key), obj[key], key);
   }
   
 });
@@ -35,7 +35,7 @@ test('should call unknownProperty if defined and value is undefined', function()
     }
   };
 
-  equals(SC.get(obj, 'foo'), 'FOO', 'should return value from unknown');
+  equals(Ember.get(obj, 'foo'), 'FOO', 'should return value from unknown');
   equals(obj.count, 1, 'should have invoked');
 });
 
@@ -50,7 +50,7 @@ testBoth("should call unknownProperty on watched values if the value is undefine
   };
 
   var count = 0;
-  SC.addObserver(obj, 'foo', function() {
+  Ember.addObserver(obj, 'foo', function() {
     count++;
   });
 
@@ -63,16 +63,16 @@ testBoth("should call unknownProperty on watched values if the value is undefine
 
 test('(regression) watched properties on unmodified inherited objects should still return their original value', function() {
 
-  var MyMixin = SC.Mixin.create({
+  var MyMixin = Ember.Mixin.create({
     someProperty: 'foo',
-    propertyDidChange: SC.observer(function() {
+    propertyDidChange: Ember.observer(function() {
       // NOTHING TO DO
     }, 'someProperty')
   });
 
   var baseObject = MyMixin.apply({});
-  var theRealObject = SC.create(baseObject);
+  var theRealObject = Ember.create(baseObject);
   
-  equals(SC.get(theRealObject, 'someProperty'), 'foo', 'should return the set value, not false');  
+  equals(Ember.get(theRealObject, 'someProperty'), 'foo', 'should return the set value, not false');  
 });
 

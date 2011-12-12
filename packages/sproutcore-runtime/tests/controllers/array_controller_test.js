@@ -8,19 +8,19 @@ require('sproutcore-runtime/~tests/suites/mutable_array');
 
 module("sproutcore-runtime/controllers/array_controller_test");
 
-SC.MutableArrayTests.extend({
+Ember.MutableArrayTests.extend({
 
-  name: 'SC.ArrayController',
+  name: 'Ember.ArrayController',
 
   newObject: function(ary) {
     var ret = ary ? ary.slice() : this.newFixture(3);
-    return SC.ArrayController.create({
-      content: SC.A(ret)
+    return Ember.ArrayController.create({
+      content: Ember.A(ret)
     });
   },
 
   mutate: function(obj) {
-    obj.pushObject(SC.get(obj, 'length')+1);
+    obj.pushObject(Ember.get(obj, 'length')+1);
   },
 
   toArray: function(obj) {

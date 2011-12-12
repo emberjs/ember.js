@@ -8,12 +8,12 @@
 module('sproutcore-runtime/system/object/destroy_test');
 
 test("should schedule objects to be destroyed at the end of the run loop", function() {
-  var obj = SC.Object.create();
+  var obj = Ember.Object.create();
 
-  SC.run(function() {
+  Ember.run(function() {
     var meta;
     obj.destroy();
-    meta = SC.meta(obj);
+    meta = Ember.meta(obj);
     ok(meta, "object is not destroyed immediately");
   });
 
@@ -21,18 +21,18 @@ test("should schedule objects to be destroyed at the end of the run loop", funct
 });
 
 test("should raise an exception when modifying watched properties on a destroyed object", function() {
-  if (SC.platform.hasAccessors) {
-    var obj = SC.Object.create({
+  if (Ember.platform.hasAccessors) {
+    var obj = Ember.Object.create({
       foo: "bar",
-      fooDidChange: SC.observer(function() { }, 'foo')
+      fooDidChange: Ember.observer(function() { }, 'foo')
     });
 
-    SC.run(function() {
+    Ember.run(function() {
       obj.destroy();
     });
 
     raises(function() {
-      SC.set(obj, 'foo', 'baz');
+      Ember.set(obj, 'foo', 'baz');
     }, Error, "raises an exception");
   }
 });

@@ -5,17 +5,17 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
-var get = SC.get, set = SC.set, fmt = SC.String.fmt;
+var get = Ember.get, set = Ember.set, fmt = Ember.String.fmt;
 
 /**
   @ignore
 
-  SC.EventDispatcher handles delegating browser events to their corresponding
-  SC.Views. For example, when you click on a view, SC.EventDispatcher ensures
+  Ember.EventDispatcher handles delegating browser events to their corresponding
+  Ember.Views. For example, when you click on a view, Ember.EventDispatcher ensures
   that that view's `mouseDown` method gets called.
 */
-SC.EventDispatcher = SC.Object.extend(
-/** @scope SC.EventDispatcher.prototype */{
+Ember.EventDispatcher = Ember.Object.extend(
+/** @scope Ember.EventDispatcher.prototype */{
 
   /**
     @private
@@ -69,11 +69,11 @@ SC.EventDispatcher = SC.Object.extend(
 
     jQuery.extend(events, addedEvents || {});
 
-    var rootElement = SC.$(get(this, 'rootElement'));
+    var rootElement = Ember.$(get(this, 'rootElement'));
 
-    sc_assert(fmt('You cannot use the same root element (%@) multiple times in an SC.Application', [rootElement.selector || rootElement[0].tagName]), !rootElement.is('.sc-application'));
-    sc_assert('You cannot make a new SC.Application using a root element that is a descendent of an existing SC.Application', !rootElement.closest('.sc-application').length);
-    sc_assert('You cannot make a new SC.Application using a root element that is an ancestor of an existing SC.Application', !rootElement.find('.sc-application').length);
+    sc_assert(fmt('You cannot use the same root element (%@) multiple times in an Ember.Application', [rootElement.selector || rootElement[0].tagName]), !rootElement.is('.sc-application'));
+    sc_assert('You cannot make a new Ember.Application using a root element that is a descendent of an existing Ember.Application', !rootElement.closest('.sc-application').length);
+    sc_assert('You cannot make a new Ember.Application using a root element that is an ancestor of an existing Ember.Application', !rootElement.find('.sc-application').length);
 
     rootElement.addClass('sc-application')
 
@@ -108,7 +108,7 @@ SC.EventDispatcher = SC.Object.extend(
 
     rootElement.delegate('.sc-view', event + '.sproutcore', function(evt, triggeringManager) {
 
-      var view = SC.View.views[this.id],
+      var view = Ember.View.views[this.id],
           result = true, manager = null;
 
       manager = self._findNearestEventManager(view,eventName);
@@ -144,7 +144,7 @@ SC.EventDispatcher = SC.Object.extend(
     var result = true;
 
     handler = object[eventName];
-    if (SC.typeOf(handler) === 'function') {
+    if (Ember.typeOf(handler) === 'function') {
       result = handler.call(object, evt, view);
       evt.stopPropagation();
     }
@@ -160,9 +160,9 @@ SC.EventDispatcher = SC.Object.extend(
     var result = true, handler,
         self = this;
 
-      SC.run(function() {
+      Ember.run(function() {
         handler = view[eventName];
-        if (SC.typeOf(handler) === 'function') {
+        if (Ember.typeOf(handler) === 'function') {
           result = handler.call(view, evt);
         }
       });
@@ -173,7 +173,7 @@ SC.EventDispatcher = SC.Object.extend(
   /** @private */
   destroy: function() {
     var rootElement = get(this, 'rootElement');
-    SC.$(rootElement).undelegate('.sproutcore').removeClass('sc-application');
+    Ember.$(rootElement).undelegate('.sproutcore').removeClass('sc-application');
     return this._super();
   }
 });

@@ -5,7 +5,7 @@
 // ==========================================================================
 
 
-module('SC.set');
+module('Ember.set');
 
 test('should set arbitrary properties on an object', function() {
   var obj = {
@@ -20,8 +20,8 @@ test('should set arbitrary properties on an object', function() {
   
   for(var key in obj) {
     if (!obj.hasOwnProperty(key)) continue;
-    equals(SC.set(newObj, key, obj[key]), obj[key], 'should return value');
-    equals(SC.get(newObj, key), obj[key], 'should set value');
+    equals(Ember.set(newObj, key, obj[key]), obj[key], 'should return value');
+    equals(Ember.get(newObj, key), obj[key], 'should set value');
   }
   
 });
@@ -38,7 +38,7 @@ test('should call unknownProperty if defined and value is undefined', function()
     }
   };
   
-  equals(SC.set(obj, 'foo', "BAR"), 'BAR', 'should return set value');
+  equals(Ember.set(obj, 'foo', "BAR"), 'BAR', 'should return set value');
   equals(obj.count, 1, 'should have invoked');
 });
 
@@ -59,7 +59,7 @@ test('should call setUnknownProperty if defined and value is undefined', functio
     }
   };
   
-  equals(SC.set(obj, 'foo', "BAR"), 'BAR', 'should return set value');
+  equals(Ember.set(obj, 'foo', "BAR"), 'BAR', 'should return set value');
   equals(obj.count, 1, 'should have invoked');
 });
 

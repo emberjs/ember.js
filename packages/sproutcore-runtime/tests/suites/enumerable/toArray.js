@@ -6,7 +6,7 @@
 
 require('sproutcore-runtime/~tests/suites/enumerable');
 
-var suite = SC.EnumerableTests;
+var suite = Ember.EnumerableTests;
 
 suite.module('toArray');
 

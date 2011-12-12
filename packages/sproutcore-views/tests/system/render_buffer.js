@@ -5,15 +5,15 @@
 // ==========================================================================
 /*global module test equals context ok same */
 
-var set = SC.set, get = SC.get;
+var set = Ember.set, get = Ember.get;
 
 // .......................................................
 //  render()
 //
-module("SC.RenderBuffer");
+module("Ember.RenderBuffer");
 
 test("RenderBuffers combine strings", function() {
-  var buffer = new SC.RenderBuffer('div');
+  var buffer = new Ember.RenderBuffer('div');
 
   buffer.push('a');
   buffer.push('b');
@@ -22,7 +22,7 @@ test("RenderBuffers combine strings", function() {
 });
 
 test("It is possible to remove a RenderBuffer", function() {
-  var buffer = new SC.RenderBuffer('div');
+  var buffer = new Ember.RenderBuffer('div');
 
   buffer.push('a');
 
@@ -40,7 +40,7 @@ test("It is possible to remove a RenderBuffer", function() {
 });
 
 test("It is possible to replace a RenderBuffer", function() {
-  var buffer = new SC.RenderBuffer('div');
+  var buffer = new Ember.RenderBuffer('div');
 
   buffer.push('a');
 
@@ -61,7 +61,7 @@ test("It is possible to replace a RenderBuffer", function() {
 });
 
 test("It is possible to insert a RenderBuffer after another one", function() {
-  var buffer = new SC.RenderBuffer('div');
+  var buffer = new Ember.RenderBuffer('div');
 
   buffer.push('a');
 
@@ -82,7 +82,7 @@ test("It is possible to insert a RenderBuffer after another one", function() {
 });
 
 test("It is possible to prepend a child RenderBuffer", function() {
-  var buffer = new SC.RenderBuffer('div');
+  var buffer = new Ember.RenderBuffer('div');
 
   buffer.push('a');
 
@@ -105,7 +105,7 @@ test("It is possible to prepend a child RenderBuffer", function() {
 module("RenderBuffers without tagName");
 
 test("It is possible to create a RenderBuffer without a tagName", function() {
-  var buffer = new SC.RenderBuffer();
+  var buffer = new Ember.RenderBuffer();
   buffer.push('a');
   buffer.push('b');
   buffer.push('c');
@@ -114,7 +114,7 @@ test("It is possible to create a RenderBuffer without a tagName", function() {
 });
 
 test("it is possible to create a child render buffer without a tagName", function() {
-  var buffer = new SC.RenderBuffer('div');
+  var buffer = new Ember.RenderBuffer('div');
 
   buffer.push('a');
 
@@ -127,7 +127,7 @@ test("it is possible to create a child render buffer without a tagName", functio
 });
 
 test("it is possible to replace a child render buffer initially created without a tagName", function() {
-  var buffer = new SC.RenderBuffer('div');
+  var buffer = new Ember.RenderBuffer('div');
 
   buffer.push('a');
 

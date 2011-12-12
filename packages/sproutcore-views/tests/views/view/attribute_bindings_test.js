@@ -4,14 +4,14 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
-var set = SC.set, get = SC.get;
+var set = Ember.set, get = Ember.get;
 
 require('sproutcore-views/views/view');
 
-module("SC.View - Attribute Bindings");
+module("Ember.View - Attribute Bindings");
 
 test("should render and update attribute bindings", function() {
-  var view = SC.View.create({
+  var view = Ember.View.create({
     classNameBindings: ['priority', 'isUrgent', 'isClassified:classified', 'canIgnore'],
     attributeBindings: ['type', 'exploded', 'destroyed', 'exists', 'nothing', 'notDefined', 'notNumber', 'explosions'],
 
@@ -54,16 +54,16 @@ test("should render and update attribute bindings", function() {
 
 test("should allow attributes to be set in the inBuffer state", function() {
   var parentView, childViews;
-  SC.run(function() {
-    window.Test = SC.Namespace.create();
-    Test.controller = SC.Object.create({
+  Ember.run(function() {
+    window.Test = Ember.Namespace.create();
+    Test.controller = Ember.Object.create({
       foo: 'bar'
     });
 
-    parentView = SC.ContainerView.create();
+    parentView = Ember.ContainerView.create();
 
     childViews = parentView.get('childViews');
-    childViews.pushObject(parentView.createChildView(SC.View, {
+    childViews.pushObject(parentView.createChildView(Ember.View, {
       template: function() {
         return "foo";
       },
@@ -72,21 +72,21 @@ test("should allow attributes to be set in the inBuffer state", function() {
       attributeBindings: ['foo']
     }));
 
-    childViews.pushObject(parentView.createChildView(SC.View, {
+    childViews.pushObject(parentView.createChildView(Ember.View, {
       template: function() {
         Test.controller.set('foo', 'baz');
         return "bar";
       }
     }));
 
-    childViews.pushObject(parentView.createChildView(SC.View, {
+    childViews.pushObject(parentView.createChildView(Ember.View, {
       template: function() {
         return "bat";
       }
     }));
   });
 
-  SC.run(function() {
+  Ember.run(function() {
     parentView.append();
   });
 

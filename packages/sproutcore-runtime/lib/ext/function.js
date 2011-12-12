@@ -7,10 +7,10 @@
 
 require('sproutcore-runtime/core');
 
-if (SC.EXTEND_PROTOTYPES) {
+if (Ember.EXTEND_PROTOTYPES) {
 
   Function.prototype.property = function() {
-    var ret = SC.computed(this);
+    var ret = Ember.computed(this);
     return ret.property.apply(ret, arguments);
   };
 

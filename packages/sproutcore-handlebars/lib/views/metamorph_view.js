@@ -1,9 +1,9 @@
 require("metamorph");
 require("sproutcore-views/views/view");
 
-var set = SC.set, get = SC.get, getPath = SC.getPath;
+var set = Ember.set, get = Ember.get, getPath = Ember.getPath;
 
-SC.Metamorph = SC.Mixin.create({
+Ember.Metamorph = Ember.Mixin.create({
   isVirtual: true,
   tagName: '',
 
@@ -28,7 +28,7 @@ SC.Metamorph = SC.Mixin.create({
     this.clearBuffer();
   },
 
-  domManagerClass: SC.Object.extend({
+  domManagerClass: Ember.Object.extend({
     remove: function(view) {
       var morph = getPath(this, 'view.morph');
       if (morph.isRemoved()) { return; }
@@ -40,7 +40,7 @@ SC.Metamorph = SC.Mixin.create({
 
       childView._insertElementLater(function() {
         var morph = get(view, 'morph');
-        var script = SC.$("#" + morph.start);
+        var script = Ember.$("#" + morph.start);
         script.after(get(childView, 'outerHTML'));
         childView.set('outerHTML', null);
       });
@@ -51,7 +51,7 @@ SC.Metamorph = SC.Mixin.create({
 
       nextView._insertElementLater(function() {
         var morph = get(view, 'morph');
-        var script = SC.$("#" + morph.end);
+        var script = Ember.$("#" + morph.end);
         script.after(get(nextView, 'outerHTML'));
         nextView.set('outerHTML', null);
       });
@@ -65,7 +65,7 @@ SC.Metamorph = SC.Mixin.create({
       view.clearRenderedChildren();
       var buffer = view.renderToBuffer();
 
-      SC.run.schedule('render', this, function() {
+      Ember.run.schedule('render', this, function() {
         if (get(view, 'isDestroyed')) { return; }
         view._notifyWillInsertElement();
         morph.replaceWith(buffer.string());

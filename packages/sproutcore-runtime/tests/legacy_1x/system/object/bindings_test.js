@@ -12,36 +12,36 @@
   
   CHANGES FROM 1.6:
 
-  * changed SC.Bending.flushPendingChanges() -> SC.run.sync();
-  * changes obj.set() and obj.get() to SC.set() and SC.get()
+  * changed Ember.Bending.flushPendingChanges() -> Ember.run.sync();
+  * changes obj.set() and obj.get() to Ember.set() and Ember.get()
   * Fixed an actual bug in unit tests around line 133
-  * fixed 'bindings should disconnect on destroy' test to use SC.destroy.
+  * fixed 'bindings should disconnect on destroy' test to use Ember.destroy.
 */
 
 // ========================================================================
-// SC.Object bindings Tests
+// Ember.Object bindings Tests
 // ========================================================================
 /*globals module test ok isObj equals expects TestNamespace */
 
 var testObject, fromObject, extraObject, TestObject;
 
-var set = SC.set, get = SC.get;
+var set = Ember.set, get = Ember.get;
 
 module("bind() method", {
 
   setup: function() {
-    testObject = SC.Object.create({
+    testObject = Ember.Object.create({
       foo: "bar",
       bar: "foo",
       extraObject: null
     });
 
-    fromObject = SC.Object.create({
+    fromObject = Ember.Object.create({
       bar: "foo",
       extraObject: null
     }) ;
 
-    extraObject = SC.Object.create({
+    extraObject = Ember.Object.create({
       foo: "extraObjectValue"
     }) ;
 
@@ -60,62 +60,62 @@ module("bind() method", {
 test("bind(TestNamespace.fromObject.bar) should follow absolute path", function() {
   // create binding
   testObject.bind("foo", "TestNamespace.fromObject.bar") ;
-  SC.run.sync() ; // actually sets up up the binding
+  Ember.run.sync() ; // actually sets up up the binding
 
   // now make a change to see if the binding triggers.
   set(fromObject, "bar", "changedValue") ;
 
   // support new-style bindings if available
-  SC.run.sync();
+  Ember.run.sync();
   equals("changedValue", get(testObject, "foo"), "testObject.foo");
 });
 
 test("bind(.bar) should bind to relative path", function() {
   // create binding
   testObject.bind("foo", ".bar") ;
-  SC.run.sync() ; // actually sets up up the binding
+  Ember.run.sync() ; // actually sets up up the binding
 
   // now make a change to see if the binding triggers.
   set(testObject, "bar", "changedValue") ;
 
-  SC.run.sync();
+  Ember.run.sync();
   equals("changedValue", get(testObject, "foo"), "testObject.foo");
 });
 
-test("SC.Binding.bool(TestNamespace.fromObject.bar)) should create binding with bool transform", function() {
+test("Ember.Binding.bool(TestNamespace.fromObject.bar)) should create binding with bool transform", function() {
   // create binding
-  testObject.bind("foo", SC.Binding.bool("TestNamespace.fromObject.bar")) ;
-  SC.run.sync() ; // actually sets up up the binding
+  testObject.bind("foo", Ember.Binding.bool("TestNamespace.fromObject.bar")) ;
+  Ember.run.sync() ; // actually sets up up the binding
 
   // now make a change to see if the binding triggers.
   set(fromObject, "bar", 1) ;
 
-  SC.run.sync();
+  Ember.run.sync();
   equals(YES, get(testObject, "foo"), "testObject.foo == YES");
 
   set(fromObject, "bar", 0) ;
 
-  SC.run.sync();
+  Ember.run.sync();
   equals(NO, get(testObject, "foo"), "testObject.foo == NO");
 });
 
 test("bind(TestNamespace.fromObject*extraObject.foo) should create chained binding", function() {
   testObject.bind("foo", "TestNamespace.fromObject*extraObject.foo");
-  SC.run.sync() ; // actually sets up up the binding
+  Ember.run.sync() ; // actually sets up up the binding
 
   set(fromObject, "extraObject", extraObject) ;
 
-  SC.run.sync();
+  Ember.run.sync();
   equals("extraObjectValue", get(testObject, "foo"), "testObject.foo") ;
 });
 
 test("bind(*extraObject.foo) should create locally chained binding", function() {
   testObject.bind("foo", "*extraObject.foo");
-  SC.run.sync() ; // actually sets up up the binding
+  Ember.run.sync() ; // actually sets up up the binding
 
   set(testObject, "extraObject", extraObject) ;
 
-  SC.run.sync();
+  Ember.run.sync();
   equals("extraObjectValue", get(testObject, "foo"), "testObject.foo") ;
 });
 
@@ -123,12 +123,12 @@ test("bind(*extraObject.foo) should create locally chained binding", function() 
 // The following contains no test
 test("bind(*extraObject.foo) should be disconnectable", function() {
   var binding = testObject.bind("foo", "*extraObject.foo");
-  SC.run.sync() ; // actually sets up up the binding
+  Ember.run.sync() ; // actually sets up up the binding
 
   binding.disconnect(testObject);
 
   set(testObject, 'extraObject', extraObject);
-  SC.run.sync() ;
+  Ember.run.sync() ;
 
   // there was actually a bug here - the binding above should have synced to
   // null as there was no original value
@@ -138,18 +138,18 @@ test("bind(*extraObject.foo) should be disconnectable", function() {
 module("fooBinding method", {
 
   setup: function() {
-    TestObject = SC.Object.extend({
+    TestObject = Ember.Object.extend({
       foo: "bar",
       bar: "foo",
       extraObject: null
     });
 
-    fromObject = SC.Object.create({
+    fromObject = Ember.Object.create({
       bar: "foo",
       extraObject: null
     }) ;
 
-    extraObject = SC.Object.create({
+    extraObject = Ember.Object.create({
       foo: "extraObjectValue"
     }) ;
 
@@ -171,12 +171,12 @@ test("fooBinding: TestNamespace.fromObject.bar should follow absolute path", fun
   testObject = TestObject.create({
     fooBinding: "TestNamespace.fromObject.bar"
   }) ;
-  SC.run.sync() ; // actually sets up up the binding
+  Ember.run.sync() ; // actually sets up up the binding
 
   // now make a change to see if the binding triggers.
   set(fromObject, "bar", "changedValue") ;
 
-  SC.run.sync();
+  Ember.run.sync();
   equals("changedValue", get(testObject, "foo"), "testObject.foo");
 });
 
@@ -185,31 +185,31 @@ test("fooBinding: .bar should bind to relative path", function() {
   testObject = TestObject.create({
     fooBinding: ".bar"
   }) ;
-  SC.run.sync() ; // actually sets up up the binding
+  Ember.run.sync() ; // actually sets up up the binding
 
   // now make a change to see if the binding triggers.
   set(testObject, "bar", "changedValue") ;
 
-  SC.run.sync();
+  Ember.run.sync();
   equals("changedValue", get(testObject, "foo"), "testObject.foo");
 });
 
-test("fooBinding: SC.Binding.bool(TestNamespace.fromObject.bar should create binding with bool transform", function() {
+test("fooBinding: Ember.Binding.bool(TestNamespace.fromObject.bar should create binding with bool transform", function() {
 
   testObject = TestObject.create({
-    fooBinding: SC.Binding.bool("TestNamespace.fromObject.bar")
+    fooBinding: Ember.Binding.bool("TestNamespace.fromObject.bar")
   }) ;
-  SC.run.sync() ; // actually sets up up the binding
+  Ember.run.sync() ; // actually sets up up the binding
 
   // now make a change to see if the binding triggers.
   set(fromObject, "bar", 1) ;
 
-  SC.run.sync();
+  Ember.run.sync();
   equals(YES, get(testObject, "foo"), "testObject.foo == YES");
 
   set(fromObject, "bar", 0) ;
 
-  SC.run.sync();
+  Ember.run.sync();
   equals(NO, get(testObject, "foo"), "testObject.foo == NO");
 });
 
@@ -218,11 +218,11 @@ test("fooBinding: TestNamespace.fromObject*extraObject.foo should create chained
   testObject = TestObject.create({
     fooBinding: "TestNamespace.fromObject*extraObject.foo"
   }) ;
-  SC.run.sync() ; // actually sets up up the binding
+  Ember.run.sync() ; // actually sets up up the binding
 
   set(fromObject, "extraObject", extraObject) ;
 
-  SC.run.sync();
+  Ember.run.sync();
   equals("extraObjectValue", get(testObject, "foo"), "testObject.foo") ;
 });
 
@@ -231,11 +231,11 @@ test("fooBinding: *extraObject.foo should create locally chained binding", funct
   testObject = TestObject.create({
     fooBinding: "*extraObject.foo"
   }) ;
-  SC.run.sync() ; // actually sets up up the binding
+  Ember.run.sync() ; // actually sets up up the binding
 
   set(testObject, "extraObject", extraObject) ;
 
-  SC.run.sync();
+  Ember.run.sync();
   equals("extraObjectValue", get(testObject, "foo"), "testObject.foo") ;
 });
 
@@ -244,29 +244,29 @@ test('fooBinding: should disconnect bindings when destroyed', function () {
   testObject = TestObject.create({
     fooBinding: "TestNamespace.fromObject.bar"
   }) ;
-  SC.run.sync() ; // actually sets up up the binding
+  Ember.run.sync() ; // actually sets up up the binding
 
   set(TestNamespace.fromObject, 'bar', 'BAZ');
-  SC.run.sync();
+  Ember.run.sync();
   equals(get(testObject, 'foo'), 'BAZ', 'binding should have synced');
 
-  SC.destroy(testObject);
+  Ember.destroy(testObject);
   set(TestNamespace.fromObject, 'bar', 'BIFF');
-  SC.run.sync();
+  Ember.run.sync();
   ok(get(testObject, 'foo') !== 'bar', 'binding should not have synced');
 });
 
-module("fooBindingDefault: SC.Binding.Bool (old style)", {
+module("fooBindingDefault: Ember.Binding.Bool (old style)", {
 
   setup: function() {
-    TestObject = SC.Object.extend({
+    TestObject = Ember.Object.extend({
       foo: "bar",
-      fooBindingDefault: SC.Binding.bool(),
+      fooBindingDefault: Ember.Binding.bool(),
       bar: "foo",
       extraObject: null
     });
 
-    fromObject = SC.Object.create({
+    fromObject = Ember.Object.create({
       bar: "foo",
       extraObject: null
     }) ;
@@ -289,50 +289,50 @@ test("fooBinding: TestNamespace.fromObject.bar should have bool binding", functi
   testObject = TestObject.create({
     fooBinding: "TestNamespace.fromObject.bar"
   }) ;
-  SC.run.sync() ; // actually sets up up the binding
+  Ember.run.sync() ; // actually sets up up the binding
 
   // now make a change to see if the binding triggers.
   set(fromObject, "bar", 1) ;
 
-  SC.run.sync();
+  Ember.run.sync();
   equals(YES, get(testObject, "foo"), "testObject.foo == YES");
 
   set(fromObject, "bar", 0) ;
 
-  SC.run.sync();
+  Ember.run.sync();
   equals(NO, get(testObject, "foo"), "testObject.foo == NO");
 });
 
-test("fooBinding: SC.Binding.not(TestNamespace.fromObject.bar should override default", function() {
+test("fooBinding: Ember.Binding.not(TestNamespace.fromObject.bar should override default", function() {
 
   testObject = TestObject.create({
-    fooBinding: SC.Binding.not("TestNamespace.fromObject.bar")
+    fooBinding: Ember.Binding.not("TestNamespace.fromObject.bar")
   }) ;
-  SC.run.sync() ; // actually sets up up the binding
+  Ember.run.sync() ; // actually sets up up the binding
 
   // now make a change to see if the binding triggers.
   set(fromObject, "bar", 1) ;
 
-  SC.run.sync();
+  Ember.run.sync();
   equals(NO, get(testObject, "foo"), "testObject.foo == NO");
 
   set(fromObject, "bar", 0) ;
 
-  SC.run.sync();
+  Ember.run.sync();
   equals(YES, get(testObject, "foo"), "testObject.foo == YES");
 });
 
-module("fooBindingDefault: SC.Binding.bool() (new style)", {
+module("fooBindingDefault: Ember.Binding.bool() (new style)", {
 
   setup: function() {
-    TestObject = SC.Object.extend({
+    TestObject = Ember.Object.extend({
       foo: "bar",
-      fooBindingDefault: SC.Binding.bool(),
+      fooBindingDefault: Ember.Binding.bool(),
       bar: "foo",
       extraObject: null
     });
 
-    fromObject = SC.Object.create({
+    fromObject = Ember.Object.create({
       bar: "foo",
       extraObject: null
     }) ;
@@ -355,53 +355,53 @@ test("fooBinding: TestNamespace.fromObject.bar should have bool binding", functi
   testObject = TestObject.create({
     fooBinding: "TestNamespace.fromObject.bar"
   }) ;
-  SC.run.sync() ; // actually sets up up the binding
+  Ember.run.sync() ; // actually sets up up the binding
 
   // now make a change to see if the binding triggers.
   set(fromObject, "bar", 1) ;
 
-  SC.run.sync();
+  Ember.run.sync();
   equals(YES, get(testObject, "foo"), "testObject.foo == YES");
 
   set(fromObject, "bar", 0) ;
 
-  SC.run.sync();
+  Ember.run.sync();
   equals(NO, get(testObject, "foo"), "testObject.foo == NO");
 });
 
-test("fooBinding: SC.Binding.not(TestNamespace.fromObject.bar should override default", function() {
+test("fooBinding: Ember.Binding.not(TestNamespace.fromObject.bar should override default", function() {
 
   testObject = TestObject.create({
-    fooBinding: SC.Binding.not("TestNamespace.fromObject.bar")
+    fooBinding: Ember.Binding.not("TestNamespace.fromObject.bar")
   }) ;
-  SC.run.sync() ; // actually sets up up the binding
+  Ember.run.sync() ; // actually sets up up the binding
 
   // now make a change to see if the binding triggers.
   set(fromObject, "bar", 1) ;
 
-  SC.run.sync();
+  Ember.run.sync();
   equals(NO, get(testObject, "foo"), "testObject.foo == NO");
 
   set(fromObject, "bar", 0) ;
 
-  SC.run.sync();
+  Ember.run.sync();
   equals(YES, get(testObject, "foo"), "testObject.foo == YES");
 });
 
 test("Chained binding should be null if intermediate object in chain is null", function() {
   var a, z;
 
-  a = SC.Object.create({
-    b: SC.Object.create({
+  a = Ember.Object.create({
+    b: Ember.Object.create({
       c: 'c'
     }),
     zBinding: '*b.c'
   });
 
-  SC.run.sync();
+  Ember.run.sync();
   equals(get(a, 'z'), 'c', "a.z == 'c'");
 
   set(a, 'b', null);
-  SC.run.sync();
+  Ember.run.sync();
   equals(get(a, 'z'), null, "a.z == null");
 });

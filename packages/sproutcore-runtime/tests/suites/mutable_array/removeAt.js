@@ -7,7 +7,7 @@
 
 require('sproutcore-runtime/~tests/suites/mutable_array');
 
-var suite = SC.MutableArrayTests;
+var suite = Ember.MutableArrayTests;
 
 suite.module('removeAt');
 
@@ -22,7 +22,7 @@ suite.test("[X].removeAt(0) => [] + notify", function() {
   equals(obj.removeAt(0), obj, 'return self');
 
   same(this.toArray(obj), after, 'post item results');
-  equals(SC.get(obj, 'length'), after.length, 'length');
+  equals(Ember.get(obj, 'length'), after.length, 'length');
 
   if (observer.isEnabled) {
     equals(observer.validate('[]'), true, 'should have notified []');
@@ -48,7 +48,7 @@ suite.test("[A,B].removeAt(0) => [B] + notify", function() {
   equals(obj.removeAt(0), obj, 'return self');
 
   same(this.toArray(obj), after, 'post item results');
-  equals(SC.get(obj, 'length'), after.length, 'length');
+  equals(Ember.get(obj, 'length'), after.length, 'length');
 
   if (observer.isEnabled) {
     equals(observer.validate('[]'), true, 'should have notified []');
@@ -67,7 +67,7 @@ suite.test("[A,B].removeAt(1) => [A] + notify", function() {
   equals(obj.removeAt(1), obj, 'return self');
 
   same(this.toArray(obj), after, 'post item results');
-  equals(SC.get(obj, 'length'), after.length, 'length');
+  equals(Ember.get(obj, 'length'), after.length, 'length');
 
   if (observer.isEnabled) {
     equals(observer.validate('[]'), true, 'should have notified []');
@@ -86,7 +86,7 @@ suite.test("[A,B,C].removeAt(1) => [A,C] + notify", function() {
   equals(obj.removeAt(1), obj, 'return self');
 
   same(this.toArray(obj), after, 'post item results');
-  equals(SC.get(obj, 'length'), after.length, 'length');
+  equals(Ember.get(obj, 'length'), after.length, 'length');
 
   if (observer.isEnabled) {
     equals(observer.validate('[]'), true, 'should have notified []');
@@ -105,7 +105,7 @@ suite.test("[A,B,C,D].removeAt(1,2) => [A,D] + notify", function() {
   equals(obj.removeAt(1,2), obj, 'return self');
 
   same(this.toArray(obj), after, 'post item results');
-  equals(SC.get(obj, 'length'), after.length, 'length');
+  equals(Ember.get(obj, 'length'), after.length, 'length');
 
   if (observer.isEnabled) {
     equals(observer.validate('[]'), true, 'should have notified []');

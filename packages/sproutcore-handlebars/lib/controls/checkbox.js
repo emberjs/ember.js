@@ -7,24 +7,24 @@
 require("sproutcore-views/views/view");
 require("sproutcore-handlebars/ext");
 
-var set = SC.set, get = SC.get;
+var set = Ember.set, get = Ember.get;
 
 // TODO: Be explicit in the class documentation that you
 // *MUST* set the value of a checkbox through SproutCore.
 // Updating the value of a checkbox directly via jQuery objects
 // will not work.
 
-SC.Checkbox = SC.View.extend({
+Ember.Checkbox = Ember.View.extend({
   title: null,
   value: false,
   disabled: false,
 
   classNames: ['sc-checkbox'],
 
-  defaultTemplate: SC.Handlebars.compile('<label><input type="checkbox" {{bindAttr checked="value" disabled="disabled"}}>{{title}}</label>'),
+  defaultTemplate: Ember.Handlebars.compile('<label><input type="checkbox" {{bindAttr checked="value" disabled="disabled"}}>{{title}}</label>'),
 
   change: function() {
-    SC.run.once(this, this._updateElementValue);
+    Ember.run.once(this, this._updateElementValue);
     // returning false will cause IE to not change checkbox state
   },
 

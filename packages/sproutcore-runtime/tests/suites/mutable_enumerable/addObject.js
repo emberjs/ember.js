@@ -6,7 +6,7 @@
 
 require('sproutcore-runtime/~tests/suites/mutable_enumerable');
 
-var suite = SC.MutableEnumerableTests;
+var suite = Ember.MutableEnumerableTests;
 
 suite.module('addObject');
 
@@ -29,7 +29,7 @@ suite.test("[A,B].addObject(C) => [A,B, C] + notify", function() {
   obj.addObject(item);
 
   same(this.toArray(obj), after, 'post item results');
-  equals(SC.get(obj, 'length'), after.length, 'length');
+  equals(Ember.get(obj, 'length'), after.length, 'length');
 
   if (observer.isEnabled) {
     equals(observer.validate('[]'), true, 'should NOT have notified []');
@@ -49,7 +49,7 @@ suite.test("[A,B,C].addObject(A) => [A,B,C] + NO notify", function() {
   obj.addObject(item); // note: item in set
 
   same(this.toArray(obj), after, 'post item results');
-  equals(SC.get(obj, 'length'), after.length, 'length');
+  equals(Ember.get(obj, 'length'), after.length, 'length');
   
   if (observer.isEnabled) {
     equals(observer.validate('[]'), false, 'should NOT have notified []');

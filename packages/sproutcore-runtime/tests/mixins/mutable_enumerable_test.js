@@ -10,7 +10,7 @@ require('sproutcore-runtime/~tests/suites/mutable_enumerable');
   Implement a basic fake mutable array.  This validates that any non-native
   enumerable can impl this API.
 */
-var TestMutableEnumerable = SC.Object.extend(SC.MutableEnumerable, {
+var TestMutableEnumerable = Ember.Object.extend(Ember.MutableEnumerable, {
 
   _content: null,
   
@@ -36,10 +36,10 @@ var TestMutableEnumerable = SC.Object.extend(SC.MutableEnumerable, {
   },
   
   nextObject: function(idx) {
-    return idx>=SC.get(this, 'length') ? undefined : this._content[idx];
+    return idx>=Ember.get(this, 'length') ? undefined : this._content[idx];
   },
   
-  length: SC.computed(function() {
+  length: Ember.computed(function() {
     return this._content.length;
   }).property('[]').cacheable(),
   
@@ -49,7 +49,7 @@ var TestMutableEnumerable = SC.Object.extend(SC.MutableEnumerable, {
 });
 
 
-SC.MutableEnumerableTests.extend({
+Ember.MutableEnumerableTests.extend({
   
   name: 'Basic Mutable Array',
     

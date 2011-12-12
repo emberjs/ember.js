@@ -7,19 +7,19 @@
 // ..........................................................
 // MUTABLE ENUMERABLE TESTS
 // 
-SC.MutableEnumerableTests.extend({
+Ember.MutableEnumerableTests.extend({
   
-  name: 'SC.Set',
+  name: 'Ember.Set',
   
   newObject: function(ary) {
     ary = ary ? ary.slice() : this.newFixture(3);
-    var ret = new SC.Set();
+    var ret = new Ember.Set();
     ret.addObjects(ary);
     return ret;
   },
 
   mutate: function(obj) {
-    obj.addObject(SC.get(obj, 'length')+1);
+    obj.addObject(Ember.get(obj, 'length')+1);
   },
   
   toArray: function(obj) {

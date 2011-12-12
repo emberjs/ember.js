@@ -2,7 +2,7 @@ var view, childView, metamorphView;
 
 module("Metamorph views", {
   setup: function() {
-    view = SC.View.create({
+    view = Ember.View.create({
       render: function(buffer) {
         buffer.push("<h1>View</h1>");
         this.appendChild(metamorphView);
@@ -22,23 +22,23 @@ module("Metamorph views", {
   }
 });
 
-var get = SC.get, set = SC.set;
+var get = Ember.get, set = Ember.set;
 
 test("a Metamorph view is not a view's parentView", function() {
-  childView = SC.View.create({
+  childView = Ember.View.create({
     render: function(buffer) {
       buffer.push("<p>Bye bros</p>");
     }
   });
 
-  metamorphView = SC.View.create(SC.Metamorph, {
+  metamorphView = Ember.View.create(Ember.Metamorph, {
     render: function(buffer) {
       buffer.push("<h2>Meta</h2>");
       this.appendChild(childView);
     }
   });
 
-  SC.run(function() {
+  Ember.run(function() {
     view.appendTo("#qunit-fixture");
   });
 
@@ -52,14 +52,14 @@ test("a Metamorph view is not a view's parentView", function() {
 
 module("Metamorph views correctly handle DOM", {
   setup: function() {
-    view = SC.View.create({
+    view = Ember.View.create({
       render: function(buffer) {
         buffer.push("<h1>View</h1>");
         this.appendChild(metamorphView);
       }
     });
 
-    metamorphView = SC.View.create(SC.Metamorph, {
+    metamorphView = Ember.View.create(Ember.Metamorph, {
       powerRanger: "Jason",
 
       render: function(buffer) {
@@ -67,7 +67,7 @@ module("Metamorph views correctly handle DOM", {
       }
     });
 
-    SC.run(function() {
+    Ember.run(function() {
       view.appendTo("#qunit-fixture");
     });
   },
@@ -81,29 +81,29 @@ module("Metamorph views correctly handle DOM", {
 });
 
 test("a metamorph view generates without a DOM node", function() {
-  var meta = SC.$("> h2", "#" + get(view, 'elementId'));
+  var meta = Ember.$("> h2", "#" + get(view, 'elementId'));
 
   equals(meta.length, 1, "The metamorph element should be directly inside its parent");
 });
 
 test("a metamorph view can be removed from the DOM", function() {
-  SC.run(function() {
+  Ember.run(function() {
     metamorphView.destroy();
   });
 
-  var meta = SC.$('#from-morph');
+  var meta = Ember.$('#from-morph');
   equals(meta.length, 0, "the associated DOM was removed");
 });
 
 test("a metamorph view can be rerendered", function() {
-  equals(SC.$('#from-meta').text(), "Jason", "precond - renders to the DOM");
+  equals(Ember.$('#from-meta').text(), "Jason", "precond - renders to the DOM");
 
   set(metamorphView, 'powerRanger', 'Trini');
-  SC.run(function() {
+  Ember.run(function() {
     metamorphView.rerender();
   });
 
-  equals(SC.$('#from-meta').text(), "Trini", "updates value when re-rendering");
+  equals(Ember.$('#from-meta').text(), "Trini", "updates value when re-rendering");
 });
 
 
@@ -113,9 +113,9 @@ test("a metamorph view calls its childrens' willInsertElement and didInsertEleme
   var didInsertElementCalled = false;
   var didInsertElementSawElement = false;
 
-  parentView = SC.View.create({
-    ViewWithCallback: SC.View.extend({
-      template: SC.Handlebars.compile('<div id="do-i-exist"></div>'),
+  parentView = Ember.View.create({
+    ViewWithCallback: Ember.View.extend({
+      template: Ember.Handlebars.compile('<div id="do-i-exist"></div>'),
 
       willInsertElement: function(){
         willInsertElementCalled = true;
@@ -126,14 +126,14 @@ test("a metamorph view calls its childrens' willInsertElement and didInsertEleme
       }
     }),
 
-    template: SC.Handlebars.compile('{{#if condition}}{{view "ViewWithCallback"}}{{/if}}'),
+    template: Ember.Handlebars.compile('{{#if condition}}{{view "ViewWithCallback"}}{{/if}}'),
     condition: false
   });
 
-  SC.run(function() {
+  Ember.run(function() {
     parentView.append();
   });
-  SC.run(function() {
+  Ember.run(function() {
     parentView.set('condition', true);
   });
 

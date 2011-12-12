@@ -5,36 +5,36 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
-var set = SC.set, get = SC.get;
+var set = Ember.set, get = Ember.get;
 var view;
 
-module("SC.CollectionView", {
+module("Ember.CollectionView", {
   setup: function() {
-    SC.CollectionView.CONTAINER_MAP.del = 'em';
+    Ember.CollectionView.CONTAINER_MAP.del = 'em';
   },
   teardown: function() {
-    delete SC.CollectionView.CONTAINER_MAP.del;
+    delete Ember.CollectionView.CONTAINER_MAP.del;
     if (view) { view.destroy(); }
   }
 });
 
 test("should render a view for each item in its content array", function() {
-  view = SC.CollectionView.create({
-    content: SC.A([1, 2, 3, 4])
+  view = Ember.CollectionView.create({
+    content: Ember.A([1, 2, 3, 4])
   });
 
-  SC.run(function() {
+  Ember.run(function() {
     view.append();
   });
   equals(view.$('div').length, 4);
 });
 
 test("should render the emptyView if content array is empty (view class)", function() {
-  view = SC.CollectionView.create({
+  view = Ember.CollectionView.create({
     tagName: 'del',
-    content: SC.A(),
+    content: Ember.A(),
 
-    emptyView: SC.View.extend({
+    emptyView: Ember.View.extend({
       tagName: 'kbd',
       render: function(buf) {
         buf.push("OY SORRY GUVNAH NO NEWS TODAY EH");
@@ -42,7 +42,7 @@ test("should render the emptyView if content array is empty (view class)", funct
     })
   });
 
-  SC.run(function() {
+  Ember.run(function() {
     view.append();
   });
 
@@ -50,11 +50,11 @@ test("should render the emptyView if content array is empty (view class)", funct
 });
 
 test("should render the emptyView if content array is empty (view instance)", function() {
-  view = SC.CollectionView.create({
+  view = Ember.CollectionView.create({
     tagName: 'del',
-    content: SC.A(),
+    content: Ember.A(),
 
-    emptyView: SC.View.create({
+    emptyView: Ember.View.create({
       tagName: 'kbd',
       render: function(buf) {
         buf.push("OY SORRY GUVNAH NO NEWS TODAY EH");
@@ -62,7 +62,7 @@ test("should render the emptyView if content array is empty (view instance)", fu
     })
   });
 
-  SC.run(function() {
+  Ember.run(function() {
     view.append();
   });
 
@@ -70,11 +70,11 @@ test("should render the emptyView if content array is empty (view instance)", fu
 });
 
 test("should be able to override the tag name of itemViewClass even if tag is in default mapping", function() {
-  view = SC.CollectionView.create({
+  view = Ember.CollectionView.create({
     tagName: 'del',
-    content: SC.A(['NEWS GUVNAH']),
+    content: Ember.A(['NEWS GUVNAH']),
 
-    itemViewClass: SC.View.extend({
+    itemViewClass: Ember.View.extend({
       tagName: 'kbd',
       render: function(buf) {
         buf.push(get(this, 'content'));
@@ -82,7 +82,7 @@ test("should be able to override the tag name of itemViewClass even if tag is in
     })
   });
 
-  SC.run(function() {
+  Ember.run(function() {
     view.append();
   });
 
@@ -91,10 +91,10 @@ test("should be able to override the tag name of itemViewClass even if tag is in
 
 test("should allow custom item views by setting itemViewClass", function() {
   var passedContents = [];
-  view = SC.CollectionView.create({
-    content: SC.A(['foo', 'bar', 'baz']),
+  view = Ember.CollectionView.create({
+    content: Ember.A(['foo', 'bar', 'baz']),
 
-    itemViewClass: SC.View.extend({
+    itemViewClass: Ember.View.extend({
       render: function(buf) {
         passedContents.push(get(this, 'content'));
         buf.push(get(this, 'content'));
@@ -102,7 +102,7 @@ test("should allow custom item views by setting itemViewClass", function() {
     })
   });
 
-  SC.run(function() {
+  Ember.run(function() {
     view.append();
   });
 
@@ -114,19 +114,19 @@ test("should allow custom item views by setting itemViewClass", function() {
 });
 
 test("should insert a new item in DOM when an item is added to the content array", function() {
-  var content = SC.A(['foo', 'bar', 'baz']);
+  var content = Ember.A(['foo', 'bar', 'baz']);
 
-  view = SC.CollectionView.create({
+  view = Ember.CollectionView.create({
     content: content,
 
-    itemViewClass: SC.View.extend({
+    itemViewClass: Ember.View.extend({
       render: function(buf) {
         buf.push(get(this, 'content'));
       }
     })
   });
 
-  SC.run(function() {
+  Ember.run(function() {
     view.append();
   });
 
@@ -134,7 +134,7 @@ test("should insert a new item in DOM when an item is added to the content array
     equals(view.$(':contains("'+item+'")').length, 1, "precond - generates pre-existing items");
   });
 
-  SC.run(function() {
+  Ember.run(function() {
     content.insertAt(1, 'quux');
   });
 
@@ -142,19 +142,19 @@ test("should insert a new item in DOM when an item is added to the content array
 });
 
 test("should remove an item from DOM when an item is removed from the content array", function() {
-  var content = SC.A(['foo', 'bar', 'baz']);
+  var content = Ember.A(['foo', 'bar', 'baz']);
 
-  view = SC.CollectionView.create({
+  view = Ember.CollectionView.create({
     content: content,
 
-    itemViewClass: SC.View.extend({
+    itemViewClass: Ember.View.extend({
       render: function(buf) {
         buf.push(get(this, 'content'));
       }
     })
   });
 
-  SC.run(function() {
+  Ember.run(function() {
     view.append();
   });
 
@@ -162,25 +162,25 @@ test("should remove an item from DOM when an item is removed from the content ar
     equals(view.$(':contains("'+item+'")').length, 1, "precond - generates pre-existing items");
   });
 
-  SC.run(function() {
+  Ember.run(function() {
     content.removeAt(1);
   });
 
   content.forEach(function(item, idx) {
-    equals(view.$(SC.String.fmt(':nth-child(%@)', [String(idx+1)])).text(), item);
+    equals(view.$(Ember.String.fmt(':nth-child(%@)', [String(idx+1)])).text(), item);
   });
 });
 
 test("should allow changes to content object before layer is created", function() {
-  view = SC.CollectionView.create({
+  view = Ember.CollectionView.create({
     content: null
   });
 
-  set(view, 'content', SC.A());
-  set(view, 'content', SC.A([1, 2, 3]));
-  set(view, 'content', SC.A([1, 2]));
+  set(view, 'content', Ember.A());
+  set(view, 'content', Ember.A([1, 2, 3]));
+  set(view, 'content', Ember.A([1, 2]));
 
-  SC.run(function() {
+  Ember.run(function() {
     view.append();
   });
 
@@ -188,21 +188,21 @@ test("should allow changes to content object before layer is created", function(
 });
 
 test("should allow changing content property to be null", function() {
-  view = SC.CollectionView.create({
-    content: SC.A([1, 2, 3]),
+  view = Ember.CollectionView.create({
+    content: Ember.A([1, 2, 3]),
 
-    emptyView: SC.View.extend({
+    emptyView: Ember.View.extend({
       template: function() { return "(empty)"; }
     })
   });
 
-  SC.run(function() {
+  Ember.run(function() {
     view.append();
   });
 
   equals(view.$().children().length, 3, "precond - creates three elements");
 
-  SC.run(function() {
+  Ember.run(function() {
     set(view, 'content', null);
   });
 
@@ -210,16 +210,16 @@ test("should allow changing content property to be null", function() {
 });
 
 test("should allow items to access to the CollectionView's current index in the content array", function() {
-  view = SC.CollectionView.create({
-    content: SC.A(['zero', 'one', 'two']),
-    itemViewClass: SC.View.extend({
+  view = Ember.CollectionView.create({
+    content: Ember.A(['zero', 'one', 'two']),
+    itemViewClass: Ember.View.extend({
       render: function(buf) {
         buf.push(get(this, 'contentIndex'));
       }
     })
   });
 
-  SC.run(function() {
+  Ember.run(function() {
     view.append();
   });
 

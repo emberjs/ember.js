@@ -9,10 +9,10 @@ require("sproutcore-views/views/view");
 require("sproutcore-handlebars/controls/text_support");
 /** @class */
 
-var get = SC.get, set = SC.set;
+var get = Ember.get, set = Ember.set;
 
-SC.TextField = SC.View.extend(SC.TextSupport,
-  /** @scope SC.TextField.prototype */ {
+Ember.TextField = Ember.View.extend(Ember.TextSupport,
+  /** @scope Ember.TextField.prototype */ {
 
   classNames: ['sc-text-field'],
 

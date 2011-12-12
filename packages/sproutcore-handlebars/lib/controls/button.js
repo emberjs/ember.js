@@ -6,9 +6,9 @@
 
 require('sproutcore-runtime/mixins/target_action_support');
 
-var get = SC.get, set = SC.set;
+var get = Ember.get, set = Ember.set;
 
-SC.Button = SC.View.extend(SC.TargetActionSupport, {
+Ember.Button = Ember.View.extend(Ember.TargetActionSupport, {
   classNames: ['sc-button'],
   classNameBindings: ['isActive'],
 
@@ -45,7 +45,7 @@ SC.Button = SC.View.extend(SC.TargetActionSupport, {
     if (get(this, 'isActive')) {
 
       // Actually invoke the button's target and action.
-      // This method comes from the SC.TargetActionSupport mixin.
+      // This method comes from the Ember.TargetActionSupport mixin.
       this.triggerAction();
       set(this, 'isActive', false);
     }

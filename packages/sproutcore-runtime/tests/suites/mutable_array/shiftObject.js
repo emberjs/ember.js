@@ -6,7 +6,7 @@
 
 require('sproutcore-runtime/~tests/suites/mutable_array');
 
-var suite = SC.MutableArrayTests;
+var suite = Ember.MutableArrayTests;
 
 suite.module('shiftObject');
 
@@ -21,7 +21,7 @@ suite.test("[].shiftObject() => [] + returns undefined + NO notify", function() 
   equals(obj.shiftObject(), undefined);
 
   same(this.toArray(obj), after, 'post item results');
-  equals(SC.get(obj, 'length'), after.length, 'length');
+  equals(Ember.get(obj, 'length'), after.length, 'length');
 
   if (observer.isEnabled) {
     equals(observer.validate('[]'), false, 'should NOT have notified []');
@@ -40,7 +40,7 @@ suite.test("[X].shiftObject() => [] + notify", function() {
   equals(obj.shiftObject(), before[0], 'should return object');
 
   same(this.toArray(obj), after, 'post item results');
-  equals(SC.get(obj, 'length'), after.length, 'length');
+  equals(Ember.get(obj, 'length'), after.length, 'length');
 
   if (observer.isEnabled) {
     equals(observer.validate('[]'), true, 'should have notified []');
@@ -59,7 +59,7 @@ suite.test("[A,B,C].shiftObject() => [B,C] + notify", function() {
   equals(obj.shiftObject(), before[0], 'should return object');
 
   same(this.toArray(obj), after, 'post item results');
-  equals(SC.get(obj, 'length'), after.length, 'length');
+  equals(Ember.get(obj, 'length'), after.length, 'length');
 
   if (observer.isEnabled) {
     equals(observer.validate('[]'), true, 'should have notified []');

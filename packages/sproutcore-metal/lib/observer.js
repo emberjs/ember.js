@@ -12,8 +12,8 @@ require('sproutcore-metal/accessors');
 
 var AFTER_OBSERVERS = ':change';
 var BEFORE_OBSERVERS = ':before';
-var guidFor = SC.guidFor;
-var normalizePath = SC.normalizePath;
+var guidFor = Ember.guidFor;
+var normalizePath = Ember.normalizePath;
 
 var suspended = 0;
 var array_Slice = Array.prototype.slice;
@@ -24,7 +24,7 @@ var ObserverSet = function(iterateable) {
 }
 
 ObserverSet.prototype.add = function(target, name) {
-  var set = this.set, guid = SC.guidFor(target), array;
+  var set = this.set, guid = Ember.guidFor(target), array;
 
   if (!set[guid]) { set[guid] = {}; }
   set[guid][name] = true;
@@ -34,7 +34,7 @@ ObserverSet.prototype.add = function(target, name) {
 };
 
 ObserverSet.prototype.contains = function(target, name) {
-  var set = this.set, guid = SC.guidFor(target), nameSet = set[guid];
+  var set = this.set, guid = Ember.guidFor(target), nameSet = set[guid];
   return nameSet && nameSet[name];
 };
 
@@ -63,7 +63,7 @@ function notifyObservers(obj, eventName, forceNotification) {
     }
 
   } else {
-    SC.sendEvent(obj, eventName);
+    Ember.sendEvent(obj, eventName);
   }
 }
 
@@ -71,15 +71,15 @@ function flushObserverQueue() {
   beforeObserverSet.empty();
 
   if (!queue || queue.array.length===0) return ;
-  queue.forEach(function(target, event){ SC.sendEvent(target, event); });
+  queue.forEach(function(target, event){ Ember.sendEvent(target, event); });
 }
 
-SC.beginPropertyChanges = function() {
+Ember.beginPropertyChanges = function() {
   suspended++;
   return this;
 };
 
-SC.endPropertyChanges = function() {
+Ember.endPropertyChanges = function() {
   suspended--;
   if (suspended<=0) flushObserverQueue();
 };
@@ -88,17 +88,17 @@ SC.endPropertyChanges = function() {
   Make a series of property changes together in an
   exception-safe way.
 
-      SC.changeProperties(function() {
+      Ember.changeProperties(function() {
         obj1.set('foo', mayBlowUpWhenSet);
         obj2.set('bar', baz);
       });
 */
-SC.changeProperties = function(cb){
-  SC.beginPropertyChanges();
+Ember.changeProperties = function(cb){
+  Ember.beginPropertyChanges();
   try {
     cb()
   } finally {
-    SC.endPropertyChanges();
+    Ember.endPropertyChanges();
   }
 }
 
@@ -122,7 +122,7 @@ function xformForArgs(args) {
   return function (target, method, params) {
     var obj = params[0], keyName = changeKey(params[1]), val;
     var copy_args = args.slice();
-    if (method.length>2) val = SC.getPath(obj, keyName);
+    if (method.length>2) val = Ember.getPath(obj, keyName);
     copy_args.unshift(obj, keyName, val);
     method.apply(target, copy_args);
   }
@@ -132,11 +132,11 @@ var xformChange = xformForArgs([]);
 
 function xformBefore(target, method, params) {
   var obj = params[0], keyName = beforeKey(params[1]), val;
-  if (method.length>2) val = SC.getPath(obj, keyName);
+  if (method.length>2) val = Ember.getPath(obj, keyName);
   method.call(target, obj, keyName, val);
 }
 
-SC.addObserver = function(obj, path, target, method) {
+Ember.addObserver = function(obj, path, target, method) {
   path = normalizePath(path);
 
   var xform;
@@ -146,49 +146,49 @@ SC.addObserver = function(obj, path, target, method) {
   } else {
     xform = xformChange;
   }
-  SC.addListener(obj, changeEvent(path), target, method, xform);
-  SC.watch(obj, path);
+  Ember.addListener(obj, changeEvent(path), target, method, xform);
+  Ember.watch(obj, path);
   return this;
 };
 
 /** @private */
-SC.observersFor = function(obj, path) {
-  return SC.listenersFor(obj, changeEvent(path));
+Ember.observersFor = function(obj, path) {
+  return Ember.listenersFor(obj, changeEvent(path));
 };
 
-SC.removeObserver = function(obj, path, target, method) {
+Ember.removeObserver = function(obj, path, target, method) {
   path = normalizePath(path);
-  SC.unwatch(obj, path);
-  SC.removeListener(obj, changeEvent(path), target, method);
+  Ember.unwatch(obj, path);
+  Ember.removeListener(obj, changeEvent(path), target, method);
   return this;
 };
 
-SC.addBeforeObserver = function(obj, path, target, method) {
+Ember.addBeforeObserver = function(obj, path, target, method) {
   path = normalizePath(path);
-  SC.addListener(obj, beforeEvent(path), target, method, xformBefore);
-  SC.watch(obj, path);
-  return this;
-};
-
-/** @private */
-SC.beforeObserversFor = function(obj, path) {
-  return SC.listenersFor(obj, beforeEvent(path));
-};
-
-SC.removeBeforeObserver = function(obj, path, target, method) {
-  path = normalizePath(path);
-  SC.unwatch(obj, path);
-  SC.removeListener(obj, beforeEvent(path), target, method);
+  Ember.addListener(obj, beforeEvent(path), target, method, xformBefore);
+  Ember.watch(obj, path);
   return this;
 };
 
 /** @private */
-SC.notifyObservers = function(obj, keyName) {
+Ember.beforeObserversFor = function(obj, path) {
+  return Ember.listenersFor(obj, beforeEvent(path));
+};
+
+Ember.removeBeforeObserver = function(obj, path, target, method) {
+  path = normalizePath(path);
+  Ember.unwatch(obj, path);
+  Ember.removeListener(obj, beforeEvent(path), target, method);
+  return this;
+};
+
+/** @private */
+Ember.notifyObservers = function(obj, keyName) {
   notifyObservers(obj, changeEvent(keyName));
 };
 
 /** @private */
-SC.notifyBeforeObservers = function(obj, keyName) {
+Ember.notifyBeforeObservers = function(obj, keyName) {
   var guid, set, forceNotification = false;
 
   if (suspended) {

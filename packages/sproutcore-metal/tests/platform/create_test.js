@@ -6,11 +6,11 @@
 
 require('sproutcore-metal');
 
-module("SC.platform.create()");
+module("Ember.platform.create()");
 
 test("should inherit the properties from the parent object", function() {
   var obj = { foo: 'FOO' };
-  var obj2 = SC.platform.create(obj);
+  var obj2 = Ember.platform.create(obj);
   ok(obj !== obj2, 'should be a new instance');
   equals(obj2.foo, obj.foo, 'should inherit from parent');
   
@@ -21,7 +21,7 @@ test("should inherit the properties from the parent object", function() {
 
 test("passing additional property descriptors should define", function() {
   var obj = { foo: 'FOO', repl: 'obj' };
-  var obj2 = SC.platform.create(obj, { 
+  var obj2 = Ember.platform.create(obj, { 
     bar: {
       value: 'BAR'    
     },

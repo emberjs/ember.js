@@ -20,17 +20,17 @@ module('system/binding/notEmpty', {
 
 test('forces binding values to be notEmpty if enumerable', function() {
   
-  var binding = SC.bind(MyApp, 'bar.value', 'foo.value').notEmpty('(EMPTY)');
+  var binding = Ember.bind(MyApp, 'bar.value', 'foo.value').notEmpty('(EMPTY)');
 
-  SC.run.sync();
-  same(SC.getPath('MyApp.bar.value'), 'FOO', '1 MyApp.bar.value');
+  Ember.run.sync();
+  same(Ember.getPath('MyApp.bar.value'), 'FOO', '1 MyApp.bar.value');
 
-  SC.setPath('MyApp.foo.value', ['FOO']);
-  SC.run.sync();
-  same(SC.getPath('MyApp.bar.value'), ['FOO'], '2 Array passes through');
+  Ember.setPath('MyApp.foo.value', ['FOO']);
+  Ember.run.sync();
+  same(Ember.getPath('MyApp.bar.value'), ['FOO'], '2 Array passes through');
 
-  SC.setPath('MyApp.foo.value', []);
-  SC.run.sync();
-  same(SC.getPath('MyApp.bar.value'), '(EMPTY)', '3 uses empty placeholder');
+  Ember.setPath('MyApp.foo.value', []);
+  Ember.run.sync();
+  same(Ember.getPath('MyApp.bar.value'), '(EMPTY)', '3 uses empty placeholder');
 
 });

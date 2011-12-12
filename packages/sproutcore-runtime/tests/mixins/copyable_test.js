@@ -8,25 +8,25 @@ require('sproutcore-runtime/~tests/suites/copyable');
 
 // NOTE: See debug/suites/copyable.js for mosts tests
 
-var CopyableObject = SC.Object.extend(SC.Copyable, {
+var CopyableObject = Ember.Object.extend(Ember.Copyable, {
   
   id: null,
   
   init: function() {
     this._super();
-    SC.set(this, 'id', SC.generateGuid());
+    Ember.set(this, 'id', Ember.generateGuid());
   },
   
   copy: function() {
     var ret = new CopyableObject();
-    SC.set(ret, 'id', SC.get(this, 'id'));
+    Ember.set(ret, 'id', Ember.get(this, 'id'));
     return ret;
   }
 });
 
-SC.CopyableTests.extend({
+Ember.CopyableTests.extend({
   
-  name: 'SC.Copyable Basic Test',
+  name: 'Ember.Copyable Basic Test',
   
   newObject: function() {
     return new CopyableObject();
@@ -34,6 +34,6 @@ SC.CopyableTests.extend({
   
   isEqual: function(a, b) {
     if (!(a instanceof CopyableObject) || !(b instanceof CopyableObject)) return false;
-    return SC.get(a, 'id') === SC.get(b,'id');
+    return Ember.get(a, 'id') === Ember.get(b,'id');
   }
 }).run();

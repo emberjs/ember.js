@@ -12,7 +12,7 @@ require('sproutcore-runtime/~tests/suites/array');
   Implement a basic fake mutable array.  This validates that any non-native
   enumerable can impl this API.
 */
-var TestArray = SC.Object.extend(SC.Array, {
+var TestArray = Ember.Object.extend(Ember.Array, {
 
   _content: null,
 
@@ -40,7 +40,7 @@ var TestArray = SC.Object.extend(SC.Array, {
     return this._content[idx];
   },
 
-  length: SC.computed(function() {
+  length: Ember.computed(function() {
     return this._content.length;
   }).property('[]').cacheable(),
 
@@ -51,7 +51,7 @@ var TestArray = SC.Object.extend(SC.Array, {
 });
 
 
-SC.ArrayTests.extend({
+Ember.ArrayTests.extend({
 
   name: 'Basic Mutable Array',
 
@@ -75,7 +75,7 @@ SC.ArrayTests.extend({
 // CONTENT DID CHANGE
 //
 
-var DummyArray = SC.Object.extend(SC.Array, {
+var DummyArray = Ember.Object.extend(Ember.Array, {
   nextObject: function() {},
   length: 0,
   objectAt: function(idx) { return 'ITEM-'+idx; }
@@ -94,7 +94,7 @@ test('should notify observers of []', function() {
 
   obj = DummyArray.create({
     _count: 0,
-    enumerablePropertyDidChange: SC.observer(function() {
+    enumerablePropertyDidChange: Ember.observer(function() {
       this._count++;
     }, '[]')
   });
@@ -116,7 +116,7 @@ module('notify observers of length', {
   setup: function() {
     obj = DummyArray.create({
       _after: 0,
-      lengthDidChange: SC.observer(function() {
+      lengthDidChange: Ember.observer(function() {
         this._after++;
       }, 'length')
 
@@ -164,7 +164,7 @@ module('notify array observers', {
   setup: function() {
     obj = DummyArray.create();
 
-    observer = SC.Object.create({
+    observer = Ember.Object.create({
       _before: null,
       _after: null,
 
@@ -229,7 +229,7 @@ module('notify enumerable observers as well', {
   setup: function() {
     obj = DummyArray.create();
 
-    observer = SC.Object.create({
+    observer = Ember.Object.create({
       _before: null,
       _after: null,
 
@@ -292,7 +292,7 @@ test('removing enumerable observer should disable', function() {
 
 var ary;
 
-module('SC.Array.@each support', {
+module('Ember.Array.@each support', {
   setup: function() {
     ary = new TestArray([
       { isDone: true,  desc: 'Todo 1' },
@@ -308,7 +308,7 @@ module('SC.Array.@each support', {
 });
 
 function verifyEachArray() {
-  var get = SC.get, set = SC.set;
+  var get = Ember.get, set = Ember.set;
 
   ['isDone', 'desc'].forEach(function(keyName) {
     var len  = get(ary, 'length'),
@@ -339,9 +339,9 @@ test('modifying the array should update the each arrays too', function() {
 
 test('modifying a property in the array should notify on each', function() {
 
-  var get = SC.get, set = SC.set;
+  var get = Ember.get, set = Ember.set;
 
-  var each = SC.getPath(ary, '@each.isDone');
+  var each = Ember.getPath(ary, '@each.isDone');
   var item = ary.objectAt(2);
 
   var obs = {
@@ -376,9 +376,9 @@ test('modifying a property in the array should notify on each', function() {
 
 test('adding an object and then modifying it should notify', function() {
 
-  var get = SC.get, set = SC.set;
+  var get = Ember.get, set = Ember.set;
 
-  var each = SC.getPath(ary, '@each.isDone');
+  var each = Ember.getPath(ary, '@each.isDone');
   var item = { isDone: false, desc: 'Todo 5' };
   var itemIndex = get(ary, 'length');
 
@@ -415,19 +415,19 @@ test('adding an object and then modifying it should notify', function() {
 
 test('adding an object should notify (@each)', function() {
 
-  var get = SC.get, set = SC.set;
+  var get = Ember.get, set = Ember.set;
   var called = 0;
 
-  var observerObject = SC.Object.create({
+  var observerObject = Ember.Object.create({
     wasCalled: function() {
       called++;
     }
   });
 
-  // SC.get(ary, '@each');
-  SC.addObserver(ary, '@each', observerObject, 'wasCalled');
+  // Ember.get(ary, '@each');
+  Ember.addObserver(ary, '@each', observerObject, 'wasCalled');
 
-  ary.addObject(SC.Object.create({
+  ary.addObject(Ember.Object.create({
     desc: "foo",
     isDone: false
   }));
@@ -438,18 +438,18 @@ test('adding an object should notify (@each)', function() {
 
 test('adding an object should notify (@each.isDone)', function() {
 
-  var get = SC.get, set = SC.set;
+  var get = Ember.get, set = Ember.set;
   var called = 0;
 
-  var observerObject = SC.Object.create({
+  var observerObject = Ember.Object.create({
     wasCalled: function() {
       called++;
     }
   });
 
-  SC.addObserver(ary, '@each.isDone', observerObject, 'wasCalled');
+  Ember.addObserver(ary, '@each.isDone', observerObject, 'wasCalled');
 
-  ary.addObject(SC.Object.create({
+  ary.addObject(Ember.Object.create({
     desc: "foo",
     isDone: false
   }));
@@ -460,9 +460,9 @@ test('adding an object should notify (@each.isDone)', function() {
 
 test('removing an object should no longer notify', function() {
 
-  var get = SC.get, set = SC.set;
+  var get = Ember.get, set = Ember.set;
 
-  var each = SC.getPath(ary, '@each.isDone');
+  var each = Ember.getPath(ary, '@each.isDone');
   var item = ary.objectAt(0);
 
   var obs = {
@@ -504,11 +504,11 @@ test('modifying the array should also indicate the isDone prop itself has change
   // EachArray materialized but just want to know when the property has
   // changed.
 
-  var get = SC.get, set = SC.set;
+  var get = Ember.get, set = Ember.set;
   var each = get(ary, '@each');
   var count = 0;
 
-  SC.addObserver(each, 'isDone', function() { count++; });
+  Ember.addObserver(each, 'isDone', function() { count++; });
 
   count = 0;
   var item = ary.objectAt(2);
@@ -518,17 +518,17 @@ test('modifying the array should also indicate the isDone prop itself has change
 
 
 testBoth("should be clear caches for computed properties that have dependent keys on arrays that are changed after object initialization", function(get, set) {
-  var obj = SC.Object.create({
+  var obj = Ember.Object.create({
     init: function() {
-      set(this, 'resources', SC.A());
+      set(this, 'resources', Ember.A());
     },
 
-    common: SC.computed(function() {
+    common: Ember.computed(function() {
       return get(get(this, 'resources').objectAt(0), 'common');
     }).property('resources.@each.common').cacheable()
   });
 
-  get(obj, 'resources').pushObject(SC.Object.create({ common: "HI!" }));
+  get(obj, 'resources').pushObject(Ember.Object.create({ common: "HI!" }));
   equals("HI!", get(obj, 'common'));
 
   set(get(obj, 'resources').objectAt(0), 'common', "BYE!");
@@ -538,19 +538,19 @@ testBoth("should be clear caches for computed properties that have dependent key
 testBoth("observers that contain @each in the path should fire only once the first time they are accessed", function(get, set) {
   count = 0;
 
-  var obj = SC.Object.create({
+  var obj = Ember.Object.create({
     init: function() {
       // Observer fires once when resources changes
-      set(this, 'resources', SC.A());
+      set(this, 'resources', Ember.A());
     },
 
-    commonDidChange: SC.observer(function() {
+    commonDidChange: Ember.observer(function() {
       count++;
     }, 'resources.@each.common')
   })
 
   // Observer fires second time when new object is added
-  get(obj, 'resources').pushObject(SC.Object.create({ common: "HI!" }));
+  get(obj, 'resources').pushObject(Ember.Object.create({ common: "HI!" }));
   // Observer fires third time when property on an object is changed
   set(get(obj, 'resources').objectAt(0), 'common', "BYE!");
 

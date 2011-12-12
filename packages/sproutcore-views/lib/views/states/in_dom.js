@@ -7,21 +7,21 @@
 
 require('sproutcore-views/views/states/default');
 
-var get = SC.get, set = SC.set, meta = SC.meta;
+var get = Ember.get, set = Ember.set, meta = Ember.meta;
 
-SC.View.states.hasElement = {
-  parentState: SC.View.states._default,
+Ember.View.states.hasElement = {
+  parentState: Ember.View.states._default,
 
   $: function(view, sel) {
     var elem = get(view, 'element');
-    return sel ? SC.$(sel, elem) : SC.$(elem);
+    return sel ? Ember.$(sel, elem) : Ember.$(elem);
   },
 
   getElement: function(view) {
     var parent = get(view, 'parentView');
     if (parent) { parent = get(parent, 'element'); }
     if (parent) { return view.findElementInParentElement(parent); }
-    return SC.$("#" + get(view, 'elementId'))[0];
+    return Ember.$("#" + get(view, 'elementId'))[0];
   },
 
   setElement: function(view, value) {
@@ -57,8 +57,8 @@ SC.View.states.hasElement = {
   }
 };
 
-SC.View.states.inDOM = {
-  parentState: SC.View.states.hasElement,
+Ember.View.states.inDOM = {
+  parentState: Ember.View.states.hasElement,
 
   insertElement: function() {
     throw "You can't insert an element into the DOM that has already been inserted";

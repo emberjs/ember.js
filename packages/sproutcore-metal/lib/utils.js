@@ -25,8 +25,8 @@ var GUID_DESC = {
   enumerable: false
 };
 
-var o_defineProperty = SC.platform.defineProperty;
-var o_create = SC.platform.create;
+var o_defineProperty = Ember.platform.defineProperty;
+var o_create = Ember.platform.create;
 
 /**
   @private
@@ -41,14 +41,14 @@ var o_create = SC.platform.create;
   On browsers that support it, these properties are added with enumeration 
   disabled so they won't show up when you iterate over your properties.
 */
-SC.GUID_KEY = GUID_KEY;
+Ember.GUID_KEY = GUID_KEY;
 
 /**
   @private
 
   Generates a new guid, optionally saving the guid to the object that you
   pass in.  You will rarely need to use this method.  Instead you should
-  call SC.guidFor(obj), which return an existing guid if available.
+  call Ember.guidFor(obj), which return an existing guid if available.
 
   @param {Object} obj
     Optional object the guid will be used for.  If passed in, the guid will
@@ -63,7 +63,7 @@ SC.GUID_KEY = GUID_KEY;
 
   @returns {String} the guid
 */
-SC.generateGuid = function(obj, prefix) {
+Ember.generateGuid = function(obj, prefix) {
   if (!prefix) prefix = 'sc';
   var ret = (prefix + (uuid++));
   if (obj) {
@@ -80,7 +80,7 @@ SC.generateGuid = function(obj, prefix) {
 
   Returns a unique id for the object.  If the object does not yet have
   a guid, one will be assigned to it.  You can call this on any object,
-  SC.Object-based or not, but be aware that it will add a _guid property.
+  Ember.Object-based or not, but be aware that it will add a _guid property.
 
   You can also use this method on DOM Element objects.
 
@@ -88,7 +88,7 @@ SC.generateGuid = function(obj, prefix) {
   @param obj {Object} any object, string, number, Element, or primitive
   @returns {String} the unique guid for this instance.
 */
-SC.guidFor = function(obj) {
+Ember.guidFor = function(obj) {
 
   // special cases where we don't want to add a key to object
   if (obj === undefined) return "(undefined)";
@@ -116,7 +116,7 @@ SC.guidFor = function(obj) {
       if (obj[GUID_KEY]) return obj[GUID_KEY];
       if (obj === Object) return '(Object)';
       if (obj === Array)  return '(Array)';
-      return SC.generateGuid(obj, 'sc');
+      return Ember.generateGuid(obj, 'sc');
   }
 };
 
@@ -132,7 +132,7 @@ var META_DESC = {
   value: null
 };
 
-var META_KEY = SC.GUID_KEY+'_meta';
+var META_KEY = Ember.GUID_KEY+'_meta';
 
 /**
   The key used to store meta information on object for property observing.
@@ -140,7 +140,7 @@ var META_KEY = SC.GUID_KEY+'_meta';
   @static
   @property
 */
-SC.META_KEY = META_KEY;
+Ember.META_KEY = META_KEY;
 
 // Placeholder for non-writable metas.
 var EMPTY_META = {
@@ -171,9 +171,9 @@ if (Object.freeze) Object.freeze(EMPTY_META);
     
   @returns {Hash}
 */
-SC.meta = function meta(obj, writable) {
+Ember.meta = function meta(obj, writable) {
   
-  sc_assert("You must pass an object to SC.meta. This was probably called from SproutCore internals, so you probably called a SproutCore method with undefined that was expecting an object", obj != undefined);
+  sc_assert("You must pass an object to Ember.meta. This was probably called from SproutCore internals, so you probably called a SproutCore method with undefined that was expecting an object", obj != undefined);
 
   var ret = obj[META_KEY];
   if (writable===false) return ret || EMPTY_META;
@@ -204,13 +204,13 @@ SC.meta = function meta(obj, writable) {
   return ret;
 };
 
-SC.getMeta = function getMeta(obj, property) {
-  var meta = SC.meta(obj, false);
+Ember.getMeta = function getMeta(obj, property) {
+  var meta = Ember.meta(obj, false);
   return meta[property];
 };
 
-SC.setMeta = function setMeta(obj, property, value) {
-  var meta = SC.meta(obj, true);
+Ember.setMeta = function setMeta(obj, property, value) {
+  var meta = Ember.meta(obj, true);
   meta[property] = value;
   return value;
 };
@@ -245,8 +245,8 @@ SC.setMeta = function setMeta(obj, property, value) {
     (or meta property) if one does not already exist or if it's
     shared with its constructor
 */
-SC.metaPath = function(obj, path, writable) {
-  var meta = SC.meta(obj, writable), keyName, value;
+Ember.metaPath = function(obj, path, writable) {
+  var meta = Ember.meta(obj, writable), keyName, value;
 
   for (var i=0, l=path.length; i<l; i++) {
     keyName = path[i];
@@ -282,7 +282,7 @@ SC.metaPath = function(obj, path, writable) {
     
   @returns {Function} wrapped function.
 */
-SC.wrap = function(func, superFunc) {
+Ember.wrap = function(func, superFunc) {
   
   function K() {}
   
@@ -309,16 +309,16 @@ SC.wrap = function(func, superFunc) {
     - the object is a native Array
     - the object is an Object, and has a length property
 
-  Unlike SC.typeOf this method returns true even if the passed object is
-  not formally array but appears to be array-like (i.e. implements SC.Array)
+  Unlike Ember.typeOf this method returns true even if the passed object is
+  not formally array but appears to be array-like (i.e. implements Ember.Array)
 
   @param {Object} obj The object to test
   @returns {Boolean}
 */
-SC.isArray = function(obj) {
+Ember.isArray = function(obj) {
   if (!obj || obj.setInterval) { return false; }
   if (Array.isArray && Array.isArray(obj)) { return true; }
-  if (SC.Array && SC.Array.detect(obj)) { return true; }
+  if (Ember.Array && Ember.Array.detect(obj)) { return true; }
   if ((obj.length !== undefined) && 'object'===typeof obj) { return true; }
   return false;
 };
@@ -331,9 +331,9 @@ SC.isArray = function(obj) {
   @param {Object} obj the object
   @returns {Array}
 */
-SC.makeArray = function(obj) {
+Ember.makeArray = function(obj) {
   if (obj==null) return [];
-  return SC.isArray(obj) ? obj : [obj];
+  return Ember.isArray(obj) ? obj : [obj];
 };
 
 

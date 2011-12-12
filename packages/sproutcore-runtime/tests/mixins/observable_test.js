@@ -7,7 +7,7 @@
 module('mixins/observable');
 
 test('should be able to use getProperties to get a POJO of provided keys', function() {
-  var obj = SC.Object.create({
+  var obj = Ember.Object.create({
     firstName: "Steve",
     lastName: "Jobs",
     companyName: "Apple, Inc."

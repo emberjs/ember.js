@@ -8,48 +8,48 @@
 // as well as methods vs props.  We are just keeping these for testing; the
 // current impl doesn't care about the differences as much...
 
-var PrivateProperty = SC.Mixin.create({
+var PrivateProperty = Ember.Mixin.create({
   _foo: '_FOO'
 });
 
-var PublicProperty = SC.Mixin.create({
+var PublicProperty = Ember.Mixin.create({
   foo: 'FOO'
 });
 
-var PrivateMethod = SC.Mixin.create({
+var PrivateMethod = Ember.Mixin.create({
   _fooMethod: function() {}
 });
 
-var PublicMethod = SC.Mixin.create({
+var PublicMethod = Ember.Mixin.create({
   fooMethod: function() {}
 });
 
-var BarProperties = SC.Mixin.create({
+var BarProperties = Ember.Mixin.create({
   _bar: '_BAR',
   bar: 'bar'
 });
 
-var BarMethods = SC.Mixin.create({
+var BarMethods = Ember.Mixin.create({
   _barMethod: function() {},
   barMethod: function() {}
 });
 
-var Combined = SC.Mixin.create(BarProperties, BarMethods);
+var Combined = Ember.Mixin.create(BarProperties, BarMethods);
 
 var obj ;
 
 module('Basic introspection', {
   setup: function() {
     obj = {};
-    SC.mixin(obj, PrivateProperty, PublicProperty, PrivateMethod, PublicMethod, Combined);
+    Ember.mixin(obj, PrivateProperty, PublicProperty, PrivateMethod, PublicMethod, Combined);
   }
 });
 
-test('SC.mixins()', function() {
+test('Ember.mixins()', function() {
   
   function mapGuids(ary) { 
-    return ary.map(function(x) { return SC.guidFor(x); }); 
+    return ary.map(function(x) { return Ember.guidFor(x); }); 
   }
   
-  same(mapGuids(SC.Mixin.mixins(obj)), mapGuids([PrivateProperty, PublicProperty, PrivateMethod, PublicMethod, Combined, BarProperties, BarMethods]), 'should return included mixins');
+  same(mapGuids(Ember.Mixin.mixins(obj)), mapGuids([PrivateProperty, PublicProperty, PrivateMethod, PublicMethod, Combined, BarProperties, BarMethods]), 'should return included mixins');
 });

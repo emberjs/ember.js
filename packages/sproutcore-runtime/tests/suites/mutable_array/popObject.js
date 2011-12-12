@@ -6,7 +6,7 @@
 
 require('sproutcore-runtime/~tests/suites/mutable_array');
 
-var suite = SC.MutableArrayTests;
+var suite = Ember.MutableArrayTests;
 
 suite.module('popObject');
 
@@ -37,7 +37,7 @@ suite.test("[X].popObject() => [] + notify", function() {
 
   equals(ret, before[0], 'return object');
   same(this.toArray(obj), after, 'post item results');
-  equals(SC.get(obj, 'length'), after.length, 'length');
+  equals(Ember.get(obj, 'length'), after.length, 'length');
   if (observer.isEnabled) {
     equals(observer.validate('[]'), true, 'should NOT have notified []');
     equals(observer.validate('length'), true, 'should NOT have notified length');
@@ -56,7 +56,7 @@ suite.test("[A,B,C].popObject() => [A,B] + notify", function() {
 
   equals(ret, before[2], 'return object');
   same(this.toArray(obj), after, 'post item results');
-  equals(SC.get(obj, 'length'), after.length, 'length');
+  equals(Ember.get(obj, 'length'), after.length, 'length');
 
   if (observer.isEnabled) {
     equals(observer.validate('[]'), true, 'should NOT have notified []');

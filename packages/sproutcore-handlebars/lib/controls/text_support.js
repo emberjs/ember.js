@@ -8,9 +8,9 @@ require("sproutcore-handlebars/ext");
 require("sproutcore-views/views/view");
 /** @class */
 
-var get = SC.get, set = SC.set;
+var get = Ember.get, set = Ember.set;
 
-SC.TextSupport = SC.Mixin.create({
+Ember.TextSupport = Ember.Mixin.create({
 
   value: "",
 
@@ -18,8 +18,8 @@ SC.TextSupport = SC.Mixin.create({
   placeholder: null,
   disabled: false,
 
-  insertNewline: SC.K,
-  cancel: SC.K,
+  insertNewline: Ember.K,
+  cancel: Ember.K,
 
   focusOut: function(event) {
     this._elementValueDidChange();
@@ -40,7 +40,7 @@ SC.TextSupport = SC.Mixin.create({
     @private
   */
   interpretKeyEvents: function(event) {
-    var map = SC.TextSupport.KEY_EVENTS;
+    var map = Ember.TextSupport.KEY_EVENTS;
     var method = map[event.keyCode];
 
     this._elementValueDidChange();
@@ -53,7 +53,7 @@ SC.TextSupport = SC.Mixin.create({
 
 });
 
-SC.TextSupport.KEY_EVENTS = {
+Ember.TextSupport.KEY_EVENTS = {
   13: 'insertNewline',
   27: 'cancel'
 };

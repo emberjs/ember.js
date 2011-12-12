@@ -4,16 +4,16 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
-var set = SC.set, get = SC.get, getPath = SC.getPath;
+var set = Ember.set, get = Ember.get, getPath = Ember.getPath;
 
 // .......................................................
 // removeChild()
 //
 
 var parent, child;
-module("SC.View#removeChild", {
+module("Ember.View#removeChild", {
   setup: function() {
-    parent = SC.ContainerView.create({ childViews: [SC.View] });
+    parent = Ember.ContainerView.create({ childViews: [Ember.View] });
     child = get(parent, 'childViews').objectAt(0);
   }
 });
@@ -38,10 +38,10 @@ test("sets parentView property to null", function() {
 // removeAllChildren()
 //
 var view;
-module("SC.View#removeAllChildren", {
+module("Ember.View#removeAllChildren", {
  setup: function() {
-  view = SC.ContainerView.create({
-    childViews: [SC.View, SC.View, SC.View]
+  view = Ember.ContainerView.create({
+    childViews: [Ember.View, Ember.View, Ember.View]
   });
  }
 });
@@ -60,10 +60,10 @@ test("returns receiver", function() {
 // .......................................................
 // removeFromParent()
 //
-module("SC.View#removeFromParent");
+module("Ember.View#removeFromParent");
 
 test("removes view from parent view", function() {
-  var parent = SC.ContainerView.create({ childViews: [SC.View] });
+  var parent = Ember.ContainerView.create({ childViews: [Ember.View] });
   var child = getPath(parent, 'childViews').objectAt(0);
   ok(get(child, 'parentView'), 'precond - has parentView');
 
@@ -78,14 +78,14 @@ test("removes view from parent view", function() {
 });
 
 test("returns receiver", function() {
-  var parent = SC.ContainerView.create({ childViews: [SC.View] });
+  var parent = Ember.ContainerView.create({ childViews: [Ember.View] });
   var child = getPath(parent, 'childViews').objectAt(0);
   equals(child.removeFromParent(), child, 'receiver');
 });
 
 test("does nothing if not in parentView", function() {
   var callCount = 0;
-  var child = SC.View.create();
+  var child = Ember.View.create();
 
   // monkey patch for testing...
   ok(!get(child, 'parentView'), 'precond - has no parent');

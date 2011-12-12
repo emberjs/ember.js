@@ -6,7 +6,7 @@
 
 require('sproutcore-runtime/~tests/suites/enumerable');
 
-SC.MutableEnumerableTests = SC.EnumerableTests.extend();
+Ember.MutableEnumerableTests = Ember.EnumerableTests.extend();
 
 require('./mutable_enumerable/addObject');
 require('./mutable_enumerable/removeObject');

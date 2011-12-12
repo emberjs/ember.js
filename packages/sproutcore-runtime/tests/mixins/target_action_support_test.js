@@ -1,9 +1,9 @@
-module("SC.TargetActionSupport");
+module("Ember.TargetActionSupport");
 
 test("it should not do anything if no target or action are specified", function() {
   expect(1);
 
-  var obj = SC.Object.create(SC.TargetActionSupport);
+  var obj = Ember.Object.create(Ember.TargetActionSupport);
 
   obj.triggerAction();
 
@@ -13,8 +13,8 @@ test("it should not do anything if no target or action are specified", function(
 test("it should support actions specified as strings", function() {
   expect(1);
 
-  var obj = SC.Object.create(SC.TargetActionSupport, {
-    target: SC.Object.create({
+  var obj = Ember.Object.create(Ember.TargetActionSupport, {
+    target: Ember.Object.create({
       anEvent: function() {
         ok(true, "anEvent method was called");
       }
@@ -29,8 +29,8 @@ test("it should support actions specified as strings", function() {
 test("it should invoke the send() method on objects that implement it", function() {
   expect(1);
 
-  var obj = SC.Object.create(SC.TargetActionSupport, {
-    target: SC.Object.create({
+  var obj = Ember.Object.create(Ember.TargetActionSupport, {
+    target: Ember.Object.create({
       send: function(evt) {
         equals(evt, 'anEvent', "send() method was invoked with correct event name");
       }
@@ -47,13 +47,13 @@ test("it should find targets specified using a property path", function() {
 
   window.Test = {};
 
-  Test.targetObj = SC.Object.create({
+  Test.targetObj = Ember.Object.create({
     anEvent: function() {
       ok(true, "anEvent method was called on global object");
     }
   });
 
-  var myObj = SC.Object.create(SC.TargetActionSupport, {
+  var myObj = Ember.Object.create(Ember.TargetActionSupport, {
     target: 'Test.targetObj',
     action: 'anEvent'
   });

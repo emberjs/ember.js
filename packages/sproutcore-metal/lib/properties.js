@@ -10,12 +10,12 @@ require('sproutcore-metal/platform');
 require('sproutcore-metal/utils');
 require('sproutcore-metal/accessors');
 
-var USE_ACCESSORS = SC.USE_ACCESSORS;
-var GUID_KEY = SC.GUID_KEY;
-var META_KEY = SC.META_KEY;
-var meta = SC.meta;
-var o_create = SC.platform.create;
-var o_defineProperty = SC.platform.defineProperty;
+var USE_ACCESSORS = Ember.USE_ACCESSORS;
+var GUID_KEY = Ember.GUID_KEY;
+var META_KEY = Ember.META_KEY;
+var meta = Ember.meta;
+var o_create = Ember.platform.create;
+var o_defineProperty = Ember.platform.defineProperty;
 var SIMPLE_PROPERTY, WATCHED_PROPERTY;
 
 // ..........................................................
@@ -38,7 +38,7 @@ var SIMPLE_DESC = {
   
   You generally won't need to create or subclass this directly.
 */
-var Dc = SC.Descriptor = function() {};
+var Dc = Ember.Descriptor = function() {};
 
 var setup = Dc.setup = function(obj, keyName, value) {
   SIMPLE_DESC.value = value;
@@ -46,7 +46,7 @@ var setup = Dc.setup = function(obj, keyName, value) {
   SIMPLE_DESC.value = null;
 };
 
-var Dp = SC.Descriptor.prototype;
+var Dp = Ember.Descriptor.prototype;
 
 /**
   Called whenever we want to set the property value.  Should set the value 
@@ -137,27 +137,27 @@ Dp.val = function(obj, keyName) {
 
 // if accessors are disabled for the app then this will act as a guard when
 // testing on browsers that do support accessors.  It will throw an exception
-// if you do foo.bar instead of SC.get(foo, 'bar')
+// if you do foo.bar instead of Ember.get(foo, 'bar')
 
-// The exception to this is that any objects managed by SC but not a descendant
-// of SC.Object will not throw an exception, instead failing silently. This
+// The exception to this is that any objects managed by Ember but not a descendant
+// of Ember.Object will not throw an exception, instead failing silently. This
 // prevent errors with other libraries that may attempt to access special
 // properties on standard objects like Array. Usually this happens when copying
 // an object by looping over all properties.
 
 if (!USE_ACCESSORS) {
-  SC.Descriptor.MUST_USE_GETTER = function() {
-    if (this instanceof SC.Object) {
-      sc_assert('Must use SC.get() to access this property', false);
+  Ember.Descriptor.MUST_USE_GETTER = function() {
+    if (this instanceof Ember.Object) {
+      sc_assert('Must use Ember.get() to access this property', false);
     }
   };
 
-  SC.Descriptor.MUST_USE_SETTER = function() {
-    if (this instanceof SC.Object) {
+  Ember.Descriptor.MUST_USE_SETTER = function() {
+    if (this instanceof Ember.Object) {
       if (this.isDestroyed) {
         sc_assert('You cannot set observed properties on destroyed objects', false);
       } else {
-        sc_assert('Must use SC.set() to access this property', false);
+        sc_assert('Must use Ember.set() to access this property', false);
       }
     }
   };
@@ -166,7 +166,7 @@ if (!USE_ACCESSORS) {
 var WATCHED_DESC = {
   configurable: true,
   enumerable:   true,
-  set: SC.Descriptor.MUST_USE_SETTER
+  set: Ember.Descriptor.MUST_USE_SETTER
 };
 
 function w_get(obj, keyName, values) {
@@ -184,9 +184,9 @@ function w_set(obj, keyName, value) {
   var m = meta(obj), watching;
   
   watching = m.watching[keyName]>0 && value!==m.values[keyName];  
-  if (watching) SC.propertyWillChange(obj, keyName);
+  if (watching) Ember.propertyWillChange(obj, keyName);
   m.values[keyName] = value;
-  if (watching) SC.propertyDidChange(obj, keyName);
+  if (watching) Ember.propertyDidChange(obj, keyName);
   return value;
 }
 
@@ -217,9 +217,9 @@ function mkWatchedSetter(keyName) {
   
   Private version of simple property that invokes property change callbacks.
 */
-WATCHED_PROPERTY = new SC.Descriptor();
+WATCHED_PROPERTY = new Ember.Descriptor();
 
-if (SC.platform.hasPropertyAccessors) {
+if (Ember.platform.hasPropertyAccessors) {
   WATCHED_PROPERTY.get = w_get ;
   WATCHED_PROPERTY.set = w_set ;
 
@@ -255,9 +255,9 @@ if (SC.platform.hasPropertyAccessors) {
     var m = meta(obj), watching;
 
     watching = m.watching[keyName]>0 && value!==obj[keyName];  
-    if (watching) SC.propertyWillChange(obj, keyName);
+    if (watching) Ember.propertyWillChange(obj, keyName);
     obj[keyName] = value;
-    if (watching) SC.propertyDidChange(obj, keyName);
+    if (watching) Ember.propertyDidChange(obj, keyName);
     return value;
   };
   
@@ -265,13 +265,13 @@ if (SC.platform.hasPropertyAccessors) {
 
 /**
   The default descriptor for simple properties.  Pass as the third argument
-  to SC.defineProperty() along with a value to set a simple value.
+  to Ember.defineProperty() along with a value to set a simple value.
   
   @static
-  @default SC.Descriptor
+  @default Ember.Descriptor
 */
-SC.SIMPLE_PROPERTY = new SC.Descriptor();
-SIMPLE_PROPERTY = SC.SIMPLE_PROPERTY;
+Ember.SIMPLE_PROPERTY = new Ember.Descriptor();
+SIMPLE_PROPERTY = Ember.SIMPLE_PROPERTY;
 
 SIMPLE_PROPERTY.unwatched = WATCHED_PROPERTY.unwatched = SIMPLE_PROPERTY;
 SIMPLE_PROPERTY.watched   = WATCHED_PROPERTY.watched   = WATCHED_PROPERTY;
@@ -290,7 +290,7 @@ function hasDesc(descs, keyName) {
   @private
 
   NOTE: This is a low-level method used by other parts of the API.  You almost
-  never want to call this method directly.  Instead you should use SC.mixin()
+  never want to call this method directly.  Instead you should use Ember.mixin()
   to define new properties.
   
   Defines a property on an object.  This method works much like the ES5 
@@ -298,14 +298,14 @@ function hasDesc(descs, keyName) {
   properties and other special descriptors. 
 
   Normally this method takes only three parameters.  However if you pass an
-  instance of SC.Descriptor as the third param then you can pass an optional
+  instance of Ember.Descriptor as the third param then you can pass an optional
   value as the fourth parameter.  This is often more efficient than creating
   new descriptor hashes for each property.
   
   ## Examples
 
       // ES5 compatible mode
-      SC.defineProperty(contact, 'firstName', {
+      Ember.defineProperty(contact, 'firstName', {
         writable: true,
         configurable: false,
         enumerable: true,
@@ -313,14 +313,14 @@ function hasDesc(descs, keyName) {
       });
       
       // define a simple property
-      SC.defineProperty(contact, 'lastName', SC.SIMPLE_PROPERTY, 'Jolley');
+      Ember.defineProperty(contact, 'lastName', Ember.SIMPLE_PROPERTY, 'Jolley');
       
       // define a computed property
-      SC.defineProperty(contact, 'fullName', SC.computed(function() {
+      Ember.defineProperty(contact, 'fullName', Ember.computed(function() {
         return this.firstName+' '+this.lastName;
       }).property('firstName', 'lastName').cacheable());
 */
-SC.defineProperty = function(obj, keyName, desc, val) {
+Ember.defineProperty = function(obj, keyName, desc, val) {
   var m = meta(obj, false), descs = m.descs, watching = m.watching[keyName]>0;
 
   if (val === undefined) {
@@ -331,7 +331,7 @@ SC.defineProperty = function(obj, keyName, desc, val) {
 
   if (!desc) desc = SIMPLE_PROPERTY;
   
-  if (desc instanceof SC.Descriptor) {
+  if (desc instanceof Ember.Descriptor) {
     m = meta(obj, true);
     descs = m.descs;
     
@@ -362,10 +362,10 @@ SC.defineProperty = function(obj, keyName, desc, val) {
     
   @returns {Object} the newly created object
 */
-SC.create = function(obj, props) {
+Ember.create = function(obj, props) {
   var ret = o_create(obj, props);
-  if (GUID_KEY in ret) SC.generateGuid(ret, 'sc');
-  if (META_KEY in ret) SC.rewatch(ret); // setup watch chains if needed.
+  if (GUID_KEY in ret) Ember.generateGuid(ret, 'sc');
+  if (META_KEY in ret) Ember.rewatch(ret); // setup watch chains if needed.
   return ret;
 };
 
@@ -373,7 +373,7 @@ SC.create = function(obj, props) {
   @private
 
   Creates a new object using the passed object as its prototype.  This method
-  acts like `SC.create()` in every way except that bindings, observers, and
+  acts like `Ember.create()` in every way except that bindings, observers, and
   computed properties will be activated on the object.  
   
   The purpose of this method is to build an object for use in a prototype
@@ -394,11 +394,11 @@ SC.create = function(obj, props) {
 
   @returns {Object} new object
 */
-SC.createPrototype = function(obj, props) {
+Ember.createPrototype = function(obj, props) {
   var ret = o_create(obj, props);
   meta(ret, true).proto = ret;
-  if (GUID_KEY in ret) SC.generateGuid(ret, 'sc');
-  if (META_KEY in ret) SC.rewatch(ret); // setup watch chains if needed.
+  if (GUID_KEY in ret) Ember.generateGuid(ret, 'sc');
+  if (META_KEY in ret) Ember.rewatch(ret); // setup watch chains if needed.
   return ret;
 };
   
@@ -410,7 +410,7 @@ SC.createPrototype = function(obj, props) {
   @param {Object} obj  the object to destroy
   @returns {void}
 */
-SC.destroy = function(obj) {
+Ember.destroy = function(obj) {
   if (obj[META_KEY]) obj[META_KEY] = null; 
 };
 

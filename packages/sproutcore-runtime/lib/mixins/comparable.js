@@ -18,7 +18,7 @@ require('sproutcore-runtime/core');
 
   @since SproutCore 1.0
 */
-SC.Comparable = SC.Mixin.create( /** @scope SC.Comparable.prototype */{
+Ember.Comparable = Ember.Mixin.create( /** @scope Ember.Comparable.prototype */{
 
   /**
     walk like a duck. Indicates that the object can be compared.
@@ -43,7 +43,7 @@ SC.Comparable = SC.Mixin.create( /** @scope SC.Comparable.prototype */{
     @param b {Object} the second object to compare
     @returns {Integer} the result of the comparison
   */
-  compare: SC.required(Function)
+  compare: Ember.required(Function)
 
 });
 

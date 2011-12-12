@@ -1,9 +1,9 @@
 module("virtual views");
 
-var get = SC.get, set = SC.set;
+var get = Ember.get, set = Ember.set;
 
 test("a virtual view does not appear as a view's parentView", function() {
-  var rootView = SC.View.create({
+  var rootView = Ember.View.create({
     elementId: 'root-view',
 
     render: function(buffer) {
@@ -12,7 +12,7 @@ test("a virtual view does not appear as a view's parentView", function() {
     }
   });
 
-  var virtualView = SC.View.create({
+  var virtualView = Ember.View.create({
     isVirtual: true,
     tagName: '',
 
@@ -22,13 +22,13 @@ test("a virtual view does not appear as a view's parentView", function() {
     }
   });
 
-  var childView = SC.View.create({
+  var childView = Ember.View.create({
     render: function(buffer) {
       buffer.push("<p>Bye!</p>");
     }
   });
 
-  SC.run(function() {
+  Ember.run(function() {
     $("#qunit-fixture").empty();
     rootView.appendTo("#qunit-fixture");
   });

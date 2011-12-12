@@ -14,29 +14,29 @@ require('sproutcore-runtime/system/object');
 
   # Example Usage
 
-      MyFramework = SC.Namespace.create({
+      MyFramework = Ember.Namespace.create({
         VERSION: '1.0.0'
       });
 
 */
-SC.Namespace = SC.Object.extend({
+Ember.Namespace = Ember.Object.extend({
   init: function() {
-    SC.Namespace.NAMESPACES.push(this);
-    SC.Namespace.PROCESSED = false;
+    Ember.Namespace.NAMESPACES.push(this);
+    Ember.Namespace.PROCESSED = false;
   },
 
   toString: function() {
-    SC.identifyNamespaces();
-    return this[SC.GUID_KEY+'_name'];
+    Ember.identifyNamespaces();
+    return this[Ember.GUID_KEY+'_name'];
   },
 
   destroy: function() {
-    var namespaces = SC.Namespace.NAMESPACES;
+    var namespaces = Ember.Namespace.NAMESPACES;
     window[this.toString()] = undefined;
     namespaces.splice(namespaces.indexOf(this), 1);
     this._super();
   }
 });
 
-SC.Namespace.NAMESPACES = [];
-SC.Namespace.PROCESSED = true;
+Ember.Namespace.NAMESPACES = [];
+Ember.Namespace.PROCESSED = true;

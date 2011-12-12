@@ -16,11 +16,11 @@ Use bindings to keep properties between two different objects in sync. You just 
 
 Here's how you create a binding between two objects:
 
-    MyApp.president = SC.Object.create({
+    MyApp.president = Ember.Object.create({
       name: "Barack Obama"
     });
 
-    MyApp.country = SC.Object.create({
+    MyApp.country = Ember.Object.create({
       // Ending a property with 'Binding' tells Ember.js to
       // create a binding to the presidentName property.
       presidentNameBinding: 'MyApp.president.name'
@@ -35,7 +35,7 @@ Bindings allow you to architect your application using the MVC (Model-View-Contr
 
 Computed properties allow you to treat a function like a property:
 
-    MyApp.president = SC.Object.create({
+    MyApp.president = Ember.Object.create({
       firstName: "Barack",
       lastName: "Obama",
 
@@ -53,7 +53,7 @@ Treating a function like a property is useful because they can work with binding
 
 Many computed properties have dependencies on other properties. For example, in the above example, the `fullName` property depends on `firstName` and `lastName` to determine its value. You can tell Ember.js about these dependencies like this:
 
-    MyApp.president = SC.Object.create({
+    MyApp.president = Ember.Object.create({
       firstName: "Barack",
       lastName: "Obama",
 

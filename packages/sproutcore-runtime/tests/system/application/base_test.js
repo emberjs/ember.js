@@ -4,10 +4,10 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
-module('SC.Application');
+module('Ember.Application');
 
-test('SC.Application should be a subclass of SC.Namespace', function() {
+test('Ember.Application should be a subclass of Ember.Namespace', function() {
 
-  ok(SC.Namespace.detect(SC.Application), 'SC.Application subclass of SC.Namespace');
+  ok(Ember.Namespace.detect(Ember.Application), 'Ember.Application subclass of Ember.Namespace');
   
 });

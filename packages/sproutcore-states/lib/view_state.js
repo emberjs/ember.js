@@ -1,8 +1,8 @@
 require('sproutcore-states/state')
 
-var get = SC.get, set = SC.set;
+var get = Ember.get, set = Ember.set;
 
-SC.ViewState = SC.State.extend({
+Ember.ViewState = Ember.State.extend({
   enter: function(stateManager) {
     var view = get(this, 'view');
 

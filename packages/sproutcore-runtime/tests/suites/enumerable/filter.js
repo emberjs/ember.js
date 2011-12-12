@@ -7,7 +7,7 @@
 require('sproutcore-runtime/~tests/suites/enumerable');
 require('sproutcore-runtime/mixins/comparable');
 
-var suite = SC.EnumerableTests;
+var suite = Ember.EnumerableTests;
 
 // ..........................................................
 // filter()
@@ -38,7 +38,7 @@ suite.test('should filter based on object', function() {
   
   ary = [
     { foo: 'foo', bar: 'BAZ' }, 
-    SC.Object.create({ foo: 'foo', bar: 'bar' })
+    Ember.Object.create({ foo: 'foo', bar: 'bar' })
   ];
   
   obj = this.newObject(ary);
@@ -52,7 +52,7 @@ suite.test('should include in result if property is true', function() {
   
   ary = [
     { foo: 'foo', bar: true }, 
-    SC.Object.create({ foo: 'bar', bar: false })
+    Ember.Object.create({ foo: 'bar', bar: false })
   ];
   
   obj = this.newObject(ary);

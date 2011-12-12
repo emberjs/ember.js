@@ -7,12 +7,12 @@
 
 var view;
 var application;
-var set = SC.set, get = SC.get;
+var set = Ember.set, get = Ember.get;
 
-module("SC.Application", {
+module("Ember.Application", {
   setup: function() {
     $("#qunit-fixture").html("<div id='one'><div id='one-child'>HI</div></div><div id='two'>HI</div>");
-    application = SC.Application.create({ rootElement: '#one' });
+    application = Ember.Application.create({ rootElement: '#one' });
   },
 
   teardown: function() {
@@ -21,31 +21,31 @@ module("SC.Application", {
 });
 
 test("you can make a new application in a non-overlapping element", function() {
-  var app = SC.Application.create({ rootElement: '#two' });
+  var app = Ember.Application.create({ rootElement: '#two' });
   app.destroy();
 });
 
 test("you cannot make a new application that is a parent of an existing application", function() {
   raises(function() {
-    SC.Application.create({ rootElement: '#qunit-fixture' });
+    Ember.Application.create({ rootElement: '#qunit-fixture' });
   }, Error);
 });
 
 test("you cannot make a new application that is a descendent of an existing application", function() {
   raises(function() {
-    SC.Application.create({ rootElement: '#one-child' });
+    Ember.Application.create({ rootElement: '#one-child' });
   }, Error);
 });
 
 test("you cannot make a new application that is a duplicate of an existing application", function() {
   raises(function() {
-    SC.Application.create({ rootElement: '#one' });
+    Ember.Application.create({ rootElement: '#one' });
   }, Error);
 });
 
 test("acts like a namespace", function() {
-  var app = window.TestApp = SC.Application.create({rootElement: '#two'});
-  app.Foo = SC.Object.extend();
+  var app = window.TestApp = Ember.Application.create({rootElement: '#two'});
+  app.Foo = Ember.Object.extend();
   equal(app.Foo.toString(), "TestApp.Foo", "Classes pick up their parent namespace");
   app.destroy();
   window.TestApp = undefined;

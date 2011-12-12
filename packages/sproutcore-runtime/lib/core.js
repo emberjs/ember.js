@@ -54,7 +54,7 @@ if (typeof console === 'undefined') {
   conflicts with other code.  If you need to turn it off however, you can
   define an ENV.EXTEND_PROTOTYPES config to disable it.
 */  
-SC.EXTEND_PROTOTYPES = (SC.ENV.EXTEND_PROTOTYPES !== false);
+Ember.EXTEND_PROTOTYPES = (Ember.ENV.EXTEND_PROTOTYPES !== false);
 
 // ........................................
 // TYPING & ARRAY MESSAGING
@@ -71,7 +71,7 @@ var toString = Object.prototype.toString;
 /**
   Returns a consistent type for the passed item.
 
-  Use this instead of the built-in SC.typeOf() to get the type of an item.
+  Use this instead of the built-in Ember.typeOf() to get the type of an item.
   It will return the same result across all browsers and includes a bit
   more detail.  Here is what will be returned:
 
@@ -83,24 +83,24 @@ var toString = Object.prototype.toString;
   | 'undefined' | Undefined value |
   | 'function' | A function |
   | 'array' | An instance of Array |
-  | 'class' | A SproutCore class (created using SC.Object.extend()) |
+  | 'class' | A SproutCore class (created using Ember.Object.extend()) |
   | 'instance' | A SproutCore object instance |
   | 'error' | An instance of the Error object |
-  | 'object' | A JavaScript object not inheriting from SC.Object |
+  | 'object' | A JavaScript object not inheriting from Ember.Object |
 
   @param item {Object} the item to check
   @returns {String} the type
 */
-SC.typeOf = function(item) {
+Ember.typeOf = function(item) {
   var ret;
   
   ret = item==null ? String(item) : TYPE_MAP[toString.call(item)]||'object';
 
   if (ret === 'function') {
-    if (SC.Object && SC.Object.detect(item)) ret = 'class';
+    if (Ember.Object && Ember.Object.detect(item)) ret = 'class';
   } else if (ret === 'object') {
     if (item instanceof Error) ret = 'error';
-    else if (SC.Object && item instanceof SC.Object) ret = 'instance';
+    else if (Ember.Object && item instanceof Ember.Object) ret = 'instance';
     else ret = 'object';
   }
   
@@ -115,7 +115,7 @@ SC.typeOf = function(item) {
   @param {Object} obj Value to test
   @returns {Boolean}
 */
-SC.none = function(obj) {
+Ember.none = function(obj) {
   return obj === null || obj === undefined;
 };
 
@@ -126,12 +126,12 @@ SC.none = function(obj) {
   @param {Object} obj Value to test
   @returns {Boolean}
 */
-SC.empty = function(obj) {
+Ember.empty = function(obj) {
   return obj === null || obj === undefined || obj === '';
 };
 
 /**
-  SC.isArray defined in sproutcore-metal/lib/utils
+  Ember.isArray defined in sproutcore-metal/lib/utils
 **/
 
 /**
@@ -142,20 +142,20 @@ SC.empty = function(obj) {
   - 0 if both are equal,
   - 1 if the first is greater than the second.
 
- The order is calculated based on SC.ORDER_DEFINITION, if types are different.
+ The order is calculated based on Ember.ORDER_DEFINITION, if types are different.
  In case they have the same type an appropriate comparison for this type is made.
 
  @param {Object} v First value to compare
  @param {Object} w Second value to compare
  @returns {Number} -1 if v < w, 0 if v = w and 1 if v > w.
 */
-SC.compare = function (v, w) {
+Ember.compare = function (v, w) {
   if (v === w) { return 0; }
 
-  var type1 = SC.typeOf(v);
-  var type2 = SC.typeOf(w);
+  var type1 = Ember.typeOf(v);
+  var type2 = Ember.typeOf(w);
 
-  var Comparable = SC.Comparable;
+  var Comparable = Ember.Comparable;
   if (Comparable) {
     if (type1==='instance' && Comparable.detect(v.constructor)) {
       return v.constructor.compare(v, w);
@@ -166,19 +166,19 @@ SC.compare = function (v, w) {
     }
   }
 
-  // If we haven't yet generated a reverse-mapping of SC.ORDER_DEFINITION,
+  // If we haven't yet generated a reverse-mapping of Ember.ORDER_DEFINITION,
   // do so now.
-  var mapping = SC.ORDER_DEFINITION_MAPPING;
+  var mapping = Ember.ORDER_DEFINITION_MAPPING;
   if (!mapping) {
-    var order = SC.ORDER_DEFINITION;
-    mapping = SC.ORDER_DEFINITION_MAPPING = {};
+    var order = Ember.ORDER_DEFINITION;
+    mapping = Ember.ORDER_DEFINITION_MAPPING = {};
     var idx, len;
     for (idx = 0, len = order.length; idx < len;  ++idx) {
       mapping[order[idx]] = idx;
     }
 
-    // We no longer need SC.ORDER_DEFINITION.
-    delete SC.ORDER_DEFINITION;
+    // We no longer need Ember.ORDER_DEFINITION.
+    delete Ember.ORDER_DEFINITION;
   }
 
   var type1Index = mapping[type1];
@@ -222,7 +222,7 @@ SC.compare = function (v, w) {
       return 0;
 
     case 'instance':
-      if (SC.Comparable && SC.Comparable.detect(v)) { 
+      if (Ember.Comparable && Ember.Comparable.detect(v)) { 
         return v.compare(v, w); 
       }
       return 0;
@@ -241,17 +241,17 @@ function _copy(obj, deep, seen, copies) {
   // avoid cyclical loops
   if (deep && (loc=seen.indexOf(obj))>=0) return copies[loc];
   
-  sc_assert('Cannot clone an SC.Object that does not implement SC.Copyable', !(obj instanceof SC.Object) || (SC.Copyable && SC.Copyable.detect(obj)));
+  sc_assert('Cannot clone an Ember.Object that does not implement Ember.Copyable', !(obj instanceof Ember.Object) || (Ember.Copyable && Ember.Copyable.detect(obj)));
 
   // IMPORTANT: this specific test will detect a native array only.  Any other
   // object will need to implement Copyable.
-  if (SC.typeOf(obj) === 'array') {
+  if (Ember.typeOf(obj) === 'array') {
     ret = obj.slice();
     if (deep) {
       loc = ret.length;
       while(--loc>=0) ret[loc] = _copy(ret[loc], deep, seen, copies);
     }
-  } else if (SC.Copyable && SC.Copyable.detect(obj)) {
+  } else if (Ember.Copyable && Ember.Copyable.detect(obj)) {
     ret = obj.copy(deep, seen, copies);
   } else {
     ret = {};
@@ -281,10 +281,10 @@ function _copy(obj, deep, seen, copies) {
   @param {Boolean} deep If true, a deep copy of the object is made
   @returns {Object} The cloned object
 */
-SC.copy = function(obj, deep) {
+Ember.copy = function(obj, deep) {
   // fast paths
   if ('object' !== typeof obj || obj===null) return obj; // can't copy primitives
-  if (SC.Copyable && SC.Copyable.detect(obj)) return obj.copy(deep);
+  if (Ember.Copyable && Ember.Copyable.detect(obj)) return obj.copy(deep);
   return _copy(obj, deep, deep ? [] : null, deep ? [] : null);
 };
 
@@ -295,13 +295,13 @@ SC.copy = function(obj, deep) {
   @param {Object} obj The object you want to inspect.
   @returns {String} A description of the object
 */
-SC.inspect = function(obj) {
+Ember.inspect = function(obj) {
   var v, ret = [];
   for(var key in obj) {
     if (obj.hasOwnProperty(key)) {
       v = obj[key];
       if (v === 'toString') { continue; } // ignore useless items
-      if (SC.typeOf(v) === 'function') { v = "function() { ... }"; }
+      if (Ember.typeOf(v) === 'function') { v = "function() { ... }"; }
       ret.push(key + ": " + v);
     }
   }
@@ -318,16 +318,16 @@ SC.inspect = function(obj) {
   @param {Object} b second object to compare
   @returns {Boolean}
 */
-SC.isEqual = function(a, b) {
+Ember.isEqual = function(a, b) {
   if (a && 'function'===typeof a.isEqual) return a.isEqual(b);
   return a === b;
 };
 
 /**
   @private
-  Used by SC.compare
+  Used by Ember.compare
 */
-SC.ORDER_DEFINITION = SC.ENV.ORDER_DEFINITION || [
+Ember.ORDER_DEFINITION = Ember.ENV.ORDER_DEFINITION || [
   'undefined',
   'null',
   'boolean',
@@ -349,10 +349,10 @@ SC.ORDER_DEFINITION = SC.ENV.ORDER_DEFINITION || [
   @param {Object} obj
   @returns {Array} Array containing keys of obj
 */
-SC.keys = Object.keys;
+Ember.keys = Object.keys;
 
-if (!SC.keys) {
-  SC.keys = function(obj) {
+if (!Ember.keys) {
+  Ember.keys = function(obj) {
     var ret = [];
     for(var key in obj) {
       if (obj.hasOwnProperty(key)) { ret.push(key); }
@@ -370,7 +370,7 @@ if (!SC.keys) {
 
   A subclass of the JavaScript Error object for use in SproutCore.
 */
-SC.Error = function() {
+Ember.Error = function() {
   var tmp = Error.prototype.constructor.apply(this, arguments);
 
   for (var p in tmp) {
@@ -378,4 +378,4 @@ SC.Error = function() {
   }
 };
 
-SC.Error.prototype = SC.create(Error.prototype);
+Ember.Error.prototype = Ember.create(Error.prototype);

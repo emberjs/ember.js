@@ -7,53 +7,53 @@
 
 module("SproutCore Type Checking");
 
-test("SC.typeOf", function() {
+test("Ember.typeOf", function() {
 	var a = null,
 	    arr = [1,2,3],
 	    obj = {},
-      object = SC.Object.create({ method: function() {} });
+      object = Ember.Object.create({ method: function() {} });
 
-  equals(SC.typeOf(undefined),     'undefined', "item of type undefined");
-  equals(SC.typeOf(a),             'null',      "item of type null");
-	equals(SC.typeOf(arr),           'array',     "item of type array");
-	equals(SC.typeOf(obj),           'object',    "item of type object");
-	equals(SC.typeOf(object),        'instance',  "item of type instance");
-	equals(SC.typeOf(object.method), 'function',  "item of type function") ;
-	equals(SC.typeOf(SC.Object),     'class',     "item of type class");
-  equals(SC.typeOf(new Error()),   'error',     "item of type error");
+  equals(Ember.typeOf(undefined),     'undefined', "item of type undefined");
+  equals(Ember.typeOf(a),             'null',      "item of type null");
+	equals(Ember.typeOf(arr),           'array',     "item of type array");
+	equals(Ember.typeOf(obj),           'object',    "item of type object");
+	equals(Ember.typeOf(object),        'instance',  "item of type instance");
+	equals(Ember.typeOf(object.method), 'function',  "item of type function") ;
+	equals(Ember.typeOf(Ember.Object),     'class',     "item of type class");
+  equals(Ember.typeOf(new Error()),   'error',     "item of type error");
 });
 
-test("SC.none", function() {
+test("Ember.none", function() {
   var string = "string", fn = function() {};
 
-  equals(true,  SC.none(null),      "for null");
-  equals(true,  SC.none(undefined), "for undefined");
-  equals(false, SC.none(""),        "for an empty String");
-  equals(false, SC.none(true),      "for true");
-  equals(false, SC.none(false),     "for false");
-  equals(false, SC.none(string),    "for a String");
-  equals(false, SC.none(fn),        "for a Function");
-  equals(false, SC.none(0),         "for 0");
-  equals(false, SC.none([]),        "for an empty Array");
-  equals(false, SC.none({}),        "for an empty Object");
+  equals(true,  Ember.none(null),      "for null");
+  equals(true,  Ember.none(undefined), "for undefined");
+  equals(false, Ember.none(""),        "for an empty String");
+  equals(false, Ember.none(true),      "for true");
+  equals(false, Ember.none(false),     "for false");
+  equals(false, Ember.none(string),    "for a String");
+  equals(false, Ember.none(fn),        "for a Function");
+  equals(false, Ember.none(0),         "for 0");
+  equals(false, Ember.none([]),        "for an empty Array");
+  equals(false, Ember.none({}),        "for an empty Object");
 });
 
-test("SC.empty", function() {
+test("Ember.empty", function() {
   var string = "string", fn = function() {};
 
-  equals(true,  SC.empty(null),      "for null");
-  equals(true,  SC.empty(undefined), "for undefined");
-  equals(true,  SC.empty(""),        "for an empty String");
-  equals(false, SC.empty(true),      "for true");
-  equals(false, SC.empty(false),     "for false");
-  equals(false, SC.empty(string),    "for a String");
-  equals(false, SC.empty(fn),        "for a Function");
-  equals(false, SC.empty(0),         "for 0");
-  equals(false, SC.empty([]),        "for an empty Array");
-  equals(false, SC.empty({}),        "for an empty Object");
+  equals(true,  Ember.empty(null),      "for null");
+  equals(true,  Ember.empty(undefined), "for undefined");
+  equals(true,  Ember.empty(""),        "for an empty String");
+  equals(false, Ember.empty(true),      "for true");
+  equals(false, Ember.empty(false),     "for false");
+  equals(false, Ember.empty(string),    "for a String");
+  equals(false, Ember.empty(fn),        "for a Function");
+  equals(false, Ember.empty(0),         "for 0");
+  equals(false, Ember.empty([]),        "for an empty Array");
+  equals(false, Ember.empty({}),        "for an empty Object");
 });
 
-test("SC.isArray" ,function(){
+test("Ember.isArray" ,function(){
   var numarray      = [1,2,3],
       number        = 23,
       strarray      = ["Hello", "Hi"],
@@ -62,13 +62,13 @@ test("SC.isArray" ,function(){
       length        = {length: 12},
       fn            = function() {};
 
-  equals( SC.isArray(numarray), true,  "[1,2,3]" );
-  equals( SC.isArray(number),   false, "23" );
-  equals( SC.isArray(strarray), true,  '["Hello", "Hi"]' );
-  equals( SC.isArray(string),   false, '"Hello"' );
-  equals( SC.isArray(object),   false, "{}" );
-  equals( SC.isArray(length),   true,  "{length: 12}" );
-  equals( SC.isArray(window),   false, "window" );
-  equals( SC.isArray(fn),       false, "function() {}" );
+  equals( Ember.isArray(numarray), true,  "[1,2,3]" );
+  equals( Ember.isArray(number),   false, "23" );
+  equals( Ember.isArray(strarray), true,  '["Hello", "Hi"]' );
+  equals( Ember.isArray(string),   false, '"Hello"' );
+  equals( Ember.isArray(object),   false, "{}" );
+  equals( Ember.isArray(length),   true,  "{length: 12}" );
+  equals( Ember.isArray(window),   false, "window" );
+  equals( Ember.isArray(fn),       false, "function() {}" );
 });
 

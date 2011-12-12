@@ -6,7 +6,7 @@
 /*globals Foo raises $foo */
 
 var obj;
-module('SC.setPath', {
+module('Ember.setPath', {
   setup: function() {
     obj = { 
       foo: { 
@@ -42,77 +42,77 @@ module('SC.setPath', {
 // 
 
 test('[obj, foo] -> obj.foo', function() {
-  SC.setPath(obj, 'foo', "BAM");
-  equals(SC.getPath(obj, 'foo'), "BAM");
+  Ember.setPath(obj, 'foo', "BAM");
+  equals(Ember.getPath(obj, 'foo'), "BAM");
 });
 
 test('[obj, *] -> EXCEPTION [cannot set *]', function() {
   raises(function() {
-    SC.setPath(obj, '*', "BAM");
+    Ember.setPath(obj, '*', "BAM");
   }, Error);
 });
 
 test('[obj, foo.bar] -> obj.foo.bar', function() {
-  SC.setPath(obj, 'foo.bar', "BAM");
-  equals(SC.getPath(obj, 'foo.bar'), "BAM");
+  Ember.setPath(obj, 'foo.bar', "BAM");
+  equals(Ember.getPath(obj, 'foo.bar'), "BAM");
 });
 
 test('[obj, foo.*] -> EXCEPTION', function() {
   raises(function() {
-    SC.setPath(obj, 'foo.*', "BAM");
+    Ember.setPath(obj, 'foo.*', "BAM");
   }, Error);
 });
 
 test('[obj, foo.*.baz] -> obj.foo.baz', function() {
-  SC.setPath(obj, 'foo.*.baz', "BAM");
-  equals(SC.getPath(obj, 'foo.baz'), "BAM");
+  Ember.setPath(obj, 'foo.*.baz', "BAM");
+  equals(Ember.getPath(obj, 'foo.baz'), "BAM");
 });
 
 
 test('[obj, foo*bar] -> obj.foo.bar', function() {
-  SC.setPath(obj, 'foo*bar', "BAM");
-  equals(SC.getPath(obj, 'foo.bar'), "BAM");
+  Ember.setPath(obj, 'foo*bar', "BAM");
+  equals(Ember.getPath(obj, 'foo.bar'), "BAM");
 });
 
 test('[obj, foo*bar.*] -> EXCEPTION', function() {
   raises(function() {
-    SC.setPath(obj, 'foo.*.baz.*', "BAM");
+    Ember.setPath(obj, 'foo.*.baz.*', "BAM");
   }, Error);
 });
 
 test('[obj, foo.bar*baz.biff] -> obj.foo.bar.baz.biff', function() {
-  SC.setPath(obj, 'foo.bar*baz.biff', "BAM");
-  equals(SC.getPath(obj, 'foo.bar.baz.biff'), "BAM");
+  Ember.setPath(obj, 'foo.bar*baz.biff', "BAM");
+  equals(Ember.getPath(obj, 'foo.bar.baz.biff'), "BAM");
 });
 
 test('[obj, this.foo] -> obj.foo', function() {
-  SC.setPath(obj, 'this.foo', "BAM");
-  equals(SC.getPath(obj, 'foo'), "BAM");
+  Ember.setPath(obj, 'this.foo', "BAM");
+  equals(Ember.getPath(obj, 'foo'), "BAM");
 });
 
 test('[obj, this.foo.bar] -> obj.foo.bar', function() {
-  SC.setPath(obj, 'this.foo.bar', "BAM");
-  equals(SC.getPath(obj, 'foo.bar'), "BAM");
+  Ember.setPath(obj, 'this.foo.bar', "BAM");
+  equals(Ember.getPath(obj, 'foo.bar'), "BAM");
 });
 
 test('[obj, .foo.bar] -> obj.foo.bar', function() {
-  SC.setPath(obj, '.foo.bar', "BAM");
-  equals(SC.getPath(obj, 'foo.bar'), "BAM");
+  Ember.setPath(obj, '.foo.bar', "BAM");
+  equals(Ember.getPath(obj, 'foo.bar'), "BAM");
 });
 
 test('[obj, *foo.bar] -> obj.foo.bar', function() {
-  SC.setPath(obj, '*foo.bar', "BAM");
-  equals(SC.getPath(obj, 'foo.bar'), "BAM");
+  Ember.setPath(obj, '*foo.bar', "BAM");
+  equals(Ember.getPath(obj, 'foo.bar'), "BAM");
 });
 
 test('[obj, this.foo*bar] -> obj.foo.bar', function() {
-  SC.setPath(obj, 'this.foo*bar', "BAM");
-  equals(SC.getPath(obj, 'foo.bar'), "BAM");
+  Ember.setPath(obj, 'this.foo*bar', "BAM");
+  equals(Ember.getPath(obj, 'foo.bar'), "BAM");
 });
 
 test('[obj, this.foo.bar*baz.biff] -> obj.foo.bar.baz.biff', function() {
-  SC.setPath(obj, 'this.foo.bar*baz.biff', "BAM");
-  equals(SC.getPath(obj, 'foo.bar.baz.biff'), "BAM");
+  Ember.setPath(obj, 'this.foo.bar*baz.biff', "BAM");
+  equals(Ember.getPath(obj, 'foo.bar.baz.biff'), "BAM");
 });
 
 // ..........................................................
@@ -121,44 +121,44 @@ test('[obj, this.foo.bar*baz.biff] -> obj.foo.bar.baz.biff', function() {
 
 test('[obj, Foo] -> EXCEPTION', function() {
   raises(function() {
-    SC.setPath(obj, 'Foo', "BAM");
+    Ember.setPath(obj, 'Foo', "BAM");
   }, Error);
 });
 
 test('[obj, foo.baz.bat] -> EXCEPTION', function() {
   raises(function() {
-    SC.setPath(obj, 'foo.baz.bat', "BAM");
+    Ember.setPath(obj, 'foo.baz.bat', "BAM");
   }, Error);
 });
 
 test('[obj, foo.baz.bat] -> EXCEPTION', function() {
-  SC.trySetPath(obj, 'foo.baz.bat', "BAM");
+  Ember.trySetPath(obj, 'foo.baz.bat', "BAM");
   // does not raise
 });
 
 test('[obj, Foo.bar] -> Foo.bar', function() {
-  SC.setPath(obj, 'Foo.bar', "BAM");
-  equals(SC.getPath(Foo, 'bar'), "BAM");
+  Ember.setPath(obj, 'Foo.bar', "BAM");
+  equals(Ember.getPath(Foo, 'bar'), "BAM");
 });
 
 test('[obj, Foo*bar] -> Foo.bar', function() {
-  SC.setPath(obj, 'Foo*bar', "BAM");
-  equals(SC.getPath(Foo, 'bar'), "BAM");
+  Ember.setPath(obj, 'Foo*bar', "BAM");
+  equals(Ember.getPath(Foo, 'bar'), "BAM");
 });
 
 test('[obj, Foo.bar*baz.biff] -> Foo.bar.baz.biff', function() {
-  SC.setPath(obj, 'Foo.bar*baz.biff', "BAM");
-  equals(SC.getPath(Foo, 'bar.baz.biff'), "BAM");
+  Ember.setPath(obj, 'Foo.bar*baz.biff', "BAM");
+  equals(Ember.getPath(Foo, 'bar.baz.biff'), "BAM");
 });
 
 test('[obj, Foo.bar.baz*biff] -> Foo.bar.baz.biff', function() {
-  SC.setPath(obj, 'Foo.bar.baz*biff', "BAM");
-  equals(SC.getPath(Foo, 'bar.baz.biff'), "BAM");
+  Ember.setPath(obj, 'Foo.bar.baz*biff', "BAM");
+  equals(Ember.getPath(Foo, 'bar.baz.biff'), "BAM");
 });
 
 test('[obj, $foo.bar.baz] -> $foo.bar.baz', function() {
-  SC.setPath(obj, '$foo.bar.baz', "BAM");
-  equals(SC.getPath($foo, 'bar.baz'), "BAM");
+  Ember.setPath(obj, '$foo.bar.baz', "BAM");
+  equals(Ember.getPath($foo, 'bar.baz'), "BAM");
 });
 
 
@@ -168,21 +168,21 @@ test('[obj, $foo.bar.baz] -> $foo.bar.baz', function() {
 // 
 
 test('[null, Foo.bar] -> Foo.bar', function() {
-  SC.setPath(null, 'Foo.bar', "BAM");
-  equals(SC.getPath(Foo, 'bar'), "BAM");
+  Ember.setPath(null, 'Foo.bar', "BAM");
+  equals(Ember.getPath(Foo, 'bar'), "BAM");
 });
 
 test('[null, Foo*bar] -> Foo.bar', function() {
-  SC.setPath(null, 'Foo*bar', "BAM");
-  equals(SC.getPath(Foo, 'bar'), "BAM");
+  Ember.setPath(null, 'Foo*bar', "BAM");
+  equals(Ember.getPath(Foo, 'bar'), "BAM");
 });
 
 test('[null, Foo.bar*baz.biff] -> Foo.bar.baz.biff', function() {
-  SC.setPath(null, 'Foo.bar*baz.biff', "BAM");
-  equals(SC.getPath(Foo, 'bar.baz.biff'), "BAM");
+  Ember.setPath(null, 'Foo.bar*baz.biff', "BAM");
+  equals(Ember.getPath(Foo, 'bar.baz.biff'), "BAM");
 });
 
 test('[null, Foo.bar.baz*biff] -> Foo.bar.baz.biff', function() {
-  SC.setPath(null, 'Foo.bar.baz*biff', "BAM");
-  equals(SC.getPath(Foo, 'bar.baz.biff'), "BAM");
+  Ember.setPath(null, 'Foo.bar.baz*biff', "BAM");
+  equals(Ember.getPath(Foo, 'bar.baz.biff'), "BAM");
 });

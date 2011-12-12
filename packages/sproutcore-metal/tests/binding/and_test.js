@@ -4,7 +4,7 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
-var MyApp, set = SC.set, get = SC.get;
+var MyApp, set = Ember.set, get = Ember.get;
 
 module('binding/and', {
   setup: function() {
@@ -12,7 +12,7 @@ module('binding/and', {
       foo: false,
       bar: false
     };
-    SC.Binding.and("foo", "bar").to("baz").connect(MyApp)
+    Ember.Binding.and("foo", "bar").to("baz").connect(MyApp)
   },
   
   teardown: function() {
@@ -23,27 +23,27 @@ module('binding/and', {
 test('should return second item when both are truthy', function() {
   set(MyApp, 'foo', true);
   set(MyApp, 'bar', 'BAR');
-  SC.run.sync();
+  Ember.run.sync();
   equals(get(MyApp, 'baz'), 'BAR', 'should be false');
 });
 
 test('should return false first item', function() {
   set(MyApp, 'foo', 0);
   set(MyApp, 'bar', true);
-  SC.run.sync();
+  Ember.run.sync();
   equals(get(MyApp, 'baz'), 0, 'should be false');
 });
 
 test('should return false second item', function() {
   set(MyApp, 'foo', true);
   set(MyApp, 'bar', 0);
-  SC.run.sync();
+  Ember.run.sync();
   equals(get(MyApp, 'baz'), 0, 'should be false');
 });
 
 test('should return first item when both are false', function() {
   set(MyApp, 'foo', 0);
   set(MyApp, 'bar', null);
-  SC.run.sync();
+  Ember.run.sync();
   equals(get(MyApp, 'baz'), 0, 'should be false');
 });

@@ -3,9 +3,9 @@ var people, view;
 module("the #each helper", {
   setup: function() {
     template = templateFor("{{#each people}}{{name}}{{/each}}");
-    people = SC.A([{ name: "Steve Holt" }, { name: "Annabelle" }]);
+    people = Ember.A([{ name: "Steve Holt" }, { name: "Annabelle" }]);
 
-    view = SC.View.create({
+    view = Ember.View.create({
       template: template,
       people: people
     });
@@ -16,11 +16,11 @@ module("the #each helper", {
 
 var template;
 var templateFor = function(template) {
-  return SC.Handlebars.compile(template);
+  return Ember.Handlebars.compile(template);
 };
 
 var append = function(view) {
-  SC.run(function() {
+  Ember.run(function() {
     view.appendTo('#qunit-fixture');
   });
 };
@@ -39,7 +39,7 @@ test("it renders the template for each item in an array", function() {
 });
 
 test("it updates the view if an item is added", function() {
-  SC.run(function() {
+  Ember.run(function() {
     people.pushObject({ name: "Tom Dale" });
   });
 
@@ -47,9 +47,9 @@ test("it updates the view if an item is added", function() {
 });
 
 test("it allows you to access the current context using {{this}}", function() {
-  view = SC.View.create({
+  view = Ember.View.create({
     template: templateFor("{{#each people}}{{this}}{{/each}}"),
-    people: SC.A(['Black Francis', 'Joey Santiago', 'Kim Deal', 'David Lovering'])
+    people: Ember.A(['Black Francis', 'Joey Santiago', 'Kim Deal', 'David Lovering'])
   });
 
   append(view);
@@ -58,7 +58,7 @@ test("it allows you to access the current context using {{this}}", function() {
 });
 
 test("it updates the view if an item is removed", function() {
-  SC.run(function() {
+  Ember.run(function() {
     people.removeAt(0);
   });
 

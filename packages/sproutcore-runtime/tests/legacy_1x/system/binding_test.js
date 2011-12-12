@@ -12,8 +12,8 @@
   
   CHANGES FROM 1.6:
 
-  * All calls to SC.run.sync() were changed to 
-    SC.run.sync()
+  * All calls to Ember.run.sync() were changed to 
+    Ember.run.sync()
     
   * Bindings no longer accept a root object as their second param.  Instead 
     our test binding objects were put under a single object they could 
@@ -21,27 +21,27 @@
   
   * tests that inspected internal properties were removed.
   
-  * converted foo.get/foo.set to use SC.get/SC.set
+  * converted foo.get/foo.set to use Ember.get/Ember.set
   
-  * Removed tests for SC.Binding.isConnected.  Since binding instances are now
+  * Removed tests for Ember.Binding.isConnected.  Since binding instances are now
     shared this property no longer makes sense.
     
-  * Changed call calls for obj.bind(...) to SC.bind(obj, ...);
+  * Changed call calls for obj.bind(...) to Ember.bind(obj, ...);
   
   * Changed all calls to sc_super() to this._super()
   
   * Changed all calls to disconnect() to pass the root object.
   
-  * removed calls to SC.Binding.destroy() as that method is no longer useful
+  * removed calls to Ember.Binding.destroy() as that method is no longer useful
     (or defined)
     
   * changed use of T_STRING to 'string'
 */
 
-var get = SC.get, set = SC.set;
+var get = Ember.get, set = Ember.set;
 
 // ========================================================================
-// SC.Binding Tests
+// Ember.Binding Tests
 // ========================================================================
 /*globals TestNamespace */
 
@@ -50,11 +50,11 @@ var fromObject, toObject, binding, Bon1, bon2, root ; // global variables
 module("basic object binding", {
 
   setup: function() {
-    fromObject = SC.Object.create({ value: 'start' }) ;
-    toObject = SC.Object.create({ value: 'end' }) ;
+    fromObject = Ember.Object.create({ value: 'start' }) ;
+    toObject = Ember.Object.create({ value: 'end' }) ;
     root = { fromObject: fromObject, toObject: toObject };
-    binding = SC.bind(root, 'toObject.value', 'fromObject.value');
-    SC.run.sync() ; // actually sets up up the connection
+    binding = Ember.bind(root, 'toObject.value', 'fromObject.value');
+    Ember.run.sync() ; // actually sets up up the connection
   }
 });
 
@@ -65,32 +65,32 @@ test("binding should have synced on connect", function() {
 test("fromObject change should propogate to toObject only after flush", function() {
   set(fromObject, "value", "change") ;
   equals(get(toObject, "value"), "start") ;
-  SC.run.sync() ;
+  Ember.run.sync() ;
   equals(get(toObject, "value"), "change") ;
 });
 
 test("toObject change should propogate to fromObject only after flush", function() {
   set(toObject, "value", "change") ;
   equals(get(fromObject, "value"), "start") ;
-  SC.run.sync() ;
+  Ember.run.sync() ;
   equals(get(fromObject, "value"), "change") ;
 });
 
 test("suspended observing during bindings", function() {
 
   // setup special binding
-  fromObject = SC.Object.create({
+  fromObject = Ember.Object.create({
     value1: 'value1',
     value2: 'value2'
   });
 
-  toObject = SC.Object.create({
+  toObject = Ember.Object.create({
     value1: 'value1',
     value2: 'value2',
 
     callCount: 0,
 
-    observer: SC.observer(function() {
+    observer: Ember.observer(function() {
       equals(get(this, 'value1'), 'CHANGED', 'value1 when observer fires');
       equals(get(this, 'value2'), 'CHANGED', 'value2 when observer fires');
       this.callCount++;
@@ -98,14 +98,14 @@ test("suspended observing during bindings", function() {
   });
 
   var root = { fromObject: fromObject, toObject: toObject };
-  SC.bind(root, 'toObject.value1', 'fromObject.value1');
-  SC.bind(root, 'toObject.value2', 'fromObject.value2');
+  Ember.bind(root, 'toObject.value1', 'fromObject.value1');
+  Ember.bind(root, 'toObject.value2', 'fromObject.value2');
 
   // change both value1 + value2, then  flush bindings.  observer should only
   // fire after bindings are done flushing.
   set(fromObject, 'value1', 'CHANGED');
   set(fromObject, 'value2', 'CHANGED');
-  SC.run.sync();
+  Ember.run.sync();
 
   equals(toObject.callCount, 2, 'should call observer twice');
 });
@@ -113,7 +113,7 @@ test("suspended observing during bindings", function() {
 test("binding disconnection actually works", function() {
   binding.disconnect(root);
   set(fromObject, 'value', 'change');
-  SC.run.sync();
+  Ember.run.sync();
   equals(get(toObject, 'value'), 'start');
 });
 
@@ -124,11 +124,11 @@ test("binding disconnection actually works", function() {
 module("one way binding", {
 
   setup: function() {
-    fromObject = SC.Object.create({ value: 'start' }) ;
-    toObject = SC.Object.create({ value: 'end' }) ;
+    fromObject = Ember.Object.create({ value: 'start' }) ;
+    toObject = Ember.Object.create({ value: 'end' }) ;
     root = { fromObject: fromObject, toObject: toObject };
-    binding = SC.oneWay(root, 'toObject.value', 'fromObject.value');
-    SC.run.sync() ; // actually sets up up the connection
+    binding = Ember.oneWay(root, 'toObject.value', 'fromObject.value');
+    Ember.run.sync() ; // actually sets up up the connection
   }
 
 });
@@ -136,14 +136,14 @@ module("one way binding", {
 test("fromObject change should propogate after flush", function() {
   set(fromObject, "value", "change") ;
   equals(get(toObject, "value"), "start") ;
-  SC.run.sync() ;
+  Ember.run.sync() ;
   equals(get(toObject, "value"), "change") ;
 });
 
 test("toObject change should NOT propogate", function() {
   set(toObject, "value", "change") ;
   equals(get(fromObject, "value"), "start") ;
-  SC.run.sync() ;
+  Ember.run.sync() ;
   equals(get(fromObject, "value"), "start") ;
 });
 
@@ -156,23 +156,23 @@ var first, second, third, binding1, binding2 ; // global variables
 module("chained binding", {
 
   setup: function() {
-    first = SC.Object.create({ output: 'first' }) ;
+    first = Ember.Object.create({ output: 'first' }) ;
 
-    second = SC.Object.create({
+    second = Ember.Object.create({
       input: 'second',
       output: 'second',
 
-      inputDidChange: SC.observer(function() {
+      inputDidChange: Ember.observer(function() {
         set(this, "output", get(this, "input")) ;
       }, "input")
     }) ;
 
-    third = SC.Object.create({ input: "third" }) ;
+    third = Ember.Object.create({ input: "third" }) ;
 
     root = { first: first, second: second, third: third };
-    binding1 = SC.bind(root, 'second.input', 'first.output');
-    binding2 = SC.bind(root, 'second.output', 'third.input');
-    SC.run.sync() ; // actually sets up up the connection
+    binding1 = Ember.bind(root, 'second.input', 'first.output');
+    binding2 = Ember.bind(root, 'second.output', 'third.input');
+    Ember.run.sync() ; // actually sets up up the connection
   }
 
 });
@@ -183,7 +183,7 @@ test("changing first output should propograte to third after flush", function() 
   ok("change" !== get(third, "input"), "third.input") ;
 
   var didChange = YES;
-  while(didChange) didChange = SC.run.sync() ;
+  while(didChange) didChange = Ember.run.sync() ;
 
   equals("change", get(first, "output"), "first.output") ;
   equals("change", get(second, "input"), "second.input") ;
@@ -198,13 +198,13 @@ test("changing first output should propograte to third after flush", function() 
 module("Custom Binding", {
 
   setup: function() {
-	Bon1 = SC.Object.extend({
+	Bon1 = Ember.Object.extend({
 		value1: "hi",
 		value2: 83,
 		array1: []
 	});
 
-	bon2 = SC.Object.create({
+	bon2 = Ember.Object.create({
 		val1: "hello",
 		val2: 25,
 		arr: [1,2,3,4]
@@ -223,57 +223,57 @@ module("Custom Binding", {
 
 test("Binding value1 such that it will recieve only single values", function() {
 	var bon1 = Bon1.create({
-		value1Binding: SC.Binding.single("TestNamespace.bon2.val1"),
-		array1Binding: SC.Binding.single("TestNamespace.bon2.arr")
+		value1Binding: Ember.Binding.single("TestNamespace.bon2.val1"),
+		array1Binding: Ember.Binding.single("TestNamespace.bon2.arr")
 	});
-	SC.run.sync();
+	Ember.run.sync();
 	var a = [23,31,12,21];
 	set(bon2, "arr", a);
 	set(bon2, "val1","changed");
-	SC.run.sync();
+	Ember.run.sync();
 	equals(get(bon2, "val1"),get(bon1, "value1"));
 	equals("@@MULT@@",get(bon1, "array1"));
 });
 
 test("Single binding using notEmpty function.", function() {
-  // This should raise an exception for SC 1.x developers who are using
+  // This should raise an exception for Ember 1.x developers who are using
   // the old syntax.
   raises(function() {
     var bond = Bon1.create ({
-      array1Binding: SC.Binding.single("TestNamespace.bon2.arr").notEmpty(null,'(EMPTY)')
+      array1Binding: Ember.Binding.single("TestNamespace.bon2.arr").notEmpty(null,'(EMPTY)')
     });
   });
 });
 
 test("Binding with transforms, function to check the type of value", function() {
 	var jon = Bon1.create({
-		value1Binding: SC.Binding.transform({
+		value1Binding: Ember.Binding.transform({
       to: function(val1) {
-        return (SC.typeOf(val1) == 'string')? val1 : "";
+        return (Ember.typeOf(val1) == 'string')? val1 : "";
       }
     }).from("TestNamespace.bon2.val1")
 	});
-	SC.run.sync();
+	Ember.run.sync();
 	set(bon2, "val1","changed");
-	SC.run.sync();
+	Ember.run.sync();
 	equals(get(jon, "value1"), get(bon2, "val1"));
 });
 
 test("two bindings to the same value should sync in the order they are initialized", function() {
 
-  SC.RunLoop.begin();
+  Ember.RunLoop.begin();
 
-  var a = SC.Object.create({
+  var a = Ember.Object.create({
     foo: "bar"
   });
 
-  var b = SC.Object.create({
+  var b = Ember.Object.create({
     foo: "baz",
     fooBinding: "a.foo",
 
     a: a,
     
-    C: SC.Object.extend({
+    C: Ember.Object.extend({
       foo: "bee",
       fooBinding: "owner.foo"
     }),
@@ -285,7 +285,7 @@ test("two bindings to the same value should sync in the order they are initializ
 
   });
 
-  SC.RunLoop.end();
+  Ember.RunLoop.end();
 
   equals(get(a, 'foo'), "bar", 'a.foo should not change');
   equals(get(b, 'foo'), "bar", 'a.foo should propogate up to b.foo');
@@ -299,57 +299,57 @@ test("two bindings to the same value should sync in the order they are initializ
 module("AND binding", {
 
   setup: function() {
-    // temporarily set up two source objects in the SC namespace so we can
+    // temporarily set up two source objects in the Ember namespace so we can
     // use property paths to access them
-    SC.set(SC, 'testControllerA', SC.Object.create({ value: NO }));
-    SC.set(SC, 'testControllerB', SC.Object.create({ value: NO }));
+    Ember.set(Ember, 'testControllerA', Ember.Object.create({ value: NO }));
+    Ember.set(Ember, 'testControllerB', Ember.Object.create({ value: NO }));
 
-    toObject = SC.Object.create({
+    toObject = Ember.Object.create({
       value: null,
-      valueBinding: SC.Binding.and('SC.testControllerA.value', 'SC.testControllerB.value')
+      valueBinding: Ember.Binding.and('Ember.testControllerA.value', 'Ember.testControllerB.value')
     });
   },
 
   teardown: function() {
-    set(SC, 'testControllerA', null);
-    set(SC, 'testControllerB', null);
+    set(Ember, 'testControllerA', null);
+    set(Ember, 'testControllerB', null);
   }
 
 });
 
 test("toObject.value should be YES if both sources are YES", function() {
-  SC.RunLoop.begin();
-  set(SC.testControllerA, 'value', YES);
-  set(SC.testControllerB, 'value', YES);
-  SC.RunLoop.end();
+  Ember.RunLoop.begin();
+  set(Ember.testControllerA, 'value', YES);
+  set(Ember.testControllerB, 'value', YES);
+  Ember.RunLoop.end();
 
-  SC.run.sync();
+  Ember.run.sync();
   equals(get(toObject, 'value'), YES);
 });
 
 test("toObject.value should be NO if either source is NO", function() {
-  SC.RunLoop.begin();
-  set(SC.testControllerA, 'value', YES);
-  set(SC.testControllerB, 'value', NO);
-  SC.RunLoop.end();
+  Ember.RunLoop.begin();
+  set(Ember.testControllerA, 'value', YES);
+  set(Ember.testControllerB, 'value', NO);
+  Ember.RunLoop.end();
 
-  SC.run.sync();
+  Ember.run.sync();
   equals(get(toObject, 'value'), NO);
 
-  SC.RunLoop.begin();
-  set(SC.testControllerA, 'value', YES);
-  set(SC.testControllerB, 'value', YES);
-  SC.RunLoop.end();
+  Ember.RunLoop.begin();
+  set(Ember.testControllerA, 'value', YES);
+  set(Ember.testControllerB, 'value', YES);
+  Ember.RunLoop.end();
 
-  SC.run.sync();
+  Ember.run.sync();
   equals(get(toObject, 'value'), YES);
 
-  SC.RunLoop.begin();
-  set(SC.testControllerA, 'value', NO);
-  set(SC.testControllerB, 'value', YES);
-  SC.RunLoop.end();
+  Ember.RunLoop.begin();
+  set(Ember.testControllerA, 'value', NO);
+  set(Ember.testControllerB, 'value', YES);
+  Ember.RunLoop.end();
 
-  SC.run.sync();
+  Ember.run.sync();
   equals(get(toObject, 'value'), NO);
 });
 
@@ -360,41 +360,41 @@ test("toObject.value should be NO if either source is NO", function() {
 module("OR binding", {
 
   setup: function() {
-    // temporarily set up two source objects in the SC namespace so we can
+    // temporarily set up two source objects in the Ember namespace so we can
     // use property paths to access them
-    SC.set(SC, 'testControllerA', SC.Object.create({ value: NO }));
-    SC.set(SC, 'testControllerB', SC.Object.create({ value: null }));
+    Ember.set(Ember, 'testControllerA', Ember.Object.create({ value: NO }));
+    Ember.set(Ember, 'testControllerB', Ember.Object.create({ value: null }));
 
-    toObject = SC.Object.create({
+    toObject = Ember.Object.create({
       value: null,
-      valueBinding: SC.Binding.or('SC.testControllerA.value', 'SC.testControllerB.value')
+      valueBinding: Ember.Binding.or('Ember.testControllerA.value', 'Ember.testControllerB.value')
     });
   },
 
   teardown: function() {
-    set(SC, 'testControllerA', null);
-    set(SC, 'testControllerB', null);
+    set(Ember, 'testControllerA', null);
+    set(Ember, 'testControllerB', null);
   }
 
 });
 
 test("toObject.value should be first value if first value is truthy", function() {
-  SC.RunLoop.begin();
-  set(SC.testControllerA, 'value', 'first value');
-  set(SC.testControllerB, 'value', 'second value');
-  SC.RunLoop.end();
+  Ember.RunLoop.begin();
+  set(Ember.testControllerA, 'value', 'first value');
+  set(Ember.testControllerB, 'value', 'second value');
+  Ember.RunLoop.end();
 
-  SC.run.sync();
+  Ember.run.sync();
   equals(get(toObject, 'value'), 'first value');
 });
 
 test("toObject.value should be second value if first is falsy", function() {
-  SC.RunLoop.begin();
-  set(SC.testControllerA, 'value', NO);
-  set(SC.testControllerB, 'value', 'second value');
-  SC.RunLoop.end();
+  Ember.RunLoop.begin();
+  set(Ember.testControllerA, 'value', NO);
+  set(Ember.testControllerB, 'value', 'second value');
+  Ember.RunLoop.end();
 
-  SC.run.sync();
+  Ember.run.sync();
   equals(get(toObject, 'value'), 'second value');
 });
 
@@ -404,11 +404,11 @@ test("toObject.value should be second value if first is falsy", function() {
 
 module("Binding with '[]'", {
   setup: function() {
-    fromObject = SC.Object.create({ value: SC.A() });
-    toObject = SC.Object.create({ value: '' });
+    fromObject = Ember.Object.create({ value: Ember.A() });
+    toObject = Ember.Object.create({ value: '' });
     root = { toObject: toObject, fromObject: fromObject };
     
-    binding = SC.bind(root, 'toObject.value', 'fromObject.value.[]').transform(function(v) {
+    binding = Ember.bind(root, 'toObject.value', 'fromObject.value.[]').transform(function(v) {
       return v ? v.join(',') : '';
     });
   },
@@ -420,7 +420,7 @@ module("Binding with '[]'", {
 
 test("Binding refreshes after a couple of items have been pushed in the array", function() {
   get(fromObject, 'value').pushObjects(['foo', 'bar']);
-  SC.run.sync();
+  Ember.run.sync();
   equals(get(toObject, 'value'), 'foo,bar');
 });
 
@@ -432,18 +432,18 @@ test("Binding refreshes after a couple of items have been pushed in the array", 
 module("propertyNameBinding with longhand", {
   setup: function(){
     TestNamespace = {
-      fromObject: SC.Object.create({
+      fromObject: Ember.Object.create({
         value: "originalValue"
       }),
       
-      toObject: SC.Object.create({
-        valueBinding: SC.Binding.from('TestNamespace.fromObject.value'),
+      toObject: Ember.Object.create({
+        valueBinding: Ember.Binding.from('TestNamespace.fromObject.value'),
         localValue: "originalLocal",
-        relativeBinding: SC.Binding.from('.localValue')
+        relativeBinding: Ember.Binding.from('.localValue')
       })
     };
     
-    SC.run.sync();
+    Ember.run.sync();
   },
   teardown: function(){
     TestNamespace = null;
@@ -453,24 +453,24 @@ module("propertyNameBinding with longhand", {
 test("works with full path", function(){
 
   set(TestNamespace.fromObject, 'value', "updatedValue");
-  SC.run.sync();
+  Ember.run.sync();
   
   equals(get(TestNamespace.toObject, 'value'), "updatedValue");
 
   set(TestNamespace.fromObject, 'value', "newerValue");
-  SC.run.sync();
+  Ember.run.sync();
 
   equals(get(TestNamespace.toObject, 'value'), "newerValue");
 });
 
 test("works with local path", function(){
   set(TestNamespace.toObject, 'localValue', "updatedValue");
-  SC.run.sync();
+  Ember.run.sync();
 
   equals(get(TestNamespace.toObject, 'relative'), "updatedValue");
 
   set(TestNamespace.toObject, 'localValue', "newerValue");
-  SC.run.sync();
+  Ember.run.sync();
 
   equals(get(TestNamespace.toObject, 'relative'), "newerValue");
 });

@@ -4,17 +4,17 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
-SC.MutableArrayTests.extend({
+Ember.MutableArrayTests.extend({
   
-  name: 'SC.ArrayProxy',
+  name: 'Ember.ArrayProxy',
   
   newObject: function(ary) {
     var ret = ary ? ary.slice() : this.newFixture(3);
-    return SC.ArrayProxy.create({ content: SC.A(ret) });
+    return Ember.ArrayProxy.create({ content: Ember.A(ret) });
   },
 
   mutate: function(obj) {
-    obj.pushObject(SC.get(obj, 'length')+1);
+    obj.pushObject(Ember.get(obj, 'length')+1);
   },
   
   toArray: function(obj) {

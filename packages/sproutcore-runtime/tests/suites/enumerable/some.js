@@ -6,7 +6,7 @@
 
 require('sproutcore-runtime/~tests/suites/enumerable');
 
-var suite = SC.EnumerableTests;
+var suite = Ember.EnumerableTests;
 
 // ..........................................................
 // some()
@@ -46,7 +46,7 @@ suite.module('someProperty');
 suite.test('should return true of any property matches', function() {
   var obj = this.newObject([
     { foo: 'foo', bar: 'BAZ' }, 
-    SC.Object.create({ foo: 'foo', bar: 'bar' })
+    Ember.Object.create({ foo: 'foo', bar: 'bar' })
   ]);
   
   equals(obj.someProperty('foo', 'foo'), true, 'someProperty(foo)');
@@ -57,7 +57,7 @@ suite.test('should return true of any property matches', function() {
 suite.test('should return true of any property is true', function() {
   var obj = this.newObject([
     { foo: 'foo', bar: true }, 
-    SC.Object.create({ foo: 'bar', bar: false })
+    Ember.Object.create({ foo: 'bar', bar: false })
   ]);
 
   // different values - all eval to true

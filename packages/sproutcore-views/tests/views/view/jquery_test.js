@@ -4,18 +4,18 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
-var set = SC.set, get = SC.get;
+var set = Ember.set, get = Ember.get;
 
 var view ;
-module("SC.View#$", {
+module("Ember.View#$", {
   setup: function() {
-    view = SC.View.extend({
+    view = Ember.View.extend({
       render: function(context, firstTime) {
         context.push('<span></span>');
       }
     }).create();
 
-    SC.run(function() {
+    Ember.run(function() {
       view.append();
     });
   },
@@ -26,7 +26,7 @@ module("SC.View#$", {
 });
 
 test("returns an empty jQuery object if no element", function() {
-  var view = SC.View.create();
+  var view = Ember.View.create();
   ok(!get(view, 'element'), 'precond - should have no element');
   equals(view.$().length, 0, 'should return empty jQuery object');
   equals(view.$('span').length, 0, 'should return empty jQuery object even if filter passed');

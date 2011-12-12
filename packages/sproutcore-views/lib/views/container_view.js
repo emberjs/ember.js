@@ -6,17 +6,17 @@
 // ==========================================================================
 
 require('sproutcore-views/views/view');
-var get = SC.get, set = SC.set, meta = SC.meta;
+var get = Ember.get, set = Ember.set, meta = Ember.meta;
 
-var childViewsProperty = SC.computed(function() {
+var childViewsProperty = Ember.computed(function() {
   return get(this, '_childViews');
 }).property('_childViews').cacheable();
 
-SC.ContainerView = SC.View.extend({
+Ember.ContainerView = Ember.View.extend({
 
   init: function() {
     var childViews = get(this, 'childViews');
-    SC.defineProperty(this, 'childViews', childViewsProperty);
+    Ember.defineProperty(this, 'childViews', childViewsProperty);
 
     this._super();
 
@@ -38,7 +38,7 @@ SC.ContainerView = SC.View.extend({
   },
 
   /**
-    Extends SC.View's implementation of renderToBuffer to
+    Extends Ember.View's implementation of renderToBuffer to
     set up an array observer on the child views array. This
     observer will detect when child views are added or removed
     and update the DOM to reflect the mutation.
@@ -63,7 +63,7 @@ SC.ContainerView = SC.View.extend({
   /**
     Instructs each child view to render to the passed render buffer.
 
-    @param {SC.RenderBuffer} buffer the buffer to render to
+    @param {Ember.RenderBuffer} buffer the buffer to render to
     @private
   */
   render: function(buffer) {
@@ -95,7 +95,7 @@ SC.ContainerView = SC.View.extend({
     `renderToBuffer` method.
 
     @private
-    @param {SC.Array} views the child views array before mutation
+    @param {Ember.Array} views the child views array before mutation
     @param {Number} start the start position of the mutation
     @param {Number} removed the number of child views removed
   **/
@@ -113,7 +113,7 @@ SC.ContainerView = SC.View.extend({
     place in the buffer.
 
     @private
-    @param {SC.Array} views the array of child views afte the mutation has occurred
+    @param {Ember.Array} views the array of child views afte the mutation has occurred
     @param {Number} start the start position of the mutation
     @param {Number} removed the number of child views removed
     @param {Number} the number of child views added
@@ -132,8 +132,8 @@ SC.ContainerView = SC.View.extend({
     Schedules a child view to be inserted into the DOM after bindings have
     finished syncing for this run loop.
 
-    @param {SC.View} view the child view to insert
-    @param {SC.View} prev the child view after which the specified view should
+    @param {Ember.View} view the child view to insert
+    @param {Ember.View} prev the child view after which the specified view should
                      be inserted
     @private
   */
@@ -146,14 +146,14 @@ SC.ContainerView = SC.View.extend({
   }
 });
 
-// SC.ContainerView extends the default view states to provide different
+// Ember.ContainerView extends the default view states to provide different
 // behavior for childViewsWillChange and childViewsDidChange.
-SC.ContainerView.states = {
-  parent: SC.View.states,
+Ember.ContainerView.states = {
+  parent: Ember.View.states,
 
   inBuffer: {
     childViewsDidChange: function(parentView, views, start, added) {
-      var buffer = meta(parentView)['SC.View'].buffer,
+      var buffer = meta(parentView)['Ember.View'].buffer,
           startWith, prev, prevBuffer, view;
 
       // Determine where to begin inserting the child view(s) in the
@@ -175,7 +175,7 @@ SC.ContainerView.states = {
       for (var i=startWith; i<start+added; i++) {
         prev = view;
         view = views[i];
-        prevBuffer = meta(prev)['SC.View'].buffer;
+        prevBuffer = meta(prev)['Ember.View'].buffer;
         view.renderToBuffer(prevBuffer, 'insertAfter');
       }
     }
@@ -203,10 +203,10 @@ SC.ContainerView.states = {
   }
 };
 
-SC.ContainerView.states.inDOM = {
-  parentState: SC.ContainerView.states.hasElement
+Ember.ContainerView.states.inDOM = {
+  parentState: Ember.ContainerView.states.hasElement
 }
 
-SC.ContainerView.reopen({
-  states: SC.ContainerView.states
+Ember.ContainerView.reopen({
+  states: Ember.ContainerView.states
 });

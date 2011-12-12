@@ -6,15 +6,15 @@
 /*globals TestObject */
 
 var textArea;
-var get = SC.get, set = SC.set;
+var get = Ember.get, set = Ember.set;
 
-module("SC.TextArea", {
+module("Ember.TextArea", {
   setup: function() {
-    TestObject = SC.Object.create({
+    TestObject = Ember.Object.create({
       value: null
     });
 
-    textArea = SC.TextArea.create();
+    textArea = Ember.TextArea.create();
   },
 
   teardown: function() {
@@ -24,7 +24,7 @@ module("SC.TextArea", {
 });
 
 function append() {
-  SC.run(function() {
+  Ember.run(function() {
     textArea.appendTo('#qunit-fixture');
   });
 }
@@ -40,43 +40,43 @@ test("should become disabled if the disabled attribute is true", function() {
   append();
   ok(textArea.$().is(":not(:disabled)"));
 
-  SC.run(function() { textArea.set('disabled', true); });
+  Ember.run(function() { textArea.set('disabled', true); });
   ok(textArea.$().is(":disabled"));
 
-  SC.run(function() { textArea.set('disabled', false); });
+  Ember.run(function() { textArea.set('disabled', false); });
   ok(textArea.$().is(":not(:disabled)"));
 });
 
 test("input value is updated when setting value property of view", function() {
-  SC.run(function() {
+  Ember.run(function() {
     set(textArea, 'value', 'foo');
     textArea.append();
   });
 
   equals(textArea.$().val(), "foo", "renders text field with value");
 
-  SC.run(function() { set(textArea, 'value', 'bar'); });
+  Ember.run(function() { set(textArea, 'value', 'bar'); });
 
   equals(textArea.$().val(), "bar", "updates text field after value changes");
 });
 
 test("input placeholder is updated when setting placeholder property of view", function() {
-  SC.run(function() {
+  Ember.run(function() {
     set(textArea, 'placeholder', 'foo');
     textArea.append();
   });
 
   equals(textArea.$().attr('placeholder'), "foo", "renders text field with placeholder");
 
-  SC.run(function() { set(textArea, 'placeholder', 'bar'); });
+  Ember.run(function() { set(textArea, 'placeholder', 'bar'); });
 
   equals(textArea.$().attr('placeholder'), "bar", "updates text field after placeholder changes");
 });
 
 test("value binding works properly for inputs that haven't been created", function() {
 
-  SC.run(function() {
-    textArea = SC.TextArea.create({
+  Ember.run(function() {
+    textArea = Ember.TextArea.create({
       valueBinding: 'TestObject.value'
     });
   });
@@ -84,13 +84,13 @@ test("value binding works properly for inputs that haven't been created", functi
   equals(get(textArea, 'value'), null, "precond - default value is null");
   equals(textArea.$().length, 0, "precond - view doesn't have its layer created yet, thus no input element");
 
-  SC.run(function() {
+  Ember.run(function() {
     set(TestObject, 'value', 'ohai');
   });
 
   equals(get(textArea, 'value'), 'ohai', "value property was properly updated");
 
-  SC.run(function() { textArea.append(); });
+  Ember.run(function() { textArea.append(); });
 
   equals(get(textArea, 'value'), 'ohai', "value property remains the same once the view has been appended");
   equals(textArea.$().val(), 'ohai', "value is reflected in the input element once it is created");
@@ -98,7 +98,7 @@ test("value binding works properly for inputs that haven't been created", functi
 
 test("should call the insertNewline method when return key is pressed", function() {
   var wasCalled;
-  var event = SC.Object.create({
+  var event = Ember.Object.create({
     keyCode: 13
   });
 
@@ -112,7 +112,7 @@ test("should call the insertNewline method when return key is pressed", function
 
 test("should call the cancel method when escape key is pressed", function() {
   var wasCalled;
-  var event = SC.Object.create({
+  var event = Ember.Object.create({
     keyCode: 27
   });
 
@@ -160,10 +160,10 @@ test("should call the cancel method when escape key is pressed", function() {
 //   textArea.$().focus();
 //   equals(insertNewlineCalled+cancelCalled, 0, "precond - no callbacks called yet");
 
-//   SC.RootResponder.responder.keyup(new SC.Event({ type: 'keyup', keyCode: 13 }));
+//   Ember.RootResponder.responder.keyup(new Ember.Event({ type: 'keyup', keyCode: 13 }));
 //   equals(insertNewlineCalled, 1, "calls insertNewline after hitting return");
 
-//   SC.RootResponder.responder.keyup(new SC.Event({ type: 'keyup', keyCode: 27 }));
+//   Ember.RootResponder.responder.keyup(new Ember.Event({ type: 'keyup', keyCode: 27 }));
 //   equals(cancelCalled, 1, "calls cancel after pressing escape key");
 // });
 

@@ -5,17 +5,17 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
-var set = SC.set, get = SC.get;
+var set = Ember.set, get = Ember.get;
 
-module("SC.View - Template Functionality");
+module("Ember.View - Template Functionality");
 
 test("should call the function of the associated template", function() {
   var view;
 
-  view = SC.View.create({
+  view = Ember.View.create({
     templateName: 'test_template',
 
-    templates: SC.Object.create({
+    templates: Ember.Object.create({
       test_template: function(dataSource) {
         return "<h1 id='twas-called'>template was called</h1>";
       }
@@ -30,12 +30,12 @@ test("should call the function of the associated template", function() {
 test("should call the function of the associated template with itself as the context", function() {
   var view;
 
-  view = SC.View.create({
+  view = Ember.View.create({
     templateName: 'test_template',
 
     personName: "Tom DAAAALE",
 
-    templates: SC.Object.create({
+    templates: Ember.Object.create({
       test_template: function(dataSource) {
         return "<h1 id='twas-called'>template was called for " + get(dataSource, 'personName') + "</h1>";
       }
@@ -50,7 +50,7 @@ test("should call the function of the associated template with itself as the con
 test("should fall back to defaultTemplate if neither template nor templateName are provided", function() {
   var View, view;
 
-  View = SC.View.extend({
+  View = Ember.View.extend({
     defaultTemplate: function(dataSource) { return "<h1 id='twas-called'>template was called for " + get(dataSource, 'personName') + "</h1>"; }
   });
 
@@ -66,7 +66,7 @@ test("should fall back to defaultTemplate if neither template nor templateName a
 test("should not use defaultTemplate if template is provided", function() {
   var View, view;
 
-  View = SC.View.extend({
+  View = Ember.View.extend({
     template:  function() { return "foo"; },
     defaultTemplate: function(dataSource) { return "<h1 id='twas-called'>template was called for " + get(dataSource, 'personName') + "</h1>"; }
   });
@@ -80,9 +80,9 @@ test("should not use defaultTemplate if template is provided", function() {
 test("should not use defaultTemplate if template is provided", function() {
   var View, view;
 
-  View = SC.View.extend({
+  View = Ember.View.extend({
     templateName: 'foobar',
-    templates: SC.Object.create({
+    templates: Ember.Object.create({
       foobar: function() { return "foo"; }
     }),
     defaultTemplate: function(dataSource) { return "<h1 id='twas-called'>template was called for " + get(dataSource, 'personName') + "</h1>"; }
@@ -97,7 +97,7 @@ test("should not use defaultTemplate if template is provided", function() {
 
 test("should render an empty element if no template is specified", function() {
   var view;
-  view = SC.View.create();
+  view = Ember.View.create();
   view.createElement();
 
   equals(view.$().html(), '', "view div should be empty");

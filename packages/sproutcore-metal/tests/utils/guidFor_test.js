@@ -7,19 +7,19 @@
 
 require('sproutcore-metal');
 
-module("SC.guidFor");
+module("Ember.guidFor");
 
 var sameGuid = function(a, b, message) {
-  equals( SC.guidFor(a), SC.guidFor(b), message );
+  equals( Ember.guidFor(a), Ember.guidFor(b), message );
 };
 
 var diffGuid = function(a, b, message) {
-  ok( SC.guidFor(a) !== SC.guidFor(b), message);
+  ok( Ember.guidFor(a) !== Ember.guidFor(b), message);
 };
 
 var nanGuid = function(obj) {
   var type = typeof obj;
-  ok( isNaN(parseInt(SC.guidFor(obj), 0)), "guids for " + type + "don't parse to numbers");
+  ok( isNaN(parseInt(Ember.guidFor(obj), 0)), "guids for " + type + "don't parse to numbers");
 };
 
 test("Object", function() {
@@ -33,15 +33,15 @@ test("Object", function() {
 test("Object with prototype", function() {
   var Class = function() { };
 
-  SC.guidFor(Class.prototype);
+  Ember.guidFor(Class.prototype);
 
   var a = new Class();
   var b = new Class();
 
   sameGuid( a, b , "without calling rewatch, objects copy the guid from their prototype");
 
-  SC.rewatch(a);
-  SC.rewatch(b);
+  Ember.rewatch(a);
+  Ember.rewatch(b);
 
   diffGuid( a, b, "after calling rewatch, objects don't share guids" );
 });

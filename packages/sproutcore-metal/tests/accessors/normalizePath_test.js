@@ -4,25 +4,25 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
-module('SC.normalizePath');
+module('Ember.normalizePath');
 
 test('foo -> foo', function() {
-  equals(SC.normalizePath('foo'), 'foo');
+  equals(Ember.normalizePath('foo'), 'foo');
 });
 
 test('foo.bar -> foo.bar', function() {
-  equals(SC.normalizePath('foo.bar'), 'foo.bar');
+  equals(Ember.normalizePath('foo.bar'), 'foo.bar');
 });
 
 test('this.foo.bar -> this.foo.bar', function() {
-  equals(SC.normalizePath('this.foo.bar'), 'this.foo.bar');
+  equals(Ember.normalizePath('this.foo.bar'), 'this.foo.bar');
 });
 
 test('.foo.bar -> this.foo.bar', function() {
-  equals(SC.normalizePath('.foo.bar'), 'this.foo.bar');
+  equals(Ember.normalizePath('.foo.bar'), 'this.foo.bar');
 });
 
 test('*foo.bar -> this.foo.bar', function() {
-  equals(SC.normalizePath('*foo.bar'), 'this.foo.bar');
+  equals(Ember.normalizePath('*foo.bar'), 'this.foo.bar');
 });
 

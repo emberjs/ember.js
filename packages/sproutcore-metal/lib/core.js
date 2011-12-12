@@ -5,17 +5,17 @@
 // ==========================================================================
 /*globals ENV sc_assert */
 
-if ('undefined' === typeof SC) {
+if ('undefined' === typeof Ember) {
 /**
   @namespace
-  @name SC
+  @name Ember
   @version 0.9
 
   All SproutCore methods and functions are defined inside of this namespace.
   You generally should not add new properties to this namespace as it may be
   overwritten by future versions of SproutCore.
 
-  You can also use the shorthand "SC" instead of "SproutCore".
+  You can also use the shorthand "Em" instead of "Ember".
 
   SproutCore-Runtime is a framework that provides core functions for 
   SproutCore including cross-platform functions, support for property 
@@ -26,11 +26,11 @@ if ('undefined' === typeof SC) {
   The core Runtime framework is based on the jQuery API with a number of
   performance optimizations.
 */
-SC = {};
+Ember = {};
 
 // aliases needed to keep minifiers from removing the global context
 if ('undefined' !== typeof window) {
-  window.Em = window.Ember = window.SC = window.SproutCore = Em = Ember = SproutCore = SC;
+  window.SC = window.SproutCore = window.Em = window.Ember = SC = SproutCore = Em = Ember;
 }
 
 }
@@ -41,7 +41,7 @@ if ('undefined' !== typeof window) {
   @default '0.9'
   @constant
 */
-SC.VERSION = '0.9';
+Ember.VERSION = '0.9';
 
 /**
   @static
@@ -52,7 +52,7 @@ SC.VERSION = '0.9';
   variable before loading SproutCore to control various configuration 
   settings.
 */
-SC.ENV = 'undefined' === typeof ENV ? {} : ENV;
+Ember.ENV = 'undefined' === typeof ENV ? {} : ENV;
 
 /**
   Empty function.  Useful for some operations.
@@ -60,7 +60,7 @@ SC.ENV = 'undefined' === typeof ENV ? {} : ENV;
   @returns {Object}
   @private
 */
-SC.K = function() { return this; };
+Ember.K = function() { return this; };
 
 /**
   Define an assertion that will throw an exception if the condition is not 
@@ -77,8 +77,8 @@ SC.K = function() { return this; };
       // pass a function.  If the function returns false the assertion fails
       // any other return value (including void) will pass.
       sc_assert('a passed record must have a firstName', function() {
-        if (obj instanceof SC.Record) {
-          return !SC.empty(obj.firstName);
+        if (obj instanceof Ember.Record) {
+          return !Ember.empty(obj.firstName);
         }
       });
       
@@ -98,8 +98,8 @@ window.sc_assert = function sc_assert(desc, test) {
   if (!test) throw new Error("assertion failed: "+desc);
 };
 
-//if ('undefined' === typeof sc_require) sc_require = SC.K;
-if ('undefined' === typeof require) require = SC.K;
+//if ('undefined' === typeof sc_require) sc_require = Ember.K;
+if ('undefined' === typeof require) require = Ember.K;
 
 // ..........................................................
 // LOGGER
@@ -111,4 +111,4 @@ if ('undefined' === typeof require) require = SC.K;
   Inside SproutCore-Metal, simply uses the window.console object.
   Override this to provide more robust logging functionality.
 */
-SC.Logger = window.console || { log: SC.K, warn: SC.K, error: SC.K };
+Ember.Logger = window.console || { log: Ember.K, warn: Ember.K, error: Ember.K };

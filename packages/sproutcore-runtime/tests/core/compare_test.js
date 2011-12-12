@@ -7,7 +7,7 @@
 
 // test parsing of query string
 var v = [];
-module("SC.compare()", {
+module("Ember.compare()", {
   setup: function() {
     // setup dummy data
     v[0]  = null;
@@ -22,7 +22,7 @@ module("SC.compare()", {
     v[9]  = [1,2,3];
     v[10] = [1,3];
     v[11] = {a: 'hash'};
-    v[12] = SC.Object.create();
+    v[12] = Ember.Object.create();
     v[13] = function (a) {return a;};
   }
 });
@@ -34,9 +34,9 @@ module("SC.compare()", {
 
 test("ordering should work", function() {
   for (var j=0; j < v.length; j++) {
-    equals(SC.compare(v[j],v[j]), 0, j +' should equal itself');
+    equals(Ember.compare(v[j],v[j]), 0, j +' should equal itself');
     for (var i=j+1; i < v.length; i++) {
-      equals(SC.compare(v[j],v[i]), -1, 'v[' + j + '] (' + SC.typeOf(v[j]) + ') should be smaller than v[' + i + '] (' + SC.typeOf(v[i]) + ')' );
+      equals(Ember.compare(v[j],v[i]), -1, 'v[' + j + '] (' + Ember.typeOf(v[j]) + ') should be smaller than v[' + i + '] (' + Ember.typeOf(v[i]) + ')' );
     }
     
   }

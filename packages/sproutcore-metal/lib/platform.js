@@ -12,7 +12,7 @@ require('sproutcore-metal/core');
 
   Platform specific methods and feature detectors needed by the framework.
 */
-var platform = SC.platform = {} ;
+var platform = Ember.platform = {} ;
 
 /**
   Identical to Object.create().  Implements if not available natively.

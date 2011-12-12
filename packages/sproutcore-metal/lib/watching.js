@@ -12,14 +12,14 @@ require('sproutcore-metal/accessors');
 require('sproutcore-metal/properties');
 require('sproutcore-metal/observer');
 
-var guidFor = SC.guidFor;
-var meta    = SC.meta;
-var get = SC.get, set = SC.set;
-var normalizeTuple = SC.normalizeTuple.primitive;
-var normalizePath  = SC.normalizePath;
-var SIMPLE_PROPERTY = SC.SIMPLE_PROPERTY;
-var GUID_KEY = SC.GUID_KEY;
-var notifyObservers = SC.notifyObservers;
+var guidFor = Ember.guidFor;
+var meta    = Ember.meta;
+var get = Ember.get, set = Ember.set;
+var normalizeTuple = Ember.normalizeTuple.primitive;
+var normalizePath  = Ember.normalizePath;
+var SIMPLE_PROPERTY = Ember.SIMPLE_PROPERTY;
+var GUID_KEY = Ember.GUID_KEY;
+var notifyObservers = Ember.notifyObservers;
 
 var FIRST_KEY = /^([^\.\*]+)/;
 var IS_PATH = /[\.\*]/;
@@ -45,7 +45,7 @@ function iterDeps(methodName, obj, depKey, seen) {
   if (seen[guid][depKey]) return ;
   seen[guid][depKey] = true;
   
-  var deps = meta(obj, false).deps, method = SC[methodName];
+  var deps = meta(obj, false).deps, method = Ember[methodName];
   deps = deps && deps[depKey];
   if (deps) {
     for(var key in deps) {
@@ -88,7 +88,7 @@ function addChainWatcher(obj, keyName, node) {
 
   if (!nodes[keyName]) nodes[keyName] = {};
   nodes[keyName][guidFor(node)] = node;
-  SC.watch(obj, keyName);
+  Ember.watch(obj, keyName);
 }
 
 function removeChainWatcher(obj, keyName, node) {
@@ -97,7 +97,7 @@ function removeChainWatcher(obj, keyName, node) {
   var nodes = m.chainWatchers;
   if (!nodes || nodes.__scproto__ !== obj) return; //nothing to do
   if (nodes[keyName]) delete nodes[keyName][guidFor(node)];
-  SC.unwatch(obj, keyName);
+  Ember.unwatch(obj, keyName);
 }
 
 var pendingQueue = [];
@@ -272,9 +272,9 @@ Wp.chainWillChange = function(chain, path, depth) {
   if (this._parent) {
     this._parent.chainWillChange(this, path, depth+1);
   } else {
-    if (depth>1) SC.propertyWillChange(this._value, path);
+    if (depth>1) Ember.propertyWillChange(this._value, path);
     path = 'this.'+path;
-    if (this._paths[path]>0) SC.propertyWillChange(this._value, path);
+    if (this._paths[path]>0) Ember.propertyWillChange(this._value, path);
   }
 };
 
@@ -283,9 +283,9 @@ Wp.chainDidChange = function(chain, path, depth) {
   if (this._parent) {
     this._parent.chainDidChange(this, path, depth+1);
   } else {
-    if (depth>1) SC.propertyDidChange(this._value, path);
+    if (depth>1) Ember.propertyDidChange(this._value, path);
     path = 'this.'+path;
-    if (this._paths[path]>0) SC.propertyDidChange(this._value, path);
+    if (this._paths[path]>0) Ember.propertyDidChange(this._value, path);
   }
 };
 
@@ -355,21 +355,21 @@ function chainsDidChange(obj, keyName) {
 // WATCH
 // 
 
-var WATCHED_PROPERTY = SC.SIMPLE_PROPERTY.watched;
+var WATCHED_PROPERTY = Ember.SIMPLE_PROPERTY.watched;
 
 /**
   @private
 
   Starts watching a property on an object.  Whenever the property changes,
-  invokes SC.propertyWillChange and SC.propertyDidChange.  This is the 
+  invokes Ember.propertyWillChange and Ember.propertyDidChange.  This is the 
   primitive used by observers and dependent keys; usually you will never call
   this method directly but instead use higher level methods like
-  SC.addObserver().
+  Ember.addObserver().
 */
-SC.watch = function(obj, keyName) {
+Ember.watch = function(obj, keyName) {
 
   // can't watch length on Array - it is special...
-  if (keyName === 'length' && SC.typeOf(obj)==='array') return this;
+  if (keyName === 'length' && Ember.typeOf(obj)==='array') return this;
   
   var m = meta(obj), watching = m.watching, desc;
   keyName = normalizePath(keyName);
@@ -380,7 +380,7 @@ SC.watch = function(obj, keyName) {
     if (isKeyName(keyName)) {
       desc = m.descs[keyName];
       desc = desc ? desc.watched : WATCHED_PROPERTY;
-      if (desc) SC.defineProperty(obj, keyName, desc);
+      if (desc) Ember.defineProperty(obj, keyName, desc);
     } else {
       chainsFor(obj).add(keyName);
     }
@@ -391,16 +391,16 @@ SC.watch = function(obj, keyName) {
   return this;
 };
 
-SC.isWatching = function(obj, keyName) {
+Ember.isWatching = function(obj, keyName) {
   return !!meta(obj).watching[keyName];
 };
 
-SC.watch.flushPending = flushPendingChains;
+Ember.watch.flushPending = flushPendingChains;
 
 /** @private */
-SC.unwatch = function(obj, keyName) {
+Ember.unwatch = function(obj, keyName) {
   // can't watch length on Array - it is special...
-  if (keyName === 'length' && SC.typeOf(obj)==='array') return this;
+  if (keyName === 'length' && Ember.typeOf(obj)==='array') return this;
 
   var watching = meta(obj).watching, desc, descs;
   keyName = normalizePath(keyName);
@@ -409,7 +409,7 @@ SC.unwatch = function(obj, keyName) {
     if (isKeyName(keyName)) {
       desc = meta(obj).descs[keyName];
       desc = desc ? desc.unwatched : SIMPLE_PROPERTY;
-      if (desc) SC.defineProperty(obj, keyName, desc);
+      if (desc) Ember.defineProperty(obj, keyName, desc);
     } else {
       chainsFor(obj).remove(keyName);
     }
@@ -428,12 +428,12 @@ SC.unwatch = function(obj, keyName) {
   setup any chained watchers on the object instance as needed.  This method is
   safe to call multiple times.
 */
-SC.rewatch = function(obj) {
+Ember.rewatch = function(obj) {
   var m = meta(obj, false), chains = m.chains, bindings = m.bindings, key, b;
 
   // make sure the object has its own guid.
   if (GUID_KEY in obj && !obj.hasOwnProperty(GUID_KEY)) {
-    SC.generateGuid(obj, 'sc');
+    Ember.generateGuid(obj, 'sc');
   }  
 
   // make sure any chained watchers update.
@@ -443,7 +443,7 @@ SC.rewatch = function(obj) {
   if (bindings && m.proto!==obj) {
     for (key in bindings) {
       b = !DEP_SKIP[key] && obj[key];
-      if (b && b instanceof SC.Binding) b.fromDidChange(obj);
+      if (b && b instanceof Ember.Binding) b.fromDidChange(obj);
     }
   }
 
@@ -460,7 +460,7 @@ SC.rewatch = function(obj) {
   
   Normally you will not need to call this method directly but if for some
   reason you can't directly watch a property you can invoke this method 
-  manually along with `SC.propertyDidChange()` which you should call just 
+  manually along with `Ember.propertyDidChange()` which you should call just 
   after the property value changes.
   
   @param {Object} obj
@@ -471,13 +471,13 @@ SC.rewatch = function(obj) {
     
   @returns {void}
 */
-SC.propertyWillChange = function(obj, keyName) {
+Ember.propertyWillChange = function(obj, keyName) {
   var m = meta(obj, false), proto = m.proto, desc = m.descs[keyName];
   if (proto === obj) return ;
   if (desc && desc.willChange) desc.willChange(obj, keyName);
   dependentKeysWillChange(obj, keyName);
   chainsWillChange(obj, keyName);
-  SC.notifyBeforeObservers(obj, keyName);
+  Ember.notifyBeforeObservers(obj, keyName);
 };
 
 /**
@@ -486,7 +486,7 @@ SC.propertyWillChange = function(obj, keyName) {
   
   Normally you will not need to call this method directly but if for some
   reason you can't directly watch a property you can invoke this method 
-  manually along with `SC.propertyWilLChange()` which you should call just 
+  manually along with `Ember.propertyWilLChange()` which you should call just 
   before the property value changes.
   
   @param {Object} obj
@@ -497,11 +497,11 @@ SC.propertyWillChange = function(obj, keyName) {
     
   @returns {void}
 */
-SC.propertyDidChange = function(obj, keyName) {
+Ember.propertyDidChange = function(obj, keyName) {
   var m = meta(obj, false), proto = m.proto, desc = m.descs[keyName];
   if (proto === obj) return ;
   if (desc && desc.didChange) desc.didChange(obj, keyName);
   dependentKeysDidChange(obj, keyName);
   chainsDidChange(obj, keyName);
-  SC.notifyObservers(obj, keyName);
+  Ember.notifyObservers(obj, keyName);
 };

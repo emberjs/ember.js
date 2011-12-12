@@ -4,19 +4,19 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
-var set = SC.set, get = SC.get;
+var set = Ember.set, get = Ember.get;
 
-module("SC.View#destroyElement");
+module("Ember.View#destroyElement");
 
 test("it if has no element, does nothing", function() {
   var callCount = 0;
-  var view = SC.View.create({
+  var view = Ember.View.create({
     willDestroyElement: function() { callCount++; }
   });
 
   ok(!get(view, 'element'), 'precond - does NOT have element');
 
-  SC.run(function() {
+  Ember.run(function() {
     view.destroyElement();
   });
 
@@ -26,11 +26,11 @@ test("it if has no element, does nothing", function() {
 test("if it has a element, calls willDestroyElement on receiver and child views then deletes the element", function() {
   var parentCount = 0, childCount = 0;
 
-  var view = SC.ContainerView.create({
+  var view = Ember.ContainerView.create({
     willDestroyElement: function() { parentCount++; },
-    childViews: [SC.ContainerView.extend({
+    childViews: [Ember.ContainerView.extend({
       // no willDestroyElement here... make sure no errors are thrown
-      childViews: [SC.View.extend({
+      childViews: [Ember.View.extend({
         willDestroyElement: function() { childCount++; }
       })]
     })]
@@ -39,7 +39,7 @@ test("if it has a element, calls willDestroyElement on receiver and child views 
   view.createElement();
   ok(get(view, 'element'), 'precond - view has element');
 
-  SC.run(function() {
+  Ember.run(function() {
     view.destroyElement();
   });
 
@@ -50,20 +50,20 @@ test("if it has a element, calls willDestroyElement on receiver and child views 
 });
 
 test("returns receiver", function() {
-  var view = SC.View.create().createElement();
+  var view = Ember.View.create().createElement();
   equals(view.destroyElement(), view, 'returns receiver');
 });
 
 test("removes element from parentNode if in DOM", function() {
-  var view = SC.View.create();
+  var view = Ember.View.create();
 
-  SC.run(function() {
+  Ember.run(function() {
     view.append();
   });
 
   ok(get(view, 'element'), 'precond - has element');
 
-  SC.run(function() {
+  Ember.run(function() {
     view.destroyElement();
   });
 

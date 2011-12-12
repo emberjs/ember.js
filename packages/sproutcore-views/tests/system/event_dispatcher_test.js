@@ -7,11 +7,11 @@
 
 var view;
 var application;
-var set = SC.set, get = SC.get;
+var set = Ember.set, get = Ember.get;
 
-module("SC.EventDispatcher", {
+module("Ember.EventDispatcher", {
   setup: function() {
-    application = SC.Application.create();
+    application = Ember.Application.create();
   },
 
   teardown: function() {
@@ -26,10 +26,10 @@ test("should dispatch events to views", function() {
   var childKeyDownCalled = 0;
   var parentKeyDownCalled = 0;
 
-  view = SC.ContainerView.create({
+  view = Ember.ContainerView.create({
     childViews: ['child'],
 
-    child: SC.View.extend({
+    child: Ember.View.extend({
       render: function(buffer) {
         buffer.push('<span id="wot">ewot</span>');
       },
@@ -56,7 +56,7 @@ test("should dispatch events to views", function() {
     }
   });
 
-  SC.run(function() {
+  Ember.run(function() {
     view.append();
   });
 
@@ -67,21 +67,21 @@ test("should dispatch events to views", function() {
   parentMouseDownCalled = 0;
 
   view.$('span#awesome').trigger('mousedown');
-  ok(receivedEvent, "event bubbles up to nearest SC.View");
+  ok(receivedEvent, "event bubbles up to nearest Ember.View");
   equals(parentMouseDownCalled, 1, "does not trigger the parent handlers twice because of browser bubbling");
   receivedEvent = null;
 
-  SC.$('#wot').trigger('mousedown');
-  ok(receivedEvent, "event bubbles up to nearest SC.View");
+  Ember.$('#wot').trigger('mousedown');
+  ok(receivedEvent, "event bubbles up to nearest Ember.View");
 
-  SC.$('#wot').trigger('keydown');
+  Ember.$('#wot').trigger('keydown');
   equals(childKeyDownCalled, 1, "calls keyDown on child view");
   equals(parentKeyDownCalled, 0, "does not call keyDown on parent if child handles event");
 });
 
 test("should send change events up view hierarchy if view contains form elements", function() {
   var receivedEvent;
-  view = SC.View.create({
+  view = Ember.View.create({
     render: function(buffer) {
       buffer.push('<input id="is-done" type="checkbox">');
     },
@@ -91,25 +91,25 @@ test("should send change events up view hierarchy if view contains form elements
     }
   });
 
-  SC.run(function() {
+  Ember.run(function() {
     view.append();
   });
 
-  SC.$('#is-done').trigger('change');
+  Ember.$('#is-done').trigger('change');
   ok(receivedEvent, "calls change method when a child element is changed");
-  equals(receivedEvent.target, SC.$('#is-done')[0], "target property is the element that was clicked");
+  equals(receivedEvent.target, Ember.$('#is-done')[0], "target property is the element that was clicked");
 });
 
 test("events should stop propagating if the view is destroyed", function() {
   var parentViewReceived, receivedEvent;
 
-  var parentView = SC.ContainerView.create({
+  var parentView = Ember.ContainerView.create({
     change: function(evt) {
       parentViewReceived = true;
     }
   });
 
-  view = parentView.createChildView(SC.View, {
+  view = parentView.createChildView(Ember.View, {
     render: function(buffer) {
       buffer.push('<input id="is-done" type="checkbox">');
     },
@@ -120,49 +120,49 @@ test("events should stop propagating if the view is destroyed", function() {
     }
   });
 
-  SC.get(parentView, 'childViews').pushObject(view);
+  Ember.get(parentView, 'childViews').pushObject(view);
 
-  SC.run(function() {
+  Ember.run(function() {
     parentView.append();
   });
 
-  ok(SC.$('#is-done').length, "precond - view is in the DOM");
-  SC.$('#is-done').trigger('change');
-  ok(!SC.$('#is-done').length, "precond - view is not in the DOM");
+  ok(Ember.$('#is-done').length, "precond - view is in the DOM");
+  Ember.$('#is-done').trigger('change');
+  ok(!Ember.$('#is-done').length, "precond - view is not in the DOM");
   ok(receivedEvent, "calls change method when a child element is changed");
   ok(!parentViewReceived, "parent view does not receive the event");
 });
 
 test("should not interfere with event propagation", function() {
   var receivedEvent;
-  view = SC.View.create({
+  view = Ember.View.create({
     render: function(buffer) {
       buffer.push('<div id="propagate-test-div"></div>')
     }
   });
 
-  SC.run(function() {
+  Ember.run(function() {
     view.append();
   });
 
-  SC.$(window).bind('click', function(evt) {
+  Ember.$(window).bind('click', function(evt) {
     receivedEvent = evt;
   });
 
-  SC.$('#propagate-test-div').click();
+  Ember.$('#propagate-test-div').click();
 
-  ok(receivedEvent, "allowed event to propagate outside SC")
-  same(receivedEvent.target, SC.$('#propagate-test-div')[0], "target property is the element that was clicked");
+  ok(receivedEvent, "allowed event to propagate outside Ember")
+  same(receivedEvent.target, Ember.$('#propagate-test-div')[0], "target property is the element that was clicked");
 });
 
 test("should dispatch events to nearest event manager", function() {
   var receivedEvent=0;
-  view = SC.ContainerView.create({
+  view = Ember.ContainerView.create({
     render: function(buffer) {
       buffer.push('<input id="is-done" type="checkbox">');
     },
 
-    eventManager: SC.Object.create({
+    eventManager: Ember.Object.create({
       mouseDown: function() {
         receivedEvent++;
       }
@@ -171,21 +171,21 @@ test("should dispatch events to nearest event manager", function() {
     mouseDown: function() {}
   });
 
-  SC.run(function() {
+  Ember.run(function() {
     view.append();
   });
 
-  SC.$('#is-done').trigger('mousedown');
+  Ember.$('#is-done').trigger('mousedown');
   equals(receivedEvent, 1, "event should go to manager and not view");
 });
 
 test("event manager should be able to re-dispatch events to view", function() {
 
   var receivedEvent=0;
-  view = SC.ContainerView.create({
+  view = Ember.ContainerView.create({
     elementId: 'containerView',
 
-    eventManager: SC.Object.create({
+    eventManager: Ember.Object.create({
       mouseDown: function(evt, view) {
         // Re-dispatch event when you get it.
         //
@@ -201,7 +201,7 @@ test("event manager should be able to re-dispatch events to view", function() {
 
     childViews: ['child'],
 
-    child: SC.View.extend({
+    child: Ember.View.extend({
       elementId: 'nestedView',
 
       mouseDown: function(evt) {
@@ -214,8 +214,8 @@ test("event manager should be able to re-dispatch events to view", function() {
     }
   });
 
-  SC.run(function() { view.append(); });
+  Ember.run(function() { view.append(); });
 
-  SC.$('#nestedView').trigger('mousedown');
+  Ember.$('#nestedView').trigger('mousedown');
   equals(receivedEvent, 2, "event should go to manager and not view");
 });

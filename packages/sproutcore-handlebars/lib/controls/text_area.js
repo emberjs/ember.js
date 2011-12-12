@@ -10,9 +10,9 @@ require("sproutcore-handlebars/controls/text_support");
 
 /** @class */
 
-var get = SC.get, set = SC.set;
+var get = Ember.get, set = Ember.set;
 
-SC.TextArea = SC.View.extend(SC.TextSupport, {
+Ember.TextArea = Ember.View.extend(Ember.TextSupport, {
 
   classNames: ['sc-text-area'],
 
@@ -25,7 +25,7 @@ SC.TextArea = SC.View.extend(SC.TextSupport, {
     this._updateElementValue();
   },
 
-  _updateElementValue: SC.observer(function() {
+  _updateElementValue: Ember.observer(function() {
     this.$().val(get(this, 'value'));
   }, 'value')
 

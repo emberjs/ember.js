@@ -7,8 +7,8 @@
 
 require('sproutcore-views/views/states/default');
 
-SC.View.states.preRender = {
-  parentState: SC.View.states._default,
+Ember.View.states.preRender = {
+  parentState: Ember.View.states._default,
 
   // a view leaves the preRender state once its element has been
   // created (createElement).
@@ -26,7 +26,7 @@ SC.View.states.preRender = {
     if (view._willInsertElementAccessUnsupported) {
       console.error("Getting element from willInsertElement is unreliable and no longer supported.");
     }
-    return SC.$();
+    return Ember.$();
   },
 
   // This exists for the removal warning, remove later

@@ -12,8 +12,8 @@ test('should invoke immediately on next timeout', function() {
   
   stop();
   
-  SC.run(function() {
-    SC.run.next(function() { invoked = true; });
+  Ember.run(function() {
+    Ember.run.next(function() { invoked = true; });
   });
 
   equals(invoked, false, 'should not have invoked yet');

@@ -9,10 +9,10 @@ require('sproutcore-metal/core');
 require('sproutcore-metal/platform');
 require('sproutcore-metal/utils');
 
-var USE_ACCESSORS = SC.platform.hasPropertyAccessors && SC.ENV.USE_ACCESSORS;
-SC.USE_ACCESSORS = !!USE_ACCESSORS;
+var USE_ACCESSORS = Ember.platform.hasPropertyAccessors && Ember.ENV.USE_ACCESSORS;
+Ember.USE_ACCESSORS = !!USE_ACCESSORS;
 
-var meta = SC.meta;
+var meta = Ember.meta;
 
 // ..........................................................
 // GET AND SET
@@ -26,7 +26,7 @@ var get, set;
 get = function get(obj, keyName) {
   if (keyName === undefined && 'string' === typeof obj) {
     keyName = obj;
-    obj = SC;
+    obj = Ember;
   }
   
   if (!obj) return undefined;
@@ -57,7 +57,7 @@ if (!USE_ACCESSORS) {
   get = function(obj, keyName) {
     if (keyName === undefined && 'string' === typeof obj) {
       keyName = obj;
-      obj = SC;
+      obj = Ember;
     }
 
     sc_assert("You need to provide an object and key to `get`.", !!obj && keyName);
@@ -106,7 +106,7 @@ if (!USE_ACCESSORS) {
     
   @returns {Object} the property value or null.
 */
-SC.get = get;
+Ember.get = get;
 
 /**
   @function 
@@ -137,7 +137,7 @@ SC.get = get;
     
   @returns {Object} the passed value.
 */
-SC.set = set;
+Ember.set = set;
 
 // ..........................................................
 // PATHS
@@ -230,7 +230,7 @@ function normalizeTuple(target, path) {
   @param {String} path path to normalize
   @returns {String} normalized path  
 */
-SC.normalizePath = normalizePath;
+Ember.normalizePath = normalizePath;
 
 /**
   @private
@@ -248,13 +248,13 @@ SC.normalizePath = normalizePath;
     
   @returns {Array} a temporary array with the normalized target/path pair.
 */
-SC.normalizeTuple = function(target, path) {
+Ember.normalizeTuple = function(target, path) {
   return normalizeTuple(target, normalizePath(path));
 };
 
-SC.normalizeTuple.primitive = normalizeTuple;
+Ember.normalizeTuple.primitive = normalizeTuple;
 
-SC.getPath = function(root, path) {
+Ember.getPath = function(root, path) {
   var hasThis, hasStar, isGlobal;
   
   if (!path && 'string'===typeof root) {
@@ -266,7 +266,7 @@ SC.getPath = function(root, path) {
 
   // If there is no root and path is a key name, return that
   // property from the global object.
-  // E.g. getPath('SC') -> SC
+  // E.g. getPath('Ember') -> Ember
   if (root === null && !hasStar && path.indexOf('.') < 0) { return get(window, path); }
 
   // detect complicated paths and normalize them
@@ -282,7 +282,7 @@ SC.getPath = function(root, path) {
   return getPath(root, path);
 };
 
-SC.setPath = function(root, path, value, tolerant) {
+Ember.setPath = function(root, path, value, tolerant) {
   var keyName;
   
   if (arguments.length===2 && 'string' === typeof root) {
@@ -304,7 +304,7 @@ SC.setPath = function(root, path, value, tolerant) {
     if (!HAS_THIS.test(path) && IS_GLOBAL_SET.test(path) && path.indexOf('.')<0) {
       root = window[path]; // special case only works during set...
     } else if (path !== 'this') {
-      root = SC.getPath(root, path);
+      root = Ember.getPath(root, path);
     }
 
   } else {
@@ -321,24 +321,24 @@ SC.setPath = function(root, path, value, tolerant) {
     else { throw new Error('Object in path '+path+' could not be found or was destroyed.'); }
   }
 
-  return SC.set(root, keyName, value);
+  return Ember.set(root, keyName, value);
 };
 
 /**
-  Error-tolerant form of SC.setPath. Will not blow up if any part of the
+  Error-tolerant form of Ember.setPath. Will not blow up if any part of the
   chain is undefined, null, or destroyed.
 
   This is primarily used when syncing bindings, which may try to update after
   an object has been destroyed.
 */
-SC.trySetPath = function(root, path, value) {
+Ember.trySetPath = function(root, path, value) {
   if (arguments.length===2 && 'string' === typeof root) {
     value = path;
     path = root;
     root = null;
   }
 
-  return SC.setPath(root, path, value, true);
+  return Ember.setPath(root, path, value, true);
 };
 
 /**
@@ -348,7 +348,7 @@ SC.trySetPath = function(root, path, value) {
   @param {String} path
   @returns Boolean
 */
-SC.isGlobalPath = function(path) {
+Ember.isGlobalPath = function(path) {
   return !HAS_THIS.test(path) && IS_GLOBAL.test(path);
 }
 

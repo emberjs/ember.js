@@ -103,7 +103,7 @@ file "dist/ember.min.js" => "dist/ember.js" do
   rm "dist/ember.prod.js"
 end
 
-SC_VERSION = File.read("VERSION").strip
+EMBER_VERSION = File.read("VERSION").strip
 
 desc "bump the version to the specified version"
 task :bump_version, :version do |t, args|
@@ -140,8 +140,8 @@ end
 ## STARTER KIT ##
 
 namespace :starter_kit do
-  ember_output = "tmp/starter-kit/js/libs/ember-#{SC_VERSION}.js"
-  ember_min_output = "tmp/starter-kit/js/libs/ember-#{SC_VERSION}.min.js"
+  ember_output = "tmp/starter-kit/js/libs/ember-#{EMBER_VERSION}.js"
+  ember_min_output = "tmp/starter-kit/js/libs/ember-#{EMBER_VERSION}.min.js"
 
   task :pull => "tmp/starter-kit" do
     Dir.chdir("tmp/starter-kit") do
@@ -155,11 +155,11 @@ namespace :starter_kit do
     end
   end
 
-  task "dist/starter-kit.#{SC_VERSION}.zip" => ["tmp/starter-kit/index.html"] do
+  task "dist/starter-kit.#{EMBER_VERSION}.zip" => ["tmp/starter-kit/index.html"] do
     mkdir_p "dist"
 
     Dir.chdir("tmp") do
-      sh %{zip -r ../dist/starter-kit.#{SC_VERSION}.zip starter-kit -x "starter-kit/.git/*"}
+      sh %{zip -r ../dist/starter-kit.#{EMBER_VERSION}.zip starter-kit -x "starter-kit/.git/*"}
     end
   end
 
@@ -182,7 +182,7 @@ namespace :starter_kit do
   file "tmp/starter-kit/index.html" => [ember_output, ember_min_output] do
     index = File.read("tmp/starter-kit/index.html")
     index.gsub! %r{<script src="js/libs/ember-\d\.\d.*</script>},
-      %{<script src="js/libs/ember-#{SC_VERSION}.min.js"></script>}
+      %{<script src="js/libs/ember-#{EMBER_VERSION}.min.js"></script>}
 
     File.open("tmp/starter-kit/index.html", "w") { |f| f.write index }
   end
@@ -190,7 +190,7 @@ namespace :starter_kit do
   task :index => "tmp/starter-kit/index.html"
 
   desc "Build the Ember.js starter kit"
-  task :build => "dist/starter-kit.#{SC_VERSION}.zip"
+  task :build => "dist/starter-kit.#{EMBER_VERSION}.zip"
 end
 
 desc "Build Ember.js"

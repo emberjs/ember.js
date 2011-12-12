@@ -6,7 +6,7 @@
 
 require('sproutcore-runtime/~tests/suites/array');
 
-SC.MutableArrayTests = SC.ArrayTests.extend();
+Ember.MutableArrayTests = Ember.ArrayTests.extend();
 
 require('./mutable_array/insertAt');
 require('./mutable_array/popObject');

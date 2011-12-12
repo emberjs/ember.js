@@ -6,7 +6,7 @@
 
 require('sproutcore-runtime/~tests/suites/copyable');
 
-var suite = SC.CopyableTests;
+var suite = Ember.CopyableTests;
 
 suite.module('copy');
 

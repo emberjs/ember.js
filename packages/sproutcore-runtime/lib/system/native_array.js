@@ -11,12 +11,12 @@ require('sproutcore-runtime/mixins/copyable');
 
 
 
-var get = SC.get, set = SC.set;
+var get = Ember.get, set = Ember.set;
   
-// Add SC.Array to Array.prototype.  Remove methods with native 
+// Add Ember.Array to Array.prototype.  Remove methods with native 
 // implementations and supply some more optimized versions of generic methods
 // because they are so common.
-var NativeArray = SC.Mixin.create(SC.MutableArray, SC.Observable, SC.Copyable, {
+var NativeArray = Ember.Mixin.create(Ember.MutableArray, Ember.Observable, Ember.Copyable, {
 
   // because length is a built-in property we need to know to just get the 
   // original property.
@@ -33,7 +33,7 @@ var NativeArray = SC.Mixin.create(SC.MutableArray, SC.Observable, SC.Copyable, {
   // primitive for array support.
   replace: function(idx, amt, objects) {
 
-    if (this.isFrozen) throw SC.FROZEN_ERROR ;
+    if (this.isFrozen) throw Ember.FROZEN_ERROR ;
 
     // if we replaced exactly the same number of items, then pass only the
     // replaced range.  Otherwise, pass the full remaining array length
@@ -107,30 +107,30 @@ if (ignore.length>0) {
 
 /**
   The NativeArray mixin contains the properties needed to to make the native
-  Array support SC.MutableArray and all of its dependent APIs.  Unless you 
-  have SC.EXTEND_PROTOTYPES set to false, this will be applied automatically.
+  Array support Ember.MutableArray and all of its dependent APIs.  Unless you 
+  have Ember.EXTEND_PROTOTYPES set to false, this will be applied automatically.
   Otherwise you can apply the mixin at anytime by calling 
-  `SC.NativeArray.activate`.
+  `Ember.NativeArray.activate`.
   
   @namespace
-  @extends SC.MutableArray
-  @extends SC.Array
-  @extends SC.Enumerable
-  @extends SC.MutableEnumerable
-  @extends SC.Copyable
-  @extends SC.Freezable
+  @extends Ember.MutableArray
+  @extends Ember.Array
+  @extends Ember.Enumerable
+  @extends Ember.MutableEnumerable
+  @extends Ember.Copyable
+  @extends Ember.Freezable
 */
-SC.NativeArray = NativeArray;
+Ember.NativeArray = NativeArray;
 
 /**
-  Creates an SC.NativeArray from an Array like object.
+  Creates an Ember.NativeArray from an Array like object.
   Does not modify the original object.
 
-  @returns {SC.NativeArray}
+  @returns {Ember.NativeArray}
 */
-SC.A = function(arr){
+Ember.A = function(arr){
   if (arr === undefined) { arr = []; }
-  return SC.NativeArray.apply(Array.prototype.slice.apply(arr));
+  return Ember.NativeArray.apply(Array.prototype.slice.apply(arr));
 };
 
 /**
@@ -139,10 +139,10 @@ SC.A = function(arr){
   
   @returns {void}
 */
-SC.NativeArray.activate = function() {
+Ember.NativeArray.activate = function() {
   NativeArray.apply(Array.prototype);
 };
 
-if (SC.EXTEND_PROTOTYPES) SC.NativeArray.activate();
+if (Ember.EXTEND_PROTOTYPES) Ember.NativeArray.activate();
 
 

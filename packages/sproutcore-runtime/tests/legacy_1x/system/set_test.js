@@ -9,16 +9,16 @@
 // are the same except for places where we intend to break the API we instead
 // validate that we warn the developer appropriately.
 //
-//  * Changed SC.Set.clone() call to SC.Set.copy()
+//  * Changed Ember.Set.clone() call to Ember.Set.copy()
 
 // ========================================================================
-// SC.Set Tests
+// Ember.Set Tests
 // ========================================================================
 /*globals module test ok isObj equals expects */
 
 var a, b, c ; // global variables
 
-module("creating SC.Set instances", {
+module("creating Ember.Set instances", {
   
   setup: function() {
     // create objects...
@@ -35,27 +35,27 @@ module("creating SC.Set instances", {
   
 });
 
-test("SC.Set.create() should create empty set", function() {
-  var set = SC.Set.create() ;
+test("Ember.Set.create() should create empty set", function() {
+  var set = Ember.Set.create() ;
   equals(set.length, 0) ;
 });
 
-test("SC.Set.create([1,2,3]) should create set with three items in them", function() {
-  var set = SC.Set.create(SC.A([a,b,c])) ;
+test("Ember.Set.create([1,2,3]) should create set with three items in them", function() {
+  var set = Ember.Set.create(Ember.A([a,b,c])) ;
   equals(set.length, 3) ;
   equals(set.contains(a), YES) ;
   equals(set.contains(b), YES) ;
   equals(set.contains(c), YES) ;
 });
 
-test("SC.Set.create() should accept anything that implements SC.Array", function() {
-  var arrayLikeObject = SC.Object.create(SC.Array, {
+test("Ember.Set.create() should accept anything that implements Ember.Array", function() {
+  var arrayLikeObject = Ember.Object.create(Ember.Array, {
     _content: [a,b,c],
     length: 3,
     objectAt: function(idx) { return this._content[idx]; } 
   }) ;
   
-  var set = SC.Set.create(arrayLikeObject) ;
+  var set = Ember.Set.create(arrayLikeObject) ;
   equals(set.length, 3) ;
   equals(set.contains(a), YES) ;
   equals(set.contains(b), YES) ;
@@ -66,10 +66,10 @@ var set ; // global variables
 
 // The tests below also end up testing the contains() method pretty 
 // exhaustively.
-module("SC.Set.add + SC.Set.contains", {
+module("Ember.Set.add + Ember.Set.contains", {
   
   setup: function() {
-    set = SC.Set.create() ;
+    set = Ember.Set.create() ;
   },
   
   teardown: function() {
@@ -78,8 +78,8 @@ module("SC.Set.add + SC.Set.contains", {
   
 });
 
-test("should add an SC.Object", function() {
-  var obj = SC.Object.create() ;
+test("should add an Ember.Object", function() {
+  var obj = Ember.Object.create() ;
   
   var oldLength = set.length ;
   set.add(obj) ;
@@ -169,13 +169,13 @@ test("adding an item, removing it, adding another item", function() {
   equals(set.length, 2, "set.length") ;
 });
 
-module("SC.Set.remove + SC.Set.contains", {
+module("Ember.Set.remove + Ember.Set.contains", {
   
   // generate a set with every type of object, but none of the specific
   // ones we add in the tests below...
   setup: function() {
-    set = SC.Set.create(SC.A([
-      SC.Object.create({ dummy: YES }),
+    set = Ember.Set.create(Ember.A([
+      Ember.Object.create({ dummy: YES }),
       { isHash: YES },
       "Not the String",
       16, true, false, 0])) ;
@@ -187,8 +187,8 @@ module("SC.Set.remove + SC.Set.contains", {
   
 });
 
-test("should remove an SC.Object and reduce length", function() {
-  var obj = SC.Object.create() ;
+test("should remove an Ember.Object and reduce length", function() {
+  var obj = Ember.Object.create() ;
   set.add(obj) ;
   equals(set.contains(obj), YES) ;
   var oldLength = set.length ;
@@ -273,7 +273,7 @@ test("should NOT remove an undefined", function() {
 });
 
 test("should ignore removing an object not in the set", function() {
-  var obj = SC.Object.create() ;
+  var obj = Ember.Object.create() ;
   var oldLength = set.length ;
   set.remove(obj) ;
   equals(set.length, oldLength) ;
@@ -288,12 +288,12 @@ test("should ignore removing an object not in the set", function() {
 // 	equals(a.length, 0);
 // });
 
-module("SC.Set.pop + SC.Set.copy", {
+module("Ember.Set.pop + Ember.Set.copy", {
 // generate a set with every type of object, but none of the specific
 // ones we add in the tests below...
 	setup: function() {
-		set = SC.Set.create(SC.A([
-			SC.Object.create({ dummy: YES }),
+		set = Ember.Set.create(Ember.A([
+			Ember.Object.create({ dummy: YES }),
 			{ isHash: YES },
 			"Not the String",
 			16, false])) ;
@@ -307,15 +307,15 @@ module("SC.Set.pop + SC.Set.copy", {
 test("the pop() should remove an arbitrary object from the set", function() {
 	var oldLength = set.length ;
 	var obj = set.pop();
-	ok(!SC.none(obj), 'pops up an item');
+	ok(!Ember.none(obj), 'pops up an item');
 	equals(set.length, oldLength-1, 'length shorter by 1');
 });
 
 test("should pop false and 0", function(){
-  set = SC.Set.create(SC.A([false]));
+  set = Ember.Set.create(Ember.A([false]));
   ok(set.pop() === false, "should pop false");
 
-  set = SC.Set.create(SC.A([0]));
+  set = Ember.Set.create(Ember.A([0]));
   ok(set.pop() === 0, "should pop 0");
 });
 

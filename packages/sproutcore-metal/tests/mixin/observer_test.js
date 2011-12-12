@@ -7,21 +7,21 @@
 
 require('sproutcore-metal/~tests/props_helper');
 
-module('SC.Mixin observer');
+module('Ember.Mixin observer');
 
 testBoth('global observer helper', function(get, set) {
 
-  var MyMixin = SC.Mixin.create({
+  var MyMixin = Ember.Mixin.create({
     
     count: 0,
     
-    foo: SC.observer(function() {
+    foo: Ember.observer(function() {
       set(this, 'count', get(this, 'count')+1);
     }, 'bar')
 
   });
 
-  var obj = SC.mixin({}, MyMixin);
+  var obj = Ember.mixin({}, MyMixin);
   equals(get(obj, 'count'), 0, 'should not invoke observer immediately');
 
   set(obj, 'bar', "BAZ");
@@ -30,17 +30,17 @@ testBoth('global observer helper', function(get, set) {
 
 testBoth('global observer helper takes multiple params', function(get, set) {
 
-  var MyMixin = SC.Mixin.create({
+  var MyMixin = Ember.Mixin.create({
     
     count: 0,
     
-    foo: SC.observer(function() {
+    foo: Ember.observer(function() {
       set(this, 'count', get(this, 'count')+1);
     }, 'bar', 'baz')
 
   });
 
-  var obj = SC.mixin({}, MyMixin);
+  var obj = Ember.mixin({}, MyMixin);
   equals(get(obj, 'count'), 0, 'should not invoke observer immediately');
 
   set(obj, 'bar', "BAZ");
@@ -51,23 +51,23 @@ testBoth('global observer helper takes multiple params', function(get, set) {
 
 testBoth('replacing observer should remove old observer', function(get, set) {
 
-  var MyMixin = SC.Mixin.create({
+  var MyMixin = Ember.Mixin.create({
     
     count: 0,
     
-    foo: SC.observer(function() {
+    foo: Ember.observer(function() {
       set(this, 'count', get(this, 'count')+1);
     }, 'bar')
 
   });
 
-  var Mixin2 = SC.Mixin.create({
-    foo: SC.observer(function() {
+  var Mixin2 = Ember.Mixin.create({
+    foo: Ember.observer(function() {
       set(this, 'count', get(this, 'count')+10);
     }, 'baz')
   });
   
-  var obj = SC.mixin({}, MyMixin, Mixin2);
+  var obj = Ember.mixin({}, MyMixin, Mixin2);
   equals(get(obj, 'count'), 0, 'should not invoke observer immediately');
 
   set(obj, 'bar', "BAZ");

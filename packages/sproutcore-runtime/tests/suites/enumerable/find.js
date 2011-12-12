@@ -7,7 +7,7 @@
 require('sproutcore-runtime/~tests/suites/enumerable');
 require('sproutcore-runtime/mixins/comparable');
 
-var suite = SC.EnumerableTests;
+var suite = Ember.EnumerableTests;
 
 // ..........................................................
 // find()
@@ -49,7 +49,7 @@ suite.test('should return first object of property matches', function() {
   
   ary = [
     { foo: 'foo', bar: 'BAZ' }, 
-    SC.Object.create({ foo: 'foo', bar: 'bar' })
+    Ember.Object.create({ foo: 'foo', bar: 'bar' })
   ];
   
   obj = this.newObject(ary);
@@ -63,7 +63,7 @@ suite.test('should return first object with truthy prop', function() {
   
   ary = [
     { foo: 'foo', bar: false }, 
-    SC.Object.create({ foo: 'bar', bar: true })
+    Ember.Object.create({ foo: 'bar', bar: true })
   ];
   
   obj = this.newObject(ary);

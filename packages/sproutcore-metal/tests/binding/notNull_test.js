@@ -20,14 +20,14 @@ module('system/binding/notNull', {
 
 test('allow empty string as placeholder', function() {
   
-  var binding = SC.bind(MyApp, 'bar.value', 'foo.value').notNull('');
+  var binding = Ember.bind(MyApp, 'bar.value', 'foo.value').notNull('');
 
-  SC.run.sync();
-  same(SC.getPath('MyApp.bar.value'), 'FOO', 'value passes through');
+  Ember.run.sync();
+  same(Ember.getPath('MyApp.bar.value'), 'FOO', 'value passes through');
 
-  SC.setPath('MyApp.foo.value', null);
-  SC.run.sync();
-  same(SC.getPath('MyApp.bar.value'), '', 'null gets replaced');
+  Ember.setPath('MyApp.foo.value', null);
+  Ember.run.sync();
+  same(Ember.getPath('MyApp.bar.value'), '', 'null gets replaced');
 
 });
 

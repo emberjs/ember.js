@@ -7,37 +7,37 @@
 
 require("sproutcore-views/system/event_dispatcher");
 
-var get = SC.get, set = SC.set;
+var get = Ember.get, set = Ember.set;
 
 /**
   @class
 
-  An SC.Application instance serves as the namespace in which you define your
+  An Ember.Application instance serves as the namespace in which you define your
   application's classes. You can also override the configuration of your
   application.
 
-  By default, SC.Application will begin listening for events on the document.
+  By default, Ember.Application will begin listening for events on the document.
   If your application is embedded inside a page, instead of controlling the
   entire document, you can specify which DOM element to attach to by setting
   the `rootElement` property:
 
-      MyApp = SC.Application.create({
+      MyApp = Ember.Application.create({
         rootElement: $('#my-app')
       });
 
-  The root of an SC.Application must not be removed during the course of the
+  The root of an Ember.Application must not be removed during the course of the
   page's lifetime. If you have only a single conceptual application for the
   entire page, and are not embedding any third-party SproutCore applications
   in your page, use the default document root for your application.
 
   You only need to specify the root if your page contains multiple instances 
-  of SC.Application.
+  of Ember.Application.
 
   @since SproutCore 2.0
-  @extends SC.Object
+  @extends Ember.Object
 */
-SC.Application = SC.Namespace.extend(
-/** @scope SC.Application.prototype */{
+Ember.Application = Ember.Namespace.extend(
+/** @scope Ember.Application.prototype */{
 
   /**
     @type DOMElement
@@ -46,7 +46,7 @@ SC.Application = SC.Namespace.extend(
   rootElement: document,
 
   /**
-    @type SC.EventDispatcher
+    @type Ember.EventDispatcher
     @default null
   */
   eventDispatcher: null,
@@ -63,14 +63,14 @@ SC.Application = SC.Namespace.extend(
         rootElement = get(this, 'rootElement');
     this._super();
 
-    eventDispatcher = SC.EventDispatcher.create({
+    eventDispatcher = Ember.EventDispatcher.create({
       rootElement: rootElement
     });
 
     set(this, 'eventDispatcher', eventDispatcher);
 
     var self = this;
-    SC.$(document).ready(function() {
+    Ember.$(document).ready(function() {
       self.ready();
     });
 

@@ -19,12 +19,12 @@ function tmpl(str) {
 test("should create and append a DOM element after bindings have synced", function() {
   window.ViewTest = {};
 
-  SC.run(function() {
-    ViewTest.fakeController = SC.Object.create({
+  Ember.run(function() {
+    ViewTest.fakeController = Ember.Object.create({
       fakeThing: 'controllerPropertyValue'
     });
 
-    view = SC.View.create({
+    view = Ember.View.create({
       fooBinding: 'ViewTest.fakeController.fakeThing',
 
       render: function(buffer) {
@@ -42,18 +42,18 @@ test("should create and append a DOM element after bindings have synced", functi
 });
 
 test("should throw an exception if trying to append a child before rendering has begun", function() {
-  SC.run(function() {
-    view = SC.View.create();
+  Ember.run(function() {
+    view = Ember.View.create();
   });
 
   raises(function() {
-    view.appendChild(SC.View, {});
+    view.appendChild(Ember.View, {});
   }, null, "throws an error when calling appendChild()");
 });
 
 test("should not affect rendering if rerender is called before initial render happens", function() {
-  SC.run(function() {
-    view = SC.View.create({
+  Ember.run(function() {
+    view = Ember.View.create({
       template: tmpl("Rerender me!")
     });
 
@@ -65,8 +65,8 @@ test("should not affect rendering if rerender is called before initial render ha
 });
 
 test("should not affect rendering if destroyElement is called before initial render happens", function() {
-  SC.run(function() {
-    view = SC.View.create({
+  Ember.run(function() {
+    view = Ember.View.create({
       template: tmpl("Don't destroy me!")
     });
 
@@ -88,14 +88,14 @@ module("views/view/view_lifecycle_test - in render", {
 });
 
 test("appendChild should work inside a template", function() {
-  SC.run(function() {
-    view = SC.View.create({
+  Ember.run(function() {
+    view = Ember.View.create({
       template: function(context, options) {
         var buffer = options.data.buffer;
 
         buffer.push("<h1>Hi!</h1>");
 
-        options.data.view.appendChild(SC.View, {
+        options.data.view.appendChild(Ember.View, {
           template: tmpl("Inception reached")
         });
 
@@ -111,20 +111,20 @@ test("appendChild should work inside a template", function() {
 });
 
 test("rerender should work inside a template", function() {
-  SC.run(function() {
+  Ember.run(function() {
     var renderCount = 0;
-    view = SC.View.create({
+    view = Ember.View.create({
       template: function(context, options) {
         var view = options.data.view;
 
-        var child1 = view.appendChild(SC.View, {
+        var child1 = view.appendChild(Ember.View, {
           template: function(context, options) {
             renderCount++;
             options.data.buffer.push(String(renderCount));
           }
         });
 
-        var child2 = view.appendChild(SC.View, {
+        var child2 = view.appendChild(Ember.View, {
           template: function(context, options) {
             options.data.buffer.push("Inside child2");
             child1.rerender();
@@ -147,8 +147,8 @@ module("views/view/view_lifecycle_test - in DOM", {
 });
 
 test("should throw an exception when calling appendChild when DOM element exists", function() {
-  SC.run(function() {
-    view = SC.View.create({
+  Ember.run(function() {
+    view = Ember.View.create({
       template: tmpl("Wait for the kick")
     });
 
@@ -156,15 +156,15 @@ test("should throw an exception when calling appendChild when DOM element exists
   });
 
   raises(function() {
-    view.appendChild(SC.View, {
+    view.appendChild(Ember.View, {
       template: tmpl("Ah ah ah! You didn't say the magic word!")
     });
   }, null, "throws an exception when calling appendChild after element is created");
 });
 
 test("should replace DOM representation if rerender() is called after element is created", function() {
-  SC.run(function() {
-    view = SC.View.create({
+  Ember.run(function() {
+    view = Ember.View.create({
       template: function(context, options) {
         var buffer = options.data.buffer;
         var value = context.get('shape');
@@ -181,7 +181,7 @@ test("should replace DOM representation if rerender() is called after element is
   equals(view.$().text(), "Do not taunt happy fun sphere", "precond - creates DOM element");
 
   view.set('shape', 'ball');
-  SC.run(function() {
+  Ember.run(function() {
     view.rerender();
   });
 
@@ -189,8 +189,8 @@ test("should replace DOM representation if rerender() is called after element is
 });
 
 test("should destroy DOM representation when destroyElement is called", function() {
-  SC.run(function() {
-    view = SC.View.create({
+  Ember.run(function() {
+    view = Ember.View.create({
       template: tmpl("Don't fear the reaper")
     });
 
@@ -199,7 +199,7 @@ test("should destroy DOM representation when destroyElement is called", function
 
   ok(view.get('element'), "precond - generates a DOM element");
 
-  SC.run(function() {
+  Ember.run(function() {
     view.destroyElement();
   });
 
@@ -207,8 +207,8 @@ test("should destroy DOM representation when destroyElement is called", function
 });
 
 test("should destroy DOM representation when destroy is called", function() {
-  SC.run(function() {
-    view = SC.View.create({
+  Ember.run(function() {
+    view = Ember.View.create({
       template: tmpl("<div id='warning'>Don't fear the reaper</div>")
     });
 
@@ -217,16 +217,16 @@ test("should destroy DOM representation when destroy is called", function() {
 
   ok(view.get('element'), "precond - generates a DOM element");
 
-  SC.run(function() {
+  Ember.run(function() {
     view.destroy();
   });
 
-  ok(SC.$('#warning').length === 0, "destroys element when destroy() is called");
+  ok(Ember.$('#warning').length === 0, "destroys element when destroy() is called");
 });
 
 test("should throw an exception if trying to append an element that is already in DOM", function() {
-  SC.run(function() {
-    view = SC.View.create({
+  Ember.run(function() {
+    view = Ember.View.create({
       template: tmpl('Broseidon, King of the Brocean')
     });
 
@@ -236,7 +236,7 @@ test("should throw an exception if trying to append an element that is already i
   ok(view.get('element'), "precond - creates DOM element");
 
   raises(function() {
-    SC.run(function() {
+    Ember.run(function() {
       view.append();
     });
   }, null, "raises an exception on second append");
@@ -245,35 +245,35 @@ test("should throw an exception if trying to append an element that is already i
 module("views/view/view_lifecycle_test - destroyed");
 
 test("should throw an exception when calling appendChild after view is destroyed", function() {
-  SC.run(function() {
-    view = SC.View.create({
+  Ember.run(function() {
+    view = Ember.View.create({
       template: tmpl("Wait for the kick")
     });
 
     view.append();
   });
 
-  SC.run(function() {
+  Ember.run(function() {
     view.destroy();
   });
 
   raises(function() {
-    view.appendChild(SC.View, {
+    view.appendChild(Ember.View, {
       template: tmpl("Ah ah ah! You didn't say the magic word!")
     });
   }, null, "throws an exception when calling appendChild");
 });
 
 test("should throw an exception when rerender is called after view is destroyed", function() {
-  SC.run(function() {
-    view = SC.View.create({
+  Ember.run(function() {
+    view = Ember.View.create({
       template: tmpl('foo')
     });
 
     view.append();
   });
 
-  SC.run(function() {
+  Ember.run(function() {
     view.destroy();
   });
 
@@ -283,15 +283,15 @@ test("should throw an exception when rerender is called after view is destroyed"
 });
 
 test("should throw an exception when rerender is called after view is destroyed", function() {
-  SC.run(function() {
-    view = SC.View.create({
+  Ember.run(function() {
+    view = Ember.View.create({
       template: tmpl('foo')
     });
 
     view.append();
   });
 
-  SC.run(function() {
+  Ember.run(function() {
     view.destroy();
   });
 

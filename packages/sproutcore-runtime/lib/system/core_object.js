@@ -6,16 +6,16 @@
 
 
 
-// NOTE: this object should never be included directly.  Instead use SC.
-// SC.Object.  We only define this separately so that SC.Set can depend on it
+// NOTE: this object should never be included directly.  Instead use Ember.
+// Ember.Object.  We only define this separately so that Ember.Set can depend on it
 
 
 
-var rewatch = SC.rewatch;
-var classToString = SC.Mixin.prototype.toString;
-var set = SC.set, get = SC.get;
-var o_create = SC.platform.create,
-    meta = SC.meta;
+var rewatch = Ember.rewatch;
+var classToString = Ember.Mixin.prototype.toString;
+var set = Ember.set, get = Ember.get;
+var o_create = Ember.platform.create,
+    meta = Ember.meta;
 
 function makeCtor() {
 
@@ -36,7 +36,7 @@ function makeCtor() {
       if (hasChains) {
         rewatch(this);
       } else {
-        this[SC.GUID_KEY] = undefined;
+        this[Ember.GUID_KEY] = undefined;
       }
       if (init===false) { init = this.init; } // cache for later instantiations
       init.apply(this, arguments);
@@ -47,7 +47,7 @@ function makeCtor() {
   Class._prototypeMixinDidChange = function() { isPrepared = false; };
   Class._initMixins = function(args) { initMixins = args; };
 
-  SC.defineProperty(Class, 'proto', SC.computed(function() {
+  Ember.defineProperty(Class, 'proto', Ember.computed(function() {
     if (!isPrepared) {
       isPrepared = true;
       Class.PrototypeMixin.applyPartial(Class.prototype);
@@ -62,10 +62,10 @@ function makeCtor() {
 
 var CoreObject = makeCtor();
 
-CoreObject.PrototypeMixin = SC.Mixin.create({
+CoreObject.PrototypeMixin = Ember.Mixin.create({
 
   reopen: function() {
-    SC.Mixin._apply(this, arguments, true);
+    Ember.Mixin._apply(this, arguments, true);
     return this;
   },
 
@@ -85,11 +85,11 @@ CoreObject.PrototypeMixin = SC.Mixin.create({
     Note that destruction is scheduled for the end of the run loop and does not
     happen immediately.
 
-    @returns {SC.Object} receiver
+    @returns {Ember.Object} receiver
   */
   destroy: function() {
     set(this, 'isDestroyed', true);
-    SC.run.schedule('destroy', this, this._scheduledDestroy);
+    Ember.run.schedule('destroy', this, this._scheduledDestroy);
     return this;
   },
 
@@ -100,27 +100,27 @@ CoreObject.PrototypeMixin = SC.Mixin.create({
     @private
   */
   _scheduledDestroy: function() {
-    this[SC.META_KEY] = null;
+    this[Ember.META_KEY] = null;
   },
 
   bind: function(to, from) {
-    if (!(from instanceof SC.Binding)) { from = SC.Binding.from(from); }
+    if (!(from instanceof Ember.Binding)) { from = Ember.Binding.from(from); }
     from.to(to).connect(this);
     return from;
   },
 
   toString: function() {
-    return '<'+this.constructor.toString()+':'+SC.guidFor(this)+'>';
+    return '<'+this.constructor.toString()+':'+Ember.guidFor(this)+'>';
   }
 });
 
 CoreObject.__super__ = null;
 
-var ClassMixin = SC.Mixin.create({
+var ClassMixin = Ember.Mixin.create({
 
-  ClassMixin: SC.required(),
+  ClassMixin: Ember.required(),
 
-  PrototypeMixin: SC.required(),
+  PrototypeMixin: Ember.required(),
 
   isClass: true,
 
@@ -128,8 +128,8 @@ var ClassMixin = SC.Mixin.create({
 
   extend: function() {
     var Class = makeCtor(), proto;
-    Class.ClassMixin = SC.Mixin.create(this.ClassMixin);
-    Class.PrototypeMixin = SC.Mixin.create(this.PrototypeMixin);
+    Class.ClassMixin = Ember.Mixin.create(this.ClassMixin);
+    Class.PrototypeMixin = Ember.Mixin.create(this.PrototypeMixin);
 
     Class.ClassMixin.ownerConstructor = Class;
     Class.PrototypeMixin.ownerConstructor = Class;
@@ -142,12 +142,12 @@ var ClassMixin = SC.Mixin.create({
 
     proto = Class.prototype = o_create(this.prototype);
     proto.constructor = Class;
-    SC.generateGuid(proto, 'sc');
+    Ember.generateGuid(proto, 'sc');
     meta(proto).proto = proto; // this will disable observers on prototype
-    SC.rewatch(proto); // setup watch chains if needed.
+    Ember.rewatch(proto); // setup watch chains if needed.
 
 
-    Class.subclasses = SC.Set ? new SC.Set() : null;
+    Class.subclasses = Ember.Set ? new Ember.Set() : null;
     if (this.subclasses) { this.subclasses.add(Class); }
 
     Class.ClassMixin.apply(Class);
@@ -170,7 +170,7 @@ var ClassMixin = SC.Mixin.create({
   reopenClass: function() {
     var ClassMixin = this.ClassMixin;
     ClassMixin.reopen.apply(ClassMixin, arguments);
-    SC.Mixin._apply(this, arguments, false);
+    Ember.Mixin._apply(this, arguments, false);
     return this;
   },
 
@@ -192,7 +192,7 @@ var ClassMixin = SC.Mixin.create({
 CoreObject.ClassMixin = ClassMixin;
 ClassMixin.apply(CoreObject);
 
-SC.CoreObject = CoreObject;
+Ember.CoreObject = CoreObject;
 
 
 
