@@ -21,7 +21,7 @@ MyApp.president = Ember.Object.create({
   name: "Barack Obama"
 });
 
-MyApp.country = Ember({
+MyApp.country = Ember.Object.create({
   // Ending a property with 'Binding' tells Ember.js to
   // create a binding to the presidentName property.
   presidentNameBinding: 'MyApp.president.name'
