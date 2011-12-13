@@ -376,6 +376,7 @@ Ember.Error = function() {
   for (var p in tmp) {
     if (tmp.hasOwnProperty(p)) { this[p] = tmp[p]; }
   }
+  this.message = tmp.message;
 };
 
 Ember.Error.prototype = Ember.create(Error.prototype);
