@@ -116,14 +116,13 @@ SC.EachProxy = SC.Object.extend({
 
     lim = removedCnt>0 ? idx+removedCnt : -1;
     SC.beginPropertyChanges(this);
+
     for(key in keys) {
-      if (!keys.hasOwnProperty(key)) continue;
+      if (!keys.hasOwnProperty(key)) { continue; }
 
       if (lim>0) removeObserverForContentKey(content, key, this, idx, lim);
 
-      array = get(this, key);
       SC.propertyWillChange(this, key);
-      if (array) array.arrayContentWillChange(idx, removedCnt, addedCnt);
     }
 
     SC.propertyWillChange(this._content, '@each');
@@ -135,15 +134,15 @@ SC.EachProxy = SC.Object.extend({
 
     lim = addedCnt>0 ? idx+addedCnt : -1;
     SC.beginPropertyChanges(this);
+
     for(key in keys) {
-      if (!keys.hasOwnProperty(key)) continue;
+      if (!keys.hasOwnProperty(key)) { continue; }
 
       if (lim>0) addObserverForContentKey(content, key, this, idx, lim);
 
-      array = get(this, key);
-      if (array) array.arrayContentDidChange(idx, removedCnt, addedCnt);
       SC.propertyDidChange(this, key);
     }
+
     SC.propertyDidChange(this._content, '@each');
     SC.endPropertyChanges(this);
   },
@@ -191,26 +190,10 @@ SC.EachProxy = SC.Object.extend({
   },
 
   contentKeyWillChange: function(obj, keyName) {
-    // notify array.
-    var indexes = this._objects[guidFor(obj)],
-        array   = get(this, keyName),
-        len = array && indexes ? indexes.length : 0, idx;
-
-    for(idx=0;idx<len;idx++) {
-      array.arrayContentWillChange(indexes[idx], 1, 1);
-    }
+    SC.propertyWillChange(this, keyName);
   },
 
   contentKeyDidChange: function(obj, keyName) {
-    // notify array.
-    var indexes = this._objects[guidFor(obj)],
-        array   = get(this, keyName),
-        len = array && indexes ? indexes.length : 0, idx;
-
-    for(idx=0;idx<len;idx++) {
-      array.arrayContentDidChange(indexes[idx], 1, 1);
-    }
-
     SC.propertyDidChange(this, keyName);
   }
 

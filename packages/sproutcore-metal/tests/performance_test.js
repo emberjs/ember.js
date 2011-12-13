@@ -51,3 +51,18 @@ test("computed properties that depend on multiple properties should run only onc
   equal(obsCount, 1, "The observer is only invoked once");
 });
 
+test("computed properties are not executed if they are the last segment of an observer chain pain", function() {
+  var foo = { bar: { baz: { } } };
+
+  var count = 0;
+
+  SC.defineProperty(foo.bar.baz, 'bam', SC.computed(function() {
+    count++;
+  }).property());
+
+  SC.addObserver(foo, 'bar.baz.bam', function() {});
+
+  SC.propertyDidChange(foo.bar.baz, 'bam');
+
+  equal(count, 0, "should not have recomputed property");
+});
