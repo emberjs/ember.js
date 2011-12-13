@@ -20,6 +20,8 @@ require('ember-runtime/system/object');
 
 */
 Ember.Namespace = Ember.Object.extend({
+  isNamespace: true,
+
   init: function() {
     Ember.Namespace.NAMESPACES.push(this);
     Ember.Namespace.PROCESSED = false;
@@ -38,5 +40,5 @@ Ember.Namespace = Ember.Object.extend({
   }
 });
 
-Ember.Namespace.NAMESPACES = [];
-Ember.Namespace.PROCESSED = true;
+Ember.Namespace.NAMESPACES = [Ember];
+Ember.Namespace.PROCESSED = false;

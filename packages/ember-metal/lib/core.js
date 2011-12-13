@@ -26,7 +26,10 @@ if ('undefined' === typeof Ember) {
   The core Runtime framework is based on the jQuery API with a number of
   performance optimizations.
 */
-Ember = {};
+
+// Create core object. Make it act like an instance of Ember.Namespace so that
+// objects assigned to it are given a sane string representation.
+Ember = { isNamespace: true, toString: function() { return "Ember"; } };
 
 // aliases needed to keep minifiers from removing the global context
 if ('undefined' !== typeof window) {

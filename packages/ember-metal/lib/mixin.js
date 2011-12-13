@@ -375,6 +375,7 @@ Mixin.prototype.keys = function() {
 /** @private - make Mixin's have nice displayNames */
 
 var NAME_KEY = Ember.GUID_KEY+'_name';
+var get = Ember.get;
 
 function processNames(paths, root, seen) {
   var idx = paths.length;
@@ -385,7 +386,7 @@ function processNames(paths, root, seen) {
 
     if (obj && obj.toString === classToString) {
       obj[NAME_KEY] = paths.join('.');
-    } else if (key==='Ember' || (Ember.Namespace && obj instanceof Ember.Namespace)) {
+    } else if (obj && get(obj, 'isNamespace')) {
       if (seen[Ember.guidFor(obj)]) continue;
       seen[Ember.guidFor(obj)] = true;
       processNames(paths, obj, seen);
@@ -406,7 +407,7 @@ function findNamespaces() {
 
     obj = window[prop];
 
-    if (obj && obj instanceof Namespace) {
+    if (obj && get(obj, 'isNamespace')) {
       obj[NAME_KEY] = prop;
     }
   }
