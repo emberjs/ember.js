@@ -14,7 +14,7 @@ var get = Ember.get, set = Ember.set;
 
 Ember.TextArea = Ember.View.extend(Ember.TextSupport, {
 
-  classNames: ['sc-text-area'],
+  classNames: ['ember-text-area'],
 
   tagName: "textarea",
 

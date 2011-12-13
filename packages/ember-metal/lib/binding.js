@@ -3,7 +3,7 @@
 // Copyright: ©2011 Strobe Inc. and contributors.
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
-/*globals sc_assert */
+/*globals ember_assert */
 
 require('ember-metal/core'); // Ember.Logger
 require('ember-metal/accessors'); // get, getPath, setPath, trySetPath
@@ -501,7 +501,7 @@ Binding.prototype = {
   */
   notEmpty: function(placeholder) {
     // Display warning for users using the SproutCore 1.x-style API.
-    sc_assert("notEmpty should only take a placeholder as a parameter. You no longer need to pass null as the first parameter.", arguments.length < 2);
+    ember_assert("notEmpty should only take a placeholder as a parameter. You no longer need to pass null as the first parameter.", arguments.length < 2);
 
     if (placeholder == undefined) { placeholder = Ember.EMPTY_PLACEHOLDER; }
 
@@ -578,7 +578,7 @@ Binding.prototype = {
     @returns {Ember.Binding} this
   */
   connect: function(obj) {
-    sc_assert('Must pass a valid object to Ember.Binding.connect()', !!obj);
+    ember_assert('Must pass a valid object to Ember.Binding.connect()', !!obj);
 
     var oneWay = this._oneWay, operand = this._operand;
 
@@ -608,7 +608,7 @@ Binding.prototype = {
     @returns {Ember.Binding} this
   */
   disconnect: function(obj) {
-    sc_assert('Must pass a valid object to Ember.Binding.disconnect()', !!obj);
+    ember_assert('Must pass a valid object to Ember.Binding.disconnect()', !!obj);
 
     var oneWay = this._oneWay, operand = this._operand;
 

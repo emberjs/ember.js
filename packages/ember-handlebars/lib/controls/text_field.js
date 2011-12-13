@@ -14,7 +14,7 @@ var get = Ember.get, set = Ember.set;
 Ember.TextField = Ember.View.extend(Ember.TextSupport,
   /** @scope Ember.TextField.prototype */ {
 
-  classNames: ['sc-text-field'],
+  classNames: ['ember-text-field'],
 
   tagName: "input",
   attributeBindings: ['type', 'value'],

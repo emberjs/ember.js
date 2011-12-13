@@ -3,7 +3,7 @@
 // Copyright: ©2011 Strobe Inc. and contributors.
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
-/*globals sc_assert */
+/*globals ember_assert */
 
 require('ember-metal/core');
 require('ember-metal/platform');
@@ -58,7 +58,7 @@ function targetSetFor(obj, eventName) {
 
 // TODO: This knowledge should really be a part of the
 // meta system.
-var SKIP_PROPERTIES = { __sc_source__: true };
+var SKIP_PROPERTIES = { __ember_source__: true };
 
 // For a given target, invokes all of the methods that have
 // been registered as a listener.
@@ -111,7 +111,7 @@ function invokeEvents(targetSet, params) {
   that observers are expecting.
 */
 function addListener(obj, eventName, target, method, xform) {
-  sc_assert("You must pass at least an object and event name to Ember.addListener", !!obj && !!eventName);
+  ember_assert("You must pass at least an object and event name to Ember.addListener", !!obj && !!eventName);
 
   if (!method && 'function' === typeof target) {
     method = target;
@@ -167,7 +167,7 @@ function watchedEvents(obj) {
 }
 
 function sendEvent(obj, eventName) {
-  sc_assert("You must pass an object and event name to Ember.sendEvent", !!obj && !!eventName);
+  ember_assert("You must pass an object and event name to Ember.sendEvent", !!obj && !!eventName);
 
   // first give object a chance to handle it
   if (obj !== Ember && 'function' === typeof obj.sendEvent) {

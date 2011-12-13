@@ -12,7 +12,7 @@ require('ember-metal/platform');
 // 
 
 // Used for guid generation...
-var GUID_KEY = '__sc'+ (+ new Date());
+var GUID_KEY = '__ember'+ (+ new Date());
 var uuid, numberCache, stringCache;
 
 uuid         = 0;
@@ -64,7 +64,7 @@ Ember.GUID_KEY = GUID_KEY;
   @returns {String} the guid
 */
 Ember.generateGuid = function(obj, prefix) {
-  if (!prefix) prefix = 'sc';
+  if (!prefix) prefix = 'ember';
   var ret = (prefix + (uuid++));
   if (obj) {
     GUID_DESC.value = ret;
@@ -116,7 +116,7 @@ Ember.guidFor = function(obj) {
       if (obj[GUID_KEY]) return obj[GUID_KEY];
       if (obj === Object) return '(Object)';
       if (obj === Array)  return '(Array)';
-      return Ember.generateGuid(obj, 'sc');
+      return Ember.generateGuid(obj, 'ember');
   }
 };
 
@@ -173,7 +173,7 @@ if (Object.freeze) Object.freeze(EMPTY_META);
 */
 Ember.meta = function meta(obj, writable) {
   
-  sc_assert("You must pass an object to Ember.meta. This was probably called from Ember internals, so you probably called a Ember method with undefined that was expecting an object", obj != undefined);
+  ember_assert("You must pass an object to Ember.meta. This was probably called from Ember internals, so you probably called a Ember method with undefined that was expecting an object", obj != undefined);
 
   var ret = obj[META_KEY];
   if (writable===false) return ret || EMPTY_META;
@@ -228,7 +228,7 @@ Ember.setMeta = function setMeta(obj, property, value) {
 
   This method allows extensions to deeply clone a series of nested hashes or
   other complex objects. For instance, the event system might pass
-  ['listeners', 'foo:change', 'sc157'] to `prepareMetaPath`, which will
+  ['listeners', 'foo:change', 'ember157'] to `prepareMetaPath`, which will
   walk down the keys provided.
 
   For each key, if the key does not exist, it is created. If it already
@@ -254,11 +254,11 @@ Ember.metaPath = function(obj, path, writable) {
 
     if (!value) {
       if (!writable) { return undefined; }
-      value = meta[keyName] = { __sc_source__: obj };
-    } else if (value.__sc_source__ !== obj) {
+      value = meta[keyName] = { __ember_source__: obj };
+    } else if (value.__ember_source__ !== obj) {
       if (!writable) { return undefined; }
       value = meta[keyName] = o_create(value);
-      value.__sc_source__ = obj;
+      value.__ember_source__ = obj;
     }
 
     meta = value;

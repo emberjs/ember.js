@@ -71,11 +71,11 @@ Ember.EventDispatcher = Ember.Object.extend(
 
     var rootElement = Ember.$(get(this, 'rootElement'));
 
-    sc_assert(fmt('You cannot use the same root element (%@) multiple times in an Ember.Application', [rootElement.selector || rootElement[0].tagName]), !rootElement.is('.sc-application'));
-    sc_assert('You cannot make a new Ember.Application using a root element that is a descendent of an existing Ember.Application', !rootElement.closest('.sc-application').length);
-    sc_assert('You cannot make a new Ember.Application using a root element that is an ancestor of an existing Ember.Application', !rootElement.find('.sc-application').length);
+    ember_assert(fmt('You cannot use the same root element (%@) multiple times in an Ember.Application', [rootElement.selector || rootElement[0].tagName]), !rootElement.is('.ember-application'));
+    ember_assert('You cannot make a new Ember.Application using a root element that is a descendent of an existing Ember.Application', !rootElement.closest('.ember-application').length);
+    ember_assert('You cannot make a new Ember.Application using a root element that is an ancestor of an existing Ember.Application', !rootElement.find('.ember-application').length);
 
-    rootElement.addClass('sc-application')
+    rootElement.addClass('ember-application')
 
     for (event in events) {
       if (events.hasOwnProperty(event)) {
@@ -106,7 +106,7 @@ Ember.EventDispatcher = Ember.Object.extend(
   setupHandler: function(rootElement, event, eventName) {
     var self = this;
 
-    rootElement.delegate('.sc-view', event + '.ember', function(evt, triggeringManager) {
+    rootElement.delegate('.ember-view', event + '.ember', function(evt, triggeringManager) {
 
       var view = Ember.View.views[this.id],
           result = true, manager = null;
@@ -173,7 +173,7 @@ Ember.EventDispatcher = Ember.Object.extend(
   /** @private */
   destroy: function() {
     var rootElement = get(this, 'rootElement');
-    Ember.$(rootElement).undelegate('.ember').removeClass('sc-application');
+    Ember.$(rootElement).undelegate('.ember').removeClass('ember-application');
     return this._super();
   }
 });

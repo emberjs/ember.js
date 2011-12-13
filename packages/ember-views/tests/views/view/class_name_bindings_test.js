@@ -79,13 +79,13 @@ test("classNames should not be duplicated on rerender", function(){
 
   view.createElement();
 
-  equals(view.$().attr('class'), 'sc-view high');
+  equals(view.$().attr('class'), 'ember-view high');
 
   Ember.run(function(){
     view.rerender();
   });
 
-  equals(view.$().attr('class'), 'sc-view high');
+  equals(view.$().attr('class'), 'ember-view high');
 });
 
 test("classNames removed by a classNameBindings observer should not re-appear on rerender", function(){
@@ -96,17 +96,17 @@ test("classNames removed by a classNameBindings observer should not re-appear on
 
   view.createElement();
 
-  equals(view.$().attr('class'), 'sc-view is-urgent');
+  equals(view.$().attr('class'), 'ember-view is-urgent');
 
   Ember.run(function(){
     view.set('isUrgent', false);
   });
 
-  equals(view.$().attr('class'), 'sc-view');
+  equals(view.$().attr('class'), 'ember-view');
 
   Ember.run(function(){
     view.rerender();
   });
 
-  equals(view.$().attr('class'), 'sc-view');
+  equals(view.$().attr('class'), 'ember-view');
 });

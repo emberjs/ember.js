@@ -3,7 +3,7 @@
 // Copyright: ©2011 Strobe Inc. and contributors.
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
-/*globals sc_assert */
+/*globals ember_assert */
 
 require('ember-metal/core');
 require('ember-metal/platform');
@@ -25,27 +25,27 @@ var o_defineProperty = Ember.platform.defineProperty;
 //  meta.deps = { 
 //   'depKey': { 
 //     'keyName': count,
-//     __scproto__: SRC_OBJ [to detect clones]
+//     __emberproto__: SRC_OBJ [to detect clones]
 //     },
-//   __scproto__: SRC_OBJ
+//   __emberproto__: SRC_OBJ
 //  }
 
 function uniqDeps(obj, depKey) {
   var m = meta(obj), deps, ret;
   deps = m.deps;
   if (!deps) {
-    deps = m.deps = { __scproto__: obj };
-  } else if (deps.__scproto__ !== obj) {
+    deps = m.deps = { __emberproto__: obj };
+  } else if (deps.__emberproto__ !== obj) {
     deps = m.deps = o_create(deps);
-    deps.__scproto__ = obj;
+    deps.__emberproto__ = obj;
   }
   
   ret = deps[depKey];
   if (!ret) {
-    ret = deps[depKey] = { __scproto__: obj };
-  } else if (ret.__scproto__ !== obj) {
+    ret = deps[depKey] = { __emberproto__: obj };
+  } else if (ret.__emberproto__ !== obj) {
     ret = deps[depKey] = o_create(ret);
-    ret.__scproto__ = obj;
+    ret.__emberproto__ = obj;
   }
   
   return ret;

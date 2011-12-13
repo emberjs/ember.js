@@ -3,7 +3,7 @@
 // Copyright: ©2011 Strobe Inc. and contributors.
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
-/*globals Handlebars sc_assert */
+/*globals Handlebars ember_assert */
 
 // TODO: Don't require the entire module
 require("ember-handlebars");
@@ -89,19 +89,19 @@ Ember.Handlebars.ViewHelper = Ember.Object.create({
 
     if ('string' === typeof path) {
       newView = Ember.getPath(thisContext, path);
-      sc_assert("Unable to find view at path '" + path + "'", !!newView);
+      ember_assert("Unable to find view at path '" + path + "'", !!newView);
     } else {
       newView = path;
     }
 
-    sc_assert(Ember.String.fmt('You must pass a view class to the #view helper, not %@ (%@)', [path, newView]), Ember.View.detect(newView));
+    ember_assert(Ember.String.fmt('You must pass a view class to the #view helper, not %@ (%@)', [path, newView]), Ember.View.detect(newView));
 
     newView = this.viewClassFromHTMLOptions(newView, hash, thisContext);
     var currentView = data.view;
     var viewOptions = {};
 
     if (fn) {
-      sc_assert("You cannot provide a template block if you also specified a templateName", !get(viewOptions, 'templateName') && !newView.PrototypeMixin.keys().indexOf('templateName') >= 0);
+      ember_assert("You cannot provide a template block if you also specified a templateName", !get(viewOptions, 'templateName') && !newView.PrototypeMixin.keys().indexOf('templateName') >= 0);
       viewOptions.template = fn;
     }
 
@@ -116,7 +116,7 @@ Ember.Handlebars.ViewHelper = Ember.Object.create({
   @returns {String} HTML string
 */
 Ember.Handlebars.registerHelper('view', function(path, options) {
-  sc_assert("The view helper only takes a single argument", arguments.length <= 2);
+  ember_assert("The view helper only takes a single argument", arguments.length <= 2);
 
   // If no path is provided, treat path param as options.
   if (path && path.data && path.data.isRenderData) {

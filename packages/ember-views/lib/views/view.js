@@ -4,7 +4,7 @@
 //            Portions ©2008-2011 Apple Inc. All rights reserved.
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
-/*globals sc_assert */
+/*globals ember_assert */
 
 require("ember-views/system/render_buffer");
 var get = Ember.get, set = Ember.set, addObserver = Ember.addObserver;
@@ -962,9 +962,9 @@ Ember.View = Ember.Object.extend(
     superclasses as well.
 
     @type Array
-    @default ['sc-view']
+    @default ['ember-view']
   */
-  classNames: ['sc-view'],
+  classNames: ['ember-view'],
 
   /**
     A list of properties of the view to apply as class names. If the property
@@ -1174,7 +1174,7 @@ Ember.View = Ember.Object.extend(
       var viewName = attrs && attrs.viewName || view.viewName;
       if (viewName) { set(this, viewName, view); }
     } else {
-      sc_assert('must pass instance of View', view instanceof Ember.View);
+      ember_assert('must pass instance of View', view instanceof Ember.View);
       set(view, '_parentView', this);
     }
     return view;

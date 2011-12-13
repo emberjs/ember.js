@@ -84,7 +84,7 @@ var get = Ember.get, getPath = Ember.getPath, set = Ember.set, fmt = Ember.Strin
     @returns {String} HTML string
   */
   Ember.Handlebars.registerHelper('bind', function(property, fn) {
-    sc_assert("You cannot pass more than one argument to the bind helper", arguments.length <= 2);
+    ember_assert("You cannot pass more than one argument to the bind helper", arguments.length <= 2);
 
     var context = (fn.contexts && fn.contexts[0]) || this;
 
@@ -127,8 +127,8 @@ var get = Ember.get, getPath = Ember.getPath, set = Ember.set, fmt = Ember.Strin
   @returns {String} HTML string
 */
 Ember.Handlebars.registerHelper('with', function(context, options) {
-  sc_assert("You must pass exactly one argument to the with helper", arguments.length == 2);
-  sc_assert("You must pass a block to the with helper", options.fn && options.fn !== Handlebars.VM.noop);
+  ember_assert("You must pass exactly one argument to the with helper", arguments.length == 2);
+  ember_assert("You must pass a block to the with helper", options.fn && options.fn !== Handlebars.VM.noop);
 
   return Ember.Handlebars.helpers.bind.call(options.contexts[0], context, options);
 });
@@ -141,8 +141,8 @@ Ember.Handlebars.registerHelper('with', function(context, options) {
   @returns {String} HTML string
 */
 Ember.Handlebars.registerHelper('if', function(context, options) {
-  sc_assert("You must pass exactly one argument to the if helper", arguments.length == 2);
-  sc_assert("You must pass a block to the if helper", options.fn && options.fn !== Handlebars.VM.noop);
+  ember_assert("You must pass exactly one argument to the if helper", arguments.length == 2);
+  ember_assert("You must pass a block to the if helper", options.fn && options.fn !== Handlebars.VM.noop);
 
   return Ember.Handlebars.helpers.boundIf.call(options.contexts[0], context, options);
 });
@@ -154,8 +154,8 @@ Ember.Handlebars.registerHelper('if', function(context, options) {
   @returns {String} HTML string
 */
 Ember.Handlebars.registerHelper('unless', function(context, options) {
-  sc_assert("You must pass exactly one argument to the unless helper", arguments.length == 2);
-  sc_assert("You must pass a block to the unless helper", options.fn && options.fn !== Handlebars.VM.noop);
+  ember_assert("You must pass exactly one argument to the unless helper", arguments.length == 2);
+  ember_assert("You must pass a block to the unless helper", options.fn && options.fn !== Handlebars.VM.noop);
 
   var fn = options.fn, inverse = options.inverse;
 
@@ -179,7 +179,7 @@ Ember.Handlebars.registerHelper('bindAttr', function(options) {
 
   var attrs = options.hash;
 
-  sc_assert("You must specify at least one hash argument to bindAttr", !!Ember.keys(attrs).length);
+  ember_assert("You must specify at least one hash argument to bindAttr", !!Ember.keys(attrs).length);
 
   var view = options.data.view;
   var ret = [];
@@ -205,18 +205,18 @@ Ember.Handlebars.registerHelper('bindAttr', function(options) {
   attrKeys.forEach(function(attr) {
     var property = attrs[attr];
 
-    sc_assert(fmt("You must provide a String for a bound attribute, not %@", [property]), typeof property === 'string');
+    ember_assert(fmt("You must provide a String for a bound attribute, not %@", [property]), typeof property === 'string');
 
     var value = getPath(ctx, property);
 
-    sc_assert(fmt("Attributes must be numbers, strings or booleans, not %@", [value]), value == null || typeof value === 'number' || typeof value === 'string' || typeof value === 'boolean');
+    ember_assert(fmt("Attributes must be numbers, strings or booleans, not %@", [value]), value == null || typeof value === 'number' || typeof value === 'string' || typeof value === 'boolean');
 
     var observer, invoker;
 
     observer = function observer() {
       var result = getPath(ctx, property);
 
-      sc_assert(fmt("Attributes must be numbers, strings or booleans, not %@", [result]), result == null || typeof result === 'number' || typeof result === 'string' || typeof result === 'boolean');
+      ember_assert(fmt("Attributes must be numbers, strings or booleans, not %@", [result]), result == null || typeof result === 'number' || typeof result === 'string' || typeof result === 'boolean');
 
       var elem = view.$("[data-handlebars-id='" + dataId + "']");
 

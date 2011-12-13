@@ -29,9 +29,9 @@ def strip_require(file)
   result
 end
 
-def strip_sc_assert(file)
+def strip_ember_assert(file)
   result = File.read(file)
-  result.gsub!(%r{^(\s)+sc_assert\((.*)\).*$}, "")
+  result.gsub!(%r{^(\s)+ember_assert\((.*)\).*$}, "")
   result
 end
 
@@ -93,7 +93,7 @@ file "dist/ember.min.js" => "dist/ember.js" do
   puts "Generating ember.min.js"
 
   File.open("dist/ember.prod.js", "w") do |file|
-    file.puts strip_sc_assert("dist/ember.js")
+    file.puts strip_ember_assert("dist/ember.js")
   end
 
   File.open("dist/ember.min.js", "w") do |file|

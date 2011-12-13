@@ -9,7 +9,7 @@ require('ember-runtime/mixins/target_action_support');
 var get = Ember.get, set = Ember.set;
 
 Ember.Button = Ember.View.extend(Ember.TargetActionSupport, {
-  classNames: ['sc-button'],
+  classNames: ['ember-button'],
   classNameBindings: ['isActive'],
 
   tagName: 'button',

@@ -4,7 +4,7 @@
 //            Portions ©2008-2010 Apple Inc. All rights reserved.
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
-/*globals sc_assert */
+/*globals ember_assert */
 
 require('ember-metal/core'); // Ember.Logger
 require('ember-metal/watching'); // Ember.watch.flushPending
@@ -197,7 +197,7 @@ Ember.run.begin = function() {
   @returns {void}
 */
 Ember.run.end = function() {
-  sc_assert('must have a current run loop', run.currentRunLoop);
+  ember_assert('must have a current run loop', run.currentRunLoop);
   run.currentRunLoop = run.currentRunLoop.end();
 };
 

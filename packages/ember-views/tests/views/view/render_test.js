@@ -136,11 +136,11 @@ test("should hide element if isVisible is false before element is created", func
   });
 });
 
-test("should add sc-view to views", function() {
+test("should add ember-view to views", function() {
   var view = Ember.View.create();
 
   view.createElement();
-  ok(view.$().hasClass('sc-view'), "the view has sc-view");
+  ok(view.$().hasClass('ember-view'), "the view has ember-view");
 });
 
 test("should not add role attribute unless one is specified", function() {

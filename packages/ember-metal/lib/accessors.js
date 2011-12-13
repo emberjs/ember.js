@@ -3,7 +3,7 @@
 // Copyright: ©2011 Strobe Inc. and contributors.
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
-/*globals sc_assert */
+/*globals ember_assert */
 
 require('ember-metal/core');
 require('ember-metal/platform');
@@ -60,7 +60,7 @@ if (!USE_ACCESSORS) {
       obj = Ember;
     }
 
-    sc_assert("You need to provide an object and key to `get`.", !!obj && keyName);
+    ember_assert("You need to provide an object and key to `get`.", !!obj && keyName);
 
     if (!obj) return undefined;
     var desc = meta(obj, false).descs[keyName];
@@ -69,7 +69,7 @@ if (!USE_ACCESSORS) {
   };
 
   set = function(obj, keyName, value) {
-    sc_assert("You need to provide an object and key to `set`.", !!obj && keyName !== undefined);
+    ember_assert("You need to provide an object and key to `set`.", !!obj && keyName !== undefined);
     var desc = meta(obj, false).descs[keyName];
     if (desc) desc.set(obj, keyName, value);
     else o_set(obj, keyName, value);
@@ -144,7 +144,7 @@ Ember.set = set;
 // 
 
 function normalizePath(path) {
-  sc_assert('must pass non-empty string to normalizePath()', path && path!=='');
+  ember_assert('must pass non-empty string to normalizePath()', path && path!=='');
     
   if (path==='*') return path; //special case...
   var first = path.charAt(0);

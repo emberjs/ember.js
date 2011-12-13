@@ -3,7 +3,7 @@
 // Copyright: ©2011 Strobe Inc. and contributors.
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
-/*globals sc_assert */
+/*globals ember_assert */
 
 require('ember-metal/core');
 require('ember-metal/platform');
@@ -37,7 +37,7 @@ function isKeyName(path) {
 // DEPENDENT KEYS
 // 
 
-var DEP_SKIP = { __scproto__: true }; // skip some keys and toString
+var DEP_SKIP = { __emberproto__: true }; // skip some keys and toString
 function iterDeps(methodName, obj, depKey, seen) {
   
   var guid = guidFor(obj);
@@ -82,8 +82,8 @@ function addChainWatcher(obj, keyName, node) {
   if (!obj || ('object' !== typeof obj)) return; // nothing to do
   var m = meta(obj);
   var nodes = m.chainWatchers;
-  if (!nodes || nodes.__scproto__ !== obj) {
-    nodes = m.chainWatchers = { __scproto__: obj };
+  if (!nodes || nodes.__emberproto__ !== obj) {
+    nodes = m.chainWatchers = { __emberproto__: obj };
   }
 
   if (!nodes[keyName]) nodes[keyName] = {};
@@ -95,7 +95,7 @@ function removeChainWatcher(obj, keyName, node) {
   if (!obj || ('object' !== typeof obj)) return; // nothing to do
   var m = meta(obj, false);
   var nodes = m.chainWatchers;
-  if (!nodes || nodes.__scproto__ !== obj) return; //nothing to do
+  if (!nodes || nodes.__emberproto__ !== obj) return; //nothing to do
   if (nodes[keyName]) delete nodes[keyName][guidFor(node)];
   Ember.unwatch(obj, keyName);
 }
@@ -332,7 +332,7 @@ function chainsFor(obj) {
 function notifyChains(obj, keyName, methodName) {
   var m = meta(obj, false);
   var nodes = m.chainWatchers;
-  if (!nodes || nodes.__scproto__ !== obj) return; // nothing to do
+  if (!nodes || nodes.__emberproto__ !== obj) return; // nothing to do
 
   nodes = nodes[keyName];
   if (!nodes) return;
@@ -433,7 +433,7 @@ Ember.rewatch = function(obj) {
 
   // make sure the object has its own guid.
   if (GUID_KEY in obj && !obj.hasOwnProperty(GUID_KEY)) {
-    Ember.generateGuid(obj, 'sc');
+    Ember.generateGuid(obj, 'ember');
   }  
 
   // make sure any chained watchers update.

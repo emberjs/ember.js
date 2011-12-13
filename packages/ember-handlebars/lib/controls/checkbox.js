@@ -19,7 +19,7 @@ Ember.Checkbox = Ember.View.extend({
   value: false,
   disabled: false,
 
-  classNames: ['sc-checkbox'],
+  classNames: ['ember-checkbox'],
 
   defaultTemplate: Ember.Handlebars.compile('<label><input type="checkbox" {{bindAttr checked="value" disabled="disabled"}}>{{title}}</label>'),
 

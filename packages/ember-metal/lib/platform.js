@@ -3,7 +3,7 @@
 // Copyright: ©2011 Strobe Inc. and contributors.
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
-/*globals sc_assert */
+/*globals ember_assert */
 
 require('ember-metal/core');
 
@@ -129,7 +129,7 @@ if (!platform.defineProperty) {
   platform.hasPropertyAccessors = false;
 
   platform.defineProperty = function(obj, keyName, desc) {
-    sc_assert("property descriptor cannot have `get` or `set` on this platform", !desc.get && !desc.set);
+    ember_assert("property descriptor cannot have `get` or `set` on this platform", !desc.get && !desc.set);
     obj[keyName] = desc.value;
   };
 

@@ -3,7 +3,7 @@
 // Copyright: ©2011 Strobe Inc. and contributors.
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
-/*globals ENV sc_assert */
+/*globals ENV ember_assert */
 
 if ('undefined' === typeof Ember) {
 /**
@@ -64,7 +64,7 @@ Ember.K = function() { return this; };
 
 /**
   Define an assertion that will throw an exception if the condition is not 
-  met.  Ember build tools will remove any calls to sc_assert() when 
+  met.  Ember build tools will remove any calls to ember_assert() when 
   doing a production build.
   
   ## Examples
@@ -72,11 +72,11 @@ Ember.K = function() { return this; };
       #js:
       
       // pass a simple Boolean value
-      sc_assert('must pass a valid object', !!obj);
+      ember_assert('must pass a valid object', !!obj);
 
       // pass a function.  If the function returns false the assertion fails
       // any other return value (including void) will pass.
-      sc_assert('a passed record must have a firstName', function() {
+      ember_assert('a passed record must have a firstName', function() {
         if (obj instanceof Ember.Record) {
           return !Ember.empty(obj.firstName);
         }
@@ -93,12 +93,12 @@ Ember.K = function() { return this; };
     will be executed.  If the function returns false an exception will be
     thrown.
 */
-window.sc_assert = function sc_assert(desc, test) {
+window.ember_assert = function ember_assert(desc, test) {
   if ('function' === typeof test) test = test()!==false;
   if (!test) throw new Error("assertion failed: "+desc);
 };
 
-//if ('undefined' === typeof sc_require) sc_require = Ember.K;
+//if ('undefined' === typeof ember_require) ember_require = Ember.K;
 if ('undefined' === typeof require) require = Ember.K;
 
 // ..........................................................

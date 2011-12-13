@@ -142,7 +142,7 @@ var ClassMixin = Ember.Mixin.create({
 
     proto = Class.prototype = o_create(this.prototype);
     proto.constructor = Class;
-    Ember.generateGuid(proto, 'sc');
+    Ember.generateGuid(proto, 'ember');
     meta(proto).proto = proto; // this will disable observers on prototype
     Ember.rewatch(proto); // setup watch chains if needed.
 

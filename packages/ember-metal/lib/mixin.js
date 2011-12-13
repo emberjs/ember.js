@@ -17,7 +17,7 @@ var classToString, superClassString;
 
 var a_map = Array.prototype.map;
 var EMPTY_META = {}; // dummy for non-writable meta
-var META_SKIP = { __scproto__: true, __sc_count__: true };
+var META_SKIP = { __emberproto__: true, __ember_count__: true };
 
 var o_create = Ember.platform.create;
 
@@ -26,10 +26,10 @@ function meta(obj, writable) {
   if (writable===false) return ret || EMPTY_META;
 
   if (!ret) {
-    ret = m.mixins = { __scproto__: obj };
-  } else if (ret.__scproto__ !== obj) {
+    ret = m.mixins = { __emberproto__: obj };
+  } else if (ret.__emberproto__ !== obj) {
     ret = m.mixins = o_create(ret);
-    ret.__scproto__ = obj;
+    ret.__emberproto__ = obj;
   }
   return ret;
 }
@@ -102,10 +102,10 @@ function mergeMixins(mixins, m, descs, values, base) {
             if (!ovalue) ovalue = base[key];
             if ('function' !== typeof ovalue) ovalue = null;
             if (ovalue) {
-              var o = value.__sc_observes__, ob = value.__sc_observesBefore__;
+              var o = value.__ember_observes__, ob = value.__ember_observesBefore__;
               value = Ember.wrap(value, ovalue);
-              value.__sc_observes__ = o;
-              value.__sc_observesBefore__ = ob;
+              value.__ember_observes__ = o;
+              value.__ember_observesBefore__ = ob;
             }
           } else if ((concats && concats.indexOf(key)>=0) || key === 'concatenatedProperties') {
             var baseValue = values[key] || base[key];
@@ -133,19 +133,19 @@ var defineProperty = Ember.defineProperty;
 
 function writableReq(obj) {
   var m = Ember.meta(obj), req = m.required;
-  if (!req || (req.__scproto__ !== obj)) {
-    req = m.required = req ? o_create(req) : { __sc_count__: 0 };
-    req.__scproto__ = obj;
+  if (!req || (req.__emberproto__ !== obj)) {
+    req = m.required = req ? o_create(req) : { __ember_count__: 0 };
+    req.__emberproto__ = obj;
   }
   return req;
 }
 
 function getObserverPaths(value) {
-  return ('function' === typeof value) && value.__sc_observes__;
+  return ('function' === typeof value) && value.__ember_observes__;
 }
 
 function getBeforeObserverPaths(value) {
-  return ('function' === typeof value) && value.__sc_observesBefore__;
+  return ('function' === typeof value) && value.__ember_observesBefore__;
 }
 
 Ember._mixinBindings = function(obj, key, value, m) {
@@ -177,7 +177,7 @@ function applyMixin(obj, mixins, partial) {
 
         // for partial applies add to hash of required keys
         req = writableReq(obj);
-        req.__sc_count__++;
+        req.__ember_count__++;
         req[key] = true;
       }
 
@@ -241,7 +241,7 @@ function applyMixin(obj, mixins, partial) {
 
       if (req && req[key]) {
         req = writableReq(obj);
-        req.__sc_count__--;
+        req.__ember_count__--;
         req[key] = false;
       }
 
@@ -251,7 +251,7 @@ function applyMixin(obj, mixins, partial) {
   }
 
   // Make sure no required attrs remain
-  if (!partial && req && req.__sc_count__>0) {
+  if (!partial && req && req.__ember_count__>0) {
     var keys = [];
     for(key in req) {
       if (META_SKIP[key]) continue;
@@ -507,13 +507,13 @@ Ember.MixinDelegate = MixinDelegate;
 
 Ember.observer = function(func) {
   var paths = Array.prototype.slice.call(arguments, 1);
-  func.__sc_observes__ = paths;
+  func.__ember_observes__ = paths;
   return func;
 };
 
 Ember.beforeObserver = function(func) {
   var paths = Array.prototype.slice.call(arguments, 1);
-  func.__sc_observesBefore__ = paths;
+  func.__ember_observesBefore__ = paths;
   return func;
 };
 

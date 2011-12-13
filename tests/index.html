@@ -31,13 +31,13 @@
 
     QUnit.jsDump.typeOf = function(obj) {
       if (Ember && Ember.Object && Ember.Object.detectInstance(obj)) {
-        return "scObject";
+        return "emberObject";
       }
 
       return originalTypeof.call(this, obj);
     };
 
-    QUnit.jsDump.parsers.scObject = function(obj) {
+    QUnit.jsDump.parsers.emberObject = function(obj) {
       return obj.toString();
     }
 

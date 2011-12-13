@@ -3,7 +3,7 @@
 // Copyright: ©2011 Strobe Inc. and contributors.
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
-/*globals sc_assert */
+/*globals ember_assert */
 
 require('ember-metal/core');
 require('ember-metal/platform');
@@ -148,16 +148,16 @@ Dp.val = function(obj, keyName) {
 if (!USE_ACCESSORS) {
   Ember.Descriptor.MUST_USE_GETTER = function() {
     if (this instanceof Ember.Object) {
-      sc_assert('Must use Ember.get() to access this property', false);
+      ember_assert('Must use Ember.get() to access this property', false);
     }
   };
 
   Ember.Descriptor.MUST_USE_SETTER = function() {
     if (this instanceof Ember.Object) {
       if (this.isDestroyed) {
-        sc_assert('You cannot set observed properties on destroyed objects', false);
+        ember_assert('You cannot set observed properties on destroyed objects', false);
       } else {
-        sc_assert('Must use Ember.set() to access this property', false);
+        ember_assert('Must use Ember.set() to access this property', false);
       }
     }
   };
@@ -364,7 +364,7 @@ Ember.defineProperty = function(obj, keyName, desc, val) {
 */
 Ember.create = function(obj, props) {
   var ret = o_create(obj, props);
-  if (GUID_KEY in ret) Ember.generateGuid(ret, 'sc');
+  if (GUID_KEY in ret) Ember.generateGuid(ret, 'ember');
   if (META_KEY in ret) Ember.rewatch(ret); // setup watch chains if needed.
   return ret;
 };
@@ -397,7 +397,7 @@ Ember.create = function(obj, props) {
 Ember.createPrototype = function(obj, props) {
   var ret = o_create(obj, props);
   meta(ret, true).proto = ret;
-  if (GUID_KEY in ret) Ember.generateGuid(ret, 'sc');
+  if (GUID_KEY in ret) Ember.generateGuid(ret, 'ember');
   if (META_KEY in ret) Ember.rewatch(ret); // setup watch chains if needed.
   return ret;
 };

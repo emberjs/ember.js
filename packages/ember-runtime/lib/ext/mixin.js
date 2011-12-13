@@ -22,10 +22,10 @@ Ember._mixinBindings = function(obj, key, value, m) {
     // resync them...
     var bindings = m.bindings;
     if (!bindings) {
-      bindings = m.bindings = { __scproto__: obj };
-    } else if (bindings.__scproto__ !== obj) {
+      bindings = m.bindings = { __emberproto__: obj };
+    } else if (bindings.__emberproto__ !== obj) {
       bindings = m.bindings = Ember.create(m.bindings);
-      bindings.__scproto__ = obj;
+      bindings.__emberproto__ = obj;
     }
 
     bindings[key] = true;
