@@ -126,22 +126,33 @@ function isProto(pvalue) {
 // pass null for parent and key and object for value.
 var ChainNode = function(parent, key, value, separator) {
   var obj;
-  
   this._parent = parent;
   this._key    = key;
   this._watching = value===undefined;
-  this._value  = value || (parent._value && !isProto(parent._value) && get(parent._value, key));
+  this._value  = value;
   this._separator = separator || '.';
   this._paths = {};
-
   if (this._watching) {
-    this._object = parent._value;
+    this._object = parent.value();
     if (this._object) addChainWatcher(this._object, this._key, this);
   }
+
+  // Special-case: the EachProxy relies on immediate evaluation to
+  // establish its observers.
+  if (this._parent && this._parent._key === '@each')
+    this.value();
 };
 
 
 var Wp = ChainNode.prototype;
+
+Wp.value = function() {
+  if (this._value === undefined && this._watching){
+    var obj = this._parent.value();
+    this._value = (obj && !isProto(obj)) ? get(obj, this._key) : undefined;
+  }
+  return this._value;
+};
 
 Wp.destroy = function() {
   if (this._watching) {
@@ -170,7 +181,7 @@ Wp.add = function(path) {
   paths = this._paths;
   paths[path] = (paths[path] || 0) + 1 ;
 
-  obj = this._value;
+  obj = this.value();
   tuple = normalizeTuple(obj, path);
   if (tuple[0] && (tuple[0] === obj)) {
     path = tuple[1];
@@ -201,7 +212,7 @@ Wp.remove = function(path) {
   paths = this._paths;
   if (paths[path] > 0) paths[path]--;
 
-  obj = this._value;
+  obj = this.value();
   tuple = normalizeTuple(obj, path);
   if (tuple[0] === obj) {
     path = tuple[1];
@@ -272,9 +283,9 @@ Wp.chainWillChange = function(chain, path, depth) {
   if (this._parent) {
     this._parent.chainWillChange(this, path, depth+1);
   } else {
-    if (depth>1) SC.propertyWillChange(this._value, path);
+    if (depth>1) SC.propertyWillChange(this.value(), path);
     path = 'this.'+path;
-    if (this._paths[path]>0) SC.propertyWillChange(this._value, path);
+    if (this._paths[path]>0) SC.propertyWillChange(this.value(), path);
   }
 };
 
@@ -283,22 +294,27 @@ Wp.chainDidChange = function(chain, path, depth) {
   if (this._parent) {
     this._parent.chainDidChange(this, path, depth+1);
   } else {
-    if (depth>1) SC.propertyDidChange(this._value, path);
+    if (depth>1) SC.propertyDidChange(this.value(), path);
     path = 'this.'+path;
-    if (this._paths[path]>0) SC.propertyDidChange(this._value, path);
+    if (this._paths[path]>0) SC.propertyDidChange(this.value(), path);
   }
 };
 
 Wp.didChange = function() {
-  // update my own value first.
+  // invalidate my own value first.
   if (this._watching) {
-    var obj = this._parent._value;
+    var obj = this._parent.value();
     if (obj !== this._object) {
       removeChainWatcher(this._object, this._key, this);
       this._object = obj;
       addChainWatcher(obj, this._key, this);
     }
-    this._value  = obj && !isProto(obj) ? get(obj, this._key) : undefined;
+    this._value  = undefined;
+
+    // Special-case: the EachProxy relies on immediate evaluation to
+    // establish its observers.
+    if (this._parent && this._parent._key === '@each')
+      this.value();
   }
   
   // then notify chains...
@@ -321,7 +337,7 @@ function chainsFor(obj) {
   var m   = meta(obj), ret = m.chains;
   if (!ret) {
     ret = m.chains = new ChainNode(null, null, obj);
-  } else if (ret._value !== obj) {
+  } else if (ret.value() !== obj) {
     ret = m.chains = ret.copy(obj);
   }
   return ret ;
@@ -437,7 +453,7 @@ SC.rewatch = function(obj) {
   }  
 
   // make sure any chained watchers update.
-  if (chains && chains._value !== obj) chainsFor(obj);
+  if (chains && chains.value() !== obj) chainsFor(obj);
 
   // if the object has bindings then sync them..
   if (bindings && m.proto!==obj) {
