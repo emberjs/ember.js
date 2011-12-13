@@ -128,7 +128,15 @@ var ChainNode = function(parent, key, value, separator) {
   var obj;
   this._parent = parent;
   this._key    = key;
+
+  // _watching is true when calling get(this._parent, this._key) will
+  // return the value of this node.
+  //
+  // It is false for the root of a chain (because we have no parent)
+  // and for global paths (because the parent node is the object with
+  // the observer on it)
   this._watching = value===undefined;
+
   this._value  = value;
   this._separator = separator || '.';
   this._paths = {};
@@ -139,8 +147,12 @@ var ChainNode = function(parent, key, value, separator) {
 
   // Special-case: the EachProxy relies on immediate evaluation to
   // establish its observers.
-  if (this._parent && this._parent._key === '@each')
+  //
+  // TODO: Replace this with an efficient callback that the EachProxy
+  // can implement.
+  if (this._parent && this._parent._key === '@each') {
     this.value();
+  }
 };
 
 
@@ -183,17 +195,20 @@ Wp.add = function(path) {
 
   obj = this.value();
   tuple = normalizeTuple(obj, path);
+
+  // the path was a local path
   if (tuple[0] && (tuple[0] === obj)) {
     path = tuple[1];
     key  = firstKey(path);
     path = path.slice(key.length+1);
 
-  // static path does not exist yet.  put into a queue and try to connect
-  // later.
+  // global path, but object does not exist yet.
+  // put into a queue and try to connect later.
   } else if (!tuple[0]) {
     pendingQueue.push([this, path]);
     return;
 
+  // global path, and object already exists
   } else {
     src  = tuple[0];
     key  = path.slice(0, 0-(tuple[1].length+1));
