@@ -1,0 +1,34 @@
+{
+  "name": "ember-datetime",
+  "summary": "Ember DateTime",
+  "description": "A rich date time class with utilities",
+  "homepage": "http://emberjs.com",
+  "author": "Strobe Inc., Apple, Inc., and contributors",
+  "version": "0.9",
+  "dependencies": {
+    "spade":              "~> 1.0.0",
+    "ember-runtime": "0.9"
+  },
+
+  "directories": {
+    "lib": "lib"
+  },
+
+  "dependencies:development": {
+    "spade-qunit": "~> 1.0.0"
+  },
+  
+  "bpm:build": {
+    
+    "bpm_libs.js": {
+      "files": ["lib"],
+      "modes":        "*"
+    },
+    
+    "ember-datetime/bpm_tests.js": {
+      "files": ["tests"],
+      "modes": ["debug"]
+    }
+  }
+}
+

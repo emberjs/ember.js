@@ -6,8 +6,8 @@
   <link rel="stylesheet" href="qunit/qunit.css" type="text/css" media="screen">
   <script type="text/javascript" src="qunit/qunit.js"></script>
   <script type="text/javascript" src="minispade.js"></script>
-  <script type="text/javascript" src="source/sproutcore.js"></script>
-  <script type="text/javascript" src="source/sproutcore-tests.js"></script>
+  <script type="text/javascript" src="source/ember.js"></script>
+  <script type="text/javascript" src="source/ember-tests.js"></script>
 </head>
 <body>
   <h1 id="qunit-header">QUnit Test Suite</h1>
@@ -26,18 +26,18 @@
     ENV['EXTEND_PROTOTYPES'] = !!(extendPrototypes && decodeURIComponent(extendPrototypes[1]));
 
 
-    // hack qunit to not suck for SC objects
+    // hack qunit to not suck for Ember objects
     var originalTypeof = QUnit.jsDump.typeOf;
 
     QUnit.jsDump.typeOf = function(obj) {
-      if (SC && SC.Object && SC.Object.detectInstance(obj)) {
-        return "scObject";
+      if (Ember && Ember.Object && Ember.Object.detectInstance(obj)) {
+        return "emberObject";
       }
 
       return originalTypeof.call(this, obj);
     };
 
-    QUnit.jsDump.parsers.scObject = function(obj) {
+    QUnit.jsDump.parsers.emberObject = function(obj) {
       return obj.toString();
     }
 
@@ -51,8 +51,8 @@
       el.innerHTML = 'Add package=package1,package2 in the URL to test packages';
     } else {
       if (packages[1] === 'all') {
-        packages = ['sproutcore-datetime', 'sproutcore-handlebars', 'sproutcore-metal', 'sproutcore-runtime',
-                    'sproutcore-states', 'sproutcore-views'];
+        packages = ['ember-datetime', 'ember-handlebars', 'ember-metal', 'ember-runtime',
+                    'ember-states', 'ember-views'];
       } else {
         packages = packages[1].split(',');
       }
