@@ -116,14 +116,13 @@ Ember.EachProxy = Ember.Object.extend({
 
     lim = removedCnt>0 ? idx+removedCnt : -1;
     Ember.beginPropertyChanges(this);
+
     for(key in keys) {
-      if (!keys.hasOwnProperty(key)) continue;
+      if (!keys.hasOwnProperty(key)) { continue; }
 
       if (lim>0) removeObserverForContentKey(content, key, this, idx, lim);
 
-      array = get(this, key);
       Ember.propertyWillChange(this, key);
-      if (array) array.arrayContentWillChange(idx, removedCnt, addedCnt);
     }
 
     Ember.propertyWillChange(this._content, '@each');
@@ -135,15 +134,15 @@ Ember.EachProxy = Ember.Object.extend({
 
     lim = addedCnt>0 ? idx+addedCnt : -1;
     Ember.beginPropertyChanges(this);
+
     for(key in keys) {
-      if (!keys.hasOwnProperty(key)) continue;
+      if (!keys.hasOwnProperty(key)) { continue; }
 
       if (lim>0) addObserverForContentKey(content, key, this, idx, lim);
 
-      array = get(this, key);
-      if (array) array.arrayContentDidChange(idx, removedCnt, addedCnt);
       Ember.propertyDidChange(this, key);
     }
+
     Ember.propertyDidChange(this._content, '@each');
     Ember.endPropertyChanges(this);
   },
@@ -191,26 +190,10 @@ Ember.EachProxy = Ember.Object.extend({
   },
 
   contentKeyWillChange: function(obj, keyName) {
-    // notify array.
-    var indexes = this._objects[guidFor(obj)],
-        array   = get(this, keyName),
-        len = array && indexes ? indexes.length : 0, idx;
-
-    for(idx=0;idx<len;idx++) {
-      array.arrayContentWillChange(indexes[idx], 1, 1);
-    }
+    Ember.propertyWillChange(this, keyName);
   },
 
   contentKeyDidChange: function(obj, keyName) {
-    // notify array.
-    var indexes = this._objects[guidFor(obj)],
-        array   = get(this, keyName),
-        len = array && indexes ? indexes.length : 0, idx;
-
-    for(idx=0;idx<len;idx++) {
-      array.arrayContentDidChange(indexes[idx], 1, 1);
-    }
-
     Ember.propertyDidChange(this, keyName);
   }
 

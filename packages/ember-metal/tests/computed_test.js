@@ -540,6 +540,14 @@ testBoth('depending on complex Global chain', function(get, set) {
 
 });
 
+testBoth('chained dependent keys should evaluate computed properties lazily', function(get,set){
+  Ember.defineProperty(obj.foo.bar, 'b', Ember.computed(func).property().cacheable());
+  Ember.defineProperty(obj.foo, 'c', Ember.computed(function(){}).property('bar.b').cacheable());
+  equals(count, 0, 'b should not run');
+});
+
+
+
 // ..........................................................
 // BUGS
 // 
