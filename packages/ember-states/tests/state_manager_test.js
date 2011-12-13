@@ -177,6 +177,21 @@ test("it automatically transitions to a default state specified using the initia
   ok(get(stateManager, 'currentState').isStart, "automatically transitions to beginning state");
 });
 
+test("it reports the view associated with the current view state, if any", function() {
+  var view = SC.View.create();
+
+  stateManager = SC.StateManager.create({
+    foo: SC.ViewState.create({
+      view: view,
+      bar: SC.State.create()
+    })
+  });
+
+  stateManager.goToState('foo.bar');
+
+  equal(get(stateManager, 'currentView'), view, "returns nearest parent view state's view");
+});
+
 module("Ember.StateManager - Transitions on Complex State Managers");
 
 /**
