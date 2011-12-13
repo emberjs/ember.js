@@ -1,4 +1,4 @@
-abort "Please use Ruby 1.9 to build Amber.js!" if RUBY_VERSION !~ /^1\.9/
+abort "Please use Ruby 1.9 to build Ember.js!" if RUBY_VERSION !~ /^1\.9/
 
 require "bundler/setup"
 require "erb"
@@ -29,9 +29,9 @@ def strip_require(file)
   result
 end
 
-def strip_sc_assert(file)
+def strip_ember_assert(file)
   result = File.read(file)
-  result.gsub!(%r{^(\s)+sc_assert\((.*)\).*$}, "")
+  result.gsub!(%r{^(\s)+ember_assert\((.*)\).*$}, "")
   result
 end
 
@@ -57,7 +57,7 @@ end
 # Create ember:package tasks for each of the Ember packages
 namespace :ember do
   %w(metal runtime handlebars views states).each do |package|
-    task package => compile_package_task("sproutcore-#{package}", "ember-#{package}")
+    task package => compile_package_task("ember-#{package}", "ember-#{package}")
   end
 end
 
@@ -93,7 +93,7 @@ file "dist/ember.min.js" => "dist/ember.js" do
   puts "Generating ember.min.js"
 
   File.open("dist/ember.prod.js", "w") do |file|
-    file.puts strip_sc_assert("dist/ember.js")
+    file.puts strip_ember_assert("dist/ember.js")
   end
 
   File.open("dist/ember.min.js", "w") do |file|
@@ -103,7 +103,7 @@ file "dist/ember.min.js" => "dist/ember.js" do
   rm "dist/ember.prod.js"
 end
 
-SC_VERSION = File.read("VERSION").strip
+EMBER_VERSION = File.read("VERSION").strip
 
 desc "bump the version to the specified version"
 task :bump_version, :version do |t, args|
@@ -118,15 +118,15 @@ task :bump_version, :version do |t, args|
     %{"ember-#{$1}": "#{version}"}
   end
 
-  File.open("packages/sproutcore/package.json", "w") do |file|
+  File.open("packages/ember/package.json", "w") do |file|
     file.write contents
   end
 
   # Bump the version of each component package
-  Dir["packages/sproutcore*/package.json", "package.json"].each do |package|
+  Dir["packages/ember*/package.json", "package.json"].each do |package|
     contents = File.read(package)
     contents.gsub! %r{"version": .*$}, %{"version": "#{version}",}
-    contents.gsub! %r{"(sproutcore-?\w*)": [^\n\{,]*(,?)$} do
+    contents.gsub! %r{"(ember-?\w*)": [^\n\{,]*(,?)$} do
       %{"#{$1}": "#{version}"#{$2}}
     end
 
@@ -140,8 +140,8 @@ end
 ## STARTER KIT ##
 
 namespace :starter_kit do
-  ember_output = "tmp/starter-kit/js/libs/ember-#{SC_VERSION}.js"
-  ember_min_output = "tmp/starter-kit/js/libs/ember-#{SC_VERSION}.min.js"
+  ember_output = "tmp/starter-kit/js/libs/ember-#{EMBER_VERSION}.js"
+  ember_min_output = "tmp/starter-kit/js/libs/ember-#{EMBER_VERSION}.min.js"
 
   task :pull => "tmp/starter-kit" do
     Dir.chdir("tmp/starter-kit") do
@@ -155,11 +155,11 @@ namespace :starter_kit do
     end
   end
 
-  task "dist/starter-kit.#{SC_VERSION}.zip" => ["tmp/starter-kit/index.html"] do
+  task "dist/starter-kit.#{EMBER_VERSION}.zip" => ["tmp/starter-kit/index.html"] do
     mkdir_p "dist"
 
     Dir.chdir("tmp") do
-      sh %{zip -r ../dist/starter-kit.#{SC_VERSION}.zip starter-kit -x "starter-kit/.git/*"}
+      sh %{zip -r ../dist/starter-kit.#{EMBER_VERSION}.zip starter-kit -x "starter-kit/.git/*"}
     end
   end
 
@@ -182,7 +182,7 @@ namespace :starter_kit do
   file "tmp/starter-kit/index.html" => [ember_output, ember_min_output] do
     index = File.read("tmp/starter-kit/index.html")
     index.gsub! %r{<script src="js/libs/ember-\d\.\d.*</script>},
-      %{<script src="js/libs/ember-#{SC_VERSION}.min.js"></script>}
+      %{<script src="js/libs/ember-#{EMBER_VERSION}.min.js"></script>}
 
     File.open("tmp/starter-kit/index.html", "w") { |f| f.write index }
   end
@@ -190,7 +190,7 @@ namespace :starter_kit do
   task :index => "tmp/starter-kit/index.html"
 
   desc "Build the Ember.js starter kit"
-  task :build => "dist/starter-kit.#{SC_VERSION}.zip"
+  task :build => "dist/starter-kit.#{EMBER_VERSION}.zip"
 end
 
 desc "Build Ember.js"

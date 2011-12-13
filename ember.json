@@ -1,0 +1,34 @@
+{
+  "name": "ember",
+  "bpm": "1.0.0",
+  "dependencies": {
+    "ember": "0.9",
+    "ember-datetime": "0.9"
+  },
+  "dependencies:development": {
+    "spade-qunit": "~> 1.0.0"
+  },
+  "bpm:build": {
+    "bpm_libs.js": {
+      "minifier": "uglify-js"
+    },
+    "jquery.js": {
+      "minifier": "uglify-js",
+      "include": [
+        "jquery"
+      ]
+    },
+    "ember.js": {
+      "minifier": "uglify-js",
+      "include": [
+        "spade",
+        "ember-metal",
+        "ember-runtime",
+        "handlebars",
+        "ember-views",
+        "ember-states",
+        "ember-handlebars"
+      ]
+    }
+  }
+}

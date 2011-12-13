@@ -33,7 +33,7 @@ match "*/{lib,tests}/**/*.js" do
   filter RegisterWrapper
   filter RequireRewrite
   filter ConcatFilter do |filename|
-    filename =~ %r{/tests/} ? "sproutcore-tests.js" : "sproutcore.js"
+    filename =~ %r{/tests/} ? "ember-tests.js" : "ember.js"
   end
 end
 
