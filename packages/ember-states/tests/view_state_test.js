@@ -8,6 +8,10 @@ test("it inherits from Ember.State", function() {
   ok(Ember.State.detect(Ember.ViewState), "Ember.ViewState is an Ember.State");
 });
 
+test("it is duck-typed as a view state", function() {
+  ok(get(Ember.ViewState.create(), 'isViewState'), "reports isViewState is true");
+});
+
 test("it can act like a state in a state manager", function() {
   var viewState = Ember.ViewState.create({
     entered: 0,
