@@ -401,7 +401,7 @@ testBoth("observers that contain @each in the path should fire only once the fir
     commonDidChange: Ember.observer(function() {
       count++;
     }, 'resources.@each.common')
-  })
+  });
 
   // Observer fires second time when new object is added
   get(obj, 'resources').pushObject(Ember.Object.create({ common: "HI!" }));

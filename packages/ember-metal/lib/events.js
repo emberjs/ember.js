@@ -73,7 +73,7 @@ function invokeEvents(targetSet, params) {
     for(var methodGuid in actionSet) {
       if (SKIP_PROPERTIES[methodGuid]) { continue; }
 
-      var action = actionSet[methodGuid]
+      var action = actionSet[methodGuid];
       if (!action) { continue; }
 
       // Extract target and method for each action

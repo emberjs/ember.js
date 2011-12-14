@@ -137,7 +137,7 @@ test("should not interfere with event propagation", function() {
   var receivedEvent;
   view = Ember.View.create({
     render: function(buffer) {
-      buffer.push('<div id="propagate-test-div"></div>')
+      buffer.push('<div id="propagate-test-div"></div>');
     }
   });
 
@@ -151,7 +151,7 @@ test("should not interfere with event propagation", function() {
 
   Ember.$('#propagate-test-div').click();
 
-  ok(receivedEvent, "allowed event to propagate outside Ember")
+  ok(receivedEvent, "allowed event to propagate outside Ember");
   same(receivedEvent.target, Ember.$('#propagate-test-div')[0], "target property is the element that was clicked");
 });
 

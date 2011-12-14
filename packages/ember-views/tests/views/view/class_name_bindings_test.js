@@ -56,7 +56,7 @@ test("should add, remove, or change class names if changed after element is crea
   set(view, 'priority', 'orange');
   set(view, 'isUrgent', false);
   set(view, 'canIgnore', true);
-  setPath(view, 'messages.count', 'six-messages')
+  setPath(view, 'messages.count', 'six-messages');
   setPath(view, 'messages.resent', true );
 
   ok(view.$().hasClass('orange'), "updates string values");

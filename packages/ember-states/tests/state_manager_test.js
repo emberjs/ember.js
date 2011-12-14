@@ -236,7 +236,7 @@ test("it sends exit events to nested states when changing to a top-level state",
   equals(stateManager.redeem.entered, 1, "redeemed state is entered once");
 });
 
-var stateManager, passedContext, loadingEventCalled, loadedEventCalled, eventInChildCalled;
+var passedContext, loadingEventCalled, loadedEventCalled, eventInChildCalled;
 loadingEventCalled = loadedEventCalled = eventInChildCalled = 0;
 
 module("Ember.StateManager - Event Dispatching", {

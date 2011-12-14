@@ -21,7 +21,7 @@ var array_Slice = Array.prototype.slice;
 var ObserverSet = function(iterateable) {
   this.set = {};
   if (iterateable) { this.array = []; }
-}
+};
 
 ObserverSet.prototype.add = function(target, name) {
   var set = this.set, guid = Ember.guidFor(target), array;
@@ -96,11 +96,11 @@ Ember.endPropertyChanges = function() {
 Ember.changeProperties = function(cb){
   Ember.beginPropertyChanges();
   try {
-    cb()
+    cb();
   } finally {
     Ember.endPropertyChanges();
   }
-}
+};
 
 function changeEvent(keyName) {
   return keyName+AFTER_OBSERVERS;
@@ -125,7 +125,7 @@ function xformForArgs(args) {
     if (method.length>2) val = Ember.getPath(obj, keyName);
     copy_args.unshift(obj, keyName, val);
     method.apply(target, copy_args);
-  }
+  };
 }
 
 var xformChange = xformForArgs([]);

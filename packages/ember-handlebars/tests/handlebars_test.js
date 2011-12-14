@@ -52,7 +52,7 @@ var firstChild = nthChild;
           range.moveStart('character', pos);
           range.select();
       }
-  }
+  };
 
 })();
 
@@ -1185,7 +1185,7 @@ test("should be able to output a property without binding", function(){
 
 test("should be able to log a property", function(){
   var originalLogger = Ember.Logger;
-  additionalTeardown = function(){ Ember.Logger = originalLogger; }
+  additionalTeardown = function(){ Ember.Logger = originalLogger; };
 
   var logCalls = [];
   Ember.Logger = { log: function(arg){ logCalls.push(arg); } };
@@ -1236,8 +1236,6 @@ test("should be able to use standard Handlebars #each helper", function() {
   equals(view.$().html(), "abc");
 });
 
-var view;
-
 module("Templates redrawing and bindings", {
   setup: function(){
     MyApp = Ember.Object.create({});
@@ -1249,7 +1247,7 @@ module("Templates redrawing and bindings", {
 });
 
 test("should be able to update when bound property updates", function(){
-  MyApp.set('controller', Ember.Object.create({name: 'first'}))
+  MyApp.set('controller', Ember.Object.create({name: 'first'}));
   
   var View = Ember.View.extend({
     template: Ember.Handlebars.compile('<i>{{value.name}}, {{computed}}</i>'),
@@ -1267,13 +1265,11 @@ test("should be able to update when bound property updates", function(){
   Ember.run(function(){
     MyApp.set('controller', Ember.Object.create({
       name: 'second'
-    }))
-  })
-  
+    }));
+  });
   
   equals(view.get('computed'), "second - computed", "view computed properties correctly update");
   equals(view.$('i').text(), 'second, second - computed', "view rerenders when bound properties change");
-  
 });
 
 test("properties within an if statement should not fail on re-render", function(){

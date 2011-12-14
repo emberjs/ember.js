@@ -139,7 +139,7 @@ test("it is possible to replace a child render buffer initially created without 
 
   equals(buffer.string(), "<div>amiddlebc</div>", "precond - Buffers without tagNames do not wrap the content in a tag");
 
-  var replacement = second.replaceWith().push('new-mid')
+  var replacement = second.replaceWith().push('new-mid');
   replacement.end();
 
   equals(buffer.string(), "<div>anew-midbc</div>", "Replacements can operate on tagName-less buffers");

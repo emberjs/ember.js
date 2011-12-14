@@ -63,7 +63,7 @@ test("append calls willInsertElement and didInsertElement callbacks", function()
     }
   });
   
-  view = ViewWithCallback.create()
+  view = ViewWithCallback.create();
 
   Ember.run(function() {
     view.append();
