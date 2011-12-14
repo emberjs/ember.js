@@ -1,0 +1,18 @@
+*Ember 0.9.1 (December 14, 2011)*
+
+* Fix jslint warnings related to missing semicolons and variables defined twice
+* Alias amber_assert to sc_assert for backwards compat
+* Fix toString() for objects in the Ember namespace
+* Clear rendered children *recursively* when removing a view from DOM.
+* Manually assigns custom message provided new Ember.Error so it will appear in debugging tools.
+* Add a currentView property to StateManager
+* Duck type view states
+* Add license file
+* We don't need to support adding Array observers onto @each proxies, so don't bother notifying about them.
+* Clean up some verbiage in watching.js
+* Cleaned up the build script
+* Fixed incorrect test
+* Updated references to SproutCore to Ember
+* Preserve old behavior for special '@each' keys.
+* Making chained keys evaluate lazily and adding unit test
+* Adding unit test to demonstrate issue #108.
