@@ -156,7 +156,7 @@ namespace :starter_kit do
     mkdir_p "tmp"
 
     Dir.chdir("tmp") do
-      sh "git clone git://github.com/emberjs/starter-kit.git"
+      sh "git clone git@github.com:emberjs/starter-kit.git"
     end
   end
 
@@ -169,6 +169,14 @@ namespace :starter_kit do
   end
 
   task :index => "tmp/starter-kit/index.html"
+
+  task :update => :index do
+    Dir.chdir("tmp/starter-kit") do
+      sh "git add -A"
+      sh "git commit -m 'Updated to #{EMBER_VERSION}'"
+      sh "git push origin master"
+    end
+  end
 
   desc "Build the Ember.js starter kit"
   task :build => "dist/starter-kit.#{EMBER_VERSION}.zip"
