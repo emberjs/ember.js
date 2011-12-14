@@ -12,7 +12,7 @@ module('binding/and', {
       foo: false,
       bar: false
     };
-    Ember.Binding.and("foo", "bar").to("baz").connect(MyApp)
+    Ember.Binding.and("foo", "bar").to("baz").connect(MyApp);
   },
   
   teardown: function() {

@@ -87,7 +87,7 @@ test("empty views should be removed when content is added to the collection (reg
   });
 
   Ember.run(function() {
-    App.ListController.pushObject({title : "Go Away, Placeholder Row!"})
+    App.ListController.pushObject({title : "Go Away, Placeholder Row!"});
   });
 
   equals(view.$('tr').length, 1, 'has one row');

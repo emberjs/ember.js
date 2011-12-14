@@ -156,13 +156,13 @@ test("should return null when property is null on standard objects", function() 
 test("raise if the provided object is null", function() {
   raises(function() {
     Ember.get(null, 'key');
-  })
+  });
 });
 
 test("raise if the provided object is undefined", function() {
   raises(function() {
     Ember.get(undefined, 'key');
-  })
+  });
 });
 
 test("should work when object is Ember (used in Ember.getPath)", function() {

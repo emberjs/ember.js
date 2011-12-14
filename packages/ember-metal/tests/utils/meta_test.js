@@ -14,7 +14,7 @@ test("should return the same hash for an object", function() {
   equals(Ember.meta(obj).foo, "bar", "returns same hash with multiple calls to Ember.meta()");
 });
 
-module("Ember.metaPath")
+module("Ember.metaPath");
 
 test("should not create nested objects if writable is false", function() {
   var obj = {};

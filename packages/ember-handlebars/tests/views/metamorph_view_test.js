@@ -122,7 +122,7 @@ test("a metamorph view calls its childrens' willInsertElement and didInsertEleme
       },
       didInsertElement: function(){
         didInsertElementCalled = true;
-        didInsertElementSawElement = (this.$('div').length == 1)
+        didInsertElementSawElement = (this.$('div').length === 1);
       }
     }),
 

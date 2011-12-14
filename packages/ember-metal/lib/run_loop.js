@@ -55,7 +55,7 @@ var RunLoop = function(prev) {
   self.onceTimers = {};
 
   return self;
-}
+};
 
 K.prototype = RunLoop.prototype;
 

@@ -698,7 +698,7 @@ function mixinProperties(to, from) {
       to[key] = from[key];
     }
   }
-};
+}
 
 mixinProperties(Binding, {
 
@@ -844,4 +844,4 @@ Ember.bind = function(obj, to, from) {
 
 Ember.oneWay = function(obj, to, from) {
   return new Ember.Binding(to, from).oneWay().connect(obj);
-}
+};

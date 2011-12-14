@@ -205,7 +205,7 @@ Ember.ContainerView.states = {
 
 Ember.ContainerView.states.inDOM = {
   parentState: Ember.ContainerView.states.hasElement
-}
+};
 
 Ember.ContainerView.reopen({
   states: Ember.ContainerView.states

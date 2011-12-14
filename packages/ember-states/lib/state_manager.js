@@ -55,7 +55,7 @@ Ember.StateManager = Ember.State.extend({
         if (view) { return view; }
       }
 
-      currentState = get(currentState, 'parentState')
+      currentState = get(currentState, 'parentState');
     }
 
     return null;
@@ -90,9 +90,9 @@ Ember.StateManager = Ember.State.extend({
     if (!newState) {
       while (state && !newState) {
         exitStates[Ember.guidFor(state)] = state;
-        exitStates.push(state)
+        exitStates.push(state);
 
-        state = get(state, 'parentState')
+        state = get(state, 'parentState');
         if (!state) {
           state = get(this, 'states');
         }
@@ -130,7 +130,7 @@ Ember.StateManager = Ember.State.extend({
       resume: function() {
         self.asyncEach(tail, callback, doneCallback);
       }
-    }
+    };
 
     callback.call(this, head, transition);
 

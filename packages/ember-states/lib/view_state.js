@@ -1,4 +1,4 @@
-require('ember-states/state')
+require('ember-states/state');
 
 var get = Ember.get, set = Ember.set;
 

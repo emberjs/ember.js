@@ -13,7 +13,7 @@ module("views/view/view_lifecycle_test - pre-render", {
 function tmpl(str) {
   return function(context, options) {
     options.data.buffer.push(str);
-  }
+  };
 }
 
 test("should create and append a DOM element after bindings have synced", function() {

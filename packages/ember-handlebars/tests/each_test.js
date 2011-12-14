@@ -32,7 +32,7 @@ var assertHTML = function(view, expectedHTML) {
   html = html.replace(/<script[^>]*><\/script>/ig, '').replace(/[\r\n]/g, '');
 
   equal(html, expectedHTML);
-}
+};
 
 test("it renders the template for each item in an array", function() {
   assertHTML(view, "Steve HoltAnnabelle");
@@ -62,6 +62,6 @@ test("it updates the view if an item is removed", function() {
     people.removeAt(0);
   });
 
-  assertHTML(view, "Annabelle")
+  assertHTML(view, "Annabelle");
   view.destroy();
 });
