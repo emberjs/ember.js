@@ -54,14 +54,10 @@ Ember.Handlebars.ViewHelper = Ember.Object.create({
       if (Ember.IS_BINDING.test(prop)) {
         path = options[prop];
         if (!Ember.isGlobalPath(path)) {
-
-          // Deprecation warning for users of beta 2 and lower, where
-          // this facility was not available. The workaround was to bind
-          // to parentViews; since this is no longer necessary, issue
-          // a notice.
-          if (PARENT_VIEW_PATH.test(path)) {
-            Ember.Logger.warn("As of SproutCore 2.0 beta 3, it is no longer necessary to bind to parentViews. Instead, please provide binding paths relative to the current Handlebars context.");
-          } else {
+          // Binding to parentViews was previously deprecated. In most cases it shouldn't be necessary, but since
+          // there are a few valid use cases and most people have broken the parentView habit, we're no longer
+          // providing a warning about it.
+          if (!PARENT_VIEW_PATH.test(path)) {
             if (path === 'this') {
               options[prop] = 'bindingContext';
             } else {
