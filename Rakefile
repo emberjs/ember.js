@@ -92,15 +92,23 @@ distributions.each do |name, libraries|
 
   # Minified distribution
   file "dist/#{name}.min.js" => "dist/#{name}.js" do
-    puts "Generating #{name}.min.js"
+    require 'zlib'
+
+    print "Generating #{name}.min.js... "
+    STDOUT.flush
 
     File.open("dist/#{name}.prod.js", "w") do |file|
       file.puts strip_ember_assert("dist/#{name}.js")
     end
 
+    minified_code = uglify("dist/#{name}.prod.js")
     File.open("dist/#{name}.min.js", "w") do |file|
-      file.puts uglify("dist/#{name}.prod.js")
+      file.puts minified_code
     end
+
+    gzipped_kb = Zlib::Deflate.deflate(minified_code).bytes.count / 1024
+
+    puts "#{gzipped_kb} KB gzipped"
 
     rm "dist/#{name}.prod.js"
   end
