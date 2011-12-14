@@ -298,11 +298,13 @@ namespace :release do
         Dir.chdir("tmp/starter-kit") do
           sh "git add -A"
           sh "git commit -m 'Updated to #{EMBER_VERSION}'"
+          sh "git tag v#{EMBER_VERSION}"
 
           print "Are you sure you want to push the starter-kit repo to github? (y/N) "
           res = STDIN.gets.chomp
           if res == 'y'
             sh "git push origin master"
+            sh "git push --tags"
           else
             puts "Not pushing"
           end
