@@ -17,6 +17,7 @@ Ember.Handlebars.ViewHelper = Ember.Object.create({
   viewClassFromHTMLOptions: function(viewClass, options, thisContext) {
     var extensions = {},
         classes = options['class'],
+        attributes = options['attributes'],
         dup = false;
 
     if (options.id) {
@@ -30,6 +31,16 @@ Ember.Handlebars.ViewHelper = Ember.Object.create({
       dup = true;
     }
 
+    if (attributes) {
+      attribute_pairs = attributes.split(/\s+/);
+      extensions.attributes = {};
+      for(var i=0; i<attribute_pairs.length; i++) {
+        var attr = attribute_pairs[i].split('=');
+        extensions.attributes[attr[0]] = attr[1]
+      }
+      dup = true;
+    }
+
     if (options.classBinding) {
       extensions.classNameBindings = options.classBinding.split(' ');
       dup = true;
@@ -39,6 +50,7 @@ Ember.Handlebars.ViewHelper = Ember.Object.create({
       options = jQuery.extend({}, options);
       delete options.id;
       delete options['class'];
+      delete options['attributes'];
       delete options.classBinding;
     }
 

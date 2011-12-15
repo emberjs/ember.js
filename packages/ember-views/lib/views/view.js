@@ -913,6 +913,14 @@ Ember.View = Ember.Object.extend(
 
 
     get(this, 'classNames').forEach(function(name){ buffer.addClass(name); });
+
+    var attributes = get(this, 'attributes');
+    if(attributes) {
+      for(var attributeName in attributes) {
+        buffer.attr(attributeName, attributes[attributeName]);
+      }
+    }
+
     buffer.id(get(this, 'elementId'));
 
     var role = get(this, 'ariaRole');
