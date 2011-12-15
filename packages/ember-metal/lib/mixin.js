@@ -405,6 +405,9 @@ function findNamespaces() {
     // Unfortunately, some versions of IE don't support window.hasOwnProperty
     if (window.hasOwnProperty && !window.hasOwnProperty(prop)) { continue; }
 
+    // IE errors out if you try to read a property of window.exteral which does not exist
+    if (prop === "external") { continue; }
+
     obj = window[prop];
 
     if (obj && get(obj, 'isNamespace')) {
