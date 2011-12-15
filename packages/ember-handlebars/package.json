@@ -1,0 +1,45 @@
+{
+  "name": "ember-handlebars",
+  "summary": "Ember Extensions to Handlebars",
+  "description": "Extensions to the Handlebars templating engine for use with Ember. These extensions make Handlebars aware of property observing, which allows it to automatically update the DOM when the referenced properties change. It also provides Handlebars helpers for creating Ember views and working with collections.",
+  "homepage": "http://emberjs.com",
+  "author": "Yehuda Katz",
+  "version": "0.9.1",
+  "dependencies": {
+    "spade":              "~> 1.0.0",
+    "handlebars":         "~> 1.0.0.beta.3",
+    "ember-views": "0.9.1",
+    "ember-handlebars-format": "~> 0.9",
+    "metamorph": "~> 1.0.0"
+  },
+
+  "directories": {
+    "lib": "lib"
+  },
+
+  "dependencies:development": {
+    "spade-qunit": "~> 1.0.0"
+  },
+
+  "bpm:build": {
+
+    "bpm_libs.js": {
+      "files": ["lib"],
+      "modes":        "*"
+    },
+
+    "ember-handlebars/bpm_tests.js": {
+      "files": ["tests"],
+      "modes": ["debug"]
+    }
+  },
+
+  "bpm:provides": {
+    "format:handlebars": {
+      "default:mime": "application/javascript",
+      "main": "ember-handlebars-format/format" 
+    }
+  }
+
+}
+

@@ -1,0 +1,36 @@
+{
+  "name": "ember-states",
+  "summary": "Ember Storyboards",
+  "description": "The Ember state management system",
+  "homepage": "http://emberjs.com",
+  "author": "Yehuda Katz",
+  "version": "0.9.1",
+
+  "directories": {
+    "lib": "lib"
+  },
+
+  "dependencies": {
+    "spade":              "~> 1.0",
+    "jquery":             "~> 1.6",
+    "ember-views": "0.9.1"
+  },
+
+  "dependencies:development": {
+    "spade-qunit": "~> 1.0.0"
+  },
+
+  "bpm:build": {
+
+    "bpm_libs.js": {
+      "files": ["lib"],
+      "modes":        "*"
+    },
+
+    "ember-views/bpm_tests.js": {
+      "files": ["tests"],
+      "modes": ["debug"]
+    }
+  }
+}
+

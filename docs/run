@@ -1,2 +1,2 @@
 #!/usr/bin/env ruby
-system('node jsdoc/app/run.js -c=sc.conf');
+system('node jsdoc/app/run.js -c=ember.conf');
