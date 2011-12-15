@@ -955,6 +955,24 @@ test("{{view}} class attribute should set class on layer", function() {
   equals(view.$('.bar').text(), 'baz', "emits content");
 });
 
+test("{{view}} attributes should set attributes on layer", function() {
+  var templates = Ember.Object.create({
+    foo: Ember.Handlebars.compile('{{#view "TemplateTests.IdView" attributes="data-attribute1=3 disabled=disabled"}}{{/view}}')
+  });
+
+  TemplateTests.IdView = Ember.View;
+
+  view = Ember.View.create({
+    templateName: 'foo',
+    templates: templates
+  });
+
+  appendView();
+
+  equals(view.$('[data-attribute1=3]').length, 1, "adds first data attribute to layer");
+  equals(view.$('[disabled=disabled]').length, 1, "adds disabled attribute to layer");
+});
+
 test("{{view}} should be able to point to a local view", function() {
   view = Ember.View.create({
     template: Ember.Handlebars.compile("{{view common}}"),
