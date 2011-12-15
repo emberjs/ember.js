@@ -10,16 +10,24 @@ require("ember-handlebars/ext");
 // Find templates stored in the head tag as script tags and make them available
 // to Ember.CoreView in the global Ember.TEMPLATES object. This will be run as as
 // jQuery DOM-ready callback.
+//
+// Script tags with type="text/html" or "text/x-handlebars" will be compiled
+// with Ember's Handlebars and are suitable for use as a view's template.
+// Those with type="text/x-raw-handlebars" will be compiled with regular
+// Handlebars and are suitable for use in views' computed properties.
 Ember.Handlebars.bootstrap = function() {
-  Ember.$('script[type="text/html"], script[type="text/x-handlebars"]')
+  Ember.$('script[type="text/html"], script[type="text/x-handlebars"], script[type="text/x-raw-handlebars"]')
     .each(function() {
     // Get a reference to the script tag
     var script = Ember.$(this),
+      compile = (script.attr('type') === 'text/x-raw-handlebars') ?
+                  Ember.$.proxy(Handlebars.compile, Handlebars) :
+                  Ember.$.proxy(Ember.Handlebars.compile, Ember.Handlebars),
       // Get the name of the script, used by Ember.View's templateName property.
       // First look for data-template-name attribute, then fall back to its
       // id if no name is found.
       templateName = script.attr('data-template-name') || script.attr('id'),
-      template = Ember.Handlebars.compile(script.html()),
+      template = compile(script.html()),
       view, viewPath;
 
     if (templateName) {
