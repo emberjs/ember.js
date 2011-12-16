@@ -218,7 +218,7 @@ Ember.Handlebars.registerHelper('bindAttr', function(options) {
 
       ember_assert(fmt("Attributes must be numbers, strings or booleans, not %@", [result]), result == null || typeof result === 'number' || typeof result === 'string' || typeof result === 'boolean');
 
-      var elem = view.$("[data-handlebars-id='" + dataId + "']");
+      var elem = view.$("[data-bindAttr-" + dataId + "='" + dataId + "']");
 
       // If we aren't able to find the element, it means the element
       // to which we were bound has been removed from the view.
@@ -267,7 +267,7 @@ Ember.Handlebars.registerHelper('bindAttr', function(options) {
   }, this);
 
   // Add the unique identifier
-  ret.push('data-handlebars-id="' + dataId + '"');
+  ret.push('data-bindAttr-' + dataId + '="' + dataId + '"');
   return new Ember.Handlebars.SafeString(ret.join(' '));
 });
 
@@ -292,12 +292,12 @@ Ember.Handlebars.registerHelper('bindAttr', function(options) {
   @param {Ember.View} view
     The view in which observers should look for the element to update
 
-  @param {String} id 
-    Optional id use to lookup elements
+  @param {Srting} bindAttrId
+    Optional bindAttr id used to lookup elements
 
   @returns {Array} An array of class names to add
 */
-Ember.Handlebars.bindClasses = function(context, classBindings, view, id) {
+Ember.Handlebars.bindClasses = function(context, classBindings, view, bindAttrId) {
   var ret = [], newClass, value, elem;
 
   // Helper method to retrieve the property from the context and
@@ -349,7 +349,7 @@ Ember.Handlebars.bindClasses = function(context, classBindings, view, id) {
     observer = function() {
       // Get the current value of the property
       newClass = classStringForProperty(binding);
-      elem = id ? view.$("[data-handlebars-id='" + id + "']") : view.$();
+      elem = bindAttrId ? view.$("[data-bindAttr-" + bindAttrId + "='" + bindAttrId + "']") : view.$();
 
       // If we can't find the element anymore, a parent template has been
       // re-rendered and we've been nuked. Remove the observer.
