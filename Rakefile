@@ -170,22 +170,11 @@ namespace :release do
       puts "Bumping to version: #{EMBER_VERSION}"
 
       unless pretend?
-        # Bump the version of subcomponents required by the "umbrella" ember
-        # package.
-        contents = File.read("packages/ember/package.json")
-        contents.gsub! %r{"ember-(\w+)": .*$} do
-          %{"ember-#{$1}": "#{EMBER_VERSION}"}
-        end
-
-        File.open("packages/ember/package.json", "w") do |file|
-          file.write contents
-        end
-
         # Bump the version of each component package
         Dir["packages/ember*/package.json", "ember.json"].each do |package|
           contents = File.read(package)
           contents.gsub! %r{"version": .*$}, %{"version": "#{EMBER_VERSION}",}
-          contents.gsub! %r{"(ember-?\w*)": [^\n\{,]*(,?)$} do
+          contents.gsub! %r{"(ember[\w-]*)": [^,\n]+(,)?$} do
             %{"#{$1}": "#{EMBER_VERSION}"#{$2}}
           end
 
