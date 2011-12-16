@@ -40,8 +40,7 @@ Ember.Metamorph = Ember.Mixin.create({
 
       childView._insertElementLater(function() {
         var morph = get(view, 'morph');
-        var script = Ember.$("#" + morph.start);
-        script.after(get(childView, 'outerHTML'));
+        morph.prepend(get(childView, 'outerHTML'));
         childView.set('outerHTML', null);
       });
     },
@@ -51,8 +50,7 @@ Ember.Metamorph = Ember.Mixin.create({
 
       nextView._insertElementLater(function() {
         var morph = get(view, 'morph');
-        var script = Ember.$("#" + morph.end);
-        script.after(get(nextView, 'outerHTML'));
+        morph.after(get(nextView, 'outerHTML'));
         nextView.set('outerHTML', null);
       });
     },
