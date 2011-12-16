@@ -98,7 +98,7 @@ Ember.CollectionView = Ember.ContainerView.extend(
 
     len = get(childViews, 'length');
     for (idx = start + removedCount - 1; idx >= start; idx--) {
-      childViews[idx].destroy();
+      if (childViews[idx]) { childViews[idx].destroy(); }
     }
   },
 
