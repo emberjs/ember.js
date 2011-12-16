@@ -1,3 +1,13 @@
+*Ember 0.9.2 (December 16, 2011)*
+
+* add replaceIn to replace an entire node's content with something new
+* Use prepend() and after() methods of Metamorph
+* Update Metamorph to include after() and prepend()
+* Fixed some missing commas which prevented bpm from working
+* Safer Runloop Unwinding
+* Adding support for <script type="text/x-raw-handlebars">
+* Remove parentView deprecation warning
+
 *Ember 0.9.1 (December 14, 2011)*
 
 * Fix jslint warnings related to missing semicolons and variables defined twice
