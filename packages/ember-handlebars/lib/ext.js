@@ -10,7 +10,7 @@ require("ember-views/system/render_buffer");
 /**
   @namespace
   @name Handlebars
-  @description JavaScript Templating Language
+  @private
 */
 
 /**
