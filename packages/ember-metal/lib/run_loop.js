@@ -62,6 +62,9 @@ K.prototype = RunLoop.prototype;
 RunLoop.prototype = {
   end: function() {
     this.flush();
+  },
+
+  prev: function() {
     return this._prev;
   },
 
@@ -198,7 +201,12 @@ Ember.run.begin = function() {
 */
 Ember.run.end = function() {
   ember_assert('must have a current run loop', run.currentRunLoop);
-  run.currentRunLoop = run.currentRunLoop.end();
+  try {
+    run.currentRunLoop.end();
+  }
+  finally {
+    run.currentRunLoop = run.currentRunLoop.prev();
+  }
 };
 
 /**
