@@ -46,7 +46,7 @@
 
   K.prototype = Metamorph.prototype;
 
-  var rangeFor, htmlFunc, removeFunc, outerHTMLFunc, appendToFunc, startTagFunc, endTagFunc;
+  var rangeFor, htmlFunc, removeFunc, outerHTMLFunc, appendToFunc, afterFunc, prependFunc, startTagFunc, endTagFunc;
 
   outerHTMLFunc = function() {
     return this.startTag() + this.innerHTML + this.endTag();
@@ -103,7 +103,7 @@
       // create a new document fragment for the HTML
       var fragment = range.createContextualFragment(html);
 
-      // inser the fragment into the range
+      // insert the fragment into the range
       range.insertNode(fragment);
     };
 
@@ -123,6 +123,29 @@
       var frag = range.createContextualFragment(this.outerHTML());
       node.appendChild(frag);
     };
+
+    afterFunc = function(html) {
+      var range = document.createRange();
+      var after = document.getElementById(this.end);
+
+      range.setStartAfter(after);
+      range.setEndAfter(after);
+
+      var fragment = range.createContextualFragment(html);
+      range.insertNode(fragment);
+    };
+
+    prependFunc = function(html) {
+      var range = document.createRange();
+      var start = document.getElementById(this.start);
+
+      range.setStartAfter(start);
+      range.setEndAfter(start);
+
+      var fragment = range.createContextualFragment(html);
+      range.insertNode(fragment);
+    };
+
   } else {
     /**
      * This code is mostly taken from jQuery, with one exception. In jQuery's case, we
@@ -307,6 +330,44 @@
         node = nextSibling;
       }
     };
+
+    afterFunc = function(html) {
+      // get the real starting node. see realNode for details.
+      var end = document.getElementById(this.end);
+      var parentNode = end.parentNode;
+      var nextSibling;
+      var node;
+
+      // get the first node for the HTML string, even in cases like
+      // tables and lists where a simple innerHTML on a div would
+      // swallow some of the content.
+      node = firstNodeFor(parentNode, html);
+
+      // copy the nodes for the HTML between the starting and ending
+      // placeholder.
+      while (node) {
+        nextSibling = node.nextSibling;
+        parentNode.insertBefore(node, end.nextSibling);
+        node = nextSibling;
+      }
+    };
+
+    prependFunc = function(html) {
+      var start = document.getElementById(this.start);
+      var parentNode = start.parentNode;
+      var nextSibling;
+      var node;
+
+      debugger;
+      node = firstNodeFor(parentNode, html);
+      var insertBefore = start.nextSibling;
+
+      while (node) {
+        nextSibling = node.nextSibling;
+        parentNode.insertBefore(node, insertBefore);
+        node = nextSibling
+      }
+    }
   }
 
   Metamorph.prototype.html = function(html) {
@@ -326,6 +387,8 @@
   Metamorph.prototype.remove = removeFunc;
   Metamorph.prototype.outerHTML = outerHTMLFunc;
   Metamorph.prototype.appendTo = appendToFunc;
+  Metamorph.prototype.after = afterFunc;
+  Metamorph.prototype.prepend = prependFunc;
   Metamorph.prototype.startTag = startTagFunc;
   Metamorph.prototype.endTag = endTagFunc;
 
