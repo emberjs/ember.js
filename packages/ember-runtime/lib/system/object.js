@@ -9,6 +9,8 @@ require('ember-runtime/system/core_object');
 require('ember-runtime/system/set');
 
 Ember.CoreObject.subclasses = new Ember.Set();
+
+/** @class */
 Ember.Object = Ember.CoreObject.extend(Ember.Observable);
 
 

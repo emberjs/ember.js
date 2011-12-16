@@ -7,10 +7,13 @@
 require("ember-handlebars/ext");
 require("ember-views/views/view");
 require("ember-handlebars/controls/text_support");
-/** @class */
 
 var get = Ember.get, set = Ember.set;
 
+/**
+  @class
+  @extends Ember.TextSupport
+*/
 Ember.TextField = Ember.View.extend(Ember.TextSupport,
   /** @scope Ember.TextField.prototype */ {
 

@@ -268,6 +268,10 @@ Ember.mixin = function(obj) {
 };
 
 
+/**
+  @constructor
+  @name Ember.Mixin
+*/
 Mixin = function() { return initMixin(this, arguments); };
 
 Mixin._apply = applyMixin;

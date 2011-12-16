@@ -477,10 +477,16 @@ Ember.run.cancel = function(timer) {
   delete timers[timer];
 };
 
-
 // ..........................................................
 // DEPRECATED API
 //
+
+/**
+  @namespace
+  @name Ember.RunLoop
+  @deprecated
+  @description Compatibility for Ember.run
+*/
 
 /**
   @deprecated

@@ -38,6 +38,7 @@ var array_Slice = Array.prototype.slice;
 
 */
 
+/** @private */
 var metaPath = Ember.metaPath;
 
 // Gets the set of all actions, keyed on the guid of each action's
@@ -109,6 +110,8 @@ function invokeEvents(targetSet, params) {
   parameters passed to an observer. if you pass an xform function, it will
   be invoked and is able to translate event listener parameters into the form
   that observers are expecting.
+
+  @name Ember.addListener
 */
 function addListener(obj, eventName, target, method, xform) {
   ember_assert("You must pass at least an object and event name to Ember.addListener", !!obj && !!eventName);
