@@ -178,12 +178,12 @@ test("it automatically transitions to a default state specified using the initia
 });
 
 test("it reports the view associated with the current view state, if any", function() {
-  var view = SC.View.create();
+  var view = Ember.View.create();
 
-  stateManager = SC.StateManager.create({
-    foo: SC.ViewState.create({
+  stateManager = Ember.StateManager.create({
+    foo: Ember.ViewState.create({
       view: view,
-      bar: SC.State.create()
+      bar: Ember.State.create()
     })
   });
 
