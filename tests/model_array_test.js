@@ -19,7 +19,7 @@ test("a model array is backed by models", function() {
   var modelArray = store.find(Person, [1,2,3]);
 
   for (var i=0, l=get(array, 'length'); i<l; i++) {
-    equals(get(modelArray.objectAt(i), 'data'), array.objectAt(i), "a model array materializes objects on demand");
+    equals(get(modelArray.objectAt(i), 'data'), array[i], "a model array materializes objects on demand");
   }
 });
 

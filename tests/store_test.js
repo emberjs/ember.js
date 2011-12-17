@@ -172,7 +172,7 @@ test("DS.Store has a load method to load in an Array of records", function() {
   var objects = currentStore.findMany(currentType, [1,2,3]);
 
   for (var i=0, l=get(objects, 'length'); i<l; i++) {
-    var object = objects.objectAt(i), hash = array.objectAt(i);
+    var object = objects.objectAt(i), hash = array[i];
 
     equals(get(object, 'data'), hash);
   }
@@ -217,7 +217,7 @@ test("DS.Store passes only needed guids to findMany", function() {
   equals(get(objects, 'length'), 6, "the ModelArray returned from findMany has all the objects");
 
   for (var i=0; i<3; i++) {
-    var object = objects.objectAt(i), hash = array.objectAt(i);
+    var object = objects.objectAt(i), hash = array[i];
 
     equals(get(object, 'data'), hash);
   }

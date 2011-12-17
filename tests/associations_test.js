@@ -118,12 +118,12 @@ test("updating the content of a ModelArray updates its content", function() {
 
   var clientIds = loaded.clientIds;
 
-  var tags = DS.ModelArray.create({ content: [clientIds[0], clientIds[1]], store: store, type: Tag });
+  var tags = DS.ModelArray.create({ content: Ember.A([clientIds[0], clientIds[1]]), store: store, type: Tag });
 
   var tag = tags.objectAt(0);
   equal(get(tag, 'name'), "friendly", "precond - we're working with the right tags");
 
-  set(tags, 'content', [clientIds[1], clientIds[2]]);
+  set(tags, 'content', Ember.A([clientIds[1], clientIds[2]]));
   var tag = tags.objectAt(0);
   equal(get(tag, 'name'), "smarmy", "the lookup was updated");
 });
