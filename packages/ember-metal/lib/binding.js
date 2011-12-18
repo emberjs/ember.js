@@ -261,6 +261,16 @@ var OR_OPERATION = function(obj, left, right) {
 
         valueBinding: Ember.Binding.oneWay("MyApp.someController.value").notEmpty().notLessThan(10)
 
+  And to finish, remember that you can provide different transformations for
+  each side of the binding, for example, women usually like to tell that they
+  are older than they really are (just a juke girls, don't take too serious),
+  so here is how you could implement a binding from and ID document to a woman:
+
+        ageBinding: Ember.Binding.transform({
+          to:   function(value, binding) { return value - 5; },
+          from: function(value, binding) { return value + 5; },
+        }).from("id.age")
+
   ## How to Manually Adding Binding
 
   All of the examples above show you how to configure a custom binding, but
