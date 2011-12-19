@@ -11,7 +11,7 @@ test('RunLoop unwinds despite unhandled exception', function() {
 
   raises(function(){
     Ember.run(function() {
-      Ember.run.schedule('actions', function() { throw new Error("boom!") });
+      Ember.run.schedule('actions', function() { throw new Error("boom!"); });
     });
   }, Error, "boom!");
   
