@@ -31,6 +31,31 @@ test("when a single record is requested, the adapter's find method is called unl
   store.find(Person, 1);
 });
 
+test("when multiple models are requested, the adapter's findMany method is called", function() {
+  expect(1);
+
+  adapter.findMany = function(store, type, ids) {
+    deepEqual(ids, [1,2,3], "ids are passed");
+  };
+
+  store.findMany(Person, [1,2,3]);
+  store.findMany(Person, [1,2,3]);
+});
+
+test("when multiple models are requested, the adapter's find method is called multiple times if findMany is not implemented", function() {
+  expect(3);
+
+  var count = 0;
+  adapter.find = function(store, type, id) {
+    count++;
+
+    equal(id, count);
+  };
+
+  store.findMany(Person, [1,2,3]);
+  store.findMany(Person, [1,2,3]);
+});
+
 test("when many records are requested with query parameters, the adapter's findQuery method is called", function() {
   expect(6);
 
