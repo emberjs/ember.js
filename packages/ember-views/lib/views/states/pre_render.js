@@ -13,8 +13,8 @@ Ember.View.states.preRender = {
   // a view leaves the preRender state once its element has been
   // created (createElement).
   insertElement: function(view, fn) {
-    view._notifyWillInsertElement(true);
     view.createElement();
+    view._notifyWillInsertElement(true);
     // after createElement, the view will be in the hasElement state.
     fn.call(view);
     view.transitionTo('inDOM');

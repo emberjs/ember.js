@@ -358,14 +358,13 @@
       var nextSibling;
       var node;
 
-      debugger;
       node = firstNodeFor(parentNode, html);
       var insertBefore = start.nextSibling;
 
       while (node) {
         nextSibling = node.nextSibling;
         parentNode.insertBefore(node, insertBefore);
-        node = nextSibling
+        node = nextSibling;
       }
     }
   }
