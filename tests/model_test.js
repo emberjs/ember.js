@@ -163,6 +163,45 @@ test("when a DS.Model updates its attributes, it is marked dirty and listed in t
   });
 });
 
+test("when a newly created DS.Model updates its attributes, it is still listed in the created queue", function() {
+  expect(9);
+
+  var yehuda = store.create(Person, { id: 2 });
+
+  set(yehuda, 'name', "Yehuda Katz");
+  equal(get(yehuda, 'isDirty'), true, "The person is now dirty");
+
+  store.eachDirtyType('created', function(type, models) {
+    equal(type, Person);
+    equal(get(models, 'length'), 1, "The dirty list should be the right length");
+    equal(get(models.objectAt(0), 'name'), "Yehuda Katz", "The dirty list should have the right item");
+  });
+
+  store.eachDirtyType('updated', function(type, models) {
+    ok(false, "should not get here");
+  });
+
+  var tom = store.create(Person, { id: 1 });
+  set(tom, 'name', "Tom Dale");
+
+  equal(get(tom, 'isDirty'), true, "The person is now dirty");
+
+  store.eachDirtyType('created', function(type, models) {
+    equal(type, Person);
+
+    equal(get(models, 'length'), 2, "The dirty list should be the right length");
+    equal(get(models.objectAt(1), 'name'), "Tom Dale", "The dirty list should have the right item");
+
+    set(tom, 'name', "Senor Dale");
+    equal(get(models, 'length'), 2, "Items don't get added multiple times");
+  });
+
+  store.eachDirtyType('updated', function(type, models) {
+    ok(false, "should not get here");
+  });
+});
+
+
 test("when a DS.Model is dirty, attempting to `load` new data raises an exception", function() {
   var yehuda = store.find(Person, 2);
   set(yehuda, 'name', "Yehuda Katz");
