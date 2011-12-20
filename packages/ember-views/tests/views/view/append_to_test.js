@@ -52,6 +52,7 @@ test("should be added to the document body when calling appendTo()", function() 
 
 test("append calls willInsertElement and didInsertElement callbacks", function(){
   var willInsertElementCalled = false;
+  var willInsertElementCalledInChild = false;
   var didInsertElementCalled = false;
   
   var ViewWithCallback = View.extend({
@@ -60,6 +61,13 @@ test("append calls willInsertElement and didInsertElement callbacks", function()
     },
     didInsertElement: function(){
       didInsertElementCalled = true;
+    },
+    render: function(buffer) {
+      this.appendChild(Ember.View.create({
+        willInsertElement: function() {
+          willInsertElementCalledInChild = true;
+        }
+      }));
     }
   });
   
@@ -70,6 +78,7 @@ test("append calls willInsertElement and didInsertElement callbacks", function()
   });
 
   ok(willInsertElementCalled, "willInsertElement called");
+  ok(willInsertElementCalledInChild, "willInsertElement called in child");
   ok(didInsertElementCalled, "didInsertElement called");
 });
 
