@@ -155,6 +155,18 @@ test("it accepts absolute paths when changing states", function() {
   ok(stateManager.get('currentState') === emptyState, "updates currentState property to state at absolute path");
 });
 
+test("it does not enter an infinite loop in goToState", function() {
+  var emptyState = loadedState.empty;
+
+  stateManager.goToState('loadedState.empty');
+
+  stateManager.goToState('');
+  ok(stateManager.get('currentState') === emptyState, "goToState does nothing when given empty name");
+
+  stateManager.goToState('nonexistentState');
+  ok(stateManager.get('currentState') === emptyState, "goToState does not infinite loop when given nonexistent State");
+});
+
 test("it automatically transitions to a default state", function() {
   stateManager = Ember.StateManager.create({
     start: Ember.State.create({
