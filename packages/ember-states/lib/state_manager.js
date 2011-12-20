@@ -6,7 +6,7 @@ Ember.LOG_STATE_TRANSITIONS = false;
 
 Ember.StateManager = Ember.State.extend({
   /**
-    When creating a new storyboard, look for a default state to transition
+    When creating a new statemanager, look for a default state to transition
     into. This state can either be named `start`, or can be specified using the
     `initialState` property.
   */
@@ -71,7 +71,7 @@ Ember.StateManager = Ember.State.extend({
     var action = currentState[event];
 
     if (action) {
-      if (log) { console.log(fmt("STORYBOARDS: Sending event '%@' to state %@.", [event, currentState.name])); }
+      if (log) { console.log(fmt("STATEMANAGER: Sending event '%@' to state %@.", [event, currentState.name])); }
       action.call(currentState, this, context);
     } else {
       var parentState = get(currentState, 'parentState');
@@ -80,6 +80,8 @@ Ember.StateManager = Ember.State.extend({
   },
 
   goToState: function(name) {
+    if (Ember.empty(name)) { return; }
+
     var currentState = get(this, 'currentState') || this, state, newState;
 
     var exitStates = Ember.A();
@@ -95,6 +97,8 @@ Ember.StateManager = Ember.State.extend({
         state = get(state, 'parentState');
         if (!state) {
           state = get(this, 'states');
+          newState = getPath(state, name);
+          if (!newState) { return; }
         }
         newState = getPath(state, name);
       }
@@ -161,7 +165,7 @@ Ember.StateManager = Ember.State.extend({
       state.exit(stateManager, transition);
     }, function() {
       this.asyncEach(enterStates, function(state, transition) {
-        if (log) { console.log("STORYBOARDS: Entering " + state.name); }
+        if (log) { console.log("STATEMANAGER: Entering " + state.name); }
         state.enter(stateManager, transition);
       }, function() {
         var startState = state, enteredState;
