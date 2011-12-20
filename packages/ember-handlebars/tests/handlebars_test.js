@@ -1046,6 +1046,59 @@ test("should be able to bind element attributes using {{bindAttr}}", function() 
   equals(view.$('img').attr('alt'), "Nanananana Ember!", "updates alt attribute when title property is computed");
 });
 
+test("should be able to bind use {{bindAttr}} more than once on an element", function() {
+  var template = Ember.Handlebars.compile('<img {{bindAttr src="content.url"}} {{bindAttr alt="content.title"}}>');
+
+  view = Ember.View.create({
+    template: template,
+    content: Ember.Object.create({
+      url: "http://www.emberjs.com/assets/images/logo.png",
+      title: "The SproutCore Logo"
+    })
+  });
+
+  appendView();
+
+  equals(view.$('img').attr('src'), "http://www.emberjs.com/assets/images/logo.png", "sets src attribute");
+  equals(view.$('img').attr('alt'), "The SproutCore Logo", "sets alt attribute");
+
+  Ember.run(function() {
+    setPath(view, 'content.title', "El logo de Eember");
+  });
+
+  equals(view.$('img').attr('alt'), "El logo de Eember", "updates alt attribute when content's title attribute changes");
+
+  Ember.run(function() {
+    set(view, 'content', Ember.Object.create({
+      url: "http://www.thegooglez.com/theydonnothing",
+      title: "I CAN HAZ SEARCH"
+    }));
+  });
+
+  equals(view.$('img').attr('alt'), "I CAN HAZ SEARCH", "updates alt attribute when content object changes");
+
+  Ember.run(function() {
+    set(view, 'content', {
+      url: "http://www.emberjs.com/assets/images/logo.png",
+      title: "The SproutCore Logo"
+    });
+  });
+
+  equals(view.$('img').attr('alt'), "The SproutCore Logo", "updates alt attribute when content object is a hash");
+
+  Ember.run(function() {
+    set(view, 'content', Ember.Object.create({
+      url: "http://www.emberjs.com/assets/images/logo.png",
+      title: Ember.computed(function() {
+        return "Nanananana Ember!";
+      })
+    }));
+  });
+
+  equals(view.$('img').attr('alt'), "Nanananana Ember!", "updates alt attribute when title property is computed");
+  
+});
+
 test("should not reset cursor position when text field receives keyUp event", function() {
   view = Ember.TextField.create({
     value: "Broseidon, King of the Brocean"
