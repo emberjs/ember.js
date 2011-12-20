@@ -3,7 +3,7 @@ var get = Ember.get, set = Ember.set;
 Ember.TargetActionSupport = Ember.Mixin.create({
   target: null,
   action: null,
-  argument: null,
+  context: null,
 
   targetObject: Ember.computed(function() {
     var target = get(this, 'target');
@@ -18,16 +18,16 @@ Ember.TargetActionSupport = Ember.Mixin.create({
   triggerAction: function() {
     var action = get(this, 'action'),
         target = get(this, 'targetObject'),
-        argument = get(this, 'argument');
+        context = get(this, 'context');
 
     if (target && action) {
       if (typeof target.send === 'function') {
-        target.send(action, this);
+        target.send(action, this, context);
       } else {
         if (typeof action === 'string') {
           action = target[action];
         }
-        action.call(target, this, argument);
+        action.call(target, this, context);
       }
     }
   }
