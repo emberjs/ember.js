@@ -173,7 +173,7 @@ test("when a store is committed, the adapter's commit method is called with dele
   store.load(Person, { id: 1, name: "Tom Dale" });
   var tom = store.find(Person, 1);
 
-  tom.delete();
+  tom.deleteModel();
   store.commit();
 
   equal(get(tom, 'isDeleted'), true, "model is marked as deleted");
@@ -247,8 +247,8 @@ test("by default, commit calls deleteMany once per type", function() {
   var tom = store.find(Person, 1);
   var yehuda = store.find(Person, 2);
 
-  tom.delete();
-  yehuda.delete();
+  tom.deleteModel();
+  yehuda.deleteModel();
   store.commit();
 
   ok(get(tom, 'isDeleted'), "model is marked as deleted");
@@ -325,12 +325,12 @@ test("by default, updateMany calls update once per record", function() {
   store.commit();
 });
 
-test("by default, deleteMany calls delete once per record", function() {
+test("by default, deleteMany calls deleteModel once per record", function() {
   expect(4);
 
   var count = 0;
 
-  adapter.delete = function(store, type, model) {
+  adapter.deleteModel = function(store, type, model) {
     equal(type, Person, "the type is correct");
 
     if (count === 0) {
@@ -352,8 +352,8 @@ test("by default, deleteMany calls delete once per record", function() {
   var tom = store.find(Person, 1);
   var yehuda = store.find(Person, 2);
 
-  tom.delete();
-  yehuda.delete();
+  tom.deleteModel();
+  yehuda.deleteModel();
   store.commit();
 
   // there is nothing to commit, so eachType won't do anything
