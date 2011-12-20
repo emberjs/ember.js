@@ -1,3 +1,10 @@
+*Ember 0.9.3 (December 19, 2011)*
+
+* Make sure willInsertElement actually gets called on all child views. Element is still not guaranteed to work.
+* Implement tab views and controller
+* Fixed some parse errors and jslint warnings
+* allow use of multiple {{bindAttr}}s per element
+
 *Ember 0.9.2 (December 16, 2011)*
 
 * add replaceIn to replace an entire node's content with something new

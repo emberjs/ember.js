@@ -1,6 +1,6 @@
 {
   "name": "ember-handlebars-format",
-  "version": "0.9.2",
+  "version": "0.9.3",
   "description": "Adds format support for handlebars templates",
   "summary": "Adds format support for handlebars templates",
   "homepage": "http://www.emberjs.com",

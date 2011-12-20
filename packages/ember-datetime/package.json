@@ -4,10 +4,10 @@
   "description": "A rich date time class with utilities",
   "homepage": "http://emberjs.com",
   "author": "Strobe Inc., Apple, Inc., and contributors",
-  "version": "0.9.2",
+  "version": "0.9.3",
   "dependencies": {
     "spade":              "~> 1.0.0",
-    "ember-runtime": "0.9.2"
+    "ember-runtime": "0.9.3"
   },
 
   "directories": {
