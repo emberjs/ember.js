@@ -26,6 +26,24 @@ test("it should support actions specified as strings", function() {
   obj.triggerAction();
 });
 
+test("it should support actions argument passing", function() {
+  expect(2);
+
+  var obj = Ember.Object.create(Ember.TargetActionSupport, {
+    target: Ember.Object.create({
+      anEvent: function(source, argument) {
+        equal(argument, 42, "anEvent method was called");
+        ok(true, "anEvent method was called");
+      }
+    }),
+
+    action: 'anEvent',
+    argument: 42
+  });
+
+  obj.triggerAction();
+});
+
 test("it should invoke the send() method on objects that implement it", function() {
   expect(1);
 
