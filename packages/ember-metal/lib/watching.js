@@ -35,16 +35,16 @@ function isKeyName(path) {
 
 // ..........................................................
 // DEPENDENT KEYS
-// 
+//
 
 var DEP_SKIP = { __emberproto__: true }; // skip some keys and toString
 function iterDeps(method, obj, depKey, seen) {
-  
+
   var guid = guidFor(obj);
   if (!seen[guid]) seen[guid] = {};
   if (seen[guid][depKey]) return ;
   seen[guid][depKey] = true;
-  
+
   var deps = meta(obj, false).deps;
   deps = deps && deps[depKey];
   if (deps) {

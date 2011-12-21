@@ -172,8 +172,6 @@ if (Object.freeze) Object.freeze(EMPTY_META);
   @returns {Hash}
 */
 Ember.meta = function meta(obj, writable) {
-  
-  ember_assert("You must pass an object to Ember.meta. This was probably called from Ember internals, so you probably called a Ember method with undefined that was expecting an object", obj != undefined);
 
   var ret = obj[META_KEY];
   if (writable===false) return ret || EMPTY_META;

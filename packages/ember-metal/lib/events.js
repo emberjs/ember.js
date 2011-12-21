@@ -167,7 +167,6 @@ function watchedEvents(obj) {
 }
 
 function sendEvent(obj, eventName) {
-  ember_assert("You must pass an object and event name to Ember.sendEvent", !!obj && !!eventName);
 
   // first give object a chance to handle it
   if (obj !== Ember && 'function' === typeof obj.sendEvent) {
