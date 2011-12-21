@@ -23,6 +23,7 @@ var meta = Ember.meta;
 
 var get, set;
 
+/** @private */
 get = function get(obj, keyName) {
   if (keyName === undefined && 'string' === typeof obj) {
     keyName = obj;
@@ -37,6 +38,7 @@ get = function get(obj, keyName) {
   return ret;
 };
 
+/** @private */
 set = function set(obj, keyName, value) {
   if (('object'===typeof obj) && !(keyName in obj)) {
     if ('function' === typeof obj.setUnknownProperty) {

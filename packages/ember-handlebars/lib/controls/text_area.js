@@ -8,11 +8,14 @@ require("ember-handlebars/ext");
 require("ember-views/views/view");
 require("ember-handlebars/controls/text_support");
 
-/** @class */
-
 var get = Ember.get, set = Ember.set;
 
-Ember.TextArea = Ember.View.extend(Ember.TextSupport, {
+/**
+  @class
+  @extends Ember.TextSupport
+*/
+Ember.TextArea = Ember.View.extend(Ember.TextSupport,
+/** @scope Ember.TextArea.prototype */ {
 
   classNames: ['ember-text-area'],
 

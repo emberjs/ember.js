@@ -5,6 +5,20 @@
 // ==========================================================================
 /*globals Handlebars */
 
+require("ember-views/system/render_buffer");
+
+/**
+  @namespace
+  @name Handlebars
+  @private
+*/
+
+/**
+  @namespace
+  @name Handlebars.helpers
+  @description Helpers for Handlebars templates
+*/
+
 /**
   @class
 
@@ -28,15 +42,6 @@
 
   Note that you won't usually need to use Ember.Handlebars yourself. Instead, use
   Ember.View, which takes care of integration into the view layer for you.
-*/
-
-require("ember-views/system/render_buffer");
-
-/**
-  @namespace
-
-  Ember Handlebars is an extension to Handlebars that makes the built-in
-  Handlebars helpers and {{mustaches}} binding-aware.
 */
 Ember.Handlebars = Ember.create(Handlebars);
 

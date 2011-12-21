@@ -6,11 +6,12 @@
 
 require("ember-handlebars/ext");
 require("ember-views/views/view");
-/** @class */
 
 var get = Ember.get, set = Ember.set;
 
-Ember.TextSupport = Ember.Mixin.create({
+/** @class */
+Ember.TextSupport = Ember.Mixin.create(
+/** @scope Ember.TextSupport.prototype */ {
 
   value: "",
 

@@ -66,6 +66,12 @@ Ember.ENV = 'undefined' === typeof ENV ? {} : ENV;
 Ember.K = function() { return this; };
 
 /**
+  @namespace
+  @name window
+  @description The global window object
+*/
+
+/**
   Define an assertion that will throw an exception if the condition is not 
   met.  Ember build tools will remove any calls to ember_assert() when 
   doing a production build.
