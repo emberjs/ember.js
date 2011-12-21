@@ -38,14 +38,14 @@ function isKeyName(path) {
 // 
 
 var DEP_SKIP = { __emberproto__: true }; // skip some keys and toString
-function iterDeps(methodName, obj, depKey, seen) {
+function iterDeps(method, obj, depKey, seen) {
   
   var guid = guidFor(obj);
   if (!seen[guid]) seen[guid] = {};
   if (seen[guid][depKey]) return ;
   seen[guid][depKey] = true;
   
-  var deps = meta(obj, false).deps, method = Ember[methodName];
+  var deps = meta(obj, false).deps;
   deps = deps && deps[depKey];
   if (deps) {
     for(var key in deps) {
@@ -62,7 +62,7 @@ var WILL_SEEN, DID_SEEN;
 function dependentKeysWillChange(obj, depKey) {
   var seen = WILL_SEEN, top = !seen;
   if (top) seen = WILL_SEEN = {};
-  iterDeps('propertyWillChange', obj, depKey, seen);
+  iterDeps(propertyWillChange, obj, depKey, seen);
   if (top) WILL_SEEN = null;
 }
 
@@ -70,7 +70,7 @@ function dependentKeysWillChange(obj, depKey) {
 function dependentKeysDidChange(obj, depKey) {
   var seen = DID_SEEN, top = !seen;
   if (top) seen = DID_SEEN = {};
-  iterDeps('propertyDidChange', obj, depKey, seen);
+  iterDeps(propertyDidChange, obj, depKey, seen);
   if (top) DID_SEEN = null;
 }
 
@@ -502,7 +502,7 @@ Ember.rewatch = function(obj) {
     
   @returns {void}
 */
-Ember.propertyWillChange = function(obj, keyName) {
+var propertyWillChange = Ember.propertyWillChange = function(obj, keyName) {
   var m = meta(obj, false), proto = m.proto, desc = m.descs[keyName];
   if (proto === obj) return ;
   if (desc && desc.willChange) desc.willChange(obj, keyName);
@@ -528,7 +528,7 @@ Ember.propertyWillChange = function(obj, keyName) {
     
   @returns {void}
 */
-Ember.propertyDidChange = function(obj, keyName) {
+var propertyDidChange = Ember.propertyDidChange = function(obj, keyName) {
   var m = meta(obj, false), proto = m.proto, desc = m.descs[keyName];
   if (proto === obj) return ;
   if (desc && desc.didChange) desc.didChange(obj, keyName);
