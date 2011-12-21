@@ -30,8 +30,8 @@ input "packages"
 output "tests/source"
 
 match "*/{lib,tests}/**/*.js" do
-  filter RegisterWrapper
   filter RequireRewrite
+  filter RegisterWrapper
   filter ConcatFilter do |filename|
     filename =~ %r{/tests/} ? "ember-tests.js" : "ember.js"
   end

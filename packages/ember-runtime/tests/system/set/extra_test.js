@@ -36,18 +36,11 @@ test('should clear a set of its content', function() {
 
   var get = Ember.get, set = Ember.set;
   var aSet = new Ember.Set([1,2,3]);
-  var count = 0;
   
   equals(get(aSet, 'length'), 3, 'should have three items');
-  ok(get(aSet, 'firstObject'), 'firstObject should return an object');
-  ok(get(aSet, 'lastObject'), 'lastObject should return an object');
-  Ember.addObserver(aSet, '[]', function() { count++; });
 
   aSet.clear();
   equals(get(aSet, 'length'), 0, 'should have 0 items');
-  equals(count, 1, 'should have notified of content change');
-  equals(get(aSet, 'firstObject'), null, 'firstObject should return nothing');
-  equals(get(aSet, 'lastObject'), null, 'lastObject should return nothing');
   
   count = 0;
   aSet.forEach(function() { count++; });

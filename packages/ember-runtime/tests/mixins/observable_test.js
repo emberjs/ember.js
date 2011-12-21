@@ -12,7 +12,7 @@ test('should be able to use getProperties to get a POJO of provided keys', funct
     lastName: "Jobs",
     companyName: "Apple, Inc."
   });
-  
+
   var pojo = obj.getProperties("firstName", "lastName");
   equals("Steve", pojo.firstName);
   equals("Jobs", pojo.lastName);
