@@ -4,7 +4,12 @@ require('ember-states/state');
 
 Ember.LOG_STATE_TRANSITIONS = false;
 
-Ember.StateManager = Ember.State.extend({
+/**
+  @class
+*/
+Ember.StateManager = Ember.State.extend(
+/** @scope Ember.State.prototype */ {
+
   /**
     When creating a new statemanager, look for a default state to transition
     into. This state can either be named `start`, or can be specified using the
@@ -41,6 +46,8 @@ Ember.StateManager = Ember.State.extend({
   currentState: null,
 
   /**
+    @property
+
     If the current state is a view state or the descendent of a view state,
     this property will be the view associated with it. If there is no
     view state active in this state manager, this value will be null.

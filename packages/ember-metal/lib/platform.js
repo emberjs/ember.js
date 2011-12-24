@@ -11,11 +11,15 @@ require('ember-metal/core');
   @class
 
   Platform specific methods and feature detectors needed by the framework.
+
+  @name Ember.platform
 */
 var platform = Ember.platform = {} ;
 
 /**
   Identical to Object.create().  Implements if not available natively.
+  @memberOf Ember.platform
+  @name create
 */
 platform.create = Object.create;
 
@@ -113,6 +117,8 @@ if (defineProperty) {
   Identical to Object.defineProperty().  Implements as much functionality
   as possible if not available natively.
 
+  @memberOf Ember.platform
+  @name defineProperty
   @param {Object} obj The object to modify
   @param {String} keyName property name to modify
   @param {Object} desc descriptor hash
@@ -122,6 +128,9 @@ platform.defineProperty = defineProperty;
 
 /**
   Set to true if the platform supports native getters and setters.
+
+  @memberOf Ember.platform
+  @name hasPropertyAccessors
 */
 platform.hasPropertyAccessors = true;
 

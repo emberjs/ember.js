@@ -40,11 +40,13 @@ var get = Ember.get, getPath = Ember.getPath, set = Ember.set, fmt = Ember.Strin
 
       var observer, invoker;
 
+      /** @private */
       observer = function(){
         // Double check since sometimes the view gets destroyed after this observer is already queued
         if (!get(bindView, 'isDestroyed')) { bindView.rerender(); }
       };
 
+      /** @private */
       invoker = function() {
         Ember.run.once(observer);
       };
@@ -213,6 +215,7 @@ Ember.Handlebars.registerHelper('bindAttr', function(options) {
 
     var observer, invoker;
 
+    /** @private */
     observer = function observer() {
       var result = getPath(ctx, property);
 
@@ -245,6 +248,7 @@ Ember.Handlebars.registerHelper('bindAttr', function(options) {
       }
     };
 
+    /** @private */
     invoker = function() {
       Ember.run.once(observer);
     };
@@ -346,6 +350,7 @@ Ember.Handlebars.bindClasses = function(context, classBindings, view, bindAttrId
 
     // Set up an observer on the context. If the property changes, toggle the
     // class name.
+    /** @private */
     observer = function() {
       // Get the current value of the property
       newClass = classStringForProperty(binding);
@@ -372,6 +377,7 @@ Ember.Handlebars.bindClasses = function(context, classBindings, view, bindAttrId
       }
     };
 
+    /** @private */
     invoker = function() {
       Ember.run.once(observer);
     };

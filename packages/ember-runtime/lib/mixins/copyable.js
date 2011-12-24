@@ -26,7 +26,8 @@ var get = Ember.get, set = Ember.set;
 
   @since Ember 0.9
 */
-Ember.Copyable = Ember.Mixin.create({
+Ember.Copyable = Ember.Mixin.create(
+/** @scope Ember.Copyable.prototype */ {
 
   /**
     Override to return a copy of the receiver.  Default implementation raises
