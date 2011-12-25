@@ -209,18 +209,13 @@ Ember.Enumerable = Ember.Mixin.create( /** @lends Ember.Enumerable */ {
   },
 
   /**
-    Retrieves the named value on each member object. This is more efficient
-    than using one of the wrapper methods defined here. Objects that
-    implement Ember.Observable will use the get() method, otherwise the property
-    will be accessed directly.
+    Alias for mapProperty
 
-    @param {String} key The key to retrieve
-    @returns {Array} Extracted values
+    @params key {String} name of the property
+    @returns {Array} The mapped array.
   */
   getEach: function(key) {
-    return this.map(function(item) {
-      return get(item, key);
-    });
+    return this.mapProperty(key);
   },
 
   /**
