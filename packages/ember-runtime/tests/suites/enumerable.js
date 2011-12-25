@@ -278,6 +278,7 @@ require('./enumerable/filter');
 require('./enumerable/find');
 require('./enumerable/firstObject');
 require('./enumerable/forEach');
+require('./enumerable/mapProperty');
 require('./enumerable/invoke');
 require('./enumerable/lastObject');
 require('./enumerable/map');
