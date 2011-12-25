@@ -12,12 +12,15 @@
 var STRING_DASHERIZE_REGEXP = (/[ _]/g);
 var STRING_DASHERIZE_CACHE = {};
 var STRING_DECAMELIZE_REGEXP = (/([a-z])([A-Z])/g);
-  
+var STRING_CAMELIZE_REGEXP = (/(\-|_|\s)+(.)?/g);
+var STRING_UNDERSCORE_REGEXP_1 = (/([a-z\d])([A-Z]+)/g);
+var STRING_UNDERSCORE_REGEXP_2 = (/\-|\s+/g);
+
 /**
-  Defines the hash of localized strings for the current language.  Used by 
+  Defines the hash of localized strings for the current language.  Used by
   the `Ember.String.loc()` helper.  To localize, add string values to this
   hash.
-  
+
   @property {String}
 */
 Ember.STRINGS = {};
@@ -26,7 +29,7 @@ Ember.STRINGS = {};
   Defines string helper methods including string formatting and localization.
   Unless Ember.EXTEND_PROTOTYPES = false these methods will also be added to the
   String.prototype as well.
-  
+
   @namespace
 */
 Ember.String = {
@@ -61,35 +64,35 @@ Ember.String = {
 
   /**
     Formats the passed string, but first looks up the string in the localized
-    strings hash.  This is a convenient way to localize text.  See 
+    strings hash.  This is a convenient way to localize text.  See
     `Ember.String.fmt()` for more information on formatting.
-    
+
     Note that it is traditional but not required to prefix localized string
     keys with an underscore or other character so you can easily identify
     localized strings.
-    
+
     # Example Usage
-    
+
         @javascript@
         Ember.STRINGS = {
           '_Hello World': 'Bonjour le monde',
           '_Hello %@ %@': 'Bonjour %@ %@'
         };
-        
+
         Ember.String.loc("_Hello World");
         => 'Bonjour le monde';
-        
+
         Ember.String.loc("_Hello %@ %@", ["John", "Smith"]);
         => "Bonjour John Smith";
-        
-        
-        
+
+
+
     @param {String} str
       The string to format
-    
+
     @param {Array} formats
       Optional array of parameters to interpolate into string.
-      
+
     @returns {String} formatted string
   */
   loc: function(str, formats) {
@@ -101,12 +104,12 @@ Ember.String = {
     Splits a string into separate units separated by spaces, eliminating any
     empty strings in the process.  This is a convenience method for split that
     is mostly useful when applied to the String.prototype.
-    
+
     # Example Usage
-    
+
         @javascript@
-        Ember.String.w("alpha beta gamma").forEach(function(key) { 
-          console.log(key); 
+        Ember.String.w("alpha beta gamma").forEach(function(key) {
+          console.log(key);
         });
         > alpha
         > beta
@@ -114,11 +117,11 @@ Ember.String = {
 
     @param {String} str
       The string to split
-      
+
     @returns {String} split string
   */
   w: function(str) { return str.split(/\s+/); },
-  
+
   /**
     Converts a camelized string into all lower case separated by underscores.
 
@@ -162,6 +165,45 @@ Ember.String = {
     }
 
     return ret;
+  },
+
+  /**
+    Converts a dasherized string or a string with spaces or underscores into
+    camelized string.
+
+    h2. Examples
+
+    | *Input String* | *Output String* |
+    | my favorite items | myFavoriteItems |
+    | css-class-name | cssClassName |
+    | action_name | actionName |
+    | innerHTML | innerHTML |
+
+    @returns {String} the camelized string.
+  */
+  camelize: function(str) {
+    return str.replace(STRING_CAMELIZE_REGEXP, function(match, separator, chr) {
+      return chr ? chr.toUpperCase() : '';
+    });
+  },
+
+  /**
+    More general than decamelize, converts a dasherized or camelcased string or a string with spaces into
+    all lower case separated by undescores.
+
+    h2. Examples
+
+    | *Input String* | *Output String* |
+    | my favorite items | my_favorite_items |
+    | css-class-name | css_class_name |
+    | action_name | action_name |
+    | innerHTML | inner_html |
+
+    @returns {String} the camelized string.
+  */
+  underscore: function(str) {
+    return str.replace(STRING_UNDERSCORE_REGEXP_1, '$1_$2').
+      replace(STRING_UNDERSCORE_REGEXP_2, '_').toLowerCase();
   }
 };
 
