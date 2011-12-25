@@ -39,7 +39,8 @@ test("Ember.none", function() {
 });
 
 test("Ember.empty", function() {
-  var string = "string", fn = function() {};
+  var string = "string", fn = function() {},
+      object = {length: 0};
 
   equals(true,  Ember.empty(null),      "for null");
   equals(true,  Ember.empty(undefined), "for undefined");
@@ -49,8 +50,9 @@ test("Ember.empty", function() {
   equals(false, Ember.empty(string),    "for a String");
   equals(false, Ember.empty(fn),        "for a Function");
   equals(false, Ember.empty(0),         "for 0");
-  equals(false, Ember.empty([]),        "for an empty Array");
+  equals(true,  Ember.empty([]),        "for an empty Array");
   equals(false, Ember.empty({}),        "for an empty Object");
+  equals(true,  Ember.empty(object),     "for an Object that has zero 'length'");
 });
 
 test("Ember.isArray" ,function(){
