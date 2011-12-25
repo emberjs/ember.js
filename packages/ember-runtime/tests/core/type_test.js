@@ -47,9 +47,9 @@ test("Ember.empty", function() {
   equals(false, Ember.empty(true),      "for true");
   equals(false, Ember.empty(false),     "for false");
   equals(false, Ember.empty(string),    "for a String");
-  equals(false, Ember.empty(fn),        "for a Function");
+  equals(true,  Ember.empty(fn),        "for a Function");
   equals(false, Ember.empty(0),         "for 0");
-  equals(false, Ember.empty([]),        "for an empty Array");
+  equals(true,  Ember.empty([]),        "for an empty Array");
   equals(false, Ember.empty({}),        "for an empty Object");
 });
 
