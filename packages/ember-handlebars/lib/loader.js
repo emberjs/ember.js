@@ -28,7 +28,7 @@ Ember.Handlebars.bootstrap = function() {
       // id if no name is found.
       templateName = script.attr('data-template-name') || script.attr('id'),
       template = compile(script.html()),
-      view, viewPath;
+      view, viewPath, tagName;
 
     if (templateName) {
       // For templates which have a name, we save them and then remove them from the DOM
@@ -53,8 +53,13 @@ Ember.Handlebars.bootstrap = function() {
       viewPath = script.attr('data-view');
       view = viewPath ? Ember.getPath(viewPath) : Ember.View;
 
+      // Users can optionally specify a custom tag name to use by setting the
+      // data-tag-name attribute on the script tag.
+      tagName = script.attr('data-tag-name');
+
       view = view.create({
-        template: template
+        template: template,
+        tagName: (tagName) ? tagName : undefined
       });
 
       view._insertElementLater(function() {
