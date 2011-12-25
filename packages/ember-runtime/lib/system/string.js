@@ -13,8 +13,8 @@ var STRING_DASHERIZE_REGEXP = (/[ _]/g);
 var STRING_DASHERIZE_CACHE = {};
 var STRING_DECAMELIZE_REGEXP = (/([a-z])([A-Z])/g);
 var STRING_CAMELIZE_REGEXP = (/(\-|_|\s)+(.)?/g);
-var STRING_UNDERSCORED_REGEXP_1 = (/([a-z\d])([A-Z]+)/g);
-var STRING_UNDERSCORED_REGEXP_2 = (/\-|\s+/g);
+var STRING_UNDERSCORE_REGEXP_1 = (/([a-z\d])([A-Z]+)/g);
+var STRING_UNDERSCORE_REGEXP_2 = (/\-|\s+/g);
 
 /**
   Defines the hash of localized strings for the current language.  Used by
@@ -201,9 +201,9 @@ Ember.String = {
 
     @returns {String} the camelized string.
   */
-  underscored: function(str) {
-    return str.replace(STRING_UNDERSCORED_REGEXP_1, '$1_$2').
-      replace(STRING_UNDERSCORED_REGEXP_2, '_').toLowerCase();
+  underscore: function(str) {
+    return str.replace(STRING_UNDERSCORE_REGEXP_1, '$1_$2').
+      replace(STRING_UNDERSCORE_REGEXP_2, '_').toLowerCase();
   }
 };
 
