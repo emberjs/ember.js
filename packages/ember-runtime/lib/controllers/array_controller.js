@@ -26,7 +26,7 @@ require('ember-runtime/system/array_proxy');
 
   Then, create a view that binds to your new controller:
 
-    {{collection contentBinding="MyApp.listController"}}
+    {{#collection contentBinding="MyApp.listController"}}
       {{content.firstName}} {{content.lastName}}
     {{/collection}}
 
