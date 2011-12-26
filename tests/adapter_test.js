@@ -360,3 +360,15 @@ test("by default, deleteMany calls deleteModel once per record", function() {
   store.commit();
 });
 
+test("can be created after the DS.Store", function() {
+  expect(1);
+  store.set('adapter', 'App.adapter');
+  adapter.find = function(store, type) {
+    equal(type, Person, "the type is correct");
+  };
+  // Expose the adapter to global namespace
+  window.App = {adapter: adapter};
+
+  store.find(Person, 1);
+});
+
