@@ -199,13 +199,11 @@ Ember.String = {
     | action_name | action_name |
     | innerHTML | inner_html |
 
-    @returns {String} the camelized string.
+    @returns {String} the underscored string.
   */
   underscore: function(str) {
     return str.replace(STRING_UNDERSCORE_REGEXP_1, '$1_$2').
       replace(STRING_UNDERSCORE_REGEXP_2, '_').toLowerCase();
   }
 };
-
-
 
