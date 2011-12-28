@@ -16,6 +16,7 @@ var Mixin, MixinDelegate, REQUIRED, Alias;
 var classToString, superClassString;
 
 var a_map = Array.prototype.map;
+var a_slice = Array.prototype.slice;
 var EMPTY_META = {}; // dummy for non-writable meta
 var META_SKIP = { __emberproto__: true, __ember_count__: true };
 
@@ -263,7 +264,7 @@ function applyMixin(obj, mixins, partial) {
 }
 
 Ember.mixin = function(obj) {
-  var args = Array.prototype.slice.call(arguments, 1);
+  var args = a_slice.call(arguments, 1);
   return applyMixin(obj, args, false);
 };
 
@@ -277,7 +278,7 @@ Mixin = function() { return initMixin(this, arguments); };
 Mixin._apply = applyMixin;
 
 Mixin.applyPartial = function(obj) {
-  var args = Array.prototype.slice.call(arguments, 1);
+  var args = a_slice.call(arguments, 1);
   return applyMixin(obj, args, true);
 };
 
@@ -349,7 +350,7 @@ Mixin.prototype.detect = function(obj) {
 
 Mixin.prototype.without = function() {
   var ret = new Mixin(this);
-  ret._without = Array.prototype.slice.call(arguments);
+  ret._without = a_slice.call(arguments);
   return ret;
 };
 
@@ -511,13 +512,13 @@ Ember.MixinDelegate = MixinDelegate;
 //
 
 Ember.observer = function(func) {
-  var paths = Array.prototype.slice.call(arguments, 1);
+  var paths = a_slice.call(arguments, 1);
   func.__ember_observes__ = paths;
   return func;
 };
 
 Ember.beforeObserver = function(func) {
-  var paths = Array.prototype.slice.call(arguments, 1);
+  var paths = a_slice.call(arguments, 1);
   func.__ember_observesBefore__ = paths;
   return func;
 };

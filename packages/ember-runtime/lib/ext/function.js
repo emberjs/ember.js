@@ -7,6 +7,8 @@
 
 require('ember-runtime/core');
 
+var a_slice = Array.prototype.slice;
+
 if (Ember.EXTEND_PROTOTYPES) {
 
   Function.prototype.property = function() {
@@ -15,12 +17,12 @@ if (Ember.EXTEND_PROTOTYPES) {
   };
 
   Function.prototype.observes = function() {
-    this.__ember_observes__ = Array.prototype.slice.call(arguments);
+    this.__ember_observes__ = a_slice.call(arguments);
     return this;
   };
 
   Function.prototype.observesBefore = function() {
-    this.__ember_observesBefore__ = Array.prototype.slice.call(arguments);
+    this.__ember_observesBefore__ = a_slice.call(arguments);
     return this;
   };
 

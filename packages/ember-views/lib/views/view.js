@@ -9,6 +9,7 @@
 require("ember-views/system/render_buffer");
 var get = Ember.get, set = Ember.set, addObserver = Ember.addObserver;
 var getPath = Ember.getPath, meta = Ember.meta, fmt = Ember.String.fmt;
+var a_slice = Array.prototype.slice;
 
 var childViewsProperty = Ember.computed(function() {
   var childViews = get(this, '_childViews');
@@ -300,7 +301,7 @@ Ember.View = Ember.Object.extend(
         var fn = state[name];
 
         if (fn) {
-          var args = Array.prototype.slice.call(arguments, 1);
+          var args = a_slice.call(arguments, 1);
           args.unshift(this);
 
           return fn.apply(this, args);
