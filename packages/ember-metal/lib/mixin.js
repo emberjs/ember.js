@@ -316,15 +316,17 @@ Mixin.prototype.reopen = function() {
 
 var TMP_ARRAY = [];
 Mixin.prototype.apply = function(obj) {
-  TMP_ARRAY.length=0;
   TMP_ARRAY[0] = this;
-  return applyMixin(obj, TMP_ARRAY, false);
+  var ret = applyMixin(obj, TMP_ARRAY, false);
+  TMP_ARRAY.length=0;
+  return ret;
 };
 
 Mixin.prototype.applyPartial = function(obj) {
-  TMP_ARRAY.length=0;
   TMP_ARRAY[0] = this;
-  return applyMixin(obj, TMP_ARRAY, true);
+  var ret = applyMixin(obj, TMP_ARRAY, true);
+  TMP_ARRAY.length=0;
+  return ret;
 };
 
 function _detect(curMixin, targetMixin, seen) {
