@@ -100,13 +100,19 @@ Ember.View = Ember.Object.extend(
 
     // If there is no template but a templateName has been specified,
     // try to lookup as a spade module
-    if (!template && templateName) {
-      if ('undefined' !== require && require.exists) {
-        if (require.exists(templateName)) { template = require(templateName); }
+    if (!template) {
+      if (templateName) {
+        if ('undefined' !== require && require.exists) {
+          if (require.exists(templateName)) { template = require(templateName); }
+        }
+      
+        if (!template) {
+          throw new Ember.Error(fmt('%@ - Unable to find template "%@".', [this, templateName]));
+        }
       }
-
-      if (!template) {
-        throw new Ember.Error(fmt('%@ - Unable to find template "%@".', [this, templateName]));
+      else {
+          // If templateName is not given and a block is given, treat the block as the template
+          template = get(this, 'yieldContent');
       }
     }
 
@@ -128,7 +134,29 @@ Ember.View = Ember.Object.extend(
   templateContext: Ember.computed(function(key, value) {
     return value !== undefined ? value : this;
   }).cacheable(),
-
+  
+  /**
+    The block to be yielded to, when requested.
+    
+    This is usually template of the block specified within the calling 
+    template. In general, you would never have to use this directly.
+    
+    @field
+    @type Function
+  */
+  yieldContent: null,
+  
+  /**
+    The object from which the yielded block should access properties.
+    
+    This object is passed in when the yielded block template (yieldContent) 
+    is evaulated. In general, you would never have to use this directly.
+    
+    @field
+    @type Object
+  */
+  yieldContext: null,
+  
   /**
     If the view is currently inserted into the DOM of a parent view, this
     property will point to the parent of the view.
@@ -1054,7 +1082,7 @@ Ember.View = Ember.Object.extend(
     var parentView = get(this, '_parentView');
 
     this._super();
-
+    
     // Register the view for event handling. This hash is used by
     // Ember.RootResponder to dispatch incoming events.
     Ember.View.views[get(this, 'elementId')] = this;
@@ -1075,7 +1103,7 @@ Ember.View = Ember.Object.extend(
   appendChild: function(view, options) {
     return this.invokeForState('appendChild', view, options);
   },
-
+  
   /**
     Removes the child view from the parent view.
 
@@ -1265,7 +1293,6 @@ Ember.View = Ember.Object.extend(
       });
     }
   }
-
 });
 
 /**
