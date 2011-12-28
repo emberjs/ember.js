@@ -11,6 +11,50 @@ Ember.StateManager = Ember.State.extend(
 /** @scope Ember.State.prototype */ {
 
   /**
+    TODO:
+      add ability to goTo relative paths
+      add support for concurrent substates
+
+    _cacheRecursively traverses a StateManager building a cache of all paths that
+    can be reached via goToState.
+  */
+  _cacheRecursively: function(stateManager, path, state, prevStates) { 
+    var cache = get(stateManager, '_cache'), name = get(state, 'name'), children = get(state, 'states');
+
+    // remove "." prefix on children of the root state manager
+    if (stateManager === state.parentState) { name = name.slice(1); }
+
+    var key = (name) ? path + name : path;
+
+    if (name) { 
+      cache[key] = [];
+
+      if (prevStates && prevStates.length > 0) {
+        prevStates.forEach(function(state) { cache[key].push(state); });
+      }
+
+      cache[key].push(state);
+      prevStates = cache[key].slice();
+      set(state, '_path', key);
+    } 
+
+    if (children) {
+      for (name in children) {
+        var child = children[name];
+
+        if (child.isState) { 
+          stateManager._cacheRecursively(stateManager, key, child, prevStates);
+        }
+      }
+    }
+  },
+
+  _clear: function() {
+    this.set('_cache', {});
+    this.set('currentStates', Ember.A());
+  },
+  
+  /**
     When creating a new statemanager, look for a default state to transition
     into. This state can either be named `start`, or can be specified using the
     `initialState` property.
@@ -18,19 +62,8 @@ Ember.StateManager = Ember.State.extend(
   init: function() {
     this._super();
 
-    var states = get(this, 'states');
-    if (!states) {
-      states = {};
-      Ember.keys(this).forEach(function(name) {
-        var value = get(this, name);
-
-        if (value && value.isState) {
-          states[name] = value;
-        }
-      }, this);
-
-      set(this, 'states', states);
-    }
+    this._clear();
+    this._cacheRecursively(this, '', this, null);
 
     var initialState = get(this, 'initialState');
 
@@ -38,7 +71,8 @@ Ember.StateManager = Ember.State.extend(
       initialState = 'start';
     }
 
-    if (initialState) {
+    // don't goTo initialState/start states for nested StateManagers
+    if (initialState && !this.parentState) {
       this.goToState(initialState);
     }
   },
@@ -87,31 +121,38 @@ Ember.StateManager = Ember.State.extend(
   },
 
   goToState: function(name) {
+    var cache = get(this, '_cache');
+
     if (Ember.empty(name)) { return; }
+    // TODO: append name to currentState's _path and check those in cache to
+    // support relative paths
 
     var currentState = get(this, 'currentState') || this, state, newState;
+    var currentStatePath = get(currentState, '_path');
 
-    var exitStates = Ember.A();
+    var exitStates = [], enterStates = [];
 
-    newState = getPath(currentState, name);
-    state = currentState;
+    var stateManager = this;
+    
+    if (cache[name]) {
+      to = cache[name];
+      //from = currentStates;
+      from = cache[currentStatePath] || [];
 
-    if (!newState) {
-      while (state && !newState) {
-        exitStates[Ember.guidFor(state)] = state;
-        exitStates.push(state);
+      var l = (from.length > to.length) ? from.length : to.length;
 
-        state = get(state, 'parentState');
-        if (!state) {
-          state = get(this, 'states');
-          newState = getPath(state, name);
-          if (!newState) { return; }
-        }
-        newState = getPath(state, name);
+      for(var i = 0; i < l; i++) {
+
+        if (to[i] !== from[i]) {
+          t = to[i], f = from[i];
+
+          if (t && t.isState) { enterStates.push(t); }
+          if (f && f.isState) { exitStates.push(f); }
+        }            
       }
-    }
 
-    this.enterState(state, name, exitStates);
+      this.enterStates(exitStates, enterStates);
+    }
   },
 
   getState: function(name) {
@@ -128,7 +169,7 @@ Ember.StateManager = Ember.State.extend(
   asyncEach: function(list, callback, doneCallback) {
     var async = false, self = this;
 
-    if (!list.length) {
+    if (!list.length || list.length == 0) {
       if (doneCallback) { doneCallback.call(this); }
       return;
     }
@@ -148,25 +189,12 @@ Ember.StateManager = Ember.State.extend(
     if (!async) { transition.resume(); }
   },
 
-  enterState: function(parent, name, exitStates) {
+  enterStates: function(exitStates, enterStates) {
     var log = Ember.LOG_STATE_TRANSITIONS;
 
-    var parts = name.split("."), state = parent, enterStates = Ember.A();
+    var stateManager = this, state;
 
-    parts.forEach(function(name) {
-      state = state[name];
-
-      var guid = Ember.guidFor(state);
-
-      if (guid in exitStates) {
-        exitStates.removeObject(state);
-        delete exitStates[guid];
-      } else {
-        enterStates.push(state);
-      }
-    });
-
-    var stateManager = this;
+    if (enterStates.length > 0) { state = enterStates[(enterStates.length - 1)]; }
 
     this.asyncEach(exitStates, function(state, transition) {
       state.exit(stateManager, transition);
@@ -175,15 +203,18 @@ Ember.StateManager = Ember.State.extend(
         if (log) { console.log("STATEMANAGER: Entering " + state.name); }
         state.enter(stateManager, transition);
       }, function() {
-        var startState = state, enteredState;
+        if (state) {
+          var startState = state, enteredState;
 
-        // right now, start states cannot be entered asynchronously
-        while (startState = get(startState, 'start')) {
-          enteredState = startState;
-          startState.enter(stateManager);
+          // right now, start states cannot be entered asynchronously
+          while (startState = get(startState, 'start')) {
+            enteredState = startState;
+            startState.enter(stateManager);
+          //  currentPaths.addObject(startState);
+          }
+
+          set(this, 'currentState', enteredState || state);
         }
-
-        set(this, 'currentState', enteredState || state);
       });
     });
   }
