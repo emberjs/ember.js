@@ -12,7 +12,6 @@ Ember.StateManager = Ember.State.extend(
 
   /**
     TODO:
-      add ability to goTo relative paths
       add support for concurrent substates
 
     _cacheRecursively traverses a StateManager building a cache of all paths that
@@ -20,9 +19,6 @@ Ember.StateManager = Ember.State.extend(
   */
   _cacheRecursively: function(stateManager, path, state, prevStates) { 
     var cache = get(stateManager, '_cache'), name = get(state, 'name'), children = get(state, 'states');
-
-    // remove "." prefix on children of the root state manager
-    if (stateManager === state.parentState) { name = name.slice(1); }
 
     var key = (name) ? path + name : path;
 
@@ -39,14 +35,17 @@ Ember.StateManager = Ember.State.extend(
     } 
 
     if (children) {
-      for (name in children) {
-        var child = children[name];
+      for (var name in children) {
+        if (children.hasOwnProperty(name)) {
+          var child = children[name];
 
-        if (child.isState) { 
-          stateManager._cacheRecursively(stateManager, key, child, prevStates);
+          if (child.isState) { 
+            stateManager._cacheRecursively(stateManager, key, child, prevStates);
+          }
         }
       }
     }
+
   },
 
   _clear: function() {
@@ -124,18 +123,24 @@ Ember.StateManager = Ember.State.extend(
     var cache = get(this, '_cache');
 
     if (Ember.empty(name)) { return; }
-    // TODO: append name to currentState's _path and check those in cache to
-    // support relative paths
 
-    var currentState = get(this, 'currentState') || this, state, newState;
-    var currentStatePath = get(currentState, '_path');
+    var currentState = get(this, 'currentState') || this;
+    var parentState = get(currentState, 'parentState') || this;
+
+    var currentStatePath = get(currentState, '_path') || '';
+    var parentStatePath = get(parentState, '_path') || '';
+
+    if (name[0] !== ".") { name = "." + name; }
+
+    var childPath = currentStatePath + name;
+    var siblingPath = parentStatePath + name;
 
     var exitStates = [], enterStates = [];
 
-    var stateManager = this;
-    
-    if (cache[name]) {
-      to = cache[name];
+    // look up path as relative either child or sibling then finally absolute
+    var to = (cache[childPath] || cache[siblingPath] || cache[name]) || null;
+
+    if (to) {
       //from = currentStates;
       from = cache[currentStatePath] || [];
 
