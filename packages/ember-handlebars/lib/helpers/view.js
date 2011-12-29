@@ -54,15 +54,10 @@ Ember.Handlebars.ViewHelper = Ember.Object.create({
       if (Ember.IS_BINDING.test(prop)) {
         path = options[prop];
         if (!Ember.isGlobalPath(path)) {
-          // Binding to parentViews was previously deprecated. In most cases it shouldn't be necessary, but since
-          // there are a few valid use cases and most people have broken the parentView habit, we're no longer
-          // providing a warning about it.
-          if (!PARENT_VIEW_PATH.test(path)) {
-            if (path === 'this') {
-              options[prop] = 'bindingContext';
-            } else {
-              options[prop] = 'bindingContext.'+path;
-            }
+          if (path === 'this') {
+            options[prop] = 'bindingContext';
+          } else {
+            options[prop] = 'bindingContext.'+path;
           }
         }
       }
