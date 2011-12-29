@@ -1,7 +1,8 @@
 module("test Ember.Handlebars.bootstrap");
 
-test("scripts with data-template-name should be added to Ember.TEMPLATES", function() {
-});
-
-test("templates with data-tag-name should create templates with specific tag name", function() {
+test("templates located in head with data-template-name should add a new template to Ember.TEMPLATES", function() {
+	$('#qunit-fixture').html( '<head><script type="text/html" data-template-name="crazyTemplate" >{{App.version}}</script></head>' );
+	Ember.Handlebars.bootstrap( $('#qunit-fixture') );
+	
+	ok( Ember.TEMPLATES['crazyTemplate'] );
 });
