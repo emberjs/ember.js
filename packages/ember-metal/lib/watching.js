@@ -206,6 +206,7 @@ Wp.add = function(path) {
   // put into a queue and try to connect later.
   } else if (!tuple[0]) {
     pendingQueue.push([this, path]);
+    tuple.length = 0;
     return;
 
   // global path, and object already exists
@@ -216,6 +217,7 @@ Wp.add = function(path) {
     path = tuple[1];
   }
 
+  tuple.length = 0;
   this.chain(key, path, src, separator);
 };
 
@@ -240,6 +242,7 @@ Wp.remove = function(path) {
     path = tuple[1];
   }
 
+  tuple.length = 0;
   this.unchain(key, path);
 };
 
