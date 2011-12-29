@@ -74,6 +74,6 @@ Ember.Handlebars.bootstrap = function(ctx) {
 
 Ember.$(document).ready(
   function(){
-	Ember.Handlebars.bootstrap( Ember.$() );
+    Ember.Handlebars.bootstrap( Ember.$(document) );
   }
 );
