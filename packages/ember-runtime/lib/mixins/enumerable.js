@@ -13,6 +13,7 @@
 // 
 
 var get = Ember.get, set = Ember.set;
+var a_slice = Array.prototype.slice;
 
 var contexts = [];
 function popCtx() {
@@ -522,7 +523,7 @@ Ember.Enumerable = Ember.Mixin.create( /** @lends Ember.Enumerable */ {
   */
   invoke: function(methodName) {
     var args, ret = [];
-    if (arguments.length>1) args = Array.prototype.slice.call(arguments, 1);
+    if (arguments.length>1) args = a_slice.call(arguments, 1);
     
     this.forEach(function(x, idx) { 
       var method = x && x[methodName];
