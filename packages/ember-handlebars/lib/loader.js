@@ -15,8 +15,8 @@ require("ember-handlebars/ext");
 // with Ember's Handlebars and are suitable for use as a view's template.
 // Those with type="text/x-raw-handlebars" will be compiled with regular
 // Handlebars and are suitable for use in views' computed properties.
-Ember.Handlebars.bootstrap = function() {
-  Ember.$('script[type="text/html"], script[type="text/x-handlebars"], script[type="text/x-raw-handlebars"]')
+Ember.Handlebars.bootstrap = function(ctx) {
+  Ember.$('script[type="text/html"], script[type="text/x-handlebars"], script[type="text/x-raw-handlebars"]', ctx)
     .each(function() {
     // Get a reference to the script tag
     var script = Ember.$(this),
@@ -72,4 +72,8 @@ Ember.Handlebars.bootstrap = function() {
   });
 };
 
-Ember.$(document).ready(Ember.Handlebars.bootstrap);
+Ember.$(document).ready(
+  function(){
+	Ember.Handlebars.bootstrap( Ember.$() );
+  }
+);
