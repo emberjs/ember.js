@@ -430,38 +430,22 @@ Ember.View = Ember.Object.extend(
 
     if (!attributeBindings) { return; }
 
-    attributeBindings.forEach(function(attribute) {
+    attributeBindings.forEach(function(attributeName) {
       // Create an observer to add/remove/change the attribute if the
       // JavaScript property changes.
       var observer = function() {
         elem = this.$();
-        var currentValue = elem.attr(attribute);
-        attributeValue = get(this, attribute);
+        attributeValue = get(this, attributeName);
 
-        type = typeof attributeValue;
-
-        if ((type === 'string' || (type === 'number' && !isNaN(attributeValue))) && attributeValue !== currentValue) {
-          elem.attr(attribute, attributeValue);
-        } else if (attributeValue && type === 'boolean') {
-          elem.attr(attribute, attribute);
-        } else if (!attributeValue) {
-          elem.removeAttr(attribute);
-        }
+        Ember.View.applyAttributeBindings(elem, attributeName, attributeValue)
       };
 
-      addObserver(this, attribute, observer);
+      addObserver(this, attributeName, observer);
 
       // Determine the current value and add it to the render buffer
       // if necessary.
-      attributeValue = get(this, attribute);
-      type = typeof attributeValue;
-
-      if (type === 'string' || type === 'number') {
-        buffer.attr(attribute, attributeValue);
-      } else if (attributeValue && type === 'boolean') {
-        // Apply boolean attributes in the form attribute="attribute"
-        buffer.attr(attribute, attribute);
-      }
+      attributeValue = get(this, attributeName);
+      Ember.View.applyAttributeBindings(buffer, attributeName, attributeValue);
     }, this);
   },
 
@@ -1312,3 +1296,17 @@ Ember.View.views = {};
 // at view initialization time. This happens in Ember.ContainerView's init
 // method.
 Ember.View.childViewsProperty = childViewsProperty;
+
+Ember.View.applyAttributeBindings = function(elem, name, value) {
+  var type = typeof value;
+  var currentValue = elem.attr(name);
+
+  // if this changes, also change the logic in ember-handlebars/lib/helpers/binding.js
+  if ((type === 'string' || (type === 'number' && !isNaN(value))) && value !== currentValue) {
+    elem.attr(name, value);
+  } else if (value && type === 'boolean') {
+    elem.attr(name, name);
+  } else if (!value) {
+    elem.removeAttr(name);
+  }
+};

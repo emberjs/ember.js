@@ -232,20 +232,7 @@ Ember.Handlebars.registerHelper('bindAttr', function(options) {
         return;
       }
 
-      var currentValue = elem.attr(attr);
-
-      // A false result will remove the attribute from the element. This is
-      // to support attributes such as disabled, whose presence is meaningful.
-      if (result === false && currentValue) {
-        elem.removeAttr(attr);
-
-      // Likewise, a true result will set the attribute's name as the value.
-      } else if (result === true && currentValue !== attr) {
-        elem.attr(attr, attr);
-
-      } else if (currentValue !== result) {
-        elem.attr(attr, result);
-      }
+      Ember.View.applyAttributeBindings(elem, attr, result);
     };
 
     /** @private */
@@ -258,15 +245,12 @@ Ember.Handlebars.registerHelper('bindAttr', function(options) {
     // unique data id and update the attribute to the new value.
     Ember.addObserver(ctx, property, invoker);
 
-    // Use the attribute's name as the value when it is YES
-    if (value === true) {
-      value = attr;
-    }
+    var type = typeof value;
 
-    // Do not add the attribute when the value is false
-    if (value !== false) {
-      // Return the current value, in the form src="foo.jpg"
+    if ((type === 'string' || (type === 'number' && !isNaN(value)))) {
       ret.push(attr + '="' + value + '"');
+    } else if (value && type === 'boolean') {
+      ret.push(attr + '="' + attr + '"');
     }
   }, this);
 
