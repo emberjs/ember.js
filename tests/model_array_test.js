@@ -35,7 +35,7 @@ test("a model is moved from a model array when it is deleted", function() {
   equal(get(modelArray, 'length'), 3, "precond - model array has three items");
   equal(get(modelArray.objectAt(0), 'name'), "Scumbag Dale", "item at index 0 is model with id 1");
 
-  scumbag.deleteModel();
+  scumbag.deleteRecord();
 
   equal(get(modelArray, 'length'), 2, "model is removed from the model array");
   ok(get(modelArray.objectAt(0), 'name') !== "Scumbag Dale", "item was removed");
@@ -74,7 +74,7 @@ test("a filtered model array includes created elements", function() {
 
   equal(get(modelArray, 'length'), 2, "precond - The model Array should have the filtered objects on it");
 
-  person = store.create(Person, { name: "Scumbag Koz" });
+  person = store.createRecord(Person, { name: "Scumbag Koz" });
 
   equal(get(modelArray, 'length'), 3, "The model array has the new object on it");
 });
