@@ -55,5 +55,5 @@ test('template with data-tag-name should add a template, wrapped in specific tag
         });
     });
 
-    equals($('#qunit-fixture h1').text(), 'Tobias takes teamocil', 'template is rendered');
+    equals($('#qunit-fixture h1').text(), 'Tobias takes teamocil', 'template is rendered inside custom tag');
 });
