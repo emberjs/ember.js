@@ -245,6 +245,7 @@ Ember.Handlebars.registerHelper('bindAttr', function(options) {
     // unique data id and update the attribute to the new value.
     Ember.addObserver(ctx, property, invoker);
 
+    // if this changes, also change the logic in ember-views/lib/views/view.js
     var type = typeof value;
 
     if ((type === 'string' || (type === 'number' && !isNaN(value)))) {
