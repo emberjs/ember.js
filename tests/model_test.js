@@ -39,7 +39,7 @@ var coercesType = function(type, provided, expected) {
   model.setData({});
   set(model, 'name', provided);
   deepEqual(get(model, 'name'), expected, type + " coerces " + provided + " to " + expected);
-}
+};
 
 test("a DS.Model can describe String attributes", function() {
   coercesType('string', "Scumbag Tom", "Scumbag Tom");
