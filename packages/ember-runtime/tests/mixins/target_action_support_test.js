@@ -62,3 +62,44 @@ test("it should find targets specified using a property path", function() {
 
   window.Test = undefined;
 });
+
+test('it should find top level targets defined as property path', function(){
+  expect(1);
+
+  window.TopLevelThing = Ember.Object.create({
+    helloWorld: function() {
+      ok(true, 'helloWorld called on the top level object');
+   }
+  });
+
+  var myObj = Ember.Object.create(Ember.TargetActionSupport, {
+    target: 'TopLevelThing',
+    action: 'helloWorld'
+  });
+
+  myObj.triggerAction();
+
+  window.TopLevelThing = undefined;
+
+});
+
+test('it should find Ember.Application as targets', function(){
+  expect(1);
+
+  window.MyApp = Ember.Application.create({
+    helloWorld: function() {
+      ok(true, 'helloWorld called on the application object');
+   }
+  });
+
+  var myObj = Ember.Object.create(Ember.TargetActionSupport, {
+    target: 'MyApp',
+    action: 'helloWorld'
+  });
+
+  myObj.triggerAction();
+
+  window.MyApp.destroy();
+  window.MyApp = undefined;
+
+});
