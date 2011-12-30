@@ -101,7 +101,7 @@ CoreObject.PrototypeMixin = Ember.Mixin.create(
     @private
   */
   _scheduledDestroy: function() {
-    this[Ember.META_KEY] = null;
+    Ember.destroy(this);
   },
 
   bind: function(to, from) {

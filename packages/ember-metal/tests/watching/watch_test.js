@@ -123,3 +123,19 @@ testBoth('watching a global object that does not yet exist should queue', functi
   Global = null; // reset
 });
 
+testBoth('destroy should tear down chainWatchers', function(get, set) {
+
+  Global = { foo: 'bar' };
+  var obj = {};
+
+  Ember.watch(obj, 'Global.foo');
+
+  var metaGlobal = Ember.meta(Global);
+  equals(metaGlobal.watching.foo, 1, 'should be watching Global.foo');
+
+  Ember.destroy(obj);
+
+  equals(metaGlobal.watching.foo, 0, 'should not be watching Global.foo');
+
+  Global = null; // reset
+});

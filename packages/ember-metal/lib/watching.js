@@ -19,6 +19,7 @@ var normalizeTuple = Ember.normalizeTuple.primitive;
 var normalizePath  = Ember.normalizePath;
 var SIMPLE_PROPERTY = Ember.SIMPLE_PROPERTY;
 var GUID_KEY = Ember.GUID_KEY;
+var META_KEY = Ember.META_KEY;
 var notifyObservers = Ember.notifyObservers;
 
 var FIRST_KEY = /^([^\.\*]+)/;
@@ -538,4 +539,29 @@ var propertyDidChange = Ember.propertyDidChange = function(obj, keyName) {
   dependentKeysDidChange(obj, keyName, m);
   chainsDidChange(obj, keyName);
   Ember.notifyObservers(obj, keyName);
+};
+
+/**
+  Tears down the meta on an object so that it can be garbage collected.
+  Multiple calls will have no effect.
+  
+  @param {Object} obj  the object to destroy
+  @returns {void}
+*/
+Ember.destroy = function (obj) {
+  var meta = obj[META_KEY], chains, watching, paths, path;
+  if (meta) {
+    obj[META_KEY] = null;
+    // remove chains to remove circular references that would prevent GC
+    chains = meta.chains;
+    if (chains) {
+      watching = meta.watching;
+      paths = chains._paths;
+      for(path in paths) {
+        if (!(paths[path] > 0)) continue; // this check will also catch non-number vals.
+        chains.remove(path);
+        watching[path] = 0;
+      }
+    }
+  }
 };
