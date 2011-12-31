@@ -1236,6 +1236,49 @@ test("should be able to output a property without binding", function(){
   equals(view.$('#second').html(), "Not here, either.");
 });
 
+test("should be able to output a block without binding", function(){
+  view = Ember.View.create({
+    template: Ember.Handlebars.compile(
+      '<div id="first">{{#unbound}}{{content.anUnboundString}}{{/unbound}}</div>'+
+      '{{#unbound}}{{#with content}}<div id="second">{{../anotherUnboundString}}</div>{{/with}}{{/unbound}}'+
+      '{{#with content}}{{#unbound}}<div id="third">{{yetAnotherUnboundString}}</div>{{/unbound}}{{/with}}'
+    ),
+
+    content: Ember.Object.create({
+      anUnboundString: "No script tags here, son.",
+      yetAnotherUnboundString: "Not even here."
+    }),
+
+    anotherUnboundString: "Not here, either."
+  });
+
+  appendView();
+
+  equals(view.$('#first').html(), "No script tags here, son.");
+  equals(view.$('#second').html(), "Not here, either.");
+  equals(view.$('#third').html(), "Not even here.");
+});
+
+test("should be able to bind manually with an #unbound block", function(){
+  view = Ember.View.create({
+    template: Ember.Handlebars.compile(
+      '{{#unbound}}<div id="first">{{bind content.aBoundString}}</div>'+
+      '{{#with content}}<div id="second">{{bind ../anotherBoundString}}</div>{{/with}}{{/unbound}}'
+    ),
+
+    content: Ember.Object.create({
+      aBoundString: "Yay, tags were inserted."
+    }),
+
+    anotherBoundString: "Here too."
+  });
+
+  appendView();
+
+  ok(view.$('#first').children().length > 0);
+  ok(view.$('#second').children().length > 0);
+});
+
 test("should be able to log a property", function(){
   var originalLogger = Ember.Logger;
   additionalTeardown = function(){ Ember.Logger = originalLogger; };
