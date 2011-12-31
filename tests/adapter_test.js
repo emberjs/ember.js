@@ -313,7 +313,7 @@ test("by default, commit calls deleteMany once per type", function() {
 });
 
 test("by default, createMany calls create once per record", function() {
-  expect(6);
+  expect(8);
   var count = 1;
 
   adapter.create = function(store, type, model) {
@@ -329,8 +329,11 @@ test("by default, createMany calls create once per record", function() {
 
     var hash = get(model, 'data');
     hash.id = count;
+    hash.updatedAt = "now";
 
     store.didCreateModel(model, hash);
+    equal(get(model, 'updatedAt'), "now", "the model should receive the new information");
+
     count++;
   };
 
