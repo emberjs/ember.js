@@ -21,7 +21,7 @@ test("a DS.Model can receive data, which puts it into the loaded state", functio
   modelIsInState(model, 'loaded');
 });
 
-var coercesType = function(type, provided, expected) {
+var converts = function(type, provided, expected) {
   var model = DS.Model.create({
     name: DS.attr(type)
   });
@@ -41,30 +41,72 @@ var coercesType = function(type, provided, expected) {
   deepEqual(get(model, 'name'), expected, type + " coerces " + provided + " to " + expected);
 };
 
+var convertsFromServer = function(type, provided, expected) {
+  var model = DS.Model.create({
+    name: DS.attr(type)
+  });
+
+  model.loadingData();
+  model.setData({ name: provided });
+  deepEqual(get(model, 'name'), expected, type + " coerces " + provided + " to " + expected);
+};
+
+var convertsWhenSet = function(type, provided, expected) {
+  var model = DS.Model.create({
+    name: DS.attr(type)
+  });
+
+  model.loadingData();
+  model.setData({});
+
+  set(model, 'name', provided);
+  deepEqual(get(model, 'data').name, expected, type + " saves " + provided + " as " + expected);
+};
+
 test("a DS.Model can describe String attributes", function() {
-  coercesType('string', "Scumbag Tom", "Scumbag Tom");
-  coercesType('string', 1, "1");
-  coercesType('string', null, "null");
+  converts('string', "Scumbag Tom", "Scumbag Tom");
+  converts('string', 1, "1");
+  converts('string', null, "null");
 });
 
 test("a DS.Model can describe Integer attributes", function() {
-  coercesType('integer', "1", 1);
-  coercesType('integer', "0", 0);
-  coercesType('integer', 1, 1);
-  coercesType('integer', 0, 0);
-  coercesType('integer', null, 0);
-  coercesType('integer', true, 1);
-  coercesType('integer', false, 0);
+  converts('integer', "1", 1);
+  converts('integer', "0", 0);
+  converts('integer', 1, 1);
+  converts('integer', 0, 0);
+  converts('integer', null, 0);
+  converts('integer', true, 1);
+  converts('integer', false, 0);
 });
 
 test("a DS.Model can describe Boolean attributes", function() {
-  coercesType('boolean', "1", true);
-  coercesType('boolean', "", false);
-  coercesType('boolean', 1, true);
-  coercesType('boolean', 0, false);
-  coercesType('boolean', null, false);
-  coercesType('boolean', true, true);
-  coercesType('boolean', false, false);
+  converts('boolean', "1", true);
+  converts('boolean', "", false);
+  converts('boolean', 1, true);
+  converts('boolean', 0, false);
+  converts('boolean', null, false);
+  converts('boolean', true, true);
+  converts('boolean', false, false);
+});
+
+test("a DS.Model can describe Date attributes", function() {
+  converts('date', null, null);
+  converts('date', undefined, undefined);
+
+  var dateString = "Sat, 31 Dec 2011 00:08:16 GMT";
+  var date = new Date(dateString);
+
+  var model = DS.Model.create({
+    updatedAt: DS.attr('date')
+  });
+
+  model.loadingData();
+  model.setData({});
+
+  model.set('updatedAt', date);
+  deepEqual(date, get(model, 'updatedAt'), "setting a date returns the same date");
+  convertsFromServer('date', dateString, date);
+  convertsWhenSet('date', date, dateString);
 });
 
 test("it can specify which key to use when looking up properties on the hash", function() {
