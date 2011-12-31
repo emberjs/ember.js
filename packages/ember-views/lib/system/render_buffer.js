@@ -101,7 +101,7 @@ Ember._RenderBuffer = Ember.Object.extend(
     set(this ,'elementClasses', Ember.A());
     set(this, 'elementAttributes', {});
     set(this, 'elementStyle', {});
-    set(this, 'childBuffers', Ember.A());
+    set(this, 'childBuffers', []);
     set(this, 'elements', {});
   },
 
@@ -112,7 +112,7 @@ Ember._RenderBuffer = Ember.Object.extend(
     @returns {Ember.RenderBuffer} this
   */
   push: function(string) {
-    get(this, 'childBuffers').pushObject(String(string));
+    get(this, 'childBuffers').push(String(string));
     return this;
   },
 
@@ -224,7 +224,7 @@ Ember._RenderBuffer = Ember.Object.extend(
   */
   begin: function(tagName) {
     return this.newBuffer(tagName, this, function(buffer) {
-      get(this, 'childBuffers').pushObject(buffer);
+      get(this, 'childBuffers').push(buffer);
     });
   },
 
@@ -235,7 +235,7 @@ Ember._RenderBuffer = Ember.Object.extend(
   */
   prepend: function(tagName) {
     return this.newBuffer(tagName, this, function(buffer) {
-      get(this, 'childBuffers').insertAt(0, buffer);
+      get(this, 'childBuffers').splice(0, 0, buffer);
     });
   },
 
@@ -263,7 +263,7 @@ Ember._RenderBuffer = Ember.Object.extend(
     return this.newBuffer(tagName, parentBuffer, function(buffer) {
       var siblings = get(parentBuffer, 'childBuffers');
       var index = siblings.indexOf(this);
-      siblings.insertAt(index + 1, buffer);
+      siblings.splice(index + 1, 0, buffer);
     });
   },
 
