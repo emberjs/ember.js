@@ -6,7 +6,6 @@ output "tests/source"
 match "*/{lib,tests}/**/*.js" do
   minispade :rewrite_requires => true, :module_id_generator => proc { |input|
     id = input.path.dup
-    id.sub!(/^\./, File.dirname(input.path))
     id.sub!('/lib/', '/')
     id.sub!(/\.js$/, '')
     id.sub!(/\/main$/, '')
