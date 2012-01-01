@@ -17,20 +17,16 @@ Ember.StateManager = Ember.State.extend(
     _cacheRecursively traverses a StateManager building a cache of all paths that
     can be reached via goToState.
   */
-  _cacheRecursively: function(stateManager, path, state, prevStates) { 
-    var cache = get(stateManager, '_cache'), name = get(state, 'name'), children = get(state, 'states');
+  _cacheRecursively: function(stateManager, path, state) {
+    var cache = get(stateManager, '_cache'), name = get(state, 'name'), children = get(state, 'states'),
+        prevStates = cache[path] || [];
 
     var key = (name) ? path + name : path;
 
     if (name) { 
-      cache[key] = [];
-
-      if (prevStates && prevStates.length > 0) {
-        prevStates.forEach(function(state) { cache[key].push(state); });
-      }
+      cache[key] = prevStates.slice();
 
       cache[key].push(state);
-      prevStates = cache[key].slice();
       set(state, '_path', key);
     } 
 
@@ -40,12 +36,11 @@ Ember.StateManager = Ember.State.extend(
           var child = children[name];
 
           if (child.isState) { 
-            stateManager._cacheRecursively(stateManager, key, child, prevStates);
+            stateManager._cacheRecursively(stateManager, key, child);
           }
         }
       }
     }
-
   },
 
   _clear: function() {
@@ -62,7 +57,7 @@ Ember.StateManager = Ember.State.extend(
     this._super();
 
     this._clear();
-    this._cacheRecursively(this, '', this, null);
+    this._cacheRecursively(this, '', this);
 
     var initialState = get(this, 'initialState');
 
@@ -124,39 +119,30 @@ Ember.StateManager = Ember.State.extend(
 
     if (Ember.empty(name)) { return; }
 
-    var currentState = get(this, 'currentState') || this;
-    var parentState = get(currentState, 'parentState') || this;
+    var currentState = get(this, 'currentState') || this,
+        parentState = get(currentState, 'parentState') || this;
 
-    var currentStatePath = get(currentState, '_path') || '';
-    var parentStatePath = get(parentState, '_path') || '';
+    var currentStatePath = get(currentState, '_path') || '',
+        parentStatePath = get(parentState, '_path') || '';
 
     if (name[0] !== ".") { name = "." + name; }
 
+    if (currentStatePath === name) { return; }
+
     var childPath = currentStatePath + name;
-    var siblingPath = parentStatePath + name;
+    var siblingPath = (parentState && get(parentState, '_path')) ? get(parentState, '_path') + name : name;
 
-    var exitStates = [], enterStates = [];
+    // look up path as either child or sibling then finally via root
+    var enterStates = (cache[childPath] || cache[siblingPath] || cache[name]) || [];
+    var exitStates = cache[currentStatePath] || [];
 
-    // look up path as relative either child or sibling then finally absolute
-    var to = (cache[childPath] || cache[siblingPath] || cache[name]) || null;
+    while (enterStates.length > 0 && enterStates[0] === exitStates[0]) {
+      enterStates.shift();
+      exitStates.shift();
+    }
 
-    if (to) {
-      //from = currentStates;
-      from = cache[currentStatePath] || [];
-
-      var l = (from.length > to.length) ? from.length : to.length;
-
-      for(var i = 0; i < l; i++) {
-
-        if (to[i] !== from[i]) {
-          t = to[i], f = from[i];
-
-          if (t && t.isState) { enterStates.push(t); }
-          if (f && f.isState) { exitStates.push(f); }
-        }            
-      }
-
-      this.enterStates(exitStates, enterStates);
+    if (enterStates.length > 0) {
+      this.enterState(exitStates, enterStates);
     }
   },
 
@@ -194,12 +180,11 @@ Ember.StateManager = Ember.State.extend(
     if (!async) { transition.resume(); }
   },
 
-  enterStates: function(exitStates, enterStates) {
+  enterState: function(exitStates, enterStates) {
     var log = Ember.LOG_STATE_TRANSITIONS;
 
-    var stateManager = this, state;
-
-    if (enterStates.length > 0) { state = enterStates[(enterStates.length - 1)]; }
+    var stateManager = this,
+        state = enterStates[(enterStates.length - 1)];
 
     this.asyncEach(exitStates, function(state, transition) {
       state.exit(stateManager, transition);

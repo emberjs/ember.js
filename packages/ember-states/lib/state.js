@@ -20,7 +20,7 @@ Ember.State = Ember.Object.extend({
       }
     }, this);
 
-    if (findStates) { set(this, 'states', states); }
+    if (Ember.keys(states).length > 0 && findStates) { set(this, 'states', states); }
   },
 
   enter: Ember.K,
