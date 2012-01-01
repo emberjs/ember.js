@@ -122,7 +122,7 @@ Ember.Handlebars.Compiler.prototype.mustache = function(mustache) {
 */
 Ember.Handlebars.compile = function(string) {
   var ast = Handlebars.parse(string);
-  var options = { data: true, stringParams: true, isUnboundBlock: false };
+  var options = { data: true, stringParams: true };
   var environment = new Ember.Handlebars.Compiler().compile(ast, options);
   var templateSpec = new Ember.Handlebars.JavaScriptCompiler().compile(environment, options, undefined, true);
 
