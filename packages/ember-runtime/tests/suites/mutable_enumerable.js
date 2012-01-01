@@ -8,5 +8,5 @@ require('ember-runtime/~tests/suites/enumerable');
 
 Ember.MutableEnumerableTests = Ember.EnumerableTests.extend();
 
-require('./mutable_enumerable/addObject');
-require('./mutable_enumerable/removeObject');
+require('ember-runtime/~tests/suites/mutable_enumerable/addObject');
+require('ember-runtime/~tests/suites/mutable_enumerable/removeObject');
