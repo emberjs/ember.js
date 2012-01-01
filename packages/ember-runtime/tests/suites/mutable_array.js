@@ -8,10 +8,10 @@ require('ember-runtime/~tests/suites/array');
 
 Ember.MutableArrayTests = Ember.ArrayTests.extend();
 
-require('./mutable_array/insertAt');
-require('./mutable_array/popObject');
-require('./mutable_array/pushObject');
-require('./mutable_array/removeAt');
-require('./mutable_array/replace');
-require('./mutable_array/shiftObject');
-require('./mutable_array/unshiftObject');
+require('ember-runtime/~tests/suites/mutable_array/insertAt');
+require('ember-runtime/~tests/suites/mutable_array/popObject');
+require('ember-runtime/~tests/suites/mutable_array/pushObject');
+require('ember-runtime/~tests/suites/mutable_array/removeAt');
+require('ember-runtime/~tests/suites/mutable_array/replace');
+require('ember-runtime/~tests/suites/mutable_array/shiftObject');
+require('ember-runtime/~tests/suites/mutable_array/unshiftObject');
