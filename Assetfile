@@ -19,4 +19,18 @@ match "*/{lib,tests}/**/*.js" do
   end
 end
 
+# Hack to ignore certain files
+match "**/*.{json,md}" do
+  concat "trash"
+end
+
+match "**/README" do
+  concat "trash"
+end
+
+match "*/*.js" do
+  concat "trash"
+end
+
+
 # vim: filetype=ruby
