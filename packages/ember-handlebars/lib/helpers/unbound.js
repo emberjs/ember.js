@@ -19,7 +19,7 @@ var getPath = Ember.getPath;
 
       <div>
         {{#unbound}}
-          {somePropertyThatDoesntChange}}
+          {{somePropertyThatDoesntChange}}
           {{anotherPropertyThatDoesntChange}}
         {{/unbound}}
       </div>
