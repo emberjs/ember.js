@@ -40,5 +40,5 @@ Ember.ArrayTests = Ember.EnumerableTests.extend({
 
 Ember.ArrayTests.ObserverClass = ObserverClass;
 
-require('./array/indexOf');
-require('./array/objectAt');
+require('ember-runtime/~tests/suites/array/indexOf');
+require('ember-runtime/~tests/suites/array/objectAt');
