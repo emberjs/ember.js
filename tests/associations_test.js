@@ -53,6 +53,28 @@ test("hasMany allows associations to be mapped to a user-specified key", functio
   strictEqual(get(person, 'tags').objectAt(0), store.find(Tag, 2), "association objects are the same as objects retrieved directly");
 });
 
+test("associations work when the declared with string path", function() {
+  window.App = {};
+
+  App.Person = DS.Model.extend({
+    name: DS.attr('string'),
+    tags: DS.hasMany('App.Tag')
+  });
+
+  App.Tag = DS.Model.extend({
+    name: DS.attr('string')
+  });
+
+  var store = DS.Store.create();
+  store.loadMany(App.Tag, [5, 2, 12], [{ id: 5, name: "friendly" }, { id: 2, name: "smarmy" }, { id: 12, name: "oohlala" }]);
+  store.load(App.Person, 1, { id: 1, name: "Tom Dale", tags: [5, 2] });
+
+  var person = store.find(App.Person, 1);
+  equals(get(person, 'name'), "Tom Dale", "precond - retrieves person record from store");
+
+  equals(getPath(person, 'tags.length'), 2, "the list of tags should have the correct length");
+});
+
 test("associations work when the data hash has not been loaded", function() {
   expect(13);
 
