@@ -541,6 +541,8 @@ var propertyDidChange = Ember.propertyDidChange = function(obj, keyName) {
   Ember.notifyObservers(obj, keyName);
 };
 
+var NODE_STACK = []
+
 /**
   Tears down the meta on an object so that it can be garbage collected.
   Multiple calls will have no effect.
@@ -549,16 +551,32 @@ var propertyDidChange = Ember.propertyDidChange = function(obj, keyName) {
   @returns {void}
 */
 Ember.destroy = function (obj) {
-  var meta = obj[META_KEY], chains, paths, path;
+  var meta = obj[META_KEY], node, nodes, key, nodeObject;
   if (meta) {
     obj[META_KEY] = null;
-    // remove chains to remove circular references that would prevent GC
-    chains = meta.chains;
-    if (chains) {
-      paths = chains._paths;
-      for(path in paths) {
-        if (!(paths[path] > 0)) continue; // this check will also catch non-number vals.
-        chains.remove(path);
+    // remove chainWatchers to remove circular references that would prevent GC
+    node = meta.chains;
+    if (node) {
+      NODE_STACK.push(node);
+      // process tree
+      while (NODE_STACK.length > 0) {
+        node = NODE_STACK.pop();
+        // push children
+        nodes = node._chains;
+        if (nodes) {
+          for (key in nodes) {
+            if (nodes.hasOwnProperty(key)) {
+              NODE_STACK.push(nodes[key]);
+            }
+          }
+        }
+        // remove chainWatcher in node object
+        if (node._watching) {
+          nodeObject = node._object;
+          if (nodeObject) {
+            removeChainWatcher(nodeObject, node._key, node);
+          }
+        }
       }
     }
   }
