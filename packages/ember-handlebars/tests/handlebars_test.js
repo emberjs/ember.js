@@ -1289,6 +1289,17 @@ test("should be able to use standard Handlebars #each helper", function() {
   equals(view.$().html(), "abc");
 });
 
+test("should be able to use unbound helper in #each helper", function() {
+  view = Ember.View.create({
+    items: Ember.A(['a', 'b', 'c']),
+    template: Ember.Handlebars.compile("{{#each items}}{{unbound this}}{{/each}}")
+  });
+
+  appendView();
+
+  equals(view.$().text(), "abc");
+});
+
 module("Templates redrawing and bindings", {
   setup: function(){
     MyApp = Ember.Object.create({});
