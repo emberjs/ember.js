@@ -86,7 +86,7 @@ Ember.Handlebars.Compiler.prototype.mustache = function(mustache) {
   if (mustache.params.length || mustache.hash) {
     return Handlebars.Compiler.prototype.mustache.call(this, mustache);
   } else {
-    var id = new Handlebars.AST.IdNode(['bind']);
+    var id = new Handlebars.AST.IdNode(['_triageMustache']);
 
     // Update the mustache node to include a hash value indicating whether the original node
     // was escaped. This will allow us to properly escape values when the underlying value
