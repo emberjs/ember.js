@@ -549,18 +549,16 @@ var propertyDidChange = Ember.propertyDidChange = function(obj, keyName) {
   @returns {void}
 */
 Ember.destroy = function (obj) {
-  var meta = obj[META_KEY], chains, watching, paths, path;
+  var meta = obj[META_KEY], chains, paths, path;
   if (meta) {
     obj[META_KEY] = null;
     // remove chains to remove circular references that would prevent GC
     chains = meta.chains;
     if (chains) {
-      watching = meta.watching;
       paths = chains._paths;
       for(path in paths) {
         if (!(paths[path] > 0)) continue; // this check will also catch non-number vals.
         chains.remove(path);
-        watching[path] = 0;
       }
     }
   }
