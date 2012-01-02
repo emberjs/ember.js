@@ -33,7 +33,7 @@ Ember.Handlebars.bootstrap = function() {
     if (templateName) {
       // For templates which have a name, we attach their data-attributes
       // to them, save them and then remove them from the DOM
-      template.data_attr = $(this).data();
+      template.dataAttr = $(this).data();
       Ember.TEMPLATES[templateName] = template;
 
       // Remove script tag from DOM
