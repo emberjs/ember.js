@@ -1572,3 +1572,32 @@ test("should update bound values after view's parent is removed and then re-appe
   });
   equal($.trim(view.$().text()), "bar");
 });
+
+test("should call a registered helper for mustache without parameters", function() {
+  Ember.Handlebars.registerHelper('foobar', function() {
+    return 'foobar';
+  });
+
+  view = Ember.View.create({
+    template: Ember.Handlebars.compile("{{foobar}}")
+  });
+
+  appendView();
+
+  ok(view.$().text() === 'foobar', "Regular helper was invoked correctly");
+});
+
+test("should bind to the property if no registered helper found for a mustache without parameters", function() {
+  view = Ember.View.create({
+    template: Ember.Handlebars.compile("{{foobarProperty}}"),
+    foobarProperty: Ember.computed(function() {
+      return 'foobarProperty';
+    })
+  });
+
+  appendView();
+
+  ok(view.$().text() === 'foobarProperty', "Property was bound to correctly");
+});
+
+
