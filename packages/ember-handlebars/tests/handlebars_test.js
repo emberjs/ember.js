@@ -1292,12 +1292,14 @@ test("should be able to use standard Handlebars #each helper", function() {
 test("should be able to use unbound helper in #each helper", function() {
   view = Ember.View.create({
     items: Ember.A(['a', 'b', 'c']),
-    template: Ember.Handlebars.compile("{{#each items}}{{unbound this}}{{/each}}")
+      template: Ember.Handlebars.compile(
+        "<ul>{{#each items}}<li>{{unbound this}}</li>{{/each}}</ul>")
   });
 
   appendView();
 
   equals(view.$().text(), "abc");
+  equals(view.$('li').children().length, 0, "No markers");
 });
 
 module("Templates redrawing and bindings", {
