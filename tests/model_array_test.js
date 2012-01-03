@@ -139,3 +139,46 @@ test("an AdapterPopulatedModelArray knows if it's loaded or not", function() {
 
   equal(get(array, 'isLoaded'), false, "The array is not yet loaded");
 });
+
+test("a model array that backs a collection view functions properly", function() {
+
+  var Person = DS.Model.extend();
+  var store = DS.Store.create();
+  
+  store.load(Person, 5, { name: "Other Katz" });
+  
+  var container = Ember.CollectionView.create({
+    classNameBindings: ['name'],
+    name: 'foo',
+    content: store.findAll(Person)
+  });
+
+  Ember.run(function() {
+    container.appendTo('#qunit-fixture');
+  });
+  
+  function compareArrays() {
+  	var modelArray = container.content;
+  	var modelCache = modelArray.get('modelCache');
+  	var content = modelArray.get('content');
+  	for(var i = 0; i < content.length; i++) {
+  	  var model = modelCache.objectAt(i);
+  	  var clientId = content.objectAt(i);
+      equal(model && model.clientId, clientId, "The entries in the model cache should have matching client ids.");
+  	}
+  }
+  
+  compareArrays();
+  
+  store.load(Person, 6, { name: "Scumbag Demon" });
+  
+  compareArrays();
+  
+  store.load(Person, 7, { name: "Lord British" });
+  
+  compareArrays();
+
+  container.destroy();
+
+});
+
