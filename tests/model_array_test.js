@@ -148,8 +148,6 @@ test("a model array that backs a collection view functions properly", function()
   store.load(Person, 5, { name: "Other Katz" });
   
   var container = Ember.CollectionView.create({
-    classNameBindings: ['name'],
-    name: 'foo',
     content: store.findAll(Person)
   });
 

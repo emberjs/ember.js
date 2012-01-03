@@ -325,6 +325,40 @@ test("if an id is supplied in the initial data hash, it can be looked up using `
   strictEqual(person, again, "the store returns the loaded object");
 });
 
+test("models inside a collection view should have their ids updated", function() {
+  var Person = DS.Model.extend({
+    id: DS.attr("integer")
+  });
+  
+  idCounter = 1;
+  var adapter = DS.Adapter.create({
+    create: function(store, type, model) {
+      store.didCreateModel(model, {name: model.get('name'), id: idCounter++});
+    }
+  });
+
+  var store = DS.Store.create({
+    adapter: adapter
+  });
+  
+  var container = Ember.CollectionView.create({
+    content: store.findAll(Person)
+  });
+
+  Ember.run(function() {
+    container.appendTo('#qunit-fixture');
+  });
+  
+  console.log(store.create(Person, { name: "Newt Gingrich" }));
+  console.log(store.create(Person, { name: "Ron Paul" }));
+  store.commit();
+  
+  container.content.forEach(function(person, index) {
+    console.log(person);
+    equal(person.get('id'), index + 1, "The model's id should be correctly.");
+  });
+});
+
 module("DS.State - Lifecycle Callbacks");
 
 test("a model receives a didLoad callback when it has finished loading", function() {
