@@ -124,6 +124,10 @@ Ember.CollectionView = Ember.ContainerView.extend(
         childViews = get(this, 'childViews'),
         addedViews = [], view, item, idx, len, itemTagName;
 
+    if ('string' === typeof itemViewClass) {
+      itemViewClass = Ember.getPath(itemViewClass);
+    }
+
     ember_assert(fmt("itemViewClass must be a subclass of Ember.View, not %@", [itemViewClass]), Ember.View.detect(itemViewClass));
 
     len = content ? get(content, 'length') : 0;

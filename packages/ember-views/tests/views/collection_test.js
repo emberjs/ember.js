@@ -227,3 +227,16 @@ test("should allow items to access to the CollectionView's current index in the 
   same(view.$(':nth-child(2)').text(), "1");
   same(view.$(':nth-child(3)').text(), "2");
 });
+
+test("should allow declaration of itemViewClass as a string", function() {
+  view = Ember.CollectionView.create({
+    content: Ember.A([1, 2, 3]),
+    itemViewClass: 'Ember.View'
+  });
+
+  Ember.run(function() {
+    view.appendTo('#qunit-fixture');
+  });
+
+  equals(view.$('.ember-view').length, 3);
+});
