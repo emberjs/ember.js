@@ -8,7 +8,12 @@ Ember.TargetActionSupport = Ember.Mixin.create({
     var target = get(this, 'target');
 
     if (Ember.typeOf(target) === "string") {
-      return Ember.getPath(this, target);
+      var obj = Ember.getPath(this, target);
+      if (Ember.none(obj)) {
+        // if the target cannot be found, try to get it as a global object
+        obj = Ember.getPath(target);
+      }
+      return obj;
     } else {
       return target;
     }
