@@ -260,6 +260,11 @@ Ember.getPath = function(root, path) {
   var hasThis, hasStar, isGlobal;
   
   if (!path && 'string'===typeof root) {
+    // Helpers that operate with 'this' within an #each
+    if (path === '') {
+      return root;
+    }
+
     path = root;
     root = null;
   }
