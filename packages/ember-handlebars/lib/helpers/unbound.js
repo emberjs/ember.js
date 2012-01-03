@@ -29,9 +29,13 @@ var getPath = Ember.getPath;
   @returns {String} HTML string
 */
 Ember.Handlebars.registerHelper('unbound', function(property, fn) {
-  // Unbound as a block helper is a no-op
+  // Unbound as a block helper
   if (fn === undefined && Ember.typeOf(property) === 'function') {
-    return property(this);
+    // used e.g. in the #each helper
+    this.isUnboundBlock = true;
+    var result = property(this);
+    this.isUnboundBlock = false;
+    return result;
   }
 
   var context = (fn.contexts && fn.contexts[0]) || this;

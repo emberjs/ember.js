@@ -1358,6 +1358,32 @@ test("should be able to use unbound helper in #each helper (with objects)", func
   equals(view.$('li').children().length, 0, "No markers");
 });
 
+test("should have no makers when #unbound helper is around #each helper", function() {
+  view = Ember.View.create({
+    items: Ember.A(['a', 'b', 'c', 1, 2, 3]),
+      template: Ember.Handlebars.compile(
+        "{{#unbound}}<ul>{{#each items}}<li>{{this}}</li>{{/each}}</ul>{{/unbound}}")
+  });
+
+  appendView();
+
+  equals(view.$().text(), "abc123");
+  equals(view.$('ul').children(':not(li)').length, 0, "No markers");
+});
+
+test("should have no markers when #unbound helper is around #each helper (with objects)", function() {
+  view = Ember.View.create({
+    items: Ember.A([{wham: 'bam'}, {wham: 1}]),
+    template: Ember.Handlebars.compile(
+      "{{#unbound}}<ul>{{#each items}}<li>{{wham}}</li>{{/each}}</ul>{{/unbound}}")
+  });
+
+  appendView();
+
+  equals(view.$().text(), "bam1");
+  equals(view.$('li').children().length, 0, "No markers");
+});
+
 module("Templates redrawing and bindings", {
   setup: function(){
     MyApp = Ember.Object.create({});
