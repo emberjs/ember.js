@@ -49,7 +49,14 @@ Ember.TextSupport = Ember.Mixin.create(
   },
 
   _elementValueDidChange: function() {
-    set(this, 'value', this.$().val() || '');
+    var element = this.$();
+
+    if (element.length) {
+      set(this, 'value', this.$().val());
+    } else {
+      // the element is receiving blur because it was
+      // removed, so don't do anything.
+    }
   }
 
 });
