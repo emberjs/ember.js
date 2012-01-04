@@ -67,6 +67,30 @@ var helpers = EmberHandlebars.helpers;
       data.buffer.push(getPath(this, property));
     }
   };
+  
+  /**
+    '_triageMustache' is used internally select between a binding and helper for 
+    the given context. Until this point, it would be hard to determine if the 
+    mustache is a property reference or a regular helper reference. This triage
+    helper resolves that.
+    
+    This would not be typically invoked by directly.
+    
+    @private
+    @name Handlebars.helpers._triageMustache
+    @param {String} property Property/helperID to triage
+    @param {Function} fn Context to provide for rendering
+    @returns {String} HTML string
+  */
+  Ember.Handlebars.registerHelper('_triageMustache', function(property, fn) {
+    ember_assert("You cannot pass more than one argument to the _triageMustache helper", arguments.length <= 2);
+    if (Ember.Handlebars.helpers[property]) {
+      return Ember.Handlebars.helpers[property].call(this, fn);
+    }
+    else {
+      return Ember.Handlebars.helpers.bind.apply(this, arguments);
+    }
+  });
 
   /**
     '_triageMustache' is used internally select between a binding and helper for 
