@@ -51,8 +51,13 @@
       el.innerHTML = 'Add package=package1,package2 in the URL to test packages';
     } else {
       if (packages[1] === 'all') {
-        packages = ['ember-datetime', 'ember-handlebars', 'ember-metal', 'ember-runtime',
-                    'ember-states', 'ember-views'];
+        packages = [
+          'ember-handlebars',
+          'ember-metal',
+          'ember-runtime',
+          'ember-states',
+          'ember-views'
+        ];
       } else {
         packages = packages[1].split(',');
       }
