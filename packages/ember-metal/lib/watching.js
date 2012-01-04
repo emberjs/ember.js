@@ -19,6 +19,7 @@ var normalizeTuple = Ember.normalizeTuple.primitive;
 var normalizePath  = Ember.normalizePath;
 var SIMPLE_PROPERTY = Ember.SIMPLE_PROPERTY;
 var GUID_KEY = Ember.GUID_KEY;
+var META_KEY = Ember.META_KEY;
 var notifyObservers = Ember.notifyObservers;
 
 var FIRST_KEY = /^([^\.\*]+)/;
@@ -538,4 +539,45 @@ var propertyDidChange = Ember.propertyDidChange = function(obj, keyName) {
   dependentKeysDidChange(obj, keyName, m);
   chainsDidChange(obj, keyName);
   Ember.notifyObservers(obj, keyName);
+};
+
+var NODE_STACK = []
+
+/**
+  Tears down the meta on an object so that it can be garbage collected.
+  Multiple calls will have no effect.
+  
+  @param {Object} obj  the object to destroy
+  @returns {void}
+*/
+Ember.destroy = function (obj) {
+  var meta = obj[META_KEY], node, nodes, key, nodeObject;
+  if (meta) {
+    obj[META_KEY] = null;
+    // remove chainWatchers to remove circular references that would prevent GC
+    node = meta.chains;
+    if (node) {
+      NODE_STACK.push(node);
+      // process tree
+      while (NODE_STACK.length > 0) {
+        node = NODE_STACK.pop();
+        // push children
+        nodes = node._chains;
+        if (nodes) {
+          for (key in nodes) {
+            if (nodes.hasOwnProperty(key)) {
+              NODE_STACK.push(nodes[key]);
+            }
+          }
+        }
+        // remove chainWatcher in node object
+        if (node._watching) {
+          nodeObject = node._object;
+          if (nodeObject) {
+            removeChainWatcher(nodeObject, node._key, node);
+          }
+        }
+      }
+    }
+  }
 };

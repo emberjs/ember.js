@@ -401,16 +401,3 @@ Ember.createPrototype = function(obj, props) {
   if (META_KEY in ret) Ember.rewatch(ret); // setup watch chains if needed.
   return ret;
 };
-  
-
-/**
-  Tears down the meta on an object so that it can be garbage collected.
-  Multiple calls will have no effect.
-  
-  @param {Object} obj  the object to destroy
-  @returns {void}
-*/
-Ember.destroy = function(obj) {
-  if (obj[META_KEY]) obj[META_KEY] = null; 
-};
-
