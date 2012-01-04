@@ -140,11 +140,11 @@ Ember.Array = Ember.Mixin.create(Ember.Enumerable, /** @scope Ember.Array.protot
 
     @example
     arr = ["a", "b", "c", "d", "a"];
-    arr.indexOf("a")      =>  0
-    arr.indexOf("a", 2)   =>  4
-    arr.indexOf("z")      => -1
-    arr.indexOf("b", 3)   => -1
-    arr.indexOf("a", 100) => -1
+    arr.indexOf("a");      =>  0
+    arr.indexOf("a", 2);   =>  4
+    arr.indexOf("z");      => -1
+    arr.indexOf("b", 3);   => -1
+    arr.indexOf("a", 100); => -1
   */
   indexOf: function(object, startAt) {
     var idx, len = get(this, 'length');
