@@ -152,9 +152,9 @@ Ember.View = Ember.Object.extend(
     If false, the view will appear hidden in DOM.
 
     @type Boolean
-    @default true
+    @default null
   */
-  isVisible: true,
+  isVisible: null,
 
   /**
     Array of child views. You should never edit this array directly.
@@ -569,6 +569,9 @@ Ember.View = Ember.Object.extend(
     // Schedule the DOM element to be created and appended to the given
     // element after bindings have synchronized.
     this._insertElementLater(function() {
+      if (get(this, 'isVisible') === null) {
+        set(this, 'isVisible', true);
+      }
       this.$().appendTo(target);
     });
 
@@ -927,7 +930,7 @@ Ember.View = Ember.Object.extend(
       buffer.attr('role', role);
     }
 
-    if (!get(this, 'isVisible')) {
+    if (get(this, 'isVisible') === false) {
       buffer.style('display', 'none');
     }
   },
@@ -1189,6 +1192,9 @@ Ember.View = Ember.Object.extend(
     return view;
   },
 
+  becameVisible: Ember.K,
+  becameHidden: Ember.K,
+
   /**
     @private
 
@@ -1196,8 +1202,53 @@ Ember.View = Ember.Object.extend(
     element of the actual DOM element.
   */
   _isVisibleDidChange: Ember.observer(function() {
-    this.$().toggle(get(this, 'isVisible'));
+    var isVisible = get(this, 'isVisible');
+
+    this.$().toggle(isVisible);
+
+    if (this._isAncestorHidden()) { return; }
+
+    if (isVisible) {
+      this._notifyBecameVisible();
+    } else {
+      this._notifyBecameHidden();
+    }
   }, 'isVisible'),
+
+  _notifyBecameVisible: function() {
+    this.becameVisible();
+
+    this.forEachChildView(function(view) {
+      var isVisible = get(view, 'isVisible');
+
+      if (isVisible || isVisible === null) {
+        view._notifyBecameVisible();
+      }
+    });
+  },
+
+  _notifyBecameHidden: function() {
+    this.becameHidden();
+    this.forEachChildView(function(view) {
+      var isVisible = get(view, 'isVisible');
+
+      if (isVisible || isVisible === null) {
+        view._notifyBecameHidden();
+      }
+    });
+  },
+
+  _isAncestorHidden: function() {
+    var parent = get(this, 'parentView');
+
+    while (parent) {
+      if (get(parent, 'isVisible') === false) { return true; }
+
+      parent = get(parent, 'parentView');
+    }
+
+    return false;
+  },
 
   clearBuffer: function() {
     this.invokeRecursively(function(view) {

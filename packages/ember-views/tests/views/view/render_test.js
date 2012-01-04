@@ -91,51 +91,6 @@ test("should render child views with a different tagName", function() {
   equals(view.$('aside').length, 1);
 });
 
-test("should hide views when isVisible is false", function() {
-  var view = Ember.View.create({
-    isVisible: false
-  });
-
-  Ember.run(function() {
-    view.append();
-  });
-
-  ok(view.$().is(':hidden'), "the view is hidden");
-
-  set(view, 'isVisible', true);
-  ok(view.$().is(':visible'), "the view is visible");
-  view.remove();
-});
-
-test("should hide element if isVisible is false before element is created", function() {
-  var view = Ember.View.create({
-    isVisible: false
-  });
-
-  ok(!get(view, 'isVisible'), "precond - view is not visible");
-
-  set(view, 'template', function() { return "foo"; });
-
-  Ember.run(function() {
-    view.append();
-  });
-
-  ok(view.$().is(':hidden'), "should be hidden");
-
-  view.remove();
-  set(view, 'isVisible', true);
-
-  Ember.run(function() {
-    view.append();
-  });
-
-  ok(view.$().is(':visible'), "view should be visible");
-
-  Ember.run(function() {
-    view.remove();
-  });
-});
-
 test("should add ember-view to views", function() {
   var view = Ember.View.create();
 
