@@ -177,7 +177,7 @@ test("when a store is committed, the adapter's commit method is called with dele
     records.deleted.eachType(function(type, array) {
       equal(type, Person, "the type is correct");
       equal(get(array, 'length'), 1, "the array is the right length");
-      store.didDeleteModels(array)
+      store.didDeleteModels(array);
     });
   };
 
