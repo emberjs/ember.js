@@ -26,3 +26,19 @@ test('RunLoop unwinds despite unhandled exception', function() {
 
 });
 
+test('Ember.run unwinds despite unhandled exception', function() {
+  var initialRunLoop = Ember.run.currentRunLoop;
+
+  raises(function(){
+    Ember.run(function() {
+      throw new Error("boom!");
+    });
+  }, Error, "boom!");
+
+  equal(Ember.run.currentRunLoop, initialRunLoop, "Previous run loop should be cleaned up despite exception");
+
+  // Prevent a failure in this test from breaking subsequent tests.
+  Ember.run.currentRunLoop = initialRunLoop;
+
+});
+

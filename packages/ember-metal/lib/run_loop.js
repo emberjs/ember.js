@@ -176,8 +176,11 @@ Ember.run = run = function(target, method) {
 
   var ret, loop;
   run.begin();
-  if (target || method) ret = invoke(target, method, arguments, 2);
-  run.end();
+  try {
+    if (target || method) ret = invoke(target, method, arguments, 2);
+  } finally {
+    run.end();
+  }
   return ret;
 };
 
