@@ -760,6 +760,15 @@ mixinProperties(Binding,
 
         valueBinding: Ember.Binding.oneWay("MyApp.someController.value").notEmpty().notLessThan(10)
 
+  Finally, it's also possible to specify bi-directional transforms. To do this,
+  you can pass a hash to `transform` with `to` and `from`. In the following
+  example, we are expecting a lowercase string that we want to transform to
+  uppercase.
+
+        valueBinding: Ember.Binding.transform({
+          to:   function(value, binding) { return value.toUpperCase(); },
+          from: function(value, binding) { return value.toLowerCase(); }
+
   ## How to Manually Adding Binding
 
   All of the examples above show you how to configure a custom binding, but
