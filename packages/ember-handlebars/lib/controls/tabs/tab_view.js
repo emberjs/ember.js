@@ -1,7 +1,7 @@
 var get = Ember.get, setPath = Ember.setPath;
 
 Ember.TabView = Ember.View.extend({
-  tabsContainer: SC.computed(function() {
+  tabsContainer: Ember.computed(function() {
     return this.nearestInstanceOf(Ember.TabContainerView);
   }).property(),
 

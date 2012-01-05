@@ -24,17 +24,14 @@ Ember.TextSupport = Ember.Mixin.create(
 
   focusOut: function(event) {
     this._elementValueDidChange();
-    return false;
   },
 
   change: function(event) {
     this._elementValueDidChange();
-    return false;
   },
 
   keyUp: function(event) {
     this.interpretKeyEvents(event);
-    return false;
   },
 
   /**

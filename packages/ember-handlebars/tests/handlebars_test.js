@@ -1544,43 +1544,43 @@ test("should update bound values after the view is removed and then re-appended"
 });
 
 test("should update bound values after view's parent is removed and then re-appended", function() {
-  var parentView = SC.ContainerView.create({
+  var parentView = Ember.ContainerView.create({
     childViews: ['testView'],
-    testView: SC.View.create({
-      template: SC.Handlebars.compile("{{#if showStuff}}{{boundValue}}{{else}}Not true.{{/if}}"),
+    testView: Ember.View.create({
+      template: Ember.Handlebars.compile("{{#if showStuff}}{{boundValue}}{{else}}Not true.{{/if}}"),
       showStuff: true,
       boundValue: "foo"
     })
   });
 
-  SC.run(function() {
+  Ember.run(function() {
     parentView.appendTo('#qunit-fixture');
   });
   view = parentView.get('testView');
 
   equal($.trim(view.$().text()), "foo");
-  SC.run(function() {
+  Ember.run(function() {
     set(view, 'showStuff', false);
   });
   equal($.trim(view.$().text()), "Not true.");
 
-  SC.run(function() {
+  Ember.run(function() {
     set(view, 'showStuff', true);
   });
   equal($.trim(view.$().text()), "foo");
 
   parentView.remove();
-  SC.run(function() {
+  Ember.run(function() {
     set(view, 'showStuff', false);
   });
-  SC.run(function() {
+  Ember.run(function() {
     set(view, 'showStuff', true);
   });
-  SC.run(function() {
+  Ember.run(function() {
     parentView.appendTo('#qunit-fixture');
   });
 
-  SC.run(function() {
+  Ember.run(function() {
     set(view, 'boundValue', "bar");
   });
   equal($.trim(view.$().text()), "bar");
