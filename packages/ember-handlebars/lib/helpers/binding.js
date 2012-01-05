@@ -16,7 +16,7 @@ var helpers = EmberHandlebars.helpers;
 
 (function() {
   // Binds a property into the DOM. This will create a hook in DOM that the
-  // KVO system will look for and upate if the property changes.
+  // KVO system will look for and update if the property changes.
   var bind = function(property, options, preserveContext, shouldDisplay) {
     var data = options.data,
         fn = options.fn,
