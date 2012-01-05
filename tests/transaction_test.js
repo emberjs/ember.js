@@ -60,7 +60,7 @@ test("after a model is added to a transaction then updated, it is not committed 
   equals(commitCalls, 1, "commit was called when committing the transaction");
 });
 
-test("a model is removed from a transaction after the transaction ", function() {
+test("a model is removed from a transaction after the models become clean", function() {
   var createCalls = 0, updateCalls = 0;
 
   var store = DS.Store.create({
@@ -91,3 +91,30 @@ test("a model is removed from a transaction after the transaction ", function() 
   store.commit();
   equals(updateCalls, 1, "commit was called when committing the store");
 });
+
+test("after a model is added to a transaction then deleted, it is not committed when store.commit() is called but is committed when transaction.commit() is called", function() {
+  var commitCalls = 0;
+
+  var store = DS.Store.create({
+    adapter: DS.Adapter.create({
+      deleteMany: function() {
+        commitCalls++;
+      }
+    })
+  });
+
+  store.load(Person, { id: 1, name: "Yehuda Katz" });
+
+  var transaction = store.transaction();
+  var model = store.find(Person, 1);
+  transaction.add(model);
+
+  model.deleteModel();
+
+  store.commit();
+  equals(commitCalls, 0, "commit was not called when committing the store");
+
+  transaction.commit();
+  equals(commitCalls, 1, "commit was called when committing the transaction");
+});
+

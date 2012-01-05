@@ -370,7 +370,7 @@ test("a model receives a didLoad callback when it has finished loading", functio
 
   var adapter = DS.Adapter.create({
     find: function(store, type, id) {
-      store.load(Person, 1, { id: 1, name: "Foo" })
+      store.load(Person, 1, { id: 1, name: "Foo" });
     }
   });
 
