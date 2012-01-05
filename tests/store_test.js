@@ -335,7 +335,7 @@ test("models inside a collection view should have their ids updated", function()
   idCounter = 1;
   var adapter = DS.Adapter.create({
     create: function(store, type, model) {
-      store.didCreateModel(model, {name: model.get('name'), id: idCounter++});
+      store.didCreateRecord(model, {name: model.get('name'), id: idCounter++});
     }
   });
 
@@ -399,7 +399,7 @@ test("a model receives a didUpdate callback when it has finished updating", func
     },
 
     updateRecord: function(store, type, model) {
-      store.didUpdateModel(model);
+      store.didUpdateRecord(model);
     }
   });
 
@@ -427,7 +427,7 @@ test("a model receives a didUpdate callback when it has finished updating", func
 
   var adapter = DS.Adapter.create({
     createRecord: function(store, type, model) {
-      store.didCreateModel(model, {});
+      store.didCreateRecord(model, {});
     }
   });
 

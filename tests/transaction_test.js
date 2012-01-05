@@ -18,14 +18,14 @@ test("after a model is created from a transaction, it is not committed when stor
 
   var store = DS.Store.create({
     adapter: DS.Adapter.create({
-      createMany: function() {
+      createRecords: function() {
         commitCalls++;
       }
     })
   });
 
   var transaction = store.transaction();
-  var model = transaction.create(Person, {});
+  var model = transaction.createRecord(Person, {});
 
   store.commit();
   equals(commitCalls, 0, "commit was not called when committing the store");
@@ -39,7 +39,7 @@ test("after a model is added to a transaction then updated, it is not committed 
 
   var store = DS.Store.create({
     adapter: DS.Adapter.create({
-      updateMany: function() {
+      updateRecords: function() {
         commitCalls++;
       }
     })
@@ -65,20 +65,20 @@ test("a model is removed from a transaction after the models become clean", func
 
   var store = DS.Store.create({
     adapter: DS.Adapter.create({
-      create: function(store, type, model) {
+      createRecord: function(store, type, model) {
         createCalls++;
 
-        store.didCreateModel(model, { id: 1 });
+        store.didCreateRecord(model, { id: 1 });
       },
 
-      updateMany: function() {
+      updateRecords: function() {
         updateCalls++;
       }
     })
   });
 
   var transaction = store.transaction();
-  var model = transaction.create(Person, {});
+  var model = transaction.createRecord(Person, {});
 
   transaction.commit();
   equals(createCalls, 1, "create should be called when committing the store");
@@ -97,7 +97,7 @@ test("after a model is added to a transaction then deleted, it is not committed 
 
   var store = DS.Store.create({
     adapter: DS.Adapter.create({
-      deleteMany: function() {
+      deleteRecords: function() {
         commitCalls++;
       }
     })
@@ -109,7 +109,7 @@ test("after a model is added to a transaction then deleted, it is not committed 
   var model = store.find(Person, 1);
   transaction.add(model);
 
-  model.deleteModel();
+  model.deleteRecord();
 
   store.commit();
   equals(commitCalls, 0, "commit was not called when committing the store");
