@@ -349,8 +349,6 @@ test("models inside a collection view should have their ids updated", function()
     container.appendTo('#qunit-fixture');
   });
   
-  console.log(store.create(Person, { name: "Newt Gingrich" }));
-  console.log(store.create(Person, { name: "Ron Paul" }));
   store.commit();
   
   container.content.forEach(function(person, index) {
