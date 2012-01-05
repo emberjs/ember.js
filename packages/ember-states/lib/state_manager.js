@@ -52,7 +52,7 @@ Ember.StateManager = Ember.State.extend(
     this property will be the view associated with it. If there is no
     view state active in this state manager, this value will be null.
   */
-  currentView: SC.computed(function() {
+  currentView: Ember.computed(function() {
     var currentState = get(this, 'currentState'),
         view;
 
