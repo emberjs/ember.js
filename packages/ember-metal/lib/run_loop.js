@@ -30,8 +30,14 @@ function invoke(target, method, args, ignore) {
   if (args && ignore>0) {
     args = args.length>ignore ? slice.call(args, ignore) : null;
   }
-  // IE8's Function.prototype.apply doesn't accept undefined/null arguments.
-  return method.apply(target || this, args || []);
+
+  try {
+    // IE8's Function.prototype.apply doesn't accept undefined/null arguments.
+    return method.apply(target || this, args || []);
+  } catch (error) {
+    if ('function'===typeof Ember.onerror) Ember.onerror(error);
+    else throw error;
+  }
 }
 
 
