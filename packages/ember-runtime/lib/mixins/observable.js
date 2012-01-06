@@ -4,9 +4,7 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
-var get = Ember.get, set = Ember.set,
-    beginPropertyChanges = Ember.beginPropertyChanges,
-    endPropertyChanges = Ember.endPropertyChanges;
+var get = Ember.get, set = Ember.set;
   
 /**
   @class
@@ -144,14 +142,12 @@ Ember.Observable = Ember.Mixin.create(/** @scope Ember.Observable.prototype */ {
     @returns {Ember.Observable}
   */
   setProperties: function(hash) {
-    beginPropertyChanges();
-    try {
+    var self = this;
+    Ember.changeProperties(function(){
       for(var prop in hash) {
-        if (hash.hasOwnProperty(prop)) set(this, prop, hash[prop]);
+        if (hash.hasOwnProperty(prop)) set(self, prop, hash[prop]);
       }
-    } finally {
-      endPropertyChanges();
-    }
+    });
     return this;
   },
 
