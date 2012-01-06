@@ -21,13 +21,6 @@ Ember.TextField = Ember.View.extend(Ember.TextSupport,
 
   tagName: "input",
   attributeBindings: ['type', 'value'],
-  type: "text",
-
-  /**
-    @private
-  */
-  _updateElementValue: function() {
-    this.$().val(get(this, 'value'));
-  }
+  type: "text"
 
 });
