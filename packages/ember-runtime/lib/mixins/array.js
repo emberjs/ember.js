@@ -162,9 +162,9 @@ Ember.Array = Ember.Mixin.create(Ember.Enumerable, /** @scope Ember.Array.protot
 
   /**
     Returns the index of the given object's last occurrence.
-    If no startAt argument is given, the starting location to
-    search is 0. If it's negative, will count backward from 
-    the end of the array. Returns -1 if no match is found.
+    If no startAt argument is given, the search starts from
+    the last position. If it's negative, will count backward 
+    from the end of the array. Returns -1 if no match is found.
 
     @param {Object} object the item to search for
     @param {Number} startAt optional starting location to search, default 0
