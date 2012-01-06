@@ -6,14 +6,27 @@ Ember.State = Ember.Object.extend({
   start: null,
 
   init: function() {
-    Ember.keys(this).forEach(function(name) {
-      var value = this[name];
+    var states = get(this, 'states');
 
-      if (value && value.isState) {
-        set(value, 'parentState', this);
-        set(value, 'name', (get(this, 'name') || '') + '.' + name);
-      }
-    }, this);
+    if (!states) {
+      states = {};
+      Ember.keys(this).forEach(function(name) {
+        if (this.hasOwnProperty(name)) {
+          var value = this[name];
+
+          if (value && value.isState) {
+            set(value, 'parentState', this);
+            set(value, 'name', (get(this, 'name') || '') + '.' + name);
+
+            states[name] = value;
+          }
+        }
+      }, this);
+
+      if (Ember.keys(states).length > 0) { set(this, 'states', states); }
+    }
+
+    set(this, 'routes', {});
   },
 
   enter: Ember.K,
