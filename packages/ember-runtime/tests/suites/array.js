@@ -41,4 +41,5 @@ Ember.ArrayTests = Ember.EnumerableTests.extend({
 Ember.ArrayTests.ObserverClass = ObserverClass;
 
 require('ember-runtime/~tests/suites/array/indexOf');
+require('ember-runtime/~tests/suites/array/lastIndexOf');
 require('ember-runtime/~tests/suites/array/objectAt');
