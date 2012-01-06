@@ -18,20 +18,6 @@ Ember.StateManager = Ember.State.extend(
   init: function() {
     this._super();
 
-    var states = get(this, 'states');
-    if (!states) {
-      states = {};
-      Ember.keys(this).forEach(function(name) {
-        var value = get(this, name);
-
-        if (value && value.isState) {
-          states[name] = value;
-        }
-      }, this);
-
-      set(this, 'states', states);
-    }
-
     var initialState = get(this, 'initialState');
 
     if (!initialState && get(this, 'start')) {
