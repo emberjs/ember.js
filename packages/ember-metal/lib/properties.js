@@ -344,7 +344,11 @@ Ember.defineProperty = function(obj, keyName, desc, val) {
     if (descs[keyName]) meta(obj).descs[keyName] = null;
     o_defineProperty(obj, keyName, desc);
   }
-  
+
+  // if key is being watched, override chains that
+  // were initialized with the prototype
+  if (watching) Ember.overrideChains(obj, keyName, m);
+
   return this;
 };
 

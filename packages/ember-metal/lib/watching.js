@@ -319,7 +319,7 @@ Wp.chainDidChange = function(chain, path, depth) {
   }
 };
 
-Wp.didChange = function() {
+Wp.didChange = function(suppressEvent) {
   // invalidate my own value first.
   if (this._watching) {
     var obj = this._parent.value();
@@ -341,9 +341,11 @@ Wp.didChange = function() {
   if (chains) {
     for(var key in chains) {
       if (!chains.hasOwnProperty(key)) continue;
-      chains[key].didChange();
+      chains[key].didChange(suppressEvent);
     }
   }
+
+  if (suppressEvent) return;
 
   // and finally tell parent about my path changing...
   if (this._parent) this._parent.chainDidChange(this, this._key, 1);
@@ -364,26 +366,30 @@ function chainsFor(obj) {
 
 
 
-function notifyChains(obj, keyName, methodName) {
-  var m = meta(obj, false);
+function notifyChains(obj, m, keyName, methodName, arg) {
   var nodes = m.chainWatchers;
+
   if (!nodes || nodes.__emberproto__ !== obj) return; // nothing to do
 
   nodes = nodes[keyName];
   if (!nodes) return;
-  
+
   for(var key in nodes) {
     if (!nodes.hasOwnProperty(key)) continue;
-    nodes[key][methodName](obj, keyName);
+    nodes[key][methodName](arg);
   }
 }
 
-function chainsWillChange(obj, keyName) {
-  notifyChains(obj, keyName, 'willChange');
+Ember.overrideChains = function(obj, keyName, m) {
+  notifyChains(obj, m, keyName, 'didChange', true);
 }
 
-function chainsDidChange(obj, keyName) {
-  notifyChains(obj, keyName, 'didChange');
+function chainsWillChange(obj, keyName, m) {
+  notifyChains(obj, m, keyName, 'willChange');
+}
+
+function chainsDidChange(obj, keyName, m) {
+  notifyChains(obj, m, keyName, 'didChange');
 }
 
 // ..........................................................
@@ -511,7 +517,7 @@ var propertyWillChange = Ember.propertyWillChange = function(obj, keyName) {
   if (proto === obj) return ;
   if (desc && desc.willChange) desc.willChange(obj, keyName);
   dependentKeysWillChange(obj, keyName, m);
-  chainsWillChange(obj, keyName);
+  chainsWillChange(obj, keyName, m);
   Ember.notifyBeforeObservers(obj, keyName);
 };
 
@@ -537,7 +543,7 @@ var propertyDidChange = Ember.propertyDidChange = function(obj, keyName) {
   if (proto === obj) return ;
   if (desc && desc.didChange) desc.didChange(obj, keyName);
   dependentKeysDidChange(obj, keyName, m);
-  chainsDidChange(obj, keyName);
+  chainsDidChange(obj, keyName, m);
   Ember.notifyObservers(obj, keyName);
 };
 
