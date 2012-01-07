@@ -321,9 +321,10 @@ function hasDesc(descs, keyName) {
       }).property('firstName', 'lastName').cacheable());
 */
 Ember.defineProperty = function(obj, keyName, desc, val) {
-  var m = meta(obj, false), descs = m.descs, watching = m.watching[keyName]>0;
+  var m = meta(obj, false), descs = m.descs, watching = m.watching[keyName]>0, override = true;
 
   if (val === undefined) {
+    override = false;
     val = hasDesc(descs, keyName) ? descs[keyName].teardown(obj, keyName) : obj[keyName];
   } else if (hasDesc(descs, keyName)) {
     descs[keyName].teardown(obj, keyName);
@@ -347,7 +348,7 @@ Ember.defineProperty = function(obj, keyName, desc, val) {
 
   // if key is being watched, override chains that
   // were initialized with the prototype
-  if (watching) Ember.overrideChains(obj, keyName, m);
+  if (override && watching) Ember.overrideChains(obj, keyName, m);
 
   return this;
 };
