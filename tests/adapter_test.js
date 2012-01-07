@@ -462,6 +462,75 @@ test("by default, deleteRecords calls deleteRecord once per record", function() 
   store.commit();
 });
 
+test("if a created model is marked as invalid by the server, it enters an error state", function() {
+  adapter.createRecord = function(store, type, record) {
+    equal(type, Person, "the type is correct");
+
+    if (get(record, 'name').indexOf('Bro') === -1) {
+      store.recordWasInvalid(record, { name: ['common... name requires a "bro"'] });
+    } else {
+      store.didUpdateRecord(record);
+    }
+  };
+
+  var yehuda = store.createRecord(Person, { name: "Yehuda Katz" });
+  store.commit();
+
+  equal(get(yehuda, 'isValid'), false, "the record is invalid");
+
+  set(yehuda, 'updatedAt', true);
+  equal(get(yehuda, 'isValid'), false, "the record is still invalid");
+
+  set(yehuda, 'name', "Brohuda Brokatz");
+  equal(get(yehuda, 'isValid'), true, "the record is no longer invalid after changing");
+  equal(get(yehuda, 'isDirty'), true, "the record has outstanding changes");
+
+  equal(get(yehuda, 'isNew'), true, "precond - record is still new");
+
+  store.commit();
+  equal(get(yehuda, 'isValid'), true, "record remains valid after committing");
+  equal(get(yehuda, 'isNew'), false, "record is no longer new");
+
+  // Test key mapping
+});
+
+test("if an updated model is marked as invalid by the server, it enters an error state", function() {
+  adapter.updateRecord = function(store, type, record) {
+    equal(type, Person, "the type is correct");
+
+    if (get(record, 'name').indexOf('Bro') === -1) {
+      store.recordWasInvalid(record, { name: ['common... name requires a "bro"'] });
+    } else {
+      store.didUpdateRecord(record);
+    }
+  };
+
+  store.load(Person, { id: 1, name: "Brohuda Brokatz" });
+  var yehuda = store.find(Person, 1);
+
+  equal(get(yehuda, 'isValid'), true, "precond - the record is valid");
+  set(yehuda, 'name', "Yehuda Katz");
+  equal(get(yehuda, 'isValid'), true, "precond - the record is still valid as far as we know");
+
+  equal(get(yehuda, 'isDirty'), true, "the record is dirty");
+  store.commit();
+  equal(get(yehuda, 'isDirty'), true, "the record is still dirty");
+  equal(get(yehuda, 'isValid'), false, "the record is invalid");
+
+  set(yehuda, 'updatedAt', true);
+  equal(get(yehuda, 'isValid'), false, "the record is still invalid");
+
+  set(yehuda, 'name', "Brohuda Brokatz");
+  equal(get(yehuda, 'isValid'), true, "the record is no longer invalid after changing");
+  equal(get(yehuda, 'isDirty'), true, "the record has outstanding changes");
+
+  store.commit();
+  equal(get(yehuda, 'isValid'), true, "record remains valid after committing");
+  equal(get(yehuda, 'isDirty'), false, "record is no longer new");
+
+  // Test key mapping
+});
+
 test("can be created after the DS.Store", function() {
   expect(1);
   store.set('adapter', 'App.adapter');
