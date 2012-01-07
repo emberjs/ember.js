@@ -10,18 +10,16 @@ Ember.State = Ember.Object.extend({
 
     if (!states) {
       states = {};
-      Ember.keys(this).forEach(function(name) {
-        if (this.hasOwnProperty(name)) {
-          var value = this[name];
+      for (var name in this) {
+        var value = this[name];
 
-          if (value && value.isState) {
-            set(value, 'parentState', this);
-            set(value, 'name', (get(this, 'name') || '') + '.' + name);
+        if (value && value.isState) {
+          set(value, 'parentState', this);
+          set(value, 'name', (get(this, 'name') || '') + '.' + name);
 
-            states[name] = value;
-          }
+          states[name] = value;
         }
-      }, this);
+      }
 
       if (Ember.keys(states).length > 0) { set(this, 'states', states); }
     }

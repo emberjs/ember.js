@@ -48,3 +48,19 @@ test("a state is passed its state manager when receiving an enter event", functi
   });
 });
 
+test("a state finds properties that are states and copies them to the states hash", function() {
+  var state1 = Ember.State.create();
+  var state2 = Ember.State.create();
+
+  var superClass = Ember.State.extend({
+    state1: state1
+  });
+
+  var stateInstance = superClass.create({
+    state2: state2
+  });
+
+  var states = get(stateInstance, 'states');
+
+  deepEqual(states, { state1: state1, state2: state2 }, "states should be retrieved from both the instance and its class");
+});
