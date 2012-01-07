@@ -33,11 +33,13 @@ module("DS.StateManager", {
 });
 
 var isTrue = function(flag) {
-  equals(getPath(stateManager, 'states.rootState.'+stateName + "." + flag), true, stateName + "." + flag + " should be true");
+  var state = stateName.split('.').join('.states.');
+  equals(getPath(stateManager, 'states.rootState.states.'+ state + "." + flag), true, stateName + "." + flag + " should be true");
 };
 
 var isFalse = function(flag) {
-  equals(getPath(stateManager, 'states.rootState.'+stateName + "." + flag), false, stateName + "." + flag + " should be false");
+  var state = stateName.split('.').join('.states.');
+  equals(getPath(stateManager, 'states.rootState.states.'+ state + "." + flag), false, stateName + "." + flag + " should be false");
 };
 
 test("the empty state", function() {
