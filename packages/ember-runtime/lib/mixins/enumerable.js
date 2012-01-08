@@ -123,6 +123,13 @@ Ember.Enumerable = Ember.Mixin.create( /** @lends Ember.Enumerable */ {
     If your enumerable is empty, this method should return undefined.
 
     @returns {Object} the object or undefined
+
+    @example
+    var arr = ["a", "b", "c"];
+    arr.firstObject(); => "a"
+
+    var arr = [];
+    arr.firstObject(); => undefined
   */
   firstObject: Ember.computed(function() {
     if (get(this, 'length')===0) return undefined ;
