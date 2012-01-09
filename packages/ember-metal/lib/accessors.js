@@ -259,12 +259,12 @@ Ember.normalizeTuple.primitive = normalizeTuple;
 Ember.getPath = function(root, path) {
   var hasThis, hasStar, isGlobal;
   
-  if (!path && 'string'===typeof root) {
-    // Helpers that operate with 'this' within an #each
-    if (path === '') {
-      return root;
-    }
+  // Helpers that operate with 'this' within an #each
+  if (path === '') {
+    return root;
+  }
 
+  if (!path && 'string'===typeof root) {
     path = root;
     root = null;
   }
