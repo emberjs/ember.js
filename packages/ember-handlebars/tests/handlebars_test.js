@@ -1291,14 +1291,27 @@ test("should be able to use standard Handlebars #each helper", function() {
 
 test("should be able to use unbound helper in #each helper", function() {
   view = Ember.View.create({
-    items: Ember.A(['a', 'b', 'c']),
-      template: Ember.Handlebars.compile(
-        "<ul>{{#each items}}<li>{{unbound this}}</li>{{/each}}</ul>")
+    items: Ember.A(['a', 'b', 'c', 1, 2, 3]),
+    template: Ember.Handlebars.compile(
+      "<ul>{{#each items}}<li>{{unbound this}}</li>{{/each}}</ul>")
   });
 
   appendView();
 
-  equals(view.$().text(), "abc");
+  equals(view.$().text(), "abc123");
+  equals(view.$('li').children().length, 0, "No markers");
+});
+
+test("should be able to use unbound helper in #each helper (with objects)", function() {
+  view = Ember.View.create({
+    items: Ember.A([{wham: 'bam'}, {wham: 1}]),
+    template: Ember.Handlebars.compile(
+      "<ul>{{#each items}}<li>{{unbound wham}}</li>{{/each}}</ul>")
+  });
+
+  appendView();
+
+  equals(view.$().text(), "bam1");
   equals(view.$('li').children().length, 0, "No markers");
 });
 
