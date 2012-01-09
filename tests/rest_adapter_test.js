@@ -3,7 +3,7 @@ require('ember-data/adapters/rest_adapter');
 var get = SC.get, set = SC.set;
 
 var adapter, store, ajaxUrl, ajaxType, ajaxHash;
-var Person, person;
+var Person, person, people;
 
 module("the REST adapter", {
   setup: function() {
@@ -36,7 +36,8 @@ module("the REST adapter", {
   teardown: function() {
     adapter.destroy();
     store.destroy();
-    person.destroy();
+
+    if (person) { person.destroy(); }
   }
 });
 
@@ -52,14 +53,24 @@ var expectData = function(hash) {
   deepEqual(hash, ajaxHash.data, "the hash was passed along");
 };
 
-var expectState = function(state, value) {
+var expectState = function(state, value, p) {
+  p = p || person;
+
   if (value === undefined) { value = true; }
 
   var flag = "is" + state.charAt(0).toUpperCase() + state.substr(1);
- equal(get(person, flag), value, "the person is " + (value === false ? "not " : "") + state);
-}
+  equal(get(p, flag), value, "the person is " + (value === false ? "not " : "") + state);
+};
+
+var expectStates = function(state, value) {
+  people.forEach(function(person) {
+    expectState(state, value, person);
+  });
+};
 
 test("creating a person makes a POST to /people, with the data hash", function() {
+  set(adapter, 'bulkCommit', false);
+
   person = store.createRecord(Person, { name: "Tom Dale" });
 
   expectState('new');
@@ -76,7 +87,9 @@ test("creating a person makes a POST to /people, with the data hash", function()
   equal(person, store.find(Person, 1), "it is now possible to retrieve the person by the ID supplied");
 });
 
-test("updating a person makes a PUT to /people/:id with the data hash", function() {
+test("updating a person makes a POST to /people/:id with the data hash", function() {
+  set(adapter, 'bulkCommit', false);
+
   store.load(Person, { id: 1, name: "Yehuda Katz" });
 
   person = store.find(Person, 1);
@@ -101,6 +114,8 @@ test("updating a person makes a PUT to /people/:id with the data hash", function
 });
 
 test("deleting a person makes a DELETE to /people/:id", function() {
+  set(adapter, 'bulkCommit', false);
+
   store.load(Person, { id: 1, name: "Tom Dale" });
 
   person = store.find(Person, 1);
@@ -220,4 +235,94 @@ test("finding people by a query", function() {
   people.forEach(function(person) {
     equal(get(person, 'isLoaded'), true, "the person is being loaded");
   });
+});
+
+test("creating several people (with bulkCommit) makes a POST to /people, with a data hash Array", function() {
+  var tom = store.createRecord(Person, { name: "Tom Dale" });
+  var yehuda = store.createRecord(Person, { name: "Yehuda Katz" });
+
+  people = [ tom, yehuda ];
+
+  expectStates('new');
+  store.commit();
+  expectStates('saving');
+
+  expectUrl("/people", "the collection at the plural of the model name");
+  expectType("POST");
+  expectData({ people: [ { name: "Tom Dale" }, { name: "Yehuda Katz" } ] });
+
+  ajaxHash.success({ people: [ { id: 1, name: "Tom Dale" }, { id: 2, name: "Yehuda Katz" } ] });
+  expectStates('saving', false);
+
+  equal(tom, store.find(Person, 1), "it is now possible to retrieve the person by the ID supplied");
+  equal(yehuda, store.find(Person, 2), "it is now possible to retrieve the person by the ID supplied");
+});
+
+test("updating several people (with bulkCommit) makes a POST to /people with the data hash Array", function() {
+  store.loadMany(Person, [
+    { id: 1, name: "Yehuda Katz" },
+    { id: 2, name: "Carl Lerche" }
+  ]);
+
+  var yehuda = store.find(Person, 1);
+  var carl = store.find(Person, 2);
+
+  people = [ yehuda, carl ];
+
+  expectStates('new', false);
+  expectStates('loaded');
+  expectStates('dirty', false);
+
+  set(yehuda, 'name', "Brohuda Brokatz");
+  set(carl, 'name', "Brocarl Brolerche");
+
+  expectStates('dirty');
+  store.commit();
+  expectStates('saving');
+
+  expectUrl("/people", "the collection at the plural of the model name");
+  expectType("POST");
+
+  ajaxHash.success({ people: [
+    { id: 1, name: "Brohuda Brokatz" },
+    { id: 2, name: "Brocarl Brolerche" }
+  ]});
+
+  expectStates('saving', false);
+
+  equal(yehuda, store.find(Person, 1), "the same person is retrieved by the same ID");
+  equal(carl, store.find(Person, 2), "the same person is retrieved by the same ID");
+});
+
+test("deleting several people (with bulkCommit) makes a POST to /people/delete_many", function() {
+  store.loadMany(Person, [
+    { id: 1, name: "Yehuda Katz" },
+    { id: 2, name: "Carl Lerche" }
+  ]);
+
+  var yehuda = store.find(Person, 1);
+  var carl = store.find(Person, 2);
+
+  people = [ yehuda, carl ];
+
+  expectStates('new', false);
+  expectStates('loaded');
+  expectStates('dirty', false);
+
+  yehuda.deleteRecord();
+  carl.deleteRecord();
+
+  expectStates('dirty');
+  expectStates('deleted');
+  store.commit();
+  expectStates('saving');
+
+  expectUrl("/people/delete", "the collection at the plural of the model name with 'delete'");
+  expectType("POST");
+
+  ajaxHash.success({ success: true });
+
+  expectStates('saving', false);
+  expectStates('deleted');
+  expectStates('dirty', false);
 });
