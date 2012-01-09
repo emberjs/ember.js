@@ -10,7 +10,12 @@ var suite = Ember.EnumerableTests;
 
 suite.module('firstObject');
 
-suite.test('firstObject return first item in enumerable', function() {
+suite.test('returns first item in enumerable', function() {
   var obj = this.newObject();
   equals(Ember.get(obj, 'firstObject'), this.toArray(obj)[0]);
+});
+
+suite.test('returns undefined if enumerable is empty', function() {
+  var obj = this.newObject([]);
+  equals(Ember.get(obj, 'firstObject'), undefined);
 });
