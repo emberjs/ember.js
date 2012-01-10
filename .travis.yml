@@ -1,0 +1,3 @@
+before_install: sudo add-apt-repository ppa:jerome-etienne/neoip; sudo apt-get -qq update; sudo apt-get -q install phantomjs
+before_script: sh -e /etc/init.d/xvfb start; bundle exec rackup &
+script: DISPLAY=:99.0 phantomjs tests/qunit/run-qunit.js "http://localhost:9292/tests/index.html?package=all"
