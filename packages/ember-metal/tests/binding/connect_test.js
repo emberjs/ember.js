@@ -54,6 +54,37 @@ testBoth('Connecting a binding between two objects', function(get, set) {
   performTest(binding, a, b, get, set);
 });
 
+testBoth('Connecting a binding between two objects through property defined after connect', function(get, set) {
+  var b = { bar: 'BAR' };
+  var a = { foo: 'FOO' };
+
+  // b.bar -> a.foo
+  var binding = new Ember.Binding('foo', 'b.bar');
+  binding.connect(a);
+
+  Ember.defineProperty(a, 'b', Ember.SIMPLE_PROPERTY, b);
+
+  performTest(binding, a, b, get, set, true);
+});
+
+testBoth('Connecting a binding between two objects through property overriden after connect', function(get, set) {
+  var c = { bar: 'BAD!' };
+  var b = { bar: 'BAR' };
+  var a = { foo: 'FOO', b: c };
+
+  // b.bar -> a.foo
+  var binding = new Ember.Binding('foo', 'b.bar');
+  binding.connect(a);
+
+  equal(Em.isWatching(c, 'bar'), true, 'should be watching bar');
+
+  Ember.Mixin.create({b: b}).apply(a);
+
+  equal(Em.isWatching(c, 'bar'), false, 'should not be watching bar');
+
+  performTest(binding, a, b, get, set, true);
+});
+
 testBoth('Connecting a binding to path', function(get, set) {
   var a = { foo: 'FOO' };
   GlobalB = {
