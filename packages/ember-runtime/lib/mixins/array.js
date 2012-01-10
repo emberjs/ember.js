@@ -182,7 +182,7 @@ Ember.Array = Ember.Mixin.create(Ember.Enumerable, /** @scope Ember.Array.protot
   lastIndexOf: function(object, startAt) {
     var idx, len = get(this, 'length');
 
-    if (startAt === undefined) startAt = len-1;
+    if (startAt === undefined || startAt >= len) startAt = len-1;
     if (startAt < 0) startAt += len;
 
     for(idx=startAt;idx>=0;idx--) {
