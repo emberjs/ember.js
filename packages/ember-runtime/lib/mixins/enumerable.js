@@ -143,9 +143,18 @@ Ember.Enumerable = Ember.Mixin.create( /** @lends Ember.Enumerable */ {
   }).property(),
 
   /**
-    Helper method returns the last object from a collection.
+    Helper method returns the last object from a collection. If your enumerable
+    contains only one object, this method should always return that object.
+    If your enumerable is empty, this method should return undefined.
 
-    @returns {Object} the object or undefined
+    @returns {Object} the last object or undefined
+
+    @example
+    var arr = ["a", "b", "c"];
+    arr.lastObject(); => "c"
+
+    var arr = [];
+    arr.lastObject(); => undefined
   */
   lastObject: Ember.computed(function() {
     var len = get(this, 'length');
@@ -161,7 +170,6 @@ Ember.Enumerable = Ember.Mixin.create( /** @lends Ember.Enumerable */ {
       pushCtx(context);
       return last;
     }
-    
   }).property(),
 
   /**
