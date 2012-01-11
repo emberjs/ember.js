@@ -133,7 +133,7 @@ task :upload => :dist do
   # setup
   login = `git config github.user`.chomp  # your login for github
   token = `git config github.token`.chomp # your token for github
-  
+
   # get repo from git config's origin url
   origin = `git config remote.origin.url`.chomp # url to origin
   # extract USERNAME/REPO_NAME
@@ -141,15 +141,15 @@ task :upload => :dist do
   #              git://github.com/emberjs/ember.js.git
   #              git@github.com:emberjs/ember.js.git
   #              git@github.com:emberjs/ember.js
-  
+
   repo = origin.match(/github\.com[\/:](.+?)(\.git)?$/)[1]
   puts "Uploading to repository: " + repo
-  
+
   gh = Net::GitHub::Upload.new(
     :login => login,
     :token => token
   )
-  
+
   puts "Uploading ember-latest.js"
   gh.replace(
     :repos => repo,
@@ -158,7 +158,7 @@ task :upload => :dist do
     :content_type => 'application/json',
     :description => "Ember.js Master"
   )
-  
+
   puts "Uploading ember-latest.min.js"
   gh.replace(
     :repos => repo,
