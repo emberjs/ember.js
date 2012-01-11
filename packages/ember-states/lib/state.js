@@ -18,7 +18,7 @@ Ember.State = Ember.Object.extend({
       states = {};
       for (var name in this) {
         if (name === "constructor") { continue; }
-        value = this.setupChild(this[name]);
+        value = this.setupChild(name, this[name]);
 
         if (value) {
           foundStates = true;
@@ -29,14 +29,14 @@ Ember.State = Ember.Object.extend({
       if (foundStates) { set(this, 'states', states); }
     } else {
       for (var name in states) {
-        this.setupChild(states[name]);
+        this.setupChild(name, states[name]);
       }
     }
 
     set(this, 'routes', {});
   },
 
-  setupChild: function(value) {
+  setupChild: function(name, value) {
     if (!value) { return false; }
 
     if (Ember.State.detect(value)) {
