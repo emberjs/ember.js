@@ -69,10 +69,15 @@ Ember.Application = Ember.Namespace.extend(
 
     set(this, 'eventDispatcher', eventDispatcher);
 
-    var self = this;
-    Ember.$(document).ready(function() {
-      self.ready();
-    });
+    // jQuery 1.7 doesn't call the ready callback if already ready
+    if (Ember.$.isReady) {
+      this.ready();
+    } else {
+      var self = this;
+      Ember.$(document).ready(function() {
+        self.ready();
+      });
+    }
 
     this._super();
   },
