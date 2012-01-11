@@ -148,6 +148,12 @@ Ember.View = Ember.Object.extend(
     }
   }).property('_parentView'),
 
+  // return the current view, not including virtual views
+  concreteView: Ember.computed(function() {
+    if (!this.isVirtual) { return this; }
+    else { return get(this, 'parentView'); }
+  }).property('_parentView'),
+
   /**
     If false, the view will appear hidden in DOM.
 
@@ -1184,7 +1190,10 @@ Ember.View = Ember.Object.extend(
       view = view.create(attrs || {}, { _parentView: this });
 
       var viewName = attrs && attrs.viewName || view.viewName;
-      if (viewName) { set(this, viewName, view); }
+
+      // don't set the property on a virtual view, as they are invisible to
+      // consumers of the view API
+      if (viewName) { set(get(this, 'concreteView'), viewName, view); }
     } else {
       ember_assert('must pass instance of View', view instanceof Ember.View);
       set(view, '_parentView', this);
