@@ -7,7 +7,7 @@
 
 require("ember-runtime");
 
-ember_assert("Ember is only compatible with jQuery 1.6+", parseFloat(jQuery().jquery) >= 1.6);
+ember_assert("Ember is only compatible with jQuery 1.6 and 1.7", jQuery().jquery.match(/^1\.[67](.\d+)?$/));
 Ember.$ = jQuery;
 
 require("ember-views/system");
