@@ -60,10 +60,10 @@ Ember.Button = Ember.View.extend(Ember.TargetActionSupport, {
   // which goes inactive as soon as mouse goes out of edges.)
 
   touchStart: function(touch) {
-    this.mouseDown(touch);
+    return this.mouseDown(touch);
   },
 
   touchEnd: function(touch) {
-    this.mouseUp(touch);
+    return this.mouseUp(touch);
   }
 });
