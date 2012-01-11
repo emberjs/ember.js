@@ -26,6 +26,14 @@ var STRING_UNDERSCORE_REGEXP_2 = (/\-|\s+/g);
 Ember.STRINGS = {};
 
 /**
+  Allow to join strings from differents packages or 'strings.js'
+  files into one.
+*/
+Ember.stringsFor = function(strings) {
+  Ember.mixin(Ember.STRINGS, strings);
+};
+
+/**
   Defines string helper methods including string formatting and localization.
   Unless Ember.EXTEND_PROTOTYPES = false these methods will also be added to the
   String.prototype as well.
