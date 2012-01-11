@@ -129,7 +129,7 @@ end
 
 ### UPLOAD LATEST EMBERJS BUILD TASK ###
 desc "Upload latest Ember.js build to GitHub repository"
-task :upload => [:clean, :dist] do
+task :upload => :dist do
   # setup
   login = `git config github.user`.chomp  # your login for github
   token = `git config github.token`.chomp # your token for github
@@ -139,8 +139,10 @@ task :upload => [:clean, :dist] do
   # extract USERNAME/REPO_NAME
   # sample urls: https://github.com/emberjs/ember.js.git
   #              git://github.com/emberjs/ember.js.git
-  r = /github\.com\S*[\/:](\w+\/[\w\.]+)\.\w*/
-  repo = r.match(origin).captures.first
+  #              git@github.com:emberjs/ember.js.git
+  #              git@github.com:emberjs/ember.js
+  
+  repo = origin.match(/github\.com[\/:](.+?)(\.git)?$/)[1]
   puts "Uploading to repository: " + repo
   
   gh = Net::GitHub::Upload.new(
@@ -154,7 +156,7 @@ task :upload => [:clean, :dist] do
     :file  => 'dist/ember.js',
     :name => 'ember-latest.js',
     :content_type => 'application/json',
-    :description => "latest build of ember.js"
+    :description => "Ember.js Master"
   )
   
   puts "Uploading ember-latest.min.js"
@@ -163,7 +165,7 @@ task :upload => [:clean, :dist] do
     :file  => 'dist/ember.min.js',
     :name => 'ember-latest.min.js',
     :content_type => 'application/json',
-    :description => "latest minified build of ember.js"
+    :description => "Ember.js Master (minified)"
   )
 end
 
