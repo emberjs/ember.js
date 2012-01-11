@@ -31,12 +31,18 @@ function invoke(target, method, args, ignore) {
     args = args.length>ignore ? slice.call(args, ignore) : null;
   }
 
-  try {
+  // Unfortunately in some browsers we lose the backtrace if we rethrow the existing error,
+  // so in the event that we don't have an `onerror` handler we don't wrap in a try/catch
+  if ('function' === typeof Ember.onerror) {
+    try {
+      // IE8's Function.prototype.apply doesn't accept undefined/null arguments.
+      return method.apply(target || this, args || []);
+    } catch (error) {
+      Ember.onerror(error);
+    }
+  } else {
     // IE8's Function.prototype.apply doesn't accept undefined/null arguments.
     return method.apply(target || this, args || []);
-  } catch (error) {
-    if ('function'===typeof Ember.onerror) Ember.onerror(error);
-    else throw error;
   }
 }
 
