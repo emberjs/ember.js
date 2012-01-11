@@ -80,6 +80,29 @@ Ember._BindableSpanView = Ember.View.extend(Ember.Metamorph,
   */
   property: null,
 
+  normalizedValue: Ember.computed(function() {
+    var property = get(this, 'property'),
+        context  = get(this, 'previousContext'),
+        valueNormalizer = get(this, 'valueNormalizerFunc'),
+        result;
+
+    // Use the current context as the result if no
+    // property is provided.
+    if (property === '') {
+      result = context;
+    } else {
+      result = getPath(context, property);
+    }
+
+    return valueNormalizer ? valueNormalizer(result) : result;
+  }).property('property', 'previousContext', 'valueNormalizerFunc'),
+
+  rerenderIfNeeded: function() {
+    if (!get(this, 'isDestroyed') && get(this, 'normalizedValue') !== this._lastNormalizedValue) {
+      this.rerender();
+    }
+  },
+
   /**
     Determines which template to invoke, sets up the correct state based on
     that logic, then invokes the default Ember.View `render` implementation.
@@ -102,23 +125,14 @@ Ember._BindableSpanView = Ember.View.extend(Ember.Metamorph,
     var escape = get(this, 'isEscaped');
 
     var shouldDisplay = get(this, 'shouldDisplayFunc'),
-        property = get(this, 'property'),
         preserveContext = get(this, 'preserveContext'),
         context = get(this, 'previousContext');
 
     var inverseTemplate = get(this, 'inverseTemplate'),
         displayTemplate = get(this, 'displayTemplate');
 
-    var result;
-
-
-    // Use the current context as the result if no
-    // property is provided.
-    if (property === '') {
-      result = context;
-    } else {
-      result = getPath(context, property);
-    }
+    var result = get(this, 'normalizedValue');
+    this._lastNormalizedValue = result;
 
     // First, test the conditional to see if we should
     // render the template or not.

@@ -898,6 +898,37 @@ test("should update boundIf blocks if the conditional changes", function() {
   equals(view.$('#first').text(), "bam", "re-renders block when condition changes to true");
 });
 
+test("should not update boundIf if truthiness does not change", function() {
+  var renderCount = 0;
+
+  view = Ember.View.create({
+    template: Ember.Handlebars.compile('<h1 id="first">{{#boundIf "shouldDisplay"}}{{view InnerViewClass}}{{/boundIf}}</h1>'),
+
+    shouldDisplay: true,
+
+    InnerViewClass: Ember.View.extend({
+      template: Ember.Handlebars.compile("bam"),
+
+      render: function() {
+        renderCount++;
+        return this._super.apply(this, arguments);
+      }
+    })
+  });
+
+  appendView();
+
+  equals(renderCount, 1, "precond - should have rendered once");
+  equals(view.$('#first').text(), "bam", "renders block when condition is true");
+
+  Ember.run(function() {
+    set(view, 'shouldDisplay', 1);
+  });
+
+  equals(renderCount, 1, "should not have rerendered");
+  equals(view.$('#first').text(), "bam", "renders block when condition is true");
+});
+
 test("boundIf should support parent access", function(){
   view = Ember.View.create({
     template: Ember.Handlebars.compile(
