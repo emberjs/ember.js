@@ -1,5 +1,8 @@
 abort "Please use Ruby 1.9 to build Ember.js!" if RUBY_VERSION !~ /^1\.9/
 
+require "rubygems"
+require "net/github-upload"
+
 require "bundler/setup"
 require "erb"
 require "uglifier"
@@ -71,8 +74,7 @@ task :metamorph => compile_package_task("metamorph")
 task :build => ["ember:metal", "ember:runtime", "ember:handlebars", "ember:views", "ember:states", "ember:datetime", :handlebars, :metamorph]
 
 distributions = {
-  "ember" => ["handlebars", "ember-metal", "ember-runtime", "ember-views", "ember-states", "metamorph", "ember-handlebars"],
-  "ember-datetime" => ["ember-datetime"]
+  "ember" => ["handlebars", "ember-metal", "ember-runtime", "ember-views", "ember-states", "metamorph", "ember-handlebars"]
 }
 
 distributions.each do |name, libraries|
@@ -121,6 +123,48 @@ task :dist => distributions.keys.map {|name| "dist/#{name}.min.js"}
 desc "Clean build artifacts from previous builds"
 task :clean do
   sh "rm -rf tmp && rm -rf dist"
+end
+
+
+
+### UPLOAD LATEST EMBERJS BUILD TASK ###
+desc "Upload latest Ember.js build to GitHub repository"
+task :upload => [:clean, :dist] do
+  # setup
+  login = `git config github.user`.chomp  # your login for github
+  token = `git config github.token`.chomp # your token for github
+  
+  # get repo from git config's origin url
+  origin = `git config remote.origin.url`.chomp # url to origin
+  # extract USERNAME/REPO_NAME
+  # sample urls: https://github.com/emberjs/ember.js.git
+  #              git://github.com/emberjs/ember.js.git
+  r = /github\.com\S*[\/:](\w+\/[\w\.]+)\.\w*/
+  repo = r.match(origin).captures.first
+  puts "Uploading to repository: " + repo
+  
+  gh = Net::GitHub::Upload.new(
+    :login => login,
+    :token => token
+  )
+  
+  puts "Uploading ember-latest.js"
+  gh.replace(
+    :repos => repo,
+    :file  => 'dist/ember.js',
+    :name => 'ember-latest.js',
+    :content_type => 'application/json',
+    :description => "latest build of ember.js"
+  )
+  
+  puts "Uploading ember-latest.min.js"
+  gh.replace(
+    :repos => repo,
+    :file  => 'dist/ember.min.js',
+    :name => 'ember-latest.min.js',
+    :content_type => 'application/json',
+    :description => "latest minified build of ember.js"
+  )
 end
 
 

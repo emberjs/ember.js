@@ -9,7 +9,7 @@ if ('undefined' === typeof Ember) {
 /**
   @namespace
   @name Ember
-  @version 0.9.2
+  @version 0.9.3
 
   All Ember methods and functions are defined inside of this namespace.
   You generally should not add new properties to this namespace as it may be
@@ -41,10 +41,10 @@ if ('undefined' !== typeof window) {
 /**
   @static
   @type String
-  @default '0.9.2'
+  @default '0.9.3'
   @constant
 */
-Ember.VERSION = '0.9.2';
+Ember.VERSION = '0.9.3';
 
 /**
   @static
@@ -64,6 +64,12 @@ Ember.ENV = 'undefined' === typeof ENV ? {} : ENV;
   @private
 */
 Ember.K = function() { return this; };
+
+/**
+  @namespace
+  @name window
+  @description The global window object
+*/
 
 /**
   Define an assertion that will throw an exception if the condition is not 

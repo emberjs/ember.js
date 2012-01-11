@@ -76,24 +76,6 @@ var obj, observer;
 
 module('mixins/enumerable/enumerableContentDidChange');
 
-test('should notify observers of []', function() {
-
-  var obj = Ember.Object.create(Ember.Enumerable, {
-    nextObject: function() {}, // avoid exceptions
-    
-    _count: 0,
-    enumerablePropertyDidChange: Ember.observer(function() {
-      this._count++;
-    }, '[]')
-  });
-  
-  equals(obj._count, 0, 'should not have invoked yet');
-  obj.enumerableContentWillChange();
-  obj.enumerableContentDidChange();
-  equals(obj._count, 1, 'should have invoked');
-  
-});
-
 // ..........................................................
 // NOTIFY CHANGES TO LENGTH
 // 

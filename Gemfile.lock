@@ -1,9 +1,10 @@
 GIT
   remote: https://github.com/livingsocial/rake-pipeline.git
-  revision: bb82ce330c2fc4cc5d918ecd140df3a5c3c6aa10
+  revision: 9ad948337082b62d8f7cc6c0bb72bbbbfc37d012
   specs:
     rake-pipeline (0.5.0)
       rake (~> 0.9.0)
+      thor
 
 GIT
   remote: https://github.com/wycats/abbot-from-scratch.git
@@ -11,14 +12,37 @@ GIT
   specs:
     sproutcore (0.0.1)
 
+GIT
+  remote: https://github.com/wycats/rake-pipeline-web-filters.git
+  revision: 56678c5beb1e7200be8cbf3f13f2be174a4ca7b5
+  specs:
+    rake-pipeline-web-filters (0.5.0)
+      rake-pipeline
+
 GEM
   remote: http://rubygems.org/
   specs:
+    confparser (0.0.2.1)
     execjs (1.2.6)
       multi_json (~> 1.0)
+    faster_xml_simple (0.5.0)
+      libxml-ruby (>= 0.3.8.4)
+    github-upload (0.0.2)
+      confparser
+      net-github-upload (>= 0.0.6)
+    httpclient (2.2.4)
+    json (1.6.3)
+    libxml-ruby (2.2.2)
     multi_json (1.0.3)
+    net-github-upload (0.0.7)
+      faster_xml_simple
+      httpclient
+      json
+      nokogiri (>= 1.4.0)
+    nokogiri (1.5.0)
     rack (1.3.5)
     rake (0.9.2.2)
+    thor (0.14.6)
     uglifier (1.0.3)
       execjs (>= 0.3.0)
       multi_json (>= 1.0.2)
@@ -28,7 +52,9 @@ PLATFORMS
 
 DEPENDENCIES
   execjs (~> 1.2.6)
+  github-upload
   rack
   rake-pipeline!
+  rake-pipeline-web-filters!
   sproutcore!
   uglifier (~> 1.0.3)

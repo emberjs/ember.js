@@ -120,14 +120,13 @@ Ember.none = function(obj) {
 };
 
 /**
-  Verifies that a value is either null or an empty string. Return false if
-  the object is not a string.
+  Verifies that a value is null or an empty string | array | function.
 
   @param {Object} obj Value to test
   @returns {Boolean}
 */
 Ember.empty = function(obj) {
-  return obj === null || obj === undefined || obj === '';
+  return obj === null || obj === undefined || (obj.length === 0 && typeof obj !== 'function');
 };
 
 /**

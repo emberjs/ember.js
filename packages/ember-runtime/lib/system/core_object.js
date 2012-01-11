@@ -62,7 +62,8 @@ function makeCtor() {
 
 var CoreObject = makeCtor();
 
-CoreObject.PrototypeMixin = Ember.Mixin.create({
+CoreObject.PrototypeMixin = Ember.Mixin.create(
+/** @scope Ember.CoreObject */ {
 
   reopen: function() {
     Ember.Mixin._apply(this, arguments, true);
@@ -100,7 +101,7 @@ CoreObject.PrototypeMixin = Ember.Mixin.create({
     @private
   */
   _scheduledDestroy: function() {
-    this[Ember.META_KEY] = null;
+    Ember.destroy(this);
   },
 
   bind: function(to, from) {
@@ -192,6 +193,9 @@ var ClassMixin = Ember.Mixin.create({
 CoreObject.ClassMixin = ClassMixin;
 ClassMixin.apply(CoreObject);
 
+/**
+  @class
+*/
 Ember.CoreObject = CoreObject;
 
 

@@ -79,6 +79,9 @@ function ComputedProperty(func, opts) {
   this._dependentKeys = opts && opts.dependentKeys;
 }
 
+/**
+  @constructor
+*/
 Ember.ComputedProperty = ComputedProperty;
 ComputedProperty.prototype = new Ember.Descriptor();
 
@@ -134,6 +137,10 @@ function mkCpSetter(keyName, desc) {
   };
 }
 
+/**
+  @extends Ember.ComputedProperty
+  @private
+*/
 var Cp = ComputedProperty.prototype;
 
 /**

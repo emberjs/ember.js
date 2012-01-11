@@ -51,8 +51,13 @@
       el.innerHTML = 'Add package=package1,package2 in the URL to test packages';
     } else {
       if (packages[1] === 'all') {
-        packages = ['ember-datetime', 'ember-handlebars', 'ember-metal', 'ember-runtime',
-                    'ember-states', 'ember-views'];
+        packages = [
+          'ember-handlebars',
+          'ember-metal',
+          'ember-runtime',
+          'ember-states',
+          'ember-views'
+        ];
       } else {
         packages = packages[1].split(',');
       }
@@ -60,20 +65,20 @@
       len = packages.length;
 
       // There are no requires for these in the code
-      minispade.require('jquery-1.6.2/main');
-      minispade.require('handlebars/main');
+      minispade.require('jquery-1.6.2');
+      minispade.require('handlebars');
 
       for (idx=0; idx<len; idx++) {
         packageName = packages[idx];
         re = new RegExp('^'+packageName+'/([^/]+)');
 
-        minispade.require(packageName+'/main');
+        minispade.require(packageName);
 
         for (moduleName in minispade.modules) {
           if (!minispade.modules.hasOwnProperty(moduleName)) { continue; }
 
           match = moduleName.match(re);
-          if (match && match[1] === 'tests') {
+          if (match && match[1] === '~tests') {
             minispade.require(moduleName);
           }
         }

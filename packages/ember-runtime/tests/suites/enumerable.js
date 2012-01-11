@@ -271,18 +271,21 @@ EnumerableTests.reopenClass({
 Ember.EnumerableTests = EnumerableTests;
 Ember.EnumerableTests.ObserverClass = ObserverClass;
 
-require('./enumerable/contains');
-require('./enumerable/every');
-require('./enumerable/filter');
-require('./enumerable/find');
-require('./enumerable/firstObject');
-require('./enumerable/forEach');
-require('./enumerable/invoke');
-require('./enumerable/lastObject');
-require('./enumerable/map');
-require('./enumerable/some');
-require('./enumerable/toArray');
-require('./enumerable/uniq');
-require('./enumerable/without');
+require('ember-runtime/~tests/suites/enumerable/compact');
+require('ember-runtime/~tests/suites/enumerable/contains');
+require('ember-runtime/~tests/suites/enumerable/every');
+require('ember-runtime/~tests/suites/enumerable/filter');
+require('ember-runtime/~tests/suites/enumerable/find');
+require('ember-runtime/~tests/suites/enumerable/firstObject');
+require('ember-runtime/~tests/suites/enumerable/forEach');
+require('ember-runtime/~tests/suites/enumerable/mapProperty');
+require('ember-runtime/~tests/suites/enumerable/invoke');
+require('ember-runtime/~tests/suites/enumerable/lastObject');
+require('ember-runtime/~tests/suites/enumerable/map');
+require('ember-runtime/~tests/suites/enumerable/reduce');
+require('ember-runtime/~tests/suites/enumerable/some');
+require('ember-runtime/~tests/suites/enumerable/toArray');
+require('ember-runtime/~tests/suites/enumerable/uniq');
+require('ember-runtime/~tests/suites/enumerable/without');
 
 

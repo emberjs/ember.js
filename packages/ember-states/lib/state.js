@@ -6,14 +6,40 @@ Ember.State = Ember.Object.extend({
   start: null,
 
   init: function() {
-    Ember.keys(this).forEach(function(name) {
-      var value = this[name];
+    var states = get(this, 'states'), foundStates;
 
-      if (value && value.isState) {
-        set(value, 'parentState', this);
-        set(value, 'name', (get(this, 'name') || '') + '.' + name);
+    // As a convenience, loop over the properties
+    // of this state and look for any that are other
+    // Ember.State instances or classes, and move them
+    // to the `states` hash. This avoids having to
+    // create an explicit separate hash.
+
+    if (!states) {
+      states = {};
+      for (var name in this) {
+        if (name === "constructor") { continue; }
+
+        var value = this[name];
+        if (!value) { continue; }
+
+        if (Ember.State.detect(value)) {
+          value = value.create();
+        }
+
+        if (value.isState) {
+          foundStates = true;
+
+          set(value, 'parentState', this);
+          set(value, 'name', (get(this, 'name') || '') + '.' + name);
+
+          states[name] = value;
+        }
       }
-    }, this);
+
+      if (foundStates) { set(this, 'states', states); }
+    }
+
+    set(this, 'routes', {});
   },
 
   enter: Ember.K,

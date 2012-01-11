@@ -30,8 +30,20 @@ function invoke(target, method, args, ignore) {
   if (args && ignore>0) {
     args = args.length>ignore ? slice.call(args, ignore) : null;
   }
-  // IE8's Function.prototype.apply doesn't accept undefined/null arguments.
-  return method.apply(target || this, args || []);
+
+  // Unfortunately in some browsers we lose the backtrace if we rethrow the existing error,
+  // so in the event that we don't have an `onerror` handler we don't wrap in a try/catch
+  if ('function' === typeof Ember.onerror) {
+    try {
+      // IE8's Function.prototype.apply doesn't accept undefined/null arguments.
+      return method.apply(target || this, args || []);
+    } catch (error) {
+      Ember.onerror(error);
+    }
+  } else {
+    // IE8's Function.prototype.apply doesn't accept undefined/null arguments.
+    return method.apply(target || this, args || []);
+  }
 }
 
 
@@ -176,8 +188,11 @@ Ember.run = run = function(target, method) {
 
   var ret, loop;
   run.begin();
-  if (target || method) ret = invoke(target, method, arguments, 2);
-  run.end();
+  try {
+    if (target || method) ret = invoke(target, method, arguments, 2);
+  } finally {
+    run.end();
+  }
   return ret;
 };
 
@@ -485,10 +500,16 @@ Ember.run.cancel = function(timer) {
   delete timers[timer];
 };
 
-
 // ..........................................................
 // DEPRECATED API
 //
+
+/**
+  @namespace
+  @name Ember.RunLoop
+  @deprecated
+  @description Compatibility for Ember.run
+*/
 
 /**
   @deprecated

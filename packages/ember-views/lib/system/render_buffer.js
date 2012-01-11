@@ -138,15 +138,38 @@ Ember._RenderBuffer = Ember.Object.extend(
     return this;
   },
 
+  // duck type attribute functionality like jQuery so a render buffer
+  // can be used like a jQuery object in attribute binding scenarios.
+
   /**
     Adds an attribute which will be rendered to the element.
 
     @param {String} name The name of the attribute
     @param {String} value The value to add to the attribute
-    @returns {Ember.RenderBuffer} this
+    @returns {Ember.RenderBuffer|String} this or the current attribute value
   */
   attr: function(name, value) {
-    get(this, 'elementAttributes')[name] = value;
+    var attributes = get(this, 'elementAttributes');
+
+    if (arguments.length === 1) {
+      return attributes[name]
+    } else {
+      attributes[name] = value;
+    }
+
+    return this;
+  },
+
+  /**
+    Remove an attribute from the list of attributes to render.
+
+    @param {String} name The name of the attribute
+    @returns {Ember.RenderBuffer} this
+  */
+  removeAttr: function(name) {
+    var attributes = get(this, 'elementAttributes');
+    delete attributes[name];
+
     return this;
   },
 

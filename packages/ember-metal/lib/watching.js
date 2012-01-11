@@ -19,6 +19,7 @@ var normalizeTuple = Ember.normalizeTuple.primitive;
 var normalizePath  = Ember.normalizePath;
 var SIMPLE_PROPERTY = Ember.SIMPLE_PROPERTY;
 var GUID_KEY = Ember.GUID_KEY;
+var META_KEY = Ember.META_KEY;
 var notifyObservers = Ember.notifyObservers;
 
 var FIRST_KEY = /^([^\.\*]+)/;
@@ -35,17 +36,17 @@ function isKeyName(path) {
 
 // ..........................................................
 // DEPENDENT KEYS
-// 
+//
 
 var DEP_SKIP = { __emberproto__: true }; // skip some keys and toString
-function iterDeps(methodName, obj, depKey, seen) {
-  
+function iterDeps(method, obj, depKey, seen, meta) {
+
   var guid = guidFor(obj);
   if (!seen[guid]) seen[guid] = {};
   if (seen[guid][depKey]) return ;
   seen[guid][depKey] = true;
-  
-  var deps = meta(obj, false).deps, method = Ember[methodName];
+
+  var deps = meta.deps;
   deps = deps && deps[depKey];
   if (deps) {
     for(var key in deps) {
@@ -59,18 +60,18 @@ function iterDeps(methodName, obj, depKey, seen) {
 var WILL_SEEN, DID_SEEN;
 
 // called whenever a property is about to change to clear the cache of any dependent keys (and notify those properties of changes, etc...)
-function dependentKeysWillChange(obj, depKey) {
+function dependentKeysWillChange(obj, depKey, meta) {
   var seen = WILL_SEEN, top = !seen;
   if (top) seen = WILL_SEEN = {};
-  iterDeps('propertyWillChange', obj, depKey, seen);
+  iterDeps(propertyWillChange, obj, depKey, seen, meta);
   if (top) WILL_SEEN = null;
 }
 
 // called whenever a property has just changed to update dependent keys
-function dependentKeysDidChange(obj, depKey) {
+function dependentKeysDidChange(obj, depKey, meta) {
   var seen = DID_SEEN, top = !seen;
   if (top) seen = DID_SEEN = {};
-  iterDeps('propertyDidChange', obj, depKey, seen);
+  iterDeps(propertyDidChange, obj, depKey, seen, meta);
   if (top) DID_SEEN = null;
 }
 
@@ -206,6 +207,7 @@ Wp.add = function(path) {
   // put into a queue and try to connect later.
   } else if (!tuple[0]) {
     pendingQueue.push([this, path]);
+    tuple.length = 0;
     return;
 
   // global path, and object already exists
@@ -216,6 +218,7 @@ Wp.add = function(path) {
     path = tuple[1];
   }
 
+  tuple.length = 0;
   this.chain(key, path, src, separator);
 };
 
@@ -240,6 +243,7 @@ Wp.remove = function(path) {
     path = tuple[1];
   }
 
+  tuple.length = 0;
   this.unchain(key, path);
 };
 
@@ -315,7 +319,7 @@ Wp.chainDidChange = function(chain, path, depth) {
   }
 };
 
-Wp.didChange = function() {
+Wp.didChange = function(suppressEvent) {
   // invalidate my own value first.
   if (this._watching) {
     var obj = this._parent.value();
@@ -337,9 +341,11 @@ Wp.didChange = function() {
   if (chains) {
     for(var key in chains) {
       if (!chains.hasOwnProperty(key)) continue;
-      chains[key].didChange();
+      chains[key].didChange(suppressEvent);
     }
   }
+
+  if (suppressEvent) return;
 
   // and finally tell parent about my path changing...
   if (this._parent) this._parent.chainDidChange(this, this._key, 1);
@@ -360,26 +366,30 @@ function chainsFor(obj) {
 
 
 
-function notifyChains(obj, keyName, methodName) {
-  var m = meta(obj, false);
+function notifyChains(obj, m, keyName, methodName, arg) {
   var nodes = m.chainWatchers;
+
   if (!nodes || nodes.__emberproto__ !== obj) return; // nothing to do
 
   nodes = nodes[keyName];
   if (!nodes) return;
-  
+
   for(var key in nodes) {
     if (!nodes.hasOwnProperty(key)) continue;
-    nodes[key][methodName](obj, keyName);
+    nodes[key][methodName](arg);
   }
 }
 
-function chainsWillChange(obj, keyName) {
-  notifyChains(obj, keyName, 'willChange');
+Ember.overrideChains = function(obj, keyName, m) {
+  notifyChains(obj, m, keyName, 'didChange', true);
 }
 
-function chainsDidChange(obj, keyName) {
-  notifyChains(obj, keyName, 'didChange');
+function chainsWillChange(obj, keyName, m) {
+  notifyChains(obj, m, keyName, 'willChange');
+}
+
+function chainsDidChange(obj, keyName, m) {
+  notifyChains(obj, m, keyName, 'didChange');
 }
 
 // ..........................................................
@@ -502,12 +512,12 @@ Ember.rewatch = function(obj) {
     
   @returns {void}
 */
-Ember.propertyWillChange = function(obj, keyName) {
+var propertyWillChange = Ember.propertyWillChange = function(obj, keyName) {
   var m = meta(obj, false), proto = m.proto, desc = m.descs[keyName];
   if (proto === obj) return ;
   if (desc && desc.willChange) desc.willChange(obj, keyName);
-  dependentKeysWillChange(obj, keyName);
-  chainsWillChange(obj, keyName);
+  dependentKeysWillChange(obj, keyName, m);
+  chainsWillChange(obj, keyName, m);
   Ember.notifyBeforeObservers(obj, keyName);
 };
 
@@ -528,11 +538,52 @@ Ember.propertyWillChange = function(obj, keyName) {
     
   @returns {void}
 */
-Ember.propertyDidChange = function(obj, keyName) {
+var propertyDidChange = Ember.propertyDidChange = function(obj, keyName) {
   var m = meta(obj, false), proto = m.proto, desc = m.descs[keyName];
   if (proto === obj) return ;
   if (desc && desc.didChange) desc.didChange(obj, keyName);
-  dependentKeysDidChange(obj, keyName);
-  chainsDidChange(obj, keyName);
+  dependentKeysDidChange(obj, keyName, m);
+  chainsDidChange(obj, keyName, m);
   Ember.notifyObservers(obj, keyName);
+};
+
+var NODE_STACK = []
+
+/**
+  Tears down the meta on an object so that it can be garbage collected.
+  Multiple calls will have no effect.
+  
+  @param {Object} obj  the object to destroy
+  @returns {void}
+*/
+Ember.destroy = function (obj) {
+  var meta = obj[META_KEY], node, nodes, key, nodeObject;
+  if (meta) {
+    obj[META_KEY] = null;
+    // remove chainWatchers to remove circular references that would prevent GC
+    node = meta.chains;
+    if (node) {
+      NODE_STACK.push(node);
+      // process tree
+      while (NODE_STACK.length > 0) {
+        node = NODE_STACK.pop();
+        // push children
+        nodes = node._chains;
+        if (nodes) {
+          for (key in nodes) {
+            if (nodes.hasOwnProperty(key)) {
+              NODE_STACK.push(nodes[key]);
+            }
+          }
+        }
+        // remove chainWatcher in node object
+        if (node._watching) {
+          nodeObject = node._object;
+          if (nodeObject) {
+            removeChainWatcher(nodeObject, node._key, node);
+          }
+        }
+      }
+    }
+  }
 };

@@ -2,8 +2,7 @@
   "name": "ember",
   "bpm": "1.0.0",
   "dependencies": {
-    "ember": "0.9.2",
-    "ember-datetime": "0.9.2"
+    "ember": "0.9.3"
   },
   "dependencies:development": {
     "spade-qunit": "~> 1.0.0"

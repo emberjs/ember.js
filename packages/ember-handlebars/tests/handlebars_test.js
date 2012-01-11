@@ -1046,6 +1046,59 @@ test("should be able to bind element attributes using {{bindAttr}}", function() 
   equals(view.$('img').attr('alt'), "Nanananana Ember!", "updates alt attribute when title property is computed");
 });
 
+test("should be able to bind use {{bindAttr}} more than once on an element", function() {
+  var template = Ember.Handlebars.compile('<img {{bindAttr src="content.url"}} {{bindAttr alt="content.title"}}>');
+
+  view = Ember.View.create({
+    template: template,
+    content: Ember.Object.create({
+      url: "http://www.emberjs.com/assets/images/logo.png",
+      title: "The SproutCore Logo"
+    })
+  });
+
+  appendView();
+
+  equals(view.$('img').attr('src'), "http://www.emberjs.com/assets/images/logo.png", "sets src attribute");
+  equals(view.$('img').attr('alt'), "The SproutCore Logo", "sets alt attribute");
+
+  Ember.run(function() {
+    setPath(view, 'content.title', "El logo de Eember");
+  });
+
+  equals(view.$('img').attr('alt'), "El logo de Eember", "updates alt attribute when content's title attribute changes");
+
+  Ember.run(function() {
+    set(view, 'content', Ember.Object.create({
+      url: "http://www.thegooglez.com/theydonnothing",
+      title: "I CAN HAZ SEARCH"
+    }));
+  });
+
+  equals(view.$('img').attr('alt'), "I CAN HAZ SEARCH", "updates alt attribute when content object changes");
+
+  Ember.run(function() {
+    set(view, 'content', {
+      url: "http://www.emberjs.com/assets/images/logo.png",
+      title: "The SproutCore Logo"
+    });
+  });
+
+  equals(view.$('img').attr('alt'), "The SproutCore Logo", "updates alt attribute when content object is a hash");
+
+  Ember.run(function() {
+    set(view, 'content', Ember.Object.create({
+      url: "http://www.emberjs.com/assets/images/logo.png",
+      title: Ember.computed(function() {
+        return "Nanananana Ember!";
+      })
+    }));
+  });
+
+  equals(view.$('img').attr('alt'), "Nanananana Ember!", "updates alt attribute when title property is computed");
+  
+});
+
 test("should not reset cursor position when text field receives keyUp event", function() {
   view = Ember.TextField.create({
     value: "Broseidon, King of the Brocean"
@@ -1234,6 +1287,32 @@ test("should be able to use standard Handlebars #each helper", function() {
   });
 
   equals(view.$().html(), "abc");
+});
+
+test("should be able to use unbound helper in #each helper", function() {
+  view = Ember.View.create({
+    items: Ember.A(['a', 'b', 'c', 1, 2, 3]),
+    template: Ember.Handlebars.compile(
+      "<ul>{{#each items}}<li>{{unbound this}}</li>{{/each}}</ul>")
+  });
+
+  appendView();
+
+  equals(view.$().text(), "abc123");
+  equals(view.$('li').children().length, 0, "No markers");
+});
+
+test("should be able to use unbound helper in #each helper (with objects)", function() {
+  view = Ember.View.create({
+    items: Ember.A([{wham: 'bam'}, {wham: 1}]),
+    template: Ember.Handlebars.compile(
+      "<ul>{{#each items}}<li>{{unbound wham}}</li>{{/each}}</ul>")
+  });
+
+  appendView();
+
+  equals(view.$().text(), "bam1");
+  equals(view.$('li').children().length, 0, "No markers");
 });
 
 module("Templates redrawing and bindings", {
@@ -1478,44 +1557,73 @@ test("should update bound values after the view is removed and then re-appended"
 });
 
 test("should update bound values after view's parent is removed and then re-appended", function() {
-  var parentView = SC.ContainerView.create({
+  var parentView = Ember.ContainerView.create({
     childViews: ['testView'],
-    testView: SC.View.create({
-      template: SC.Handlebars.compile("{{#if showStuff}}{{boundValue}}{{else}}Not true.{{/if}}"),
+    testView: Ember.View.create({
+      template: Ember.Handlebars.compile("{{#if showStuff}}{{boundValue}}{{else}}Not true.{{/if}}"),
       showStuff: true,
       boundValue: "foo"
     })
   });
 
-  SC.run(function() {
+  Ember.run(function() {
     parentView.appendTo('#qunit-fixture');
   });
   view = parentView.get('testView');
 
   equal($.trim(view.$().text()), "foo");
-  SC.run(function() {
+  Ember.run(function() {
     set(view, 'showStuff', false);
   });
   equal($.trim(view.$().text()), "Not true.");
 
-  SC.run(function() {
+  Ember.run(function() {
     set(view, 'showStuff', true);
   });
   equal($.trim(view.$().text()), "foo");
 
   parentView.remove();
-  SC.run(function() {
+  Ember.run(function() {
     set(view, 'showStuff', false);
   });
-  SC.run(function() {
+  Ember.run(function() {
     set(view, 'showStuff', true);
   });
-  SC.run(function() {
+  Ember.run(function() {
     parentView.appendTo('#qunit-fixture');
   });
 
-  SC.run(function() {
+  Ember.run(function() {
     set(view, 'boundValue', "bar");
   });
   equal($.trim(view.$().text()), "bar");
 });
+
+test("should call a registered helper for mustache without parameters", function() {
+  Ember.Handlebars.registerHelper('foobar', function() {
+    return 'foobar';
+  });
+
+  view = Ember.View.create({
+    template: Ember.Handlebars.compile("{{foobar}}")
+  });
+
+  appendView();
+
+  ok(view.$().text() === 'foobar', "Regular helper was invoked correctly");
+});
+
+test("should bind to the property if no registered helper found for a mustache without parameters", function() {
+  view = Ember.View.create({
+    template: Ember.Handlebars.compile("{{foobarProperty}}"),
+    foobarProperty: Ember.computed(function() {
+      return 'foobarProperty';
+    })
+  });
+
+  appendView();
+
+  ok(view.$().text() === 'foobarProperty', "Property was bound to correctly");
+});
+
+

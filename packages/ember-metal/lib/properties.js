@@ -321,9 +321,10 @@ function hasDesc(descs, keyName) {
       }).property('firstName', 'lastName').cacheable());
 */
 Ember.defineProperty = function(obj, keyName, desc, val) {
-  var m = meta(obj, false), descs = m.descs, watching = m.watching[keyName]>0;
+  var m = meta(obj, false), descs = m.descs, watching = m.watching[keyName]>0, override = true;
 
   if (val === undefined) {
+    override = false;
     val = hasDesc(descs, keyName) ? descs[keyName].teardown(obj, keyName) : obj[keyName];
   } else if (hasDesc(descs, keyName)) {
     descs[keyName].teardown(obj, keyName);
@@ -344,7 +345,11 @@ Ember.defineProperty = function(obj, keyName, desc, val) {
     if (descs[keyName]) meta(obj).descs[keyName] = null;
     o_defineProperty(obj, keyName, desc);
   }
-  
+
+  // if key is being watched, override chains that
+  // were initialized with the prototype
+  if (override && watching) Ember.overrideChains(obj, keyName, m);
+
   return this;
 };
 
@@ -401,16 +406,3 @@ Ember.createPrototype = function(obj, props) {
   if (META_KEY in ret) Ember.rewatch(ret); // setup watch chains if needed.
   return ret;
 };
-  
-
-/**
-  Tears down the meta on an object so that it can be garbage collected.
-  Multiple calls will have no effect.
-  
-  @param {Object} obj  the object to destroy
-  @returns {void}
-*/
-Ember.destroy = function(obj) {
-  if (obj[META_KEY]) obj[META_KEY] = null; 
-};
-

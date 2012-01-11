@@ -1,54 +1,35 @@
-LICENSE = File.read("generators/license.js")
-
-class RegisterWrapper < Filter
-  def generate_output(inputs, output)
-    inputs.each do |input|
-      id = input.path.sub('/lib/','/').sub(/\.js$/, '')
-      code = "\nminispade.register('#{id}', function(exports) {\n#{input.read}\n});\n"
-      output.write code
-    end
-  end
-end
-
-class RequireRewrite < Filter
-  def generate_output(inputs, output)
-    inputs.each do |input|
-      result = input.read
-      result.gsub!(%r{^\s*require\(['"]([^'"]*)['"]\);?\s*}) do |s|
-        module_id = $1
-        module_id.sub!(/^\./, File.dirname(input.path))
-        module_id << '/main' if module_id !~ /\//
-        module_id.sub!('~tests','tests')
-        "minispade.require('#{module_id}');"
-      end
-      output.write result
-    end
-  end
-end
+require "rake-pipeline-web-filters"
 
 input "packages"
 output "tests/source"
 
 match "*/{lib,tests}/**/*.js" do
-  filter RegisterWrapper
-  filter RequireRewrite
-  filter ConcatFilter do |filename|
+  minispade :rewrite_requires => true, :module_id_generator => proc { |input|
+    id = input.path.dup
+    id.sub!('/lib/', '/')
+    id.sub!(/\.js$/, '')
+    id.sub!(/\/main$/, '')
+    id.sub!('/tests', '/~tests')
+    id
+  }
+
+  concat do |filename|
     filename =~ %r{/tests/} ? "ember-tests.js" : "ember.js"
   end
 end
 
 # Hack to ignore certain files
-
 match "**/*.{json,md}" do
-  filter ConcatFilter, "trash"
+  concat "trash"
 end
 
 match "**/README" do
-  filter ConcatFilter, "trash"
+  concat "trash"
 end
 
 match "*/*.js" do
-  filter ConcatFilter, "trash"
+  concat "trash"
 end
+
 
 # vim: filetype=ruby

@@ -18,6 +18,14 @@ Ember.Button = Ember.View.extend(Ember.TargetActionSupport, {
   disabled: false,
   propagateEvents: false,
 
+  click: function() {
+    // Actually invoke the button's target and action.
+    // This method comes from the Ember.TargetActionSupport mixin.
+    this.triggerAction();
+
+    return get(this, 'propagateEvents');
+  },
+
   mouseDown: function() {
     if (!get(this, 'disabled')) {
       set(this, 'isActive', true);
@@ -43,10 +51,6 @@ Ember.Button = Ember.View.extend(Ember.TargetActionSupport, {
 
   mouseUp: function(event) {
     if (get(this, 'isActive')) {
-
-      // Actually invoke the button's target and action.
-      // This method comes from the Ember.TargetActionSupport mixin.
-      this.triggerAction();
       set(this, 'isActive', false);
     }
 

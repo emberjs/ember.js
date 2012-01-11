@@ -42,7 +42,7 @@ var TestArray = Ember.Object.extend(Ember.Array, {
 
   length: Ember.computed(function() {
     return this._content.length;
-  }).property('[]').cacheable(),
+  }).property('@each').cacheable(),
 
   slice: function() {
     return this._content.slice();
@@ -90,13 +90,13 @@ var obj, observer;
 
 module('mixins/array/arrayContent[Will|Did]Change');
 
-test('should notify observers of []', function() {
+test('should notify observers of @each', function() {
 
   obj = DummyArray.create({
     _count: 0,
     enumerablePropertyDidChange: Ember.observer(function() {
       this._count++;
-    }, '[]')
+    }, '@each')
   });
 
   equals(obj._count, 0, 'should not have invoked yet');

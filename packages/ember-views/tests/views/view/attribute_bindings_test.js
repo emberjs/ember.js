@@ -10,7 +10,32 @@ require('ember-views/views/view');
 
 module("Ember.View - Attribute Bindings");
 
-test("should render and update attribute bindings", function() {
+test("should render attribute bindings", function() {
+  var view = Ember.View.create({
+    classNameBindings: ['priority', 'isUrgent', 'isClassified:classified', 'canIgnore'],
+    attributeBindings: ['type', 'exploded', 'destroyed', 'exists', 'nothing', 'notDefined', 'notNumber', 'explosions'],
+
+    type: 'submit',
+    exploded: false,
+    destroyed: false,
+    exists: true,
+    nothing: null,
+    notDefined: undefined,
+    notNumber: NaN,
+  });
+
+  view.createElement();
+
+  equals(view.$().attr('type'), 'submit', "updates type attribute");
+  ok(!view.$().attr('exploded'), "removes exploded attribute when false");
+  ok(!view.$().attr('destroyed'), "removes destroyed attribute when false");
+  ok(view.$().attr('exists'), "adds exists attribute when true");
+  ok(!view.$().attr('nothing'), "removes nothing attribute when null");
+  ok(!view.$().attr('notDefined'), "removes notDefined attribute when undefined");
+  ok(!view.$().attr('notNumber'), "removes notNumber attribute when NaN");
+});
+
+test("should update attribute bindings", function() {
   var view = Ember.View.create({
     classNameBindings: ['priority', 'isUrgent', 'isClassified:classified', 'canIgnore'],
     attributeBindings: ['type', 'exploded', 'destroyed', 'exists', 'nothing', 'notDefined', 'notNumber', 'explosions'],

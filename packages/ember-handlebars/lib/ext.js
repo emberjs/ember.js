@@ -5,6 +5,20 @@
 // ==========================================================================
 /*globals Handlebars */
 
+require("ember-views/system/render_buffer");
+
+/**
+  @namespace
+  @name Handlebars
+  @private
+*/
+
+/**
+  @namespace
+  @name Handlebars.helpers
+  @description Helpers for Handlebars templates
+*/
+
 /**
   @class
 
@@ -28,15 +42,6 @@
 
   Note that you won't usually need to use Ember.Handlebars yourself. Instead, use
   Ember.View, which takes care of integration into the view layer for you.
-*/
-
-require("ember-views/system/render_buffer");
-
-/**
-  @namespace
-
-  Ember Handlebars is an extension to Handlebars that makes the built-in
-  Handlebars helpers and {{mustaches}} binding-aware.
 */
 Ember.Handlebars = Ember.create(Handlebars);
 
@@ -81,7 +86,7 @@ Ember.Handlebars.Compiler.prototype.mustache = function(mustache) {
   if (mustache.params.length || mustache.hash) {
     return Handlebars.Compiler.prototype.mustache.call(this, mustache);
   } else {
-    var id = new Handlebars.AST.IdNode(['bind']);
+    var id = new Handlebars.AST.IdNode(['_triageMustache']);
 
     // Update the mustache node to include a hash value indicating whether the original node
     // was escaped. This will allow us to properly escape values when the underlying value
