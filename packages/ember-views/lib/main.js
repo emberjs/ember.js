@@ -7,6 +7,7 @@
 
 require("ember-runtime");
 
+ember_assert("Ember is only compatible with jQuery 1.6+", parseFloat(jQuery().jquery) >= 1.6);
 Ember.$ = jQuery;
 
 require("ember-views/system");
