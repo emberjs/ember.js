@@ -12,7 +12,7 @@
 
   "dependencies": {
     "spade":              "~> 1.0",
-    "jquery":             "~> 1.6",
+    "jquery":             "~> 1.7",
     "ember-views": "0.9.3"
   },
 

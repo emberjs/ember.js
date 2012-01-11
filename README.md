@@ -125,3 +125,5 @@ therubyracer`.
 To run multiple packages, you can separate them with commas. You can run all the tests using the `all` package:
 
 [http://localhost:9292/tests/index.html?package=all](http://localhost:9292/tests/index.html?package=all)
+
+You can also pass `jquery=VERSION` in the test URL to test different versions of jQuery. Default is 1.7.1.
