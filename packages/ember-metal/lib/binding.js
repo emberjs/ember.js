@@ -506,7 +506,7 @@ Binding.prototype = /** @scope Ember.Binding.prototype */ {
 
     // get the direction of the binding for the object we are
     // synchronizing from
-    var guid = guidFor(obj), direction = this[guid], val, transformedValue;
+    var guid = guidFor(obj), direction = this[guid];
 
     var fromPath = this._from, toPath = this._to;
 
@@ -520,12 +520,12 @@ Binding.prototype = /** @scope Ember.Binding.prototype */ {
 
     // if we're synchronizing from the remote object...
     if (direction === 'fwd') {
-      if (log) { Ember.Logger.log(' ', this.toString(), val, '->', fromValue, obj); }
+      if (log) { Ember.Logger.log(' ', this.toString(), toValue, '->', fromValue, obj); }
       Ember.trySetPath(obj, toPath, fromValue);
 
     // if we're synchronizing *to* the remote object
     } else if (direction === 'back') {// && !this._oneWay) {
-      if (log) { Ember.Logger.log(' ', this.toString(), val, '<-', fromValue, obj); }
+      if (log) { Ember.Logger.log(' ', this.toString(), toValue, '<-', fromValue, obj); }
       Ember.trySetPath(obj, fromPath, toValue);
     }
   }

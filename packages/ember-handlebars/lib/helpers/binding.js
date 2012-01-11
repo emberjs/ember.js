@@ -17,7 +17,7 @@ var helpers = EmberHandlebars.helpers;
 (function() {
   // Binds a property into the DOM. This will create a hook in DOM that the
   // KVO system will look for and update if the property changes.
-  var bind = function(property, options, preserveContext, shouldDisplay) {
+  var bind = function(property, options, preserveContext, shouldDisplay, valueNormalizer) {
     var data = options.data,
         fn = options.fn,
         inverse = options.inverse,
@@ -32,6 +32,7 @@ var helpers = EmberHandlebars.helpers;
       var bindView = view.createChildView(Ember._BindableSpanView, {
         preserveContext: preserveContext,
         shouldDisplayFunc: shouldDisplay,
+        valueNormalizerFunc: valueNormalizer,
         displayTemplate: fn,
         inverseTemplate: inverse,
         property: property,
@@ -41,17 +42,9 @@ var helpers = EmberHandlebars.helpers;
 
       view.appendChild(bindView);
 
-      var observer, invoker;
-
       /** @private */
-      observer = function(){
-        // Double check since sometimes the view gets destroyed after this observer is already queued
-        if (!get(bindView, 'isDestroyed')) { bindView.rerender(); }
-      };
-
-      /** @private */
-      invoker = function() {
-        Ember.run.once(observer);
+      var observer = function() {
+        Ember.run.once(bindView, 'rerenderIfNeeded');
       };
 
       // Observes the given property on the context and
@@ -59,7 +52,7 @@ var helpers = EmberHandlebars.helpers;
       // is an empty string, we are printing the current context
       // object ({{this}}) so updating it is not our responsibility.
       if (property !== '') {
-        Ember.addObserver(ctx, property, invoker);
+        Ember.addObserver(ctx, property, observer);
       }
     } else {
       // The object is not observable, so just render it out and
@@ -138,14 +131,15 @@ var helpers = EmberHandlebars.helpers;
   */
   EmberHandlebars.registerHelper('boundIf', function(property, fn) {
     var context = (fn.contexts && fn.contexts[0]) || this;
-
-    return bind.call(context, property, fn, true, function(result) {
+    var func = function(result) {
       if (Ember.typeOf(result) === 'array') {
         return get(result, 'length') !== 0;
       } else {
         return !!result;
       }
-    } );
+    };
+
+    return bind.call(context, property, fn, true, func, func);
   });
 })();
 
