@@ -18,28 +18,38 @@ Ember.State = Ember.Object.extend({
       states = {};
       for (var name in this) {
         if (name === "constructor") { continue; }
+        value = this.setupChild(this[name]);
 
-        var value = this[name];
-        if (!value) { continue; }
-
-        if (Ember.State.detect(value)) {
-          value = value.create();
-        }
-
-        if (value.isState) {
+        if (value) {
           foundStates = true;
-
-          set(value, 'parentState', this);
-          set(value, 'name', (get(this, 'name') || '') + '.' + name);
-
           states[name] = value;
         }
       }
 
       if (foundStates) { set(this, 'states', states); }
+    } else {
+      for (var name in states) {
+        this.setupChild(states[name]);
+      }
     }
 
     set(this, 'routes', {});
+  },
+
+  setupChild: function(value) {
+    if (!value) { return false; }
+
+    if (Ember.State.detect(value)) {
+      value = value.create();
+    }
+
+    if (value.isState) {
+      set(value, 'parentState', this);
+      set(value, 'name', (get(this, 'name') || '') + '.' + name);
+      return value;
+    }
+
+    return false;
   },
 
   enter: Ember.K,
