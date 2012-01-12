@@ -72,3 +72,31 @@ suite.test('should return first object with truthy prop', function() {
   equals(obj.findProperty('foo'), ary[0], 'findProperty(foo)');
   equals(obj.findProperty('bar'), ary[1], 'findProperty(bar)');
 });
+
+suite.test('should return first null property match', function() {
+  var ary, obj;
+
+  ary = [
+    { foo: null, bar: 'BAZ' },
+    Ember.Object.create({ foo: null, bar: null })
+  ];
+
+  obj = this.newObject(ary);
+
+  equals(obj.findProperty('foo', null), ary[0], "findProperty('foo', null)");
+  equals(obj.findProperty('bar', null), ary[1], "findProperty('bar', null)");
+});
+
+suite.test('should return first undefined property match', function() {
+  var ary, obj;
+
+  ary = [
+    { foo: undefined, bar: 'BAZ' },
+    Ember.Object.create({ })
+  ];
+
+  obj = this.newObject(ary);
+
+  equals(obj.findProperty('foo', undefined), ary[0], "findProperty('foo', undefined)");
+  equals(obj.findProperty('bar', undefined), ary[1], "findProperty('bar', undefined)");
+});

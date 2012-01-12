@@ -61,3 +61,80 @@ suite.test('should include in result if property is true', function() {
   same(obj.filterProperty('foo'), ary, 'filterProperty(foo)');
   same(obj.filterProperty('bar'), [ary[0]], 'filterProperty(bar)');
 });
+
+suite.test('should filter on second argument if provided', function() {
+  var obj, ary;
+
+  ary = [
+    { name: 'obj1', foo: 3},
+    Ember.Object.create({ name: 'obj2', foo: 2}),
+    { name: 'obj3', foo: 2},
+    Ember.Object.create({ name: 'obj4', foo: 3})
+  ];
+
+  obj = this.newObject(ary);
+
+  same(obj.filterProperty('foo', 3), [ary[0], ary[3]], "filterProperty('foo', 3)')");
+});
+
+suite.test('should correctly filter null second argument', function() {
+  var obj, ary;
+
+  ary = [
+    { name: 'obj1', foo: 3},
+    Ember.Object.create({ name: 'obj2', foo: null}),
+    { name: 'obj3', foo: null},
+    Ember.Object.create({ name: 'obj4', foo: 3})
+  ];
+
+  obj = this.newObject(ary);
+
+  same(obj.filterProperty('foo', null), [ary[1], ary[2]], "filterProperty('foo', 3)')");
+});
+
+suite.test('should not return all objects on undefined second argument', function() {
+  var obj, ary;
+
+  ary = [
+    { name: 'obj1', foo: 3},
+    Ember.Object.create({ name: 'obj2', foo: 2})
+  ];
+
+  obj = this.newObject(ary);
+
+  same(obj.filterProperty('foo', undefined), [], "filterProperty('foo', 3)')");
+});
+
+suite.test('should correctly filter explicit undefined second argument', function() {
+  var obj, ary;
+
+  ary = [
+    { name: 'obj1', foo: 3},
+    Ember.Object.create({ name: 'obj2', foo: 3}),
+    { name: 'obj3', foo: undefined},
+    Ember.Object.create({ name: 'obj4', foo: undefined}),
+    { name: 'obj5'},
+    Ember.Object.create({ name: 'obj6'})
+  ];
+
+  obj = this.newObject(ary);
+
+  same(obj.filterProperty('foo', undefined), ary.slice(2), "filterProperty('foo', 3)')");
+});
+
+suite.test('should not match undefined properties without second argument', function() {
+  var obj, ary;
+
+  ary = [
+    { name: 'obj1', foo: 3},
+    Ember.Object.create({ name: 'obj2', foo: 3}),
+    { name: 'obj3', foo: undefined},
+    Ember.Object.create({ name: 'obj4', foo: undefined}),
+    { name: 'obj5'},
+    Ember.Object.create({ name: 'obj6'})
+  ];
+
+  obj = this.newObject(ary);
+
+  same(obj.filterProperty('foo'), ary.slice(0, 2), "filterProperty('foo', 3)')");
+});

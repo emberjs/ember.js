@@ -64,3 +64,23 @@ suite.test('should return true of every property is true', function() {
   equals(obj.everyProperty('foo'), true, 'everyProperty(foo)');
   equals(obj.everyProperty('bar'), false, 'everyProperty(bar)');
 });
+
+suite.test('should return true if every property matches null', function() {
+  var obj = this.newObject([
+    { foo: null, bar: 'BAZ' },
+    Ember.Object.create({ foo: null, bar: null })
+  ]);
+
+  equals(obj.everyProperty('foo', null), true, "everyProperty('foo', null)");
+  equals(obj.everyProperty('bar', null), false, "everyProperty('bar', null)");
+});
+
+suite.test('should return true if every property is undefined', function() {
+  var obj = this.newObject([
+    { foo: undefined, bar: 'BAZ' },
+    Ember.Object.create({ bar: undefined })
+  ]);
+
+  equals(obj.everyProperty('foo', undefined), true, "everyProperty('foo', undefined)");
+  equals(obj.everyProperty('bar', undefined), false, "everyProperty('bar', undefined)");
+});
