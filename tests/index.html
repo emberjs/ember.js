@@ -18,13 +18,15 @@
     // Load custom version of jQuery if possible
     var jQueryMatch = location.search.match(/jquery=([^&]+)/),
         jQueryVersion = jQueryMatch ? jQueryMatch[1] : "1.7.1";
-    document.write(unescape('%3Cscript src="//ajax.googleapis.com/ajax/libs/jquery/'+jQueryVersion+'/jquery.js"%3E%3C/script%3E'));
+    if (jQueryVersion !== 'none') {
+      document.write(unescape('%3Cscript src="//ajax.googleapis.com/ajax/libs/jquery/'+jQueryVersion+'/jquery.js"%3E%3C/script%3E'));
+    }
     // Close the script tag to make sure document.write happens
   </script>
 
   <script>
     // Fallback to default jQuery
-    if (!window.jQuery) {
+    if (jQueryVersion !== 'none' && !window.jQuery) {
       if (console && console.warn) { console.warn("Unable to load jQuery "+jQueryVersion+". Using default."); }
       document.write(unescape('%3Cscript src="jquery-1.7.1.js"%3E%3C/script%3E'));
     }
