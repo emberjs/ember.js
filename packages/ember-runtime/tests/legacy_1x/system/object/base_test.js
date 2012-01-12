@@ -32,6 +32,14 @@ var obj, obj1, don, don1 ; // global variables
 
 var get = Ember.get, set = Ember.set;
 
+function inArray(item, array) {
+  var len = array.length, idx;
+  for (idx=0; idx<len; idx++) {
+    if (array[idx] === item) { return idx; }
+  }
+  return -1;
+}
+
 module("A new Ember.Object instance", {
 
   setup: function() {
@@ -151,10 +159,10 @@ test("Checking the detectInstance() function on an object and its subclass", fun
 });
 
 test("subclasses should contain defined subclasses", function() {
-  ok(jQuery.inArray(obj1, obj.subclasses) > -1, 'obj.subclasses should contain obj1');
+  ok(inArray(obj1, obj.subclasses) > -1, 'obj.subclasses should contain obj1');
 
   equals(get(obj1.subclasses, 'length'),0,'obj1.subclasses should be empty');
 
   var kls2 = obj1.extend();
-  ok(jQuery.inArray(kls2, obj1.subclasses) > -1, 'obj1.subclasses should contain kls2');
+  ok(inArray(kls2, obj1.subclasses) > -1, 'obj1.subclasses should contain kls2');
 });
