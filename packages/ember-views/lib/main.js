@@ -7,8 +7,8 @@
 
 require("ember-runtime");
 
-ember_assert("Ember is only compatible with jQuery 1.6 and 1.7", jQuery().jquery.match(/^1\.[67](.\d+)?$/));
-Ember.$ = jQuery;
+ember_assert("Ember requires jQuery 1.6 or 1.7", window.jQuery && jQuery().jquery.match(/^1\.[67](.\d+)?$/));
+Ember.$ = window.jQuery;
 
 require("ember-views/system");
 require("ember-views/views");
