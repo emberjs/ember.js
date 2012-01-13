@@ -1346,6 +1346,23 @@ test("should be able to use unbound helper in #each helper (with objects)", func
   equals(view.$('li').children().length, 0, "No markers");
 });
 
+test("should work with precompiled templates", function() {
+  var templateString = Ember.Handlebars.precompile("{{value}}"),
+      compiledTemplate = Ember.Handlebars.template(eval('('+templateString+')'));
+  view = Ember.View.create({
+    value: "rendered",
+    template: compiledTemplate
+  });
+
+  appendView();
+
+  equals(view.$().text(), "rendered", "the precompiled template was rendered");
+
+  Ember.run(function() { view.set('value', 'updated'); });
+
+  equals(view.$().text(), "updated", "the precompiled template was updated");
+});
+
 module("Templates redrawing and bindings", {
   setup: function(){
     MyApp = Ember.Object.create({});
