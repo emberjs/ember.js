@@ -75,6 +75,20 @@ Ember.Handlebars.JavaScriptCompiler.prototype.appendToBuffer = function(string) 
   return "data.buffer.push("+string+");";
 };
 
+Ember.Handlebars.Compiler.prototype.block = function(block) {
+  var parts = block.mustache.id.parts;
+
+  if (parts.length === 1 && parts[0] === 'unbound' &&
+      block.mustache.hash === null) {
+    // Use "this.options", because "this" doesn't survive the compilation step
+    this.options.isUnboundBlock = true;
+  }
+
+  var result = Handlebars.Compiler.prototype.block.call(this, block);
+  this.options.isUnboundBlock = false;
+  return result;
+};
+
 /**
   Rewrite simple mustaches from {{foo}} to {{bind "foo"}}. This means that all simple
   mustaches in Ember's Handlebars will also set up an observer to keep the DOM
@@ -83,7 +97,7 @@ Ember.Handlebars.JavaScriptCompiler.prototype.appendToBuffer = function(string) 
   @private
 */
 Ember.Handlebars.Compiler.prototype.mustache = function(mustache) {
-  if (mustache.params.length || mustache.hash) {
+  if (this.options.isUnboundBlock || mustache.params.length || mustache.hash) {
     return Handlebars.Compiler.prototype.mustache.call(this, mustache);
   } else {
     var id = new Handlebars.AST.IdNode(['_triageMustache']);

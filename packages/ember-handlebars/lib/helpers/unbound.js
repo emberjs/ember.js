@@ -15,11 +15,29 @@ var getPath = Ember.getPath;
 
       <div>{{unbound somePropertyThatDoesntChange}}</div>
 
+  It can also be used as a block statement:
+
+      <div>
+        {{#unbound}}
+          {{somePropertyThatDoesntChange}}
+          {{anotherPropertyThatDoesntChange}}
+        {{/unbound}}
+      </div>
+
   @name Handlebars.helpers.unbound
   @param {String} property
   @returns {String} HTML string
 */
 Ember.Handlebars.registerHelper('unbound', function(property, fn) {
+  // Unbound as a block helper
+  if (fn === undefined && Ember.typeOf(property) === 'function') {
+    // used e.g. in the #each helper
+    this.isUnboundBlock = true;
+    var result = property(this);
+    this.isUnboundBlock = false;
+    return result;
+  }
+
   var context = (fn.contexts && fn.contexts[0]) || this;
   return getPath(context, property);
 });

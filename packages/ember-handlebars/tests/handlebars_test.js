@@ -1267,6 +1267,49 @@ test("should be able to output a property without binding", function(){
   equals(view.$('#second').html(), "Not here, either.");
 });
 
+test("should be able to output a block without binding", function(){
+  view = Ember.View.create({
+    template: Ember.Handlebars.compile(
+      '<div id="first">{{#unbound}}{{content.anUnboundString}}{{/unbound}}</div>'+
+      '{{#unbound}}{{#with content}}<div id="second">{{../anotherUnboundString}}</div>{{/with}}{{/unbound}}'+
+      '{{#with content}}{{#unbound}}<div id="third">{{yetAnotherUnboundString}}</div>{{/unbound}}{{/with}}'
+    ),
+
+    content: Ember.Object.create({
+      anUnboundString: "No script tags here, son.",
+      yetAnotherUnboundString: "Not even here."
+    }),
+
+    anotherUnboundString: "Not here, either."
+  });
+
+  appendView();
+
+  equals(view.$('#first').html(), "No script tags here, son.");
+  equals(view.$('#second').html(), "Not here, either.");
+  equals(view.$('#third').html(), "Not even here.");
+});
+
+test("should be able to bind manually with an #unbound block", function(){
+  view = Ember.View.create({
+    template: Ember.Handlebars.compile(
+      '{{#unbound}}<div id="first">{{bind content.aBoundString}}</div>'+
+      '{{#with content}}<div id="second">{{bind ../anotherBoundString}}</div>{{/with}}{{/unbound}}'
+    ),
+
+    content: Ember.Object.create({
+      aBoundString: "Yay, tags were inserted."
+    }),
+
+    anotherBoundString: "Here too."
+  });
+
+  appendView();
+
+  ok(view.$('#first').children().length > 0);
+  ok(view.$('#second').children().length > 0);
+});
+
 test("should be able to log a property", function(){
   var originalLogger = Ember.Logger;
   additionalTeardown = function(){ Ember.Logger = originalLogger; };
@@ -1338,6 +1381,32 @@ test("should be able to use unbound helper in #each helper (with objects)", func
     items: Ember.A([{wham: 'bam'}, {wham: 1}]),
     template: Ember.Handlebars.compile(
       "<ul>{{#each items}}<li>{{unbound wham}}</li>{{/each}}</ul>")
+  });
+
+  appendView();
+
+  equals(view.$().text(), "bam1");
+  equals(view.$('li').children().length, 0, "No markers");
+});
+
+test("should have no makers when #unbound helper is around #each helper", function() {
+  view = Ember.View.create({
+    items: Ember.A(['a', 'b', 'c', 1, 2, 3]),
+      template: Ember.Handlebars.compile(
+        "{{#unbound}}<ul>{{#each items}}<li>{{this}}</li>{{/each}}</ul>{{/unbound}}")
+  });
+
+  appendView();
+
+  equals(view.$().text(), "abc123");
+  equals(view.$('ul').children(':not(li)').length, 0, "No markers");
+});
+
+test("should have no markers when #unbound helper is around #each helper (with objects)", function() {
+  view = Ember.View.create({
+    items: Ember.A([{wham: 'bam'}, {wham: 1}]),
+    template: Ember.Handlebars.compile(
+      "{{#unbound}}<ul>{{#each items}}<li>{{wham}}</li>{{/each}}</ul>{{/unbound}}")
   });
 
   appendView();
