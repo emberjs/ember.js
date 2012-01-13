@@ -40,6 +40,13 @@ Ember.CollectionView = Ember.ContainerView.extend(
   */
   itemViewClass: Ember.View,
 
+  /**
+    A list  class names to be applied to the ChildViews.
+    @type Ember.Array
+    @default null
+  */
+  itemViewClassNames: null,
+
   init: function() {
     var ret = this._super();
     this._contentDidChange();
@@ -121,6 +128,7 @@ Ember.CollectionView = Ember.ContainerView.extend(
   */
   arrayDidChange: function(content, start, removed, added) {
     var itemViewClass = get(this, 'itemViewClass'),
+        itemViewClassNames = get(this, 'itemViewClassNames'),
         childViews = get(this, 'childViews'),
         addedViews = [], view, item, idx, len, itemTagName;
 
@@ -136,6 +144,7 @@ Ember.CollectionView = Ember.ContainerView.extend(
         item = content.objectAt(idx);
 
         view = this.createChildView(itemViewClass, {
+          classNames: itemViewClassNames, 
           content: item,
           contentIndex: idx
         });
