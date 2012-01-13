@@ -552,7 +552,7 @@ Ember.Enumerable = Ember.Mixin.create( /** @lends Ember.Enumerable */ {
 
   /**
     Simply converts the enumerable into a genuine array.  The order is not 
-    gauranteed.  Corresponds to the method implemented by Prototype.
+    guaranteed.  Corresponds to the method implemented by Prototype.
 
     @returns {Array} the enumerable as an array.
   */
