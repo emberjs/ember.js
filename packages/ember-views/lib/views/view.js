@@ -698,7 +698,7 @@ Ember.View = Ember.Object.extend(
   */
   renderBuffer: function(tagName) {
     tagName = tagName || get(this, 'tagName');
-    if (tagName == null) { tagName = tagName || 'div'; }
+    if (tagName == null) { tagName = 'div'; }
 
     return Ember.RenderBuffer(tagName);
   },
@@ -887,7 +887,7 @@ Ember.View = Ember.Object.extend(
     // insert a new buffer after the "parent buffer").
     if (parentBuffer) {
       var tagName = get(this, 'tagName');
-      tagName = tagName == null ? 'div' : tagName;
+      if (tagName == null) { tagName = 'div'; }
 
       buffer = parentBuffer[bufferOperation](tagName);
     } else {
