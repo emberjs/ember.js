@@ -338,6 +338,10 @@ Ember.View = Ember.Object.extend(
     return this.invokeForState('rerender');
   },
 
+  templateDidChange: Ember.observer(function() {
+    this.rerender();
+  }, 'template'),
+
   clearRenderedChildren: function() {
     var viewMeta = meta(this)['Ember.View'],
         lengthBefore = viewMeta.lengthBeforeRender,

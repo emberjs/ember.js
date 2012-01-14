@@ -170,5 +170,8 @@ Ember._BindableSpanView = Ember.View.extend(Ember.Metamorph,
     }
 
     return this._super(buffer);
-  }
+  },
+
+  // We don't want this to re-render when template is changed
+  templateDidChange: null
 });

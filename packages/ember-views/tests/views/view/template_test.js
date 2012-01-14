@@ -94,11 +94,26 @@ test("should not use defaultTemplate if template is provided", function() {
   equals("foo", view.$().text(), "default template was not printed");
 });
 
-
 test("should render an empty element if no template is specified", function() {
   var view;
   view = Ember.View.create();
   view.createElement();
 
   equals(view.$().html(), '', "view div should be empty");
+});
+
+test("should re-render if template is changed", function() {
+  var view = Ember.View.create({
+    template: function() { return "foo"; }
+  });
+
+  view.createElement();
+
+  equals(view.$().html(), 'foo', "precond - should have initial template");
+
+  Ember.run(function() {
+    view.set('template', function() { return "bar"; });
+  });
+
+  equals(view.$().html(), 'bar', "should have new template");
 });
