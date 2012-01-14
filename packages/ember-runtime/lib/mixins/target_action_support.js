@@ -27,6 +27,9 @@ Ember.TargetActionSupport = Ember.Mixin.create({
         }
         action.call(target, this);
       }
+      return true;
+    } else {
+      return false;
     }
   }
 });
