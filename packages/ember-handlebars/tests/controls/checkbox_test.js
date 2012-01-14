@@ -28,7 +28,7 @@ function append() {
   });
 }
 
-test("should become disabled if the disabled attribute is true", function() {
+test("should begin disabled if the disabled attribute is true", function() {
   checkboxView = Ember.Checkbox.create({});
 
   checkboxView.set('disabled', true);
@@ -37,7 +37,7 @@ test("should become disabled if the disabled attribute is true", function() {
   ok(checkboxView.$("input").is(":disabled"));
 });
 
-test("should become disabled if the disabled attribute is true", function() {
+test("should become disabled if the disabled attribute is changed", function() {
   checkboxView = Ember.Checkbox.create({});
 
   append();
