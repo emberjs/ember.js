@@ -28,7 +28,7 @@ function append() {
   });
 }
 
-test("should become disabled if the disabled attribute is true", function() {
+test("should begin disabled if the disabled attribute is true", function() {
   radioButtonView = Ember.RadioButton.create({});
 
   radioButtonView.set('disabled', true);
@@ -37,7 +37,7 @@ test("should become disabled if the disabled attribute is true", function() {
   ok(radioButtonView.$("input").is(":disabled"));
 });
 
-test("should become disabled if the disabled attribute is true", function() {
+test("should become disabled if the disabled attribute is changed", function() {
   radioButtonView = Ember.RadioButton.create({});
 
   append();
