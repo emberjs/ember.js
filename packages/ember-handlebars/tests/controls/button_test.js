@@ -30,14 +30,14 @@ function append() {
   });
 }
 
-test("should become disabled if the disabled attribute is true", function() {
+test("should begin disabled if the disabled attribute is true", function() {
   button.set('disabled', true);
   append();
 
   ok(button.$().is(":disabled"));
 });
 
-test("should become disabled if the disabled attribute is true", function() {
+test("should become disabled if the disabled attribute is changed", function() {
   append();
   ok(button.$().is(":not(:disabled)"));
 
