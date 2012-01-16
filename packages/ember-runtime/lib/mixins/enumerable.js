@@ -26,9 +26,11 @@ function pushCtx(ctx) {
 }
 
 function iter(key, value) {
+  var valueProvided = arguments.length === 2;
+
   function i(item) {
     var cur = get(item, key);
-    return value===undefined ? !!cur : value===cur;
+    return valueProvided ? value===cur : !!cur;
   } 
   return i ;
 }
@@ -336,7 +338,7 @@ Ember.Enumerable = Ember.Mixin.create( /** @lends Ember.Enumerable */ {
     @returns {Array} filtered array
   */
   filterProperty: function(key, value) {
-    return this.filter(iter(key, value));
+    return this.filter(iter.apply(this, arguments));
   },
 
   /**
@@ -391,7 +393,7 @@ Ember.Enumerable = Ember.Mixin.create( /** @lends Ember.Enumerable */ {
     @returns {Object} found item or null
   */
   findProperty: function(key, value) {
-    return this.find(iter(key, value));
+    return this.find(iter.apply(this, arguments));
   },
 
   /**
@@ -436,7 +438,7 @@ Ember.Enumerable = Ember.Mixin.create( /** @lends Ember.Enumerable */ {
     @returns {Array} filtered array
   */
   everyProperty: function(key, value) {
-    return this.every(iter(key, value));
+    return this.every(iter.apply(this, arguments));
   },
 
 
@@ -482,7 +484,7 @@ Ember.Enumerable = Ember.Mixin.create( /** @lends Ember.Enumerable */ {
     @returns {Boolean} true
   */
   someProperty: function(key, value) {
-    return this.some(iter(key, value));
+    return this.some(iter.apply(this, arguments));
   },
 
   /**

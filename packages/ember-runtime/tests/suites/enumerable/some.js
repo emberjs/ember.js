@@ -65,3 +65,32 @@ suite.test('should return true of any property is true', function() {
   equals(obj.someProperty('bar'), true, 'someProperty(bar)');
   equals(obj.someProperty('BIFF'), false, 'someProperty(biff)');
 });
+
+suite.test('should return true if any property matches null', function() {
+  var obj = this.newObject([
+    { foo: null, bar: 'bar' },
+    Ember.Object.create({ foo: 'foo', bar: null })
+  ]);
+
+  equals(obj.someProperty('foo', null), true, "someProperty('foo', null)");
+  equals(obj.someProperty('bar', null), true, "someProperty('bar', null)");
+});
+
+suite.test('should return true if any property is undefined', function() {
+  var obj = this.newObject([
+    { foo: undefined, bar: 'bar' },
+    Ember.Object.create({ foo: 'foo' })
+  ]);
+
+  equals(obj.someProperty('foo', undefined), true, "someProperty('foo', undefined)");
+  equals(obj.someProperty('bar', undefined), true, "someProperty('bar', undefined)");
+});
+
+suite.test('should not match undefined properties without second argument', function() {
+  var obj = this.newObject([
+    { foo: undefined },
+    Ember.Object.create({ })
+  ]);
+
+  equals(obj.someProperty('foo'), false, "someProperty('foo', undefined)");
+});
