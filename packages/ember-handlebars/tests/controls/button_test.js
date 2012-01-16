@@ -213,6 +213,24 @@ test("should have a configurable type", function() {
   equals(button.$().attr('type'), 'submit');
 });
 
+test("should set href='#' if tagName is 'a'", function() {
+  button.set('tagName', 'a');
+
+  Ember.run(function() {
+    button.appendTo('#qunit-fixture');
+  });
+
+  equals(button.$().attr('href'), '#');
+});
+
+test("should not set href if tagName is not 'a'", function() {
+  Ember.run(function() {
+    button.appendTo('#qunit-fixture');
+  });
+
+  equals(button.$().attr('href'), null);
+});
+
 test("should allow the target to be the parentView", function() {
   button.set('target', 'parentView');
   

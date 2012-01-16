@@ -16,8 +16,9 @@ Ember.Button = Ember.View.extend(Ember.TargetActionSupport, {
 
   propagateEvents: false,
 
-  attributeBindings: ['type', 'disabled'],
+  attributeBindings: ['type', 'disabled', 'href'],
 
+  // Defaults to 'button' if tagName is 'input' or 'button'
   type: Ember.computed(function(key, value) {
     var tagName = this.get('tagName');
     if (value !== undefined) { this._type = value; }
@@ -26,6 +27,11 @@ Ember.Button = Ember.View.extend(Ember.TargetActionSupport, {
   }).property('tagName').cacheable(),
 
   disabled: false,
+
+  // Allow 'a' tags to act like buttons
+  href: Ember.computed(function() {
+    return this.get('tagName') === 'a' ? '#' : null;
+  }).property('tagName').cacheable(),
 
   click: function() {
     // Actually invoke the button's target and action.
