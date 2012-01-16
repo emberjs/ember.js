@@ -288,6 +288,8 @@ test("findAll(type) returns a model array of all records of a specific type", fu
   store.load(Person, 2, { id: 2, name: "Yehuda Katz" });
   equal(get(results, 'length'), 2, "model array should have the new object");
   equal(get(results.objectAt(1), 'name'), "Yehuda Katz", "model has the correct information");
+
+  strictEqual(results, store.findAll(Person), "subsequent calls to findAll return the same modelArray)");
 });
 
 test("a new model of a particular type is created via store.create(type)", function() {
