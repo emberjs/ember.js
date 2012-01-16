@@ -155,12 +155,52 @@ test("should not trigger action if disabled and a non-standard input", function(
   ok(!get(button, 'isActive'), "button does not become active when pushed");
 });
 
-test("should by default be of type='button'", function() {
+test("should not have a type if tagName is not 'input' or 'button'", function() {
   Ember.run(function() {
+    button.set('tagName', 'a');
+    button.appendTo('#qunit-fixture');
+  });
+
+  equals(button.$().attr('type'), null);
+});
+
+test("should by default be of type='button' if tagName is 'input'", function() {
+  Ember.run(function() {
+    button.set('tagName', 'input');
     button.appendTo('#qunit-fixture');
   });
 
   equals(button.$().attr('type'), 'button');
+});
+
+test("should by default be of type='button' if tagName is 'button'", function() {
+  Ember.run(function() {
+    button.set('tagName', 'button');
+    button.appendTo('#qunit-fixture');
+  });
+
+  equals(button.$().attr('type'), 'button');
+});
+
+test("should allow setting of type when tagName is not 'input' or 'button'", function() {
+  button.set('tagName', 'a');
+  button.set('type', 'submit');
+
+  equals(button.get('type'), 'submit');
+});
+
+test("should allow setting of type when tagName is 'input'", function() {
+  button.set('tagName', 'input');
+  button.set('type', 'submit');
+
+  equals(button.get('type'), 'submit');
+});
+
+test("should allow setting of type when tagName is 'button'", function() {
+  button.set('tagName', 'button');
+  button.set('type', 'submit');
+
+  equals(button.get('type'), 'submit');
 });
 
 test("should have a configurable type", function() {

@@ -13,10 +13,19 @@ Ember.Button = Ember.View.extend(Ember.TargetActionSupport, {
   classNameBindings: ['isActive'],
 
   tagName: 'button',
-  attributeBindings: ['type', 'disabled'],
-  type: 'button',
-  disabled: false,
+
   propagateEvents: false,
+
+  attributeBindings: ['type', 'disabled'],
+
+  type: Ember.computed(function(key, value) {
+    var tagName = this.get('tagName');
+    if (value !== undefined) { this._type = value; }
+    if (this._type !== undefined) { return this._type; }
+    if (tagName === 'input' || tagName === 'button') { return 'button'; }
+  }).property('tagName').cacheable(),
+
+  disabled: false,
 
   click: function() {
     // Actually invoke the button's target and action.
