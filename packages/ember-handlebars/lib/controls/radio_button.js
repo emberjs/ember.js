@@ -17,7 +17,7 @@ Ember.RadioButton = Ember.View.extend({
 
   classNames: ['ember-radio-button'],
 
-  defaultTemplate: Ember.Handlebars.compile('<input type="radio" {{bindAttr disabled="disabled" name="group" value="val" checked="checked"}}>{{title}}</input>'),
+  defaultTemplate: Ember.Handlebars.compile('<label><input type="radio" {{bindAttr disabled="disabled" name="group" value="val" checked="checked"}}>{{title}}</label>'),
 
   change: function() {
     Ember.run.once(this, this._updateElementValue);
