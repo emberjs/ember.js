@@ -74,6 +74,18 @@ Ember.Button = Ember.View.extend(Ember.TargetActionSupport, {
     return get(this, 'propagateEvents');
   },
 
+  keyDown: function(event) {
+    if ( event.keyCode === 32 ) {
+      this.mouseDown(event);
+    }
+  },
+
+  keyUp: function(event) {
+    if ( event.keyCode === 32 ) {
+      this.mouseUp(event);
+    }
+  },
+
   // TODO: Handle proper touch behavior.  Including should make inactive when
   // finger moves more than 20x outside of the edge of the button (vs mouse
   // which goes inactive as soon as mouse goes out of edges.)
