@@ -40,10 +40,14 @@ Ember.Application = Ember.Namespace.extend(
 /** @scope Ember.Application.prototype */{
 
   /**
+    The root DOM element of the Application.
+
+    Can be specified as DOMElement or a selector string.
+
     @type DOMElement
-    @default document.body
+    @default 'body'
   */
-  rootElement: document.body,
+  rootElement: 'body',
 
   /**
     @type Ember.EventDispatcher

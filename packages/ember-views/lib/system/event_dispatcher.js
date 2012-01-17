@@ -23,10 +23,15 @@ Ember.EventDispatcher = Ember.Object.extend(
     The root DOM element to which event listeners should be attached. Event
     listeners will be attached to the document unless this is overridden.
 
+    Can be specified as a DOMElement or a selector string.
+
+    The default body is a string since this may be evaluated before document.body
+    exists in the DOM.
+
     @type DOMElement
-    @default document.body
+    @default 'body'
   */
-  rootElement: document.body,
+  rootElement: 'body',
 
   /**
     @private
