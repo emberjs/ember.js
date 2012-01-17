@@ -19,15 +19,19 @@ Ember.TargetActionSupport = Ember.Mixin.create({
         target = get(this, 'targetObject');
 
     if (target && action) {
+      var ret;
+      
       if (typeof target.send === 'function') {
-        target.send(action, this);
+        ret = target.send(action, this);
       } else {
         if (typeof action === 'string') {
           action = target[action];
         }
-        action.call(target, this);
+        ret = action.call(target, this);
       }
-      return true;
+      if (ret !== false) ret = true;
+      
+      return ret;
     } else {
       return false;
     }
