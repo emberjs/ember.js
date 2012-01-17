@@ -26,6 +26,12 @@ function synthesizeEvent(type, view) {
   view.$().trigger(type);
 }
 
+function synthesizeKeyEvent(type, keyCode, view) {
+  var event = jQuery.Event(type);
+  event.keyCode = keyCode;
+  view.$().trigger(event);
+}
+
 function append() {
   Ember.run(function() {
     button.appendTo('#qunit-fixture');
@@ -66,9 +72,99 @@ test("should trigger an action when clicked", function() {
     button.appendTo('#qunit-fixture');
   });
 
-  synthesizeEvent('click', button);
+  synthesizeEvent('mousedown', button);
+  synthesizeEvent('mouseup', button);
 
   ok(wasClicked);
+});
+
+test("should trigger an action when touched", function() {
+  var wasClicked = false;
+
+  var actionObject = Ember.Object.create({
+    myAction: function() {
+      wasClicked = true;
+    }
+  });
+
+  button.set('target', actionObject);
+  button.set('action', 'myAction');
+
+  Ember.run(function() {
+    button.appendTo('#qunit-fixture');
+  });
+
+  synthesizeEvent('touchstart', button);
+  synthesizeEvent('touchend', button);
+
+  ok(wasClicked);
+});
+
+test("should trigger an action when space pressed", function() {
+  var wasClicked = false;
+
+  var actionObject = Ember.Object.create({
+    myAction: function() {
+      wasClicked = true;
+    }
+  });
+
+  button.set('target', actionObject);
+  button.set('action', 'myAction');
+
+  Ember.run(function() {
+    button.appendTo('#qunit-fixture');
+  });
+
+  synthesizeKeyEvent('keydown', 13, button);
+  synthesizeKeyEvent('keyup', 13, button);
+
+  ok(wasClicked);
+});
+
+test("should trigger an action when enter pressed", function() {
+  var wasClicked = false;
+
+  var actionObject = Ember.Object.create({
+    myAction: function() {
+      wasClicked = true;
+    }
+  });
+
+  button.set('target', actionObject);
+  button.set('action', 'myAction');
+
+  Ember.run(function() {
+    button.appendTo('#qunit-fixture');
+  });
+
+  synthesizeKeyEvent('keydown', 32, button);
+  synthesizeKeyEvent('keyup', 32, button);
+
+  ok(wasClicked);
+});
+
+test("should not trigger an action when another key is pressed", function() {
+  var wasClicked = false;
+
+  var actionObject = Ember.Object.create({
+    myAction: function() {
+      wasClicked = true;
+    }
+  });
+
+  button.set('target', actionObject);
+  button.set('action', 'myAction');
+
+  Ember.run(function() {
+    button.appendTo('#qunit-fixture');
+  });
+
+  // 'a' key
+  synthesizeKeyEvent('keydown', 65, button);
+  synthesizeKeyEvent('keyup', 65, button);
+
+  ok(!wasClicked);
 });
 
 test("should trigger an action on a String target when clicked", function() {
@@ -91,7 +187,8 @@ test("should trigger an action on a String target when clicked", function() {
     button.appendTo('#qunit-fixture');
   });
 
-  synthesizeEvent('click', button);
+  synthesizeEvent('mousedown', button);
+  synthesizeEvent('mouseup', button);
 
   ok(wasClicked);
 
@@ -130,7 +227,6 @@ test("should not trigger action if mouse leaves area before mouseup", function()
   synthesizeEvent('mouseleave', button);
   synthesizeEvent('mouseenter', button);
   synthesizeEvent('mouseup', button);
-  synthesizeEvent('click', button);
 
   ok(wasClicked);
 });

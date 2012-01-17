@@ -33,14 +33,6 @@ Ember.Button = Ember.View.extend(Ember.TargetActionSupport, {
     return this.get('tagName') === 'a' ? '#' : null;
   }).property('tagName').cacheable(),
 
-  click: function() {
-    // Actually invoke the button's target and action.
-    // This method comes from the Ember.TargetActionSupport mixin.
-    this.triggerAction();
-
-    return get(this, 'propagateEvents');
-  },
-
   mouseDown: function() {
     if (!get(this, 'disabled')) {
       set(this, 'isActive', true);
@@ -66,12 +58,29 @@ Ember.Button = Ember.View.extend(Ember.TargetActionSupport, {
 
   mouseUp: function(event) {
     if (get(this, 'isActive')) {
+      // Actually invoke the button's target and action.
+      // This method comes from the Ember.TargetActionSupport mixin.
+      this.triggerAction();
       set(this, 'isActive', false);
     }
 
     this._mouseDown = false;
     this._mouseEntered = false;
     return get(this, 'propagateEvents');
+  },
+
+  keyDown: function(event) {
+    // Handle space or enter
+    if (event.keyCode === 13 || event.keyCode === 32) {
+      this.mouseDown();
+    }
+  },
+
+  keyUp: function(event) {
+    // Handle space or enter
+    if (event.keyCode === 13 || event.keyCode === 32) {
+      this.mouseUp();
+    }
   },
 
   // TODO: Handle proper touch behavior.  Including should make inactive when
