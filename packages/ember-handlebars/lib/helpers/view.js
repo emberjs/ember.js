@@ -79,7 +79,7 @@ Ember.Handlebars.ViewHelper = Ember.Object.create({
         newView;
 
     if ('string' === typeof path) {
-      newView = Ember.getPath(thisContext, path);
+      newView = Ember.Handlebars.getPath(thisContext, path);
       ember_assert("Unable to find view at path '" + path + "'", !!newView);
     } else {
       newView = path;

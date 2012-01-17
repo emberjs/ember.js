@@ -112,11 +112,11 @@ test('[obj, this.Foo.bar] -> (null)', function() {
 });
 
 // ..........................................................
-// GLOBAL PATHS
+// GLOBAL PATHS (DEPRECATED)
 // 
 
 test('[obj, Foo] -> undefined', function() {
-  same(Ember.getPath(obj, 'Foo'), undefined);
+  same(Ember.getPath(obj, 'Foo'), Foo);
 });
 
 test('[obj, Foo.bar] -> Foo.bar', function() {
