@@ -10,7 +10,10 @@ Ember.Handlebars.YieldView = Ember.View.extend(Ember.Metamorph, {
 
 Ember.Handlebars.registerHelper('yield', function(options) {
   var currentView = options.data.view;
-  if (currentView.yieldContent) {
+  if (currentView.isVirtual) {
+    currentView = Ember.get(currentView, 'parentView');
+  }
+  if (currentView && currentView.yieldContent) {
     options.hash.templateContext = currentView.yieldContext;
     options.hash.template = currentView.yieldContent;
     return Ember.Handlebars.helpers.view.call(this, 'Ember.Handlebars.YieldView', options);

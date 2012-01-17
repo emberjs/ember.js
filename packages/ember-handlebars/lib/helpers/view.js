@@ -95,6 +95,7 @@ Ember.Handlebars.ViewHelper = Ember.Object.create({
       // Block could be something to yield to, or simply a template. We don't know much about the view to make the determination here. Hence this decision is moved downstream into the view's computed property - template
 	    viewOptions.yieldContent = fn;
 	    viewOptions.yieldContext = get(currentView, 'templateContext');
+	    viewOptions.yieldContainer = currentView;
     }
 
     currentView.appendChild(newView, viewOptions);
