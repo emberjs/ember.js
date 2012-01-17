@@ -15,8 +15,10 @@ module("Ember.Button", {
   },
 
   teardown: function() {
-    button.destroy();
-    application.destroy();
+    Ember.run(function() {
+      button.destroy();
+      application.destroy();
+    });
   }
 });
 

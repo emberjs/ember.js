@@ -1538,7 +1538,10 @@ test("should not enter an infinite loop when binding an attribute in Handlebars"
 
   parentView.destroy();
 
-  App = undefined;
+  Ember.run(function() {
+    App.destroy();
+    App = undefined;
+  });
 });
 
 test("should render other templates using the {{template}} helper", function() {

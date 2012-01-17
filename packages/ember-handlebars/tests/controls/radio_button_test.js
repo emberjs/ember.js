@@ -11,8 +11,10 @@ module("Ember.RadioButton", {
     application = Ember.Application.create();
   },
   teardown: function() {
-    radioButtonView.destroy();
-    application.destroy();
+    Ember.run(function() {
+      radioButtonView.destroy();
+      application.destroy();
+    });
   }
 });
 

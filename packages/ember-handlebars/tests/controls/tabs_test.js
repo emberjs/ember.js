@@ -27,7 +27,7 @@ module("Ember.TabContainerView and components", {
   },
 
   teardown: function() {
-    app.destroy();
+    Ember.run(function(){ app.destroy(); });
   }
 });
 

@@ -16,7 +16,7 @@ module("Ember.Application", {
   },
 
   teardown: function() {
-    application.destroy();
+    Ember.run(function(){ application.destroy(); });
   }
 });
 
