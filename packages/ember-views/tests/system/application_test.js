@@ -43,6 +43,16 @@ test("you cannot make a new application that is a duplicate of an existing appli
   }, Error);
 });
 
+test("you cannot make two default applications without a rootElement error", function() {
+  // Teardown existing
+  application.destroy();
+
+  application = Ember.Application.create();
+  raises(function() {
+    Ember.Application.create();
+  }, Error);
+});
+
 test("acts like a namespace", function() {
   var app = window.TestApp = Ember.Application.create({rootElement: '#two'});
   app.Foo = Ember.Object.extend();

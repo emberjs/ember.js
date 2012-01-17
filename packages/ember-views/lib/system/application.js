@@ -41,9 +41,9 @@ Ember.Application = Ember.Namespace.extend(
 
   /**
     @type DOMElement
-    @default document
+    @default document.body
   */
-  rootElement: document,
+  rootElement: document.body,
 
   /**
     @type Ember.EventDispatcher

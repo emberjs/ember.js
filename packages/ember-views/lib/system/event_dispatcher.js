@@ -24,9 +24,9 @@ Ember.EventDispatcher = Ember.Object.extend(
     listeners will be attached to the document unless this is overridden.
 
     @type DOMElement
-    @default document
+    @default document.body
   */
-  rootElement: document,
+  rootElement: document.body,
 
   /**
     @private
@@ -76,6 +76,8 @@ Ember.EventDispatcher = Ember.Object.extend(
     ember_assert('You cannot make a new Ember.Application using a root element that is an ancestor of an existing Ember.Application', !rootElement.find('.ember-application').length);
 
     rootElement.addClass('ember-application');
+
+    ember_assert('Unable to add "ember-application" class to rootElement. Make sure you the body or an element in the body.', rootElement.is('.ember-application'));
 
     for (event in events) {
       if (events.hasOwnProperty(event)) {
