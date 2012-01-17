@@ -54,6 +54,16 @@ Ember.View.states.hasElement = {
 
     get(view, 'domManager').remove();
     return view;
+  },
+
+  // Handle events from `Ember.EventDispatcher`
+  handleEvent: function(view, eventName, evt) {
+    var handler = view[eventName];
+    if (Ember.typeOf(handler) === 'function') {
+      return handler.call(view, evt);
+    } else {
+      return true; // continue event propagation
+    }
   }
 };
 
