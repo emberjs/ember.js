@@ -9,6 +9,13 @@ Ember.ViewState = Ember.State.extend({
     var view = get(this, 'view'), root, childViews;
 
     if (view) {
+      if (Ember.View.detect(view)) {
+        view = view.create();
+        set(this, 'view', view);
+      }
+
+      ember_assert('view must be an Ember.View', view instanceof Ember.View);
+
       root = stateManager.get('rootView');
 
       if (root) {
@@ -39,4 +46,3 @@ Ember.ViewState = Ember.State.extend({
     }
   }
 });
-
