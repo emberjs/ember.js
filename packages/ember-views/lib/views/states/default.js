@@ -22,6 +22,11 @@ Ember.View.states = {
 
     getElement: function() {
       return null;
+    },
+
+    // Handle events from `Ember.EventDispatcher`
+    handleEvent: function() {
+      return true; // continue event propagation
     }
   }
 };

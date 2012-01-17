@@ -79,6 +79,43 @@ test("should dispatch events to views", function() {
   equals(parentKeyDownCalled, 0, "does not call keyDown on parent if child handles event");
 });
 
+test("should not dispatch events to views not inDOM", function() {
+  var receivedEvent;
+
+  view = Ember.View.create({
+    render: function(buffer) {
+      buffer.push('some <span id="awesome">awesome</span> content');
+      this._super(buffer);
+    },
+
+    mouseDown: function(evt) {
+      receivedEvent = evt;
+    }
+  });
+
+  Ember.run(function() {
+    view.append();
+  });
+
+  var $element = view.$();
+
+  Ember.run(function() {
+    view.set('element', null); // Force into preRender
+  });
+
+  $element.trigger('mousedown');
+
+  ok(!receivedEvent, "does not pass event to associated event method");
+  receivedEvent = null;
+
+  $element.find('span#awesome').trigger('mousedown');
+  ok(!receivedEvent, "event does not bubble up to nearest Ember.View");
+  receivedEvent = null;
+
+  // Cleanup
+  $element.remove();
+});
+
 test("should send change events up view hierarchy if view contains form elements", function() {
   var receivedEvent;
   view = Ember.View.create({
