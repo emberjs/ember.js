@@ -176,3 +176,131 @@ test("updating the content of a ModelArray updates its content", function() {
   tag = tags.objectAt(0);
   equal(get(tag, 'name'), "smarmy", "the lookup was updated");
 });
+
+module("DS.hasOne");
+
+test("hasOne lazily loads associations as needed", function() {
+  var Tag = DS.Model.extend({
+    name: DS.attr('string')
+  });
+
+  var Person = DS.Model.extend({
+    name: DS.attr('string'),
+    tag: DS.hasOne(Tag)
+  });
+
+  var store = DS.Store.create();
+  store.loadMany(Tag, [5, 2, 12], [{ id: 5, name: "friendly" }, { id: 2, name: "smarmy" }, { id: 12, name: "oohlala" }]);
+  store.load(Person, 1, { id: 1, name: "Tom Dale", tag: 5 });
+
+  var person = store.find(Person, 1);
+  equals(get(person, 'name'), "Tom Dale", "precond - retrieves person record from store");
+
+  equals(get(person, 'tag') instanceof Tag, true, "the tag property should return a tag");
+  equals(getPath(person, 'tag.name'), "friendly", "the tag shuld have name");
+
+  strictEqual(get(person, 'tag'), get(person, 'tag'), "the returned object is always the same");
+  strictEqual(get(person, 'tag'), store.find(Tag, 5), "association object is the same as object retrieved directly");
+});
+
+test("hasOne allows associations to be mapped to a user-specified key", function() {
+  var Tag = DS.Model.extend({
+    name: DS.attr('string')
+  });
+
+  var Person = DS.Model.extend({
+    name: DS.attr('string'),
+    tag: DS.hasOne(Tag, { key: 'tag_id' })
+  });
+
+  var store = DS.Store.create();
+  store.loadMany(Tag, [5, 2, 8], [
+    { id: 5, name: 'curmudgeon' },
+    { id: 2, name: 'cuddly' },
+    { id: 8, name: 'drunk' }
+  ]);
+  store.load(Person, 1, { id: 1, name: 'Carsten Nielsen', tag_id: 2 });
+
+  var person = store.find(Person, 1);
+  equals(get(person, 'name'), "Carsten Nielsen", "precond - retrieves person record from store");
+  equals(getPath(person, 'tag.name'), "cuddly", "the tag should be a Tag");
+
+  strictEqual(get(person, 'tag'), get(person, 'tag'), "the returned object is always the same");
+  strictEqual(get(person, 'tag'), store.find(Tag, 2), "association object are the same as object retrieved directly");
+});
+
+test("associations work when the data hash has not been loaded", function() {
+  expect(12);
+
+  var Tag = DS.Model.extend({
+    name: DS.attr('string')
+  });
+
+  var Person = DS.Model.extend({
+    name: DS.attr('string'),
+    tag: DS.hasOne(Tag)
+  });
+
+  var store = DS.Store.create({
+    adapter: DS.Adapter.create({
+      find: function(store, type, id) {
+        if (type === Person) {
+          equal(type, Person, "type should be Person");
+          equal(id, 1, "id should be 1");
+
+          stop();
+
+          setTimeout(function() {
+            start();
+            store.load(type, id, { id: 1, name: "Tom Dale", tag: 2 });
+
+            equal(get(person, 'name'), "Tom Dale", "The person is now populated");
+            equal(get(person, 'tag') instanceof Tag, true, "the tag Model already exists");
+            equal(getPath(person, 'tag.isLoaded'), false, "the tag objects exist, but are not yet loaded");
+          }, 1);
+        } else if (type === Tag) {
+          equal(type, Tag, "type should be Tag");
+          equal(id, 2, "id should be 2");
+
+          stop();
+
+          setTimeout(function() {
+            start();
+            store.load(type, 2, { id: 2, name: "friendly" });
+
+            equal(get(person, 'name'), "Tom Dale", "precond - the person is still Tom Dale");
+            equal(getPath(person, 'tag.name'), "friendly", "Tom Dale is now friendly");
+            equal(getPath(person, 'tag.isLoaded'), true, "Tom Dale is now loaded");
+          }, 1);
+        }
+      }
+    })
+  });
+
+  var person = store.find(Person, 1);
+
+  equal(get(person, 'isLoaded'), false, "isLoaded should be false");
+  equal(get(person, 'tag'), null, "tag should be null");
+});
+
+test("hasOne embedded associations work the same as referenced ones, and have the same identity map functionality", function() {
+  var Tag = DS.Model.extend({
+    name: DS.attr('string')
+  });
+
+  var Person = DS.Model.extend({
+    name: DS.attr('string'),
+    tag: DS.hasOne(Tag, { embedded: true })
+  });
+
+  var store = DS.Store.create();
+  store.load(Person, 1, { id: 1, name: "Tom Dale", tag: { id: 5, name: "friendly" } });
+
+  var person = store.find(Person, 1);
+  equals(get(person, 'name'), "Tom Dale", "precond - retrieves person record from store");
+
+  equals(getPath(person, 'tag.name'), "friendly", "the first tag should be a Tag");
+
+  strictEqual(get(person, 'tag'), get(person, 'tag'), "the returned object is always the same");
+  strictEqual(get(person, 'tag'), store.find(Tag, 5), "association object are the same as object retrieved directly");
+});
