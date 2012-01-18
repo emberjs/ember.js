@@ -67,6 +67,7 @@ test("a DS.Model can describe String attributes", function() {
   converts('string', "Scumbag Tom", "Scumbag Tom");
   converts('string', 1, "1");
   converts('string', null, null);
+  converts('string', undefined, null);
   convertsFromServer('string', undefined, null);
 });
 
@@ -75,7 +76,8 @@ test("a DS.Model can describe Integer attributes", function() {
   converts('integer', "0", 0);
   converts('integer', 1, 1);
   converts('integer', 0, 0);
-  converts('integer', null, 0);
+  converts('integer', null, null);
+  converts('integer', undefined, null);
   converts('integer', true, 1);
   converts('integer', false, 0);
 });
