@@ -9,7 +9,6 @@
     "spade":              "~> 1.0.0",
     "handlebars":         "~> 1.0.0.beta.3",
     "ember-views": "0.9.3",
-    "ember-handlebars-format": "0.9.3",
     "metamorph": "~> 1.0.0"
   },
 
@@ -31,13 +30,6 @@
     "ember-handlebars/bpm_tests.js": {
       "files": ["tests"],
       "modes": ["debug"]
-    }
-  },
-
-  "bpm:provides": {
-    "format:handlebars": {
-      "default:mime": "application/javascript",
-      "main": "ember-handlebars-format/format" 
     }
   }
 
