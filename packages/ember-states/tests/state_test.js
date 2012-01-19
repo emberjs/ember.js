@@ -48,6 +48,30 @@ test("a state is passed its state manager when receiving an enter event", functi
   });
 });
 
+test("a state is passed a context on the enter event when one is passed with goToState", function() {
+  var passedContext;
+
+  var readyState = Ember.State.create({
+    enter: function(stateManager, transition, context) {
+      passedContext = context;
+    }
+  });
+
+  var stateManager;
+
+  Ember.run(function() {
+    stateManager = Ember.StateManager.create({
+      start: Ember.State.create(),
+
+      ready: readyState
+    });
+  });
+
+  stateManager.goToState('ready', 'worked');
+
+  equals(passedContext, 'worked', "state enter received passed context");
+});
+
 test("a state finds properties that are states and copies them to the states hash", function() {
   var state1 = Ember.State.create();
   var state2 = Ember.State.create();
