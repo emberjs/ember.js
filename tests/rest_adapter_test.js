@@ -42,7 +42,7 @@ module("the REST adapter", {
 });
 
 var expectUrl = function(url, desc) {
-  equal(url, ajaxUrl, "the URL is " + desc);
+  equal(ajaxUrl, url, "the URL is " + desc);
 };
 
 var expectType = function(type) {
@@ -326,3 +326,11 @@ test("deleting several people (with bulkCommit) makes a POST to /people/delete_m
   expectStates('deleted');
   expectStates('dirty', false);
 });
+
+test("if you specify a namespace then it is prepended onto all URLs", function() {
+  set(adapter, 'namespace', 'ember');
+
+  person = store.find(Person, 1);
+
+  expectUrl("/ember/people/1", "the namespace, followed by by the plural of the model name and the id")
+})
