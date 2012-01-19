@@ -129,6 +129,21 @@ Ember.Handlebars.compile = function(string) {
 };
 
 /**
+  Lookup both on root and on window
+
+  @param {Object} root The object to look up the property on
+  @param {String} path The path to be lookedup
+*/
+Ember.Handlebars.getPath = function(root, path) {
+  // TODO: Remove this `false` when the `getPath` globals support is removed
+  var value = Ember.getPath(root, path, false);
+  if (value === undefined && root !== window && Ember.isGlobalPath(path)) {
+    value = Ember.getPath(window, path);
+  }
+  return value;
+};
+
+/**
   Registers a helper in Handlebars that will be called if no property with the
   given name can be found on the current context object, and no helper with
   that name is registered.

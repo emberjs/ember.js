@@ -116,7 +116,7 @@ test('[obj, this.foo.bar*baz.biff] -> obj.foo.bar.baz.biff', function() {
 });
 
 // ..........................................................
-// GLOBAL PATHS
+// GLOBAL PATHS (DEPRECATED)
 // 
 
 test('[obj, Foo] -> EXCEPTION', function() {

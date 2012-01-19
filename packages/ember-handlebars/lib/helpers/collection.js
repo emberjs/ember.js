@@ -9,7 +9,7 @@
 require('ember-handlebars');
 require('ember-handlebars/helpers/view');
 
-var get = Ember.get, fmt = Ember.String.fmt;
+var get = Ember.get, getPath = Ember.Handlebars.getPath, fmt = Ember.String.fmt;
 
 /**
   @name Handlebars.helpers.collection
@@ -34,7 +34,7 @@ Ember.Handlebars.registerHelper('collection', function(path, options) {
   // If passed a path string, convert that into an object.
   // Otherwise, just default to the standard class.
   var collectionClass;
-  collectionClass = path ? Ember.getPath(this, path) : Ember.CollectionView;
+  collectionClass = path ? getPath(this, path) : Ember.CollectionView;
   ember_assert(fmt("%@ #collection: Could not find %@", data.view, path), !!collectionClass);
 
   var hash = options.hash, itemHash = {}, match;
@@ -43,7 +43,7 @@ Ember.Handlebars.registerHelper('collection', function(path, options) {
   var itemViewClass, itemViewPath = hash.itemViewClass;
   var collectionPrototype = get(collectionClass, 'proto');
   delete hash.itemViewClass;
-  itemViewClass = itemViewPath ? Ember.getPath(collectionPrototype, itemViewPath) : collectionPrototype.itemViewClass;
+  itemViewClass = itemViewPath ? getPath(collectionPrototype, itemViewPath) : collectionPrototype.itemViewClass;
   ember_assert(fmt("%@ #collection: Could not find %@", data.view, itemViewPath), !!itemViewClass);
 
   // Go through options passed to the {{collection}} helper and extract options

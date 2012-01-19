@@ -122,7 +122,9 @@ function xformForArgs(args) {
   return function (target, method, params) {
     var obj = params[0], keyName = changeKey(params[1]), val;
     var copy_args = args.slice();
-    if (method.length>2) val = Ember.getPath(obj, keyName);
+    if (method.length>2) {
+      val = Ember.getPath(Ember.isGlobalPath(keyName) ? window : obj, keyName);
+    }
     copy_args.unshift(obj, keyName, val);
     method.apply(target, copy_args);
   };

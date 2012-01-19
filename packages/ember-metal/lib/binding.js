@@ -109,7 +109,8 @@ var NOT = {
 var get     = Ember.get,
     getPath = Ember.getPath,
     setPath = Ember.setPath,
-    guidFor = Ember.guidFor;
+    guidFor = Ember.guidFor,
+    isGlobalPath = Ember.isGlobalPath;
 
 // Applies a binding's transformations against a value.
 function getTransformedValue(binding, val, obj, dir) {
@@ -137,9 +138,18 @@ function empty(val) {
   return val===undefined || val===null || val==='' || (Ember.isArray(val) && get(val, 'length')===0) ;
 }
 
+function getPathWithGlobals(obj, path) {
+  return getPath(isGlobalPath(path) ? window : obj, path);
+}
+
 function getTransformedFromValue(obj, binding) {
-  var operation = binding._operation;
-  var fromValue = operation ? operation(obj, binding._from, binding._operand) : getPath(obj, binding._from);
+  var operation = binding._operation,
+      fromValue;
+  if (operation) {
+    fromValue = operation(obj, binding._from, binding._operand);
+  } else {
+    fromValue = getPathWithGlobals(obj, binding._from);
+  }
   return getTransformedValue(binding, fromValue, obj, 'to');
 }
 
@@ -149,11 +159,11 @@ function getTransformedToValue(obj, binding) {
 }
 
 var AND_OPERATION = function(obj, left, right) {
-  return getPath(obj, left) && getPath(obj, right);
+  return getPathWithGlobals(obj, left) && getPathWithGlobals(obj, right);
 };
 
 var OR_OPERATION = function(obj, left, right) {
-  return getPath(obj, left) || getPath(obj, right);
+  return getPathWithGlobals(obj, left) || getPathWithGlobals(obj, right);
 };
 
 // ..........................................................
@@ -521,12 +531,12 @@ Binding.prototype = /** @scope Ember.Binding.prototype */ {
     // if we're synchronizing from the remote object...
     if (direction === 'fwd') {
       if (log) { Ember.Logger.log(' ', this.toString(), toValue, '->', fromValue, obj); }
-      Ember.trySetPath(obj, toPath, fromValue);
+      Ember.trySetPath(Ember.isGlobalPath(toPath) ? window : obj, toPath, fromValue);
 
     // if we're synchronizing *to* the remote object
     } else if (direction === 'back') {// && !this._oneWay) {
       if (log) { Ember.Logger.log(' ', this.toString(), toValue, '<-', fromValue, obj); }
-      Ember.trySetPath(obj, fromPath, toValue);
+      Ember.trySetPath(Ember.isGlobalPath(fromPath) ? window : obj, fromPath, toValue);
     }
   }
 
