@@ -6,10 +6,18 @@ Ember.ViewState = Ember.State.extend({
   isViewState: true,
 
   enter: function(stateManager) {
-    var view = get(this, 'view');
+    var view = get(this, 'view'), root, childViews;
 
     if (view) {
-      view.appendTo(stateManager.get('rootElement') || 'body');
+      root = stateManager.get('rootView');
+
+      if (root) {
+        childViews = get(root, 'childViews');
+        childViews.pushObject(view);
+      } else {
+        root = stateManager.get('rootElement') || 'body';
+        view.appendTo(root);
+      }
     }
   },
 
@@ -17,7 +25,17 @@ Ember.ViewState = Ember.State.extend({
     var view = get(this, 'view');
 
     if (view) {
-      view.remove();
+      // If the view has a parent view, then it is
+      // part of a view hierarchy and should be removed
+      // from its parent.
+      if (get(view, 'parentView')) {
+        view.removeFromParent();
+      } else {
+
+        // Otherwise, the view is a "root view" and
+        // was appended directly to the DOM.
+        view.remove();
+      }
     }
   }
 });
