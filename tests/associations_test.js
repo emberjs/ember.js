@@ -15,6 +15,7 @@ test("hasMany lazily loads associations as needed", function() {
   var store = DS.Store.create();
   store.loadMany(Tag, [5, 2, 12], [{ id: 5, name: "friendly" }, { id: 2, name: "smarmy" }, { id: 12, name: "oohlala" }]);
   store.load(Person, 1, { id: 1, name: "Tom Dale", tags: [5, 2] });
+  store.load(Person, 2, { id: 2, name: "Yehuda Katz", tags: [12] });
 
   var person = store.find(Person, 1);
   equals(get(person, 'name'), "Tom Dale", "precond - retrieves person record from store");
@@ -24,6 +25,15 @@ test("hasMany lazily loads associations as needed", function() {
 
   strictEqual(get(person, 'tags').objectAt(0), get(person, 'tags').objectAt(0), "the returned object is always the same");
   strictEqual(get(person, 'tags').objectAt(0), store.find(Tag, 5), "association objects are the same as objects retrieved directly");
+
+  var wycats = store.find(Person, 2);
+  equals(get(wycats, 'name'), "Yehuda Katz", "precond - retrieves person record from store");
+
+  equals(getPath(wycats, 'tags.length'), 1, "the list of tags should have the correct length");
+  equals(get(get(wycats, 'tags').objectAt(0), 'name'), "oohlala", "the first tag should be a Tag");
+
+  strictEqual(get(wycats, 'tags').objectAt(0), get(wycats, 'tags').objectAt(0), "the returned object is always the same");
+  strictEqual(get(wycats, 'tags').objectAt(0), store.find(Tag, 12), "association objects are the same as objects retrieved directly");
 });
 
 test("hasMany allows associations to be mapped to a user-specified key", function() {
