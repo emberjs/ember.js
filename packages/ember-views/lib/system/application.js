@@ -75,23 +75,32 @@ Ember.Application = Ember.Namespace.extend(
 
     // jQuery 1.7 doesn't call the ready callback if already ready
     if (Ember.$.isReady) {
-      this.ready();
+      this.didBecomeReady();
     } else {
       var self = this;
       Ember.$(document).ready(function() {
-        self.ready();
+        self.didBecomeReady();
       });
     }
 
     this._super();
   },
 
-  ready: function() {
+  /** @private */
+  didBecomeReady: function() {
     var eventDispatcher = get(this, 'eventDispatcher'),
         customEvents    = get(this, 'customEvents');
 
     eventDispatcher.setup(customEvents);
+
+    this.ready();
   },
+
+  /**
+    Called when the Application has become ready.
+    The call will be delayed until the DOM has become ready.
+  */
+  ready: Ember.K,
 
   /** @private */
   destroy: function() {
