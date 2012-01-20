@@ -90,3 +90,25 @@ test("it appends and removes a view to the element specified in its state manage
 
   equals(Ember.$('#test-view').length, 0, "can't find view with custom id in DOM");
 });
+
+test("Can find View by string path", function() {
+
+  window.App = {};
+
+  Ember.run(function() {
+    stateManager = Ember.StateManager.create({
+      rootElement: '#qunit-fixture',
+      other: Ember.ViewState.create({
+        view: 'App.MyView'
+      })
+    });
+  });
+
+  App.MyView = Ember.View.create({elementId: 'my-view'});
+
+  Ember.run(function() {
+    stateManager.goToState('other');
+  });
+
+  equals(Ember.$('#my-view').length, 1, "found view with custom id in DOM");
+});
