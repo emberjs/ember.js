@@ -1076,6 +1076,14 @@ Ember.View = Ember.Object.extend(
     set(this, 'domManager', this.domManagerClass.create({ view: this }));
 
     meta(this)["Ember.View"] = {};
+
+    var viewController = get(this, 'viewController');
+    if (viewController) {
+      viewController = Ember.getPath(viewController);
+      if (viewController) {
+        set(viewController, 'view', this);
+      }
+    }
   },
 
   appendChild: function(view, options) {
