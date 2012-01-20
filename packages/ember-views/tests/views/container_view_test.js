@@ -1,3 +1,5 @@
+var get = Ember.get;
+
 module("ember-views/views/container_view_test");
 
 test("should be able to insert views after the DOM representation is created", function() {
@@ -11,7 +13,7 @@ test("should be able to insert views after the DOM representation is created", f
     container.appendTo('#qunit-fixture');
   });
 
-  var view = container.createChildView(Ember.View, {
+  var view = Ember.View.create({
     template: function() {
       return "This is my moment";
     }
@@ -21,7 +23,14 @@ test("should be able to insert views after the DOM representation is created", f
     container.get('childViews').pushObject(view);
   });
 
-  equals(container.$().text(), "This is my moment");
+  equal(container.$().text(), "This is my moment");
+  equal(view.get('parentView'), container, "sets the parent view after the childView is appended");
+
+  Ember.run(function() {
+    get(container, 'childViews').removeObject(view);
+  });
+
+  equal(view.get('parentView'), null, "sets parentView to null when a view is removed");
 
   container.destroy();
 });
