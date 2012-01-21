@@ -73,7 +73,7 @@ Ember.ContainerView = Ember.View.extend({
   },
 
   /**
-    When the container view is destroyer, tear down the child views
+    When the container view is destroyed, tear down the child views
     array observer.
 
     @private
