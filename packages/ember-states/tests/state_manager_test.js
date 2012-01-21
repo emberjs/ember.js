@@ -203,6 +203,24 @@ test("it automatically transitions to a default substate specified using the ini
   ok(get(stateManager, 'currentState').isStart, "automatically transitions to beginning substate");
 });
 
+test("it automatically transitions to a default substate nested more than one state deep using the initialSubstate property", function() {
+  stateManager = Ember.StateManager.create({
+    start: Ember.State.create({
+      initialSubstate: 'intermediateSubstate',
+
+      intermediateSubstate: Ember.State.create({
+        initialSubstate: 'beginningSubstate',
+
+        beginningSubstate: Ember.State.create({
+          isStart: true
+        })
+      })
+    })
+  });
+
+  ok(get(stateManager, 'currentState').isStart, "automatically transitions to beginning substate");
+});
+
 test("it reports the view associated with the current view state, if any", function() {
   var view = Ember.View.create();
 
