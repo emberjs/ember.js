@@ -10,3 +10,4 @@ require("ember-handlebars/controls/button");
 require("ember-handlebars/controls/radio_button");
 require("ember-handlebars/controls/text_area");
 require("ember-handlebars/controls/tabs");
+require("ember-handlebars/controls/select");
