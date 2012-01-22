@@ -79,3 +79,99 @@ test("selection can be set", function() {
 
   equals(select.$()[0].selectedIndex, 0, "After changing it, selection should be correct");
 });
+
+test("a prompt can be specified", function() {
+  var yehuda = { id: 1, firstName: 'Yehuda' },
+      tom = { id: 2, firstName: 'Tom' };
+  select.set('content', Ember.A([yehuda, tom]));
+  select.set('prompt', 'Pick a person');
+  select.set('optionLabelPath', 'content.firstName');
+  select.set('optionValuePath', 'content.id');
+
+  append();
+
+  equals(select.$('option').length, 3, "There should be three options");
+  equals(select.$()[0].selectedIndex, 0, "By default, the prompt is selected in the DOM");
+  equals(select.$().val(), 'Pick a person', "By default, the prompt is selected in the DOM");
+
+  equals(select.get('selection'), null, "When the prompt is selected, the selection should be null");
+
+  select.set('selection', tom);
+  equals(select.$()[0].selectedIndex, 2, "The selectedIndex accounts for the prompt");
+
+  select.$()[0].selectedIndex = 0;
+  select.$().trigger('change');
+
+  equals(select.get('selection'), null, "When the prompt is selected again after another option, the selection should be null");
+
+  select.$()[0].selectedIndex = 2;
+  select.$().trigger('change');
+  equals(select.get('selection'), tom, "Properly accounts for the prompt when DOM change occurs");
+});
+
+module("Ember.Select - usage inside templates", {
+  setup: function() {
+    application = Ember.Application.create();
+  },
+
+  teardown: function() {
+    application.destroy();
+  }
+});
+
+test("works from a template with bindings", function() {
+  var Person = Ember.Object.extend({
+    id: null,
+    firstName: null,
+    lastName: null,
+
+    fullName: Ember.computed(function() {
+      return this.get('firstName') + " " + this.get('lastName');
+    }).property('firstName', 'lastName').cacheable()
+  });
+
+  var erik = Person.create({id: 4, firstName: 'Erik', lastName: 'Bryn'});
+  application.peopleController = Ember.ArrayController.create({
+    content: Ember.A([
+      Person.create({id: 1, firstName: 'Yehuda', lastName: 'Katz'}),
+      Person.create({id: 2, firstName: 'Tom', lastName: 'Dale'}),
+      Person.create({id: 3, firstName: 'Peter', lastName: 'Wagenet'}),
+      erik
+    ])
+  });
+
+  application.selectedPersonController = Ember.Object.create({
+    person: null
+  });
+
+  var view = Ember.View.create({
+    app: application,
+    template: Ember.Handlebars.compile(
+      '{{view Ember.Select viewName="select"' +
+      '                    contentBinding="app.peopleController"' +
+      '                    optionLabelPath="content.fullName"' +
+      '                    optionValuePath="content.id"' +
+      '                    prompt="Pick a person:"' +
+      '                    selectionBinding="app.selectedPersonController.person"}}'
+    )
+  });
+
+  Ember.run(function() {
+    view.appendTo('#qunit-fixture');
+  });
+
+  var select = view.get('select');
+  ok(select.$().length, "Select was rendered");
+  equals(select.$('option').length, 5, "Options were rendered");
+  equals(select.$().text(), "Pick a person:Yehuda KatzTom DalePeter WagenetErik Bryn", "Option values were rendered")
+  equals(select.get('selection'), null, "Nothing has been selected");
+
+  application.selectedPersonController.set('person', erik);
+  Ember.run.sync();
+  equals(select.get('selection'), erik, "Selection was updated through binding");
+
+  application.peopleController.pushObject(Person.create({id: 5, firstName: "James", lastName: "Rosen"}));
+  Ember.run.end();
+  equals(select.$('option').length, 6, "New option was added");
+  equals(select.get('selection'), erik, "Selection was maintained after new option was added");
+});
