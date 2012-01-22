@@ -74,7 +74,8 @@ task :metamorph => compile_package_task("metamorph")
 task :build => ["ember:metal", "ember:runtime", "ember:handlebars", "ember:views", "ember:states", "ember:datetime", :handlebars, :metamorph]
 
 distributions = {
-  "ember" => ["handlebars", "ember-metal", "ember-runtime", "ember-views", "ember-states", "metamorph", "ember-handlebars"]
+  "ember" => ["handlebars", "ember-metal", "ember-runtime", "ember-views", "ember-states", "metamorph", "ember-handlebars"],
+  "ember-runtime" => ["ember-metal", "ember-runtime"]
 }
 
 distributions.each do |name, libraries|
