@@ -431,26 +431,35 @@ Ember.View = Ember.Object.extend(
     @param {Ember.RenderBuffer} buffer
   */
   _applyAttributeBindings: function(buffer) {
-    var attributeBindings = get(this, 'attributeBindings'),
-        attributeValue, elem, type;
+    var attributeBindings = get(this, 'attributeBindings');
 
     if (!attributeBindings) { return; }
 
     attributeBindings.forEach(function(attributeName) {
+      var attributeValue, attributeKey, elem, split;
+      
+      // Check if attribute has alias ['key:alias']
+      if (attributeName.match(/:/)) {
+        split = attributeName.split(':');
+        attributeName = split[0]; // attribute key
+        attributeKey = split[1]; // alias
+      } else {
+        attributeKey = attributeName; // attribute key is the same as the attribute name
+      }
+
       // Create an observer to add/remove/change the attribute if the
       // JavaScript property changes.
       var observer = function() {
         elem = this.$();
-        attributeValue = get(this, attributeName);
-
-        Ember.View.applyAttributeBindings(elem, attributeName, attributeValue)
+        attributeValue = get(this, attributeKey);
+        Ember.View.applyAttributeBindings(elem, attributeName, attributeValue);
       };
 
-      addObserver(this, attributeName, observer);
+      addObserver(this, attributeKey, observer);
 
       // Determine the current value and add it to the render buffer
       // if necessary.
-      attributeValue = get(this, attributeName);
+      attributeValue = get(this, attributeKey);
       Ember.View.applyAttributeBindings(buffer, attributeName, attributeValue);
     }, this);
   },
@@ -466,9 +475,10 @@ Ember.View = Ember.Object.extend(
   */
   _classStringForProperty: function(property) {
     var split = property.split(':'),
-        property = split[0],
         className = split[1];
 
+    property = split[0];
+        
     var val = Ember.getPath(this, property);
 
     // If value is a Boolean and true, return the dasherized property
