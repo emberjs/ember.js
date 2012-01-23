@@ -157,7 +157,7 @@ test("should be able to use action more than once for the same event within a vi
     ),
     click: function() { originalEventHandlerWasCalled = true; },
     edit: function() { editWasCalled = true; return false; },
-    delete: function() { deleteWasCalled = true; return false; }
+    "delete": function() { deleteWasCalled = true; return false; }
   });
 
   appendView();
