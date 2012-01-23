@@ -21,7 +21,7 @@ module("Ember.Handlebars - action helper", {
 
 test("should output a data attribute with a guid", function() {
   view = Ember.View.create({
-    template: Ember.Handlebars.compile('<a href="#" {{action "edit"}}>')
+    template: Ember.Handlebars.compile('<a href="#" {{action "edit"}}>edit</a>')
   });
 
   appendView();
@@ -37,7 +37,7 @@ test("should by default register a click event", function() {
   };
 
   view = Ember.View.create({
-    template: Ember.Handlebars.compile('<a href="#" {{action "edit"}}>')
+    template: Ember.Handlebars.compile('<a href="#" {{action "edit"}}>edit</a>')
   });
 
   appendView();
@@ -55,7 +55,7 @@ test("should allow alternative events to be handled", function() {
   };
 
   view = Ember.View.create({
-    template: Ember.Handlebars.compile('<a href="#" {{action "edit" on="mouseUp"}}>')
+    template: Ember.Handlebars.compile('<a href="#" {{action "edit" on="mouseUp"}}>edit</a>')
   });
 
   appendView();
@@ -73,7 +73,7 @@ test("should by default target the parent view", function() {
   };
 
   view = Ember.View.create({
-    template: Ember.Handlebars.compile('<a href="#" {{action "edit"}}>')
+    template: Ember.Handlebars.compile('<a href="#" {{action "edit"}}>edit</a>')
   });
 
   appendView();
@@ -93,7 +93,7 @@ test("should allow a target to be specified", function() {
   var anotherTarget = Ember.View.create();
 
   view = Ember.View.create({
-    template: Ember.Handlebars.compile('<a href="#" {{action "edit" target="anotherTarget"}}>'),
+    template: Ember.Handlebars.compile('<a href="#" {{action "edit" target="anotherTarget"}}>edit</a>'),
     anotherTarget: anotherTarget
   });
 
