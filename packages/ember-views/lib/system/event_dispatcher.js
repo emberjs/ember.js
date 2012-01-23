@@ -69,7 +69,8 @@ Ember.EventDispatcher = Ember.Object.extend(
       dragleave   : 'dragLeave',
       dragover    : 'dragOver',
       drop        : 'drop',
-      dragend     : 'dragEnd'
+      dragend     : 'dragEnd',
+      mousewheel  : 'mouseWheel'
     };
 
     jQuery.extend(events, addedEvents || {});
@@ -150,7 +151,7 @@ Ember.EventDispatcher = Ember.Object.extend(
   _dispatchEvent: function(object, evt, eventName, view) {
     var result = true;
 
-    handler = object[eventName];
+    var handler = object[eventName];
     if (Ember.typeOf(handler) === 'function') {
       result = handler.call(object, evt, view);
       evt.stopPropagation();
