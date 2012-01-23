@@ -19,8 +19,15 @@ Ember.TextSupport = Ember.Mixin.create(
   placeholder: null,
   disabled: false,
 
+  deleteBackward: Ember.K,
+  insertTab: Ember.K,
   insertNewline: Ember.K,
   cancel: Ember.K,
+  moveLeft: Ember.K,
+  moveUp: Ember.K,
+  moveRight: Ember.K,
+  moveDown: Ember.K,
+  deleteForward: Ember.K,
 
   focusOut: function(event) {
     this._elementValueDidChange();
@@ -52,6 +59,13 @@ Ember.TextSupport = Ember.Mixin.create(
 });
 
 Ember.TextSupport.KEY_EVENTS = {
+  8: 'deleteBackward',
+  9: 'insertTab',
   13: 'insertNewline',
-  27: 'cancel'
+  27: 'cancel',
+  37: 'moveLeft',
+  38: 'moveUp',
+  39: 'moveRight',
+  40: 'moveDown',
+  46: 'deleteForward'
 };

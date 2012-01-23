@@ -38,7 +38,7 @@ test("should render attribute bindings", function() {
 test("should update attribute bindings", function() {
   var view = Ember.View.create({
     classNameBindings: ['priority', 'isUrgent', 'isClassified:classified', 'canIgnore'],
-    attributeBindings: ['type', 'exploded', 'destroyed', 'exists', 'nothing', 'notDefined', 'notNumber', 'explosions'],
+    attributeBindings: ['type', 'exploded', 'destroyed', 'exists', 'nothing', 'notDefined', 'notNumber', 'explosions', 'value:fieldValue'],
 
     type: 'reset',
     exploded: true,
@@ -47,7 +47,8 @@ test("should update attribute bindings", function() {
     nothing: true,
     notDefined: true,
     notNumber: true,
-    explosions: 15
+    explosions: 15,
+    fieldValue: 'UY$ 1.00'
   });
 
   view.createElement();
@@ -59,6 +60,7 @@ test("should update attribute bindings", function() {
   ok(view.$().attr('notDefined'), "adds notDefined attribute when true");
   ok(view.$().attr('notNumber'), "adds notNumber attribute when true");
   equals(view.$().attr('explosions'), "15", "adds integer attributes");
+  equals(view.$().attr('value'), "UY$ 1.00", "adds value using alias attributes");
 
   view.set('type', 'submit');
   view.set('exploded', false);
@@ -67,6 +69,7 @@ test("should update attribute bindings", function() {
   view.set('nothing', null);
   view.set('notDefined', undefined);
   view.set('notNumber', NaN);
+  view.set('fieldValue', "UY$ 1000.00");
 
   equals(view.$().attr('type'), 'submit', "updates type attribute");
   ok(!view.$().attr('exploded'), "removes exploded attribute when false");
@@ -75,6 +78,7 @@ test("should update attribute bindings", function() {
   ok(!view.$().attr('nothing'), "removes nothing attribute when null");
   ok(!view.$().attr('notDefined'), "removes notDefined attribute when undefined");
   ok(!view.$().attr('notNumber'), "removes notNumber attribute when NaN");
+  ok(!view.$().attr('UY$ 1000.00'), "updates value using alias attribute");
 });
 
 test("should allow attributes to be set in the inBuffer state", function() {
