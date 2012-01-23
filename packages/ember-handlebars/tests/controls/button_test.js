@@ -259,7 +259,8 @@ test("should not have a type if tagName is not 'input' or 'button'", function() 
     button.appendTo('#qunit-fixture');
   });
 
-  equals(button.$().attr('type'), null);
+  // IE 7 reports an empty string instead of null.
+  ok(!button.$().attr('type'));
 });
 
 test("should by default be of type='button' if tagName is 'input'", function() {
@@ -318,7 +319,8 @@ test("should set href='#' if tagName is 'a'", function() {
     button.appendTo('#qunit-fixture');
   });
 
-  equals(button.$().attr('href'), '#');
+  // IE 7 throws the whole url in there. If it ends with '#' we're ok
+  ok(/#$/.test(button.$().attr('href')));
 });
 
 test("should not set href if tagName is not 'a'", function() {
