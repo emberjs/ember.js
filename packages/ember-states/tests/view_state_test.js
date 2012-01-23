@@ -29,6 +29,44 @@ test("it can act like a state in a state manager", function() {
   equals(viewState.entered, 1, "viewState receives enter event when transitioning to current state");
 });
 
+test("it throws an error when the view passed is not an Ember.View", function() {
+  var viewState = Ember.ViewState.extend({
+    view: Ember.Object.create({
+      foo: 1
+    })
+  });
+
+  var stateManager;
+
+  Ember.run(function() {
+    raises(function() {
+      stateManager = Ember.StateManager.create({
+        start: viewState
+      });
+    }, Error);
+  });
+});
+
+test("it creates and appends a view when it is entered", function() {
+  var viewState = Ember.ViewState.extend({
+    view: Ember.View.extend({
+      elementId: 'test-view'
+    })
+  });
+
+  var stateManager;
+
+  Ember.run(function() {
+    stateManager = Ember.StateManager.create({
+      start: viewState
+    });
+  });
+
+  equals(Ember.$('#test-view').length, 1, "found view within custom id in DOM");
+
+  stateManager.getPath('currentState.view').remove();
+});
+
 test("it appends and removes a view when it is entered and exited", function() {
   var view = Ember.View.create({
     elementId: 'test-view'
