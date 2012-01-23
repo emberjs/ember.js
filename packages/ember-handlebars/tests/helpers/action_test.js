@@ -128,7 +128,7 @@ test("should wrap an existing event handler on the parent view", function() {
   view = Ember.View.create({
     template: Ember.Handlebars.compile('<a href="#" {{action "edit"}}>click me</a>'),
     click: function() { originalEventHandlerWasCalled = true; },
-    edit: function() { eventHandlerWasCalled = true; }
+    edit: function() { eventHandlerWasCalled = true; return false; }
   });
 
   appendView();
@@ -156,8 +156,8 @@ test("should be able to use action more than once for the same event within a vi
       '<a id="edit" href="#" {{action "edit"}}>edit</a><a id="delete" href="#" {{action "delete"}}>delete</a>'
     ),
     click: function() { originalEventHandlerWasCalled = true; },
-    edit: function() { editWasCalled = true; },
-    delete: function() { deleteWasCalled = true; }
+    edit: function() { editWasCalled = true; return false; },
+    delete: function() { deleteWasCalled = true; return false; }
   });
 
   appendView();
@@ -249,4 +249,21 @@ test("should properly capture events on child elements of a container with an ac
   view.$('button').trigger('click');
 
   ok(eventHandlerWasCalled, "Event on a child element triggered the action of it's parent")
+});
+
+test("should allow bubbling of events from action helper to original parent event", function() {
+  var eventHandlerWasCalled = false,
+      originalEventHandlerWasCalled = false;
+
+  view = Ember.View.create({
+    template: Ember.Handlebars.compile('<a href="#" {{action "edit"}}>click me</a>'),
+    click: function() { originalEventHandlerWasCalled = true; },
+    edit: function() { eventHandlerWasCalled = true; return true; }
+  });
+
+  appendView();
+
+  view.$('a').trigger('click');
+
+  ok(eventHandlerWasCalled && originalEventHandlerWasCalled, "Both event handlers were called");
 });
