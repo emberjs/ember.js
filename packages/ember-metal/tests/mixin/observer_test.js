@@ -122,7 +122,7 @@ testBoth('observing chain with property in mixin applied later', function(get, s
     count: 0,
     foo: Ember.observer(function() {
       set(this, 'count', get(this, 'count')+1);
-    }, 'bar.baz'),
+    }, 'bar.baz')
   });
 
   var MyMixin2 = Ember.Mixin.create({bar: obj2});
@@ -144,7 +144,7 @@ testBoth('observing chain with existing property', function(get, set) {
     count: 0,
     foo: Ember.observer(function() {
       set(this, 'count', get(this, 'count')+1);
-    }, 'bar.baz'),
+    }, 'bar.baz')
   });
 
   var obj = Ember.mixin({bar: obj2}, MyMixin);
@@ -162,7 +162,7 @@ testBoth('observing chain with property in mixin before', function(get, set) {
     count: 0,
     foo: Ember.observer(function() {
       set(this, 'count', get(this, 'count')+1);
-    }, 'bar.baz'),
+    }, 'bar.baz')
   });
 
   var obj = Ember.mixin({}, MyMixin2, MyMixin);
@@ -180,7 +180,7 @@ testBoth('observing chain with property in mixin after', function(get, set) {
     count: 0,
     foo: Ember.observer(function() {
       set(this, 'count', get(this, 'count')+1);
-    }, 'bar.baz'),
+    }, 'bar.baz')
   });
 
   var obj = Ember.mixin({}, MyMixin, MyMixin2);
@@ -200,7 +200,7 @@ testBoth('observing chain with overriden property', function(get, set) {
     count: 0,
     foo: Ember.observer(function() {
       set(this, 'count', get(this, 'count')+1);
-    }, 'bar.baz'),
+    }, 'bar.baz')
   });
 
   var obj = Ember.mixin({bar: obj2}, MyMixin, MyMixin2);
