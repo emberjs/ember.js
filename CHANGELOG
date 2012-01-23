@@ -1,3 +1,36 @@
+*Ember 0.9.4 (January 23, 2012)*
+
+* Add Ember.Select control
+* Added Ember.Handlebars action helper to easily add event handling to DOM elements without requiring a new view
+* jQuery 1.7 compatibility
+* Added a runtime build target for usage with Node.js
+* Instantiate a ViewState's view if it's not already an instance
+* In addition to having a rootElement, state managers can now have a rootView property. If this is set, view states will append their view as a child view of that view.
+* Views now register themselves with a controller if the viewController property is set
+* Other miscellaneous improvements to States
+* Allows setting a custom initial substate on states
+* ContainerView now sets the parentView property of views that are added to its childViews array.
+* Removed ember-handlebars-format, ember-datetime
+* Array's [] property no longer notifies of changes. Use @each instead.
+* Deprecated getPath/setPath global support
+* Ember.Application's default rootElement has changed from document to document.body
+* Events are no longer passed to views that are not in the DOM
+* Miscellaneous improvements to Ember.Button
+* Add return value to Ember.TargetActionSupport.triggerAction()
+* Added Ember.Handlebars.precompile for template precompilation
+* Fix security exceptions in older versions of Firefox
+* Introduce Ember.onerror for improved error handling
+* Make {{this}} work with numbers within an #each helper
+* Textfield and textarea now bubble events by default
+* Fixed issue where Handlebars helpers without arguments were interpreted as bindings
+* Add callbacks for isVisible changes to Ember.View
+* Fix unbound helper when used with {{this}}
+* Add underscore and camelize to string prototype extensions.
+* View tagName is now settable from Handlebars <script> template via data-tag-name
+* Miscellaneous performance improvements
+* Lots of minor bug fixes
+* Inline documentation improvements
+
 *Ember 0.9.3 (December 19, 2011)*
 
 * Make sure willInsertElement actually gets called on all child views. Element is still not guaranteed to work.
