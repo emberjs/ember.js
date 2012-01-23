@@ -105,6 +105,34 @@ test("value binding works properly for inputs that haven't been created", functi
   equals(textField.$().val(), 'ohai', "value is reflected in the input element once it is created");
 });
 
+test("should call the deleteBackward method when delete (backward) key is pressed", function() {
+  var wasCalled;
+  var event = Ember.Object.create({
+    keyCode: 8
+  });
+
+  textField.deleteBackward = function() {
+    wasCalled = true;
+  };
+
+  textField.keyUp(event);
+  ok(wasCalled, "invokes deleteBackward method");
+});
+
+test("should call the insertTab method when tab key is pressed", function() {
+  var wasCalled;
+  var event = Ember.Object.create({
+    keyCode: 9
+  });
+
+  textField.insertTab = function() {
+    wasCalled = true;
+  };
+
+  textField.keyUp(event);
+  ok(wasCalled, "invokes insertTab method");
+});
+
 test("should call the insertNewline method when return key is pressed", function() {
   var wasCalled;
   var event = Ember.Object.create({
@@ -131,6 +159,76 @@ test("should call the cancel method when escape key is pressed", function() {
 
   textField.keyUp(event);
   ok(wasCalled, "invokes cancel method");
+});
+
+test("should call the moveLeft method when arrow left key is pressed", function() {
+  var wasCalled;
+  var event = Ember.Object.create({
+    keyCode: 37
+  });
+
+  textField.moveLeft = function() {
+    wasCalled = true;
+  };
+
+  textField.keyUp(event);
+  ok(wasCalled, "invokes moveLeft method");
+});
+
+test("should call the moveUp method when arrow up key is pressed", function() {
+  var wasCalled;
+  var event = Ember.Object.create({
+    keyCode: 38
+  });
+
+  textField.moveUp = function() {
+    wasCalled = true;
+  };
+
+  textField.keyUp(event);
+  ok(wasCalled, "invokes moveUp method");
+});
+
+test("should call the moveRight method when arrow right key is pressed", function() {
+  var wasCalled;
+  var event = Ember.Object.create({
+    keyCode: 39
+  });
+
+  textField.moveRight = function() {
+    wasCalled = true;
+  };
+
+  textField.keyUp(event);
+  ok(wasCalled, "invokes moveRight method");
+});
+
+test("should call the moveDown method when arrow down key is pressed", function() {
+  var wasCalled;
+  var event = Ember.Object.create({
+    keyCode: 40
+  });
+
+  textField.moveDown = function() {
+    wasCalled = true;
+  };
+
+  textField.keyUp(event);
+  ok(wasCalled, "invokes moveDown method");
+});
+
+test("should call the deleteForward method when delete (forward) key is pressed", function() {
+  var wasCalled;
+  var event = Ember.Object.create({
+    keyCode: 46
+  });
+
+  textField.deleteForward = function() {
+    wasCalled = true;
+  };
+
+  textField.keyUp(event);
+  ok(wasCalled, "invokes deleteForward method");
 });
 
 // test("listens for focus and blur events", function() {
