@@ -21,7 +21,7 @@ test("should render attribute bindings", function() {
     exists: true,
     nothing: null,
     notDefined: undefined,
-    notNumber: NaN,
+    notNumber: NaN
   });
 
   view.createElement();
