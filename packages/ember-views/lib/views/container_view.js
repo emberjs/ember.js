@@ -127,7 +127,10 @@ Ember.ContainerView = Ember.View.extend({
     var len = get(views, 'length');
 
     // No new child views were added; bail out.
-    if (added === 0) return;
+    if (added === 0) {
+      this.childViewsDidChangeElementEnd();
+      return;
+    }
 
     var changedViews = views.slice(start, added);
     this.setParentView(changedViews, this);
@@ -142,6 +145,15 @@ Ember.ContainerView = Ember.View.extend({
     });
   },
 
+
+  /**
+    Called when an ContainerView which was already inserted in the DOM, ends to update
+    its children content.  
+    Override this function to do any set up that requires an element to know the
+    new state of the DOM element.
+  */
+  childViewsDidChangeElementEnd: Ember.K,
+
   /**
     Schedules a child view to be inserted into the DOM after bindings have
     finished syncing for this run loop.
@@ -151,11 +163,11 @@ Ember.ContainerView = Ember.View.extend({
                      be inserted
     @private
   */
-  _scheduleInsertion: function(view, prev) {
+  _scheduleInsertion: function(view, prev, fn) {
     if (prev) {
-      prev.get('domManager').after(view);
+      prev.get('domManager').after(view, fn);
     } else {
-      this.get('domManager').prepend(view);
+      this.get('domManager').prepend(view, fn);
     }
   }
 });
@@ -206,11 +218,21 @@ Ember.ContainerView.states = {
       // If the DOM element for this container view already exists,
       // schedule each child view to insert its DOM representation after
       // bindings have finished syncing.
-      var prev = start === 0 ? null : views[start-1];
+      var prev = start === 0 ? null : views[start-1]
+        , fn 
+        , containerView = view;
 
       for (var i=start; i<start+added; i++) {
+
+        if ( i === start+added-1 ) {
+          fn = function(){
+            containerView.childViewsDidChangeElementEnd();
+          }; 
+        }else {
+          fn = undefined;
+        }
         view = views[i];
-        this._scheduleInsertion(view, prev);
+        this._scheduleInsertion(view, prev, fn);
         prev = view;
       }
     }

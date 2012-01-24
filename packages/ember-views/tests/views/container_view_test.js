@@ -53,3 +53,50 @@ test("should be able to observe properties that contain child views", function()
 
   ok(container.get('displayIsDisplayed'), "can bind to child view");
 });
+
+
+test("childViewsDidChangeElementEnd get called when updated the content", function() {
+
+  var container;
+  var isCalled = false;
+
+  container = Ember.ContainerView.create({
+    childViews: ['child'],
+
+    childViewsDidChangeElementEnd: function() {
+      isCalled = true;
+    },
+    child: Ember.View
+
+  });
+
+  Ember.run(function() {
+    container.appendTo('#qunit-fixture');
+  });
+
+  ok(!isCalled, "after being the element inserted in the DOM, the method is NOT called");
+
+
+  var view = Ember.View.create({});
+
+  Ember.run(function() {
+    container.get('childViews').pushObject(view);
+  });
+
+
+
+  ok(isCalled, "when new views are inserted, the method is called");
+
+
+  isCalled = false;
+
+
+  Ember.run(function() {
+    container.get('childViews').popObject();
+    container.get('childViews').popObject();
+  });
+
+  ok(isCalled, "after removing all the elements , the method is called");
+
+
+});

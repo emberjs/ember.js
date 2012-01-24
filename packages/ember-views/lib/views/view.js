@@ -1328,25 +1328,27 @@ Ember.View.reopen({
   domManagerClass: Ember.Object.extend({
     view: this,
 
-    prepend: function(childView) {
+    prepend: function(childView, fn) {
       var view = get(this, 'view');
 
       childView._insertElementLater(function() {
         var element = view.$();
         element.prepend(childView.$());
+        if ( fn ) { fn(); }
       });
     },
 
-    after: function(nextView) {
+    after: function(nextView, fn) {
       var view = get(this, 'view');
 
       nextView._insertElementLater(function() {
         var element = view.$();
         element.after(nextView.$());
+        if ( fn ) { fn(); }
       });
     },
 
-    replace: function() {
+    replace: function(fn) {
       var view = get(this, 'view');
       var element = get(view, 'element');
 
@@ -1354,16 +1356,18 @@ Ember.View.reopen({
 
       view._insertElementLater(function() {
         Ember.$(element).replaceWith(get(view, 'element'));
+        if ( fn ) { fn(); }
       });
     },
 
-    remove: function() {
+    remove: function(fn) {
       var view = get(this, 'view');
       var elem = get(view, 'element');
 
       set(view, 'element', null);
 
       Ember.$(elem).remove();
+      if ( fn ) { fn(); }
     }
   })
 });
