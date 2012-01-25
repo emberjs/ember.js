@@ -257,7 +257,7 @@ Ember.normalizeTuple = function(target, path) {
 Ember.normalizeTuple.primitive = normalizeTuple;
 
 Ember.getPath = function(root, path, _checkGlobal) {
-  var hasThis, hasStar, isGlobal, ret;
+  var pathOnly, hasThis, hasStar, isGlobal, ret;
   
   // Helpers that operate with 'this' within an #each
   if (path === '') {
@@ -267,6 +267,7 @@ Ember.getPath = function(root, path, _checkGlobal) {
   if (!path && 'string'===typeof root) {
     path = root;
     root = null;
+    pathOnly = true;
   }
 
   hasStar = path.indexOf('*') > -1;
@@ -293,7 +294,7 @@ Ember.getPath = function(root, path, _checkGlobal) {
 
   ret = getPath(root, path);
 
-  if (ret === undefined && root !== window && !hasThis && IS_GLOBAL.test(path) && _checkGlobal !== false) {
+  if (ret === undefined && !pathOnly && !hasThis && root !== window && IS_GLOBAL.test(path) && _checkGlobal !== false) {
     console.warn("Fetching globals with Ember.getPath is deprecated", root, path);
     return Ember.getPath(window, path);
   } else {
