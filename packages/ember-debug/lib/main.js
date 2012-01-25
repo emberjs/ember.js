@@ -36,7 +36,7 @@ window.ember_assert = window.sc_assert = function ember_assert(desc, test) {
 
 
 
-window.ember_deprecate = function(desc) {
+window.ember_deprecate = function(message) {
   var error, stackStr = '';
 
   // When using new Error, we can't do the arguments check for Chrome. Alternatives are welcome
@@ -60,5 +60,12 @@ window.ember_deprecate = function(desc) {
     stackStr = "\n    " + stack.slice(2).join("\n    ");
   }
 
-  console.warn("DEPRECATION: "+desc+stackStr);
+  console.warn("DEPRECATION: "+message+stackStr);
+};
+
+window.ember_deprecateFunc = function(message, func) {
+  return function() {
+    window.ember_deprecate(message);
+    return func.apply(this, arguments);
+  };
 };

@@ -76,6 +76,9 @@ if ('undefined' === typeof ember_assert) {
 };
 
 if ('undefined' === typeof ember_deprecate) { window.ember_deprecate = Ember.K; }
+if ('undefined' === typeof ember_deprecateFunc) {
+  window.ember_deprecateFunc = function(_, func) { return func; };
+}
 
 //if ('undefined' === typeof ember_require) ember_require = Ember.K;
 if ('undefined' === typeof require) require = Ember.K;
