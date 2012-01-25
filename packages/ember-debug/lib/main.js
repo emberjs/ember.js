@@ -33,3 +33,32 @@ window.ember_assert = window.sc_assert = function ember_assert(desc, test) {
   if ('function' === typeof test) test = test()!==false;
   if (!test) throw new Error("assertion failed: "+desc);
 };
+
+
+
+window.ember_deprecate = function(desc) {
+  var error, stackStr = '';
+
+  // When using new Error, we can't do the arguments check for Chrome. Alternatives are welcome
+  try { __fail__; } catch (e) { error = e; }
+
+  if (error.stack) {
+    var stack;
+
+    if (error['arguments']) {
+      // Chrome
+      stack = error.stack.replace(/^\s+at\s+/gm, '').
+                          replace(/^([^\(]+?)([\n$])/gm, '{anonymous}($1)$2').
+                          replace(/^Object.<anonymous>\s*\(([^\)]+)\)/gm, '{anonymous}($1)').split('\n');
+      stack.shift();
+    } else {
+      // Firefox
+      stack = error.stack.replace(/(?:\n@:0)?\s+$/m, '').
+                          replace(/^\(/gm, '{anonymous}(').split('\n');
+    }
+
+    stackStr = "\n    " + stack.slice(2).join("\n    ");
+  }
+
+  console.warn("DEPRECATION: "+desc+stackStr);
+};

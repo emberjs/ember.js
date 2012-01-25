@@ -32,9 +32,9 @@ def strip_require(file)
   result
 end
 
-def strip_ember_assert(file)
+def strip_dev_code(file)
   result = File.read(file)
-  result.gsub!(%r{^(\s)+ember_assert\((.*)\).*$}, "")
+  result.gsub!(%r{^(\s)+ember_(assert|deprecate)\((.*)\).*$}, "")
   result
 end
 
@@ -108,7 +108,7 @@ distributions.each do |name, libraries|
 
     mkdir_p "dist", :verbose => false
     File.open("dist/#{name}.prod.js", "w") do |file|
-      file.puts strip_ember_assert("tmp/dist/#{name}.js")
+      file.puts strip_dev_code("tmp/dist/#{name}.js")
     end
 
     minified_code = uglify("dist/#{name}.prod.js")

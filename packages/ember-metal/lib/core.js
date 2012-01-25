@@ -75,6 +75,8 @@ if ('undefined' === typeof ember_assert) {
   window.ember_assert = window.sc_assert = Ember.K;
 };
 
+if ('undefined' === typeof ember_deprecate) { window.ember_deprecate = Ember.K; }
+
 //if ('undefined' === typeof ember_require) ember_require = Ember.K;
 if ('undefined' === typeof require) require = Ember.K;
 
