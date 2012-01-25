@@ -469,7 +469,11 @@ Ember.View = Ember.Object.extend(
         property = split[0],
         className = split[1];
 
-    var val = Ember.getPath(this, property);
+    // TODO: Remove this `false` when the `getPath` globals support is removed
+    var val = Ember.getPath(this, property, false);
+    if (val === undefined && Ember.isGlobalPath(property)) {
+      val = Ember.getPath(window, property);
+    }
 
     // If value is a Boolean and true, return the dasherized property
     // name.
