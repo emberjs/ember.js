@@ -89,7 +89,7 @@ Ember.StateManager = Ember.State.extend(
     return ret;
   },
 
-  goToState: function(name) {
+  goToState: function(name, context) {
     if (Ember.empty(name)) { return; }
 
     var currentState = get(this, 'currentState') || this, state, newState;
@@ -137,7 +137,7 @@ Ember.StateManager = Ember.State.extend(
       };
     }
 
-    this.enterState(exitStates, enterStates, state);
+    this.enterState(exitStates, enterStates, state, context);
   },
 
   getState: function(name) {
@@ -174,7 +174,7 @@ Ember.StateManager = Ember.State.extend(
     if (!async) { transition.resume(); }
   },
 
-  enterState: function(exitStates, enterStates, state) {
+  enterState: function(exitStates, enterStates, state, context) {
     var log = Ember.LOG_STATE_TRANSITIONS;
 
     var stateManager = this;
@@ -184,7 +184,7 @@ Ember.StateManager = Ember.State.extend(
     }, function() {
       this.asyncEach(enterStates, function(state, transition) {
         if (log) { console.log("STATEMANAGER: Entering " + state.name); }
-        state.enter(stateManager, transition);
+        state.enter(stateManager, transition, context);
       }, function() {
         var startState = state, enteredState, initialSubstate;
 
