@@ -160,7 +160,7 @@ if (Object.freeze) Object.freeze(EMPTY_META);
   The meta object contains information about computed property descriptors as
   well as any watched properties and other information.  You generally will
   not access this information directly but instead work with higher level 
-  methods that manipulate this has indirectly.
+  methods that manipulate this hash indirectly.
 
   @param {Object} obj
     The object to retrieve meta for
