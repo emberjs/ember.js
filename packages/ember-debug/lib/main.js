@@ -36,7 +36,25 @@ window.ember_assert = window.sc_assert = function ember_assert(desc, test) {
 
 
 
-window.ember_deprecate = function(message) {
+/**
+  Display a deprecation warning with the provided message and a stack trace
+  (Chrome and Firefox only). Ember build tools will remove any calls to
+  ember_deprecate() when doing a production build.
+
+  @static
+  @function
+  @param {String} message
+    A description of the deprecation.
+
+  @param {Boolean} test
+    An optional boolean or function. If the test returns false, the deprecation
+    will be displayed.
+*/
+window.ember_deprecate = function(message, test) {
+  if (arguments.length === 1) { test = false; }
+  if ('function' === typeof test) { test = test()!==false; }
+  if (test) { return; }
+
   var error, stackStr = '';
 
   // When using new Error, we can't do the arguments check for Chrome. Alternatives are welcome
@@ -63,6 +81,20 @@ window.ember_deprecate = function(message) {
   console.warn("DEPRECATION: "+message+stackStr);
 };
 
+
+
+/**
+  Display a deprecation warning with the provided message and a stack trace
+  (Chrome and Firefox only) when the wrapped method is called.
+
+  @static
+  @function
+  @param {String} message
+    A description of the deprecation.
+
+  @param {Function} func
+    The function to be deprecated.
+*/
 window.ember_deprecateFunc = function(message, func) {
   return function() {
     window.ember_deprecate(message);
