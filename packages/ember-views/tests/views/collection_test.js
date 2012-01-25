@@ -240,3 +240,26 @@ test("should allow declaration of itemViewClass as a string", function() {
 
   equals(view.$('.ember-view').length, 3);
 });
+
+test("should be able to setup classNames on childViews with itemViewClassNames property", function() {
+
+  view = Ember.CollectionView.create({
+    content: Ember.A([1, 2]),
+    itemViewClass: Em.View,
+    itemViewClassNames: ['ui_item', 'item']
+  });
+
+  Ember.run(function() {
+    view.append();
+  });
+
+  ok( view.$(':nth-child(1)').hasClass('ui_item') );
+  ok( view.$(':nth-child(1)').hasClass('item') );
+
+  ok( view.$(':nth-child(2)').hasClass('ui_item') );
+  ok( view.$(':nth-child(2)').hasClass('item') );
+  
+});
+
+
+
