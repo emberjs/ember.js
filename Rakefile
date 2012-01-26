@@ -34,7 +34,7 @@ end
 
 def strip_dev_code(file)
   result = File.read(file)
-  result.gsub!(%r{^(\s)+ember_(assert|deprecate)\((.*)\).*$}, "")
+  result.gsub!(%r{^(\s)+ember_(assert|deprecate|warn)\((.*)\).*$}, "")
   result
 end
 

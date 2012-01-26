@@ -71,14 +71,22 @@ Ember.K = function() { return this; };
   @description The global window object
 */
 
+
+// Stub out the methods defined by the ember-debug package in case it's not loaded
+
 if ('undefined' === typeof ember_assert) { 
   window.ember_assert = window.sc_assert = Ember.K;
 };
 
+if ('undefined' === typeof ember_warn) { window.ember_warn = Ember.K; }
+
 if ('undefined' === typeof ember_deprecate) { window.ember_deprecate = Ember.K; }
+
 if ('undefined' === typeof ember_deprecateFunc) {
   window.ember_deprecateFunc = function(_, func) { return func; };
 }
+
+
 
 //if ('undefined' === typeof ember_require) ember_require = Ember.K;
 if ('undefined' === typeof require) require = Ember.K;
