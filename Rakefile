@@ -32,9 +32,9 @@ def strip_require(file)
   result
 end
 
-def strip_ember_assert(file)
+def strip_dev_code(file)
   result = File.read(file)
-  result.gsub!(%r{^(\s)+ember_assert\((.*)\).*$}, "")
+  result.gsub!(%r{^(\s)+ember_(assert|deprecate)\((.*)\).*$}, "")
   result
 end
 
@@ -59,7 +59,7 @@ end
 
 # Create ember:package tasks for each of the Ember packages
 namespace :ember do
-  %w(metal runtime handlebars views states datetime).each do |package|
+  %w(debug metal runtime handlebars views states datetime).each do |package|
     task package => compile_package_task("ember-#{package}", "ember-#{package}")
   end
 end
@@ -71,7 +71,7 @@ task :handlebars => compile_package_task("handlebars")
 task :metamorph => compile_package_task("metamorph")
 
 # Create a build task that depends on all of the package dependencies
-task :build => ["ember:metal", "ember:runtime", "ember:handlebars", "ember:views", "ember:states", "ember:datetime", :handlebars, :metamorph]
+task :build => ["ember:debug", "ember:metal", "ember:runtime", "ember:handlebars", "ember:views", "ember:states", "ember:datetime", :handlebars, :metamorph]
 
 distributions = {
   "ember" => ["handlebars", "ember-metal", "ember-runtime", "ember-views", "ember-states", "metamorph", "ember-handlebars"],
@@ -81,27 +81,34 @@ distributions = {
 distributions.each do |name, libraries|
   # Strip out require lines. For the interim, requires are
   # precomputed by the compiler so they are no longer necessary at runtime.
-  file "dist/#{name}.js" => :build do
-    puts "Generating #{name}.js"
-
-    mkdir_p "dist"
-
-    File.open("dist/#{name}.js", "w") do |file|
+  file "tmp/dist/#{name}.js" => :build do
+    mkdir_p "tmp/dist", :verbose => false
+    File.open("tmp/dist/#{name}.js", "w") do |file|
       libraries.each do |library|
         file.puts strip_require("tmp/static/#{library}.js")
       end
     end
   end
 
+  file "dist/#{name}.js" => "tmp/dist/#{name}.js" do
+    puts "Generating #{name}.js... "
+    mkdir_p "dist", :verbose => false
+    File.open("dist/#{name}.js", "w") do |file|
+      file.puts strip_require("tmp/static/ember-debug.js")
+      file.puts File.read("tmp/dist/#{name}.js")
+    end
+  end
+
   # Minified distribution
-  file "dist/#{name}.min.js" => "dist/#{name}.js" do
+  file "dist/#{name}.min.js" => "tmp/dist/#{name}.js" do
     require 'zlib'
 
     print "Generating #{name}.min.js... "
     STDOUT.flush
 
+    mkdir_p "dist", :verbose => false
     File.open("dist/#{name}.prod.js", "w") do |file|
-      file.puts strip_ember_assert("dist/#{name}.js")
+      file.puts strip_dev_code("tmp/dist/#{name}.js")
     end
 
     minified_code = uglify("dist/#{name}.prod.js")
@@ -113,13 +120,13 @@ distributions.each do |name, libraries|
 
     puts "#{gzipped_kb} KB gzipped"
 
-    rm "dist/#{name}.prod.js"
+    rm "dist/#{name}.prod.js", :verbose => false
   end
 end
 
 
 desc "Build Ember.js"
-task :dist => distributions.keys.map {|name| "dist/#{name}.min.js"}
+task :dist => distributions.keys.map{|name| ["dist/#{name}.js", "dist/#{name}.min.js"] }.flatten
 
 desc "Clean build artifacts from previous builds"
 task :clean do
