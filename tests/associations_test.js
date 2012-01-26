@@ -36,6 +36,58 @@ test("hasMany lazily loads associations as needed", function() {
   strictEqual(get(wycats, 'tags').objectAt(0), store.find(Tag, 12), "association objects are the same as objects retrieved directly");
 });
 
+test("should be able to retrieve the type for a hasMany association from its metadata", function() {
+  var Tag = DS.Model.extend({
+    name: DS.attr('string')
+  });
+
+  var Person = DS.Model.extend({
+    name: DS.attr('string'),
+    tags: DS.hasMany(Tag)
+  });
+
+  equal(Person.typeForAssociation('tags'), Tag, "returns the association type");
+});
+
+test("should be able to retrieve the type for a hasMany association specified using a string from its metadata", function() {
+  window.Tag = DS.Model.extend({
+    name: DS.attr('string')
+  });
+
+  var Person = DS.Model.extend({
+    name: DS.attr('string'),
+    tags: DS.hasMany('Tag')
+  });
+
+  equal(Person.typeForAssociation('tags'), Tag, "returns the association type");
+});
+
+test("should be able to retrieve the type for a hasOne association from its metadata", function() {
+  var Tag = DS.Model.extend({
+    name: DS.attr('string')
+  });
+
+  var Person = DS.Model.extend({
+    name: DS.attr('string'),
+    tags: DS.hasOne(Tag)
+  });
+
+  equal(Person.typeForAssociation('tags'), Tag, "returns the association type");
+});
+
+test("should be able to retrieve the type for a hasOne association specified using a string from its metadata", function() {
+  window.Tag = DS.Model.extend({
+    name: DS.attr('string')
+  });
+
+  var Person = DS.Model.extend({
+    name: DS.attr('string'),
+    tags: DS.hasOne('Tag')
+  });
+
+  equal(Person.typeForAssociation('tags'), Tag, "returns the association type");
+});
+
 test("hasMany allows associations to be mapped to a user-specified key", function() {
   var Tag = DS.Model.extend({
     name: DS.attr('string')
