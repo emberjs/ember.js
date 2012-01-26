@@ -186,18 +186,26 @@ Ember.StateManager = Ember.State.extend(
         if (log) { console.log("STATEMANAGER: Entering " + state.name); }
         state.enter(stateManager, transition);
       }, function() {
-        var startState = state, enteredState, initialSubstate;
+        var startState = state, enteredState, initialState;
 
-        initialSubstate = get(startState, 'initialSubstate');
+        initialState = get(startState, 'initialState');
 
-        if (!initialSubstate) {
-          initialSubstate = 'start';
+        if (!initialState) {
+          initialState = 'start';
         }
 
         // right now, start states cannot be entered asynchronously
-        while (startState = get(startState, initialSubstate)) {
+        while (startState = get(startState, initialState)) {
           enteredState = startState;
+
+          if (log) { console.log("STATEMANAGER: Entering " + startState.name); }
           startState.enter(stateManager);
+
+          initialState = get(startState, 'initialState');
+
+          if (!initialState) {
+            initialState = 'start';
+          }
         }
 
         set(this, 'currentState', enteredState || state);
