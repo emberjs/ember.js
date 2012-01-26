@@ -131,3 +131,12 @@ testBoth('complex depndent keys changing complex dependent keys', function(get, 
   set(get(obj2, 'bar2'), 'baz', 'BLARG');
   equals(get(obj2, 'foo'), 'BLARG 2', 'should invalidate property');
 });
+
+testBoth("can retrieve metadata for a computed property", function(get, set) {
+  var MyClass = Ember.Object.extend({
+    computedProperty: Ember.computed(function() {
+    }).property().meta({ key: 'keyValue' })
+  });
+
+  equal(get(MyClass.metaForProperty('computedProperty'), 'key'), 'keyValue', "metadata saved on the computed property can be retrieved");
+});

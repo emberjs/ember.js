@@ -168,6 +168,30 @@ Cp.property = function() {
   return this;
 };
 
+/**
+  In some cases, you may want to annotate computed properties with additional
+  metadata about how they function or what values they operate on. For example,
+  computed property functions may close over variables that are then no longer
+  available for introspection.
+
+  You can pass a hash of these values to a computed property like this:
+
+      person: function() {
+        var personId = this.get('personId');
+        return App.Person.create({ id: personId });
+      }.property().meta({ type: App.Person })
+
+  The hash that you pass to the `meta()` function will be saved on the
+  computed property descriptor under the `_meta` key. Ember runtime
+  exposes a public API for retrieving these values from classes,
+  via the `metaForProperty()` function.
+*/
+
+Cp.meta = function(meta) {
+  this._meta = meta;
+  return this;
+};
+
 /** @private - impl descriptor API */
 Cp.setup = function(obj, keyName, value) {
   CP_DESC.get = mkCpGetter(keyName, this);

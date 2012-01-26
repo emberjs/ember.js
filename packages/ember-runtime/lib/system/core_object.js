@@ -186,6 +186,30 @@ var ClassMixin = Ember.Mixin.create({
 
   detectInstance: function(obj) {
     return this.PrototypeMixin.detect(obj);
+  },
+
+  /**
+    In some cases, you may want to annotate computed properties with additional
+    metadata about how they function or what values they operate on. For example,
+    computed property functions may close over variables that are then no longer
+    available for introspection.
+
+    You can pass a hash of these values to a computed property like this:
+
+        person: function() {
+          var personId = this.get('personId');
+          return App.Person.create({ id: personId });
+        }.property().meta({ type: App.Person })
+
+    Once you've done this, you can retrieve the values saved to the computed
+    property from your class like this:
+
+        MyClass.metaForProperty('person');
+
+    This will return the original hash that was passed to `meta()`.
+  */
+  metaForProperty: function(key) {
+    return meta(get(this, 'proto'), false).descs[key]._meta;
   }
 
 });

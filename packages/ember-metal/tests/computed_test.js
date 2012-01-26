@@ -174,6 +174,14 @@ testBoth('using get() and set()', function(get, set) {
 });
 
 
+module("can set metadata on a computed property", function() {
+  var computedProperty = Ember.computed(function() { });
+  computedProperty.property();
+  computedProperty.meta({ key: 'keyValue' });
+
+  equal(computedProperty._meta.key, 'keyValue', "saves passed meta hash to the _meta property");
+});
+
 // ..........................................................
 // CACHEABLE
 // 
