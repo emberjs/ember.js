@@ -11,16 +11,26 @@ require("ember-handlebars/ext");
 // to Ember.CoreView in the global Ember.TEMPLATES object. This will be run as as
 // jQuery DOM-ready callback.
 //
-// Script tags with type="text/html" or "text/x-handlebars" will be compiled
+// Script tags with "text/x-handlebars" will be compiled
 // with Ember's Handlebars and are suitable for use as a view's template.
 // Those with type="text/x-raw-handlebars" will be compiled with regular
 // Handlebars and are suitable for use in views' computed properties.
 Ember.Handlebars.bootstrap = function(ctx) {
-  Ember.$('script[type="text/html"], script[type="text/x-handlebars"], script[type="text/x-raw-handlebars"]', ctx)
+  var selectors = 'script[type="text/x-handlebars"], script[type="text/x-raw-handlebars"]';
+
+  if (Ember.ENV.LEGACY_HANDLEBARS_TAGS) { selectors += ', script[type="text/html"]'; }
+
+  ember_warn("Ember no longer parses text/html script tags by default. Set ENV.LEGACY_HANDLEBARS_TAGS = true to restore this functionality.", Ember.ENV.LEGACY_HANDLEBARS_TAGS || Ember.$('script[type="text/html"]').length === 0);
+
+  Ember.$(selectors, ctx)
     .each(function() {
     // Get a reference to the script tag
     var script = Ember.$(this),
-      compile = (script.attr('type') === 'text/x-raw-handlebars') ?
+        type   = script.attr('type');
+
+    if (type === 'text/html' && !Ember.ENV.LEGACY_HANDLEBARS_TAGS) { return; }
+
+    var compile = (script.attr('type') === 'text/x-raw-handlebars') ?
                   Ember.$.proxy(Handlebars.compile, Handlebars) :
                   Ember.$.proxy(Ember.Handlebars.compile, Ember.Handlebars),
       // Get the name of the script, used by Ember.View's templateName property.
