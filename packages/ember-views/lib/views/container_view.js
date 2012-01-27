@@ -35,29 +35,14 @@ Ember.ContainerView = Ember.View.extend({
 
       _childViews[idx] = view;
     }, this);
-  },
 
-  /**
-    Extends Ember.View's implementation of renderToBuffer to
-    set up an array observer on the child views array. This
-    observer will detect when child views are added or removed
-    and update the DOM to reflect the mutation.
-
-    Note that we set up this array observer in the `renderToBuffer`
-    method because any views set up previously will be rendered the first
-    time the container is rendered.
-
-    @private
-  */
-  renderToBuffer: function() {
-    var ret = this._super.apply(this, arguments);
-
+    // Sets up an array observer on the child views array. This
+    // observer will detect when child views are added or removed
+    // and update the DOM to reflect the mutation.
     get(this, 'childViews').addArrayObserver(this, {
       willChange: 'childViewsWillChange',
       didChange: 'childViewsDidChange'
     });
-
-    return ret;
   },
 
   /**

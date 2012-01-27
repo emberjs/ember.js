@@ -1,4 +1,4 @@
-var get = Ember.get;
+var get = Ember.get, getPath = Ember.getPath;
 
 module("ember-views/views/container_view_test");
 
@@ -24,13 +24,6 @@ test("should be able to insert views after the DOM representation is created", f
   });
 
   equal(container.$().text(), "This is my moment");
-  equal(view.get('parentView'), container, "sets the parent view after the childView is appended");
-
-  Ember.run(function() {
-    get(container, 'childViews').removeObject(view);
-  });
-
-  equal(view.get('parentView'), null, "sets parentView to null when a view is removed");
 
   container.destroy();
 });
@@ -52,4 +45,28 @@ test("should be able to observe properties that contain child views", function()
   });
 
   ok(container.get('displayIsDisplayed'), "can bind to child view");
+});
+
+test("should set the parentView property on views that are added to the child views array", function() {
+  var container = Ember.ContainerView.create();
+  var view = Ember.View.create({
+    template: function() {
+      return "This is my moment";
+    }
+  });
+
+  get(container, 'childViews').pushObject(view);
+  equal(view.get('parentView'), container, "sets the parent view after the childView is appended");
+
+  Ember.run(function() {
+    get(container, 'childViews').removeObject(view);
+  });
+  equal(view.get('parentView'), null, "sets parentView to null when a view is removed");
+
+  Ember.run(function() {
+    container.appendTo('#qunit-fixture');
+  });
+
+  get(container, 'childViews').pushObject(view);
+  equal(view.get('parentView'), container, "sets the parent view after the childView is appended");
 });
