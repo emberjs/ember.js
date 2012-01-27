@@ -48,27 +48,45 @@ test("should be able to observe properties that contain child views", function()
 });
 
 test("should set the parentView property on views that are added to the child views array", function() {
-  var container = Ember.ContainerView.create();
-  var view = Ember.View.create({
-    template: function() {
-      return "This is my moment";
-    }
-  });
+  var container = Ember.ContainerView.create(),
+      View = Ember.View.extend({
+        template: function() {
+          return "This is my moment";
+        }
+      }),
+      view = View.create(),
+      childViews = get(container, 'childViews');
 
-  get(container, 'childViews').pushObject(view);
+  childViews.pushObject(view);
   equal(view.get('parentView'), container, "sets the parent view after the childView is appended");
 
   Ember.run(function() {
-    get(container, 'childViews').removeObject(view);
+    childViews.removeObject(view);
   });
-  equal(view.get('parentView'), null, "sets parentView to null when a view is removed");
+  equal(get(view, 'parentView'), null, "sets parentView to null when a view is removed");
 
   Ember.run(function() {
     container.appendTo('#qunit-fixture');
   });
 
-  get(container, 'childViews').pushObject(view);
-  equal(view.get('parentView'), container, "sets the parent view after the childView is appended");
+  childViews.pushObject(view);
+  equal(get(view, 'parentView'), container, "sets the parent view after the childView is appended");
+
+  var secondView = View.create(),
+      thirdView = View.create(),
+      fourthView = View.create();
+
+  childViews.pushObject(secondView);
+  childViews.replace(1, 0, [thirdView, fourthView]);
+  equal(get(secondView, 'parentView'), container, "sets the parent view of the second view");
+  equal(get(thirdView, 'parentView'), container, "sets the parent view of the third view");
+  equal(get(fourthView, 'parentView'), container, "sets the parent view of the fourth view");
+
+  childViews.replace(2, 2);
+  equal(get(view, 'parentView'), container, "doesn't change non-removed view");
+  equal(get(thirdView, 'parentView'), container, "doesn't change non-removed view");
+  equal(get(secondView, 'parentView'), null, "clears the parent view of the third view");
+  equal(get(fourthView, 'parentView'), null, "clears the parent view of the fourth view");
 });
 
 test("views that are removed from a ContainerView should have their child views cleared", function() {
