@@ -9,7 +9,7 @@ ActionHelper.registerAction = function(actionName, eventName, target, view) {
       existingHandler = view[eventName];
 
   function handler(event) {
-    if ($(event.target).closest('[data-ember-action]').attr('data-ember-action') === actionId) {
+    if (Ember.$(event.target).closest('[data-ember-action]').attr('data-ember-action') === actionId) {
       if ('function' === typeof target.send) {
         return target.send(actionName);
       } else {
