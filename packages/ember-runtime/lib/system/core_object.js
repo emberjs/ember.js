@@ -209,7 +209,8 @@ var ClassMixin = Ember.Mixin.create({
     This will return the original hash that was passed to `meta()`.
   */
   metaForProperty: function(key) {
-    return meta(get(this, 'proto'), false).descs[key]._meta;
+    ember_assert("metaForProperty() could not find a computed property with key '"+key+"'.", !!key);
+    return meta(get(this, 'proto'), false).descs[key]._meta || {};
   }
 
 });
