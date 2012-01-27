@@ -183,7 +183,7 @@ Ember.ContainerView.states = {
   hasElement: {
     childViewsWillChange: function(view, views, start, removed) {
       for (var i=start; i<start+removed; i++) {
-        views[i].destroyElement();
+        views[i].remove();
       }
     },
 
