@@ -6,26 +6,26 @@ var ActionHelper = EmberHandlebars.ActionHelper = {};
 
 ActionHelper.registerAction = function(actionName, eventName, target, view) {
   var actionId = (++jQuery.uuid).toString(),
-      existingHandler = view[eventName],
-      handler;
+      existingHandler = view[eventName];
+
+  function handler(event) {
+    if ($(event.target).closest('[data-ember-action]').attr('data-ember-action') === actionId) {
+      if ('function' === typeof target.send) {
+        return target.send(actionName);
+      } else {
+        return target[actionName](event);
+      }
+    }
+  }
 
   if (existingHandler) {
-    var handler = function(event) {
-      var ret;
-      if ($(event.target).closest('[data-ember-action]').attr('data-ember-action') === actionId) {
-        ret = target[actionName](event);
-      }
+    view[eventName] = function(event) {
+      var ret = handler.call(view, event);
       return ret !== false ? existingHandler.call(view, event) : ret;
     };
   } else {
-    var handler = function(event) {
-      if ($(event.target).closest('[data-ember-action]').attr('data-ember-action') === actionId) {
-        return target[actionName](event);
-      }
-    };
+    view[eventName] = handler;
   }
-
-  view[eventName] = handler;
 
   view.reopen({
     rerender: function() {
