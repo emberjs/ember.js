@@ -142,9 +142,18 @@ testBoth("can retrieve metadata for a computed property", function(get, set) {
 
   var ClassWithNoMetadata = Ember.Object.extend({
     computedProperty: Ember.computed(function() {
+    }).property(),
 
-    }).property()
+    staticProperty: 12
   });
 
   equal(typeof ClassWithNoMetadata.metaForProperty('computedProperty'), "object", "returns empty hash if no metadata has been saved");
+
+  raises(function() {
+    ClassWithNoMetadata.metaForProperty('nonexistentProperty');
+  }, Error, "throws an error if metadata for a non-existent property is requested");
+
+  raises(function() {
+    ClassWithNoMetadata.metaForProperty('staticProperty');
+  }, Error, "throws an error if metadata for a non-computed property is requested");
 });
