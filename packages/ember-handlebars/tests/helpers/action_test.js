@@ -32,7 +32,7 @@ test("should output a data attribute with a guid", function() {
 test("should by default register a click event", function() {
   var registeredEventName;
 
-  ActionHelper.registerAction = function(_, eventName) {
+  ActionHelper.registerAction = function(actionName, eventName) {
     registeredEventName = eventName;
   };
 
@@ -50,7 +50,7 @@ test("should by default register a click event", function() {
 test("should allow alternative events to be handled", function() {
   var registeredEventName;
 
-  ActionHelper.registerAction = function(_, eventName) {
+  ActionHelper.registerAction = function(actionName, eventName) {
     registeredEventName = eventName;
   };
 
@@ -68,7 +68,7 @@ test("should allow alternative events to be handled", function() {
 test("should by default target the parent view", function() {
   var registeredTarget;
 
-  ActionHelper.registerAction = function(_, _, target) {
+  ActionHelper.registerAction = function(actionName, eventName, target) {
     registeredTarget = target;
   };
 
@@ -86,7 +86,7 @@ test("should by default target the parent view", function() {
 test("should allow a target to be specified", function() {
   var registeredTarget;
 
-  ActionHelper.registerAction = function(_, _, target) {
+  ActionHelper.registerAction = function(actionName, eventName, target) {
     registeredTarget = target;
   };
 
@@ -248,7 +248,7 @@ test("should properly capture events on child elements of a container with an ac
 
   view.$('button').trigger('click');
 
-  ok(eventHandlerWasCalled, "Event on a child element triggered the action of it's parent")
+  ok(eventHandlerWasCalled, "Event on a child element triggered the action of it's parent");
 });
 
 test("should allow bubbling of events from action helper to original parent event", function() {
@@ -286,4 +286,36 @@ test("should be compatible with sending events to a state manager", function() {
 
   ok(sendWasCalled, "The state manager's send method was called");
   equals(eventNameSent, "edit", "The edit event was sent to the state manager");
+});
+
+test("should send the view, event and current Handlebars context to the action", function() {
+  var passedTarget;
+  var passedView;
+  var passedEvent;
+  var passedContext;
+
+  var aTarget = Ember.View.create({
+    edit: function(view, event, context) {
+      passedTarget = this;
+      passedView = view;
+      passedEvent = event;
+      passedContext = context;
+    }
+  });
+
+  var aContext = { aTarget: aTarget };
+
+  view = Ember.View.create({
+    aContext: aContext,
+    template: Ember.Handlebars.compile('{{#with aContext}}<a id="edit" href="#" {{action "edit" target="aTarget"}}>edit</a>{{/with}}')
+  });
+
+  appendView();
+
+  view.$('#edit').trigger('click');
+
+  strictEqual(passedTarget, aTarget, "the action is called with the target as this");
+  strictEqual(passedView, view, "the view passed is the view containing the action helper");
+  deepEqual(passedContext, aContext, "the context passed is the context surrounding the action helper");
+  equals(passedEvent.type, 'click', "the event passed is the event triggered for the action helper");
 });
