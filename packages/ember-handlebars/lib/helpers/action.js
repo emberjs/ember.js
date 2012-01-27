@@ -4,16 +4,16 @@ var EmberHandlebars = Ember.Handlebars, getPath = Ember.Handlebars.getPath;
 
 var ActionHelper = EmberHandlebars.ActionHelper = {};
 
-ActionHelper.registerAction = function(actionName, eventName, target, view) {
+ActionHelper.registerAction = function(actionName, eventName, target, view, context) {
   var actionId = (++jQuery.uuid).toString(),
       existingHandler = view[eventName];
 
   function handler(event) {
     if (Ember.$(event.target).closest('[data-ember-action]').attr('data-ember-action') === actionId) {
       if ('function' === typeof target.send) {
-        return target.send(actionName);
+        return target.send(actionName, { view: view, event: event, context: context });
       } else {
-        return target[actionName](event);
+        return target[actionName].call(target, view, event, context);
       }
     }
   }
@@ -45,11 +45,12 @@ EmberHandlebars.registerHelper('action', function(actionName, options) {
   var hash = options.hash || {},
       eventName = options.hash.on || "click",
       view = options.data.view,
-      target;
+      target, context;
 
   if (view.isVirtual) { view = view.get('parentView'); }
   target = options.hash.target ? getPath(this, options.hash.target) : view;
+  context = options.contexts[0];
 
-  var actionId = ActionHelper.registerAction(actionName, eventName, target, view);
+  var actionId = ActionHelper.registerAction(actionName, eventName, target, view, context);
   return new EmberHandlebars.SafeString('data-ember-action="' + actionId + '"');
 });
