@@ -179,6 +179,7 @@ Ember.StateManager = Ember.State.extend(
 
     var stateManager = this;
 
+    exitStates.reverse();
     this.asyncEach(exitStates, function(state, transition) {
       state.exit(stateManager, transition);
     }, function() {
