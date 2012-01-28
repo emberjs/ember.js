@@ -1159,7 +1159,7 @@ Ember.View = Ember.Object.extend(
         childViews = get(this, '_childViews'),
         parent     = get(this, '_parentView'),
         elementId  = get(this, 'elementId'),
-        childLen   = childViews.length;
+        childLen;
 
     // destroy the element -- this will avoid each child view destroying
     // the element over and over again...
@@ -1174,6 +1174,7 @@ Ember.View = Ember.Object.extend(
 
     this._super();
 
+    childLen = get(childViews, 'length');
     for (var i=childLen-1; i>=0; i--) {
       childViews[i].removedFromDOM = true;
       childViews[i].destroy();
