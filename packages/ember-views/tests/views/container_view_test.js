@@ -88,3 +88,28 @@ test("should set the parentView property on views that are added to the child vi
   equal(get(secondView, 'parentView'), null, "clears the parent view of the third view");
   equal(get(fourthView, 'parentView'), null, "clears the parent view of the fourth view");
 });
+
+test("views that are removed from a ContainerView should have their child views cleared", function() {
+  var container = Ember.ContainerView.create();
+  var view = Ember.View.create({
+    remove: function() {
+      this._super();
+    },
+    template: function(view) {
+      var childViews = get(view, '_childViews');
+      childViews.pushObject(view.createChildView(Ember.View, {}));
+    }
+  });
+
+  get(container, 'childViews').pushObject(view);
+
+  Ember.run(function() {
+    container.appendTo('#qunit-fixture');
+  });
+
+  equal(getPath(view, 'childViews.length'), 1, "precond - renders one child view");
+  Ember.run(function() {
+    get(container, 'childViews').removeObject(view);
+  });
+  equal(getPath(view, 'childViews.length'), 0, "child views are cleared when removed from container view");
+});
