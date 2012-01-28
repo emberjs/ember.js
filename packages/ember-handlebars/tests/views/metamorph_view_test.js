@@ -107,6 +107,9 @@ test("a metamorph view can be rerendered", function() {
 });
 
 
+// Redefining without setup/teardown
+module("Metamorph views correctly handle DOM");
+
 test("a metamorph view calls its childrens' willInsertElement and didInsertElement", function(){
   var parentView;
   var willInsertElementCalled = false;
@@ -143,4 +146,36 @@ test("a metamorph view calls its childrens' willInsertElement and didInsertEleme
 
   parentView.destroy();
 
+});
+
+test("replacing a Metamorph should invalidate childView elements", function() {
+  var insertedElement;
+
+  view = Ember.View.create({
+    show: false,
+
+    CustomView: Ember.View.extend({
+      init: function() {
+        this._super();
+        // This will be called in preRender
+        // We want it to cache a null value
+        // Hopefully it will be invalidated when `show` is toggled
+        this.get('element');
+      },
+
+      didInsertElement: function(){
+        insertedElement = this.get('element');
+      }
+    }),
+
+    template: Ember.Handlebars.compile("{{#if show}}{{view CustomView}}{{/if}}")
+  });
+
+  Ember.run(function(){ view.append(); });
+
+  Ember.run(function(){ view.set('show', true); });
+
+  ok(insertedElement, "should have an element");
+
+  view.destroy();
 });
