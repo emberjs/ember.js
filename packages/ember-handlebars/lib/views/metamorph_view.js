@@ -65,6 +65,7 @@ Ember.Metamorph = Ember.Mixin.create({
 
       Ember.run.schedule('render', this, function() {
         if (get(view, 'isDestroyed')) { return; }
+        view.invalidateRecursively('element');
         view._notifyWillInsertElement();
         morph.replaceWith(buffer.string());
         view.transitionTo('inDOM');
