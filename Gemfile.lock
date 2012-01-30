@@ -8,7 +8,7 @@ GIT
 
 GIT
   remote: https://github.com/wycats/abbot-from-scratch.git
-  revision: 29dfaa6c3c120847e61f742f74c414e4872cc142
+  revision: 47662bbbb25afc213318051676cd31375d1d1f59
   specs:
     sproutcore (0.0.1)
 
