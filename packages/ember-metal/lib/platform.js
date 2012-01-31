@@ -24,6 +24,7 @@ var platform = Ember.platform = {} ;
 platform.create = Object.create;
 
 if (!platform.create) {
+  /** @private */
   var O_ctor = function() {},
       O_proto = O_ctor.prototype;
 
@@ -45,13 +46,16 @@ if (!platform.create) {
   platform.create.isSimulated = true;
 }
 
-var defineProperty = Object.defineProperty, canRedefineProperties, canDefinePropertyOnDOM;
+/** @private */
+var defineProperty = Object.defineProperty;
+var canRedefineProperties, canDefinePropertyOnDOM;
 
 // Catch IE8 where Object.defineProperty exists but only works on DOM elements
 if (defineProperty) {
   try {
     defineProperty({}, 'a',{get:function(){}});
   } catch (e) {
+    /** @private */
     defineProperty = null;
   }
 }
@@ -59,6 +63,7 @@ if (defineProperty) {
 if (defineProperty) {
   // Detects a bug in Android <3.2 where you cannot redefine a property using
   // Object.defineProperty once accessors have already been set.
+  /** @private */
   canRedefineProperties = (function() {
     var obj = {};
 
@@ -81,7 +86,7 @@ if (defineProperty) {
 
   // This is for Safari 5.0, which supports Object.defineProperty, but not
   // on DOM nodes.
-
+  /** @private */
   canDefinePropertyOnDOM = (function(){
     try {
       defineProperty(document.body, 'definePropertyOnDOM', {});
@@ -92,8 +97,10 @@ if (defineProperty) {
   })();
 
   if (!canRedefineProperties) {
+    /** @private */
     defineProperty = null;
   } else if (!canDefinePropertyOnDOM) {
+    /** @private */
     defineProperty = function(obj, keyName, desc){
       var isNode;
 

@@ -75,6 +75,7 @@ Ember.EMPTY_PLACEHOLDER = '@@EMPTY@@';
 //
 
 // Coerces a non-array value into an array.
+/** @private */
 function MULTIPLE(val) {
   if (val instanceof Array) return val;
   if (val === undefined || val === null) return [];
@@ -83,6 +84,7 @@ function MULTIPLE(val) {
 
 // Treats a single-element array as the element. Otherwise
 // returns a placeholder.
+/** @private */
 function SINGLE(val, placeholder) {
   if (val instanceof Array) {
     if (val.length>1) return placeholder;
@@ -113,6 +115,7 @@ var get     = Ember.get,
     isGlobalPath = Ember.isGlobalPath;
 
 // Applies a binding's transformations against a value.
+/** @private */
 function getTransformedValue(binding, val, obj, dir) {
 
   // First run a type transform, if it exists, that changes the fundamental
@@ -134,14 +137,17 @@ function getTransformedValue(binding, val, obj, dir) {
   return val;
 }
 
+/** @private */
 function empty(val) {
   return val===undefined || val===null || val==='' || (Ember.isArray(val) && get(val, 'length')===0) ;
 }
 
+/** @private */
 function getPathWithGlobals(obj, path) {
   return getPath(isGlobalPath(path) ? window : obj, path);
 }
 
+/** @private */
 function getTransformedFromValue(obj, binding) {
   var operation = binding._operation,
       fromValue;
@@ -153,15 +159,18 @@ function getTransformedFromValue(obj, binding) {
   return getTransformedValue(binding, fromValue, obj, 'to');
 }
 
+/** @private */
 function getTransformedToValue(obj, binding) {
   var toValue = getPath(obj, binding._to);
   return getTransformedValue(binding, toValue, obj, 'from');
 }
 
+/** @private */
 var AND_OPERATION = function(obj, left, right) {
   return getPathWithGlobals(obj, left) && getPathWithGlobals(obj, right);
 };
 
+/** @private */
 var OR_OPERATION = function(obj, left, right) {
   return getPathWithGlobals(obj, left) || getPathWithGlobals(obj, right);
 };
@@ -170,7 +179,10 @@ var OR_OPERATION = function(obj, left, right) {
 // BINDING
 //
 
+/** @private */
 var K = function() {};
+
+/** @private */
 var Binding = function(toPath, fromPath) {
   var self;
   
@@ -542,6 +554,7 @@ Binding.prototype = /** @scope Ember.Binding.prototype */ {
 
 };
 
+/** @private */
 function mixinProperties(to, from) {
   for (var key in from) {
     if (from.hasOwnProperty(key)) {

@@ -17,6 +17,7 @@ require('ember-metal');
   @type Boolean
   @default true
   @constant
+  @deprecated
 */
 YES = true;
 
@@ -26,6 +27,7 @@ YES = true;
   @type Boolean
   @default NO
   @constant
+  @deprecated
 */
 NO = false;
 
@@ -231,6 +233,7 @@ Ember.compare = function (v, w) {
   }
 };
 
+/** @private */
 function _copy(obj, deep, seen, copies) {
   var ret, loc, key;
 
