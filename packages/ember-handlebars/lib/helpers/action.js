@@ -10,6 +10,8 @@ ActionHelper.registerAction = function(actionName, eventName, target, view, cont
 
   function handler(event) {
     if (Ember.$(event.target).closest('[data-ember-action]').attr('data-ember-action') === actionId) {
+      event.preventDefault();
+
       if ('function' === typeof target.send) {
         return target.send(actionName, { view: view, event: event, context: context });
       } else {
