@@ -1,0 +1,361 @@
+<html><head><meta http-equiv="content-type" content="text/html; charset=utf8"> <style>
+	.KEYW {color: #933;}
+	.COMM {color: #bbb; font-style: italic;}
+	.NUMB {color: #393;}
+	.STRN {color: #393;}
+	.REGX {color: #339;}
+	.line {border-right: 1px dotted #666; color: #666; font-style: normal;}
+	</style></head><body><pre><span class='line'>  1</span> <span class="COMM">// ==========================================================================</span><span class="WHIT">
+<span class='line'>  2</span> </span><span class="COMM">// Project:  Ember Runtime</span><span class="WHIT">
+<span class='line'>  3</span> </span><span class="COMM">// Copyright: ©2011 Strobe Inc. and contributors.</span><span class="WHIT">
+<span class='line'>  4</span> </span><span class="COMM">// License:   Licensed under MIT license (see license.js)</span><span class="WHIT">
+<span class='line'>  5</span> </span><span class="COMM">// ==========================================================================</span><span class="WHIT">
+<span class='line'>  6</span> 
+<span class='line'>  7</span> </span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">get</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">Ember.get</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">set</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">Ember.set</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>  8</span> </span><span class="WHIT">  
+<span class='line'>  9</span> </span><span class="COMM">/**
+<span class='line'> 10</span>   @class
+<span class='line'> 11</span> 
+<span class='line'> 12</span>   Restores some of the Ember 1.x Ember.Observable mixin API.  The new property 
+<span class='line'> 13</span>   observing system does not require Ember.Observable to be applied anymore.
+<span class='line'> 14</span>   Instead, on most browsers you can just access properties directly.  For
+<span class='line'> 15</span>   code that needs to run on IE7 or IE8 you should use Ember.get() and Ember.set()
+<span class='line'> 16</span>   instead.
+<span class='line'> 17</span>   
+<span class='line'> 18</span>   If you have older code and you want to bring back the older Ember 1.x observable
+<span class='line'> 19</span>   API, you can do so by readding Ember.Observable to Ember.Object like so:
+<span class='line'> 20</span>   
+<span class='line'> 21</span>       Ember.Object.reopen(Ember.Observable);
+<span class='line'> 22</span>     
+<span class='line'> 23</span>   You will then be able to use the traditional get(), set() and other 
+<span class='line'> 24</span>   observable methods on your objects.
+<span class='line'> 25</span> 
+<span class='line'> 26</span>   @extends Ember.Mixin
+<span class='line'> 27</span> */</span><span class="WHIT">
+<span class='line'> 28</span> </span><span class="NAME">Ember.Observable</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">Ember.Mixin.create</span><span class="PUNC">(</span><span class="COMM">/** @scope Ember.Observable.prototype */</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'> 29</span> 
+<span class='line'> 30</span> </span><span class="WHIT">  </span><span class="COMM">/** @private - compatibility */</span><span class="WHIT">
+<span class='line'> 31</span> </span><span class="WHIT">  </span><span class="NAME">isObserverable</span><span class="PUNC">:</span><span class="WHIT"> </span><span class="KEYW">true</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'> 32</span> </span><span class="WHIT">  
+<span class='line'> 33</span>   </span><span class="COMM">/**
+<span class='line'> 34</span>     Retrieves the value of key from the object.
+<span class='line'> 35</span> 
+<span class='line'> 36</span>     This method is generally very similar to using object[key] or object.key,
+<span class='line'> 37</span>     however it supports both computed properties and the unknownProperty
+<span class='line'> 38</span>     handler.
+<span class='line'> 39</span> 
+<span class='line'> 40</span>     ## Computed Properties
+<span class='line'> 41</span> 
+<span class='line'> 42</span>     Computed properties are methods defined with the property() modifier
+<span class='line'> 43</span>     declared at the end, such as:
+<span class='line'> 44</span> 
+<span class='line'> 45</span>           fullName: function() {
+<span class='line'> 46</span>             return this.getEach('firstName', 'lastName').compact().join(' ');
+<span class='line'> 47</span>           }.property('firstName', 'lastName')
+<span class='line'> 48</span> 
+<span class='line'> 49</span>     When you call get() on a computed property, the property function will be
+<span class='line'> 50</span>     called and the return value will be returned instead of the function
+<span class='line'> 51</span>     itself.
+<span class='line'> 52</span> 
+<span class='line'> 53</span>     ## Unknown Properties
+<span class='line'> 54</span> 
+<span class='line'> 55</span>     Likewise, if you try to call get() on a property whose values is
+<span class='line'> 56</span>     undefined, the unknownProperty() method will be called on the object.
+<span class='line'> 57</span>     If this method reutrns any value other than undefined, it will be returned
+<span class='line'> 58</span>     instead. This allows you to implement "virtual" properties that are
+<span class='line'> 59</span>     not defined upfront.
+<span class='line'> 60</span> 
+<span class='line'> 61</span>     @param {String} key The property to retrieve
+<span class='line'> 62</span>     @returns {Object} The property value or undefined.
+<span class='line'> 63</span>   */</span><span class="WHIT">
+<span class='line'> 64</span> </span><span class="WHIT">  </span><span class="NAME">get</span><span class="PUNC">:</span><span class="WHIT"> </span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">keyName</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'> 65</span> </span><span class="WHIT">    </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">get</span><span class="PUNC">(</span><span class="KEYW">this</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">keyName</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 66</span> </span><span class="WHIT">  </span><span class="PUNC">}</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'> 67</span> 
+<span class='line'> 68</span> </span><span class="WHIT">  </span><span class="COMM">/**
+<span class='line'> 69</span>     To get multiple properties at once, call getProperties
+<span class='line'> 70</span>     with a list of strings:
+<span class='line'> 71</span> 
+<span class='line'> 72</span>           record.getProperties('firstName', 'lastName', 'zipCode');
+<span class='line'> 73</span> 
+<span class='line'> 74</span>     @param {String...} list of keys to get
+<span class='line'> 75</span>     @returns {Hash}
+<span class='line'> 76</span>   */</span><span class="WHIT">
+<span class='line'> 77</span> </span><span class="WHIT">  </span><span class="NAME">getProperties</span><span class="PUNC">:</span><span class="WHIT"> </span><span class="KEYW">function</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'> 78</span> </span><span class="WHIT">    </span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">ret</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="PUNC">}</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 79</span> </span><span class="WHIT">    </span><span class="KEYW">for</span><span class="PUNC">(</span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">i</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NUMB">0</span><span class="PUNC">;</span><span class="WHIT"> </span><span class="NAME">i</span><span class="WHIT"> </span><span class="PUNC">&lt;</span><span class="WHIT"> </span><span class="NAME">arguments.length</span><span class="PUNC">;</span><span class="WHIT"> </span><span class="NAME">i</span><span class="PUNC">++</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'> 80</span> </span><span class="WHIT">      </span><span class="NAME">ret</span><span class="PUNC">[</span><span class="NAME">arguments</span><span class="PUNC">[</span><span class="NAME">i</span><span class="PUNC">]</span><span class="PUNC">]</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">get</span><span class="PUNC">(</span><span class="KEYW">this</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">arguments</span><span class="PUNC">[</span><span class="NAME">i</span><span class="PUNC">]</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 81</span> </span><span class="WHIT">    </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'> 82</span> </span><span class="WHIT">    </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">ret</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 83</span> </span><span class="WHIT">  </span><span class="PUNC">}</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'> 84</span> </span><span class="WHIT">  
+<span class='line'> 85</span>   </span><span class="COMM">/**
+<span class='line'> 86</span>     Sets the key equal to value.
+<span class='line'> 87</span> 
+<span class='line'> 88</span>     This method is generally very similar to calling object[key] = value or
+<span class='line'> 89</span>     object.key = value, except that it provides support for computed
+<span class='line'> 90</span>     properties, the unknownProperty() method and property observers.
+<span class='line'> 91</span> 
+<span class='line'> 92</span>     ## Computed Properties
+<span class='line'> 93</span> 
+<span class='line'> 94</span>     If you try to set a value on a key that has a computed property handler
+<span class='line'> 95</span>     defined (see the get() method for an example), then set() will call
+<span class='line'> 96</span>     that method, passing both the value and key instead of simply changing
+<span class='line'> 97</span>     the value itself. This is useful for those times when you need to
+<span class='line'> 98</span>     implement a property that is composed of one or more member
+<span class='line'> 99</span>     properties.
+<span class='line'>100</span> 
+<span class='line'>101</span>     ## Unknown Properties
+<span class='line'>102</span> 
+<span class='line'>103</span>     If you try to set a value on a key that is undefined in the target
+<span class='line'>104</span>     object, then the unknownProperty() handler will be called instead. This
+<span class='line'>105</span>     gives you an opportunity to implement complex "virtual" properties that
+<span class='line'>106</span>     are not predefined on the obejct. If unknownProperty() returns
+<span class='line'>107</span>     undefined, then set() will simply set the value on the object.
+<span class='line'>108</span> 
+<span class='line'>109</span>     ## Property Observers
+<span class='line'>110</span> 
+<span class='line'>111</span>     In addition to changing the property, set() will also register a
+<span class='line'>112</span>     property change with the object. Unless you have placed this call
+<span class='line'>113</span>     inside of a beginPropertyChanges() and endPropertyChanges(), any "local"
+<span class='line'>114</span>     observers (i.e. observer methods declared on the same object), will be
+<span class='line'>115</span>     called immediately. Any "remote" observers (i.e. observer methods
+<span class='line'>116</span>     declared on another object) will be placed in a queue and called at a
+<span class='line'>117</span>     later time in a coelesced manner.
+<span class='line'>118</span> 
+<span class='line'>119</span>     ## Chaining
+<span class='line'>120</span> 
+<span class='line'>121</span>     In addition to property changes, set() returns the value of the object
+<span class='line'>122</span>     itself so you can do chaining like this:
+<span class='line'>123</span> 
+<span class='line'>124</span>           record.set('firstName', 'Charles').set('lastName', 'Jolley');
+<span class='line'>125</span> 
+<span class='line'>126</span>     @param {String} key The property to set
+<span class='line'>127</span>     @param {Object} value The value to set or null.
+<span class='line'>128</span>     @returns {Ember.Observable}
+<span class='line'>129</span>   */</span><span class="WHIT">
+<span class='line'>130</span> </span><span class="WHIT">  </span><span class="NAME">set</span><span class="PUNC">:</span><span class="WHIT"> </span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">keyName</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">value</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>131</span> </span><span class="WHIT">    </span><span class="NAME">set</span><span class="PUNC">(</span><span class="KEYW">this</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">keyName</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">value</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>132</span> </span><span class="WHIT">    </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>133</span> </span><span class="WHIT">  </span><span class="PUNC">}</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'>134</span> </span><span class="WHIT">  
+<span class='line'>135</span>   </span><span class="COMM">/**
+<span class='line'>136</span>     To set multiple properties at once, call setProperties
+<span class='line'>137</span>     with a Hash:
+<span class='line'>138</span> 
+<span class='line'>139</span>           record.setProperties({ firstName: 'Charles', lastName: 'Jolley' });
+<span class='line'>140</span> 
+<span class='line'>141</span>     @param {Hash} hash the hash of keys and values to set
+<span class='line'>142</span>     @returns {Ember.Observable}
+<span class='line'>143</span>   */</span><span class="WHIT">
+<span class='line'>144</span> </span><span class="WHIT">  </span><span class="NAME">setProperties</span><span class="PUNC">:</span><span class="WHIT"> </span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">hash</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>145</span> </span><span class="WHIT">    </span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">self</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>146</span> </span><span class="WHIT">    </span><span class="NAME">Ember.changeProperties</span><span class="PUNC">(</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>147</span> </span><span class="WHIT">      </span><span class="KEYW">for</span><span class="PUNC">(</span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">prop</span><span class="WHIT"> </span><span class="KEYW">in</span><span class="WHIT"> </span><span class="NAME">hash</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>148</span> </span><span class="WHIT">        </span><span class="KEYW">if</span><span class="WHIT"> </span><span class="PUNC">(</span><span class="NAME">hash.hasOwnProperty</span><span class="PUNC">(</span><span class="NAME">prop</span><span class="PUNC">)</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="NAME">set</span><span class="PUNC">(</span><span class="NAME">self</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">prop</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">hash</span><span class="PUNC">[</span><span class="NAME">prop</span><span class="PUNC">]</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>149</span> </span><span class="WHIT">      </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>150</span> </span><span class="WHIT">    </span><span class="PUNC">}</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>151</span> </span><span class="WHIT">    </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>152</span> </span><span class="WHIT">  </span><span class="PUNC">}</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'>153</span> 
+<span class='line'>154</span> </span><span class="WHIT">  </span><span class="COMM">/**
+<span class='line'>155</span>     Begins a grouping of property changes.
+<span class='line'>156</span> 
+<span class='line'>157</span>     You can use this method to group property changes so that notifications
+<span class='line'>158</span>     will not be sent until the changes are finished. If you plan to make a
+<span class='line'>159</span>     large number of changes to an object at one time, you should call this
+<span class='line'>160</span>     method at the beginning of the changes to suspend change notifications.
+<span class='line'>161</span>     When you are done making changes, call endPropertyChanges() to allow
+<span class='line'>162</span>     notification to resume.
+<span class='line'>163</span> 
+<span class='line'>164</span>     @returns {Ember.Observable}
+<span class='line'>165</span>   */</span><span class="WHIT">
+<span class='line'>166</span> </span><span class="WHIT">  </span><span class="NAME">beginPropertyChanges</span><span class="PUNC">:</span><span class="WHIT"> </span><span class="KEYW">function</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>167</span> </span><span class="WHIT">    </span><span class="NAME">Ember.beginPropertyChanges</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>168</span> </span><span class="WHIT">    </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>169</span> </span><span class="WHIT">  </span><span class="PUNC">}</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'>170</span> </span><span class="WHIT">  
+<span class='line'>171</span>   </span><span class="COMM">/**
+<span class='line'>172</span>     Ends a grouping of property changes.
+<span class='line'>173</span> 
+<span class='line'>174</span>     You can use this method to group property changes so that notifications
+<span class='line'>175</span>     will not be sent until the changes are finished. If you plan to make a
+<span class='line'>176</span>     large number of changes to an object at one time, you should call
+<span class='line'>177</span>     beginPropertyChanges() at the beginning of the changes to suspend change
+<span class='line'>178</span>     notifications. When you are done making changes, call this method to allow
+<span class='line'>179</span>     notification to resume.
+<span class='line'>180</span> 
+<span class='line'>181</span>     @returns {Ember.Observable}
+<span class='line'>182</span>   */</span><span class="WHIT">
+<span class='line'>183</span> </span><span class="WHIT">  </span><span class="NAME">endPropertyChanges</span><span class="PUNC">:</span><span class="WHIT"> </span><span class="KEYW">function</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>184</span> </span><span class="WHIT">    </span><span class="NAME">Ember.endPropertyChanges</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>185</span> </span><span class="WHIT">    </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>186</span> </span><span class="WHIT">  </span><span class="PUNC">}</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'>187</span> </span><span class="WHIT">  
+<span class='line'>188</span>   </span><span class="COMM">/**
+<span class='line'>189</span>     Notify the observer system that a property is about to change.
+<span class='line'>190</span> 
+<span class='line'>191</span>     Sometimes you need to change a value directly or indirectly without
+<span class='line'>192</span>     actually calling get() or set() on it. In this case, you can use this
+<span class='line'>193</span>     method and propertyDidChange() instead. Calling these two methods
+<span class='line'>194</span>     together will notify all observers that the property has potentially
+<span class='line'>195</span>     changed value.
+<span class='line'>196</span> 
+<span class='line'>197</span>     Note that you must always call propertyWillChange and propertyDidChange as
+<span class='line'>198</span>     a pair. If you do not, it may get the property change groups out of order
+<span class='line'>199</span>     and cause notifications to be delivered more often than you would like.
+<span class='line'>200</span> 
+<span class='line'>201</span>     @param {String} key The property key that is about to change.
+<span class='line'>202</span>     @returns {Ember.Observable}
+<span class='line'>203</span>   */</span><span class="WHIT">
+<span class='line'>204</span> </span><span class="WHIT">  </span><span class="NAME">propertyWillChange</span><span class="PUNC">:</span><span class="WHIT"> </span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">keyName</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>205</span> </span><span class="WHIT">    </span><span class="NAME">Ember.propertyWillChange</span><span class="PUNC">(</span><span class="KEYW">this</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">keyName</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>206</span> </span><span class="WHIT">    </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>207</span> </span><span class="WHIT">  </span><span class="PUNC">}</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'>208</span> </span><span class="WHIT">  
+<span class='line'>209</span>   </span><span class="COMM">/**
+<span class='line'>210</span>     Notify the observer system that a property has just changed.
+<span class='line'>211</span> 
+<span class='line'>212</span>     Sometimes you need to change a value directly or indirectly without
+<span class='line'>213</span>     actually calling get() or set() on it. In this case, you can use this
+<span class='line'>214</span>     method and propertyWillChange() instead. Calling these two methods
+<span class='line'>215</span>     together will notify all observers that the property has potentially
+<span class='line'>216</span>     changed value.
+<span class='line'>217</span> 
+<span class='line'>218</span>     Note that you must always call propertyWillChange and propertyDidChange as
+<span class='line'>219</span>     a pair. If you do not, it may get the property change groups out of order
+<span class='line'>220</span>     and cause notifications to be delivered more often than you would like.
+<span class='line'>221</span> 
+<span class='line'>222</span>     @param {String} key The property key that has just changed.
+<span class='line'>223</span>     @param {Object} value The new value of the key. May be null.
+<span class='line'>224</span>     @param {Boolean} _keepCache Private property
+<span class='line'>225</span>     @returns {Ember.Observable}
+<span class='line'>226</span>   */</span><span class="WHIT">
+<span class='line'>227</span> </span><span class="WHIT">  </span><span class="NAME">propertyDidChange</span><span class="PUNC">:</span><span class="WHIT"> </span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">keyName</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>228</span> </span><span class="WHIT">    </span><span class="NAME">Ember.propertyDidChange</span><span class="PUNC">(</span><span class="KEYW">this</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">keyName</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>229</span> </span><span class="WHIT">    </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>230</span> </span><span class="WHIT">  </span><span class="PUNC">}</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'>231</span> </span><span class="WHIT">  
+<span class='line'>232</span>   </span><span class="NAME">notifyPropertyChange</span><span class="PUNC">:</span><span class="WHIT"> </span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">keyName</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>233</span> </span><span class="WHIT">    </span><span class="NAME">this.propertyWillChange</span><span class="PUNC">(</span><span class="NAME">keyName</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>234</span> </span><span class="WHIT">    </span><span class="NAME">this.propertyDidChange</span><span class="PUNC">(</span><span class="NAME">keyName</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>235</span> </span><span class="WHIT">    </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>236</span> </span><span class="WHIT">  </span><span class="PUNC">}</span><span class="PUNC">,</span><span class="WHIT"> 
+<span class='line'>237</span> 
+<span class='line'>238</span>   </span><span class="COMM">/**
+<span class='line'>239</span>     Adds an observer on a property.
+<span class='line'>240</span> 
+<span class='line'>241</span>     This is the core method used to register an observer for a property.
+<span class='line'>242</span> 
+<span class='line'>243</span>     Once you call this method, anytime the key's value is set, your observer
+<span class='line'>244</span>     will be notified. Note that the observers are triggered anytime the
+<span class='line'>245</span>     value is set, regardless of whether it has actually changed. Your
+<span class='line'>246</span>     observer should be prepared to handle that.
+<span class='line'>247</span> 
+<span class='line'>248</span>     You can also pass an optional context parameter to this method. The
+<span class='line'>249</span>     context will be passed to your observer method whenever it is triggered.
+<span class='line'>250</span>     Note that if you add the same target/method pair on a key multiple times
+<span class='line'>251</span>     with different context parameters, your observer will only be called once
+<span class='line'>252</span>     with the last context you passed.
+<span class='line'>253</span> 
+<span class='line'>254</span>     ## Observer Methods
+<span class='line'>255</span> 
+<span class='line'>256</span>     Observer methods you pass should generally have the following signature if
+<span class='line'>257</span>     you do not pass a "context" parameter:
+<span class='line'>258</span> 
+<span class='line'>259</span>           fooDidChange: function(sender, key, value, rev);
+<span class='line'>260</span> 
+<span class='line'>261</span>     The sender is the object that changed. The key is the property that
+<span class='line'>262</span>     changes. The value property is currently reserved and unused. The rev
+<span class='line'>263</span>     is the last property revision of the object when it changed, which you can
+<span class='line'>264</span>     use to detect if the key value has really changed or not.
+<span class='line'>265</span> 
+<span class='line'>266</span>     If you pass a "context" parameter, the context will be passed before the
+<span class='line'>267</span>     revision like so:
+<span class='line'>268</span> 
+<span class='line'>269</span>           fooDidChange: function(sender, key, value, context, rev);
+<span class='line'>270</span> 
+<span class='line'>271</span>     Usually you will not need the value, context or revision parameters at
+<span class='line'>272</span>     the end. In this case, it is common to write observer methods that take
+<span class='line'>273</span>     only a sender and key value as parameters or, if you aren't interested in
+<span class='line'>274</span>     any of these values, to write an observer that has no parameters at all.
+<span class='line'>275</span> 
+<span class='line'>276</span>     @param {String} key The key to observer
+<span class='line'>277</span>     @param {Object} target The target object to invoke
+<span class='line'>278</span>     @param {String|Function} method The method to invoke.
+<span class='line'>279</span>     @returns {Ember.Object} self
+<span class='line'>280</span>   */</span><span class="WHIT">
+<span class='line'>281</span> </span><span class="WHIT">  </span><span class="NAME">addObserver</span><span class="PUNC">:</span><span class="WHIT"> </span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">key</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">target</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">method</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>282</span> </span><span class="WHIT">    </span><span class="NAME">Ember.addObserver</span><span class="PUNC">(</span><span class="KEYW">this</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">key</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">target</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">method</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>283</span> </span><span class="WHIT">  </span><span class="PUNC">}</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'>284</span> </span><span class="WHIT">  
+<span class='line'>285</span>   </span><span class="COMM">/**
+<span class='line'>286</span>     Remove an observer you have previously registered on this object. Pass
+<span class='line'>287</span>     the same key, target, and method you passed to addObserver() and your
+<span class='line'>288</span>     target will no longer receive notifications.
+<span class='line'>289</span> 
+<span class='line'>290</span>     @param {String} key The key to observer
+<span class='line'>291</span>     @param {Object} target The target object to invoke
+<span class='line'>292</span>     @param {String|Function} method The method to invoke.
+<span class='line'>293</span>     @returns {Ember.Observable} reciever
+<span class='line'>294</span>   */</span><span class="WHIT">
+<span class='line'>295</span> </span><span class="WHIT">  </span><span class="NAME">removeObserver</span><span class="PUNC">:</span><span class="WHIT"> </span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">key</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">target</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">method</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>296</span> </span><span class="WHIT">    </span><span class="NAME">Ember.removeObserver</span><span class="PUNC">(</span><span class="KEYW">this</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">key</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">target</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">method</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>297</span> </span><span class="WHIT">  </span><span class="PUNC">}</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'>298</span> </span><span class="WHIT">  
+<span class='line'>299</span>   </span><span class="COMM">/**
+<span class='line'>300</span>     Returns YES if the object currently has observers registered for a
+<span class='line'>301</span>     particular key. You can use this method to potentially defer performing
+<span class='line'>302</span>     an expensive action until someone begins observing a particular property
+<span class='line'>303</span>     on the object.
+<span class='line'>304</span> 
+<span class='line'>305</span>     @param {String} key Key to check
+<span class='line'>306</span>     @returns {Boolean}
+<span class='line'>307</span>   */</span><span class="WHIT">
+<span class='line'>308</span> </span><span class="WHIT">  </span><span class="NAME">hasObserverFor</span><span class="PUNC">:</span><span class="WHIT"> </span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">key</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>309</span> </span><span class="WHIT">    </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">Ember.hasListeners</span><span class="PUNC">(</span><span class="KEYW">this</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">key</span><span class="PUNC">+</span><span class="STRN">':change'</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>310</span> </span><span class="WHIT">  </span><span class="PUNC">}</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'>311</span> 
+<span class='line'>312</span> </span><span class="WHIT">  </span><span class="NAME">unknownProperty</span><span class="PUNC">:</span><span class="WHIT"> </span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">key</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>313</span> </span><span class="WHIT">    </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">undefined</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>314</span> </span><span class="WHIT">  </span><span class="PUNC">}</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'>315</span> </span><span class="WHIT">  
+<span class='line'>316</span>   </span><span class="NAME">setUnknownProperty</span><span class="PUNC">:</span><span class="WHIT"> </span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">key</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">value</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>317</span> </span><span class="WHIT">    </span><span class="KEYW">this</span><span class="PUNC">[</span><span class="NAME">key</span><span class="PUNC">]</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">value</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>318</span> </span><span class="WHIT">  </span><span class="PUNC">}</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'>319</span> </span><span class="WHIT">  
+<span class='line'>320</span>   </span><span class="NAME">getPath</span><span class="PUNC">:</span><span class="WHIT"> </span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">path</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>321</span> </span><span class="WHIT">    </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">Ember.getPath</span><span class="PUNC">(</span><span class="KEYW">this</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">path</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>322</span> </span><span class="WHIT">  </span><span class="PUNC">}</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'>323</span> </span><span class="WHIT">  
+<span class='line'>324</span>   </span><span class="NAME">setPath</span><span class="PUNC">:</span><span class="WHIT"> </span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">path</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">value</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>325</span> </span><span class="WHIT">    </span><span class="NAME">Ember.setPath</span><span class="PUNC">(</span><span class="KEYW">this</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">path</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">value</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>326</span> </span><span class="WHIT">    </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>327</span> </span><span class="WHIT">  </span><span class="PUNC">}</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'>328</span> </span><span class="WHIT">  
+<span class='line'>329</span>   </span><span class="NAME">incrementProperty</span><span class="PUNC">:</span><span class="WHIT"> </span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">keyName</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">increment</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>330</span> </span><span class="WHIT">    </span><span class="KEYW">if</span><span class="WHIT"> </span><span class="PUNC">(</span><span class="PUNC">!</span><span class="NAME">increment</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT"> </span><span class="NAME">increment</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NUMB">1</span><span class="PUNC">;</span><span class="WHIT"> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>331</span> </span><span class="WHIT">    </span><span class="NAME">set</span><span class="PUNC">(</span><span class="KEYW">this</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">keyName</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="PUNC">(</span><span class="NAME">get</span><span class="PUNC">(</span><span class="KEYW">this</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">keyName</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">||</span><span class="WHIT"> </span><span class="NUMB">0</span><span class="PUNC">)</span><span class="PUNC">+</span><span class="NAME">increment</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>332</span> </span><span class="WHIT">    </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">get</span><span class="PUNC">(</span><span class="KEYW">this</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">keyName</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>333</span> </span><span class="WHIT">  </span><span class="PUNC">}</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'>334</span> </span><span class="WHIT">  
+<span class='line'>335</span>   </span><span class="NAME">decrementProperty</span><span class="PUNC">:</span><span class="WHIT"> </span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">keyName</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">increment</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>336</span> </span><span class="WHIT">    </span><span class="KEYW">if</span><span class="WHIT"> </span><span class="PUNC">(</span><span class="PUNC">!</span><span class="NAME">increment</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT"> </span><span class="NAME">increment</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NUMB">1</span><span class="PUNC">;</span><span class="WHIT"> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>337</span> </span><span class="WHIT">    </span><span class="NAME">set</span><span class="PUNC">(</span><span class="KEYW">this</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">keyName</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="PUNC">(</span><span class="NAME">get</span><span class="PUNC">(</span><span class="KEYW">this</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">keyName</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">||</span><span class="WHIT"> </span><span class="NUMB">0</span><span class="PUNC">)</span><span class="PUNC">-</span><span class="NAME">increment</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>338</span> </span><span class="WHIT">    </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">get</span><span class="PUNC">(</span><span class="KEYW">this</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">keyName</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>339</span> </span><span class="WHIT">  </span><span class="PUNC">}</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'>340</span> </span><span class="WHIT">  
+<span class='line'>341</span>   </span><span class="NAME">toggleProperty</span><span class="PUNC">:</span><span class="WHIT"> </span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">keyName</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>342</span> </span><span class="WHIT">    </span><span class="NAME">set</span><span class="PUNC">(</span><span class="KEYW">this</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">keyName</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="PUNC">!</span><span class="NAME">get</span><span class="PUNC">(</span><span class="KEYW">this</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">keyName</span><span class="PUNC">)</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>343</span> </span><span class="WHIT">    </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">get</span><span class="PUNC">(</span><span class="KEYW">this</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">keyName</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>344</span> </span><span class="WHIT">  </span><span class="PUNC">}</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'>345</span> </span><span class="WHIT">  
+<span class='line'>346</span>   </span><span class="NAME">observersForKey</span><span class="PUNC">:</span><span class="WHIT"> </span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">keyName</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>347</span> </span><span class="WHIT">    </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">Ember.observersFor</span><span class="PUNC">(</span><span class="KEYW">this</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">keyName</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>348</span> </span><span class="WHIT">  </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>349</span> </span><span class="WHIT">    
+<span class='line'>350</span> </span><span class="PUNC">}</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>351</span> 
+<span class='line'>352</span> 
+<span class='line'>353</span> 
+<span class='line'>354</span> </span></pre></body></html>

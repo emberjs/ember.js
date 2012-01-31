@@ -1,0 +1,764 @@
+<html><head><meta http-equiv="content-type" content="text/html; charset=utf8"> <style>
+	.KEYW {color: #933;}
+	.COMM {color: #bbb; font-style: italic;}
+	.NUMB {color: #393;}
+	.STRN {color: #393;}
+	.REGX {color: #339;}
+	.line {border-right: 1px dotted #666; color: #666; font-style: normal;}
+	</style></head><body><pre><span class='line'>  1</span> <span class="COMM">// ==========================================================================</span><span class="WHIT">
+<span class='line'>  2</span> </span><span class="COMM">// Project:  Ember Runtime</span><span class="WHIT">
+<span class='line'>  3</span> </span><span class="COMM">// Copyright: ©2011 Strobe Inc. and contributors.</span><span class="WHIT">
+<span class='line'>  4</span> </span><span class="COMM">// License:   Licensed under MIT license (see license.js)</span><span class="WHIT">
+<span class='line'>  5</span> </span><span class="COMM">// ==========================================================================</span><span class="WHIT">
+<span class='line'>  6</span> 
+<span class='line'>  7</span> 
+<span class='line'>  8</span> 
+<span class='line'>  9</span> 
+<span class='line'> 10</span> 
+<span class='line'> 11</span> </span><span class="COMM">// ..........................................................</span><span class="WHIT">
+<span class='line'> 12</span> </span><span class="COMM">// HELPERS</span><span class="WHIT">
+<span class='line'> 13</span> </span><span class="COMM">// </span><span class="WHIT">
+<span class='line'> 14</span> 
+<span class='line'> 15</span> </span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">get</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">Ember.get</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">set</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">Ember.set</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 16</span> </span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">a_slice</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">Array.prototype.slice</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 17</span> 
+<span class='line'> 18</span> </span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">contexts</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="PUNC">[</span><span class="PUNC">]</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 19</span> </span><span class="COMM">/** @private */</span><span class="WHIT">
+<span class='line'> 20</span> </span><span class="KEYW">function</span><span class="WHIT"> </span><span class="NAME">popCtx</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'> 21</span> </span><span class="WHIT">  </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">contexts.length</span><span class="PUNC">===</span><span class="NUMB">0</span><span class="WHIT"> </span><span class="PUNC">?</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="PUNC">}</span><span class="WHIT"> </span><span class="PUNC">:</span><span class="WHIT"> </span><span class="NAME">contexts.pop</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 22</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'> 23</span> 
+<span class='line'> 24</span> </span><span class="COMM">/** @private */</span><span class="WHIT">
+<span class='line'> 25</span> </span><span class="KEYW">function</span><span class="WHIT"> </span><span class="NAME">pushCtx</span><span class="PUNC">(</span><span class="NAME">ctx</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'> 26</span> </span><span class="WHIT">  </span><span class="NAME">contexts.push</span><span class="PUNC">(</span><span class="NAME">ctx</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 27</span> </span><span class="WHIT">  </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">null</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 28</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'> 29</span> 
+<span class='line'> 30</span> </span><span class="COMM">/** @private */</span><span class="WHIT">
+<span class='line'> 31</span> </span><span class="KEYW">function</span><span class="WHIT"> </span><span class="NAME">iter</span><span class="PUNC">(</span><span class="NAME">key</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">value</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'> 32</span> </span><span class="WHIT">  </span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">valueProvided</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">arguments.length</span><span class="WHIT"> </span><span class="PUNC">===</span><span class="WHIT"> </span><span class="NUMB">2</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 33</span> 
+<span class='line'> 34</span> </span><span class="WHIT">  </span><span class="KEYW">function</span><span class="WHIT"> </span><span class="NAME">i</span><span class="PUNC">(</span><span class="NAME">item</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'> 35</span> </span><span class="WHIT">    </span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">cur</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">get</span><span class="PUNC">(</span><span class="NAME">item</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">key</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 36</span> </span><span class="WHIT">    </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">valueProvided</span><span class="WHIT"> </span><span class="PUNC">?</span><span class="WHIT"> </span><span class="NAME">value</span><span class="PUNC">===</span><span class="NAME">cur</span><span class="WHIT"> </span><span class="PUNC">:</span><span class="WHIT"> </span><span class="PUNC">!</span><span class="PUNC">!</span><span class="NAME">cur</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 37</span> </span><span class="WHIT">  </span><span class="PUNC">}</span><span class="WHIT"> 
+<span class='line'> 38</span>   </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">i</span><span class="WHIT"> </span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 39</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'> 40</span> 
+<span class='line'> 41</span> </span><span class="COMM">/** @private */</span><span class="WHIT">
+<span class='line'> 42</span> </span><span class="KEYW">function</span><span class="WHIT"> </span><span class="NAME">xform</span><span class="PUNC">(</span><span class="NAME">target</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">method</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">params</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'> 43</span> </span><span class="WHIT">  </span><span class="NAME">method.call</span><span class="PUNC">(</span><span class="NAME">target</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">params</span><span class="PUNC">[</span><span class="NUMB">0</span><span class="PUNC">]</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">params</span><span class="PUNC">[</span><span class="NUMB">2</span><span class="PUNC">]</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">params</span><span class="PUNC">[</span><span class="NUMB">3</span><span class="PUNC">]</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 44</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'> 45</span> 
+<span class='line'> 46</span> </span><span class="COMM">/**
+<span class='line'> 47</span>   @class
+<span class='line'> 48</span> 
+<span class='line'> 49</span>   This mixin defines the common interface implemented by enumerable objects
+<span class='line'> 50</span>   in Ember.  Most of these methods follow the standard Array iteration
+<span class='line'> 51</span>   API defined up to JavaScript 1.8 (excluding language-specific features that
+<span class='line'> 52</span>   cannot be emulated in older versions of JavaScript).
+<span class='line'> 53</span> 
+<span class='line'> 54</span>   This mixin is applied automatically to the Array class on page load, so you
+<span class='line'> 55</span>   can use any of these methods on simple arrays.  If Array already implements
+<span class='line'> 56</span>   one of these methods, the mixin will not override them.
+<span class='line'> 57</span> 
+<span class='line'> 58</span>   h3. Writing Your Own Enumerable
+<span class='line'> 59</span> 
+<span class='line'> 60</span>   To make your own custom class enumerable, you need two items:
+<span class='line'> 61</span> 
+<span class='line'> 62</span>   1. You must have a length property.  This property should change whenever
+<span class='line'> 63</span>      the number of items in your enumerable object changes.  If you using this
+<span class='line'> 64</span>      with an Ember.Object subclass, you should be sure to change the length
+<span class='line'> 65</span>      property using set().
+<span class='line'> 66</span> 
+<span class='line'> 67</span>   2. If you must implement nextObject().  See documentation.
+<span class='line'> 68</span> 
+<span class='line'> 69</span>   Once you have these two methods implement, apply the Ember.Enumerable mixin
+<span class='line'> 70</span>   to your class and you will be able to enumerate the contents of your object
+<span class='line'> 71</span>   like any other collection.
+<span class='line'> 72</span> 
+<span class='line'> 73</span>   h3. Using Ember Enumeration with Other Libraries
+<span class='line'> 74</span> 
+<span class='line'> 75</span>   Many other libraries provide some kind of iterator or enumeration like
+<span class='line'> 76</span>   facility.  This is often where the most common API conflicts occur.
+<span class='line'> 77</span>   Ember's API is designed to be as friendly as possible with other
+<span class='line'> 78</span>   libraries by implementing only methods that mostly correspond to the
+<span class='line'> 79</span>   JavaScript 1.8 API.
+<span class='line'> 80</span> 
+<span class='line'> 81</span>   @since Ember 0.9
+<span class='line'> 82</span> */</span><span class="WHIT">
+<span class='line'> 83</span> </span><span class="NAME">Ember.Enumerable</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">Ember.Mixin.create</span><span class="PUNC">(</span><span class="WHIT"> </span><span class="COMM">/** @lends Ember.Enumerable */</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'> 84</span> </span><span class="WHIT">  
+<span class='line'> 85</span>   </span><span class="COMM">/** @private - compatibility */</span><span class="WHIT">
+<span class='line'> 86</span> </span><span class="WHIT">  </span><span class="NAME">isEnumerable</span><span class="PUNC">:</span><span class="WHIT"> </span><span class="KEYW">true</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'> 87</span> </span><span class="WHIT">  
+<span class='line'> 88</span>   </span><span class="COMM">/**
+<span class='line'> 89</span>     Implement this method to make your class enumerable.
+<span class='line'> 90</span> 
+<span class='line'> 91</span>     This method will be call repeatedly during enumeration.  The index value
+<span class='line'> 92</span>     will always begin with 0 and increment monotonically.  You don't have to
+<span class='line'> 93</span>     rely on the index value to determine what object to return, but you should
+<span class='line'> 94</span>     always check the value and start from the beginning when you see the
+<span class='line'> 95</span>     requested index is 0.
+<span class='line'> 96</span> 
+<span class='line'> 97</span>     The previousObject is the object that was returned from the last call
+<span class='line'> 98</span>     to nextObject for the current iteration.  This is a useful way to
+<span class='line'> 99</span>     manage iteration if you are tracing a linked list, for example.
+<span class='line'>100</span> 
+<span class='line'>101</span>     Finally the context parameter will always contain a hash you can use as
+<span class='line'>102</span>     a "scratchpad" to maintain any other state you need in order to iterate
+<span class='line'>103</span>     properly.  The context object is reused and is not reset between
+<span class='line'>104</span>     iterations so make sure you setup the context with a fresh state whenever
+<span class='line'>105</span>     the index parameter is 0.
+<span class='line'>106</span> 
+<span class='line'>107</span>     Generally iterators will continue to call nextObject until the index
+<span class='line'>108</span>     reaches the your current length-1.  If you run out of data before this
+<span class='line'>109</span>     time for some reason, you should simply return undefined.
+<span class='line'>110</span> 
+<span class='line'>111</span>     The default impementation of this method simply looks up the index.
+<span class='line'>112</span>     This works great on any Array-like objects.
+<span class='line'>113</span> 
+<span class='line'>114</span>     @param index {Number} the current index of the iteration
+<span class='line'>115</span>     @param previousObject {Object} the value returned by the last call to nextObject.
+<span class='line'>116</span>     @param context {Object} a context object you can use to maintain state.
+<span class='line'>117</span>     @returns {Object} the next object in the iteration or undefined
+<span class='line'>118</span>   */</span><span class="WHIT">
+<span class='line'>119</span> </span><span class="WHIT">  </span><span class="NAME">nextObject</span><span class="PUNC">:</span><span class="WHIT"> </span><span class="NAME">Ember.required</span><span class="PUNC">(</span><span class="NAME">Function</span><span class="PUNC">)</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'>120</span> 
+<span class='line'>121</span> </span><span class="WHIT">  </span><span class="COMM">/**
+<span class='line'>122</span>     Helper method returns the first object from a collection.  This is usually
+<span class='line'>123</span>     used by bindings and other parts of the framework to extract a single
+<span class='line'>124</span>     object if the enumerable contains only one item.
+<span class='line'>125</span> 
+<span class='line'>126</span>     If you override this method, you should implement it so that it will
+<span class='line'>127</span>     always return the same value each time it is called.  If your enumerable
+<span class='line'>128</span>     contains only one object, this method should always return that object.
+<span class='line'>129</span>     If your enumerable is empty, this method should return undefined.
+<span class='line'>130</span> 
+<span class='line'>131</span>     @returns {Object} the object or undefined
+<span class='line'>132</span> 
+<span class='line'>133</span>     @example
+<span class='line'>134</span>     var arr = ["a", "b", "c"];
+<span class='line'>135</span>     arr.firstObject(); => "a"
+<span class='line'>136</span> 
+<span class='line'>137</span>     var arr = [];
+<span class='line'>138</span>     arr.firstObject(); => undefined
+<span class='line'>139</span>   */</span><span class="WHIT">
+<span class='line'>140</span> </span><span class="WHIT">  </span><span class="NAME">firstObject</span><span class="PUNC">:</span><span class="WHIT"> </span><span class="NAME">Ember.computed</span><span class="PUNC">(</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>141</span> </span><span class="WHIT">    </span><span class="KEYW">if</span><span class="WHIT"> </span><span class="PUNC">(</span><span class="NAME">get</span><span class="PUNC">(</span><span class="KEYW">this</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="STRN">'length'</span><span class="PUNC">)</span><span class="PUNC">===</span><span class="NUMB">0</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">undefined</span><span class="WHIT"> </span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>142</span> </span><span class="WHIT">    </span><span class="KEYW">if</span><span class="WHIT"> </span><span class="PUNC">(</span><span class="NAME">Ember.Array</span><span class="WHIT"> </span><span class="PUNC">&&</span><span class="WHIT"> </span><span class="NAME">Ember.Array.detect</span><span class="PUNC">(</span><span class="KEYW">this</span><span class="PUNC">)</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">this.objectAt</span><span class="PUNC">(</span><span class="NUMB">0</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT"> 
+<span class='line'>143</span> 
+<span class='line'>144</span>     </span><span class="COMM">// handle generic enumerables</span><span class="WHIT">
+<span class='line'>145</span> </span><span class="WHIT">    </span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">context</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">popCtx</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">ret</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>146</span> </span><span class="WHIT">    </span><span class="NAME">ret</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">this.nextObject</span><span class="PUNC">(</span><span class="NUMB">0</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="KEYW">null</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">context</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>147</span> </span><span class="WHIT">    </span><span class="NAME">pushCtx</span><span class="PUNC">(</span><span class="NAME">context</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>148</span> </span><span class="WHIT">    </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">ret</span><span class="WHIT"> </span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>149</span> </span><span class="WHIT">  </span><span class="PUNC">}</span><span class="PUNC">)</span><span class="PUNC">.</span><span class="NAME">property</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'>150</span> 
+<span class='line'>151</span> </span><span class="WHIT">  </span><span class="COMM">/**
+<span class='line'>152</span>     Helper method returns the last object from a collection. If your enumerable
+<span class='line'>153</span>     contains only one object, this method should always return that object.
+<span class='line'>154</span>     If your enumerable is empty, this method should return undefined.
+<span class='line'>155</span> 
+<span class='line'>156</span>     @returns {Object} the last object or undefined
+<span class='line'>157</span> 
+<span class='line'>158</span>     @example
+<span class='line'>159</span>     var arr = ["a", "b", "c"];
+<span class='line'>160</span>     arr.lastObject(); => "c"
+<span class='line'>161</span> 
+<span class='line'>162</span>     var arr = [];
+<span class='line'>163</span>     arr.lastObject(); => undefined
+<span class='line'>164</span>   */</span><span class="WHIT">
+<span class='line'>165</span> </span><span class="WHIT">  </span><span class="NAME">lastObject</span><span class="PUNC">:</span><span class="WHIT"> </span><span class="NAME">Ember.computed</span><span class="PUNC">(</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>166</span> </span><span class="WHIT">    </span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">len</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">get</span><span class="PUNC">(</span><span class="KEYW">this</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="STRN">'length'</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>167</span> </span><span class="WHIT">    </span><span class="KEYW">if</span><span class="WHIT"> </span><span class="PUNC">(</span><span class="NAME">len</span><span class="PUNC">===</span><span class="NUMB">0</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">undefined</span><span class="WHIT"> </span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>168</span> </span><span class="WHIT">    </span><span class="KEYW">if</span><span class="WHIT"> </span><span class="PUNC">(</span><span class="NAME">Ember.Array</span><span class="WHIT"> </span><span class="PUNC">&&</span><span class="WHIT"> </span><span class="NAME">Ember.Array.detect</span><span class="PUNC">(</span><span class="KEYW">this</span><span class="PUNC">)</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>169</span> </span><span class="WHIT">      </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">this.objectAt</span><span class="PUNC">(</span><span class="NAME">len</span><span class="PUNC">-</span><span class="NUMB">1</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>170</span> </span><span class="WHIT">    </span><span class="PUNC">}</span><span class="WHIT"> </span><span class="KEYW">else</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>171</span> </span><span class="WHIT">      </span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">context</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">popCtx</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">idx</span><span class="PUNC">=</span><span class="NUMB">0</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">cur</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">last</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="KEYW">null</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>172</span> </span><span class="WHIT">      </span><span class="KEYW">do</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>173</span> </span><span class="WHIT">        </span><span class="NAME">last</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">cur</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>174</span> </span><span class="WHIT">        </span><span class="NAME">cur</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">this.nextObject</span><span class="PUNC">(</span><span class="NAME">idx</span><span class="PUNC">++</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">last</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">context</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>175</span> </span><span class="WHIT">      </span><span class="PUNC">}</span><span class="WHIT"> </span><span class="KEYW">while</span><span class="WHIT"> </span><span class="PUNC">(</span><span class="NAME">cur</span><span class="WHIT"> </span><span class="PUNC">!==</span><span class="WHIT"> </span><span class="NAME">undefined</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>176</span> </span><span class="WHIT">      </span><span class="NAME">pushCtx</span><span class="PUNC">(</span><span class="NAME">context</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>177</span> </span><span class="WHIT">      </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">last</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>178</span> </span><span class="WHIT">    </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>179</span> </span><span class="WHIT">  </span><span class="PUNC">}</span><span class="PUNC">)</span><span class="PUNC">.</span><span class="NAME">property</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'>180</span> <span class='line'>181</span> 
+</span><span class="WHIT">  </span><span class="COMM">/**
+<span class='line'>182</span>     Returns true if the passed object can be found in the receiver.  The
+<span class='line'>183</span>     default version will iterate through the enumerable until the object 
+<span class='line'>184</span>     is found.  You may want to override this with a more efficient version.
+<span class='line'>185</span>     
+<span class='line'>186</span>     @param {Object} obj
+<span class='line'>187</span>       The object to search for.
+<span class='line'>188</span>       
+<span class='line'>189</span>     @returns {Boolean} true if object is found in enumerable.
+<span class='line'>190</span>   */</span><span class="WHIT">
+<span class='line'>191</span> </span><span class="WHIT">  </span><span class="NAME">contains</span><span class="PUNC">:</span><span class="WHIT"> </span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">obj</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>192</span> </span><span class="WHIT">    </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">this.find</span><span class="PUNC">(</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">item</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT"> </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">item</span><span class="PUNC">===</span><span class="NAME">obj</span><span class="PUNC">;</span><span class="WHIT"> </span><span class="PUNC">}</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">!==</span><span class="WHIT"> </span><span class="NAME">undefined</span><span class="PUNC">;</span><span class="WHIT"> 
+<span class='line'>193</span>   </span><span class="PUNC">}</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'>194</span> </span><span class="WHIT">  
+<span class='line'>195</span>   </span><span class="COMM">/**
+<span class='line'>196</span>     Iterates through the enumerable, calling the passed function on each
+<span class='line'>197</span>     item. This method corresponds to the forEach() method defined in
+<span class='line'>198</span>     JavaScript 1.6.
+<span class='line'>199</span> 
+<span class='line'>200</span>     The callback method you provide should have the following signature (all
+<span class='line'>201</span>     parameters are optional):
+<span class='line'>202</span> 
+<span class='line'>203</span>           function(item, index, enumerable);
+<span class='line'>204</span> 
+<span class='line'>205</span>     - *item* is the current item in the iteration.
+<span class='line'>206</span>     - *index* is the current index in the iteration
+<span class='line'>207</span>     - *enumerable* is the enumerable object itself.
+<span class='line'>208</span> 
+<span class='line'>209</span>     Note that in addition to a callback, you can also pass an optional target
+<span class='line'>210</span>     object that will be set as "this" on the context. This is a good way
+<span class='line'>211</span>     to give your iterator function access to the current object.
+<span class='line'>212</span> 
+<span class='line'>213</span>     @param {Function} callback The callback to execute
+<span class='line'>214</span>     @param {Object} target The target object to use
+<span class='line'>215</span>     @returns {Object} receiver
+<span class='line'>216</span>   */</span><span class="WHIT">
+<span class='line'>217</span> </span><span class="WHIT">  </span><span class="NAME">forEach</span><span class="PUNC">:</span><span class="WHIT"> </span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">callback</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">target</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>218</span> </span><span class="WHIT">    </span><span class="KEYW">if</span><span class="WHIT"> </span><span class="PUNC">(</span><span class="KEYW">typeof</span><span class="WHIT"> </span><span class="NAME">callback</span><span class="WHIT"> </span><span class="PUNC">!==</span><span class="WHIT"> </span><span class="STRN">"function"</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="KEYW">throw</span><span class="WHIT"> </span><span class="KEYW">new</span><span class="WHIT"> </span><span class="NAME">TypeError</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>219</span> </span><span class="WHIT">    </span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">len</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">get</span><span class="PUNC">(</span><span class="KEYW">this</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="STRN">'length'</span><span class="PUNC">)</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">last</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="KEYW">null</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">context</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">popCtx</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>220</span> 
+<span class='line'>221</span> </span><span class="WHIT">    </span><span class="KEYW">if</span><span class="WHIT"> </span><span class="PUNC">(</span><span class="NAME">target</span><span class="WHIT"> </span><span class="PUNC">===</span><span class="WHIT"> </span><span class="NAME">undefined</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="NAME">target</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="KEYW">null</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>222</span> 
+<span class='line'>223</span> </span><span class="WHIT">    </span><span class="KEYW">for</span><span class="PUNC">(</span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">idx</span><span class="PUNC">=</span><span class="NUMB">0</span><span class="PUNC">;</span><span class="NAME">idx</span><span class="PUNC">&lt;</span><span class="NAME">len</span><span class="PUNC">;</span><span class="NAME">idx</span><span class="PUNC">++</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>224</span> </span><span class="WHIT">      </span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">next</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">this.nextObject</span><span class="PUNC">(</span><span class="NAME">idx</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">last</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">context</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>225</span> </span><span class="WHIT">      </span><span class="NAME">callback.call</span><span class="PUNC">(</span><span class="NAME">target</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">next</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">idx</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>226</span> </span><span class="WHIT">      </span><span class="NAME">last</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">next</span><span class="WHIT"> </span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>227</span> </span><span class="WHIT">    </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>228</span> </span><span class="WHIT">    </span><span class="NAME">last</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="KEYW">null</span><span class="WHIT"> </span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>229</span> </span><span class="WHIT">    </span><span class="NAME">context</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">pushCtx</span><span class="PUNC">(</span><span class="NAME">context</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>230</span> </span><span class="WHIT">    </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="WHIT"> </span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>231</span> </span><span class="WHIT">  </span><span class="PUNC">}</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'>232</span> 
+<span class='line'>233</span> </span><span class="WHIT">  </span><span class="COMM">/**
+<span class='line'>234</span>     Alias for mapProperty
+<span class='line'>235</span> 
+<span class='line'>236</span>     @params key {String} name of the property
+<span class='line'>237</span>     @returns {Array} The mapped array.
+<span class='line'>238</span>   */</span><span class="WHIT">
+<span class='line'>239</span> </span><span class="WHIT">  </span><span class="NAME">getEach</span><span class="PUNC">:</span><span class="WHIT"> </span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">key</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>240</span> </span><span class="WHIT">    </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">this.mapProperty</span><span class="PUNC">(</span><span class="NAME">key</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>241</span> </span><span class="WHIT">  </span><span class="PUNC">}</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'>242</span> 
+<span class='line'>243</span> </span><span class="WHIT">  </span><span class="COMM">/**
+<span class='line'>244</span>     Sets the value on the named property for each member. This is more
+<span class='line'>245</span>     efficient than using other methods defined on this helper. If the object
+<span class='line'>246</span>     implements Ember.Observable, the value will be changed to set(), otherwise
+<span class='line'>247</span>     it will be set directly. null objects are skipped.
+<span class='line'>248</span> 
+<span class='line'>249</span>     @param {String} key The key to set
+<span class='line'>250</span>     @param {Object} value The object to set
+<span class='line'>251</span>     @returns {Object} receiver
+<span class='line'>252</span>   */</span><span class="WHIT">
+<span class='line'>253</span> </span><span class="WHIT">  </span><span class="NAME">setEach</span><span class="PUNC">:</span><span class="WHIT"> </span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">key</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">value</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>254</span> </span><span class="WHIT">    </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">this.forEach</span><span class="PUNC">(</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">item</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>255</span> </span><span class="WHIT">      </span><span class="NAME">set</span><span class="PUNC">(</span><span class="NAME">item</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">key</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">value</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>256</span> </span><span class="WHIT">    </span><span class="PUNC">}</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>257</span> </span><span class="WHIT">  </span><span class="PUNC">}</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'>258</span> 
+<span class='line'>259</span> </span><span class="WHIT">  </span><span class="COMM">/**
+<span class='line'>260</span>     Maps all of the items in the enumeration to another value, returning
+<span class='line'>261</span>     a new array. This method corresponds to map() defined in JavaScript 1.6.
+<span class='line'>262</span> 
+<span class='line'>263</span>     The callback method you provide should have the following signature (all
+<span class='line'>264</span>     parameters are optional):
+<span class='line'>265</span> 
+<span class='line'>266</span>         function(item, index, enumerable);
+<span class='line'>267</span> 
+<span class='line'>268</span>     - *item* is the current item in the iteration.
+<span class='line'>269</span>     - *index* is the current index in the iteration
+<span class='line'>270</span>     - *enumerable* is the enumerable object itself.
+<span class='line'>271</span> 
+<span class='line'>272</span>     It should return the mapped value.
+<span class='line'>273</span> 
+<span class='line'>274</span>     Note that in addition to a callback, you can also pass an optional target
+<span class='line'>275</span>     object that will be set as "this" on the context. This is a good way
+<span class='line'>276</span>     to give your iterator function access to the current object.
+<span class='line'>277</span> 
+<span class='line'>278</span>     @param {Function} callback The callback to execute
+<span class='line'>279</span>     @param {Object} target The target object to use
+<span class='line'>280</span>     @returns {Array} The mapped array.
+<span class='line'>281</span>   */</span><span class="WHIT">
+<span class='line'>282</span> </span><span class="WHIT">  </span><span class="NAME">map</span><span class="PUNC">:</span><span class="WHIT"> </span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">callback</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">target</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>283</span> </span><span class="WHIT">    </span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">ret</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="PUNC">[</span><span class="PUNC">]</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>284</span> </span><span class="WHIT">    </span><span class="NAME">this.forEach</span><span class="PUNC">(</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">x</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">idx</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">i</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT"> 
+<span class='line'>285</span>       </span><span class="NAME">ret</span><span class="PUNC">[</span><span class="NAME">idx</span><span class="PUNC">]</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">callback.call</span><span class="PUNC">(</span><span class="NAME">target</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">x</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">idx</span><span class="PUNC">,</span><span class="NAME">i</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT"> 
+<span class='line'>286</span>     </span><span class="PUNC">}</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>287</span> </span><span class="WHIT">    </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">ret</span><span class="WHIT"> </span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>288</span> </span><span class="WHIT">  </span><span class="PUNC">}</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'>289</span> 
+<span class='line'>290</span> </span><span class="WHIT">  </span><span class="COMM">/**
+<span class='line'>291</span>     Similar to map, this specialized function returns the value of the named
+<span class='line'>292</span>     property on all items in the enumeration.
+<span class='line'>293</span> 
+<span class='line'>294</span>     @params key {String} name of the property
+<span class='line'>295</span>     @returns {Array} The mapped array.
+<span class='line'>296</span>   */</span><span class="WHIT">
+<span class='line'>297</span> </span><span class="WHIT">  </span><span class="NAME">mapProperty</span><span class="PUNC">:</span><span class="WHIT"> </span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">key</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>298</span> </span><span class="WHIT">    </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">this.map</span><span class="PUNC">(</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">next</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>299</span> </span><span class="WHIT">      </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">get</span><span class="PUNC">(</span><span class="NAME">next</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">key</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>300</span> </span><span class="WHIT">    </span><span class="PUNC">}</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>301</span> </span><span class="WHIT">  </span><span class="PUNC">}</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'>302</span> 
+<span class='line'>303</span> </span><span class="WHIT">  </span><span class="COMM">/**
+<span class='line'>304</span>     Returns an array with all of the items in the enumeration that the passed
+<span class='line'>305</span>     function returns YES for. This method corresponds to filter() defined in
+<span class='line'>306</span>     JavaScript 1.6.
+<span class='line'>307</span> 
+<span class='line'>308</span>     The callback method you provide should have the following signature (all
+<span class='line'>309</span>     parameters are optional):
+<span class='line'>310</span> 
+<span class='line'>311</span>           function(item, index, enumerable);
+<span class='line'>312</span> 
+<span class='line'>313</span>     - *item* is the current item in the iteration.
+<span class='line'>314</span>     - *index* is the current index in the iteration
+<span class='line'>315</span>     - *enumerable* is the enumerable object itself.
+<span class='line'>316</span> 
+<span class='line'>317</span>     It should return the YES to include the item in the results, NO otherwise.
+<span class='line'>318</span> 
+<span class='line'>319</span>     Note that in addition to a callback, you can also pass an optional target
+<span class='line'>320</span>     object that will be set as "this" on the context. This is a good way
+<span class='line'>321</span>     to give your iterator function access to the current object.
+<span class='line'>322</span> 
+<span class='line'>323</span>     @param {Function} callback The callback to execute
+<span class='line'>324</span> <span class='line'>325</span>     @param {Object} target The target object to use
+<span class='line'>326</span>     @returns {Array} A filtered array.
+<span class='line'>327</span>   */</span><span class="WHIT">
+<span class='line'>328</span> </span><span class="WHIT">  </span><span class="NAME">filter</span><span class="PUNC">:</span><span class="WHIT"> </span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">callback</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">target</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>329</span> </span><span class="WHIT">    </span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">ret</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="PUNC">[</span><span class="PUNC">]</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>330</span> </span><span class="WHIT">    </span><span class="NAME">this.forEach</span><span class="PUNC">(</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">x</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">idx</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">i</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>331</span> </span><span class="WHIT">      </span><span class="KEYW">if</span><span class="WHIT"> </span><span class="PUNC">(</span><span class="NAME">callback.call</span><span class="PUNC">(</span><span class="NAME">target</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">x</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">idx</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">i</span><span class="PUNC">)</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="NAME">ret.push</span><span class="PUNC">(</span><span class="NAME">x</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>332</span> </span><span class="WHIT">    </span><span class="PUNC">}</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>333</span> </span><span class="WHIT">    </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">ret</span><span class="WHIT"> </span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>334</span> </span><span class="WHIT">  </span><span class="PUNC">}</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'>335</span> 
+<span class='line'>336</span> </span><span class="WHIT">  </span><span class="COMM">/**
+<span class='line'>337</span>     Returns an array with just the items with the matched property.  You
+<span class='line'>338</span>     can pass an optional second argument with the target value.  Otherwise
+<span class='line'>339</span>     this will match any property that evaluates to true.
+<span class='line'>340</span> 
+<span class='line'>341</span>     @params key {String} the property to test
+<span class='line'>342</span>     @param value {String} optional value to test against.
+<span class='line'>343</span>     @returns {Array} filtered array
+<span class='line'>344</span>   */</span><span class="WHIT">
+<span class='line'>345</span> </span><span class="WHIT">  </span><span class="NAME">filterProperty</span><span class="PUNC">:</span><span class="WHIT"> </span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">key</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">value</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>346</span> </span><span class="WHIT">    </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">this.filter</span><span class="PUNC">(</span><span class="NAME">iter.apply</span><span class="PUNC">(</span><span class="KEYW">this</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">arguments</span><span class="PUNC">)</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>347</span> </span><span class="WHIT">  </span><span class="PUNC">}</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'>348</span> 
+<span class='line'>349</span> </span><span class="WHIT">  </span><span class="COMM">/**
+<span class='line'>350</span>     Returns the first item in the array for which the callback returns YES.
+<span class='line'>351</span>     This method works similar to the filter() method defined in JavaScript 1.6
+<span class='line'>352</span>     except that it will stop working on the array once a match is found.
+<span class='line'>353</span> 
+<span class='line'>354</span>     The callback method you provide should have the following signature (all
+<span class='line'>355</span>     parameters are optional):
+<span class='line'>356</span> 
+<span class='line'>357</span>           function(item, index, enumerable);
+<span class='line'>358</span> 
+<span class='line'>359</span>     - *item* is the current item in the iteration.
+<span class='line'>360</span>     - *index* is the current index in the iteration
+<span class='line'>361</span>     - *enumerable* is the enumerable object itself.
+<span class='line'>362</span> 
+<span class='line'>363</span>     It should return the YES to include the item in the results, NO otherwise.
+<span class='line'>364</span> 
+<span class='line'>365</span>     Note that in addition to a callback, you can also pass an optional target
+<span class='line'>366</span>     object that will be set as "this" on the context. This is a good way
+<span class='line'>367</span>     to give your iterator function access to the current object.
+<span class='line'>368</span> 
+<span class='line'>369</span>     @param {Function} callback The callback to execute
+<span class='line'>370</span>     @param {Object} target The target object to use
+<span class='line'>371</span>     @returns {Object} Found item or null.
+<span class='line'>372</span>   */</span><span class="WHIT">
+<span class='line'>373</span> </span><span class="WHIT">  </span><span class="NAME">find</span><span class="PUNC">:</span><span class="WHIT"> </span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">callback</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">target</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>374</span> </span><span class="WHIT">    </span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">len</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">get</span><span class="PUNC">(</span><span class="KEYW">this</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="STRN">'length'</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>375</span> </span><span class="WHIT">    </span><span class="KEYW">if</span><span class="WHIT"> </span><span class="PUNC">(</span><span class="NAME">target</span><span class="WHIT"> </span><span class="PUNC">===</span><span class="WHIT"> </span><span class="NAME">undefined</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="NAME">target</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="KEYW">null</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>376</span> 
+<span class='line'>377</span> </span><span class="WHIT">    </span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">last</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="KEYW">null</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">next</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">found</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="KEYW">false</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">ret</span><span class="WHIT"> </span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>378</span> </span><span class="WHIT">    </span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">context</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">popCtx</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>379</span> </span><span class="WHIT">    </span><span class="KEYW">for</span><span class="PUNC">(</span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">idx</span><span class="PUNC">=</span><span class="NUMB">0</span><span class="PUNC">;</span><span class="NAME">idx</span><span class="PUNC">&lt;</span><span class="NAME">len</span><span class="WHIT"> </span><span class="PUNC">&&</span><span class="WHIT"> </span><span class="PUNC">!</span><span class="NAME">found</span><span class="PUNC">;</span><span class="NAME">idx</span><span class="PUNC">++</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>380</span> </span><span class="WHIT">      </span><span class="NAME">next</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">this.nextObject</span><span class="PUNC">(</span><span class="NAME">idx</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">last</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">context</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>381</span> </span><span class="WHIT">      </span><span class="KEYW">if</span><span class="WHIT"> </span><span class="PUNC">(</span><span class="NAME">found</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">callback.call</span><span class="PUNC">(</span><span class="NAME">target</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">next</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">idx</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">)</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="NAME">ret</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">next</span><span class="WHIT"> </span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>382</span> </span><span class="WHIT">      </span><span class="NAME">last</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">next</span><span class="WHIT"> </span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>383</span> </span><span class="WHIT">    </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>384</span> </span><span class="WHIT">    </span><span class="NAME">next</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">last</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="KEYW">null</span><span class="WHIT"> </span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>385</span> </span><span class="WHIT">    </span><span class="NAME">context</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">pushCtx</span><span class="PUNC">(</span><span class="NAME">context</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>386</span> </span><span class="WHIT">    </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">ret</span><span class="WHIT"> </span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>387</span> </span><span class="WHIT">  </span><span class="PUNC">}</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'>388</span> 
+<span class='line'>389</span> </span><span class="WHIT">  </span><span class="COMM">/**
+<span class='line'>390</span>     Returns an the first item with a property matching the passed value.  You
+<span class='line'>391</span>     can pass an optional second argument with the target value.  Otherwise
+<span class='line'>392</span>     this will match any property that evaluates to true.
+<span class='line'>393</span> 
+<span class='line'>394</span>     This method works much like the more generic find() method.
+<span class='line'>395</span> 
+<span class='line'>396</span>     @params key {String} the property to test
+<span class='line'>397</span>     @param value {String} optional value to test against.
+<span class='line'>398</span>     @returns {Object} found item or null
+<span class='line'>399</span>   */</span><span class="WHIT">
+<span class='line'>400</span> </span><span class="WHIT">  </span><span class="NAME">findProperty</span><span class="PUNC">:</span><span class="WHIT"> </span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">key</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">value</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>401</span> </span><span class="WHIT">    </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">this.find</span><span class="PUNC">(</span><span class="NAME">iter.apply</span><span class="PUNC">(</span><span class="KEYW">this</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">arguments</span><span class="PUNC">)</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>402</span> </span><span class="WHIT">  </span><span class="PUNC">}</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'>403</span> 
+<span class='line'>404</span> </span><span class="WHIT">  </span><span class="COMM">/**
+<span class='line'>405</span>     Returns YES if the passed function returns YES for every item in the
+<span class='line'>406</span>     enumeration. This corresponds with the every() method in JavaScript 1.6.
+<span class='line'>407</span> 
+<span class='line'>408</span>     The callback method you provide should have the following signature (all
+<span class='line'>409</span>     parameters are optional):
+<span class='line'>410</span> 
+<span class='line'>411</span>           function(item, index, enumerable);
+<span class='line'>412</span> 
+<span class='line'>413</span>     - *item* is the current item in the iteration.
+<span class='line'>414</span>     - *index* is the current index in the iteration
+<span class='line'>415</span>     - *enumerable* is the enumerable object itself.
+<span class='line'>416</span> 
+<span class='line'>417</span>     It should return the YES or NO.
+<span class='line'>418</span> 
+<span class='line'>419</span>     Note that in addition to a callback, you can also pass an optional target
+<span class='line'>420</span>     object that will be set as "this" on the context. This is a good way
+<span class='line'>421</span>     to give your iterator function access to the current object.
+<span class='line'>422</span> 
+<span class='line'>423</span>     Example Usage:
+<span class='line'>424</span> 
+<span class='line'>425</span>           if (people.every(isEngineer)) { Paychecks.addBigBonus(); }
+<span class='line'>426</span> 
+<span class='line'>427</span>     @param {Function} callback The callback to execute
+<span class='line'>428</span>     @param {Object} target The target object to use
+<span class='line'>429</span>     @returns {Boolean}
+<span class='line'>430</span>   */</span><span class="WHIT">
+<span class='line'>431</span> </span><span class="WHIT">  </span><span class="NAME">every</span><span class="PUNC">:</span><span class="WHIT"> </span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">callback</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">target</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>432</span> </span><span class="WHIT">    </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="PUNC">!</span><span class="NAME">this.find</span><span class="PUNC">(</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">x</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">idx</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">i</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>433</span> </span><span class="WHIT">      </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="PUNC">!</span><span class="NAME">callback.call</span><span class="PUNC">(</span><span class="NAME">target</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">x</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">idx</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">i</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>434</span> </span><span class="WHIT">    </span><span class="PUNC">}</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>435</span> </span><span class="WHIT">  </span><span class="PUNC">}</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'>436</span> 
+<span class='line'>437</span> </span><span class="WHIT">  </span><span class="COMM">/**
+<span class='line'>438</span>     Returns true if the passed property resolves to true for all items in the
+<span class='line'>439</span>     enumerable.  This method is often simpler/faster than using a callback.
+<span class='line'>440</span> 
+<span class='line'>441</span>     @params key {String} the property to test
+<span class='line'>442</span>     @param value {String} optional value to test against.
+<span class='line'>443</span>     @returns {Array} filtered array
+<span class='line'>444</span>   */</span><span class="WHIT">
+<span class='line'>445</span> </span><span class="WHIT">  </span><span class="NAME">everyProperty</span><span class="PUNC">:</span><span class="WHIT"> </span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">key</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">value</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>446</span> </span><span class="WHIT">    </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">this.every</span><span class="PUNC">(</span><span class="NAME">iter.apply</span><span class="PUNC">(</span><span class="KEYW">this</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">arguments</span><span class="PUNC">)</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>447</span> </span><span class="WHIT">  </span><span class="PUNC">}</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'>448</span> 
+<span class='line'>449</span> 
+<span class='line'>450</span> </span><span class="WHIT">  </span><span class="COMM">/**
+<span class='line'>451</span>     Returns YES if the passed function returns true for any item in the
+<span class='line'>452</span>     enumeration. This corresponds with the every() method in JavaScript 1.6.
+<span class='line'>453</span> 
+<span class='line'>454</span>     The callback method you provide should have the following signature (all
+<span class='line'>455</span>     parameters are optional):
+<span class='line'>456</span> 
+<span class='line'>457</span>           function(item, index, enumerable);
+<span class='line'>458</span> 
+<span class='line'>459</span>     - *item* is the current item in the iteration.
+<span class='line'>460</span>     - *index* is the current index in the iteration
+<span class='line'>461</span>     - *enumerable* is the enumerable object itself.
+<span class='line'>462</span> 
+<span class='line'>463</span>     It should return the YES to include the item in the results, NO otherwise.
+<span class='line'>464</span> 
+<span class='line'>465</span>     Note that in addition to a callback, you can also pass an optional target
+<span class='line'>466</span>     object that will be set as "this" on the context. This is a good way
+<span class='line'>467</span>     to give your iterator function access to the current object.
+<span class='line'>468</span> 
+<span class='line'>469</span>     Usage Example:
+<span class='line'>470</span> 
+<span class='line'>471</span>           if (people.some(isManager)) { Paychecks.addBiggerBonus(); }
+<span class='line'>472</span> 
+<span class='line'>473</span>     @param {Function} callback The callback to execute
+<span class='line'>474</span>     @param {Object} target The target object to use
+<span class='line'>475</span>     @returns {Array} A filtered array.
+<span class='line'>476</span>   */</span><span class="WHIT">
+<span class='line'>477</span> </span><span class="WHIT">  </span><span class="NAME">some</span><span class="PUNC">:</span><span class="WHIT"> </span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">callback</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">target</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>478</span> </span><span class="WHIT">    </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="PUNC">!</span><span class="PUNC">!</span><span class="NAME">this.find</span><span class="PUNC">(</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">x</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">idx</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">i</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>479</span> </span><span class="WHIT">      </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="PUNC">!</span><span class="PUNC">!</span><span class="NAME">callback.call</span><span class="PUNC">(</span><span class="NAME">target</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">x</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">idx</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">i</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>480</span> </span><span class="WHIT">    </span><span class="PUNC">}</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>481</span> </span><span class="WHIT">  </span><span class="PUNC">}</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'>482</span> 
+<span class='line'>483</span> </span><span class="WHIT">  </span><span class="COMM">/**
+<span class='line'>484</span>     Returns true if the passed property resolves to true for any item in the
+<span class='line'>485</span>     enumerable.  This method is often simpler/faster than using a callback.
+<span class='line'>486</span> 
+<span class='line'>487</span>     @params key {String} the property to test
+<span class='line'>488</span>     @param value {String} optional value to test against.
+<span class='line'>489</span>     @returns {Boolean} true
+<span class='line'>490</span>   */</span><span class="WHIT">
+<span class='line'>491</span> </span><span class="WHIT">  </span><span class="NAME">someProperty</span><span class="PUNC">:</span><span class="WHIT"> </span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">key</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">value</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>492</span> </span><span class="WHIT">    </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">this.some</span><span class="PUNC">(</span><span class="NAME">iter.apply</span><span class="PUNC">(</span><span class="KEYW">this</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">arguments</span><span class="PUNC">)</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>493</span> </span><span class="WHIT">  </span><span class="PUNC">}</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'>494</span> 
+<span class='line'>495</span> </span><span class="WHIT">  </span><span class="COMM">/**
+<span class='line'>496</span>     This will combine the values of the enumerator into a single value. It
+<span class='line'>497</span>     is a useful way to collect a summary value from an enumeration. This
+<span class='line'>498</span>     corresponds to the reduce() method defined in JavaScript 1.8.
+<span class='line'>499</span> 
+<span class='line'>500</span>     The callback method you provide should have the following signature (all
+<span class='line'>501</span>     parameters are optional):
+<span class='line'>502</span> 
+<span class='line'>503</span>           function(previousValue, item, index, enumerable);
+<span class='line'>504</span> 
+<span class='line'>505</span>     - *previousValue* is the value returned by the last call to the iterator.
+<span class='line'>506</span>     - *item* is the current item in the iteration.
+<span class='line'>507</span>     - *index* is the current index in the iteration
+<span class='line'>508</span>     - *enumerable* is the enumerable object itself.
+<span class='line'>509</span> 
+<span class='line'>510</span>     Return the new cumulative value.
+<span class='line'>511</span> 
+<span class='line'>512</span>     In addition to the callback you can also pass an initialValue. An error
+<span class='line'>513</span>     will be raised if you do not pass an initial value and the enumerator is
+<span class='line'>514</span>     empty.
+<span class='line'>515</span> 
+<span class='line'>516</span>     Note that unlike the other methods, this method does not allow you to
+<span class='line'>517</span>     pass a target object to set as this for the callback. It's part of the
+<span class='line'>518</span>     spec. Sorry.
+<span class='line'>519</span> 
+<span class='line'>520</span>     @param {Function} callback The callback to execute
+<span class='line'>521</span>     @param {Object} initialValue Initial value for the reduce
+<span class='line'>522</span>     @param {String} reducerProperty internal use only.
+<span class='line'>523</span>     @returns {Object} The reduced value.
+<span class='line'>524</span>   */</span><span class="WHIT">
+<span class='line'>525</span> </span><span class="WHIT">  </span><span class="NAME">reduce</span><span class="PUNC">:</span><span class="WHIT"> </span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">callback</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">initialValue</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">reducerProperty</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>526</span> </span><span class="WHIT">    </span><span class="KEYW">if</span><span class="WHIT"> </span><span class="PUNC">(</span><span class="KEYW">typeof</span><span class="WHIT"> </span><span class="NAME">callback</span><span class="WHIT"> </span><span class="PUNC">!==</span><span class="WHIT"> </span><span class="STRN">"function"</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT"> </span><span class="KEYW">throw</span><span class="WHIT"> </span><span class="KEYW">new</span><span class="WHIT"> </span><span class="NAME">TypeError</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT"> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>527</span> 
+<span class='line'>528</span> </span><span class="WHIT">    </span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">ret</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">initialValue</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>529</span> 
+<span class='line'>530</span> </span><span class="WHIT">    </span><span class="NAME">this.forEach</span><span class="PUNC">(</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">item</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">i</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>531</span> </span><span class="WHIT">      </span><span class="NAME">ret</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">callback.call</span><span class="PUNC">(</span><span class="KEYW">null</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">ret</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">item</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">i</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">reducerProperty</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>532</span> </span><span class="WHIT">    </span><span class="PUNC">}</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>533</span> 
+<span class='line'>534</span> </span><span class="WHIT">    </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">ret</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>535</span> </span><span class="WHIT">  </span><span class="PUNC">}</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'>536</span> 
+<span class='line'>537</span> </span><span class="WHIT">  </span><span class="COMM">/**
+<span class='line'>538</span>     Invokes the named method on every object in the receiver that
+<span class='line'>539</span>     implements it.  This method corresponds to the implementation in
+<span class='line'>540</span>     Prototype 1.6.
+<span class='line'>541</span> 
+<span class='line'>542</span>     @param methodName {String} the name of the method
+<span class='line'>543</span>     @param args {Object...} optional arguments to pass as well.
+<span class='line'>544</span>     @returns {Array} return values from calling invoke.
+<span class='line'>545</span>   */</span><span class="WHIT">
+<span class='line'>546</span> </span><span class="WHIT">  </span><span class="NAME">invoke</span><span class="PUNC">:</span><span class="WHIT"> </span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">methodName</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>547</span> </span><span class="WHIT">    </span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">args</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">ret</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="PUNC">[</span><span class="PUNC">]</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>548</span> </span><span class="WHIT">    </span><span class="KEYW">if</span><span class="WHIT"> </span><span class="PUNC">(</span><span class="NAME">arguments.length</span><span class="PUNC">></span><span class="NUMB">1</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="NAME">args</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">a_slice.call</span><span class="PUNC">(</span><span class="NAME">arguments</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NUMB">1</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>549</span> </span><span class="WHIT">    
+<span class='line'>550</span>     </span><span class="NAME">this.forEach</span><span class="PUNC">(</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">x</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">idx</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT"> 
+<span class='line'>551</span>       </span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">method</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">x</span><span class="WHIT"> </span><span class="PUNC">&&</span><span class="WHIT"> </span><span class="NAME">x</span><span class="PUNC">[</span><span class="NAME">methodName</span><span class="PUNC">]</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>552</span> </span><span class="WHIT">      </span><span class="KEYW">if</span><span class="WHIT"> </span><span class="PUNC">(</span><span class="STRN">'function'</span><span class="WHIT"> </span><span class="PUNC">===</span><span class="WHIT"> </span><span class="KEYW">typeof</span><span class="WHIT"> </span><span class="NAME">method</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>553</span> </span><span class="WHIT">        </span><span class="NAME">ret</span><span class="PUNC">[</span><span class="NAME">idx</span><span class="PUNC">]</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">args</span><span class="WHIT"> </span><span class="PUNC">?</span><span class="WHIT"> </span><span class="NAME">method.apply</span><span class="PUNC">(</span><span class="NAME">x</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">args</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">:</span><span class="WHIT"> </span><span class="NAME">method.call</span><span class="PUNC">(</span><span class="NAME">x</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>554</span> </span><span class="WHIT">      </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>555</span> </span><span class="WHIT">    </span><span class="PUNC">}</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>556</span> </span><span class="WHIT">    
+<span class='line'>557</span>     </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">ret</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>558</span> </span><span class="WHIT">  </span><span class="PUNC">}</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'>559</span> 
+<span class='line'>560</span> </span><span class="WHIT">  </span><span class="COMM">/**
+<span class='line'>561</span>     Simply converts the enumerable into a genuine array.  The order is not 
+<span class='line'>562</span>     guaranteed.  Corresponds to the method implemented by Prototype.
+<span class='line'>563</span> 
+<span class='line'>564</span>     @returns {Array} the enumerable as an array.
+<span class='line'>565</span>   */</span><span class="WHIT">
+<span class='line'>566</span> </span><span class="WHIT">  </span><span class="NAME">toArray</span><span class="PUNC">:</span><span class="WHIT"> </span><span class="KEYW">function</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>567</span> </span><span class="WHIT">    </span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">ret</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="PUNC">[</span><span class="PUNC">]</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>568</span> </span><span class="WHIT">    </span><span class="NAME">this.forEach</span><span class="PUNC">(</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">o</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">idx</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT"> </span><span class="NAME">ret</span><span class="PUNC">[</span><span class="NAME">idx</span><span class="PUNC">]</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">o</span><span class="PUNC">;</span><span class="WHIT"> </span><span class="PUNC">}</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>569</span> </span><span class="WHIT">    </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">ret</span><span class="WHIT"> </span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>570</span> </span><span class="WHIT">  </span><span class="PUNC">}</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'>571</span> 
+<span class='line'>572</span> </span><span class="WHIT">  </span><span class="COMM">/**
+<span class='line'>573</span>     Generates a new array with the contents of the old array, sans any null
+<span class='line'>574</span>     values.
+<span class='line'>575</span> 
+<span class='line'>576</span>     @returns {Array}
+<span class='line'>577</span>   */</span><span class="WHIT">
+<span class='line'>578</span> </span><span class="WHIT">  </span><span class="NAME">compact</span><span class="PUNC">:</span><span class="WHIT"> </span><span class="KEYW">function</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT"> </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">this.without</span><span class="PUNC">(</span><span class="KEYW">null</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT"> </span><span class="PUNC">}</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'>579</span> 
+<span class='line'>580</span> </span><span class="WHIT">  </span><span class="COMM">/**
+<span class='line'>581</span>     Returns a new enumerable that excludes the passed value.  The default
+<span class='line'>582</span>     implementation returns an array regardless of the receiver type unless
+<span class='line'>583</span>     the receiver does not contain the value.
+<span class='line'>584</span> 
+<span class='line'>585</span>     @param {Object} value
+<span class='line'>586</span>     @returns {Ember.Enumerable}
+<span class='line'>587</span>   */</span><span class="WHIT">
+<span class='line'>588</span> </span><span class="WHIT">  </span><span class="NAME">without</span><span class="PUNC">:</span><span class="WHIT"> </span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">value</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>589</span> </span><span class="WHIT">    </span><span class="KEYW">if</span><span class="WHIT"> </span><span class="PUNC">(</span><span class="PUNC">!</span><span class="NAME">this.contains</span><span class="PUNC">(</span><span class="NAME">value</span><span class="PUNC">)</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="WHIT"> </span><span class="COMM">// nothing to do</span><span class="WHIT">
+<span class='line'>590</span> </span><span class="WHIT">    </span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">ret</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="PUNC">[</span><span class="PUNC">]</span><span class="WHIT"> </span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>591</span> </span><span class="WHIT">    </span><span class="NAME">this.forEach</span><span class="PUNC">(</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">k</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT"> 
+<span class='line'>592</span>       </span><span class="KEYW">if</span><span class="WHIT"> </span><span class="PUNC">(</span><span class="NAME">k</span><span class="WHIT"> </span><span class="PUNC">!==</span><span class="WHIT"> </span><span class="NAME">value</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="NAME">ret</span><span class="PUNC">[</span><span class="NAME">ret.length</span><span class="PUNC">]</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">k</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>593</span> </span><span class="WHIT">    </span><span class="PUNC">}</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>594</span> </span><span class="WHIT">    </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">ret</span><span class="WHIT"> </span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>595</span> </span><span class="WHIT">  </span><span class="PUNC">}</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'>596</span> 
+<span class='line'>597</span> </span><span class="WHIT">  </span><span class="COMM">/**
+<span class='line'>598</span>     Returns a new enumerable that contains only unique values.  The default
+<span class='line'>599</span>     implementation returns an array regardless of the receiver type.
+<span class='line'>600</span>     
+<span class='line'>601</span>     @returns {Ember.Enumerable}
+<span class='line'>602</span>   */</span><span class="WHIT">
+<span class='line'>603</span> </span><span class="WHIT">  </span><span class="NAME">uniq</span><span class="PUNC">:</span><span class="WHIT"> </span><span class="KEYW">function</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>604</span> </span><span class="WHIT">    </span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">ret</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="PUNC">[</span><span class="PUNC">]</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>605</span> </span><span class="WHIT">    </span><span class="NAME">this.forEach</span><span class="PUNC">(</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">k</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>606</span> </span><span class="WHIT">      </span><span class="KEYW">if</span><span class="WHIT"> </span><span class="PUNC">(</span><span class="NAME">ret.indexOf</span><span class="PUNC">(</span><span class="NAME">k</span><span class="PUNC">)</span><span class="PUNC">&lt;</span><span class="NUMB">0</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="NAME">ret.push</span><span class="PUNC">(</span><span class="NAME">k</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>607</span> </span><span class="WHIT">    </span><span class="PUNC">}</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>608</span> </span><span class="WHIT">    </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">ret</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>609</span> </span><span class="WHIT">  </span><span class="PUNC">}</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'>610</span> 
+<span class='line'>611</span> </span><span class="WHIT">  </span><span class="COMM">/**
+<span class='line'>612</span>     This property will trigger anytime the enumerable's content changes.
+<span class='line'>613</span>     You can observe this property to be notified of changes to the enumerables
+<span class='line'>614</span>     content.
+<span class='line'>615</span> 
+<span class='line'>616</span>     For plain enumerables, this property is read only.  Ember.Array overrides
+<span class='line'>617</span>     this method.
+<span class='line'>618</span> 
+<span class='line'>619</span>     @property {Ember.Array}
+<span class='line'>620</span>   */</span><span class="WHIT">
+<span class='line'>621</span> </span><span class="WHIT">  </span><span class="STRN">'[]'</span><span class="PUNC">:</span><span class="WHIT"> </span><span class="NAME">Ember.computed</span><span class="PUNC">(</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">key</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">value</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT"> 
+<span class='line'>622</span>     </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="WHIT"> 
+<span class='line'>623</span>   </span><span class="PUNC">}</span><span class="PUNC">)</span><span class="PUNC">.</span><span class="NAME">property</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">.</span><span class="NAME">cacheable</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'>624</span> 
+<span class='line'>625</span> </span><span class="WHIT">  </span><span class="COMM">// ..........................................................</span><span class="WHIT">
+<span class='line'>626</span> </span><span class="WHIT">  </span><span class="COMM">// ENUMERABLE OBSERVERS</span><span class="WHIT">
+<span class='line'>627</span> </span><span class="WHIT">  </span><span class="COMM">// </span><span class="WHIT">
+<span class='line'>628</span> </span><span class="WHIT">  
+<span class='line'>629</span> <span class='line'>630</span>   </span><span class="COMM">/**
+<span class='line'>631</span>     Registers an enumerable observer.   Must implement Ember.EnumerableObserver
+<span class='line'>632</span>     mixin.
+<span class='line'>633</span>   */</span><span class="WHIT">
+<span class='line'>634</span> </span><span class="WHIT">  </span><span class="NAME">addEnumerableObserver</span><span class="PUNC">:</span><span class="WHIT"> </span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">target</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">opts</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>635</span> </span><span class="WHIT">    </span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">willChange</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="PUNC">(</span><span class="NAME">opts</span><span class="WHIT"> </span><span class="PUNC">&&</span><span class="WHIT"> </span><span class="NAME">opts.willChange</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">||</span><span class="WHIT"> </span><span class="STRN">'enumerableWillChange'</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'>636</span> </span><span class="WHIT">        </span><span class="NAME">didChange</span><span class="WHIT">  </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="PUNC">(</span><span class="NAME">opts</span><span class="WHIT"> </span><span class="PUNC">&&</span><span class="WHIT"> </span><span class="NAME">opts.didChange</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">||</span><span class="WHIT"> </span><span class="STRN">'enumerableDidChange'</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>637</span> 
+<span class='line'>638</span> </span><span class="WHIT">    </span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">hasObservers</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">get</span><span class="PUNC">(</span><span class="KEYW">this</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="STRN">'hasEnumerableObservers'</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>639</span> </span><span class="WHIT">    </span><span class="KEYW">if</span><span class="WHIT"> </span><span class="PUNC">(</span><span class="PUNC">!</span><span class="NAME">hasObservers</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="NAME">Ember.propertyWillChange</span><span class="PUNC">(</span><span class="KEYW">this</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="STRN">'hasEnumerableObservers'</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>640</span> </span><span class="WHIT">    </span><span class="NAME">Ember.addListener</span><span class="PUNC">(</span><span class="KEYW">this</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="STRN">'@enumerable:before'</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">target</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">willChange</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">xform</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>641</span> </span><span class="WHIT">    </span><span class="NAME">Ember.addListener</span><span class="PUNC">(</span><span class="KEYW">this</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="STRN">'@enumerable:change'</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">target</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">didChange</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">xform</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>642</span> </span><span class="WHIT">    </span><span class="KEYW">if</span><span class="WHIT"> </span><span class="PUNC">(</span><span class="PUNC">!</span><span class="NAME">hasObservers</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="NAME">Ember.propertyDidChange</span><span class="PUNC">(</span><span class="KEYW">this</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="STRN">'hasEnumerableObservers'</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>643</span> </span><span class="WHIT">    </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>644</span> </span><span class="WHIT">  </span><span class="PUNC">}</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'>645</span> 
+<span class='line'>646</span> </span><span class="WHIT">  </span><span class="COMM">/**
+<span class='line'>647</span>     Removes a registered enumerable observer. 
+<span class='line'>648</span>   */</span><span class="WHIT">
+<span class='line'>649</span> </span><span class="WHIT">  </span><span class="NAME">removeEnumerableObserver</span><span class="PUNC">:</span><span class="WHIT"> </span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">target</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">opts</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>650</span> </span><span class="WHIT">    </span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">willChange</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="PUNC">(</span><span class="NAME">opts</span><span class="WHIT"> </span><span class="PUNC">&&</span><span class="WHIT"> </span><span class="NAME">opts.willChange</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">||</span><span class="WHIT"> </span><span class="STRN">'enumerableWillChange'</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'>651</span> </span><span class="WHIT">        </span><span class="NAME">didChange</span><span class="WHIT">  </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="PUNC">(</span><span class="NAME">opts</span><span class="WHIT"> </span><span class="PUNC">&&</span><span class="WHIT"> </span><span class="NAME">opts.didChange</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">||</span><span class="WHIT"> </span><span class="STRN">'enumerableDidChange'</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>652</span> 
+<span class='line'>653</span> </span><span class="WHIT">    </span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">hasObservers</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">get</span><span class="PUNC">(</span><span class="KEYW">this</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="STRN">'hasEnumerableObservers'</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>654</span> </span><span class="WHIT">    </span><span class="KEYW">if</span><span class="WHIT"> </span><span class="PUNC">(</span><span class="NAME">hasObservers</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="NAME">Ember.propertyWillChange</span><span class="PUNC">(</span><span class="KEYW">this</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="STRN">'hasEnumerableObservers'</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>655</span> </span><span class="WHIT">    </span><span class="NAME">Ember.removeListener</span><span class="PUNC">(</span><span class="KEYW">this</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="STRN">'@enumerable:before'</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">target</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">willChange</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>656</span> </span><span class="WHIT">    </span><span class="NAME">Ember.removeListener</span><span class="PUNC">(</span><span class="KEYW">this</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="STRN">'@enumerable:change'</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">target</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">didChange</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>657</span> </span><span class="WHIT">    </span><span class="KEYW">if</span><span class="WHIT"> </span><span class="PUNC">(</span><span class="NAME">hasObservers</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="NAME">Ember.propertyDidChange</span><span class="PUNC">(</span><span class="KEYW">this</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="STRN">'hasEnumerableObservers'</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>658</span> </span><span class="WHIT">    </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>659</span> </span><span class="WHIT">  </span><span class="PUNC">}</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'>660</span> </span><span class="WHIT">  
+<span class='line'>661</span>   </span><span class="COMM">/**
+<span class='line'>662</span>     Becomes true whenever the array currently has observers watching changes
+<span class='line'>663</span>     on the array.
+<span class='line'>664</span>     
+<span class='line'>665</span>     @property {Boolean}
+<span class='line'>666</span>   */</span><span class="WHIT">
+<span class='line'>667</span> </span><span class="WHIT">  </span><span class="NAME">hasEnumerableObservers</span><span class="PUNC">:</span><span class="WHIT"> </span><span class="NAME">Ember.computed</span><span class="PUNC">(</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>668</span> </span><span class="WHIT">    </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">Ember.hasListeners</span><span class="PUNC">(</span><span class="KEYW">this</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="STRN">'@enumerable:change'</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">||</span><span class="WHIT"> </span><span class="NAME">Ember.hasListeners</span><span class="PUNC">(</span><span class="KEYW">this</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="STRN">'@enumerable:before'</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>669</span> </span><span class="WHIT">  </span><span class="PUNC">}</span><span class="PUNC">)</span><span class="PUNC">.</span><span class="NAME">property</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">.</span><span class="NAME">cacheable</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'>670</span> </span><span class="WHIT">  
+<span class='line'>671</span>   
+<span class='line'>672</span>   </span><span class="COMM">/**
+<span class='line'>673</span>     Invoke this method just before the contents of your enumerable will 
+<span class='line'>674</span>     change.  You can either omit the parameters completely or pass the objects
+<span class='line'>675</span>     to be removed or added if available or just a count.
+<span class='line'>676</span>     
+<span class='line'>677</span>     @param {Ember.Enumerable|Number} removing
+<span class='line'>678</span>       An enumerable of the objects to be removed or the number of items to
+<span class='line'>679</span>       be removed.
+<span class='line'>680</span>       
+<span class='line'>681</span>     @param {Ember.Enumerable|Number} adding
+<span class='line'>682</span>       An enumerable of the objects to be added or the number of items to be
+<span class='line'>683</span>       added.
+<span class='line'>684</span>     
+<span class='line'>685</span>     @returns {Ember.Enumerable} receiver
+<span class='line'>686</span>   */</span><span class="WHIT">
+<span class='line'>687</span> </span><span class="WHIT">  </span><span class="NAME">enumerableContentWillChange</span><span class="PUNC">:</span><span class="WHIT"> </span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">removing</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">adding</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>688</span> </span><span class="WHIT">    
+<span class='line'>689</span>     </span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">removeCnt</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">addCnt</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">hasDelta</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>690</span> 
+<span class='line'>691</span> </span><span class="WHIT">    </span><span class="KEYW">if</span><span class="WHIT"> </span><span class="PUNC">(</span><span class="STRN">'number'</span><span class="WHIT"> </span><span class="PUNC">===</span><span class="WHIT"> </span><span class="KEYW">typeof</span><span class="WHIT"> </span><span class="NAME">removing</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="NAME">removeCnt</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">removing</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>692</span> </span><span class="WHIT">    </span><span class="KEYW">else</span><span class="WHIT"> </span><span class="KEYW">if</span><span class="WHIT"> </span><span class="PUNC">(</span><span class="NAME">removing</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="NAME">removeCnt</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">get</span><span class="PUNC">(</span><span class="NAME">removing</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="STRN">'length'</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>693</span> </span><span class="WHIT">    </span><span class="KEYW">else</span><span class="WHIT"> </span><span class="NAME">removeCnt</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">removing</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="PUNC">-</span><span class="NUMB">1</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>694</span> 
+<span class='line'>695</span> </span><span class="WHIT">    </span><span class="KEYW">if</span><span class="WHIT"> </span><span class="PUNC">(</span><span class="STRN">'number'</span><span class="WHIT"> </span><span class="PUNC">===</span><span class="WHIT"> </span><span class="KEYW">typeof</span><span class="WHIT"> </span><span class="NAME">adding</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="NAME">addCnt</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">adding</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>696</span> </span><span class="WHIT">    </span><span class="KEYW">else</span><span class="WHIT"> </span><span class="KEYW">if</span><span class="WHIT"> </span><span class="PUNC">(</span><span class="NAME">adding</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="NAME">addCnt</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">get</span><span class="PUNC">(</span><span class="NAME">adding</span><span class="PUNC">,</span><span class="STRN">'length'</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>697</span> </span><span class="WHIT">    </span><span class="KEYW">else</span><span class="WHIT"> </span><span class="NAME">addCnt</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">adding</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="PUNC">-</span><span class="NUMB">1</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>698</span> </span><span class="WHIT">    
+<span class='line'>699</span>     </span><span class="NAME">hasDelta</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">addCnt</span><span class="PUNC">&lt;</span><span class="NUMB">0</span><span class="WHIT"> </span><span class="PUNC">||</span><span class="WHIT"> </span><span class="NAME">removeCnt</span><span class="PUNC">&lt;</span><span class="NUMB">0</span><span class="WHIT"> </span><span class="PUNC">||</span><span class="WHIT"> </span><span class="NAME">addCnt</span><span class="PUNC">-</span><span class="NAME">removeCnt</span><span class="PUNC">!==</span><span class="NUMB">0</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>700</span> 
+<span class='line'>701</span> </span><span class="WHIT">    </span><span class="KEYW">if</span><span class="WHIT"> </span><span class="PUNC">(</span><span class="NAME">removing</span><span class="WHIT"> </span><span class="PUNC">===</span><span class="WHIT"> </span><span class="PUNC">-</span><span class="NUMB">1</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="NAME">removing</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="KEYW">null</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>702</span> </span><span class="WHIT">    </span><span class="KEYW">if</span><span class="WHIT"> </span><span class="PUNC">(</span><span class="NAME">adding</span><span class="WHIT">   </span><span class="PUNC">===</span><span class="WHIT"> </span><span class="PUNC">-</span><span class="NUMB">1</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="NAME">adding</span><span class="WHIT">   </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="KEYW">null</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>703</span> </span><span class="WHIT">    
+<span class='line'>704</span>     </span><span class="KEYW">if</span><span class="WHIT"> </span><span class="PUNC">(</span><span class="NAME">hasDelta</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="NAME">Ember.propertyWillChange</span><span class="PUNC">(</span><span class="KEYW">this</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="STRN">'length'</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>705</span> </span><span class="WHIT">    </span><span class="NAME">Ember.sendEvent</span><span class="PUNC">(</span><span class="KEYW">this</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="STRN">'@enumerable:before'</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">removing</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">adding</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>706</span> 
+<span class='line'>707</span> </span><span class="WHIT">    </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>708</span> </span><span class="WHIT">  </span><span class="PUNC">}</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'>709</span> </span><span class="WHIT">  
+<span class='line'>710</span>   </span><span class="COMM">/**
+<span class='line'>711</span>     Invoke this method when the contents of your enumerable has changed.
+<span class='line'>712</span>     This will notify any observers watching for content changes.  If your are
+<span class='line'>713</span>     implementing an ordered enumerable (such as an array), also pass the
+<span class='line'>714</span>     start and end values where the content changed so that it can be used to
+<span class='line'>715</span>     notify range observers.
+<span class='line'>716</span> 
+<span class='line'>717</span>     @param {Number} start 
+<span class='line'>718</span>       optional start offset for the content change.  For unordered 
+<span class='line'>719</span>       enumerables, you should always pass -1.
+<span class='line'>720</span>       
+<span class='line'>721</span>     @param {Enumerable} added
+<span class='line'>722</span>       optional enumerable containing items that were added to the set.  For
+<span class='line'>723</span>       ordered enumerables, this should be an ordered array of items.  If no
+<span class='line'>724</span>       items were added you can pass null.
+<span class='line'>725</span>     
+<span class='line'>726</span>     @param {Enumerable} removes
+<span class='line'>727</span>       optional enumerable containing items that were removed from the set. 
+<span class='line'>728</span>       For ordered enumerables, this hsould be an ordered array of items. If 
+<span class='line'>729</span>       no items were removed you can pass null.
+<span class='line'>730</span>       
+<span class='line'>731</span>     @returns {Object} receiver
+<span class='line'>732</span>   */</span><span class="WHIT">
+<span class='line'>733</span> </span><span class="WHIT">  </span><span class="NAME">enumerableContentDidChange</span><span class="PUNC">:</span><span class="WHIT"> </span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">removing</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">adding</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>734</span> </span><span class="WHIT">    </span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">notify</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">this.propertyDidChange</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">removeCnt</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">addCnt</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">hasDelta</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>735</span> 
+<span class='line'>736</span> </span><span class="WHIT">    </span><span class="KEYW">if</span><span class="WHIT"> </span><span class="PUNC">(</span><span class="STRN">'number'</span><span class="WHIT"> </span><span class="PUNC">===</span><span class="WHIT"> </span><span class="KEYW">typeof</span><span class="WHIT"> </span><span class="NAME">removing</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="NAME">removeCnt</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">removing</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>737</span> </span><span class="WHIT">    </span><span class="KEYW">else</span><span class="WHIT"> </span><span class="KEYW">if</span><span class="WHIT"> </span><span class="PUNC">(</span><span class="NAME">removing</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="NAME">removeCnt</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">get</span><span class="PUNC">(</span><span class="NAME">removing</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="STRN">'length'</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>738</span> </span><span class="WHIT">    </span><span class="KEYW">else</span><span class="WHIT"> </span><span class="NAME">removeCnt</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">removing</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="PUNC">-</span><span class="NUMB">1</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>739</span> 
+<span class='line'>740</span> </span><span class="WHIT">    </span><span class="KEYW">if</span><span class="WHIT"> </span><span class="PUNC">(</span><span class="STRN">'number'</span><span class="WHIT"> </span><span class="PUNC">===</span><span class="WHIT"> </span><span class="KEYW">typeof</span><span class="WHIT"> </span><span class="NAME">adding</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="NAME">addCnt</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">adding</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>741</span> </span><span class="WHIT">    </span><span class="KEYW">else</span><span class="WHIT"> </span><span class="KEYW">if</span><span class="WHIT"> </span><span class="PUNC">(</span><span class="NAME">adding</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="NAME">addCnt</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">get</span><span class="PUNC">(</span><span class="NAME">adding</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="STRN">'length'</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>742</span> </span><span class="WHIT">    </span><span class="KEYW">else</span><span class="WHIT"> </span><span class="NAME">addCnt</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">adding</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="PUNC">-</span><span class="NUMB">1</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>743</span> </span><span class="WHIT">    
+<span class='line'>744</span>     </span><span class="NAME">hasDelta</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">addCnt</span><span class="PUNC">&lt;</span><span class="NUMB">0</span><span class="WHIT"> </span><span class="PUNC">||</span><span class="WHIT"> </span><span class="NAME">removeCnt</span><span class="PUNC">&lt;</span><span class="NUMB">0</span><span class="WHIT"> </span><span class="PUNC">||</span><span class="WHIT"> </span><span class="NAME">addCnt</span><span class="PUNC">-</span><span class="NAME">removeCnt</span><span class="PUNC">!==</span><span class="NUMB">0</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>745</span> 
+<span class='line'>746</span> </span><span class="WHIT">    </span><span class="KEYW">if</span><span class="WHIT"> </span><span class="PUNC">(</span><span class="NAME">removing</span><span class="WHIT"> </span><span class="PUNC">===</span><span class="WHIT"> </span><span class="PUNC">-</span><span class="NUMB">1</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="NAME">removing</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="KEYW">null</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>747</span> </span><span class="WHIT">    </span><span class="KEYW">if</span><span class="WHIT"> </span><span class="PUNC">(</span><span class="NAME">adding</span><span class="WHIT">   </span><span class="PUNC">===</span><span class="WHIT"> </span><span class="PUNC">-</span><span class="NUMB">1</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="NAME">adding</span><span class="WHIT">   </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="KEYW">null</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>748</span> </span><span class="WHIT">    
+<span class='line'>749</span>     </span><span class="NAME">Ember.sendEvent</span><span class="PUNC">(</span><span class="KEYW">this</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="STRN">'@enumerable:change'</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">removing</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">adding</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>750</span> </span><span class="WHIT">    </span><span class="KEYW">if</span><span class="WHIT"> </span><span class="PUNC">(</span><span class="NAME">hasDelta</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="NAME">Ember.propertyDidChange</span><span class="PUNC">(</span><span class="KEYW">this</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="STRN">'length'</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>751</span> 
+<span class='line'>752</span> </span><span class="WHIT">    </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="WHIT"> </span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>753</span> </span><span class="WHIT">  </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>754</span> 
+<span class='line'>755</span> </span><span class="PUNC">}</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>756</span> 
+<span class='line'>757</span> 
+<span class='line'>758</span> 
+<span class='line'>759</span> </span></pre></body></html>

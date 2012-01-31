@@ -1,6 +1,7 @@
 // From: https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/array/map
 if (!Array.prototype.map)
 {
+  /** @private */
   Array.prototype.map = function(fun /*, thisp */)
   {
     "use strict";
@@ -28,6 +29,7 @@ if (!Array.prototype.map)
 // From: https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/array/foreach
 if (!Array.prototype.forEach)
 {
+  /** @private */
   Array.prototype.forEach = function(fun /*, thisp */)
   {
     "use strict";
@@ -50,6 +52,7 @@ if (!Array.prototype.forEach)
 }
 
 if (!Array.prototype.indexOf) {
+  /** @private */
   Array.prototype.indexOf = function (obj, fromIndex) {
     if (fromIndex == null) { fromIndex = 0; }
     else if (fromIndex < 0) { fromIndex = Math.max(0, this.length + fromIndex); }

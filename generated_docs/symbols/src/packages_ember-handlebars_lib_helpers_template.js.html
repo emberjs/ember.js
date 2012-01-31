@@ -1,0 +1,45 @@
+<html><head><meta http-equiv="content-type" content="text/html; charset=utf8"> <style>
+	.KEYW {color: #933;}
+	.COMM {color: #bbb; font-style: italic;}
+	.NUMB {color: #393;}
+	.STRN {color: #393;}
+	.REGX {color: #339;}
+	.line {border-right: 1px dotted #666; color: #666; font-style: normal;}
+	</style></head><body><pre><span class='line'>  1</span> <span class="NAME">require</span><span class="PUNC">(</span><span class="STRN">'ember-handlebars/ext'</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>  2</span> 
+<span class='line'>  3</span> </span><span class="COMM">/**
+<span class='line'>  4</span>   `template` allows you to render a template from inside another template.
+<span class='line'>  5</span>   This allows you to re-use the same template in multiple places. For example:
+<span class='line'>  6</span> 
+<span class='line'>  7</span>       &lt;script type="text/x-handlebars">
+<span class='line'>  8</span>         {{#with loggedInUser}}
+<span class='line'>  9</span>           Last Login: {{lastLogin}}
+<span class='line'> 10</span>           User Info: {{template "user_info"}}
+<span class='line'> 11</span>         {{/with}}
+<span class='line'> 12</span>       &lt;/script>
+<span class='line'> 13</span> 
+<span class='line'> 14</span>       &lt;script type="text/x-handlebars" data-template-name="user_info">
+<span class='line'> 15</span>         Name: &lt;em>{{name}}&lt;/em>
+<span class='line'> 16</span>         Karma: &lt;em>{{karma}}&lt;/em>
+<span class='line'> 17</span>       &lt;/script>
+<span class='line'> 18</span> 
+<span class='line'> 19</span>   This helper looks for templates in the global Ember.TEMPLATES hash. If you
+<span class='line'> 20</span>   add &lt;script> tags to your page with the `data-template-name` attribute set,
+<span class='line'> 21</span>   they will be compiled and placed in this hash automatically.
+<span class='line'> 22</span> 
+<span class='line'> 23</span>   You can also manually register templates by adding them to the hash:
+<span class='line'> 24</span> 
+<span class='line'> 25</span>       Ember.TEMPLATES["my_cool_template"] = Ember.Handlebars.compile('&lt;b>{{user}}&lt;/b>');
+<span class='line'> 26</span> 
+<span class='line'> 27</span>   @name Handlebars.helpers.template
+<span class='line'> 28</span>   @param {String} templateName the template to render
+<span class='line'> 29</span> */</span><span class="WHIT">
+<span class='line'> 30</span> 
+<span class='line'> 31</span> </span><span class="NAME">Ember.Handlebars.registerHelper</span><span class="PUNC">(</span><span class="STRN">'template'</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">name</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">options</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'> 32</span> </span><span class="WHIT">  </span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">template</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">Ember.TEMPLATES</span><span class="PUNC">[</span><span class="NAME">name</span><span class="PUNC">]</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 33</span> 
+<span class='line'> 34</span> </span><span class="WHIT">  </span><span class="NAME">ember_assert</span><span class="PUNC">(</span><span class="STRN">"Unable to find template with name '"</span><span class="PUNC">+</span><span class="NAME">name</span><span class="PUNC">+</span><span class="STRN">"'."</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="PUNC">!</span><span class="PUNC">!</span><span class="NAME">template</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 35</span> 
+<span class='line'> 36</span> </span><span class="WHIT">  </span><span class="NAME">Ember.TEMPLATES</span><span class="PUNC">[</span><span class="NAME">name</span><span class="PUNC">]</span><span class="PUNC">(</span><span class="KEYW">this</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT"> </span><span class="NAME">data</span><span class="PUNC">:</span><span class="WHIT"> </span><span class="NAME">options.data</span><span class="WHIT"> </span><span class="PUNC">}</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 37</span> </span><span class="PUNC">}</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 38</span> </span></pre></body></html>
