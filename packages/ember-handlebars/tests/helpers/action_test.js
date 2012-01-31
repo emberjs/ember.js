@@ -269,10 +269,11 @@ test("should allow bubbling of events from action helper to original parent even
 });
 
 test("should be compatible with sending events to a state manager", function() {
-  var eventNameSent,
-      sendWasCalled = false,
+  var sendWasCalled = false,
+      eventNameSent,
+      eventObjectSent,
       fakeManager = {
-        send: function(eventName) { eventNameSent = eventName; sendWasCalled = true; }
+        send: function(eventName, actionEvent) { sendWasCalled = true; eventNameSent = eventName; eventObjectSent = actionEvent; }
       };
 
   view = Ember.View.create({
@@ -286,6 +287,7 @@ test("should be compatible with sending events to a state manager", function() {
 
   ok(sendWasCalled, "The state manager's send method was called");
   equals(eventNameSent, "edit", "The edit event was sent to the state manager");
+  ok(eventObjectSent, "The state manager's send method was called with an event object");
 });
 
 test("should send the view, event and current Handlebars context to the action", function() {
