@@ -1,0 +1,219 @@
+<html><head><meta http-equiv="content-type" content="text/html; charset=utf8"> <style>
+	.KEYW {color: #933;}
+	.COMM {color: #bbb; font-style: italic;}
+	.NUMB {color: #393;}
+	.STRN {color: #393;}
+	.REGX {color: #339;}
+	.line {border-right: 1px dotted #666; color: #666; font-style: normal;}
+	</style></head><body><pre><span class='line'>  1</span> <span class="COMM">// ==========================================================================</span><span class="WHIT">
+<span class='line'>  2</span> </span><span class="COMM">// Project:  Ember Runtime</span><span class="WHIT">
+<span class='line'>  3</span> </span><span class="COMM">// Copyright: ©2011 Strobe Inc.</span><span class="WHIT">
+<span class='line'>  4</span> </span><span class="COMM">// License:   Licensed under MIT license (see license.js)</span><span class="WHIT">
+<span class='line'>  5</span> </span><span class="COMM">// ==========================================================================</span><span class="WHIT">
+<span class='line'>  6</span> 
+<span class='line'>  7</span> 
+<span class='line'>  8</span> 
+<span class='line'>  9</span> 
+<span class='line'> 10</span> 
+<span class='line'> 11</span> </span><span class="COMM">/** @private **/</span><span class="WHIT">
+<span class='line'> 12</span> </span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">STRING_DASHERIZE_REGEXP</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="PUNC">(</span><span class="REGX">/[ _]/g</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 13</span> </span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">STRING_DASHERIZE_CACHE</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="PUNC">}</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 14</span> </span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">STRING_DECAMELIZE_REGEXP</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="PUNC">(</span><span class="REGX">/([a-z])([A-Z])/g</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 15</span> </span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">STRING_CAMELIZE_REGEXP</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="PUNC">(</span><span class="REGX">/(\-|_|\s)+(.)?/g</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 16</span> </span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">STRING_UNDERSCORE_REGEXP_1</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="PUNC">(</span><span class="REGX">/([a-z\d])([A-Z]+)/g</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 17</span> </span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">STRING_UNDERSCORE_REGEXP_2</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="PUNC">(</span><span class="REGX">/\-|\s+/g</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 18</span> 
+<span class='line'> 19</span> </span><span class="COMM">/**
+<span class='line'> 20</span>   Defines the hash of localized strings for the current language.  Used by
+<span class='line'> 21</span>   the `Ember.String.loc()` helper.  To localize, add string values to this
+<span class='line'> 22</span>   hash.
+<span class='line'> 23</span> 
+<span class='line'> 24</span>   @property {String}
+<span class='line'> 25</span> */</span><span class="WHIT">
+<span class='line'> 26</span> </span><span class="NAME">Ember.STRINGS</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="PUNC">}</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 27</span> 
+<span class='line'> 28</span> </span><span class="COMM">/**
+<span class='line'> 29</span>   Defines string helper methods including string formatting and localization.
+<span class='line'> 30</span>   Unless Ember.EXTEND_PROTOTYPES = false these methods will also be added to the
+<span class='line'> 31</span>   String.prototype as well.
+<span class='line'> 32</span> 
+<span class='line'> 33</span>   @namespace
+<span class='line'> 34</span> */</span><span class="WHIT">
+<span class='line'> 35</span> </span><span class="NAME">Ember.String</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'> 36</span> 
+<span class='line'> 37</span> </span><span class="WHIT">  </span><span class="COMM">/**
+<span class='line'> 38</span>     Apply formatting options to the string.  This will look for occurrences
+<span class='line'> 39</span>     of %@ in your string and substitute them with the arguments you pass into
+<span class='line'> 40</span>     this method.  If you want to control the specific order of replacement,
+<span class='line'> 41</span>     you can add a number after the key as well to indicate which argument
+<span class='line'> 42</span>     you want to insert.
+<span class='line'> 43</span> 
+<span class='line'> 44</span>     Ordered insertions are most useful when building loc strings where values
+<span class='line'> 45</span>     you need to insert may appear in different orders.
+<span class='line'> 46</span> 
+<span class='line'> 47</span>     ## Examples
+<span class='line'> 48</span> 
+<span class='line'> 49</span>         "Hello %@ %@".fmt('John', 'Doe') => "Hello John Doe"
+<span class='line'> 50</span>         "Hello %@2, %@1".fmt('John', 'Doe') => "Hello Doe, John"
+<span class='line'> 51</span> 
+<span class='line'> 52</span>     @param {Object...} [args]
+<span class='line'> 53</span>     @returns {String} formatted string
+<span class='line'> 54</span>   */</span><span class="WHIT">
+<span class='line'> 55</span> </span><span class="WHIT">  </span><span class="NAME">fmt</span><span class="PUNC">:</span><span class="WHIT"> </span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">str</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">formats</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'> 56</span> </span><span class="WHIT">    </span><span class="COMM">// first, replace any ORDERED replacements.</span><span class="WHIT">
+<span class='line'> 57</span> </span><span class="WHIT">    </span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">idx</span><span class="WHIT">  </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NUMB">0</span><span class="PUNC">;</span><span class="WHIT"> </span><span class="COMM">// the current index for non-numerical replacements</span><span class="WHIT">
+<span class='line'> 58</span> </span><span class="WHIT">    </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">str.replace</span><span class="PUNC">(</span><span class="REGX">/%@([0-9]+)?/g</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">s</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">argIndex</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'> 59</span> </span><span class="WHIT">      </span><span class="NAME">argIndex</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="PUNC">(</span><span class="NAME">argIndex</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">?</span><span class="WHIT"> </span><span class="NAME">parseInt</span><span class="PUNC">(</span><span class="NAME">argIndex</span><span class="PUNC">,</span><span class="NUMB">0</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">-</span><span class="WHIT"> </span><span class="NUMB">1</span><span class="WHIT"> </span><span class="PUNC">:</span><span class="WHIT"> </span><span class="NAME">idx</span><span class="PUNC">++</span><span class="WHIT"> </span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 60</span> </span><span class="WHIT">      </span><span class="NAME">s</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">formats</span><span class="PUNC">[</span><span class="NAME">argIndex</span><span class="PUNC">]</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 61</span> </span><span class="WHIT">      </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="PUNC">(</span><span class="PUNC">(</span><span class="NAME">s</span><span class="WHIT"> </span><span class="PUNC">===</span><span class="WHIT"> </span><span class="KEYW">null</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">?</span><span class="WHIT"> </span><span class="STRN">'(null)'</span><span class="WHIT"> </span><span class="PUNC">:</span><span class="WHIT"> </span><span class="PUNC">(</span><span class="NAME">s</span><span class="WHIT"> </span><span class="PUNC">===</span><span class="WHIT"> </span><span class="NAME">undefined</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">?</span><span class="WHIT"> </span><span class="STRN">''</span><span class="WHIT"> </span><span class="PUNC">:</span><span class="WHIT"> </span><span class="NAME">s</span><span class="PUNC">)</span><span class="PUNC">.</span><span class="NAME">toString</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 62</span> </span><span class="WHIT">    </span><span class="PUNC">}</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 63</span> </span><span class="WHIT">  </span><span class="PUNC">}</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'> 64</span> 
+<span class='line'> 65</span> </span><span class="WHIT">  </span><span class="COMM">/**
+<span class='line'> 66</span>     Formats the passed string, but first looks up the string in the localized
+<span class='line'> 67</span>     strings hash.  This is a convenient way to localize text.  See
+<span class='line'> 68</span>     `Ember.String.fmt()` for more information on formatting.
+<span class='line'> 69</span> 
+<span class='line'> 70</span>     Note that it is traditional but not required to prefix localized string
+<span class='line'> 71</span>     keys with an underscore or other character so you can easily identify
+<span class='line'> 72</span>     localized strings.
+<span class='line'> 73</span> 
+<span class='line'> 74</span>     # Example Usage
+<span class='line'> 75</span> 
+<span class='line'> 76</span>         @javascript@
+<span class='line'> 77</span>         Ember.STRINGS = {
+<span class='line'> 78</span>           '_Hello World': 'Bonjour le monde',
+<span class='line'> 79</span>           '_Hello %@ %@': 'Bonjour %@ %@'
+<span class='line'> 80</span>         };
+<span class='line'> 81</span> 
+<span class='line'> 82</span>         Ember.String.loc("_Hello World");
+<span class='line'> 83</span>         => 'Bonjour le monde';
+<span class='line'> 84</span> 
+<span class='line'> 85</span>         Ember.String.loc("_Hello %@ %@", ["John", "Smith"]);
+<span class='line'> 86</span>         => "Bonjour John Smith";
+<span class='line'> 87</span> 
+<span class='line'> 88</span> 
+<span class='line'> 89</span> 
+<span class='line'> 90</span>     @param {String} str
+<span class='line'> 91</span>       The string to format
+<span class='line'> 92</span> 
+<span class='line'> 93</span>     @param {Array} formats
+<span class='line'> 94</span>       Optional array of parameters to interpolate into string.
+<span class='line'> 95</span> 
+<span class='line'> 96</span>     @returns {String} formatted string
+<span class='line'> 97</span>   */</span><span class="WHIT">
+<span class='line'> 98</span> </span><span class="WHIT">  </span><span class="NAME">loc</span><span class="PUNC">:</span><span class="WHIT"> </span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">str</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">formats</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'> 99</span> </span><span class="WHIT">    </span><span class="NAME">str</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">Ember.STRINGS</span><span class="PUNC">[</span><span class="NAME">str</span><span class="PUNC">]</span><span class="WHIT"> </span><span class="PUNC">||</span><span class="WHIT"> </span><span class="NAME">str</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>100</span> </span><span class="WHIT">    </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">Ember.String.fmt</span><span class="PUNC">(</span><span class="NAME">str</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">formats</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>101</span> </span><span class="WHIT">  </span><span class="PUNC">}</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'>102</span> 
+<span class='line'>103</span> </span><span class="WHIT">  </span><span class="COMM">/**
+<span class='line'>104</span>     Splits a string into separate units separated by spaces, eliminating any
+<span class='line'>105</span>     empty strings in the process.  This is a convenience method for split that
+<span class='line'>106</span>     is mostly useful when applied to the String.prototype.
+<span class='line'>107</span> 
+<span class='line'>108</span>     # Example Usage
+<span class='line'>109</span> 
+<span class='line'>110</span>         @javascript@
+<span class='line'>111</span>         Ember.String.w("alpha beta gamma").forEach(function(key) {
+<span class='line'>112</span>           console.log(key);
+<span class='line'>113</span>         });
+<span class='line'>114</span>         > alpha
+<span class='line'>115</span>         > beta
+<span class='line'>116</span>         > gamma
+<span class='line'>117</span> 
+<span class='line'>118</span>     @param {String} str
+<span class='line'>119</span>       The string to split
+<span class='line'>120</span> 
+<span class='line'>121</span>     @returns {String} split string
+<span class='line'>122</span>   */</span><span class="WHIT">
+<span class='line'>123</span> </span><span class="WHIT">  </span><span class="NAME">w</span><span class="PUNC">:</span><span class="WHIT"> </span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">str</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT"> </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">str.split</span><span class="PUNC">(</span><span class="REGX">/\s+/</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT"> </span><span class="PUNC">}</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'>124</span> 
+<span class='line'>125</span> </span><span class="WHIT">  </span><span class="COMM">/**
+<span class='line'>126</span>     Converts a camelized string into all lower case separated by underscores.
+<span class='line'>127</span> 
+<span class='line'>128</span>     h2. Examples
+<span class='line'>129</span> 
+<span class='line'>130</span>     | *Input String* | *Output String* |
+<span class='line'>131</span>     | my favorite items | my favorite items |
+<span class='line'>132</span>     | css-class-name | css-class-name |
+<span class='line'>133</span>     | action_name | action_name |
+<span class='line'>134</span>     | innerHTML | inner_html |
+<span class='line'>135</span> 
+<span class='line'>136</span>     @returns {String} the decamelized string.
+<span class='line'>137</span>   */</span><span class="WHIT">
+<span class='line'>138</span> </span><span class="WHIT">  </span><span class="NAME">decamelize</span><span class="PUNC">:</span><span class="WHIT"> </span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">str</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>139</span> </span><span class="WHIT">    </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">str.replace</span><span class="PUNC">(</span><span class="NAME">STRING_DECAMELIZE_REGEXP</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="STRN">'$1_$2'</span><span class="PUNC">)</span><span class="PUNC">.</span><span class="NAME">toLowerCase</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>140</span> </span><span class="WHIT">  </span><span class="PUNC">}</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'>141</span> <span class='line'>142</span> 
+</span><span class="WHIT">  </span><span class="COMM">/**
+<span class='line'>143</span>     Converts a camelized string or a string with spaces or underscores into
+<span class='line'>144</span>     a string with components separated by dashes.
+<span class='line'>145</span> 
+<span class='line'>146</span>     h2. Examples
+<span class='line'>147</span> 
+<span class='line'>148</span>     | *Input String* | *Output String* |
+<span class='line'>149</span>     | my favorite items | my-favorite-items |
+<span class='line'>150</span>     | css-class-name | css-class-name |
+<span class='line'>151</span>     | action_name | action-name |
+<span class='line'>152</span>     | innerHTML | inner-html |
+<span class='line'>153</span> 
+<span class='line'>154</span>     @returns {String} the dasherized string.
+<span class='line'>155</span>   */</span><span class="WHIT">
+<span class='line'>156</span> </span><span class="WHIT">  </span><span class="NAME">dasherize</span><span class="PUNC">:</span><span class="WHIT"> </span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">str</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>157</span> </span><span class="WHIT">    </span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">cache</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">STRING_DASHERIZE_CACHE</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'>158</span> </span><span class="WHIT">        </span><span class="NAME">ret</span><span class="WHIT">   </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">cache</span><span class="PUNC">[</span><span class="NAME">str</span><span class="PUNC">]</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>159</span> 
+<span class='line'>160</span> </span><span class="WHIT">    </span><span class="KEYW">if</span><span class="WHIT"> </span><span class="PUNC">(</span><span class="NAME">ret</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>161</span> </span><span class="WHIT">      </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">ret</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>162</span> </span><span class="WHIT">    </span><span class="PUNC">}</span><span class="WHIT"> </span><span class="KEYW">else</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>163</span> </span><span class="WHIT">      </span><span class="NAME">ret</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">Ember.String.decamelize</span><span class="PUNC">(</span><span class="NAME">str</span><span class="PUNC">)</span><span class="PUNC">.</span><span class="NAME">replace</span><span class="PUNC">(</span><span class="NAME">STRING_DASHERIZE_REGEXP</span><span class="PUNC">,</span><span class="STRN">'-'</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>164</span> </span><span class="WHIT">      </span><span class="NAME">cache</span><span class="PUNC">[</span><span class="NAME">str</span><span class="PUNC">]</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">ret</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>165</span> </span><span class="WHIT">    </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>166</span> 
+<span class='line'>167</span> </span><span class="WHIT">    </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">ret</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>168</span> </span><span class="WHIT">  </span><span class="PUNC">}</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'>169</span> 
+<span class='line'>170</span> </span><span class="WHIT">  </span><span class="COMM">/**
+<span class='line'>171</span>     Converts a dasherized string or a string with spaces or underscores into
+<span class='line'>172</span>     camelized string.
+<span class='line'>173</span> 
+<span class='line'>174</span>     h2. Examples
+<span class='line'>175</span> 
+<span class='line'>176</span>     | *Input String* | *Output String* |
+<span class='line'>177</span>     | my favorite items | myFavoriteItems |
+<span class='line'>178</span>     | css-class-name | cssClassName |
+<span class='line'>179</span>     | action_name | actionName |
+<span class='line'>180</span>     | innerHTML | innerHTML |
+<span class='line'>181</span> 
+<span class='line'>182</span>     @returns {String} the camelized string.
+<span class='line'>183</span>   */</span><span class="WHIT">
+<span class='line'>184</span> </span><span class="WHIT">  </span><span class="NAME">camelize</span><span class="PUNC">:</span><span class="WHIT"> </span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">str</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>185</span> </span><span class="WHIT">    </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">str.replace</span><span class="PUNC">(</span><span class="NAME">STRING_CAMELIZE_REGEXP</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">match</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">separator</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">chr</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>186</span> </span><span class="WHIT">      </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">chr</span><span class="WHIT"> </span><span class="PUNC">?</span><span class="WHIT"> </span><span class="NAME">chr.toUpperCase</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">:</span><span class="WHIT"> </span><span class="STRN">''</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>187</span> </span><span class="WHIT">    </span><span class="PUNC">}</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>188</span> </span><span class="WHIT">  </span><span class="PUNC">}</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'>189</span> 
+<span class='line'>190</span> </span><span class="WHIT">  </span><span class="COMM">/**
+<span class='line'>191</span>     More general than decamelize, converts a dasherized or camelcased string or a string with spaces into
+<span class='line'>192</span>     all lower case separated by undescores.
+<span class='line'>193</span> 
+<span class='line'>194</span>     h2. Examples
+<span class='line'>195</span> 
+<span class='line'>196</span>     | *Input String* | *Output String* |
+<span class='line'>197</span>     | my favorite items | my_favorite_items |
+<span class='line'>198</span>     | css-class-name | css_class_name |
+<span class='line'>199</span>     | action_name | action_name |
+<span class='line'>200</span>     | innerHTML | inner_html |
+<span class='line'>201</span> 
+<span class='line'>202</span>     @returns {String} the camelized string.
+<span class='line'>203</span>   */</span><span class="WHIT">
+<span class='line'>204</span> </span><span class="WHIT">  </span><span class="NAME">underscore</span><span class="PUNC">:</span><span class="WHIT"> </span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">str</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>205</span> </span><span class="WHIT">    </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">str.replace</span><span class="PUNC">(</span><span class="NAME">STRING_UNDERSCORE_REGEXP_1</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="STRN">'$1_$2'</span><span class="PUNC">)</span><span class="PUNC">.</span><span class="WHIT">
+<span class='line'>206</span> </span><span class="WHIT">      </span><span class="NAME">replace</span><span class="PUNC">(</span><span class="NAME">STRING_UNDERSCORE_REGEXP_2</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="STRN">'_'</span><span class="PUNC">)</span><span class="PUNC">.</span><span class="NAME">toLowerCase</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>207</span> </span><span class="WHIT">  </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>208</span> </span><span class="PUNC">}</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>209</span> 
+<span class='line'>210</span> 
+<span class='line'>211</span> 
+<span class='line'>212</span> </span></pre></body></html>

@@ -1,0 +1,45 @@
+<html><head><meta http-equiv="content-type" content="text/html; charset=utf8"> <style>
+	.KEYW {color: #933;}
+	.COMM {color: #bbb; font-style: italic;}
+	.NUMB {color: #393;}
+	.STRN {color: #393;}
+	.REGX {color: #339;}
+	.line {border-right: 1px dotted #666; color: #666; font-style: normal;}
+	</style></head><body><pre><span class='line'>  1</span> <span class="COMM">// ==========================================================================</span><span class="WHIT">
+<span class='line'>  2</span> </span><span class="COMM">// Project:   Ember Handlebar Views</span><span class="WHIT">
+<span class='line'>  3</span> </span><span class="COMM">// Copyright: ©2011 Strobe Inc. and contributors.</span><span class="WHIT">
+<span class='line'>  4</span> </span><span class="COMM">// License:   Licensed under MIT license (see license.js)</span><span class="WHIT">
+<span class='line'>  5</span> </span><span class="COMM">// ==========================================================================</span><span class="WHIT">
+<span class='line'>  6</span> </span><span class="COMM">/*globals Handlebars */</span><span class="WHIT">
+<span class='line'>  7</span> 
+<span class='line'>  8</span> </span><span class="NAME">require</span><span class="PUNC">(</span><span class="STRN">'ember-handlebars/ext'</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>  9</span> 
+<span class='line'> 10</span> </span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">getPath</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">Ember.getPath</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 11</span> 
+<span class='line'> 12</span> </span><span class="COMM">/**
+<span class='line'> 13</span>   `log` allows you to output the value of a value in the current rendering
+<span class='line'> 14</span>   context.
+<span class='line'> 15</span> 
+<span class='line'> 16</span>     {{log myVariable}}
+<span class='line'> 17</span> 
+<span class='line'> 18</span>   @name Handlebars.helpers.log
+<span class='line'> 19</span>   @param {String} property
+<span class='line'> 20</span> */</span><span class="WHIT">
+<span class='line'> 21</span> </span><span class="NAME">Ember.Handlebars.registerHelper</span><span class="PUNC">(</span><span class="STRN">'log'</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">property</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">fn</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'> 22</span> </span><span class="WHIT">  </span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">context</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="PUNC">(</span><span class="NAME">fn.contexts</span><span class="WHIT"> </span><span class="PUNC">&&</span><span class="WHIT"> </span><span class="NAME">fn.contexts</span><span class="PUNC">[</span><span class="NUMB">0</span><span class="PUNC">]</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">||</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 23</span> </span><span class="WHIT">  </span><span class="NAME">Ember.Logger.log</span><span class="PUNC">(</span><span class="NAME">getPath</span><span class="PUNC">(</span><span class="NAME">context</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">property</span><span class="PUNC">)</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 24</span> </span><span class="PUNC">}</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 25</span> 
+<span class='line'> 26</span> </span><span class="COMM">/**
+<span class='line'> 27</span>   The `debugger` helper executes the `debugger` statement in the current
+<span class='line'> 28</span>   context.
+<span class='line'> 29</span> 
+<span class='line'> 30</span>     {{debugger}}
+<span class='line'> 31</span> 
+<span class='line'> 32</span>   @name Handlebars.helpers.debugger
+<span class='line'> 33</span>   @param {String} property
+<span class='line'> 34</span> */</span><span class="WHIT">
+<span class='line'> 35</span> </span><span class="NAME">Ember.Handlebars.registerHelper</span><span class="PUNC">(</span><span class="STRN">'debugger'</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="KEYW">function</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'> 36</span> </span><span class="WHIT">  </span><span class="NAME">debugger</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 37</span> </span><span class="PUNC">}</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 38</span> </span></pre></body></html>

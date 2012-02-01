@@ -1,0 +1,72 @@
+<html><head><meta http-equiv="content-type" content="text/html; charset=utf8"> <style>
+	.KEYW {color: #933;}
+	.COMM {color: #bbb; font-style: italic;}
+	.NUMB {color: #393;}
+	.STRN {color: #393;}
+	.REGX {color: #339;}
+	.line {border-right: 1px dotted #666; color: #666; font-style: normal;}
+	</style></head><body><pre><span class='line'>  1</span> <span class="COMM">// ==========================================================================</span><span class="WHIT">
+<span class='line'>  2</span> </span><span class="COMM">// Project:  Ember Runtime</span><span class="WHIT">
+<span class='line'>  3</span> </span><span class="COMM">// Copyright: ©2006-2011 Strobe Inc. and contributors.</span><span class="WHIT">
+<span class='line'>  4</span> </span><span class="COMM">//            Portions ©2008-2010 Apple Inc. All rights reserved.</span><span class="WHIT">
+<span class='line'>  5</span> </span><span class="COMM">// License:   Licensed under MIT license (see license.js)</span><span class="WHIT">
+<span class='line'>  6</span> </span><span class="COMM">// ==========================================================================</span><span class="WHIT">
+<span class='line'>  7</span> 
+<span class='line'>  8</span> 
+<span class='line'>  9</span> </span><span class="NAME">require</span><span class="PUNC">(</span><span class="STRN">'ember-runtime/system/string'</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 10</span> 
+<span class='line'> 11</span> 
+<span class='line'> 12</span> </span><span class="WHIT">  
+<span class='line'> 13</span> </span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">get</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">Ember.get</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">set</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">Ember.set</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 14</span> 
+<span class='line'> 15</span> </span><span class="COMM">/**
+<span class='line'> 16</span>   @namespace
+<span class='line'> 17</span> 
+<span class='line'> 18</span>   Implements some standard methods for copying an object.  Add this mixin to
+<span class='line'> 19</span>   any object you create that can create a copy of itself.  This mixin is
+<span class='line'> 20</span>   added automatically to the built-in array.
+<span class='line'> 21</span> 
+<span class='line'> 22</span>   You should generally implement the copy() method to return a copy of the
+<span class='line'> 23</span>   receiver.
+<span class='line'> 24</span> 
+<span class='line'> 25</span>   Note that frozenCopy() will only work if you also implement Ember.Freezable.
+<span class='line'> 26</span> 
+<span class='line'> 27</span>   @since Ember 0.9
+<span class='line'> 28</span> */</span><span class="WHIT">
+<span class='line'> 29</span> </span><span class="NAME">Ember.Copyable</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">Ember.Mixin.create</span><span class="PUNC">(</span><span class="WHIT">
+<span class='line'> 30</span> </span><span class="COMM">/** @scope Ember.Copyable.prototype */</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'> 31</span> 
+<span class='line'> 32</span> </span><span class="WHIT">  </span><span class="COMM">/**
+<span class='line'> 33</span>     Override to return a copy of the receiver.  Default implementation raises
+<span class='line'> 34</span>     an exception.
+<span class='line'> 35</span> 
+<span class='line'> 36</span>     @param deep {Boolean} if true, a deep copy of the object should be made
+<span class='line'> 37</span>     @returns {Object} copy of receiver
+<span class='line'> 38</span>   */</span><span class="WHIT">
+<span class='line'> 39</span> </span><span class="WHIT">  </span><span class="NAME">copy</span><span class="PUNC">:</span><span class="WHIT"> </span><span class="NAME">Ember.required</span><span class="PUNC">(</span><span class="NAME">Function</span><span class="PUNC">)</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'> 40</span> 
+<span class='line'> 41</span> </span><span class="WHIT">  </span><span class="COMM">/**
+<span class='line'> 42</span>     If the object implements Ember.Freezable, then this will return a new copy
+<span class='line'> 43</span>     if the object is not frozen and the receiver if the object is frozen.
+<span class='line'> 44</span> 
+<span class='line'> 45</span>     Raises an exception if you try to call this method on a object that does
+<span class='line'> 46</span>     not support freezing.
+<span class='line'> 47</span> 
+<span class='line'> 48</span>     You should use this method whenever you want a copy of a freezable object
+<span class='line'> 49</span>     since a freezable object can simply return itself without actually
+<span class='line'> 50</span>     consuming more memory.
+<span class='line'> 51</span> 
+<span class='line'> 52</span>     @returns {Object} copy of receiver or receiver
+<span class='line'> 53</span>   */</span><span class="WHIT">
+<span class='line'> 54</span> </span><span class="WHIT">  </span><span class="NAME">frozenCopy</span><span class="PUNC">:</span><span class="WHIT"> </span><span class="KEYW">function</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'> 55</span> </span><span class="WHIT">    </span><span class="KEYW">if</span><span class="WHIT"> </span><span class="PUNC">(</span><span class="NAME">Ember.Freezable</span><span class="WHIT"> </span><span class="PUNC">&&</span><span class="WHIT"> </span><span class="NAME">Ember.Freezable.detect</span><span class="PUNC">(</span><span class="KEYW">this</span><span class="PUNC">)</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'> 56</span> </span><span class="WHIT">      </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">get</span><span class="PUNC">(</span><span class="KEYW">this</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="STRN">'isFrozen'</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">?</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="WHIT"> </span><span class="PUNC">:</span><span class="WHIT"> </span><span class="NAME">this.copy</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">.</span><span class="NAME">freeze</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 57</span> </span><span class="WHIT">    </span><span class="PUNC">}</span><span class="WHIT"> </span><span class="KEYW">else</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'> 58</span> </span><span class="WHIT">      </span><span class="KEYW">throw</span><span class="WHIT"> </span><span class="KEYW">new</span><span class="WHIT"> </span><span class="NAME">Error</span><span class="PUNC">(</span><span class="NAME">Ember.String.fmt</span><span class="PUNC">(</span><span class="STRN">"%@ does not support freezing"</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="PUNC">[</span><span class="KEYW">this</span><span class="PUNC">]</span><span class="PUNC">)</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 59</span> </span><span class="WHIT">    </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'> 60</span> </span><span class="WHIT">  </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'> 61</span> </span><span class="PUNC">}</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 62</span> 
+<span class='line'> 63</span> 
+<span class='line'> 64</span> 
+<span class='line'> 65</span> </span></pre></body></html>

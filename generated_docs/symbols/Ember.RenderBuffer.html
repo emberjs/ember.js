@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>SproutCore</title>
+  <meta name="description" content="A framework for building fast, desktop caliber web applications." />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="/css/api.css" />
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.js"></script>
+  <script src="/js/jquery-bbq.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/lib/modernizr-1.7.min.js"></script>
+  <!--[if lt IE 9]>
+  <script src="//html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+</head>
+
+  <body id="docs">
+<!-- ============================== header ================================= -->
+    <!-- begin static/header.html -->
+      <header role="banner">
+    <div class="container">
+      <h1 id="logo">
+        <a href="http://www.sproutcore.com"><img src="/img/logo.png" alt="SproutCore" /></a>
+        </h1>
+
+      <nav role="navigation">
+        <ul>
+          <li><a href="http://www.sproutcore.com/about/">About</a></li>
+          <li><a href="http://guides.sproutcore.com">Guides</a></li>
+          <li class="active"><a href="/" >Docs</a></li>
+          <li><a href="http://www.sproutcore.com/community/">Community</a></li>
+          <li><a href="http://blog.sproutcore.com">Blog</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+  
+
+
+    <!-- end static/header.html -->
+
+<!-- ============================== classes index ============================ -->
+
+    <section id="list">
+      <header>
+        <form action="#" role="search">
+          <input type="text" />
+          <a href="#" class="search-reset"></a>
+        </form>
+      </header>
+      <div>
+        <span class="odd active"><a href="/">API Documentation Index</a></span>
+	
+	<span class='even' global><a href="../symbols/_global_.html">_global_</a></span>
+	
+	<span class='odd'><a href="../symbols/Ember.html">Ember</a></span>
+	
+	<span class='even'><a href="../symbols/Ember.Application.html">Ember.Application</a></span>
+	
+	<span class='odd'><a href="../symbols/Ember.Array.html">Ember.Array</a></span>
+	
+	<span class='even'><a href="../symbols/Ember.ArrayController.html">Ember.ArrayController</a></span>
+	
+	<span class='odd'><a href="../symbols/Ember.ArrayProxy.html">Ember.ArrayProxy</a></span>
+	
+	<span class='even'><a href="../symbols/Ember.Binding.html">Ember.Binding</a></span>
+	
+	<span class='odd'><a href="../symbols/Ember.CollectionView.html">Ember.CollectionView</a></span>
+	
+	<span class='even'><a href="../symbols/Ember.Comparable.html">Ember.Comparable</a></span>
+	
+	<span class='odd'><a href="../symbols/Ember.ComputedProperty.html">Ember.ComputedProperty</a></span>
+	
+	<span class='even'><a href="../symbols/Ember.Copyable.html">Ember.Copyable</a></span>
+	
+	<span class='odd'><a href="../symbols/Ember.CoreObject.html">Ember.CoreObject</a></span>
+	
+	<span class='even'><a href="../symbols/Ember.Enumerable.html">Ember.Enumerable</a></span>
+	
+	<span class='odd'><a href="../symbols/Ember.Error.html">Ember.Error</a></span>
+	
+	<span class='even'><a href="../symbols/Ember.Freezable.html">Ember.Freezable</a></span>
+	
+	<span class='odd'><a href="../symbols/Ember.Handlebars.html">Ember.Handlebars</a></span>
+	
+	<span class='even'><a href="../symbols/Ember.Logger.html">Ember.Logger</a></span>
+	
+	<span class='odd'><a href="../symbols/Ember.Mixin.html">Ember.Mixin</a></span>
+	
+	<span class='even'><a href="../symbols/Ember.MutableArray.html">Ember.MutableArray</a></span>
+	
+	<span class='odd'><a href="../symbols/Ember.MutableEnumerable.html">Ember.MutableEnumerable</a></span>
+	
+	<span class='even'><a href="../symbols/Ember.NativeArray.html">Ember.NativeArray</a></span>
+	
+	<span class='odd'><a href="../symbols/Ember.Object.html">Ember.Object</a></span>
+	
+	<span class='even'><a href="../symbols/Ember.Observable.html">Ember.Observable</a></span>
+	
+	<span class='odd'><a href="../symbols/Ember.platform.html">Ember.platform</a></span>
+	
+	<span class='even'><a href="../symbols/Ember.RenderBuffer.html">Ember.RenderBuffer</a></span>
+	
+	<span class='odd'><a href="../symbols/Ember.RunLoop.html">Ember.RunLoop</a></span>
+	
+	<span class='even'><a href="../symbols/Ember.Set.html">Ember.Set</a></span>
+	
+	<span class='odd'><a href="../symbols/Ember.StateManager.html">Ember.StateManager</a></span>
+	
+	<span class='even'><a href="../symbols/Ember.String.html">Ember.String</a></span>
+	
+	<span class='odd'><a href="../symbols/Ember.TextArea.html">Ember.TextArea</a></span>
+	
+	<span class='even'><a href="../symbols/Ember.TextField.html">Ember.TextField</a></span>
+	
+	<span class='odd'><a href="../symbols/Ember.TextSupport.html">Ember.TextSupport</a></span>
+	
+	<span class='even'><a href="../symbols/Ember.View.html">Ember.View</a></span>
+	
+	<span class='odd'><a href="../symbols/Function.html">Function</a></span>
+	
+	<span class='even'><a href="../symbols/Handlebars.helpers.html">Handlebars.helpers</a></span>
+	
+	<span class='odd'><a href="../symbols/String.html">String</a></span>
+	
+	<span class='even'><a href="../symbols/window.html">window</a></span>
+	
+
+      </div>
+    </section>
+    <footer>
+      <a href="http://groups.google.com/group/sproutcore" class="button secondary">SUBSCRIBE TO MAILING LIST</a>
+    </footer>
+
+    <div role="main">
+      <section id="documentation">
+<!-- ============================== class title ============================ -->
+        <h1 class="classTitle">
+          
+          Class: Ember.RenderBuffer
+        </h1>
+
+<!-- ============================== class summary ========================== -->
+        <p class="description">
+          <span class="extends">
+          <br />Extends
+            <a href="../symbols/Ember.Object.html">Ember.Object</a>.<br />
+          
+          </span>
+
+        
+
+          <p><code class='syntax js'><span class="class">Ember</span>.<span class="class">RenderBuffer</span></code> gathers information regarding the a view and generates the
+final representation. <code class='syntax js'><span class="class">Ember</span>.<span class="class">RenderBuffer</span></code> will generate HTML which can be pushed
+to the DOM.</p>
+
+          
+            <span class="definedin">Defined in: <a href="../symbols/src/packages_ember-views_lib_system_render_buffer.js.html">render_buffer.js</a>.</span>
+          
+        </p>
+
+
+<!-- ============================== properties summary ===================== -->
+      
+      
+        
+        <h2>Field Summary</h2>
+        <div id="properties">
+        
+          <ul>
+          
+            <li>
+              <a href="../symbols/Ember.RenderBuffer.html#elementAttributes">elementAttributes</a>
+            </li>
+          
+            <li>
+              <a href="../symbols/Ember.RenderBuffer.html#elementClasses">elementClasses</a>
+            </li>
+          
+            <li>
+              <a href="../symbols/Ember.RenderBuffer.html#elementId">elementId</a>
+            </li>
+          
+            <li>
+              <a href="../symbols/Ember.RenderBuffer.html#elementStyle">elementStyle</a>
+            </li>
+          
+            <li>
+              <a href="../symbols/Ember.RenderBuffer.html#elementTag">elementTag</a>
+            </li>
+          
+            <li>
+              <a href="../symbols/Ember.RenderBuffer.html#parentBuffer">parentBuffer</a>
+            </li>
+          
+          </ul>
+        
+
+        
+        
+          
+        
+        </div>
+      
+
+
+
+
+<!-- ============================== methods summary ======================== -->
+      
+      
+        
+        
+      
+        
+        
+          <h2>Instance Methods</h2>
+          <ul class="methods">
+          
+            <li class="fixedFont"><a href="../symbols/Ember.RenderBuffer.html#addClass">addClass</a></li>
+          
+            <li class="fixedFont"><a href="../symbols/Ember.RenderBuffer.html#attr">attr</a></li>
+          
+            <li class="fixedFont"><a href="../symbols/Ember.RenderBuffer.html#begin">begin</a></li>
+          
+            <li class="fixedFont"><a href="../symbols/Ember.RenderBuffer.html#element">element</a></li>
+          
+            <li class="fixedFont"><a href="../symbols/Ember.RenderBuffer.html#end">end</a></li>
+          
+            <li class="fixedFont"><a href="../symbols/Ember.RenderBuffer.html#id">id</a></li>
+          
+            <li class="fixedFont"><a href="../symbols/Ember.RenderBuffer.html#insertAfter">insertAfter</a></li>
+          
+            <li class="fixedFont"><a href="../symbols/Ember.RenderBuffer.html#prepend">prepend</a></li>
+          
+            <li class="fixedFont"><a href="../symbols/Ember.RenderBuffer.html#push">push</a></li>
+          
+            <li class="fixedFont"><a href="../symbols/Ember.RenderBuffer.html#remove">remove</a></li>
+          
+            <li class="fixedFont"><a href="../symbols/Ember.RenderBuffer.html#removeAttr">removeAttr</a></li>
+          
+            <li class="fixedFont"><a href="../symbols/Ember.RenderBuffer.html#replaceWith">replaceWith</a></li>
+          
+            <li class="fixedFont"><a href="../symbols/Ember.RenderBuffer.html#string">string</a></li>
+          
+            <li class="fixedFont"><a href="../symbols/Ember.RenderBuffer.html#style">style</a></li>
+          
+          </ul>
+        
+      
+<!-- ============================== events summary ======================== -->
+      
+
+
+
+<!-- ============================== field details ========================== -->
+      
+        <h2>
+          Field Detail
+        </h2>
+        
+          <a name="elementAttributes"> </a>
+          <span class="light">Hash</span>
+          <span class="property"><b>elementAttributes</b></span>
+
+          <div class="description">
+            <p>A hash keyed on the name of the attribute and whose value will be
+applied to that attribute. For example, if you wanted to apply a
+data-view="Foo.bar" property to an element, you would set the
+<code class='syntax js'><span class="variable">elementAttributes</span></code> hash to {'data-view':'Foo.bar'}</p>
+
+<p>You should not maintain this hash yourself, rather, you should use
+the attr() method of <code class='syntax js'><span class="class">Ember</span>.<span class="class">RenderBuffer</span>.</code></p>
+            
+            
+          </div>
+
+          
+
+            
+            
+            
+            
+
+        
+          <a name="elementClasses"> </a>
+          <span class="light">Array</span>
+          <span class="property"><b>elementClasses</b></span>
+
+          <div class="description">
+            <p>Array of class-names which will be applied in the class="" attribute</p>
+
+<p>You should not maintain this array yourself, rather, you should use
+the <code class='syntax js'><span class="variable">addClass</span></code>() method of <code class='syntax js'><span class="class">Ember</span>.<span class="class">RenderBuffer</span>.</code></p>
+            
+            
+          </div>
+
+          
+
+            
+            
+            
+            
+              <dl class="detailList">
+              <dt class="heading">Default Value:</dt>
+              <dd>
+                []
+              </dd>
+              </dl>
+            
+
+        
+          <a name="elementId"> </a>
+          <span class="light"><a href="../symbols/String.html">String</a></span>
+          <span class="property"><b>elementId</b></span>
+
+          <div class="description">
+            <p>The id in of the element, to be applied in the id="" attribute</p>
+
+<p>You should not set this property yourself, rather, you should use
+the id() method of <code class='syntax js'><span class="class">Ember</span>.<span class="class">RenderBuffer</span>.</code></p>
+            
+            
+          </div>
+
+          
+
+            
+            
+            
+            
+              <dl class="detailList">
+              <dt class="heading">Default Value:</dt>
+              <dd>
+                null
+              </dd>
+              </dl>
+            
+
+        
+          <a name="elementStyle"> </a>
+          <span class="light">Hash</span>
+          <span class="property"><b>elementStyle</b></span>
+
+          <div class="description">
+            <p>A hash keyed on the name of the style attribute and whose value will
+be applied to that attribute. For example, if you wanted to apply a
+background-color:black;" style to an element, you would set the
+<code class='syntax js'><span class="variable">elementStyle</span></code> hash to {'background-color':'black'}</p>
+
+<p>You should not maintain this hash yourself, rather, you should use
+the style() method of <code class='syntax js'><span class="class">Ember</span>.<span class="class">RenderBuffer</span>.</code></p>
+            
+            
+          </div>
+
+          
+
+            
+            
+            
+            
+
+        
+          <a name="elementTag"> </a>
+          <span class="light"><a href="../symbols/String.html">String</a></span>
+          <span class="property"><b>elementTag</b></span>
+
+          <div class="description">
+            <p>The tagname of the element an instance of <code class='syntax js'><span class="class">Ember</span>.<span class="class">RenderBuffer</span></code> represents.</p>
+
+<p>Usually, this gets set as the first parameter to <code class='syntax js'><span class="class">Ember</span>.<span class="class">RenderBuffer</span>.</code> For
+example, if you wanted to create a <code class='syntax js'><span class="variable">p</span></code> tag, then you would call</p>
+
+<p><code class='syntax js'><span class="class">Ember</span>.<span class="class">RenderBuffer</span>(<span class="string">'p'</span>)</code></p>
+            
+            
+          </div>
+
+          
+
+            
+            
+            
+            
+              <dl class="detailList">
+              <dt class="heading">Default Value:</dt>
+              <dd>
+                null
+              </dd>
+              </dl>
+            
+
+        
+          <a name="parentBuffer"> </a>
+          <span class="light">Ember._RenderBuffer</span>
+          <span class="property"><b>parentBuffer</b></span>
+
+          <div class="description">
+            <p>Nested RenderBuffers will set this to their parent RenderBuffer
+instance.</p>
+            
+            
+          </div>
+
+          
+
+            
+            
+            
+            
+
+        
+      
+
+
+<!-- ============================== method details ========================= -->
+      
+        
+        
+      
+        
+        
+          <h2>Instance Method Detail</h2>
+          
+            <a name="addClass"> </a>
+            <div class="fixedFont">
+              <span class="methodname">addClass</span>
+            </div>
+            <div class="description">
+              Adds a class to the buffer, which will be rendered to the class attribute.
+              
+              
+            </div>
+
+            
+
+              
+                <dl class="parameters">
+                <dt class="heading">Parameters:</dt>
+                
+                  <dt>
+                    <span class="light fixedFont"><a href="../symbols/String.html">String</a></span> <b>className</b>
+                    
+                  </dt>
+                  <dd>Class name to add to the buffer</dd>
+                
+                </dl>
+              
+              
+              
+              
+              
+                <dl class="returns">
+                <dt class="heading">Returns:</dt>
+                
+                  <dd><span class="light fixedFont"><a href="../symbols/Ember.RenderBuffer.html">Ember.RenderBuffer</a></span> this</dd>
+                
+                </dl>
+              
+              
+              
+
+          
+            <a name="attr"> </a>
+            <div class="fixedFont">
+              <span class="methodname">attr</span>
+            </div>
+            <div class="description">
+              Adds an attribute which will be rendered to the element.
+              
+              
+            </div>
+
+            
+
+              
+                <dl class="parameters">
+                <dt class="heading">Parameters:</dt>
+                
+                  <dt>
+                    <span class="light fixedFont"><a href="../symbols/String.html">String</a></span> <b>name</b>
+                    
+                  </dt>
+                  <dd>The name of the attribute</dd>
+                
+                  <dt>
+                    <span class="light fixedFont"><a href="../symbols/String.html">String</a></span> <b>value</b>
+                    
+                  </dt>
+                  <dd>The value to add to the attribute</dd>
+                
+                </dl>
+              
+              
+              
+              
+              
+                <dl class="returns">
+                <dt class="heading">Returns:</dt>
+                
+                  <dd><span class="light fixedFont"><a href="../symbols/Ember.RenderBuffer.html">Ember.RenderBuffer</a>|<a href="../symbols/String.html">String</a></span> this or the current attribute value</dd>
+                
+                </dl>
+              
+              
+              
+
+          
+            <a name="begin"> </a>
+            <div class="fixedFont">
+              <span class="methodname">begin</span>
+            </div>
+            <div class="description">
+              <p>Creates a new <code class='syntax js'><span class="class">Ember</span>.<span class="class">RenderBuffer</span></code> object with the provided <code class='syntax js'><span class="variable">tagName</span></code> as
+the element tag and with its <code class='syntax js'><span class="variable">parentBuffer</span></code> property set to the current
+<code class='syntax js'><span class="class">Ember</span>.<span class="class">RenderBuffer</span>.</code></p>
+              
+              
+            </div>
+
+            
+
+              
+                <dl class="parameters">
+                <dt class="heading">Parameters:</dt>
+                
+                  <dt>
+                    <span class="light fixedFont"><a href="../symbols/String.html">String</a></span> <b>tagName</b>
+                    
+                  </dt>
+                  <dd>Tag name to use for the child buffer's element</dd>
+                
+                </dl>
+              
+              
+              
+              
+              
+                <dl class="returns">
+                <dt class="heading">Returns:</dt>
+                
+                  <dd><span class="light fixedFont"><a href="../symbols/Ember.RenderBuffer.html">Ember.RenderBuffer</a></span> A new RenderBuffer object</dd>
+                
+                </dl>
+              
+              
+              
+
+          
+            <a name="element"> </a>
+            <div class="fixedFont">
+              <span class="methodname">element</span>
+            </div>
+            <div class="description">
+              
+              
+              
+            </div>
+
+            
+
+              
+              
+              
+              
+              
+                <dl class="returns">
+                <dt class="heading">Returns:</dt>
+                
+                  <dd><span class="light fixedFont">DOMElement</span> <p>The element corresponding to the generated HTML
+of this buffer</p></dd>
+                
+                </dl>
+              
+              
+              
+
+          
+            <a name="end"> </a>
+            <div class="fixedFont">
+              <span class="methodname">end</span>
+            </div>
+            <div class="description">
+              Closes the current buffer and adds its content to the parentBuffer.
+              
+              
+            </div>
+
+            
+
+              
+              
+              
+              
+              
+                <dl class="returns">
+                <dt class="heading">Returns:</dt>
+                
+                  <dd><span class="light fixedFont"><a href="../symbols/Ember.RenderBuffer.html">Ember.RenderBuffer</a></span> The parentBuffer, if one exists. Otherwise, this</dd>
+                
+                </dl>
+              
+              
+              
+
+          
+            <a name="id"> </a>
+            <div class="fixedFont">
+              <span class="methodname">id</span>
+            </div>
+            <div class="description">
+              Sets the elementID to be used for the element.
+              
+              
+            </div>
+
+            
+
+              
+                <dl class="parameters">
+                <dt class="heading">Parameters:</dt>
+                
+                  <dt>
+                    <span class="light fixedFont"><a href="../symbols/String.html">String</a></span> <b>id</b>
+                    
+                  </dt>
+                  <dd></dd>
+                
+                </dl>
+              
+              
+              
+              
+              
+                <dl class="returns">
+                <dt class="heading">Returns:</dt>
+                
+                  <dd><span class="light fixedFont"><a href="../symbols/Ember.RenderBuffer.html">Ember.RenderBuffer</a></span> this</dd>
+                
+                </dl>
+              
+              
+              
+
+          
+            <a name="insertAfter"> </a>
+            <div class="fixedFont">
+              <span class="methodname">insertAfter</span>
+            </div>
+            <div class="description">
+              Insert a new render buffer after the current render buffer.
+              
+              
+            </div>
+
+            
+
+              
+                <dl class="parameters">
+                <dt class="heading">Parameters:</dt>
+                
+                  <dt>
+                    <span class="light fixedFont"><a href="../symbols/String.html">String</a></span> <b>tagName</b>
+                    
+                  </dt>
+                  <dd>Tag name to use for the new buffer's element</dd>
+                
+                </dl>
+              
+              
+              
+              
+              
+              
+              
+
+          
+            <a name="prepend"> </a>
+            <div class="fixedFont">
+              <span class="methodname">prepend</span>
+            </div>
+            <div class="description">
+              Prepend a new child buffer to the current render buffer.
+              
+              
+            </div>
+
+            
+
+              
+                <dl class="parameters">
+                <dt class="heading">Parameters:</dt>
+                
+                  <dt>
+                    <span class="light fixedFont"><a href="../symbols/String.html">String</a></span> <b>tagName</b>
+                    
+                  </dt>
+                  <dd>Tag name to use for the child buffer's element</dd>
+                
+                </dl>
+              
+              
+              
+              
+              
+              
+              
+
+          
+            <a name="push"> </a>
+            <div class="fixedFont">
+              <span class="methodname">push</span>
+            </div>
+            <div class="description">
+              Adds a string of HTML to the RenderBuffer.
+              
+              
+            </div>
+
+            
+
+              
+                <dl class="parameters">
+                <dt class="heading">Parameters:</dt>
+                
+                  <dt>
+                    <span class="light fixedFont"><a href="../symbols/String.html">String</a></span> <b>string</b>
+                    
+                  </dt>
+                  <dd>HTML to push into the buffer</dd>
+                
+                </dl>
+              
+              
+              
+              
+              
+                <dl class="returns">
+                <dt class="heading">Returns:</dt>
+                
+                  <dd><span class="light fixedFont"><a href="../symbols/Ember.RenderBuffer.html">Ember.RenderBuffer</a></span> this</dd>
+                
+                </dl>
+              
+              
+              
+
+          
+            <a name="remove"> </a>
+            <div class="fixedFont">
+              <span class="methodname">remove</span>
+            </div>
+            <div class="description">
+              
+              
+              
+            </div>
+
+            
+
+              
+              
+              
+              
+              
+              
+              
+
+          
+            <a name="removeAttr"> </a>
+            <div class="fixedFont">
+              <span class="methodname">removeAttr</span>
+            </div>
+            <div class="description">
+              Remove an attribute from the list of attributes to render.
+              
+              
+            </div>
+
+            
+
+              
+                <dl class="parameters">
+                <dt class="heading">Parameters:</dt>
+                
+                  <dt>
+                    <span class="light fixedFont"><a href="../symbols/String.html">String</a></span> <b>name</b>
+                    
+                  </dt>
+                  <dd>The name of the attribute</dd>
+                
+                </dl>
+              
+              
+              
+              
+              
+                <dl class="returns">
+                <dt class="heading">Returns:</dt>
+                
+                  <dd><span class="light fixedFont"><a href="../symbols/Ember.RenderBuffer.html">Ember.RenderBuffer</a></span> this</dd>
+                
+                </dl>
+              
+              
+              
+
+          
+            <a name="replaceWith"> </a>
+            <div class="fixedFont">
+              <span class="methodname">replaceWith</span>
+            </div>
+            <div class="description">
+              Replace the current buffer with a new render buffer.
+              
+              
+            </div>
+
+            
+
+              
+                <dl class="parameters">
+                <dt class="heading">Parameters:</dt>
+                
+                  <dt>
+                    <span class="light fixedFont"><a href="../symbols/String.html">String</a></span> <b>tagName</b>
+                    
+                  </dt>
+                  <dd>Tag name to use for the new buffer's element</dd>
+                
+                </dl>
+              
+              
+              
+              
+              
+              
+              
+
+          
+            <a name="string"> </a>
+            <div class="fixedFont">
+              <span class="methodname">string</span>
+            </div>
+            <div class="description">
+              Generates the HTML content for this buffer.
+              
+              
+            </div>
+
+            
+
+              
+              
+              
+              
+              
+                <dl class="returns">
+                <dt class="heading">Returns:</dt>
+                
+                  <dd><span class="light fixedFont"><a href="../symbols/String.html">String</a></span> The generated HTMl</dd>
+                
+                </dl>
+              
+              
+              
+
+          
+            <a name="style"> </a>
+            <div class="fixedFont">
+              <span class="methodname">style</span>
+            </div>
+            <div class="description">
+              Adds a style to the style attribute which will be rendered to the element.
+              
+              
+            </div>
+
+            
+
+              
+                <dl class="parameters">
+                <dt class="heading">Parameters:</dt>
+                
+                  <dt>
+                    <span class="light fixedFont"><a href="../symbols/String.html">String</a></span> <b>name</b>
+                    
+                  </dt>
+                  <dd>Name of the style</dd>
+                
+                  <dt>
+                    <span class="light fixedFont"><a href="../symbols/String.html">String</a></span> <b>value</b>
+                    
+                  </dt>
+                  <dd></dd>
+                
+                </dl>
+              
+              
+              
+              
+              
+                <dl class="returns">
+                <dt class="heading">Returns:</dt>
+                
+                  <dd><span class="light fixedFont"><a href="../symbols/Ember.RenderBuffer.html">Ember.RenderBuffer</a></span> this</dd>
+                
+                </dl>
+              
+              
+              
+
+          
+        
+      
+
+<!-- ============================== event details ========================= -->
+      
+
+
+
+<!-- ============================== footer ================================= -->
+        <div class="fineprint" style="clear:both">
+          
+          Documentation generated by <a href="http://code.google.com/p/jsdoc-toolkit/" target="_blank">JsDoc Toolkit</a> 2.4.0 on Mon Jan 30 2012 16:12:29 GMT-0800 (PST)
+        </div>
+      </section>
+    </div>
+  </body>
+</html>

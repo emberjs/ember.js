@@ -1,0 +1,122 @@
+<html><head><meta http-equiv="content-type" content="text/html; charset=utf8"> <style>
+	.KEYW {color: #933;}
+	.COMM {color: #bbb; font-style: italic;}
+	.NUMB {color: #393;}
+	.STRN {color: #393;}
+	.REGX {color: #339;}
+	.line {border-right: 1px dotted #666; color: #666; font-style: normal;}
+	</style></head><body><pre><span class='line'>  1</span> <span class="COMM">// ==========================================================================</span><span class="WHIT">
+<span class='line'>  2</span> </span><span class="COMM">// Project:  Ember Runtime</span><span class="WHIT">
+<span class='line'>  3</span> </span><span class="COMM">// Copyright: ©2011 Strobe Inc. and contributors.</span><span class="WHIT">
+<span class='line'>  4</span> </span><span class="COMM">// License:   Licensed under MIT license (see license.js)</span><span class="WHIT">
+<span class='line'>  5</span> </span><span class="COMM">// ==========================================================================</span><span class="WHIT">
+<span class='line'>  6</span> 
+<span class='line'>  7</span> 
+<span class='line'>  8</span> </span><span class="NAME">require</span><span class="PUNC">(</span><span class="STRN">'ember-runtime/mixins/enumerable'</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>  9</span> 
+<span class='line'> 10</span> </span><span class="COMM">/**
+<span class='line'> 11</span>   @class
+<span class='line'> 12</span> 
+<span class='line'> 13</span>   This mixin defines the API for modifying generic enumerables.  These methods
+<span class='line'> 14</span>   can be applied to an object regardless of whether it is ordered or 
+<span class='line'> 15</span>   unordered.
+<span class='line'> 16</span>   
+<span class='line'> 17</span>   Note that an Enumerable can change even if it does not implement this mixin.
+<span class='line'> 18</span>   For example, a MappedEnumerable cannot be directly modified but if its 
+<span class='line'> 19</span>   underlying enumerable changes, it will change also.
+<span class='line'> 20</span> 
+<span class='line'> 21</span>   ## Adding Objects
+<span class='line'> 22</span>   
+<span class='line'> 23</span>   To add an object to an enumerable, use the addObject() method.  This 
+<span class='line'> 24</span>   method will only add the object to the enumerable if the object is not 
+<span class='line'> 25</span>   already present and the object if of a type supported by the enumerable.
+<span class='line'> 26</span>   
+<span class='line'> 27</span>       javascript:
+<span class='line'> 28</span>       set.addObject(contact);
+<span class='line'> 29</span>       
+<span class='line'> 30</span>   ## Removing Objects
+<span class='line'> 31</span>   
+<span class='line'> 32</span>   To remove an object form an enumerable, use the removeObject() method.  This
+<span class='line'> 33</span>   will only remove the object if it is already in the enumerable, otherwise
+<span class='line'> 34</span>   this method has no effect.
+<span class='line'> 35</span>   
+<span class='line'> 36</span>       javascript:
+<span class='line'> 37</span>       set.removeObject(contact);
+<span class='line'> 38</span>       
+<span class='line'> 39</span>   ## Implementing In Your Own Code
+<span class='line'> 40</span>   
+<span class='line'> 41</span>   If you are implementing an object and want to support this API, just include
+<span class='line'> 42</span>   this mixin in your class and implement the required methods.  In your unit
+<span class='line'> 43</span>   tests, be sure to apply the Ember.MutableEnumerableTests to your object.
+<span class='line'> 44</span>   
+<span class='line'> 45</span>   @extends Ember.Mixin
+<span class='line'> 46</span>   @extends Ember.Enumerable
+<span class='line'> 47</span> */</span><span class="WHIT">
+<span class='line'> 48</span> </span><span class="NAME">Ember.MutableEnumerable</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">Ember.Mixin.create</span><span class="PUNC">(</span><span class="NAME">Ember.Enumerable</span><span class="PUNC">,</span><span class="WHIT"> 
+<span class='line'> 49</span>   </span><span class="COMM">/** @scope Ember.MutableEnumerable.prototype */</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'> 50</span> </span><span class="WHIT">  
+<span class='line'> 51</span>   </span><span class="COMM">/**
+<span class='line'> 52</span>     __Required.__ You must implement this method to apply this mixin.
+<span class='line'> 53</span>     
+<span class='line'> 54</span>     Attempts to add the passed object to the receiver if the object is not 
+<span class='line'> 55</span>     already present in the collection. If the object is present, this method
+<span class='line'> 56</span>     has no effect. 
+<span class='line'> 57</span>     
+<span class='line'> 58</span>     If the passed object is of a type not supported by the receiver (for 
+<span class='line'> 59</span>     example if you pass an object to an IndexSet) then this method should 
+<span class='line'> 60</span>     raise an exception.
+<span class='line'> 61</span>     
+<span class='line'> 62</span>     @param {Object} object
+<span class='line'> 63</span>       The object to add to the enumerable.
+<span class='line'> 64</span>       
+<span class='line'> 65</span>     @returns {Object} the passed object
+<span class='line'> 66</span>   */</span><span class="WHIT">
+<span class='line'> 67</span> </span><span class="WHIT">  </span><span class="NAME">addObject</span><span class="PUNC">:</span><span class="WHIT"> </span><span class="NAME">Ember.required</span><span class="PUNC">(</span><span class="NAME">Function</span><span class="PUNC">)</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'> 68</span> 
+<span class='line'> 69</span> </span><span class="WHIT">  </span><span class="COMM">/**
+<span class='line'> 70</span>     Adds each object in the passed enumerable to the receiver.
+<span class='line'> 71</span> 
+<span class='line'> 72</span>     @param {Ember.Enumerable} objects the objects to remove
+<span class='line'> 73</span>     @returns {Object} receiver
+<span class='line'> 74</span>   */</span><span class="WHIT">
+<span class='line'> 75</span> </span><span class="WHIT">  </span><span class="NAME">addObjects</span><span class="PUNC">:</span><span class="WHIT"> </span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">objects</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'> 76</span> </span><span class="WHIT">    </span><span class="NAME">Ember.beginPropertyChanges</span><span class="PUNC">(</span><span class="KEYW">this</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 77</span> </span><span class="WHIT">    </span><span class="NAME">objects.forEach</span><span class="PUNC">(</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">obj</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT"> </span><span class="NAME">this.addObject</span><span class="PUNC">(</span><span class="NAME">obj</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT"> </span><span class="PUNC">}</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 78</span> </span><span class="WHIT">    </span><span class="NAME">Ember.endPropertyChanges</span><span class="PUNC">(</span><span class="KEYW">this</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 79</span> </span><span class="WHIT">    </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 80</span> </span><span class="WHIT">  </span><span class="PUNC">}</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'> 81</span> 
+<span class='line'> 82</span> </span><span class="WHIT">  </span><span class="COMM">/**
+<span class='line'> 83</span>     __Required.__ You must implement this method to apply this mixin.
+<span class='line'> 84</span>     
+<span class='line'> 85</span>     Attempts to remove the passed object from the receiver collection if the
+<span class='line'> 86</span>     object is in present in the collection.  If the object is not present,
+<span class='line'> 87</span>     this method has no effect.
+<span class='line'> 88</span>     
+<span class='line'> 89</span>     If the passed object is of a type not supported by the receiver (for 
+<span class='line'> 90</span>     example if you pass an object to an IndexSet) then this method should 
+<span class='line'> 91</span>     raise an exception.
+<span class='line'> 92</span>     
+<span class='line'> 93</span>     @param {Object} object
+<span class='line'> 94</span>       The object to remove from the enumerable.
+<span class='line'> 95</span>       
+<span class='line'> 96</span>     @returns {Object} the passed object
+<span class='line'> 97</span>   */</span><span class="WHIT">
+<span class='line'> 98</span> </span><span class="WHIT">  </span><span class="NAME">removeObject</span><span class="PUNC">:</span><span class="WHIT"> </span><span class="NAME">Ember.required</span><span class="PUNC">(</span><span class="NAME">Function</span><span class="PUNC">)</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'> 99</span> </span><span class="WHIT">  
+<span class='line'>100</span>   
+<span class='line'>101</span>   </span><span class="COMM">/**
+<span class='line'>102</span>     Removes each objects in the passed enumerable from the receiver.
+<span class='line'>103</span> 
+<span class='line'>104</span>     @param {Ember.Enumerable} objects the objects to remove
+<span class='line'>105</span>     @returns {Object} receiver
+<span class='line'>106</span>   */</span><span class="WHIT">
+<span class='line'>107</span> </span><span class="WHIT">  </span><span class="NAME">removeObjects</span><span class="PUNC">:</span><span class="WHIT"> </span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">objects</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>108</span> </span><span class="WHIT">    </span><span class="NAME">Ember.beginPropertyChanges</span><span class="PUNC">(</span><span class="KEYW">this</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>109</span> </span><span class="WHIT">    </span><span class="NAME">objects.forEach</span><span class="PUNC">(</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">obj</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT"> </span><span class="NAME">this.removeObject</span><span class="PUNC">(</span><span class="NAME">obj</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT"> </span><span class="PUNC">}</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>110</span> </span><span class="WHIT">    </span><span class="NAME">Ember.endPropertyChanges</span><span class="PUNC">(</span><span class="KEYW">this</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>111</span> </span><span class="WHIT">    </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>112</span> </span><span class="WHIT">  </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>113</span> </span><span class="WHIT">    
+<span class='line'>114</span> </span><span class="PUNC">}</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>115</span> </span></pre></body></html>

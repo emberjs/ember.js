@@ -17,6 +17,7 @@ var set = Ember.set, get = Ember.get;
 var o_create = Ember.platform.create,
     meta = Ember.meta;
 
+/** @private */
 function makeCtor() {
 
   // Note: avoid accessing any properties on the object since it makes the
