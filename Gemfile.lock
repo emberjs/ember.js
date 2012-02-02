@@ -7,6 +7,14 @@ GIT
       thor
 
 GIT
+  remote: https://github.com/wagenet/ember-docs.git
+  revision: d8f10e2eabe144adf77850f929f2b840f119e3d1
+  specs:
+    ember-docs (0.1)
+      rack
+      thor
+
+GIT
   remote: https://github.com/wycats/abbot-from-scratch.git
   revision: 47662bbbb25afc213318051676cd31375d1d1f59
   specs:
@@ -52,6 +60,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  ember-docs!
   execjs (~> 1.2.6)
   github-upload
   rack
