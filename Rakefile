@@ -6,6 +6,7 @@ require "net/github-upload"
 require "bundler/setup"
 require "erb"
 require "uglifier"
+require "ember_docs/cli"
 
 # for now, the SproutCore compiler will be used to compile Ember.js
 require "sproutcore"
@@ -367,6 +368,24 @@ namespace :release do
 
   task :deploy => ['framework:deploy', 'starter_kit:deploy']
 
+end
+
+namespace :docs do
+  def doc_args
+    "#{Dir.glob("packages/ember-*").join(' ')} -E #{Dir.glob("packages/ember-*/tests").join(' ')} -t docs.emberjs.com"
+  end
+
+  task :preview do
+    EmberDocs::CLI.start("preview #{doc_args}".split(' '))
+  end
+
+  task :build do
+    EmberDocs::CLI.start("generate #{doc_args} -o docs".split(' '))
+  end
+
+  task :clean do
+    rm_r "docs"
+  end
 end
 
 task :default => :dist
