@@ -40,7 +40,7 @@ Ember.EventDispatcher = Ember.Object.extend(
 
     This will be called after the browser sends a DOMContentReady event. By
     default, it will set up all of the listeners on the document body. If you
-    would like to register the listeners on different element, set the event
+    would like to register the listeners on a different element, set the event
     dispatcher's `root` property.
   */
   setup: function(addedEvents) {
@@ -82,7 +82,7 @@ Ember.EventDispatcher = Ember.Object.extend(
 
     rootElement.addClass('ember-application');
 
-    ember_assert('Unable to add "ember-application" class to rootElement. Make sure you the body or an element in the body.', rootElement.is('.ember-application'));
+    ember_assert('Unable to add "ember-application" class to rootElement. Make sure you set rootElement to the body or an element in the body.', rootElement.is('.ember-application'));
 
     for (event in events) {
       if (events.hasOwnProperty(event)) {
