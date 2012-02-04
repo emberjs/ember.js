@@ -13,7 +13,7 @@ var getPath = Ember.getPath;
   `log` allows you to output the value of a value in the current rendering
   context.
 
-    {{log myVariable}}
+      {{log myVariable}}
 
   @name Handlebars.helpers.log
   @param {String} property
@@ -27,7 +27,7 @@ Ember.Handlebars.registerHelper('log', function(property, fn) {
   The `debugger` helper executes the `debugger` statement in the current
   context.
 
-    {{debugger}}
+      {{debugger}}
 
   @name Handlebars.helpers.debugger
   @param {String} property

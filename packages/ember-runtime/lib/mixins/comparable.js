@@ -33,9 +33,9 @@ Ember.Comparable = Ember.Mixin.create( /** @scope Ember.Comparable.prototype */{
     Override to return the result of the comparison of the two parameters. The
     compare method should return:
 
-      - -1 if a < b
-      - 0 if a == b
-      - 1 if a > b
+      - `-1` if `a < b`
+      - `0` if `a == b`
+      - `1` if `a > b`
 
     Default implementation raises an exception.
 
