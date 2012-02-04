@@ -128,14 +128,13 @@ Ember.Enumerable = Ember.Mixin.create( /** @lends Ember.Enumerable */ {
     contains only one object, this method should always return that object.
     If your enumerable is empty, this method should return undefined.
 
+        var arr = ["a", "b", "c"];
+        arr.firstObject(); => "a"
+
+        var arr = [];
+        arr.firstObject(); => undefined
+
     @returns {Object} the object or undefined
-
-    @example
-    var arr = ["a", "b", "c"];
-    arr.firstObject(); => "a"
-
-    var arr = [];
-    arr.firstObject(); => undefined
   */
   firstObject: Ember.computed(function() {
     if (get(this, 'length')===0) return undefined ;
@@ -153,14 +152,13 @@ Ember.Enumerable = Ember.Mixin.create( /** @lends Ember.Enumerable */ {
     contains only one object, this method should always return that object.
     If your enumerable is empty, this method should return undefined.
 
+        var arr = ["a", "b", "c"];
+        arr.lastObject(); => "c"
+
+        var arr = [];
+        arr.lastObject(); => undefined
+
     @returns {Object} the last object or undefined
-
-    @example
-    var arr = ["a", "b", "c"];
-    arr.lastObject(); => "c"
-
-    var arr = [];
-    arr.lastObject(); => undefined
   */
   lastObject: Ember.computed(function() {
     var len = get(this, 'length');
