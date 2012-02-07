@@ -219,6 +219,59 @@ test("embedded associations work the same as referenced ones, and have the same 
   strictEqual(get(person, 'tags').objectAt(0), store.find(Tag, 5), "association objects are the same as objects retrieved directly");
 });
 
+test("it is possible to add a new item to an association", function() {
+  var Tag = DS.Model.extend({
+    name: DS.attr('string')
+  });
+
+  var Person = DS.Model.extend({
+    name: DS.attr('string'),
+    tags: DS.hasMany(Tag)
+  });
+
+  var store = DS.Store.create();
+
+  store.load(Person, { id: 1, name: "Tom Dale", tags: [ 1 ] });
+  store.load(Tag, { id: 1, name: "ember" });
+
+  var person = store.find(Person, 1);
+  var tag = get(person, 'tags').objectAt(0);
+
+  equal(get(tag, 'name'), "ember", "precond - associations work");
+
+  tag = store.createRecord(Tag, { name: "js" });
+  get(person, 'tags').pushObject(tag);
+
+  equal(get(person, 'tags').objectAt(1), tag, "newly added association works");
+});
+
+test("it is possible to remove an item from an association", function() {
+  var Tag = DS.Model.extend({
+    name: DS.attr('string')
+  });
+
+  var Person = DS.Model.extend({
+    name: DS.attr('string'),
+    tags: DS.hasMany(Tag)
+  });
+
+  var store = DS.Store.create();
+
+  store.load(Person, { id: 1, name: "Tom Dale", tags: [ 1 ] });
+  store.load(Tag, { id: 1, name: "ember" });
+
+  var person = store.find(Person, 1);
+  var tag = get(person, 'tags').objectAt(0);
+
+  equal(get(tag, 'name'), "ember", "precond - associations work");
+
+  get(person, 'tags').removeObject(tag);
+
+  equal(getPath(person, 'tags.length'), 0, "object is removed from the association");
+});
+
+module("ModelArray");
+
 test("updating the content of a ModelArray updates its content", function() {
   var Tag = DS.Model.extend({
     name: DS.attr('string')
