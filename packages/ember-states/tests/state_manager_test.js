@@ -177,6 +177,33 @@ test("it automatically transitions to a default state", function() {
   ok(get(stateManager, 'currentState').isStart, "automatically transitions to start state");
 });
 
+test("it automatically transitions to a default state that is an instance", function() {
+  stateManager = Ember.StateManager.create({
+    states: {
+      foo: Ember.State.create({
+        start: Ember.State.extend({
+          isStart: true
+        })
+      })
+    }
+  });
+
+  stateManager.goToState('foo');
+  ok(get(stateManager, 'currentState').isStart, "automatically transitions to start state");
+});
+
+test("on a state manager, it automatically transitions to a default state that is an instance", function() {
+  stateManager = Ember.StateManager.create({
+    states: {
+      start: Ember.State.extend({
+        isStart: true
+      })
+    }
+  });
+
+  ok(get(stateManager, 'currentState').isStart, "automatically transitions to start state");
+});
+
 test("it automatically transitions to a default state specified using the initialState property", function() {
   stateManager = Ember.StateManager.create({
     initialState: 'beginning',

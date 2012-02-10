@@ -20,7 +20,7 @@ Ember.StateManager = Ember.State.extend(
 
     var initialState = get(this, 'initialState');
 
-    if (!initialState && get(this, 'start')) {
+    if (!initialState && getPath(this, 'states.start')) {
       initialState = 'start';
     }
 
@@ -196,7 +196,7 @@ Ember.StateManager = Ember.State.extend(
         }
 
         // right now, start states cannot be entered asynchronously
-        while (startState = get(startState, initialState)) {
+        while (startState = get(get(startState, 'states'), initialState)) {
           enteredState = startState;
 
           if (log) { console.log("STATEMANAGER: Entering " + startState.name); }
