@@ -63,17 +63,6 @@
   // If we have the W3C range API, this process is relatively straight forward.
   if (supportsRange) {
 
-    // IE 9 supports ranges but doesn't define createContextualFragment
-    if (!Range.prototype.createContextualFragment) {
-      Range.prototype.createContextualFragment = function(html) {
-        var frag = document.createDocumentFragment(),
-             div = document.createElement("div");
-        frag.appendChild(div);
-        div.outerHTML = html;
-        return frag;
-      };
-    }
-
     // Get a range for the current morph. Optionally include the starting and
     // ending placeholders.
     rangeFor = function(morph, outerToo) {
@@ -334,6 +323,7 @@
     afterFunc = function(html) {
       // get the real starting node. see realNode for details.
       var end = document.getElementById(this.end);
+      var insertBefore = end.nextSibling;
       var parentNode = end.parentNode;
       var nextSibling;
       var node;
@@ -347,7 +337,7 @@
       // placeholder.
       while (node) {
         nextSibling = node.nextSibling;
-        parentNode.insertBefore(node, end.nextSibling);
+        parentNode.insertBefore(node, insertBefore);
         node = nextSibling;
       }
     };
