@@ -14,7 +14,7 @@
 var get = SC.get, set = SC.set, getPath = SC.getPath;
 var Person, store, adapter;
 
-module("DS.Adapter", {
+module("DS.Store and DS.Adapter integration test", {
   setup: function() {
     Person = DS.Model.extend({
       updatedAt: DS.attr('string')
