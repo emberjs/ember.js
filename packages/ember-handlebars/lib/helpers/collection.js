@@ -70,7 +70,14 @@ Ember.Handlebars.registerHelper('collection', function(path, options) {
   }
 
   if (inverse && inverse !== Handlebars.VM.noop) {
-    hash.emptyView = Ember.View.extend({
+    var emptyViewClass = Ember.View;
+
+    if (hash.emptyViewClass) {
+      emptyViewClass = Ember.View.detect(emptyViewClass) ?
+                          hash.emptyViewClass : getPath(this, hash.emptyViewClass);
+    }
+
+    hash.emptyView = emptyViewClass.extend({
       template: inverse,
       tagName: itemHash.tagName
     });
