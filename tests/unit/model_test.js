@@ -226,7 +226,7 @@ test("when a record depends on the state of another record, it enters the pendin
   equal(get(childComment, 'isPending'), true, "Child comment is pending on the parent comment");
 
   parentComment.willCommit();
-  parentComment.didUpdate();
+  parentComment.adapterDidUpdate();
 
   equal(get(parentComment, 'isLoaded'), true, "precond - Parent comment is loaded");
   equal(get(parentComment, 'isDirty'), false, "precond - Parent comment is not dirty");
