@@ -1,0 +1,106 @@
+<html><head><meta http-equiv="content-type" content="text/html; charset=utf8"> <style>
+	.KEYW {color: #933;}
+	.COMM {color: #bbb; font-style: italic;}
+	.NUMB {color: #393;}
+	.STRN {color: #393;}
+	.REGX {color: #339;}
+	.line {border-right: 1px dotted #666; color: #666; font-style: normal;}
+	</style></head><body><pre><span class='line'>  1</span> <span class="COMM">// ==========================================================================</span><span class="WHIT">
+<span class='line'>  2</span> </span><span class="COMM">// Project:  Ember Runtime</span><span class="WHIT">
+<span class='line'>  3</span> </span><span class="COMM">// Copyright: ©2006-2011 Strobe Inc. and contributors.</span><span class="WHIT">
+<span class='line'>  4</span> </span><span class="COMM">//            Portions ©2008-2010 Apple Inc. All rights reserved.</span><span class="WHIT">
+<span class='line'>  5</span> </span><span class="COMM">// License:   Licensed under MIT license (see license.js)</span><span class="WHIT">
+<span class='line'>  6</span> </span><span class="COMM">// ==========================================================================</span><span class="WHIT">
+<span class='line'>  7</span> 
+<span class='line'>  8</span> 
+<span class='line'>  9</span> 
+<span class='line'> 10</span> 
+<span class='line'> 11</span> </span><span class="WHIT">  
+<span class='line'> 12</span> </span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">get</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">Ember.get</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">set</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">Ember.set</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 13</span> 
+<span class='line'> 14</span> </span><span class="COMM">/**
+<span class='line'> 15</span>   @namespace
+<span class='line'> 16</span> 
+<span class='line'> 17</span>   The Ember.Freezable mixin implements some basic methods for marking an object
+<span class='line'> 18</span>   as frozen. Once an object is frozen it should be read only. No changes
+<span class='line'> 19</span>   may be made the internal state of the object.
+<span class='line'> 20</span> 
+<span class='line'> 21</span>   ## Enforcement
+<span class='line'> 22</span> 
+<span class='line'> 23</span>   To fully support freezing in your subclass, you must include this mixin and
+<span class='line'> 24</span>   override any method that might alter any property on the object to instead
+<span class='line'> 25</span>   raise an exception. You can check the state of an object by checking the
+<span class='line'> 26</span>   isFrozen property.
+<span class='line'> 27</span> 
+<span class='line'> 28</span>   Although future versions of JavaScript may support language-level freezing
+<span class='line'> 29</span>   object objects, that is not the case today. Even if an object is freezable,
+<span class='line'> 30</span>   it is still technically possible to modify the object, even though it could
+<span class='line'> 31</span>   break other parts of your application that do not expect a frozen object to
+<span class='line'> 32</span>   change. It is, therefore, very important that you always respect the
+<span class='line'> 33</span>   isFrozen property on all freezable objects.
+<span class='line'> 34</span> 
+<span class='line'> 35</span>   ## Example Usage
+<span class='line'> 36</span> 
+<span class='line'> 37</span>   The example below shows a simple object that implement the Ember.Freezable
+<span class='line'> 38</span>   protocol.
+<span class='line'> 39</span> 
+<span class='line'> 40</span>         Contact = Ember.Object.extend(Ember.Freezable, {
+<span class='line'> 41</span> 
+<span class='line'> 42</span>           firstName: null,
+<span class='line'> 43</span> 
+<span class='line'> 44</span>           lastName: null,
+<span class='line'> 45</span> 
+<span class='line'> 46</span>           // swaps the names
+<span class='line'> 47</span>           swapNames: function() {
+<span class='line'> 48</span>             if (this.get('isFrozen')) throw Ember.FROZEN_ERROR;
+<span class='line'> 49</span>             var tmp = this.get('firstName');
+<span class='line'> 50</span>             this.set('firstName', this.get('lastName'));
+<span class='line'> 51</span>             this.set('lastName', tmp);
+<span class='line'> 52</span>             return this;
+<span class='line'> 53</span>           }
+<span class='line'> 54</span> 
+<span class='line'> 55</span>         });
+<span class='line'> 56</span> 
+<span class='line'> 57</span>         c = Context.create({ firstName: "John", lastName: "Doe" });
+<span class='line'> 58</span>         c.swapNames();  => returns c
+<span class='line'> 59</span>         c.freeze();
+<span class='line'> 60</span>         c.swapNames();  => EXCEPTION
+<span class='line'> 61</span> 
+<span class='line'> 62</span>   ## Copying
+<span class='line'> 63</span> 
+<span class='line'> 64</span>   Usually the Ember.Freezable protocol is implemented in cooperation with the
+<span class='line'> 65</span>   Ember.Copyable protocol, which defines a frozenCopy() method that will return
+<span class='line'> 66</span>   a frozen object, if the object implements this method as well.
+<span class='line'> 67</span> 
+<span class='line'> 68</span>   @since Ember 0.9
+<span class='line'> 69</span> */</span><span class="WHIT">
+<span class='line'> 70</span> </span><span class="NAME">Ember.Freezable</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">Ember.Mixin.create</span><span class="PUNC">(</span><span class="WHIT">
+<span class='line'> 71</span> </span><span class="COMM">/** @scope Ember.Freezable.prototype */</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'> 72</span> 
+<span class='line'> 73</span> </span><span class="WHIT">  </span><span class="COMM">/**
+<span class='line'> 74</span>     Set to YES when the object is frozen.  Use this property to detect whether
+<span class='line'> 75</span>     your object is frozen or not.
+<span class='line'> 76</span> 
+<span class='line'> 77</span>     @property {Boolean}
+<span class='line'> 78</span>   */</span><span class="WHIT">
+<span class='line'> 79</span> </span><span class="WHIT">  </span><span class="NAME">isFrozen</span><span class="PUNC">:</span><span class="WHIT"> </span><span class="KEYW">false</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'> 80</span> 
+<span class='line'> 81</span> </span><span class="WHIT">  </span><span class="COMM">/**
+<span class='line'> 82</span>     Freezes the object.  Once this method has been called the object should
+<span class='line'> 83</span>     no longer allow any properties to be edited.
+<span class='line'> 84</span> 
+<span class='line'> 85</span>     @returns {Object} reciever
+<span class='line'> 86</span>   */</span><span class="WHIT">
+<span class='line'> 87</span> </span><span class="WHIT">  </span><span class="NAME">freeze</span><span class="PUNC">:</span><span class="WHIT"> </span><span class="KEYW">function</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'> 88</span> </span><span class="WHIT">    </span><span class="KEYW">if</span><span class="WHIT"> </span><span class="PUNC">(</span><span class="NAME">get</span><span class="PUNC">(</span><span class="KEYW">this</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="STRN">'isFrozen'</span><span class="PUNC">)</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 89</span> </span><span class="WHIT">    </span><span class="NAME">set</span><span class="PUNC">(</span><span class="KEYW">this</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="STRN">'isFrozen'</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="KEYW">true</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 90</span> </span><span class="WHIT">    </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 91</span> </span><span class="WHIT">  </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'> 92</span> 
+<span class='line'> 93</span> </span><span class="PUNC">}</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 94</span> 
+<span class='line'> 95</span> </span><span class="NAME">Ember.FROZEN_ERROR</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="STRN">"Frozen object cannot be modified."</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 96</span> 
+<span class='line'> 97</span> 
+<span class='line'> 98</span> 
+<span class='line'> 99</span> </span></pre></body></html>

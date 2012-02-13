@@ -1,0 +1,1875 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>SproutCore</title>
+  <meta name="description" content="A framework for building fast, desktop caliber web applications." />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="/css/api.css" />
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.js"></script>
+  <script src="/js/jquery-bbq.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/lib/modernizr-1.7.min.js"></script>
+  <!--[if lt IE 9]>
+  <script src="//html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+</head>
+
+  <body id="docs">
+<!-- ============================== header ================================= -->
+    <!-- begin static/header.html -->
+      <header role="banner">
+    <div class="container">
+      <h1 id="logo">
+        <a href="http://www.sproutcore.com"><img src="/img/logo.png" alt="SproutCore" /></a>
+        </h1>
+
+      <nav role="navigation">
+        <ul>
+          <li><a href="http://www.sproutcore.com/about/">About</a></li>
+          <li><a href="http://guides.sproutcore.com">Guides</a></li>
+          <li class="active"><a href="/" >Docs</a></li>
+          <li><a href="http://www.sproutcore.com/community/">Community</a></li>
+          <li><a href="http://blog.sproutcore.com">Blog</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+  
+
+
+    <!-- end static/header.html -->
+
+<!-- ============================== classes index ============================ -->
+
+    <section id="list">
+      <header>
+        <form action="#" role="search">
+          <input type="text" />
+          <a href="#" class="search-reset"></a>
+        </form>
+      </header>
+      <div>
+        <span class="odd active"><a href="/">API Documentation Index</a></span>
+	
+	<span class='even' global><a href="../symbols/_global_.html">_global_</a></span>
+	
+	<span class='odd'><a href="../symbols/Ember.html">Ember</a></span>
+	
+	<span class='even'><a href="../symbols/Ember.Application.html">Ember.Application</a></span>
+	
+	<span class='odd'><a href="../symbols/Ember.Array.html">Ember.Array</a></span>
+	
+	<span class='even'><a href="../symbols/Ember.ArrayController.html">Ember.ArrayController</a></span>
+	
+	<span class='odd'><a href="../symbols/Ember.ArrayProxy.html">Ember.ArrayProxy</a></span>
+	
+	<span class='even'><a href="../symbols/Ember.Binding.html">Ember.Binding</a></span>
+	
+	<span class='odd'><a href="../symbols/Ember.CollectionView.html">Ember.CollectionView</a></span>
+	
+	<span class='even'><a href="../symbols/Ember.Comparable.html">Ember.Comparable</a></span>
+	
+	<span class='odd'><a href="../symbols/Ember.ComputedProperty.html">Ember.ComputedProperty</a></span>
+	
+	<span class='even'><a href="../symbols/Ember.Copyable.html">Ember.Copyable</a></span>
+	
+	<span class='odd'><a href="../symbols/Ember.CoreObject.html">Ember.CoreObject</a></span>
+	
+	<span class='even'><a href="../symbols/Ember.Enumerable.html">Ember.Enumerable</a></span>
+	
+	<span class='odd'><a href="../symbols/Ember.Error.html">Ember.Error</a></span>
+	
+	<span class='even'><a href="../symbols/Ember.Freezable.html">Ember.Freezable</a></span>
+	
+	<span class='odd'><a href="../symbols/Ember.Handlebars.html">Ember.Handlebars</a></span>
+	
+	<span class='even'><a href="../symbols/Ember.Logger.html">Ember.Logger</a></span>
+	
+	<span class='odd'><a href="../symbols/Ember.Mixin.html">Ember.Mixin</a></span>
+	
+	<span class='even'><a href="../symbols/Ember.MutableArray.html">Ember.MutableArray</a></span>
+	
+	<span class='odd'><a href="../symbols/Ember.MutableEnumerable.html">Ember.MutableEnumerable</a></span>
+	
+	<span class='even'><a href="../symbols/Ember.NativeArray.html">Ember.NativeArray</a></span>
+	
+	<span class='odd'><a href="../symbols/Ember.Object.html">Ember.Object</a></span>
+	
+	<span class='even'><a href="../symbols/Ember.Observable.html">Ember.Observable</a></span>
+	
+	<span class='odd'><a href="../symbols/Ember.platform.html">Ember.platform</a></span>
+	
+	<span class='even'><a href="../symbols/Ember.RenderBuffer.html">Ember.RenderBuffer</a></span>
+	
+	<span class='odd'><a href="../symbols/Ember.RunLoop.html">Ember.RunLoop</a></span>
+	
+	<span class='even'><a href="../symbols/Ember.Set.html">Ember.Set</a></span>
+	
+	<span class='odd'><a href="../symbols/Ember.StateManager.html">Ember.StateManager</a></span>
+	
+	<span class='even'><a href="../symbols/Ember.String.html">Ember.String</a></span>
+	
+	<span class='odd'><a href="../symbols/Ember.TextArea.html">Ember.TextArea</a></span>
+	
+	<span class='even'><a href="../symbols/Ember.TextField.html">Ember.TextField</a></span>
+	
+	<span class='odd'><a href="../symbols/Ember.TextSupport.html">Ember.TextSupport</a></span>
+	
+	<span class='even'><a href="../symbols/Ember.View.html">Ember.View</a></span>
+	
+	<span class='odd'><a href="../symbols/Function.html">Function</a></span>
+	
+	<span class='even'><a href="../symbols/Handlebars.helpers.html">Handlebars.helpers</a></span>
+	
+	<span class='odd'><a href="../symbols/String.html">String</a></span>
+	
+	<span class='even'><a href="../symbols/window.html">window</a></span>
+	
+
+      </div>
+    </section>
+    <footer>
+      <a href="http://groups.google.com/group/sproutcore" class="button secondary">SUBSCRIBE TO MAILING LIST</a>
+    </footer>
+
+    <div role="main">
+      <section id="documentation">
+<!-- ============================== class title ============================ -->
+        <h1 class="classTitle">
+          
+          Class: Ember.View
+        </h1>
+
+<!-- ============================== class summary ========================== -->
+        <p class="description">
+          <span class="extends">
+          <br />Extends
+            <a href="../symbols/Ember.Object.html">Ember.Object</a>.<br />
+          
+          </span>
+
+        
+
+          
+
+          
+            <span class="definedin">Defined in: <a href="../symbols/src/packages_ember-views_lib_views_view.js.html">view.js</a>.</span>
+          
+        </p>
+
+
+<!-- ============================== properties summary ===================== -->
+      
+      
+        
+        <h2>Field Summary</h2>
+        <div id="properties">
+        
+          <ul>
+          
+            <li>
+              <a href="../symbols/Ember.View.html#ariaRole">ariaRole</a>
+            </li>
+          
+            <li>
+              <a href="../symbols/Ember.View.html#attributeBindings">attributeBindings</a>
+            </li>
+          
+            <li>
+              <a href="../symbols/Ember.View.html#classNameBindings">classNameBindings</a>
+            </li>
+          
+            <li>
+              <a href="../symbols/Ember.View.html#classNames">classNames</a>
+            </li>
+          
+            <li>
+              <a href="../symbols/Ember.View.html#collectionView">collectionView</a>
+            </li>
+          
+            <li>
+              <a href="../symbols/Ember.View.html#contentView">contentView</a>
+            </li>
+          
+            <li>
+              <a href="../symbols/Ember.View.html#didInsertElement">didInsertElement</a>
+            </li>
+          
+            <li>
+              <a href="../symbols/Ember.View.html#element">element</a>
+            </li>
+          
+            <li>
+              <a href="../symbols/Ember.View.html#elementId">elementId</a>
+            </li>
+          
+            <li>
+              <a href="../symbols/Ember.View.html#isView">isView</a>
+            </li>
+          
+            <li>
+              <a href="../symbols/Ember.View.html#isVisible">isVisible</a>
+            </li>
+          
+            <li>
+              <a href="../symbols/Ember.View.html#itemView">itemView</a>
+            </li>
+          
+            <li>
+              <a href="../symbols/Ember.View.html#tagName">tagName</a>
+            </li>
+          
+            <li>
+              <a href="../symbols/Ember.View.html#template">template</a>
+            </li>
+          
+            <li>
+              <a href="../symbols/Ember.View.html#templateContext">templateContext</a>
+            </li>
+          
+            <li>
+              <a href="../symbols/Ember.View.html#templateName">templateName</a>
+            </li>
+          
+            <li>
+              <a href="../symbols/Ember.View.html#templates">templates</a>
+            </li>
+          
+            <li>
+              <a href="../symbols/Ember.View.html#willInsertElement">willInsertElement</a>
+            </li>
+          
+          </ul>
+        
+
+        
+        
+          
+        
+        </div>
+      
+
+
+
+
+<!-- ============================== methods summary ======================== -->
+      
+      
+        
+        
+          <h2>Class Methods</h2>
+          <ul class="methods">
+          
+            <li class="fixedFont"><a href="../symbols/Ember.View.html#.applyAttributeBindings">applyAttributeBindings</a></li>
+          
+          </ul>
+        
+      
+        
+        
+          <h2>Instance Methods</h2>
+          <ul class="methods">
+          
+            <li class="fixedFont"><a href="../symbols/Ember.View.html#$">$</a></li>
+          
+            <li class="fixedFont"><a href="../symbols/Ember.View.html#append">append</a></li>
+          
+            <li class="fixedFont"><a href="../symbols/Ember.View.html#appendChild">appendChild</a></li>
+          
+            <li class="fixedFont"><a href="../symbols/Ember.View.html#appendTo">appendTo</a></li>
+          
+            <li class="fixedFont"><a href="../symbols/Ember.View.html#beforeRender">beforeRender</a></li>
+          
+            <li class="fixedFont"><a href="../symbols/Ember.View.html#clearBuffer">clearBuffer</a></li>
+          
+            <li class="fixedFont"><a href="../symbols/Ember.View.html#clearRenderedChildren">clearRenderedChildren</a></li>
+          
+            <li class="fixedFont"><a href="../symbols/Ember.View.html#createChildView">createChildView</a></li>
+          
+            <li class="fixedFont"><a href="../symbols/Ember.View.html#createElement">createElement</a></li>
+          
+            <li class="fixedFont"><a href="../symbols/Ember.View.html#destroy">destroy</a></li>
+          
+            <li class="fixedFont"><a href="../symbols/Ember.View.html#destroyAllChildren">destroyAllChildren</a></li>
+          
+            <li class="fixedFont"><a href="../symbols/Ember.View.html#destroyElement">destroyElement</a></li>
+          
+            <li class="fixedFont"><a href="../symbols/Ember.View.html#findElementInParentElement">findElementInParentElement</a></li>
+          
+            <li class="fixedFont"><a href="../symbols/Ember.View.html#invalidateRecursively">invalidateRecursively</a></li>
+          
+            <li class="fixedFont"><a href="../symbols/Ember.View.html#invokeForState">invokeForState</a></li>
+          
+            <li class="fixedFont"><a href="../symbols/Ember.View.html#nearestChildOf">nearestChildOf</a></li>
+          
+            <li class="fixedFont"><a href="../symbols/Ember.View.html#nearestInstanceOf">nearestInstanceOf</a></li>
+          
+            <li class="fixedFont"><a href="../symbols/Ember.View.html#nearestWithProperty">nearestWithProperty</a></li>
+          
+            <li class="fixedFont"><a href="../symbols/Ember.View.html#parentViewDidChange">parentViewDidChange</a></li>
+          
+            <li class="fixedFont"><a href="../symbols/Ember.View.html#remove">remove</a></li>
+          
+            <li class="fixedFont"><a href="../symbols/Ember.View.html#removeAllChildren">removeAllChildren</a></li>
+          
+            <li class="fixedFont"><a href="../symbols/Ember.View.html#removeChild">removeChild</a></li>
+          
+            <li class="fixedFont"><a href="../symbols/Ember.View.html#removeFromParent">removeFromParent</a></li>
+          
+            <li class="fixedFont"><a href="../symbols/Ember.View.html#render">render</a></li>
+          
+            <li class="fixedFont"><a href="../symbols/Ember.View.html#renderBuffer">renderBuffer</a></li>
+          
+            <li class="fixedFont"><a href="../symbols/Ember.View.html#replaceIn">replaceIn</a></li>
+          
+            <li class="fixedFont"><a href="../symbols/Ember.View.html#rerender">rerender</a></li>
+          
+            <li class="fixedFont"><a href="../symbols/Ember.View.html#transitionTo">transitionTo</a></li>
+          
+            <li class="fixedFont"><a href="../symbols/Ember.View.html#willDestroyElement">willDestroyElement</a></li>
+          
+          </ul>
+        
+      
+<!-- ============================== events summary ======================== -->
+      
+
+
+
+<!-- ============================== field details ========================== -->
+      
+        <h2>
+          Field Detail
+        </h2>
+        
+          <a name="ariaRole"> </a>
+          <span class="light"><a href="../symbols/String.html">String</a></span>
+          <span class="property"><b>ariaRole</b></span>
+
+          <div class="description">
+            <p>The WAI-ARIA role of the control represented by this view. For example, a
+button may have a role of type 'button', or a pane may have a role of
+type 'alertdialog'. This property is used by assistive software to help
+visually challenged users navigate rich web applications.</p>
+
+<p>The full list of valid WAI-ARIA roles is available at:
+http://www.w3.org/TR/wai-aria/roles#roles_categorization</p>
+            
+            
+          </div>
+
+          
+
+            
+            
+            
+            
+              <dl class="detailList">
+              <dt class="heading">Default Value:</dt>
+              <dd>
+                null
+              </dd>
+              </dl>
+            
+
+        
+          <a name="attributeBindings"> </a>
+          
+          <span class="property"><b>attributeBindings</b></span>
+
+          <div class="description">
+            <p>A list of properties of the view to apply as attributes. If the property is
+a string value, the value of that string will be applied as the attribute.</p>
+
+<pre><code class='syntax js'><span class="comment">// Applies the type attribute to the element</span>
+<span class="comment">// with the value &quot;button&quot;, like &lt;div type=&quot;button&quot;&gt;</span>
+<span class="class">Ember</span>.<span class="class">View</span>.<span class="variable">create</span>({
+  <span class="variable">attributeBindings</span>: [<span class="string">'type'</span>],
+  <span class="variable">type</span>: <span class="string">'button'</span>
+});
+</code></pre>
+
+<p>If the value of the property is a Boolean, the name of that property is
+added as an attribute.</p>
+
+<pre><code class='syntax js'><span class="comment">// Renders something like &lt;div enabled=&quot;enabled&quot;&gt;</span>
+<span class="class">Ember</span>.<span class="class">View</span>.<span class="variable">create</span>({
+  <span class="variable">attributeBindings</span>: [<span class="string">'enabled'</span>],
+  <span class="variable">enabled</span>: <span class="variable">true</span>
+});
+</code></pre>
+            
+            
+          </div>
+
+          
+
+            
+            
+            
+            
+
+        
+          <a name="classNameBindings"> </a>
+          <span class="light">Array</span>
+          <span class="property"><b>classNameBindings</b></span>
+
+          <div class="description">
+            <p>A list of properties of the view to apply as class names. If the property
+is a string value, the value of that string will be applied as a class
+name.</p>
+
+<pre><code class='syntax js'><span class="comment">// Applies the 'high' class to the view element</span>
+<span class="class">Ember</span>.<span class="class">View</span>.<span class="variable">create</span>({
+  <span class="variable">classNameBindings</span>: [<span class="string">'priority'</span>]
+  <span class="variable">priority</span>: <span class="string">'high'</span>
+});
+</code></pre>
+
+<p>If the value of the property is a Boolean, the name of that property is
+added as a dasherized class name.</p>
+
+<pre><code class='syntax js'><span class="comment">// Applies the 'is-urgent' class to the view element</span>
+<span class="class">Ember</span>.<span class="class">View</span>.<span class="variable">create</span>({
+  <span class="variable">classNameBindings</span>: [<span class="string">'isUrgent'</span>]
+  <span class="variable">isUrgent</span>: <span class="variable">true</span>
+});
+</code></pre>
+
+<p>If you would prefer to use a custom value instead of the dasherized
+property name, you can pass a binding like this:</p>
+
+<pre><code class='syntax js'><span class="comment">// Applies the 'urgent' class to the view element</span>
+<span class="class">Ember</span>.<span class="class">View</span>.<span class="variable">create</span>({
+  <span class="variable">classNameBindings</span>: [<span class="string">'isUrgent:urgent'</span>]
+  <span class="variable">isUrgent</span>: <span class="variable">true</span>
+});
+</code></pre>
+
+<p>This list of properties is inherited from the view's superclasses as well.</p>
+            
+            
+          </div>
+
+          
+
+            
+            
+            
+            
+              <dl class="detailList">
+              <dt class="heading">Default Value:</dt>
+              <dd>
+                []
+              </dd>
+              </dl>
+            
+
+        
+          <a name="classNames"> </a>
+          <span class="light">Array</span>
+          <span class="property"><b>classNames</b></span>
+
+          <div class="description">
+            <p>Standard CSS class names to apply to the view's outer element. This
+property automatically inherits any class names defined by the view's
+superclasses as well.</p>
+            
+            
+          </div>
+
+          
+
+            
+            
+            
+            
+              <dl class="detailList">
+              <dt class="heading">Default Value:</dt>
+              <dd>
+                ['ember-view']
+              </dd>
+              </dl>
+            
+
+        
+          <a name="collectionView"> </a>
+          
+          <span class="property"><b>collectionView</b></span>
+
+          <div class="description">
+            Return the nearest ancestor that is an Ember.CollectionView
+            
+            
+          </div>
+
+          
+
+            
+            
+            
+            
+
+        
+          <a name="contentView"> </a>
+          
+          <span class="property"><b>contentView</b></span>
+
+          <div class="description">
+            <p>Return the nearest ancestor that has the property
+<code class='syntax js'><span class="variable">content</span></code>.</p>
+            
+            
+          </div>
+
+          
+
+            
+            
+            
+            
+
+        
+          <a name="didInsertElement"> </a>
+          
+          <span class="property"><b>didInsertElement</b></span>
+
+          <div class="description">
+            <p>Called when the element of the view has been inserted into the DOM.
+Override this function to do any set up that requires an element in the
+document body.</p>
+            
+            
+          </div>
+
+          
+
+            
+            
+            
+            
+
+        
+          <a name="element"> </a>
+          <span class="light">DOMElement</span>
+          <span class="property"><b>element</b></span>
+
+          <div class="description">
+            Returns the current DOM element for the view.
+            
+            
+          </div>
+
+          
+
+            
+            
+            
+            
+
+        
+          <a name="elementId"> </a>
+          <span class="light"><a href="../symbols/String.html">String</a></span>
+          <span class="property"><b>elementId</b></span>
+
+          <div class="description">
+            <p>The ID to use when trying to locate the element in the DOM. If you do not
+set the <code class='syntax js'><span class="variable">elementId</span></code> explicitly, then the view's GUID will be used instead.
+This ID must be set at the time the view is created.</p>
+            
+            
+          </div>
+
+          
+
+            
+            
+            
+            
+
+        
+          <a name="isView"> </a>
+          <span class="light">Boolean</span>
+          <span class="property"><b>isView</b></span>
+
+          <div class="description">
+            
+            
+            
+          </div>
+
+          
+
+            
+            
+            
+            
+              <dl class="detailList">
+              <dt class="heading">Default Value:</dt>
+              <dd>
+                YES
+              </dd>
+              </dl>
+            
+
+        
+          <a name="isVisible"> </a>
+          <span class="light">Boolean</span>
+          <span class="property"><b>isVisible</b></span>
+
+          <div class="description">
+            If false, the view will appear hidden in DOM.
+            
+            
+          </div>
+
+          
+
+            
+            
+            
+            
+              <dl class="detailList">
+              <dt class="heading">Default Value:</dt>
+              <dd>
+                null
+              </dd>
+              </dl>
+            
+
+        
+          <a name="itemView"> </a>
+          
+          <span class="property"><b>itemView</b></span>
+
+          <div class="description">
+            <p>Return the nearest ancestor that is a direct child of
+an <code class='syntax js'><span class="class">Ember</span>.<span class="class">CollectionView</span></code></p>
+            
+            
+          </div>
+
+          
+
+            
+            
+            
+            
+
+        
+          <a name="tagName"> </a>
+          <span class="light"><a href="../symbols/String.html">String</a></span>
+          <span class="property"><b>tagName</b></span>
+
+          <div class="description">
+            <p>Tag name for the view's outer element. The tag name is only used when
+an element is first created. If you change the <code class='syntax js'><span class="variable">tagName</span></code> for an element, you
+must destroy and recreate the view element.</p>
+
+<p>By default, the render buffer will use a <code class='syntax js'>&lt;<span class="variable">div</span>&gt;</code> tag for views.</p>
+            
+            
+          </div>
+
+          
+
+            
+            
+            
+            
+              <dl class="detailList">
+              <dt class="heading">Default Value:</dt>
+              <dd>
+                null
+              </dd>
+              </dl>
+            
+
+        
+          <a name="template"> </a>
+          <span class="light"><a href="../symbols/Function.html">Function</a></span>
+          <span class="property"><b>template</b></span>
+
+          <div class="description">
+            <p>The template used to render the view. This should be a function that
+accepts an optional context parameter and returns a string of HTML that
+will be inserted into the DOM relative to its parent view.</p>
+
+<p>In general, you should set the <code class='syntax js'><span class="variable">templateName</span></code> property instead of setting
+the template yourself.</p>
+            
+            
+          </div>
+
+          
+
+            
+            
+            
+            
+
+        
+          <a name="templateContext"> </a>
+          <span class="light">Object</span>
+          <span class="property"><b>templateContext</b></span>
+
+          <div class="description">
+            <p>The object from which templates should access properties.</p>
+
+<p>This object will be passed to the template function each time the render
+method is called, but it is up to the individual function to decide what
+to do with it.</p>
+
+<p>By default, this will be the view itself.</p>
+            
+            
+          </div>
+
+          
+
+            
+            
+            
+            
+
+        
+          <a name="templateName"> </a>
+          <span class="light"><a href="../symbols/String.html">String</a></span>
+          <span class="property"><b>templateName</b></span>
+
+          <div class="description">
+            <p>The name of the template to lookup if no template is provided.</p>
+
+<p><code class='syntax js'><span class="class">Ember</span>.<span class="class">View</span></code> will look for a template with this name in this view's
+<code class='syntax js'><span class="variable">templates</span></code> object. By default, this will be a global object
+shared in <code class='syntax js'><span class="class">Ember</span>.<span class="class">TEMPLATES</span></code>.</p>
+            
+            
+          </div>
+
+          
+
+            
+            
+            
+            
+              <dl class="detailList">
+              <dt class="heading">Default Value:</dt>
+              <dd>
+                null
+              </dd>
+              </dl>
+            
+
+        
+          <a name="templates"> </a>
+          <span class="light"><a href="../symbols/Ember.Object.html">Ember.Object</a></span>
+          <span class="property"><b>templates</b></span>
+
+          <div class="description">
+            The hash in which to look for `templateName`.
+            
+            
+          </div>
+
+          
+
+            
+            
+            
+            
+              <dl class="detailList">
+              <dt class="heading">Default Value:</dt>
+              <dd>
+                Ember.TEMPLATES
+              </dd>
+              </dl>
+            
+
+        
+          <a name="willInsertElement"> </a>
+          
+          <span class="property"><b>willInsertElement</b></span>
+
+          <div class="description">
+            Called when a view is going to insert an element into the DOM.
+            
+            
+          </div>
+
+          
+
+            
+            
+            
+            
+
+        
+      
+
+
+<!-- ============================== method details ========================= -->
+      
+        
+        
+          <h2>Class Method Detail</h2>
+          
+            <a name=".applyAttributeBindings"> </a>
+            <div class="fixedFont">
+              <span class="methodname">applyAttributeBindings</span>
+            </div>
+            <div class="description">
+              
+              
+              
+            </div>
+
+            
+
+              
+                <dl class="parameters">
+                <dt class="heading">Parameters:</dt>
+                
+                  <dt>
+                    <b>elem</b>
+                    
+                  </dt>
+                  <dd></dd>
+                
+                  <dt>
+                    <b>name</b>
+                    
+                  </dt>
+                  <dd></dd>
+                
+                  <dt>
+                    <b>value</b>
+                    
+                  </dt>
+                  <dd></dd>
+                
+                </dl>
+              
+              
+              
+              
+              
+              
+              
+
+          
+        
+      
+        
+        
+          <h2>Instance Method Detail</h2>
+          
+            <a name="$"> </a>
+            <div class="fixedFont">
+              <span class="methodname">$</span>
+            </div>
+            <div class="description">
+              <p>Returns a <code class='syntax js'><span class="variable">jQuery</span></code> object for this view's element. If you pass in a selector
+string, this method will return a <code class='syntax js'><span class="variable">jQuery</span></code> object, using the current element
+as its buffer.</p>
+
+<p>For example, calling <code class='syntax js'><span class="variable">view</span>.$(<span class="string">'li'</span>)</code> will return a <code class='syntax js'><span class="variable">jQuery</span></code> object containing
+all of the <code class='syntax js'><span class="variable">li</span></code> elements inside the DOM element of this view.</p>
+              
+              
+            </div>
+
+            
+
+              
+                <dl class="parameters">
+                <dt class="heading">Parameters:</dt>
+                
+                  <dt>
+                    <span class="light fixedFont"><a href="../symbols/String.html">String</a></span> <b>selector</b>
+                    <i>Optional</i>
+                  </dt>
+                  <dd>a jQuery-compatible selector string</dd>
+                
+                </dl>
+              
+              
+              
+              
+              
+                <dl class="returns">
+                <dt class="heading">Returns:</dt>
+                
+                  <dd><span class="light fixedFont">Ember.CoreQuery</span> the CoreQuery object for the DOM node</dd>
+                
+                </dl>
+              
+              
+              
+
+          
+            <a name="append"> </a>
+            <div class="fixedFont">
+              <span class="methodname">append</span>
+            </div>
+            <div class="description">
+              <p>Appends the view's element to the document body. If the view does
+not have an HTML representation yet, <code class='syntax js'><span class="variable">createElement</span>()</code> will be called
+automatically.</p>
+
+<p>Note that this method just schedules the view to be appended; the DOM
+element will not be appended to the document body until all bindings have
+finished synchronizing.</p>
+              
+              
+            </div>
+
+            
+
+              
+              
+              
+              
+              
+                <dl class="returns">
+                <dt class="heading">Returns:</dt>
+                
+                  <dd><span class="light fixedFont"><a href="../symbols/Ember.View.html">Ember.View</a></span> receiver</dd>
+                
+                </dl>
+              
+              
+              
+
+          
+            <a name="appendChild"> </a>
+            <div class="fixedFont">
+              <span class="methodname">appendChild</span>
+            </div>
+            <div class="description">
+              
+              
+              
+            </div>
+
+            
+
+              
+                <dl class="parameters">
+                <dt class="heading">Parameters:</dt>
+                
+                  <dt>
+                    <b>view</b>
+                    
+                  </dt>
+                  <dd></dd>
+                
+                  <dt>
+                    <b>options</b>
+                    
+                  </dt>
+                  <dd></dd>
+                
+                </dl>
+              
+              
+              
+              
+              
+              
+              
+
+          
+            <a name="appendTo"> </a>
+            <div class="fixedFont">
+              <span class="methodname">appendTo</span>
+            </div>
+            <div class="description">
+              <p>Appends the view's element to the specified parent element.</p>
+
+<p>If the view does not have an HTML representation yet, <code class='syntax js'><span class="variable">createElement</span>()</code>
+will be called automatically.</p>
+
+<p>Note that this method just schedules the view to be appended; the DOM
+element will not be appended to the given element until all bindings have
+finished synchronizing.</p>
+              
+              
+            </div>
+
+            
+
+              
+                <dl class="parameters">
+                <dt class="heading">Parameters:</dt>
+                
+                  <dt>
+                    <span class="light fixedFont"><a href="../symbols/String.html">String</a>|DOMElement|jQuery</span> <b>A</b>
+                    
+                  </dt>
+                  <dd>selector, element, HTML string, or jQuery object</dd>
+                
+                </dl>
+              
+              
+              
+              
+              
+                <dl class="returns">
+                <dt class="heading">Returns:</dt>
+                
+                  <dd><span class="light fixedFont"><a href="../symbols/Ember.View.html">Ember.View</a></span> receiver</dd>
+                
+                </dl>
+              
+              
+              
+
+          
+            <a name="beforeRender"> </a>
+            <div class="fixedFont">
+              <span class="methodname">beforeRender</span>
+            </div>
+            <div class="description">
+              
+              
+              
+            </div>
+
+            
+
+              
+                <dl class="parameters">
+                <dt class="heading">Parameters:</dt>
+                
+                  <dt>
+                    <b>buffer</b>
+                    
+                  </dt>
+                  <dd></dd>
+                
+                </dl>
+              
+              
+              
+              
+              
+              
+              
+
+          
+            <a name="clearBuffer"> </a>
+            <div class="fixedFont">
+              <span class="methodname">clearBuffer</span>
+            </div>
+            <div class="description">
+              
+              
+              
+            </div>
+
+            
+
+              
+              
+              
+              
+              
+              
+              
+
+          
+            <a name="clearRenderedChildren"> </a>
+            <div class="fixedFont">
+              <span class="methodname">clearRenderedChildren</span>
+            </div>
+            <div class="description">
+              
+              
+              
+            </div>
+
+            
+
+              
+              
+              
+              
+              
+              
+              
+
+          
+            <a name="createChildView"> </a>
+            <div class="fixedFont">
+              <span class="methodname">createChildView</span>
+            </div>
+            <div class="description">
+              <p>Instantiates a view to be added to the <code class='syntax js'><span class="variable">childViews</span></code> array during view
+initialization. You generally will not call this method directly unless
+you are overriding <code class='syntax js'><span class="variable">createChildViews</span></code>(). Note that this method will
+automatically configure the correct settings on the new view instance to
+act as a child of the parent.</p>
+              
+              
+            </div>
+
+            
+
+              
+                <dl class="parameters">
+                <dt class="heading">Parameters:</dt>
+                
+                  <dt>
+                    <span class="light fixedFont">Class</span> <b>viewClass</b>
+                    
+                  </dt>
+                  <dd></dd>
+                
+                  <dt>
+                    <span class="light fixedFont">Hash</span> <b>attrs</b>
+                    <i>Optional</i>
+                  </dt>
+                  <dd>Attributes to add</dd>
+                
+                </dl>
+              
+              
+              
+              
+              
+                <dl class="returns">
+                <dt class="heading">Returns:</dt>
+                
+                  <dd><span class="light fixedFont"><a href="../symbols/Ember.View.html">Ember.View</a></span> new instance</dd>
+                
+                </dl>
+              
+              
+              
+
+          
+            <a name="createElement"> </a>
+            <div class="fixedFont">
+              <span class="methodname">createElement</span>
+            </div>
+            <div class="description">
+              <p>Creates a DOM representation of the view and all of its
+child views by recursively calling the <code class='syntax js'><span class="variable">render</span>()</code> method.</p>
+
+<p>After the element has been created, <code class='syntax js'><span class="variable">didInsertElement</span></code> will
+be called on this view and all of its child views.</p>
+              
+              
+            </div>
+
+            
+
+              
+              
+              
+              
+              
+                <dl class="returns">
+                <dt class="heading">Returns:</dt>
+                
+                  <dd><span class="light fixedFont"><a href="../symbols/Ember.View.html">Ember.View</a></span> receiver</dd>
+                
+                </dl>
+              
+              
+              
+
+          
+            <a name="destroy"> </a>
+            <div class="fixedFont">
+              <span class="methodname">destroy</span>
+            </div>
+            <div class="description">
+              <p>You must call this method on a view to destroy the view (and all of its
+child views). This will remove the view from any parent node, then make
+sure that the DOM element managed by the view can be released by the
+memory manager.</p>
+              
+              
+            </div>
+
+            
+
+              
+              
+              
+              
+              
+              
+              
+
+          
+            <a name="destroyAllChildren"> </a>
+            <div class="fixedFont">
+              <span class="methodname">destroyAllChildren</span>
+            </div>
+            <div class="description">
+              
+              
+              
+            </div>
+
+            
+
+              
+              
+              
+              
+              
+              
+              
+
+          
+            <a name="destroyElement"> </a>
+            <div class="fixedFont">
+              <span class="methodname">destroyElement</span>
+            </div>
+            <div class="description">
+              <p>Destroys any existing element along with the element for any child views
+as well. If the view does not currently have a element, then this method
+will do nothing.</p>
+
+<p>If you implement <code class='syntax js'><span class="variable">willDestroyElement</span></code>() on your view, then this method will
+be invoked on your view before your element is destroyed to give you a
+chance to clean up any event handlers, etc.</p>
+
+<p>If you write a <code class='syntax js'><span class="variable">willDestroyElement</span></code>() handler, you can assume that your
+<code class='syntax js'><span class="variable">didInsertElement</span></code>() handler was called earlier for the same element.</p>
+
+<p>Normally you will not call or override this method yourself, but you may
+want to implement the above callbacks when it is run.</p>
+              
+              
+            </div>
+
+            
+
+              
+              
+              
+              
+              
+                <dl class="returns">
+                <dt class="heading">Returns:</dt>
+                
+                  <dd><span class="light fixedFont"><a href="../symbols/Ember.View.html">Ember.View</a></span> receiver</dd>
+                
+                </dl>
+              
+              
+              
+
+          
+            <a name="findElementInParentElement"> </a>
+            <div class="fixedFont">
+              <span class="methodname">findElementInParentElement</span>
+            </div>
+            <div class="description">
+              <p>Attempts to discover the element in the parent element. The default
+implementation looks for an element with an ID of <code class='syntax js'><span class="variable">elementId</span></code> (or the view's
+guid if <code class='syntax js'><span class="variable">elementId</span></code> is null). You can override this method to provide your
+own form of lookup. For example, if you want to discover your element
+using a CSS class name instead of an ID.</p>
+              
+              
+            </div>
+
+            
+
+              
+                <dl class="parameters">
+                <dt class="heading">Parameters:</dt>
+                
+                  <dt>
+                    <span class="light fixedFont">DOMElement</span> <b>parentElement</b>
+                    
+                  </dt>
+                  <dd>The parent's DOM element</dd>
+                
+                </dl>
+              
+              
+              
+              
+              
+                <dl class="returns">
+                <dt class="heading">Returns:</dt>
+                
+                  <dd><span class="light fixedFont">DOMElement</span> The discovered element</dd>
+                
+                </dl>
+              
+              
+              
+
+          
+            <a name="invalidateRecursively"> </a>
+            <div class="fixedFont">
+              <span class="methodname">invalidateRecursively</span>
+            </div>
+            <div class="description">
+              Invalidates the cache for a property on all child views.
+              
+              
+            </div>
+
+            
+
+              
+                <dl class="parameters">
+                <dt class="heading">Parameters:</dt>
+                
+                  <dt>
+                    <b>key</b>
+                    
+                  </dt>
+                  <dd></dd>
+                
+                </dl>
+              
+              
+              
+              
+              
+              
+              
+
+          
+            <a name="invokeForState"> </a>
+            <div class="fixedFont">
+              <span class="methodname">invokeForState</span>
+            </div>
+            <div class="description">
+              
+              
+              
+            </div>
+
+            
+
+              
+                <dl class="parameters">
+                <dt class="heading">Parameters:</dt>
+                
+                  <dt>
+                    <b>name</b>
+                    
+                  </dt>
+                  <dd></dd>
+                
+                </dl>
+              
+              
+              
+              
+              
+              
+              
+
+          
+            <a name="nearestChildOf"> </a>
+            <div class="fixedFont">
+              <span class="methodname">nearestChildOf</span>
+            </div>
+            <div class="description">
+              <p>Return the nearest ancestor that is a direct child of a
+view of.</p>
+              
+              
+            </div>
+
+            
+
+              
+                <dl class="parameters">
+                <dt class="heading">Parameters:</dt>
+                
+                  <dt>
+                    <span class="light fixedFont">Class</span> <b>klass</b>
+                    
+                  </dt>
+                  <dd>Subclass of Ember.View (or Ember.View itself)</dd>
+                
+                </dl>
+              
+              
+              
+              
+              
+                <dl class="returns">
+                <dt class="heading">Returns:</dt>
+                
+                  <dd>Ember.View</dd>
+                
+                </dl>
+              
+              
+              
+
+          
+            <a name="nearestInstanceOf"> </a>
+            <div class="fixedFont">
+              <span class="methodname">nearestInstanceOf</span>
+            </div>
+            <div class="description">
+              <p>Return the nearest ancestor that is an instance of the provided
+class.</p>
+              
+              
+            </div>
+
+            
+
+              
+                <dl class="parameters">
+                <dt class="heading">Parameters:</dt>
+                
+                  <dt>
+                    <span class="light fixedFont">Class</span> <b>klass</b>
+                    
+                  </dt>
+                  <dd>Subclass of Ember.View (or Ember.View itself)</dd>
+                
+                </dl>
+              
+              
+              
+              
+              
+                <dl class="returns">
+                <dt class="heading">Returns:</dt>
+                
+                  <dd>Ember.View</dd>
+                
+                </dl>
+              
+              
+              
+
+          
+            <a name="nearestWithProperty"> </a>
+            <div class="fixedFont">
+              <span class="methodname">nearestWithProperty</span>
+            </div>
+            <div class="description">
+              Return the nearest ancestor that has a given property.
+              
+              
+            </div>
+
+            
+
+              
+                <dl class="parameters">
+                <dt class="heading">Parameters:</dt>
+                
+                  <dt>
+                    <span class="light fixedFont"><a href="../symbols/String.html">String</a></span> <b>property</b>
+                    
+                  </dt>
+                  <dd>A property name</dd>
+                
+                </dl>
+              
+              
+              
+              
+              
+                <dl class="returns">
+                <dt class="heading">Returns:</dt>
+                
+                  <dd>Ember.View</dd>
+                
+                </dl>
+              
+              
+              
+
+          
+            <a name="parentViewDidChange"> </a>
+            <div class="fixedFont">
+              <span class="methodname">parentViewDidChange</span>
+            </div>
+            <div class="description">
+              Called when the parentView property has changed.
+              
+              
+            </div>
+
+            
+
+              
+              
+              
+              
+              
+              
+              
+
+          
+            <a name="remove"> </a>
+            <div class="fixedFont">
+              <span class="methodname">remove</span>
+            </div>
+            <div class="description">
+              Removes the view's element from the element to which it is attached.
+              
+              
+            </div>
+
+            
+
+              
+              
+              
+              
+              
+                <dl class="returns">
+                <dt class="heading">Returns:</dt>
+                
+                  <dd><span class="light fixedFont"><a href="../symbols/Ember.View.html">Ember.View</a></span> receiver</dd>
+                
+                </dl>
+              
+              
+              
+
+          
+            <a name="removeAllChildren"> </a>
+            <div class="fixedFont">
+              <span class="methodname">removeAllChildren</span>
+            </div>
+            <div class="description">
+              Removes all children from the parentView.
+              
+              
+            </div>
+
+            
+
+              
+              
+              
+              
+              
+                <dl class="returns">
+                <dt class="heading">Returns:</dt>
+                
+                  <dd><span class="light fixedFont"><a href="../symbols/Ember.View.html">Ember.View</a></span> receiver</dd>
+                
+                </dl>
+              
+              
+              
+
+          
+            <a name="removeChild"> </a>
+            <div class="fixedFont">
+              <span class="methodname">removeChild</span>
+            </div>
+            <div class="description">
+              Removes the child view from the parent view.
+              
+              
+            </div>
+
+            
+
+              
+                <dl class="parameters">
+                <dt class="heading">Parameters:</dt>
+                
+                  <dt>
+                    <span class="light fixedFont"><a href="../symbols/Ember.View.html">Ember.View</a></span> <b>view</b>
+                    
+                  </dt>
+                  <dd></dd>
+                
+                </dl>
+              
+              
+              
+              
+              
+                <dl class="returns">
+                <dt class="heading">Returns:</dt>
+                
+                  <dd><span class="light fixedFont"><a href="../symbols/Ember.View.html">Ember.View</a></span> receiver</dd>
+                
+                </dl>
+              
+              
+              
+
+          
+            <a name="removeFromParent"> </a>
+            <div class="fixedFont">
+              <span class="methodname">removeFromParent</span>
+            </div>
+            <div class="description">
+              <p>Removes the view from its <code class='syntax js'><span class="variable">parentView</span></code>, if one is found. Otherwise
+does nothing.</p>
+              
+              
+            </div>
+
+            
+
+              
+              
+              
+              
+              
+                <dl class="returns">
+                <dt class="heading">Returns:</dt>
+                
+                  <dd><span class="light fixedFont"><a href="../symbols/Ember.View.html">Ember.View</a></span> receiver</dd>
+                
+                </dl>
+              
+              
+              
+
+          
+            <a name="render"> </a>
+            <div class="fixedFont">
+              <span class="methodname">render</span>
+            </div>
+            <div class="description">
+              <p>Called on your view when it should push strings of HTML into a
+<code class='syntax js'><span class="class">Ember</span>.<span class="class">RenderBuffer</span>.</code> Most users will want to override the <code class='syntax js'><span class="variable">template</span></code>
+or <code class='syntax js'><span class="variable">templateName</span></code> properties instead of this method.</p>
+
+<p>By default, <code class='syntax js'><span class="class">Ember</span>.<span class="class">View</span></code> will look for a function in the <code class='syntax js'><span class="variable">template</span></code>
+property and invoke it with the value of <code class='syntax js'><span class="variable">templateContext</span></code>. The value of
+<code class='syntax js'><span class="variable">templateContext</span></code> will be the view itself unless you override it.</p>
+              
+              
+            </div>
+
+            
+
+              
+                <dl class="parameters">
+                <dt class="heading">Parameters:</dt>
+                
+                  <dt>
+                    <span class="light fixedFont"><a href="../symbols/Ember.RenderBuffer.html">Ember.RenderBuffer</a></span> <b>buffer</b>
+                    
+                  </dt>
+                  <dd>The render buffer</dd>
+                
+                </dl>
+              
+              
+              
+              
+              
+              
+              
+
+          
+            <a name="renderBuffer"> </a>
+            <div class="fixedFont">
+              <span class="methodname">renderBuffer</span>
+            </div>
+            <div class="description">
+              <p>Creates a new <code class='syntax js'><span class="variable">renderBuffer</span></code> with the passed <code class='syntax js'><span class="variable">tagName</span></code>. You can override this
+method to provide further customization to the buffer if needed. Normally
+you will not need to call or override this method.</p>
+              
+              
+            </div>
+
+            
+
+              
+                <dl class="parameters">
+                <dt class="heading">Parameters:</dt>
+                
+                  <dt>
+                    <b>tagName</b>
+                    
+                  </dt>
+                  <dd></dd>
+                
+                </dl>
+              
+              
+              
+              
+              
+                <dl class="returns">
+                <dt class="heading">Returns:</dt>
+                
+                  <dd><span class="light fixedFont"><a href="../symbols/Ember.RenderBuffer.html">Ember.RenderBuffer</a></span> </dd>
+                
+                </dl>
+              
+              
+              
+
+          
+            <a name="replaceIn"> </a>
+            <div class="fixedFont">
+              <span class="methodname">replaceIn</span>
+            </div>
+            <div class="description">
+              <p>Replaces the view's element to the specified parent element.
+If the view does not have an HTML representation yet, <code class='syntax js'><span class="variable">createElement</span>()</code>
+will be called automatically.
+If the parent element already has some content, it will be removed.</p>
+
+<p>Note that this method just schedules the view to be appended; the DOM
+element will not be appended to the given element until all bindings have
+finished synchronizing</p>
+              
+              
+            </div>
+
+            
+
+              
+                <dl class="parameters">
+                <dt class="heading">Parameters:</dt>
+                
+                  <dt>
+                    <span class="light fixedFont"><a href="../symbols/String.html">String</a>|DOMElement|jQuery</span> <b>A</b>
+                    
+                  </dt>
+                  <dd>selector, element, HTML string, or jQuery object</dd>
+                
+                </dl>
+              
+              
+              
+              
+              
+                <dl class="returns">
+                <dt class="heading">Returns:</dt>
+                
+                  <dd><span class="light fixedFont"><a href="../symbols/Ember.View.html">Ember.View</a></span> received</dd>
+                
+                </dl>
+              
+              
+              
+
+          
+            <a name="rerender"> </a>
+            <div class="fixedFont">
+              <span class="methodname">rerender</span>
+            </div>
+            <div class="description">
+              <p>Renders the view again. This will work regardless of whether the
+view is already in the DOM or not. If the view is in the DOM, the
+rendering process will be deferred to give bindings a chance
+to synchronize.</p>
+
+<p>If children were added during the rendering process using <code class='syntax js'><span class="variable">appendChild</span></code>,
+<code class='syntax js'><span class="variable">rerender</span></code> will remove them, because they will be added again
+if needed by the next <code class='syntax js'><span class="variable">render</span></code>.</p>
+
+<p>In general, if the display of your view changes, you should modify
+the DOM element directly instead of manually calling <code class='syntax js'><span class="variable">rerender</span></code>, which can
+be slow.</p>
+              
+              
+            </div>
+
+            
+
+              
+              
+              
+              
+              
+              
+              
+
+          
+            <a name="transitionTo"> </a>
+            <div class="fixedFont">
+              <span class="methodname">transitionTo</span>
+            </div>
+            <div class="description">
+              
+              
+              
+            </div>
+
+            
+
+              
+                <dl class="parameters">
+                <dt class="heading">Parameters:</dt>
+                
+                  <dt>
+                    <b>state</b>
+                    
+                  </dt>
+                  <dd></dd>
+                
+                  <dt>
+                    <b>children</b>
+                    
+                  </dt>
+                  <dd></dd>
+                
+                </dl>
+              
+              
+              
+              
+              
+              
+              
+
+          
+            <a name="willDestroyElement"> </a>
+            <div class="fixedFont">
+              <span class="methodname">willDestroyElement</span>
+            </div>
+            <div class="description">
+              <p>Called when the element of the view is going to be destroyed. Override
+this function to do any teardown that requires an element, like removing
+event listeners.</p>
+              
+              
+            </div>
+
+            
+
+              
+              
+              
+              
+              
+              
+              
+
+          
+        
+      
+
+<!-- ============================== event details ========================= -->
+      
+
+
+
+<!-- ============================== footer ================================= -->
+        <div class="fineprint" style="clear:both">
+          
+          Documentation generated by <a href="http://code.google.com/p/jsdoc-toolkit/" target="_blank">JsDoc Toolkit</a> 2.4.0 on Mon Jan 30 2012 16:12:29 GMT-0800 (PST)
+        </div>
+      </section>
+    </div>
+  </body>
+</html>

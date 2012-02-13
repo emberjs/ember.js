@@ -1,0 +1,1636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>SproutCore</title>
+  <meta name="description" content="A framework for building fast, desktop caliber web applications." />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="/css/api.css" />
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.js"></script>
+  <script src="/js/jquery-bbq.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/lib/modernizr-1.7.min.js"></script>
+  <!--[if lt IE 9]>
+  <script src="//html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+</head>
+
+  <body id="docs">
+<!-- ============================== header ================================= -->
+    <!-- begin static/header.html -->
+      <header role="banner">
+    <div class="container">
+      <h1 id="logo">
+        <a href="http://www.sproutcore.com"><img src="/img/logo.png" alt="SproutCore" /></a>
+        </h1>
+
+      <nav role="navigation">
+        <ul>
+          <li><a href="http://www.sproutcore.com/about/">About</a></li>
+          <li><a href="http://guides.sproutcore.com">Guides</a></li>
+          <li class="active"><a href="/" >Docs</a></li>
+          <li><a href="http://www.sproutcore.com/community/">Community</a></li>
+          <li><a href="http://blog.sproutcore.com">Blog</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+  
+
+
+    <!-- end static/header.html -->
+
+<!-- ============================== classes index ============================ -->
+
+    <section id="list">
+      <header>
+        <form action="#" role="search">
+          <input type="text" />
+          <a href="#" class="search-reset"></a>
+        </form>
+      </header>
+      <div>
+        <span class="odd active"><a href="/">API Documentation Index</a></span>
+	
+	<span class='even' global><a href="../symbols/_global_.html">_global_</a></span>
+	
+	<span class='odd'><a href="../symbols/Ember.html">Ember</a></span>
+	
+	<span class='even'><a href="../symbols/Ember.Application.html">Ember.Application</a></span>
+	
+	<span class='odd'><a href="../symbols/Ember.Array.html">Ember.Array</a></span>
+	
+	<span class='even'><a href="../symbols/Ember.ArrayController.html">Ember.ArrayController</a></span>
+	
+	<span class='odd'><a href="../symbols/Ember.ArrayProxy.html">Ember.ArrayProxy</a></span>
+	
+	<span class='even'><a href="../symbols/Ember.Binding.html">Ember.Binding</a></span>
+	
+	<span class='odd'><a href="../symbols/Ember.CollectionView.html">Ember.CollectionView</a></span>
+	
+	<span class='even'><a href="../symbols/Ember.Comparable.html">Ember.Comparable</a></span>
+	
+	<span class='odd'><a href="../symbols/Ember.ComputedProperty.html">Ember.ComputedProperty</a></span>
+	
+	<span class='even'><a href="../symbols/Ember.Copyable.html">Ember.Copyable</a></span>
+	
+	<span class='odd'><a href="../symbols/Ember.CoreObject.html">Ember.CoreObject</a></span>
+	
+	<span class='even'><a href="../symbols/Ember.Enumerable.html">Ember.Enumerable</a></span>
+	
+	<span class='odd'><a href="../symbols/Ember.Error.html">Ember.Error</a></span>
+	
+	<span class='even'><a href="../symbols/Ember.Freezable.html">Ember.Freezable</a></span>
+	
+	<span class='odd'><a href="../symbols/Ember.Handlebars.html">Ember.Handlebars</a></span>
+	
+	<span class='even'><a href="../symbols/Ember.Logger.html">Ember.Logger</a></span>
+	
+	<span class='odd'><a href="../symbols/Ember.Mixin.html">Ember.Mixin</a></span>
+	
+	<span class='even'><a href="../symbols/Ember.MutableArray.html">Ember.MutableArray</a></span>
+	
+	<span class='odd'><a href="../symbols/Ember.MutableEnumerable.html">Ember.MutableEnumerable</a></span>
+	
+	<span class='even'><a href="../symbols/Ember.NativeArray.html">Ember.NativeArray</a></span>
+	
+	<span class='odd'><a href="../symbols/Ember.Object.html">Ember.Object</a></span>
+	
+	<span class='even'><a href="../symbols/Ember.Observable.html">Ember.Observable</a></span>
+	
+	<span class='odd'><a href="../symbols/Ember.platform.html">Ember.platform</a></span>
+	
+	<span class='even'><a href="../symbols/Ember.RenderBuffer.html">Ember.RenderBuffer</a></span>
+	
+	<span class='odd'><a href="../symbols/Ember.RunLoop.html">Ember.RunLoop</a></span>
+	
+	<span class='even'><a href="../symbols/Ember.Set.html">Ember.Set</a></span>
+	
+	<span class='odd'><a href="../symbols/Ember.StateManager.html">Ember.StateManager</a></span>
+	
+	<span class='even'><a href="../symbols/Ember.String.html">Ember.String</a></span>
+	
+	<span class='odd'><a href="../symbols/Ember.TextArea.html">Ember.TextArea</a></span>
+	
+	<span class='even'><a href="../symbols/Ember.TextField.html">Ember.TextField</a></span>
+	
+	<span class='odd'><a href="../symbols/Ember.TextSupport.html">Ember.TextSupport</a></span>
+	
+	<span class='even'><a href="../symbols/Ember.View.html">Ember.View</a></span>
+	
+	<span class='odd'><a href="../symbols/Function.html">Function</a></span>
+	
+	<span class='even'><a href="../symbols/Handlebars.helpers.html">Handlebars.helpers</a></span>
+	
+	<span class='odd'><a href="../symbols/String.html">String</a></span>
+	
+	<span class='even'><a href="../symbols/window.html">window</a></span>
+	
+
+      </div>
+    </section>
+    <footer>
+      <a href="http://groups.google.com/group/sproutcore" class="button secondary">SUBSCRIBE TO MAILING LIST</a>
+    </footer>
+
+    <div role="main">
+      <section id="documentation">
+<!-- ============================== class title ============================ -->
+        <h1 class="classTitle">
+          
+          Class: Ember.Enumerable
+        </h1>
+
+<!-- ============================== class summary ========================== -->
+        <p class="description">
+          <span class="extends">
+          
+          </span>
+
+        
+
+          <p>This mixin defines the common interface implemented by enumerable objects
+in Ember.  Most of these methods follow the standard Array iteration
+API defined up to JavaScript 1.8 (excluding language-specific features that
+cannot be emulated in older versions of JavaScript).</p>
+
+<p>This mixin is applied automatically to the Array class on page load, so you
+can use any of these methods on simple arrays.  If Array already implements
+one of these methods, the mixin will not override them.</p>
+
+<p>h3. Writing Your Own Enumerable</p>
+
+<p>To make your own custom class enumerable, you need two items:</p>
+
+<ol>
+<li><p>You must have a length property.  This property should change whenever
+the number of items in your enumerable object changes.  If you using this
+with an <code class='syntax js'><span class="class">Ember</span>.<span class="class">Object</span></code> subclass, you should be sure to change the length
+property using set().</p></li>
+<li><p>If you must implement <code class='syntax js'><span class="variable">nextObject</span></code>().  See documentation.</p></li>
+</ol>
+
+<p>Once you have these two methods implement, apply the <code class='syntax js'><span class="class">Ember</span>.<span class="class">Enumerable</span></code> mixin
+to your class and you will be able to enumerate the contents of your object
+like any other collection.</p>
+
+<p>h3. Using Ember Enumeration with Other Libraries</p>
+
+<p>Many other libraries provide some kind of iterator or enumeration like
+facility.  This is often where the most common API conflicts occur.
+Ember's API is designed to be as friendly as possible with other
+libraries by implementing only methods that mostly correspond to the
+JavaScript 1.8 API.</p>
+
+          
+            <span class="definedin">Defined in: <a href="../symbols/src/packages_ember-runtime_lib_mixins_enumerable.js.html">enumerable.js</a>.</span>
+          
+        </p>
+
+
+<!-- ============================== properties summary ===================== -->
+      
+      
+        
+        <h2>Field Summary</h2>
+        <div id="properties">
+        
+          <ul>
+          
+            <li>
+              Ember.Enumerable.<a href="../symbols/Ember.Enumerable.html#.firstObject">firstObject</a>
+            </li>
+          
+            <li>
+              Ember.Enumerable.<a href="../symbols/Ember.Enumerable.html#.hasEnumerableObservers">hasEnumerableObservers</a>
+            </li>
+          
+            <li>
+              Ember.Enumerable.<a href="../symbols/Ember.Enumerable.html#.lastObject">lastObject</a>
+            </li>
+          
+            <li>
+              Ember.Enumerable.<a href="../symbols/Ember.Enumerable.html#.nextObject">nextObject</a>
+            </li>
+          
+          </ul>
+        
+
+        
+        </div>
+      
+
+
+
+
+<!-- ============================== methods summary ======================== -->
+      
+      
+        
+        
+          <h2>Class Methods</h2>
+          <ul class="methods">
+          
+            <li class="fixedFont"><a href="../symbols/Ember.Enumerable.html#.addEnumerableObserver">addEnumerableObserver</a></li>
+          
+            <li class="fixedFont"><a href="../symbols/Ember.Enumerable.html#.compact">compact</a></li>
+          
+            <li class="fixedFont"><a href="../symbols/Ember.Enumerable.html#.contains">contains</a></li>
+          
+            <li class="fixedFont"><a href="../symbols/Ember.Enumerable.html#.enumerableContentDidChange">enumerableContentDidChange</a></li>
+          
+            <li class="fixedFont"><a href="../symbols/Ember.Enumerable.html#.enumerableContentWillChange">enumerableContentWillChange</a></li>
+          
+            <li class="fixedFont"><a href="../symbols/Ember.Enumerable.html#.every">every</a></li>
+          
+            <li class="fixedFont"><a href="../symbols/Ember.Enumerable.html#.everyProperty">everyProperty</a></li>
+          
+            <li class="fixedFont"><a href="../symbols/Ember.Enumerable.html#.filter">filter</a></li>
+          
+            <li class="fixedFont"><a href="../symbols/Ember.Enumerable.html#.filterProperty">filterProperty</a></li>
+          
+            <li class="fixedFont"><a href="../symbols/Ember.Enumerable.html#.find">find</a></li>
+          
+            <li class="fixedFont"><a href="../symbols/Ember.Enumerable.html#.findProperty">findProperty</a></li>
+          
+            <li class="fixedFont"><a href="../symbols/Ember.Enumerable.html#.forEach">forEach</a></li>
+          
+            <li class="fixedFont"><a href="../symbols/Ember.Enumerable.html#.getEach">getEach</a></li>
+          
+            <li class="fixedFont"><a href="../symbols/Ember.Enumerable.html#.invoke">invoke</a></li>
+          
+            <li class="fixedFont"><a href="../symbols/Ember.Enumerable.html#.map">map</a></li>
+          
+            <li class="fixedFont"><a href="../symbols/Ember.Enumerable.html#.mapProperty">mapProperty</a></li>
+          
+            <li class="fixedFont"><a href="../symbols/Ember.Enumerable.html#.reduce">reduce</a></li>
+          
+            <li class="fixedFont"><a href="../symbols/Ember.Enumerable.html#.removeEnumerableObserver">removeEnumerableObserver</a></li>
+          
+            <li class="fixedFont"><a href="../symbols/Ember.Enumerable.html#.setEach">setEach</a></li>
+          
+            <li class="fixedFont"><a href="../symbols/Ember.Enumerable.html#.some">some</a></li>
+          
+            <li class="fixedFont"><a href="../symbols/Ember.Enumerable.html#.someProperty">someProperty</a></li>
+          
+            <li class="fixedFont"><a href="../symbols/Ember.Enumerable.html#.toArray">toArray</a></li>
+          
+            <li class="fixedFont"><a href="../symbols/Ember.Enumerable.html#.uniq">uniq</a></li>
+          
+            <li class="fixedFont"><a href="../symbols/Ember.Enumerable.html#.without">without</a></li>
+          
+          </ul>
+        
+      
+        
+        
+      
+<!-- ============================== events summary ======================== -->
+      
+
+
+
+<!-- ============================== field details ========================== -->
+      
+        <h2>
+          Field Detail
+        </h2>
+        
+          <a name=".firstObject"> </a>
+          <span class="light">Object</span>
+          <span class="property"><span class="light">Ember.Enumerable.</span><b>firstObject</b></span>
+
+          <div class="description">
+            <p>Helper method returns the first object from a collection.  This is usually
+used by bindings and other parts of the framework to extract a single
+object if the enumerable contains only one item.</p>
+
+<p>If you override this method, you should implement it so that it will
+always return the same value each time it is called.  If your enumerable
+contains only one object, this method should always return that object.
+If your enumerable is empty, this method should return undefined.</p>
+            
+            
+          </div>
+
+          
+          
+          <pre class="code"><p>var arr = ["a", "b", "c"];
+arr.firstObject(); => "a"</p>
+
+<p>var arr = [];
+arr.firstObject(); => undefined</p></pre>
+          
+          
+
+            
+            
+            
+            
+
+        
+          <a name=".hasEnumerableObservers"> </a>
+          
+          <span class="property"><span class="light">Ember.Enumerable.</span><b>hasEnumerableObservers</b></span>
+
+          <div class="description">
+            <p>Becomes true whenever the array currently has observers watching changes
+on the array.</p>
+            
+            
+          </div>
+
+          
+
+            
+            
+            
+            
+
+        
+          <a name=".lastObject"> </a>
+          <span class="light">Object</span>
+          <span class="property"><span class="light">Ember.Enumerable.</span><b>lastObject</b></span>
+
+          <div class="description">
+            <p>Helper method returns the last object from a collection. If your enumerable
+contains only one object, this method should always return that object.
+If your enumerable is empty, this method should return undefined.</p>
+            
+            
+          </div>
+
+          
+          
+          <pre class="code"><p>var arr = ["a", "b", "c"];
+arr.lastObject(); => "c"</p>
+
+<p>var arr = [];
+arr.lastObject(); => undefined</p></pre>
+          
+          
+
+            
+            
+            
+            
+
+        
+          <a name=".nextObject"> </a>
+          <span class="light">Object</span>
+          <span class="property"><span class="light">Ember.Enumerable.</span><b>nextObject</b></span>
+
+          <div class="description">
+            <p>Implement this method to make your class enumerable.</p>
+
+<p>This method will be call repeatedly during enumeration.  The index value
+will always begin with 0 and increment monotonically.  You don't have to
+rely on the index value to determine what object to return, but you should
+always check the value and start from the beginning when you see the
+requested index is 0.</p>
+
+<p>The <code class='syntax js'><span class="variable">previousObject</span></code> is the object that was returned from the last call
+to <code class='syntax js'><span class="variable">nextObject</span></code> for the current iteration.  This is a useful way to
+manage iteration if you are tracing a linked list, for example.</p>
+
+<p>Finally the context parameter will always contain a hash you can use as
+a "scratchpad" to maintain any other state you need in order to iterate
+properly.  The context object is reused and is not reset between
+iterations so make sure you setup the context with a fresh state whenever
+the index parameter is 0.</p>
+
+<p>Generally iterators will continue to call <code class='syntax js'><span class="variable">nextObject</span></code> until the index
+reaches the your current length-1.  If you run out of data before this
+time for some reason, you should simply return undefined.</p>
+
+<p>The default impementation of this method simply looks up the index.
+This works great on any Array-like objects.</p>
+            
+            
+          </div>
+
+          
+
+            
+            
+            
+            
+
+        
+      
+
+
+<!-- ============================== method details ========================= -->
+      
+        
+        
+          <h2>Class Method Detail</h2>
+          
+            <a name=".addEnumerableObserver"> </a>
+            <div class="fixedFont">
+              <span class="methodname">addEnumerableObserver</span>
+            </div>
+            <div class="description">
+              <p>Registers an enumerable observer.   Must implement <code class='syntax js'><span class="class">Ember</span>.<span class="class">EnumerableObserver</span></code>
+mixin.</p>
+              
+              
+            </div>
+
+            
+
+              
+                <dl class="parameters">
+                <dt class="heading">Parameters:</dt>
+                
+                  <dt>
+                    <b>target</b>
+                    
+                  </dt>
+                  <dd></dd>
+                
+                  <dt>
+                    <b>opts</b>
+                    
+                  </dt>
+                  <dd></dd>
+                
+                </dl>
+              
+              
+              
+              
+              
+              
+              
+
+          
+            <a name=".compact"> </a>
+            <div class="fixedFont">
+              <span class="methodname">compact</span>
+            </div>
+            <div class="description">
+              <p>Generates a new array with the contents of the old array, sans any null
+values.</p>
+              
+              
+            </div>
+
+            
+
+              
+              
+              
+              
+              
+                <dl class="returns">
+                <dt class="heading">Returns:</dt>
+                
+                  <dd><span class="light fixedFont">Array</span> </dd>
+                
+                </dl>
+              
+              
+              
+
+          
+            <a name=".contains"> </a>
+            <div class="fixedFont">
+              <span class="methodname">contains</span>
+            </div>
+            <div class="description">
+              <p>Returns true if the passed object can be found in the receiver.  The
+default version will iterate through the enumerable until the object 
+is found.  You may want to override this with a more efficient version.</p>
+              
+              
+            </div>
+
+            
+
+              
+                <dl class="parameters">
+                <dt class="heading">Parameters:</dt>
+                
+                  <dt>
+                    <span class="light fixedFont">Object</span> <b>obj</b>
+                    
+                  </dt>
+                  <dd>The object to search for.</dd>
+                
+                </dl>
+              
+              
+              
+              
+              
+                <dl class="returns">
+                <dt class="heading">Returns:</dt>
+                
+                  <dd><span class="light fixedFont">Boolean</span> true if object is found in enumerable.</dd>
+                
+                </dl>
+              
+              
+              
+
+          
+            <a name=".enumerableContentDidChange"> </a>
+            <div class="fixedFont">
+              <span class="methodname">enumerableContentDidChange</span>
+            </div>
+            <div class="description">
+              <p>Invoke this method when the contents of your enumerable has changed.
+This will notify any observers watching for content changes.  If your are
+implementing an ordered enumerable (such as an array), also pass the
+start and end values where the content changed so that it can be used to
+notify range observers.</p>
+              
+              
+            </div>
+
+            
+
+              
+                <dl class="parameters">
+                <dt class="heading">Parameters:</dt>
+                
+                  <dt>
+                    <span class="light fixedFont">Number</span> <b>start</b>
+                    
+                  </dt>
+                  <dd>optional start offset for the content change.  For unordered 
+      enumerables, you should always pass -1.</dd>
+                
+                  <dt>
+                    <span class="light fixedFont">Enumerable</span> <b>added</b>
+                    
+                  </dt>
+                  <dd>optional enumerable containing items that were added to the set.  For
+      ordered enumerables, this should be an ordered array of items.  If no
+      items were added you can pass null.</dd>
+                
+                  <dt>
+                    <span class="light fixedFont">Enumerable</span> <b>removes</b>
+                    
+                  </dt>
+                  <dd>optional enumerable containing items that were removed from the set. 
+      For ordered enumerables, this hsould be an ordered array of items. If 
+      no items were removed you can pass null.</dd>
+                
+                </dl>
+              
+              
+              
+              
+              
+                <dl class="returns">
+                <dt class="heading">Returns:</dt>
+                
+                  <dd><span class="light fixedFont">Object</span> receiver</dd>
+                
+                </dl>
+              
+              
+              
+
+          
+            <a name=".enumerableContentWillChange"> </a>
+            <div class="fixedFont">
+              <span class="methodname">enumerableContentWillChange</span>
+            </div>
+            <div class="description">
+              <p>Invoke this method just before the contents of your enumerable will 
+change.  You can either omit the parameters completely or pass the objects
+to be removed or added if available or just a count.</p>
+              
+              
+            </div>
+
+            
+
+              
+                <dl class="parameters">
+                <dt class="heading">Parameters:</dt>
+                
+                  <dt>
+                    <span class="light fixedFont"><a href="../symbols/Ember.Enumerable.html">Ember.Enumerable</a>|Number</span> <b>removing</b>
+                    
+                  </dt>
+                  <dd>An enumerable of the objects to be removed or the number of items to
+      be removed.</dd>
+                
+                  <dt>
+                    <span class="light fixedFont"><a href="../symbols/Ember.Enumerable.html">Ember.Enumerable</a>|Number</span> <b>adding</b>
+                    
+                  </dt>
+                  <dd>An enumerable of the objects to be added or the number of items to be
+      added.</dd>
+                
+                </dl>
+              
+              
+              
+              
+              
+                <dl class="returns">
+                <dt class="heading">Returns:</dt>
+                
+                  <dd><span class="light fixedFont"><a href="../symbols/Ember.Enumerable.html">Ember.Enumerable</a></span> receiver</dd>
+                
+                </dl>
+              
+              
+              
+
+          
+            <a name=".every"> </a>
+            <div class="fixedFont">
+              <span class="methodname">every</span>
+            </div>
+            <div class="description">
+              <p>Returns <code class='syntax js'><span class="keyword">YES</span></code> if the passed function returns YES for every item in the
+enumeration. This corresponds with the every() method in JavaScript 1.6.</p>
+
+<p>The callback method you provide should have the following signature (all
+parameters are optional):</p>
+
+<pre><code class='syntax js'><span class="keyword">function</span>(<span class="variable">item</span>, <span class="variable">index</span>, <span class="variable">enumerable</span>);
+</code></pre>
+
+<ul>
+<li><em>item</em> is the current item in the iteration.</li>
+<li><em>index</em> is the current index in the iteration</li>
+<li><em>enumerable</em> is the enumerable object itself.</li>
+</ul>
+
+<p>It should return the <code class='syntax js'><span class="keyword">YES</span></code> or NO.</p>
+
+<p>Note that in addition to a callback, you can also pass an optional target
+object that will be set as "this" on the context. This is a good way
+to give your iterator function access to the current object.</p>
+
+<p>Example Usage:</p>
+
+<pre><code class='syntax js'><span class="keyword">if</span> (<span class="variable">people</span>.<span class="variable">every</span>(<span class="variable">isEngineer</span>)) { <span class="class">Paychecks</span>.<span class="variable">addBigBonus</span>(); }
+</code></pre>
+              
+              
+            </div>
+
+            
+
+              
+                <dl class="parameters">
+                <dt class="heading">Parameters:</dt>
+                
+                  <dt>
+                    <span class="light fixedFont"><a href="../symbols/Function.html">Function</a></span> <b>callback</b>
+                    
+                  </dt>
+                  <dd>The callback to execute</dd>
+                
+                  <dt>
+                    <span class="light fixedFont">Object</span> <b>target</b>
+                    
+                  </dt>
+                  <dd>The target object to use</dd>
+                
+                </dl>
+              
+              
+              
+              
+              
+                <dl class="returns">
+                <dt class="heading">Returns:</dt>
+                
+                  <dd><span class="light fixedFont">Boolean</span> </dd>
+                
+                </dl>
+              
+              
+              
+
+          
+            <a name=".everyProperty"> </a>
+            <div class="fixedFont">
+              <span class="methodname">everyProperty</span>
+            </div>
+            <div class="description">
+              <p>Returns true if the passed property resolves to true for all items in the
+enumerable.  This method is often simpler/faster than using a callback.</p>
+              
+              
+            </div>
+
+            
+
+              
+                <dl class="parameters">
+                <dt class="heading">Parameters:</dt>
+                
+                  <dt>
+                    <b>value</b>
+                    
+                  </dt>
+                  <dd>{String} optional value to test against.</dd>
+                
+                  <dt>
+                    <b>value</b>
+                    
+                  </dt>
+                  <dd></dd>
+                
+                </dl>
+              
+              
+              
+              
+              
+                <dl class="returns">
+                <dt class="heading">Returns:</dt>
+                
+                  <dd><span class="light fixedFont">Array</span> filtered array</dd>
+                
+                </dl>
+              
+              
+              
+
+          
+            <a name=".filter"> </a>
+            <div class="fixedFont">
+              <span class="methodname">filter</span>
+            </div>
+            <div class="description">
+              <p>Returns an array with all of the items in the enumeration that the passed
+function returns <code class='syntax js'><span class="keyword">YES</span></code> for. This method corresponds to filter() defined in
+JavaScript 1.6.</p>
+
+<p>The callback method you provide should have the following signature (all
+parameters are optional):</p>
+
+<pre><code class='syntax js'><span class="keyword">function</span>(<span class="variable">item</span>, <span class="variable">index</span>, <span class="variable">enumerable</span>);
+</code></pre>
+
+<ul>
+<li><em>item</em> is the current item in the iteration.</li>
+<li><em>index</em> is the current index in the iteration</li>
+<li><em>enumerable</em> is the enumerable object itself.</li>
+</ul>
+
+<p>It should return the <code class='syntax js'><span class="keyword">YES</span></code> to include the item in the results, NO otherwise.</p>
+
+<p>Note that in addition to a callback, you can also pass an optional target
+object that will be set as "this" on the context. This is a good way
+to give your iterator function access to the current object.</p>
+              
+              
+            </div>
+
+            
+
+              
+                <dl class="parameters">
+                <dt class="heading">Parameters:</dt>
+                
+                  <dt>
+                    <span class="light fixedFont"><a href="../symbols/Function.html">Function</a></span> <b>callback</b>
+                    
+                  </dt>
+                  <dd>The callback to execute</dd>
+                
+                  <dt>
+                    <span class="light fixedFont">Object</span> <b>target</b>
+                    
+                  </dt>
+                  <dd>The target object to use</dd>
+                
+                </dl>
+              
+              
+              
+              
+              
+                <dl class="returns">
+                <dt class="heading">Returns:</dt>
+                
+                  <dd><span class="light fixedFont">Array</span> A filtered array.</dd>
+                
+                </dl>
+              
+              
+              
+
+          
+            <a name=".filterProperty"> </a>
+            <div class="fixedFont">
+              <span class="methodname">filterProperty</span>
+            </div>
+            <div class="description">
+              <p>Returns an array with just the items with the matched property.  You
+can pass an optional second argument with the target value.  Otherwise
+this will match any property that evaluates to true.</p>
+              
+              
+            </div>
+
+            
+
+              
+                <dl class="parameters">
+                <dt class="heading">Parameters:</dt>
+                
+                  <dt>
+                    <b>value</b>
+                    
+                  </dt>
+                  <dd>{String} optional value to test against.</dd>
+                
+                  <dt>
+                    <b>value</b>
+                    
+                  </dt>
+                  <dd></dd>
+                
+                </dl>
+              
+              
+              
+              
+              
+                <dl class="returns">
+                <dt class="heading">Returns:</dt>
+                
+                  <dd><span class="light fixedFont">Array</span> filtered array</dd>
+                
+                </dl>
+              
+              
+              
+
+          
+            <a name=".find"> </a>
+            <div class="fixedFont">
+              <span class="methodname">find</span>
+            </div>
+            <div class="description">
+              <p>Returns the first item in the array for which the callback returns <code class='syntax js'><span class="keyword">YES</span></code>.
+This method works similar to the filter() method defined in JavaScript 1.6
+except that it will stop working on the array once a match is found.</p>
+
+<p>The callback method you provide should have the following signature (all
+parameters are optional):</p>
+
+<pre><code class='syntax js'><span class="keyword">function</span>(<span class="variable">item</span>, <span class="variable">index</span>, <span class="variable">enumerable</span>);
+</code></pre>
+
+<ul>
+<li><em>item</em> is the current item in the iteration.</li>
+<li><em>index</em> is the current index in the iteration</li>
+<li><em>enumerable</em> is the enumerable object itself.</li>
+</ul>
+
+<p>It should return the <code class='syntax js'><span class="keyword">YES</span></code> to include the item in the results, NO otherwise.</p>
+
+<p>Note that in addition to a callback, you can also pass an optional target
+object that will be set as "this" on the context. This is a good way
+to give your iterator function access to the current object.</p>
+              
+              
+            </div>
+
+            
+
+              
+                <dl class="parameters">
+                <dt class="heading">Parameters:</dt>
+                
+                  <dt>
+                    <span class="light fixedFont"><a href="../symbols/Function.html">Function</a></span> <b>callback</b>
+                    
+                  </dt>
+                  <dd>The callback to execute</dd>
+                
+                  <dt>
+                    <span class="light fixedFont">Object</span> <b>target</b>
+                    
+                  </dt>
+                  <dd>The target object to use</dd>
+                
+                </dl>
+              
+              
+              
+              
+              
+                <dl class="returns">
+                <dt class="heading">Returns:</dt>
+                
+                  <dd><span class="light fixedFont">Object</span> Found item or null.</dd>
+                
+                </dl>
+              
+              
+              
+
+          
+            <a name=".findProperty"> </a>
+            <div class="fixedFont">
+              <span class="methodname">findProperty</span>
+            </div>
+            <div class="description">
+              <p>Returns an the first item with a property matching the passed value.  You
+can pass an optional second argument with the target value.  Otherwise
+this will match any property that evaluates to true.</p>
+
+<p>This method works much like the more generic find() method.</p>
+              
+              
+            </div>
+
+            
+
+              
+                <dl class="parameters">
+                <dt class="heading">Parameters:</dt>
+                
+                  <dt>
+                    <b>value</b>
+                    
+                  </dt>
+                  <dd>{String} optional value to test against.</dd>
+                
+                  <dt>
+                    <b>value</b>
+                    
+                  </dt>
+                  <dd></dd>
+                
+                </dl>
+              
+              
+              
+              
+              
+                <dl class="returns">
+                <dt class="heading">Returns:</dt>
+                
+                  <dd><span class="light fixedFont">Object</span> found item or null</dd>
+                
+                </dl>
+              
+              
+              
+
+          
+            <a name=".forEach"> </a>
+            <div class="fixedFont">
+              <span class="methodname">forEach</span>
+            </div>
+            <div class="description">
+              <p>Iterates through the enumerable, calling the passed function on each
+item. This method corresponds to the <code class='syntax js'><span class="variable">forEach</span></code>() method defined in
+JavaScript 1.6.</p>
+
+<p>The callback method you provide should have the following signature (all
+parameters are optional):</p>
+
+<pre><code class='syntax js'><span class="keyword">function</span>(<span class="variable">item</span>, <span class="variable">index</span>, <span class="variable">enumerable</span>);
+</code></pre>
+
+<ul>
+<li><em>item</em> is the current item in the iteration.</li>
+<li><em>index</em> is the current index in the iteration</li>
+<li><em>enumerable</em> is the enumerable object itself.</li>
+</ul>
+
+<p>Note that in addition to a callback, you can also pass an optional target
+object that will be set as "this" on the context. This is a good way
+to give your iterator function access to the current object.</p>
+              
+              
+            </div>
+
+            
+
+              
+                <dl class="parameters">
+                <dt class="heading">Parameters:</dt>
+                
+                  <dt>
+                    <span class="light fixedFont"><a href="../symbols/Function.html">Function</a></span> <b>callback</b>
+                    
+                  </dt>
+                  <dd>The callback to execute</dd>
+                
+                  <dt>
+                    <span class="light fixedFont">Object</span> <b>target</b>
+                    
+                  </dt>
+                  <dd>The target object to use</dd>
+                
+                </dl>
+              
+              
+              
+              
+              
+                <dl class="returns">
+                <dt class="heading">Returns:</dt>
+                
+                  <dd><span class="light fixedFont">Object</span> receiver</dd>
+                
+                </dl>
+              
+              
+              
+
+          
+            <a name=".getEach"> </a>
+            <div class="fixedFont">
+              <span class="methodname">getEach</span>
+            </div>
+            <div class="description">
+              Alias for mapProperty
+              
+              
+            </div>
+
+            
+
+              
+                <dl class="parameters">
+                <dt class="heading">Parameters:</dt>
+                
+                  <dt>
+                    <b>key</b>
+                    
+                  </dt>
+                  <dd></dd>
+                
+                </dl>
+              
+              
+              
+              
+              
+                <dl class="returns">
+                <dt class="heading">Returns:</dt>
+                
+                  <dd><span class="light fixedFont">Array</span> The mapped array.</dd>
+                
+                </dl>
+              
+              
+              
+
+          
+            <a name=".invoke"> </a>
+            <div class="fixedFont">
+              <span class="methodname">invoke</span>
+            </div>
+            <div class="description">
+              <p>Invokes the named method on every object in the receiver that
+implements it.  This method corresponds to the implementation in
+Prototype 1.6.</p>
+              
+              
+            </div>
+
+            
+
+              
+                <dl class="parameters">
+                <dt class="heading">Parameters:</dt>
+                
+                  <dt>
+                    <b>methodName</b>
+                    
+                  </dt>
+                  <dd>{String} the name of the method</dd>
+                
+                  <dt>
+                    <b>args</b>
+                    
+                  </dt>
+                  <dd>{Object...} optional arguments to pass as well.</dd>
+                
+                </dl>
+              
+              
+              
+              
+              
+                <dl class="returns">
+                <dt class="heading">Returns:</dt>
+                
+                  <dd><span class="light fixedFont">Array</span> return values from calling invoke.</dd>
+                
+                </dl>
+              
+              
+              
+
+          
+            <a name=".map"> </a>
+            <div class="fixedFont">
+              <span class="methodname">map</span>
+            </div>
+            <div class="description">
+              <p>Maps all of the items in the enumeration to another value, returning
+a new array. This method corresponds to map() defined in JavaScript 1.6.</p>
+
+<p>The callback method you provide should have the following signature (all
+parameters are optional):</p>
+
+<pre><code class='syntax js'><span class="keyword">function</span>(<span class="variable">item</span>, <span class="variable">index</span>, <span class="variable">enumerable</span>);
+</code></pre>
+
+<ul>
+<li><em>item</em> is the current item in the iteration.</li>
+<li><em>index</em> is the current index in the iteration</li>
+<li><em>enumerable</em> is the enumerable object itself.</li>
+</ul>
+
+<p>It should return the mapped value.</p>
+
+<p>Note that in addition to a callback, you can also pass an optional target
+object that will be set as "this" on the context. This is a good way
+to give your iterator function access to the current object.</p>
+              
+              
+            </div>
+
+            
+
+              
+                <dl class="parameters">
+                <dt class="heading">Parameters:</dt>
+                
+                  <dt>
+                    <span class="light fixedFont"><a href="../symbols/Function.html">Function</a></span> <b>callback</b>
+                    
+                  </dt>
+                  <dd>The callback to execute</dd>
+                
+                  <dt>
+                    <span class="light fixedFont">Object</span> <b>target</b>
+                    
+                  </dt>
+                  <dd>The target object to use</dd>
+                
+                </dl>
+              
+              
+              
+              
+              
+                <dl class="returns">
+                <dt class="heading">Returns:</dt>
+                
+                  <dd><span class="light fixedFont">Array</span> The mapped array.</dd>
+                
+                </dl>
+              
+              
+              
+
+          
+            <a name=".mapProperty"> </a>
+            <div class="fixedFont">
+              <span class="methodname">mapProperty</span>
+            </div>
+            <div class="description">
+              <p>Similar to map, this specialized function returns the value of the named
+property on all items in the enumeration.</p>
+              
+              
+            </div>
+
+            
+
+              
+                <dl class="parameters">
+                <dt class="heading">Parameters:</dt>
+                
+                  <dt>
+                    <b>key</b>
+                    
+                  </dt>
+                  <dd></dd>
+                
+                </dl>
+              
+              
+              
+              
+              
+                <dl class="returns">
+                <dt class="heading">Returns:</dt>
+                
+                  <dd><span class="light fixedFont">Array</span> The mapped array.</dd>
+                
+                </dl>
+              
+              
+              
+
+          
+            <a name=".reduce"> </a>
+            <div class="fixedFont">
+              <span class="methodname">reduce</span>
+            </div>
+            <div class="description">
+              <p>This will combine the values of the enumerator into a single value. It
+is a useful way to collect a summary value from an enumeration. This
+corresponds to the reduce() method defined in JavaScript 1.8.</p>
+
+<p>The callback method you provide should have the following signature (all
+parameters are optional):</p>
+
+<pre><code class='syntax js'><span class="keyword">function</span>(<span class="variable">previousValue</span>, <span class="variable">item</span>, <span class="variable">index</span>, <span class="variable">enumerable</span>);
+</code></pre>
+
+<ul>
+<li><em>previousValue</em> is the value returned by the last call to the iterator.</li>
+<li><em>item</em> is the current item in the iteration.</li>
+<li><em>index</em> is the current index in the iteration</li>
+<li><em>enumerable</em> is the enumerable object itself.</li>
+</ul>
+
+<p>Return the new cumulative value.</p>
+
+<p>In addition to the callback you can also pass an <code class='syntax js'><span class="variable">initialValue</span></code>. An error
+will be raised if you do not pass an initial value and the enumerator is
+empty.</p>
+
+<p>Note that unlike the other methods, this method does not allow you to
+pass a target object to set as this for the callback. It's part of the
+spec. Sorry.</p>
+              
+              
+            </div>
+
+            
+
+              
+                <dl class="parameters">
+                <dt class="heading">Parameters:</dt>
+                
+                  <dt>
+                    <span class="light fixedFont"><a href="../symbols/Function.html">Function</a></span> <b>callback</b>
+                    
+                  </dt>
+                  <dd>The callback to execute</dd>
+                
+                  <dt>
+                    <span class="light fixedFont">Object</span> <b>initialValue</b>
+                    
+                  </dt>
+                  <dd>Initial value for the reduce</dd>
+                
+                  <dt>
+                    <span class="light fixedFont"><a href="../symbols/String.html">String</a></span> <b>reducerProperty</b>
+                    
+                  </dt>
+                  <dd>internal use only.</dd>
+                
+                </dl>
+              
+              
+              
+              
+              
+                <dl class="returns">
+                <dt class="heading">Returns:</dt>
+                
+                  <dd><span class="light fixedFont">Object</span> The reduced value.</dd>
+                
+                </dl>
+              
+              
+              
+
+          
+            <a name=".removeEnumerableObserver"> </a>
+            <div class="fixedFont">
+              <span class="methodname">removeEnumerableObserver</span>
+            </div>
+            <div class="description">
+              Removes a registered enumerable observer.
+              
+              
+            </div>
+
+            
+
+              
+                <dl class="parameters">
+                <dt class="heading">Parameters:</dt>
+                
+                  <dt>
+                    <b>target</b>
+                    
+                  </dt>
+                  <dd></dd>
+                
+                  <dt>
+                    <b>opts</b>
+                    
+                  </dt>
+                  <dd></dd>
+                
+                </dl>
+              
+              
+              
+              
+              
+              
+              
+
+          
+            <a name=".setEach"> </a>
+            <div class="fixedFont">
+              <span class="methodname">setEach</span>
+            </div>
+            <div class="description">
+              <p>Sets the value on the named property for each member. This is more
+efficient than using other methods defined on this helper. If the object
+implements <code class='syntax js'><span class="class">Ember</span>.<span class="class">Observable</span></code>, the value will be changed to set(), otherwise
+it will be set directly. null objects are skipped.</p>
+              
+              
+            </div>
+
+            
+
+              
+                <dl class="parameters">
+                <dt class="heading">Parameters:</dt>
+                
+                  <dt>
+                    <span class="light fixedFont"><a href="../symbols/String.html">String</a></span> <b>key</b>
+                    
+                  </dt>
+                  <dd>The key to set</dd>
+                
+                  <dt>
+                    <span class="light fixedFont">Object</span> <b>value</b>
+                    
+                  </dt>
+                  <dd>The object to set</dd>
+                
+                </dl>
+              
+              
+              
+              
+              
+                <dl class="returns">
+                <dt class="heading">Returns:</dt>
+                
+                  <dd><span class="light fixedFont">Object</span> receiver</dd>
+                
+                </dl>
+              
+              
+              
+
+          
+            <a name=".some"> </a>
+            <div class="fixedFont">
+              <span class="methodname">some</span>
+            </div>
+            <div class="description">
+              <p>Returns <code class='syntax js'><span class="keyword">YES</span></code> if the passed function returns true for any item in the
+enumeration. This corresponds with the every() method in JavaScript 1.6.</p>
+
+<p>The callback method you provide should have the following signature (all
+parameters are optional):</p>
+
+<pre><code class='syntax js'><span class="keyword">function</span>(<span class="variable">item</span>, <span class="variable">index</span>, <span class="variable">enumerable</span>);
+</code></pre>
+
+<ul>
+<li><em>item</em> is the current item in the iteration.</li>
+<li><em>index</em> is the current index in the iteration</li>
+<li><em>enumerable</em> is the enumerable object itself.</li>
+</ul>
+
+<p>It should return the <code class='syntax js'><span class="keyword">YES</span></code> to include the item in the results, NO otherwise.</p>
+
+<p>Note that in addition to a callback, you can also pass an optional target
+object that will be set as "this" on the context. This is a good way
+to give your iterator function access to the current object.</p>
+
+<p>Usage Example:</p>
+
+<pre><code class='syntax js'><span class="keyword">if</span> (<span class="variable">people</span>.<span class="variable">some</span>(<span class="variable">isManager</span>)) { <span class="class">Paychecks</span>.<span class="variable">addBiggerBonus</span>(); }
+</code></pre>
+              
+              
+            </div>
+
+            
+
+              
+                <dl class="parameters">
+                <dt class="heading">Parameters:</dt>
+                
+                  <dt>
+                    <span class="light fixedFont"><a href="../symbols/Function.html">Function</a></span> <b>callback</b>
+                    
+                  </dt>
+                  <dd>The callback to execute</dd>
+                
+                  <dt>
+                    <span class="light fixedFont">Object</span> <b>target</b>
+                    
+                  </dt>
+                  <dd>The target object to use</dd>
+                
+                </dl>
+              
+              
+              
+              
+              
+                <dl class="returns">
+                <dt class="heading">Returns:</dt>
+                
+                  <dd><span class="light fixedFont">Array</span> A filtered array.</dd>
+                
+                </dl>
+              
+              
+              
+
+          
+            <a name=".someProperty"> </a>
+            <div class="fixedFont">
+              <span class="methodname">someProperty</span>
+            </div>
+            <div class="description">
+              <p>Returns true if the passed property resolves to true for any item in the
+enumerable.  This method is often simpler/faster than using a callback.</p>
+              
+              
+            </div>
+
+            
+
+              
+                <dl class="parameters">
+                <dt class="heading">Parameters:</dt>
+                
+                  <dt>
+                    <b>value</b>
+                    
+                  </dt>
+                  <dd>{String} optional value to test against.</dd>
+                
+                  <dt>
+                    <b>value</b>
+                    
+                  </dt>
+                  <dd></dd>
+                
+                </dl>
+              
+              
+              
+              
+              
+                <dl class="returns">
+                <dt class="heading">Returns:</dt>
+                
+                  <dd><span class="light fixedFont">Boolean</span> true</dd>
+                
+                </dl>
+              
+              
+              
+
+          
+            <a name=".toArray"> </a>
+            <div class="fixedFont">
+              <span class="methodname">toArray</span>
+            </div>
+            <div class="description">
+              <p>Simply converts the enumerable into a genuine array.  The order is not 
+guaranteed.  Corresponds to the method implemented by Prototype.</p>
+              
+              
+            </div>
+
+            
+
+              
+              
+              
+              
+              
+                <dl class="returns">
+                <dt class="heading">Returns:</dt>
+                
+                  <dd><span class="light fixedFont">Array</span> the enumerable as an array.</dd>
+                
+                </dl>
+              
+              
+              
+
+          
+            <a name=".uniq"> </a>
+            <div class="fixedFont">
+              <span class="methodname">uniq</span>
+            </div>
+            <div class="description">
+              <p>Returns a new enumerable that contains only unique values.  The default
+implementation returns an array regardless of the receiver type.</p>
+              
+              
+            </div>
+
+            
+
+              
+              
+              
+              
+              
+                <dl class="returns">
+                <dt class="heading">Returns:</dt>
+                
+                  <dd><span class="light fixedFont"><a href="../symbols/Ember.Enumerable.html">Ember.Enumerable</a></span> </dd>
+                
+                </dl>
+              
+              
+              
+
+          
+            <a name=".without"> </a>
+            <div class="fixedFont">
+              <span class="methodname">without</span>
+            </div>
+            <div class="description">
+              <p>Returns a new enumerable that excludes the passed value.  The default
+implementation returns an array regardless of the receiver type unless
+the receiver does not contain the value.</p>
+              
+              
+            </div>
+
+            
+
+              
+                <dl class="parameters">
+                <dt class="heading">Parameters:</dt>
+                
+                  <dt>
+                    <span class="light fixedFont">Object</span> <b>value</b>
+                    
+                  </dt>
+                  <dd></dd>
+                
+                </dl>
+              
+              
+              
+              
+              
+                <dl class="returns">
+                <dt class="heading">Returns:</dt>
+                
+                  <dd><span class="light fixedFont"><a href="../symbols/Ember.Enumerable.html">Ember.Enumerable</a></span> </dd>
+                
+                </dl>
+              
+              
+              
+
+          
+        
+      
+        
+        
+      
+
+<!-- ============================== event details ========================= -->
+      
+
+
+
+<!-- ============================== footer ================================= -->
+        <div class="fineprint" style="clear:both">
+          
+          Documentation generated by <a href="http://code.google.com/p/jsdoc-toolkit/" target="_blank">JsDoc Toolkit</a> 2.4.0 on Mon Jan 30 2012 16:12:29 GMT-0800 (PST)
+        </div>
+      </section>
+    </div>
+  </body>
+</html>

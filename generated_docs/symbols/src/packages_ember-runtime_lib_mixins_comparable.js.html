@@ -1,0 +1,57 @@
+<html><head><meta http-equiv="content-type" content="text/html; charset=utf8"> <style>
+	.KEYW {color: #933;}
+	.COMM {color: #bbb; font-style: italic;}
+	.NUMB {color: #393;}
+	.STRN {color: #393;}
+	.REGX {color: #339;}
+	.line {border-right: 1px dotted #666; color: #666; font-style: normal;}
+	</style></head><body><pre><span class='line'>  1</span> <span class="COMM">// ==========================================================================</span><span class="WHIT">
+<span class='line'>  2</span> </span><span class="COMM">// Project:  Ember Runtime</span><span class="WHIT">
+<span class='line'>  3</span> </span><span class="COMM">// Copyright: ©2006-2011 Strobe Inc. and contributors.</span><span class="WHIT">
+<span class='line'>  4</span> </span><span class="COMM">//            Portions ©2008-2011 Apple Inc. All rights reserved.</span><span class="WHIT">
+<span class='line'>  5</span> </span><span class="COMM">// License:   Licensed under MIT license (see license.js)</span><span class="WHIT">
+<span class='line'>  6</span> </span><span class="COMM">// ==========================================================================</span><span class="WHIT">
+<span class='line'>  7</span> 
+<span class='line'>  8</span> </span><span class="NAME">require</span><span class="PUNC">(</span><span class="STRN">'ember-runtime/core'</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>  9</span> 
+<span class='line'> 10</span> 
+<span class='line'> 11</span> </span><span class="COMM">/**
+<span class='line'> 12</span>   @namespace
+<span class='line'> 13</span> 
+<span class='line'> 14</span>   Implements some standard methods for comparing objects. Add this mixin to
+<span class='line'> 15</span>   any class you create that can compare its instances.
+<span class='line'> 16</span> 
+<span class='line'> 17</span>   You should implement the compare() method.
+<span class='line'> 18</span> 
+<span class='line'> 19</span>   @since Ember 0.9
+<span class='line'> 20</span> */</span><span class="WHIT">
+<span class='line'> 21</span> </span><span class="NAME">Ember.Comparable</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">Ember.Mixin.create</span><span class="PUNC">(</span><span class="WHIT"> </span><span class="COMM">/** @scope Ember.Comparable.prototype */</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'> 22</span> 
+<span class='line'> 23</span> </span><span class="WHIT">  </span><span class="COMM">/**
+<span class='line'> 24</span>     walk like a duck. Indicates that the object can be compared.
+<span class='line'> 25</span> 
+<span class='line'> 26</span>     @type Boolean
+<span class='line'> 27</span>     @default YES
+<span class='line'> 28</span>     @constant
+<span class='line'> 29</span>   */</span><span class="WHIT">
+<span class='line'> 30</span> </span><span class="WHIT">  </span><span class="NAME">isComparable</span><span class="PUNC">:</span><span class="WHIT"> </span><span class="KEYW">true</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'> 31</span> 
+<span class='line'> 32</span> </span><span class="WHIT">  </span><span class="COMM">/**
+<span class='line'> 33</span>     Override to return the result of the comparison of the two parameters. The
+<span class='line'> 34</span>     compare method should return:
+<span class='line'> 35</span> 
+<span class='line'> 36</span>       - -1 if a &lt; b
+<span class='line'> 37</span>       - 0 if a == b
+<span class='line'> 38</span>       - 1 if a > b
+<span class='line'> 39</span> 
+<span class='line'> 40</span>     Default implementation raises an exception.
+<span class='line'> 41</span> 
+<span class='line'> 42</span>     @param a {Object} the first object to compare
+<span class='line'> 43</span>     @param b {Object} the second object to compare
+<span class='line'> 44</span>     @returns {Integer} the result of the comparison
+<span class='line'> 45</span>   */</span><span class="WHIT">
+<span class='line'> 46</span> </span><span class="WHIT">  </span><span class="NAME">compare</span><span class="PUNC">:</span><span class="WHIT"> </span><span class="NAME">Ember.required</span><span class="PUNC">(</span><span class="NAME">Function</span><span class="PUNC">)</span><span class="WHIT">
+<span class='line'> 47</span> 
+<span class='line'> 48</span> </span><span class="PUNC">}</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 49</span> 
+<span class='line'> 50</span> </span></pre></body></html>

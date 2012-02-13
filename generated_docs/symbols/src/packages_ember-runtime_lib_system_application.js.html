@@ -1,0 +1,41 @@
+<html><head><meta http-equiv="content-type" content="text/html; charset=utf8"> <style>
+	.KEYW {color: #933;}
+	.COMM {color: #bbb; font-style: italic;}
+	.NUMB {color: #393;}
+	.STRN {color: #393;}
+	.REGX {color: #339;}
+	.line {border-right: 1px dotted #666; color: #666; font-style: normal;}
+	</style></head><body><pre><span class='line'>  1</span> <span class="COMM">// ==========================================================================</span><span class="WHIT">
+<span class='line'>  2</span> </span><span class="COMM">// Project:  Ember Runtime</span><span class="WHIT">
+<span class='line'>  3</span> </span><span class="COMM">// Copyright: ©2011 Strobe Inc. and contributors.</span><span class="WHIT">
+<span class='line'>  4</span> </span><span class="COMM">// License:   Licensed under MIT license (see license.js)</span><span class="WHIT">
+<span class='line'>  5</span> </span><span class="COMM">// ==========================================================================</span><span class="WHIT">
+<span class='line'>  6</span> 
+<span class='line'>  7</span> </span><span class="NAME">require</span><span class="PUNC">(</span><span class="STRN">'ember-runtime/system/namespace'</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>  8</span> 
+<span class='line'>  9</span> </span><span class="COMM">/**
+<span class='line'> 10</span>   @private
+<span class='line'> 11</span> 
+<span class='line'> 12</span>   Defines a namespace that will contain an executable application.  This is
+<span class='line'> 13</span>   very similar to a normal namespace except that it is expected to include at
+<span class='line'> 14</span>   least a 'ready' function which can be run to initialize the application.
+<span class='line'> 15</span>   
+<span class='line'> 16</span>   Currently Ember.Application is very similar to Ember.Namespace.  However, this
+<span class='line'> 17</span>   class may be augmented by additional frameworks so it is important to use
+<span class='line'> 18</span>   this instance when building new applications.
+<span class='line'> 19</span>   
+<span class='line'> 20</span>   # Example Usage
+<span class='line'> 21</span>   
+<span class='line'> 22</span>       MyApp = Ember.Application.create({
+<span class='line'> 23</span>         VERSION: '1.0.0',
+<span class='line'> 24</span>         store: Ember.Store.create().from(Ember.fixtures)
+<span class='line'> 25</span>       });
+<span class='line'> 26</span>       
+<span class='line'> 27</span>       MyApp.ready = function() { 
+<span class='line'> 28</span>         //..init code goes here...
+<span class='line'> 29</span>       }
+<span class='line'> 30</span>       
+<span class='line'> 31</span> */</span><span class="WHIT">
+<span class='line'> 32</span> </span><span class="NAME">Ember.Application</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">Ember.Namespace.extend</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 33</span> 
+<span class='line'> 34</span> </span></pre></body></html>
