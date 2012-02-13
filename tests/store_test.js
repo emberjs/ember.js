@@ -292,7 +292,7 @@ test("findAll(type) returns a model array of all records of a specific type", fu
   strictEqual(results, store.findAll(Person), "subsequent calls to findAll return the same modelArray)");
 });
 
-test("a new model of a particular type is created via store.create(type)", function() {
+test("a new model of a particular type is created via store.createRecord(type)", function() {
   var store = DS.Store.create();
   var Person = DS.Model.extend();
 
@@ -307,7 +307,7 @@ test("a new model of a particular type is created via store.create(type)", funct
   equal(get(person, 'name'), "Braaahm Dale", "Even if no hash is supplied, `set` still worked");
 });
 
-test("an initial data hash can be provided via store.create(type, hash)", function() {
+test("an initial data hash can be provided via store.createRecord(type, hash)", function() {
   var store = DS.Store.create();
   var Person = DS.Model.extend();
 

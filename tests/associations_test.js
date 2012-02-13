@@ -115,7 +115,7 @@ test("hasMany allows associations to be mapped to a user-specified key", functio
   strictEqual(get(person, 'tags').objectAt(0), store.find(Tag, 2), "association objects are the same as objects retrieved directly");
 });
 
-test("associations work when the declared with string path", function() {
+test("associations work when declared with a string path", function() {
   window.App = {};
 
   App.Person = DS.Model.extend({

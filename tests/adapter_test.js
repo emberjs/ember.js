@@ -322,7 +322,7 @@ test("by default, commit calls deleteRecords once per type", function() {
   store.commit();
 });
 
-test("by default, createRecords calls create once per record", function() {
+test("by default, createRecords calls createRecord once per record", function() {
   expect(8);
   var count = 1;
 
