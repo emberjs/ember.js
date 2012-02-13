@@ -4,10 +4,6 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
-
-
-
-
 /** @private **/
 var STRING_DASHERIZE_REGEXP = (/[ _]/g);
 var STRING_DASHERIZE_CACHE = {};
@@ -44,8 +40,6 @@ Ember.String = {
     Ordered insertions are most useful when building loc strings where values
     you need to insert may appear in different orders.
 
-    ## Examples
-
         "Hello %@ %@".fmt('John', 'Doe') => "Hello John Doe"
         "Hello %@2, %@1".fmt('John', 'Doe') => "Hello Doe, John"
 
@@ -71,9 +65,6 @@ Ember.String = {
     keys with an underscore or other character so you can easily identify
     localized strings.
 
-    # Example Usage
-
-        @javascript@
         Ember.STRINGS = {
           '_Hello World': 'Bonjour le monde',
           '_Hello %@ %@': 'Bonjour %@ %@'
@@ -84,8 +75,6 @@ Ember.String = {
 
         Ember.String.loc("_Hello %@ %@", ["John", "Smith"]);
         => "Bonjour John Smith";
-
-
 
     @param {String} str
       The string to format
@@ -105,9 +94,6 @@ Ember.String = {
     empty strings in the process.  This is a convenience method for split that
     is mostly useful when applied to the String.prototype.
 
-    # Example Usage
-
-        @javascript@
         Ember.String.w("alpha beta gamma").forEach(function(key) {
           console.log(key);
         });
@@ -115,7 +101,7 @@ Ember.String = {
         > beta
         > gamma
 
-    @param {String} str
+    @param {String} str 
       The string to split
 
     @returns {String} split string
@@ -124,14 +110,14 @@ Ember.String = {
 
   /**
     Converts a camelized string into all lower case separated by underscores.
+    
+        'innerHTML'.decamelize()         => 'inner_html'
+        'action_name'.decamelize()       => 'action_name'
+        'css-class-name'.decamelize()    => 'css-class-name'
+        'my favorite items'.decamelize() => 'my favorite items'
 
-    h2. Examples
-
-    | *Input String* | *Output String* |
-    | my favorite items | my favorite items |
-    | css-class-name | css-class-name |
-    | action_name | action_name |
-    | innerHTML | inner_html |
+    @param {String} str
+      The string to decamelize.
 
     @returns {String} the decamelized string.
   */
@@ -140,16 +126,15 @@ Ember.String = {
   },
 
   /**
-    Converts a camelized string or a string with spaces or underscores into
-    a string with components separated by dashes.
+    Replaces underscores or spaces with dashes.
+    
+        'innerHTML'.dasherize()         => 'inner-html'
+        'action_name'.dasherize()       => 'action-name'
+        'css-class-name'.dasherize()    => 'css-class-name'
+        'my favorite items'.dasherize() => 'my-favorite-items'
 
-    h2. Examples
-
-    | *Input String* | *Output String* |
-    | my favorite items | my-favorite-items |
-    | css-class-name | css-class-name |
-    | action_name | action-name |
-    | innerHTML | inner-html |
+    @param {String} str
+      The string to dasherize.
 
     @returns {String} the dasherized string.
   */
@@ -168,16 +153,15 @@ Ember.String = {
   },
 
   /**
-    Converts a dasherized string or a string with spaces or underscores into
-    camelized string.
+    Returns the lowerCaseCamel form of a string.
+    
+        'innerHTML'.camelize()         => 'innerHTML'
+        'action_name'.camelize()       => 'actionName'
+        'css-class-name'.camelize()    => 'cssClassName'
+        'my favorite items'.camelize() => 'myFavoriteItems'
 
-    h2. Examples
-
-    | *Input String* | *Output String* |
-    | my favorite items | myFavoriteItems |
-    | css-class-name | cssClassName |
-    | action_name | actionName |
-    | innerHTML | innerHTML |
+    @param {String} str
+      The string to camelize.
 
     @returns {String} the camelized string.
   */
@@ -188,24 +172,21 @@ Ember.String = {
   },
 
   /**
-    More general than decamelize, converts a dasherized or camelcased string or a string with spaces into
-    all lower case separated by undescores.
+    More general than decamelize. Returns the lower_case_and_underscored
+    form of a string.
 
-    h2. Examples
+        'innerHTML'.underscore()         => 'inner_html'
+        'action_name'.underscore()       => 'action_name'
+        'css-class-name'.underscore()    => 'css_class_name'
+        'my favorite items'.underscore() => 'my_favorite_items'
 
-    | *Input String* | *Output String* |
-    | my favorite items | my_favorite_items |
-    | css-class-name | css_class_name |
-    | action_name | action_name |
-    | innerHTML | inner_html |
+    @param {String} str
+      The string to underscore.
 
-    @returns {String} the camelized string.
+    @returns {String} the underscored string.
   */
   underscore: function(str) {
     return str.replace(STRING_UNDERSCORE_REGEXP_1, '$1_$2').
       replace(STRING_UNDERSCORE_REGEXP_2, '_').toLowerCase();
   }
 };
-
-
-
