@@ -479,11 +479,11 @@ test("if a created model is marked as invalid by the server, it enters an error 
     if (get(record, 'name').indexOf('Bro') === -1) {
       store.recordWasInvalid(record, { name: ['common... name requires a "bro"'] });
     } else {
-      store.didUpdateRecord(record);
+      store.didCreateRecord(record);
     }
   };
 
-  var yehuda = store.createRecord(Person, { name: "Yehuda Katz" });
+  var yehuda = store.createRecord(Person, { id: 1, name: "Yehuda Katz" });
   store.commit();
 
   equal(get(yehuda, 'isValid'), false, "the record is invalid");

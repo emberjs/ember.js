@@ -420,7 +420,7 @@ test("a model receives a didUpdate callback when it has finished updating", func
   equal(callCount, 1, "didUpdate called after update");
 });
 
-test("a model receives a didUpdate callback when it has finished updating", function() {
+test("a model receives a didCreate callback when it has finished updating", function() {
   var callCount = 0;
 
   var Person = DS.Model.extend({
@@ -431,7 +431,7 @@ test("a model receives a didUpdate callback when it has finished updating", func
 
   var adapter = DS.Adapter.create({
     createRecord: function(store, type, model) {
-      store.didCreateRecord(model, {});
+      store.didCreateRecord(model);
     }
   });
 
@@ -441,7 +441,7 @@ test("a model receives a didUpdate callback when it has finished updating", func
 
   equal(callCount, 0, "precond - didUpdate callback was not called yet");
 
-  var person = store.createRecord(Person, { name: "Newt Gingrich" });
+  var person = store.createRecord(Person, { id: 69, name: "Newt Gingrich" });
   store.commit();
 
   equal(callCount, 1, "didCreate called after commit");
