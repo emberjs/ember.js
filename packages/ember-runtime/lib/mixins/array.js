@@ -4,10 +4,7 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
-
 require('ember-runtime/mixins/enumerable');
-
-
   
 // ..........................................................
 // HELPERS
@@ -77,9 +74,15 @@ Ember.Array = Ember.Mixin.create(Ember.Enumerable, /** @scope Ember.Array.protot
     the value of an array item using get() (i.e. myArray.get(0)), then you do
     not need to implement this method yourself.
 
+        var arr = ["a", "b", "c", "d"];
+        arr.objectAt(0);  => "a"
+        arr.objectAt(4);  => undefined
+        arr.objectAt(-1); => undefined
+
     @param {Number} idx
-      The index of the item to return.  If idx exceeds the current length,
-      return null.
+      The index of the item to return.  If idx is negative or
+      exceeds the current length, returns undefined.
+    @return the item at idx.
   */
   objectAt: function(idx) {
     if ((idx < 0) || (idx>=get(this, 'length'))) return undefined ;
@@ -115,6 +118,14 @@ Ember.Array = Ember.Mixin.create(Ember.Enumerable, /** @scope Ember.Array.protot
     Returns a new array that is a slice of the receiver.  This implementation
     uses the observable array methods to retrieve the objects for the new
     slice.
+
+        var arr = ["a", "b", "c", "d"];
+        arr.slice();       => ["a", "b", "c", "d"]
+        arr.slice(2);      => ["c", "d"]
+        arr.slice(2, 4);   => ["c", "d"]
+        arr.slice(4, 2);   => []
+        arr.slice(-1);     => ["d"]
+        arr.slice(-2, -1); => ["c"]
 
     @param beginIndex {Integer} (Optional) index to begin slicing from.
     @param endIndex {Integer} (Optional) index to end the slice at.
@@ -351,10 +362,5 @@ Ember.Array = Ember.Mixin.create(Ember.Enumerable, /** @scope Ember.Array.protot
     if (!this.__each) this.__each = new Ember.EachProxy(this);
     return this.__each;
   }).property().cacheable()
-  
-  
-  
-}) ;
 
-
-
+});
