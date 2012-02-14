@@ -16,7 +16,7 @@ test("a new DS.Model is in the empty state", function() {
 
 test("a DS.Model can receive data, which puts it into the loaded state", function() {
   var model = DS.Model.create();
-  model.loadingData();
+  model.send('loadingData');
   model.setData({ scumbag: "tom" });
   modelIsInState(model, 'loaded.saved');
 });
@@ -26,7 +26,7 @@ var converts = function(type, provided, expected) {
     name: DS.attr(type)
   });
 
-  model.loadingData();
+  model.send('loadingData');
   model.setData({ name: provided });
   deepEqual(get(model, 'name'), expected, type + " coerces " + provided + " to " + expected);
 
@@ -35,7 +35,7 @@ var converts = function(type, provided, expected) {
     name: DS.attr(type)
   });
 
-  model.loadingData();
+  model.send('loadingData');
   model.setData({});
   set(model, 'name', provided);
   deepEqual(get(model, 'name'), expected, type + " coerces " + provided + " to " + expected);
@@ -46,7 +46,7 @@ var convertsFromServer = function(type, provided, expected) {
     name: DS.attr(type)
   });
 
-  model.loadingData();
+  model.send('loadingData');
   model.setData({ name: provided });
   deepEqual(get(model, 'name'), expected, type + " coerces " + provided + " to " + expected);
 };
@@ -56,7 +56,7 @@ var convertsWhenSet = function(type, provided, expected) {
     name: DS.attr(type)
   });
 
-  model.loadingData();
+  model.send('loadingData');
   model.setData({});
 
   set(model, 'name', provided);
@@ -103,7 +103,7 @@ test("a DS.Model can describe Date attributes", function() {
     updatedAt: DS.attr('date')
   });
 
-  model.loadingData();
+  model.send('loadingData');
   model.setData({});
 
   model.set('updatedAt', date);
@@ -117,7 +117,7 @@ test("it can specify which key to use when looking up properties on the hash", f
     name: DS.attr('string', { key: 'full_name' })
   });
 
-  model.loadingData();
+  model.send('loadingData');
   model.setData({ name: "Steve", full_name: "Pete" });
 
   equals(get(model, 'name'), "Pete", "retrieves correct value");
@@ -146,7 +146,7 @@ test("it should modify the property of the hash specified by the `key` option", 
     name: DS.attr('string', { key: 'full_name' })
   });
 
-  model.loadingData();
+  model.send('loadingData');
   model.setData({ name: "Steve", full_name: "Pete" });
 
   model.set('name', "Colin");
@@ -225,8 +225,8 @@ test("when a new record depends on the state of another record, it enters the pe
 
   equal(get(childComment, 'isPending'), true, "Child comment is pending on the parent comment");
 
-  parentComment.willCommit();
-  parentComment.adapterDidUpdate();
+  parentComment.send('willCommit');
+  parentComment.send('didCommit');
 
   equal(get(parentComment, 'isLoaded'), true, "precond - Parent comment is loaded");
   equal(get(parentComment, 'isDirty'), false, "precond - Parent comment is not dirty");
@@ -241,9 +241,9 @@ test("when an updated record depends on the state of another record, it enters t
   var parentComment = store.createRecord(Comment);
   var childComment = store.createRecord(Comment);
 
-  childComment.willCommit();
+  childComment.send('willCommit');
   childComment.setData({});
-  childComment.adapterDidUpdate();
+  childComment.send('didCommit');
 
   childComment.set('title', "foo");
 
@@ -254,8 +254,8 @@ test("when an updated record depends on the state of another record, it enters t
 
   equal(get(childComment, 'isPending'), true, "Child comment is pending on the parent comment");
 
-  parentComment.willCommit();
-  parentComment.adapterDidUpdate();
+  parentComment.send('willCommit');
+  parentComment.send('didCommit');
 
   equal(get(parentComment, 'isLoaded'), true, "precond - Parent comment is loaded");
   equal(get(parentComment, 'isDirty'), false, "precond - Parent comment is not dirty");
@@ -270,9 +270,9 @@ test("when a loaded record depends on the state of another record, it enters the
   var parentComment = store.createRecord(Comment);
   var childComment = store.createRecord(Comment);
 
-  childComment.willCommit();
+  childComment.send('willCommit');
   childComment.setData({});
-  childComment.adapterDidUpdate();
+  childComment.send('didCommit');
 
   equal(childComment.get('isDirty'), false, "precond - record is not marked as dirty");
   equal(childComment.get('isNew'), false, "precond - record is not new");
@@ -282,8 +282,8 @@ test("when a loaded record depends on the state of another record, it enters the
   equal(get(childComment, 'isDirty'), true, "child comment is marked as dirty once a dependency has been created");
   equal(get(childComment, 'isPending'), true, "Child comment is pending on the parent comment");
 
-  parentComment.willCommit();
-  parentComment.adapterDidUpdate();
+  parentComment.send('willCommit');
+  parentComment.send('didCommit');
 
   equal(get(parentComment, 'isLoaded'), true, "precond - Parent comment is loaded");
   equal(get(parentComment, 'isDirty'), false, "precond - Parent comment is not dirty");
