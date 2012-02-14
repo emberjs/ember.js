@@ -69,7 +69,7 @@ Ember.MutableEnumerable = Ember.Mixin.create(Ember.Enumerable,
   /**
     Adds each object in the passed enumerable to the receiver.
 
-    @param {Ember.Enumerable} objects the objects to remove
+    @param {Ember.Enumerable} objects the objects to add.
     @returns {Object} receiver
   */
   addObjects: function(objects) {
