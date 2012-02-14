@@ -18,7 +18,7 @@ test("a DS.Model can receive data, which puts it into the loaded state", functio
   var model = DS.Model.create();
   model.loadingData();
   model.setData({ scumbag: "tom" });
-  modelIsInState(model, 'loaded');
+  modelIsInState(model, 'loaded.saved');
 });
 
 var converts = function(type, provided, expected) {

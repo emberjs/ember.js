@@ -79,7 +79,7 @@ test("the updated state", function() {
 });
 
 test("the saving state", function() {
-  stateName = "loaded.updated.saving";
+  stateName = "loaded.updated.inFlight";
   isTrue("isLoaded");
   isTrue("isDirty");
   isTrue("isSaving");
