@@ -8,10 +8,19 @@ var set = Ember.set, get = Ember.get;
 
 require('ember-views/views/view');
 
-module("Ember.View - Attribute Bindings");
+var view;
+
+module("Ember.View - Attribute Bindings", {
+  teardown: function() {
+    if (view) {
+      view.destroy();
+      view = null;
+    }
+  }
+});
 
 test("should render attribute bindings", function() {
-  var view = Ember.View.create({
+  view = Ember.View.create({
     classNameBindings: ['priority', 'isUrgent', 'isClassified:classified', 'canIgnore'],
     attributeBindings: ['type', 'exploded', 'destroyed', 'exists', 'nothing', 'notDefined', 'notNumber', 'explosions'],
 
@@ -36,7 +45,7 @@ test("should render attribute bindings", function() {
 });
 
 test("should update attribute bindings", function() {
-  var view = Ember.View.create({
+  view = Ember.View.create({
     classNameBindings: ['priority', 'isUrgent', 'isClassified:classified', 'canIgnore'],
     attributeBindings: ['type', 'exploded', 'destroyed', 'exists', 'nothing', 'notDefined', 'notNumber', 'explosions'],
 
@@ -121,3 +130,16 @@ test("should allow attributes to be set in the inBuffer state", function() {
   Test.destroy();
 });
 
+// This comes into play when using the {{#each}} helper. If the
+// passed array item is a String, it will be converted into a
+// String object instead of a normal string.
+test("should allow binding to String objects", function() {
+  view = Ember.View.create({
+    attributeBindings: ['foo'],
+    foo: new String("bar")
+  });
+
+  view.createElement();
+
+  equals(view.$().attr('foo'), 'bar', "should convert String object to bare string");
+});
