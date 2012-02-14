@@ -176,15 +176,6 @@ test("when a DS.Model updates its attributes, its changes affect its filtered Ar
   equal(get(people, 'length'), 0, "there are now no items");
 });
 
-test("when a DS.Model is dirty, attempting to `load` new data raises an exception", function() {
-  var yehuda = store.find(Person, 2);
-  set(yehuda, 'name', "Yehuda Katz");
-
-  raises(function() {
-    store.load(Person, 2, { id: 2, name: "Scumhuda Katz" });
-  });
-});
-
 module("with a simple Person model", {
   setup: function() {
     array = [{ id: 1, name: "Scumbag Dale" }, { id: 2, name: "Scumbag Katz" }, { id: 3, name: "Scumbag Bryn" }];
