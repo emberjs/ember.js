@@ -17,7 +17,7 @@ test("a new DS.Model is in the empty state", function() {
 test("a DS.Model can receive data, which puts it into the loaded state", function() {
   var model = DS.Model.create();
   model.send('loadingData');
-  model.setData({ scumbag: "tom" });
+  model.send('setData', { scumbag: "tom" });
   modelIsInState(model, 'loaded.saved');
 });
 
@@ -27,7 +27,7 @@ var converts = function(type, provided, expected) {
   });
 
   model.send('loadingData');
-  model.setData({ name: provided });
+  model.send('setData', { name: provided });
   deepEqual(get(model, 'name'), expected, type + " coerces " + provided + " to " + expected);
 
 
@@ -36,7 +36,7 @@ var converts = function(type, provided, expected) {
   });
 
   model.send('loadingData');
-  model.setData({});
+  model.send('setData', {});
   set(model, 'name', provided);
   deepEqual(get(model, 'name'), expected, type + " coerces " + provided + " to " + expected);
 };
@@ -47,7 +47,7 @@ var convertsFromServer = function(type, provided, expected) {
   });
 
   model.send('loadingData');
-  model.setData({ name: provided });
+  model.send('setData', { name: provided });
   deepEqual(get(model, 'name'), expected, type + " coerces " + provided + " to " + expected);
 };
 
@@ -57,7 +57,7 @@ var convertsWhenSet = function(type, provided, expected) {
   });
 
   model.send('loadingData');
-  model.setData({});
+  model.send('setData', {});
 
   set(model, 'name', provided);
   deepEqual(get(model, 'data').name, expected, type + " saves " + provided + " as " + expected);
@@ -104,7 +104,7 @@ test("a DS.Model can describe Date attributes", function() {
   });
 
   model.send('loadingData');
-  model.setData({});
+  model.send('setData', {});
 
   model.set('updatedAt', date);
   deepEqual(date, get(model, 'updatedAt'), "setting a date returns the same date");
@@ -118,7 +118,7 @@ test("it can specify which key to use when looking up properties on the hash", f
   });
 
   model.send('loadingData');
-  model.setData({ name: "Steve", full_name: "Pete" });
+  model.send('setData', { name: "Steve", full_name: "Pete" });
 
   equals(get(model, 'name'), "Pete", "retrieves correct value");
 });
@@ -147,7 +147,7 @@ test("it should modify the property of the hash specified by the `key` option", 
   });
 
   model.send('loadingData');
-  model.setData({ name: "Steve", full_name: "Pete" });
+  model.send('setData', { name: "Steve", full_name: "Pete" });
 
   model.set('name', "Colin");
   var data = model.get('data');
@@ -233,7 +233,7 @@ test("when an updated record depends on the state of another record, it enters t
   var childComment = store.createRecord(Comment);
 
   childComment.send('willCommit');
-  childComment.setData({});
+  childComment.send('setData', {});
   childComment.send('didCommit');
 
   childComment.set('title', "foo");
@@ -262,7 +262,7 @@ test("when a loaded record depends on the state of another record, it enters the
   var childComment = store.createRecord(Comment);
 
   childComment.send('willCommit');
-  childComment.setData({});
+  childComment.send('setData', {});
   childComment.send('didCommit');
 
   equal(childComment.get('isDirty'), false, "precond - record is not marked as dirty");
