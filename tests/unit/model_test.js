@@ -21,6 +21,25 @@ test("a DS.Model can receive data, which puts it into the loaded state", functio
   modelIsInState(model, 'loaded.saved');
 });
 
+test("can have a property set on it", function() {
+  var model = DS.Model.create();
+  set(model, 'foo', 'bar');
+
+  equals(get(model, 'foo'), 'bar', "property was set on the model");
+});
+
+test("a record reports its unique id via the `id` property", function() {
+  var record = DS.Model.create();
+  record.send('setData', { id: 1 });
+  equal(get(record, 'id'), 1, "reports id as id by default");
+
+  record = DS.Model.create({
+    primaryKey: 'foobar'
+  });
+  record.send('setData', { id: 1, foobar: 2 });
+  equal(get(record, 'id'), 2, "reports id as foobar when primaryKey is set");
+});
+
 var converts = function(type, provided, expected) {
   var model = DS.Model.create({
     name: DS.attr(type)
@@ -179,7 +198,9 @@ test("when a DS.Model updates its attributes, its changes affect its filtered Ar
 module("with a simple Person model", {
   setup: function() {
     array = [{ id: 1, name: "Scumbag Dale" }, { id: 2, name: "Scumbag Katz" }, { id: 3, name: "Scumbag Bryn" }];
-    Person = DS.Model.extend();
+    Person = DS.Model.extend({
+      name: DS.attr('string')
+    });
     store = DS.Store.create();
     store.loadMany(Person, array);
   }

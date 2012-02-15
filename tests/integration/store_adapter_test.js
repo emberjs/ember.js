@@ -17,7 +17,8 @@ var Person, store, adapter;
 module("DS.Store and DS.Adapter integration test", {
   setup: function() {
     Person = DS.Model.extend({
-      updatedAt: DS.attr('string')
+      updatedAt: DS.attr('string'),
+      name: DS.attr('string')
     });
 
     adapter = DS.Adapter.create();

@@ -28,15 +28,22 @@ module("the REST adapter", {
       adapter: adapter
     });
 
-    Person = DS.Model.extend()
+    Person = DS.Model.extend({
+      name: DS.attr('string')
+    });
+
     Person.toString = function() {
       return "App.Person";
-    }
+    };
 
-    Role = DS.Model.extend({ primaryKey: '_id' });
+    Role = DS.Model.extend({
+      name: DS.attr('string'),
+      primaryKey: '_id'
+    });
+
     Role.toString = function() {
       return "App.Role";
-    }
+    };
   },
 
   teardown: function() {
@@ -123,14 +130,14 @@ test("updating a record with custom primaryKey", function() {
   set(adapter, 'bulkCommit', false);
   store.load(Role, { _id: 1, name: "Developer" });
 
-  role = store.find(Role, 1)
+  role = store.find(Role, 1);
 
   set(role, 'name', "Manager");
   store.commit();
 
   expectUrl("/roles/1", "the plural of the model name with its ID");
   ajaxHash.success({ person: { id: 1, name: "Manager" } });
-})
+});
 
 
 test("deleting a person makes a DELETE to /people/:id", function() {

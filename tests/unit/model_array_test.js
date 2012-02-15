@@ -1,18 +1,24 @@
 var get = SC.get, set = SC.set, getPath = SC.getPath;
+var Person;
 
 module("DS.ModelArray");
 
 var array = [{ id: 1, name: "Scumbag Dale" }, { id: 2, name: "Scumbag Katz" }, { id: 3, name: "Scumbag Bryn" }];
 
 module("DS.Store", {
+  setup: function() {
+    Person = DS.Model.extend({
+      name: DS.attr('string')
+    });
+  },
+
   teardown: function() {
+    Person = null;
     set(DS, 'defaultStore', null);
   }
 });
 
 test("a model array is backed by models", function() {
-  var Person = DS.Model.extend();
-
   var store = DS.Store.create({ adapter: null });
   store.loadMany(Person, [1,2,3], array);
 
@@ -24,8 +30,6 @@ test("a model array is backed by models", function() {
 });
 
 test("a model is moved from a model array when it is deleted", function() {
-  var Person = DS.Model.extend();
-
   var store = DS.Store.create({ adapter: null });
   store.loadMany(Person, [1,2,3], array);
 
@@ -42,7 +46,6 @@ test("a model is moved from a model array when it is deleted", function() {
 });
 
 test("a model array can have a filter on it", function() {
-  var Person = DS.Model.extend();
   var store = DS.Store.create();
 
   store.loadMany(Person, array);
@@ -63,7 +66,6 @@ test("a model array can have a filter on it", function() {
 });
 
 test("a filtered model array includes created elements", function() {
-  var Person = DS.Model.extend();
   var store = DS.Store.create();
 
   store.loadMany(Person, array);
@@ -80,7 +82,6 @@ test("a filtered model array includes created elements", function() {
 });
 
 test("a model array returns undefined when asking for a member outside of its content Array's range", function() {
-  var Person = DS.Model.extend();
   var store = DS.Store.create();
 
   store.loadMany(Person, array);
@@ -91,7 +92,6 @@ test("a model array returns undefined when asking for a member outside of its co
 });
 
 test("a model Array can update its filter", function() {
-  var Person = DS.Model.extend();
   var store = DS.Store.create();
 
   store.loadMany(Person, array);
@@ -120,7 +120,6 @@ test("a model Array can update its filter", function() {
 test("an AdapterPopulatedModelArray knows if it's loaded or not", function() {
   expect(2);
 
-  var Person = DS.Model.extend();
   var store = DS.Store.create({
     adapter: {
       findQuery: function(store, type, query, modelArray) {
@@ -142,7 +141,6 @@ test("an AdapterPopulatedModelArray knows if it's loaded or not", function() {
 
 test("a model array that backs a collection view functions properly", function() {
 
-  var Person = DS.Model.extend();
   var store = DS.Store.create();
   
   store.load(Person, 5, { name: "Other Katz" });

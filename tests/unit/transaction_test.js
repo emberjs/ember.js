@@ -1,6 +1,9 @@
 var get = Ember.get, set = Ember.set;
 
-var Person = DS.Model.extend();
+var Person = DS.Model.extend({
+  name: DS.attr('string'),
+  foo: DS.attr('string')
+});
 
 module("DS.Transaction");
 
