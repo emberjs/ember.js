@@ -301,3 +301,26 @@ test("when a loaded record depends on the state of another record, it enters the
   equal(get(parentComment, 'isDirty'), false, "precond - Parent comment is not dirty");
   equal(get(childComment, 'isPending'), false, "Child comment is no longer pending on the parent comment");
 });
+
+test("when a record depends on another record, we can delete the first record and finish loading the second record", function() {
+  var Comment = DS.Model.extend({
+    title: DS.attr('string')
+  });
+
+  var parentComment = store.createRecord(Comment);
+  var childComment = store.createRecord(Comment);
+
+  childComment.waitingOn(parentComment);
+  childComment.deleteRecord();
+
+  equal(get(childComment, 'isDeleted'), true, "child record is marked as deleted");
+  equal(get(parentComment, 'isDirty'), true, "parent comment has not yet been saved");
+
+  parentComment.send('willCommit');
+  parentComment.send('setData', { id: 'foo' });
+  parentComment.send('didCommit');
+
+  equal(get(parentComment, 'isDirty'), false, "parent comment has been saved");
+
+  ok(true, "no exception was thrown");
+});
