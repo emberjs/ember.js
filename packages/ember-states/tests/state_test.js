@@ -86,3 +86,39 @@ test("a state finds properties that are state classes and instantiates them", fu
   equal(get(states.state1, 'isState1'), true, "instantiated first state");
   equal(get(states.state2, 'isState2'), true, "instantiated second state");
 });
+
+test("states set up proper names on their children", function() {
+  var manager = Ember.StateManager.create({
+    states: {
+      first: Ember.State.extend({
+        insideFirst: Ember.State.extend({
+
+        })
+      })
+    }
+  });
+
+  manager.goToState('first');
+  equal(getPath(manager, 'currentState.path'), 'first');
+
+  manager.goToState('first.insideFirst');
+  equal(getPath(manager, 'currentState.path'), 'first.insideFirst');
+});
+
+test("states with child instances set up proper names on their children", function() {
+  var manager = Ember.StateManager.create({
+    states: {
+      first: Ember.State.create({
+        insideFirst: Ember.State.create({
+
+        })
+      })
+    }
+  });
+
+  manager.goToState('first');
+  equal(getPath(manager, 'currentState.path'), 'first');
+
+  manager.goToState('first.insideFirst');
+  equal(getPath(manager, 'currentState.path'), 'first.insideFirst');
+});

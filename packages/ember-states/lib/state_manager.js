@@ -80,7 +80,7 @@ Ember.StateManager = Ember.State.extend(
       if (parentState) {
         this.sendRecursively(event, parentState, context);
       } else if (get(this, 'errorOnUnhandledEvent')) {
-        throw new Ember.Error(this.toString() + " could not respond to event " + event + ".");
+        throw new Ember.Error(this.toString() + " could not respond to event " + event + " in state " + getPath(this, 'currentState.name') + ".");
       }
     }
   },
