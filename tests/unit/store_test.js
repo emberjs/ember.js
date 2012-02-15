@@ -97,7 +97,7 @@ test("the deleted state", function() {
 });
 
 test("the deleted.saving state", function() {
-  stateName = "deleted.saving";
+  stateName = "deleted.inFlight";
   isTrue("isLoaded");
   isTrue("isDirty");
   isTrue("isSaving");
