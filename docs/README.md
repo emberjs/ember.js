@@ -1,5 +1,6 @@
-Ember Documentation
-========================
+# Ember Documentation
+
+## Building the Documentation
 
 Generating the Ember documentation requires node.js, as well as the port of jsdoc-toolkit to node, located [here](https://github.com/p120ph37/node-jsdoc-toolkit). In order to build the docs, run the following commands from the `docs` directory:
 
@@ -22,3 +23,8 @@ Using that, running ./run won't fail with latest node.js installed.
 
 If you wish to consult it without installing node.js and the toolkit a static version is provided [here](https://s3.amazonaws.com/emberjs/emberjs-docs-as-of-2012-01-04.zip).
 Please note that it will not be as up to date as building it yourself but it is provided as a convenience for the time being.
+
+## Contributing to the Website
+
+The repository for the [emberjs.com](http://emberjs.com/) website is located at
+<a href="https://github.com/emberjs/website">github.com/emberjs/website</a>.
