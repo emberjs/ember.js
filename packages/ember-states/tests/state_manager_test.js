@@ -389,6 +389,23 @@ test("it supports arguments to events", function() {
   equals(passedContext.context, true, "send passes along a context");
 });
 
+test("it throws an exception if an event is dispatched that is unhandled", function() {
+  raises(function() {
+    stateManager.send('unhandledEvent');
+  }, Error, "exception was raised");
+
+  stateManager = Ember.StateManager.create({
+    initialState: 'loading',
+    errorOnUnhandledEvent: false,
+    loading: Ember.State.create({
+      anEvent: function() {}
+    })
+  });
+
+  stateManager.send('unhandledEvent');
+  ok(true, "does not raise exception when errorOnUnhandledEvent is set to false");
+});
+
 module("Ember.Statemanager - Pivot states", {
   setup: function() {
     var State = Ember.State.extend(stateEventStub);
