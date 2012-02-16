@@ -246,6 +246,7 @@ test("when a new record depends on the state of another record, it enters the pe
   equal(get(childComment, 'isPending'), true, "Child comment is pending on the parent comment");
 
   parentComment.send('willCommit');
+  parentComment.send('setData', { id: 'foo' });
   parentComment.send('didCommit');
 
   equal(get(parentComment, 'isLoaded'), true, "precond - Parent comment is loaded");
@@ -275,6 +276,7 @@ test("when an updated record depends on the state of another record, it enters t
   equal(get(childComment, 'isPending'), true, "Child comment is pending on the parent comment");
 
   parentComment.send('willCommit');
+  parentComment.send('setData', { id: 'foo' });
   parentComment.send('didCommit');
 
   equal(get(parentComment, 'isLoaded'), true, "precond - Parent comment is loaded");
@@ -303,6 +305,7 @@ test("when a loaded record depends on the state of another record, it enters the
   equal(get(childComment, 'isPending'), true, "Child comment is pending on the parent comment");
 
   parentComment.send('willCommit');
+  parentComment.send('setData', { id: 'foo' });
   parentComment.send('didCommit');
 
   equal(get(parentComment, 'isLoaded'), true, "precond - Parent comment is loaded");
