@@ -23,3 +23,23 @@ test("registers itself with a controller if the viewController property is set",
 
   equal(TestApp.fooController.get('view'), v, "sets the view property of the controller");
 });
+
+test("duplicates classNames array", function() {
+  var classNames = ['one', 'two', 'three'];
+  var v = Ember.View.create({
+    classNames: classNames
+  });
+
+  equal(classNames.length, 3, "should not modify original array");
+  deepEqual(v.get('classNames'), ['ember-view', 'one', 'two', 'three'], "should have specified classes");
+});
+
+test("handles computed classNames", function() {
+  var v = Ember.View.create({
+    classNames: Ember.computed(function(){
+      return ['one', 'two', 'three'];
+    }).property()
+  });
+
+  deepEqual(v.get('classNames'), ['one', 'two', 'three'], "should return computed property");
+});
