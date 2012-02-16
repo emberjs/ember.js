@@ -185,12 +185,16 @@ test("when a DS.Model updates its attributes, its changes affect its filtered Ar
 
   equal(get(person, 'name'), "Scumbag Katz", "precond - the item is correct");
 
-  set(person, 'name', "Yehuda Katz");
+  Ember.run(function() {
+    set(person, 'name', "Yehuda Katz");
+  });
 
   equal(get(people, 'length'), 1, "there is still one item");
   equal(get(person, 'name'), "Yehuda Katz", "it has the updated item");
 
-  set(person, 'name', "Yehuda Katz-Foo");
+  Ember.run(function() {
+    set(person, 'name', "Yehuda Katz-Foo");
+  });
 
   equal(get(people, 'length'), 0, "there are now no items");
 });
@@ -217,12 +221,16 @@ test("when a DS.Model updates its attributes, its changes affect its filtered Ar
 
   equal(get(person, 'name'), "Scumbag Katz", "precond - the item is correct");
 
-  set(person, 'name', "Yehuda Katz");
+  Ember.run(function() {
+    set(person, 'name', "Yehuda Katz");
+  });
 
   equal(get(people, 'length'), 1, "there is still one item");
   equal(get(person, 'name'), "Yehuda Katz", "it has the updated item");
 
-  set(person, 'name', "Yehuda Katz-Foo");
+  Ember.run(function() {
+    set(person, 'name', "Yehuda Katz-Foo");
+  });
 
   equal(get(people, 'length'), 0, "there are now no items");
 });
