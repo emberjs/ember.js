@@ -10,30 +10,30 @@ var modelIsInState = function(model, stateName) {
 };
 
 test("a new DS.Model is in the empty state", function() {
-  var model = DS.Model.create();
+  var model = DS.Model._create();
   modelIsInState(model, 'empty');
 });
 
 test("a DS.Model can receive data, which puts it into the loaded state", function() {
-  var model = DS.Model.create();
+  var model = DS.Model._create();
   model.send('loadingData');
   model.send('setData', { scumbag: "tom" });
   modelIsInState(model, 'loaded.saved');
 });
 
 test("can have a property set on it", function() {
-  var model = DS.Model.create();
+  var model = DS.Model._create();
   set(model, 'foo', 'bar');
 
   equals(get(model, 'foo'), 'bar', "property was set on the model");
 });
 
 test("a record reports its unique id via the `id` property", function() {
-  var record = DS.Model.create();
+  var record = DS.Model._create();
   record.send('setData', { id: 1 });
   equal(get(record, 'id'), 1, "reports id as id by default");
 
-  record = DS.Model.create({
+  record = DS.Model._create({
     primaryKey: 'foobar'
   });
   record.send('setData', { id: 1, foobar: 2 });
@@ -41,7 +41,7 @@ test("a record reports its unique id via the `id` property", function() {
 });
 
 var converts = function(type, provided, expected) {
-  var model = DS.Model.create({
+  var model = DS.Model._create({
     name: DS.attr(type)
   });
 
@@ -50,7 +50,7 @@ var converts = function(type, provided, expected) {
   deepEqual(get(model, 'name'), expected, type + " coerces " + provided + " to " + expected);
 
 
-  model = DS.Model.create({
+  model = DS.Model._create({
     name: DS.attr(type)
   });
 
@@ -61,7 +61,7 @@ var converts = function(type, provided, expected) {
 };
 
 var convertsFromServer = function(type, provided, expected) {
-  var model = DS.Model.create({
+  var model = DS.Model._create({
     name: DS.attr(type)
   });
 
@@ -71,7 +71,7 @@ var convertsFromServer = function(type, provided, expected) {
 };
 
 var convertsWhenSet = function(type, provided, expected) {
-  var model = DS.Model.create({
+  var model = DS.Model._create({
     name: DS.attr(type)
   });
 
@@ -118,7 +118,7 @@ test("a DS.Model can describe Date attributes", function() {
   var dateString = "Sat, 31 Dec 2011 00:08:16 GMT";
   var date = new Date(dateString);
 
-  var model = DS.Model.create({
+  var model = DS.Model._create({
     updatedAt: DS.attr('date')
   });
 
@@ -132,7 +132,7 @@ test("a DS.Model can describe Date attributes", function() {
 });
 
 test("it can specify which key to use when looking up properties on the hash", function() {
-  var model = DS.Model.create({
+  var model = DS.Model._create({
     name: DS.attr('string', { key: 'full_name' })
   });
 
@@ -161,7 +161,7 @@ test("a DS.Model can update its attributes", function() {
 });
 
 test("it should modify the property of the hash specified by the `key` option", function() {
-  var model = DS.Model.create({
+  var model = DS.Model._create({
     name: DS.attr('string', { key: 'full_name' })
   });
 

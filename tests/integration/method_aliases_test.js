@@ -3,6 +3,7 @@
   store. This file tests that those are operating correctly.
 */
 
+var get = Ember.get;
 var store, Person, findCalled;
 
 module("Integration test - DS.Model class methods", {
@@ -43,4 +44,32 @@ test("the filter method should be aliased", function() {
   };
 
   Person.filter(filter);
+});
+
+test("the create method should raise an exception", function() {
+  raises(function() {
+    Person.create();
+  }, Ember.Error);
+});
+
+test("the createRecord method should be aliased", function() {
+  expect(4);
+
+  var hash = {};
+
+  store = DS.Store.create({
+    isDefaultStore: true,
+
+    createRecord: function(type, passedHash, transaction) {
+      equal(type, Person, "createRecord called with correct type");
+      equal(hash, passedHash);
+
+      return this._super(type, passedHash, transaction);
+    }
+  });
+
+  var person = Person.createRecord(hash);
+
+  equal(get(person, 'store'), store, "the store was set");
+  equal(Person.detectInstance(person), true, "the person is an instance of Person");
 });
