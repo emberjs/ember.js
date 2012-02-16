@@ -1,4 +1,4 @@
-var get = SC.get, set = SC.set, getPath = SC.getPath;
+var get = Ember.get, set = Ember.set, getPath = Ember.getPath;
 var Person;
 
 module("DS.ModelArray");
@@ -25,7 +25,7 @@ test("a model array is backed by models", function() {
   var modelArray = store.find(Person, [1,2,3]);
 
   for (var i=0, l=get(array, 'length'); i<l; i++) {
-    equals(get(modelArray.objectAt(i), 'data'), array[i], "a model array materializes objects on demand");
+    equal(get(modelArray.objectAt(i), 'data'), array[i], "a model array materializes objects on demand");
   }
 });
 
@@ -76,7 +76,7 @@ test("a filtered model array includes created elements", function() {
 
   equal(get(modelArray, 'length'), 2, "precond - The model Array should have the filtered objects on it");
 
-  person = store.createRecord(Person, { name: "Scumbag Koz" });
+  store.createRecord(Person, { name: "Scumbag Koz" });
 
   equal(get(modelArray, 'length'), 3, "The model array has the new object on it");
 });
@@ -142,9 +142,9 @@ test("an AdapterPopulatedModelArray knows if it's loaded or not", function() {
 test("a model array that backs a collection view functions properly", function() {
 
   var store = DS.Store.create();
-  
+
   store.load(Person, 5, { name: "Other Katz" });
-  
+
   var container = Ember.CollectionView.create({
     content: store.findAll(Person)
   });
@@ -152,26 +152,26 @@ test("a model array that backs a collection view functions properly", function()
   Ember.run(function() {
     container.appendTo('#qunit-fixture');
   });
-  
+
   function compareArrays() {
-  	var modelArray = container.content;
-  	var modelCache = modelArray.get('modelCache');
-  	var content = modelArray.get('content');
-  	for(var i = 0; i < content.length; i++) {
-  	  var model = modelCache.objectAt(i);
-  	  var clientId = content.objectAt(i);
+    var modelArray = container.content;
+    var modelCache = modelArray.get('modelCache');
+    var content = modelArray.get('content');
+    for(var i = 0; i < content.length; i++) {
+      var model = modelCache.objectAt(i);
+      var clientId = content.objectAt(i);
       equal(model && model.clientId, clientId, "The entries in the model cache should have matching client ids.");
-  	}
+    }
   }
-  
+
   compareArrays();
-  
+
   store.load(Person, 6, { name: "Scumbag Demon" });
-  
+
   compareArrays();
-  
+
   store.load(Person, 7, { name: "Lord British" });
-  
+
   compareArrays();
 
   container.destroy();

@@ -1,4 +1,4 @@
-var get = SC.get, set = SC.set, getPath = SC.getPath;
+var get = Ember.get, set = Ember.set, getPath = Ember.getPath;
 
 module("DS.Model");
 
@@ -6,7 +6,7 @@ var modelIsInState = function(model, stateName) {
   var state = getPath(model, 'stateManager.currentState');
   ok(state, "precond - there is a current state");
   var expected = getPath(model, 'stateManager.states.rootState.' + stateName);
-  equals(state, expected, "the current state should be " + stateName);
+  equal(state, expected, "the current state should be " + stateName);
 };
 
 test("a new DS.Model is in the empty state", function() {
@@ -25,7 +25,7 @@ test("can have a property set on it", function() {
   var model = DS.Model._create();
   set(model, 'foo', 'bar');
 
-  equals(get(model, 'foo'), 'bar', "property was set on the model");
+  equal(get(model, 'foo'), 'bar', "property was set on the model");
 });
 
 test("a record reports its unique id via the `id` property", function() {
@@ -139,7 +139,7 @@ test("it can specify which key to use when looking up properties on the hash", f
   model.send('loadingData');
   model.send('setData', { name: "Steve", full_name: "Pete" });
 
-  equals(get(model, 'name'), "Pete", "retrieves correct value");
+  equal(get(model, 'name'), "Pete", "retrieves correct value");
 });
 
 var Person, store, array;
@@ -170,8 +170,8 @@ test("it should modify the property of the hash specified by the `key` option", 
 
   model.set('name', "Colin");
   var data = model.get('data');
-  equals(get(data, 'name'), "Steve", "did not modify name property");
-  equals(get(data, 'full_name'), "Colin", "properly modified full_name property");
+  equal(get(data, 'name'), "Steve", "did not modify name property");
+  equal(get(data, 'full_name'), "Colin", "properly modified full_name property");
 });
 
 test("when a DS.Model updates its attributes, its changes affect its filtered Array membership", function() {

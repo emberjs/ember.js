@@ -11,7 +11,7 @@
  the given model or model array changes state appropriately.
 */
 
-var get = SC.get, set = SC.set, getPath = SC.getPath;
+var get = Ember.get, set = Ember.set, getPath = Ember.getPath;
 var Person, store, adapter;
 
 module("DS.Store and DS.Adapter integration test", {
@@ -32,8 +32,8 @@ test("when a single record is requested, the adapter's find method is called unl
   var count = 0;
 
   adapter.find = function(store, type, id) {
-    equals(type, Person, "the find method is called with the correct type");
-    equals(count, 0, "the find method is only called once");
+    equal(type, Person, "the find method is called with the correct type");
+    equal(count, 0, "the find method is only called once");
 
     store.load(type, id, { id: 1, name: "Braaaahm Dale" });
 

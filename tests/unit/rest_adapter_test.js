@@ -1,6 +1,6 @@
 require('ember-data/adapters/rest_adapter');
 
-var get = SC.get, set = SC.set;
+var get = Ember.get, set = Ember.set;
 
 var adapter, store, ajaxUrl, ajaxType, ajaxHash;
 var Person, person, people;

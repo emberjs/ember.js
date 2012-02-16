@@ -1,4 +1,4 @@
-var get = SC.get, set = SC.set, getPath = SC.getPath;
+var get = Ember.get, set = Ember.set, getPath = Ember.getPath;
 
 module("DS.Store", {
   teardown: function() {
@@ -13,7 +13,7 @@ test("a store can be created", function() {
 
 test("the first store becomes the default store", function() {
   var store = DS.Store.create();
-  equals(get(DS, 'defaultStore'), store, "the first store is the default");
+  equal(get(DS, 'defaultStore'), store, "the first store is the default");
 });
 
 test("a specific store can be supplied as the default store", function() {
@@ -21,7 +21,7 @@ test("a specific store can be supplied as the default store", function() {
   var store = DS.Store.create({ isDefaultStore: true });
   DS.Store.create();
 
-  equals(get(DS, 'defaultStore'), store, "isDefaultStore overrides the default behavior");
+  equal(get(DS, 'defaultStore'), store, "isDefaultStore overrides the default behavior");
 });
 
 var stateManager, stateName;
@@ -34,12 +34,12 @@ module("DS.StateManager", {
 
 var isTrue = function(flag) {
   var state = stateName.split('.').join('.states.');
-  equals(getPath(stateManager, 'states.rootState.states.'+ state + "." + flag), true, stateName + "." + flag + " should be true");
+  equal(getPath(stateManager, 'states.rootState.states.'+ state + "." + flag), true, stateName + "." + flag + " should be true");
 };
 
 var isFalse = function(flag) {
   var state = stateName.split('.').join('.states.');
-  equals(getPath(stateManager, 'states.rootState.states.'+ state + "." + flag), false, stateName + "." + flag + " should be false");
+  equal(getPath(stateManager, 'states.rootState.states.'+ state + "." + flag), false, stateName + "." + flag + " should be false");
 };
 
 test("the empty state", function() {
@@ -132,9 +132,9 @@ test("Calling Store#find invokes its adapter#find", function() {
   var adapter = DS.Adapter.create({
     find: function(store, type, id) {
       ok(true, "Adapter#find was called");
-      equals(store, currentStore, "Adapter#find was called with the right store");
-      equals(type,  currentType,  "Adapter#find was called with the type passed into Store#find");
-      equals(id,    1,            "Adapter#find was called with the id passed into Store#find");
+      equal(store, currentStore, "Adapter#find was called with the right store");
+      equal(type,  currentType,  "Adapter#find was called with the type passed into Store#find");
+      equal(id,    1,            "Adapter#find was called with the id passed into Store#find");
     }
   });
 
@@ -156,7 +156,7 @@ test("DS.Store has a load method to load in a new record", function() {
 
   var object = currentStore.find(currentType, 1);
 
-  equals(getPath(object, 'data.name'), "Scumbag Dale", "the data hash was inserted");
+  equal(getPath(object, 'data.name'), "Scumbag Dale", "the data hash was inserted");
 });
 
 var array = [{ id: 1, name: "Scumbag Dale" }, { id: 2, name: "Scumbag Katz" }, { id: 3, name: "Scumbag Bryn" }];
@@ -176,7 +176,7 @@ test("DS.Store has a load method to load in an Array of records", function() {
   for (var i=0, l=get(objects, 'length'); i<l; i++) {
     var object = objects.objectAt(i), hash = array[i];
 
-    equals(get(object, 'data'), hash);
+    equal(get(object, 'data'), hash);
   }
 });
 
@@ -218,14 +218,14 @@ test("DS.Store passes only needed guids to findMany", function() {
 
   var objects = currentStore.findMany(currentType, [1,2,3,4,5,6]);
 
-  equals(get(objects, 'length'), 6, "the ModelArray returned from findMany has all the objects");
+  equal(get(objects, 'length'), 6, "the ModelArray returned from findMany has all the objects");
 
   var i, object, hash;
   for (i=0; i<3; i++) {
     object = objects.objectAt(i);
     hash = array[i];
 
-    equals(get(object, 'data'), hash);
+    equal(get(object, 'data'), hash);
   }
 
   for (i=3; i<6; i++) {
@@ -346,8 +346,8 @@ test("models inside a collection view should have their ids updated", function()
   var Person = DS.Model.extend({
     id: DS.attr("integer")
   });
-  
-  idCounter = 1;
+
+  var idCounter = 1;
   var adapter = DS.Adapter.create({
     create: function(store, type, model) {
       store.didCreateRecord(model, {name: model.get('name'), id: idCounter++});
@@ -357,7 +357,7 @@ test("models inside a collection view should have their ids updated", function()
   var store = DS.Store.create({
     adapter: adapter
   });
-  
+
   var container = Ember.CollectionView.create({
     content: store.findAll(Person)
   });
@@ -365,9 +365,9 @@ test("models inside a collection view should have their ids updated", function()
   Ember.run(function() {
     container.appendTo('#qunit-fixture');
   });
-  
+
   store.commit();
-  
+
   container.content.forEach(function(person, index) {
     console.log(person);
     equal(person.get('id'), index + 1, "The model's id should be correctly.");
@@ -454,7 +454,7 @@ test("a model receives a didCreate callback when it has finished updating", func
 
   equal(callCount, 0, "precond - didUpdate callback was not called yet");
 
-  var person = store.createRecord(Person, { id: 69, name: "Newt Gingrich" });
+  store.createRecord(Person, { id: 69, name: "Newt Gingrich" });
   store.commit();
 
   equal(callCount, 1, "didCreate called after commit");

@@ -1,4 +1,6 @@
-var get = SC.get, set = SC.set, getPath = SC.getPath;
+/*global Tag App*/
+
+var get = Ember.get, set = Ember.set, getPath = Ember.getPath;
 
 module("DS.hasMany");
 
@@ -18,19 +20,19 @@ test("hasMany lazily loads associations as needed", function() {
   store.load(Person, 2, { id: 2, name: "Yehuda Katz", tags: [12] });
 
   var person = store.find(Person, 1);
-  equals(get(person, 'name'), "Tom Dale", "precond - retrieves person record from store");
+  equal(get(person, 'name'), "Tom Dale", "precond - retrieves person record from store");
 
-  equals(getPath(person, 'tags.length'), 2, "the list of tags should have the correct length");
-  equals(get(get(person, 'tags').objectAt(0), 'name'), "friendly", "the first tag should be a Tag");
+  equal(getPath(person, 'tags.length'), 2, "the list of tags should have the correct length");
+  equal(get(get(person, 'tags').objectAt(0), 'name'), "friendly", "the first tag should be a Tag");
 
   strictEqual(get(person, 'tags').objectAt(0), get(person, 'tags').objectAt(0), "the returned object is always the same");
   strictEqual(get(person, 'tags').objectAt(0), store.find(Tag, 5), "association objects are the same as objects retrieved directly");
 
   var wycats = store.find(Person, 2);
-  equals(get(wycats, 'name'), "Yehuda Katz", "precond - retrieves person record from store");
+  equal(get(wycats, 'name'), "Yehuda Katz", "precond - retrieves person record from store");
 
-  equals(getPath(wycats, 'tags.length'), 1, "the list of tags should have the correct length");
-  equals(get(get(wycats, 'tags').objectAt(0), 'name'), "oohlala", "the first tag should be a Tag");
+  equal(getPath(wycats, 'tags.length'), 1, "the list of tags should have the correct length");
+  equal(get(get(wycats, 'tags').objectAt(0), 'name'), "oohlala", "the first tag should be a Tag");
 
   strictEqual(get(wycats, 'tags').objectAt(0), get(wycats, 'tags').objectAt(0), "the returned object is always the same");
   strictEqual(get(wycats, 'tags').objectAt(0), store.find(Tag, 12), "association objects are the same as objects retrieved directly");
@@ -107,9 +109,9 @@ test("hasMany allows associations to be mapped to a user-specified key", functio
   store.load(Person, 1, { id: 1, name: 'Carsten Nielsen', tag_ids: [2, 8] });
 
   var person = store.find(Person, 1);
-  equals(get(person, 'name'), "Carsten Nielsen", "precond - retrieves person record from store");
-  equals(getPath(person, 'tags.length'), 2, "the list of tags should have the correct length");
-  equals(get(get(person, 'tags').objectAt(0), 'name'), "cuddly", "the first tag should be a Tag");
+  equal(get(person, 'name'), "Carsten Nielsen", "precond - retrieves person record from store");
+  equal(getPath(person, 'tags.length'), 2, "the list of tags should have the correct length");
+  equal(get(get(person, 'tags').objectAt(0), 'name'), "cuddly", "the first tag should be a Tag");
 
   strictEqual(get(person, 'tags').objectAt(0), get(person, 'tags').objectAt(0), "the returned object is always the same");
   strictEqual(get(person, 'tags').objectAt(0), store.find(Tag, 2), "association objects are the same as objects retrieved directly");
@@ -132,9 +134,9 @@ test("associations work when declared with a string path", function() {
   store.load(App.Person, 1, { id: 1, name: "Tom Dale", tags: [5, 2] });
 
   var person = store.find(App.Person, 1);
-  equals(get(person, 'name'), "Tom Dale", "precond - retrieves person record from store");
+  equal(get(person, 'name'), "Tom Dale", "precond - retrieves person record from store");
 
-  equals(getPath(person, 'tags.length'), 2, "the list of tags should have the correct length");
+  equal(getPath(person, 'tags.length'), 2, "the list of tags should have the correct length");
 });
 
 test("associations work when the data hash has not been loaded", function() {
@@ -210,10 +212,10 @@ test("embedded associations work the same as referenced ones, and have the same 
   store.load(Person, 1, { id: 1, name: "Tom Dale", tags: [{ id: 5, name: "friendly" }, { id: 2, name: "smarmy" }] });
 
   var person = store.find(Person, 1);
-  equals(get(person, 'name'), "Tom Dale", "precond - retrieves person record from store");
+  equal(get(person, 'name'), "Tom Dale", "precond - retrieves person record from store");
 
-  equals(getPath(person, 'tags.length'), 2, "the list of tags should have the correct length");
-  equals(get(get(person, 'tags').objectAt(0), 'name'), "friendly", "the first tag should be a Tag");
+  equal(getPath(person, 'tags.length'), 2, "the list of tags should have the correct length");
+  equal(get(get(person, 'tags').objectAt(0), 'name'), "friendly", "the first tag should be a Tag");
 
   strictEqual(get(person, 'tags').objectAt(0), get(person, 'tags').objectAt(0), "the returned object is always the same");
   strictEqual(get(person, 'tags').objectAt(0), store.find(Tag, 5), "association objects are the same as objects retrieved directly");
@@ -309,10 +311,10 @@ test("hasOne lazily loads associations as needed", function() {
   store.load(Person, 1, { id: 1, name: "Tom Dale", tag: 5 });
 
   var person = store.find(Person, 1);
-  equals(get(person, 'name'), "Tom Dale", "precond - retrieves person record from store");
+  equal(get(person, 'name'), "Tom Dale", "precond - retrieves person record from store");
 
-  equals(get(person, 'tag') instanceof Tag, true, "the tag property should return a tag");
-  equals(getPath(person, 'tag.name'), "friendly", "the tag shuld have name");
+  equal(get(person, 'tag') instanceof Tag, true, "the tag property should return a tag");
+  equal(getPath(person, 'tag.name'), "friendly", "the tag shuld have name");
 
   strictEqual(get(person, 'tag'), get(person, 'tag'), "the returned object is always the same");
   strictEqual(get(person, 'tag'), store.find(Tag, 5), "association object is the same as object retrieved directly");
@@ -337,8 +339,8 @@ test("hasOne allows associations to be mapped to a user-specified key", function
   store.load(Person, 1, { id: 1, name: 'Carsten Nielsen', tag_id: 2 });
 
   var person = store.find(Person, 1);
-  equals(get(person, 'name'), "Carsten Nielsen", "precond - retrieves person record from store");
-  equals(getPath(person, 'tag.name'), "cuddly", "the tag should be a Tag");
+  equal(get(person, 'name'), "Carsten Nielsen", "precond - retrieves person record from store");
+  equal(getPath(person, 'tag.name'), "cuddly", "the tag should be a Tag");
 
   strictEqual(get(person, 'tag'), get(person, 'tag'), "the returned object is always the same");
   strictEqual(get(person, 'tag'), store.find(Tag, 2), "association object are the same as object retrieved directly");
@@ -412,9 +414,9 @@ test("hasOne embedded associations work the same as referenced ones, and have th
   store.load(Person, 1, { id: 1, name: "Tom Dale", tag: { id: 5, name: "friendly" } });
 
   var person = store.find(Person, 1);
-  equals(get(person, 'name'), "Tom Dale", "precond - retrieves person record from store");
+  equal(get(person, 'name'), "Tom Dale", "precond - retrieves person record from store");
 
-  equals(getPath(person, 'tag.name'), "friendly", "the first tag should be a Tag");
+  equal(getPath(person, 'tag.name'), "friendly", "the first tag should be a Tag");
 
   strictEqual(get(person, 'tag'), get(person, 'tag'), "the returned object is always the same");
   strictEqual(get(person, 'tag'), store.find(Tag, 5), "association object are the same as object retrieved directly");

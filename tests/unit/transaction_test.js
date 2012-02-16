@@ -28,13 +28,13 @@ test("after a model is created from a transaction, it is not committed when stor
   });
 
   var transaction = store.transaction();
-  var model = transaction.createRecord(Person, {});
+  transaction.createRecord(Person, {});
 
   store.commit();
-  equals(commitCalls, 0, "commit was not called when committing the store");
+  equal(commitCalls, 0, "commit was not called when committing the store");
 
   transaction.commit();
-  equals(commitCalls, 1, "commit was called when committing the transaction");
+  equal(commitCalls, 1, "commit was called when committing the transaction");
 });
 
 test("after a model is added to a transaction then updated, it is not committed when store.commit() is called but is committed when transaction.commit() is called", function() {
@@ -57,10 +57,10 @@ test("after a model is added to a transaction then updated, it is not committed 
   model.set('name', 'Brohuda Brokatz');
 
   store.commit();
-  equals(commitCalls, 0, "commit was not called when committing the store");
+  equal(commitCalls, 0, "commit was not called when committing the store");
 
   transaction.commit();
-  equals(commitCalls, 1, "commit was called when committing the transaction");
+  equal(commitCalls, 1, "commit was called when committing the transaction");
 });
 
 test("a model is removed from a transaction after the models become clean", function() {
@@ -84,15 +84,15 @@ test("a model is removed from a transaction after the models become clean", func
   var model = transaction.createRecord(Person, {});
 
   transaction.commit();
-  equals(createCalls, 1, "create should be called when committing the store");
+  equal(createCalls, 1, "create should be called when committing the store");
 
   model.set('foo', 'bar');
 
   transaction.commit();
-  equals(updateCalls, 0, "commit was not called when committing the transaction");
+  equal(updateCalls, 0, "commit was not called when committing the transaction");
 
   store.commit();
-  equals(updateCalls, 1, "commit was called when committing the store");
+  equal(updateCalls, 1, "commit was called when committing the store");
 });
 
 test("after a model is added to a transaction then deleted, it is not committed when store.commit() is called but is committed when transaction.commit() is called", function() {
@@ -115,9 +115,9 @@ test("after a model is added to a transaction then deleted, it is not committed 
   model.deleteRecord();
 
   store.commit();
-  equals(commitCalls, 0, "commit was not called when committing the store");
+  equal(commitCalls, 0, "commit was not called when committing the store");
 
   transaction.commit();
-  equals(commitCalls, 1, "commit was called when committing the transaction");
+  equal(commitCalls, 1, "commit was called when committing the transaction");
 });
 

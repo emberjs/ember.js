@@ -1,4 +1,4 @@
-var get = SC.get, set = SC.set;
+var get = Ember.get, set = Ember.set;
 
 module("DS.FixtureAdapter");
 
