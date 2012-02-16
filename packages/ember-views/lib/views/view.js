@@ -1075,11 +1075,7 @@ Ember.View = Ember.Object.extend(
 
 
     this.classNameBindings = Ember.A(get(this, 'classNameBindings').slice());
-
-    // Check this in case a computed property was used
-    if (Ember.typeOf(this.classNames) === 'array') {
-      this.classNames = Ember.A(get(this, 'classNames').slice());
-    }
+    this.classNames = Ember.A(get(this, 'classNames').slice());
 
     set(this, 'domManager', this.domManagerClass.create({ view: this }));
 
