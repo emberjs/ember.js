@@ -19,6 +19,6 @@ suite.test('contains returns true if items is in enumerable', function() {
 suite.test('contains returns false if item is not in enumerable', function() {
   var data = this.newFixture(1);
   var obj  = this.newObject(this.newFixture(3));
-  equals(obj.contains(data[0]), false, 'should return true if not contained');
+  equals(obj.contains(data[0]), false, 'should return false if not contained');
 });
 
