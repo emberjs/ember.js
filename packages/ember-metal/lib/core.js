@@ -33,7 +33,7 @@ Ember = { isNamespace: true, toString: function() { return "Ember"; } };
 
 // aliases needed to keep minifiers from removing the global context
 if ('undefined' !== typeof window) {
-  window.SC = window.SproutCore = window.Em = window.Ember = SC = SproutCore = Em = Ember;
+  window.Em = window.Ember = Em = Ember;
 }
 
 }
