@@ -74,9 +74,9 @@ Ember.K = function() { return this; };
 
 // Stub out the methods defined by the ember-debug package in case it's not loaded
 
-if ('undefined' === typeof ember_assert) { 
-  window.ember_assert = window.sc_assert = Ember.K;
-};
+if ('undefined' === typeof ember_assert) {
+  window.ember_assert = Ember.K;
+}
 
 if ('undefined' === typeof ember_warn) { window.ember_warn = Ember.K; }
 
