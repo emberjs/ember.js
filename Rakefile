@@ -335,6 +335,7 @@ namespace :release do
 
     task :index => "tmp/starter-kit/index.html"
 
+    desc "Update starter-kit repo"
     task :update => :index do
       puts "Updating starter-kit repo"
       unless pretend?
@@ -358,13 +359,17 @@ namespace :release do
     desc "Build the Ember.js starter kit"
     task :build => "dist/starter-kit.#{EMBER_VERSION}.zip"
 
+    desc "Prepare starter-kit for release"
     task :prepare => [:build]
 
+    desc "Release starter-kit"
     task :deploy => [:update]
   end
 
+  desc "Prepare Ember for new release"
   task :prepare => ['framework:prepare', 'starter_kit:prepare']
 
+  desc "Deploy a new Ember release"
   task :deploy => ['framework:deploy', 'starter_kit:deploy']
 
 end
