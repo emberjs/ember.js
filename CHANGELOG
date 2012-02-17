@@ -1,3 +1,34 @@
+*Ember 0.9.5 (February 17, 2012)*
+
+* Add Handlebars helper for {{yield}}
+* Add a .jshintrc
+* Add layout support to Ember.View
+* Allow state managers to control their own logging
+* Print more useful debug information in state manager
+* Fix issues that prevented Ember from being used in iframes
+* Fix path resolution for states
+* State manager should raise if an event is unhandled
+* Attribute Bindings should handle String objects - Fixes #497
+* Fixed each/else - fixes #389
+* Updated Metamorph - fixes #449
+* States hashes misbehave when including classes
+* The action helper should prevent default behavior on it's attached element
+* Pass the event, view, and context to {{action}} helper actions
+* #454 State Exit Methods Should Be Called In Reverse Order
+* #454 test StateManager should send exit events in the correct order when changing to a top-level state
+* Retrieve child views length after potential mutations
+* Metamorph's replace now recursively invalidates childView elements
+* Fixes a bug where parent views were not being set correctly when multiple views were added or removed from ContainerView
+* Views removed from a container should clear rendered children.
+* ContainerView should set parentView on new children
+* Add state manager compatibility to action helper
+* Adds ability to save metadata for computed properties
+* Don't parse text/html by default. Use ENV.LEGACY_HANDLEBARS_TAG to restore this functionality. - Fixes #441
+* Fix overzealous deprecation warnings
+* Fix bug such that initialState *and* start states will be entered
+* Miscellaneous documentation improvements
+* Better framework warnings and deprecations
+
 *Ember 0.9.4 (January 23, 2012)*
 
 * Add Ember.Select control
