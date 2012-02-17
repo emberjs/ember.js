@@ -73,6 +73,18 @@ Ember.View = Ember.Object.extend(
   templateName: null,
 
   /**
+    The name of the layout to lookup if no layout is provided.
+
+    Ember.View will look for a template with this name in this view's
+    `templates` object. By default, this will be a global object
+    shared in `Ember.TEMPLATES`.
+
+    @type String
+    @default null
+  */
+  layoutName: null,
+
+  /**
     The hash in which to look for `templateName`.
 
     @type Ember.Object
@@ -94,25 +106,46 @@ Ember.View = Ember.Object.extend(
   template: Ember.computed(function(key, value) {
     if (value !== undefined) { return value; }
 
-    var templateName = get(this, 'templateName'), template;
+    var templateName = get(this, 'templateName'),
+        template = this.templateForName(templateName, 'template');
 
-    if (templateName) { template = get(get(this, 'templates'), templateName); }
-
-    // If there is no template but a templateName has been specified,
-    // try to lookup as a spade module
-    if (!template && templateName) {
-      if ('undefined' !== require && require.exists) {
-        if (require.exists(templateName)) { template = require(templateName); }
-      }
-
-      if (!template) {
-        throw new Ember.Error(fmt('%@ - Unable to find template "%@".', [this, templateName]));
-      }
-    }
-
-    // return the template, or undefined if no template was found
     return template || get(this, 'defaultTemplate');
   }).property('templateName').cacheable(),
+
+  /**
+    A view may contain a layout. A layout is a regular template but
+    supercedes the `template` property during rendering. It is the
+    responsibility of the layout template to retrieve the `template`
+    property from the view and render it in the correct location.
+
+    This is useful for a view that has a shared wrapper, but which delegates
+    the rendering of the contents of the wrapper to the `template` property
+    on a subclass.
+
+    @field
+    @type Function
+  */
+  layout: Ember.computed(function(key, value) {
+    if (arguments.length === 2) { return value; }
+
+    var layoutName = get(this, 'layoutName'),
+        layout = this.templateForName(layoutName, 'layout');
+
+    return layout || get(this, 'defaultLayout');
+  }).property('layoutName').cacheable(),
+
+  templateForName: function(name, type) {
+    if (!name) { return; }
+
+    var templates = get(this, 'templates'),
+        template = get(templates, name);
+
+    if (!template) {
+     throw new Ember.Error(fmt('%@ - Unable to find %@ "%@".', [this, type, name]));
+    }
+
+    return template;
+  },
 
   /**
     The object from which templates should access properties.
@@ -276,7 +309,10 @@ Ember.View = Ember.Object.extend(
     @param {Ember.RenderBuffer} buffer The render buffer
   */
   render: function(buffer) {
-    var template = get(this, 'template');
+    // If this view has a layout, it is the responsibility of the
+    // the layout to render the view's template. Otherwise, render the template
+    // directly.
+    var template = get(this, 'layout') || get(this, 'template');
 
     if (template) {
       var context = get(this, 'templateContext'),
