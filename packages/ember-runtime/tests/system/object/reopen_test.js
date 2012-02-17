@@ -14,8 +14,8 @@ test('adds new properties to subclass instance', function() {
     bar: 'BAR'
   });
   
-  equals( new Subclass().foo(), 'FOO', 'Adds method');
-  equals(Ember.get(new Subclass(), 'bar'), 'BAR', 'Adds property');
+  equal( new Subclass().foo(), 'FOO', 'Adds method');
+  equal(Ember.get(new Subclass(), 'bar'), 'BAR', 'Adds property');
 });
 
 test('reopened properties inherited by subclasses', function() {
@@ -29,7 +29,7 @@ test('reopened properties inherited by subclasses', function() {
   });
 
   
-  equals( new SubSub().foo(), 'FOO', 'Adds method');
-  equals(Ember.get(new SubSub(), 'bar'), 'BAR', 'Adds property');
+  equal( new SubSub().foo(), 'FOO', 'Adds method');
+  equal(Ember.get(new SubSub(), 'bar'), 'BAR', 'Adds property');
 });
 

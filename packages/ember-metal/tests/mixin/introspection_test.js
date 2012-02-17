@@ -51,5 +51,5 @@ test('Ember.mixins()', function() {
     return ary.map(function(x) { return Ember.guidFor(x); }); 
   }
   
-  same(mapGuids(Ember.Mixin.mixins(obj)), mapGuids([PrivateProperty, PublicProperty, PrivateMethod, PublicMethod, Combined, BarProperties, BarMethods]), 'should return included mixins');
+  deepEqual(mapGuids(Ember.Mixin.mixins(obj)), mapGuids([PrivateProperty, PublicProperty, PrivateMethod, PublicMethod, Combined, BarProperties, BarMethods]), 'should return included mixins');
 });

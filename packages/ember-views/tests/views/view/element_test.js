@@ -10,8 +10,8 @@ module("Ember.View#element");
 
 test("returns null if the view has no element and no parent view", function() {
   var view = Ember.View.create() ;
-  equals(get(view, 'parentView'), null, 'precond - has no parentView');
-  equals(get(view, 'element'), null, 'has no element');
+  equal(get(view, 'parentView'), null, 'precond - has no parentView');
+  equal(get(view, 'element'), null, 'has no element');
 });
 
 test("returns null if the view has no element and parent view has no element", function() {
@@ -20,19 +20,19 @@ test("returns null if the view has no element and parent view has no element", f
   });
   var view = get(parent, 'childViews').objectAt(0);
 
-  equals(get(view, 'parentView'), parent, 'precond - has parent view');
-  equals(get(parent, 'element'), null, 'parentView has no element');
-  equals(get(view, 'element'), null, ' has no element');
+  equal(get(view, 'parentView'), parent, 'precond - has parent view');
+  equal(get(parent, 'element'), null, 'parentView has no element');
+  equal(get(view, 'element'), null, ' has no element');
 });
 
 test("returns element if you set the value", function() {
   var view = Ember.View.create();
-  equals(get(view, 'element'), null, 'precond- has no element');
+  equal(get(view, 'element'), null, 'precond- has no element');
 
   var dom = document.createElement('div');
   set(view, 'element', dom);
 
-  equals(get(view, 'element'), dom, 'now has set element');
+  equal(get(view, 'element'), dom, 'now has set element');
 });
 
 var parent, child, parentDom, childDom ;
@@ -61,9 +61,9 @@ module("Ember.View#element - autodiscovery", {
 });
 
 test("discovers element if has no element but parent view does have element", function() {
-  equals(get(parent, 'element'), parentDom, 'precond - parent has element');
+  equal(get(parent, 'element'), parentDom, 'precond - parent has element');
   ok(parentDom.firstChild, 'precond - parentDom has first child');
 
-  equals(child.$().attr('id'), 'child-view', 'view discovered child');
+  equal(child.$().attr('id'), 'child-view', 'view discovered child');
 });
 

@@ -10,7 +10,7 @@ module("Ember.View.create");
 
 test("registers view in the global views hash using layerId for event targeted", function() {
   var v = Ember.View.create();
-  equals(Ember.View.views[get(v, 'elementId')], v, 'registers view');
+  equal(Ember.View.views[get(v, 'elementId')], v, 'registers view');
 });
 
 test("registers itself with a controller if the viewController property is set", function() {

@@ -1,3 +1,5 @@
+/*jshint newcap:false*/
+
 require("metamorph");
 require("ember-views/views/view");
 

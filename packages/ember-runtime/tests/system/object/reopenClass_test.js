@@ -14,8 +14,8 @@ test('adds new properties to subclass', function() {
     bar: 'BAR'
   });
   
-  equals(Subclass.foo(), 'FOO', 'Adds method');
-  equals(Ember.get(Subclass, 'bar'), 'BAR', 'Adds property');
+  equal(Subclass.foo(), 'FOO', 'Adds method');
+  equal(Ember.get(Subclass, 'bar'), 'BAR', 'Adds property');
 });
 
 test('class properties inherited by subclasses', function() {
@@ -28,7 +28,7 @@ test('class properties inherited by subclasses', function() {
 
   var SubSub = Subclass.extend();
   
-  equals(SubSub.foo(), 'FOO', 'Adds method');
-  equals(Ember.get(SubSub, 'bar'), 'BAR', 'Adds property');
+  equal(SubSub.foo(), 'FOO', 'Adds method');
+  equal(Ember.get(SubSub, 'bar'), 'BAR', 'Adds property');
 });
 

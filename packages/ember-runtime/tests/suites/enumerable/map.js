@@ -18,7 +18,7 @@ suite.test('map should iterate over list', function() {
       found = [];
       
   found = obj.map(mapFunc);
-  same(found, ary, 'mapped arrays should match');
+  deepEqual(found, ary, 'mapped arrays should match');
 });
 
 
@@ -30,12 +30,12 @@ suite.test('map should iterate over list after mutation', function() {
       found;
       
   found = obj.map(mapFunc);
-  same(found, ary, 'items passed during forEach should match');
+  deepEqual(found, ary, 'items passed during forEach should match');
       
   this.mutate(obj);
   ary = this.toArray(obj).map(mapFunc);
   found = obj.map(mapFunc);
-  same(found, ary, 'items passed during forEach should match');
+  deepEqual(found, ary, 'items passed during forEach should match');
 });
 
 suite.test('2nd target parameter', function() {
@@ -43,11 +43,11 @@ suite.test('2nd target parameter', function() {
   
   
   obj.map(function() { 
-    equals(Ember.guidFor(this), Ember.guidFor(window), 'should pass window as this if no context');
+    equal(Ember.guidFor(this), Ember.guidFor(window), 'should pass window as this if no context');
   });
 
   obj.map(function() { 
-    equals(Ember.guidFor(this), Ember.guidFor(target), 'should pass target as this if context');
+    equal(Ember.guidFor(this), Ember.guidFor(target), 'should pass target as this if context');
   }, target);
 
 });
@@ -60,9 +60,9 @@ suite.test('callback params', function() {
   
   
   obj.map(function(item, idx, enumerable) { 
-    equals(item, ary[loc], 'item param');
-    equals(idx, loc, 'idx param');
-    equals(Ember.guidFor(enumerable), Ember.guidFor(obj), 'enumerable param');
+    equal(item, ary[loc], 'item param');
+    equal(idx, loc, 'idx param');
+    equal(Ember.guidFor(enumerable), Ember.guidFor(obj), 'enumerable param');
     loc++;
   });
 

@@ -21,8 +21,8 @@ suite.test('every should should invoke callback on each item as long as you retu
       found = [], result;
       
   result = obj.every(function(i) { found.push(i); return true; });
-  equals(result, true, 'return value of obj.every');
-  same(found, ary, 'items passed during every() should match');
+  equal(result, true, 'return value of obj.every');
+  deepEqual(found, ary, 'items passed during every() should match');
 });
 
 suite.test('every should stop invoking when you return false', function() {
@@ -33,9 +33,9 @@ suite.test('every should stop invoking when you return false', function() {
       found = [], result;
       
   result = obj.every(function(i) { found.push(i); return --cnt>0; });
-  equals(result, false, 'return value of obj.every');
-  equals(found.length, exp, 'should invoke proper number of times');
-  same(found, ary.slice(0,-2), 'items passed during every() should match');
+  equal(result, false, 'return value of obj.every');
+  equal(found.length, exp, 'should invoke proper number of times');
+  deepEqual(found, ary.slice(0,-2), 'items passed during every() should match');
 });
 
 // ..........................................................
@@ -50,8 +50,8 @@ suite.test('should return true of every property matches', function() {
     Ember.Object.create({ foo: 'foo', bar: 'bar' })
   ]);
   
-  equals(obj.everyProperty('foo', 'foo'), true, 'everyProperty(foo)');
-  equals(obj.everyProperty('bar', 'bar'), false, 'everyProperty(bar)');
+  equal(obj.everyProperty('foo', 'foo'), true, 'everyProperty(foo)');
+  equal(obj.everyProperty('bar', 'bar'), false, 'everyProperty(bar)');
 });
 
 suite.test('should return true of every property is true', function() {
@@ -61,8 +61,8 @@ suite.test('should return true of every property is true', function() {
   ]);
 
   // different values - all eval to true
-  equals(obj.everyProperty('foo'), true, 'everyProperty(foo)');
-  equals(obj.everyProperty('bar'), false, 'everyProperty(bar)');
+  equal(obj.everyProperty('foo'), true, 'everyProperty(foo)');
+  equal(obj.everyProperty('bar'), false, 'everyProperty(bar)');
 });
 
 suite.test('should return true if every property matches null', function() {
@@ -71,8 +71,8 @@ suite.test('should return true if every property matches null', function() {
     Ember.Object.create({ foo: null, bar: null })
   ]);
 
-  equals(obj.everyProperty('foo', null), true, "everyProperty('foo', null)");
-  equals(obj.everyProperty('bar', null), false, "everyProperty('bar', null)");
+  equal(obj.everyProperty('foo', null), true, "everyProperty('foo', null)");
+  equal(obj.everyProperty('bar', null), false, "everyProperty('bar', null)");
 });
 
 suite.test('should return true if every property is undefined', function() {
@@ -81,6 +81,6 @@ suite.test('should return true if every property is undefined', function() {
     Ember.Object.create({ bar: undefined })
   ]);
 
-  equals(obj.everyProperty('foo', undefined), true, "everyProperty('foo', undefined)");
-  equals(obj.everyProperty('bar', undefined), false, "everyProperty('bar', undefined)");
+  equal(obj.everyProperty('foo', undefined), true, "everyProperty('foo', undefined)");
+  equal(obj.everyProperty('bar', undefined), false, "everyProperty('bar', undefined)");
 });

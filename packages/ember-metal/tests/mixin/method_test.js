@@ -21,8 +21,8 @@ test('defining simple methods', function() {
   MixinA.apply(obj);
   
   // but should be defined
-  equals(props.publicMethod(), 'publicMethod', 'publicMethod is func');
-  equals(props._privateMethod(), 'privateMethod', 'privateMethod is func');
+  equal(props.publicMethod(), 'publicMethod', 'publicMethod is func');
+  equal(props._privateMethod(), 'privateMethod', 'privateMethod is func');
 });
 
 test('overriding public methods', function() {
@@ -46,20 +46,20 @@ test('overriding public methods', function() {
   
   obj = {};
   MixinB.apply(obj);
-  equals(obj.publicMethod(), 'AB', 'should define super for A and B');
+  equal(obj.publicMethod(), 'AB', 'should define super for A and B');
 
   obj = {};
   MixinD.apply(obj);
-  equals(obj.publicMethod(), 'AD', 'should define super for A and B');
+  equal(obj.publicMethod(), 'AD', 'should define super for A and B');
 
   obj = {};
   MixinA.apply(obj);
   MixinF.apply(obj);
-  equals(obj.publicMethod(), 'AF', 'should define super for A and F');
+  equal(obj.publicMethod(), 'AF', 'should define super for A and F');
 
   obj = { publicMethod: function() { return 'obj'; } };
   MixinF.apply(obj);
-  equals(obj.publicMethod(), 'objF', 'should define super for F');
+  equal(obj.publicMethod(), 'objF', 'should define super for F');
 });
 
 
@@ -82,11 +82,11 @@ test('overriding inherited objects', function() {
   
   cnt = 0;
   objB.foo();
-  equals(cnt, 2, 'should invoke both methods');
+  equal(cnt, 2, 'should invoke both methods');
   
   cnt = 0;
   objA.foo();
-  equals(cnt, 1, 'should not screw w/ parent obj');
+  equal(cnt, 1, 'should not screw w/ parent obj');
 });
 
 test('Including the same mixin more than once will only run once', function() {
@@ -114,7 +114,7 @@ test('Including the same mixin more than once will only run once', function() {
   cnt = 0;
   obj.foo();
   
-  equals(cnt, 1, 'should invoke MixinA.foo one time');
+  equal(cnt, 1, 'should invoke MixinA.foo one time');
 });
 
 // ..........................................................
@@ -131,11 +131,11 @@ test('overriding toString', function() {
   
   var obj = {};
   MixinA.apply(obj);
-  equals(obj.toString(), 'FOO', 'should override toString w/o error');
+  equal(obj.toString(), 'FOO', 'should override toString w/o error');
   
   obj = {};
   Ember.mixin(obj, { toString: function() { return 'FOO'; } });
-  equals(obj.toString(), 'FOO', 'should override toString w/o error');
+  equal(obj.toString(), 'FOO', 'should override toString w/o error');
 });
 
 // ..........................................................
@@ -165,5 +165,5 @@ test('applying several mixins at once with sup already defined causes infinite l
 
   cnt = 0;
   obj.foo();
-  equals(cnt, 3, 'should invoke all 3 methods');
+  equal(cnt, 3, 'should invoke all 3 methods');
 });

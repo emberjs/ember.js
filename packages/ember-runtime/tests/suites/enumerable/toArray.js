@@ -12,6 +12,6 @@ suite.module('toArray');
 
 suite.test('toArray should convert to an array', function() {
   var obj = this.newObject();
-  same(obj.toArray(), this.toArray(obj));
+  deepEqual(obj.toArray(), this.toArray(obj));
 });
 

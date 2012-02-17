@@ -41,14 +41,14 @@ testBoth('unwatching a computed property - regular get/set', function(get, set) 
   
   Ember.watch(obj, 'foo');
   set(obj, 'foo', 'bar');
-  equals(willCount, 1, 'should have invoked willCount');
-  equals(didCount, 1, 'should have invoked didCount');
+  equal(willCount, 1, 'should have invoked willCount');
+  equal(didCount, 1, 'should have invoked didCount');
 
   Ember.unwatch(obj, 'foo');
   willCount = didCount = 0;
   set(obj, 'foo', 'BAZ');
-  equals(willCount, 0, 'should NOT have invoked willCount');
-  equals(didCount, 0, 'should NOT have invoked didCount');
+  equal(willCount, 0, 'should NOT have invoked willCount');
+  equal(didCount, 0, 'should NOT have invoked didCount');
 });
 
 
@@ -58,14 +58,14 @@ testBoth('unwatching a regular property - regular get/set', function(get, set) {
   
   Ember.watch(obj, 'foo');
   set(obj, 'foo', 'bar');
-  equals(willCount, 1, 'should have invoked willCount');
-  equals(didCount, 1, 'should have invoked didCount');
+  equal(willCount, 1, 'should have invoked willCount');
+  equal(didCount, 1, 'should have invoked didCount');
 
   Ember.unwatch(obj, 'foo');
   willCount = didCount = 0;
   set(obj, 'foo', 'BAZ');
-  equals(willCount, 0, 'should NOT have invoked willCount');
-  equals(didCount, 0, 'should NOT have invoked didCount');
+  equal(willCount, 0, 'should NOT have invoked willCount');
+  equal(didCount, 0, 'should NOT have invoked didCount');
 });
 
 test('unwatching should be nested', function() {
@@ -75,18 +75,18 @@ test('unwatching should be nested', function() {
   Ember.watch(obj, 'foo');
   Ember.watch(obj, 'foo');
   Ember.set(obj, 'foo', 'bar');
-  equals(willCount, 1, 'should have invoked willCount');
-  equals(didCount, 1, 'should have invoked didCount');
+  equal(willCount, 1, 'should have invoked willCount');
+  equal(didCount, 1, 'should have invoked didCount');
 
   Ember.unwatch(obj, 'foo');
   willCount = didCount = 0;
   Ember.set(obj, 'foo', 'BAZ');
-  equals(willCount, 1, 'should NOT have invoked willCount');
-  equals(didCount, 1, 'should NOT have invoked didCount');
+  equal(willCount, 1, 'should NOT have invoked willCount');
+  equal(didCount, 1, 'should NOT have invoked didCount');
 
   Ember.unwatch(obj, 'foo');
   willCount = didCount = 0;
   Ember.set(obj, 'foo', 'BAZ');
-  equals(willCount, 0, 'should NOT have invoked willCount');
-  equals(didCount, 0, 'should NOT have invoked didCount');
+  equal(willCount, 0, 'should NOT have invoked willCount');
+  equal(didCount, 0, 'should NOT have invoked didCount');
 });

@@ -49,7 +49,7 @@ Ember.Handlebars.bootstrap = function(ctx) {
     } else {
       if (script.parents('head').length !== 0) {
         // don't allow inline templates in the head
-        throw new Ember.Error("Template found in \<head\> without a name specified. " +
+        throw new Ember.Error("Template found in <head> without a name specified. " +
                          "Please provide a data-template-name attribute.\n" +
                          script.html());
       }

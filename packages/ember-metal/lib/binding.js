@@ -24,7 +24,7 @@ require('ember-metal/run_loop'); // Ember.run.schedule
   can also enable this from the console or temporarily.
 
   @type Boolean
-  @default NO
+  @default false
 */
 Ember.LOG_BINDINGS = false || !!Ember.ENV.LOG_BINDINGS;
 
@@ -350,7 +350,9 @@ Binding.prototype = /** @scope Ember.Binding.prototype */ {
     @returns {Ember.Binding} this
   */
   notEmpty: function(placeholder) {
-    if (placeholder == undefined) { placeholder = Ember.EMPTY_PLACEHOLDER; }
+    if (placeholder === null || placeholder === undefined) {
+      placeholder = Ember.EMPTY_PLACEHOLDER;
+    }
 
     this.transform({
       to: function(val) { return empty(val) ? placeholder : val; }
@@ -368,10 +370,12 @@ Binding.prototype = /** @scope Ember.Binding.prototype */ {
     @returns {Ember.Binding} this
   */
   notNull: function(placeholder) {
-    if (placeholder == undefined) { placeholder = Ember.EMPTY_PLACEHOLDER; }
+    if (placeholder === null || placeholder === undefined) {
+      placeholder = Ember.EMPTY_PLACEHOLDER;
+    }
 
     this.transform({
-      to: function(val) { return val == null ? placeholder : val; }
+      to: function(val) { return (val === null || val === undefined) ? placeholder : val; }
     });
 
     return this;
@@ -394,7 +398,7 @@ Binding.prototype = /** @scope Ember.Binding.prototype */ {
     @returns {Ember.Binding} this
   */
   isNull: function() {
-    this.transform(function(val) { return val == null; });
+    this.transform(function(val) { return val === null || val === undefined; });
     return this;
   },
 

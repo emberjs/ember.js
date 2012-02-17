@@ -22,7 +22,7 @@ suite.test("frozen objects should return same instance", function() {
     ok(Ember.get(copy, 'isFrozen'), 'returned value should be frozen');
     
     copy = obj.freeze().frozenCopy();
-    equals(copy, obj, 'returns frozen object should be same');
+    equal(copy, obj, 'returns frozen object should be same');
     ok(Ember.get(copy, 'isFrozen'), 'returned object should be frozen');
     
   } else {

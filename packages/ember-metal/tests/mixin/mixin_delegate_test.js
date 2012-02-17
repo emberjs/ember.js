@@ -30,8 +30,8 @@ test('Basic usage', function() {
   ok(!!obj._after,  'should have called with props');
 
   Ember.mixin(obj, { foo: 'FOO' });
-  same(obj._before, ['foo', 'BAR'], 'should have called before apply');
-  same(obj._after,  ['foo', 'FOO'], 'should have called after apply');
+  deepEqual(obj._before, ['foo', 'BAR'], 'should have called before apply');
+  deepEqual(obj._after,  ['foo', 'FOO'], 'should have called after apply');
   
 });
 
@@ -55,8 +55,8 @@ test('Only invokes callbacks once mixin is applied', function() {
   });
   
   Ember.mixin(obj, { foo: 'FOO' });
-  equals(obj._before, 'BAR', 'should not have called yet');
-  equals(obj._after,  'FOO', 'should not have called yet');
+  equal(obj._before, 'BAR', 'should not have called yet');
+  equal(obj._after,  'FOO', 'should not have called yet');
   
 });
 

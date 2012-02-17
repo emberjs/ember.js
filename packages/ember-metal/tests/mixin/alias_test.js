@@ -8,14 +8,14 @@ module('Ember.alias');
 
 function validateAlias(obj) {
   var get = Ember.get;
-  equals(get(obj, 'foo'), 'foo', 'obj.foo');
-  equals(get(obj, 'bar'), 'foo', 'obj.bar should be a copy of foo');
+  equal(get(obj, 'foo'), 'foo', 'obj.foo');
+  equal(get(obj, 'bar'), 'foo', 'obj.bar should be a copy of foo');
 
-  equals(get(obj, 'computedFoo'), 'cfoo', 'obj.computedFoo');
-  equals(get(obj, 'computedBar'), 'cfoo', 'obj.computedBar should be a copy of computedFoo');
+  equal(get(obj, 'computedFoo'), 'cfoo', 'obj.computedFoo');
+  equal(get(obj, 'computedBar'), 'cfoo', 'obj.computedBar should be a copy of computedFoo');
 
-  equals(obj.fooMethod(), 'FOO', 'obj.fooMethod()');
-  equals(obj.barMethod(), 'FOO', 'obj.barMethod should be a copy of foo');
+  equal(obj.fooMethod(), 'FOO', 'obj.fooMethod()');
+  equal(obj.barMethod(), 'FOO', 'obj.barMethod should be a copy of foo');
 }
 
 test('copies the property values from another key when the mixin is applied', function() {
@@ -46,7 +46,7 @@ test('should follow aliases all the way down', function() {
   });
   
   var obj = MyMixin.apply({});
-  equals(Ember.get(obj, 'bar'), 'baz', 'should have followed aliases');
+  equal(Ember.get(obj, 'bar'), 'baz', 'should have followed aliases');
 });
 
 test('should copy from other dependent mixins', function() {

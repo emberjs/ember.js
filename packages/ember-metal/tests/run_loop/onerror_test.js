@@ -16,7 +16,7 @@ test('With Ember.onerror undefined, errors in Ember.run are thrown', function ()
     caught = error;
   }
 
-  same(caught, thrown);
+  deepEqual(caught, thrown);
 });
 
 test('With Ember.onerror set, errors in Ember.run are caught', function () {
@@ -27,7 +27,7 @@ test('With Ember.onerror set, errors in Ember.run are caught', function () {
 
   Ember.run(function() { throw thrown; });
 
-  same(caught, thrown);
+  deepEqual(caught, thrown);
 
   Ember.onerror = undefined;
 });

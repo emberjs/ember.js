@@ -36,7 +36,7 @@ Ember.Handlebars.ViewHelper = Ember.Object.create({
     }
 
     if (dup) {
-      options = jQuery.extend({}, options);
+      options = Ember.$.extend({}, options);
       delete options.id;
       delete options['class'];
       delete options.classBinding;
@@ -92,7 +92,7 @@ Ember.Handlebars.ViewHelper = Ember.Object.create({
     var viewOptions = {};
 
     if (fn) {
-      ember_assert("You cannot provide a template block if you also specified a templateName", !get(viewOptions, 'templateName') && !newView.PrototypeMixin.keys().indexOf('templateName') >= 0);
+      ember_assert("You cannot provide a template block if you also specified a templateName", !(get(viewOptions, 'templateName')) && !(newView.PrototypeMixin.keys().indexOf('templateName') >= 0));
       viewOptions.template = fn;
     }
 

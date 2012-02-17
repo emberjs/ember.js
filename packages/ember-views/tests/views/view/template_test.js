@@ -44,7 +44,7 @@ test("should call the function of the associated template with itself as the con
 
   view.createElement();
 
-  equals("template was called for Tom DAAAALE", view.$('#twas-called').text(), "the named template was called with the view as the data source");
+  equal("template was called for Tom DAAAALE", view.$('#twas-called').text(), "the named template was called with the view as the data source");
 });
 
 test("should fall back to defaultTemplate if neither template nor templateName are provided", function() {
@@ -60,7 +60,7 @@ test("should fall back to defaultTemplate if neither template nor templateName a
 
   view.createElement();
 
-  equals("template was called for Tom DAAAALE", view.$('#twas-called').text(), "the named template was called with the view as the data source");
+  equal("template was called for Tom DAAAALE", view.$('#twas-called').text(), "the named template was called with the view as the data source");
 });
 
 test("should not use defaultTemplate if template is provided", function() {
@@ -74,7 +74,7 @@ test("should not use defaultTemplate if template is provided", function() {
   view = View.create();
   view.createElement();
 
-  equals("foo", view.$().text(), "default template was not printed");
+  equal("foo", view.$().text(), "default template was not printed");
 });
 
 test("should not use defaultTemplate if template is provided", function() {
@@ -91,7 +91,7 @@ test("should not use defaultTemplate if template is provided", function() {
   view = View.create();
   view.createElement();
 
-  equals("foo", view.$().text(), "default template was not printed");
+  equal("foo", view.$().text(), "default template was not printed");
 });
 
 
@@ -100,5 +100,5 @@ test("should render an empty element if no template is specified", function() {
   view = Ember.View.create();
   view.createElement();
 
-  equals(view.$().html(), '', "view div should be empty");
+  equal(view.$().html(), '', "view div should be empty");
 });

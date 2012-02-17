@@ -16,7 +16,7 @@ test("Creates a new object that contains passed properties", function() {
   });
 
   //console.log(Ct.dump(obj));
-  equals(Ember.get(obj, 'prop'), 'FOO', 'obj.prop');
+  equal(Ember.get(obj, 'prop'), 'FOO', 'obj.prop');
   obj.method();
   ok(called, 'method executed');
 
@@ -31,8 +31,8 @@ test("Creates a new object that includes mixins and properties", function() {
   var MixinA = Ember.Mixin.create({ mixinA: 'A' });
   var obj = Ember.Object.create(MixinA, { prop: 'FOO' });
 
-  equals(Ember.get(obj, 'mixinA'), 'A', 'obj.mixinA');
-  equals(Ember.get(obj, 'prop'), 'FOO', 'obj.prop');
+  equal(Ember.get(obj, 'mixinA'), 'A', 'obj.mixinA');
+  equal(Ember.get(obj, 'prop'), 'FOO', 'obj.prop');
 });
 
 // ..........................................................
@@ -76,7 +76,7 @@ test("Calls all mixin inits if defined", function() {
   });
   
   Ember.Object.create(Mixin1, Mixin2);
-  equals(completed, 2, 'should have called init for both mixins.');
+  equal(completed, 2, 'should have called init for both mixins.');
 });
 
 test('creating an object with required properties', function() {
@@ -85,7 +85,7 @@ test('creating an object with required properties', function() {
   });
   
   var obj = ClassA.create({ foo: 'FOO' }); // should not throw
-  equals(Ember.get(obj,'foo'), 'FOO');
+  equal(Ember.get(obj,'foo'), 'FOO');
 });
 
 
@@ -111,10 +111,10 @@ test('create should not break observed values', function() {
   });
   
   var obj = CountObject.create({ value: 'foo' });
-  equals(obj._count, 0, 'should not fire yet');
+  equal(obj._count, 0, 'should not fire yet');
   
   Ember.set(obj, 'value', 'BAR');
-  equals(obj._count, 1, 'should fire');
+  equal(obj._count, 1, 'should fire');
 });
 
 test('bindings on a class should only sync on instances', function() {
@@ -132,8 +132,8 @@ test('bindings on a class should only sync on instances', function() {
     inst = Class.create();
   });
   
-  equals(Ember.get(Class.prototype, 'foo'), undefined, 'should not sync binding');
-  equals(Ember.get(inst, 'foo'), 'FOO', 'should sync binding');
+  equal(Ember.get(Class.prototype, 'foo'), undefined, 'should not sync binding');
+  equal(Ember.get(inst, 'foo'), 'FOO', 'should sync binding');
 
 });
 
@@ -156,17 +156,17 @@ test('inherited bindings should only sync on instances', function() {
     inst = Subclass.create();
   });
   
-  equals(Ember.get(Class.prototype, 'foo'), undefined, 'should not sync binding on Class');
-  equals(Ember.get(Subclass.prototype, 'foo'), undefined, 'should not sync binding on Subclass');
-  equals(Ember.get(inst, 'foo'), 'FOO', 'should sync binding on inst');
+  equal(Ember.get(Class.prototype, 'foo'), undefined, 'should not sync binding on Class');
+  equal(Ember.get(Subclass.prototype, 'foo'), undefined, 'should not sync binding on Subclass');
+  equal(Ember.get(inst, 'foo'), 'FOO', 'should sync binding on inst');
   
   Ember.run(function() {
     Ember.set(TestObject, 'foo', 'BAR');
   });
   
-  equals(Ember.get(Class.prototype, 'foo'), undefined, 'should not sync binding on Class');
-  equals(Ember.get(Subclass.prototype, 'foo'), undefined, 'should not sync binding on Subclass');
-  equals(Ember.get(inst, 'foo'), 'BAR', 'should sync binding on inst');
+  equal(Ember.get(Class.prototype, 'foo'), undefined, 'should not sync binding on Class');
+  equal(Ember.get(Subclass.prototype, 'foo'), undefined, 'should not sync binding on Subclass');
+  equal(Ember.get(inst, 'foo'), 'BAR', 'should sync binding on inst');
   
 });
 

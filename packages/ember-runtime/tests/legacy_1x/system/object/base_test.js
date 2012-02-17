@@ -60,19 +60,19 @@ module("A new Ember.Object instance", {
 });
 
 test("Should return it's properties when requested using Ember.Object#get", function() {
-  equals(get(obj, 'foo'), 'bar') ;
-  equals(get(obj, 'total'), 12345) ;
+  equal(get(obj, 'foo'), 'bar') ;
+  equal(get(obj, 'total'), 12345) ;
 });
 
 test("Should allow changing of those properties by calling Ember.Object#set", function() {
-  equals(get(obj,'foo'), 'bar') ;
-  equals(get(obj, 'total'), 12345) ;
+  equal(get(obj,'foo'), 'bar') ;
+  equal(get(obj, 'total'), 12345) ;
 
   set(obj,  'foo', 'Chunky Bacon' ) ;
   set(obj,  'total', 12 ) ;
 
-  equals(get(obj, 'foo'), 'Chunky Bacon') ;
-  equals(get(obj, 'total'), 12) ;
+  equal(get(obj, 'foo'), 'Chunky Bacon') ;
+  equal(get(obj, 'total'), 12) ;
 });
 
 
@@ -109,19 +109,19 @@ module("Ember.Object observers", {
 test("Local observers work", function() {
   obj._normal = NO;
   set(obj, "prop1", NO);
-  equals(obj._normal, YES, "Normal observer did change.");
+  equal(obj._normal, YES, "Normal observer did change.");
 });
 
 test("Global observers work", function() {
   obj._global = NO;
   set(TestNamespace.obj, "value", "test2");
-  equals(obj._global, YES, "Global observer did change.");
+  equal(obj._global, YES, "Global observer did change.");
 });
 
 test("Global+Local observer works", function() {
   obj._both = NO;
   set(obj, "prop1", NO);
-  equals(obj._both, YES, "Both observer did change.");
+  equal(obj._both, YES, "Both observer did change.");
 });
 
 
@@ -149,8 +149,8 @@ module("Ember.Object superclass and subclasses", {
 });
 
 test("Checking the detect() function on an object and its subclass", function(){
-	equals(obj.detect(obj1), YES);
-	equals(obj1.detect(obj), NO);
+	equal(obj.detect(obj1), YES);
+	equal(obj1.detect(obj), NO);
 });
 
 test("Checking the detectInstance() function on an object and its subclass", function() {
@@ -161,7 +161,7 @@ test("Checking the detectInstance() function on an object and its subclass", fun
 test("subclasses should contain defined subclasses", function() {
   ok(inArray(obj1, obj.subclasses) > -1, 'obj.subclasses should contain obj1');
 
-  equals(get(obj1.subclasses, 'length'),0,'obj1.subclasses should be empty');
+  equal(get(obj1.subclasses, 'length'),0,'obj1.subclasses should be empty');
 
   var kls2 = obj1.extend();
   ok(inArray(kls2, obj1.subclasses) > -1, 'obj1.subclasses should contain kls2');

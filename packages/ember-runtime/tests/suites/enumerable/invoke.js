@@ -29,11 +29,11 @@ suite.test('invoke should call on each object that implements', function() {
   
   obj = this.newObject(ary);
   obj.invoke('foo');
-  equals(cnt, 3, 'should have invoked 3 times');
+  equal(cnt, 3, 'should have invoked 3 times');
   
   cnt = 0;
   obj.invoke('foo', 2);
-  equals(cnt, 6, 'should have invoked 3 times, passing param');
+  equal(cnt, 6, 'should have invoked 3 times, passing param');
 });
 
 

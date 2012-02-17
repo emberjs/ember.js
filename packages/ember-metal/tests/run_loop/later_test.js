@@ -15,7 +15,7 @@ test('should invoke after specified period of time - function only', function() 
   
   setTimeout(function() {
     start();
-    equals(invoked, true, 'should have invoked later item');
+    equal(invoked, true, 'should have invoked later item');
   }, 150);
   
 });
@@ -30,7 +30,7 @@ test('should invoke after specified period of time - target/method', function() 
   
   setTimeout(function() {
     start();
-    equals(obj.invoked, true, 'should have invoked later item');
+    equal(obj.invoked, true, 'should have invoked later item');
   }, 150);
   
 });
@@ -45,7 +45,7 @@ test('should invoke after specified period of time - target/method/args', functi
   
   setTimeout(function() {
     start();
-    equals(obj.invoked, 10, 'should have invoked later item');
+    equal(obj.invoked, 10, 'should have invoked later item');
   }, 150);
   
 });

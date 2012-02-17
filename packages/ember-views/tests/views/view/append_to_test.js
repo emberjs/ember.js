@@ -106,7 +106,7 @@ test("remove removes an element from the DOM", function() {
   ok(Ember.$("#" + get(view, 'elementId')).length === 0, "remove removes an element from the DOM");
   ok(Ember.View.views[get(view, 'elementId')] === view, "remove does not remove the view from the view hash");
   ok(!get(view, 'element'), "remove nulls out the element");
-  equals(willDestroyCalled, 1, "the willDestroyElement hook was called once");
+  equal(willDestroyCalled, 1, "the willDestroyElement hook was called once");
 });
 
 test("destroy more forcibly removes the view", function() {
@@ -132,9 +132,9 @@ test("destroy more forcibly removes the view", function() {
 
   ok(Ember.$("#" + get(view, 'elementId')).length === 0, "destroy removes an element from the DOM");
   ok(Ember.View.views[get(view, 'elementId')] === undefined, "destroy removes a view from the global views hash");
-  equals(get(view, 'isDestroyed'), true, "the view is marked as destroyed");
+  equal(get(view, 'isDestroyed'), true, "the view is marked as destroyed");
   ok(!get(view, 'element'), "the view no longer has an element");
-  equals(willDestroyCalled, 1, "the willDestroyElement hook was called once");
+  equal(willDestroyCalled, 1, "the willDestroyElement hook was called once");
 });
 
 module("Ember.View - append() and appendTo() in a view hierarchy", {
@@ -220,7 +220,7 @@ test("remove removes child elements from the DOM", function() {
   ok(Ember.$("#" + get(childView, 'elementId')).length === 0, "remove removes child elements the DOM");
   ok(Ember.View.views[get(childView, 'elementId')] === childView, "remove does not remove child views from the view hash");
   ok(!get(childView, 'element'), "remove nulls out child elements");
-  equals(willDestroyCalled, 1, "the willDestroyElement hook was called once");
+  equal(willDestroyCalled, 1, "the willDestroyElement hook was called once");
 });
 
 test("destroy more forcibly removes child views", function() {
@@ -240,9 +240,9 @@ test("destroy more forcibly removes child views", function() {
 
   ok(Ember.$("#" + get(childView, 'elementId')).length === 0, "destroy removes child elements from the DOM");
   ok(Ember.View.views[get(childView, 'elementId')] === undefined, "destroy removes a child views from the global views hash");
-  equals(get(childView, 'isDestroyed'), true, "child views are marked as destroyed");
+  equal(get(childView, 'isDestroyed'), true, "child views are marked as destroyed");
   ok(!get(childView, 'element'), "child views no longer have an element");
-  equals(willDestroyCalled, 1, "the willDestroyElement hook was called once on children");
+  equal(willDestroyCalled, 1, "the willDestroyElement hook was called once on children");
 });
 
 test("destroy removes a child view from its parent", function() {

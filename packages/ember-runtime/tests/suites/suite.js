@@ -100,7 +100,7 @@ Ember.Suite.reopenClass({
   same: function(actual, exp, message) {
     actual = (actual && actual.map) ? actual.map(function(x) { return Ember.guidFor(x); }) : actual;
     exp = (exp && exp.map) ? exp.map(function(x) { return Ember.guidFor(x); }) : exp;
-    return same(actual, exp, message);
+    return deepEqual(actual, exp, message);
   },
   
   // easy way to disable tests

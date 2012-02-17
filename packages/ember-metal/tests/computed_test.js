@@ -24,13 +24,13 @@ test('defining computed property should invoke property on get', function() {
     return 'computed '+key;
   }));
 
-  equals(Ember.get(obj, 'foo'), 'computed foo', 'should return value');
-  equals(count, 1, 'should have invoked computed property');
+  equal(Ember.get(obj, 'foo'), 'computed foo', 'should return value');
+  equal(count, 1, 'should have invoked computed property');
 
   if (Ember.USES_ACCESSORS) {
     count = 0;
-    equals(Ember.get(obj, 'foo'), 'computed foo', 'should return value');
-    equals(count, 1, 'should have invoked computed property');
+    equal(Ember.get(obj, 'foo'), 'computed foo', 'should return value');
+    equal(count, 1, 'should have invoked computed property');
   }
 });
 
@@ -46,15 +46,15 @@ test('defining computed property should invoke property on set', function() {
     return this['__'+key];
   }));
   
-  equals(Ember.set(obj, 'foo', 'bar'), 'bar', 'should return set value');
-  equals(count, 1, 'should have invoked computed property');
-  equals(Ember.get(obj, 'foo'), 'computed bar', 'should return new value');
+  equal(Ember.set(obj, 'foo', 'bar'), 'bar', 'should return set value');
+  equal(count, 1, 'should have invoked computed property');
+  equal(Ember.get(obj, 'foo'), 'computed bar', 'should return new value');
   
   if (Ember.USES_ACCESSORS) {
     count = 0;
-    equals(obj.foo = 'bar', 'bar', 'shoudl return set value');
-    equals(count, 1, 'should have invoked computed property');
-    equals(Ember.get(obj, 'foo'), 'computed bar', 'should return value');
+    equal(obj.foo = 'bar', 'bar', 'shoudl return set value');
+    equal(count, 1, 'should have invoked computed property');
+    equal(Ember.get(obj, 'foo'), 'computed bar', 'should return value');
   }
 });
 
@@ -79,20 +79,20 @@ module('Ember.computed should inherit through prototype', {
 });
 
 testBoth('using get() and set()', function(get, set) {
-  equals(get(objA, 'foo'), 'FOO', 'should get FOO from A');  
-  equals(get(objB, 'foo'), 'FOO', 'should get FOO from B');
+  equal(get(objA, 'foo'), 'FOO', 'should get FOO from A');  
+  equal(get(objB, 'foo'), 'FOO', 'should get FOO from B');
 
   set(objA, 'foo', 'BIFF');
-  equals(get(objA, 'foo'), 'computed BIFF', 'should change A');
-  equals(get(objB, 'foo'), 'FOO', 'should NOT change B');
+  equal(get(objA, 'foo'), 'computed BIFF', 'should change A');
+  equal(get(objB, 'foo'), 'FOO', 'should NOT change B');
   
   set(objB, 'foo', 'bar');
-  equals(get(objB, 'foo'), 'computed bar', 'should change B');
-  equals(get(objA, 'foo'), 'computed BIFF', 'should NOT change A');
+  equal(get(objB, 'foo'), 'computed bar', 'should change B');
+  equal(get(objA, 'foo'), 'computed BIFF', 'should NOT change A');
 
   set(objA, 'foo', 'BAZ');
-  equals(get(objA, 'foo'), 'computed BAZ', 'should change A');
-  equals(get(objB, 'foo'), 'computed bar', 'should NOT change B');
+  equal(get(objA, 'foo'), 'computed BAZ', 'should change A');
+  equal(get(objB, 'foo'), 'computed bar', 'should NOT change B');
 });
 
 module('redefining computed property to normal', {
@@ -115,20 +115,20 @@ module('redefining computed property to normal', {
 });
 
 testBoth('using get() and set()', function(get, set) {
-  equals(get(objA, 'foo'), 'FOO', 'should get FOO from A');  
-  equals(get(objB, 'foo'), undefined, 'should get undefined from B');
+  equal(get(objA, 'foo'), 'FOO', 'should get FOO from A');  
+  equal(get(objB, 'foo'), undefined, 'should get undefined from B');
 
   set(objA, 'foo', 'BIFF');
-  equals(get(objA, 'foo'), 'computed BIFF', 'should change A');
-  equals(get(objB, 'foo'), undefined, 'should NOT change B');
+  equal(get(objA, 'foo'), 'computed BIFF', 'should change A');
+  equal(get(objB, 'foo'), undefined, 'should NOT change B');
   
   set(objB, 'foo', 'bar');
-  equals(get(objB, 'foo'), 'bar', 'should change B');
-  equals(get(objA, 'foo'), 'computed BIFF', 'should NOT change A');
+  equal(get(objB, 'foo'), 'bar', 'should change B');
+  equal(get(objA, 'foo'), 'computed BIFF', 'should NOT change A');
 
   set(objA, 'foo', 'BAZ');
-  equals(get(objA, 'foo'), 'computed BAZ', 'should change A');
-  equals(get(objB, 'foo'), 'bar', 'should NOT change B');
+  equal(get(objA, 'foo'), 'computed BAZ', 'should change A');
+  equal(get(objB, 'foo'), 'bar', 'should NOT change B');
 });
 
 module('redefining computed property to another property', {
@@ -157,20 +157,20 @@ module('redefining computed property to another property', {
 });
 
 testBoth('using get() and set()', function(get, set) {
-  equals(get(objA, 'foo'), 'FOO', 'should get FOO from A');  
-  equals(get(objB, 'foo'), 'FOO', 'should get FOO from B');
+  equal(get(objA, 'foo'), 'FOO', 'should get FOO from A');  
+  equal(get(objB, 'foo'), 'FOO', 'should get FOO from B');
 
   set(objA, 'foo', 'BIFF');
-  equals(get(objA, 'foo'), 'A BIFF', 'should change A');
-  equals(get(objB, 'foo'), 'FOO', 'should NOT change B');
+  equal(get(objA, 'foo'), 'A BIFF', 'should change A');
+  equal(get(objB, 'foo'), 'FOO', 'should NOT change B');
   
   set(objB, 'foo', 'bar');
-  equals(get(objB, 'foo'), 'B bar', 'should change B');
-  equals(get(objA, 'foo'), 'A BIFF', 'should NOT change A');
+  equal(get(objB, 'foo'), 'B bar', 'should change B');
+  equal(get(objA, 'foo'), 'A BIFF', 'should NOT change A');
 
   set(objA, 'foo', 'BAZ');
-  equals(get(objA, 'foo'), 'A BAZ', 'should change A');
-  equals(get(objB, 'foo'), 'B bar', 'should NOT change B');
+  equal(get(objA, 'foo'), 'A BAZ', 'should change A');
+  equal(get(objB, 'foo'), 'B bar', 'should NOT change B');
 });
 
 
@@ -202,32 +202,32 @@ module('Ember.computed - cacheable', {
 });
 
 testBoth('cacheable should cache', function(get, set) {
-  equals(get(obj, 'foo'), 'bar 1', 'first get');
-  equals(get(obj, 'foo'), 'bar 1', 'second get');
-  equals(count, 1, 'should only invoke once');
+  equal(get(obj, 'foo'), 'bar 1', 'first get');
+  equal(get(obj, 'foo'), 'bar 1', 'second get');
+  equal(count, 1, 'should only invoke once');
 });
 
 testBoth('modifying a cacheable property should update cache', function(get, set) {
-  equals(get(obj, 'foo'), 'bar 1', 'first get');
-  equals(get(obj, 'foo'), 'bar 1', 'second get');
+  equal(get(obj, 'foo'), 'bar 1', 'first get');
+  equal(get(obj, 'foo'), 'bar 1', 'second get');
 
-  equals(set(obj, 'foo', 'baz'), 'baz', 'setting');
-  equals(get(obj, 'foo'), 'bar 2', 'third get');
-  equals(count, 2, 'should not invoke again');
+  equal(set(obj, 'foo', 'baz'), 'baz', 'setting');
+  equal(get(obj, 'foo'), 'bar 2', 'third get');
+  equal(count, 2, 'should not invoke again');
 });
 
 testBoth('inherited property should not pick up cache', function(get, set) {
   var objB = Ember.create(obj);
 
-  equals(get(obj, 'foo'), 'bar 1', 'obj first get');
-  equals(get(objB, 'foo'), 'bar 2', 'objB first get');
+  equal(get(obj, 'foo'), 'bar 1', 'obj first get');
+  equal(get(objB, 'foo'), 'bar 2', 'objB first get');
 
-  equals(get(obj, 'foo'), 'bar 1', 'obj second get');
-  equals(get(objB, 'foo'), 'bar 2', 'objB second get');
+  equal(get(obj, 'foo'), 'bar 1', 'obj second get');
+  equal(get(objB, 'foo'), 'bar 2', 'objB second get');
   
   set(obj, 'foo', 'baz'); // modify A
-  equals(get(obj, 'foo'), 'bar 3', 'obj third get');
-  equals(get(objB, 'foo'), 'bar 2', 'objB third get');
+  equal(get(obj, 'foo'), 'bar 3', 'obj third get');
+  equal(get(objB, 'foo'), 'bar 2', 'objB third get');
 });
 
 // ..........................................................
@@ -252,13 +252,13 @@ module('Ember.computed - dependentkey', {
 });
 
 testBoth('local dependent key should invalidate cache', function(get, set) {
-  equals(get(obj, 'foo'), 'bar 1', 'get once');
-  equals(get(obj, 'foo'), 'bar 1', 'cached retrieve');
+  equal(get(obj, 'foo'), 'bar 1', 'get once');
+  equal(get(obj, 'foo'), 'bar 1', 'cached retrieve');
 
   set(obj, 'bar', 'BIFF'); // should invalidate foo
 
-  equals(get(obj, 'foo'), 'bar 2', 'should recache');
-  equals(get(obj, 'foo'), 'bar 2', 'cached retrieve');
+  equal(get(obj, 'foo'), 'bar 2', 'should recache');
+  equal(get(obj, 'foo'), 'bar 2', 'cached retrieve');
 });
 
 testBoth('should invalidate multiple nested dependent keys', function(get, set) {
@@ -268,13 +268,13 @@ testBoth('should invalidate multiple nested dependent keys', function(get, set) 
     return 'baz '+count;
   }).property('baz').cacheable());
   
-  equals(get(obj, 'foo'), 'bar 1', 'get once');
-  equals(get(obj, 'foo'), 'bar 1', 'cached retrieve');
+  equal(get(obj, 'foo'), 'bar 1', 'get once');
+  equal(get(obj, 'foo'), 'bar 1', 'cached retrieve');
 
   set(obj, 'baz', 'BIFF'); // should invalidate bar -> foo
 
-  equals(get(obj, 'foo'), 'bar 2', 'should recache');
-  equals(get(obj, 'foo'), 'bar 2', 'cached retrieve');
+  equal(get(obj, 'foo'), 'bar 2', 'should recache');
+  equal(get(obj, 'foo'), 'bar 2', 'cached retrieve');
 });
 
 testBoth('circular keys should not blow up', function(get, set) {
@@ -289,31 +289,31 @@ testBoth('circular keys should not blow up', function(get, set) {
     return 'foo '+count;
   }).property('bar').cacheable());
   
-  equals(get(obj, 'foo'), 'foo 1', 'get once');
-  equals(get(obj, 'foo'), 'foo 1', 'cached retrieve');
+  equal(get(obj, 'foo'), 'foo 1', 'get once');
+  equal(get(obj, 'foo'), 'foo 1', 'cached retrieve');
 
   set(obj, 'bar', 'BIFF'); // should invalidate bar -> foo -> bar
 
-  equals(get(obj, 'foo'), 'foo 3', 'should recache');
-  equals(get(obj, 'foo'), 'foo 3', 'cached retrieve');
+  equal(get(obj, 'foo'), 'foo 3', 'should recache');
+  equal(get(obj, 'foo'), 'foo 3', 'cached retrieve');
 });
 
 testBoth('redefining a property should undo old depenent keys', function(get ,set) {
 
-  equals(get(obj, 'foo'), 'bar 1');
+  equal(get(obj, 'foo'), 'bar 1');
 
   Ember.defineProperty(obj, 'foo', Ember.computed(function() {
     count++;
     return 'baz '+count;
   }).property('baz').cacheable());
 
-  equals(get(obj, 'foo'), 'baz 2');
+  equal(get(obj, 'foo'), 'baz 2');
   
   set(obj, 'bar', 'BIFF'); // should not kill cache
-  equals(get(obj, 'foo'), 'baz 2');
+  equal(get(obj, 'foo'), 'baz 2');
   
   set(obj, 'baz', 'BOP');
-  equals(get(obj, 'foo'), 'baz 3');
+  equal(get(obj, 'foo'), 'baz 3');
 });
 
 // ..........................................................
@@ -362,43 +362,43 @@ testBoth('depending on simple chain', function(get, set) {
   Ember.defineProperty(obj, 'prop', 
     Ember.computed(func).property('foo.bar.baz.biff').cacheable());
 
-  equals(get(obj, 'prop'), 'BIFF 1');
+  equal(get(obj, 'prop'), 'BIFF 1');
   
   set(Ember.getPath(obj, 'foo.bar.baz'), 'biff', 'BUZZ');
-  equals(get(obj, 'prop'), 'BUZZ 2');
-  equals(get(obj, 'prop'), 'BUZZ 2');
+  equal(get(obj, 'prop'), 'BUZZ 2');
+  equal(get(obj, 'prop'), 'BUZZ 2');
   
   set(Ember.getPath(obj, 'foo.bar'),  'baz', { biff: 'BLOB' });
-  equals(get(obj, 'prop'), 'BLOB 3');
-  equals(get(obj, 'prop'), 'BLOB 3');
+  equal(get(obj, 'prop'), 'BLOB 3');
+  equal(get(obj, 'prop'), 'BLOB 3');
   
   set(Ember.getPath(obj, 'foo.bar.baz'), 'biff', 'BUZZ');
-  equals(get(obj, 'prop'), 'BUZZ 4');
-  equals(get(obj, 'prop'), 'BUZZ 4');
+  equal(get(obj, 'prop'), 'BUZZ 4');
+  equal(get(obj, 'prop'), 'BUZZ 4');
   
   set(Ember.get(obj, 'foo'), 'bar', { baz: { biff: 'BOOM' } });
-  equals(get(obj, 'prop'), 'BOOM 5');
-  equals(get(obj, 'prop'), 'BOOM 5');
+  equal(get(obj, 'prop'), 'BOOM 5');
+  equal(get(obj, 'prop'), 'BOOM 5');
   
   set(Ember.getPath(obj, 'foo.bar.baz'), 'biff', 'BUZZ');
-  equals(get(obj, 'prop'), 'BUZZ 6');
-  equals(get(obj, 'prop'), 'BUZZ 6');
+  equal(get(obj, 'prop'), 'BUZZ 6');
+  equal(get(obj, 'prop'), 'BUZZ 6');
   
   set(obj, 'foo', { bar: { baz: { biff: 'BLARG' } } });
-  equals(get(obj, 'prop'), 'BLARG 7');
-  equals(get(obj, 'prop'), 'BLARG 7');
+  equal(get(obj, 'prop'), 'BLARG 7');
+  equal(get(obj, 'prop'), 'BLARG 7');
   
   set(Ember.getPath(obj, 'foo.bar.baz'), 'biff', 'BUZZ');
-  equals(get(obj, 'prop'), 'BUZZ 8');
-  equals(get(obj, 'prop'), 'BUZZ 8');
+  equal(get(obj, 'prop'), 'BUZZ 8');
+  equal(get(obj, 'prop'), 'BUZZ 8');
   
   Ember.defineProperty(obj, 'prop');
   set(obj, 'prop', 'NONE');
-  equals(get(obj, 'prop'), 'NONE');
+  equal(get(obj, 'prop'), 'NONE');
 
   set(obj, 'foo', { bar: { baz: { biff: 'BLARG' } } });
-  equals(get(obj, 'prop'), 'NONE'); // should do nothing
-  equals(count, 8, 'should be not have invoked computed again');
+  equal(get(obj, 'prop'), 'NONE'); // should do nothing
+  equal(count, 8, 'should be not have invoked computed again');
 
 });
 
@@ -408,45 +408,45 @@ testBoth('depending on complex chain', function(get, set) {
   Ember.defineProperty(obj, 'prop', 
     Ember.computed(func).property('foo.bar*baz.biff').cacheable());
 
-  equals(get(obj, 'prop'), 'BIFF 1');
+  equal(get(obj, 'prop'), 'BIFF 1');
   
   set(Ember.getPath(obj, 'foo.bar.baz'), 'biff', 'BUZZ');
-  equals(get(obj, 'prop'), 'BUZZ 2');
-  equals(get(obj, 'prop'), 'BUZZ 2');
+  equal(get(obj, 'prop'), 'BUZZ 2');
+  equal(get(obj, 'prop'), 'BUZZ 2');
   
   set(Ember.getPath(obj, 'foo.bar'),  'baz', { biff: 'BLOB' });
-  equals(get(obj, 'prop'), 'BLOB 3');
-  equals(get(obj, 'prop'), 'BLOB 3');
+  equal(get(obj, 'prop'), 'BLOB 3');
+  equal(get(obj, 'prop'), 'BLOB 3');
   
   set(Ember.getPath(obj, 'foo.bar.baz'), 'biff', 'BUZZ');
-  equals(get(obj, 'prop'), 'BUZZ 4');
-  equals(get(obj, 'prop'), 'BUZZ 4');
+  equal(get(obj, 'prop'), 'BUZZ 4');
+  equal(get(obj, 'prop'), 'BUZZ 4');
 
   // NOTHING SHOULD CHANGE AFTER THIS POINT BECAUSE OF THE CHAINED *
   
   set(Ember.get(obj, 'foo'), 'bar', { baz: { biff: 'BOOM' } });
-  equals(get(obj, 'prop'), 'BUZZ 4');
-  equals(get(obj, 'prop'), 'BUZZ 4');
+  equal(get(obj, 'prop'), 'BUZZ 4');
+  equal(get(obj, 'prop'), 'BUZZ 4');
   
   set(Ember.getPath(obj, 'foo.bar.baz'), 'biff', 'BUZZ');
-  equals(get(obj, 'prop'), 'BUZZ 4');
-  equals(get(obj, 'prop'), 'BUZZ 4');
+  equal(get(obj, 'prop'), 'BUZZ 4');
+  equal(get(obj, 'prop'), 'BUZZ 4');
   
   set(obj, 'foo', { bar: { baz: { biff: 'BLARG' } } });
-  equals(get(obj, 'prop'), 'BUZZ 4');
-  equals(get(obj, 'prop'), 'BUZZ 4');
+  equal(get(obj, 'prop'), 'BUZZ 4');
+  equal(get(obj, 'prop'), 'BUZZ 4');
   
   set(Ember.getPath(obj, 'foo.bar.baz'), 'biff', 'BUZZ');
-  equals(get(obj, 'prop'), 'BUZZ 4');
-  equals(get(obj, 'prop'), 'BUZZ 4');
+  equal(get(obj, 'prop'), 'BUZZ 4');
+  equal(get(obj, 'prop'), 'BUZZ 4');
   
   Ember.defineProperty(obj, 'prop');
   set(obj, 'prop', 'NONE');
-  equals(get(obj, 'prop'), 'NONE');
+  equal(get(obj, 'prop'), 'NONE');
 
   set(obj, 'foo', { bar: { baz: { biff: 'BLARG' } } });
-  equals(get(obj, 'prop'), 'NONE'); // should do nothing
-  equals(count, 4, 'should be not have invoked computed again');
+  equal(get(obj, 'prop'), 'NONE'); // should do nothing
+  equal(count, 4, 'should be not have invoked computed again');
 
 });
 
@@ -458,43 +458,43 @@ testBoth('depending on Global chain', function(get, set) {
     return Ember.getPath('Global.foo.bar.baz.biff')+' '+count;    
   }).property('Global.foo.bar.baz.biff').cacheable());
 
-  equals(get(obj, 'prop'), 'BIFF 1');
+  equal(get(obj, 'prop'), 'BIFF 1');
   
   set(Ember.getPath(Global, 'foo.bar.baz'), 'biff', 'BUZZ');
-  equals(get(obj, 'prop'), 'BUZZ 2');
-  equals(get(obj, 'prop'), 'BUZZ 2');
+  equal(get(obj, 'prop'), 'BUZZ 2');
+  equal(get(obj, 'prop'), 'BUZZ 2');
   
   set(Ember.getPath(Global, 'foo.bar'), 'baz', { biff: 'BLOB' });
-  equals(get(obj, 'prop'), 'BLOB 3');
-  equals(get(obj, 'prop'), 'BLOB 3');
+  equal(get(obj, 'prop'), 'BLOB 3');
+  equal(get(obj, 'prop'), 'BLOB 3');
   
   set(Ember.getPath(Global, 'foo.bar.baz'), 'biff', 'BUZZ');
-  equals(get(obj, 'prop'), 'BUZZ 4');
-  equals(get(obj, 'prop'), 'BUZZ 4');
+  equal(get(obj, 'prop'), 'BUZZ 4');
+  equal(get(obj, 'prop'), 'BUZZ 4');
   
   set(Ember.get(Global, 'foo'), 'bar', { baz: { biff: 'BOOM' } });
-  equals(get(obj, 'prop'), 'BOOM 5');
-  equals(get(obj, 'prop'), 'BOOM 5');
+  equal(get(obj, 'prop'), 'BOOM 5');
+  equal(get(obj, 'prop'), 'BOOM 5');
   
   set(Ember.getPath(Global, 'foo.bar.baz'), 'biff', 'BUZZ');
-  equals(get(obj, 'prop'), 'BUZZ 6');
-  equals(get(obj, 'prop'), 'BUZZ 6');
+  equal(get(obj, 'prop'), 'BUZZ 6');
+  equal(get(obj, 'prop'), 'BUZZ 6');
   
   set(Global, 'foo', { bar: { baz: { biff: 'BLARG' } } });
-  equals(get(obj, 'prop'), 'BLARG 7');
-  equals(get(obj, 'prop'), 'BLARG 7');
+  equal(get(obj, 'prop'), 'BLARG 7');
+  equal(get(obj, 'prop'), 'BLARG 7');
   
   set(Ember.getPath(Global, 'foo.bar.baz'), 'biff', 'BUZZ');
-  equals(get(obj, 'prop'), 'BUZZ 8');
-  equals(get(obj, 'prop'), 'BUZZ 8');
+  equal(get(obj, 'prop'), 'BUZZ 8');
+  equal(get(obj, 'prop'), 'BUZZ 8');
   
   Ember.defineProperty(obj, 'prop');
   set(obj, 'prop', 'NONE');
-  equals(get(obj, 'prop'), 'NONE');
+  equal(get(obj, 'prop'), 'NONE');
 
   set(Global, 'foo', { bar: { baz: { biff: 'BLARG' } } });
-  equals(get(obj, 'prop'), 'NONE'); // should do nothing
-  equals(count, 8, 'should be not have invoked computed again');
+  equal(get(obj, 'prop'), 'NONE'); // should do nothing
+  equal(count, 8, 'should be not have invoked computed again');
 
 });
 
@@ -506,52 +506,52 @@ testBoth('depending on complex Global chain', function(get, set) {
     return Ember.getPath('Global.foo.bar.baz.biff')+' '+count;    
   }).property('Global.foo.bar*baz.biff').cacheable());
 
-  equals(get(obj, 'prop'), 'BIFF 1');
+  equal(get(obj, 'prop'), 'BIFF 1');
   
   set(Ember.getPath(Global, 'foo.bar.baz'), 'biff', 'BUZZ');
-  equals(get(obj, 'prop'), 'BUZZ 2');
-  equals(get(obj, 'prop'), 'BUZZ 2');
+  equal(get(obj, 'prop'), 'BUZZ 2');
+  equal(get(obj, 'prop'), 'BUZZ 2');
   
   set(Ember.getPath(Global, 'foo.bar'), 'baz', { biff: 'BLOB' });
-  equals(get(obj, 'prop'), 'BLOB 3');
-  equals(get(obj, 'prop'), 'BLOB 3');
+  equal(get(obj, 'prop'), 'BLOB 3');
+  equal(get(obj, 'prop'), 'BLOB 3');
   
   set(Ember.getPath(Global, 'foo.bar.baz'), 'biff', 'BUZZ');
-  equals(get(obj, 'prop'), 'BUZZ 4');
-  equals(get(obj, 'prop'), 'BUZZ 4');
+  equal(get(obj, 'prop'), 'BUZZ 4');
+  equal(get(obj, 'prop'), 'BUZZ 4');
 
   // NOTHING SHOULD CHANGE AFTER THIS POINT BECAUSE OF THE CHAINED *
   
   set(Ember.get(Global, 'foo'), 'bar', { baz: { biff: 'BOOM' } });
-  equals(get(obj, 'prop'), 'BUZZ 4');
-  equals(get(obj, 'prop'), 'BUZZ 4');
+  equal(get(obj, 'prop'), 'BUZZ 4');
+  equal(get(obj, 'prop'), 'BUZZ 4');
   
   set(Ember.getPath(Global, 'foo.bar.baz'), 'biff', 'BUZZ');
-  equals(get(obj, 'prop'), 'BUZZ 4');
-  equals(get(obj, 'prop'), 'BUZZ 4');
+  equal(get(obj, 'prop'), 'BUZZ 4');
+  equal(get(obj, 'prop'), 'BUZZ 4');
   
   set(Global, 'foo', { bar: { baz: { biff: 'BLARG' } } });
-  equals(get(obj, 'prop'), 'BUZZ 4');
-  equals(get(obj, 'prop'), 'BUZZ 4');
+  equal(get(obj, 'prop'), 'BUZZ 4');
+  equal(get(obj, 'prop'), 'BUZZ 4');
   
   set(Ember.getPath(Global, 'foo.bar.baz'), 'biff', 'BUZZ');
-  equals(get(obj, 'prop'), 'BUZZ 4');
-  equals(get(obj, 'prop'), 'BUZZ 4');
+  equal(get(obj, 'prop'), 'BUZZ 4');
+  equal(get(obj, 'prop'), 'BUZZ 4');
   
   Ember.defineProperty(obj, 'prop');
   set(obj, 'prop', 'NONE');
-  equals(get(obj, 'prop'), 'NONE');
+  equal(get(obj, 'prop'), 'NONE');
 
   set(Global, 'foo', { bar: { baz: { biff: 'BLARG' } } });
-  equals(get(obj, 'prop'), 'NONE'); // should do nothing
-  equals(count, 4, 'should be not have invoked computed again');
+  equal(get(obj, 'prop'), 'NONE'); // should do nothing
+  equal(count, 4, 'should be not have invoked computed again');
 
 });
 
 testBoth('chained dependent keys should evaluate computed properties lazily', function(get,set){
   Ember.defineProperty(obj.foo.bar, 'b', Ember.computed(func).property().cacheable());
   Ember.defineProperty(obj.foo, 'c', Ember.computed(function(){}).property('bar.b').cacheable());
-  equals(count, 0, 'b should not run');
+  equal(count, 0, 'b should not run');
 });
 
 

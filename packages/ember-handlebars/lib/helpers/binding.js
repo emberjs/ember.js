@@ -3,7 +3,6 @@
 // Copyright: ©2011 Strobe Inc. and contributors.
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
-/*globals Handlebars */
 
 require('ember-handlebars/ext');
 require('ember-handlebars/views/bindable_span');
@@ -150,7 +149,7 @@ var helpers = EmberHandlebars.helpers;
   @returns {String} HTML string
 */
 EmberHandlebars.registerHelper('with', function(context, options) {
-  ember_assert("You must pass exactly one argument to the with helper", arguments.length == 2);
+  ember_assert("You must pass exactly one argument to the with helper", arguments.length === 2);
   ember_assert("You must pass a block to the with helper", options.fn && options.fn !== Handlebars.VM.noop);
 
   return helpers.bind.call(options.contexts[0], context, options);
@@ -164,7 +163,7 @@ EmberHandlebars.registerHelper('with', function(context, options) {
   @returns {String} HTML string
 */
 EmberHandlebars.registerHelper('if', function(context, options) {
-  ember_assert("You must pass exactly one argument to the if helper", arguments.length == 2);
+  ember_assert("You must pass exactly one argument to the if helper", arguments.length === 2);
   ember_assert("You must pass a block to the if helper", options.fn && options.fn !== Handlebars.VM.noop);
 
   return helpers.boundIf.call(options.contexts[0], context, options);
@@ -177,7 +176,7 @@ EmberHandlebars.registerHelper('if', function(context, options) {
   @returns {String} HTML string
 */
 EmberHandlebars.registerHelper('unless', function(context, options) {
-  ember_assert("You must pass exactly one argument to the unless helper", arguments.length == 2);
+  ember_assert("You must pass exactly one argument to the unless helper", arguments.length === 2);
   ember_assert("You must pass a block to the unless helper", options.fn && options.fn !== Handlebars.VM.noop);
 
   var fn = options.fn, inverse = options.inverse;
@@ -211,7 +210,7 @@ EmberHandlebars.registerHelper('bindAttr', function(options) {
   // Generate a unique id for this element. This will be added as a
   // data attribute to the element so it can be looked up when
   // the bound property changes.
-  var dataId = ++jQuery.uuid;
+  var dataId = ++Ember.$.uuid;
 
   // Handle classes differently, as we can bind multiple classes
   var classBindings = attrs['class'];
@@ -232,7 +231,7 @@ EmberHandlebars.registerHelper('bindAttr', function(options) {
 
     var value = getPath(ctx, property);
 
-    ember_assert(fmt("Attributes must be numbers, strings or booleans, not %@", [value]), value == null || typeof value === 'number' || typeof value === 'string' || typeof value === 'boolean');
+    ember_assert(fmt("Attributes must be numbers, strings or booleans, not %@", [value]), value === null || value === undefined || typeof value === 'number' || typeof value === 'string' || typeof value === 'boolean');
 
     var observer, invoker;
 
@@ -240,7 +239,7 @@ EmberHandlebars.registerHelper('bindAttr', function(options) {
     observer = function observer() {
       var result = getPath(ctx, property);
 
-      ember_assert(fmt("Attributes must be numbers, strings or booleans, not %@", [result]), result == null || typeof result === 'number' || typeof result === 'string' || typeof result === 'boolean');
+      ember_assert(fmt("Attributes must be numbers, strings or booleans, not %@", [result]), result === null || result === undefined || typeof result === 'number' || typeof result === 'string' || typeof result === 'boolean');
 
       var elem = view.$("[data-bindAttr-" + dataId + "='" + dataId + "']");
 
@@ -323,7 +322,7 @@ EmberHandlebars.bindClasses = function(context, classBindings, view, bindAttrId)
 
     // If value is a Boolean and true, return the dasherized property
     // name.
-    if (val === YES) {
+    if (val === true) {
       if (className) { return className; }
 
       // Normalize property path to be suitable for use
@@ -334,7 +333,7 @@ EmberHandlebars.bindClasses = function(context, classBindings, view, bindAttrId)
 
     // If the value is not NO, undefined, or null, return the current
     // value of the property.
-    } else if (val !== NO && val !== undefined && val !== null) {
+    } else if (val !== false && val !== undefined && val !== null) {
       return val;
 
     // Nothing to display. Return null so that the old class is removed
@@ -389,7 +388,7 @@ EmberHandlebars.bindClasses = function(context, classBindings, view, bindAttrId)
       Ember.run.once(observer);
     };
 
-    property = binding.split(':')[0];
+    var property = binding.split(':')[0];
     Ember.addObserver(context, property, invoker);
 
     // We've already setup the observer; now we just need to figure out the 

@@ -24,11 +24,11 @@ test("defining a simple property", function() {
     value: 'FOO'
   });
   
-  equals(obj.foo, 'FOO', 'should have added property');
+  equal(obj.foo, 'FOO', 'should have added property');
   
   obj.foo = "BAR";
-  equals(obj.foo, 'BAR', 'writable defined property should be writable');
-  equals(isEnumerable(obj, 'foo'), true, 'foo should be enumerable');
+  equal(obj.foo, 'BAR', 'writable defined property should be writable');
+  equal(isEnumerable(obj, 'foo'), true, 'foo should be enumerable');
 });
 
 test('defining a read only property', function() {
@@ -39,13 +39,13 @@ test('defining a read only property', function() {
     value: 'FOO'
   });
   
-  equals(obj.foo, 'FOO', 'should have added property');
+  equal(obj.foo, 'FOO', 'should have added property');
   
   obj.foo = "BAR";
   if (Ember.platform.defineProperty.isSimulated) {
-    equals(obj.foo, 'BAR', 'simulated defineProperty should silently work');
+    equal(obj.foo, 'BAR', 'simulated defineProperty should silently work');
   } else {
-    equals(obj.foo, 'FOO', 'real defined property should not be writable');
+    equal(obj.foo, 'FOO', 'real defined property should not be writable');
   }
   
 });
@@ -59,9 +59,9 @@ test('defining a non enumerable property', function() {
   });
   
   if (Ember.platform.defineProperty.isSimulated) {
-    equals(isEnumerable(obj, 'foo'), true, 'simulated defineProperty will leave properties enumerable');
+    equal(isEnumerable(obj, 'foo'), true, 'simulated defineProperty will leave properties enumerable');
   } else {
-    equals(isEnumerable(obj, 'foo'), false, 'real defineProperty will make property not-enumerable');
+    equal(isEnumerable(obj, 'foo'), false, 'real defineProperty will make property not-enumerable');
   }
 });
 
@@ -76,12 +76,12 @@ test('defining a getter/setter', function() {
   
   if (Ember.platform.hasPropertyAccessors) {
     Ember.platform.defineProperty(obj, 'foo', desc);
-    equals(obj.foo, 'FOO', 'should return getter');
-    equals(getCnt, 1, 'should have invoked getter');
+    equal(obj.foo, 'FOO', 'should return getter');
+    equal(getCnt, 1, 'should have invoked getter');
     
     obj.foo = 'BAR';
-    equals(obj.foo, 'BAR', 'setter should have worked');
-    equals(setCnt, 1, 'should have invoked setter');
+    equal(obj.foo, 'BAR', 'setter should have worked');
+    equal(setCnt, 1, 'should have invoked setter');
 
   } else {
     raises(function() {

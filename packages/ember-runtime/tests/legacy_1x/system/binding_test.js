@@ -59,21 +59,21 @@ module("basic object binding", {
 });
 
 test("binding should have synced on connect", function() {
-  equals(get(toObject, "value"), "start", "toObject.value should match fromObject.value");
+  equal(get(toObject, "value"), "start", "toObject.value should match fromObject.value");
 });
 
 test("fromObject change should propogate to toObject only after flush", function() {
   set(fromObject, "value", "change") ;
-  equals(get(toObject, "value"), "start") ;
+  equal(get(toObject, "value"), "start") ;
   Ember.run.sync() ;
-  equals(get(toObject, "value"), "change") ;
+  equal(get(toObject, "value"), "change") ;
 });
 
 test("toObject change should propogate to fromObject only after flush", function() {
   set(toObject, "value", "change") ;
-  equals(get(fromObject, "value"), "start") ;
+  equal(get(fromObject, "value"), "start") ;
   Ember.run.sync() ;
-  equals(get(fromObject, "value"), "change") ;
+  equal(get(fromObject, "value"), "change") ;
 });
 
 test("suspended observing during bindings", function() {
@@ -91,8 +91,8 @@ test("suspended observing during bindings", function() {
     callCount: 0,
 
     observer: Ember.observer(function() {
-      equals(get(this, 'value1'), 'CHANGED', 'value1 when observer fires');
-      equals(get(this, 'value2'), 'CHANGED', 'value2 when observer fires');
+      equal(get(this, 'value1'), 'CHANGED', 'value1 when observer fires');
+      equal(get(this, 'value2'), 'CHANGED', 'value2 when observer fires');
       this.callCount++;
     }, 'value1', 'value2')
   });
@@ -107,14 +107,14 @@ test("suspended observing during bindings", function() {
   set(fromObject, 'value2', 'CHANGED');
   Ember.run.sync();
 
-  equals(toObject.callCount, 2, 'should call observer twice');
+  equal(toObject.callCount, 2, 'should call observer twice');
 });
 
 test("binding disconnection actually works", function() {
   binding.disconnect(root);
   set(fromObject, 'value', 'change');
   Ember.run.sync();
-  equals(get(toObject, 'value'), 'start');
+  equal(get(toObject, 'value'), 'start');
 });
 
 // ..........................................................
@@ -135,16 +135,16 @@ module("one way binding", {
 
 test("fromObject change should propogate after flush", function() {
   set(fromObject, "value", "change") ;
-  equals(get(toObject, "value"), "start") ;
+  equal(get(toObject, "value"), "start") ;
   Ember.run.sync() ;
-  equals(get(toObject, "value"), "change") ;
+  equal(get(toObject, "value"), "change") ;
 });
 
 test("toObject change should NOT propogate", function() {
   set(toObject, "value", "change") ;
-  equals(get(fromObject, "value"), "start") ;
+  equal(get(fromObject, "value"), "start") ;
   Ember.run.sync() ;
-  equals(get(fromObject, "value"), "start") ;
+  equal(get(fromObject, "value"), "start") ;
 });
 
 var first, second, third, binding1, binding2 ; // global variables
@@ -179,16 +179,16 @@ module("chained binding", {
 
 test("changing first output should propograte to third after flush", function() {
   set(first, "output", "change") ;
-  equals("change", get(first, "output"), "first.output") ;
+  equal("change", get(first, "output"), "first.output") ;
   ok("change" !== get(third, "input"), "third.input") ;
 
   var didChange = YES;
   while(didChange) didChange = Ember.run.sync() ;
 
-  equals("change", get(first, "output"), "first.output") ;
-  equals("change", get(second, "input"), "second.input") ;
-  equals("change", get(second, "output"), "second.output") ;
-  equals("change", get(third,"input"), "third.input") ;
+  equal("change", get(first, "output"), "first.output") ;
+  equal("change", get(second, "input"), "second.input") ;
+  equal("change", get(second, "output"), "second.output") ;
+  equal("change", get(third,"input"), "third.input") ;
 });
 
 // ..........................................................
@@ -231,8 +231,8 @@ test("Binding value1 such that it will recieve only single values", function() {
 	set(bon2, "arr", a);
 	set(bon2, "val1","changed");
 	Ember.run.sync();
-	equals(get(bon2, "val1"),get(bon1, "value1"));
-	equals("@@MULT@@",get(bon1, "array1"));
+	equal(get(bon2, "val1"),get(bon1, "value1"));
+	equal("@@MULT@@",get(bon1, "array1"));
 });
 
 test("Single binding using notEmpty function.", function() {
@@ -256,7 +256,7 @@ test("Binding with transforms, function to check the type of value", function() 
 	Ember.run.sync();
 	set(bon2, "val1","changed");
 	Ember.run.sync();
-	equals(get(jon, "value1"), get(bon2, "val1"));
+	equal(get(jon, "value1"), get(bon2, "val1"));
 });
 
 test("two bindings to the same value should sync in the order they are initialized", function() {
@@ -287,9 +287,9 @@ test("two bindings to the same value should sync in the order they are initializ
 
   Ember.RunLoop.end();
 
-  equals(get(a, 'foo'), "bar", 'a.foo should not change');
-  equals(get(b, 'foo'), "bar", 'a.foo should propogate up to b.foo');
-  equals(get(b.c, 'foo'), "bar", 'a.foo should propogate up to b.c.foo');
+  equal(get(a, 'foo'), "bar", 'a.foo should not change');
+  equal(get(b, 'foo'), "bar", 'a.foo should propogate up to b.foo');
+  equal(get(b.c, 'foo'), "bar", 'a.foo should propogate up to b.c.foo');
 });
 
 // ..........................................................
@@ -324,7 +324,7 @@ test("toObject.value should be YES if both sources are YES", function() {
   Ember.RunLoop.end();
 
   Ember.run.sync();
-  equals(get(toObject, 'value'), YES);
+  equal(get(toObject, 'value'), YES);
 });
 
 test("toObject.value should be NO if either source is NO", function() {
@@ -334,7 +334,7 @@ test("toObject.value should be NO if either source is NO", function() {
   Ember.RunLoop.end();
 
   Ember.run.sync();
-  equals(get(toObject, 'value'), NO);
+  equal(get(toObject, 'value'), NO);
 
   Ember.RunLoop.begin();
   set(Ember.testControllerA, 'value', YES);
@@ -342,7 +342,7 @@ test("toObject.value should be NO if either source is NO", function() {
   Ember.RunLoop.end();
 
   Ember.run.sync();
-  equals(get(toObject, 'value'), YES);
+  equal(get(toObject, 'value'), YES);
 
   Ember.RunLoop.begin();
   set(Ember.testControllerA, 'value', NO);
@@ -350,7 +350,7 @@ test("toObject.value should be NO if either source is NO", function() {
   Ember.RunLoop.end();
 
   Ember.run.sync();
-  equals(get(toObject, 'value'), NO);
+  equal(get(toObject, 'value'), NO);
 });
 
 // ..........................................................
@@ -385,7 +385,7 @@ test("toObject.value should be first value if first value is truthy", function()
   Ember.RunLoop.end();
 
   Ember.run.sync();
-  equals(get(toObject, 'value'), 'first value');
+  equal(get(toObject, 'value'), 'first value');
 });
 
 test("toObject.value should be second value if first is falsy", function() {
@@ -395,7 +395,7 @@ test("toObject.value should be second value if first is falsy", function() {
   Ember.RunLoop.end();
 
   Ember.run.sync();
-  equals(get(toObject, 'value'), 'second value');
+  equal(get(toObject, 'value'), 'second value');
 });
 
 // ..........................................................
@@ -421,7 +421,7 @@ module("Binding with '[]'", {
 test("Binding refreshes after a couple of items have been pushed in the array", function() {
   get(fromObject, 'value').pushObjects(['foo', 'bar']);
   Ember.run.sync();
-  equals(get(toObject, 'value'), 'foo,bar');
+  equal(get(toObject, 'value'), 'foo,bar');
 });
 
 
@@ -455,22 +455,22 @@ test("works with full path", function(){
   set(TestNamespace.fromObject, 'value', "updatedValue");
   Ember.run.sync();
   
-  equals(get(TestNamespace.toObject, 'value'), "updatedValue");
+  equal(get(TestNamespace.toObject, 'value'), "updatedValue");
 
   set(TestNamespace.fromObject, 'value', "newerValue");
   Ember.run.sync();
 
-  equals(get(TestNamespace.toObject, 'value'), "newerValue");
+  equal(get(TestNamespace.toObject, 'value'), "newerValue");
 });
 
 test("works with local path", function(){
   set(TestNamespace.toObject, 'localValue', "updatedValue");
   Ember.run.sync();
 
-  equals(get(TestNamespace.toObject, 'relative'), "updatedValue");
+  equal(get(TestNamespace.toObject, 'relative'), "updatedValue");
 
   set(TestNamespace.toObject, 'localValue', "newerValue");
   Ember.run.sync();
 
-  equals(get(TestNamespace.toObject, 'relative'), "newerValue");
+  equal(get(TestNamespace.toObject, 'relative'), "newerValue");
 });

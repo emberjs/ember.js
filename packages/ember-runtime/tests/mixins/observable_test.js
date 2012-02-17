@@ -14,8 +14,8 @@ test('should be able to use getProperties to get a POJO of provided keys', funct
   });
 
   var pojo = obj.getProperties("firstName", "lastName");
-  equals("Steve", pojo.firstName);
-  equals("Jobs", pojo.lastName);
+  equal("Steve", pojo.firstName);
+  equal("Jobs", pojo.lastName);
 });
 
 test('should be able to use setProperties to set multiple properties at once', function() {
@@ -26,8 +26,8 @@ test('should be able to use setProperties to set multiple properties at once', f
   });
 
   obj.setProperties({firstName: "Tim", lastName: "Cook"});
-  equals("Tim", obj.get("firstName"));
-  equals("Cook", obj.get("lastName"));
+  equal("Tim", obj.get("firstName"));
+  equal("Cook", obj.get("lastName"));
 });
 
 testBoth('calling setProperties completes safely despite exceptions', function(get,set) {
@@ -58,5 +58,5 @@ testBoth('calling setProperties completes safely despite exceptions', function(g
       throw err;
   }
 
-  equals(firstNameChangedCount, 1, 'firstName should have fired once');
+  equal(firstNameChangedCount, 1, 'firstName should have fired once');
 });

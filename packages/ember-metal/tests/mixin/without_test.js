@@ -17,7 +17,7 @@ test('without should create a new mixin excluding named properties', function() 
   var obj = {};
   MixinB.apply(obj);
   
-  equals(obj.foo, 'FOO', 'should defined foo');
-  equals(obj.bar, undefined, 'should not define bar');
+  equal(obj.foo, 'FOO', 'should defined foo');
+  equal(obj.bar, undefined, 'should not define bar');
   
 });

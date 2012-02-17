@@ -15,51 +15,51 @@ test('should set arbitrary properties on an object', function() {
     boolFalse: false,
     nullValue: null
   };
-  
+
   var newObj = {};
-  
+
   for(var key in obj) {
     if (!obj.hasOwnProperty(key)) continue;
-    equals(Ember.set(newObj, key, obj[key]), obj[key], 'should return value');
-    equals(Ember.get(newObj, key), obj[key], 'should set value');
+    equal(Ember.set(newObj, key, obj[key]), obj[key], 'should return value');
+    equal(Ember.get(newObj, key), obj[key], 'should set value');
   }
-  
+
 });
 
 test('should call unknownProperty if defined and value is undefined', function() {
-  
+
   var obj = {
     count: 0,
     unknownProperty: function(key, value) {
-      equals(key, 'foo', 'should pass key');
-      equals(value, 'BAR', 'should pass key');
+      equal(key, 'foo', 'should pass key');
+      equal(value, 'BAR', 'should pass key');
       this.count++;
       return 'FOO';
     }
   };
-  
-  equals(Ember.set(obj, 'foo', "BAR"), 'BAR', 'should return set value');
-  equals(obj.count, 1, 'should have invoked');
+
+  equal(Ember.set(obj, 'foo', "BAR"), 'BAR', 'should return set value');
+  equal(obj.count, 1, 'should have invoked');
 });
 
 test('should call setUnknownProperty if defined and value is undefined', function() {
-  
+
   var obj = {
     count: 0,
-    
+
     unknownProperty: function(key, value) {
       ok(false, 'should not invoke unknownProperty is setUnknownProperty is defined');
     },
-    
+
     setUnknownProperty: function(key, value) {
-      equals(key, 'foo', 'should pass key');
-      equals(value, 'BAR', 'should pass key');
+      equal(key, 'foo', 'should pass key');
+      equal(value, 'BAR', 'should pass key');
       this.count++;
       return 'FOO';
     }
   };
-  
-  equals(Ember.set(obj, 'foo', "BAR"), 'BAR', 'should return set value');
-  equals(obj.count, 1, 'should have invoked');
+
+  equal(Ember.set(obj, 'foo', "BAR"), 'BAR', 'should return set value');
+  equal(obj.count, 1, 'should have invoked');
 });
 

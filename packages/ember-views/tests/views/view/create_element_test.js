@@ -10,7 +10,7 @@ module("Ember.View#createElement");
 
 test("returns the receiver", function() {
   var view = Ember.View.create();
-  equals(view.createElement(), view, 'returns receiver');
+  equal(view.createElement(), view, 'returns receiver');
 });
 
 test("calls render and turns resultant string into element", function() {
@@ -22,13 +22,13 @@ test("calls render and turns resultant string into element", function() {
     }
   });
 
-  equals(get(view, 'element'), null, 'precondition - has no element');
+  equal(get(view, 'element'), null, 'precondition - has no element');
   view.createElement();
 
   var elem = get(view, 'element');
   ok(elem, 'has element now');
-  equals(elem.innerHTML, 'foo', 'has innerHTML from context');
-  equals(elem.tagName.toString().toLowerCase(), 'span', 'has tagName from view');
+  equal(elem.innerHTML, 'foo', 'has innerHTML from context');
+  equal(elem.tagName.toString().toLowerCase(), 'span', 'has tagName from view');
 });
 
 test("generated element include HTML from child views as well", function() {

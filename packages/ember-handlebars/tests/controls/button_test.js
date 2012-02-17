@@ -27,7 +27,7 @@ function synthesizeEvent(type, view) {
 }
 
 function synthesizeKeyEvent(type, keyCode, view) {
-  var event = jQuery.Event(type);
+  var event = Ember.$.Event(type);
   event.keyCode = keyCode;
   view.$().trigger(event);
 }
@@ -269,7 +269,7 @@ test("should by default be of type='button' if tagName is 'input'", function() {
     button.appendTo('#qunit-fixture');
   });
 
-  equals(button.$().attr('type'), 'button');
+  equal(button.$().attr('type'), 'button');
 });
 
 test("should by default be of type='button' if tagName is 'button'", function() {
@@ -278,28 +278,28 @@ test("should by default be of type='button' if tagName is 'button'", function() 
     button.appendTo('#qunit-fixture');
   });
 
-  equals(button.$().attr('type'), 'button');
+  equal(button.$().attr('type'), 'button');
 });
 
 test("should allow setting of type when tagName is not 'input' or 'button'", function() {
   button.set('tagName', 'a');
   button.set('type', 'submit');
 
-  equals(button.get('type'), 'submit');
+  equal(button.get('type'), 'submit');
 });
 
 test("should allow setting of type when tagName is 'input'", function() {
   button.set('tagName', 'input');
   button.set('type', 'submit');
 
-  equals(button.get('type'), 'submit');
+  equal(button.get('type'), 'submit');
 });
 
 test("should allow setting of type when tagName is 'button'", function() {
   button.set('tagName', 'button');
   button.set('type', 'submit');
 
-  equals(button.get('type'), 'submit');
+  equal(button.get('type'), 'submit');
 });
 
 test("should have a configurable type", function() {
@@ -308,8 +308,8 @@ test("should have a configurable type", function() {
   Ember.run(function() {
     button.appendTo('#qunit-fixture');
   });
-  
-  equals(button.$().attr('type'), 'submit');
+
+  equal(button.$().attr('type'), 'submit');
 });
 
 test("should set href='#' if tagName is 'a'", function() {
@@ -328,11 +328,11 @@ test("should not set href if tagName is not 'a'", function() {
     button.appendTo('#qunit-fixture');
   });
 
-  equals(button.$().attr('href'), null);
+  equal(button.$().attr('href'), null);
 });
 
 test("should allow the target to be the parentView", function() {
   button.set('target', 'parentView');
-  
-  equals(get(button, 'parentView'), button.get('targetObject'));
+
+  equal(get(button, 'parentView'), button.get('targetObject'));
 });

@@ -22,14 +22,14 @@ test('forces binding values to be single', function() {
   var binding = Ember.bind(MyApp, 'bar.value', 'foo.value').single();
 
   Ember.run.sync();
-  equals(Ember.getPath('MyApp.bar.value'), 'FOO', 'passes single object');
+  equal(Ember.getPath('MyApp.bar.value'), 'FOO', 'passes single object');
 
   Ember.setPath('MyApp.foo.value', ['BAR']);
   Ember.run.sync();
-  equals(Ember.getPath('MyApp.bar.value'), 'BAR', 'passes single object');
+  equal(Ember.getPath('MyApp.bar.value'), 'BAR', 'passes single object');
 
   Ember.setPath('MyApp.foo.value', ['BAR', 'BAZ']);
   Ember.run.sync();
-  equals(Ember.getPath('MyApp.bar.value'), Ember.MULTIPLE_PLACEHOLDER, 'converts to placeholder');
+  equal(Ember.getPath('MyApp.bar.value'), Ember.MULTIPLE_PLACEHOLDER, 'converts to placeholder');
   
 });

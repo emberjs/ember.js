@@ -68,17 +68,17 @@ test("should observe the changes within the nested begin / end property changes"
     // Inner nest
     ObjectA.beginPropertyChanges();
         ObjectA.set('foo', 'changeFooValue');
-      equals(ObjectA.prop, "propValue") ;
+      equal(ObjectA.prop, "propValue") ;
       ObjectA.endPropertyChanges();
     
     //end inner nest
     ObjectA.set('prop', 'changePropValue');
-    equals(ObjectA.newFoo, "newFooValue") ;
+    equal(ObjectA.newFoo, "newFooValue") ;
   //close the outer nest
   ObjectA.endPropertyChanges();
   
-  equals(ObjectA.prop, "changedPropValue") ;
-  equals(ObjectA.newFoo, "changedNewFooValue") ;
+  equal(ObjectA.prop, "changedPropValue") ;
+  equal(ObjectA.newFoo, "changedNewFooValue") ;
   
 });
 
@@ -87,10 +87,10 @@ test("should observe the changes within the begin and end property changes", fun
   ObjectA.beginPropertyChanges();
     ObjectA.set('foo', 'changeFooValue');
     
-  equals(ObjectA.prop, "propValue") ;
+  equal(ObjectA.prop, "propValue") ;
     ObjectA.endPropertyChanges();
     
-  equals(ObjectA.prop, "changedPropValue") ;
+  equal(ObjectA.prop, "changedPropValue") ;
 });
 
 test("should indicate that the property of an object has just changed", function() {
@@ -98,7 +98,7 @@ test("should indicate that the property of an object has just changed", function
   ObjectA.propertyWillChange('foo') ;
   
   //Value of the prop is unchanged yet as this will be changed when foo changes
-  equals(ObjectA.prop, 'propValue' ) ;
+  equal(ObjectA.prop, 'propValue' ) ;
   
   //change the value of foo.
   ObjectA.set('foo', 'changeFooValue');
@@ -107,7 +107,7 @@ test("should indicate that the property of an object has just changed", function
   ObjectA.propertyDidChange('foo', null) ;
   
   // Values of prop has just changed
-  equals(ObjectA.prop,'changedPropValue') ;
+  equal(ObjectA.prop,'changedPropValue') ;
 });
 
 test("should notify that the property of an object has changed", function() {
@@ -117,7 +117,7 @@ test("should notify that the property of an object has changed", function() {
   ObjectA.notifyPropertyChange('newFoo','fooValue');
   
   //value of newProp changed.
-  equals(ObjectA.newProp,'changedNewPropValue') ;
+  equal(ObjectA.newProp,'changedNewPropValue') ;
 });
 
 test("should invalidate function property cache when notifyPropertyChange is called", function() {
@@ -134,11 +134,11 @@ test("should invalidate function property cache when notifyPropertyChange is cal
   });
   
   a.set('b', 'foo');
-  equals(a.get('b'), 'foo', 'should have set the correct value for property b');
+  equal(a.get('b'), 'foo', 'should have set the correct value for property b');
   
   a._b = 'bar';
   a.notifyPropertyChange('b');
   a.set('b', 'foo');
-  equals(a.get('b'), 'foo', 'should have invalidated the cache so that the newly set value is actually set');
+  equal(a.get('b'), 'foo', 'should have invalidated the cache so that the newly set value is actually set');
   
 });

@@ -99,12 +99,12 @@ var ObserverClass = Ember.Object.extend({
   },
   
   enumerableWillChange: function() {
-    equals(this._before, null, 'should only call once');
+    equal(this._before, null, 'should only call once');
     this._before = Array.prototype.slice.call(arguments);
   },
 
   enumerableDidChange: function() {
-    equals(this._after, null, 'should only call once');
+    equal(this._after, null, 'should only call once');
     this._after = Array.prototype.slice.call(arguments);
   }
   
@@ -260,7 +260,7 @@ EnumerableTests.reopenClass({
   same: function(actual, exp, message) {
     actual = (actual && actual.map) ? actual.map(function(x) { return Ember.guidFor(x); }) : actual;
     exp = (exp && exp.map) ? exp.map(function(x) { return Ember.guidFor(x); }) : exp;
-    return same(actual, exp, message);
+    return deepEqual(actual, exp, message);
   },
   
   // easy way to disable tests

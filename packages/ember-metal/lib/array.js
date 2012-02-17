@@ -1,3 +1,5 @@
+/*jshint newcap:true*/
+
 // From: https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/array/map
 if (!Array.prototype.map)
 {
@@ -51,7 +53,7 @@ if (!Array.prototype.forEach)
 
 if (!Array.prototype.indexOf) {
   Array.prototype.indexOf = function (obj, fromIndex) {
-    if (fromIndex == null) { fromIndex = 0; }
+    if (fromIndex === null || fromIndex === undefined) { fromIndex = 0; }
     else if (fromIndex < 0) { fromIndex = Math.max(0, this.length + fromIndex); }
     for (var i = fromIndex, j = this.length; i < j; i++) {
       if (this[i] === obj) { return i; }

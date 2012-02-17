@@ -14,8 +14,8 @@ test('using apply() should apply properties', function() {
   var obj = {};
   Ember.mixin(obj, MixinA);
 
-  equals(Ember.get(obj, 'foo'), "FOO", 'should apply foo');
-  equals(Ember.get(obj, 'baz'), K, 'should apply foo');
+  equal(Ember.get(obj, 'foo'), "FOO", 'should apply foo');
+  equal(Ember.get(obj, 'baz'), K, 'should apply foo');
 });
 
 test('applying anonymous properties', function() {
@@ -25,8 +25,8 @@ test('applying anonymous properties', function() {
     baz: K
   });
 
-  equals(Ember.get(obj, 'foo'), "FOO", 'should apply foo');
-  equals(Ember.get(obj, 'baz'), K, 'should apply foo');
+  equal(Ember.get(obj, 'foo'), "FOO", 'should apply foo');
+  equal(Ember.get(obj, 'baz'), K, 'should apply foo');
 });
 
 test('applying null values', function() {

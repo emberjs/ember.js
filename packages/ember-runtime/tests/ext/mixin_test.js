@@ -18,7 +18,7 @@ test('Defining a property ending in Binding should setup binding when applied', 
   Ember.run.sync(); // let bindings sync...
   
   ok(Ember.get(obj, 'fooBinding') instanceof Ember.Binding, 'should be a binding object');
-  equals(Ember.get(obj, 'foo'), 'BIFF', 'binding should be created and synced');
+  equal(Ember.get(obj, 'foo'), 'BIFF', 'binding should be created and synced');
   
 });
 
@@ -37,6 +37,6 @@ test('Defining a property ending in Binding should apply to prototype children',
   Ember.run.sync(); // let bindings sync...
   
   ok(Ember.get(obj2, 'fooBinding') instanceof Ember.Binding, 'should be a binding object');
-  equals(Ember.get(obj2, 'foo'), 'BARG', 'binding should be created and synced');
+  equal(Ember.get(obj2, 'foo'), 'BARG', 'binding should be created and synced');
   
 });

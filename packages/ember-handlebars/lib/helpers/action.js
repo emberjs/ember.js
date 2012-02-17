@@ -5,7 +5,7 @@ var EmberHandlebars = Ember.Handlebars, getPath = Ember.Handlebars.getPath;
 var ActionHelper = EmberHandlebars.ActionHelper = {};
 
 ActionHelper.registerAction = function(actionName, eventName, target, view, context) {
-  var actionId = (++jQuery.uuid).toString(),
+  var actionId = (++Ember.$.uuid).toString(),
       existingHandler = view[eventName];
 
   function handler(event) {

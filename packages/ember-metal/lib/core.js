@@ -3,7 +3,7 @@
 // Copyright: ©2011 Strobe Inc. and contributors.
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
-/*globals ENV ember_assert */
+/*globals Em:true ENV */
 
 if ('undefined' === typeof Ember) {
 /**
@@ -17,10 +17,10 @@ if ('undefined' === typeof Ember) {
 
   You can also use the shorthand "Em" instead of "Ember".
 
-  Ember-Runtime is a framework that provides core functions for 
-  Ember including cross-platform functions, support for property 
-  observing and objects. Its focus is on small size and performance. You can 
-  use this in place of or along-side other cross-platform libraries such as 
+  Ember-Runtime is a framework that provides core functions for
+  Ember including cross-platform functions, support for property
+  observing and objects. Its focus is on small size and performance. You can
+  use this in place of or along-side other cross-platform libraries such as
   jQuery.
 
   The core Runtime framework is based on the jQuery API with a number of
@@ -50,9 +50,9 @@ Ember.VERSION = '0.9.5';
   @static
   @type Hash
   @constant
-  
+
   Standard environmental variables.  You can define these in a global `ENV`
-  variable before loading Ember to control various configuration 
+  variable before loading Ember to control various configuration
   settings.
 */
 Ember.ENV = 'undefined' === typeof ENV ? {} : ENV;
@@ -88,7 +88,7 @@ if ('undefined' === typeof ember_deprecateFunc) {
 
 // ..........................................................
 // LOGGER
-// 
+//
 
 /**
   @class

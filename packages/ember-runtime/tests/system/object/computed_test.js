@@ -15,7 +15,7 @@ testBoth('computed property on instance', function(get, set) {
     foo: Ember.computed(function() { return 'FOO'; }).cacheable()
   });
   
-  equals(get(new MyClass(), 'foo'), 'FOO');
+  equal(get(new MyClass(), 'foo'), 'FOO');
   
 });
 
@@ -30,7 +30,7 @@ testBoth('computed property on subclass', function(get, set) {
     foo: Ember.computed(function() { return 'BAR'; }).cacheable()
   });
   
-  equals(get(new Subclass(), 'foo'), 'BAR');
+  equal(get(new Subclass(), 'foo'), 'BAR');
   
 });
 
@@ -45,7 +45,7 @@ testBoth('replacing computed property with regular val', function(get, set) {
     foo: 'BAR'
   });
   
-  equals(get(new Subclass(), 'foo'), 'BAR');
+  equal(get(new Subclass(), 'foo'), 'BAR');
   
 });
 
@@ -74,18 +74,18 @@ testBoth('complex depndent keys', function(get, set) {
   var obj1 = new MyClass(),
       obj2 = new Subclass();
       
-  equals(get(obj1, 'foo'), 'BIFF 1');
-  equals(get(obj2, 'foo'), 'BIFF 21');
+  equal(get(obj1, 'foo'), 'BIFF 1');
+  equal(get(obj2, 'foo'), 'BIFF 21');
 
   set(get(obj1, 'bar'), 'baz', 'BLARG');
   
-  equals(get(obj1, 'foo'), 'BLARG 2');
-  equals(get(obj2, 'foo'), 'BIFF 21');
+  equal(get(obj1, 'foo'), 'BLARG 2');
+  equal(get(obj2, 'foo'), 'BIFF 21');
 
   set(get(obj2, 'bar'), 'baz', 'BOOM');
 
-  equals(get(obj1, 'foo'), 'BLARG 2');
-  equals(get(obj2, 'foo'), 'BOOM 22');
+  equal(get(obj1, 'foo'), 'BLARG 2');
+  equal(get(obj2, 'foo'), 'BOOM 22');
 });
 
 testBoth('complex depndent keys changing complex dependent keys', function(get, set) {
@@ -123,13 +123,13 @@ testBoth('complex depndent keys changing complex dependent keys', function(get, 
 
   var obj2 = new Subclass();
       
-  equals(get(obj2, 'foo'), 'BIFF2 1');
+  equal(get(obj2, 'foo'), 'BIFF2 1');
 
   set(get(obj2, 'bar'), 'baz', 'BLARG');
-  equals(get(obj2, 'foo'), 'BIFF2 1', 'should not invalidate property');
+  equal(get(obj2, 'foo'), 'BIFF2 1', 'should not invalidate property');
 
   set(get(obj2, 'bar2'), 'baz', 'BLARG');
-  equals(get(obj2, 'foo'), 'BLARG 2', 'should invalidate property');
+  equal(get(obj2, 'foo'), 'BLARG 2', 'should invalidate property');
 });
 
 testBoth("can retrieve metadata for a computed property", function(get, set) {

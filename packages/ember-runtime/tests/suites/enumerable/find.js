@@ -21,8 +21,8 @@ suite.test('find should invoke callback on each item as long as you return false
       found = [], result;
       
   result = obj.find(function(i) { found.push(i); return false; });
-  equals(result, undefined, 'return value of obj.find');
-  same(found, ary, 'items passed during find() should match');
+  equal(result, undefined, 'return value of obj.find');
+  deepEqual(found, ary, 'items passed during find() should match');
 });
 
 suite.test('every should stop invoking when you return true', function() {
@@ -33,9 +33,9 @@ suite.test('every should stop invoking when you return true', function() {
       found = [], result;
       
   result = obj.find(function(i) { found.push(i); return !(--cnt>0); });
-  equals(result, ary[exp-1], 'return value of obj.find');
-  equals(found.length, exp, 'should invoke proper number of times');
-  same(found, ary.slice(0,-2), 'items passed during find() should match');
+  equal(result, ary[exp-1], 'return value of obj.find');
+  equal(found.length, exp, 'should invoke proper number of times');
+  deepEqual(found, ary.slice(0,-2), 'items passed during find() should match');
 });
 
 // ..........................................................
@@ -54,8 +54,8 @@ suite.test('should return first object of property matches', function() {
   
   obj = this.newObject(ary);
   
-  equals(obj.findProperty('foo', 'foo'), ary[0], 'findProperty(foo)');
-  equals(obj.findProperty('bar', 'bar'), ary[1], 'findProperty(bar)');
+  equal(obj.findProperty('foo', 'foo'), ary[0], 'findProperty(foo)');
+  equal(obj.findProperty('bar', 'bar'), ary[1], 'findProperty(bar)');
 });
 
 suite.test('should return first object with truthy prop', function() {
@@ -69,8 +69,8 @@ suite.test('should return first object with truthy prop', function() {
   obj = this.newObject(ary);
 
   // different values - all eval to true
-  equals(obj.findProperty('foo'), ary[0], 'findProperty(foo)');
-  equals(obj.findProperty('bar'), ary[1], 'findProperty(bar)');
+  equal(obj.findProperty('foo'), ary[0], 'findProperty(foo)');
+  equal(obj.findProperty('bar'), ary[1], 'findProperty(bar)');
 });
 
 suite.test('should return first null property match', function() {
@@ -83,8 +83,8 @@ suite.test('should return first null property match', function() {
 
   obj = this.newObject(ary);
 
-  equals(obj.findProperty('foo', null), ary[0], "findProperty('foo', null)");
-  equals(obj.findProperty('bar', null), ary[1], "findProperty('bar', null)");
+  equal(obj.findProperty('foo', null), ary[0], "findProperty('foo', null)");
+  equal(obj.findProperty('bar', null), ary[1], "findProperty('bar', null)");
 });
 
 suite.test('should return first undefined property match', function() {
@@ -97,6 +97,6 @@ suite.test('should return first undefined property match', function() {
 
   obj = this.newObject(ary);
 
-  equals(obj.findProperty('foo', undefined), ary[0], "findProperty('foo', undefined)");
-  equals(obj.findProperty('bar', undefined), ary[1], "findProperty('bar', undefined)");
+  equal(obj.findProperty('foo', undefined), ary[0], "findProperty('foo', undefined)");
+  equal(obj.findProperty('bar', undefined), ary[1], "findProperty('bar', undefined)");
 });

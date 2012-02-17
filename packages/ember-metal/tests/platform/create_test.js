@@ -12,11 +12,11 @@ test("should inherit the properties from the parent object", function() {
   var obj = { foo: 'FOO' };
   var obj2 = Ember.platform.create(obj);
   ok(obj !== obj2, 'should be a new instance');
-  equals(obj2.foo, obj.foo, 'should inherit from parent');
+  equal(obj2.foo, obj.foo, 'should inherit from parent');
   
   obj2.foo = 'BAR';
-  equals(obj2.foo, 'BAR', 'should change foo');
-  equals(obj.foo, 'FOO', 'modifying obj2 should not modify obj');
+  equal(obj2.foo, 'BAR', 'should change foo');
+  equal(obj.foo, 'FOO', 'modifying obj2 should not modify obj');
 });
 
 test("passing additional property descriptors should define", function() {
@@ -31,7 +31,7 @@ test("passing additional property descriptors should define", function() {
     }
   });
   
-  equals(obj2.bar, 'BAR', 'should have defined');
-  equals(obj2.repl, 'obj2', 'should have replaced parent');
+  equal(obj2.bar, 'BAR', 'should have defined');
+  equal(obj2.repl, 'obj2', 'should have replaced parent');
 });
 

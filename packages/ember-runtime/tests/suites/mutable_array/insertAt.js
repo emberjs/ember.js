@@ -20,12 +20,12 @@ suite.test("[].insertAt(0, X) => [X] + notify", function() {
 
   obj.insertAt(0, after[0]);
 
-  same(this.toArray(obj), after, 'post item results');
-  equals(Ember.get(obj, 'length'), after.length, 'length');
+  deepEqual(this.toArray(obj), after, 'post item results');
+  equal(Ember.get(obj, 'length'), after.length, 'length');
 
   if (observer.isEnabled) {
-    equals(observer.validate('[]'), true, 'should have notified []');
-    equals(observer.validate('length'), true, 'should have notified length');
+    equal(observer.validate('[]'), true, 'should have notified []');
+    equal(observer.validate('length'), true, 'should have notified length');
   }
 });
 
@@ -47,12 +47,12 @@ suite.test("[A].insertAt(0, X) => [X,A] + notify", function() {
 
   obj.insertAt(0, item);
 
-  same(this.toArray(obj), after, 'post item results');
-  equals(Ember.get(obj, 'length'), after.length, 'length');
+  deepEqual(this.toArray(obj), after, 'post item results');
+  equal(Ember.get(obj, 'length'), after.length, 'length');
 
   if (observer.isEnabled) {
-    equals(observer.validate('[]'), true, 'should have notified []');
-    equals(observer.validate('length'), true, 'should have notified length');
+    equal(observer.validate('[]'), true, 'should have notified []');
+    equal(observer.validate('length'), true, 'should have notified length');
   }
 });
 
@@ -67,12 +67,12 @@ suite.test("[A].insertAt(1, X) => [A,X] + notify", function() {
 
   obj.insertAt(1, item);
 
-  same(this.toArray(obj), after, 'post item results');
-  equals(Ember.get(obj, 'length'), after.length, 'length');
+  deepEqual(this.toArray(obj), after, 'post item results');
+  equal(Ember.get(obj, 'length'), after.length, 'length');
 
   if (observer.isEnabled) {
-    equals(observer.validate('[]'), true, 'should have notified []');
-    equals(observer.validate('length'), true, 'should have notified length');
+    equal(observer.validate('[]'), true, 'should have notified []');
+    equal(observer.validate('length'), true, 'should have notified length');
   }
 });
 
@@ -94,12 +94,12 @@ suite.test("[A,B,C].insertAt(0,X) => [X,A,B,C] + notify", function() {
 
   obj.insertAt(0, item);
 
-  same(this.toArray(obj), after, 'post item results');
-  equals(Ember.get(obj, 'length'), after.length, 'length');
+  deepEqual(this.toArray(obj), after, 'post item results');
+  equal(Ember.get(obj, 'length'), after.length, 'length');
 
   if (observer.isEnabled) {
-    equals(observer.validate('[]'), true, 'should have notified []');
-    equals(observer.validate('length'), true, 'should have notified length');
+    equal(observer.validate('[]'), true, 'should have notified []');
+    equal(observer.validate('length'), true, 'should have notified length');
   }
 });
 
@@ -114,12 +114,12 @@ suite.test("[A,B,C].insertAt(1,X) => [A,X,B,C] + notify", function() {
 
   obj.insertAt(1, item);
 
-  same(this.toArray(obj), after, 'post item results');
-  equals(Ember.get(obj, 'length'), after.length, 'length');
+  deepEqual(this.toArray(obj), after, 'post item results');
+  equal(Ember.get(obj, 'length'), after.length, 'length');
 
   if (observer.isEnabled) {
-    equals(observer.validate('[]'), true, 'should have notified []');
-    equals(observer.validate('length'), true, 'should have notified length');
+    equal(observer.validate('[]'), true, 'should have notified []');
+    equal(observer.validate('length'), true, 'should have notified length');
   }
 });
 
@@ -134,11 +134,11 @@ suite.test("[A,B,C].insertAt(3,X) => [A,B,C,X] + notify", function() {
 
   obj.insertAt(3, item);
 
-  same(this.toArray(obj), after, 'post item results');
-  equals(Ember.get(obj, 'length'), after.length, 'length');
+  deepEqual(this.toArray(obj), after, 'post item results');
+  equal(Ember.get(obj, 'length'), after.length, 'length');
 
   if (observer.isEnabled) {
-    equals(observer.validate('[]'), true, 'should have notified []');
-    equals(observer.validate('length'), true, 'should have notified length');
+    equal(observer.validate('[]'), true, 'should have notified []');
+    equal(observer.validate('length'), true, 'should have notified length');
   }
 });

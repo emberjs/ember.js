@@ -34,14 +34,14 @@ test("should get observers", function() {
       o3 = ObservableObject.create({ func: function() {} }),
       observers = null;
       
-  equals(Ember.get(o1.observersForKey('foo'), 'length'), 0, "o1.observersForKey should return empty array");
+  equal(Ember.get(o1.observersForKey('foo'), 'length'), 0, "o1.observersForKey should return empty array");
   
   o1.addObserver('foo', o2, o2.func);
   o1.addObserver('foo', o3, o3.func);
   
   observers = o1.observersForKey('foo');
     
-  equals(Ember.get(observers, 'length'), 2, "o2.observersForKey should return an array with length 2");
-  equals(observers[0][0], o2, "first item in observers array should be o2");
-  equals(observers[1][0], o3, "second item in observers array should be o3");
+  equal(Ember.get(observers, 'length'), 2, "o2.observersForKey should return an array with length 2");
+  equal(observers[0][0], o2, "first item in observers array should be o2");
+  equal(observers[1][0], o3, "second item in observers array should be o3");
 });

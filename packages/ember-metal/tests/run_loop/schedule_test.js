@@ -12,10 +12,10 @@ test('scheduling item in queue should defer until finished', function() {
   Ember.run(function() {
     Ember.run.schedule('actions', function() { cnt++; });
     Ember.run.schedule('actions', function() { cnt++; });
-    equals(cnt, 0, 'should not run action yet') ;
+    equal(cnt, 0, 'should not run action yet') ;
   });
   
-  equals(cnt, 2, 'should flush actions now');
+  equal(cnt, 2, 'should flush actions now');
   
 });
 
@@ -24,15 +24,15 @@ test('nested runs should queue each phase independently', function() {
   
   Ember.run(function() {
     Ember.run.schedule('actions', function() { cnt++; });
-    equals(cnt, 0, 'should not run action yet') ;
+    equal(cnt, 0, 'should not run action yet') ;
     
     Ember.run(function() {
       Ember.run.schedule('actions', function() { cnt++; });
     });
-    equals(cnt, 1, 'should not run action yet') ;
+    equal(cnt, 1, 'should not run action yet') ;
 
   });
   
-  equals(cnt, 2, 'should flush actions now');
+  equal(cnt, 2, 'should flush actions now');
   
 });

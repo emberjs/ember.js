@@ -11,16 +11,16 @@ test('listener should receive event - removing should remove', function() {
   var F = function() { count++; };
   
   Ember.addListener(obj, 'event!', F);
-  equals(count, 0, 'nothing yet');
+  equal(count, 0, 'nothing yet');
   
   Ember.sendEvent(obj, 'event!');
-  equals(count, 1, 'received event');
+  equal(count, 1, 'received event');
   
   Ember.removeListener(obj, 'event!', F);
 
   count = 0;
   Ember.sendEvent(obj, 'event!');
-  equals(count, 0, 'received event');
+  equal(count, 0, 'received event');
 });
 
 test('listeners should be inherited', function() {
@@ -31,19 +31,19 @@ test('listeners should be inherited', function() {
   
   var obj2 = Ember.create(obj);
   
-  equals(count, 0, 'nothing yet');
+  equal(count, 0, 'nothing yet');
   
   Ember.sendEvent(obj2, 'event!');
-  equals(count, 1, 'received event');
+  equal(count, 1, 'received event');
 
   Ember.removeListener(obj2, 'event!', F);
 
   count = 0;
   Ember.sendEvent(obj2, 'event!');
-  equals(count, 0, 'did not receive event');
+  equal(count, 0, 'did not receive event');
   
   Ember.sendEvent(obj, 'event!');
-  equals(count, 1, 'should still invoke on parent');
+  equal(count, 1, 'should still invoke on parent');
   
 });
 
@@ -56,7 +56,7 @@ test('adding a listener more than once should only invoke once', function() {
   Ember.addListener(obj, 'event!', F);
 
   Ember.sendEvent(obj, 'event!');
-  equals(count, 1, 'should only invoke once');
+  equal(count, 1, 'should only invoke once');
 });
 
 test('adding a listener with a target should invoke with target', function() {
@@ -69,7 +69,7 @@ test('adding a listener with a target should invoke with target', function() {
   
   Ember.addListener(obj, 'event!', target, target.method);
   Ember.sendEvent(obj, 'event!');
-  equals(target.count, 1, 'should invoke');  
+  equal(target.count, 1, 'should invoke');  
 });
 
 test('adding a listener with string method should lookup method on event delivery', function() {
@@ -82,11 +82,11 @@ test('adding a listener with string method should lookup method on event deliver
   
   Ember.addListener(obj, 'event!', target, 'method');
   Ember.sendEvent(obj, 'event!');
-  equals(target.count, 0, 'should invoke but do nothing');  
+  equal(target.count, 0, 'should invoke but do nothing');  
   
   target.method = function() { this.count++; };
   Ember.sendEvent(obj, 'event!');
-  equals(target.count, 1, 'should invoke now');  
+  equal(target.count, 1, 'should invoke now');  
 });
 
 test('calling sendEvent with extra params should be passed to listeners', function() {
@@ -97,15 +97,15 @@ test('calling sendEvent with extra params should be passed to listeners', functi
   });
   
   Ember.sendEvent(obj, 'event!', 'foo', 'bar');
-  same(params, [obj, 'event!', 'foo', 'bar'], 'params should be saved');  
+  deepEqual(params, [obj, 'event!', 'foo', 'bar'], 'params should be saved');  
 });
 
 test('implementing sendEvent on object should invoke', function() {
   var obj = {
     sendEvent: function(eventName, param1, param2) {
-      equals(eventName, 'event!', 'eventName');
-      equals(param1, 'foo', 'param1');
-      equals(param2, 'bar', 'param2');
+      equal(eventName, 'event!', 'eventName');
+      equal(param1, 'foo', 'param1');
+      equal(param2, 'bar', 'param2');
       this.count++;
     },
     
@@ -115,27 +115,27 @@ test('implementing sendEvent on object should invoke', function() {
   Ember.addListener(obj, 'event!', obj, function() { this.count++; });
   
   Ember.sendEvent(obj, 'event!', 'foo', 'bar');
-  equals(obj.count, 2, 'should have invoked method & listener');
+  equal(obj.count, 2, 'should have invoked method & listener');
 });
 
 test('hasListeners tells you if there are listeners for a given event', function() {
 
   var obj = {}, F = function() {}, F2 = function() {};
   
-  equals(Ember.hasListeners(obj, 'event!'), false, 'no listeners at first');
+  equal(Ember.hasListeners(obj, 'event!'), false, 'no listeners at first');
   
   Ember.addListener(obj, 'event!', F);
   Ember.addListener(obj, 'event!', F2);
 
-  equals(Ember.hasListeners(obj, 'event!'), true, 'has listeners');
+  equal(Ember.hasListeners(obj, 'event!'), true, 'has listeners');
 
   Ember.removeListener(obj, 'event!', F);
-  equals(Ember.hasListeners(obj, 'event!'), true, 'has listeners');
+  equal(Ember.hasListeners(obj, 'event!'), true, 'has listeners');
 
   Ember.removeListener(obj, 'event!', F2);
-  equals(Ember.hasListeners(obj, 'event!'), false, 'has no more listeners');
+  equal(Ember.hasListeners(obj, 'event!'), false, 'has no more listeners');
 
   Ember.addListener(obj, 'event!', F);
-  equals(Ember.hasListeners(obj, 'event!'), true, 'has listeners');
+  equal(Ember.hasListeners(obj, 'event!'), true, 'has listeners');
 });
 

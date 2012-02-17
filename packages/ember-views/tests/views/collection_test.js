@@ -26,7 +26,7 @@ test("should render a view for each item in its content array", function() {
   Ember.run(function() {
     view.append();
   });
-  equals(view.$('div').length, 4);
+  equal(view.$('div').length, 4);
 });
 
 test("should render the emptyView if content array is empty (view class)", function() {
@@ -106,10 +106,10 @@ test("should allow custom item views by setting itemViewClass", function() {
     view.append();
   });
 
-  same(passedContents, ['foo', 'bar', 'baz'], "sets the content property on each item view");
+  deepEqual(passedContents, ['foo', 'bar', 'baz'], "sets the content property on each item view");
 
   passedContents.forEach(function(item) {
-    equals(view.$(':contains("'+item+'")').length, 1);
+    equal(view.$(':contains("'+item+'")').length, 1);
   });
 });
 
@@ -131,14 +131,14 @@ test("should insert a new item in DOM when an item is added to the content array
   });
 
   content.forEach(function(item) {
-    equals(view.$(':contains("'+item+'")').length, 1, "precond - generates pre-existing items");
+    equal(view.$(':contains("'+item+'")').length, 1, "precond - generates pre-existing items");
   });
 
   Ember.run(function() {
     content.insertAt(1, 'quux');
   });
 
-  equals(view.$(':nth-child(2)').text(), 'quux');
+  equal(view.$(':nth-child(2)').text(), 'quux');
 });
 
 test("should remove an item from DOM when an item is removed from the content array", function() {
@@ -159,7 +159,7 @@ test("should remove an item from DOM when an item is removed from the content ar
   });
 
   content.forEach(function(item) {
-    equals(view.$(':contains("'+item+'")').length, 1, "precond - generates pre-existing items");
+    equal(view.$(':contains("'+item+'")').length, 1, "precond - generates pre-existing items");
   });
 
   Ember.run(function() {
@@ -167,7 +167,7 @@ test("should remove an item from DOM when an item is removed from the content ar
   });
 
   content.forEach(function(item, idx) {
-    equals(view.$(Ember.String.fmt(':nth-child(%@)', [String(idx+1)])).text(), item);
+    equal(view.$(Ember.String.fmt(':nth-child(%@)', [String(idx+1)])).text(), item);
   });
 });
 
@@ -200,13 +200,13 @@ test("should allow changing content property to be null", function() {
     view.append();
   });
 
-  equals(view.$().children().length, 3, "precond - creates three elements");
+  equal(view.$().children().length, 3, "precond - creates three elements");
 
   Ember.run(function() {
     set(view, 'content', null);
   });
 
-  equals(view.$().children().text(), "(empty)", "should display empty view");
+  equal(view.$().children().text(), "(empty)", "should display empty view");
 });
 
 test("should allow items to access to the CollectionView's current index in the content array", function() {
@@ -223,9 +223,9 @@ test("should allow items to access to the CollectionView's current index in the 
     view.append();
   });
 
-  same(view.$(':nth-child(1)').text(), "0");
-  same(view.$(':nth-child(2)').text(), "1");
-  same(view.$(':nth-child(3)').text(), "2");
+  deepEqual(view.$(':nth-child(1)').text(), "0");
+  deepEqual(view.$(':nth-child(2)').text(), "1");
+  deepEqual(view.$(':nth-child(3)').text(), "2");
 });
 
 test("should allow declaration of itemViewClass as a string", function() {
@@ -238,5 +238,5 @@ test("should allow declaration of itemViewClass as a string", function() {
     view.appendTo('#qunit-fixture');
   });
 
-  equals(view.$('.ember-view').length, 3);
+  equal(view.$('.ember-view').length, 3);
 });

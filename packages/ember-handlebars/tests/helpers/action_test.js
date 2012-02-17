@@ -42,7 +42,7 @@ test("should by default register a click event", function() {
 
   appendView();
 
-  equals(registeredEventName, 'click', "The click event was properly registered");
+  equal(registeredEventName, 'click', "The click event was properly registered");
 
   ActionHelper.registerAction = originalRegisterAction;
 });
@@ -60,7 +60,7 @@ test("should allow alternative events to be handled", function() {
 
   appendView();
 
-  equals(registeredEventName, 'mouseUp', "The alternative mouseUp event was properly registered");
+  equal(registeredEventName, 'mouseUp', "The alternative mouseUp event was properly registered");
 
   ActionHelper.registerAction = originalRegisterAction;
 });
@@ -78,7 +78,7 @@ test("should by default target the parent view", function() {
 
   appendView();
 
-  equals(registeredTarget, view, "The parent view was registered as the target");
+  equal(registeredTarget, view, "The parent view was registered as the target");
 
   ActionHelper.registerAction = originalRegisterAction;
 });
@@ -99,7 +99,7 @@ test("should allow a target to be specified", function() {
 
   appendView();
 
-  equals(registeredTarget, anotherTarget, "The specified target was registered");
+  equal(registeredTarget, anotherTarget, "The specified target was registered");
 
   ActionHelper.registerAction = originalRegisterAction;
 });
@@ -286,7 +286,7 @@ test("should be compatible with sending events to a state manager", function() {
   view.$('a').trigger('click');
 
   ok(sendWasCalled, "The state manager's send method was called");
-  equals(eventNameSent, "edit", "The edit event was sent to the state manager");
+  equal(eventNameSent, "edit", "The edit event was sent to the state manager");
   ok(eventObjectSent, "The state manager's send method was called with an event object");
 });
 
@@ -319,5 +319,5 @@ test("should send the view, event and current Handlebars context to the action",
   strictEqual(passedTarget, aTarget, "the action is called with the target as this");
   strictEqual(passedView, view, "the view passed is the view containing the action helper");
   deepEqual(passedContext, aContext, "the context passed is the context surrounding the action helper");
-  equals(passedEvent.type, 'click', "the event passed is the event triggered for the action helper");
+  equal(passedEvent.type, 'click', "the event passed is the event triggered for the action helper");
 });

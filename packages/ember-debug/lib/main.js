@@ -1,12 +1,14 @@
+/*global __fail__*/
+
 /**
-  Define an assertion that will throw an exception if the condition is not 
-  met.  Ember build tools will remove any calls to ember_assert() when 
+  Define an assertion that will throw an exception if the condition is not
+  met.  Ember build tools will remove any calls to ember_assert() when
   doing a production build.
-  
+
   ## Examples
-  
+
       #js:
-      
+
       // pass a simple Boolean value
       ember_assert('must pass a valid object', !!obj);
 
@@ -17,13 +19,13 @@
           return !Ember.empty(obj.firstName);
         }
       });
-      
+
   @static
   @function
   @param {String} desc
     A description of the assertion.  This will become the text of the Error
     thrown if the assertion fails.
-    
+
   @param {Boolean} test
     Must return true for the assertion to pass.  If you pass a function it
     will be executed.  If the function returns false an exception will be
@@ -52,7 +54,7 @@ window.ember_warn = function(message, test) {
   if (arguments.length === 1) { test = false; }
   if ('function' === typeof test) test = test()!==false;
   if (!test) console.warn("WARNING: "+message);
-}
+};
 
 
 
@@ -78,7 +80,7 @@ window.ember_deprecate = function(message, test) {
   var error, stackStr = '';
 
   // When using new Error, we can't do the arguments check for Chrome. Alternatives are welcome
-  try { __fail__; } catch (e) { error = e; }
+  try { __fail__.fail(); } catch (e) { error = e; }
 
   if (error.stack) {
     var stack;

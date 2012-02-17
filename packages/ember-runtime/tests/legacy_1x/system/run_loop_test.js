@@ -62,17 +62,17 @@ test("Should propagate bindings after the RunLoop completes (using Ember.RunLoop
     MyApp.first.set("output", "change") ;
     
     //Changes the output of the MyApp.first object
-    equals(MyApp.first.get("output"), "change") ;
+    equal(MyApp.first.get("output"), "change") ;
     
     //since binding has not taken into effect the value still remains as change.
-    equals(MyApp.second.get("output"), "MyApp.first") ;
+    equal(MyApp.second.get("output"), "MyApp.first") ;
   Ember.RunLoop.end(); // allows bindings to trigger...
   
   //Value of the output variable changed to 'change'
-  equals(MyApp.first.get("output"), "change") ;
+  equal(MyApp.first.get("output"), "change") ;
   
   //Since binding triggered after the end loop the value changed to 'change'.
-  equals(MyApp.second.get("output"), "change") ;
+  equal(MyApp.second.get("output"), "change") ;
 });
 
 test("Should propagate bindings after the RunLoop completes (using Ember.beginRunLoop)", function() {
@@ -91,17 +91,17 @@ test("Should propagate bindings after the RunLoop completes (using Ember.beginRu
     MyApp.first.set("output", "change") ;
     
     //Changes the output of the MyApp.first object
-    equals(MyApp.first.get("output"), "change") ;
+    equal(MyApp.first.get("output"), "change") ;
     
     //since binding has not taken into effect the value still remains as change.
-    equals(MyApp.second.get("output"), "MyApp.first") ;
+    equal(MyApp.second.get("output"), "MyApp.first") ;
   Ember.run.sync() ; // actually sets up the connection
   
   //Value of the output variable changed to 'change'
-  equals(MyApp.first.get("output"), "change") ;
+  equal(MyApp.first.get("output"), "change") ;
   
   //Since binding triggered after the end loop the value changed to 'change'.
-  equals(MyApp.second.get("output"), "change") ;
+  equal(MyApp.second.get("output"), "change") ;
 });
 
 test("Should propagate bindings after the RunLoop completes (checking invokeOnce() function)", function() {
@@ -121,10 +121,10 @@ test("Should propagate bindings after the RunLoop completes (checking invokeOnce
     MyApp.first.set("output", "change") ;
     
     //Changes the output of the MyApp.first object
-    equals(MyApp.first.get("output"), "change") ;
+    equal(MyApp.first.get("output"), "change") ;
     
     //since binding has not taken into effect the value still remains as change.
-    equals(MyApp.second.get("output"), "MyApp.first") ;
+    equal(MyApp.second.get("output"), "MyApp.first") ;
     
     // Call the invokeOnce function to set the function which needs to be called once
     // MyApp.second.invokeOnce('MyApp.second','inputDidChange'); <-- Broken?
@@ -132,18 +132,18 @@ test("Should propagate bindings after the RunLoop completes (checking invokeOnce
   Ember.RunLoop.end(); // allows bindings to trigger...
   
   //Value of the output variable changed to 'change'
-  equals(MyApp.first.get("output"), "change") ;
+  equal(MyApp.first.get("output"), "change") ;
   
   //Since binding triggered after the end loop the value changed to 'change'.
-  equals(MyApp.second.get("output"), "change") ;
+  equal(MyApp.second.get("output"), "change") ;
   
   //Set the output for the MyApp.first so that the 'inputDidChange' function in the MyApp.second object is called again
   MyApp.first.set("output", "againChanged") ;
   
   //Value of the output variable changed to 'change'
-  equals(MyApp.first.get("output"), "againChanged") ;
+  equal(MyApp.first.get("output"), "againChanged") ;
   
   //Since the invoker function is called only once the value of output did not change.
-  equals(MyApp.second.get("output"), "change") ;
+  equal(MyApp.second.get("output"), "change") ;
   
 });

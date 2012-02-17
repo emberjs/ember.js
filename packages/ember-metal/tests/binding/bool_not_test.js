@@ -3,13 +3,13 @@
 // Copyright: ©2011 Strobe Inc. and contributors.
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
-/*globals MyApp */
+/*globals MyApp:true */
 
 function testBool(val, expected) {
   test('Forces '+Object.prototype.toString.call(val)+' value to '+expected, function() {
     Ember.set(MyApp.foo, 'value', val);
     Ember.run.sync();
-    equals(Ember.get(MyApp.bar, 'value'), expected);
+    equal(Ember.get(MyApp.bar, 'value'), expected);
   });
 }
 
@@ -19,7 +19,7 @@ module('system/binding/bool', {
       foo: { value: 'FOO' },
       bar: { value: 'BAR' }
     };
-    
+
     Ember.bind(MyApp, 'bar.value', 'foo.value').bool();
   },
 
@@ -48,7 +48,7 @@ module('system/binding/not', {
       foo: { value: 'FOO' },
       bar: { value: 'BAR' }
     };
-    
+
     Ember.bind(MyApp, 'bar.value', 'foo.value').not();
   },
 

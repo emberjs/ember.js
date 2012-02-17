@@ -35,7 +35,7 @@ test("should render attribute bindings", function() {
 
   view.createElement();
 
-  equals(view.$().attr('type'), 'submit', "updates type attribute");
+  equal(view.$().attr('type'), 'submit', "updates type attribute");
   ok(!view.$().attr('exploded'), "removes exploded attribute when false");
   ok(!view.$().attr('destroyed'), "removes destroyed attribute when false");
   ok(view.$().attr('exists'), "adds exists attribute when true");
@@ -60,14 +60,14 @@ test("should update attribute bindings", function() {
   });
 
   view.createElement();
-  equals(view.$().attr('type'), 'reset', "adds type attribute");
+  equal(view.$().attr('type'), 'reset', "adds type attribute");
   ok(view.$().attr('exploded'), "adds exploded attribute when true");
   ok(view.$().attr('destroyed'), "adds destroyed attribute when true");
   ok(!view.$().attr('exists'), "does not add exists attribute when false");
   ok(view.$().attr('nothing'), "adds nothing attribute when true");
   ok(view.$().attr('notDefined'), "adds notDefined attribute when true");
   ok(view.$().attr('notNumber'), "adds notNumber attribute when true");
-  equals(view.$().attr('explosions'), "15", "adds integer attributes");
+  equal(view.$().attr('explosions'), "15", "adds integer attributes");
 
   view.set('type', 'submit');
   view.set('exploded', false);
@@ -77,7 +77,7 @@ test("should update attribute bindings", function() {
   view.set('notDefined', undefined);
   view.set('notNumber', NaN);
 
-  equals(view.$().attr('type'), 'submit', "updates type attribute");
+  equal(view.$().attr('type'), 'submit', "updates type attribute");
   ok(!view.$().attr('exploded'), "removes exploded attribute when false");
   ok(!view.$().attr('destroyed'), "removes destroyed attribute when false");
   ok(view.$().attr('exists'), "adds exists attribute when true");
@@ -124,7 +124,7 @@ test("should allow attributes to be set in the inBuffer state", function() {
     parentView.append();
   });
 
-  equals(parentView.get('childViews')[0].$().attr('foo'), 'baz');
+  equal(parentView.get('childViews')[0].$().attr('foo'), 'baz');
 
   parentView.destroy();
   Test.destroy();
@@ -141,5 +141,5 @@ test("should allow binding to String objects", function() {
 
   view.createElement();
 
-  equals(view.$().attr('foo'), 'bar', "should convert String object to bare string");
+  equal(view.$().attr('foo'), 'bar', "should convert String object to bare string");
 });

@@ -36,8 +36,8 @@ module("Comparable", {
 });
 
 test("should be comparable and return the correct result", function() {
-  equals(Ember.Comparable.detect(r1), true);
-  equals(Ember.compare(r1, r1), 0);
-  equals(Ember.compare(r1, r2), -1);
-  equals(Ember.compare(r2, r1), 1);
+  equal(Ember.Comparable.detect(r1), true);
+  equal(Ember.compare(r1, r1), 0);
+  equal(Ember.compare(r1, r2), -1);
+  equal(Ember.compare(r2, r1), 1);
 });

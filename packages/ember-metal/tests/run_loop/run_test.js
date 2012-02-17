@@ -13,8 +13,8 @@ test('Ember.run invokes passed function, returning value', function() {
     checkArgs: function(arg1, arg2) { return [ arg1, this.bar, arg2 ]; }
   };
 
-  equals(Ember.run(function() { return 'FOO'; }), 'FOO', 'pass function only');
-  same(Ember.run(obj, obj.foo), ['BAR', 'FOO'], 'pass obj and obj.method');
-  same(Ember.run(obj, 'foo'), ['BAR', 'FOO'], 'pass obj and "method"');
-  same(Ember.run(obj, obj.checkArgs, 'hello', 'world'), ['hello', 'BAR', 'world'], 'pass obj, obj.method, and extra arguments');
+  equal(Ember.run(function() { return 'FOO'; }), 'FOO', 'pass function only');
+  deepEqual(Ember.run(obj, obj.foo), ['BAR', 'FOO'], 'pass obj and obj.method');
+  deepEqual(Ember.run(obj, 'foo'), ['BAR', 'FOO'], 'pass obj and "method"');
+  deepEqual(Ember.run(obj, obj.checkArgs, 'hello', 'world'), ['hello', 'BAR', 'world'], 'pass obj, obj.method, and extra arguments');
 });

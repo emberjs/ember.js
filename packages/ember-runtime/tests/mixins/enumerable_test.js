@@ -90,7 +90,7 @@ module('notify observers of length', {
       
     });
     
-    equals(obj._after, 0, 'should not have fired yet');
+    equal(obj._after, 0, 'should not have fired yet');
   },
    
   teardown: function() {
@@ -100,46 +100,46 @@ module('notify observers of length', {
 
 test('should notify observers when call with no params', function() {
   obj.enumerableContentWillChange();
-  equals(obj._after, 0);
+  equal(obj._after, 0);
   
   obj.enumerableContentDidChange();
-  equals(obj._after, 1);
+  equal(obj._after, 1);
 });
 
 // API variation that included items only
 test('should not notify when passed arrays of same length', function() {
   var added = ['foo'], removed = ['bar'];
   obj.enumerableContentWillChange(removed, added);
-  equals(obj._after, 0);
+  equal(obj._after, 0);
   
   obj.enumerableContentDidChange(removed, added);
-  equals(obj._after, 0);
+  equal(obj._after, 0);
 });
 
 test('should notify when passed arrays of different length', function() {
   var added = ['foo'], removed = ['bar', 'baz'];
   obj.enumerableContentWillChange(removed, added);
-  equals(obj._after, 0);
+  equal(obj._after, 0);
   
   obj.enumerableContentDidChange(removed, added);
-  equals(obj._after, 1);
+  equal(obj._after, 1);
 });
 
 // API variation passes indexes only
 test('should not notify when passed with indexes', function() {
   obj.enumerableContentWillChange(1, 1);
-  equals(obj._after, 0);
+  equal(obj._after, 0);
   
   obj.enumerableContentDidChange(1, 1);
-  equals(obj._after, 0);
+  equal(obj._after, 0);
 });
 
 test('should notify when passed old index API with delta', function() {
   obj.enumerableContentWillChange(1, 2);
-  equals(obj._after, 0);
+  equal(obj._after, 0);
   
   obj.enumerableContentDidChange(1, 2);
-  equals(obj._after, 1);
+  equal(obj._after, 1);
 });
 
 
@@ -156,12 +156,12 @@ module('notify enumerable observers', {
       _after: null,
       
       enumerableWillChange: function() {
-        equals(this._before, null); // should only call once
+        equal(this._before, null); // should only call once
         this._before = Array.prototype.slice.call(arguments);  
       },
       
       enumerableDidChange: function() {
-        equals(this._after, null); // should only call once
+        equal(this._after, null); // should only call once
         this._after = Array.prototype.slice.call(arguments);  
       }
     });
@@ -176,46 +176,46 @@ module('notify enumerable observers', {
 
 test('should notify enumerable observers when called with no params', function() {
   obj.enumerableContentWillChange();
-  same(observer._before, [obj, null, null]);
+  deepEqual(observer._before, [obj, null, null]);
 
   obj.enumerableContentDidChange();
-  same(observer._after, [obj, null, null]);
+  deepEqual(observer._after, [obj, null, null]);
 });
 
 // API variation that included items only
 test('should notify when called with same length items', function() {
   var added = ['foo'], removed = ['bar'];
   obj.enumerableContentWillChange(removed, added);
-  same(observer._before, [obj, removed, added]);
+  deepEqual(observer._before, [obj, removed, added]);
 
   obj.enumerableContentDidChange(removed, added);
-  same(observer._after, [obj, removed, added]);
+  deepEqual(observer._after, [obj, removed, added]);
 });
 
 test('should notify when called with diff length items', function() {
   var added = ['foo', 'baz'], removed = ['bar'];
   obj.enumerableContentWillChange(removed, added);
-  same(observer._before, [obj, removed, added]);
+  deepEqual(observer._before, [obj, removed, added]);
 
   obj.enumerableContentDidChange(removed, added);
-  same(observer._after, [obj, removed, added]);
+  deepEqual(observer._after, [obj, removed, added]);
 });
 
 test('should not notify when passed with indexes only', function() {
   obj.enumerableContentWillChange(1, 2);
-  same(observer._before, [obj, 1, 2]);
+  deepEqual(observer._before, [obj, 1, 2]);
 
   obj.enumerableContentDidChange(1, 2);
-  same(observer._after, [obj, 1, 2]);
+  deepEqual(observer._after, [obj, 1, 2]);
 });
 
 test('removing enumerable observer should disable', function() {
   obj.removeEnumerableObserver(observer);
   obj.enumerableContentWillChange();
-  same(observer._before, null);
+  deepEqual(observer._before, null);
 
   obj.enumerableContentDidChange();
-  same(observer._after, null);
+  deepEqual(observer._after, null);
 });
 
 

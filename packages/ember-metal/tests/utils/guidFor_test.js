@@ -10,7 +10,7 @@ require('ember-metal');
 module("Ember.guidFor");
 
 var sameGuid = function(a, b, message) {
-  equals( Ember.guidFor(a), Ember.guidFor(b), message );
+  equal( Ember.guidFor(a), Ember.guidFor(b), message );
 };
 
 var diffGuid = function(a, b, message) {

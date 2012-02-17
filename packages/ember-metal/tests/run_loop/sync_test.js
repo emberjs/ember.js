@@ -20,13 +20,13 @@ test('sync() will immediately flush the sync queue only', function() {
     
     syncfunc();
 
-    equals(cnt, 1, 'should not run action yet') ;
+    equal(cnt, 1, 'should not run action yet') ;
     Ember.run.sync();
     
-    equals(cnt, 5, 'should have run sync queue continuously');
+    equal(cnt, 5, 'should have run sync queue continuously');
   });
   
-  equals(cnt, 10, 'should flush actions now too');
+  equal(cnt, 10, 'should flush actions now too');
   
 });
 
@@ -43,10 +43,10 @@ test('sync() works outside of runloop (by fixing runloop)', function() {
     
   syncfunc();
 
-  equals(cnt, 1, 'should not run action yet') ;
+  equal(cnt, 1, 'should not run action yet') ;
   Ember.run.sync();
     
-  equals(cnt, 5, 'should have run sync queue continuously');
+  equal(cnt, 5, 'should have run sync queue continuously');
   
 });
 

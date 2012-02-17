@@ -37,7 +37,7 @@ test("should create and append a DOM element after bindings have synced", functi
     view.append();
   });
 
-  equals(view.$().text(), 'controllerPropertyValue', "renders and appends after bindings have synced");
+  equal(view.$().text(), 'controllerPropertyValue', "renders and appends after bindings have synced");
   window.ViewTest = undefined;
 });
 
@@ -61,7 +61,7 @@ test("should not affect rendering if rerender is called before initial render ha
     view.append();
   });
 
-  equals(view.$().text(), "Rerender me!", "renders correctly if rerender is called first");
+  equal(view.$().text(), "Rerender me!", "renders correctly if rerender is called first");
 });
 
 test("should not affect rendering if destroyElement is called before initial render happens", function() {
@@ -74,7 +74,7 @@ test("should not affect rendering if destroyElement is called before initial ren
     view.append();
   });
 
-  equals(view.$().text(), "Don't destroy me!", "renders correctly if destroyElement is called first");
+  equal(view.$().text(), "Don't destroy me!", "renders correctly if destroyElement is called first");
 });
 
 module("views/view/view_lifecycle_test - in render", {
@@ -178,14 +178,14 @@ test("should replace DOM representation if rerender() is called after element is
     view.append();
   });
 
-  equals(view.$().text(), "Do not taunt happy fun sphere", "precond - creates DOM element");
+  equal(view.$().text(), "Do not taunt happy fun sphere", "precond - creates DOM element");
 
   view.set('shape', 'ball');
   Ember.run(function() {
     view.rerender();
   });
 
-  equals(view.$().text(), "Do not taunt happy fun ball", "rerenders DOM element when rerender() is called");
+  equal(view.$().text(), "Do not taunt happy fun ball", "rerenders DOM element when rerender() is called");
 });
 
 test("should destroy DOM representation when destroyElement is called", function() {

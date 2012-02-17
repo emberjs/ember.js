@@ -23,11 +23,11 @@ test('allow empty string as placeholder', function() {
   var binding = Ember.bind(MyApp, 'bar.value', 'foo.value').notNull('');
 
   Ember.run.sync();
-  same(Ember.getPath('MyApp.bar.value'), 'FOO', 'value passes through');
+  deepEqual(Ember.getPath('MyApp.bar.value'), 'FOO', 'value passes through');
 
   Ember.setPath('MyApp.foo.value', null);
   Ember.run.sync();
-  same(Ember.getPath('MyApp.bar.value'), '', 'null gets replaced');
+  deepEqual(Ember.getPath('MyApp.bar.value'), '', 'null gets replaced');
 
 });
 

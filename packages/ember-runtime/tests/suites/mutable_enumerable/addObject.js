@@ -14,7 +14,7 @@ suite.test("should return receiver", function() {
   var before, obj;
   before = this.newFixture(3);
   obj    = this.newObject(before);
-  equals(obj.addObject(before[1]), obj, 'should return receiver');
+  equal(obj.addObject(before[1]), obj, 'should return receiver');
 });
 
 suite.test("[A,B].addObject(C) => [A,B, C] + notify", function() {
@@ -28,12 +28,12 @@ suite.test("[A,B].addObject(C) => [A,B, C] + notify", function() {
 
   obj.addObject(item);
 
-  same(this.toArray(obj), after, 'post item results');
-  equals(Ember.get(obj, 'length'), after.length, 'length');
+  deepEqual(this.toArray(obj), after, 'post item results');
+  equal(Ember.get(obj, 'length'), after.length, 'length');
 
   if (observer.isEnabled) {
-    equals(observer.validate('[]'), true, 'should NOT have notified []');
-    equals(observer.validate('length'), true, 'should NOT have notified length');
+    equal(observer.validate('[]'), true, 'should NOT have notified []');
+    equal(observer.validate('length'), true, 'should NOT have notified length');
   }
 });
 
@@ -48,12 +48,12 @@ suite.test("[A,B,C].addObject(A) => [A,B,C] + NO notify", function() {
 
   obj.addObject(item); // note: item in set
 
-  same(this.toArray(obj), after, 'post item results');
-  equals(Ember.get(obj, 'length'), after.length, 'length');
+  deepEqual(this.toArray(obj), after, 'post item results');
+  equal(Ember.get(obj, 'length'), after.length, 'length');
   
   if (observer.isEnabled) {
-    equals(observer.validate('[]'), false, 'should NOT have notified []');
-    equals(observer.validate('length'), false, 'should NOT have notified length');
+    equal(observer.validate('[]'), false, 'should NOT have notified []');
+    equal(observer.validate('length'), false, 'should NOT have notified length');
   }
 });
 
@@ -65,6 +65,6 @@ suite.test('Adding object should notify enumerable observer', function() {
   
   obj.addObject(item);
   
-  same(observer._before, [obj, null, [item]]);
-  same(observer._after, [obj, null, [item]]);
+  deepEqual(observer._before, [obj, null, [item]]);
+  deepEqual(observer._after, [obj, null, [item]]);
 });
