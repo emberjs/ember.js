@@ -12,9 +12,9 @@ module('Ember.Mixin observer');
 testBoth('global observer helper', function(get, set) {
 
   var MyMixin = Ember.Mixin.create({
-    
+
     count: 0,
-    
+
     foo: Ember.observer(function() {
       set(this, 'count', get(this, 'count')+1);
     }, 'bar')
@@ -31,9 +31,9 @@ testBoth('global observer helper', function(get, set) {
 testBoth('global observer helper takes multiple params', function(get, set) {
 
   var MyMixin = Ember.Mixin.create({
-    
+
     count: 0,
-    
+
     foo: Ember.observer(function() {
       set(this, 'count', get(this, 'count')+1);
     }, 'bar', 'baz')
@@ -52,9 +52,9 @@ testBoth('global observer helper takes multiple params', function(get, set) {
 testBoth('replacing observer should remove old observer', function(get, set) {
 
   var MyMixin = Ember.Mixin.create({
-    
+
     count: 0,
-    
+
     foo: Ember.observer(function() {
       set(this, 'count', get(this, 'count')+1);
     }, 'bar')
@@ -66,7 +66,7 @@ testBoth('replacing observer should remove old observer', function(get, set) {
       set(this, 'count', get(this, 'count')+10);
     }, 'baz')
   });
-  
+
   var obj = Ember.mixin({}, MyMixin, Mixin2);
   equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
 

@@ -14,7 +14,7 @@ module('binding/and', {
     };
     Ember.Binding.and("foo", "bar").to("baz").connect(MyApp);
   },
-  
+
   teardown: function() {
     MyApp = null;
   }

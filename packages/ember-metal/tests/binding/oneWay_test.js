@@ -12,7 +12,7 @@ module('system/mixin/binding/oneWay_test', {
       bar: { value: 'BAR' }
     };
   },
-  
+
   teardown: function() {
     MyApp = null;
   }
@@ -21,7 +21,7 @@ module('system/mixin/binding/oneWay_test', {
 test('oneWay(true) should only sync one way', function() {
   var binding = Ember.oneWay(MyApp, 'bar.value', 'foo.value');
   Ember.run.sync();
-  
+
   equal(Ember.getPath('MyApp.foo.value'), 'FOO', 'foo synced');
   equal(Ember.getPath('MyApp.bar.value'), 'FOO', 'bar synced');
 

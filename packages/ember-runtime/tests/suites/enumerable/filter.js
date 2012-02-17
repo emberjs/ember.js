@@ -11,7 +11,7 @@ var suite = Ember.EnumerableTests;
 
 // ..........................................................
 // filter()
-// 
+//
 
 suite.module('filter');
 
@@ -29,32 +29,32 @@ suite.test('filter should invoke on each item', function() {
 
 // ..........................................................
 // filterProperty()
-// 
+//
 
 suite.module('filterProperty');
 
 suite.test('should filter based on object', function() {
   var obj, ary;
-  
+
   ary = [
-    { foo: 'foo', bar: 'BAZ' }, 
+    { foo: 'foo', bar: 'BAZ' },
     Ember.Object.create({ foo: 'foo', bar: 'bar' })
   ];
-  
+
   obj = this.newObject(ary);
-  
+
   deepEqual(obj.filterProperty('foo', 'foo'), ary, 'filterProperty(foo)');
   deepEqual(obj.filterProperty('bar', 'bar'), [ary[1]], 'filterProperty(bar)');
 });
 
 suite.test('should include in result if property is true', function() {
   var obj, ary;
-  
+
   ary = [
-    { foo: 'foo', bar: true }, 
+    { foo: 'foo', bar: true },
     Ember.Object.create({ foo: 'bar', bar: false })
   ];
-  
+
   obj = this.newObject(ary);
 
   // different values - all eval to true

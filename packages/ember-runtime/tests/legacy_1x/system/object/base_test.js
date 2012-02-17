@@ -9,13 +9,13 @@
   NOTE: This test is adapted from the 1.x series of unit tests.  The tests
   are the same except for places where we intend to break the API we instead
   validate that we warn the developer appropriately.
-  
+
   CHANGES FROM 1.6:
 
   * Changed get(obj, ) and set(obj, ) to Ember.get() and Ember.set()
-  * Removed obj.instanceOf() and obj.kindOf() tests.  use obj instanceof Foo 
+  * Removed obj.instanceOf() and obj.kindOf() tests.  use obj instanceof Foo
     instead
-  * Removed respondsTo() and tryToPerform() tests.  Can be brought back in a 
+  * Removed respondsTo() and tryToPerform() tests.  Can be brought back in a
     utils package.
   * Removed destroy() test.  You can impl yourself but not built in
   * Changed Class.subclassOf() test to Class.detect()

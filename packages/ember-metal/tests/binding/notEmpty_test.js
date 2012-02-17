@@ -19,7 +19,7 @@ module('system/binding/notEmpty', {
 });
 
 test('forces binding values to be notEmpty if enumerable', function() {
-  
+
   var binding = Ember.bind(MyApp, 'bar.value', 'foo.value').notEmpty('(EMPTY)');
 
   Ember.run.sync();

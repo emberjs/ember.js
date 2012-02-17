@@ -13,11 +13,11 @@ test('defining concatenated properties should concat future version', function()
     concatenatedProperties: ['foo'],
     foo: ['a', 'b', 'c']
   });
-  
+
   var MixinB = Ember.Mixin.create({
     foo: ['d', 'e', 'f']
   });
-  
+
   var obj = Ember.mixin({}, MixinA, MixinB);
   deepEqual(Ember.get(obj, 'foo'), ['a', 'b', 'c', 'd', 'e', 'f']);
 });
@@ -28,17 +28,17 @@ test('concatenatedProperties should be concatenated', function() {
     concatenatedProperties: ['foo'],
     foo: ['a', 'b', 'c']
   });
-  
+
   var MixinB = Ember.Mixin.create({
     concatenatedProperties: 'bar',
     foo: ['d', 'e', 'f'],
     bar: [1,2,3]
   });
-  
+
   var MixinC = Ember.Mixin.create({
     bar: [4,5,6]
   });
-  
+
   var obj = Ember.mixin({}, MixinA, MixinB, MixinC);
   deepEqual(Ember.get(obj, 'concatenatedProperties'), ['foo', 'bar'], 'get concatenatedProperties');
   deepEqual(Ember.get(obj, 'foo'), ['a', 'b', 'c', 'd', 'e', 'f'], 'get foo');

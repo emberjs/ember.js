@@ -23,9 +23,9 @@ test("defining a simple property", function() {
     writable:     true,
     value: 'FOO'
   });
-  
+
   equal(obj.foo, 'FOO', 'should have added property');
-  
+
   obj.foo = "BAR";
   equal(obj.foo, 'BAR', 'writable defined property should be writable');
   equal(isEnumerable(obj, 'foo'), true, 'foo should be enumerable');
@@ -38,16 +38,16 @@ test('defining a read only property', function() {
     writable:     false,
     value: 'FOO'
   });
-  
+
   equal(obj.foo, 'FOO', 'should have added property');
-  
+
   obj.foo = "BAR";
   if (Ember.platform.defineProperty.isSimulated) {
     equal(obj.foo, 'BAR', 'simulated defineProperty should silently work');
   } else {
     equal(obj.foo, 'FOO', 'real defined property should not be writable');
   }
-  
+
 });
 
 test('defining a non enumerable property', function() {
@@ -57,7 +57,7 @@ test('defining a non enumerable property', function() {
     writable:     true,
     value: 'FOO'
   });
-  
+
   if (Ember.platform.defineProperty.isSimulated) {
     equal(isEnumerable(obj, 'foo'), true, 'simulated defineProperty will leave properties enumerable');
   } else {
@@ -73,12 +73,12 @@ test('defining a getter/setter', function() {
     get: function() { getCnt++; return v; },
     set: function(val) { setCnt++; v = val; }
   };
-  
+
   if (Ember.platform.hasPropertyAccessors) {
     Ember.platform.defineProperty(obj, 'foo', desc);
     equal(obj.foo, 'FOO', 'should return getter');
     equal(getCnt, 1, 'should have invoked getter');
-    
+
     obj.foo = 'BAR';
     equal(obj.foo, 'BAR', 'setter should have worked');
     equal(setCnt, 1, 'should have invoked setter');
@@ -88,7 +88,7 @@ test('defining a getter/setter', function() {
       Ember.platform.defineProperty(obj, 'foo', desc);
     }, Error, 'should throw exception if getters/setters not supported');
   }
-  
+
 });
 
 test('defining getter/setter along with writable', function() {

@@ -19,7 +19,7 @@ suite.test("should return receiver", function() {
 
 suite.test("[A,B,C].removeObject(B) => [A,C] + notify", function() {
   var obj, before, after, observer, ret;
-  
+
   before = this.newFixture(3);
   after  = [before[0], before[2]];
   obj = this.newObject(before);
@@ -38,7 +38,7 @@ suite.test("[A,B,C].removeObject(B) => [A,C] + notify", function() {
 
 suite.test("[A,B,C].removeObject(D) => [A,B,C]", function() {
   var obj, before, after, observer, item;
-  
+
   before = this.newFixture(3);
   after  = before;
   item   = this.newFixture(1)[0];
@@ -57,14 +57,14 @@ suite.test("[A,B,C].removeObject(D) => [A,B,C]", function() {
 });
 
 suite.test('Removing object should notify enumerable observer', function() {
-  
+
   var fixtures = this.newFixture(3);
   var obj = this.newObject(fixtures);
   var observer = this.newObserver(obj).observeEnumerable(obj);
   var item = fixtures[1];
-  
+
   obj.removeObject(item);
-  
+
   deepEqual(observer._before, [obj, [item], null]);
   deepEqual(observer._after, [obj, [item], null]);
 });

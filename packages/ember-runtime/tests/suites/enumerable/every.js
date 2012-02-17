@@ -11,7 +11,7 @@ var suite = Ember.EnumerableTests;
 
 // ..........................................................
 // every()
-// 
+//
 
 suite.module('every');
 
@@ -19,7 +19,7 @@ suite.test('every should should invoke callback on each item as long as you retu
   var obj = this.newObject(),
       ary = this.toArray(obj),
       found = [], result;
-      
+
   result = obj.every(function(i) { found.push(i); return true; });
   equal(result, true, 'return value of obj.every');
   deepEqual(found, ary, 'items passed during every() should match');
@@ -28,10 +28,10 @@ suite.test('every should should invoke callback on each item as long as you retu
 suite.test('every should stop invoking when you return false', function() {
   var obj = this.newObject(),
       ary = this.toArray(obj),
-      cnt = ary.length - 2, 
-      exp = cnt, 
+      cnt = ary.length - 2,
+      exp = cnt,
       found = [], result;
-      
+
   result = obj.every(function(i) { found.push(i); return --cnt>0; });
   equal(result, false, 'return value of obj.every');
   equal(found.length, exp, 'should invoke proper number of times');
@@ -40,23 +40,23 @@ suite.test('every should stop invoking when you return false', function() {
 
 // ..........................................................
 // everyProperty()
-// 
+//
 
 suite.module('everyProperty');
 
 suite.test('should return true of every property matches', function() {
   var obj = this.newObject([
-    { foo: 'foo', bar: 'BAZ' }, 
+    { foo: 'foo', bar: 'BAZ' },
     Ember.Object.create({ foo: 'foo', bar: 'bar' })
   ]);
-  
+
   equal(obj.everyProperty('foo', 'foo'), true, 'everyProperty(foo)');
   equal(obj.everyProperty('bar', 'bar'), false, 'everyProperty(bar)');
 });
 
 suite.test('should return true of every property is true', function() {
   var obj = this.newObject([
-    { foo: 'foo', bar: true }, 
+    { foo: 'foo', bar: true },
     Ember.Object.create({ foo: 'bar', bar: false })
   ]);
 

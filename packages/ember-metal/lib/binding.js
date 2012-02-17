@@ -173,20 +173,20 @@ var OR_OPERATION = function(obj, left, right) {
 var K = function() {};
 var Binding = function(toPath, fromPath) {
   var self;
-  
+
   if (this instanceof Binding) {
     self = this;
   } else {
     self = new K();
   }
-  
+
   /** @private */
   self._direction = 'fwd';
 
   /** @private */
   self._from = fromPath;
   self._to   = toPath;
-  
+
   return self;
 };
 

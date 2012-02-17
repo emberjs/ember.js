@@ -14,7 +14,7 @@ module('binding/or', {
     };
     Ember.Binding.or("foo", "bar").to("baz").connect(MyApp);
   },
-  
+
   teardown: function() {
     MyApp = null;
   }

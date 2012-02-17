@@ -9,11 +9,11 @@
   NOTE: This test is adapted from the 1.x series of unit tests.  The tests
   are the same except for places where we intend to break the API we instead
   validate that we warn the developer appropriately.
-  
+
   CHANGES FROM 1.6:
 
   * changed get(obj, ) and set(obj, ) to Ember.get() and Ember.set()
-  * converted uses of obj.isEqual() to use deepEqual() test since isEqual is not 
+  * converted uses of obj.isEqual() to use deepEqual() test since isEqual is not
     always defined
 */
 

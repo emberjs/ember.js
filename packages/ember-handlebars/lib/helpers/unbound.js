@@ -10,7 +10,7 @@ require('ember-handlebars/ext');
 var getPath = Ember.Handlebars.getPath;
 
 /**
-  `unbound` allows you to output a property without binding. *Important:* The 
+  `unbound` allows you to output a property without binding. *Important:* The
   output will not be updated if the property changes. Use with caution.
 
       <div>{{unbound somePropertyThatDoesntChange}}</div>

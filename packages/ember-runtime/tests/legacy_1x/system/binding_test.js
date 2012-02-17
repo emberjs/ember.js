@@ -9,32 +9,32 @@
   NOTE: This test is adapted from the 1.x series of unit tests.  The tests
   are the same except for places where we intend to break the API we instead
   validate that we warn the developer appropriately.
-  
+
   CHANGES FROM 1.6:
 
-  * All calls to Ember.run.sync() were changed to 
+  * All calls to Ember.run.sync() were changed to
     Ember.run.sync()
-    
-  * Bindings no longer accept a root object as their second param.  Instead 
-    our test binding objects were put under a single object they could 
+
+  * Bindings no longer accept a root object as their second param.  Instead
+    our test binding objects were put under a single object they could
     originate from.
-  
+
   * tests that inspected internal properties were removed.
-  
+
   * converted foo.get/foo.set to use Ember.get/Ember.set
-  
+
   * Removed tests for Ember.Binding.isConnected.  Since binding instances are now
     shared this property no longer makes sense.
-    
+
   * Changed call calls for obj.bind(...) to Ember.bind(obj, ...);
-  
+
   * Changed all calls to sc_super() to this._super()
-  
+
   * Changed all calls to disconnect() to pass the root object.
-  
+
   * removed calls to Ember.Binding.destroy() as that method is no longer useful
     (or defined)
-    
+
   * changed use of T_STRING to 'string'
 */
 
@@ -119,7 +119,7 @@ test("binding disconnection actually works", function() {
 
 // ..........................................................
 // one way binding
-// 
+//
 
 module("one way binding", {
 
@@ -151,7 +151,7 @@ var first, second, third, binding1, binding2 ; // global variables
 
 // ..........................................................
 // chained binding
-// 
+//
 
 module("chained binding", {
 
@@ -193,7 +193,7 @@ test("changing first output should propograte to third after flush", function() 
 
 // ..........................................................
 // Custom Binding
-// 
+//
 
 module("Custom Binding", {
 
@@ -272,7 +272,7 @@ test("two bindings to the same value should sync in the order they are initializ
     fooBinding: "a.foo",
 
     a: a,
-    
+
     C: Ember.Object.extend({
       foo: "bee",
       fooBinding: "owner.foo"
@@ -294,7 +294,7 @@ test("two bindings to the same value should sync in the order they are initializ
 
 // ..........................................................
 // AND BINDING
-// 
+//
 
 module("AND binding", {
 
@@ -355,7 +355,7 @@ test("toObject.value should be NO if either source is NO", function() {
 
 // ..........................................................
 // OR BINDING
-// 
+//
 
 module("OR binding", {
 
@@ -400,19 +400,19 @@ test("toObject.value should be second value if first is falsy", function() {
 
 // ..........................................................
 // BINDING WITH []
-// 
+//
 
 module("Binding with '[]'", {
   setup: function() {
     fromObject = Ember.Object.create({ value: Ember.A() });
     toObject = Ember.Object.create({ value: '' });
     root = { toObject: toObject, fromObject: fromObject };
-    
+
     binding = Ember.bind(root, 'toObject.value', 'fromObject.value.[]').transform(function(v) {
       return v ? v.join(',') : '';
     });
   },
-  
+
   teardown: function() {
     root = fromObject = toObject = null;
   }
@@ -427,7 +427,7 @@ test("Binding refreshes after a couple of items have been pushed in the array", 
 
 // ..........................................................
 // propertyNameBinding with longhand
-// 
+//
 
 module("propertyNameBinding with longhand", {
   setup: function(){
@@ -435,14 +435,14 @@ module("propertyNameBinding with longhand", {
       fromObject: Ember.Object.create({
         value: "originalValue"
       }),
-      
+
       toObject: Ember.Object.create({
         valueBinding: Ember.Binding.from('TestNamespace.fromObject.value'),
         localValue: "originalLocal",
         relativeBinding: Ember.Binding.from('.localValue')
       })
     };
-    
+
     Ember.run.sync();
   },
   teardown: function(){
@@ -454,7 +454,7 @@ test("works with full path", function(){
 
   set(TestNamespace.fromObject, 'value', "updatedValue");
   Ember.run.sync();
-  
+
   equal(get(TestNamespace.toObject, 'value'), "updatedValue");
 
   set(TestNamespace.fromObject, 'value', "newerValue");

@@ -13,55 +13,55 @@ require('ember-runtime/~tests/suites/enumerable');
 var TestEnumerable = Ember.Object.extend(Ember.Enumerable, {
 
   _content: null,
-  
+
   init: function(ary) {
     this._content = ary || [];
   },
 
   addObject: function(obj) {
     if (this._content.indexOf(obj)>=0) return this;
-    this._content.push(obj);    
+    this._content.push(obj);
     this.enumerableContentDidChange();
   },
-  
+
   nextObject: function(idx) {
     return idx >= Ember.get(this, 'length') ? undefined : this._content[idx];
   },
-  
+
   length: Ember.computed(function() {
     return this._content.length;
   }).property('[]').cacheable(),
-  
+
   slice: function() {
     return this._content.slice();
   }
-  
+
 });
 
 
 Ember.EnumerableTests.extend({
-  
+
   name: 'Basic Enumerable',
-    
+
   newObject: function(ary) {
     ary = ary ? ary.slice() : this.newFixture(3);
     return new TestEnumerable(ary);
   },
-  
+
   // allows for testing of the basic enumerable after an internal mutation
   mutate: function(obj) {
     obj.addObject(obj._content.length+1);
   },
-  
+
   toArray: function(obj) {
     return obj.slice();
   }
-  
+
 }).run();
 
 // ..........................................................
 // CONTENT DID CHANGE
-// 
+//
 
 var DummyEnum = Ember.Object.extend(Ember.Enumerable, {
   nextObject: function() {},
@@ -72,13 +72,13 @@ var obj, observer;
 
 // ..........................................................
 // NOTIFY ENUMERABLE PROPERTY
-// 
+//
 
 module('mixins/enumerable/enumerableContentDidChange');
 
 // ..........................................................
 // NOTIFY CHANGES TO LENGTH
-// 
+//
 
 module('notify observers of length', {
   setup: function() {
@@ -87,12 +87,12 @@ module('notify observers of length', {
       lengthDidChange: Ember.observer(function() {
         this._after++;
       }, 'length')
-      
+
     });
-    
+
     equal(obj._after, 0, 'should not have fired yet');
   },
-   
+
   teardown: function() {
     obj = null;
   }
@@ -101,7 +101,7 @@ module('notify observers of length', {
 test('should notify observers when call with no params', function() {
   obj.enumerableContentWillChange();
   equal(obj._after, 0);
-  
+
   obj.enumerableContentDidChange();
   equal(obj._after, 1);
 });
@@ -111,7 +111,7 @@ test('should not notify when passed arrays of same length', function() {
   var added = ['foo'], removed = ['bar'];
   obj.enumerableContentWillChange(removed, added);
   equal(obj._after, 0);
-  
+
   obj.enumerableContentDidChange(removed, added);
   equal(obj._after, 0);
 });
@@ -120,7 +120,7 @@ test('should notify when passed arrays of different length', function() {
   var added = ['foo'], removed = ['bar', 'baz'];
   obj.enumerableContentWillChange(removed, added);
   equal(obj._after, 0);
-  
+
   obj.enumerableContentDidChange(removed, added);
   equal(obj._after, 1);
 });
@@ -129,7 +129,7 @@ test('should notify when passed arrays of different length', function() {
 test('should not notify when passed with indexes', function() {
   obj.enumerableContentWillChange(1, 1);
   equal(obj._after, 0);
-  
+
   obj.enumerableContentDidChange(1, 1);
   equal(obj._after, 0);
 });
@@ -137,7 +137,7 @@ test('should not notify when passed with indexes', function() {
 test('should notify when passed old index API with delta', function() {
   obj.enumerableContentWillChange(1, 2);
   equal(obj._after, 0);
-  
+
   obj.enumerableContentDidChange(1, 2);
   equal(obj._after, 1);
 });
@@ -145,30 +145,30 @@ test('should notify when passed old index API with delta', function() {
 
 // ..........................................................
 // NOTIFY ENUMERABLE OBSERVER
-// 
+//
 
 module('notify enumerable observers', {
   setup: function() {
     obj = DummyEnum.create();
-    
+
     observer = Ember.Object.create({
       _before: null,
       _after: null,
-      
+
       enumerableWillChange: function() {
         equal(this._before, null); // should only call once
-        this._before = Array.prototype.slice.call(arguments);  
+        this._before = Array.prototype.slice.call(arguments);
       },
-      
+
       enumerableDidChange: function() {
         equal(this._after, null); // should only call once
-        this._after = Array.prototype.slice.call(arguments);  
+        this._after = Array.prototype.slice.call(arguments);
       }
     });
-    
+
     obj.addEnumerableObserver(observer);
   },
-   
+
   teardown: function() {
     obj = observer = null;
   }

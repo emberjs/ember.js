@@ -40,7 +40,7 @@ test('Overriding a method several layers deep', function() {
     fooCnt: 0,
     foo: function() { this.fooCnt++; this._super(); }
   });
-  
+
   var obj = new FinalClass();
   obj.foo();
   obj.bar();

@@ -20,7 +20,7 @@ CountObject.prototype = {
 
   _count: 0,
 
-  reset: function() {  
+  reset: function() {
     this._count = 0;
     return this;
   },
@@ -36,11 +36,11 @@ module('system/mixin/binding/transform_test', {
       foo: new CountObject({ value: 'FOO' }),
       bar: new CountObject({ value: 'BAR' })
     };
-    
+
     foo = Ember.getPath('MyApp.foo');
     bar = Ember.getPath('MyApp.bar');
   },
-  
+
   teardown: function() {
     binding.disconnect(MyApp);
     MyApp = null;
@@ -55,14 +55,14 @@ test('returns this', function() {
 });
 
 test('transform function should be invoked on fwd change', function() {
-  
+
   binding = Ember.bind(MyApp, 'foo.value', 'bar.value');
   binding.transform({ to: function(value) { return 'TRANSFORMED'; }});
   Ember.run.sync();
-  
+
   // should have transformed...
   equal(Ember.getPath('MyApp.foo.value'), 'TRANSFORMED', 'should transform');
-  equal(Ember.getPath('MyApp.bar.value'), 'BAR', 'should stay original');  
+  equal(Ember.getPath('MyApp.bar.value'), 'BAR', 'should stay original');
 });
 
 test('two-way transforms work', function() {
@@ -89,7 +89,7 @@ test('two-way transforms work', function() {
 });
 
 test('transform function should NOT be invoked on fwd change', function() {
-  
+
   var count = 0;
   binding = Ember.bind(MyApp, 'foo.value', 'bar.value');
   var lastSeenValue;
@@ -106,13 +106,13 @@ test('transform function should NOT be invoked on fwd change', function() {
   // should have transformed...
   foo.reset();
   bar.reset();
-  
+
   Ember.setPath('MyApp.bar.value', 'FOOBAR');
   Ember.run.sync();
 
   equal(Ember.getPath('MyApp.foo.value'), 'TRANSFORMED 2', 'should transform');
-  equal(Ember.getPath('MyApp.bar.value'), 'FOOBAR', 'should stay original');  
-  
+  equal(Ember.getPath('MyApp.bar.value'), 'FOOBAR', 'should stay original');
+
   equal(foo._count, 1, 'observer should have fired on set');
   equal(bar._count, 1, 'observer should have fired on set');
 });
@@ -129,7 +129,7 @@ test('transforms should chain', function() {
 
   // should have transformed...
   equal(Ember.getPath('MyApp.foo.value'), 'BAR T1 T2', 'should transform');
-  equal(Ember.getPath('MyApp.bar.value'), 'BAR', 'should stay original');  
+  equal(Ember.getPath('MyApp.bar.value'), 'BAR', 'should stay original');
 });
 
 test('resetTransforms() should clear', function() {
@@ -145,6 +145,6 @@ test('resetTransforms() should clear', function() {
 
   // should have transformed...
   equal(Ember.getPath('MyApp.foo.value'), 'BAR T2', 'should transform');
-  equal(Ember.getPath('MyApp.bar.value'), 'BAR', 'should stay original');  
+  equal(Ember.getPath('MyApp.bar.value'), 'BAR', 'should stay original');
 });
 

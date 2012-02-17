@@ -9,7 +9,7 @@
   NOTE: This test is adapted from the 1.x series of unit tests.  The tests
   are the same except for places where we intend to break the API we instead
   validate that we warn the developer appropriately.
-  
+
   CHANGES FROM 1.6:
 
   * changed Ember.Bending.flushPendingChanges() -> Ember.run.sync();

@@ -9,7 +9,7 @@ require('ember-metal/~tests/props_helper');
 
 var willCount = 0 , didCount = 0,
     willKeys = [] , didKeys = [],
-    willChange = Ember.propertyWillChange, 
+    willChange = Ember.propertyWillChange,
     didChange = Ember.propertyDidChange;
 
 module('Ember.watch', {
@@ -43,7 +43,7 @@ testBoth('watching a computed property', function(get, set) {
     if (value !== undefined) this.__foo = value;
     return this.__foo;
   }));
-  
+
   Ember.watch(obj, 'foo');
   set(obj, 'foo', 'bar');
   equal(willCount, 1, 'should have invoked willCount');
@@ -53,10 +53,10 @@ testBoth('watching a computed property', function(get, set) {
 testBoth('watching a regular defined property', function(get, set) {
 
   var obj = { foo: 'baz' };
-  
+
   Ember.watch(obj, 'foo');
   equal(get(obj, 'foo'), 'baz', 'should have original prop');
-  
+
   set(obj, 'foo', 'bar');
   equal(willCount, 1, 'should have invoked willCount');
   equal(didCount, 1, 'should have invoked didCount');
@@ -66,10 +66,10 @@ testBoth('watches should inherit', function(get, set) {
 
   var obj = { foo: 'baz' };
   var objB = Ember.create(obj);
-  
+
   Ember.watch(obj, 'foo');
   equal(get(obj, 'foo'), 'baz', 'should have original prop');
-  
+
   set(obj, 'foo', 'bar');
   set(objB, 'foo', 'baz');
   equal(willCount, 2, 'should have invoked willCount once only');
@@ -80,14 +80,14 @@ test("watching an object THEN defining it should work also", function() {
 
   var obj = {};
   Ember.watch(obj, 'foo');
-  
+
   Ember.defineProperty(obj, 'foo');
   Ember.set(obj, 'foo', 'bar');
-  
+
   equal(Ember.get(obj, 'foo'), 'bar', 'should have set');
   equal(willCount, 1, 'should have invoked willChange once');
   equal(didCount, 1, 'should have invoked didChange once');
-  
+
 });
 
 test("watching a chain then defining the property", function () {

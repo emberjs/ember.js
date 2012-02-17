@@ -12,7 +12,7 @@ suite.module('shiftObject');
 
 suite.test("[].shiftObject() => [] + returns undefined + NO notify", function() {
   var obj, before, after, observer, item;
-  
+
   before = [];
   after  = [];
   obj = this.newObject(before);
@@ -31,7 +31,7 @@ suite.test("[].shiftObject() => [] + returns undefined + NO notify", function() 
 
 suite.test("[X].shiftObject() => [] + notify", function() {
   var obj, before, after, observer;
-  
+
   before = this.newFixture(1);
   after  = [];
   obj = this.newObject(before);
@@ -50,7 +50,7 @@ suite.test("[X].shiftObject() => [] + notify", function() {
 
 suite.test("[A,B,C].shiftObject() => [B,C] + notify", function() {
   var obj, before, after, observer;
-  
+
   before = this.newFixture(3);
   after  = [before[1], before[2]];
   obj = this.newObject(before);

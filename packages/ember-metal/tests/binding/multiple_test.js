@@ -23,7 +23,7 @@ test('forces binding values to be multiple', function() {
 
   Ember.run.sync();
   deepEqual(Ember.getPath('MyApp.bar.value'), ['FOO'], '1 MyApp.bar.value');
-  
+
   Ember.setPath('MyApp.foo.value', ['BAR']);
   Ember.run.sync();
   deepEqual(Ember.getPath('MyApp.foo.value'), ['BAR'], '2 MyApp.foo.value');
@@ -37,5 +37,5 @@ test('forces binding values to be multiple', function() {
   Ember.setPath('MyApp.foo.value', null);
   Ember.run.sync();
   deepEqual(Ember.getPath('MyApp.bar.value'), [], '4 MyApp.bar.value');
-  
+
 });

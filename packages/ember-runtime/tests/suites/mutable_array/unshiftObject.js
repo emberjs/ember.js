@@ -19,7 +19,7 @@ suite.test("returns unshifted object", function() {
 
 suite.test("[].unshiftObject(X) => [X] + notify", function() {
   var obj, before, after, item, observer;
-  
+
   before = [];
   item = this.newFixture(1)[0];
   after  = [item];
@@ -39,7 +39,7 @@ suite.test("[].unshiftObject(X) => [X] + notify", function() {
 
 suite.test("[A,B,C].unshiftObject(X) => [X,A,B,C] + notify", function() {
   var obj, before, after, item, observer;
-  
+
   before = this.newFixture(3);
   item = this.newFixture(1)[0];
   after  = [item, before[0], before[1], before[2]];
@@ -59,7 +59,7 @@ suite.test("[A,B,C].unshiftObject(X) => [X,A,B,C] + notify", function() {
 
 suite.test("[A,B,C].unshiftObject(A) => [A,A,B,C] + notify", function() {
   var obj, before, after, item, observer;
-  
+
   before = this.newFixture(3);
   item = before[0]; // note same object as current head. should end up twice
   after  = [item, before[0], before[1], before[2]];

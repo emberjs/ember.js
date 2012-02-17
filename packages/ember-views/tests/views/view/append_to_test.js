@@ -54,7 +54,7 @@ test("append calls willInsertElement and didInsertElement callbacks", function()
   var willInsertElementCalled = false;
   var willInsertElementCalledInChild = false;
   var didInsertElementCalled = false;
-  
+
   var ViewWithCallback = View.extend({
     willInsertElement: function(){
       willInsertElementCalled = true;
@@ -70,7 +70,7 @@ test("append calls willInsertElement and didInsertElement callbacks", function()
       }));
     }
   });
-  
+
   view = ViewWithCallback.create();
 
   Ember.run(function() {

@@ -15,7 +15,7 @@ test('calling invokeOnce more than once invokes only once', function() {
     Ember.run.once(F);
     Ember.run.once(F);
   });
-  
+
   equal(count, 1, 'should have invoked once');
 });
 
@@ -29,7 +29,7 @@ test('should differentiate based on target', function() {
     Ember.run.once(A, F);
     Ember.run.once(B, F);
   });
-  
+
   equal(A.count, 1, 'should have invoked once on A');
   equal(B.count, 1, 'should have invoked once on B');
 });
@@ -45,7 +45,7 @@ test('should ignore other arguments - replacing previous ones', function() {
     Ember.run.once(A, F, 30);
     Ember.run.once(B, F, 40);
   });
-  
+
   equal(A.count, 30, 'should have invoked once on A');
   equal(B.count, 40, 'should have invoked once on B');
 });

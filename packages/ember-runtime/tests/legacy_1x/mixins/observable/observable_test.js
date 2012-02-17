@@ -11,7 +11,7 @@ var get = Ember.get, set = Ember.set;
   NOTE: This test is adapted from the 1.x series of unit tests.  The tests
   are the same except for places where we intend to break the API we instead
   validate that we warn the developer appropriately.
-  
+
   CHANGES FROM 1.6:
 
   * Added ObservableObject which applies the Ember.Observable mixin.
@@ -19,14 +19,14 @@ var get = Ember.get, set = Ember.set;
   * Changed all references to sc_super to this._super()
   * Changed Ember.objectForPropertyPath() to Ember.getPath()
   * Removed allPropertiesDidChange test - no longer supported
-  * Changed test that uses 'ObjectE' as path to 'objectE' to reflect new 
+  * Changed test that uses 'ObjectE' as path to 'objectE' to reflect new
     rule on using capital letters for property paths.
   * Removed test passing context to addObserver.  context param is no longer
     supported.
   * Changed calls to Ember.Binding.flushPendingChanges() -> Ember.run.sync()
   * removed test in observer around line 862 that expected key/value to be
     the last item in the chained path.  Should be root and chained path
-  
+
 */
 
 // ========================================================================
@@ -280,7 +280,7 @@ test("should change normal properties and return this", function() {
 test("should call computed properties passing value and return this", function() {
   var ret = object.set("computed", "changed") ;
   equal(object._computed, "changed") ;
-  
+
   // DISABLED: this is no longer true with accessors
   //equal(Ember.typeOf(object.computed), 'function') ;
 
@@ -411,7 +411,7 @@ test("setting values should call function return value", function() {
     equal(object.set(key, values[0]), object, Ember.String.fmt('Try #1: object.set(%@, %@) should run function', [key, values[0]]));
 
     equal(object.set(key, values[1]), object, Ember.String.fmt('Try #2: object.set(%@, %@) should run function', [key, values[1]]));
-    
+
     equal(object.set(key, values[1]), object, Ember.String.fmt('Try #3: object.set(%@, %@) should not run function since it is setting same value as before', [key, values[1]]));
 
   });

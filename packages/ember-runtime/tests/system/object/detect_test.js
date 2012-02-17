@@ -7,7 +7,7 @@
 module('system/object/detect');
 
 test('detect detects classes correctly', function() {
-  
+
   var A = Ember.Object.extend();
   var B = A.extend();
   var C = A.extend();

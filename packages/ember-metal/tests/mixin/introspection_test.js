@@ -46,10 +46,10 @@ module('Basic introspection', {
 });
 
 test('Ember.mixins()', function() {
-  
-  function mapGuids(ary) { 
-    return ary.map(function(x) { return Ember.guidFor(x); }); 
+
+  function mapGuids(ary) {
+    return ary.map(function(x) { return Ember.guidFor(x); });
   }
-  
+
   deepEqual(mapGuids(Ember.Mixin.mixins(obj)), mapGuids([PrivateProperty, PublicProperty, PrivateMethod, PublicMethod, Combined, BarProperties, BarMethods]), 'should return included mixins');
 });

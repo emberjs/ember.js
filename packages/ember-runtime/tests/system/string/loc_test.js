@@ -16,7 +16,7 @@ module('Ember.String.loc', {
       '_Hello %@# %@#': 'Bonjour %@2 %@1'
     };
   },
-  
+
   teardown: function() {
     Ember.STRINGS = oldString;
   }

@@ -13,14 +13,14 @@ module('Module.required', {
       foo: Ember.required(),
       bar: 'BAR'
     });
-  
+
     FinalMixin = Ember.Mixin.create({
       foo: 'FOO'
     });
-  
+
     obj = {};
   },
-  
+
   teardown: function() {
     PartialMixin = FinalMixin = obj = null;
   }
@@ -35,12 +35,12 @@ test('applying a mixin with unmet requirement', function() {
 test('applying a mixin with unmet requirement using applyPartial', function() {
   PartialMixin.applyPartial(obj);
   equal(obj.foo, null, 'obj.foo has required');
-  
+
   // applying regularly to object should throw
   raises(function() {
     Ember.Mixin.create({ bar: 'BAR' }).apply(obj);
   }, Error, 'should raise error for unmet requirement');
-  
+
 });
 
 test('applying a mixin to meet requirement', function() {

@@ -7,10 +7,10 @@
 module('Mixin.detect');
 
 test('detect() finds a directly applied mixin', function() {
-  
+
   var MixinA = Ember.Mixin.create();
   var obj = {};
-  
+
   equal(MixinA.detect(obj), false, 'MixinA.detect(obj) before apply()');
 
   MixinA.apply(obj);
@@ -21,7 +21,7 @@ test('detect() finds nested mixins', function() {
   var MixinA = Ember.Mixin.create({});
   var MixinB = Ember.Mixin.create(MixinA);
   var obj = {};
-  
+
   equal(MixinA.detect(obj), false, 'MixinA.detect(obj) before apply()');
 
   MixinB.apply(obj);

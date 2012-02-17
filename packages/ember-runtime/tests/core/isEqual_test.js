@@ -36,7 +36,7 @@ test("array should be equal",function(){
 
 test("first object implements isEqual should use it", function() {
   ok(Ember.isEqual({ isEqual: function() { return true; } }, null), 'should return true always');
-  
+
   var obj = { isEqual: function() { return false; } };
   equal(Ember.isEqual(obj, obj), false, 'should return false because isEqual returns false');
 });

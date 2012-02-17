@@ -31,5 +31,5 @@ test('forces binding values to be single', function() {
   Ember.setPath('MyApp.foo.value', ['BAR', 'BAZ']);
   Ember.run.sync();
   equal(Ember.getPath('MyApp.bar.value'), Ember.MULTIPLE_PLACEHOLDER, 'converts to placeholder');
-  
+
 });

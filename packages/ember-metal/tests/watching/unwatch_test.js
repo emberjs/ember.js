@@ -7,8 +7,8 @@
 
 require('ember-metal/~tests/props_helper');
 
-var willCount = 0 , didCount = 0, 
-    willChange = Ember.propertyWillChange, 
+var willCount = 0 , didCount = 0,
+    willChange = Ember.propertyWillChange,
     didChange = Ember.propertyDidChange;
 
 module('Ember.unwatch', {
@@ -24,7 +24,7 @@ module('Ember.unwatch', {
       didChange.call(this, cur, keyName);
     };
   },
-  
+
   teardown: function() {
     Ember.propertyWillChange = willChange;
     Ember.propertyDidChange  = didChange;
@@ -38,7 +38,7 @@ testBoth('unwatching a computed property - regular get/set', function(get, set) 
     if (value !== undefined) this.__foo = value;
     return this.__foo;
   }));
-  
+
   Ember.watch(obj, 'foo');
   set(obj, 'foo', 'bar');
   equal(willCount, 1, 'should have invoked willCount');
@@ -55,7 +55,7 @@ testBoth('unwatching a computed property - regular get/set', function(get, set) 
 testBoth('unwatching a regular property - regular get/set', function(get, set) {
 
   var obj = { foo: 'BIFF' };
-  
+
   Ember.watch(obj, 'foo');
   set(obj, 'foo', 'bar');
   equal(willCount, 1, 'should have invoked willCount');
@@ -71,7 +71,7 @@ testBoth('unwatching a regular property - regular get/set', function(get, set) {
 test('unwatching should be nested', function() {
 
   var obj = { foo: 'BIFF' };
-  
+
   Ember.watch(obj, 'foo');
   Ember.watch(obj, 'foo');
   Ember.set(obj, 'foo', 'bar');

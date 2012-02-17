@@ -305,17 +305,17 @@ test("select tagName on collection helper automatically sets child tagName to op
   TemplateTests.RerenderTest = Ember.CollectionView.extend({
     content: Ember.A(['foo'])
   });
-  
+
   var view = Ember.View.create({
     template: Ember.Handlebars.compile('{{#collection TemplateTests.RerenderTest tagName="select"}}{{content}}{{/collection}}')
   });
-  
+
   Ember.run(function() {
     view.appendTo('qunit-fixture');
   });
-  
+
   equal(view.$('option').length, 1, "renders the correct child tag name");
-  
+
 });
 
 test("tagName works in the #collection helper", function() {

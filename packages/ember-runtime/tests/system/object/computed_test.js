@@ -14,9 +14,9 @@ testBoth('computed property on instance', function(get, set) {
   var MyClass = Ember.Object.extend({
     foo: Ember.computed(function() { return 'FOO'; }).cacheable()
   });
-  
+
   equal(get(new MyClass(), 'foo'), 'FOO');
-  
+
 });
 
 
@@ -25,13 +25,13 @@ testBoth('computed property on subclass', function(get, set) {
   var MyClass = Ember.Object.extend({
     foo: Ember.computed(function() { return 'FOO'; }).cacheable()
   });
-  
+
   var Subclass = MyClass.extend({
     foo: Ember.computed(function() { return 'BAR'; }).cacheable()
   });
-  
+
   equal(get(new Subclass(), 'foo'), 'BAR');
-  
+
 });
 
 
@@ -40,45 +40,45 @@ testBoth('replacing computed property with regular val', function(get, set) {
   var MyClass = Ember.Object.extend({
     foo: Ember.computed(function() { return 'FOO'; }).cacheable()
   });
-  
+
   var Subclass = MyClass.extend({
     foo: 'BAR'
   });
-  
+
   equal(get(new Subclass(), 'foo'), 'BAR');
-  
+
 });
 
 testBoth('complex depndent keys', function(get, set) {
 
   var MyClass = Ember.Object.extend({
-    
+
     init: function() {
       this._super();
       set(this, 'bar', { baz: 'BIFF' });
     },
 
-    count: 0, 
-    
-    foo: Ember.computed(function() { 
+    count: 0,
+
+    foo: Ember.computed(function() {
       set(this, 'count', get(this, 'count')+1);
-      return get(get(this, 'bar'), 'baz') + ' ' + get(this, 'count'); 
+      return get(get(this, 'bar'), 'baz') + ' ' + get(this, 'count');
     }).property('bar.baz').cacheable()
 
   });
-  
+
   var Subclass = MyClass.extend({
     count: 20
   });
 
   var obj1 = new MyClass(),
       obj2 = new Subclass();
-      
+
   equal(get(obj1, 'foo'), 'BIFF 1');
   equal(get(obj2, 'foo'), 'BIFF 21');
 
   set(get(obj1, 'bar'), 'baz', 'BLARG');
-  
+
   equal(get(obj1, 'foo'), 'BLARG 2');
   equal(get(obj2, 'foo'), 'BIFF 21');
 
@@ -91,30 +91,30 @@ testBoth('complex depndent keys', function(get, set) {
 testBoth('complex depndent keys changing complex dependent keys', function(get, set) {
 
   var MyClass = Ember.Object.extend({
-    
+
     init: function() {
       this._super();
       set(this, 'bar', { baz: 'BIFF' });
     },
 
-    count: 0, 
-    
-    foo: Ember.computed(function() { 
+    count: 0,
+
+    foo: Ember.computed(function() {
       set(this, 'count', get(this, 'count')+1);
-      return get(get(this, 'bar'), 'baz') + ' ' + get(this, 'count'); 
+      return get(get(this, 'bar'), 'baz') + ' ' + get(this, 'count');
     }).property('bar.baz').cacheable()
 
   });
-  
+
   var Subclass = MyClass.extend({
-    
+
     init: function() {
       this._super();
       set(this, 'bar2', { baz: 'BIFF2' });
     },
-    
+
     count: 0,
-    
+
     foo: Ember.computed(function() {
       set(this, 'count', get(this, 'count')+1);
       return get(get(this, 'bar2'), 'baz') + ' ' + get(this, 'count');
@@ -122,7 +122,7 @@ testBoth('complex depndent keys changing complex dependent keys', function(get, 
   });
 
   var obj2 = new Subclass();
-      
+
   equal(get(obj2, 'foo'), 'BIFF2 1');
 
   set(get(obj2, 'bar'), 'baz', 'BLARG');

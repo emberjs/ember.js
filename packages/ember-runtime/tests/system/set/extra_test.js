@@ -6,7 +6,7 @@
 
 // ..........................................................
 // Ember.Set.init
-// 
+//
 
 module('Ember.Set.init');
 
@@ -16,7 +16,7 @@ test('passing an array to new Ember.Set() should instantiate w/ items', function
   var ary  = [1,2,3];
   var aSet = new Ember.Set(ary);
   var count = 0;
-  
+
   equal(get(aSet, 'length'), 3, 'should have three items');
   aSet.forEach(function(x) {
     ok(ary.indexOf(x)>=0, 'should find passed item in array');
@@ -28,7 +28,7 @@ test('passing an array to new Ember.Set() should instantiate w/ items', function
 
 // ..........................................................
 // Ember.Set.clear
-// 
+//
 
 module('Ember.Set.clear');
 
@@ -36,21 +36,21 @@ test('should clear a set of its content', function() {
 
   var get = Ember.get, set = Ember.set;
   var aSet = new Ember.Set([1,2,3]);
-  
+
   equal(get(aSet, 'length'), 3, 'should have three items');
 
   aSet.clear();
   equal(get(aSet, 'length'), 0, 'should have 0 items');
-  
+
   count = 0;
   aSet.forEach(function() { count++; });
   equal(count, 0, 'iterating over items should not invoke callback');
-  
+
 });
 
 // ..........................................................
 // Ember.Set.pop
-// 
+//
 
 module('Ember.Set.pop');
 
@@ -58,12 +58,12 @@ test('calling pop should return an object and remove it', function() {
 
   var aSet = new Ember.Set([1,2,3]);
   var count = 0, obj;
-  while(count<10 && (obj = aSet.pop())) { 
+  while(count<10 && (obj = aSet.pop())) {
     equal(aSet.contains(obj), false, 'set should no longer contain object');
     count++;
     equal(Ember.get(aSet, 'length'), 3-count, 'length should be shorter');
   }
-  
+
   equal(count, 3, 'should only pop 3 objects');
   equal(Ember.get(aSet, 'length'), 0, 'final length should be zero');
   equal(aSet.pop(), null, 'extra pops should do nothing');
@@ -71,7 +71,7 @@ test('calling pop should return an object and remove it', function() {
 
 // ..........................................................
 // Ember.Set.aliases
-// 
+//
 
 module('Ember.Set aliases');
 

@@ -30,7 +30,7 @@ module("Ember.compare()", {
 
 // ..........................................................
 // TESTS
-// 
+//
 
 test("ordering should work", function() {
   for (var j=0; j < v.length; j++) {
@@ -38,7 +38,7 @@ test("ordering should work", function() {
     for (var i=j+1; i < v.length; i++) {
       equal(Ember.compare(v[j],v[i]), -1, 'v[' + j + '] (' + Ember.typeOf(v[j]) + ') should be smaller than v[' + i + '] (' + Ember.typeOf(v[i]) + ')' );
     }
-    
+
   }
-}); 
-  
+});
+

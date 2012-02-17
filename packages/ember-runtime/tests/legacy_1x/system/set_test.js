@@ -19,20 +19,20 @@
 var a, b, c ; // global variables
 
 module("creating Ember.Set instances", {
-  
+
   setup: function() {
     // create objects...
     a = { name: "a" } ;
     b = { name: "b" } ;
     c = { name: "c" } ;
   },
-  
+
   teardown: function() {
     a = undefined ;
     b = undefined ;
     c = undefined ;
   }
-  
+
 });
 
 test("Ember.Set.create() should create empty set", function() {
@@ -52,9 +52,9 @@ test("Ember.Set.create() should accept anything that implements Ember.Array", fu
   var arrayLikeObject = Ember.Object.create(Ember.Array, {
     _content: [a,b,c],
     length: 3,
-    objectAt: function(idx) { return this._content[idx]; } 
+    objectAt: function(idx) { return this._content[idx]; }
   }) ;
-  
+
   var set = Ember.Set.create(arrayLikeObject) ;
   equal(set.length, 3) ;
   equal(set.contains(a), YES) ;
@@ -64,23 +64,23 @@ test("Ember.Set.create() should accept anything that implements Ember.Array", fu
 
 var set ; // global variables
 
-// The tests below also end up testing the contains() method pretty 
+// The tests below also end up testing the contains() method pretty
 // exhaustively.
 module("Ember.Set.add + Ember.Set.contains", {
-  
+
   setup: function() {
     set = Ember.Set.create() ;
   },
-  
+
   teardown: function() {
     set = undefined ;
   }
-  
+
 });
 
 test("should add an Ember.Object", function() {
   var obj = Ember.Object.create() ;
-  
+
   var oldLength = set.length ;
   set.add(obj) ;
   equal(set.contains(obj), YES, "contains()") ;
@@ -89,7 +89,7 @@ test("should add an Ember.Object", function() {
 
 test("should add a regular hash", function() {
   var obj = {} ;
-  
+
   var oldLength = set.length ;
   set.add(obj) ;
   equal(set.contains(obj), YES, "contains()") ;
@@ -98,7 +98,7 @@ test("should add a regular hash", function() {
 
 test("should add a string", function() {
   var obj = "String!" ;
-  
+
   var oldLength = set.length ;
   set.add(obj) ;
   equal(set.contains(obj), YES, "contains()") ;
@@ -107,7 +107,7 @@ test("should add a string", function() {
 
 test("should add a number", function() {
   var obj = 23 ;
-  
+
   var oldLength = set.length ;
   set.add(obj) ;
   equal(set.contains(obj), YES, "contains()") ;
@@ -136,7 +136,7 @@ test("should add 0", function() {
 
 test("should add a function", function() {
   var obj = function() { return "Test function"; } ;
-  
+
   var oldLength = set.length ;
   set.add(obj) ;
   equal(set.contains(obj), YES, "contains()") ;
@@ -162,15 +162,15 @@ test("adding an item, removing it, adding another item", function() {
   set.add(item1) ; // add to set
   set.remove(item1) ; //remove from set
   set.add(item2) ;
-  
+
   equal(set.contains(item1), NO, "set.contains(item1)") ;
-  
+
   set.add(item1) ; // re-add to set
   equal(set.length, 2, "set.length") ;
 });
 
 module("Ember.Set.remove + Ember.Set.contains", {
-  
+
   // generate a set with every type of object, but none of the specific
   // ones we add in the tests below...
   setup: function() {
@@ -180,11 +180,11 @@ module("Ember.Set.remove + Ember.Set.contains", {
       "Not the String",
       16, true, false, 0])) ;
   },
-  
+
   teardown: function() {
     set = undefined ;
   }
-  
+
 });
 
 test("should remove an Ember.Object and reduce length", function() {
@@ -192,7 +192,7 @@ test("should remove an Ember.Object and reduce length", function() {
   set.add(obj) ;
   equal(set.contains(obj), YES) ;
   var oldLength = set.length ;
-  
+
   set.remove(obj) ;
   equal(set.contains(obj), NO, "should be removed") ;
   equal(set.length, oldLength-1, "should be 1 shorter") ;
@@ -203,7 +203,7 @@ test("should remove a regular hash and reduce length", function() {
   set.add(obj) ;
   equal(set.contains(obj), YES) ;
   var oldLength = set.length ;
-  
+
   set.remove(obj) ;
   equal(set.contains(obj), NO, "should be removed") ;
   equal(set.length, oldLength-1, "should be 1 shorter") ;
@@ -214,7 +214,7 @@ test("should remove a string and reduce length", function() {
   set.add(obj) ;
   equal(set.contains(obj), YES) ;
   var oldLength = set.length ;
-  
+
   set.remove(obj) ;
   equal(set.contains(obj), NO, "should be removed") ;
   equal(set.length, oldLength-1, "should be 1 shorter") ;
@@ -225,7 +225,7 @@ test("should remove a number and reduce length", function() {
   set.add(obj) ;
   equal(set.contains(obj), YES) ;
   var oldLength = set.length ;
-  
+
   set.remove(obj) ;
   equal(set.contains(obj), NO, "should be removed") ;
   equal(set.length, oldLength-1, "should be 1 shorter") ;
@@ -254,7 +254,7 @@ test("should remove a function and reduce length", function() {
   set.add(obj) ;
   equal(set.contains(obj), YES) ;
   var oldLength = set.length ;
-  
+
   set.remove(obj) ;
   equal(set.contains(obj), NO, "should be removed") ;
   equal(set.length, oldLength-1, "should be 1 shorter") ;

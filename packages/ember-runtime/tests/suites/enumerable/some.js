@@ -10,7 +10,7 @@ var suite = Ember.EnumerableTests;
 
 // ..........................................................
 // some()
-// 
+//
 
 suite.module('some');
 
@@ -18,7 +18,7 @@ suite.test('some should should invoke callback on each item as long as you retur
   var obj = this.newObject(),
       ary = this.toArray(obj),
       found = [], result;
-      
+
   result = obj.some(function(i) { found.push(i); return false; });
   equal(result, false, 'return value of obj.some');
   deepEqual(found, ary, 'items passed during some() should match');
@@ -27,10 +27,10 @@ suite.test('some should should invoke callback on each item as long as you retur
 suite.test('every should stop invoking when you return true', function() {
   var obj = this.newObject(),
       ary = this.toArray(obj),
-      cnt = ary.length - 2, 
-      exp = cnt, 
+      cnt = ary.length - 2,
+      exp = cnt,
       found = [], result;
-      
+
   result = obj.some(function(i) { found.push(i); return !(--cnt>0); });
   equal(result, true, 'return value of obj.some');
   equal(found.length, exp, 'should invoke proper number of times');
@@ -39,16 +39,16 @@ suite.test('every should stop invoking when you return true', function() {
 
 // ..........................................................
 // someProperty()
-// 
+//
 
 suite.module('someProperty');
 
 suite.test('should return true of any property matches', function() {
   var obj = this.newObject([
-    { foo: 'foo', bar: 'BAZ' }, 
+    { foo: 'foo', bar: 'BAZ' },
     Ember.Object.create({ foo: 'foo', bar: 'bar' })
   ]);
-  
+
   equal(obj.someProperty('foo', 'foo'), true, 'someProperty(foo)');
   equal(obj.someProperty('bar', 'bar'), true, 'someProperty(bar)');
   equal(obj.someProperty('bar', 'BIFF'), false, 'someProperty(BIFF)');
@@ -56,7 +56,7 @@ suite.test('should return true of any property matches', function() {
 
 suite.test('should return true of any property is true', function() {
   var obj = this.newObject([
-    { foo: 'foo', bar: true }, 
+    { foo: 'foo', bar: true },
     Ember.Object.create({ foo: 'bar', bar: false })
   ]);
 

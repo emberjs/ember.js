@@ -13,7 +13,7 @@ suite.module('insertAt');
 
 suite.test("[].insertAt(0, X) => [X] + notify", function() {
   var obj, after, observer;
-  
+
   after = this.newFixture(1);
   obj = this.newObject([]);
   observer = this.newObserver(obj, '[]', 'length');
@@ -38,7 +38,7 @@ suite.test("[].insertAt(200,X) => OUT_OF_RANGE_EXCEPTION exception", function() 
 
 suite.test("[A].insertAt(0, X) => [X,A] + notify", function() {
   var obj, item, after, before, observer;
-  
+
   item = this.newFixture(1)[0];
   before = this.newFixture(1);
   after  = [item, before[0]];
@@ -58,7 +58,7 @@ suite.test("[A].insertAt(0, X) => [X,A] + notify", function() {
 
 suite.test("[A].insertAt(1, X) => [A,X] + notify", function() {
   var obj, item, after, before, observer;
-  
+
   item = this.newFixture(1)[0];
   before = this.newFixture(1);
   after  = [before[0], item];
@@ -85,7 +85,7 @@ suite.test("[A].insertAt(200,X) => OUT_OF_RANGE exception", function() {
 
 suite.test("[A,B,C].insertAt(0,X) => [X,A,B,C] + notify", function() {
   var obj, item, after, before, observer;
-  
+
   item = this.newFixture(1)[0];
   before = this.newFixture(3);
   after  = [item, before[0], before[1], before[2]];
@@ -105,7 +105,7 @@ suite.test("[A,B,C].insertAt(0,X) => [X,A,B,C] + notify", function() {
 
 suite.test("[A,B,C].insertAt(1,X) => [A,X,B,C] + notify", function() {
   var obj, item, after, before, observer;
-  
+
   item = this.newFixture(1)[0];
   before = this.newFixture(3);
   after  = [before[0], item, before[1], before[2]];
@@ -125,7 +125,7 @@ suite.test("[A,B,C].insertAt(1,X) => [A,X,B,C] + notify", function() {
 
 suite.test("[A,B,C].insertAt(3,X) => [A,B,C,X] + notify", function() {
   var obj, item, after, before, observer;
-  
+
   item = this.newFixture(1)[0];
   before = this.newFixture(3);
   after  = [before[0], before[1], before[2], item];

@@ -12,7 +12,7 @@ suite.module('popObject');
 
 suite.test("[].popObject() => [] + returns undefined + NO notify", function() {
   var obj, observer;
-  
+
   obj = this.newObject([]);
   observer = this.newObserver(obj, '[]', 'length');
 
@@ -27,7 +27,7 @@ suite.test("[].popObject() => [] + returns undefined + NO notify", function() {
 
 suite.test("[X].popObject() => [] + notify", function() {
   var obj, before, after, observer, ret;
-  
+
   before = this.newFixture(1);
   after  = [];
   obj = this.newObject(before);
@@ -46,7 +46,7 @@ suite.test("[X].popObject() => [] + notify", function() {
 
 suite.test("[A,B,C].popObject() => [A,B] + notify", function() {
   var obj, before, after, observer, ret;
-  
+
   before = this.newFixture(3);
   after  = [before[0], before[1]];
   obj = this.newObject(before);

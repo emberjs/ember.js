@@ -37,23 +37,23 @@ if (typeof console === 'undefined') {
 
 // ..........................................................
 // BOOTSTRAP
-// 
+//
 
 /**
   @static
   @type Boolean
   @default YES
   @constant
-  
-  Determines whether Ember should enhances some built-in object 
-  prototypes to provide a more friendly API.  If enabled, a few methods 
+
+  Determines whether Ember should enhances some built-in object
+  prototypes to provide a more friendly API.  If enabled, a few methods
   will be added to Function, String, and Array.  Object.prototype will not be
   enhanced, which is the one that causes most troubles for people.
-  
+
   In general we recommend leaving this option set to true since it rarely
   conflicts with other code.  If you need to turn it off however, you can
   define an ENV.EXTEND_PROTOTYPES config to disable it.
-*/  
+*/
 Ember.EXTEND_PROTOTYPES = (Ember.ENV.EXTEND_PROTOTYPES !== false);
 
 // ........................................
@@ -93,7 +93,7 @@ var toString = Object.prototype.toString;
 */
 Ember.typeOf = function(item) {
   var ret;
-  
+
   ret = item==null ? String(item) : TYPE_MAP[toString.call(item)]||'object';
 
   if (ret === 'function') {
@@ -103,7 +103,7 @@ Ember.typeOf = function(item) {
     else if (Ember.Object && item instanceof Ember.Object) ret = 'instance';
     else ret = 'object';
   }
-  
+
   return ret;
 };
 
@@ -159,7 +159,7 @@ Ember.compare = function (v, w) {
     if (type1==='instance' && Comparable.detect(v.constructor)) {
       return v.constructor.compare(v, w);
     }
-    
+
     if (type2 === 'instance' && Comparable.detect(w.constructor)) {
       return 1-w.constructor.compare(w, v);
     }
@@ -221,8 +221,8 @@ Ember.compare = function (v, w) {
       return 0;
 
     case 'instance':
-      if (Ember.Comparable && Ember.Comparable.detect(v)) { 
-        return v.compare(v, w); 
+      if (Ember.Comparable && Ember.Comparable.detect(v)) {
+        return v.compare(v, w);
       }
       return 0;
 
@@ -239,7 +239,7 @@ function _copy(obj, deep, seen, copies) {
 
   // avoid cyclical loops
   if (deep && (loc=seen.indexOf(obj))>=0) return copies[loc];
-  
+
   ember_assert('Cannot clone an Ember.Object that does not implement Ember.Copyable', !(obj instanceof Ember.Object) || (Ember.Copyable && Ember.Copyable.detect(obj)));
 
   // IMPORTANT: this specific test will detect a native array only.  Any other
@@ -259,7 +259,7 @@ function _copy(obj, deep, seen, copies) {
       ret[key] = deep ? _copy(obj[key], deep, seen, copies) : obj[key];
     }
   }
-  
+
   if (deep) {
     seen.push(obj);
     copies.push(ret);
@@ -308,11 +308,11 @@ Ember.inspect = function(obj) {
 };
 
 /**
-  Compares two objects, returning true if they are logically equal.  This is 
+  Compares two objects, returning true if they are logically equal.  This is
   a deeper comparison than a simple triple equal.  For arrays and enumerables
   it will compare the internal objects.  For any other object that implements
   `isEqual()` it will respect that method.
-  
+
   @param {Object} a first object to compare
   @param {Object} b second object to compare
   @returns {Boolean}
@@ -362,7 +362,7 @@ if (!Ember.keys) {
 
 // ..........................................................
 // ERROR
-// 
+//
 
 /**
   @class

@@ -10,7 +10,7 @@
 
 // ..........................................................
 // HELPERS
-// 
+//
 
 var get = Ember.get, set = Ember.set;
 var a_slice = Array.prototype.slice;
@@ -31,7 +31,7 @@ function iter(key, value) {
   function i(item) {
     var cur = get(item, key);
     return valueProvided ? value===cur : !!cur;
-  } 
+  }
   return i ;
 }
 
@@ -77,10 +77,10 @@ function xform(target, method, params) {
   @since Ember 0.9
 */
 Ember.Enumerable = Ember.Mixin.create( /** @lends Ember.Enumerable */ {
-  
+
   /** @private - compatibility */
   isEnumerable: true,
-  
+
   /**
     Implement this method to make your class enumerable.
 
@@ -135,7 +135,7 @@ Ember.Enumerable = Ember.Mixin.create( /** @lends Ember.Enumerable */ {
   */
   firstObject: Ember.computed(function() {
     if (get(this, 'length')===0) return undefined ;
-    if (Ember.Array && Ember.Array.detect(this)) return this.objectAt(0); 
+    if (Ember.Array && Ember.Array.detect(this)) return this.objectAt(0);
 
     // handle generic enumerables
     var context = popCtx(), ret;
@@ -176,18 +176,18 @@ Ember.Enumerable = Ember.Mixin.create( /** @lends Ember.Enumerable */ {
 
   /**
     Returns true if the passed object can be found in the receiver.  The
-    default version will iterate through the enumerable until the object 
+    default version will iterate through the enumerable until the object
     is found.  You may want to override this with a more efficient version.
-    
+
     @param {Object} obj
       The object to search for.
-      
+
     @returns {Boolean} true if object is found in enumerable.
   */
   contains: function(obj) {
-    return this.find(function(item) { return item===obj; }) !== undefined; 
+    return this.find(function(item) { return item===obj; }) !== undefined;
   },
-  
+
   /**
     Iterates through the enumerable, calling the passed function on each
     item. This method corresponds to the forEach() method defined in
@@ -277,8 +277,8 @@ Ember.Enumerable = Ember.Mixin.create( /** @lends Ember.Enumerable */ {
   */
   map: function(callback, target) {
     var ret = [];
-    this.forEach(function(x, idx, i) { 
-      ret[idx] = callback.call(target, x, idx,i); 
+    this.forEach(function(x, idx, i) {
+      ret[idx] = callback.call(target, x, idx,i);
     });
     return ret ;
   },
@@ -541,19 +541,19 @@ Ember.Enumerable = Ember.Mixin.create( /** @lends Ember.Enumerable */ {
   invoke: function(methodName) {
     var args, ret = [];
     if (arguments.length>1) args = a_slice.call(arguments, 1);
-    
-    this.forEach(function(x, idx) { 
+
+    this.forEach(function(x, idx) {
       var method = x && x[methodName];
       if ('function' === typeof method) {
         ret[idx] = args ? method.apply(x, args) : method.call(x);
       }
     }, this);
-    
+
     return ret;
   },
 
   /**
-    Simply converts the enumerable into a genuine array.  The order is not 
+    Simply converts the enumerable into a genuine array.  The order is not
     guaranteed.  Corresponds to the method implemented by Prototype.
 
     @returns {Array} the enumerable as an array.
@@ -583,7 +583,7 @@ Ember.Enumerable = Ember.Mixin.create( /** @lends Ember.Enumerable */ {
   without: function(value) {
     if (!this.contains(value)) return this; // nothing to do
     var ret = [] ;
-    this.forEach(function(k) { 
+    this.forEach(function(k) {
       if (k !== value) ret[ret.length] = k;
     }) ;
     return ret ;
@@ -592,7 +592,7 @@ Ember.Enumerable = Ember.Mixin.create( /** @lends Ember.Enumerable */ {
   /**
     Returns a new enumerable that contains only unique values.  The default
     implementation returns an array regardless of the receiver type.
-    
+
     @returns {Ember.Enumerable}
   */
   uniq: function() {
@@ -613,14 +613,14 @@ Ember.Enumerable = Ember.Mixin.create( /** @lends Ember.Enumerable */ {
 
     @property {Ember.Array}
   */
-  '[]': Ember.computed(function(key, value) { 
-    return this; 
+  '[]': Ember.computed(function(key, value) {
+    return this;
   }).property().cacheable(),
 
   // ..........................................................
   // ENUMERABLE OBSERVERS
-  // 
-  
+  //
+
   /**
     Registers an enumerable observer.   Must implement Ember.EnumerableObserver
     mixin.
@@ -638,7 +638,7 @@ Ember.Enumerable = Ember.Mixin.create( /** @lends Ember.Enumerable */ {
   },
 
   /**
-    Removes a registered enumerable observer. 
+    Removes a registered enumerable observer.
   */
   removeEnumerableObserver: function(target, opts) {
     var willChange = (opts && opts.willChange) || 'enumerableWillChange',
@@ -651,35 +651,35 @@ Ember.Enumerable = Ember.Mixin.create( /** @lends Ember.Enumerable */ {
     if (hasObservers) Ember.propertyDidChange(this, 'hasEnumerableObservers');
     return this;
   },
-  
+
   /**
     Becomes true whenever the array currently has observers watching changes
     on the array.
-    
+
     @property {Boolean}
   */
   hasEnumerableObservers: Ember.computed(function() {
     return Ember.hasListeners(this, '@enumerable:change') || Ember.hasListeners(this, '@enumerable:before');
   }).property().cacheable(),
-  
-  
+
+
   /**
-    Invoke this method just before the contents of your enumerable will 
+    Invoke this method just before the contents of your enumerable will
     change.  You can either omit the parameters completely or pass the objects
     to be removed or added if available or just a count.
-    
+
     @param {Ember.Enumerable|Number} removing
       An enumerable of the objects to be removed or the number of items to
       be removed.
-      
+
     @param {Ember.Enumerable|Number} adding
       An enumerable of the objects to be added or the number of items to be
       added.
-    
+
     @returns {Ember.Enumerable} receiver
   */
   enumerableContentWillChange: function(removing, adding) {
-    
+
     var removeCnt, addCnt, hasDelta;
 
     if ('number' === typeof removing) removeCnt = removing;
@@ -689,18 +689,18 @@ Ember.Enumerable = Ember.Mixin.create( /** @lends Ember.Enumerable */ {
     if ('number' === typeof adding) addCnt = adding;
     else if (adding) addCnt = get(adding,'length');
     else addCnt = adding = -1;
-    
+
     hasDelta = addCnt<0 || removeCnt<0 || addCnt-removeCnt!==0;
 
     if (removing === -1) removing = null;
     if (adding   === -1) adding   = null;
-    
+
     if (hasDelta) Ember.propertyWillChange(this, 'length');
     Ember.sendEvent(this, '@enumerable:before', removing, adding);
 
     return this;
   },
-  
+
   /**
     Invoke this method when the contents of your enumerable has changed.
     This will notify any observers watching for content changes.  If your are
@@ -708,20 +708,20 @@ Ember.Enumerable = Ember.Mixin.create( /** @lends Ember.Enumerable */ {
     start and end values where the content changed so that it can be used to
     notify range observers.
 
-    @param {Number} start 
-      optional start offset for the content change.  For unordered 
+    @param {Number} start
+      optional start offset for the content change.  For unordered
       enumerables, you should always pass -1.
-      
+
     @param {Enumerable} added
       optional enumerable containing items that were added to the set.  For
       ordered enumerables, this should be an ordered array of items.  If no
       items were added you can pass null.
-    
+
     @param {Enumerable} removes
-      optional enumerable containing items that were removed from the set. 
-      For ordered enumerables, this hsould be an ordered array of items. If 
+      optional enumerable containing items that were removed from the set.
+      For ordered enumerables, this hsould be an ordered array of items. If
       no items were removed you can pass null.
-      
+
     @returns {Object} receiver
   */
   enumerableContentDidChange: function(removing, adding) {
@@ -734,12 +734,12 @@ Ember.Enumerable = Ember.Mixin.create( /** @lends Ember.Enumerable */ {
     if ('number' === typeof adding) addCnt = adding;
     else if (adding) addCnt = get(adding, 'length');
     else addCnt = adding = -1;
-    
+
     hasDelta = addCnt<0 || removeCnt<0 || addCnt-removeCnt!==0;
 
     if (removing === -1) removing = null;
     if (adding   === -1) adding   = null;
-    
+
     Ember.sendEvent(this, '@enumerable:change', removing, adding);
     if (hasDelta) Ember.propertyDidChange(this, 'length');
 

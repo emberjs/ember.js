@@ -24,7 +24,7 @@
 
   // Constructor that supports either Metamorph('foo') or new
   // Metamorph('foo');
-  // 
+  //
   // Takes a string of HTML as the argument.
 
   var Metamorph = function(html) {

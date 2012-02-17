@@ -9,17 +9,17 @@ require('ember-runtime/~tests/suites/enumerable');
 
 
 var ObserverClass =   Ember.EnumerableTests.ObserverClass.extend({
-    
+
    observeArray: function(obj) {
     obj.addArrayObserver(this);
     return this;
   },
-  
+
   stopObserveArray: function(obj) {
     obj.removeArrayObserver(this);
     return this;
   },
-  
+
   arrayWillChange: function() {
     equal(this._before, null, 'should only call once');
     this._before = Array.prototype.slice.call(arguments);
@@ -29,13 +29,13 @@ var ObserverClass =   Ember.EnumerableTests.ObserverClass.extend({
     equal(this._after, null, 'should only call once');
     this._after = Array.prototype.slice.call(arguments);
   }
-  
+
 });
 
 Ember.ArrayTests = Ember.EnumerableTests.extend({
-  
+
   observerClass: ObserverClass
-  
+
 });
 
 Ember.ArrayTests.ObserverClass = ObserverClass;

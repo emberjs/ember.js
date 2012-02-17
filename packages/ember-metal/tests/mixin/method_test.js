@@ -8,18 +8,18 @@
 module('Mixin Methods');
 
 test('defining simple methods', function() {
-  
+
   var MixinA, obj, props;
-  
+
   props = {
     publicMethod: function() { return 'publicMethod'; },
     _privateMethod: function() { return 'privateMethod'; }
   };
-  
+
   MixinA = Ember.Mixin.create(props);
   obj = {};
   MixinA.apply(obj);
-  
+
   // but should be defined
   equal(props.publicMethod(), 'publicMethod', 'publicMethod is func');
   equal(props._privateMethod(), 'privateMethod', 'privateMethod is func');
@@ -27,11 +27,11 @@ test('defining simple methods', function() {
 
 test('overriding public methods', function() {
   var MixinA, MixinB, MixinC, MixinD, MixinE, MixinF, obj;
-  
+
   MixinA = Ember.Mixin.create({
     publicMethod: function() { return 'A'; }
   });
-  
+
   MixinB = Ember.Mixin.create(MixinA, {
     publicMethod: function() { return this._super()+'B'; }
   });
@@ -39,11 +39,11 @@ test('overriding public methods', function() {
   MixinD = Ember.Mixin.create(MixinA, {
     publicMethod: function() { return this._super()+'D'; }
   });
-  
+
   MixinF = Ember.Mixin.create({
     publicMethod: function() { return this._super()+'F'; }
   });
-  
+
   obj = {};
   MixinB.apply(obj);
   equal(obj.publicMethod(), 'AB', 'should define super for A and B');
@@ -64,26 +64,26 @@ test('overriding public methods', function() {
 
 
 test('overriding inherited objects', function() {
-  
+
   var cnt = 0;
   var MixinA = Ember.Mixin.create({
     foo: function() { cnt++; }
   });
-  
+
   var MixinB = Ember.Mixin.create({
     foo: function() { this._super(); cnt++; }
   });
 
   var objA = {};
   MixinA.apply(objA);
-  
+
   var objB = Ember.create(objA);
   MixinB.apply(objB);
-  
+
   cnt = 0;
   objB.foo();
   equal(cnt, 2, 'should invoke both methods');
-  
+
   cnt = 0;
   objA.foo();
   equal(cnt, 1, 'should not screw w/ parent obj');
@@ -94,11 +94,11 @@ test('Including the same mixin more than once will only run once', function() {
   var MixinA = Ember.Mixin.create({
     foo: function() { cnt++; }
   });
-  
+
   var MixinB = Ember.Mixin.create(MixinA, {
     foo: function() { this._super(); }
   });
-  
+
   var MixinC = Ember.Mixin.create(MixinA, {
     foo: function() { this._super(); }
   });
@@ -106,20 +106,20 @@ test('Including the same mixin more than once will only run once', function() {
   var MixinD = Ember.Mixin.create(MixinB, MixinC, MixinA, {
     foo: function() { this._super(); }
   });
-  
+
   var obj = {};
   MixinD.apply(obj);
   MixinA.apply(obj); // try to apply again..
-  
+
   cnt = 0;
   obj.foo();
-  
+
   equal(cnt, 1, 'should invoke MixinA.foo one time');
 });
 
 // ..........................................................
 // CONFLICTS
-// 
+//
 
 module('Method Conflicts');
 
@@ -128,11 +128,11 @@ test('overriding toString', function() {
   var MixinA = Ember.Mixin.create({
     toString: function() { return 'FOO'; }
   });
-  
+
   var obj = {};
   MixinA.apply(obj);
   equal(obj.toString(), 'FOO', 'should override toString w/o error');
-  
+
   obj = {};
   Ember.mixin(obj, { toString: function() { return 'FOO'; } });
   equal(obj.toString(), 'FOO', 'should override toString w/o error');
@@ -140,17 +140,17 @@ test('overriding toString', function() {
 
 // ..........................................................
 // BUGS
-// 
+//
 
 module('system/mixin/method_test BUGS');
 
 test('applying several mixins at once with sup already defined causes infinite loop', function() {
-  
+
   var cnt = 0;
   var MixinA = Ember.Mixin.create({
     foo: function() { cnt++; }
   });
-  
+
   var MixinB = Ember.Mixin.create({
     foo: function() { this._super(); cnt++; }
   });

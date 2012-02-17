@@ -55,7 +55,7 @@ var queue = new ObserverSet(true), beforeObserverSet = new ObserverSet();
 function notifyObservers(obj, eventName, forceNotification) {
   if (suspended && !forceNotification) {
 
-    // if suspended add to the queue to send event later - but only send 
+    // if suspended add to the queue to send event later - but only send
     // event once.
     if (!queue.contains(obj, eventName)) {
       queue.add(obj, eventName);

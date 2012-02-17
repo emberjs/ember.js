@@ -19,7 +19,7 @@ module('system/binding/notNull', {
 });
 
 test('allow empty string as placeholder', function() {
-  
+
   var binding = Ember.bind(MyApp, 'bar.value', 'foo.value').notNull('');
 
   Ember.run.sync();

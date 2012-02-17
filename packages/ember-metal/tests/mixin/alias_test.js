@@ -29,11 +29,11 @@ test('copies the property values from another key when the mixin is applied', fu
     }),
 
     computedBar: Ember.alias('computedFoo'),
-    
+
     fooMethod: function() { return 'FOO'; },
     barMethod: Ember.alias('fooMethod')
   });
-  
+
   var obj = MyMixin.apply({});
   validateAlias(obj);
 });
@@ -44,7 +44,7 @@ test('should follow aliases all the way down', function() {
     baz: 'baz',
     foo: Ember.alias('baz')
   });
-  
+
   var obj = MyMixin.apply({});
   equal(Ember.get(obj, 'bar'), 'baz', 'should have followed aliases');
 });
@@ -60,13 +60,13 @@ test('should copy from other dependent mixins', function() {
 
     fooMethod: function() { return 'FOO'; }
   });
-  
+
   var MyMixin = Ember.Mixin.create(BaseMixin, {
     bar: Ember.alias('foo'),
     computedBar: Ember.alias('computedFoo'),
     barMethod: Ember.alias('fooMethod')
   });
-  
+
   var obj = MyMixin.apply({});
   validateAlias(obj);
 });
@@ -82,13 +82,13 @@ test('should copy from other mixins applied at same time', function() {
 
     fooMethod: function() { return 'FOO'; }
   });
-  
+
   var MyMixin = Ember.Mixin.create({
     bar: Ember.alias('foo'),
     computedBar: Ember.alias('computedFoo'),
     barMethod: Ember.alias('fooMethod')
   });
-  
+
   var obj = Ember.mixin({}, BaseMixin, MyMixin);
   validateAlias(obj);
 });
@@ -97,13 +97,13 @@ test('should copy from properties already applied on object', function() {
 
   var BaseMixin = Ember.Mixin.create({
     foo: 'foo',
-    
+
     computedFoo: Ember.computed(function() {
       return 'cfoo';
     })
-    
+
   });
-  
+
   var MyMixin = Ember.Mixin.create({
     bar: Ember.alias('foo'),
     computedBar: Ember.alias('computedFoo'),
@@ -113,9 +113,9 @@ test('should copy from properties already applied on object', function() {
   var obj = {
     fooMethod: function() { return 'FOO'; }
   };
-  
+
   BaseMixin.apply(obj);
   MyMixin.apply(obj);
-  
+
   validateAlias(obj);
 });
