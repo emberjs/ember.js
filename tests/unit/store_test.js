@@ -24,6 +24,15 @@ test("a specific store can be supplied as the default store", function() {
   equal(get(DS, 'defaultStore'), store, "isDefaultStore overrides the default behavior");
 });
 
+test("when a store is destroyed, it removes itself as the default store", function() {
+  var store = DS.Store.create({ isDefaultStore: true });
+
+  equal(get(DS, 'defaultStore'), store, "precond - store creates itself as default store");
+  store.destroy();
+
+  equal(get(DS, 'defaultStore'), null, "default store is set to null after previous default was destroyed");
+});
+
 var stateManager, stateName;
 
 module("DS.StateManager", {
