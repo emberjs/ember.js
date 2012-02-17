@@ -7,6 +7,7 @@ module("Association/adapter integration test", {
     adapter = DS.Adapter.create();
 
     store = DS.Store.create({
+      isDefaultStore: true,
       adapter: adapter
     });
   },
@@ -26,7 +27,11 @@ test("when adding a record to an association that belongs to another record that
   });
 
   var parentRecord = Comment.createRecord();
+  parentRecord.toString = function() { return "<parent>"; };
   var childRecord = Comment.createRecord();
+  childRecord.toString = function() { return "<child>"; };
+
+  childRecord.get('stateManager').enableLogging = true;
 
   parentRecord.get('comments').pushObject(childRecord);
 
@@ -35,6 +40,9 @@ test("when adding a record to an association that belongs to another record that
     createCalled++;
     if (createCalled === 1) {
       equal(model, parentRecord, "parent record is committed first");
+      store.didCreateRecord(model, { id: 1 });
+    } else if (createCalled === 2) {
+      equal(model, childRecord, "child record is committed after its parent is committed");
     }
   };
 
