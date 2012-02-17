@@ -350,9 +350,6 @@ Binding.prototype = /** @scope Ember.Binding.prototype */ {
     @returns {Ember.Binding} this
   */
   notEmpty: function(placeholder) {
-    // Display warning for users using the SproutCore 1.x-style API.
-    ember_assert("notEmpty should only take a placeholder as a parameter. You no longer need to pass null as the first parameter.", arguments.length < 2);
-
     if (placeholder == undefined) { placeholder = Ember.EMPTY_PLACEHOLDER; }
 
     this.transform({
