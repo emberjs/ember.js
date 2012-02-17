@@ -413,7 +413,7 @@ function findNamespaces() {
     // globalStorage is a storage obsoleted by the WhatWG storage specification. See https://developer.mozilla.org/en/DOM/Storage#globalStorage
     if (prop === "globalStorage" && window.StorageList && window.globalStorage instanceof window.StorageList) { continue; }
     // Don't access properties on parent window, which will throw "Access/Permission Denied" in IE/Firefox for windows on different domains
-    if (prop === "parent") { continue; }
+    if (prop === "parent" || prop === "top" || prop === "frameElement" || prop === "content") { continue; }
     // Unfortunately, some versions of IE don't support window.hasOwnProperty
     if (window.hasOwnProperty && !window.hasOwnProperty(prop)) { continue; }
 
