@@ -32,7 +32,7 @@ suite.test('every should stop invoking when you return true', function() {
       exp = cnt,
       found = [], result;
 
-  result = obj.find(function(i) { found.push(i); return !(--cnt>0); });
+  result = obj.find(function(i) { found.push(i); return --cnt >= 0; });
   equal(result, ary[exp-1], 'return value of obj.find');
   equal(found.length, exp, 'should invoke proper number of times');
   deepEqual(found, ary.slice(0,-2), 'items passed during find() should match');

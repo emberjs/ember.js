@@ -180,7 +180,7 @@ Wp.copy = function(obj) {
   var ret = new ChainNode(null, null, obj, this._separator);
   var paths = this._paths, path;
   for(path in paths) {
-    if (!(paths[path] > 0)) continue; // this check will also catch non-number vals.
+    if (paths[path] <= 0) continue; // this check will also catch non-number vals.
     ret.add(path);
   }
   return ret;
