@@ -236,16 +236,6 @@ test("Binding value1 such that it will recieve only single values", function() {
 	equal("@@MULT@@",get(bon1, "array1"));
 });
 
-test("Single binding using notEmpty function.", function() {
-  // This should raise an exception for Ember 1.x developers who are using
-  // the old syntax.
-  raises(function() {
-    var bond = Bon1.create ({
-      array1Binding: Ember.Binding.single("TestNamespace.bon2.arr").notEmpty(null,'(EMPTY)')
-    });
-  });
-});
-
 test("Binding with transforms, function to check the type of value", function() {
 	var jon = Bon1.create({
 		value1Binding: Ember.Binding.transform({
