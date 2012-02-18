@@ -315,9 +315,9 @@ test("it sends exit events in the correct order when changing to a top-level sta
         start: Ember.State.create({
           outer: Ember.State.create({
             inner: Ember.State.create({
-              exit: function() {exitOrder.push('exitedInner')},
+              exit: function() { exitOrder.push('exitedInner'); }
             }),
-            exit: function() {exitOrder.push('exitedOuter')}
+            exit: function() { exitOrder.push('exitedOuter'); }
           })
         })
       });
@@ -327,7 +327,7 @@ test("it sends exit events in the correct order when changing to a top-level sta
   equal(exitOrder.length, 2, "precond - it calls both exits");
   equal(exitOrder[0], 'exitedInner', "inner exit is called first");
   equal(exitOrder[1], 'exitedOuter', "outer exit is called second");
-})
+});
 
 var passedContext, loadingEventCalled, loadedEventCalled, eventInChildCalled;
 loadingEventCalled = loadedEventCalled = eventInChildCalled = 0;
@@ -360,7 +360,6 @@ module("Ember.StateManager - Event Dispatching", {
     });
 
     stateManager.goToState('loading');
-    context = null;
   }
 });
 

@@ -3,7 +3,7 @@
 // Copyright: ©2011 Strobe Inc. and contributors.
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
-/*globals testBoth Global */
+/*globals Global:true */
 
 require('ember-metal/~tests/props_helper');
 
@@ -89,7 +89,7 @@ testBoth('suspending property changes safely despite exceptions', function(get,s
       throw exc;
     });
   } catch(err) {
-    if (err != exc)
+    if (err !== exc)
       throw err;
   }
 

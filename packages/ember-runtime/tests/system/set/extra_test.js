@@ -42,7 +42,7 @@ test('should clear a set of its content', function() {
   aSet.clear();
   equal(get(aSet, 'length'), 0, 'should have 0 items');
 
-  count = 0;
+  var count = 0;
   aSet.forEach(function() { count++; });
   equal(count, 0, 'iterating over items should not invoke callback');
 

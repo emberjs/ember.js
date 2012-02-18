@@ -9,8 +9,8 @@ module("Ember Type Checking");
 
 test("Ember.typeOf", function() {
 	var a = null,
-	    arr = [1,2,3],
-	    obj = {},
+      arr = [1,2,3],
+      obj = {},
       object = Ember.Object.create({ method: function() {} });
 
   equal(Ember.typeOf(undefined),     'undefined', "item of type undefined");

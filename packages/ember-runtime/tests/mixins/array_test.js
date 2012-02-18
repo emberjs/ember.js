@@ -390,7 +390,7 @@ testBoth("should be clear caches for computed properties that have dependent key
 });
 
 testBoth("observers that contain @each in the path should fire only once the first time they are accessed", function(get, set) {
-  count = 0;
+  var count = 0;
 
   var obj = Ember.Object.create({
     init: function() {

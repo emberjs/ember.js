@@ -3,7 +3,7 @@
 // Copyright: ©2011 Strobe Inc. and contributors.
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
-/*globals testBoth Global */
+/*globals Global:true */
 
 require('ember-metal/~tests/props_helper');
 
@@ -92,7 +92,7 @@ test("watching an object THEN defining it should work also", function() {
 
 test("watching a chain then defining the property", function () {
   var obj = {};
-  var foo = {bar: 'bar'}
+  var foo = {bar: 'bar'};
   Ember.watch(obj, 'foo.bar');
 
   Ember.defineProperty(obj, 'foo', Ember.SIMPLE_PROPERTY, foo);
@@ -107,7 +107,7 @@ test("watching a chain then defining the property", function () {
 test("watching a chain then defining the nested property", function () {
   var bar = {};
   var obj = {foo: bar};
-  var baz = {baz: 'baz'}
+  var baz = {baz: 'baz'};
   Ember.watch(obj, 'foo.bar.baz');
 
   Ember.defineProperty(bar, 'bar', Ember.SIMPLE_PROPERTY, baz);

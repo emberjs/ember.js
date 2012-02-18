@@ -75,7 +75,7 @@ test("numbers", function() {
 });
 
 test("null and undefined", function() {
-  var a = null, aprime = null, b = undefined;
+  var a = null, aprime = null, b;
 
   sameGuid( a, a,      "null always returns the same guid" );
   sameGuid( b, b,      "undefined always returns the same guid" );

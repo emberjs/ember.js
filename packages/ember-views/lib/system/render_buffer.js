@@ -152,7 +152,7 @@ Ember._RenderBuffer = Ember.Object.extend(
     var attributes = get(this, 'elementAttributes');
 
     if (arguments.length === 1) {
-      return attributes[name]
+      return attributes[name];
     } else {
       attributes[name] = value;
     }
@@ -324,15 +324,15 @@ Ember._RenderBuffer = Ember.Object.extend(
         style = get(this, 'elementStyle'),
         tag = get(this, 'elementTag'),
         content = '',
-        styleBuffer = [], prop;
+        styleBuffer = [], prop, openTag;
 
     if (tag) {
-      var openTag = ["<" + tag];
+      openTag = ["<" + tag];
 
       if (id) { openTag.push('id="' + id + '"'); }
       if (classes.length) { openTag.push('class="' + classes.join(" ") + '"'); }
 
-      if (!jQuery.isEmptyObject(style)) {
+      if (!Ember.$.isEmptyObject(style)) {
         for (prop in style) {
           if (style.hasOwnProperty(prop)) {
             styleBuffer.push(prop + ':' + style[prop] + ';');

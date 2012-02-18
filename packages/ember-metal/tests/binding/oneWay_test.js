@@ -3,7 +3,7 @@
 // Copyright: ©2011 Strobe Inc. and contributors.
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
-/*globals MyApp */
+/*globals MyApp:true */
 
 module('system/mixin/binding/oneWay_test', {
   setup: function() {

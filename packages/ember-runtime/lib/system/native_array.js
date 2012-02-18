@@ -142,7 +142,7 @@ Ember.A = function(arr){
 Ember.NativeArray.activate = function() {
   NativeArray.apply(Array.prototype);
 
-  Ember.A = function(arr) { return arr || []; }
+  Ember.A = function(arr) { return arr || []; };
 };
 
 if (Ember.EXTEND_PROTOTYPES) Ember.NativeArray.activate();

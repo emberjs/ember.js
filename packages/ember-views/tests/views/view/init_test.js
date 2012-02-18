@@ -1,9 +1,4 @@
-// ==========================================================================
-// Project:   Ember - JavaScript Application Framework
-// Copyright: ©2006-2011 Apple Inc. and contributors.
-// License:   Licensed under MIT license (see license.js)
-// ==========================================================================
-
+/*global TestApp:true*/
 var set = Ember.set, get = Ember.get;
 
 module("Ember.View.create");

@@ -3,7 +3,7 @@
 // Copyright: ©2011 Strobe Inc. and contributors.
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
-/*globals MyApp */
+/*globals MyApp:true */
 
 var foo, bar, binding, set = Ember.set, get = Ember.get, setPath = Ember.setPath;
 
@@ -70,7 +70,7 @@ test('two-way transforms work', function() {
     binding = Ember.bind(MyApp, 'foo.value', 'bar.value');
     binding.transform({
       to: function(string) {
-        return parseInt(string) || null;
+        return parseInt(string, 10) || null;
       },
       from: function(integer) {
         return String(integer);

@@ -14,7 +14,6 @@
 // ========================================================================
 // Ember.Set Tests
 // ========================================================================
-/*globals module test ok isObj equals expects */
 
 var a, b, c ; // global variables
 
@@ -278,15 +277,6 @@ test("should ignore removing an object not in the set", function() {
   set.remove(obj) ;
   equal(set.length, oldLength) ;
 });
-
-// test("should remove all the elements in the set", function() {
-// 	var obj = [2,3,4];
-// 	set.add(obj) ;
-// 	var oldLength = set.length ;
-// 	equal(oldLength, 6);
-// 	a = set.removeEach(obj);
-// 	equal(a.length, 0);
-// });
 
 module("Ember.Set.pop + Ember.Set.copy", {
 // generate a set with every type of object, but none of the specific

@@ -3,7 +3,6 @@
 // Copyright: ©2006-2011 Apple Inc. and contributors.
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
-/*global module test equals context ok same */
 
 var set = Ember.set, get = Ember.get;
 
@@ -118,7 +117,7 @@ test("it is possible to create a child render buffer without a tagName", functio
 
   buffer.push('a');
 
-  second = buffer.begin().push('middle').end();
+  var second = buffer.begin().push('middle').end();
 
   buffer.push('b');
   buffer.push('c');
@@ -131,7 +130,7 @@ test("it is possible to replace a child render buffer initially created without 
 
   buffer.push('a');
 
-  second = buffer.begin().push('middle');
+  var second = buffer.begin().push('middle');
   second.end();
 
   buffer.push('b');

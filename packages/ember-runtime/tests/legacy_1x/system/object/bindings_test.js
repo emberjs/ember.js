@@ -5,6 +5,8 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
+/*globals TestNamespace:true*/
+
 /*
   NOTE: This test is adapted from the 1.x series of unit tests.  The tests
   are the same except for places where we intend to break the API we instead
@@ -21,7 +23,6 @@
 // ========================================================================
 // Ember.Object bindings Tests
 // ========================================================================
-/*globals module test ok isObj equals expects TestNamespace */
 
 var testObject, fromObject, extraObject, TestObject;
 

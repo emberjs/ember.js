@@ -5,6 +5,8 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
+/*global TestNamespace:true*/
+
 /*
   NOTE: This test is adapted from the 1.x series of unit tests.  The tests
   are the same except for places where we intend to break the API we instead
@@ -43,7 +45,6 @@ var get = Ember.get, set = Ember.set;
 // ========================================================================
 // Ember.Binding Tests
 // ========================================================================
-/*globals TestNamespace */
 
 var fromObject, toObject, binding, Bon1, bon2, root ; // global variables
 
@@ -249,7 +250,7 @@ test("Binding with transforms, function to check the type of value", function() 
 	var jon = Bon1.create({
 		value1Binding: Ember.Binding.transform({
       to: function(val1) {
-        return (Ember.typeOf(val1) == 'string')? val1 : "";
+        return (Ember.typeOf(val1) === 'string')? val1 : "";
       }
     }).from("TestNamespace.bon2.val1")
 	});

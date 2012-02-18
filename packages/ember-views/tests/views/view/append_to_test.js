@@ -19,7 +19,7 @@ module("Ember.View - append() and appendTo()", {
 });
 
 test("should be added to the specified element when calling append()", function() {
-  jQuery("#qunit-fixture").html('<div id="menu"></div>');
+  Ember.$("#qunit-fixture").html('<div id="menu"></div>');
 
   view = View.create();
 
@@ -153,7 +153,7 @@ module("Ember.View - append() and appendTo() in a view hierarchy", {
 });
 
 test("should be added to the specified element when calling appendTo()", function() {
-  jQuery("#qunit-fixture").html('<div id="menu"></div>');
+  Ember.$("#qunit-fixture").html('<div id="menu"></div>');
 
   view = View.create();
 
@@ -168,7 +168,7 @@ test("should be added to the specified element when calling appendTo()", functio
 });
 
 test("should be added to the document body when calling append()", function() {
-  jQuery("#qunit-fixture").html('<div id="menu"></div>');
+  Ember.$("#qunit-fixture").html('<div id="menu"></div>');
 
   view = View.create();
 

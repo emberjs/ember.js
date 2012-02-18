@@ -130,7 +130,8 @@ Ember.StateManager = Ember.State.extend(
         newState = this.findStatesByRoute(state, name);
       }
 
-      enterStates = newState.slice(0), exitStates = exitStates.slice(0);
+      enterStates = newState.slice(0);
+      exitStates = exitStates.slice(0);
 
       if (enterStates.length > 0) {
         state = enterStates[enterStates.length - 1];

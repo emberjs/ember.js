@@ -479,7 +479,7 @@ Ember.View = Ember.Object.extend(
         elem = this.$();
         attributeValue = get(this, attributeName);
 
-        Ember.View.applyAttributeBindings(elem, attributeName, attributeValue)
+        Ember.View.applyAttributeBindings(elem, attributeName, attributeValue);
       };
 
       addObserver(this, attributeName, observer);
@@ -502,8 +502,9 @@ Ember.View = Ember.Object.extend(
   */
   _classStringForProperty: function(property) {
     var split = property.split(':'),
-        property = split[0],
         className = split[1];
+
+    property = split[0];
 
     // TODO: Remove this `false` when the `getPath` globals support is removed
     var val = Ember.getPath(this, property, false);
@@ -726,7 +727,7 @@ Ember.View = Ember.Object.extend(
   */
   findElementInParentElement: function(parentElem) {
     var id = "#" + get(this, 'elementId');
-    return jQuery(id)[0] || jQuery(id, parentElem)[0];
+    return Ember.$(id)[0] || Ember.$(id, parentElem)[0];
   },
 
   /**
@@ -738,7 +739,12 @@ Ember.View = Ember.Object.extend(
   */
   renderBuffer: function(tagName) {
     tagName = tagName || get(this, 'tagName');
-    if (tagName == null) { tagName = 'div'; }
+
+    // Explicitly check for null or undefined, as tagName
+    // may be an empty string, which would evaluate to false.
+    if (tagName === null || tagName === undefined) {
+      tagName = 'div';
+    }
 
     return Ember.RenderBuffer(tagName);
   },
@@ -927,7 +933,9 @@ Ember.View = Ember.Object.extend(
     // insert a new buffer after the "parent buffer").
     if (parentBuffer) {
       var tagName = get(this, 'tagName');
-      if (tagName == null) { tagName = 'div'; }
+      if (tagName === null || tagName === undefined) {
+        tagName = 'div';
+      }
 
       buffer = parentBuffer[bufferOperation](tagName);
     } else {

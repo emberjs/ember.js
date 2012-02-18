@@ -39,7 +39,7 @@ testBoth('calling setProperties completes safely despite exceptions', function(g
       if (value !== undefined) {
         throw exc;
       }
-      return "Apple, Inc."
+      return "Apple, Inc.";
     })
   });
 
@@ -54,8 +54,9 @@ testBoth('calling setProperties completes safely despite exceptions', function(g
       companyName: 'Fruit Co., Inc.'
     });
   } catch(err) {
-    if (err != exc)
+    if (err !== exc) {
       throw err;
+    }
   }
 
   equal(firstNameChangedCount, 1, 'firstName should have fired once');

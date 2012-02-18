@@ -37,10 +37,10 @@ test("dasherize camelcased string", function() {
 
 test("after call with the same passed value take object from cashe", function() {
   var res = Ember.String.dasherize('innerHTML');
-  var decamelize = Ember.String.decamelize
+  var decamelize = Ember.String.decamelize;
   Ember.String.decamelize = function() {
-    throw "Ember.String.decamelize has been called."
-  }
+    throw "Ember.String.decamelize has been called.";
+  };
   Ember.String.dasherize('innerHTML');
   Ember.String.decamelize = decamelize;
 });

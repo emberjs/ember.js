@@ -1,3 +1,5 @@
+/*global Test:true*/
+
 module("Ember.TargetActionSupport");
 
 test("it should return false if no target or action are specified", function() {

@@ -1,3 +1,5 @@
+/*global ViewTest:true*/
+
 var view;
 
 module("views/view/view_lifecycle_test - pre-render", {
@@ -106,7 +108,7 @@ test("appendChild should work inside a template", function() {
     view.appendTo("#qunit-fixture");
   });
 
-  ok(view.$('h1').length == 1 && view.$('div').length == 2,
+  ok(view.$('h1').length === 1 && view.$('div').length === 2,
      "The appended child is visible");
 });
 
@@ -136,7 +138,7 @@ test("rerender should work inside a template", function() {
     view.appendTo("#qunit-fixture");
   });
 
-  ok(view.$('div:contains(2), div:contains(Inside child2').length == 2,
+  ok(view.$('div:contains(2), div:contains(Inside child2').length === 2,
      "Rerendering a view causes it to rerender");
 });
 

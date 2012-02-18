@@ -11,7 +11,7 @@ var set = Ember.set, get = Ember.get;
 
 module("Ember.Application", {
   setup: function() {
-    $("#qunit-fixture").html("<div id='one'><div id='one-child'>HI</div></div><div id='two'>HI</div>");
+    Ember.$("#qunit-fixture").html("<div id='one'><div id='one-child'>HI</div></div><div id='two'>HI</div>");
     application = Ember.Application.create({ rootElement: '#one' });
   },
 

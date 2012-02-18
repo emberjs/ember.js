@@ -5,6 +5,8 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
+/*global Namespace:true DepObj:true*/
+
 var get = Ember.get, set = Ember.set;
 
 /*
@@ -32,7 +34,6 @@ var get = Ember.get, set = Ember.set;
 // ========================================================================
 // Ember.Observable Tests
 // ========================================================================
-/*globals module test ok isObj equals expects Namespace DepObj */
 
 var object, ObjectC, ObjectD, objectA, objectB ;
 

@@ -3,7 +3,7 @@
 // Copyright: ©2011 Strobe Inc. and contributors.
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
-/*global testBoth */
+/*global testBoth:true */
 
 // used by unit tests to test both accessor mode and non-accessor mode
 testBoth = function(testname, callback) {

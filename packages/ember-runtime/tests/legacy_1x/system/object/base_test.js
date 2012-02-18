@@ -4,6 +4,7 @@
 //            ©2008-2011 Apple Inc. All rights reserved.
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
+/*globals TestNamespace:true*/
 
 /*
   NOTE: This test is adapted from the 1.x series of unit tests.  The tests
@@ -26,7 +27,6 @@
 // ========================================================================
 // Ember.Object Base Tests
 // ========================================================================
-/*globals module test ok isObj equals expects same plan TestNamespace*/
 
 var obj, obj1, don, don1 ; // global variables
 
@@ -129,15 +129,15 @@ test("Global+Local observer works", function() {
 module("Ember.Object superclass and subclasses", {
   setup: function() {
     obj = Ember.Object.extend ({
-	  method1: function() {
-		return "hello";
-	  }
+    method1: function() {
+      return "hello";
+    }
 	});
 	obj1 = obj.extend();
 	don = obj1.create ({
-	  method2: function() {
-		  return this.superclass();
-		}
+    method2: function() {
+      return this.superclass();
+    }
 	});
   },
 

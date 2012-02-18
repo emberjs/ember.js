@@ -76,7 +76,7 @@ var toString = Object.prototype.toString;
 Ember.typeOf = function(item) {
   var ret;
 
-  ret = item==null ? String(item) : TYPE_MAP[toString.call(item)]||'object';
+  ret = (item === null || item === undefined) ? String(item) : TYPE_MAP[toString.call(item)] || 'object';
 
   if (ret === 'function') {
     if (Ember.Object && Ember.Object.detect(item)) ret = 'class';
@@ -130,7 +130,7 @@ Ember.empty = function(obj) {
  @param {Object} w Second value to compare
  @returns {Number} -1 if v < w, 0 if v = w and 1 if v > w.
 */
-Ember.compare = function (v, w) {
+Ember.compare = function compare(v, w) {
   if (v === w) { return 0; }
 
   var type1 = Ember.typeOf(v);
@@ -188,9 +188,8 @@ Ember.compare = function (v, w) {
       var l = Math.min(vLen, wLen);
       var r = 0;
       var i = 0;
-      var thisFunc = arguments.callee;
       while (r === 0 && i < l) {
-        r = thisFunc(v[i],w[i]);
+        r = compare(v[i],w[i]);
         i++;
       }
       if (r !== 0) { return r; }

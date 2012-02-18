@@ -4,6 +4,7 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
+/*global Test:true*/
 var set = Ember.set, get = Ember.get;
 
 require('ember-views/views/view');

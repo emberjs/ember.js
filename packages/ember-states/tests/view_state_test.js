@@ -106,9 +106,9 @@ test("it appends and removes a view to the element specified in its state manage
 
   var stateManager;
 
-  $('<div id="my-container"></div>').appendTo($('#qunit-fixture'));
+  Ember.$('<div id="my-container"></div>').appendTo(Ember.$('#qunit-fixture'));
 
-  equal($('#qunit-fixture > #my-container')[0].childNodes.length, 0, "precond - container does not have any child nodes");
+  equal(Ember.$('#qunit-fixture > #my-container')[0].childNodes.length, 0, "precond - container does not have any child nodes");
 
   Ember.run(function() {
     stateManager = Ember.StateManager.create({
@@ -120,7 +120,7 @@ test("it appends and removes a view to the element specified in its state manage
   });
 
   equal(Ember.$('#test-view').length, 1, "found view with custom id in DOM");
-  equal($("#test-view").parent().attr('id'), "my-container", "appends view to the correct element");
+  equal(Ember.$("#test-view").parent().attr('id'), "my-container", "appends view to the correct element");
 
   Ember.run(function() {
     stateManager.goToState('other');

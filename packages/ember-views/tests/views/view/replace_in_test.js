@@ -19,7 +19,7 @@ module("Ember.View - replaceIn()", {
 });
 
 test("should be added to the specified element when calling replaceIn()", function() {
-  jQuery("#qunit-fixture").html('<div id="menu"></div>');
+  Ember.$("#qunit-fixture").html('<div id="menu"></div>');
 
   view = View.create();
 
@@ -34,18 +34,18 @@ test("should be added to the specified element when calling replaceIn()", functi
 });
 
 test("should remove previous elements when calling replaceIn()", function() {
-  jQuery("#qunit-fixture").html('<div id="menu"><p>Foo</p></div>');
+  Ember.$("#qunit-fixture").html('<div id="menu"><p>Foo</p></div>');
   var viewElem = Ember.$('#menu').children();
 
   view = View.create();
 
-  ok(viewElem.length == 1, "should have one element");
+  ok(viewElem.length === 1, "should have one element");
 
   Ember.run(function() {
     view.replaceIn('#menu');
   });
 
-  ok(viewElem.length == 1, "should have one element");
+  ok(viewElem.length === 1, "should have one element");
 
 });
 
@@ -65,7 +65,7 @@ module("Ember.View - replaceIn() in a view hierarchy", {
 });
 
 test("should be added to the specified element when calling replaceIn()", function() {
-  jQuery("#qunit-fixture").html('<div id="menu"></div>');
+  Ember.$("#qunit-fixture").html('<div id="menu"></div>');
 
   view = View.create();
 
