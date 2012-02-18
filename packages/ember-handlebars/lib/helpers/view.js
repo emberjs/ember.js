@@ -92,7 +92,7 @@ Ember.Handlebars.ViewHelper = Ember.Object.create({
     var viewOptions = {};
 
     if (fn) {
-      ember_assert("You cannot provide a template block if you also specified a templateName", !(get(viewOptions, 'templateName')) && !(newView.PrototypeMixin.keys().indexOf('templateName') >= 0));
+      ember_assert("You cannot provide a template block if you also specified a templateName", !(get(viewOptions, 'templateName')) && (newView.PrototypeMixin.keys().indexOf('templateName') >= 0));
       viewOptions.template = fn;
     }
 
