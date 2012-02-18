@@ -182,7 +182,7 @@ test("changing first output should propograte to third after flush", function() 
   equal("change", get(first, "output"), "first.output") ;
   ok("change" !== get(third, "input"), "third.input") ;
 
-  var didChange = YES;
+  var didChange = true;
   while(didChange) didChange = Ember.run.sync() ;
 
   equal("change", get(first, "output"), "first.output") ;
@@ -301,8 +301,8 @@ module("AND binding", {
   setup: function() {
     // temporarily set up two source objects in the Ember namespace so we can
     // use property paths to access them
-    Ember.set(Ember, 'testControllerA', Ember.Object.create({ value: NO }));
-    Ember.set(Ember, 'testControllerB', Ember.Object.create({ value: NO }));
+    Ember.set(Ember, 'testControllerA', Ember.Object.create({ value: false }));
+    Ember.set(Ember, 'testControllerB', Ember.Object.create({ value: false }));
 
     toObject = Ember.Object.create({
       value: null,
@@ -317,40 +317,40 @@ module("AND binding", {
 
 });
 
-test("toObject.value should be YES if both sources are YES", function() {
+test("toObject.value should be true if both sources are true", function() {
   Ember.RunLoop.begin();
-  set(Ember.testControllerA, 'value', YES);
-  set(Ember.testControllerB, 'value', YES);
+  set(Ember.testControllerA, 'value', true);
+  set(Ember.testControllerB, 'value', true);
   Ember.RunLoop.end();
 
   Ember.run.sync();
-  equal(get(toObject, 'value'), YES);
+  equal(get(toObject, 'value'), true);
 });
 
-test("toObject.value should be NO if either source is NO", function() {
+test("toObject.value should be false if either source is false", function() {
   Ember.RunLoop.begin();
-  set(Ember.testControllerA, 'value', YES);
-  set(Ember.testControllerB, 'value', NO);
+  set(Ember.testControllerA, 'value', true);
+  set(Ember.testControllerB, 'value', false);
   Ember.RunLoop.end();
 
   Ember.run.sync();
-  equal(get(toObject, 'value'), NO);
+  equal(get(toObject, 'value'), false);
 
   Ember.RunLoop.begin();
-  set(Ember.testControllerA, 'value', YES);
-  set(Ember.testControllerB, 'value', YES);
+  set(Ember.testControllerA, 'value', true);
+  set(Ember.testControllerB, 'value', true);
   Ember.RunLoop.end();
 
   Ember.run.sync();
-  equal(get(toObject, 'value'), YES);
+  equal(get(toObject, 'value'), true);
 
   Ember.RunLoop.begin();
-  set(Ember.testControllerA, 'value', NO);
-  set(Ember.testControllerB, 'value', YES);
+  set(Ember.testControllerA, 'value', false);
+  set(Ember.testControllerB, 'value', true);
   Ember.RunLoop.end();
 
   Ember.run.sync();
-  equal(get(toObject, 'value'), NO);
+  equal(get(toObject, 'value'), false);
 });
 
 // ..........................................................
@@ -362,7 +362,7 @@ module("OR binding", {
   setup: function() {
     // temporarily set up two source objects in the Ember namespace so we can
     // use property paths to access them
-    Ember.set(Ember, 'testControllerA', Ember.Object.create({ value: NO }));
+    Ember.set(Ember, 'testControllerA', Ember.Object.create({ value: false }));
     Ember.set(Ember, 'testControllerB', Ember.Object.create({ value: null }));
 
     toObject = Ember.Object.create({
@@ -390,7 +390,7 @@ test("toObject.value should be first value if first value is truthy", function()
 
 test("toObject.value should be second value if first is falsy", function() {
   Ember.RunLoop.begin();
-  set(Ember.testControllerA, 'value', NO);
+  set(Ember.testControllerA, 'value', false);
   set(Ember.testControllerB, 'value', 'second value');
   Ember.RunLoop.end();
 

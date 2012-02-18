@@ -49,7 +49,7 @@ module("A new Ember.Object instance", {
       aMethodThatExists: function() {},
       aMethodThatReturnsTrue: function() { return true; },
       aMethodThatReturnsFoobar: function() { return "Foobar"; },
-      aMethodThatReturnsFalse: function() { return NO; }
+      aMethodThatReturnsFalse: function() { return false; }
     });
   },
 
@@ -91,15 +91,15 @@ module("Ember.Object observers", {
 
       // normal observer
       observer: Ember.observer(function(){
-        this._normal = YES;
+        this._normal = true;
       }, "prop1"),
 
       globalObserver: Ember.observer(function() {
-        this._global = YES;
+        this._global = true;
       }, "TestNamespace.obj.value"),
 
       bothObserver: Ember.observer(function() {
-        this._both = YES;
+        this._both = true;
       }, "prop1", "TestNamespace.obj.value")
     });
 
@@ -107,21 +107,21 @@ module("Ember.Object observers", {
 });
 
 test("Local observers work", function() {
-  obj._normal = NO;
-  set(obj, "prop1", NO);
-  equal(obj._normal, YES, "Normal observer did change.");
+  obj._normal = false;
+  set(obj, "prop1", false);
+  equal(obj._normal, true, "Normal observer did change.");
 });
 
 test("Global observers work", function() {
-  obj._global = NO;
+  obj._global = false;
   set(TestNamespace.obj, "value", "test2");
-  equal(obj._global, YES, "Global observer did change.");
+  equal(obj._global, true, "Global observer did change.");
 });
 
 test("Global+Local observer works", function() {
-  obj._both = NO;
-  set(obj, "prop1", NO);
-  equal(obj._both, YES, "Both observer did change.");
+  obj._both = false;
+  set(obj, "prop1", false);
+  equal(obj._both, true, "Both observer did change.");
 });
 
 
@@ -149,8 +149,8 @@ module("Ember.Object superclass and subclasses", {
 });
 
 test("Checking the detect() function on an object and its subclass", function(){
-	equal(obj.detect(obj1), YES);
-	equal(obj1.detect(obj), NO);
+	equal(obj.detect(obj1), true);
+	equal(obj1.detect(obj), false);
 });
 
 test("Checking the detectInstance() function on an object and its subclass", function() {

@@ -513,13 +513,13 @@ test("change dependent should clear cache when observers of dependent are called
 
 test('setting one of two computed properties that depend on a third property should clear the kvo cache', function() {
   // we have to call set twice to fill up the cache
-  object.set('isOff', YES);
-  object.set('isOn', YES);
+  object.set('isOff', true);
+  object.set('isOn', true);
 
-  // setting isOff to YES should clear the kvo cache
-  object.set('isOff', YES);
-  equal(object.get('isOff'), YES, 'object.isOff should be YES');
-  equal(object.get('isOn'), NO, 'object.isOn should be NO');
+  // setting isOff to true should clear the kvo cache
+  object.set('isOff', true);
+  equal(object.get('isOff'), true, 'object.isOff should be true');
+  equal(object.get('isOn'), false, 'object.isOn should be false');
 });
 
 test("dependent keys should be able to be specified as property paths", function() {
@@ -801,7 +801,7 @@ test("should unregister an observer for a property - special case when key has a
 test("removing an observer inside of an observer shouldn’t cause any problems", function() {
   // The observable system should be protected against clients removing
   // observers in the middle of observer notification.
-  var encounteredError = NO;
+  var encounteredError = false;
   try {
     ObjectD.addObserver('observableValue', null, 'observer1');
     ObjectD.addObserver('observableValue', null, 'observer2');
@@ -809,9 +809,9 @@ test("removing an observer inside of an observer shouldn’t cause any problems"
     Ember.run(function() { ObjectD.set('observableValue', "hi world"); });
   }
   catch(e) {
-    encounteredError = YES;
+    encounteredError = true;
   }
-  equal(encounteredError, NO);
+  equal(encounteredError, false);
 });
 
 

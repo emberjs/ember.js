@@ -297,7 +297,7 @@ Ember.Observable = Ember.Mixin.create(/** @scope Ember.Observable.prototype */ {
   },
 
   /**
-    Returns YES if the object currently has observers registered for a
+    Returns true if the object currently has observers registered for a
     particular key. You can use this method to potentially defer performing
     an expensive action until someone begins observing a particular property
     on the object.

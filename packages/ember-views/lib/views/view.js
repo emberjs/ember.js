@@ -51,10 +51,10 @@ Ember.View = Ember.Object.extend(
 
   /**
     @type Boolean
-    @default YES
+    @default true
     @constant
   */
-  isView: YES,
+  isView: true,
 
   // ..........................................................
   // TEMPLATE SUPPORT
@@ -513,7 +513,7 @@ Ember.View = Ember.Object.extend(
 
     // If value is a Boolean and true, return the dasherized property
     // name.
-    if (val === YES) {
+    if (val === true) {
       if (className) { return className; }
 
       // Normalize property path to be suitable for use
@@ -522,9 +522,9 @@ Ember.View = Ember.Object.extend(
       var parts = property.split('.');
       return Ember.String.dasherize(parts[parts.length-1]);
 
-    // If the value is not NO, undefined, or null, return the current
+    // If the value is not false, undefined, or null, return the current
     // value of the property.
-    } else if (val !== NO && val !== undefined && val !== null) {
+    } else if (val !== false && val !== undefined && val !== null) {
       return val;
 
     // Nothing to display. Return null so that the old class is removed

@@ -240,7 +240,7 @@ Binding.prototype = /** @scope Ember.Binding.prototype */ {
 
     @param {Boolean} flag
       (Optional) passing nothing here will make the binding oneWay.  You can
-      instead pass NO to disable oneWay, making the binding two way again.
+      instead pass false to disable oneWay, making the binding two way again.
 
     @returns {Ember.Binding} receiver
   */
@@ -332,8 +332,8 @@ Binding.prototype = /** @scope Ember.Binding.prototype */ {
 
   /**
     Adds a transform to convert the value to a bool value. If the value is
-    an array it will return YES if array is not empty. If the value is a
-    string it will return YES if the string is not empty.
+    an array it will return true if array is not empty. If the value is a
+    string it will return true if the string is not empty.
 
     @returns {Ember.Binding} this
   */
@@ -393,7 +393,7 @@ Binding.prototype = /** @scope Ember.Binding.prototype */ {
   },
 
   /**
-    Adds a transform that will return YES if the value is null or undefined, NO otherwise.
+    Adds a transform that will return true if the value is null or undefined, false otherwise.
 
     @returns {Ember.Binding} this
   */

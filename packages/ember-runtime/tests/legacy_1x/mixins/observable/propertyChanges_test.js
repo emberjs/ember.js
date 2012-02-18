@@ -27,7 +27,7 @@
 
 var ObservableObject = Ember.Object.extend(Ember.Observable);
 
-var revMatches = NO , ObjectA;
+var revMatches = false , ObjectA;
 
 module("object.propertyChanges", {
   setup: function() {

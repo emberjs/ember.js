@@ -91,12 +91,12 @@ test("Ember.Binding.bool(TestNamespace.fromObject.bar)) should create binding wi
   set(fromObject, "bar", 1) ;
 
   Ember.run.sync();
-  equal(YES, get(testObject, "foo"), "testObject.foo == YES");
+  equal(true, get(testObject, "foo"), "testObject.foo == true");
 
   set(fromObject, "bar", 0) ;
 
   Ember.run.sync();
-  equal(NO, get(testObject, "foo"), "testObject.foo == NO");
+  equal(false, get(testObject, "foo"), "testObject.foo == false");
 });
 
 test("bind(TestNamespace.fromObject*extraObject.foo) should create chained binding", function() {
@@ -205,12 +205,12 @@ test("fooBinding: Ember.Binding.bool(TestNamespace.fromObject.bar should create 
   set(fromObject, "bar", 1) ;
 
   Ember.run.sync();
-  equal(YES, get(testObject, "foo"), "testObject.foo == YES");
+  equal(true, get(testObject, "foo"), "testObject.foo == true");
 
   set(fromObject, "bar", 0) ;
 
   Ember.run.sync();
-  equal(NO, get(testObject, "foo"), "testObject.foo == NO");
+  equal(false, get(testObject, "foo"), "testObject.foo == false");
 });
 
 test("fooBinding: TestNamespace.fromObject*extraObject.foo should create chained binding", function() {
@@ -295,12 +295,12 @@ test("fooBinding: TestNamespace.fromObject.bar should have bool binding", functi
   set(fromObject, "bar", 1) ;
 
   Ember.run.sync();
-  equal(YES, get(testObject, "foo"), "testObject.foo == YES");
+  equal(true, get(testObject, "foo"), "testObject.foo == true");
 
   set(fromObject, "bar", 0) ;
 
   Ember.run.sync();
-  equal(NO, get(testObject, "foo"), "testObject.foo == NO");
+  equal(false, get(testObject, "foo"), "testObject.foo == false");
 });
 
 test("fooBinding: Ember.Binding.not(TestNamespace.fromObject.bar should override default", function() {
@@ -314,12 +314,12 @@ test("fooBinding: Ember.Binding.not(TestNamespace.fromObject.bar should override
   set(fromObject, "bar", 1) ;
 
   Ember.run.sync();
-  equal(NO, get(testObject, "foo"), "testObject.foo == NO");
+  equal(false, get(testObject, "foo"), "testObject.foo == false");
 
   set(fromObject, "bar", 0) ;
 
   Ember.run.sync();
-  equal(YES, get(testObject, "foo"), "testObject.foo == YES");
+  equal(true, get(testObject, "foo"), "testObject.foo == true");
 });
 
 module("fooBindingDefault: Ember.Binding.bool() (new style)", {
@@ -361,12 +361,12 @@ test("fooBinding: TestNamespace.fromObject.bar should have bool binding", functi
   set(fromObject, "bar", 1) ;
 
   Ember.run.sync();
-  equal(YES, get(testObject, "foo"), "testObject.foo == YES");
+  equal(true, get(testObject, "foo"), "testObject.foo == true");
 
   set(fromObject, "bar", 0) ;
 
   Ember.run.sync();
-  equal(NO, get(testObject, "foo"), "testObject.foo == NO");
+  equal(false, get(testObject, "foo"), "testObject.foo == false");
 });
 
 test("fooBinding: Ember.Binding.not(TestNamespace.fromObject.bar should override default", function() {
@@ -380,12 +380,12 @@ test("fooBinding: Ember.Binding.not(TestNamespace.fromObject.bar should override
   set(fromObject, "bar", 1) ;
 
   Ember.run.sync();
-  equal(NO, get(testObject, "foo"), "testObject.foo == NO");
+  equal(false, get(testObject, "foo"), "testObject.foo == false");
 
   set(fromObject, "bar", 0) ;
 
   Ember.run.sync();
-  equal(YES, get(testObject, "foo"), "testObject.foo == YES");
+  equal(true, get(testObject, "foo"), "testObject.foo == true");
 });
 
 test("Chained binding should be null if intermediate object in chain is null", function() {

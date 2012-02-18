@@ -299,7 +299,7 @@ Ember.wrap = function(func, superFunc) {
 /**
   @function
 
-  Returns YES if the passed object is an array or Array-like.
+  Returns true if the passed object is an array or Array-like.
 
   Ember Array Protocol:
 

@@ -11,24 +11,6 @@ require('ember-metal');
 // GLOBAL CONSTANTS
 //
 
-/**
-  @name YES
-  @static
-  @type Boolean
-  @default true
-  @constant
-*/
-YES = true;
-
-/**
-  @name NO
-  @static
-  @type Boolean
-  @default NO
-  @constant
-*/
-NO = false;
-
 // ensure no undefined errors in browsers where console doesn't exist
 if (typeof console === 'undefined') {
   window.console = {};
@@ -42,7 +24,7 @@ if (typeof console === 'undefined') {
 /**
   @static
   @type Boolean
-  @default YES
+  @default true
   @constant
 
   Determines whether Ember should enhances some built-in object
@@ -108,7 +90,7 @@ Ember.typeOf = function(item) {
 };
 
 /**
-  Returns YES if the passed value is null or undefined.  This avoids errors
+  Returns true if the passed value is null or undefined.  This avoids errors
   from JSLint complaining about use of ==, which can be technically
   confusing.
 

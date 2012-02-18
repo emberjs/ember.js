@@ -11,7 +11,7 @@ var view, myViewClass ;
 module("Ember.View#createChildView", {
   setup: function() {
     view = Ember.View.create();
-    myViewClass = Ember.View.extend({ isMyView: YES, foo: 'bar' });
+    myViewClass = Ember.View.extend({ isMyView: true, foo: 'bar' });
   }
 });
 

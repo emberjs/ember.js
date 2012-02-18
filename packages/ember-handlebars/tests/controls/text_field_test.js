@@ -159,11 +159,11 @@ test("should call the cancel method when escape key is pressed", function() {
 
 //   textField.insertNewline = function() {
 //     insertNewlineCalled++;
-//     return YES;
+//     return true;
 //   };
 //   textField.cancel = function() {
 //     cancelCalled++;
-//     return YES;
+//     return true;
 //   };
 
 //   textField.$().focus();

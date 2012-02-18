@@ -298,7 +298,7 @@ Ember.Enumerable = Ember.Mixin.create( /** @lends Ember.Enumerable */ {
 
   /**
     Returns an array with all of the items in the enumeration that the passed
-    function returns YES for. This method corresponds to filter() defined in
+    function returns true for. This method corresponds to filter() defined in
     JavaScript 1.6.
 
     The callback method you provide should have the following signature (all
@@ -310,7 +310,7 @@ Ember.Enumerable = Ember.Mixin.create( /** @lends Ember.Enumerable */ {
     - *index* is the current index in the iteration
     - *enumerable* is the enumerable object itself.
 
-    It should return the YES to include the item in the results, NO otherwise.
+    It should return the true to include the item in the results, false otherwise.
 
     Note that in addition to a callback, you can also pass an optional target
     object that will be set as "this" on the context. This is a good way
@@ -342,7 +342,7 @@ Ember.Enumerable = Ember.Mixin.create( /** @lends Ember.Enumerable */ {
   },
 
   /**
-    Returns the first item in the array for which the callback returns YES.
+    Returns the first item in the array for which the callback returns true.
     This method works similar to the filter() method defined in JavaScript 1.6
     except that it will stop working on the array once a match is found.
 
@@ -355,7 +355,7 @@ Ember.Enumerable = Ember.Mixin.create( /** @lends Ember.Enumerable */ {
     - *index* is the current index in the iteration
     - *enumerable* is the enumerable object itself.
 
-    It should return the YES to include the item in the results, NO otherwise.
+    It should return the true to include the item in the results, false otherwise.
 
     Note that in addition to a callback, you can also pass an optional target
     object that will be set as "this" on the context. This is a good way
@@ -397,7 +397,7 @@ Ember.Enumerable = Ember.Mixin.create( /** @lends Ember.Enumerable */ {
   },
 
   /**
-    Returns YES if the passed function returns YES for every item in the
+    Returns true if the passed function returns true for every item in the
     enumeration. This corresponds with the every() method in JavaScript 1.6.
 
     The callback method you provide should have the following signature (all
@@ -409,7 +409,7 @@ Ember.Enumerable = Ember.Mixin.create( /** @lends Ember.Enumerable */ {
     - *index* is the current index in the iteration
     - *enumerable* is the enumerable object itself.
 
-    It should return the YES or NO.
+    It should return the true or false.
 
     Note that in addition to a callback, you can also pass an optional target
     object that will be set as "this" on the context. This is a good way
@@ -443,7 +443,7 @@ Ember.Enumerable = Ember.Mixin.create( /** @lends Ember.Enumerable */ {
 
 
   /**
-    Returns YES if the passed function returns true for any item in the
+    Returns true if the passed function returns true for any item in the
     enumeration. This corresponds with the every() method in JavaScript 1.6.
 
     The callback method you provide should have the following signature (all
@@ -455,7 +455,7 @@ Ember.Enumerable = Ember.Mixin.create( /** @lends Ember.Enumerable */ {
     - *index* is the current index in the iteration
     - *enumerable* is the enumerable object itself.
 
-    It should return the YES to include the item in the results, NO otherwise.
+    It should return the true to include the item in the results, false otherwise.
 
     Note that in addition to a callback, you can also pass an optional target
     object that will be set as "this" on the context. This is a good way

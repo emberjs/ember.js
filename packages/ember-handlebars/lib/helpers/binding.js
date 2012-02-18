@@ -287,7 +287,7 @@ EmberHandlebars.registerHelper('bindAttr', function(options) {
   change, the correct class name will be reapplied to the DOM element.
 
   For example, if you pass the string "fooBar", it will first look up the
-  "fooBar" value of the context. If that value is YES, it will add the
+  "fooBar" value of the context. If that value is true, it will add the
   "foo-bar" class to the current element (i.e., the dasherized form of
   "fooBar"). If the value is a string, it will add that string as the class.
   Otherwise, it will not add any new class name.
@@ -331,7 +331,7 @@ EmberHandlebars.bindClasses = function(context, classBindings, view, bindAttrId)
       var parts = property.split('.');
       return Ember.String.dasherize(parts[parts.length-1]);
 
-    // If the value is not NO, undefined, or null, return the current
+    // If the value is not false, undefined, or null, return the current
     // value of the property.
     } else if (val !== false && val !== undefined && val !== null) {
       return val;

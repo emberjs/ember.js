@@ -43,7 +43,7 @@ Ember._BindableSpanView = Ember.View.extend(Ember.Metamorph,
 
     For example, this is true when using the `{{#if}}` helper, because the
     template inside the helper should look up properties relative to the same
-    object as outside the block. This would be NO when used with `{{#with
+    object as outside the block. This would be false when used with `{{#with
     foo}}` because the template should receive the object found by evaluating
     `foo`.
 

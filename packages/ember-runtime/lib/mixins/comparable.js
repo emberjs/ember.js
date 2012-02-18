@@ -24,7 +24,7 @@ Ember.Comparable = Ember.Mixin.create( /** @scope Ember.Comparable.prototype */{
     walk like a duck. Indicates that the object can be compared.
 
     @type Boolean
-    @default YES
+    @default true
     @constant
   */
   isComparable: true,

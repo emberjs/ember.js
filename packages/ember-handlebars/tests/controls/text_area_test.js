@@ -150,11 +150,11 @@ test("should call the cancel method when escape key is pressed", function() {
 
 //   textArea.insertNewline = function() {
 //     insertNewlineCalled++;
-//     return YES;
+//     return true;
 //   };
 //   textArea.cancel = function() {
 //     cancelCalled++;
-//     return YES;
+//     return true;
 //   };
 
 //   textArea.$().focus();
