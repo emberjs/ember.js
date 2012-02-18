@@ -77,7 +77,10 @@ module("Ember.View - handlebars integration", {
   },
 
   teardown: function() {
-    if (view) view.destroy();
+    if (view) {
+      view.destroy();
+      view = null;
+    }
     window.TemplateTests = undefined;
 
     if (additionalTeardown) { additionalTeardown(); }

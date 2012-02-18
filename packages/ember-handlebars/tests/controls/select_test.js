@@ -7,8 +7,8 @@ module("Ember.Select", {
   },
 
   teardown: function() {
-    select.destroy();
     application.destroy();
+    select.destroy();
   }
 });
 

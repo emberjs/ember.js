@@ -12,8 +12,8 @@ module("Ember.Checkbox", {
   },
   teardown: function() {
     Ember.run(function() {
-      checkboxView.destroy();
       application.destroy();
+      checkboxView.destroy();
     });
   }
 });

@@ -13,8 +13,8 @@ module("Ember.Handlebars - action helper", {
 
   teardown: function() {
     Ember.run(function() {
-      view.destroy();
       application.destroy();
+      view.destroy();
     });
   }
 });
