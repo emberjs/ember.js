@@ -146,6 +146,30 @@ test("should wrap an existing event handler on the parent view", function() {
   ok(originalEventHandlerWasCalled, "The parent view's event handler was called");
 });
 
+test("should not bubble events originating in children of a disabled button", function() {
+  var eventHandlerWasCalled = false;
+
+  view = Ember.View.create({
+    template: Ember.Handlebars.compile('<button {{action "edit"}} {{bindAttr disabled="isDisabled"}}><span>click me</span></button>'),
+    isDisabled: false,
+    edit: function() { eventHandlerWasCalled = true; return false; }
+  });
+
+  appendView();
+
+  view.$('span').trigger('click');
+  ok(eventHandlerWasCalled, "The event handler was called");
+
+  eventHandlerWasCalled = false;
+  view.set('isDisabled', true);
+
+  view.rerender();
+  Ember.run.end();
+
+  view.$('span').trigger('click');
+  ok(!eventHandlerWasCalled, "The event handler wasn't called");
+});
+
 test("should be able to use action more than once for the same event within a view", function() {
   var editWasCalled = false,
       deleteWasCalled = false,
