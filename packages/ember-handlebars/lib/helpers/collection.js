@@ -73,7 +73,7 @@ Ember.Handlebars.registerHelper('collection', function(path, options) {
     var emptyViewClass = Ember.View;
 
     if (hash.emptyViewClass) {
-      emptyViewClass = Ember.View.detect(emptyViewClass) ?
+      emptyViewClass = Ember.View.detect(hash.emptyViewClass) ?
                           hash.emptyViewClass : getPath(this, hash.emptyViewClass);
     }
 
