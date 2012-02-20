@@ -23,9 +23,10 @@ module("Ember.View - Attribute Bindings", {
 test("should render attribute bindings", function() {
   view = Ember.View.create({
     classNameBindings: ['priority', 'isUrgent', 'isClassified:classified', 'canIgnore'],
-    attributeBindings: ['type', 'exploded', 'destroyed', 'exists', 'nothing', 'notDefined', 'notNumber', 'explosions'],
+    attributeBindings: ['type', 'isDisabled:disabled', 'exploded', 'destroyed', 'exists', 'nothing', 'notDefined', 'notNumber', 'explosions'],
 
     type: 'submit',
+    isDisabled: true,
     exploded: false,
     destroyed: false,
     exists: true,
@@ -36,7 +37,8 @@ test("should render attribute bindings", function() {
 
   view.createElement();
 
-  equal(view.$().attr('type'), 'submit', "updates type attribute");
+  equals(view.$().attr('type'), 'submit', "updates type attribute");
+  ok(view.$().attr('disabled'), "supports customizing attribute name for Boolean values");
   ok(!view.$().attr('exploded'), "removes exploded attribute when false");
   ok(!view.$().attr('destroyed'), "removes destroyed attribute when false");
   ok(view.$().attr('exists'), "adds exists attribute when true");
@@ -48,9 +50,10 @@ test("should render attribute bindings", function() {
 test("should update attribute bindings", function() {
   view = Ember.View.create({
     classNameBindings: ['priority', 'isUrgent', 'isClassified:classified', 'canIgnore'],
-    attributeBindings: ['type', 'exploded', 'destroyed', 'exists', 'nothing', 'notDefined', 'notNumber', 'explosions'],
+    attributeBindings: ['type', 'isDisabled:disabled', 'exploded', 'destroyed', 'exists', 'nothing', 'notDefined', 'notNumber', 'explosions'],
 
     type: 'reset',
+    isDisabled: true,
     exploded: true,
     destroyed: true,
     exists: false,
@@ -61,7 +64,9 @@ test("should update attribute bindings", function() {
   });
 
   view.createElement();
-  equal(view.$().attr('type'), 'reset', "adds type attribute");
+
+  equals(view.$().attr('type'), 'reset', "adds type attribute");
+  ok(view.$().attr('disabled'), "adds disabled attribute when true");
   ok(view.$().attr('exploded'), "adds exploded attribute when true");
   ok(view.$().attr('destroyed'), "adds destroyed attribute when true");
   ok(!view.$().attr('exists'), "does not add exists attribute when false");
@@ -71,6 +76,7 @@ test("should update attribute bindings", function() {
   equal(view.$().attr('explosions'), "15", "adds integer attributes");
 
   view.set('type', 'submit');
+  view.set('isDisabled', false);
   view.set('exploded', false);
   view.set('destroyed', false);
   view.set('exists', true);
@@ -78,7 +84,8 @@ test("should update attribute bindings", function() {
   view.set('notDefined', undefined);
   view.set('notNumber', NaN);
 
-  equal(view.$().attr('type'), 'submit', "updates type attribute");
+  equals(view.$().attr('type'), 'submit', "updates type attribute");
+  ok(!view.$().attr('disabled'), "removes disabled attribute when false");
   ok(!view.$().attr('exploded'), "removes exploded attribute when false");
   ok(!view.$().attr('destroyed'), "removes destroyed attribute when false");
   ok(view.$().attr('exists'), "adds exists attribute when true");

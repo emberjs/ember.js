@@ -472,21 +472,25 @@ Ember.View = Ember.Object.extend(
 
     if (!attributeBindings) { return; }
 
-    attributeBindings.forEach(function(attributeName) {
+    attributeBindings.forEach(function(binding) {
+      var split = binding.split(':'),
+          property = split[0],
+          attributeName = split[1] || property;
+
       // Create an observer to add/remove/change the attribute if the
       // JavaScript property changes.
       var observer = function() {
         elem = this.$();
-        attributeValue = get(this, attributeName);
+        attributeValue = get(this, property);
 
         Ember.View.applyAttributeBindings(elem, attributeName, attributeValue);
       };
 
-      addObserver(this, attributeName, observer);
+      addObserver(this, property, observer);
 
       // Determine the current value and add it to the render buffer
       // if necessary.
-      attributeValue = get(this, attributeName);
+      attributeValue = get(this, property);
       Ember.View.applyAttributeBindings(buffer, attributeName, attributeValue);
     }, this);
   },
