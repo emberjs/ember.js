@@ -32,7 +32,7 @@ Ember.ArrayProxy = Ember.Object.extend(Ember.MutableArray,
 
     @property {Ember.Array}
   */
-  content: null,
+  content: Ember.A(),
 
   /**
     Should actually retrieve the object at the specified index from the
