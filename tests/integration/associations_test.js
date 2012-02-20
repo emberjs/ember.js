@@ -27,11 +27,7 @@ test("when adding a record to an association that belongs to another record that
   });
 
   var parentRecord = Comment.createRecord();
-  parentRecord.toString = function() { return "<parent>"; };
   var childRecord = Comment.createRecord();
-  childRecord.toString = function() { return "<child>"; };
-
-  childRecord.get('stateManager').enableLogging = true;
 
   parentRecord.get('comments').pushObject(childRecord);
 
@@ -46,6 +42,7 @@ test("when adding a record to an association that belongs to another record that
     }
   };
 
-  store.commit();
-  equal(createCalled, 1, "only the parent record was created");
+  Ember.run(function() {
+    store.commit();
+  });
 });
