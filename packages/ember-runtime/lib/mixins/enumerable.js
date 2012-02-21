@@ -181,6 +181,10 @@ Ember.Enumerable = Ember.Mixin.create( /** @lends Ember.Enumerable */ {
     default version will iterate through the enumerable until the object 
     is found.  You may want to override this with a more efficient version.
     
+        var arr = ["a", "b", "c"];
+        arr.contains("a"); => true
+        arr.contains("z"); => false
+
     @param {Object} obj
       The object to search for.
       
@@ -567,10 +571,12 @@ Ember.Enumerable = Ember.Mixin.create( /** @lends Ember.Enumerable */ {
   },
 
   /**
-    Generates a new array with the contents of the old array, sans any null
-    values.
+    Returns a copy of the array with all null elements removed.
+    
+        var arr = ["a", null, "c", null];
+        arr.compact(); => ["a", "c"] 
 
-    @returns {Array}
+    @returns {Array} the array without null elements.
   */
   compact: function() { return this.without(null); },
 
@@ -578,6 +584,9 @@ Ember.Enumerable = Ember.Mixin.create( /** @lends Ember.Enumerable */ {
     Returns a new enumerable that excludes the passed value.  The default
     implementation returns an array regardless of the receiver type unless
     the receiver does not contain the value.
+
+        var arr = ["a", "b", "a", "c"];
+        arr.without("a"); => ["b", "c"]
 
     @param {Object} value
     @returns {Ember.Enumerable}
@@ -594,6 +603,9 @@ Ember.Enumerable = Ember.Mixin.create( /** @lends Ember.Enumerable */ {
   /**
     Returns a new enumerable that contains only unique values.  The default
     implementation returns an array regardless of the receiver type.
+
+        var arr = ["a", "a", "b", "b"];
+        arr.uniq(); => ["a", "b"]
     
     @returns {Ember.Enumerable}
   */
