@@ -121,3 +121,42 @@ test("after a model is added to a transaction then deleted, it is not committed 
   equal(commitCalls, 1, "commit was called when committing the transaction");
 });
 
+test("a model that is in the created state cannot be moved into a new transaction", function() {
+  var store = DS.Store.create();
+
+  var person = store.createRecord(Person);
+  var transaction = store.transaction();
+
+  raises(function() {
+    transaction.add(person);
+  }, Error);
+});
+
+test("a model that is in the updated state cannot be moved into a new transaction", function() {
+  var store = DS.Store.create();
+
+  store.load(Person, { id: 1 });
+  var person = store.find(Person, 1);
+
+  person.set('name', "Scumdale");
+  var transaction = store.transaction();
+
+  raises(function() {
+    transaction.add(person);
+  }, Error);
+});
+
+test("a model that is in the deleted state cannot be moved into a new transaction", function() {
+  var store = DS.Store.create();
+
+  store.load(Person, { id: 1 });
+  var person = store.find(Person, 1);
+
+  person.deleteRecord();
+  var transaction = store.transaction();
+
+  raises(function() {
+    transaction.add(person);
+  }, Error);
+});
+
