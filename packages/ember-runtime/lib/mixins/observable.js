@@ -326,6 +326,10 @@ Ember.Observable = Ember.Mixin.create(/** @scope Ember.Observable.prototype */ {
     return this;
   },
 
+  getWithDefault: function(key, defaultValue) {
+    return Ember.getWithDefault(this, key, defaultValue);
+  },
+
   incrementProperty: function(keyName, increment) {
     if (!increment) { increment = 1; }
     set(this, keyName, (get(this, keyName) || 0)+increment);
