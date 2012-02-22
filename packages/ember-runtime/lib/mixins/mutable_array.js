@@ -63,6 +63,10 @@ Ember.MutableArray = Ember.Mixin.create(Ember.Array, Ember.MutableEnumerable,
     This will use the primitive replace() method to insert an object at the
     specified index.
 
+        var colors = ["red", "green", "blue"];
+        colors.insertAt(2, "yellow"); => ["red", "green", "yellow", "blue"]
+        colors.insertAt(5, "orange"); => Error: Index out of range
+
     @param {Number} idx index of insert the object at.
     @param {Object} object object to insert
   */
