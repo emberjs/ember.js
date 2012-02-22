@@ -19,7 +19,7 @@ var EMPTY = [];
 // HELPERS
 //
 
-var get = Ember.get, set = Ember.set;
+var get = Ember.get, set = Ember.set, forEach = Ember.ArrayUtils.forEach;
 
 /**
   @class
@@ -176,7 +176,7 @@ Ember.MutableArray = Ember.Mixin.create(Ember.Array, Ember.MutableEnumerable,
   */
   unshiftObjects: function(objects) {
     this.beginPropertyChanges();
-    objects.forEach(function(obj) { this.unshiftObject(obj); }, this);
+    forEach(objects, function(obj) { this.unshiftObject(obj); }, this);
     this.endPropertyChanges();
     return this;
   },

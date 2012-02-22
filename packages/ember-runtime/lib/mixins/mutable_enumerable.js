@@ -7,6 +7,8 @@
 
 require('ember-runtime/mixins/enumerable');
 
+var forEach = Ember.ArrayUtils.forEach;
+
 /**
   @class
 
@@ -74,7 +76,7 @@ Ember.MutableEnumerable = Ember.Mixin.create(Ember.Enumerable,
   */
   addObjects: function(objects) {
     Ember.beginPropertyChanges(this);
-    objects.forEach(function(obj) { this.addObject(obj); }, this);
+    forEach(objects, function(obj) { this.addObject(obj); }, this);
     Ember.endPropertyChanges(this);
     return this;
   },
@@ -106,7 +108,7 @@ Ember.MutableEnumerable = Ember.Mixin.create(Ember.Enumerable,
   */
   removeObjects: function(objects) {
     Ember.beginPropertyChanges(this);
-    objects.forEach(function(obj) { this.removeObject(obj); }, this);
+    forEach(objects, function(obj) { this.removeObject(obj); }, this);
     Ember.endPropertyChanges(this);
     return this;
   }

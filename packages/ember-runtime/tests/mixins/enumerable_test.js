@@ -6,6 +6,8 @@
 
 require('ember-runtime/~tests/suites/enumerable');
 
+var indexOf = Ember.ArrayUtils.indexOf;
+
 /*
   Implement a basic fake enumerable.  This validates that any non-native
   enumerable can impl this API.
@@ -19,7 +21,7 @@ var TestEnumerable = Ember.Object.extend(Ember.Enumerable, {
   },
 
   addObject: function(obj) {
-    if (this._content.indexOf(obj)>=0) return this;
+    if (indexOf(this._content, obj)>=0) return this;
     this._content.push(obj);
     this.enumerableContentDidChange();
   },
