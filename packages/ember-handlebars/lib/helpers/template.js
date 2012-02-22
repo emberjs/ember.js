@@ -17,7 +17,7 @@ require('ember-handlebars/ext');
       </script>
 
   This helper looks for templates in the global Ember.TEMPLATES hash. If you
-  add <script> tags to your page with the `data-template-name` attribute set,
+  add &lt;script&gt; tags to your page with the `data-template-name` attribute set,
   they will be compiled and placed in this hash automatically.
 
   You can also manually register templates by adding them to the hash:
