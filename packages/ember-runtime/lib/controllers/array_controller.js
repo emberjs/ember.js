@@ -12,8 +12,8 @@ require('ember-runtime/system/array_proxy');
   Ember.ArrayController provides a way for you to publish an array of objects for
   Ember.CollectionView or other controllers to work with.  To work with an
   ArrayController, set the content property to the array you want the controller
-  to manage.  Then work directly with the controller object as if it were the
-  array itself.
+  to manage or use the default empty array. Then work directly with the controller 
+  object as if it were the array itself.
 
   For example, imagine you wanted to display a list of items fetched via an XHR
   request. Create an Ember.ArrayController and set its `content` property:
@@ -37,4 +37,6 @@ require('ember-runtime/system/array_proxy');
   @extends Ember.ArrayProxy
 */
 
-Ember.ArrayController = Ember.ArrayProxy.extend();
+Ember.ArrayController = Ember.ArrayProxy.extend({
+  content: Ember.A()
+});
