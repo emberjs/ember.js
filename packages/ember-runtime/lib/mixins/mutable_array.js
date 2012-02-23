@@ -99,15 +99,6 @@ Ember.MutableArray = Ember.Mixin.create(Ember.Array, Ember.MutableEnumerable,
       this.replace(start, len, EMPTY);
     }
 
-    // TODO: Reintroduce Ember.IndexSet support
-    // this.beginPropertyChanges();
-    // start.forEachRange(function(start, length) {
-    //   start -= delta ;
-    //   delta += length ;
-    //   this.replace(start, length, empty); // remove!
-    // }, this);
-    // this.endPropertyChanges();
-
     return this ;
   },
 
