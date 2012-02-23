@@ -44,7 +44,7 @@ Ember.TEMPLATES = {};
   @since Ember 0.9
   @extends Ember.Object
 */
-Ember.View = Ember.Object.extend(
+Ember.View = Ember.Object.extend(Ember.Evented,
 /** @scope Ember.View.prototype */ {
 
   /** @private */
@@ -785,6 +785,13 @@ Ember.View = Ember.Object.extend(
   didInsertElement: Ember.K,
 
   /**
+    Called when the view is about to rerender, but before anything has
+    been torn down. This is a good opportunity to tear down any manual
+    observers you have installed based on the DOM state
+  */
+  willRerender: Ember.K,
+
+  /**
     Run this callback on the current view and recursively on child views.
 
     @private
@@ -818,7 +825,7 @@ Ember.View = Ember.Object.extend(
   _notifyWillInsertElement: function(fromPreRender) {
     this.invokeRecursively(function(view) {
       if (fromPreRender) { view._willInsertElementAccessUnsupported = true; }
-      view.willInsertElement();
+      view.fire('willInsertElement');
       view._willInsertElementAccessUnsupported = false;
     });
   },
@@ -831,7 +838,19 @@ Ember.View = Ember.Object.extend(
   */
   _notifyDidInsertElement: function() {
     this.invokeRecursively(function(view) {
-      view.didInsertElement();
+      view.fire('didInsertElement');
+    });
+  },
+
+  /**
+    @private
+
+    Invokes the receiver's willRerender() method if it exists and then
+    invokes the same on all child views.
+  */
+  _notifyWillRerender: function() {
+    this.invokeRecursively(function(view) {
+      view.fire('willRerender');
     });
   },
 
@@ -870,7 +889,7 @@ Ember.View = Ember.Object.extend(
   */
   _notifyWillDestroyElement: function() {
     this.invokeRecursively(function(view) {
-      view.willDestroyElement();
+      view.fire('willDestroyElement');
     });
   },
 
@@ -1287,7 +1306,7 @@ Ember.View = Ember.Object.extend(
   }, 'isVisible'),
 
   _notifyBecameVisible: function() {
-    this.becameVisible();
+    this.fire('becameVisible');
 
     this.forEachChildView(function(view) {
       var isVisible = get(view, 'isVisible');
@@ -1299,7 +1318,7 @@ Ember.View = Ember.Object.extend(
   },
 
   _notifyBecameHidden: function() {
-    this.becameHidden();
+    this.fire('becameHidden');
     this.forEachChildView(function(view) {
       var isVisible = get(view, 'isVisible');
 
@@ -1335,6 +1354,17 @@ Ember.View = Ember.Object.extend(
         view.transitionTo(state);
       });
     }
+  },
+
+  /**
+    @private
+
+    Override the default event firing from Ember.Evented to
+    also call methods with the given name.
+  */
+  fire: function(name) {
+    this[name].apply(this, [].slice.call(arguments, 1));
+    this._super.apply(this, arguments);
   },
 
   // .......................................................

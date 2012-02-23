@@ -38,6 +38,8 @@ Ember.View.states.hasElement = {
   // once the view has been inserted into the DOM, rerendering is
   // deferred to allow bindings to synchronize.
   rerender: function(view) {
+    view._notifyWillRerender();
+
     view.clearRenderedChildren();
 
     get(view, 'domManager').replace();
@@ -48,9 +50,7 @@ Ember.View.states.hasElement = {
   // from the DOM, nukes its element, and puts it back into the
   // preRender state.
   destroyElement: function(view) {
-    view.invokeRecursively(function(view) {
-      this.willDestroyElement();
-    });
+    view._notifyWillDestroyElement();
 
     get(view, 'domManager').remove();
     return view;
