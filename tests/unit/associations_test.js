@@ -2,6 +2,31 @@
 
 var get = Ember.get, set = Ember.set, getPath = Ember.getPath;
 
+module("DS.Model");
+
+test("exposes a hash of the associations on a model", function() {
+  var Occupation = DS.Model.extend();
+
+  var Person = DS.Model.extend({
+    occupations: DS.hasMany(Occupation)
+  });
+
+  Person.reopen({
+    people: DS.hasMany(Person),
+    parent: DS.hasOne(Person)
+  });
+
+  var associations = get(Person, 'associations');
+  deepEqual(associations.get(Person), [
+    { name: "people", kind: "hasMany" },
+    { name: "parent", kind: "belongsTo" }
+  ]);
+
+  deepEqual(associations.get(Occupation), [
+    { name: "occupations", kind: "hasMany" }
+  ]);
+});
+
 module("DS.hasMany");
 
 test("hasMany lazily loads associations as needed", function() {
