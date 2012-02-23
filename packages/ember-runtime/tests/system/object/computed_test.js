@@ -159,3 +159,53 @@ test("can retrieve metadata for a computed property", function() {
     ClassWithNoMetadata.metaForProperty('staticProperty');
   }, Error, "throws an error if metadata for a non-computed property is requested");
 });
+
+testBoth("can iterate over a list of computed properties for a class", function(get, set) {
+  var MyClass = Ember.Object.extend({
+    foo: Ember.computed(function() {
+
+    }),
+
+    fooDidChange: Ember.observer(function() {
+
+    }, 'foo'),
+
+    bar: Ember.computed(function() {
+
+    })
+  });
+
+  var SubClass = MyClass.extend({
+    baz: Ember.computed(function() {
+
+    })
+  });
+
+  SubClass.reopen({
+    bat: Ember.computed(function() {
+
+    }).meta({ iAmBat: true })
+  });
+
+  var list = [];
+
+  MyClass.eachComputedProperty(function(name) {
+    list.push(name);
+  });
+
+  deepEqual(list.sort(), ['bar', 'foo'], "watched and unwatched computed properties are iterated");
+
+  list = [];
+
+  SubClass.eachComputedProperty(function(name, meta) {
+    list.push(name);
+
+    if (name === 'bat') {
+      deepEqual(meta, { iAmBat: true });
+    } else {
+      deepEqual(meta, {});
+    }
+  });
+
+  deepEqual(list.sort(), ['bar', 'bat', 'baz', 'foo'], "all inherited properties are included");
+});

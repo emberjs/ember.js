@@ -6,6 +6,8 @@
 /*globals TemplateTests:true MyApp:true App:true */
 
 var getPath = Ember.getPath, setPath = Ember.setPath, get = Ember.get, set = Ember.set;
+var forEach = Ember.ArrayUtils.forEach;
+
 var firstGrandchild = function(view) {
   return get(get(view, 'childViews').objectAt(0), 'childViews').objectAt(0);
 };
@@ -559,7 +561,7 @@ test("should update the block when object passed to #if helper changes", functio
 
   var tests = [false, null, undefined, [], '', 0];
 
-  tests.forEach(function(val) {
+  forEach(tests, function(val) {
     Ember.run(function() {
       set(view, 'inception', val);
     });
@@ -595,7 +597,7 @@ test("should update the block when object passed to #unless helper changes", fun
 
   var tests = [false, null, undefined, [], '', 0];
 
-  tests.forEach(function(val) {
+  forEach(tests, function(val) {
     Ember.run(function() {
       set(view, 'onDrugs', val);
     });
@@ -634,7 +636,7 @@ test("should update the block when object passed to #if helper changes and an in
 
   var tests = [false, null, undefined, [], '', 0];
 
-  tests.forEach(function(val) {
+  forEach(tests, function(val) {
     Ember.run(function() {
       set(view, 'inception', val);
     });

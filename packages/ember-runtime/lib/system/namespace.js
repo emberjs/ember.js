@@ -6,6 +6,8 @@
 
 require('ember-runtime/system/object');
 
+var indexOf = Ember.ArrayUtils.indexOf;
+
 /**
   @private
   A Namespace is an object usually used to contain other objects or methods
@@ -35,7 +37,7 @@ Ember.Namespace = Ember.Object.extend({
   destroy: function() {
     var namespaces = Ember.Namespace.NAMESPACES;
     window[this.toString()] = undefined;
-    namespaces.splice(namespaces.indexOf(this), 1);
+    namespaces.splice(indexOf(namespaces, this), 1);
     this._super();
   }
 });

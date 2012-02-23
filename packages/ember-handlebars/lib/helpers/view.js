@@ -9,6 +9,7 @@
 require("ember-handlebars");
 
 var get = Ember.get, set = Ember.set;
+var indexOf = Ember.ArrayUtils.indexOf;
 var PARENT_VIEW_PATH = /^parentView\./;
 
 /** @private */
@@ -92,7 +93,7 @@ Ember.Handlebars.ViewHelper = Ember.Object.create({
     var viewOptions = {};
 
     if (fn) {
-      ember_assert("You cannot provide a template block if you also specified a templateName", !(get(viewOptions, 'templateName')) && (newView.PrototypeMixin.keys().indexOf('templateName') >= 0));
+      ember_assert("You cannot provide a template block if you also specified a templateName", !(get(viewOptions, 'templateName')) && (indexOf(newView.PrototypeMixin.keys(), 'templateName') >= 0));
       viewOptions.template = fn;
     }
 
