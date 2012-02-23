@@ -20,7 +20,10 @@
 
 var guidFor = Ember.guidFor;
 
-var OrderedSet = function() {
+// This class is used internally by Ember.js and Ember Data.
+// Please do not use it at this time. We plan to clean it up
+// and add many tests soon.
+var OrderedSet = Ember.OrderedSet = function() {
   this.clear();
 };
 
