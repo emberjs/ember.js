@@ -14,6 +14,7 @@
 
 var get = Ember.get, set = Ember.set;
 var a_slice = Array.prototype.slice;
+var a_indexOf = Ember.ArrayUtils.indexOf;
 
 var contexts = [];
 function popCtx() {
@@ -598,7 +599,7 @@ Ember.Enumerable = Ember.Mixin.create( /** @lends Ember.Enumerable */ {
   uniq: function() {
     var ret = [];
     this.forEach(function(k){
-      if (ret.indexOf(k)<0) ret.push(k);
+      if (a_indexOf(ret, k)<0) ret.push(k);
     });
     return ret;
   },

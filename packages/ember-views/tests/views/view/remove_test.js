@@ -5,6 +5,7 @@
 // ==========================================================================
 
 var set = Ember.set, get = Ember.get, getPath = Ember.getPath;
+var indexOf = Ember.ArrayUtils.indexOf;
 
 // .......................................................
 // removeChild()
@@ -23,9 +24,9 @@ test("returns receiver", function() {
 });
 
 test("removes child from parent.childViews array", function() {
-  ok(get(parentView, 'childViews').indexOf(child)>=0, 'precond - has child in childViews array before remove');
+  ok(indexOf(get(parentView, 'childViews'), child)>=0, 'precond - has child in childViews array before remove');
   parentView.removeChild(child);
-  ok(get(parentView, 'childViews').indexOf(child)<0, 'removed child');
+  ok(indexOf(get(parentView, 'childViews'), child)<0, 'removed child');
 });
 
 test("sets parentView property to null", function() {
@@ -73,7 +74,7 @@ test("removes view from parent view", function() {
 
   child.removeFromParent();
   ok(!get(child, 'parentView'), 'no longer has parentView');
-  ok(get(parentView, 'childViews').indexOf(child)<0, 'no longer in parent childViews');
+  ok(indexOf(get(parentView, 'childViews'), child)<0, 'no longer in parent childViews');
   equal(parentView.$('div').length, 0, "removes DOM element from parent");
 });
 

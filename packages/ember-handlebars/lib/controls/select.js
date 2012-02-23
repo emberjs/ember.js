@@ -1,4 +1,5 @@
 var set = Ember.set, get = Ember.get, getPath = Ember.getPath;
+var indexOf = Ember.ArrayUtils.indexOf;
 
 Ember.Select = Ember.View.extend({
   tagName: 'select',
@@ -39,7 +40,7 @@ Ember.Select = Ember.View.extend({
     var el = this.$()[0],
         content = get(this, 'content'),
         selection = get(this, 'selection'),
-        selectionIndex = content.indexOf(selection),
+        selectionIndex = indexOf(content, selection),
         prompt = get(this, 'prompt');
 
     if (prompt) { selectionIndex += 1; }

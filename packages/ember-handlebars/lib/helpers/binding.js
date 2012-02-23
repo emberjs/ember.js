@@ -9,6 +9,7 @@ require('ember-handlebars/views/bindable_span');
 require('ember-handlebars/views/metamorph_view');
 
 var get = Ember.get, getPath = Ember.Handlebars.getPath, set = Ember.set, fmt = Ember.String.fmt;
+var forEach = Ember.ArrayUtils.forEach;
 
 var EmberHandlebars = Ember.Handlebars, helpers = EmberHandlebars.helpers;
 var helpers = EmberHandlebars.helpers;
@@ -224,7 +225,7 @@ EmberHandlebars.registerHelper('bindAttr', function(options) {
 
   // For each attribute passed, create an observer and emit the
   // current value of the property as an attribute.
-  attrKeys.forEach(function(attr) {
+  forEach(attrKeys, function(attr) {
     var property = attrs[attr];
 
     ember_assert(fmt("You must provide a String for a bound attribute, not %@", [property]), typeof property === 'string');
@@ -345,7 +346,7 @@ EmberHandlebars.bindClasses = function(context, classBindings, view, bindAttrId)
 
   // For each property passed, loop through and setup
   // an observer.
-  classBindings.split(' ').forEach(function(binding) {
+  forEach(classBindings.split(' '), function(binding) {
 
     // Variable in which the old class value is saved. The observer function
     // closes over this variable, so it knows which string to remove when

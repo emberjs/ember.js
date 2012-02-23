@@ -1,3 +1,5 @@
+var map = Ember.ArrayUtils.map;
+
 var application, select;
 
 module("Ember.Select", {
@@ -46,7 +48,7 @@ test("can specify the property path for an option's label and value", function()
 
   equal(select.$('option').length, 2, "Should have two options");
   equal(select.$().text(), "YehudaTom", "Options should have content");
-  deepEqual(select.$('option').toArray().map(function(el) { return Ember.$(el).attr('value'); }), ["1", "2"], "Options should have values");
+  deepEqual(map(select.$('option').toArray(), function(el) { return Ember.$(el).attr('value'); }), ["1", "2"], "Options should have values");
 });
 
 test("can retrieve the current selected option", function() {

@@ -19,7 +19,7 @@ test('passing an array to new Ember.Set() should instantiate w/ items', function
 
   equal(get(aSet, 'length'), 3, 'should have three items');
   aSet.forEach(function(x) {
-    ok(ary.indexOf(x)>=0, 'should find passed item in array');
+    ok(Ember.ArrayUtils.indexOf(ary, x)>=0, 'should find passed item in array');
     count++;
   });
   equal(count, 3, 'iterating should have returned three objects');
