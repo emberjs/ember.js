@@ -10,6 +10,7 @@ ActionHelper.registerAction = function(actionName, eventName, target, view, cont
 
   function handler(event) {
     if (Ember.$(event.target).closest('[data-ember-action]').attr('data-ember-action') === actionId) {
+      if (Ember.$(event.target).closest('button:disabled').size()) return false;
       event.preventDefault();
 
       if ('function' === typeof target.send) {
