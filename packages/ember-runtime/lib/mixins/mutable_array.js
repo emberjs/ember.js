@@ -74,13 +74,12 @@ Ember.MutableArray = Ember.Mixin.create(Ember.Array, Ember.MutableEnumerable,
 
   /**
     Remove an object at the specified index using the replace() primitive
-    method.  You can pass either a single index, a start and a length or an
-    index set.
+    method.  You can pass either a single index, or a start and a length.
 
-    If you pass a single index or a start and length that is beyond the
+    If you pass a start and length that is beyond the
     length this method will throw an Ember.OUT_OF_RANGE_EXCEPTION
 
-    @param {Number|Ember.IndexSet} start index, start of range, or index set
+    @param {Number} start index, start of range
     @param {Number} len length of passing range
     @returns {Object} receiver
   */
