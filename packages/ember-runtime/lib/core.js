@@ -7,6 +7,8 @@
 
 require('ember-metal');
 
+var indexOf = Ember.ArrayUtils.indexOf;
+
 // ........................................
 // GLOBAL CONSTANTS
 //
@@ -17,26 +19,6 @@ if (typeof console === 'undefined') {
   console.log = console.info = console.warn = console.error = function() {};
 }
 
-// ..........................................................
-// BOOTSTRAP
-//
-
-/**
-  @static
-  @type Boolean
-  @default true
-  @constant
-
-  Determines whether Ember should enhances some built-in object
-  prototypes to provide a more friendly API.  If enabled, a few methods
-  will be added to Function, String, and Array.  Object.prototype will not be
-  enhanced, which is the one that causes most troubles for people.
-
-  In general we recommend leaving this option set to true since it rarely
-  conflicts with other code.  If you need to turn it off however, you can
-  define an ENV.EXTEND_PROTOTYPES config to disable it.
-*/
-Ember.EXTEND_PROTOTYPES = (Ember.ENV.EXTEND_PROTOTYPES !== false);
 
 // ........................................
 // TYPING & ARRAY MESSAGING
@@ -44,7 +26,7 @@ Ember.EXTEND_PROTOTYPES = (Ember.ENV.EXTEND_PROTOTYPES !== false);
 
 var TYPE_MAP = {};
 var t ="Boolean Number String Function Array Date RegExp Object".split(" ");
-t.forEach(function(name) {
+Ember.ArrayUtils.forEach(t, function(name) {
 	TYPE_MAP[ "[object " + name + "]" ] = name.toLowerCase();
 });
 
@@ -219,7 +201,7 @@ function _copy(obj, deep, seen, copies) {
   if ('object' !== typeof obj || obj===null) return obj;
 
   // avoid cyclical loops
-  if (deep && (loc=seen.indexOf(obj))>=0) return copies[loc];
+  if (deep && (loc=indexOf(seen, obj))>=0) return copies[loc];
 
   ember_assert('Cannot clone an Ember.Object that does not implement Ember.Copyable', !(obj instanceof Ember.Object) || (Ember.Copyable && Ember.Copyable.detect(obj)));
 

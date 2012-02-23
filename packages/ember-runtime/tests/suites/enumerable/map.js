@@ -14,7 +14,7 @@ function mapFunc(item) { return item ? item.toString() : null; }
 
 suite.test('map should iterate over list', function() {
   var obj = this.newObject(),
-      ary = this.toArray(obj).map(mapFunc),
+      ary = Ember.ArrayUtils.map(this.toArray(obj), mapFunc),
       found = [];
 
   found = obj.map(mapFunc);

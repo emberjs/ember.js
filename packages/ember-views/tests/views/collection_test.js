@@ -6,6 +6,7 @@
 // ==========================================================================
 
 var set = Ember.set, get = Ember.get;
+var forEach = Ember.ArrayUtils.forEach;
 var view;
 
 module("Ember.CollectionView", {
@@ -108,7 +109,7 @@ test("should allow custom item views by setting itemViewClass", function() {
 
   deepEqual(passedContents, ['foo', 'bar', 'baz'], "sets the content property on each item view");
 
-  passedContents.forEach(function(item) {
+  forEach(passedContents, function(item) {
     equal(view.$(':contains("'+item+'")').length, 1);
   });
 });
@@ -130,7 +131,7 @@ test("should insert a new item in DOM when an item is added to the content array
     view.append();
   });
 
-  content.forEach(function(item) {
+  forEach(content, function(item) {
     equal(view.$(':contains("'+item+'")').length, 1, "precond - generates pre-existing items");
   });
 
@@ -158,7 +159,7 @@ test("should remove an item from DOM when an item is removed from the content ar
     view.append();
   });
 
-  content.forEach(function(item) {
+  forEach(content, function(item) {
     equal(view.$(':contains("'+item+'")').length, 1, "precond - generates pre-existing items");
   });
 
@@ -166,7 +167,7 @@ test("should remove an item from DOM when an item is removed from the content ar
     content.removeAt(1);
   });
 
-  content.forEach(function(item, idx) {
+  forEach(content, function(item, idx) {
     equal(view.$(Ember.String.fmt(':nth-child(%@)', [String(idx+1)])).text(), item);
   });
 });

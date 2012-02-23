@@ -6,6 +6,8 @@
 
 require('ember-runtime/~tests/suites/mutable_enumerable');
 
+var indexOf = Ember.ArrayUtils.indexOf;
+
 /*
   Implement a basic fake mutable array.  This validates that any non-native
   enumerable can impl this API.
@@ -15,14 +17,14 @@ var TestMutableEnumerable = Ember.Object.extend(Ember.MutableEnumerable, {
   _content: null,
 
   addObject: function(obj) {
-    if (this._content.indexOf(obj)>=0) return this;
+    if (indexOf(this._content, obj)>=0) return this;
     this.enumerableContentWillChange(null, [obj]);
     this._content.push(obj);
     this.enumerableContentDidChange(null, [obj]);
   },
 
   removeObject: function(obj) {
-    var idx = this._content.indexOf(obj);
+    var idx = indexOf(this._content, obj);
     if (idx<0) return this;
 
     this.enumerableContentWillChange([obj], null);

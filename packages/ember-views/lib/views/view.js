@@ -10,13 +10,14 @@ require("ember-views/system/render_buffer");
 var get = Ember.get, set = Ember.set, addObserver = Ember.addObserver;
 var getPath = Ember.getPath, meta = Ember.meta, fmt = Ember.String.fmt;
 var a_slice = Array.prototype.slice;
+var a_forEach = Ember.ArrayUtils.forEach;
 
 var childViewsProperty = Ember.computed(function() {
   var childViews = get(this, '_childViews');
 
   var ret = Ember.A();
 
-  childViews.forEach(function(view) {
+  a_forEach(childViews, function(view) {
     if (view.isVirtual) {
       ret.pushObjects(get(view, 'childViews'));
     } else {
@@ -408,7 +409,7 @@ Ember.View = Ember.Object.extend(
     // Loop through all of the configured bindings. These will be either
     // property names ('isUrgent') or property paths relative to the view
     // ('content.isUrgent')
-    classBindings.forEach(function(binding) {
+    a_forEach(classBindings, function(binding) {
 
       // Variable in which the old class value is saved. The observer function
       // closes over this variable, so it knows which string to remove when
@@ -472,7 +473,7 @@ Ember.View = Ember.Object.extend(
 
     if (!attributeBindings) { return; }
 
-    attributeBindings.forEach(function(binding) {
+    a_forEach(attributeBindings, function(binding) {
       var split = binding.split(':'),
           property = split[0],
           attributeName = split[1] || property;
@@ -980,7 +981,7 @@ Ember.View = Ember.Object.extend(
     this._applyAttributeBindings(buffer);
 
 
-    get(this, 'classNames').forEach(function(name){ buffer.addClass(name); });
+    a_forEach(get(this, 'classNames'), function(name){ buffer.addClass(name); });
     buffer.id(get(this, 'elementId'));
 
     var role = get(this, 'ariaRole');

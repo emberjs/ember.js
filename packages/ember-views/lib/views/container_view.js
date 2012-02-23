@@ -7,6 +7,7 @@
 
 require('ember-views/views/view');
 var get = Ember.get, set = Ember.set, meta = Ember.meta;
+var forEach = Ember.ArrayUtils.forEach;
 
 var childViewsProperty = Ember.computed(function() {
   return get(this, '_childViews');
@@ -22,7 +23,7 @@ Ember.ContainerView = Ember.View.extend({
 
     var _childViews = get(this, '_childViews');
 
-    childViews.forEach(function(viewName, idx) {
+    forEach(childViews, function(viewName, idx) {
       var view;
 
       if ('string' === typeof viewName) {
@@ -122,7 +123,7 @@ Ember.ContainerView = Ember.View.extend({
   },
 
   setParentView: function(views, parentView) {
-    views.forEach(function(view) {
+    forEach(views, function(view) {
       set(view, '_parentView', parentView);
     });
   },

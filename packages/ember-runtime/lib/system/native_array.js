@@ -97,7 +97,7 @@ var NativeArray = Ember.Mixin.create(Ember.MutableArray, Ember.Observable, Ember
 
 // Remove any methods implemented natively so we don't override them
 var ignore = ['length'];
-NativeArray.keys().forEach(function(methodName) {
+Ember.ArrayUtils.forEach(NativeArray.keys(), function(methodName) {
   if (Array.prototype[methodName]) ignore.push(methodName);
 });
 
