@@ -5,6 +5,7 @@
 // ==========================================================================
 
 require('ember-handlebars/ext');
+require('ember-handlebars/views/bound_property_view');
 require('ember-handlebars/views/bindable_span');
 require('ember-handlebars/views/metamorph_view');
 
@@ -14,9 +15,38 @@ var EmberHandlebars = Ember.Handlebars, helpers = EmberHandlebars.helpers;
 var helpers = EmberHandlebars.helpers;
 
 (function() {
-  // Binds a property into the DOM. This will create a hook in DOM that the
+  // Binds a single property into the DOM.
+  var bind = function(property, options) {
+    var data = options.data,
+        view = data.view,
+        ctx  = this;
+
+    // Set up observers for observable objects
+    if ('object' === typeof ctx) {
+      if (property !== '') {
+        // Create the view that will wrap the output of this template/property
+        // and add it to the nearest view's childViews array.
+        // See the documentation of Ember._BoundPropertyView for more.
+        var bindView = view.createChildView(Ember._BoundPropertyView, {
+          property: property,
+          context: ctx,
+          isEscaped: options.hash.escaped
+        });
+
+        view.appendChild(bindView);
+      } else {
+        data.buffer.push(ctx);
+      }
+    } else {
+      // The object is not observable, so just render it out and
+      // be done with it.
+      data.buffer.push(getPath(ctx, property));
+    }
+  };
+
+  // Binds a property with block into the DOM. This will create a hook in DOM that the
   // KVO system will look for and update if the property changes.
-  var bind = function(property, options, preserveContext, shouldDisplay, valueNormalizer) {
+  var bindBlock = function(property, options, preserveContext, shouldDisplay, valueNormalizer) {
     var data = options.data,
         fn = options.fn,
         inverse = options.inverse,
@@ -104,14 +134,20 @@ var helpers = EmberHandlebars.helpers;
     @param {Function} fn Context to provide for rendering
     @returns {String} HTML string
   */
-  EmberHandlebars.registerHelper('bind', function(property, fn) {
+  EmberHandlebars.registerHelper('bind', function(property, options) {
     ember_assert("You cannot pass more than one argument to the bind helper", arguments.length <= 2);
 
-    var context = (fn.contexts && fn.contexts[0]) || this;
+    var context = (options.contexts && options.contexts[0]) || this;
 
-    return bind.call(context, property, fn, false, function(result) {
-      return !Ember.none(result);
-    });
+    if (options.fn && options.fn !== Handlebars.VM.noop) {
+      // Use more complex path if a block was passed
+      return bindBlock.call(context, property, options, false, function(result) {
+        return !Ember.none(result);
+      });
+    } else {
+      // No block, use simple bind
+      return bind.call(context, property, options);
+    }
   });
 
   /**
@@ -138,7 +174,7 @@ var helpers = EmberHandlebars.helpers;
       }
     };
 
-    return bind.call(context, property, fn, true, func, func);
+    return bindBlock.call(context, property, fn, true, func, func);
   });
 })();
 
