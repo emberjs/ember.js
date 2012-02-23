@@ -1,7 +1,14 @@
 /*jshint newcap:true*/
 
+// Testing this is not ideal, but we want ArrayUtils to use native functions
+// if available, but not to use versions created by libraries like Prototype
+var isNativeFunc = function(func) {
+  // This should probably work in all browsers likely to have ES5 array methods
+  return func && Function.prototype.toString.call(func).indexOf('[native code]') > -1;
+};
+
 // From: https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/array/map
-var arrayMap = Array.prototype.map || function(fun /*, thisp */) {
+var arrayMap = isNativeFunc(Array.prototype.map) ? Array.prototype.map : function(fun /*, thisp */) {
   "use strict";
 
   if (this === void 0 || this === null) {
@@ -26,7 +33,7 @@ var arrayMap = Array.prototype.map || function(fun /*, thisp */) {
 };
 
 // From: https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/array/foreach
-var arrayForEach = Array.prototype.forEach || function(fun /*, thisp */) {
+var arrayForEach = isNativeFunc(Array.prototype.forEach) ? Array.prototype.forEach : function(fun /*, thisp */) {
   "use strict";
 
   if (this === void 0 || this === null) {
@@ -47,7 +54,7 @@ var arrayForEach = Array.prototype.forEach || function(fun /*, thisp */) {
   }
 };
 
-var arrayIndexOf = Array.prototype.indexOf || function (obj, fromIndex) {
+var arrayIndexOf = isNativeFunc(Array.prototype.indexOf) ? Array.prototype.indexOf : function (obj, fromIndex) {
   if (fromIndex === null || fromIndex === undefined) { fromIndex = 0; }
   else if (fromIndex < 0) { fromIndex = Math.max(0, this.length + fromIndex); }
   for (var i = fromIndex, j = this.length; i < j; i++) {
