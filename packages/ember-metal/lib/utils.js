@@ -150,6 +150,8 @@ var EMPTY_META = {
 
 if (Object.freeze) Object.freeze(EMPTY_META);
 
+var createMeta = Ember.platform.defineProperty.isSimulated ? o_create : function(meta) { return meta; };
+
 /**
   @private
   @function
@@ -178,26 +180,27 @@ Ember.meta = function meta(obj, writable) {
 
   if (!ret) {
     o_defineProperty(obj, META_KEY, META_DESC);
-    ret = obj[META_KEY] = {
+    ret = obj[META_KEY] = createMeta({
       descs: {},
       watching: {},
       values: {},
       lastSetValues: {},
       cache:  {},
       source: obj
-    };
+    });
 
     // make sure we don't accidentally try to create constructor like desc
     ret.descs.constructor = null;
 
   } else if (ret.source !== obj) {
-    ret = obj[META_KEY] = o_create(ret);
+    ret = o_create(ret);
     ret.descs    = o_create(ret.descs);
     ret.values   = o_create(ret.values);
     ret.watching = o_create(ret.watching);
     ret.lastSetValues = {};
     ret.cache    = {};
     ret.source   = obj;
+    ret = obj[META_KEY] = createMeta(ret);
   }
   return ret;
 };
