@@ -6,12 +6,12 @@ test("a listener can be added to an object", function() {
 
   var obj = Ember.Object.create(Ember.Evented);
 
-  obj.bindEvent('event!', F);
-  obj.triggerEvent('event!');
+  obj.on('event!', F);
+  obj.fire('event!');
 
   equal(count, 1, "the event was triggered");
 
-  obj.triggerEvent('event!');
+  obj.fire('event!');
 
   equal(count, 2, "the event was triggered");
 });
@@ -21,12 +21,12 @@ test("triggering an event can have arguments", function() {
 
   var obj = Ember.Object.create(Ember.Evented);
 
-  obj.bindEvent('event!', function() {
+  obj.on('event!', function() {
     args = [].slice.call(arguments);
     self = this;
   });
 
-  obj.triggerEvent('event!', "foo", "bar");
+  obj.fire('event!', "foo", "bar");
 
   deepEqual(args, [ "foo", "bar" ]);
   equal(self, obj);
@@ -38,12 +38,12 @@ test("binding an event can specify a different target", function() {
   var obj = Ember.Object.create(Ember.Evented);
   var target = {};
 
-  obj.bindEvent('event!', target, function() {
+  obj.on('event!', target, function() {
     args = [].slice.call(arguments);
     self = this;
   });
 
-  obj.triggerEvent('event!', "foo", "bar");
+  obj.fire('event!', "foo", "bar");
 
   deepEqual(args, [ "foo", "bar" ]);
   equal(self, target);
