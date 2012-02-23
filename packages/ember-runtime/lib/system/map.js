@@ -27,6 +27,10 @@ var OrderedSet = Ember.OrderedSet = function() {
   this.clear();
 };
 
+OrderedSet.create = function() {
+  return new OrderedSet();
+};
+
 OrderedSet.prototype = {
   clear: function() {
     this.presenceSet = {};
@@ -93,7 +97,7 @@ OrderedSet.prototype = {
 */
 
 var Map = Ember.Map = function() {
-  this.keys = new OrderedSet();
+  this.keys = Ember.OrderedSet.create();
   this.values = {};
 };
 
