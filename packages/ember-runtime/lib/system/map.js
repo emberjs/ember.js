@@ -19,6 +19,7 @@
 */
 
 var guidFor = Ember.guidFor;
+var indexOf = Ember.ArrayUtils.indexOf;
 
 // This class is used internally by Ember.js and Ember Data.
 // Please do not use it at this time. We plan to clean it up
@@ -55,7 +56,7 @@ OrderedSet.prototype = {
 
     delete presenceSet[guid];
 
-    var index = list.indexOf(obj);
+    var index = indexOf(list, obj);
     if (index > -1) {
       list.splice(index, 1);
     }
