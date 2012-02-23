@@ -84,6 +84,11 @@ Ember.MutableArray = Ember.Mixin.create(Ember.Array, Ember.MutableEnumerable,
     If you pass a single index or a start and length that is beyond the
     length this method will throw an Ember.OUT_OF_RANGE_EXCEPTION
 
+        var colors = ["red", "green", "blue", "yellow", "orange"];
+        colors.removeAt(0); => ["green", "blue", "yellow", "orange"]
+        colors.removeAt(2, 2); => ["green", "blue"]
+        colors.removeAt(4, 2); => Error: Index out of range
+
     @param {Number|Ember.IndexSet} start index, start of range, or index set
     @param {Number} len length of passing range
     @returns {Object} receiver
@@ -118,16 +123,24 @@ Ember.MutableArray = Ember.Mixin.create(Ember.Array, Ember.MutableEnumerable,
   /**
     Push the object onto the end of the array.  Works just like push() but it
     is KVO-compliant.
+
+        var colors = ["red", "green", "blue"];
+        colors.pushObject("black"); => ["red", "green", "blue", "black"]
+        colors.pushObject(["yellow", "orange"]); => ["red", "green", "blue", "black", ["yellow", "orange"]]
+
   */
   pushObject: function(obj) {
     this.insertAt(get(this, 'length'), obj) ;
     return obj ;
   },
 
-
   /**
     Add the objects in the passed numerable to the end of the array.  Defers
     notifying observers of the change until all objects are added.
+
+        var colors = ["red", "green", "blue"];
+        colors.pushObjects("black"); => ["red", "green", "blue", "black"]
+        colors.pushObjects(["yellow", "orange"]); => ["red", "green", "blue", "black", "yellow", "orange"]
 
     @param {Ember.Enumerable} objects the objects to add
     @returns {Ember.Array} receiver
@@ -140,6 +153,11 @@ Ember.MutableArray = Ember.Mixin.create(Ember.Array, Ember.MutableEnumerable,
   /**
     Pop object from array or nil if none are left.  Works just like pop() but
     it is KVO-compliant.
+
+        var colors = ["red", "green", "blue"];
+        colors.popObject(); => "blue"
+        console.log(colors); => ["red", "green"]
+
   */
   popObject: function() {
     var len = get(this, 'length') ;
@@ -153,6 +171,11 @@ Ember.MutableArray = Ember.Mixin.create(Ember.Array, Ember.MutableEnumerable,
   /**
     Shift an object from start of array or nil if none are left.  Works just
     like shift() but it is KVO-compliant.
+
+        var colors = ["red", "green", "blue"];
+        colors.shiftObject(); => "red"
+        console.log(colors); => ["green", "blue"]
+
   */
   shiftObject: function() {
     if (get(this, 'length') === 0) return null ;
@@ -164,16 +187,24 @@ Ember.MutableArray = Ember.Mixin.create(Ember.Array, Ember.MutableEnumerable,
   /**
     Unshift an object to start of array.  Works just like unshift() but it is
     KVO-compliant.
+
+        var colors = ["red", "green", "blue"];
+        colors.unshiftObject("yellow"); => ["yellow", "red", "green", "blue"]
+        colors.unshiftObject(["black", "white"]); => [["black", "white"], "yellow", "red", "green", "blue"]
+
   */
   unshiftObject: function(obj) {
     this.insertAt(0, obj) ;
     return obj ;
   },
 
-
   /**
     Adds the named objects to the beginning of the array.  Defers notifying
     observers until all objects have been added.
+
+        var colors = ["red", "green", "blue"];
+        colors.unshiftObjects(["black", "white"]); => ["black", "white", "red", "green", "blue"]
+        colors.unshiftObjects("yellow"); => Type Error: 'undefined' is not a function
 
     @param {Ember.Enumerable} objects the objects to add
     @returns {Ember.Array} receiver
