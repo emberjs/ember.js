@@ -36,6 +36,18 @@ Ember.Handlebars.ViewHelper = Ember.Object.create({
       dup = true;
     }
 
+    if (options.attributeBindings) {
+      ember_assert("Setting 'attributeBindings' via Handlebars is not allowed. Please subclass Ember.View and set it there instead.");
+      extensions.attributeBindings = null;
+      dup = true;
+    }
+
+    if (options.classNameBindings) {
+      ember_assert("Setting 'classNameBindings' via Handlebars is not allowed. Consider setting 'classNames' instead.");
+      extensions.classNameBindings = null;
+      dup = true;
+    }
+
     if (dup) {
       options = Ember.$.extend({}, options);
       delete options.id;
