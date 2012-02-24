@@ -492,7 +492,11 @@ test("if a created model is marked as invalid by the server, it enters an error 
   set(yehuda, 'updatedAt', true);
   equal(get(yehuda, 'isValid'), false, "the record is still invalid");
 
+  var errors = get(yehuda, 'errors');
+  errors['other_bound_property'] = undefined;
+  set(yehuda, 'errors', errors);
   set(yehuda, 'name', "Brohuda Brokatz");
+
   equal(get(yehuda, 'isValid'), true, "the record is no longer invalid after changing");
   equal(get(yehuda, 'isDirty'), true, "the record has outstanding changes");
 
