@@ -1142,8 +1142,11 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     set(this, '_childViews', childViews);
 
 
-    this.classNameBindings = Ember.A(get(this, 'classNameBindings').slice());
-    this.classNames = Ember.A(get(this, 'classNames').slice());
+    ember_assert("Only arrays are allowed for 'classNameBindings'", Ember.typeOf(this.classNameBindings) === 'array');
+    this.classNameBindings = Ember.A(this.classNameBindings.slice());
+
+    ember_assert("Only arrays are allowed for 'classNames'", Ember.typeOf(this.classNames) === 'array');
+    this.classNames = Ember.A(this.classNames.slice());
 
     set(this, 'domManager', this.domManagerClass.create({ view: this }));
 
