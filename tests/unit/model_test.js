@@ -131,6 +131,22 @@ test("a DS.Model can describe Date attributes", function() {
   convertsWhenSet('date', date, dateString);
 });
 
+test("it should cache attributes", function() {
+  var model = DS.Model._create({
+    updatedAt: DS.attr('date')
+  });
+
+  var dateString = "Sat, 31 Dec 2011 00:08:16 GMT";
+  var date = new Date(dateString);
+
+  model.send('loadingData');
+  model.send('setData', {});
+
+  model.set('updatedAt', date);
+  deepEqual(date, get(model, 'updatedAt'), "setting a date returns the same date");
+  strictEqual(get(model, 'updatedAt'), get(model, 'updatedAt'), "second get still returns the same object");
+});
+
 test("it can specify which key to use when looking up properties on the hash", function() {
   var model = DS.Model._create({
     name: DS.attr('string', { key: 'full_name' })
