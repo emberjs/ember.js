@@ -230,9 +230,10 @@ EmberHandlebars.registerHelper('bindAttr', function(options) {
 
     ember_assert(fmt("You must provide a String for a bound attribute, not %@", [property]), typeof property === 'string');
 
-    var value = getPath(ctx, property);
+    var value = (property === 'this') ? ctx : getPath(ctx, property),
+        type = Ember.typeOf(value);
 
-    ember_assert(fmt("Attributes must be numbers, strings or booleans, not %@", [value]), value === null || value === undefined || typeof value === 'number' || typeof value === 'string' || typeof value === 'boolean');
+    ember_assert(fmt("Attributes must be numbers, strings or booleans, not %@", [value]), value === null || value === undefined || type === 'number' || type === 'string' || type === 'boolean');
 
     var observer, invoker;
 
@@ -264,11 +265,11 @@ EmberHandlebars.registerHelper('bindAttr', function(options) {
     // Add an observer to the view for when the property changes.
     // When the observer fires, find the element using the
     // unique data id and update the attribute to the new value.
-    Ember.addObserver(ctx, property, invoker);
+    if (property !== 'this') {
+      Ember.addObserver(ctx, property, invoker);
+    }
 
     // if this changes, also change the logic in ember-views/lib/views/view.js
-    var type = typeof value;
-
     if ((type === 'string' || (type === 'number' && !isNaN(value)))) {
       ret.push(attr + '="' + value + '"');
     } else if (value && type === 'boolean') {

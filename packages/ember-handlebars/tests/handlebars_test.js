@@ -1252,6 +1252,20 @@ test("should be able to add multiple classes using {{bindAttr class}}", function
   ok(!view.$('div').hasClass('amazing'), "removes aliased class when property is set to false");
 });
 
+test("should be able to bindAttr to 'this' in an {{#each}} block", function() {
+  view = Ember.View.create({
+    template: Ember.Handlebars.compile('{{#each images}}<img {{bindAttr src="this"}}>{{/each}}'),
+    images: Ember.A(['one.png', 'two.jpg', 'three.gif'])
+  });
+
+  appendView();
+
+  var images = view.$('img');
+  ok(/one\.png$/.test(images[0].src));
+  ok(/two\.jpg$/.test(images[1].src));
+  ok(/three\.gif$/.test(images[2].src));
+});
+
 test("should be able to output a property without binding", function(){
   view = Ember.View.create({
     template: Ember.Handlebars.compile(
