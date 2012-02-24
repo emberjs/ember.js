@@ -720,6 +720,11 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     return value !== undefined ? value : Ember.guidFor(this);
   }).cacheable(),
 
+  /** @private */
+  _elementIdDidChange: Ember.observer(function() {
+    throw "Changing a view's elementId after creation is not allowed.";
+  }, 'elementId'),
+
   /**
     Attempts to discover the element in the parent element. The default
     implementation looks for an element with an ID of elementId (or the view's

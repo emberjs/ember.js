@@ -68,3 +68,12 @@ test("discovers element if has no element but parent view does have element", fu
   equal(child.$().attr('id'), 'child-view', 'view discovered child');
 });
 
+test("should not allow the elementId to be changed", function() {
+  view = Ember.View.create({
+    elementId: 'one'
+  });
+
+  raises(function() {
+    view.set('elementId', 'two');
+  }, /Changing a view's elementId after creation is not allowed./, "raises elementId changed exception");
+});
