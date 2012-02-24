@@ -721,7 +721,7 @@ Ember.View = Ember.Object.extend(Ember.Evented,
   }).cacheable(),
 
   /** @private */
-  _elementIdDidChange: Ember.observer(function() {
+  _elementIdDidChange: Ember.beforeObserver(function() {
     throw "Changing a view's elementId after creation is not allowed.";
   }, 'elementId'),
 
