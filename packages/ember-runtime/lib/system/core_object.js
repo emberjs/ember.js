@@ -44,7 +44,10 @@ function makeCtor() {
   };
 
   Class.toString = classToString;
-  Class._prototypeMixinDidChange = function() { isPrepared = false; };
+  Class._prototypeMixinDidChange = function() {
+    ember_assert("Reopening already instantiated classes is not supported. We plan to support this in the future.", isPrepared === false);
+    isPrepared = false;
+  };
   Class._initMixins = function(args) { initMixins = args; };
 
   Ember.defineProperty(Class, 'proto', Ember.computed(function() {
