@@ -104,7 +104,7 @@ test("should allow a target to be specified", function() {
   ActionHelper.registerAction = originalRegisterAction;
 });
 
-test("should attach an event handler on the parent view", function() {
+test("should register an event handler", function() {
   var eventHandlerWasCalled = false;
 
   view = Ember.View.create({
@@ -114,36 +114,13 @@ test("should attach an event handler on the parent view", function() {
 
   appendView();
 
-  ok('function' === typeof view.click, "An event handler was added to the parent view");
+  var actionId = view.$('a[data-ember-action]').attr('data-ember-action');
+
+  ok(Ember.Handlebars.ActionHelper.registeredActions[actionId], "The action was registered");
 
   view.$('a').trigger('click');
 
   ok(eventHandlerWasCalled, "The event handler was called");
-});
-
-test("should wrap an existing event handler on the parent view", function() {
-  var eventHandlerWasCalled = false,
-      originalEventHandlerWasCalled = false;
-
-  view = Ember.View.create({
-    template: Ember.Handlebars.compile('<a href="#" {{action "edit"}}>click me</a>'),
-    click: function() { originalEventHandlerWasCalled = true; },
-    edit: function() { eventHandlerWasCalled = true; return false; }
-  });
-
-  appendView();
-
-  view.$('a').trigger('click');
-
-  ok(eventHandlerWasCalled, "The event handler was called");
-  ok(!originalEventHandlerWasCalled, "The parent view's event handler wasn't called");
-
-  eventHandlerWasCalled = originalEventHandlerWasCalled = false;
-
-  view.$().trigger('click');
-
-  ok(!eventHandlerWasCalled, "The event handler wasn't called");
-  ok(originalEventHandlerWasCalled, "The parent view's event handler was called");
 });
 
 test("should be able to use action more than once for the same event within a view", function() {
@@ -190,8 +167,6 @@ test("should work properly in an #each block", function() {
 
   appendView();
 
-  ok('function' === typeof view.click, "The event handler was added to the parent view");
-
   view.$('a').trigger('click');
 
   ok(eventHandlerWasCalled, "The event handler was called");
@@ -208,14 +183,12 @@ test("should work properly in a #with block", function() {
 
   appendView();
 
-  ok('function' === typeof view.click, "The event handler was added to the parent view");
-
   view.$('a').trigger('click');
 
   ok(eventHandlerWasCalled, "The event handler was called");
 });
 
-test("should unwrap parent view event handlers on rerender", function() {
+test("should unregister event handlers on rerender", function() {
   var eventHandlerWasCalled = false;
 
   view = Ember.View.create({
@@ -225,15 +198,17 @@ test("should unwrap parent view event handlers on rerender", function() {
 
   appendView();
 
-  ok('function' === typeof view.click, "The event handler was added to the parent view");
+  var previousActionId = view.$('a[data-ember-action]').attr('data-ember-action');
 
   view.rerender();
 
-  ok(view.click === null, "On rerender, the event handler was removed");
+  ok(!Ember.Handlebars.ActionHelper.registeredActions[previousActionId], "On rerender, the event handler was removed");
 
   Ember.run.end();
 
-  ok('function' === typeof view.click, "After rerender completes, a new event handler was added");
+  var newActionId = view.$('a[data-ember-action]').attr('data-ember-action');
+
+  ok(Ember.Handlebars.ActionHelper.registeredActions[newActionId], "After rerender completes, a new event handler was added");
 });
 
 test("should properly capture events on child elements of a container with an action", function() {
@@ -320,4 +295,19 @@ test("should send the view, event and current Handlebars context to the action",
   strictEqual(passedView, view, "the view passed is the view containing the action helper");
   deepEqual(passedContext, aContext, "the context passed is the context surrounding the action helper");
   equal(passedEvent.type, 'click', "the event passed is the event triggered for the action helper");
+});
+
+test("should only trigger actions for the event they were registered on", function() {
+  var editWasCalled = false;
+
+  view = Ember.View.create({
+    template: Ember.Handlebars.compile('<a href="#" {{action "edit"}}>edit</a>'),
+    edit: function() { editWasCalled = true; }
+  });
+
+  appendView();
+  
+  view.$('a').trigger('mouseover');
+
+  ok(!editWasCalled, "The action wasn't called");
 });
