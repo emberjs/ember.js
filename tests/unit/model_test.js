@@ -135,7 +135,7 @@ test("a DS.Model can describe Date attributes", function() {
   convertsWhenSet('date', date, dateString);
 });
 
-test("retrieving properties should return undefined if the record is not loaded", function() {
+test("retrieving properties should return the same value as they would if they were not in the data hash if the record is not loaded", function() {
   var store = DS.Store.create({
     adapter: DS.Adapter.create({
       // no-op
@@ -149,9 +149,7 @@ test("retrieving properties should return undefined if the record is not loaded"
 
   var record = store.find(Person, 1);
 
-  strictEqual(get(record, 'name'), undefined, "returns undefined value");
-
-
+  strictEqual(get(record, 'name'), null, "returns null value");
 });
 
 test("it can specify which key to use when looking up properties on the hash", function() {
