@@ -165,7 +165,7 @@ test("DS.Store has a load method to load in a new record", function() {
 
   var object = currentStore.find(currentType, 1);
 
-  equal(getPath(object, 'data.name'), "Scumbag Dale", "the data hash was inserted");
+  equal(getPath(object, 'savedData.name'), "Scumbag Dale", "the data hash was inserted");
 });
 
 var array = [{ id: 1, name: "Scumbag Dale" }, { id: 2, name: "Scumbag Katz" }, { id: 3, name: "Scumbag Bryn" }];
@@ -185,7 +185,7 @@ test("DS.Store has a load method to load in an Array of records", function() {
   for (var i=0, l=get(objects, 'length'); i<l; i++) {
     var object = objects.objectAt(i), hash = array[i];
 
-    equal(get(object, 'data'), hash);
+    equal(get(object, 'savedData'), hash);
   }
 });
 
@@ -234,7 +234,7 @@ test("DS.Store passes only needed guids to findMany", function() {
     object = objects.objectAt(i);
     hash = array[i];
 
-    equal(get(object, 'data'), hash);
+    equal(get(object, 'savedData'), hash);
   }
 
   for (i=3; i<6; i++) {

@@ -338,7 +338,7 @@ test("by default, createRecords calls createRecord once per record", function() 
       ok(false, "should not have invoked more than 2 times");
     }
 
-    var hash = get(model, 'data');
+    var hash = get(model, 'savedData');
     hash.id = count;
     hash.updatedAt = "now";
 
