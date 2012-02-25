@@ -61,9 +61,11 @@ var converts = function(type, provided, expected) {
 };
 
 var convertsFromServer = function(type, provided, expected) {
-  var model = DS.Model._create({
+  var Person = DS.Model.extend({
     name: DS.attr(type)
   });
+
+  var model = Person._create();
 
   model.send('loadingData');
   model.send('setData', { name: provided });
@@ -71,15 +73,17 @@ var convertsFromServer = function(type, provided, expected) {
 };
 
 var convertsWhenSet = function(type, provided, expected) {
-  var model = DS.Model._create({
+  var Person = DS.Model.extend({
     name: DS.attr(type)
   });
+
+  var model = Person._create();
 
   model.send('loadingData');
   model.send('setData', {});
 
   set(model, 'name', provided);
-  deepEqual(get(model, 'data').name, expected, type + " saves " + provided + " as " + expected);
+  deepEqual(model.toJSON().name, expected, type + " saves " + provided + " as " + expected);
 };
 
 test("a DS.Model can describe String attributes", function() {
@@ -131,6 +135,25 @@ test("a DS.Model can describe Date attributes", function() {
   convertsWhenSet('date', date, dateString);
 });
 
+test("retrieving properties should return undefined if the record is not loaded", function() {
+  var store = DS.Store.create({
+    adapter: DS.Adapter.create({
+      // no-op
+      find: Ember.K
+    })
+  });
+
+  var Person = DS.Model.extend({
+    name: DS.attr('string')
+  });
+
+  var record = store.find(Person, 1);
+
+  strictEqual(get(record, 'name'), undefined, "returns undefined value");
+
+
+});
+
 test("it can specify which key to use when looking up properties on the hash", function() {
   var model = DS.Model._create({
     name: DS.attr('string', { key: 'full_name' })
@@ -140,6 +163,25 @@ test("it can specify which key to use when looking up properties on the hash", f
   model.send('setData', { name: "Steve", full_name: "Pete" });
 
   equal(get(model, 'name'), "Pete", "retrieves correct value");
+});
+
+test("toJSON returns a hash containing the JSON representation of the record", function() {
+  var Person = DS.Model.extend({
+    firstName: DS.attr('string'),
+    lastName: DS.attr('string', { key: 'last_name' })
+  });
+
+  var record = Person._create();
+
+  record.send('setData', {
+    firstName: "Steve",
+    last_name: "Holt",
+    other: "none"
+  });
+
+  var json = record.toJSON();
+
+  deepEqual(json, { firstName: "Steve", last_name: "Holt" }, "the data is extracted by attribute");
 });
 
 var Person, store, array;
@@ -169,14 +211,17 @@ test("it should modify the property of the hash specified by the `key` option", 
   model.send('setData', { name: "Steve", full_name: "Pete" });
 
   model.set('name', "Colin");
-  var data = model.get('data');
+
+  var data = get(model, 'data');
+  var changes = get(model, 'changes');
+
   equal(get(data, 'name'), "Steve", "did not modify name property");
-  equal(get(data, 'full_name'), "Colin", "properly modified full_name property");
+  equal(get(changes, 'full_name'), "Colin", "properly modified full_name property");
 });
 
 test("when a DS.Model updates its attributes, its changes affect its filtered Array membership", function() {
   var people = store.filter(Person, function(hash) {
-    if (hash.name.match(/Katz$/)) { return true; }
+    if (hash.get('name').match(/Katz$/)) { return true; }
   });
 
   equal(get(people, 'length'), 1, "precond - one item is in the ModelArray");
@@ -212,7 +257,7 @@ module("with a simple Person model", {
 
 test("when a DS.Model updates its attributes, its changes affect its filtered Array membership", function() {
   var people = store.filter(Person, function(hash) {
-    if (hash.name.match(/Katz$/)) { return true; }
+    if (hash.get('name').match(/Katz$/)) { return true; }
   });
 
   equal(get(people, 'length'), 1, "precond - one item is in the ModelArray");

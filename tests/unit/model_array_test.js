@@ -51,7 +51,7 @@ test("a model array can have a filter on it", function() {
   store.loadMany(Person, array);
 
   var modelArray = store.filter(Person, function(hash) {
-    if (hash.name.match(/Scumbag [KD]/)) { return true; }
+    if (hash.get('name').match(/Scumbag [KD]/)) { return true; }
   });
 
   equal(get(modelArray, 'length'), 2, "The model Array should have the filtered objects on it");
@@ -71,7 +71,7 @@ test("a filtered model array includes created elements", function() {
   store.loadMany(Person, array);
 
   var modelArray = store.filter(Person, function(hash) {
-    if (hash.name.match(/Scumbag [KD]/)) { return true; }
+    if (hash.get('name').match(/Scumbag [KD]/)) { return true; }
   });
 
   equal(get(modelArray, 'length'), 2, "precond - The model Array should have the filtered objects on it");
@@ -97,13 +97,13 @@ test("a model Array can update its filter", function() {
   store.loadMany(Person, array);
 
   var modelArray = store.filter(Person, function(hash) {
-    if (hash.name.match(/Scumbag [KD]/)) { return true; }
+    if (hash.get('name').match(/Scumbag [KD]/)) { return true; }
   });
 
   equal(get(modelArray, 'length'), 2, "The model Array should have the filtered objects on it");
 
   modelArray.set('filterFunction', function(hash) {
-    if (hash.name.match(/Katz/)) { return true; }
+    if (hash.get('name').match(/Katz/)) { return true; }
   });
 
   equal(get(modelArray, 'length'), 1, "The model Array should have one object on it");
