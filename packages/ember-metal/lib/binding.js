@@ -142,20 +142,18 @@ function getPathWithGlobals(obj, path) {
   return getPath(isGlobalPath(path) ? window : obj, path);
 }
 
-function getTransformedFromValue(obj, binding) {
-  var operation = binding._operation,
-      fromValue;
+function getFromValue(obj, binding) {
+  var operation = binding._operation;
+
   if (operation) {
-    fromValue = operation(obj, binding._from, binding._operand);
+    return operation(obj, binding._from, binding._operand);
   } else {
-    fromValue = getPathWithGlobals(obj, binding._from);
+    return getPathWithGlobals(obj, binding._from);
   }
-  return getTransformedValue(binding, fromValue, obj, 'to');
 }
 
-function getTransformedToValue(obj, binding) {
-  var toValue = getPath(obj, binding._to);
-  return getTransformedValue(binding, toValue, obj, 'from');
+function getToValue(obj, binding) {
+  return getPath(obj, binding._to);
 }
 
 var AND_OPERATION = function(obj, left, right) {
@@ -186,6 +184,9 @@ var Binding = function(toPath, fromPath) {
   /** @private */
   self._from = fromPath;
   self._to   = toPath;
+
+  /** @private */
+  self._cache = {};
 
   return self;
 };
@@ -519,13 +520,43 @@ Binding.prototype = /** @scope Ember.Binding.prototype */ {
     // synchronizing from
     var guid = guidFor(obj), direction = this[guid];
 
-    var fromPath = this._from, toPath = this._to;
+    var fromPath = this._from, toPath = this._to, lastSet;
 
     delete this[guid];
 
-    // apply any operations to the object, then apply transforms
-    var fromValue = getTransformedFromValue(obj, this);
-    var toValue   = getTransformedToValue(obj, this);
+    if (direction === 'fwd') {
+      lastSet = this._cache.back;
+    } else if (direction === 'back') {
+      lastSet = this._cache.fwd;
+    }
+
+    var fromValue, toValue;
+
+    // There's a bit of duplicate logic here, but the order is important.
+    //
+    // We want to avoid ping-pong bindings. To do this, we store off the
+    // guid of the item we are setting. Later, we avoid synchronizing
+    // bindings in the other direction if the raw value we are copying
+    // is the same as the guid of the last thing we set.
+    //
+    // Use guids here to avoid unnecessarily holding hard references
+    // to objects.
+    if (direction === 'fwd') {
+      fromValue = getFromValue(obj, this);
+      if (this._cache.back === guidFor(fromValue)) { return; }
+      this._cache.fwd = guidFor(fromValue);
+
+      toValue = getToValue(obj, this);
+    } else if (direction === 'back') {
+      toValue = getToValue(obj, this);
+      if (this._cache.fwd === guidFor(toValue)) { return; }
+      this._cache.back = guidFor(toValue);
+
+      fromValue = getFromValue(obj, this);
+    }
+
+    fromValue = getTransformedValue(this, fromValue, obj, 'to');
+    toValue = getTransformedValue(this, toValue, obj, 'from');
 
     if (toValue === fromValue) { return; }
 
