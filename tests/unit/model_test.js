@@ -213,7 +213,7 @@ test("it should modify the property of the hash specified by the `key` option", 
   model.set('name', "Colin");
 
   var data = get(model, 'savedData');
-  var changes = get(model, 'changes');
+  var changes = get(model, 'unsavedData');
 
   equal(get(data, 'name'), "Steve", "did not modify name property");
   equal(get(changes, 'full_name'), "Colin", "properly modified full_name property");
