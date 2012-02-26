@@ -151,6 +151,25 @@ test("retrieving properties should return the same value as they would if they w
   strictEqual(get(record, 'name'), null, "returns null value");
 });
 
+test("it should cache attributes", function() {
+  var store = DS.Store.create();
+
+  var Post = DS.Model.extend({
+    updatedAt: DS.attr('date')
+  });
+
+  var dateString = "Sat, 31 Dec 2011 00:08:16 GMT";
+  var date = new Date(dateString);
+
+  store.load(Post, { id: 1 });
+
+  var model = store.find(Post, 1);
+
+  model.set('updatedAt', date);
+  strictEqual(date, get(model, 'updatedAt'), "setting a date returns the same date");
+  strictEqual(get(model, 'updatedAt'), get(model, 'updatedAt'), "second get still returns the same object");
+});
+
 test("it can specify which key to use when looking up properties on the hash", function() {
   var Model = DS.Model.extend({
     name: DS.attr('string', { key: 'full_name' })
