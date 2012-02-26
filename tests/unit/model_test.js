@@ -166,7 +166,7 @@ test("it should cache attributes", function() {
   var model = store.find(Post, 1);
 
   model.set('updatedAt', date);
-  strictEqual(date, get(model, 'updatedAt'), "setting a date returns the same date");
+  deepEqual(date, get(model, 'updatedAt'), "setting a date returns the same date");
   strictEqual(get(model, 'updatedAt'), get(model, 'updatedAt'), "second get still returns the same object");
 });
 
