@@ -205,6 +205,22 @@ test("DS.Store loads individual models without explicit IDs", function() {
   equal(get(tom, 'name'), "Tom Dale", "the person was successfully loaded for the given ID");
 });
 
+test("can load data for the same record if it is not dirty", function() {
+  var store = DS.Store.create();
+  var Person = DS.Model.extend({
+    name: DS.attr('string')
+  });
+
+  store.load(Person, { id: 1, name: "Tom Dale" });
+  var tom = store.find(Person, 1);
+
+  equal(get(tom, 'isDirty'), false, "precond - record is not dirty");
+  equal(get(tom, 'name'), "Tom Dale", "returns the correct name");
+
+  store.load(Person, { id: 1, name: "Captain Underpants" });
+  equal(get(tom, 'name'), "Captain Underpants", "updated record with new date");
+});
+
 test("DS.Store loads individual models without explicit IDs with a custom primaryKey", function() {
   var store = DS.Store.create();
   var Person = DS.Model.extend({ name: DS.attr('string'), primaryKey: 'key' });
