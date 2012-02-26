@@ -172,6 +172,33 @@ test("updating a person makes a PUT to /people/:id with the data hash", function
   expectState('saving', false);
 
   equal(person, store.find(Person, 1), "the same person is retrieved by the same ID");
+  equal(get(person, 'name'), "Brohuda Brokatz", "the hash should be updated");
+});
+
+test("updates are not required to return data", function() {
+  set(adapter, 'bulkCommit', false);
+
+  store.load(Person, { id: 1, name: "Yehuda Katz" });
+
+  person = store.find(Person, 1);
+
+  expectState('new', false);
+  expectState('loaded');
+  expectState('dirty', false);
+
+  set(person, 'name', "Brohuda Brokatz");
+
+  expectState('dirty');
+  store.commit();
+  expectState('saving');
+
+  expectUrl("/people/1", "the plural of the model name with its ID");
+  expectType("PUT");
+
+  ajaxHash.success();
+  expectState('saving', false);
+
+  equal(person, store.find(Person, 1), "the same person is retrieved by the same ID");
 });
 
 test("singular updates can sideload data", function() {
