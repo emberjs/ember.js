@@ -126,7 +126,7 @@ test("a DS.Model can describe Date attributes", function() {
   });
 
   model.send('loadingData');
-  model.send('setData', {});
+  model.send('didChangeData');
 
   model.set('updatedAt', date);
   deepEqual(date, get(model, 'updatedAt'), "setting a date returns the same date");
