@@ -199,6 +199,7 @@ test("updates are not required to return data", function() {
   expectState('saving', false);
 
   equal(person, store.find(Person, 1), "the same person is retrieved by the same ID");
+  equal(get(person, 'name'), "Brohuda Brokatz", "the data is preserved");
 });
 
 test("singular updates can sideload data", function() {
