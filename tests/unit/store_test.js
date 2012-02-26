@@ -491,3 +491,12 @@ test("a model receives a didCreate callback when it has finished updating", func
   equal(callCount, 1, "didCreate called after commit");
 });
 
+test("an ID of 0 is allowed", function() {
+  var store = DS.Store.create();
+
+  var Person = DS.Model.extend({
+    name: DS.attr('string')
+  });
+
+  store.load(Person, { id: 0, name: "Tom Dale" });
+});
