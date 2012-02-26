@@ -558,3 +558,20 @@ test("can be created after the DS.Store", function() {
   store.find(Person, 1);
 });
 
+test("the filter method can optionally take a server query as well", function() {
+  adapter.findQuery = function(store, type, query, array) {
+    array.load([
+      { id: 1, name: "Yehuda Katz" },
+      { id: 2, name: "Tom Dale" }
+    ]);
+  };
+
+  var filter = store.filter(Person, { page: 1 }, function(data) {
+    return data.get('name') === "Tom Dale";
+  });
+
+  var tom = store.find(Person, 2);
+
+  equal(get(filter, 'length'), 1, "The filter has an item in it");
+  deepEqual(filter.toArray(), [ tom ], "The filter has a single entry in it");
+});
