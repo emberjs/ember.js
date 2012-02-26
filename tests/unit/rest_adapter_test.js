@@ -743,3 +743,12 @@ test("bulk deletes can sideload data", function() {
   group = store.find(Group, 1);
   equal(get(group, 'name'), "Group 1", "the data sideloaded successfully");
 });
+
+test("if you specify a namespace then it is prepended onto all URLs", function() {
+  set(adapter, 'namespace', 'ember');
+  person = store.find(Person, 1);
+  expectUrl("/ember/people/1", "the namespace, followed by by the plural of the model name and the id")
+
+  store.load(Person, { id: 1 });
+});
+
