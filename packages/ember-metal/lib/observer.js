@@ -8,6 +8,7 @@ require('ember-metal/core');
 require('ember-metal/platform');
 require('ember-metal/utils');
 require('ember-metal/accessors');
+require('ember-metal/array');
 
 var AFTER_OBSERVERS = ':change';
 var BEFORE_OBSERVERS = ':before';
@@ -16,6 +17,7 @@ var normalizePath = Ember.normalizePath;
 
 var suspended = 0;
 var array_Slice = Array.prototype.slice;
+var array_ForEach = Ember.ArrayUtils.forEach;
 
 var ObserverSet = function(iterateable) {
   this.set = {};
@@ -45,7 +47,7 @@ ObserverSet.prototype.empty = function() {
 ObserverSet.prototype.forEach = function(fn) {
   var q = this.array;
   this.empty();
-  q.forEach(function(item) {
+  array_ForEach(q, function(item) {
     fn(item[0], item[1]);
   });
 };

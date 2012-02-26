@@ -10,13 +10,14 @@ require("ember-views/system/render_buffer");
 var get = Ember.get, set = Ember.set, addObserver = Ember.addObserver;
 var getPath = Ember.getPath, meta = Ember.meta, fmt = Ember.String.fmt;
 var a_slice = Array.prototype.slice;
+var a_forEach = Ember.ArrayUtils.forEach;
 
 var childViewsProperty = Ember.computed(function() {
   var childViews = get(this, '_childViews');
 
   var ret = Ember.A();
 
-  childViews.forEach(function(view) {
+  a_forEach(childViews, function(view) {
     if (view.isVirtual) {
       ret.pushObjects(get(view, 'childViews'));
     } else {
@@ -43,7 +44,7 @@ Ember.TEMPLATES = {};
   @since Ember 0.9
   @extends Ember.Object
 */
-Ember.View = Ember.Object.extend(
+Ember.View = Ember.Object.extend(Ember.Evented,
 /** @scope Ember.View.prototype */ {
 
   /** @private */
@@ -408,7 +409,7 @@ Ember.View = Ember.Object.extend(
     // Loop through all of the configured bindings. These will be either
     // property names ('isUrgent') or property paths relative to the view
     // ('content.isUrgent')
-    classBindings.forEach(function(binding) {
+    a_forEach(classBindings, function(binding) {
 
       // Variable in which the old class value is saved. The observer function
       // closes over this variable, so it knows which string to remove when
@@ -472,7 +473,7 @@ Ember.View = Ember.Object.extend(
 
     if (!attributeBindings) { return; }
 
-    attributeBindings.forEach(function(binding) {
+    a_forEach(attributeBindings, function(binding) {
       var split = binding.split(':'),
           property = split[0],
           attributeName = split[1] || property;
@@ -719,6 +720,11 @@ Ember.View = Ember.Object.extend(
     return value !== undefined ? value : Ember.guidFor(this);
   }).cacheable(),
 
+  /** @private */
+  _elementIdDidChange: Ember.beforeObserver(function() {
+    throw "Changing a view's elementId after creation is not allowed.";
+  }, 'elementId'),
+
   /**
     Attempts to discover the element in the parent element. The default
     implementation looks for an element with an ID of elementId (or the view's
@@ -784,6 +790,13 @@ Ember.View = Ember.Object.extend(
   didInsertElement: Ember.K,
 
   /**
+    Called when the view is about to rerender, but before anything has
+    been torn down. This is a good opportunity to tear down any manual
+    observers you have installed based on the DOM state
+  */
+  willRerender: Ember.K,
+
+  /**
     Run this callback on the current view and recursively on child views.
 
     @private
@@ -817,7 +830,7 @@ Ember.View = Ember.Object.extend(
   _notifyWillInsertElement: function(fromPreRender) {
     this.invokeRecursively(function(view) {
       if (fromPreRender) { view._willInsertElementAccessUnsupported = true; }
-      view.willInsertElement();
+      view.fire('willInsertElement');
       view._willInsertElementAccessUnsupported = false;
     });
   },
@@ -830,7 +843,19 @@ Ember.View = Ember.Object.extend(
   */
   _notifyDidInsertElement: function() {
     this.invokeRecursively(function(view) {
-      view.didInsertElement();
+      view.fire('didInsertElement');
+    });
+  },
+
+  /**
+    @private
+
+    Invokes the receiver's willRerender() method if it exists and then
+    invokes the same on all child views.
+  */
+  _notifyWillRerender: function() {
+    this.invokeRecursively(function(view) {
+      view.fire('willRerender');
     });
   },
 
@@ -869,7 +894,7 @@ Ember.View = Ember.Object.extend(
   */
   _notifyWillDestroyElement: function() {
     this.invokeRecursively(function(view) {
-      view.willDestroyElement();
+      view.fire('willDestroyElement');
     });
   },
 
@@ -980,7 +1005,7 @@ Ember.View = Ember.Object.extend(
     this._applyAttributeBindings(buffer);
 
 
-    get(this, 'classNames').forEach(function(name){ buffer.addClass(name); });
+    a_forEach(get(this, 'classNames'), function(name){ buffer.addClass(name); });
     buffer.id(get(this, 'elementId'));
 
     var role = get(this, 'ariaRole');
@@ -1122,8 +1147,11 @@ Ember.View = Ember.Object.extend(
     set(this, '_childViews', childViews);
 
 
-    this.classNameBindings = Ember.A(get(this, 'classNameBindings').slice());
-    this.classNames = Ember.A(get(this, 'classNames').slice());
+    ember_assert("Only arrays are allowed for 'classNameBindings'", Ember.typeOf(this.classNameBindings) === 'array');
+    this.classNameBindings = Ember.A(this.classNameBindings.slice());
+
+    ember_assert("Only arrays are allowed for 'classNames'", Ember.typeOf(this.classNames) === 'array');
+    this.classNames = Ember.A(this.classNames.slice());
 
     set(this, 'domManager', this.domManagerClass.create({ view: this }));
 
@@ -1286,7 +1314,7 @@ Ember.View = Ember.Object.extend(
   }, 'isVisible'),
 
   _notifyBecameVisible: function() {
-    this.becameVisible();
+    this.fire('becameVisible');
 
     this.forEachChildView(function(view) {
       var isVisible = get(view, 'isVisible');
@@ -1298,7 +1326,7 @@ Ember.View = Ember.Object.extend(
   },
 
   _notifyBecameHidden: function() {
-    this.becameHidden();
+    this.fire('becameHidden');
     this.forEachChildView(function(view) {
       var isVisible = get(view, 'isVisible');
 
@@ -1334,6 +1362,17 @@ Ember.View = Ember.Object.extend(
         view.transitionTo(state);
       });
     }
+  },
+
+  /**
+    @private
+
+    Override the default event firing from Ember.Evented to
+    also call methods with the given name.
+  */
+  fire: function(name) {
+    this[name].apply(this, [].slice.call(arguments, 1));
+    this._super.apply(this, arguments);
   },
 
   // .......................................................

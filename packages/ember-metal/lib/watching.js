@@ -11,6 +11,7 @@ require('ember-metal/utils');
 require('ember-metal/accessors');
 require('ember-metal/properties');
 require('ember-metal/observer');
+require('ember-metal/array');
 
 var guidFor = Ember.guidFor;
 var meta    = Ember.meta;
@@ -21,6 +22,7 @@ var SIMPLE_PROPERTY = Ember.SIMPLE_PROPERTY;
 var GUID_KEY = Ember.GUID_KEY;
 var META_KEY = Ember.META_KEY;
 var notifyObservers = Ember.notifyObservers;
+var forEach = Ember.ArrayUtils.forEach;
 
 var FIRST_KEY = /^([^\.\*]+)/;
 var IS_PATH = /[\.\*]/;
@@ -112,7 +114,7 @@ function flushPendingChains(reschedule) {
   var queue = pendingQueue;
   pendingQueue = [];
 
-  queue.forEach(function(q) { q[0].add(q[1]); });
+  forEach(queue, function(q) { q[0].add(q[1]); });
   if (reschedule!==false && pendingQueue.length>0) {
     setTimeout(flushPendingChains, 1);
   }

@@ -256,6 +256,13 @@ Ember.normalizeTuple = function(target, path) {
 
 Ember.normalizeTuple.primitive = normalizeTuple;
 
+Ember.getWithDefault = function(root, key, defaultValue) {
+  var value = Ember.get(root, key);
+
+  if (value === undefined) { return defaultValue; }
+  return value;
+};
+
 Ember.getPath = function(root, path, _checkGlobal) {
   var pathOnly, hasThis, hasStar, isGlobal, ret;
 

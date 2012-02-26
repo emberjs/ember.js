@@ -6,6 +6,8 @@
 /*globals TemplateTests:true MyApp:true App:true */
 
 var getPath = Ember.getPath, setPath = Ember.setPath, get = Ember.get, set = Ember.set;
+var forEach = Ember.ArrayUtils.forEach;
+
 var firstGrandchild = function(view) {
   return get(get(view, 'childViews').objectAt(0), 'childViews').objectAt(0);
 };
@@ -559,7 +561,7 @@ test("should update the block when object passed to #if helper changes", functio
 
   var tests = [false, null, undefined, [], '', 0];
 
-  tests.forEach(function(val) {
+  forEach(tests, function(val) {
     Ember.run(function() {
       set(view, 'inception', val);
     });
@@ -595,7 +597,7 @@ test("should update the block when object passed to #unless helper changes", fun
 
   var tests = [false, null, undefined, [], '', 0];
 
-  tests.forEach(function(val) {
+  forEach(tests, function(val) {
     Ember.run(function() {
       set(view, 'onDrugs', val);
     });
@@ -634,7 +636,7 @@ test("should update the block when object passed to #if helper changes and an in
 
   var tests = [false, null, undefined, [], '', 0];
 
-  tests.forEach(function(val) {
+  forEach(tests, function(val) {
     Ember.run(function() {
       set(view, 'inception', val);
     });
@@ -989,6 +991,24 @@ test("{{view}} class attribute should set class on layer", function() {
   equal(view.$('.bar').text(), 'baz', "emits content");
 });
 
+test("{{view}} should not allow attributeBindings to be set", function() {
+  raises(function() {
+    view = Ember.View.create({
+      template: Ember.Handlebars.compile('{{view "Ember.View" attributeBindings="one two"}}')
+    });
+    appendView();
+  }, /Setting 'attributeBindings' via Handlebars is not allowed/, "should raise attributeBindings error");
+});
+
+test("{{view}} should not allow classNameBindings to be set", function() {
+  raises(function() {
+    view = Ember.View.create({
+      template: Ember.Handlebars.compile('{{view "Ember.View" classNameBindings="one two"}}')
+    });
+    appendView();
+  }, /Setting 'classNameBindings' via Handlebars is not allowed/, "should raise classNameBindings error");
+});
+
 test("{{view}} should be able to point to a local view", function() {
   view = Ember.View.create({
     template: Ember.Handlebars.compile("{{view common}}"),
@@ -1248,6 +1268,20 @@ test("should be able to add multiple classes using {{bindAttr class}}", function
 
   ok(!view.$('div').hasClass('is-awesome-sauce'), "removes dasherized class when property is set to false");
   ok(!view.$('div').hasClass('amazing'), "removes aliased class when property is set to false");
+});
+
+test("should be able to bindAttr to 'this' in an {{#each}} block", function() {
+  view = Ember.View.create({
+    template: Ember.Handlebars.compile('{{#each images}}<img {{bindAttr src="this"}}>{{/each}}'),
+    images: Ember.A(['one.png', 'two.jpg', 'three.gif'])
+  });
+
+  appendView();
+
+  var images = view.$('img');
+  ok(/one\.png$/.test(images[0].src));
+  ok(/two\.jpg$/.test(images[1].src));
+  ok(/three\.gif$/.test(images[2].src));
 });
 
 test("should be able to output a property without binding", function(){

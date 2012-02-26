@@ -265,6 +265,37 @@ test("should give its item views the classBinding specified by itemClassBinding"
   equal(view.$('ul li.is-baz').length, 2, "removes class when property changes");
 });
 
+test("should give its item views the property specified by itemPropertyBinding", function() {
+  TemplateTests.itemPropertyBindingTestItemView = Ember.View.extend({
+    tagName: 'li'
+  });
+
+  // Use preserveContext=false so the itemView handlebar context is the view context
+  // Set itemView bindings using item*
+  var view = Ember.View.create({
+    baz: "baz",
+    content: Ember.A([Ember.Object.create(), Ember.Object.create(), Ember.Object.create()]),
+    template: Ember.Handlebars.compile('{{#collection contentBinding="content" tagName="ul" itemViewClass="TemplateTests.itemPropertyBindingTestItemView" itemPropertyBinding="baz" preserveContext=false}}{{property}}{{/collection}}')
+  });
+
+  Ember.run(function() {
+    view.appendTo('#qunit-fixture');
+  });
+
+  equals(view.$('ul li').length, 3, "adds 3 itemView");
+
+  view.$('ul li').each(function(i, li){
+    console.log( li)
+    equals($(li).text(), "baz", "creates the li with the property = baz");
+  })
+
+  Ember.run(function() {
+    setPath(view, 'baz', "yobaz");
+  });
+
+  equals(view.$('ul li:first').text(), "yobaz", "change property of sub view");
+});
+
 test("should work inside a bound {{#if}}", function() {
   var testData = Ember.A([Ember.Object.create({ isBaz: false }), Ember.Object.create({ isBaz: true }), Ember.Object.create({ isBaz: true })]);
   TemplateTests.ifTestCollectionView = Ember.CollectionView.extend({

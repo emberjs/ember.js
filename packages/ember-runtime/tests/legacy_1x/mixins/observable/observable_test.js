@@ -8,6 +8,7 @@
 /*global Namespace:true DepObj:true*/
 
 var get = Ember.get, set = Ember.set;
+var forEach = Ember.ArrayUtils.forEach;
 
 /*
   NOTE: This test is adapted from the 1.x series of unit tests.  The tests
@@ -346,6 +347,12 @@ module("Computed properties", {
         return 'dependent';
       }).property('changer'),
 
+      dependentFrontCalls: [],
+      dependentFront: Ember.computed('changer', function(key, value) {
+        this.dependentFrontCalls.push(value);
+        return 'dependentFront';
+      }),
+
       dependentCachedCalls: [],
       dependentCached: Ember.computed(function(key, value) {
         this.dependentCachedCalls.push(value);
@@ -383,19 +390,19 @@ module("Computed properties", {
 test("getting values should call function return value", function() {
 
   // get each property twice. Verify return.
-  var keys = Ember.String.w('computed computedCached dependent dependentCached');
+  var keys = Ember.String.w('computed computedCached dependent dependentFront dependentCached');
 
-  keys.forEach(function(key) {
+  forEach(keys, function(key) {
     equal(object.get(key), key, Ember.String.fmt('Try #1: object.get(%@) should run function', [key]));
     equal(object.get(key), key, Ember.String.fmt('Try #2: object.get(%@) should run function', [key]));
   });
 
   // verify each call count.  cached should only be called once
-  Ember.String.w('computedCalls dependentCalls').forEach(function(key) {
+  forEach(Ember.String.w('computedCalls dependentFrontCalls dependentCalls'), function(key) {
     equal(object[key].length, 2, Ember.String.fmt('non-cached property %@ should be called 2x', [key]));
   });
 
-  Ember.String.w('computedCachedCalls dependentCachedCalls').forEach(function(key) {
+  forEach(Ember.String.w('computedCachedCalls dependentCachedCalls'), function(key) {
     equal(object[key].length, 1, Ember.String.fmt('non-cached property %@ should be called 1x', [key]));
   });
 
@@ -404,10 +411,10 @@ test("getting values should call function return value", function() {
 test("setting values should call function return value", function() {
 
   // get each property twice. Verify return.
-  var keys = Ember.String.w('computed dependent computedCached dependentCached');
+  var keys = Ember.String.w('computed dependent dependentFront computedCached dependentCached');
   var values = Ember.String.w('value1 value2');
 
-  keys.forEach(function(key) {
+  forEach(keys, function(key) {
 
     equal(object.set(key, values[0]), object, Ember.String.fmt('Try #1: object.set(%@, %@) should run function', [key, values[0]]));
 
@@ -419,7 +426,7 @@ test("setting values should call function return value", function() {
 
 
   // verify each call count.  cached should only be called once
-  keys.forEach(function(key) {
+  forEach(keys, function(key) {
     var calls = object[key + 'Calls'], idx;
     var expectedLength;
 

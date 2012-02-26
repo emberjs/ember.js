@@ -13,3 +13,4 @@ require('ember-runtime/mixins/mutable_array');
 require('ember-runtime/mixins/mutable_enumerable');
 require('ember-runtime/mixins/observable');
 require('ember-runtime/mixins/target_action_support');
+require('ember-runtime/mixins/evented');

@@ -57,6 +57,41 @@ Ember.VERSION = '0.9.5';
 */
 Ember.ENV = 'undefined' === typeof ENV ? {} : ENV;
 
+
+// ..........................................................
+// BOOTSTRAP
+//
+
+/**
+  @static
+  @type Boolean
+  @default true
+  @constant
+
+  Determines whether Ember should enhances some built-in object
+  prototypes to provide a more friendly API.  If enabled, a few methods
+  will be added to Function, String, and Array.  Object.prototype will not be
+  enhanced, which is the one that causes most troubles for people.
+
+  In general we recommend leaving this option set to true since it rarely
+  conflicts with other code.  If you need to turn it off however, you can
+  define an ENV.EXTEND_PROTOTYPES config to disable it.
+*/
+Ember.EXTEND_PROTOTYPES = (Ember.ENV.EXTEND_PROTOTYPES !== false);
+
+
+/**
+  @static
+  @type Boolean
+  @default Ember.EXTEND_PROTOTYPES
+  @constant
+
+  Determines whether Ember should add ECMAScript 5 shims to older browsers.
+*/
+Ember.SHIM_ES5 = (Ember.ENV.SHIM_ES5 === false) ? false : Ember.EXTEND_PROTOTYPES;
+
+
+
 /**
   Empty function.  Useful for some operations.
 

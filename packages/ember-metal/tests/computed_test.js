@@ -569,7 +569,7 @@ test('adding a computed property should show up in key iteration',function() {
 
   var found = [];
   for(var key in obj) found.push(key);
-  ok(found.indexOf('foo')>=0, 'should find computed property in iteration found='+found);
+  ok(Ember.ArrayUtils.indexOf(found, 'foo')>=0, 'should find computed property in iteration found='+found);
   ok('foo' in obj, 'foo in obj should pass');
 });
 

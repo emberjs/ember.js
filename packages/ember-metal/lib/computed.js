@@ -292,5 +292,18 @@ if (!Ember.platform.hasPropertyAccessors) {
   @returns {Ember.ComputedProperty} property descriptor instance
 */
 Ember.computed = function(func) {
-  return new ComputedProperty(func);
+  var args;
+
+  if (arguments.length > 1) {
+    args = [].slice.call(arguments, 0, -1);
+    func = [].slice.call(arguments, -1)[0];
+  }
+
+  var cp = new ComputedProperty(func);
+
+  if (args) {
+    cp.property.apply(cp, args);
+  }
+
+  return cp;
 };

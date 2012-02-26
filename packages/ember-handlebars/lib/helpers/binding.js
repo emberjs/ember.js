@@ -9,6 +9,7 @@ require('ember-handlebars/views/bindable_span');
 require('ember-handlebars/views/metamorph_view');
 
 var get = Ember.get, getPath = Ember.Handlebars.getPath, set = Ember.set, fmt = Ember.String.fmt;
+var forEach = Ember.ArrayUtils.forEach;
 
 var EmberHandlebars = Ember.Handlebars, helpers = EmberHandlebars.helpers;
 var helpers = EmberHandlebars.helpers;
@@ -224,14 +225,15 @@ EmberHandlebars.registerHelper('bindAttr', function(options) {
 
   // For each attribute passed, create an observer and emit the
   // current value of the property as an attribute.
-  attrKeys.forEach(function(attr) {
+  forEach(attrKeys, function(attr) {
     var property = attrs[attr];
 
     ember_assert(fmt("You must provide a String for a bound attribute, not %@", [property]), typeof property === 'string');
 
-    var value = getPath(ctx, property);
+    var value = (property === 'this') ? ctx : getPath(ctx, property),
+        type = Ember.typeOf(value);
 
-    ember_assert(fmt("Attributes must be numbers, strings or booleans, not %@", [value]), value === null || value === undefined || typeof value === 'number' || typeof value === 'string' || typeof value === 'boolean');
+    ember_assert(fmt("Attributes must be numbers, strings or booleans, not %@", [value]), value === null || value === undefined || type === 'number' || type === 'string' || type === 'boolean');
 
     var observer, invoker;
 
@@ -263,11 +265,11 @@ EmberHandlebars.registerHelper('bindAttr', function(options) {
     // Add an observer to the view for when the property changes.
     // When the observer fires, find the element using the
     // unique data id and update the attribute to the new value.
-    Ember.addObserver(ctx, property, invoker);
+    if (property !== 'this') {
+      Ember.addObserver(ctx, property, invoker);
+    }
 
     // if this changes, also change the logic in ember-views/lib/views/view.js
-    var type = typeof value;
-
     if ((type === 'string' || (type === 'number' && !isNaN(value)))) {
       ret.push(attr + '="' + value + '"');
     } else if (value && type === 'boolean') {
@@ -345,7 +347,7 @@ EmberHandlebars.bindClasses = function(context, classBindings, view, bindAttrId)
 
   // For each property passed, loop through and setup
   // an observer.
-  classBindings.split(' ').forEach(function(binding) {
+  forEach(classBindings.split(' '), function(binding) {
 
     // Variable in which the old class value is saved. The observer function
     // closes over this variable, so it knows which string to remove when

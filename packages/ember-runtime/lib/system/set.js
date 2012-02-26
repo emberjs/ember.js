@@ -22,7 +22,7 @@ var get = Ember.get, set = Ember.set, guidFor = Ember.guidFor, none = Ember.none
   A Set works a bit like an array except that its items are not ordered.
   You can create a set to efficiently test for membership for an object. You
   can also iterate through a set just like an array, even accessing objects
-  by index, however there is no gaurantee as to their order.
+  by index, however there is no guarantee as to their order.
 
   Starting with Ember 2.0 all Sets are now observable since there is no
   added cost to providing this support.  Sets also do away with the more

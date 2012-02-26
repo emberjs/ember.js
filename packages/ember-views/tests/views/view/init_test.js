@@ -18,3 +18,23 @@ test("registers itself with a controller if the viewController property is set",
 
   equal(TestApp.fooController.get('view'), v, "sets the view property of the controller");
 });
+
+test("should warn if a non-array is used for classNames", function() {
+  raises(function() {
+    Ember.View.create({
+      classNames: Ember.computed(function() {
+        return ['className'];
+      }).property()
+    });
+  }, /Only arrays are allowed/i, 'should warn that an array was not used');
+});
+
+test("should warn if a non-array is used for classNamesBindings", function() {
+  raises(function() {
+    Ember.View.create({
+      classNameBindings: Ember.computed(function() {
+        return ['className'];
+      }).property()
+    });
+  }, /Only arrays are allowed/i, 'should warn that an array was not used');
+});

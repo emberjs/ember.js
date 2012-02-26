@@ -11,7 +11,7 @@ function isEnumerable(obj, keyName) {
   for(var key in obj) {
     if (obj.hasOwnProperty(key)) keys.push(key);
   }
-  return keys.indexOf(keyName)>=0;
+  return Ember.ArrayUtils.indexOf(keys, keyName)>=0;
 }
 
 module("Ember.platform.defineProperty()");

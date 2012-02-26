@@ -329,6 +329,29 @@ test("it sends exit events in the correct order when changing to a top-level sta
   equal(exitOrder[1], 'exitedOuter', "outer exit is called second");
 });
 
+test("it sends exit events in the correct order when changing to a state multiple times", function() {
+  var exitOrder = [],
+      stateManager = Ember.StateManager.create({
+        start: Ember.State.create({
+          outer: Ember.State.create({
+            inner: Ember.State.create({
+              exit: function() { exitOrder.push('exitedInner'); }
+            }),
+            exit: function() { exitOrder.push('exitedOuter'); }
+          })
+        })
+      });
+
+  stateManager.goToState('start.outer.inner');
+  stateManager.goToState('start');
+  stateManager.goToState('start.outer.inner');
+  exitOrder = []
+  stateManager.goToState('start');
+  equal(exitOrder.length, 2, "precond - it calls both exits");
+  equal(exitOrder[0], 'exitedInner', "inner exit is called first");
+  equal(exitOrder[1], 'exitedOuter', "outer exit is called second");
+});
+
 var passedContext, loadingEventCalled, loadedEventCalled, eventInChildCalled;
 loadingEventCalled = loadedEventCalled = eventInChildCalled = 0;
 
