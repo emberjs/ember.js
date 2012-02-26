@@ -1,89 +1,88 @@
 var get = Ember.get, set = Ember.set, getPath = Ember.getPath;
 
-module("DS.Model");
+var store, Person;
 
-var modelIsInState = function(model, stateName) {
-  var state = getPath(model, 'stateManager.currentState');
-  ok(state, "precond - there is a current state");
-  var expected = getPath(model, 'stateManager.states.rootState.' + stateName);
-  equal(state, expected, "the current state should be " + stateName);
-};
+module("DS.Model", {
+  setup: function() {
+    store = DS.Store.create();
 
-test("a new DS.Model is in the empty state", function() {
-  var model = DS.Model._create();
-  modelIsInState(model, 'empty');
-});
+    Person = DS.Model.extend({
+      name: DS.attr('string')
+    });
+  },
 
-test("a DS.Model can receive data, which puts it into the loaded state", function() {
-  var model = DS.Model._create();
-  model.send('loadingData');
-  model.send('setData', { scumbag: "tom" });
-  modelIsInState(model, 'loaded.saved');
+  teardown: function() {
+    store = null;
+    Person = null;
+  }
 });
 
 test("can have a property set on it", function() {
-  var model = DS.Model._create();
-  set(model, 'foo', 'bar');
+  var record = store.createRecord(Person);
+  set(record, 'name', 'bar');
 
-  equal(get(model, 'foo'), 'bar', "property was set on the model");
+  equal(get(record, 'name'), 'bar', "property was set on the model");
 });
 
 test("a record reports its unique id via the `id` property", function() {
-  var record = DS.Model._create();
-  record.send('setData', { id: 1 });
+  store.load(Person, { id: 1 });
+
+  var record = store.find(Person, 1);
   equal(get(record, 'id'), 1, "reports id as id by default");
 
-  record = DS.Model._create({
+  var PersonWithPrimaryKey = DS.Model.extend({
     primaryKey: 'foobar'
   });
-  record.send('setData', { id: 1, foobar: 2 });
+
+  store.load(PersonWithPrimaryKey, { id: 1, foobar: 2 });
+  record = store.find(PersonWithPrimaryKey, 2);
+
   equal(get(record, 'id'), 2, "reports id as foobar when primaryKey is set");
 });
 
 var converts = function(type, provided, expected) {
-  var model = DS.Model._create({
+  var testStore = DS.Store.create();
+
+  var Model = DS.Model.extend({
     name: DS.attr(type)
   });
 
-  model.send('loadingData');
-  model.send('setData', { name: provided });
-  deepEqual(get(model, 'name'), expected, type + " coerces " + provided + " to " + expected);
+  testStore.load(Model, { id: 1, name: provided });
+  testStore.load(Model, { id: 2 });
 
+  var record = testStore.find(Model, 1);
+  deepEqual(get(record, 'name'), expected, type + " coerces " + provided + " to " + expected);
 
-  model = DS.Model._create({
-    name: DS.attr(type)
-  });
-
-  model.send('loadingData');
-  model.send('setData', {});
-  set(model, 'name', provided);
-  deepEqual(get(model, 'name'), expected, type + " coerces " + provided + " to " + expected);
+  record = testStore.find(Model, 2);
+  set(record, 'name', provided);
+  deepEqual(get(record, 'name'), expected, type + " coerces " + provided + " to " + expected);
 };
 
 var convertsFromServer = function(type, provided, expected) {
-  var Person = DS.Model.extend({
+  var testStore = DS.Store.create();
+
+  var Model = DS.Model.extend({
     name: DS.attr(type)
   });
 
-  var model = Person._create();
+  testStore.load(Model, { id: 1, name: provided });
+  var record = testStore.find(Model, 1);
 
-  model.send('loadingData');
-  model.send('setData', { name: provided });
-  deepEqual(get(model, 'name'), expected, type + " coerces " + provided + " to " + expected);
+  deepEqual(get(record, 'name'), expected, type + " coerces " + provided + " to " + expected);
 };
 
 var convertsWhenSet = function(type, provided, expected) {
-  var Person = DS.Model.extend({
+  var testStore = DS.Store.create();
+
+  var Model = DS.Model.extend({
     name: DS.attr(type)
   });
 
-  var model = Person._create();
+  testStore.load(Model, { id: 2 });
+  var record = testStore.find(Model, 2);
 
-  model.send('loadingData');
-  model.send('setData', {});
-
-  set(model, 'name', provided);
-  deepEqual(model.toJSON().name, expected, type + " saves " + provided + " as " + expected);
+  set(record, 'name', provided);
+  deepEqual(record.toJSON().name, expected, type + " saves " + provided + " as " + expected);
 };
 
 test("a DS.Model can describe String attributes", function() {
@@ -153,33 +152,26 @@ test("retrieving properties should return the same value as they would if they w
 });
 
 test("it can specify which key to use when looking up properties on the hash", function() {
-  var model = DS.Model._create({
+  var Model = DS.Model.extend({
     name: DS.attr('string', { key: 'full_name' })
   });
 
-  model.send('loadingData');
-  model.send('setData', { name: "Steve", full_name: "Pete" });
+  store.load(Model, { id: 1, name: "Steve", full_name: "Pete" });
+  var record = store.find(Model, 1);
 
-  equal(get(model, 'name'), "Pete", "retrieves correct value");
+  equal(get(record, 'name'), "Pete", "retrieves correct value");
 });
 
 test("toJSON returns a hash containing the JSON representation of the record", function() {
-  var Person = DS.Model.extend({
+  var Model = DS.Model.extend({
     firstName: DS.attr('string'),
     lastName: DS.attr('string', { key: 'last_name' })
   });
 
-  var record = Person._create();
+  store.load(Model, { id: 1, firstName: "Steve", last_name: "Holt", other: "none" });
+  var record = store.find(Model, 1);
 
-  record.send('setData', {
-    firstName: "Steve",
-    last_name: "Holt",
-    other: "none"
-  });
-
-  var json = record.toJSON();
-
-  deepEqual(json, { firstName: "Steve", last_name: "Holt" }, "the data is extracted by attribute");
+  deepEqual(record.toJSON(), { id: 1, firstName: "Steve", last_name: "Holt" }, "the data is extracted by attribute");
 });
 
 var Person, store, array;
@@ -201,20 +193,19 @@ test("a DS.Model can update its attributes", function() {
 });
 
 test("it should modify the property of the hash specified by the `key` option", function() {
-  var model = DS.Model._create({
+  var store = DS.Store.create();
+  var Person = DS.Model.extend({
     name: DS.attr('string', { key: 'full_name' })
   });
 
-  model.send('loadingData');
-  model.send('setData', { name: "Steve", full_name: "Pete" });
+  store.load(Person, { id: 1, name: "Steve", full_name: "Peter" });
+  var record = store.find(Person, 1);
 
-  model.set('name', "Colin");
+  record.set('name', "Colin");
 
-  var data = get(model, 'savedData');
-  var changes = get(model, 'unsavedData');
-
-  equal(get(data, 'name'), "Steve", "did not modify name property");
-  equal(get(changes, 'full_name'), "Colin", "properly modified full_name property");
+  var data = record.toJSON();
+  equal(get(data, 'full_name'), "Colin", "properly modified full_name property");
+  strictEqual(get(data, 'name'), undefined, "does not include non-defined attributes");
 });
 
 test("when a DS.Model updates its attributes, its changes affect its filtered Array membership", function() {
@@ -279,6 +270,17 @@ test("when a DS.Model updates its attributes, its changes affect its filtered Ar
 });
 
 test("when a new record depends on the state of another record, it enters the pending state", function() {
+  var id = 0;
+
+  var store = DS.Store.create({
+    adapter: DS.Adapter.create({
+      createRecord: function(store, type, record) {
+        var hash = record.toJSON();
+        hash.id = ++id;
+        store.didCreateRecord(record, hash);
+      }
+    })
+  });
   var Comment = DS.Model.extend();
 
   var parentComment = store.createRecord(Comment);
@@ -288,9 +290,9 @@ test("when a new record depends on the state of another record, it enters the pe
 
   equal(get(childComment, 'isPending'), true, "Child comment is pending on the parent comment");
 
-  parentComment.send('willCommit');
-  parentComment.send('setData', { id: 'foo' });
-  parentComment.send('didCommit');
+  Ember.run(function() {
+    store.commit();
+  });
 
   equal(get(parentComment, 'isLoaded'), true, "precond - Parent comment is loaded");
   equal(get(parentComment, 'isDirty'), false, "precond - Parent comment is not dirty");
@@ -298,29 +300,50 @@ test("when a new record depends on the state of another record, it enters the pe
 });
 
 test("when an updated record depends on the state of another record, it enters the pending state", function() {
+  var id = 0,
+      parentComment;
+
+  var store = DS.Store.create({
+    adapter: DS.Adapter.create({
+      createRecord: function(store, type, record) {
+        var hash = record.toJSON();
+        hash.id = ++id;
+        store.didCreateRecord(record, hash);
+      },
+
+      updateRecord: function(store, type, record) {
+        equal(get(parentComment, 'id'), 2, "parent record has been assigned an id");
+        equal(record, childComment, "updated record is the child");
+        store.didUpdateRecord(record);
+      }
+    })
+  });
+
   var Comment = DS.Model.extend({
     title: DS.attr('string')
   });
 
-  var parentComment = store.createRecord(Comment);
   var childComment = store.createRecord(Comment);
 
-  childComment.send('willCommit');
-  childComment.send('setData', {});
-  childComment.send('didCommit');
+  Ember.run(function() {
+    store.commit();
+  });
+
+  parentComment = store.createRecord(Comment);
 
   childComment.set('title', "foo");
 
   equal(childComment.get('isDirty'), true, "precond - record is marked as dirty");
   equal(childComment.get('isNew'), false, "precond - record is not new");
+  equal(parentComment.get('isNew'), true, "precond - parent record is new");
 
   childComment.waitingOn(parentComment);
 
   equal(get(childComment, 'isPending'), true, "Child comment is pending on the parent comment");
 
-  parentComment.send('willCommit');
-  parentComment.send('setData', { id: 'foo' });
-  parentComment.send('didCommit');
+  Ember.run(function() {
+    store.commit();
+  });
 
   equal(get(parentComment, 'isLoaded'), true, "precond - Parent comment is loaded");
   equal(get(parentComment, 'isDirty'), false, "precond - Parent comment is not dirty");
@@ -328,28 +351,45 @@ test("when an updated record depends on the state of another record, it enters t
 });
 
 test("when a loaded record depends on the state of another record, it enters the updated pending state", function() {
+  var id = 0,
+      parentComment, childComment;
+
+  var store = DS.Store.create({
+    adapter: DS.Adapter.create({
+      createRecord: function(store, type, record) {
+        var hash = record.toJSON();
+        hash.id = ++id;
+        store.didCreateRecord(record, hash);
+      },
+
+      updateRecord: function(store, type, record) {
+        store.didUpdateRecord(record);
+      }
+    })
+  });
+
   var Comment = DS.Model.extend({
     title: DS.attr('string')
   });
 
-  var parentComment = store.createRecord(Comment);
-  var childComment = store.createRecord(Comment);
+  childComment = store.createRecord(Comment);
 
-  childComment.send('willCommit');
-  childComment.send('setData', {});
-  childComment.send('didCommit');
+  Ember.run(function() {
+    store.commit();
+  });
 
   equal(childComment.get('isDirty'), false, "precond - record is not marked as dirty");
   equal(childComment.get('isNew'), false, "precond - record is not new");
 
+  parentComment = store.createRecord(Comment);
   childComment.waitingOn(parentComment);
 
   equal(get(childComment, 'isDirty'), true, "child comment is marked as dirty once a dependency has been created");
   equal(get(childComment, 'isPending'), true, "Child comment is pending on the parent comment");
 
-  parentComment.send('willCommit');
-  parentComment.send('setData', { id: 'foo' });
-  parentComment.send('didCommit');
+  Ember.run(function() {
+    store.commit();
+  });
 
   equal(get(parentComment, 'isLoaded'), true, "precond - Parent comment is loaded");
   equal(get(parentComment, 'isDirty'), false, "precond - Parent comment is not dirty");
@@ -357,24 +397,41 @@ test("when a loaded record depends on the state of another record, it enters the
 });
 
 test("when a record depends on another record, we can delete the first record and finish loading the second record", function() {
+  var id = 0,
+      parentComment, childComment;
+
+  var store = DS.Store.create({
+    adapter: DS.Adapter.create({
+      createRecord: function(store, type, record) {
+        var hash = record.toJSON();
+        hash.id = ++id;
+        store.didCreateRecord(record, hash);
+      },
+
+      updateRecord: function(store, type, record) {
+        store.didUpdateRecord(record);
+      }
+    })
+  });
+
   var Comment = DS.Model.extend({
     title: DS.attr('string')
   });
 
-  var parentComment = store.createRecord(Comment);
-  var childComment = store.createRecord(Comment);
+  parentComment = store.createRecord(Comment);
+  childComment = store.createRecord(Comment);
 
   childComment.waitingOn(parentComment);
   childComment.deleteRecord();
 
   equal(get(childComment, 'isDeleted'), true, "child record is marked as deleted");
+  equal(get(childComment, 'isDirty'), false, "child record should not be dirty since it was deleted and never saved");
   equal(get(parentComment, 'isDirty'), true, "parent comment has not yet been saved");
 
-  parentComment.send('willCommit');
-  parentComment.send('setData', { id: 'foo' });
-  parentComment.send('didCommit');
+  Ember.run(function() {
+    store.commit();
+  });
 
   equal(get(parentComment, 'isDirty'), false, "parent comment has been saved");
-
   ok(true, "no exception was thrown");
 });

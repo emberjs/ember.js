@@ -161,11 +161,13 @@ test("DS.Store has a load method to load in a new record", function() {
   });
 
   var currentStore = DS.Store.create({ adapter: adapter });
-  var currentType = DS.Model.extend();
+  var currentType = DS.Model.extend({
+    name: DS.attr('string')
+  });
 
   var object = currentStore.find(currentType, 1);
 
-  equal(getPath(object, 'savedData.name'), "Scumbag Dale", "the data hash was inserted");
+  equal(object.toJSON().name, "Scumbag Dale", "the data hash was inserted");
 });
 
 var array = [{ id: 1, name: "Scumbag Dale" }, { id: 2, name: "Scumbag Katz" }, { id: 3, name: "Scumbag Bryn" }];
@@ -178,14 +180,16 @@ test("DS.Store has a load method to load in an Array of records", function() {
   });
 
   var currentStore = DS.Store.create({ adapter: adapter });
-  var currentType = DS.Model.extend();
+  var currentType = DS.Model.extend({
+    name: DS.attr('string')
+  });
 
   var objects = currentStore.findMany(currentType, [1,2,3]);
 
   for (var i=0, l=get(objects, 'length'); i<l; i++) {
     var object = objects.objectAt(i), hash = array[i];
 
-    equal(get(object, 'savedData'), hash);
+    deepEqual(object.toJSON(), hash);
   }
 });
 
@@ -221,7 +225,9 @@ test("DS.Store passes only needed guids to findMany", function() {
   });
 
   var currentStore = DS.Store.create({ adapter: adapter });
-  var currentType = DS.Model.extend();
+  var currentType = DS.Model.extend({
+    name: DS.attr('string')
+  });
 
   currentStore.loadMany(currentType, [1,2,3], array);
 
@@ -234,7 +240,7 @@ test("DS.Store passes only needed guids to findMany", function() {
     object = objects.objectAt(i);
     hash = array[i];
 
-    equal(get(object, 'savedData'), hash);
+    deepEqual(object.toJSON(), hash);
   }
 
   for (i=3; i<6; i++) {
