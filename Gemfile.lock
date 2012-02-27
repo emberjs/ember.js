@@ -1,8 +1,8 @@
 GIT
   remote: https://github.com/livingsocial/rake-pipeline.git
-  revision: 56bbc5d9cf7ce1b69d29d3d6af7282603dcdebba
+  revision: f71caeb1406dafd6af5ab8453db8c5ac53947c92
   specs:
-    rake-pipeline (0.5.0)
+    rake-pipeline (0.6.0)
       rake (~> 0.9.0)
       thor
 
@@ -22,11 +22,11 @@ GIT
 
 GIT
   remote: https://github.com/wycats/rake-pipeline-web-filters.git
-  revision: e7273a0c5df7181c9cc0bca31cb3dec7fa39fcc8
+  revision: fe752a8cfdbb318b746fd76fd3c10dd8b8f29891
   specs:
-    rake-pipeline-web-filters (0.5.0)
+    rake-pipeline-web-filters (0.6.0)
       rack
-      rake-pipeline
+      rake-pipeline (~> 0.6)
 
 GEM
   remote: http://rubygems.org/
@@ -40,16 +40,16 @@ GEM
       confparser
       net-github-upload (>= 0.0.6)
     httpclient (2.2.4)
-    json (1.6.4)
+    json (1.6.5)
     libxml-ruby (2.2.2)
     multi_json (1.0.4)
-    net-github-upload (0.0.7)
+    net-github-upload (0.0.8)
       faster_xml_simple
       httpclient
       json
       nokogiri (>= 1.4.0)
     nokogiri (1.5.0)
-    rack (1.4.0)
+    rack (1.4.1)
     rake (0.9.2.2)
     thor (0.14.6)
     uglifier (1.0.4)

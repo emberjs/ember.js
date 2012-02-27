@@ -2,8 +2,6 @@ var get = Ember.get, set = Ember.set, getPath = Ember.getPath, fmt = Ember.Strin
 
 require('ember-states/state');
 
-Ember.LOG_STATE_TRANSITIONS = false;
-
 /**
   @class
 */
@@ -20,7 +18,7 @@ Ember.StateManager = Ember.State.extend(
 
     var initialState = get(this, 'initialState');
 
-    if (!initialState && get(this, 'start')) {
+    if (!initialState && getPath(this, 'states.start')) {
       initialState = 'start';
     }
 
@@ -30,6 +28,15 @@ Ember.StateManager = Ember.State.extend(
   },
 
   currentState: null,
+
+  /**
+    @property
+
+    If set to true, `errorOnUnhandledEvents` will cause an exception to be
+    raised if you attempt to send an event to a state manager that is not
+    handled by the current state or any of its parent states.
+  */
+  errorOnUnhandledEvent: true,
 
   /**
     @property
@@ -59,16 +66,20 @@ Ember.StateManager = Ember.State.extend(
   },
 
   sendRecursively: function(event, currentState, context) {
-    var log = Ember.LOG_STATE_TRANSITIONS;
+    var log = this.enableLogging;
 
     var action = currentState[event];
 
     if (action) {
-      if (log) { console.log(fmt("STATEMANAGER: Sending event '%@' to state %@.", [event, currentState.name])); }
+      if (log) { console.log(fmt("STATEMANAGER: Sending event '%@' to state %@.", [event, get(currentState, 'path')])); }
       action.call(currentState, this, context);
     } else {
       var parentState = get(currentState, 'parentState');
-      if (parentState) { this.sendRecursively(event, parentState, context); }
+      if (parentState) {
+        this.sendRecursively(event, parentState, context);
+      } else if (get(this, 'errorOnUnhandledEvent')) {
+        throw new Ember.Error(this.toString() + " could not respond to event " + event + " in state " + getPath(this, 'currentState.path') + ".");
+      }
     }
   },
 
@@ -119,7 +130,8 @@ Ember.StateManager = Ember.State.extend(
         newState = this.findStatesByRoute(state, name);
       }
 
-      enterStates = newState.slice(0), exitStates = exitStates.slice(0);
+      enterStates = newState.slice(0);
+      exitStates = exitStates.slice(0);
 
       if (enterStates.length > 0) {
         state = enterStates[enterStates.length - 1];
@@ -175,16 +187,16 @@ Ember.StateManager = Ember.State.extend(
   },
 
   enterState: function(exitStates, enterStates, state) {
-    var log = Ember.LOG_STATE_TRANSITIONS;
+    var log = this.enableLogging;
 
     var stateManager = this;
 
-    exitStates.reverse();
+    exitStates = exitStates.slice(0).reverse();
     this.asyncEach(exitStates, function(state, transition) {
       state.exit(stateManager, transition);
     }, function() {
       this.asyncEach(enterStates, function(state, transition) {
-        if (log) { console.log("STATEMANAGER: Entering " + state.name); }
+        if (log) { console.log("STATEMANAGER: Entering " + get(state, 'path')); }
         state.enter(stateManager, transition);
       }, function() {
         var startState = state, enteredState, initialState;
@@ -196,10 +208,10 @@ Ember.StateManager = Ember.State.extend(
         }
 
         // right now, start states cannot be entered asynchronously
-        while (startState = get(startState, initialState)) {
+        while (startState = get(get(startState, 'states'), initialState)) {
           enteredState = startState;
 
-          if (log) { console.log("STATEMANAGER: Entering " + startState.name); }
+          if (log) { console.log("STATEMANAGER: Entering " + get(startState, 'path')); }
           startState.enter(stateManager);
 
           initialState = get(startState, 'initialState');

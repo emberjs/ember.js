@@ -5,32 +5,33 @@
 // ==========================================================================
 
 var set = Ember.set, get = Ember.get, getPath = Ember.getPath;
+var indexOf = Ember.ArrayUtils.indexOf;
 
 // .......................................................
 // removeChild()
 //
 
-var parent, child;
+var parentView, child;
 module("Ember.View#removeChild", {
   setup: function() {
-    parent = Ember.ContainerView.create({ childViews: [Ember.View] });
-    child = get(parent, 'childViews').objectAt(0);
+    parentView = Ember.ContainerView.create({ childViews: [Ember.View] });
+    child = get(parentView, 'childViews').objectAt(0);
   }
 });
 
 test("returns receiver", function() {
-  equals(parent.removeChild(child), parent, 'receiver');
+  equal(parentView.removeChild(child), parentView, 'receiver');
 });
 
 test("removes child from parent.childViews array", function() {
-  ok(get(parent, 'childViews').indexOf(child)>=0, 'precond - has child in childViews array before remove');
-  parent.removeChild(child);
-  ok(get(parent, 'childViews').indexOf(child)<0, 'removed child');
+  ok(indexOf(get(parentView, 'childViews'), child)>=0, 'precond - has child in childViews array before remove');
+  parentView.removeChild(child);
+  ok(indexOf(get(parentView, 'childViews'), child)<0, 'removed child');
 });
 
 test("sets parentView property to null", function() {
   ok(get(child, 'parentView'), 'precond - has parentView');
-  parent.removeChild(child);
+  parentView.removeChild(child);
   ok(!get(child, 'parentView'), 'parentView is now null');
 });
 
@@ -47,14 +48,14 @@ module("Ember.View#removeAllChildren", {
 });
 
 test("removes all child views", function() {
-  equals(getPath(view, 'childViews.length'), 3, 'precond - has child views');
+  equal(getPath(view, 'childViews.length'), 3, 'precond - has child views');
 
   view.removeAllChildren();
-  equals(getPath(view, 'childViews.length'), 0, 'removed all children');
+  equal(getPath(view, 'childViews.length'), 0, 'removed all children');
 });
 
 test("returns receiver", function() {
-  equals(view.removeAllChildren(), view, 'receiver');
+  equal(view.removeAllChildren(), view, 'receiver');
 });
 
 // .......................................................
@@ -63,24 +64,24 @@ test("returns receiver", function() {
 module("Ember.View#removeFromParent");
 
 test("removes view from parent view", function() {
-  var parent = Ember.ContainerView.create({ childViews: [Ember.View] });
-  var child = getPath(parent, 'childViews').objectAt(0);
+  var parentView = Ember.ContainerView.create({ childViews: [Ember.View] });
+  var child = getPath(parentView, 'childViews').objectAt(0);
   ok(get(child, 'parentView'), 'precond - has parentView');
 
-  parent.createElement();
+  parentView.createElement();
 
-  ok(parent.$('div').length, "precond - has a child DOM element");
+  ok(parentView.$('div').length, "precond - has a child DOM element");
 
   child.removeFromParent();
   ok(!get(child, 'parentView'), 'no longer has parentView');
-  ok(get(parent, 'childViews').indexOf(child)<0, 'no longer in parent childViews');
-  equals(parent.$('div').length, 0, "removes DOM element from parent");
+  ok(indexOf(get(parentView, 'childViews'), child)<0, 'no longer in parent childViews');
+  equal(parentView.$('div').length, 0, "removes DOM element from parent");
 });
 
 test("returns receiver", function() {
-  var parent = Ember.ContainerView.create({ childViews: [Ember.View] });
-  var child = getPath(parent, 'childViews').objectAt(0);
-  equals(child.removeFromParent(), child, 'receiver');
+  var parentView = Ember.ContainerView.create({ childViews: [Ember.View] });
+  var child = getPath(parentView, 'childViews').objectAt(0);
+  equal(child.removeFromParent(), child, 'receiver');
 });
 
 test("does nothing if not in parentView", function() {

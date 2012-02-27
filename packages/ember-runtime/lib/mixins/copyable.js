@@ -9,7 +9,7 @@
 require('ember-runtime/system/string');
 
 
-  
+
 var get = Ember.get, set = Ember.set;
 
 /**

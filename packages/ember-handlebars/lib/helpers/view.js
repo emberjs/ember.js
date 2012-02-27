@@ -9,6 +9,7 @@
 require("ember-handlebars");
 
 var get = Ember.get, set = Ember.set;
+var indexOf = Ember.ArrayUtils.indexOf;
 var PARENT_VIEW_PATH = /^parentView\./;
 
 /** @private */
@@ -35,8 +36,20 @@ Ember.Handlebars.ViewHelper = Ember.Object.create({
       dup = true;
     }
 
+    if (options.attributeBindings) {
+      ember_assert("Setting 'attributeBindings' via Handlebars is not allowed. Please subclass Ember.View and set it there instead.");
+      extensions.attributeBindings = null;
+      dup = true;
+    }
+
+    if (options.classNameBindings) {
+      ember_assert("Setting 'classNameBindings' via Handlebars is not allowed. Consider setting 'classNames' instead.");
+      extensions.classNameBindings = null;
+      dup = true;
+    }
+
     if (dup) {
-      options = jQuery.extend({}, options);
+      options = Ember.$.extend({}, options);
       delete options.id;
       delete options['class'];
       delete options.classBinding;
@@ -92,7 +105,7 @@ Ember.Handlebars.ViewHelper = Ember.Object.create({
     var viewOptions = {};
 
     if (fn) {
-      ember_assert("You cannot provide a template block if you also specified a templateName", !get(viewOptions, 'templateName') && !newView.PrototypeMixin.keys().indexOf('templateName') >= 0);
+      ember_assert("You cannot provide a template block if you also specified a templateName", !(get(viewOptions, 'templateName')) && (indexOf(newView.PrototypeMixin.keys(), 'templateName') >= 0));
       viewOptions.template = fn;
     }
 

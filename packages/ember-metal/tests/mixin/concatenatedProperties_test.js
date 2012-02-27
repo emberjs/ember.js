@@ -13,13 +13,13 @@ test('defining concatenated properties should concat future version', function()
     concatenatedProperties: ['foo'],
     foo: ['a', 'b', 'c']
   });
-  
+
   var MixinB = Ember.Mixin.create({
     foo: ['d', 'e', 'f']
   });
-  
+
   var obj = Ember.mixin({}, MixinA, MixinB);
-  same(Ember.get(obj, 'foo'), ['a', 'b', 'c', 'd', 'e', 'f']);
+  deepEqual(Ember.get(obj, 'foo'), ['a', 'b', 'c', 'd', 'e', 'f']);
 });
 
 test('concatenatedProperties should be concatenated', function() {
@@ -28,21 +28,21 @@ test('concatenatedProperties should be concatenated', function() {
     concatenatedProperties: ['foo'],
     foo: ['a', 'b', 'c']
   });
-  
+
   var MixinB = Ember.Mixin.create({
     concatenatedProperties: 'bar',
     foo: ['d', 'e', 'f'],
     bar: [1,2,3]
   });
-  
+
   var MixinC = Ember.Mixin.create({
     bar: [4,5,6]
   });
-  
+
   var obj = Ember.mixin({}, MixinA, MixinB, MixinC);
-  same(Ember.get(obj, 'concatenatedProperties'), ['foo', 'bar'], 'get concatenatedProperties');
-  same(Ember.get(obj, 'foo'), ['a', 'b', 'c', 'd', 'e', 'f'], 'get foo');
-  same(Ember.get(obj, 'bar'), [1,2,3,4,5,6], 'get bar');
+  deepEqual(Ember.get(obj, 'concatenatedProperties'), ['foo', 'bar'], 'get concatenatedProperties');
+  deepEqual(Ember.get(obj, 'foo'), ['a', 'b', 'c', 'd', 'e', 'f'], 'get foo');
+  deepEqual(Ember.get(obj, 'bar'), [1,2,3,4,5,6], 'get bar');
 });
 
 test('adding a prop that is not an array should make array', function() {
@@ -57,7 +57,7 @@ test('adding a prop that is not an array should make array', function() {
   });
 
   var obj = Ember.mixin({}, MixinA, MixinB);
-  same(Ember.get(obj, 'foo'), [1,2,3,4]);
+  deepEqual(Ember.get(obj, 'foo'), [1,2,3,4]);
 });
 
 test('adding a prop that is not an array should make array', function() {
@@ -68,5 +68,5 @@ test('adding a prop that is not an array should make array', function() {
   });
 
   var obj = Ember.mixin({}, MixinA);
-  same(Ember.get(obj, 'foo'), ['bar']);
+  deepEqual(Ember.get(obj, 'foo'), ['bar']);
 });

@@ -30,7 +30,7 @@ var get = Ember.get, set = Ember.set;
   entire page, and are not embedding any third-party Ember applications
   in your page, use the default document root for your application.
 
-  You only need to specify the root if your page contains multiple instances 
+  You only need to specify the root if your page contains multiple instances
   of Ember.Application.
 
   @since Ember 2.0

@@ -6,6 +6,8 @@
 // ==========================================================================
 
 var get = Ember.get, set = Ember.set;
+var forEach = Ember.ArrayUtils.forEach;
+var indexOf = Ember.ArrayUtils.indexOf;
 
 /**
   @class
@@ -152,7 +154,7 @@ Ember._RenderBuffer = Ember.Object.extend(
     var attributes = get(this, 'elementAttributes');
 
     if (arguments.length === 1) {
-      return attributes[name]
+      return attributes[name];
     } else {
       attributes[name] = value;
     }
@@ -228,7 +230,7 @@ Ember._RenderBuffer = Ember.Object.extend(
 
     var childBuffers = get(parent, 'childBuffers');
 
-    var index = childBuffers.indexOf(this);
+    var index = indexOf(childBuffers, this);
 
     if (newBuffer) {
       childBuffers.splice(index, 1, newBuffer);
@@ -285,7 +287,7 @@ Ember._RenderBuffer = Ember.Object.extend(
 
     return this.newBuffer(tagName, parentBuffer, function(buffer) {
       var siblings = get(parentBuffer, 'childBuffers');
-      var index = siblings.indexOf(this);
+      var index = indexOf(siblings, this);
       siblings.splice(index + 1, 0, buffer);
     });
   },
@@ -324,15 +326,15 @@ Ember._RenderBuffer = Ember.Object.extend(
         style = get(this, 'elementStyle'),
         tag = get(this, 'elementTag'),
         content = '',
-        styleBuffer = [], prop;
+        styleBuffer = [], prop, openTag;
 
     if (tag) {
-      var openTag = ["<" + tag];
+      openTag = ["<" + tag];
 
       if (id) { openTag.push('id="' + id + '"'); }
       if (classes.length) { openTag.push('class="' + classes.join(" ") + '"'); }
 
-      if (!jQuery.isEmptyObject(style)) {
+      if (!Ember.$.isEmptyObject(style)) {
         for (prop in style) {
           if (style.hasOwnProperty(prop)) {
             styleBuffer.push(prop + ':' + style[prop] + ';');
@@ -353,7 +355,7 @@ Ember._RenderBuffer = Ember.Object.extend(
 
     var childBuffers = get(this, 'childBuffers');
 
-    childBuffers.forEach(function(buffer) {
+    forEach(childBuffers, function(buffer) {
       var stringy = typeof buffer === 'string';
       content += (stringy ? buffer : buffer.string());
     });

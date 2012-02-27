@@ -10,14 +10,14 @@ module("Ember.none");
 test("Ember.none", function() {
   var string = "string", fn = function() {};
 
-  equals(true,  Ember.none(null),      "for null");
-  equals(true,  Ember.none(undefined), "for undefined");
-  equals(false, Ember.none(""),        "for an empty String");
-  equals(false, Ember.none(true),      "for true");
-  equals(false, Ember.none(false),     "for false");
-  equals(false, Ember.none(string),    "for a String");
-  equals(false, Ember.none(fn),        "for a Function");
-  equals(false, Ember.none(0),         "for 0");
-  equals(false, Ember.none([]),        "for an empty Array");
-  equals(false, Ember.none({}),        "for an empty Object");
+  equal(true,  Ember.none(null),      "for null");
+  equal(true,  Ember.none(undefined), "for undefined");
+  equal(false, Ember.none(""),        "for an empty String");
+  equal(false, Ember.none(true),      "for true");
+  equal(false, Ember.none(false),     "for false");
+  equal(false, Ember.none(string),    "for a String");
+  equal(false, Ember.none(fn),        "for a Function");
+  equal(false, Ember.none(0),         "for 0");
+  equal(false, Ember.none([]),        "for an empty Array");
+  equal(false, Ember.none({}),        "for an empty Object");
 });

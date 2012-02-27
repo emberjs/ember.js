@@ -9,7 +9,7 @@
   NOTE: This test is adapted from the 1.x series of unit tests.  The tests
   are the same except for places where we intend to break the API we instead
   validate that we warn the developer appropriately.
-  
+
   CHANGES FROM 1.6:
 
   * changed obj.set() and obj.get() to Ember.set() and Ember.get()
@@ -39,20 +39,20 @@ test("chained observers on enumerable properties are triggered when the observed
 
   observerFiredCount = 0;
   Ember.run(function() { get(momma, 'children').setEach('name', 'Juan'); });
-  equals(observerFiredCount, 3, "observer fired after changing child names");
+  equal(observerFiredCount, 3, "observer fired after changing child names");
 
   observerFiredCount = 0;
   Ember.run(function() { get(momma, 'children').pushObject(child4); });
-  equals(observerFiredCount, 1, "observer fired after adding a new item");
+  equal(observerFiredCount, 1, "observer fired after adding a new item");
 
   observerFiredCount = 0;
   Ember.run(function() { set(child4, 'name', "Herbert"); });
-  equals(observerFiredCount, 1, "observer fired after changing property on new object");
+  equal(observerFiredCount, 1, "observer fired after changing property on new object");
 
   set(momma, 'children', []);
 
   observerFiredCount = 0;
   Ember.run(function() { set(child1, 'name', "Hanna"); });
-  equals(observerFiredCount, 0, "observer did not fire after removing changing property on a removed object");
+  equal(observerFiredCount, 0, "observer did not fire after removing changing property on a removed object");
 });
 

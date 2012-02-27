@@ -24,7 +24,7 @@ require('ember-metal/run_loop'); // Ember.run.schedule
   can also enable this from the console or temporarily.
 
   @type Boolean
-  @default NO
+  @default false
 */
 Ember.LOG_BINDINGS = false || !!Ember.ENV.LOG_BINDINGS;
 
@@ -148,21 +148,19 @@ function getPathWithGlobals(obj, path) {
 }
 
 /** @private */
-function getTransformedFromValue(obj, binding) {
-  var operation = binding._operation,
-      fromValue;
+function getFromValue(obj, binding) {
+  var operation = binding._operation;
+
   if (operation) {
-    fromValue = operation(obj, binding._from, binding._operand);
+    return operation(obj, binding._from, binding._operand);
   } else {
-    fromValue = getPathWithGlobals(obj, binding._from);
+    return getPathWithGlobals(obj, binding._from);
   }
-  return getTransformedValue(binding, fromValue, obj, 'to');
 }
 
 /** @private */
-function getTransformedToValue(obj, binding) {
-  var toValue = getPath(obj, binding._to);
-  return getTransformedValue(binding, toValue, obj, 'from');
+function getToValue(obj, binding) {
+  return getPath(obj, binding._to);
 }
 
 /** @private */
@@ -185,20 +183,23 @@ var K = function() {};
 /** @private */
 var Binding = function(toPath, fromPath) {
   var self;
-  
+
   if (this instanceof Binding) {
     self = this;
   } else {
     self = new K();
   }
-  
+
   /** @private */
   self._direction = 'fwd';
 
   /** @private */
   self._from = fromPath;
   self._to   = toPath;
-  
+
+  /** @private */
+  self._cache = {};
+
   return self;
 };
 
@@ -252,7 +253,7 @@ Binding.prototype = /** @scope Ember.Binding.prototype */ {
 
     @param {Boolean} flag
       (Optional) passing nothing here will make the binding oneWay.  You can
-      instead pass NO to disable oneWay, making the binding two way again.
+      instead pass false to disable oneWay, making the binding two way again.
 
     @returns {Ember.Binding} receiver
   */
@@ -344,8 +345,8 @@ Binding.prototype = /** @scope Ember.Binding.prototype */ {
 
   /**
     Adds a transform to convert the value to a bool value. If the value is
-    an array it will return YES if array is not empty. If the value is a
-    string it will return YES if the string is not empty.
+    an array it will return true if array is not empty. If the value is a
+    string it will return true if the string is not empty.
 
     @returns {Ember.Binding} this
   */
@@ -362,10 +363,9 @@ Binding.prototype = /** @scope Ember.Binding.prototype */ {
     @returns {Ember.Binding} this
   */
   notEmpty: function(placeholder) {
-    // Display warning for users using the SproutCore 1.x-style API.
-    ember_assert("notEmpty should only take a placeholder as a parameter. You no longer need to pass null as the first parameter.", arguments.length < 2);
-
-    if (placeholder == undefined) { placeholder = Ember.EMPTY_PLACEHOLDER; }
+    if (placeholder === null || placeholder === undefined) {
+      placeholder = Ember.EMPTY_PLACEHOLDER;
+    }
 
     this.transform({
       to: function(val) { return empty(val) ? placeholder : val; }
@@ -383,10 +383,12 @@ Binding.prototype = /** @scope Ember.Binding.prototype */ {
     @returns {Ember.Binding} this
   */
   notNull: function(placeholder) {
-    if (placeholder == undefined) { placeholder = Ember.EMPTY_PLACEHOLDER; }
+    if (placeholder === null || placeholder === undefined) {
+      placeholder = Ember.EMPTY_PLACEHOLDER;
+    }
 
     this.transform({
-      to: function(val) { return val == null ? placeholder : val; }
+      to: function(val) { return (val === null || val === undefined) ? placeholder : val; }
     });
 
     return this;
@@ -404,12 +406,12 @@ Binding.prototype = /** @scope Ember.Binding.prototype */ {
   },
 
   /**
-    Adds a transform that will return YES if the value is null or undefined, NO otherwise.
+    Adds a transform that will return true if the value is null or undefined, false otherwise.
 
     @returns {Ember.Binding} this
   */
   isNull: function() {
-    this.transform(function(val) { return val == null; });
+    this.transform(function(val) { return val === null || val === undefined; });
     return this;
   },
 
@@ -530,13 +532,43 @@ Binding.prototype = /** @scope Ember.Binding.prototype */ {
     // synchronizing from
     var guid = guidFor(obj), direction = this[guid];
 
-    var fromPath = this._from, toPath = this._to;
+    var fromPath = this._from, toPath = this._to, lastSet;
 
     delete this[guid];
 
-    // apply any operations to the object, then apply transforms
-    var fromValue = getTransformedFromValue(obj, this);
-    var toValue   = getTransformedToValue(obj, this);
+    if (direction === 'fwd') {
+      lastSet = this._cache.back;
+    } else if (direction === 'back') {
+      lastSet = this._cache.fwd;
+    }
+
+    var fromValue, toValue;
+
+    // There's a bit of duplicate logic here, but the order is important.
+    //
+    // We want to avoid ping-pong bindings. To do this, we store off the
+    // guid of the item we are setting. Later, we avoid synchronizing
+    // bindings in the other direction if the raw value we are copying
+    // is the same as the guid of the last thing we set.
+    //
+    // Use guids here to avoid unnecessarily holding hard references
+    // to objects.
+    if (direction === 'fwd') {
+      fromValue = getFromValue(obj, this);
+      if (this._cache.back === guidFor(fromValue)) { return; }
+      this._cache.fwd = guidFor(fromValue);
+
+      toValue = getToValue(obj, this);
+    } else if (direction === 'back') {
+      toValue = getToValue(obj, this);
+      if (this._cache.fwd === guidFor(toValue)) { return; }
+      this._cache.back = guidFor(toValue);
+
+      fromValue = getFromValue(obj, this);
+    }
+
+    fromValue = getTransformedValue(this, fromValue, obj, 'to');
+    toValue = getTransformedValue(this, toValue, obj, 'from');
 
     if (toValue === fromValue) { return; }
 

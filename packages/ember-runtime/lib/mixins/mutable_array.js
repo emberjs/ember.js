@@ -10,25 +10,25 @@ require('ember-runtime/mixins/mutable_enumerable');
 
 // ..........................................................
 // CONSTANTS
-// 
+//
 
 var OUT_OF_RANGE_EXCEPTION = "Index out of range" ;
 var EMPTY = [];
 
 // ..........................................................
 // HELPERS
-// 
+//
 
-var get = Ember.get, set = Ember.set;
+var get = Ember.get, set = Ember.set, forEach = Ember.ArrayUtils.forEach;
 
 /**
   @class
 
   This mixin defines the API for modifying array-like objects.  These methods
   can be applied only to a collection that keeps its items in an ordered set.
-  
+
   Note that an Array can change even if it does not implement this mixin.
-  For example, a SparyArray may not be directly modified but if its 
+  For example, a SparyArray may not be directly modified but if its
   underlying enumerable changes, it will change also.
 
   @extends Ember.Mixin
@@ -46,7 +46,7 @@ Ember.MutableArray = Ember.Mixin.create(Ember.Array, Ember.MutableEnumerable,
     array.  You should also call this.enumerableContentDidChange() ;
 
     @param {Number} idx
-      Starting index in the array to replace.  If idx >= length, then append 
+      Starting index in the array to replace.  If idx >= length, then append
       to the end of the array.
 
     @param {Number} amt
@@ -54,7 +54,7 @@ Ember.MutableArray = Ember.Mixin.create(Ember.Array, Ember.MutableEnumerable,
       *idx*.
 
     @param {Array} objects
-      An array of zero or more objects that should be inserted into the array 
+      An array of zero or more objects that should be inserted into the array
       at *idx*
   */
   replace: Ember.required(),
@@ -78,10 +78,9 @@ Ember.MutableArray = Ember.Mixin.create(Ember.Array, Ember.MutableEnumerable,
 
   /**
     Remove an object at the specified index using the replace() primitive
-    method.  You can pass either a single index, a start and a length or an
-    index set.
+    method.  You can pass either a single index, or a start and a length.
 
-    If you pass a single index or a start and length that is beyond the
+    If you pass a start and length that is beyond the
     length this method will throw an Ember.OUT_OF_RANGE_EXCEPTION
 
         var colors = ["red", "green", "blue", "yellow", "orange"];
@@ -107,15 +106,6 @@ Ember.MutableArray = Ember.Mixin.create(Ember.Array, Ember.MutableEnumerable,
       if (len === undefined) len = 1;
       this.replace(start, len, EMPTY);
     }
-
-    // TODO: Reintroduce Ember.IndexSet support
-    // this.beginPropertyChanges();
-    // start.forEachRange(function(start, length) {
-    //   start -= delta ;
-    //   delta += length ;
-    //   this.replace(start, length, empty); // remove!
-    // }, this);
-    // this.endPropertyChanges();
 
     return this ;
   },
@@ -211,14 +201,14 @@ Ember.MutableArray = Ember.Mixin.create(Ember.Array, Ember.MutableEnumerable,
   */
   unshiftObjects: function(objects) {
     this.beginPropertyChanges();
-    objects.forEach(function(obj) { this.unshiftObject(obj); }, this);
+    forEach(objects, function(obj) { this.unshiftObject(obj); }, this);
     this.endPropertyChanges();
     return this;
   },
-  
+
   // ..........................................................
   // IMPLEMENT Ember.MutableEnumerable
-  // 
+  //
 
   /** @private (nodoc) */
   removeObject: function(obj) {
@@ -229,12 +219,12 @@ Ember.MutableArray = Ember.Mixin.create(Ember.Array, Ember.MutableEnumerable,
     }
     return this ;
   },
-  
+
   /** @private (nodoc) */
   addObject: function(obj) {
     if (!this.contains(obj)) this.pushObject(obj);
     return this ;
   }
-    
+
 });
 

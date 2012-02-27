@@ -3,7 +3,6 @@
 // Copyright: ©2006-2011 Apple Inc. and contributors.
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
-/*global module test equals context ok same */
 
 var set = Ember.set, get = Ember.get;
 
@@ -18,7 +17,7 @@ test("RenderBuffers combine strings", function() {
   buffer.push('a');
   buffer.push('b');
 
-  equals("<div>ab</div>", buffer.string(), "Multiple pushes should concatenate");
+  equal("<div>ab</div>", buffer.string(), "Multiple pushes should concatenate");
 });
 
 test("It is possible to remove a RenderBuffer", function() {
@@ -36,7 +35,7 @@ test("It is possible to remove a RenderBuffer", function() {
 
   second.remove();
 
-  equals(buffer.string(), '<div>a<span>wotwot</span>b</div>', 'Removed elements are gone');
+  equal(buffer.string(), '<div>a<span>wotwot</span>b</div>', 'Removed elements are gone');
 });
 
 test("It is possible to replace a RenderBuffer", function() {
@@ -57,7 +56,7 @@ test("It is possible to replace a RenderBuffer", function() {
   var replacement = second.replaceWith('aside').push('replaced!');
   replacement.end();
 
-  equals(buffer.string(), '<div>a<aside>replaced!</aside>b<span>wotwot</span>c</div>', 'Removed elements are absent in the final output');
+  equal(buffer.string(), '<div>a<aside>replaced!</aside>b<span>wotwot</span>c</div>', 'Removed elements are absent in the final output');
 });
 
 test("It is possible to insert a RenderBuffer after another one", function() {
@@ -78,7 +77,7 @@ test("It is possible to insert a RenderBuffer after another one", function() {
   var inserted = third.insertAfter('aside').push('inserted!');
   inserted.end();
 
-  equals(buffer.string(), '<div>a<span>zomg</span>b<span>wotwot</span><aside>inserted!</aside>c</div>', 'Inserted objects are inserted in the final output');
+  equal(buffer.string(), '<div>a<span>zomg</span>b<span>wotwot</span><aside>inserted!</aside>c</div>', 'Inserted objects are inserted in the final output');
 });
 
 test("It is possible to prepend a child RenderBuffer", function() {
@@ -99,7 +98,7 @@ test("It is possible to prepend a child RenderBuffer", function() {
   var prepended = buffer.prepend('aside').push('prepended!');
   prepended.end();
 
-  equals(buffer.string(), '<div><aside>prepended!</aside>a<span>zomg</span>b<span>wotwot</span>c</div>', 'Prepended buffers are prepended to the final output');
+  equal(buffer.string(), '<div><aside>prepended!</aside>a<span>zomg</span>b<span>wotwot</span>c</div>', 'Prepended buffers are prepended to the final output');
 });
 
 module("RenderBuffers without tagName");
@@ -110,7 +109,7 @@ test("It is possible to create a RenderBuffer without a tagName", function() {
   buffer.push('b');
   buffer.push('c');
 
-  equals(buffer.string(), "abc", "Buffers without tagNames do not wrap the content in a tag");
+  equal(buffer.string(), "abc", "Buffers without tagNames do not wrap the content in a tag");
 });
 
 test("it is possible to create a child render buffer without a tagName", function() {
@@ -118,12 +117,12 @@ test("it is possible to create a child render buffer without a tagName", functio
 
   buffer.push('a');
 
-  second = buffer.begin().push('middle').end();
+  var second = buffer.begin().push('middle').end();
 
   buffer.push('b');
   buffer.push('c');
 
-  equals(buffer.string(), "<div>amiddlebc</div>", "Buffers without tagNames do not wrap the content in a tag");
+  equal(buffer.string(), "<div>amiddlebc</div>", "Buffers without tagNames do not wrap the content in a tag");
 });
 
 test("it is possible to replace a child render buffer initially created without a tagName", function() {
@@ -131,17 +130,17 @@ test("it is possible to replace a child render buffer initially created without 
 
   buffer.push('a');
 
-  second = buffer.begin().push('middle');
+  var second = buffer.begin().push('middle');
   second.end();
 
   buffer.push('b');
   buffer.push('c');
 
-  equals(buffer.string(), "<div>amiddlebc</div>", "precond - Buffers without tagNames do not wrap the content in a tag");
+  equal(buffer.string(), "<div>amiddlebc</div>", "precond - Buffers without tagNames do not wrap the content in a tag");
 
   var replacement = second.replaceWith().push('new-mid');
   replacement.end();
 
-  equals(buffer.string(), "<div>anew-midbc</div>", "Replacements can operate on tagName-less buffers");
+  equal(buffer.string(), "<div>anew-midbc</div>", "Replacements can operate on tagName-less buffers");
 });
 

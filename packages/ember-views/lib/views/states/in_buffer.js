@@ -24,6 +24,8 @@ Ember.View.states.inBuffer = {
   // when a view is rendered in a buffer, rerendering it simply
   // replaces the existing buffer with a new one
   rerender: function(view) {
+    view._notifyWillRerender();
+
     var buffer = meta(view)['Ember.View'].buffer;
 
     view.clearRenderedChildren();

@@ -4,18 +4,19 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
+
 require('ember-runtime/mixins/enumerable');
-  
+
+
+
 // ..........................................................
 // HELPERS
 // 
 
 var get = Ember.get, set = Ember.set, meta = Ember.meta;
 
-/** @private */
 function none(obj) { return obj===null || obj===undefined; }
 
-/** @private */
 function xform(target, method, params) {
   method.call(target, params[0], params[2], params[3], params[4]);
 }
@@ -74,15 +75,9 @@ Ember.Array = Ember.Mixin.create(Ember.Enumerable, /** @scope Ember.Array.protot
     the value of an array item using get() (i.e. myArray.get(0)), then you do
     not need to implement this method yourself.
 
-        var arr = ["a", "b", "c", "d"];
-        arr.objectAt(0);  => "a"
-        arr.objectAt(4);  => undefined
-        arr.objectAt(-1); => undefined
-
     @param {Number} idx
-      The index of the item to return.  If idx is negative or
-      exceeds the current length, returns undefined.
-    @return the item at idx.
+      The index of the item to return.  If idx exceeds the current length,
+      return null.
   */
   objectAt: function(idx) {
     if ((idx < 0) || (idx>=get(this, 'length'))) return undefined ;
@@ -119,14 +114,6 @@ Ember.Array = Ember.Mixin.create(Ember.Enumerable, /** @scope Ember.Array.protot
     uses the observable array methods to retrieve the objects for the new
     slice.
 
-        var arr = ["a", "b", "c", "d"];
-        arr.slice();       => ["a", "b", "c", "d"]
-        arr.slice(2);      => ["c", "d"]
-        arr.slice(2, 4);   => ["c", "d"]
-        arr.slice(4, 2);   => []
-        arr.slice(-1);     => ["d"]
-        arr.slice(-2, -1); => ["c"]
-
     @param beginIndex {Integer} (Optional) index to begin slicing from.
     @param endIndex {Integer} (Optional) index to end the slice at.
     @returns {Array} New array with specified slice
@@ -148,17 +135,18 @@ Ember.Array = Ember.Mixin.create(Ember.Enumerable, /** @scope Ember.Array.protot
     search is 0. If it's negative, will count backward from 
     the end of the array. Returns -1 if no match is found.
 
-        var arr = ["a", "b", "c", "d", "a"];
-        arr.indexOf("a");      =>  0
-        arr.indexOf("z");      => -1
-        arr.indexOf("a", 2);   =>  4
-        arr.indexOf("a", -1);  =>  4
-        arr.indexOf("b", 3);   => -1
-        arr.indexOf("a", 100); => -1
-
     @param {Object} object the item to search for
     @param {Number} startAt optional starting location to search, default 0
     @returns {Number} index or -1 if not found
+
+    @example
+    var arr = ["a", "b", "c", "d", "a"];
+    arr.indexOf("a");      =>  0
+    arr.indexOf("z");      => -1
+    arr.indexOf("a", 2);   =>  4
+    arr.indexOf("a", -1);  =>  4
+    arr.indexOf("b", 3);   => -1
+    arr.indexOf("a", 100); => -1
   */
   indexOf: function(object, startAt) {
     var idx, len = get(this, 'length');
@@ -178,17 +166,18 @@ Ember.Array = Ember.Mixin.create(Ember.Enumerable, /** @scope Ember.Array.protot
     the last position. If it's negative, will count backward 
     from the end of the array. Returns -1 if no match is found.
 
-        var arr = ["a", "b", "c", "d", "a"];
-        arr.lastIndexOf("a");      =>  4
-        arr.lastIndexOf("z");      => -1
-        arr.lastIndexOf("a", 2);   =>  0
-        arr.lastIndexOf("a", -1);  =>  4
-        arr.lastIndexOf("b", 3);   =>  1
-        arr.lastIndexOf("a", 100); =>  4
-
     @param {Object} object the item to search for
     @param {Number} startAt optional starting location to search, default 0
     @returns {Number} index or -1 if not found
+
+    @example
+    var arr = ["a", "b", "c", "d", "a"];
+    arr.lastIndexOf("a");      =>  4
+    arr.lastIndexOf("z");      => -1
+    arr.lastIndexOf("a", 2);   =>  0
+    arr.lastIndexOf("a", -1);  =>  4
+    arr.lastIndexOf("b", 3);   =>  1
+    arr.lastIndexOf("a", 100); =>  4
   */
   lastIndexOf: function(object, startAt) {
     var idx, len = get(this, 'length');
@@ -363,4 +352,9 @@ Ember.Array = Ember.Mixin.create(Ember.Enumerable, /** @scope Ember.Array.protot
     return this.__each;
   }).property().cacheable()
 
-});
+
+
+}) ;
+
+
+

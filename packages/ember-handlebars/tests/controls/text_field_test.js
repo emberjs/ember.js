@@ -3,7 +3,7 @@
 // Copyright: ©2011 Strobe Inc. and contributors.
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
-/*globals TestObject */
+/*globals TestObject:true */
 
 var textField;
 var get = Ember.get, set = Ember.set;
@@ -53,11 +53,11 @@ test("input value is updated when setting value property of view", function() {
     textField.append();
   });
 
-  equals(textField.$().val(), "foo", "renders text field with value");
+  equal(textField.$().val(), "foo", "renders text field with value");
 
   Ember.run(function() { set(textField, 'value', 'bar'); });
 
-  equals(textField.$().val(), "bar", "updates text field after value changes");
+  equal(textField.$().val(), "bar", "updates text field after value changes");
 });
 
 test("input placeholder is updated when setting placeholder property of view", function() {
@@ -66,11 +66,11 @@ test("input placeholder is updated when setting placeholder property of view", f
     textField.append();
   });
 
-  equals(textField.$().attr('placeholder'), "foo", "renders text field with placeholder");
+  equal(textField.$().attr('placeholder'), "foo", "renders text field with placeholder");
 
   Ember.run(function() { set(textField, 'placeholder', 'bar'); });
 
-  equals(textField.$().attr('placeholder'), "bar", "updates text field after placeholder changes");
+  equal(textField.$().attr('placeholder'), "bar", "updates text field after placeholder changes");
 });
 
 test("input type is configurable when creating view", function() {
@@ -79,7 +79,7 @@ test("input type is configurable when creating view", function() {
     textField.append();
   });
 
-  equals(textField.$().attr('type'), 'password', "renders text field with type");
+  equal(textField.$().attr('type'), 'password', "renders text field with type");
 });
 
 test("value binding works properly for inputs that haven't been created", function() {
@@ -90,19 +90,19 @@ test("value binding works properly for inputs that haven't been created", functi
     });
   });
 
-  equals(get(textField, 'value'), null, "precond - default value is null");
-  equals(textField.$().length, 0, "precond - view doesn't have its layer created yet, thus no input element");
+  equal(get(textField, 'value'), null, "precond - default value is null");
+  equal(textField.$().length, 0, "precond - view doesn't have its layer created yet, thus no input element");
 
   Ember.run(function() {
     set(TestObject, 'value', 'ohai');
   });
 
-  equals(get(textField, 'value'), 'ohai', "value property was properly updated");
+  equal(get(textField, 'value'), 'ohai', "value property was properly updated");
 
   Ember.run(function() { textField.append(); });
 
-  equals(get(textField, 'value'), 'ohai', "value property remains the same once the view has been appended");
-  equals(textField.$().val(), 'ohai', "value is reflected in the input element once it is created");
+  equal(get(textField, 'value'), 'ohai', "value property remains the same once the view has been appended");
+  equal(textField.$().val(), 'ohai', "value is reflected in the input element once it is created");
 });
 
 test("should call the insertNewline method when return key is pressed", function() {
@@ -144,13 +144,13 @@ test("should call the cancel method when escape key is pressed", function() {
 //     blurCalled++;
 //   };
 
-//   equals(focusCalled+blurCalled, 0, "precond - no callbacks called yet");
+//   equal(focusCalled+blurCalled, 0, "precond - no callbacks called yet");
 
 //   textField.$().focus();
-//   equals(focusCalled, 1, "focus called after field receives focus");
+//   equal(focusCalled, 1, "focus called after field receives focus");
 
 //   textField.$().blur();
-//   equals(blurCalled, 1, "blur alled after field blurs");
+//   equal(blurCalled, 1, "blur alled after field blurs");
 // });
 
 // test("calls correct method for key events", function() {
@@ -159,20 +159,20 @@ test("should call the cancel method when escape key is pressed", function() {
 
 //   textField.insertNewline = function() {
 //     insertNewlineCalled++;
-//     return YES;
+//     return true;
 //   };
 //   textField.cancel = function() {
 //     cancelCalled++;
-//     return YES;
+//     return true;
 //   };
 
 //   textField.$().focus();
-//   equals(insertNewlineCalled+cancelCalled, 0, "precond - no callbacks called yet");
+//   equal(insertNewlineCalled+cancelCalled, 0, "precond - no callbacks called yet");
 
 //   Ember.RootResponder.responder.keyup(new Ember.Event({ type: 'keyup', keyCode: 13 }));
-//   equals(insertNewlineCalled, 1, "calls insertNewline after hitting return");
+//   equal(insertNewlineCalled, 1, "calls insertNewline after hitting return");
 
 //   Ember.RootResponder.responder.keyup(new Ember.Event({ type: 'keyup', keyCode: 27 }));
-//   equals(cancelCalled, 1, "calls cancel after pressing escape key");
+//   equal(cancelCalled, 1, "calls cancel after pressing escape key");
 // });
 

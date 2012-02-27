@@ -12,7 +12,7 @@ suite.module('frozenCopy');
 
 suite.test("frozen objects should return same instance", function() {
   var obj, copy;
-  
+
   obj = this.newObject();
   if (Ember.get(this, 'shouldBeFreezable')) {
     ok(!Ember.Freezable || Ember.Freezable.detect(obj), 'object should be freezable');
@@ -20,11 +20,11 @@ suite.test("frozen objects should return same instance", function() {
     copy = obj.frozenCopy();
     ok(this.isEqual(obj, copy), 'new copy should be equal');
     ok(Ember.get(copy, 'isFrozen'), 'returned value should be frozen');
-    
+
     copy = obj.freeze().frozenCopy();
-    equals(copy, obj, 'returns frozen object should be same');
+    equal(copy, obj, 'returns frozen object should be same');
     ok(Ember.get(copy, 'isFrozen'), 'returned object should be frozen');
-    
+
   } else {
     ok(!Ember.Freezable || !Ember.Freezable.detect(obj), 'object should not be freezable');
   }

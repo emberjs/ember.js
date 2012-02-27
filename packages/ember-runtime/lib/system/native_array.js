@@ -12,24 +12,24 @@ require('ember-runtime/mixins/copyable');
 
 
 var get = Ember.get, set = Ember.set;
-  
-// Add Ember.Array to Array.prototype.  Remove methods with native 
+
+// Add Ember.Array to Array.prototype.  Remove methods with native
 // implementations and supply some more optimized versions of generic methods
 // because they are so common.
 var NativeArray = Ember.Mixin.create(Ember.MutableArray, Ember.Observable, Ember.Copyable, {
 
-  // because length is a built-in property we need to know to just get the 
+  // because length is a built-in property we need to know to just get the
   // original property.
   get: function(key) {
     if (key==='length') return this.length;
     else if ('number' === typeof key) return this[key];
-    else return this._super(key);  
+    else return this._super(key);
   },
-  
+
   objectAt: function(idx) {
     return this[idx];
   },
-    
+
   // primitive for array support.
   replace: function(idx, amt, objects) {
 
@@ -40,7 +40,7 @@ var NativeArray = Ember.Mixin.create(Ember.MutableArray, Ember.Observable, Ember
     // since everything has shifted
     var len = objects ? get(objects, 'length') : 0;
     this.arrayContentWillChange(idx, amt, len);
-    
+
     if (!objects || objects.length === 0) {
       this.splice(idx, amt) ;
     } else {
@@ -89,7 +89,7 @@ var NativeArray = Ember.Mixin.create(Ember.MutableArray, Ember.Observable, Ember
     }
     return -1;
   },
-  
+
   copy: function() {
     return this.slice();
   }
@@ -97,7 +97,7 @@ var NativeArray = Ember.Mixin.create(Ember.MutableArray, Ember.Observable, Ember
 
 // Remove any methods implemented natively so we don't override them
 var ignore = ['length'];
-NativeArray.keys().forEach(function(methodName) {
+Ember.ArrayUtils.forEach(NativeArray.keys(), function(methodName) {
   if (Array.prototype[methodName]) ignore.push(methodName);
 });
 
@@ -107,11 +107,11 @@ if (ignore.length>0) {
 
 /**
   The NativeArray mixin contains the properties needed to to make the native
-  Array support Ember.MutableArray and all of its dependent APIs.  Unless you 
+  Array support Ember.MutableArray and all of its dependent APIs.  Unless you
   have Ember.EXTEND_PROTOTYPES set to false, this will be applied automatically.
-  Otherwise you can apply the mixin at anytime by calling 
+  Otherwise you can apply the mixin at anytime by calling
   `Ember.NativeArray.activate`.
-  
+
   @namespace
   @extends Ember.MutableArray
   @extends Ember.Array
@@ -136,13 +136,13 @@ Ember.A = function(arr){
 /**
   Activates the mixin on the Array.prototype if not already applied.  Calling
   this method more than once is safe.
-  
+
   @returns {void}
 */
 Ember.NativeArray.activate = function() {
   NativeArray.apply(Array.prototype);
 
-  Ember.A = function(arr) { return arr || []; }
+  Ember.A = function(arr) { return arr || []; };
 };
 
 if (Ember.EXTEND_PROTOTYPES) Ember.NativeArray.activate();

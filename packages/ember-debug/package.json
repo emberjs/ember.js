@@ -4,7 +4,7 @@
   "description": "Dubugging helpers for Ember",
   "homepage": "http://www.ember`js.com",
   "author": "Peter Wagenet",
-  "version": "0.9.4",
+  "version": "0.9.5",
 
   "directories": {
     "lib": "lib"

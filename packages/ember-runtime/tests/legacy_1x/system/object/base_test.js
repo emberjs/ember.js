@@ -4,18 +4,19 @@
 //            ©2008-2011 Apple Inc. All rights reserved.
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
+/*globals TestNamespace:true*/
 
 /*
   NOTE: This test is adapted from the 1.x series of unit tests.  The tests
   are the same except for places where we intend to break the API we instead
   validate that we warn the developer appropriately.
-  
+
   CHANGES FROM 1.6:
 
   * Changed get(obj, ) and set(obj, ) to Ember.get() and Ember.set()
-  * Removed obj.instanceOf() and obj.kindOf() tests.  use obj instanceof Foo 
+  * Removed obj.instanceOf() and obj.kindOf() tests.  use obj instanceof Foo
     instead
-  * Removed respondsTo() and tryToPerform() tests.  Can be brought back in a 
+  * Removed respondsTo() and tryToPerform() tests.  Can be brought back in a
     utils package.
   * Removed destroy() test.  You can impl yourself but not built in
   * Changed Class.subclassOf() test to Class.detect()
@@ -26,7 +27,6 @@
 // ========================================================================
 // Ember.Object Base Tests
 // ========================================================================
-/*globals module test ok isObj equals expects same plan TestNamespace*/
 
 var obj, obj1, don, don1 ; // global variables
 
@@ -49,7 +49,7 @@ module("A new Ember.Object instance", {
       aMethodThatExists: function() {},
       aMethodThatReturnsTrue: function() { return true; },
       aMethodThatReturnsFoobar: function() { return "Foobar"; },
-      aMethodThatReturnsFalse: function() { return NO; }
+      aMethodThatReturnsFalse: function() { return false; }
     });
   },
 
@@ -60,19 +60,19 @@ module("A new Ember.Object instance", {
 });
 
 test("Should return it's properties when requested using Ember.Object#get", function() {
-  equals(get(obj, 'foo'), 'bar') ;
-  equals(get(obj, 'total'), 12345) ;
+  equal(get(obj, 'foo'), 'bar') ;
+  equal(get(obj, 'total'), 12345) ;
 });
 
 test("Should allow changing of those properties by calling Ember.Object#set", function() {
-  equals(get(obj,'foo'), 'bar') ;
-  equals(get(obj, 'total'), 12345) ;
+  equal(get(obj,'foo'), 'bar') ;
+  equal(get(obj, 'total'), 12345) ;
 
   set(obj,  'foo', 'Chunky Bacon' ) ;
   set(obj,  'total', 12 ) ;
 
-  equals(get(obj, 'foo'), 'Chunky Bacon') ;
-  equals(get(obj, 'total'), 12) ;
+  equal(get(obj, 'foo'), 'Chunky Bacon') ;
+  equal(get(obj, 'total'), 12) ;
 });
 
 
@@ -91,15 +91,15 @@ module("Ember.Object observers", {
 
       // normal observer
       observer: Ember.observer(function(){
-        this._normal = YES;
+        this._normal = true;
       }, "prop1"),
 
       globalObserver: Ember.observer(function() {
-        this._global = YES;
+        this._global = true;
       }, "TestNamespace.obj.value"),
 
       bothObserver: Ember.observer(function() {
-        this._both = YES;
+        this._both = true;
       }, "prop1", "TestNamespace.obj.value")
     });
 
@@ -107,21 +107,21 @@ module("Ember.Object observers", {
 });
 
 test("Local observers work", function() {
-  obj._normal = NO;
-  set(obj, "prop1", NO);
-  equals(obj._normal, YES, "Normal observer did change.");
+  obj._normal = false;
+  set(obj, "prop1", false);
+  equal(obj._normal, true, "Normal observer did change.");
 });
 
 test("Global observers work", function() {
-  obj._global = NO;
+  obj._global = false;
   set(TestNamespace.obj, "value", "test2");
-  equals(obj._global, YES, "Global observer did change.");
+  equal(obj._global, true, "Global observer did change.");
 });
 
 test("Global+Local observer works", function() {
-  obj._both = NO;
-  set(obj, "prop1", NO);
-  equals(obj._both, YES, "Both observer did change.");
+  obj._both = false;
+  set(obj, "prop1", false);
+  equal(obj._both, true, "Both observer did change.");
 });
 
 
@@ -129,15 +129,15 @@ test("Global+Local observer works", function() {
 module("Ember.Object superclass and subclasses", {
   setup: function() {
     obj = Ember.Object.extend ({
-	  method1: function() {
-		return "hello";
-	  }
+    method1: function() {
+      return "hello";
+    }
 	});
 	obj1 = obj.extend();
 	don = obj1.create ({
-	  method2: function() {
-		  return this.superclass();
-		}
+    method2: function() {
+      return this.superclass();
+    }
 	});
   },
 
@@ -149,8 +149,8 @@ module("Ember.Object superclass and subclasses", {
 });
 
 test("Checking the detect() function on an object and its subclass", function(){
-	equals(obj.detect(obj1), YES);
-	equals(obj1.detect(obj), NO);
+	equal(obj.detect(obj1), true);
+	equal(obj1.detect(obj), false);
 });
 
 test("Checking the detectInstance() function on an object and its subclass", function() {
@@ -161,7 +161,7 @@ test("Checking the detectInstance() function on an object and its subclass", fun
 test("subclasses should contain defined subclasses", function() {
   ok(inArray(obj1, obj.subclasses) > -1, 'obj.subclasses should contain obj1');
 
-  equals(get(obj1.subclasses, 'length'),0,'obj1.subclasses should be empty');
+  equal(get(obj1.subclasses, 'length'),0,'obj1.subclasses should be empty');
 
   var kls2 = obj1.extend();
   ok(inArray(kls2, obj1.subclasses) > -1, 'obj1.subclasses should contain kls2');

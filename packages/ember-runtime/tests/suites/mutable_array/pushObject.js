@@ -13,12 +13,12 @@ suite.module('pushObject');
 suite.test("returns pushed object", function() {
   var exp = this.newFixture(1)[0];
   var obj = this.newObject([]);
-  equals(obj.pushObject(exp), exp, 'should return pushed object');
+  equal(obj.pushObject(exp), exp, 'should return pushed object');
 });
 
 suite.test("[].pushObject(X) => [X] + notify", function() {
   var obj, before, after, observer, ret;
-  
+
   before = [];
   after  = this.newFixture(1);
   obj = this.newObject(before);
@@ -26,18 +26,18 @@ suite.test("[].pushObject(X) => [X] + notify", function() {
 
   obj.pushObject(after[0]);
 
-  same(this.toArray(obj), after, 'post item results');
-  equals(Ember.get(obj, 'length'), after.length, 'length');
+  deepEqual(this.toArray(obj), after, 'post item results');
+  equal(Ember.get(obj, 'length'), after.length, 'length');
 
   if (observer.isEnabled) {
-    equals(observer.validate('[]'), true, 'should have notified []');
-    equals(observer.validate('length'), true, 'should have notified length');
+    equal(observer.validate('[]'), true, 'should have notified []');
+    equal(observer.validate('length'), true, 'should have notified length');
   }
 });
 
 suite.test("[A,B,C].pushObject(X) => [A,B,C,X] + notify", function() {
   var obj, before, after, item, observer, ret;
-  
+
   before = this.newFixture(3);
   item   = this.newFixture(1)[0];
   after  = [before[0], before[1], before[2], item];
@@ -46,11 +46,11 @@ suite.test("[A,B,C].pushObject(X) => [A,B,C,X] + notify", function() {
 
   obj.pushObject(item);
 
-  same(this.toArray(obj), after, 'post item results');
-  equals(Ember.get(obj, 'length'), after.length, 'length');
+  deepEqual(this.toArray(obj), after, 'post item results');
+  equal(Ember.get(obj, 'length'), after.length, 'length');
 
   if (observer.isEnabled) {
-    equals(observer.validate('[]'), true, 'should have notified []');
-    equals(observer.validate('length'), true, 'should have notified length');
+    equal(observer.validate('[]'), true, 'should have notified []');
+    equal(observer.validate('length'), true, 'should have notified length');
   }
 });

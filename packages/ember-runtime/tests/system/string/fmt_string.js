@@ -8,16 +8,16 @@
 module('Ember.String.fmt');
 
 test("'Hello %@ %@'.fmt('John', 'Doe') => 'Hello John Doe'", function() {
-  equals(Ember.String.fmt('Hello %@ %@', ['John', 'Doe']), 'Hello John Doe');
+  equal(Ember.String.fmt('Hello %@ %@', ['John', 'Doe']), 'Hello John Doe');
   if (Ember.EXTEND_PROTOTYPES) {
-    equals('Hello %@ %@'.fmt('John', 'Doe'), 'Hello John Doe');
+    equal('Hello %@ %@'.fmt('John', 'Doe'), 'Hello John Doe');
   }
 });
 
 test("'Hello %@2 %@1'.fmt('John', 'Doe') => 'Hello Doe John'", function() {
-  equals(Ember.String.fmt('Hello %@2 %@1', ['John', 'Doe']), 'Hello Doe John');
+  equal(Ember.String.fmt('Hello %@2 %@1', ['John', 'Doe']), 'Hello Doe John');
   if (Ember.EXTEND_PROTOTYPES) {
-    equals('Hello %@2 %@1'.fmt('John', 'Doe'), 'Hello Doe John');
+    equal('Hello %@2 %@1'.fmt('John', 'Doe'), 'Hello Doe John');
   }
 });
 

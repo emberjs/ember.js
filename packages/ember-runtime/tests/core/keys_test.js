@@ -20,7 +20,7 @@ test("should get a key array for a specified object ",function(){
 
 	var object2 = [];
 	object2 = Ember.keys(object1);
-	same(object2,['names','age','place']);
+	deepEqual(object2,['names','age','place']);
 });
 
 

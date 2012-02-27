@@ -16,12 +16,12 @@ test("Ember.isArray" ,function(){
       length        = {length: 12},
       fn            = function() {};
 
-  equals( Ember.isArray(numarray), true,  "[1,2,3]" );
-  equals( Ember.isArray(number),   false, "23" );
-  equals( Ember.isArray(strarray), true,  '["Hello", "Hi"]' );
-  equals( Ember.isArray(string),   false, '"Hello"' );
-  equals( Ember.isArray(object),   false, "{}" );
-  equals( Ember.isArray(length),   true,  "{length: 12}" );
-  equals( Ember.isArray(window),   false, "window" );
-  equals( Ember.isArray(fn),       false, "function() {}" );
+  equal( Ember.isArray(numarray), true,  "[1,2,3]" );
+  equal( Ember.isArray(number),   false, "23" );
+  equal( Ember.isArray(strarray), true,  '["Hello", "Hi"]' );
+  equal( Ember.isArray(string),   false, '"Hello"' );
+  equal( Ember.isArray(object),   false, "{}" );
+  equal( Ember.isArray(length),   true,  "{length: 12}" );
+  equal( Ember.isArray(window),   false, "window" );
+  equal( Ember.isArray(fn),       false, "function() {}" );
 });

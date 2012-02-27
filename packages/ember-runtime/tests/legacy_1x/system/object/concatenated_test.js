@@ -9,11 +9,11 @@
   NOTE: This test is adapted from the 1.x series of unit tests.  The tests
   are the same except for places where we intend to break the API we instead
   validate that we warn the developer appropriately.
-  
+
   CHANGES FROM 1.6:
 
   * changed get(obj, ) and set(obj, ) to Ember.get() and Ember.set()
-  * converted uses of obj.isEqual() to use same() test since isEqual is not 
+  * converted uses of obj.isEqual() to use deepEqual() test since isEqual is not
     always defined
 */
 
@@ -37,7 +37,7 @@
 
     var values = get(obj, 'values'),
         expected = ['a', 'b', 'c', 'd', 'e', 'f'];
-    same(values, expected, Ember.String.fmt("should concatenate values property (expected: %@, got: %@)", [expected, values]));
+    deepEqual(values, expected, Ember.String.fmt("should concatenate values property (expected: %@, got: %@)", [expected, values]));
   });
 
   test("concatenates subclasses", function() {
@@ -48,7 +48,7 @@
 
     var values = get(obj, 'values'),
         expected = ['a', 'b', 'c', 'd', 'e', 'f'];
-    same(values, expected, Ember.String.fmt("should concatenate values property (expected: %@, got: %@)", [expected, values]));
+    deepEqual(values, expected, Ember.String.fmt("should concatenate values property (expected: %@, got: %@)", [expected, values]));
   });
 
   test("concatenates reopen", function() {
@@ -59,7 +59,7 @@
 
     var values = get(obj, 'values'),
         expected = ['a', 'b', 'c', 'd', 'e', 'f'];
-    same(values, expected, Ember.String.fmt("should concatenate values property (expected: %@, got: %@)", [expected, values]));
+    deepEqual(values, expected, Ember.String.fmt("should concatenate values property (expected: %@, got: %@)", [expected, values]));
   });
 
   test("concatenates mixin", function() {
@@ -73,7 +73,7 @@
 
     var values = get(obj, 'values'),
         expected = ['a', 'b', 'c', 'd', 'e', 'f'];
-    same(values, expected, Ember.String.fmt("should concatenate values property (expected: %@, got: %@)", [expected, values]));
+    deepEqual(values, expected, Ember.String.fmt("should concatenate values property (expected: %@, got: %@)", [expected, values]));
   });
 
   test("concatenates reopen, subclass, and instance", function() {
@@ -83,7 +83,7 @@
 
     var values = get(obj, 'values'),
         expected = ['a', 'b', 'c', 'd', 'e', 'f'];
-    same(values, expected, Ember.String.fmt("should concatenate values property (expected: %@, got: %@)", [expected, values]));
+    deepEqual(values, expected, Ember.String.fmt("should concatenate values property (expected: %@, got: %@)", [expected, values]));
   });
 
 

@@ -32,9 +32,9 @@ test("default implementation does not render child views", function() {
   });
 
   view.createElement();
-  equals(rendered, 1, 'rendered the child once');
-  equals(parentRendered, 1);
-  equals(view.$('div').length, 1);
+  equal(rendered, 1, 'rendered the child once');
+  equal(parentRendered, 1);
+  equal(view.$('div').length, 1);
 
 });
 
@@ -61,17 +61,17 @@ test("should invoke renderChildViews if layer is destroyed then re-rendered", fu
     view.append();
   });
 
-  equals(rendered, 1, 'rendered the child once');
-  equals(parentRendered, 1);
-  equals(view.$('div').length, 1);
+  equal(rendered, 1, 'rendered the child once');
+  equal(parentRendered, 1);
+  equal(view.$('div').length, 1);
 
   Ember.run(function() {
     view.rerender();
   });
 
-  equals(rendered, 2, 'rendered the child twice');
-  equals(parentRendered, 2);
-  equals(view.$('div').length, 1);
+  equal(rendered, 2, 'rendered the child twice');
+  equal(parentRendered, 2);
+  equal(view.$('div').length, 1);
 
   view.destroy();
 });
@@ -88,7 +88,7 @@ test("should render child views with a different tagName", function() {
   });
 
   view.createElement();
-  equals(view.$('aside').length, 1);
+  equal(view.$('aside').length, 1);
 });
 
 test("should add ember-view to views", function() {

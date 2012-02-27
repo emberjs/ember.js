@@ -5,10 +5,9 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
+/*globals jQuery*/
+
 require("ember-runtime");
-
-ember_assert("Ember requires jQuery 1.6 or 1.7", window.jQuery && jQuery().jquery.match(/^1\.[67](.\d+)?$/));
-Ember.$ = window.jQuery;
-
+require("ember-views/core");
 require("ember-views/system");
 require("ember-views/views");

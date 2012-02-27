@@ -10,6 +10,7 @@ require('ember-runtime/mixins/array');
 
 
 var set = Ember.set, get = Ember.get, guidFor = Ember.guidFor;
+var forEach = Ember.ArrayUtils.forEach;
 
 var EachArray = Ember.Object.extend(Ember.Array, {
 
@@ -92,7 +93,7 @@ Ember.EachProxy = Ember.Object.extend({
 
     // in case someone is already observing some keys make sure they are
     // added
-    Ember.watchedEvents(this).forEach(function(eventName) {
+    forEach(Ember.watchedEvents(this), function(eventName) {
       this.didAddListener(eventName);
     }, this);
   },

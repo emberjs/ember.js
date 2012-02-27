@@ -30,15 +30,15 @@ module("Ember.compare()", {
 
 // ..........................................................
 // TESTS
-// 
+//
 
 test("ordering should work", function() {
   for (var j=0; j < v.length; j++) {
-    equals(Ember.compare(v[j],v[j]), 0, j +' should equal itself');
+    equal(Ember.compare(v[j],v[j]), 0, j +' should equal itself');
     for (var i=j+1; i < v.length; i++) {
-      equals(Ember.compare(v[j],v[i]), -1, 'v[' + j + '] (' + Ember.typeOf(v[j]) + ') should be smaller than v[' + i + '] (' + Ember.typeOf(v[i]) + ')' );
+      equal(Ember.compare(v[j],v[i]), -1, 'v[' + j + '] (' + Ember.typeOf(v[j]) + ') should be smaller than v[' + i + '] (' + Ember.typeOf(v[i]) + ')' );
     }
-    
+
   }
-}); 
-  
+});
+

@@ -5,11 +5,13 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
+/*globals TestNamespace:true*/
+
 /*
   NOTE: This test is adapted from the 1.x series of unit tests.  The tests
   are the same except for places where we intend to break the API we instead
   validate that we warn the developer appropriately.
-  
+
   CHANGES FROM 1.6:
 
   * changed Ember.Bending.flushPendingChanges() -> Ember.run.sync();
@@ -21,7 +23,6 @@
 // ========================================================================
 // Ember.Object bindings Tests
 // ========================================================================
-/*globals module test ok isObj equals expects TestNamespace */
 
 var testObject, fromObject, extraObject, TestObject;
 
@@ -67,7 +68,7 @@ test("bind(TestNamespace.fromObject.bar) should follow absolute path", function(
 
   // support new-style bindings if available
   Ember.run.sync();
-  equals("changedValue", get(testObject, "foo"), "testObject.foo");
+  equal("changedValue", get(testObject, "foo"), "testObject.foo");
 });
 
 test("bind(.bar) should bind to relative path", function() {
@@ -79,7 +80,7 @@ test("bind(.bar) should bind to relative path", function() {
   set(testObject, "bar", "changedValue") ;
 
   Ember.run.sync();
-  equals("changedValue", get(testObject, "foo"), "testObject.foo");
+  equal("changedValue", get(testObject, "foo"), "testObject.foo");
 });
 
 test("Ember.Binding.bool(TestNamespace.fromObject.bar)) should create binding with bool transform", function() {
@@ -91,12 +92,12 @@ test("Ember.Binding.bool(TestNamespace.fromObject.bar)) should create binding wi
   set(fromObject, "bar", 1) ;
 
   Ember.run.sync();
-  equals(YES, get(testObject, "foo"), "testObject.foo == YES");
+  equal(true, get(testObject, "foo"), "testObject.foo == true");
 
   set(fromObject, "bar", 0) ;
 
   Ember.run.sync();
-  equals(NO, get(testObject, "foo"), "testObject.foo == NO");
+  equal(false, get(testObject, "foo"), "testObject.foo == false");
 });
 
 test("bind(TestNamespace.fromObject*extraObject.foo) should create chained binding", function() {
@@ -106,7 +107,7 @@ test("bind(TestNamespace.fromObject*extraObject.foo) should create chained bindi
   set(fromObject, "extraObject", extraObject) ;
 
   Ember.run.sync();
-  equals("extraObjectValue", get(testObject, "foo"), "testObject.foo") ;
+  equal("extraObjectValue", get(testObject, "foo"), "testObject.foo") ;
 });
 
 test("bind(*extraObject.foo) should create locally chained binding", function() {
@@ -116,7 +117,7 @@ test("bind(*extraObject.foo) should create locally chained binding", function() 
   set(testObject, "extraObject", extraObject) ;
 
   Ember.run.sync();
-  equals("extraObjectValue", get(testObject, "foo"), "testObject.foo") ;
+  equal("extraObjectValue", get(testObject, "foo"), "testObject.foo") ;
 });
 
 
@@ -132,7 +133,7 @@ test("bind(*extraObject.foo) should be disconnectable", function() {
 
   // there was actually a bug here - the binding above should have synced to
   // null as there was no original value
-  equals(null, get(testObject, "foo"), "testObject.foo after disconnecting");
+  equal(null, get(testObject, "foo"), "testObject.foo after disconnecting");
 });
 
 module("fooBinding method", {
@@ -177,7 +178,7 @@ test("fooBinding: TestNamespace.fromObject.bar should follow absolute path", fun
   set(fromObject, "bar", "changedValue") ;
 
   Ember.run.sync();
-  equals("changedValue", get(testObject, "foo"), "testObject.foo");
+  equal("changedValue", get(testObject, "foo"), "testObject.foo");
 });
 
 test("fooBinding: .bar should bind to relative path", function() {
@@ -191,7 +192,7 @@ test("fooBinding: .bar should bind to relative path", function() {
   set(testObject, "bar", "changedValue") ;
 
   Ember.run.sync();
-  equals("changedValue", get(testObject, "foo"), "testObject.foo");
+  equal("changedValue", get(testObject, "foo"), "testObject.foo");
 });
 
 test("fooBinding: Ember.Binding.bool(TestNamespace.fromObject.bar should create binding with bool transform", function() {
@@ -205,12 +206,12 @@ test("fooBinding: Ember.Binding.bool(TestNamespace.fromObject.bar should create 
   set(fromObject, "bar", 1) ;
 
   Ember.run.sync();
-  equals(YES, get(testObject, "foo"), "testObject.foo == YES");
+  equal(true, get(testObject, "foo"), "testObject.foo == true");
 
   set(fromObject, "bar", 0) ;
 
   Ember.run.sync();
-  equals(NO, get(testObject, "foo"), "testObject.foo == NO");
+  equal(false, get(testObject, "foo"), "testObject.foo == false");
 });
 
 test("fooBinding: TestNamespace.fromObject*extraObject.foo should create chained binding", function() {
@@ -223,7 +224,7 @@ test("fooBinding: TestNamespace.fromObject*extraObject.foo should create chained
   set(fromObject, "extraObject", extraObject) ;
 
   Ember.run.sync();
-  equals("extraObjectValue", get(testObject, "foo"), "testObject.foo") ;
+  equal("extraObjectValue", get(testObject, "foo"), "testObject.foo") ;
 });
 
 test("fooBinding: *extraObject.foo should create locally chained binding", function() {
@@ -236,7 +237,7 @@ test("fooBinding: *extraObject.foo should create locally chained binding", funct
   set(testObject, "extraObject", extraObject) ;
 
   Ember.run.sync();
-  equals("extraObjectValue", get(testObject, "foo"), "testObject.foo") ;
+  equal("extraObjectValue", get(testObject, "foo"), "testObject.foo") ;
 });
 
 test('fooBinding: should disconnect bindings when destroyed', function () {
@@ -248,7 +249,7 @@ test('fooBinding: should disconnect bindings when destroyed', function () {
 
   set(TestNamespace.fromObject, 'bar', 'BAZ');
   Ember.run.sync();
-  equals(get(testObject, 'foo'), 'BAZ', 'binding should have synced');
+  equal(get(testObject, 'foo'), 'BAZ', 'binding should have synced');
 
   Ember.destroy(testObject);
   set(TestNamespace.fromObject, 'bar', 'BIFF');
@@ -295,12 +296,12 @@ test("fooBinding: TestNamespace.fromObject.bar should have bool binding", functi
   set(fromObject, "bar", 1) ;
 
   Ember.run.sync();
-  equals(YES, get(testObject, "foo"), "testObject.foo == YES");
+  equal(true, get(testObject, "foo"), "testObject.foo == true");
 
   set(fromObject, "bar", 0) ;
 
   Ember.run.sync();
-  equals(NO, get(testObject, "foo"), "testObject.foo == NO");
+  equal(false, get(testObject, "foo"), "testObject.foo == false");
 });
 
 test("fooBinding: Ember.Binding.not(TestNamespace.fromObject.bar should override default", function() {
@@ -314,12 +315,12 @@ test("fooBinding: Ember.Binding.not(TestNamespace.fromObject.bar should override
   set(fromObject, "bar", 1) ;
 
   Ember.run.sync();
-  equals(NO, get(testObject, "foo"), "testObject.foo == NO");
+  equal(false, get(testObject, "foo"), "testObject.foo == false");
 
   set(fromObject, "bar", 0) ;
 
   Ember.run.sync();
-  equals(YES, get(testObject, "foo"), "testObject.foo == YES");
+  equal(true, get(testObject, "foo"), "testObject.foo == true");
 });
 
 module("fooBindingDefault: Ember.Binding.bool() (new style)", {
@@ -361,12 +362,12 @@ test("fooBinding: TestNamespace.fromObject.bar should have bool binding", functi
   set(fromObject, "bar", 1) ;
 
   Ember.run.sync();
-  equals(YES, get(testObject, "foo"), "testObject.foo == YES");
+  equal(true, get(testObject, "foo"), "testObject.foo == true");
 
   set(fromObject, "bar", 0) ;
 
   Ember.run.sync();
-  equals(NO, get(testObject, "foo"), "testObject.foo == NO");
+  equal(false, get(testObject, "foo"), "testObject.foo == false");
 });
 
 test("fooBinding: Ember.Binding.not(TestNamespace.fromObject.bar should override default", function() {
@@ -380,12 +381,12 @@ test("fooBinding: Ember.Binding.not(TestNamespace.fromObject.bar should override
   set(fromObject, "bar", 1) ;
 
   Ember.run.sync();
-  equals(NO, get(testObject, "foo"), "testObject.foo == NO");
+  equal(false, get(testObject, "foo"), "testObject.foo == false");
 
   set(fromObject, "bar", 0) ;
 
   Ember.run.sync();
-  equals(YES, get(testObject, "foo"), "testObject.foo == YES");
+  equal(true, get(testObject, "foo"), "testObject.foo == true");
 });
 
 test("Chained binding should be null if intermediate object in chain is null", function() {
@@ -399,9 +400,9 @@ test("Chained binding should be null if intermediate object in chain is null", f
   });
 
   Ember.run.sync();
-  equals(get(a, 'z'), 'c', "a.z == 'c'");
+  equal(get(a, 'z'), 'c', "a.z == 'c'");
 
   set(a, 'b', null);
   Ember.run.sync();
-  equals(get(a, 'z'), null, "a.z == null");
+  equal(get(a, 'z'), null, "a.z == null");
 });

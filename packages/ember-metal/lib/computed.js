@@ -19,11 +19,11 @@ var o_defineProperty = Ember.platform.defineProperty;
 
 // ..........................................................
 // DEPENDENT KEYS
-// 
+//
 
 // data structure:
-//  meta.deps = { 
-//   'depKey': { 
+//  meta.deps = {
+//   'depKey': {
 //     'keyName': count,
 //     __emberproto__: SRC_OBJ [to detect clones]
 //     },
@@ -40,7 +40,7 @@ function uniqDeps(obj, depKey) {
     deps = m.deps = o_create(deps);
     deps.__emberproto__ = obj;
   }
-  
+
   ret = deps[depKey];
   if (!ret) {
     ret = deps[depKey] = { __emberproto__: obj };
@@ -48,7 +48,7 @@ function uniqDeps(obj, depKey) {
     ret = deps[depKey] = o_create(ret);
     ret.__emberproto__ = obj;
   }
-  
+
   return ret;
 }
 
@@ -68,7 +68,7 @@ function removeDependentKey(obj, keyName, depKey) {
 
 /** @private */
 function addDependentKeys(desc, obj, keyName) {
-  var keys = desc._dependentKeys, 
+  var keys = desc._dependentKeys,
       len  = keys ? keys.length : 0;
   for(var idx=0;idx<len;idx++) addDependentKey(obj, keyName, keys[idx]);
 }
@@ -99,9 +99,9 @@ var CP_DESC = {
 
 /** @private */
 function mkCpGetter(keyName, desc) {
-  var cacheable = desc._cacheable, 
+  var cacheable = desc._cacheable,
       func     = desc.func;
-      
+
   if (cacheable) {
     return function() {
       var ret, cache = meta(this).cache;
@@ -120,7 +120,7 @@ function mkCpGetter(keyName, desc) {
 function mkCpSetter(keyName, desc) {
   var cacheable = desc._cacheable,
       func      = desc.func;
-      
+
   return function(value) {
     var m = meta(this, cacheable),
         watched = (m.source===this) && m.watching[keyName]>0,
@@ -134,7 +134,7 @@ function mkCpSetter(keyName, desc) {
       m.lastSetValues[keyName] = guidFor(value);
       Ember.propertyWillChange(this, keyName);
     }
-    
+
     if (cacheable) delete m.cache[keyName];
     ret = func.call(this, keyName, value);
     if (cacheable) m.cache[keyName] = ret;
@@ -152,7 +152,7 @@ var Cp = ComputedProperty.prototype;
 
 /**
   Call on a computed property to set it into cacheable mode.  When in this
-  mode the computed property will automatically cache the return value of 
+  mode the computed property will automatically cache the return value of
   your function until one of the dependent keys changes.
 
   @param {Boolean} aFlag optional set to false to disable cacheing
@@ -164,9 +164,9 @@ Cp.cacheable = function(aFlag) {
 };
 
 /**
-  Sets the dependent keys on this computed property.  Pass any number of 
+  Sets the dependent keys on this computed property.  Pass any number of
   arguments containing key paths that this computed property depends on.
-  
+
   @param {String} path... zero or more property paths
   @returns {Ember.ComputedProperty} receiver
 */
@@ -210,12 +210,12 @@ Cp.setup = function(obj, keyName, value) {
 
 /** @private - impl descriptor API */
 Cp.teardown = function(obj, keyName) {
-  var keys = this._dependentKeys, 
+  var keys = this._dependentKeys,
       len  = keys ? keys.length : 0;
   for(var idx=0;idx<len;idx++) removeDependentKey(obj, keyName, keys[idx]);
 
   if (this._cacheable) delete meta(obj).cache[keyName];
-  
+
   return null; // no value to restore
 };
 
@@ -229,7 +229,7 @@ Cp.didChange = function(obj, keyName) {
 /** @private - impl descriptor API */
 Cp.get = function(obj, keyName) {
   var ret, cache;
-  
+
   if (this._cacheable) {
     cache = meta(obj).cache;
     if (keyName in cache) return cache[keyName];
@@ -243,7 +243,7 @@ Cp.get = function(obj, keyName) {
 /** @private - impl descriptor API */
 Cp.set = function(obj, keyName, value) {
   var cacheable = this._cacheable;
-  
+
   var m = meta(obj, cacheable),
       watched = (m.source===obj) && m.watching[keyName]>0,
       ret, oldSuspended, lastSetValues;
@@ -256,7 +256,7 @@ Cp.set = function(obj, keyName, value) {
     m.lastSetValues[keyName] = guidFor(value);
     Ember.propertyWillChange(obj, keyName);
   }
-  
+
   if (cacheable) delete m.cache[keyName];
   ret = this.func.call(obj, keyName, value);
   if (cacheable) m.cache[keyName] = ret;
@@ -274,30 +274,43 @@ if (!Ember.platform.hasPropertyAccessors) {
     obj[keyName] = undefined; // so it shows up in key iteration
     addDependentKeys(this, obj, keyName);
   };
-  
+
 } else if (!USE_ACCESSORS) {
   Cp.setup = function(obj, keyName) {
     // throw exception if not using Ember.get() and Ember.set() when supported
     o_defineProperty(obj, keyName, CP_DESC);
     addDependentKeys(this, obj, keyName);
   };
-} 
+}
 
 /**
-  This helper returns a new property descriptor that wraps the passed 
+  This helper returns a new property descriptor that wraps the passed
   computed property function.  You can use this helper to define properties
   with mixins or via Ember.defineProperty().
-  
+
   The function you pass will be used to both get and set property values.
   The function should accept two parameters, key and value.  If value is not
-  undefined you should set the value first.  In either case return the 
+  undefined you should set the value first.  In either case return the
   current value of the property.
-  
+
   @param {Function} func
     The computed property function.
-    
+
   @returns {Ember.ComputedProperty} property descriptor instance
 */
 Ember.computed = function(func) {
-  return new ComputedProperty(func);
+  var args;
+
+  if (arguments.length > 1) {
+    args = [].slice.call(arguments, 0, -1);
+    func = [].slice.call(arguments, -1)[0];
+  }
+
+  var cp = new ComputedProperty(func);
+
+  if (args) {
+    cp.property.apply(cp, args);
+  }
+
+  return cp;
 };

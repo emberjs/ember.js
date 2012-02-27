@@ -9,33 +9,33 @@ require('ember-runtime/system/native_array');
 require('ember-runtime/~tests/suites/suite');
 
 
-  
+
 var ObserverClass = Ember.Object.extend({
-  
+
   _keys: null,
   _values: null,
   _before : null,
   _after: null,
-  
+
   isEnabled: true,
-  
+
   init: function() {
     this._super();
     this.reset();
   },
-  
+
   /**
-    Invoked when the property changes.  Just records the parameters for 
+    Invoked when the property changes.  Just records the parameters for
     later analysis.
   */
   propertyDidChange: function(target, key, value) {
       this._keys[key] = true;
       this._values[key] = value;
   },
-  
+
   /**
     Resets the recorded results for another run.
-      
+
     @returns {Object} receiver
   */
   reset: function() {
@@ -45,14 +45,14 @@ var ObserverClass = Ember.Object.extend({
     this._after = null;
     return this;
   },
-  
+
   /**
     Begins observing the passed key names on the passed object.  Any changes
     on the named properties will be recorded.
-    
-    @param {Ember.Enumerable} obj 
+
+    @param {Ember.Enumerable} obj
       The enumerable to observe.
-      
+
     @returns {Object} receiver
   */
   observe: function(obj) {
@@ -65,17 +65,17 @@ var ObserverClass = Ember.Object.extend({
     }
     return this;
   },
-  
+
   /**
-    Returns true if the passed key was invoked.  If you pass a value as 
+    Returns true if the passed key was invoked.  If you pass a value as
     well then validates that the values match.
-    
+
     @param {String} key
       Key to validate
-  
+
     @param {Object} value
       (Optional) value
-    
+
     @returns {Boolean}
   */
   validate: function(key, value) {
@@ -84,7 +84,7 @@ var ObserverClass = Ember.Object.extend({
     if (arguments.length>1) return this._values[key] === value;
     else return true;
   },
-  
+
   /**
     begins acting as an enumerable observer.
   */
@@ -92,61 +92,61 @@ var ObserverClass = Ember.Object.extend({
     obj.addEnumerableObserver(this);
     return this;
   },
-  
+
   stopObserveEnumerable: function(obj) {
     obj.removeEnumerableObserver(this);
     return this;
   },
-  
+
   enumerableWillChange: function() {
-    equals(this._before, null, 'should only call once');
+    equal(this._before, null, 'should only call once');
     this._before = Array.prototype.slice.call(arguments);
   },
 
   enumerableDidChange: function() {
-    equals(this._after, null, 'should only call once');
+    equal(this._after, null, 'should only call once');
     this._after = Array.prototype.slice.call(arguments);
   }
-  
+
 });
 
 
 /**
-  Defines a test suite that can be used to test any object for compliance 
+  Defines a test suite that can be used to test any object for compliance
   with any enumerable.  To use, extend this object and define the required
-  methods to generate new object instances for testing, etc.  
-  
+  methods to generate new object instances for testing, etc.
+
   You can also add your own tests by defining new methods beginning with the
   word 'test'
 */
 var EnumerableTests = Ember.Object.extend({
-  
+
   /**
     Define a name for these tests - all modules are prefixed w/ it.
-    
+
     @property {String}
   */
   name: Ember.required(String),
-  
+
   /**
     Implement to return a new enumerable object for testing.  Should accept
     either no parameters, a single number (indicating the desired length of
     the collection) or an array of objects.
-    
+
     @param {Array} content
-      An array of items to include in the enumerable optionally.  
-      
+      An array of items to include in the enumerable optionally.
+
     @returns {Ember.Enumerable} a new enumerable
   */
   newObject: Ember.required(Function),
-  
+
   /**
     Implement to return a set of new fixture objects that can be applied to
     the enumerable.  This may be passed into the newObject method.
-    
+
     @param {Number} count
       The number of items required.
-      
+
     @returns {Array} array of items
   */
   newFixture: function(cnt) {
@@ -154,56 +154,56 @@ var EnumerableTests = Ember.Object.extend({
     while(--cnt>=0) ret.push(Ember.generateGuid());
     return ret;
   },
-  
+
   /**
-    Implement accept an instance of the enumerable and return an array 
+    Implement accept an instance of the enumerable and return an array
     containing the objects in the enumerable.  This is used only for testing
     so performance is not important.
-    
+
     @param {Ember.Enumerable} enumerable
       The enumerable to convert.
-      
+
     @returns {Array} array of items
   */
   toArray: Ember.required(Function),
 
   /**
-    Implement this method if your object can mutate internally (even if it 
+    Implement this method if your object can mutate internally (even if it
     does not support the MutableEnumerable API).  The method should accept
-    an object of your desired type and modify it somehow.  Suite tests will 
+    an object of your desired type and modify it somehow.  Suite tests will
     use this to ensure that all appropriate caches, etc. clear when the
     mutation occurs.
-    
+
     If you do not define this optional method, then mutation-related tests
     will be skipped.
-    
+
     @param {Ember.Enumerable} enumerable
       The enumerable to mutate
-      
+
     @returns {void}
   */
   mutate: function(){},
-  
+
   /**
-    Becomes true when you define a new mutate() method, indicating that 
+    Becomes true when you define a new mutate() method, indicating that
     mutation tests should run.  This is calculated automatically.
-    
+
     @property {Boolean}
   */
   canTestMutation: Ember.computed(function() {
-    return this.mutate !== EnumerableTests.prototype.mutate;  
+    return this.mutate !== EnumerableTests.prototype.mutate;
   }).property().cacheable(),
-  
+
   /**
     Invoked to actually run the test - overridden by mixins
   */
   run: function() {},
-  
-  
+
+
   /**
     Creates a new observer object for testing.  You can add this object as an
-    observer on an array and it will record results anytime it is invoked.  
-    After running the test, call the validate() method on the observer to 
+    observer on an array and it will record results anytime it is invoked.
+    After running the test, call the validate() method on the observer to
     validate the results.
   */
   newObserver: function(obj) {
@@ -211,20 +211,20 @@ var EnumerableTests = Ember.Object.extend({
     if (arguments.length>0) ret.observe.apply(ret, arguments);
     return ret;
   },
-  
+
   observerClass: ObserverClass
 
 });
 
 EnumerableTests.reopenClass({
-  
+
   plan: null,
-  
+
   run: function() {
     var C = this;
     return new C().run();
   },
-  
+
   module: function(desc, opts) {
     if (!opts) opts = {};
     var setup = opts.setup, teardown = opts.teardown;
@@ -244,7 +244,7 @@ EnumerableTests.reopenClass({
       }
     });
   },
-  
+
   test: function(name, func) {
     this.reopen({
       run: function() {
@@ -255,17 +255,17 @@ EnumerableTests.reopenClass({
       }
     });
   },
-  
+
   // convert to guids to minimize logging.
   same: function(actual, exp, message) {
     actual = (actual && actual.map) ? actual.map(function(x) { return Ember.guidFor(x); }) : actual;
     exp = (exp && exp.map) ? exp.map(function(x) { return Ember.guidFor(x); }) : exp;
-    return same(actual, exp, message);
+    return deepEqual(actual, exp, message);
   },
-  
+
   // easy way to disable tests
   notest: function() {}
-  
+
 });
 
 Ember.EnumerableTests = EnumerableTests;

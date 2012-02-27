@@ -17,7 +17,7 @@ var fmt = Ember.String.fmt,
     decamelize = Ember.String.decamelize,
     dasherize = Ember.String.dasherize,
     underscore = Ember.String.underscore;
-  
+
 if (Ember.EXTEND_PROTOTYPES) {
 
   /**
@@ -26,14 +26,14 @@ if (Ember.EXTEND_PROTOTYPES) {
   String.prototype.fmt = function() {
     return fmt(this, arguments);
   };
-  
+
   /**
     @see Ember.String.w
   */
   String.prototype.w = function() {
     return w(this);
   };
-  
+
   /**
     @see Ember.String.loc
   */

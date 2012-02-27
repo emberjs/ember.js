@@ -23,7 +23,7 @@ Ember.TargetActionSupport = Ember.Mixin.create({
 
     if (target && action) {
       var ret;
-      
+
       if (typeof target.send === 'function') {
         ret = target.send(action, this);
       } else {
@@ -33,7 +33,7 @@ Ember.TargetActionSupport = Ember.Mixin.create({
         ret = action.call(target, this);
       }
       if (ret !== false) ret = true;
-      
+
       return ret;
     } else {
       return false;

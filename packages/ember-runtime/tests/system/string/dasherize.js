@@ -8,39 +8,39 @@
 module('Ember.String.dasherize');
 
 test("dasherize normal string", function() {
-  same(Ember.String.dasherize('my favorite items'), 'my-favorite-items');
+  deepEqual(Ember.String.dasherize('my favorite items'), 'my-favorite-items');
   if (Ember.EXTEND_PROTOTYPES) {
-    same('my favorite items'.dasherize(), 'my-favorite-items');
+    deepEqual('my favorite items'.dasherize(), 'my-favorite-items');
   }
 });
 
 test("does nothing with dasherized string", function() {
-  same(Ember.String.dasherize('css-class-name'), 'css-class-name');
+  deepEqual(Ember.String.dasherize('css-class-name'), 'css-class-name');
   if (Ember.EXTEND_PROTOTYPES) {
-    same('css-class-name'.dasherize(), 'css-class-name');
+    deepEqual('css-class-name'.dasherize(), 'css-class-name');
   }
 });
 
 test("dasherize underscored string", function() {
-  same(Ember.String.dasherize('action_name'), 'action-name');
+  deepEqual(Ember.String.dasherize('action_name'), 'action-name');
   if (Ember.EXTEND_PROTOTYPES) {
-    same('action_name'.dasherize(), 'action-name');
+    deepEqual('action_name'.dasherize(), 'action-name');
   }
 });
 
 test("dasherize camelcased string", function() {
-  same(Ember.String.dasherize('innerHTML'), 'inner-html');
+  deepEqual(Ember.String.dasherize('innerHTML'), 'inner-html');
   if (Ember.EXTEND_PROTOTYPES) {
-    same('innerHTML'.dasherize(), 'inner-html');
+    deepEqual('innerHTML'.dasherize(), 'inner-html');
   }
 });
 
 test("after call with the same passed value take object from cashe", function() {
   var res = Ember.String.dasherize('innerHTML');
-  var decamelize = Ember.String.decamelize
+  var decamelize = Ember.String.decamelize;
   Ember.String.decamelize = function() {
-    throw "Ember.String.decamelize has been called."
-  }
+    throw "Ember.String.decamelize has been called.";
+  };
   Ember.String.dasherize('innerHTML');
   Ember.String.decamelize = decamelize;
 });

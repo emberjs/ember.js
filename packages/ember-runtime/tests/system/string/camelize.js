@@ -8,30 +8,30 @@
 module('Ember.String.camelize');
 
 test("camelize normal string", function() {
-  same(Ember.String.camelize('my favorite items'), 'myFavoriteItems');
+  deepEqual(Ember.String.camelize('my favorite items'), 'myFavoriteItems');
   if (Ember.EXTEND_PROTOTYPES) {
-    same('my favorite items'.camelize(), 'myFavoriteItems');
+    deepEqual('my favorite items'.camelize(), 'myFavoriteItems');
   }
 });
 
 test("camelize dasherized string", function() {
-  same(Ember.String.camelize('css-class-name'), 'cssClassName');
+  deepEqual(Ember.String.camelize('css-class-name'), 'cssClassName');
   if (Ember.EXTEND_PROTOTYPES) {
-    same('css-class-name'.camelize(), 'cssClassName');
+    deepEqual('css-class-name'.camelize(), 'cssClassName');
   }
 });
 
 test("camelize underscored string", function() {
-  same(Ember.String.camelize('action_name'), 'actionName');
+  deepEqual(Ember.String.camelize('action_name'), 'actionName');
   if (Ember.EXTEND_PROTOTYPES) {
-    same('action_name'.camelize(), 'actionName');
+    deepEqual('action_name'.camelize(), 'actionName');
   }
 });
 
 test("does nothing with camelcased string", function() {
-  same(Ember.String.camelize('innerHTML'), 'innerHTML');
+  deepEqual(Ember.String.camelize('innerHTML'), 'innerHTML');
   if (Ember.EXTEND_PROTOTYPES) {
-    same('innerHTML'.camelize(), 'innerHTML');
+    deepEqual('innerHTML'.camelize(), 'innerHTML');
   }
 });
 

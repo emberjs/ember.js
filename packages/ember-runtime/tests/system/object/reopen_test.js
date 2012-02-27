@@ -7,19 +7,19 @@
 module('system/core_object/reopenClass');
 
 test('adds new properties to subclass instance', function() {
-  
+
   var Subclass = Ember.Object.extend();
   Subclass.reopen({
     foo: function() { return 'FOO'; },
     bar: 'BAR'
   });
-  
-  equals( new Subclass().foo(), 'FOO', 'Adds method');
-  equals(Ember.get(new Subclass(), 'bar'), 'BAR', 'Adds property');
+
+  equal( new Subclass().foo(), 'FOO', 'Adds method');
+  equal(Ember.get(new Subclass(), 'bar'), 'BAR', 'Adds property');
 });
 
 test('reopened properties inherited by subclasses', function() {
-  
+
   var Subclass = Ember.Object.extend();
   var SubSub = Subclass.extend();
 
@@ -28,8 +28,16 @@ test('reopened properties inherited by subclasses', function() {
     bar: 'BAR'
   });
 
-  
-  equals( new SubSub().foo(), 'FOO', 'Adds method');
-  equals(Ember.get(new SubSub(), 'bar'), 'BAR', 'Adds property');
+
+  equal( new SubSub().foo(), 'FOO', 'Adds method');
+  equal(Ember.get(new SubSub(), 'bar'), 'BAR', 'Adds property');
 });
 
+// We plan to allow this in the future
+test('does not allow reopening already instantiated classes', function() {
+  var Subclass = Ember.Object.extend();
+
+  Subclass.create();
+
+  raises(function(){ Subclass.reopen(); }, /reopening already instantiated classes is not supported/i, "should throw error on reopening");
+});

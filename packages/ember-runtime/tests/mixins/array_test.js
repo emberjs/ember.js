@@ -99,12 +99,12 @@ test('should notify observers of @each', function() {
     }, '@each')
   });
 
-  equals(obj._count, 0, 'should not have invoked yet');
+  equal(obj._count, 0, 'should not have invoked yet');
 
   obj.arrayContentWillChange(0, 1, 1);
   obj.arrayContentDidChange(0, 1, 1);
 
-  equals(obj._count, 1, 'should have invoked');
+  equal(obj._count, 1, 'should have invoked');
 
 });
 
@@ -122,7 +122,7 @@ module('notify observers of length', {
 
     });
 
-    equals(obj._after, 0, 'should not have fired yet');
+    equal(obj._after, 0, 'should not have fired yet');
   },
 
   teardown: function() {
@@ -132,27 +132,27 @@ module('notify observers of length', {
 
 test('should notify observers when call with no params', function() {
   obj.arrayContentWillChange();
-  equals(obj._after, 0);
+  equal(obj._after, 0);
 
   obj.arrayContentDidChange();
-  equals(obj._after, 1);
+  equal(obj._after, 1);
 });
 
 // API variation that included items only
 test('should not notify when passed lengths are same', function() {
   obj.arrayContentWillChange(0, 1, 1);
-  equals(obj._after, 0);
+  equal(obj._after, 0);
 
   obj.arrayContentDidChange(0, 1, 1);
-  equals(obj._after, 0);
+  equal(obj._after, 0);
 });
 
 test('should notify when passed lengths are different', function() {
   obj.arrayContentWillChange(0, 1, 2);
-  equals(obj._after, 0);
+  equal(obj._after, 0);
 
   obj.arrayContentDidChange(0, 1, 2);
-  equals(obj._after, 1);
+  equal(obj._after, 1);
 });
 
 
@@ -169,12 +169,12 @@ module('notify array observers', {
       _after: null,
 
       arrayWillChange: function() {
-        equals(this._before, null); // should only call once
+        equal(this._before, null); // should only call once
         this._before = Array.prototype.slice.call(arguments);
       },
 
       arrayDidChange: function() {
-        equals(this._after, null); // should only call once
+        equal(this._after, null); // should only call once
         this._after = Array.prototype.slice.call(arguments);
       }
     });
@@ -189,36 +189,36 @@ module('notify array observers', {
 
 test('should notify enumerable observers when called with no params', function() {
   obj.arrayContentWillChange();
-  same(observer._before, [obj, 0, -1, -1]);
+  deepEqual(observer._before, [obj, 0, -1, -1]);
 
   obj.arrayContentDidChange();
-  same(observer._after, [obj, 0, -1, -1]);
+  deepEqual(observer._after, [obj, 0, -1, -1]);
 });
 
 // API variation that included items only
 test('should notify when called with same length items', function() {
   obj.arrayContentWillChange(0, 1, 1);
-  same(observer._before, [obj, 0, 1, 1]);
+  deepEqual(observer._before, [obj, 0, 1, 1]);
 
   obj.arrayContentDidChange(0, 1, 1);
-  same(observer._after, [obj, 0, 1, 1]);
+  deepEqual(observer._after, [obj, 0, 1, 1]);
 });
 
 test('should notify when called with diff length items', function() {
   obj.arrayContentWillChange(0, 2, 1);
-  same(observer._before, [obj, 0, 2, 1]);
+  deepEqual(observer._before, [obj, 0, 2, 1]);
 
   obj.arrayContentDidChange(0, 2, 1);
-  same(observer._after, [obj, 0, 2, 1]);
+  deepEqual(observer._after, [obj, 0, 2, 1]);
 });
 
 test('removing enumerable observer should disable', function() {
   obj.removeArrayObserver(observer);
   obj.arrayContentWillChange();
-  same(observer._before, null);
+  deepEqual(observer._before, null);
 
   obj.arrayContentDidChange();
-  same(observer._after, null);
+  deepEqual(observer._after, null);
 });
 
 // ..........................................................
@@ -234,12 +234,12 @@ module('notify enumerable observers as well', {
       _after: null,
 
       enumerableWillChange: function() {
-        equals(this._before, null); // should only call once
+        equal(this._before, null); // should only call once
         this._before = Array.prototype.slice.call(arguments);
       },
 
       enumerableDidChange: function() {
-        equals(this._after, null); // should only call once
+        equal(this._after, null); // should only call once
         this._after = Array.prototype.slice.call(arguments);
       }
     });
@@ -254,36 +254,36 @@ module('notify enumerable observers as well', {
 
 test('should notify enumerable observers when called with no params', function() {
   obj.arrayContentWillChange();
-  same(observer._before, [obj, null, null], 'before');
+  deepEqual(observer._before, [obj, null, null], 'before');
 
   obj.arrayContentDidChange();
-  same(observer._after, [obj, null, null], 'after');
+  deepEqual(observer._after, [obj, null, null], 'after');
 });
 
 // API variation that included items only
 test('should notify when called with same length items', function() {
   obj.arrayContentWillChange(0, 1, 1);
-  same(observer._before, [obj, ['ITEM-0'], 1], 'before');
+  deepEqual(observer._before, [obj, ['ITEM-0'], 1], 'before');
 
   obj.arrayContentDidChange(0, 1, 1);
-  same(observer._after, [obj, 1, ['ITEM-0']], 'after');
+  deepEqual(observer._after, [obj, 1, ['ITEM-0']], 'after');
 });
 
 test('should notify when called with diff length items', function() {
   obj.arrayContentWillChange(0, 2, 1);
-  same(observer._before, [obj, ['ITEM-0', 'ITEM-1'], 1], 'before');
+  deepEqual(observer._before, [obj, ['ITEM-0', 'ITEM-1'], 1], 'before');
 
   obj.arrayContentDidChange(0, 2, 1);
-  same(observer._after, [obj, 2, ['ITEM-0']], 'after');
+  deepEqual(observer._after, [obj, 2, ['ITEM-0']], 'after');
 });
 
 test('removing enumerable observer should disable', function() {
   obj.removeEnumerableObserver(observer);
   obj.arrayContentWillChange();
-  same(observer._before, null, 'before');
+  deepEqual(observer._before, null, 'before');
 
   obj.arrayContentDidChange();
-  same(observer._after, null, 'after');
+  deepEqual(observer._after, null, 'after');
 });
 
 // ..........................................................
@@ -326,7 +326,7 @@ test('adding an object should notify (@each)', function() {
     isDone: false
   }));
 
-  equals(called, 1, "calls observer when object is pushed");
+  equal(called, 1, "calls observer when object is pushed");
 
 });
 
@@ -348,7 +348,7 @@ test('adding an object should notify (@each.isDone)', function() {
     isDone: false
   }));
 
-  equals(called, 1, "calls observer when object is pushed");
+  equal(called, 1, "calls observer when object is pushed");
 
 });
 
@@ -367,7 +367,7 @@ test('modifying the array should also indicate the isDone prop itself has change
   count = 0;
   var item = ary.objectAt(2);
   set(item, 'isDone', !get(item, 'isDone'));
-  equals(count, 1, '@each.isDone should have notified');
+  equal(count, 1, '@each.isDone should have notified');
 });
 
 
@@ -383,14 +383,14 @@ testBoth("should be clear caches for computed properties that have dependent key
   });
 
   get(obj, 'resources').pushObject(Ember.Object.create({ common: "HI!" }));
-  equals("HI!", get(obj, 'common'));
+  equal("HI!", get(obj, 'common'));
 
   set(get(obj, 'resources').objectAt(0), 'common', "BYE!");
-  equals("BYE!", get(obj, 'common'));
+  equal("BYE!", get(obj, 'common'));
 });
 
 testBoth("observers that contain @each in the path should fire only once the first time they are accessed", function(get, set) {
-  count = 0;
+  var count = 0;
 
   var obj = Ember.Object.create({
     init: function() {
@@ -408,5 +408,5 @@ testBoth("observers that contain @each in the path should fire only once the fir
   // Observer fires third time when property on an object is changed
   set(get(obj, 'resources').objectAt(0), 'common', "BYE!");
 
-  equals(count, 3, "observers should only be called once");
+  equal(count, 3, "observers should only be called once");
 });

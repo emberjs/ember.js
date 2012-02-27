@@ -42,12 +42,12 @@ test("a Metamorph view is not a view's parentView", function() {
     view.appendTo("#qunit-fixture");
   });
 
-  equals(get(childView, 'parentView'), view, "A child of a metamorph view cannot see the metamorph view as its parent");
+  equal(get(childView, 'parentView'), view, "A child of a metamorph view cannot see the metamorph view as its parent");
 
   var children = get(view, 'childViews');
 
-  equals(get(children, 'length'), 1, "precond - there is only one child of the main node");
-  equals(children.objectAt(0), childView, "... and it is not the metamorph");
+  equal(get(children, 'length'), 1, "precond - there is only one child of the main node");
+  equal(children.objectAt(0), childView, "... and it is not the metamorph");
 });
 
 module("Metamorph views correctly handle DOM", {
@@ -83,7 +83,7 @@ module("Metamorph views correctly handle DOM", {
 test("a metamorph view generates without a DOM node", function() {
   var meta = Ember.$("> h2", "#" + get(view, 'elementId'));
 
-  equals(meta.length, 1, "The metamorph element should be directly inside its parent");
+  equal(meta.length, 1, "The metamorph element should be directly inside its parent");
 });
 
 test("a metamorph view can be removed from the DOM", function() {
@@ -92,18 +92,18 @@ test("a metamorph view can be removed from the DOM", function() {
   });
 
   var meta = Ember.$('#from-morph');
-  equals(meta.length, 0, "the associated DOM was removed");
+  equal(meta.length, 0, "the associated DOM was removed");
 });
 
 test("a metamorph view can be rerendered", function() {
-  equals(Ember.$('#from-meta').text(), "Jason", "precond - renders to the DOM");
+  equal(Ember.$('#from-meta').text(), "Jason", "precond - renders to the DOM");
 
   set(metamorphView, 'powerRanger', 'Trini');
   Ember.run(function() {
     metamorphView.rerender();
   });
 
-  equals(Ember.$('#from-meta').text(), "Trini", "updates value when re-rendering");
+  equal(Ember.$('#from-meta').text(), "Trini", "updates value when re-rendering");
 });
 
 

@@ -10,7 +10,7 @@ var suite = Ember.EnumerableTests;
 
 // ..........................................................
 // some()
-// 
+//
 
 suite.module('some');
 
@@ -18,52 +18,52 @@ suite.test('some should should invoke callback on each item as long as you retur
   var obj = this.newObject(),
       ary = this.toArray(obj),
       found = [], result;
-      
+
   result = obj.some(function(i) { found.push(i); return false; });
-  equals(result, false, 'return value of obj.some');
-  same(found, ary, 'items passed during some() should match');
+  equal(result, false, 'return value of obj.some');
+  deepEqual(found, ary, 'items passed during some() should match');
 });
 
 suite.test('every should stop invoking when you return true', function() {
   var obj = this.newObject(),
       ary = this.toArray(obj),
-      cnt = ary.length - 2, 
-      exp = cnt, 
+      cnt = ary.length - 2,
+      exp = cnt,
       found = [], result;
-      
-  result = obj.some(function(i) { found.push(i); return !(--cnt>0); });
-  equals(result, true, 'return value of obj.some');
-  equals(found.length, exp, 'should invoke proper number of times');
-  same(found, ary.slice(0,-2), 'items passed during some() should match');
+
+  result = obj.some(function(i) { found.push(i); return --cnt <= 0; });
+  equal(result, true, 'return value of obj.some');
+  equal(found.length, exp, 'should invoke proper number of times');
+  deepEqual(found, ary.slice(0,-2), 'items passed during some() should match');
 });
 
 // ..........................................................
 // someProperty()
-// 
+//
 
 suite.module('someProperty');
 
 suite.test('should return true of any property matches', function() {
   var obj = this.newObject([
-    { foo: 'foo', bar: 'BAZ' }, 
+    { foo: 'foo', bar: 'BAZ' },
     Ember.Object.create({ foo: 'foo', bar: 'bar' })
   ]);
-  
-  equals(obj.someProperty('foo', 'foo'), true, 'someProperty(foo)');
-  equals(obj.someProperty('bar', 'bar'), true, 'someProperty(bar)');
-  equals(obj.someProperty('bar', 'BIFF'), false, 'someProperty(BIFF)');
+
+  equal(obj.someProperty('foo', 'foo'), true, 'someProperty(foo)');
+  equal(obj.someProperty('bar', 'bar'), true, 'someProperty(bar)');
+  equal(obj.someProperty('bar', 'BIFF'), false, 'someProperty(BIFF)');
 });
 
 suite.test('should return true of any property is true', function() {
   var obj = this.newObject([
-    { foo: 'foo', bar: true }, 
+    { foo: 'foo', bar: true },
     Ember.Object.create({ foo: 'bar', bar: false })
   ]);
 
   // different values - all eval to true
-  equals(obj.someProperty('foo'), true, 'someProperty(foo)');
-  equals(obj.someProperty('bar'), true, 'someProperty(bar)');
-  equals(obj.someProperty('BIFF'), false, 'someProperty(biff)');
+  equal(obj.someProperty('foo'), true, 'someProperty(foo)');
+  equal(obj.someProperty('bar'), true, 'someProperty(bar)');
+  equal(obj.someProperty('BIFF'), false, 'someProperty(biff)');
 });
 
 suite.test('should return true if any property matches null', function() {
@@ -72,8 +72,8 @@ suite.test('should return true if any property matches null', function() {
     Ember.Object.create({ foo: 'foo', bar: null })
   ]);
 
-  equals(obj.someProperty('foo', null), true, "someProperty('foo', null)");
-  equals(obj.someProperty('bar', null), true, "someProperty('bar', null)");
+  equal(obj.someProperty('foo', null), true, "someProperty('foo', null)");
+  equal(obj.someProperty('bar', null), true, "someProperty('bar', null)");
 });
 
 suite.test('should return true if any property is undefined', function() {
@@ -82,8 +82,8 @@ suite.test('should return true if any property is undefined', function() {
     Ember.Object.create({ foo: 'foo' })
   ]);
 
-  equals(obj.someProperty('foo', undefined), true, "someProperty('foo', undefined)");
-  equals(obj.someProperty('bar', undefined), true, "someProperty('bar', undefined)");
+  equal(obj.someProperty('foo', undefined), true, "someProperty('foo', undefined)");
+  equal(obj.someProperty('bar', undefined), true, "someProperty('bar', undefined)");
 });
 
 suite.test('should not match undefined properties without second argument', function() {
@@ -92,5 +92,5 @@ suite.test('should not match undefined properties without second argument', func
     Ember.Object.create({ })
   ]);
 
-  equals(obj.someProperty('foo'), false, "someProperty('foo', undefined)");
+  equal(obj.someProperty('foo'), false, "someProperty('foo', undefined)");
 });

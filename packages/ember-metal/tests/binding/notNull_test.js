@@ -3,7 +3,7 @@
 // Copyright: ©2011 Strobe Inc. and contributors.
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
-/*globals MyApp */
+/*globals MyApp:true */
 
 module('system/binding/notNull', {
   setup: function() {
@@ -19,15 +19,15 @@ module('system/binding/notNull', {
 });
 
 test('allow empty string as placeholder', function() {
-  
+
   var binding = Ember.bind(MyApp, 'bar.value', 'foo.value').notNull('');
 
   Ember.run.sync();
-  same(Ember.getPath('MyApp.bar.value'), 'FOO', 'value passes through');
+  deepEqual(Ember.getPath('MyApp.bar.value'), 'FOO', 'value passes through');
 
   Ember.setPath('MyApp.foo.value', null);
   Ember.run.sync();
-  same(Ember.getPath('MyApp.bar.value'), '', 'null gets replaced');
+  deepEqual(Ember.getPath('MyApp.bar.value'), '', 'null gets replaced');
 
 });
 

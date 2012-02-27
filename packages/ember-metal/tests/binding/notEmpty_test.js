@@ -3,7 +3,7 @@
 // Copyright: ©2011 Strobe Inc. and contributors.
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
-/*globals MyApp */
+/*globals MyApp:true */
 
 module('system/binding/notEmpty', {
   setup: function() {
@@ -19,18 +19,18 @@ module('system/binding/notEmpty', {
 });
 
 test('forces binding values to be notEmpty if enumerable', function() {
-  
+
   var binding = Ember.bind(MyApp, 'bar.value', 'foo.value').notEmpty('(EMPTY)');
 
   Ember.run.sync();
-  same(Ember.getPath('MyApp.bar.value'), 'FOO', '1 MyApp.bar.value');
+  deepEqual(Ember.getPath('MyApp.bar.value'), 'FOO', '1 MyApp.bar.value');
 
   Ember.setPath('MyApp.foo.value', ['FOO']);
   Ember.run.sync();
-  same(Ember.getPath('MyApp.bar.value'), ['FOO'], '2 Array passes through');
+  deepEqual(Ember.getPath('MyApp.bar.value'), ['FOO'], '2 Array passes through');
 
   Ember.setPath('MyApp.foo.value', []);
   Ember.run.sync();
-  same(Ember.getPath('MyApp.bar.value'), '(EMPTY)', '3 uses empty placeholder');
+  deepEqual(Ember.getPath('MyApp.bar.value'), '(EMPTY)', '3 uses empty placeholder');
 
 });

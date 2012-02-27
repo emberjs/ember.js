@@ -40,7 +40,7 @@ Ember.EventDispatcher = Ember.Object.extend(
 
     This will be called after the browser sends a DOMContentReady event. By
     default, it will set up all of the listeners on the document body. If you
-    would like to register the listeners on different element, set the event
+    would like to register the listeners on a different element, set the event
     dispatcher's `root` property.
   */
   setup: function(addedEvents) {
@@ -72,7 +72,7 @@ Ember.EventDispatcher = Ember.Object.extend(
       dragend     : 'dragEnd'
     };
 
-    jQuery.extend(events, addedEvents || {});
+    Ember.$.extend(events, addedEvents || {});
 
     var rootElement = Ember.$(get(this, 'rootElement'));
 
@@ -82,7 +82,7 @@ Ember.EventDispatcher = Ember.Object.extend(
 
     rootElement.addClass('ember-application');
 
-    ember_assert('Unable to add "ember-application" class to rootElement. Make sure you the body or an element in the body.', rootElement.is('.ember-application'));
+    ember_assert('Unable to add "ember-application" class to rootElement. Make sure you set rootElement to the body or an element in the body.', rootElement.is('.ember-application'));
 
     for (event in events) {
       if (events.hasOwnProperty(event)) {
@@ -130,6 +130,16 @@ Ember.EventDispatcher = Ember.Object.extend(
 
       return result;
     });
+
+    rootElement.delegate('[data-ember-action]', event + '.ember', function(evt) {
+      var actionId = $(evt.currentTarget).attr('data-ember-action'),
+          action   = Ember.Handlebars.ActionHelper.registeredActions[actionId],
+          handler  = action.handler;
+
+      if (action.eventName === eventName) {
+        return handler(evt);
+      }
+    });
   },
 
   /** @private */
@@ -150,7 +160,7 @@ Ember.EventDispatcher = Ember.Object.extend(
   _dispatchEvent: function(object, evt, eventName, view) {
     var result = true;
 
-    handler = object[eventName];
+    var handler = object[eventName];
     if (Ember.typeOf(handler) === 'function') {
       result = handler.call(object, evt, view);
       evt.stopPropagation();

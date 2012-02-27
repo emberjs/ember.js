@@ -18,7 +18,7 @@ test('defining a new subclass should add it to set of parent', function() {
 test('defining sub-sub class should only go to parent', function() {
   var Sub = Ember.Object.extend();
   var SubSub = Sub.extend();
-  
+
   ok(Ember.Object.subclasses.contains(Sub), 'Ember.Object contains Sub');
   ok(Sub.subclasses.contains(SubSub), 'Sub contains SubSub');
 });

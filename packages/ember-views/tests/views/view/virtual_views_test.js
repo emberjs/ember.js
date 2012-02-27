@@ -29,11 +29,11 @@ test("a virtual view does not appear as a view's parentView", function() {
   });
 
   Ember.run(function() {
-    $("#qunit-fixture").empty();
+    Ember.$("#qunit-fixture").empty();
     rootView.appendTo("#qunit-fixture");
   });
 
-  equal($("#root-view > h2").length, 1, "nodes with '' tagName do not create wrappers");
+  equal(Ember.$("#root-view > h2").length, 1, "nodes with '' tagName do not create wrappers");
   equal(get(childView, 'parentView'), rootView);
 
   var children = get(rootView, 'childViews');

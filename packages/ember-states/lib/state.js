@@ -1,12 +1,24 @@
-var get = Ember.get, set = Ember.set;
+var get = Ember.get, set = Ember.set, getPath = Ember.getPath;
 
 Ember.State = Ember.Object.extend({
   isState: true,
   parentState: null,
   start: null,
+  name: null,
+  path: Ember.computed(function() {
+    var parentPath = getPath(this, 'parentState.path'),
+        path = get(this, 'name');
+
+    if (parentPath) {
+      path = parentPath + '.' + path;
+    }
+
+    return path;
+  }).property().cacheable(),
 
   init: function() {
     var states = get(this, 'states'), foundStates;
+    var name;
 
     // As a convenience, loop over the properties
     // of this state and look for any that are other
@@ -16,40 +28,37 @@ Ember.State = Ember.Object.extend({
 
     if (!states) {
       states = {};
-      for (var name in this) {
-        if (name === "constructor") { continue; }
-        value = this.setupChild(name, this[name]);
 
-        if (value) {
-          foundStates = true;
-          states[name] = value;
-        }
+      for (name in this) {
+        if (name === "constructor") { continue; }
+        this.setupChild(states, name, this[name]);
       }
 
-      if (foundStates) { set(this, 'states', states); }
+      set(this, 'states', states);
     } else {
-      for (var name in states) {
-        this.setupChild(name, states[name]);
+      for (name in states) {
+        this.setupChild(states, name, states[name]);
       }
     }
 
     set(this, 'routes', {});
   },
 
-  setupChild: function(name, value) {
+  setupChild: function(states, name, value) {
     if (!value) { return false; }
 
     if (Ember.State.detect(value)) {
-      value = value.create();
+      value = value.create({
+        name: name
+      });
+    } else if (value.isState) {
+      set(value, 'name', name);
     }
 
     if (value.isState) {
       set(value, 'parentState', this);
-      set(value, 'name', (get(this, 'name') || '') + '.' + name);
-      return value;
+      states[name] = value;
     }
-
-    return false;
   },
 
   enter: Ember.K,

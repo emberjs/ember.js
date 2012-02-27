@@ -3,13 +3,13 @@
 // Copyright: ©2011 Strobe Inc. and contributors.
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
-/*globals Handlebars */
 
 require('ember-handlebars/ext');
 require('ember-handlebars/views/bindable_span');
 require('ember-handlebars/views/metamorph_view');
 
 var get = Ember.get, getPath = Ember.Handlebars.getPath, set = Ember.set, fmt = Ember.String.fmt;
+var forEach = Ember.ArrayUtils.forEach;
 
 var EmberHandlebars = Ember.Handlebars, helpers = EmberHandlebars.helpers;
 var helpers = EmberHandlebars.helpers;
@@ -26,7 +26,7 @@ var helpers = EmberHandlebars.helpers;
 
     // Set up observers for observable objects
     if ('object' === typeof this) {
-      // Create the view that will wrap the output of this template/property 
+      // Create the view that will wrap the output of this template/property
       // and add it to the nearest view's childViews array.
       // See the documentation of Ember._BindableSpanView for more.
       var bindView = view.createChildView(Ember._BindableSpanView, {
@@ -62,8 +62,8 @@ var helpers = EmberHandlebars.helpers;
   };
 
   /**
-    '_triageMustache' is used internally select between a binding and helper for 
-    the given context. Until this point, it would be hard to determine if the 
+    '_triageMustache' is used internally select between a binding and helper for
+    the given context. Until this point, it would be hard to determine if the
     mustache is a property reference or a regular helper reference. This triage
     helper resolves that.
 
@@ -86,16 +86,16 @@ var helpers = EmberHandlebars.helpers;
   });
 
   /**
-    `bind` can be used to display a value, then update that value if it 
-    changes. For example, if you wanted to print the `title` property of 
+    `bind` can be used to display a value, then update that value if it
+    changes. For example, if you wanted to print the `title` property of
     `content`:
 
         {{bind "content.title"}}
 
-    This will return the `title` property as a string, then create a new 
-    observer at the specified path. If it changes, it will update the value in 
-    DOM. Note that if you need to support IE7 and IE8 you must modify the 
-    model objects properties using Ember.get() and Ember.set() for this to work as 
+    This will return the `title` property as a string, then create a new
+    observer at the specified path. If it changes, it will update the value in
+    DOM. Note that if you need to support IE7 and IE8 you must modify the
+    model objects properties using Ember.get() and Ember.set() for this to work as
     it relies on Ember's KVO system.  For all other browsers this will be handled
     for you automatically.
 
@@ -116,7 +116,7 @@ var helpers = EmberHandlebars.helpers;
   });
 
   /**
-    Use the `boundIf` helper to create a conditional that re-evaluates 
+    Use the `boundIf` helper to create a conditional that re-evaluates
     whenever the bound value changes.
 
         {{#boundIf "content.shouldDisplayTitle"}}
@@ -150,7 +150,7 @@ var helpers = EmberHandlebars.helpers;
   @returns {String} HTML string
 */
 EmberHandlebars.registerHelper('with', function(context, options) {
-  ember_assert("You must pass exactly one argument to the with helper", arguments.length == 2);
+  ember_assert("You must pass exactly one argument to the with helper", arguments.length === 2);
   ember_assert("You must pass a block to the with helper", options.fn && options.fn !== Handlebars.VM.noop);
 
   return helpers.bind.call(options.contexts[0], context, options);
@@ -164,7 +164,7 @@ EmberHandlebars.registerHelper('with', function(context, options) {
   @returns {String} HTML string
 */
 EmberHandlebars.registerHelper('if', function(context, options) {
-  ember_assert("You must pass exactly one argument to the if helper", arguments.length == 2);
+  ember_assert("You must pass exactly one argument to the if helper", arguments.length === 2);
   ember_assert("You must pass a block to the if helper", options.fn && options.fn !== Handlebars.VM.noop);
 
   return helpers.boundIf.call(options.contexts[0], context, options);
@@ -177,7 +177,7 @@ EmberHandlebars.registerHelper('if', function(context, options) {
   @returns {String} HTML string
 */
 EmberHandlebars.registerHelper('unless', function(context, options) {
-  ember_assert("You must pass exactly one argument to the unless helper", arguments.length == 2);
+  ember_assert("You must pass exactly one argument to the unless helper", arguments.length === 2);
   ember_assert("You must pass a block to the unless helper", options.fn && options.fn !== Handlebars.VM.noop);
 
   var fn = options.fn, inverse = options.inverse;
@@ -211,7 +211,7 @@ EmberHandlebars.registerHelper('bindAttr', function(options) {
   // Generate a unique id for this element. This will be added as a
   // data attribute to the element so it can be looked up when
   // the bound property changes.
-  var dataId = ++jQuery.uuid;
+  var dataId = ++Ember.$.uuid;
 
   // Handle classes differently, as we can bind multiple classes
   var classBindings = attrs['class'];
@@ -225,14 +225,15 @@ EmberHandlebars.registerHelper('bindAttr', function(options) {
 
   // For each attribute passed, create an observer and emit the
   // current value of the property as an attribute.
-  attrKeys.forEach(function(attr) {
+  forEach(attrKeys, function(attr) {
     var property = attrs[attr];
 
     ember_assert(fmt("You must provide a String for a bound attribute, not %@", [property]), typeof property === 'string');
 
-    var value = getPath(ctx, property);
+    var value = (property === 'this') ? ctx : getPath(ctx, property),
+        type = Ember.typeOf(value);
 
-    ember_assert(fmt("Attributes must be numbers, strings or booleans, not %@", [value]), value == null || typeof value === 'number' || typeof value === 'string' || typeof value === 'boolean');
+    ember_assert(fmt("Attributes must be numbers, strings or booleans, not %@", [value]), value === null || value === undefined || type === 'number' || type === 'string' || type === 'boolean');
 
     var observer, invoker;
 
@@ -240,7 +241,7 @@ EmberHandlebars.registerHelper('bindAttr', function(options) {
     observer = function observer() {
       var result = getPath(ctx, property);
 
-      ember_assert(fmt("Attributes must be numbers, strings or booleans, not %@", [result]), result == null || typeof result === 'number' || typeof result === 'string' || typeof result === 'boolean');
+      ember_assert(fmt("Attributes must be numbers, strings or booleans, not %@", [result]), result === null || result === undefined || typeof result === 'number' || typeof result === 'string' || typeof result === 'boolean');
 
       var elem = view.$("[data-bindAttr-" + dataId + "='" + dataId + "']");
 
@@ -264,11 +265,11 @@ EmberHandlebars.registerHelper('bindAttr', function(options) {
     // Add an observer to the view for when the property changes.
     // When the observer fires, find the element using the
     // unique data id and update the attribute to the new value.
-    Ember.addObserver(ctx, property, invoker);
+    if (property !== 'this') {
+      Ember.addObserver(ctx, property, invoker);
+    }
 
     // if this changes, also change the logic in ember-views/lib/views/view.js
-    var type = typeof value;
-
     if ((type === 'string' || (type === 'number' && !isNaN(value)))) {
       ret.push(attr + '="' + value + '"');
     } else if (value && type === 'boolean') {
@@ -283,20 +284,20 @@ EmberHandlebars.registerHelper('bindAttr', function(options) {
 
 /**
   Helper that, given a space-separated string of property paths and a context,
-  returns an array of class names. Calling this method also has the side 
-  effect of setting up observers at those property paths, such that if they 
+  returns an array of class names. Calling this method also has the side
+  effect of setting up observers at those property paths, such that if they
   change, the correct class name will be reapplied to the DOM element.
 
-  For example, if you pass the string "fooBar", it will first look up the 
-  "fooBar" value of the context. If that value is YES, it will add the 
-  "foo-bar" class to the current element (i.e., the dasherized form of 
-  "fooBar"). If the value is a string, it will add that string as the class. 
+  For example, if you pass the string "fooBar", it will first look up the
+  "fooBar" value of the context. If that value is true, it will add the
+  "foo-bar" class to the current element (i.e., the dasherized form of
+  "fooBar"). If the value is a string, it will add that string as the class.
   Otherwise, it will not add any new class name.
 
-  @param {Ember.Object} context 
+  @param {Ember.Object} context
     The context from which to lookup properties
 
-  @param {String} classBindings 
+  @param {String} classBindings
     A string, space-separated, of class bindings to use
 
   @param {Ember.View} view
@@ -323,7 +324,7 @@ EmberHandlebars.bindClasses = function(context, classBindings, view, bindAttrId)
 
     // If value is a Boolean and true, return the dasherized property
     // name.
-    if (val === YES) {
+    if (val === true) {
       if (className) { return className; }
 
       // Normalize property path to be suitable for use
@@ -332,9 +333,9 @@ EmberHandlebars.bindClasses = function(context, classBindings, view, bindAttrId)
       var parts = property.split('.');
       return Ember.String.dasherize(parts[parts.length-1]);
 
-    // If the value is not NO, undefined, or null, return the current
+    // If the value is not false, undefined, or null, return the current
     // value of the property.
-    } else if (val !== NO && val !== undefined && val !== null) {
+    } else if (val !== false && val !== undefined && val !== null) {
       return val;
 
     // Nothing to display. Return null so that the old class is removed
@@ -346,7 +347,7 @@ EmberHandlebars.bindClasses = function(context, classBindings, view, bindAttrId)
 
   // For each property passed, loop through and setup
   // an observer.
-  classBindings.split(' ').forEach(function(binding) {
+  forEach(classBindings.split(' '), function(binding) {
 
     // Variable in which the old class value is saved. The observer function
     // closes over this variable, so it knows which string to remove when
@@ -389,17 +390,17 @@ EmberHandlebars.bindClasses = function(context, classBindings, view, bindAttrId)
       Ember.run.once(observer);
     };
 
-    property = binding.split(':')[0];
+    var property = binding.split(':')[0];
     Ember.addObserver(context, property, invoker);
 
-    // We've already setup the observer; now we just need to figure out the 
+    // We've already setup the observer; now we just need to figure out the
     // correct behavior right now on the first pass through.
     value = classStringForProperty(binding);
 
     if (value) {
       ret.push(value);
 
-      // Make sure we save the current value so that it can be removed if the 
+      // Make sure we save the current value so that it can be removed if the
       // observer fires.
       oldClass = value;
     }

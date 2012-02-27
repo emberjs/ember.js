@@ -3,7 +3,7 @@
 // Copyright: ©2011 Strobe Inc. and contributors.
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
-/*globals TemplateTests */
+/*globals TemplateTests:true App:true */
 
 var set = Ember.set, get = Ember.get, setPath = Ember.setPath;
 var firstGrandchild = function(view) {
@@ -26,6 +26,7 @@ module("ember-handlebars/tests/views/collection_view_test", {
     }
 
     window.TemplateTests = undefined;
+    window.App = undefined;
   }
 });
 
@@ -43,7 +44,7 @@ test("passing a block to the collection helper sets it as the template for examp
     view.appendTo('#qunit-fixture');
   });
 
-  equals(view.$('label').length, 3, 'one label element is created for each content item');
+  equal(view.$('label').length, 3, 'one label element is created for each content item');
 });
 
 test("collection helper should accept relative paths", function() {
@@ -60,7 +61,7 @@ test("collection helper should accept relative paths", function() {
     view.appendTo('#qunit-fixture');
   });
 
-  equals(view.$('label').length, 3, 'one label element is created for each content item');
+  equal(view.$('label').length, 3, 'one label element is created for each content item');
 });
 
 test("empty views should be removed when content is added to the collection (regression, ht: msofaer)", function() {
@@ -90,7 +91,42 @@ test("empty views should be removed when content is added to the collection (reg
     App.ListController.pushObject({title : "Go Away, Placeholder Row!"});
   });
 
-  equals(view.$('tr').length, 1, 'has one row');
+  equal(view.$('tr').length, 1, 'has one row');
+
+  Ember.run(function(){ window.App.destroy(); });
+});
+
+test("collection helper should accept emptyViewClass attribute", function() {
+  window.App = Ember.Application.create();
+
+  App.EmptyView = Ember.View.extend({
+    classNames: ['empty']
+  });
+
+  App.ListController = Ember.ArrayProxy.create({
+    content : Ember.A()
+  });
+
+  view = Ember.View.create({
+    template: Ember.Handlebars.compile('{{#collection emptyViewClass="App.EmptyView" contentBinding="App.ListController" tagName="table"}} <td>{{content.title}}</td> {{/collection}}')
+  });
+
+  Ember.run(function() {
+    view.appendTo('#qunit-fixture');
+  });
+
+  equals(view.$('tr').length, 0, 'emptyViewClass has no effect without inverse');
+  view.remove();
+
+  view = Ember.View.create({
+    template: Ember.Handlebars.compile('{{#collection emptyViewClass="App.EmptyView" contentBinding="App.ListController" tagName="table"}} <td>{{content.title}}</td> {{else}} <td>No Rows Yet</td> {{/collection}}')
+  });
+
+  Ember.run(function() {
+    view.appendTo('#qunit-fixture');
+  });
+
+  equals(view.$('tr').hasClass('empty'), 1, 'if emptyViewClass is given it is used for inverse');
 
   Ember.run(function(){ window.App.destroy(); });
 });
@@ -109,7 +145,7 @@ test("if no content is passed, and no 'else' is specified, nothing is rendered",
     view.appendTo('#qunit-fixture');
   });
 
-  equals(view.$('li').length, 0, 'if no "else" is specified, nothing is rendered');
+  equal(view.$('li').length, 0, 'if no "else" is specified, nothing is rendered');
 });
 
 test("if no content is passed, and 'else' is specified, the else block is rendered", function() {
@@ -126,7 +162,7 @@ test("if no content is passed, and 'else' is specified, the else block is render
     view.appendTo('#qunit-fixture');
   });
 
-  equals(view.$('li:has(del)').length, 1, 'the else block is rendered');
+  equal(view.$('li:has(del)').length, 1, 'the else block is rendered');
 });
 
 test("a block passed to a collection helper defaults to the content property of the context", function() {
@@ -143,7 +179,7 @@ test("a block passed to a collection helper defaults to the content property of 
     view.appendTo('#qunit-fixture');
   });
 
-  equals(view.$('li:has(label:contains("foo")) + li:has(label:contains("bar")) + li:has(label:contains("baz"))').length, 1, 'one label element is created for each content item');
+  equal(view.$('li:has(label:contains("foo")) + li:has(label:contains("bar")) + li:has(label:contains("baz"))').length, 1, 'one label element is created for each content item');
 });
 
 test("a block passed to a collection helper defaults to the view", function() {
@@ -159,12 +195,12 @@ test("a block passed to a collection helper defaults to the view", function() {
   Ember.run(function() {
     view.appendTo('#qunit-fixture');
   });
-  equals(view.$('li:has(label:contains("foo")) + li:has(label:contains("bar")) + li:has(label:contains("baz"))').length, 1, 'precond - one aside element is created for each content item');
+  equal(view.$('li:has(label:contains("foo")) + li:has(label:contains("bar")) + li:has(label:contains("baz"))').length, 1, 'precond - one aside element is created for each content item');
 
   Ember.run(function() {
     set(firstChild(view), 'content', Ember.A());
   });
-  equals(view.$('label').length, 0, "all list item views should be removed from DOM");
+  equal(view.$('label').length, 0, "all list item views should be removed from DOM");
 });
 
 test("should include an id attribute if id is set in the options hash", function() {
@@ -181,7 +217,7 @@ test("should include an id attribute if id is set in the options hash", function
     view.appendTo('#qunit-fixture');
   });
 
-  equals(view.$('ul#baz').length, 1, "adds an id attribute");
+  equal(view.$('ul#baz').length, 1, "adds an id attribute");
 });
 
 test("should give its item views the class specified by itemClass", function() {
@@ -197,7 +233,7 @@ test("should give its item views the class specified by itemClass", function() {
     view.appendTo('#qunit-fixture');
   });
 
-  equals(view.$('ul li.baz').length, 3, "adds class attribute");
+  equal(view.$('ul li.baz').length, 3, "adds class attribute");
 });
 
 test("should give its item views the classBinding specified by itemClassBinding", function() {
@@ -214,19 +250,50 @@ test("should give its item views the classBinding specified by itemClassBinding"
     view.appendTo('#qunit-fixture');
   });
 
-  equals(view.$('ul li.is-baz').length, 2, "adds class on initial rendering");
+  equal(view.$('ul li.is-baz').length, 2, "adds class on initial rendering");
 
   Ember.run(function() {
     setPath(firstChild(view), 'content.0.isBaz', true);
   });
 
-  equals(view.$('ul li.is-baz').length, 3, "adds class when property changes");
+  equal(view.$('ul li.is-baz').length, 3, "adds class when property changes");
 
   Ember.run(function() {
     setPath(firstChild(view), 'content.0.isBaz', false);
   });
 
-  equals(view.$('ul li.is-baz').length, 2, "removes class when property changes");
+  equal(view.$('ul li.is-baz').length, 2, "removes class when property changes");
+});
+
+test("should give its item views the property specified by itemPropertyBinding", function() {
+  TemplateTests.itemPropertyBindingTestItemView = Ember.View.extend({
+    tagName: 'li'
+  });
+
+  // Use preserveContext=false so the itemView handlebar context is the view context
+  // Set itemView bindings using item*
+  var view = Ember.View.create({
+    baz: "baz",
+    content: Ember.A([Ember.Object.create(), Ember.Object.create(), Ember.Object.create()]),
+    template: Ember.Handlebars.compile('{{#collection contentBinding="content" tagName="ul" itemViewClass="TemplateTests.itemPropertyBindingTestItemView" itemPropertyBinding="baz" preserveContext=false}}{{property}}{{/collection}}')
+  });
+
+  Ember.run(function() {
+    view.appendTo('#qunit-fixture');
+  });
+
+  equals(view.$('ul li').length, 3, "adds 3 itemView");
+
+  view.$('ul li').each(function(i, li){
+    console.log( li)
+    equals($(li).text(), "baz", "creates the li with the property = baz");
+  })
+
+  Ember.run(function() {
+    setPath(view, 'baz', "yobaz");
+  });
+
+  equals(view.$('ul li:first').text(), "yobaz", "change property of sub view");
 });
 
 test("should work inside a bound {{#if}}", function() {
@@ -245,13 +312,13 @@ test("should work inside a bound {{#if}}", function() {
     view.appendTo('#qunit-fixture');
   });
 
-  equals(view.$('ul li').length, 3, "renders collection when conditional is true");
+  equal(view.$('ul li').length, 3, "renders collection when conditional is true");
 
-  Ember.run(function() { set(view, 'shouldDisplay', NO); });
-  equals(view.$('ul li').length, 0, "removes collection when conditional changes to false");
+  Ember.run(function() { set(view, 'shouldDisplay', false); });
+  equal(view.$('ul li').length, 0, "removes collection when conditional changes to false");
 
-  Ember.run(function() { set(view, 'shouldDisplay', YES); });
-  equals(view.$('ul li').length, 3, "collection renders when conditional changes to true");
+  Ember.run(function() { set(view, 'shouldDisplay', true); });
+  equal(view.$('ul li').length, 3, "collection renders when conditional changes to true");
 });
 
 test("should pass content as context when using {{#each}} helper", function() {
@@ -270,7 +337,7 @@ test("should pass content as context when using {{#each}} helper", function() {
 
   Ember.run(function() { view.appendTo('#qunit-fixture'); });
 
-  equals(view.$().text(), "Mac OS X 10.7: Lion Mac OS X 10.6: Snow Leopard Mac OS X 10.5: Leopard ", "prints each item in sequence");
+  equal(view.$().text(), "Mac OS X 10.7: Lion Mac OS X 10.6: Snow Leopard Mac OS X 10.5: Leopard ", "prints each item in sequence");
 });
 
 test("should re-render when the content object changes", function() {
@@ -295,8 +362,8 @@ test("should re-render when the content object changes", function() {
     set(firstChild(view), 'content', Ember.A(['ramalamadingdong']));
   });
 
-  equals(view.$('li').length, 1, "rerenders with correct number of items");
-  equals(view.$('li:eq(0)').text(), "ramalamadingdong");
+  equal(view.$('li').length, 1, "rerenders with correct number of items");
+  equal(view.$('li:eq(0)').text(), "ramalamadingdong");
 
 });
 
@@ -304,17 +371,17 @@ test("select tagName on collection helper automatically sets child tagName to op
   TemplateTests.RerenderTest = Ember.CollectionView.extend({
     content: Ember.A(['foo'])
   });
-  
+
   var view = Ember.View.create({
     template: Ember.Handlebars.compile('{{#collection TemplateTests.RerenderTest tagName="select"}}{{content}}{{/collection}}')
   });
-  
+
   Ember.run(function() {
     view.appendTo('qunit-fixture');
   });
-  
-  equals(view.$('option').length, 1, "renders the correct child tag name");
-  
+
+  equal(view.$('option').length, 1, "renders the correct child tag name");
+
 });
 
 test("tagName works in the #collection helper", function() {
@@ -330,15 +397,15 @@ test("tagName works in the #collection helper", function() {
     view.appendTo('#qunit-fixture');
   });
 
-  equals(view.$('ol').length, 1, "renders the correct tag name");
-  equals(view.$('li').length, 2, "rerenders with correct number of items");
+  equal(view.$('ol').length, 1, "renders the correct tag name");
+  equal(view.$('li').length, 2, "rerenders with correct number of items");
 
   Ember.run(function() {
     set(firstChild(view), 'content', Ember.A(['bing', 'bat', 'bang']));
   });
 
-  equals(view.$('li').length, 3, "rerenders with correct number of items");
-  equals(view.$('li:eq(0)').text(), "bing");
+  equal(view.$('li').length, 3, "rerenders with correct number of items");
+  equal(view.$('li:eq(0)').text(), "bing");
 });
 
 test("should render nested collections", function() {
@@ -361,9 +428,9 @@ test("should render nested collections", function() {
     view.appendTo('#qunit-fixture');
   });
 
-  equals(view.$('ul.outer > li').length, 1, "renders the outer list with correct number of items");
-  equals(view.$('ul.inner').length, 1, "the inner list exsits");
-  equals(view.$('ul.inner > li').length, 3, "renders the inner list with correct number of items");
+  equal(view.$('ul.outer > li').length, 1, "renders the outer list with correct number of items");
+  equal(view.$('ul.inner').length, 1, "the inner list exsits");
+  equal(view.$('ul.inner > li').length, 3, "renders the inner list with correct number of items");
 
 });
 
@@ -402,10 +469,10 @@ test("should render multiple, bound nested collections (#68)", function() {
     view.appendTo('#qunit-fixture');
   });
 
-  equals(view.$('ul.outer > li').length, 2, "renders the outer list with correct number of items");
-  equals(view.$('ul.inner').length, 2, "renders the correct number of inner lists");
-  equals(view.$('ul.inner:first > li').length, 3, "renders the first inner list with correct number of items");
-  equals(view.$('ul.inner:last > li').length, 3, "renders the second list with correct number of items");
+  equal(view.$('ul.outer > li').length, 2, "renders the outer list with correct number of items");
+  equal(view.$('ul.inner').length, 2, "renders the correct number of inner lists");
+  equal(view.$('ul.inner:first > li').length, 3, "renders the first inner list with correct number of items");
+  equal(view.$('ul.inner:last > li').length, 3, "renders the second list with correct number of items");
 
 });
 
@@ -435,7 +502,7 @@ test("should allow view objects to be swapped out without throwing an error (#78
     view.appendTo('#qunit-fixture');
   });
 
-  equals(view.$().text(), "Loading", "renders the loading text when the dataset is not ready");
+  equal(view.$().text(), "Loading", "renders the loading text when the dataset is not ready");
 
   Ember.run(function() {
     dataset = Ember.Object.create({
@@ -445,14 +512,14 @@ test("should allow view objects to be swapped out without throwing an error (#78
     TemplateTests.datasetController.set('dataset',dataset);
   });
 
-  equals(view.$('ul > li').length, 3, "renders the collection with the correct number of items when the dataset is ready");
+  equal(view.$('ul > li').length, 3, "renders the collection with the correct number of items when the dataset is ready");
 
   Ember.run(function() {
     secondDataset = Ember.Object.create({ready: false});
     TemplateTests.datasetController.set('dataset',secondDataset);
   });
 
-  equals(view.$().text(), "Loading", "renders the loading text when the second dataset is not ready");
+  equal(view.$().text(), "Loading", "renders the loading text when the second dataset is not ready");
 
 });
 

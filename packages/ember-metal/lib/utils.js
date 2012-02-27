@@ -6,10 +6,10 @@
 
 require('ember-metal/core');
 require('ember-metal/platform');
-    
+
 // ..........................................................
 // GUIDS
-// 
+//
 
 // Used for guid generation...
 var GUID_KEY = '__ember'+ (+ new Date());
@@ -38,7 +38,7 @@ var o_create = Ember.platform.create;
   If you inspect an object in your browser debugger you will often see these.
   They can be safely ignored.
 
-  On browsers that support it, these properties are added with enumeration 
+  On browsers that support it, these properties are added with enumeration
   disabled so they won't show up when you iterate over your properties.
 */
 Ember.GUID_KEY = GUID_KEY;
@@ -52,7 +52,7 @@ Ember.GUID_KEY = GUID_KEY;
 
   @param {Object} obj
     Optional object the guid will be used for.  If passed in, the guid will
-    be saved on the object and reused whenever you pass the same object 
+    be saved on the object and reused whenever you pass the same object
     again.
 
     If no object is passed, just generate a new guid.
@@ -123,7 +123,7 @@ Ember.guidFor = function(obj) {
 
 // ..........................................................
 // META
-// 
+//
 
 var META_DESC = {
   writable:    true,
@@ -146,29 +146,31 @@ Ember.META_KEY = META_KEY;
 var EMPTY_META = {
   descs: {},
   watching: {}
-}; 
+};
 
 if (Object.freeze) Object.freeze(EMPTY_META);
+
+var createMeta = Ember.platform.defineProperty.isSimulated ? o_create : function(meta) { return meta; };
 
 /**
   @private
   @function
-  
+
   Retrieves the meta hash for an object.  If 'writable' is true ensures the
   hash is writable for this object as well.
-  
+
   The meta object contains information about computed property descriptors as
   well as any watched properties and other information.  You generally will
-  not access this information directly but instead work with higher level 
+  not access this information directly but instead work with higher level
   methods that manipulate this hash indirectly.
 
   @param {Object} obj
     The object to retrieve meta for
-    
+
   @param {Boolean} writable
-    Pass false if you do not intend to modify the meta hash, allowing the 
+    Pass false if you do not intend to modify the meta hash, allowing the
     method to avoid making an unnecessary copy.
-    
+
   @returns {Hash}
 */
 Ember.meta = function meta(obj, writable) {
@@ -178,26 +180,27 @@ Ember.meta = function meta(obj, writable) {
 
   if (!ret) {
     o_defineProperty(obj, META_KEY, META_DESC);
-    ret = obj[META_KEY] = {
+    ret = obj[META_KEY] = createMeta({
       descs: {},
       watching: {},
       values: {},
       lastSetValues: {},
       cache:  {},
       source: obj
-    };
-    
+    });
+
     // make sure we don't accidentally try to create constructor like desc
     ret.descs.constructor = null;
-    
+
   } else if (ret.source !== obj) {
-    ret = obj[META_KEY] = o_create(ret);
+    ret = o_create(ret);
     ret.descs    = o_create(ret.descs);
     ret.values   = o_create(ret.values);
     ret.watching = o_create(ret.watching);
     ret.lastSetValues = {};
     ret.cache    = {};
     ret.source   = obj;
+    ret = obj[META_KEY] = createMeta(ret);
   }
   return ret;
 };
@@ -271,19 +274,19 @@ Ember.metaPath = function(obj, path, writable) {
   Wraps the passed function so that `this._super` will point to the superFunc
   when the function is invoked.  This is the primitive we use to implement
   calls to super.
-  
+
   @param {Function} func
     The function to call
-    
+
   @param {Function} superFunc
     The super function.
-    
+
   @returns {Function} wrapped function.
 */
 Ember.wrap = function(func, superFunc) {
-  
+
   function K() {}
-  
+
   var newFunc = function() {
     var ret, sup = this._super;
     this._super = superFunc || K;
@@ -291,15 +294,15 @@ Ember.wrap = function(func, superFunc) {
     this._super = sup;
     return ret;
   };
-  
+
   newFunc.base = func;
   return newFunc;
 };
 
 /**
   @function
-  
-  Returns YES if the passed object is an array or Array-like.
+
+  Returns true if the passed object is an array or Array-like.
 
   Ember Array Protocol:
 
@@ -325,12 +328,12 @@ Ember.isArray = function(obj) {
   Forces the passed object to be part of an array.  If the object is already
   an array or array-like, returns the object.  Otherwise adds the object to
   an array.  If obj is null or undefined, returns an empty array.
-  
+
   @param {Object} obj the object
   @returns {Array}
 */
 Ember.makeArray = function(obj) {
-  if (obj==null) return [];
+  if (obj === null || obj === undefined) return [];
   return Ember.isArray(obj) ? obj : [obj];
 };
 

@@ -2,42 +2,26 @@ require('ember-handlebars/ext');
 
 var EmberHandlebars = Ember.Handlebars, getPath = Ember.Handlebars.getPath;
 
-var ActionHelper = EmberHandlebars.ActionHelper = {};
+var ActionHelper = EmberHandlebars.ActionHelper = {
+  registeredActions: {}
+};
 
 ActionHelper.registerAction = function(actionName, eventName, target, view, context) {
-  var actionId = (++jQuery.uuid).toString(),
-      existingHandler = view[eventName];
+  var actionId = (++Ember.$.uuid).toString();
 
-  function handler(event) {
-    if (Ember.$(event.target).closest('[data-ember-action]').attr('data-ember-action') === actionId) {
-      event.preventDefault();
-
+  ActionHelper.registeredActions[actionId] = {
+    eventName: eventName,
+    handler: function(event) {
       if ('function' === typeof target.send) {
         return target.send(actionName, { view: view, event: event, context: context });
       } else {
         return target[actionName].call(target, view, event, context);
       }
     }
-  }
+  };
 
-  if (existingHandler) {
-    view[eventName] = function(event) {
-      var ret = handler.call(view, event);
-      return ret !== false ? existingHandler.call(view, event) : ret;
-    };
-  } else {
-    view[eventName] = handler;
-  }
-
-  view.reopen({
-    rerender: function() {
-      if (existingHandler) {
-        view[eventName] = existingHandler;
-      } else {
-        view[eventName] = null;
-      }
-      return this._super();
-    }
+  view.on('willRerender', function() {
+    delete ActionHelper.registeredActions[actionId];
   });
 
   return actionId;

@@ -1,3 +1,5 @@
+/*global Test:true*/
+
 module("Ember.TargetActionSupport");
 
 test("it should return false if no target or action are specified", function() {
@@ -30,7 +32,7 @@ test("it should invoke the send() method on objects that implement it", function
   var obj = Ember.Object.create(Ember.TargetActionSupport, {
     target: Ember.Object.create({
       send: function(evt) {
-        equals(evt, 'anEvent', "send() method was invoked with correct event name");
+        equal(evt, 'anEvent', "send() method was invoked with correct event name");
       }
     }),
 

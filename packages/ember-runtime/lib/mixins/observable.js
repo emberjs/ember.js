@@ -5,22 +5,22 @@
 // ==========================================================================
 
 var get = Ember.get, set = Ember.set;
-  
+
 /**
   @class
 
-  Restores some of the Ember 1.x Ember.Observable mixin API.  The new property 
+  Restores some of the Ember 1.x Ember.Observable mixin API.  The new property
   observing system does not require Ember.Observable to be applied anymore.
   Instead, on most browsers you can just access properties directly.  For
   code that needs to run on IE7 or IE8 you should use Ember.get() and Ember.set()
   instead.
-  
+
   If you have older code and you want to bring back the older Ember 1.x observable
   API, you can do so by readding Ember.Observable to Ember.Object like so:
-  
+
       Ember.Object.reopen(Ember.Observable);
-    
-  You will then be able to use the traditional get(), set() and other 
+
+  You will then be able to use the traditional get(), set() and other
   observable methods on your objects.
 
   @extends Ember.Mixin
@@ -29,7 +29,7 @@ Ember.Observable = Ember.Mixin.create(/** @scope Ember.Observable.prototype */ {
 
   /** @private - compatibility */
   isObserverable: true,
-  
+
   /**
     Retrieves the value of key from the object.
 
@@ -81,7 +81,7 @@ Ember.Observable = Ember.Mixin.create(/** @scope Ember.Observable.prototype */ {
     }
     return ret;
   },
-  
+
   /**
     Sets the key equal to value.
 
@@ -131,7 +131,7 @@ Ember.Observable = Ember.Mixin.create(/** @scope Ember.Observable.prototype */ {
     set(this, keyName, value);
     return this;
   },
-  
+
   /**
     To set multiple properties at once, call setProperties
     with a Hash:
@@ -167,7 +167,7 @@ Ember.Observable = Ember.Mixin.create(/** @scope Ember.Observable.prototype */ {
     Ember.beginPropertyChanges();
     return this;
   },
-  
+
   /**
     Ends a grouping of property changes.
 
@@ -184,7 +184,7 @@ Ember.Observable = Ember.Mixin.create(/** @scope Ember.Observable.prototype */ {
     Ember.endPropertyChanges();
     return this;
   },
-  
+
   /**
     Notify the observer system that a property is about to change.
 
@@ -205,7 +205,7 @@ Ember.Observable = Ember.Mixin.create(/** @scope Ember.Observable.prototype */ {
     Ember.propertyWillChange(this, keyName);
     return this;
   },
-  
+
   /**
     Notify the observer system that a property has just changed.
 
@@ -228,12 +228,12 @@ Ember.Observable = Ember.Mixin.create(/** @scope Ember.Observable.prototype */ {
     Ember.propertyDidChange(this, keyName);
     return this;
   },
-  
+
   notifyPropertyChange: function(keyName) {
     this.propertyWillChange(keyName);
     this.propertyDidChange(keyName);
     return this;
-  }, 
+  },
 
   /**
     Adds an observer on a property.
@@ -281,7 +281,7 @@ Ember.Observable = Ember.Mixin.create(/** @scope Ember.Observable.prototype */ {
   addObserver: function(key, target, method) {
     Ember.addObserver(this, key, target, method);
   },
-  
+
   /**
     Remove an observer you have previously registered on this object. Pass
     the same key, target, and method you passed to addObserver() and your
@@ -295,9 +295,9 @@ Ember.Observable = Ember.Mixin.create(/** @scope Ember.Observable.prototype */ {
   removeObserver: function(key, target, method) {
     Ember.removeObserver(this, key, target, method);
   },
-  
+
   /**
-    Returns YES if the object currently has observers registered for a
+    Returns true if the object currently has observers registered for a
     particular key. You can use this method to potentially defer performing
     an expensive action until someone begins observing a particular property
     on the object.
@@ -312,41 +312,45 @@ Ember.Observable = Ember.Mixin.create(/** @scope Ember.Observable.prototype */ {
   unknownProperty: function(key) {
     return undefined;
   },
-  
+
   setUnknownProperty: function(key, value) {
     this[key] = value;
   },
-  
+
   getPath: function(path) {
     return Ember.getPath(this, path);
   },
-  
+
   setPath: function(path, value) {
     Ember.setPath(this, path, value);
     return this;
   },
-  
+
+  getWithDefault: function(key, defaultValue) {
+    return Ember.getWithDefault(this, key, defaultValue);
+  },
+
   incrementProperty: function(keyName, increment) {
     if (!increment) { increment = 1; }
     set(this, keyName, (get(this, keyName) || 0)+increment);
     return get(this, keyName);
   },
-  
+
   decrementProperty: function(keyName, increment) {
     if (!increment) { increment = 1; }
     set(this, keyName, (get(this, keyName) || 0)-increment);
     return get(this, keyName);
   },
-  
+
   toggleProperty: function(keyName) {
     set(this, keyName, !get(this, keyName));
     return get(this, keyName);
   },
-  
+
   observersForKey: function(keyName) {
     return Ember.observersFor(this, keyName);
   }
-    
+
 });
 
 

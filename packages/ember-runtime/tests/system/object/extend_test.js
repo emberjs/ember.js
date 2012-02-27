@@ -10,7 +10,7 @@ test('Basic extend', function() {
   var SomeClass = Ember.Object.extend({ foo: 'BAR' });
   ok(SomeClass.isClass, "A class has isClass of true");
   var obj = new SomeClass();
-  equals(obj.foo, 'BAR');
+  equal(obj.foo, 'BAR');
   ok(obj.isInstance, "An instance of a class has isInstance of true");
 });
 
@@ -18,8 +18,8 @@ test('Sub-subclass', function() {
   var SomeClass = Ember.Object.extend({ foo: 'BAR' });
   var AnotherClass = SomeClass.extend({ bar: 'FOO' });
   var obj = new AnotherClass();
-  equals(obj.foo, 'BAR');
-  equals(obj.bar, 'FOO');
+  equal(obj.foo, 'BAR');
+  equal(obj.bar, 'FOO');
 });
 
 test('Overriding a method several layers deep', function() {
@@ -40,12 +40,12 @@ test('Overriding a method several layers deep', function() {
     fooCnt: 0,
     foo: function() { this.fooCnt++; this._super(); }
   });
-  
+
   var obj = new FinalClass();
   obj.foo();
   obj.bar();
-  equals(obj.fooCnt, 2, 'should invoke both');
-  equals(obj.barCnt, 2, 'should invoke both');
+  equal(obj.fooCnt, 2, 'should invoke both');
+  equal(obj.barCnt, 2, 'should invoke both');
 
   // Try overriding on create also
   obj = FinalClass.create({
@@ -54,8 +54,8 @@ test('Overriding a method several layers deep', function() {
 
   obj.foo();
   obj.bar();
-  equals(obj.fooCnt, 3, 'should invoke final as well');
-  equals(obj.barCnt, 2, 'should invoke both');
+  equal(obj.fooCnt, 3, 'should invoke final as well');
+  equal(obj.barCnt, 2, 'should invoke both');
 });
 
 

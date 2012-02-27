@@ -15,12 +15,12 @@ require('ember-handlebars/views/metamorph_view');
   @private
   @class
 
-  Ember._BindableSpanView is a private view created by the Handlebars `{{bind}}` 
+  Ember._BindableSpanView is a private view created by the Handlebars `{{bind}}`
   helpers that is used to keep track of bound properties.
 
-  Every time a property is bound using a `{{mustache}}`, an anonymous subclass 
-  of Ember._BindableSpanView is created with the appropriate sub-template and 
-  context set up. When the associated property changes, just the template for 
+  Every time a property is bound using a `{{mustache}}`, an anonymous subclass
+  of Ember._BindableSpanView is created with the appropriate sub-template and
+  context set up. When the associated property changes, just the template for
   this view will re-render.
 */
 Ember._BindableSpanView = Ember.View.extend(Ember.Metamorph,
@@ -41,10 +41,10 @@ Ember._BindableSpanView = Ember.View.extend(Ember.Metamorph,
     of its parent template, or gets passed the value of retrieving `property`
     from the previous context.
 
-    For example, this is true when using the `{{#if}}` helper, because the 
-    template inside the helper should look up properties relative to the same 
-    object as outside the block. This would be NO when used with `{{#with 
-    foo}}` because the template should receive the object found by evaluating 
+    For example, this is true when using the `{{#if}}` helper, because the
+    template inside the helper should look up properties relative to the same
+    object as outside the block. This would be false when used with `{{#with
+    foo}}` because the template should receive the object found by evaluating
     `foo`.
 
     @type Boolean
@@ -72,7 +72,7 @@ Ember._BindableSpanView = Ember.View.extend(Ember.Metamorph,
     The key to look up on `previousContext` that is passed to
     `shouldDisplayFunc` to determine which template to render.
 
-    In addition, if `preserveContext` is false, this object will be passed to 
+    In addition, if `preserveContext` is false, this object will be passed to
     the template when rendering.
 
     @type String
@@ -112,9 +112,9 @@ Ember._BindableSpanView = Ember.View.extend(Ember.Metamorph,
     true, the `displayTemplate` function will be rendered to DOM. Otherwise,
     `inverseTemplate`, if specified, will be rendered.
 
-    For example, if this Ember._BindableSpan represented the {{#with foo}} 
-    helper, it would look up the `foo` property of its context, and 
-    `shouldDisplayFunc` would always return true. The object found by looking 
+    For example, if this Ember._BindableSpan represented the {{#with foo}}
+    helper, it would look up the `foo` property of its context, and
+    `shouldDisplayFunc` would always return true. The object found by looking
     up `foo` would be passed to `displayTemplate`.
 
     @param {Ember.RenderBuffer} buffer
@@ -151,7 +151,12 @@ Ember._BindableSpanView = Ember.View.extend(Ember.Metamorph,
         } else {
         // This is not a bind block, just push the result of the
         // expression to the render context and return.
-          if (result == null) { result = ""; } else { result = String(result); }
+          if (result === null || result === undefined) {
+            result = "";
+          } else {
+            result = String(result);
+          }
+
           if (escape) { result = Handlebars.Utils.escapeExpression(result); }
           buffer.push(result);
           return;

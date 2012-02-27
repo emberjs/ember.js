@@ -3,7 +3,7 @@
 // Copyright: ©2011 Strobe Inc. and contributors.
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
-/*globals MyApp */
+/*globals MyApp:true */
 
 var foo, bar, binding, set = Ember.set, get = Ember.get, setPath = Ember.setPath;
 
@@ -20,7 +20,7 @@ CountObject.prototype = {
 
   _count: 0,
 
-  reset: function() {  
+  reset: function() {
     this._count = 0;
     return this;
   },
@@ -36,11 +36,11 @@ module('system/mixin/binding/transform_test', {
       foo: new CountObject({ value: 'FOO' }),
       bar: new CountObject({ value: 'BAR' })
     };
-    
+
     foo = Ember.getPath('MyApp.foo');
     bar = Ember.getPath('MyApp.bar');
   },
-  
+
   teardown: function() {
     binding.disconnect(MyApp);
     MyApp = null;
@@ -51,18 +51,18 @@ test('returns this', function() {
   binding = new Ember.Binding('foo.value', 'bar.value');
 
   var ret = binding.transform({ from: function() {}, to: function() {} });
-  equals(ret, binding);
+  equal(ret, binding);
 });
 
 test('transform function should be invoked on fwd change', function() {
-  
+
   binding = Ember.bind(MyApp, 'foo.value', 'bar.value');
   binding.transform({ to: function(value) { return 'TRANSFORMED'; }});
   Ember.run.sync();
-  
+
   // should have transformed...
-  equals(Ember.getPath('MyApp.foo.value'), 'TRANSFORMED', 'should transform');
-  equals(Ember.getPath('MyApp.bar.value'), 'BAR', 'should stay original');  
+  equal(Ember.getPath('MyApp.foo.value'), 'TRANSFORMED', 'should transform');
+  equal(Ember.getPath('MyApp.bar.value'), 'BAR', 'should stay original');
 });
 
 test('two-way transforms work', function() {
@@ -70,7 +70,7 @@ test('two-way transforms work', function() {
     binding = Ember.bind(MyApp, 'foo.value', 'bar.value');
     binding.transform({
       to: function(string) {
-        return parseInt(string) || null;
+        return parseInt(string, 10) || null;
       },
       from: function(integer) {
         return String(integer);
@@ -82,14 +82,14 @@ test('two-way transforms work', function() {
     setPath(MyApp, 'bar.value', "1");
   });
 
-  equals(Ember.getPath('MyApp.foo.value'), 1, "sets the value to a number");
+  equal(Ember.getPath('MyApp.foo.value'), 1, "sets the value to a number");
 
   setPath(MyApp, 'foo.value', 1);
-  equals(Ember.getPath('MyApp.bar.value'), "1", "sets the value to a string");
+  equal(Ember.getPath('MyApp.bar.value'), "1", "sets the value to a string");
 });
 
 test('transform function should NOT be invoked on fwd change', function() {
-  
+
   var count = 0;
   binding = Ember.bind(MyApp, 'foo.value', 'bar.value');
   var lastSeenValue;
@@ -106,15 +106,15 @@ test('transform function should NOT be invoked on fwd change', function() {
   // should have transformed...
   foo.reset();
   bar.reset();
-  
+
   Ember.setPath('MyApp.bar.value', 'FOOBAR');
   Ember.run.sync();
 
-  equals(Ember.getPath('MyApp.foo.value'), 'TRANSFORMED 2', 'should transform');
-  equals(Ember.getPath('MyApp.bar.value'), 'FOOBAR', 'should stay original');  
-  
-  equals(foo._count, 1, 'observer should have fired on set');
-  equals(bar._count, 1, 'observer should have fired on set');
+  equal(Ember.getPath('MyApp.foo.value'), 'TRANSFORMED 2', 'should transform');
+  equal(Ember.getPath('MyApp.bar.value'), 'FOOBAR', 'should stay original');
+
+  equal(foo._count, 1, 'observer should have fired on set');
+  equal(bar._count, 1, 'observer should have fired on set');
 });
 
 test('transforms should chain', function() {
@@ -128,8 +128,8 @@ test('transforms should chain', function() {
   Ember.run.sync();
 
   // should have transformed...
-  equals(Ember.getPath('MyApp.foo.value'), 'BAR T1 T2', 'should transform');
-  equals(Ember.getPath('MyApp.bar.value'), 'BAR', 'should stay original');  
+  equal(Ember.getPath('MyApp.foo.value'), 'BAR T1 T2', 'should transform');
+  equal(Ember.getPath('MyApp.bar.value'), 'BAR', 'should stay original');
 });
 
 test('resetTransforms() should clear', function() {
@@ -144,7 +144,7 @@ test('resetTransforms() should clear', function() {
   Ember.run.sync();
 
   // should have transformed...
-  equals(Ember.getPath('MyApp.foo.value'), 'BAR T2', 'should transform');
-  equals(Ember.getPath('MyApp.bar.value'), 'BAR', 'should stay original');  
+  equal(Ember.getPath('MyApp.foo.value'), 'BAR T2', 'should transform');
+  equal(Ember.getPath('MyApp.bar.value'), 'BAR', 'should stay original');
 });
 

@@ -10,7 +10,7 @@ require('ember-metal');
 module("Ember.guidFor");
 
 var sameGuid = function(a, b, message) {
-  equals( Ember.guidFor(a), Ember.guidFor(b), message );
+  equal( Ember.guidFor(a), Ember.guidFor(b), message );
 };
 
 var diffGuid = function(a, b, message) {
@@ -75,7 +75,7 @@ test("numbers", function() {
 });
 
 test("null and undefined", function() {
-  var a = null, aprime = null, b = undefined;
+  var a = null, aprime = null, b;
 
   sameGuid( a, a,      "null always returns the same guid" );
   sameGuid( b, b,      "undefined always returns the same guid" );

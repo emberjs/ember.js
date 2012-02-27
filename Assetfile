@@ -1,34 +1,36 @@
 require "rake-pipeline-web-filters"
+require "json"
 
-input "packages"
 output "tests/source"
 
-match "*/{lib,tests}/**/*.js" do
-  minispade :rewrite_requires => true, :module_id_generator => proc { |input|
-    id = input.path.dup
-    id.sub!('/lib/', '/')
-    id.sub!(/\.js$/, '')
-    id.sub!(/\/main$/, '')
-    id.sub!('/tests', '/~tests')
-    id
-  }
+input "packages" do
+  match "*/{lib,tests}/**/*.js" do
+    minispade :rewrite_requires => true, :string => true, :module_id_generator => proc { |input|
+      id = input.path.dup
+      id.sub!('/lib/', '/')
+      id.sub!(/\.js$/, '')
+      id.sub!(/\/main$/, '')
+      id.sub!('/tests', '/~tests')
+      id
+    }
 
-  concat do |filename|
-    filename =~ %r{/tests/} ? "ember-tests.js" : "ember.js"
+    concat do |filename|
+      filename =~ %r{/tests/} ? "ember-tests.js" : "ember.js"
+    end
   end
-end
 
-# Hack to ignore certain files
-match "**/*.{json,md}" do
-  concat "trash"
-end
+  # Hack to ignore certain files
+  match "**/*.{json,md}" do
+    concat "trash"
+  end
 
-match "**/README" do
-  concat "trash"
-end
+  match "**/README" do
+    concat "trash"
+  end
 
-match "*/*.js" do
-  concat "trash"
+  match "*/*.js" do
+    concat "trash"
+  end
 end
 
 

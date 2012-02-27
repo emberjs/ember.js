@@ -27,7 +27,7 @@ test("collectionView should return the nearest collection view", function() {
   });
 
   itemViewChild = view.get('childViews')[0].get('childViews')[0];
-  equals(itemViewChild.getPath('collectionView.isARealCollection'), true, "finds collection view in the hierarchy");
+  equal(itemViewChild.getPath('collectionView.isARealCollection'), true, "finds collection view in the hierarchy");
 });
 
 test("itemView should return the nearest child of a collection view", function() {
@@ -50,7 +50,7 @@ test("itemView should return the nearest child of a collection view", function()
   });
 
   itemViewChild = view.get('childViews')[0].get('childViews')[0];
-  equals(itemViewChild.getPath('itemView.isAnItemView'), true, "finds item view in the hierarchy");
+  equal(itemViewChild.getPath('itemView.isAnItemView'), true, "finds item view in the hierarchy");
 });
 
 test("itemView should return the nearest child of a collection view", function() {
@@ -73,7 +73,7 @@ test("itemView should return the nearest child of a collection view", function()
   });
 
   itemViewChild = view.get('childViews')[0].get('childViews')[0];
-  equals(itemViewChild.getPath('contentView.isAnItemView'), true, "finds a view with a content property in the hierarchy");
+  equal(itemViewChild.getPath('contentView.isAnItemView'), true, "finds a view with a content property in the hierarchy");
 });
 
 test("nearestWithProperty should search immediate parent", function(){
@@ -92,7 +92,7 @@ test("nearestWithProperty should search immediate parent", function(){
   });
 
   childView = view.get('childViews')[0];
-  equals(childView.nearestWithProperty('myProp'), view);
+  equal(childView.nearestWithProperty('myProp'), view);
 
 });
 

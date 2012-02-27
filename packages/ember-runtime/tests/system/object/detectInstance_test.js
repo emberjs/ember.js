@@ -7,7 +7,7 @@
 module('system/object/detectInstance');
 
 test('detectInstance detects instances correctly', function() {
-  
+
   var A = Ember.Object.extend();
   var B = A.extend();
   var C = A.extend();
@@ -16,7 +16,7 @@ test('detectInstance detects instances correctly', function() {
       a = A.create(),
       b = B.create(),
       c = C.create();
-  
+
   ok( Ember.Object.detectInstance(o), 'o is an instance of Ember.Object' );
   ok( Ember.Object.detectInstance(a), 'a is an instance of Ember.Object' );
   ok( Ember.Object.detectInstance(b), 'b is an instance of Ember.Object' );
@@ -26,7 +26,7 @@ test('detectInstance detects instances correctly', function() {
   ok( A.detectInstance(a), 'a is an instance of A' );
   ok( A.detectInstance(b), 'b is an instance of A' );
   ok( A.detectInstance(c), 'c is an instance of A' );
-  
+
   ok( !B.detectInstance(o), 'o is not an instance of B' );
   ok( !B.detectInstance(a), 'a is not an instance of B' );
   ok( B.detectInstance(b), 'b is an instance of B' );

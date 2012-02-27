@@ -9,17 +9,17 @@ module("Ember Type Checking");
 
 test("Ember.typeOf", function() {
 	var a = null,
-	    arr = [1,2,3],
-	    obj = {},
+      arr = [1,2,3],
+      obj = {},
       object = Ember.Object.create({ method: function() {} });
 
-  equals(Ember.typeOf(undefined),     'undefined', "item of type undefined");
-  equals(Ember.typeOf(a),             'null',      "item of type null");
-	equals(Ember.typeOf(arr),           'array',     "item of type array");
-	equals(Ember.typeOf(obj),           'object',    "item of type object");
-	equals(Ember.typeOf(object),        'instance',  "item of type instance");
-	equals(Ember.typeOf(object.method), 'function',  "item of type function") ;
-	equals(Ember.typeOf(Ember.Object),     'class',     "item of type class");
-  equals(Ember.typeOf(new Error()),   'error',     "item of type error");
+  equal(Ember.typeOf(undefined),     'undefined', "item of type undefined");
+  equal(Ember.typeOf(a),             'null',      "item of type null");
+	equal(Ember.typeOf(arr),           'array',     "item of type array");
+	equal(Ember.typeOf(obj),           'object',    "item of type object");
+	equal(Ember.typeOf(object),        'instance',  "item of type instance");
+	equal(Ember.typeOf(object.method), 'function',  "item of type function") ;
+	equal(Ember.typeOf(Ember.Object),     'class',     "item of type class");
+  equal(Ember.typeOf(new Error()),   'error',     "item of type error");
 });
 

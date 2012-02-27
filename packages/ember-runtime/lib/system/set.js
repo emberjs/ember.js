@@ -20,19 +20,19 @@ var get = Ember.get, set = Ember.set, guidFor = Ember.guidFor, none = Ember.none
   A Set works a bit like an array except that its items are not ordered.
   You can create a set to efficiently test for membership for an object. You
   can also iterate through a set just like an array, even accessing objects
-  by index, however there is no gaurantee as to their order.
+  by index, however there is no guarantee as to their order.
 
   Starting with Ember 2.0 all Sets are now observable since there is no
   added cost to providing this support.  Sets also do away with the more
-  specialized Set Observer API in favor of the more generic Enumerable 
+  specialized Set Observer API in favor of the more generic Enumerable
   Observer API - which works on any enumerable object including both Sets and
   Arrays.
 
   ## Creating a Set
 
-  You can create a set like you would most objects using 
-  `new Ember.Set()`.  Most new sets you create will be empty, but you can 
-  also initialize the set with some content by passing an array or other 
+  You can create a set like you would most objects using
+  `new Ember.Set()`.  Most new sets you create will be empty, but you can
+  also initialize the set with some content by passing an array or other
   enumerable of objects to the constructor.
 
   Finally, you can pass in an existing set and the set will be copied. You
@@ -53,56 +53,56 @@ var get = Ember.get, set = Ember.set, guidFor = Ember.guidFor, none = Ember.none
 
   ## Adding/Removing Objects
 
-  You generally add or remove objects from a set using `add()` or 
-  `remove()`. You can add any type of object including primitives such as 
+  You generally add or remove objects from a set using `add()` or
+  `remove()`. You can add any type of object including primitives such as
   numbers, strings, and booleans.
 
-  Unlike arrays, objects can only exist one time in a set. If you call `add()` 
+  Unlike arrays, objects can only exist one time in a set. If you call `add()`
   on a set with the same object multiple times, the object will only be added
   once. Likewise, calling `remove()` with the same object multiple times will
   remove the object the first time and have no effect on future calls until
   you add the object to the set again.
 
-  NOTE: You cannot add/remove null or undefined to a set. Any attempt to do so 
+  NOTE: You cannot add/remove null or undefined to a set. Any attempt to do so
   will be ignored.
 
-  In addition to add/remove you can also call `push()`/`pop()`. Push behaves 
-  just like `add()` but `pop()`, unlike `remove()` will pick an arbitrary 
-  object, remove it and return it. This is a good way to use a set as a job 
+  In addition to add/remove you can also call `push()`/`pop()`. Push behaves
+  just like `add()` but `pop()`, unlike `remove()` will pick an arbitrary
+  object, remove it and return it. This is a good way to use a set as a job
   queue when you don't care which order the jobs are executed in.
 
   ## Testing for an Object
 
-  To test for an object's presence in a set you simply call 
+  To test for an object's presence in a set you simply call
   `Ember.Set#contains()`.
 
   ## Observing changes
 
-  When using `Ember.Set`, you can observe the `"[]"` property to be 
-  alerted whenever the content changes.  You can also add an enumerable 
+  When using `Ember.Set`, you can observe the `"[]"` property to be
+  alerted whenever the content changes.  You can also add an enumerable
   observer to the set to be notified of specific objects that are added and
-  removed from the set.  See `Ember.Enumerable` for more information on 
+  removed from the set.  See `Ember.Enumerable` for more information on
   enumerables.
 
   This is often unhelpful. If you are filtering sets of objects, for instance,
-  it is very inefficient to re-filter all of the items each time the set 
-  changes. It would be better if you could just adjust the filtered set based 
-  on what was changed on the original set. The same issue applies to merging 
+  it is very inefficient to re-filter all of the items each time the set
+  changes. It would be better if you could just adjust the filtered set based
+  on what was changed on the original set. The same issue applies to merging
   sets, as well.
 
   ## Other Methods
 
   `Ember.Set` primary implements other mixin APIs.  For a complete reference
   on the methods you will use with `Ember.Set`, please consult these mixins.
-  The most useful ones will be `Ember.Enumerable` and 
-  `Ember.MutableEnumerable` which implement most of the common iterator 
+  The most useful ones will be `Ember.Enumerable` and
+  `Ember.MutableEnumerable` which implement most of the common iterator
   methods you are used to on Array.
 
   Note that you can also use the `Ember.Copyable` and `Ember.Freezable`
-  APIs on `Ember.Set` as well.  Once a set is frozen it can no longer be 
+  APIs on `Ember.Set` as well.  Once a set is frozen it can no longer be
   modified.  The benefit of this is that when you call frozenCopy() on it,
   Ember will avoid making copies of the set.  This allows you to write
-  code that can know with certainty when the underlying set data will or 
+  code that can know with certainty when the underlying set data will or
   will not be modified.
 
   @extends Ember.Enumerable
@@ -148,7 +148,7 @@ Ember.Set = Ember.CoreObject.extend(Ember.MutableEnumerable, Ember.Copyable, Emb
   },
 
   /**
-    Returns true if the passed object is also an enumerable that contains the 
+    Returns true if the passed object is also an enumerable that contains the
     same objects as the receiver.
 
         var colors = ["red", "green", "blue"],
@@ -162,7 +162,7 @@ Ember.Set = Ember.CoreObject.extend(Ember.MutableEnumerable, Ember.Copyable, Emb
   isEqual: function(obj) {
     // fail fast
     if (!Ember.Enumerable.detect(obj)) return false;
-    
+
     var loc = get(this, 'length');
     if (get(obj, 'length') !== loc) return false;
 
@@ -172,9 +172,9 @@ Ember.Set = Ember.CoreObject.extend(Ember.MutableEnumerable, Ember.Copyable, Emb
 
     return true;
   },
-  
+
   /**
-    Adds an object to the set. Only non-null objects can be added to a set 
+    Adds an object to the set. Only non-null objects can be added to a set
     and those can only be added once. If the object is already in the set or
     the passed value is null this method will have no effect.
 
@@ -208,7 +208,7 @@ Ember.Set = Ember.CoreObject.extend(Ember.MutableEnumerable, Ember.Copyable, Emb
     @returns {Ember.Set} The set itself.
   */
   remove: Ember.alias('removeObject'),
-  
+
   /**
     Removes the last element from the set and returns it, or null if it's empty.
     
@@ -241,7 +241,7 @@ Ember.Set = Ember.CoreObject.extend(Ember.MutableEnumerable, Ember.Copyable, Emb
     @returns {Ember.Set} The set itself.
   */
   push: Ember.alias('addObject'),
-  
+
   /**
     Removes the last element from the set and returns it, or null if it's empty.
 
@@ -318,7 +318,7 @@ Ember.Set = Ember.CoreObject.extend(Ember.MutableEnumerable, Ember.Copyable, Emb
 
   /** @private - more optimized version */
   firstObject: Ember.computed(function() {
-    return this.length > 0 ? this[0] : undefined;  
+    return this.length > 0 ? this[0] : undefined;
   }).property('[]').cacheable(),
 
   /** @private - more optimized version */
@@ -330,14 +330,14 @@ Ember.Set = Ember.CoreObject.extend(Ember.MutableEnumerable, Ember.Copyable, Emb
   addObject: function(obj) {
     if (get(this, 'isFrozen')) throw new Error(Ember.FROZEN_ERROR);
     if (none(obj)) return this; // nothing to do
-    
+
     var guid = guidFor(obj),
         idx  = this[guid],
         len  = get(this, 'length'),
         added ;
-        
+
     if (idx>=0 && idx<len && (this[idx] === obj)) return this; // added
-    
+
     added = [obj];
     this.enumerableContentWillChange(null, added);
     len = get(this, 'length');
@@ -348,23 +348,23 @@ Ember.Set = Ember.CoreObject.extend(Ember.MutableEnumerable, Ember.Copyable, Emb
 
     return this;
   },
-  
+
   /** @private (nodoc) - implements Ember.MutableEnumerable */
   removeObject: function(obj) {
     if (get(this, 'isFrozen')) throw new Error(Ember.FROZEN_ERROR);
     if (none(obj)) return this; // nothing to do
-    
+
     var guid = guidFor(obj),
         idx  = this[guid],
         len = get(this, 'length'),
         last, removed;
-        
-    
+
+
     if (idx>=0 && idx<len && (this[idx] === obj)) {
       removed = [obj];
 
       this.enumerableContentWillChange(removed, null);
-      
+
       // swap items - basically move the item to the end so it can be removed
       if (idx < len-1) {
         last = this[len-1];
@@ -378,7 +378,7 @@ Ember.Set = Ember.CoreObject.extend(Ember.MutableEnumerable, Ember.Copyable, Emb
 
       this.enumerableContentDidChange(removed, null);
     }
-    
+
     return this;
   },
 
@@ -386,7 +386,7 @@ Ember.Set = Ember.CoreObject.extend(Ember.MutableEnumerable, Ember.Copyable, Emb
   contains: function(obj) {
     return this[guidFor(obj)]>=0;
   },
-  
+
   /** @private (nodoc) */
   copy: function() {
     var C = this.constructor, ret = new C(), loc = get(this, 'length');
@@ -397,7 +397,7 @@ Ember.Set = Ember.CoreObject.extend(Ember.MutableEnumerable, Ember.Copyable, Emb
     }
     return ret;
   },
-  
+
   /** @private */
   toString: function() {
     var len = this.length, idx, array = [];
@@ -406,10 +406,10 @@ Ember.Set = Ember.CoreObject.extend(Ember.MutableEnumerable, Ember.Copyable, Emb
     }
     return "Ember.Set<%@>".fmt(array.join(','));
   },
-  
+
   // ..........................................................
   // DEPRECATED
-  // 
+  //
 
   /** @deprecated
 
@@ -427,10 +427,10 @@ Ember.Set = Ember.CoreObject.extend(Ember.MutableEnumerable, Ember.Copyable, Emb
     @default true
   */
   isSet: true
-    
+
 });
 
-// Support the older API 
+// Support the older API
 var o_create = Ember.Set.create;
 Ember.Set.create = function(items) {
   if (items && Ember.Enumerable.detect(items)) {

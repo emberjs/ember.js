@@ -10,12 +10,14 @@ require('ember-metal/core'); // Ember.Logger
 require('ember-metal/watching'); // Ember.watch.flushPending
 require('ember-metal/observer'); // Ember.beginPropertyChanges, Ember.endPropertyChanges
 require('ember-metal/utils'); // Ember.guidFor
+require('ember-metal/array'); // Ember.ArrayUtils
 
 // ..........................................................
 // HELPERS
 //
 
 var slice = Array.prototype.slice;
+var forEach = Ember.ArrayUtils.forEach;
 
 // invokes passed params - normalizing so you can pass target/func,
 // target/string or just func
@@ -120,7 +122,7 @@ RunLoop.prototype = {
         // the sync phase is to allow property changes to propogate.  don't
         // invoke observers until that is finished.
         if (queueName === 'sync') Ember.beginPropertyChanges();
-        queue.forEach(iter);
+        forEach(queue, iter);
         if (queueName === 'sync') Ember.endPropertyChanges();
 
         if (log) Ember.Logger.log('End: Flush Sync Queue');
@@ -140,7 +142,7 @@ RunLoop.prototype = {
           if (log) Ember.Logger.log('Begin: Flush Sync Queue');
 
           if (queueName === 'sync') Ember.beginPropertyChanges();
-          if (queue) queue.forEach(iter);
+          if (queue) forEach(queue, iter);
           if (queueName === 'sync') Ember.endPropertyChanges();
 
           if (log) Ember.Logger.log('End: Flush Sync Queue');

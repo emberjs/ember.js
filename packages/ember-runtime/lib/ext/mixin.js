@@ -30,6 +30,6 @@ Ember._mixinBindings = function(obj, key, value, m) {
 
     bindings[key] = true;
   }
-  
+
   return value;
 };

@@ -68,15 +68,15 @@ test("should dispatch events to views", function() {
 
   view.$('span#awesome').trigger('mousedown');
   ok(receivedEvent, "event bubbles up to nearest Ember.View");
-  equals(parentMouseDownCalled, 1, "does not trigger the parent handlers twice because of browser bubbling");
+  equal(parentMouseDownCalled, 1, "does not trigger the parent handlers twice because of browser bubbling");
   receivedEvent = null;
 
   Ember.$('#wot').trigger('mousedown');
   ok(receivedEvent, "event bubbles up to nearest Ember.View");
 
   Ember.$('#wot').trigger('keydown');
-  equals(childKeyDownCalled, 1, "calls keyDown on child view");
-  equals(parentKeyDownCalled, 0, "does not call keyDown on parent if child handles event");
+  equal(childKeyDownCalled, 1, "calls keyDown on child view");
+  equal(parentKeyDownCalled, 0, "does not call keyDown on parent if child handles event");
 });
 
 test("should not dispatch events to views not inDOM", function() {
@@ -134,7 +134,7 @@ test("should send change events up view hierarchy if view contains form elements
 
   Ember.$('#is-done').trigger('change');
   ok(receivedEvent, "calls change method when a child element is changed");
-  equals(receivedEvent.target, Ember.$('#is-done')[0], "target property is the element that was clicked");
+  equal(receivedEvent.target, Ember.$('#is-done')[0], "target property is the element that was clicked");
 });
 
 test("events should stop propagating if the view is destroyed", function() {
@@ -189,7 +189,7 @@ test("should not interfere with event propagation", function() {
   Ember.$('#propagate-test-div').click();
 
   ok(receivedEvent, "allowed event to propagate outside Ember");
-  same(receivedEvent.target, Ember.$('#propagate-test-div')[0], "target property is the element that was clicked");
+  deepEqual(receivedEvent.target, Ember.$('#propagate-test-div')[0], "target property is the element that was clicked");
 });
 
 test("should dispatch events to nearest event manager", function() {
@@ -213,7 +213,7 @@ test("should dispatch events to nearest event manager", function() {
   });
 
   Ember.$('#is-done').trigger('mousedown');
-  equals(receivedEvent, 1, "event should go to manager and not view");
+  equal(receivedEvent, 1, "event should go to manager and not view");
 });
 
 test("event manager should be able to re-dispatch events to view", function() {
@@ -229,8 +229,8 @@ test("event manager should be able to re-dispatch events to view", function() {
         // The second parameter tells the dispatcher
         // that this event has been handled. This
         // API will clearly need to be reworked since
-        // multiple eventManagers in a single view 
-        // hierarchy would break, but it shows that 
+        // multiple eventManagers in a single view
+        // hierarchy would break, but it shows that
         // re-dispatching works
         view.$().trigger('mousedown',this);
       }
@@ -254,5 +254,5 @@ test("event manager should be able to re-dispatch events to view", function() {
   Ember.run(function() { view.append(); });
 
   Ember.$('#nestedView').trigger('mousedown');
-  equals(receivedEvent, 2, "event should go to manager and not view");
+  equal(receivedEvent, 2, "event should go to manager and not view");
 });

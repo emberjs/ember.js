@@ -26,7 +26,7 @@ test("it can act like a state in a state manager", function() {
   });
 
   ok(get(stateManager, 'currentState') === viewState, "automatically transitions to the view state");
-  equals(viewState.entered, 1, "viewState receives enter event when transitioning to current state");
+  equal(viewState.entered, 1, "viewState receives enter event when transitioning to current state");
 });
 
 test("it throws an error when the view passed is not an Ember.View", function() {
@@ -62,7 +62,7 @@ test("it creates and appends a view when it is entered", function() {
     });
   });
 
-  equals(Ember.$('#test-view').length, 1, "found view within custom id in DOM");
+  equal(Ember.$('#test-view').length, 1, "found view within custom id in DOM");
 
   stateManager.getPath('currentState.view').remove();
 });
@@ -86,13 +86,13 @@ test("it appends and removes a view when it is entered and exited", function() {
     });
   });
 
-  equals(Ember.$('#test-view').length, 1, "found view with custom id in DOM");
+  equal(Ember.$('#test-view').length, 1, "found view with custom id in DOM");
 
   Ember.run(function() {
     stateManager.goToState('other');
   });
 
-  equals(Ember.$('#test-view').length, 0, "can't find view with custom id in DOM");
+  equal(Ember.$('#test-view').length, 0, "can't find view with custom id in DOM");
 });
 
 test("it appends and removes a view to the element specified in its state manager", function() {
@@ -106,9 +106,9 @@ test("it appends and removes a view to the element specified in its state manage
 
   var stateManager;
 
-  $('<div id="my-container"></div>').appendTo($('#qunit-fixture'));
+  Ember.$('<div id="my-container"></div>').appendTo(Ember.$('#qunit-fixture'));
 
-  equals($('#qunit-fixture > #my-container')[0].childNodes.length, 0, "precond - container does not have any child nodes");
+  equal(Ember.$('#qunit-fixture > #my-container')[0].childNodes.length, 0, "precond - container does not have any child nodes");
 
   Ember.run(function() {
     stateManager = Ember.StateManager.create({
@@ -119,14 +119,14 @@ test("it appends and removes a view to the element specified in its state manage
     });
   });
 
-  equals(Ember.$('#test-view').length, 1, "found view with custom id in DOM");
-  equals($("#test-view").parent().attr('id'), "my-container", "appends view to the correct element");
+  equal(Ember.$('#test-view').length, 1, "found view with custom id in DOM");
+  equal(Ember.$("#test-view").parent().attr('id'), "my-container", "appends view to the correct element");
 
   Ember.run(function() {
     stateManager.goToState('other');
   });
 
-  equals(Ember.$('#test-view').length, 0, "can't find view with custom id in DOM");
+  equal(Ember.$('#test-view').length, 0, "can't find view with custom id in DOM");
 });
 
 test("it appends and removes a view to the view specified in the state manager's rootView property", function() {

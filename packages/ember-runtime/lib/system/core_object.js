@@ -45,7 +45,10 @@ function makeCtor() {
   };
 
   Class.toString = classToString;
-  Class._prototypeMixinDidChange = function() { isPrepared = false; };
+  Class._prototypeMixinDidChange = function() {
+    ember_assert("Reopening already instantiated classes is not supported. We plan to support this in the future.", isPrepared === false);
+    isPrepared = false;
+  };
   Class._initMixins = function(args) { initMixins = args; };
 
   Ember.defineProperty(Class, 'proto', Ember.computed(function() {
@@ -214,6 +217,25 @@ var ClassMixin = Ember.Mixin.create({
 
     ember_assert("metaForProperty() could not find a computed property with key '"+key+"'.", !!desc && desc instanceof Ember.ComputedProperty);
     return desc._meta || {};
+  },
+
+  /**
+    Iterate over each computed property for the class, passing its name
+    and any associated metadata (see `metaForProperty`) to the callback.
+  */
+  eachComputedProperty: function(callback, binding) {
+    var proto = get(this, 'proto'),
+        descs = meta(proto).descs,
+        empty = {},
+        property;
+
+    for (var name in descs) {
+      property = descs[name];
+
+      if (property instanceof Ember.ComputedProperty) {
+        callback.call(binding || this, name, property._meta || empty);
+      }
+    }
   }
 
 });
