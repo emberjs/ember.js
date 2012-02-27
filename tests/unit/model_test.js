@@ -184,13 +184,17 @@ test("it can specify which key to use when looking up properties on the hash", f
 test("toJSON returns a hash containing the JSON representation of the record", function() {
   var Model = DS.Model.extend({
     firstName: DS.attr('string'),
-    lastName: DS.attr('string', { key: 'last_name' })
+    lastName: DS.attr('string', { key: 'last_name' }),
+    country: DS.attr('string', { defaultValue: 'US' }),
+    isHipster: DS.attr('boolean', { defaultValue: false })
   });
 
-  store.load(Model, { id: 1, firstName: "Steve", last_name: "Holt", other: "none" });
+  store.load(Model, { id: 1, firstName: "Tom", last_name: "Dale", other: "none" });
   var record = store.find(Model, 1);
 
-  deepEqual(record.toJSON(), { id: 1, firstName: "Steve", last_name: "Holt" }, "the data is extracted by attribute");
+  set(record, 'isHipster', true);
+
+  deepEqual(record.toJSON(), { id: 1, firstName: "Tom", last_name: "Dale", country: 'US', isHipster: true }, "the data is extracted by attribute");
 });
 
 var Person, store, array;
