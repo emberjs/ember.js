@@ -24,6 +24,7 @@ var META_SKIP = { __emberproto__: true, __ember_count__: true };
 
 var o_create = Ember.platform.create;
 
+/** @private */
 function meta(obj, writable) {
   var m = Ember.meta(obj, writable!==false), ret = m.mixins;
   if (writable===false) return ret || EMPTY_META;
@@ -37,6 +38,7 @@ function meta(obj, writable) {
   return ret;
 }
 
+/** @private */
 function initMixin(mixin, args) {
   if (args && args.length > 0) {
     mixin.mixins = a_map(args, function(x) {
@@ -54,14 +56,17 @@ function initMixin(mixin, args) {
 }
 
 var NATIVES = [Boolean, Object, Number, Array, Date, String];
+/** @private */
 function isMethod(obj) {
   if ('function' !== typeof obj || obj.isMethod===false) return false;
   return a_indexOf(NATIVES, obj)<0;
 }
 
+/** @private */
 function mergeMixins(mixins, m, descs, values, base) {
   var len = mixins.length, idx, mixin, guid, props, value, key, ovalue, concats;
 
+  /** @private */
   function removeKeys(keyName) {
     delete descs[keyName];
     delete values[keyName];
@@ -132,8 +137,10 @@ function mergeMixins(mixins, m, descs, values, base) {
   }
 }
 
+/** @private */
 var defineProperty = Ember.defineProperty;
 
+/** @private */
 function writableReq(obj) {
   var m = Ember.meta(obj), req = m.required;
   if (!req || (req.__emberproto__ !== obj)) {
@@ -143,10 +150,12 @@ function writableReq(obj) {
   return req;
 }
 
+/** @private */
 function getObserverPaths(value) {
   return ('function' === typeof value) && value.__ember_observes__;
 }
 
+/** @private */
 function getBeforeObserverPaths(value) {
   return ('function' === typeof value) && value.__ember_observesBefore__;
 }
@@ -155,6 +164,7 @@ Ember._mixinBindings = function(obj, key, value, m) {
   return value;
 };
 
+/** @private */
 function applyMixin(obj, mixins, partial) {
   var descs = {}, values = {}, m = Ember.meta(obj), req = m.required;
   var key, willApply, didApply, value, desc;
@@ -273,10 +283,13 @@ Ember.mixin = function(obj) {
 
 /**
   @constructor
-  @name Ember.Mixin
 */
-Mixin = function() { return initMixin(this, arguments); };
+Ember.Mixin = function() { return initMixin(this, arguments); };
 
+/** @private */
+Mixin = Ember.Mixin;
+
+/** @private */
 Mixin._apply = applyMixin;
 
 Mixin.applyPartial = function(obj) {
@@ -332,6 +345,7 @@ Mixin.prototype.applyPartial = function(obj) {
   return ret;
 };
 
+/** @private */
 function _detect(curMixin, targetMixin, seen) {
   var guid = Ember.guidFor(curMixin);
 
@@ -358,6 +372,7 @@ Mixin.prototype.without = function() {
   return ret;
 };
 
+/** @private */
 function _keys(ret, mixin, seen) {
   if (seen[Ember.guidFor(mixin)]) return;
   seen[Ember.guidFor(mixin)] = true;
@@ -386,6 +401,7 @@ Mixin.prototype.keys = function() {
 var NAME_KEY = Ember.GUID_KEY+'_name';
 var get = Ember.get;
 
+/** @private */
 function processNames(paths, root, seen) {
   var idx = paths.length;
   for(var key in root) {
@@ -405,6 +421,7 @@ function processNames(paths, root, seen) {
   paths.length = idx; // cut out last item
 }
 
+/** @private */
 function findNamespaces() {
   var Namespace = Ember.Namespace, obj;
 
@@ -429,6 +446,7 @@ function findNamespaces() {
 
 Ember.identifyNamespaces = findNamespaces;
 
+/** @private */
 superClassString = function(mixin) {
   var superclass = mixin.superclass;
   if (superclass) {
@@ -439,6 +457,7 @@ superClassString = function(mixin) {
   }
 };
 
+/** @private */
 classToString = function() {
   var Namespace = Ember.Namespace, namespace;
 
@@ -495,6 +514,7 @@ Ember.required = function() {
   return REQUIRED;
 };
 
+/** @private */
 Alias = function(methodName) {
   this.methodName = methodName;
 };
@@ -504,16 +524,15 @@ Ember.alias = function(methodName) {
   return new Alias(methodName);
 };
 
-Ember.Mixin = Mixin;
-
-MixinDelegate = Mixin.create({
+Ember.MixinDelegate = Mixin.create({
 
   willApplyProperty: Ember.required(),
   didApplyProperty:  Ember.required()
 
 });
 
-Ember.MixinDelegate = MixinDelegate;
+/** @private */
+MixinDelegate = Ember.MixinDelegate;
 
 
 // ..........................................................

@@ -127,3 +127,11 @@ To run multiple packages, you can separate them with commas. You can run all the
 [http://localhost:9292/tests/index.html?package=all](http://localhost:9292/tests/index.html?package=all)
 
 You can also pass `jquery=VERSION` in the test URL to test different versions of jQuery. Default is 1.7.1.
+
+# Building API Docs
+
+NOTE: Requires node.js.
+
+Preview: `rake docs:preview`
+
+Build: `rake docs:build`

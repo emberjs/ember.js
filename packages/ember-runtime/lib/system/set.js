@@ -10,8 +10,6 @@ require('ember-runtime/mixins/mutable_enumerable');
 require('ember-runtime/mixins/copyable');
 require('ember-runtime/mixins/freezable');
 
-
-
 var get = Ember.get, set = Ember.set, guidFor = Ember.guidFor, none = Ember.none;
 
 /**
@@ -130,10 +128,15 @@ Ember.Set = Ember.CoreObject.extend(Ember.MutableEnumerable, Ember.Copyable, Emb
   length: 0,
 
   /**
-    Clears the set.  This is useful if you want to reuse an existing set
+    Clears the set. This is useful if you want to reuse an existing set
     without having to recreate it.
 
-    @returns {Ember.Set}
+        var colors = new Ember.Set(["red", "green", "blue"]);
+        colors.length;  => 3
+        colors.clear();
+        colors.length;  => 0
+
+    @returns {Ember.Set} An empty Set
   */
   clear: function() {
     if (this.isFrozen) { throw new Error(Ember.FROZEN_ERROR); }
@@ -148,7 +151,12 @@ Ember.Set = Ember.CoreObject.extend(Ember.MutableEnumerable, Ember.Copyable, Emb
     Returns true if the passed object is also an enumerable that contains the
     same objects as the receiver.
 
-    @param {Ember.Set} obj the other object
+        var colors = ["red", "green", "blue"],
+            same_colors = new Ember.Set(colors);
+        same_colors.isEqual(colors); => true
+        same_colors.isEqual(["purple", "brown"]); => false
+
+    @param {Ember.Set} obj the other object.
     @returns {Boolean}
   */
   isEqual: function(obj) {
@@ -166,15 +174,22 @@ Ember.Set = Ember.CoreObject.extend(Ember.MutableEnumerable, Ember.Copyable, Emb
   },
 
   /**
-    Adds an object to the set.  Only non-null objects can be added to a set
+    Adds an object to the set. Only non-null objects can be added to a set
     and those can only be added once. If the object is already in the set or
     the passed value is null this method will have no effect.
 
     This is an alias for `Ember.MutableEnumerable.addObject()`.
 
+        var colors = new Ember.Set();
+        colors.add("blue");    => ["blue"]
+        colors.add("blue");    => ["blue"]
+        colors.add("red");     => ["blue", "red"]
+        colors.add(null);      => ["blue", "red"]
+        colors.add(undefined); => ["blue", "red"]
+
     @function
-    @param {Object} obj The object to add
-    @returns {Ember.Set} receiver
+    @param {Object} obj The object to add.
+    @returns {Ember.Set} The set itself.
   */
   add: Ember.alias('addObject'),
 
@@ -183,16 +198,26 @@ Ember.Set = Ember.CoreObject.extend(Ember.MutableEnumerable, Ember.Copyable, Emb
     or an object that is already not in the set, this method will have no
     effect. This is an alias for `Ember.MutableEnumerable.removeObject()`.
 
+        var colors = new Ember.Set(["red", "green", "blue"]);
+        colors.remove("red");    => ["blue", "green"]
+        colors.remove("purple"); => ["blue", "green"]
+        colors.remove(null);     => ["blue", "green"]
+
     @function
     @param {Object} obj The object to remove
-    @returns {Ember.Set} receiver
+    @returns {Ember.Set} The set itself.
   */
   remove: Ember.alias('removeObject'),
 
   /**
-    Removes an arbitrary object from the set and returns it.
+    Removes the last element from the set and returns it, or null if it's empty.
+    
+        var colors = new Ember.Set(["green", "blue"]);
+        colors.pop(); => "blue"
+        colors.pop(); => "green"
+        colors.pop(); => null
 
-    @returns {Object} An object from the set or null
+    @returns {Object} The removed object from the set or null.
   */
   pop: function() {
     if (get(this, 'isFrozen')) throw new Error(Ember.FROZEN_ERROR);
@@ -202,33 +227,77 @@ Ember.Set = Ember.CoreObject.extend(Ember.MutableEnumerable, Ember.Copyable, Emb
   },
 
   /**
+    Inserts the given object on to the end of the set. It returns
+    the set itself.
+
     This is an alias for `Ember.MutableEnumerable.addObject()`.
 
+        var colors = new Ember.Set();
+        colors.push("red");   => ["red"]
+        colors.push("green"); => ["red", "green"]
+        colors.push("blue");  => ["red", "green", "blue"]
+
     @function
+    @returns {Ember.Set} The set itself.
   */
   push: Ember.alias('addObject'),
 
   /**
+    Removes the last element from the set and returns it, or null if it's empty.
+
     This is an alias for `Ember.Set.pop()`.
+
+        var colors = new Ember.Set(["green", "blue"]);
+        colors.shift(); => "blue"
+        colors.shift(); => "green"
+        colors.shift(); => null
+
     @function
+    @returns {Object} The removed object from the set or null.
   */
   shift: Ember.alias('pop'),
 
   /**
+    Inserts the given object on to the end of the set. It returns
+    the set itself.
+
     This is an alias of `Ember.Set.push()`
+
+        var colors = new Ember.Set();
+        colors.unshift("red");   => ["red"]
+        colors.unshift("green"); => ["red", "green"]
+        colors.unshift("blue");  => ["red", "green", "blue"]
+
     @function
+    @returns {Ember.Set} The set itself.
   */
   unshift: Ember.alias('push'),
 
   /**
+    Adds each object in the passed enumerable to the set.
+
     This is an alias of `Ember.MutableEnumerable.addObjects()`
+
+        var colors = new Ember.Set();
+        colors.addEach(["red", "green", "blue"]); => ["red", "green", "blue"]
+
     @function
+    @param {Ember.Enumerable} objects the objects to add.
+    @returns {Ember.Set} The set itself.
   */
   addEach: Ember.alias('addObjects'),
 
   /**
+    Removes each object in the passed enumerable to the set.
+
     This is an alias of `Ember.MutableEnumerable.removeObjects()`
+
+        var colors = new Ember.Set(["red", "green", "blue"]);
+        colors.removeEach(["red", "blue"]); => ["green"]
+
     @function
+    @param {Ember.Enumerable} objects the objects to remove.
+    @returns {Ember.Set} The set itself.
   */
   removeEach: Ember.alias('removeObjects'),
 
@@ -371,5 +440,3 @@ Ember.Set.create = function(items) {
     return o_create.apply(this, arguments);
   }
 };
-
-

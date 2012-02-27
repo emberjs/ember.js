@@ -194,6 +194,7 @@ Ember.compare = function compare(v, w) {
   }
 };
 
+/** @private */
 function _copy(obj, deep, seen, copies) {
   var ret, loc, key;
 
