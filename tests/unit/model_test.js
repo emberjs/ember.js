@@ -195,6 +195,9 @@ test("toJSON returns a hash containing the JSON representation of the record", f
   set(record, 'isHipster', true);
 
   deepEqual(record.toJSON(), { id: 1, firstName: "Tom", last_name: "Dale", country: 'US', isHipster: true }, "the data is extracted by attribute");
+
+  record = Model.createRecord({ firstName: "Yehuda", lastName: "Katz", country: null });
+  deepEqual(record.toJSON(), { firstName: "Yehuda", last_name: "Katz", country: null, isHipster: false }, "the data is extracted by attribute");
 });
 
 var Person, store, array;
@@ -213,6 +216,20 @@ test("a DS.Model can update its attributes", function() {
 
   set(person, 'name', "Brohuda Katz");
   equal(get(person, 'name'), "Brohuda Katz", "setting took hold");
+});
+
+test("a DS.Model can have a defaultValue", function() {
+  var Tag = DS.Model.extend({
+    name: DS.attr('string', { defaultValue: "unknown" })
+  });
+
+  var tag = Tag.createRecord();
+
+  equal(get(tag, 'name'), "unknown", "the default value is found");
+
+  set(tag, 'name', null);
+
+  equal(get(tag, 'name'), null, "null doesn't shadow defaultValue");
 });
 
 test("it should modify the property of the hash specified by the `key` option", function() {
