@@ -56,6 +56,7 @@ if (!USE_ACCESSORS) {
 
   var o_get = get, o_set = set;
 
+  /** @private */
   get = function(obj, keyName) {
     if (keyName === undefined && 'string' === typeof obj) {
       keyName = obj;
@@ -70,6 +71,7 @@ if (!USE_ACCESSORS) {
     else return o_get(obj, keyName);
   };
 
+  /** @private */
   set = function(obj, keyName, value) {
     ember_assert("You need to provide an object and key to `set`.", !!obj && keyName !== undefined);
     var desc = meta(obj, false).descs[keyName];
@@ -145,6 +147,7 @@ Ember.set = set;
 // PATHS
 //
 
+/** @private */
 function normalizePath(path) {
   ember_assert('must pass non-empty string to normalizePath()', path && path!=='');
 
@@ -156,6 +159,7 @@ function normalizePath(path) {
 }
 
 // assumes normalized input; no *, normalized path, always a target...
+/** @private */
 function getPath(target, path) {
   var len = path.length, idx, next, key;
 
@@ -184,11 +188,13 @@ var IS_GLOBAL_PATH = /^([A-Z$]|([0-9][A-Z$])).*[\.\*]/;
 var HAS_THIS  = /^this[\.\*]/;
 var FIRST_KEY = /^([^\.\*]+)/;
 
+/** @private */
 function firstKey(path) {
   return path.match(FIRST_KEY)[0];
 }
 
 // assumes path is already normalized
+/** @private */
 function normalizeTuple(target, path) {
   var hasThis  = HAS_THIS.test(path),
       isGlobal = !hasThis && IS_GLOBAL_PATH.test(path),
