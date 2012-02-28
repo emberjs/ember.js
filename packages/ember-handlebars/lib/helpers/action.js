@@ -16,7 +16,7 @@ ActionHelper.registerAction = function(actionName, eventName, target, view, cont
       event.context = context;
 
       if ('function' === typeof target.send) {
-        return target.send(actionName, { event: event });
+        return target.send(actionName, event);
       } else {
         return target[actionName].call(target, event);
       }
