@@ -1000,15 +1000,6 @@ test("{{view}} should not allow attributeBindings to be set", function() {
   }, /Setting 'attributeBindings' via Handlebars is not allowed/, "should raise attributeBindings error");
 });
 
-test("{{view}} should not allow classNameBindings to be set", function() {
-  raises(function() {
-    view = Ember.View.create({
-      template: Ember.Handlebars.compile('{{view "Ember.View" classNameBindings="one two"}}')
-    });
-    appendView();
-  }, /Setting 'classNameBindings' via Handlebars is not allowed/, "should raise classNameBindings error");
-});
-
 test("{{view}} should be able to point to a local view", function() {
   view = Ember.View.create({
     template: Ember.Handlebars.compile("{{view common}}"),
