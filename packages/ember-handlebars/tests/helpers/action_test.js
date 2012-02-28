@@ -272,11 +272,9 @@ test("should send the view, event and current Handlebars context to the action",
   var passedContext;
 
   var aTarget = Ember.View.create({
-    edit: function(view, event, context) {
+    edit: function(event) {
       passedTarget = this;
-      passedView = view;
       passedEvent = event;
-      passedContext = context;
     }
   });
 
@@ -292,8 +290,8 @@ test("should send the view, event and current Handlebars context to the action",
   view.$('#edit').trigger('click');
 
   strictEqual(passedTarget, aTarget, "the action is called with the target as this");
-  strictEqual(passedView, view, "the view passed is the view containing the action helper");
-  deepEqual(passedContext, aContext, "the context passed is the context surrounding the action helper");
+  strictEqual(passedEvent.view, view, "the view passed is the view containing the action helper");
+  deepEqual(passedEvent.context, aContext, "the context passed is the context surrounding the action helper");
   equal(passedEvent.type, 'click', "the event passed is the event triggered for the action helper");
 });
 
