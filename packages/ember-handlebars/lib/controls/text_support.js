@@ -15,9 +15,10 @@ Ember.TextSupport = Ember.Mixin.create(
 
   value: "",
 
-  attributeBindings: ['placeholder', 'disabled'],
+  attributeBindings: ['placeholder', 'disabled', 'maxlength'],
   placeholder: null,
   disabled: false,
+  maxlength: null,
 
   insertNewline: Ember.K,
   cancel: Ember.K,
