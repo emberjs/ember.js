@@ -375,7 +375,7 @@ test("if an id is supplied in the initial data hash, it can be looked up using `
 
 test("models inside a collection view should have their ids updated", function() {
   var Person = DS.Model.extend({
-    id: DS.attr("integer")
+    id: DS.attr("number")
   });
 
   var idCounter = 1;

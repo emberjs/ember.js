@@ -11,7 +11,7 @@ test("should load all data for a type asynchronously the first time it is reques
     firstName: DS.attr('string'),
     lastName: DS.attr('string'),
 
-    height: DS.attr('integer')
+    height: DS.attr('number')
   });
 
   Person.FIXTURES = [{
