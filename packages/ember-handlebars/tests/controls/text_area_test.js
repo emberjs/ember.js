@@ -66,11 +66,50 @@ test("input placeholder is updated when setting placeholder property of view", f
     textArea.append();
   });
 
-  equal(textArea.$().attr('placeholder'), "foo", "renders text field with placeholder");
+  equal(textArea.$().attr('placeholder'), "foo", "renders text area with placeholder");
 
   Ember.run(function() { set(textArea, 'placeholder', 'bar'); });
 
-  equal(textArea.$().attr('placeholder'), "bar", "updates text field after placeholder changes");
+  equal(textArea.$().attr('placeholder'), "bar", "updates text area after placeholder changes");
+});
+
+test("input maxlength is updated when setting maxlength property of view", function() {
+  Ember.run(function() {
+    set(textArea, 'maxlength', '300');
+    textArea.append();
+  });
+
+  equal(textArea.$().attr('maxlength'), "300", "renders text area with maxlength");
+
+  Ember.run(function() { set(textArea, 'maxlength', '400'); });
+
+  equal(textArea.$().attr('maxlength'), "400", "updates text area after maxlength changes");
+});
+
+test("input rows is updated when setting rows property of view", function() {
+  Ember.run(function() {
+    set(textArea, 'rows', '3');
+    textArea.append();
+  });
+
+  equal(textArea.$().attr('rows'), "3", "renders text area with rows");
+
+  Ember.run(function() { set(textArea, 'rows', '4'); });
+
+  equal(textArea.$().attr('rows'), "4", "updates text area after rows changes");
+});
+
+test("input cols is updated when setting cols property of view", function() {
+  Ember.run(function() {
+    set(textArea, 'cols', '30');
+    textArea.append();
+  });
+
+  equal(textArea.$().attr('cols'), "30", "renders text area with cols");
+
+  Ember.run(function() { set(textArea, 'cols', '40'); });
+
+  equal(textArea.$().attr('cols'), "40", "updates text area after cols changes");
 });
 
 test("value binding works properly for inputs that haven't been created", function() {

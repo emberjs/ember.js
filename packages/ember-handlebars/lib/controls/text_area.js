@@ -20,6 +20,9 @@ Ember.TextArea = Ember.View.extend(Ember.TextSupport,
   classNames: ['ember-text-area'],
 
   tagName: "textarea",
+  attributeBindings: ['rows', 'cols'],
+  rows: null,
+  cols: null,
 
   /**
     @private
