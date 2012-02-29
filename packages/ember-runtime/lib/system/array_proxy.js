@@ -33,6 +33,13 @@ Ember.ArrayProxy = Ember.Object.extend(Ember.MutableArray,
     @property {Ember.Array}
   */
   content: null,
+  
+  /**
+    The model class to which incoming items should be type cast.  Must be an object that implements Ember.Object.
+
+    @property {Ember.Object}
+  */
+  model: null,
 
   /**
     Should actually retrieve the object at the specified index from the
@@ -48,6 +55,29 @@ Ember.ArrayProxy = Ember.Object.extend(Ember.MutableArray,
   */
   objectAtContent: function(idx) {
     return get(this, 'content').objectAt(idx);
+  },
+  
+  pushObject: function(obj) {      
+    if (this.get('model') && obj.__proto__.constructor !== this.get('model')) {
+      obj = this.get('model').create(obj); 
+    } else {
+      console.log("either the model isn't defined, or this obj is already the right type");
+    }
+    return this._super(obj);
+  },
+
+  pushObjects: function(objs) {
+    if (this.get('model')) {
+      objs = this._typecastArray(objs)
+    }
+    return this._super(typecasted);
+  },
+
+  set: function(prop, val) {
+    if (prop === 'content' && this.get('model')) {
+      val = this._typecastArray(val);
+    }
+    return this._super(prop, val);
   },
 
   /**
@@ -69,6 +99,9 @@ Ember.ArrayProxy = Ember.Object.extend(Ember.MutableArray,
     @returns {void}
   */
   replaceContent: function(idx, amt, objects) {
+    if (this.get('model')) {
+      objects = this._typecastArray(objects)
+    }
     get(this, 'content').replace(idx, amt, objects);
   },
 
@@ -90,6 +123,18 @@ Ember.ArrayProxy = Ember.Object.extend(Ember.MutableArray,
     this.arrayDidChange(content, 0, undefined, len);
   }, 'content'),
 
+  /** @private (nodoc) */
+  _typecastArray: function(objs) {
+    var typecasted = [];
+    objs.forEach(function(obj){
+      if (obj.__proto__.constructor !== this.get('model')) {
+        obj = this.get('model').create(obj);
+      } 
+      typecasted.push(obj);
+    }, this);        
+    return typecasted;
+  },
+  
   /** @private (nodoc) */
   objectAt: function(idx) {
     return get(this, 'content') && this.objectAtContent(idx);
