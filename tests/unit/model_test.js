@@ -200,7 +200,7 @@ test("toJSON returns a hash containing the JSON representation of the record", f
   deepEqual(record.toJSON(), { firstName: "Yehuda", last_name: "Katz", country: null, isHipster: false }, "the data is extracted by attribute");
 });
 
-test("toJSON returns a hash containing the JSON representation of the record", function() {
+test("toJSON includes associations when the association option is set", function() {
   var PhoneNumber = DS.Model.extend({
     number: DS.attr('string')
   });
@@ -229,6 +229,65 @@ test("toJSON returns a hash containing the JSON representation of the record", f
 
   deepEqual(record.toJSON({ associations: true }),
             { id: 1, name: "Chad", phoneNumbers: [7,8,9] },
+            "association is updated after editing associations array");
+});
+
+test("toJSON includes embedded associations when an association is embedded", function() {
+  var PhoneNumber = DS.Model.extend({
+    number: DS.attr('string')
+  });
+
+  var Contact = DS.Model.extend({
+    name: DS.attr('string'),
+    phoneNumbers: DS.hasMany(PhoneNumber, {
+      embedded: true
+    })
+  });
+
+  store.load(Contact, { id: 1, name: "Chad", phoneNumbers: [{
+    id: 7,
+    number: '123'
+  },
+
+  {
+    id: 8,
+    number: '345'
+  }]});
+
+  var record = store.find(Contact, 1);
+
+  deepEqual(record.toJSON(), { id: 1, name: "Chad" }, "precond - associations not included by default");
+  deepEqual(record.toJSON({ associations: true }),
+            { id: 1, name: "Chad", phoneNumbers: [{
+                id: 7,
+                number: '123'
+              },
+              {
+                id: 8,
+                number: '345'
+              }
+            ]},
+            "associations are included when association flag is set");
+
+  store.load(PhoneNumber, { id: 9, number: '789' });
+  var phoneNumber = store.find(PhoneNumber, 9);
+
+  record.get('phoneNumbers').pushObject(phoneNumber);
+
+  deepEqual(record.toJSON({ associations: true }),
+            { id: 1, name: "Chad", phoneNumbers: [{
+                id: 7,
+                number: '123'
+              },
+              {
+                id: 8,
+                number: '345'
+              },
+              {
+                id: 9,
+                number: '789'
+              }
+            ]},
             "association is updated after editing associations array");
 });
 
