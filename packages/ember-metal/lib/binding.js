@@ -75,7 +75,6 @@ Ember.EMPTY_PLACEHOLDER = '@@EMPTY@@';
 //
 
 // Coerces a non-array value into an array.
-/** @private */
 function MULTIPLE(val) {
   if (val instanceof Array) return val;
   if (val === undefined || val === null) return [];
@@ -84,7 +83,6 @@ function MULTIPLE(val) {
 
 // Treats a single-element array as the element. Otherwise
 // returns a placeholder.
-/** @private */
 function SINGLE(val, placeholder) {
   if (val instanceof Array) {
     if (val.length>1) return placeholder;
@@ -115,7 +113,6 @@ var get     = Ember.get,
     isGlobalPath = Ember.isGlobalPath;
 
 // Applies a binding's transformations against a value.
-/** @private */
 function getTransformedValue(binding, val, obj, dir) {
 
   // First run a type transform, if it exists, that changes the fundamental
@@ -137,38 +134,34 @@ function getTransformedValue(binding, val, obj, dir) {
   return val;
 }
 
-/** @private */
 function empty(val) {
   return val===undefined || val===null || val==='' || (Ember.isArray(val) && get(val, 'length')===0) ;
 }
 
-/** @private */
 function getPathWithGlobals(obj, path) {
   return getPath(isGlobalPath(path) ? window : obj, path);
 }
 
-/** @private */
-function getFromValue(obj, binding) {
-  var operation = binding._operation;
-
+function getTransformedFromValue(obj, binding) {
+  var operation = binding._operation,
+      fromValue;
   if (operation) {
-    return operation(obj, binding._from, binding._operand);
+    fromValue = operation(obj, binding._from, binding._operand);
   } else {
-    return getPathWithGlobals(obj, binding._from);
+    fromValue = getPathWithGlobals(obj, binding._from);
   }
+  return getTransformedValue(binding, fromValue, obj, 'to');
 }
 
-/** @private */
-function getToValue(obj, binding) {
-  return getPath(obj, binding._to);
+function getTransformedToValue(obj, binding) {
+  var toValue = getPath(obj, binding._to);
+  return getTransformedValue(binding, toValue, obj, 'from');
 }
 
-/** @private */
 var AND_OPERATION = function(obj, left, right) {
   return getPathWithGlobals(obj, left) && getPathWithGlobals(obj, right);
 };
 
-/** @private */
 var OR_OPERATION = function(obj, left, right) {
   return getPathWithGlobals(obj, left) || getPathWithGlobals(obj, right);
 };
@@ -177,10 +170,7 @@ var OR_OPERATION = function(obj, left, right) {
 // BINDING
 //
 
-/** @private */
 var K = function() {};
-
-/** @private */
 var Binding = function(toPath, fromPath) {
   var self;
 
@@ -196,9 +186,6 @@ var Binding = function(toPath, fromPath) {
   /** @private */
   self._from = fromPath;
   self._to   = toPath;
-
-  /** @private */
-  self._cache = {};
 
   return self;
 };
@@ -532,43 +519,13 @@ Binding.prototype = /** @scope Ember.Binding.prototype */ {
     // synchronizing from
     var guid = guidFor(obj), direction = this[guid];
 
-    var fromPath = this._from, toPath = this._to, lastSet;
+    var fromPath = this._from, toPath = this._to;
 
     delete this[guid];
 
-    if (direction === 'fwd') {
-      lastSet = this._cache.back;
-    } else if (direction === 'back') {
-      lastSet = this._cache.fwd;
-    }
-
-    var fromValue, toValue;
-
-    // There's a bit of duplicate logic here, but the order is important.
-    //
-    // We want to avoid ping-pong bindings. To do this, we store off the
-    // guid of the item we are setting. Later, we avoid synchronizing
-    // bindings in the other direction if the raw value we are copying
-    // is the same as the guid of the last thing we set.
-    //
-    // Use guids here to avoid unnecessarily holding hard references
-    // to objects.
-    if (direction === 'fwd') {
-      fromValue = getFromValue(obj, this);
-      if (this._cache.back === guidFor(fromValue)) { return; }
-      this._cache.fwd = guidFor(fromValue);
-
-      toValue = getToValue(obj, this);
-    } else if (direction === 'back') {
-      toValue = getToValue(obj, this);
-      if (this._cache.fwd === guidFor(toValue)) { return; }
-      this._cache.back = guidFor(toValue);
-
-      fromValue = getFromValue(obj, this);
-    }
-
-    fromValue = getTransformedValue(this, fromValue, obj, 'to');
-    toValue = getTransformedValue(this, toValue, obj, 'from');
+    // apply any operations to the object, then apply transforms
+    var fromValue = getTransformedFromValue(obj, this);
+    var toValue   = getTransformedToValue(obj, this);
 
     if (toValue === fromValue) { return; }
 
@@ -586,7 +543,6 @@ Binding.prototype = /** @scope Ember.Binding.prototype */ {
 
 };
 
-/** @private */
 function mixinProperties(to, from) {
   for (var key in from) {
     if (from.hasOwnProperty(key)) {

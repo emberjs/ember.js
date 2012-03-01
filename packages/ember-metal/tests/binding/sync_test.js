@@ -43,6 +43,9 @@ testBoth("bindings should not infinite loop if computed properties return object
 
     Ember.defineProperty(a, 'foo', Ember.computed(function() {
       getCalled++;
+      if (getCalled > 1000) {
+        throw 'infinite loop detected';
+      }
       return ['foo', 'bar'];
     }));
 
