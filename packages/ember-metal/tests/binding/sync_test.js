@@ -89,6 +89,47 @@ testBoth("bindings should do the right thing when observers trigger bindings in 
   equal(get(a, 'foo'), "what is going on");
 });
 
+testBoth("bindings should do the right thing when binding is in prototype", function(get, set) {
+  var obj, proto, a, b, selectionChanged;
+  Ember.run(function() {
+    obj = {
+      selection: null
+    };
+
+    selectionChanged = 0;
+
+    Ember.addObserver(obj, 'selection', function () {
+      selectionChanged++;
+    });
+
+    proto = {
+      obj: obj,
+      changeSelection: function (value) {
+        set(this, 'selection', value);
+      }
+    };
+    Em.bind(proto, 'selection', 'obj.selection');
+
+    a = Em.create(proto);
+    b = Em.create(proto);
+  });
+
+  Em.run(function () {
+    set(a, 'selection', 'a');
+  });
+
+  Em.run(function () {
+    set(b, 'selection', 'b');
+  });
+
+  Em.run(function () {
+    set(a, 'selection', 'a');
+  });
+
+  equal(selectionChanged, 3);
+  equal(get(obj, 'selection'), 'a');
+});
+
 testBoth("bindings should not try to sync destroyed objects", function(get, set) {
   var a, b;
 
