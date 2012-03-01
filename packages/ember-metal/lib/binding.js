@@ -520,24 +520,35 @@ Binding.prototype = /** @scope Ember.Binding.prototype */ {
     var guid = guidFor(obj), direction = this[guid];
 
     var fromPath = this._from, toPath = this._to;
+    var oneWay = this._oneWay;
 
     delete this[guid];
 
     // apply any operations to the object, then apply transforms
-    var fromValue = getTransformedFromValue(obj, this);
-    var toValue   = getTransformedToValue(obj, this);
+    // var fromValue = getTransformedFromValue(obj, this);
+    // var toValue   = getTransformedToValue(obj, this);
 
-    if (toValue === fromValue) { return; }
+    // if (toValue === fromValue) { return; }
 
     // if we're synchronizing from the remote object...
     if (direction === 'fwd') {
-      if (log) { Ember.Logger.log(' ', this.toString(), toValue, '->', fromValue, obj); }
+      var fromValue = getTransformedFromValue(obj, this);
+      if (log) {
+        Ember.Logger.log(' ', this.toString(), '->', fromValue, obj);
+      }
+      if (!oneWay) Ember.removeObserver(obj, toPath, this, this.toDidChange);
       Ember.trySetPath(Ember.isGlobalPath(toPath) ? window : obj, toPath, fromValue);
+      if (!oneWay) Ember.addObserver(obj, toPath, this, this.toDidChange);
 
     // if we're synchronizing *to* the remote object
     } else if (direction === 'back') {// && !this._oneWay) {
-      if (log) { Ember.Logger.log(' ', this.toString(), toValue, '<-', fromValue, obj); }
+      var toValue = getTransformedToValue(obj, this);
+      if (log) {
+        Ember.Logger.log(' ', this.toString(), '<-', toValue, obj);
+      }
+      Ember.removeObserver(obj, fromPath, this, this.fromDidChange);
       Ember.trySetPath(Ember.isGlobalPath(fromPath) ? window : obj, fromPath, toValue);
+      Ember.addObserver(obj, fromPath, this, this.fromDidChange);
     }
   }
 
