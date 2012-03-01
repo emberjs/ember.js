@@ -121,9 +121,9 @@ RunLoop.prototype = {
 
         // the sync phase is to allow property changes to propogate.  don't
         // invoke observers until that is finished.
-        if (queueName === 'sync') Ember.beginPropertyChanges();
+        //if (queueName === 'sync') Ember.beginPropertyChanges();
         forEach(queue, iter);
-        if (queueName === 'sync') Ember.endPropertyChanges();
+        //if (queueName === 'sync') Ember.endPropertyChanges();
 
         if (log) Ember.Logger.log('End: Flush Sync Queue');
 
@@ -141,9 +141,9 @@ RunLoop.prototype = {
           log = Ember.LOG_BINDINGS && queueName==='sync';
           if (log) Ember.Logger.log('Begin: Flush Sync Queue');
 
-          if (queueName === 'sync') Ember.beginPropertyChanges();
+          //if (queueName === 'sync') Ember.beginPropertyChanges();
           if (queue) forEach(queue, iter);
-          if (queueName === 'sync') Ember.endPropertyChanges();
+          //if (queueName === 'sync') Ember.endPropertyChanges();
 
           if (log) Ember.Logger.log('End: Flush Sync Queue');
 
