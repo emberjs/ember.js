@@ -121,12 +121,14 @@ test("a DS.Model can describe Date attributes", function() {
   var dateString = "Sat, 31 Dec 2011 00:08:16 GMT";
   var date = new Date(dateString);
 
-  var model = DS.Model._create({
+  var store = DS.Store.create();
+
+  var Person = DS.Model.extend({
     updatedAt: DS.attr('date')
   });
 
-  model.send('loadingData');
-  model.send('didChangeData');
+  store.load(Person, { id: 1 });
+  var model = store.find(Person, 1);
 
   model.set('updatedAt', date);
   deepEqual(date, get(model, 'updatedAt'), "setting a date returns the same date");
@@ -181,23 +183,56 @@ test("it can specify which key to use when looking up properties on the hash", f
   equal(get(record, 'name'), "Pete", "retrieves correct value");
 });
 
+test("it can specify a naming convention", function() {
+  var convention = {
+    keyToJSONKey: function(key) {
+      return Ember.String.decamelize(key);
+    },
+
+    foreignKey: function(key) {
+      return key + '_id';
+    }
+  };
+
+  var store = DS.Store.create();
+
+  var Model = DS.Model.extend({
+    namingConvention: convention,
+
+    firstName: DS.attr('string'),
+    lastName: DS.attr('string', { key: 'lastName' })
+  });
+
+  store.load(Model, { id: 1, first_name: "Tom", lastName: "Dale" });
+  var tom = store.find(Model, 1);
+
+  equal(get(tom, 'firstName'), "Tom", "the naming convention is used by default");
+  equal(get(tom, 'lastName'), "Dale", "the naming convention is unused if a key is specified");
+
+  deepEqual(tom.toJSON(), {
+    id: 1,
+    first_name: "Tom",
+    lastName: "Dale"
+  }, "toJSON takes naming convention into consideration");
+});
+
 test("toJSON returns a hash containing the JSON representation of the record", function() {
   var Model = DS.Model.extend({
     firstName: DS.attr('string'),
-    lastName: DS.attr('string', { key: 'last_name' }),
+    lastName: DS.attr('string', { key: 'lastName' }),
     country: DS.attr('string', { defaultValue: 'US' }),
     isHipster: DS.attr('boolean', { defaultValue: false })
   });
 
-  store.load(Model, { id: 1, firstName: "Tom", last_name: "Dale", other: "none" });
+  store.load(Model, { id: 1, first_name: "Tom", lastName: "Dale", other: "none" });
   var record = store.find(Model, 1);
 
   set(record, 'isHipster', true);
 
-  deepEqual(record.toJSON(), { id: 1, firstName: "Tom", last_name: "Dale", country: 'US', isHipster: true }, "the data is extracted by attribute");
+  deepEqual(record.toJSON(), { id: 1, first_name: "Tom", lastName: "Dale", country: 'US', is_hipster: true }, "the data is extracted by attribute");
 
   record = Model.createRecord({ firstName: "Yehuda", lastName: "Katz", country: null });
-  deepEqual(record.toJSON(), { firstName: "Yehuda", last_name: "Katz", country: null, isHipster: false }, "the data is extracted by attribute");
+  deepEqual(record.toJSON(), { first_name: "Yehuda", lastName: "Katz", country: null, is_hipster: false }, "the data is extracted by attribute");
 });
 
 test("toJSON includes associations when the association option is set", function() {

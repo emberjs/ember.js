@@ -207,7 +207,7 @@ test("by default, commit calls createRecords once per type", function() {
   adapter.createRecords = function(store, type, array) {
     equal(type, Person, "the type is correct");
     equal(get(array, 'length'), 2, "the array is the right length");
-    var records = [{ id: 1, name: "Tom Dale", updatedAt: 'right nao' }, { id: 2, name: "Yehuda Katz" }];
+    var records = [{ id: 1, name: "Tom Dale", updated_at: 'right nao' }, { id: 2, name: "Yehuda Katz" }];
     store.didCreateRecords(Person, array, records);
   };
 
@@ -271,7 +271,7 @@ test("updateRecords can return an array of Hashes to update the store with", fun
     equal(type, Person, "the type is correct");
     equal(get(array, 'length'), 2, "the array is the right length");
 
-    store.didUpdateRecords(array, [ { id: 1, name: "Tom Dale", updatedAt: "now" }, { id: 2, name: "Yehuda Katz", updatedAt: "now!" } ]);
+    store.didUpdateRecords(array, [ { id: 1, name: "Tom Dale", updated_at: "now" }, { id: 2, name: "Yehuda Katz", updated_at: "now!" } ]);
 
     equal(get(array[0], 'updatedAt'), "now", "the data was inserted");
     equal(get(array[1], 'updatedAt'), "now!", "the data was inserted");
@@ -340,7 +340,7 @@ test("by default, createRecords calls createRecord once per record", function() 
 
     var hash = get(model, 'data');
     hash.id = count;
-    hash.updatedAt = "now";
+    hash.updated_at = "now";
 
     store.didCreateRecord(model, hash);
     equal(get(model, 'updatedAt'), "now", "the model should receive the new information");
@@ -408,12 +408,12 @@ test("calling store.didUpdateRecord can provide an optional hash", function() {
 
     if (count === 0) {
       equal(get(model, 'name'), "Tom Dale");
-      store.didUpdateRecord(model, { id: 1, name: "Tom Dale", updatedAt: "now" });
+      store.didUpdateRecord(model, { id: 1, name: "Tom Dale", updated_at: "now" });
       equal(get(model, 'isDirty'), false, "the model should not be dirty");
       equal(get(model, 'updatedAt'), "now", "the hash was updated");
     } else if (count === 1) {
       equal(get(model, 'name'), "Yehuda Katz");
-      store.didUpdateRecord(model, { id: 2, name: "Yehuda Katz", updatedAt: "now!" });
+      store.didUpdateRecord(model, { id: 2, name: "Yehuda Katz", updated_at: "now!" });
       equal(model.get('isDirty'), false, "the model should not be dirty");
       equal(get(model, 'updatedAt'), "now!", "the hash was updated");
     } else {
