@@ -159,6 +159,24 @@ function removeListener(obj, eventName, target, method) {
   }
 }
 
+function suspendListener(obj, eventName, target, method, callback) {
+  if (!method && 'function' === typeof target) {
+    method = target;
+    target = null;
+  }
+
+  var actionSet = actionSetFor(obj, eventName, target, true),
+      methodGuid = guidFor(method),
+      action = actionSet && actionSet[methodGuid];
+
+  actionSet[methodGuid] = null;
+  try {
+    return callback.call(target);
+  } finally {
+    actionSet[methodGuid] = action;
+  }
+}
+
 // returns a list of currently watched events
 /** @memberOf Ember */
 function watchedEvents(obj) {
@@ -235,6 +253,7 @@ function listenersFor(obj, eventName) {
 
 Ember.addListener = addListener;
 Ember.removeListener = removeListener;
+Ember.suspendListener = suspendListener;
 Ember.sendEvent = sendEvent;
 Ember.hasListeners = hasListeners;
 Ember.watchedEvents = watchedEvents;
