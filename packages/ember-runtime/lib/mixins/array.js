@@ -114,6 +114,11 @@ Ember.Array = Ember.Mixin.create(Ember.Enumerable, /** @scope Ember.Array.protot
     uses the observable array methods to retrieve the objects for the new
     slice.
 
+        var arr = ['red', 'green', 'blue'];
+        arr.slice(0);      => ['red', 'green', 'blue']
+        arr.slice(0, 2);   => ['red', 'green']
+        arr.slice(1, 100); => ['green', 'blue']
+
     @param beginIndex {Integer} (Optional) index to begin slicing from.
     @param endIndex {Integer} (Optional) index to end the slice at.
     @returns {Array} New array with specified slice
