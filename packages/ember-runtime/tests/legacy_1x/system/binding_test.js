@@ -77,7 +77,7 @@ test("toObject change should propogate to fromObject only after flush", function
   equal(get(fromObject, "value"), "change") ;
 });
 
-test("suspended observing during bindings", function() {
+test("deferred observing during bindings", function() {
 
   // setup special binding
   fromObject = Ember.Object.create({

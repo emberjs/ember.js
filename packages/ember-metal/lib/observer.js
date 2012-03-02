@@ -15,7 +15,7 @@ var BEFORE_OBSERVERS = ':before';
 var guidFor = Ember.guidFor;
 var normalizePath = Ember.normalizePath;
 
-var suspended = 0;
+var deferred = 0;
 var array_Slice = Array.prototype.slice;
 var array_ForEach = Ember.ArrayUtils.forEach;
 
@@ -57,9 +57,9 @@ var queue = new ObserverSet(true), beforeObserverSet = new ObserverSet();
 
 /** @private */
 function notifyObservers(obj, eventName, forceNotification) {
-  if (suspended && !forceNotification) {
+  if (deferred && !forceNotification) {
 
-    // if suspended add to the queue to send event later - but only send
+    // if deferred add to the queue to send event later - but only send
     // event once.
     if (!queue.contains(obj, eventName)) {
       queue.add(obj, eventName);
@@ -79,13 +79,13 @@ function flushObserverQueue() {
 }
 
 Ember.beginPropertyChanges = function() {
-  suspended++;
+  deferred++;
   return this;
 };
 
 Ember.endPropertyChanges = function() {
-  suspended--;
-  if (suspended<=0) flushObserverQueue();
+  deferred--;
+  if (deferred<=0) flushObserverQueue();
 };
 
 /**
@@ -182,6 +182,10 @@ Ember.addBeforeObserver = function(obj, path, target, method) {
   return this;
 };
 
+Ember.suspendObserver = function(obj, path, target, method, callback) {
+  return Ember.suspendListener(obj, changeEvent(path), target, method, callback);
+};
+
 /** @private */
 Ember.beforeObserversFor = function(obj, path) {
   return Ember.listenersFor(obj, beforeEvent(path));
@@ -203,7 +207,7 @@ Ember.notifyObservers = function(obj, keyName) {
 Ember.notifyBeforeObservers = function(obj, keyName) {
   var guid, set, forceNotification = false;
 
-  if (suspended) {
+  if (deferred) {
     if (!beforeObserverSet.contains(obj, keyName)) {
       beforeObserverSet.add(obj, keyName);
       forceNotification = true;
