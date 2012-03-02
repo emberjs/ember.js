@@ -520,7 +520,6 @@ Binding.prototype = /** @scope Ember.Binding.prototype */ {
     var guid = guidFor(obj), direction = this[guid];
 
     var fromPath = this._from, toPath = this._to;
-    var oneWay = this._oneWay;
 
     delete this[guid];
 
@@ -536,19 +535,22 @@ Binding.prototype = /** @scope Ember.Binding.prototype */ {
       if (log) {
         Ember.Logger.log(' ', this.toString(), '->', fromValue, obj);
       }
-      if (!oneWay) Ember.removeObserver(obj, toPath, this, this.toDidChange);
-      Ember.trySetPath(Ember.isGlobalPath(toPath) ? window : obj, toPath, fromValue);
-      if (!oneWay) Ember.addObserver(obj, toPath, this, this.toDidChange);
-
+      if (this._oneWay) {
+        Ember.trySetPath(Ember.isGlobalPath(toPath) ? window : obj, toPath, fromValue);
+      } else {
+        Ember.suspendObserver(obj, toPath, this, this.toDidChange, function () {
+          Ember.trySetPath(Ember.isGlobalPath(toPath) ? window : obj, toPath, fromValue);
+        });
+      }
     // if we're synchronizing *to* the remote object
     } else if (direction === 'back') {// && !this._oneWay) {
       var toValue = getTransformedToValue(obj, this);
       if (log) {
         Ember.Logger.log(' ', this.toString(), '<-', toValue, obj);
       }
-      Ember.removeObserver(obj, fromPath, this, this.fromDidChange);
-      Ember.trySetPath(Ember.isGlobalPath(fromPath) ? window : obj, fromPath, toValue);
-      Ember.addObserver(obj, fromPath, this, this.fromDidChange);
+      Ember.suspendObserver(obj, fromPath, this, this.fromDidChange, function () {
+        Ember.trySetPath(Ember.isGlobalPath(fromPath) ? window : obj, fromPath, toValue);
+      });
     }
   }
 
