@@ -116,17 +116,24 @@ RunLoop.prototype = {
       while (this._queues && (queue = this._queues[queueName])) {
         this._queues[queueName] = null;
 
-        log = Ember.LOG_BINDINGS && queueName==='sync';
-        if (log) Ember.Logger.log('Begin: Flush Sync Queue');
-
         // the sync phase is to allow property changes to propogate.  don't
         // invoke observers until that is finished.
-        //if (queueName === 'sync') Ember.beginPropertyChanges();
-        forEach(queue, iter);
-        //if (queueName === 'sync') Ember.endPropertyChanges();
+        if (queueName === 'sync') {
+          log = Ember.LOG_BINDINGS;
+          if (log) Ember.Logger.log('Begin: Flush Sync Queue');
 
-        if (log) Ember.Logger.log('End: Flush Sync Queue');
+          Ember.beginPropertyChanges();
+          try {
+            forEach(queue, iter);
+          } finally {
+            Ember.endPropertyChanges();
+          }
 
+          if (log) Ember.Logger.log('End: Flush Sync Queue');
+
+        } else {
+          forEach(queue, iter);
+        }
       }
 
     } else {
@@ -138,17 +145,26 @@ RunLoop.prototype = {
           queueName = queueNames[idx];
           queue = queues[queueName];
 
-          log = Ember.LOG_BINDINGS && queueName==='sync';
-          if (log) Ember.Logger.log('Begin: Flush Sync Queue');
+          if (queue) {
+            // the sync phase is to allow property changes to propogate.  don't
+            // invoke observers until that is finished.
+            if (queueName === 'sync') {
+              log = Ember.LOG_BINDINGS;
+              if (log) Ember.Logger.log('Begin: Flush Sync Queue');
 
-          //if (queueName === 'sync') Ember.beginPropertyChanges();
-          if (queue) forEach(queue, iter);
-          //if (queueName === 'sync') Ember.endPropertyChanges();
+              Ember.beginPropertyChanges();
+              try {
+                forEach(queue, iter);
+              } finally {
+                Ember.endPropertyChanges();
+              }
 
-          if (log) Ember.Logger.log('End: Flush Sync Queue');
-
+              if (log) Ember.Logger.log('End: Flush Sync Queue');
+            } else {
+              forEach(queue, iter);
+            }
+          }
         }
-
       } while (queues = this._queues); // go until queues stay clean
     }
 
