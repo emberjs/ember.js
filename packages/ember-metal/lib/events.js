@@ -63,48 +63,51 @@ function targetSetFor(obj, eventName) {
 // meta system.
 var SKIP_PROPERTIES = { __ember_source__: true };
 
-// For a given target, invokes all of the methods that have
-// been registered as a listener.
 /** @private */
-function invokeEvents(targetSet, params) {
+function iterateSet(targetSet, callback, params) {
+  if (!targetSet) { return false; }
   // Iterate through all elements of the target set
   for(var targetGuid in targetSet) {
     if (SKIP_PROPERTIES[targetGuid]) { continue; }
 
     var actionSet = targetSet[targetGuid];
+    if (actionSet) {
+      // Iterate through the elements of the action set
+      for(var methodGuid in actionSet) {
+        if (SKIP_PROPERTIES[methodGuid]) { continue; }
 
-    // Iterate through the elements of the action set
-    for(var methodGuid in actionSet) {
-      if (SKIP_PROPERTIES[methodGuid]) { continue; }
-
-      var action = actionSet[methodGuid];
-      if (!action) { continue; }
-
-      // Extract target and method for each action
-      var method = action.method;
-      var target = action.target;
-
-      // If there is no target, the target is the object
-      // on which the event was fired.
-      if (!target) { target = params[0]; }
-      if ('string' === typeof method) { method = target[method]; }
-
-      // Listeners can provide an `xform` function, which can perform
-      // arbitrary transformations, such as changing the order of
-      // parameters.
-      //
-      // This is primarily used by ember-runtime's observer system, which
-      // provides a higher level abstraction on top of events, including
-      // dynamically looking up current values and passing them into the
-      // registered listener.
-      var xform = action.xform;
-
-      if (xform) {
-        xform(target, method, params);
-      } else {
-        method.apply(target, params);
+        var action = actionSet[methodGuid];
+        if (action) {
+          if (callback(action, params) === true) {
+            return true;
+          }
+        }
       }
     }
+  }
+  return false;
+}
+
+/** @private */
+function invokeAction(action, params) {
+  var method = action.method, target = action.target, xform = action.xform;
+  // If there is no target, the target is the object
+  // on which the event was fired.
+  if (!target) { target = params[0]; }
+  if ('string' === typeof method) { method = target[method]; }
+
+  // Listeners can provide an `xform` function, which can perform
+  // arbitrary transformations, such as changing the order of
+  // parameters.
+  //
+  // This is primarily used by ember-runtime's observer system, which
+  // provides a higher level abstraction on top of events, including
+  // dynamically looking up current values and passing them into the
+  // registered listener.
+  if (xform) {
+    xform(target, method, params);
+  } else {
+    method.apply(target, params);
   }
 }
 
@@ -201,26 +204,29 @@ function sendEvent(obj, eventName) {
   }
 
   var targetSet = targetSetFor(obj, eventName);
-  if (!targetSet) { return false; }
+  iterateSet(targetSet, invokeAction, arguments);
 
-  invokeEvents(targetSet, arguments);
   return true;
+}
+
+function deferEvent(obj, eventName) {
+  var targetSet = targetSetFor(obj, eventName), actions = [], params = arguments;
+  iterateSet(targetSet, function (action) {
+    actions.push(action);
+  });
+
+  return function() {
+    for (var i=0, len=actions.length; i < len; ++i) {
+      invokeAction(actions[i], params);
+    }
+  };
 }
 
 /** @memberOf Ember */
 function hasListeners(obj, eventName) {
   var targetSet = targetSetFor(obj, eventName);
-  if (!targetSet) { return false; }
-
-  for(var targetGuid in targetSet) {
-    if (SKIP_PROPERTIES[targetGuid] || !targetSet[targetGuid]) { continue; }
-
-    var actionSet = targetSet[targetGuid];
-
-    for(var methodGuid in actionSet) {
-      if (SKIP_PROPERTIES[methodGuid] || !actionSet[methodGuid]) { continue; }
-      return true; // stop as soon as we find a valid listener
-    }
+  if (iterateSet(targetSet, function () {return true;})) {
+    return true;
   }
 
   // no listeners!  might as well clean this up so it is faster later.
@@ -233,21 +239,9 @@ function hasListeners(obj, eventName) {
 /** @memberOf Ember */
 function listenersFor(obj, eventName) {
   var targetSet = targetSetFor(obj, eventName), ret = [];
-  if (!targetSet) { return ret; }
-
-  var info;
-  for(var targetGuid in targetSet) {
-    if (SKIP_PROPERTIES[targetGuid] || !targetSet[targetGuid]) { continue; }
-
-    var actionSet = targetSet[targetGuid];
-
-    for(var methodGuid in actionSet) {
-      if (SKIP_PROPERTIES[methodGuid] || !actionSet[methodGuid]) { continue; }
-      info = actionSet[methodGuid];
-      ret.push([info.target, info.method]);
-    }
-  }
-
+  iterateSet(targetSet, function (action) {
+    ret.push([action.target, action.method]);
+  });
   return ret;
 }
 
@@ -258,3 +252,4 @@ Ember.sendEvent = sendEvent;
 Ember.hasListeners = hasListeners;
 Ember.watchedEvents = watchedEvents;
 Ember.listenersFor = listenersFor;
+Ember.deferEvent = deferEvent;
