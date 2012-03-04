@@ -20,7 +20,7 @@ Ember.TextField = Ember.View.extend(Ember.TextSupport,
   classNames: ['ember-text-field'],
 
   tagName: "input",
-  attributeBindings: ['type', 'value'],
-  type: "text"
-
+  attributeBindings: ['type', 'value', 'size'],
+  type: "text",
+  size: null
 });

@@ -43,6 +43,7 @@ var metaPath = Ember.metaPath;
 
 // Gets the set of all actions, keyed on the guid of each action's
 // method property.
+/** @private */
 function actionSetFor(obj, eventName, target, writable) {
   var targetGuid = guidFor(target);
   return metaPath(obj, ['listeners', eventName, targetGuid], writable);
@@ -50,6 +51,7 @@ function actionSetFor(obj, eventName, target, writable) {
 
 // Gets the set of all targets, keyed on the guid of each action's
 // target property.
+/** @private */
 function targetSetFor(obj, eventName) {
   var listenerSet = meta(obj, false).listeners;
   if (!listenerSet) { return false; }
@@ -63,6 +65,7 @@ var SKIP_PROPERTIES = { __ember_source__: true };
 
 // For a given target, invokes all of the methods that have
 // been registered as a listener.
+/** @private */
 function invokeEvents(targetSet, params) {
   // Iterate through all elements of the target set
   for(var targetGuid in targetSet) {
@@ -111,7 +114,7 @@ function invokeEvents(targetSet, params) {
   be invoked and is able to translate event listener parameters into the form
   that observers are expecting.
 
-  @name Ember.addListener
+  @memberOf Ember
 */
 function addListener(obj, eventName, target, method, xform) {
   ember_assert("You must pass at least an object and event name to Ember.addListener", !!obj && !!eventName);
@@ -137,6 +140,7 @@ function addListener(obj, eventName, target, method, xform) {
   return ret; // return true if this is the first listener.
 }
 
+/** @memberOf Ember */
 function removeListener(obj, eventName, target, method) {
   if (!method && 'function'===typeof target) {
     method = target;
@@ -156,6 +160,7 @@ function removeListener(obj, eventName, target, method) {
 }
 
 // returns a list of currently watched events
+/** @memberOf Ember */
 function watchedEvents(obj) {
   var listeners = meta(obj, false).listeners, ret = [];
 
@@ -169,6 +174,7 @@ function watchedEvents(obj) {
   return ret;
 }
 
+/** @memberOf Ember */
 function sendEvent(obj, eventName) {
 
   // first give object a chance to handle it
@@ -183,6 +189,7 @@ function sendEvent(obj, eventName) {
   return true;
 }
 
+/** @memberOf Ember */
 function hasListeners(obj, eventName) {
   var targetSet = targetSetFor(obj, eventName);
   if (!targetSet) { return false; }
@@ -205,6 +212,7 @@ function hasListeners(obj, eventName) {
   return false;
 }
 
+/** @memberOf Ember */
 function listenersFor(obj, eventName) {
   var targetSet = targetSetFor(obj, eventName), ret = [];
   if (!targetSet) { return ret; }

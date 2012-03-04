@@ -73,6 +73,32 @@ test("input placeholder is updated when setting placeholder property of view", f
   equal(textField.$().attr('placeholder'), "bar", "updates text field after placeholder changes");
 });
 
+test("input maxlength is updated when setting maxlength property of view", function() {
+  Ember.run(function() {
+    set(textField, 'maxlength', '30');
+    textField.append();
+  });
+
+  equal(textField.$().attr('maxlength'), "30", "renders text field with maxlength");
+
+  Ember.run(function() { set(textField, 'maxlength', '40'); });
+
+  equal(textField.$().attr('maxlength'), "40", "updates text field after maxlength changes");
+});
+
+test("input size is updated when setting size property of view", function() {
+  Ember.run(function() {
+    set(textField, 'size', '30');
+    textField.append();
+  });
+
+  equal(textField.$().attr('size'), "30", "renders text field with size");
+
+  Ember.run(function() { set(textField, 'size', '40'); });
+
+  equal(textField.$().attr('size'), "40", "updates text field after size changes");
+});
+
 test("input type is configurable when creating view", function() {
   Ember.run(function() {
     set(textField, 'type', 'password');

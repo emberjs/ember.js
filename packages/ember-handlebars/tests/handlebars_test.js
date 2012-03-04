@@ -1000,15 +1000,6 @@ test("{{view}} should not allow attributeBindings to be set", function() {
   }, /Setting 'attributeBindings' via Handlebars is not allowed/, "should raise attributeBindings error");
 });
 
-test("{{view}} should not allow classNameBindings to be set", function() {
-  raises(function() {
-    view = Ember.View.create({
-      template: Ember.Handlebars.compile('{{view "Ember.View" classNameBindings="one two"}}')
-    });
-    appendView();
-  }, /Setting 'classNameBindings' via Handlebars is not allowed/, "should raise classNameBindings error");
-});
-
 test("{{view}} should be able to point to a local view", function() {
   view = Ember.View.create({
     template: Ember.Handlebars.compile("{{view common}}"),
@@ -1243,7 +1234,7 @@ test("should be able to bind boolean element attributes using {{bindAttr}}", fun
 });
 
 test("should be able to add multiple classes using {{bindAttr class}}", function() {
-  var template = Ember.Handlebars.compile('<div {{bindAttr class="content.isAwesomeSauce content.isAlsoCool content.isAmazing:amazing"}}></div>');
+  var template = Ember.Handlebars.compile('<div {{bindAttr class="content.isAwesomeSauce content.isAlsoCool content.isAmazing:amazing :is-super-duper"}}></div>');
   var content = Ember.Object.create({
     isAwesomeSauce: true,
     isAlsoCool: true,
@@ -1260,6 +1251,7 @@ test("should be able to add multiple classes using {{bindAttr class}}", function
   ok(view.$('div').hasClass('is-awesome-sauce'), "dasherizes first property and sets classname");
   ok(view.$('div').hasClass('is-also-cool'), "dasherizes second property and sets classname");
   ok(view.$('div').hasClass('amazing'), "uses alias for third property and sets classname");
+  ok(view.$('div').hasClass('is-super-duper'), "static class is present");
 
   Ember.run(function() {
     set(content, 'isAwesomeSauce', false);
@@ -1268,6 +1260,7 @@ test("should be able to add multiple classes using {{bindAttr class}}", function
 
   ok(!view.$('div').hasClass('is-awesome-sauce'), "removes dasherized class when property is set to false");
   ok(!view.$('div').hasClass('amazing'), "removes aliased class when property is set to false");
+  ok(view.$('div').hasClass('is-super-duper'), "static class is still present");
 });
 
 test("should be able to bindAttr to 'this' in an {{#each}} block", function() {

@@ -21,6 +21,7 @@ var forEach = Ember.ArrayUtils.forEach;
 
 // invokes passed params - normalizing so you can pass target/func,
 // target/string or just func
+/** @private */
 function invoke(target, method, args, ignore) {
 
   if (method===undefined) {
@@ -55,7 +56,10 @@ function invoke(target, method, args, ignore) {
 
 var timerMark; // used by timers...
 
+/** @private */
 var K = function() {};
+
+/** @private */
 var RunLoop = function(prev) {
   var self;
 
@@ -161,8 +165,6 @@ Ember.RunLoop = RunLoop;
 // Ember.run - this is ideally the only public API the dev sees
 //
 
-var run;
-
 /**
   Runs the passed target and method inside of a runloop, ensuring any
   deferred actions including bindings and views updates are flushed at the
@@ -186,7 +188,7 @@ var run;
 
   @returns {Object} return value from invoking the passed function.
 */
-Ember.run = run = function(target, method) {
+Ember.run = function(target, method) {
 
   var ret, loop;
   run.begin();
@@ -197,6 +199,10 @@ Ember.run = run = function(target, method) {
   }
   return ret;
 };
+
+/** @private */
+var run = Ember.run;
+
 
 /**
   Begins a new RunLoop.  Any deferred actions invoked after the begin will
@@ -270,6 +276,7 @@ Ember.run.schedule = function(queue, target, method) {
 
 var autorunTimer;
 
+/** @private */
 function autorun() {
   autorunTimer = null;
   if (run.currentRunLoop) run.end();
@@ -321,6 +328,7 @@ Ember.run.sync = function() {
 var timers = {}; // active timers...
 
 var laterScheduled = false;
+/** @private */
 function invokeLaterTimers() {
   var now = (+ new Date()), earliest = -1;
   for(var key in timers) {
@@ -388,6 +396,7 @@ Ember.run.later = function(target, method) {
   return guid;
 };
 
+/** @private */
 function invokeOnceTimer(guid, onceTimers) {
   if (onceTimers[this.tguid]) delete onceTimers[this.tguid][this.mguid];
   if (timers[guid]) invoke(this.target, this.method, this.args, 2);
@@ -444,6 +453,7 @@ Ember.run.once = function(target, method) {
 };
 
 var scheduledNext = false;
+/** @private */
 function invokeNextTimers() {
   scheduledNext = null;
   for(var key in timers) {

@@ -19,7 +19,7 @@ uuid         = 0;
 numberCache  = [];
 stringCache  = {};
 
-var GUID_DESC = {
+var GUID_DESC = Ember.GUID_DESC = {
   configurable: true,
   writable: true,
   enumerable: false
@@ -200,6 +200,8 @@ Ember.meta = function meta(obj, writable) {
     ret.lastSetValues = {};
     ret.cache    = {};
     ret.source   = obj;
+
+    o_defineProperty(obj, META_KEY, META_DESC);
     ret = obj[META_KEY] = createMeta(ret);
   }
   return ret;

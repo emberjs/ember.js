@@ -19,6 +19,7 @@ var suspended = 0;
 var array_Slice = Array.prototype.slice;
 var array_ForEach = Ember.ArrayUtils.forEach;
 
+/** @private */
 var ObserverSet = function(iterateable) {
   this.set = {};
   if (iterateable) { this.array = []; }
@@ -54,6 +55,7 @@ ObserverSet.prototype.forEach = function(fn) {
 
 var queue = new ObserverSet(true), beforeObserverSet = new ObserverSet();
 
+/** @private */
 function notifyObservers(obj, eventName, forceNotification) {
   if (suspended && !forceNotification) {
 
@@ -68,6 +70,7 @@ function notifyObservers(obj, eventName, forceNotification) {
   }
 }
 
+/** @private */
 function flushObserverQueue() {
   beforeObserverSet.empty();
 
@@ -103,22 +106,27 @@ Ember.changeProperties = function(cb){
   }
 };
 
+/** @private */
 function changeEvent(keyName) {
   return keyName+AFTER_OBSERVERS;
 }
 
+/** @private */
 function beforeEvent(keyName) {
   return keyName+BEFORE_OBSERVERS;
 }
 
+/** @private */
 function changeKey(eventName) {
   return eventName.slice(0, -7);
 }
 
+/** @private */
 function beforeKey(eventName) {
   return eventName.slice(0, -7);
 }
 
+/** @private */
 function xformForArgs(args) {
   return function (target, method, params) {
     var obj = params[0], keyName = changeKey(params[1]), val;
@@ -133,6 +141,7 @@ function xformForArgs(args) {
 
 var xformChange = xformForArgs([]);
 
+/** @private */
 function xformBefore(target, method, params) {
   var obj = params[0], keyName = beforeKey(params[1]), val;
   if (method.length>2) val = Ember.getPath(obj, keyName);

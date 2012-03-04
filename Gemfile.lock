@@ -7,6 +7,14 @@ GIT
       thor
 
 GIT
+  remote: https://github.com/wagenet/ember-docs.git
+  revision: d8f10e2eabe144adf77850f929f2b840f119e3d1
+  specs:
+    ember-docs (0.1)
+      rack
+      thor
+
+GIT
   remote: https://github.com/wycats/rake-pipeline-web-filters.git
   revision: fe752a8cfdbb318b746fd76fd3c10dd8b8f29891
   specs:
@@ -46,6 +54,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  ember-docs!
   execjs (~> 1.2.6)
   github-upload
   rack

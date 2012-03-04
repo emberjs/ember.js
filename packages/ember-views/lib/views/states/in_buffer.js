@@ -26,17 +26,15 @@ Ember.View.states.inBuffer = {
   rerender: function(view) {
     view._notifyWillRerender();
 
-    var buffer = meta(view)['Ember.View'].buffer;
-
     view.clearRenderedChildren();
-    view.renderToBuffer(buffer, 'replaceWith');
+    view.renderToBuffer(view.buffer, 'replaceWith');
   },
 
   // when a view is rendered in a buffer, appending a child
   // view will render that view and append the resulting
   // buffer into its buffer.
   appendChild: function(view, childView, options) {
-    var buffer = meta(view)['Ember.View'].buffer;
+    var buffer = view.buffer;
 
     childView = this.createChildView(childView, options);
     get(view, '_childViews').pushObject(childView);

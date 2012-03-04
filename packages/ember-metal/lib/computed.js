@@ -30,6 +30,7 @@ var o_defineProperty = Ember.platform.defineProperty;
 //   __emberproto__: SRC_OBJ
 //  }
 
+/** @private */
 function uniqDeps(obj, depKey) {
   var m = meta(obj), deps, ret;
   deps = m.deps;
@@ -51,18 +52,21 @@ function uniqDeps(obj, depKey) {
   return ret;
 }
 
+/** @private */
 function addDependentKey(obj, keyName, depKey) {
   var deps = uniqDeps(obj, depKey);
   deps[keyName] = (deps[keyName] || 0) + 1;
   Ember.watch(obj, depKey);
 }
 
+/** @private */
 function removeDependentKey(obj, keyName, depKey) {
   var deps = uniqDeps(obj, depKey);
   deps[keyName] = (deps[keyName] || 0) - 1;
   Ember.unwatch(obj, depKey);
 }
 
+/** @private */
 function addDependentKeys(desc, obj, keyName) {
   var keys = desc._dependentKeys,
       len  = keys ? keys.length : 0;
@@ -73,6 +77,7 @@ function addDependentKeys(desc, obj, keyName) {
 // COMPUTED PROPERTY
 //
 
+/** @private */
 function ComputedProperty(func, opts) {
   this.func = func;
   this._cacheable = opts && opts.cacheable;
@@ -92,6 +97,7 @@ var CP_DESC = {
   set: Ember.Descriptor.MUST_USE_SETTER  // for when use_accessors is false
 };
 
+/** @private */
 function mkCpGetter(keyName, desc) {
   var cacheable = desc._cacheable,
       func     = desc.func;
@@ -110,6 +116,7 @@ function mkCpGetter(keyName, desc) {
   }
 }
 
+/** @private */
 function mkCpSetter(keyName, desc) {
   var cacheable = desc._cacheable,
       func      = desc.func;

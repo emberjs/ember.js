@@ -12,10 +12,13 @@ ActionHelper.registerAction = function(actionName, eventName, target, view, cont
   ActionHelper.registeredActions[actionId] = {
     eventName: eventName,
     handler: function(event) {
+      event.view = view;
+      event.context = context;
+
       if ('function' === typeof target.send) {
-        return target.send(actionName, { view: view, event: event, context: context });
+        return target.send(actionName, event);
       } else {
-        return target[actionName].call(target, view, event, context);
+        return target[actionName].call(target, event);
       }
     }
   };

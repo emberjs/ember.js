@@ -139,9 +139,9 @@ Ember.ContainerView = Ember.View.extend({
   */
   _scheduleInsertion: function(view, prev) {
     if (prev) {
-      prev.get('domManager').after(view);
+      prev.domManager.after(prev, view);
     } else {
-      this.get('domManager').prepend(view);
+      this.domManager.prepend(this, view);
     }
   }
 });
@@ -153,7 +153,7 @@ Ember.ContainerView.states = {
 
   inBuffer: {
     childViewsDidChange: function(parentView, views, start, added) {
-      var buffer = meta(parentView)['Ember.View'].buffer,
+      var buffer = parentView.buffer,
           startWith, prev, prevBuffer, view;
 
       // Determine where to begin inserting the child view(s) in the
@@ -175,7 +175,7 @@ Ember.ContainerView.states = {
       for (var i=startWith; i<start+added; i++) {
         prev = view;
         view = views[i];
-        prevBuffer = meta(prev)['Ember.View'].buffer;
+        prevBuffer = prev.buffer;
         view.renderToBuffer(prevBuffer, 'insertAfter');
       }
     }

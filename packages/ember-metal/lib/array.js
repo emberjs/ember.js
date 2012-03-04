@@ -8,6 +8,7 @@ var isNativeFunc = function(func) {
 };
 
 // From: https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/array/map
+/** @private */
 var arrayMap = isNativeFunc(Array.prototype.map) ? Array.prototype.map : function(fun /*, thisp */) {
   "use strict";
 
@@ -33,6 +34,7 @@ var arrayMap = isNativeFunc(Array.prototype.map) ? Array.prototype.map : functio
 };
 
 // From: https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/array/foreach
+/** @private */
 var arrayForEach = isNativeFunc(Array.prototype.forEach) ? Array.prototype.forEach : function(fun /*, thisp */) {
   "use strict";
 
@@ -54,6 +56,7 @@ var arrayForEach = isNativeFunc(Array.prototype.forEach) ? Array.prototype.forEa
   }
 };
 
+/** @private */
 var arrayIndexOf = isNativeFunc(Array.prototype.indexOf) ? Array.prototype.indexOf : function (obj, fromIndex) {
   if (fromIndex === null || fromIndex === undefined) { fromIndex = 0; }
   else if (fromIndex < 0) { fromIndex = Math.max(0, this.length + fromIndex); }
@@ -84,14 +87,17 @@ Ember.ArrayUtils = {
 
 if (Ember.SHIM_ES5) {
   if (!Array.prototype.map) {
+    /** @private */
     Array.prototype.map = arrayMap;
   }
 
   if (!Array.prototype.forEach) {
+    /** @private */
     Array.prototype.forEach = arrayForEach;
   }
 
   if (!Array.prototype.indexOf) {
+    /** @private */
     Array.prototype.indexOf = arrayIndexOf;
   }
 }

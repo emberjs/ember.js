@@ -15,9 +15,7 @@ assets/bpm_styles.css
 bin/
 coverage
 dist
-doc/
-docs/jsdoc
-docs/output
+docs
 lib/*/tests/all.js
 lib/*/tests/qunit*
 lib/bundler/man

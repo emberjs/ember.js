@@ -44,11 +44,17 @@ test("getMeta and setMeta", function() {
 if (window.jQuery) {
   // Tests fix for https://github.com/emberjs/ember.js/issues/344
   // This is primarily for older browsers such as IE8
-  // We would use NativeArray but it's not defined in metal
   test("jQuery.extend works on an extended Array", function() {
-    var mixin = Ember.Mixin.create({ prop: 'val' })
-        array = mixin.apply([1,2,3]),
+    var array = [1,2,3],
         result = {};
+
+
+    // Apply a mixin to an array so we can check the behavior of extended arrays
+    // Since prototypes may not be extended and NativeArray isn't defined in metal, we have an alternate mixin
+    if (!Ember.NativeArray || !Ember.NativeArray.detect(array)) {
+      var mixin = Ember.Mixin.create({ prop: 'val' });
+      array = mixin.apply(array);
+    }
 
     jQuery.extend(true, result, { arr: array });
 

@@ -42,7 +42,7 @@ Ember.View.states.hasElement = {
 
     view.clearRenderedChildren();
 
-    get(view, 'domManager').replace();
+    view.domManager.replace(view);
     return view;
   },
 
@@ -52,7 +52,7 @@ Ember.View.states.hasElement = {
   destroyElement: function(view) {
     view._notifyWillDestroyElement();
 
-    get(view, 'domManager').remove();
+    view.domManager.remove(view);
     return view;
   },
 
