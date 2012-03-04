@@ -1117,6 +1117,8 @@ Ember.View = Ember.Object.extend(Ember.Evented,
   */
   attributeBindings: [],
 
+  state: 'preRender',
+
   // .......................................................
   // CORE DISPLAY METHODS
   //
@@ -1130,8 +1132,6 @@ Ember.View = Ember.Object.extend(Ember.Evented,
       dispatch
   */
   init: function() {
-    set(this, 'state', 'preRender');
-
     var parentView = get(this, '_parentView');
 
     this._super();
@@ -1141,17 +1141,15 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     Ember.View.views[get(this, 'elementId')] = this;
 
     var childViews = Ember.A(get(this, '_childViews').slice());
+
     // setup child views. be sure to clone the child views array first
     set(this, '_childViews', childViews);
-
 
     ember_assert("Only arrays are allowed for 'classNameBindings'", Ember.typeOf(this.classNameBindings) === 'array');
     this.classNameBindings = Ember.A(this.classNameBindings.slice());
 
     ember_assert("Only arrays are allowed for 'classNames'", Ember.typeOf(this.classNames) === 'array');
     this.classNames = Ember.A(this.classNames.slice());
-
-    set(this, 'domManager', this.domManagerClass.create({ view: this }));
 
     var viewController = get(this, 'viewController');
     if (viewController) {
@@ -1410,49 +1408,43 @@ Ember.View = Ember.Object.extend(Ember.Evented,
   // once the view has been inserted into the DOM, legal manipulations
   // are done on the DOM element.
 
+DOMManager = {
+  prepend: function(view, childView) {
+    childView._insertElementLater(function() {
+      var element = view.$();
+      element.prepend(childView.$());
+    });
+  },
+
+  after: function(view, nextView) {
+    nextView._insertElementLater(function() {
+      var element = view.$();
+      element.after(nextView.$());
+    });
+  },
+
+  replace: function(view) {
+    var element = get(view, 'element');
+
+    set(view, 'element', null);
+
+    view._insertElementLater(function() {
+      Ember.$(element).replaceWith(get(view, 'element'));
+    });
+  },
+
+  remove: function(view) {
+    var elem = get(view, 'element');
+
+    set(view, 'element', null);
+
+    Ember.$(elem).remove();
+  }
+};
+
 Ember.View.reopen({
   states: Ember.View.states,
-  domManagerClass: Ember.Object.extend({
-    view: this,
-
-    prepend: function(childView) {
-      var view = get(this, 'view');
-
-      childView._insertElementLater(function() {
-        var element = view.$();
-        element.prepend(childView.$());
-      });
-    },
-
-    after: function(nextView) {
-      var view = get(this, 'view');
-
-      nextView._insertElementLater(function() {
-        var element = view.$();
-        element.after(nextView.$());
-      });
-    },
-
-    replace: function() {
-      var view = get(this, 'view');
-      var element = get(view, 'element');
-
-      set(view, 'element', null);
-
-      view._insertElementLater(function() {
-        Ember.$(element).replaceWith(get(view, 'element'));
-      });
-    },
-
-    remove: function() {
-      var view = get(this, 'view');
-      var elem = get(view, 'element');
-
-      set(view, 'element', null);
-
-      Ember.$(elem).remove();
-    }
-  })
+  domManager: DOMManager
 });
 
 // Create a global view hash.

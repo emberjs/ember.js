@@ -139,9 +139,9 @@ Ember.ContainerView = Ember.View.extend({
   */
   _scheduleInsertion: function(view, prev) {
     if (prev) {
-      prev.get('domManager').after(view);
+      prev.domManager.after(prev, view);
     } else {
-      this.get('domManager').prepend(view);
+      this.domManager.prepend(this, view);
     }
   }
 });
