@@ -376,9 +376,8 @@ Ember.View = Ember.Object.extend(Ember.Evented,
   },
 
   clearRenderedChildren: function() {
-    var viewMeta = meta(this)['Ember.View'],
-        lengthBefore = viewMeta.lengthBeforeRender,
-        lengthAfter  = viewMeta.lengthAfterRender;
+    var lengthBefore = this.lengthBeforeRender,
+        lengthAfter  = this.lengthAfterRender;
 
     // If there were child views created during the last call to render(),
     // remove them under the assumption that they will be re-created when
@@ -945,7 +944,6 @@ Ember.View = Ember.Object.extend(Ember.Evented,
       be used.
   */
   renderToBuffer: function(parentBuffer, bufferOperation) {
-    var viewMeta = meta(this)['Ember.View'];
     var buffer;
 
     Ember.run.sync();
@@ -971,16 +969,16 @@ Ember.View = Ember.Object.extend(Ember.Evented,
       buffer = this.renderBuffer();
     }
 
-    viewMeta.buffer = buffer;
+    this.buffer = buffer;
     this.transitionTo('inBuffer');
 
-    viewMeta.lengthBeforeRender = getPath(this, '_childViews.length');
+    this.lengthBeforeRender = getPath(this, '_childViews.length');
 
     this.beforeRender(buffer);
     this.render(buffer);
     this.afterRender(buffer);
 
-    viewMeta.lengthAfterRender = getPath(this, '_childViews.length');
+    this.lengthAfterRender = getPath(this, '_childViews.length');
 
     return buffer;
   },
@@ -1155,8 +1153,6 @@ Ember.View = Ember.Object.extend(Ember.Evented,
 
     set(this, 'domManager', this.domManagerClass.create({ view: this }));
 
-    meta(this)["Ember.View"] = {};
-
     var viewController = get(this, 'viewController');
     if (viewController) {
       viewController = Ember.getPath(viewController);
@@ -1231,8 +1227,7 @@ Ember.View = Ember.Object.extend(Ember.Evented,
 
     // calling this._super() will nuke computed properties and observers,
     // so collect any information we need before calling super.
-    var viewMeta   = meta(this)['Ember.View'],
-        childViews = get(this, '_childViews'),
+    var childViews = get(this, '_childViews'),
         parent     = get(this, '_parentView'),
         elementId  = get(this, 'elementId'),
         childLen;
@@ -1350,7 +1345,7 @@ Ember.View = Ember.Object.extend(Ember.Evented,
 
   clearBuffer: function() {
     this.invokeRecursively(function(view) {
-      meta(view)['Ember.View'].buffer = null;
+      this.buffer = null;
     });
   },
 
