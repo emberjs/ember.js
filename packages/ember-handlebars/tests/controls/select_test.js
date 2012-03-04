@@ -177,3 +177,35 @@ test("works from a template with bindings", function() {
   equal(select.$('option').length, 6, "New option was added");
   equal(select.get('selection'), erik, "Selection was maintained after new option was added");
 });
+
+test("upon content change, the DOM should reflect the selection (#481)", function() {
+  var userOne = {name: 'Mike', options: Ember.A(['a', 'b']), selectedOption: 'a'},
+      userTwo = {name: 'John', options: Ember.A(['c', 'd']), selectedOption: 'd'};
+
+  var view = Ember.View.create({
+    user: userOne,
+    template: Ember.Handlebars.compile(
+      '{{view Ember.Select viewName="select"' +
+      '    contentBinding="user.options"' +
+      '    selectionBinding="user.selectedOption"}}'
+    )
+  });
+
+  Ember.run(function() {
+    view.appendTo('#qunit-fixture');
+  });
+
+  var select = view.get('select'),
+      selectEl = select.$()[0];
+
+  equal(select.get('selection'), 'a', "Precond: Initial selection is correct");
+  equal(selectEl.selectedIndex, 0, "Precond: The DOM reflects the correct selection");
+
+  Ember.run(function() {
+    view.set('user', userTwo);
+  });
+
+  equal(select.get('selection'), 'd', "Selection was properly set after content change");
+  equal(selectEl.selectedIndex, 1, "The DOM reflects the correct selection");
+});
+

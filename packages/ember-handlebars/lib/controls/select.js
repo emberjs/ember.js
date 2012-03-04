@@ -15,7 +15,6 @@ Ember.Select = Ember.View.extend({
   optionLabelPath: 'content',
   optionValuePath: 'content',
 
-
   didInsertElement: function() {
     var selection = get(this, 'selection');
 
@@ -51,7 +50,7 @@ Ember.Select = Ember.View.extend({
 Ember.SelectOption = Ember.View.extend({
   tagName: 'option',
   template: Ember.Handlebars.compile("{{label}}"),
-  attributeBindings: ['value'],
+  attributeBindings: ['value', 'selected'],
 
   init: function() {
     this.labelPathDidChange();
@@ -59,6 +58,11 @@ Ember.SelectOption = Ember.View.extend({
 
     this._super();
   },
+
+  selected: Ember.computed(function() {
+    // Primitives get passed through bindings as objects... since `new Number(4) !== 4`, we use `==` below
+    return get(this, 'content') == getPath(this, 'parentView.selection');
+  }).property('content', 'parentView.selection'),
 
   labelPathDidChange: Ember.observer(function() {
     var labelPath = getPath(this, 'parentView.optionLabelPath');
