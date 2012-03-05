@@ -54,6 +54,7 @@ Ember.EventDispatcher = Ember.Object.extend(
       keypress    : 'keyPress',
       mousedown   : 'mouseDown',
       mouseup     : 'mouseUp',
+      contextmenu : 'contextMenu',
       click       : 'click',
       dblclick    : 'doubleClick',
       mousemove   : 'mouseMove',
