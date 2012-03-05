@@ -25,6 +25,7 @@ test("should dispatch events to views", function() {
   var parentMouseDownCalled = 0;
   var childKeyDownCalled = 0;
   var parentKeyDownCalled = 0;
+  var childContextMenuCalled = 0;
 
   view = Ember.ContainerView.create({
     childViews: ['child'],
@@ -38,6 +39,10 @@ test("should dispatch events to views", function() {
         childKeyDownCalled++;
 
         return false;
+      },
+
+      contextMenu: function(evt) {
+        childContextMenuCalled++;
       }
     }),
 
@@ -77,6 +82,9 @@ test("should dispatch events to views", function() {
   Ember.$('#wot').trigger('keydown');
   equal(childKeyDownCalled, 1, "calls keyDown on child view");
   equal(parentKeyDownCalled, 0, "does not call keyDown on parent if child handles event");
+
+  Ember.$('#wot').trigger('contextmenu');
+  equal(childContextMenuCalled, 1, "calls contextMenu on child view");
 });
 
 test("should not dispatch events to views not inDOM", function() {
