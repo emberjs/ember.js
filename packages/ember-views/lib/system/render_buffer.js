@@ -19,10 +19,15 @@ var indexOf = Ember.ArrayUtils.indexOf;
   @extends Ember.Object
 */
 Ember.RenderBuffer = function(tagName) {
-  return Ember._RenderBuffer.create({ elementTag: tagName });
+  return new Ember._RenderBuffer(tagName);
 };
 
-Ember._RenderBuffer = Ember.Object.extend(
+Ember._RenderBuffer = function(tagName) {
+  this.elementTag = tagName;
+  this.childBuffers = [];
+}
+
+Ember._RenderBuffer.prototype =
 /** @scope Ember.RenderBuffer.prototype */ {
 
   /**
@@ -95,13 +100,6 @@ Ember._RenderBuffer = Ember.Object.extend(
     @type Ember._RenderBuffer
   */
   parentBuffer: null,
-
-  /** @private */
-  init: function() {
-    this._super();
-
-    this.childBuffers = [];
-  },
 
   /**
     Adds a string of HTML to the RenderBuffer.
@@ -205,10 +203,8 @@ Ember._RenderBuffer = Ember.Object.extend(
       buffer.
   */
   newBuffer: function(tagName, parent, fn, other) {
-    var buffer = Ember._RenderBuffer.create({
-      parentBuffer: parent,
-      elementTag: tagName
-    });
+    var buffer = new Ember._RenderBuffer(tagName);
+    buffer.parentBuffer = parent;
 
     if (other) { buffer.setProperties(other); }
     if (fn) { fn.call(this, buffer); }
@@ -370,4 +366,4 @@ Ember._RenderBuffer = Ember.Object.extend(
     }
   }
 
-});
+};
