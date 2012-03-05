@@ -333,7 +333,7 @@ test("hasOne lazily loads associations as needed", function() {
 
   var store = DS.Store.create();
   store.loadMany(Tag, [5, 2, 12], [{ id: 5, name: "friendly" }, { id: 2, name: "smarmy" }, { id: 12, name: "oohlala" }]);
-  store.load(Person, 1, { id: 1, name: "Tom Dale", tag: 5 });
+  store.load(Person, 1, { id: 1, name: "Tom Dale", tag_id: 5 });
 
   var person = store.find(Person, 1);
   equal(get(person, 'name'), "Tom Dale", "precond - retrieves person record from store");
@@ -394,7 +394,7 @@ test("associations work when the data hash has not been loaded", function() {
 
           setTimeout(function() {
             start();
-            store.load(type, id, { id: 1, name: "Tom Dale", tag: 2 });
+            store.load(type, id, { id: 1, name: "Tom Dale", tag_id: 2 });
 
             equal(get(person, 'name'), "Tom Dale", "The person is now populated");
             equal(get(person, 'tag') instanceof Tag, true, "the tag Model already exists");

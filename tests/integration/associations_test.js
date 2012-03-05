@@ -107,29 +107,3 @@ test("if a parent record and an uncommitted pending child belong to different tr
   });
 });
 
-
-test("if a record is added to another record's hasMany association, it receives a foreign key associated with the new object", function() {
-  store.load(Comment, { id: 1, comments: [] });
-  store.load(Comment, { id: 2, comments: [] });
-
-  var parentRecord = store.find(Comment, 1);
-  var childRecord = store.find(Comment, 2);
-
-  get(parentRecord, 'comments').pushObject(childRecord);
-  equal(get(childRecord, 'comment'), parentRecord);
-
-  var json = childRecord.toJSON();
-
-  equal(json.comment, 1);
-});
-
-test("if a record has a foreign key when loaded, it is included in the toJSON output", function() {
-  store.load(Comment, { id: 1, comments: [2] });
-  store.load(Comment, { id: 2, comment: 1, comments: [] });
-
-  var childRecord = store.find(Comment, 2);
-
-  var json = childRecord.toJSON();
-
-  equal(json.comment, 1);
-});
