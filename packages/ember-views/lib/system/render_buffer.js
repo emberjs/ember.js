@@ -100,11 +100,7 @@ Ember._RenderBuffer = Ember.Object.extend(
   init: function() {
     this._super();
 
-    set(this ,'elementClasses', Ember.A());
-    set(this, 'elementAttributes', {});
-    set(this, 'elementStyle', {});
-    set(this, 'childBuffers', []);
-    set(this, 'elements', {});
+    this.childBuffers = [];
   },
 
   /**
@@ -114,7 +110,7 @@ Ember._RenderBuffer = Ember.Object.extend(
     @returns {Ember.RenderBuffer} this
   */
   push: function(string) {
-    get(this, 'childBuffers').push(String(string));
+    this.childBuffers.push(String(string));
     return this;
   },
 
@@ -125,7 +121,10 @@ Ember._RenderBuffer = Ember.Object.extend(
     @returns {Ember.RenderBuffer} this
   */
   addClass: function(className) {
-    get(this, 'elementClasses').addObject(className);
+    // lazily create elementClasses
+    var elementClasses = this.elementClasses = (this.elementClasses || Ember.A([]))
+
+    this.elementClasses.addObject(className);
     return this;
   },
 
@@ -136,7 +135,7 @@ Ember._RenderBuffer = Ember.Object.extend(
     @returns {Ember.RenderBuffer} this
   */
   id: function(id) {
-    set(this, 'elementId', id);
+    this.elementId = id;
     return this;
   },
 
@@ -151,7 +150,7 @@ Ember._RenderBuffer = Ember.Object.extend(
     @returns {Ember.RenderBuffer|String} this or the current attribute value
   */
   attr: function(name, value) {
-    var attributes = get(this, 'elementAttributes');
+    var attributes = this.elementAttributes = (this.elementAttributes || {});
 
     if (arguments.length === 1) {
       return attributes[name];
@@ -169,8 +168,8 @@ Ember._RenderBuffer = Ember.Object.extend(
     @returns {Ember.RenderBuffer} this
   */
   removeAttr: function(name) {
-    var attributes = get(this, 'elementAttributes');
-    delete attributes[name];
+    var attributes = this.elementAttributes;
+    if (attributes) { delete attributes[name]; }
 
     return this;
   },
@@ -183,7 +182,9 @@ Ember._RenderBuffer = Ember.Object.extend(
     @returns {Ember.RenderBuffer} this
   */
   style: function(name, value) {
-    get(this, 'elementStyle')[name] = value;
+    var style = this.elementStyle = (this.elementStyle || {});
+
+    this.elementStyle[name] = value;
     return this;
   },
 
@@ -225,10 +226,10 @@ Ember._RenderBuffer = Ember.Object.extend(
       the existing buffer.
   */
   replaceWithBuffer: function(newBuffer) {
-    var parent = get(this, 'parentBuffer');
+    var parent = this.parentBuffer;
     if (!parent) { return; }
 
-    var childBuffers = get(parent, 'childBuffers');
+    var childBuffers = parent.childBuffers;
 
     var index = indexOf(childBuffers, this);
 
@@ -249,7 +250,7 @@ Ember._RenderBuffer = Ember.Object.extend(
   */
   begin: function(tagName) {
     return this.newBuffer(tagName, this, function(buffer) {
-      get(this, 'childBuffers').push(buffer);
+      this.childBuffers.push(buffer);
     });
   },
 
@@ -260,7 +261,7 @@ Ember._RenderBuffer = Ember.Object.extend(
   */
   prepend: function(tagName) {
     return this.newBuffer(tagName, this, function(buffer) {
-      get(this, 'childBuffers').splice(0, 0, buffer);
+      this.childBuffers.splice(0, 0, buffer);
     });
   },
 
@@ -270,7 +271,7 @@ Ember._RenderBuffer = Ember.Object.extend(
     @param {String} tagName Tag name to use for the new buffer's element
   */
   replaceWith: function(tagName) {
-    var parentBuffer = get(this, 'parentBuffer');
+    var parentBuffer = this.parentBuffer;
 
     return this.newBuffer(tagName, parentBuffer, function(buffer) {
       this.replaceWithBuffer(buffer);
@@ -286,7 +287,7 @@ Ember._RenderBuffer = Ember.Object.extend(
     var parentBuffer = get(this, 'parentBuffer');
 
     return this.newBuffer(tagName, parentBuffer, function(buffer) {
-      var siblings = get(parentBuffer, 'childBuffers');
+      var siblings = parentBuffer.childBuffers;
       var index = indexOf(siblings, this);
       siblings.splice(index + 1, 0, buffer);
     });
@@ -298,7 +299,7 @@ Ember._RenderBuffer = Ember.Object.extend(
     @returns {Ember.RenderBuffer} The parentBuffer, if one exists. Otherwise, this
   */
   end: function() {
-    var parent = get(this, 'parentBuffer');
+    var parent = this.parentBuffer;
     return parent || this;
   },
 
@@ -320,40 +321,42 @@ Ember._RenderBuffer = Ember.Object.extend(
     @returns {String} The generated HTMl
   */
   string: function() {
-    var id = get(this, 'elementId'),
-        classes = get(this, 'elementClasses'),
-        attrs = get(this, 'elementAttributes'),
-        style = get(this, 'elementStyle'),
-        tag = get(this, 'elementTag'),
-        content = '',
-        styleBuffer = [], prop, openTag;
+    var content = '', tag = this.elementTag, openTag;
 
     if (tag) {
+      var id = this.elementId,
+          classes = this.elementClasses,
+          attrs = this.elementAttributes,
+          style = this.elementStyle,
+          styleBuffer = '', prop;
+
       openTag = ["<" + tag];
 
       if (id) { openTag.push('id="' + id + '"'); }
-      if (classes.length) { openTag.push('class="' + classes.join(" ") + '"'); }
+      if (classes) { openTag.push('class="' + classes.join(" ") + '"'); }
 
-      if (!Ember.$.isEmptyObject(style)) {
+      if (style) {
         for (prop in style) {
           if (style.hasOwnProperty(prop)) {
-            styleBuffer.push(prop + ':' + style[prop] + ';');
+            styleBuffer += (prop + ':' + style[prop] + ';');
           }
         }
 
-        openTag.push('style="' + styleBuffer.join("") + '"');
+        openTag.push('style="' + styleBuffer + '"');
       }
 
-      for (prop in attrs) {
-        if (attrs.hasOwnProperty(prop)) {
-          openTag.push(prop + '="' + attrs[prop] + '"');
+      if (attrs) {
+        for (prop in attrs) {
+          if (attrs.hasOwnProperty(prop)) {
+            openTag.push(prop + '="' + attrs[prop] + '"');
+          }
         }
       }
 
       openTag = openTag.join(" ") + '>';
     }
 
-    var childBuffers = get(this, 'childBuffers');
+    var childBuffers = this.childBuffers;
 
     forEach(childBuffers, function(buffer) {
       var stringy = typeof buffer === 'string';
