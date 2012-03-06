@@ -18,6 +18,7 @@
   `Ember.Map.create()` for symmetry with other Ember classes.
 */
 
+/** @private */
 var guidFor = Ember.guidFor;
 var indexOf = Ember.ArrayUtils.indexOf;
 
@@ -97,6 +98,7 @@ OrderedSet.prototype = {
   we delete its entry in `keys` and `values`.
 */
 
+/** @private */
 var Map = Ember.Map = function() {
   this.keys = Ember.OrderedSet.create();
   this.values = {};

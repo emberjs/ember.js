@@ -2,6 +2,7 @@
 
 // Testing this is not ideal, but we want ArrayUtils to use native functions
 // if available, but not to use versions created by libraries like Prototype
+/** @private */
 var isNativeFunc = function(func) {
   // This should probably work in all browsers likely to have ES5 array methods
   return func && Function.prototype.toString.call(func).indexOf('[native code]') > -1;

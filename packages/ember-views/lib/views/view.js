@@ -1428,6 +1428,7 @@ Ember.View = Ember.Object.extend(Ember.Evented,
   // once the view has been inserted into the DOM, legal manipulations
   // are done on the DOM element.
 
+/** @private */
 DOMManager = {
   prepend: function(view, childView) {
     childView._insertElementLater(function() {

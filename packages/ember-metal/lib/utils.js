@@ -150,7 +150,7 @@ var EMPTY_META = {
 
 if (Object.freeze) Object.freeze(EMPTY_META);
 
-var createMeta = Ember.platform.defineProperty.isSimulated ? o_create : function(meta) { return meta; };
+var createMeta = Ember.platform.defineProperty.isSimulated ? o_create : (function(meta) { return meta; });
 
 /**
   @private
