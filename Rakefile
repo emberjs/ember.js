@@ -406,4 +406,13 @@ namespace :docs do
   end
 end
 
+desc "Run jshint"
+task :jshint do
+  unless system("which jshint > /dev/null 2>&1")
+    abort "Please install jshint. `npm install -g jshint`"
+  end
+
+  system("jshint packages/ember*")
+end
+
 task :default => :dist
