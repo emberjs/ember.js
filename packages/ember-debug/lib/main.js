@@ -1,5 +1,7 @@
 /*global __fail__*/
 
+require("ember-metal");
+
 /**
   Define an assertion that will throw an exception if the condition is not
   met.  Ember build tools will remove any calls to ember_assert() when
@@ -56,8 +58,6 @@ window.ember_warn = function(message, test) {
   if (!test) console.warn("WARNING: "+message);
 };
 
-
-
 /**
   Display a deprecation warning with the provided message and a stack trace
   (Chrome and Firefox only). Ember build tools will remove any calls to
@@ -73,9 +73,13 @@ window.ember_warn = function(message, test) {
     will be displayed.
 */
 window.ember_deprecate = function(message, test) {
+  if (Ember.TESTING_DEPRECATION) { return; }
+
   if (arguments.length === 1) { test = false; }
   if ('function' === typeof test) { test = test()!==false; }
   if (test) { return; }
+
+  if (Ember.ENV.RAISE_ON_DEPRECATION) { throw new Error(message); }
 
   var error, stackStr = '';
 

@@ -70,7 +70,7 @@ end
 
 # Create ember:package tasks for each of the Ember packages
 namespace :ember do
-  %w(debug metal runtime handlebars views states datetime).each do |package|
+  %w(metal debug runtime handlebars views states datetime).each do |package|
     task package => compile_package_task("ember-#{package}", "ember-#{package}")
   end
 end

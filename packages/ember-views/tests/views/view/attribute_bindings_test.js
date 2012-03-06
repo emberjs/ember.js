@@ -128,9 +128,15 @@ test("should allow attributes to be set in the inBuffer state", function() {
     }));
   });
 
-  Ember.run(function() {
-    parentView.append();
-  });
+  try {
+    Ember.TESTING_DEPRECATION = true;
+
+    Ember.run(function() {
+      parentView.append();
+    });
+  } finally {
+    Ember.TESTING_DEPRECATION = false;
+  }
 
   equal(parentView.get('childViews')[0].$().attr('foo'), 'baz');
 

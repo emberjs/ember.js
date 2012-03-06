@@ -113,30 +113,36 @@ test("appendChild should work inside a template", function() {
 });
 
 test("rerender should work inside a template", function() {
-  Ember.run(function() {
-    var renderCount = 0;
-    view = Ember.View.create({
-      template: function(context, options) {
-        var view = options.data.view;
+  try {
+    Ember.TESTING_DEPRECATION = true;
 
-        var child1 = view.appendChild(Ember.View, {
-          template: function(context, options) {
-            renderCount++;
-            options.data.buffer.push(String(renderCount));
-          }
-        });
+    Ember.run(function() {
+      var renderCount = 0;
+      view = Ember.View.create({
+        template: function(context, options) {
+          var view = options.data.view;
 
-        var child2 = view.appendChild(Ember.View, {
-          template: function(context, options) {
-            options.data.buffer.push("Inside child2");
-            child1.rerender();
-          }
-        });
-      }
+          var child1 = view.appendChild(Ember.View, {
+            template: function(context, options) {
+              renderCount++;
+              options.data.buffer.push(String(renderCount));
+            }
+          });
+
+          var child2 = view.appendChild(Ember.View, {
+            template: function(context, options) {
+              options.data.buffer.push("Inside child2");
+              child1.rerender();
+            }
+          });
+        }
+      });
+
+      view.appendTo("#qunit-fixture");
     });
-
-    view.appendTo("#qunit-fixture");
-  });
+  } finally {
+    Ember.TESTING_DEPRECATION = false;
+  }
 
   ok(view.$('div:contains(2), div:contains(Inside child2').length === 2,
      "Rerendering a view causes it to rerender");
