@@ -8,7 +8,7 @@ GIT
 
 GIT
   remote: https://github.com/wagenet/ember-docs.git
-  revision: d8f10e2eabe144adf77850f929f2b840f119e3d1
+  revision: b32c0cb5ceea286c755a17640cb7f6750543e71c
   specs:
     ember-docs (0.1)
       rack

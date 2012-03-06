@@ -390,14 +390,17 @@ namespace :docs do
     "#{Dir.glob("packages/ember-*").join(' ')} -E #{Dir.glob("packages/ember-*/tests").join(' ')} -t docs.emberjs.com"
   end
 
+  desc "Preview Ember Docs (does not auto update)"
   task :preview do
     EmberDocs::CLI.start("preview #{doc_args}".split(' '))
   end
 
+  desc "Build Ember Docs"
   task :build do
     EmberDocs::CLI.start("generate #{doc_args} -o docs".split(' '))
   end
 
+  desc "Remove Ember Docs"
   task :clean do
     rm_r "docs"
   end
