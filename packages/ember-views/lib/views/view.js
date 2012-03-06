@@ -989,13 +989,13 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     this.buffer = buffer;
     this.transitionTo('inBuffer', false);
 
-    this.lengthBeforeRender = getPath(this, '_childViews.length');
+    this.lengthBeforeRender = get(get(this, '_childViews'), 'length');
 
     this.beforeRender(buffer);
     this.render(buffer);
     this.afterRender(buffer);
 
-    this.lengthAfterRender = getPath(this, '_childViews.length');
+    this.lengthAfterRender = get(get(this, '_childViews'), 'length');
 
     return buffer;
   },
@@ -1288,7 +1288,7 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     if (Ember.View.detect(view)) {
       view = view.create(attrs || {}, { _parentView: this });
 
-      var viewName = attrs && attrs.viewName || view.viewName;
+      var viewName = view.viewName;
 
       // don't set the property on a virtual view, as they are invisible to
       // consumers of the view API
