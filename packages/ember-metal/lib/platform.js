@@ -89,7 +89,7 @@ if (defineProperty) {
   /** @private */
   canDefinePropertyOnDOM = (function(){
     try {
-      defineProperty(document.body, 'definePropertyOnDOM', {});
+      defineProperty(document.createElement('div'), 'definePropertyOnDOM', {});
       return true;
     } catch(e) { }
 
