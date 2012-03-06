@@ -39,6 +39,14 @@ var childViewsProperty = Ember.computed(function() {
 */
 Ember.TEMPLATES = {};
 
+var invokeForState = {
+  preRender: {},
+  inBuffer: {},
+  hasElement: {},
+  inDOM: {},
+  destroyed: {}
+};
+
 /**
   @class
   @since Ember 0.9
@@ -334,8 +342,18 @@ Ember.View = Ember.Object.extend(Ember.Evented,
   },
 
   invokeForState: function(name) {
-    var parent = this, states = parent.states;
-    var stateName = get(this, 'state'), state;
+    var stateName = this.state, args;
+
+    // try to find the function for the state in the cache
+    if (fn = invokeForState[stateName][name]) {
+      args = a_slice.call(arguments)
+      args[0] = this;
+
+      return fn.apply(this, args);
+    }
+
+    // otherwise, find and cache the function for this state
+    var parent = this, states = parent.states, state;
 
     while (states) {
       state = states[stateName];
@@ -344,7 +362,9 @@ Ember.View = Ember.Object.extend(Ember.Evented,
         var fn = state[name];
 
         if (fn) {
-          var args = a_slice.call(arguments, 1);
+          invokeForState[stateName][name] = fn;
+
+          args = a_slice.call(arguments, 1);
           args.unshift(this);
 
           return fn.apply(this, args);
@@ -1348,7 +1368,7 @@ Ember.View = Ember.Object.extend(Ember.Evented,
   },
 
   transitionTo: function(state, children) {
-    set(this, 'state', state);
+    this.state = state;
 
     if (children !== false) {
       this.forEachChildView(function(view) {
