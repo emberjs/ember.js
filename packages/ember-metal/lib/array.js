@@ -83,7 +83,7 @@ Ember.ArrayUtils = {
     var args = Array.prototype.slice.call(arguments, 1);
     return obj.indexOf ? obj.indexOf.apply(obj, args) : arrayIndexOf.apply(obj, args);
   }
-}
+};
 
 
 if (Ember.SHIM_ES5) {

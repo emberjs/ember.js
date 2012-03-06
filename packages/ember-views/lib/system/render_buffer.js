@@ -25,7 +25,7 @@ ClassSet.prototype = {
   toDOM: function() {
     return this.list.join(" ");
   }
-}
+};
 
 /**
   @class
@@ -43,7 +43,7 @@ Ember.RenderBuffer = function(tagName) {
 Ember._RenderBuffer = function(tagName) {
   this.elementTag = tagName;
   this.childBuffers = [];
-}
+};
 
 Ember._RenderBuffer.prototype =
 /** @scope Ember.RenderBuffer.prototype */ {
@@ -138,7 +138,7 @@ Ember._RenderBuffer.prototype =
   */
   addClass: function(className) {
     // lazily create elementClasses
-    var elementClasses = this.elementClasses = (this.elementClasses || new ClassSet())
+    var elementClasses = this.elementClasses = (this.elementClasses || new ClassSet());
     this.elementClasses.add(className);
 
     return this;

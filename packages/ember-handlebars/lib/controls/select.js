@@ -1,3 +1,5 @@
+/*jshint eqeqeq:false */
+
 var set = Ember.set, get = Ember.get, getPath = Ember.getPath;
 var indexOf = Ember.ArrayUtils.indexOf;
 

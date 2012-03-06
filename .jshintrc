@@ -13,13 +13,15 @@
         "equal",
         "test",
         "testBoth",
+        "testWithDefault",
         "raises",
         "deepEqual",
         "start",
         "stop",
         "ok",
         "strictEqual",
-        "module"
+        "module",
+        "expect"
     ],
 
     "node" : false,

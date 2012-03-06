@@ -24,7 +24,7 @@ var DOMManager = {
     nextView._insertElementLater(function() {
       var morph = view.morph;
       morph.after(nextView.outerHTML);
-      nextView,outerHTML = null;
+      nextView.outerHTML = null;
     });
   },
 

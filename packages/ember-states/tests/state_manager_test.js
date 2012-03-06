@@ -345,7 +345,7 @@ test("it sends exit events in the correct order when changing to a state multipl
   stateManager.goToState('start.outer.inner');
   stateManager.goToState('start');
   stateManager.goToState('start.outer.inner');
-  exitOrder = []
+  exitOrder = [];
   stateManager.goToState('start');
   equal(exitOrder.length, 2, "precond - it calls both exits");
   equal(exitOrder[0], 'exitedInner', "inner exit is called first");

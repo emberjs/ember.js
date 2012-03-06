@@ -346,7 +346,7 @@ Ember.View = Ember.Object.extend(Ember.Evented,
 
     // try to find the function for the state in the cache
     if (fn = invokeForState[stateName][name]) {
-      args = a_slice.call(arguments)
+      args = a_slice.call(arguments);
       args[0] = this;
 
       return fn.apply(this, args);
@@ -1426,7 +1426,7 @@ Ember.View = Ember.Object.extend(Ember.Evented,
   // are done on the DOM element.
 
 /** @private */
-DOMManager = {
+var DOMManager = {
   prepend: function(view, childView) {
     childView._insertElementLater(function() {
       var element = view.$();
