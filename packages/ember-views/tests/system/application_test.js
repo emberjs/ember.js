@@ -23,6 +23,7 @@ module("Ember.Application", {
 test("you can make a new application in a non-overlapping element", function() {
   var app = Ember.Application.create({ rootElement: '#two' });
   app.destroy();
+  ok(true, "should not raise");
 });
 
 test("you cannot make a new application that is a parent of an existing application", function() {

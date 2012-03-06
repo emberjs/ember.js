@@ -115,7 +115,7 @@ test("collection helper should accept emptyViewClass attribute", function() {
     view.appendTo('#qunit-fixture');
   });
 
-  equals(view.$('tr').length, 0, 'emptyViewClass has no effect without inverse');
+  equal(view.$('tr').length, 0, 'emptyViewClass has no effect without inverse');
   view.remove();
 
   view = Ember.View.create({
@@ -126,7 +126,7 @@ test("collection helper should accept emptyViewClass attribute", function() {
     view.appendTo('#qunit-fixture');
   });
 
-  equals(view.$('tr').hasClass('empty'), 1, 'if emptyViewClass is given it is used for inverse');
+  equal(view.$('tr').hasClass('empty'), 1, 'if emptyViewClass is given it is used for inverse');
 
   Ember.run(function(){ window.App.destroy(); });
 });
@@ -282,18 +282,17 @@ test("should give its item views the property specified by itemPropertyBinding",
     view.appendTo('#qunit-fixture');
   });
 
-  equals(view.$('ul li').length, 3, "adds 3 itemView");
+  equal(view.$('ul li').length, 3, "adds 3 itemView");
 
   view.$('ul li').each(function(i, li){
-    console.log( li)
-    equals($(li).text(), "baz", "creates the li with the property = baz");
-  })
+    equal(Ember.$(li).text(), "baz", "creates the li with the property = baz");
+  });
 
   Ember.run(function() {
     setPath(view, 'baz', "yobaz");
   });
 
-  equals(view.$('ul li:first').text(), "yobaz", "change property of sub view");
+  equal(view.$('ul li:first').text(), "yobaz", "change property of sub view");
 });
 
 test("should work inside a bound {{#if}}", function() {

@@ -34,5 +34,7 @@ test("should raise an exception when modifying watched properties on a destroyed
     raises(function() {
       Ember.set(obj, 'foo', 'baz');
     }, Error, "raises an exception");
+  } else {
+    expect(0);
   }
 });

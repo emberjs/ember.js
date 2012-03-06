@@ -133,7 +133,7 @@ test('[obj, foo.baz.bat] -> EXCEPTION', function() {
 
 test('[obj, foo.baz.bat] -> EXCEPTION', function() {
   Ember.trySetPath(obj, 'foo.baz.bat', "BAM");
-  // does not raise
+  ok(true, "does not raise");
 });
 
 test('[obj, Foo.bar] -> Foo.bar', function() {

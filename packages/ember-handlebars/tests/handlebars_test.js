@@ -1542,6 +1542,8 @@ test("bindings can be 'this', in which case they *are* the current context", fun
 // https://github.com/emberjs/ember.js/issues/120
 
 test("should not enter an infinite loop when binding an attribute in Handlebars", function() {
+  expect(0);
+
   App = Ember.Application.create();
   App.test = Ember.Object.create({ href: 'test' });
   App.Link = Ember.View.extend({

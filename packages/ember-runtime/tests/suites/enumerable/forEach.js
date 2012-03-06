@@ -21,7 +21,10 @@ suite.test('forEach should iterate over list', function() {
 
 
 suite.test('forEach should iterate over list after mutation', function() {
-  if (Ember.get(this, 'canTestMutation')) return ;
+  if (Ember.get(this, 'canTestMutation')) {
+    expect(0);
+    return ;
+  }
 
   var obj = this.newObject(),
       ary = this.toArray(obj),

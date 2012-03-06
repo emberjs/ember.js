@@ -35,12 +35,20 @@ test("dasherize camelcased string", function() {
   }
 });
 
-test("after call with the same passed value take object from cashe", function() {
+test("after call with the same passed value take object from cache", function() {
   var res = Ember.String.dasherize('innerHTML');
+
+  var callCount = 0;
   var decamelize = Ember.String.decamelize;
-  Ember.String.decamelize = function() {
-    throw "Ember.String.decamelize has been called.";
-  };
-  Ember.String.dasherize('innerHTML');
-  Ember.String.decamelize = decamelize;
+
+  try {
+    Ember.String.decamelize = function() {
+      callCount++;
+    };
+    Ember.String.dasherize('innerHTML');
+  } finally {
+    Ember.String.decamelize = decamelize;
+  }
+
+  equal(callCount, 0, "decamelize is not called again");
 });

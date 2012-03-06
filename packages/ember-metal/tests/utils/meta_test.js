@@ -4,6 +4,8 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
+/*global jQuery*/
+
 module("Ember.meta");
 
 test("should return the same hash for an object", function() {
@@ -58,6 +60,6 @@ if (window.jQuery) {
 
     jQuery.extend(true, result, { arr: array });
 
-    equals(result.arr.length, 3);
+    equal(result.arr.length, 3);
   });
 }

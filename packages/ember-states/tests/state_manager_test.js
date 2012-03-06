@@ -463,9 +463,9 @@ test("goToState triggers all enter states", function() {
 test("goToState with current state does not trigger enter or exit", function() {
   stateManager.goToState('grandparent.parent.child');
   stateManager.goToState('grandparent.parent.child');
-  equals(stateManager.grandparent.entered, 1, "the top level should only be entered once");
-  equals(stateManager.grandparent.parent.entered, 1, "intermediate states should only be entered once");
-  equals(stateManager.grandparent.parent.child.entered, 1, "the final state should only be entered once");
-  equals(stateManager.grandparent.parent.child.exited, 0, "the final state should not be exited");
+  equal(stateManager.grandparent.entered, 1, "the top level should only be entered once");
+  equal(stateManager.grandparent.parent.entered, 1, "intermediate states should only be entered once");
+  equal(stateManager.grandparent.parent.child.entered, 1, "the final state should only be entered once");
+  equal(stateManager.grandparent.parent.child.exited, 0, "the final state should not be exited");
 });
 
