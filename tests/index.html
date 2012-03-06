@@ -32,10 +32,6 @@
     }
   </script>
 
-  <script type="text/javascript" src="minispade.js"></script>
-  <script type="text/javascript" src="source/ember.js"></script>
-  <script type="text/javascript" src="source/ember-tests.js"></script>
-
   <script type="text/javascript">
     // Handle extending prototypes
     QUnit.config.urlConfig.push('extendprototypes');
@@ -43,7 +39,20 @@
     window.ENV = window.ENV || {};
     var extendPrototypes = location.search.match(/extendprototypes=([^&]+)/);
     ENV['EXTEND_PROTOTYPES'] = !!(extendPrototypes && decodeURIComponent(extendPrototypes[1]));
+  </script>
 
+  <script type="text/javascript" src="minispade.js"></script>
+
+  <script>
+    // Load ember distribution from query vars
+    var distMatch = location.search.match(/dist=([^&]+)/),
+        dist = distMatch ? (distMatch[1] + ".") : "";
+      document.write(unescape('%3Cscript src="../dist/ember.'+dist+'js"%3E%3C/script%3E'));
+  </script>
+
+  <script type="text/javascript" src="ember-tests.js"></script>
+
+  <script>
 
     // hack qunit to not suck for Ember objects
     var originalTypeof = QUnit.jsDump.typeOf;
@@ -84,14 +93,33 @@
       len = packages.length;
 
       // There is no require for this in the code
-      minispade.require('handlebars');
-      minispade.require('ember-debug');
+      if (dist == 'spade.') {
+        minispade.require('handlebars');
+        minispade.require('ember-debug');
+      } else {
+        reqs = [
+          'ember-runtime/system/native_array', 
+          'ember-runtime/system/object',
+          'ember-runtime/mixins/comparable',
+          'ember-states/state_manager',
+          'ember-states/state',
+          'ember-states/view_state',
+          'ember-views/views/view'
+        ]
+        jQuery.each(reqs, function(i, e) {
+          minispade.loaded[e] = true;
+        });
+      }
 
       for (idx=0; idx<len; idx++) {
         packageName = packages[idx];
         re = new RegExp('^'+packageName+'/([^/]+)');
 
-        minispade.require(packageName);
+        if (dist == 'spade.') {
+          minispade.require(packageName);
+        } else {
+          minispade.loaded[packageName] = true;
+        }
 
         for (moduleName in minispade.modules) {
           if (!minispade.modules.hasOwnProperty(moduleName)) { continue; }

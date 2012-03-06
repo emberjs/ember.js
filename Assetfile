@@ -1,37 +1,54 @@
 require "rake-pipeline-web-filters"
 require "json"
+require "uglifier"
+require "./neuter"
 
-output "tests/source"
+output "tests"
 
 input "packages" do
-  match "*/{lib,tests}/**/*.js" do
+  match "*/tests/**/*.js" do
     minispade :rewrite_requires => true, :string => true, :module_id_generator => proc { |input|
       id = input.path.dup
-      id.sub!('/lib/', '/')
       id.sub!(/\.js$/, '')
       id.sub!(/\/main$/, '')
       id.sub!('/tests', '/~tests')
       id
     }
 
-    concat do |filename|
-      filename =~ %r{/tests/} ? "ember-tests.js" : "ember.js"
-    end
-  end
-
-  # Hack to ignore certain files
-  match "**/*.{json,md}" do
-    concat "trash"
-  end
-
-  match "**/README" do
-    concat "trash"
-  end
-
-  match "*/*.js" do
-    concat "trash"
+    concat "ember-tests.js"
   end
 end
 
+output "dist"
 
-# vim: filetype=ruby
+input "packages" do
+  match "*/lib/**/*.js" do
+    minispade :rewrite_requires => true, :string => true, :module_id_generator => proc { |input|
+      id = input.path.dup
+      id.sub!('/lib/', '/')
+      id.sub!(/\.js$/, '')
+      id.sub!(/\/main$/, '')
+      id
+    }
+
+    concat "ember.spade.js"
+  end
+end
+
+input "packages" do
+  match "*/lib/**/main.js" do
+    neuter do |filename|
+      File.join("modules/", filename.gsub('/lib/main.js', '.js'))
+    end
+  end
+
+  match "modules/*.js" do
+    concat ["modules/ember-debug.js", "modules/handlebars.js", "modules/ember-metal.js", "modules/ember-runtime.js", "modules/ember-views.js", "modules/ember-states.js", "modules/metamorph.js", "modules/ember-handlebars.js"], "ember.js"
+  end
+end
+
+input "dist" do
+  match "ember.js" do
+    uglify
+  end
+end

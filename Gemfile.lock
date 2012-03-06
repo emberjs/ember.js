@@ -15,12 +15,6 @@ GIT
       thor
 
 GIT
-  remote: https://github.com/wycats/abbot-from-scratch.git
-  revision: 47662bbbb25afc213318051676cd31375d1d1f59
-  specs:
-    sproutcore (0.0.1)
-
-GIT
   remote: https://github.com/wycats/rake-pipeline-web-filters.git
   revision: fe752a8cfdbb318b746fd76fd3c10dd8b8f29891
   specs:
@@ -66,5 +60,4 @@ DEPENDENCIES
   rack
   rake-pipeline!
   rake-pipeline-web-filters!
-  sproutcore!
   uglifier (~> 1.0.3)
