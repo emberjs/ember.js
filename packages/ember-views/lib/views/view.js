@@ -202,7 +202,7 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     @type Boolean
     @default null
   */
-  isVisible: null,
+  isVisible: true,
 
   /**
     Array of child views. You should never edit this array directly.
@@ -640,9 +640,6 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     // Schedule the DOM element to be created and appended to the given
     // element after bindings have synchronized.
     this._insertElementLater(function() {
-      if (get(this, 'isVisible') === null) {
-        set(this, 'isVisible', true);
-      }
       this.$().appendTo(target);
     });
 
