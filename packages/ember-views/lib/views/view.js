@@ -990,7 +990,7 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     }
 
     this.buffer = buffer;
-    this.transitionTo('inBuffer');
+    this.transitionTo('inBuffer', false);
 
     this.lengthBeforeRender = getPath(this, '_childViews.length');
 
