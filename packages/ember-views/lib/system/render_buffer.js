@@ -9,6 +9,24 @@ var get = Ember.get, set = Ember.set;
 var forEach = Ember.ArrayUtils.forEach;
 var indexOf = Ember.ArrayUtils.indexOf;
 
+var ClassSet = function() {
+  this.seen = {};
+  this.list = [];
+};
+
+ClassSet.prototype = {
+  add: function(string) {
+    if (string in this.seen) { return; }
+    this.seen[string] = true;
+
+    this.list.push(string);
+  },
+
+  toDOM: function() {
+    return this.list.join(" ");
+  }
+}
+
 /**
   @class
 
@@ -120,9 +138,9 @@ Ember._RenderBuffer.prototype =
   */
   addClass: function(className) {
     // lazily create elementClasses
-    var elementClasses = this.elementClasses = (this.elementClasses || Ember.A([]))
+    var elementClasses = this.elementClasses = (this.elementClasses || new ClassSet())
+    this.elementClasses.add(className);
 
-    this.elementClasses.addObject(className);
     return this;
   },
 
@@ -329,7 +347,7 @@ Ember._RenderBuffer.prototype =
       openTag = ["<" + tag];
 
       if (id) { openTag.push('id="' + id + '"'); }
-      if (classes) { openTag.push('class="' + classes.join(" ") + '"'); }
+      if (classes) { openTag.push('class="' + classes.toDOM() + '"'); }
 
       if (style) {
         for (prop in style) {
