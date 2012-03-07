@@ -36,6 +36,7 @@ Ember.Handlebars.bootstrap = function(ctx) {
       // Get the name of the script, used by Ember.View's templateName property.
       // First look for data-template-name attribute, then fall back to its
       // id if no name is found.
+      elementId: script.attr('data-element-id'),
       templateName = script.attr('data-template-name') || script.attr('id'),
       template = compile(script.html()),
       view, viewPath, tagName;
@@ -68,6 +69,7 @@ Ember.Handlebars.bootstrap = function(ctx) {
       tagName = script.attr('data-tag-name');
 
       view = view.create({
+        elementId: elementId,
         template: template,
         tagName: (tagName) ? tagName : undefined
       });
