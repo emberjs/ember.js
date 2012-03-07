@@ -299,7 +299,7 @@ end
 
 
 desc "Run tests with phantomjs"
-task :test do
+task :test => :dist do
   unless system("which phantomjs > /dev/null 2>&1")
     abort "PhantomJS is not installed. Download from http://phantomjs.org"
   end
