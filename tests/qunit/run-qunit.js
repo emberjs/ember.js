@@ -23,11 +23,11 @@ function waitFor(testFx, onReady, timeOutMillis) {
       } else {
         if (!condition) {
           // If condition still not fulfilled (timeout but condition is 'false')
-          console.log("'waitFor()' timeout");
+          console.log("'Tests timeout");
           phantom.exit(1);
         } else {
           // Condition fulfilled (timeout and/or condition is 'true')
-          console.log("'waitFor()' finished in " + (new Date().getTime() - start) + "ms.");
+          console.log("'Tests finished in " + (new Date().getTime() - start) + "ms.");
           typeof(onReady) === "string" ? eval(onReady) : onReady(); //< Do what it's supposed to do once the condition is fulfilled
           clearInterval(interval); //< Stop this interval
         }
@@ -67,15 +67,42 @@ page.open(phantom.args[0], function(status) {
         return false;
       });
     }, function() {
-      var failedNum = page.evaluate(function() {
+      var data = page.evaluate(function() {
         var el = document.getElementById('qunit-testresult');
-        console.log(el.innerText);
+
         try {
-          return el.getElementsByClassName('failed')[0].innerHTML;
-        } catch (e) {}
-        return 10000;
+          failedNum = el.getElementsByClassName('failed')[0].innerHTML;
+        } catch (e) {
+          failedNum = 10000;
+        }
+
+        return { failedNum: failedNum, resultsText: el.innerText };
       });
-      phantom.exit((parseInt(failedNum, 10) > 0) ? 1 : 0);
+
+      var failed = parseInt(data.failedNum, 10) > 0;
+
+      if (failed) {
+        var failures = page.evaluate(function() {
+          var testEls = document.getElementById('qunit-tests').children,
+              failures = [];
+              len = testEls.length, idx;
+
+          for (idx=0; idx<len; idx++) {
+            if (testEls[idx].className === 'fail') {
+              var children = testEls[idx].children;
+              failures.push(children[0].innerText+"\n    "+(children[2].innerText.split("\n").join("    \n")));
+            }
+          }
+
+          return failures;
+        });
+
+        console.log("\nFailures:\n\n"+failures.join("\n\n")+"\n\n");
+      }
+
+      console.log(data.resultsText);
+
+      phantom.exit(failed ? 1 : 0);
     });
   }
 });
