@@ -71,6 +71,6 @@ test('template with data-element-id should add an id attribute to the view', fun
         Ember.Handlebars.bootstrap(Ember.$('#qunit-fixture'));
     });
 
-    equal(Ember.$('#qunit-fixture').text(), '<div id="application" class="ember-view">Hello World !</div>', 'id attribute has been added to the view');
+    equal(Ember.$('#qunit-fixture').html(), '<div id="application" class="ember-view">Hello World !</div>', 'id attribute has been added to the view');
 });
 // TODO: Text x-raw-handlebars
