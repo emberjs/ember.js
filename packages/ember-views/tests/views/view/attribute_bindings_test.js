@@ -7,8 +7,6 @@
 /*global Test:true*/
 var set = Ember.set, get = Ember.get;
 
-require('ember-views/views/view');
-
 var view;
 
 module("Ember.View - Attribute Bindings", {
@@ -37,7 +35,7 @@ test("should render attribute bindings", function() {
 
   view.createElement();
 
-  equals(view.$().attr('type'), 'submit', "updates type attribute");
+  equal(view.$().attr('type'), 'submit', "updates type attribute");
   ok(view.$().attr('disabled'), "supports customizing attribute name for Boolean values");
   ok(!view.$().attr('exploded'), "removes exploded attribute when false");
   ok(!view.$().attr('destroyed'), "removes destroyed attribute when false");
@@ -65,7 +63,7 @@ test("should update attribute bindings", function() {
 
   view.createElement();
 
-  equals(view.$().attr('type'), 'reset', "adds type attribute");
+  equal(view.$().attr('type'), 'reset', "adds type attribute");
   ok(view.$().attr('disabled'), "adds disabled attribute when true");
   ok(view.$().attr('exploded'), "adds exploded attribute when true");
   ok(view.$().attr('destroyed'), "adds destroyed attribute when true");
@@ -84,7 +82,7 @@ test("should update attribute bindings", function() {
   view.set('notDefined', undefined);
   view.set('notNumber', NaN);
 
-  equals(view.$().attr('type'), 'submit', "updates type attribute");
+  equal(view.$().attr('type'), 'submit', "updates type attribute");
   ok(!view.$().attr('disabled'), "removes disabled attribute when false");
   ok(!view.$().attr('exploded'), "removes exploded attribute when false");
   ok(!view.$().attr('destroyed'), "removes destroyed attribute when false");
@@ -128,9 +126,15 @@ test("should allow attributes to be set in the inBuffer state", function() {
     }));
   });
 
-  Ember.run(function() {
-    parentView.append();
-  });
+  try {
+    Ember.TESTING_DEPRECATION = true;
+
+    Ember.run(function() {
+      parentView.append();
+    });
+  } finally {
+    Ember.TESTING_DEPRECATION = false;
+  }
 
   equal(parentView.get('childViews')[0].$().attr('foo'), 'baz');
 

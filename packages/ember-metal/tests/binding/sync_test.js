@@ -147,7 +147,7 @@ testBoth("bindings should not try to sync destroyed objects", function(get, set)
   Ember.run(function() {
     set(a, 'foo', 'trollface');
     set(b, 'isDestroyed', true);
-    // should not raise
+    ok(true, "should not raise");
   });
 
   Ember.run(function() {
@@ -164,6 +164,6 @@ testBoth("bindings should not try to sync destroyed objects", function(get, set)
   Ember.run(function() {
     set(b, 'foo', 'trollface');
     set(a, 'isDestroyed', true);
-    // should not raise
+    ok(true, "should not raise");
   });
 });

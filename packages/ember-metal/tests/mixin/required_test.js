@@ -56,6 +56,7 @@ test('combined mixins to meet requirement', function() {
 
 test('merged mixin', function() {
   Ember.Mixin.create(PartialMixin, { foo: 'FOO' }).apply(obj);
+  equal(Ember.get(obj, 'foo'), 'FOO', 'should now be defined');
 });
 
 test('define property on source object', function() {

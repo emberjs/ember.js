@@ -39,6 +39,14 @@ var childViewsProperty = Ember.computed(function() {
 */
 Ember.TEMPLATES = {};
 
+var invokeForState = {
+  preRender: {},
+  inBuffer: {},
+  hasElement: {},
+  inDOM: {},
+  destroyed: {}
+};
+
 /**
   @class
   @since Ember 0.9
@@ -194,7 +202,7 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     @type Boolean
     @default null
   */
-  isVisible: null,
+  isVisible: true,
 
   /**
     Array of child views. You should never edit this array directly.
@@ -334,8 +342,18 @@ Ember.View = Ember.Object.extend(Ember.Evented,
   },
 
   invokeForState: function(name) {
-    var parent = this, states = parent.states;
-    var stateName = get(this, 'state'), state;
+    var stateName = this.state, args;
+
+    // try to find the function for the state in the cache
+    if (fn = invokeForState[stateName][name]) {
+      args = a_slice.call(arguments);
+      args[0] = this;
+
+      return fn.apply(this, args);
+    }
+
+    // otherwise, find and cache the function for this state
+    var parent = this, states = parent.states, state;
 
     while (states) {
       state = states[stateName];
@@ -344,7 +362,9 @@ Ember.View = Ember.Object.extend(Ember.Evented,
         var fn = state[name];
 
         if (fn) {
-          var args = a_slice.call(arguments, 1);
+          invokeForState[stateName][name] = fn;
+
+          args = a_slice.call(arguments, 1);
           args.unshift(this);
 
           return fn.apply(this, args);
@@ -376,9 +396,8 @@ Ember.View = Ember.Object.extend(Ember.Evented,
   },
 
   clearRenderedChildren: function() {
-    var viewMeta = meta(this)['Ember.View'],
-        lengthBefore = viewMeta.lengthBeforeRender,
-        lengthAfter  = viewMeta.lengthAfterRender;
+    var lengthBefore = this.lengthBeforeRender,
+        lengthAfter  = this.lengthAfterRender;
 
     // If there were child views created during the last call to render(),
     // remove them under the assumption that they will be re-created when
@@ -621,9 +640,6 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     // Schedule the DOM element to be created and appended to the given
     // element after bindings have synchronized.
     this._insertElementLater(function() {
-      if (get(this, 'isVisible') === null) {
-        set(this, 'isVisible', true);
-      }
       this.$().appendTo(target);
     });
 
@@ -673,7 +689,7 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     @param {Function} fn the function that inserts the element into the DOM
   */
   _insertElementLater: function(fn) {
-    Ember.run.schedule('render', this, 'invokeForState', 'insertElement', fn);
+    Ember.run.schedule('render', this, this.invokeForState, 'insertElement', fn);
   },
 
   /**
@@ -945,7 +961,6 @@ Ember.View = Ember.Object.extend(Ember.Evented,
       be used.
   */
   renderToBuffer: function(parentBuffer, bufferOperation) {
-    var viewMeta = meta(this)['Ember.View'];
     var buffer;
 
     Ember.run.sync();
@@ -971,16 +986,16 @@ Ember.View = Ember.Object.extend(Ember.Evented,
       buffer = this.renderBuffer();
     }
 
-    viewMeta.buffer = buffer;
-    this.transitionTo('inBuffer');
+    this.buffer = buffer;
+    this.transitionTo('inBuffer', false);
 
-    viewMeta.lengthBeforeRender = getPath(this, '_childViews.length');
+    this.lengthBeforeRender = get(get(this, '_childViews'), 'length');
 
     this.beforeRender(buffer);
     this.render(buffer);
     this.afterRender(buffer);
 
-    viewMeta.lengthAfterRender = getPath(this, '_childViews.length');
+    this.lengthAfterRender = get(get(this, '_childViews'), 'length');
 
     return buffer;
   },
@@ -1119,6 +1134,8 @@ Ember.View = Ember.Object.extend(Ember.Evented,
   */
   attributeBindings: [],
 
+  state: 'preRender',
+
   // .......................................................
   // CORE DISPLAY METHODS
   //
@@ -1132,8 +1149,6 @@ Ember.View = Ember.Object.extend(Ember.Evented,
       dispatch
   */
   init: function() {
-    set(this, 'state', 'preRender');
-
     var parentView = get(this, '_parentView');
 
     this._super();
@@ -1143,19 +1158,15 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     Ember.View.views[get(this, 'elementId')] = this;
 
     var childViews = Ember.A(get(this, '_childViews').slice());
+
     // setup child views. be sure to clone the child views array first
     set(this, '_childViews', childViews);
-
 
     ember_assert("Only arrays are allowed for 'classNameBindings'", Ember.typeOf(this.classNameBindings) === 'array');
     this.classNameBindings = Ember.A(this.classNameBindings.slice());
 
     ember_assert("Only arrays are allowed for 'classNames'", Ember.typeOf(this.classNames) === 'array');
     this.classNames = Ember.A(this.classNames.slice());
-
-    set(this, 'domManager', this.domManagerClass.create({ view: this }));
-
-    meta(this)["Ember.View"] = {};
 
     var viewController = get(this, 'viewController');
     if (viewController) {
@@ -1231,8 +1242,7 @@ Ember.View = Ember.Object.extend(Ember.Evented,
 
     // calling this._super() will nuke computed properties and observers,
     // so collect any information we need before calling super.
-    var viewMeta   = meta(this)['Ember.View'],
-        childViews = get(this, '_childViews'),
+    var childViews = get(this, '_childViews'),
         parent     = get(this, '_parentView'),
         elementId  = get(this, 'elementId'),
         childLen;
@@ -1240,6 +1250,14 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     // destroy the element -- this will avoid each child view destroying
     // the element over and over again...
     if (!this.removedFromDOM) { this.destroyElement(); }
+
+    // remove from non-virtual parent view if viewName was specified
+    if (this.viewName) {
+      var nonVirtualParentView = get(this, 'parentView');
+      if (nonVirtualParentView) {
+        set(nonVirtualParentView, this.viewName, null);
+      }
+    }
 
     // remove from parent if found. Don't call removeFromParent,
     // as removeFromParent will try to remove the element from
@@ -1278,7 +1296,7 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     if (Ember.View.detect(view)) {
       view = view.create(attrs || {}, { _parentView: this });
 
-      var viewName = attrs && attrs.viewName || view.viewName;
+      var viewName = view.viewName;
 
       // don't set the property on a virtual view, as they are invisible to
       // consumers of the view API
@@ -1350,12 +1368,12 @@ Ember.View = Ember.Object.extend(Ember.Evented,
 
   clearBuffer: function() {
     this.invokeRecursively(function(view) {
-      meta(view)['Ember.View'].buffer = null;
+      this.buffer = null;
     });
   },
 
   transitionTo: function(state, children) {
-    set(this, 'state', state);
+    this.state = state;
 
     if (children !== false) {
       this.forEachChildView(function(view) {
@@ -1415,49 +1433,44 @@ Ember.View = Ember.Object.extend(Ember.Evented,
   // once the view has been inserted into the DOM, legal manipulations
   // are done on the DOM element.
 
+/** @private */
+var DOMManager = {
+  prepend: function(view, childView) {
+    childView._insertElementLater(function() {
+      var element = view.$();
+      element.prepend(childView.$());
+    });
+  },
+
+  after: function(view, nextView) {
+    nextView._insertElementLater(function() {
+      var element = view.$();
+      element.after(nextView.$());
+    });
+  },
+
+  replace: function(view) {
+    var element = get(view, 'element');
+
+    set(view, 'element', null);
+
+    view._insertElementLater(function() {
+      Ember.$(element).replaceWith(get(view, 'element'));
+    });
+  },
+
+  remove: function(view) {
+    var elem = get(view, 'element');
+
+    set(view, 'element', null);
+
+    Ember.$(elem).remove();
+  }
+};
+
 Ember.View.reopen({
   states: Ember.View.states,
-  domManagerClass: Ember.Object.extend({
-    view: this,
-
-    prepend: function(childView) {
-      var view = get(this, 'view');
-
-      childView._insertElementLater(function() {
-        var element = view.$();
-        element.prepend(childView.$());
-      });
-    },
-
-    after: function(nextView) {
-      var view = get(this, 'view');
-
-      nextView._insertElementLater(function() {
-        var element = view.$();
-        element.after(nextView.$());
-      });
-    },
-
-    replace: function() {
-      var view = get(this, 'view');
-      var element = get(view, 'element');
-
-      set(view, 'element', null);
-
-      view._insertElementLater(function() {
-        Ember.$(element).replaceWith(get(view, 'element'));
-      });
-    },
-
-    remove: function() {
-      var view = get(this, 'view');
-      var elem = get(view, 'element');
-
-      set(view, 'element', null);
-
-      Ember.$(elem).remove();
-    }
-  })
+  domManager: DOMManager
 });
 
 // Create a global view hash.

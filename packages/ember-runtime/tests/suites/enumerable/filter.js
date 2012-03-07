@@ -5,7 +5,6 @@
 // ==========================================================================
 
 require('ember-runtime/~tests/suites/enumerable');
-require('ember-runtime/mixins/comparable');
 
 var suite = Ember.EnumerableTests;
 

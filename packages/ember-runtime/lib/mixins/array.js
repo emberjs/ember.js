@@ -15,8 +15,10 @@ require('ember-runtime/mixins/enumerable');
 
 var get = Ember.get, set = Ember.set, meta = Ember.meta;
 
+/** @private */
 function none(obj) { return obj===null || obj===undefined; }
 
+/** @private */
 function xform(target, method, params) {
   method.call(target, params[0], params[2], params[3], params[4]);
 }
@@ -113,6 +115,11 @@ Ember.Array = Ember.Mixin.create(Ember.Enumerable, /** @scope Ember.Array.protot
     Returns a new array that is a slice of the receiver.  This implementation
     uses the observable array methods to retrieve the objects for the new
     slice.
+
+        var arr = ['red', 'green', 'blue'];
+        arr.slice(0);      => ['red', 'green', 'blue']
+        arr.slice(0, 2);   => ['red', 'green']
+        arr.slice(1, 100); => ['green', 'blue']
 
     @param beginIndex {Integer} (Optional) index to begin slicing from.
     @param endIndex {Integer} (Optional) index to end the slice at.

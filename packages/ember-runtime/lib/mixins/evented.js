@@ -1,5 +1,6 @@
 var get = Ember.get, set = Ember.set;
 
+/** @private */
 function xform(target, method, params) {
   var args = [].slice.call(params, 2);
   method.apply(target, args);

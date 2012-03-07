@@ -94,7 +94,7 @@ test('should get arbitrary properties on an object', function() {
 
   obj = {
     undef: undefined
-  }
+  };
 
   equal(Ember.getWithDefault(obj, "undef", "default"), "default", "explicit undefined retrieves the default");
   equal(Ember.getWithDefault(obj, "not-present", "default"), "default", "non-present key retrieves the default");
@@ -119,7 +119,7 @@ testBoth("if unknownProperty is present, it is called", function(get, set) {
   var obj = {
     count: 0,
     unknownProperty: function(key) {
-      if (key == "foo") {
+      if (key === "foo") {
         equal(key, 'foo', "should pass key");
         this.count++;
         return "FOO";

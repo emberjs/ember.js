@@ -64,9 +64,14 @@
 
     equal(middle.getPath('childViews.length'), 2);
 
-    Ember.run(function() {
-      middle.rerender();
-    });
+    try {
+      Ember.TESTING_DEPRECATION = true;
+      Ember.run(function() {
+        middle.rerender();
+      });
+    } finally {
+      Ember.TESTING_DEPRECATION = false;
+    }
 
     equal(middle.getPath('childViews.length'), 2);
 

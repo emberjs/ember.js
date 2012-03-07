@@ -1,37 +1,98 @@
 require "rake-pipeline-web-filters"
 require "json"
+require "uglifier"
+require "./neuter"
 
-output "tests/source"
+class EmberProductionFilter < Rake::Pipeline::Filter
+  def generate_output(inputs, output)
+    inputs.each do |input|
+      result = File.read(input.fullpath)
+      result.gsub!(%r{^(\s)+ember_(assert|deprecate|warn)\((.*)\).*$}, "")
+      output.write result
+    end
+  end
+end
+
+class EmberLicenseFilter < Rake::Pipeline::Filter
+  def generate_output(inputs, output)
+    inputs.each do |input|
+      file = File.read(input.fullpath)
+      license = File.read("generators/license.js")
+      output.write "#{license}\n\n#{file}"
+    end
+  end
+end
+
+distros = {
+  :runtime => %w(ember-metal ember-runtime),
+  :full    => %w(handlebars ember-metal ember-runtime ember-views ember-states metamorph ember-handlebars)
+}
+
+output "dist"
 
 input "packages" do
-  match "*/{lib,tests}/**/*.js" do
+  output "tests"
+
+  match "*/tests/**/*.js" do
     minispade :rewrite_requires => true, :string => true, :module_id_generator => proc { |input|
       id = input.path.dup
-      id.sub!('/lib/', '/')
       id.sub!(/\.js$/, '')
       id.sub!(/\/main$/, '')
       id.sub!('/tests', '/~tests')
       id
     }
 
-    concat do |filename|
-      filename =~ %r{/tests/} ? "ember-tests.js" : "ember.js"
-    end
-  end
-
-  # Hack to ignore certain files
-  match "**/*.{json,md}" do
-    concat "trash"
-  end
-
-  match "**/README" do
-    concat "trash"
-  end
-
-  match "*/*.js" do
-    concat "trash"
+    concat "ember-tests.js"
   end
 end
 
+input "packages" do
+  match "*/lib/**/*.js" do
+    minispade :rewrite_requires => true, :string => true, :module_id_generator => proc { |input|
+      id = input.path.dup
+      id.sub!('/lib/', '/')
+      id.sub!(/\.js$/, '')
+      id.sub!(/\/main$/, '')
+      id
+    }
+
+    concat "ember-spade.js"
+  end
+end
+
+input "packages" do
+  match "*/lib/**/main.js" do
+    neuter do |filename|
+      File.join("modules/", filename.gsub('/lib/main.js', '.js'))
+    end
+  end
+end
+
+distros.each do |name, modules|
+  name = name == :full ? "ember" : "ember-#{name}"
+
+  input "dist/modules" do
+    module_paths = modules.map{|m| "#{m}.js" }
+    match "{#{module_paths.join(',')}}" do
+      concat(module_paths){ ["#{name}.js", "#{name}.prod.js"] }
+    end
+
+    # Add debug to the main distro
+    match "{#{name}.js,ember-debug.js}" do
+      concat ["ember-debug.js"], "#{name}.js"
+    end
+
+    # Strip dev code
+    match "#{name}.prod.js" do
+      filter(EmberProductionFilter) { ["#{name}.prod.js", "#{name}.min.js"] }
+    end
+
+    # Minify
+    match "#{name}.min.js" do
+      uglify{ "#{name}.min.js" }
+      filter EmberLicenseFilter
+    end
+  end
+end
 
 # vim: filetype=ruby

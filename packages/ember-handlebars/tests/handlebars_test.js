@@ -1234,7 +1234,7 @@ test("should be able to bind boolean element attributes using {{bindAttr}}", fun
 });
 
 test("should be able to add multiple classes using {{bindAttr class}}", function() {
-  var template = Ember.Handlebars.compile('<div {{bindAttr class="content.isAwesomeSauce content.isAlsoCool content.isAmazing:amazing"}}></div>');
+  var template = Ember.Handlebars.compile('<div {{bindAttr class="content.isAwesomeSauce content.isAlsoCool content.isAmazing:amazing :is-super-duper"}}></div>');
   var content = Ember.Object.create({
     isAwesomeSauce: true,
     isAlsoCool: true,
@@ -1251,6 +1251,7 @@ test("should be able to add multiple classes using {{bindAttr class}}", function
   ok(view.$('div').hasClass('is-awesome-sauce'), "dasherizes first property and sets classname");
   ok(view.$('div').hasClass('is-also-cool'), "dasherizes second property and sets classname");
   ok(view.$('div').hasClass('amazing'), "uses alias for third property and sets classname");
+  ok(view.$('div').hasClass('is-super-duper'), "static class is present");
 
   Ember.run(function() {
     set(content, 'isAwesomeSauce', false);
@@ -1259,6 +1260,7 @@ test("should be able to add multiple classes using {{bindAttr class}}", function
 
   ok(!view.$('div').hasClass('is-awesome-sauce'), "removes dasherized class when property is set to false");
   ok(!view.$('div').hasClass('amazing'), "removes aliased class when property is set to false");
+  ok(view.$('div').hasClass('is-super-duper'), "static class is still present");
 });
 
 test("should be able to bindAttr to 'this' in an {{#each}} block", function() {
@@ -1540,6 +1542,8 @@ test("bindings can be 'this', in which case they *are* the current context", fun
 // https://github.com/emberjs/ember.js/issues/120
 
 test("should not enter an infinite loop when binding an attribute in Handlebars", function() {
+  expect(0);
+
   App = Ember.Application.create();
   App.test = Ember.Object.create({ href: 'test' });
   App.Link = Ember.View.extend({

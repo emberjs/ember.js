@@ -321,7 +321,7 @@ EmberHandlebars.bindClasses = function(context, classBindings, view, bindAttrId)
 
     property = split[0];
 
-    var val = getPath(context, property);
+    var val = property !== '' ? getPath(context, property) : true;
 
     // If value is a Boolean and true, return the dasherized property
     // name.
@@ -392,7 +392,9 @@ EmberHandlebars.bindClasses = function(context, classBindings, view, bindAttrId)
     };
 
     var property = binding.split(':')[0];
-    Ember.addObserver(context, property, invoker);
+    if (property !== '') {
+      Ember.addObserver(context, property, invoker);
+    }
 
     // We've already setup the observer; now we just need to figure out the
     // correct behavior right now on the first pass through.
