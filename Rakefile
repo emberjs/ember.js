@@ -1,12 +1,10 @@
 abort "Please use Ruby 1.9 to build Ember.js!" if RUBY_VERSION !~ /^1\.9/
 
-require "rubygems"
-require "net/github-upload"
-
 require "bundler/setup"
 require "erb"
 require 'rake-pipeline'
 require "ember_docs/cli"
+require "colored"
 
 desc "Strip trailing whitespace for JavaScript files in packages"
 task :strip_whitespace do
@@ -31,6 +29,8 @@ end
 ### UPLOAD LATEST EMBERJS BUILD TASK ###
 desc "Upload latest Ember.js build to GitHub repository"
 task :upload => :dist do
+  require "net/github-upload"
+
   # setup
   login = `git config github.user`.chomp  # your login for github
   token = `git config github.token`.chomp # your token for github
@@ -315,11 +315,16 @@ task :test => :dist do
   success = system(cmd)
 
   if success
-    puts "Tests Passed"
+    puts "Tests Passed".green
   else
-    puts "Tests Failed"
+    puts "Tests Failed".red
     exit(1)
   end
+end
+
+desc "Automatically run tests (Mac OS X only)"
+task :autotest do
+  system("kicker -e 'rake test' packages")
 end
 
 task :default => :dist
