@@ -1,5 +1,3 @@
-require('ember-data/adapters/rest_adapter');
-
 var get = Ember.get, set = Ember.set;
 
 var adapter, store, ajaxUrl, ajaxType, ajaxHash;

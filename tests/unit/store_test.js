@@ -380,7 +380,7 @@ test("models inside a collection view should have their ids updated", function()
 
   var idCounter = 1;
   var adapter = DS.Adapter.create({
-    create: function(store, type, model) {
+    createRecord: function(store, type, model) {
       store.didCreateRecord(model, {name: model.get('name'), id: idCounter++});
     }
   });
@@ -397,10 +397,12 @@ test("models inside a collection view should have their ids updated", function()
     container.appendTo('#qunit-fixture');
   });
 
+  store.createRecord(Person, {name: 'Tom Dale'});
+  store.createRecord(Person, {name: 'Yehuda Katz'});
+
   store.commit();
 
   container.content.forEach(function(person, index) {
-    console.log(person);
     equal(person.get('id'), index + 1, "The model's id should be correctly.");
   });
 });
@@ -499,4 +501,5 @@ test("an ID of 0 is allowed", function() {
   });
 
   store.load(Person, { id: 0, name: "Tom Dale" });
+  equal(store.findAll(Person).objectAt(0).get('name'), "Tom Dale", "found record with id 0");
 });
