@@ -285,8 +285,8 @@ test("should give its item views the property specified by itemPropertyBinding",
   equal(view.$('ul li').length, 3, "adds 3 itemView");
 
   view.$('ul li').each(function(i, li){
-    equals($(li).text(), "baz", "creates the li with the property = baz");
-  })
+    equal(Ember.$(li).text(), "baz", "creates the li with the property = baz");
+  });
 
   Ember.run(function() {
     setPath(view, 'baz', "yobaz");
