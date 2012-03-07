@@ -108,21 +108,21 @@ testBoth("bindings should do the right thing when binding is in prototype", func
         set(this, 'selection', value);
       }
     };
-    Em.bind(proto, 'selection', 'obj.selection');
+    Ember.bind(proto, 'selection', 'obj.selection');
 
-    a = Em.create(proto);
-    b = Em.create(proto);
+    a = Ember.create(proto);
+    b = Ember.create(proto);
   });
 
-  Em.run(function () {
+  Ember.run(function () {
     set(a, 'selection', 'a');
   });
 
-  Em.run(function () {
+  Ember.run(function () {
     set(b, 'selection', 'b');
   });
 
-  Em.run(function () {
+  Ember.run(function () {
     set(a, 'selection', 'a');
   });
 
