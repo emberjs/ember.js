@@ -12,7 +12,6 @@ var get = Ember.get, getPath = Ember.Handlebars.getPath, set = Ember.set, fmt = 
 var forEach = Ember.ArrayUtils.forEach;
 
 var EmberHandlebars = Ember.Handlebars, helpers = EmberHandlebars.helpers;
-var helpers = EmberHandlebars.helpers;
 
 (function() {
   // Binds a property into the DOM. This will create a hook in DOM that the
