@@ -32,10 +32,6 @@
     }
   </script>
 
-  <script type="text/javascript" src="minispade.js"></script>
-  <script type="text/javascript" src="source/ember.js"></script>
-  <script type="text/javascript" src="source/ember-tests.js"></script>
-
   <script type="text/javascript">
     // Handle extending prototypes
     QUnit.config.urlConfig.push('extendprototypes');
@@ -43,7 +39,21 @@
     window.ENV = window.ENV || {};
     var extendPrototypes = location.search.match(/extendprototypes=([^&]+)/);
     ENV['EXTEND_PROTOTYPES'] = !!(extendPrototypes && decodeURIComponent(extendPrototypes[1]));
+  </script>
 
+  <script type="text/javascript" src="minispade.js"></script>
+
+  <script>
+    // Load ember distribution from query vars
+    var distMatch = location.search.match(/dist=([^&]+)/),
+        dist = distMatch && distMatch[1],
+        emberPath = "../dist/ember"+(dist ? '-' + dist : '')+".js";
+      document.write(unescape('%3Cscript src="'+emberPath+'"%3E%3C/script%3E'));
+  </script>
+
+  <script type="text/javascript" src="ember-tests.js"></script>
+
+  <script>
 
     // hack qunit to not suck for Ember objects
     var originalTypeof = QUnit.jsDump.typeOf;
@@ -84,14 +94,18 @@
       len = packages.length;
 
       // There is no require for this in the code
-      minispade.require('handlebars');
-      minispade.require('ember-debug');
+      if (dist == 'spade') {
+        minispade.require('handlebars');
+        minispade.require('ember-debug');
+      }
 
       for (idx=0; idx<len; idx++) {
         packageName = packages[idx];
         re = new RegExp('^'+packageName+'/([^/]+)');
 
-        minispade.require(packageName);
+        if (dist == 'spade') {
+          minispade.require(packageName);
+        }
 
         for (moduleName in minispade.modules) {
           if (!minispade.modules.hasOwnProperty(moduleName)) { continue; }

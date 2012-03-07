@@ -7,8 +7,6 @@
 /*global Test:true*/
 var set = Ember.set, get = Ember.get;
 
-require('ember-views/views/view');
-
 var view;
 
 module("Ember.View - Attribute Bindings", {

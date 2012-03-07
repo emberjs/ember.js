@@ -4,8 +4,6 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
-require('ember-metal');
-
 function isEnumerable(obj, keyName) {
   var keys = [];
   for(var key in obj) {

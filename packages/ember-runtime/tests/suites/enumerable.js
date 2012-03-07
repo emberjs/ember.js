@@ -4,12 +4,6 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
-require('ember-runtime/system/object');
-require('ember-runtime/system/native_array');
-require('ember-runtime/~tests/suites/suite');
-
-
-
 var ObserverClass = Ember.Object.extend({
 
   _keys: null,

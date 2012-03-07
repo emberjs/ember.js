@@ -4,8 +4,6 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
-require('ember-metal');
-
 module("Ember.platform.create()");
 
 test("should inherit the properties from the parent object", function() {

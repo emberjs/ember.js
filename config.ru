@@ -1,3 +1,4 @@
+require 'bundler/setup'
 require 'rake-pipeline'
 require 'rake-pipeline/middleware'
 

@@ -6,8 +6,6 @@
 
 var set = Ember.set, get = Ember.get, setPath = Ember.setPath;
 
-require('ember-views/views/view');
-
 module("Ember.View - Class Name Bindings");
 
 test("should apply bound class names to the element", function() {
