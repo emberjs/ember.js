@@ -1,9 +1,4 @@
-begin
-  require 'bundler'
-  Bundler.setup :default
-rescue LoadError
-end
-
+require 'bundler/setup'
 require 'rake-pipeline'
 require 'rake-pipeline/middleware'
 
