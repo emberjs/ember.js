@@ -300,7 +300,7 @@ task :test, [:suite] => :dist do |t, args|
               "package=all&jquery=1.6.4&nojshint=true",
               "package=all&extendprototypes=true&nojshint=true",
               "package=all&extendprototypes=true&jquery=1.6.4&nojshint=true",
-              "package=all&dist=build"]
+              "package=all&dist=build&nojshint=true"]
   }
 
   suite = args[:suite] || :default

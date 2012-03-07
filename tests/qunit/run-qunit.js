@@ -23,11 +23,11 @@ function waitFor(testFx, onReady, timeOutMillis) {
       } else {
         if (!condition) {
           // If condition still not fulfilled (timeout but condition is 'false')
-          console.log("'Tests timeout");
+          console.log("Tests timeout");
           phantom.exit(1);
         } else {
           // Condition fulfilled (timeout and/or condition is 'true')
-          console.log("'Tests finished in " + (new Date().getTime() - start) + "ms.");
+          console.log("Tests finished in " + (new Date().getTime() - start) + "ms.");
           typeof(onReady) === "string" ? eval(onReady) : onReady(); //< Do what it's supposed to do once the condition is fulfilled
           clearInterval(interval); //< Stop this interval
         }
@@ -58,6 +58,7 @@ page.open(phantom.args[0], function(status) {
     console.log("Unable to access network");
     phantom.exit(1);
   } else {
+    console.log("\n");
     waitFor(function() {
       return page.evaluate(function() {
         var el = document.getElementById('qunit-testresult');

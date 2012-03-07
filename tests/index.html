@@ -22,15 +22,15 @@
           str = '',
           error, idx;;
 
+      if (len === 0) { return ''; }
+
       for (idx=0; idx<len; idx++) {
         error = errors[idx];
         str += file  + ': line ' + error.line + ', col ' +
             error.character + ', ' + error.reason + '\n';
       };
 
-      if (str) {
-        return str + "\n" + len + ' error' + ((len === 1) ? '' : 's');
-      }
+      return str + "\n" + len + ' error' + ((len === 1) ? '' : 's');
     }
 
 
@@ -159,8 +159,9 @@
               (function() {
                 var jshintModule = moduleName;
                 test(jshintModule+' should pass jshint', function() {
-                  var result = JSHINT(minispade.modules[jshintModule], JSHINTRC);
-                  ok(result, jshintModule+" should pass jshint.\n" + jsHintReporter(jshintModule, JSHINT.errors));
+                  var passed = JSHINT(minispade.modules[jshintModule], JSHINTRC),
+                      errors = jsHintReporter(jshintModule, JSHINT.errors);
+                  ok(result, jshintModule+" should pass jshint."+(errors ? "\n"+errors : ''));
                 });
               })();
             }
