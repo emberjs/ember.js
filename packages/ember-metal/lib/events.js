@@ -162,6 +162,13 @@ function removeListener(obj, eventName, target, method) {
   }
 }
 
+// Suspend listener during callback.
+//
+// This should only be used by the target of the event listener
+// when it is taking an action that would cause the event, e.g.
+// an object might suspend its property change listener while it is
+// setting that property.
+/** @private */
 function suspendListener(obj, eventName, target, method, callback) {
   if (!method && 'function' === typeof target) {
     method = target;
@@ -247,7 +254,7 @@ function listenersFor(obj, eventName) {
 
 Ember.addListener = addListener;
 Ember.removeListener = removeListener;
-Ember.suspendListener = suspendListener;
+Ember._suspendListener = suspendListener;
 Ember.sendEvent = sendEvent;
 Ember.hasListeners = hasListeners;
 Ember.watchedEvents = watchedEvents;

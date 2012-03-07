@@ -549,7 +549,7 @@ Binding.prototype = /** @scope Ember.Binding.prototype */ {
       if (this._oneWay) {
         Ember.trySetPath(Ember.isGlobalPath(toPath) ? window : obj, toPath, fromValue);
       } else {
-        Ember.suspendObserver(obj, toPath, this, this.toDidChange, function () {
+        Ember._suspendObserver(obj, toPath, this, this.toDidChange, function () {
           Ember.trySetPath(Ember.isGlobalPath(toPath) ? window : obj, toPath, fromValue);
         });
       }
@@ -559,7 +559,7 @@ Binding.prototype = /** @scope Ember.Binding.prototype */ {
       if (log) {
         Ember.Logger.log(' ', this.toString(), '<-', toValue, obj);
       }
-      Ember.suspendObserver(obj, fromPath, this, this.fromDidChange, function () {
+      Ember._suspendObserver(obj, fromPath, this, this.fromDidChange, function () {
         Ember.trySetPath(Ember.isGlobalPath(fromPath) ? window : obj, fromPath, toValue);
       });
     }

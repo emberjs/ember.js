@@ -98,7 +98,7 @@ test('suspending a listener should not invoke during callback', function() {
 
   Ember.sendEvent(obj, 'event!');
   
-  equal(Ember.suspendListener(obj, 'event!', target, target.method, callback), 'result');
+  equal(Ember._suspendListener(obj, 'event!', target, target.method, callback), 'result');
 
   Ember.sendEvent(obj, 'event!');
 

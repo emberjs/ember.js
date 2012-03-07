@@ -195,8 +195,13 @@ Ember.addBeforeObserver = function(obj, path, target, method) {
   return this;
 };
 
-Ember.suspendObserver = function(obj, path, target, method, callback) {
-  return Ember.suspendListener(obj, changeEvent(path), target, method, callback);
+// Suspend observer during callback.
+//
+// This should only be used by the target of the observer
+// while it is setting the observed path.
+/** @private */
+Ember._suspendObserver = function(obj, path, target, method, callback) {
+  return Ember._suspendListener(obj, changeEvent(path), target, method, callback);
 };
 
 /** @private */
