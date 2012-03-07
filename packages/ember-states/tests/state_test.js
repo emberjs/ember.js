@@ -1,5 +1,3 @@
-require('ember-states/state');
-
 var get = Ember.get, set = Ember.set, getPath = Ember.getPath, setPath = Ember.setPath;
 
 module("Ember.State");

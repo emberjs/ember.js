@@ -46,8 +46,9 @@
   <script>
     // Load ember distribution from query vars
     var distMatch = location.search.match(/dist=([^&]+)/),
-        dist = distMatch ? (distMatch[1] + ".") : "";
-      document.write(unescape('%3Cscript src="../dist/ember.'+dist+'js"%3E%3C/script%3E'));
+        dist = distMatch && distMatch[1],
+        emberPath = "../dist/ember"+(dist ? '.' + dist : '')+".js";
+      document.write(unescape('%3Cscript src="'+emberPath+'"%3E%3C/script%3E'));
   </script>
 
   <script type="text/javascript" src="ember-tests.js"></script>
@@ -93,32 +94,17 @@
       len = packages.length;
 
       // There is no require for this in the code
-      if (dist == 'spade.') {
+      if (dist == 'spade') {
         minispade.require('handlebars');
         minispade.require('ember-debug');
-      } else {
-        reqs = [
-          'ember-runtime/system/native_array', 
-          'ember-runtime/system/object',
-          'ember-runtime/mixins/comparable',
-          'ember-states/state_manager',
-          'ember-states/state',
-          'ember-states/view_state',
-          'ember-views/views/view'
-        ]
-        jQuery.each(reqs, function(i, e) {
-          minispade.loaded[e] = true;
-        });
       }
 
       for (idx=0; idx<len; idx++) {
         packageName = packages[idx];
         re = new RegExp('^'+packageName+'/([^/]+)');
 
-        if (dist == 'spade.') {
+        if (dist == 'spade') {
           minispade.require(packageName);
-        } else {
-          minispade.loaded[packageName] = true;
         }
 
         for (moduleName in minispade.modules) {

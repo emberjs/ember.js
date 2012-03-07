@@ -5,8 +5,6 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
-require('ember-metal');
-
 module("Ember.guidFor");
 
 var sameGuid = function(a, b, message) {
