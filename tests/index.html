@@ -47,7 +47,7 @@
     // Load ember distribution from query vars
     var distMatch = location.search.match(/dist=([^&]+)/),
         dist = distMatch && distMatch[1],
-        emberPath = "../dist/ember"+(dist ? '.' + dist : '')+".js";
+        emberPath = "../dist/ember"+(dist ? '-' + dist : '')+".js";
       document.write(unescape('%3Cscript src="'+emberPath+'"%3E%3C/script%3E'));
   </script>
 

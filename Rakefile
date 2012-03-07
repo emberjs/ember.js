@@ -18,15 +18,9 @@ task :strip_whitespace do
   end
 end
 
-LICENSE = File.read("generators/license.js")
-
 desc "Build ember.js"
-task :dist => :clean do
+task :dist do
   Rake::Pipeline::Project.new("Assetfile").invoke
-  minified = File.read("dist/ember.min.js")
-  File.open("dist/ember.min.js", "w") do |file|
-    file.write "#{LICENSE} #{minified}"
-  end
 end
 
 desc "Clean build artifacts from previous builds"
