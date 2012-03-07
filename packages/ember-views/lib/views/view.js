@@ -1251,6 +1251,14 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     // the element over and over again...
     if (!this.removedFromDOM) { this.destroyElement(); }
 
+    // remove from non-virtual parent view if viewName was specified
+    if (this.viewName) {
+      var nonVirtualParentView = get(this, 'parentView');
+      if (nonVirtualParentView) {
+        set(nonVirtualParentView, this.viewName, null);
+      }
+    }
+
     // remove from parent if found. Don't call removeFromParent,
     // as removeFromParent will try to remove the element from
     // the DOM again.
