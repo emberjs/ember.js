@@ -64,4 +64,13 @@ test('template with data-tag-name should add a template, wrapped in specific tag
     equal(Ember.$('#qunit-fixture h1').text(), 'Tobias takes teamocil', 'template is rendered inside custom tag');
 });
 
+test('template with data-element-id should add an id attribut to the view', function() {
+    Ember.$('#qunit-fixture').html('<script type="text/x-handlebars" data-element-id="application">Hello World !</script>');
+
+    Ember.run(function() {
+        Ember.Handlebars.bootstrap(Ember.$('#qunit-fixture'));
+    });
+
+    equal(Ember.$('#qunit-fixture').text(), '<div id="application">Hello World !</div>', 'id attribut as been added to the view');
+});
 // TODO: Text x-raw-handlebars
