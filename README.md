@@ -108,15 +108,19 @@ therubyracer`.
 
 # How to Run Unit Tests
 
+## Setup
+
 1. Install Ruby 1.9.2+. There are many resources on the web can help; one of the best is [rvm](http://rvm.beginrescueend.com/).
 
 2. Install Bundler: `gem install bundler`
 
 3. Run `bundle` inside the project root to install the gem dependencies.
 
-4. To start the development server, run `bundle exec rackup`.
+## In Your Browser
 
-5. Then visit: `http://localhost:9292/tests/index.html?package=PACKAGE_NAME`.  Replace `PACKAGE_NAME` with the name of the package you want to run.  For example:
+1. To start the development server, run `rackup`.
+
+2. Then visit: `http://localhost:9292/tests/index.html?package=PACKAGE_NAME`.  Replace `PACKAGE_NAME` with the name of the package you want to run.  For example:
 
   * [Ember.js Runtime](http://localhost:9292/tests/index.html?package=ember-runtime)
   * [Ember.js Views](http://localhost:9292/tests/index.html?package=ember-views)
@@ -127,6 +131,16 @@ To run multiple packages, you can separate them with commas. You can run all the
 [http://localhost:9292/tests/index.html?package=all](http://localhost:9292/tests/index.html?package=all)
 
 You can also pass `jquery=VERSION` in the test URL to test different versions of jQuery. Default is 1.7.1.
+
+## From the CLI
+
+1. Install phantomjs from http://phantomjs.org
+
+2. Run `rake test` to run a basic test suite or run `rake test[all]` to
+   run a more comprehensive suite.
+
+3. (Mac OS X Only) Run `rake autotest` to automatically re-run tests
+   when any files are changed.
 
 # Building API Docs
 
