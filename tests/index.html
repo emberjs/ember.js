@@ -5,6 +5,39 @@
   <title>QUnit Test Suite</title>
   <link rel="stylesheet" href="qunit/qunit.css" type="text/css" media="screen">
   <script type="text/javascript" src="qunit/qunit.js"></script>
+  <script type="text/javascript" src="jshint.js"></script>
+  <script type="text/javascript" src="minispade.js"></script>
+
+  <script type="text/javascript">
+    // Handle JSHint
+    QUnit.config.urlConfig.push('nojshint');
+
+    var noJsHint = location.search.match(/nojshint=([^&]+)/);
+    jsHint = !(noJsHint && decodeURIComponent(noJsHint[1]));
+
+    var jsHintReporter = function (file, errors) {
+      var len = errors.length,
+          str = '',
+          error;
+
+      errors.forEach(function (error) {
+        str += file  + ': line ' + error.line + ', col ' +
+            error.character + ', ' + error.reason + '\n';
+      });
+
+      if (str) {
+        return str + "\n" + len + ' error' + ((len === 1) ? '' : 's');
+      }
+    }
+
+
+    // Handle extending prototypes
+    QUnit.config.urlConfig.push('extendprototypes');
+
+    window.ENV = window.ENV || {};
+    var extendPrototypes = location.search.match(/extendprototypes=([^&]+)/);
+    ENV['EXTEND_PROTOTYPES'] = !!(extendPrototypes && decodeURIComponent(extendPrototypes[1]));
+  </script>
 </head>
 <body>
   <h1 id="qunit-header">QUnit Test Suite</h1>
@@ -30,30 +63,30 @@
       if (console && console.warn) { console.warn("Unable to load jQuery "+jQueryVersion+". Using default."); }
       document.write(unescape('%3Cscript src="jquery-1.7.1.js"%3E%3C/script%3E'));
     }
+    // Close the script tag to make sure document.write happens
   </script>
-
-  <script type="text/javascript">
-    // Handle extending prototypes
-    QUnit.config.urlConfig.push('extendprototypes');
-
-    window.ENV = window.ENV || {};
-    var extendPrototypes = location.search.match(/extendprototypes=([^&]+)/);
-    ENV['EXTEND_PROTOTYPES'] = !!(extendPrototypes && decodeURIComponent(extendPrototypes[1]));
-  </script>
-
-  <script type="text/javascript" src="minispade.js"></script>
 
   <script>
     // Load ember distribution from query vars
     var distMatch = location.search.match(/dist=([^&]+)/),
-        dist = distMatch && distMatch[1],
-        emberPath = "../dist/ember"+(dist ? '-' + dist : '')+".js";
-      document.write(unescape('%3Cscript src="'+emberPath+'"%3E%3C/script%3E'));
+        dist = (distMatch && distMatch[1]) || 'spade';
+
+    var distros = {
+      spade:   'ember-spade.js',
+      build:   'ember.js',
+      runtime: 'ember-runtime.js'
+    };
+
+    var emberFile = distros[dist];
+    if (!emberFile) { throw 'Unknown dist'; }
+
+    document.write(unescape('%3Cscript src="../dist/'+emberFile+'"%3E%3C/script%3E'));
+    // Close the script tag to make sure document.write happens
   </script>
 
   <script type="text/javascript" src="ember-tests.js"></script>
 
-  <script>
+  <script type="text/javascript">
 
     // hack qunit to not suck for Ember objects
     var originalTypeof = QUnit.jsDump.typeOf;
@@ -111,8 +144,23 @@
           if (!minispade.modules.hasOwnProperty(moduleName)) { continue; }
 
           match = moduleName.match(re);
-          if (match && match[1] === '~tests') {
-            minispade.require(moduleName);
+          if (match) {
+            if (match[1] === '~tests') {
+              // Only require the actual tests since we already required the module
+              minispade.require(moduleName);
+            }
+
+            if (jsHint) {
+              // JSHint all modules in this package, tests and code
+              // (closure to preserve variable values)
+              (function() {
+                var jshintModule = moduleName;
+                test(jshintModule+' should pass jshint', function() {
+                  var result = JSHINT(minispade.modules[jshintModule], JSHINTRC);
+                  ok(result, jshintModule+" should pass jshint.\n" + jsHintReporter(jshintModule, JSHINT.errors));
+                });
+              })();
+            }
           }
         }
       }

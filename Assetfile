@@ -23,6 +23,16 @@ class EmberLicenseFilter < Rake::Pipeline::Filter
   end
 end
 
+class JSHintRC < Rake::Pipeline::Filter
+  def generate_output(inputs, output)
+    inputs.each do |input|
+      file = File.read(input.fullpath)
+      jshintrc = File.read(".jshintrc")
+      output.write "var JSHINTRC = #{jshintrc};\n\n#{file}"
+    end
+  end
+end
+
 distros = {
   :runtime => %w(ember-metal ember-runtime),
   :full    => %w(handlebars ember-metal ember-runtime ember-views ember-states metamorph ember-handlebars)
@@ -43,6 +53,10 @@ input "packages" do
     }
 
     concat "ember-tests.js"
+  end
+
+  match "ember-tests.js" do
+    filter JSHintRC
   end
 end
 

@@ -288,21 +288,6 @@ namespace :docs do
   end
 end
 
-desc "Run jshint"
-task :jshint do
-  unless system("which jshint > /dev/null 2>&1")
-    abort "Please install jshint. `npm install -g jshint`"
-  end
-
-  if system("jshint packages/ember*")
-    puts "The JavaScript is clean".green
-  else
-    puts "The JavaScript is dirty".red
-    exit(1)
-  end
-end
-
-
 desc "Run tests with phantomjs"
 task :test, [:suite] => :dist do |t, args|
   unless system("which phantomjs > /dev/null 2>&1")
@@ -311,7 +296,11 @@ task :test, [:suite] => :dist do |t, args|
 
   suites = {
     :default => ["package=all"],
-    :all => ["package=all", "package=all&jquery=1.6.4", "package=all&extendprototypes=true", "package=all&extendprototypes=true&jquery=1.6.4"]
+    :all => ["package=all",
+              "package=all&jquery=1.6.4&nojshint=true",
+              "package=all&extendprototypes=true&nojshint=true",
+              "package=all&extendprototypes=true&jquery=1.6.4&nojshint=true",
+              "package=all&dist=build"]
   }
 
   suite = args[:suite] || :default
