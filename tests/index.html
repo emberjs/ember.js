@@ -161,7 +161,7 @@
                 test(jshintModule+' should pass jshint', function() {
                   var passed = JSHINT(minispade.modules[jshintModule], JSHINTRC),
                       errors = jsHintReporter(jshintModule, JSHINT.errors);
-                  ok(result, jshintModule+" should pass jshint."+(errors ? "\n"+errors : ''));
+                  ok(passed, jshintModule+" should pass jshint."+(errors ? "\n"+errors : ''));
                 });
               })();
             }
