@@ -16,14 +16,17 @@
     jsHint = !(noJsHint && decodeURIComponent(noJsHint[1]));
 
     var jsHintReporter = function (file, errors) {
+      if (!errors) { return ''; }
+
       var len = errors.length,
           str = '',
-          error;
+          error, idx;;
 
-      errors.forEach(function (error) {
+      for (idx=0; idx<len; idx++) {
+        error = errors[idx];
         str += file  + ': line ' + error.line + ', col ' +
             error.character + ', ' + error.reason + '\n';
-      });
+      };
 
       if (str) {
         return str + "\n" + len + ' error' + ((len === 1) ? '' : 's');
