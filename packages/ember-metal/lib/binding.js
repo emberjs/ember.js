@@ -534,12 +534,6 @@ Binding.prototype = /** @scope Ember.Binding.prototype */ {
 
     delete this[guid];
 
-    // apply any operations to the object, then apply transforms
-    // var fromValue = getTransformedFromValue(obj, this);
-    // var toValue   = getTransformedToValue(obj, this);
-
-    // if (toValue === fromValue) { return; }
-
     // if we're synchronizing from the remote object...
     if (direction === 'fwd') {
       var fromValue = getTransformedFromValue(obj, this);
