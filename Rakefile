@@ -304,13 +304,23 @@ end
 
 
 desc "Run tests with phantomjs"
-task :test => :dist do
+task :test, [:suite] => :dist do |t, args|
   unless system("which phantomjs > /dev/null 2>&1")
     abort "PhantomJS is not installed. Download from http://phantomjs.org"
   end
 
-  # Build up command
-  opts = ["package=all", "package=all&jquery=1.6.4", "package=all&extendprototypes=true", "package=all&extendprototypes=true&jquery=1.6.4"]
+  suites = {
+    :default => ["package=all"],
+    :all => ["package=all", "package=all&jquery=1.6.4", "package=all&extendprototypes=true", "package=all&extendprototypes=true&jquery=1.6.4"]
+  }
+
+  suite = args[:suite] || :default
+  opts = suites[suite.to_sym]
+
+  unless opts
+    abort "No suite named: #{suite}"
+  end
+
   cmd = opts.map do |opt|
     "phantomjs tests/qunit/run-qunit.js \"file://localhost#{File.dirname(__FILE__)}/tests/index.html?#{opt}\""
   end.join(' && ')
