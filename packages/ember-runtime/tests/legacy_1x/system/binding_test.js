@@ -199,22 +199,22 @@ test("changing first output should propograte to third after flush", function() 
 module("Custom Binding", {
 
   setup: function() {
-	Bon1 = Ember.Object.extend({
-		value1: "hi",
-		value2: 83,
-		array1: []
-	});
+    Bon1 = Ember.Object.extend({
+      value1: "hi",
+      value2: 83,
+      array1: []
+    });
 
-	bon2 = Ember.Object.create({
-		val1: "hello",
-		val2: 25,
-		arr: [1,2,3,4]
-	});
+    bon2 = Ember.Object.create({
+      val1: "hello",
+      val2: 25,
+      arr: [1,2,3,4]
+    });
 
-	TestNamespace = {
+    TestNamespace = {
       bon2: bon2,
       Bon1: Bon1
-    } ;
+    };
   },
 
   teardown: function() {
