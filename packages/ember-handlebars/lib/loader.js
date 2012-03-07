@@ -33,10 +33,12 @@ Ember.Handlebars.bootstrap = function(ctx) {
     var compile = (script.attr('type') === 'text/x-raw-handlebars') ?
                   Ember.$.proxy(Handlebars.compile, Handlebars) :
                   Ember.$.proxy(Ember.Handlebars.compile, Ember.Handlebars),
+      // Get the id of the script, used by Ember.View's elementId property,
+      // Look for data-element-id attribute.
+      elementId = script.attr('data-element-id'),
       // Get the name of the script, used by Ember.View's templateName property.
       // First look for data-template-name attribute, then fall back to its
       // id if no name is found.
-      elementId: script.attr('data-element-id'),
       templateName = script.attr('data-template-name') || script.attr('id'),
       template = compile(script.html()),
       view, viewPath, tagName;
