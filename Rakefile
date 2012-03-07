@@ -294,7 +294,12 @@ task :jshint do
     abort "Please install jshint. `npm install -g jshint`"
   end
 
-  system("jshint packages/ember*")
+  if system("jshint packages/ember*")
+    puts "The JavaScript is clean".green
+  else
+    puts "The JavaScript is dirty".red
+    exit(1)
+  end
 end
 
 

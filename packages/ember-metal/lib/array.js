@@ -1,4 +1,8 @@
-/*jshint newcap:true*/
+/*jshint newcap:false*/
+
+// NOTE: There is a bug in jshint that doesn't recognize `Object()` without `new`
+// as being ok unless both `newcap:false` and not `use strict`.
+// https://github.com/jshint/jshint/issues/392
 
 // Testing this is not ideal, but we want ArrayUtils to use native functions
 // if available, but not to use versions created by libraries like Prototype
@@ -11,7 +15,7 @@ var isNativeFunc = function(func) {
 // From: https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/array/map
 /** @private */
 var arrayMap = isNativeFunc(Array.prototype.map) ? Array.prototype.map : function(fun /*, thisp */) {
-  "use strict";
+  //"use strict";
 
   if (this === void 0 || this === null) {
     throw new TypeError();
@@ -37,7 +41,7 @@ var arrayMap = isNativeFunc(Array.prototype.map) ? Array.prototype.map : functio
 // From: https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/array/foreach
 /** @private */
 var arrayForEach = isNativeFunc(Array.prototype.forEach) ? Array.prototype.forEach : function(fun /*, thisp */) {
-  "use strict";
+  //"use strict";
 
   if (this === void 0 || this === null) {
     throw new TypeError();

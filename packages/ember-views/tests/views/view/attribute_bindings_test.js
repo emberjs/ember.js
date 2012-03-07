@@ -148,7 +148,8 @@ test("should allow attributes to be set in the inBuffer state", function() {
 test("should allow binding to String objects", function() {
   view = Ember.View.create({
     attributeBindings: ['foo'],
-    foo: new String("bar")
+    // JSHint doesn't like `new String` so we'll create it the same way it gets created in practice
+    foo: (function(){ return this; }).call("bar")
   });
 
   view.createElement();
