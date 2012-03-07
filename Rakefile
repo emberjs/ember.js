@@ -304,26 +304,15 @@ task :test do
     abort "PhantomJS is not installed. Download from http://phantomjs.org"
   end
 
-  # We need the server running for our tests to work
-  # Save the pid so we call kill it when tests are done
-  puts "Starting server"
-  system("bundle exec rackup -D -P rack.pid")
-
-  # Wait for server
-  sleep 5
-
   # Build up command
   opts = ["package=all", "package=all&jquery=1.6.4", "package=all&extendprototypes=true", "package=all&extendprototypes=true&jquery=1.6.4"]
   cmd = opts.map do |opt|
-    "phantomjs tests/qunit/run-qunit.js \"http://localhost:9292/tests/index.html?#{opt}\""
+    "phantomjs tests/qunit/run-qunit.js \"file://localhost#{File.dirname(__FILE__)}/tests/index.html?#{opt}\""
   end.join(' && ')
 
   # Run the tests
-  puts "Running: #{cmd}"
+  puts "Running: #{opts.join(", ")}"
   success = system(cmd)
-
-  # Kill the server
-  system("kill -9 `cat rack.pid`")
 
   if success
     puts "Tests Passed"
