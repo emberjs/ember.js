@@ -252,7 +252,7 @@ test("Binding with transforms, function to check the type of value", function() 
 
 test("two bindings to the same value should sync in the order they are initialized", function() {
 
-  Ember.RunLoop.begin();
+  Ember.run.begin();
 
   var a = Ember.Object.create({
     foo: "bar"
@@ -276,7 +276,7 @@ test("two bindings to the same value should sync in the order they are initializ
 
   });
 
-  Ember.RunLoop.end();
+  Ember.run.end();
 
   equal(get(a, 'foo'), "bar", 'a.foo should not change');
   equal(get(b, 'foo'), "bar", 'a.foo should propogate up to b.foo');
@@ -309,36 +309,36 @@ module("AND binding", {
 });
 
 test("toObject.value should be true if both sources are true", function() {
-  Ember.RunLoop.begin();
+  Ember.run.begin();
   set(Ember.testControllerA, 'value', true);
   set(Ember.testControllerB, 'value', true);
-  Ember.RunLoop.end();
+  Ember.run.end();
 
   Ember.run.sync();
   equal(get(toObject, 'value'), true);
 });
 
 test("toObject.value should be false if either source is false", function() {
-  Ember.RunLoop.begin();
+  Ember.run.begin();
   set(Ember.testControllerA, 'value', true);
   set(Ember.testControllerB, 'value', false);
-  Ember.RunLoop.end();
+  Ember.run.end();
 
   Ember.run.sync();
   equal(get(toObject, 'value'), false);
 
-  Ember.RunLoop.begin();
+  Ember.run.begin();
   set(Ember.testControllerA, 'value', true);
   set(Ember.testControllerB, 'value', true);
-  Ember.RunLoop.end();
+  Ember.run.end();
 
   Ember.run.sync();
   equal(get(toObject, 'value'), true);
 
-  Ember.RunLoop.begin();
+  Ember.run.begin();
   set(Ember.testControllerA, 'value', false);
   set(Ember.testControllerB, 'value', true);
-  Ember.RunLoop.end();
+  Ember.run.end();
 
   Ember.run.sync();
   equal(get(toObject, 'value'), false);
@@ -370,20 +370,20 @@ module("OR binding", {
 });
 
 test("toObject.value should be first value if first value is truthy", function() {
-  Ember.RunLoop.begin();
+  Ember.run.begin();
   set(Ember.testControllerA, 'value', 'first value');
   set(Ember.testControllerB, 'value', 'second value');
-  Ember.RunLoop.end();
+  Ember.run.end();
 
   Ember.run.sync();
   equal(get(toObject, 'value'), 'first value');
 });
 
 test("toObject.value should be second value if first is falsy", function() {
-  Ember.RunLoop.begin();
+  Ember.run.begin();
   set(Ember.testControllerA, 'value', false);
   set(Ember.testControllerB, 'value', 'second value');
-  Ember.RunLoop.end();
+  Ember.run.end();
 
   Ember.run.sync();
   equal(get(toObject, 'value'), 'second value');
