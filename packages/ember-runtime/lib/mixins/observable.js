@@ -199,9 +199,9 @@ Ember.Observable = Ember.Mixin.create(/** @scope Ember.Observable.prototype */ {
     You can use this method to group property changes so that notifications
     will not be sent until the changes are finished. If you plan to make a
     large number of changes to an object at one time, you should call this
-    method at the beginning of the changes to suspend change notifications.
-    When you are done making changes, call endPropertyChanges() to allow
-    notification to resume.
+    method at the beginning of the changes to begin deferring change
+    notifications. When you are done making changes, call endPropertyChanges()
+    to deliver the deferred change notifications and end deferring.
 
     @returns {Ember.Observable}
   */
@@ -216,9 +216,9 @@ Ember.Observable = Ember.Mixin.create(/** @scope Ember.Observable.prototype */ {
     You can use this method to group property changes so that notifications
     will not be sent until the changes are finished. If you plan to make a
     large number of changes to an object at one time, you should call
-    beginPropertyChanges() at the beginning of the changes to suspend change
-    notifications. When you are done making changes, call this method to allow
-    notification to resume.
+    beginPropertyChanges() at the beginning of the changes to defer change
+    notifications. When you are done making changes, call this method to
+    deliver the deferred change notifications and end deferring.
 
     @returns {Ember.Observable}
   */

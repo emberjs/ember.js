@@ -220,17 +220,17 @@ property notifications.
 
 ### `Ember.beginPropertyChanges()`
 
-Temporarily suspends delivering observer notifications until you call `Ember.endPropertyChanges()` a matching number of times.  This is useful for
+Defers delivering observer notifications until you call `Ember.endPropertyChanges()` a matching number of times.  This is useful for
 bunching together many updates.
 
 ### `Ember.endPropertyChanges()`
 
-Resumes property observing.  See `Ember.beginPropertyChanges()`
+Delivers deferred observer notifications.  See `Ember.beginPropertyChanges()`
 
 ## Mixins
 
 __TODO:  Explain mixins__
-
+observer notifications
 ### `Ember.mixin(obj, props...)`
 
 Applies the passed properties or mixins to the object.

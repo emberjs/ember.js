@@ -72,6 +72,40 @@ test('adding a listener with a target should invoke with target', function() {
   equal(target.count, 1, 'should invoke');
 });
 
+test('suspending a listener should not invoke during callback', function() {
+  var obj = {}, target, otherTarget;
+
+  target = {
+    count: 0,
+    method: function() { this.count++; }
+  };
+
+  otherTarget = {
+    count: 0,
+    method: function() { this.count++; }
+  };
+
+  Ember.addListener(obj, 'event!', target, target.method);
+  Ember.addListener(obj, 'event!', otherTarget, otherTarget.method);
+
+  function callback() {
+      equal(this, target);
+
+      Ember.sendEvent(obj, 'event!');
+
+      return 'result';
+  }
+
+  Ember.sendEvent(obj, 'event!');
+  
+  equal(Ember._suspendListener(obj, 'event!', target, target.method, callback), 'result');
+
+  Ember.sendEvent(obj, 'event!');
+
+  equal(target.count, 2, 'should invoke');
+  equal(otherTarget.count, 3, 'should invoke');
+});
+
 test('adding a listener with string method should lookup method on event delivery', function() {
   var obj = {}, target;
 
