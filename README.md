@@ -92,8 +92,6 @@ For new users, we recommend downloading the [Ember.js Starter Kit](https://githu
 
 We also recommend that you check out the [annotated Todos example](http://annotated-todos.strobeapp.com/), which shows you the best practices for architecting an MVC-based web application. You can also [browse or fork the code on Github](https://github.com/emberjs/todos).
 
-[Guides are available](http://guides.sproutcore20.com/) for Ember.js. If you find an error, please [fork the guides on GitHub](https://github.com/sproutcore/sproutguides/tree/v2.0) and submit a pull request. (Note that Ember.js guides are on the `v2.0` branch.)
-
 # Building Ember.js
 
 NOTE: Due to the rename, these instructions may be in flux
