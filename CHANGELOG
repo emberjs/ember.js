@@ -3,7 +3,7 @@
 * Add Handlebars helper for {{yield}}
 * Add a .jshintrc
 * Add layout support to Ember.View
-* Allow state managers to control their own logging
+* Allow state managers to control their own logging
 * Print more useful debug information in state manager
 * Fix issues that prevented Ember from being used in iframes
 * Fix path resolution for states

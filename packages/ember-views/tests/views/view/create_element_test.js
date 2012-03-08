@@ -13,7 +13,7 @@ test("returns the receiver", function() {
   equal(view.createElement(), view, 'returns receiver');
 });
 
-test("calls render and turns resultant string into element", function() {
+test("calls render and turns resultant string into element", function() {
   var view = Ember.View.create({
     tagName: 'span',
 
