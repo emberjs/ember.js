@@ -35,7 +35,9 @@ require("ember-metal");
 */
 window.ember_assert = window.sc_assert = function ember_assert(desc, test) {
   if ('function' === typeof test) test = test()!==false;
-  if (!test) throw new Error("assertion failed: "+desc);
+  if (!test){
+    throw new Error("assertion failed: "+desc);
+  }
 };
 
 
