@@ -60,7 +60,78 @@ testBoth('nested observers should fire in order', function(get,set) {
 
 });
 
-testBoth('suspending property changes will defer', function(get,set) {
+testBoth('suspending an observer should not fire during callback', function(get,set) {
+  var obj = {}, target, otherTarget;
+
+  target = {
+    values: [],
+    method: function() { this.values.push(get(obj, 'foo')); }
+  };
+
+  otherTarget = {
+    values: [],
+    method: function() { this.values.push(get(obj, 'foo')); }
+  };
+
+  Ember.addObserver(obj, 'foo', target, target.method);
+  Ember.addObserver(obj, 'foo', otherTarget, otherTarget.method);
+
+  function callback() {
+      equal(this, target);
+
+      set(obj, 'foo', '2');
+
+      return 'result';
+  }
+
+  set(obj, 'foo', '1');
+  
+  equal(Ember._suspendObserver(obj, 'foo', target, target.method, callback), 'result');
+
+  set(obj, 'foo', '3');
+
+  deepEqual(target.values, ['1', '3'], 'should invoke');
+  deepEqual(otherTarget.values, ['1', '2', '3'], 'should invoke');
+});
+
+
+testBoth('suspending an observer should not defer change notifications during callback', function(get,set) {
+  var obj = {}, target, otherTarget;
+
+  target = {
+    values: [],
+    method: function() { this.values.push(get(obj, 'foo')); }
+  };
+
+  otherTarget = {
+    values: [],
+    method: function() { this.values.push(get(obj, 'foo')); }
+  };
+
+  Ember.addObserver(obj, 'foo', target, target.method);
+  Ember.addObserver(obj, 'foo', otherTarget, otherTarget.method);
+
+  function callback() {
+      equal(this, target);
+
+      set(obj, 'foo', '2');
+
+      return 'result';
+  }
+
+  set(obj, 'foo', '1');
+  
+  Ember.beginPropertyChanges();
+  equal(Ember._suspendObserver(obj, 'foo', target, target.method, callback), 'result');
+  Ember.endPropertyChanges();
+
+  set(obj, 'foo', '3');
+
+  deepEqual(target.values, ['1', '3'], 'should invoke');
+  deepEqual(otherTarget.values, ['1', '2', '3'], 'should invoke');
+});
+
+testBoth('deferring property change notifications', function(get,set) {
   var obj = { foo: 'foo' };
   var fooCount = 0;
 
@@ -74,7 +145,7 @@ testBoth('suspending property changes will defer', function(get,set) {
   equal(fooCount, 1, 'foo should have fired once');
 });
 
-testBoth('suspending property changes safely despite exceptions', function(get,set) {
+testBoth('deferring property change notifications safely despite exceptions', function(get,set) {
   var obj = { foo: 'foo' };
   var fooCount = 0;
   var exc = new Error("Something unexpected happened!");
@@ -103,7 +174,7 @@ testBoth('suspending property changes safely despite exceptions', function(get,s
   equal(fooCount, 2, 'foo should have fired again once');
 });
 
-testBoth('suspending property changes will not defer before observers', function(get,set) {
+testBoth('deferring property change notifications will not defer before observers', function(get,set) {
   var obj = { foo: 'foo' };
   var fooCount = 0;
 
