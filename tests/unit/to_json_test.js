@@ -126,13 +126,13 @@ test("toJSON includes associations when the association option is set", function
   store.load(PhoneNumber, { id: 7, number: '123' });
   store.load(PhoneNumber, { id: 8, number: '345' });
 
-  store.load(Contact, { id: 1, name: "Chad", phoneNumbers: [7, 8] });
+  store.load(Contact, { id: 1, name: "Chad", phone_numbers: [7, 8] });
 
   var record = store.find(Contact, 1);
 
   deepEqual(record.toJSON(), { id: 1, name: "Chad" }, "precond - associations not included by default");
   deepEqual(record.toJSON({ associations: true }),
-            { id: 1, name: "Chad", phoneNumbers: [7,8] },
+            { id: 1, name: "Chad", phone_numbers: [7,8] },
             "associations are included when association flag is set");
 
   store.load(PhoneNumber, { id: 9, number: '789' });
@@ -141,7 +141,7 @@ test("toJSON includes associations when the association option is set", function
   record.get('phoneNumbers').pushObject(phoneNumber);
 
   deepEqual(record.toJSON({ associations: true }),
-            { id: 1, name: "Chad", phoneNumbers: [7,8,9] },
+            { id: 1, name: "Chad", phone_numbers: [7,8,9] },
             "association is updated after editing associations array");
 });
 
@@ -157,7 +157,7 @@ test("toJSON includes embedded associations when an association is embedded", fu
     })
   });
 
-  store.load(Contact, { id: 1, name: "Chad", phoneNumbers: [{
+  store.load(Contact, { id: 1, name: "Chad", phone_numbers: [{
     id: 7,
     number: '123'
   },
@@ -171,7 +171,7 @@ test("toJSON includes embedded associations when an association is embedded", fu
 
   deepEqual(record.toJSON(), { id: 1, name: "Chad" }, "precond - associations not included by default");
   deepEqual(record.toJSON({ associations: true }),
-            { id: 1, name: "Chad", phoneNumbers: [{
+            { id: 1, name: "Chad", phone_numbers: [{
                 id: 7,
                 number: '123'
               },
@@ -188,7 +188,7 @@ test("toJSON includes embedded associations when an association is embedded", fu
   record.get('phoneNumbers').pushObject(phoneNumber);
 
   deepEqual(record.toJSON({ associations: true }),
-            { id: 1, name: "Chad", phoneNumbers: [{
+            { id: 1, name: "Chad", phone_numbers: [{
                 id: 7,
                 number: '123'
               },
