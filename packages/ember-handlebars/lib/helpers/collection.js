@@ -62,7 +62,7 @@ Ember.Handlebars.registerHelper('collection', function(path, options) {
     }
   }
 
-  var tagName = hash.tagName || get(collectionClass, 'proto').tagName;
+  var tagName = hash.tagName || collectionPrototype.tagName;
 
   if (fn) {
     itemHash.template = fn;
