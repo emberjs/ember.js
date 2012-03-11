@@ -1149,8 +1149,6 @@ Ember.View = Ember.Object.extend(Ember.Evented,
       dispatch
   */
   init: function() {
-    var parentView = get(this, '_parentView');
-
     this._super();
 
     // Register the view for event handling. This hash is used by
@@ -1294,7 +1292,11 @@ Ember.View = Ember.Object.extend(Ember.Evented,
   */
   createChildView: function(view, attrs) {
     if (Ember.View.detect(view)) {
-      view = view.create(attrs || {}, { _parentView: this });
+      if (attrs) {
+        view = view.createWith({ _parentView: this }, attrs);
+      } else {
+        view = view.createWith({ _parentView: this });
+      }
 
       var viewName = view.viewName;
 

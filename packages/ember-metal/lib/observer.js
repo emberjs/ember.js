@@ -119,6 +119,21 @@ Ember.changeProperties = function(cb){
   }
 };
 
+/**
+  Set a list of properties on an object. These properties are set inside
+  a single `beginPropertyChanges` and `endPropertyChanges` batch, so
+  observers will be buffered.
+*/
+Ember.setProperties = function(self, hash) {
+  Ember.changeProperties(function(){
+    for(var prop in hash) {
+      if (hash.hasOwnProperty(prop)) Ember.set(self, prop, hash[prop]);
+    }
+  });
+  return self;
+};
+
+
 /** @private */
 function changeEvent(keyName) {
   return keyName+AFTER_OBSERVERS;

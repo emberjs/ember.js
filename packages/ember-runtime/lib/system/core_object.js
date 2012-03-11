@@ -16,6 +16,7 @@ var classToString = Ember.Mixin.prototype.toString;
 var set = Ember.set, get = Ember.get;
 var o_create = Ember.platform.create,
     o_defineProperty = Ember.platform.defineProperty,
+    a_slice = Array.prototype.slice,
     meta = Ember.meta;
 
 /** @private */
@@ -25,14 +26,16 @@ function makeCtor() {
   // method a lot faster.  This is glue code so we want it to be as fast as
   // possible.
 
-  var wasApplied = false, initMixins, init = false, hasChains = false;
+  var wasApplied = false, initMixins, defaults, init = false, hasChains = false;
 
   var Class = function() {
+    if (defaults) { Ember.setProperties(this, defaults); defaults = null; }
+
     if (!wasApplied) { Class.proto(); } // prepare prototype...
     if (initMixins) {
       this.reopen.apply(this, initMixins);
       initMixins = null;
-      rewatch(this); // ålways rewatch just in case
+      rewatch(this); // always rewatch just in case
       this.init.apply(this, arguments);
     } else {
       if (hasChains) {
@@ -57,6 +60,7 @@ function makeCtor() {
     wasApplied = false;
   };
   Class._initMixins = function(args) { initMixins = args; };
+  Class._setDefaults = function(arg) { defaults = arg; };
 
   Class.proto = function() {
     var superclass = Class.superclass;
@@ -173,6 +177,30 @@ var ClassMixin = Ember.Mixin.create({
   create: function() {
     var C = this;
     if (arguments.length>0) { this._initMixins(arguments); }
+    return new C();
+  },
+
+  /**
+    @private
+
+    Right now, when a key is passed in `create` that is not already
+    present in the superclass, we need to create a mixin object and
+    apply the mixin to the object we're creating. This is
+    unnecessarily expensive. Because Ember views are created a lot,
+    this is a temporary convenience that will allow us to create
+    a new object and set properties before `init` time.
+
+    The correct solution is for the default init code to detect
+    properties that do not need special handling and call
+    `setProperties` on them when `create` occurs. This will
+    massively speed up `create` calls that do not need any special
+    Ember features (like bindings, observers or computed properties)
+    and are not overriding a computed property with a regular value.
+  */
+  createWith: function(defaults) {
+    var C = this;
+    if (arguments.length>0) { this._initMixins(a_slice.call(arguments, 1)); }
+    if (defaults) { this._setDefaults(defaults); }
     return new C();
   },
 
