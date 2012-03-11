@@ -171,6 +171,12 @@ function applyMixin(obj, mixins, partial) {
 
   var mixinBindings = Ember._mixinBindings;
 
+  // Go through all mixins and hashes passed in, and:
+  //
+  // * Handle concatenated properties
+  // * Set up _super wrapping if necessary
+  // * Set up descriptors (simple, watched or computed properties)
+  // * Copying `toString` in broken browsers
   mergeMixins(mixins, meta(obj), descs, values, obj);
 
   if (MixinDelegate.detect(obj)) {
