@@ -9,6 +9,8 @@ before(function() {
   App.View = Ember.View.extend({
     template: Ember.Handlebars.compile("{{view}}")
   });
+
+  App.View.create().destroy();
 });
 
 after(function() {
