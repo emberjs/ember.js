@@ -9,6 +9,10 @@ function makeiframe(emberPath, suitePath, profile, callback) {
   var iframe = jQuery("<iframe>").appendTo("body")[0];
   var write = function(str) { iframe.contentDocument.write(str); };
 
+  var name = emberPath + ": " + suitePath;
+  iframe.name = name;
+
+  write("<title>" + name + "</title>");
   write("<script src='../tests/jquery-1.7.1.js'></script>");
   write("<script src='" + emberPath + "'></script>");
   write("<script src='benchmark.js'></script>");
@@ -18,7 +22,7 @@ function makeiframe(emberPath, suitePath, profile, callback) {
   var bench, before;
 
   var logger = function(string) {
-    jQuery("[data-ember-path='" + emberPath + "']").html(string);
+    jQuery("[data-ember-path='" + emberPath + "']").html(emberPath + ": " + string);
   };
 
   setTimeout(function() {
@@ -31,7 +35,7 @@ function makeiframe(emberPath, suitePath, profile, callback) {
         callback(bench);
       }
     });
-  }, 1000);
+  }, 2000);
 }
 
 jQuery(function() {
