@@ -39,5 +39,9 @@ test('does not allow reopening already instantiated classes', function() {
 
   Subclass.create();
 
-  raises(function(){ Subclass.reopen(); }, /reopening already instantiated classes is not supported/i, "should throw error on reopening");
+  Subclass.reopen({
+    trololol: true
+  });
+
+  equal(Subclass.create().get('trololol'), true, "reopen works");
 });
