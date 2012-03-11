@@ -25,10 +25,10 @@ function makeCtor() {
   // method a lot faster.  This is glue code so we want it to be as fast as
   // possible.
 
-  var isPrepared = false, initMixins, init = false, hasChains = false;
+  var wasApplied = false, initMixins, init = false, hasChains = false;
 
   var Class = function() {
-    if (!isPrepared) { get(Class, 'proto'); } // prepare prototype...
+    if (!wasApplied) { Class.proto(); } // prepare prototype...
     if (initMixins) {
       this.reopen.apply(this, initMixins);
       initMixins = null;
@@ -49,20 +49,27 @@ function makeCtor() {
   };
 
   Class.toString = classToString;
-  Class._prototypeMixinDidChange = function() {
-    ember_assert("Reopening already instantiated classes is not supported. We plan to support this in the future.", isPrepared === false);
-    isPrepared = false;
+  Class.willReopen = function() {
+    if (wasApplied) {
+      Class.PrototypeMixin = Ember.Mixin.create(Class.PrototypeMixin);
+    }
+
+    wasApplied = false;
   };
   Class._initMixins = function(args) { initMixins = args; };
 
-  Ember.defineProperty(Class, 'proto', Ember.computed(function() {
-    if (!isPrepared) {
-      isPrepared = true;
+  Class.proto = function() {
+    var superclass = Class.superclass;
+    if (superclass) { superclass.proto(); }
+
+    if (!wasApplied) {
+      wasApplied = true;
       Class.PrototypeMixin.applyPartial(Class.prototype);
       hasChains = !!meta(Class.prototype, false).chains; // avoid rewatch
     }
+
     return this.prototype;
-  }));
+  };
 
   return Class;
 
@@ -170,9 +177,9 @@ var ClassMixin = Ember.Mixin.create({
   },
 
   reopen: function() {
+    this.willReopen();
     var PrototypeMixin = this.PrototypeMixin;
     PrototypeMixin.reopen.apply(PrototypeMixin, arguments);
-    this._prototypeMixinDidChange();
     return this;
   },
 
@@ -193,7 +200,7 @@ var ClassMixin = Ember.Mixin.create({
   },
 
   detectInstance: function(obj) {
-    return this.PrototypeMixin.detect(obj);
+    return obj instanceof this;
   },
 
   /**
@@ -217,7 +224,7 @@ var ClassMixin = Ember.Mixin.create({
     This will return the original hash that was passed to `meta()`.
   */
   metaForProperty: function(key) {
-    var desc = meta(get(this, 'proto'), false).descs[key];
+    var desc = meta(this.proto(), false).descs[key];
 
     ember_assert("metaForProperty() could not find a computed property with key '"+key+"'.", !!desc && desc instanceof Ember.ComputedProperty);
     return desc._meta || {};
@@ -228,7 +235,7 @@ var ClassMixin = Ember.Mixin.create({
     and any associated metadata (see `metaForProperty`) to the callback.
   */
   eachComputedProperty: function(callback, binding) {
-    var proto = get(this, 'proto'),
+    var proto = this.proto(),
         descs = meta(proto).descs,
         empty = {},
         property;

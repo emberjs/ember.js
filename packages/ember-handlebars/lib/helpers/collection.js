@@ -41,7 +41,7 @@ Ember.Handlebars.registerHelper('collection', function(path, options) {
 
   // Extract item view class if provided else default to the standard class
   var itemViewClass, itemViewPath = hash.itemViewClass;
-  var collectionPrototype = get(collectionClass, 'proto');
+  var collectionPrototype = collectionClass.proto();
   delete hash.itemViewClass;
   itemViewClass = itemViewPath ? getPath(collectionPrototype, itemViewPath) : collectionPrototype.itemViewClass;
   ember_assert(fmt("%@ #collection: Could not find %@", data.view, itemViewPath), !!itemViewClass);
