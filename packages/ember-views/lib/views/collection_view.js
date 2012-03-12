@@ -74,13 +74,11 @@ Ember.CollectionView = Ember.ContainerView.extend(
     this.arrayDidChange(content, 0, null, len);
   }, 'content'),
 
-  destroy: function() {
+  willDestroy: function() {
     var content = get(this, 'content');
     if (content) { content.removeArrayObserver(this); }
 
     this._super();
-
-    return this;
   },
 
   arrayWillChange: function(content, start, removedCount) {
@@ -97,8 +95,17 @@ Ember.CollectionView = Ember.ContainerView.extend(
     var childViews = get(this, 'childViews'), childView, idx, len;
 
     len = get(childViews, 'length');
+
+    var removingAll = removedCount === len;
+
+    if (removingAll) {
+      this.invokeForState('empty');
+    }
+
     for (idx = start + removedCount - 1; idx >= start; idx--) {
-      childViews[idx].destroy();
+      childView = childViews[idx];
+      if (removingAll) { childView.removedFromDOM = true; }
+      childView.destroy();
     }
   },
 

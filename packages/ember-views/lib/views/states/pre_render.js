@@ -29,6 +29,8 @@ Ember.View.states.preRender = {
     return Ember.$();
   },
 
+  empty: Ember.K,
+
   // This exists for the removal warning, remove later
   getElement: function(view){
     if (view._willInsertElementAccessUnsupported) {

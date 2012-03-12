@@ -56,6 +56,10 @@ Ember.View.states.hasElement = {
     return view;
   },
 
+  empty: function(view) {
+    view.domManager.empty(view);
+  },
+
   // Handle events from `Ember.EventDispatcher`
   handleEvent: function(view, eventName, evt) {
     var handler = view[eventName];

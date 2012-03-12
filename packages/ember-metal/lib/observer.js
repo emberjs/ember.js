@@ -110,10 +110,10 @@ Ember.endPropertyChanges = function() {
         obj2.set('bar', baz);
       });
 */
-Ember.changeProperties = function(cb){
+Ember.changeProperties = function(cb, binding){
   Ember.beginPropertyChanges();
   try {
-    cb();
+    cb.call(binding);
   } finally {
     Ember.endPropertyChanges();
   }
@@ -233,11 +233,15 @@ Ember.removeBeforeObserver = function(obj, path, target, method) {
 
 /** @private */
 Ember.notifyObservers = function(obj, keyName) {
+  if (obj.isDestroying) { return; }
+
   notifyObservers(obj, changeEvent(keyName));
 };
 
 /** @private */
 Ember.notifyBeforeObservers = function(obj, keyName) {
+  if (obj.isDestroying) { return; }
+
   var guid, set, forceNotification = false;
 
   if (deferred) {

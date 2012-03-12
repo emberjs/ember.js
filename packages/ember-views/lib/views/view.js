@@ -299,6 +299,8 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     collectionView, itemView, and contentView
   */
   _parentViewDidChange: Ember.observer(function() {
+    if (this.isDestroying) { return; }
+
     this.invokeRecursively(function(view) {
       view.propertyDidChange('collectionView');
       view.propertyDidChange('itemView');
@@ -1193,6 +1195,8 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     var childViews = get(this, '_childViews');
     childViews.removeObject(view);
 
+    // update `childViews`
+
     return this;
   },
 
@@ -1230,14 +1234,12 @@ Ember.View = Ember.Object.extend(Ember.Evented,
   },
 
   /**
-    You must call this method on a view to destroy the view (and all of its
+    You must call `destroy` on a view to destroy the view (and all of its
     child views). This will remove the view from any parent node, then make
     sure that the DOM element managed by the view can be released by the
     memory manager.
   */
-  destroy: function() {
-    if (get(this, 'isDestroyed')) { return; }
-
+  willDestroy: function() {
     // calling this._super() will nuke computed properties and observers,
     // so collect any information we need before calling super.
     var childViews = get(this, '_childViews'),
@@ -1262,9 +1264,7 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     // the DOM again.
     if (parent) { parent.removeChild(this); }
 
-    Ember.Descriptor.setup(this, 'state', 'destroyed');
-
-    this._super();
+    this.state = 'destroyed';
 
     childLen = get(childViews, 'length');
     for (var i=childLen-1; i>=0; i--) {
@@ -1274,8 +1274,6 @@ Ember.View = Ember.Object.extend(Ember.Evented,
 
     // next remove view from global hash
     delete Ember.View.views[get(this, 'elementId')];
-
-    return this; // done with cleanup
   },
 
   /**
@@ -1467,6 +1465,10 @@ var DOMManager = {
     set(view, 'element', null);
 
     Ember.$(elem).remove();
+  },
+
+  empty: function(view) {
+    view.$().empty();
   }
 };
 

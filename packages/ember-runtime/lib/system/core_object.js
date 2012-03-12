@@ -29,7 +29,14 @@ function makeCtor() {
   var wasApplied = false, initMixins, defaults, init = false, hasChains = false;
 
   var Class = function() {
-    if (defaults) { Ember.setProperties(this, defaults); defaults = null; }
+    if (defaults) {
+      for (var prop in defaults) {
+        if (!defaults.hasOwnProperty(prop)) { continue; }
+        Ember.defineProperty(this, prop, undefined, defaults[prop]);
+      }
+
+      defaults = null;
+    }
 
     if (!wasApplied) { Class.proto(); } // prepare prototype...
     if (initMixins) {
@@ -94,6 +101,7 @@ CoreObject.PrototypeMixin = Ember.Mixin.create(
   init: function() {},
 
   isDestroyed: false,
+  isDestroying: false,
 
   /**
     Destroys an object by setting the isDestroyed flag and removing its
@@ -108,6 +116,16 @@ CoreObject.PrototypeMixin = Ember.Mixin.create(
     @returns {Ember.Object} receiver
   */
   destroy: function() {
+    if (this.isDestroying) { return; }
+
+    this.isDestroying = true;
+
+    if (this.willDestroy) {
+      Ember.changeProperties(function() {
+        this.willDestroy();
+      }, this);
+    }
+
     set(this, 'isDestroyed', true);
     Ember.run.schedule('destroy', this, this._scheduledDestroy);
     return this;
@@ -121,6 +139,7 @@ CoreObject.PrototypeMixin = Ember.Mixin.create(
   */
   _scheduledDestroy: function() {
     Ember.destroy(this);
+    if (this.didDestroy) { this.didDestroy(); }
   },
 
   bind: function(to, from) {

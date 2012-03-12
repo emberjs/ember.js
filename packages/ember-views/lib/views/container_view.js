@@ -64,7 +64,7 @@ Ember.ContainerView = Ember.View.extend({
 
     @private
   */
-  destroy: function() {
+  willDestroy: function() {
     get(this, 'childViews').removeArrayObserver(this, {
       willChange: 'childViewsWillChange',
       didChange: 'childViewsDidChange'
