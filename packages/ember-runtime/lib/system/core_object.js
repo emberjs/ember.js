@@ -120,11 +120,7 @@ CoreObject.PrototypeMixin = Ember.Mixin.create(
 
     this.isDestroying = true;
 
-    if (this.willDestroy) {
-      Ember.changeProperties(function() {
-        this.willDestroy();
-      }, this);
-    }
+    if (this.willDestroy) { this.willDestroy(); }
 
     set(this, 'isDestroyed', true);
     Ember.run.schedule('destroy', this, this._scheduledDestroy);

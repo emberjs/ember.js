@@ -41,9 +41,10 @@ Ember.View.states.inBuffer = {
     childView = this.createChildView(childView, options);
     get(view, '_childViews').pushObject(childView);
 
+    childView.renderToBuffer(buffer);
+
     // update `childViews`
 
-    childView.renderToBuffer(buffer);
     return childView;
   },
 

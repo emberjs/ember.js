@@ -1188,6 +1188,11 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     @returns {Ember.View} receiver
   */
   removeChild: function(view) {
+    // If we're destroying, the entire subtree will be
+    // freed, and the DOM will be handled separately,
+    // so no need to mess with childViews.
+    if (this.isDestroying) { return; }
+
     // update parent node
     set(view, '_parentView', null);
 
