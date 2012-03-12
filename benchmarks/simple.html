@@ -3,11 +3,11 @@
 <html>
   <head>
     <script src="../tests/jquery-1.7.1.js"></script>
-    <script src="../dist/ember.prod.js"></script>
+    <script src="ember.js"></script>
   </head>
   <body>
     <script type="text/x-handlebars">
-      <ul>{{#each App.wat}}<li>{{id}}</li>{{/each}}</ul>
+      <ul>{{#each App.wat}}<li>{{id}}: {{dateIn}}: {{tag}}: {{speed}}: {{length}}</li>{{/each}}</ul>
     </script>
 
     <script>
@@ -17,7 +17,7 @@
         newContent = function() {
           var newContent = [], i;
 
-          for (i = 0; i < 1000; i++) {
+          for (i = 0; i < 50; i++) {
             newContent[newContent.length] = {
               id: Math.round(Math.random() * 1000),
               dateIn: new Date(),
@@ -33,13 +33,16 @@
         App.set('wat', newContent());
       });
 
-      setTimeout(function() {
-        console.profile('wat');
-        Ember.run(function() {
-          App.set('wat', newContent());
-        });
-        console.profileEnd('wat');
-      }, 1000);
+      setInterval(function() {
+        App.set('wat', newContent());
+      }, 1);
+      //setTimeout(function() {
+      //  console.profile('wat');
+      //  Ember.run(function() {
+      //    App.set('wat', newContent());
+      //  });
+      //  console.profileEnd('wat');
+      //}, 1000);
     </script>
   </body>
 </html>
