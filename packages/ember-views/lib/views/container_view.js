@@ -37,6 +37,9 @@ Ember.ContainerView = Ember.View.extend({
       _childViews[idx] = view;
     }, this);
 
+    // Make the _childViews array observable
+    Ember.A(_childViews);
+
     // Sets up an array observer on the child views array. This
     // observer will detect when child views are added or removed
     // and update the DOM to reflect the mutation.
