@@ -16,8 +16,9 @@ task :strip_whitespace do
   end
 end
 
+# We shouldn't need to depend on :clean, but right now the pipeline is not invalidating properly
 desc "Build ember.js"
-task :dist do
+task :dist => :clean do
   Rake::Pipeline::Project.new("Assetfile").invoke
 end
 
