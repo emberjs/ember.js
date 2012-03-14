@@ -82,8 +82,6 @@ Ember.Application = Ember.Namespace.extend(
         self.didBecomeReady();
       });
     }
-
-    this._super();
   },
 
   /** @private */
