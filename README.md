@@ -126,7 +126,7 @@ therubyracer`.
 
 To run multiple packages, you can separate them with commas. You can run all the tests using the `all` package:
 
-[http://localhost:9292/tests/index.html?package=all](http://localhost:9292/tests/index.html?package=all)
+<http://localhost:9292/tests/index.html?package=all>
 
 You can also pass `jquery=VERSION` in the test URL to test different versions of jQuery. Default is 1.7.1.
 
@@ -142,8 +142,21 @@ You can also pass `jquery=VERSION` in the test URL to test different versions of
 
 # Building API Docs
 
-NOTE: Requires node.js.
+The Ember.js API Docs provide a detailed collection of methods, classes, and viewable source code.
 
-Preview: `rake docs:preview`
+NOTE: Requires node.js to generate.
 
-Build: `rake docs:build`
+See <http://emberjs.com/> for annotated introductory documentation.
+
+## Preview API documenation
+
+* run `rake docs:preview`
+
+* The `docs:preview` task will build the documentation and make it available at <http://localhost:9292/index.html>
+
+
+## Build API documentation
+
+* run `rake docs:build`
+
+* HTML documentation is built in the `docs` directory
