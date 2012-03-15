@@ -21,6 +21,9 @@ Ember.View.states.destroyed = {
   destroyElement: function() {
     throw fmt(destroyedError, ['destroyElement']);
   },
+  empty: function() {
+    throw fmt(destroyedError, ['empty']);
+  },
 
   setElement: function() {
     throw fmt(destroyedError, ["set('element', ...)"]);

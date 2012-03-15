@@ -74,13 +74,13 @@ BenchWarmer.prototype = {
       var count = parseInt(this.profile, 10);
 
       setTimeout(function() {
-        self.setup();
+        if (self.setup) { self.setup(); }
         console.profile(self.emberPath + ": " + self.name);
         for (var i=0; i<count; i++) {
           self.fn();
         }
         console.profileEnd(self.emberPath + ": " + self.name);
-        self.teardown();
+        if (self.teardown) { self.teardown(); }
         if (self.next) { self.next.run(); }
       }, 1);
     } else {

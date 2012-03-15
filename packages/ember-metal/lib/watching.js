@@ -68,6 +68,8 @@ var WILL_SEEN, DID_SEEN;
 // called whenever a property is about to change to clear the cache of any dependent keys (and notify those properties of changes, etc...)
 /** @private */
 function dependentKeysWillChange(obj, depKey, meta) {
+  if (obj.isDestroying) { return; }
+
   var seen = WILL_SEEN, top = !seen;
   if (top) seen = WILL_SEEN = {};
   iterDeps(propertyWillChange, obj, depKey, seen, meta);
@@ -77,6 +79,8 @@ function dependentKeysWillChange(obj, depKey, meta) {
 // called whenever a property has just changed to update dependent keys
 /** @private */
 function dependentKeysDidChange(obj, depKey, meta) {
+  if (obj.isDestroying) { return; }
+
   var seen = DID_SEEN, top = !seen;
   if (top) seen = DID_SEEN = {};
   iterDeps(propertyDidChange, obj, depKey, seen, meta);

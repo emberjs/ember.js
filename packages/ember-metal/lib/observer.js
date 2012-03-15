@@ -110,14 +110,29 @@ Ember.endPropertyChanges = function() {
         obj2.set('bar', baz);
       });
 */
-Ember.changeProperties = function(cb){
+Ember.changeProperties = function(cb, binding){
   Ember.beginPropertyChanges();
   try {
-    cb();
+    cb.call(binding);
   } finally {
     Ember.endPropertyChanges();
   }
 };
+
+/**
+  Set a list of properties on an object. These properties are set inside
+  a single `beginPropertyChanges` and `endPropertyChanges` batch, so
+  observers will be buffered.
+*/
+Ember.setProperties = function(self, hash) {
+  Ember.changeProperties(function(){
+    for(var prop in hash) {
+      if (hash.hasOwnProperty(prop)) Ember.set(self, prop, hash[prop]);
+    }
+  });
+  return self;
+};
+
 
 /** @private */
 function changeEvent(keyName) {
@@ -218,11 +233,15 @@ Ember.removeBeforeObserver = function(obj, path, target, method) {
 
 /** @private */
 Ember.notifyObservers = function(obj, keyName) {
+  if (obj.isDestroying) { return; }
+
   notifyObservers(obj, changeEvent(keyName));
 };
 
 /** @private */
 Ember.notifyBeforeObservers = function(obj, keyName) {
+  if (obj.isDestroying) { return; }
+
   var guid, set, forceNotification = false;
 
   if (deferred) {

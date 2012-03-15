@@ -26,7 +26,7 @@ var childViewsProperty = Ember.computed(function() {
   });
 
   return ret;
-}).property('_childViews.@each').cacheable();
+}).property().cacheable();
 
 /**
   @static
@@ -214,7 +214,7 @@ Ember.View = Ember.Object.extend(Ember.Evented,
   */
   childViews: childViewsProperty,
 
-  _childViews: Ember.A(),
+  _childViews: [],
 
   /**
     Return the nearest ancestor that is an instance of the provided
@@ -299,6 +299,8 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     collectionView, itemView, and contentView
   */
   _parentViewDidChange: Ember.observer(function() {
+    if (this.isDestroying) { return; }
+
     this.invokeRecursively(function(view) {
       view.propertyDidChange('collectionView');
       view.propertyDidChange('itemView');
@@ -1149,15 +1151,13 @@ Ember.View = Ember.Object.extend(Ember.Evented,
       dispatch
   */
   init: function() {
-    var parentView = get(this, '_parentView');
-
     this._super();
 
     // Register the view for event handling. This hash is used by
     // Ember.RootResponder to dispatch incoming events.
     Ember.View.views[get(this, 'elementId')] = this;
 
-    var childViews = Ember.A(get(this, '_childViews').slice());
+    var childViews = get(this, '_childViews').slice();
 
     // setup child views. be sure to clone the child views array first
     set(this, '_childViews', childViews);
@@ -1188,12 +1188,19 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     @returns {Ember.View} receiver
   */
   removeChild: function(view) {
+    // If we're destroying, the entire subtree will be
+    // freed, and the DOM will be handled separately,
+    // so no need to mess with childViews.
+    if (this.isDestroying) { return; }
+
     // update parent node
     set(view, '_parentView', null);
 
     // remove view from childViews array.
     var childViews = get(this, '_childViews');
-    childViews.removeObject(view);
+    Ember.ArrayUtils.removeObject(childViews, view);
+
+    this.propertyDidChange('childViews');
 
     return this;
   },
@@ -1232,14 +1239,12 @@ Ember.View = Ember.Object.extend(Ember.Evented,
   },
 
   /**
-    You must call this method on a view to destroy the view (and all of its
+    You must call `destroy` on a view to destroy the view (and all of its
     child views). This will remove the view from any parent node, then make
     sure that the DOM element managed by the view can be released by the
     memory manager.
   */
-  destroy: function() {
-    if (get(this, 'isDestroyed')) { return; }
-
+  willDestroy: function() {
     // calling this._super() will nuke computed properties and observers,
     // so collect any information we need before calling super.
     var childViews = get(this, '_childViews'),
@@ -1264,9 +1269,7 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     // the DOM again.
     if (parent) { parent.removeChild(this); }
 
-    Ember.Descriptor.setup(this, 'state', 'destroyed');
-
-    this._super();
+    this.state = 'destroyed';
 
     childLen = get(childViews, 'length');
     for (var i=childLen-1; i>=0; i--) {
@@ -1276,8 +1279,6 @@ Ember.View = Ember.Object.extend(Ember.Evented,
 
     // next remove view from global hash
     delete Ember.View.views[get(this, 'elementId')];
-
-    return this; // done with cleanup
   },
 
   /**
@@ -1294,7 +1295,11 @@ Ember.View = Ember.Object.extend(Ember.Evented,
   */
   createChildView: function(view, attrs) {
     if (Ember.View.detect(view)) {
-      view = view.create(attrs || {}, { _parentView: this });
+      if (attrs) {
+        view = view.createWith({ _parentView: this }, attrs);
+      } else {
+        view = view.createWith({ _parentView: this });
+      }
 
       var viewName = view.viewName;
 
@@ -1465,6 +1470,10 @@ var DOMManager = {
     set(view, 'element', null);
 
     Ember.$(elem).remove();
+  },
+
+  empty: function(view) {
+    view.$().empty();
   }
 };
 

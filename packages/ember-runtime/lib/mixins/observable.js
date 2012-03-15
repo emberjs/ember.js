@@ -184,13 +184,7 @@ Ember.Observable = Ember.Mixin.create(/** @scope Ember.Observable.prototype */ {
     @returns {Ember.Observable}
   */
   setProperties: function(hash) {
-    var self = this;
-    Ember.changeProperties(function(){
-      for(var prop in hash) {
-        if (hash.hasOwnProperty(prop)) set(self, prop, hash[prop]);
-      }
-    });
-    return this;
+    return Ember.setProperties(this, hash);
   },
 
   /**

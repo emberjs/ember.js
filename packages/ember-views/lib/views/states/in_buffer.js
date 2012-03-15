@@ -39,8 +39,12 @@ Ember.View.states.inBuffer = {
     var buffer = view.buffer;
 
     childView = this.createChildView(childView, options);
-    get(view, '_childViews').pushObject(childView);
+    get(view, '_childViews').push(childView);
+
     childView.renderToBuffer(buffer);
+
+    view.propertyDidChange('childViews');
+
     return childView;
   },
 
@@ -53,6 +57,10 @@ Ember.View.states.inBuffer = {
     view.transitionTo('preRender');
 
     return view;
+  },
+
+  empty: function() {
+    throw "EWOT";
   },
 
   // It should be impossible for a rendered view to be scheduled for

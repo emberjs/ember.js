@@ -43,6 +43,10 @@ var DOMManager = {
       view.transitionTo('inDOM');
       view._notifyDidInsertElement();
     });
+  },
+
+  empty: function(view) {
+    view.morph.html("");
   }
 };
 
