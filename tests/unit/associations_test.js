@@ -13,7 +13,7 @@ test("exposes a hash of the associations on a model", function() {
 
   Person.reopen({
     people: DS.hasMany(Person),
-    parent: DS.hasOne(Person)
+    parent: DS.belongsTo(Person)
   });
 
   var associations = get(Person, 'associations');
@@ -41,14 +41,19 @@ test("hasMany lazily loads associations as needed", function() {
 
   var store = DS.Store.create();
   store.loadMany(Tag, [5, 2, 12], [{ id: 5, name: "friendly" }, { id: 2, name: "smarmy" }, { id: 12, name: "oohlala" }]);
-  store.load(Person, 1, { id: 1, name: "Tom Dale", tags: [5, 2] });
+  store.load(Person, 1, { id: 1, name: "Tom Dale", tags: [5] });
   store.load(Person, 2, { id: 2, name: "Yehuda Katz", tags: [12] });
 
   var person = store.find(Person, 1);
   equal(get(person, 'name'), "Tom Dale", "precond - retrieves person record from store");
 
-  equal(getPath(person, 'tags.length'), 2, "the list of tags should have the correct length");
-  equal(get(get(person, 'tags').objectAt(0), 'name'), "friendly", "the first tag should be a Tag");
+  var tags = get(person, 'tags');
+  equal(get(tags, 'length'), 1, "the list of tags should have the correct length");
+  equal(get(tags.objectAt(0), 'name'), "friendly", "the first tag should be a Tag");
+
+  store.load(Person, 1, { id: 1, name: "Tom Dale", tags: [5, 2] });
+  equal(tags, get(person, 'tags'), "an association returns the same object every time");
+  equal(get(get(person, 'tags'), 'length'), 2, "the length is updated after new data is loaded");
 
   strictEqual(get(person, 'tags').objectAt(0), get(person, 'tags').objectAt(0), "the returned object is always the same");
   strictEqual(get(person, 'tags').objectAt(0), store.find(Tag, 5), "association objects are the same as objects retrieved directly");
@@ -61,6 +66,11 @@ test("hasMany lazily loads associations as needed", function() {
 
   strictEqual(get(wycats, 'tags').objectAt(0), get(wycats, 'tags').objectAt(0), "the returned object is always the same");
   strictEqual(get(wycats, 'tags').objectAt(0), store.find(Tag, 12), "association objects are the same as objects retrieved directly");
+
+  store.load(Person, 3, { id: 3, name: "KSelden" });
+  var kselden = store.find(Person, 3);
+
+  equal(get(get(kselden, 'tags'), 'length'), 0, "an association that has not been supplied returns an empty array");
 });
 
 test("should be able to retrieve the type for a hasMany association from its metadata", function() {
@@ -89,27 +99,27 @@ test("should be able to retrieve the type for a hasMany association specified us
   equal(Person.typeForAssociation('tags'), Tag, "returns the association type");
 });
 
-test("should be able to retrieve the type for a hasOne association from its metadata", function() {
+test("should be able to retrieve the type for a belongsTo association from its metadata", function() {
   var Tag = DS.Model.extend({
     name: DS.attr('string')
   });
 
   var Person = DS.Model.extend({
     name: DS.attr('string'),
-    tags: DS.hasOne(Tag)
+    tags: DS.belongsTo(Tag)
   });
 
   equal(Person.typeForAssociation('tags'), Tag, "returns the association type");
 });
 
-test("should be able to retrieve the type for a hasOne association specified using a string from its metadata", function() {
+test("should be able to retrieve the type for a belongsTo association specified using a string from its metadata", function() {
   window.Tag = DS.Model.extend({
     name: DS.attr('string')
   });
 
   var Person = DS.Model.extend({
     name: DS.attr('string'),
-    tags: DS.hasOne('Tag')
+    tags: DS.belongsTo('Tag')
   });
 
   equal(Person.typeForAssociation('tags'), Tag, "returns the association type");
@@ -244,6 +254,11 @@ test("embedded associations work the same as referenced ones, and have the same 
 
   strictEqual(get(person, 'tags').objectAt(0), get(person, 'tags').objectAt(0), "the returned object is always the same");
   strictEqual(get(person, 'tags').objectAt(0), store.find(Tag, 5), "association objects are the same as objects retrieved directly");
+
+  store.load(Person, 2, { id: 2, name: "KSelden" });
+  var kselden = store.find(Person, 2);
+
+  equal(getPath(kselden, 'tags.length'), 0, "if no association is provided, an empty list is returned");
 });
 
 test("it is possible to add a new item to an association", function() {
@@ -319,16 +334,16 @@ test("updating the content of a ModelArray updates its content", function() {
   equal(get(tag, 'name'), "smarmy", "the lookup was updated");
 });
 
-module("DS.hasOne");
+module("DS.belongsTo");
 
-test("hasOne lazily loads associations as needed", function() {
+test("belongsTo lazily loads associations as needed", function() {
   var Tag = DS.Model.extend({
     name: DS.attr('string')
   });
 
   var Person = DS.Model.extend({
     name: DS.attr('string'),
-    tag: DS.hasOne(Tag)
+    tag: DS.belongsTo(Tag)
   });
 
   var store = DS.Store.create();
@@ -345,14 +360,14 @@ test("hasOne lazily loads associations as needed", function() {
   strictEqual(get(person, 'tag'), store.find(Tag, 5), "association object is the same as object retrieved directly");
 });
 
-test("hasOne allows associations to be mapped to a user-specified key", function() {
+test("belongsTo allows associations to be mapped to a user-specified key", function() {
   var Tag = DS.Model.extend({
     name: DS.attr('string')
   });
 
   var Person = DS.Model.extend({
     name: DS.attr('string'),
-    tag: DS.hasOne(Tag, { key: 'tag_id' })
+    tag: DS.belongsTo(Tag, { key: 'tag_id' })
   });
 
   var store = DS.Store.create();
@@ -380,7 +395,7 @@ test("associations work when the data hash has not been loaded", function() {
 
   var Person = DS.Model.extend({
     name: DS.attr('string'),
-    tag: DS.hasOne(Tag)
+    tag: DS.belongsTo(Tag)
   });
 
   var store = DS.Store.create({
@@ -425,14 +440,14 @@ test("associations work when the data hash has not been loaded", function() {
   equal(get(person, 'tag'), null, "tag should be null");
 });
 
-test("hasOne embedded associations work the same as referenced ones, and have the same identity map functionality", function() {
+test("belongsTo embedded associations work the same as referenced ones, and have the same identity map functionality", function() {
   var Tag = DS.Model.extend({
     name: DS.attr('string')
   });
 
   var Person = DS.Model.extend({
     name: DS.attr('string'),
-    tag: DS.hasOne(Tag, { embedded: true })
+    tag: DS.belongsTo(Tag, { embedded: true })
   });
 
   var store = DS.Store.create();
