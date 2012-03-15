@@ -65,6 +65,7 @@ function makeCtor() {
     if (!wasApplied) {
       wasApplied = true;
       Class.PrototypeMixin.applyPartial(Class.prototype);
+      Ember.rewatch(Class.prototype); // setup watch chains if needed.
       hasChains = !!meta(Class.prototype, false).chains; // avoid rewatch
     }
 
@@ -160,7 +161,6 @@ var ClassMixin = Ember.Mixin.create({
     proto.constructor = Class;
     Ember.generateGuid(proto, 'ember');
     meta(proto).proto = proto; // this will disable observers on prototype
-    Ember.rewatch(proto); // setup watch chains if needed.
 
 
     Class.subclasses = Ember.Set ? new Ember.Set() : null;
