@@ -1,8 +1,8 @@
-var get = Ember.get, set = Ember.set;
+var get = Ember.get, set = Ember.set, a_slice = Array.prototype.slice;
 
 /** @private */
 function xform(target, method, params) {
-  var args = [].slice.call(params, 2);
+  var args = a_slice.call(params, 2);
   method.apply(target, args);
 }
 
@@ -17,7 +17,7 @@ Ember.Evented = Ember.Mixin.create({
   },
 
   fire: function(name) {
-    Ember.sendEvent.apply(null, [this, name].concat([].slice.call(arguments, 1)));
+    Ember.sendEvent.apply(null, [this, name].concat(a_slice.call(arguments, 1)));
   },
 
   off: function(name, target, method) {
