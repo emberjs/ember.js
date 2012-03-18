@@ -12,7 +12,7 @@ require('ember-metal/utils');
 var o_create = Ember.platform.create;
 var meta = Ember.meta;
 var guidFor = Ember.guidFor;
-var array_Slice = Array.prototype.slice;
+var a_slice = Array.prototype.slice;
 
 /**
   The event system uses a series of nested hashes to store listeners on an
@@ -207,7 +207,7 @@ function sendEvent(obj, eventName) {
 
   // first give object a chance to handle it
   if (obj !== Ember && 'function' === typeof obj.sendEvent) {
-    obj.sendEvent.apply(obj, array_Slice.call(arguments, 1));
+    obj.sendEvent.apply(obj, a_slice.call(arguments, 1));
   }
 
   var targetSet = targetSetFor(obj, eventName);
@@ -223,6 +223,10 @@ function deferEvent(obj, eventName) {
   });
 
   return function() {
+    if (obj !== Ember && 'function' === typeof obj.sendEvent) {
+      obj.sendEvent.apply(obj, a_slice.call(params, 1));
+    }
+
     for (var i=0, len=actions.length; i < len; ++i) {
       invokeAction(actions[i], params);
     }

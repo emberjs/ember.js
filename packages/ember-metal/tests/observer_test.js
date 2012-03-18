@@ -189,6 +189,31 @@ testBoth('deferring property change notifications will not defer before observer
   equal(fooCount, 1, 'should not fire before observer twice');
 });
 
+testBoth('implementing sendEvent on object should invoke when deferring property change notifications ends', function(get, set) {
+  var count = 0, events = [];
+  var obj = {
+    sendEvent: function(eventName) {
+      events.push(eventName);
+    },
+    foo: 'baz'
+  };
+
+  Ember.addObserver(obj, 'foo', function() { count++; });
+
+  Ember.beginPropertyChanges(obj);
+  set(obj, 'foo', 'BAZ');
+
+  equal(count, 0, 'should have not invoked observer');
+  equal(events.length, 1, 'should have invoked sendEvent for before');
+
+  Ember.endPropertyChanges(obj);
+
+  equal(count, 1, 'should have invoked observer');
+  equal(events.length, 2, 'should have invoked sendEvent');
+  equal(events[0], 'foo:before');
+  equal(events[1], 'foo:change');
+});
+
 testBoth('addObserver should propogate through prototype', function(get,set) {
   var obj = { foo: 'foo', count: 0 }, obj2;
 
