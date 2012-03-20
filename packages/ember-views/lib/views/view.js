@@ -649,6 +649,27 @@ Ember.View = Ember.Object.extend(Ember.Evented,
   },
 
   /**
+    Replaces the given element with this view's element.
+    
+    If the view does not have an HTML representation yet, `createElement()`
+    will be called automatically.
+
+    Note that this method just schedules the view to replace the element; the DOM
+    element will not be added until all bindings have
+    finished synchronizing
+
+    @param {String|DOMElement|jQuery} A selector, element, HTML string, or jQuery object
+    @returns {Ember.View} received
+  */
+  replace: function(target) {
+    this._insertElementLater(function() {
+      Ember.$(target).replaceWith(this.$());
+    });
+
+    return this;
+  },
+
+  /**
     Replaces the view's element to the specified parent element.
     If the view does not have an HTML representation yet, `createElement()`
     will be called automatically.
