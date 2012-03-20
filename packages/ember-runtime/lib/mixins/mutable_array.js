@@ -60,6 +60,24 @@ Ember.MutableArray = Ember.Mixin.create(Ember.Array, Ember.MutableEnumerable,
   replace: Ember.required(),
 
   /**
+    Remove all elements from self. This is useful if you
+    want to reuse an existing array without having to recreate it.
+
+        var colors = ["red", "green", "blue"];
+        color.length();  => 3
+        colors.clear();  => []
+        colors.length(); => 0
+
+    @returns {Ember.Array} An empry Array. 
+  */
+  clear: function () {
+    var len = get(this, 'length');
+    if (len === 0) return this;
+    this.replace(0, len, EMPTY);
+    return this;
+  },
+
+  /**
     This will use the primitive replace() method to insert an object at the
     specified index.
 
