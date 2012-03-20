@@ -155,6 +155,20 @@ var Cp = ComputedProperty.prototype;
   mode the computed property will automatically cache the return value of
   your function until one of the dependent keys changes.
 
+      MyApp.president = Ember.Object.create({
+        fullName: function() {
+          return this.get('firstName') + ' ' + this.get('lastName');
+
+          // After calculating the value of this function, Ember.js will
+          // return that value without re-executing this function until
+          // one of the dependent properties change.
+        }.property('firstName', 'lastName').cacheable()
+      });
+
+  It is common to use `cacheable()` on nearly every computed property
+  you define. 
+
+  @name Ember.ComputedProperty.cacheable
   @param {Boolean} aFlag optional set to false to disable cacheing
   @returns {Ember.ComputedProperty} receiver
 */
@@ -167,6 +181,16 @@ Cp.cacheable = function(aFlag) {
   Sets the dependent keys on this computed property.  Pass any number of
   arguments containing key paths that this computed property depends on.
 
+      MyApp.president = Ember.Object.create({
+        fullName: Ember.computed(function() {
+          return this.get('firstName') + ' ' + this.get('lastName');
+
+          // Tell Ember.js that this computed property depends on firstName
+          // and lastName
+        }).property('firstName', 'lastName')
+      });
+
+  @name Ember.ComputedProperty.property
   @param {String} path... zero or more property paths
   @returns {Ember.ComputedProperty} receiver
 */
@@ -192,6 +216,10 @@ Cp.property = function() {
   computed property descriptor under the `_meta` key. Ember runtime
   exposes a public API for retrieving these values from classes,
   via the `metaForProperty()` function.
+
+  @name Ember.ComputedProperty.meta
+  @param {Hash} metadata
+  @returns {Ember.ComputedProperty} property descriptor instance
 */
 
 Cp.meta = function(meta) {
