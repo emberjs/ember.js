@@ -11,7 +11,7 @@ var suite = Ember.MutableArrayTests;
 suite.module('shiftObject');
 
 suite.test("[].shiftObject() => [] + returns undefined + NO notify", function() {
-  var obj, before, after, observer, item;
+  var obj, before, after, observer;
 
   before = [];
   after  = [];
