@@ -17,7 +17,7 @@ suite.test("returns pushed object", function() {
 });
 
 suite.test("[].pushObject(X) => [X] + notify", function() {
-  var obj, before, after, observer, ret;
+  var obj, before, after, observer;
 
   before = [];
   after  = this.newFixture(1);
@@ -36,7 +36,7 @@ suite.test("[].pushObject(X) => [X] + notify", function() {
 });
 
 suite.test("[A,B,C].pushObject(X) => [A,B,C,X] + notify", function() {
-  var obj, before, after, item, observer, ret;
+  var obj, before, after, item, observer;
 
   before = this.newFixture(3);
   item   = this.newFixture(1)[0];
