@@ -8,7 +8,7 @@ require('ember-runtime/~tests/suites/enumerable');
 
 var suite = Ember.EnumerableTests;
 
-suite.module('reverse');
+suite.module('reverseCopy');
 
 suite.test('should return new instance with elements in reverse order', function () {
   var before, after, obj, ret;
@@ -17,7 +17,8 @@ suite.test('should return new instance with elements in reverse order', function
   after  = [before[2], before[1], before[0]];
   obj = this.newObject(before);
 
-  ret = obj.reverse();
+  ret = obj.reverseCopy();
 
   deepEqual(this.toArray(ret), after, 'should have been reversed');
+  deepEqual(this.toArray(obj), before, 'should not have changed original');
 });

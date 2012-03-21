@@ -626,12 +626,10 @@ Ember.Enumerable = Ember.Mixin.create( /** @lends Ember.Enumerable */ {
 
     @returns {Ember.Enumerable} A reversed enumerable.
   */
-  reverse: function () {
-    var ret = [],
-        len = get(this, 'length');
+  reverseCopy: function () {
+    var ret = [];
     this.forEach(function (item) {
-      len--;
-      ret[len] = item;
+      ret.unshift(item);
     });
     return ret;
   },
