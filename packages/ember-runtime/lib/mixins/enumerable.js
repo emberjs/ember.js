@@ -622,7 +622,7 @@ Ember.Enumerable = Ember.Mixin.create( /** @lends Ember.Enumerable */ {
     Returns a new enumerable containing self's elements in reverse order.
     
         [ "a", "b", "c" ].reverse() => ["c", "b", "a"]
-        [1].reverse() => [1]
+        [1].reverseCopy() => [1]
 
     @returns {Ember.Enumerable} A reversed enumerable.
   */
