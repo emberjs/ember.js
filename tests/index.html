@@ -5,7 +5,6 @@
   <title>QUnit Test Suite</title>
   <link rel="stylesheet" href="qunit/qunit.css" type="text/css" media="screen">
   <script type="text/javascript" src="qunit/qunit.js"></script>
-  <script type="text/javascript" src="jshint.js"></script>
   <script type="text/javascript" src="minispade.js"></script>
 
   <script type="text/javascript">
@@ -49,6 +48,14 @@
   <h2 id="qunit-userAgent"></h2>
   <ol id="qunit-tests"></ol>
   <div id="qunit-fixture">test markup</div>
+
+  <script>
+    // Load jshint if being used (can cause failurs in old environments if always loaded)
+    if (jsHint) {
+      document.write(unescape('%3Cscript src="jshint.js"%3E%3C/script%3E'));
+    }
+    // Close the script tag to make sure document.write happens
+  </script>
 
   <script>
     // Load custom version of jQuery if possible
