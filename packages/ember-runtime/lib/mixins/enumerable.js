@@ -619,6 +619,24 @@ Ember.Enumerable = Ember.Mixin.create( /** @lends Ember.Enumerable */ {
   },
 
   /**
+    Returns a new enumerable containing self's elements in reverse order.
+    
+        [ "a", "b", "c" ].reverse() => ["c", "b", "a"]
+        [1].reverse() => [1]
+
+    @returns {Ember.Enumerable} A reversed enumerable.
+  */
+  reverse: function () {
+    var ret = [],
+        len = get(this, 'length');
+    this.forEach(function (item) {
+      len--;
+      ret[len] = item;
+    });
+    return ret;
+  },
+
+  /**
     This property will trigger anytime the enumerable's content changes.
     You can observe this property to be notified of changes to the enumerables
     content.

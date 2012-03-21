@@ -281,5 +281,6 @@ require('ember-runtime/~tests/suites/enumerable/some');
 require('ember-runtime/~tests/suites/enumerable/toArray');
 require('ember-runtime/~tests/suites/enumerable/uniq');
 require('ember-runtime/~tests/suites/enumerable/without');
+require('ember-runtime/~tests/suites/enumerable/reverse');
 
 
