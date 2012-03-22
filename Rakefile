@@ -6,6 +6,10 @@ require 'rake-pipeline'
 require "ember_docs/cli"
 require "colored"
 
+def pipeline
+  Rake::Pipeline::Project.new("Assetfile")
+end
+
 desc "Strip trailing whitespace for JavaScript files in packages"
 task :strip_whitespace do
   Dir["packages/**/*.js"].each do |name|
@@ -16,15 +20,18 @@ task :strip_whitespace do
   end
 end
 
-# We shouldn't need to depend on :clean, but right now the pipeline is not invalidating properly
 desc "Build ember.js"
-task :dist => :clean do
-  Rake::Pipeline::Project.new("Assetfile").invoke
+task :dist do
+  puts "Building Ember..."
+  pipeline.invoke
+  puts "Done"
 end
 
 desc "Clean build artifacts from previous builds"
 task :clean do
-  sh "rm -rf tmp dist tests/ember-tests.js"
+  puts "Cleaning build..."
+  pipeline.clean
+  puts "Done"
 end
 
 ### UPLOAD LATEST EMBERJS BUILD TASK ###

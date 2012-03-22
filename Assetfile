@@ -1,7 +1,6 @@
 require "rake-pipeline-web-filters"
 require "json"
 require "uglifier"
-require "./neuter"
 
 class EmberProductionFilter < Rake::Pipeline::Filter
   def generate_output(inputs, output)
@@ -76,7 +75,17 @@ end
 
 input "packages" do
   match "*/lib/**/main.js" do
-    neuter do |filename|
+    neuter(
+      :additional_dependencies => proc { |input|
+        Dir.glob(File.join(File.dirname(input.fullpath),'**','*.js'))
+      },
+      :path_transform => proc { |path, input|
+        package, path = path.split('/', 2)
+        current_package = input.path.split('/', 2)[0]
+        current_package == package && path ? File.join(package, "lib", "#{path}.js") : nil
+      },
+      :closure_wrap => true
+    ) do |filename|
       File.join("modules/", filename.gsub('/lib/main.js', '.js'))
     end
   end
