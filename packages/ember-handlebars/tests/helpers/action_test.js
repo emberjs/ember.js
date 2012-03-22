@@ -244,26 +244,44 @@ test("should allow bubbling of events from action helper to original parent even
 });
 
 test("should be compatible with sending events to a state manager", function() {
-  var sendWasCalled = false,
-      eventNameSent,
+  var eventWasCalled = false,
       eventObjectSent,
-      fakeManager = {
-        send: function(eventName, actionEvent) { sendWasCalled = true; eventNameSent = eventName; eventObjectSent = actionEvent; }
-      };
+      manager = Ember.StateManager.create({
+        start: Ember.State.create({
+          edit: function(manager, eventObject) { eventWasCalled = true; eventObjectSent = eventObject; }
+        })
+      });
 
   view = Ember.View.create({
-    template: Ember.Handlebars.compile('<a href="#" {{action "edit" target="fakeManager"}}>click me</a>'),
-    fakeManager: fakeManager
+    template: Ember.Handlebars.compile('<a href="#" {{action "edit" target="manager"}}>click me</a>'),
+    manager: manager
   });
 
   appendView();
 
   view.$('a').trigger('click');
 
-  ok(sendWasCalled, "The state manager's send method was called");
-  equal(eventNameSent, "edit", "The edit event was sent to the state manager");
+  ok(eventWasCalled, "The state manager's send method was called");
   ok(eventObjectSent, "The state manager's send method was called with an event object");
 });
+
+test("should allow 'send' as action name (#594)", function() {
+  var eventHandlerWasCalled = false;
+  var eventObjectSent;
+
+  view = Ember.View.create({
+    template: Ember.Handlebars.compile('<a href="#" {{action "send" }}>send</a>'),
+    send: function(evt){ eventHandlerWasCalled = true; eventObjectSent = evt; }
+  });
+
+  appendView();
+
+  view.$('a').trigger('click');
+
+  ok(eventHandlerWasCalled, "The view's send method was called");
+  ok(eventObjectSent, "Callback was called with an event object");
+});
+
 
 test("should send the view, event and current Handlebars context to the action", function() {
   var passedTarget;
