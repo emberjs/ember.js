@@ -20,6 +20,14 @@ function append() {
   });
 }
 
+function selectedOptions() {
+  var rv = [];
+  for(var i=0, len = select.getPath('content.length'); i < len; ++i) {
+    rv.push(select.getPath('childViews.' + i + '.childViews.0.selected'));
+  }
+  return rv;
+}
+
 test("should render", function() {
   append();
 
@@ -51,7 +59,7 @@ test("can specify the property path for an option's label and value", function()
   deepEqual(map(select.$('option').toArray(), function(el) { return Ember.$(el).attr('value'); }), ["1", "2"], "Options should have values");
 });
 
-test("can retrieve the current selected option", function() {
+test("can retrieve the current selected option when multiple=false", function() {
   var yehuda = { id: 1, firstName: 'Yehuda' },
       tom = { id: 2, firstName: 'Tom' };
   select.set('content', Ember.A([yehuda, tom]));
@@ -66,10 +74,31 @@ test("can retrieve the current selected option", function() {
   equal(select.get('selection'), tom, "On change, the new option should be selected");
 });
 
-test("selection can be set", function() {
+test("can retrieve the current selected options when multiple=true", function() {
+  var yehuda = { id: 1, firstName: 'Yehuda' },
+      tom = { id: 2, firstName: 'Tom' },
+      david = { id: 3, firstName: 'David' },
+      brennain = { id: 4, firstName: 'Brennain' };
+  select.set('content', Ember.A([yehuda, tom, david, brennain]));
+  select.set('multiple', true);
+  select.set('optionLabelPath', 'content.firstName');
+
+  append();
+
+  deepEqual(select.get('selection').toArray(), [], "By default, nothing is selected");
+
+  select.$(':contains("Tom"), :contains("David")').each(function() { this.selected = true; });
+
+  select.$().trigger('change');
+
+  deepEqual(select.get('selection').toArray(), [tom, david], "On change, the new options should be selected");
+});
+
+test("selection can be set when multiple=false", function() {
   var yehuda = { id: 1, firstName: 'Yehuda' },
       tom = { id: 2, firstName: 'Tom' };
   select.set('content', Ember.A([yehuda, tom]));
+  select.set('multiple', false);
 
   select.set('selection', tom);
 
@@ -80,6 +109,98 @@ test("selection can be set", function() {
   select.set('selection', yehuda);
 
   equal(select.$()[0].selectedIndex, 0, "After changing it, selection should be correct");
+});
+
+test("multiple selection raises error", function() {
+  var yehuda = { id: 1, firstName: 'Yehuda' },
+      tom = { id: 2, firstName: 'Tom' };
+  select.set('content', Ember.A([yehuda, tom]));
+  select.set('multiple', false);
+
+  raises(function() {
+    select.set('selection', Ember.A([yehuda, tom]));
+    append();
+  }, null, "raises error when setting multiple selections for a non-multiple select");
+});
+
+test("selection can be set when multiple=true", function() {
+  var yehuda = { id: 1, firstName: 'Yehuda' },
+      tom = { id: 2, firstName: 'Tom' },
+      david = { id: 3, firstName: 'David' },
+      brennain = { id: 4, firstName: 'Brennain' };
+  select.set('content', Ember.A([yehuda, tom, david, brennain]));
+  select.set('multiple', true);
+
+  select.set('selection', tom);
+
+  append();
+
+  deepEqual(select.get('selection').toArray(), [tom], "Initial selection should be correct");
+
+  select.set('selection', yehuda);
+
+  deepEqual(select.get('selection').toArray(), [yehuda], "After changing it, selection should be correct");
+});
+
+test("multiple selections can be set when multiple=true", function() {
+  var yehuda = { id: 1, firstName: 'Yehuda' },
+      tom = { id: 2, firstName: 'Tom' },
+      david = { id: 3, firstName: 'David' },
+      brennain = { id: 4, firstName: 'Brennain' };
+  select.set('content', Ember.A([yehuda, tom, david, brennain]));
+  select.set('optionLabelPath', 'content.firstName');
+  select.set('multiple', true);
+
+  select.set('selection', Ember.A([yehuda, david]));
+
+  append();
+
+  deepEqual(select.get('selection').toArray(), [yehuda, david], "Initial selection should be correct");
+
+  select.set('selection', Ember.A([tom, brennain]));
+
+  deepEqual(
+    select.$(':selected').map(function(){ return Ember.$(this).text();}).toArray(),
+    ['Tom', 'Brennain'],
+    "After changing it, selection should be correct");
+});
+
+test("Ember.SelectedOption knows when it is selected when multiple=false", function() {
+  var yehuda = { id: 1, firstName: 'Yehuda' },
+      tom = { id: 2, firstName: 'Tom' },
+      david = { id: 3, firstName: 'David' },
+      brennain = { id: 4, firstName: 'Brennain' };
+  select.set('content', Ember.A([yehuda, tom, david, brennain]));
+  select.set('multiple', false);
+
+  select.set('selection', david);
+
+  append();
+
+  deepEqual(selectedOptions(), [false, false, true, false], "Initial selection should be correct");
+
+  select.set('selection', brennain);
+
+  deepEqual(selectedOptions(), [false, false, false, true], "After changing it, selection should be correct");
+});
+
+test("Ember.SelectedOption knows when it is selected when multiple=true", function() {
+  var yehuda = { id: 1, firstName: 'Yehuda' },
+      tom = { id: 2, firstName: 'Tom' },
+      david = { id: 3, firstName: 'David' },
+      brennain = { id: 4, firstName: 'Brennain' };
+  select.set('content', Ember.A([yehuda, tom, david, brennain]));
+  select.set('multiple', true);
+
+  select.set('selection', [yehuda, david]);
+
+  append();
+
+  deepEqual(selectedOptions(), [true, false, true, false], "Initial selection should be correct");
+
+  select.set('selection', [tom, david]);
+
+  deepEqual(selectedOptions(), [false, true, true, false], "After changing it, selection should be correct");
 });
 
 test("a prompt can be specified", function() {
