@@ -342,3 +342,22 @@ Ember.computed = function(func) {
 
   return cp;
 };
+
+/**
+  Returns the cached value for a property, if one exists.
+  This can be useful for peeking at the value of a computed
+  property that is generated lazily, without accidentally causing
+  it to be created.
+
+  @param {Object} obj the object whose property you want to check
+  @param {String} key the name of the property whose cached value you want
+                      to return
+
+*/
+Ember.cacheFor = function(obj, key) {
+  var cache = meta(obj, false).cache;
+
+  if (cache && cache[key]) {
+    return cache[key];
+  }
+};

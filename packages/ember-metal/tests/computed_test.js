@@ -230,6 +230,14 @@ testBoth('inherited property should not pick up cache', function(get, set) {
   equal(get(objB, 'foo'), 'bar 2', 'objB third get');
 });
 
+testBoth('cacheFor should return the cached value', function(get, set) {
+  equal(Ember.cacheFor(obj, 'foo'), undefined, "should not yet be a cached value");
+
+  get(obj, 'foo');
+
+  equal(Ember.cacheFor(obj, 'foo'), "bar 1", "should retrieve cached value");
+});
+
 // ..........................................................
 // DEPENDENT KEYS
 //

@@ -468,11 +468,23 @@ Ember.Observable = Ember.Mixin.create(/** @scope Ember.Observable.prototype */ {
     return get(this, keyName);
   },
 
+  /**
+    Returns the cached value of a computed property, if it exists.
+    This allows you to inspect the value of a computed property
+    without accidentally invoking it if it is intended to be
+    generated lazily.
+
+    @param {String} keyName
+    @returns {Object} The cached value of the computed property, if any
+  */
+  cacheFor: function(keyName) {
+    return Ember.cacheFor(this, keyName);
+  },
+
   /** @private - intended for debugging purposes */
   observersForKey: function(keyName) {
     return Ember.observersFor(this, keyName);
   }
-
 });
 
 
