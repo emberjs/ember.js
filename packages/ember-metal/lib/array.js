@@ -88,6 +88,13 @@ Ember.ArrayUtils = {
     return obj.indexOf ? obj.indexOf.apply(obj, args) : arrayIndexOf.apply(obj, args);
   },
 
+  indexesOf: function(obj) {
+    var args = Array.prototype.slice.call(arguments, 1);
+    return args[0] === undefined ? [] : Ember.ArrayUtils.map(args[0], function(item) {
+      return Ember.ArrayUtils.indexOf(obj, item);
+    });
+  },
+
   removeObject: function(array, item) {
     var index = this.indexOf(array, item);
     if (index !== -1) { array.splice(index, 1); }
