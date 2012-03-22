@@ -141,7 +141,13 @@ Ember.Set = Ember.CoreObject.extend(Ember.MutableEnumerable, Ember.Copyable, Emb
   clear: function() {
     if (this.isFrozen) { throw new Error(Ember.FROZEN_ERROR); }
     var len = get(this, 'length');
+    var guid;
     this.enumerableContentWillChange(len, 0);
+    for (var i=0; i < len; i++){
+      guid = guidFor(this[i]);
+      delete this[guid];
+      delete this[i];
+    }
     set(this, 'length', 0);
     this.enumerableContentDidChange(len, 0);
     return this;
