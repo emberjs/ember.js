@@ -14,7 +14,7 @@ suite.test("should return receiver", function() {
   var before, obj;
   before = this.newFixture(3);
   obj    = this.newObject(before);
-  equal(obj.removeObject(before[1]), obj, 'shoudl return receiver');
+  equal(obj.removeObject(before[1]), obj, 'should return receiver');
 });
 
 suite.test("[A,B,C].removeObject(B) => [A,C] + notify", function() {
