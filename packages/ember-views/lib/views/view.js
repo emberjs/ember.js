@@ -679,6 +679,128 @@ Ember.View = Ember.Object.extend(Ember.Evented,
   },
 
   /**
+    Inserts the view's element and invokes the given `callback` when the view is ready
+    to be added to DOM. It's the callback's responsibility to actually add the view to
+    the DOM. The view's element can be retrieved via `this.$()` inside the callback.
+
+    For example you would add the view to the element with #body id like this:
+      
+        view.insertView(function(){ this.$().appendTo('#body'); });
+
+    If the view does not have an HTML representation yet, `createElement()`
+    will be called automatically.
+
+    Note that this method just schedules the view to be appended; the DOM
+    element will not be appended to the given element until all bindings have
+    finished synchronizing.
+
+    @param {Function} A callback which is invoked when the view shall be added to DOM
+    @returns {Ember.View} receiver
+  */
+  insertView: function(callback) {
+    if (Ember.none(callback)) {
+      return this.append();
+    }
+  
+    this._insertElementLater(callback);
+    return this;
+  },
+
+  /**
+    Replaces the specified target element with the view's element.
+
+    If the view does not have an HTML representation yet, `createElement()`
+    will be called automatically.
+
+    Note that this method just schedules the view to be appended; the DOM
+    element will not be appended to the given element until all bindings have
+    finished synchronizing.
+
+    @param {String|DOMElement|jQuery} A selector, element, HTML string, or jQuery object
+    @returns {Ember.View} receiver
+  */
+  replaceWith: function(target) {
+    return this.insertView(function(){
+      Ember.$(target).replaceWith(this.$());
+    });
+  },
+
+  /**
+    Inserts the view's element before the specified target element.
+
+    If the view does not have an HTML representation yet, `createElement()`
+    will be called automatically.
+
+    Note that this method just schedules the view to be appended; the DOM
+    element will not be appended to the given element until all bindings have
+    finished synchronizing.
+
+    @param {String|DOMElement|jQuery} A selector, element, HTML string, or jQuery object
+    @returns {Ember.View} receiver
+  */
+  insertBefore: function(target) {
+    return this.insertView(function(){
+      this.$().insertBefore(target);
+    });
+  },
+
+  /**
+    Inserts the view's element after the specified target element.
+
+    If the view does not have an HTML representation yet, `createElement()`
+    will be called automatically.
+
+    Note that this method just schedules the view to be appended; the DOM
+    element will not be appended to the given element until all bindings have
+    finished synchronizing.
+
+    @param {String|DOMElement|jQuery} A selector, element, HTML string, or jQuery object
+    @returns {Ember.View} receiver
+  */
+  insertAfter: function(target) {
+    return this.insertView(function(){
+      this.$().insertAfter(target);
+    });
+  },
+
+  /**
+    Prepends the view's element to the document body.
+
+    If the view does not have an HTML representation yet, `createElement()`
+    will be called automatically.
+
+    Note that this method just schedules the view to be appended; the DOM
+    element will not be appended to the given element until all bindings have
+    finished synchronizing.
+
+    @param {String|DOMElement|jQuery} A selector, element, HTML string, or jQuery object
+    @returns {Ember.View} receiver
+  */
+  prepend: function(application) {
+    var prependToElement = this.getRootElement(application);
+    return this.prependTo( prependToElement );
+  },
+
+  /**
+    Prepends the view's element to the specified target element.
+
+    If the view does not have an HTML representation yet, `createElement()`
+    will be called automatically.
+
+    Note that this method just schedules the view to be appended; the DOM
+    element will not be appended to the given element until all bindings have
+    finished synchronizing.
+
+    @param {String|DOMElement|jQuery} A selector, element, HTML string, or jQuery object
+    @returns {Ember.View} receiver
+  */
+  prependTo: function(target) {
+    return this.insertView(function(){
+      this.$().prependTo(target);
+    });
+  },
+
+  /**
     Appends the view's element to the specified parent element.
 
     If the view does not have an HTML representation yet, `createElement()`
@@ -692,13 +814,9 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     @returns {Ember.View} receiver
   */
   appendTo: function(target) {
-    // Schedule the DOM element to be created and appended to the given
-    // element after bindings have synchronized.
-    this._insertElementLater(function() {
+    return this.insertView(function() {
       this.$().appendTo(target);
     });
-
-    return this;
   },
 
   /**
@@ -715,12 +833,10 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     @returns {Ember.View} received
   */
   replaceIn: function(target) {
-    this._insertElementLater(function() {
+    return this.insertView(function() {
       Ember.$(target).empty();
       this.$().appendTo(target);
     });
-
-    return this;
   },
 
   /**
@@ -759,10 +875,15 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     @returns {Ember.View} receiver
   */
   append: function(application) {
+    var appendToElement = this.getRootElement(application);
+    return this.appendTo( appendToElement );
+  },
+
+  getRootElement: function(application) {
     var appendToElement = document.body;
     if (!application) { application = Ember.get('defaultApplication'); }
     if (application) { appendToElement = application.get('rootElement'); }
-    return this.appendTo( appendToElement );
+    return appendToElement;
   },
 
   /**
