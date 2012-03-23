@@ -18,7 +18,7 @@ suite.test("should return receiver", function() {
 });
 
 suite.test("[A,B].addObject(C) => [A,B, C] + notify", function() {
-  var obj, before, after, observer, item, ret;
+  var obj, before, after, observer, item;
 
   before = this.newFixture(2);
   item   = this.newFixture(1)[0];
@@ -58,7 +58,6 @@ suite.test("[A,B,C].addObject(A) => [A,B,C] + NO notify", function() {
 });
 
 suite.test('Adding object should notify enumerable observer', function() {
-
   var obj = this.newObject(this.newFixture(3));
   var observer = this.newObserver(obj).observeEnumerable(obj);
   var item = this.newFixture(1)[0];

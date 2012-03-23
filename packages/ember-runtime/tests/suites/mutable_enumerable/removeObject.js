@@ -18,7 +18,7 @@ suite.test("should return receiver", function() {
 });
 
 suite.test("[A,B,C].removeObject(B) => [A,C] + notify", function() {
-  var obj, before, after, observer, ret;
+  var obj, before, after, observer;
 
   before = this.newFixture(3);
   after  = [before[0], before[2]];
