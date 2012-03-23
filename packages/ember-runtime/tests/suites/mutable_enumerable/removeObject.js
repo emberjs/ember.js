@@ -14,11 +14,11 @@ suite.test("should return receiver", function() {
   var before, obj;
   before = this.newFixture(3);
   obj    = this.newObject(before);
-  equal(obj.removeObject(before[1]), obj, 'shoudl return receiver');
+  equal(obj.removeObject(before[1]), obj, 'should return receiver');
 });
 
 suite.test("[A,B,C].removeObject(B) => [A,C] + notify", function() {
-  var obj, before, after, observer, ret;
+  var obj, before, after, observer;
 
   before = this.newFixture(3);
   after  = [before[0], before[2]];
