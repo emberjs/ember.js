@@ -125,7 +125,7 @@ test("a model Array can update its filter", function() {
       ids.forEach( function(id) {
         var person = store.find(Person, id);
         person.set('name', 'Client-side ' + id );
-      })
+      });
     });
   };
 
@@ -133,7 +133,7 @@ test("a model Array can update its filter", function() {
     Ember.run( function() {
       names.forEach( function( name ) {
         Person.createRecord({ name: 'Client-side ' + name });
-      })
+      });
     });
   };
 
@@ -179,7 +179,7 @@ test("a model Array can update its filter", function() {
       }
     });
 
-    clientEdits([1,2])
+    clientEdits([1,2]);
     equal(get(modelArray, 'length'), 1, "The model array updates when the client changes records");
 
     serverResponds();
@@ -216,7 +216,7 @@ test("a model Array can update its filter", function() {
     serverResponds();
     equal(get(modelArray, 'length'), 5, "The model array updates when the server creates multiple records");
   });
-})();
+}());
 
 test("an AdapterPopulatedModelArray knows if it's loaded or not", function() {
   expect(2);
