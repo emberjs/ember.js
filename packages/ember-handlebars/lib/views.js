@@ -5,4 +5,5 @@
 // ==========================================================================
 
 require("ember-handlebars/views/bindable_span");
+require("ember-handlebars/views/bound_helper_view");
 require("ember-handlebars/views/metamorph_view");

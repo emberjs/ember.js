@@ -1709,4 +1709,67 @@ test("should bind to the property if no registered helper found for a mustache w
   ok(view.$().text() === 'foobarProperty', "Property was bound to correctly");
 });
 
+test("should update bound helpers when properties change", function() {
+  Ember.Handlebars.registerBoundHelper('capitalize', function(value) {
+    return value.toUpperCase();
+  });
+  
+  view = Ember.View.create({
+    name: "Brogrammer",
+    template: Ember.Handlebars.compile("{{capitalize name}}")
+  });
+
+  appendView();
+  
+  ok(view.$().text() === 'BROGRAMMER', "helper output is correct");
+  
+  Ember.run(function() {
+    set(view, 'name', 'wes');
+  });
+  
+  ok(view.$().text() === 'WES', "helper output updated");
+});
+
+test("should update bound helpers when sub-properties change", function() {
+  Ember.Handlebars.registerBoundHelper('capitalizeName', function(value) {
+    return get(value, 'name').toUpperCase();
+  }, 'name');
+  
+  view = Ember.View.create({
+    person: Ember.Object.create({
+      name: 'Brogrammer'
+    }),
+    template: Ember.Handlebars.compile("{{capitalizeName person}}")
+  });
+
+  appendView();
+  
+  ok(view.$().text() === 'BROGRAMMER', "helper output is correct");
+  
+  Ember.run(function() {
+    set(view, 'person', Ember.Object.create({name: 'wes'}));
+  });
+  
+  ok(view.$().text() === 'WES', "helper output updated");
+});
+
+test("bound helpers should support options", function() {
+  Ember.Handlebars.registerBoundHelper('repeat', function(value, options) {
+    var count = options.count;
+    var a = [];
+    while(a.length < count){
+        a.push(value);
+    }
+    return a.join('');
+  });
+  
+  view = Ember.View.create({
+    text: 'ab',
+    template: Ember.Handlebars.compile("{{repeat text count=3}}")
+  });
+
+  appendView();
+  
+  ok(view.$().text() === 'ababab', "helper output is correct");
+});
 
