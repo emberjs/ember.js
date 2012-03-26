@@ -630,6 +630,15 @@ mixinProperties(Binding,
   },
 
   /**
+    @see Ember.Binding.prototype.notNull
+  */
+  notNull: function(from, placeholder) {
+    var C = this, binding = new C(null, from);
+    return binding.notNull(placeholder);
+  },
+
+
+  /**
     @see Ember.Binding.prototype.bool
   */
   bool: function(from) {
