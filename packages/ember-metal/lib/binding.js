@@ -600,9 +600,9 @@ mixinProperties(Binding,
   /**
     @see Ember.Binding.prototype.single
   */
-  single: function(from) {
+  single: function(from, placeholder) {
     var C = this, binding = new C(null, from);
-    return binding.single();
+    return binding.single(placeholder);
   },
 
   /**

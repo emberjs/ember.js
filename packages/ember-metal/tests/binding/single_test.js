@@ -5,6 +5,8 @@
 // ==========================================================================
 /*globals MyApp:true */
 
+var get = Ember.get, set = Ember.set;
+
 module('system/binding/single', {
   setup: function() {
     MyApp = {
@@ -31,5 +33,22 @@ test('forces binding values to be single', function() {
   Ember.setPath('MyApp.foo.value', ['BAR', 'BAZ']);
   Ember.run.sync();
   equal(Ember.getPath('MyApp.bar.value'), Ember.MULTIPLE_PLACEHOLDER, 'converts to placeholder');
+});
 
+test('Ember.Binding#single(fromPath, placeholder) is available', function() {
+  var obj = Ember.Object.create({
+    value: null,
+    boundValueBinding: Ember.Binding.single('value', 'placeholder')
+  });
+
+  Ember.run.sync();
+  equal(get(obj, 'boundValue'), null, 'intial boundValue is null');
+
+  set(obj, 'value', [1]);
+  Ember.run.sync();
+  equal(get(obj, 'boundValue'), 1, 'passes single object');
+
+  set(obj, 'value', [1, 2]);
+  Ember.run.sync();
+  equal(get(obj, 'boundValue'), 'placeholder', 'converts to placeholder');
 });
