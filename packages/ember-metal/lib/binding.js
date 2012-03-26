@@ -646,6 +646,14 @@ mixinProperties(Binding,
   },
 
   /**
+    @see Ember.Binding.prototype.isNull
+  */
+  isNull: function(from) {
+    var C = this, binding = new C(null, from);
+    return binding.isNull();
+  },
+
+  /**
     Adds a transform that forwards the logical 'AND' of values at 'pathA' and
     'pathB' whenever either source changes. Note that the transform acts
     strictly as a one-way binding, working only in the direction
