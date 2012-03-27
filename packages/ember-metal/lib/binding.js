@@ -616,8 +616,8 @@ mixinProperties(Binding,
   /**
     @see Ember.Binding.prototype.transform
   */
-  transform: function(func) {
-    var C = this, binding = new C();
+  transform: function(from, func) {
+    var C = this, binding = new C(null, from);
     return binding.transform(func);
   },
 
