@@ -169,10 +169,10 @@ Ember.View = Ember.Object.extend(Ember.Evented,
   */
   templateContext: Ember.computed(function(key, value) {
     if (arguments.length === 2) {
-      this._templateContext = value;
+      set(this, '_templateContext', value);
       return value;
     } else {
-      return this._templateContext;
+      return get(this, '_templateContext');
     }
   }).cacheable(),
 
