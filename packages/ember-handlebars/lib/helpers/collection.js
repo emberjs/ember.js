@@ -84,7 +84,7 @@ Ember.Handlebars.registerHelper('collection', function(path, options) {
   }
 
   if (hash.preserveContext) {
-    itemHash.templateContext = Ember.computed(function() {
+    itemHash._templateContext = Ember.computed(function() {
       return get(this, 'content');
     }).property('content');
     delete hash.preserveContext;

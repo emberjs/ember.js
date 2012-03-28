@@ -168,8 +168,38 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     @type Object
   */
   templateContext: Ember.computed(function(key, value) {
-    return value !== undefined ? value : this;
+    if (arguments.length === 2) {
+      this._templateContext = value;
+      return value;
+    } else {
+      return this._templateContext;
+    }
   }).cacheable(),
+
+  /**
+    @private
+
+    Private copy of the view's template context. This can be set directly
+    by Handlebars without triggering the observer that causes the view
+    to be re-rendered.
+  */
+  _templateContext: Ember.computed(function(key, value) {
+    if (arguments.length === 2) {
+      return value;
+    } else {
+      return this;
+    }
+  }).cacheable(),
+
+  /**
+    If the template context changes, the view should be re-rendered to display
+    the new value.
+
+    @private
+  */
+  templateContextDidChange: Ember.observer(function() {
+    this.rerender();
+  }, 'templateContext'),
 
   /**
     If the view is currently inserted into the DOM of a parent view, this
@@ -326,7 +356,7 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     var template = get(this, 'layout') || get(this, 'template');
 
     if (template) {
-      var context = get(this, 'templateContext'),
+      var context = get(this, '_templateContext'),
           data = { view: this, buffer: buffer, isRenderData: true };
 
       // Invoke the template with the provided template context, which

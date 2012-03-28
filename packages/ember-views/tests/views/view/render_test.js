@@ -104,3 +104,28 @@ test("should not add role attribute unless one is specified", function() {
   view.createElement();
   ok(view.$().attr('role') === undefined, "does not have a role attribute");
 });
+
+test("should re-render if the templateContext is changed", function() {
+  var view = Ember.View.create({
+    elementId: 'template-context-test',
+    templateContext: { foo: "bar" },
+    render: function(buffer) {
+      var value = get(get(this, 'templateContext'), 'foo');
+      buffer.push(value);
+    }
+  });
+
+  Ember.run(function() {
+    view.appendTo('#qunit-fixture');
+  });
+
+  equal(Ember.$('#qunit-fixture #template-context-test').text(), "bar", "precond - renders the view with the initial value");
+
+  Ember.run(function() {
+    view.set('templateContext', {
+      foo: "bang baz"
+    });
+  });
+
+  equal(Ember.$('#qunit-fixture #template-context-test').text(), "bang baz", "re-renders the view with the updated templateContext");
+});
