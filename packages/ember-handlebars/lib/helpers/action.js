@@ -32,12 +32,12 @@ ActionHelper.registerAction = function(actionName, eventName, target, view, cont
 
 EmberHandlebars.registerHelper('action', function(actionName, options) {
   var hash = options.hash || {},
-      eventName = options.hash.on || "click",
+      eventName = hash.on || "click",
       view = options.data.view,
       target, context;
 
   if (view.isVirtual) { view = view.get('parentView'); }
-  target = options.hash.target ? getPath(this, options.hash.target) : view;
+  target = hash.target ? getPath(this, hash.target) : view;
   context = options.contexts[0];
 
   var actionId = ActionHelper.registerAction(actionName, eventName, target, view, context);
