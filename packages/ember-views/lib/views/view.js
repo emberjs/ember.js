@@ -1532,6 +1532,9 @@ Ember.View.applyAttributeBindings = function(elem, name, value) {
   } else if (value && type === 'boolean') {
     elem.attr(name, name);
   } else if (!value) {
-    elem.removeAttr(name);
+    // http://bugs.jquery.com/ticket/10870
+    if (elem.attr(name)) {
+      elem.removeAttr(name);
+    }
   }
 };
