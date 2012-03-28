@@ -165,3 +165,31 @@ Ember.Handlebars.registerHelper('helperMissing', function(path, options) {
   throw new Ember.Error(Ember.String.fmt(error, [view, path, this]));
 });
 
+/**
+  Registers a bound helper in handlebars. This helper will automatically
+  update when the specified property path changes.
+
+  @param {String} name
+  @param {Function} func
+*/
+Ember.Handlebars.registerBoundHelper = function(name, func) {
+  var propertyPaths = Array.prototype.slice.call(arguments, 2);
+  Ember.Handlebars.registerHelper(name, function(property, options) {
+    var data = options.data,
+        view = data.view,
+        ctx  = this;
+    
+    var bindView = view.createChildView(Ember._BoundHelperView, {
+      property: property,
+      propertyPaths: propertyPaths,
+      context: ctx,
+      options: options.hash,
+      value: func
+    });
+
+    view.appendChild(bindView);
+  });
+};
+
+
+
