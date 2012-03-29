@@ -31,3 +31,4 @@ tmp
 tmp*.gem
 tmp.bpm
 tmp.spade
+tests/source
