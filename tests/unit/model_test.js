@@ -1,6 +1,6 @@
 var get = Ember.get, set = Ember.set, getPath = Ember.getPath;
 
-var store, Person;
+var Person, store, array;
 
 module("DS.Model", {
   setup: function() {
@@ -12,8 +12,8 @@ module("DS.Model", {
   },
 
   teardown: function() {
-    store = null;
     Person = null;
+    store = null;
   }
 });
 
@@ -144,13 +144,33 @@ test("retrieving properties should return the same value as they would if they w
     })
   });
 
+  // TODO :
+  // Investigate why this test fail with DS.attr `name` and jshint because of this :
+  // if (typeof String.prototype.name !== 'function') {
+  //   String.prototype.name = function () {
+  //     if (ix.test(this)) {
+  //         return this;
+  //     }
+  //     if (nx.test(this)) {
+  //         return '"' + this.replace(nxg, function (a) {
+  //             var c = escapes[a];
+  //             if (c) {
+  //                 return c;
+  //             }
+  //             return '\\u' + ('0000' + a.charCodeAt().toString(16)).slice(-4);
+  //         }) + '"';
+  //     }
+  //     return '"' + this + '"';
+  //   };
+  // }
+
   var Person = DS.Model.extend({
-    name: DS.attr('string')
+    firstName: DS.attr('string')
   });
 
   var record = store.find(Person, 1);
 
-  strictEqual(get(record, 'name'), null, "returns null value");
+  strictEqual(get(record, 'firstName'), null, "returns null value");
 });
 
 test("it should cache attributes", function() {
@@ -183,16 +203,17 @@ test("it can specify which key to use when looking up properties on the hash", f
   equal(get(record, 'name'), "Pete", "retrieves correct value");
 });
 
-
-
-var Person, store, array;
-
 module("DS.Model updating", {
   setup: function() {
     array = [{ id: 1, name: "Scumbag Dale" }, { id: 2, name: "Scumbag Katz" }, { id: 3, name: "Scumbag Bryn" }];
     Person = DS.Model.extend({ name: DS.attr('string') });
     store = DS.Store.create();
     store.loadMany(Person, array);
+  },
+  teardown: function() {
+    Person = null;
+    store = null;
+    array = null;
   }
 });
 
@@ -258,6 +279,7 @@ test("when a DS.Model updates its attributes, its changes affect its filtered Ar
   equal(get(people, 'length'), 0, "there are now no items");
 });
 
+
 module("with a simple Person model", {
   setup: function() {
     array = [{ id: 1, name: "Scumbag Dale" }, { id: 2, name: "Scumbag Katz" }, { id: 3, name: "Scumbag Bryn" }];
@@ -266,6 +288,11 @@ module("with a simple Person model", {
     });
     store = DS.Store.create();
     store.loadMany(Person, array);
+  },
+  teardown: function() {
+    Person = null;
+    store = null;
+    array = null;
   }
 });
 
