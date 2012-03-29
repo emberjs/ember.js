@@ -244,6 +244,7 @@ test("should allow bubbling of events from action helper to original parent even
 });
 
 test("should be compatible with sending events to a state manager", function() {
+  require("ember-states");
   var eventWasCalled = false,
       eventObjectSent,
       manager = Ember.StateManager.create({

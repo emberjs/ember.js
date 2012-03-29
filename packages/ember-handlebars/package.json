@@ -9,6 +9,7 @@
     "spade":              "~> 1.0.0",
     "handlebars":         "~> 1.0.0.beta.3",
     "ember-views": "0.9.5",
+    "ember-states" : "0.9.5",
     "metamorph": "~> 1.0.0"
   },
 
