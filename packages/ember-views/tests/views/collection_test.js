@@ -188,6 +188,78 @@ test("should allow changes to content object before layer is created", function(
   ok(view.$().children().length);
 });
 
+test("should fire life cycle events when elements are added and removed", function() {
+  var view,
+    didInsertElement = 0,
+    willDestroyElement = 0,
+    willDestroy = 0,
+    content = Ember.A([1, 2, 3]);
+  Ember.run(function () {
+    view = Ember.CollectionView.create({
+      content: content,
+      itemViewClass: Ember.View.extend({
+        render: function(buf) {
+          buf.push(get(this, 'content'));
+        },
+        didInsertElement: function () {
+          didInsertElement++;
+        },
+        willDestroyElement: function () {
+          willDestroyElement++;
+        },
+        willDestroy: function () {
+          willDestroy++;
+          this._super();
+        }
+      })
+    });
+    view.appendTo('#qunit-fixture');
+  });
+
+  equal(didInsertElement, 3);
+  equal(willDestroyElement, 0);
+  equal(willDestroy, 0);
+  equal(view.$().text(), '123');
+
+  Ember.run(function () {
+    content.pushObject(4);
+    content.unshiftObject(0);
+  });
+
+
+  equal(didInsertElement, 5);
+  equal(willDestroyElement, 0);
+  equal(willDestroy, 0);
+  equal(view.$().text(), '01234');
+
+  Ember.run(function () {
+    content.popObject();
+    content.shiftObject();
+  });
+
+  equal(didInsertElement, 5);
+  equal(willDestroyElement, 2);
+  equal(willDestroy, 2);
+  equal(view.$().text(), '123');
+
+  Ember.run(function () {
+    view.set('content', Ember.A([7,8,9]));
+  });
+
+  equal(didInsertElement, 8);
+  equal(willDestroyElement, 5);
+  equal(willDestroy, 5);
+  equal(view.$().text(), '789');
+
+  Ember.run(function () {
+    view.destroy();
+  });
+
+  equal(didInsertElement, 8);
+  equal(willDestroyElement, 8);
+  equal(willDestroy, 8);
+});
+
 test("should allow changing content property to be null", function() {
   view = Ember.CollectionView.create({
     content: Ember.A([1, 2, 3]),
