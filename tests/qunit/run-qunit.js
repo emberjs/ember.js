@@ -16,7 +16,7 @@ var page = require('webpage').create();
 
 //Route "console.log()" calls from within the Page context to the main Phantom context (i.e. current "this")
 page.onConsoleMessage = function(msg) {
-  if (test.slice(0,12) !== 'DEPRECATION:') {
+  if (msg.slice(0,12) !== 'DEPRECATION:') {
     console.log(msg);
   }
 };
