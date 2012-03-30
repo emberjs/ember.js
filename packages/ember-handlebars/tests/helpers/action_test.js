@@ -244,14 +244,12 @@ test("should allow bubbling of events from action helper to original parent even
 });
 
 test("should be compatible with sending events to a state manager", function() {
-  require("ember-states");
-  var eventWasCalled = false,
+  var eventNameCalled,
       eventObjectSent,
-      manager = Ember.StateManager.create({
-        start: Ember.State.create({
-          edit: function(manager, eventObject) { eventWasCalled = true; eventObjectSent = eventObject; }
-        })
-      });
+      manager = {
+        isState: true,
+        send: function(eventName, eventObject) { eventNameCalled = eventName; eventObjectSent = eventObject; }
+      };
 
   view = Ember.View.create({
     template: Ember.Handlebars.compile('<a href="#" {{action "edit" target="manager"}}>click me</a>'),
@@ -262,7 +260,7 @@ test("should be compatible with sending events to a state manager", function() {
 
   view.$('a').trigger('click');
 
-  ok(eventWasCalled, "The state manager's send method was called");
+  equal(eventNameCalled, "edit", "The state manager's send method was called");
   ok(eventObjectSent, "The state manager's send method was called with an event object");
 });
 

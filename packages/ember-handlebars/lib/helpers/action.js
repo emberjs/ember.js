@@ -15,7 +15,8 @@ ActionHelper.registerAction = function(actionName, eventName, target, view, cont
       event.view = view;
       event.context = context;
 
-      if (Ember.StateManager && Ember.StateManager.detectInstance(target)) {
+      // Check for StateManager (or compatible object)
+      if (target.isState && typeof target.send === 'function') {
         return target.send(actionName, event);
       } else {
         return target[actionName].call(target, event);
