@@ -311,8 +311,12 @@ task :test, [:suite] => :dist do |t, args|
               "package=all&dist=build&nojshint=true"]
   }
 
-  suite = args[:suite] || :default
-  opts = suites[suite.to_sym]
+  if ENV['TEST']
+    opts = [ENV['TEST']]
+  else
+    suite = args[:suite] || :default
+    opts = suites[suite.to_sym]
+  end
 
   unless opts
     abort "No suite named: #{suite}"
