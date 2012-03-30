@@ -57,6 +57,13 @@ Ember.View.states.hasElement = {
   },
 
   empty: function(view) {
+    var _childViews = get(view, '_childViews'), len, idx;
+    if (_childViews) {
+      len = get(_childViews, 'length');
+      for (idx = 0; idx < len; idx++) {
+        _childViews[idx]._notifyWillDestroyElement();
+      }
+    }
     view.domManager.empty(view);
   },
 
