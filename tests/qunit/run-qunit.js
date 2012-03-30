@@ -1,99 +1,92 @@
-/*
- * Qt+WebKit powered (mostly) headless test runner using Phantomjs
- *
- * Phantomjs installation: http://code.google.com/p/phantomjs/wiki/BuildInstructions
- *
- * Run with:
- *  phantomjs test.js [url-of-your-qunit-testsuite]
- *
- * E.g.
- *      phantomjs test.js http://localhost/qunit/test
- */
+// PhantomJS QUnit Test Runner
 
-var url = phantom.args[0];
+var args = phantom.args;
+if (args.length < 1 || args.length > 2) {
+  console.log("Usage: " + phantom.scriptName + " <URL> <timeout>");
+  phantom.exit(1);
+}
 
 var page = require('webpage').create();
 
-//Route "console.log()" calls from within the Page context to the main Phantom context (i.e. current "this")
+var depRe = /^DEPRECATION:/;
 page.onConsoleMessage = function(msg) {
-  if (msg.slice(0,12) !== 'DEPRECATION:') {
-    console.log(msg);
-  }
+  if (!depRe.test(msg)) console.log(msg);
 };
 
-page.open(url, function(status){
-  if (status !== "success") {
-    console.log("Unable to access network: " + status);
+page.open(args[0], function(status) {
+  if (status !== 'success') {
+    console.error("Unable to access network");
     phantom.exit(1);
   } else {
     page.evaluate(addLogging);
+
+    var timeout = parseInt(args[1] || 30000, 10);
+    var start = Date.now();
     var interval = setInterval(function() {
-      if (finished()) {
-        clearInterval(interval);
-        onfinishedTests();
+      if (Date.now() > start + timeout) {
+        console.error("Tests timed out");
+        phantom.exit(1);
+      } else {
+        var qunitDone = page.evaluate(function() {
+          return window.qunitDone;
+        });
+
+        if (qunitDone) {
+          clearInterval(interval);
+          if (qunitDone.failed > 0) {
+            phantom.exit(1);
+          } else {
+            phantom.exit();
+          }
+        }
       }
     }, 500);
   }
 });
 
-function finished() {
-  return page.evaluate(function(){
-    return !!window.qunitDone;
-  });
-};
-
-function onfinishedTests() {
-  var output = page.evaluate(function() {
-      return JSON.stringify(window.qunitDone);
-  });
-  phantom.exit(JSON.parse(output).failed > 0 ? 1 : 0);
-};
-
 function addLogging() {
-  var current_test_assertions = [];
-  var module;
+  var testErrors = [];
+  var assertionErrors = [];
 
-  QUnit.moduleStart(function(context) {
-    module = context.name;
+  QUnit.moduleDone(function(context) {
+    if (context.failed) {
+      var msg = "Module Failed: " + context.name + "\n" + testErrors.join("\n");
+      console.error(msg);
+      testErrors = [];
+    }
   });
 
-  QUnit.testDone(function(result) {
-    var name = module + ': ' + result.name;
-    var i;
-
-    if (result.failed) {
-      console.log('Assertion Failed: ' + name);
-
-      for (i = 0; i < current_test_assertions.length; i++) {
-        console.log('    ' + current_test_assertions[i]);
-      }
+  QUnit.testDone(function(context) {
+    if (context.failed) {
+      var msg = "  Test Failed: " + context.name + assertionErrors.join("    ");
+      testErrors.push(msg);
+      assertionErrors = [];
     }
-
-    current_test_assertions = [];
   });
 
-  QUnit.log(function(details) {
-    var response;
+  QUnit.log(function(context) {
+    if (context.result) return;
 
-    if (details.result) {
-      return;
+    var msg = "\n    Assertion Failed:";
+    if (context.message) {
+      msg += " " + context.message;
     }
 
-    response = details.message || '';
-
-    if (typeof details.expected !== 'undefined') {
-      if (response) {
-        response += ', ';
-      }
-
-      response += 'expected: ' + details.expected + ', but was: ' + details.actual;
+    if (context.expected) {
+      msg += "\n      Expected: " + context.expected + ", Actual: " + context.actual;
     }
 
-    current_test_assertions.push('Failed assertion: ' + response);
+    assertionErrors.push(msg);
   });
 
-  QUnit.done(function(result){
-    console.log('Took ' + result.runtime +  'ms to run ' + result.total + ' tests. ' + result.passed + ' passed, ' + result.failed + ' failed.');
-    window.qunitDone = result;
+  QUnit.done(function(context) {
+    var stats = [
+      "Time: " + context.runtime + "ms",
+      "Total: " + context.total,
+      "Passed: " + context.passed,
+      "Failed: " + context.failed
+    ];
+    console.log(stats.join(", "));
+    window.qunitDone = context;
   });
 }
