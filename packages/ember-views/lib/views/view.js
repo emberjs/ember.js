@@ -1333,9 +1333,9 @@ Ember.View = Ember.Object.extend(Ember.Evented,
   createChildView: function(view, attrs) {
     if (Ember.View.detect(view)) {
       if (attrs) {
-        view = view.createWith({ _parentView: this }, attrs);
+        view = view.create({ _parentView: this }, attrs);
       } else {
-        view = view.createWith({ _parentView: this });
+        view = view.create({ _parentView: this });
       }
 
       var viewName = view.viewName;
