@@ -33,7 +33,7 @@ require("ember-metal");
     will be executed.  If the function returns false an exception will be
     thrown.
 */
-window.ember_assert = window.sc_assert = function ember_assert(desc, test) {
+window.ember_assert = function ember_assert(desc, test) {
   if ('function' === typeof test) test = test()!==false;
   if (!test) throw new Error("assertion failed: "+desc);
 };
