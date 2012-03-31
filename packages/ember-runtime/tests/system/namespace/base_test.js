@@ -2,8 +2,7 @@
 // Project:  Ember Runtime
 // ==========================================================================
 
-var get = Ember.get,
-    originalRaiseOnDeprecation;
+var get = Ember.get;
 
 module('Ember.Namespace', {
   teardown: function() {
