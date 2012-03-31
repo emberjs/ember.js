@@ -1,15 +1,15 @@
 // ==========================================================================
 // Project:  Ember Runtime
-// Copyright: ©2011 Strobe Inc. and contributors.
-// License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
-var get = Ember.get;
+var get = Ember.get,
+    originalRaiseOnDeprecation;
 
 module('Ember.Namespace', {
   teardown: function() {
     if (window.NamespaceA) { window.NamespaceA.destroy(); }
     if (window.NamespaceB) { window.NamespaceB.destroy(); }
+    if (window.namespaceC) { window.namespaceC.destroy(); }
   }
 });
 
@@ -47,4 +47,22 @@ test("Classes under Ember are properly named", function() {
 
   Ember.TestObject = Ember.Object.extend({});
   equal(Ember.TestObject.toString(), "Ember.TestObject", "class under Ember is given a string representation");
+});
+
+test("Lowercase namespaces should be deprecated", function() {
+  window.namespaceC = Ember.Namespace.create();
+
+  var originalWarn = console.warn,
+      consoleWarning;
+
+  console.warn = function(msg) { consoleWarning = msg; };
+
+  try {
+    Ember.identifyNamespaces();
+  } finally {
+    console.warn = originalWarn;
+  }
+
+  // Ignore backtrace
+  equal(consoleWarning.split("\n")[0], "DEPRECATION: Namespaces should not begin with lowercase.");
 });
