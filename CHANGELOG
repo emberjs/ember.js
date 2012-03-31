@@ -1,3 +1,52 @@
+*Ember 0.9.6 (March 30, 2012)*
+
+* Significant internal performance improvements
+* Improved performance of RenderBuffer
+* Avoid unneceesary ping-ponging in binding updates
+* Fix infinite loop caused by jQuery.extend with array in older browsers
+* Added ENV.SHIM_ES5 option to improve compatibility with Prototype.js
+* Added Ember.Evented mixin for internal events
+* Removed YES and NO constants
+* No longer alias as SC/Sproutcore
+* Deprecate lowercase Namespaces
+* Improved "destroy" method and added "willDestroy" and "didDestroy" callbacks
+* Support static classes in bindAttr
+* Allow 'this' to be used in bindAttr
+* Make sure States are exited in the proper order
+* Deprecate re-rendering while view is inBuffer
+* Add contextmenu event support
+* {{action}} helper event includes view and context
+* Simplified parameters passed by {{action}} helper to StateManager
+* Allow the {{action}} helper to use "send" as the action name
+* Collection itemViewClass itemHash bindings should be resolved in the proper context.
+* Honor emptyViewClass attribute in collection view helper
+* Allow View attributeBindings to be aliased.
+* Add Ember.getWithDefault
+* Add Ember.computed(key1, key2, func)
+* Add Ember.Map
+* Improvements to OrderedSet
+* Warn if classNames or classNameBindings is set to non-array
+* Warn when setting attributeBindings or classNameBindings with {{view}} helper
+* Warn if user tries to change a view's elementId after creation
+* Remove contained items from Ember.Set when calling #clear
+* Treat classNameBindings the same as classBinding in the view helper
+* Added maxlength to TextSupport; added size to TextField; added rows and cols to TextArea
+* Fix bug where DOM did not update when Ember.Select content changed
+* Dereference views from parent when viewName is specified and the view is destroyed
+* Added "clear" method to Ember.MutableArray
+* Added Ember.cacheFor to peek at computed property cache
+* Added support for multiple attributes to Ember.Select
+* Fix security warning in older Firefox
+* Re-render views if the templateContext is changed
+* More sugar for creating complex bindings
+* Fixed bug where a class could not be reopened if an instance of it had already been created
+* Enable unnamed Handlebars script tags to have a custom id with the `data-element-id` attribute
+* Testing improvements including headless tests (rake test) and JSHint
+* Improved framework build process
+* API documentation improvements
+* Added benchmarking harness for internals
+
+
 *Ember 0.9.5 (February 17, 2012)*
 
 * Add Handlebars helper for {{yield}}
