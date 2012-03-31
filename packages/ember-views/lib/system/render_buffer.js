@@ -9,6 +9,7 @@ var get = Ember.get, set = Ember.set;
 var forEach = Ember.ArrayUtils.forEach;
 var indexOf = Ember.ArrayUtils.indexOf;
 
+/** @private */
 var ClassSet = function() {
   this.seen = {};
   this.list = [];

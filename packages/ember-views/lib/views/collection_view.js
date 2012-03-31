@@ -40,6 +40,7 @@ Ember.CollectionView = Ember.ContainerView.extend(
   */
   itemViewClass: Ember.View,
 
+  /** @private */
   init: function() {
     var ret = this._super();
     this._contentDidChange();

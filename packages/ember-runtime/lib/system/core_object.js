@@ -89,9 +89,13 @@ CoreObject.PrototypeMixin = Ember.Mixin.create(
 
   isInstance: true,
 
+  /** @private */
   init: function() {},
 
+  /** @field */
   isDestroyed: false,
+
+  /** @field */
   isDestroying: false,
 
   /**

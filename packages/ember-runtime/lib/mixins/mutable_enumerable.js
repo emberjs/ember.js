@@ -26,7 +26,6 @@ var forEach = Ember.ArrayUtils.forEach;
   method will only add the object to the enumerable if the object is not
   already present and the object if of a type supported by the enumerable.
 
-      javascript:
       set.addObject(contact);
 
   ## Removing Objects
@@ -35,7 +34,6 @@ var forEach = Ember.ArrayUtils.forEach;
   will only remove the object if it is already in the enumerable, otherwise
   this method has no effect.
 
-      javascript:
       set.removeObject(contact);
 
   ## Implementing In Your Own Code

@@ -216,6 +216,7 @@ function sendEvent(obj, eventName) {
   return true;
 }
 
+/** @memberOf Ember */
 function deferEvent(obj, eventName) {
   var targetSet = targetSetFor(obj, eventName), actions = [], params = arguments;
   iterateSet(targetSet, function (action) {
