@@ -304,6 +304,7 @@ task :test, [:suite] => :dist do |t, args|
 
   suites = {
     :default => ["package=all"],
+    # testing older jQuery 1.6.4 for compatibility
     :all => ["package=all",
               "package=all&jquery=1.6.4&nojshint=true",
               "package=all&extendprototypes=true&nojshint=true",
