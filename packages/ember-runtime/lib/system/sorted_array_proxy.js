@@ -18,24 +18,33 @@ var get = Ember.get, set = Ember.set;
  a number of binding use cases or other cases where being able to swap
  out the underlying array is useful.
 
- In order for the sorting to succeed, the individual items must implement
+   In order for the sorting to succeed, the individual items must implement
  the method 'sortValue', which returns a property or calculated property
  of the item's value to sort on.
 
+   Since this collection is continually reorganized to keep it sorted, calling
+ modifying methods other than 'add' and 'remove' will, at best, corrupt the order of
+ the array's items and, at worst, drop some and/or double items up.
+
  A simple example of usage:
 
+ // Define an object to be put into the sorted array:
  App.Pet = Ember.Object.extend({
  name: null,
  description: null
 
+ // Sort on the pet's name case-insensitive:
  sortValue: function() {
- return this.get('name');
+ return this.get('name').toUpperCase();
  }.property('name')
  });
 
+ // Create a sorted array:
  var sortedArrayProxy = Ember.SortedArrayProxy.create({});
+
+ // Add some pets to it.
  sortedArray.add(App.Pet.create({
- name: 'dog',
+ name: 'Dog',
  description: 'furry friendly'
  });
  sortedArray.add(App.Pet.create({
@@ -47,9 +56,19 @@ var get = Ember.get, set = Ember.set;
  description: 'scaly wet'
  });
 
+ // Examine how they're sorted:
  sortedArray.map(function(item, index, self) {
- return item.get('name');
- }); => ['cat', 'dog', 'fish'];
+  return item.get('name');
+ }); => ['cat', 'Dog', 'fish'];
+
+ // Remove the cat:
+ var cat = sortedArray.objectAtContent(0);
+ sortedArray.remove(cat);
+
+ // See what's left:
+ sortedArray.map(function(item.index.self) {
+  return item.get('name');
+ }); => ['Dog', 'fish'];
 
  @extends Ember.ArrayProxy
  @extends Ember.Object
@@ -65,11 +84,10 @@ Ember.SortedArrayProxy = Ember.ArrayProxy.extend(
 
    @property {Ember.Array}
    */
-  content: null,
-
+//  content: null,
 
   /**
-   * Adds a new contact to the list and ensures it is
+   * Adds a new item to the list and ensures it is
    * sorted correctly.
    *
    * @param item the item to insert.  item class must implement sortValue
@@ -91,7 +109,7 @@ Ember.SortedArrayProxy = Ember.ArrayProxy.extend(
    * @private
    *
    * Binary search implementation that finds the index
-   * where a contact should be inserted.
+   * where a item should be inserted.
    */
   binarySearch: function(value, low, high) {
     var mid, midValue;
