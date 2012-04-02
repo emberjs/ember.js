@@ -129,14 +129,58 @@ Ember.Handlebars.compile = function(string) {
 };
 
 /**
-  Lookup both on root and on window
+  Lookup both on root and on window. If the path starts with
+  a keyword, the corresponding object will be looked up in the
+  template's data hash and used to resolve the path.
 
   @param {Object} root The object to look up the property on
   @param {String} path The path to be lookedup
+  @param {Object} options The template's option hash
 */
-Ember.Handlebars.getPath = function(root, path) {
-  // TODO: Remove this `false` when the `getPath` globals support is removed
-  var value = Ember.getPath(root, path, false);
+
+// Regular expression used to determine if a path starts
+// with a reserved word, and if so, which reserved word it
+// is.
+var KEYWORD_REGEX = Ember.Handlebars.KEYWORD_REGEX = /^(controller|view)\.?/;
+
+Ember.Handlebars.getPath = function(root, path, options) {
+  var data = options.data,
+      value, keyword;
+
+  // Test to see if the path starts with a keyword.
+  // For example, "controller.foo.bar"
+  if (data && KEYWORD_REGEX.test(path)) {
+
+    // We used a fast (non-extracting) test above
+    // to reduce the performance hit for paths that
+    // do not contain keywords. Now that we know that
+    // we match, extract the keyword from the string.
+    keyword = path.match(KEYWORD_REGEX)[1];
+
+    // Look up the value in the template's data hash.
+    root = data[keyword];
+
+    // Make sure we don't expose virtual views to the
+    // user.
+    if (root.isView) {
+      root = root.get('concreteView');
+    }
+
+    // Handle cases where the entire path is the reserved
+    // word. In that case, return the object itself.
+    if (path === keyword) {
+      value = root;
+    } else {
+      // Strip the keyword from the path and look up
+      // the remainder from the newly found root.
+      path = path.substr(keyword.length);
+      value = Ember.getPath(root, path, false);
+    }
+  } else {
+    // TODO: Remove this `false` when the `getPath` globals support is removed
+    value = Ember.getPath(root, path, false);
+  }
+
   if (value === undefined && root !== window && Ember.isGlobalPath(path)) {
     value = Ember.getPath(window, path);
   }

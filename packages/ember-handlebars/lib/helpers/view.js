@@ -11,9 +11,10 @@ require("ember-handlebars");
 var get = Ember.get, set = Ember.set;
 var indexOf = Ember.ArrayUtils.indexOf;
 var PARENT_VIEW_PATH = /^parentView\./;
+var EmberHandlebars = Ember.Handlebars;
 
 /** @private */
-Ember.Handlebars.ViewHelper = Ember.Object.create({
+EmberHandlebars.ViewHelper = Ember.Object.create({
 
   viewClassFromHTMLOptions: function(viewClass, options, thisContext) {
     var extensions = {},
@@ -65,7 +66,10 @@ Ember.Handlebars.ViewHelper = Ember.Object.create({
       // Test if the property ends in "Binding"
       if (Ember.IS_BINDING.test(prop)) {
         path = options[prop];
-        if (!Ember.isGlobalPath(path)) {
+
+        if (EmberHandlebars.KEYWORD_REGEX.test(path)) {
+          options[prop] = 'templateData.'+path;
+        } else if (!Ember.isGlobalPath(path)) {
           if (path === 'this') {
             options[prop] = 'bindingContext';
           } else {
@@ -91,7 +95,7 @@ Ember.Handlebars.ViewHelper = Ember.Object.create({
         newView;
 
     if ('string' === typeof path) {
-      newView = Ember.Handlebars.getPath(thisContext, path);
+      newView = EmberHandlebars.getPath(thisContext, path, options);
       ember_assert("Unable to find view at path '" + path + "'", !!newView);
     } else {
       newView = path;
@@ -101,7 +105,9 @@ Ember.Handlebars.ViewHelper = Ember.Object.create({
 
     newView = this.viewClassFromHTMLOptions(newView, hash, thisContext);
     var currentView = data.view;
-    var viewOptions = {};
+    var viewOptions = {
+      templateData: options.data
+    };
 
     if (fn) {
       ember_assert("You cannot provide a template block if you also specified a templateName", !(get(viewOptions, 'templateName')) && (indexOf(newView.PrototypeMixin.keys(), 'templateName') >= 0));
@@ -118,7 +124,7 @@ Ember.Handlebars.ViewHelper = Ember.Object.create({
   @param {Hash} options
   @returns {String} HTML string
 */
-Ember.Handlebars.registerHelper('view', function(path, options) {
+EmberHandlebars.registerHelper('view', function(path, options) {
   ember_assert("The view helper only takes a single argument", arguments.length <= 2);
 
   // If no path is provided, treat path param as options.
@@ -127,6 +133,6 @@ Ember.Handlebars.registerHelper('view', function(path, options) {
     path = "Ember.View";
   }
 
-  return Ember.Handlebars.ViewHelper.helper(this, path, options);
+  return EmberHandlebars.ViewHelper.helper(this, path, options);
 });
 
