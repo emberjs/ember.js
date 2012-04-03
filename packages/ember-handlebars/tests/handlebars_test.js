@@ -1410,6 +1410,15 @@ test("should expose a controller keyword when present on the view", function() {
 
   equal(view.$().text(), "barbang", "renders values from controller and parent controller");
 
+  var controller = get(view, 'controller');
+
+  Ember.run(function() {
+    controller.set('foo', "BAR");
+    controller.set('baz', "BLARGH");
+  });
+
+  equal(view.$().text(), "BARBLARGH", "updates the DOM when a bound value is updated");
+
   view.destroy();
 
   view = Ember.View.create({
@@ -1422,6 +1431,29 @@ test("should expose a controller keyword when present on the view", function() {
   });
 
   equal(view.$().text(), "aString", "renders the controller itself if no additional path is specified");
+});
+
+test("should expose a controller keyword that can be used in conditionals", function() {
+  var templateString = "{{#view}}{{#if controller}}{{controller.foo}}{{/if}}{{/view}}";
+  view = Ember.View.create({
+    controller: Ember.Object.create({
+      foo: "bar"
+    }),
+
+    template: Ember.Handlebars.compile(templateString)
+  });
+
+  Ember.run(function() {
+    view.appendTo("#qunit-fixture");
+  });
+
+  equal(view.$().text(), "bar", "renders values from controller and parent controller");
+
+  Ember.run(function() {
+    view.set('controller', null);
+  });
+
+  equal(view.$().text(), "", "updates the DOM when the controller is changed");
 });
 
 test("should expose a view keyword", function() {
