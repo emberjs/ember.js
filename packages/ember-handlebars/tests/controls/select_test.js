@@ -111,18 +111,6 @@ test("selection can be set when multiple=false", function() {
   equal(select.$()[0].selectedIndex, 0, "After changing it, selection should be correct");
 });
 
-test("multiple selection raises error", function() {
-  var yehuda = { id: 1, firstName: 'Yehuda' },
-      tom = { id: 2, firstName: 'Tom' };
-  select.set('content', Ember.A([yehuda, tom]));
-  select.set('multiple', false);
-
-  raises(function() {
-    select.set('selection', Ember.A([yehuda, tom]));
-    append();
-  }, null, "raises error when setting multiple selections for a non-multiple select");
-});
-
 test("selection can be set when multiple=true", function() {
   var yehuda = { id: 1, firstName: 'Yehuda' },
       tom = { id: 2, firstName: 'Tom' },

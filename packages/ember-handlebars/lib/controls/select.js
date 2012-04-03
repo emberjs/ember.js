@@ -45,7 +45,6 @@ Ember.Select = Ember.View.extend({
       }
       this._selectionDidChangeMultiple();
     } else {
-      ember_assert("Select multiple is false, but you have specified an Array selection.", !isArray);
       this._selectionDidChangeSingle();
     }
   }, 'selection'),
