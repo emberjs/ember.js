@@ -21,7 +21,13 @@ var EmberHandlebars = Ember.Handlebars, helpers = EmberHandlebars.helpers;
         fn = options.fn,
         inverse = options.inverse,
         view = data.view,
-        ctx  = this;
+        ctx  = this,
+        normalized;
+
+    normalized = Ember.Handlebars.normalizePath(ctx, property, data);
+
+    ctx = normalized.root;
+    property = normalized.path;
 
     // Set up observers for observable objects
     if ('object' === typeof this) {

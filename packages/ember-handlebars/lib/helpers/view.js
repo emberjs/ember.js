@@ -17,12 +17,13 @@ var EmberHandlebars = Ember.Handlebars;
 EmberHandlebars.ViewHelper = Ember.Object.create({
 
   viewClassFromHTMLOptions: function(viewClass, options, thisContext) {
+    var hash = options.hash, data = options.data;
     var extensions = {},
-        classes = options['class'],
+        classes = hash['class'],
         dup = false;
 
-    if (options.id) {
-      extensions.elementId = options.id;
+    if (hash.id) {
+      extensions.elementId = hash.id;
       dup = true;
     }
 
@@ -32,48 +33,49 @@ EmberHandlebars.ViewHelper = Ember.Object.create({
       dup = true;
     }
 
-    if (options.classBinding) {
-      extensions.classNameBindings = options.classBinding.split(' ');
+    if (hash.classBinding) {
+      extensions.classNameBindings = hash.classBinding.split(' ');
       dup = true;
     }
 
-    if (options.classNameBindings) {
-      extensions.classNameBindings = options.classNameBindings.split(' ');
+    if (hash.classNameBindings) {
+      extensions.classNameBindings = hash.classNameBindings.split(' ');
       dup = true;
     }
 
-    if (options.attributeBindings) {
+    if (hash.attributeBindings) {
       ember_assert("Setting 'attributeBindings' via Handlebars is not allowed. Please subclass Ember.View and set it there instead.");
       extensions.attributeBindings = null;
       dup = true;
     }
 
     if (dup) {
-      options = Ember.$.extend({}, options);
-      delete options.id;
-      delete options['class'];
-      delete options.classBinding;
+      hash = Ember.$.extend({}, hash);
+      delete hash.id;
+      delete hash['class'];
+      delete hash.classBinding;
     }
 
     // Look for bindings passed to the helper and, if they are
     // local, make them relative to the current context instead of the
     // view.
-    var path;
+    var path, normalized;
 
-    for (var prop in options) {
-      if (!options.hasOwnProperty(prop)) { continue; }
+    for (var prop in hash) {
+      if (!hash.hasOwnProperty(prop)) { continue; }
 
       // Test if the property ends in "Binding"
       if (Ember.IS_BINDING.test(prop)) {
-        path = options[prop];
+        path = hash[prop];
 
-        if (EmberHandlebars.KEYWORD_REGEX.test(path)) {
-          options[prop] = 'templateData.'+path;
+        normalized = Ember.Handlebars.normalizePath(null, path, data);
+        if (normalized.isKeyword) {
+          hash[prop] = 'templateData.keywords.'+path;
         } else if (!Ember.isGlobalPath(path)) {
           if (path === 'this') {
-            options[prop] = 'bindingContext';
+            hash[prop] = 'bindingContext';
           } else {
-            options[prop] = 'bindingContext.'+path;
+            hash[prop] = 'bindingContext.'+path;
           }
         }
       }
@@ -83,7 +85,7 @@ EmberHandlebars.ViewHelper = Ember.Object.create({
     // for the bindings set up above.
     extensions.bindingContext = thisContext;
 
-    return viewClass.extend(options, extensions);
+    return viewClass.extend(hash, extensions);
   },
 
   helper: function(thisContext, path, options) {
@@ -103,7 +105,7 @@ EmberHandlebars.ViewHelper = Ember.Object.create({
 
     ember_assert(Ember.String.fmt('You must pass a view class to the #view helper, not %@ (%@)', [path, newView]), Ember.View.detect(newView));
 
-    newView = this.viewClassFromHTMLOptions(newView, hash, thisContext);
+    newView = this.viewClassFromHTMLOptions(newView, options, thisContext);
     var currentView = data.view;
     var viewOptions = {
       templateData: options.data

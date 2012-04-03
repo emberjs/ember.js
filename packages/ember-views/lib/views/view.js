@@ -122,6 +122,14 @@ Ember.View = Ember.Object.extend(Ember.Evented,
   }).property('templateName').cacheable(),
 
   /**
+    The controller managing this view. If this property is set, it will be made
+    made available for use by the template.
+
+    @type Object
+  */
+  controller: null,
+
+  /**
     A view may contain a layout. A layout is a regular template but
     supercedes the `template` property during rendering. It is the
     responsibility of the layout template to retrieve the `template`
@@ -192,14 +200,14 @@ Ember.View = Ember.Object.extend(Ember.Evented,
   }).cacheable(),
 
   /**
-    If the template context changes, the view should be re-rendered to display
-    the new value.
+    If a value that affects template rendering changes, the view should be
+    re-rendered to reflect the new value.
 
     @private
   */
-  templateContextDidChange: Ember.observer(function() {
+  _displayPropertyDidChange: Ember.observer(function() {
     this.rerender();
-  }, 'templateContext'),
+  }, 'templateContext', 'controller'),
 
   /**
     If the view is currently inserted into the DOM of a parent view, this
@@ -358,13 +366,21 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     if (template) {
       var context = get(this, '_templateContext'),
           templateData = this.get('templateData'),
-          controller = this.get('controller'),
-          data = { view: this, buffer: buffer, isRenderData: true };
+          controller = this.get('controller');
+
+      var data = {
+        view: this,
+        buffer: buffer,
+        isRenderData: true,
+        keywords: {
+          view: get(this, 'concreteView')
+        }
+      };
 
       // If the view has a controller specified, make it available to the
       // template. If not, pass along the parent template's controller,
       // if it exists.
-      data.controller = controller || (templateData && templateData.controller);
+      data.keywords.controller = controller || (templateData && templateData.keywords.controller);
 
       // Invoke the template with the provided template context, which
       // is the view by default. A hash of data is also passed that provides

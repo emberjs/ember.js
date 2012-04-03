@@ -129,6 +129,39 @@ Ember.Handlebars.compile = function(string) {
 };
 
 /**
+  If a path starts with a reserved keyword, returns the root
+  that should be used.
+*/
+var normalizePath = Ember.Handlebars.normalizePath = function(root, path, data) {
+  var keywords = (data && data.keywords) || {},
+      keyword, isKeyword;
+
+  // Get the first segment of the path. For example, if the
+  // path is "foo.bar.baz", returns "foo".
+  keyword = path.split('.', 1)[0];
+
+  // Test to see if the first path is a keyword that has been
+  // passed along in the view's data hash. If so, we will treat
+  // that object as the new root.
+  if (keywords.hasOwnProperty(keyword)) {
+    // Look up the value in the template's data hash.
+    root = keywords[keyword];
+    isKeyword = true;
+
+    // Handle cases where the entire path is the reserved
+    // word. In that case, return the object itself.
+    if (path === keyword) {
+      path = '';
+    } else {
+      // Strip the keyword from the path and look up
+      // the remainder from the newly found root.
+      path = path.substr(keyword.length);
+    }
+  }
+
+  return { root: root, path: path, isKeyword: isKeyword };
+};
+/**
   Lookup both on root and on window. If the path starts with
   a keyword, the corresponding object will be looked up in the
   template's data hash and used to resolve the path.
@@ -138,48 +171,19 @@ Ember.Handlebars.compile = function(string) {
   @param {Object} options The template's option hash
 */
 
-// Regular expression used to determine if a path starts
-// with a reserved word, and if so, which reserved word it
-// is.
-var KEYWORD_REGEX = Ember.Handlebars.KEYWORD_REGEX = /^(controller|view)\.?/;
-
 Ember.Handlebars.getPath = function(root, path, options) {
   var data = options.data,
-      value, keyword;
+      normalizedPath = normalizePath(root, path, data),
+      value;
 
-  // Test to see if the path starts with a keyword.
-  // For example, "controller.foo.bar"
-  if (data && KEYWORD_REGEX.test(path)) {
+  // In cases where the path begins with a keyword, change the
+  // root to the value represented by that keyword, and ensure
+  // the path is relative to it.
+  root = normalizedPath.root;
+  path = normalizedPath.path;
 
-    // We used a fast (non-extracting) test above
-    // to reduce the performance hit for paths that
-    // do not contain keywords. Now that we know that
-    // we match, extract the keyword from the string.
-    keyword = path.match(KEYWORD_REGEX)[1];
-
-    // Look up the value in the template's data hash.
-    root = data[keyword];
-
-    // Make sure we don't expose virtual views to the
-    // user.
-    if (root.isView) {
-      root = root.get('concreteView');
-    }
-
-    // Handle cases where the entire path is the reserved
-    // word. In that case, return the object itself.
-    if (path === keyword) {
-      value = root;
-    } else {
-      // Strip the keyword from the path and look up
-      // the remainder from the newly found root.
-      path = path.substr(keyword.length);
-      value = Ember.getPath(root, path, false);
-    }
-  } else {
-    // TODO: Remove this `false` when the `getPath` globals support is removed
-    value = Ember.getPath(root, path, false);
-  }
+  // TODO: Remove this `false` when the `getPath` globals support is removed
+  value = Ember.getPath(root, path, false);
 
   if (value === undefined && root !== window && Ember.isGlobalPath(path)) {
     value = Ember.getPath(window, path);
