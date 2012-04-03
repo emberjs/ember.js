@@ -45,7 +45,6 @@ Ember.Select = Ember.View.extend({
       }
       this._selectionDidChangeMultiple();
     } else {
-      ember_assert("Select multiple is false, but you have specified an Array selection.", !isArray);
       this._selectionDidChangeSingle();
     }
   }, 'selection'),
@@ -73,7 +72,7 @@ Ember.Select = Ember.View.extend({
     if (options) {
       var selectedIndexes = options.map(function(){
         return this.index - offset;
-      });
+      }).toArray();
       set(this, 'selection', content.objectsAt(selectedIndexes));
     }
   },
