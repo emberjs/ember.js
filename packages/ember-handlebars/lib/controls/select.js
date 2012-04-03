@@ -73,7 +73,7 @@ Ember.Select = Ember.View.extend({
     if (options) {
       var selectedIndexes = options.map(function(){
         return this.index - offset;
-      });
+      }).toArray();
       set(this, 'selection', content.objectsAt(selectedIndexes));
     }
   },

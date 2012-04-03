@@ -85,13 +85,13 @@ test("can retrieve the current selected options when multiple=true", function() 
 
   append();
 
-  deepEqual(select.get('selection').toArray(), [], "By default, nothing is selected");
+  deepEqual(select.get('selection'), [], "By default, nothing is selected");
 
   select.$(':contains("Tom"), :contains("David")').each(function() { this.selected = true; });
 
   select.$().trigger('change');
 
-  deepEqual(select.get('selection').toArray(), [tom, david], "On change, the new options should be selected");
+  deepEqual(select.get('selection'), [tom, david], "On change, the new options should be selected");
 });
 
 test("selection can be set when multiple=false", function() {
@@ -135,11 +135,11 @@ test("selection can be set when multiple=true", function() {
 
   append();
 
-  deepEqual(select.get('selection').toArray(), [tom], "Initial selection should be correct");
+  deepEqual(select.get('selection'), [tom], "Initial selection should be correct");
 
   select.set('selection', yehuda);
 
-  deepEqual(select.get('selection').toArray(), [yehuda], "After changing it, selection should be correct");
+  deepEqual(select.get('selection'), [yehuda], "After changing it, selection should be correct");
 });
 
 test("multiple selections can be set when multiple=true", function() {
@@ -155,7 +155,7 @@ test("multiple selections can be set when multiple=true", function() {
 
   append();
 
-  deepEqual(select.get('selection').toArray(), [yehuda, david], "Initial selection should be correct");
+  deepEqual(select.get('selection'), [yehuda, david], "Initial selection should be correct");
 
   select.set('selection', Ember.A([tom, brennain]));
 
