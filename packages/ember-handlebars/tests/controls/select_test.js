@@ -85,13 +85,13 @@ test("can retrieve the current selected options when multiple=true", function() 
 
   append();
 
-  deepEqual(select.get('selection').toArray(), [], "By default, nothing is selected");
+  deepEqual(select.get('selection'), [], "By default, nothing is selected");
 
   select.$(':contains("Tom"), :contains("David")').each(function() { this.selected = true; });
 
   select.$().trigger('change');
 
-  deepEqual(select.get('selection').toArray(), [tom, david], "On change, the new options should be selected");
+  deepEqual(select.get('selection'), [tom, david], "On change, the new options should be selected");
 });
 
 test("selection can be set when multiple=false", function() {
@@ -111,18 +111,6 @@ test("selection can be set when multiple=false", function() {
   equal(select.$()[0].selectedIndex, 0, "After changing it, selection should be correct");
 });
 
-test("multiple selection raises error", function() {
-  var yehuda = { id: 1, firstName: 'Yehuda' },
-      tom = { id: 2, firstName: 'Tom' };
-  select.set('content', Ember.A([yehuda, tom]));
-  select.set('multiple', false);
-
-  raises(function() {
-    select.set('selection', Ember.A([yehuda, tom]));
-    append();
-  }, null, "raises error when setting multiple selections for a non-multiple select");
-});
-
 test("selection can be set when multiple=true", function() {
   var yehuda = { id: 1, firstName: 'Yehuda' },
       tom = { id: 2, firstName: 'Tom' },
@@ -135,11 +123,11 @@ test("selection can be set when multiple=true", function() {
 
   append();
 
-  deepEqual(select.get('selection').toArray(), [tom], "Initial selection should be correct");
+  deepEqual(select.get('selection'), [tom], "Initial selection should be correct");
 
   select.set('selection', yehuda);
 
-  deepEqual(select.get('selection').toArray(), [yehuda], "After changing it, selection should be correct");
+  deepEqual(select.get('selection'), [yehuda], "After changing it, selection should be correct");
 });
 
 test("multiple selections can be set when multiple=true", function() {
@@ -155,7 +143,7 @@ test("multiple selections can be set when multiple=true", function() {
 
   append();
 
-  deepEqual(select.get('selection').toArray(), [yehuda, david], "Initial selection should be correct");
+  deepEqual(select.get('selection'), [yehuda, david], "Initial selection should be correct");
 
   select.set('selection', Ember.A([tom, brennain]));
 
