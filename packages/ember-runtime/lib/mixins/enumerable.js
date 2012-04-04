@@ -734,7 +734,7 @@ Ember.Enumerable = Ember.Mixin.create( /** @lends Ember.Enumerable */ {
 
     @param {Enumerable} removes
       optional enumerable containing items that were removed from the set.
-      For ordered enumerables, this hsould be an ordered array of items. If
+      For ordered enumerables, this should be an ordered array of items. If
       no items were removed you can pass null.
 
     @returns {Object} receiver
