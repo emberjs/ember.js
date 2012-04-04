@@ -236,7 +236,7 @@ parse: function parse(input) {
 
     var symbol, preErrorSymbol, state, action, a, r, yyval={},p,len,newState, expected;
     while (true) {
-        // retreive state number from top of stack
+        // retrieve state number from top of stack
         state = stack[stack.length-1];
 
         // use default actions if available

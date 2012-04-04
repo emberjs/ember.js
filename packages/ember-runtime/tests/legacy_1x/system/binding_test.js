@@ -63,14 +63,14 @@ test("binding should have synced on connect", function() {
   equal(get(toObject, "value"), "start", "toObject.value should match fromObject.value");
 });
 
-test("fromObject change should propogate to toObject only after flush", function() {
+test("fromObject change should propagate to toObject only after flush", function() {
   set(fromObject, "value", "change") ;
   equal(get(toObject, "value"), "start") ;
   Ember.run.sync() ;
   equal(get(toObject, "value"), "change") ;
 });
 
-test("toObject change should propogate to fromObject only after flush", function() {
+test("toObject change should propagate to fromObject only after flush", function() {
   set(toObject, "value", "change") ;
   equal(get(fromObject, "value"), "start") ;
   Ember.run.sync() ;
@@ -134,14 +134,14 @@ module("one way binding", {
 
 });
 
-test("fromObject change should propogate after flush", function() {
+test("fromObject change should propagate after flush", function() {
   set(fromObject, "value", "change") ;
   equal(get(toObject, "value"), "start") ;
   Ember.run.sync() ;
   equal(get(toObject, "value"), "change") ;
 });
 
-test("toObject change should NOT propogate", function() {
+test("toObject change should NOT propagate", function() {
   set(toObject, "value", "change") ;
   equal(get(fromObject, "value"), "start") ;
   Ember.run.sync() ;
@@ -279,8 +279,8 @@ test("two bindings to the same value should sync in the order they are initializ
   Ember.run.end();
 
   equal(get(a, 'foo'), "bar", 'a.foo should not change');
-  equal(get(b, 'foo'), "bar", 'a.foo should propogate up to b.foo');
-  equal(get(b.c, 'foo'), "bar", 'a.foo should propogate up to b.c.foo');
+  equal(get(b, 'foo'), "bar", 'a.foo should propagate up to b.foo');
+  equal(get(b.c, 'foo'), "bar", 'a.foo should propagate up to b.c.foo');
 });
 
 // ..........................................................
