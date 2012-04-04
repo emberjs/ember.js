@@ -36,85 +36,84 @@ test("should begin disabled if the disabled attribute is true", function() {
   checkboxView.set('disabled', true);
   append();
 
-  ok(checkboxView.$("input").is(":disabled"));
+  ok(checkboxView.$().is(":disabled"));
 });
 
 test("should become disabled if the disabled attribute is changed", function() {
   checkboxView = Ember.Checkbox.create({});
 
   append();
-  ok(checkboxView.$("input").is(":not(:disabled)"));
+  ok(checkboxView.$().is(":not(:disabled)"));
 
   Ember.run(function() { checkboxView.set('disabled', true); });
-  ok(checkboxView.$("input").is(":disabled"));
+  ok(checkboxView.$().is(":disabled"));
 
   Ember.run(function() { checkboxView.set('disabled', false); });
-  ok(checkboxView.$("input").is(":not(:disabled)"));
+  ok(checkboxView.$().is(":not(:disabled)"));
 });
 
-test("value property mirrors input value", function() {
+test("checked property mirrors input value", function() {
   checkboxView = Ember.Checkbox.create({});
   Ember.run(function() { checkboxView.append(); });
 
-  equal(get(checkboxView, 'value'), false, "initially starts with a false value");
-  equal(!!checkboxView.$('input').prop('checked'), false, "the initial checked property is false");
+  equal(get(checkboxView, 'checked'), false, "initially starts with a false value");
+  equal(!!checkboxView.$().prop('checked'), false, "the initial checked property is false");
 
-  setAndFlush(checkboxView, 'value', true);
+  setAndFlush(checkboxView, 'checked', true);
 
-  equal(checkboxView.$('input').prop('checked'), true, "changing the value property changes the DOM");
+  equal(checkboxView.$().prop('checked'), true, "changing the value property changes the DOM");
 
   checkboxView.remove();
   Ember.run(function() { checkboxView.append(); });
 
-  equal(checkboxView.$('input').prop('checked'), true, "changing the value property changes the DOM");
+  equal(checkboxView.$().prop('checked'), true, "changing the value property changes the DOM");
 
   Ember.run(function() { checkboxView.remove(); });
-  Ember.run(function() { set(checkboxView, 'value', false); });
+  Ember.run(function() { set(checkboxView, 'checked', false); });
   Ember.run(function() { checkboxView.append(); });
 
-  equal(checkboxView.$('input').prop('checked'), false, "changing the value property changes the DOM");
-});
-
-test("value property mirrors input value", function() {
-  checkboxView = Ember.Checkbox.create({ value: true });
-  Ember.run(function() { checkboxView.append(); });
-
-  equal(get(checkboxView, 'value'), true, "precond - initially starts with a true value");
-  equal(!!checkboxView.$('input').prop('checked'), true, "the initial checked property is true");
-
-  setAndFlush(checkboxView, 'value', false);
-
-  equal(!!checkboxView.$('input').prop('checked'), false, "changing the value property changes the DOM");
-
-  Ember.run(function() { checkboxView.remove(); });
-  Ember.run(function() { checkboxView.append(); });
-
-  equal(checkboxView.$('input').prop('checked'), false, "changing the value property changes the DOM");
-
-  Ember.run(function() { checkboxView.remove(); });
-  setAndFlush(checkboxView, 'value', true);
-  Ember.run(function() { checkboxView.append(); });
-
-  equal(checkboxView.$('input').prop('checked'), true, "changing the value property changes the DOM");
+  equal(checkboxView.$().prop('checked'), false, "changing the value property changes the DOM");
 });
 
 test("checking the checkbox updates the value", function() {
-  checkboxView = Ember.Checkbox.create({ value: true });
+  checkboxView = Ember.Checkbox.create({ checked: true });
   Ember.run(function() { checkboxView.appendTo('#qunit-fixture'); });
 
-  equal(get(checkboxView, 'value'), true, "precond - initially starts with a true value");
-  equal(!!checkboxView.$('input').attr('checked'), true, "precond - the initial checked property is true");
+  equal(get(checkboxView, 'checked'), true, "precond - initially starts with a true value");
+  equal(!!checkboxView.$().attr('checked'), true, "precond - the initial checked property is true");
 
   // Can't find a way to programatically trigger a checkbox in IE and have it generate the
   // same events as if a user actually clicks.
   if (!Ember.$.browser.msie) {
-    checkboxView.$('input')[0].click();
+    checkboxView.$()[0].click();
   } else {
-    checkboxView.$('input').trigger('click');
-    checkboxView.$('input').removeAttr('checked').trigger('change');
+    checkboxView.$().trigger('click');
+    checkboxView.$().removeAttr('checked').trigger('change');
   }
 
-  equal(checkboxView.$('input').prop('checked'), false, "after clicking a checkbox, the checked property changed");
-  equal(get(checkboxView, 'value'), false, "changing the checkbox causes the view's value to get updated");
+  equal(checkboxView.$().prop('checked'), false, "after clicking a checkbox, the checked property changed");
+  equal(get(checkboxView, 'checked'), false, "changing the checkbox causes the view's value to get updated");
+});
+
+// deprecated behaviors
+test("wraps the checkbox in a label if a title attribute is provided", function(){
+  checkboxView = Ember.Checkbox.create({ title: "I have a title" });
+  append();
+  equal(checkboxView.$('label').length, 1);
+});
+
+test("proxies the checked attribute to value for backwards compatibility", function(){
+  checkboxView = Ember.Checkbox.create({ title: "I have a title" });
+  append();
+  
+  set(checkboxView, 'value', true);
+  equal(get(checkboxView, 'checked'), true, 'checked is updated when value set');
+  equal(get(checkboxView, 'value'), true, 'value is updated when value set');
+  
+  set(checkboxView, 'checked', false);
+  
+  equal(get(checkboxView, 'checked'), false, 'checked is updated when checked set');
+  equal(get(checkboxView, 'value'), false, 'value is updated when checked set');
+  
 });
 
