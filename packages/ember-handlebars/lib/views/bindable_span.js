@@ -84,14 +84,15 @@ Ember._BindableSpanView = Ember.View.extend(Ember.Metamorph,
     var property = get(this, 'property'),
         context  = get(this, 'previousContext'),
         valueNormalizer = get(this, 'valueNormalizerFunc'),
-        result;
+        result, templateData;
 
     // Use the current context as the result if no
     // property is provided.
     if (property === '') {
       result = context;
     } else {
-      result = getPath(context, property);
+      templateData = get(this, 'templateData');
+      result = getPath(context, property, { data: templateData });
     }
 
     return valueNormalizer ? valueNormalizer(result) : result;

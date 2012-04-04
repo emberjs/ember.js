@@ -21,7 +21,13 @@ var EmberHandlebars = Ember.Handlebars, helpers = EmberHandlebars.helpers;
         fn = options.fn,
         inverse = options.inverse,
         view = data.view,
-        ctx  = this;
+        ctx  = this,
+        normalized;
+
+    normalized = Ember.Handlebars.normalizePath(ctx, property, data);
+
+    ctx = normalized.root;
+    property = normalized.path;
 
     // Set up observers for observable objects
     if ('object' === typeof this) {
@@ -36,7 +42,8 @@ var EmberHandlebars = Ember.Handlebars, helpers = EmberHandlebars.helpers;
         inverseTemplate: inverse,
         property: property,
         previousContext: ctx,
-        isEscaped: options.hash.escaped
+        isEscaped: options.hash.escaped,
+        templateData: options.data
       });
 
       view.appendChild(bindView);
@@ -56,7 +63,7 @@ var EmberHandlebars = Ember.Handlebars, helpers = EmberHandlebars.helpers;
     } else {
       // The object is not observable, so just render it out and
       // be done with it.
-      data.buffer.push(getPath(this, property));
+      data.buffer.push(getPath(this, property, options));
     }
   };
 
@@ -215,7 +222,7 @@ EmberHandlebars.registerHelper('bindAttr', function(options) {
   // Handle classes differently, as we can bind multiple classes
   var classBindings = attrs['class'];
   if (classBindings !== null && classBindings !== undefined) {
-    var classResults = EmberHandlebars.bindClasses(this, classBindings, view, dataId);
+    var classResults = EmberHandlebars.bindClasses(this, classBindings, view, dataId, options);
     ret.push('class="' + classResults.join(' ') + '"');
     delete attrs['class'];
   }
@@ -229,7 +236,7 @@ EmberHandlebars.registerHelper('bindAttr', function(options) {
 
     ember_assert(fmt("You must provide a String for a bound attribute, not %@", [property]), typeof property === 'string');
 
-    var value = (property === 'this') ? ctx : getPath(ctx, property),
+    var value = (property === 'this') ? ctx : getPath(ctx, property, options),
         type = Ember.typeOf(value);
 
     ember_assert(fmt("Attributes must be numbers, strings or booleans, not %@", [value]), value === null || value === undefined || type === 'number' || type === 'string' || type === 'boolean');
@@ -238,7 +245,7 @@ EmberHandlebars.registerHelper('bindAttr', function(options) {
 
     /** @private */
     observer = function observer() {
-      var result = getPath(ctx, property);
+      var result = getPath(ctx, property, options);
 
       ember_assert(fmt("Attributes must be numbers, strings or booleans, not %@", [result]), result === null || result === undefined || typeof result === 'number' || typeof result === 'string' || typeof result === 'boolean');
 
@@ -308,7 +315,7 @@ EmberHandlebars.registerHelper('bindAttr', function(options) {
 
   @returns {Array} An array of class names to add
 */
-EmberHandlebars.bindClasses = function(context, classBindings, view, bindAttrId) {
+EmberHandlebars.bindClasses = function(context, classBindings, view, bindAttrId, options) {
   var ret = [], newClass, value, elem;
 
   // Helper method to retrieve the property from the context and
@@ -320,7 +327,7 @@ EmberHandlebars.bindClasses = function(context, classBindings, view, bindAttrId)
 
     property = split[0];
 
-    var val = property !== '' ? getPath(context, property) : true;
+    var val = property !== '' ? getPath(context, property, options) : true;
 
     // If value is a Boolean and true, return the dasherized property
     // name.
