@@ -123,7 +123,7 @@ Ember.View = Ember.Object.extend(Ember.Evented,
 
   /**
     A view may contain a layout. A layout is a regular template but
-    supercedes the `template` property during rendering. It is the
+    supersedes the `template` property during rendering. It is the
     responsibility of the layout template to retrieve the `template`
     property from the view and render it in the correct location.
 

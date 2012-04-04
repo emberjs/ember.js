@@ -214,7 +214,7 @@ testBoth('implementing sendEvent on object should invoke when deferring property
   equal(events[1], 'foo:change');
 });
 
-testBoth('addObserver should propogate through prototype', function(get,set) {
+testBoth('addObserver should propagate through prototype', function(get,set) {
   var obj = { foo: 'foo', count: 0 }, obj2;
 
   Ember.addObserver(obj, 'foo', function() { this.count++; });
@@ -434,7 +434,7 @@ testBoth('observer should fire before dependent property is modified', function(
   equal(count, 1, 'should have invoked observer');
 });
 
-testBoth('addBeforeObserver should propogate through prototype', function(get,set) {
+testBoth('addBeforeObserver should propagate through prototype', function(get,set) {
   var obj = { foo: 'foo', count: 0 }, obj2;
 
   Ember.addBeforeObserver(obj, 'foo', function() { this.count++; });
