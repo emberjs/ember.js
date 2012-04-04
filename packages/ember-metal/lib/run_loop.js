@@ -116,7 +116,7 @@ RunLoop.prototype = {
       while (this._queues && (queue = this._queues[queueName])) {
         this._queues[queueName] = null;
 
-        // the sync phase is to allow property changes to propogate.  don't
+        // the sync phase is to allow property changes to propagate.  don't
         // invoke observers until that is finished.
         if (queueName === 'sync') {
           log = Ember.LOG_BINDINGS;
@@ -146,7 +146,7 @@ RunLoop.prototype = {
           queue = queues[queueName];
 
           if (queue) {
-            // the sync phase is to allow property changes to propogate.  don't
+            // the sync phase is to allow property changes to propagate.  don't
             // invoke observers until that is finished.
             if (queueName === 'sync') {
               log = Ember.LOG_BINDINGS;
@@ -187,7 +187,7 @@ Ember.RunLoop = RunLoop;
 */ 
 
 /**
-  Runs the passed target and method inside of a runloop, ensuring any
+  Runs the passed target and method inside of a RunLoop, ensuring any
   deferred actions including bindings and views updates are flushed at the
   end.
 
