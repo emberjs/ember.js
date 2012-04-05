@@ -1447,7 +1447,9 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     also call methods with the given name.
   */
   fire: function(name) {
-    this[name].apply(this, [].slice.call(arguments, 1));
+    if (this[name]) {
+      this[name].apply(this, [].slice.call(arguments, 1));
+    }
     this._super.apply(this, arguments);
   },
 
