@@ -77,4 +77,21 @@ test("Can preload sorted items on create", function() {
 
 });
 
-test
+test("If no argument is passed during create, then create an empty Ember.Array", function() {
+  // Create a sorted array:
+  var sortedPets = Ember.SortedArrayProxy.create();
+
+  // Add some pets to it.
+  sortedPets.add(this.dog);
+  sortedPets.add(this.cat);
+  sortedPets.add(this.fish);
+
+  equal(sortedPets.get('length'), 3);
+
+  // Examine how they're sorted:
+  var actualArrayResult = sortedPets.map(function(item, index, self) {
+    return item.get('name');
+  }); // => ['cat', 'Dog', 'fish'];
+  deepEqual(actualArrayResult, ['cat', 'Dog', 'fish'], "should be sorted case-insensitive");
+
+});

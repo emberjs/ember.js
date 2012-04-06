@@ -76,6 +76,19 @@ var get = Ember.get, set = Ember.set;
 Ember.SortedArrayProxy = Ember.ArrayProxy.extend(
 /** @scope Ember.SortedArrayProxy.prototype */ {
 
+    /**
+     * @private
+     *
+     * Checks to see if the 'content' array has been created.  If not,
+     * creates it with an empty Ember.array.
+     */
+    init: function() {
+      this._super();
+      if (this.get('content') === null) {
+        this.set('content', Ember.A([]));
+      }
+    },
+
   /**
    * Adds a new item to the list and ensures it is
    * sorted correctly.
