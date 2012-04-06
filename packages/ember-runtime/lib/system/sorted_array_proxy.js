@@ -75,16 +75,8 @@ var get = Ember.get, set = Ember.set;
  @extends Ember.Array
  @extends Ember.MutableArray
  */
-Ember.SortedArrayProxy = Ember.Mixin.create(Ember.MutableArray,
+Ember.SortedArrayProxy = Ember.ArrayProxy.extend(
 /** @scope Ember.SortedArrayProxy.prototype */ {
-
-  /**
-   The content array.  Must be an object that implements Ember.Array and/or
-   Ember.MutableArray.
-
-   @property {Ember.Array}
-   */
-//  content: null,
 
   /**
    * Adds a new item to the list and ensures it is
@@ -93,8 +85,9 @@ Ember.SortedArrayProxy = Ember.Mixin.create(Ember.MutableArray,
    * @param item the item to insert.  item class must implement sortValue
    */
   add: function(item) {
-    var length = this.get('length'), idx;
+    var length, idx;
 
+    length = this.get('length');
     idx = this.binarySearch(item.get('sortValue'), 0, length);
 
     this.insertAt(idx, item);
