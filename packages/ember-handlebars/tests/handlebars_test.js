@@ -1393,6 +1393,109 @@ test("should work with precompiled templates", function() {
   equal(view.$().text(), "updated", "the precompiled template was updated");
 });
 
+test("should expose a controller keyword when present on the view", function() {
+  var templateString = "{{controller.foo}}{{#view}}{{controller.baz}}{{/view}}";
+  view = Ember.View.create({
+    controller: Ember.Object.create({
+      foo: "bar",
+      baz: "bang"
+    }),
+
+    template: Ember.Handlebars.compile(templateString)
+  });
+
+  Ember.run(function() {
+    view.appendTo("#qunit-fixture");
+  });
+
+  equal(view.$().text(), "barbang", "renders values from controller and parent controller");
+
+  var controller = get(view, 'controller');
+
+  Ember.run(function() {
+    controller.set('foo', "BAR");
+    controller.set('baz', "BLARGH");
+  });
+
+  equal(view.$().text(), "BARBLARGH", "updates the DOM when a bound value is updated");
+
+  view.destroy();
+
+  view = Ember.View.create({
+    controller: "aString",
+    template: Ember.Handlebars.compile("{{controller}}")
+  });
+
+  Ember.run(function() {
+    view.appendTo('#qunit-fixture');
+  });
+
+  equal(view.$().text(), "aString", "renders the controller itself if no additional path is specified");
+});
+
+test("should expose a controller keyword that can be used in conditionals", function() {
+  var templateString = "{{#view}}{{#if controller}}{{controller.foo}}{{/if}}{{/view}}";
+  view = Ember.View.create({
+    controller: Ember.Object.create({
+      foo: "bar"
+    }),
+
+    template: Ember.Handlebars.compile(templateString)
+  });
+
+  Ember.run(function() {
+    view.appendTo("#qunit-fixture");
+  });
+
+  equal(view.$().text(), "bar", "renders values from controller and parent controller");
+
+  Ember.run(function() {
+    view.set('controller', null);
+  });
+
+  equal(view.$().text(), "", "updates the DOM when the controller is changed");
+});
+
+test("should expose a view keyword", function() {
+  var templateString = '{{#with differentContent}}{{view.foo}}{{#view baz="bang"}}{{view.baz}}{{/view}}{{/with}}';
+  view = Ember.View.create({
+    differentContent: {
+      view: {
+        foo: "WRONG",
+        baz: "WRONG"
+      }
+    },
+
+    foo: "bar",
+
+    template: Ember.Handlebars.compile(templateString)
+  });
+
+  Ember.run(function() {
+    view.appendTo("#qunit-fixture");
+  });
+
+  equal(view.$().text(), "barbang", "renders values from view and child view");
+});
+
+test("Ember.Button targets should respect keywords", function() {
+  var templateString = '{{#with anObject}}{{view Ember.Button target="controller.foo"}}{{/with}}';
+  view = Ember.View.create({
+    template: Ember.Handlebars.compile(templateString),
+    anObject: {},
+    controller: {
+      foo: "bar"
+    }
+  });
+
+  Ember.run(function() {
+    view.appendTo('#qunit-fixture');
+  });
+
+  var button = view.get('childViews').objectAt(0);
+  equal(button.get('targetObject'), "bar", "resolves the target");
+});
+
 module("Templates redrawing and bindings", {
   setup: function(){
     MyApp = Ember.Object.create({});
@@ -1507,6 +1610,31 @@ test("bindings should be relative to the current context", function() {
     }),
 
     template: Ember.Handlebars.compile('{{#if museumOpen}} {{view museumView nameBinding="museumDetails.name" dollarsBinding="museumDetails.price"}} {{/if}}')
+  });
+
+  Ember.run(function() {
+    view.appendTo('#qunit-fixture');
+  });
+
+  equal(Ember.$.trim(view.$().text()), "Name: SFMoMA Price: $20", "should print baz twice");
+});
+
+test("bindings should respect keywords", function() {
+  view = Ember.View.create({
+    museumOpen: true,
+
+    controller: {
+      museumDetails: Ember.Object.create({
+        name: "SFMoMA",
+        price: 20
+      })
+    },
+
+    museumView: Ember.View.extend({
+      template: Ember.Handlebars.compile('Name: {{name}} Price: ${{dollars}}')
+    }),
+
+    template: Ember.Handlebars.compile('{{#if museumOpen}}{{view museumView nameBinding="controller.museumDetails.name" dollarsBinding="controller.museumDetails.price"}}{{/if}}')
   });
 
   Ember.run(function() {

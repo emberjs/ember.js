@@ -73,4 +73,15 @@ test('template with data-element-id should add an id attribute to the view', fun
 
     equal(Ember.$('#qunit-fixture #application').text(), 'Hello World !', 'view exists with id');
 });
+
+test('template without data-element-id should still get an attribute', function() {
+  Ember.$('#qunit-fixture').html('<script type="text/x-handlebars">Hello World!</script>');
+
+  Ember.run(function() {
+    Ember.Handlebars.bootstrap(Ember.$('#qunit-fixture'));
+  });
+
+  var id = Ember.$('#qunit-fixture .ember-view').attr('id');
+  ok(id && /^ember\d+$/.test(id), "has standard Ember id");
+});
 // TODO: Text x-raw-handlebars

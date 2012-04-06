@@ -34,7 +34,7 @@ Ember.Handlebars.registerHelper('collection', function(path, options) {
   // If passed a path string, convert that into an object.
   // Otherwise, just default to the standard class.
   var collectionClass;
-  collectionClass = path ? getPath(this, path) : Ember.CollectionView;
+  collectionClass = path ? getPath(this, path, options) : Ember.CollectionView;
   ember_assert(fmt("%@ #collection: Could not find %@", data.view, path), !!collectionClass);
 
   var hash = options.hash, itemHash = {}, match;
@@ -43,7 +43,7 @@ Ember.Handlebars.registerHelper('collection', function(path, options) {
   var itemViewClass, itemViewPath = hash.itemViewClass;
   var collectionPrototype = collectionClass.proto();
   delete hash.itemViewClass;
-  itemViewClass = itemViewPath ? getPath(collectionPrototype, itemViewPath) : collectionPrototype.itemViewClass;
+  itemViewClass = itemViewPath ? getPath(collectionPrototype, itemViewPath, options) : collectionPrototype.itemViewClass;
   ember_assert(fmt("%@ #collection: Could not find %@", data.view, itemViewPath), !!itemViewClass);
 
   // Go through options passed to the {{collection}} helper and extract options
@@ -74,7 +74,7 @@ Ember.Handlebars.registerHelper('collection', function(path, options) {
 
     if (hash.emptyViewClass) {
       emptyViewClass = Ember.View.detect(hash.emptyViewClass) ?
-                          hash.emptyViewClass : getPath(this, hash.emptyViewClass);
+                          hash.emptyViewClass : getPath(this, hash.emptyViewClass, options);
     }
 
     hash.emptyView = emptyViewClass.extend({
@@ -90,7 +90,7 @@ Ember.Handlebars.registerHelper('collection', function(path, options) {
     delete hash.preserveContext;
   }
 
-  hash.itemViewClass = Ember.Handlebars.ViewHelper.viewClassFromHTMLOptions(itemViewClass, itemHash, this);
+  hash.itemViewClass = Ember.Handlebars.ViewHelper.viewClassFromHTMLOptions(itemViewClass, { data: data, hash: itemHash }, this);
 
   return Ember.Handlebars.helpers.view.call(this, collectionClass, options);
 });

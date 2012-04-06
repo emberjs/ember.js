@@ -363,7 +363,7 @@ Ember.defineProperty = function(obj, keyName, desc, val) {
   that support it, this uses the built in Object.create method.  Else one is
   simulated for you.
 
-  This method is a better choice thant Object.create() because it will make
+  This method is a better choice than Object.create() because it will make
   sure that any observers, event listeners, and computed properties are
   inherited from the parent as well.
 

@@ -33,7 +33,6 @@ var get = Ember.get, set = Ember.set;
   You only need to specify the root if your page contains multiple instances
   of Ember.Application.
 
-  @since Ember 2.0
   @extends Ember.Object
 */
 Ember.Application = Ember.Namespace.extend(

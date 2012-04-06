@@ -64,7 +64,7 @@ Ember.ArrayProxy = Ember.Object.extend(Ember.MutableArray,
     This method will only be called if content is non-null.
 
     @param {Number} idx
-      The index to retreive.
+      The index to retrieve.
 
     @returns {Object} the value or undefined if none found
   */

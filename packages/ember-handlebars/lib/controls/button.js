@@ -18,6 +18,20 @@ Ember.Button = Ember.View.extend(Ember.TargetActionSupport, {
 
   attributeBindings: ['type', 'disabled', 'href'],
 
+  /** @private
+    Overrides TargetActionSupport's targetObject computed
+    property to use Handlebars-specific path resolution.
+  */
+  targetObject: Ember.computed(function() {
+    var target = get(this, 'target'),
+        root = get(this, 'templateContext'),
+        data = get(this, 'templateData');
+
+    if (typeof target !== 'string') { return target; }
+
+    return Ember.Handlebars.getPath(root, target, { data: data });
+  }).property('target').cacheable(),
+
   // Defaults to 'button' if tagName is 'input' or 'button'
   type: Ember.computed(function(key, value) {
     var tagName = this.get('tagName');

@@ -113,7 +113,7 @@ test("should provide a controller to the template if a controller is specified o
     controller: controller1,
 
     template: function(buffer, options) {
-      strictEqual(options.data.controller, controller1, "passes the controller in the data");
+      strictEqual(options.data.keywords.controller, controller1, "passes the controller in the data");
     }
   });
 
@@ -131,10 +131,10 @@ test("should provide a controller to the template if a controller is specified o
         controller: controller2,
         templateData: options.data,
         template: function(buffer, options) {
-          strictEqual(options.data.controller, controller2, "passes the child view's controller in the data");
+          strictEqual(options.data.keywords.controller, controller2, "passes the child view's controller in the data");
         }
       }));
-      strictEqual(options.data.controller, controller1, "passes the controller in the data");
+      strictEqual(options.data.keywords.controller, controller1, "passes the controller in the data");
     }
   });
 
@@ -151,11 +151,11 @@ test("should provide a controller to the template if a controller is specified o
       options.data.view.appendChild(Ember.View.create({
         templateData: options.data,
         template: function(buffer, options) {
-          strictEqual(options.data.controller, controller1, "passes the original controller in the data");
+          strictEqual(options.data.keywords.controller, controller1, "passes the original controller in the data");
         }
       }));
 
-      strictEqual(options.data.controller, controller1, "passes the controller in the data to child views");
+      strictEqual(options.data.keywords.controller, controller1, "passes the controller in the data to child views");
     }
   });
 
