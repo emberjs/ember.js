@@ -21,7 +21,7 @@ test("Add objects into the sorted array", function() {
   });
 
   // Create a sorted array:
-  var sortedArray = Ember.SortedArrayProxy.create();
+  var sortedArray = Ember.ArrayProxy.create(Ember.SortedArrayProxy);
 
   // Add some pets to it.
   sortedArray.add(Pet.create({

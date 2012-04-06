@@ -75,7 +75,7 @@ var get = Ember.get, set = Ember.set;
  @extends Ember.Array
  @extends Ember.MutableArray
  */
-Ember.SortedArrayProxy = Ember.ArrayProxy.extend(
+Ember.SortedArrayProxy = Ember.Mixin.create(Ember.MutableArray,
 /** @scope Ember.SortedArrayProxy.prototype */ {
 
   /**
