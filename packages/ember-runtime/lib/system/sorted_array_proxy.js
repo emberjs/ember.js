@@ -12,59 +12,60 @@ var get = Ember.get, set = Ember.set;
 /**
  @class
 
-   An Ember.SortedArrayProxy wraps any other object that implements Ember.ArrayProxy,
- providing a method to add an item which is inserted in the offset into the
- array to keep the array sorted.
+   An Ember.sortedPetsProxy wraps Ember.ArrayProxy to keep the 'content' array sorted
+ as Ember.Object's are added and removed.
 
-   In order for the sorting to succeed, the individual items must implement
+   In order for the sorting to succeed, each added item must implement
  the method 'sortValue', which returns a computed property
  of the item's value to sort on.
 
-   Since this collection is continually reorganized to keep it sorted, calling
- modifying methods other than 'add' and 'remove' will, at best, corrupt the order of
+   Since this collection is continually sorted as items are
+ added and deleted,
+ invoking modifying methods other than 'add' and 'remove' will, at best, corrupt the order of
  the array's items and, at worst, drop some and/or double items up.
 
  A simple example of usage:
 
-     // Define an object to be put into the sorted array:
+     // Define an Ember.Object to be put into the sorted array:
      var Pet = Ember.Object.extend({
        name: null,
        description: null,
 
-       // Sort on the pet's name case-insensitive:
+       // Sort on the pet's name case-insensitive.  Note how this
+       // method is implemented as a computed property.
        sortValue: Ember.computed(function() {
-       return this.get('name').toUpperCase();
+         return this.get('name').toUpperCase();
        }).property('name')
      });
 
-     // Create a sorted array:
-     var sortedArray = Ember.SortedArrayProxy.create({content: Ember.A([])});
+     // Create the sorted array:
+     var sortedPets = Ember.sortedPetsProxy.create();
 
      // Add some pets to it.
-     sortedArray.add(Pet.create({
+     sortedPets.add(Pet.create({
        name: 'Dog',
        description: 'furry friendly'
      }));
-     sortedArray.add(Pet.create({
+     sortedPets.add(Pet.create({
        name: 'cat',
        description: 'furry aloof'
      }));
-     sortedArray.add(Pet.create({
+     sortedPets.add(Pet.create({
        name: 'fish',
        description: 'scaly wet'
      }));
 
      // Examine how they're sorted:
-     var actualArrayResult = sortedArray.map(function(item, index, self) {
+     var actualArrayResult = sortedPets.map(function(item, index, self) {
        return item.get('name');
      }); // => ['cat', 'Dog', 'fish'];
 
      // Remove the cat:
-     var cat = sortedArray.objectAtContent(0);
-     sortedArray.remove(cat);
+     var cat = sortedPets.objectAtContent(0);
+     sortedPets.remove(cat);
 
      // See what's left:
-     actualArrayResult = sortedArray.map(function(item, index, self) {
+     actualArrayResult = sortedPets.map(function(item, index, self) {
        return item.get('name');
      }); // => ['Dog', 'fish'];
 
@@ -76,24 +77,11 @@ var get = Ember.get, set = Ember.set;
 Ember.SortedArrayProxy = Ember.ArrayProxy.extend(
 /** @scope Ember.SortedArrayProxy.prototype */ {
 
-    /**
-     * @private
-     *
-     * Checks to see if the 'content' array has been created.  If not,
-     * creates it with an empty Ember.array.
-     */
-    init: function() {
-      this._super();
-      if (this.get('content') === null) {
-        this.set('content', Ember.A([]));
-      }
-    },
-
   /**
    * Adds a new item to the list and ensures it is
    * sorted correctly.
    *
-   * @param item the item to insert.  item class must implement sortValue
+   * @param {Ember.Object} item the item to insert.  The item's class must implement 'sortValue' as a computed property.
    */
   add: function(item) {
     var length, idx;
@@ -107,6 +95,16 @@ Ember.SortedArrayProxy = Ember.ArrayProxy.extend(
     // changes, we need to re-insert it at the correct
     // location in the list.
     item.addObserver('sortValue', this, 'itemSortValueDidChange');
+  },
+
+  /**
+   * Removes an item from the list
+   * 
+   * @param {Ember.Object} item the item to remove
+   */
+  remove: function(item) {
+    this.removeObject(item);
+    item.removeObserver('sortValue', this, 'itemSortValueDidChange');
   },
 
   /**
@@ -135,15 +133,6 @@ Ember.SortedArrayProxy = Ember.ArrayProxy.extend(
   },
 
   /**
-   *
-   * @param item
-   */
-  remove: function(item) {
-    this.removeObject(item);
-    item.removeObserver('sortValue', this, 'itemSortValueDidChange');
-  },
-
-  /**
    * @private
    *
    * Adjusts the sorting caused by a sort value change in an item.
@@ -153,7 +142,20 @@ Ember.SortedArrayProxy = Ember.ArrayProxy.extend(
   itemSortValueDidChange: function(item) {
     this.remove(item);
     this.add(item);
-  }
+  },
 
-});
+    /**
+     * @private
+     *
+     * Checks to see if the 'content' array has been created.  If not,
+     * creates it with an empty Ember.array.
+     */
+    init: function() {
+      this._super();
+      if (this.get('content') === null) {
+        this.set('content', Ember.A([]));
+      }
+    }
+
+  });
 
