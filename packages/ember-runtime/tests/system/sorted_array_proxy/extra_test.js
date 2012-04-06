@@ -16,7 +16,7 @@ test("Add objects into the sorted array", function() {
 
     // Sort on the pet's name case-insensitive:
     sortValue: Ember.computed(function() {
-      return this.get('name');
+      return this.get('name').toUpperCase();
     }).property('name')
   });
 
@@ -25,7 +25,7 @@ test("Add objects into the sorted array", function() {
 
   // Add some pets to it.
   sortedArray.add(Pet.create({
-    name: 'dog',
+    name: 'Dog',
     description: 'furry friendly'
   }));
   sortedArray.add(Pet.create({
@@ -43,7 +43,7 @@ test("Add objects into the sorted array", function() {
   var actualArrayResult = sortedArray.map(function(item, index, self) {
     return item.get('name');
   }); // => ['cat', 'Dog', 'fish'];
-  equal(actualArrayResult, ['cat', 'dog', 'fish'], "should be sorted case-insensitive");
+  deepEqual(actualArrayResult, ['cat', 'Dog', 'fish'], "should be sorted case-insensitive");
 
   // Remove the cat:
   var cat = sortedArray.objectAtContent(0);
