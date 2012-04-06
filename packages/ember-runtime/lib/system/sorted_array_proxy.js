@@ -12,14 +12,12 @@ var get = Ember.get, set = Ember.set;
 /**
  @class
 
-   A SortedArrayProxy wraps any other object that implements Ember.ArrayProxy,
+   An Ember.SortedArrayProxy wraps any other object that implements Ember.ArrayProxy,
  providing a method to add an item which is inserted in the offset into the
- array to keep the array sorted.  Like the ArrayProxy, his makes it very useful for
- a number of binding use cases or other cases where being able to swap
- out the underlying array is useful.
+ array to keep the array sorted.
 
    In order for the sorting to succeed, the individual items must implement
- the method 'sortValue', which returns a property or calculated property
+ the method 'sortValue', which returns a computed property
  of the item's value to sort on.
 
    Since this collection is continually reorganized to keep it sorted, calling
@@ -28,47 +26,47 @@ var get = Ember.get, set = Ember.set;
 
  A simple example of usage:
 
- // Define an object to be put into the sorted array:
- App.Pet = Ember.Object.extend({
- name: null,
- description: null
+     // Define an object to be put into the sorted array:
+     var Pet = Ember.Object.extend({
+       name: null,
+       description: null,
 
- // Sort on the pet's name case-insensitive:
- sortValue: function() {
- return this.get('name').toUpperCase();
- }.property('name')
- });
+       // Sort on the pet's name case-insensitive:
+       sortValue: Ember.computed(function() {
+       return this.get('name').toUpperCase();
+       }).property('name')
+     });
 
- // Create a sorted array:
- var sortedArrayProxy = Ember.SortedArrayProxy.create({});
+     // Create a sorted array:
+     var sortedArray = Ember.SortedArrayProxy.create({content: Ember.A([])});
 
- // Add some pets to it.
- sortedArray.add(App.Pet.create({
- name: 'Dog',
- description: 'furry friendly'
- });
- sortedArray.add(App.Pet.create({
- name: 'cat',
- description: 'furry aloof'
- });
- sortedArray.add(App.Pet.create({
- name: 'fish',
- description: 'scaly wet'
- });
+     // Add some pets to it.
+     sortedArray.add(Pet.create({
+       name: 'Dog',
+       description: 'furry friendly'
+     }));
+     sortedArray.add(Pet.create({
+       name: 'cat',
+       description: 'furry aloof'
+     }));
+     sortedArray.add(Pet.create({
+       name: 'fish',
+       description: 'scaly wet'
+     }));
 
- // Examine how they're sorted:
- sortedArray.map(function(item, index, self) {
-  return item.get('name');
- }); => ['cat', 'Dog', 'fish'];
+     // Examine how they're sorted:
+     var actualArrayResult = sortedArray.map(function(item, index, self) {
+       return item.get('name');
+     }); // => ['cat', 'Dog', 'fish'];
 
- // Remove the cat:
- var cat = sortedArray.objectAtContent(0);
- sortedArray.remove(cat);
+     // Remove the cat:
+     var cat = sortedArray.objectAtContent(0);
+     sortedArray.remove(cat);
 
- // See what's left:
- sortedArray.map(function(item.index.self) {
-  return item.get('name');
- }); => ['Dog', 'fish'];
+     // See what's left:
+     actualArrayResult = sortedArray.map(function(item, index, self) {
+       return item.get('name');
+     }); // => ['Dog', 'fish'];
 
  @extends Ember.ArrayProxy
  @extends Ember.Object
