@@ -24,6 +24,8 @@ var get = Ember.get, set = Ember.set;
  invoking modifying methods other than 'add' and 'remove' will, at best, corrupt the order of
  the array's items and, at worst, drop some and/or double items up.
 
+   On the other hand, you can safely remove everything from the collection using the method 'clear'.
+
  A simple example of usage:
 
      // Define an Ember.Object to be put into the sorted array:
@@ -68,6 +70,9 @@ var get = Ember.get, set = Ember.set;
      actualArrayResult = sortedPets.map(function(item, index, self) {
        return item.get('name');
      }); // => ['Dog', 'fish'];
+
+     // Clear all contents:
+     sortedPets.clear(); // => [];
 
  @extends Ember.ArrayProxy
  @extends Ember.Object

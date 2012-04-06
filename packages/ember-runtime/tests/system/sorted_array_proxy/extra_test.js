@@ -95,3 +95,20 @@ test("If no argument is passed during create, then create an empty Ember.Array",
   deepEqual(actualArrayResult, ['cat', 'Dog', 'fish'], "should be sorted case-insensitive");
 
 });
+
+test("Test being able to remove all the objects at once", function() {
+  // Create a sorted array:
+  var sortedPets = Ember.SortedArrayProxy.create();
+
+  // Add some pets to it.
+  sortedPets.add(this.dog);
+  sortedPets.add(this.cat);
+  sortedPets.add(this.fish);
+
+  equal(sortedPets.get('length'), 3);
+
+  sortedPets.clear();
+
+  equal(sortedPets.get('length'), 0);
+
+});
