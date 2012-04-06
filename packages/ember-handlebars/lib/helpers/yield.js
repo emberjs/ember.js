@@ -11,6 +11,5 @@ Ember.Handlebars.registerHelper('yield', function(options) {
 
   template = get(view, 'template');
 
-  ember_assert("You called yield on " + view.toString() + " without supplying a template", !!template);
-  template(this, options);
+  if (template) { template(this, options); }
 });
