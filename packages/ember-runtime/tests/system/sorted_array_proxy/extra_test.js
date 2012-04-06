@@ -15,9 +15,9 @@ test("Add objects into the sorted array", function() {
     description: null,
 
     // Sort on the pet's name case-insensitive:
-    sortValue: function() {
+    sortValue: Ember.computed(function() {
       return this.get('name');
-    }.property('name')
+    }).property('name')
   });
 
   // Create a sorted array:
