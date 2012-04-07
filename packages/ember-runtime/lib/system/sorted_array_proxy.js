@@ -12,8 +12,8 @@ var get = Ember.get, set = Ember.set;
 /**
  @class
 
-   An Ember.sortedPetsProxy wraps Ember.ArrayProxy to keep the 'content' array sorted
- as Ember.Object's are added and removed.
+   An Ember.SortedArrayProxy wraps Ember.ArrayProxy to keep the 'content' array sorted
+ as Ember.Object items are added and removed.
 
    In order for the sorting to succeed, each added item must implement
  the method 'sortValue', which returns a computed property
@@ -24,7 +24,7 @@ var get = Ember.get, set = Ember.set;
  invoking modifying methods other than 'add' and 'remove' will, at best, corrupt the order of
  the array's items and, at worst, drop some and/or double items up.
 
-   On the other hand, you can safely remove everything from the collection using the method 'clear'.
+   On the other hand, you can safely remove everything from the collection using the method 'purge'.
 
  A simple example of usage:
 
@@ -72,7 +72,7 @@ var get = Ember.get, set = Ember.set;
      }); // => ['Dog', 'fish'];
 
      // Clear all contents:
-     sortedPets.clear(); // => [];
+     sortedPets.purge(); // => []; DON'T USE clear()
 
  @extends Ember.ArrayProxy
  @extends Ember.Object
@@ -110,6 +110,19 @@ Ember.SortedArrayProxy = Ember.ArrayProxy.extend(
   remove: function(item) {
     this.removeObject(item);
     item.removeObserver('sortValue', this, 'itemSortValueDidChange');
+  },
+
+  /**
+   * Clears the contents in place so you can reuse the content if desired.
+   */
+  purge: function() {
+    // Implementation note: this is called 'purge' instead of 'clear'
+    // since MutableArray will remove values in a non-sorted order
+    // which will crash.
+    for (var offset = this.get('length') - 1 ; offset >= 0 ; offset--) {
+      var lastItem = this.get('content')[offset];
+      this.remove(lastItem);
+    }
   },
 
   /**

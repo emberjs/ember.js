@@ -107,7 +107,7 @@ test("Test being able to remove all the objects at once", function() {
 
   equal(sortedPets.get('length'), 3);
 
-  sortedPets.clear();
+  sortedPets.purge();
 
   equal(sortedPets.get('length'), 0);
 
