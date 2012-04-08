@@ -302,11 +302,13 @@ task :test, [:suite] => :dist do |t, args|
     abort "PhantomJS is not installed. Download from http://phantomjs.org"
   end
 
+  packages = Dir['packages/*/tests'].map{|p| p.split('/')[1] }
+
   suites = {
-    :default => ["package=all"],
+    :default => packages.map{|p| "package=#{p}" },
     # testing older jQuery 1.6.4 for compatibility
-    :all => ["package=all",
-              "package=all&jquery=1.6.4&nojshint=true",
+    :all => packages.map{|p| "package=#{p}" } +
+            ["package=all&jquery=1.6.4&nojshint=true",
               "package=all&extendprototypes=true&nojshint=true",
               "package=all&extendprototypes=true&jquery=1.6.4&nojshint=true",
               "package=all&dist=build&nojshint=true"]
