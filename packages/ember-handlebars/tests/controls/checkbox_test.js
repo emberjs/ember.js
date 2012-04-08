@@ -103,17 +103,22 @@ test("wraps the checkbox in a label if a title attribute is provided", function(
 });
 
 test("proxies the checked attribute to value for backwards compatibility", function(){
-  checkboxView = Ember.Checkbox.create({ title: "I have a title" });
-  append();
-  
-  set(checkboxView, 'value', true);
-  equal(get(checkboxView, 'checked'), true, 'checked is updated when value set');
-  equal(get(checkboxView, 'value'), true, 'value is updated when value set');
-  
-  set(checkboxView, 'checked', false);
-  
-  equal(get(checkboxView, 'checked'), false, 'checked is updated when checked set');
-  equal(get(checkboxView, 'value'), false, 'value is updated when checked set');
-  
+  Ember.TESTING_DEPRECATION = true;
+
+  try {
+    checkboxView = Ember.Checkbox.create({ title: "I have a title" });
+    append();
+
+    set(checkboxView, 'value', true);
+    equal(get(checkboxView, 'checked'), true, 'checked is updated when value set');
+    equal(get(checkboxView, 'value'), true, 'value is updated when value set');
+
+    set(checkboxView, 'checked', false);
+
+    equal(get(checkboxView, 'checked'), false, 'checked is updated when checked set');
+    equal(get(checkboxView, 'value'), false, 'value is updated when checked set');
+  } finally {
+    Ember.TESTING_DEPRECATION = false;
+  }
 });
 

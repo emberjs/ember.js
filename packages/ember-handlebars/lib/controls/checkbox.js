@@ -63,10 +63,8 @@ Ember.Checkbox = Ember.View.extend({
   disabled: false,
 
   title:  Ember.computed(function(propName, value){
-    if (value !== undefined) {
-      ember_warn("Automatically surrounding Ember.Checkbox inputs with a label by providing a 'title' property is deprecated");
-      return value;
-    }
+    ember_deprecate("Automatically surrounding Ember.Checkbox inputs with a label by providing a 'title' property is deprecated", value === undefined);
+    return value;
   }).property().cacheable(),
 
   defaultTemplate: Ember.computed(function(){
@@ -78,7 +76,7 @@ Ember.Checkbox = Ember.View.extend({
   }).property().cacheable(),
 
   value: Ember.computed(function(propName, value){
-    ember_warn("Ember.Checkbox's 'value' property has been renamed to 'checked' to match the html element attribute name");
+    ember_deprecate("Ember.Checkbox's 'value' property has been renamed to 'checked' to match the html element attribute name");
     if (value !== undefined) {
       return set(this, 'checked', value);
     } else {
