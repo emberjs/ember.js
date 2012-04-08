@@ -36,10 +36,11 @@ test('forces binding values to be single', function() {
 });
 
 test('Ember.Binding#single(fromPath, placeholder) is available', function() {
-  var obj = Ember.Object.create({
-    value: null,
-    boundValueBinding: Ember.Binding.single('value', 'placeholder')
-  });
+  var obj = {
+        value: null,
+        boundValue: null
+      },
+      binding = Ember.Binding.single('value', 'placeholder').to('boundValue').connect(obj);
 
   Ember.run.sync();
   equal(get(obj, 'boundValue'), null, 'intial boundValue is null');
