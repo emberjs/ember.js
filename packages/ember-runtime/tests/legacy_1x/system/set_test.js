@@ -20,6 +20,8 @@ var a, b, c ; // global variables
 module("creating Ember.Set instances", {
 
   setup: function() {
+    Ember.TESTING_DEPRECATION = true;
+
     // create objects...
     a = { name: "a" } ;
     b = { name: "b" } ;
@@ -27,6 +29,8 @@ module("creating Ember.Set instances", {
   },
 
   teardown: function() {
+    Ember.TESTING_DEPRECATION = false;
+
     a = undefined ;
     b = undefined ;
     c = undefined ;
@@ -173,6 +177,8 @@ module("Ember.Set.remove + Ember.Set.contains", {
   // generate a set with every type of object, but none of the specific
   // ones we add in the tests below...
   setup: function() {
+    Ember.TESTING_DEPRECATION = true;
+
     set = Ember.Set.create(Ember.A([
       Ember.Object.create({ dummy: true }),
       { isHash: true },
@@ -181,6 +187,7 @@ module("Ember.Set.remove + Ember.Set.contains", {
   },
 
   teardown: function() {
+    Ember.TESTING_DEPRECATION = false;
     set = undefined ;
   }
 
@@ -282,6 +289,7 @@ module("Ember.Set.pop + Ember.Set.copy", {
 // generate a set with every type of object, but none of the specific
 // ones we add in the tests below...
 	setup: function() {
+    Ember.TESTING_DEPRECATION = true;
 		set = Ember.Set.create(Ember.A([
 			Ember.Object.create({ dummy: true }),
 			{ isHash: true },
@@ -290,6 +298,7 @@ module("Ember.Set.pop + Ember.Set.copy", {
 		},
 		
 		teardown: function() {
+      Ember.TESTING_DEPRECATION = false;
 			set = undefined ;
 		}
 });

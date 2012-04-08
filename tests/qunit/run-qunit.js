@@ -8,9 +8,8 @@ if (args.length < 1 || args.length > 2) {
 
 var page = require('webpage').create();
 
-var depRe = /^DEPRECATION:/;
 page.onConsoleMessage = function(msg) {
-  if (!depRe.test(msg)) console.log(msg);
+  console.log(msg);
 };
 
 page.open(args[0], function(status) {

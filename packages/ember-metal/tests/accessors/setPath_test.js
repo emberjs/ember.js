@@ -5,8 +5,7 @@
 // ==========================================================================
 /*globals Foo:true $foo:true */
 
-var obj;
-module('Ember.setPath', {
+var obj, moduleOpts = {
   setup: function() {
     obj = {
       foo: {
@@ -35,7 +34,9 @@ module('Ember.setPath', {
     Foo = null;
     $foo = null;
   }
-});
+};
+
+module('Ember.setPath', moduleOpts);
 
 // ..........................................................
 // LOCAL PATHS
@@ -115,9 +116,46 @@ test('[obj, this.foo.bar*baz.biff] -> obj.foo.bar.baz.biff', function() {
   equal(Ember.getPath(obj, 'foo.bar.baz.biff'), "BAM");
 });
 
+
+// ..........................................................
+// NO TARGET
+//
+
+test('[null, Foo.bar] -> Foo.bar', function() {
+  Ember.setPath(null, 'Foo.bar', "BAM");
+  equal(Ember.getPath(Foo, 'bar'), "BAM");
+});
+
+test('[null, Foo*bar] -> Foo.bar', function() {
+  Ember.setPath(null, 'Foo*bar', "BAM");
+  equal(Ember.getPath(Foo, 'bar'), "BAM");
+});
+
+test('[null, Foo.bar*baz.biff] -> Foo.bar.baz.biff', function() {
+  Ember.setPath(null, 'Foo.bar*baz.biff', "BAM");
+  equal(Ember.getPath(Foo, 'bar.baz.biff'), "BAM");
+});
+
+test('[null, Foo.bar.baz*biff] -> Foo.bar.baz.biff', function() {
+  Ember.setPath(null, 'Foo.bar.baz*biff', "BAM");
+  equal(Ember.getPath(Foo, 'bar.baz.biff'), "BAM");
+});
+
+
 // ..........................................................
 // GLOBAL PATHS (DEPRECATED)
 //
+
+module("Ember.setPath - deprecated", {
+  setup: function() {
+    Ember.TESTING_DEPRECATION = true;
+    moduleOpts.setup();
+  },
+  teardown: function() {
+    Ember.TESTING_DEPRECATION = false;
+    moduleOpts.teardown();
+  }
+});
 
 test('[obj, Foo] -> EXCEPTION', function() {
   raises(function() {
@@ -159,30 +197,4 @@ test('[obj, Foo.bar.baz*biff] -> Foo.bar.baz.biff', function() {
 test('[obj, $foo.bar.baz] -> $foo.bar.baz', function() {
   Ember.setPath(obj, '$foo.bar.baz', "BAM");
   equal(Ember.getPath($foo, 'bar.baz'), "BAM");
-});
-
-
-
-// ..........................................................
-// NO TARGET
-//
-
-test('[null, Foo.bar] -> Foo.bar', function() {
-  Ember.setPath(null, 'Foo.bar', "BAM");
-  equal(Ember.getPath(Foo, 'bar'), "BAM");
-});
-
-test('[null, Foo*bar] -> Foo.bar', function() {
-  Ember.setPath(null, 'Foo*bar', "BAM");
-  equal(Ember.getPath(Foo, 'bar'), "BAM");
-});
-
-test('[null, Foo.bar*baz.biff] -> Foo.bar.baz.biff', function() {
-  Ember.setPath(null, 'Foo.bar*baz.biff', "BAM");
-  equal(Ember.getPath(Foo, 'bar.baz.biff'), "BAM");
-});
-
-test('[null, Foo.bar.baz*biff] -> Foo.bar.baz.biff', function() {
-  Ember.setPath(null, 'Foo.bar.baz*biff', "BAM");
-  equal(Ember.getPath(Foo, 'bar.baz.biff'), "BAM");
 });
