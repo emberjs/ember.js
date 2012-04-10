@@ -1347,11 +1347,14 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     @test in createChildViews
   */
   createChildView: function(view, attrs) {
+    var coreAttrs;
+
     if (Ember.View.detect(view)) {
+      coreAttrs = { _parentView: this };
       if (attrs) {
-        view = view.create({ _parentView: this }, attrs);
+        view = view.create(coreAttrs, attrs);
       } else {
-        view = view.create({ _parentView: this });
+        view = view.create(coreAttrs);
       }
 
       var viewName = view.viewName;
@@ -1363,6 +1366,7 @@ Ember.View = Ember.Object.extend(Ember.Evented,
       ember_assert('must pass instance of View', view instanceof Ember.View);
       set(view, '_parentView', this);
     }
+
     return view;
   },
 
