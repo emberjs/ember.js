@@ -92,7 +92,7 @@ Ember.ContainerView = Ember.View.extend({
     if (removed === 0) { return; }
 
     var changedViews = views.slice(start, start+removed);
-    this.setParentView(changedViews, null);
+    this.initializeViews(changedViews, null, null);
 
     this.invokeForState('childViewsWillChange', views, start, removed);
   },
@@ -119,15 +119,16 @@ Ember.ContainerView = Ember.View.extend({
     if (added === 0) return;
 
     var changedViews = views.slice(start, start+added);
-    this.setParentView(changedViews, this);
+    this.initializeViews(changedViews, this, get(this, 'templateData'));
 
     // Let the current state handle the changes
     this.invokeForState('childViewsDidChange', views, start, added);
   },
 
-  setParentView: function(views, parentView) {
+  initializeViews: function(views, parentView, templateData) {
     forEach(views, function(view) {
       set(view, '_parentView', parentView);
+      set(view, 'templateData', templateData);
     });
   },
 

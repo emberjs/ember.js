@@ -1456,6 +1456,32 @@ test("should expose a controller keyword that can be used in conditionals", func
   equal(view.$().text(), "", "updates the DOM when the controller is changed");
 });
 
+test("should expose a controller keyword that persists through Ember.ContainerView", function() {
+  var templateString = "{{view Ember.ContainerView}}";
+  view = Ember.View.create({
+    controller: Ember.Object.create({
+      foo: "bar"
+    }),
+
+    template: Ember.Handlebars.compile(templateString)
+  });
+
+  Ember.run(function() {
+    view.appendTo("#qunit-fixture");
+  });
+
+  var containerView = getPath(view, 'childViews.firstObject');
+  var viewInstanceToBeInserted = Ember.View.create({
+    template: Ember.Handlebars.compile('{{controller.foo}}')
+  });
+
+  Ember.run(function() {
+    get(containerView, 'childViews').pushObject(viewInstanceToBeInserted);
+  });
+
+  equal(viewInstanceToBeInserted.$().text(), "bar", "renders value from parent's controller");
+});
+
 test("should expose a view keyword", function() {
   var templateString = '{{#with differentContent}}{{view.foo}}{{#view baz="bang"}}{{view.baz}}{{/view}}{{/with}}';
   view = Ember.View.create({
