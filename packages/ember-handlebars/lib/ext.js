@@ -131,6 +131,8 @@ Ember.Handlebars.compile = function(string) {
 /**
   If a path starts with a reserved keyword, returns the root
   that should be used.
+
+  @private
 */
 var normalizePath = Ember.Handlebars.normalizePath = function(root, path, data) {
   var keywords = (data && data.keywords) || {},
