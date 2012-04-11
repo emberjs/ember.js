@@ -721,6 +721,31 @@ test("Template views set the template of their children to a passed block", func
   ok(view.$('h1:has(span)').length === 1, "renders the passed template inside the parent template");
 });
 
+test("should warn if setting a template on a view with a templateName already specified", function() {
+  view = Ember.View.create({
+    childView: Ember.View.extend({
+      templateName: 'foo'
+    }),
+
+    template: Ember.Handlebars.compile('{{#view childView}}test{{/view}}')
+  });
+
+  raises(function() {
+    appendView();
+  }, Error, "raises if conflicting template and templateName are provided");
+
+  view.destroy();
+
+  view = Ember.View.create({
+    childView: Ember.View.extend(),
+    template: Ember.Handlebars.compile('{{#view childView templateName="foo"}}test{{/view}}')
+  });
+
+  raises(function() {
+    appendView();
+  }, Error, "raises if conflicting template and templateName are provided via a Handlebars template");
+});
+
 test("should pass hash arguments to the view object", function() {
   TemplateTests.bindTestObject = Ember.Object.create({
     bar: 'bat'
