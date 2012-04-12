@@ -108,6 +108,15 @@ Ember.CollectionView = Ember.ContainerView.extend(
       if (removingAll) { childView.removedFromDOM = true; }
       childView.destroy();
     }
+    
+    // If there is an element before the ones we deleted
+    if (start>0) {
+      childViews[start-1].set('nextView', start<childViews.length ? childViews[start] : null);
+    }
+    // if there is an element after the ones we deleted
+    if (start<childViews.length) {
+      childViews[start].set('prevView', start>0 ? childViews[start-1] : null);
+    }
   },
 
   /**
@@ -147,6 +156,12 @@ Ember.CollectionView = Ember.ContainerView.extend(
           content: item,
           contentIndex: idx
         });
+        
+        // link together the chain of addedViews
+        if (addedViews.length>0) {
+          view.set('prevView', addedViews[addedViews.length-1]);
+          addedViews[addedViews.length-1].set('nextView', view);
+        }
 
         addedViews.push(view);
       }
@@ -158,7 +173,19 @@ Ember.CollectionView = Ember.ContainerView.extend(
       addedViews.push(emptyView);
       set(this, 'emptyView', emptyView);
     }
-
+    
+    if (added>0) {
+      // if there is a childview before the ones we're adding
+      if (start>0) {
+        childViews.objectAt(start-1).set('nextView', addedViews[0]);
+        addedViews[0].set('prevView', childViews.objectAt(start-1));
+      }
+      // if there is a childview after the ones we're adding
+      if (start<childViews.length) {
+        childViews.objectAt(start).set('prevView', addedViews[addedViews.length-1]);
+        addedViews[addedViews.length-1].set('nextView', childViews.objectAt(start));
+      }
+    }
     childViews.replace(start, 0, addedViews);
   },
 
