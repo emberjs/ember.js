@@ -99,6 +99,15 @@ var utils = Ember.EnumerableUtils = {
   removeObject: function(array, item) {
     var index = utils.indexOf(array, item);
     if (index !== -1) { array.splice(index, 1); }
+  },
+
+  replace: function(array, idx, amt, objects) {
+    if (array.replace) {
+      return array.replace(idx, amt, objects);
+    } else {
+      var args = Array.prototype.concat.apply([idx, amt], objects);
+      return array.splice.apply(array, args);
+    }
   }
 };
 
