@@ -1514,16 +1514,6 @@ var DOMManager = {
         prevView=prevView.get('prevView');
       }
       if (prevView === null) {
-        var childViews = parentView.get('childViews');
-        for (var i=0; i<childViews.get('length'); i++) {
-          nextView = childViews[i];
-          if (nextView.get('state') === 'inDOM') {
-            break;
-          }
-        }
-        if (i === childViews.get('length')) {
-          nextView = null;
-        }
         var element = parentView.$();
         element.prepend(newView.$());
       } else {
