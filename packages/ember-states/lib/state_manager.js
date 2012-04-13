@@ -427,11 +427,11 @@ require('ember-states/state');
 
   will change the rendered HTML to
 
-    <body>
-      <div id="ember2" class="ember-view my-photos-css-class">
-        <h2>Photos</h2>
-      </div>
-    </body>
+      <body>
+        <div id="ember2" class="ember-view my-photos-css-class">
+          <h2>Photos</h2>
+        </div>
+      </body>
 
 
   When entering nested `ViewState`s, each state's view will be draw into the the StateManager's
