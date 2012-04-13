@@ -246,6 +246,112 @@ require('ember-states/state');
           enableLogging: true
         })
 
+  ## Managing currentState with Actions
+  To control which transitions between states are possible for a given state, StateManager
+  can receive and route action messages to its states via the `send` method.  Calling to `send` with
+  an action name will begin searching for a method with the same name starting at the current state
+  and moving up through the parent states in a state hierarchy until an appropriate method is found
+  or the StateManager instance itself is reached. 
+
+  If an appropriately named method is found it will be called with the state manager as the first
+  argument an an option `context` object as the second argument.
+
+      managerA = Ember.StateManager.create({
+        initialState: 'stateOne.substateOne.subsubstateOne',
+        stateOne: Ember.State.create({
+          substateOne: Ember.State.create({
+            anAction: function(manager, context){
+              console.log("an action was called")
+            },
+            subsubstateOne: Ember.State.create({})
+          })
+        })
+      })
+
+      managerA.currentState.name // 'subsubstateOne'
+      managerA.send('anAction')
+      // 'stateOne.substateOne.subsubstateOne' has no anAction method
+      // so the 'anAction' method of 'stateOne.substateOne' is called
+      // and logs "an action was called"
+      // with managerA as the first argument
+      // and no second argument
+
+       someObject = {}
+       managerA.send('anAction', someObject)
+       // the 'anAction' method of 'stateOne.substateOne' is called again
+       // with managerA as the first argument and
+       // someObject as the second argument.
+
+
+  If the StateManager attempts to send an action but does not find an appropriately named
+  method in the current state or while moving upwards through the state hierarchy
+  it will throw a new Ember.Error. Action detection only moves upwards through the state hierarchy
+  from the current state. It does not search in other portions of the hierarchy.
+
+        managerB = Ember.StateManager.create({
+          initialState: 'stateOne.substateOne.subsubstateOne',
+          stateOne: Ember.State.create({
+            substateOne: Ember.State.create({
+              subsubstateOne: Ember.State.create({})
+            })
+          }),
+          stateTwo: Ember.State.create({
+           anAction: function(manager, context){
+             // will not be called below because it is
+             // not a parent of the current state
+           }
+          })
+        })
+
+        managerB.currentState.name // 'subsubstateOne'
+        managerB.send('anAction')
+        // Error: <Ember.StateManager:ember132> could not
+        // respond to event anAction in state stateOne.substateOne.subsubstateOne.
+
+  Inside of an action method the given state should delegate `goToState` calls on its
+  StateManager.
+
+        robotManager = Ember.StateManager.create({
+          initialState: 'poweredDown.charging',
+           poweredDown: Ember.State.create({
+             charging: Ember.State.create({
+                chargeComplete: function(manager, context){
+                  manager.goToState('charged')
+                }
+             }),
+             charged: Ember.State.create({
+               boot: function(manager, context){
+                  manager.goToState('poweredUp')
+               }
+             })
+           }),
+           poweredUp: Ember.State.create({
+             beginExtermination: function(manager, context){
+                manager.goToState('rampaging')
+             },
+             rampaging: Ember.State.create()
+           })
+         })
+
+         robotManager.currentState.name // 'charging'
+         robotManager.send('boot') // throws error, no boot action  
+                                   // in current hierarchy
+         robotManager.currentState.name // remains 'charging'
+
+         robotManager.send('beginExtermination') // throws error, no beginExtermination
+                                                 // action in current hierarchy
+         robotManager.currentState.name // remains 'charging'
+
+         robotManager.send('chargeComplete')
+         robotManager.currentState.name // 'charged'
+
+         robotManager.send('boot')
+         robotManager.currentState.name // 'poweredUp'
+
+         robotManager.send('beginExtermination', allHumans)
+         robotManager.currentState.name // 'rampaging'
+
+
   ## Interactions with Ember's View System.
   When combined with instances of `Ember.ViewState`, StateManager is designed to 
   interact with Ember's view system to control which views are added to 
@@ -387,7 +493,7 @@ require('ember-states/state');
       })
 
   ## Managing Multiple Sections of A Page With States
-  Multiple StateManagers can be combined to control multiple areas of an app.
+  Multiple StateManagers can be combined to control multiple areas of an application's rendered views.
   Given the following HTML body:
 
       <body>
@@ -453,6 +559,33 @@ require('ember-states/state');
 
       dashboard.appendTo('body')
 
+  ## User Manipulation of State via `{{action}}` Helpers
+  The Handlebars `{{action}}` helper is StateManager-aware and will use StateManager action sending 
+  to connect user interaction to action-based state transitions.
+
+  Given the following body and handlebars template
+
+      <body>
+        <script type='text/x-handlebars'>
+          <a href="#" {{action "anAction" target="App.appStates"}}> Go </a>
+        </script>
+      </body>
+
+  And application code
+
+      App = Ember.Application.create()
+      App.states = Ember.StateManager.create({
+        initialState: 'aState',
+        aState: Ember.State.create({
+          anAction: function(manager, context){}
+        }),
+        bState: Ember.State.create({})
+      })
+
+  A user initiated click or touch event on "Go" will trigger the 'anAction' method of
+  `App.states.aState` with `App.states` as the first argument and a
+  `jQuery.Event` object as the second object. The `jQuery.Event` will include a property
+  `view` that references the `Ember.View` object that was interacted with.
   
 **/
 Ember.StateManager = Ember.State.extend(
