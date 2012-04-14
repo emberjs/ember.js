@@ -50,14 +50,14 @@ require('ember-states/state');
         start: Ember.State.create({})
       })
 
-      managerA.currentState.name // 'start'
+      managerA.getPath('currentState.name') // 'start'
 
       managerB = Ember.StateManager.create({
         initialState: 'beginHere',
         beginHere: Ember.State.create({})
       })
 
-      managerB.currentState.name // 'beginHere'
+      managerB.getPath('currentState.name') // 'beginHere'
 
   Because it is a property you may also provided a computed function if you wish to derive
   an `initialState` programmatically:
@@ -86,9 +86,9 @@ require('ember-states/state');
          poweredUp: Ember.State.create({})
        })
 
-       robotManager.currentState.name // 'poweredDown'
+       robotManager.getPath('currentState.name') // 'poweredDown'
        robotManager.goToState('poweredUp')
-       robotManager.currentState.name // 'poweredUp'
+       robotManager.getPath('currentState.name') // 'poweredUp'
 
   Before transitioning into a new state the existing `currentState` will have its
   `exit` method called with with the StateManager instance as its first argument and 
@@ -112,7 +112,7 @@ require('ember-states/state');
         })
       })
 
-      robotManager.currentState.name // 'poweredDown'
+      robotManager.getPath('currentState.name') // 'poweredDown'
       robotManager.goToState('poweredUp')
       // will log
       // 'exiting the poweredDown state'
@@ -137,7 +137,7 @@ require('ember-states/state');
         })
       })
 
-      robotManager.currentState.name // 'poweredDown'
+      robotManager.getPath('currentState.name') // 'poweredDown'
       robotManager.goToState('poweredUp')
       // will log
       // 'exiting the poweredDown state'
@@ -145,7 +145,7 @@ require('ember-states/state');
       robotManager.goToState('poweredUp') // no logging, no state change
 
       robotManager.goToState('someUnknownState') // silently fails
-      robotManager.currentState.name // 'poweredUp'
+      robotManager.getPath('currentState.name') // 'poweredUp'
 
 
   Each state property may itself contain properties that are instances of Ember.State. 
@@ -166,26 +166,26 @@ require('ember-states/state');
          })
        })
 
-       robotManager.currentState.name // 'poweredDown'
+       robotManager.getPath('currentState.name') // 'poweredDown'
 
        robotManager.goToState('poweredUp')
-       robotManager.currentState.name // 'poweredUp'
+       robotManager.getPath('currentState.name') // 'poweredUp'
 
        robotManager.goToState('mobile')
-       robotManager.currentState.name // 'mobile'
+       robotManager.getPath('currentState.name') // 'mobile'
 
        // transition via a state path
        robotManager.goToState('poweredDown.charging')
-       robotManager.currentState.name // 'charging'
+       robotManager.getPath('currentState.name') // 'charging'
 
-       robotManager.currentState.get('path') // 'poweredDown.charging'
+       robotManager.getPath('currentState.get.path') // 'poweredDown.charging'
 
-    Enter transitions methods will be called for each state and nested child state in their 
+    Enter transition methods will be called for each state and nested child state in their 
     hierarchical order.  Exit methods will be called for each state and its nested states in
     reverse hierarchical order.
 
     Exit transitions for a parent state are not called when entering into one of its child states,
-    only when transitioning to a new section of possible states.
+    only when transitioning to a new section of possible states in the hierarchy.
 
        robotManager = Ember.StateManager.create({
          initialState: 'poweredDown',
@@ -226,11 +226,11 @@ require('ember-states/state');
         })
 
 
-        robotManager.currentState.get('path') // 'poweredDown'
+        robotManager.get('currentState.get.path') // 'poweredDown'
         robotManager.goToState('charged')
         // logs 'entered charged state'
         // but does *not* log  'exited poweredDown state'
-        robotManager.currentState.name // 'charged
+        robotManager.getPath('currentState.name') // 'charged
 
         robotManager.goToState('poweredUp.mobile')
         // logs
@@ -254,7 +254,7 @@ require('ember-states/state');
   or the StateManager instance itself is reached. 
 
   If an appropriately named method is found it will be called with the state manager as the first
-  argument an an option `context` object as the second argument.
+  argument and an optional `context` object as the second argument.
 
       managerA = Ember.StateManager.create({
         initialState: 'stateOne.substateOne.subsubstateOne',
@@ -268,7 +268,7 @@ require('ember-states/state');
         })
       })
 
-      managerA.currentState.name // 'subsubstateOne'
+      managerA.getPath('currentState.name') // 'subsubstateOne'
       managerA.send('anAction')
       // 'stateOne.substateOne.subsubstateOne' has no anAction method
       // so the 'anAction' method of 'stateOne.substateOne' is called
@@ -303,7 +303,7 @@ require('ember-states/state');
           })
         })
 
-        managerB.currentState.name // 'subsubstateOne'
+        managerB.getPath('currentState.name') // 'subsubstateOne'
         managerB.send('anAction')
         // Error: <Ember.StateManager:ember132> could not
         // respond to event anAction in state stateOne.substateOne.subsubstateOne.
@@ -333,23 +333,23 @@ require('ember-states/state');
            })
          })
 
-         robotManager.currentState.name // 'charging'
+         robotManager.getPath('currentState.name') // 'charging'
          robotManager.send('boot') // throws error, no boot action  
                                    // in current hierarchy
-         robotManager.currentState.name // remains 'charging'
+         robotManager.getPath('currentState.name') // remains 'charging'
 
          robotManager.send('beginExtermination') // throws error, no beginExtermination
                                                  // action in current hierarchy
-         robotManager.currentState.name // remains 'charging'
+         robotManager.getPath('currentState.name') // remains 'charging'
 
          robotManager.send('chargeComplete')
-         robotManager.currentState.name // 'charged'
+         robotManager.getPath('currentState.name') // 'charged'
 
          robotManager.send('boot')
-         robotManager.currentState.name // 'poweredUp'
+         robotManager.getPath('currentState.name') // 'poweredUp'
 
          robotManager.send('beginExtermination', allHumans)
-         robotManager.currentState.name // 'rampaging'
+         robotManager.getPath('currentState.name') // 'rampaging'
 
 
   ## Interactions with Ember's View System.
@@ -368,7 +368,7 @@ require('ember-states/state');
 
   You can also specify a particular instance of `Ember.ContainerView` you would like to receive
   view rendering by setting the `rootView` property. You will be responsible for placing
-  this element into DOM yourself.
+  this element into the DOM yourself.
 
       aLayoutView = Ember.ContainerView.create()
 
@@ -527,7 +527,7 @@ require('ember-states/state');
 
 
   If you prefer to start with an empty body and manage state programmatically you
-  can also take advantage of StateManager's rootView property and the ability of 
+  can also take advantage of StateManager's `rootView` property and the ability of 
   `Ember.ContainerView`s to manually manage their child views. 
 
 
@@ -538,7 +538,7 @@ require('ember-states/state');
       })
 
       navigationStates = Ember.StateManager.create({
-        rootView: dashboard.navigationAreaView,
+        rootView: dashboard.get('navigationAreaView'),
         userAuthenticated: Em.ViewState.create({
           view: Ember.View.extend({})
         }),
@@ -548,7 +548,7 @@ require('ember-states/state');
       })
 
       contentStates = Ember.StateManager.create({
-        rootView: dashboard.contentAreaView,
+        rootView: dashboard.get('contentAreaView'),
         books: Em.ViewState.create({
           view: Ember.View.extend({})
         }),
