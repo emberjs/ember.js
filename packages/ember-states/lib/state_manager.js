@@ -574,7 +574,7 @@ require('ember-states/state');
   And application code
 
       App = Ember.Application.create()
-      App.states = Ember.StateManager.create({
+      App.appStates = Ember.StateManager.create({
         initialState: 'aState',
         aState: Ember.State.create({
           anAction: function(manager, context){}
@@ -583,7 +583,7 @@ require('ember-states/state');
       })
 
   A user initiated click or touch event on "Go" will trigger the 'anAction' method of
-  `App.states.aState` with `App.states` as the first argument and a
+  `App.appStates.aState` with `App.appStates` as the first argument and a
   `jQuery.Event` object as the second object. The `jQuery.Event` will include a property
   `view` that references the `Ember.View` object that was interacted with.
   
