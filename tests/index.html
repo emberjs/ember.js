@@ -120,7 +120,7 @@
       el = document.getElementById('qunit-header');
       el.innerHTML = 'Add package=package1,package2 in the URL to test packages';
     } else {
-      if (packages[1] === 'all') {
+      if (packages[0] === 'all') {
         packages = [
           'ember-handlebars',
           'ember-metal',
@@ -128,8 +128,6 @@
           'ember-states',
           'ember-views'
         ];
-      } else {
-        packages = packages[1].split(',');
       }
 
       len = packages.length;
