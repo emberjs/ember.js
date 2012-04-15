@@ -8,6 +8,7 @@
 require("ember-views/system/event_dispatcher");
 
 var get = Ember.get, set = Ember.set;
+var indexOf = Ember.ArrayUtils.indexOf;
 
 /**
   @class
@@ -62,15 +63,21 @@ Ember.Application = Ember.Namespace.extend(
 
   /** @private */
   init: function() {
+    this._super();
+    
     var eventDispatcher,
         rootElement = get(this, 'rootElement');
-    this._super();
 
     eventDispatcher = Ember.EventDispatcher.create({
       rootElement: rootElement
     });
 
     set(this, 'eventDispatcher', eventDispatcher);
+
+    if (!get(Ember, 'defaultApplication') || get(this, 'isDefaultApplication')) {
+      set(Ember, 'defaultApplication', this);
+    }
+		Ember.Application.APPLICATIONS.push(this);
 
     // jQuery 1.7 doesn't call the ready callback if already ready
     if (Ember.$.isReady) {
@@ -102,8 +109,17 @@ Ember.Application = Ember.Namespace.extend(
   /** @private */
   destroy: function() {
     get(this, 'eventDispatcher').destroy();
+    if (get(Ember, 'defaultApplication') === this) {
+      var applications = Ember.Application.APPLICATIONS;
+      applications.splice(indexOf(applications, this), 1);
+      if (applications.length > 0) {
+        set(Ember, 'defaultApplication', applications[0]);
+      } else {
+        set(Ember, 'defaultApplication', undefined);
+      }
+    }
     return this._super();
   }
 });
 
-
+Ember.Application.APPLICATIONS = [];
