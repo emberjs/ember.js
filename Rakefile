@@ -97,12 +97,28 @@ namespace :docs do
     EmberDocs::CLI.start("generate #{doc_args} -o docs".split(' '))
   end
 
+  desc "Build and upload Ember Docs"
+  task :upload => :build do
+    raise "missing environment variable EMBER_DOCS_UPLOAD_PATH" unless ENV.has_key?('EMBER_DOCS_UPLOAD_PATH')
+    Rake::Task["docs:build"].invoke
+    upload_path = ENV['EMBER_DOCS_UPLOAD_PATH']
+    FileUtils.cd(upload_path) do
+      system "git pull"
+    end
+    FileUtils.rm_rf("#{upload_path}/html.old") if Dir.exists?("#{upload_path}/html.old")
+    FileUtils.mv("#{upload_path}/html", "#{upload_path}/html.old")
+    FileUtils.cp_r("docs", "#{upload_path}/html")
+    FileUtils.cd(upload_path) do
+      system "git add html && git commit --all -m 'Upload generated API docs' && git push heroku master"
+    end
+    FileUtils.rm_rf("#{upload_path}/html.old")
+  end
+
   desc "Remove Ember Docs"
   task :clean do
     rm_r "docs"
   end
 end
-
 
 desc "Run tests with phantomjs"
 task :test, [:suite] => :dist do |t, args|
