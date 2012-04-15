@@ -1,5 +1,7 @@
 // PhantomJS QUnit Test Runner
 
+/*globals QUnit phantom*/
+
 var args = phantom.args;
 if (args.length < 1 || args.length > 2) {
   console.log("Usage: " + phantom.scriptName + " <URL> <timeout>");
@@ -80,6 +82,7 @@ function addLogging() {
 
   QUnit.done(function(context) {
     var stats = [
+      "Test run: " + JSON.stringify(QUnit.urlParams),
       "Time: " + context.runtime + "ms",
       "Total: " + context.total,
       "Passed: " + context.passed,

@@ -11,8 +11,7 @@
     // Handle JSHint
     QUnit.config.urlConfig.push('nojshint');
 
-    var noJsHint = location.search.match(/nojshint=([^&]+)/);
-    jsHint = !(noJsHint && decodeURIComponent(noJsHint[1]));
+    var jsHint = !QUnit.urlParams.nojshint;
 
     var jsHintReporter = function (file, errors) {
       if (!errors) { return ''; }
@@ -37,8 +36,8 @@
     QUnit.config.urlConfig.push('extendprototypes');
 
     window.ENV = window.ENV || {};
-    var extendPrototypes = location.search.match(/extendprototypes=([^&]+)/);
-    ENV['EXTEND_PROTOTYPES'] = !!(extendPrototypes && decodeURIComponent(extendPrototypes[1]));
+    var extendPrototypes = QUnit.urlParams.extendprototypes;
+    ENV['EXTEND_PROTOTYPES'] = !!extendPrototypes;
   </script>
 </head>
 <body>
@@ -59,8 +58,7 @@
 
   <script>
     // Load custom version of jQuery if possible
-    var jQueryMatch = location.search.match(/jquery=([^&]+)/),
-        jQueryVersion = jQueryMatch ? jQueryMatch[1] : "1.7.2";
+    var jQueryVersion = QUnit.urlParams.jquery || "1.7.2";
     if (jQueryVersion !== 'none') {
       document.write(unescape('%3Cscript src="http://code.jquery.com/jquery-'+jQueryVersion+'.js"%3E%3C/script%3E'));
     }
@@ -115,10 +113,10 @@
 
 
     // Load Tests and Depenencies
-    var packages = location.search.match(/package=([^&]+)/),
+    var packages = (QUnit.urlParams.package || "").split(","),
         packageName, el, idx, len, re, match, moduleName;
 
-    if (!packages) {
+    if (!packages.length) {
       el = document.getElementById('qunit-header');
       el.innerHTML = 'Add package=package1,package2 in the URL to test packages';
     } else {
