@@ -1,17 +1,17 @@
 GIT
+  remote: https://github.com/emberjs/docs-generator.git
+  revision: cfbb82496c1c342ff6da49fc46559dd8fddf8b55
+  specs:
+    ember-docs (0.1)
+      rack
+      thor
+
+GIT
   remote: https://github.com/livingsocial/rake-pipeline.git
   revision: b70ca6cad7655e58d13031f3e24df7dfc74f9030
   specs:
     rake-pipeline (0.6.0)
       rake (~> 0.9.0)
-      thor
-
-GIT
-  remote: https://github.com/wagenet/ember-docs.git
-  revision: cfbb82496c1c342ff6da49fc46559dd8fddf8b55
-  specs:
-    ember-docs (0.1)
-      rack
       thor
 
 GIT
@@ -33,10 +33,10 @@ GEM
       addressable (~> 2.2)
       multipart-post (~> 1.1)
       rack (~> 1.1)
-    github_api (0.4.8)
+    github_api (0.4.10)
       faraday (~> 0.7.6)
       hashie (~> 1.2.0)
-      multi_json (~> 1.1.0)
+      multi_json (~> 1.0)
       oauth2 (~> 0.5.2)
     hashie (1.2.0)
     kicker (2.5.0)
@@ -44,6 +44,7 @@ GEM
     mime-types (1.18)
     multi_json (1.1.0)
     multipart-post (1.1.5)
+    nokogiri (1.5.2)
     oauth2 (0.5.2)
       faraday (~> 0.7)
       multi_json (~> 1.0)
@@ -65,6 +66,7 @@ DEPENDENCIES
   ember-docs!
   github_api
   kicker
+  nokogiri
   rack
   rake-pipeline!
   rake-pipeline-web-filters!
