@@ -309,8 +309,10 @@ task :test, [:suite] => :dist do |t, args|
     # testing older jQuery 1.6.4 for compatibility
     :all => packages.map{|p| "package=#{p}" } +
             ["package=all&jquery=1.6.4&nojshint=true",
+             "package=all&jquery=git&nojshint=true",
               "package=all&extendprototypes=true&nojshint=true",
               "package=all&extendprototypes=true&jquery=1.6.4&nojshint=true",
+              "package=all&extendprototypes=true&jquery=git&nojshint=true",
               "package=all&dist=build&nojshint=true"]
   }
 
