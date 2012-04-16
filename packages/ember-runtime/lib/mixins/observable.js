@@ -109,17 +109,25 @@ Ember.Observable = Ember.Mixin.create(/** @scope Ember.Observable.prototype */ {
 
   /**
     To get multiple properties at once, call getProperties
-    with a list of strings:
+    with a list of strings or an array:
 
           record.getProperties('firstName', 'lastName', 'zipCode'); // => { firstName: 'John', lastName: 'Doe', zipCode: '10011' }
 
-    @param {String...} list of keys to get
+   is equivalent to:
+
+          record.getProperties(['firstName', 'lastName', 'zipCode']); // => { firstName: 'John', lastName: 'Doe', zipCode: '10011' }
+
+    @param {String...|Array} list of keys to get
     @returns {Hash}
   */
   getProperties: function() {
     var ret = {};
-    for(var i = 0; i < arguments.length; i++) {
-      ret[arguments[i]] = get(this, arguments[i]);
+    var propertyNames = arguments;
+    if (arguments.length === 1 && Ember.typeOf(arguments[0]) === 'array') {
+      propertyNames = arguments[0];
+    }
+    for(var i = 0; i < propertyNames.length; i++) {
+      ret[propertyNames[i]] = get(this, propertyNames[i]);
     }
     return ret;
   },
