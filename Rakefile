@@ -6,6 +6,10 @@ require 'rake-pipeline'
 require "ember_docs/cli"
 require "colored"
 
+require "rest-client"
+require "github_api"
+require "nokogiri"
+
 def pipeline
   Rake::Pipeline::Project.new("Assetfile")
 end
@@ -34,51 +38,97 @@ task :clean do
   puts "Done"
 end
 
-### UPLOAD LATEST EMBERJS BUILD TASK ###
-desc "Upload latest Ember.js build to GitHub repository"
-task :upload => :dist do
-  require "net/github-upload"
+namespace :upload do
+  def get_oauth_token(login)  
+    token = nil
 
-  # setup
-  login = `git config github.user`.chomp  # your login for github
-  token = `git config github.token`.chomp # your token for github
+    if !File.exists?(".github-upload-token")
+      puts "There is no file named .github-upload-token in this folder. This file holds the OAuth token needed to communicate with GitHub."
+      puts "You will be asked to enter your GitHub password so a new OAuth token will be created."
+      print "GitHub Password: "
+      system "stty -echo" # disable echoing of entered chars so password is not shown on console
+      pw = STDIN.gets.chomp
+      system "stty echo" # enable echoing of entered chars
+      puts ""
 
-  # get repo from git config's origin url
-  origin = `git config remote.origin.url`.chomp # url to origin
-  # extract USERNAME/REPO_NAME
-  # sample urls: https://github.com/emberjs/ember.js.git
-  #              git://github.com/emberjs/ember.js.git
-  #              git@github.com:emberjs/ember.js.git
-  #              git@github.com:emberjs/ember.js
+      # check if the user already granted access for Ember.js Uploader by checking the available authorizations
+      response = RestClient.get "https://#{login}:#{pw}@api.github.com/authorizations"
+      JSON.parse(response.to_str).each do |auth|
+        if auth["note"] == "Ember.js Uploader"
+          # user already granted access, so we reuse the existing token
+          token = auth["token"]
+        end
+      end
 
-  repo = origin.match(/github\.com[\/:](.+?)(\.git)?$/)[1]
-  puts "Uploading to repository: " + repo
+      ## we need to create a new token
+      if (token == nil)
+        payload = {
+          :scopes => ["public_repo"],
+          :note => "Ember.js Uploader",
+          :note_url => "https://github.com/emberjs/ember.js"
+        }
+        response = RestClient.post "https://#{login}:#{pw}@api.github.com/authorizations", payload.to_json, :content_type => :json
+        token = JSON.parse(response.to_str)["token"]
+      end
 
-  gh = Net::GitHub::Upload.new(
-    :login => login,
-    :token => token
-  )
+      # finally save the token into .github-upload-token
+      File.open(".github-upload-token", 'w') {|f| f.write(token)}
+    else
+      # if the file already exists, get the token from it
+      token = File.open(".github-upload-token", "rb").read
+    end
 
-  puts "Uploading ember-latest.js"
-  gh.replace(
-    :repos => repo,
-    :file  => 'dist/ember.js',
-    :name => 'ember-latest.js',
-    :content_type => 'application/json',
-    :description => "Ember.js Master"
-  )
+    return token
+  end
+  
+  def upload_file(login, username, repo, filename, description, file)
+    token = get_oauth_token(login)
+    gh = Github.new :user => username, :repo => repo, :oauth_token => token
+    
+    # remvove previous download with the same name
+    gh.repos.downloads do |download|
+      if filename == download.name
+        gh.repos.delete_download login, repo, download.id
+      end
+    end
+    
+    # step 1
+    hash = gh.repos.create_download username, repo,
+      "name" => filename,
+      "size" => File.size(file),
+      "description" => description,
+      "content_type" => "application/json"
+      
+    # step 2
+    gh.repos.upload hash, file
+    
+    puts "uploaded file #{filename}"
+  end
+  
+  ### UPLOAD LATEST EMBERJS BUILD TASK ###
+  desc "Upload latest Ember.js build to GitHub repository"
+  task :latest => :dist do
+    
+    # get the github user name
+    login = `git config github.user`.chomp
 
-  puts "Uploading ember-latest.min.js"
-  gh.replace(
-    :repos => repo,
-    :file  => 'dist/ember.min.js',
-    :name => 'ember-latest.min.js',
-    :content_type => 'application/json',
-    :description => "Ember.js Master (minified)"
-  )
+    # get repo from git config's origin url
+    origin = `git config remote.origin.url`.chomp # url to origin
+    # extract USERNAME/REPO_NAME
+    # sample urls: https://github.com/emberjs/ember.js.git
+    #              git://github.com/emberjs/ember.js.git
+    #              git@github.com:emberjs/ember.js.git
+    #              git@github.com:emberjs/ember.js
+
+    repoUrl = origin.match(/github\.com[\/:]((.+?)\/(.+?))(\.git)?$/)
+    username = repoUrl[2] # username part of origin url
+    repo = repoUrl[3] # repository name part of origin url
+    
+    upload_file login, username, repo, 'ember-latest.js', "Ember.js Master", "dist/ember.js"
+    upload_file login, username, repo, 'ember-latest.min.js', "Ember.js Master (minified)", "dist/ember.min.js"
+    
+  end
 end
-
-
 
 ### RELEASE TASKS ###
 
