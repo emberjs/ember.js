@@ -6,10 +6,6 @@ require 'rake-pipeline'
 require "ember_docs/cli"
 require "colored"
 
-require "rest-client"
-require "github_api"
-require "nokogiri"
-
 def pipeline
   Rake::Pipeline::Project.new("Assetfile")
 end
@@ -39,7 +35,10 @@ task :clean do
 end
 
 namespace :upload do
-  def get_oauth_token(login)  
+
+  def get_oauth_token(login)
+    require "rest-client"
+
     token = nil
 
     if !File.exists?(".github-upload-token")
@@ -80,35 +79,40 @@ namespace :upload do
 
     return token
   end
-  
+
   def upload_file(login, username, repo, filename, description, file)
+    require "github_api"
+    # We can stop requiring nokogiri when github_api is updated
+    # # We can stop requiring nokogiri when github_api is updated
+    require "nokogiri"
+
     token = get_oauth_token(login)
     gh = Github.new :user => username, :repo => repo, :oauth_token => token
-    
+
     # remvove previous download with the same name
     gh.repos.downloads do |download|
       if filename == download.name
         gh.repos.delete_download login, repo, download.id
       end
     end
-    
+
     # step 1
     hash = gh.repos.create_download username, repo,
       "name" => filename,
       "size" => File.size(file),
       "description" => description,
       "content_type" => "application/json"
-      
+
     # step 2
     gh.repos.upload hash, file
-    
+
     puts "uploaded file #{filename}"
   end
-  
+
   ### UPLOAD LATEST EMBERJS BUILD TASK ###
   desc "Upload latest Ember.js build to GitHub repository"
   task :latest => :dist do
-    
+
     # get the github user name
     login = `git config github.user`.chomp
 
@@ -123,10 +127,10 @@ namespace :upload do
     repoUrl = origin.match(/github\.com[\/:]((.+?)\/(.+?))(\.git)?$/)
     username = repoUrl[2] # username part of origin url
     repo = repoUrl[3] # repository name part of origin url
-    
+
     upload_file login, username, repo, 'ember-latest.js', "Ember.js Master", "dist/ember.js"
     upload_file login, username, repo, 'ember-latest.min.js', "Ember.js Master (minified)", "dist/ember.min.js"
-    
+
   end
 end
 
