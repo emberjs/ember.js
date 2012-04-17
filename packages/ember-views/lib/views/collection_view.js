@@ -13,7 +13,115 @@ var get = Ember.get, set = Ember.set, fmt = Ember.String.fmt;
 /**
   @class
   @since Ember 0.9
-  @extends Ember.View
+  @extends Ember.ContainerView
+  
+  `Ember.CollectionView` is an `Ember.View` descendent responsible for managing a
+  collection (an array or array-like object) by maintaing a child view object and 
+  associated DOM representation for each item in the array and ensuring that child
+  views and their associated rendered HTML are updated when items in the array
+  are added, removed, or replaced.
+
+  ## Setting content
+  The managed collection of objects is referenced as the `Ember.CollectionView` instance's
+  `content` property.
+
+      someItemsView = Ember.CollectionView.create({
+        content: ['A', 'B','C']
+      })
+
+  The view for each item in the collection will have its `content` property set
+  to the item.
+
+  ## Specifying itemViewClass
+  By default the view class for each item in the managed collection will be an instance
+  of `Ember.View`. You can supply a different class by setting the `CollectionView`'s
+  `itemViewClass` property.
+
+  Given an empty `<body>` and the following code:
+
+
+        someItemsView = Ember.CollectionView.create({
+          classNames: ['a-collection'],
+          content: ['A','B','C'],
+          itemViewClass: Ember.View.extend({
+            template: Ember.Handlebars.compile("the letter: {{content}}")
+          })
+        })
+
+        someItemsView.appendTo('body')
+
+  Will result in the following HTML structure
+
+        <div class="ember-view a-collection">
+          <div class="ember-view">the letter: A</div>
+          <div class="ember-view">the letter: B</div>
+          <div class="ember-view">the letter: C</div>
+        </div>
+
+
+  ## Automatic matching of parent/child tagNames
+  Setting the `tagName` property of a `CollectionView` to any of 
+  "ul", "ol", "table", "thead", "tbody", "tfoot", "tr", or "select" will result
+  in the item views receiving an appropriately matched `tagName` property.
+
+
+  Given an empty `<body>` and the following code:
+
+        anUndorderedListView = Ember.CollectionView.create({
+          tagName: 'ul',
+          content: ['A','B','C'],
+          itemViewClass: Ember.View.extend({
+            template: Ember.Handlebars.compile("the letter: {{content}}")
+          })
+        })
+
+        anUndorderedListView.appendTo('body')
+
+  Will result in the following HTML structure
+
+        <ul class="ember-view a-collection">
+          <li class="ember-view">the letter: A</li>
+          <li class="ember-view">the letter: B</li>
+          <li class="ember-view">the letter: C</li>
+        </ul>
+
+  Additional tagName pairs can be provided by adding to `Ember.CollectionView.CONTAINER_MAP `
+
+        Ember.CollectionView.CONTAINER_MAP['article'] = 'section'
+
+
+  ## Empty View
+  You can provide an `Ember.View` subclass to the `Ember.CollectionView` instance as its
+  `emptyView` property. If the `content` property of a `CollectionView` is set to `null`
+  or an empty array, an instance of this view will be the `CollectionView`s only child.
+
+        aListWithNothing = Ember.CollectionView.create({
+          classNames: ['nothing']
+          content: null,
+          emptyView: Ember.View.extend({
+            template: Ember.Handlebars.compile("The collection is empty")
+          })
+        })
+
+        aListWithNothing.appendTo('body')
+
+  Will result in the following HTML structure
+
+        <div class="ember-view nothing">
+          <div class="ember-view">
+            The collection is empty
+          </div>
+        </div>
+
+  ## Adding and Removing items
+  The `childViews` property of a `CollectionView` should not be directly manipulated. Instead,
+  add, remove, replace items from its `content` property. This will trigger
+  appropriate changes to its rendered HTML.
+
+  ## Use in templates via the `{{collection}}` Ember.Handlebars helper
+  Ember.Handlebars provides a helper specifically for adding `CollectionView`s to templates.
+  See `Ember.Handlebars.collection` for more details
+  
 */
 Ember.CollectionView = Ember.ContainerView.extend(
 /** @scope Ember.CollectionView.prototype */ {
