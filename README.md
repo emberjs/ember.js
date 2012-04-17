@@ -27,6 +27,7 @@ MyApp.country = Ember.Object.create({
   presidentNameBinding: 'MyApp.president.name'
 });
 
+// Later, after Ember has resolved bindings...
 MyApp.country.get('presidentName');
 // "Barack Obama"
 ```
