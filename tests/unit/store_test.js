@@ -193,7 +193,7 @@ test("DS.Store has a load method to load in an Array of records", function() {
   }
 });
 
-test("DS.Store loads individual models without explicit IDs", function() {
+test("DS.Store loads individual records without explicit IDs", function() {
   var store = DS.Store.create();
   var Person = DS.Model.extend({
     name: DS.attr('string')
@@ -221,7 +221,7 @@ test("can load data for the same record if it is not dirty", function() {
   equal(get(tom, 'name'), "Captain Underpants", "updated record with new date");
 });
 
-test("DS.Store loads individual models without explicit IDs with a custom primaryKey", function() {
+test("DS.Store loads individual records without explicit IDs with a custom primaryKey", function() {
   var store = DS.Store.create();
   var Person = DS.Model.extend({ name: DS.attr('string'), primaryKey: 'key' });
 
@@ -249,7 +249,7 @@ test("DS.Store passes only needed guids to findMany", function() {
 
   var objects = currentStore.findMany(currentType, [1,2,3,4,5,6]);
 
-  equal(get(objects, 'length'), 6, "the ModelArray returned from findMany has all the objects");
+  equal(get(objects, 'length'), 6, "the RecordArray returned from findMany has all the objects");
 
   var i, object, hash;
   for (i=0; i<3; i++) {
@@ -261,7 +261,7 @@ test("DS.Store passes only needed guids to findMany", function() {
 
   for (i=3; i<6; i++) {
     object = objects.objectAt(i);
-    ok(currentType.detectInstance(object), "objects are instances of the ModelArray's type");
+    ok(currentType.detectInstance(object), "objects are instances of the RecordArray's type");
   }
 });
 
@@ -309,7 +309,7 @@ test("loadMany takes an optional Object and passes it on to the Adapter", functi
   store.find(Person, passedQuery);
 });
 
-test("findAll(type) returns a model array of all records of a specific type", function() {
+test("findAll(type) returns a record array of all records of a specific type", function() {
   var store = DS.Store.create({ adapter: DS.Adapter.create() });
   var Person = DS.Model.extend({
     name: DS.attr('string')
@@ -318,17 +318,17 @@ test("findAll(type) returns a model array of all records of a specific type", fu
   store.load(Person, 1, { id: 1, name: "Tom Dale" });
 
   var results = store.findAll(Person);
-  equal(get(results, 'length'), 1, "model array should have the original object");
-  equal(get(results.objectAt(0), 'name'), "Tom Dale", "model has the correct information");
+  equal(get(results, 'length'), 1, "record array should have the original object");
+  equal(get(results.objectAt(0), 'name'), "Tom Dale", "record has the correct information");
 
   store.load(Person, 2, { id: 2, name: "Yehuda Katz" });
-  equal(get(results, 'length'), 2, "model array should have the new object");
-  equal(get(results.objectAt(1), 'name'), "Yehuda Katz", "model has the correct information");
+  equal(get(results, 'length'), 2, "record array should have the new object");
+  equal(get(results.objectAt(1), 'name'), "Yehuda Katz", "record has the correct information");
 
-  strictEqual(results, store.findAll(Person), "subsequent calls to findAll return the same modelArray)");
+  strictEqual(results, store.findAll(Person), "subsequent calls to findAll return the same recordArray)");
 });
 
-test("a new model of a particular type is created via store.createRecord(type)", function() {
+test("a new record of a particular type is created via store.createRecord(type)", function() {
   var store = DS.Store.create();
   var Person = DS.Model.extend({
     name: DS.attr('string')
@@ -336,9 +336,9 @@ test("a new model of a particular type is created via store.createRecord(type)",
 
   var person = store.createRecord(Person);
 
-  equal(get(person, 'isLoaded'), true, "A newly created model is loaded");
-  equal(get(person, 'isNew'), true, "A newly created model is new");
-  equal(get(person, 'isDirty'), true, "A newly created model is dirty");
+  equal(get(person, 'isLoaded'), true, "A newly created record is loaded");
+  equal(get(person, 'isNew'), true, "A newly created record is new");
+  equal(get(person, 'isDirty'), true, "A newly created record is dirty");
 
   set(person, 'name', "Braaahm Dale");
 
@@ -353,9 +353,9 @@ test("an initial data hash can be provided via store.createRecord(type, hash)", 
 
   var person = store.createRecord(Person, { name: "Brohuda Katz" });
 
-  equal(get(person, 'isLoaded'), true, "A newly created model is loaded");
-  equal(get(person, 'isNew'), true, "A newly created model is new");
-  equal(get(person, 'isDirty'), true, "A newly created model is dirty");
+  equal(get(person, 'isLoaded'), true, "A newly created record is loaded");
+  equal(get(person, 'isNew'), true, "A newly created record is new");
+  equal(get(person, 'isDirty'), true, "A newly created record is dirty");
 
   equal(get(person, 'name'), "Brohuda Katz", "The initial data hash is provided");
 });
@@ -373,15 +373,15 @@ test("if an id is supplied in the initial data hash, it can be looked up using `
   strictEqual(person, again, "the store returns the loaded object");
 });
 
-test("models inside a collection view should have their ids updated", function() {
+test("records inside a collection view should have their ids updated", function() {
   var Person = DS.Model.extend({
     id: DS.attr("number")
   });
 
   var idCounter = 1;
   var adapter = DS.Adapter.create({
-    createRecord: function(store, type, model) {
-      store.didCreateRecord(model, {name: model.get('name'), id: idCounter++});
+    createRecord: function(store, type, record) {
+      store.didCreateRecord(record, {name: record.get('name'), id: idCounter++});
     }
   });
 
@@ -403,13 +403,13 @@ test("models inside a collection view should have their ids updated", function()
   store.commit();
 
   container.content.forEach(function(person, index) {
-    equal(person.get('id'), index + 1, "The model's id should be correctly.");
+    equal(person.get('id'), index + 1, "The record's id should be correct.");
   });
 });
 
 module("DS.State - Lifecycle Callbacks");
 
-test("a model receives a didLoad callback when it has finished loading", function() {
+test("a record receives a didLoad callback when it has finished loading", function() {
   var callCount = 0;
 
   var Person = DS.Model.extend({
@@ -432,7 +432,7 @@ test("a model receives a didLoad callback when it has finished loading", functio
   equal(callCount, 1, "didLoad callback was called once");
 });
 
-test("a model receives a didUpdate callback when it has finished updating", function() {
+test("a record receives a didUpdate callback when it has finished updating", function() {
   var callCount = 0;
 
   var Person = DS.Model.extend({
@@ -448,8 +448,8 @@ test("a model receives a didUpdate callback when it has finished updating", func
       store.load(Person, 1, { id: 1, name: "Foo" });
     },
 
-    updateRecord: function(store, type, model) {
-      store.didUpdateRecord(model);
+    updateRecord: function(store, type, record) {
+      store.didUpdateRecord(record);
     }
   });
 
@@ -466,7 +466,7 @@ test("a model receives a didUpdate callback when it has finished updating", func
   equal(callCount, 1, "didUpdate called after update");
 });
 
-test("a model receives a didCreate callback when it has finished updating", function() {
+test("a record receives a didCreate callback when it has finished updating", function() {
   var callCount = 0;
 
   var Person = DS.Model.extend({
@@ -476,8 +476,8 @@ test("a model receives a didCreate callback when it has finished updating", func
   });
 
   var adapter = DS.Adapter.create({
-    createRecord: function(store, type, model) {
-      store.didCreateRecord(model);
+    createRecord: function(store, type, record) {
+      store.didCreateRecord(record);
     }
   });
 

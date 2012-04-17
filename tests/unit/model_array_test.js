@@ -1,7 +1,7 @@
 var get = Ember.get, set = Ember.set, getPath = Ember.getPath;
 var Person;
 
-module("DS.ModelArray");
+module("DS.RecordArray");
 
 var array = [{ id: 1, name: "Scumbag Dale" }, { id: 2, name: "Scumbag Katz" }, { id: 3, name: "Scumbag Bryn" }];
 
@@ -18,107 +18,107 @@ module("DS.Store", {
   }
 });
 
-test("a model array is backed by models", function() {
+test("a record array is backed by records", function() {
   var store = DS.Store.create({ adapter: null });
   store.loadMany(Person, [1,2,3], array);
 
-  var modelArray = store.find(Person, [1,2,3]);
+  var recordArray = store.find(Person, [1,2,3]);
 
   for (var i=0, l=get(array, 'length'); i<l; i++) {
-    deepEqual(modelArray.objectAt(i).toJSON(), array[i], "a model array materializes objects on demand");
+    deepEqual(recordArray.objectAt(i).toJSON(), array[i], "a record array materializes objects on demand");
   }
 });
 
-test("a model is moved from a model array when it is deleted", function() {
+test("a record is removed from a record array when it is deleted", function() {
   var store = DS.Store.create({ adapter: null });
   store.loadMany(Person, [1,2,3], array);
 
   var scumbag = store.find(Person, 1);
 
-  var modelArray = store.find(Person, [1, 2, 3]);
-  equal(get(modelArray, 'length'), 3, "precond - model array has three items");
-  equal(get(modelArray.objectAt(0), 'name'), "Scumbag Dale", "item at index 0 is model with id 1");
+  var recordArray = store.find(Person, [1, 2, 3]);
+  equal(get(recordArray, 'length'), 3, "precond - record array has three items");
+  equal(get(recordArray.objectAt(0), 'name'), "Scumbag Dale", "item at index 0 is record with id 1");
 
   scumbag.deleteRecord();
 
-  equal(get(modelArray, 'length'), 2, "model is removed from the model array");
-  ok(get(modelArray.objectAt(0), 'name') !== "Scumbag Dale", "item was removed");
+  equal(get(recordArray, 'length'), 2, "record is removed from the record array");
+  ok(get(recordArray.objectAt(0), 'name') !== "Scumbag Dale", "item was removed");
 });
 
-test("a model array can have a filter on it", function() {
+test("a record array can have a filter on it", function() {
   var store = DS.Store.create();
 
   store.loadMany(Person, array);
 
-  var modelArray = store.filter(Person, function(hash) {
+  var recordArray = store.filter(Person, function(hash) {
     if (hash.get('name').match(/Scumbag [KD]/)) { return true; }
   });
 
-  equal(get(modelArray, 'length'), 2, "The model Array should have the filtered objects on it");
+  equal(get(recordArray, 'length'), 2, "The Record Array should have the filtered objects on it");
 
   store.load(Person, { id: 4, name: "Scumbag Koz" });
 
-  equal(get(modelArray, 'length'), 3, "The model Array should be updated as new items are added to the store");
+  equal(get(recordArray, 'length'), 3, "The Record Array should be updated as new items are added to the store");
 
   store.load(Person, { id: 1, name: "Scumbag Tom" });
 
-  equal(get(modelArray, 'length'), 2, "The model Array should be updated as existing members are updated");
+  equal(get(recordArray, 'length'), 2, "The Record Array should be updated as existing members are updated");
 });
 
-test("a filtered model array includes created elements", function() {
+test("a filtered record array includes created elements", function() {
   var store = DS.Store.create();
 
   store.loadMany(Person, array);
 
-  var modelArray = store.filter(Person, function(hash) {
+  var recordArray = store.filter(Person, function(hash) {
     if (hash.get('name').match(/Scumbag [KD]/)) { return true; }
   });
 
-  equal(get(modelArray, 'length'), 2, "precond - The model Array should have the filtered objects on it");
+  equal(get(recordArray, 'length'), 2, "precond - The Record Array should have the filtered objects on it");
 
   store.createRecord(Person, { name: "Scumbag Koz" });
 
-  equal(get(modelArray, 'length'), 3, "The model array has the new object on it");
+  equal(get(recordArray, 'length'), 3, "The record array has the new object on it");
 });
 
-test("a model array returns undefined when asking for a member outside of its content Array's range", function() {
+test("a record array returns undefined when asking for a member outside of its content Array's range", function() {
   var store = DS.Store.create();
 
   store.loadMany(Person, array);
 
-  var modelArray = store.find(Person);
+  var recordArray = store.find(Person);
 
-  strictEqual(modelArray.objectAt(20), undefined, "objects outside of the range just return undefined");
+  strictEqual(recordArray.objectAt(20), undefined, "objects outside of the range just return undefined");
 });
 
-test("a model Array can update its filter", function() {
+test("a Record Array can update its filter", function() {
   var store = DS.Store.create();
 
   store.loadMany(Person, array);
 
-  var modelArray = store.filter(Person, function(hash) {
+  var recordArray = store.filter(Person, function(hash) {
     if (hash.get('name').match(/Scumbag [KD]/)) { return true; }
   });
 
-  equal(get(modelArray, 'length'), 2, "The model Array should have the filtered objects on it");
+  equal(get(recordArray, 'length'), 2, "The Record Array should have the filtered objects on it");
 
-  modelArray.set('filterFunction', function(hash) {
+  recordArray.set('filterFunction', function(hash) {
     if (hash.get('name').match(/Katz/)) { return true; }
   });
 
-  equal(get(modelArray, 'length'), 1, "The model Array should have one object on it");
+  equal(get(recordArray, 'length'), 1, "The Record Array should have one object on it");
 
   store.load(Person, 5, { name: "Other Katz" });
 
-  equal(get(modelArray, 'length'), 2, "The model Array now has the new object matching the filter");
+  equal(get(recordArray, 'length'), 2, "The Record Array now has the new object matching the filter");
 
   store.load(Person, 6, { name: "Scumbag Demon" });
 
-  equal(get(modelArray, 'length'), 2, "The model Array doesn't have objects matching the old filter");
+  equal(get(recordArray, 'length'), 2, "The Record Array doesn't have objects matching the old filter");
 });
 
 (function(){
-  var store, modelArray;
+  var store, recordArray;
 
   var clientEdits = function(ids) {
     Ember.run( function() {
@@ -148,31 +148,31 @@ test("a model Array can update its filter", function() {
 
     store.loadMany(Person, array);
 
-    modelArray = store.filter(Person, function(hash) {
+    recordArray = store.filter(Person, function(hash) {
       if (hash.get('name').match(/Scumbag/)) { return true; }
     });
 
-    equal(get(modelArray, 'length'), 3, "The filter function should work");
+    equal(get(recordArray, 'length'), 3, "The filter function should work");
   };
 
-  test("a model Array can update its filter after server-side updates one record", function() {
+  test("a Record Array can update its filter after server-side updates one record", function() {
     setup({
-      updateRecord: function(store, type, model) {
-        store.didUpdateRecord(model, {id: 1, name: "Scumbag Server-side Dale"});
+      updateRecord: function(store, type, record) {
+        store.didUpdateRecord(record, {id: 1, name: "Scumbag Server-side Dale"});
       }
     });
 
     clientEdits([1]);
-    equal(get(modelArray, 'length'), 2, "The model array updates when the client changes records");
+    equal(get(recordArray, 'length'), 2, "The record array updates when the client changes records");
 
     serverResponds();
-    equal(get(modelArray, 'length'), 3, "The model array updates when the server changes one record");
+    equal(get(recordArray, 'length'), 3, "The record array updates when the server changes one record");
   });
 
-  test("a model Array can update its filter after server-side updates multiple records", function() {
+  test("a Record Array can update its filter after server-side updates multiple records", function() {
     setup({
-      updateRecords: function(store, type, models) {
-        store.didUpdateRecords(models, [
+      updateRecords: function(store, type, records) {
+        store.didUpdateRecords(records, [
           {id: 1, name: "Scumbag Server-side Dale"},
           {id: 2, name: "Scumbag Server-side Katz"}
         ]);
@@ -180,30 +180,30 @@ test("a model Array can update its filter", function() {
     });
 
     clientEdits([1,2]);
-    equal(get(modelArray, 'length'), 1, "The model array updates when the client changes records");
+    equal(get(recordArray, 'length'), 1, "The record array updates when the client changes records");
 
     serverResponds();
-    equal(get(modelArray, 'length'), 3, "The model array updates when the server changes multiple records");
+    equal(get(recordArray, 'length'), 3, "The record array updates when the server changes multiple records");
   });
 
-  test("a model Array can update its filter after server-side creates one record", function() {
+  test("a Record Array can update its filter after server-side creates one record", function() {
     setup({
-      createRecord: function(store, type, model) {
-        store.didCreateRecord(model, {id: 4, name: "Scumbag Server-side Tim"});
+      createRecord: function(store, type, record) {
+        store.didCreateRecord(record, {id: 4, name: "Scumbag Server-side Tim"});
       }
     });
 
     clientCreates(["Tim"]);
-    equal(get(modelArray, 'length'), 3, "The model array does not include non-matching records");
+    equal(get(recordArray, 'length'), 3, "The record array does not include non-matching records");
 
     serverResponds();
-    equal(get(modelArray, 'length'), 4, "The model array updates when the server creates a record");
+    equal(get(recordArray, 'length'), 4, "The record array updates when the server creates a record");
   });
 
-  test("a model Array can update its filter after server-side creates multiple records", function() {
+  test("a Record Array can update its filter after server-side creates multiple records", function() {
     setup({
-      createRecords: function(store, type, models) {
-        store.didCreateRecords(Person, models, [
+      createRecords: function(store, type, records) {
+        store.didCreateRecords(Person, records, [
           {id: 4, name: "Scumbag Server-side Mike"},
           {id: 5, name: "Scumbag Server-side David"}
         ]);
@@ -211,23 +211,23 @@ test("a model Array can update its filter", function() {
     });
 
     clientCreates(["Mike", "David"]);
-    equal(get(modelArray, 'length'), 3, "The model array does not include non-matching records");
+    equal(get(recordArray, 'length'), 3, "The record array does not include non-matching records");
 
     serverResponds();
-    equal(get(modelArray, 'length'), 5, "The model array updates when the server creates multiple records");
+    equal(get(recordArray, 'length'), 5, "The record array updates when the server creates multiple records");
   });
 }());
 
-test("an AdapterPopulatedModelArray knows if it's loaded or not", function() {
+test("an AdapterPopulatedRecordArray knows if it's loaded or not", function() {
   expect(2);
 
   var store = DS.Store.create({
     adapter: {
-      findQuery: function(store, type, query, modelArray) {
+      findQuery: function(store, type, query, recordArray) {
         stop();
 
         setTimeout(function() {
-          modelArray.load(array);
+          recordArray.load(array);
           equal(get(array, 'isLoaded'), true, "The array is now loaded");
           start();
         }, 100);
@@ -240,7 +240,7 @@ test("an AdapterPopulatedModelArray knows if it's loaded or not", function() {
   equal(get(array, 'isLoaded'), false, "The array is not yet loaded");
 });
 
-test("a model array that backs a collection view functions properly", function() {
+test("a record array that backs a collection view functions properly", function() {
 
   var store = DS.Store.create();
 
@@ -255,13 +255,13 @@ test("a model array that backs a collection view functions properly", function()
   });
 
   function compareArrays() {
-    var modelArray = container.content;
-    var modelCache = modelArray.get('modelCache');
-    var content = modelArray.get('content');
+    var recordArray = container.content;
+    var recordCache = recordArray.get('recordCache');
+    var content = recordArray.get('content');
     for(var i = 0; i < content.length; i++) {
-      var model = modelCache.objectAt(i);
+      var record = recordCache.objectAt(i);
       var clientId = content.objectAt(i);
-      equal(model && model.clientId, clientId, "The entries in the model cache should have matching client ids.");
+      equal(record && record.clientId, clientId, "The entries in the record cache should have matching client ids.");
     }
   }
 

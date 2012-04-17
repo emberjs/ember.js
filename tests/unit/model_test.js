@@ -21,7 +21,7 @@ test("can have a property set on it", function() {
   var record = store.createRecord(Person);
   set(record, 'name', 'bar');
 
-  equal(get(record, 'name'), 'bar', "property was set on the model");
+  equal(get(record, 'name'), 'bar', "property was set on the record");
 });
 
 test("a record reports its unique id via the `id` property", function() {
@@ -128,10 +128,10 @@ test("a DS.Model can describe Date attributes", function() {
   });
 
   store.load(Person, { id: 1 });
-  var model = store.find(Person, 1);
+  var record = store.find(Person, 1);
 
-  model.set('updatedAt', date);
-  deepEqual(date, get(model, 'updatedAt'), "setting a date returns the same date");
+  record.set('updatedAt', date);
+  deepEqual(date, get(record, 'updatedAt'), "setting a date returns the same date");
   convertsFromServer('date', dateString, date);
   convertsWhenSet('date', date, dateString);
 });
@@ -185,11 +185,11 @@ test("it should cache attributes", function() {
 
   store.load(Post, { id: 1 });
 
-  var model = store.find(Post, 1);
+  var record = store.find(Post, 1);
 
-  model.set('updatedAt', date);
-  deepEqual(date, get(model, 'updatedAt'), "setting a date returns the same date");
-  strictEqual(get(model, 'updatedAt'), get(model, 'updatedAt'), "second get still returns the same object");
+  record.set('updatedAt', date);
+  deepEqual(date, get(record, 'updatedAt'), "setting a date returns the same date");
+  strictEqual(get(record, 'updatedAt'), get(record, 'updatedAt'), "second get still returns the same object");
 });
 
 test("it can specify which key to use when looking up properties on the hash", function() {
@@ -259,7 +259,7 @@ test("when a DS.Model updates its attributes, its changes affect its filtered Ar
     if (hash.get('name').match(/Katz$/)) { return true; }
   });
 
-  equal(get(people, 'length'), 1, "precond - one item is in the ModelArray");
+  equal(get(people, 'length'), 1, "precond - one item is in the RecordArray");
 
   var person = people.objectAt(0);
 
@@ -301,7 +301,7 @@ test("when a DS.Model updates its attributes, its changes affect its filtered Ar
     if (hash.get('name').match(/Katz$/)) { return true; }
   });
 
-  equal(get(people, 'length'), 1, "precond - one item is in the ModelArray");
+  equal(get(people, 'length'), 1, "precond - one item is in the RecordArray");
 
   var person = people.objectAt(0);
 

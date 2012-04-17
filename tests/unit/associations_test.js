@@ -312,9 +312,9 @@ test("it is possible to remove an item from an association", function() {
   equal(getPath(person, 'tags.length'), 0, "object is removed from the association");
 });
 
-module("ModelArray");
+module("RecordArray");
 
-test("updating the content of a ModelArray updates its content", function() {
+test("updating the content of a RecordArray updates its content", function() {
   var Tag = DS.Model.extend({
     name: DS.attr('string')
   });
@@ -324,7 +324,7 @@ test("updating the content of a ModelArray updates its content", function() {
 
   var clientIds = loaded.clientIds;
 
-  var tags = DS.ModelArray.create({ content: Ember.A([clientIds[0], clientIds[1]]), store: store, type: Tag });
+  var tags = DS.RecordArray.create({ content: Ember.A([clientIds[0], clientIds[1]]), store: store, type: Tag });
 
   var tag = tags.objectAt(0);
   equal(get(tag, 'name'), "friendly", "precond - we're working with the right tags");

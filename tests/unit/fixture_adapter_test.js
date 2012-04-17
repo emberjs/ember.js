@@ -32,7 +32,7 @@ test("should load all data for a type asynchronously the first time it is reques
 
   var ebryn = store.find(Person, 'ebryn');
 
-  equal(get(ebryn, 'isLoaded'), false, "model from fixtures is returned in the loading state");
+  equal(get(ebryn, 'isLoaded'), false, "record from fixtures is returned in the loading state");
 
   ebryn.addObserver('isLoaded', function() {
     clearTimeout(timer);
@@ -42,8 +42,8 @@ test("should load all data for a type asynchronously the first time it is reques
     equal(get(ebryn, 'height'), 70, "data from fixtures is loaded correctly");
 
     var wycats = store.find(Person, 'wycats');
-    equal(get(wycats, 'isLoaded'), true, "subsequent requests for models are returned immediately");
-    equal(get(wycats, 'height'), 65, "subsequent requested models contain correct information");
+    equal(get(wycats, 'isLoaded'), true, "subsequent requests for records are returned immediately");
+    equal(get(wycats, 'height'), 65, "subsequent requested records contain correct information");
   });
 
   stop();

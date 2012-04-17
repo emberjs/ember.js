@@ -8,7 +8,7 @@
  by calling a method on the store.
 
  These tests ensure that the proper methods get called, and, if applicable,
- the given model or model array changes state appropriately.
+ the given record orrecord arrayay changes state appropriately.
 */
 
 var get = Ember.get, set = Ember.set, getPath = Ember.getPath;
@@ -44,7 +44,7 @@ test("when a single record is requested, the adapter's find method is called unl
   store.find(Person, 1);
 });
 
-test("when multiple models are requested, the adapter's findMany method is called", function() {
+test("when multiple records are requested, the adapter's findMany method is called", function() {
   expect(1);
 
   adapter.findMany = function(store, type, ids) {
@@ -55,7 +55,7 @@ test("when multiple models are requested, the adapter's findMany method is calle
   store.findMany(Person, [1,2,3]);
 });
 
-test("when multiple models are requested, the adapter's find method is called multiple times if findMany is not implemented", function() {
+test("when multiple records are requested, the adapter's find method is called multiple times if findMany is not implemented", function() {
   expect(3);
 
   var count = 0;
@@ -71,13 +71,13 @@ test("when multiple models are requested, the adapter's find method is called mu
 
 test("when many records are requested with query parameters, the adapter's findQuery method is called", function() {
   expect(6);
-  adapter.findQuery = function(store, type, query, modelArray) {
+  adapter.findQuery = function(store, type, query, recordArray) {
     equal(type, Person, "the find method is called with the correct type");
 
     stop();
 
     setTimeout(function() {
-      modelArray.load([{ id: 1, name: "Peter Wagenet" }, { id: 2, name: "Brohuda Katz" }]);
+      recordArray.load([{ id: 1, name: "Peter Wagenet" }, { id: 2, name: "Brohuda Katz" }]);
       start();
     }, 100);
   };
@@ -198,7 +198,7 @@ test("when a store is committed, the adapter's commit method is called with dele
   tom.deleteRecord();
   store.commit();
 
-  equal(get(tom, 'isDeleted'), true, "model is marked as deleted");
+  equal(get(tom, 'isDeleted'), true, "record is marked as deleted");
 });
 
 test("by default, commit calls createRecords once per type", function() {
@@ -221,7 +221,7 @@ test("by default, commit calls createRecords once per type", function() {
   });
 
   store.commit();
-  equal(callCount, 1, "calls observer on the model when it has been changed");
+  equal(callCount, 1, "calls observer on the record when it has been changed");
 
   equal(tom, store.find(Person, 1), "Once an ID is in, find returns the same object");
   equal(yehuda, store.find(Person, 2), "Once an ID is in, find returns the same object");
@@ -258,7 +258,7 @@ test("by default, commit calls updateRecords once per type", function() {
 
   store.commit();
 
-  equal(get(store.find(Person, 2), "name"), "Yehuda Katz", "model was updated");
+  equal(get(store.find(Person, 2), "name"), "Yehuda Katz", "record was updated");
 
   // there is nothing to commit, so eachType won't do anything
   store.commit();
@@ -290,8 +290,8 @@ test("updateRecords can return an array of Hashes to update the store with", fun
 
   store.commit();
 
-  equal(get(store.find(Person, 1), "name"), "Tom Dale", "model was updated");
-  equal(get(store.find(Person, 2), "name"), "Yehuda Katz", "model was updated");
+  equal(get(store.find(Person, 1), "name"), "Tom Dale", "record was updated");
+  equal(get(store.find(Person, 2), "name"), "Yehuda Katz", "record was updated");
 
   // there is nothing to commit, so eachType won't do anything
   store.commit();
@@ -316,8 +316,8 @@ test("by default, commit calls deleteRecords once per type", function() {
   yehuda.deleteRecord();
   store.commit();
 
-  ok(get(tom, 'isDeleted'), "model is marked as deleted");
-  ok(!get(tom, 'isDirty'), "model is marked as not being dirty");
+  ok(get(tom, 'isDeleted'), "record is marked as deleted");
+  ok(!get(tom, 'isDirty'), "record is marked as not being dirty");
 
   // there is nothing to commit, so eachType won't do anything
   store.commit();
@@ -327,23 +327,23 @@ test("by default, createRecords calls createRecord once per record", function() 
   expect(8);
   var count = 1;
 
-  adapter.createRecord = function(store, type, model) {
+  adapter.createRecord = function(store, type, record) {
     equal(type, Person, "the type is correct");
 
     if (count === 1) {
-      equal(get(model, 'name'), "Tom Dale");
+      equal(get(record, 'name'), "Tom Dale");
     } else if (count === 2) {
-      equal(get(model, 'name'), "Yehuda Katz");
+      equal(get(record, 'name'), "Yehuda Katz");
     } else {
       ok(false, "should not have invoked more than 2 times");
     }
 
-    var hash = get(model, 'data');
+    var hash = get(record, 'data');
     hash.id = count;
     hash.updated_at = "now";
 
-    store.didCreateRecord(model, hash);
-    equal(get(model, 'updatedAt'), "now", "the model should receive the new information");
+    store.didCreateRecord(record, hash);
+    equal(get(record, 'updatedAt'), "now", "the record should receive the new information");
 
     count++;
   };
@@ -362,25 +362,25 @@ test("by default, updateRecords calls updateRecord once per record", function() 
 
   var count = 0;
 
-  adapter.updateRecord = function(store, type, model) {
+  adapter.updateRecord = function(store, type, record) {
     equal(type, Person, "the type is correct");
 
     if (count === 0) {
-      equal(get(model, 'name'), "Tom Dale");
+      equal(get(record, 'name'), "Tom Dale");
     } else if (count === 1) {
-      equal(get(model, 'name'), "Yehuda Katz");
+      equal(get(record, 'name'), "Yehuda Katz");
     } else {
       ok(false, "should not get here");
     }
 
     count++;
 
-    equal(model.get('isSaving'), true, "model is saving");
+    equal(record.get('isSaving'), true, "record is saving");
 
-    store.didUpdateRecord(model);
+    store.didUpdateRecord(record);
 
-    equal(model.get('isSaving'), false, "model is no longer saving");
-    equal(model.get('isLoaded'), true, "model is saving");
+    equal(record.get('isSaving'), false, "record is no longer saving");
+    equal(record.get('isLoaded'), true, "record is saving");
   };
 
   store.load(Person, { id: 1, name: "Braaaahm Dale" });
@@ -403,19 +403,19 @@ test("calling store.didUpdateRecord can provide an optional hash", function() {
 
   var count = 0;
 
-  adapter.updateRecord = function(store, type, model) {
+  adapter.updateRecord = function(store, type, record) {
     equal(type, Person, "the type is correct");
 
     if (count === 0) {
-      equal(get(model, 'name'), "Tom Dale");
-      store.didUpdateRecord(model, { id: 1, name: "Tom Dale", updated_at: "now" });
-      equal(get(model, 'isDirty'), false, "the model should not be dirty");
-      equal(get(model, 'updatedAt'), "now", "the hash was updated");
+      equal(get(record, 'name'), "Tom Dale");
+      store.didUpdateRecord(record, { id: 1, name: "Tom Dale", updated_at: "now" });
+      equal(get(record, 'isDirty'), false, "the record should not be dirty");
+      equal(get(record, 'updatedAt'), "now", "the hash was updated");
     } else if (count === 1) {
-      equal(get(model, 'name'), "Yehuda Katz");
-      store.didUpdateRecord(model, { id: 2, name: "Yehuda Katz", updated_at: "now!" });
-      equal(model.get('isDirty'), false, "the model should not be dirty");
-      equal(get(model, 'updatedAt'), "now!", "the hash was updated");
+      equal(get(record, 'name'), "Yehuda Katz");
+      store.didUpdateRecord(record, { id: 2, name: "Yehuda Katz", updated_at: "now!" });
+      equal(record.get('isDirty'), false, "the record should not be dirty");
+      equal(get(record, 'updatedAt'), "now!", "the hash was updated");
     } else {
       ok(false, "should not get here");
     }
@@ -443,20 +443,20 @@ test("by default, deleteRecords calls deleteRecord once per record", function() 
 
   var count = 0;
 
-  adapter.deleteRecord = function(store, type, model) {
+  adapter.deleteRecord = function(store, type, record) {
     equal(type, Person, "the type is correct");
 
     if (count === 0) {
-      equal(get(model, 'name'), "Tom Dale");
+      equal(get(record, 'name'), "Tom Dale");
     } else if (count === 1) {
-      equal(get(model, 'name'), "Yehuda Katz");
+      equal(get(record, 'name'), "Yehuda Katz");
     } else {
       ok(false, "should not get here");
     }
 
     count++;
 
-    store.didDeleteRecord(model);
+    store.didDeleteRecord(record);
   };
 
   store.load(Person, { id: 1, name: "Tom Dale" });
@@ -473,7 +473,7 @@ test("by default, deleteRecords calls deleteRecord once per record", function() 
   store.commit();
 });
 
-test("if a created model is marked as invalid by the server, it enters an error state", function() {
+test("if a created record is marked as invalid by the server, it enters an error state", function() {
   adapter.createRecord = function(store, type, record) {
     equal(type, Person, "the type is correct");
 
@@ -509,7 +509,7 @@ test("if a created model is marked as invalid by the server, it enters an error 
   // Test key mapping
 });
 
-test("if an updated model is marked as invalid by the server, it enters an error state", function() {
+test("if an updated record is marked as invalid by the server, it enters an error state", function() {
   adapter.updateRecord = function(store, type, record) {
     equal(type, Person, "the type is correct");
 
