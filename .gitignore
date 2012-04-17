@@ -5,6 +5,7 @@
 .bpm
 .bundle
 .config
+.github-upload-token
 .yardoc
 InstalledFiles
 _site
