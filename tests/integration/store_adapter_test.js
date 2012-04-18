@@ -127,6 +127,54 @@ test("when all records for a type are requested, the adapter's findAll method is
   equal(get(array, 'length'), 0, "The array is 0 length do far");
 });
 
+test("if an adapter implements the generateIdForRecord method, it gets invoked when new records are created", function() {
+  expect(7);
+
+  var idCount = 0;
+
+  var Comment = DS.Model.extend();
+  var Post = DS.Model.extend({
+    primaryKey: 'fooId',
+    comments: DS.hasMany(Comment)
+  });
+
+  Comment.reopen({
+    primaryKey: '__ID',
+    post: DS.belongsTo(Post)
+  });
+
+  var adapter = DS.Adapter.create({
+    generateIdForRecord: function(passedStore, record) {
+      equal(store, passedStore, "should pass store as first parameter");
+      ok(true, "generateIdForRecord should be called");
+      return "id-" + (++idCount);
+    },
+
+    createRecord: function(store, type, record) {
+      if (type === Comment) {
+        equal(get(record, 'id'), 'id-1', "created record should be assigned correct id");
+      } else {
+        equal(get(record, 'id'), 'id-2', "second record should be assigned the correct id");
+      }
+    }
+  });
+
+  var store = DS.Store.create({
+    adapter: adapter
+  });
+
+  var comment = store.createRecord(Comment);
+  var post = store.createRecord(Post);
+
+  set(comment, 'post', post);
+
+  equal(comment.toJSON().post_id, "id-2", "assigned id is immediately available in JSON form of record");
+
+  Ember.run(function() {
+    store.commit();
+  });
+});
+
 test("when a store is committed, the adapter's commit method is called with updates", function() {
   expect(2);
 
