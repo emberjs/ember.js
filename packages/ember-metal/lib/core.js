@@ -9,7 +9,7 @@ if ('undefined' === typeof Ember) {
 /**
   @namespace
   @name Ember
-  @version 0.9.6
+  @version 0.9.7
 
   All Ember methods and functions are defined inside of this namespace.
   You generally should not add new properties to this namespace as it may be
@@ -41,10 +41,10 @@ if ('undefined' !== typeof window) {
 /**
   @static
   @type String
-  @default '0.9.6'
+  @default '0.9.7'
   @constant
 */
-Ember.VERSION = '0.9.6';
+Ember.VERSION = '0.9.7';
 
 /**
   @static
