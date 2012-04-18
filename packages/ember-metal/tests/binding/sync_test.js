@@ -15,7 +15,7 @@ testBoth("bindings should not sync twice in a single run loop", function(get, se
         getCalled++;
         return setValue;
       }
-    }));
+    }).cacheable(false));
 
     b = {
       a: a

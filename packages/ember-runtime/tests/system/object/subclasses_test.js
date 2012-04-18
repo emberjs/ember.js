@@ -41,7 +41,7 @@ test('chains should copy forward to subclasses when prototype created', function
       hiBinding: 'obj.hi', // add chain
       hello: Ember.computed(function() {
           return this.getPath('obj.hi') + ' world';
-      }).property('hi'), // observe chain
+      }).property('hi').cacheable(false), // observe chain
       greetingBinding: 'hello'
     });
     SubSub = SubWithChains.extend();

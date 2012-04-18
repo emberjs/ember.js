@@ -80,7 +80,7 @@ function addDependentKeys(desc, obj, keyName) {
 /** @private */
 function ComputedProperty(func, opts) {
   this.func = func;
-  this._cacheable = opts && opts.cacheable;
+  this._cacheable = !opts || opts.cacheable !== false;
   this._dependentKeys = opts && opts.dependentKeys;
 }
 

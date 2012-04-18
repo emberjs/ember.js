@@ -1565,7 +1565,7 @@ test("should be able to update when bound property updates", function(){
     valueBinding: 'MyApp.controller',
     computed: Ember.computed(function(){
       return this.getPath('value.name') + ' - computed';
-    }).property('value')
+    }).property('value').cacheable(false)
   });
 
   view = View.create();
