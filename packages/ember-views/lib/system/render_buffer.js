@@ -385,13 +385,14 @@ Ember._RenderBuffer.prototype =
     }
   },
 
-  _escapeAttribute: function(string) {
+  _escapeAttribute: function(value) {
     // Escaping only double quotes is probably sufficient, but it can't hurt to do a few more
-    return string.replace(/&/g, '&amp;')
-                 .replace(/</g, '&lt;')
-                 .replace(/>/g, '&gt;')
-                 .replace(/'/g, '&#x27;')
-                 .replace(/"/g, '&quot;');
+    return value.toString()
+                  .replace(/&/g, '&amp;')
+                  .replace(/</g, '&lt;')
+                  .replace(/>/g, '&gt;')
+                  .replace(/'/g, '&#x27;')
+                  .replace(/"/g, '&quot;');
   }
 
 };
