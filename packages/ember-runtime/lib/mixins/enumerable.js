@@ -146,7 +146,7 @@ Ember.Enumerable = Ember.Mixin.create( /** @lends Ember.Enumerable */ {
     ret = this.nextObject(0, null, context);
     pushCtx(context);
     return ret ;
-  }).property().cacheable(false),
+  }).property().volatile(),
 
   /**
     Helper method returns the last object from a collection. If your enumerable
@@ -175,7 +175,7 @@ Ember.Enumerable = Ember.Mixin.create( /** @lends Ember.Enumerable */ {
       pushCtx(context);
       return last;
     }
-  }).property().cacheable(false),
+  }).property().volatile(),
 
   /**
     Returns true if the passed object can be found in the receiver.  The

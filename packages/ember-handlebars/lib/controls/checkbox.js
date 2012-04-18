@@ -52,11 +52,11 @@ Ember.Checkbox = Ember.View.extend({
 
   tagName: Ember.computed(function(){
     return get(this, 'title') ? undefined : 'input';
-  }).property().cacheable(false),
+  }).property().volatile(),
 
   attributeBindings: Ember.computed(function(){
     return get(this, 'title') ? [] : ['type', 'checked', 'disabled'];
-  }).property().cacheable(false),
+  }).property().volatile(),
 
   type: "checkbox",
   checked: false,
@@ -82,7 +82,7 @@ Ember.Checkbox = Ember.View.extend({
     } else {
       return get(this, 'checked');
     }
-  }).property('checked').cacheable(false),
+  }).property('checked').volatile(),
 
   change: function() {
     Ember.run.once(this, this._updateElementValue);

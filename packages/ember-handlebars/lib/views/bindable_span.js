@@ -96,7 +96,7 @@ Ember._BindableSpanView = Ember.View.extend(Ember.Metamorph,
     }
 
     return valueNormalizer ? valueNormalizer(result) : result;
-  }).property('property', 'previousContext', 'valueNormalizerFunc').cacheable(false),
+  }).property('property', 'previousContext', 'valueNormalizerFunc').volatile(),
 
   rerenderIfNeeded: function() {
     if (!get(this, 'isDestroyed') && get(this, 'normalizedValue') !== this._lastNormalizedValue) {

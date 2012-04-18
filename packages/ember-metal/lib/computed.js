@@ -165,16 +165,32 @@ var Cp = ComputedProperty.prototype;
         }.property('firstName', 'lastName').cacheable()
       });
 
-  It is common to use `cacheable()` on nearly every computed property
-  you define. 
+  Properties are cacheable by default.
 
   @name Ember.ComputedProperty.cacheable
-  @param {Boolean} aFlag optional set to false to disable cacheing
+  @param {Boolean} aFlag optional set to false to disable caching
   @returns {Ember.ComputedProperty} receiver
 */
 Cp.cacheable = function(aFlag) {
   this._cacheable = aFlag!==false;
   return this;
+};
+
+/**
+  Call on a computed property to set it into non-cached mode.  When in this
+  mode the computed property will not automatically cache the return value.
+
+      MyApp.outsideService = Ember.Object.create({
+        value: function() {
+          return OutsideService.getValue();
+        }.property().volatile()
+      });
+
+  @name Ember.ComputedProperty.volatile
+  @returns {Ember.ComputedProperty} receiver
+*/
+Cp.volatile = function() {
+  return this.cacheable(false);
 };
 
 /**

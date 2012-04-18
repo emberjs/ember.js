@@ -127,7 +127,7 @@ Ember.SelectOption = Ember.View.extend({
       // `new Number(4) !== 4`, we use `==` below
       return content == selection;
     }
-  }).property('content', 'parentView.selection').cacheable(false),
+  }).property('content', 'parentView.selection').volatile(),
 
   labelPathDidChange: Ember.observer(function() {
     var labelPath = getPath(this, 'parentView.optionLabelPath');
