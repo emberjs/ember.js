@@ -29,7 +29,7 @@ test("a record array is backed by records", function() {
   }
 });
 
-test("a record is removed from a record array when it is deleted", function() {
+test("a loaded record is removed from a record array when it is deleted", function() {
   var store = DS.Store.create({ adapter: null });
   store.loadMany(Person, [1,2,3], array);
 
@@ -43,6 +43,24 @@ test("a record is removed from a record array when it is deleted", function() {
 
   equal(get(recordArray, 'length'), 2, "record is removed from the record array");
   ok(get(recordArray.objectAt(0), 'name') !== "Scumbag Dale", "item was removed");
+});
+
+// GitHub Issue #168
+test("a newly created record is removed from a record array when it is deleted", function() {
+  var store = DS.Store.create({ adapter: null });
+
+  var scumbag = store.createRecord(Person, {
+    name: "Scumbag Dale"
+  });
+
+  var recordArray = store.findAll(Person);
+
+  equal(get(recordArray, 'length'), 1, "precond - record array has the created item");
+  equal(get(recordArray.objectAt(0), 'name'), "Scumbag Dale", "item at index 0 is record with id 1");
+
+  scumbag.deleteRecord();
+
+  equal(get(recordArray, 'length'), 0, "record is removed from the record array");
 });
 
 test("a record array can have a filter on it", function() {

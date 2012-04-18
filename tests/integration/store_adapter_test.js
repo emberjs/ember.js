@@ -473,6 +473,42 @@ test("by default, deleteRecords calls deleteRecord once per record", function() 
   store.commit();
 });
 
+test("if an existing model is edited then deleted, deleteRecord is called on the adapter", function() {
+  expect(5);
+
+  var count = 0;
+
+  adapter.deleteRecord = function(store, type, record) {
+    count++;
+    equal(get(record, 'id'), 'deleted-record', "should pass correct record to deleteRecord");
+    equal(count, 1, "should only call deleteRecord method of adapter once");
+
+    store.didDeleteRecord(record);
+  };
+
+  adapter.updateRecord = function() {
+    ok(false, "should not have called updateRecord method of adapter");
+  };
+
+  // Load data for a record into the store.
+  store.load(Person, { id: 'deleted-record', name: "Tom Dale" });
+
+  // Retrieve that loaded record and edit it so it becomes dirty
+  var tom = store.find(Person, 'deleted-record');
+  tom.set('name', "Tom Mothereffin' Dale");
+
+  equal(get(tom, 'isDirty'), true, "precond - record should be dirty after editing");
+
+  tom.deleteRecord();
+  store.commit();
+
+  equal(get(tom, 'isDirty'), false, "record should not be dirty");
+  equal(get(tom, 'isDeleted'), true, "record should be considered deleted");
+
+  // should be a no-op since all records should be clean
+  store.commit();
+});
+
 test("if a created record is marked as invalid by the server, it enters an error state", function() {
   adapter.createRecord = function(store, type, record) {
     equal(type, Person, "the type is correct");
