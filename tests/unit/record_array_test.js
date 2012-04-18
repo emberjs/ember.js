@@ -49,18 +49,22 @@ test("a loaded record is removed from a record array when it is deleted", functi
 test("a newly created record is removed from a record array when it is deleted", function() {
   var store = DS.Store.create({ adapter: null });
 
+  var recordArray = store.findAll(Person);
+
   var scumbag = store.createRecord(Person, {
     name: "Scumbag Dale"
   });
 
-  var recordArray = store.findAll(Person);
+  var person1 = store.createRecord(Person, { name: 'p1'});
+  var person2 = store.createRecord(Person, { name: 'p2'});
+  var person3 = store.createRecord(Person, { name: 'p3'});
 
-  equal(get(recordArray, 'length'), 1, "precond - record array has the created item");
+  equal(get(recordArray, 'length'), 4, "precond - record array has the created item");
   equal(get(recordArray.objectAt(0), 'name'), "Scumbag Dale", "item at index 0 is record with id 1");
 
   scumbag.deleteRecord();
 
-  equal(get(recordArray, 'length'), 0, "record is removed from the record array");
+  equal(get(recordArray, 'length'), 3, "record is removed from the record array");
 });
 
 test("a record array can have a filter on it", function() {
