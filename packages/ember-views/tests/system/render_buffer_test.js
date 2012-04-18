@@ -101,6 +101,40 @@ test("It is possible to prepend a child RenderBuffer", function() {
   equal(buffer.string(), '<div><aside>prepended!</aside>a<span>zomg</span>b<span>wotwot</span>c</div>', 'Prepended buffers are prepended to the final output');
 });
 
+test("prevents XSS injection via `id`", function() {
+  var buffer = new Ember.RenderBuffer('div');
+
+  buffer.id('hacked" megahax="yes');
+
+  equal(buffer.string(), '<div id="hacked&quot; megahax=&quot;yes"></div>');
+});
+
+test("prevents XSS injection via `attr`", function() {
+  var buffer = new Ember.RenderBuffer('div');
+
+  buffer.attr('id', 'trololol" onmouseover="pwn()');
+  buffer.attr('class', "hax><img src='trollface.png'");
+
+  equal(buffer.string(), '<div id="trololol&quot; onmouseover=&quot;pwn()" class="hax&gt;&lt;img src=&#x27;trollface.png&#x27;"></div>');
+});
+
+test("prevents XSS injection via `addClass`", function() {
+  var buffer = new Ember.RenderBuffer('div');
+
+  buffer.addClass('megahax" xss="true');
+
+  equal(buffer.string(), '<div class="megahax&quot; xss=&quot;true"></div>');
+});
+
+test("prevents XSS injection via `style`", function() {
+  var buffer = new Ember.RenderBuffer('div');
+
+  buffer.style('color', 'blue;" xss="true" style="color:red');
+
+  equal(buffer.string(), '<div style="color:blue;&quot; xss=&quot;true&quot; style=&quot;color:red;"></div>');
+});
+
+
 module("RenderBuffers without tagName");
 
 test("It is possible to create a RenderBuffer without a tagName", function() {
@@ -143,4 +177,3 @@ test("it is possible to replace a child render buffer initially created without 
 
   equal(buffer.string(), "<div>anew-midbc</div>", "Replacements can operate on tagName-less buffers");
 });
-
