@@ -174,7 +174,7 @@ var normalizePath = Ember.Handlebars.normalizePath = function(root, path, data) 
 */
 
 Ember.Handlebars.getPath = function(root, path, options) {
-  var data = options.data,
+  var data = options && options.data,
       normalizedPath = normalizePath(root, path, data),
       value;
 
