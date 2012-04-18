@@ -12,9 +12,7 @@ var get = Ember.get, set = Ember.set, fmt = Ember.String.fmt;
 
 /**
   @class
-  @since Ember 0.9
-  @extends Ember.ContainerView
-  
+
   `Ember.CollectionView` is an `Ember.View` descendent responsible for managing a
   collection (an array or array-like object) by maintaing a child view object and 
   associated DOM representation for each item in the array and ensuring that child
@@ -121,7 +119,9 @@ var get = Ember.get, set = Ember.set, fmt = Ember.String.fmt;
   ## Use in templates via the `{{collection}}` Ember.Handlebars helper
   Ember.Handlebars provides a helper specifically for adding `CollectionView`s to templates.
   See `Ember.Handlebars.collection` for more details
-  
+
+  @since Ember 0.9
+  @extends Ember.ContainerView
 */
 Ember.CollectionView = Ember.ContainerView.extend(
 /** @scope Ember.CollectionView.prototype */ {

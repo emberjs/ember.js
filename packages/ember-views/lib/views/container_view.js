@@ -15,8 +15,7 @@ var childViewsProperty = Ember.computed(function() {
 
 /**
   @class
-  @extends Ember.View
-  
+
   A `ContainerView` is an `Ember.View` subclass that allows for manual or programatic
   management of a view's `childViews` array that will correctly update the `ContainerView`
   instance's rendered DOM representation.
@@ -182,6 +181,8 @@ var childViewsProperty = Ember.computed(function() {
   property on a container view will not result in the template or layout being rendered. 
   The HTML contents of a `Ember.ContainerView`'s DOM representation will only be the rendered HTML
   of its child views.
+
+  @extends Ember.View
 */
 
 Ember.ContainerView = Ember.View.extend({

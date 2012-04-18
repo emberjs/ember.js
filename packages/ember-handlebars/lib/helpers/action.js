@@ -5,9 +5,33 @@ var EmberHandlebars = Ember.Handlebars, getPath = EmberHandlebars.getPath;
 var ActionHelper = EmberHandlebars.ActionHelper = {
   registeredActions: {}
 };
+
+ActionHelper.registerAction = function(actionName, eventName, target, view, context) {
+  var actionId = (++Ember.$.uuid).toString();
+
+  ActionHelper.registeredActions[actionId] = {
+    eventName: eventName,
+    handler: function(event) {
+      event.view = view;
+      event.context = context;
+
+      // Check for StateManager (or compatible object)
+      if (target.isState && typeof target.send === 'function') {
+        return target.send(actionName, event);
+      } else {
+        return target[actionName].call(target, event);
+      }
+    }
+  };
+
+  view.on('willRerender', function() {
+    delete ActionHelper.registeredActions[actionId];
+  });
+
+  return actionId;
+};
+
 /**
-  @name Handlebars.helpers.action
-  
   The `{{action}}` helper registers an HTML element within a template for
   DOM event handling.  User interaction with that element will call the method
   on the template's associated `Ember.View` instance that has the same name
@@ -115,33 +139,11 @@ var ActionHelper = EmberHandlebars.ActionHelper = {
   an `Ember.EventDispatcher` instance is available. An `Ember.EventDispatcher` instance 
   will be created when a new `Ember.Application` is created. Having an instance of
   `Ember.Application` will satisfy this requirement.
-  
+
+  @name Handlebars.helpers.action
+  @param {String} actionName
+  @param {Hash} options
 */
-ActionHelper.registerAction = function(actionName, eventName, target, view, context) {
-  var actionId = (++Ember.$.uuid).toString();
-
-  ActionHelper.registeredActions[actionId] = {
-    eventName: eventName,
-    handler: function(event) {
-      event.view = view;
-      event.context = context;
-
-      // Check for StateManager (or compatible object)
-      if (target.isState && typeof target.send === 'function') {
-        return target.send(actionName, event);
-      } else {
-        return target[actionName].call(target, event);
-      }
-    }
-  };
-
-  view.on('willRerender', function() {
-    delete ActionHelper.registeredActions[actionId];
-  });
-
-  return actionId;
-};
-
 EmberHandlebars.registerHelper('action', function(actionName, options) {
   var hash = options.hash || {},
       eventName = hash.on || "click",
