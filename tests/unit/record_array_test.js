@@ -47,24 +47,29 @@ test("a loaded record is removed from a record array when it is deleted", functi
 
 // GitHub Issue #168
 test("a newly created record is removed from a record array when it is deleted", function() {
-  var store = DS.Store.create({ adapter: null });
+  var store = DS.Store.create({ adapter: null }),
+      recordArray;
 
-  var recordArray = store.findAll(Person);
+  Ember.run(function() {
+    recordArray = store.findAll(Person);
 
-  var scumbag = store.createRecord(Person, {
-    name: "Scumbag Dale"
+    var scumbag = store.createRecord(Person, {
+      name: "Scumbag Dale"
+    });
+
+    store.createRecord(Person, { name: 'p1'});
+    store.createRecord(Person, { name: 'p2'});
+    store.createRecord(Person, { name: 'p3'});
+
+    equal(get(recordArray, 'length'), 4, "precond - record array has the created item");
+    equal(get(recordArray.objectAt(0), 'name'), "Scumbag Dale", "item at index 0 is record with id 1");
+
+    scumbag.deleteRecord();
   });
 
-  var person1 = store.createRecord(Person, { name: 'p1'});
-  var person2 = store.createRecord(Person, { name: 'p2'});
-  var person3 = store.createRecord(Person, { name: 'p3'});
-
-  equal(get(recordArray, 'length'), 4, "precond - record array has the created item");
-  equal(get(recordArray.objectAt(0), 'name'), "Scumbag Dale", "item at index 0 is record with id 1");
-
-  scumbag.deleteRecord();
-
-  equal(get(recordArray, 'length'), 3, "record is removed from the record array");
+  Ember.run(function() {
+    equal(get(recordArray, 'length'), 3, "record is removed from the record array");
+  });
 });
 
 test("a record array can have a filter on it", function() {
