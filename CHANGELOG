@@ -1,3 +1,8 @@
+*Ember 0.9.7.1 (April 19, 2012)*
+
+* Better escaping method for RenderBuffer
+* More rigorous XSS escaping from bindAttr
+
 *Ember 0.9.7 (April 18, 2012)*
 
 * RenderBuffer now properly escapes attribute values. Fixes XSS vulnerability documented in #699.
