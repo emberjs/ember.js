@@ -223,7 +223,7 @@ EmberHandlebars.registerHelper('bindAttr', function(options) {
   var classBindings = attrs['class'];
   if (classBindings !== null && classBindings !== undefined) {
     var classResults = EmberHandlebars.bindClasses(this, classBindings, view, dataId, options);
-    ret.push('class="' + classResults.join(' ') + '"');
+    ret.push('class="' + Handlebars.Utils.escapeExpression(classResults.join(' ')) + '"');
     delete attrs['class'];
   }
 
@@ -278,9 +278,8 @@ EmberHandlebars.registerHelper('bindAttr', function(options) {
     // if this changes, also change the logic in ember-views/lib/views/view.js
     if ((type === 'string' || (type === 'number' && !isNaN(value)))) {
       ret.push(attr + '="' + Handlebars.Utils.escapeExpression(value) + '"');
-
-
     } else if (value && type === 'boolean') {
+      // The developer controls the attr name, so it should always be safe
       ret.push(attr + '="' + attr + '"');
     }
   }, this);
