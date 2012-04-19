@@ -277,7 +277,9 @@ EmberHandlebars.registerHelper('bindAttr', function(options) {
 
     // if this changes, also change the logic in ember-views/lib/views/view.js
     if ((type === 'string' || (type === 'number' && !isNaN(value)))) {
-      ret.push(attr + '="' + value + '"');
+      ret.push(attr + '="' + Handlebars.Utils.escapeExpression(value) + '"');
+
+
     } else if (value && type === 'boolean') {
       ret.push(attr + '="' + attr + '"');
     }
