@@ -10,6 +10,10 @@ require('ember-metal/platform');
 require('ember-metal/utils');
 require('ember-metal/properties');
 
+
+ember_warn("Computed properties will soon be cacheable by default. To enable this in your app, set `ENV.CP_DEFAULT_CACHEABLE = true`.", Ember.CP_DEFAULT_CACHEABLE);
+
+
 var meta = Ember.meta;
 var guidFor = Ember.guidFor;
 var USE_ACCESSORS = Ember.USE_ACCESSORS;
@@ -80,7 +84,7 @@ function addDependentKeys(desc, obj, keyName) {
 /** @private */
 function ComputedProperty(func, opts) {
   this.func = func;
-  this._cacheable = !opts || opts.cacheable !== false;
+  this._cacheable = (opts && opts.cacheable !== undefined) ? opts.cacheable : Ember.CP_DEFAULT_CACHEABLE;
   this._dependentKeys = opts && opts.dependentKeys;
 }
 
