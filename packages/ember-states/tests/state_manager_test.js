@@ -248,21 +248,6 @@ test("it automatically transitions to multiple substates specified using either 
   ok(get(stateManager, 'currentState').isStart, "automatically transitions to final substate");
 });
 
-test("it reports the view associated with the current view state, if any", function() {
-  var view = Ember.View.create();
-
-  stateManager = Ember.StateManager.create({
-    foo: Ember.ViewState.create({
-      view: view,
-      bar: Ember.State.create()
-    })
-  });
-
-  stateManager.goToState('foo.bar');
-
-  equal(get(stateManager, 'currentView'), view, "returns nearest parent view state's view");
-});
-
 module("Ember.StateManager - Transitions on Complex State Managers");
 
 /**
