@@ -347,13 +347,13 @@ Ember._RenderBuffer.prototype =
 
       openTag = ["<" + tag];
 
-      if (id) { openTag.push('id="' + this._escapeAttribute(id) + '"'); }
-      if (classes) { openTag.push('class="' + this._escapeAttribute(classes.toDOM()) + '"'); }
+      if (id) { openTag.push('id="' + Handlebars.Utils.escapeExpression(id) + '"'); }
+      if (classes) { openTag.push('class="' + Handlebars.Utils.escapeExpression(classes.toDOM()) + '"'); }
 
       if (style) {
         for (prop in style) {
           if (style.hasOwnProperty(prop)) {
-            styleBuffer += (prop + ':' + this._escapeAttribute(style[prop]) + ';');
+            styleBuffer += (prop + ':' + Handlebars.Utils.escapeExpression(style[prop]) + ';');
           }
         }
 
@@ -363,7 +363,7 @@ Ember._RenderBuffer.prototype =
       if (attrs) {
         for (prop in attrs) {
           if (attrs.hasOwnProperty(prop)) {
-            openTag.push(prop + '="' + this._escapeAttribute(attrs[prop]) + '"');
+            openTag.push(prop + '="' + Handlebars.Utils.escapeExpression(attrs[prop]) + '"');
           }
         }
       }
@@ -383,16 +383,6 @@ Ember._RenderBuffer.prototype =
     } else {
       return content;
     }
-  },
-
-  _escapeAttribute: function(value) {
-    // Escaping only double quotes is probably sufficient, but it can't hurt to do a few more
-    return value.toString()
-                  .replace(/&/g, '&amp;')
-                  .replace(/</g, '&lt;')
-                  .replace(/>/g, '&gt;')
-                  .replace(/'/g, '&#x27;')
-                  .replace(/"/g, '&quot;');
   }
 
 };
