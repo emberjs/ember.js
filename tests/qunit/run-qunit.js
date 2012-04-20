@@ -11,6 +11,7 @@ if (args.length < 1 || args.length > 2) {
 var page = require('webpage').create();
 
 page.onConsoleMessage = function(msg) {
+  if (msg.slice(0,8) === 'WARNING:') { return; }
   console.log(msg);
 };
 
