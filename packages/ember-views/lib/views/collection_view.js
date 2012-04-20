@@ -196,6 +196,7 @@ Ember.CollectionView = Ember.ContainerView.extend(
     var emptyView = get(this, '_emptyView');
     if (emptyView && emptyView instanceof Ember.View) {
       emptyView.removeFromParent();
+      emptyView.destroyElement();
     }
 
     // Loop through child views that correspond with the removed items.
@@ -259,12 +260,15 @@ Ember.CollectionView = Ember.ContainerView.extend(
         addedViews.push(view);
       }
     } else {
-      var emptyView = get(this, 'emptyView');
-      if (!emptyView) { return; }
+      var emptyViewClass = get(this, 'emptyView'),
+          emptyView = get(this, '_emptyView');
+      if (!emptyViewClass) { return; }
 
-      emptyView = this.createChildView(emptyView);
+      if (!emptyView) {
+        emptyView = this.createChildView(emptyViewClass);
+        set(this, '_emptyView', emptyView);
+      }
       addedViews.push(emptyView);
-      set(this, '_emptyView', emptyView);
     }
 
     childViews.replace(start, 0, addedViews);

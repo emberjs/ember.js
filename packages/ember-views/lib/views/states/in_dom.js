@@ -53,6 +53,7 @@ Ember.View.states.hasElement = {
     view._notifyWillDestroyElement();
 
     view.domManager.remove(view);
+    view.transitionTo('preRender');
     return view;
   },
 
