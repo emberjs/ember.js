@@ -32,12 +32,19 @@
     }
 
 
+    window.ENV = window.ENV || {};
+
     // Handle extending prototypes
     QUnit.config.urlConfig.push('extendprototypes');
 
-    window.ENV = window.ENV || {};
     var extendPrototypes = QUnit.urlParams.extendprototypes;
     ENV['EXTEND_PROTOTYPES'] = !!extendPrototypes;
+
+    // Handle CP cacheable by default
+    QUnit.config.urlConfig.push('cpdefaultcacheable');
+
+    var cpDefaultCacheable = QUnit.urlParams.cpdefaultcacheable;
+    ENV['CP_DEFAULT_CACHEABLE'] = !!cpDefaultCacheable;
   </script>
 </head>
 <body>
