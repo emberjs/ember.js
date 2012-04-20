@@ -38,8 +38,6 @@ var get = Ember.get, set = Ember.set;
 Ember.Application = Ember.Namespace.extend(
 /** @scope Ember.Application.prototype */{
 
-  isApplication: true,
-
   /**
     The root DOM element of the Application.
 
@@ -115,7 +113,7 @@ Ember.Application = Ember.Namespace.extend(
       // get next Ember.Application which is not this one
       for (var i=0, len = applications.length; i < len && !nextApp; i++) {
         var app = applications[i];
-        if (app.isApplication && app !== this) { nextApp = app; }
+        if (Ember.Application.detectInstance(app) && app !== this) { nextApp = app; }
       }
       set(Ember, 'defaultApplication', nextApp);
     }
