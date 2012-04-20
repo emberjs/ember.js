@@ -177,7 +177,7 @@ var childViewsProperty = Ember.computed(function() {
 
 
   ## Templates and Layout
-  A `template`, `templateName`, `defaultTempalte`, `layout`, `layoutName` or `defaultLayout`
+  A `template`, `templateName`, `defaultTemplate`, `layout`, `layoutName` or `defaultLayout`
   property on a container view will not result in the template or layout being rendered. 
   The HTML contents of a `Ember.ContainerView`'s DOM representation will only be the rendered HTML
   of its child views.
