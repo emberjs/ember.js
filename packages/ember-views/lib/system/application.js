@@ -8,7 +8,6 @@
 require("ember-views/system/event_dispatcher");
 
 var get = Ember.get, set = Ember.set;
-var indexOf = Ember.ArrayUtils.indexOf;
 
 /**
   @class
