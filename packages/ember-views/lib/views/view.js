@@ -758,8 +758,11 @@ Ember.View = Ember.Object.extend(Ember.Evented,
 
     @returns {Ember.View} receiver
   */
-  append: function() {
-    return this.appendTo(document.body);
+  append: function(application) {
+    var appendToElement = document.body;
+    if (!application) { application = Ember.get('defaultApplication'); }
+    if (application) { appendToElement = application.get('rootElement'); }
+    return this.appendTo( appendToElement );
   },
 
   /**
