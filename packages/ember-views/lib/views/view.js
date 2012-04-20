@@ -766,6 +766,11 @@ Ember.View = Ember.Object.extend(Ember.Evented,
   /**
     Prepends the view's element to the document body.
 
+    If an appliction is passed, the view is appended to its' `rootElement`.
+    If no appliction is passed, the `rootElement` of the default application
+    - set as Ember.defaultApplication - is used. If no application is available
+    `document.body` is used.
+
     If the view does not have an HTML representation yet, `createElement()`
     will be called automatically.
 
@@ -773,11 +778,11 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     element will not be appended to the given element until all bindings have
     finished synchronizing.
 
-    @param {String|DOMElement|jQuery} A selector, element, HTML string, or jQuery object
+    @param {Ember.Application} (optional) application, this view shall be prepended to
     @returns {Ember.View} receiver
   */
   prepend: function(application) {
-    var prependToElement = this.getRootElement(application);
+    var prependToElement = this._getRootElement(application);
     return this.prependTo( prependToElement );
   },
 
@@ -864,22 +869,37 @@ Ember.View = Ember.Object.extend(Ember.Evented,
   },
 
   /**
-    Appends the view's element to the document body. If the view does
-    not have an HTML representation yet, `createElement()` will be called
-    automatically.
+    Appends the view's element to the document body.
+
+    If an appliction is passed, the view is appended to its' `rootElement`.
+    If no appliction is passed, the `rootElement` of the default application
+    - set as Ember.defaultApplication - is used. If no application is available
+    `document.body` is used.
+
+    If the view does not have an HTML representation yet, `createElement()`
+    will be called automatically.
 
     Note that this method just schedules the view to be appended; the DOM
     element will not be appended to the document body until all bindings have
     finished synchronizing.
 
+    @param {Ember.Application} (optional) application, this view shall be prepended to
     @returns {Ember.View} receiver
   */
   append: function(application) {
-    var appendToElement = this.getRootElement(application);
+    var appendToElement = this._getRootElement(application);
     return this.appendTo( appendToElement );
   },
 
-  getRootElement: function(application) {
+  /**
+    @private
+
+    Get the `rootElement` of specified Ember.Application. If the application
+    is undefined, the `rootElement` of the default application - set as
+    Ember.defaultApplication - is returned. If no Ember.Application is available,
+    document.body is returned.
+  */
+  _getRootElement: function(application) {
     var appendToElement = document.body;
     if (!application) { application = Ember.get('defaultApplication'); }
     if (application) { appendToElement = application.get('rootElement'); }
