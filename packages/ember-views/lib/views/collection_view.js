@@ -193,7 +193,7 @@ Ember.CollectionView = Ember.ContainerView.extend(
   arrayWillChange: function(content, start, removedCount) {
     // If the contents were empty before and this template collection has an
     // empty view remove it now.
-    var emptyView = get(this, 'emptyView');
+    var emptyView = get(this, '_emptyView');
     if (emptyView && emptyView instanceof Ember.View) {
       emptyView.removeFromParent();
     }
@@ -264,7 +264,7 @@ Ember.CollectionView = Ember.ContainerView.extend(
 
       emptyView = this.createChildView(emptyView);
       addedViews.push(emptyView);
-      set(this, 'emptyView', emptyView);
+      set(this, '_emptyView', emptyView);
     }
 
     childViews.replace(start, 0, addedViews);

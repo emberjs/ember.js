@@ -134,6 +134,30 @@ test("it supports {{else}}", function() {
   });
 });
 
+test("it supports {{else}} with switching empty content ", function() {
+  view = Ember.View.create({
+    template: templateFor("{{#each items}}{{this}}{{else}}Nothing{{/each}}"),
+    items: Ember.A()
+  });
+
+  append(view);
+
+  assertHTML(view, "Nothing");
+
+  stop();
+
+  // We really need to make sure we get to the re-render
+  Ember.run.next(function() {
+    Ember.run(function() {
+      view.set('items', Ember.A([]));
+    });
+
+    start();
+
+    assertHTML(view, "Nothing");
+  });
+});
+
 test("it works with the controller keyword", function() {
   var controller = Ember.ArrayController.create({
     content: Ember.A(["foo", "bar", "baz"])
