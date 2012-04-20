@@ -68,7 +68,9 @@ module("Ember#defaultApplication", {
   setup: function() {
     Ember.$("#qunit-fixture").html("<div class='first' ></div><div class='second' ></div>");
     Ember.run(function() { set(Ember, 'defaultApplication', undefined); });
-    Ember.Application.APPLICATIONS = [];
+
+    // reset Ember.Namespace because it's polluted by Applications of other tests
+    Ember.Namespace.NAMESPACES = [Ember];
   },
 
   teardown: function() {
@@ -80,7 +82,6 @@ module("Ember#defaultApplication", {
     }
 
     Ember.run(function() { set(Ember, 'defaultApplication', undefined); });
-    Ember.Application.APPLICATIONS = [];
   }
 });
 
