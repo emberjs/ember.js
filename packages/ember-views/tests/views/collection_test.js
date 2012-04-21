@@ -188,6 +188,22 @@ test("should allow changes to content object before layer is created", function(
   ok(view.$().children().length);
 });
 
+test("should remove child items in arraDidChange", function() {
+  view = Ember.CollectionView.create({
+    content: null
+  });
+
+  set(view, 'content', Ember.A([1, 2, 3]));
+
+  view.arrayDidChange(Ember.A([2,3]), 0, 3, 2);
+  
+  Ember.run(function() {
+    view.append();
+  });
+
+  equal(view.$().children().length, 2);
+});
+
 test("should fire life cycle events when elements are added and removed", function() {
   var view,
     didInsertElement = 0,

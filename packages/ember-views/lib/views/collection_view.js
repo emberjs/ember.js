@@ -267,7 +267,7 @@ Ember.CollectionView = Ember.ContainerView.extend(
       set(this, 'emptyView', emptyView);
     }
 
-    childViews.replace(start, 0, addedViews);
+    childViews.replace(start, removed, addedViews);
   },
 
   createChildView: function(view, attrs) {
