@@ -95,5 +95,27 @@ test("does nothing if not in parentView", function() {
 });
 
 
+test("the DOM element is gone after doing append and remove in two separate runloops", function() {
+  var view = Ember.View.create();
+  Ember.run(function() {
+    view.append();
+  });
+  Ember.run(function() {
+    view.remove();
+  });
 
+  var viewElem = Ember.$('#'+get(view, 'elementId'));
+  ok(viewElem.length === 0, "view's element doesn't exist in DOM");
+});
+
+test("the DOM element is gone after doing append and remove in a single runloop", function() {
+  var view = Ember.View.create();
+  Ember.run(function() {
+    view.append();
+    view.remove();
+  });
+
+  var viewElem = Ember.$('#'+get(view, 'elementId'));
+  ok(viewElem.length === 0, "view's element doesn't exist in DOM");
+});
 

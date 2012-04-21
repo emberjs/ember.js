@@ -9,6 +9,8 @@ var DOMManager = {
   remove: function(view) {
     var morph = view.morph;
     if (morph.isRemoved()) { return; }
+    set(view, 'element', null);
+    set(view, 'lastInsert', null);
     morph.remove();
   },
 
