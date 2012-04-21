@@ -34,7 +34,7 @@ end
 
 distros = {
   :runtime => %w(ember-metal ember-runtime),
-  :full    => %w(handlebars ember-metal ember-runtime ember-views ember-states metamorph ember-handlebars)
+  :full    => %w(handlebars ember-metal ember-runtime ember-views ember-states ember-viewstates metamorph ember-handlebars)
 }
 
 output "dist"

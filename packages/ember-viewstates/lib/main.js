@@ -4,7 +4,7 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
-require('ember-runtime')
-require('ember-states/state_manager');
-require('ember-states/state');
-
+require('ember-views');
+require('ember-states');
+require('ember-viewstates/state_manager')
+require('ember-viewstates/view_state');
