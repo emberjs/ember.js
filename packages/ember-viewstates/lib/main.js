@@ -8,4 +8,3 @@ require('ember-views');
 require('ember-states');
 require('ember-viewstates/state_manager')
 require('ember-viewstates/view_state');
-
