@@ -39,7 +39,13 @@ Ember.View.states.inBuffer = {
     var buffer = view.buffer;
 
     childView = this.createChildView(childView, options);
-    get(view, '_childViews').push(childView);
+    var childViews = get(view, '_childViews');
+
+    if (childViews.length > 0) {
+        childViews[childViews.length-1].nextView = childView;
+        childView.prevView = childViews[childViews.length-1];
+    }
+    childViews.push(childView);
 
     childView.renderToBuffer(buffer);
 

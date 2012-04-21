@@ -20,11 +20,25 @@ var DOMManager = {
     });
   },
 
-  after: function(view, nextView) {
-    nextView._insertElementLater(function() {
-      var morph = view.morph;
-      morph.after(nextView.outerHTML);
-      nextView.outerHTML = null;
+  after: function(parentView, view, newView) {
+    newView._insertElementLater(function() {
+      var morph;
+      var nextView;
+      var prevView = view;
+
+      // Find a previous item that actually exists in the page
+      while (prevView !== null && prevView.get('state') === 'destroyed') {
+        prevView=prevView.get('prevView');
+      }
+      if (prevView === null) {
+        morph = parentView.get('morph');
+        morph.prepend(newView.outerHTML);
+        newView.outerHTML = null;
+      } else {
+        morph = prevView.morph;
+        morph.after(newView.outerHTML);
+        newView.outerHTML = null;
+      }
     });
   },
 

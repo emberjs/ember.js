@@ -228,6 +228,10 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     }
   }).property('_parentView'),
 
+  // allow navigation between the next and previous views
+  prevView: null,
+  nextView: null,
+
   // return the current view, not including virtual views
   concreteView: Ember.computed(function() {
     if (!this.isVirtual) { return this; }
@@ -1506,10 +1510,22 @@ var DOMManager = {
     });
   },
 
-  after: function(view, nextView) {
-    nextView._insertElementLater(function() {
-      var element = view.$();
-      element.after(nextView.$());
+  after: function(parentView, view, newView) {
+    newView._insertElementLater(function() {
+      var nextView;
+      var prevView = view;
+      while (prevView !== null && prevView.get('state') !== 'inDOM') {
+        prevView=prevView.get('prevView');
+      }
+      var element;
+      if (prevView === null) {
+        element = parentView.$();
+        element.prepend(newView.$());
+      } else {
+        element = prevView.$();
+        element.after(newView.$());
+      }
+      
     });
   },
 
