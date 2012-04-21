@@ -189,3 +189,19 @@ test("it appends and removes a view to the view specified in the state manager's
   equal(getPath(rootView, 'childViews.length'), 1, "when transitioning into a view state, its view should be added as a child of the root view");
   equal(get(rootView, 'childViews').objectAt(0), view, "the view added is the view state's view");
 });
+
+test("it reports the view associated with the current view state, if any", function() {
+  var view = Ember.View.create();
+
+  var stateManager = Ember.StateManager.create({
+    foo: Ember.ViewState.create({
+      view: view,
+      bar: Ember.State.create()
+    })
+  });
+
+  stateManager.goToState('foo.bar');
+
+  equal(get(stateManager, 'currentView'), view, "returns nearest parent view state's view");
+});
+
