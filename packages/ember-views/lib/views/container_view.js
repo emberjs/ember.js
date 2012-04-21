@@ -206,6 +206,10 @@ Ember.ContainerView = Ember.View.extend({
         view = this.createChildView(viewName);
       }
 
+      if (idx>0) {
+        _childViews[idx-1].nextView = view;
+	view.prevView = _childViews[idx-1];
+      }
       _childViews[idx] = view;
     }, this);
 
@@ -315,7 +319,7 @@ Ember.ContainerView = Ember.View.extend({
   */
   _scheduleInsertion: function(view, prev) {
     if (prev) {
-      prev.domManager.after(prev, view);
+      prev.domManager.after(this, prev, view);
     } else {
       this.domManager.prepend(this, view);
     }
