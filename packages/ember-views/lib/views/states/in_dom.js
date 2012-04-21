@@ -27,6 +27,7 @@ Ember.View.states.hasElement = {
   setElement: function(view, value) {
     if (value === null) {
       view.invalidateRecursively('element');
+
       view.transitionTo('preRender');
     } else {
       throw "You cannot set an element to a non-null value when the element is already in the DOM.";
@@ -48,10 +49,10 @@ Ember.View.states.hasElement = {
 
   // once the view is already in the DOM, destroying it removes it
   // from the DOM, nukes its element, and puts it back into the
-  // preRender state.
+  // preRender state if inDOM.
+
   destroyElement: function(view) {
     view._notifyWillDestroyElement();
-
     view.domManager.remove(view);
     return view;
   },
@@ -81,7 +82,10 @@ Ember.View.states.hasElement = {
 Ember.View.states.inDOM = {
   parentState: Ember.View.states.hasElement,
 
-  insertElement: function() {
+  insertElement: function(view, fn) {
+    if (view.get('lastInsert') !== fn.insertGuid){
+      return;
+    }
     throw "You can't insert an element into the DOM that has already been inserted";
   }
 };

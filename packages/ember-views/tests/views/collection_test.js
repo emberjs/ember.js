@@ -313,3 +313,30 @@ test("should allow declaration of itemViewClass as a string", function() {
 
   equal(view.$('.ember-view').length, 3);
 });
+
+test("should not render the emptyView if content is emptied and refilled in the same run loop", function() {
+  view = Ember.CollectionView.create({
+    tagName: 'div',
+    content: Ember.A(['NEWS GUVNAH']),
+
+    emptyView: Ember.View.create({
+      tagName: 'kbd',
+      render: function(buf) {
+        buf.push("OY SORRY GUVNAH NO NEWS TODAY EH");
+      }
+    })
+  });
+
+  Ember.run(function() {
+    view.append();
+  });
+  
+  equal(view.$().find('kbd:contains("OY SORRY GUVNAH")').length, 0);
+
+  Ember.run(function() {
+    view.get('content').popObject();
+    view.get('content').pushObject(['NEWS GUVNAH']);
+  });
+  equal(view.$('div').length, 1);
+  equal(view.$().find('kbd:contains("OY SORRY GUVNAH")').length, 0);
+});
