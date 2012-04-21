@@ -193,7 +193,7 @@ Ember.CollectionView = Ember.ContainerView.extend(
   arrayWillChange: function(content, start, removedCount) {
     // If the contents were empty before and this template collection has an
     // empty view remove it now.
-    var emptyView = get(this, 'emptyView');
+    var emptyView = get(this, '_emptyView');
     if (emptyView && emptyView instanceof Ember.View) {
       emptyView.removeFromParent();
     }
@@ -259,14 +259,17 @@ Ember.CollectionView = Ember.ContainerView.extend(
         addedViews.push(view);
       }
     } else {
-      var emptyView = get(this, 'emptyView');
-      if (!emptyView) { return; }
+      var emptyViewClass = get(this, 'emptyView'),
+          emptyView = get(this, '_emptyView');
+      if (!emptyViewClass) { return; }
 
-      emptyView = this.createChildView(emptyView);
+      if (!emptyView) {
+        emptyView = this.createChildView(emptyViewClass);
+        set(this, '_emptyView', emptyView);
+      }
+      
       addedViews.push(emptyView);
-      set(this, 'emptyView', emptyView);
     }
-
     childViews.replace(start, 0, addedViews);
   },
 

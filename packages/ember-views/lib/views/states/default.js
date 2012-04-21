@@ -27,6 +27,12 @@ Ember.View.states = {
     // Handle events from `Ember.EventDispatcher`
     handleEvent: function() {
       return true; // continue event propagation
+    },
+
+    destroyElement: function(view) {
+      set(view, 'element', null);
+      set(view, 'lastInsert', null);
+      return view;
     }
   }
 };

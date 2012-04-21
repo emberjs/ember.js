@@ -745,6 +745,7 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     @param {Function} fn the function that inserts the element into the DOM
   */
   _insertElementLater: function(fn) {
+    set(this, 'lastInsert', fn.insertGuid = Ember.generateGuid());
     Ember.run.schedule('render', this, this.invokeForState, 'insertElement', fn);
   },
 
@@ -1528,6 +1529,7 @@ var DOMManager = {
     var elem = get(view, 'element');
 
     set(view, 'element', null);
+    set(view, 'lastInsert', null);
 
     Ember.$(elem).remove();
   },
