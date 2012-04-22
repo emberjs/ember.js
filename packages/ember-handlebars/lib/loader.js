@@ -28,8 +28,6 @@ Ember.Handlebars.bootstrap = function(ctx) {
     var script = Ember.$(this),
         type   = script.attr('type');
 
-    if (type === 'text/html' && !Ember.ENV.LEGACY_HANDLEBARS_TAGS) { return; }
-
     var compile = (script.attr('type') === 'text/x-raw-handlebars') ?
                   Ember.$.proxy(Handlebars.compile, Handlebars) :
                   Ember.$.proxy(Ember.Handlebars.compile, Ember.Handlebars),
