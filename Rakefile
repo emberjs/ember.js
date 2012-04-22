@@ -357,11 +357,126 @@ namespace :release do
     task :deploy => [:update, :upload]
   end
 
+  namespace :examples do
+    ember_min_output = "tmp/examples/lib/ember.min.js"
+
+    task :pull => "tmp/examples" do
+      Dir.chdir("tmp/examples") do
+        sh "git pull origin master"
+      end
+    end
+
+    task :clean => :pull do
+      Dir.chdir("tmp/examples") do
+        rm_rf Dir["lib/ember.min.js"]
+      end
+    end
+
+    file ember_min_output => [:clean, "tmp/examples", "dist/ember.min.js"] do
+
+    file "tmp/examples" do
+      mkdir_p "tmp"
+
+      Dir.chdir("tmp") do
+        sh "git clone git@github.com:emberjs/examples.git"
+      end
+    end
+
+    desc "Update examples repo"
+    task :update => ember_min_output do
+      puts "Updating examples repo"
+      unless pretend?
+        Dir.chdir("tmp/examples") do
+          sh "git add -A"
+          sh "git commit -m 'Updated to #{EMBER_VERSION}'"
+
+          print "Are you sure you want to push the examples repo to github? (y/N) "
+          res = STDIN.gets.chomp
+          if res == 'y'
+            sh "git push origin master"
+            sh "git push --tags"
+          else
+            puts "Not pushing"
+          end
+        end
+      end
+    end
+
+    desc "Prepare examples for release"
+    task :prepare => []
+
+    desc "Update examples repo"
+    task :deploy => [:update]
+  end
+
+  namespace :website do
+
+    task :pull => "tmp/website" do
+      Dir.chdir("tmp/website") do
+        sh "git pull origin master"
+      end
+    end
+
+    file "tmp/website" do
+      mkdir_p "tmp"
+
+      Dir.chdir("tmp") do
+        sh "git clone git@github.com:emberjs/website.git"
+      end
+    end
+
+    file "tmp/website/source/layout.erb" => [:pull, "dist/ember.min.js"] do
+      require 'zlib'
+
+      layout = File.read("tmp/website/source/layout.erb")
+      min_gz = Zlib::Deflate.deflate(File.read("dist/ember.min.js")).bytes.count / 1024
+
+      layout.gsub! %r{<a href="https://github\.com/downloads/emberjs/ember\.js/ember-\d(\.\d+)*.min\.js">},
+        %{<a href="https://github.com/downloads/emberjs/ember.js/ember-#{EMBER_VERSION}.min.js">}
+
+      layout.gsub! %r{<a href="https://github\.com/downloads/emberjs/starter-kit/starter-kit\.\d(\.\d+)*\.zip">},
+        %{<a href="https://github.com/downloads/emberjs/starter-kit/starter-kit.#{EMBER_VERSION}.zip">}
+
+      layout.gsub! /\d+k min\+gzip/, "#{min_gz}k min+gzip"
+
+      File.open("tmp/website/index.html", "w") { |f| f.write index }
+    end
+
+    task :layout => "tmp/website/source/layout.erb"
+
+    desc "Update website repo"
+    task :update => :layout do
+      puts "Updating website repo"
+      unless pretend?
+        Dir.chdir("tmp/website") do
+          sh "git add -A"
+          sh "git commit -m 'Updated to #{EMBER_VERSION}'"
+
+          print "Are you sure you want to push the website repo to github? (y/N) "
+          res = STDIN.gets.chomp
+          if res == 'y'
+            sh "git push origin master"
+            sh "git push --tags"
+          else
+            puts "Not pushing"
+          end
+        end
+        puts "NOTE: You still need to run `rake deploy` from within the website repo."
+      end
+    end
+
+    desc "Prepare website for release"
+    task :prepare => []
+
+    desc "Update website repo"
+    task :deploy => [:update]
+  end
+
   desc "Prepare Ember for new release"
-  task :prepare => ['framework:prepare', 'starter_kit:prepare']
+  task :prepare => ['framework:prepare', 'starter_kit:prepare', 'examples:prepare']
 
   desc "Deploy a new Ember release"
-  task :deploy => ['framework:deploy', 'starter_kit:deploy']
+  task :deploy => ['framework:deploy', 'starter_kit:deploy', 'examples:deploy']
 
 end
 
