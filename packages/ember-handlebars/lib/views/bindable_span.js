@@ -15,8 +15,9 @@ require('ember-handlebars/views/metamorph_view');
   @private
   @class
 
-  Ember._BindableSpanView is a private view created by the Handlebars `{{bind}}`
-  helpers that is used to keep track of bound properties.
+  Ember._BindableSpanView is a private view created by the Handlebars helpers
+  that do not want to have a wrapping tag. Examples include `{{#if}}` and
+  `{{#each}}`.
 
   Every time a property is bound using a `{{mustache}}`, an anonymous subclass
   of Ember._BindableSpanView is created with the appropriate sub-template and
