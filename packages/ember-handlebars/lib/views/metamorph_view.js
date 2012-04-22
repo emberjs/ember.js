@@ -10,7 +10,7 @@ var DOMManager = {
     var morph = view.morph;
     if (morph.isRemoved()) { return; }
     set(view, 'element', null);
-    set(view, 'lastInsert', null);
+    view._lastInsert = null;
     morph.remove();
   },
 

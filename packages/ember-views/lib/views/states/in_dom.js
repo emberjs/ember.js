@@ -83,7 +83,7 @@ Ember.View.states.inDOM = {
   parentState: Ember.View.states.hasElement,
 
   insertElement: function(view, fn) {
-    if (view.get('lastInsert') !== fn.insertGuid){
+    if (view._lastInsert !== Ember.guidFor(fn)){
       return;
     }
     throw "You can't insert an element into the DOM that has already been inserted";

@@ -13,7 +13,7 @@ Ember.View.states.preRender = {
   // a view leaves the preRender state once its element has been
   // created (createElement).
   insertElement: function(view, fn) {
-    if (view.get('lastInsert') !== fn.insertGuid){
+    if (view._lastInsert !== Ember.guidFor(fn)){
       return;
     }
     view.createElement();

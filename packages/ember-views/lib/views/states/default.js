@@ -31,7 +31,7 @@ Ember.View.states = {
 
     destroyElement: function(view) {
       set(view, 'element', null);
-      set(view, 'lastInsert', null);
+      view._lastInsert = null;
       return view;
     }
   }
