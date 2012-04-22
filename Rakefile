@@ -372,8 +372,6 @@ namespace :release do
       end
     end
 
-    file ember_min_output => [:clean, "tmp/examples", "dist/ember.min.js"] do
-
     file "tmp/examples" do
       mkdir_p "tmp"
 
