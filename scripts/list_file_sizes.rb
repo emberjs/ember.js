@@ -18,19 +18,26 @@ def gzip(string)
 end
 
 
-string = ""
+all_files = ""
+sizes = []
 
 files.each do |file|
   this_file = File.read(file)
-  string += this_file
+  all_files += this_file
   size = this_file.size
   uglified = uglify(this_file)
   gzipped = gzip(uglified)
-
-  puts "%8d %8d %8d - %s" % [size, uglified.size, gzipped.size, file]
+  sizes << [size, uglified.size, gzipped.size, file]
 end
 
-uglified = uglify(string)
+# HEADER
+puts "     RAW      MIN   MIN+GZ"
+
+sizes.sort{|a,b| b[2] <=> a[2] }.each do |size|
+  puts "%8d %8d %8d - %s" % size
+end
+
+uglified = uglify(all_files)
 gzipped = gzip(uglified)
 
-puts "%8d %8d %8d" % [string.size, uglified.size, gzipped.size]
+puts "%8d %8d %8d" % [all_files.size, uglified.size, gzipped.size]
