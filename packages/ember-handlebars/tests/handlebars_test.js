@@ -1558,21 +1558,27 @@ test("should expose a view keyword", function() {
 });
 
 test("Ember.Button targets should respect keywords", function() {
-  var templateString = '{{#with anObject}}{{view Ember.Button target="controller.foo"}}{{/with}}';
-  view = Ember.View.create({
-    template: Ember.Handlebars.compile(templateString),
-    anObject: {},
-    controller: {
-      foo: "bar"
-    }
-  });
+  Ember.TESTING_DEPRECATION = true;
 
-  Ember.run(function() {
-    view.appendTo('#qunit-fixture');
-  });
+  try {
+    var templateString = '{{#with anObject}}{{view Ember.Button target="controller.foo"}}{{/with}}';
+    view = Ember.View.create({
+      template: Ember.Handlebars.compile(templateString),
+      anObject: {},
+      controller: {
+        foo: "bar"
+      }
+    });
 
-  var button = view.get('childViews').objectAt(0);
-  equal(button.get('targetObject'), "bar", "resolves the target");
+    Ember.run(function() {
+      view.appendTo('#qunit-fixture');
+    });
+
+    var button = view.get('childViews').objectAt(0);
+    equal(button.get('targetObject'), "bar", "resolves the target");
+  } finally {
+    Ember.TESTING_DEPRECATION = false;
+  }
 });
 
 module("Templates redrawing and bindings", {
@@ -1636,13 +1642,13 @@ test("properties within an if statement should not fail on re-render", function(
 
 test("views within an if statement should be sane on re-render", function(){
   view = Ember.View.create({
-    template: Ember.Handlebars.compile('{{#if display}}{{view Ember.Button}}{{/if}}'),
+    template: Ember.Handlebars.compile('{{#if display}}{{view Ember.TextField}}{{/if}}'),
     display: false
   });
 
   appendView();
 
-  equal(view.$('button').length, 0);
+  equal(view.$('input').length, 0);
 
   Ember.run(function(){
     // Setting twice will trigger the observer twice, this is intentional
@@ -1650,11 +1656,11 @@ test("views within an if statement should be sane on re-render", function(){
     view.set('display', 'yes');
   });
 
-  var button = view.$('button');
-  equal(button.length, 1);
+  var textfield = view.$('input');
+  equal(textfield.length, 1);
 
   // Make sure the view is still registered in Ember.View.views
-  ok(Ember.View.views[button.attr('id')]);
+  ok(Ember.View.views[textfield.attr('id')]);
 });
 
 test("the {{this}} helper should not fail on removal", function(){
