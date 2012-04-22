@@ -177,6 +177,25 @@ test("should not escape HTML in triple mustaches", function() {
   equal(view.$('i').length, 1, "creates an element when value is updated");
 });
 
+test("should not escape HTML if string is a Handlebars.SafeString", function() {
+  view = Ember.View.create({
+    template: Ember.Handlebars.compile('{{output}}'),
+    output: new Handlebars.SafeString("you need to be more <b>bold</b>")
+  });
+
+  Ember.run(function() {
+    view.appendTo('#qunit-fixture');
+  });
+
+  equal(view.$('b').length, 1, "creates an element");
+
+  Ember.run(function() {
+    set(view, 'output', new Handlebars.SafeString("you are so <i>super</i>"));
+  });
+
+  equal(view.$('i').length, 1, "creates an element when value is updated");
+});
+
 TemplateTests = {};
 
 test("child views can be inserted using the {{view}} Handlebars helper", function() {
