@@ -22,7 +22,7 @@ page.open(args[0], function(status) {
   } else {
     page.evaluate(addLogging);
 
-    var timeout = parseInt(args[1] || 30000, 10);
+    var timeout = parseInt(args[1] || 60000, 10);
     var start = Date.now();
     var interval = setInterval(function() {
       if (Date.now() > start + timeout) {
