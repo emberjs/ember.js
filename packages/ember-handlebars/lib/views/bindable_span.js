@@ -154,7 +154,7 @@ Ember._BindableSpanView = Ember.View.extend(Ember.Metamorph,
         // expression to the render context and return.
           if (result === null || result === undefined) {
             result = "";
-          } else {
+          } else if (!(result instanceof Handlebars.SafeString)) {
             result = String(result);
           }
 
