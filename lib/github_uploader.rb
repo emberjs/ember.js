@@ -1,7 +1,5 @@
 require "rest-client"
 require "github_api"
-# We can stop requiring nokogiri when github_api is updated
-require "nokogiri"
 
 class GithubUploader
 
