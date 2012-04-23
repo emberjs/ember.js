@@ -143,6 +143,12 @@ test("should allow values from normal JavaScript hash objects to be used", funct
   equal(view.$().text(), "Señor CFC (and Fido)", "prints out values from a hash");
 });
 
+test("htmlSafe should return an instance of Handlebars.SafeString", function() {
+  var safeString = Ember.String.htmlSafe("you need to be more <b>bold</b>");
+
+  ok(safeString instanceof Handlebars.SafeString, "should return SafeString");
+});
+
 test("should escape HTML in normal mustaches", function() {
   view = Ember.View.create({
     template: Ember.Handlebars.compile('{{output}}'),
