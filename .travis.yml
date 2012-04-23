@@ -6,3 +6,4 @@ before_script:
   - "sh -e /etc/init.d/xvfb start"
   - "rake clean"
 script: "rake test[all]"
+after_script: "rake upload_to_url"
