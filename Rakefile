@@ -138,9 +138,17 @@ task :test, [:suite] => :dist do |t, args|
 
   # Run the tests
   puts "Running: #{opts.join(", ")}"
-  success = system(cmd)
+  system(cmd)
 
-  if success
+  # A bit of a hack until we can figure this out on Travis
+  tries = 0
+  while tries < 3 && $?.exitstatus === 124
+    tries += 1
+    puts "Timed Out. Trying again..."
+    system(cmd)
+  end
+
+  if $?.success?
     puts "Tests Passed".green
   else
     puts "Tests Failed".red

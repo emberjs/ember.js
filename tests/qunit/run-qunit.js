@@ -27,7 +27,7 @@ page.open(args[0], function(status) {
     var interval = setInterval(function() {
       if (Date.now() > start + timeout) {
         console.error("Tests timed out");
-        phantom.exit(1);
+        phantom.exit(124);
       } else {
         var qunitDone = page.evaluate(function() {
           return window.qunitDone;
