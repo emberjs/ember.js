@@ -11,12 +11,13 @@ module("Ember.View - Class Name Bindings");
 test("should apply bound class names to the element", function() {
   var view = Ember.View.create({
     classNameBindings: ['priority', 'isUrgent', 'isClassified:classified',
-                        'canIgnore', 'messages.count', 'messages.resent:is-resent'],
+                        'canIgnore', 'messages.count', 'messages.resent:is-resent', 'isNumber:is-number'],
 
     priority: 'high',
     isUrgent: true,
     isClassified: true,
     canIgnore: false,
+		isNumber: 5,
 
     messages: {
       count: 'five-messages',
@@ -30,6 +31,7 @@ test("should apply bound class names to the element", function() {
   ok(view.$().hasClass('classified'), "supports customizing class name for Boolean values");
   ok(view.$().hasClass('five-messages'), "supports paths in bindings");
   ok(view.$().hasClass('is-resent'), "supports customing class name for paths");
+  ok(view.$().hasClass('is-number'), "supports colon syntax with truthy properties");
   ok(!view.$().hasClass('can-ignore'), "does not add false Boolean values as class");
 });
 

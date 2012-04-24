@@ -1089,6 +1089,31 @@ test("should be able to bind view class names to properties", function() {
   equal(view.$('.is-done').length, 0, "removes class name if bound property is set to false");
 });
 
+test("should be able to bind view class names to truthy properties", function() {
+  var templates = Ember.Object.create({
+    template: Ember.Handlebars.compile('{{#view "TemplateTests.classBindingView" classBinding="number:is-truthy"}}foo{{/view}}')
+  });
+
+  TemplateTests.classBindingView = Ember.View.extend({
+    number: 5
+  });
+
+  view = Ember.View.create({
+    templateName: 'template',
+    templates: templates
+  });
+
+  appendView();
+
+  equal(view.$('.is-truthy').length, 1, "sets class name");
+
+  Ember.run(function() {
+    set(firstChild(view), 'number', 0);
+  });
+
+  equal(view.$('.is-truthy').length, 0, "removes class name if bound property is set to falsey");
+});
+
 test("should be able to bind element attributes using {{bindAttr}}", function() {
   var template = Ember.Handlebars.compile('<img {{bindAttr src="content.url" alt="content.title"}}>');
 
@@ -1270,6 +1295,25 @@ test("should be able to bind class attribute with {{bindAttr}}", function() {
   });
 
   equal(view.$('img').attr('class'), 'baz', "updates class");
+});
+
+test("should be able to bind class attribute via a truthy property with {{bindAttr}}", function() {
+  var template = Ember.Handlebars.compile('<img {{bindAttr class="isNumber:is-truthy"}}>');
+
+  view = Ember.View.create({
+    template: template,
+    isNumber: 5
+  });
+
+  appendView();
+
+  equal(view.$('.is-truthy').length, 1, "sets class name");
+
+  Ember.run(function() {
+    set(view, 'isNumber', 0);
+  });
+
+  equal(view.$('.is-truthy').length, 0, "removes class name if bound property is set to something non-truthy");
 });
 
 test("should not allow XSS injection via {{bindAttr}} with class", function() {
