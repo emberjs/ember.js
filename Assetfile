@@ -51,10 +51,10 @@ input "packages" do
       id
     }
 
-    concat "ember-tests.js"
+    concat "ember-tests.min.js"
   end
 
-  match "ember-tests.js" do
+  match "ember-tests.min.js" do
     filter JSHintRC
   end
 end
