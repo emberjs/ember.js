@@ -592,9 +592,14 @@ Ember.View = Ember.Object.extend(Ember.Evented,
       val = Ember.getPath(window, property);
     }
 
+    // If the value is truthy and we're using the colon syntax,
+    // we should return the className directly
+    if (!!val && className) {
+      return className;
+			
     // If value is a Boolean and true, return the dasherized property
     // name.
-    if (val === true) {
+		} else if (val === true) {
       if (className) { return className; }
 
       // Normalize property path to be suitable for use
