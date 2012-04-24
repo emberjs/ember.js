@@ -599,9 +599,7 @@ Ember.View = Ember.Object.extend(Ember.Evented,
 			
     // If value is a Boolean and true, return the dasherized property
     // name.
-		} else if (val === true) {
-      if (className) { return className; }
-
+    } else if (val === true) {
       // Normalize property path to be suitable for use
       // as a class name. For exaple, content.foo.barBaz
       // becomes bar-baz.

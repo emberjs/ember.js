@@ -338,8 +338,6 @@ EmberHandlebars.bindClasses = function(context, classBindings, view, bindAttrId,
     // If value is a Boolean and true, return the dasherized property
     // name.
     } else if (val === true) {
-      if (className) { return className; }
-
       // Normalize property path to be suitable for use
       // as a class name. For exaple, content.foo.barBaz
       // becomes bar-baz.
