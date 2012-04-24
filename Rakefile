@@ -132,23 +132,23 @@ task :test, [:suite] => :dist do |t, args|
     abort "No suite named: #{suite}"
   end
 
-  cmd = opts.map do |opt|
-    "phantomjs tests/qunit/run-qunit.js \"file://localhost#{File.dirname(__FILE__)}/tests/index.html?#{opt}\""
-  end.join(' && ')
-
-  # Run the tests
-  puts "Running: #{opts.join(", ")}"
-  system(cmd)
-
-  # A bit of a hack until we can figure this out on Travis
-  tries = 0
-  while tries < 3 && $?.exitstatus === 124
-    tries += 1
-    puts "Timed Out. Trying again..."
+  success = true
+  opts.each do |opt|
+    cmd = "phantomjs tests/qunit/run-qunit.js \"file://localhost#{File.dirname(__FILE__)}/tests/index.html?#{opt}\""
     system(cmd)
+
+    # A bit of a hack until we can figure this out on Travis
+    tries = 0
+    while tries < 3 && $?.exitstatus === 124
+      tries += 1
+      puts "Timed Out. Trying again..."
+      system(cmd)
+    end
+
+    success &&= $?.success?
   end
 
-  if $?.success?
+  if success
     puts "Tests Passed".green
   else
     puts "Tests Failed".red

@@ -20,7 +20,7 @@ page.open(args[0], function(status) {
     console.error("Unable to access network");
     phantom.exit(1);
   } else {
-    page.evaluate(addLogging);
+    page.evaluate(logQUnit);
 
     var timeout = parseInt(args[1] || 60000, 10);
     var start = Date.now();
@@ -46,9 +46,11 @@ page.open(args[0], function(status) {
   }
 });
 
-function addLogging() {
+function logQUnit() {
   var testErrors = [];
   var assertionErrors = [];
+
+  console.log("Running: " + JSON.stringify(QUnit.urlParams));
 
   QUnit.moduleDone(function(context) {
     if (context.failed) {
@@ -83,7 +85,6 @@ function addLogging() {
 
   QUnit.done(function(context) {
     var stats = [
-      "Test run: " + JSON.stringify(QUnit.urlParams),
       "Time: " + context.runtime + "ms",
       "Total: " + context.total,
       "Passed: " + context.passed,
