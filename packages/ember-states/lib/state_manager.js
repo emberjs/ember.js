@@ -394,7 +394,13 @@ Ember.StateManager = Ember.State.extend(
 
     var action = currentState[event];
 
-    if (action) {
+    // Test to see if the action is a method that
+    // can be invoked. Don't blindly check just for
+    // existence, because it is possible the state
+    // manager has a child state of the given name,
+    // and we should still raise an exception in that
+    // case.
+    if (typeof action === 'function') {
       if (log) { console.log(fmt("STATEMANAGER: Sending event '%@' to state %@.", [event, get(currentState, 'path')])); }
       action.call(currentState, this, context);
     } else {
