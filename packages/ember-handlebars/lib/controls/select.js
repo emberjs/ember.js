@@ -16,14 +16,6 @@ Ember.Select = Ember.View.extend({
   optionLabelPath: 'content',
   optionValuePath: 'content',
 
-  didInsertElement: function() {
-    var selection = get(this, 'selection');
-
-    if (selection) { this.selectionDidChange(); }
-
-    this.change();
-  },
-
   change: function() {
     if (get(this, 'multiple')) {
       this._changeMultiple();
@@ -46,6 +38,13 @@ Ember.Select = Ember.View.extend({
     }
   }, 'selection'),
 
+  _triggerChange: function() {
+    var selection = get(this, 'selection');
+
+    if (selection) { this.selectionDidChange(); }
+
+    this.change();
+  },
 
   _changeSingle: function() {
     var selectedIndex = this.$()[0].selectedIndex,
@@ -98,6 +97,11 @@ Ember.Select = Ember.View.extend({
         this.selected = indexOf(selectedIndexes, this.index + offset) > -1;
       });
     }
+  },
+
+  init: function() {
+    this._super();
+    this.on("didInsertElement", this, this._triggerChange);
   }
 
 });
