@@ -26,7 +26,6 @@
     ],
 
     "node" : false,
-    "es5" : true,
     "browser" : true,
 
     "boss" : true,

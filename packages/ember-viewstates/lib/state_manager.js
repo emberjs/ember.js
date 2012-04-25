@@ -263,6 +263,6 @@ Ember.StateManager.reopen({
     }
 
     return null;
-  }).property('currentState').cacheable(),
+  }).property('currentState').cacheable()
 
 });
