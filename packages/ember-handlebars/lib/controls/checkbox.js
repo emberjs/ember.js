@@ -50,30 +50,16 @@ var set = Ember.set, get = Ember.get;
 Ember.Checkbox = Ember.View.extend({
   classNames: ['ember-checkbox'],
 
-  tagName: Ember.computed(function(){
-    return get(this, 'title') ? undefined : 'input';
-  }).property().volatile(),
+  tagName: 'input',
 
-  attributeBindings: Ember.computed(function(){
-    return get(this, 'title') ? [] : ['type', 'checked', 'disabled'];
-  }).property().volatile(),
+  attributeBindings: ['type', 'checked', 'disabled'],
 
   type: "checkbox",
   checked: false,
   disabled: false,
 
-  title:  Ember.computed(function(propName, value){
-    ember_deprecate("Automatically surrounding Ember.Checkbox inputs with a label by providing a 'title' property is deprecated", value === undefined);
-    return value;
-  }).property().cacheable(),
-
-  defaultTemplate: Ember.computed(function(){
-    if (get(this, 'title')) {
-      return Ember.Handlebars.compile('<label><input type="checkbox" {{bindAttr checked="checked" disabled="disabled"}}>{{title}}</label>');
-    } else {
-      return undefined;
-    }
-  }).property().cacheable(),
+  // Deprecated, use 'checked' instead
+  title: null,
 
   value: Ember.computed(function(propName, value){
     ember_deprecate("Ember.Checkbox's 'value' property has been renamed to 'checked' to match the html element attribute name");
@@ -88,12 +74,23 @@ Ember.Checkbox = Ember.View.extend({
     Ember.run.once(this, this._updateElementValue);
     // returning false will cause IE to not change checkbox state
   },
-  
+
   /**
     @private
   */
   _updateElementValue: function() {
     var input = get(this, 'title') ? this.$('input:checkbox') : this.$();
     set(this, 'checked', input.prop('checked'));
+  },
+
+  init: function() {
+    if (get(this, 'title') || get(this, 'titleBinding')) {
+      ember_deprecate("Automatically surrounding Ember.Checkbox inputs with a label by providing a 'title' property is deprecated");
+      this.tagName = undefined;
+      this.attributeBindings = [];
+      this.defaultTemplate = Ember.Handlebars.compile('<label><input type="checkbox" {{bindAttr checked="checked" disabled="disabled"}}>{{title}}</label>');
+    }
+
+    this._super();
   }
 });

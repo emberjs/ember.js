@@ -97,9 +97,15 @@ test("checking the checkbox updates the value", function() {
 
 // deprecated behaviors
 test("wraps the checkbox in a label if a title attribute is provided", function(){
-  checkboxView = Ember.Checkbox.create({ title: "I have a title" });
-  append();
-  equal(checkboxView.$('label').length, 1);
+  Ember.TESTING_DEPRECATION = true;
+
+  try {
+    checkboxView = Ember.Checkbox.create({ title: "I have a title" });
+    append();
+    equal(checkboxView.$('label').length, 1);
+  } finally {
+    Ember.TESTING_DEPRECATION = false;
+  }
 });
 
 test("proxies the checked attribute to value for backwards compatibility", function(){
