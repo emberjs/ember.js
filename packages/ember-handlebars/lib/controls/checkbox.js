@@ -58,7 +58,7 @@ Ember.Checkbox = Ember.View.extend({
   checked: false,
   disabled: false,
 
-  // Deprecated, use 'checked' instead
+  /** @deprecated */
   title: null,
 
   value: Ember.computed(function(propName, value){
