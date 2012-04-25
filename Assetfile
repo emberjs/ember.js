@@ -13,8 +13,11 @@ class EmberProductionFilter < Rake::Pipeline::Filter
 end
 
 class EmberLicenseFilter < Rake::Pipeline::Filter
+  def license
+    @license ||= File.read("generators/license.js")
+  end
+
   def generate_output(inputs, output)
-    license = File.read("generators/license.js")
     inputs.each do |input|
       file = File.read(input.fullpath)
       output.write "#{license}\n\n#{file}"
@@ -23,8 +26,11 @@ class EmberLicenseFilter < Rake::Pipeline::Filter
 end
 
 class JSHintRC < Rake::Pipeline::Filter
+  def jshintrc
+    @jshintrc ||= File.read(".jshintrc")
+  end
+
   def generate_output(inputs, output)
-    jshintrc = File.read(".jshintrc")
     inputs.each do |input|
       file = File.read(input.fullpath)
       output.write "var JSHINTRC = #{jshintrc};\n\n#{file}"
