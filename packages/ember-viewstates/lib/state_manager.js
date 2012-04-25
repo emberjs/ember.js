@@ -40,12 +40,12 @@ var get = Ember.get, set = Ember.set, getPath = Ember.getPath, fmt = Ember.Strin
 
       ContactListView = Ember.View.extend({
         classNames: ['my-contacts-css-class'],
-        defaultTemplate: Ember.Handlebars.compile('<h2>People</h2>')
+        template: Ember.Handlebars.compile('<h2>People</h2>')
       })
 
       PhotoListView = Ember.View.extend({
         classNames: ['my-photos-css-class'],
-        defaultTemplate: Ember.Handlebars.compile('<h2>Photos</h2>')
+        template: Ember.Handlebars.compile('<h2>Photos</h2>')
       })
 
       viewStates = Ember.StateManager.create({
@@ -91,12 +91,12 @@ var get = Ember.get, set = Ember.set, getPath = Ember.getPath, fmt = Ember.Strin
 
       ContactListView = Ember.View.extend({
         classNames: ['my-contacts-css-class'],
-        defaultTemplate: Ember.Handlebars.compile('<h2>People</h2>')
+        template: Ember.Handlebars.compile('<h2>People</h2>')
       })
 
       EditAContactView = Ember.View.extend({
         classNames: ['editing-a-contact-css-class'],
-        defaultTemplate: Ember.Handlebars.compile('Editing...')
+        template: Ember.Handlebars.compile('Editing...')
       })
 
       viewStates = Ember.StateManager.create({

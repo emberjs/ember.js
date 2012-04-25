@@ -1,12 +1,37 @@
 require "rake-pipeline-web-filters"
 require "json"
 require "uglifier"
+require "execjs"
 
 class EmberProductionFilter < Rake::Pipeline::Filter
+
+  def js_context
+    # We're using Ember to build Ember! Inception!
+    unless @context
+      headless = File.read("lib/headless-ember.js")
+      ember    = File.read("lib/ember.js")
+      @context = ExecJS.compile([headless, ember].join("\n"))
+    end
+    @context
+  end
+
+  def strip_debug(data)
+    # Strip debug code
+    data.gsub!(%r{^(\s)+ember_(assert|deprecate|warn)\((.*)\).*$}, "")
+  end
+
+  def precompile_templates(data)
+    # Precompile defaultTemplates
+    data.gsub!(%r{(defaultTemplate(?:\s*=|:)\s*)Ember\.Handlebars\.compile\(['"](.*)['"]\)}) do
+      "#{$1}Ember.Handlebars.template(#{js_context.call("precompileEmberHandlebars", $2)})"
+    end
+  end
+
   def generate_output(inputs, output)
     inputs.each do |input|
       result = File.read(input.fullpath)
-      result.gsub!(%r{^(\s)+ember_(assert|deprecate|warn)\((.*)\).*$}, "")
+      strip_debug(result)
+      precompile_templates(result)
       output.write result
     end
   end

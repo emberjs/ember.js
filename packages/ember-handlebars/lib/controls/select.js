@@ -5,10 +5,7 @@ var indexOf = Ember.ArrayUtils.indexOf, indexesOf = Ember.ArrayUtils.indexesOf;
 
 Ember.Select = Ember.View.extend({
   tagName: 'select',
-  template: Ember.Handlebars.compile(
-    '{{#if prompt}}<option>{{prompt}}</option>{{/if}}' +
-    '{{#each content}}{{view Ember.SelectOption contentBinding="this"}}{{/each}}'
-  ),
+  defaultTemplate: Ember.Handlebars.compile('{{#if prompt}}<option>{{prompt}}</option>{{/if}}{{#each content}}{{view Ember.SelectOption contentBinding="this"}}{{/each}}'),
   attributeBindings: ['multiple'],
 
   multiple: false,
@@ -107,7 +104,7 @@ Ember.Select = Ember.View.extend({
 
 Ember.SelectOption = Ember.View.extend({
   tagName: 'option',
-  template: Ember.Handlebars.compile("{{label}}"),
+  defaultTemplate: Ember.Handlebars.compile("{{label}}"),
   attributeBindings: ['value', 'selected'],
 
   init: function() {
