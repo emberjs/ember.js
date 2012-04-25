@@ -76,7 +76,7 @@
     // Fallback to default jQuery
     if (jQueryVersion !== 'none' && !window.jQuery) {
       if (console && console.warn) { console.warn("Unable to load jQuery "+jQueryVersion+". Using default."); }
-      document.write(unescape('%3Cscript src="jquery-1.7.2.js"%3E%3C/script%3E'));
+      document.write(unescape('%3Cscript src="../lib/jquery-1.7.2.js"%3E%3C/script%3E'));
     }
     // Close the script tag to make sure document.write happens
   </script>

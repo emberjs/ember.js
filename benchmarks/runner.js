@@ -1,7 +1,7 @@
 /*global jQuery Benchmark BenchWarmer:true*/
 
 var embers = {
-  before: "ember.js",
+  before: "../lib/ember.js",
   after: "../dist/ember.prod.js"
 };
 
@@ -13,7 +13,7 @@ function makeiframe(emberPath, suitePath, profile, callback) {
   iframe.name = name;
 
   write("<title>" + name + "</title>");
-  write("<script src='../tests/jquery-1.7.2.js'></script>");
+  write("<script src='../lib/jquery-1.7.2.js'></script>");
   write("<script src='" + emberPath + "'></script>");
   write("<script src='benchmark.js'></script>");
   write("<script src='iframe_runner.js'></script>");
