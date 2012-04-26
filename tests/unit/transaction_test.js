@@ -237,6 +237,7 @@ test("modified records are reset when their transaction is rolled back", functio
   transaction.add(updatedPerson);
   transaction.add(deletedPerson);
   transaction.add(anotherUpdatedPerson);
+  transaction.add(invalidPerson);
 
   var newPerson = transaction.createRecord(Person, {
     name: "Scumbag Yehuda"
