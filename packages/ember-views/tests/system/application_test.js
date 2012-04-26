@@ -61,3 +61,90 @@ test("acts like a namespace", function() {
   app.destroy();
   window.TestApp = undefined;
 });
+
+var FirstApp, SecondApp;
+
+module("Ember#defaultApplication", {
+  setup: function() {
+    Ember.$("#qunit-fixture").html("<div class='first' ></div><div class='second' ></div>");
+    Ember.run(function() { set(Ember, 'defaultApplication', undefined); });
+
+    // reset Ember.Namespace because it's polluted by Applications of other tests
+    Ember.Namespace.NAMESPACES = [Ember];
+  },
+
+  teardown: function() {
+    if (FirstApp) {
+      Ember.run(function() { FirstApp.destroy(); });
+    }
+    if (SecondApp) {
+      Ember.run(function() { SecondApp.destroy(); });
+    }
+
+    Ember.run(function() { set(Ember, 'defaultApplication', undefined); });
+  }
+});
+
+test("is set to undefined when no application has been created", function() {
+  var defaultApplication = get(Ember, 'defaultApplication');
+  equal(Ember.typeOf(defaultApplication), 'undefined', 'defaultApplication is undefined');
+});
+
+test("is set when a new application is created", function() {
+  FirstApp = Ember.Application.create({ rootElement: '.first' });
+
+  var defaultApplication = get(Ember, 'defaultApplication');
+  ok(defaultApplication, 'defaultApplication is defined');
+  equal(defaultApplication, FirstApp, 'defaultApplication is the created application');
+});
+
+test("is set to the first created application", function() {
+  FirstApp = Ember.Application.create({ rootElement: '.first' });
+  SecondApp = Ember.Application.create({ rootElement: '.second' });
+
+  var defaultApplication = get(Ember, 'defaultApplication');
+  ok(defaultApplication, 'defaultApplication is defined');
+  equal(defaultApplication, FirstApp, 'defaultApplication is the first created application');
+});
+
+test("is overwritten when a new application is created with flag isDefaultApplication", function() {
+  FirstApp = Ember.Application.create({ rootElement: '.first' });
+
+  var defaultApplication = get(Ember, 'defaultApplication');
+  ok(defaultApplication, 'defaultApplication is defined');
+  equal(defaultApplication, FirstApp, 'defaultApplication is defined');
+
+  SecondApp = Ember.Application.create({ rootElement: '.second', isDefaultApplication: true });
+
+  defaultApplication = get(Ember, 'defaultApplication');
+  ok(defaultApplication, 'defaultApplication is defined');
+  equal(defaultApplication, SecondApp, 'defaultApplication is the second created application');
+});
+
+test("is set to the next available appliation if the default application is destroyed", function() {
+  FirstApp = Ember.Application.create({ rootElement: '.first' });
+  SecondApp = Ember.Application.create({ rootElement: '.second' });
+
+  var defaultApplication = get(Ember, 'defaultApplication');
+  ok(defaultApplication, 'defaultApplication is defined');
+  equal(defaultApplication, FirstApp, 'defaultApplication is the first created application');
+
+  Ember.run(function() { FirstApp.destroy(); });
+  
+  defaultApplication = get(Ember, 'defaultApplication');
+  ok(defaultApplication, 'defaultApplication is defined');
+  equal(defaultApplication, SecondApp, 'defaultApplication is the second created application');
+});
+
+test("is set to undefined when the default application is destroyed and there are no more applications available", function() {
+  FirstApp = Ember.Application.create({ rootElement: '.first' });
+
+  var defaultApplication = get(Ember, 'defaultApplication');
+  ok(defaultApplication, 'defaultApplication is defined');
+  equal(defaultApplication, FirstApp, 'defaultApplication is defined');
+
+  Ember.run(function() { FirstApp.destroy(); });
+
+  defaultApplication = get(Ember, 'defaultApplication');
+  ok(!defaultApplication, 'defaultApplication is undefined');
+});

@@ -62,15 +62,20 @@ Ember.Application = Ember.Namespace.extend(
 
   /** @private */
   init: function() {
+    this._super();
+
     var eventDispatcher,
         rootElement = get(this, 'rootElement');
-    this._super();
 
     eventDispatcher = Ember.EventDispatcher.create({
       rootElement: rootElement
     });
 
     set(this, 'eventDispatcher', eventDispatcher);
+
+    if (!get(Ember, 'defaultApplication') || get(this, 'isDefaultApplication')) {
+      set(Ember, 'defaultApplication', this);
+    }
 
     // jQuery 1.7 doesn't call the ready callback if already ready
     if (Ember.$.isReady) {
@@ -102,8 +107,16 @@ Ember.Application = Ember.Namespace.extend(
   /** @private */
   destroy: function() {
     get(this, 'eventDispatcher').destroy();
+    if (get(Ember, 'defaultApplication') === this) {
+      var applications = Ember.Namespace.NAMESPACES;
+      var nextApp;
+      // get next Ember.Application which is not this one
+      for (var i=0, len = applications.length; i < len && !nextApp; i++) {
+        var app = applications[i];
+        if (Ember.Application.detectInstance(app) && app !== this) { nextApp = app; }
+      }
+      set(Ember, 'defaultApplication', nextApp);
+    }
     return this._super();
   }
 });
-
-

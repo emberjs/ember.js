@@ -18,7 +18,7 @@ module("Ember.View - append() and appendTo()", {
   }
 });
 
-test("should be added to the specified element when calling append()", function() {
+test("should be added to the specified element when calling appendTo()", function() {
   Ember.$("#qunit-fixture").html('<div id="menu"></div>');
 
   view = View.create();
@@ -33,7 +33,7 @@ test("should be added to the specified element when calling append()", function(
   ok(viewElem.length > 0, "creates and appends the view's element");
 });
 
-test("should be added to the document body when calling appendTo()", function() {
+test("should be added to the document body when calling append()", function() {
   view = View.create({
     render: function(buffer) {
       buffer.push("foo bar baz");
@@ -261,3 +261,33 @@ test("destroy removes a child view from its parent", function() {
   ok(Ember.getPath(view, 'childViews.length') === 0, "Destroyed child views should be removed from their parent");
 });
 
+var FirstApp, SecondApp;
+
+module("Ember.View#append appends to the rootElement of Ember.defaultApplication", {
+  setup: function() {
+    Ember.$("#qunit-fixture").html("<div id='first-app' ></div><div id='second-app' ></div>");
+    Ember.run(function() { FirstApp = Ember.Application.create({ rootElement: '#first-app' }); });
+    view = Ember.View.create({ elementId: 'myCoolView'  });
+  },
+  teardown: function() {
+    if (FirstApp) { Ember.run(function() { FirstApp.destroy(); }); }
+    if (SecondApp) { Ember.run(function() { SecondApp.destroy(); }); }
+  }
+});
+
+test("uses the rootElement of Ember.defaultApplication if no application is defined", function() {
+  equal(Ember.get('defaultApplication'), FirstApp, "precond: defaultApplication is FirstApp");
+
+  Ember.run(function() { view.append(); });
+
+  equal(Ember.$('#first-app').children().length, 1, "view is appened to rootElement of default application");
+});
+
+test("uses rootElement of passed application", function() {
+  SecondApp = Ember.Application.create({ rootElement: '#second-app' });
+  equal(Ember.get('defaultApplication'), FirstApp, "precond: defaultApplication is FirstApp");
+
+  Ember.run(function() { view.append(SecondApp); });
+
+  equal(Ember.$('#second-app').children().length, 1, "view is appened to rootElement of second application");
+});
