@@ -11,7 +11,7 @@ require('ember-metal/utils');
 require('ember-metal/properties');
 
 
-ember_warn("Computed properties will soon be cacheable by default. To enable this in your app, set `ENV.CP_DEFAULT_CACHEABLE = true`.", Ember.CP_DEFAULT_CACHEABLE);
+ember_warn("Computed properties will soon be cacheable by default. To enable this in your app, set `Ember.ENV.CP_DEFAULT_CACHEABLE = true`.", Ember.CP_DEFAULT_CACHEABLE);
 
 
 var meta = Ember.meta;
