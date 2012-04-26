@@ -183,6 +183,26 @@ test("it can specify which key to use when looking up properties on the hash", f
   equal(get(record, 'name'), "Pete", "retrieves correct value");
 });
 
+test("custom belongsTo keys are applied", function() {
+  var testStore = DS.Store.create({});
+
+  var RelatedModel = DS.Model.extend({
+    name: DS.attr('string')
+  });
+  var Model = DS.Model.extend({
+    name: DS.attr('string'),
+    related: DS.belongsTo(RelatedModel),
+    related_custom: DS.belongsTo(RelatedModel, {key: 'my_custom_key'})
+  });
+
+  testStore.load(Model, { id: 1, name: "John Doe", related: 1 });
+  var record = testStore.find(Model, 1);
+
+  json = record.toJSON();
+
+  ok(json.hasOwnProperty('related_id'), "non-custom key did not get standard naming");
+  ok(json.hasOwnProperty('my_custom_key'), "custom belongsTo key name was not applied");
+});
 
 
 var Person, store, array;
