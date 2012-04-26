@@ -212,13 +212,13 @@ test("child views can be inserted using the {{view}} Handlebars helper", functio
 
   TemplateTests.LabelView = Ember.View.extend({
     tagName: "aside",
-    cruel: "cruel",
     world: "world?",
     templateName: 'nested',
     templates: templates
   });
 
   view = Ember.View.create({
+    cruel: "cruel",
     world: "world!",
     templateName: 'nester',
     templates: templates
@@ -227,8 +227,8 @@ test("child views can be inserted using the {{view}} Handlebars helper", functio
   appendView();
 
   ok(view.$("#hello-world:contains('Hello world!')").length, "The parent view renders its contents");
-  ok(view.$("#child-view:contains('Goodbye cruel world?')").length === 1, "The child view renders its content once");
-  ok(view.$().text().match(/Hello world!.*Goodbye cruel world\?/), "parent view should appear before the child view");
+  ok(view.$("#child-view:contains('Goodbye cruel world!')").length === 1, "The child view renders its content once");
+  ok(view.$().text().match(/Hello world!.*Goodbye cruel world\!/), "parent view should appear before the child view");
 });
 
 test("should accept relative paths to views", function() {
@@ -258,7 +258,6 @@ test("child views can be inserted inside a bind block", function() {
     tagName: "blockquote",
     cruel: "cruel",
     world: "world?",
-    content: Ember.Object.create({ blah: "wot" }),
     templateName: 'nested',
     templates: templates
   });
@@ -270,6 +269,7 @@ test("child views can be inserted inside a bind block", function() {
 
   view = Ember.View.create({
     world: "world!",
+    content: Ember.Object.create({ blah: "wot" }),
     templateName: 'nester',
     templates: templates
   });
@@ -277,8 +277,8 @@ test("child views can be inserted inside a bind block", function() {
   appendView();
 
   ok(view.$("#hello-world:contains('Hello world!')").length, "The parent view renders its contents");
-  ok(view.$("blockquote").text().match(/Goodbye.*wot.*cruel.*world\?/), "The child view renders its content once");
-  ok(view.$().text().match(/Hello world!.*Goodbye.*wot.*cruel.*world\?/), "parent view should appear before the child view");
+  ok(view.$("blockquote").text().match(/Goodbye.*wot.*cruel.*world\!/), "The child view renders its content once");
+  ok(view.$().text().match(/Hello world!.*Goodbye.*wot.*cruel.*world\!/), "parent view should appear before the child view");
 });
 
 test("Ember.View should bind properties in the parent context", function() {
@@ -730,7 +730,7 @@ test("Template views add an elementId to child views created using the view help
   equal(view.$().children().first().children().first().attr('id'), get(childView, 'elementId'));
 });
 
-test("Template views set the template of their children to a passed block", function() {
+test("views set the template of their children to a passed block", function() {
   var templates = Ember.Object.create({
     parent: Ember.Handlebars.compile('<h1>{{#view "TemplateTests.NoTemplateView"}}<span>It worked!</span>{{/view}}</h1>')
   });
@@ -744,6 +744,47 @@ test("Template views set the template of their children to a passed block", func
 
   appendView();
   ok(view.$('h1:has(span)').length === 1, "renders the passed template inside the parent template");
+});
+
+test("views render their template in the context of the parent view's context", function() {
+  var templates = Ember.Object.create({
+    parent: Ember.Handlebars.compile('<h1>{{#with content}}{{#view}}{{firstName}} {{lastName}}{{/view}}{{/with}}</h1>')
+  });
+
+  view = Ember.View.create({
+    templates: templates,
+    templateName: 'parent',
+
+    content: {
+      firstName: "Lana",
+      lastName: "del Heeeyyyyyy"
+    }
+  });
+
+  appendView();
+  equal(view.$('h1').text(), "Lana del Heeeyyyyyy", "renders properties from parent context");
+});
+
+test("views make a view keyword available that allows template to reference view context", function() {
+  var templates = Ember.Object.create({
+    parent: Ember.Handlebars.compile('<h1>{{#with content}}{{#view subview}}{{view.firstName}} {{lastName}}{{/view}}{{/with}}</h1>')
+  });
+
+  view = Ember.View.create({
+    templates: templates,
+    templateName: 'parent',
+
+    content: {
+      subview: Ember.View.extend({
+        firstName: "Brodele"
+      }),
+      firstName: "Lana",
+      lastName: "del Heeeyyyyyy"
+    }
+  });
+
+  appendView();
+  equal(view.$('h1').text(), "Brodele del Heeeyyyyyy", "renders properties from parent context");
 });
 
 test("should warn if setting a template on a view with a templateName already specified", function() {
@@ -769,31 +810,6 @@ test("should warn if setting a template on a view with a templateName already sp
   raises(function() {
     appendView();
   }, Error, "raises if conflicting template and templateName are provided via a Handlebars template");
-});
-
-test("should pass hash arguments to the view object", function() {
-  TemplateTests.bindTestObject = Ember.Object.create({
-    bar: 'bat'
-  });
-
-  TemplateTests.HashArgTemplateView = Ember.View.extend({
-  });
-
-  Ember.run(function() {
-    view = Ember.View.create({
-      template: Ember.Handlebars.compile('{{#view TemplateTests.HashArgTemplateView fooBinding="TemplateTests.bindTestObject.bar"}}{{foo}}{{/view}}')
-    });
-
-    appendView();
-  });
-
-  equal(view.$().text(), "bat", "prints initial bound value");
-
-  Ember.run(function() {
-    set(TemplateTests.bindTestObject, 'bar', 'brains');
-  });
-
-  equal(view.$().text(), "brains", "prints updated bound value");
 });
 
 test("Child views created using the view helper should have their parent view set properly", function() {
@@ -1443,13 +1459,9 @@ test("should be able to log a property", function(){
 });
 
 test("should allow standard Handlebars template usage", function() {
-  TemplateTests.StandardTemplate = Ember.View.extend({
+  view = Ember.View.create({
     name: "Erik",
     template: Handlebars.compile("Hello, {{name}}")
-  });
-
-  view = Ember.View.create({
-    template: Ember.Handlebars.compile("{{view TemplateTests.StandardTemplate}}")
   });
 
   Ember.run(function() {
@@ -1760,7 +1772,7 @@ test("bindings should be relative to the current context", function() {
     }),
 
     museumView: Ember.View.extend({
-      template: Ember.Handlebars.compile('Name: {{name}} Price: ${{dollars}}')
+      template: Ember.Handlebars.compile('Name: {{view.name}} Price: ${{view.dollars}}')
     }),
 
     template: Ember.Handlebars.compile('{{#if museumOpen}} {{view museumView nameBinding="museumDetails.name" dollarsBinding="museumDetails.price"}} {{/if}}')
@@ -1785,7 +1797,7 @@ test("bindings should respect keywords", function() {
     },
 
     museumView: Ember.View.extend({
-      template: Ember.Handlebars.compile('Name: {{name}} Price: ${{dollars}}')
+      template: Ember.Handlebars.compile('Name: {{view.name}} Price: ${{view.dollars}}')
     }),
 
     template: Ember.Handlebars.compile('{{#if museumOpen}}{{view museumView nameBinding="controller.museumDetails.name" dollarsBinding="controller.museumDetails.price"}}{{/if}}')
@@ -1806,7 +1818,7 @@ test("bindings can be 'this', in which case they *are* the current context", fun
       name: "SFMoMA",
       price: 20,
       museumView: Ember.View.extend({
-        template: Ember.Handlebars.compile('Name: {{museum.name}} Price: ${{museum.price}}')
+        template: Ember.Handlebars.compile('Name: {{view.museum.name}} Price: ${{view.museum.price}}')
       })
     }),
 
@@ -1924,10 +1936,11 @@ test("should update bound values after the view is removed and then re-appended"
 test("should update bound values after view's parent is removed and then re-appended", function() {
   var parentView = Ember.ContainerView.create({
     childViews: ['testView'],
+    showStuff: true,
+    boundValue: "foo",
+
     testView: Ember.View.create({
-      template: Ember.Handlebars.compile("{{#if showStuff}}{{boundValue}}{{else}}Not true.{{/if}}"),
-      showStuff: true,
-      boundValue: "foo"
+      template: Ember.Handlebars.compile("{{#if showStuff}}{{boundValue}}{{else}}Not true.{{/if}}")
     })
   });
 
@@ -1938,28 +1951,28 @@ test("should update bound values after view's parent is removed and then re-appe
 
   equal(Ember.$.trim(view.$().text()), "foo");
   Ember.run(function() {
-    set(view, 'showStuff', false);
+    set(parentView, 'showStuff', false);
   });
   equal(Ember.$.trim(view.$().text()), "Not true.");
 
   Ember.run(function() {
-    set(view, 'showStuff', true);
+    set(parentView, 'showStuff', true);
   });
   equal(Ember.$.trim(view.$().text()), "foo");
 
   parentView.remove();
   Ember.run(function() {
-    set(view, 'showStuff', false);
+    set(parentView, 'showStuff', false);
   });
   Ember.run(function() {
-    set(view, 'showStuff', true);
+    set(parentView, 'showStuff', true);
   });
   Ember.run(function() {
     parentView.appendTo('#qunit-fixture');
   });
 
   Ember.run(function() {
-    set(view, 'boundValue', "bar");
+    set(parentView, 'boundValue', "bar");
   });
   equal(Ember.$.trim(view.$().text()), "bar");
 });

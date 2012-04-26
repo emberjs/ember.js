@@ -95,8 +95,8 @@ test("views that are removed from a ContainerView should have their child views 
     remove: function() {
       this._super();
     },
-    template: function(view) {
-      view.appendChild(Ember.View);
+    template: function(context, options) {
+      options.data.view.appendChild(Ember.View);
     }
   });
 

@@ -172,7 +172,7 @@ test("a block passed to a collection helper defaults to the content property of 
   });
 
   view = Ember.View.create({
-    template: Ember.Handlebars.compile('{{#collection "TemplateTests.CollectionTestView"}} <label>{{content}}</label> {{/collection}}')
+    template: Ember.Handlebars.compile('{{#collection "TemplateTests.CollectionTestView"}} <label>{{view.content}}</label> {{/collection}}')
   });
 
   Ember.run(function() {
@@ -189,7 +189,7 @@ test("a block passed to a collection helper defaults to the view", function() {
   });
 
   view = Ember.View.create({
-    template: Ember.Handlebars.compile('{{#collection "TemplateTests.CollectionTestView"}} <label>{{content}}</label> {{/collection}}')
+    template: Ember.Handlebars.compile('{{#collection "TemplateTests.CollectionTestView"}} <label>{{view.content}}</label> {{/collection}}')
   });
 
   Ember.run(function() {
@@ -275,7 +275,7 @@ test("should give its item views the property specified by itemPropertyBinding",
   var view = Ember.View.create({
     baz: "baz",
     content: Ember.A([Ember.Object.create(), Ember.Object.create(), Ember.Object.create()]),
-    template: Ember.Handlebars.compile('{{#collection contentBinding="content" tagName="ul" itemViewClass="TemplateTests.itemPropertyBindingTestItemView" itemPropertyBinding="baz" preserveContext=false}}{{property}}{{/collection}}')
+    template: Ember.Handlebars.compile('{{#collection contentBinding="content" tagName="ul" itemViewClass="TemplateTests.itemPropertyBindingTestItemView" itemPropertyBinding="baz" preserveContext=false}}{{view.property}}{{/collection}}')
   });
 
   Ember.run(function() {
@@ -346,7 +346,7 @@ test("should re-render when the content object changes", function() {
   });
 
   var view = Ember.View.create({
-    template: Ember.Handlebars.compile('{{#collection TemplateTests.RerenderTest}}{{content}}{{/collection}}')
+    template: Ember.Handlebars.compile('{{#collection TemplateTests.RerenderTest}}{{view.content}}{{/collection}}')
   });
 
   Ember.run(function() {
@@ -372,7 +372,7 @@ test("select tagName on collection helper automatically sets child tagName to op
   });
 
   var view = Ember.View.create({
-    template: Ember.Handlebars.compile('{{#collection TemplateTests.RerenderTest tagName="select"}}{{content}}{{/collection}}')
+    template: Ember.Handlebars.compile('{{#collection TemplateTests.RerenderTest tagName="select"}}{{view.content}}{{/collection}}')
   });
 
   Ember.run(function() {
@@ -389,7 +389,7 @@ test("tagName works in the #collection helper", function() {
   });
 
   var view = Ember.View.create({
-    template: Ember.Handlebars.compile('{{#collection TemplateTests.RerenderTest tagName="ol"}}{{content}}{{/collection}}')
+    template: Ember.Handlebars.compile('{{#collection TemplateTests.RerenderTest tagName="ol"}}{{view.content}}{{/collection}}')
   });
 
   Ember.run(function() {
