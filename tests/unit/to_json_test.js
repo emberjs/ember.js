@@ -145,7 +145,7 @@ test("toJSON includes associations when the association option is set", function
             "association is updated after editing associations array");
 });
 
-test("toJSON includes embedded associations when an association is embedded", function() {
+test("toJSON includes embedded associations correctly when a custom key is defined", function() {
   var PhoneNumber = DS.Model.extend({
     number: DS.attr('string')
   });
