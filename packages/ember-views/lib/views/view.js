@@ -608,7 +608,7 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     // we should return the className directly
     if (!!val && className) {
       return className;
-			
+
     // If value is a Boolean and true, return the dasherized property
     // name.
     } else if (val === true) {
@@ -703,6 +703,12 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     Note that this method just schedules the view to be appended; the DOM
     element will not be appended to the given element until all bindings have
     finished synchronizing.
+
+    This is not typically a function that you will need to call directly
+    when building your application. You might consider using Ember.ContainerView
+    instead. If you do need to use appendTo, be sure that the target element you
+    are providing is associated with an Ember.Application and does not have an
+    ancestor element that is associated with an Ember view.
 
     @param {String|DOMElement|jQuery} A selector, element, HTML string, or jQuery object
     @returns {Ember.View} receiver
