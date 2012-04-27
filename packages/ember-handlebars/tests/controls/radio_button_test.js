@@ -21,9 +21,9 @@ module("Ember.RadioButton", {
   }
 });
 
-function append() {
+function append(v) {
   Ember.run(function() {
-    rb.appendTo('#qunit-fixture');
+    v.appendTo('#qunit-fixture');
   });
 }
 
@@ -57,7 +57,7 @@ test("#isSelected by default returns false", function() {
 test("when #isSelected is false at render-time, the element 'checked' property should be false", function() {
   strictEqual(get(rb, "isSelected"), false, "precond - isSelected returns false");
 
-  append();
+  append(rb);
   strictEqual(rb.$().is(":checked"), false, "the element is not checked");
 });
 
@@ -65,12 +65,12 @@ test("when #isSelected is true at render-time, the element 'checked' property sh
   setAndFlush(rb, "isSelected", true);
   strictEqual(get(rb, "isSelected"), true, "precond - isSelected returns true");
 
-  append();
+  append(rb);
   strictEqual(rb.$().is(":checked"), true, "the element is checked");
 });
 
 test("#isSelected= when the element is in the DOM updates the element's 'checked' property accordingly", function() {
-  append();
+  append(rb);
 
   strictEqual(rb.$().is(":checked"), false, "precond - the element is not checked");
   setAndFlush(rb, "isSelected", true);
@@ -82,7 +82,7 @@ test("#isSelected= when the element is in the DOM updates the element's 'checked
 });
 
 test("listens for user interaction and updates the 'isSelected' properly accordingly on the view", function() {
-  append();
+  append(rb);
 
   strictEqual(rb.$().is(":checked"), false, "precond - the element is not checked");
   strictEqual(get(rb, "isSelected"), false, "precond - isSelected returns false");
@@ -296,4 +296,27 @@ test("watches for changes to 'isSelected' on the radio buttons and updates the s
   setAndFlush(deselectedButton, "isSelected", false);
 
   strictEqual(get(group, "selection"), null, "setting 'isSelected' on the selection to false changes the selection to null");
+});
+
+test("RadioButtonGroup as a view", function() {
+  group = Ember.RadioButtonGroup.create({
+    name: 'testName',
+    template: Ember.Handlebars.compile(
+      '{{ view RadioButton value="option1" }}' +
+      '{{ view RadioButton value="option2" }}'
+    )
+  });
+
+  append(group);
+
+  var option1 = group.buttonForValue('option1');
+  var option2 = group.buttonForValue('option2');
+
+  equal(option1.$().attr('name'), 'testName');
+  equal(option1.$().val(), 'option1');
+  equal(get(option1, 'group'), group);
+
+  equal(option2.$().attr('name'), 'testName');
+  equal(option2.$().val(), 'option2');
+  equal(get(option2, 'group'), group);
 });
