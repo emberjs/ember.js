@@ -97,7 +97,7 @@ test("listens for user interaction and updates the 'isSelected' properly accordi
   }
 
   ok(rb.$().is(":checked"), "after clicking a radio button, the checked property changed in the DOM.");
-  equals(get(rb, "isSelected"), true, "after clicking a radio button, the isSelected property changed in the view.");
+  equal(get(rb, "isSelected"), true, "after clicking a radio button, the isSelected property changed in the view.");
 });
 
 test("#group by default returns false", function() {
