@@ -437,6 +437,35 @@ test("finding many people by a list of IDs", function() {
   });
 });
 
+test("finding many people by a list of IDs doesn't rely on the returned array order matching the passed list of ids", function() {
+  store.load(Group, { id: 1, people: [ 1, 2, 3 ] });
+
+  var group = store.find(Group, 1);
+
+  var people = get(group, 'people');
+
+  ajaxHash.success({
+    people: [
+      { id: 2, name: "Tom Dale" },
+      { id: 1, name: "Rein Heinrichs" },
+      { id: 3, name: "Yehuda Katz" }
+    ]
+  });
+
+  var rein = people.objectAt(0);
+  equal(get(rein, 'name'), "Rein Heinrichs");
+  equal(get(rein, 'id'), 1);
+
+  var tom = people.objectAt(1);
+  equal(get(tom, 'name'), "Tom Dale");
+  equal(get(tom, 'id'), 2);
+
+  var yehuda = people.objectAt(2);
+  equal(get(yehuda, 'name'), "Yehuda Katz");
+  equal(get(yehuda, 'id'), 3);
+
+});
+
 test("additional data can be sideloaded in a GET with many IDs", function() {
   //store.load(Group, { id: 1, people: [ 1, 2, 3 ] });
 
