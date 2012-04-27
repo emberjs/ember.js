@@ -429,7 +429,7 @@ function processNames(paths, root, seen) {
 
 /** @private */
 function findNamespaces() {
-  var Namespace = Ember.Namespace, obj;
+  var Namespace = Ember.Namespace, obj, isNamespace;
 
   if (Namespace.PROCESSED) { return; }
 
@@ -440,13 +440,16 @@ function findNamespaces() {
     // Unfortunately, some versions of IE don't support window.hasOwnProperty
     if (window.hasOwnProperty && !window.hasOwnProperty(prop)) { continue; }
 
+    // At times we are not allowed to access certain properties for security reasons.
+    // There are also times where even if we can access them, we are not allowed to access their properties.
     try {
       obj = window[prop];
+      isNamespace = obj && get(obj, 'isNamespace');
     } catch (e) {
       continue;
     }
 
-    if (obj && get(obj, 'isNamespace')) {
+    if (isNamespace) {
       ember_deprecate("Namespaces should not begin with lowercase.", /^[A-Z]/.test(prop));
       obj[NAME_KEY] = prop;
     }
