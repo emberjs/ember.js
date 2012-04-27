@@ -14,7 +14,7 @@ var get = Ember.get, getPath = Ember.getPath, set = Ember.set, fmt = Ember.Strin
 Ember.RadioButton = Ember.View.extend(
 /** @scope Ember.RadioButton.prototype */ {
 
-  attributeBindings: ["isDisabled:disabled", "type"],
+  attributeBindings: ["isDisabled:disabled", "type", "name", "value"],
   classNames: ["ember-radio-button"],
 
   /**
@@ -35,6 +35,9 @@ Ember.RadioButton = Ember.View.extend(
 
   tagName: "input",
   type: "radio",
+  name: Ember.computed(function() {
+    return getPath(this, 'group.name');
+  }).property('group'),
 
   /** @private */
   init: function() {
@@ -207,7 +210,7 @@ Ember.RadioButton = Ember.View.extend(
 
   @extends Ember.Object
 */
-Ember.RadioButtonGroup = Ember.Object.extend(
+Ember.RadioButtonGroup = Ember.View.extend(
 /** @scope Ember.RadioButtonGroup.prototype */ {
 
   /**
@@ -217,9 +220,21 @@ Ember.RadioButtonGroup = Ember.Object.extend(
     @field
     @type Number
   */
+
+  classNames: ['ember-radio-button-group'],
+  attributeBindings: ['name:data-name'],
+
   numRadioButtons: Ember.computed(function() {
     return getPath(this, "_radioButtons.length");
   }).property("_radioButtons.length").cacheable(),
+
+  name: Ember.required(),
+
+  RadioButton: Ember.computed(function() {
+    return Ember.RadioButton.extend({
+      group: this
+    })
+  }),
 
   /**
     Contains a reference to the `value` property of the currently
@@ -240,7 +255,7 @@ Ember.RadioButtonGroup = Ember.Object.extend(
     // setter
     } else {
       if (!Ember.none(value)) {
-        var buttonForValue = get(this, "_radioButtons").findProperty("value", value);
+        var buttonForValue = this.buttonForValue(value);
 
         ember_assert(fmt("%@ - selectedValue can only be set to the value of a radio button in the group. You passed %@", [this, value]), !!buttonForValue);
 
@@ -250,6 +265,10 @@ Ember.RadioButtonGroup = Ember.Object.extend(
       }
     }
   }).property("selection").cacheable(),
+
+  buttonForValue: function(value) {
+    return get(this, "_radioButtons").findProperty("value", value);
+  },
 
   _selection: null,
 
