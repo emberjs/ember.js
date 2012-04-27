@@ -111,35 +111,22 @@ Ember.RadioButton = Ember.View.extend(
 });
 
 /**
-  @class A controller for a group of radio buttons.
+  @class A view for a group of radio buttons.
 
   ## Creating a RadioButtonGroup
 
-  You can create an instance of `Ember.RadioButtonGroup` like this:
+  You can create radio buttons like this:
 
-      #js
-      var App = Ember.Application.create();
-      App.group = Ember.RadioButtonGroup.create();
-
-  The group will not have any radio buttons associated with it by default.
-
-  ## Adding/Removing radio buttons
-
-  Adding radio buttons to a group is simple, just set the `group` property
-  of an `Ember.RadioButton` instance to the group.
-
-      <script type="text/x-handlebars">
-        {{view Ember.RadioButton groupBinding="App.group" value="1" isSelected="true"}}
-        {{view Ember.RadioButton groupBinding="App.group" value="2"}}
-        {{view Ember.RadioButton groupBinding="App.group" value="3"}}
-      </script>
-
-  To remove a radio button from a group, set the `group` property to `null`
-  or another instance of `Ember.RadioButtonGroup`.
-
-      #js
-      // removes the button from the group
-      rb.set("group", null);
+      #handlebars
+      {{#view Ember.RadioButtonGroup name="someName"}}
+        <label>
+          {{view RadioButton value="option1"}}
+          Option 1
+        </label>
+        <label>
+          {{view RadioButton value="option2"}}
+        </label>
+      {{/view}}
 
   ## Getting/Setting the selected radio button
 
@@ -200,15 +187,16 @@ Ember.RadioButton = Ember.View.extend(
 
       <script type="text/x-handlebars" data-template-name="question">
         <h2>{{question.content}}</h2>
+        {{#view Ember.RadioButtonGroup name="answer" selectedValueBinding="App.question.selectedAnswer"}}
         {{#each question.possibleAnswers}}
           <label>
-            {{view Ember.RadioButton groupBinding="group" valueBinding="value"}}
+            {{view RadioButton valueBinding="value"}}
             {{label}}
           </label>
         {{/each}}
       </script>
 
-  @extends Ember.Object
+  @extends Ember.View
 */
 Ember.RadioButtonGroup = Ember.View.extend(
 /** @scope Ember.RadioButtonGroup.prototype */ {
