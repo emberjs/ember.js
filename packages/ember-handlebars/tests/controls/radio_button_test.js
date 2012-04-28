@@ -1,5 +1,7 @@
 var get = Ember.get, getPath = Ember.getPath, set = Ember.set, group, rb, rb2, application;
 
+var msie = window.jQuery && window.jQuery.browser.msie;
+
 function setAndFlush(obj, key, value) {
   Ember.run(function() {
     set(obj, key, value);
@@ -89,7 +91,7 @@ test("listens for user interaction and updates the 'isSelected' properly accordi
 
   // Can't find a way to programatically trigger a checkbox in IE and have it generate the
   // same events as if a user actually clicks.
-  if (!jQuery.browser.msie) {
+  if (!msie) {
     rb.$()[0].click();
   } else {
     rb.$().trigger('click');

@@ -221,7 +221,7 @@ Ember.RadioButtonGroup = Ember.View.extend(
   RadioButton: Ember.computed(function() {
     return Ember.RadioButton.extend({
       group: this
-    })
+    });
   }),
 
   /**
