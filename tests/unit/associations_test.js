@@ -334,6 +334,27 @@ test("updating the content of a RecordArray updates its content", function() {
   equal(get(tag, 'name'), "smarmy", "the lookup was updated");
 });
 
+test("can create child record from a hasMany association", function() {
+  var Tag = DS.Model.extend({
+    name: DS.attr('string')
+  });
+
+  var Person = DS.Model.extend({
+    name: DS.attr('string'),
+    tags: DS.hasMany(Tag)
+  });
+
+  var store = DS.Store.create();
+  store.load(Person, 1, { id: 1, name: "Tom Dale"});
+
+  var person = store.find(Person, 1);
+  person.get("tags").createRecord({name:"cool"});
+
+  equal(get(person, 'name'), "Tom Dale", "precond - retrieves person record from store");
+  equal(getPath(person, 'tags.length'), 1, "tag is added to the parent record");
+  equal(get(person, 'tags').objectAt(0).get("name"), "cool", "tag values are passed along");
+});
+
 module("DS.belongsTo");
 
 test("belongsTo lazily loads associations as needed", function() {
