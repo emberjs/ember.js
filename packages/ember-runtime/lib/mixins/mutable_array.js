@@ -219,7 +219,7 @@ Ember.MutableArray = Ember.Mixin.create(Ember.Array, Ember.MutableEnumerable,
   */
   unshiftObjects: function(objects) {
     this.beginPropertyChanges();
-    forEach(objects, function(obj) { this.unshiftObject(obj); }, this);
+    forEach(objects.slice(0).reverse(), function(obj) { this.unshiftObject(obj); }, this);
     this.endPropertyChanges();
     return this;
   },
