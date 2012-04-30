@@ -17,7 +17,7 @@ suite.test("returns receiver", function() {
 });
 
 suite.test("[].unshiftObjects([A,B,C]) => [A,B,C] + notify", function() {
-  var obj, before, after, item, observer;
+  var obj, before, after, items, observer;
 
   before = [];
   items = this.newFixture(3);
@@ -37,7 +37,7 @@ suite.test("[].unshiftObjects([A,B,C]) => [A,B,C] + notify", function() {
 });
 
 suite.test("[A,B,C].unshiftObjects([X,Y,Z]) => [X,Y,Z,A,B,C] + notify", function() {
-  var obj, before, after, item, observer;
+  var obj, before, after, items, observer;
 
   before = this.newFixture(3);
   items = this.newFixture(3);
@@ -57,7 +57,7 @@ suite.test("[A,B,C].unshiftObjects([X,Y,Z]) => [X,Y,Z,A,B,C] + notify", function
 });
 
 suite.test("[A,B,C].unshiftObjects([A,B,C]) => [A,B,C,A,B,C] + notify", function() {
-  var obj, before, after, item, observer;
+  var obj, before, after, items, observer;
 
   before = this.newFixture(3);
   items = before; // note same objects as current. should end up twice
