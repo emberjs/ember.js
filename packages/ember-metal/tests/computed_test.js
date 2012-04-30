@@ -238,6 +238,19 @@ testBoth('cacheFor should return the cached value', function(get, set) {
   equal(Ember.cacheFor(obj, 'foo'), "bar 1", "should retrieve cached value");
 });
 
+testBoth('cacheFor should return falsy cached values', function(get, set) {
+
+  Ember.defineProperty(obj, 'falsy', Ember.computed(function() {
+    return false;
+  }).cacheable());
+
+  equal(Ember.cacheFor(obj, 'falsy'), undefined, "should not yet be a cached value");
+
+  get(obj, 'falsy');
+
+  equal(Ember.cacheFor(obj, 'falsy'), false, "should retrieve cached value");
+});
+
 // ..........................................................
 // DEPENDENT KEYS
 //
