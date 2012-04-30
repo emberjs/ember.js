@@ -1,6 +1,6 @@
 require('ember-handlebars/ext');
 
-var EmberHandlebars = Ember.Handlebars, getPath = EmberHandlebars.getPath;
+var EmberHandlebars = Ember.Handlebars, getPath = EmberHandlebars.getPath, get = Ember.get;
 
 var ActionHelper = EmberHandlebars.ActionHelper = {
   registeredActions: {}
@@ -148,10 +148,18 @@ EmberHandlebars.registerHelper('action', function(actionName, options) {
   var hash = options.hash || {},
       eventName = hash.on || "click",
       view = options.data.view,
-      target, context;
+      target, context, controller;
 
   if (view.isVirtual) { view = view.get('parentView'); }
-  target = hash.target ? getPath(this, hash.target, options) : view;
+
+  if (hash.target) {
+    target = getPath(this, hash.target, options);
+  } else if (controller = options.data.keywords.controller) {
+    target = get(controller, 'stateManager');
+  }
+
+  target = target || view;
+
   context = options.contexts[0];
 
   var actionId = ActionHelper.registerAction(actionName, eventName, target, view, context);
