@@ -204,6 +204,29 @@ var Binding = function(toPath, fromPath) {
 K.prototype = Binding.prototype;
 
 Binding.prototype = /** @scope Ember.Binding.prototype */ {
+  /**
+    This copies the Binding so it can be connected to another object.
+    @returns {Ember.Binding}
+  */
+  copy: function () {
+    var copy = new Binding(this._to, this._from);
+    if (this._oneWay) {
+      copy._oneWay = true;
+    }
+    if (this._transforms) {
+      copy._transforms = this._transforms.slice(0);
+    }
+    if (this._typeTransform) {
+      copy._typeTransform = this._typeTransform;
+      copy._placeholder = this._placeholder;
+    }
+    if (this._operand) {
+      copy._operand = this._operand;
+      copy._operation = this._operation;
+    }
+    return copy;
+  },
+
   // ..........................................................
   // CONFIG
   //

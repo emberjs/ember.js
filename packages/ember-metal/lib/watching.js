@@ -500,14 +500,6 @@ Ember.rewatch = function(obj) {
   // make sure any chained watchers update.
   if (chains && chains.value() !== obj) chainsFor(obj);
 
-  // if the object has bindings then sync them..
-  if (bindings && m.proto!==obj) {
-    for (key in bindings) {
-      b = !DEP_SKIP[key] && obj[key];
-      if (b && b instanceof Ember.Binding) b.fromDidChange(obj);
-    }
-  }
-
   return this;
 };
 

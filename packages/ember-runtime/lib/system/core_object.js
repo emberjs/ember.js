@@ -34,6 +34,7 @@ function makeCtor() {
       this.reopen.apply(this, initMixins);
       initMixins = null;
       rewatch(this); // always rewatch just in case
+      Ember.Mixin.finishPartial(this);
       this.init.apply(this, arguments);
     } else {
       if (hasChains) {
@@ -45,6 +46,7 @@ function makeCtor() {
       if (init===false) { init = this.init; } // cache for later instantiations
       Ember.GUID_DESC.value = undefined;
       o_defineProperty(this, '_super', Ember.GUID_DESC);
+      Ember.Mixin.finishPartial(this);
       init.apply(this, arguments);
     }
   };
