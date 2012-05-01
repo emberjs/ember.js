@@ -1,5 +1,5 @@
 /*global __fail__*/
-var root = Ember.root;
+var ROOT = Ember.ROOT;
 /**
   Define an assertion that will throw an exception if the condition is not
   met.  Ember build tools will remove any calls to ember_assert() when
@@ -31,7 +31,7 @@ var root = Ember.root;
     will be executed.  If the function returns false an exception will be
     thrown.
 */
-root.ember_assert = function ember_assert(desc, test) {
+ROOT.ember_assert = function ember_assert(desc, test) {
   if ('function' === typeof test) test = test()!==false;
   if (!test) throw new Error("assertion failed: "+desc);
 };
@@ -50,7 +50,7 @@ root.ember_assert = function ember_assert(desc, test) {
     An optional boolean or function. If the test returns false, the warning
     will be displayed.
 */
-root.ember_warn = function(message, test) {
+ROOT.ember_warn = function(message, test) {
   if (arguments.length === 1) { test = false; }
   if ('function' === typeof test) test = test()!==false;
   if (!test) console.warn("WARNING: "+message);
@@ -70,7 +70,7 @@ root.ember_warn = function(message, test) {
     An optional boolean or function. If the test returns false, the deprecation
     will be displayed.
 */
-root.ember_deprecate = function(message, test) {
+ROOT.ember_deprecate = function(message, test) {
   if (Ember && Ember.TESTING_DEPRECATION) { return; }
 
   if (arguments.length === 1) { test = false; }
@@ -119,9 +119,9 @@ root.ember_deprecate = function(message, test) {
   @param {Function} func
     The function to be deprecated.
 */
-root.ember_deprecateFunc = function(message, func) {
+ROOT.ember_deprecateFunc = function(message, func) {
   return function() {
-    root.ember_deprecate(message);
+    ROOT.ember_deprecate(message);
     return func.apply(this, arguments);
   };
 };
