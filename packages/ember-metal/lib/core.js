@@ -5,6 +5,8 @@
 // ==========================================================================
 /*globals Em:true ENV */
 
+var ROOT;
+
 if ('undefined' === typeof Ember) {
 /**
   @namespace
@@ -29,14 +31,21 @@ if ('undefined' === typeof Ember) {
 
 // Create core object. Make it act like an instance of Ember.Namespace so that
 // objects assigned to it are given a sane string representation.
-Ember = { isNamespace: true, toString: function() { return "Ember"; } };
+var Ember = { isNamespace: true, toString: function() { return "Ember"; } };
+
+ROOT = typeof window == 'undefined' ? typeof global == 'undefined' ? this : global : window;
 
 // aliases needed to keep minifiers from removing the global context
-if ('undefined' !== typeof window) {
-  window.Em = window.Ember = Em = Ember;
-}
+ROOT.Ember = ROOT.Em = Ember;
 
 }
+
+/**
+  @static
+  @type Object
+  @constant
+*/
+Ember.ROOT = ROOT;
 
 /**
   @static
@@ -160,15 +169,15 @@ Ember.K = function() { return this; };
 // Stub out the methods defined by the ember-debug package in case it's not loaded
 
 if ('undefined' === typeof ember_assert) {
-  window.ember_assert = Ember.K;
+  ROOT.ember_assert = Ember.K;
 }
 
-if ('undefined' === typeof ember_warn) { window.ember_warn = Ember.K; }
+if ('undefined' === typeof ember_warn) { ROOT.ember_warn = Ember.K; }
 
-if ('undefined' === typeof ember_deprecate) { window.ember_deprecate = Ember.K; }
+if ('undefined' === typeof ember_deprecate) { ROOT.ember_deprecate = Ember.K; }
 
 if ('undefined' === typeof ember_deprecateFunc) {
-  window.ember_deprecateFunc = function(_, func) { return func; };
+  ROOT.ember_deprecateFunc = function(_, func) { return func; };
 }
 
 // ..........................................................
@@ -178,7 +187,7 @@ if ('undefined' === typeof ember_deprecateFunc) {
 /**
   @class
 
-  Inside Ember-Metal, simply uses the window.console object.
+  Inside Ember-Metal, simply uses the ROOT.console object.
   Override this to provide more robust logging functionality.
 */
-Ember.Logger = window.console || { log: Ember.K, warn: Ember.K, error: Ember.K };
+Ember.Logger = ROOT.console || { log: Ember.K, warn: Ember.K, error: Ember.K };

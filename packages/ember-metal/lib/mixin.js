@@ -15,6 +15,7 @@ require('ember-metal/binding');
 
 var Mixin, MixinDelegate, REQUIRED, Alias;
 var classToString, superClassString;
+var ROOT = Ember.ROOT;
 
 var a_map = Ember.ArrayUtils.map;
 var a_indexOf = Ember.ArrayUtils.indexOf;
@@ -473,17 +474,17 @@ function findNamespaces() {
 
   if (Namespace.PROCESSED) { return; }
 
-  for (var prop in window) {
-    //  get(window.globalStorage, 'isNamespace') would try to read the storage for domain isNamespace and cause exception in Firefox.
+  for (var prop in ROOT) {
+    //  get(ROOT.globalStorage, 'isNamespace') would try to read the storage for domain isNamespace and cause exception in Firefox.
     // globalStorage is a storage obsoleted by the WhatWG storage specification. See https://developer.mozilla.org/en/DOM/Storage#globalStorage
-    if (prop === "globalStorage" && window.StorageList && window.globalStorage instanceof window.StorageList) { continue; }
-    // Unfortunately, some versions of IE don't support window.hasOwnProperty
-    if (window.hasOwnProperty && !window.hasOwnProperty(prop)) { continue; }
+    if (prop === "globalStorage" && ROOT.StorageList && ROOT.globalStorage instanceof ROOT.StorageList) { continue; }
+    // Unfortunately, some versions of IE don't support ROOT.hasOwnProperty
+    if (ROOT.hasOwnProperty && !ROOT.hasOwnProperty(prop)) { continue; }
 
     // At times we are not allowed to access certain properties for security reasons.
     // There are also times where even if we can access them, we are not allowed to access their properties.
     try {
-      obj = window[prop];
+      obj = ROOT[prop];
       isNamespace = obj && get(obj, 'isNamespace');
     } catch (e) {
       continue;

@@ -8,14 +8,16 @@
 require('ember-metal');
 
 var indexOf = Ember.ArrayUtils.indexOf;
+var ROOT = Ember.ROOT;
 
 // ........................................
 // GLOBAL CONSTANTS
 //
 
 // ensure no undefined errors in browsers where console doesn't exist
+// can this be removed? it's in ember-metal/core.js
 if (typeof console === 'undefined') {
-  window.console = {};
+  ROOT.console = {};
   console.log = console.info = console.warn = console.error = function() {};
 }
 
