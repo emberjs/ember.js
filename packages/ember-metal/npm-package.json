@@ -1,0 +1,10 @@
+{
+  "name": "ember-metal",
+  "description": "JavaScript on Steroids",
+  "summary": "JavaScript on Steroids",
+  "homepage": "http://github.com/emberjs/ember.js",
+  "author": "Charles Jolley",
+  "version": "0.9.7-1",
+  "main": "./index.js",
+  "dependencies": {}
+}
