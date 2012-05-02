@@ -226,23 +226,32 @@ test("modified records are reset when their transaction is rolled back", functio
   store.load(Person, { id: 1, name: "Scumbag Tom" });
   store.load(Person, { id: 2, name: "Scumbag Carl" });
   store.load(Person, { id: 3, name: "Scumbag André" });
+  store.load(Person, { id: 4, name: "Scumbag Paul" });
 
   var updatedPerson = store.find(Person, 1);
   var deletedPerson = store.find(Person, 2);
   var anotherUpdatedPerson = store.find(Person, 3);
+  var invalidPerson = store.find(Person, 4);
 
   var transaction = store.transaction();
   transaction.add(updatedPerson);
   transaction.add(deletedPerson);
   transaction.add(anotherUpdatedPerson);
+  transaction.add(invalidPerson);
 
   var newPerson = transaction.createRecord(Person, {
     name: "Scumbag Yehuda"
   });
+  var anotherInvalidPerson = transaction.createRecord(Person, {});
 
   updatedPerson.set('name', "Scumbag Patrick");
   anotherUpdatedPerson.set('name', "Scumbag Leah");
   deletedPerson.deleteRecord();
+  invalidPerson.set('name', null);
+  invalidPerson.send('willCommit');
+  store.recordWasInvalid(invalidPerson, {name: 'no name!'});
+  anotherInvalidPerson.send('willCommit');
+  store.recordWasInvalid(anotherInvalidPerson, {name: 'no name!'});
 
   equal(updatedPerson.get('isDirty'), true, "precond - Record is marked as dirty when changed");
   equal(updatedPerson.get('name'), "Scumbag Patrick", "precond - Record has been changed to the value we set");
@@ -252,6 +261,11 @@ test("modified records are reset when their transaction is rolled back", functio
   equal(newPerson.get('isNew'), true, "precond - new record is marked as new");
   equal(deletedPerson.get('isDirty'), true, "precond - deleted record is marked as dirty when deleted");
   equal(deletedPerson.get('isDeleted'), true, "precond - deleted record is marked as deleted");
+  equal(invalidPerson.get('isDirty'), true, "precond - invalid record is marked as dirty");
+  equal(invalidPerson.get('isValid'), false, "precond - invalid record is marked as invalid");
+  equal(anotherInvalidPerson.get('isDirty'), true, "precond - invalid record is marked as dirty");
+  equal(anotherInvalidPerson.get('isNew'), true, "precond - invalid record is marked as dirty");
+  equal(anotherInvalidPerson.get('isValid'), false, "precond - invalid record is marked as invalid");
 
   transaction.rollback();
 
@@ -263,10 +277,16 @@ test("modified records are reset when their transaction is rolled back", functio
   equal(newPerson.get('isDeleted'), true, "created records are deleted when their transaction is rolled back");
   equal(deletedPerson.get('isDirty'), false, "deleted record is no longer considered dirty");
   equal(deletedPerson.get('isDeleted'), false, "deleted record is no longer considered deleted");
+  equal(invalidPerson.get('isDirty'), false, "invalid record is no longer considered dirty");
+  equal(invalidPerson.get('name'), "Scumbag Paul", "Record has previously loaded name");
+  equal(invalidPerson.get('isValid'), true, "invalid record is marked as valid");
+  equal(anotherInvalidPerson.get('isValid'), true, "invalid record is marked as valid");
+  equal(anotherInvalidPerson.get('isDeleted'), true, "created records are deleted when their transaction is rolled back");
 
   equal(get(newPerson, 'transaction'), get(store, 'defaultTransaction'), "record should have been moved back to the default transaction");
   equal(get(updatedPerson, 'transaction'), get(store, 'defaultTransaction'), "record should have been moved back to the default transaction");
   equal(get(anotherUpdatedPerson, 'transaction'), get(store, 'defaultTransaction'), "record should have been moved back to the default transaction");
   equal(get(deletedPerson, 'transaction'), get(store, 'defaultTransaction'), "record should have been moved back to the default transaction");
+  equal(get(invalidPerson, 'transaction'), get(store, 'defaultTransaction'), "record should have been moved back to the default transaction");
 });
 
