@@ -659,3 +659,43 @@ test("the filter method can optionally take a server query as well", function() 
   equal(get(filter, 'length'), 1, "The filter has an item in it");
   deepEqual(filter.toArray(), [ tom ], "The filter has a single entry in it");
 });
+
+test("can rollback after sucessives updates", function() {
+  store.load(Person, 1, {name: "Paul Chavard"});
+  store.set('adapter', 'App.adapter');
+  adapter.updateRecord = function(store, type, record) {
+    store.didUpdateRecord(record);
+  };
+  // Expose the adapter to global namespace
+  window.App = {adapter: adapter};
+
+  var person = store.find(Person, 1);
+
+  equal(person.get('name'), "Paul Chavard", "person has a name defined");
+
+  person.set('name', 'Paul Bro');
+
+  equal(person.get('name'), "Paul Bro", "person changed the name");
+
+  person.get('transaction').rollback();
+
+  equal(person.get('name'), "Paul Chavard", "person name is back to Paul Chavard");
+
+  person.set('name', 'Paul Bro');
+  equal(person.get('name'), "Paul Bro", "person changed the name");
+  equal(person.get('isDirty'), true, "person is dirty");
+
+  person.get('transaction').commit();
+
+  equal(person.get('isDirty'), false, "person is not dirty");
+  equal(person.get('name'), "Paul Bro", "person changed the name");
+
+  person.set('name', 'Paul BroBro');
+  equal(person.get('name'), "Paul BroBro", "person changed the name again");
+  equal(person.get('isDirty'), true, "person is dirty");
+
+  person.get('transaction').rollback();
+
+  equal(person.get('isDirty'), false, "person is not dirty");
+  equal(person.get('name'), "Paul Bro", "person changed the name back to Paul Bro");
+});
