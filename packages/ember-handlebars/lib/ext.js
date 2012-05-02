@@ -29,19 +29,8 @@ require("ember-views/system/render_buffer");
   Ember's get() method instead of direct property access, which allows
   computed properties to be used inside templates.
 
-  To use Ember.Handlebars, call Ember.Handlebars.compile().  This will return a
-  function that you can call multiple times, with a context object as the first
-  parameter:
-
-      var template = Ember.Handlebars.compile("my {{cool}} template");
-      var result = template({
-        cool: "awesome"
-      });
-
-      console.log(result); // prints "my awesome template"
-
-  Note that you won't usually need to use Ember.Handlebars yourself. Instead, use
-  Ember.View, which takes care of integration into the view layer for you.
+  To create an Ember.Handlebars template, call Ember.Handlebars.compile().  This will
+  return a function that can be used by Ember.View for rendering.
 */
 Ember.Handlebars = Ember.create(Handlebars);
 
