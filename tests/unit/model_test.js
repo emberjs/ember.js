@@ -351,6 +351,40 @@ test("when a new record depends on the state of another record, it enters the pe
   equal(get(childComment, 'isPending'), false, "Child comment is no longer pending on the parent comment");
 });
 
+test("when a new record depends on the state of another record which depends on the state of another record, it enters the pending state", function() {
+  var id = 0;
+
+  var store = DS.Store.create({
+    adapter: DS.Adapter.create({
+      createRecord: function(store, type, record) {
+        var hash = record.toJSON();
+        hash.id = ++id;
+        store.didCreateRecord(record, hash);
+      }
+    })
+  });
+  var Comment = DS.Model.extend();
+
+  var parentComment = store.createRecord(Comment);
+  var childComment = store.createRecord(Comment);
+  var grandchildComment = store.createRecord(Comment);
+
+  childComment.waitingOn(parentComment);
+  grandchildComment.waitingOn(childComment);
+
+  equal(get(childComment, 'isPending'), true, "Child comment is pending on the parent comment");
+  equal(get(grandchildComment, 'isPending'), true, "Grandchild comment is pending on the child comment");
+
+  Ember.run(function() {
+    store.commit();
+  });
+
+  equal(get(parentComment, 'isLoaded'), true, "precond - Parent comment is loaded");
+  equal(get(parentComment, 'isDirty'), false, "precond - Parent comment is not dirty");
+  equal(get(childComment, 'isPending'), false, "Child comment is no longer pending on the parent comment");
+  equal(get(grandchildComment, 'isPending'), false, "Second level comment is on its parent comment");
+});
+
 test("when an updated record depends on the state of another record, it enters the pending state", function() {
   var id = 0,
       parentComment;
