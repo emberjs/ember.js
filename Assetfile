@@ -9,13 +9,13 @@ class EmberExportsFilter < Rake::Pipeline::Filter
       result = File.read(input.fullpath)
       output.write <<END
 (function() {
-  var exports = ('function' === typeof define) ? {} : window,
+  var exports = (typeof define === 'function' && define.amd) ? {} : window,
       Ember;
 
   #{result}
 
-  if ('function' === typeof define) {
-    define("ember", [], function() { return exports; });
+  if (typeof define === 'function' && define.amd) {
+    define(function() { return exports; });
   }
 })();
 END
