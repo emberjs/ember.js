@@ -82,7 +82,7 @@ var EmberHandlebars = Ember.Handlebars, helpers = EmberHandlebars.helpers;
     @returns {String} HTML string
   */
   EmberHandlebars.registerHelper('_triageMustache', function(property, fn) {
-    ember_assert("You cannot pass more than one argument to the _triageMustache helper", arguments.length <= 2);
+    Ember.assert("You cannot pass more than one argument to the _triageMustache helper", arguments.length <= 2);
     if (helpers[property]) {
       return helpers[property].call(this, fn);
     }
@@ -112,7 +112,7 @@ var EmberHandlebars = Ember.Handlebars, helpers = EmberHandlebars.helpers;
     @returns {String} HTML string
   */
   EmberHandlebars.registerHelper('bind', function(property, fn) {
-    ember_assert("You cannot pass more than one argument to the bind helper", arguments.length <= 2);
+    Ember.assert("You cannot pass more than one argument to the bind helper", arguments.length <= 2);
 
     var context = (fn.contexts && fn.contexts[0]) || this;
 
@@ -156,8 +156,8 @@ var EmberHandlebars = Ember.Handlebars, helpers = EmberHandlebars.helpers;
   @returns {String} HTML string
 */
 EmberHandlebars.registerHelper('with', function(context, options) {
-  ember_assert("You must pass exactly one argument to the with helper", arguments.length === 2);
-  ember_assert("You must pass a block to the with helper", options.fn && options.fn !== Handlebars.VM.noop);
+  Ember.assert("You must pass exactly one argument to the with helper", arguments.length === 2);
+  Ember.assert("You must pass a block to the with helper", options.fn && options.fn !== Handlebars.VM.noop);
 
   return helpers.bind.call(options.contexts[0], context, options);
 });
@@ -170,8 +170,8 @@ EmberHandlebars.registerHelper('with', function(context, options) {
   @returns {String} HTML string
 */
 EmberHandlebars.registerHelper('if', function(context, options) {
-  ember_assert("You must pass exactly one argument to the if helper", arguments.length === 2);
-  ember_assert("You must pass a block to the if helper", options.fn && options.fn !== Handlebars.VM.noop);
+  Ember.assert("You must pass exactly one argument to the if helper", arguments.length === 2);
+  Ember.assert("You must pass a block to the if helper", options.fn && options.fn !== Handlebars.VM.noop);
 
   return helpers.boundIf.call(options.contexts[0], context, options);
 });
@@ -183,8 +183,8 @@ EmberHandlebars.registerHelper('if', function(context, options) {
   @returns {String} HTML string
 */
 EmberHandlebars.registerHelper('unless', function(context, options) {
-  ember_assert("You must pass exactly one argument to the unless helper", arguments.length === 2);
-  ember_assert("You must pass a block to the unless helper", options.fn && options.fn !== Handlebars.VM.noop);
+  Ember.assert("You must pass exactly one argument to the unless helper", arguments.length === 2);
+  Ember.assert("You must pass a block to the unless helper", options.fn && options.fn !== Handlebars.VM.noop);
 
   var fn = options.fn, inverse = options.inverse;
 
@@ -208,7 +208,7 @@ EmberHandlebars.registerHelper('bindAttr', function(options) {
 
   var attrs = options.hash;
 
-  ember_assert("You must specify at least one hash argument to bindAttr", !!Ember.keys(attrs).length);
+  Ember.assert("You must specify at least one hash argument to bindAttr", !!Ember.keys(attrs).length);
 
   var view = options.data.view;
   var ret = [];
@@ -234,12 +234,12 @@ EmberHandlebars.registerHelper('bindAttr', function(options) {
   forEach(attrKeys, function(attr) {
     var property = attrs[attr];
 
-    ember_assert(fmt("You must provide a String for a bound attribute, not %@", [property]), typeof property === 'string');
+    Ember.assert(fmt("You must provide a String for a bound attribute, not %@", [property]), typeof property === 'string');
 
     var value = (property === 'this') ? ctx : getPath(ctx, property, options),
         type = Ember.typeOf(value);
 
-    ember_assert(fmt("Attributes must be numbers, strings or booleans, not %@", [value]), value === null || value === undefined || type === 'number' || type === 'string' || type === 'boolean');
+    Ember.assert(fmt("Attributes must be numbers, strings or booleans, not %@", [value]), value === null || value === undefined || type === 'number' || type === 'string' || type === 'boolean');
 
     var observer, invoker;
 
@@ -247,7 +247,7 @@ EmberHandlebars.registerHelper('bindAttr', function(options) {
     observer = function observer() {
       var result = getPath(ctx, property, options);
 
-      ember_assert(fmt("Attributes must be numbers, strings or booleans, not %@", [result]), result === null || result === undefined || typeof result === 'number' || typeof result === 'string' || typeof result === 'boolean');
+      Ember.assert(fmt("Attributes must be numbers, strings or booleans, not %@", [result]), result === null || result === undefined || typeof result === 'number' || typeof result === 'string' || typeof result === 'boolean');
 
       var elem = view.$("[data-bindattr-" + dataId + "='" + dataId + "']");
 
