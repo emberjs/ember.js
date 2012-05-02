@@ -1,4 +1,4 @@
-var get = Ember.get, set = Ember.set, getPath = Ember.getPath;
+var get = Ember.get, set = Ember.set, getPath = Ember.getPath, ROOT = Ember.ROOT;
 
 Ember.TargetActionSupport = Ember.Mixin.create({
   target: null,
@@ -10,7 +10,7 @@ Ember.TargetActionSupport = Ember.Mixin.create({
     if (Ember.typeOf(target) === "string") {
       // TODO: Remove the false when deprecation is done
       var value = getPath(this, target, false);
-      if (value === undefined) { value = getPath(window, target); }
+      if (value === undefined) { value = getPath(ROOT, target); }
       return value;
     } else {
       return target;

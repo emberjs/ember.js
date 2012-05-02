@@ -14,6 +14,7 @@ var AFTER_OBSERVERS = ':change';
 var BEFORE_OBSERVERS = ':before';
 var guidFor = Ember.guidFor;
 var normalizePath = Ember.normalizePath;
+var ROOT = Ember.ROOT;
 
 var deferred = 0;
 var array_Slice = Array.prototype.slice;
@@ -160,7 +161,7 @@ function xformForArgs(args) {
     var obj = params[0], keyName = changeKey(params[1]), val;
     var copy_args = args.slice();
     if (method.length>2) {
-      val = Ember.getPath(Ember.isGlobalPath(keyName) ? window : obj, keyName);
+      val = Ember.getPath(Ember.isGlobalPath(keyName) ? ROOT : obj, keyName);
     }
     copy_args.unshift(obj, keyName, val);
     method.apply(target, copy_args);
