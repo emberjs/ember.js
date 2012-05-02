@@ -4,7 +4,7 @@
   "description": "A semantic templating language for JavaScript",
   "homepage": "http://www.handlebarsjs.com",
   "author": "Yehuda Katz",
-  "version": "1.0.0.beta.3",
+  "version": "1.0.0.beta.6",
 
   "directories": {
     "lib": "lib"
