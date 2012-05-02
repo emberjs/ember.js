@@ -827,6 +827,10 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     return this.invokeForState('rerender');
   },
 
+  templateDidChange: Ember.observer(function() {
+    this.rerender();
+  }, 'template'),
+
   clearRenderedChildren: function() {
     var lengthBefore = this.lengthBeforeRender,
         lengthAfter  = this.lengthAfterRender;
