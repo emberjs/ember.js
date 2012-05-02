@@ -5,7 +5,7 @@
 // ==========================================================================
 
 require('ember-handlebars/ext');
-require('ember-handlebars/views/bindable_span');
+require('ember-handlebars/views/handlebars_bound_view');
 require('ember-handlebars/views/metamorph_view');
 
 var get = Ember.get, getPath = Ember.Handlebars.getPath, set = Ember.set, fmt = Ember.String.fmt;
@@ -33,8 +33,8 @@ var EmberHandlebars = Ember.Handlebars, helpers = EmberHandlebars.helpers;
     if ('object' === typeof this) {
       // Create the view that will wrap the output of this template/property
       // and add it to the nearest view's childViews array.
-      // See the documentation of Ember._BindableSpanView for more.
-      var bindView = view.createChildView(Ember._BindableSpanView, {
+      // See the documentation of Ember._HandlebarsBoundView for more.
+      var bindView = view.createChildView(Ember._HandlebarsBoundView, {
         preserveContext: preserveContext,
         shouldDisplayFunc: shouldDisplay,
         valueNormalizerFunc: valueNormalizer,
