@@ -290,3 +290,23 @@ test("modified records are reset when their transaction is rolled back", functio
   equal(get(invalidPerson, 'transaction'), get(store, 'defaultTransaction'), "record should have been moved back to the default transaction");
 });
 
+test("modified records are reset when their transaction is rolled back", function() {
+  var store = DS.Store.create();
+
+  store.load(Person, { id: 1, name: "Scumbag Tom" });
+
+  var person = store.find(Person, 1);
+
+  var transaction = store.transaction();
+  transaction.add(person);
+
+  person.set('name', 'toto');
+
+  store.recordWasInvalid(person, {name: 'error'});
+
+  equal(person.get('isValid'), false, "precond - invalid record is marked as invalid");
+
+  transaction.rollback();
+
+  equal(person.get('isValid'), true, "invalid record is now marked as valid");
+});
