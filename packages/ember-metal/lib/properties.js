@@ -3,7 +3,6 @@
 // Copyright: ©2011 Strobe Inc. and contributors.
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
-/*globals ember_assert */
 
 require('ember-metal/core');
 require('ember-metal/platform');
@@ -148,16 +147,16 @@ Dp.val = function(obj, keyName) {
 if (!USE_ACCESSORS) {
   Ember.Descriptor.MUST_USE_GETTER = function() {
     if (this instanceof Ember.Object) {
-      ember_assert('Must use Ember.get() to access this property', false);
+      Ember.assert('Must use Ember.get() to access this property', false);
     }
   };
 
   Ember.Descriptor.MUST_USE_SETTER = function() {
     if (this instanceof Ember.Object) {
       if (this.isDestroyed) {
-        ember_assert('You cannot set observed properties on destroyed objects', false);
+        Ember.assert('You cannot set observed properties on destroyed objects', false);
       } else {
-        ember_assert('Must use Ember.set() to access this property', false);
+        Ember.assert('Must use Ember.set() to access this property', false);
       }
     }
   };

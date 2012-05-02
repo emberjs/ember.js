@@ -31,7 +31,7 @@ test("a Metamorph view is not a view's parentView", function() {
     }
   });
 
-  metamorphView = Ember.View.create(Ember.Metamorph, {
+  metamorphView = Ember._MetamorphView.create({
     render: function(buffer) {
       buffer.push("<h2>Meta</h2>");
       this.appendChild(childView);
@@ -59,7 +59,7 @@ module("Metamorph views correctly handle DOM", {
       }
     });
 
-    metamorphView = Ember.View.create(Ember.Metamorph, {
+    metamorphView = Ember._MetamorphView.create({
       powerRanger: "Jason",
 
       render: function(buffer) {

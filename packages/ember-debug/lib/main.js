@@ -1,8 +1,12 @@
 /*global __fail__*/
 
+if ('undefined' === typeof Ember) {
+  Ember = {};
+}
+
 /**
   Define an assertion that will throw an exception if the condition is not
-  met.  Ember build tools will remove any calls to ember_assert() when
+  met.  Ember build tools will remove any calls to Ember.assert() when
   doing a production build.
 
   ## Examples
@@ -10,11 +14,11 @@
       #js:
 
       // pass a simple Boolean value
-      ember_assert('must pass a valid object', !!obj);
+      Ember.assert('must pass a valid object', !!obj);
 
       // pass a function.  If the function returns false the assertion fails
       // any other return value (including void) will pass.
-      ember_assert('a passed record must have a firstName', function() {
+      Ember.assert('a passed record must have a firstName', function() {
         if (obj instanceof Ember.Record) {
           return !Ember.empty(obj.firstName);
         }
@@ -31,7 +35,7 @@
     will be executed.  If the function returns false an exception will be
     thrown.
 */
-window.ember_assert = function ember_assert(desc, test) {
+Ember.assert = function(desc, test) {
   if ('function' === typeof test) test = test()!==false;
   if (!test) throw new Error("assertion failed: "+desc);
 };
@@ -39,7 +43,7 @@ window.ember_assert = function ember_assert(desc, test) {
 
 /**
   Display a warning with the provided message. Ember build tools will
-  remove any calls to ember_warn() when doing a production build.
+  remove any calls to Ember.warn() when doing a production build.
 
   @static
   @function
@@ -50,7 +54,7 @@ window.ember_assert = function ember_assert(desc, test) {
     An optional boolean or function. If the test returns false, the warning
     will be displayed.
 */
-window.ember_warn = function(message, test) {
+Ember.warn = function(message, test) {
   if (arguments.length === 1) { test = false; }
   if ('function' === typeof test) test = test()!==false;
   if (!test) console.warn("WARNING: "+message);
@@ -59,7 +63,7 @@ window.ember_warn = function(message, test) {
 /**
   Display a deprecation warning with the provided message and a stack trace
   (Chrome and Firefox only). Ember build tools will remove any calls to
-  ember_deprecate() when doing a production build.
+  Ember.deprecate() when doing a production build.
 
   @static
   @function
@@ -70,7 +74,7 @@ window.ember_warn = function(message, test) {
     An optional boolean or function. If the test returns false, the deprecation
     will be displayed.
 */
-window.ember_deprecate = function(message, test) {
+Ember.deprecate = function(message, test) {
   if (Ember && Ember.TESTING_DEPRECATION) { return; }
 
   if (arguments.length === 1) { test = false; }
@@ -111,6 +115,9 @@ window.ember_deprecate = function(message, test) {
   Display a deprecation warning with the provided message and a stack trace
   (Chrome and Firefox only) when the wrapped method is called.
 
+  Ember build tools will not remove calls to Ember.deprecateFunc(), though
+  no warnings will be shown in production.
+
   @static
   @function
   @param {String} message
@@ -119,9 +126,15 @@ window.ember_deprecate = function(message, test) {
   @param {Function} func
     The function to be deprecated.
 */
-window.ember_deprecateFunc = function(message, func) {
+Ember.deprecateFunc = function(message, func) {
   return function() {
-    window.ember_deprecate(message);
+    Ember.deprecate(message);
     return func.apply(this, arguments);
   };
 };
+
+
+window.ember_assert         = Ember.deprecateFunc("ember_assert is deprecated. Please use Ember.assert instead.",               Ember.assert);
+window.ember_warn           = Ember.deprecateFunc("ember_warn is deprecated. Please use Ember.warn instead.",                   Ember.warn);
+window.ember_deprecate      = Ember.deprecateFunc("ember_deprecate is deprecated. Please use Ember.deprecate instead.",         Ember.deprecate);
+window.ember_deprecateFunc  = Ember.deprecateFunc("ember_deprecateFunc is deprecated. Please use Ember.deprecateFunc instead.", Ember.deprecateFunc);

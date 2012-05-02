@@ -3,7 +3,7 @@
 // Copyright: ©2011 Strobe Inc. and contributors.
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
-/*globals Handlebars ember_assert */
+/*globals Handlebars */
 
 // TODO: Don't require all of this module
 require('ember-handlebars');
@@ -124,9 +124,9 @@ Ember.Handlebars.registerHelper('collection', function(path, options) {
   if (path && path.data && path.data.isRenderData) {
     options = path;
     path = undefined;
-    ember_assert("You cannot pass more than one argument to the collection helper", arguments.length === 1);
+    Ember.assert("You cannot pass more than one argument to the collection helper", arguments.length === 1);
   } else {
-    ember_assert("You cannot pass more than one argument to the collection helper", arguments.length === 2);
+    Ember.assert("You cannot pass more than one argument to the collection helper", arguments.length === 2);
   }
 
   var fn = options.fn;
@@ -137,7 +137,7 @@ Ember.Handlebars.registerHelper('collection', function(path, options) {
   // Otherwise, just default to the standard class.
   var collectionClass;
   collectionClass = path ? getPath(this, path, options) : Ember.CollectionView;
-  ember_assert(fmt("%@ #collection: Could not find %@", data.view, path), !!collectionClass);
+  Ember.assert(fmt("%@ #collection: Could not find %@", data.view, path), !!collectionClass);
 
   var hash = options.hash, itemHash = {}, match;
 
@@ -146,7 +146,7 @@ Ember.Handlebars.registerHelper('collection', function(path, options) {
   var collectionPrototype = collectionClass.proto();
   delete hash.itemViewClass;
   itemViewClass = itemViewPath ? getPath(collectionPrototype, itemViewPath, options) : collectionPrototype.itemViewClass;
-  ember_assert(fmt("%@ #collection: Could not find %@", data.view, itemViewPath), !!itemViewClass);
+  Ember.assert(fmt("%@ #collection: Could not find %@", data.view, itemViewPath), !!itemViewClass);
 
   // Go through options passed to the {{collection}} helper and extract options
   // that configure item views instead of the collection itself.

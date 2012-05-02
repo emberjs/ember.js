@@ -145,7 +145,7 @@ if (!platform.defineProperty) {
   platform.hasPropertyAccessors = false;
 
   platform.defineProperty = function(obj, keyName, desc) {
-    ember_assert("property descriptor cannot have `get` or `set` on this platform", !desc.get && !desc.set);
+    Ember.assert("property descriptor cannot have `get` or `set` on this platform", !desc.get && !desc.set);
     obj[keyName] = desc.value;
   };
 

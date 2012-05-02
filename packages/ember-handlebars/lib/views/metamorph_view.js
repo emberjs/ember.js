@@ -55,7 +55,7 @@ var DOMManager = {
 // The `morph` and `outerHTML` properties are internal only
 // and not observable.
 
-Ember.Metamorph = Ember.Mixin.create({
+Ember._Metamorph = Ember.Mixin.create({
   isVirtual: true,
   tagName: '',
 
@@ -80,4 +80,6 @@ Ember.Metamorph = Ember.Mixin.create({
 
   domManager: DOMManager
 });
+
+Ember._MetamorphView = Ember.View.extend(Ember._Metamorph);
 

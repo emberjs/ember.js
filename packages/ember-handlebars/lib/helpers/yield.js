@@ -53,7 +53,7 @@ Ember.Handlebars.registerHelper('yield', function(options) {
     view = get(view, 'parentView');
   }
 
-  ember_assert("You called yield in a template that was not a layout", !!view);
+  Ember.assert("You called yield in a template that was not a layout", !!view);
 
   template = get(view, 'template');
 

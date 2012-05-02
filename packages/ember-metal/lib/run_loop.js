@@ -4,7 +4,6 @@
 //            Portions ©2008-2010 Apple Inc. All rights reserved.
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
-/*globals ember_assert */
 
 require('ember-metal/core'); // Ember.Logger
 require('ember-metal/watching'); // Ember.watch.flushPending
@@ -258,7 +257,7 @@ Ember.run.begin = function() {
   @returns {void}
 */
 Ember.run.end = function() {
-  ember_assert('must have a current run loop', run.currentRunLoop);
+  Ember.assert('must have a current run loop', run.currentRunLoop);
   try {
     run.currentRunLoop.end();
   }
@@ -610,7 +609,7 @@ Ember.run.cancel = function(timer) {
 
   Use `#js:Ember.run.begin()` instead
 */
-Ember.RunLoop.begin = ember_deprecateFunc("Use Ember.run.begin instead of Ember.RunLoop.begin.", Ember.run.begin);
+Ember.RunLoop.begin = Ember.deprecateFunc("Use Ember.run.begin instead of Ember.RunLoop.begin.", Ember.run.begin);
 
 /**
   @deprecated
@@ -618,6 +617,6 @@ Ember.RunLoop.begin = ember_deprecateFunc("Use Ember.run.begin instead of Ember.
 
   Use `#js:Ember.run.end()` instead
 */
-Ember.RunLoop.end = ember_deprecateFunc("Use Ember.run.end instead of Ember.RunLoop.end.", Ember.run.end);
+Ember.RunLoop.end = Ember.deprecateFunc("Use Ember.run.end instead of Ember.RunLoop.end.", Ember.run.end);
 
 
