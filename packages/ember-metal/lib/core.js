@@ -7,6 +7,7 @@
 
 if ('undefined' === typeof exports) { exports = window; }
 
+if ('undefined' === typeof Ember) {
 /**
   @namespace
   @name Ember
@@ -32,13 +33,19 @@ if ('undefined' === typeof exports) { exports = window; }
 // objects assigned to it are given a sane string representation.
 Ember = {};
 
-exports.Em = exports.Ember = Ember;
+}
+
 
 // Make sure these are set whether Ember was already defined or not
 
 Ember.isNamespace = true;
 
 Ember.toString = function() { return "Ember"; };
+
+
+// Export Ember
+
+exports.Em = exports.Ember = Ember;
 
 
 /**
