@@ -136,7 +136,7 @@ var get = Ember.get, set = Ember.set, getPath = Ember.getPath, fmt = Ember.Strin
           enter: function(manager, transition){
             // calling _super ensures this view will be
             // properly inserted
-            this._super();
+            this._super(manager, transition);
 
             // now you can do other things
           }
