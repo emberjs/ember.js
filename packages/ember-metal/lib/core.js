@@ -3,9 +3,10 @@
 // Copyright: ©2011 Strobe Inc. and contributors.
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
-/*globals Em:true ENV */
+/*globals exports:true ENV */
 
-if ('undefined' === typeof Ember) {
+if ('undefined' === typeof exports) { exports = window; }
+
 /**
   @namespace
   @name Ember
@@ -31,12 +32,7 @@ if ('undefined' === typeof Ember) {
 // objects assigned to it are given a sane string representation.
 Ember = { isNamespace: true, toString: function() { return "Ember"; } };
 
-// aliases needed to keep minifiers from removing the global context
-if ('undefined' !== typeof window) {
-  window.Em = window.Ember = Em = Ember;
-}
-
-}
+exports.Em = exports.Ember = Ember;
 
 /**
   @static
