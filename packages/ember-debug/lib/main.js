@@ -2,6 +2,10 @@
 
 if ('undefined' === typeof Ember) {
   Ember = {};
+
+  if ('undefined' !== typeof window) {
+    window.Em = window.Ember = Em = Ember;
+  }
 }
 
 /**
