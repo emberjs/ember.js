@@ -20,13 +20,13 @@ var bind = function(property, options, preserveContext, shouldDisplay, valueNorm
       fn = options.fn,
       inverse = options.inverse,
       view = data.view,
-      ctx  = this,
-      normalized;
+      currentContext = this,
+      pathRoot, path, normalized;
 
-  normalized = Ember.Handlebars.normalizePath(ctx, property, data);
+  normalized = Ember.Handlebars.normalizePath(currentContext, property, data);
 
-  ctx = normalized.root;
-  property = normalized.path;
+  pathRoot = normalized.root;
+  path = normalized.path;
 
   // Set up observers for observable objects
   if ('object' === typeof this) {
@@ -39,8 +39,9 @@ var bind = function(property, options, preserveContext, shouldDisplay, valueNorm
       valueNormalizerFunc: valueNormalizer,
       displayTemplate: fn,
       inverseTemplate: inverse,
-      property: property,
-      previousContext: ctx,
+      path: path,
+      pathRoot: pathRoot,
+      previousContext: currentContext,
       isEscaped: options.hash.escaped,
       templateData: options.data
     });
@@ -56,13 +57,13 @@ var bind = function(property, options, preserveContext, shouldDisplay, valueNorm
     // tells the Ember._BindableSpan to re-render. If property
     // is an empty string, we are printing the current context
     // object ({{this}}) so updating it is not our responsibility.
-    if (property !== '') {
-      Ember.addObserver(ctx, property, observer);
+    if (path !== '') {
+      Ember.addObserver(pathRoot, path, observer);
     }
   } else {
     // The object is not observable, so just render it out and
     // be done with it.
-    data.buffer.push(getPath(this, property, options));
+    data.buffer.push(getPath(pathRoot, path, options));
   }
 };
 
