@@ -489,7 +489,7 @@ Ember.View = Ember.Object.extend(Ember.Evented,
   }).property('templateName').cacheable(),
 
   /**
-    The controller managing this view. If this property is set, it will be made
+    The controller managing this view. If this property is set, it will be
     made available for use by the template.
 
     @type Object
