@@ -399,16 +399,16 @@ var invokeForState = {
   ### Event Names
   Possible events names for any of the responding approaches described above are:
 
-  *Touch events*: 'touchstart', 'touchmove', 'touchend', 'touchcancel'
+  *Touch events*: 'touchStart', 'touchMove', 'touchEnd', 'touchCancel'
 
-  *Keyboard events*: 'keydown', 'keyup', 'keypress'
+  *Keyboard events*: 'keyDown', 'keyUp', 'keyPress'
 
-  *Mouse events*: 'mousedown', 'mouseup', 'contextmenu', 'click', 'dblclick', 'mousemove',
-  'focusin', 'focusout', 'mouseenter', 'mouseleave'
+  *Mouse events*: 'mouseDown', 'mouseUp', 'contextMenu', 'click', 'doubleClick', 'mouseMove',
+  'focusIn', 'focusOut', 'mouseEnter', 'mouseLeave'
 
-  *Form events*: 'submit', 'change', 'focusin', 'focusout'
+  *Form events*: 'submit', 'change', 'focusIn', 'focusOut', 'input'
 
-  *HTML5 drag and drop events*: 'dragstart', 'drag', 'dragenter', dragleave', 'drop', 'dragend'
+  *HTML5 drag and drop events*: 'dragStart', 'drag', 'dragEnter', dragLeave', 'drop', 'dragEnd'
   
   ## Handlebars `{{view}}` Helper
   Other `Ember.View` instances can be included as part of a view's template by using the `{{view}}`
