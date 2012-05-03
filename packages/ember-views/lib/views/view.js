@@ -743,19 +743,22 @@ Ember.View = Ember.Object.extend(Ember.Evented,
           templateData = this.get('templateData'),
           controller = this.get('controller');
 
-      var data = {
-        view: this,
-        buffer: buffer,
-        isRenderData: true,
-        keywords: {
-          view: get(this, 'concreteView')
-        }
-      };
+      var keywords = templateData ? Ember.copy(templateData.keywords) : {};
+      keywords.view = get(this, 'concreteView');
 
       // If the view has a controller specified, make it available to the
       // template. If not, pass along the parent template's controller,
       // if it exists.
-      data.keywords.controller = controller || (templateData && templateData.keywords.controller);
+      if (controller) {
+        keywords.controller = controller;
+      }
+
+      var data = {
+        view: this,
+        buffer: buffer,
+        isRenderData: true,
+        keywords: keywords
+      };
 
       // Invoke the template with the provided template context, which
       // is the view by default. A hash of data is also passed that provides
