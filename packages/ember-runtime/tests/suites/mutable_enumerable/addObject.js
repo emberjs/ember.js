@@ -51,8 +51,10 @@ suite.test("[A,B,C].addObject(A) => [A,B,C] + NO notify", function() {
   deepEqual(this.toArray(obj), after, 'post item results');
   equal(Ember.get(obj, 'length'), after.length, 'length');
 
-  equal(observer.validate('@each'), false, 'should NOT have notified @each');
-  equal(observer.validate('length'), false, 'should NOT have notified length');
+  if (observer.isEnabled) {
+    equal(observer.validate('@each'), false, 'should NOT have notified @each');
+    equal(observer.validate('length'), false, 'should NOT have notified length');
+  }
 });
 
 suite.test('Adding object should notify enumerable observer', function() {

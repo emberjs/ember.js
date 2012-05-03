@@ -24,8 +24,8 @@ suite.test("[].clear() => [] + notify", function () {
   deepEqual(this.toArray(obj), after, 'post item results');
   equal(Ember.get(obj, 'length'), after.length, 'length');
 
-  equal(observer.timesCalled('@each'), 1, 'should have notified @each once');
-  equal(observer.timesCalled('length'), 1, 'should have notified length once');
+  equal(observer.validate('@each'), false, 'should NOT have notified @each once');
+  equal(observer.validate('length'), false, 'should NOT have notified length once');
 });
 
 suite.test("[X].clear() => [] + notify", function () {

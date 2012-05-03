@@ -58,7 +58,7 @@ suite.test("[A,B,C,D].replace(1,2,[X,Y]) => [A,X,Y,D] + notify", function() {
   deepEqual(this.toArray(obj), after, 'post item results');
 
   equal(observer.timesCalled('@each'), 1, 'should have notified @each once');
-  equal(observer.timesCalled('length'), 1, 'should have notified length once');
+  equal(observer.validate('length'), false, 'should NOT have notified length');
 });
 
 suite.test("[A,B].replace(1,0,[X,Y]) => [A,X,Y,B] + notify", function() {
