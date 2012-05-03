@@ -23,7 +23,7 @@ suite.test("[A,B,C].removeObject(B) => [A,C] + notify", function() {
   before = this.newFixture(3);
   after  = [before[0], before[2]];
   obj = this.newObject(before);
-  observer = this.newObserver(obj, '[]', 'length');
+  observer = this.newObserver(obj, '@each', 'length');
 
   obj.removeObject(before[1]);
 
@@ -31,8 +31,8 @@ suite.test("[A,B,C].removeObject(B) => [A,C] + notify", function() {
   equal(Ember.get(obj, 'length'), after.length, 'length');
 
   if (observer.isEnabled) {
-    equal(observer.validate('[]'), true, 'should NOT have notified []');
-    equal(observer.validate('length'), true, 'should NOT have notified length');
+    equal(observer.timesCalled('@each'), 1, 'should have notified @each once');
+    equal(observer.timesCalled('length'), 1, 'should have notified length once');
   }
 });
 
@@ -43,17 +43,15 @@ suite.test("[A,B,C].removeObject(D) => [A,B,C]", function() {
   after  = before;
   item   = this.newFixture(1)[0];
   obj = this.newObject(before);
-  observer = this.newObserver(obj, '[]', 'length');
+  observer = this.newObserver(obj, '@each', 'length');
 
   obj.removeObject(item); // note: item not in set
 
   deepEqual(this.toArray(obj), after, 'post item results');
   equal(Ember.get(obj, 'length'), after.length, 'length');
 
-  if (observer.isEnabled) {
-    equal(observer.validate('[]'), false, 'should NOT have notified []');
-    equal(observer.validate('length'), false, 'should NOT have notified length');
-  }
+  equal(observer.validate('@each'), false, 'should NOT have notified @each');
+  equal(observer.validate('length'), false, 'should NOT have notified length');
 });
 
 suite.test('Removing object should notify enumerable observer', function() {

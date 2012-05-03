@@ -17,17 +17,15 @@ suite.test("[].clear() => [] + notify", function () {
   before = [];
   after  = [];
   obj = this.newObject(before);
-  observer = this.newObserver(obj, '[]', 'length');
+  observer = this.newObserver(obj, '@each', 'length');
 
   equal(obj.clear(), obj, 'return self');
 
   deepEqual(this.toArray(obj), after, 'post item results');
   equal(Ember.get(obj, 'length'), after.length, 'length');
 
-  if (observer.isEnabled) {
-    equal(observer.validate('[]'), true, 'should have notified []');
-    equal(observer.validate('length'), true, 'should have notified length');
-  }
+  equal(observer.timesCalled('@each'), 1, 'should have notified @each once');
+  equal(observer.timesCalled('length'), 1, 'should have notified length once');
 });
 
 suite.test("[X].clear() => [] + notify", function () {
@@ -43,9 +41,7 @@ suite.test("[X].clear() => [] + notify", function () {
   deepEqual(this.toArray(obj), after, 'post item results');
   equal(Ember.get(obj, 'length'), after.length, 'length');
 
-  if (observer.isEnabled) {
-    equal(observer.validate('[]'), true, 'should have notified []');
-    equal(observer.validate('length'), true, 'should have notified length');
-  }
+  equal(observer.timesCalled('@each'), 1, 'should have notified @each once');
+  equal(observer.timesCalled('length'), 1, 'should have notified length once');
 
 });
