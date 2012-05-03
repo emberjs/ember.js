@@ -51,7 +51,10 @@ if (Ember.EXTEND_PROTOTYPES) {
         });
 
     Make sure you list these dependencies so Ember.js knows when to update
-    bindings that connect to a computed property.
+    bindings that connect to a computed property. Changing a dependency
+    will not immediately trigger an update of the computed property, but
+    will instead clear the cache so that it is updated when the next `get`
+    is called on the property.
 
     Note: you will usually want to use `property(...)` with `cacheable()`.
 
