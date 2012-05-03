@@ -25,10 +25,12 @@ def setup_uploader
   #              git@github.com:emberjs/ember.js
 
   repoUrl = origin.match(/github\.com[\/:]((.+?)\/(.+?))(\.git)?$/)
-  username = repoUrl[2] # username part of origin url
-  repo = repoUrl[3] # repository name part of origin url
+  username = ENV['GH_USERNAME'] || repoUrl[2] # username part of origin url
+  repo = ENV['GH_REPO'] || repoUrl[3] # repository name part of origin url
 
-  uploader = GithubUploader.new(login, username, repo)
+  token = ENV['GH_OAUTH_TOKEN']
+
+  uploader = GithubUploader.new(login, username, repo, token)
   uploader.authorize
 
   uploader
@@ -76,7 +78,6 @@ task :upload_latest => :dist do
   upload_file(uploader, 'ember-latest.min.js', "Ember.js Master (minified)", "dist/ember.min.js")
   upload_file(uploader, 'ember-latest.js', "Ember.js Master", "dist/ember.js")
 end
-
 
 namespace :docs do
   def doc_args
