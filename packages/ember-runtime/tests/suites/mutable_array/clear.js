@@ -34,7 +34,7 @@ suite.test("[X].clear() => [] + notify", function () {
   before = this.newFixture(1);
   after  = [];
   obj = this.newObject(before);
-  observer = this.newObserver(obj, '[]', 'length');
+  observer = this.newObserver(obj, '@each', 'length');
 
   equal(obj.clear(), obj, 'return self');
 

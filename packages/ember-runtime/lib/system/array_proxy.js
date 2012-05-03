@@ -125,7 +125,8 @@ Ember.ArrayProxy = Ember.Object.extend(Ember.MutableArray,
   length: Ember.computed(function() {
     var content = get(this, 'content');
     return content ? get(content, 'length') : 0;
-  }).property('content.length').cacheable(),
+    // No dependencies since Enumerable notifies length of change
+  }).property().cacheable(),
 
   /** @private (nodoc) */
   replace: function(idx, amt, objects) {
