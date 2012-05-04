@@ -116,6 +116,14 @@ Ember.Array = Ember.Mixin.create(Ember.Enumerable, /** @scope Ember.Array.protot
     return this ;
   }).property().cacheable(),
 
+  firstObject: Ember.computed(function() {
+    return this.objectAt(0);
+  }).property().cacheable(),
+
+  lastObject: Ember.computed(function() {
+    return this.objectAt(get(this, 'length')-1);
+  }).property().cacheable(),
+
   /** @private (nodoc) - optimized version from Enumerable */
   contains: function(obj){
     return this.indexOf(obj) >= 0;
@@ -321,7 +329,13 @@ Ember.Array = Ember.Mixin.create(Ember.Enumerable, /** @scope Ember.Array.protot
       removing = removeAmt;
     }
 
+    var len = this._originalLength = get(this, 'length'),
+        firstChanged = startIdx === 0,
+        lastChanged = startIdx + removeAmt >= len;
+
     this.enumerableContentWillChange(removing, addAmt);
+    if (firstChanged) { Ember.propertyWillChange(this, 'firstObject'); }
+    if (lastChanged)  { Ember.propertyWillChange(this, 'lastObject'); }
 
     // Make sure the @each proxy is set up if anyone is observing @each
     if (Ember.isWatching(this, '@each')) { get(this, '@each'); }
@@ -348,7 +362,13 @@ Ember.Array = Ember.Mixin.create(Ember.Enumerable, /** @scope Ember.Array.protot
       adding = addAmt;
     }
 
+    var len = this._originalLength,
+        firstChanged = startIdx === 0,
+        lastChanged = startIdx + removeAmt >= len;
+
     this.enumerableContentDidChange(removeAmt, adding);
+    if (firstChanged) { Ember.propertyDidChange(this, 'firstObject'); }
+    if (lastChanged)  { Ember.propertyDidChange(this, 'lastObject'); }
     Ember.sendEvent(this, '@array:change', startIdx, removeAmt, addAmt);
     return this;
   },

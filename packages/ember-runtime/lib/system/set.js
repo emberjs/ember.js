@@ -78,9 +78,11 @@ var get = Ember.get, set = Ember.set, guidFor = Ember.guidFor, none = Ember.none
 
   ## Observing changes
 
-  When using `Ember.Set`, you can add an enumerable observer to the set to
-  be notified of specific objects that are added and removed from the set.
-  See `Ember.Enumerable` for more information on enumerables.
+  When using `Ember.Set`, you can observe the `"[]"` property to be
+  alerted whenever the content changes.  You can also add an enumerable
+  observer to the set to be notified of specific objects that are added and
+  removed from the set.  See `Ember.Enumerable` for more information on
+  enumerables.
 
   This is often unhelpful. If you are filtering sets of objects, for instance,
   it is very inefficient to re-filter all of the items each time the set
@@ -138,16 +140,28 @@ Ember.Set = Ember.CoreObject.extend(Ember.MutableEnumerable, Ember.Copyable, Emb
   */
   clear: function() {
     if (this.isFrozen) { throw new Error(Ember.FROZEN_ERROR); }
+
     var len = get(this, 'length');
+    if (len === 0) { return this; }
+
     var guid;
+
     this.enumerableContentWillChange(len, 0);
+    Ember.propertyWillChange(this, 'firstObject');
+    Ember.propertyWillChange(this, 'lastObject');
+
     for (var i=0; i < len; i++){
       guid = guidFor(this[i]);
       delete this[guid];
       delete this[i];
     }
+
     set(this, 'length', 0);
+
+    Ember.propertyDidChange(this, 'firstObject');
+    Ember.propertyDidChange(this, 'lastObject');
     this.enumerableContentDidChange(len, 0);
+
     return this;
   },
 
@@ -323,12 +337,12 @@ Ember.Set = Ember.CoreObject.extend(Ember.MutableEnumerable, Ember.Copyable, Emb
   /** @private - more optimized version */
   firstObject: Ember.computed(function() {
     return this.length > 0 ? this[0] : undefined;
-  }).property('[]').cacheable(),
+  }).property().cacheable(),
 
   /** @private - more optimized version */
   lastObject: Ember.computed(function() {
     return this.length > 0 ? this[this.length-1] : undefined;
-  }).property('[]').cacheable(),
+  }).property().cacheable(),
 
   /** @private (nodoc) - implements Ember.MutableEnumerable */
   addObject: function(obj) {
@@ -343,11 +357,16 @@ Ember.Set = Ember.CoreObject.extend(Ember.MutableEnumerable, Ember.Copyable, Emb
     if (idx>=0 && idx<len && (this[idx] === obj)) return this; // added
 
     added = [obj];
+
     this.enumerableContentWillChange(null, added);
+    Ember.propertyWillChange(this, 'lastObject');
+
     len = get(this, 'length');
     this[guid] = len;
     this[len] = obj;
     set(this, 'length', len+1);
+
+    Ember.propertyDidChange(this, 'lastObject');
     this.enumerableContentDidChange(null, added);
 
     return this;
@@ -361,6 +380,8 @@ Ember.Set = Ember.CoreObject.extend(Ember.MutableEnumerable, Ember.Copyable, Emb
     var guid = guidFor(obj),
         idx  = this[guid],
         len = get(this, 'length'),
+        isFirst = idx === 0,
+        isLast = idx === len-1,
         last, removed;
 
 
@@ -368,6 +389,8 @@ Ember.Set = Ember.CoreObject.extend(Ember.MutableEnumerable, Ember.Copyable, Emb
       removed = [obj];
 
       this.enumerableContentWillChange(removed, null);
+      if (isFirst) { Ember.propertyWillChange(this, 'firstObject'); }
+      if (isLast)  { Ember.propertyWillChange(this, 'lastObject'); }
 
       // swap items - basically move the item to the end so it can be removed
       if (idx < len-1) {
@@ -380,6 +403,8 @@ Ember.Set = Ember.CoreObject.extend(Ember.MutableEnumerable, Ember.Copyable, Emb
       delete this[len-1];
       set(this, 'length', len-1);
 
+      if (isFirst) { Ember.propertyDidChange(this, 'firstObject'); }
+      if (isLast)  { Ember.propertyDidChange(this, 'lastObject'); }
       this.enumerableContentDidChange(removed, null);
     }
 
