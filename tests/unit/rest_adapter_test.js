@@ -98,8 +98,6 @@ var expectStates = function(state, value) {
 };
 
 test("creating a person makes a POST to /people, with the data hash", function() {
-  set(adapter, 'bulkCommit', false);
-
   person = store.createRecord(Person, { name: "Tom Dale" });
 
   expectState('new');
@@ -117,8 +115,6 @@ test("creating a person makes a POST to /people, with the data hash", function()
 });
 
 test("singular creations can sideload data", function() {
-  set(adapter, 'bulkCommit', false);
-
   adapter.mappings = {
     groups: Group
   };
@@ -147,8 +143,6 @@ test("singular creations can sideload data", function() {
 });
 
 test("updating a person makes a PUT to /people/:id with the data hash", function() {
-  set(adapter, 'bulkCommit', false);
-
   store.load(Person, { id: 1, name: "Yehuda Katz" });
 
   person = store.find(Person, 1);
@@ -174,8 +168,6 @@ test("updating a person makes a PUT to /people/:id with the data hash", function
 });
 
 test("updates are not required to return data", function() {
-  set(adapter, 'bulkCommit', false);
-
   store.load(Person, { id: 1, name: "Yehuda Katz" });
 
   person = store.find(Person, 1);
@@ -201,8 +193,6 @@ test("updates are not required to return data", function() {
 });
 
 test("singular updates can sideload data", function() {
-  set(adapter, 'bulkCommit', false);
-
   adapter.mappings = {
     groups: Group
   };
@@ -238,7 +228,6 @@ test("singular updates can sideload data", function() {
 });
 
 test("updating a record with custom primaryKey", function() {
-  set(adapter, 'bulkCommit', false);
   store.load(Role, { _id: 1, name: "Developer" });
 
   role = store.find(Role, 1);
@@ -252,8 +241,6 @@ test("updating a record with custom primaryKey", function() {
 
 
 test("deleting a person makes a DELETE to /people/:id", function() {
-  set(adapter, 'bulkCommit', false);
-
   store.load(Person, { id: 1, name: "Tom Dale" });
 
   person = store.find(Person, 1);
@@ -277,8 +264,6 @@ test("deleting a person makes a DELETE to /people/:id", function() {
 });
 
 test("singular deletes can sideload data", function() {
-  set(adapter, 'bulkCommit', false);
-
   adapter.mappings = {
     groups: Group
   };
@@ -312,8 +297,6 @@ test("singular deletes can sideload data", function() {
 });
 
 test("deleting a record with custom primaryKey", function() {
-  set(adapter, 'bulkCommit', false);
-
   store.load(Role, { _id: 1, name: "Developer" });
 
   role = store.find(Role, 1);
@@ -592,6 +575,8 @@ test("finding people by a query can sideload data", function() {
 });
 
 test("creating several people (with bulkCommit) makes a POST to /people, with a data hash Array", function() {
+  set(adapter, 'bulkCommit', true);
+
   var tom = store.createRecord(Person, { name: "Tom Dale" });
   var yehuda = store.createRecord(Person, { name: "Yehuda Katz" });
 
@@ -613,6 +598,8 @@ test("creating several people (with bulkCommit) makes a POST to /people, with a 
 });
 
 test("bulk commits can sideload data", function() {
+  set(adapter, 'bulkCommit', true);
+  
   var tom = store.createRecord(Person, { name: "Tom Dale" });
   var yehuda = store.createRecord(Person, { name: "Yehuda Katz" });
 
@@ -643,6 +630,8 @@ test("bulk commits can sideload data", function() {
 });
 
 test("updating several people (with bulkCommit) makes a PUT to /people/bulk with the data hash Array", function() {
+  set(adapter, 'bulkCommit', true);
+  
   store.loadMany(Person, [
     { id: 1, name: "Yehuda Katz" },
     { id: 2, name: "Carl Lerche" }
@@ -679,6 +668,8 @@ test("updating several people (with bulkCommit) makes a PUT to /people/bulk with
 });
 
 test("bulk updates can sideload data", function() {
+  set(adapter, 'bulkCommit', true);
+  
   adapter.mappings = {
     groups: Group
   };
@@ -725,6 +716,8 @@ test("bulk updates can sideload data", function() {
 });
 
 test("deleting several people (with bulkCommit) makes a PUT to /people/bulk", function() {
+  set(adapter, 'bulkCommit', true);
+  
   store.loadMany(Person, [
     { id: 1, name: "Yehuda Katz" },
     { id: 2, name: "Carl Lerche" }
@@ -758,6 +751,8 @@ test("deleting several people (with bulkCommit) makes a PUT to /people/bulk", fu
 });
 
 test("bulk deletes can sideload data", function() {
+  set(adapter, 'bulkCommit', true);
+  
   adapter.mappings = {
     groups: Group
   };
