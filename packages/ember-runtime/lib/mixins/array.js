@@ -329,16 +329,15 @@ Ember.Array = Ember.Mixin.create(Ember.Enumerable, /** @scope Ember.Array.protot
       removing = removeAmt;
     }
 
-    var len = this._originalLength = get(this, 'length'),
-        firstChanged = startIdx === 0,
-        lastChanged = startIdx + removeAmt >= len;
-
     this.enumerableContentWillChange(removing, addAmt);
-    if (firstChanged) { Ember.propertyWillChange(this, 'firstObject'); }
-    if (lastChanged)  { Ember.propertyWillChange(this, 'lastObject'); }
 
     // Make sure the @each proxy is set up if anyone is observing @each
     if (Ember.isWatching(this, '@each')) { get(this, '@each'); }
+
+    // Make sure we've cached these for the check in arrayContentDidChange
+    get(this, 'firstObject');
+    get(this, 'lastObject');
+
     return this;
   },
 
@@ -362,14 +361,19 @@ Ember.Array = Ember.Mixin.create(Ember.Enumerable, /** @scope Ember.Array.protot
       adding = addAmt;
     }
 
-    var len = this._originalLength,
-        firstChanged = startIdx === 0,
-        lastChanged = startIdx + removeAmt >= len;
-
     this.enumerableContentDidChange(removeAmt, adding);
-    if (firstChanged) { Ember.propertyDidChange(this, 'firstObject'); }
-    if (lastChanged)  { Ember.propertyDidChange(this, 'lastObject'); }
     Ember.sendEvent(this, '@array:change', startIdx, removeAmt, addAmt);
+
+    var length = get(this, 'length');
+    if (this.objectAt(0) !== get(this, 'firstObject')) {
+      Ember.propertyWillChange(this, 'firstObject');
+      Ember.propertyDidChange(this, 'firstObject');
+    }
+    if (this.objectAt(length-1) !== get(this, 'lastObject')) {
+      Ember.propertyWillChange(this, 'lastObject');
+      Ember.propertyDidChange(this, 'lastObject');
+    }
+
     return this;
   },
 
