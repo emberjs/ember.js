@@ -721,6 +721,23 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     });
   }, '_parentView'),
 
+  cloneKeywords: function() {
+    var templateData = get(this, 'templateData'),
+        controller = get(this, 'controller');
+
+    var keywords = templateData ? Ember.copy(templateData.keywords) : {};
+    keywords.view = get(this, 'concreteView');
+
+    // If the view has a controller specified, make it available to the
+    // template. If not, pass along the parent template's controller,
+    // if it exists.
+    if (controller) {
+      keywords.controller = controller;
+    }
+
+    return keywords;
+  },
+
   /**
     Called on your view when it should push strings of HTML into a
     Ember.RenderBuffer. Most users will want to override the `template`
@@ -739,19 +756,8 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     var template = get(this, 'layout') || get(this, 'template');
 
     if (template) {
-      var context = get(this, '_templateContext'),
-          templateData = this.get('templateData'),
-          controller = this.get('controller');
-
-      var keywords = templateData ? Ember.copy(templateData.keywords) : {};
-      keywords.view = get(this, 'concreteView');
-
-      // If the view has a controller specified, make it available to the
-      // template. If not, pass along the parent template's controller,
-      // if it exists.
-      if (controller) {
-        keywords.controller = controller;
-      }
+      var context = get(this, '_templateContext');
+      var keywords = this.cloneKeywords();
 
       var data = {
         view: this,
@@ -1740,10 +1746,11 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     @test in createChildViews
   */
   createChildView: function(view, attrs) {
-    var coreAttrs;
+    var coreAttrs, templateData;
 
     if (Ember.View.detect(view)) {
-      coreAttrs = { _parentView: this };
+      coreAttrs = { _parentView: this, templateData: get(this, 'templateData') };
+
       if (attrs) {
         view = view.create(coreAttrs, attrs);
       } else {
@@ -1756,7 +1763,14 @@ Ember.View = Ember.Object.extend(Ember.Evented,
       // consumers of the view API
       if (viewName) { set(get(this, 'concreteView'), viewName, view); }
     } else {
+      if (attrs) { throw "EWOT"; }
+
       Ember.assert('must pass instance of View', view instanceof Ember.View);
+
+      if (!get(view, 'templateData')) {
+        set(view, 'templateData', get(this, 'templateData'));
+      }
+
       set(view, '_parentView', this);
     }
 

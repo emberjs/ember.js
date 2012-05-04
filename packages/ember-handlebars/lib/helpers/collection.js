@@ -172,12 +172,7 @@ Ember.Handlebars.registerHelper('collection', function(path, options) {
   }
 
   if (inverse && inverse !== Handlebars.VM.noop) {
-    var emptyViewClass = Ember.View;
-
-    if (hash.emptyViewClass) {
-      emptyViewClass = Ember.View.detect(hash.emptyViewClass) ?
-                          hash.emptyViewClass : getPath(this, hash.emptyViewClass, options);
-    }
+    var emptyViewClass = get(collectionPrototype, 'emptyViewClass');
 
     hash.emptyView = emptyViewClass.extend({
       template: inverse,
@@ -185,11 +180,11 @@ Ember.Handlebars.registerHelper('collection', function(path, options) {
     });
   }
 
-  if (hash.preserveContext) {
+  if (hash.eachHelper === 'each') {
     itemHash._templateContext = Ember.computed(function() {
       return get(this, 'content');
     }).property('content');
-    delete hash.preserveContext;
+    delete hash.eachHelper;
   }
 
   hash.itemViewClass = Ember.Handlebars.ViewHelper.viewClassFromHTMLOptions(itemViewClass, { data: data, hash: itemHash }, this);

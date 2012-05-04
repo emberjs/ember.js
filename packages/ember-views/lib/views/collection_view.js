@@ -135,6 +135,15 @@ Ember.CollectionView = Ember.ContainerView.extend(
   content: null,
 
   /**
+    @private
+
+    This provides metadata about what kind of empty view class this
+    collection would like if it is being instantiated from another
+    system (like Handlebars)
+  */
+  emptyViewClass: Ember.View,
+
+  /**
     An optional view to display if content is set to an empty array.
 
     @type Ember.View
