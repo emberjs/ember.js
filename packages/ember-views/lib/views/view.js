@@ -50,6 +50,8 @@ var invokeForState = {
 };
 
 /**
+  @class
+
   `Ember.View` is the class in Ember responsible for encapsulating templates of HTML
   content, combining templates with data to render as sections of a page's DOM, and
   registering and responding to user-initiated events.
@@ -399,23 +401,21 @@ var invokeForState = {
   ### Event Names
   Possible events names for any of the responding approaches described above are:
 
-  *Touch events*: 'touchStart', 'touchMove', 'touchEnd', 'touchCancel'
+  Touch events: 'touchStart', 'touchMove', 'touchEnd', 'touchCancel'
 
-  *Keyboard events*: 'keyDown', 'keyUp', 'keyPress'
+  Keyboard events: 'keyDown', 'keyUp', 'keyPress'
 
-  *Mouse events*: 'mouseDown', 'mouseUp', 'contextMenu', 'click', 'doubleClick', 'mouseMove',
+  Mouse events: 'mouseDown', 'mouseUp', 'contextMenu', 'click', 'doubleClick', 'mouseMove',
   'focusIn', 'focusOut', 'mouseEnter', 'mouseLeave'
 
-  *Form events*: 'submit', 'change', 'focusIn', 'focusOut', 'input'
+  Form events: 'submit', 'change', 'focusIn', 'focusOut', 'input'
 
-  *HTML5 drag and drop events*: 'dragStart', 'drag', 'dragEnter', dragLeave', 'drop', 'dragEnd'
+  HTML5 drag and drop events: 'dragStart', 'drag', 'dragEnter', 'dragLeave', 'drop', 'dragEnd'
   
   ## Handlebars `{{view}}` Helper
   Other `Ember.View` instances can be included as part of a view's template by using the `{{view}}`
   Handlebars helper. See `Handlebars.helpers.view` for additional information.
-  
-  @class
-  @since Ember 0.9
+
   @extends Ember.Object
 */
 Ember.View = Ember.Object.extend(Ember.Evented,
