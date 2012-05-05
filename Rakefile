@@ -28,7 +28,8 @@ def setup_uploader
   username = repoUrl[2] # username part of origin url
   repo = repoUrl[3] # repository name part of origin url
 
-  uploader = GithubUploader.new(login, username, repo)
+  token = ENV["GH_OAUTH_TOKEN"]
+  uploader = GithubUploader.new(login, username, repo, token)
   uploader.authorize
 
   uploader

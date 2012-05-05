@@ -3,12 +3,12 @@ require "github_api"
 
 class GithubUploader
 
-  def initialize(login, username, repo, root=Dir.pwd)
+  def initialize(login, username, repo, token=nil, root=Dir.pwd)
     @login    = login
     @username = username
     @repo     = repo
     @root     = root
-    @token    = check_token
+    @token    = token || check_token
   end
 
   def authorized?
