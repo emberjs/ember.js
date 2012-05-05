@@ -3,17 +3,86 @@
 var set = Ember.set, get = Ember.get, getPath = Ember.getPath;
 var indexOf = Ember.ArrayUtils.indexOf, indexesOf = Ember.ArrayUtils.indexesOf;
 
-Ember.Select = Ember.View.extend({
+/**
+  @class
+
+  The Ember.Select view class renders a
+  [select](https://developer.mozilla.org/en/HTML/Element/select) HTML element,
+  allowing the user to choose from a list of options. The selected option(s)
+  are updated live in the `selection` property.
+
+  @extends Ember.View
+*/
+Ember.Select = Ember.View.extend(
+  /** @scope Ember.Select.prototype */ {
+
   tagName: 'select',
   defaultTemplate: Ember.Handlebars.compile('{{#if view.prompt}}<option>{{view.prompt}}</option>{{/if}}{{#each view.content}}{{view Ember.SelectOption contentBinding="this"}}{{/each}}'),
   attributeBindings: ['multiple'],
 
+  /**
+    The `multiple` attribute of the select element. Indicates whether multiple
+    options can be selected.
+
+    @type Boolean
+    @default false
+  */
   multiple: false,
+
+  /**
+    The list of options.
+
+    If `optionLabelPath` and `optionValuePath` are not overridden, this should
+    be a list of strings, which will serve simultaneously as labels and values.
+
+    Otherwise, this should be a list of objects. For instance:
+
+        content: Ember.A([
+            { id: 1, firstName: 'Yehuda' },
+            { id: 2, firstName: 'Tom' }
+          ])),
+        optionLabelPath: 'content.firstName',
+        optionValuePath: 'content.id'
+
+    @type Array
+    @default null
+  */
   content: null,
+
+  /**
+    When `multiple` is false, the element of `content` that is currently
+    selected, if any.
+
+    When `multiple` is true, an array of such elements.
+
+    @type Object or Array
+    @default null
+  */
   selection: null,
+
+  /**
+    If given, a top-most dummy option will be rendered to serve as a user
+    prompt.
+
+    @type String
+    @default null
+  */
   prompt: null,
 
+  /**
+    The path of the option labels. See `content`.
+
+    @type String
+    @default 'content'
+  */
   optionLabelPath: 'content',
+
+  /**
+    The path of the option values. See `content`.
+
+    @type String
+    @default 'content'
+  */
   optionValuePath: 'content',
 
   change: function() {
