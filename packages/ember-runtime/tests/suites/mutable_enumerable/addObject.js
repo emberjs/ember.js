@@ -24,7 +24,7 @@ suite.test("[A,B].addObject(C) => [A,B,C] + notify", function() {
   item   = this.newFixture(1)[0];
   after  = [before[0], before[1], item];
   obj = this.newObject(before);
-  observer = this.newObserver(obj, 'length');
+  observer = this.newObserver(obj, '[]', 'length', 'firstObject', 'lastObject');
 
   obj.addObject(item);
 
@@ -32,7 +32,11 @@ suite.test("[A,B].addObject(C) => [A,B,C] + notify", function() {
   equal(Ember.get(obj, 'length'), after.length, 'length');
 
   if (observer.isEnabled) {
+    equal(observer.timesCalled('[]'), 1, 'should have notified [] once');
     equal(observer.timesCalled('length'), 1, 'should have notified length once');
+    equal(observer.timesCalled('lastObject'), 1, 'should have notified lastObject once');
+    // This gets called since MutableEnumerable is naive about changes
+    equal(observer.timesCalled('firstObject'), 1, 'should have notified firstObject once');
   }
 });
 
@@ -43,7 +47,7 @@ suite.test("[A,B,C].addObject(A) => [A,B,C] + NO notify", function() {
   after  = before;
   item   = before[0];
   obj = this.newObject(before);
-  observer = this.newObserver(obj, 'length');
+  observer = this.newObserver(obj, '[]', 'length', 'firstObject', 'lastObject');
 
   obj.addObject(item); // note: item in set
 
@@ -51,7 +55,10 @@ suite.test("[A,B,C].addObject(A) => [A,B,C] + NO notify", function() {
   equal(Ember.get(obj, 'length'), after.length, 'length');
 
   if (observer.isEnabled) {
+    equal(observer.validate('[]'), false, 'should NOT have notified []');
     equal(observer.validate('length'), false, 'should NOT have notified length');
+    equal(observer.validate('firstObject'), false, 'should NOT have notified firstObject');
+    equal(observer.validate('lastObject'), false, 'should NOT have notified lastObject');
   }
 });
 
