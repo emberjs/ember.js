@@ -727,15 +727,13 @@ Ember.Enumerable = Ember.Mixin.create( /** @lends Ember.Enumerable */ {
       optional start offset for the content change.  For unordered
       enumerables, you should always pass -1.
 
-    @param {Enumerable} added
-      optional enumerable containing items that were added to the set.  For
-      ordered enumerables, this should be an ordered array of items.  If no
-      items were added you can pass null.
+    @param {Ember.Enumerable|Number} removing
+      An enumerable of the objects to be removed or the number of items to
+      be removed.
 
-    @param {Enumerable} removes
-      optional enumerable containing items that were removed from the set.
-      For ordered enumerables, this should be an ordered array of items. If
-      no items were removed you can pass null.
+    @param {Ember.Enumerable|Numbe} adding
+      An enumerable of the objects to be added or the number of items to be
+      added.
 
     @returns {Object} receiver
   */
