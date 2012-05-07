@@ -147,6 +147,7 @@ Ember.ArrayProxy = Ember.Object.extend(Ember.MutableArray,
   /** @private (nodoc) */
   init: function() {
     this._super();
+    this.contentWillChange();
     this.contentDidChange();
   }
 
