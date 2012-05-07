@@ -306,8 +306,8 @@ Ember.Array = Ember.Mixin.create(Ember.Enumerable, /** @scope Ember.Array.protot
       startIdx = 0;
       removeAmt = addAmt = -1;
     } else {
-      if (!removeAmt) removeAmt=0;
-      if (!addAmt) addAmt=0;
+      if (removeAmt === undefined) removeAmt=-1;
+      if (addAmt    === undefined) addAmt=-1;
     }
 
     Ember.sendEvent(this, '@array:before', startIdx, removeAmt, addAmt);
@@ -335,8 +335,8 @@ Ember.Array = Ember.Mixin.create(Ember.Enumerable, /** @scope Ember.Array.protot
       startIdx = 0;
       removeAmt = addAmt = -1;
     } else {
-      if (!removeAmt) removeAmt=0;
-      if (!addAmt) addAmt=0;
+      if (removeAmt === undefined) removeAmt=-1;
+      if (addAmt    === undefined) addAmt=-1;
     }
 
     var adding, lim;

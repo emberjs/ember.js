@@ -64,7 +64,7 @@ test("block should work properly even when templates are not hard-coded", functi
 
 test("templates should yield to block, when the yield is embedded in a hierarchy of virtual views", function() {
   TemplateTests.TimesView = Ember.View.extend({
-    layout: Ember.Handlebars.compile('<div class="times">{{#each index}}{{yield}}{{/each}}</div>'),
+    layout: Ember.Handlebars.compile('<div class="times">{{#each view.index}}{{yield}}{{/each}}</div>'),
     n: null,
     index: Ember.computed(function() {
       var n = Ember.get(this, 'n'), indexArray = Ember.A([]);
@@ -100,5 +100,21 @@ test("templates should yield to block, when the yield is embedded in a hierarchy
   });
 
   equal(view.$('div#container div.nesting div#block').length, 1, 'nesting view yields correctly even within a view hierarchy in the nesting view');
+});
+
+test("block should not be required", function() {
+  TemplateTests.YieldingView = Ember.View.extend({
+    layout: Ember.Handlebars.compile('{{#view Ember.View tagName="div" classNames="yielding"}}{{yield}}{{/view}}')
+  });
+
+  view = Ember.View.create({
+    template: Ember.Handlebars.compile('<div id="container">{{view TemplateTests.YieldingView}}</div>')
+  });
+
+  Ember.run(function() {
+    view.appendTo('#qunit-fixture');
+  });
+
+  equal(view.$('div#container div.yielding').length, 1, 'yielding view is rendered as expected');
 });
 

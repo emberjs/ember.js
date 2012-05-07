@@ -1,20 +1,48 @@
 require "rake-pipeline-web-filters"
 require "json"
 require "uglifier"
+require "execjs"
 
 class EmberProductionFilter < Rake::Pipeline::Filter
+
+  def js_context
+    # We're using Ember to build Ember! Inception!
+    unless @context
+      headless = File.read("lib/headless-ember.js")
+      ember    = File.read("lib/ember.js")
+      @context = ExecJS.compile([headless, ember].join("\n"))
+    end
+    @context
+  end
+
+  def strip_debug(data)
+    # Strip debug code
+    data.gsub!(%r{^(\s)*Ember\.(assert|deprecate|warn)\((.*)\).*$}, "")
+  end
+
+  def precompile_templates(data)
+    # Precompile defaultTemplates
+    data.gsub!(%r{(defaultTemplate(?:\s*=|:)\s*)Ember\.Handlebars\.compile\(['"](.*)['"]\)}) do
+      "#{$1}Ember.Handlebars.template(#{js_context.call("precompileEmberHandlebars", $2)})"
+    end
+  end
+
   def generate_output(inputs, output)
     inputs.each do |input|
       result = File.read(input.fullpath)
-      result.gsub!(%r{^(\s)+ember_(assert|deprecate|warn)\((.*)\).*$}, "")
+      strip_debug(result)
+      precompile_templates(result)
       output.write result
     end
   end
 end
 
 class EmberLicenseFilter < Rake::Pipeline::Filter
+  def license
+    @license ||= File.read("generators/license.js")
+  end
+
   def generate_output(inputs, output)
-    license = File.read("generators/license.js")
     inputs.each do |input|
       file = File.read(input.fullpath)
       output.write "#{license}\n\n#{file}"
@@ -23,8 +51,11 @@ class EmberLicenseFilter < Rake::Pipeline::Filter
 end
 
 class JSHintRC < Rake::Pipeline::Filter
+  def jshintrc
+    @jshintrc ||= File.read(".jshintrc")
+  end
+
   def generate_output(inputs, output)
-    jshintrc = File.read(".jshintrc")
     inputs.each do |input|
       file = File.read(input.fullpath)
       output.write "var JSHINTRC = #{jshintrc};\n\n#{file}"
@@ -34,7 +65,7 @@ end
 
 distros = {
   :runtime => %w(ember-metal ember-runtime),
-  :full    => %w(handlebars ember-metal ember-runtime ember-views ember-states metamorph ember-handlebars)
+  :full    => %w(handlebars ember-metal ember-runtime ember-views ember-states ember-viewstates metamorph ember-handlebars)
 }
 
 output "dist"

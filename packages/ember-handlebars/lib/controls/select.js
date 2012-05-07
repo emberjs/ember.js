@@ -3,29 +3,87 @@
 var set = Ember.set, get = Ember.get, getPath = Ember.getPath;
 var indexOf = Ember.ArrayUtils.indexOf, indexesOf = Ember.ArrayUtils.indexesOf;
 
-Ember.Select = Ember.View.extend({
+/**
+  @class
+
+  The Ember.Select view class renders a
+  [select](https://developer.mozilla.org/en/HTML/Element/select) HTML element,
+  allowing the user to choose from a list of options. The selected option(s)
+  are updated live in the `selection` property.
+
+  @extends Ember.View
+*/
+Ember.Select = Ember.View.extend(
+  /** @scope Ember.Select.prototype */ {
+
   tagName: 'select',
-  template: Ember.Handlebars.compile(
-    '{{#if prompt}}<option>{{prompt}}</option>{{/if}}' +
-    '{{#each content}}{{view Ember.SelectOption contentBinding="this"}}{{/each}}'
-  ),
+  defaultTemplate: Ember.Handlebars.compile('{{#if view.prompt}}<option>{{view.prompt}}</option>{{/if}}{{#each view.content}}{{view Ember.SelectOption contentBinding="this"}}{{/each}}'),
   attributeBindings: ['multiple'],
 
+  /**
+    The `multiple` attribute of the select element. Indicates whether multiple
+    options can be selected.
+
+    @type Boolean
+    @default false
+  */
   multiple: false,
+
+  /**
+    The list of options.
+
+    If `optionLabelPath` and `optionValuePath` are not overridden, this should
+    be a list of strings, which will serve simultaneously as labels and values.
+
+    Otherwise, this should be a list of objects. For instance:
+
+        content: Ember.A([
+            { id: 1, firstName: 'Yehuda' },
+            { id: 2, firstName: 'Tom' }
+          ])),
+        optionLabelPath: 'content.firstName',
+        optionValuePath: 'content.id'
+
+    @type Array
+    @default null
+  */
   content: null,
+
+  /**
+    When `multiple` is false, the element of `content` that is currently
+    selected, if any.
+
+    When `multiple` is true, an array of such elements.
+
+    @type Object or Array
+    @default null
+  */
   selection: null,
+
+  /**
+    If given, a top-most dummy option will be rendered to serve as a user
+    prompt.
+
+    @type String
+    @default null
+  */
   prompt: null,
 
+  /**
+    The path of the option labels. See `content`.
+
+    @type String
+    @default 'content'
+  */
   optionLabelPath: 'content',
+
+  /**
+    The path of the option values. See `content`.
+
+    @type String
+    @default 'content'
+  */
   optionValuePath: 'content',
-
-  didInsertElement: function() {
-    var selection = get(this, 'selection');
-
-    if (selection) { this.selectionDidChange(); }
-
-    this.change();
-  },
 
   change: function() {
     if (get(this, 'multiple')) {
@@ -49,6 +107,13 @@ Ember.Select = Ember.View.extend({
     }
   }, 'selection'),
 
+  _triggerChange: function() {
+    var selection = get(this, 'selection');
+
+    if (selection) { this.selectionDidChange(); }
+
+    this.change();
+  },
 
   _changeSingle: function() {
     var selectedIndex = this.$()[0].selectedIndex,
@@ -101,13 +166,18 @@ Ember.Select = Ember.View.extend({
         this.selected = indexOf(selectedIndexes, this.index + offset) > -1;
       });
     }
+  },
+
+  init: function() {
+    this._super();
+    this.on("didInsertElement", this, this._triggerChange);
   }
 
 });
 
 Ember.SelectOption = Ember.View.extend({
   tagName: 'option',
-  template: Ember.Handlebars.compile("{{label}}"),
+  defaultTemplate: Ember.Handlebars.compile("{{view.label}}"),
   attributeBindings: ['value', 'selected'],
 
   init: function() {
@@ -127,7 +197,7 @@ Ember.SelectOption = Ember.View.extend({
       // `new Number(4) !== 4`, we use `==` below
       return content == selection;
     }
-  }).property('content', 'parentView.selection'),
+  }).property('content', 'parentView.selection').volatile(),
 
   labelPathDidChange: Ember.observer(function() {
     var labelPath = getPath(this, 'parentView.optionLabelPath');

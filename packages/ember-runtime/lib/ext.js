@@ -6,4 +6,3 @@
 
 require('ember-runtime/ext/string');
 require('ember-runtime/ext/function');
-require('ember-runtime/ext/mixin');

@@ -14,7 +14,7 @@ Ember.ViewState = Ember.State.extend({
         set(this, 'view', view);
       }
 
-      ember_assert('view must be an Ember.View', view instanceof Ember.View);
+      Ember.assert('view must be an Ember.View', view instanceof Ember.View);
 
       root = stateManager.get('rootView');
 

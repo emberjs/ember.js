@@ -23,8 +23,9 @@ var ObserverClass = Ember.Object.extend({
     later analysis.
   */
   propertyDidChange: function(target, key, value) {
-      this._keys[key] = true;
-      this._values[key] = value;
+    if (this._keys[key] === undefined) { this._keys[key] = 0; }
+    this._keys[key]++;
+    this._values[key] = value;
   },
 
   /**
@@ -50,7 +51,7 @@ var ObserverClass = Ember.Object.extend({
     @returns {Object} receiver
   */
   observe: function(obj) {
-    if (Ember.Observer && Ember.Observer.detect(obj)) {
+    if (obj.addObserver) {
       var keys = Array.prototype.slice.call(arguments, 1),
           loc  = keys.length;
       while(--loc>=0) obj.addObserver(keys[loc], this, 'propertyDidChange');
@@ -77,6 +78,16 @@ var ObserverClass = Ember.Object.extend({
     if (!this._keys[key]) return false;
     if (arguments.length>1) return this._values[key] === value;
     else return true;
+  },
+
+  /**
+    Returns times the observer as invoked.
+
+    @param {String} key
+      Key to check
+  */
+  timesCalled: function(key) {
+    return this._keys[key] || 0;
   },
 
   /**

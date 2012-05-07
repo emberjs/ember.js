@@ -347,13 +347,13 @@ Ember._RenderBuffer.prototype =
 
       openTag = ["<" + tag];
 
-      if (id) { openTag.push('id="' + id + '"'); }
-      if (classes) { openTag.push('class="' + classes.toDOM() + '"'); }
+      if (id) { openTag.push('id="' + this._escapeAttribute(id) + '"'); }
+      if (classes) { openTag.push('class="' + this._escapeAttribute(classes.toDOM()) + '"'); }
 
       if (style) {
         for (prop in style) {
           if (style.hasOwnProperty(prop)) {
-            styleBuffer += (prop + ':' + style[prop] + ';');
+            styleBuffer += (prop + ':' + this._escapeAttribute(style[prop]) + ';');
           }
         }
 
@@ -363,7 +363,7 @@ Ember._RenderBuffer.prototype =
       if (attrs) {
         for (prop in attrs) {
           if (attrs.hasOwnProperty(prop)) {
-            openTag.push(prop + '="' + attrs[prop] + '"');
+            openTag.push(prop + '="' + this._escapeAttribute(attrs[prop]) + '"');
           }
         }
       }
@@ -383,6 +383,30 @@ Ember._RenderBuffer.prototype =
     } else {
       return content;
     }
+  },
+
+  _escapeAttribute: function(value) {
+    // Stolen shamelessly from Handlebars
+
+    var escape = {
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#x27;",
+      "`": "&#x60;"
+    };
+
+    var badChars = /&(?!\w+;)|[<>"'`]/g;
+    var possible = /[&<>"'`]/;
+
+    var escapeChar = function(chr) {
+      return escape[chr] || "&amp;";
+    };
+
+    var string = value.toString();
+
+    if(!possible.test(string)) { return string; }
+    return string.replace(badChars, escapeChar);
   }
 
 };

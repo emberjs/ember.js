@@ -1,5 +1,7 @@
 // PhantomJS QUnit Test Runner
 
+/*globals QUnit phantom*/
+
 var args = phantom.args;
 if (args.length < 1 || args.length > 2) {
   console.log("Usage: " + phantom.scriptName + " <URL> <timeout>");
@@ -8,9 +10,9 @@ if (args.length < 1 || args.length > 2) {
 
 var page = require('webpage').create();
 
-var depRe = /^DEPRECATION:/;
 page.onConsoleMessage = function(msg) {
-  if (!depRe.test(msg)) console.log(msg);
+  if (msg.slice(0,8) === 'WARNING:') { return; }
+  console.log(msg);
 };
 
 page.open(args[0], function(status) {
@@ -18,14 +20,14 @@ page.open(args[0], function(status) {
     console.error("Unable to access network");
     phantom.exit(1);
   } else {
-    page.evaluate(addLogging);
+    page.evaluate(logQUnit);
 
-    var timeout = parseInt(args[1] || 30000, 10);
+    var timeout = parseInt(args[1] || 60000, 10);
     var start = Date.now();
     var interval = setInterval(function() {
       if (Date.now() > start + timeout) {
         console.error("Tests timed out");
-        phantom.exit(1);
+        phantom.exit(124);
       } else {
         var qunitDone = page.evaluate(function() {
           return window.qunitDone;
@@ -44,9 +46,11 @@ page.open(args[0], function(status) {
   }
 });
 
-function addLogging() {
+function logQUnit() {
   var testErrors = [];
   var assertionErrors = [];
+
+  console.log("Running: " + JSON.stringify(QUnit.urlParams));
 
   QUnit.moduleDone(function(context) {
     if (context.failed) {

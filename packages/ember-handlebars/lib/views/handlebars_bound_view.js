@@ -15,16 +15,16 @@ require('ember-handlebars/views/metamorph_view');
   @private
   @class
 
-  Ember._BindableSpanView is a private view created by the Handlebars `{{bind}}`
+  Ember._HandlebarsBoundView is a private view created by the Handlebars `{{bind}}`
   helpers that is used to keep track of bound properties.
 
   Every time a property is bound using a `{{mustache}}`, an anonymous subclass
-  of Ember._BindableSpanView is created with the appropriate sub-template and
+  of Ember._HandlebarsBoundView is created with the appropriate sub-template and
   context set up. When the associated property changes, just the template for
   this view will re-render.
 */
-Ember._BindableSpanView = Ember.View.extend(Ember.Metamorph,
-/** @scope Ember._BindableSpanView.prototype */{
+Ember._HandlebarsBoundView = Ember._MetamorphView.extend({
+/** @scope Ember._HandlebarsBoundView.prototype */
 
   /**
     The function used to determine if the `displayTemplate` or
@@ -38,8 +38,8 @@ Ember._BindableSpanView = Ember.View.extend(Ember.Metamorph,
 
   /**
     Whether the template rendered by this view gets passed the context object
-    of its parent template, or gets passed the value of retrieving `property`
-    from the previous context.
+    of its parent template, or gets passed the value of retrieving `path`
+    from the `pathRoot`.
 
     For example, this is true when using the `{{#if}}` helper, because the
     template inside the helper should look up properties relative to the same
@@ -51,6 +51,14 @@ Ember._BindableSpanView = Ember.View.extend(Ember.Metamorph,
     @default false
   */
   preserveContext: false,
+
+  /**
+    If `preserveContext` is true, this is the object that will be used
+    to render the template.
+
+    @type Object
+  */
+  previousContext: null,
 
   /**
     The template to render when `shouldDisplayFunc` evaluates to true.
@@ -68,35 +76,48 @@ Ember._BindableSpanView = Ember.View.extend(Ember.Metamorph,
   */
   inverseTemplate: null,
 
+
   /**
-    The key to look up on `previousContext` that is passed to
+    The path to look up on `pathRoot` that is passed to
     `shouldDisplayFunc` to determine which template to render.
 
-    In addition, if `preserveContext` is false, this object will be passed to
-    the template when rendering.
+    In addition, if `preserveContext` is false, the object at this path will
+    be passed to the template when rendering.
 
     @type String
     @default null
   */
-  property: null,
+  path: null,
+
+  /**
+    The object from which the `path` will be looked up. Sometimes this is the
+    same as the `previousContext`, but in cases where this view has been generated
+    for paths that start with a keyword such as `view` or `controller`, the
+    path root will be that resolved object.
+
+    @type Object
+  */
+  pathRoot: null,
 
   normalizedValue: Ember.computed(function() {
-    var property = get(this, 'property'),
-        context  = get(this, 'previousContext'),
+    var path = get(this, 'path'),
+        pathRoot  = get(this, 'pathRoot'),
         valueNormalizer = get(this, 'valueNormalizerFunc'),
         result, templateData;
 
-    // Use the current context as the result if no
-    // property is provided.
-    if (property === '') {
-      result = context;
+    // Use the pathRoot as the result if no path is provided. This
+    // happens if the path is `this`, which gets normalized into
+    // a `pathRoot` of the current Handlebars context and a path
+    // of `''`.
+    if (path === '') {
+      result = pathRoot;
     } else {
       templateData = get(this, 'templateData');
-      result = getPath(context, property, { data: templateData });
+      result = getPath(pathRoot, path, { data: templateData });
     }
 
     return valueNormalizer ? valueNormalizer(result) : result;
-  }).property('property', 'previousContext', 'valueNormalizerFunc'),
+  }).property('path', 'pathRoot', 'valueNormalizerFunc').volatile(),
 
   rerenderIfNeeded: function() {
     if (!get(this, 'isDestroyed') && get(this, 'normalizedValue') !== this._lastNormalizedValue) {
@@ -108,7 +129,7 @@ Ember._BindableSpanView = Ember.View.extend(Ember.Metamorph,
     Determines which template to invoke, sets up the correct state based on
     that logic, then invokes the default Ember.View `render` implementation.
 
-    This method will first look up the `property` key on `previousContext`,
+    This method will first look up the `path` key on `pathRoot`,
     then pass that value to the `shouldDisplayFunc` function. If that returns
     true, the `displayTemplate` function will be rendered to DOM. Otherwise,
     `inverseTemplate`, if specified, will be rendered.
@@ -154,7 +175,7 @@ Ember._BindableSpanView = Ember.View.extend(Ember.Metamorph,
         // expression to the render context and return.
           if (result === null || result === undefined) {
             result = "";
-          } else {
+          } else if (!(result instanceof Handlebars.SafeString)) {
             result = String(result);
           }
 

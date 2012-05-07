@@ -53,7 +53,7 @@ module("object.get()", {
       numberVal: 24,
       toggleVal: true,
 
-      computed: Ember.computed(function() { return 'value'; }).property(),
+      computed: Ember.computed(function() { return 'value'; }).property().volatile(),
 
       method: function() { return "value"; },
 
@@ -103,7 +103,7 @@ module("Ember.get()", {
       numberVal: 24,
       toggleVal: true,
 
-      computed: Ember.computed(function() { return 'value'; }).property(),
+      computed: Ember.computed(function() { return 'value'; }).property().volatile(),
 
       method: function() { return "value"; },
 
@@ -178,7 +178,7 @@ module("Ember.getPath()");
 test("should return a property at a given path relative to the window", function() {
   window.Foo = ObservableObject.create({
     Bar: ObservableObject.create({
-      Baz: Ember.computed(function() { return "blargh"; }).property()
+      Baz: Ember.computed(function() { return "blargh"; }).property().volatile()
     })
   });
 
@@ -192,7 +192,7 @@ test("should return a property at a given path relative to the window", function
 test("should return a property at a given path relative to the passed object", function() {
   var foo = ObservableObject.create({
     bar: ObservableObject.create({
-      baz: Ember.computed(function() { return "blargh"; }).property()
+      baz: Ember.computed(function() { return "blargh"; }).property().volatile()
     })
   });
 
@@ -242,7 +242,7 @@ module("object.set()", {
           this._computed = value ;
         }
         return this._computed ;
-      }).property(),
+      }).property().volatile(),
 
       // method, but not a property
       _method: "method",
@@ -328,7 +328,7 @@ module("Computed properties", {
       computed: Ember.computed(function(key, value) {
         this.computedCalls.push(value);
         return 'computed';
-      }).property(),
+      }).property().volatile(),
 
       computedCachedCalls: [],
       computedCached: Ember.computed(function(key, value) {
@@ -345,13 +345,13 @@ module("Computed properties", {
       dependent: Ember.computed(function(key, value) {
         this.dependentCalls.push(value);
         return 'dependent';
-      }).property('changer'),
+      }).property('changer').volatile(),
 
       dependentFrontCalls: [],
       dependentFront: Ember.computed('changer', function(key, value) {
         this.dependentFrontCalls.push(value);
         return 'dependentFront';
-      }),
+      }).volatile(),
 
       dependentCachedCalls: [],
       dependentCached: Ember.computed(function(key, value) {
@@ -376,12 +376,12 @@ module("Computed properties", {
       isOn: Ember.computed(function(key, value) {
         if (value !== undefined) this.set('state', 'on');
         return this.get('state') === 'on';
-      }).property('state'),
+      }).property('state').volatile(),
 
       isOff: Ember.computed(function(key, value) {
         if (value !== undefined) this.set('state', 'off');
         return this.get('state') === 'off';
-      }).property('state')
+      }).property('state').volatile()
 
     }) ;
   }
@@ -558,7 +558,7 @@ test("nested dependent keys should propagate after they update", function() {
 
     price: Ember.computed(function() {
       return this.getPath('restaurant.menu.price');
-    }).property('restaurant.menu.price')
+    }).property('restaurant.menu.price').volatile()
   });
 
   var bindObj = ObservableObject.create({

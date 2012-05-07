@@ -4,5 +4,5 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
-require("ember-handlebars/views/bindable_span");
+require("ember-handlebars/views/handlebars_bound_view");
 require("ember-handlebars/views/metamorph_view");

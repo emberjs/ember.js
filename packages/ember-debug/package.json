@@ -1,10 +1,10 @@
 {
   "name": "ember-debug",
   "summary": "Debugging for Ember",
-  "description": "Dubugging helpers for Ember",
-  "homepage": "http://www.ember`js.com",
+  "description": "Debugging helpers for Ember",
+  "homepage": "http://www.emberjs.com",
   "author": "Peter Wagenet",
-  "version": "0.9.6",
+  "version": "0.9.7.1",
 
   "directories": {
     "lib": "lib"

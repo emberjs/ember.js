@@ -11,8 +11,7 @@
     // Handle JSHint
     QUnit.config.urlConfig.push('nojshint');
 
-    var noJsHint = location.search.match(/nojshint=([^&]+)/);
-    jsHint = !(noJsHint && decodeURIComponent(noJsHint[1]));
+    var jsHint = !QUnit.urlParams.nojshint;
 
     var jsHintReporter = function (file, errors) {
       if (!errors) { return ''; }
@@ -33,12 +32,21 @@
     }
 
 
+    window.ENV = window.ENV || {};
+
     // Handle extending prototypes
     QUnit.config.urlConfig.push('extendprototypes');
 
-    window.ENV = window.ENV || {};
-    var extendPrototypes = location.search.match(/extendprototypes=([^&]+)/);
-    ENV['EXTEND_PROTOTYPES'] = !!(extendPrototypes && decodeURIComponent(extendPrototypes[1]));
+    var extendPrototypes = QUnit.urlParams.extendprototypes;
+    ENV['EXTEND_PROTOTYPES'] = !!extendPrototypes;
+
+    // Handle CP cacheable by default
+    QUnit.config.urlConfig.push('cpdefaultcacheable');
+
+    var cpDefaultCacheable = QUnit.urlParams.cpdefaultcacheable;
+    ENV['CP_DEFAULT_CACHEABLE'] = !!cpDefaultCacheable;
+
+    ENV.VIEW_PRESERVES_CONTEXT = true;
   </script>
 </head>
 <body>
@@ -59,10 +67,9 @@
 
   <script>
     // Load custom version of jQuery if possible
-    var jQueryMatch = location.search.match(/jquery=([^&]+)/),
-        jQueryVersion = jQueryMatch ? jQueryMatch[1] : "1.7.2";
+    var jQueryVersion = QUnit.urlParams.jquery || "1.7.2";
     if (jQueryVersion !== 'none') {
-      document.write(unescape('%3Cscript src="http://ajax.googleapis.com/ajax/libs/jquery/'+jQueryVersion+'/jquery.js"%3E%3C/script%3E'));
+      document.write(unescape('%3Cscript src="http://code.jquery.com/jquery-'+jQueryVersion+'.js"%3E%3C/script%3E'));
     }
     // Close the script tag to make sure document.write happens
   </script>
@@ -71,7 +78,7 @@
     // Fallback to default jQuery
     if (jQueryVersion !== 'none' && !window.jQuery) {
       if (console && console.warn) { console.warn("Unable to load jQuery "+jQueryVersion+". Using default."); }
-      document.write(unescape('%3Cscript src="jquery-1.7.2.js"%3E%3C/script%3E'));
+      document.write(unescape('%3Cscript src="../lib/jquery-1.7.2.js"%3E%3C/script%3E'));
     }
     // Close the script tag to make sure document.write happens
   </script>
@@ -84,6 +91,7 @@
     var distros = {
       spade:   'ember-spade.js',
       build:   'ember.js',
+      prod:    'ember.prod.js',
       runtime: 'ember-runtime.js'
     };
 
@@ -115,23 +123,22 @@
 
 
     // Load Tests and Depenencies
-    var packages = location.search.match(/package=([^&]+)/),
+    var packages = (QUnit.urlParams.package || "").split(","),
         packageName, el, idx, len, re, match, moduleName;
 
-    if (!packages) {
+    if (!packages.length) {
       el = document.getElementById('qunit-header');
       el.innerHTML = 'Add package=package1,package2 in the URL to test packages';
     } else {
-      if (packages[1] === 'all') {
+      if (packages[0] === 'all') {
         packages = [
           'ember-handlebars',
           'ember-metal',
           'ember-runtime',
           'ember-states',
-          'ember-views'
+          'ember-views',
+          'ember-viewstates'
         ];
-      } else {
-        packages = packages[1].split(',');
       }
 
       len = packages.length;
@@ -165,7 +172,8 @@
               // (closure to preserve variable values)
               (function() {
                 var jshintModule = moduleName;
-                test(jshintModule+' should pass jshint', function() {
+                module(jshintModule);
+                test('should pass jshint', function() {
                   var passed = JSHINT(minispade.modules[jshintModule], JSHINTRC),
                       errors = jsHintReporter(jshintModule, JSHINT.errors);
                   ok(passed, jshintModule+" should pass jshint."+(errors ? "\n"+errors : ''));

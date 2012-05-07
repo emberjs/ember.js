@@ -14,15 +14,13 @@ suite.test("[].popObject() => [] + returns undefined + NO notify", function() {
   var obj, observer;
 
   obj = this.newObject([]);
-  observer = this.newObserver(obj, '[]', 'length');
+  observer = this.newObserver(obj, '@each', 'length');
 
   equal(obj.popObject(), undefined, 'popObject results');
 
   deepEqual(this.toArray(obj), [], 'post item results');
-  if (observer.isEnabled) {
-    equal(observer.validate('[]'), false, 'should NOT have notified []');
-    equal(observer.validate('length'), false, 'should NOT have notified length');
-  }
+  equal(observer.validate('@each'), false, 'should NOT have notified @each');
+  equal(observer.validate('length'), false, 'should NOT have notified length');
 });
 
 suite.test("[X].popObject() => [] + notify", function() {
@@ -31,17 +29,15 @@ suite.test("[X].popObject() => [] + notify", function() {
   before = this.newFixture(1);
   after  = [];
   obj = this.newObject(before);
-  observer = this.newObserver(obj, '[]', 'length');
+  observer = this.newObserver(obj, '@each', 'length');
 
   ret = obj.popObject();
 
   equal(ret, before[0], 'return object');
   deepEqual(this.toArray(obj), after, 'post item results');
   equal(Ember.get(obj, 'length'), after.length, 'length');
-  if (observer.isEnabled) {
-    equal(observer.validate('[]'), true, 'should NOT have notified []');
-    equal(observer.validate('length'), true, 'should NOT have notified length');
-  }
+  equal(observer.validate('@each'), true, 'should NOT have notified @each');
+  equal(observer.validate('length'), true, 'should NOT have notified length');
 });
 
 suite.test("[A,B,C].popObject() => [A,B] + notify", function() {
@@ -50,7 +46,7 @@ suite.test("[A,B,C].popObject() => [A,B] + notify", function() {
   before = this.newFixture(3);
   after  = [before[0], before[1]];
   obj = this.newObject(before);
-  observer = this.newObserver(obj, '[]', 'length');
+  observer = this.newObserver(obj, '@each', 'length');
 
   ret = obj.popObject();
 
@@ -58,8 +54,6 @@ suite.test("[A,B,C].popObject() => [A,B] + notify", function() {
   deepEqual(this.toArray(obj), after, 'post item results');
   equal(Ember.get(obj, 'length'), after.length, 'length');
 
-  if (observer.isEnabled) {
-    equal(observer.validate('[]'), true, 'should NOT have notified []');
-    equal(observer.validate('length'), true, 'should NOT have notified length');
-  }
+  equal(observer.validate('@each'), true, 'should NOT have notified @each');
+  equal(observer.validate('length'), true, 'should NOT have notified length');
 });

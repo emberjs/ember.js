@@ -1,3 +1,27 @@
+*Ember 0.9.7.1 (April 19, 2012)*
+
+* Better escaping method for RenderBuffer
+* More rigorous XSS escaping from bindAttr
+
+*Ember 0.9.7 (April 18, 2012)*
+
+* RenderBuffer now properly escapes attribute values. Fixes XSS vulnerability documented in #699.
+* Make options an optional argument to Ember.Handlebars.getPath
+* getProperties can be called with an array of property names
+* Allow for jQuery prereleases and RCs - fixes #678
+* Raise if both template and templateName appear
+* DRY up createChildView initialization
+* Ember.ContainerView should propagate template data
+* allows yielded template blocks to be optional
+* Fixed substate/parentState test
+* Inline views should always have an id - Fixes #655
+* Ember.View should not require view method sharing event name.
+* Refactor and cleanup Ember.Checkbox
+* Normalize keyword paths so that observers work
+* Expose view and controller keywords to templates
+* Ember.Select allows array selections when multiple=false.
+* Ember.ArrayUtils.objectsAt returns correct objects.
+
 *Ember 0.9.6 (March 30, 2012)*
 
 * Significant internal performance improvements

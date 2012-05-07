@@ -10,6 +10,7 @@ var get = Ember.get, set = Ember.set;
 
 module("Ember.Button", {
   setup: function() {
+    Ember.TESTING_DEPRECATION = true;
     application = Ember.Application.create();
     button = Ember.Button.create();
   },
@@ -19,6 +20,7 @@ module("Ember.Button", {
       button.destroy();
       application.destroy();
     });
+    Ember.TESTING_DEPRECATION = false;
   }
 });
 

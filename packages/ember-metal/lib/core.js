@@ -9,7 +9,7 @@ if ('undefined' === typeof Ember) {
 /**
   @namespace
   @name Ember
-  @version 0.9.6
+  @version 0.9.7.1
 
   All Ember methods and functions are defined inside of this namespace.
   You generally should not add new properties to this namespace as it may be
@@ -29,7 +29,7 @@ if ('undefined' === typeof Ember) {
 
 // Create core object. Make it act like an instance of Ember.Namespace so that
 // objects assigned to it are given a sane string representation.
-Ember = { isNamespace: true, toString: function() { return "Ember"; } };
+Ember = {};
 
 // aliases needed to keep minifiers from removing the global context
 if ('undefined' !== typeof window) {
@@ -38,13 +38,20 @@ if ('undefined' !== typeof window) {
 
 }
 
+// Make sure these are set whether Ember was already defined or not
+
+Ember.isNamespace = true;
+
+Ember.toString = function() { return "Ember"; };
+
+
 /**
   @static
   @type String
-  @default '0.9.6'
+  @default '0.9.7.1'
   @constant
 */
-Ember.VERSION = '0.9.6';
+Ember.VERSION = '0.9.7.1';
 
 /**
   @static
@@ -91,6 +98,56 @@ Ember.EXTEND_PROTOTYPES = (Ember.ENV.EXTEND_PROTOTYPES !== false);
 Ember.SHIM_ES5 = (Ember.ENV.SHIM_ES5 === false) ? false : Ember.EXTEND_PROTOTYPES;
 
 
+/**
+  @static
+  @type Boolean
+  @default false
+  @constant
+
+  Determines whether computed properties are cacheable by default.
+  In future releases this will default to `true`. For the 1.0 release,
+  the option to turn off caching by default will be removed entirely.
+
+  When caching is enabled by default, you can use `volatile()` to disable
+  caching on individual computed properties.
+*/
+Ember.CP_DEFAULT_CACHEABLE = !!Ember.ENV.CP_DEFAULT_CACHEABLE;
+
+/**
+  @static
+  @type Boolean
+  @default false
+  @constant
+
+  Determines whether views render their templates using themselves
+  as the context, or whether it is inherited from the parent. In
+  future releases, this will default to `true`. For the 1.0 release,
+  the option to have views change context by default will be removed entirely.
+
+  If you need to update your application to use the new context rules, simply
+  prefix property access with `view.`:
+
+      // Before:
+      {{#each App.photosController}}
+        Photo Title: {{title}}
+        {{#view App.InfoView contentBinding="this"}}
+          {{content.date}}
+          {{content.cameraType}}
+          {{otherViewProperty}}
+        {{/view}}
+      {{/each}}
+
+      // After:
+      {{#each App.photosController}}
+        Photo Title: {{title}}
+        {{#view App.InfoView}}
+          {{date}}
+          {{cameraType}}
+          {{view.otherViewProperty}}
+        {{/view}}
+      {{/each}}
+*/
+Ember.VIEW_PRESERVES_CONTEXT = !!Ember.ENV.VIEW_PRESERVES_CONTEXT;
 
 /**
   Empty function.  Useful for some operations.
@@ -109,17 +166,22 @@ Ember.K = function() { return this; };
 
 // Stub out the methods defined by the ember-debug package in case it's not loaded
 
-if ('undefined' === typeof ember_assert) {
-  window.ember_assert = Ember.K;
+if ('undefined' === typeof Ember.assert) { Ember.assert = Ember.K; }
+if ('undefined' === typeof Ember.warn) { Ember.warn = Ember.K; }
+if ('undefined' === typeof Ember.deprecate) { Ember.deprecate = Ember.K; }
+if ('undefined' === typeof Ember.deprecateFunc) {
+  Ember.deprecateFunc = function(_, func) { return func; };
 }
 
+// These are deprecated but still supported
+
+if ('undefined' === typeof ember_assert) { window.ember_assert = Ember.K; }
 if ('undefined' === typeof ember_warn) { window.ember_warn = Ember.K; }
-
 if ('undefined' === typeof ember_deprecate) { window.ember_deprecate = Ember.K; }
-
 if ('undefined' === typeof ember_deprecateFunc) {
   window.ember_deprecateFunc = function(_, func) { return func; };
 }
+
 
 // ..........................................................
 // LOGGER

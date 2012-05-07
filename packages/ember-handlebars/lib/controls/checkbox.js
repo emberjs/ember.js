@@ -50,52 +50,47 @@ var set = Ember.set, get = Ember.get;
 Ember.Checkbox = Ember.View.extend({
   classNames: ['ember-checkbox'],
 
-  tagName: Ember.computed(function(){
-    return get(this, 'title') ? undefined : 'input';
-  }).property(),
+  tagName: 'input',
 
-  attributeBindings: Ember.computed(function(){
-    return get(this, 'title') ? [] : ['type', 'checked', 'disabled'];
-  }).property(),
+  attributeBindings: ['type', 'checked', 'disabled'],
 
   type: "checkbox",
   checked: false,
   disabled: false,
 
-  title:  Ember.computed(function(propName, value){
-    if (value !== undefined) {
-      ember_warn("Automatically surrounding Ember.Checkbox inputs with a label by providing a 'title' property is deprecated");
-      return value;
-    }
-  }).property().cacheable(),
-
-  defaultTemplate: Ember.computed(function(){
-    if (get(this, 'title')) {
-      return Ember.Handlebars.compile('<label><input type="checkbox" {{bindAttr checked="checked" disabled="disabled"}}>{{title}}</label>');
-    } else {
-      return undefined;
-    }
-  }).property().cacheable(),
+  /** @deprecated */
+  title: null,
 
   value: Ember.computed(function(propName, value){
-    ember_warn("Ember.Checkbox's 'value' property has been renamed to 'checked' to match the html element attribute name");
+    Ember.deprecate("Ember.Checkbox's 'value' property has been renamed to 'checked' to match the html element attribute name");
     if (value !== undefined) {
       return set(this, 'checked', value);
     } else {
       return get(this, 'checked');
     }
-  }).property('checked'),
+  }).property('checked').volatile(),
 
   change: function() {
     Ember.run.once(this, this._updateElementValue);
     // returning false will cause IE to not change checkbox state
   },
-  
+
   /**
     @private
   */
   _updateElementValue: function() {
     var input = get(this, 'title') ? this.$('input:checkbox') : this.$();
     set(this, 'checked', input.prop('checked'));
+  },
+
+  init: function() {
+    if (get(this, 'title') || get(this, 'titleBinding')) {
+      Ember.deprecate("Automatically surrounding Ember.Checkbox inputs with a label by providing a 'title' property is deprecated");
+      this.tagName = undefined;
+      this.attributeBindings = [];
+      this.defaultTemplate = Ember.Handlebars.compile('<label><input type="checkbox" {{bindAttr checked="checked" disabled="disabled"}}>{{title}}</label>');
+    }
+
+    this._super();
   }
 });

@@ -18,6 +18,18 @@ test('should be able to use getProperties to get a POJO of provided keys', funct
   equal("Jobs", pojo.lastName);
 });
 
+test('should be able to use getProperties with array parameter to get a POJO of provided keys', function() {
+  var obj = Ember.Object.create({
+    firstName: "Steve",
+    lastName: "Jobs",
+    companyName: "Apple, Inc."
+  });
+
+  var pojo = obj.getProperties(["firstName", "lastName"]);
+  equal("Steve", pojo.firstName);
+  equal("Jobs", pojo.lastName);
+});
+
 test('should be able to use setProperties to set multiple properties at once', function() {
   var obj = Ember.Object.create({
     firstName: "Steve",

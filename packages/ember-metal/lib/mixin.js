@@ -11,6 +11,7 @@ require('ember-metal/properties');
 require('ember-metal/observer');
 require('ember-metal/utils');
 require('ember-metal/array');
+require('ember-metal/binding');
 
 var Mixin, MixinDelegate, REQUIRED, Alias;
 var classToString, superClassString;
@@ -160,16 +161,47 @@ function getBeforeObserverPaths(value) {
   return ('function' === typeof value) && value.__ember_observesBefore__;
 }
 
-Ember._mixinBindings = function(obj, key, value, m) {
-  return value;
-};
+var IS_BINDING = Ember.IS_BINDING = /^.+Binding$/;
+
+function detectBinding(obj, key, m) {
+  if (IS_BINDING.test(key)) {
+    var bindings = m.bindings;
+    if (!bindings) {
+      bindings = m.bindings = { __emberproto__: obj };
+    } else if (bindings.__emberproto__ !== obj) {
+      bindings = m.bindings = o_create(m.bindings);
+      bindings.__emberproto__ = obj;
+    }
+    bindings[key] = true;
+  }
+}
+
+function connectBindings(obj, m) {
+  if (m === undefined) {
+    m = Ember.meta(obj);
+  }
+  var bindings = m.bindings, key, binding;
+  if (bindings) {
+    for (key in bindings) {
+      binding = key !== '__emberproto__' && obj[key];
+      if (binding) {
+        if (binding instanceof Ember.Binding) {
+          binding = binding.copy(); // copy prototypes' instance
+          binding.to(key.slice(0, -7));
+        } else {
+          binding = new Ember.Binding(key.slice(0,-7), binding);
+        }
+        binding.connect(obj);
+        obj[key] = binding;
+      }
+    }
+  }
+}
 
 /** @private */
 function applyMixin(obj, mixins, partial) {
   var descs = {}, values = {}, m = Ember.meta(obj), req = m.required;
   var key, willApply, didApply, value, desc;
-
-  var mixinBindings = Ember._mixinBindings;
 
   // Go through all mixins and hashes passed in, and:
   //
@@ -239,8 +271,7 @@ function applyMixin(obj, mixins, partial) {
         }
       }
 
-      // TODO: less hacky way for ember-runtime to add bindings.
-      value = mixinBindings(obj, key, value, m);
+      detectBinding(obj, key, m);
 
       defineProperty(obj, key, desc, value);
 
@@ -267,6 +298,10 @@ function applyMixin(obj, mixins, partial) {
       if (didApply) didApply.call(obj, key);
 
     }
+  }
+
+  if (!partial) { // don't apply to prototype
+    value = connectBindings(obj, m);
   }
 
   // Make sure no required attrs remain
@@ -301,6 +336,11 @@ Mixin._apply = applyMixin;
 Mixin.applyPartial = function(obj) {
   var args = a_slice.call(arguments, 1);
   return applyMixin(obj, args, true);
+};
+
+Mixin.finishPartial = function(obj) {
+  connectBindings(obj);
+  return obj;
 };
 
 Mixin.create = function() {
@@ -429,7 +469,7 @@ function processNames(paths, root, seen) {
 
 /** @private */
 function findNamespaces() {
-  var Namespace = Ember.Namespace, obj;
+  var Namespace = Ember.Namespace, obj, isNamespace;
 
   if (Namespace.PROCESSED) { return; }
 
@@ -440,14 +480,17 @@ function findNamespaces() {
     // Unfortunately, some versions of IE don't support window.hasOwnProperty
     if (window.hasOwnProperty && !window.hasOwnProperty(prop)) { continue; }
 
+    // At times we are not allowed to access certain properties for security reasons.
+    // There are also times where even if we can access them, we are not allowed to access their properties.
     try {
       obj = window[prop];
+      isNamespace = obj && get(obj, 'isNamespace');
     } catch (e) {
       continue;
     }
 
-    if (obj && get(obj, 'isNamespace')) {
-      ember_deprecate("Namespaces should not begin with lowercase.", /^[A-Z]/.test(prop));
+    if (isNamespace) {
+      Ember.deprecate("Namespaces should not begin with lowercase.", /^[A-Z]/.test(prop));
       obj[NAME_KEY] = prop;
     }
   }

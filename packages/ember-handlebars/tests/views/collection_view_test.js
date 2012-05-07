@@ -96,41 +96,6 @@ test("empty views should be removed when content is added to the collection (reg
   Ember.run(function(){ window.App.destroy(); });
 });
 
-test("collection helper should accept emptyViewClass attribute", function() {
-  window.App = Ember.Application.create();
-
-  App.EmptyView = Ember.View.extend({
-    classNames: ['empty']
-  });
-
-  App.ListController = Ember.ArrayProxy.create({
-    content : Ember.A()
-  });
-
-  view = Ember.View.create({
-    template: Ember.Handlebars.compile('{{#collection emptyViewClass="App.EmptyView" contentBinding="App.ListController" tagName="table"}} <td>{{content.title}}</td> {{/collection}}')
-  });
-
-  Ember.run(function() {
-    view.appendTo('#qunit-fixture');
-  });
-
-  equal(view.$('tr').length, 0, 'emptyViewClass has no effect without inverse');
-  view.remove();
-
-  view = Ember.View.create({
-    template: Ember.Handlebars.compile('{{#collection emptyViewClass="App.EmptyView" contentBinding="App.ListController" tagName="table"}} <td>{{content.title}}</td> {{else}} <td>No Rows Yet</td> {{/collection}}')
-  });
-
-  Ember.run(function() {
-    view.appendTo('#qunit-fixture');
-  });
-
-  equal(view.$('tr').hasClass('empty'), 1, 'if emptyViewClass is given it is used for inverse');
-
-  Ember.run(function(){ window.App.destroy(); });
-});
-
 test("if no content is passed, and no 'else' is specified, nothing is rendered", function() {
   TemplateTests.CollectionTestView = Ember.CollectionView.extend({
     tagName: 'ul',
@@ -172,7 +137,7 @@ test("a block passed to a collection helper defaults to the content property of 
   });
 
   view = Ember.View.create({
-    template: Ember.Handlebars.compile('{{#collection "TemplateTests.CollectionTestView"}} <label>{{content}}</label> {{/collection}}')
+    template: Ember.Handlebars.compile('{{#collection "TemplateTests.CollectionTestView"}} <label>{{view.content}}</label> {{/collection}}')
   });
 
   Ember.run(function() {
@@ -189,7 +154,7 @@ test("a block passed to a collection helper defaults to the view", function() {
   });
 
   view = Ember.View.create({
-    template: Ember.Handlebars.compile('{{#collection "TemplateTests.CollectionTestView"}} <label>{{content}}</label> {{/collection}}')
+    template: Ember.Handlebars.compile('{{#collection "TemplateTests.CollectionTestView"}} <label>{{view.content}}</label> {{/collection}}')
   });
 
   Ember.run(function() {
@@ -275,7 +240,7 @@ test("should give its item views the property specified by itemPropertyBinding",
   var view = Ember.View.create({
     baz: "baz",
     content: Ember.A([Ember.Object.create(), Ember.Object.create(), Ember.Object.create()]),
-    template: Ember.Handlebars.compile('{{#collection contentBinding="content" tagName="ul" itemViewClass="TemplateTests.itemPropertyBindingTestItemView" itemPropertyBinding="baz" preserveContext=false}}{{property}}{{/collection}}')
+    template: Ember.Handlebars.compile('{{#collection contentBinding="content" tagName="ul" itemViewClass="TemplateTests.itemPropertyBindingTestItemView" itemPropertyBinding="baz" preserveContext=false}}{{view.property}}{{/collection}}')
   });
 
   Ember.run(function() {
@@ -346,7 +311,7 @@ test("should re-render when the content object changes", function() {
   });
 
   var view = Ember.View.create({
-    template: Ember.Handlebars.compile('{{#collection TemplateTests.RerenderTest}}{{content}}{{/collection}}')
+    template: Ember.Handlebars.compile('{{#collection TemplateTests.RerenderTest}}{{view.content}}{{/collection}}')
   });
 
   Ember.run(function() {
@@ -372,7 +337,7 @@ test("select tagName on collection helper automatically sets child tagName to op
   });
 
   var view = Ember.View.create({
-    template: Ember.Handlebars.compile('{{#collection TemplateTests.RerenderTest tagName="select"}}{{content}}{{/collection}}')
+    template: Ember.Handlebars.compile('{{#collection TemplateTests.RerenderTest tagName="select"}}{{view.content}}{{/collection}}')
   });
 
   Ember.run(function() {
@@ -389,7 +354,7 @@ test("tagName works in the #collection helper", function() {
   });
 
   var view = Ember.View.create({
-    template: Ember.Handlebars.compile('{{#collection TemplateTests.RerenderTest tagName="ol"}}{{content}}{{/collection}}')
+    template: Ember.Handlebars.compile('{{#collection TemplateTests.RerenderTest tagName="ol"}}{{view.content}}{{/collection}}')
   });
 
   Ember.run(function() {

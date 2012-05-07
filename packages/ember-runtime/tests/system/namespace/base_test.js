@@ -8,7 +8,14 @@ module('Ember.Namespace', {
   teardown: function() {
     if (window.NamespaceA) { window.NamespaceA.destroy(); }
     if (window.NamespaceB) { window.NamespaceB.destroy(); }
-    if (window.namespaceC) { window.namespaceC.destroy(); }
+    if (window.namespaceC) {
+      try {
+        Ember.TESTING_DEPRECATION = true;
+        window.namespaceC.destroy();
+      } finally {
+        Ember.TESTING_DEPRECATION = false;
+      }
+    }
   }
 });
 

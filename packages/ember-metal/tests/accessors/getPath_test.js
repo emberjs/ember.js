@@ -5,8 +5,7 @@
 // ==========================================================================
 /*globals Foo:true $foo:true */
 
-var obj;
-module('Ember.getPath', {
+var obj, moduleOpts = {
   setup: function() {
     obj = {
       foo: {
@@ -35,7 +34,9 @@ module('Ember.getPath', {
     Foo = null;
     $foo = null;
   }
-});
+};
+
+module('Ember.getPath', moduleOpts);
 
 // ..........................................................
 // LOCAL PATHS
@@ -112,8 +113,43 @@ test('[obj, this.Foo.bar] -> (null)', function() {
 });
 
 // ..........................................................
+// NO TARGET
+//
+
+test('[null, Foo] -> Foo', function() {
+  deepEqual(Ember.getPath('Foo'), Foo);
+});
+
+test('[null, Foo.bar] -> Foo.bar', function() {
+  deepEqual(Ember.getPath('Foo.bar'), Foo.bar);
+});
+
+test('[null, Foo*bar] -> Foo.bar', function() {
+  deepEqual(Ember.getPath('Foo*bar'), Foo.bar);
+});
+
+test('[null, Foo.bar*baz.biff] -> Foo.bar.baz.biff', function() {
+  deepEqual(Ember.getPath('Foo.bar*baz.biff'), Foo.bar.baz.biff);
+});
+
+test('[null, Foo.bar.baz*biff] -> Foo.bar.baz.biff', function() {
+  deepEqual(Ember.getPath('Foo.bar.baz*biff'), Foo.bar.baz.biff);
+});
+
+// ..........................................................
 // GLOBAL PATHS (DEPRECATED)
 //
+
+module('Ember.getPath - deprecated', {
+  setup: function() {
+    Ember.TESTING_DEPRECATION = true;
+    moduleOpts.setup();
+  },
+  teardown: function() {
+    Ember.TESTING_DEPRECATION = false;
+    moduleOpts.teardown();
+  }
+});
 
 test('[obj, Foo] -> undefined', function() {
   deepEqual(Ember.getPath(obj, 'Foo'), Foo);
@@ -137,28 +173,4 @@ test('[obj, Foo.bar.baz*biff] -> Foo.bar.baz.biff', function() {
 
 test('[obj, $foo.bar.baz] -> $foo.bar.baz', function() {
   deepEqual(Ember.getPath(obj, '$foo.bar.baz'), $foo.bar.baz);
-});
-
-// ..........................................................
-// NO TARGET
-//
-
-test('[null, Foo] -> Foo', function() {
-  deepEqual(Ember.getPath('Foo'), Foo);
-});
-
-test('[null, Foo.bar] -> Foo.bar', function() {
-  deepEqual(Ember.getPath('Foo.bar'), Foo.bar);
-});
-
-test('[null, Foo*bar] -> Foo.bar', function() {
-  deepEqual(Ember.getPath('Foo*bar'), Foo.bar);
-});
-
-test('[null, Foo.bar*baz.biff] -> Foo.bar.baz.biff', function() {
-  deepEqual(Ember.getPath('Foo.bar*baz.biff'), Foo.bar.baz.biff);
-});
-
-test('[null, Foo.bar.baz*biff] -> Foo.bar.baz.biff', function() {
-  deepEqual(Ember.getPath('Foo.bar.baz*biff'), Foo.bar.baz.biff);
 });

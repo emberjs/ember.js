@@ -1,4 +1,8 @@
 var people, view;
+var template;
+var templateFor = function(template) {
+  return Ember.Handlebars.compile(template);
+};
 
 module("the #each helper", {
   setup: function() {
@@ -19,10 +23,6 @@ module("the #each helper", {
   }
 });
 
-var template;
-var templateFor = function(template) {
-  return Ember.Handlebars.compile(template);
-};
 
 var append = function(view) {
   Ember.run(function() {
@@ -68,16 +68,6 @@ test("it updates the view if an item is removed", function() {
   });
 
   assertHTML(view, "Annabelle");
-});
-
-module("the #each helper", {
-  setup: function() {
-    people = Ember.A([{ name: "Steve Holt" }, { name: "Annabelle" }]);
-  },
-  teardown: function() {
-    if (view) { view.destroy(); }
-    view = null;
-  }
 });
 
 test("it works inside a ul element", function() {
@@ -144,3 +134,43 @@ test("it supports {{else}}", function() {
   });
 });
 
+test("it works with the controller keyword", function() {
+  var controller = Ember.ArrayController.create({
+    content: Ember.A(["foo", "bar", "baz"])
+  });
+
+  view = Ember.View.create({
+    controller: controller,
+    template: templateFor("{{#view}}{{#each controller}}{{this}}{{/each}}{{/view}}")
+  });
+
+  append(view);
+
+  equal(view.$().text(), "foobarbaz");
+});
+
+module("{{#each foo in bar}}");
+
+test("#each accepts a name binding and does not change the context", function() {
+  view = Ember.View.create({
+    template: templateFor("{{#each item in items}}{{title}} {{debugger}}{{item}}{{/each}}"),
+    title: "My Cool Each Test",
+    items: Ember.A([1, 2])
+  });
+
+  append(view);
+
+  equal(view.$().text(), "My Cool Each Test 1My Cool Each Test 2");
+});
+
+test("#each accepts a name binding and can display child properties", function() {
+  view = Ember.View.create({
+    template: templateFor("{{#each item in items}}{{title}} {{item.name}}{{/each}}"),
+    title: "My Cool Each Test",
+    items: Ember.A([{ name: 1 }, { name: 2 }])
+  });
+
+  append(view);
+
+  equal(view.$().text(), "My Cool Each Test 1My Cool Each Test 2");
+});

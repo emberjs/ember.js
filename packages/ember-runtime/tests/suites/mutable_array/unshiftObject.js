@@ -13,7 +13,7 @@ suite.module('unshiftObject');
 suite.test("returns unshifted object", function() {
   var obj = this.newObject([]);
   var item = this.newFixture(1)[0];
-  equal(obj.unshiftObject(item), item, 'should return receiver');
+  equal(obj.unshiftObject(item), item, 'should return unshifted object');
 });
 
 
@@ -24,17 +24,15 @@ suite.test("[].unshiftObject(X) => [X] + notify", function() {
   item = this.newFixture(1)[0];
   after  = [item];
   obj = this.newObject(before);
-  observer = this.newObserver(obj, '[]', 'length');
+  observer = this.newObserver(obj, '@each', 'length');
 
   obj.unshiftObject(item);
 
   deepEqual(this.toArray(obj), after, 'post item results');
   equal(Ember.get(obj, 'length'), after.length, 'length');
 
-  if (observer.isEnabled) {
-    equal(observer.validate('[]'), true, 'should have notified []');
-    equal(observer.validate('length'), true, 'should have notified length');
-  }
+  equal(observer.timesCalled('@each'), 1, 'should have notified @each once');
+  equal(observer.timesCalled('length'), 1, 'should have notified length once');
 });
 
 suite.test("[A,B,C].unshiftObject(X) => [X,A,B,C] + notify", function() {
@@ -44,17 +42,15 @@ suite.test("[A,B,C].unshiftObject(X) => [X,A,B,C] + notify", function() {
   item = this.newFixture(1)[0];
   after  = [item, before[0], before[1], before[2]];
   obj = this.newObject(before);
-  observer = this.newObserver(obj, '[]', 'length');
+  observer = this.newObserver(obj, '@each', 'length');
 
   obj.unshiftObject(item);
 
   deepEqual(this.toArray(obj), after, 'post item results');
   equal(Ember.get(obj, 'length'), after.length, 'length');
 
-  if (observer.isEnabled) {
-    equal(observer.validate('[]'), true, 'should have notified []');
-    equal(observer.validate('length'), true, 'should have notified length');
-  }
+  equal(observer.timesCalled('@each'), 1, 'should have notified @each once');
+  equal(observer.timesCalled('length'), 1, 'should have notified length once');
 });
 
 suite.test("[A,B,C].unshiftObject(A) => [A,A,B,C] + notify", function() {
@@ -64,15 +60,13 @@ suite.test("[A,B,C].unshiftObject(A) => [A,A,B,C] + notify", function() {
   item = before[0]; // note same object as current head. should end up twice
   after  = [item, before[0], before[1], before[2]];
   obj = this.newObject(before);
-  observer = this.newObserver(obj, '[]', 'length');
+  observer = this.newObserver(obj, '@each', 'length');
 
   obj.unshiftObject(item);
 
   deepEqual(this.toArray(obj), after, 'post item results');
   equal(Ember.get(obj, 'length'), after.length, 'length');
 
-  if (observer.isEnabled) {
-    equal(observer.validate('[]'), true, 'should have notified []');
-    equal(observer.validate('length'), true, 'should have notified length');
-  }
+  equal(observer.timesCalled('@each'), 1, 'should have notified @each once');
+  equal(observer.timesCalled('length'), 1, 'should have notified length once');
 });

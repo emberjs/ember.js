@@ -3,7 +3,6 @@
 // Copyright: ©2011 Strobe Inc. and contributors.
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
-/*globals ember_assert */
 
 require('ember-metal/core'); // Ember.Logger
 require('ember-metal/accessors'); // get, getPath, setPath, trySetPath
@@ -204,6 +203,29 @@ var Binding = function(toPath, fromPath) {
 K.prototype = Binding.prototype;
 
 Binding.prototype = /** @scope Ember.Binding.prototype */ {
+  /**
+    This copies the Binding so it can be connected to another object.
+    @returns {Ember.Binding}
+  */
+  copy: function () {
+    var copy = new Binding(this._to, this._from);
+    if (this._oneWay) {
+      copy._oneWay = true;
+    }
+    if (this._transforms) {
+      copy._transforms = this._transforms.slice(0);
+    }
+    if (this._typeTransform) {
+      copy._typeTransform = this._typeTransform;
+      copy._placeholder = this._placeholder;
+    }
+    if (this._operand) {
+      copy._operand = this._operand;
+      copy._operation = this._operation;
+    }
+    return copy;
+  },
+
   // ..........................................................
   // CONFIG
   //
@@ -440,7 +462,7 @@ Binding.prototype = /** @scope Ember.Binding.prototype */ {
     @returns {Ember.Binding} this
   */
   connect: function(obj) {
-    ember_assert('Must pass a valid object to Ember.Binding.connect()', !!obj);
+    Ember.assert('Must pass a valid object to Ember.Binding.connect()', !!obj);
 
     var oneWay = this._oneWay, operand = this._operand;
 
@@ -470,7 +492,7 @@ Binding.prototype = /** @scope Ember.Binding.prototype */ {
     @returns {Ember.Binding} this
   */
   disconnect: function(obj) {
-    ember_assert('Must pass a valid object to Ember.Binding.disconnect()', !!obj);
+    Ember.assert('Must pass a valid object to Ember.Binding.disconnect()', !!obj);
 
     var oneWay = this._oneWay, operand = this._operand;
 

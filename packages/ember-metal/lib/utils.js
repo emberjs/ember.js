@@ -317,7 +317,6 @@ Ember.wrap = function(func, superFunc) {
       Ember.isArray([]); // true
       Ember.isArray( Ember.ArrayProxy.create({ content: [] }) ); // true
 
-  @name Ember.isArray
   @param {Object} obj The object to test
   @returns {Boolean}
 */

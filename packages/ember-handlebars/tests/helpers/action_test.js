@@ -83,6 +83,29 @@ test("should by default target the parent view", function() {
   ActionHelper.registerAction = originalRegisterAction;
 });
 
+test("should by default target the state manager on the controller if it exists", function() {
+  var registeredTarget;
+
+  var sent = 0;
+
+  view = Ember.View.create({
+    controller: Ember.Object.create({
+      stateManager: Ember.Object.create({
+        isState: true,
+        send: function(context) {
+          sent++;
+        }
+      })
+    }),
+    template: Ember.Handlebars.compile('<a id="ember-link" href="#" {{action "edit"}}>edit</a>')
+  });
+
+  appendView();
+
+  Ember.$("#ember-link").click();
+  equal(sent, 1, "The action was sent to the state manager");
+});
+
 test("should allow a target to be specified", function() {
   var registeredTarget;
 
