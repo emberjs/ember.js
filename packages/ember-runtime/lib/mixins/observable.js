@@ -61,6 +61,11 @@ var get = Ember.get, set = Ember.set;
   This will call the `targetAction` method on the `targetObject` to be called
   whenever the value of the `propertyKey` changes.
   
+  Note that if `propertyKey` is a computed property, the observer will be 
+  called when any of the property dependencies are changed, even if the 
+  resulting value of the computed property is unchanged. This is necessary
+  because computed properties are not computed until `get` is called.
+  
   @extends Ember.Mixin
 */
 Ember.Observable = Ember.Mixin.create(/** @scope Ember.Observable.prototype */ {

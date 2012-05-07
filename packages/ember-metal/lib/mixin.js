@@ -490,7 +490,7 @@ function findNamespaces() {
     }
 
     if (isNamespace) {
-      ember_deprecate("Namespaces should not begin with lowercase.", /^[A-Z]/.test(prop));
+      Ember.deprecate("Namespaces should not begin with lowercase.", /^[A-Z]/.test(prop));
       obj[NAME_KEY] = prop;
     }
   }

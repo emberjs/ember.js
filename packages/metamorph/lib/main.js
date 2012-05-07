@@ -179,7 +179,7 @@
         var shyElement = element;
 
         // Sometimes we get nameless elements with the shy inside
-        while (shyElement.nodeType === 1 && !shyElement.nodeName && shyElement.childNodes.length === 1) {
+        while (shyElement.nodeType === 1 && !shyElement.nodeName) {
           shyElement = shyElement.firstChild;
         }
 

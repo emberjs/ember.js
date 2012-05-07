@@ -3,7 +3,7 @@ require "github_api"
 
 class GithubUploader
 
-  def initialize(login, username, repo, token, root=Dir.pwd)
+  def initialize(login, username, repo, token=nil, root=Dir.pwd)
     @login    = login
     @username = username
     @repo     = repo

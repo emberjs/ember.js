@@ -3,7 +3,6 @@
 // Copyright: ©2011 Strobe Inc. and contributors.
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
-/*globals ember_assert */
 
 require('ember-metal/core');
 require('ember-metal/platform');
@@ -11,7 +10,7 @@ require('ember-metal/utils');
 require('ember-metal/properties');
 
 
-ember_warn("Computed properties will soon be cacheable by default. To enable this in your app, set `ENV.CP_DEFAULT_CACHEABLE = true`.", Ember.CP_DEFAULT_CACHEABLE);
+Ember.warn("Computed properties will soon be cacheable by default. To enable this in your app, set `ENV.CP_DEFAULT_CACHEABLE = true`.", Ember.CP_DEFAULT_CACHEABLE);
 
 
 var meta = Ember.meta;

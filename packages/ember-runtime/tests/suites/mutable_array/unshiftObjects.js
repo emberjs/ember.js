@@ -8,34 +8,41 @@ require('ember-runtime/~tests/suites/mutable_array');
 
 var suite = Ember.MutableArrayTests;
 
-suite.module('shiftObject');
+suite.module('unshiftObjects');
 
-suite.test("[].shiftObject() => [] + returns undefined + NO notify", function() {
-  var obj, before, after, observer;
-
-  before = [];
-  after  = [];
-  obj = this.newObject(before);
-  observer = this.newObserver(obj, '@each', 'length');
-
-  equal(obj.shiftObject(), undefined);
-
-  deepEqual(this.toArray(obj), after, 'post item results');
-  equal(Ember.get(obj, 'length'), after.length, 'length');
-
-  equal(observer.validate('@each', undefined, 1), false, 'should NOT have notified @each once');
-  equal(observer.validate('length', undefined, 1), false, 'should NOT have notified length once');
+suite.test("returns receiver", function() {
+  var obj = this.newObject([]);
+  var items = this.newFixture(3);
+  equal(obj.unshiftObjects(items), obj, 'should return receiver');
 });
 
-suite.test("[X].shiftObject() => [] + notify", function() {
-  var obj, before, after, observer;
+suite.test("[].unshiftObjects([A,B,C]) => [A,B,C] + notify", function() {
+  var obj, before, items, observer;
 
-  before = this.newFixture(1);
-  after  = [];
+  before = [];
+  items = this.newFixture(3);
   obj = this.newObject(before);
   observer = this.newObserver(obj, '@each', 'length');
 
-  equal(obj.shiftObject(), before[0], 'should return object');
+  obj.unshiftObjects(items);
+
+  deepEqual(this.toArray(obj), items, 'post item results');
+  equal(Ember.get(obj, 'length'), items.length, 'length');
+
+  equal(observer.timesCalled('@each'), 1, 'should have notified @each once');
+  equal(observer.timesCalled('length'), 1, 'should have notified length once');
+});
+
+suite.test("[A,B,C].unshiftObjects([X,Y]) => [X,Y,A,B,C] + notify", function() {
+  var obj, before, items, after, observer;
+
+  before = this.newFixture(3);
+  items  = this.newFixture(2);
+  after  = items.concat(before);
+  obj = this.newObject(before);
+  observer = this.newObserver(obj, '@each', 'length');
+
+  obj.unshiftObjects(items);
 
   deepEqual(this.toArray(obj), after, 'post item results');
   equal(Ember.get(obj, 'length'), after.length, 'length');
@@ -44,15 +51,16 @@ suite.test("[X].shiftObject() => [] + notify", function() {
   equal(observer.timesCalled('length'), 1, 'should have notified length once');
 });
 
-suite.test("[A,B,C].shiftObject() => [B,C] + notify", function() {
-  var obj, before, after, observer;
+suite.test("[A,B,C].unshiftObjects([A,B]) => [A,B,A,B,C] + notify", function() {
+  var obj, before, after, items, observer;
 
   before = this.newFixture(3);
-  after  = [before[1], before[2]];
+  items = [before[0], before[1]]; // note same object as current head. should end up twice
+  after  = items.concat(before);
   obj = this.newObject(before);
   observer = this.newObserver(obj, '@each', 'length');
 
-  equal(obj.shiftObject(), before[0], 'should return object');
+  obj.unshiftObjects(items);
 
   deepEqual(this.toArray(obj), after, 'post item results');
   equal(Ember.get(obj, 'length'), after.length, 'length');

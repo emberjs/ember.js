@@ -135,6 +135,15 @@ Ember.CollectionView = Ember.ContainerView.extend(
   content: null,
 
   /**
+    @private
+
+    This provides metadata about what kind of empty view class this
+    collection would like if it is being instantiated from another
+    system (like Handlebars)
+  */
+  emptyViewClass: Ember.View,
+
+  /**
     An optional view to display if content is set to an empty array.
 
     @type Ember.View
@@ -175,7 +184,7 @@ Ember.CollectionView = Ember.ContainerView.extend(
     var content = get(this, 'content');
 
     if (content) {
-      ember_assert(fmt("an Ember.CollectionView's content must implement Ember.Array. You passed %@", [content]), Ember.Array.detect(content));
+      Ember.assert(fmt("an Ember.CollectionView's content must implement Ember.Array. You passed %@", [content]), Ember.Array.detect(content));
       content.addArrayObserver(this);
     }
 
@@ -244,7 +253,7 @@ Ember.CollectionView = Ember.ContainerView.extend(
       itemViewClass = Ember.getPath(itemViewClass);
     }
 
-    ember_assert(fmt("itemViewClass must be a subclass of Ember.View, not %@", [itemViewClass]), Ember.View.detect(itemViewClass));
+    Ember.assert(fmt("itemViewClass must be a subclass of Ember.View, not %@", [itemViewClass]), Ember.View.detect(itemViewClass));
 
     len = content ? get(content, 'length') : 0;
     if (len) {

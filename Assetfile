@@ -17,7 +17,7 @@ class EmberProductionFilter < Rake::Pipeline::Filter
 
   def strip_debug(data)
     # Strip debug code
-    data.gsub!(%r{^(\s)+ember_(assert|deprecate|warn)\((.*)\).*$}, "")
+    data.gsub!(%r{^(\s)*Ember\.(assert|deprecate|warn)\((.*)\).*$}, "")
   end
 
   def precompile_templates(data)

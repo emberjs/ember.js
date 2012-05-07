@@ -218,9 +218,7 @@ Ember.MutableArray = Ember.Mixin.create(Ember.Array, Ember.MutableEnumerable,
     @returns {Ember.Array} receiver
   */
   unshiftObjects: function(objects) {
-    this.beginPropertyChanges();
-    forEach(objects, function(obj) { this.unshiftObject(obj); }, this);
-    this.endPropertyChanges();
+    this.replace(0, 0, objects);
     return this;
   },
 

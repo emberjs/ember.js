@@ -4,7 +4,6 @@
 //            Portions ©2008-2011 Apple Inc. All rights reserved.
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
-/*globals ember_assert */
 
 require("ember-views/system/render_buffer");
 var get = Ember.get, set = Ember.set, addObserver = Ember.addObserver;
@@ -29,7 +28,7 @@ var childViewsProperty = Ember.computed(function() {
 }).property().cacheable();
 
 var VIEW_PRESERVES_CONTEXT = Ember.VIEW_PRESERVES_CONTEXT;
-ember_warn("The way that the {{view}} helper affects templates is about to change. Previously, templates inside child views would use the new view as the context. Soon, views will preserve their parent context when rendering their template. You can opt-in early to the new behavior by setting `ENV.VIEW_PRESERVES_CONTEXT = true`. For more information, see https://gist.github.com/2494968. You should update your templates as soon as possible; this default will change soon, and the option will be eliminated entirely before the 1.0 release.", VIEW_PRESERVES_CONTEXT);
+Ember.warn("The way that the {{view}} helper affects templates is about to change. Previously, templates inside child views would use the new view as the context. Soon, views will preserve their parent context when rendering their template. You can opt-in early to the new behavior by setting `ENV.VIEW_PRESERVES_CONTEXT = true`. For more information, see https://gist.github.com/2494968. You should update your templates as soon as possible; this default will change soon, and the option will be eliminated entirely before the 1.0 release.", VIEW_PRESERVES_CONTEXT);
 
 /**
   @static
@@ -51,6 +50,8 @@ var invokeForState = {
 };
 
 /**
+  @class
+
   `Ember.View` is the class in Ember responsible for encapsulating templates of HTML
   content, combining templates with data to render as sections of a page's DOM, and
   registering and responding to user-initiated events.
@@ -400,23 +401,21 @@ var invokeForState = {
   ### Event Names
   Possible events names for any of the responding approaches described above are:
 
-  *Touch events*: 'touchstart', 'touchmove', 'touchend', 'touchcancel'
+  Touch events: 'touchStart', 'touchMove', 'touchEnd', 'touchCancel'
 
-  *Keyboard events*: 'keydown', 'keyup', 'keypress'
+  Keyboard events: 'keyDown', 'keyUp', 'keyPress'
 
-  *Mouse events*: 'mousedown', 'mouseup', 'contextmenu', 'click', 'dblclick', 'mousemove',
-  'focusin', 'focusout', 'mouseenter', 'mouseleave'
+  Mouse events: 'mouseDown', 'mouseUp', 'contextMenu', 'click', 'doubleClick', 'mouseMove',
+  'focusIn', 'focusOut', 'mouseEnter', 'mouseLeave'
 
-  *Form events*: 'submit', 'change', 'focusin', 'focusout'
+  Form events: 'submit', 'change', 'focusIn', 'focusOut', 'input'
 
-  *HTML5 drag and drop events*: 'dragstart', 'drag', 'dragenter', dragleave', 'drop', 'dragend'
+  HTML5 drag and drop events: 'dragStart', 'drag', 'dragEnter', 'dragLeave', 'drop', 'dragEnd'
   
   ## Handlebars `{{view}}` Helper
   Other `Ember.View` instances can be included as part of a view's template by using the `{{view}}`
   Handlebars helper. See `Handlebars.helpers.view` for additional information.
-  
-  @class
-  @since Ember 0.9
+
   @extends Ember.Object
 */
 Ember.View = Ember.Object.extend(Ember.Evented,
@@ -489,7 +488,7 @@ Ember.View = Ember.Object.extend(Ember.Evented,
   }).property('templateName').cacheable(),
 
   /**
-    The controller managing this view. If this property is set, it will be made
+    The controller managing this view. If this property is set, it will be
     made available for use by the template.
 
     @type Object
@@ -722,6 +721,23 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     });
   }, '_parentView'),
 
+  cloneKeywords: function() {
+    var templateData = get(this, 'templateData'),
+        controller = get(this, 'controller');
+
+    var keywords = templateData ? Ember.copy(templateData.keywords) : {};
+    keywords.view = get(this, 'concreteView');
+
+    // If the view has a controller specified, make it available to the
+    // template. If not, pass along the parent template's controller,
+    // if it exists.
+    if (controller) {
+      keywords.controller = controller;
+    }
+
+    return keywords;
+  },
+
   /**
     Called on your view when it should push strings of HTML into a
     Ember.RenderBuffer. Most users will want to override the `template`
@@ -740,29 +756,21 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     var template = get(this, 'layout') || get(this, 'template');
 
     if (template) {
-      var context = get(this, '_templateContext'),
-          templateData = this.get('templateData'),
-          controller = this.get('controller');
+      var context = get(this, '_templateContext');
+      var keywords = this.cloneKeywords();
 
       var data = {
         view: this,
         buffer: buffer,
         isRenderData: true,
-        keywords: {
-          view: get(this, 'concreteView')
-        }
+        keywords: keywords
       };
-
-      // If the view has a controller specified, make it available to the
-      // template. If not, pass along the parent template's controller,
-      // if it exists.
-      data.keywords.controller = controller || (templateData && templateData.keywords.controller);
 
       // Invoke the template with the provided template context, which
       // is the view by default. A hash of data is also passed that provides
       // the template with access to the view and render buffer.
 
-      ember_assert('template must be a function. Did you mean to specify templateName instead?', typeof template === 'function');
+      Ember.assert('template must be a function. Did you mean to specify templateName instead?', typeof template === 'function');
       // The template should write directly to the render buffer instead
       // of returning a string.
       var output = template(context, { data: data });
@@ -1078,7 +1086,7 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     @returns {Ember.View} receiver
   */
   appendTo: function(target) {
-    ember_assert("You cannot append to an existing Ember.View. Consider using Ember.ContainerView instead.", !Ember.$(target).is('.ember-view') && !Ember.$(target).parents().is('.ember-view'));
+    Ember.assert("You cannot append to an existing Ember.View. Consider using Ember.ContainerView instead.", !Ember.$(target).is('.ember-view') && !Ember.$(target).parents().is('.ember-view'));
 
     // Schedule the DOM element to be created and appended to the given
     // element after bindings have synchronized.
@@ -1103,7 +1111,7 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     @returns {Ember.View} received
   */
   replaceIn: function(target) {
-    ember_assert("You cannot replace an existing Ember.View. Consider using Ember.ContainerView instead.", !Ember.$(target).is('.ember-view') && !Ember.$(target).parents().is('.ember-view'));
+    Ember.assert("You cannot replace an existing Ember.View. Consider using Ember.ContainerView instead.", !Ember.$(target).is('.ember-view') && !Ember.$(target).parents().is('.ember-view'));
 
     this._insertElementLater(function() {
       Ember.$(target).empty();
@@ -1606,10 +1614,10 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     // setup child views. be sure to clone the child views array first
     set(this, '_childViews', childViews);
 
-    ember_assert("Only arrays are allowed for 'classNameBindings'", Ember.typeOf(this.classNameBindings) === 'array');
+    Ember.assert("Only arrays are allowed for 'classNameBindings'", Ember.typeOf(this.classNameBindings) === 'array');
     this.classNameBindings = Ember.A(this.classNameBindings.slice());
 
-    ember_assert("Only arrays are allowed for 'classNames'", Ember.typeOf(this.classNames) === 'array');
+    Ember.assert("Only arrays are allowed for 'classNames'", Ember.typeOf(this.classNames) === 'array');
     this.classNames = Ember.A(this.classNames.slice());
 
     var viewController = get(this, 'viewController');
@@ -1738,10 +1746,11 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     @test in createChildViews
   */
   createChildView: function(view, attrs) {
-    var coreAttrs;
+    var coreAttrs, templateData;
 
     if (Ember.View.detect(view)) {
-      coreAttrs = { _parentView: this };
+      coreAttrs = { _parentView: this, templateData: get(this, 'templateData') };
+
       if (attrs) {
         view = view.create(coreAttrs, attrs);
       } else {
@@ -1754,7 +1763,14 @@ Ember.View = Ember.Object.extend(Ember.Evented,
       // consumers of the view API
       if (viewName) { set(get(this, 'concreteView'), viewName, view); }
     } else {
-      ember_assert('must pass instance of View', view instanceof Ember.View);
+      if (attrs) { throw "EWOT"; }
+
+      Ember.assert('must pass instance of View', view instanceof Ember.View);
+
+      if (!get(view, 'templateData')) {
+        set(view, 'templateData', get(this, 'templateData'));
+      }
+
       set(view, '_parentView', this);
     }
 
