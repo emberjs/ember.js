@@ -517,3 +517,58 @@ test("embedded associations should respect namingConvention", function() {
   var person = store.find(Person, 1);
   equal(getPath(person, 'myCustomTags.firstObject.name'), "UN-friendly", "hasMany tag should be set properly");
 });
+
+test("lazy-loaded embedded association should work", function() {
+  stop();
+
+  var Tag = DS.Model.extend({
+    name: DS.attr('string')
+  });
+
+  var Person = DS.Model.extend({
+    name: DS.attr('string'),
+    tags: DS.hasMany(Tag, { embedded: true })
+  });
+  Person.toString = function() { return 'Person'; };
+
+  var Account = DS.Model.extend({
+    person: DS.belongsTo(Person)
+  });
+  Account.toString = function() { return 'Account'; };
+
+  var data = {
+    'Person': {
+      '1': { id: 1, name: "Wes", tags: [ { id: 5, name: "bro" } ] }
+    },
+    'Account': {
+      '1': { id: 1, person_id: 1 }
+    }
+  };
+
+  var store = DS.Store.create({
+    adapter: DS.Adapter.create({
+      find: function(store, type, id) {
+        ok(!id.name, "id should be an integer");
+        setTimeout(function() {
+          var json = data[type][id];
+          store.load(type, json);
+        }, 1);
+      }
+    })
+  });
+
+  var timer = setTimeout(function() {
+    ok(false, 'tags were never loaded');
+    start();
+  }, 1000);
+
+  var account = store.find(Account, 1);
+  Ember.addObserver(account, 'person.tags.length', function() {
+    if(account.getPath('person.tags.length') === 1) {
+      start();
+      clearTimeout(timer);
+      var tags = account.getPath('person.tags');
+      equal(tags.objectAt(0).get('name'), 'bro', 'tag should be set');
+    }
+  });
+});
