@@ -29,7 +29,7 @@ var EachArray = Ember.Object.extend(Ember.Array, {
   length: Ember.computed(function() {
     var content = this._content;
     return content ? get(content, 'length') : 0;
-  }).property('[]').cacheable()
+  }).property().cacheable()
 
 });
 

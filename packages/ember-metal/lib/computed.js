@@ -376,7 +376,7 @@ Ember.computed = function(func) {
 Ember.cacheFor = function(obj, key) {
   var cache = meta(obj, false).cache;
 
-  if (cache && cache[key] !== undefined) {
+  if (cache && key in cache) {
     return cache[key];
   }
 };
