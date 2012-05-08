@@ -91,12 +91,12 @@ require('ember-states/state');
        robotManager.getPath('currentState.name') // 'poweredUp'
 
   Before transitioning into a new state the existing `currentState` will have its
-  `exit` method called with with the StateManager instance as its first argument and 
-  an object representing the the transition as its second argument.
+  `exit` method called with the StateManager instance as its first argument and 
+  an object representing the transition as its second argument.
 
   After transitioning into a new state the new `currentState` will have its
-  `enter` method called with with the StateManager instance as its first argument and 
-  an object representing the the transition as its second argument.
+  `enter` method called with the StateManager instance as its first argument and 
+  an object representing the transition as its second argument.
 
       robotManager = Ember.StateManager.create({
        initialState: 'poweredDown',
