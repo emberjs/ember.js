@@ -15,6 +15,8 @@ test("creating a state with substates sets the parentState property", function()
 });
 
 test("a state is passed its state manager when receiving an enter event", function() {
+  expect(2);
+
   var count = 0;
 
   var states = {
@@ -30,6 +32,40 @@ test("a state is passed its state manager when receiving an enter event", functi
       }
     })
   };
+
+  var stateManager = Ember.StateManager.create({
+    initialState: 'load',
+    isFirst: true,
+
+    states: states
+  });
+
+  var anotherStateManager = Ember.StateManager.create({
+    initialState: 'load',
+    isSecond: true,
+
+    states: states
+  });
+});
+
+test("a state can have listeners that are fired when the state is entered", function() {
+  expect(2);
+
+  var count = 0;
+
+  var states = {
+    load: Ember.State.create()
+  };
+
+  states.load.on('enter', function(passedStateManager) {
+    if (count === 0) {
+      ok(passedStateManager.get('isFirst'), "passes first state manager when created");
+    } else {
+      ok(passedStateManager.get('isSecond'), "passes second state manager when created");
+    }
+
+    count++;
+  });
 
   var stateManager = Ember.StateManager.create({
     initialState: 'load',

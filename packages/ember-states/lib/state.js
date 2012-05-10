@@ -1,6 +1,6 @@
 var get = Ember.get, set = Ember.set, getPath = Ember.getPath;
 
-Ember.State = Ember.Object.extend({
+Ember.State = Ember.Object.extend(Ember.Evented, {
   isState: true,
   parentState: null,
   start: null,

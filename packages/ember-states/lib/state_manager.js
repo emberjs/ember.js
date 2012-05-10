@@ -524,10 +524,12 @@ Ember.StateManager = Ember.State.extend(
     exitStates = exitStates.slice(0).reverse();
     this.asyncEach(exitStates, function(state, transition) {
       state.exit(stateManager, transition);
+      state.fire('exit', stateManager);
     }, function() {
       this.asyncEach(enterStates, function(state, transition) {
         if (log) { console.log("STATEMANAGER: Entering " + get(state, 'path')); }
         state.enter(stateManager, transition);
+        state.fire('enter', stateManager);
       }, function() {
         var startState = state, enteredState, initialState;
 
@@ -543,6 +545,7 @@ Ember.StateManager = Ember.State.extend(
 
           if (log) { console.log("STATEMANAGER: Entering " + get(startState, 'path')); }
           startState.enter(stateManager);
+          state.fire('enter', stateManager);
 
           initialState = get(startState, 'initialState');
 
