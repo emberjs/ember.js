@@ -12,15 +12,18 @@ module("Handlebars {{#if}} and {{#unless}} helpers", {
   }
 });
 
-test("unless should keep the current context (#784)", function() {
-  view = Ember.View.create({
-    o: Ember.Object.create({foo: '42'}),
+if (Ember.VIEW_PRESERVES_CONTEXT) {
 
-    template: Ember.Handlebars.compile('{{#with o}}{{#view Ember.View}}{{#unless view.doesNotExist}}foo: {{foo}}{{/unless}}{{/view}}{{/with}}')
+  test("unless should keep the current context (#784)", function() {
+    view = Ember.View.create({
+      o: Ember.Object.create({foo: '42'}),
+
+      template: Ember.Handlebars.compile('{{#with o}}{{#view Ember.View}}{{#unless view.doesNotExist}}foo: {{foo}}{{/unless}}{{/view}}{{/with}}')
+    });
+
+    appendView(view);
+
+    equal(view.$().text(), 'foo: 42');
   });
 
-  appendView(view);
-
-  equal(view.$().text(), 'foo: 42');
-});
-
+}

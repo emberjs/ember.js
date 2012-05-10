@@ -23,7 +23,7 @@ suite.test("[A,B,C].removeObject(B) => [A,C] + notify", function() {
   before = this.newFixture(3);
   after  = [before[0], before[2]];
   obj = this.newObject(before);
-  observer = this.newObserver(obj, '@each', 'length');
+  observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
 
   obj.removeObject(before[1]);
 
@@ -31,8 +31,12 @@ suite.test("[A,B,C].removeObject(B) => [A,C] + notify", function() {
   equal(Ember.get(obj, 'length'), after.length, 'length');
 
   if (observer.isEnabled) {
+    equal(observer.timesCalled('[]'), 1, 'should have notified [] once');
     equal(observer.timesCalled('@each'), 1, 'should have notified @each once');
     equal(observer.timesCalled('length'), 1, 'should have notified length once');
+
+    equal(observer.validate('firstObject'), false, 'should NOT have notified firstObject once');
+    equal(observer.validate('lastObject'), false, 'should NOT have notified lastObject once');
   }
 });
 
@@ -43,7 +47,7 @@ suite.test("[A,B,C].removeObject(D) => [A,B,C]", function() {
   after  = before;
   item   = this.newFixture(1)[0];
   obj = this.newObject(before);
-  observer = this.newObserver(obj, '@each', 'length');
+  observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
 
   obj.removeObject(item); // note: item not in set
 
@@ -51,7 +55,11 @@ suite.test("[A,B,C].removeObject(D) => [A,B,C]", function() {
   equal(Ember.get(obj, 'length'), after.length, 'length');
 
   if (observer.isEnabled) {
+    equal(observer.validate('[]'), false, 'should NOT have notified []');
     equal(observer.validate('@each'), false, 'should NOT have notified @each');
     equal(observer.validate('length'), false, 'should NOT have notified length');
+
+    equal(observer.validate('firstObject'), false, 'should NOT have notified firstObject once');
+    equal(observer.validate('lastObject'), false, 'should NOT have notified lastObject once');
   }
 });

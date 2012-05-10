@@ -119,6 +119,7 @@ task :test, [:suite] => :dist do |t, args|
               "package=all&extendprototypes=true&jquery=1.6.4&nojshint=true",
               "package=all&extendprototypes=true&jquery=git&nojshint=true",
               "package=all&cpdefaultcacheable=true&nojshint=true",
+              "package=all&noviewpreservescontext=true&nojshint=true",
               "package=all&dist=build&nojshint=true"]
   }
 

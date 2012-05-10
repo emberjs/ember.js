@@ -46,7 +46,11 @@
     var cpDefaultCacheable = QUnit.urlParams.cpdefaultcacheable;
     ENV['CP_DEFAULT_CACHEABLE'] = !!cpDefaultCacheable;
 
-    ENV.VIEW_PRESERVES_CONTEXT = true;
+    // Handle preserving context
+    QUnit.config.urlConfig.push('viewpreservescontext');
+
+    var noViewPreservesContext = QUnit.urlParams.noviewpreservescontext;
+    ENV['VIEW_PRESERVES_CONTEXT'] = !noViewPreservesContext;
   </script>
 </head>
 <body>

@@ -663,10 +663,11 @@ module("Observable objects & object properties ", {
 
       testArrayObserver: Ember.observer(function(){
         this.abnormal = 'notifiedObserver';
-      }, 'normalArray.@each')
+      }, 'normalArray.[]')
 
     });
   }
+
 });
 
 test('incrementProperty and decrementProperty',function(){
