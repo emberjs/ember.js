@@ -18,6 +18,8 @@ Ember.State = Ember.Object.extend(Ember.Evented, {
 
   init: function() {
     var states = get(this, 'states'), foundStates;
+    set(this, 'childStates', Ember.A());
+
     var name;
 
     // As a convenience, loop over the properties
@@ -57,6 +59,7 @@ Ember.State = Ember.Object.extend(Ember.Evented, {
 
     if (value.isState) {
       set(value, 'parentState', this);
+      get(this, 'childStates').pushObject(value);
       states[name] = value;
     }
   },

@@ -12,6 +12,7 @@ test("creating a state with substates sets the parentState property", function()
   });
 
   equal(state.getPath('child.parentState'), state, "A child state gets its parent state");
+  deepEqual(state.get('childStates'), [ state.get('child') ], "The childStates method returns a state's child states");
 });
 
 test("a state is passed its state manager when receiving an enter event", function() {
