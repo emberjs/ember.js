@@ -12,11 +12,6 @@ require('ember-handlebars/helpers/view');
 var get = Ember.get, getPath = Ember.Handlebars.getPath, fmt = Ember.String.fmt;
 
 /**
-  @name Handlebars.helpers.collection
-  @param {String} path
-  @param {Hash} options
-  @returns {String} HTML string
-  
   `{{collection}}` is a `Ember.Handlebars` helper for adding instances of
   `Ember.CollectionView` to a template.  See `Ember.CollectionView` for additional
   information on how a `CollectionView` functions.
@@ -117,7 +112,10 @@ var get = Ember.get, getPath = Ember.Handlebars.getPath, fmt = Ember.String.fmt;
         <p class="ember-view greeting">Howdy Sara</p>
       </div>
   
-  
+  @name Handlebars.helpers.collection
+  @param {String} path
+  @param {Hash} options
+  @returns {String} HTML string
 */
 Ember.Handlebars.registerHelper('collection', function(path, options) {
   // If no path is provided, treat path param as options.
