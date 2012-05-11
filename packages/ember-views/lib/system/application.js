@@ -89,8 +89,8 @@ Ember.Application = Ember.Namespace.extend(
 
     Example:
 
-      App.PostsController = Ember.ArrayController.create();
-      App.CommentsController = Ember.ArrayController.create();
+      App.PostsController = Ember.ArrayController.extend();
+      App.CommentsController = Ember.ArrayController.extend();
 
       var stateManager = Ember.StateManager.create({
         ...
