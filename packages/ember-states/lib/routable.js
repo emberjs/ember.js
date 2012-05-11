@@ -59,8 +59,26 @@ Ember.Routable = Ember.Mixin.create({
     }
   },
 
+  updateRoute: function(manager, location) {
+    if (location && get(this, 'isLeaf')) {
+      var path = get(this, 'absoluteRoute');
+      location.setUrl(path);
+    }
+  },
+
+  absoluteRoute: Ember.computed(function() {
+    var parentState = get(this, 'parentState');
+    var path = '';
+
+    if (get(parentState, 'isRoutable')) {
+      path = get(parentState, 'absoluteRoute');
+    }
+
+    return path + '/' + get(this, 'route');
+  }).cacheable(),
+
   isRoutable: Ember.computed(function() {
-    return typeof this.updateRoute === "function";
+    return typeof this.route === "string";
   }).cacheable(),
 
   routeMatcher: Ember.computed(function() {
@@ -74,7 +92,6 @@ Ember.Routable = Ember.Mixin.create({
     Ember.assert("Could not find state for path " + path, !!match || !path);
 
     if (match) {
-      manager.enableLogging = true;
       manager.goToState(get(match.state, 'path'));
       manager.send('routePath', match.remaining);
     }

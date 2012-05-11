@@ -157,3 +157,26 @@ test("states with child instances set up proper names on their children", functi
   manager.goToState('first.insideFirst');
   equal(getPath(manager, 'currentState.path'), 'first.insideFirst');
 });
+
+test("the isLeaf property is false when a state has child states", function() {
+  var manager = Ember.StateManager.create({
+    states: {
+      first: Ember.State.create({
+        insideFirst: Ember.State.create(),
+        otherInsideFirst: Ember.State.create({
+          definitelyInside: Ember.State.create()
+        })
+      })
+    }
+  });
+
+  var first = manager.getPath('states.first');
+  var insideFirst = first.getPath('states.insideFirst');
+  var otherInsideFirst = first.getPath('states.otherInsideFirst');
+  var definitelyInside = otherInsideFirst.getPath('states.definitelyInside');
+
+  equal(first.get('isLeaf'), false);
+  equal(insideFirst.get('isLeaf'), true);
+  equal(otherInsideFirst.get('isLeaf'), false);
+  equal(definitelyInside.get('isLeaf'), true);
+});

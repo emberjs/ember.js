@@ -64,6 +64,17 @@ Ember.State = Ember.Object.extend(Ember.Evented, {
     }
   },
 
+  /**
+    A Boolean value indicating whether the state is a leaf state
+    in the state hierarchy. This is false if the state has child
+    states; otherwise it is true.
+
+    @property {Boolean}
+  */
+  isLeaf: Ember.computed(function() {
+    return !get(this, 'childStates').length;
+  }).cacheable(),
+
   enter: Ember.K,
   exit: Ember.K
 });

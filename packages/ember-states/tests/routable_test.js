@@ -7,6 +7,7 @@ test("it should have its updateRoute method called when it is entered", function
 
 
   var state = Ember.State.create({
+    route: 'foo',
     updateRoute: function(manager, location) {
       ok(true, "updateRoute was called");
       strictEqual(location, locationStub);
@@ -106,4 +107,42 @@ test("route repeatedly descends into a nested hierarchy", function() {
   stateManager.route("/foo/bar/baz");
 
   equal(stateManager.getPath('currentState.path'), 'start.fooChild.barChild.bazChild');
+});
+
+test("when you descend into a state, the route is set", function() {
+  var state = Ember.State.create({
+    ready: function(manager) {
+      manager.goToState('fooChild.barChild.bazChild');
+    },
+
+    fooChild: Ember.State.create({
+      route: 'foo',
+
+      barChild: Ember.State.create({
+        route: 'bar',
+
+        bazChild: Ember.State.create({
+          route: 'baz'
+        })
+      })
+    })
+  });
+
+  var count = 0;
+
+  var stateManager = Ember.StateManager.create({
+    start: state,
+    location: {
+      setUrl: function(url) {
+        if (count === 0) {
+          equal(url, '/foo/bar/baz', "The current URL should be passed in");
+          count++;
+        } else {
+          ok(false, "Should not get here");
+        }
+      }
+    }
+  });
+
+  stateManager.send('ready');
 });
