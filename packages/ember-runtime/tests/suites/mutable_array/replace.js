@@ -98,7 +98,7 @@ suite.test("[A,B].replace(1,0,[X,Y]) => [A,X,Y,B] + notify", function() {
   equal(observer.validate('lastObject'), false, 'should NOT have notified lastObject once');
 });
 
-suite.notest("[A,B,C,D].replace(2,2) => [A,B] + notify", function() {
+suite.test("[A,B,C,D].replace(2,2) => [A,B] + notify", function() {
   var obj, observer, before, replace, after;
 
   before  = this.newFixture(4);
@@ -108,16 +108,16 @@ suite.notest("[A,B,C,D].replace(2,2) => [A,B] + notify", function() {
   observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
   obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
 
-  obj.replace(2,2) ;
+  obj.replace(2,2);
 
   deepEqual(this.toArray(obj), after, 'post item results');
 
   equal(observer.timesCalled('[]'), 1, 'should have notified [] once');
   equal(observer.timesCalled('@each'), 1, 'should have notified @each once');
   equal(observer.timesCalled('length'), 1, 'should have notified length once');
+  equal(observer.timesCalled('lastObject'), 1, 'should have notified lastObject once');
 
   equal(observer.validate('firstObject'), false, 'should NOT have notified firstObject once');
-  equal(observer.validate('lastObject'), false, 'should NOT have notified lastObject once');
 });
 
 suite.test('Adding object should notify enumerable observer', function() {
