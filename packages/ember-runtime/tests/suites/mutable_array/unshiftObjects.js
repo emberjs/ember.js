@@ -23,6 +23,7 @@ suite.test("[].unshiftObjects([A,B,C]) => [A,B,C] + notify", function() {
   items = this.newFixture(3);
   obj = this.newObject(before);
   observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
+  obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
 
   obj.unshiftObjects(items);
 
@@ -44,6 +45,7 @@ suite.test("[A,B,C].unshiftObjects([X,Y]) => [X,Y,A,B,C] + notify", function() {
   after  = items.concat(before);
   obj = this.newObject(before);
   observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
+  obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
 
   obj.unshiftObjects(items);
 
@@ -66,6 +68,7 @@ suite.test("[A,B,C].unshiftObjects([A,B]) => [A,B,A,B,C] + notify", function() {
   after  = items.concat(before);
   obj = this.newObject(before);
   observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
+  obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
 
   obj.unshiftObjects(items);
 

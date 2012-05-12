@@ -16,6 +16,7 @@ suite.test("[].replace(0,0,'X') => ['X'] + notify", function() {
   exp = this.newFixture(1);
   obj = this.newObject([]);
   observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
+  obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
 
   obj.replace(0,0,exp) ;
 
@@ -37,6 +38,7 @@ suite.test("[A,B,C,D].replace(1,2,X) => [A,X,D] + notify", function() {
 
   obj = this.newObject(before);
   observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
+  obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
 
   obj.replace(1,2,replace) ;
 
@@ -59,6 +61,7 @@ suite.test("[A,B,C,D].replace(1,2,[X,Y]) => [A,X,Y,D] + notify", function() {
 
   obj = this.newObject(before);
   observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
+  obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
 
   obj.replace(1,2,replace) ;
 
@@ -81,6 +84,7 @@ suite.test("[A,B].replace(1,0,[X,Y]) => [A,X,Y,B] + notify", function() {
 
   obj = this.newObject(before);
   observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
+  obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
 
   obj.replace(1,0,replace) ;
 
@@ -102,6 +106,7 @@ suite.notest("[A,B,C,D].replace(2,2) => [A,B] + notify", function() {
 
   obj = this.newObject(before);
   observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
+  obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
 
   obj.replace(2,2) ;
 
