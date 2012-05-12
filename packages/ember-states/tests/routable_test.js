@@ -53,36 +53,66 @@ test("when you call `route` on the StateManager, it calls it on the current stat
   stateManager.route('hookers/and/blow');
 });
 
-test("a state can enumerate its child states that are routable", function() {
+test("a RouteMatcher matches routes", function() {
   var match;
 
-  var state = Ember.State.create({
-    fooChildState: Ember.State.create({
-      route: 'foo'
-    }),
+  var matcher = Ember._RouteMatcher.create({
+    route: "foo"
+  });
 
-    barChildState: Ember.State.create({
-      route: 'bar'
+  match = matcher.match('foo');
+  equal(match.remaining, "");
+  deepEqual(match.hash, {});
+
+  match = matcher.match('foo/bar');
+  equal(match.remaining, "/bar");
+  deepEqual(match.hash, {});
+
+  match = matcher.match('bar');
+  equal(match, undefined);
+});
+
+test("a RouteMatcher matches routes with dynamic segments", function() {
+  var match;
+
+  var matcher = Ember._RouteMatcher.create({
+    route: "foo/:id/:name"
+  });
+
+  match = matcher.match('foo/bar/baz');
+  equal(match.remaining, "");
+  deepEqual(match.hash, {"id": "bar", "name": "baz"});
+
+  match = matcher.match('foo/bar/baz/bat');
+  equal(match.remaining, "/bat");
+  deepEqual(match.hash, {"id": "bar", "name": "baz"});
+
+  match = matcher.match('foo/bar');
+  equal(match, undefined);
+});
+
+test("route repeatedly descends into a nested hierarchy", function() {
+  var state = Ember.State.create({
+    fooChild: Ember.State.create({
+      route: 'foo',
+
+      barChild: Ember.State.create({
+        route: 'bar',
+
+        bazChild: Ember.State.create({
+          route: 'baz'
+        })
+      })
     })
   });
 
-  var routeMatcher = state.get('routeMatcher');
+  var stateManager = Ember.StateManager.create({
+    start: state
+  });
 
-  match = routeMatcher.match('foo');
-  equal(match.state, state.get('fooChildState'));
-  deepEqual(match.hash, {});
+  stateManager.route("/foo/bar/baz");
 
-  match = routeMatcher.match('bar');
-  equal(match.state, state.get('barChildState'));
-  deepEqual(match.hash, {});
-
-  match = routeMatcher.match('/foo');
-  equal(match.state, state.get('fooChildState'));
-  deepEqual(match.hash, {});
-
-  match = routeMatcher.match('/bar');
-  equal(match.state, state.get('barChildState'));
-  deepEqual(match.hash, {});
+  equal(stateManager.getPath('currentState.path'), 'start.fooChild.barChild.bazChild');
 });
 
 test("route repeatedly descends into a nested hierarchy", function() {

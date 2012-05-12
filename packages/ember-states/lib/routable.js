@@ -11,36 +11,42 @@ var get = Ember.get, getPath = Ember.getPath;
 // * .onUrlChange(callback) - this happens when the user presses
 //   the back or forward button
 
+var escapeForRegex = function(text) {
+  return text.replace(/[\-\[\]{}()*+?.,\\\^\$|#\s]/g, "\\$&");
+};
+
 Ember._RouteMatcher = Ember.Object.extend({
   state: null,
 
-  match: function(path) {
-    if (path[0] === '/') {
-      path = path.substr(1);
-    }
+  init: function() {
+    var route = get(this, 'route'),
+        escaped = escapeForRegex(route),
+        identifiers = [],
+        count = 1;
 
-    var childStates = getPath(this, 'state.childStates');
-    var remaining;
-
-    var state = childStates.find(function(state) {
-      var route = get(state, 'route');
-      var match = path.substr(0, route.length);
-
-      if (match === route) {
-        var nextChar = route[match.length];
-
-        if (nextChar === undefined || nextChar === "/") {
-          remaining = path.substr(match.length);
-          return true;
-        }
-      }
+    var regex = escaped.replace(/:([a-z]+)(?=$|\/)/gi, function(match, id) {
+      identifiers[count++] = id;
+      return "([^/]+)";
     });
 
-    if (state) {
+    this.identifiers = identifiers;
+    this.regex = new RegExp("^/?" + regex);
+  },
+
+  match: function(path) {
+    var match = path.match(this.regex);
+
+    if (match) {
+      var identifiers = this.identifiers,
+          hash = {};
+
+      for (var i=1, l=identifiers.length; i<l; i++) {
+        hash[identifiers[i]] = match[i];
+      }
+
       return {
-        state: state,
-        remaining: remaining,
-        hash: {}
+        remaining: path.substr(match[0].length),
+        hash: hash
       };
     }
   }
@@ -82,19 +88,23 @@ Ember.Routable = Ember.Mixin.create({
   }).cacheable(),
 
   routeMatcher: Ember.computed(function() {
-    return Ember._RouteMatcher.create({ state: this });
+    return Ember._RouteMatcher.create({ route: get(this, 'route') });
   }).cacheable(),
 
   routePath: function(manager, path) {
-    var matcher = this.get('routeMatcher');
-    var match = matcher.match(path);
+    if (get(this, 'isLeaf')) { return; }
 
-    Ember.assert("Could not find state for path " + path, !!match || !path);
+    var childStates = get(this, 'childStates'), match;
 
-    if (match) {
-      manager.goToState(get(match.state, 'path'));
-      manager.send('routePath', match.remaining);
-    }
+    var state = childStates.find(function(state) {
+      var matcher = get(state, 'routeMatcher');
+      if (match = matcher.match(path)) { return true; }
+    });
+
+    Ember.assert("Could not find state for path " + path, !!state);
+
+    manager.goToState(get(state, 'path'));
+    manager.send('routePath', match.remaining);
   }
 });
 
