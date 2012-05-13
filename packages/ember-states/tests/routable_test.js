@@ -208,23 +208,43 @@ module("Routing Serialization and Deserialization", {
       location: locationMock,
       start: Ember.State.create({
         ready: function(manager, post) {
-          manager.transitionTo('post', { post: post });
+          manager.transitionTo('post.show', { post: post });
+        },
+
+        showIndex: function(manager) {
+          manager.transitionTo('post.index');
         },
 
         post: Ember.State.create({
-          route: "posts/:post_id",
+          route: '/posts',
 
-          setupContext: function(manager, context) {
-            equal(context.post.id, 2, "should be the same value regardless of entry point");
-          },
+          index: Ember.State.create({
+            route: '/',
 
-          deserialize: function(manager, params) {
-            return { post: Post.find(params['post_id']) };
-          },
+            showPost: function(manager, post) {
+              manager.transitionTo('post.show', { post: post });
+            }
+          }),
 
-          serialize: function(manager, hash) {
-            return { post_id: hash.post.id };
-          }
+          show: Ember.State.create({
+            route: "/:post_id",
+
+            setupContext: function(manager, context) {
+              equal(context.post.id, 2, "should be the same value regardless of entry point");
+            },
+
+            deserialize: function(manager, params) {
+              return { post: Post.find(params['post_id']) };
+            },
+
+            serialize: function(manager, hash) {
+              return { post_id: hash.post.id };
+            },
+
+            showIndex: function(manager) {
+              manager.transitionTo('index');
+            }
+          })
         })
       })
     });
@@ -237,10 +257,23 @@ test("should invoke the deserialize method on a state when it is entered via a U
   stateManager.route('/posts/2');
 });
 
-test("should invoke the serialize method on a state when it is entered programmatically", function() {
-  expect(2);
+test("should invoke the serialize method on a state when it is entered programmatically (initially deep)", function() {
+  expect(3);
 
   stateManager.send('ready', Post.find(2));
   equal(setUrl, '/posts/2', "The post is serialized");
+
+  stateManager.send('showIndex');
+  equal(setUrl, '/posts');
+});
+
+test("should invoke the serialize method on a state when it is entered programmatically (initially shallow)", function() {
+  expect(3);
+
+  stateManager.send('showIndex');
+  equal(setUrl, '/posts', "The post is serialized");
+
+  stateManager.send('showPost', Post.find(2));
+  equal(setUrl, '/posts/2');
 });
 

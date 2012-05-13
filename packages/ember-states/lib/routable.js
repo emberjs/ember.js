@@ -19,10 +19,17 @@ Ember._RouteMatcher = Ember.Object.extend({
   state: null,
 
   init: function() {
-    var route = get(this, 'route'),
-        escaped = escapeForRegex(route),
+    var route = this.route,
         identifiers = [],
-        count = 1;
+        count = 1,
+        escaped;
+
+    // Strip off leading slash if present
+    if (route[0] === '/') {
+      route = this.route = route.substr(1);
+    }
+
+    escaped = escapeForRegex(route);
 
     var regex = escaped.replace(/:([a-z_]+)(?=$|\/)/gi, function(match, id) {
       identifiers[count++] = id;
@@ -97,7 +104,13 @@ Ember.Routable = Ember.Mixin.create({
     var matcher = get(this, 'routeMatcher'),
         hash = get(manager, 'stateMeta').get(this);
 
-    return path + '/' + matcher.generate(hash);
+    var generated = matcher.generate(hash);
+
+    if (generated !== "") {
+      return path + '/' + matcher.generate(hash);
+    } else {
+      return path;
+    }
   },
 
   isRoutable: Ember.computed(function() {
@@ -120,6 +133,10 @@ Ember.Routable = Ember.Mixin.create({
     if (get(this, 'isLeaf')) { return; }
 
     var childStates = get(this, 'childStates'), match;
+
+    childStates = childStates.sort(function(a, b) {
+      return getPath(b, 'route.length') - getPath(a, 'route.length');
+    });
 
     var state = childStates.find(function(state) {
       var matcher = get(state, 'routeMatcher');
