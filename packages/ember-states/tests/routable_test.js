@@ -76,19 +76,30 @@ test("a RouteMatcher matches routes with dynamic segments", function() {
   var match;
 
   var matcher = Ember._RouteMatcher.create({
-    route: "foo/:id/:name"
+    route: "foo/:id/:name/:ok_tom"
   });
 
-  match = matcher.match('foo/bar/baz');
+  match = matcher.match('foo/bar/baz/sigh');
   equal(match.remaining, "");
-  deepEqual(match.hash, {"id": "bar", "name": "baz"});
+  deepEqual(match.hash, {"id": "bar", "name": "baz", "ok_tom": "sigh"});
 
-  match = matcher.match('foo/bar/baz/bat');
-  equal(match.remaining, "/bat");
-  deepEqual(match.hash, {"id": "bar", "name": "baz"});
+  match = matcher.match('foo/bar/baz/common/bro');
+  equal(match.remaining, "/bro");
+  deepEqual(match.hash, {"id": "bar", "name": "baz", "ok_tom": "common"});
 
   match = matcher.match('foo/bar');
   equal(match, undefined);
+});
+
+test("a RouteMatcher generates routes with dynamic segments", function() {
+  var url;
+
+  var matcher = Ember._RouteMatcher.create({
+    route: "foo/:id/:first_name"
+  });
+
+  url = matcher.generate({ id: 1, first_name: "Yehuda" });
+  equal(url, "foo/1/Yehuda");
 });
 
 test("route repeatedly descends into a nested hierarchy", function() {
@@ -142,7 +153,7 @@ test("route repeatedly descends into a nested hierarchy", function() {
 test("when you descend into a state, the route is set", function() {
   var state = Ember.State.create({
     ready: function(manager) {
-      manager.goToState('fooChild.barChild.bazChild');
+      manager.transitionTo('fooChild.barChild.bazChild');
     },
 
     fooChild: Ember.State.create({
@@ -176,3 +187,60 @@ test("when you descend into a state, the route is set", function() {
 
   stateManager.send('ready');
 });
+
+var stateManager;
+var Post = {
+  find: function(id) {
+    return { isPerson: true, id: parseInt(id, 10) };
+  }
+};
+
+var setUrl;
+var locationMock = {
+  setUrl: function(url) {
+    setUrl = url;
+  }
+};
+
+module("Routing Serialization and Deserialization", {
+  setup: function() {
+    stateManager = Ember.StateManager.create({
+      location: locationMock,
+      start: Ember.State.create({
+        ready: function(manager, post) {
+          manager.transitionTo('post', { post: post });
+        },
+
+        post: Ember.State.create({
+          route: "posts/:post_id",
+
+          setupContext: function(manager, context) {
+            equal(context.post.id, 2, "should be the same value regardless of entry point");
+          },
+
+          deserialize: function(manager, params) {
+            return { post: Post.find(params['post_id']) };
+          },
+
+          serialize: function(manager, hash) {
+            return { post_id: hash.post.id };
+          }
+        })
+      })
+    });
+  }
+});
+
+test("should invoke the deserialize method on a state when it is entered via a URL", function() {
+  expect(1);
+
+  stateManager.route('/posts/2');
+});
+
+test("should invoke the serialize method on a state when it is entered programmatically", function() {
+  expect(2);
+
+  stateManager.send('ready', Post.find(2));
+  equal(setUrl, '/posts/2', "The post is serialized");
+});
+

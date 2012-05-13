@@ -16,6 +16,19 @@ Ember.State = Ember.Object.extend(Ember.Evented, {
     return path;
   }).property().cacheable(),
 
+  /**
+    @private
+
+    Override the default event firing from Ember.Evented to
+    also call methods with the given name.
+  */
+  fire: function(name) {
+    if (this[name]) {
+      this[name].apply(this, [].slice.call(arguments, 1));
+    }
+    this._super.apply(this, arguments);
+  },
+
   init: function() {
     var states = get(this, 'states'), foundStates;
     set(this, 'childStates', Ember.A());
@@ -75,6 +88,7 @@ Ember.State = Ember.Object.extend(Ember.Evented, {
     return !get(this, 'childStates').length;
   }).cacheable(),
 
+  setupContext: Ember.K,
   enter: Ember.K,
   exit: Ember.K
 });

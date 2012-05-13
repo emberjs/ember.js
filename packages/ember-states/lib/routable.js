@@ -24,7 +24,7 @@ Ember._RouteMatcher = Ember.Object.extend({
         identifiers = [],
         count = 1;
 
-    var regex = escaped.replace(/:([a-z]+)(?=$|\/)/gi, function(match, id) {
+    var regex = escaped.replace(/:([a-z_]+)(?=$|\/)/gi, function(match, id) {
       identifiers[count++] = id;
       return "([^/]+)";
     });
@@ -49,17 +49,31 @@ Ember._RouteMatcher = Ember.Object.extend({
         hash: hash
       };
     }
+  },
+
+  generate: function(hash) {
+    var identifiers = this.identifiers, route = this.route, id;
+    for (var i=1, l=identifiers.length; i<l; i++) {
+      id = identifiers[i];
+      route = route.replace(new RegExp(":" + id), hash[id]);
+    }
+    return route;
   }
 });
 
 Ember.Routable = Ember.Mixin.create({
   init: function() {
-    this.on('enter', this, this.enterRoute);
+    this.on('setupContext', this, this.stashContext);
 
     this._super();
   },
 
-  enterRoute: function(manager) {
+  stashContext: function(manager, context) {
+    var meta = get(manager, 'stateMeta'),
+        serialized = this.serialize(manager, context);
+
+    meta.set(this, serialized);
+
     if (get(this, 'isRoutable')) {
       this.updateRoute(manager, get(manager, 'location'));
     }
@@ -67,21 +81,24 @@ Ember.Routable = Ember.Mixin.create({
 
   updateRoute: function(manager, location) {
     if (location && get(this, 'isLeaf')) {
-      var path = get(this, 'absoluteRoute');
+      var path = this.absoluteRoute(manager);
       location.setUrl(path);
     }
   },
 
-  absoluteRoute: Ember.computed(function() {
+  absoluteRoute: function(manager) {
     var parentState = get(this, 'parentState');
     var path = '';
 
     if (get(parentState, 'isRoutable')) {
-      path = get(parentState, 'absoluteRoute');
+      path = parentState.absoluteRoute(manager);
     }
 
-    return path + '/' + get(this, 'route');
-  }).cacheable(),
+    var matcher = get(this, 'routeMatcher'),
+        hash = get(manager, 'stateMeta').get(this);
+
+    return path + '/' + matcher.generate(hash);
+  },
 
   isRoutable: Ember.computed(function() {
     return typeof this.route === "string";
@@ -90,6 +107,14 @@ Ember.Routable = Ember.Mixin.create({
   routeMatcher: Ember.computed(function() {
     return Ember._RouteMatcher.create({ route: get(this, 'route') });
   }).cacheable(),
+
+  deserialize: function(manager, context) {
+    return context;
+  },
+
+  serialize: function(manager, context) {
+    return context;
+  },
 
   routePath: function(manager, path) {
     if (get(this, 'isLeaf')) { return; }
@@ -103,7 +128,8 @@ Ember.Routable = Ember.Mixin.create({
 
     Ember.assert("Could not find state for path " + path, !!state);
 
-    manager.goToState(get(state, 'path'));
+    var object = state.deserialize(manager, match.hash) || {};
+    manager.transitionTo(get(state, 'path'), object);
     manager.send('routePath', match.remaining);
   }
 });
