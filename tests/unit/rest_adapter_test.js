@@ -817,3 +817,29 @@ test("sideloaded data is loaded prior to primary data (to ensure relationship co
     group: { id: 1, name: "Tilde team", people: [1] }
   });
 });
+
+test("additional data can be sideloaded with associations in correct order", function() {
+  var Comment = DS.Model.extend({
+    person: DS.belongsTo(Person)
+  });
+
+  store.adapter.mappings = {'comments': Comment};
+
+  var comments = store.filter(Comment, function(data) {
+    equal(store.find(Comment, data.get('id')).getPath('person.id'), 1);
+  });
+
+  group = store.find(Group, 1);
+
+  ajaxHash.success({
+    group: {
+      id: 1, name: "Group 1", people: [ 1 ]
+    },
+    comments: [{
+      id: 1, person_id: 1, text: 'hello'
+    }],
+    people: [{
+      id: 1, name: "Yehuda Katz"
+    }]
+  });
+});
