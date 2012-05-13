@@ -525,9 +525,7 @@ Ember.StateManager = Ember.State.extend(
 
       state = getPath(state, path);
 
-      if (context) {
-        state.setupContext(this, context);
-      }
+      state.fire('setupContext', this, context);
     }, this);
     //getPath(root, path).setupContext(this, context);
   },

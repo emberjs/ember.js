@@ -251,7 +251,7 @@ test("it automatically transitions to multiple substates specified using either 
 module("Ember.StateManager - Transitions on Complex State Managers");
 
 /**
-            SB
+            SM
           /    \
      Login      Redeem
     /    |        |    \
@@ -509,7 +509,38 @@ test("if a context is passed to a transition and the path is to the current stat
   stateManager.send('goNext', counter);
 });
 
+test("if no context is provided, setupContext is triggered with an undefined context", function() {
+  expect(2);
+
+  Ember.run(function() {
+    stateManager = Ember.StateManager.create({
+      start: Ember.State.create({
+        goNext: function(manager) {
+          manager.transitionTo('foo.next');
+        }
+      }),
+
+      foo: Ember.State.create({
+        next: Ember.State.create({
+          goNext: function(manager, context) {
+            manager.transitionTo('next');
+          },
+
+          setupContext: function(manager, context) {
+            equal(context, undefined, "setupContext is called with no context");
+          }
+        })
+      })
+    });
+  });
+
+  stateManager.send('goNext');
+  stateManager.send('goNext');
+});
+
 test("multiple contexts can be provided in a single transitionTo", function() {
+  expect(2);
+
   Ember.run(function() {
     stateManager = Ember.StateManager.create({
       start: Ember.State.create({
