@@ -6,6 +6,7 @@
 
 require('ember-runtime/system/application');
 require('ember-runtime/system/array_proxy');
+require('ember-runtime/system/sorted_array_proxy');
 require('ember-runtime/system/core_object');
 require('ember-runtime/system/each_proxy');
 
