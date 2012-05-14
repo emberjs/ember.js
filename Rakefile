@@ -173,6 +173,38 @@ namespace :release do
   def pretend?
     ENV['PRETEND']
   end
+  
+  namespace :npm do
+    
+    def npm_command
+      npm_paths = %w(ember-metal ember-runtime ember-states)
+      pwd = Dir.pwd
+      
+      begin
+        npm_paths.each_with_index do |path, i|
+          Dir.chdir "#{pwd}/dist/npm/#{path}"
+          yield(npm_paths, i)
+        end
+      ensure
+        Dir.chdir pwd
+      end
+    end
+    
+    desc "Publish packages in dist/npm to npmjs.org"
+    task :publish do
+      npm_command do |paths, i|
+        system "npm publish"
+      end
+    end
+    
+    desc "Link npm modules to global namespace"
+    task :link do
+      npm_command do |paths, i|
+        system "npm link #{paths[i - 1]}" if i > 0 # link to just-linked dependencies
+        system "npm link" # then link this
+      end
+    end
+  end
 
   namespace :framework do
     desc "Update repo"

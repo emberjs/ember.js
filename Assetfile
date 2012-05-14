@@ -64,8 +64,9 @@ class JSHintRC < Rake::Pipeline::Filter
 end
 
 distros = {
-  :runtime => %w(ember-metal ember-runtime),
-  :full    => %w(handlebars ember-metal ember-runtime ember-views ember-states ember-viewstates metamorph ember-handlebars)
+  :runtime  => %w(ember-metal ember-runtime),
+  :stateful => %w(ember-metal ember-runtime ember-states),
+  :full     => %w(handlebars ember-metal ember-runtime ember-views ember-states ember-viewstates metamorph ember-handlebars)
 }
 
 output "dist"
@@ -122,25 +123,49 @@ input "packages" do
   end
 end
 
-distros.each do |name, modules|
-  name = name == :full ? "ember" : "ember-#{name}"
+# npm build
+input "dist/modules" do
+  module_paths = distros[:stateful].map{|m| "#{m}.js" }
+  
+  match "{#{module_paths.join(',')}}" do
+    concat do |filename|
+      File.join("npm/", filename.gsub('.js', ''), '/index.js')
+    end
+  end
+end
 
+input "packages" do
+  package_paths = distros[:stateful].map{|m| "#{m}/npm-package.json" }
+  
+  match "{#{package_paths.join(',')}}" do
+    concat do |filename|
+      File.join("npm/", filename.gsub('npm-package.json', ''), '/package.json')
+    end
+  end
+end
+
+distros.each do |name, modules|
+  next if name == :stateful
+  
+  name = name == :full ? "ember" : "ember-#{name}"
+  
   input "dist/modules" do
     module_paths = modules.map{|m| "#{m}.js" }
+    
     match "{#{module_paths.join(',')}}" do
       concat(module_paths){ ["#{name}.js", "#{name}.prod.js"] }
     end
-
+    
     # Add debug to the main distro
     match "{#{name}.js,ember-debug.js}" do
       concat ["ember-debug.js"], "#{name}.js"
     end
-
+    
     # Strip dev code
     match "#{name}.prod.js" do
       filter(EmberProductionFilter) { ["#{name}.prod.js", "#{name}.min.js"] }
     end
-
+    
     # Minify
     match "#{name}.min.js" do
       uglify{ "#{name}.min.js" }
