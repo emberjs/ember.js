@@ -168,7 +168,6 @@ var childViewsProperty = Ember.computed(function() {
   Calling `aContainer.get('aView').removeFromParent()` will result in the following HTML
 
         <div class="ember-view the-container">
-          <div class="ember-view">A</div>
           <div class="ember-view">B</div>
         </div>
 
