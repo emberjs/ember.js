@@ -353,7 +353,7 @@ require('ember-states/state');
 
 **/
 Ember.StateManager = Ember.State.extend(
-/** @scope Ember.State.prototype */ {
+/** @scope Ember.StateManager.prototype */ {
 
   /**
     When creating a new statemanager, look for a default state to transition
@@ -377,11 +377,11 @@ Ember.StateManager = Ember.State.extend(
   currentState: null,
 
   /**
-    @property
-
     If set to true, `errorOnUnhandledEvents` will cause an exception to be
     raised if you attempt to send an event to a state manager that is not
     handled by the current state or any of its parent states.
+
+    @property {Boolean}
   */
   errorOnUnhandledEvent: true,
 
