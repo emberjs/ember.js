@@ -434,38 +434,6 @@ Ember.Set = Ember.CoreObject.extend(Ember.MutableEnumerable, Ember.Copyable, Emb
       array[idx] = this[idx];
     }
     return "Ember.Set<%@>".fmt(array.join(','));
-  },
-
-  // ..........................................................
-  // DEPRECATED
-  //
-
-  /** @deprecated
-
-    This property is often used to determine that a given object is a set.
-    Instead you should use instanceof:
-
-        #js:
-        // SproutCore 1.x:
-        isSet = myobject && myobject.isSet;
-
-        // Ember:
-        isSet = myobject instanceof Ember.Set
-
-    @type Boolean
-    @default true
-  */
-  isSet: true
+  }
 
 });
-
-// Support the older API
-var o_create = Ember.Set.create;
-Ember.Set.create = function(items) {
-  if (items && Ember.Enumerable.detect(items)) {
-    Ember.deprecate('Passing an enumerable to Ember.Set.create() is deprecated and will be removed in a future version of Ember.  Use new Ember.Set(items) instead.');
-    return new Ember.Set(items);
-  } else {
-    return o_create.apply(this, arguments);
-  }
-};
