@@ -232,7 +232,7 @@ var invokeForState = {
           firstName: 'Barry'
         })
         excitedGreeting: function(){
-          return this.getPath("contnet.firstName") + "!!!"
+          return this.getPath("content.firstName") + "!!!"
         }
       })
 
@@ -1098,10 +1098,9 @@ Ember.View = Ember.Object.extend(Ember.Evented,
   },
 
   /**
-    Replaces the view's element to the specified parent element.
+    Replaces the content of the specified parent element with this view's element.
     If the view does not have an HTML representation yet, `createElement()`
     will be called automatically.
-    If the parent element already has some content, it will be removed.
 
     Note that this method just schedules the view to be appended; the DOM
     element will not be appended to the given element until all bindings have
@@ -1190,7 +1189,11 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     return value !== undefined ? value : Ember.guidFor(this);
   }).cacheable(),
 
-  /** @private */
+  /**
+    @private
+
+    TODO: Perhaps this should be removed from the production build somehow.
+  */
   _elementIdDidChange: Ember.beforeObserver(function() {
     throw "Changing a view's elementId after creation is not allowed.";
   }, 'elementId'),
