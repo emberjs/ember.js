@@ -341,7 +341,7 @@ var invokeForState = {
 
       AView = Ember.View.extend({
         eventManager: Ember.Object.create({
-          dblclick: function(event, view){
+          doubleClick: function(event, view){
             // will be called when when an instance's
             // rendered element or any rendering
             // of this views's descendent
@@ -356,12 +356,12 @@ var invokeForState = {
 
 
       AView = Ember.View.extend({
-        mouseenter: function(event){
+        mouseEnter: function(event){
           // will never trigger.
         },
         eventManager: Ember.Object.create({
-          mouseenter: function(event, view){
-            // takes presedence over AView#mouseenter
+          mouseEnter: function(event, view){
+            // takes presedence over AView#mouseEnter
           }
         })
       })
@@ -375,7 +375,7 @@ var invokeForState = {
       OuterView = Ember.View.extend({
         eventManager: Ember.Object.create({
           template: Ember.Handlebars.compile("outer {{#view InnerView}}inner{{/view}} outer"),
-          mouseenter: function(event, view){
+          mouseEnter: function(event, view){
             // view might be instance of either
             // OutsideView or InnerView depending on
             // where on the page the user interaction occured
@@ -389,7 +389,7 @@ var invokeForState = {
           // an OuterView because OuterView's
           // eventManager doesn't handle click events
         },
-        mouseenter: function(event){
+        mouseEnter: function(event){
           // will never be called if rendered inside 
           // an OuterView.
         }
