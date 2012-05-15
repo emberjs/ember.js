@@ -8,8 +8,7 @@ Ember.TargetActionSupport = Ember.Mixin.create({
     var target = get(this, 'target');
 
     if (Ember.typeOf(target) === "string") {
-      // TODO: Remove the false when deprecation is done
-      var value = getPath(this, target, false);
+      var value = getPath(this, target);
       if (value === undefined) { value = getPath(window, target); }
       return value;
     } else {

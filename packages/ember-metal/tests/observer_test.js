@@ -492,7 +492,7 @@ testBoth('addBeforeObserver should respect targets with methods', function(get,s
 
 var obj, count;
 
-module('Ember.computed - dependentkey with chained properties', {
+module('Ember.addObserver - dependentkey with chained properties', {
   setup: function() {
     obj = {
       foo: {
@@ -560,35 +560,6 @@ testBoth('depending on a simple chain', function(get, set) {
   equal(count, 6, 'should be not have invoked observer');
 });
 
-testBoth('depending on complex chain', function(get, set) {
-
-  var val ;
-  Ember.addObserver(obj, 'foo.bar*baz.biff', function(target, key, value) {
-    val = value;
-    count++;
-  });
-
-  set(Ember.getPath(obj, 'foo.bar.baz'), 'biff', 'BUZZ');
-  equal(val, 'BUZZ');
-  equal(count, 1);
-
-  set(Ember.getPath(obj, 'foo.bar'), 'baz', { biff: 'BLARG' });
-  equal(val, 'BLARG');
-  equal(count, 2);
-
-  // // NOTHING SHOULD CHANGE AFTER THIS POINT BECAUSE OF THE CHAINED *
-
-  set(Ember.get(obj, 'foo'), 'bar', { baz: { biff: 'BOOM' } });
-  equal(val, 'BLARG');
-  equal(count, 2);
-
-  set(obj, 'foo', { bar: { baz: { biff: 'BLARG' } } });
-  equal(val, 'BLARG');
-  equal(count, 2);
-
-
-});
-
 testBoth('depending on a Global chain', function(get, set) {
 
   var val ;
@@ -625,34 +596,6 @@ testBoth('depending on a Global chain', function(get, set) {
 
   set(foo.bar.baz, 'biff', "BOOM");
   equal(count, 6, 'should be not have invoked observer');
-});
-
-testBoth('depending on complex chain', function(get, set) {
-
-  var val ;
-  Ember.addObserver(obj, 'Global.foo.bar*baz.biff', function(target, key, value){
-    val = value;
-    count++;
-  });
-
-  set(Ember.getPath(Global, 'foo.bar.baz'),  'biff', 'BUZZ');
-  equal(val, 'BUZZ');
-  equal(count, 1);
-
-  set(Ember.getPath(Global, 'foo.bar'),  'baz', { biff: 'BLARG' });
-  equal(val, 'BLARG');
-  equal(count, 2);
-
-  // // NOTHING SHOULD CHANGE AFTER THIS POINT BECAUSE OF THE CHAINED *
-
-  set(Ember.get(Global, 'foo'),  'bar', { baz: { biff: 'BOOM' } });
-  equal(val, 'BLARG');
-  equal(count, 2);
-
-  set(Global, 'foo', { bar: { baz: { biff: 'BLARG' } } });
-  equal(val, 'BLARG');
-  equal(count, 2);
-
 });
 
 // ..........................................................

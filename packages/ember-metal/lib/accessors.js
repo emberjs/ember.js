@@ -147,13 +147,24 @@ Ember.set = set;
 //
 
 /** @private */
+function cleanupStars(path) {
+  if (path.indexOf('*') === -1 || path === '*') return path;
+
+  Ember.deprecate('Star paths are now treated the same as normal paths', !/(^|[^\.])\*/.test(path));
+
+  return path.replace(/(^|.)\*/, function(match, char){
+    return (char === '.') ? match : (char + '.');
+  });
+}
+
+/** @private */
 function normalizePath(path) {
   Ember.assert('must pass non-empty string to normalizePath()', path && path!=='');
+  path = cleanupStars(path);
 
   if (path==='*') return path; //special case...
   var first = path.charAt(0);
   if(first==='.') return 'this'+path;
-  if (first==='*' && path.charAt(1)!=='.') return 'this.'+path.slice(1);
   return path;
 }
 
@@ -162,10 +173,7 @@ function normalizePath(path) {
 function getPath(target, path) {
   var len = path.length, idx, next, key;
 
-  idx = path.indexOf('*');
-  if (idx>0 && path.charAt(idx-1)!=='.') {
-    return getPath(getPath(target, path.slice(0, idx)), path.slice(idx+1));
-  }
+  path = cleanupStars(path);
 
   idx = 0;
   while(target && idx<len) {
@@ -202,19 +210,9 @@ function normalizeTuple(target, path) {
   if (!target || isGlobal) target = window;
   if (hasThis) path = path.slice(5);
 
-  var idx = path.indexOf('*');
-  if (idx>0 && path.charAt(idx-1)!=='.') {
+  path = cleanupStars(path);
 
-    // should not do lookup on a prototype object because the object isn't
-    // really live yet.
-    if (target && meta(target,false).proto!==target) {
-      target = getPath(target, path.slice(0, idx));
-    } else {
-      target = null;
-    }
-    path   = path.slice(idx+1);
-
-  } else if (target === window) {
+  if (target === window) {
     key = firstKey(path);
     target = get(target, key);
     path   = path.slice(key.length+1);
@@ -268,8 +266,8 @@ Ember.getWithDefault = function(root, key, defaultValue) {
   return value;
 };
 
-Ember.getPath = function(root, path, _checkGlobal) {
-  var pathOnly, hasThis, hasStar, isGlobal, ret;
+Ember.getPath = function(root, path) {
+  var hasThis, isGlobal, ret;
 
   // Helpers that operate with 'this' within an #each
   if (path === '') {
@@ -279,37 +277,27 @@ Ember.getPath = function(root, path, _checkGlobal) {
   if (!path && 'string'===typeof root) {
     path = root;
     root = null;
-    pathOnly = true;
   }
 
-  hasStar = path.indexOf('*') > -1;
+  path = cleanupStars(path);
 
   // If there is no root and path is a key name, return that
   // property from the global object.
   // E.g. getPath('Ember') -> Ember
-  if (root === null && !hasStar && path.indexOf('.') < 0) { return get(window, path); }
+  if (root === null && path.indexOf('.') < 0) { return get(window, path); }
 
   // detect complicated paths and normalize them
   path = normalizePath(path);
   hasThis  = HAS_THIS.test(path);
 
-  if (!root || hasThis || hasStar) {
-    Ember.deprecate("Fetching globals with Ember.getPath is deprecated (root: "+root+", path: "+path+")", !root || root === window || !IS_GLOBAL.test(path));
-
+  if (!root || hasThis) {
     var tuple = normalizeTuple(root, path);
     root = tuple[0];
     path = tuple[1];
     tuple.length = 0;
   }
 
-  ret = getPath(root, path);
-
-  if (ret === undefined && !pathOnly && !hasThis && root !== window && IS_GLOBAL.test(path) && _checkGlobal !== false) {
-    Ember.deprecate("Fetching globals with Ember.getPath is deprecated (root: "+root+", path: "+path+")");
-    return Ember.getPath(window, path);
-  } else {
-    return ret;
-  }
+  return getPath(root, path);
 };
 
 Ember.setPath = function(root, path, value, tolerant) {
@@ -322,25 +310,12 @@ Ember.setPath = function(root, path, value, tolerant) {
   }
 
   path = normalizePath(path);
-  if (path.indexOf('*')>0) {
-    Ember.deprecate("Setting globals with Ember.setPath is deprecated (path: "+path+")", !root || root === window || !IS_GLOBAL.test(path));
-
-    var tuple = normalizeTuple(root, path);
-    root = tuple[0];
-    path = tuple[1];
-    tuple.length = 0;
-  }
 
   if (path.indexOf('.') > 0) {
     keyName = path.slice(path.lastIndexOf('.')+1);
     path    = path.slice(0, path.length-(keyName.length+1));
     if (path !== 'this') {
-      // Remove the `false` when we're done with this deprecation
-      root = Ember.getPath(root, path, false);
-      if (!root && IS_GLOBAL.test(path)) {
-        Ember.deprecate("Setting globals with Ember.setPath is deprecated (path: "+path+")");
-        root = Ember.getPath(window, path);
-      }
+      root = Ember.getPath(root, path);
     }
 
   } else {

@@ -447,7 +447,7 @@ test("should allow view objects to be swapped out without throwing an error (#78
     TemplateTests.datasetController = Ember.Object.create();
 
     TemplateTests.ReportingView = Ember.View.extend({
-      datasetBinding: 'TemplateTests.datasetController*dataset',
+      datasetBinding: 'TemplateTests.datasetController.dataset',
       readyBinding: 'dataset.ready',
       itemsBinding: 'dataset.items',
       template: Ember.Handlebars.compile("{{#if ready}}{{collection TemplateTests.CollectionView}}{{else}}Loading{{/if}}")

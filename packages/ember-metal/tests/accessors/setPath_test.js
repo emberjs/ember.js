@@ -69,6 +69,44 @@ test('[obj, foo.*.baz] -> obj.foo.baz', function() {
   equal(Ember.getPath(obj, 'foo.baz'), "BAM");
 });
 
+test('[obj, this.foo] -> obj.foo', function() {
+  Ember.setPath(obj, 'this.foo', "BAM");
+  equal(Ember.getPath(obj, 'foo'), "BAM");
+});
+
+test('[obj, this.foo.bar] -> obj.foo.bar', function() {
+  Ember.setPath(obj, 'this.foo.bar', "BAM");
+  equal(Ember.getPath(obj, 'foo.bar'), "BAM");
+});
+
+test('[obj, .foo.bar] -> obj.foo.bar', function() {
+  Ember.setPath(obj, '.foo.bar', "BAM");
+  equal(Ember.getPath(obj, 'foo.bar'), "BAM");
+});
+
+// ..........................................................
+// NO TARGET
+//
+
+test('[null, Foo.bar] -> Foo.bar', function() {
+  Ember.setPath(null, 'Foo.bar', "BAM");
+  equal(Ember.getPath(Foo, 'bar'), "BAM");
+});
+
+// ..........................................................
+// DEPRECATED
+//
+
+module("Ember.setPath - deprecated", {
+  setup: function() {
+    Ember.TESTING_DEPRECATION = true;
+    moduleOpts.setup();
+  },
+  teardown: function() {
+    Ember.TESTING_DEPRECATION = false;
+    moduleOpts.teardown();
+  }
+});
 
 test('[obj, foo*bar] -> obj.foo.bar', function() {
   Ember.setPath(obj, 'foo*bar', "BAM");
@@ -86,21 +124,6 @@ test('[obj, foo.bar*baz.biff] -> obj.foo.bar.baz.biff', function() {
   equal(Ember.getPath(obj, 'foo.bar.baz.biff'), "BAM");
 });
 
-test('[obj, this.foo] -> obj.foo', function() {
-  Ember.setPath(obj, 'this.foo', "BAM");
-  equal(Ember.getPath(obj, 'foo'), "BAM");
-});
-
-test('[obj, this.foo.bar] -> obj.foo.bar', function() {
-  Ember.setPath(obj, 'this.foo.bar', "BAM");
-  equal(Ember.getPath(obj, 'foo.bar'), "BAM");
-});
-
-test('[obj, .foo.bar] -> obj.foo.bar', function() {
-  Ember.setPath(obj, '.foo.bar', "BAM");
-  equal(Ember.getPath(obj, 'foo.bar'), "BAM");
-});
-
 test('[obj, *foo.bar] -> obj.foo.bar', function() {
   Ember.setPath(obj, '*foo.bar', "BAM");
   equal(Ember.getPath(obj, 'foo.bar'), "BAM");
@@ -114,16 +137,6 @@ test('[obj, this.foo*bar] -> obj.foo.bar', function() {
 test('[obj, this.foo.bar*baz.biff] -> obj.foo.bar.baz.biff', function() {
   Ember.setPath(obj, 'this.foo.bar*baz.biff', "BAM");
   equal(Ember.getPath(obj, 'foo.bar.baz.biff'), "BAM");
-});
-
-
-// ..........................................................
-// NO TARGET
-//
-
-test('[null, Foo.bar] -> Foo.bar', function() {
-  Ember.setPath(null, 'Foo.bar', "BAM");
-  equal(Ember.getPath(Foo, 'bar'), "BAM");
 });
 
 test('[null, Foo*bar] -> Foo.bar', function() {
@@ -141,22 +154,6 @@ test('[null, Foo.bar.baz*biff] -> Foo.bar.baz.biff', function() {
   equal(Ember.getPath(Foo, 'bar.baz.biff'), "BAM");
 });
 
-
-// ..........................................................
-// GLOBAL PATHS (DEPRECATED)
-//
-
-module("Ember.setPath - deprecated", {
-  setup: function() {
-    Ember.TESTING_DEPRECATION = true;
-    moduleOpts.setup();
-  },
-  teardown: function() {
-    Ember.TESTING_DEPRECATION = false;
-    moduleOpts.teardown();
-  }
-});
-
 test('[obj, Foo] -> EXCEPTION', function() {
   raises(function() {
     Ember.setPath(obj, 'Foo', "BAM");
@@ -172,29 +169,4 @@ test('[obj, foo.baz.bat] -> EXCEPTION', function() {
 test('[obj, foo.baz.bat] -> EXCEPTION', function() {
   Ember.trySetPath(obj, 'foo.baz.bat', "BAM");
   ok(true, "does not raise");
-});
-
-test('[obj, Foo.bar] -> Foo.bar', function() {
-  Ember.setPath(obj, 'Foo.bar', "BAM");
-  equal(Ember.getPath(Foo, 'bar'), "BAM");
-});
-
-test('[obj, Foo*bar] -> Foo.bar', function() {
-  Ember.setPath(obj, 'Foo*bar', "BAM");
-  equal(Ember.getPath(Foo, 'bar'), "BAM");
-});
-
-test('[obj, Foo.bar*baz.biff] -> Foo.bar.baz.biff', function() {
-  Ember.setPath(obj, 'Foo.bar*baz.biff', "BAM");
-  equal(Ember.getPath(Foo, 'bar.baz.biff'), "BAM");
-});
-
-test('[obj, Foo.bar.baz*biff] -> Foo.bar.baz.biff', function() {
-  Ember.setPath(obj, 'Foo.bar.baz*biff', "BAM");
-  equal(Ember.getPath(Foo, 'bar.baz.biff'), "BAM");
-});
-
-test('[obj, $foo.bar.baz] -> $foo.bar.baz', function() {
-  Ember.setPath(obj, '$foo.bar.baz', "BAM");
-  equal(Ember.getPath($foo, 'bar.baz'), "BAM");
 });

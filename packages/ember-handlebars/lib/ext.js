@@ -173,8 +173,7 @@ Ember.Handlebars.getPath = function(root, path, options) {
   root = normalizedPath.root;
   path = normalizedPath.path;
 
-  // TODO: Remove this `false` when the `getPath` globals support is removed
-  value = Ember.getPath(root, path, false);
+  value = Ember.getPath(root, path);
 
   if (value === undefined && root !== window && Ember.isGlobalPath(path)) {
     value = Ember.getPath(window, path);

@@ -5,8 +5,7 @@
 // ==========================================================================
 /*globals Foo:true $foo:true */
 
-var obj;
-module('Ember.normalizeTuple', {
+var obj, moduleOpts = {
   setup: function() {
     obj = {
       foo: {
@@ -33,7 +32,9 @@ module('Ember.normalizeTuple', {
     obj = null;
     Foo = null;
   }
-});
+};
+
+module('Ember.normalizeTuple', moduleOpts);
 
 // ..........................................................
 // LOCAL PATHS
@@ -59,24 +60,6 @@ test('[obj, foo.*.baz] -> [obj, foo.*.baz]', function() {
   deepEqual(Ember.normalizeTuple(obj, 'foo.*.baz'), [obj, 'foo.*.baz']);
 });
 
-
-test('[obj, foo*bar] -> [obj.foo, bar]', function() {
-  deepEqual(Ember.normalizeTuple(obj, 'foo*bar'), [obj.foo, 'bar']);
-});
-
-test('[obj, foo*bar.*] -> [obj.foo, bar.*]', function() {
-  deepEqual(Ember.normalizeTuple(obj, 'foo*bar.*'), [obj.foo, 'bar.*']);
-});
-
-test('[obj, foo.bar*baz.biff] -> [obj.foo.bar, baz.biff]', function() {
-  deepEqual(Ember.normalizeTuple(obj, 'foo.bar*baz.biff'), [obj.foo.bar, 'baz.biff']);
-});
-
-test('[obj, foo.bar*baz.biff] -> [obj.foo.bar, baz.biff]', function() {
-  deepEqual(Ember.normalizeTuple(obj, 'foo.bar*baz.biff'), [obj.foo.bar, 'baz.biff']);
-});
-
-
 test('[obj, this.foo] -> [obj, foo]', function() {
   deepEqual(Ember.normalizeTuple(obj, 'this.foo'), [obj, 'foo']);
 });
@@ -87,22 +70,6 @@ test('[obj, this.foo.bar] -> [obj, foo.bar]', function() {
 
 test('[obj, .foo.bar] -> [obj, foo.bar]', function() {
   deepEqual(Ember.normalizeTuple(obj, 'this.foo.bar'), [obj, 'foo.bar']);
-});
-
-test('[obj, *foo.bar] -> [obj, foo.bar]', function() {
-  deepEqual(Ember.normalizeTuple(obj, 'this.foo.bar'), [obj, 'foo.bar']);
-});
-
-test('[obj, this.foo*bar] -> [obj.foo, bar]', function() {
-  deepEqual(Ember.normalizeTuple(obj, 'this.foo*bar'), [obj.foo, 'bar']);
-});
-
-test('[obj, this.foo.bar*baz.biff] -> [obj.foo.bar, baz.biff]', function() {
-  deepEqual(Ember.normalizeTuple(obj, 'this.foo.bar*baz.biff'), [obj.foo.bar, 'baz.biff']);
-});
-
-test('[obj, this.foo.bar*baz.biff] -> [obj.foo.bar, baz.biff]', function() {
-  deepEqual(Ember.normalizeTuple(obj, 'foo.bar*baz.biff'), [obj.foo.bar, 'baz.biff']);
 });
 
 test('[obj, this.Foo.bar] -> [obj, Foo.bar]', function() {
@@ -119,18 +86,6 @@ test('[obj, Foo] -> [obj, Foo]', function() {
 
 test('[obj, Foo.bar] -> [Foo, bar]', function() {
   deepEqual(Ember.normalizeTuple(obj, 'Foo.bar'), [Foo, 'bar']);
-});
-
-test('[obj, Foo*bar] -> [Foo, bar]', function() {
-  deepEqual(Ember.normalizeTuple(obj, 'Foo*bar'), [Foo, 'bar']);
-});
-
-test('[obj, Foo.bar*baz.biff] -> [Foo.bar, baz.biff]', function() {
-  deepEqual(Ember.normalizeTuple(obj, 'Foo.bar*baz.biff'), [Foo.bar, 'baz.biff']);
-});
-
-test('[obj, Foo.bar.baz*biff] -> [Foo.bar.baz, biff]', function() {
-  deepEqual(Ember.normalizeTuple(obj, 'Foo.bar.baz*biff'), [Foo.bar.baz, 'biff']);
 });
 
 test('[obj, $foo.bar.baz] -> [$foo, bar.baz]', function() {
@@ -151,14 +106,69 @@ test('[null, Foo.bar] -> [Foo, bar]', function() {
   deepEqual(Ember.normalizeTuple(null, 'Foo.bar'), [Foo, 'bar']);
 });
 
+// ..........................................................
+// DEPRECATED
+//
+//
+module('Ember.normalizeTuple - deprecated', {
+  setup: function() {
+    Ember.TESTING_DEPRECATION = true;
+    moduleOpts.setup();
+  },
+  teardown: function() {
+    Ember.TESTING_DEPRECATION = false;
+    moduleOpts.teardown();
+  }
+});
+
+test('[obj, foo*bar] -> [obj, foo.bar]', function() {
+  deepEqual(Ember.normalizeTuple(obj, 'foo*bar'), [obj, 'foo.bar']);
+});
+
+test('[obj, foo*bar.*] -> [obj, foo.bar.*]', function() {
+  deepEqual(Ember.normalizeTuple(obj, 'foo*bar.*'), [obj, 'foo.bar.*']);
+});
+
+test('[obj, foo.bar*baz.biff] -> [obj, foo.bar.baz.biff]', function() {
+  deepEqual(Ember.normalizeTuple(obj, 'foo.bar*baz.biff'), [obj, 'foo.bar.baz.biff']);
+});
+
+test('[obj, *foo.bar] -> [obj, foo.bar]', function() {
+  deepEqual(Ember.normalizeTuple(obj, '*foo.bar'), [obj, 'foo.bar']);
+});
+
+test('[obj, this.foo*bar] -> [obj, foo.bar]', function() {
+  deepEqual(Ember.normalizeTuple(obj, 'this.foo*bar'), [obj, 'foo.bar']);
+});
+
+test('[obj, this.foo.bar*baz.biff] -> [obj, foo.bar.baz.biff]', function() {
+  deepEqual(Ember.normalizeTuple(obj, 'this.foo.bar*baz.biff'), [obj, 'foo.bar.baz.biff']);
+});
+
+test('[obj, this.foo.bar*baz.biff] -> [obj, foo.bar.baz.biff]', function() {
+  deepEqual(Ember.normalizeTuple(obj, 'foo.bar*baz.biff'), [obj, 'foo.bar.baz.biff']);
+});
+
 test('[null, Foo*bar] -> [Foo, bar]', function() {
   deepEqual(Ember.normalizeTuple(null, 'Foo*bar'), [Foo, 'bar']);
 });
 
-test('[null, Foo.bar*baz.biff] -> [Foo.bar, baz.biff]', function() {
-  deepEqual(Ember.normalizeTuple(null, 'Foo.bar*baz.biff'), [Foo.bar, 'baz.biff']);
+test('[null, Foo.bar*baz.biff] -> [Foo, bar.baz.biff]', function() {
+  deepEqual(Ember.normalizeTuple(null, 'Foo.bar*baz.biff'), [Foo, 'bar.baz.biff']);
 });
 
-test('[null, Foo.bar.baz*biff] -> [Foo.bar.baz, biff]', function() {
-  deepEqual(Ember.normalizeTuple(null, 'Foo.bar.baz*biff'), [Foo.bar.baz, 'biff']);
+test('[null, Foo.bar.baz*biff] -> [Foo, bar.baz.biff]', function() {
+  deepEqual(Ember.normalizeTuple(null, 'Foo.bar.baz*biff'), [Foo, 'bar.baz.biff']);
+});
+
+test('[obj, Foo*bar] -> [Foo, bar]', function() {
+  deepEqual(Ember.normalizeTuple(obj, 'Foo*bar'), [Foo, 'bar']);
+});
+
+test('[obj, Foo.bar*baz.biff] -> [Foo, bar.baz.biff]', function() {
+  deepEqual(Ember.normalizeTuple(obj, 'Foo.bar*baz.biff'), [Foo, 'bar.baz.biff']);
+});
+
+test('[obj, Foo.bar.baz*biff] -> [Foo, bar.baz.biff]', function() {
+  deepEqual(Ember.normalizeTuple(obj, 'Foo.bar.baz*biff'), [Foo, 'bar.baz.biff']);
 });
