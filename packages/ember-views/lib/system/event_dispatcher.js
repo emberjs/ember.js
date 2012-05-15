@@ -63,6 +63,7 @@ Ember.EventDispatcher = Ember.Object.extend(
       mouseenter  : 'mouseEnter',
       mouseleave  : 'mouseLeave',
       submit      : 'submit',
+      input       : 'input',
       change      : 'change',
       dragstart   : 'dragStart',
       drag        : 'drag',
