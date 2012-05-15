@@ -592,31 +592,3 @@ Ember.run.next = function(target, method) {
 Ember.run.cancel = function(timer) {
   delete timers[timer];
 };
-
-// ..........................................................
-// DEPRECATED API
-//
-
-/**
-  @namespace Compatibility for Ember.run
-  @name Ember.RunLoop
-  @deprecated
-*/
-
-/**
-  @deprecated
-  @method
-
-  Use `#js:Ember.run.begin()` instead
-*/
-Ember.RunLoop.begin = Ember.deprecateFunc("Use Ember.run.begin instead of Ember.RunLoop.begin.", Ember.run.begin);
-
-/**
-  @deprecated
-  @method
-
-  Use `#js:Ember.run.end()` instead
-*/
-Ember.RunLoop.end = Ember.deprecateFunc("Use Ember.run.end instead of Ember.RunLoop.end.", Ember.run.end);
-
-
