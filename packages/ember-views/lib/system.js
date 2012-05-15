@@ -8,4 +8,5 @@
 require("ember-views/system/render_buffer");
 require("ember-views/system/application");
 require("ember-views/system/event_dispatcher");
+require("ember-views/system/location");
 require("ember-views/system/ext");
