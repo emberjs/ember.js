@@ -35,7 +35,7 @@ GEM
   specs:
     addressable (2.2.7)
     colored (1.2)
-    execjs (1.3.0)
+    execjs (1.3.2)
       multi_json (~> 1.0)
     faraday (0.7.6)
       addressable (~> 2.2)
@@ -51,7 +51,7 @@ GEM
     kicker (2.5.0)
       rb-fsevent
     mime-types (1.18)
-    multi_json (1.3.2)
+    multi_json (1.3.5)
     multipart-post (1.1.5)
     nokogiri (1.5.2)
     oauth2 (0.5.2)
