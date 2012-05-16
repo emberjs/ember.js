@@ -1300,11 +1300,9 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     NOTE: In some cases this was called when the element existed. This no longer
     works so we let people know. We can remove this warning code later.
   */
-  _notifyWillInsertElement: function(fromPreRender) {
+  _notifyWillInsertElement: function() {
     this.invokeRecursively(function(view) {
-      if (fromPreRender) { view._willInsertElementAccessUnsupported = true; }
       view.fire('willInsertElement');
-      view._willInsertElementAccessUnsupported = false;
     });
   },
 

@@ -17,30 +17,14 @@ Ember.View.states.preRender = {
       return;
     }
     view.createElement();
-    view._notifyWillInsertElement(true);
+    view._notifyWillInsertElement();
     // after createElement, the view will be in the hasElement state.
     fn.call(view);
     view.transitionTo('inDOM');
     view._notifyDidInsertElement();
   },
 
-  // This exists for the removal warning, remove later
-  $: function(view){
-    if (view._willInsertElementAccessUnsupported) {
-      console.error("Getting element from willInsertElement is unreliable and no longer supported.");
-    }
-    return Ember.$();
-  },
-
   empty: Ember.K,
-
-  // This exists for the removal warning, remove later
-  getElement: function(view){
-    if (view._willInsertElementAccessUnsupported) {
-      console.error("Getting element from willInsertElement is unreliable and no longer supported.");
-    }
-    return null;
-  },
 
   setElement: function(view, value) {
     view.beginPropertyChanges();
