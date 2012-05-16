@@ -61,7 +61,7 @@ Ember.assert = function(desc, test) {
 Ember.warn = function(message, test) {
   if (arguments.length === 1) { test = false; }
   if ('function' === typeof test) test = test()!==false;
-  if (!test) console.warn("WARNING: "+message);
+  if (!test) Ember.Logger.warn("WARNING: "+message);
 };
 
 /**
@@ -110,7 +110,7 @@ Ember.deprecate = function(message, test) {
     stackStr = "\n    " + stack.slice(2).join("\n    ");
   }
 
-  console.warn("DEPRECATION: "+message+stackStr);
+  Ember.Logger.warn("DEPRECATION: "+message+stackStr);
 };
 
 
