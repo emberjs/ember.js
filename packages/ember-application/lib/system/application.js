@@ -5,8 +5,6 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
-require("ember-views/system/event_dispatcher");
-
 var get = Ember.get, set = Ember.set;
 
 /**

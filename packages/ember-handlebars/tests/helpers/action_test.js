@@ -1,4 +1,4 @@
-var application, view,
+var dispatcher, view,
     ActionHelper = Ember.Handlebars.ActionHelper,
     originalRegisterAction = ActionHelper.registerAction;
 
@@ -8,12 +8,13 @@ var appendView = function() {
 
 module("Ember.Handlebars - action helper", {
   setup: function() {
-    application = Ember.Application.create();
+    dispatcher = Ember.EventDispatcher.create();
+    dispatcher.setup();
   },
 
   teardown: function() {
     Ember.run(function() {
-      application.destroy();
+      dispatcher.destroy();
       view.destroy();
     });
   }

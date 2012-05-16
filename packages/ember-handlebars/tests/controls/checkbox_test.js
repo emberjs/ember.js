@@ -4,15 +4,16 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
-var get = Ember.get, set = Ember.set, checkboxView, application;
+var get = Ember.get, set = Ember.set, checkboxView, dispatcher;
 
 module("Ember.Checkbox", {
   setup: function() {
-    application = Ember.Application.create();
+    dispatcher = Ember.EventDispatcher.create();
+    dispatcher.setup();
   },
   teardown: function() {
     Ember.run(function() {
-      application.destroy();
+      dispatcher.destroy();
       checkboxView.destroy();
     });
   }
