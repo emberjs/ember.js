@@ -174,7 +174,7 @@ test("when you descend into a state, the route is set", function() {
   var stateManager = Ember.StateManager.create({
     start: state,
     location: {
-      setUrl: function(url) {
+      setURL: function(url) {
         if (count === 0) {
           equal(url, '/foo/bar/baz', "The current URL should be passed in");
           count++;
@@ -195,10 +195,10 @@ var Post = {
   }
 };
 
-var setUrl;
+var setURL;
 var locationMock = {
-  setUrl: function(url) {
-    setUrl = url;
+  setURL: function(url) {
+    setURL = url;
   }
 };
 
@@ -261,19 +261,19 @@ test("should invoke the serialize method on a state when it is entered programma
   expect(3);
 
   stateManager.send('ready', Post.find(2));
-  equal(setUrl, '/posts/2', "The post is serialized");
+  equal(setURL, '/posts/2', "The post is serialized");
 
   stateManager.send('showIndex');
-  equal(setUrl, '/posts');
+  equal(setURL, '/posts');
 });
 
 test("should invoke the serialize method on a state when it is entered programmatically (initially shallow)", function() {
   expect(3);
 
   stateManager.send('showIndex');
-  equal(setUrl, '/posts', "The post is serialized");
+  equal(setURL, '/posts', "The post is serialized");
 
   stateManager.send('showPost', Post.find(2));
-  equal(setUrl, '/posts/2');
+  equal(setURL, '/posts/2');
 });
 

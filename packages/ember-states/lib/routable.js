@@ -5,10 +5,10 @@ var get = Ember.get, getPath = Ember.getPath;
 // The Ember Routable mixin assumes the existance of a simple
 // routing shim that supports the following three behaviors:
 //
-// * .getUrl() - this is called when the page loads
-// * .setUrl(newUrl) - this is called from within the state
+// * .getURL() - this is called when the page loads
+// * .setURL(newURL) - this is called from within the state
 //   manager when the state changes to a routable state
-// * .onUrlChange(callback) - this happens when the user presses
+// * .onURLChange(callback) - this happens when the user presses
 //   the back or forward button
 
 var escapeForRegex = function(text) {
@@ -89,7 +89,7 @@ Ember.Routable = Ember.Mixin.create({
   updateRoute: function(manager, location) {
     if (location && get(this, 'isLeaf')) {
       var path = this.absoluteRoute(manager);
-      location.setUrl(path);
+      location.setURL(path);
     }
   },
 
