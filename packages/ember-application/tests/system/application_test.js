@@ -12,7 +12,9 @@ var set = Ember.set, get = Ember.get, getPath = Ember.getPath;
 module("Ember.Application", {
   setup: function() {
     Ember.$("#qunit-fixture").html("<div id='one'><div id='one-child'>HI</div></div><div id='two'>HI</div>");
-    application = Ember.Application.create({ rootElement: '#one' });
+    Ember.run(function() {
+      application = Ember.Application.create({ rootElement: '#one' });
+    });
   },
 
   teardown: function() {
@@ -21,41 +23,61 @@ module("Ember.Application", {
 });
 
 test("you can make a new application in a non-overlapping element", function() {
-  var app = Ember.Application.create({ rootElement: '#two' });
-  app.destroy();
+  var app;
+  Ember.run(function() {
+    app = Ember.Application.create({ rootElement: '#two' });
+  });
+  Ember.run(function() {
+    app.destroy();
+  });
   ok(true, "should not raise");
 });
 
 test("you cannot make a new application that is a parent of an existing application", function() {
   raises(function() {
-    Ember.Application.create({ rootElement: '#qunit-fixture' });
+    Ember.run(function() {
+      Ember.Application.create({ rootElement: '#qunit-fixture' });
+    });
   }, Error);
 });
 
 test("you cannot make a new application that is a descendent of an existing application", function() {
   raises(function() {
-    Ember.Application.create({ rootElement: '#one-child' });
+    Ember.run(function() {
+      Ember.Application.create({ rootElement: '#one-child' });
+    });
   }, Error);
 });
 
 test("you cannot make a new application that is a duplicate of an existing application", function() {
   raises(function() {
-    Ember.Application.create({ rootElement: '#one' });
+    Ember.run(function() {
+      Ember.Application.create({ rootElement: '#one' });
+    });
   }, Error);
 });
 
 test("you cannot make two default applications without a rootElement error", function() {
   // Teardown existing
-  application.destroy();
+  Ember.run(function() {
+    application.destroy();
+  });
 
-  application = Ember.Application.create();
+  Ember.run(function() {
+    application = Ember.Application.create();
+  });
   raises(function() {
-    Ember.Application.create();
+    Ember.run(function() {
+      Ember.Application.create();
+    });
   }, Error);
 });
 
 test("acts like a namespace", function() {
-  var app = window.TestApp = Ember.Application.create({rootElement: '#two'});
+  var app;
+  Ember.run(function() {
+    app = window.TestApp = Ember.Application.create({rootElement: '#two'});
+  });
   app.Foo = Ember.Object.extend();
   equal(app.Foo.toString(), "TestApp.Foo", "Classes pick up their parent namespace");
   app.destroy();
@@ -88,4 +110,28 @@ test("inject controllers into a state manager", function() {
 
   equal(getPath(stateManager, 'fooController.stateManager'), stateManager, "the state manager is assigned");
   equal(getPath(stateManager, 'barController.stateManager'), stateManager, "the state manager is assigned");
+});
+
+module("Ember.Application initial route", function() {
+  Ember.run(function() {
+    app = Ember.Application.create({
+      rootElement: '#qunit-fixture'
+    });
+
+    app.stateManager = Ember.StateManager.create({
+      location: {
+        getURL: function() {
+          return '/';
+        }
+      },
+
+      start: Ember.State.extend({
+        index: Ember.State.extend({
+          route: '/'
+        })
+      })
+    });
+  });
+
+  equal(app.getPath('stateManager.currentState.path'), 'start.index', "The router moved the state into the right place");
 });
