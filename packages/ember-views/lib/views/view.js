@@ -630,6 +630,28 @@ Ember.View = Ember.Object.extend(Ember.Evented,
   _childViews: [],
 
   /**
+    When it's a virtual view, we need to notify the parent that their
+    childViews will change.
+  */
+  _childViewsWillChange: Ember.beforeObserver(function() {
+    if (this.isVirtual) {
+      var parentView = get(this, 'parentView');
+      if (parentView) { Ember.propertyWillChange(parentView, 'childViews'); }
+    }
+  }, 'childViews'),
+
+  /**
+    When it's a virtual view, we need to notify the parent that their
+    childViews did change.
+  */
+  _childViewsDidChange: Ember.observer(function() {
+    if (this.isVirtual) {
+      var parentView = get(this, 'parentView');
+      if (parentView) { Ember.propertyDidChange(parentView, 'childViews'); }
+    }
+  }, 'childViews'),
+
+  /**
     Return the nearest ancestor that is an instance of the provided
     class.
 
