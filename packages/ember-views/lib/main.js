@@ -10,4 +10,5 @@
 require("ember-runtime");
 require("ember-views/core");
 require("ember-views/system");
+require("ember-states");
 require("ember-views/views");
