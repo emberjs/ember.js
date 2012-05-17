@@ -101,16 +101,15 @@ Ember.Application = Ember.Namespace.extend(
 
       stateManager.getPath('postsController.stateManager') // stateManager
   */
-  injectControllers: function(stateManager) {
+  inject: function(stateManager) {
     var properties = Ember.A(Ember.keys(this)),
+        injections = get(this.constructor, 'injections'),
         namespace = this, controller, name;
 
     properties.forEach(function(property) {
-      if (!/^[A-Z].*Controller$/.test(property)) { return; }
-      name = property[0].toLowerCase() + property.substr(1);
-      controller = namespace[property].create();
-      stateManager.set(name, controller);
-      controller.set('stateManager', stateManager);
+      injections.forEach(function(injection) {
+        injection(namespace, stateManager, property);
+      });
     });
   },
 
@@ -158,4 +157,20 @@ Ember.Application = Ember.Namespace.extend(
   }
 });
 
+Ember.Application.reopenClass({
+  concatenatedProperties: ['injections'],
+  injections: Ember.A(),
+  registerInjection: function(callback) {
+    get(this, 'injections').pushObject(callback);
+  }
+});
 
+Ember.Application.registerInjection(function(app, stateManager, property) {
+  if (!/^[A-Z].*Controller$/.test(property)) { return; }
+
+  var name = property[0].toLowerCase() + property.substr(1),
+      controller = app[property].create();
+
+  stateManager.set(name, controller);
+  controller.set('target', stateManager);
+});

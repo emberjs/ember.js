@@ -91,7 +91,7 @@ test("should by default target the state manager on the controller if it exists"
 
   view = Ember.View.create({
     controller: Ember.Object.create({
-      stateManager: Ember.Object.create({
+      target: Ember.Object.create({
         isState: true,
         send: function(context) {
           sent++;

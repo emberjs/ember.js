@@ -102,14 +102,14 @@ test("inject controllers into a state manager", function() {
 
   var stateManager = Ember.Object.create();
 
-  app.injectControllers(stateManager);
+  app.inject(stateManager);
 
   ok(get(stateManager, 'fooController') instanceof app.FooController, "fooController was assigned");
   ok(get(stateManager, 'barController') instanceof app.BarController, "barController was assigned");
   ok(get(stateManager, 'foo') === undefined, "foo was not assigned");
 
-  equal(getPath(stateManager, 'fooController.stateManager'), stateManager, "the state manager is assigned");
-  equal(getPath(stateManager, 'barController.stateManager'), stateManager, "the state manager is assigned");
+  equal(getPath(stateManager, 'fooController.target'), stateManager, "the state manager is assigned");
+  equal(getPath(stateManager, 'barController.target'), stateManager, "the state manager is assigned");
 });
 
 module("Ember.Application initial route", function() {
