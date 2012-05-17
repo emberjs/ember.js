@@ -322,3 +322,22 @@ test("RadioButtonGroup as a view", function() {
   equal(option2.$().val(), 'option2');
   equal(get(option2, 'group'), group);
 });
+
+test("selectedValue works even if the view is not in the DOM", function() {
+  group = Ember.RadioButtonGroup.create({
+    name: 'testName',
+    template: Ember.Handlebars.compile(
+      '{{ view RadioButton value="option1" }}' +
+      '{{ view RadioButton value="option2" }}'
+    )
+  });
+
+  set(group, 'selectedValue', 'option1');
+
+  append(group);
+
+  equal(get(group, 'selectedValue'), 'option1', 'selectedValue should be set');
+
+  console.log('FOOBAR');
+  equal(group.$("[value='option1']").attr('checked'), 'checked', 'checkbox should be checked');
+});
