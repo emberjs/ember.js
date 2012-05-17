@@ -4,7 +4,7 @@ require('ember-states/state');
 
 /**
   @class
-  
+
   StateManager is part of Ember's implementation of a finite state machine. A StateManager
   instance manages a number of properties that are instances of `Ember.State`,
   tracks the current active state, and triggers callbacks when states have changed.
@@ -43,7 +43,7 @@ require('ember-states/state');
 
   ## The Initial State
   When created a StateManager instance will immediately enter into the state
-  defined as its `start` property or the state referenced by name in its 
+  defined as its `start` property or the state referenced by name in its
   `initialState` property:
 
       managerA = Ember.StateManager.create({
@@ -91,11 +91,11 @@ require('ember-states/state');
       robotManager.getPath('currentState.name') // 'poweredUp'
 
   Before transitioning into a new state the existing `currentState` will have its
-  `exit` method called with the StateManager instance as its first argument and 
+  `exit` method called with the StateManager instance as its first argument and
   an object representing the transition as its second argument.
 
   After transitioning into a new state the new `currentState` will have its
-  `enter` method called with the StateManager instance as its first argument and 
+  `enter` method called with the StateManager instance as its first argument and
   an object representing the transition as its second argument.
 
       robotManager = Ember.StateManager.create({
@@ -120,7 +120,7 @@ require('ember-states/state');
 
 
   Once a StateManager is already in a state, subsequent attempts to enter that state will
-  not trigger enter or exit method calls. Attempts to transition into a state that the 
+  not trigger enter or exit method calls. Attempts to transition into a state that the
   manager does not have will result in no changes in the StateManager's current state:
 
       robotManager = Ember.StateManager.create({
@@ -148,9 +148,9 @@ require('ember-states/state');
       robotManager.getPath('currentState.name') // 'poweredUp'
 
 
-  Each state property may itself contain properties that are instances of Ember.State. 
-  The StateManager can transition to specific sub-states in a series of transitionTo method calls or
-  via a single transitionTo with the full path to the specific state. The StateManager will also 
+  Each state property may itself contain properties that are instances of Ember.State.
+  The StateManager can transition to specific sub-states in a series of goToState method calls or
+  via a single transitionTo with the full path to the specific state. The StateManager will also
   keep track of the full path to its currentState
 
       robotManager = Ember.StateManager.create({
@@ -250,7 +250,7 @@ require('ember-states/state');
   can receive and route action messages to its states via the `send` method.  Calling to `send` with
   an action name will begin searching for a method with the same name starting at the current state
   and moving up through the parent states in a state hierarchy until an appropriate method is found
-  or the StateManager instance itself is reached. 
+  or the StateManager instance itself is reached.
 
   If an appropriately named method is found it will be called with the state manager as the first
   argument and an optional `context` object as the second argument.
@@ -350,6 +350,24 @@ require('ember-states/state');
       robotManager.send('beginExtermination', allHumans)
       robotManager.getPath('currentState.name') // 'rampaging'
 
+  ## Async transitions
+  When a state's `enter` and `exit` methods are called they passed a argument representing
+  the transition. By calling `async()` and `resume()` on the transition object, the
+  transition can be delayed. This can be useful to account for an animation between states.
+
+      robotManager = Ember.StateManager.create({
+        poweredUp: Ember.State.create({
+          exit: function(stateManager, transition){
+            console.log("beginning exit of the poweredUp state");
+            transition.async();
+            asyncStartShutdownDanceMoves().done(function(){
+              console.log("completing exit of the poweredUp state");
+              transition.resume();
+            });
+          }
+        });
+      });
+
 **/
 Ember.StateManager = Ember.State.extend(
 /** @scope Ember.StateManager.prototype */ {
@@ -375,11 +393,11 @@ Ember.StateManager = Ember.State.extend(
       Ember.assert('Failed to transition to initial state "' + initialState + '"', get(this, 'currentState'));
     }
   },
-  
+
   /**
     The current state from among the manager's possible states. This property should
     not be set directly.  Use `transitionTo` to move between states by name.
-    
+
     @property {Ember.State}
     @readOnly
   */
