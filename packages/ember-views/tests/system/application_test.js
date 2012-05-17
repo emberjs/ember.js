@@ -75,6 +75,8 @@ test("inject controllers into a state manager", function() {
 
   app.FooController = Ember.Object.extend();
   app.BarController = Ember.ArrayController.extend();
+  // instance that uses class naming conventions
+  app.BazController = Ember.ArrayController.create();
   app.Foo = Ember.Object.create();
   app.fooController = Ember.Object.create();
 
@@ -84,8 +86,10 @@ test("inject controllers into a state manager", function() {
 
   ok(get(stateManager, 'fooController') instanceof app.FooController, "fooController was assigned");
   ok(get(stateManager, 'barController') instanceof app.BarController, "barController was assigned");
+  ok(!get(stateManager, 'bazController'), "existing instances named like classes are not assigned");
   ok(get(stateManager, 'foo') === undefined, "foo was not assigned");
 
   equal(getPath(stateManager, 'fooController.stateManager'), stateManager, "the state manager is assigned");
   equal(getPath(stateManager, 'barController.stateManager'), stateManager, "the state manager is assigned");
+  ok(!get(app.BazController, "stateManager"), "the state manager is not set on existing instances named like classes");
 });

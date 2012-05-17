@@ -89,8 +89,8 @@ Ember.Application = Ember.Namespace.extend(
 
     Example:
 
-      App.PostsController = Ember.ArrayController.create();
-      App.CommentsController = Ember.ArrayController.create();
+      App.PostsController = Ember.ArrayController.extend();
+      App.CommentsController = Ember.ArrayController.extend();
 
       var stateManager = Ember.StateManager.create({
         ...
@@ -105,12 +105,14 @@ Ember.Application = Ember.Namespace.extend(
   */
   injectControllers: function(stateManager) {
     var properties = Ember.A(Ember.keys(this)),
-        namespace = this, controller, name;
+        namespace = this, controller, klass, name;
 
     properties.forEach(function(property) {
       if (!/^[A-Z].*Controller$/.test(property)) { return; }
       name = property[0].toLowerCase() + property.substr(1);
-      controller = namespace[property].create();
+      klass = namespace[property];
+      if (!Ember.Object.detect(klass)) { return; }
+      controller = klass.create();
       stateManager.set(name, controller);
       controller.set('stateManager', stateManager);
     });
