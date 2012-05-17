@@ -143,7 +143,6 @@ test("rerender should work inside a template", function() {
   } finally {
     Ember.TESTING_DEPRECATION = false;
   }
-
   ok(view.$('div:contains(2), div:contains(Inside child2').length === 2,
      "Rerendering a view causes it to rerender");
 });
@@ -187,12 +186,12 @@ test("should replace DOM representation if rerender() is called after element is
   });
 
   equal(view.$().text(), "Do not taunt happy fun sphere", "precond - creates DOM element");
-
+  
   view.set('shape', 'ball');
   Ember.run(function() {
     view.rerender();
   });
-
+  
   equal(view.$().text(), "Do not taunt happy fun ball", "rerenders DOM element when rerender() is called");
 });
 
