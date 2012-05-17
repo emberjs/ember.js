@@ -70,7 +70,7 @@ Ember._RouteMatcher = Ember.Object.extend({
 
 Ember.Routable = Ember.Mixin.create({
   init: function() {
-    this.on('setupContext', this, this.stashContext);
+    this.on('setupControllers', this, this.stashContext);
 
     this._super();
   },

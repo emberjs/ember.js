@@ -229,7 +229,7 @@ module("Routing Serialization and Deserialization", {
           show: Ember.State.create({
             route: "/:post_id",
 
-            setupContext: function(manager, context) {
+            setupControllers: function(manager, context) {
               equal(context.post.id, 2, "should be the same value regardless of entry point");
             },
 
