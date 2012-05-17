@@ -330,6 +330,32 @@ test("it is possible to remove an item from an association", function() {
   equal(getPath(person, 'tags.length'), 0, "object is removed from the association");
 });
 
+test("it is possible to add an item to an association, remove it, then add it again", function() {
+  var Tag = DS.Model.extend({
+    name: DS.attr('string')
+  });
+
+  var Person = DS.Model.extend({
+    name: DS.attr('string'),
+    tags: DS.hasMany(Tag)
+  });
+
+  var store = DS.Store.create();
+
+  var person = store.createRecord(Person);
+  var tag1 = store.createRecord(Tag);
+  var tag2 = store.createRecord(Tag);
+
+  var tags = get(person, 'tags');
+
+  tags.pushObject(tag1);
+  tags.pushObject(tag2);
+  tags.removeAt(0);
+  tags.pushObject(tag1);
+
+  equal(getPath(person, 'tags.length'), 2, "object is removed from the association");
+});
+
 module("RecordArray");
 
 test("updating the content of a RecordArray updates its content", function() {
