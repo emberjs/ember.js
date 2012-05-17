@@ -728,6 +728,21 @@ mixinProperties(Binding,
     binding._operand = pathB;
     binding._operation = OR_OPERATION;
     return binding;
+  },
+
+  /**
+    Registers a custom transform for use in bindings.
+
+    @param {String} name The name of the transform
+    @param {Function} transform The transformation function
+  */
+  registerTransform: function(name, transform) {
+    this.prototype[name] = transform;
+    this[name] = function(from) {
+      var C = this, binding = new C(null, from), args;
+      args = Array.prototype.slice.call(arguments, 1);
+      return binding[name].apply(binding, args);
+    };
   }
 
 });
@@ -814,12 +829,10 @@ mixinProperties(Binding,
   below adds a new helper called `notLessThan()` which will limit the value to
   be not less than the passed minimum:
 
-      Ember.Binding.reopen({
-        notLessThan: function(minValue) {
-          return this.transform(function(value, binding) {
-            return ((Ember.typeOf(value) === 'number') && (value < minValue)) ? minValue : value;
-          });
-        }
+      Ember.Binding.registerTransform('notLessThan', function(minValue) {
+        return this.transform(function(value, binding) {
+          return ((Ember.typeOf(value) === 'number') && (value < minValue)) ? minValue : value;
+        });
       });
 
   You could specify this in your core.js file, for example. Then anywhere in
