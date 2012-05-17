@@ -1764,9 +1764,8 @@ Ember.View = Ember.Object.extend(Ember.Evented,
       // consumers of the view API
       if (viewName) { set(get(this, 'concreteView'), viewName, view); }
     } else {
-      if (attrs) { throw "EWOT"; }
-
-      Ember.assert('must pass instance of View', view instanceof Ember.View);
+      Ember.assert('You must pass instance or subclass of View', view instanceof Ember.View);
+      Ember.assert("You can only pass attributes when a class is provided", !attrs);
 
       if (!get(view, 'templateData')) {
         set(view, 'templateData', get(this, 'templateData'));
