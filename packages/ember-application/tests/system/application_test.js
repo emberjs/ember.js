@@ -86,13 +86,13 @@ test("acts like a namespace", function() {
 
 var app;
 
-module("Ember.Application injection", {
+module("Ember.Application initialization", {
   teardown: function() {
     Ember.run(function(){ app.destroy(); });
   }
 });
 
-test("inject controllers into a state manager", function() {
+test("initialize controllers into a state manager", function() {
   app = Ember.Application.create();
 
   app.FooController = Ember.Object.extend();
@@ -102,7 +102,7 @@ test("inject controllers into a state manager", function() {
 
   var stateManager = Ember.Object.create();
 
-  app.inject(stateManager);
+  app.initialize(stateManager);
 
   ok(get(stateManager, 'fooController') instanceof app.FooController, "fooController was assigned");
   ok(get(stateManager, 'barController') instanceof app.BarController, "barController was assigned");

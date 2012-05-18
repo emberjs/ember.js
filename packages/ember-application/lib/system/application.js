@@ -101,10 +101,12 @@ Ember.Application = Ember.Namespace.extend(
 
       stateManager.getPath('postsController.stateManager') // stateManager
   */
-  inject: function(stateManager) {
+  initialize: function(stateManager) {
     var properties = Ember.A(Ember.keys(this)),
         injections = get(this.constructor, 'injections'),
         namespace = this, controller, name;
+
+    Ember.runLoadHooks('application', this);
 
     properties.forEach(function(property) {
       injections.forEach(function(injection) {
@@ -154,6 +156,10 @@ Ember.Application = Ember.Namespace.extend(
   destroy: function() {
     get(this, 'eventDispatcher').destroy();
     return this._super();
+  },
+
+  registerInjection: function(callback) {
+    this.constructor.registerInjection(callback);
   }
 });
 
