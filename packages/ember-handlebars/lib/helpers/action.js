@@ -155,7 +155,7 @@ EmberHandlebars.registerHelper('action', function(actionName, options) {
   if (hash.target) {
     target = getPath(this, hash.target, options);
   } else if (controller = options.data.keywords.controller) {
-    target = get(controller, 'stateManager');
+    target = get(controller, 'target');
   }
 
   target = target || view;

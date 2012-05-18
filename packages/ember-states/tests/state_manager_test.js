@@ -251,7 +251,7 @@ test("it automatically transitions to multiple substates specified using either 
 module("Ember.StateManager - Transitions on Complex State Managers");
 
 /**
-            SB
+            SM
           /    \
      Login      Redeem
     /    |        |    \
@@ -452,3 +452,116 @@ test("goToState with current state does not trigger enter or exit", function() {
   equal(stateManager.grandparent.parent.child.exited, 0, "the final state should not be exited");
 });
 
+module("Transition contexts");
+
+test("if a context is passed to a transition, the state's setupControllers event is triggered after the transition has completed", function() {
+  expect(1);
+  var context = {};
+
+  Ember.run(function() {
+    stateManager = Ember.StateManager.create({
+      start: Ember.State.create({
+        goNext: function(manager, context) {
+          manager.goToState('next', context);
+        }
+      }),
+
+      next: Ember.State.create({
+        setupControllers: function(manager, passedContext) {
+          equal(context, passedContext, "The context is passed through");
+        }
+      })
+    });
+  });
+
+  stateManager.send('goNext', context);
+});
+
+test("if a context is passed to a transition and the path is to the current state, the state's setupControllers event is triggered again", function() {
+  expect(2);
+  var counter = 0;
+
+  Ember.run(function() {
+    stateManager = Ember.StateManager.create({
+      start: Ember.State.create({
+        goNext: function(manager, context) {
+          counter++;
+          manager.goToState('foo.next', counter);
+        }
+      }),
+
+      foo: Ember.State.create({
+        next: Ember.State.create({
+          goNext: function(manager, context) {
+            counter++;
+            manager.goToState('next', counter);
+          },
+
+          setupControllers: function(manager, context) {
+            equal(context, counter, "The context is passed through");
+          }
+        })
+      })
+    });
+  });
+
+  stateManager.send('goNext', counter);
+  stateManager.send('goNext', counter);
+});
+
+test("if no context is provided, setupControllers is triggered with an undefined context", function() {
+  expect(2);
+
+  Ember.run(function() {
+    stateManager = Ember.StateManager.create({
+      start: Ember.State.create({
+        goNext: function(manager) {
+          manager.transitionTo('foo.next');
+        }
+      }),
+
+      foo: Ember.State.create({
+        next: Ember.State.create({
+          goNext: function(manager, context) {
+            manager.transitionTo('next');
+          },
+
+          setupControllers: function(manager, context) {
+            equal(context, undefined, "setupControllers is called with no context");
+          }
+        })
+      })
+    });
+  });
+
+  stateManager.send('goNext');
+  stateManager.send('goNext');
+});
+
+test("multiple contexts can be provided in a single transitionTo", function() {
+  expect(2);
+
+  Ember.run(function() {
+    stateManager = Ember.StateManager.create({
+      start: Ember.State.create({
+        goNuts: function(manager, context) {
+          manager.goToState('foo.next', context);
+        }
+      }),
+
+      planters: Ember.State.create({
+        setupControllers: function(manager, context) {
+          deepEqual(context, { company: true });
+        },
+
+        nuts: Ember.State.create({
+          setupControllers: function(manager, context) {
+            deepEqual(context, { product: true });
+          }
+        })
+      })
+    });
+  });
+
+  stateManager.transitionTo(['planters', { company: true }], ['nuts', { product: true }]);
+});

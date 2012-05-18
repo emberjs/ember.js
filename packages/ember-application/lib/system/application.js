@@ -5,8 +5,6 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
-require("ember-views/system/event_dispatcher");
-
 var get = Ember.get, set = Ember.set;
 
 /**
@@ -74,11 +72,11 @@ Ember.Application = Ember.Namespace.extend(
 
     // jQuery 1.7 doesn't call the ready callback if already ready
     if (Ember.$.isReady) {
-      this.didBecomeReady();
+      Ember.run.once(this, this.didBecomeReady);
     } else {
       var self = this;
       Ember.$(document).ready(function() {
-        self.didBecomeReady();
+        Ember.run.once(self, self.didBecomeReady);
       });
     }
   },
@@ -103,27 +101,47 @@ Ember.Application = Ember.Namespace.extend(
 
       stateManager.getPath('postsController.stateManager') // stateManager
   */
-  injectControllers: function(stateManager) {
+  inject: function(stateManager) {
     var properties = Ember.A(Ember.keys(this)),
+        injections = get(this.constructor, 'injections'),
         namespace = this, controller, name;
 
     properties.forEach(function(property) {
-      if (!/^[A-Z].*Controller$/.test(property)) { return; }
-      name = property[0].toLowerCase() + property.substr(1);
-      controller = namespace[property].create();
-      stateManager.set(name, controller);
-      controller.set('stateManager', stateManager);
+      injections.forEach(function(injection) {
+        injection(namespace, stateManager, property);
+      });
     });
   },
 
   /** @private */
   didBecomeReady: function() {
     var eventDispatcher = get(this, 'eventDispatcher'),
+        stateManager    = get(this, 'stateManager'),
         customEvents    = get(this, 'customEvents');
 
     eventDispatcher.setup(customEvents);
 
     this.ready();
+
+    if (stateManager) {
+      this.setupStateManager(stateManager);
+    }
+  },
+
+  /**
+    @private
+
+    If the application has a state manager, use it to route
+    to the current URL, and trigger a new call to `route`
+    whenever the URL changes.
+  */
+  setupStateManager: function(stateManager) {
+    var location = get(stateManager, 'location');
+
+    stateManager.route(location.getURL());
+    location.onUpdateURL(function(url) {
+      stateManager.route(url);
+    });
   },
 
   /**
@@ -139,4 +157,20 @@ Ember.Application = Ember.Namespace.extend(
   }
 });
 
+Ember.Application.reopenClass({
+  concatenatedProperties: ['injections'],
+  injections: Ember.A(),
+  registerInjection: function(callback) {
+    get(this, 'injections').pushObject(callback);
+  }
+});
 
+Ember.Application.registerInjection(function(app, stateManager, property) {
+  if (!/^[A-Z].*Controller$/.test(property)) { return; }
+
+  var name = property[0].toLowerCase() + property.substr(1),
+      controller = app[property].create();
+
+  stateManager.set(name, controller);
+  controller.set('target', stateManager);
+});

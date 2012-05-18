@@ -363,6 +363,8 @@ Ember.StateManager = Ember.State.extend(
   init: function() {
     this._super();
 
+    set(this, 'stateMeta', Ember.Map.create());
+
     var initialState = get(this, 'initialState');
 
     if (!initialState && getPath(this, 'states.start')) {
@@ -430,35 +432,68 @@ Ember.StateManager = Ember.State.extend(
     return ret;
   },
 
-  goToState: function(name) {
+  goToState: function() {
+    // not deprecating this yet so people don't constantly need to
+    // make trivial changes for little reason.
+    return this.transitionTo.apply(this, arguments);
+  },
+
+  pathForSegments: function(array) {
+    return Ember.ArrayUtils.map(array, function(tuple) {
+      Ember.assert("A segment passed to transitionTo must be an Array", Ember.typeOf(tuple) === "array");
+      return tuple[0];
+    }).join(".");
+  },
+
+  transitionTo: function(name, context) {
+    // 1. Normalize arguments
+    // 2. Ensure that we are in the correct state
+    // 3. Map provided path to context objects and send
+    //    appropriate setupControllers events
+
     if (Ember.empty(name)) { return; }
+
+    var segments;
+
+    if (Ember.typeOf(name) === "array") {
+      segments = Array.prototype.slice.call(arguments);
+    } else {
+      segments = [[name, context]];
+    }
+
+    var path = this.pathForSegments(segments);
 
     var currentState = get(this, 'currentState') || this, state, newState;
 
-    var exitStates = [], enterStates;
+    var exitStates = [], enterStates, resolveState;
 
     state = currentState;
 
-    if (state.routes[name]) {
+    if (state.routes[path]) {
       // cache hit
-      exitStates = state.routes[name].exitStates;
-      enterStates = state.routes[name].enterStates;
-      state = state.routes[name].futureState;
+
+      var route = state.routes[path];
+      exitStates = route.exitStates;
+      enterStates = route.enterStates;
+      state = route.futureState;
+      resolveState = route.resolveState;
     } else {
       // cache miss
 
-      newState = this.findStatesByRoute(currentState, name);
+      newState = this.findStatesByRoute(currentState, path);
 
       while (state && !newState) {
         exitStates.unshift(state);
 
         state = get(state, 'parentState');
         if (!state) {
-          newState = this.findStatesByRoute(this, name);
+          newState = this.findStatesByRoute(this, path);
           if (!newState) { return; }
         }
-        newState = this.findStatesByRoute(state, name);
+        newState = this.findStatesByRoute(state, path);
       }
+
+      resolveState = state;
 
       enterStates = newState.slice(0);
       exitStates = exitStates.slice(0);
@@ -472,14 +507,30 @@ Ember.StateManager = Ember.State.extend(
         }
       }
 
-      currentState.routes[name] = {
+      currentState.routes[path] = {
         exitStates: exitStates,
         enterStates: enterStates,
-        futureState: state
+        futureState: state,
+        resolveState: resolveState
       };
     }
 
     this.enterState(exitStates, enterStates, state);
+    this.triggerSetupContext(resolveState, segments);
+  },
+
+  triggerSetupContext: function(root, segments) {
+    var state = root;
+
+    Ember.ArrayUtils.forEach(segments, function(tuple) {
+      var path = tuple[0], context = tuple[1];
+
+      state = this.findStatesByRoute(state, path);
+      state = state[state.length-1];
+
+      state.fire('setupControllers', this, context);
+    }, this);
+    //getPath(root, path).setupControllers(this, context);
   },
 
   getState: function(name) {
@@ -523,13 +574,11 @@ Ember.StateManager = Ember.State.extend(
 
     exitStates = exitStates.slice(0).reverse();
     this.asyncEach(exitStates, function(state, transition) {
-      state.exit(stateManager, transition);
-      state.fire('exit', stateManager);
+      state.fire('exit', stateManager, transition);
     }, function() {
       this.asyncEach(enterStates, function(state, transition) {
         if (log) { Ember.Logger.log("STATEMANAGER: Entering " + get(state, 'path')); }
-        state.enter(stateManager, transition);
-        state.fire('enter', stateManager);
+        state.fire('enter', stateManager, transition);
       }, function() {
         var startState = state, enteredState, initialState;
 
@@ -544,7 +593,7 @@ Ember.StateManager = Ember.State.extend(
           enteredState = startState;
 
           if (log) { Ember.Logger.log("STATEMANAGER: Entering " + get(startState, 'path')); }
-          startState.enter(stateManager);
+          startState.fire('enter', stateManager);
 
           initialState = get(startState, 'initialState');
 

@@ -6,17 +6,18 @@
 // ==========================================================================
 
 var view;
-var application;
+var dispatcher;
 var set = Ember.set, get = Ember.get;
 
 module("Ember.EventDispatcher", {
   setup: function() {
-    application = Ember.Application.create();
+    dispatcher = Ember.EventDispatcher.create();
+    dispatcher.setup();
   },
 
   teardown: function() {
     if (view) { view.destroy(); }
-    application.destroy();
+    dispatcher.destroy();
   }
 });
 

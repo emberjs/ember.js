@@ -1,15 +1,16 @@
 var map = Ember.ArrayUtils.map;
 
-var application, select;
+var dispatcher, select;
 
 module("Ember.Select", {
   setup: function() {
-    application = Ember.Application.create();
+    dispatcher = Ember.EventDispatcher.create();
+    dispatcher.setup();
     select = Ember.Select.create();
   },
 
   teardown: function() {
-    application.destroy();
+    dispatcher.destroy();
     select.destroy();
   }
 });
@@ -222,11 +223,12 @@ test("a prompt can be specified", function() {
 
 module("Ember.Select - usage inside templates", {
   setup: function() {
-    application = Ember.Application.create();
+    dispatcher = Ember.EventDispatcher.create();
+    dispatcher.setup();
   },
 
   teardown: function() {
-    application.destroy();
+    dispatcher.destroy();
   }
 });
 
@@ -242,6 +244,9 @@ test("works from a template with bindings", function() {
   });
 
   var erik = Person.create({id: 4, firstName: 'Erik', lastName: 'Bryn'});
+
+  var application = Ember.Namespace.create();
+
   application.peopleController = Ember.ArrayController.create({
     content: Ember.A([
       Person.create({id: 1, firstName: 'Yehuda', lastName: 'Katz'}),
