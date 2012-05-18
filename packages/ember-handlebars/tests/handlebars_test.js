@@ -1235,6 +1235,23 @@ test("should be able to bind element attributes using {{bindAttr}}", function() 
   equal(view.$('img').attr('alt'), "Nanananana Ember!", "updates alt attribute when title property is computed");
 });
 
+test("should be able to bind to view attributes with {{bindAttr}}", function() {
+  view = Ember.View.create({
+    value: 'test.jpg',
+    template: Ember.Handlebars.compile('<img {{bindAttr src="view.value"}}>')
+  });
+
+  appendView();
+
+  equal(view.$('img').attr('src'), "test.jpg", "renders initial value");
+
+  Ember.run(function() {
+    view.set('value', 'updated.jpg');
+  });
+
+  equal(view.$('img').attr('src'), "updated.jpg", "updates value");
+});
+
 test("should not allow XSS injection via {{bindAttr}}", function() {
   view = Ember.View.create({
     template: Ember.Handlebars.compile('<img {{bindAttr src="content.url"}}>'),
@@ -1383,6 +1400,25 @@ test("should be able to bind class attribute via a truthy property with {{bindAt
   });
 
   equal(view.$('.is-truthy').length, 0, "removes class name if bound property is set to something non-truthy");
+});
+
+test("should be able to bind class to view attribute with {{bindAttr}}", function() {
+  var template = Ember.Handlebars.compile('<img {{bindAttr class="view.foo"}}>');
+
+  view = Ember.View.create({
+    template: template,
+    foo: 'bar'
+  });
+
+  appendView();
+
+  equal(view.$('img').attr('class'), 'bar', "renders class");
+
+  Ember.run(function() {
+    set(view, 'foo', 'baz');
+  });
+
+  equal(view.$('img').attr('class'), 'baz', "updates class");
 });
 
 test("should not allow XSS injection via {{bindAttr}} with class", function() {

@@ -8,7 +8,8 @@ require('ember-handlebars/ext');
 require('ember-handlebars/views/handlebars_bound_view');
 require('ember-handlebars/views/metamorph_view');
 
-var get = Ember.get, getPath = Ember.Handlebars.getPath, set = Ember.set, fmt = Ember.String.fmt;
+var get = Ember.get, getPath = Ember.getPath, set = Ember.set, fmt = Ember.String.fmt;
+var normalizePath = Ember.Handlebars.normalizePath;
 var forEach = Ember.ArrayUtils.forEach;
 
 var EmberHandlebars = Ember.Handlebars, helpers = EmberHandlebars.helpers;
@@ -23,7 +24,7 @@ var bind = function(property, options, preserveContext, shouldDisplay, valueNorm
       currentContext = this,
       pathRoot, path, normalized;
 
-  normalized = Ember.Handlebars.normalizePath(currentContext, property, data);
+  normalized = normalizePath(currentContext, property, data);
 
   pathRoot = normalized.root;
   path = normalized.path;
@@ -251,11 +252,17 @@ EmberHandlebars.registerHelper('bindAttr', function(options) {
   // For each attribute passed, create an observer and emit the
   // current value of the property as an attribute.
   forEach(attrKeys, function(attr) {
-    var property = attrs[attr];
+    var path = attrs[attr],
+        pathRoot, normalized;
 
-    Ember.assert(fmt("You must provide a String for a bound attribute, not %@", [property]), typeof property === 'string');
+    Ember.assert(fmt("You must provide a String for a bound attribute, not %@", [path]), typeof path === 'string');
 
-    var value = (property === 'this') ? ctx : getPath(ctx, property, options),
+    normalized = normalizePath(ctx, path, options.data);
+
+    pathRoot = normalized.root;
+    path = normalized.path;
+
+    var value = (path === 'this') ? pathRoot : getPath(pathRoot, path, options),
         type = Ember.typeOf(value);
 
     Ember.assert(fmt("Attributes must be numbers, strings or booleans, not %@", [value]), value === null || value === undefined || type === 'number' || type === 'string' || type === 'boolean');
@@ -264,7 +271,7 @@ EmberHandlebars.registerHelper('bindAttr', function(options) {
 
     /** @private */
     observer = function observer() {
-      var result = getPath(ctx, property, options);
+      var result = getPath(pathRoot, path, options);
 
       Ember.assert(fmt("Attributes must be numbers, strings or booleans, not %@", [result]), result === null || result === undefined || typeof result === 'number' || typeof result === 'string' || typeof result === 'boolean');
 
@@ -275,7 +282,7 @@ EmberHandlebars.registerHelper('bindAttr', function(options) {
       // In that case, we can assume the template has been re-rendered
       // and we need to clean up the observer.
       if (elem.length === 0) {
-        Ember.removeObserver(ctx, property, invoker);
+        Ember.removeObserver(pathRoot, path, invoker);
         return;
       }
 
@@ -290,8 +297,8 @@ EmberHandlebars.registerHelper('bindAttr', function(options) {
     // Add an observer to the view for when the property changes.
     // When the observer fires, find the element using the
     // unique data id and update the attribute to the new value.
-    if (property !== 'this') {
-      Ember.addObserver(ctx, property, invoker);
+    if (path !== 'this') {
+      Ember.addObserver(pathRoot, path, invoker);
     }
 
     // if this changes, also change the logic in ember-views/lib/views/view.js
@@ -341,13 +348,8 @@ EmberHandlebars.bindClasses = function(context, classBindings, view, bindAttrId,
   // Helper method to retrieve the property from the context and
   // determine which class string to return, based on whether it is
   // a Boolean or not.
-  var classStringForProperty = function(property) {
-    var split = property.split(':'),
-        className = split[1];
-
-    property = split[0];
-
-    var val = property !== '' ? getPath(context, property, options) : true;
+  var classStringForPath = function(root, path, className, options) {
+    var val = path !== '' ? getPath(root, path, options) : true;
 
     // If the value is truthy and we're using the colon syntax,
     // we should return the className directly
@@ -360,7 +362,7 @@ EmberHandlebars.bindClasses = function(context, classBindings, view, bindAttrId,
       // Normalize property path to be suitable for use
       // as a class name. For exaple, content.foo.barBaz
       // becomes bar-baz.
-      var parts = property.split('.');
+      var parts = path.split('.');
       return Ember.String.dasherize(parts[parts.length-1]);
 
     // If the value is not false, undefined, or null, return the current
@@ -386,18 +388,31 @@ EmberHandlebars.bindClasses = function(context, classBindings, view, bindAttrId,
 
     var observer, invoker;
 
+    var split = binding.split(':'),
+        path = split[0],
+        className = split[1],
+        pathRoot = context,
+        normalized;
+
+    if (path !== '') {
+      normalized = normalizePath(context, path, options.data);
+
+      pathRoot = normalized.root;
+      path = normalized.path;
+    }
+
     // Set up an observer on the context. If the property changes, toggle the
     // class name.
     /** @private */
     observer = function() {
       // Get the current value of the property
-      newClass = classStringForProperty(binding);
+      newClass = classStringForPath(pathRoot, path, className, options);
       elem = bindAttrId ? view.$("[data-bindattr-" + bindAttrId + "='" + bindAttrId + "']") : view.$();
 
       // If we can't find the element anymore, a parent template has been
       // re-rendered and we've been nuked. Remove the observer.
       if (elem.length === 0) {
-        Ember.removeObserver(context, binding, invoker);
+        Ember.removeObserver(pathRoot, path, invoker);
       } else {
         // If we had previously added a class to the element, remove it.
         if (oldClass) {
@@ -420,14 +435,13 @@ EmberHandlebars.bindClasses = function(context, classBindings, view, bindAttrId,
       Ember.run.once(observer);
     };
 
-    var property = binding.split(':')[0];
-    if (property !== '') {
-      Ember.addObserver(context, property, invoker);
+    if (path !== '') {
+      Ember.addObserver(pathRoot, path, invoker);
     }
 
     // We've already setup the observer; now we just need to figure out the
     // correct behavior right now on the first pass through.
-    value = classStringForProperty(binding);
+    value = classStringForPath(pathRoot, path, className, options);
 
     if (value) {
       ret.push(value);
