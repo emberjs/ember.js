@@ -120,16 +120,15 @@ var pendingQueue = [];
 // back in the queue and reschedule is true, schedules a timeout to try
 // again.
 /** @private */
-function flushPendingChains(reschedule) {
+function flushPendingChains() {
   if (pendingQueue.length===0) return ; // nothing to do
 
   var queue = pendingQueue;
   pendingQueue = [];
 
   forEach(queue, function(q) { q[0].add(q[1]); });
-  if (reschedule!==false && pendingQueue.length>0) {
-    setTimeout(flushPendingChains, 1);
-  }
+
+  Ember.warn('Watching an undefined global, Ember expects watched globals to be setup by the time the run loop is flushed, check for typos', pendingQueue.length > 0);
 }
 
 /** @private */
