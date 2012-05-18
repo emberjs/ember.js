@@ -223,6 +223,24 @@ test("a prompt can be specified", function() {
   equal(select.get('selection'), tom, "Properly accounts for the prompt when DOM change occurs");
 });
 
+test("handles null content", function() {
+  append();
+
+  Ember.run(function() {
+    select.set('content', null);
+    select.set('selection', 'invalid');
+  });
+
+  equal(select.get('element').selectedIndex, -1, "should have no selection");
+
+  Ember.run(function() {
+    select.set('multiple', true);
+    select.set('selection', [{ content: 'invalid' }]);
+  });
+
+  equal(select.get('element').selectedIndex, -1, "should have no selection");
+});
+
 module("Ember.Select - usage inside templates", {
   setup: function() {
     dispatcher = Ember.EventDispatcher.create();

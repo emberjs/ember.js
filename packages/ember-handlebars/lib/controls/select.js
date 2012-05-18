@@ -146,24 +146,26 @@ Ember.Select = Ember.View.extend(
     var el = this.$()[0],
         content = get(this, 'content'),
         selection = get(this, 'selection'),
-        selectionIndex = indexOf(content, selection),
+        selectionIndex = content ? indexOf(content, selection) : -1,
         prompt = get(this, 'prompt');
 
-    if (prompt) { selectionIndex += 1; }
+    if (prompt && selectionIndex > -1) { selectionIndex += 1; }
     if (el) { el.selectedIndex = selectionIndex; }
   },
 
   _selectionDidChangeMultiple: function() {
     var content = get(this, 'content'),
         selection = get(this, 'selection'),
-        selectedIndexes = indexesOf(content, selection),
+        selectedIndexes = content ? indexesOf(content, selection) : [-1],
         prompt = get(this, 'prompt'),
         offset = prompt ? 1 : 0,
-        options = this.$('option');
+        options = this.$('option'),
+        adjusted;
 
     if (options) {
       options.each(function() {
-        this.selected = indexOf(selectedIndexes, this.index + offset) > -1;
+        adjusted = this.index > -1 ? this.index + offset : -1;
+        this.selected = indexOf(selectedIndexes, adjusted) > -1;
       });
     }
   },
