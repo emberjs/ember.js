@@ -14,7 +14,7 @@ test("it should have its updateRoute method called when it is entered", function
     }
   });
 
-  var stateManager = Ember.StateManager.create({
+  var router = Ember.Router.create({
     location: locationStub,
     start: Ember.State.create({
       ready: function(manager) {
@@ -25,10 +25,10 @@ test("it should have its updateRoute method called when it is entered", function
     })
   });
 
-  stateManager.send('ready');
+  router.send('ready');
 });
 
-test("when you call `route` on the StateManager, it calls it on the current state", function() {
+test("when you call `route` on the Router, it calls it on the current state", function() {
   expect(2);
 
   var state = Ember.State.create({
@@ -37,7 +37,7 @@ test("when you call `route` on the StateManager, it calls it on the current stat
     }
   });
 
-  var stateManager = Ember.StateManager.create({
+  var router = Ember.Router.create({
     location: locationStub,
     start: Ember.State.create({
       ready: function(manager) {
@@ -48,9 +48,9 @@ test("when you call `route` on the StateManager, it calls it on the current stat
     })
   });
 
-  stateManager.send('ready');
-  stateManager.route('/hookers/and/blow');
-  stateManager.route('hookers/and/blow');
+  router.send('ready');
+  router.route('/hookers/and/blow');
+  router.route('hookers/and/blow');
 });
 
 test("a RouteMatcher matches routes", function() {
@@ -117,13 +117,13 @@ test("route repeatedly descends into a nested hierarchy", function() {
     })
   });
 
-  var stateManager = Ember.StateManager.create({
+  var router = Ember.Router.create({
     start: state
   });
 
-  stateManager.route("/foo/bar/baz");
+  router.route("/foo/bar/baz");
 
-  equal(stateManager.getPath('currentState.path'), 'start.fooChild.barChild.bazChild');
+  equal(router.getPath('currentState.path'), 'start.fooChild.barChild.bazChild');
 });
 
 test("route repeatedly descends into a nested hierarchy", function() {
@@ -141,13 +141,13 @@ test("route repeatedly descends into a nested hierarchy", function() {
     })
   });
 
-  var stateManager = Ember.StateManager.create({
+  var router = Ember.Router.create({
     start: state
   });
 
-  stateManager.route("/foo/bar/baz");
+  router.route("/foo/bar/baz");
 
-  equal(stateManager.getPath('currentState.path'), 'start.fooChild.barChild.bazChild');
+  equal(router.getPath('currentState.path'), 'start.fooChild.barChild.bazChild');
 });
 
 test("when you descend into a state, the route is set", function() {
@@ -171,7 +171,7 @@ test("when you descend into a state, the route is set", function() {
 
   var count = 0;
 
-  var stateManager = Ember.StateManager.create({
+  var router = Ember.Router.create({
     start: state,
     location: {
       setURL: function(url) {
@@ -185,10 +185,10 @@ test("when you descend into a state, the route is set", function() {
     }
   });
 
-  stateManager.send('ready');
+  router.send('ready');
 });
 
-var stateManager;
+var router;
 var Post = {
   find: function(id) {
     return { isPerson: true, id: parseInt(id, 10) };
@@ -204,7 +204,7 @@ var locationMock = {
 
 module("Routing Serialization and Deserialization", {
   setup: function() {
-    stateManager = Ember.StateManager.create({
+    router = Ember.Router.create({
       location: locationMock,
       start: Ember.State.create({
         ready: function(manager, post) {
@@ -254,26 +254,26 @@ module("Routing Serialization and Deserialization", {
 test("should invoke the deserialize method on a state when it is entered via a URL", function() {
   expect(1);
 
-  stateManager.route('/posts/2');
+  router.route('/posts/2');
 });
 
 test("should invoke the serialize method on a state when it is entered programmatically (initially deep)", function() {
   expect(3);
 
-  stateManager.send('ready', Post.find(2));
+  router.send('ready', Post.find(2));
   equal(setURL, '/posts/2', "The post is serialized");
 
-  stateManager.send('showIndex');
+  router.send('showIndex');
   equal(setURL, '/posts');
 });
 
 test("should invoke the serialize method on a state when it is entered programmatically (initially shallow)", function() {
   expect(3);
 
-  stateManager.send('showIndex');
+  router.send('showIndex');
   equal(setURL, '/posts', "The post is serialized");
 
-  stateManager.send('showPost', Post.find(2));
+  router.send('showPost', Post.find(2));
   equal(setURL, '/posts/2');
 });
 
