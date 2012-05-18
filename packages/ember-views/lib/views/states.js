@@ -40,7 +40,7 @@ Ember.View.RenderStateManager = Ember.StateManager.extend({
     // and we should still raise an exception in that
     // case.
     if (typeof action === 'function') {
-      if (log) { console.log(fmt("STATEMANAGER: Sending event '%@' to state %@.", [event, get(currentState, 'path')])); }
+      if (log) { Ember.Logger.log(fmt("STATEMANAGER: Sending event '%@' to state %@.", [event, get(currentState, 'path')])); }
       
       // remove event and currentState from the args
       // and move `this` to the first argument position.
