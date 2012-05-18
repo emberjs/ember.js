@@ -45,6 +45,24 @@ test("it throws an error when the view passed is not an Ember.View", function() 
   });
 });
 
+test("it passes the state manager to the view", function() {
+  var viewState = Ember.ViewState.extend({
+    view: Ember.View
+  });
+
+  var stateManager;
+
+  Ember.run(function() {
+    stateManager = Ember.StateManager.create({
+      start: viewState
+    });
+  });
+
+  equal(stateManager.getPath('currentState.view.stateManager'), stateManager, "State Manager passed to view");
+
+  stateManager.getPath('currentState.view').remove();
+});
+
 test("it creates and appends a view when it is entered", function() {
   var viewState = Ember.ViewState.extend({
     view: Ember.View.extend({

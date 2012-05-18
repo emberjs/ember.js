@@ -11,6 +11,7 @@ Ember.ViewState = Ember.State.extend({
     if (view) {
       if (Ember.View.detect(view)) {
         view = view.create();
+        set(view, 'stateManager', stateManager);
         set(this, 'view', view);
       }
 
