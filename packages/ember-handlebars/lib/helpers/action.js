@@ -140,6 +140,19 @@ ActionHelper.registerAction = function(actionName, eventName, target, view, cont
   will be created when a new `Ember.Application` is created. Having an instance of
   `Ember.Application` will satisfy this requirement.
 
+  ### Specifying a context
+  By default the `{{action}}` helper passes the current Handlebars context along in the
+  `jQuery.Event` object. You may specify an alternative object to pass as the context by
+  providing a property path:
+
+      <script type="text/x-handlebars" data-template-name='a-template'>
+        {{#each person in people}}
+          <div {{action "edit" context="person"}}>
+            click me
+          </div>
+        {{/each}}
+      </script>
+
   @name Handlebars.helpers.action
   @param {String} actionName
   @param {Hash} options
