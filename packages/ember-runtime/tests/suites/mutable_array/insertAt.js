@@ -18,6 +18,8 @@ suite.test("[].insertAt(0, X) => [X] + notify", function() {
   obj = this.newObject([]);
   observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
 
+  obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
+
   obj.insertAt(0, after[0]);
 
   deepEqual(this.toArray(obj), after, 'post item results');
@@ -46,6 +48,8 @@ suite.test("[A].insertAt(0, X) => [X,A] + notify", function() {
   obj = this.newObject(before);
   observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
 
+  obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
+
   obj.insertAt(0, item);
 
   deepEqual(this.toArray(obj), after, 'post item results');
@@ -67,6 +71,8 @@ suite.test("[A].insertAt(1, X) => [A,X] + notify", function() {
   after  = [before[0], item];
   obj = this.newObject(before);
   observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
+
+  obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
 
   obj.insertAt(1, item);
 
@@ -97,6 +103,8 @@ suite.test("[A,B,C].insertAt(0,X) => [X,A,B,C] + notify", function() {
   obj = this.newObject(before);
   observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
 
+  obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
+
   obj.insertAt(0, item);
 
   deepEqual(this.toArray(obj), after, 'post item results');
@@ -119,6 +127,8 @@ suite.test("[A,B,C].insertAt(1,X) => [A,X,B,C] + notify", function() {
   obj = this.newObject(before);
   observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
 
+  obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
+
   obj.insertAt(1, item);
 
   deepEqual(this.toArray(obj), after, 'post item results');
@@ -140,6 +150,8 @@ suite.test("[A,B,C].insertAt(3,X) => [A,B,C,X] + notify", function() {
   after  = [before[0], before[1], before[2], item];
   obj = this.newObject(before);
   observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
+
+  obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
 
   obj.insertAt(3, item);
 

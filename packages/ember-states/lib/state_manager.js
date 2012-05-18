@@ -353,7 +353,7 @@ require('ember-states/state');
 
 **/
 Ember.StateManager = Ember.State.extend(
-/** @scope Ember.State.prototype */ {
+/** @scope Ember.StateManager.prototype */ {
 
   /**
     When creating a new statemanager, look for a default state to transition
@@ -377,11 +377,11 @@ Ember.StateManager = Ember.State.extend(
   currentState: null,
 
   /**
-    @property
-
     If set to true, `errorOnUnhandledEvents` will cause an exception to be
     raised if you attempt to send an event to a state manager that is not
     handled by the current state or any of its parent states.
+
+    @property {Boolean}
   */
   errorOnUnhandledEvent: true,
 
@@ -401,7 +401,7 @@ Ember.StateManager = Ember.State.extend(
     // and we should still raise an exception in that
     // case.
     if (typeof action === 'function') {
-      if (log) { console.log(fmt("STATEMANAGER: Sending event '%@' to state %@.", [event, get(currentState, 'path')])); }
+      if (log) { Ember.Logger.log(fmt("STATEMANAGER: Sending event '%@' to state %@.", [event, get(currentState, 'path')])); }
       action.call(currentState, this, context);
     } else {
       var parentState = get(currentState, 'parentState');
@@ -527,7 +527,7 @@ Ember.StateManager = Ember.State.extend(
       state.fire('exit', stateManager);
     }, function() {
       this.asyncEach(enterStates, function(state, transition) {
-        if (log) { console.log("STATEMANAGER: Entering " + get(state, 'path')); }
+        if (log) { Ember.Logger.log("STATEMANAGER: Entering " + get(state, 'path')); }
         state.enter(stateManager, transition);
         state.fire('enter', stateManager);
       }, function() {
@@ -543,7 +543,7 @@ Ember.StateManager = Ember.State.extend(
         while (startState = get(get(startState, 'states'), initialState)) {
           enteredState = startState;
 
-          if (log) { console.log("STATEMANAGER: Entering " + get(startState, 'path')); }
+          if (log) { Ember.Logger.log("STATEMANAGER: Entering " + get(startState, 'path')); }
           startState.enter(stateManager);
 
           initialState = get(startState, 'initialState');

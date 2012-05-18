@@ -62,24 +62,6 @@ test('[obj, foo.*.baz] -> obj.foo.baz', function() {
   deepEqual(Ember.getPath(obj, 'foo.*.baz'), obj.foo.baz);
 });
 
-
-test('[obj, foo*bar] -> obj.foo.bar', function() {
-  deepEqual(Ember.getPath(obj, 'foo*bar'), obj.foo.bar);
-});
-
-test('[obj, foo*bar.*] -> obj.foo.bar', function() {
-  deepEqual(Ember.getPath(obj, 'foo*bar.*'), obj.foo.bar);
-});
-
-test('[obj, foo.bar*baz.biff] -> obj.foo.bar.baz.biff', function() {
-  deepEqual(Ember.getPath(obj, 'foo.bar*baz.biff'), obj.foo.bar.baz.biff);
-});
-
-test('[obj, foo.bar*baz.biff] -> obj.foo.bar.baz.biff', function() {
-  deepEqual(Ember.getPath(obj, 'foo.bar*baz.biff'), obj.foo.bar.baz.biff);
-});
-
-
 test('[obj, this.foo] -> obj.foo', function() {
   deepEqual(Ember.getPath(obj, 'this.foo'), obj.foo);
 });
@@ -90,22 +72,6 @@ test('[obj, this.foo.bar] -> obj.foo.bar', function() {
 
 test('[obj, .foo.bar] -> obj.foo.bar', function() {
   deepEqual(Ember.getPath(obj, 'this.foo.bar'), obj.foo.bar);
-});
-
-test('[obj, *foo.bar] -> obj.foo.bar', function() {
-  deepEqual(Ember.getPath(obj, 'this.foo.bar'), obj.foo.bar);
-});
-
-test('[obj, this.foo*bar] -> obj.foo.bar', function() {
-  deepEqual(Ember.getPath(obj, 'this.foo*bar'), obj.foo.bar);
-});
-
-test('[obj, this.foo.bar*baz.biff] -> obj.foo.bar.baz.biff', function() {
-  deepEqual(Ember.getPath(obj, 'this.foo.bar*baz.biff'), obj.foo.bar.baz.biff);
-});
-
-test('[obj, this.foo.bar*baz.biff] -> obj.foo.bar.baz.biff', function() {
-  deepEqual(Ember.getPath(obj, 'foo.bar*baz.biff'), obj.foo.bar.baz.biff);
 });
 
 test('[obj, this.Foo.bar] -> (null)', function() {
@@ -124,20 +90,8 @@ test('[null, Foo.bar] -> Foo.bar', function() {
   deepEqual(Ember.getPath('Foo.bar'), Foo.bar);
 });
 
-test('[null, Foo*bar] -> Foo.bar', function() {
-  deepEqual(Ember.getPath('Foo*bar'), Foo.bar);
-});
-
-test('[null, Foo.bar*baz.biff] -> Foo.bar.baz.biff', function() {
-  deepEqual(Ember.getPath('Foo.bar*baz.biff'), Foo.bar.baz.biff);
-});
-
-test('[null, Foo.bar.baz*biff] -> Foo.bar.baz.biff', function() {
-  deepEqual(Ember.getPath('Foo.bar.baz*biff'), Foo.bar.baz.biff);
-});
-
 // ..........................................................
-// GLOBAL PATHS (DEPRECATED)
+// DEPRECATED
 //
 
 module('Ember.getPath - deprecated', {
@@ -151,26 +105,42 @@ module('Ember.getPath - deprecated', {
   }
 });
 
-test('[obj, Foo] -> undefined', function() {
-  deepEqual(Ember.getPath(obj, 'Foo'), Foo);
+test('[obj, foo*bar] -> obj.foo.bar', function() {
+  deepEqual(Ember.getPath(obj, 'foo*bar'), obj.foo.bar);
 });
 
-test('[obj, Foo.bar] -> Foo.bar', function() {
-  deepEqual(Ember.getPath(obj, 'Foo.bar'), Foo.bar);
+test('[obj, foo*bar.*] -> obj.foo.bar', function() {
+  deepEqual(Ember.getPath(obj, 'foo*bar.*'), obj.foo.bar);
 });
 
-test('[obj, Foo*bar] -> Foo.bar', function() {
-  deepEqual(Ember.getPath(obj, 'Foo*bar'), Foo.bar);
+test('[obj, foo.bar*baz.biff] -> obj.foo.bar.baz.biff', function() {
+  deepEqual(Ember.getPath(obj, 'foo.bar*baz.biff'), obj.foo.bar.baz.biff);
 });
 
-test('[obj, Foo.bar*baz.biff] -> Foo.bar.baz.biff', function() {
-  deepEqual(Ember.getPath(obj, 'Foo.bar*baz.biff'), Foo.bar.baz.biff);
+test('[obj, *foo.bar] -> obj.foo.bar', function() {
+  deepEqual(Ember.getPath(obj, '*foo.bar'), obj.foo.bar);
 });
 
-test('[obj, Foo.bar.baz*biff] -> Foo.bar.baz.biff', function() {
-  deepEqual(Ember.getPath(obj, 'Foo.bar.baz*biff'), Foo.bar.baz.biff);
+test('[obj, this.foo*bar] -> obj.foo.bar', function() {
+  deepEqual(Ember.getPath(obj, 'this.foo*bar'), obj.foo.bar);
 });
 
-test('[obj, $foo.bar.baz] -> $foo.bar.baz', function() {
-  deepEqual(Ember.getPath(obj, '$foo.bar.baz'), $foo.bar.baz);
+test('[obj, this.foo.bar*baz.biff] -> obj.foo.bar.baz.biff', function() {
+  deepEqual(Ember.getPath(obj, 'this.foo.bar*baz.biff'), obj.foo.bar.baz.biff);
+});
+
+test('[obj, foo.bar*baz.biff] -> obj.foo.bar.baz.biff', function() {
+  deepEqual(Ember.getPath(obj, 'foo.bar*baz.biff'), obj.foo.bar.baz.biff);
+});
+
+test('[null, Foo*bar] -> Foo.bar', function() {
+  deepEqual(Ember.getPath('Foo*bar'), Foo.bar);
+});
+
+test('[null, Foo.bar*baz.biff] -> Foo.bar.baz.biff', function() {
+  deepEqual(Ember.getPath('Foo.bar*baz.biff'), Foo.bar.baz.biff);
+});
+
+test('[null, Foo.bar.baz*biff] -> Foo.bar.baz.biff', function() {
+  deepEqual(Ember.getPath('Foo.bar.baz*biff'), Foo.bar.baz.biff);
 });

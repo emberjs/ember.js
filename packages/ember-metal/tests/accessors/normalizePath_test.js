@@ -23,6 +23,11 @@ test('.foo.bar -> this.foo.bar', function() {
 });
 
 test('*foo.bar -> this.foo.bar', function() {
-  equal(Ember.normalizePath('*foo.bar'), 'this.foo.bar');
+  Ember.TESTING_DEPRECATION = true;
+  try {
+    equal(Ember.normalizePath('*foo.bar'), 'this.foo.bar');
+  } finally {
+    Ember.TESTING_DEPRECATION = false;
+  }
 });
 

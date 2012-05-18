@@ -20,8 +20,6 @@ var a, b, c ; // global variables
 module("creating Ember.Set instances", {
 
   setup: function() {
-    Ember.TESTING_DEPRECATION = true;
-
     // create objects...
     a = { name: "a" } ;
     b = { name: "b" } ;
@@ -29,8 +27,6 @@ module("creating Ember.Set instances", {
   },
 
   teardown: function() {
-    Ember.TESTING_DEPRECATION = false;
-
     a = undefined ;
     b = undefined ;
     c = undefined ;
@@ -38,27 +34,27 @@ module("creating Ember.Set instances", {
 
 });
 
-test("Ember.Set.create() should create empty set", function() {
-  var set = Ember.Set.create() ;
+test("new Ember.Set() should create empty set", function() {
+  var set = new Ember.Set() ;
   equal(set.length, 0) ;
 });
 
-test("Ember.Set.create([1,2,3]) should create set with three items in them", function() {
-  var set = Ember.Set.create(Ember.A([a,b,c])) ;
+test("new Ember.Set([1,2,3]) should create set with three items in them", function() {
+  var set = new Ember.Set(Ember.A([a,b,c])) ;
   equal(set.length, 3) ;
   equal(set.contains(a), true) ;
   equal(set.contains(b), true) ;
   equal(set.contains(c), true) ;
 });
 
-test("Ember.Set.create() should accept anything that implements Ember.Array", function() {
+test("new Ember.Set() should accept anything that implements Ember.Array", function() {
   var arrayLikeObject = Ember.Object.create(Ember.Array, {
     _content: [a,b,c],
     length: 3,
     objectAt: function(idx) { return this._content[idx]; }
   }) ;
 
-  var set = Ember.Set.create(arrayLikeObject) ;
+  var set = new Ember.Set(arrayLikeObject) ;
   equal(set.length, 3) ;
   equal(set.contains(a), true) ;
   equal(set.contains(b), true) ;
@@ -72,7 +68,7 @@ var set ; // global variables
 module("Ember.Set.add + Ember.Set.contains", {
 
   setup: function() {
-    set = Ember.Set.create() ;
+    set = new Ember.Set() ;
   },
 
   teardown: function() {
@@ -177,9 +173,7 @@ module("Ember.Set.remove + Ember.Set.contains", {
   // generate a set with every type of object, but none of the specific
   // ones we add in the tests below...
   setup: function() {
-    Ember.TESTING_DEPRECATION = true;
-
-    set = Ember.Set.create(Ember.A([
+    set = new Ember.Set(Ember.A([
       Ember.Object.create({ dummy: true }),
       { isHash: true },
       "Not the String",
@@ -187,7 +181,6 @@ module("Ember.Set.remove + Ember.Set.contains", {
   },
 
   teardown: function() {
-    Ember.TESTING_DEPRECATION = false;
     set = undefined ;
   }
 
@@ -288,43 +281,41 @@ test("should ignore removing an object not in the set", function() {
 module("Ember.Set.pop + Ember.Set.copy", {
 // generate a set with every type of object, but none of the specific
 // ones we add in the tests below...
-	setup: function() {
-    Ember.TESTING_DEPRECATION = true;
-		set = Ember.Set.create(Ember.A([
-			Ember.Object.create({ dummy: true }),
-			{ isHash: true },
-			"Not the String",
-			16, false])) ;
-		},
-		
-		teardown: function() {
-      Ember.TESTING_DEPRECATION = false;
-			set = undefined ;
-		}
+  setup: function() {
+    set = new Ember.Set(Ember.A([
+      Ember.Object.create({ dummy: true }),
+      { isHash: true },
+      "Not the String",
+      16, false])) ;
+    },
+
+    teardown: function() {
+      set = undefined ;
+    }
 });
 
 test("the pop() should remove an arbitrary object from the set", function() {
-	var oldLength = set.length ;
-	var obj = set.pop();
-	ok(!Ember.none(obj), 'pops up an item');
-	equal(set.length, oldLength-1, 'length shorter by 1');
+  var oldLength = set.length ;
+  var obj = set.pop();
+  ok(!Ember.none(obj), 'pops up an item');
+  equal(set.length, oldLength-1, 'length shorter by 1');
 });
 
 test("should pop false and 0", function(){
-  set = Ember.Set.create(Ember.A([false]));
+  set = new Ember.Set(Ember.A([false]));
   ok(set.pop() === false, "should pop false");
 
-  set = Ember.Set.create(Ember.A([0]));
+  set = new Ember.Set(Ember.A([0]));
   ok(set.pop() === 0, "should pop 0");
 });
 
 test("the copy() should return an indentical set", function() {
-	var oldLength = set.length ;
-	var obj = set.copy();
-	equal(oldLength,obj.length,'length of the clone should be same');
-	equal(obj.contains(set[0]), true);
-	equal(obj.contains(set[1]), true);
-	equal(obj.contains(set[2]), true);
-	equal(obj.contains(set[3]), true);
-	equal(obj.contains(set[4]), true);
+  var oldLength = set.length ;
+  var obj = set.copy();
+  equal(oldLength,obj.length,'length of the clone should be same');
+  equal(obj.contains(set[0]), true);
+  equal(obj.contains(set[1]), true);
+  equal(obj.contains(set[2]), true);
+  equal(obj.contains(set[3]), true);
+  equal(obj.contains(set[4]), true);
 });

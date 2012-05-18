@@ -239,15 +239,15 @@ var get = Ember.get, set = Ember.set, getPath = Ember.getPath, fmt = Ember.Strin
   `view` that references the `Ember.View` object that was interacted with.
   
 **/
-
-Ember.StateManager.reopen({
+Ember.StateManager.reopen(
+/** @scope Ember.StateManager.prototype */ {
 
   /**
-    @property
-
     If the current state is a view state or the descendent of a view state,
     this property will be the view associated with it. If there is no
     view state active in this state manager, this value will be null.
+
+    @property
   */
   currentView: Ember.computed(function() {
     var currentState = get(this, 'currentState'),

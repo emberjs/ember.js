@@ -18,6 +18,7 @@ suite.test("[].clear() => [] + notify", function () {
   after  = [];
   obj = this.newObject(before);
   observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
+  obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
 
   equal(obj.clear(), obj, 'return self');
 
@@ -38,6 +39,7 @@ suite.test("[X].clear() => [] + notify", function () {
   after  = [];
   obj = this.newObject(before);
   observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
+  obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
 
   equal(obj.clear(), obj, 'return self');
 

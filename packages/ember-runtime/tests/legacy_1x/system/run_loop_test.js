@@ -47,7 +47,7 @@ module("System:run_loop() - chained binding", {
 test("Should propagate bindings after the RunLoop completes (using Ember.RunLoop)", function() {
   Ember.TESTING_DEPRECATION = true;
 
-  Ember.RunLoop.begin();
+  Ember.run.begin();
 
     //Binding of output of MyApp.first object to input of MyApp.second object
       binding1 = Ember.Binding.from("first.output")
@@ -70,7 +70,7 @@ test("Should propagate bindings after the RunLoop completes (using Ember.RunLoop
     //since binding has not taken into effect the value still remains as change.
     equal(MyApp.second.get("output"), "MyApp.first") ;
 
-  Ember.RunLoop.end(); // allows bindings to trigger...
+  Ember.run.end(); // allows bindings to trigger...
 
   //Value of the output variable changed to 'change'
   equal(MyApp.first.get("output"), "change") ;
@@ -117,7 +117,7 @@ test("Should propagate bindings after the RunLoop completes (using Ember.beginRu
 test("Should propagate bindings after the RunLoop completes (checking invokeOnce() function)", function() {
   Ember.TESTING_DEPRECATION = true;
 
-  Ember.RunLoop.begin();
+  Ember.run.begin();
 
     //Binding of output of MyApp.first object to input of MyApp.second object
     binding1 = Ember.Binding.from("first.output")
@@ -142,7 +142,7 @@ test("Should propagate bindings after the RunLoop completes (checking invokeOnce
     // Call the invokeOnce function to set the function which needs to be called once
     // MyApp.second.invokeOnce('MyApp.second','inputDidChange'); <-- Broken?
 
-  Ember.RunLoop.end(); // allows bindings to trigger...
+  Ember.run.end(); // allows bindings to trigger...
 
   //Value of the output variable changed to 'change'
   equal(MyApp.first.get("output"), "change") ;

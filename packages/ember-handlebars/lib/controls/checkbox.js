@@ -11,36 +11,36 @@ var set = Ember.set, get = Ember.get;
 
 /**
   @class
-  
+
   Creates an HTML input view in one of two formats.
-  
+
   If a `title` property or binding is provided the input will be wrapped in
   a `div` and `label` tag. View properties like `classNames` will be applied to
   the outermost `div`. This behavior is deprecated and will issue a warning in development.
-  
-  
+
+
       {{view Ember.Checkbox classNames="applicaton-specific-checkbox" title="Some title"}}
-      
-      
+
+
       <div id="ember1" class="ember-view ember-checkbox applicaton-specific-checkbox">
         <label><input type="checkbox" />Some title</label>
       </div>
-  
+
   If `title` isn't provided the view will render as an input element of the 'checkbox' type and HTML
   related properties will be applied directly to the input.
-  
+
       {{view Ember.Checkbox classNames="applicaton-specific-checkbox"}}
-      
+
       <input id="ember1" class="ember-view ember-checkbox applicaton-specific-checkbox" type="checkbox">
-  
+
   You can add a `label` tag yourself in the template where the Ember.Checkbox is being used.
-  
+
       <label>
         Some Title
         {{view Ember.Checkbox classNames="applicaton-specific-checkbox"}}
       </label>
-      
-  
+
+
   The `checked` attribute of an Ember.Checkbox object should always be set
   through the Ember object or by interacting with its rendered element representation
   via the mouse, keyboard, or touch.  Updating the value of the checkbox via jQuery will

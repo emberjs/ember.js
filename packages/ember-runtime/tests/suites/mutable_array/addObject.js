@@ -25,6 +25,7 @@ suite.test("[A,B].addObject(C) => [A,B,C] + notify", function() {
   after  = [before[0], before[1], item];
   obj = this.newObject(before);
   observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
+  obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
 
   obj.addObject(item);
 
@@ -49,6 +50,7 @@ suite.test("[A,B,C].addObject(A) => [A,B,C] + NO notify", function() {
   item   = before[0];
   obj = this.newObject(before);
   observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
+  obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
 
   obj.addObject(item); // note: item in set
 

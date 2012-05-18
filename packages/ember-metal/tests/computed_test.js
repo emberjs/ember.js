@@ -341,9 +341,7 @@ testBoth('redefining a property should undo old depenent keys', function(get ,se
 // CHAINED DEPENDENT KEYS
 //
 
-var func;
-
-module('Ember.computed - dependentkey with chained properties', {
+var func, moduleOpts = {
   setup: function() {
     obj = {
       foo: {
@@ -375,7 +373,9 @@ module('Ember.computed - dependentkey with chained properties', {
   teardown: function() {
     obj = count = func = Global = null;
   }
-});
+};
+
+module('Ember.computed - dependentkey with chained properties', moduleOpts);
 
 testBoth('depending on simple chain', function(get, set) {
 
@@ -420,54 +420,6 @@ testBoth('depending on simple chain', function(get, set) {
   set(obj, 'foo', { bar: { baz: { biff: 'BLARG' } } });
   equal(get(obj, 'prop'), 'NONE'); // should do nothing
   equal(count, 8, 'should be not have invoked computed again');
-
-});
-
-testBoth('depending on complex chain', function(get, set) {
-
-  // assign computed property
-  Ember.defineProperty(obj, 'prop',
-    Ember.computed(func).property('foo.bar*baz.biff').cacheable());
-
-  equal(get(obj, 'prop'), 'BIFF 1');
-
-  set(Ember.getPath(obj, 'foo.bar.baz'), 'biff', 'BUZZ');
-  equal(get(obj, 'prop'), 'BUZZ 2');
-  equal(get(obj, 'prop'), 'BUZZ 2');
-
-  set(Ember.getPath(obj, 'foo.bar'),  'baz', { biff: 'BLOB' });
-  equal(get(obj, 'prop'), 'BLOB 3');
-  equal(get(obj, 'prop'), 'BLOB 3');
-
-  set(Ember.getPath(obj, 'foo.bar.baz'), 'biff', 'BUZZ');
-  equal(get(obj, 'prop'), 'BUZZ 4');
-  equal(get(obj, 'prop'), 'BUZZ 4');
-
-  // NOTHING SHOULD CHANGE AFTER THIS POINT BECAUSE OF THE CHAINED *
-
-  set(Ember.get(obj, 'foo'), 'bar', { baz: { biff: 'BOOM' } });
-  equal(get(obj, 'prop'), 'BUZZ 4');
-  equal(get(obj, 'prop'), 'BUZZ 4');
-
-  set(Ember.getPath(obj, 'foo.bar.baz'), 'biff', 'BUZZ');
-  equal(get(obj, 'prop'), 'BUZZ 4');
-  equal(get(obj, 'prop'), 'BUZZ 4');
-
-  set(obj, 'foo', { bar: { baz: { biff: 'BLARG' } } });
-  equal(get(obj, 'prop'), 'BUZZ 4');
-  equal(get(obj, 'prop'), 'BUZZ 4');
-
-  set(Ember.getPath(obj, 'foo.bar.baz'), 'biff', 'BUZZ');
-  equal(get(obj, 'prop'), 'BUZZ 4');
-  equal(get(obj, 'prop'), 'BUZZ 4');
-
-  Ember.defineProperty(obj, 'prop');
-  set(obj, 'prop', 'NONE');
-  equal(get(obj, 'prop'), 'NONE');
-
-  set(obj, 'foo', { bar: { baz: { biff: 'BLARG' } } });
-  equal(get(obj, 'prop'), 'NONE'); // should do nothing
-  equal(count, 4, 'should be not have invoked computed again');
 
 });
 
@@ -519,62 +471,11 @@ testBoth('depending on Global chain', function(get, set) {
 
 });
 
-testBoth('depending on complex Global chain', function(get, set) {
-
-  // assign computed property
-  Ember.defineProperty(obj, 'prop', Ember.computed(function() {
-    count++;
-    return Ember.getPath('Global.foo.bar.baz.biff')+' '+count;
-  }).property('Global.foo.bar*baz.biff').cacheable());
-
-  equal(get(obj, 'prop'), 'BIFF 1');
-
-  set(Ember.getPath(Global, 'foo.bar.baz'), 'biff', 'BUZZ');
-  equal(get(obj, 'prop'), 'BUZZ 2');
-  equal(get(obj, 'prop'), 'BUZZ 2');
-
-  set(Ember.getPath(Global, 'foo.bar'), 'baz', { biff: 'BLOB' });
-  equal(get(obj, 'prop'), 'BLOB 3');
-  equal(get(obj, 'prop'), 'BLOB 3');
-
-  set(Ember.getPath(Global, 'foo.bar.baz'), 'biff', 'BUZZ');
-  equal(get(obj, 'prop'), 'BUZZ 4');
-  equal(get(obj, 'prop'), 'BUZZ 4');
-
-  // NOTHING SHOULD CHANGE AFTER THIS POINT BECAUSE OF THE CHAINED *
-
-  set(Ember.get(Global, 'foo'), 'bar', { baz: { biff: 'BOOM' } });
-  equal(get(obj, 'prop'), 'BUZZ 4');
-  equal(get(obj, 'prop'), 'BUZZ 4');
-
-  set(Ember.getPath(Global, 'foo.bar.baz'), 'biff', 'BUZZ');
-  equal(get(obj, 'prop'), 'BUZZ 4');
-  equal(get(obj, 'prop'), 'BUZZ 4');
-
-  set(Global, 'foo', { bar: { baz: { biff: 'BLARG' } } });
-  equal(get(obj, 'prop'), 'BUZZ 4');
-  equal(get(obj, 'prop'), 'BUZZ 4');
-
-  set(Ember.getPath(Global, 'foo.bar.baz'), 'biff', 'BUZZ');
-  equal(get(obj, 'prop'), 'BUZZ 4');
-  equal(get(obj, 'prop'), 'BUZZ 4');
-
-  Ember.defineProperty(obj, 'prop');
-  set(obj, 'prop', 'NONE');
-  equal(get(obj, 'prop'), 'NONE');
-
-  set(Global, 'foo', { bar: { baz: { biff: 'BLARG' } } });
-  equal(get(obj, 'prop'), 'NONE'); // should do nothing
-  equal(count, 4, 'should be not have invoked computed again');
-
-});
-
 testBoth('chained dependent keys should evaluate computed properties lazily', function(get,set){
   Ember.defineProperty(obj.foo.bar, 'b', Ember.computed(func).property().cacheable());
   Ember.defineProperty(obj.foo, 'c', Ember.computed(function(){}).property('bar.b').cacheable());
   equal(count, 0, 'b should not run');
 });
-
 
 
 // ..........................................................

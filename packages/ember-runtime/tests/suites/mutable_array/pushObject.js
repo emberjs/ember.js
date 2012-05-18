@@ -23,6 +23,7 @@ suite.test("[].pushObject(X) => [X] + notify", function() {
   after  = this.newFixture(1);
   obj = this.newObject(before);
   observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
+  obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
 
   obj.pushObject(after[0]);
 
@@ -44,6 +45,7 @@ suite.test("[A,B,C].pushObject(X) => [A,B,C,X] + notify", function() {
   after  = [before[0], before[1], before[2], item];
   obj = this.newObject(before);
   observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
+  obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
 
   obj.pushObject(item);
 

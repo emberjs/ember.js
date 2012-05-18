@@ -232,7 +232,7 @@ var invokeForState = {
           firstName: 'Barry'
         })
         excitedGreeting: function(){
-          return this.getPath("contnet.firstName") + "!!!"
+          return this.getPath("content.firstName") + "!!!"
         }
       })
 
@@ -341,7 +341,7 @@ var invokeForState = {
 
       AView = Ember.View.extend({
         eventManager: Ember.Object.create({
-          dblclick: function(event, view){
+          doubleClick: function(event, view){
             // will be called when when an instance's
             // rendered element or any rendering
             // of this views's descendent
@@ -356,12 +356,12 @@ var invokeForState = {
 
 
       AView = Ember.View.extend({
-        mouseenter: function(event){
+        mouseEnter: function(event){
           // will never trigger.
         },
         eventManager: Ember.Object.create({
-          mouseenter: function(event, view){
-            // takes presedence over AView#mouseenter
+          mouseEnter: function(event, view){
+            // takes presedence over AView#mouseEnter
           }
         })
       })
@@ -375,7 +375,7 @@ var invokeForState = {
       OuterView = Ember.View.extend({
         eventManager: Ember.Object.create({
           template: Ember.Handlebars.compile("outer {{#view InnerView}}inner{{/view}} outer"),
-          mouseenter: function(event, view){
+          mouseEnter: function(event, view){
             // view might be instance of either
             // OutsideView or InnerView depending on
             // where on the page the user interaction occured
@@ -389,7 +389,7 @@ var invokeForState = {
           // an OuterView because OuterView's
           // eventManager doesn't handle click events
         },
-        mouseenter: function(event){
+        mouseEnter: function(event){
           // will never be called if rendered inside 
           // an OuterView.
         }
@@ -1098,10 +1098,9 @@ Ember.View = Ember.Object.extend(Ember.Evented,
   },
 
   /**
-    Replaces the view's element to the specified parent element.
+    Replaces the content of the specified parent element with this view's element.
     If the view does not have an HTML representation yet, `createElement()`
     will be called automatically.
-    If the parent element already has some content, it will be removed.
 
     Note that this method just schedules the view to be appended; the DOM
     element will not be appended to the given element until all bindings have
@@ -1190,7 +1189,11 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     return value !== undefined ? value : Ember.guidFor(this);
   }).cacheable(),
 
-  /** @private */
+  /**
+    @private
+
+    TODO: Perhaps this should be removed from the production build somehow.
+  */
   _elementIdDidChange: Ember.beforeObserver(function() {
     throw "Changing a view's elementId after creation is not allowed.";
   }, 'elementId'),
@@ -1297,11 +1300,9 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     NOTE: In some cases this was called when the element existed. This no longer
     works so we let people know. We can remove this warning code later.
   */
-  _notifyWillInsertElement: function(fromPreRender) {
+  _notifyWillInsertElement: function() {
     this.invokeRecursively(function(view) {
-      if (fromPreRender) { view._willInsertElementAccessUnsupported = true; }
       view.fire('willInsertElement');
-      view._willInsertElementAccessUnsupported = false;
     });
   },
 
@@ -1763,9 +1764,8 @@ Ember.View = Ember.Object.extend(Ember.Evented,
       // consumers of the view API
       if (viewName) { set(get(this, 'concreteView'), viewName, view); }
     } else {
-      if (attrs) { throw "EWOT"; }
-
-      Ember.assert('must pass instance of View', view instanceof Ember.View);
+      Ember.assert('You must pass instance or subclass of View', view instanceof Ember.View);
+      Ember.assert("You can only pass attributes when a class is provided", !attrs);
 
       if (!get(view, 'templateData')) {
         set(view, 'templateData', get(this, 'templateData'));

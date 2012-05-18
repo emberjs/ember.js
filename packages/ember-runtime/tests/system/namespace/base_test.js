@@ -58,17 +58,17 @@ test("Classes under Ember are properly named", function() {
 test("Lowercase namespaces should be deprecated", function() {
   window.namespaceC = Ember.Namespace.create();
 
-  var originalWarn = console.warn,
-      consoleWarning;
+  var originalWarn = Ember.Logger.warn,
+      loggerWarning;
 
-  console.warn = function(msg) { consoleWarning = msg; };
+  Ember.Logger.warn = function(msg) { loggerWarning = msg; };
 
   try {
     Ember.identifyNamespaces();
   } finally {
-    console.warn = originalWarn;
+    Ember.Logger.warn = originalWarn;
   }
 
   // Ignore backtrace
-  equal(consoleWarning.split("\n")[0], "DEPRECATION: Namespaces should not begin with lowercase.");
+  equal(loggerWarning.split("\n")[0], "DEPRECATION: Namespaces should not begin with lowercase.");
 });
