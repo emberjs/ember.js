@@ -18,7 +18,9 @@ module("Ember.TextField", {
   },
 
   teardown: function() {
-    textField.destroy();
+    Ember.run(function() {
+      textField.destroy();
+    });
     TestObject = textField = null;
   }
 });

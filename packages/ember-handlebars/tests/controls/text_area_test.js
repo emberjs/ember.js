@@ -18,7 +18,9 @@ module("Ember.TextArea", {
   },
 
   teardown: function() {
-    textArea.destroy();
+    Ember.run(function() {
+      textArea.destroy();
+    });
     TestObject = textArea = null;
   }
 });

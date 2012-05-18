@@ -31,9 +31,11 @@ module("Ember.StateManager", {
   },
 
   teardown: function() {
-    if (stateManager) {
-      stateManager.destroy();
-    }
+    Ember.run(function() {
+      if (stateManager) {
+        stateManager.destroy();
+      }
+    });
   }
 });
 

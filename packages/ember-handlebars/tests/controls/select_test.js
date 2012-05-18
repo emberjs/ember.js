@@ -10,8 +10,10 @@ module("Ember.Select", {
   },
 
   teardown: function() {
-    dispatcher.destroy();
-    select.destroy();
+    Ember.run(function() {
+      dispatcher.destroy();
+      select.destroy();
+    });
   }
 });
 
@@ -228,7 +230,9 @@ module("Ember.Select - usage inside templates", {
   },
 
   teardown: function() {
-    dispatcher.destroy();
+    Ember.run(function() {
+      dispatcher.destroy();
+    });
   }
 });
 

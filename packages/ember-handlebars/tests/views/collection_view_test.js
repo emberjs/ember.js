@@ -65,7 +65,9 @@ test("collection helper should accept relative paths", function() {
 });
 
 test("empty views should be removed when content is added to the collection (regression, ht: msofaer)", function() {
-  window.App = Ember.Application.create();
+  Ember.run(function() {
+    window.App = Ember.Application.create();
+  });
 
   App.EmptyView = Ember.View.extend({
     template : Ember.Handlebars.compile("<td>No Rows Yet</td>")

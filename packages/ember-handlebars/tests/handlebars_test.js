@@ -80,7 +80,9 @@ module("Ember.View - handlebars integration", {
 
   teardown: function() {
     if (view) {
-      view.destroy();
+      Ember.run(function() {
+        view.destroy();
+      });
       view = null;
     }
     window.TemplateTests = undefined;
@@ -515,7 +517,9 @@ test("Handlebars templates update properties if a content object changes", funct
 
   equal(view.$('#price').text(), "$5", "should update price field when price property is changed");
 
-  view.destroy();
+  Ember.run(function() {
+    view.destroy();
+  });
 });
 
 test("Template updates correctly if a path is passed to the bind helper", function() {
@@ -853,7 +857,9 @@ test("should warn if setting a template on a view with a templateName already sp
     appendView();
   }, Error, "raises if conflicting template and templateName are provided");
 
-  view.destroy();
+  Ember.run(function() {
+    view.destroy();
+  });
 
   view = Ember.View.create({
     childView: Ember.View.extend(),
@@ -936,7 +942,9 @@ test("Collection views that specify an example view class have their children be
 
   ok(firstGrandchild(parentView).isCustom, "uses the example view class");
 
-  parentView.destroy();
+  Ember.run(function() {
+    parentView.destroy();
+  });
 });
 
 test("itemViewClass works in the #collection helper", function() {
@@ -958,7 +966,9 @@ test("itemViewClass works in the #collection helper", function() {
 
   ok(firstGrandchild(parentView).isAlsoCustom, "uses the example view class specified in the #collection helper");
 
-  parentView.destroy();
+  Ember.run(function() {
+    parentView.destroy();
+  });
 });
 
 test("itemViewClass works in the #collection helper relatively", function() {
@@ -984,7 +994,9 @@ test("itemViewClass works in the #collection helper relatively", function() {
 
   ok(firstGrandchild(parentView).isAlsoCustom, "uses the example view class specified in the #collection helper");
 
-  parentView.destroy();
+  Ember.run(function() {
+    parentView.destroy();
+  });
 });
 
 test("should update boundIf blocks if the conditional changes", function() {
@@ -1338,7 +1350,9 @@ test("should not reset cursor position when text field receives keyUp event", fu
 
   equal(view.$().caretPosition(), 5, "The keyUp event should not result in the cursor being reset due to the bindAttr observers");
 
-  view.destroy();
+  Ember.run(function() {
+    view.destroy();
+  });
 });
 
 test("should be able to bind element attributes using {{bindAttr}} inside a block", function() {
@@ -1642,7 +1656,9 @@ test("should expose a controller keyword when present on the view", function() {
 
   equal(view.$().text(), "BARBLARGH", "updates the DOM when a bound value is updated");
 
-  view.destroy();
+  Ember.run(function() {
+    view.destroy();
+  });
 
   view = Ember.View.create({
     controller: "aString",
@@ -1756,7 +1772,9 @@ module("Templates redrawing and bindings", {
     MyApp = Ember.Object.create({});
   },
   teardown: function(){
-    if (view) view.destroy();
+    Ember.run(function() {
+      if (view) view.destroy();
+    });
     window.MyApp = null;
   }
 });
@@ -1927,7 +1945,10 @@ test("bindings can be 'this', in which case they *are* the current context", fun
 test("should not enter an infinite loop when binding an attribute in Handlebars", function() {
   expect(0);
 
-  App = Ember.Application.create();
+  Ember.run(function() {
+    App = Ember.Application.create();
+  });
+
   App.test = Ember.Object.create({ href: 'test' });
   App.Link = Ember.View.extend({
     classNames: ['app-link'],
@@ -1951,7 +1972,9 @@ test("should not enter an infinite loop when binding an attribute in Handlebars"
   });
   // equal(view.$().attr('href'), 'test');
 
-  parentView.destroy();
+  Ember.run(function() {
+    parentView.destroy();
+  });
 
   Ember.run(function() {
     App.destroy();

@@ -80,7 +80,9 @@ test("acts like a namespace", function() {
   });
   app.Foo = Ember.Object.extend();
   equal(app.Foo.toString(), "TestApp.Foo", "Classes pick up their parent namespace");
-  app.destroy();
+  Ember.run(function() {
+    app.destroy();
+  });
   window.TestApp = undefined;
 });
 
@@ -93,7 +95,9 @@ module("Ember.Application initialization", {
 });
 
 test("initialize controllers into a state manager", function() {
-  app = Ember.Application.create();
+  Ember.run(function() {
+    app = Ember.Application.create();
+  });
 
   app.FooController = Ember.Object.extend();
   app.BarController = Ember.ArrayController.extend();

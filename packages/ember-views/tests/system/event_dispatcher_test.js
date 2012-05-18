@@ -11,13 +11,17 @@ var set = Ember.set, get = Ember.get;
 
 module("Ember.EventDispatcher", {
   setup: function() {
-    dispatcher = Ember.EventDispatcher.create();
-    dispatcher.setup();
+    Ember.run(function() {
+      dispatcher = Ember.EventDispatcher.create();
+      dispatcher.setup();
+    });
   },
 
   teardown: function() {
-    if (view) { view.destroy(); }
-    dispatcher.destroy();
+    Ember.run(function() {
+      if (view) { view.destroy(); }
+      dispatcher.destroy();
+    });
   }
 });
 
@@ -154,7 +158,10 @@ test("events should stop propagating if the view is destroyed", function() {
 
     change: function(evt) {
       receivedEvent = true;
-      get(this, 'parentView').destroy();
+      var self = this;
+      Ember.run(function() {
+        get(self, 'parentView').destroy();
+      });
     }
   });
 
