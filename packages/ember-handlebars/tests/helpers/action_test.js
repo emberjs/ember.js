@@ -350,3 +350,22 @@ test("should only trigger actions for the event they were registered on", functi
 
   ok(!editWasCalled, "The action wasn't called");
 });
+
+test("should allow a context to be specified", function() {
+  var passedContext,
+      model = Ember.Object.create();
+
+  view = Ember.View.create({
+    people: Ember.A([model]),
+    template: Ember.Handlebars.compile('{{#each person in people}}<button {{action "edit" context="person"}}>edit</button>{{/each}}'),
+    edit: function(event) {
+      passedContext = event.context;
+    }
+  });
+
+  appendView();
+
+  view.$('button').trigger('click');
+
+  equal(passedContext, model, "the action was called with the passed context");
+});

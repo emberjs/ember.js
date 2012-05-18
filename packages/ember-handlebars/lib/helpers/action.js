@@ -160,7 +160,7 @@ EmberHandlebars.registerHelper('action', function(actionName, options) {
 
   target = target || view;
 
-  context = options.contexts[0];
+  context = hash.context ? getPath(this, hash.context, options) : options.contexts[0];
 
   var actionId = ActionHelper.registerAction(actionName, eventName, target, view, context);
   return new EmberHandlebars.SafeString('data-ember-action="' + actionId + '"');
