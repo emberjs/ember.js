@@ -607,10 +607,8 @@ ERROR:  Multiple versions detected for external dependency
     desc "Publish NPM package"
     task :deploy do
       puts "Publishing package to NPM..."
-      Dir['dist/node_modules/*'].each do |source_path|
-        puts "  publishing #{source_path}" 
-        puts `npm publish #{source_path}`
-      end
+      package_path = File.join 'dist', 'node_modules', 'ember'
+      puts `npm publish #{package_path}`
       puts "Done."
     end
 
