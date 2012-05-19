@@ -593,6 +593,7 @@ ERROR:  Multiple versions detected for external dependency
 
       package_json["version"] = npm_version base_package_json["version"]
       package_json["dependencies"] = external_dependencies
+      package_json["main"] = "./ember.js"
       File.open File.join(package_root, 'package.json'), 'w+' do |fd|
         fd.write JSON.pretty_generate(package_json)
       end
