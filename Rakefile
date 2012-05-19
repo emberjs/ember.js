@@ -487,81 +487,125 @@ namespace :release do
       version.sub /^([^\d]*\d+\.\d+\.\d+)\.(.*)$/, '\1-\2'
     end
 
+    # these packages need to have the global object -> window
+    NEEDS_GLOBAL_WINDOW = %w(ember-metal ember-debug)
+
+    # these packages need a "real dom" window - any package req jquery
+    # also gets this.
+    NEEDS_REAL_WINDOW = %w(metamorph)
+
     desc "Builds NPM packages"
     task :build => :dist do
-      puts "Generating NPM packages..."
-      Dir['dist/modules/*'].each do |source_path|
-        package_name = File.basename source_path, '.js'
-        if package_name == 'handlebars' 
-          # already published in npm, no need to do it again.
-          puts "  skipping #{package_name}"
-          next
+      puts "Generating NPM package..."
+
+      package_root = File.join 'dist/node_modules/ember'
+      FileUtils.mkdir_p package_root
+
+      # copy each file over, add require statements for other modules as 
+      # needed.
+      external_dependencies = {}
+      dependency_sources = {}
+      base_package_json = nil
+      module_names = Dir['dist/modules/*'].map do |path| 
+        File.basename path, '.js'
+      end
+
+      # use already published NPM version of handlebars
+      module_names.reject! { |name| name == 'handlebars' } 
+
+      module_names.each do |module_name|
+        source_path = File.join 'dist', 'modules', "#{module_name}.js"
+        puts "  writing '#{module_name}'"
+
+        package_json = File.join 'packages', module_name, 'package.json'
+        package_json = JSON.parse File.read(package_json)
+        dependencies = package_json["dependencies"] || {}
+
+        # save for later processing.
+        base_package_json = package_json if module_name == 'ember' 
+
+        output_body = []
+
+        # add external dependency on window module first before jquery can
+        # load
+        if NEEDS_REAL_WINDOW.include?(module_name) or dependencies['jquery']
+          output_body << %[require("window");]
+          # TODO: convert to published package when ready
+          external_dependencies["window"] = 
+            "git://github.com/charlesjolley/node-window.git#master"
         end
 
-        source_package = File.join('packages', package_name, 'package.json')
-        source_package = JSON.parse File.read(source_package)
-
-        # adjust dependencies to fit npm requirements
-        dependencies = {}
-        (source_package["dependencies"] || {}).each do |package_name, version|
-          next if package_name == "spade" # not needed for npm
-          package_name = "convoy-jquery" if package_name == "jquery"
-          dependencies[package_name] = npm_version version
-        end
-
-        # Build output body - require dependent packages
-        source_body = File.read source_path
-        output_body = dependencies.keys.map do |package_name|
-          case package_name
-          # Adapt to use publish Handlebars npm which does not make global
-          when 'handlebars'
-            %[var Handlebars = require("handlebars");]
+        dependencies.each do |package_name, package_version|
+          next if package_name == 'spade' # not needed in npm-land
+          if module_names.include? package_name
+            output_body << %[require("./#{package_name}");]
           else
-            %(require("#{package_name}");) 
+            output_body << case package_name
+              when 'handlebars' 
+                %[var Handlebars = require("handlebars");]
+              when 'jquery'
+                %[var jQuery, $; jQuery = $ = require('jquery');]
+              else
+                %[require("#{package_name}");]
+            end
+
+            # save external dependency. throw exception if a duplicate is found
+            package_version = npm_version package_version 
+            unless external_dependencies[package_name] == package_version
+              if external_dependencies[package_name]
+                abort <<-eof
+ERROR:  Multiple versions detected for external dependency
+        "#{package_name}" (#{package_version} required by
+        "#{module_name}" vs #{external_dependencies[package_name]}
+        required by "#{dependency_sources[package_name]})"
+        eof
+              end
+              external_dependencies[package_name] = package_version
+              dependency_sources[package_name] = module_name
+            end
           end
         end
         output_body << "\n"
-        output_body << source_body
 
+        # sometimes ember refers to 'window' - map to global if needed
+        source_body = File.read source_path
+        if NEEDS_GLOBAL_WINDOW.include? module_name
+          output_body << '(function(window) {'
+          output_body << source_body
+          output_body << '})(this);'
+        else
+          output_body << source_body
+        end
         output_body = output_body.compact.join "\n"
 
-        # Build output package.json
-        output_package = {}
-        %w(name summary description homepage author).each do |key|
-          output_package[key] = source_package[key]
-        end
-
-        output_package["version"] = npm_version source_package["version"]
-
-        output_package["dependencies"] = dependencies
-        output_package["main"] = "./#{package_name}.js"
-
-        puts "  publishing #{package_name} (#{output_package["version"]})"
-        
-        # Create package and save assets
-        package_root = File.join 'dist', 'node_modules', package_name
-        FileUtils.mkdir_p package_root
-
-        # package_name/package.json
-        File.open File.join(package_root, 'package.json'), 'w+' do |fd|
-          fd.write JSON.pretty_generate output_package
-        end
-
-        # package_name/package_name.js
-        File.open File.join(package_root, "#{package_name}.js"), 'w+' do |fd|
+        # ember/module_name.js
+        File.open File.join(package_root, "#{module_name}.js"), 'w+' do |fd|
           fd.write output_body
         end
+      end
+
+      puts "  generating package.json"
+      package_json = {}   
+      throw "ember package.json was not found" if not base_package_json
+      %w(name summary description homepage author).each do |key|
+        package_json[key] = base_package_json[key]
+      end
+
+      package_json["version"] = npm_version base_package_json["version"]
+      package_json["dependencies"] = external_dependencies
+      File.open File.join(package_root, 'package.json'), 'w+' do |fd|
+        fd.write JSON.pretty_generate(package_json)
       end
 
       puts "Done"
     end
 
-    desc "Prepare NPM packages for deployment"
+    desc "Prepare NPM package for deployment"
     task :prepare => [:build]
 
-    desc "Publish NPM packages"
+    desc "Publish NPM package"
     task :deploy do
-      puts "Publishing packages to NPM..."
+      puts "Publishing package to NPM..."
       Dir['dist/node_modules/*'].each do |source_path|
         puts "  publishing #{source_path}" 
         puts `npm publish #{source_path}`
