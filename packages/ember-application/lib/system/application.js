@@ -94,7 +94,7 @@ Ember.Application = Ember.Namespace.extend(
         ...
       });
 
-      App.injectControllers(stateManager);
+      App.initialize(stateManager);
 
       stateManager.get('postsController')     // <App.PostsController:ember1234>
       stateManager.get('commentsController')  // <App.CommentsController:ember1235>
