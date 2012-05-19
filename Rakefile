@@ -5,6 +5,7 @@ require "erb"
 require 'rake-pipeline'
 require "ember_docs/cli"
 require "colored"
+require "json"
 
 def pipeline
   Rake::Pipeline::Project.new("Assetfile")
@@ -480,11 +481,101 @@ namespace :release do
     task :deploy => [:update]
   end
 
+  namespace :npm do
+
+    def npm_version(version)
+      version.sub /^([^\d]*\d+\.\d+\.\d+)\.(.*)$/, '\1-\2'
+    end
+
+    desc "Builds NPM packages"
+    task :build => :dist do
+      puts "Generating NPM packages..."
+      Dir['dist/modules/*'].each do |source_path|
+        package_name = File.basename source_path, '.js'
+        if package_name == 'handlebars' 
+          # already published in npm, no need to do it again.
+          puts "  skipping #{package_name}"
+          next
+        end
+
+        source_package = File.join('packages', package_name, 'package.json')
+        source_package = JSON.parse File.read(source_package)
+
+        # adjust dependencies to fit npm requirements
+        dependencies = {}
+        (source_package["dependencies"] || {}).each do |package_name, version|
+          next if package_name == "spade" # not needed for npm
+          package_name = "convoy-jquery" if package_name == "jquery"
+          dependencies[package_name] = npm_version version
+        end
+
+        # Build output body - require dependent packages
+        source_body = File.read source_path
+        output_body = dependencies.keys.map do |package_name|
+          case package_name
+          # Adapt to use publish Handlebars npm which does not make global
+          when 'handlebars'
+            %[var Handlebars = require("handlebars");]
+          else
+            %(require("#{package_name}");) 
+          end
+        end
+        output_body << "\n"
+        output_body << source_body
+
+        output_body = output_body.compact.join "\n"
+
+        # Build output package.json
+        output_package = {}
+        %w(name summary description homepage author).each do |key|
+          output_package[key] = source_package[key]
+        end
+
+        output_package["version"] = npm_version source_package["version"]
+
+        output_package["dependencies"] = dependencies
+        output_package["main"] = "./#{package_name}.js"
+
+        puts "  publishing #{package_name} (#{output_package["version"]})"
+        
+        # Create package and save assets
+        package_root = File.join 'dist', 'node_modules', package_name
+        FileUtils.mkdir_p package_root
+
+        # package_name/package.json
+        File.open File.join(package_root, 'package.json'), 'w+' do |fd|
+          fd.write JSON.pretty_generate output_package
+        end
+
+        # package_name/package_name.js
+        File.open File.join(package_root, "#{package_name}.js"), 'w+' do |fd|
+          fd.write output_body
+        end
+      end
+
+      puts "Done"
+    end
+
+    desc "Prepare NPM packages for deployment"
+    task :prepare => [:build]
+
+    desc "Publish NPM packages"
+    task :deploy do
+      puts "Publishing packages to NPM..."
+      Dir['dist/node_modules/*'].each do |source_path|
+        puts "  publishing #{source_path}" 
+        puts `npm publish #{source_path}`
+      end
+      puts "Done."
+    end
+
+  end
+
   desc "Prepare Ember for new release"
-  task :prepare => ['framework:prepare', 'starter_kit:prepare', 'examples:prepare']
+  task :prepare => ['framework:prepare', 'starter_kit:prepare', 'examples:prepare', 'npm:prepare']
 
   desc "Deploy a new Ember release"
-  task :deploy => ['framework:deploy', 'starter_kit:deploy', 'examples:deploy']
+  task :deploy => ['framework:deploy', 'starter_kit:deploy', 'examples:deploy', 'npm:deploy']
 
 end
 
