@@ -277,3 +277,78 @@ test("should invoke the serialize method on a state when it is entered programma
   equal(setURL, '/posts/2');
 });
 
+var url, firstPost, firstUser;
+
+module("default serialize and deserialize", {
+  setup: function() {
+    window.TestApp = Ember.Namespace.create();
+    window.TestApp.Post = Ember.Object.extend();
+    window.TestApp.Post.find = function(id) {
+      if (id === "1") { return firstPost; }
+    };
+
+    window.TestApp.User = Ember.Object.extend();
+    window.TestApp.User.find = function(id) {
+      if (id === "1") { return firstUser; }
+    };
+
+    firstPost = window.TestApp.Post.create({ id: 1 });
+    firstUser = window.TestApp.User.create({ id: 1 });
+
+    router = Ember.Router.create({
+      location: {
+        setURL: function(passedURL) {
+          url = passedURL;
+        }
+      },
+
+      initialState: 'root',
+      root: Ember.State.extend({
+        post: Ember.State.extend({
+          route: '/posts/:post_id',
+          modelType: 'TestApp.Post',
+
+          setupControllers: function(router, post) {
+            equal(post, firstPost, "the post should have deserialized correctly");
+          }
+        }),
+
+        user: Ember.State.extend({
+          route: '/users/:user_id',
+          modelType: window.TestApp.User,
+
+          setupControllers: function(router, user) {
+            equal(user, firstUser, "the post should have deserialized correctly");
+          }
+        })
+      })
+    });
+  },
+
+  teardown: function() {
+    window.TestApp = undefined;
+  }
+});
+
+test("should use a specified String `modelType` in the default `serialize`", function() {
+  router.transitionTo('post', firstPost);
+  equal(url, "/posts/1");
+});
+
+test("should use a specified String `modelType` in the default `deserialize`", function() {
+  expect(1);
+
+  router.route("/posts/1");
+});
+
+test("should use a specified class `modelType` in the default `serialize`", function() {
+  router.transitionTo('user', firstUser);
+  equal(url, "/users/1");
+});
+
+test("should use a specified class `modelType` in the default `deserialize`", function() {
+  expect(1);
+
+  router.route("/users/1");
+});
+

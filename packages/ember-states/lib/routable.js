@@ -9,6 +9,14 @@ var get = Ember.get, getPath = Ember.getPath;
 // * .onURLChange(callback) - this happens when the user presses
 //   the back or forward button
 
+var paramForClass = function(classObject) {
+  var className = classObject.toString(),
+      parts = className.split("."),
+      last = parts[parts.length - 1];
+
+  return Ember.String.underscore(last) + "_id";
+};
+
 Ember.Routable = Ember.Mixin.create({
   init: function() {
     this.on('setupControllers', this, this.stashContext);
@@ -62,11 +70,36 @@ Ember.Routable = Ember.Mixin.create({
     return Ember._RouteMatcher.create({ route: get(this, 'route') });
   }).cacheable(),
 
-  deserialize: function(manager, context) {
-    return context;
+  modelClass: Ember.computed(function() {
+    var modelType = get(this, 'modelType');
+
+    if (typeof modelType === 'string') {
+      return Ember.getPath(window, modelType);
+    } else {
+      return modelType;
+    }
+  }).cacheable(),
+
+  deserialize: function(manager, params) {
+    var modelClass, param;
+
+    if (modelClass = get(this, 'modelClass')) {
+      return modelClass.find(params[paramForClass(modelClass)]);
+    } else {
+      return params;
+    }
   },
 
   serialize: function(manager, context) {
+    var modelClass, param, id;
+
+    if (modelClass = get(this, 'modelClass')) {
+      param = paramForClass(modelClass);
+      id = get(context, 'id');
+      context = {};
+      context[param] = id;
+    }
+
     return context;
   },
 
