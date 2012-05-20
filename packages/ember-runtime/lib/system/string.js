@@ -154,7 +154,7 @@ Ember.String = {
 
   /**
     Returns the lowerCaseCamel form of a string.
-    
+
         'innerHTML'.camelize()         => 'innerHTML'
         'action_name'.camelize()       => 'actionName'
         'css-class-name'.camelize()    => 'cssClassName'
