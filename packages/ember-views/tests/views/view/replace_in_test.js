@@ -14,7 +14,9 @@ module("Ember.View - replaceIn()", {
   },
 
   teardown: function() {
-    view.destroy();
+    Ember.run(function(){
+      view.destroy();
+    });
   }
 });
 
@@ -60,7 +62,9 @@ module("Ember.View - replaceIn() in a view hierarchy", {
   },
 
   teardown: function() {
-    view.destroy();
+    Ember.run(function(){
+      view.destroy();
+    });
   }
 });
 

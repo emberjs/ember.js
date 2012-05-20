@@ -31,7 +31,9 @@ test("default implementation does not render child views", function() {
     })
   });
 
-  view.createElement();
+  Ember.run(function(){
+    view.createElement();
+  });
   equal(rendered, 1, 'rendered the child once');
   equal(parentRendered, 1);
   equal(view.$('div').length, 1);
@@ -73,7 +75,9 @@ test("should invoke renderChildViews if layer is destroyed then re-rendered", fu
   equal(parentRendered, 2);
   equal(view.$('div').length, 1);
 
-  view.destroy();
+  Ember.run(function(){
+    view.destroy();
+  });
 });
 
 test("should render child views with a different tagName", function() {
@@ -87,21 +91,30 @@ test("should render child views with a different tagName", function() {
     })
   });
 
-  view.createElement();
+  Ember.run(function(){
+    view.createElement();
+  });
+  
   equal(view.$('aside').length, 1);
 });
 
 test("should add ember-view to views", function() {
   var view = Ember.View.create();
 
-  view.createElement();
+  Ember.run(function(){
+    view.createElement();
+  });
+  
   ok(view.$().hasClass('ember-view'), "the view has ember-view");
 });
 
 test("should not add role attribute unless one is specified", function() {
   var view = Ember.View.create();
 
-  view.createElement();
+  Ember.run(function(){
+    view.createElement();
+  });
+  
   ok(view.$().attr('role') === undefined, "does not have a role attribute");
 });
 

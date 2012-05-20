@@ -56,9 +56,11 @@ test('returns this', function() {
 
 test('transform function should be invoked on fwd change', function() {
 
-  binding = Ember.bind(MyApp, 'foo.value', 'bar.value');
-  binding.transform({ to: function(value) { return 'TRANSFORMED'; }});
-  Ember.run.sync();
+  Ember.run(function(){
+    binding = Ember.bind(MyApp, 'foo.value', 'bar.value');
+    binding.transform({ to: function(value) { return 'TRANSFORMED'; }});
+    Ember.run.sync();
+  });
 
   // should have transformed...
   equal(Ember.getPath('MyApp.foo.value'), 'TRANSFORMED', 'should transform');
@@ -89,26 +91,29 @@ test('two-way transforms work', function() {
 });
 
 test('transform function should NOT be invoked on fwd change', function() {
+  
+  Ember.run(function(){
+    var count = 0;
+    binding = Ember.bind(MyApp, 'foo.value', 'bar.value');
+    var lastSeenValue;
+    binding.transform({
+      to: function(value) {
+        if (value !== lastSeenValue) count++; // transform must be consistent
+        lastSeenValue = value;
+        return 'TRANSFORMED '+count;
+      }
+    });
 
-  var count = 0;
-  binding = Ember.bind(MyApp, 'foo.value', 'bar.value');
-  var lastSeenValue;
-  binding.transform({
-    to: function(value) {
-      if (value !== lastSeenValue) count++; // transform must be consistent
-      lastSeenValue = value;
-      return 'TRANSFORMED '+count;
-    }
+    Ember.run.sync();
+
+    // should have transformed...
+    foo.reset();
+    bar.reset();
+
+    Ember.setPath('MyApp.bar.value', 'FOOBAR');
+    Ember.run.sync();
   });
-
-  Ember.run.sync();
-
-  // should have transformed...
-  foo.reset();
-  bar.reset();
-
-  Ember.setPath('MyApp.bar.value', 'FOOBAR');
-  Ember.run.sync();
+  
 
   equal(Ember.getPath('MyApp.foo.value'), 'TRANSFORMED 2', 'should transform');
   equal(Ember.getPath('MyApp.bar.value'), 'FOOBAR', 'should stay original');

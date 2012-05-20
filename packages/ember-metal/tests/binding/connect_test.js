@@ -7,7 +7,14 @@
 
 require('ember-metal/~tests/props_helper');
 
-module('system/mixin/binding/connect_test');
+module('system/mixin/binding/connect_test', {
+  setup: function(){
+    window.ENV['PREVENT_AUTOMATIC_RUNLOOP_CREATION'] = false;
+  },
+  teardown: function(){
+    window.ENV['PREVENT_AUTOMATIC_RUNLOOP_CREATION'] = true;
+  }
+});
 
 function performTest(binding, a, b, get, set, skipFirst) {
 
@@ -37,10 +44,10 @@ function performTest(binding, a, b, get, set, skipFirst) {
 
 testBoth('Connecting a binding between two properties', function(get, set) {
   var a = { foo: 'FOO', bar: 'BAR' };
-
+  
   // a.bar -> a.foo
   var binding = new Ember.Binding('foo', 'bar');
-
+  
   performTest(binding, a, a, get, set);
 });
 

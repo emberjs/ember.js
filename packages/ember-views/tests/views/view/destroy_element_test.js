@@ -36,7 +36,10 @@ test("if it has a element, calls willDestroyElement on receiver and child views 
     })]
   });
 
-  view.createElement();
+  Ember.run(function(){
+    view.createElement();
+  });
+  
   ok(get(view, 'element'), 'precond - view has element');
 
   Ember.run(function() {
@@ -50,8 +53,14 @@ test("if it has a element, calls willDestroyElement on receiver and child views 
 });
 
 test("returns receiver", function() {
-  var view = Ember.View.create().createElement();
-  equal(view.destroyElement(), view, 'returns receiver');
+  var view = Ember.View.create(), ret;
+  
+  Ember.run(function(){
+    view.createElement();
+    ret = view.destroyElement();
+  });
+  
+  equal(ret, view, 'returns receiver');
 });
 
 test("removes element from parentNode if in DOM", function() {

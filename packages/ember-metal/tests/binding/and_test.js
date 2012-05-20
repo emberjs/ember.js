@@ -12,7 +12,11 @@ module('binding/and', {
       foo: false,
       bar: false
     };
-    Ember.Binding.and("foo", "bar").to("baz").connect(MyApp);
+    
+    Ember.run(function(){
+      Ember.Binding.and("foo", "bar").to("baz").connect(MyApp);
+      
+    });
   },
 
   teardown: function() {
@@ -21,29 +25,34 @@ module('binding/and', {
 });
 
 test('should return second item when both are truthy', function() {
-  set(MyApp, 'foo', true);
-  set(MyApp, 'bar', 'BAR');
-  Ember.run.sync();
+  Ember.run(function(){
+    set(MyApp, 'foo', true);
+    set(MyApp, 'bar', 'BAR');
+  });
+  
   equal(get(MyApp, 'baz'), 'BAR', 'should be false');
 });
 
 test('should return false first item', function() {
-  set(MyApp, 'foo', 0);
-  set(MyApp, 'bar', true);
-  Ember.run.sync();
+  Ember.run(function(){
+    set(MyApp, 'foo', 0);
+    set(MyApp, 'bar', true);
+  });
   equal(get(MyApp, 'baz'), 0, 'should be false');
 });
 
 test('should return false second item', function() {
-  set(MyApp, 'foo', true);
-  set(MyApp, 'bar', 0);
-  Ember.run.sync();
+  Ember.run(function(){
+    set(MyApp, 'foo', true);
+    set(MyApp, 'bar', 0);
+  });
   equal(get(MyApp, 'baz'), 0, 'should be false');
 });
 
 test('should return first item when both are false', function() {
-  set(MyApp, 'foo', 0);
-  set(MyApp, 'bar', null);
-  Ember.run.sync();
+  Ember.run(function(){
+    set(MyApp, 'foo', 0);
+    set(MyApp, 'bar', null);
+  });
   equal(get(MyApp, 'baz'), 0, 'should be false');
 });

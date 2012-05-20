@@ -51,11 +51,16 @@ var fromObject, toObject, binding, Bon1, bon2, root ; // global variables
 module("basic object binding", {
 
   setup: function() {
+    window.ENV['PREVENT_AUTOMATIC_RUNLOOP_CREATION'] = false;
+    
     fromObject = Ember.Object.create({ value: 'start' }) ;
     toObject = Ember.Object.create({ value: 'end' }) ;
     root = { fromObject: fromObject, toObject: toObject };
     binding = Ember.bind(root, 'toObject.value', 'fromObject.value');
     Ember.run.sync() ; // actually sets up up the connection
+  },
+  teardown: function(){
+    window.ENV['PREVENT_AUTOMATIC_RUNLOOP_CREATION'] = true;
   }
 });
 
@@ -125,11 +130,16 @@ test("binding disconnection actually works", function() {
 module("one way binding", {
 
   setup: function() {
+    window.ENV['PREVENT_AUTOMATIC_RUNLOOP_CREATION'] = false;
+    
     fromObject = Ember.Object.create({ value: 'start' }) ;
     toObject = Ember.Object.create({ value: 'end' }) ;
     root = { fromObject: fromObject, toObject: toObject };
     binding = Ember.oneWay(root, 'toObject.value', 'fromObject.value');
     Ember.run.sync() ; // actually sets up up the connection
+  },
+  teardown: function(){
+    window.ENV['PREVENT_AUTOMATIC_RUNLOOP_CREATION'] = true;
   }
 
 });
@@ -157,6 +167,8 @@ var first, second, third, binding1, binding2 ; // global variables
 module("chained binding", {
 
   setup: function() {
+    window.ENV['PREVENT_AUTOMATIC_RUNLOOP_CREATION'] = false;
+    
     first = Ember.Object.create({ output: 'first' }) ;
 
     second = Ember.Object.create({
@@ -174,6 +186,9 @@ module("chained binding", {
     binding1 = Ember.bind(root, 'second.input', 'first.output');
     binding2 = Ember.bind(root, 'second.output', 'third.input');
     Ember.run.sync() ; // actually sets up up the connection
+  },
+  teardown: function(){
+    window.ENV['PREVENT_AUTOMATIC_RUNLOOP_CREATION'] = true;
   }
 
 });
@@ -199,6 +214,8 @@ test("changing first output should propograte to third after flush", function() 
 module("Custom Binding", {
 
   setup: function() {
+    window.ENV['PREVENT_AUTOMATIC_RUNLOOP_CREATION'] = false;
+    
     Bon1 = Ember.Object.extend({
       value1: "hi",
       value2: 83,
@@ -216,9 +233,9 @@ module("Custom Binding", {
       Bon1: Bon1
     };
   },
-
   teardown: function() {
     Bon1 = bon2 = TestNamespace  = null;
+    window.ENV['PREVENT_AUTOMATIC_RUNLOOP_CREATION'] = true;
   }
 });
 
@@ -290,6 +307,8 @@ test("two bindings to the same value should sync in the order they are initializ
 module("AND binding", {
 
   setup: function() {
+    window.ENV['PREVENT_AUTOMATIC_RUNLOOP_CREATION'] = false;
+    
     // temporarily set up two source objects in the Ember namespace so we can
     // use property paths to access them
     Ember.set(Ember, 'testControllerA', Ember.Object.create({ value: false }));
@@ -304,6 +323,7 @@ module("AND binding", {
   teardown: function() {
     set(Ember, 'testControllerA', null);
     set(Ember, 'testControllerB', null);
+    window.ENV['PREVENT_AUTOMATIC_RUNLOOP_CREATION'] = true;
   }
 
 });
@@ -351,6 +371,8 @@ test("toObject.value should be false if either source is false", function() {
 module("OR binding", {
 
   setup: function() {
+    window.ENV['PREVENT_AUTOMATIC_RUNLOOP_CREATION'] = false;
+    
     // temporarily set up two source objects in the Ember namespace so we can
     // use property paths to access them
     Ember.set(Ember, 'testControllerA', Ember.Object.create({ value: false }));
@@ -365,6 +387,7 @@ module("OR binding", {
   teardown: function() {
     set(Ember, 'testControllerA', null);
     set(Ember, 'testControllerB', null);
+    window.ENV['PREVENT_AUTOMATIC_RUNLOOP_CREATION'] = true;
   }
 
 });
@@ -395,6 +418,8 @@ test("toObject.value should be second value if first is falsy", function() {
 
 module("Binding with '[]'", {
   setup: function() {
+    window.ENV['PREVENT_AUTOMATIC_RUNLOOP_CREATION'] = false;
+    
     fromObject = Ember.Object.create({ value: Ember.A() });
     toObject = Ember.Object.create({ value: '' });
     root = { toObject: toObject, fromObject: fromObject };
@@ -406,6 +431,7 @@ module("Binding with '[]'", {
 
   teardown: function() {
     root = fromObject = toObject = null;
+    window.ENV['PREVENT_AUTOMATIC_RUNLOOP_CREATION'] = true;
   }
 });
 
@@ -422,6 +448,8 @@ test("Binding refreshes after a couple of items have been pushed in the array", 
 
 module("propertyNameBinding with longhand", {
   setup: function(){
+    window.ENV['PREVENT_AUTOMATIC_RUNLOOP_CREATION'] = false;
+    
     TestNamespace = {
       fromObject: Ember.Object.create({
         value: "originalValue"
@@ -438,6 +466,7 @@ module("propertyNameBinding with longhand", {
   },
   teardown: function(){
     TestNamespace = null;
+    window.ENV['PREVENT_AUTOMATIC_RUNLOOP_CREATION'] = true;
   }
 });
 

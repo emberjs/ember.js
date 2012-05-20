@@ -4,7 +4,15 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
-module('system/run_loop/later_test');
+module('system/run_loop/later_test', {
+  setup: function() {
+    window.ENV['PREVENT_AUTOMATIC_RUNLOOP_CREATION'] = false;
+  },
+
+  teardown: function() {
+     window.ENV['PREVENT_AUTOMATIC_RUNLOOP_CREATION'] = true;
+  }
+});
 
 test('should invoke after specified period of time - function only', function() {
 

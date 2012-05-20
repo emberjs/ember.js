@@ -18,8 +18,10 @@ module("the #each helper", {
   },
 
   teardown: function() {
-    view.destroy();
-    view = null;
+    Ember.run(function(){
+      view.destroy();
+      view = null;
+    });
   }
 });
 
