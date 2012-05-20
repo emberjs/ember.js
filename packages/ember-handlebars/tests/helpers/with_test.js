@@ -16,7 +16,9 @@ module("Handlebars {{#with}} helper", {
   },
 
   teardown: function() {
-    view.destroy();
+    Ember.run(function(){
+      view.destroy();
+    });
   }
 });
 

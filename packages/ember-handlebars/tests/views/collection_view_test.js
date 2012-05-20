@@ -21,9 +21,11 @@ module("ember-handlebars/tests/views/collection_view_test", {
     window.TemplateTests = Ember.Namespace.create();
   },
   teardown: function() {
-    if (view) {
-      view.destroy();
-    }
+    Ember.run(function(){
+      if (view) {
+        view.destroy();
+      }
+    });
 
     window.TemplateTests = undefined;
     window.App = undefined;

@@ -32,6 +32,8 @@ test('sync() will immediately flush the sync queue only', function() {
 
 
 test('sync() works outside of runloop (by fixing runloop)', function() {
+  window.ENV['PREVENT_AUTOMATIC_RUNLOOP_CREATION'] = false;
+  
   var cnt = 0;
 
   function cntup() { cnt++; }
@@ -47,6 +49,7 @@ test('sync() works outside of runloop (by fixing runloop)', function() {
   Ember.run.sync();
 
   equal(cnt, 5, 'should have run sync queue continuously');
-
+  
+  window.ENV['PREVENT_AUTOMATIC_RUNLOOP_CREATION'] = true;
 });
 

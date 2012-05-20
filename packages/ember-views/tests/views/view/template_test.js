@@ -22,7 +22,10 @@ test("should call the function of the associated template", function() {
     })
   });
 
-  view.createElement();
+  Ember.run(function(){
+    view.createElement();
+  });
+  
 
   ok(view.$('#twas-called').length, "the named template was called");
 });
@@ -42,7 +45,10 @@ test("should call the function of the associated template with itself as the con
     })
   });
 
-  view.createElement();
+  Ember.run(function(){
+    view.createElement();
+  });
+  
 
   equal("template was called for Tom DAAAALE", view.$('#twas-called').text(), "the named template was called with the view as the data source");
 });
@@ -58,7 +64,9 @@ test("should fall back to defaultTemplate if neither template nor templateName a
     personName: "Tom DAAAALE"
   });
 
-  view.createElement();
+  Ember.run(function(){
+    view.createElement();
+  });
 
   equal("template was called for Tom DAAAALE", view.$('#twas-called').text(), "the named template was called with the view as the data source");
 });
@@ -72,7 +80,10 @@ test("should not use defaultTemplate if template is provided", function() {
   });
 
   view = View.create();
-  view.createElement();
+  Ember.run(function(){
+    view.createElement();
+  });
+  
 
   equal("foo", view.$().text(), "default template was not printed");
 });
@@ -89,7 +100,10 @@ test("should not use defaultTemplate if template is provided", function() {
   });
 
   view = View.create();
-  view.createElement();
+  Ember.run(function(){
+    view.createElement();
+  });
+  
 
   equal("foo", view.$().text(), "default template was not printed");
 });
@@ -98,70 +112,83 @@ test("should not use defaultTemplate if template is provided", function() {
 test("should render an empty element if no template is specified", function() {
   var view;
   view = Ember.View.create();
-  view.createElement();
-
+  Ember.run(function(){
+    view.createElement();
+  });
   equal(view.$().html(), '', "view div should be empty");
 });
 
 test("should provide a controller to the template if a controller is specified on the view", function() {
   expect(5);
-
   var controller1 = Ember.Object.create(),
-      controller2 = Ember.Object.create();
-
+      controller2 = Ember.Object.create(),
+      optionsDataKeywordsControllerForView,
+      optionsDataKeywordsControllerForChildView;
+  
   var view = Ember.View.create({
     controller: controller1,
-
+  
     template: function(buffer, options) {
-      strictEqual(options.data.keywords.controller, controller1, "passes the controller in the data");
+      optionsDataKeywordsControllerForView = options.data.keywords.controller;
     }
   });
 
   Ember.run(function() {
     view.appendTo('#qunit-fixture');
   });
-
-  view.destroy();
-
+  
+  strictEqual(optionsDataKeywordsControllerForView, controller1, "passes the controller in the data");
+  
+  Ember.run(function(){
+    view.destroy();
+  });
+  
   var parentView = Ember.View.create({
     controller: controller1,
-
+  
     template: function(buffer, options) {
       options.data.view.appendChild(Ember.View.create({
         controller: controller2,
         templateData: options.data,
         template: function(buffer, options) {
-          strictEqual(options.data.keywords.controller, controller2, "passes the child view's controller in the data");
+          optionsDataKeywordsControllerForChildView = options.data.keywords.controller;
         }
       }));
-      strictEqual(options.data.keywords.controller, controller1, "passes the controller in the data");
+      optionsDataKeywordsControllerForView = options.data.keywords.controller;
     }
   });
-
+  
   Ember.run(function() {
     parentView.appendTo('#qunit-fixture');
   });
-
-  parentView.destroy();
-
+  
+  strictEqual(optionsDataKeywordsControllerForView, controller1, "passes the controller in the data");
+  strictEqual(optionsDataKeywordsControllerForChildView, controller2, "passes the child view's controller in the data");
+  
+  Ember.run(function(){
+    parentView.destroy();
+  });
+  
+  
   var parentViewWithControllerlessChild = Ember.View.create({
     controller: controller1,
-
+  
     template: function(buffer, options) {
       options.data.view.appendChild(Ember.View.create({
         templateData: options.data,
         template: function(buffer, options) {
-          strictEqual(options.data.keywords.controller, controller1, "passes the original controller in the data");
+          optionsDataKeywordsControllerForChildView = options.data.keywords.controller;
         }
       }));
-
-      strictEqual(options.data.keywords.controller, controller1, "passes the controller in the data to child views");
+      optionsDataKeywordsControllerForView = options.data.keywords.controller;
     }
   });
-
+  
   Ember.run(function() {
     parentViewWithControllerlessChild.appendTo('#qunit-fixture');
   });
-
-  parentViewWithControllerlessChild.destroy();
+  
+  
+  strictEqual(optionsDataKeywordsControllerForView, controller1, "passes the original controller in the data");
+  strictEqual(optionsDataKeywordsControllerForChildView, controller1, "passes the controller in the data to child views");
 });
