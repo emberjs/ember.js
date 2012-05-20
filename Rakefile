@@ -5,6 +5,7 @@ require "erb"
 require 'rake-pipeline'
 require "ember_docs/cli"
 require "colored"
+require "json"
 
 def pipeline
   Rake::Pipeline::Project.new("Assetfile")
@@ -480,11 +481,144 @@ namespace :release do
     task :deploy => [:update]
   end
 
+  namespace :npm do
+
+    def npm_version(version)
+      version.sub /^([^\d]*\d+\.\d+\.\d+)\.(.*)$/, '\1-\2'
+    end
+
+    # these packages need to have the global object -> window
+    NEEDS_GLOBAL_WINDOW = %w(ember-metal ember-debug)
+
+    # these packages need a "real dom" window - any package req jquery
+    # also gets this.
+    NEEDS_REAL_WINDOW = %w(metamorph)
+
+    desc "Builds NPM packages"
+    task :build => :dist do
+      puts "Generating NPM package..."
+
+      package_root = File.join 'dist/node_modules/ember'
+      FileUtils.mkdir_p package_root
+
+      # copy each file over, add require statements for other modules as 
+      # needed.
+      external_dependencies = {}
+      dependency_sources = {}
+      base_package_json = nil
+      module_names = Dir['dist/modules/*'].map do |path| 
+        File.basename path, '.js'
+      end
+
+      # use already published NPM version of handlebars
+      module_names.reject! { |name| name == 'handlebars' } 
+
+      module_names.each do |module_name|
+        source_path = File.join 'dist', 'modules', "#{module_name}.js"
+        puts "  writing '#{module_name}'"
+
+        package_json = File.join 'packages', module_name, 'package.json'
+        package_json = JSON.parse File.read(package_json)
+        dependencies = package_json["dependencies"] || {}
+
+        # save for later processing.
+        base_package_json = package_json if module_name == 'ember' 
+
+        output_body = []
+
+        # add external dependency on window module first before jquery can
+        # load
+        if NEEDS_REAL_WINDOW.include?(module_name) or dependencies['jquery']
+          output_body << %[require("window");]
+          # TODO: convert to published package when ready
+          external_dependencies["window"] = 
+            "git://github.com/charlesjolley/node-window.git#master"
+        end
+
+        dependencies.each do |package_name, package_version|
+          next if package_name == 'spade' # not needed in npm-land
+          if module_names.include? package_name
+            output_body << %[require("./#{package_name}");]
+          else
+            output_body << case package_name
+              when 'handlebars' 
+                %[var Handlebars = require("handlebars");]
+              when 'jquery'
+                %[var jQuery, $; jQuery = $ = require('jquery');]
+              else
+                %[require("#{package_name}");]
+            end
+
+            # save external dependency. throw exception if a duplicate is found
+            package_version = npm_version package_version 
+            unless external_dependencies[package_name] == package_version
+              if external_dependencies[package_name]
+                abort <<-eof
+ERROR:  Multiple versions detected for external dependency
+        "#{package_name}" (#{package_version} required by
+        "#{module_name}" vs #{external_dependencies[package_name]}
+        required by "#{dependency_sources[package_name]})"
+        eof
+              end
+              external_dependencies[package_name] = package_version
+              dependency_sources[package_name] = module_name
+            end
+          end
+        end
+        output_body << "\n"
+
+        # sometimes ember refers to 'window' - map to global if needed
+        source_body = File.read source_path
+        if NEEDS_GLOBAL_WINDOW.include? module_name
+          output_body << '(function(window) {'
+          output_body << source_body
+          output_body << '})(this);'
+        else
+          output_body << source_body
+        end
+        output_body = output_body.compact.join "\n"
+
+        # ember/module_name.js
+        File.open File.join(package_root, "#{module_name}.js"), 'w+' do |fd|
+          fd.write output_body
+        end
+      end
+
+      puts "  generating package.json"
+      package_json = {}   
+      throw "ember package.json was not found" if not base_package_json
+      %w(name summary description homepage author).each do |key|
+        package_json[key] = base_package_json[key]
+      end
+
+      package_json["version"] = npm_version base_package_json["version"]
+      package_json["dependencies"] = external_dependencies
+      package_json["main"] = "./ember.js"
+      File.open File.join(package_root, 'package.json'), 'w+' do |fd|
+        fd.write JSON.pretty_generate(package_json)
+      end
+
+      puts "Done"
+    end
+
+    desc "Prepare NPM package for deployment"
+    task :prepare => [:build]
+
+    desc "Publish NPM package"
+    task :deploy do
+      puts "Publishing package to NPM..."
+      package_path = File.join 'dist', 'node_modules', 'ember'
+      puts `npm publish #{package_path}`
+      puts "Done."
+    end
+
+  end
+
   desc "Prepare Ember for new release"
-  task :prepare => ['framework:prepare', 'starter_kit:prepare', 'examples:prepare']
+  task :prepare => ['framework:prepare', 'starter_kit:prepare', 'examples:prepare', 'npm:prepare']
 
   desc "Deploy a new Ember release"
-  task :deploy => ['framework:deploy', 'starter_kit:deploy', 'examples:deploy']
+  task :deploy => ['framework:deploy', 'starter_kit:deploy', 'examples:deploy', 'npm:deploy']
 
 end
 
