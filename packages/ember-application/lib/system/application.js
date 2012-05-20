@@ -94,23 +94,31 @@ Ember.Application = Ember.Namespace.extend(
         ...
       });
 
-      App.initialize(stateManager);
+      App.initialize(router);
 
-      stateManager.get('postsController')     // <App.PostsController:ember1234>
-      stateManager.get('commentsController')  // <App.CommentsController:ember1235>
+      router.get('postsController')     // <App.PostsController:ember1234>
+      router.get('commentsController')  // <App.CommentsController:ember1235>
 
-      stateManager.getPath('postsController.stateManager') // stateManager
+      router.getPath('postsController.router') // router
   */
-  initialize: function(stateManager) {
+  initialize: function(router) {
     var properties = Ember.A(Ember.keys(this)),
         injections = get(this.constructor, 'injections'),
         namespace = this, controller, name;
+
+    // By default, the router's namespace is the current application.
+    //
+    // This allows it to find model classes when a state has a
+    // route like `/posts/:post_id`. In that case, it would first
+    // convert `post_id` into `Post`, and then look it up on its
+    // namespace.
+    set(router, 'namespace', this);
 
     Ember.runLoadHooks('application', this);
 
     properties.forEach(function(property) {
       injections.forEach(function(injection) {
-        injection(namespace, stateManager, property);
+        injection(namespace, router, property);
       });
     });
   },

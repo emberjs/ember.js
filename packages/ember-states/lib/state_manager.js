@@ -449,7 +449,7 @@ Ember.StateManager = Ember.State.extend(
     // 1. Normalize arguments
     // 2. Ensure that we are in the correct state
     // 3. Map provided path to context objects and send
-    //    appropriate setupControllers events
+    //    appropriate connectOutlets events
 
     if (Ember.empty(name)) { return; }
 
@@ -528,9 +528,8 @@ Ember.StateManager = Ember.State.extend(
       state = this.findStatesByRoute(state, path);
       state = state[state.length-1];
 
-      state.fire('setupControllers', this, context);
+      state.fire('connectOutlets', this, context);
     }, this);
-    //getPath(root, path).setupControllers(this, context);
   },
 
   getState: function(name) {

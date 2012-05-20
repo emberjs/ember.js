@@ -19,7 +19,7 @@ var paramForClass = function(classObject) {
 
 Ember.Routable = Ember.Mixin.create({
   init: function() {
-    this.on('setupControllers', this, this.stashContext);
+    this.on('connectOutlets', this, this.stashContext);
 
     this._super();
   },
@@ -67,7 +67,9 @@ Ember.Routable = Ember.Mixin.create({
   }).cacheable(),
 
   routeMatcher: Ember.computed(function() {
-    return Ember._RouteMatcher.create({ route: get(this, 'route') });
+    if (get(this, 'route')) {
+      return Ember._RouteMatcher.create({ route: get(this, 'route') });
+    }
   }).cacheable(),
 
   modelClass: Ember.computed(function() {
@@ -80,20 +82,52 @@ Ember.Routable = Ember.Mixin.create({
     }
   }).cacheable(),
 
-  deserialize: function(manager, params) {
-    var modelClass, param;
+  modelClassFor: function(manager) {
+    var modelClass, namespace, routeMatcher, identifiers, match, className;
 
-    if (modelClass = get(this, 'modelClass')) {
+    // if an explicit modelType was specified, use that
+    if (modelClass = get(this, 'modelClass')) { return modelClass; }
+
+    // if the router has no lookup namespace, we won't be able to guess
+    // the modelType
+    namespace = get(manager, 'namespace');
+    if (!namespace) { return; }
+
+    // make sure this state is actually a routable state
+    routeMatcher = get(this, 'routeMatcher');
+    if (!routeMatcher) { return; }
+
+    // only guess modelType for states with a single dynamic segment
+    // (no more, no fewer)
+    identifiers = routeMatcher.identifiers;
+    if (identifiers.length !== 2) { return; }
+
+    // extract the `_id` from the end of the dynamic segment; if the
+    // dynamic segment does not end in `_id`, we can't guess the
+    // modelType
+    match = identifiers[1].match(/^(.*)_id$/);
+    if (!match) { return; }
+
+    // convert the underscored type into a class form and look it up
+    // on the router's namespace
+    className = Ember.String.classify(match[1]);
+    return get(namespace, className);
+  },
+
+  deserialize: function(manager, params) {
+    var modelClass, routeMatcher, param;
+
+    if (modelClass = this.modelClassFor(manager)) {
       return modelClass.find(params[paramForClass(modelClass)]);
-    } else {
-      return params;
     }
+
+    return params;
   },
 
   serialize: function(manager, context) {
-    var modelClass, param, id;
+    var modelClass, routeMatcher, namespace, param, id;
 
-    if (modelClass = get(this, 'modelClass')) {
+    if (modelClass = this.modelClassFor(manager)) {
       param = paramForClass(modelClass);
       id = get(context, 'id');
       context = {};
