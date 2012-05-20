@@ -179,12 +179,14 @@ Ember.Application.reopenClass({
   }
 });
 
-Ember.Application.registerInjection(function(app, stateManager, property) {
+Ember.Application.registerInjection(function(app, router, property) {
   if (!/^[A-Z].*Controller$/.test(property)) { return; }
 
   var name = property[0].toLowerCase() + property.substr(1),
       controller = app[property].create();
 
-  stateManager.set(name, controller);
-  controller.set('target', stateManager);
+  router.set(name, controller);
+
+  controller.set('target', router);
+  controller.set('controllers', router);
 });
