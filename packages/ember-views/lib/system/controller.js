@@ -50,7 +50,7 @@ Ember.ControllerMixin.reopen({
     You can supply a `content` for the controller by supplying
     a final argument after the view class:
 
-        application.createOutlet(App.PostsView, App.Post.find());
+        applicationController.connectOutlet(App.PostsView, App.Post.find());
 
     The only required argument is `viewClass`. You can optionally
     specify an `outletName` before `viewClass` and/or a `context`
