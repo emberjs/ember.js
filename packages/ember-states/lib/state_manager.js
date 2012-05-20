@@ -70,7 +70,7 @@ require('ember-states/state');
             return 'passive';
           }
         }.property(),
-        active: Ember.State.create({})
+        active: Ember.State.create({}),
         passive: Ember.State.create({})
       })
 
@@ -81,7 +81,7 @@ require('ember-states/state');
   Calling `goToState` transitions between states:
 
        robotManager = Ember.StateManager.create({
-        initialState: 'poweredDown',
+         initialState: 'poweredDown',
          poweredDown: Ember.State.create({}),
          poweredUp: Ember.State.create({})
        })
@@ -99,7 +99,7 @@ require('ember-states/state');
   an object representing the transition as its second argument.
 
       robotManager = Ember.StateManager.create({
-       initialState: 'poweredDown',
+        initialState: 'poweredDown',
         poweredDown: Ember.State.create({
           exit: function(stateManager, transition){
             console.log("exiting the poweredDown state")
@@ -124,7 +124,7 @@ require('ember-states/state');
   manager does not have will result in no changes in the StateManager's current state:
 
       robotManager = Ember.StateManager.create({
-       initialState: 'poweredDown',
+        initialState: 'poweredDown',
         poweredDown: Ember.State.create({
           exit: function(stateManager, transition){
             console.log("exiting the poweredDown state")
@@ -155,7 +155,7 @@ require('ember-states/state');
 
 
       robotManager = Ember.StateManager.create({
-        initialState: 'poweredDown',
+         initialState: 'poweredDown',
          poweredDown: Ember.State.create({
            charging: Ember.State.create(),
            charged: Ember.State.create()
@@ -188,7 +188,7 @@ require('ember-states/state');
     only when transitioning to a new section of possible states in the hierarchy.
 
        robotManager = Ember.StateManager.create({
-         initialState: 'poweredDown',
+          initialState: 'poweredDown',
           poweredDown: Ember.State.create({
             enter: function(){},
             exit: function(){
@@ -312,7 +312,7 @@ require('ember-states/state');
   StateManager.
 
         robotManager = Ember.StateManager.create({
-          initialState: 'poweredDown.charging',
+           initialState: 'poweredDown.charging',
            poweredDown: Ember.State.create({
              charging: Ember.State.create({
                 chargeComplete: function(manager, context){
