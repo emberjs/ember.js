@@ -1249,26 +1249,26 @@ test("should be able to bind element attributes using {{bindAttr}}", function() 
 
 test("should be able to bind to view attributes with {{bindAttr}}", function() {
   view = Ember.View.create({
-    value: 'test.jpg',
-    template: Ember.Handlebars.compile('<img {{bindAttr src="view.value"}}>')
+    value: 'Test',
+    template: Ember.Handlebars.compile('<img src="test.jpg" {{bindAttr alt="view.value"}}>')
   });
 
   appendView();
 
-  equal(view.$('img').attr('src'), "test.jpg", "renders initial value");
+  equal(view.$('img').attr('alt'), "Test", "renders initial value");
 
   Ember.run(function() {
-    view.set('value', 'updated.jpg');
+    view.set('value', 'Updated');
   });
 
-  equal(view.$('img').attr('src'), "updated.jpg", "updates value");
+  equal(view.$('img').attr('alt'), "Updated", "updates value");
 });
 
 test("should not allow XSS injection via {{bindAttr}}", function() {
   view = Ember.View.create({
-    template: Ember.Handlebars.compile('<img {{bindAttr src="content.url"}}>'),
+    template: Ember.Handlebars.compile('<img src="test.jpg" {{bindAttr alt="content.value"}}>'),
     content: {
-      url: 'trollface.png" onmouseover="alert(\'HAX!\');'
+      value: 'Trololol" onmouseover="alert(\'HAX!\');'
     }
   });
 
@@ -1276,7 +1276,7 @@ test("should not allow XSS injection via {{bindAttr}}", function() {
 
   equal(view.$('img').attr('onmouseover'), undefined);
   // If the whole string is here, then it means we got properly escaped
-  equal(view.$('img').attr('src'), 'trollface.png" onmouseover="alert(\'HAX!\');');
+  equal(view.$('img').attr('alt'), 'Trololol" onmouseover="alert(\'HAX!\');');
 });
 
 test("should be able to bind use {{bindAttr}} more than once on an element", function() {
