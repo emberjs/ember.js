@@ -10,19 +10,23 @@ def pipeline
   Rake::Pipeline::Project.new("Assetfile")
 end
 
-def setup_uploader
+def setup_uploader(root=Dir.pwd)
   require './lib/github_uploader'
 
-  # get the github user name
-  login = `git config github.user`.chomp
+  login = origin = nil
 
-  # get repo from git config's origin url
-  origin = `git config remote.origin.url`.chomp # url to origin
-  # extract USERNAME/REPO_NAME
-  # sample urls: https://github.com/emberjs/ember.js.git
-  #              git://github.com/emberjs/ember.js.git
-  #              git@github.com:emberjs/ember.js.git
-  #              git@github.com:emberjs/ember.js
+  Dir.chdir(root) do
+    # get the github user name
+    login = `git config github.user`.chomp
+
+    # get repo from git config's origin url
+    origin = `git config remote.origin.url`.chomp # url to origin
+    # extract USERNAME/REPO_NAME
+    # sample urls: https://github.com/emberjs/ember.js.git
+    #              git://github.com/emberjs/ember.js.git
+    #              git@github.com:emberjs/ember.js.git
+    #              git@github.com:emberjs/ember.js
+  end
 
   repoUrl = origin.match(/github\.com[\/:]((.+?)\/(.+?))(\.git)?$/)
   username = repoUrl[2] # username part of origin url
@@ -351,7 +355,7 @@ namespace :release do
 
     desc "Upload release"
     task :upload do
-      uploader = setup_uploader
+      uploader = setup_uploader("tmp/starter-kit")
 
       # Upload minified first, so non-minified shows up on top
       upload_file(uploader, "starter-kit.#{EMBER_VERSION}.zip", "Ember.js #{EMBER_VERSION} Starter Kit", "dist/starter-kit.#{EMBER_VERSION}.zip")
