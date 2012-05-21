@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/emberjs/docs-generator.git
-  revision: cfbb82496c1c342ff6da49fc46559dd8fddf8b55
+  revision: a5d7e25dd77199f4e9473bca93ab67005cf42259
   specs:
     ember-docs (0.1)
       rack
@@ -62,7 +62,7 @@ GEM
     rb-fsevent (0.9.1)
     rest-client (1.6.7)
       mime-types (>= 1.16)
-    thor (0.14.6)
+    thor (0.15.2)
 
 PLATFORMS
   ruby
