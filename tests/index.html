@@ -41,10 +41,10 @@
     ENV['EXTEND_PROTOTYPES'] = !!extendPrototypes;
 
     // Handle CP cacheable by default
-    QUnit.config.urlConfig.push('cpdefaultcacheable');
+    QUnit.config.urlConfig.push('nocpdefaultcacheable');
 
-    var cpDefaultCacheable = QUnit.urlParams.cpdefaultcacheable;
-    ENV['CP_DEFAULT_CACHEABLE'] = !!cpDefaultCacheable;
+    var noCpDefaultCacheable = QUnit.urlParams.nocpdefaultcacheable;
+    ENV['CP_DEFAULT_CACHEABLE'] = !noCpDefaultCacheable;
 
     // Handle preserving context
     QUnit.config.urlConfig.push('noviewpreservescontext');
