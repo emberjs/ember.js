@@ -75,8 +75,7 @@ class GithubUploader
     hash = gh.repos.create_download @username, @repo,
       "name" => filename,
       "size" => File.size(file),
-      "description" => description,
-      "content_type" => "application/json"
+      "description" => description
 
     # step 2
     gh.repos.upload hash, file
