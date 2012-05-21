@@ -394,6 +394,10 @@ namespace :release do
       end
     end
 
+    file ember_min_output => [:clean, "tmp/examples", "dist/ember.min.js"] do
+      sh "cp dist/ember.min.js #{ember_min_output}"
+    end
+
     desc "Update examples repo"
     task :update => ember_min_output do
       puts "Updating examples repo"
