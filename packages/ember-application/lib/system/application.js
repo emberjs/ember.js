@@ -106,6 +106,12 @@ Ember.Application = Ember.Namespace.extend(
         injections = get(this.constructor, 'injections'),
         namespace = this, controller, name;
 
+    if (!stateManager && Ember.Router.detect(namespace['Router'])) {
+      stateManager = namespace['Router'].create();
+    }
+
+    set(this, 'stateManager', stateManager);
+
     Ember.runLoadHooks('application', this);
 
     properties.forEach(function(property) {
@@ -139,6 +145,11 @@ Ember.Application = Ember.Namespace.extend(
   */
   setupStateManager: function(stateManager) {
     var location = get(stateManager, 'location');
+
+    if (typeof location === 'string') {
+      location = Ember.Location.create({style: location});
+      set(stateManager, 'location', location);
+    }
 
     stateManager.route(location.getURL());
     location.onUpdateURL(function(url) {
