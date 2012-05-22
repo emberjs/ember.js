@@ -116,17 +116,19 @@ test("initialize controllers into a state manager", function() {
   equal(getPath(stateManager, 'barController.target'), stateManager, "the state manager is assigned");
 });
 
-module("Ember.Application initial route", function() {
+test('initialized application go to initial route', function() {
   Ember.run(function() {
     app = Ember.Application.create({
       rootElement: '#qunit-fixture'
     });
 
-    app.stateManager = Ember.StateManager.create({
+    app.stateManager = Ember.Router.create({
       location: {
         getURL: function() {
           return '/';
-        }
+        },
+        setURL: function() {},
+        onUpdateURL: function() {}
       },
 
       start: Ember.State.extend({
@@ -138,4 +140,18 @@ module("Ember.Application initial route", function() {
   });
 
   equal(app.getPath('stateManager.currentState.path'), 'start.index', "The router moved the state into the right place");
+});
+
+test("initialize application with non routable stateManager", function() {
+  Ember.run(function() {
+    app = Ember.Application.create({
+      rootElement: '#qunit-fixture'
+    });
+
+    app.stateManager = Ember.StateManager.create({
+      start: Ember.State.extend()
+    });
+  });
+
+  equal(app.getPath('stateManager.currentState.path'), 'start', "Application sucessfuly started");
 });
