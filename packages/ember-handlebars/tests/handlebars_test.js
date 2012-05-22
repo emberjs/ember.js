@@ -1264,6 +1264,24 @@ test("should be able to bind to view attributes with {{bindAttr}}", function() {
   equal(view.$('img').attr('alt'), "Updated", "updates value");
 });
 
+test("should be able to bind to globals with {{bindAttr}}", function() {
+  TemplateTests.set('value', 'Test');
+
+  view = Ember.View.create({
+    template: Ember.Handlebars.compile('<img src="test.jpg" {{bindAttr alt="TemplateTests.value"}}>')
+  });
+
+  appendView();
+
+  equal(view.$('img').attr('alt'), "Test", "renders initial value");
+
+  Ember.run(function() {
+    TemplateTests.set('value', 'Updated');
+  });
+
+  equal(view.$('img').attr('alt'), "Updated", "updates value");
+});
+
 test("should not allow XSS injection via {{bindAttr}}", function() {
   view = Ember.View.create({
     template: Ember.Handlebars.compile('<img src="test.jpg" {{bindAttr alt="content.value"}}>'),
