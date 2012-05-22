@@ -22,7 +22,7 @@
 * Fixed ordering of MutableArray#unshiftObjects
 * Fix Em namespace in dev mode
 * Add currentView property to Ember.ContainerView
-* Namespace debugging functions, ember_assert, ember_deprecate, and ember_warn are now Ember.asset, Ember.deprecate, and Ember.warn.
+* Namespace debugging functions, ember_assert, ember_deprecate, and ember_warn are now Ember.assert, Ember.deprecate, and Ember.warn.
 * Rename BindableSpanView -> HandlebarsBoundView
 * Updated Handlebars to 1.0.0.beta.6
 * Ember.cacheFor should return falsy values
