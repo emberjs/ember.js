@@ -437,6 +437,10 @@ Ember.watch = function(obj, keyName) {
   if (!watching[keyName]) {
     watching[keyName] = 1;
     if (isKeyName(keyName)) {
+      if ('function' === typeof obj.willWatchProperty) {
+        obj.willWatchProperty(keyName);
+      }
+
       desc = m.descs[keyName];
       desc = desc ? desc.watched : WATCHED_PROPERTY;
       if (desc) Ember.defineProperty(obj, keyName, desc);
@@ -463,12 +467,17 @@ Ember.unwatch = function(obj, keyName) {
 
   var watching = meta(obj).watching, desc, descs;
   keyName = normalizePath(keyName);
+
   if (watching[keyName] === 1) {
     watching[keyName] = 0;
     if (isKeyName(keyName)) {
       desc = meta(obj).descs[keyName];
       desc = desc ? desc.unwatched : SIMPLE_PROPERTY;
       if (desc) Ember.defineProperty(obj, keyName, desc);
+
+      if ('function' === typeof obj.didUnwatchProperty) {
+        obj.didUnwatchProperty(keyName);
+      }
     } else {
       chainsFor(obj).remove(keyName);
     }
