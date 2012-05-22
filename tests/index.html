@@ -88,6 +88,24 @@
   </script>
 
   <script>
+    // Load custom version of Handlebars if possible
+    var handlebarsVersion = QUnit.urlParams.handlebars || "1.0.0.beta.6";
+    if (handlebarsVersion !== 'none') {
+      document.write('<script src="https://github.com/downloads/wycats/handlebars.js/handlebars-'+handlebarsVersion+'.js"><\/script>');
+    }
+    // Close the script tag to make sure document.write happens
+  </script>
+
+  <script>
+    // Fallback to default Handlebars
+    if (handlebarsVersion !== 'none' && !window.Handlebars) {
+      if (console && console.warn) { console.warn("Unable to load Handlebars "+handlebarsVersion+". Using default."); }
+      document.write('<script src="../lib/handlebars-1.0.0.beta.6.js"><\/script>');
+    }
+    // Close the script tag to make sure document.write happens
+  </script>
+
+  <script>
     // Load ember distribution from query vars
     var distMatch = location.search.match(/dist=([^&]+)/),
         dist = (distMatch && distMatch[1]) || 'spade';
@@ -150,7 +168,6 @@
 
       // There is no require for this in the code
       if (dist == 'spade') {
-        minispade.require('handlebars');
         minispade.require('ember-debug');
       }
 
