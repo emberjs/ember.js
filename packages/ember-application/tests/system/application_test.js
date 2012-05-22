@@ -155,3 +155,50 @@ test("initialize application with non routable stateManager", function() {
 
   equal(app.getPath('stateManager.currentState.path'), 'start', "Application sucessfuly started");
 });
+
+test("initialize application with stateManager via initialize call", function() {
+  Ember.run(function() {
+    app = Ember.Application.create({
+      rootElement: '#qunit-fixture'
+    });
+
+    app.Router = Ember.Router.extend({
+      location: 'hash',
+
+      start: Ember.State.extend({
+        index: Ember.State.extend({
+          route: '/'
+        })
+      })
+    });
+
+    app.initialize(app.Router.create());
+  });
+
+  equal(app.getPath('stateManager') instanceof Ember.Router, true, "Router was set from initialize call");
+  equal(app.getPath('stateManager.location') instanceof Ember.HashLocation, true, "Location was set from location style name");
+  equal(app.getPath('stateManager.currentState.path'), 'start.index', "The router moved the state into the right place");
+});
+
+test("initialize application with stateManager via initialize call from Router class", function() {
+  Ember.run(function() {
+    app = Ember.Application.create({
+      rootElement: '#qunit-fixture'
+    });
+
+    app.Router = Ember.Router.extend({
+      location: 'hash',
+
+      start: Ember.State.extend({
+        index: Ember.State.extend({
+          route: '/'
+        })
+      })
+    });
+
+    app.initialize();
+  });
+
+  equal(app.getPath('stateManager') instanceof Ember.Router, true, "Router was set from initialize call");
+  equal(app.getPath('stateManager.currentState.path'), 'start.index', "The router moved the state into the right place");
+});
