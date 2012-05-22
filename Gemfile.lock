@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/emberjs/docs-generator.git
-  revision: a5d7e25dd77199f4e9473bca93ab67005cf42259
+  revision: 2ac995d64e7c2c1291c06f1d1ef77e67c908b229
   specs:
     ember-docs (0.1)
       rack
