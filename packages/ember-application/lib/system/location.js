@@ -79,16 +79,25 @@ Ember.HashLocation = Ember.Object.extend({
   Ember.Location returns an instance of the correct implementation of
   the `location` API.
 
-  You can pass it a `style` ('hash', 'html5', 'none') to force a
+  You can pass it a `implementation` ('hash', 'html5', 'none') to force a
   particular implementation.
 */
 Ember.Location = {
   create: function(options) {
-    var style = options && options.style;
-    Ember.assert("you must provide a style to Ember.Location.create", !!style);
+    var implementation = options && (options.style || options.implementation);
+    Ember.assert("you must provide an implementation to Ember.Location.create", !!implementation);
 
-    if (style === "hash") {
-      return Ember.HashLocation.create.apply(Ember.HashLocation, arguments);
-    }
-  }
+    implementation = this.implementations[implementation];
+    Ember.assert("you must provide an implementation to Ember.Location.create", !!implementation);
+
+    return implementation.create.apply(implementation, arguments);
+  },
+
+  registerImplementation: function(name, implementation) {
+    this.implementations[name] = implementation;
+  },
+
+  implementations: {}
 };
+
+Ember.Location.registerImplementation('hash', Ember.HashLocation);

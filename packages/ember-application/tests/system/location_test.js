@@ -1,9 +1,9 @@
 var locationObject;
 
-module("Ember.Location, hash style", {
+module("Ember.Location, hash implementation", {
   setup: function() {
     locationObject = Ember.Location.create({
-      style: 'hash'
+      implementation: 'hash'
     });
     locationObject.setURL("/");
 
