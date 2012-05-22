@@ -125,7 +125,7 @@ Ember.Application = Ember.Namespace.extend(
 
     this.ready();
 
-    if (stateManager) {
+    if (stateManager && stateManager instanceof Ember.Router) {
       this.setupStateManager(stateManager);
     }
   },
