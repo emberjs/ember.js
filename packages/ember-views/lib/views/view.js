@@ -590,8 +590,6 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     @type Ember.View
     @default null
   */
-  _parentView: null,
-
   parentView: Ember.computed(function() {
     var parent = get(this, '_parentView');
 
@@ -601,6 +599,8 @@ Ember.View = Ember.Object.extend(Ember.Evented,
       return parent;
     }
   }).property('_parentView').volatile(),
+
+  _parentView: null,
 
   // return the current view, not including virtual views
   concreteView: Ember.computed(function() {
@@ -682,8 +682,8 @@ Ember.View = Ember.Object.extend(Ember.Evented,
   },
 
   /**
-    Return the nearest ancestor that is a direct child of a
-    view of.
+    Return the nearest ancestor whose parent is an instance of
+    `klass`.
 
     @param {Class} klass Subclass of Ember.View (or Ember.View itself)
     @returns Ember.View
