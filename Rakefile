@@ -441,27 +441,29 @@ namespace :release do
       end
     end
 
-    file "tmp/website/source/layout.erb" => [:pull, "dist/ember.min.js"] do
+    file "tmp/website/source/about.erb" => [:pull, "dist/ember.min.js"] do
       require 'zlib'
 
-      layout = File.read("tmp/website/source/layout.erb")
+      about = File.read("tmp/website/source/about.erb")
       min_gz = Zlib::Deflate.deflate(File.read("dist/ember.min.js")).bytes.count / 1024
 
-      layout.gsub! %r{<a href="https://github\.com/downloads/emberjs/ember\.js/ember-\d(\.\d+)*.min\.js">},
-        %{<a href="https://github.com/downloads/emberjs/ember.js/ember-#{EMBER_VERSION}.min.js">}
+      about.gsub! %r{https://github\.com/downloads/emberjs/ember\.js/ember-\d(\.\d+)*.min\.js},
+        %{https://github.com/downloads/emberjs/ember.js/ember-#{EMBER_VERSION}.min.js}
 
-      layout.gsub! %r{<a href="https://github\.com/downloads/emberjs/starter-kit/starter-kit\.\d(\.\d+)*\.zip">},
-        %{<a href="https://github.com/downloads/emberjs/starter-kit/starter-kit.#{EMBER_VERSION}.zip">}
+      about.gsub! %r{https://github\.com/downloads/emberjs/starter-kit/starter-kit\.\d(\.\d+)*\.zip},
+        %{https://github.com/downloads/emberjs/starter-kit/starter-kit.#{EMBER_VERSION}.zip}
 
-      layout.gsub! /\d+k min\+gzip/, "#{min_gz}k min+gzip"
+      about.gsub! /Ember \d(\.\d+)*/, "Ember #{EMBER_VERSION}"
 
-      File.open("tmp/website/index.html", "w") { |f| f.write index }
+      about.gsub! /\d+k min\+gzip/, "#{min_gz}k min+gzip"
+
+      File.open("tmp/website/source/about.erb", "w") { |f| f.write about }
     end
 
-    task :layout => "tmp/website/source/layout.erb"
+    task :about => "tmp/website/source/about.erb"
 
     desc "Update website repo"
-    task :update => :layout do
+    task :update => :about do
       puts "Updating website repo"
       unless pretend?
         Dir.chdir("tmp/website") do
