@@ -8,7 +8,7 @@
 
 require('ember-handlebars/ext');
 
-var getPath = Ember.getPath;
+var getPath = Ember.Handlebars.getPath;
 
 /**
   `log` allows you to output the value of a value in the current rendering
@@ -21,7 +21,7 @@ var getPath = Ember.getPath;
 */
 Ember.Handlebars.registerHelper('log', function(property, fn) {
   var context = (fn.contexts && fn.contexts[0]) || this;
-  Ember.Logger.log(getPath(context, property));
+  Ember.Logger.log(getPath(context, property, fn));
 });
 
 /**
