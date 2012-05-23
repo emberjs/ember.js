@@ -14,7 +14,9 @@ module("Ember.View - append() and appendTo()", {
   },
 
   teardown: function() {
-    if (!view.isDestroyed) { view.destroy(); }
+    Ember.run(function(){
+      if (!view.isDestroyed) { view.destroy(); }
+    });
   }
 });
 
@@ -148,7 +150,9 @@ module("Ember.View - append() and appendTo() in a view hierarchy", {
   },
 
   teardown: function() {
-    if (!view.isDestroyed) { view.destroy(); }
+    Ember.run(function(){
+      if (!view.isDestroyed) { view.destroy(); }
+    });
   }
 });
 
@@ -199,7 +203,9 @@ module("Ember.View - removing views in a view hierarchy", {
   },
 
   teardown: function() {
-    if (!view.isDestroyed) { view.destroy(); }
+    Ember.run(function(){
+      if (!view.isDestroyed) { view.destroy(); }
+    });
   }
 });
 

@@ -17,8 +17,11 @@
     },
 
     teardown: function() {
-      parentView.destroy();
-      childView.destroy();
+      Ember.run(function(){
+        parentView.destroy();
+            childView.destroy();
+      });
+      
       childViews = null;
     }
   });

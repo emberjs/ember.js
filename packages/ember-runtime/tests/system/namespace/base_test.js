@@ -6,12 +6,14 @@ var get = Ember.get;
 
 module('Ember.Namespace', {
   teardown: function() {
-    if (window.NamespaceA) { window.NamespaceA.destroy(); }
-    if (window.NamespaceB) { window.NamespaceB.destroy(); }
+    if (window.NamespaceA) { Ember.run(function(){ window.NamespaceA.destroy(); }); }
+    if (window.NamespaceB) { Ember.run(function(){ window.NamespaceB.destroy(); }); }
     if (window.namespaceC) {
       try {
         Ember.TESTING_DEPRECATION = true;
-        window.namespaceC.destroy();
+        Ember.run(function(){
+          window.namespaceC.destroy();
+        });
       } finally {
         Ember.TESTING_DEPRECATION = false;
       }

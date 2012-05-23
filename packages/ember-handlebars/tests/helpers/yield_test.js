@@ -14,9 +14,12 @@ module("Support for {{yield}} helper (#307)", {
     window.TemplateTests = Ember.Namespace.create();
   },
   teardown: function() {
-    if (view) {
-      view.destroy();
-    }
+    Ember.run(function(){
+      if (view) {
+        view.destroy();
+      }}
+    );
+
 
     window.TemplateTests = undefined;
   }

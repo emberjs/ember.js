@@ -14,7 +14,9 @@ module("Ember.Location, hash implementation", {
 
   teardown: function() {
     window.location.hash = "";
-    locationObject.destroy();
+    Ember.run(function(){
+      locationObject.destroy();
+    });
   }
 });
 
