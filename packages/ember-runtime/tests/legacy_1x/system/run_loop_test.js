@@ -23,9 +23,6 @@ var MyApp, binding1, binding2, previousPreventRunloop;
 
 module("System:run_loop() - chained binding", {
   setup: function() {
-    previousPreventRunloop = Ember.ENV.PREVENT_AUTOMATIC_RUNLOOP_CREATION;
-    Ember.ENV.PREVENT_AUTOMATIC_RUNLOOP_CREATION = false;
-    
     MyApp = {};
     MyApp.first = Ember.Object.create(Ember.Observable, {
       output: 'MyApp.first'
@@ -44,9 +41,6 @@ module("System:run_loop() - chained binding", {
     MyApp.third = Ember.Object.create(Ember.Observable, {
       input: "MyApp.third"
     }) ;
-  },
-  teardown: function(){
-    Ember.ENV.PREVENT_AUTOMATIC_RUNLOOP_CREATION = previousPreventRunloop;
   }
 });
 

@@ -6,17 +6,6 @@
 
 var previousPreventRunloop;
 
-module('system/run_loop/later_test', {
-  setup: function() {
-    previousPreventRunloop = Ember.ENV.PREVENT_AUTOMATIC_RUNLOOP_CREATION;
-    Ember.ENV.PREVENT_AUTOMATIC_RUNLOOP_CREATION = false;
-  },
-
-  teardown: function() {
-     Ember.ENV.PREVENT_AUTOMATIC_RUNLOOP_CREATION = previousPreventRunloop;
-  }
-});
-
 test('should invoke after specified period of time - function only', function() {
 
   var invoked = false;
