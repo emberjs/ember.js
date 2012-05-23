@@ -329,6 +329,10 @@ function autorun() {
   if (run.currentRunLoop) run.end();
 }
 
+Ember.run.hasAutorun = function() {
+  return !!autorunTimer;
+};
+
 /**
   Begins a new RunLoop if necessary and schedules a timer to flush the
   RunLoop at a later time.  This method is used by parts of Ember to
