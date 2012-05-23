@@ -19,23 +19,31 @@ module('system/binding/multiple', {
 });
 
 test('forces binding values to be multiple', function() {
-  var binding = Ember.bind(MyApp, 'bar.value', 'foo.value').multiple();
-
-  Ember.run.sync();
+  var binding;
+  Ember.run(function(){
+    binding = Ember.bind(MyApp, 'bar.value', 'foo.value').multiple();
+  });
+  
   deepEqual(Ember.getPath('MyApp.bar.value'), ['FOO'], '1 MyApp.bar.value');
 
-  Ember.setPath('MyApp.foo.value', ['BAR']);
-  Ember.run.sync();
+  Ember.run(function(){
+    Ember.setPath('MyApp.foo.value', ['BAR']);
+  });
+  
   deepEqual(Ember.getPath('MyApp.foo.value'), ['BAR'], '2 MyApp.foo.value');
   deepEqual(Ember.getPath('MyApp.bar.value'), ['BAR'], '2 MyApp.bar.value');
 
-  Ember.setPath('MyApp.foo.value', ['BAR', 'BAZ']);
-  Ember.run.sync();
+  Ember.run(function(){
+    Ember.setPath('MyApp.foo.value', ['BAR', 'BAZ']);
+  });
+  
   deepEqual(Ember.getPath('MyApp.foo.value'), ['BAR', 'BAZ'], '3 MyApp.foo.value');
   deepEqual(Ember.getPath('MyApp.bar.value'), ['BAR', 'BAZ'], '3 MyApp.bar.value');
 
-  Ember.setPath('MyApp.foo.value', null);
-  Ember.run.sync();
+  Ember.run(function(){
+    Ember.setPath('MyApp.foo.value', null);
+  });
+  
   deepEqual(Ember.getPath('MyApp.bar.value'), [], '4 MyApp.bar.value');
 
 });
