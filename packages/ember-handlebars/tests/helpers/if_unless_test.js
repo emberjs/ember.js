@@ -6,9 +6,11 @@ var view;
 
 module("Handlebars {{#if}} and {{#unless}} helpers", {
   teardown: function() {
-    if (view) {
-      view.destroy();
-    }
+    Ember.run(function(){
+      if (view) {
+        view.destroy();
+      }
+    });
   }
 });
 

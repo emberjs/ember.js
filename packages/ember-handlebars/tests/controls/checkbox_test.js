@@ -116,11 +116,11 @@ test("proxies the checked attribute to value for backwards compatibility", funct
     checkboxView = Ember.Checkbox.create({ title: "I have a title" });
     append();
 
-    set(checkboxView, 'value', true);
+    setAndFlush(checkboxView, 'value', true);
     equal(get(checkboxView, 'checked'), true, 'checked is updated when value set');
     equal(get(checkboxView, 'value'), true, 'value is updated when value set');
 
-    set(checkboxView, 'checked', false);
+    setAndFlush(checkboxView, 'checked', false);
 
     equal(get(checkboxView, 'checked'), false, 'checked is updated when checked set');
     equal(get(checkboxView, 'value'), false, 'value is updated when checked set');
