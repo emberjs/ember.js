@@ -87,19 +87,19 @@ Ember.Application = Ember.Namespace.extend(
 
     Example:
 
-      App.PostsController = Ember.ArrayController.extend();
-      App.CommentsController = Ember.ArrayController.extend();
+        App.PostsController = Ember.ArrayController.extend();
+        App.CommentsController = Ember.ArrayController.extend();
 
-      var stateManager = Ember.StateManager.create({
-        ...
-      });
+        var stateManager = Ember.StateManager.create({
+          ...
+        });
 
-      App.initialize(stateManager);
+        App.initialize(stateManager);
 
-      stateManager.get('postsController')     // <App.PostsController:ember1234>
-      stateManager.get('commentsController')  // <App.CommentsController:ember1235>
+        stateManager.get('postsController')     // <App.PostsController:ember1234>
+        stateManager.get('commentsController')  // <App.CommentsController:ember1235>
 
-      stateManager.getPath('postsController.stateManager') // stateManager
+        stateManager.getPath('postsController.stateManager') // stateManager
   */
   initialize: function(stateManager) {
     var properties = Ember.A(Ember.keys(this)),
