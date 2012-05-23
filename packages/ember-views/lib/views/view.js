@@ -777,7 +777,7 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     var template = get(this, 'layout') || get(this, 'template');
 
     if (template) {
-      var context = get(this, '_templateContext');
+      var context = get(this, 'templateContext');
       var keywords = this.cloneKeywords();
 
       var data = {
