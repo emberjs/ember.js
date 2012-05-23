@@ -7,12 +7,15 @@
 
 require('ember-metal/~tests/props_helper');
 
+var previousPreventRunloop;
+
 module('system/mixin/binding/connect_test', {
   setup: function(){
-    window.ENV['PREVENT_AUTOMATIC_RUNLOOP_CREATION'] = false;
+    previousPreventRunloop = Ember.ENV.PREVENT_AUTOMATIC_RUNLOOP_CREATION;
+    Ember.ENV.PREVENT_AUTOMATIC_RUNLOOP_CREATION = false;
   },
   teardown: function(){
-    window.ENV['PREVENT_AUTOMATIC_RUNLOOP_CREATION'] = true;
+    Ember.ENV.PREVENT_AUTOMATIC_RUNLOOP_CREATION = previousPreventRunloop;
   }
 });
 
