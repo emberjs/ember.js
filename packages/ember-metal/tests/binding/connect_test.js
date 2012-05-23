@@ -9,33 +9,33 @@ require('ember-metal/~tests/props_helper');
 
 var previousPreventRunloop;
 
-function performTest(binding, a, b, get, set, skipFirst) {
+function performTest(binding, a, b, get, set, connect) {
+  if (connect === undefined) connect = function(){binding.connect(a);};
 
-  if (!skipFirst) {
-    Ember.run.sync();
-    equal(get(a, 'foo'), 'FOO', 'a should not have changed');
-    equal(get(b, 'bar'), 'BAR', 'b should not have changed');
-  }
+  ok(!Ember.run.currentRunLoop, 'performTest should not have a currentRunLoop');
 
-  binding.connect(a);
-  equal(get(a, 'foo'), 'FOO', 'a should not have changed before sync');
-  equal(get(b, 'bar'), 'BAR', 'b should not have changed before sync');
+  equal(get(a, 'foo'), 'FOO', 'a should not have changed');
+  equal(get(b, 'bar'), 'BAR', 'b should not have changed');
 
-  Ember.run.sync();
+  Ember.run(function () {
+    connect();
+    equal(get(a, 'foo'), 'FOO', 'a should not have changed before sync');
+    equal(get(b, 'bar'), 'BAR', 'b should not have changed before sync');
+  });
+
   equal(get(a, 'foo'), 'BAR', 'a should have changed');
   equal(get(b, 'bar'), 'BAR', 'b should have changed');
   //
   // make sure changes sync both ways
-  set(b, 'bar', 'BAZZ');
-  Ember.run.sync();
+  Ember.run(function () {
+    set(b, 'bar', 'BAZZ');
+  });
   equal(get(a, 'foo'), 'BAZZ', 'a should have changed');
 
-  set(a, 'foo', 'BARF');
-  Ember.run.sync();
+  Ember.run(function () {
+    set(a, 'foo', 'BARF');
+  });
   equal(get(b, 'bar'), 'BARF', 'a should have changed');
-  
-  Ember.run.end();
-  Ember.run.cancelTimers();
 }
 
 testBoth('Connecting a binding between two properties', function(get, set) {
@@ -43,7 +43,7 @@ testBoth('Connecting a binding between two properties', function(get, set) {
   
   // a.bar -> a.foo
   var binding = new Ember.Binding('foo', 'bar');
-  
+
   performTest(binding, a, a, get, set);
 });
 
@@ -63,11 +63,12 @@ testBoth('Connecting a binding between two objects through property defined afte
 
   // b.bar -> a.foo
   var binding = new Ember.Binding('foo', 'b.bar');
-  binding.connect(a);
 
-  Ember.defineProperty(a, 'b', Ember.SIMPLE_PROPERTY, b);
+  performTest(binding, a, b, get, set, function () {
+    binding.connect(a);
 
-  performTest(binding, a, b, get, set, true);
+    Ember.defineProperty(a, 'b', Ember.SIMPLE_PROPERTY, b);
+  });
 });
 
 testBoth('Connecting a binding between two objects through property overriden after connect', function(get, set) {
@@ -77,15 +78,16 @@ testBoth('Connecting a binding between two objects through property overriden af
 
   // b.bar -> a.foo
   var binding = new Ember.Binding('foo', 'b.bar');
-  binding.connect(a);
 
-  equal(Ember.isWatching(c, 'bar'), true, 'should be watching bar');
+  performTest(binding, a, b, get, set, function () {
+    binding.connect(a);
 
-  Ember.Mixin.create({b: b}).apply(a);
+    equal(Ember.isWatching(c, 'bar'), true, 'should be watching bar');
 
-  equal(Ember.isWatching(c, 'bar'), false, 'should not be watching bar');
+    Ember.Mixin.create({b: b}).apply(a);
 
-  performTest(binding, a, b, get, set, true);
+    equal(Ember.isWatching(c, 'bar'), false, 'should not be watching bar');
+  });
 });
 
 testBoth('Connecting a binding to path', function(get, set) {
@@ -118,9 +120,12 @@ testBoth('Calling connect more than once', function(get, set) {
 
   // b.bar -> a.foo
   var binding = new Ember.Binding('foo', 'b.bar');
-  binding.connect(a);
 
-  performTest(binding, a, b, get, set, true);
+  performTest(binding, a, b, get, set, function () {
+    binding.connect(a);
+
+    binding.connect(a);
+  });
 });
 
 testBoth('Bindings should be inherited', function(get, set) {
