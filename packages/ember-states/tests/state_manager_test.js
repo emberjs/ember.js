@@ -456,7 +456,7 @@ test("goToState with current state does not trigger enter or exit", function() {
 
 module("Transition contexts");
 
-test("if a context is passed to a transition, the state's connectOutlets event is triggered after the transition has completed", function() {
+test("if a context is passed to a transition, the state's setup event is triggered after the transition has completed", function() {
   expect(1);
   var context = {};
 
@@ -469,7 +469,7 @@ test("if a context is passed to a transition, the state's connectOutlets event i
       }),
 
       next: Ember.State.create({
-        connectOutlets: function(manager, passedContext) {
+        setup: function(manager, passedContext) {
           equal(context, passedContext, "The context is passed through");
         }
       })
@@ -479,7 +479,7 @@ test("if a context is passed to a transition, the state's connectOutlets event i
   stateManager.send('goNext', context);
 });
 
-test("if a context is passed to a transition and the path is to the current state, the state's connectOutlets event is triggered again", function() {
+test("if a context is passed to a transition and the path is to the current state, the state's setup event is triggered again", function() {
   expect(2);
   var counter = 0;
 
@@ -499,7 +499,7 @@ test("if a context is passed to a transition and the path is to the current stat
             manager.goToState('next', counter);
           },
 
-          connectOutlets: function(manager, context) {
+          setup: function(manager, context) {
             equal(context, counter, "The context is passed through");
           }
         })
@@ -511,7 +511,7 @@ test("if a context is passed to a transition and the path is to the current stat
   stateManager.send('goNext', counter);
 });
 
-test("if no context is provided, connectOutlets is triggered with an undefined context", function() {
+test("if no context is provided, setup is triggered with an undefined context", function() {
   expect(2);
 
   Ember.run(function() {
@@ -528,8 +528,8 @@ test("if no context is provided, connectOutlets is triggered with an undefined c
             manager.transitionTo('next');
           },
 
-          connectOutlets: function(manager, context) {
-            equal(context, undefined, "connectOutlets is called with no context");
+          setup: function(manager, context) {
+            equal(context, undefined, "setup is called with no context");
           }
         })
       })
@@ -552,12 +552,12 @@ test("multiple contexts can be provided in a single transitionTo", function() {
       }),
 
       planters: Ember.State.create({
-        connectOutlets: function(manager, context) {
+        setup: function(manager, context) {
           deepEqual(context, { company: true });
         },
 
         nuts: Ember.State.create({
-          connectOutlets: function(manager, context) {
+          setup: function(manager, context) {
             deepEqual(context, { product: true });
           }
         })

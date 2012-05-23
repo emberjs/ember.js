@@ -88,7 +88,7 @@ Ember.State = Ember.Object.extend(Ember.Evented, {
     return !get(this, 'childStates').length;
   }).cacheable(),
 
-  connectOutlets: Ember.K,
+  setup: Ember.K,
   enter: Ember.K,
   exit: Ember.K
 });
