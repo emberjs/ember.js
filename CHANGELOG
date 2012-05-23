@@ -1,3 +1,10 @@
+*Ember 0.9.8.1 (May 22, 2012)*
+
+* Fix bindAttr with global paths
+* Fix initialization with non routable stateManager
+* Better jQuery warning message
+* Documentation fixes
+
 *Ember 0.9.8 (May 21, 2012)*
 
 * Better docs
