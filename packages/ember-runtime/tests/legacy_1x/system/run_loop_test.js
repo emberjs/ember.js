@@ -19,11 +19,12 @@
     broken anyway.  I don't think it ever even worked.
 */
 
-var MyApp, binding1, binding2;
+var MyApp, binding1, binding2, previousPreventRunloop;
 
 module("System:run_loop() - chained binding", {
   setup: function() {
-    window.ENV['PREVENT_AUTOMATIC_RUNLOOP_CREATION'] = false;
+    previousPreventRunloop = Ember.ENV.PREVENT_AUTOMATIC_RUNLOOP_CREATION;
+    Ember.ENV.PREVENT_AUTOMATIC_RUNLOOP_CREATION = false;
     
     MyApp = {};
     MyApp.first = Ember.Object.create(Ember.Observable, {
@@ -45,7 +46,7 @@ module("System:run_loop() - chained binding", {
     }) ;
   },
   teardown: function(){
-    window.ENV['PREVENT_AUTOMATIC_RUNLOOP_CREATION'] = true;
+    Ember.ENV.PREVENT_AUTOMATIC_RUNLOOP_CREATION = previousPreventRunloop;
   }
 });
 

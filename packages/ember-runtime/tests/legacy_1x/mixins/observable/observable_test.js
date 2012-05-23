@@ -549,43 +549,46 @@ test("dependent keys should be able to be specified as property paths", function
 });
 
 test("nested dependent keys should propagate after they update", function() {
-  window.ENV['PREVENT_AUTOMATIC_RUNLOOP_CREATION'] = false;
-  
-  window.DepObj = ObservableObject.create({
-    restaurant: ObservableObject.create({
-      menu: ObservableObject.create({
-        price: 5
-      })
-    }),
-  
-    price: Ember.computed(function() {
-      return this.getPath('restaurant.menu.price');
-    }).property('restaurant.menu.price').volatile()
-  });
-  
-  var bindObj = ObservableObject.create({
-    priceBinding: "DepObj.price"
-  });
-  
-  Ember.run.sync();
-  
-  equal(bindObj.get('price'), 5, "precond - binding propagates");
-  
-  DepObj.setPath('restaurant.menu.price', 10);
-  
-  Ember.run.sync();
-  
-  equal(bindObj.get('price'), 10, "binding propagates after a nested dependent keys updates");
-  
-  DepObj.setPath('restaurant.menu', ObservableObject.create({
-    price: 15
-  }));
-  
-  Ember.run.sync();
-  
-  equal(bindObj.get('price'), 15, "binding propagates after a middle dependent keys updates");
-  
-  window.ENV['PREVENT_AUTOMATIC_RUNLOOP_CREATION'] = true;
+  var previousPreventRunloop = Ember.ENV.PREVENT_AUTOMATIC_RUNLOOP_CREATION;
+  Ember.ENV.PREVENT_AUTOMATIC_RUNLOOP_CREATION = false;
+
+  try {
+    window.DepObj = ObservableObject.create({
+      restaurant: ObservableObject.create({
+        menu: ObservableObject.create({
+          price: 5
+        })
+      }),
+
+      price: Ember.computed(function() {
+        return this.getPath('restaurant.menu.price');
+      }).property('restaurant.menu.price').volatile()
+    });
+
+    var bindObj = ObservableObject.create({
+      priceBinding: "DepObj.price"
+    });
+
+    Ember.run.sync();
+
+    equal(bindObj.get('price'), 5, "precond - binding propagates");
+
+    DepObj.setPath('restaurant.menu.price', 10);
+
+    Ember.run.sync();
+
+    equal(bindObj.get('price'), 10, "binding propagates after a nested dependent keys updates");
+
+    DepObj.setPath('restaurant.menu', ObservableObject.create({
+      price: 15
+    }));
+
+    Ember.run.sync();
+
+    equal(bindObj.get('price'), 15, "binding propagates after a middle dependent keys updates");
+  } finally {
+    Ember.ENV.PREVENT_AUTOMATIC_RUNLOOP_CREATION = previousPreventRunloop;
+  }
 });
 
 test("cacheable nested dependent keys should clear after their dependencies update", function() {

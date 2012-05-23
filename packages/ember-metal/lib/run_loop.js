@@ -344,8 +344,7 @@ Ember.run.autorun = function() {
   if (!run.currentRunLoop) {
     run.begin();
 
-    // TODO: throw during tests
-    if (window.ENV['PREVENT_AUTOMATIC_RUNLOOP_CREATION']) {
+    if (Ember.ENV.PREVENT_AUTOMATIC_RUNLOOP_CREATION) {
       throw "A RunLoop cannot be automatically created during testing. " +
             "Wrap code that requires an active RunLoop inside an Ember.run(function{ ... }).";
     } else if (!autorunTimer) {

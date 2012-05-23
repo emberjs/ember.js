@@ -4,13 +4,16 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
+var previousPreventRunloop;
+
 module('system/run_loop/later_test', {
   setup: function() {
-    window.ENV['PREVENT_AUTOMATIC_RUNLOOP_CREATION'] = false;
+    previousPreventRunloop = Ember.ENV.PREVENT_AUTOMATIC_RUNLOOP_CREATION;
+    Ember.ENV.PREVENT_AUTOMATIC_RUNLOOP_CREATION = false;
   },
 
   teardown: function() {
-     window.ENV['PREVENT_AUTOMATIC_RUNLOOP_CREATION'] = true;
+     Ember.ENV.PREVENT_AUTOMATIC_RUNLOOP_CREATION = previousPreventRunloop;
   }
 });
 
