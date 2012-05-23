@@ -88,12 +88,12 @@ Ember.HashLocation = Ember.Object.extend({
 Ember.Location = {
   create: function(options) {
     var implementation = options && (options.style || options.implementation);
-    Ember.assert("you must provide an implementation to Ember.Location.create", !!implementation);
+    Ember.assert("Ember.Location.create: you must specify a 'style' option", !!implementation);
 
-    implementation = this.implementations[implementation];
-    Ember.assert("you must provide an implementation to Ember.Location.create", !!implementation);
+    var implementationClass = this.implementations[implementation];
+    Ember.assert("Ember.Location.create: " + implementation + " is not a valid implementation", !!implementationClass);
 
-    return implementation.create.apply(implementation, arguments);
+    return implementationClass.create.apply(implementationClass, arguments);
   },
 
   registerImplementation: function(name, implementation) {
