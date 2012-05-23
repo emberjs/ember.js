@@ -79,6 +79,7 @@ test("Should propagate bindings after the RunLoop completes (using Ember.RunLoop
   equal(MyApp.second.get("output"), "change") ;
 
   Ember.TESTING_DEPRECATION = false;
+  
 });
 
 test("Should propagate bindings after the RunLoop completes (using Ember.beginRunLoop)", function() {
@@ -112,6 +113,9 @@ test("Should propagate bindings after the RunLoop completes (using Ember.beginRu
   equal(MyApp.second.get("output"), "change") ;
 
   Ember.TESTING_DEPRECATION = false;
+  
+  Ember.run.end();
+  Ember.run.cancelTimers();
 });
 
 test("Should propagate bindings after the RunLoop completes (checking invokeOnce() function)", function() {
@@ -160,4 +164,9 @@ test("Should propagate bindings after the RunLoop completes (checking invokeOnce
   equal(MyApp.second.get("output"), "change") ;
 
   Ember.TESTING_DEPRECATION = false;
+  
+  // cleanup
+  Ember.run.end();
+  Ember.run.cancelTimers();
+  
 });

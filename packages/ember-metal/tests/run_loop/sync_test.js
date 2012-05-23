@@ -47,5 +47,8 @@ test('sync() works outside of runloop (by fixing runloop)', function() {
   Ember.run.sync();
 
   equal(cnt, 5, 'should have run sync queue continuously');
+  
+  Ember.run.end();
+  Ember.run.cancelTimers();
 });
 

@@ -582,6 +582,9 @@ test("nested dependent keys should propagate after they update", function() {
   Ember.run.sync();
 
   equal(bindObj.get('price'), 15, "binding propagates after a middle dependent keys updates");
+  
+  Ember.run.end();
+  Ember.run.cancelTimers();
 });
 
 test("cacheable nested dependent keys should clear after their dependencies update", function() {

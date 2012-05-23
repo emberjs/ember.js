@@ -55,6 +55,10 @@ module("basic object binding", {
     root = { fromObject: fromObject, toObject: toObject };
     binding = Ember.bind(root, 'toObject.value', 'fromObject.value');
     Ember.run.sync(); // actually sets up up the connection
+  },
+  teardown: function(){
+    Ember.run.end();
+    Ember.run.cancelTimers();
   }
 });
 
@@ -129,8 +133,11 @@ module("one way binding", {
     root = { fromObject: fromObject, toObject: toObject };
     binding = Ember.oneWay(root, 'toObject.value', 'fromObject.value');
     Ember.run.sync() ; // actually sets up up the connection
+  },
+  teardown: function(){
+    Ember.run.end();
+    Ember.run.cancelTimers();
   }
-
 });
 
 test("fromObject change should propagate after flush", function() {
@@ -173,6 +180,10 @@ module("chained binding", {
     binding1 = Ember.bind(root, 'second.input', 'first.output');
     binding2 = Ember.bind(root, 'second.output', 'third.input');
     Ember.run.sync() ; // actually sets up up the connection
+  },
+  teardown: function(){
+    Ember.run.end();
+    Ember.run.cancelTimers();
   }
 });
 
@@ -215,6 +226,7 @@ module("Custom Binding", {
   },
   teardown: function() {
     Bon1 = bon2 = TestNamespace  = null;
+    Ember.run.cancelTimers();
   }
 });
 
@@ -230,6 +242,8 @@ test("Binding value1 such that it will recieve only single values", function() {
 	Ember.run.sync();
 	equal(get(bon2, "val1"),get(bon1, "value1"));
 	equal("@@MULT@@",get(bon1, "array1"));
+	
+	Ember.run.end();
 });
 
 test("Binding with transforms, function to check the type of value", function() {
@@ -244,6 +258,8 @@ test("Binding with transforms, function to check the type of value", function() 
 	set(bon2, "val1","changed");
 	Ember.run.sync();
 	equal(get(jon, "value1"), get(bon2, "val1"));
+	
+	Ember.run.end();
 });
 
 test("two bindings to the same value should sync in the order they are initialized", function() {
@@ -300,6 +316,8 @@ module("AND binding", {
   teardown: function() {
     set(Ember, 'testControllerA', null);
     set(Ember, 'testControllerB', null);
+    Ember.run.end();
+    Ember.run.cancelTimers();
   }
 
 });
@@ -360,6 +378,9 @@ module("OR binding", {
   teardown: function() {
     set(Ember, 'testControllerA', null);
     set(Ember, 'testControllerB', null);
+    
+    Ember.run.end();
+    Ember.run.cancelTimers();
   }
 
 });
@@ -401,6 +422,8 @@ module("Binding with '[]'", {
 
   teardown: function() {
     root = fromObject = toObject = null;
+    Ember.run.end();
+    Ember.run.cancelTimers();
   }
 });
 
@@ -433,6 +456,8 @@ module("propertyNameBinding with longhand", {
   },
   teardown: function(){
     TestNamespace = null;
+    Ember.run.end();
+    Ember.run.cancelTimers();
   }
 });
 

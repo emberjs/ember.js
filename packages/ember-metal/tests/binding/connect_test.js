@@ -33,6 +33,9 @@ function performTest(binding, a, b, get, set, skipFirst) {
   set(a, 'foo', 'BARF');
   Ember.run.sync();
   equal(get(b, 'bar'), 'BARF', 'a should have changed');
+  
+  Ember.run.end();
+  Ember.run.cancelTimers();
 }
 
 testBoth('Connecting a binding between two properties', function(get, set) {
@@ -100,8 +103,11 @@ testBoth('Connecting a binding to path', function(get, set) {
 
   // make sure modifications update
   b = { bar: 'BIFF' };
-  set(GlobalB, 'b', b);
-  Ember.run.sync();
+  
+  Ember.run(function(){
+    set(GlobalB, 'b', b);
+  });
+  
   equal(get(a, 'foo'), 'BIFF', 'a should have changed');
 
 });
@@ -133,6 +139,9 @@ testBoth('Bindings should be inherited', function(get, set) {
 
   equal(get(a2, 'foo'), "BAZZ", "Should have synced binding on child");
   equal(get(a,  'foo'), "BAR", "Should NOT have synced binding on parent");
+  
+  Ember.run.end();
+  Ember.run.cancelTimers();
 
 });
 
@@ -147,5 +156,8 @@ test('inherited bindings should sync on create', function() {
 
   Ember.run.sync();
   equal(Ember.get(a, 'foo'), 'BAZ', 'should have synced binding on new obj');
+  
+  Ember.run.end();
+  Ember.run.cancelTimers();
 });
 

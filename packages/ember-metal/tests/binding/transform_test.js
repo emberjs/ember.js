@@ -135,6 +135,9 @@ test('transforms should chain', function() {
   // should have transformed...
   equal(Ember.getPath('MyApp.foo.value'), 'BAR T1 T2', 'should transform');
   equal(Ember.getPath('MyApp.bar.value'), 'BAR', 'should stay original');
+  
+  Ember.run.end();
+  Ember.run.cancelTimers();
 });
 
 test('resetTransforms() should clear', function() {
@@ -151,5 +154,8 @@ test('resetTransforms() should clear', function() {
   // should have transformed...
   equal(Ember.getPath('MyApp.foo.value'), 'BAR T2', 'should transform');
   equal(Ember.getPath('MyApp.bar.value'), 'BAR', 'should stay original');
+  
+  Ember.run.end();
+  Ember.run.cancelTimers();
 });
 

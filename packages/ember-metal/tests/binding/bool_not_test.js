@@ -10,6 +10,7 @@ function testBool(val, expected) {
     Ember.run(function(){
       Ember.set(MyApp.foo, 'value', val);
     });
+    
     equal(Ember.get(MyApp.bar, 'value'), expected);
   });
 }
