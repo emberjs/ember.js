@@ -16,6 +16,8 @@ var nthChild = function(view, nth) {
 };
 var firstChild = nthChild;
 
+var originalLog, logCalls;
+
 (function() {
 
   Ember.$.fn.caretPosition = function() {
@@ -86,9 +88,6 @@ module("Ember.View - handlebars integration", {
       view = null;
     }
     window.TemplateTests = undefined;
-
-    if (additionalTeardown) { additionalTeardown(); }
-    additionalTeardown = null;
   }
 });
 
@@ -1556,29 +1555,6 @@ test("should be able to output a property without binding", function(){
   equal(view.$('#second').html(), "Not here, either.");
 });
 
-test("should be able to log a property", function(){
-  var originalLogger = Ember.Logger;
-  additionalTeardown = function(){ Ember.Logger = originalLogger; };
-
-  var logCalls = [];
-  Ember.Logger = { log: function(arg){ logCalls.push(arg); } };
-
-  view = Ember.View.create({
-    template: Ember.Handlebars.compile('{{log value}}{{#with content}}{{log ../valueTwo}}{{/with}}'),
-
-    value: 'one',
-    valueTwo: 'two',
-
-    content: Ember.Object.create({})
-  });
-
-  appendView();
-
-  equal(view.$().text(), "", "shouldn't render any text");
-  equal(logCalls[0], 'one', "should call log with value");
-  equal(logCalls[1], 'two', "should call log with valueTwo");
-});
-
 test("should allow standard Handlebars template usage", function() {
   view = Ember.View.create({
     name: "Erik",
@@ -1784,6 +1760,68 @@ test("Ember.Button targets should respect keywords", function() {
     Ember.TESTING_DEPRECATION = false;
   }
 });
+
+module("Ember.View - handlebars integration", {
+  setup: function() {
+    originalLog = Ember.Logger.log;
+    logCalls = [];
+    Ember.Logger.log = function(arg) { logCalls.push(arg); };
+  },
+
+  teardown: function() {
+    if (view) {
+      Ember.run(function() {
+        view.destroy();
+      });
+      view = null;
+    }
+
+    Ember.Logger.log = originalLog;
+  }
+});
+
+test("should be able to log a property", function(){
+  view = Ember.View.create({
+    template: Ember.Handlebars.compile('{{log value}}{{#with content}}{{log ../valueTwo}}{{/with}}'),
+
+    value: 'one',
+    valueTwo: 'two',
+
+    content: Ember.Object.create({})
+  });
+
+  appendView();
+
+  equal(view.$().text(), "", "shouldn't render any text");
+  equal(logCalls[0], 'one', "should call log with value");
+  equal(logCalls[1], 'two', "should call log with valueTwo");
+});
+
+test("should be able to log a view property", function() {
+  view = Ember.View.create({
+    template: Ember.Handlebars.compile('{{log view.value}}'),
+    value: 'one'
+  });
+
+  appendView();
+
+  equal(view.$().text(), "", "shouldn't render any text");
+  equal(logCalls[0], 'one', "should call log with value");
+});
+
+test("should be able to log `this`", function() {
+  view = Ember.View.create({
+    template: Ember.Handlebars.compile('{{#each items}}{{log this}}{{/each}}'),
+    items: Ember.A(['one', 'two'])
+  });
+
+  appendView();
+
+  equal(view.$().text(), "", "shouldn't render any text");
+  equal(logCalls[0], 'one', "should call log with item one");
+  equal(logCalls[1], 'two', "should call log with item two");
+});
+
 
 module("Templates redrawing and bindings", {
   setup: function(){
