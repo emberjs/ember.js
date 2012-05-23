@@ -26,32 +26,39 @@ module('system/binding/registerTransform', {
 });
 
 test('registerTransform registers a custom transform for use in a binding', function() {
-  Ember.setPath('MyApp.foo', 0);
+  var binding;
+  
+  Ember.run(function(){
+    Ember.setPath('MyApp.foo', 0);
 
-  var binding = Ember.bind(MyApp, 'bar', 'foo').gt(0);
-  Ember.run.sync();
-
+    binding = Ember.bind(MyApp, 'bar', 'foo').gt(0);
+  });
+  
   equal(Ember.getPath('MyApp.bar'), false);
 
-  Ember.setPath('MyApp.foo', 1);
-  Ember.run.sync();
-
+  Ember.run(function(){
+    Ember.setPath('MyApp.foo', 1);
+  });
+  
   equal(Ember.getPath('MyApp.bar'), true);
 
   binding.disconnect(MyApp);
 });
 
 test('registerTransform adds a class method to Ember.Binding', function() {
-  Ember.setPath('MyApp.foo', 0);
-
-  var binding = Ember.Binding.gt('foo', 0).to('baz').connect(MyApp);
-  Ember.run.sync();
+  var binding;
+  
+  Ember.run(function(){
+    Ember.setPath('MyApp.foo', 0);
+    binding = Ember.Binding.gt('foo', 0).to('baz').connect(MyApp);
+  });
 
   equal(Ember.getPath('MyApp.baz'), false);
 
-  Ember.setPath('MyApp.foo', 1);
-  Ember.run.sync();
-
+  Ember.run(function(){
+    Ember.setPath('MyApp.foo', 1);
+  });
+  
   equal(Ember.getPath('MyApp.baz'), true);
 
   binding.disconnect(MyApp);

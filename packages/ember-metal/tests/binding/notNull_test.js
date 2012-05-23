@@ -19,14 +19,17 @@ module('system/binding/notNull', {
 });
 
 test('allow empty string as placeholder', function() {
-
-  var binding = Ember.bind(MyApp, 'bar.value', 'foo.value').notNull('');
-
-  Ember.run.sync();
+  var binding;
+  Ember.run(function(){
+    binding = Ember.bind(MyApp, 'bar.value', 'foo.value').notNull('');
+  });
+  
   deepEqual(Ember.getPath('MyApp.bar.value'), 'FOO', 'value passes through');
 
-  Ember.setPath('MyApp.foo.value', null);
-  Ember.run.sync();
+  Ember.run(function(){
+    Ember.setPath('MyApp.foo.value', null);
+  });
+  
   deepEqual(Ember.getPath('MyApp.bar.value'), '', 'null gets replaced');
 
 });
