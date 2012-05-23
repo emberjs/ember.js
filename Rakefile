@@ -298,6 +298,9 @@ namespace :release do
       end
     end
 
+    file "dist/ember.js" => :dist
+    file "dist/ember.min.js" => :dist
+
     task "dist/starter-kit.#{EMBER_VERSION}.zip" => ["tmp/starter-kit/index.html"] do
       mkdir_p "dist"
 
@@ -427,12 +430,6 @@ namespace :release do
 
   namespace :website do
 
-    task :pull => "tmp/website" do
-      Dir.chdir("tmp/website") do
-        sh "git pull origin master"
-      end
-    end
-
     file "tmp/website" do
       mkdir_p "tmp"
 
@@ -441,10 +438,18 @@ namespace :release do
       end
     end
 
-    file "tmp/website/source/about.erb" => [:pull, "dist/ember.min.js"] do
+    task :pull => "tmp/website" do
+      Dir.chdir("tmp/website") do
+        sh "git pull origin master"
+      end
+    end
+
+    file "dist/ember.min.js" => :dist
+
+    file "tmp/website/source/about.html.erb" => [:pull, "dist/ember.min.js"] do
       require 'zlib'
 
-      about = File.read("tmp/website/source/about.erb")
+      about = File.read("tmp/website/source/about.html.erb")
       min_gz = Zlib::Deflate.deflate(File.read("dist/ember.min.js")).bytes.count / 1024
 
       about.gsub! %r{https://github\.com/downloads/emberjs/ember\.js/ember-\d(\.\d+)*.min\.js},
@@ -457,10 +462,10 @@ namespace :release do
 
       about.gsub! /\d+k min\+gzip/, "#{min_gz}k min+gzip"
 
-      File.open("tmp/website/source/about.erb", "w") { |f| f.write about }
+      File.open("tmp/website/source/about.html.erb", "w") { |f| f.write about }
     end
 
-    task :about => "tmp/website/source/about.erb"
+    task :about => "tmp/website/source/about.html.erb"
 
     desc "Update website repo"
     task :update => :about do
@@ -491,10 +496,10 @@ namespace :release do
   end
 
   desc "Prepare Ember for new release"
-  task :prepare => ['framework:prepare', 'starter_kit:prepare', 'examples:prepare']
+  task :prepare => ['framework:prepare', 'starter_kit:prepare', 'examples:prepare', 'website:prepare']
 
   desc "Deploy a new Ember release"
-  task :deploy => ['framework:deploy', 'starter_kit:deploy', 'examples:deploy']
+  task :deploy => ['framework:deploy', 'starter_kit:deploy', 'examples:deploy', 'website:deploy']
 
 end
 
