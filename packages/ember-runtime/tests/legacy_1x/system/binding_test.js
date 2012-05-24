@@ -46,16 +46,16 @@ var get = Ember.get, set = Ember.set;
 // Ember.Binding Tests
 // ========================================================================
 
-var fromObject, toObject, binding, Bon1, bon2, root ; // global variables
+var fromObject, toObject, binding, Bon1, bon2, root; // global variables
 
 module("basic object binding", {
-
   setup: function() {
     fromObject = Ember.Object.create({ value: 'start' }) ;
     toObject = Ember.Object.create({ value: 'end' }) ;
     root = { fromObject: fromObject, toObject: toObject };
-    binding = Ember.bind(root, 'toObject.value', 'fromObject.value');
-    Ember.run.sync() ; // actually sets up up the connection
+    Ember.run(function () {
+      binding = Ember.bind(root, 'toObject.value', 'fromObject.value');
+    });
   }
 });
 
@@ -64,16 +64,18 @@ test("binding should have synced on connect", function() {
 });
 
 test("fromObject change should propagate to toObject only after flush", function() {
-  set(fromObject, "value", "change") ;
-  equal(get(toObject, "value"), "start") ;
-  Ember.run.sync() ;
+  Ember.run(function () {
+    set(fromObject, "value", "change") ;
+    equal(get(toObject, "value"), "start") ;
+  });
   equal(get(toObject, "value"), "change") ;
 });
 
 test("toObject change should propagate to fromObject only after flush", function() {
-  set(toObject, "value", "change") ;
-  equal(get(fromObject, "value"), "start") ;
-  Ember.run.sync() ;
+  Ember.run(function () {
+    set(toObject, "value", "change") ;
+    equal(get(fromObject, "value"), "start") ;
+  });
   equal(get(fromObject, "value"), "change") ;
 });
 
@@ -99,22 +101,24 @@ test("deferred observing during bindings", function() {
   });
 
   var root = { fromObject: fromObject, toObject: toObject };
-  Ember.bind(root, 'toObject.value1', 'fromObject.value1');
-  Ember.bind(root, 'toObject.value2', 'fromObject.value2');
+  Ember.run(function () {
+    Ember.bind(root, 'toObject.value1', 'fromObject.value1');
+    Ember.bind(root, 'toObject.value2', 'fromObject.value2');
 
-  // change both value1 + value2, then  flush bindings.  observer should only
-  // fire after bindings are done flushing.
-  set(fromObject, 'value1', 'CHANGED');
-  set(fromObject, 'value2', 'CHANGED');
-  Ember.run.sync();
+    // change both value1 + value2, then  flush bindings.  observer should only
+    // fire after bindings are done flushing.
+    set(fromObject, 'value1', 'CHANGED');
+    set(fromObject, 'value2', 'CHANGED');
+  });
 
   equal(toObject.callCount, 2, 'should call observer twice');
 });
 
 test("binding disconnection actually works", function() {
   binding.disconnect(root);
-  set(fromObject, 'value', 'change');
-  Ember.run.sync();
+  Ember.run(function () {
+    set(fromObject, 'value', 'change');
+  });
   equal(get(toObject, 'value'), 'start');
 });
 
@@ -130,8 +134,11 @@ module("one way binding", {
     root = { fromObject: fromObject, toObject: toObject };
     binding = Ember.oneWay(root, 'toObject.value', 'fromObject.value');
     Ember.run.sync() ; // actually sets up up the connection
+  },
+  teardown: function(){
+    Ember.run.end();
+    Ember.run.cancelTimers();
   }
-
 });
 
 test("fromObject change should propagate after flush", function() {
@@ -148,7 +155,7 @@ test("toObject change should NOT propagate", function() {
   equal(get(fromObject, "value"), "start") ;
 });
 
-var first, second, third, binding1, binding2 ; // global variables
+var first, second, third, binding1, binding2; // global variables
 
 // ..........................................................
 // chained binding
@@ -174,8 +181,11 @@ module("chained binding", {
     binding1 = Ember.bind(root, 'second.input', 'first.output');
     binding2 = Ember.bind(root, 'second.output', 'third.input');
     Ember.run.sync() ; // actually sets up up the connection
+  },
+  teardown: function(){
+    Ember.run.end();
+    Ember.run.cancelTimers();
   }
-
 });
 
 test("changing first output should propograte to third after flush", function() {
@@ -197,7 +207,6 @@ test("changing first output should propograte to third after flush", function() 
 //
 
 module("Custom Binding", {
-
   setup: function() {
     Bon1 = Ember.Object.extend({
       value1: "hi",
@@ -216,9 +225,9 @@ module("Custom Binding", {
       Bon1: Bon1
     };
   },
-
   teardown: function() {
     Bon1 = bon2 = TestNamespace  = null;
+    Ember.run.cancelTimers();
   }
 });
 
@@ -234,6 +243,8 @@ test("Binding value1 such that it will recieve only single values", function() {
 	Ember.run.sync();
 	equal(get(bon2, "val1"),get(bon1, "value1"));
 	equal("@@MULT@@",get(bon1, "array1"));
+	
+	Ember.run.end();
 });
 
 test("Binding with transforms, function to check the type of value", function() {
@@ -248,6 +259,8 @@ test("Binding with transforms, function to check the type of value", function() 
 	set(bon2, "val1","changed");
 	Ember.run.sync();
 	equal(get(jon, "value1"), get(bon2, "val1"));
+	
+	Ember.run.end();
 });
 
 test("two bindings to the same value should sync in the order they are initialized", function() {
@@ -304,6 +317,8 @@ module("AND binding", {
   teardown: function() {
     set(Ember, 'testControllerA', null);
     set(Ember, 'testControllerB', null);
+    Ember.run.end();
+    Ember.run.cancelTimers();
   }
 
 });
@@ -349,7 +364,6 @@ test("toObject.value should be false if either source is false", function() {
 //
 
 module("OR binding", {
-
   setup: function() {
     // temporarily set up two source objects in the Ember namespace so we can
     // use property paths to access them
@@ -365,6 +379,9 @@ module("OR binding", {
   teardown: function() {
     set(Ember, 'testControllerA', null);
     set(Ember, 'testControllerB', null);
+    
+    Ember.run.end();
+    Ember.run.cancelTimers();
   }
 
 });
@@ -406,6 +423,8 @@ module("Binding with '[]'", {
 
   teardown: function() {
     root = fromObject = toObject = null;
+    Ember.run.end();
+    Ember.run.cancelTimers();
   }
 });
 
@@ -438,6 +457,8 @@ module("propertyNameBinding with longhand", {
   },
   teardown: function(){
     TestNamespace = null;
+    Ember.run.end();
+    Ember.run.cancelTimers();
   }
 });
 

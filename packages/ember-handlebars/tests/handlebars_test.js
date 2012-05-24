@@ -16,6 +16,8 @@ var nthChild = function(view, nth) {
 };
 var firstChild = nthChild;
 
+var originalLog, logCalls;
+
 (function() {
 
   Ember.$.fn.caretPosition = function() {
@@ -86,9 +88,6 @@ module("Ember.View - handlebars integration", {
       view = null;
     }
     window.TemplateTests = undefined;
-
-    if (additionalTeardown) { additionalTeardown(); }
-    additionalTeardown = null;
   }
 });
 
@@ -1249,26 +1248,44 @@ test("should be able to bind element attributes using {{bindAttr}}", function() 
 
 test("should be able to bind to view attributes with {{bindAttr}}", function() {
   view = Ember.View.create({
-    value: 'test.jpg',
-    template: Ember.Handlebars.compile('<img {{bindAttr src="view.value"}}>')
+    value: 'Test',
+    template: Ember.Handlebars.compile('<img src="test.jpg" {{bindAttr alt="view.value"}}>')
   });
 
   appendView();
 
-  equal(view.$('img').attr('src'), "test.jpg", "renders initial value");
+  equal(view.$('img').attr('alt'), "Test", "renders initial value");
 
   Ember.run(function() {
-    view.set('value', 'updated.jpg');
+    view.set('value', 'Updated');
   });
 
-  equal(view.$('img').attr('src'), "updated.jpg", "updates value");
+  equal(view.$('img').attr('alt'), "Updated", "updates value");
+});
+
+test("should be able to bind to globals with {{bindAttr}}", function() {
+  TemplateTests.set('value', 'Test');
+
+  view = Ember.View.create({
+    template: Ember.Handlebars.compile('<img src="test.jpg" {{bindAttr alt="TemplateTests.value"}}>')
+  });
+
+  appendView();
+
+  equal(view.$('img').attr('alt'), "Test", "renders initial value");
+
+  Ember.run(function() {
+    TemplateTests.set('value', 'Updated');
+  });
+
+  equal(view.$('img').attr('alt'), "Updated", "updates value");
 });
 
 test("should not allow XSS injection via {{bindAttr}}", function() {
   view = Ember.View.create({
-    template: Ember.Handlebars.compile('<img {{bindAttr src="content.url"}}>'),
+    template: Ember.Handlebars.compile('<img src="test.jpg" {{bindAttr alt="content.value"}}>'),
     content: {
-      url: 'trollface.png" onmouseover="alert(\'HAX!\');'
+      value: 'Trololol" onmouseover="alert(\'HAX!\');'
     }
   });
 
@@ -1276,7 +1293,7 @@ test("should not allow XSS injection via {{bindAttr}}", function() {
 
   equal(view.$('img').attr('onmouseover'), undefined);
   // If the whole string is here, then it means we got properly escaped
-  equal(view.$('img').attr('src'), 'trollface.png" onmouseover="alert(\'HAX!\');');
+  equal(view.$('img').attr('alt'), 'Trololol" onmouseover="alert(\'HAX!\');');
 });
 
 test("should be able to bind use {{bindAttr}} more than once on an element", function() {
@@ -1538,29 +1555,6 @@ test("should be able to output a property without binding", function(){
   equal(view.$('#second').html(), "Not here, either.");
 });
 
-test("should be able to log a property", function(){
-  var originalLogger = Ember.Logger;
-  additionalTeardown = function(){ Ember.Logger = originalLogger; };
-
-  var logCalls = [];
-  Ember.Logger = { log: function(arg){ logCalls.push(arg); } };
-
-  view = Ember.View.create({
-    template: Ember.Handlebars.compile('{{log value}}{{#with content}}{{log ../valueTwo}}{{/with}}'),
-
-    value: 'one',
-    valueTwo: 'two',
-
-    content: Ember.Object.create({})
-  });
-
-  appendView();
-
-  equal(view.$().text(), "", "shouldn't render any text");
-  equal(logCalls[0], 'one', "should call log with value");
-  equal(logCalls[1], 'two', "should call log with valueTwo");
-});
-
 test("should allow standard Handlebars template usage", function() {
   view = Ember.View.create({
     name: "Erik",
@@ -1767,6 +1761,68 @@ test("Ember.Button targets should respect keywords", function() {
   }
 });
 
+module("Ember.View - handlebars integration", {
+  setup: function() {
+    originalLog = Ember.Logger.log;
+    logCalls = [];
+    Ember.Logger.log = function(arg) { logCalls.push(arg); };
+  },
+
+  teardown: function() {
+    if (view) {
+      Ember.run(function() {
+        view.destroy();
+      });
+      view = null;
+    }
+
+    Ember.Logger.log = originalLog;
+  }
+});
+
+test("should be able to log a property", function(){
+  view = Ember.View.create({
+    template: Ember.Handlebars.compile('{{log value}}{{#with content}}{{log ../valueTwo}}{{/with}}'),
+
+    value: 'one',
+    valueTwo: 'two',
+
+    content: Ember.Object.create({})
+  });
+
+  appendView();
+
+  equal(view.$().text(), "", "shouldn't render any text");
+  equal(logCalls[0], 'one', "should call log with value");
+  equal(logCalls[1], 'two', "should call log with valueTwo");
+});
+
+test("should be able to log a view property", function() {
+  view = Ember.View.create({
+    template: Ember.Handlebars.compile('{{log view.value}}'),
+    value: 'one'
+  });
+
+  appendView();
+
+  equal(view.$().text(), "", "shouldn't render any text");
+  equal(logCalls[0], 'one', "should call log with value");
+});
+
+test("should be able to log `this`", function() {
+  view = Ember.View.create({
+    template: Ember.Handlebars.compile('{{#each items}}{{log this}}{{/each}}'),
+    items: Ember.A(['one', 'two'])
+  });
+
+  appendView();
+
+  equal(view.$().text(), "", "shouldn't render any text");
+  equal(logCalls[0], 'one', "should call log with item one");
+  equal(logCalls[1], 'two', "should call log with item two");
+});
+
+
 module("Templates redrawing and bindings", {
   setup: function(){
     MyApp = Ember.Object.create({});
@@ -1789,11 +1845,12 @@ test("should be able to update when bound property updates", function(){
       return this.getPath('value.name') + ' - computed';
     }).property('value').volatile()
   });
-
-  view = View.create();
+  
+  Ember.run(function(){
+    view = View.create();
+  });
+  
   appendView();
-
-  Ember.run.sync();
 
   Ember.run(function(){
     MyApp.set('controller', Ember.Object.create({
@@ -2012,24 +2069,24 @@ test("should update bound values after the view is removed and then re-appended"
     showStuff: true,
     boundValue: "foo"
   });
-
+  
   Ember.run(function() {
     view.appendTo('#qunit-fixture');
   });
-
+  
   equal(Ember.$.trim(view.$().text()), "foo");
   Ember.run(function() {
     set(view, 'showStuff', false);
   });
   equal(Ember.$.trim(view.$().text()), "Not true.");
-
+  
   Ember.run(function() {
     set(view, 'showStuff', true);
   });
   equal(Ember.$.trim(view.$().text()), "foo");
-
-  view.remove();
+  
   Ember.run(function() {
+    view.remove();
     set(view, 'showStuff', false);
   });
   Ember.run(function() {
@@ -2038,7 +2095,7 @@ test("should update bound values after the view is removed and then re-appended"
   Ember.run(function() {
     view.appendTo('#qunit-fixture');
   });
-
+  
   Ember.run(function() {
     set(view, 'boundValue', "bar");
   });
@@ -2048,37 +2105,38 @@ test("should update bound values after the view is removed and then re-appended"
 test("should update bound values after view's parent is removed and then re-appended", function() {
   var parentView = Ember.ContainerView.create({
     childViews: ['testView'],
-
+  
     testView: Ember.View.create({
       template: Ember.Handlebars.compile("{{#if showStuff}}{{boundValue}}{{else}}Not true.{{/if}}")
     })
   });
-
+  
   var targetView = Ember.VIEW_PRESERVES_CONTEXT ? parentView : parentView.get('testView');
-
+  
   targetView.setProperties({
     showStuff: true,
     boundValue: "foo"
   });
-
+  
   Ember.run(function() {
     parentView.appendTo('#qunit-fixture');
   });
   view = parentView.get('testView');
-
+  
   equal(Ember.$.trim(view.$().text()), "foo");
   Ember.run(function() {
     set(targetView, 'showStuff', false);
   });
   equal(Ember.$.trim(view.$().text()), "Not true.");
-
+  
   Ember.run(function() {
     set(targetView, 'showStuff', true);
   });
   equal(Ember.$.trim(view.$().text()), "foo");
-
-  parentView.remove();
+  
+  
   Ember.run(function() {
+    parentView.remove();
     set(targetView, 'showStuff', false);
   });
   Ember.run(function() {
@@ -2087,7 +2145,7 @@ test("should update bound values after view's parent is removed and then re-appe
   Ember.run(function() {
     parentView.appendTo('#qunit-fixture');
   });
-
+  
   Ember.run(function() {
     set(targetView, 'boundValue', "bar");
   });

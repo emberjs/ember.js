@@ -121,10 +121,10 @@ EmberHandlebars.ViewHelper = Ember.Object.create({
 });
 
 /**
-`{{view}}` inserts a new instance of `Ember.View` into a template passing its options
-to the `Ember.View`'s `create` method and using the supplied block as the view's own template.
+  `{{view}}` inserts a new instance of `Ember.View` into a template passing its options
+  to the `Ember.View`'s `create` method and using the supplied block as the view's own template.
 
-An empty `<body>` and the following template:
+  An empty `<body>` and the following template:
 
       <script type="text/x-handlebars">
         A span:
@@ -133,7 +133,7 @@ An empty `<body>` and the following template:
         {{/view}}
       </script>
 
-Will result in HTML structure:
+  Will result in HTML structure:
 
       <body>
         <!-- Note: the handlebars template script 
@@ -148,49 +148,49 @@ Will result in HTML structure:
         </div>
       </body>
 
-### parentView setting
-The `parentView` property of the new `Ember.View` instance created through `{{view}}`
-will be set to the `Ember.View` instance of the template where `{{view}}` was called.
-    
-    aView = Ember.View.create({
-      template: Ember.Handlebars.compile("{{#view}} my parent: {{parentView.elementId}} {{/view}}")
-    })
+  ### parentView setting
 
-    aView.appendTo('body')
-    
-Will result in HTML structure:
+  The `parentView` property of the new `Ember.View` instance created through `{{view}}`
+  will be set to the `Ember.View` instance of the template where `{{view}}` was called.
 
-    <div id="ember1" class="ember-view">
-      <div id="ember2" class="ember-view">
-        my parent: ember1
+      aView = Ember.View.create({
+        template: Ember.Handlebars.compile("{{#view}} my parent: {{parentView.elementId}} {{/view}}")
+      })
+
+      aView.appendTo('body')
+    
+  Will result in HTML structure:
+
+      <div id="ember1" class="ember-view">
+        <div id="ember2" class="ember-view">
+          my parent: ember1
+        </div>
       </div>
-    </div>
 
+  ### Setting CSS id and class attributes
 
+  The HTML `id` attribute can be set on the `{{view}}`'s resulting element with the `id` option.
+  This option will _not_ be passed to `Ember.View.create`.
 
-### Setting CSS id and class attributes
-The HTML `id` attribute can be set on the `{{view}}`'s resulting element with the `id` option.
-This option will _not_ be passed to `Ember.View.create`.
+      <script type="text/x-handlebars">
+        {{#view tagName="span" id="a-custom-id"}}
+          hello.
+        {{/view}}
+      </script>
 
-    <script type="text/x-handlebars">
-      {{#view tagName="span" id="a-custom-id"}}
-        hello.
-      {{/view}}
-    </script>
+  Results in the following HTML structure:
 
-Results in the following HTML structure:
+      <div class="ember-view">
+        <span id="a-custom-id" class="ember-view">
+          hello.
+        </span>
+      </div>
 
-    <div class="ember-view">
-      <span id="a-custom-id" class="ember-view">
-        hello.
-      </span>
-    </div>
-
-The HTML `class` attribute can be set on the `{{view}}`'s resulting element with
-the `class` or `classNameBindings` options. The `class` option
-will directly set the CSS `class` attribute and will not be passed to
-`Ember.View.create`. `classNameBindings` will be passed to `create` and use
-`Ember.View`'s class name binding functionality:
+  The HTML `class` attribute can be set on the `{{view}}`'s resulting element with
+  the `class` or `classNameBindings` options. The `class` option
+  will directly set the CSS `class` attribute and will not be passed to
+  `Ember.View.create`. `classNameBindings` will be passed to `create` and use
+  `Ember.View`'s class name binding functionality:
 
       <script type="text/x-handlebars">
         {{#view tagName="span" class="a-custom-class"}}
@@ -198,7 +198,7 @@ will directly set the CSS `class` attribute and will not be passed to
         {{/view}}
       </script>
 
-Results in the following HTML structure:
+  Results in the following HTML structure:
 
       <div class="ember-view">
         <span id="ember2" class="ember-view a-custom-class">
@@ -206,9 +206,9 @@ Results in the following HTML structure:
         </span>
       </div>
 
-### Supplying a different view class
-`{{view}}` can take an optional first argument before its supplied options to specify a
-path to a custom view class.
+  ### Supplying a different view class
+  `{{view}}` can take an optional first argument before its supplied options to specify a
+  path to a custom view class.
 
       <script type="text/x-handlebars">
         {{#view "MyApp.CustomView"}}
@@ -216,9 +216,8 @@ path to a custom view class.
         {{/view}}
       </script>
 
-The first argument can also be a relative path. Ember will search for the view class 
-starting at the `Ember.View` of the template where `{{view}}` was used as the root object:
-
+  The first argument can also be a relative path. Ember will search for the view class
+  starting at the `Ember.View` of the template where `{{view}}` was used as the root object:
 
       MyApp = Ember.Application.create({})
       MyApp.OuterView = Ember.View.extend({
@@ -237,27 +236,29 @@ Will result in the following HTML:
           hi
         </div>
       </div>
-      
-### Blockless use
-If you supply a custom `Ember.View` subclass that specifies its own template 
-or provide a `templateName` option to `{{view}}` it can be used without supplying a block.
-Attempts to use both a `templateName` option and supply a block will throw an error.
 
-        <script type="text/x-handlebars">
-          {{view "MyApp.ViewWithATemplateDefined"}}
-        </script>
+  ### Blockless use
 
-### viewName property
-You can supply a `viewName` option to `{{view}}`. The `Ember.View` instance will
-be referenced as a property of its parent view by this name.
+  If you supply a custom `Ember.View` subclass that specifies its own template
+  or provide a `templateName` option to `{{view}}` it can be used without supplying a block.
+  Attempts to use both a `templateName` option and supply a block will throw an error.
 
-    aView = Ember.View.create({
-      template: Ember.Handlebars.compile('{{#view viewName="aChildByName"}} hi {{/view}}')
-    })
+      <script type="text/x-handlebars">
+        {{view "MyApp.ViewWithATemplateDefined"}}
+      </script>
 
-    aView.appendTo('body')
-    aView.get('aChildByName') // the instance of Ember.View created by {{view}} helper
-  
+  ### viewName property
+
+  You can supply a `viewName` option to `{{view}}`. The `Ember.View` instance will
+  be referenced as a property of its parent view by this name.
+
+      aView = Ember.View.create({
+        template: Ember.Handlebars.compile('{{#view viewName="aChildByName"}} hi {{/view}}')
+      })
+
+      aView.appendTo('body')
+      aView.get('aChildByName') // the instance of Ember.View created by {{view}} helper
+
   @name Handlebars.helpers.view
   @param {String} path
   @param {Hash} options

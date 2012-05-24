@@ -13,3 +13,4 @@ require("ember-handlebars/helpers/each");
 require("ember-handlebars/helpers/template");
 require("ember-handlebars/helpers/action");
 require("ember-handlebars/helpers/yield");
+require("ember-handlebars/helpers/outlet");

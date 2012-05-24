@@ -8,7 +8,11 @@ module("views/view/view_lifecycle_test - pre-render", {
   },
 
   teardown: function() {
-    if (view) { view.destroy(); }
+    if (view) { 
+      Ember.run(function(){
+        view.destroy();
+      });
+    }
   }
 });
 
@@ -85,7 +89,11 @@ module("views/view/view_lifecycle_test - in render", {
   },
 
   teardown: function() {
-    if (view) { view.destroy(); }
+    if (view) { 
+      Ember.run(function(){
+        view.destroy();
+      }); 
+    }
   }
 });
 
@@ -149,7 +157,11 @@ test("rerender should work inside a template", function() {
 
 module("views/view/view_lifecycle_test - in DOM", {
   teardown: function() {
-    if (view) { view.destroy(); }
+    if (view) { 
+      Ember.run(function(){
+        view.destroy();
+      });
+    }
   }
 });
 

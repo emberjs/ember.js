@@ -19,6 +19,8 @@ require("ember-views/system/render_buffer");
   @description Helpers for Handlebars templates
 */
 
+Ember.assert("Ember Handlebars requires Handlebars 1.0.beta.5 or greater", window.Handlebars && window.Handlebars.VERSION.match(/^1\.0\.beta\.[56789]$/));
+
 /**
   @class
 

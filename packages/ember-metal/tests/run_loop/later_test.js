@@ -4,7 +4,7 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
-module('system/run_loop/later_test');
+var previousPreventRunloop;
 
 test('should invoke after specified period of time - function only', function() {
 

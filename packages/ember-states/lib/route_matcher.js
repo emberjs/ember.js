@@ -12,7 +12,7 @@ Ember._RouteMatcher = Ember.Object.extend({
         escaped;
 
     // Strip off leading slash if present
-    if (route[0] === '/') {
+    if (route.charAt(0) === '/') {
       route = this.route = route.substr(1);
     }
 

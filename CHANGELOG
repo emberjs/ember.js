@@ -1,3 +1,57 @@
+*Ember 0.9.8.1 (May 22, 2012)*
+
+* Fix bindAttr with global paths
+* Fix initialization with non routable stateManager
+* Better jQuery warning message
+* Documentation fixes
+
+*Ember 0.9.8 (May 21, 2012)*
+
+* Better docs
+* Preliminary routing support
+* Properly handle null content in Ember.Select - fixes #775
+* Allow a context to be passed to the action helper
+* Notify parentView of childView changes for virtual views
+* Extract Ember.Application into a separate package
+* Better console handling
+* Removed warnings about element not being present in willInsertElement
+* Removed old deprecated RunLoop syntax
+* Add support for "input" event handlers
+* Removed deprecated getPath/setPath global support, deprecated star paths
+* Removed Ember.Set.create with enumerable
+* Add Ember.Binding.registerTransform
+* States should create a childStates array
+* Always send Array#contentWillChange with contentDidChange
+* Updated Metamorph - fixes #783
+* Re-enable enumerable properties: [], firstObject and lastObject
+* Add support for #each foo in bar
+* Implement {{#with foo as bar}} syntax
+* Fixed ordering of MutableArray#unshiftObjects
+* Fix Em namespace in dev mode
+* Add currentView property to Ember.ContainerView
+* Namespace debugging functions, ember_assert, ember_deprecate, and ember_warn are now Ember.assert, Ember.deprecate, and Ember.warn.
+* Rename BindableSpanView -> HandlebarsBoundView
+* Updated Handlebars to 1.0.0.beta.6
+* Ember.cacheFor should return falsy values
+* Handlebars actions use a stateManager by default
+* Bindings should connect to `this` and not the prototype.
+* Fix security error w/ Opera and Frames - fixes #734
+* Warn when attempting to appendTo or replaceIn with an existing Ember.View
+* Change the context in which {{view}} renders
+* Improve error when sending an unimplemented event
+* Change didInsertElement function to event callback - fixes #740
+* Precompile defaultTemplates for production builds
+* Updated uglifier - fixes #733
+* Improved the testing stack
+* Using the colon syntax with classBinding should allow truthy values to propagate the associated class
+* Add safeHtml method to String
+* Improved compatibility with Handlebars.SafeString
+* Deprecate Ember.Button - closes #436
+* Refactor ember-states/view_states out into ember-viewstates so that states is free of ember-views dependency.
+* Prevent classNames from being displayed twice
+* Added ComputedProperty#volatile to turn off caching
+* Support making Computed Properties cacheable by default
+
 *Ember 0.9.7.1 (April 19, 2012)*
 
 * Better escaping method for RenderBuffer

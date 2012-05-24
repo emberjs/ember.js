@@ -8,14 +8,15 @@ require('ember-handlebars/ext');
 require('ember-handlebars/views/handlebars_bound_view');
 require('ember-handlebars/views/metamorph_view');
 
-var get = Ember.get, getPath = Ember.getPath, set = Ember.set, fmt = Ember.String.fmt;
-var normalizePath = Ember.Handlebars.normalizePath;
+var get = Ember.get, set = Ember.set, fmt = Ember.String.fmt;
+var getPath = Ember.Handlebars.getPath, normalizePath = Ember.Handlebars.normalizePath;
 var forEach = Ember.ArrayUtils.forEach;
 
 var EmberHandlebars = Ember.Handlebars, helpers = EmberHandlebars.helpers;
 
 // Binds a property into the DOM. This will create a hook in DOM that the
 // KVO system will look for and update if the property changes.
+/** @private */
 var bind = function(property, options, preserveContext, shouldDisplay, valueNormalizer) {
   var data = options.data,
       fn = options.fn,

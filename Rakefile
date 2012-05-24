@@ -10,19 +10,23 @@ def pipeline
   Rake::Pipeline::Project.new("Assetfile")
 end
 
-def setup_uploader
+def setup_uploader(root=Dir.pwd)
   require './lib/github_uploader'
 
-  # get the github user name
-  login = `git config github.user`.chomp
+  login = origin = nil
 
-  # get repo from git config's origin url
-  origin = `git config remote.origin.url`.chomp # url to origin
-  # extract USERNAME/REPO_NAME
-  # sample urls: https://github.com/emberjs/ember.js.git
-  #              git://github.com/emberjs/ember.js.git
-  #              git@github.com:emberjs/ember.js.git
-  #              git@github.com:emberjs/ember.js
+  Dir.chdir(root) do
+    # get the github user name
+    login = `git config github.user`.chomp
+
+    # get repo from git config's origin url
+    origin = `git config remote.origin.url`.chomp # url to origin
+    # extract USERNAME/REPO_NAME
+    # sample urls: https://github.com/emberjs/ember.js.git
+    #              git://github.com/emberjs/ember.js.git
+    #              git@github.com:emberjs/ember.js.git
+    #              git@github.com:emberjs/ember.js
+  end
 
   repoUrl = origin.match(/github\.com[\/:]((.+?)\/(.+?))(\.git)?$/)
   username = repoUrl[2] # username part of origin url
@@ -118,7 +122,7 @@ task :test, [:suite] => :dist do |t, args|
               "package=all&extendprototypes=true&nojshint=true",
               "package=all&extendprototypes=true&jquery=1.6.4&nojshint=true",
               "package=all&extendprototypes=true&jquery=git&nojshint=true",
-              "package=all&cpdefaultcacheable=true&nojshint=true",
+              "package=all&nocpdefaultcacheable=true&nojshint=true",
               "package=all&noviewpreservescontext=true&nojshint=true",
               "package=all&dist=build&nojshint=true"]
   }
@@ -294,6 +298,9 @@ namespace :release do
       end
     end
 
+    file "dist/ember.js" => :dist
+    file "dist/ember.min.js" => :dist
+
     task "dist/starter-kit.#{EMBER_VERSION}.zip" => ["tmp/starter-kit/index.html"] do
       mkdir_p "dist"
 
@@ -351,7 +358,7 @@ namespace :release do
 
     desc "Upload release"
     task :upload do
-      uploader = setup_uploader
+      uploader = setup_uploader("tmp/starter-kit")
 
       # Upload minified first, so non-minified shows up on top
       upload_file(uploader, "starter-kit.#{EMBER_VERSION}.zip", "Ember.js #{EMBER_VERSION} Starter Kit", "dist/starter-kit.#{EMBER_VERSION}.zip")
@@ -390,6 +397,10 @@ namespace :release do
       end
     end
 
+    file ember_min_output => [:clean, "tmp/examples", "dist/ember.min.js"] do
+      sh "cp dist/ember.min.js #{ember_min_output}"
+    end
+
     desc "Update examples repo"
     task :update => ember_min_output do
       puts "Updating examples repo"
@@ -419,12 +430,6 @@ namespace :release do
 
   namespace :website do
 
-    task :pull => "tmp/website" do
-      Dir.chdir("tmp/website") do
-        sh "git pull origin master"
-      end
-    end
-
     file "tmp/website" do
       mkdir_p "tmp"
 
@@ -433,27 +438,37 @@ namespace :release do
       end
     end
 
-    file "tmp/website/source/layout.erb" => [:pull, "dist/ember.min.js"] do
-      require 'zlib'
-
-      layout = File.read("tmp/website/source/layout.erb")
-      min_gz = Zlib::Deflate.deflate(File.read("dist/ember.min.js")).bytes.count / 1024
-
-      layout.gsub! %r{<a href="https://github\.com/downloads/emberjs/ember\.js/ember-\d(\.\d+)*.min\.js">},
-        %{<a href="https://github.com/downloads/emberjs/ember.js/ember-#{EMBER_VERSION}.min.js">}
-
-      layout.gsub! %r{<a href="https://github\.com/downloads/emberjs/starter-kit/starter-kit\.\d(\.\d+)*\.zip">},
-        %{<a href="https://github.com/downloads/emberjs/starter-kit/starter-kit.#{EMBER_VERSION}.zip">}
-
-      layout.gsub! /\d+k min\+gzip/, "#{min_gz}k min+gzip"
-
-      File.open("tmp/website/index.html", "w") { |f| f.write index }
+    task :pull => "tmp/website" do
+      Dir.chdir("tmp/website") do
+        sh "git pull origin master"
+      end
     end
 
-    task :layout => "tmp/website/source/layout.erb"
+    file "dist/ember.min.js" => :dist
+
+    file "tmp/website/source/about.html.erb" => [:pull, "dist/ember.min.js"] do
+      require 'zlib'
+
+      about = File.read("tmp/website/source/about.html.erb")
+      min_gz = Zlib::Deflate.deflate(File.read("dist/ember.min.js")).bytes.count / 1024
+
+      about.gsub! %r{https://github\.com/downloads/emberjs/ember\.js/ember-\d(\.\d+)*.min\.js},
+        %{https://github.com/downloads/emberjs/ember.js/ember-#{EMBER_VERSION}.min.js}
+
+      about.gsub! %r{https://github\.com/downloads/emberjs/starter-kit/starter-kit\.\d(\.\d+)*\.zip},
+        %{https://github.com/downloads/emberjs/starter-kit/starter-kit.#{EMBER_VERSION}.zip}
+
+      about.gsub! /Ember \d(\.\d+)*/, "Ember #{EMBER_VERSION}"
+
+      about.gsub! /\d+k min\+gzip/, "#{min_gz}k min+gzip"
+
+      File.open("tmp/website/source/about.html.erb", "w") { |f| f.write about }
+    end
+
+    task :about => "tmp/website/source/about.html.erb"
 
     desc "Update website repo"
-    task :update => :layout do
+    task :update => :about do
       puts "Updating website repo"
       unless pretend?
         Dir.chdir("tmp/website") do
@@ -481,10 +496,10 @@ namespace :release do
   end
 
   desc "Prepare Ember for new release"
-  task :prepare => ['framework:prepare', 'starter_kit:prepare', 'examples:prepare']
+  task :prepare => [:clean, 'framework:prepare', 'starter_kit:prepare', 'examples:prepare', 'website:prepare']
 
   desc "Deploy a new Ember release"
-  task :deploy => ['framework:deploy', 'starter_kit:deploy', 'examples:deploy']
+  task :deploy => ['framework:deploy', 'starter_kit:deploy', 'examples:deploy', 'website:deploy']
 
 end
 

@@ -4,7 +4,7 @@ require('ember-states/routable');
 
 Ember.Router = Ember.StateManager.extend({
   route: function(path) {
-    if (path[0] === '/') {
+    if (path.charAt(0) === '/') {
       path = path.substr(1);
     }
 
