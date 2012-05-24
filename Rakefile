@@ -1,12 +1,9 @@
 abort "Please use Ruby 1.9 to build Ember.js!" if RUBY_VERSION !~ /^1\.9/
 
 require "bundler/setup"
-require "erb"
-require 'rake-pipeline'
-require "ember_docs/cli"
-require "colored"
 
 def pipeline
+  require 'rake-pipeline'
   Rake::Pipeline::Project.new("Assetfile")
 end
 
@@ -90,11 +87,13 @@ namespace :docs do
 
   desc "Preview Ember Docs (does not auto update)"
   task :preview do
+    require "ember_docs/cli"
     EmberDocs::CLI.start("preview #{doc_args}".split(' '))
   end
 
   desc "Build Ember Docs"
   task :build do
+    require "ember_docs/cli"
     EmberDocs::CLI.start("generate #{doc_args} -o docs".split(' '))
   end
 
@@ -107,6 +106,8 @@ end
 
 desc "Run tests with phantomjs"
 task :test, [:suite] => :dist do |t, args|
+  require "colored"
+
   unless system("which phantomjs > /dev/null 2>&1")
     abort "PhantomJS is not installed. Download from http://phantomjs.org"
   end
