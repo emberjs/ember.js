@@ -421,6 +421,35 @@ Ember.StateManager = Ember.State.extend(
     }
   },
 
+  /**
+    Finds a state by its state path.
+
+    Example:
+
+        manager = Ember.StateManager.create({
+          root: Ember.State.create({
+            dashboard: Ember.State.create()
+          })
+        });
+
+        manager.findStatesByPath(manager, "root.dashboard")
+
+        // returns the dashboard state
+
+    @param {Ember.State} root the state to start searching from
+    @param {String} path the state path to follow
+    @returns {Ember.State} the state at the end of the path
+  */
+  findStatesByPath: function(root, path) {
+    var parts = path.split('.'), state = root;
+
+    for (var i=0, l=parts.length; i<l; i++) {
+      state = get(get(state, 'states'), parts[i]);
+    }
+
+    return state;
+  },
+
   findStatesByRoute: function(state, route) {
     if (!route || route === "") { return undefined; }
     var r = route.split('.'), ret = [];
@@ -449,6 +478,11 @@ Ember.StateManager = Ember.State.extend(
       Ember.assert("A segment passed to transitionTo must be an Array", Ember.typeOf(tuple) === "array");
       return tuple[0];
     }).join(".");
+  },
+
+  urlFor: function(path, hash) {
+    var state = this.findStatesByPath(this, path);
+    return state.absoluteRoute(this, hash);
   },
 
   transitionTo: function(name, context) {

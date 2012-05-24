@@ -453,3 +453,115 @@ test("you cannot have a redirectsTo in a non-leaf state", function () {
     });
   });
 });
+
+module("urlFor", {
+
+});
+
+test("urlFor returns an absolute route", function() {
+  var router = Ember.Router.create({
+    root: Ember.State.create({
+      dashboard: Ember.State.create({
+        route: '/dashboard'
+      })
+    })
+  });
+
+  var url = router.urlFor('root.dashboard');
+  equal(url, "/dashboard");
+});
+
+test("urlFor supports dynamic segments", function() {
+  var router = Ember.Router.create({
+    root: Ember.State.create({
+      dashboard: Ember.State.create({
+        route: '/dashboard',
+
+        posts: Ember.State.create({
+          route: '/posts/:post_id'
+        })
+      })
+    })
+  });
+
+  var url = router.urlFor('root.dashboard.posts', { post_id: 1 });
+  equal(url, "/dashboard/posts/1");
+});
+
+test("urlFor supports using the current information for dynamic segments", function() {
+  var router = Ember.Router.create({
+    namespace: {
+      Post: {
+        toString: function() { return "Post"; },
+        find: function() { return { id: 1 }; }
+      }
+    },
+
+    root: Ember.State.create({
+      dashboard: Ember.State.create({
+        route: '/dashboard',
+
+        posts: Ember.State.create({
+          route: '/posts/:post_id',
+
+          index: Ember.State.create({
+            route: '/'
+          }),
+
+          manage: Ember.State.create({
+            route: '/manage'
+          })
+        })
+      })
+    })
+  });
+
+  Ember.run(function() {
+    router.route('/dashboard/posts/1');
+  });
+
+  var url = router.urlFor('root.dashboard.posts.manage');
+  equal(url, '/dashboard/posts/1/manage');
+});
+
+test("urlFor supports merging the current information for dynamic segments", function() {
+  var router = Ember.Router.create({
+    namespace: {
+      Post: {
+        toString: function() { return "Post"; },
+        find: function() { return { id: 1 }; }
+      },
+
+      Widget: {
+        toString: function() { return "Widget"; },
+        find: function() { return { id: 2 }; }
+      }
+    },
+
+    root: Ember.State.create({
+      dashboard: Ember.State.create({
+        route: '/dashboard',
+
+        posts: Ember.State.create({
+          route: '/posts/:post_id',
+
+          index: Ember.State.create({
+            route: '/'
+          }),
+
+          manage: Ember.State.create({
+            route: '/manage/:widget_id'
+          })
+        })
+      })
+    })
+  });
+
+  Ember.run(function() {
+    router.route('/dashboard/posts/1');
+  });
+
+  var url = router.urlFor('root.dashboard.posts.manage', { widget_id: 2 });
+  equal(url, '/dashboard/posts/1/manage/2');
+});
+

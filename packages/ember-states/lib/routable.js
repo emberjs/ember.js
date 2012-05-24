@@ -17,6 +17,13 @@ var paramForClass = function(classObject) {
   return Ember.String.underscore(last) + "_id";
 };
 
+var merge = function(original, hash) {
+  for (var prop in hash) {
+    if (!hash.hasOwnProperty(prop)) { continue; }
+    original[prop] = hash[prop];
+  }
+};
+
 Ember.Routable = Ember.Mixin.create({
   init: function() {
     var redirection;
@@ -53,17 +60,19 @@ Ember.Routable = Ember.Mixin.create({
     }
   },
 
-  absoluteRoute: function(manager) {
+  absoluteRoute: function(manager, hash) {
     var parentState = get(this, 'parentState');
     var path = '';
 
     if (get(parentState, 'isRoutable')) {
-      path = parentState.absoluteRoute(manager);
+      path = parentState.absoluteRoute(manager, hash);
     }
 
     var matcher = get(this, 'routeMatcher'),
-        hash = get(manager, 'stateMeta').get(this);
+        meta = get(manager, 'stateMeta').get(this);
 
+    hash = hash || {};
+    merge(hash, meta);
     var generated = matcher.generate(hash);
 
     if (generated !== "") {
