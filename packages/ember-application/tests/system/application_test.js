@@ -176,7 +176,7 @@ test("initialize application with stateManager via initialize call", function() 
   });
 
   equal(app.getPath('stateManager') instanceof Ember.Router, true, "Router was set from initialize call");
-  equal(app.getPath('stateManager.location') instanceof Ember.HashLocation, true, "Location was set from location style name");
+  equal(app.getPath('stateManager.location') instanceof Ember.HashLocation, true, "Location was set from location implementation name");
   equal(app.getPath('stateManager.currentState.path'), 'start.index', "The router moved the state into the right place");
 });
 

@@ -157,7 +157,7 @@ Ember.Application = Ember.Namespace.extend(
     var location = get(stateManager, 'location');
 
     if (typeof location === 'string') {
-      location = Ember.Location.create({style: location});
+      location = Ember.Location.create({implementation: location});
       set(stateManager, 'location', location);
     }
 
