@@ -21,7 +21,15 @@ require('ember-states/routable');
 */
 Ember.Router = Ember.StateManager.extend(
 /** @scope Ember.Router.prototype */ {
+
   initialState: 'root',
+
+  /**
+    On router, transitionEvent should be called connectOutlets
+
+    @property {String}
+  */
+  transitionEvent: 'connectOutlets',
 
   route: function(path) {
     if (path.charAt(0) === '/') {

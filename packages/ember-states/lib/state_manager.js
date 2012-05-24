@@ -378,6 +378,13 @@ Ember.StateManager = Ember.State.extend(
   currentState: null,
 
   /**
+    The name of transitionEvent that this stateManager will dispatch
+
+    @property {String}
+  */
+  transitionEvent: 'setup',
+
+  /**
     If set to true, `errorOnUnhandledEvents` will cause an exception to be
     raised if you attempt to send an event to a state manager that is not
     handled by the current state or any of its parent states.
@@ -448,7 +455,7 @@ Ember.StateManager = Ember.State.extend(
     // 1. Normalize arguments
     // 2. Ensure that we are in the correct state
     // 3. Map provided path to context objects and send
-    //    appropriate connectOutlets events
+    //    appropriate transitionEvent events
 
     if (Ember.empty(name)) { return; }
 
@@ -527,7 +534,7 @@ Ember.StateManager = Ember.State.extend(
       state = this.findStatesByRoute(state, path);
       state = state[state.length-1];
 
-      state.fire('connectOutlets', this, context);
+      state.fire(get(this, 'transitionEvent'), this, context);
     }, this);
   },
 
