@@ -59,7 +59,7 @@ require('ember-states/state');
 
       managerB.getPath('currentState.name') // 'beginHere'
 
-  Because it is a property you may also provided a computed function if you wish to derive
+  Because it is a property you may also provide a computed function if you wish to derive
   an `initialState` programmatically:
 
       managerC = Ember.StateManager.create({
