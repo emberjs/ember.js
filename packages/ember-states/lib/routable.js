@@ -19,9 +19,20 @@ var paramForClass = function(classObject) {
 
 Ember.Routable = Ember.Mixin.create({
   init: function() {
+    var redirection;
     this.on('connectOutlets', this, this.stashContext);
 
+    if (redirection = get(this, 'redirectsTo')) {
+      Ember.assert("You cannot use `redirectsTo` if you already have a `connectOutlets` method", this.connectOutlets === Ember.K);
+
+      this.connectOutlets = function(router) {
+        router.transitionTo(redirection);
+      };
+    }
+
     this._super();
+
+    Ember.assert("You cannot use `redirectsTo` on a state that has child states", !redirection || (!!redirection && !!get(this, 'isLeaf')));
   },
 
   stashContext: function(manager, context) {

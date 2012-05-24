@@ -405,3 +405,56 @@ test("should use a specified String `modelType` in the default `deserialize`", f
 
   router.route("/posts/1");
 });
+
+module("redirectsTo");
+
+test("if a leaf state has a redirectsTo, it automatically transitions into that state", function() {
+   var router = Ember.Router.create({
+     initialState: 'root',
+     root: Ember.State.create({
+
+       index: Ember.State.create({
+         route: '/',
+         redirectsTo: 'someOtherState'
+       }),
+
+       someOtherState: Ember.State.create({
+         route: '/other'
+       })
+     })
+  });
+
+  Ember.run(function() {
+    router.route("/");
+  });
+
+  equal(router.getPath('currentState.path'), "root.someOtherState");
+});
+
+test("you cannot define connectOutlets AND redirectsTo", function() {
+  raises(function() {
+    Ember.Router.create({
+     initialState: 'root',
+     root: Ember.State.create({
+       index: Ember.State.create({
+         route: '/',
+         redirectsTo: 'someOtherState',
+         connectOutlets: function() {}
+       })
+     })
+    });
+  });
+});
+
+test("you cannot have a redirectsTo in a non-leaf state", function () {
+  raises(function() {
+    Ember.Router.create({
+      initialState: 'root',
+      root: Ember.State.create({
+        redirectsTo: 'someOtherState',
+
+        index: Ember.State.create()
+      })
+    });
+  });
+});
