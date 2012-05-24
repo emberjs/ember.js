@@ -16,7 +16,7 @@ test("it should have its updateRoute method called when it is entered", function
 
   var router = Ember.Router.create({
     location: locationStub,
-    start: Ember.State.create({
+    root: Ember.State.create({
       ready: function(manager) {
         manager.goToState('initial');
       },
@@ -39,7 +39,7 @@ test("when you call `route` on the Router, it calls it on the current state", fu
 
   var router = Ember.Router.create({
     location: locationStub,
-    start: Ember.State.create({
+    root: Ember.State.create({
       ready: function(manager) {
         manager.goToState('initial');
       },
@@ -118,12 +118,12 @@ test("route repeatedly descends into a nested hierarchy", function() {
   });
 
   var router = Ember.Router.create({
-    start: state
+    root: state
   });
 
   router.route("/foo/bar/baz");
 
-  equal(router.getPath('currentState.path'), 'start.fooChild.barChild.bazChild');
+  equal(router.getPath('currentState.path'), 'root.fooChild.barChild.bazChild');
 });
 
 test("route repeatedly descends into a nested hierarchy", function() {
@@ -142,12 +142,12 @@ test("route repeatedly descends into a nested hierarchy", function() {
   });
 
   var router = Ember.Router.create({
-    start: state
+    root: state
   });
 
   router.route("/foo/bar/baz");
 
-  equal(router.getPath('currentState.path'), 'start.fooChild.barChild.bazChild');
+  equal(router.getPath('currentState.path'), 'root.fooChild.barChild.bazChild');
 });
 
 test("when you descend into a state, the route is set", function() {
@@ -172,7 +172,7 @@ test("when you descend into a state, the route is set", function() {
   var count = 0;
 
   var router = Ember.Router.create({
-    start: state,
+    root: state,
     location: {
       setURL: function(url) {
         if (count === 0) {
@@ -206,7 +206,7 @@ module("Routing Serialization and Deserialization", {
   setup: function() {
     router = Ember.Router.create({
       location: locationMock,
-      start: Ember.State.create({
+      root: Ember.State.create({
         ready: function(manager, post) {
           manager.transitionTo('post.show', { post: post });
         },
@@ -302,7 +302,6 @@ module("default serialize and deserialize with modelType", {
         }
       },
 
-      initialState: 'root',
       root: Ember.State.extend({
         post: Ember.State.extend({
           route: '/posts/:post_id',
@@ -377,7 +376,6 @@ module("default serialize and deserialize without modelType", {
         }
       },
 
-      initialState: 'root',
       root: Ember.State.extend({
         post: Ember.State.extend({
           route: '/posts/:post_id',
@@ -410,7 +408,6 @@ module("redirectsTo");
 
 test("if a leaf state has a redirectsTo, it automatically transitions into that state", function() {
    var router = Ember.Router.create({
-     initialState: 'root',
      root: Ember.State.create({
 
        index: Ember.State.create({
@@ -434,7 +431,6 @@ test("if a leaf state has a redirectsTo, it automatically transitions into that 
 test("you cannot define connectOutlets AND redirectsTo", function() {
   raises(function() {
     Ember.Router.create({
-     initialState: 'root',
      root: Ember.State.create({
        index: Ember.State.create({
          route: '/',
@@ -449,7 +445,6 @@ test("you cannot define connectOutlets AND redirectsTo", function() {
 test("you cannot have a redirectsTo in a non-leaf state", function () {
   raises(function() {
     Ember.Router.create({
-      initialState: 'root',
       root: Ember.State.create({
         redirectsTo: 'someOtherState',
 
