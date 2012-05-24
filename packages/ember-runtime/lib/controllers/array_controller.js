@@ -5,6 +5,7 @@
 // ==========================================================================
 
 require('ember-runtime/system/array_proxy');
+require('ember-runtime/controllers/controller');
 
 /**
   @class
@@ -45,4 +46,4 @@ require('ember-runtime/system/array_proxy');
   @extends Ember.ArrayProxy
 */
 
-Ember.ArrayController = Ember.ArrayProxy.extend();
+Ember.ArrayController = Ember.ArrayProxy.extend(Ember.ControllerMixin);

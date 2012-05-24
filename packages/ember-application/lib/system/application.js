@@ -94,29 +94,39 @@ Ember.Application = Ember.Namespace.extend(
         ...
       });
 
-      App.initialize(stateManager);
+      App.initialize(router);
 
-      stateManager.get('postsController')     // <App.PostsController:ember1234>
-      stateManager.get('commentsController')  // <App.CommentsController:ember1235>
+      router.get('postsController')     // <App.PostsController:ember1234>
+      router.get('commentsController')  // <App.CommentsController:ember1235>
 
-      stateManager.getPath('postsController.stateManager') // stateManager
+      router.getPath('postsController.router') // router
   */
-  initialize: function(stateManager) {
+  initialize: function(router) {
     var properties = Ember.A(Ember.keys(this)),
         injections = get(this.constructor, 'injections'),
         namespace = this, controller, name;
 
-    if (!stateManager && Ember.Router.detect(namespace['Router'])) {
-      stateManager = namespace['Router'].create();
+    if (!router && Ember.Router.detect(namespace['Router'])) {
+      router = namespace['Router'].create();
     }
 
-    set(this, 'stateManager', stateManager);
+    if (router) {
+      set(this, 'stateManager', router);
+    }
+
+    // By default, the router's namespace is the current application.
+    //
+    // This allows it to find model classes when a state has a
+    // route like `/posts/:post_id`. In that case, it would first
+    // convert `post_id` into `Post`, and then look it up on its
+    // namespace.
+    set(router, 'namespace', this);
 
     Ember.runLoadHooks('application', this);
 
     properties.forEach(function(property) {
       injections.forEach(function(injection) {
-        injection(namespace, stateManager, property);
+        injection(namespace, router, property);
       });
     });
   },
@@ -182,12 +192,14 @@ Ember.Application.reopenClass({
   }
 });
 
-Ember.Application.registerInjection(function(app, stateManager, property) {
+Ember.Application.registerInjection(function(app, router, property) {
   if (!/^[A-Z].*Controller$/.test(property)) { return; }
 
   var name = property[0].toLowerCase() + property.substr(1),
       controller = app[property].create();
 
-  stateManager.set(name, controller);
-  controller.set('target', stateManager);
+  router.set(name, controller);
+
+  controller.set('target', router);
+  controller.set('controllers', router);
 });
