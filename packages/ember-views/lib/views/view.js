@@ -794,9 +794,9 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     }
   },
   
-  invokeForState: function() {
+  invokeForState: function(methodName, options) {
     var states = this.get('renderStates');
-    return states.send.apply(states, arguments);
+    return states.send(methodName, options);
   },
 
   /**
@@ -1619,7 +1619,7 @@ Ember.View = Ember.Object.extend(Ember.Evented,
   }).property().cacheable(),
   
   appendChild: function(view, options) {
-    return this.invokeForState('appendChild', view, options);
+    return this.invokeForState('appendChild', {childView: view, options: options});
   },
 
   /**
@@ -1863,7 +1863,7 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     Handle events from `Ember.EventDispatcher`
   */
   handleEvent: function(eventName, evt) {
-    return this.invokeForState('handleEvent', eventName, evt);
+    return this.invokeForState('handleEvent', {eventName: eventName, event: evt});
   }
 
 });

@@ -394,7 +394,7 @@ Ember.StateManager = Ember.State.extend(
   errorOnUnhandledEvent: true,
   
   send: function(event, context) {
-    this.sendRecursively(event, get(this, 'currentState'), context);
+    return this.sendRecursively(event, get(this, 'currentState'), context);
   },
 
   sendRecursively: function(event, currentState, context) {
@@ -410,11 +410,11 @@ Ember.StateManager = Ember.State.extend(
     // case.
     if (typeof action === 'function') {
       if (log) { Ember.Logger.log(fmt("STATEMANAGER: Sending event '%@' to state %@.", [event, get(currentState, 'path')])); }
-      action.call(currentState, this, context);
+      return action.call(currentState, this, context);
     } else {
       var parentState = get(currentState, 'parentState');
       if (parentState) {
-        this.sendRecursively(event, parentState, context);
+        return this.sendRecursively(event, parentState, context);
       } else if (get(this, 'errorOnUnhandledEvent')) {
         throw new Ember.Error(this.toString() + " could not respond to event " + event + " in state " + getPath(this, 'currentState.path') + ".");
       }

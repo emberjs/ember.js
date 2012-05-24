@@ -78,8 +78,10 @@ Ember.View.states.HasElementState = Ember.State.extend({
   },
 
   // Handle events from `Ember.EventDispatcher`
-  handleEvent: function(manager, eventName, evt) {
-    var view = get(manager, 'view');
+  handleEvent: function(manager, options) {
+    var view = get(manager, 'view'),
+        eventName = options.eventName,
+        evt = options.event;
     
     var handler = view[eventName];
     if (Ember.typeOf(handler) === 'function') {

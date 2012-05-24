@@ -286,7 +286,7 @@ Ember.ContainerView = Ember.View.extend({
     var changedViews = views.slice(start, start+removed);
     this.initializeViews(changedViews, null, null);
 
-    this.invokeForState('childViewsWillChange', views, start, removed);
+    this.invokeForState('childViewsWillChange', {views: views, start: start, removed: removed});
   },
 
   /**
@@ -314,7 +314,7 @@ Ember.ContainerView = Ember.View.extend({
     this.initializeViews(changedViews, this, get(this, 'templateData'));
 
     // Let the current state handle the changes
-    this.invokeForState('childViewsDidChange', views, start, added);
+    this.invokeForState('childViewsDidChange', {views: views, start: start, added: added});
   },
 
   initializeViews: function(views, parentView, templateData) {
@@ -383,15 +383,23 @@ Ember.ContainerView.RenderStateManager = Ember.View.RenderStateManager.extend({
     
     hasElement: Ember.View.states.HasElementState.create({
       inDOM: Ember.View.states.InDomState.create(),
-      childViewsWillChange: function(manager, views, start, removed) {
-        var view = get(manager, 'view');
+      childViewsWillChange: function(manager, options) {
+        var view = get(manager, 'view'),
+            views = options.views,
+            start = options.start,
+            removed = options.removed;
+            
         for (var i=start; i<start+removed; i++) {
           views[i].remove();
         }
       },
     
-      childViewsDidChange: function(manager, views, start, added) {
-        var view = get(manager, 'view');
+      childViewsDidChange: function(manager, options) {
+        var view = get(manager, 'view'),
+            views = options.views,
+            start = options.start,
+            added = options.added;
+            
         // If the DOM element for this container view already exists,
         // schedule each child view to insert its DOM representation after
         // bindings have finished syncing.

@@ -36,10 +36,11 @@ Ember.View.states.InBufferState = Ember.State.extend({
     // when a view is rendered in a buffer, appending a child
     // view will render that view and append the resulting
     // buffer into its buffer.
-    appendChild: function(manager, childView, options) {
+    appendChild: function(manager, context) {
       var view = get(manager, 'view'),
-          buffer = view.buffer;
-  
+          buffer = view.buffer,
+          childView = context.childView,
+          options = context.options;
   
       childView = view.createChildView(childView, options);
       get(view, '_childViews').push(childView);
