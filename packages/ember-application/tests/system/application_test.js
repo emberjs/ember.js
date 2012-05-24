@@ -131,7 +131,7 @@ test('initialized application go to initial route', function() {
         onUpdateURL: function() {}
       },
 
-      start: Ember.State.extend({
+      root: Ember.State.extend({
         index: Ember.State.extend({
           route: '/'
         })
@@ -139,7 +139,7 @@ test('initialized application go to initial route', function() {
     });
   });
 
-  equal(app.getPath('stateManager.currentState.path'), 'start.index', "The router moved the state into the right place");
+  equal(app.getPath('stateManager.currentState.path'), 'root.index', "The router moved the state into the right place");
 });
 
 test("initialize application with non routable stateManager", function() {
@@ -165,7 +165,7 @@ test("initialize application with stateManager via initialize call", function() 
     app.Router = Ember.Router.extend({
       location: 'hash',
 
-      start: Ember.State.extend({
+      root: Ember.State.extend({
         index: Ember.State.extend({
           route: '/'
         })
@@ -177,7 +177,7 @@ test("initialize application with stateManager via initialize call", function() 
 
   equal(app.getPath('stateManager') instanceof Ember.Router, true, "Router was set from initialize call");
   equal(app.getPath('stateManager.location') instanceof Ember.HashLocation, true, "Location was set from location implementation name");
-  equal(app.getPath('stateManager.currentState.path'), 'start.index', "The router moved the state into the right place");
+  equal(app.getPath('stateManager.currentState.path'), 'root.index', "The router moved the state into the right place");
 });
 
 test("initialize application with stateManager via initialize call from Router class", function() {
@@ -189,7 +189,7 @@ test("initialize application with stateManager via initialize call from Router c
     app.Router = Ember.Router.extend({
       location: 'hash',
 
-      start: Ember.State.extend({
+      root: Ember.State.extend({
         index: Ember.State.extend({
           route: '/'
         })
@@ -200,5 +200,5 @@ test("initialize application with stateManager via initialize call from Router c
   });
 
   equal(app.getPath('stateManager') instanceof Ember.Router, true, "Router was set from initialize call");
-  equal(app.getPath('stateManager.currentState.path'), 'start.index', "The router moved the state into the right place");
+  equal(app.getPath('stateManager.currentState.path'), 'root.index', "The router moved the state into the right place");
 });

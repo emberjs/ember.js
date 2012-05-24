@@ -176,7 +176,9 @@ Ember.Routable = Ember.Mixin.create({
     var object = state.deserialize(manager, match.hash) || {};
     manager.transitionTo(get(state, 'path'), object);
     manager.send('routePath', match.remaining);
-  }
+  },
+
+  connectOutlets: Ember.K
 });
 
 Ember.State.reopen(Ember.Routable);
