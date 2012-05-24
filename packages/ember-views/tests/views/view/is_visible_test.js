@@ -39,7 +39,7 @@ module("Ember.View#isVisible", {
 });
 
 test("should hide views when isVisible is false", function() {
-  var view = Ember.View.create({
+  view = Ember.View.create({
     isVisible: false
   });
 
@@ -55,7 +55,7 @@ test("should hide views when isVisible is false", function() {
 });
 
 test("should hide element if isVisible is false before element is created", function() {
-  var view = Ember.View.create({
+  view = Ember.View.create({
     isVisible: false
   });
 
@@ -84,7 +84,6 @@ test("should hide element if isVisible is false before element is created", func
 });
 
 test("view should be notified after isVisible is set to false and the element has been hidden", function() {
-  var view;
   Ember.run(function(){
     view = View.create({ isVisible: false });
     view.append();

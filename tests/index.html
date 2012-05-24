@@ -8,6 +8,30 @@
   <script type="text/javascript" src="minispade.js"></script>
 
   <script type="text/javascript">
+    var originalModule = module;
+    module = function(name, origOpts) {
+      var opts = {};
+      if (origOpts && origOpts.setup) { opts.setup = origOpts.setup; }
+      opts.teardown = function() {
+        if (origOpts && origOpts.teardown) { origOpts.teardown(); }
+        if (Ember.run.currentRunLoop) {
+          ok(false, "Should not be in a run loop at end of test");
+          while (Ember.run.currentRunLoop) {
+            Ember.run.end();
+          }
+        }
+        if (Ember.run.hasScheduledTimers()) {
+          // Use `ok` so we get full description.
+          // Gate inside of `if` so that we don't mess up `expects` counts
+          ok(false, "Ember run should not have scheduled timers at end of test");
+          Ember.run.cancelTimers();
+        }
+      }
+      return originalModule(name, opts);
+    };
+  </script>
+
+  <script type="text/javascript">
     // Handle JSHint
     QUnit.config.urlConfig.push('nojshint');
 

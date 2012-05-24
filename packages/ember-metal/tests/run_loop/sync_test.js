@@ -29,31 +29,3 @@ test('sync() will immediately flush the sync queue only', function() {
   equal(cnt, 10, 'should flush actions now too');
 
 });
-
-
-test('sync() works outside of runloop (by fixing runloop)', function() {
-  var previousPreventRunloop = Ember.ENV.PREVENT_AUTOMATIC_RUNLOOP_CREATION;
-  Ember.ENV.PREVENT_AUTOMATIC_RUNLOOP_CREATION = false;
-
-  try {
-    var cnt = 0;
-
-    function cntup() { cnt++; }
-
-    function syncfunc() {
-      if (++cnt<5) Ember.run.schedule('sync', syncfunc);
-      Ember.run.schedule('actions', cntup);
-
-    }
-
-    syncfunc();
-
-    equal(cnt, 1, 'should not run action yet') ;
-    Ember.run.sync();
-
-    equal(cnt, 5, 'should have run sync queue continuously');
-  } finally {
-    Ember.ENV.PREVENT_AUTOMATIC_RUNLOOP_CREATION = previousPreventRunloop;
-  }
-});
-

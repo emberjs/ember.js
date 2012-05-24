@@ -123,14 +123,15 @@ test('transform function should NOT be invoked on fwd change', function() {
 });
 
 test('transforms should chain', function() {
-  binding = Ember.bind(MyApp, 'foo.value', 'bar.value');
-  binding.transform({
-    to: function(value) { return value+' T1'; }
+  Ember.run(function () {
+    binding = Ember.bind(MyApp, 'foo.value', 'bar.value');
+    binding.transform({
+      to: function(value) { return value+' T1'; }
+    });
+    binding.transform({
+      to: function(value) { return value+' T2'; }
+    });
   });
-  binding.transform({
-    to: function(value) { return value+' T2'; }
-  });
-  Ember.run.sync();
 
   // should have transformed...
   equal(Ember.getPath('MyApp.foo.value'), 'BAR T1 T2', 'should transform');
@@ -138,15 +139,16 @@ test('transforms should chain', function() {
 });
 
 test('resetTransforms() should clear', function() {
-  binding = Ember.bind(MyApp, 'foo.value', 'bar.value');
-  binding.transform({
-    to: function(value) { return value+' T1'; }
+  Ember.run(function () {
+    binding = Ember.bind(MyApp, 'foo.value', 'bar.value');
+    binding.transform({
+      to: function(value) { return value+' T1'; }
+    });
+    binding.resetTransforms();
+    binding.transform({
+      to: function(value) { return value+' T2'; }
+    });
   });
-  binding.resetTransforms();
-  binding.transform({
-    to: function(value) { return value+' T2'; }
-  });
-  Ember.run.sync();
 
   // should have transformed...
   equal(Ember.getPath('MyApp.foo.value'), 'BAR T2', 'should transform');
