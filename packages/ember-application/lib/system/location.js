@@ -10,6 +10,9 @@ var get = Ember.get, set = Ember.set;
   onUpdateURL(callback): triggers the callback when the URL changes
 
   Calling setURL will not trigger onUpdateURL callbacks.
+
+  TODO: This, as well as the Ember.Location documentation below, should
+  perhaps be moved so that it's visible in the JsDoc output.
 */
 
 /**

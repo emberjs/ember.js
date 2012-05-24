@@ -243,7 +243,8 @@ var get = Ember.get, set = Ember.set;
   `view` that references the `Ember.View` object that was interacted with.
   
 **/
-Ember.ViewState = Ember.State.extend({
+Ember.ViewState = Ember.State.extend(
+/** @scope Ember.ViewState.prototype */ {
   isViewState: true,
 
   enter: function(stateManager) {
