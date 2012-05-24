@@ -132,37 +132,37 @@ testBoth('Bindings should be inherited', function(get, set) {
 
   var a = { foo: 'FOO', b: { bar: 'BAR' } };
   var binding = new Ember.Binding('foo', 'b.bar');
-  binding.connect(a);
+  var a2;
 
-  var a2 = Ember.create(a);
-  Ember.run.sync();
+  Ember.run(function () {
+    binding.connect(a);
+
+    a2 = Ember.create(a);
+  });
+
   equal(get(a2, 'foo'), "BAR", "Should have synced binding on child");
   equal(get(a,  'foo'), "BAR", "Should NOT have synced binding on parent");
 
-  set(a2, 'b', { bar: 'BAZZ' });
-  Ember.run.sync();
+  Ember.run(function () {
+    set(a2, 'b', { bar: 'BAZZ' });
+  });
 
   equal(get(a2, 'foo'), "BAZZ", "Should have synced binding on child");
   equal(get(a,  'foo'), "BAR", "Should NOT have synced binding on parent");
-  
-  Ember.run.end();
-  Ember.run.cancelTimers();
 
 });
 
 test('inherited bindings should sync on create', function() {
+  var a;
+  Ember.run(function () {
+    var A = function() {
+      Ember.bind(this, 'foo', 'bar.baz');
+    };
 
-  var A = function() {
-    Ember.bind(this, 'foo', 'bar.baz');
-  };
+    a = new A();
+    Ember.set(a, 'bar', { baz: 'BAZ' });
+  });
 
-  var a = new A();
-  Ember.set(a, 'bar', { baz: 'BAZ' });
-
-  Ember.run.sync();
   equal(Ember.get(a, 'foo'), 'BAZ', 'should have synced binding on new obj');
-  
-  Ember.run.end();
-  Ember.run.cancelTimers();
 });
 

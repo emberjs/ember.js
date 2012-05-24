@@ -53,12 +53,9 @@ module("basic object binding", {
     fromObject = Ember.Object.create({ value: 'start' }) ;
     toObject = Ember.Object.create({ value: 'end' }) ;
     root = { fromObject: fromObject, toObject: toObject };
-    binding = Ember.bind(root, 'toObject.value', 'fromObject.value');
-    Ember.run.sync(); // actually sets up up the connection
-  },
-  teardown: function(){
-    Ember.run.end();
-    Ember.run.cancelTimers();
+    Ember.run(function () {
+      binding = Ember.bind(root, 'toObject.value', 'fromObject.value');
+    });
   }
 });
 
@@ -67,16 +64,18 @@ test("binding should have synced on connect", function() {
 });
 
 test("fromObject change should propagate to toObject only after flush", function() {
-  set(fromObject, "value", "change") ;
-  equal(get(toObject, "value"), "start") ;
-  Ember.run.sync() ;
+  Ember.run(function () {
+    set(fromObject, "value", "change") ;
+    equal(get(toObject, "value"), "start") ;
+  });
   equal(get(toObject, "value"), "change") ;
 });
 
 test("toObject change should propagate to fromObject only after flush", function() {
-  set(toObject, "value", "change") ;
-  equal(get(fromObject, "value"), "start") ;
-  Ember.run.sync() ;
+  Ember.run(function () {
+    set(toObject, "value", "change") ;
+    equal(get(fromObject, "value"), "start") ;
+  });
   equal(get(fromObject, "value"), "change") ;
 });
 
@@ -102,22 +101,24 @@ test("deferred observing during bindings", function() {
   });
 
   var root = { fromObject: fromObject, toObject: toObject };
-  Ember.bind(root, 'toObject.value1', 'fromObject.value1');
-  Ember.bind(root, 'toObject.value2', 'fromObject.value2');
+  Ember.run(function () {
+    Ember.bind(root, 'toObject.value1', 'fromObject.value1');
+    Ember.bind(root, 'toObject.value2', 'fromObject.value2');
 
-  // change both value1 + value2, then  flush bindings.  observer should only
-  // fire after bindings are done flushing.
-  set(fromObject, 'value1', 'CHANGED');
-  set(fromObject, 'value2', 'CHANGED');
-  Ember.run.sync();
+    // change both value1 + value2, then  flush bindings.  observer should only
+    // fire after bindings are done flushing.
+    set(fromObject, 'value1', 'CHANGED');
+    set(fromObject, 'value2', 'CHANGED');
+  });
 
   equal(toObject.callCount, 2, 'should call observer twice');
 });
 
 test("binding disconnection actually works", function() {
   binding.disconnect(root);
-  set(fromObject, 'value', 'change');
-  Ember.run.sync();
+  Ember.run(function () {
+    set(fromObject, 'value', 'change');
+  });
   equal(get(toObject, 'value'), 'start');
 });
 
