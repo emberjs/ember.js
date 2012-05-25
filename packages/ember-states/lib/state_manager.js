@@ -432,7 +432,7 @@ Ember.StateManager = Ember.State.extend(
           })
         });
 
-        manager.findStatesByPath(manager, "root.dashboard")
+        manager.getStateByPath(manager, "root.dashboard")
 
         // returns the dashboard state
 
@@ -440,7 +440,7 @@ Ember.StateManager = Ember.State.extend(
     @param {String} path the state path to follow
     @returns {Ember.State} the state at the end of the path
   */
-  findStatesByPath: function(root, path) {
+  getStateByPath: function(root, path) {
     var parts = path.split('.'), state = root;
 
     for (var i=0, l=parts.length; i<l; i++) {
@@ -448,6 +448,17 @@ Ember.StateManager = Ember.State.extend(
     }
 
     return state;
+  },
+
+  findStateByPath: function(state, path) {
+    var possible;
+
+    while (!possible && state) {
+      possible = this.getStateByPath(state, path);
+      state = get(state, 'parentState');
+    }
+
+    return possible;
   },
 
   findStatesByRoute: function(state, route) {
@@ -481,7 +492,9 @@ Ember.StateManager = Ember.State.extend(
   },
 
   urlFor: function(path, hash) {
-    var state = this.findStatesByPath(this, path);
+    var currentState = get(this, 'currentState') || this;
+
+    var state = this.findStateByPath(currentState, path);
     return state.absoluteRoute(this, hash);
   },
 

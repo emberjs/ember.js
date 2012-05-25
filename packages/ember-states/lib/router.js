@@ -2,6 +2,8 @@ require('ember-states/state');
 require('ember-states/route_matcher');
 require('ember-states/routable');
 
+var get = Ember.get;
+
 /**
   @class
 
@@ -37,5 +39,19 @@ Ember.Router = Ember.StateManager.extend(
     }
 
     this.send('routePath', path);
+  },
+
+  urlForEvent: function(eventName, context) {
+    var currentState = get(this, 'currentState');
+    var targetStateName = currentState.eventTransitions[eventName];
+
+    Ember.assert("You must specify a target state for an event in order to get links for an event", !!targetStateName);
+
+    var targetState = this.findStateByPath(currentState, targetStateName);
+
+    Ember.assert("Your target state name " + targetStateName + " for event " + eventName + " did not resolve to a state", !!targetState);
+    var hash = targetState.serialize(this, context);
+
+    return this.urlFor(targetStateName, hash);
   }
 });

@@ -157,12 +157,12 @@ ActionHelper.registerAction = function(actionName, eventName, target, view, cont
   @param {Hash} options
 */
 EmberHandlebars.registerHelper('action', function(actionName, options) {
-  var hash = options.hash || {},
+  var hash = options.hash,
       eventName = hash.on || "click",
       view = options.data.view,
       target, context, controller;
 
-  if (view.isVirtual) { view = view.get('parentView'); }
+  view = get(view, 'concreteView');
 
   if (hash.target) {
     target = getPath(this, hash.target, options);
@@ -174,6 +174,15 @@ EmberHandlebars.registerHelper('action', function(actionName, options) {
 
   context = hash.context ? getPath(this, hash.context, options) : options.contexts[0];
 
+  var output = [], url;
+
+  if (target.urlForEvent) {
+    url = target.urlForEvent(actionName, context);
+    output.push('href="' + url + '"');
+  }
+
   var actionId = ActionHelper.registerAction(actionName, eventName, target, view, context);
-  return new EmberHandlebars.SafeString('data-ember-action="' + actionId + '"');
+  output.push('data-ember-action="' + actionId + '"');
+
+  return new EmberHandlebars.SafeString(output.join(" "));
 });
