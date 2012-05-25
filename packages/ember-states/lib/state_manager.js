@@ -394,6 +394,7 @@ Ember.StateManager = Ember.State.extend(
   errorOnUnhandledEvent: true,
 
   send: function(event, context) {
+    Ember.assert('Cannot send event "' + event + '" while currentState is ' + get(this, 'currentState'), get(this, 'currentState'));
     this.sendRecursively(event, get(this, 'currentState'), context);
   },
 
