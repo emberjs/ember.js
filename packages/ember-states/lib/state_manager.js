@@ -372,6 +372,7 @@ Ember.StateManager = Ember.State.extend(
 
     if (initialState) {
       this.transitionTo(initialState);
+      Ember.assert('Failed to transition to initial state "' + initialState + '"', get(this, 'currentState'));
     }
   },
   
