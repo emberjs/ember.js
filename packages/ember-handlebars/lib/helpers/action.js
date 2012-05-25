@@ -176,7 +176,7 @@ EmberHandlebars.registerHelper('action', function(actionName, options) {
 
   var output = [], url;
 
-  if (target.urlForEvent) {
+  if (hash.href === true && target.urlForEvent) {
     url = target.urlForEvent(actionName, context);
     output.push('href="' + url + '"');
   }

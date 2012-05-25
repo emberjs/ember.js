@@ -13,6 +13,27 @@ var namespace = {
   }
 };
 
+test("it will not generates the URL from the target without href option", function() {
+  var view = Ember.View.create({
+    template: compile("<a {{action show}}>Hi</a>")
+  });
+
+  var controller = Ember.Object.create(Ember.ControllerMixin, {
+    target: {
+      urlForEvent: function(event, context) {
+        return "/foo/bar";
+      }
+    }
+  });
+
+  Ember.run(function() {
+    view.set('controller', controller);
+    view.appendTo('#qunit-fixture');
+  });
+
+  ok(!view.$().html().match(/href=['"]\/foo\/bar['"]/), "The html (" + view.$().html() + ") has the href /foo/bar in it");
+});
+
 test("it generates the URL from the target", function() {
   var view = Ember.View.create({
     template: compile("<a {{action show href=true}}>Hi</a>")
