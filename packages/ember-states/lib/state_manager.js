@@ -445,6 +445,7 @@ Ember.StateManager = Ember.State.extend(
 
     for (var i=0, l=parts.length; i<l; i++) {
       state = get(get(state, 'states'), parts[i]);
+      if (!state) { break; }
     }
 
     return state;
