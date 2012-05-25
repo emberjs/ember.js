@@ -1123,7 +1123,7 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     @param {Function} fn the function that inserts the element into the DOM
   */
   _insertElementLater: function(fn) {
-    this._lastInsert = Ember.guidFor(fn);    
+    this._lastInsert = Ember.guidFor(fn);
     Ember.run.schedule('render', this, this.invokeForState, 'insertElement', fn);
   },
 
@@ -1570,8 +1570,6 @@ Ember.View = Ember.Object.extend(Ember.Evented,
         });
   */
   attributeBindings: [],
-
-  // state: 'preRender',
 
   // .......................................................
   // CORE DISPLAY METHODS
