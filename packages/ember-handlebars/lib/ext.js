@@ -106,7 +106,8 @@ Ember.Handlebars.precompile = function(string) {
       unbound: true,
       bindAttr: true,
       template: true,
-      view: true
+      view: true,
+      _triageMustache: true
     },
     data: true,
     stringParams: true
