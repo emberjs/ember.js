@@ -179,8 +179,12 @@ Ember.Select = Ember.View.extend(
 
 Ember.SelectOption = Ember.View.extend({
   tagName: 'option',
-  defaultTemplate: Ember.Handlebars.compile("{{view.label}}"),
   attributeBindings: ['value', 'selected'],
+
+  defaultTemplate: function(context, options) {
+    options = { data: options.data, hash: {} };
+    Ember.Handlebars.helpers.bind.call(context, "view.label", options);
+  },
 
   init: function() {
     this.labelPathDidChange();
