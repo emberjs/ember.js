@@ -44,7 +44,7 @@ var bind = function(property, options, preserveContext, shouldDisplay, valueNorm
       path: path,
       pathRoot: pathRoot,
       previousContext: currentContext,
-      isEscaped: options.hash.escaped,
+      isEscaped: !options.hash.unescaped,
       templateData: options.data
     });
 
