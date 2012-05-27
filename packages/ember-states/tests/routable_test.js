@@ -566,8 +566,8 @@ test("urlFor supports merging the current information for dynamic segments", fun
 });
 
 test("will not rewrite url with undefined id while loading record on initial load", function() {
-  var postRecord = Ember.Object.create({clientId: 1, isLoaded: false});
-  var postUrl;
+  var postRecord = Ember.Object.create({clientId: 1});
+  var postUrl = '/posts/1';
   var post;
   var router = Ember.Router.create({
     namespace: {
@@ -606,7 +606,6 @@ test("will not rewrite url with undefined id while loading record on initial loa
     stop();
     setTimeout(function() {
       postRecord.set('id', 1);
-      postRecord.set('isLoaded', true);
       start();
     }, 1);
   });
