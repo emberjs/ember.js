@@ -565,3 +565,52 @@ test("urlFor supports merging the current information for dynamic segments", fun
   equal(url, '/dashboard/posts/1/manage/2');
 });
 
+test("will not rewrite url with undefined id while loading record on initial load", function() {
+  var postRecord = Ember.Object.create({clientId: 1, isLoaded: false});
+  var postUrl;
+  var post;
+  var router = Ember.Router.create({
+    namespace: {
+      Post: {
+        toString: function() { return "Post"; },
+        find: function() { return postRecord; }
+      }
+    },
+
+    location: {
+      setURL: function(url) {
+        postUrl = url;
+      },
+      getURL: function() {
+        return postUrl;
+      }
+    },
+
+    root: Ember.State.create({
+      posts: Ember.State.create({
+        route: '/posts',
+
+        show: Ember.State.create({
+          route: '/:post_id',
+
+          connectOutlets: function(router, context) {
+            post = context;
+          }
+        })
+      })
+    })
+  });
+
+  Ember.run(function() {
+    router.route('/posts/1');
+    stop();
+    setTimeout(function() {
+      postRecord.set('id', 1);
+      postRecord.set('isLoaded', true);
+      start();
+    }, 1);
+  });
+
+  equal(post.get('clientId'), 1, 'Found a post with clientId');
+  equal(router.get('location').getURL(), '/posts/1', 'Got full url');
+});
