@@ -42,7 +42,7 @@ Ember.Suite = Ember.Object.extend(
   /**
     Define a name for these tests - all modules are prefixed w/ it.
 
-    @property {String}
+    @type String
   */
   name: Ember.required(String),
 

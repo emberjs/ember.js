@@ -119,7 +119,7 @@ Ember.Set = Ember.CoreObject.extend(Ember.MutableEnumerable, Ember.Copyable, Emb
   /**
     This property will change as the number of objects in the set changes.
 
-    @property Number
+    @type number
     @default 0
   */
   length: 0,

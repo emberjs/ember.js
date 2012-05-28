@@ -389,7 +389,8 @@ Ember.StateManager = Ember.State.extend(
     raised if you attempt to send an event to a state manager that is not
     handled by the current state or any of its parent states.
 
-    @property {Boolean}
+    @type Boolean
+    @default true
   */
   errorOnUnhandledEvent: true,
 
