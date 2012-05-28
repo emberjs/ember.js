@@ -257,3 +257,22 @@ test("if a ContainerView starts with a currentView and then a different currentV
   equal(getPath(container, 'childViews.length'), 1, "should have one child view");
   equal(getPath(container, 'childViews').objectAt(0), secondaryView, "should have the currentView as the only child view");
 });
+
+test("should set the child view context in template", function() {
+  var container = Ember.ContainerView.create({
+    name: 'container'
+  });
+
+  set(container, 'currentView', Ember.View.create({
+    name: 'child',
+    template: function(context, options) {
+      return 'In ' + context.get('name') + ' context';
+    }
+  }));
+
+  Ember.run(function() {
+    container.appendTo('#qunit-fixture');
+  });
+
+  equal(container.$().text(), 'In child context', '');
+});
