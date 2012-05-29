@@ -5,14 +5,15 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
-require('ember-views/views/states/default');
+var get = Ember.get;
 
-Ember.View.states.preRender = {
-  parentState: Ember.View.states._default,
-
+/** @private */
+Ember.View.states.PreRenderState = Ember.State.extend({
   // a view leaves the preRender state once its element has been
   // created (createElement).
-  insertElement: function(view, fn) {
+  insertElement: function(manager, fn) {
+    var view = get(manager, 'view');
+    
     if (view._lastInsert !== Ember.guidFor(fn)){
       return;
     }
@@ -26,7 +27,9 @@ Ember.View.states.preRender = {
 
   empty: Ember.K,
 
-  setElement: function(view, value) {
+  setElement: function(manager, value) {
+    var view = get(manager, 'view');
+
     view.beginPropertyChanges();
     view.invalidateRecursively('element');
 
@@ -38,4 +41,4 @@ Ember.View.states.preRender = {
 
     return value;
   }
-};
+});
