@@ -56,7 +56,7 @@ var bind = function(property, options, preserveContext, shouldDisplay, valueNorm
     };
 
     // Observes the given property on the context and
-    // tells the Ember._BindableSpan to re-render. If property
+    // tells the Ember._HandlebarsBoundView to re-render. If property
     // is an empty string, we are printing the current context
     // object ({{this}}) so updating it is not our responsibility.
     if (path !== '') {
