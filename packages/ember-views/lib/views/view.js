@@ -1768,7 +1768,7 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     @test in createChildViews
   */
   createChildView: function(view, attrs) {
-    var coreAttrs, templateData;
+    var coreAttrs;
 
     if (Ember.View.detect(view)) {
       coreAttrs = { _parentView: this, templateData: get(this, 'templateData') };
