@@ -1768,22 +1768,16 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     @test in createChildViews
   */
   createChildView: function(view, attrs) {
-    var coreAttrs;
-
     if (Ember.View.detect(view)) {
-      coreAttrs = { _parentView: this, templateData: get(this, 'templateData') };
+      attrs = attrs || {};
+      attrs._parentView = this;
+      attrs.templateData = attrs.templateData || get(this, 'templateData');
 
-      if (attrs) {
-        view = view.create(coreAttrs, attrs);
-      } else {
-        view = view.create(coreAttrs);
-      }
-
-      var viewName = view.viewName;
+      view = view.create(attrs);
 
       // don't set the property on a virtual view, as they are invisible to
       // consumers of the view API
-      if (viewName) { set(get(this, 'concreteView'), viewName, view); }
+      if (view.viewName) { set(get(this, 'concreteView'), view.viewName, view); }
     } else {
       Ember.assert('You must pass instance or subclass of View', view instanceof Ember.View);
       Ember.assert("You can only pass attributes when a class is provided", !attrs);
