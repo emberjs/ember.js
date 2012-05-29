@@ -225,7 +225,7 @@ Ember._RenderBuffer.prototype =
     var buffer = new Ember._RenderBuffer(tagName);
     buffer.parentBuffer = parent;
 
-    if (other) { buffer.setProperties(other); }
+    if (other) { Ember.$.extend(buffer, other); }
     if (fn) { fn.call(this, buffer); }
 
     return buffer;
