@@ -1741,7 +1741,7 @@ test("Ember.Button targets should respect keywords", function() {
   Ember.TESTING_DEPRECATION = true;
 
   try {
-    var templateString = '{{#with anObject}}{{view Ember.Button target="controller.foo"}}{{/with}}';
+    var templateString = '{{#with view.anObject}}{{view Ember.Button target="controller.foo"}}{{/with}}';
     view = Ember.View.create({
       template: Ember.Handlebars.compile(templateString),
       anObject: {},
