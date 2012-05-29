@@ -78,7 +78,7 @@ require('ember-states/state');
   A StateManager can have any number of Ember.State objects as properties
   and can have a single one of these states as its current state.
 
-  Calling `goToState` transitions between states:
+  Calling `transitionTo` transitions between states:
 
       robotManager = Ember.StateManager.create({
         initialState: 'poweredDown',
@@ -87,7 +87,7 @@ require('ember-states/state');
       })
 
       robotManager.getPath('currentState.name') // 'poweredDown'
-      robotManager.goToState('poweredUp')
+      robotManager.transitionTo('poweredUp')
       robotManager.getPath('currentState.name') // 'poweredUp'
 
   Before transitioning into a new state the existing `currentState` will have its
@@ -113,7 +113,7 @@ require('ember-states/state');
       })
 
       robotManager.getPath('currentState.name') // 'poweredDown'
-      robotManager.goToState('poweredUp')
+      robotManager.transitionTo('poweredUp')
       // will log
       // 'exiting the poweredDown state'
       // 'entering the poweredUp state. Destroy all humans.'
@@ -138,19 +138,19 @@ require('ember-states/state');
       })
 
       robotManager.getPath('currentState.name') // 'poweredDown'
-      robotManager.goToState('poweredUp')
+      robotManager.transitionTo('poweredUp')
       // will log
       // 'exiting the poweredDown state'
       // 'entering the poweredUp state. Destroy all humans.'
-      robotManager.goToState('poweredUp') // no logging, no state change
+      robotManager.transitionTo('poweredUp') // no logging, no state change
 
-      robotManager.goToState('someUnknownState') // silently fails
+      robotManager.transitionTo('someUnknownState') // silently fails
       robotManager.getPath('currentState.name') // 'poweredUp'
 
 
   Each state property may itself contain properties that are instances of Ember.State. 
-  The StateManager can transition to specific sub-states in a series of goToState method calls or
-  via a single goToState with the full path to the specific state. The StateManager will also 
+  The StateManager can transition to specific sub-states in a series of transitionTo method calls or
+  via a single transitionTo with the full path to the specific state. The StateManager will also 
   keep track of the full path to its currentState
 
       robotManager = Ember.StateManager.create({
@@ -167,14 +167,14 @@ require('ember-states/state');
 
       robotManager.getPath('currentState.name') // 'poweredDown'
 
-      robotManager.goToState('poweredUp')
+      robotManager.transitionTo('poweredUp')
       robotManager.getPath('currentState.name') // 'poweredUp'
 
-      robotManager.goToState('mobile')
+      robotManager.transitionTo('mobile')
       robotManager.getPath('currentState.name') // 'mobile'
 
       // transition via a state path
-      robotManager.goToState('poweredDown.charging')
+      robotManager.transitionTo('poweredDown.charging')
       robotManager.getPath('currentState.name') // 'charging'
 
       robotManager.getPath('currentState.get.path') // 'poweredDown.charging'
@@ -226,12 +226,12 @@ require('ember-states/state');
 
 
       robotManager.get('currentState.get.path') // 'poweredDown'
-      robotManager.goToState('charged')
+      robotManager.transitionTo('charged')
       // logs 'entered charged state'
       // but does *not* log  'exited poweredDown state'
       robotManager.getPath('currentState.name') // 'charged
 
-      robotManager.goToState('poweredUp.mobile')
+      robotManager.transitionTo('poweredUp.mobile')
       // logs
       // 'exited charged state'
       // 'exited poweredDown state'
@@ -307,7 +307,7 @@ require('ember-states/state');
       // Error: <Ember.StateManager:ember132> could not
       // respond to event anAction in state stateOne.substateOne.subsubstateOne.
 
-  Inside of an action method the given state should delegate `goToState` calls on its
+  Inside of an action method the given state should delegate `transitionTo` calls on its
   StateManager.
 
       robotManager = Ember.StateManager.create({
@@ -315,18 +315,18 @@ require('ember-states/state');
         poweredDown: Ember.State.create({
           charging: Ember.State.create({
             chargeComplete: function(manager, context){
-              manager.goToState('charged')
+              manager.transitionTo('charged')
             }
           }),
           charged: Ember.State.create({
             boot: function(manager, context){
-              manager.goToState('poweredUp')
+              manager.transitionTo('poweredUp')
             }
           })
         }),
         poweredUp: Ember.State.create({
           beginExtermination: function(manager, context){
-            manager.goToState('rampaging')
+            manager.transitionTo('rampaging')
           },
           rampaging: Ember.State.create()
         })
@@ -371,10 +371,17 @@ Ember.StateManager = Ember.State.extend(
     }
 
     if (initialState) {
-      this.goToState(initialState);
+      this.transitionTo(initialState);
     }
   },
-
+  
+  /**
+    The current state from among the manager's possible states. This property should
+    not be set directly.  Use `transitionTo` to move between states by name.
+    
+    @property {Ember.State}
+    @readOnly
+  */
   currentState: null,
 
   /**

@@ -1628,7 +1628,7 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     this._super();
 
     // Register the view for event handling. This hash is used by
-    // Ember.RootResponder to dispatch incoming events.
+    // Ember.EventDispatcher to dispatch incoming events.
     Ember.View.views[get(this, 'elementId')] = this;
 
     var childViews = get(this, '_childViews').slice();
