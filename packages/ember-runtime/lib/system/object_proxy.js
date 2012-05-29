@@ -77,34 +77,77 @@ function delegate(key, value) {
 
 delegateDesc = Ember.computed(delegate).volatile();
 
-Ember.ObjectProxy = Ember.Object.extend({
+/**
+  @class
+
+  `Ember.ObjectProxy` forwards all properties to a proxied `content`
+  object.
+
+      object = Ember.Object.create({
+        name: 'Foo'
+      });
+      proxy = Ember.ObjectProxy.create({
+        content: object
+      });
+
+      // Access and change existing properties
+      proxy.get('name') // => 'Foo'
+      proxy.set('name', 'Bar');
+      object.get('name') // => 'Bar'
+
+      // Create new 'description' property on `object`
+      proxy.set('description', 'Foo is a whizboo baz');
+      object.get('description') // => 'Foo is a whizboo baz'
+
+  While `content` is unset, new properties will be silently discarded.
+
+      proxy = Ember.ObjectProxy.create({
+        content: null
+      });
+      proxy.set('blackHole', 'data');
+      proxy.get('blackHole') // => undefined
+*/
+Ember.ObjectProxy = Ember.Object.extend(
+/** @scope Ember.ObjectProxy.prototype */ {
+  /**
+    The object whose properties will be forwarded.
+
+    @type Ember.Object
+    @default null
+  */
   content: null,
+  /** @private */
   delegateGet: function (key) {
     var content = get(this, 'content');
     if (content) {
       return get(content, key);
     }
   },
+  /** @private */
   delegateSet: function (key, value) {
     var content = get(this, 'content');
     if (content) {
       return set(content, key, value);
     }
   },
+  /** @private */
   willWatchProperty: function (key) {
     if (key in this) return;
     defineProperty(this, key, delegateDesc);
     addDelegateObservers(this, key);
   },
+  /** @private */
   didUnwatchProperty: function (key) {
     if (isDelegateDesc(this, key)) {
       removeDelegateObservers(this, key);
       undefineProperty(this, key);
     }
   },
+  /** @private */
   unknownProperty: function (key) {
     return this.delegateGet(key);
   },
+  /** @private */
   setUnknownProperty: function (key, value) {
     this.delegateSet(key, value);
   }
