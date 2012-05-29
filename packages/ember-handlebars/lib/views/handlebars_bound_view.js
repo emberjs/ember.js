@@ -164,12 +164,12 @@ Ember._HandlebarsBoundView = Ember._MetamorphView.extend({
       // If we are preserving the context (for example, if this
       // is an #if block, call the template with the same object.
       if (preserveContext) {
-        set(this, '_templateContext', context);
+        set(this, '_context', context);
       } else {
       // Otherwise, determine if this is a block bind or not.
       // If so, pass the specified object to the template
         if (displayTemplate) {
-          set(this, '_templateContext', result);
+          set(this, '_context', result);
         } else {
         // This is not a bind block, just push the result of the
         // expression to the render context and return.
@@ -188,9 +188,9 @@ Ember._HandlebarsBoundView = Ember._MetamorphView.extend({
       set(this, 'template', inverseTemplate);
 
       if (preserveContext) {
-        set(this, '_templateContext', context);
+        set(this, '_context', context);
       } else {
-        set(this, '_templateContext', result);
+        set(this, '_context', result);
       }
     } else {
       set(this, 'template', function() { return ''; });

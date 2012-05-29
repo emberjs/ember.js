@@ -540,12 +540,12 @@ Ember.View = Ember.Object.extend(Ember.Evented,
 
     @type Object
   */
-  templateContext: Ember.computed(function(key, value) {
+  context: Ember.computed(function(key, value) {
     if (arguments.length === 2) {
-      set(this, '_templateContext', value);
+      set(this, '_context', value);
       return value;
     } else {
-      return get(this, '_templateContext');
+      return get(this, '_context');
     }
   }).cacheable(),
 
@@ -556,7 +556,7 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     by Handlebars without triggering the observer that causes the view
     to be re-rendered.
   */
-  _templateContext: Ember.computed(function(key, value) {
+  _context: Ember.computed(function(key, value) {
     var parentView, controller;
 
     if (arguments.length === 2) {
@@ -570,7 +570,7 @@ Ember.View = Ember.Object.extend(Ember.Evented,
 
       parentView = get(this, '_parentView');
       if (parentView) {
-        return get(parentView, '_templateContext');
+        return get(parentView, '_context');
       }
     }
 
@@ -585,7 +585,7 @@ Ember.View = Ember.Object.extend(Ember.Evented,
   */
   _displayPropertyDidChange: Ember.observer(function() {
     this.rerender();
-  }, 'templateContext', 'controller'),
+  }, 'context', 'controller'),
 
   /**
     If the view is currently inserted into the DOM of a parent view, this
@@ -769,8 +769,8 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     or `templateName` properties instead of this method.
 
     By default, Ember.View will look for a function in the `template`
-    property and invoke it with the value of `templateContext`. The value of
-    `templateContext` will be the view itself unless you override it.
+    property and invoke it with the value of `context`. The value of
+    `context` will be the view's controller unless you override it.
 
     @param {Ember.RenderBuffer} buffer The render buffer
   */
@@ -781,7 +781,7 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     var template = get(this, 'layout') || get(this, 'template');
 
     if (template) {
-      var context = get(this, '_templateContext');
+      var context = get(this, '_context');
       var keywords = this.cloneKeywords();
 
       var data = {

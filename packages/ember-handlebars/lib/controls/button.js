@@ -24,7 +24,7 @@ Ember.Button = Ember.View.extend(Ember.TargetActionSupport, {
   */
   targetObject: Ember.computed(function() {
     var target = get(this, 'target'),
-        root = get(this, 'templateContext'),
+        root = get(this, 'context'),
         data = get(this, 'templateData');
 
     if (typeof target !== 'string') { return target; }
