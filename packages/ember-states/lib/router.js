@@ -45,7 +45,7 @@ Ember.Router = Ember.StateManager.extend(
     var currentState = get(this, 'currentState');
     var targetStateName = currentState.eventTransitions[eventName];
 
-    Ember.assert("You must specify a target state for an event in order to get links for an event", !!targetStateName);
+    Ember.assert(Ember.String.fmt("You must specify a target state for event '%@' in order to link to it in the current state '%@'.", [eventName, get(currentState, 'path')]), !!targetStateName);
 
     var targetState = this.findStateByPath(currentState, targetStateName);
 
