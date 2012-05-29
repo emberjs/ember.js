@@ -1,6 +1,6 @@
 module("Ember.Routable");
 
-var locationStub = {};
+var locationStub = { };
 
 test("it should have its updateRoute method called when it is entered", function() {
   expect(2);
@@ -454,12 +454,30 @@ test("you cannot have a redirectsTo in a non-leaf state", function () {
   });
 });
 
-module("urlFor", {
+var formatURLArgument = null;
 
+var expectURL = function(url) {
+  equal(url, formatURLArgument, "should invoke formatURL with URL "+url);
+};
+
+module("urlFor", {
+  setup: function() {
+    locationStub = {
+      formatURL: function(url) {
+        formatURLArgument = url;
+        return url;
+      },
+
+      setURL: Ember.K
+    };
+  }
 });
 
 test("urlFor returns an absolute route", function() {
+  expect(2);
+
   var router = Ember.Router.create({
+    location: locationStub,
     root: Ember.State.create({
       dashboard: Ember.State.create({
         route: '/dashboard'
@@ -469,10 +487,13 @@ test("urlFor returns an absolute route", function() {
 
   var url = router.urlFor('root.dashboard');
   equal(url, "/dashboard");
+  expectURL('/dashboard');
 });
 
 test("urlFor supports dynamic segments", function() {
   var router = Ember.Router.create({
+    location: locationStub,
+
     root: Ember.State.create({
       dashboard: Ember.State.create({
         route: '/dashboard',
@@ -486,10 +507,12 @@ test("urlFor supports dynamic segments", function() {
 
   var url = router.urlFor('root.dashboard.posts', { post_id: 1 });
   equal(url, "/dashboard/posts/1");
+  expectURL('/dashboard/posts/1');
 });
 
 test("urlFor supports using the current information for dynamic segments", function() {
   var router = Ember.Router.create({
+    location: locationStub,
     namespace: {
       Post: {
         toString: function() { return "Post"; },
@@ -522,10 +545,12 @@ test("urlFor supports using the current information for dynamic segments", funct
 
   var url = router.urlFor('root.dashboard.posts.manage');
   equal(url, '/dashboard/posts/1/manage');
+  expectURL('/dashboard/posts/1/manage');
 });
 
 test("urlFor supports merging the current information for dynamic segments", function() {
   var router = Ember.Router.create({
+    location: locationStub,
     namespace: {
       Post: {
         toString: function() { return "Post"; },
@@ -563,5 +588,6 @@ test("urlFor supports merging the current information for dynamic segments", fun
 
   var url = router.urlFor('root.dashboard.posts.manage', { widget_id: 2 });
   equal(url, '/dashboard/posts/1/manage/2');
+  expectURL('/dashboard/posts/1/manage/2');
 });
 

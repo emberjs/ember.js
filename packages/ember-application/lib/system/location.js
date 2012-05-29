@@ -70,6 +70,19 @@ Ember.HashLocation = Ember.Object.extend({
     window.addEventListener('hashchange', hashchange);
   },
 
+  /**
+    @private
+
+    Given a URL, formats it to be placed into the page as part
+    of an element's `href` attribute.
+
+    This is used, for example, when using the {{action}} helper
+    to generate a URL based on an event.
+  */
+  formatURL: function(url) {
+    return '#'+url;
+  },
+
   willDestroy: function() {
     get(this, 'callbacks').forEach(function(callback) {
       window.removeEventListener('hashchange', callback);

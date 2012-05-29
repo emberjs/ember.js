@@ -7,9 +7,17 @@ var namespace = {
   }
 };
 
+var locationStub = {
+  formatURL: function(url) {
+    return '#!#' + url;
+  },
+
+  setURL: Ember.K
+};
 
 test("router.urlForEvent looks in the current state's eventTransitions hash", function() {
   var router = Ember.Router.create({
+    location: locationStub,
     namespace: namespace,
     root: Ember.State.create({
       index: Ember.State.create({
@@ -37,11 +45,12 @@ test("router.urlForEvent looks in the current state's eventTransitions hash", fu
   equal(router.getPath('currentState.path'), "root.index", "precond - the router is in root.index");
 
   var url = router.urlForEvent('showDashboard');
-  equal(url, "/dashboard");
+  equal(url, "#!#/dashboard");
 });
 
 test("router.urlForEvent works with a context", function() {
   var router = Ember.Router.create({
+    location: locationStub,
     namespace: namespace,
     root: Ember.State.create({
       index: Ember.State.create({
@@ -69,11 +78,12 @@ test("router.urlForEvent works with a context", function() {
   equal(router.getPath('currentState.path'), "root.index", "precond - the router is in root.index");
 
   var url = router.urlForEvent('showDashboard', { id: 1 });
-  equal(url, "/dashboard/1");
+  equal(url, "#!#/dashboard/1");
 });
 
 test("router.urlForEvent works with Ember.State.transitionTo", function() {
   var router = Ember.Router.create({
+    location: locationStub,
     namespace: namespace,
     root: Ember.State.create({
       index: Ember.State.create({
@@ -95,6 +105,6 @@ test("router.urlForEvent works with Ember.State.transitionTo", function() {
   equal(router.getPath('currentState.path'), "root.index", "precond - the router is in root.index");
 
   var url = router.urlForEvent('showDashboard', { id: 1 });
-  equal(url, "/dashboard/1");
+  equal(url, "#!#/dashboard/1");
 });
 

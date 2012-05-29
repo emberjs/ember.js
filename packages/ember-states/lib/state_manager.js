@@ -501,9 +501,10 @@ Ember.StateManager = Ember.State.extend(
 
   urlFor: function(path, hash) {
     var currentState = get(this, 'currentState') || this;
-
     var state = this.findStateByPath(currentState, path);
-    return state.absoluteRoute(this, hash);
+    var location = get(this, 'location');
+
+    return location.formatURL(state.absoluteRoute(this, hash));
   },
 
   transitionTo: function(name, context) {
