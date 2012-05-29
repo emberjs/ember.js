@@ -7,6 +7,8 @@
 
 var set = Ember.set, get = Ember.get;
 
+var VIEW_PRESERVES_CONTEXT = Ember.VIEW_PRESERVES_CONTEXT;
+
 module("Ember.View - Template Functionality");
 
 test("should call the function of the associated template", function() {
@@ -25,7 +27,6 @@ test("should call the function of the associated template", function() {
   Ember.run(function(){
     view.createElement();
   });
-
 
   ok(view.$('#twas-called').length, "the named template was called");
 });
@@ -48,7 +49,6 @@ test("should call the function of the associated template with itself as the con
   Ember.run(function(){
     view.createElement();
   });
-
 
   equal("template was called for Tom DAAAALE", view.$('#twas-called').text(), "the named template was called with the view as the data source");
 });
@@ -84,7 +84,6 @@ test("should not use defaultTemplate if template is provided", function() {
     view.createElement();
   });
 
-
   equal("foo", view.$().text(), "default template was not printed");
 });
 
@@ -104,22 +103,22 @@ test("should not use defaultTemplate if template is provided", function() {
     view.createElement();
   });
 
-
   equal("foo", view.$().text(), "default template was not printed");
 });
 
-
 test("should render an empty element if no template is specified", function() {
   var view;
+
   view = Ember.View.create();
   Ember.run(function(){
     view.createElement();
   });
+
   equal(view.$().html(), '', "view div should be empty");
 });
 
 test("should provide a controller to the template if a controller is specified on the view", function() {
-  expect(7);
+  expect(VIEW_PRESERVES_CONTEXT ? 7 : 5);
 
   var Controller1 = Ember.Object.extend({
     toString: function() { return "Controller1"; }
@@ -181,7 +180,6 @@ test("should provide a controller to the template if a controller is specified o
     parentView.destroy();
   });
 
-
   var parentViewWithControllerlessChild = Ember.View.create({
     controller: controller1,
 
@@ -203,6 +201,9 @@ test("should provide a controller to the template if a controller is specified o
 
   strictEqual(optionsDataKeywordsControllerForView, controller1, "passes the original controller in the data");
   strictEqual(optionsDataKeywordsControllerForChildView, controller1, "passes the controller in the data to child views");
-  strictEqual(contextForView, controller2, "passes the controller in as the main context of the parent view");
-  strictEqual(contextForControllerlessView, controller1, "passes the controller in as the main context of the child view");
+
+  if (VIEW_PRESERVES_CONTEXT) {
+    strictEqual(contextForView, controller2, "passes the controller in as the main context of the parent view");
+    strictEqual(contextForControllerlessView, controller1, "passes the controller in as the main context of the child view");
+  }
 });
