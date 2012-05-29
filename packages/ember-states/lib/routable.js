@@ -46,6 +46,8 @@ Ember.Routable = Ember.Mixin.create({
     var meta = get(manager, 'stateMeta'),
         serialized = this.serialize(manager, context);
 
+    if (serialized === false) { return; }
+
     meta.set(this, serialized);
 
     if (get(this, 'isRoutable')) {
@@ -150,6 +152,7 @@ Ember.Routable = Ember.Mixin.create({
     if (modelClass = this.modelClassFor(manager)) {
       param = paramForClass(modelClass);
       id = get(context, 'id');
+      if (id === undefined) { return false; }
       context = {};
       context[param] = id;
     }
