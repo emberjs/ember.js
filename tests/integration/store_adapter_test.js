@@ -44,6 +44,14 @@ test("when a single record is requested, the adapter's find method is called unl
   store.find(Person, 1);
 });
 
+test("when a record is requested but has not yet been loaded, it should report its id", function() {
+  adapter.find = Ember.K;
+
+  var record = store.find(Person, 1);
+  equal(get(record, 'id'), 1, "should report its id while loading");
+});
+
+
 test("when multiple records are requested, the adapter's findMany method is called", function() {
   expect(1);
 
