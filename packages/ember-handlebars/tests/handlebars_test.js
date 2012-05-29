@@ -1741,7 +1741,7 @@ test("Ember.Button targets should respect keywords", function() {
   Ember.TESTING_DEPRECATION = true;
 
   try {
-    var templateString = '{{#with anObject}}{{view Ember.Button target="controller.foo"}}{{/with}}';
+    var templateString = '{{#with view.anObject}}{{view Ember.Button target="controller.foo"}}{{/with}}';
     view = Ember.View.create({
       template: Ember.Handlebars.compile(templateString),
       anObject: {},
@@ -1954,6 +1954,7 @@ test("bindings should respect keywords", function() {
     museumOpen: true,
 
     controller: {
+      museumOpen: true,
       museumDetails: Ember.Object.create({
         name: "SFMoMA",
         price: 20
@@ -1964,7 +1965,7 @@ test("bindings should respect keywords", function() {
       template: Ember.Handlebars.compile('Name: {{view.name}} Price: ${{view.dollars}}')
     }),
 
-    template: Ember.Handlebars.compile('{{#if museumOpen}}{{view museumView nameBinding="controller.museumDetails.name" dollarsBinding="controller.museumDetails.price"}}{{/if}}')
+    template: Ember.Handlebars.compile('{{#if view.museumOpen}}{{view view.museumView nameBinding="controller.museumDetails.name" dollarsBinding="controller.museumDetails.price"}}{{/if}}')
   });
 
   Ember.run(function() {

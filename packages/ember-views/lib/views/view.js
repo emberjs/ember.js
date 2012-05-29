@@ -557,13 +557,17 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     to be re-rendered.
   */
   _templateContext: Ember.computed(function(key, value) {
-    var parentView;
+    var parentView, controller;
 
     if (arguments.length === 2) {
       return value;
     }
 
     if (VIEW_PRESERVES_CONTEXT) {
+      if (controller = get(this, 'controller')) {
+        return controller;
+      }
+
       parentView = get(this, '_parentView');
       if (parentView) {
         return get(parentView, '_templateContext');
