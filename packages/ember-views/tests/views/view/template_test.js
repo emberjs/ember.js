@@ -25,7 +25,7 @@ test("should call the function of the associated template", function() {
   Ember.run(function(){
     view.createElement();
   });
-  
+
 
   ok(view.$('#twas-called').length, "the named template was called");
 });
@@ -48,7 +48,7 @@ test("should call the function of the associated template with itself as the con
   Ember.run(function(){
     view.createElement();
   });
-  
+
 
   equal("template was called for Tom DAAAALE", view.$('#twas-called').text(), "the named template was called with the view as the data source");
 });
@@ -83,7 +83,7 @@ test("should not use defaultTemplate if template is provided", function() {
   Ember.run(function(){
     view.createElement();
   });
-  
+
 
   equal("foo", view.$().text(), "default template was not printed");
 });
@@ -103,7 +103,7 @@ test("should not use defaultTemplate if template is provided", function() {
   Ember.run(function(){
     view.createElement();
   });
-  
+
 
   equal("foo", view.$().text(), "default template was not printed");
 });
@@ -119,15 +119,26 @@ test("should render an empty element if no template is specified", function() {
 });
 
 test("should provide a controller to the template if a controller is specified on the view", function() {
-  expect(5);
-  var controller1 = Ember.Object.create(),
-      controller2 = Ember.Object.create(),
+  expect(7);
+
+  var Controller1 = Ember.Object.extend({
+    toString: function() { return "Controller1"; }
+  });
+
+  var Controller2 = Ember.Object.extend({
+    toString: function() { return "Controller2"; }
+  });
+
+  var controller1 = Controller1.create(),
+      controller2 = Controller2.create(),
       optionsDataKeywordsControllerForView,
-      optionsDataKeywordsControllerForChildView;
-  
+      optionsDataKeywordsControllerForChildView,
+      contextForView,
+      contextForControllerlessView;
+
   var view = Ember.View.create({
     controller: controller1,
-  
+
     template: function(buffer, options) {
       optionsDataKeywordsControllerForView = options.data.keywords.controller;
     }
@@ -136,59 +147,62 @@ test("should provide a controller to the template if a controller is specified o
   Ember.run(function() {
     view.appendTo('#qunit-fixture');
   });
-  
+
   strictEqual(optionsDataKeywordsControllerForView, controller1, "passes the controller in the data");
-  
+
   Ember.run(function(){
     view.destroy();
   });
-  
+
   var parentView = Ember.View.create({
     controller: controller1,
-  
+
     template: function(buffer, options) {
       options.data.view.appendChild(Ember.View.create({
         controller: controller2,
         templateData: options.data,
-        template: function(buffer, options) {
+        template: function(context, options) {
+          contextForView = context;
           optionsDataKeywordsControllerForChildView = options.data.keywords.controller;
         }
       }));
       optionsDataKeywordsControllerForView = options.data.keywords.controller;
     }
   });
-  
+
   Ember.run(function() {
     parentView.appendTo('#qunit-fixture');
   });
-  
+
   strictEqual(optionsDataKeywordsControllerForView, controller1, "passes the controller in the data");
   strictEqual(optionsDataKeywordsControllerForChildView, controller2, "passes the child view's controller in the data");
-  
+
   Ember.run(function(){
     parentView.destroy();
   });
-  
-  
+
+
   var parentViewWithControllerlessChild = Ember.View.create({
     controller: controller1,
-  
+
     template: function(buffer, options) {
       options.data.view.appendChild(Ember.View.create({
         templateData: options.data,
-        template: function(buffer, options) {
+        template: function(context, options) {
+          contextForControllerlessView = context;
           optionsDataKeywordsControllerForChildView = options.data.keywords.controller;
         }
       }));
       optionsDataKeywordsControllerForView = options.data.keywords.controller;
     }
   });
-  
+
   Ember.run(function() {
     parentViewWithControllerlessChild.appendTo('#qunit-fixture');
   });
-  
-  
+
   strictEqual(optionsDataKeywordsControllerForView, controller1, "passes the original controller in the data");
   strictEqual(optionsDataKeywordsControllerForChildView, controller1, "passes the controller in the data to child views");
+  strictEqual(contextForView, controller2, "passes the controller in as the main context of the parent view");
+  strictEqual(contextForControllerlessView, controller1, "passes the controller in as the main context of the child view");
 });
