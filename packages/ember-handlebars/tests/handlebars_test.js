@@ -245,7 +245,7 @@ test("child views can be inserted using the {{view}} Handlebars helper", functio
 
 test("should accept relative paths to views", function() {
   view = Ember.View.create({
-    template: Ember.Handlebars.compile('Hey look, at {{view ".myCool.view"}}'),
+    template: Ember.Handlebars.compile('Hey look, at {{view "myCool.view"}}'),
 
     myCool: Ember.Object.create({
       view: Ember.View.extend({

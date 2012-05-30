@@ -161,7 +161,7 @@ var normalizePath = Ember.Handlebars.normalizePath = function(root, path, data) 
     } else {
       // Strip the keyword from the path and look up
       // the remainder from the newly found root.
-      path = path.substr(keyword.length);
+      path = path.substr(keyword.length+1);
     }
   }
 
