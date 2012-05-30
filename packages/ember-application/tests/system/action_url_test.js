@@ -1,4 +1,7 @@
-require('ember-handlebars');
+// FIXME: Move this to an integration test pacakge with proper requires
+try {
+  require('ember-handlebars');
+} catch() { }
 
 module("the {{action}} helper with href attribute");
 
