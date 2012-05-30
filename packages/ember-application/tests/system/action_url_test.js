@@ -34,7 +34,28 @@ test("it generates the URL from the target", function() {
     view.appendTo('#qunit-fixture');
   });
 
-  ok(view.$().html().match(/href=['"]\/foo\/bar['"]/), "The html (" + view.$().html() + ") has the href /foo/bar in it");
+  ok(view.$().html().match(/href=['"]\/foo\/bar['"]/), "The html (" + view.$().html() + ") does not have the href /foo/bar in it");
+});
+
+test("it does not generate the URL when href property is not specified", function() {
+  var view = Ember.View.create({
+    template: compile("<a {{action show}}>Hi</a>")
+  });
+
+  var controller = Ember.Object.create(Ember.ControllerMixin, {
+    target: {
+      urlForEvent: function(event, context) {
+        return "/foo/bar";
+      }
+    }
+  });
+
+  Ember.run(function() {
+    view.set('controller', controller);
+    view.appendTo('#qunit-fixture');
+  });
+
+  ok(!view.$().html().match(/href=['"]\/foo\/bar['"]/), "The html (" + view.$().html() + ") has the href /foo/bar in it");
 });
 
 test("it sets a URL with a context", function() {
