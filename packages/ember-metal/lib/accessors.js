@@ -39,12 +39,16 @@ get = function get(obj, keyName) {
 
 /** @private */
 set = function set(obj, keyName, value) {
-  if (('object'===typeof obj) && !(keyName in obj)) {
-    if ('function' === typeof obj.setUnknownProperty) {
-      obj.setUnknownProperty(keyName, value);
-    } else if ('function' === typeof obj.unknownProperty) {
-      obj.unknownProperty(keyName, value);
-    } else obj[keyName] = value;
+  var isObject = 'object' === typeof obj;
+  var hasProp = isObject && !(keyName in obj);
+
+  // setUnknownProperty is called if `obj` is an object,
+  // the property does not already exist, and the
+  // `setUnknownProperty` method exists on the object
+  var unknownProp = hasProp && 'function' === typeof obj.setUnknownProperty;
+
+  if (unknownProp) {
+    obj.setUnknownProperty(keyName, value);
   } else {
     obj[keyName] = value;
   }

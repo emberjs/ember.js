@@ -26,22 +26,6 @@ test('should set arbitrary properties on an object', function() {
 
 });
 
-test('should call unknownProperty if defined and value is undefined', function() {
-
-  var obj = {
-    count: 0,
-    unknownProperty: function(key, value) {
-      equal(key, 'foo', 'should pass key');
-      equal(value, 'BAR', 'should pass key');
-      this.count++;
-      return 'FOO';
-    }
-  };
-
-  equal(Ember.set(obj, 'foo', "BAR"), 'BAR', 'should return set value');
-  equal(obj.count, 1, 'should have invoked');
-});
-
 test('should call setUnknownProperty if defined and value is undefined', function() {
 
   var obj = {
