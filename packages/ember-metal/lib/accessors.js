@@ -24,17 +24,14 @@ var get, set;
 
 /** @private */
 get = function get(obj, keyName) {
-  if (keyName === undefined && 'string' === typeof obj) {
-    keyName = obj;
-    obj = Ember;
-  }
-
-  if (!obj) return undefined;
   var ret = obj[keyName];
-  if (ret===undefined && 'function'===typeof obj.unknownProperty) {
-    ret = obj.unknownProperty(keyName);
+  if (ret !== undefined) { return ret; }
+
+  // if the property's value is undefined and the object defines
+  // unknownProperty, invoke unknownProperty
+  if ('function' === typeof obj.unknownProperty) {
+    return obj.unknownProperty(keyName);
   }
-  return ret;
 };
 
 /** @private */
