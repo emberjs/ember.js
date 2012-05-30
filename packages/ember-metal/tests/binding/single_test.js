@@ -1,4 +1,3 @@
-// ==========================================================================
 // Project:  Ember Runtime
 // Copyright: ©2011 Strobe Inc. and contributors.
 // License:   Licensed under MIT license (see license.js)
@@ -39,7 +38,7 @@ test('forces binding values to be single', function() {
     Ember.setPath('MyApp.foo.value', ['BAR', 'BAZ']);
   });
   
-  equal(Ember.getPath('MyApp.bar.value'), Ember.MULTIPLE_PLACEHOLDER, 'converts to placeholder');
+  equal(Ember.getPath('MyApp.bar.value'), "@@MULT@@", 'converts to placeholder');
 });
 
 test('Ember.Binding#single(fromPath, placeholder) is available', function() {

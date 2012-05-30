@@ -27,48 +27,6 @@ require('ember-metal/run_loop'); // Ember.run.schedule
 */
 Ember.LOG_BINDINGS = false || !!Ember.ENV.LOG_BINDINGS;
 
-/**
-  @static
-
-  Performance paramter. This will benchmark the time spent firing each
-  binding.
-
-  @type Boolean
-*/
-Ember.BENCHMARK_BINDING_NOTIFICATIONS = !!Ember.ENV.BENCHMARK_BINDING_NOTIFICATIONS;
-
-/**
-  @static
-
-  Performance parameter. This will benchmark the time spend configuring each
-  binding.
-
-  @type Boolean
-*/
-Ember.BENCHMARK_BINDING_SETUP = !!Ember.ENV.BENCHMARK_BINDING_SETUP;
-
-
-/**
-  @static
-
-  Default placeholder for multiple values in bindings.
-
-  @type String
-  @default '@@MULT@@'
-*/
-Ember.MULTIPLE_PLACEHOLDER = '@@MULT@@';
-
-/**
-  @static
-
-  Default placeholder for empty values in bindings.  Used by notEmpty()
-  helper unless you specify an alternative.
-
-  @type String
-  @default '@@EMPTY@@'
-*/
-Ember.EMPTY_PLACEHOLDER = '@@EMPTY@@';
-
 // ..........................................................
 // TYPE COERCION HELPERS
 //
@@ -396,9 +354,8 @@ Binding.prototype = /** @scope Ember.Binding.prototype */ {
     @returns {Ember.Binding} this
   */
   single: function(placeholder) {
-    if (placeholder===undefined) placeholder = Ember.MULTIPLE_PLACEHOLDER;
     this._typeTransform = SINGLE;
-    this._placeholder = placeholder;
+    this._placeholder = placeholder || "@@MULT@@";
     return this;
   },
 
@@ -474,7 +431,7 @@ Binding.prototype = /** @scope Ember.Binding.prototype */ {
   */
   notEmpty: function(placeholder) {
     if (placeholder === null || placeholder === undefined) {
-      placeholder = Ember.EMPTY_PLACEHOLDER;
+      placeholder = "@@EMPTY@@";
     }
 
     this.transform({
@@ -504,7 +461,7 @@ Binding.prototype = /** @scope Ember.Binding.prototype */ {
   */
   notNull: function(placeholder) {
     if (placeholder === null || placeholder === undefined) {
-      placeholder = Ember.EMPTY_PLACEHOLDER;
+      placeholder = "@@EMPTY@@";
     }
 
     this.transform({
