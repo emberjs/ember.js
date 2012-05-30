@@ -17,7 +17,7 @@ var STRING_UNDERSCORE_REGEXP_2 = (/\-|\s+/g);
   the `Ember.String.loc()` helper.  To localize, add string values to this
   hash.
 
-  @property {String}
+  @type Hash
 */
 Ember.STRINGS = {};
 

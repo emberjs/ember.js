@@ -76,7 +76,8 @@
     var noViewPreservesContext = QUnit.urlParams.noviewpreservescontext;
     ENV['VIEW_PRESERVES_CONTEXT'] = !noViewPreservesContext;
 
-    ENV['PREVENT_AUTOMATIC_RUNLOOP_CREATION'] = true;
+    // Don't worry about jQuery version
+    ENV['FORCE_JQUERY'] = true;
   </script>
 </head>
 <body>
@@ -171,63 +172,58 @@
 
 
     // Load Tests and Depenencies
-    var packages = (QUnit.urlParams.package || "").split(","),
+    var packages = (QUnit.urlParams.package || "all").split(","),
         packageName, el, idx, len, re, match, moduleName;
 
-    if (!packages.length) {
-      el = document.getElementById('qunit-header');
-      el.innerHTML = 'Add package=package1,package2 in the URL to test packages';
-    } else {
-      if (packages[0] === 'all') {
-        packages = [
-          'ember-handlebars',
-          'ember-metal',
-          'ember-runtime',
-          'ember-states',
-          'ember-views',
-          'ember-viewstates',
-          'ember-application'
-        ];
-      }
+    if (packages[0] === 'all') {
+      packages = [
+        'ember-handlebars',
+        'ember-metal',
+        'ember-runtime',
+        'ember-states',
+        'ember-views',
+        'ember-viewstates',
+        'ember-application'
+      ];
+    }
 
-      len = packages.length;
+    len = packages.length;
 
-      // There is no require for this in the code
+    // There is no require for this in the code
+    if (dist == 'spade') {
+      minispade.require('ember-debug');
+    }
+
+    for (idx=0; idx<len; idx++) {
+      packageName = packages[idx];
+      re = new RegExp('^'+packageName+'/([^/]+)');
+
       if (dist == 'spade') {
-        minispade.require('ember-debug');
+        minispade.require(packageName);
       }
 
-      for (idx=0; idx<len; idx++) {
-        packageName = packages[idx];
-        re = new RegExp('^'+packageName+'/([^/]+)');
+      for (moduleName in minispade.modules) {
+        if (!minispade.modules.hasOwnProperty(moduleName)) { continue; }
 
-        if (dist == 'spade') {
-          minispade.require(packageName);
-        }
+        match = moduleName.match(re);
+        if (match) {
+          if (match[1] === '~tests') {
+            // Only require the actual tests since we already required the module
+            minispade.require(moduleName);
+          }
 
-        for (moduleName in minispade.modules) {
-          if (!minispade.modules.hasOwnProperty(moduleName)) { continue; }
-
-          match = moduleName.match(re);
-          if (match) {
-            if (match[1] === '~tests') {
-              // Only require the actual tests since we already required the module
-              minispade.require(moduleName);
-            }
-
-            if (jsHint) {
-              // JSHint all modules in this package, tests and code
-              // (closure to preserve variable values)
-              (function() {
-                var jshintModule = moduleName;
-                module(jshintModule);
-                test('should pass jshint', function() {
-                  var passed = JSHINT(minispade.modules[jshintModule], JSHINTRC),
-                      errors = jsHintReporter(jshintModule, JSHINT.errors);
-                  ok(passed, jshintModule+" should pass jshint."+(errors ? "\n"+errors : ''));
-                });
-              })();
-            }
+          if (jsHint) {
+            // JSHint all modules in this package, tests and code
+            // (closure to preserve variable values)
+            (function() {
+              var jshintModule = moduleName;
+              module(jshintModule);
+              test('should pass jshint', function() {
+                var passed = JSHINT(minispade.modules[jshintModule], JSHINTRC),
+                    errors = jsHintReporter(jshintModule, JSHINT.errors);
+                ok(passed, jshintModule+" should pass jshint."+(errors ? "\n"+errors : ''));
+              });
+            })();
           }
         }
       }

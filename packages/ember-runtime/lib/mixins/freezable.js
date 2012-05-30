@@ -74,7 +74,7 @@ Ember.Freezable = Ember.Mixin.create(
     Set to true when the object is frozen.  Use this property to detect whether
     your object is frozen or not.
 
-    @property {Boolean}
+    @type Boolean
   */
   isFrozen: false,
 
