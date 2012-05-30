@@ -486,8 +486,21 @@ test("urlFor returns an absolute route", function() {
   });
 
   var url = router.urlFor('root.dashboard');
-  equal(url, "/dashboard");
+  equal(url, '/dashboard');
   expectURL('/dashboard');
+});
+
+test("urlFor raises an error when route property is not defined", function() {
+  var router = Ember.Router.create({
+    location: locationStub,
+    root: Ember.State.create({
+      dashboard: Ember.State.create({}) // state without route property
+    })
+  });
+
+  raises(function (){
+    router.urlFor('root.dashboard');
+  });
 });
 
 test("urlFor supports dynamic segments", function() {

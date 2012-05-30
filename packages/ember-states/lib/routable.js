@@ -73,17 +73,20 @@ Ember.Routable = Ember.Mixin.create({
 
     hash = hash || {};
     merge(hash, meta);
+
+    Ember.assert("couldn't find route property for " + get(this, 'path'), !!matcher);
+
     var generated = matcher.generate(hash);
 
-    if (generated !== "") {
-      return path + '/' + matcher.generate(hash);
-    } else {
-      return path;
+    if (generated !== '') {
+      path = path + '/' + generated;
     }
+
+    return path;
   },
 
   isRoutable: Ember.computed(function() {
-    return typeof this.route === "string";
+    return typeof this.route === 'string';
   }).cacheable(),
 
   routeMatcher: Ember.computed(function() {
