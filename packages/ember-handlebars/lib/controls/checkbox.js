@@ -12,22 +12,8 @@ var set = Ember.set, get = Ember.get;
 /**
   @class
 
-  Creates an HTML input view in one of two formats.
-
-  If a `title` property or binding is provided the input will be wrapped in
-  a `div` and `label` tag. View properties like `classNames` will be applied to
-  the outermost `div`. This behavior is deprecated and will issue a warning in development.
-
-
-      {{view Ember.Checkbox classNames="applicaton-specific-checkbox" title="Some title"}}
-
-
-      <div id="ember1" class="ember-view ember-checkbox applicaton-specific-checkbox">
-        <label><input type="checkbox" />Some title</label>
-      </div>
-
-  If `title` isn't provided the view will render as an input element of the 'checkbox' type and HTML
-  related properties will be applied directly to the input.
+  Creates an HTML input of type 'checkbox' with HTML related properties 
+  applied directly to the input.
 
       {{view Ember.Checkbox classNames="applicaton-specific-checkbox"}}
 
@@ -58,18 +44,6 @@ Ember.Checkbox = Ember.View.extend({
   checked: false,
   disabled: false,
 
-  /** @deprecated */
-  title: null,
-
-  value: Ember.computed(function(propName, value){
-    Ember.deprecate("Ember.Checkbox's 'value' property has been renamed to 'checked' to match the html element attribute name");
-    if (value !== undefined) {
-      return set(this, 'checked', value);
-    } else {
-      return get(this, 'checked');
-    }
-  }).property('checked').volatile(),
-
   change: function() {
     Ember.run.once(this, this._updateElementValue);
     // returning false will cause IE to not change checkbox state
@@ -79,7 +53,6 @@ Ember.Checkbox = Ember.View.extend({
     @private
   */
   _updateElementValue: function() {
-    var input = get(this, 'title') ? this.$('input:checkbox') : this.$();
-    set(this, 'checked', input.prop('checked'));
+    set(this, 'checked', this.$().prop('checked'));
   }
 });
