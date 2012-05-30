@@ -102,8 +102,8 @@ Ember.State = Ember.Object.extend(Ember.Evented, {
 });
 
 Ember.State.transitionTo = function(target) {
-  var event = function(router, context) {
-    router.transitionTo(target, context);
+  var event = function(router, event) {
+    router.transitionTo(target, event.context);
   };
 
   event.transitionTarget = target;
