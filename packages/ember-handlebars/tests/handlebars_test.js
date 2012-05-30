@@ -1144,6 +1144,74 @@ test("{{view}} should be able to point to a local view", function() {
   equal(view.$().text(), "common", "tries to look up view name locally");
 });
 
+test("{{view}} should be able to apply one mixin with 'mixins property' ", function() {
+
+  var templates = Ember.Object.create({
+    foo: Ember.Handlebars.compile('{{#view "TemplateTests.mixinsView" mixins="TemplateTests.AppMixin" id="target"}}{{/view}}')
+  });
+
+  TemplateTests.mixinsView = Ember.View.extend({
+  });
+
+  TemplateTests.AppMixin = Ember.Mixin.create({
+    classNames: ['mixin']
+  });
+
+
+
+  view = Ember.View.create({
+    templateName: 'foo',
+    templates: templates
+  });
+
+  appendView();
+
+  var targetView = Ember.View.views.target;
+
+  ok( TemplateTests.AppMixin.detect( targetView ), "Mixin was applied to target view");
+  ok( targetView.$().hasClass('mixin'), "Mixin logic was applied to the target view");
+
+
+});
+
+test("{{view}} should be able to apply multiple mixins with 'mixins property' ", function() {
+
+  var templates = Ember.Object.create({
+    foo: Ember.Handlebars.compile('{{#view "TemplateTests.mixinsView" mixins="TemplateTests.AppMixin1 TemplateTests.AppMixin2" id="target"}}{{/view}}')
+  });
+
+  TemplateTests.mixinsView = Ember.View.extend({
+  });
+
+  TemplateTests.AppMixin1 = Ember.Mixin.create({
+    classNames: ['mixin1']
+  });
+
+  TemplateTests.AppMixin2 = Ember.Mixin.create({
+    classNames: ['mixin2']
+  });
+
+
+  view = Ember.View.create({
+    templateName: 'foo',
+    templates: templates
+  });
+
+  appendView();
+
+  var targetView = Ember.View.views.target;
+
+  ok( TemplateTests.AppMixin1.detect( targetView ), "Mixin1 was applied to target view");
+  ok( TemplateTests.AppMixin2.detect( targetView ), "Mixin2 was applied to target view");
+  ok( targetView.$().hasClass('mixin1'), "Mixin1 logic was applied to the target view");
+  ok( targetView.$().hasClass('mixin2'), "Mixin2 logic was applied to the target view");
+
+
+});
+
+
+
+
 test("should be able to bind view class names to properties", function() {
   var templates = Ember.Object.create({
     template: Ember.Handlebars.compile('{{#view "TemplateTests.classBindingView" classBinding="isDone"}}foo{{/view}}')
