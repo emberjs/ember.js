@@ -154,11 +154,21 @@ Ember.Application = Ember.Namespace.extend(
     whenever the URL changes.
   */
   setupStateManager: function(stateManager) {
-    var location = get(stateManager, 'location');
+    var location = get(stateManager, 'location'),
+        rootElement = get(this, 'rootElement'),
+        applicationController = get(stateManager, 'applicationController');
 
     if (typeof location === 'string') {
       location = Ember.Location.create({implementation: location});
       set(stateManager, 'location', location);
+    }
+
+    if (this.ApplicationView && applicationController) {
+      var applicationView = this.ApplicationView.create({
+        controller: applicationController
+      });
+
+      applicationView.appendTo(rootElement);
     }
 
     stateManager.route(location.getURL());

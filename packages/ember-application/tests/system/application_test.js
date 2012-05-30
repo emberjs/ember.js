@@ -203,6 +203,36 @@ test("initialize application with stateManager via initialize call from Router c
   equal(app.getPath('stateManager.currentState.path'), 'root.index', "The router moved the state into the right place");
 });
 
+test("ApplicationView is inserted into the page", function() {
+  Ember.$("#qunit-fixture").empty();
+
+  Ember.run(function() {
+    app = Ember.Application.create({
+      rootElement: '#qunit-fixture'
+    });
+
+    app.ApplicationView = Ember.View.extend({
+      template: function() { return "Hello!"; }
+    });
+
+    app.ApplicationController = Ember.Controller.extend();
+
+    app.Router = Ember.Router.extend({
+      location: 'hash',
+
+      root: Ember.State.extend({
+        index: Ember.State.extend({
+          route: '/'
+        })
+      })
+    });
+
+    app.initialize();
+  });
+
+  equal(Ember.$("#qunit-fixture").text(), "Hello!");
+});
+
 test("ControllerObject class can be initialized with target, controllers and view properties", function() {
   var stateManager;
 
