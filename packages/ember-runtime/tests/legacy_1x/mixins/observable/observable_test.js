@@ -169,7 +169,6 @@ test("raise if the provided object is undefined", function() {
 
 test("should work when object is Ember (used in Ember.getPath)", function() {
   equal(Ember.getPath('Ember.RunLoop'), Ember.RunLoop, 'Ember.getPath');
-  equal(Ember.get('RunLoop'), Ember.RunLoop, 'Ember.get(RunLoop)');
   equal(Ember.get(Ember, 'RunLoop'), Ember.RunLoop, 'Ember.get(Ember, RunLoop)');
 });
 

@@ -104,55 +104,6 @@ test("Ember.Binding.bool(TestNamespace.fromObject.bar)) should create binding wi
   equal(false, get(testObject, "foo"), "testObject.foo == false");
 });
 
-
-module("bind() method - deprecated", {
-  setup: function() {
-    Ember.TESTING_DEPRECATION = true;
-    bindModuleOpts.setup();
-  },
-  teardown: function() {
-    Ember.TESTING_DEPRECATION = false;
-    bindModuleOpts.teardown();
-  }
-});
-
-test("bind(TestNamespace.fromObject*extraObject.foo) should create chained binding", function() {
-  Ember.run(function(){
-    testObject.bind("foo", "TestNamespace.fromObject*extraObject.foo");
-    set(fromObject, "extraObject", extraObject);
-  });
-
-  equal("extraObjectValue", get(testObject, "foo"), "testObject.foo") ;
-});
-
-test("bind(*extraObject.foo) should create locally chained binding", function() {
-  Ember.run(function(){
-    testObject.bind("foo", "*extraObject.foo");
-    set(testObject, "extraObject", extraObject);
-  });
-
-  equal("extraObjectValue", get(testObject, "foo"), "testObject.foo") ;
-});
-
-
-// The following contains no test
-test("bind(*extraObject.foo) should be disconnectable", function() {
-  var binding;
-  Ember.run(function(){
-    binding = testObject.bind("foo", "*extraObject.foo");
-  });
-  
-  binding.disconnect(testObject);
-
-  Ember.run(function(){
-    set(testObject, 'extraObject', extraObject);
-  });
-  
-  // there was actually a bug here - the binding above should have synced to
-  // null as there was no original value
-  equal(null, get(testObject, "foo"), "testObject.foo after disconnecting");
-});
-
 var fooBindingModuleOpts = {
 
   setup: function() {
@@ -252,40 +203,4 @@ test('fooBinding: should disconnect bindings when destroyed', function () {
   });
   
   ok(get(testObject, 'foo') !== 'bar', 'binding should not have synced');
-});
-
-
-module("fooBinding method - deprecated", {
-  setup: function() {
-    Ember.TESTING_DEPRECATION = true;
-    fooBindingModuleOpts.setup();
-  },
-  teardown: function() {
-    Ember.TESTING_DEPRECATION = false;
-    fooBindingModuleOpts.teardown();
-  }
-});
-
-test("fooBinding: TestNamespace.fromObject*extraObject.foo should create chained binding", function() {
-
-  Ember.run(function(){
-    testObject = TestObject.create({
-      fooBinding: "TestNamespace.fromObject*extraObject.foo"
-    });
-
-    set(fromObject, "extraObject", extraObject);
-  });
-
-  equal("extraObjectValue", get(testObject, "foo"), "testObject.foo") ;
-});
-
-test("fooBinding: *extraObject.foo should create locally chained binding", function() {
-  Ember.run(function(){
-    testObject = TestObject.create({
-      fooBinding: "*extraObject.foo"
-    });
-    set(testObject, "extraObject", extraObject);
-  });
-
-  equal("extraObjectValue", get(testObject, "foo"), "testObject.foo") ;
 });

@@ -23,7 +23,7 @@ var meta = Ember.meta;
 var get, set;
 
 /** @private */
-get = function get(obj, keyName) {
+var basicGet = function get(obj, keyName) {
   var ret = obj[keyName];
   if (ret !== undefined) { return ret; }
 
@@ -35,7 +35,7 @@ get = function get(obj, keyName) {
 };
 
 /** @private */
-set = function set(obj, keyName, value) {
+var basicSet = function set(obj, keyName, value) {
   var isObject = 'object' === typeof obj;
   var hasProp = isObject && !(keyName in obj);
 
@@ -49,38 +49,26 @@ set = function set(obj, keyName, value) {
   } else {
     obj[keyName] = value;
   }
-  return value;
 };
 
-if (!USE_ACCESSORS) {
+/** @private */
+get = function(obj, keyName) {
+  Ember.assert("You need to provide an object and key to `get`.", !!obj && keyName);
 
-  var o_get = get, o_set = set;
+  var desc = meta(obj, false).descs[keyName];
+  if (desc) { return desc.get(obj, keyName); }
+  else { return basicGet(obj, keyName); }
+};
 
-  /** @private */
-  get = function(obj, keyName) {
-    if (keyName === undefined && 'string' === typeof obj) {
-      keyName = obj;
-      obj = Ember;
-    }
+/** @private */
+set = function(obj, keyName, value) {
+  Ember.assert("You need to provide an object and key to `set`.", !!obj && keyName !== undefined);
 
-    Ember.assert("You need to provide an object and key to `get`.", !!obj && keyName);
-
-    if (!obj) return undefined;
-    var desc = meta(obj, false).descs[keyName];
-    if (desc) return desc.get(obj, keyName);
-    else return o_get(obj, keyName);
-  };
-
-  /** @private */
-  set = function(obj, keyName, value) {
-    Ember.assert("You need to provide an object and key to `set`.", !!obj && keyName !== undefined);
-    var desc = meta(obj, false).descs[keyName];
-    if (desc) desc.set(obj, keyName, value);
-    else o_set(obj, keyName, value);
-    return value;
-  };
-
-}
+  var desc = meta(obj, false).descs[keyName];
+  if (desc) { desc.set(obj, keyName, value); }
+  else { basicSet(obj, keyName, value); }
+  return value;
+};
 
 /**
   @function
@@ -148,20 +136,8 @@ Ember.set = set;
 //
 
 /** @private */
-function cleanupStars(path) {
-  if (path.indexOf('*') === -1 || path === '*') return path;
-
-  Ember.deprecate('Star paths are now treated the same as normal paths', !/(^|[^\.])\*/.test(path));
-
-  return path.replace(/(^|.)\*/, function(match, char){
-    return (char === '.') ? match : (char + '.');
-  });
-}
-
-/** @private */
 function normalizePath(path) {
   Ember.assert('must pass non-empty string to normalizePath()', path && path!=='');
-  path = cleanupStars(path);
 
   if (path==='*') return path; //special case...
   var first = path.charAt(0);
@@ -172,9 +148,12 @@ function normalizePath(path) {
 // assumes normalized input; no *, normalized path, always a target...
 /** @private */
 function getPath(target, path) {
-  var len = path.length, idx, next, key;
+  if (path === undefined) {
+    path = target;
+    target = Ember;
+  }
 
-  path = cleanupStars(path);
+  var len = path.length, idx, next, key;
 
   idx = 0;
   while(target && idx<len) {
@@ -210,8 +189,6 @@ function normalizeTuple(target, path) {
 
   if (!target || isGlobal) target = window;
   if (hasThis) path = path.slice(5);
-
-  path = cleanupStars(path);
 
   if (target === window) {
     key = firstKey(path);
@@ -279,8 +256,6 @@ Ember.getPath = function(root, path) {
     path = root;
     root = null;
   }
-
-  path = cleanupStars(path);
 
   // If there is no root and path is a key name, return that
   // property from the global object.

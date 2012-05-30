@@ -108,52 +108,6 @@ module("Ember.setPath - deprecated", {
   }
 });
 
-test('[obj, foo*bar] -> obj.foo.bar', function() {
-  Ember.setPath(obj, 'foo*bar', "BAM");
-  equal(Ember.getPath(obj, 'foo.bar'), "BAM");
-});
-
-test('[obj, foo*bar.*] -> EXCEPTION', function() {
-  raises(function() {
-    Ember.setPath(obj, 'foo.*.baz.*', "BAM");
-  }, Error);
-});
-
-test('[obj, foo.bar*baz.biff] -> obj.foo.bar.baz.biff', function() {
-  Ember.setPath(obj, 'foo.bar*baz.biff', "BAM");
-  equal(Ember.getPath(obj, 'foo.bar.baz.biff'), "BAM");
-});
-
-test('[obj, *foo.bar] -> obj.foo.bar', function() {
-  Ember.setPath(obj, '*foo.bar', "BAM");
-  equal(Ember.getPath(obj, 'foo.bar'), "BAM");
-});
-
-test('[obj, this.foo*bar] -> obj.foo.bar', function() {
-  Ember.setPath(obj, 'this.foo*bar', "BAM");
-  equal(Ember.getPath(obj, 'foo.bar'), "BAM");
-});
-
-test('[obj, this.foo.bar*baz.biff] -> obj.foo.bar.baz.biff', function() {
-  Ember.setPath(obj, 'this.foo.bar*baz.biff', "BAM");
-  equal(Ember.getPath(obj, 'foo.bar.baz.biff'), "BAM");
-});
-
-test('[null, Foo*bar] -> Foo.bar', function() {
-  Ember.setPath(null, 'Foo*bar', "BAM");
-  equal(Ember.getPath(Foo, 'bar'), "BAM");
-});
-
-test('[null, Foo.bar*baz.biff] -> Foo.bar.baz.biff', function() {
-  Ember.setPath(null, 'Foo.bar*baz.biff', "BAM");
-  equal(Ember.getPath(Foo, 'bar.baz.biff'), "BAM");
-});
-
-test('[null, Foo.bar.baz*biff] -> Foo.bar.baz.biff', function() {
-  Ember.setPath(null, 'Foo.bar.baz*biff', "BAM");
-  equal(Ember.getPath(Foo, 'bar.baz.biff'), "BAM");
-});
-
 test('[obj, Foo] -> EXCEPTION', function() {
   raises(function() {
     Ember.setPath(obj, 'Foo', "BAM");
