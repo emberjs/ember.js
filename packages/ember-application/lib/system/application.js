@@ -176,7 +176,6 @@ Ember.Application = Ember.Namespace.extend(
 
     stateManager.route(location.getURL());
     location.onUpdateURL(function(url) {
-      stateManager.transitionTo('root');
       stateManager.route(url);
     });
   },
