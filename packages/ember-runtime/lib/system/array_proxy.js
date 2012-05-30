@@ -52,7 +52,7 @@ Ember.ArrayProxy = Ember.Object.extend(Ember.MutableArray,
     The content array.  Must be an object that implements Ember.Array and/or
     Ember.MutableArray.
 
-    @property {Ember.Array}
+    @type Ember.Array
   */
   content: null,
 

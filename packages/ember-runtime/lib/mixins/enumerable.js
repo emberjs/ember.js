@@ -621,7 +621,7 @@ Ember.Enumerable = Ember.Mixin.create( /** @lends Ember.Enumerable */ {
     For plain enumerables, this property is read only.  Ember.Array overrides
     this method.
 
-    @property {Ember.Array}
+    @type Ember.Array
   */
   '[]': Ember.computed(function(key, value) {
     return this;
@@ -666,7 +666,7 @@ Ember.Enumerable = Ember.Mixin.create( /** @lends Ember.Enumerable */ {
     Becomes true whenever the array currently has observers watching changes
     on the array.
 
-    @property {Boolean}
+    @type Boolean
   */
   hasEnumerableObservers: Ember.computed(function() {
     return Ember.hasListeners(this, '@enumerable:change') || Ember.hasListeners(this, '@enumerable:before');

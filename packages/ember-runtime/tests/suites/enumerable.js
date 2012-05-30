@@ -129,7 +129,7 @@ var EnumerableTests = Ember.Object.extend({
   /**
     Define a name for these tests - all modules are prefixed w/ it.
 
-    @property {String}
+    @type String
   */
   name: Ember.required(String),
 
@@ -193,7 +193,7 @@ var EnumerableTests = Ember.Object.extend({
     Becomes true when you define a new mutate() method, indicating that
     mutation tests should run.  This is calculated automatically.
 
-    @property {Boolean}
+    @type Boolean
   */
   canTestMutation: Ember.computed(function() {
     return this.mutate !== EnumerableTests.prototype.mutate;

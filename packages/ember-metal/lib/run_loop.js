@@ -272,7 +272,7 @@ Ember.run.end = function() {
   simply adding the queue name to this array.  Normally you should not need
   to inspect or modify this property.
 
-  @property {String}
+  @type Array
   @default ['sync', 'actions', 'destroy', 'timers']
 */
 Ember.run.queues = ['sync', 'actions', 'destroy', 'timers'];
