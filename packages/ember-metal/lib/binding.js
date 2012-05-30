@@ -14,7 +14,6 @@ require('ember-metal/run_loop'); // Ember.run.schedule
 // CONSTANTS
 //
 
-
 /**
   @static
 
@@ -47,22 +46,9 @@ var K = function() {};
 
 /** @private */
 var Binding = function(toPath, fromPath) {
-  var self;
-
-  if (this instanceof Binding) {
-    self = this;
-  } else {
-    self = new K();
-  }
-
-  /** @private */
-  self._direction = 'fwd';
-
-  /** @private */
-  self._from = fromPath;
-  self._to   = toPath;
-
-  return self;
+  this._direction = 'fwd';
+  this._from = fromPath;
+  this._to   = toPath;
 };
 
 K.prototype = Binding.prototype;
