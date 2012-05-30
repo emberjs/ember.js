@@ -135,23 +135,14 @@ Ember.set = set;
 // PATHS
 //
 
-// assumes normalized input; no *, normalized path, always a target...
 /** @private */
 function getPath(target, path) {
-  var len = path.length, idx, next, key;
-
-  idx = 0;
-  while(target && idx<len) {
-    next = path.indexOf('.', idx);
-    if (next<0) next = len;
-    key = path.slice(idx, next);
-    target = get(target, key);
-
+  var parts = path.split(".");
+  for (var i=0, l=parts.length; target && i<l; i++) {
+    target = get(target, parts[i]);
     if (target && target.isDestroyed) { return undefined; }
-
-    idx = next+1;
   }
-  return target ;
+  return target;
 }
 
 var TUPLE_RET = [];
