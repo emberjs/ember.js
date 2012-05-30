@@ -35,7 +35,7 @@ Ember.CopyableTests = Ember.Suite.extend({
     you say you can't test freezable it will verify that your objects really
     aren't freezable.)
 
-    @property {Boolean}
+    @type Boolean
   */
   shouldBeFreezable: false
 

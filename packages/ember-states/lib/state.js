@@ -82,7 +82,7 @@ Ember.State = Ember.Object.extend(Ember.Evented, {
     in the state hierarchy. This is false if the state has child
     states; otherwise it is true.
 
-    @property {Boolean}
+    @type Boolean
   */
   isLeaf: Ember.computed(function() {
     return !get(this, 'childStates').length;
