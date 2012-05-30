@@ -103,7 +103,6 @@ Ember.State = Ember.Object.extend(Ember.Evented, {
 
 Ember.State.transitionTo = function(target) {
   var event = function(router, event) {
-    router.transitionTo('root');
     router.transitionTo(target, event.context);
   };
 
