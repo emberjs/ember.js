@@ -75,7 +75,7 @@ test("bind(TestNamespace.fromObject.bar) should follow absolute path", function(
 test("bind(.bar) should bind to relative path", function() {
   Ember.run(function(){
     // create binding
-    testObject.bind("foo", ".bar") ;
+    testObject.bind("foo", "bar") ;
 
     // now make a change to see if the binding triggers.
     set(testObject, "bar", "changedValue") ;
@@ -156,7 +156,7 @@ test("fooBinding: TestNamespace.fromObject.bar should follow absolute path", fun
 test("fooBinding: .bar should bind to relative path", function() {
   Ember.run(function(){
     testObject = TestObject.create({
-      fooBinding: ".bar"
+      fooBinding: "bar"
     });
     // now make a change to see if the binding triggers.
     set(testObject, "bar", "changedValue");

@@ -79,11 +79,6 @@ test('[obj, this.foo.bar] -> obj.foo.bar', function() {
   equal(Ember.getPath(obj, 'foo.bar'), "BAM");
 });
 
-test('[obj, .foo.bar] -> obj.foo.bar', function() {
-  Ember.setPath(obj, '.foo.bar', "BAM");
-  equal(Ember.getPath(obj, 'foo.bar'), "BAM");
-});
-
 // ..........................................................
 // NO TARGET
 //

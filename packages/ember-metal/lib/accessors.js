@@ -135,24 +135,9 @@ Ember.set = set;
 // PATHS
 //
 
-/** @private */
-function normalizePath(path) {
-  Ember.assert('must pass non-empty string to normalizePath()', path && path!=='');
-
-  if (path==='*') return path; //special case...
-  var first = path.charAt(0);
-  if(first==='.') return 'this'+path;
-  return path;
-}
-
 // assumes normalized input; no *, normalized path, always a target...
 /** @private */
 function getPath(target, path) {
-  if (path === undefined) {
-    path = target;
-    target = Ember;
-  }
-
   var len = path.length, idx, next, key;
 
   idx = 0;
@@ -207,17 +192,6 @@ function normalizeTuple(target, path) {
 /**
   @private
 
-  Normalizes a path to support older-style property paths beginning with . or
-
-  @function
-  @param {String} path path to normalize
-  @returns {String} normalized path
-*/
-Ember.normalizePath = normalizePath;
-
-/**
-  @private
-
   Normalizes a target/path pair to reflect that actual target/path that should
   be observed, etc.  This takes into account passing in global property
   paths (i.e. a path beginning with a captial letter not defined on the
@@ -232,7 +206,7 @@ Ember.normalizePath = normalizePath;
   @returns {Array} a temporary array with the normalized target/path pair.
 */
 Ember.normalizeTuple = function(target, path) {
-  return normalizeTuple(target, normalizePath(path));
+  return normalizeTuple(target, path);
 };
 
 Ember.normalizeTuple.primitive = normalizeTuple;
@@ -263,7 +237,6 @@ Ember.getPath = function(root, path) {
   if (root === null && path.indexOf('.') < 0) { return get(window, path); }
 
   // detect complicated paths and normalize them
-  path = normalizePath(path);
   hasThis  = HAS_THIS.test(path);
 
   if (!root || hasThis) {
@@ -285,7 +258,6 @@ Ember.setPath = function(root, path, value, tolerant) {
     root = null;
   }
 
-  path = normalizePath(path);
 
   if (path.indexOf('.') > 0) {
     keyName = path.slice(path.lastIndexOf('.')+1);

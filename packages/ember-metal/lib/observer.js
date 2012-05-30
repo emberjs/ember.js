@@ -13,7 +13,6 @@ require('ember-metal/array');
 var AFTER_OBSERVERS = ':change';
 var BEFORE_OBSERVERS = ':before';
 var guidFor = Ember.guidFor;
-var normalizePath = Ember.normalizePath;
 
 var deferred = 0;
 var array_Slice = Array.prototype.slice;
@@ -177,8 +176,6 @@ function xformBefore(target, method, params) {
 }
 
 Ember.addObserver = function(obj, path, target, method) {
-  path = normalizePath(path);
-
   var xform;
   if (arguments.length > 4) {
     var args = array_Slice.call(arguments, 4);
@@ -197,14 +194,12 @@ Ember.observersFor = function(obj, path) {
 };
 
 Ember.removeObserver = function(obj, path, target, method) {
-  path = normalizePath(path);
   Ember.unwatch(obj, path);
   Ember.removeListener(obj, changeEvent(path), target, method);
   return this;
 };
 
 Ember.addBeforeObserver = function(obj, path, target, method) {
-  path = normalizePath(path);
   Ember.addListener(obj, beforeEvent(path), target, method, xformBefore);
   Ember.watch(obj, path);
   return this;
@@ -229,7 +224,6 @@ Ember.beforeObserversFor = function(obj, path) {
 };
 
 Ember.removeBeforeObserver = function(obj, path, target, method) {
-  path = normalizePath(path);
   Ember.unwatch(obj, path);
   Ember.removeListener(obj, beforeEvent(path), target, method);
   return this;

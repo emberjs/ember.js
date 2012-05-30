@@ -449,7 +449,7 @@ module("propertyNameBinding with longhand", {
       toObject: Ember.Object.create({
         valueBinding: Ember.Binding.from('TestNamespace.fromObject.value'),
         localValue: "originalLocal",
-        relativeBinding: Ember.Binding.from('.localValue')
+        relativeBinding: Ember.Binding.from('localValue')
       })
     };
 

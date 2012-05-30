@@ -16,7 +16,6 @@ var guidFor = Ember.guidFor;
 var meta    = Ember.meta;
 var get = Ember.get, set = Ember.set;
 var normalizeTuple = Ember.normalizeTuple.primitive;
-var normalizePath  = Ember.normalizePath;
 var SIMPLE_PROPERTY = Ember.SIMPLE_PROPERTY;
 var GUID_KEY = Ember.GUID_KEY;
 var META_KEY = Ember.META_KEY;
@@ -431,7 +430,6 @@ Ember.watch = function(obj, keyName) {
   if (keyName === 'length' && Ember.typeOf(obj)==='array') return this;
 
   var m = meta(obj), watching = m.watching, desc;
-  keyName = normalizePath(keyName);
 
   // activate watching first time
   if (!watching[keyName]) {
@@ -466,7 +464,6 @@ Ember.unwatch = function(obj, keyName) {
   if (keyName === 'length' && Ember.typeOf(obj)==='array') return this;
 
   var watching = meta(obj).watching, desc, descs;
-  keyName = normalizePath(keyName);
 
   if (watching[keyName] === 1) {
     watching[keyName] = 0;
