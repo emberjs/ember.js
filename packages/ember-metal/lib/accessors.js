@@ -145,7 +145,7 @@ function getPath(target, path) {
     next = path.indexOf('.', idx);
     if (next<0) next = len;
     key = path.slice(idx, next);
-    target = key==='*' ? target : get(target, key);
+    target = get(target, key);
 
     if (target && target.isDestroyed) { return undefined; }
 

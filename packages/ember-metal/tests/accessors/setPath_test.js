@@ -58,17 +58,6 @@ test('[obj, foo.bar] -> obj.foo.bar', function() {
   equal(Ember.getPath(obj, 'foo.bar'), "BAM");
 });
 
-test('[obj, foo.*] -> EXCEPTION', function() {
-  raises(function() {
-    Ember.setPath(obj, 'foo.*', "BAM");
-  }, Error);
-});
-
-test('[obj, foo.*.baz] -> obj.foo.baz', function() {
-  Ember.setPath(obj, 'foo.*.baz', "BAM");
-  equal(Ember.getPath(obj, 'foo.baz'), "BAM");
-});
-
 test('[obj, this.foo] -> obj.foo', function() {
   Ember.setPath(obj, 'this.foo', "BAM");
   equal(Ember.getPath(obj, 'foo'), "BAM");

@@ -46,20 +46,8 @@ test('[obj, foo] -> obj.foo', function() {
   deepEqual(Ember.getPath(obj, 'foo'), obj.foo);
 });
 
-test('[obj, *] -> obj', function() {
-  deepEqual(Ember.getPath(obj, '*'), obj);
-});
-
 test('[obj, foo.bar] -> obj.foo.bar', function() {
   deepEqual(Ember.getPath(obj, 'foo.bar'), obj.foo.bar);
-});
-
-test('[obj, foo.*] -> obj.foo', function() {
-  deepEqual(Ember.getPath(obj, 'foo.*'), obj.foo);
-});
-
-test('[obj, foo.*.baz] -> obj.foo.baz', function() {
-  deepEqual(Ember.getPath(obj, 'foo.*.baz'), obj.foo.baz);
 });
 
 test('[obj, this.foo] -> obj.foo', function() {
@@ -67,10 +55,6 @@ test('[obj, this.foo] -> obj.foo', function() {
 });
 
 test('[obj, this.foo.bar] -> obj.foo.bar', function() {
-  deepEqual(Ember.getPath(obj, 'this.foo.bar'), obj.foo.bar);
-});
-
-test('[obj, .foo.bar] -> obj.foo.bar', function() {
   deepEqual(Ember.getPath(obj, 'this.foo.bar'), obj.foo.bar);
 });
 
