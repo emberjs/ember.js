@@ -1,6 +1,11 @@
 var get = Ember.get, set = Ember.set;
 
 Ember.ControllerMixin.reopen({
+
+  target: null,
+  controllers: null,
+  view: null,
+
   /**
     `connectOutlet` creates a new instance of a provided view
     class, wires it up to its associated controller, and
