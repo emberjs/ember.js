@@ -202,3 +202,25 @@ test("initialize application with stateManager via initialize call from Router c
   equal(app.getPath('stateManager') instanceof Ember.Router, true, "Router was set from initialize call");
   equal(app.getPath('stateManager.currentState.path'), 'root.index', "The router moved the state into the right place");
 });
+
+test("ControllerObject class can be initialized with target, controllers and view properties", function() {
+  var stateManager;
+
+  Ember.run(function() {
+    app = Ember.Application.create({
+      rootElement: '#qunit-fixture'
+    });
+
+    app.PostController = Ember.ObjectController.extend();
+
+    stateManager = Ember.StateManager.create();
+
+    app.initialize(stateManager);
+
+    stateManager.get('postController').set('view', Ember.View.create());
+  });
+
+  equal(app.getPath('stateManager.postController.target') instanceof Ember.StateManager, true, "controller has target");
+  equal(app.getPath('stateManager.postController.controllers') instanceof Ember.StateManager, true, "controller has controllers");
+  equal(app.getPath('stateManager.postController.view') instanceof Ember.View, true, "controller has view");
+});
