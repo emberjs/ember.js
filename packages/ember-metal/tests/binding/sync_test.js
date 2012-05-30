@@ -130,52 +130,6 @@ testBoth("bindings should do the right thing when binding is in prototype", func
   equal(get(obj, 'selection'), 'a');
 });
 
-testBoth("binding with transform should only fire one change when set", function (get, set) {
-  var a, b, changed, transform;
-
-  Ember.run(function() {
-    a = {array: null};
-    b = {a: a};
-    changed = 0;
-
-    Ember.addObserver(a, 'array', function() {
-      changed++;
-    });
-
-    transform = {
-      to: function(array) {
-        if (array) {
-          return array.join(',');
-        } else {
-          return array;
-        }
-      },
-      from: function(string) {
-        if (string) {
-          return string.split(',');
-        } else {
-          return string;
-        }
-      }
-    };
-    Ember.Binding.from('a.array').to('string').transform(transform).connect(b);
-  });
-
-  Ember.run(function() {
-    set(a, 'array', ['a', 'b', 'c']);
-  });
-
-  equal(changed, 1);
-  equal(get(b, 'string'), 'a,b,c');
-
-  Ember.run(function() {
-    set(b, 'string', '1,2,3');
-  });
-
-  equal(changed, 2);
-  deepEqual(get(a, 'array'), ['1','2','3']);
-});
-
 testBoth("bindings should not try to sync destroyed objects", function(get, set) {
   var a, b;
 

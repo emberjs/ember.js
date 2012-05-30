@@ -84,26 +84,6 @@ test("bind(.bar) should bind to relative path", function() {
   equal("changedValue", get(testObject, "foo"), "testObject.foo");
 });
 
-test("Ember.Binding.bool(TestNamespace.fromObject.bar)) should create binding with bool transform", function() {
-  Ember.run(function(){
-    // create binding
-    testObject.bind("foo", Ember.Binding.bool("TestNamespace.fromObject.bar"));
-    
-    // now make a change to see if the binding triggers.
-    set(fromObject, "bar", 1);
-  });
-  
-
-  equal(true, get(testObject, "foo"), "testObject.foo == true");
-
-  Ember.run(function(){
-    set(fromObject, "bar", 0);
-  });
-  
-
-  equal(false, get(testObject, "foo"), "testObject.foo == false");
-});
-
 var fooBindingModuleOpts = {
 
   setup: function() {
@@ -163,26 +143,6 @@ test("fooBinding: .bar should bind to relative path", function() {
   });
   
   equal("changedValue", get(testObject, "foo"), "testObject.foo");
-});
-
-test("fooBinding: Ember.Binding.bool(TestNamespace.fromObject.bar should create binding with bool transform", function() {
-
-  Ember.run(function(){
-    testObject = TestObject.create({
-      fooBinding: Ember.Binding.bool("TestNamespace.fromObject.bar")
-    });
-
-    // now make a change to see if the binding triggers.
-    set(fromObject, "bar", 1);
-  });
-  
-  equal(true, get(testObject, "foo"), "testObject.foo == true");
-
-  Ember.run(function(){
-    set(fromObject, "bar", 0);
-  });
-  
-  equal(false, get(testObject, "foo"), "testObject.foo == false");
 });
 
 test('fooBinding: should disconnect bindings when destroyed', function () {

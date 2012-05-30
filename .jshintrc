@@ -48,5 +48,6 @@
     "undef": true,
     "sub": true,
     "strict": false,
-    "white": false
+    "white": false,
+    "eqnull": true
 }
