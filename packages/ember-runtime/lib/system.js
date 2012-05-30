@@ -15,6 +15,5 @@ require('ember-runtime/system/native_array');
 require('ember-runtime/system/object');
 require('ember-runtime/system/set');
 require('ember-runtime/system/string');
-require('ember-runtime/system/map');
 
 require('ember-runtime/system/lazy_load');

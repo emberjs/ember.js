@@ -5,6 +5,7 @@
 // ==========================================================================
 
 require('ember-metal/core');
+require('ember-metal/map');
 require('ember-metal/platform');
 require('ember-metal/utils');
 require('ember-metal/accessors');

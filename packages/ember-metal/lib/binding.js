@@ -9,6 +9,7 @@ require('ember-metal/accessors'); // get, getPath, setPath, trySetPath
 require('ember-metal/utils'); // guidFor, isArray, meta
 require('ember-metal/observer'); // addObserver, removeObserver
 require('ember-metal/run_loop'); // Ember.run.schedule
+require('ember-metal/map');
 
 // ..........................................................
 // CONSTANTS
@@ -41,17 +42,14 @@ function getPathWithGlobals(obj, path) {
 // ..........................................................
 // BINDING
 //
-/** @private */
-var K = function() {};
 
 /** @private */
 var Binding = function(toPath, fromPath) {
   this._direction = 'fwd';
   this._from = fromPath;
   this._to   = toPath;
+  this._directionMap = Ember.Map.create();
 };
-
-K.prototype = Binding.prototype;
 
 Binding.prototype = /** @scope Ember.Binding.prototype */ {
   /**
@@ -60,9 +58,7 @@ Binding.prototype = /** @scope Ember.Binding.prototype */ {
   */
   copy: function () {
     var copy = new Binding(this._to, this._from);
-    if (this._oneWay) {
-      copy._oneWay = true;
-    }
+    if (this._oneWay) { copy._oneWay = true; }
     return copy;
   },
 
@@ -117,7 +113,7 @@ Binding.prototype = /** @scope Ember.Binding.prototype */ {
     @returns {Ember.Binding} receiver
   */
   oneWay: function(flag) {
-    this._oneWay = flag===undefined ? true : !!flag;
+    this._oneWay = true;
     return this;
   },
 
@@ -142,16 +138,17 @@ Binding.prototype = /** @scope Ember.Binding.prototype */ {
   connect: function(obj) {
     Ember.assert('Must pass a valid object to Ember.Binding.connect()', !!obj);
 
-    var oneWay = this._oneWay;
+    var twoWay = !this._oneWay;
 
     // add an observer on the object to be notified when the binding should be updated
     Ember.addObserver(obj, this._from, this, this.fromDidChange);
 
     // if the binding is a two-way binding, also set up an observer on the target
     // object.
-    if (!oneWay) { Ember.addObserver(obj, this._to, this, this.toDidChange); }
+    if (twoWay) { Ember.addObserver(obj, this._to, this, this.toDidChange); }
 
-    if (Ember.meta(obj,false).proto !== obj) { this._scheduleSync(obj, 'fwd'); }
+    // Don't schedule a sync if we're connecting an item on a prototype
+    if (Ember.meta(obj, false).proto !== obj) { this._scheduleSync(obj, 'fwd'); }
 
     this._readyToSync = true;
     return this;
@@ -169,14 +166,14 @@ Binding.prototype = /** @scope Ember.Binding.prototype */ {
   disconnect: function(obj) {
     Ember.assert('Must pass a valid object to Ember.Binding.disconnect()', !!obj);
 
-    var oneWay = this._oneWay;
+    var twoWay = !this._oneWay;
 
     // remove an observer on the object so we're no longer notified of
     // changes that should update bindings.
     Ember.removeObserver(obj, this._from, this, this.fromDidChange);
 
     // if the binding is two-way, remove the observer from the target as well
-    if (!oneWay) Ember.removeObserver(obj, this._to, this, this.toDidChange);
+    if (twoWay) { Ember.removeObserver(obj, this._to, this, this.toDidChange); }
 
     this._readyToSync = false; // disable scheduled syncs...
     return this;
@@ -198,18 +195,19 @@ Binding.prototype = /** @scope Ember.Binding.prototype */ {
 
   /** @private */
   _scheduleSync: function(obj, dir) {
-    var guid = guidFor(obj), existingDir = this[guid];
+    var directionMap = this._directionMap;
+    var existingDir = directionMap.get(obj);
 
     // if we haven't scheduled the binding yet, schedule it
     if (!existingDir) {
       Ember.run.schedule('sync', this, this._sync, obj);
-      this[guid] = dir;
+      directionMap.set(obj, dir);
     }
 
     // If both a 'back' and 'fwd' sync have been scheduled on the same object,
     // default to a 'fwd' sync so that it remains deterministic.
     if (existingDir === 'back' && dir === 'fwd') {
-      this[guid] = 'fwd';
+      directionMap.set(obj, 'fwd');
     }
   },
 
@@ -222,11 +220,12 @@ Binding.prototype = /** @scope Ember.Binding.prototype */ {
 
     // get the direction of the binding for the object we are
     // synchronizing from
-    var guid = guidFor(obj), direction = this[guid];
+    var directionMap = this._directionMap;
+    var direction = directionMap.get(obj);
 
     var fromPath = this._from, toPath = this._to;
 
-    delete this[guid];
+    directionMap.remove(obj);
 
     // if we're synchronizing from the remote object...
     if (direction === 'fwd') {
