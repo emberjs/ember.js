@@ -248,27 +248,31 @@ Ember.getPath = function(root, path) {
 Ember.setPath = function(root, path, value, tolerant) {
   var keyName;
 
-  if (arguments.length===2 && 'string' === typeof root) {
+  if (IS_GLOBAL.test(root)) {
     value = path;
     path = root;
     root = null;
   }
 
-
   if (path.indexOf('.') > 0) {
-    keyName = path.slice(path.lastIndexOf('.')+1);
+    // get the last part of the path
+    keyName = path.slice(path.lastIndexOf('.') + 1);
+
+    // get the first part of the part
     path    = path.slice(0, path.length-(keyName.length+1));
+
+    // unless the path is this, look up the first part to
+    // get the root
     if (path !== 'this') {
       root = Ember.getPath(root, path);
     }
-
   } else {
-    if (IS_GLOBAL.test(path)) throw new Error('Invalid Path');
+    Ember.assert("A global path passed to setPath must have at least one period", !IS_GLOBAL.test(path) || path.indexOf(".") > -1);
     keyName = path;
   }
 
-  if (!keyName || keyName.length===0 || keyName==='*') {
-    throw new Error('Invalid Path');
+  if (!keyName || keyName.length === 0) {
+    throw new Error('You passed an empty path');
   }
 
   if (!root) {
@@ -287,12 +291,6 @@ Ember.setPath = function(root, path, value, tolerant) {
   an object has been destroyed.
 */
 Ember.trySetPath = function(root, path, value) {
-  if (arguments.length===2 && 'string' === typeof root) {
-    value = path;
-    path = root;
-    root = null;
-  }
-
   return Ember.setPath(root, path, value, true);
 };
 

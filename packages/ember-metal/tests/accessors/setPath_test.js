@@ -47,12 +47,6 @@ test('[obj, foo] -> obj.foo', function() {
   equal(Ember.getPath(obj, 'foo'), "BAM");
 });
 
-test('[obj, *] -> EXCEPTION [cannot set *]', function() {
-  raises(function() {
-    Ember.setPath(obj, '*', "BAM");
-  }, Error);
-});
-
 test('[obj, foo.bar] -> obj.foo.bar', function() {
   Ember.setPath(obj, 'foo.bar', "BAM");
   equal(Ember.getPath(obj, 'foo.bar'), "BAM");
