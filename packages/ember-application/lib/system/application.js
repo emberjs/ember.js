@@ -108,6 +108,7 @@ Ember.Application = Ember.Namespace.extend(
 
     if (!router && Ember.Router.detect(namespace['Router'])) {
       router = namespace['Router'].create();
+      this._createdRouter = router;
     }
 
     if (router) {
@@ -161,12 +162,14 @@ Ember.Application = Ember.Namespace.extend(
     if (typeof location === 'string') {
       location = Ember.Location.create({implementation: location});
       set(stateManager, 'location', location);
+      this._createdLocation = location;
     }
 
     if (this.ApplicationView && applicationController) {
       var applicationView = this.ApplicationView.create({
         controller: applicationController
       });
+      this._createdApplicationView = applicationView;
 
       applicationView.appendTo(rootElement);
     }
@@ -185,9 +188,11 @@ Ember.Application = Ember.Namespace.extend(
   ready: Ember.K,
 
   /** @private */
-  destroy: function() {
+  willDestroy: function() {
     get(this, 'eventDispatcher').destroy();
-    return this._super();
+    if (this._createdRouter)          { this._createdRouter.destroy(); }
+    if (this._createdLocation)        { this._createdLocation.destroy(); }
+    if (this._createdApplicationView) { this._createdApplicationView.destroy(); }
   },
 
   registerInjection: function(callback) {
