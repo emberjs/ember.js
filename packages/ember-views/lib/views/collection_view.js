@@ -42,7 +42,7 @@ var get = Ember.get, set = Ember.set, fmt = Ember.String.fmt;
           classNames: ['a-collection'],
           content: ['A','B','C'],
           itemViewClass: Ember.View.extend({
-            template: Ember.Handlebars.compile("the letter: {{content}}")
+            template: Ember.Handlebars.compile("the letter: {{view.content}}")
           })
         })
 
@@ -56,8 +56,8 @@ var get = Ember.get, set = Ember.set, fmt = Ember.String.fmt;
           <div class="ember-view">the letter: C</div>
         </div>
 
-
   ## Automatic matching of parent/child tagNames
+
   Setting the `tagName` property of a `CollectionView` to any of 
   "ul", "ol", "table", "thead", "tbody", "tfoot", "tr", or "select" will result
   in the item views receiving an appropriately matched `tagName` property.
@@ -69,7 +69,7 @@ var get = Ember.get, set = Ember.set, fmt = Ember.String.fmt;
           tagName: 'ul',
           content: ['A','B','C'],
           itemViewClass: Ember.View.extend({
-            template: Ember.Handlebars.compile("the letter: {{content}}")
+            template: Ember.Handlebars.compile("the letter: {{view.content}}")
           })
         })
 
