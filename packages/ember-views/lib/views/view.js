@@ -492,7 +492,17 @@ Ember.View = Ember.Object.extend(Ember.Evented,
 
     @type Object
   */
-  controller: null,
+  controller: Ember.computed(function(key, value) {
+    var parentView;
+
+    if (arguments.length === 2) {
+      return value;
+    } else {
+      parentView = get(this, 'parentView');
+
+      return parentView ? get(parentView, 'controller') : null;
+    }
+  }).property().cacheable(),
 
   /**
     A view may contain a layout. A layout is a regular template but
@@ -747,18 +757,11 @@ Ember.View = Ember.Object.extend(Ember.Evented,
   }, '_parentView'),
 
   cloneKeywords: function() {
-    var templateData = get(this, 'templateData'),
-        controller = get(this, 'controller');
+    var templateData = get(this, 'templateData');
 
     var keywords = templateData ? Ember.copy(templateData.keywords) : {};
     keywords.view = get(this, 'concreteView');
-
-    // If the view has a controller specified, make it available to the
-    // template. If not, pass along the parent template's controller,
-    // if it exists.
-    if (controller) {
-      keywords.controller = controller;
-    }
+    keywords.controller = get(this, 'controller');
 
     return keywords;
   },
