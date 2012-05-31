@@ -387,6 +387,7 @@ Mixin.prototype.reopen = function() {
 
   for(idx=0;idx<len;idx++) {
     mixin = arguments[idx];
+    Ember.assert("Expected Mixin or hash, got null or undefined.", !!mixin);
     if (mixin instanceof Mixin) {
       mixins.push(mixin);
     } else {
