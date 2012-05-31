@@ -1,3 +1,5 @@
+/*globals Foo */
+
 var appendView = function(view) {
   Ember.run(function() { view.appendTo('#qunit-fixture'); });
 };
@@ -52,4 +54,30 @@ test("updating a property on the view should update the HTML", function() {
   equal(view.$().text(), "Señorette Engineer: Tom Dale", "should be properly scoped after updating");
 });
 
+module("Handlebars {{#with}} globals helper", {
+  setup: function() {
+    window.Foo = { bar: 'baz' };
+    view = Ember.View.create({
+      template: Ember.Handlebars.compile("{{#with Foo.bar as qux}}{{qux}}{{/with}}")
+    });
 
+    appendView(view);
+  },
+
+  teardown: function() {
+    Ember.run(function(){
+      window.Foo = null;
+      view.destroy();
+    });
+  }
+});
+
+test("it should support #with Foo.bar as qux", function() {
+  equal(view.$().text(), "baz", "should be properly scoped");
+
+  Ember.run(function() {
+    Ember.set(Foo, 'bar', 'updated');
+  });
+
+  equal(view.$().text(), "updated", "should update");
+});
