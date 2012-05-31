@@ -76,7 +76,7 @@ function mergeMixins(mixins, m, descs, values, base) {
   for(idx=0;idx<len;idx++) {
 
     mixin = mixins[idx];
-    if (!mixin) throw new Error('Null value found in Ember.mixin()');
+    Ember.assert('Null value found in Ember.mixin()', !!mixin);
 
     if (mixin instanceof Mixin) {
       guid = Ember.guidFor(mixin);
@@ -224,7 +224,7 @@ function applyMixin(obj, mixins, partial) {
 
     if (desc === REQUIRED) {
       if (!(key in obj)) {
-        if (!partial) throw new Error('Required property not defined: '+key);
+        Ember.assert('Required property not defined: '+key, !!partial);
 
         // for partial applies add to hash of required keys
         req = writableReq(obj);
@@ -311,7 +311,8 @@ function applyMixin(obj, mixins, partial) {
       if (META_SKIP[key]) continue;
       keys.push(key);
     }
-    throw new Error('Required properties not defined: '+keys.join(','));
+    // TODO: Remove surrounding if clause from production build
+    Ember.assert('Required properties not defined: '+keys.join(','));
   }
   return obj;
 }
