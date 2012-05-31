@@ -2180,4 +2180,27 @@ test("should bind to the property if no registered helper found for a mustache w
   ok(view.$().text() === 'foobarProperty', "Property was bound to correctly");
 });
 
+test("should accept bindings as a string or an Ember.Binding", function() {
+  var viewClass = Ember.View.extend({
+    template: Ember.Handlebars.compile("binding: {{view.bindingTest}}, string: {{view.stringTest}}")
+  });
+
+  Ember.Handlebars.registerHelper('boogie', function(id, options) {
+    options.hash = options.hash || {};
+    options.hash.bindingTestBinding = Ember.Binding.oneWay('bindingContext.' + id);
+    options.hash.stringTestBinding = id;
+    return Ember.Handlebars.ViewHelper.helper(this, viewClass, options);
+  });
+
+  view = Ember.View.create({
+    content: Ember.Object.create({
+      direction: 'down'
+    }),
+    template: Ember.Handlebars.compile("{{boogie content.direction}}")
+  });
+
+  appendView();
+
+  equal(Ember.$.trim(view.$().text()), "binding: down, string: down");
+});
 
