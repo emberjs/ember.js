@@ -250,6 +250,15 @@ test("it automatically transitions to multiple substates specified using either 
   ok(get(stateManager, 'currentState').isStart, "automatically transitions to final substate");
 });
 
+test("it throws an assertion error when the initialState does not exist", function() {
+  raises(function() {
+    Ember.StateManager.create({
+      initialState: 'foo',
+      bar: Ember.State.create()
+    });
+  }, Error, 'raises an exception');
+});
+
 module("Ember.StateManager - Transitions on Complex State Managers");
 
 /**
