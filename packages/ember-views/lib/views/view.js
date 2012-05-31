@@ -807,7 +807,7 @@ Ember.View = Ember.Object.extend(Ember.Evented,
   },
 
   invokeForState: function(name) {
-    var stateName = this.state, args;
+    var stateName = this.state, args, fn;
 
     // try to find the function for the state in the cache
     if (fn = invokeForState[stateName][name]) {
@@ -824,7 +824,7 @@ Ember.View = Ember.Object.extend(Ember.Evented,
       state = states[stateName];
 
       while (state) {
-        var fn = state[name];
+        fn = state[name];
 
         if (fn) {
           invokeForState[stateName][name] = fn;
