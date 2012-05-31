@@ -167,11 +167,15 @@ EmberHandlebars.registerHelper('with', function(context, options) {
 
     Ember.assert("You must pass a block to the with helper", options.fn && options.fn !== Handlebars.VM.noop);
 
-    // This is a workaround for the fact that you cannot bind separate objects
-    // together. When we implement that functionality, we should use it here.
-    var contextKey = Ember.$.expando + Ember.guidFor(this);
-    options.data.keywords[contextKey] = this;
-    Ember.bind(options.data.keywords, keywordName, contextKey + '.' + path);
+    if (Ember.isGlobal(path)) {
+      Ember.bind(options.data.keywords, keywordName, path);
+    } else {
+      // This is a workaround for the fact that you cannot bind separate objects
+      // together. When we implement that functionality, we should use it here.
+      var contextKey = Ember.$.expando + Ember.guidFor(this);
+      options.data.keywords[contextKey] = this;
+      Ember.bind(options.data.keywords, keywordName, contextKey + '.' + path);
+    }
 
     return bind.call(this, path, options.fn, true, function(result) {
       return !Ember.none(result);

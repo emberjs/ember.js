@@ -180,6 +180,11 @@ function normalizeTuple(target, path) {
   return TUPLE_RET;
 }
 
+/** @private */
+Ember.isGlobal = function(path) {
+  return IS_GLOBAL.test(path);
+};
+
 /**
   @private
 

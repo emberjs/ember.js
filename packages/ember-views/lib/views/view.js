@@ -288,10 +288,12 @@ var invokeForState = {
       <div id="ember1" class="ember-view">I was the template, not default</div>
 
   ## Layouts
-  Views can have a secondary outer template that wraps their main template. Like
+  Views can have a secondary template that wraps their main template. Like
   primary templates, layouts can be any function that  accepts an optional context
-  parameter and returns a string of HTML that will be inserted a view's tag.
-  Most typically in Ember this function will be a compiled Ember.Handlebars template.
+  parameter and returns a string of HTML that will be inserted inside view's tag. Views whose HTML
+  element is self closing (e.g. `<input />`) cannot have a layout and this property will be ignored.
+  
+  Most typically in Ember a layout will be a compiled Ember.Handlebars template.
 
   A view's layout can be set directly with the `layout` property or reference an
   existing Handlebars template by name with the `layoutName` property.
