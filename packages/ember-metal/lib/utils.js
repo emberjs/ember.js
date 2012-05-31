@@ -19,12 +19,6 @@ uuid         = 0;
 numberCache  = [];
 stringCache  = {};
 
-var GUID_DESC = Ember.GUID_DESC = {
-  configurable: true,
-  writable: true,
-  enumerable: false
-};
-
 var o_defineProperty = Ember.platform.defineProperty;
 var o_create = Ember.platform.create;
 
@@ -67,9 +61,11 @@ Ember.generateGuid = function(obj, prefix) {
   if (!prefix) prefix = 'ember';
   var ret = (prefix + (uuid++));
   if (obj) {
-    GUID_DESC.value = ret;
-    o_defineProperty(obj, GUID_KEY, GUID_DESC);
-    GUID_DESC.value = null;
+    o_defineProperty(obj, GUID_KEY, {
+      configurable: true,
+      writable: true,
+      value: ret
+    });
   }
 
   return ret ;

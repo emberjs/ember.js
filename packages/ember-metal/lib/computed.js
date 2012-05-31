@@ -110,7 +110,10 @@ function addDependentKeys(desc, obj, keyName) {
   // add all of its dependent keys.
   var keys = desc._dependentKeys,
       len  = keys ? keys.length : 0;
-  for(var idx=0;idx<len;idx++) addDependentKey(obj, keyName, keys[idx]);
+
+  for(var idx=0; idx<len; idx++) {
+    addDependentKey(obj, keyName, keys[idx]);
+  }
 }
 
 // ..........................................................

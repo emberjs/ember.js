@@ -21,13 +21,6 @@ var SIMPLE_PROPERTY, WATCHED_PROPERTY;
 // DESCRIPTOR
 //
 
-var SIMPLE_DESC = {
-  writable: true,
-  configurable: true,
-  enumerable: true,
-  value: null
-};
-
 /**
   @private
   @constructor
@@ -37,15 +30,18 @@ var SIMPLE_DESC = {
 
   You generally won't need to create or subclass this directly.
 */
-var Dc = Ember.Descriptor = function() {};
+var Descriptor = Ember.Descriptor = function() {};
 
-var setup = Dc.setup = function(obj, keyName, value) {
-  SIMPLE_DESC.value = value;
-  o_defineProperty(obj, keyName, SIMPLE_DESC);
-  SIMPLE_DESC.value = null;
+var setup = Descriptor.setup = function(obj, keyName, value) {
+  o_defineProperty(obj, keyName, {
+    writable: true,
+    configurable: true,
+    enumerable: true,
+    value: value
+  });
 };
 
-var Dp = Ember.Descriptor.prototype;
+var DescriptorPrototype = Ember.Descriptor.prototype;
 
 /**
   Called whenever we want to set the property value.  Should set the value
@@ -63,7 +59,7 @@ var Dp = Ember.Descriptor.prototype;
 
   @returns {Object} value actual set value
 */
-Dp.set = function(obj, keyName, value) {
+DescriptorPrototype.set = function(obj, keyName, value) {
   obj[keyName] = value;
   return value;
 };
@@ -80,7 +76,7 @@ Dp.set = function(obj, keyName, value) {
 
   @returns {Object} the current value
 */
-Dp.get = function(obj, keyName) {
+DescriptorPrototype.get = function(obj, keyName) {
   return w_get(obj, keyName, obj);
 };
 
@@ -103,7 +99,7 @@ Dp.get = function(obj, keyName) {
 
   @returns {void}
 */
-Dp.setup = setup;
+DescriptorPrototype.setup = setup;
 
 /**
   This is called on the descriptor just before another descriptor takes its
@@ -122,11 +118,11 @@ Dp.setup = setup;
 
   @returns {Object} transfer value
 */
-Dp.teardown = function(obj, keyName) {
+DescriptorPrototype.teardown = function(obj, keyName) {
   return obj[keyName];
 };
 
-Dp.val = function(obj, keyName) {
+DescriptorPrototype.val = function(obj, keyName) {
   return obj[keyName];
 };
 
