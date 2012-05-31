@@ -33,21 +33,37 @@ var o_defineProperty = Ember.platform.defineProperty;
 //   __emberproto__: SRC_OBJ
 //  }
 
-/** @private */
+/**
+  @private
+
+  This function returns a map of unique dependencies for a
+  given object and key.
+*/
 function uniqDeps(obj, depKey) {
   var m = meta(obj), deps, ret;
   deps = m.deps;
+
+  // If the current object has no dependencies...
   if (!deps) {
+    // initialize the dependencies with a pointer back to
+    // the current object
     deps = m.deps = { __emberproto__: obj };
   } else if (deps.__emberproto__ !== obj) {
+    // otherwise if the dependencies are inherited from the
+    // object's superclass, clone the deps
     deps = m.deps = o_create(deps);
     deps.__emberproto__ = obj;
   }
 
   ret = deps[depKey];
+
   if (!ret) {
+    // if there are no dependencies yet for a the given key
+    // create a new empty list of dependencies for the key
     ret = deps[depKey] = { __emberproto__: obj };
   } else if (ret.__emberproto__ !== obj) {
+    // otherwise if the dependency list is inherited from
+    // a superclass, clone the hash
     ret = deps[depKey] = o_create(ret);
     ret.__emberproto__ = obj;
   }
@@ -55,22 +71,43 @@ function uniqDeps(obj, depKey) {
   return ret;
 }
 
-/** @private */
+/**
+  @private
+
+  This method allows us to register that a particular
+  property depends on another property.
+*/
 function addDependentKey(obj, keyName, depKey) {
   var deps = uniqDeps(obj, depKey);
+
+  // Increment the number of times depKey depends on
+  // keyName.
   deps[keyName] = (deps[keyName] || 0) + 1;
+
+  // Watch the depKey
   Ember.watch(obj, depKey);
 }
 
-/** @private */
+/**
+  @private
+
+  This method removes a dependency.
+*/
 function removeDependentKey(obj, keyName, depKey) {
   var deps = uniqDeps(obj, depKey);
+
+  // Decrement the number of times depKey depends
+  // on keyName.
   deps[keyName] = (deps[keyName] || 0) - 1;
+
+  // Unwatch the depKey
   Ember.unwatch(obj, depKey);
 }
 
 /** @private */
 function addDependentKeys(desc, obj, keyName) {
+  // the descriptor has a list of dependent keys, so
+  // add all of its dependent keys.
   var keys = desc._dependentKeys,
       len  = keys ? keys.length : 0;
   for(var idx=0;idx<len;idx++) addDependentKey(obj, keyName, keys[idx]);
