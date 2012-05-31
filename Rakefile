@@ -128,6 +128,10 @@ task :test, [:suite] => :dist do |t, args|
               "package=all&dist=build&nojshint=true"]
   }
 
+  packages.each do |package|
+    suites[package.to_sym] = ["package=#{package}"]
+  end
+
   if ENV['TEST']
     opts = [ENV['TEST']]
   else
