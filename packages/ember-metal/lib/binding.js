@@ -241,7 +241,7 @@ Binding.prototype = /** @scope Ember.Binding.prototype */ {
         });
       }
     // if we're synchronizing *to* the remote object
-    } else if (direction === 'back') {// && !this._oneWay) {
+    } else if (direction === 'back') {
       var toValue = getPath(obj, this._to);
       if (log) {
         Ember.Logger.log(' ', this.toString(), '<-', toValue, obj);
@@ -322,34 +322,6 @@ mixinProperties(Binding,
   property of your object instance automatically. Now the two values will be
   kept in sync.
 
-  ## Customizing Your Bindings
-
-  In addition to synchronizing values, bindings can perform  basic transforms on values.
-  These transforms can help to make sure the data fed into one object always meets
-  the expectations of that object regardless of what the other object outputs.
-
-  To customize a binding, you can use one of the many helper methods defined
-  on Ember.Binding:
-
-        valueBinding: Ember.Binding.single("MyApp.someController.title")
-
-  This will create a binding just like the example above, except that now the
-  binding will convert the value of `MyApp.someController.title` to a single
-  object (by accessing its first element if it's an Array) before applying it
-  to the `value` property of your object.
-
-  You can also chain helper methods to build custom bindings:
-
-        valueBinding: Ember.Binding.single("MyApp.someController.title").notEmpty("(EMPTY)")
-
-  This will force the value of MyApp.someController.title to be a single value
-  and then check to see if the value is "empty" (null, undefined, empty array,
-  or an empty string). If it is empty, the value will be set to the string
-  "(EMPTY)".
-
-  The included transforms are: `and`, `bool`, `isNull`, `not`, `notEmpty`, `notNull`, `oneWay`,
-  `single`, and `multiple`
-
   ## One Way Bindings
 
   One especially useful binding customization you can use is the `oneWay()`
@@ -372,52 +344,6 @@ mixinProperties(Binding,
   You should consider using one way bindings anytime you have an object that
   may be created frequently and you do not intend to change a property; only
   to monitor it for changes. (such as in the example above).
-
-  ## Adding Custom Transforms
-
-  In addition to using the standard helpers provided by Ember, you can
-  also define your own custom transform functions which will be used to
-  convert the value. To do this, just define your transform function and add
-  it to the binding with the transform() helper. The following example will
-  not allow Integers less than ten. Note that it checks the value of the
-  bindings and allows all other values to pass:
-
-        valueBinding: Ember.Binding.transform(function(value, object) {
-          return ((Ember.typeOf(value) === 'number') && (value < 10)) ? 10 : value;
-        }).from("MyApp.someController.value")
-
-  If you would like to instead use this transform on a number of bindings,
-  you can also optionally add your own helper method to Ember.Binding. This
-  method should return the value of `this.transform()`. The example
-  below adds a new helper called `notLessThan()` which will limit the value to
-  be not less than the passed minimum:
-
-      Ember.Binding.registerTransform('notLessThan', function(minValue) {
-        return this.transform(function(value, object) {
-          return ((Ember.typeOf(value) === 'number') && (value < minValue)) ? minValue : value;
-        });
-      });
-
-  You could specify this in your core.js file, for example. Then anywhere in
-  your application you can use it to define bindings like so:
-
-        valueBinding: Ember.Binding.from("MyApp.someController.value").notLessThan(10)
-
-  Also, remember that helpers are chained so you can use your helper along
-  with any other helpers. The example below will create a one way binding that
-  does not allow empty values or values less than 10:
-
-        valueBinding: Ember.Binding.oneWay("MyApp.someController.value").notEmpty().notLessThan(10)
-
-  Finally, it's also possible to specify bi-directional transforms. To do this,
-  you can pass a hash to `transform` with `to` and `from`. In the following
-  example, we are expecting a lowercase string that we want to transform to
-  uppercase.
-
-        valueBinding: Ember.Binding.from('MyApp.Object.property').transform({
-          to:   function(value, object) { return value.toUpperCase(); },
-          from: function(value, object) { return value.toLowerCase(); }
-        }
 
   ## How to Manually Add Binding
 
@@ -482,9 +408,7 @@ Ember.Binding = Binding;
 
 /**
   Global helper method to create a new binding.  Just pass the root object
-  along with a to and from path to create and connect the binding.  The new
-  binding object will be returned which you can further configure with
-  transforms and other conditions.
+  along with a to and from path to create and connect the binding.
 
   @param {Object} obj
     The root object of the transform.
