@@ -175,10 +175,9 @@ var childViewsProperty = Ember.computed(function() {
   `childViews` array.
 
   ## Templates and Layout
-  A `template`, `templateName`, `defaultTemplate`, `layout`, `layoutName` or `defaultLayout`
-  property on a container view will not result in the template or layout being rendered. 
-  The HTML contents of a `Ember.ContainerView`'s DOM representation will only be the rendered HTML
-  of its child views.
+  A `template`, `templateName`, or `defaultTemplate` property on a container view will not result
+  in the template being rendered. The HTML contents of a `Ember.ContainerView`'s DOM representation
+  will only be the rendered HTML of its `layout` and child views.
 
   ## Binding a View to Display
 
@@ -242,14 +241,14 @@ Ember.ContainerView = Ember.View.extend({
   },
 
   /**
-    Instructs each child view to render to the passed render buffer.
-
-    @param {Ember.RenderBuffer} buffer the buffer to render to
+    Instructs each child view to render to the render buffer.
     @private
   */
-  render: function(buffer) {
-    this.forEachChildView(function(view) {
-      view.renderToBuffer(buffer);
+  template: function(context, options){
+    var buffer = options.data.buffer,
+        view = options.data.view;
+    view.forEachChildView(function(child) {
+       child.renderToBuffer(buffer);
     });
   },
 

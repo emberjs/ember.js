@@ -104,3 +104,25 @@ test("the template property is available to the layout template", function() {
 
   equal("Herp derp", view.$().text(), "the layout has access to the template");
 });
+
+test("should work with Ember.ContainerView", function(){
+  var childView = Ember.View.create({
+    template: function() {
+      return "This is the main view.";
+    }
+  });
+  
+  var container = Ember.ContainerView.create({
+    layout: function(context, options){
+      options.data.buffer.push("Herp. ");
+      get(context, 'template')(context, options);
+    }
+  });
+  
+  Ember.run(function(){
+    container.set('currentView', childView);
+    container.createElement();
+  });
+  
+  equal(container.$().text(), "Herp. This is the main view.", "the layout has access to the template");
+});
