@@ -85,6 +85,17 @@ Ember.State = Ember.Object.extend(Ember.Evented, {
     }
   },
 
+  lookupEventTransition: function(name) {
+    var path, state = this;
+
+    while(state && !path) {
+      path = state.eventTransitions[name];
+      state = state.get('parentState');
+    }
+
+    return path;
+  },
+
   /**
     A Boolean value indicating whether the state is a leaf state
     in the state hierarchy. This is false if the state has child

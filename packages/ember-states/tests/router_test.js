@@ -48,6 +48,35 @@ test("router.urlForEvent looks in the current state's eventTransitions hash", fu
   equal(url, "#!#/dashboard");
 });
 
+test("router.urlForEvent looks in the eventTransitions hashes of the current state's ancestors", function() {
+  var router = Ember.Router.create({
+    location: locationStub,
+    namespace: namespace,
+    root: Ember.State.create({
+      eventTransitions: {
+        showDashboard: 'dashboard'
+      },
+
+      index: Ember.State.create({
+        route: '/'
+      }),
+
+      dashboard: Ember.State.create({
+        route: '/dashboard'
+      })
+    })
+  });
+
+  Ember.run(function() {
+    router.route('/');
+  });
+
+  equal(router.getPath('currentState.path'), "root.index", "precond - the router is in root.index");
+
+  var url = router.urlForEvent('showDashboard');
+  equal(url, "#!#/dashboard");
+});
+
 test("router.urlForEvent works with a context", function() {
   var router = Ember.Router.create({
     location: locationStub,

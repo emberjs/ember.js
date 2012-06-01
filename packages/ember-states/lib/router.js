@@ -43,7 +43,7 @@ Ember.Router = Ember.StateManager.extend(
 
   urlForEvent: function(eventName, context) {
     var currentState = get(this, 'currentState');
-    var targetStateName = currentState.eventTransitions[eventName];
+    var targetStateName = currentState.lookupEventTransition(eventName);
 
     Ember.assert(Ember.String.fmt("You must specify a target state for event '%@' in order to link to it in the current state '%@'.", [eventName, get(currentState, 'path')]), !!targetStateName);
 
