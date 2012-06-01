@@ -77,7 +77,7 @@ DescriptorPrototype.set = function(obj, keyName, value) {
   @returns {Object} the current value
 */
 DescriptorPrototype.get = function(obj, keyName) {
-  return w_get(obj, keyName, obj);
+  return get(obj, keyName, obj);
 };
 
 /**
@@ -165,25 +165,32 @@ var WATCHED_DESC = {
 };
 
 /** @private */
-function w_get(obj, keyName, values) {
-  values = values || meta(obj, false).values;
+function rawGet(obj, keyName, values) {
+  var ret = values[keyName];
+  if (ret !== undefined) { return ret; }
+  if (obj.unknownProperty) { return obj.unknownProperty(keyName); }
+}
 
-  if (values) {
-    var ret = values[keyName];
-    if (ret !== undefined) { return ret; }
-    if (obj.unknownProperty) { return obj.unknownProperty(keyName); }
-  }
+function get(obj, keyName) {
+  return rawGet(obj, keyName, obj);
+}
 
+var emptyObject = {};
+
+function watchedGet(obj, keyName) {
+  return rawGet(obj, keyName, meta(obj, false).values || emptyObject);
 }
 
 /** @private */
-function w_set(obj, keyName, value) {
-  var m = meta(obj), watching;
+function watchedSet(obj, keyName, value) {
+  var m = meta(obj), changed = value !== m.values[keyName];
 
-  watching = m.watching[keyName]>0 && value!==m.values[keyName];
-  if (watching) Ember.propertyWillChange(obj, keyName);
-  m.values[keyName] = value;
-  if (watching) Ember.propertyDidChange(obj, keyName);
+  if (changed) {
+    Ember.propertyWillChange(obj, keyName);
+    m.values[keyName] = value;
+    Ember.propertyDidChange(obj, keyName);
+  }
+
   return value;
 }
 
@@ -193,7 +200,7 @@ function mkWatchedGetter(keyName) {
   var ret = WATCHED_GETTERS[keyName];
   if (!ret) {
     ret = WATCHED_GETTERS[keyName] = function() {
-      return w_get(this, keyName);
+      return watchedGet(this, keyName);
     };
   }
   return ret;
@@ -205,7 +212,7 @@ function mkWatchedSetter(keyName) {
   var ret = WATCHED_SETTERS[keyName];
   if (!ret) {
     ret = WATCHED_SETTERS[keyName] = function(value) {
-      return w_set(this, keyName, value);
+      return watchedSet(this, keyName, value);
     };
   }
   return ret;
@@ -219,8 +226,8 @@ function mkWatchedSetter(keyName) {
 WATCHED_PROPERTY = new Ember.Descriptor();
 
 if (Ember.platform.hasPropertyAccessors) {
-  WATCHED_PROPERTY.get = w_get ;
-  WATCHED_PROPERTY.set = w_set ;
+  WATCHED_PROPERTY.get = watchedGet ;
+  WATCHED_PROPERTY.set = watchedSet ;
 
   if (USE_ACCESSORS) {
     WATCHED_PROPERTY.setup = function(obj, keyName, value) {

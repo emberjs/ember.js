@@ -19,6 +19,13 @@ var o_create = Ember.platform.create,
     a_slice = Array.prototype.slice,
     meta = Ember.meta;
 
+var undefinedDescriptor = {
+  configurable: true,
+  writable: true,
+  enumerable: false,
+  value: undefined
+};
+
 /** @private */
 function makeCtor() {
 
@@ -40,12 +47,10 @@ function makeCtor() {
       if (hasChains) {
         rewatch(this);
       } else {
-        Ember.GUID_DESC.value = undefined;
-        o_defineProperty(this, Ember.GUID_KEY, Ember.GUID_DESC);
+        o_defineProperty(this, Ember.GUID_KEY, undefinedDescriptor);
       }
       if (init===false) { init = this.init; } // cache for later instantiations
-      Ember.GUID_DESC.value = undefined;
-      o_defineProperty(this, '_super', Ember.GUID_DESC);
+      o_defineProperty(this, '_super', undefinedDescriptor);
       Ember.Mixin.finishPartial(this);
       init.apply(this, arguments);
     }

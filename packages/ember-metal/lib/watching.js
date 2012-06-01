@@ -530,8 +530,16 @@ Ember.rewatch = function(obj) {
 
   @returns {void}
 */
-function propertyWillChange(obj, keyName) {
-  var m = meta(obj, false), proto = m.proto, desc = m.descs[keyName];
+function propertyWillChange(obj, keyName, value) {
+  var m = meta(obj, false),
+      watching = m.watching[keyName] > 0 || keyName === 'length',
+      proto = m.proto,
+      desc = m.descs[keyName];
+
+  if (!watching) {
+    return;
+  }
+
   if (proto === obj) return ;
   if (desc && desc.willChange) desc.willChange(obj, keyName);
   dependentKeysWillChange(obj, keyName, m);
@@ -561,9 +569,17 @@ Ember.propertyWillChange = propertyWillChange;
   @returns {void}
 */
 function propertyDidChange(obj, keyName) {
-  var m = meta(obj, false), proto = m.proto, desc = m.descs[keyName];
+  var m = meta(obj, false),
+      watching = m.watching[keyName] > 0 || keyName === 'length',
+      proto = m.proto,
+      desc = m.descs[keyName];
+
   if (proto === obj) return ;
-  if (desc && desc.didChange) desc.didChange(obj, keyName);
+
+  // shouldn't this mean that we're watching this key?
+  if (desc && desc.didChange) { desc.didChange(obj, keyName); }
+  if (!watching && keyName !== 'length') { return; }
+
   dependentKeysDidChange(obj, keyName, m);
   chainsDidChange(obj, keyName, m);
   Ember.notifyObservers(obj, keyName);
