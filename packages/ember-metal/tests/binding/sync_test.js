@@ -112,6 +112,8 @@ testBoth("bindings should do the right thing when binding is in prototype", func
 
     a = Ember.create(proto);
     b = Ember.create(proto);
+    Ember.rewatch(a);
+    Ember.rewatch(b);
   });
 
   Ember.run(function () {

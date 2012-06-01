@@ -7,6 +7,8 @@
 
 require("ember-views/system/render_buffer");
 
+var objectCreate = Ember.create;
+
 /**
   @namespace
   @name Handlebars
@@ -34,19 +36,19 @@ Ember.assert("Ember Handlebars requires Handlebars 1.0.beta.5 or greater", windo
   To create an Ember.Handlebars template, call Ember.Handlebars.compile().  This will
   return a function that can be used by Ember.View for rendering.
 */
-Ember.Handlebars = Ember.create(Handlebars);
+Ember.Handlebars = objectCreate(Handlebars);
 
-Ember.Handlebars.helpers = Ember.create(Handlebars.helpers);
+Ember.Handlebars.helpers = objectCreate(Handlebars.helpers);
 
 /**
   Override the the opcode compiler and JavaScript compiler for Handlebars.
 */
 Ember.Handlebars.Compiler = function() {};
-Ember.Handlebars.Compiler.prototype = Ember.create(Handlebars.Compiler.prototype);
+Ember.Handlebars.Compiler.prototype = objectCreate(Handlebars.Compiler.prototype);
 Ember.Handlebars.Compiler.prototype.compiler = Ember.Handlebars.Compiler;
 
 Ember.Handlebars.JavaScriptCompiler = function() {};
-Ember.Handlebars.JavaScriptCompiler.prototype = Ember.create(Handlebars.JavaScriptCompiler.prototype);
+Ember.Handlebars.JavaScriptCompiler.prototype = objectCreate(Handlebars.JavaScriptCompiler.prototype);
 Ember.Handlebars.JavaScriptCompiler.prototype.compiler = Ember.Handlebars.JavaScriptCompiler;
 Ember.Handlebars.JavaScriptCompiler.prototype.namespace = "Ember.Handlebars";
 

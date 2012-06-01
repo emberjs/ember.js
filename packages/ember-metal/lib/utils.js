@@ -20,7 +20,7 @@ numberCache  = [];
 stringCache  = {};
 
 var o_defineProperty = Ember.platform.defineProperty;
-var o_create = Ember.platform.create;
+var o_create = Ember.create;
 
 /**
   @private

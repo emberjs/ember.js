@@ -13,7 +13,7 @@ var USE_ACCESSORS = Ember.USE_ACCESSORS;
 var GUID_KEY = Ember.GUID_KEY;
 var META_KEY = Ember.META_KEY;
 var meta = Ember.meta;
-var o_create = Ember.platform.create;
+var o_create = Ember.create;
 var objectDefineProperty = Ember.platform.defineProperty;
 var SIMPLE_PROPERTY, WATCHED_PROPERTY;
 
@@ -342,56 +342,3 @@ Ember.defineProperty = function(obj, keyName, desc, val) {
   return this;
 };
 
-/**
-  Creates a new object using the passed object as its prototype.  On browsers
-  that support it, this uses the built in Object.create method.  Else one is
-  simulated for you.
-
-  This method is a better choice than Object.create() because it will make
-  sure that any observers, event listeners, and computed properties are
-  inherited from the parent as well.
-
-  @param {Object} obj
-    The object you want to have as the prototype.
-
-  @returns {Object} the newly created object
-*/
-Ember.create = function(obj, props) {
-  var ret = o_create(obj, props);
-  if (GUID_KEY in ret) Ember.generateGuid(ret, 'ember');
-  if (META_KEY in ret) Ember.rewatch(ret); // setup watch chains if needed.
-  return ret;
-};
-
-/**
-  @private
-
-  Creates a new object using the passed object as its prototype.  This method
-  acts like `Ember.create()` in every way except that bindings, observers, and
-  computed properties will be activated on the object.
-
-  The purpose of this method is to build an object for use in a prototype
-  chain. (i.e. to be set as the `prototype` property on a constructor
-  function).  Prototype objects need to inherit bindings, observers and
-  other configuration so they pass it on to their children.  However since
-  they are never 'live' objects themselves, they should not fire or make
-  other changes when various properties around them change.
-
-  You should use this method anytime you want to create a new object for use
-  in a prototype chain.
-
-  @param {Object} obj
-    The base object.
-
-  @param {Object} hash
-    Optional hash of properties to define on the object.
-
-  @returns {Object} new object
-*/
-Ember.createPrototype = function(obj, props) {
-  var ret = o_create(obj, props);
-  meta(ret, true).proto = ret;
-  if (GUID_KEY in ret) Ember.generateGuid(ret, 'ember');
-  if (META_KEY in ret) Ember.rewatch(ret); // setup watch chains if needed.
-  return ret;
-};

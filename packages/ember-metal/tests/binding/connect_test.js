@@ -138,6 +138,7 @@ testBoth('Bindings should be inherited', function(get, set) {
     binding.connect(a);
 
     a2 = Ember.create(a);
+    Ember.rewatch(a2);
   });
 
   equal(get(a2, 'foo'), "BAR", "Should have synced binding on child");

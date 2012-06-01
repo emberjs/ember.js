@@ -17,7 +17,7 @@ var meta = Ember.meta;
 var guidFor = Ember.guidFor;
 var USE_ACCESSORS = Ember.USE_ACCESSORS;
 var a_slice = Array.prototype.slice;
-var o_create = Ember.platform.create;
+var o_create = Ember.create;
 var o_defineProperty = Ember.platform.defineProperty;
 
 // ..........................................................

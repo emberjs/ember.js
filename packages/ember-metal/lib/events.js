@@ -8,7 +8,7 @@ require('ember-metal/core');
 require('ember-metal/platform');
 require('ember-metal/utils');
 
-var o_create = Ember.platform.create;
+var o_create = Ember.create;
 var meta = Ember.meta;
 var guidFor = Ember.guidFor;
 var a_slice = Array.prototype.slice;

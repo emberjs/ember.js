@@ -116,6 +116,7 @@ task :test, [:suite] => :dist do |t, args|
 
   suites = {
     :default => packages.map{|p| "package=#{p}" },
+    :runtime => [ "package=ember-metal,ember-runtime" ],
     # testing older jQuery 1.6.4 for compatibility
     :all => packages.map{|p| "package=#{p}" } +
             ["package=all&jquery=1.6.4&nojshint=true",

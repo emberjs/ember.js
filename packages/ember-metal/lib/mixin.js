@@ -23,7 +23,7 @@ var a_slice = Array.prototype.slice;
 var EMPTY_META = {}; // dummy for non-writable meta
 var META_SKIP = { __emberproto__: true, __ember_count__: true };
 
-var o_create = Ember.platform.create;
+var o_create = Ember.create;
 
 /** @private */
 function meta(obj, writable) {
