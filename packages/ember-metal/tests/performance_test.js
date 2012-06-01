@@ -62,7 +62,7 @@ test("computed properties are not executed if they are the last segment of an ob
 
   Ember.addObserver(foo, 'bar.baz.bam', function() {});
 
-  Ember.propertyDidChange(foo.bar.baz, 'bam');
+  Ember.propertyDidChange(Ember.getPath(foo, 'bar.baz'), 'bam');
 
   equal(count, 0, "should not have recomputed property");
 });

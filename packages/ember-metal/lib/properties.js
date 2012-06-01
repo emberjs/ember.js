@@ -14,7 +14,7 @@ var GUID_KEY = Ember.GUID_KEY;
 var META_KEY = Ember.META_KEY;
 var meta = Ember.meta;
 var o_create = Ember.platform.create;
-var o_defineProperty = Ember.platform.defineProperty;
+var objectDefineProperty = Ember.platform.defineProperty;
 var SIMPLE_PROPERTY, WATCHED_PROPERTY;
 
 // ..........................................................
@@ -33,7 +33,7 @@ var SIMPLE_PROPERTY, WATCHED_PROPERTY;
 var Descriptor = Ember.Descriptor = function() {};
 
 var setup = Descriptor.setup = function(obj, keyName, value) {
-  o_defineProperty(obj, keyName, {
+  objectDefineProperty(obj, keyName, {
     writable: true,
     configurable: true,
     enumerable: true,
@@ -130,45 +130,36 @@ DescriptorPrototype.val = function(obj, keyName) {
 // SIMPLE AND WATCHED PROPERTIES
 //
 
-// if accessors are disabled for the app then this will act as a guard when
-// testing on browsers that do support accessors.  It will throw an exception
-// if you do foo.bar instead of Ember.get(foo, 'bar')
-
 // The exception to this is that any objects managed by Ember but not a descendant
 // of Ember.Object will not throw an exception, instead failing silently. This
 // prevent errors with other libraries that may attempt to access special
 // properties on standard objects like Array. Usually this happens when copying
 // an object by looping over all properties.
-
-if (!USE_ACCESSORS) {
-  Ember.Descriptor.MUST_USE_GETTER = function() {
-    if (this instanceof Ember.Object) {
-      Ember.assert('Must use Ember.get() to access this property', false);
+//
+// QUESTION: What is this scenario exactly?
+var mandatorySetter = Ember.Descriptor.MUST_USE_SETTER = function() {
+  if (this instanceof Ember.Object) {
+    if (this.isDestroyed) {
+      Ember.assert('You cannot set observed properties on destroyed objects', false);
+    } else {
+      Ember.assert('Must use Ember.set() to access this property', false);
     }
-  };
-
-  Ember.Descriptor.MUST_USE_SETTER = function() {
-    if (this instanceof Ember.Object) {
-      if (this.isDestroyed) {
-        Ember.assert('You cannot set observed properties on destroyed objects', false);
-      } else {
-        Ember.assert('Must use Ember.set() to access this property', false);
-      }
-    }
-  };
-}
+  }
+};
 
 var WATCHED_DESC = {
   configurable: true,
   enumerable:   true,
-  set: Ember.Descriptor.MUST_USE_SETTER
+  set: mandatorySetter
 };
 
 /** @private */
 function rawGet(obj, keyName, values) {
   var ret = values[keyName];
-  if (ret !== undefined) { return ret; }
-  if (obj.unknownProperty) { return obj.unknownProperty(keyName); }
+  if (ret === undefined && obj.unknownProperty) {
+    ret = obj.unknownProperty(keyName);
+  }
+  return ret;
 }
 
 function get(obj, keyName) {
@@ -181,41 +172,47 @@ function watchedGet(obj, keyName) {
   return rawGet(obj, keyName, meta(obj, false).values || emptyObject);
 }
 
+var hasGetters = Ember.platform.hasPropertyAccessors, rawSet;
+
+rawSet = function(obj, keyName, value, values) {
+  values[keyName] = value;
+};
+
+// if there are no getters, keep the raw property up to date
+if (!Ember.platform.hasPropertyAccessors) {
+  rawSet = function(obj, keyName, value, values) {
+    obj[keyName] = value;
+    values[keyName] = value;
+  };
+}
+
 /** @private */
 function watchedSet(obj, keyName, value) {
-  var m = meta(obj), changed = value !== m.values[keyName];
+  var m = meta(obj),
+      values = m.values,
+      changed = value !== values[keyName];
 
   if (changed) {
     Ember.propertyWillChange(obj, keyName);
-    m.values[keyName] = value;
+    rawSet(obj, keyName, value, m.values);
     Ember.propertyDidChange(obj, keyName);
   }
 
   return value;
 }
 
-var WATCHED_GETTERS = {};
 /** @private */
-function mkWatchedGetter(keyName) {
-  var ret = WATCHED_GETTERS[keyName];
-  if (!ret) {
-    ret = WATCHED_GETTERS[keyName] = function() {
-      return watchedGet(this, keyName);
-    };
-  }
-  return ret;
+function makeWatchedGetter(keyName) {
+  return function() {
+    return watchedGet(this, keyName);
+  };
 }
 
-var WATCHED_SETTERS = {};
 /** @private */
-function mkWatchedSetter(keyName) {
-  var ret = WATCHED_SETTERS[keyName];
-  if (!ret) {
-    ret = WATCHED_SETTERS[keyName] = function(value) {
-      return watchedSet(this, keyName, value);
-    };
-  }
-  return ret;
+function makeWatchedSetter(keyName) {
+  return function(value) {
+    return watchedSet(this, keyName, value);
+  };
 }
 
 /**
@@ -224,50 +221,25 @@ function mkWatchedSetter(keyName) {
   Private version of simple property that invokes property change callbacks.
 */
 WATCHED_PROPERTY = new Ember.Descriptor();
+WATCHED_PROPERTY.get = watchedGet ;
+WATCHED_PROPERTY.set = watchedSet ;
 
-if (Ember.platform.hasPropertyAccessors) {
-  WATCHED_PROPERTY.get = watchedGet ;
-  WATCHED_PROPERTY.set = watchedSet ;
+WATCHED_PROPERTY.setup = function(obj, keyName, value) {
+  objectDefineProperty(obj, keyName, {
+    configurable: true,
+    enumerable:   true,
+    set: mandatorySetter,
+    get: makeWatchedGetter(keyName)
+  });
 
-  if (USE_ACCESSORS) {
-    WATCHED_PROPERTY.setup = function(obj, keyName, value) {
-      WATCHED_DESC.get = mkWatchedGetter(keyName);
-      WATCHED_DESC.set = mkWatchedSetter(keyName);
-      o_defineProperty(obj, keyName, WATCHED_DESC);
-      WATCHED_DESC.get = WATCHED_DESC.set = null;
-      if (value !== undefined) meta(obj).values[keyName] = value;
-    };
+  meta(obj).values[keyName] = value;
+};
 
-  } else {
-    WATCHED_PROPERTY.setup = function(obj, keyName, value) {
-      WATCHED_DESC.get = mkWatchedGetter(keyName);
-      o_defineProperty(obj, keyName, WATCHED_DESC);
-      WATCHED_DESC.get = null;
-      if (value !== undefined) meta(obj).values[keyName] = value;
-    };
-  }
-
-  WATCHED_PROPERTY.teardown = function(obj, keyName) {
-    var ret = meta(obj).values[keyName];
-    delete meta(obj).values[keyName];
-    return ret;
-  };
-
-// NOTE: if platform does not have property accessors then we just have to
-// set values and hope for the best.  You just won't get any warnings...
-} else {
-
-  WATCHED_PROPERTY.set = function(obj, keyName, value) {
-    var m = meta(obj), watching;
-
-    watching = m.watching[keyName]>0 && value!==obj[keyName];
-    if (watching) Ember.propertyWillChange(obj, keyName);
-    obj[keyName] = value;
-    if (watching) Ember.propertyDidChange(obj, keyName);
-    return value;
-  };
-
-}
+WATCHED_PROPERTY.teardown = function(obj, keyName) {
+  var ret = meta(obj).values[keyName];
+  delete meta(obj).values[keyName];
+  return ret;
+};
 
 /**
   The default descriptor for simple properties.  Pass as the third argument
@@ -281,7 +253,6 @@ SIMPLE_PROPERTY = Ember.SIMPLE_PROPERTY;
 
 SIMPLE_PROPERTY.unwatched = WATCHED_PROPERTY.unwatched = SIMPLE_PROPERTY;
 SIMPLE_PROPERTY.watched   = WATCHED_PROPERTY.watched   = WATCHED_PROPERTY;
-
 
 // ..........................................................
 // DEFINING PROPERTIES API
@@ -328,16 +299,27 @@ function hasDesc(descs, keyName) {
       }).property('firstName', 'lastName').cacheable());
 */
 Ember.defineProperty = function(obj, keyName, desc, val) {
-  var m = meta(obj, false), descs = m.descs, watching = m.watching[keyName]>0, override = true;
+  var m = meta(obj, false),
+      descs = m.descs,
+      watching = m.watching[keyName]>0,
+      override = true;
 
   if (val === undefined) {
+    // if a value wasn't provided, the value is the old value
+    // (which can be obtained by calling teardown on a property
+    // with a descriptor).
     override = false;
     val = hasDesc(descs, keyName) ? descs[keyName].teardown(obj, keyName) : obj[keyName];
   } else if (hasDesc(descs, keyName)) {
+    // otherwise, tear down the descriptor, but use the provided
+    // value as the new value instead of the descriptor's current
+    // value.
     descs[keyName].teardown(obj, keyName);
   }
 
-  if (!desc) desc = SIMPLE_PROPERTY;
+  if (!desc) {
+    desc = SIMPLE_PROPERTY;
+  }
 
   if (desc instanceof Ember.Descriptor) {
     m = meta(obj, true);
@@ -350,7 +332,7 @@ Ember.defineProperty = function(obj, keyName, desc, val) {
   // compatibility with ES5
   } else {
     if (descs[keyName]) meta(obj).descs[keyName] = null;
-    o_defineProperty(obj, keyName, desc);
+    objectDefineProperty(obj, keyName, desc);
   }
 
   // if key is being watched, override chains that

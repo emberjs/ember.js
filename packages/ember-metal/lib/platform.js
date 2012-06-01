@@ -46,6 +46,7 @@ if (!platform.create) {
   platform.create.isSimulated = true;
 }
 
+Object.defineProperty = null;
 /** @private */
 var defineProperty = Object.defineProperty;
 var canRedefineProperties, canDefinePropertyOnDOM;
@@ -145,8 +146,7 @@ if (!platform.defineProperty) {
   platform.hasPropertyAccessors = false;
 
   platform.defineProperty = function(obj, keyName, desc) {
-    Ember.assert("property descriptor cannot have `get` or `set` on this platform", !desc.get && !desc.set);
-    obj[keyName] = desc.value;
+    if (!desc.get) { obj[keyName] = desc.value; }
   };
 
   platform.defineProperty.isSimulated = true;
