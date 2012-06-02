@@ -32,6 +32,21 @@ Ember.Router = Ember.StateManager.extend(
   initialState: 'root',
 
   /**
+    The `Ember.Location` implementation to be used to manage the application
+    URL state. The following values are supported:
+
+    * 'hash': Uses URL fragment identifiers (like #/blog/1) for routing.
+    * 'none': Does not read or set the browser URL, but still allows for
+      routing to happen. Useful for testing.
+
+    @type String
+    @default 'hash'
+  */
+  location: 'hash',
+
+  /**
+    On router, transitionEvent should be called connectOutlets
+
     @property {String}
     @default 'connectOutlets'
   */

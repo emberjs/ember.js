@@ -1,3 +1,6 @@
+require('ember-application/system/location');
+require('ember-application/system/none_location');
+
 module("Ember.Routable");
 
 test("it should have its updateRoute method called when it is entered", function() {
@@ -92,6 +95,7 @@ test("route repeatedly descends into a nested hierarchy", function() {
   });
 
   var router = Ember.Router.create({
+    location: 'none',
     root: state
   });
 
@@ -116,6 +120,7 @@ test("route repeatedly descends into a nested hierarchy", function() {
   });
 
   var router = Ember.Router.create({
+    location: 'none',
     root: state
   });
 
@@ -382,6 +387,7 @@ module("redirectsTo");
 
 test("if a leaf state has a redirectsTo, it automatically transitions into that state", function() {
    var router = Ember.Router.create({
+     location: 'none',
      root: Ember.State.create({
 
        index: Ember.State.create({
@@ -405,13 +411,14 @@ test("if a leaf state has a redirectsTo, it automatically transitions into that 
 test("you cannot define connectOutlets AND redirectsTo", function() {
   raises(function() {
     Ember.Router.create({
-     root: Ember.State.create({
-       index: Ember.State.create({
-         route: '/',
-         redirectsTo: 'someOtherState',
-         connectOutlets: function() {}
-       })
-     })
+      location: 'none',
+      root: Ember.State.create({
+        index: Ember.State.create({
+          route: '/',
+          redirectsTo: 'someOtherState',
+          connectOutlets: function() {}
+        })
+      })
     });
   });
 });
@@ -419,6 +426,7 @@ test("you cannot define connectOutlets AND redirectsTo", function() {
 test("you cannot have a redirectsTo in a non-leaf state", function () {
   raises(function() {
     Ember.Router.create({
+      location: 'none',
       root: Ember.State.create({
         redirectsTo: 'someOtherState',
 
