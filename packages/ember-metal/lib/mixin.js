@@ -76,7 +76,7 @@ function mergeMixins(mixins, m, descs, values, base) {
   for(idx=0;idx<len;idx++) {
 
     mixin = mixins[idx];
-    Ember.assert('Null value found in Ember.mixin()', !!mixin);
+    Ember.assert('Expected hash or Mixin instance, got ' + Object.prototype.toString.call(mixin), typeof mixin === 'object' && mixin !== null && Object.prototype.toString.call(mixin) !== '[object Array]');
 
     if (mixin instanceof Mixin) {
       guid = Ember.guidFor(mixin);
@@ -388,7 +388,8 @@ Mixin.prototype.reopen = function() {
 
   for(idx=0;idx<len;idx++) {
     mixin = arguments[idx];
-    Ember.assert("Expected Mixin or hash, got null or undefined.", !!mixin);
+    Ember.assert('Expected hash or Mixin instance, got ' + Object.prototype.toString.call(mixin), typeof mixin === 'object' && mixin !== null && Object.prototype.toString.call(mixin) !== '[object Array]');
+
     if (mixin instanceof Mixin) {
       mixins.push(mixin);
     } else {
