@@ -74,7 +74,7 @@ Ember.Routable = Ember.Mixin.create({
     In general, this will update the browser's URL.
   */
   updateRoute: function(manager, location) {
-    if (location && get(this, 'isLeaf')) {
+    if (get(this, 'isLeaf')) {
       var path = this.absoluteRoute(manager);
       location.setURL(path);
     }

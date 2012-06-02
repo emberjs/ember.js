@@ -76,13 +76,9 @@ Ember.Router = Ember.StateManager.extend(
     Ember.assert("To get a URL for a state, it must have a `route` property.", !!get(state, 'routeMatcher'));
 
     var location = get(this, 'location'),
-        url = state.absoluteRoute(this, hash);
+        absoluteRoute = state.absoluteRoute(this, hash);
 
-    if (location) {
-      url = location.formatURL(url);
-    }
-
-    return url;
+    return location.formatURL(absoluteRoute);
   },
 
   urlForEvent: function(eventName, context) {
