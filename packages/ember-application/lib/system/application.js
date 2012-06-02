@@ -135,12 +135,15 @@ Ember.Application = Ember.Namespace.extend(
   /** @private */
   didBecomeReady: function() {
     var eventDispatcher = get(this, 'eventDispatcher'),
-        stateManager    = get(this, 'stateManager'),
         customEvents    = get(this, 'customEvents');
 
     eventDispatcher.setup(customEvents);
 
     this.ready();
+
+    // It is possible that stateManager was initialized inside ready call.
+    // By geting it here we ensure we have one.
+    var stateManager = get(this, 'stateManager');
 
     if (stateManager && stateManager instanceof Ember.Router) {
       this.setupStateManager(stateManager);
