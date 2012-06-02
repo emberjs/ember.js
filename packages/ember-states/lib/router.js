@@ -27,9 +27,24 @@ Ember.Router = Ember.StateManager.extend(
   initialState: 'root',
 
   /**
-    On router, transitionEvent should be called connectOutlets
+    The `Ember.Location` implementation to be used to manage the application
+    URL state. At the moment, only 'hash' is supported, which uses URL fragment
+    identifiers (like #/blog/1) for routing.
 
-    @property {String}
+    This can be either a string or an object returned by
+    `Ember.Location.create`.
+
+    @type String
+    @default 'hash'
+  */
+  location: 'hash',
+
+  /**
+    The name of the functions used to set up states. On Router, this is
+    `connectOutlets` instead of `setup`.
+
+    @type String
+    @default 'connectOutlets'
   */
   transitionEvent: 'connectOutlets',
 

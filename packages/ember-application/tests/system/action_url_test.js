@@ -60,6 +60,7 @@ test("it does not generate the URL when href property is not specified", functio
 
 test("it sets a URL with a context", function() {
   var router = Ember.Router.create({
+    location: null,
     namespace: namespace,
     root: Ember.State.create({
       index: Ember.State.create({

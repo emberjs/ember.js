@@ -118,6 +118,7 @@ test("route repeatedly descends into a nested hierarchy", function() {
   });
 
   var router = Ember.Router.create({
+    location: null,
     root: state
   });
 
@@ -142,6 +143,7 @@ test("route repeatedly descends into a nested hierarchy", function() {
   });
 
   var router = Ember.Router.create({
+    location: null,
     root: state
   });
 
@@ -408,6 +410,7 @@ module("redirectsTo");
 
 test("if a leaf state has a redirectsTo, it automatically transitions into that state", function() {
    var router = Ember.Router.create({
+     location: null,
      root: Ember.State.create({
 
        index: Ember.State.create({
@@ -431,6 +434,7 @@ test("if a leaf state has a redirectsTo, it automatically transitions into that 
 test("you cannot define connectOutlets AND redirectsTo", function() {
   raises(function() {
     Ember.Router.create({
+     location: null,
      root: Ember.State.create({
        index: Ember.State.create({
          route: '/',
@@ -445,6 +449,7 @@ test("you cannot define connectOutlets AND redirectsTo", function() {
 test("you cannot have a redirectsTo in a non-leaf state", function () {
   raises(function() {
     Ember.Router.create({
+      location: null,
       root: Ember.State.create({
         redirectsTo: 'someOtherState',
 
