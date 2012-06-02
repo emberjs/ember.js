@@ -130,21 +130,20 @@ Ember.Application = Ember.Namespace.extend(
         injection(namespace, router, property);
       });
     });
+
+    if (router && router instanceof Ember.Router) {
+      this.startRouting(router);
+    }
   },
 
   /** @private */
   didBecomeReady: function() {
     var eventDispatcher = get(this, 'eventDispatcher'),
-        stateManager    = get(this, 'stateManager'),
         customEvents    = get(this, 'customEvents');
 
     eventDispatcher.setup(customEvents);
 
     this.ready();
-
-    if (stateManager && stateManager instanceof Ember.Router) {
-      this.setupStateManager(stateManager);
-    }
   },
 
   /**
@@ -154,7 +153,7 @@ Ember.Application = Ember.Namespace.extend(
     to the current URL, and trigger a new call to `route`
     whenever the URL changes.
   */
-  setupStateManager: function(stateManager) {
+  startRouting: function(stateManager) {
     var location = get(stateManager, 'location'),
         rootElement = get(this, 'rootElement'),
         applicationController = get(stateManager, 'applicationController');
