@@ -5,6 +5,8 @@
 // ==========================================================================
 
 require('ember-views');
+require('ember-handlebars');
 require('ember-states');
-require('ember-viewstates/state_manager')
+require('ember-application');
+require('ember-viewstates/state_manager');
 require('ember-viewstates/view_state');

@@ -1,19 +1,19 @@
 require('ember-states/state');
 
-var get = Ember.get, set = Ember.set;
+var get = Ember.get, getPath = Ember.getPath;
 /**
   @class
-  
+
   Ember.ViewState extends Ember.State to control the presence of a childView within a
   container based on the current state of the ViewState's StateManager.
-  
+
   ## Interactions with Ember's View System.
-  When combined with instances of `Ember.StateManager`, ViewState is designed to 
-  interact with Ember's view system to control which views are added to 
+  When combined with instances of `Ember.StateManager`, ViewState is designed to
+  interact with Ember's view system to control which views are added to
   and removed from the DOM based on the manager's current state.
 
   By default, a StateManager will manage views inside the 'body' element. This can be
-  customized by setting the `rootElement` property to a CSS selector of an existing 
+  customized by setting the `rootElement` property to a CSS selector of an existing
   HTML element you would prefer to receive view rendering.
 
 
@@ -28,7 +28,7 @@ var get = Ember.get, set = Ember.set;
       aLayoutView = Ember.ContainerView.create()
 
       // make sure this view instance is added to the browser
-      aLayoutView.appendTo('body') 
+      aLayoutView.appendTo('body')
 
       App.viewStates = Ember.StateManager.create({
         rootView: aLayoutView
@@ -182,8 +182,8 @@ var get = Ember.get, set = Ember.set;
 
 
   If you prefer to start with an empty body and manage state programmatically you
-  can also take advantage of StateManager's `rootView` property and the ability of 
-  `Ember.ContainerView`s to manually manage their child views. 
+  can also take advantage of StateManager's `rootView` property and the ability of
+  `Ember.ContainerView`s to manually manage their child views.
 
 
       dashboard = Ember.ContainerView.create({
@@ -215,7 +215,7 @@ var get = Ember.get, set = Ember.set;
       dashboard.appendTo('body')
 
   ## User Manipulation of State via `{{action}}` Helpers
-  The Handlebars `{{action}}` helper is StateManager-aware and will use StateManager action sending 
+  The Handlebars `{{action}}` helper is StateManager-aware and will use StateManager action sending
   to connect user interaction to action-based state transitions.
 
   Given the following body and handlebars template
@@ -241,50 +241,23 @@ var get = Ember.get, set = Ember.set;
   `App.appStates.aState` with `App.appStates` as the first argument and a
   `jQuery.Event` object as the second object. The `jQuery.Event` will include a property
   `view` that references the `Ember.View` object that was interacted with.
-  
+
 **/
 Ember.ViewState = Ember.State.extend(
 /** @scope Ember.ViewState.prototype */ {
   isViewState: true,
 
-  enter: function(stateManager) {
-    var view = get(this, 'view'), root, childViews;
+  outlet: 'view',
 
-    if (view) {
-      if (Ember.View.detect(view)) {
-        view = view.create();
-        set(this, 'view', view);
-      }
+  view: null,
 
-      Ember.assert('view must be an Ember.View', view instanceof Ember.View);
+  connectOutlets: function(router, context) {
+    var view = get(this, 'view'),
+        outlet = get(this, 'outlet');
+    if (typeof view === 'string') { view = getPath(window, view); }
 
-      root = stateManager.get('rootView');
+    Ember.assert('view must be an Ember.View', Ember.View.detect(view));
 
-      if (root) {
-        childViews = get(root, 'childViews');
-        childViews.pushObject(view);
-      } else {
-        root = stateManager.get('rootElement') || 'body';
-        view.appendTo(root);
-      }
-    }
-  },
-
-  exit: function(stateManager) {
-    var view = get(this, 'view');
-
-    if (view) {
-      // If the view has a parent view, then it is
-      // part of a view hierarchy and should be removed
-      // from its parent.
-      if (get(view, 'parentView')) {
-        view.removeFromParent();
-      } else {
-
-        // Otherwise, the view is a "root view" and
-        // was appended directly to the DOM.
-        view.remove();
-      }
-    }
+    router.get('applicationController').connectOutlet(outlet, view, context);
   }
 });
