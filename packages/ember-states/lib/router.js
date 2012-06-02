@@ -1,6 +1,7 @@
 require('ember-states/state');
 require('ember-states/route_matcher');
 require('ember-states/routable');
+require('ember-application/system/location');
 
 var get = Ember.get, getPath = Ember.getPath, set = Ember.set;
 
@@ -81,5 +82,20 @@ Ember.Router = Ember.StateManager.extend(
     var hash = targetState.serialize(this, context);
 
     return this.urlFor(targetStateName, hash);
+  },
+
+  /** @private */
+  init: function() {
+    this._super();
+
+    var location = get(this, 'location');
+    if ('string' === typeof location) {
+      set(this, 'location', Ember.Location.create({ implementation: location }));
+    }
+  },
+
+  /** @private */
+  willDestroy: function() {
+    get(this, 'location').destroy();
   }
 });
