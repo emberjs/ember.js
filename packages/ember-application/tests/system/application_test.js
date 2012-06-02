@@ -139,6 +139,7 @@ test('initialized application go to initial route', function() {
     });
   });
 
+  app.initialize(app.stateManager);
   equal(app.getPath('stateManager.currentState.path'), 'root.index', "The router moved the state into the right place");
 });
 
