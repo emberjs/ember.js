@@ -106,13 +106,9 @@ Binding.prototype = /** @scope Ember.Binding.prototype */ {
     means that if you change the "to" side directly, the "from" side may have
     a different value.
 
-    @param {Boolean} flag
-      (Optional) passing nothing here will make the binding oneWay.  You can
-      instead pass false to disable oneWay, making the binding two way again.
-
     @returns {Ember.Binding} receiver
   */
-  oneWay: function(flag) {
+  oneWay: function() {
     this._oneWay = true;
     return this;
   },
