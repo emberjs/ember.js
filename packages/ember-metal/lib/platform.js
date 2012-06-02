@@ -38,7 +38,6 @@ if (!Ember.create) {
   Ember.create.isSimulated = true;
 }
 
-Object.defineProperty = null;
 /** @private */
 var defineProperty = Object.defineProperty;
 var canRedefineProperties, canDefinePropertyOnDOM;
