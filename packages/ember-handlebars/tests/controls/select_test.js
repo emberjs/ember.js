@@ -247,6 +247,23 @@ test("handles null content", function() {
   equal(select.get('element').selectedIndex, -1, "should have no selection");
 });
 
+
+test("should be able to select an option and then reselect the prompt", function() {
+  select.set('content', Ember.A(['one', 'two', 'three']));
+  select.set('prompt', 'Select something');
+
+  append();
+
+  select.$()[0].selectedIndex = 2;
+  select.$().trigger('change');
+  equal(select.get('selection'), 'two');
+
+  select.$()[0].selectedIndex = 0;
+  select.$().trigger('change');
+  equal(select.get('selection'), null);
+  equal(select.$()[0].selectedIndex, 0);
+});
+
 module("Ember.Select - usage inside templates", {
   setup: function() {
     dispatcher = Ember.EventDispatcher.create();
@@ -353,4 +370,3 @@ test("upon content change, the DOM should reflect the selection (#481)", functio
   equal(select.get('selection'), 'd', "Selection was properly set after content change");
   equal(selectEl.selectedIndex, 1, "The DOM reflects the correct selection");
 });
-

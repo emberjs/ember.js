@@ -149,7 +149,7 @@ Ember.Select = Ember.View.extend(
         selectionIndex = content ? indexOf(content, selection) : -1,
         prompt = get(this, 'prompt');
 
-    if (prompt && selectionIndex > -1) { selectionIndex += 1; }
+    if (prompt) { selectionIndex += 1; }
     if (el) { el.selectedIndex = selectionIndex; }
   },
 
