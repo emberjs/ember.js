@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/emberjs/docs-generator.git
-  revision: 2ac995d64e7c2c1291c06f1d1ef77e67c908b229
+  revision: cfbc2a3aabc08de305224b290ad8f37f3ef5f847
   specs:
     ember-docs (0.1)
       rack
@@ -8,7 +8,7 @@ GIT
 
 GIT
   remote: https://github.com/lautis/uglifier.git
-  revision: 62a749bad506d7ec791392b9938fdf25ecc3ac8b
+  revision: 45133bfdadc8f5056cb93423d2eedad3aed936bf
   specs:
     uglifier (1.2.4)
       execjs (>= 0.3.0)
@@ -24,7 +24,7 @@ GIT
 
 GIT
   remote: https://github.com/wycats/rake-pipeline-web-filters.git
-  revision: ba0b8a00356b4c854930a8e849b5629d51ffd70f
+  revision: 81a22fb0808dfdeab8ed92d5d8c898ad198b9938
   specs:
     rake-pipeline-web-filters (0.6.0)
       rack
@@ -33,30 +33,30 @@ GIT
 GEM
   remote: http://rubygems.org/
   specs:
-    addressable (2.2.7)
     colored (1.2)
-    execjs (1.3.2)
+    execjs (1.4.0)
       multi_json (~> 1.0)
-    faraday (0.7.6)
-      addressable (~> 2.2)
+    faraday (0.8.1)
       multipart-post (~> 1.1)
-      rack (~> 1.1)
-    github_api (0.4.11)
-      faraday (~> 0.7.6)
+    github_api (0.5.2)
+      faraday (~> 0.8.0)
       hashie (~> 1.2.0)
       multi_json (~> 1.3)
       nokogiri (~> 1.5.2)
-      oauth2 (~> 0.5.2)
+      oauth2 (~> 0.7)
     hashie (1.2.0)
+    httpauth (0.1)
     kicker (2.5.0)
       rb-fsevent
     mime-types (1.18)
-    multi_json (1.3.5)
+    multi_json (1.3.6)
     multipart-post (1.1.5)
-    nokogiri (1.5.2)
-    oauth2 (0.5.2)
-      faraday (~> 0.7)
+    nokogiri (1.5.3)
+    oauth2 (0.7.1)
+      faraday (~> 0.8)
+      httpauth (~> 0.1)
       multi_json (~> 1.0)
+      rack (~> 1.4)
     rack (1.4.1)
     rake (0.9.2.2)
     rb-fsevent (0.9.1)
