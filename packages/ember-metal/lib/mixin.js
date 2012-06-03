@@ -323,7 +323,30 @@ Ember.mixin = function(obj) {
 
 
 /**
-  @constructor
+  @class
+
+  The `Ember.Mixin` class allows you to create mixins, whose properties can be
+  added to other classes. For instance,
+
+      App.Editable = Ember.Mixin.create({
+        edit: function() {
+          console.log('starting to edit');
+          this.set('isEditing', true);
+        },
+        isEditing: false
+      });
+
+      // Mix mixins into classes by passing them as the first arguments to
+      // .extend or .create.
+      App.CommentView = Ember.View.extend(App.Editable, {
+        template: Ember.Handlebars.compile('{{#if isEditing}}...{{else}}...{{/if}}')
+      });
+
+      commentView = App.CommentView.create();
+      commentView.edit(); // => outputs 'starting to edit'
+
+  Note that Mixins are created with `Ember.Mixin.create`, not
+  `Ember.Mixin.extend`.
 */
 Ember.Mixin = function() { return initMixin(this, arguments); };
 

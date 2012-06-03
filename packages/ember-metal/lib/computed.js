@@ -167,7 +167,7 @@ function mkCpSetter(keyName, desc) {
   return function(value) {
     var m = meta(this, cacheable),
         watched = (m.source===this) && m.watching[keyName]>0,
-        ret, oldSuspended, lastSetValues;
+        ret, oldSuspended;
 
     oldSuspended = desc._suspended;
     desc._suspended = this;
@@ -333,7 +333,7 @@ Cp.set = function(obj, keyName, value) {
 
   var m = meta(obj, cacheable),
       watched = (m.source===obj) && m.watching[keyName]>0,
-      ret, oldSuspended, lastSetValues;
+      ret, oldSuspended;
 
   oldSuspended = this._suspended;
   this._suspended = obj;

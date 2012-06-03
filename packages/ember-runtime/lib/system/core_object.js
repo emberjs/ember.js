@@ -87,7 +87,7 @@ function makeCtor() {
 var CoreObject = makeCtor();
 
 CoreObject.PrototypeMixin = Ember.Mixin.create(
-/** @scope Ember.CoreObject */ {
+/** @scope Ember.CoreObject.prototype */ {
 
   reopen: function() {
     Ember.Mixin._apply(this, arguments, true);
@@ -153,7 +153,8 @@ CoreObject.PrototypeMixin = Ember.Mixin.create(
 
 CoreObject.__super__ = null;
 
-var ClassMixin = Ember.Mixin.create({
+var ClassMixin = Ember.Mixin.create(
+/** @scope Ember.CoreObject */ {
 
   ClassMixin: Ember.required(),
 
