@@ -264,6 +264,39 @@ test("should be able to select an option and then reselect the prompt", function
   equal(select.$()[0].selectedIndex, 0);
 });
 
+test("should be able to get the current selection's value", function() {
+  select.set('content', Ember.A([
+    {label: 'Yehuda Katz', value: 'wycats'},
+    {label: 'Tom Dale', value: 'tomdale'},
+    {label: 'Peter Wagenet', value: 'wagenet'},
+    {label: 'Erik Bryn', value: 'ebryn'}
+  ]));
+  select.set('optionLabelPath', 'content.label');
+  select.set('optionValuePath', 'content.value');
+
+  append();
+
+  equal(select.get('value'), 'wycats');
+});
+
+test("should be able to set the current selection by value", function() {
+  var ebryn = {label: 'Erik Bryn', value: 'ebryn'};
+  select.set('content', Ember.A([
+    {label: 'Yehuda Katz', value: 'wycats'},
+    {label: 'Tom Dale', value: 'tomdale'},
+    {label: 'Peter Wagenet', value: 'wagenet'},
+    ebryn
+  ]));
+  select.set('optionLabelPath', 'content.label');
+  select.set('optionValuePath', 'content.value');
+  select.set('value', 'ebryn');
+
+  append();
+
+  equal(select.get('value'), 'ebryn');
+  equal(select.get('selection'), ebryn);
+});
+
 module("Ember.Select - usage inside templates", {
   setup: function() {
     dispatcher = Ember.EventDispatcher.create();
