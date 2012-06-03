@@ -161,9 +161,15 @@ Ember.Routable = Ember.Mixin.create({
   },
 
   routePath: function(manager, path) {
-    if (get(this, 'isLeaf')) { return; }
+    var childStates, match;
 
-    var childStates = get(this, 'childStates'), match;
+    if (get(this, 'isLeaf')) {
+      if (path === "") { return; }
+      // Route from root.
+      childStates = getPath(manager, 'childStates.firstObject.childStates');
+    } else {
+      childStates = get(this, 'childStates');
+    }
 
     childStates = childStates.sort(function(a, b) {
       return getPath(b, 'route.length') - getPath(a, 'route.length');
