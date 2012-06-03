@@ -61,6 +61,22 @@ Ember.Select = Ember.View.extend(
   selection: null,
 
   /**
+    In single selection mode (when `multiple` is false), value can be used to get
+    the current selection's value or set the selection by it's value.
+
+    It is not currently supported in multiple selection mode.
+
+    @type String
+    @default null
+  */
+  value: Ember.computed(function(key, value) {
+    if (arguments.length === 2) { return value; }
+
+    var valuePath = get(this, 'optionValuePath').replace(/^content\.?/, '');
+    return valuePath ? getPath(this, 'selection.' + valuePath) : get(this, 'selection');
+  }).property('selection').cacheable(),
+
+  /**
     If given, a top-most dummy option will be rendered to serve as a user
     prompt.
 
@@ -106,6 +122,23 @@ Ember.Select = Ember.View.extend(
       this._selectionDidChangeSingle();
     }
   }, 'selection'),
+
+  valueDidChange: Ember.observer(function() {
+    var content = get(this, 'content'),
+        value = get(this, 'value'),
+        valuePath = get(this, 'optionValuePath').replace(/^content\.?/, ''),
+        selectedValue = (valuePath ? getPath(this, 'selection.' + valuePath) : get(this, 'selection')),
+        selection;
+
+    if (value !== selectedValue) {
+      selection = content.find(function(obj) {
+        return value === (valuePath ? get(obj, valuePath) : obj);
+      });
+
+      this.set('selection', selection);
+    }
+  }, 'value'),
+
 
   _triggerChange: function() {
     var selection = get(this, 'selection');
