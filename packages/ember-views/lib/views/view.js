@@ -794,7 +794,7 @@ Ember.View = Ember.Object.extend(Ember.Evented,
       // is the view by default. A hash of data is also passed that provides
       // the template with access to the view and render buffer.
 
-      Ember.assert('template must be a function. Did you mean to specify templateName instead?', typeof template === 'function');
+      Ember.assert('template must be a function. Did you mean to call Ember.Handlebars.compile("...") or specify templateName instead?', typeof template === 'function');
       // The template should write directly to the render buffer instead
       // of returning a string.
       var output = template(context, { data: data });
