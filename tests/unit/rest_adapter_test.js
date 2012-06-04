@@ -802,3 +802,18 @@ test("if you specify a namespace then it is prepended onto all URLs", function()
   store.load(Person, { id: 1 });
 });
 
+test("sideloaded data is loaded prior to primary data (to ensure relationship coherence)", function() {
+  expect(1);
+
+  group = store.find(Group, 1);
+  group.on("didLoad", function() {
+    equal(group.getPath('people.firstObject').get('name'), "Tom Dale", "sideloaded data are already loaded");
+  });
+
+  ajaxHash.success({
+    people: [
+      { id: 1, name: "Tom Dale" }
+    ],
+    group: { id: 1, name: "Tilde team", people: [1] }
+  });
+});
