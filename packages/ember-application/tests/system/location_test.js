@@ -1,4 +1,5 @@
 var locationObject;
+var lastKnownLocation;
 
 module("Ember.Location, hash implementation", {
   setup: function() {
@@ -60,4 +61,35 @@ test("if the URL is set, it doesn't trigger the hashchange event", function() {
   });
 
   locationObject.setURL('/avoid/triggering');
+});
+
+module("Ember.Location, html5 implementation", {
+  setup: function() {
+    lastKnownLocation = window.location.pathname;
+    locationObject = Ember.Location.create({
+      implementation: 'html5'
+    });
+
+    locationObject.setURL('/');
+
+    stop();
+    setTimeout(start, 1);
+  },
+
+  teardown: function() {
+    window.history.pushState(null, null, lastKnownLocation);
+    Ember.run(function() {
+      locationObject.destroy();
+    });
+  }
+});
+
+test("it is possible to get the current URL", function() {
+  equal(locationObject.getURL(), "/", "the initial URL is '/'");
+  equal(window.location.pathname, "/", "the initial pathname is '/'");
+});
+
+test("it is possible to set the current URL", function() {
+  locationObject.setURL("/foo");
+  equal(locationObject.getURL(), "/foo", "the updated URL is '/foo'");
 });

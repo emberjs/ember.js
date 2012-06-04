@@ -91,6 +91,48 @@ Ember.HashLocation = Ember.Object.extend({
   }
 });
 
+Ember.Html5Location = Ember.Object.extend({
+  init: function() {
+    set(this, 'location', get(this, 'location') || window.location);
+    set(this, 'callbacks', Ember.A());
+  },
+
+  getURL: function() {
+    return get(this, 'location').pathname;
+  },
+
+  setURL: function(path) {
+    var state = window.history.state;
+    if (path === "") { path = '/'; }
+    if (!state || (state && state.path !== path)) {
+      window.history.pushState({ path: path }, null, path);
+      this.set('lastSetURL', path);
+    }
+  },
+
+  onUpdateURL: function(callback) {
+    var self = this;
+
+    var popstate = function(e) {
+      callback(location.pathname);
+    };
+
+    this.get('callbacks').pushObject(popstate);
+    window.addEventListener('popstate', popstate);
+  },
+
+  formatURL: function(url) {
+    return url;
+  },
+
+  willDestroy: function() {
+    get(this, 'callbacks').forEach(function(callback) {
+      window.removeEventListener('popstate', callback);
+    });
+    set(this, 'callbacks', null);
+  }
+});
+
 /**
   Ember.Location returns an instance of the correct implementation of
   the `location` API.
@@ -117,3 +159,4 @@ Ember.Location = {
 };
 
 Ember.Location.registerImplementation('hash', Ember.HashLocation);
+Ember.Location.registerImplementation('html5', Ember.Html5Location);
