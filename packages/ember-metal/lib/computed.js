@@ -146,9 +146,11 @@ function mkCpGetter(keyName, desc) {
 
   if (cacheable) {
     return function() {
-      var ret, cache = meta(this).cache;
+      var ret, m = meta(this), cache = m.cache;
       if (keyName in cache) { return cache[keyName]; }
       ret = cache[keyName] = func.call(this, keyName);
+      var watched = m.source === this && m.watching[keyName] > 0;
+      if (watched) { m.lastSetValues[keyName] = guidFor(ret); }
       return ret;
     };
   } else {
@@ -317,12 +319,15 @@ ComputedPropertyPrototype.didChange = function(obj, keyName) {
 
 /** @private - impl descriptor API */
 ComputedPropertyPrototype.get = function(obj, keyName) {
-  var ret, cache;
+  var ret, cache, m;
 
   if (this._cacheable) {
-    cache = meta(obj).cache;
+    m = meta(obj);
+    cache = m.cache;
     if (keyName in cache) { return cache[keyName]; }
     ret = cache[keyName] = this.func.call(obj, keyName);
+    var watched = m.source === obj && m.watching[keyName] > 0;
+    if (watched) { m.lastSetValues[keyName] = guidFor(ret); }
   } else {
     ret = this.func.call(obj, keyName);
   }
