@@ -179,4 +179,16 @@ if (Ember.VIEW_PRESERVES_CONTEXT) {
     equal(view.$().text(), "My Cool Each Test 1My Cool Each Test 2");
   });
 
+  test("#each accepts 'this' as the right hand side", function() {
+    view = Ember.View.create({
+      template: templateFor("{{#each item in this}}{{view.title}} {{item.name}}{{/each}}"),
+      title: "My Cool Each Test",
+      controller: Ember.A([{ name: 1 }, { name: 2 }])
+    });
+
+    append(view);
+
+    equal(view.$().text(), "My Cool Each Test 1My Cool Each Test 2");
+  });
+
 }

@@ -174,7 +174,10 @@ EmberHandlebars.registerHelper('with', function(context, options) {
       // together. When we implement that functionality, we should use it here.
       var contextKey = Ember.$.expando + Ember.guidFor(this);
       options.data.keywords[contextKey] = this;
-      Ember.bind(options.data.keywords, keywordName, contextKey + '.' + path);
+
+      // if the path is '' ("this"), just bind directly to the current context
+      var contextPath = path ? contextKey + '.' + path : contextKey;
+      Ember.bind(options.data.keywords, keywordName, contextPath);
     }
 
     return bind.call(this, path, options.fn, true, function(result) {

@@ -42,6 +42,7 @@ Ember.Handlebars.registerHelper('each', function(path, options) {
 
     options = arguments[3];
     path = arguments[2];
+    if (path === '') { path = "this"; }
 
     options.hash.keyword = keywordName;
   } else {
