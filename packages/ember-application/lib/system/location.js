@@ -91,16 +91,30 @@ Ember.HashLocation = Ember.Object.extend({
   }
 });
 
+/**
+  Ember.Html5Location implements the location API using the browser's
+  history.pushState API.
+*/
 Ember.Html5Location = Ember.Object.extend({
   init: function() {
     set(this, 'location', get(this, 'location') || window.location);
     set(this, 'callbacks', Ember.A());
   },
 
+  /**
+    @private
+
+    Returns the current `location.pathname`.
+  */
   getURL: function() {
     return get(this, 'location').pathname;
   },
 
+  /**
+    @private
+
+    Uses `history.pushState` to update `location.pathname`.
+  */
   setURL: function(path) {
     var state = window.history.state;
     if (path === "") { path = '/'; }
@@ -110,6 +124,12 @@ Ember.Html5Location = Ember.Object.extend({
     }
   },
 
+  /**
+    @private
+
+    Register a callback to be invoked whenever the browser
+    history changes, including using forward and back buttons.
+  */
   onUpdateURL: function(callback) {
     var self = this;
 
@@ -121,6 +141,12 @@ Ember.Html5Location = Ember.Object.extend({
     window.addEventListener('popstate', popstate);
   },
 
+  /**
+    @private
+
+    Used when using {{action}} helper.  Since no formatting
+    is required we just return the url given.
+  */
   formatURL: function(url) {
     return url;
   },
