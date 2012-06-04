@@ -28,31 +28,6 @@ test("it should have its updateRoute method called when it is entered", function
   router.send('ready');
 });
 
-test("when you call `route` on the Router, it calls it on the current state", function() {
-  expect(2);
-
-  var state = Ember.State.create({
-    routePath: function(manager, path) {
-      equal(path, 'hookers/and/blow', "correct path is passed to route");
-    }
-  });
-
-  var router = Ember.Router.create({
-    location: locationStub,
-    root: Ember.State.create({
-      ready: function(manager) {
-        manager.transitionTo('initial');
-      },
-
-      initial: state
-    })
-  });
-
-  router.send('ready');
-  router.route('/hookers/and/blow');
-  router.route('hookers/and/blow');
-});
-
 test("a RouteMatcher matches routes", function() {
   var match;
 

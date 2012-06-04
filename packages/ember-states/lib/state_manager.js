@@ -394,6 +394,26 @@ Ember.StateManager = Ember.State.extend(
     }
   },
 
+  stateMetaFor: function(state) {
+    var meta = get(this, 'stateMeta'),
+        stateMeta = meta.get(state);
+
+    if (!stateMeta) {
+      stateMeta = {};
+      meta.set(state, stateMeta);
+    }
+
+    return stateMeta;
+  },
+
+  setStateMeta: function(state, key, value) {
+    return set(this.stateMetaFor(state), key, value);
+  },
+
+  getStateMeta: function(state, key) {
+    return get(this.stateMetaFor(state), key);
+  },
+
   /**
     The current state from among the manager's possible states. This property should
     not be set directly.  Use `transitionTo` to move between states by name.
@@ -422,6 +442,7 @@ Ember.StateManager = Ember.State.extend(
 
   send: function(event, context) {
     Ember.assert('Cannot send event "' + event + '" while currentState is ' + get(this, 'currentState'), get(this, 'currentState'));
+    if (arguments.length === 1) { context = {}; }
     this.sendRecursively(event, get(this, 'currentState'), context);
   },
 
@@ -519,19 +540,6 @@ Ember.StateManager = Ember.State.extend(
       Ember.assert("A segment passed to transitionTo must be an Array", Ember.typeOf(tuple) === "array");
       return tuple[0];
     }).join(".");
-  },
-
-  urlFor: function(path, hash) {
-    var currentState = get(this, 'currentState') || this,
-        state = this.findStateByPath(currentState, path),
-        location = get(this, 'location'),
-        url = state.absoluteRoute(this, hash);
-
-    if (location) {
-      url = location.formatURL(url);
-    }
-
-    return url;
   },
 
   transitionTo: function(name, context) {
