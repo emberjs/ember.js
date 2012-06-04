@@ -37,6 +37,12 @@ Ember.Routable = Ember.Mixin.create({
       };
     }
 
+    // normalize empty route to '/'
+    var route = get(this, 'route');
+    if (route === '') {
+      route = '/';
+    }
+
     this._super();
 
     Ember.assert("You cannot use `redirectsTo` on a state that has child states", !redirection || (!!redirection && !!get(this, 'isLeaf')));
@@ -285,9 +291,11 @@ Ember.Routable = Ember.Mixin.create({
     path = path.replace(/^(?=[^\/])/, "/");
     var absolutePath = this.absoluteRoute(router);
 
+    var route = get(this, 'route');
+
     // If the current path is empty, move up one state,
     // because the index ('/') state must be a leaf node.
-    if (absolutePath !== '') {
+    if (route !== '/') {
       // If the current path is a prefix of the path we're trying
       // to go to, we're done.
       var index = path.indexOf(absolutePath),
