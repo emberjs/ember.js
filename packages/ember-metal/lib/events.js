@@ -8,10 +8,11 @@ require('ember-metal/core');
 require('ember-metal/platform');
 require('ember-metal/utils');
 
-var o_create = Ember.create;
-var meta = Ember.meta;
-var guidFor = Ember.guidFor;
-var a_slice = Array.prototype.slice;
+var o_create = Ember.create,
+    meta = Ember.meta,
+    metaPath = Ember.metaPath,
+    guidFor = Ember.guidFor,
+    a_slice = [].slice;
 
 /**
   The event system uses a series of nested hashes to store listeners on an
@@ -37,15 +38,11 @@ var a_slice = Array.prototype.slice;
 
 */
 
-/** @private */
-var metaPath = Ember.metaPath;
-
 // Gets the set of all actions, keyed on the guid of each action's
 // method property.
 /** @private */
 function actionSetFor(obj, eventName, target, writable) {
-  var targetGuid = guidFor(target);
-  return metaPath(obj, ['listeners', eventName, targetGuid], writable);
+  return metaPath(obj, ['listeners', eventName, guidFor(target)], writable);
 }
 
 // Gets the set of all targets, keyed on the guid of each action's
@@ -142,7 +139,7 @@ function addListener(obj, eventName, target, method, xform) {
 
 /** @memberOf Ember */
 function removeListener(obj, eventName, target, method) {
-  if (!method && 'function'===typeof target) {
+  if (!method && 'function' === typeof target) {
     method = target;
     target = null;
   }
@@ -201,15 +198,12 @@ function watchedEvents(obj) {
 
 /** @memberOf Ember */
 function sendEvent(obj, eventName) {
-
   // first give object a chance to handle it
   if (obj !== Ember && 'function' === typeof obj.sendEvent) {
     obj.sendEvent.apply(obj, a_slice.call(arguments, 1));
   }
 
-  var targetSet = targetSetFor(obj, eventName);
-  iterateSet(targetSet, invokeAction, arguments);
-
+  iterateSet(targetSetFor(obj, eventName), invokeAction, arguments);
   return true;
 }
 
@@ -234,7 +228,7 @@ function deferEvent(obj, eventName) {
 /** @memberOf Ember */
 function hasListeners(obj, eventName) {
   var targetSet = targetSetFor(obj, eventName);
-  if (iterateSet(targetSet, function () {return true;})) {
+  if (iterateSet(targetSet, function() { return true; })) {
     return true;
   }
 

@@ -12,18 +12,18 @@ require('ember-metal/properties');
 require('ember-metal/observer');
 require('ember-metal/array');
 
-var guidFor = Ember.guidFor;
-var meta    = Ember.meta;
-var get = Ember.get, set = Ember.set;
-var normalizeTuple = Ember.normalizeTuple.primitive;
-var SIMPLE_PROPERTY = Ember.SIMPLE_PROPERTY;
-var GUID_KEY = Ember.GUID_KEY;
-var META_KEY = Ember.META_KEY;
-var notifyObservers = Ember.notifyObservers;
-var forEach = Ember.ArrayUtils.forEach;
-
-var FIRST_KEY = /^([^\.\*]+)/;
-var IS_PATH = /[\.\*]/;
+var guidFor = Ember.guidFor,
+    meta = Ember.meta,
+    get = Ember.get,
+    set = Ember.set,
+    normalizeTuple = Ember.normalizeTuple.primitive,
+    SIMPLE_PROPERTY = Ember.SIMPLE_PROPERTY,
+    GUID_KEY = Ember.GUID_KEY,
+    META_KEY = Ember.META_KEY,
+    notifyObservers = Ember.notifyObservers,
+    forEach = Ember.ArrayUtils.forEach,
+    FIRST_KEY = /^([^\.\*]+)/,
+    IS_PATH = /[\.\*]/;
 
 /** @private */
 function firstKey(path) {
@@ -47,7 +47,7 @@ function iterDeps(method, obj, depKey, seen, meta) {
 
   var guid = guidFor(obj);
   if (!seen[guid]) seen[guid] = {};
-  if (seen[guid][depKey]) return ;
+  if (seen[guid][depKey]) return;
   seen[guid][depKey] = true;
 
   var deps = meta.deps;
@@ -69,9 +69,9 @@ function dependentKeysWillChange(obj, depKey, meta) {
   if (obj.isDestroying) { return; }
 
   var seen = WILL_SEEN, top = !seen;
-  if (top) seen = WILL_SEEN = {};
+  if (top) { seen = WILL_SEEN = {}; }
   iterDeps(propertyWillChange, obj, depKey, seen, meta);
-  if (top) WILL_SEEN = null;
+  if (top) { WILL_SEEN = null; }
 }
 
 // called whenever a property has just changed to update dependent keys
@@ -80,9 +80,9 @@ function dependentKeysDidChange(obj, depKey, meta) {
   if (obj.isDestroying) { return; }
 
   var seen = DID_SEEN, top = !seen;
-  if (top) seen = DID_SEEN = {};
+  if (top) { seen = DID_SEEN = {}; }
   iterDeps(propertyDidChange, obj, depKey, seen, meta);
-  if (top) DID_SEEN = null;
+  if (top) { DID_SEEN = null; }
 }
 
 // ..........................................................
@@ -98,18 +98,18 @@ function addChainWatcher(obj, keyName, node) {
     nodes = m.chainWatchers = { __emberproto__: obj };
   }
 
-  if (!nodes[keyName]) nodes[keyName] = {};
+  if (!nodes[keyName]) { nodes[keyName] = {}; }
   nodes[keyName][guidFor(node)] = node;
   Ember.watch(obj, keyName);
 }
 
 /** @private */
 function removeChainWatcher(obj, keyName, node) {
-  if (!obj || ('object' !== typeof obj)) return; // nothing to do
-  var m = meta(obj, false);
-  var nodes = m.chainWatchers;
-  if (!nodes || nodes.__emberproto__ !== obj) return; //nothing to do
-  if (nodes[keyName]) delete nodes[keyName][guidFor(node)];
+  if (!obj || 'object' !== typeof obj) { return; } // nothing to do
+  var m = meta(obj, false),
+      nodes = m.chainWatchers;
+  if (!nodes || nodes.__emberproto__ !== obj) { return; } //nothing to do
+  if (nodes[keyName]) { delete nodes[keyName][guidFor(node)]; }
   Ember.unwatch(obj, keyName);
 }
 
@@ -120,7 +120,7 @@ var pendingQueue = [];
 // again.
 /** @private */
 function flushPendingChains() {
-  if (pendingQueue.length===0) return ; // nothing to do
+  if (pendingQueue.length === 0) { return; } // nothing to do
 
   var queue = pendingQueue;
   pendingQueue = [];
@@ -157,7 +157,7 @@ var ChainNode = function(parent, key, value, separator) {
   this._paths = {};
   if (this._watching) {
     this._object = parent.value();
-    if (this._object) addChainWatcher(this._object, this._key, this);
+    if (this._object) { addChainWatcher(this._object, this._key, this); }
   }
 
   // Special-case: the EachProxy relies on immediate evaluation to
@@ -170,31 +170,30 @@ var ChainNode = function(parent, key, value, separator) {
   }
 };
 
+var ChainNodePrototype = ChainNode.prototype;
 
-var Wp = ChainNode.prototype;
-
-Wp.value = function() {
-  if (this._value === undefined && this._watching){
+ChainNodePrototype.value = function() {
+  if (this._value === undefined && this._watching) {
     var obj = this._parent.value();
     this._value = (obj && !isProto(obj)) ? get(obj, this._key) : undefined;
   }
   return this._value;
 };
 
-Wp.destroy = function() {
+ChainNodePrototype.destroy = function() {
   if (this._watching) {
     var obj = this._object;
-    if (obj) removeChainWatcher(obj, this._key, this);
+    if (obj) { removeChainWatcher(obj, this._key, this); }
     this._watching = false; // so future calls do nothing
   }
 };
 
 // copies a top level object only
-Wp.copy = function(obj) {
-  var ret = new ChainNode(null, null, obj, this._separator);
-  var paths = this._paths, path;
-  for(path in paths) {
-    if (paths[path] <= 0) continue; // this check will also catch non-number vals.
+ChainNodePrototype.copy = function(obj) {
+  var ret = new ChainNode(null, null, obj, this._separator),
+      paths = this._paths, path;
+  for (path in paths) {
+    if (paths[path] <= 0) { continue; } // this check will also catch non-number vals.
     ret.add(path);
   }
   return ret;
@@ -202,17 +201,17 @@ Wp.copy = function(obj) {
 
 // called on the root node of a chain to setup watchers on the specified
 // path.
-Wp.add = function(path) {
+ChainNodePrototype.add = function(path) {
   var obj, tuple, key, src, separator, paths;
 
   paths = this._paths;
-  paths[path] = (paths[path] || 0) + 1 ;
+  paths[path] = (paths[path] || 0) + 1;
 
   obj = this.value();
   tuple = normalizeTuple(obj, path);
 
   // the path was a local path
-  if (tuple[0] && (tuple[0] === obj)) {
+  if (tuple[0] && tuple[0] === obj) {
     path = tuple[1];
     key  = firstKey(path);
     path = path.slice(key.length+1);
@@ -238,11 +237,11 @@ Wp.add = function(path) {
 
 // called on the root node of a chain to teardown watcher on the specified
 // path
-Wp.remove = function(path) {
+ChainNodePrototype.remove = function(path) {
   var obj, tuple, key, src, paths;
 
   paths = this._paths;
-  if (paths[path] > 0) paths[path]--;
+  if (paths[path] > 0) { paths[path]--; }
 
   obj = this.value();
   tuple = normalizeTuple(obj, path);
@@ -250,7 +249,6 @@ Wp.remove = function(path) {
     path = tuple[1];
     key  = firstKey(path);
     path = path.slice(key.length+1);
-
   } else {
     src  = tuple[0];
     key  = path.slice(0, 0-(tuple[1].length+1));
@@ -261,14 +259,14 @@ Wp.remove = function(path) {
   this.unchain(key, path);
 };
 
-Wp.count = 0;
+ChainNodePrototype.count = 0;
 
-Wp.chain = function(key, path, src, separator) {
+ChainNodePrototype.chain = function(key, path, src, separator) {
   var chains = this._chains, node;
-  if (!chains) chains = this._chains = {};
+  if (!chains) { chains = this._chains = {}; }
 
   node = chains[key];
-  if (!node) node = chains[key] = new ChainNode(this, key, src, separator);
+  if (!node) { node = chains[key] = new ChainNode(this, key, src, separator); }
   node.count++; // count chains...
 
   // chain rest of path if there is one
@@ -279,7 +277,7 @@ Wp.chain = function(key, path, src, separator) {
   }
 };
 
-Wp.unchain = function(key, path) {
+ChainNodePrototype.unchain = function(key, path) {
   var chains = this._chains, node = chains[key];
 
   // unchain rest of path first...
@@ -298,42 +296,42 @@ Wp.unchain = function(key, path) {
 
 };
 
-Wp.willChange = function() {
+ChainNodePrototype.willChange = function() {
   var chains = this._chains;
   if (chains) {
     for(var key in chains) {
-      if (!chains.hasOwnProperty(key)) continue;
+      if (!chains.hasOwnProperty(key)) { continue; }
       chains[key].willChange();
     }
   }
 
-  if (this._parent) this._parent.chainWillChange(this, this._key, 1);
+  if (this._parent) { this._parent.chainWillChange(this, this._key, 1); }
 };
 
-Wp.chainWillChange = function(chain, path, depth) {
-  if (this._key) path = this._key+this._separator+path;
+ChainNodePrototype.chainWillChange = function(chain, path, depth) {
+  if (this._key) { path = this._key + this._separator + path; }
 
   if (this._parent) {
     this._parent.chainWillChange(this, path, depth+1);
   } else {
-    if (depth>1) Ember.propertyWillChange(this.value(), path);
-    path = 'this.'+path;
-    if (this._paths[path]>0) Ember.propertyWillChange(this.value(), path);
+    if (depth > 1) { Ember.propertyWillChange(this.value(), path); }
+    path = 'this.' + path;
+    if (this._paths[path] > 0) { Ember.propertyWillChange(this.value(), path); }
   }
 };
 
-Wp.chainDidChange = function(chain, path, depth) {
-  if (this._key) path = this._key+this._separator+path;
+ChainNodePrototype.chainDidChange = function(chain, path, depth) {
+  if (this._key) { path = this._key + this._separator + path; }
   if (this._parent) {
     this._parent.chainDidChange(this, path, depth+1);
   } else {
-    if (depth>1) Ember.propertyDidChange(this.value(), path);
-    path = 'this.'+path;
-    if (this._paths[path]>0) Ember.propertyDidChange(this.value(), path);
+    if (depth > 1) { Ember.propertyDidChange(this.value(), path); }
+    path = 'this.' + path;
+    if (this._paths[path] > 0) { Ember.propertyDidChange(this.value(), path); }
   }
 };
 
-Wp.didChange = function(suppressEvent) {
+ChainNodePrototype.didChange = function(suppressEvent) {
   // invalidate my own value first.
   if (this._watching) {
     var obj = this._parent.value();
@@ -354,15 +352,15 @@ Wp.didChange = function(suppressEvent) {
   var chains = this._chains;
   if (chains) {
     for(var key in chains) {
-      if (!chains.hasOwnProperty(key)) continue;
+      if (!chains.hasOwnProperty(key)) { continue; }
       chains[key].didChange(suppressEvent);
     }
   }
 
-  if (suppressEvent) return;
+  if (suppressEvent) { return; }
 
   // and finally tell parent about my path changing...
-  if (this._parent) this._parent.chainDidChange(this, this._key, 1);
+  if (this._parent) { this._parent.chainDidChange(this, this._key, 1); }
 };
 
 // get the chains for the current object.  If the current object has
@@ -370,27 +368,26 @@ Wp.didChange = function(suppressEvent) {
 // the current object.
 /** @private */
 function chainsFor(obj) {
-  var m   = meta(obj), ret = m.chains;
+  var m = meta(obj), ret = m.chains;
   if (!ret) {
     ret = m.chains = new ChainNode(null, null, obj);
   } else if (ret.value() !== obj) {
     ret = m.chains = ret.copy(obj);
   }
-  return ret ;
+  return ret;
 }
-
 
 /** @private */
 function notifyChains(obj, m, keyName, methodName, arg) {
   var nodes = m.chainWatchers;
 
-  if (!nodes || nodes.__emberproto__ !== obj) return; // nothing to do
+  if (!nodes || nodes.__emberproto__ !== obj) { return; } // nothing to do
 
   nodes = nodes[keyName];
-  if (!nodes) return;
+  if (!nodes) { return; }
 
   for(var key in nodes) {
-    if (!nodes.hasOwnProperty(key)) continue;
+    if (!nodes.hasOwnProperty(key)) { continue; }
     nodes[key][methodName](arg);
   }
 }
@@ -425,9 +422,8 @@ var WATCHED_PROPERTY = Ember.SIMPLE_PROPERTY.watched;
   Ember.addObserver().
 */
 Ember.watch = function(obj, keyName) {
-
   // can't watch length on Array - it is special...
-  if (keyName === 'length' && Ember.typeOf(obj)==='array') return this;
+  if (keyName === 'length' && Ember.typeOf(obj) === 'array') { return this; }
 
   var m = meta(obj), watching = m.watching, desc;
 
@@ -441,13 +437,13 @@ Ember.watch = function(obj, keyName) {
 
       desc = m.descs[keyName];
       desc = desc ? desc.watched : WATCHED_PROPERTY;
-      if (desc) Ember.defineProperty(obj, keyName, desc);
+      if (desc) { Ember.defineProperty(obj, keyName, desc); }
     } else {
       chainsFor(obj).add(keyName);
     }
 
   }  else {
-    watching[keyName] = (watching[keyName]||0)+1;
+    watching[keyName] = (watching[keyName] || 0) + 1;
   }
   return this;
 };
@@ -461,7 +457,7 @@ Ember.watch.flushPending = flushPendingChains;
 /** @private */
 Ember.unwatch = function(obj, keyName) {
   // can't watch length on Array - it is special...
-  if (keyName === 'length' && Ember.typeOf(obj)==='array') return this;
+  if (keyName === 'length' && Ember.typeOf(obj) === 'array') { return this; }
 
   var watching = meta(obj).watching, desc, descs;
 
@@ -470,7 +466,7 @@ Ember.unwatch = function(obj, keyName) {
     if (isKeyName(keyName)) {
       desc = meta(obj).descs[keyName];
       desc = desc ? desc.unwatched : SIMPLE_PROPERTY;
-      if (desc) Ember.defineProperty(obj, keyName, desc);
+      if (desc) { Ember.defineProperty(obj, keyName, desc); }
 
       if ('function' === typeof obj.didUnwatchProperty) {
         obj.didUnwatchProperty(keyName);
@@ -502,7 +498,7 @@ Ember.rewatch = function(obj) {
   }
 
   // make sure any chained watchers update.
-  if (chains && chains.value() !== obj) chainsFor(obj);
+  if (chains && chains.value() !== obj) { chainsFor(obj); }
 
   return this;
 };
@@ -536,12 +532,9 @@ function propertyWillChange(obj, keyName, value) {
       proto = m.proto,
       desc = m.descs[keyName];
 
-  if (!watching) {
-    return;
-  }
-
-  if (proto === obj) return ;
-  if (desc && desc.willChange) desc.willChange(obj, keyName);
+  if (!watching) { return; }
+  if (proto === obj) { return; }
+  if (desc && desc.willChange) { desc.willChange(obj, keyName); }
   dependentKeysWillChange(obj, keyName, m);
   chainsWillChange(obj, keyName, m);
   Ember.notifyBeforeObservers(obj, keyName);
@@ -574,7 +567,7 @@ function propertyDidChange(obj, keyName) {
       proto = m.proto,
       desc = m.descs[keyName];
 
-  if (proto === obj) return ;
+  if (proto === obj) { return; }
 
   // shouldn't this mean that we're watching this key?
   if (desc && desc.didChange) { desc.didChange(obj, keyName); }

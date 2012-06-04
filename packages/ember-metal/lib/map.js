@@ -22,8 +22,8 @@ require('ember-metal/array');
 require('ember-metal/utils');
 
 /** @private */
-var guidFor = Ember.guidFor;
-var indexOf = Ember.ArrayUtils.indexOf;
+var guidFor = Ember.guidFor,
+    indexOf = Ember.ArrayUtils.indexOf;
 
 // This class is used internally by Ember.js and Ember Data.
 // Please do not use it at this time. We plan to clean it up

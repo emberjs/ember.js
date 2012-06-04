@@ -14,7 +14,7 @@ require('ember-metal/core');
 
   @name Ember.platform
 */
-var platform = Ember.platform = {} ;
+var platform = Ember.platform = {};
 
 /**
   Identical to Object.create().  Implements if not available natively.

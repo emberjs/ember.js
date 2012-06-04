@@ -9,13 +9,13 @@ require('ember-metal/platform');
 require('ember-metal/utils');
 require('ember-metal/accessors');
 
-var USE_ACCESSORS = Ember.USE_ACCESSORS;
-var GUID_KEY = Ember.GUID_KEY;
-var META_KEY = Ember.META_KEY;
-var meta = Ember.meta;
-var o_create = Ember.create;
-var objectDefineProperty = Ember.platform.defineProperty;
-var SIMPLE_PROPERTY, WATCHED_PROPERTY;
+var USE_ACCESSORS = Ember.USE_ACCESSORS,
+    GUID_KEY = Ember.GUID_KEY,
+    META_KEY = Ember.META_KEY,
+    meta = Ember.meta,
+    o_create = Ember.create,
+    objectDefineProperty = Ember.platform.defineProperty,
+    SIMPLE_PROPERTY, WATCHED_PROPERTY;
 
 // ..........................................................
 // DESCRIPTOR
