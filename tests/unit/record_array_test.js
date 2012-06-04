@@ -118,16 +118,41 @@ test("a record array returns undefined when asking for a member outside of its c
   strictEqual(recordArray.objectAt(20), undefined, "objects outside of the range just return undefined");
 });
 
+var shouldContain = function(array, item) {
+  ok(array.indexOf(item) !== -1, "array should contain "+item.get('name'));
+};
+
+var shouldNotContain = function(array, item) {
+  ok(array.indexOf(item) === -1, "array should not contain "+item.get('name'));
+};
+
 test("a Record Array can update its filter", function() {
-  var store = DS.Store.create();
+  var store = DS.Store.create({
+    adapter: DS.Adapter.create({
+      deleteRecord: function(store, type, record) {
+        store.didDeleteRecord(record);
+      }
+    })
+  });
 
   store.loadMany(Person, array);
+
+  var dickens = store.createRecord(Person, { id: 4, name: "Scumbag Dickens" });
+  dickens.deleteRecord();
+  store.commit();
+
+  var dale = store.find(Person, 1);
+  var katz = store.find(Person, 2);
+  var bryn = store.find(Person, 3);
 
   var recordArray = store.filter(Person, function(hash) {
     if (hash.get('name').match(/Scumbag [KD]/)) { return true; }
   });
 
-  equal(get(recordArray, 'length'), 2, "The Record Array should have the filtered objects on it");
+  shouldContain(recordArray, dale);
+  shouldContain(recordArray, katz);
+  shouldNotContain(recordArray, bryn);
+  shouldNotContain(recordArray, dickens);
 
   recordArray.set('filterFunction', function(hash) {
     if (hash.get('name').match(/Katz/)) { return true; }
