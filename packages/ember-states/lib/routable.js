@@ -60,7 +60,7 @@ Ember.Routable = Ember.Mixin.create({
 
     manager.setStateMeta(this, 'serialized', serialized);
 
-    if (get(this, 'isRoutable')) {
+    if (get(this, 'isRoutable') && !get(manager, 'isRouting')) {
       this.updateRoute(manager, get(manager, 'location'));
     }
   },

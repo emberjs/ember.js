@@ -2,7 +2,7 @@ require('ember-states/state');
 require('ember-states/route_matcher');
 require('ember-states/routable');
 
-var get = Ember.get, getPath = Ember.getPath;
+var get = Ember.get, getPath = Ember.getPath, set = Ember.set;
 
 /**
   @class
@@ -34,14 +34,20 @@ Ember.Router = Ember.StateManager.extend(
   transitionEvent: 'connectOutlets',
 
   route: function(path) {
-    path = path.replace(/^(?=[^\/])/, "/");
+    set(this, 'isRouting', true);
 
-    this.send('unroutePath', path);
+    try {
+      path = path.replace(/^(?=[^\/])/, "/");
 
-    var currentURL = get(this, 'currentState').absoluteRoute(this);
-    var rest = path.substr(currentURL.length);
+      this.send('unroutePath', path);
 
-    this.send('routePath', rest);
+      var currentURL = get(this, 'currentState').absoluteRoute(this);
+      var rest = path.substr(currentURL.length);
+
+      this.send('routePath', rest);
+    } finally {
+      set(this, 'isRouting', false);
+    }
   },
 
   urlFor: function(path, hash) {
