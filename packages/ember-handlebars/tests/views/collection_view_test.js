@@ -100,6 +100,31 @@ test("empty views should be removed when content is added to the collection (reg
   Ember.run(function(){ window.App.destroy(); });
 });
 
+test("should be able to specify which class should be used for the empty view", function() {
+  Ember.run(function() {
+    window.App = Ember.Application.create();
+  });
+
+  App.ListView = Ember.CollectionView.extend();
+  App.EmptyView = Ember.View.extend({
+    template: Ember.Handlebars.compile('This is an empty view')
+  });
+
+  var view = Ember.View.create({
+    template: Ember.Handlebars.compile('{{collection emptyViewClass="App.EmptyView"}}')
+  });
+
+  Ember.run(function() {
+    view.appendTo('#qunit-fixture');
+  });
+
+  equal(view.$().text(), 'This is an empty view', "Empty view should be rendered.");
+
+  Ember.run(function() {
+    window.App.destroy();
+  });
+});
+
 test("if no content is passed, and no 'else' is specified, nothing is rendered", function() {
   TemplateTests.CollectionTestView = Ember.CollectionView.extend({
     tagName: 'ul',

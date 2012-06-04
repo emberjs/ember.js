@@ -169,14 +169,17 @@ Ember.Handlebars.registerHelper('collection', function(path, options) {
     delete options.fn;
   }
 
+  var emptyViewClass;
   if (inverse && inverse !== Handlebars.VM.noop) {
-    var emptyViewClass = get(collectionPrototype, 'emptyViewClass');
-
-    hash.emptyView = emptyViewClass.extend({
-      template: inverse,
-      tagName: itemHash.tagName
+    emptyViewClass = get(collectionPrototype, 'emptyViewClass');
+    emptyViewClass = emptyViewClass.extend({
+          template: inverse,
+          tagName: itemHash.tagName
     });
+  } else if (hash.emptyViewClass) {
+    emptyViewClass = getPath(this, hash.emptyViewClass, options);
   }
+  hash.emptyView = emptyViewClass;
 
   if (hash.eachHelper === 'each') {
     itemHash._context = Ember.computed(function() {
