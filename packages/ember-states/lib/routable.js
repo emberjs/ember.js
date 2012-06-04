@@ -164,14 +164,14 @@ Ember.Routable = Ember.Mixin.create({
     used here.
   */
   modelClassFor: function(namespace) {
-    // if the router has no lookup namespace, we won't be able to guess
-    // the modelType
-    if (!namespace) { return; }
-
     var modelClass, routeMatcher, identifiers, match, className;
 
     // if an explicit modelType was specified, use that
     if (modelClass = get(this, 'modelClass')) { return modelClass; }
+
+    // if the router has no lookup namespace, we won't be able to guess
+    // the modelType
+    if (!namespace) { return; }
 
     // make sure this state is actually a routable state
     routeMatcher = get(this, 'routeMatcher');
