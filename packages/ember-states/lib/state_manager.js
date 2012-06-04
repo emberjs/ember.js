@@ -149,7 +149,7 @@ require('ember-states/state');
 
 
   Each state property may itself contain properties that are instances of Ember.State.
-  The StateManager can transition to specific sub-states in a series of goToState method calls or
+  The StateManager can transition to specific sub-states in a series of transitionTo method calls or
   via a single transitionTo with the full path to the specific state. The StateManager will also
   keep track of the full path to its currentState
 

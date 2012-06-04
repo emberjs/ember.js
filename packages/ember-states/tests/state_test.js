@@ -133,10 +133,10 @@ test("states set up proper names on their children", function() {
     }
   });
 
-  manager.goToState('first');
+  manager.transitionTo('first');
   equal(getPath(manager, 'currentState.path'), 'first');
 
-  manager.goToState('first.insideFirst');
+  manager.transitionTo('first.insideFirst');
   equal(getPath(manager, 'currentState.path'), 'first.insideFirst');
 });
 
@@ -151,10 +151,10 @@ test("states with child instances set up proper names on their children", functi
     }
   });
 
-  manager.goToState('first');
+  manager.transitionTo('first');
   equal(getPath(manager, 'currentState.path'), 'first');
 
-  manager.goToState('first.insideFirst');
+  manager.transitionTo('first.insideFirst');
   equal(getPath(manager, 'currentState.path'), 'first.insideFirst');
 });
 

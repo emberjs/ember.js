@@ -87,7 +87,7 @@ test("it appends and removes a view when it is entered and exited", function() {
   equal(Ember.$('#test-view').length, 1, "found view with custom id in DOM");
 
   Ember.run(function() {
-    stateManager.goToState('other');
+    stateManager.transitionTo('other');
   });
 
   equal(Ember.$('#test-view').length, 0, "can't find view with custom id in DOM");
@@ -121,7 +121,7 @@ test("it appends and removes a view to the element specified in its state manage
   equal(Ember.$("#test-view").parent().attr('id'), "my-container", "appends view to the correct element");
 
   Ember.run(function() {
-    stateManager.goToState('other');
+    stateManager.transitionTo('other');
   });
 
   equal(Ember.$('#test-view').length, 0, "can't find view with custom id in DOM");
@@ -172,19 +172,19 @@ test("it appends and removes a view to the view specified in the state manager's
   equal(get(rootView, 'childViews').objectAt(0), view, "the view added is the view state's view");
 
   Ember.run(function() {
-    stateManager.goToState('other');
+    stateManager.transitionTo('other');
   });
 
   equal(getPath(rootView, 'childViews.length'), 0, "transitioning to a state without a view should remove the previous view");
 
   Ember.run(function() {
-    stateManager.goToState('otherWithView');
+    stateManager.transitionTo('otherWithView');
   });
 
   equal(get(rootView, 'childViews').objectAt(0), otherView, "the view added is the otherView state's view");
 
   Ember.run(function() {
-    stateManager.goToState('start');
+    stateManager.transitionTo('start');
   });
   equal(getPath(rootView, 'childViews.length'), 1, "when transitioning into a view state, its view should be added as a child of the root view");
   equal(get(rootView, 'childViews').objectAt(0), view, "the view added is the view state's view");
@@ -201,7 +201,7 @@ test("it reports the view associated with the current view state, if any", funct
   });
   
   Ember.run(function(){
-    stateManager.goToState('foo.bar');
+    stateManager.transitionTo('foo.bar');
   });
   
   equal(get(stateManager, 'currentView'), view, "returns nearest parent view state's view");
