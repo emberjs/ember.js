@@ -105,7 +105,6 @@ test("should be able to specify which class should be used for the empty view", 
     window.App = Ember.Application.create();
   });
 
-  App.ListView = Ember.CollectionView.extend();
   App.EmptyView = Ember.View.extend({
     template: Ember.Handlebars.compile('This is an empty view')
   });
