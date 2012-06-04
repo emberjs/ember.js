@@ -52,6 +52,7 @@ Ember.State = Ember.Object.extend(Ember.Evented,
     this._super.apply(this, arguments);
   },
 
+  /** @private */
   init: function() {
     var states = get(this, 'states'), foundStates;
     set(this, 'childStates', Ember.A());
@@ -90,9 +91,7 @@ Ember.State = Ember.Object.extend(Ember.Evented,
     set(this, 'routes', {});
   },
 
-  /**
-    @private
-  */
+  /** @private */
   setupChild: function(states, name, value) {
     if (!value) { return false; }
 
@@ -122,19 +121,35 @@ Ember.State = Ember.Object.extend(Ember.Evented,
     return !get(this, 'childStates').length;
   }).cacheable(),
 
+  /**
+    This is the default transition event.
+
+    @event
+    @param {Ember.StateManager} manager
+    @param context
+    @see Ember.StateManager#transitionEvent
+  */
   setup: Ember.K,
 
   /**
-    A function that will be called upon entering this state.
+    This event fires when the state is entered.
 
-    @type Function
+    @event
+    @param {Ember.StateManager} manager
+    @param {Object} transition
+    @param {Function} transition.async
+    @param {Function} transition.resume
   */
   enter: Ember.K,
 
   /**
-    A function that will be called upon exiting this state.
+    This event fires when the state is exited.
 
-    @type Function
+    @event
+    @param {Ember.StateManager} manager
+    @param {Object} transition
+    @param {Function} transition.async
+    @param {Function} transition.resume
   */
   exit: Ember.K
 });

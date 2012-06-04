@@ -24,12 +24,15 @@ var get = Ember.get, getPath = Ember.getPath, set = Ember.set;
 Ember.Router = Ember.StateManager.extend(
 /** @scope Ember.Router.prototype */ {
 
+  /**
+    @property {String}
+    @default 'root'
+  */
   initialState: 'root',
 
   /**
-    On router, transitionEvent should be called connectOutlets
-
     @property {String}
+    @default 'connectOutlets'
   */
   transitionEvent: 'connectOutlets',
 
