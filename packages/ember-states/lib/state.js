@@ -1,10 +1,33 @@
 var get = Ember.get, set = Ember.set, getPath = Ember.getPath;
 
-Ember.State = Ember.Object.extend(Ember.Evented, {
+/**
+  @class
+*/
+Ember.State = Ember.Object.extend(Ember.Evented,
+/** @scope Ember.State.prototype */{
   isState: true,
+
+  /**
+    A reference to the parent state.
+
+    @type {Ember.State}
+  */
   parentState: null,
   start: null,
+
+  /**
+    The name of this state.
+
+    @type String
+  */
   name: null,
+
+  /**
+    The full path to this state.
+
+    @type String
+    @readOnly
+  */
   path: Ember.computed(function() {
     var parentPath = getPath(this, 'parentState.path'),
         path = get(this, 'name');
@@ -67,6 +90,9 @@ Ember.State = Ember.Object.extend(Ember.Evented, {
     set(this, 'routes', {});
   },
 
+  /**
+    @private
+  */
   setupChild: function(states, name, value) {
     if (!value) { return false; }
 
@@ -97,7 +123,19 @@ Ember.State = Ember.Object.extend(Ember.Evented, {
   }).cacheable(),
 
   setup: Ember.K,
+
+  /**
+    A function that will be called upon entering this state.
+
+    @type Function
+  */
   enter: Ember.K,
+
+  /**
+    A function that will be called upon exiting this state.
+
+    @type Function
+  */
   exit: Ember.K
 });
 

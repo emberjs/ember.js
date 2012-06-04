@@ -18,7 +18,7 @@ test("it should have its updateRoute method called when it is entered", function
     location: locationStub,
     root: Ember.State.create({
       ready: function(manager) {
-        manager.goToState('initial');
+        manager.transitionTo('initial');
       },
 
       initial: state
@@ -41,7 +41,7 @@ test("when you call `route` on the Router, it calls it on the current state", fu
     location: locationStub,
     root: Ember.State.create({
       ready: function(manager) {
-        manager.goToState('initial');
+        manager.transitionTo('initial');
       },
 
       initial: state

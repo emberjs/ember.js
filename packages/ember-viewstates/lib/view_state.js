@@ -61,7 +61,7 @@ var get = Ember.get, set = Ember.set;
         })
       })
 
-      viewStates.goToState('showingPeople')
+      viewStates.transitionTo('showingPeople')
 
   The above code will change the rendered HTML from
 
@@ -75,10 +75,10 @@ var get = Ember.get, set = Ember.set;
         </div>
       </body>
 
-  Changing the current state via `goToState` from `showingPeople` to
+  Changing the current state via `transitionTo` from `showingPeople` to
   `showingPhotos` will remove the `showingPeople` view and add the `showingPhotos` view:
 
-      viewStates.goToState('showingPhotos')
+      viewStates.transitionTo('showingPhotos')
 
   will change the rendered HTML to
 
@@ -114,7 +114,7 @@ var get = Ember.get, set = Ember.set;
       })
 
 
-      viewStates.goToState('showingPeople.withEditingPanel')
+      viewStates.transitionTo('showingPeople.withEditingPanel')
 
 
   Will result in the following rendered HTML:

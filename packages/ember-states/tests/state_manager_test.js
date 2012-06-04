@@ -70,15 +70,15 @@ test("it discovers states that are properties of the state manager", function() 
 test("it reports its current state", function() {
   ok(get(stateManager, 'currentState') === null, "currentState defaults to null if no state is specified");
 
-  stateManager.goToState('loadingState');
-  ok(get(stateManager, 'currentState') === loadingState, "currentState changes after goToState() is called");
+  stateManager.transitionTo('loadingState');
+  ok(get(stateManager, 'currentState') === loadingState, "currentState changes after transitionTo() is called");
 
-  stateManager.goToState('loadedState');
+  stateManager.transitionTo('loadedState');
   ok(get(stateManager, 'currentState') === loadedState, "currentState can change to a sibling state");
 });
 
 test("it sends enter and exit events during state transitions", function() {
-  stateManager.goToState('loadingState');
+  stateManager.transitionTo('loadingState');
 
   equal(loadingState.entered, 1, "state should receive one enter event");
   equal(loadingState.exited, 0, "state should not have received an exit event");
@@ -88,7 +88,7 @@ test("it sends enter and exit events during state transitions", function() {
   loadingState.reset();
   loadedState.reset();
 
-  stateManager.goToState('loadedState');
+  stateManager.transitionTo('loadedState');
   equal(loadingState.entered, 0, "state should not receive an enter event");
   equal(loadingState.exited, 1, "state should receive one exit event");
   equal(loadedState.entered, 1, "sibling state should receive one enter event");
@@ -97,7 +97,7 @@ test("it sends enter and exit events during state transitions", function() {
   loadingState.reset();
   loadedState.reset();
 
-  stateManager.goToState('loadingState');
+  stateManager.transitionTo('loadingState');
 
   equal(loadingState.entered, 1, "state should receive one enter event");
   equal(loadingState.exited, 0, "state should not have received an exit event");
@@ -112,7 +112,7 @@ test("a transition can be asynchronous", function() {
   var stateManager = Ember.StateManager.create({
     start: Ember.State.create({
       finish: function(manager) {
-        manager.goToState('finished');
+        manager.transitionTo('finished');
       },
 
       exit: function(manager, transition) {
@@ -146,25 +146,25 @@ test("a transition can be asynchronous", function() {
 test("it accepts absolute paths when changing states", function() {
   var emptyState = loadedState.empty;
 
-  stateManager.goToState('loadingState');
+  stateManager.transitionTo('loadingState');
 
-  stateManager.goToState('loadedState.empty');
+  stateManager.transitionTo('loadedState.empty');
 
   equal(emptyState.entered, 1, "sends enter event to substate");
   equal(emptyState.exited, 0, "does not send exit event to substate");
   ok(stateManager.get('currentState') === emptyState, "updates currentState property to state at absolute path");
 });
 
-test("it does not enter an infinite loop in goToState", function() {
+test("it does not enter an infinite loop in transitionTo", function() {
   var emptyState = loadedState.empty;
 
-  stateManager.goToState('loadedState.empty');
+  stateManager.transitionTo('loadedState.empty');
 
-  stateManager.goToState('');
-  ok(stateManager.get('currentState') === emptyState, "goToState does nothing when given empty name");
+  stateManager.transitionTo('');
+  ok(stateManager.get('currentState') === emptyState, "transitionTo does nothing when given empty name");
 
-  stateManager.goToState('nonexistentState');
-  ok(stateManager.get('currentState') === emptyState, "goToState does not infinite loop when given nonexistent State");
+  stateManager.transitionTo('nonexistentState');
+  ok(stateManager.get('currentState') === emptyState, "transitionTo does not infinite loop when given nonexistent State");
 });
 
 test("it automatically transitions to a default state", function() {
@@ -188,7 +188,7 @@ test("it automatically transitions to a default state that is an instance", func
     }
   });
 
-  stateManager.goToState('foo');
+  stateManager.transitionTo('foo');
   ok(get(stateManager, 'currentState').isStart, "automatically transitions to start state");
 });
 
@@ -287,7 +287,7 @@ test("it sends exit events to nested states when changing to a top-level state",
     })
   });
 
-  stateManager.goToState('login');
+  stateManager.transitionTo('login');
   equal(stateManager.login.entered, 1, "precond - it enters the login state");
   equal(stateManager.login.start.entered, 1, "automatically enters the start state");
   ok(stateManager.get('currentState') === stateManager.login.start, "automatically sets currentState to start state");
@@ -295,7 +295,7 @@ test("it sends exit events to nested states when changing to a top-level state",
   stateManager.login.reset();
   stateManager.login.start.reset();
 
-  stateManager.goToState('redeem');
+  stateManager.transitionTo('redeem');
 
   equal(stateManager.login.exited, 1, "login state is exited once");
   equal(stateManager.login.start.exited, 1, "start state is exited once");
@@ -316,8 +316,8 @@ test("it sends exit events in the correct order when changing to a top-level sta
         })
       });
 
-  stateManager.goToState('start.outer.inner');
-  stateManager.goToState('start');
+  stateManager.transitionTo('start.outer.inner');
+  stateManager.transitionTo('start');
   equal(exitOrder.length, 2, "precond - it calls both exits");
   equal(exitOrder[0], 'exitedInner', "inner exit is called first");
   equal(exitOrder[1], 'exitedOuter', "outer exit is called second");
@@ -336,11 +336,11 @@ test("it sends exit events in the correct order when changing to a state multipl
         })
       });
 
-  stateManager.goToState('start.outer.inner');
-  stateManager.goToState('start');
-  stateManager.goToState('start.outer.inner');
+  stateManager.transitionTo('start.outer.inner');
+  stateManager.transitionTo('start');
+  stateManager.transitionTo('start.outer.inner');
   exitOrder = [];
-  stateManager.goToState('start');
+  stateManager.transitionTo('start');
   equal(exitOrder.length, 2, "precond - it calls both exits");
   equal(exitOrder[0], 'exitedInner', "inner exit is called first");
   equal(exitOrder[1], 'exitedOuter', "outer exit is called second");
@@ -376,7 +376,7 @@ module("Ember.StateManager - Event Dispatching", {
       })
     });
 
-    stateManager.goToState('loading');
+    stateManager.transitionTo('loading');
   }
 });
 
@@ -387,14 +387,14 @@ test("it dispatches events to the current state", function() {
 });
 
 test("it dispatches events to a parent state if the child state does not respond to it", function() {
-  stateManager.goToState('loaded.empty');
+  stateManager.transitionTo('loaded.empty');
   stateManager.send('anEvent');
 
   equal(loadedEventCalled, 1, "parent state receives event");
 });
 
 test("it does not dispatch events to parents if the child responds to it", function() {
-  stateManager.goToState('loaded.empty');
+  stateManager.transitionTo('loaded.empty');
   stateManager.send('eventInChild');
 
   equal(eventInChildCalled, 1, "does not dispatch event to parent");
@@ -438,13 +438,13 @@ module("Ember.Statemanager - Pivot states", {
   }
 });
 
-test("goToState triggers all enter states", function() {
-  stateManager.goToState('grandparent.parent.child');
+test("transitionTo triggers all enter states", function() {
+  stateManager.transitionTo('grandparent.parent.child');
   equal(stateManager.grandparent.entered, 1, "the top level should be entered");
   equal(stateManager.grandparent.parent.entered, 1, "intermediate states should be entered");
   equal(stateManager.grandparent.parent.child.entered, 1, "the final state should be entered");
 
-  stateManager.goToState('grandparent.parent.sibling');
+  stateManager.transitionTo('grandparent.parent.sibling');
   equal(stateManager.grandparent.entered, 1, "the top level should not be re-entered");
   equal(stateManager.grandparent.parent.entered, 1, "intermediate states should not be re-entered");
   equal(stateManager.grandparent.parent.child.entered, 1, "the final state should not be re-entered");
@@ -454,9 +454,9 @@ test("goToState triggers all enter states", function() {
   equal(stateManager.grandparent.parent.exited, 0, "intermediate states should not have exited");
 });
 
-test("goToState with current state does not trigger enter or exit", function() {
-  stateManager.goToState('grandparent.parent.child');
-  stateManager.goToState('grandparent.parent.child');
+test("transitionTo with current state does not trigger enter or exit", function() {
+  stateManager.transitionTo('grandparent.parent.child');
+  stateManager.transitionTo('grandparent.parent.child');
   equal(stateManager.grandparent.entered, 1, "the top level should only be entered once");
   equal(stateManager.grandparent.parent.entered, 1, "intermediate states should only be entered once");
   equal(stateManager.grandparent.parent.child.entered, 1, "the final state should only be entered once");
@@ -473,7 +473,7 @@ test("if a context is passed to a transition, the state's setup event is trigger
     stateManager = Ember.StateManager.create({
       start: Ember.State.create({
         goNext: function(manager, context) {
-          manager.goToState('next', context);
+          manager.transitionTo('next', context);
         }
       }),
 
@@ -497,7 +497,7 @@ test("if a context is passed to a transition and the path is to the current stat
       start: Ember.State.create({
         goNext: function(manager, context) {
           counter++;
-          manager.goToState('foo.next', counter);
+          manager.transitionTo('foo.next', counter);
         }
       }),
 
@@ -505,7 +505,7 @@ test("if a context is passed to a transition and the path is to the current stat
         next: Ember.State.create({
           goNext: function(manager, context) {
             counter++;
-            manager.goToState('next', counter);
+            manager.transitionTo('next', counter);
           },
 
           setup: function(manager, context) {
@@ -556,7 +556,7 @@ test("multiple contexts can be provided in a single transitionTo", function() {
     stateManager = Ember.StateManager.create({
       start: Ember.State.create({
         goNuts: function(manager, context) {
-          manager.goToState('foo.next', context);
+          manager.transitionTo('foo.next', context);
         }
       }),
 
