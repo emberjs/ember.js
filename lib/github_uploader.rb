@@ -16,7 +16,7 @@ class GithubUploader
   end
 
   def token_path
-    File.expand_path(".github-upload-token", @root) 
+    File.expand_path(".github-upload-token", @root)
   end
 
   def check_token
