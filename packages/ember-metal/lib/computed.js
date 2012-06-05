@@ -13,7 +13,8 @@ require('ember-metal/properties');
 Ember.warn("Computed properties will soon be cacheable by default. To enable this in your app, set `ENV.CP_DEFAULT_CACHEABLE = true`.", Ember.CP_DEFAULT_CACHEABLE);
 
 
-var meta = Ember.meta,
+var get = Ember.get,
+    meta = Ember.meta,
     guidFor = Ember.guidFor,
     USE_ACCESSORS = Ember.USE_ACCESSORS,
     a_slice = [].slice,
@@ -420,4 +421,23 @@ Ember.cacheFor = function(obj, key) {
   if (cache && key in cache) {
     return cache[key];
   }
+};
+
+Ember.computed.not = function(dependentKey) {
+  return Ember.computed(function(key) {
+    return !get(this, dependentKey);
+  }).property(dependentKey).cacheable();
+};
+
+Ember.computed.empty = function(dependentKey) {
+  return Ember.computed(function(key) {
+    var val = get(this, dependentKey);
+    return val === undefined || val === null || val === '' || (Ember.isArray(val) && get(val, 'length') === 0);
+  }).property(dependentKey).cacheable();
+};
+
+Ember.computed.bool = function(dependentKey) {
+  return Ember.computed(function(key) {
+    return !!get(this, dependentKey);
+  }).property(dependentKey).cacheable();
 };

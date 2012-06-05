@@ -495,3 +495,39 @@ test('adding a computed property should show up in key iteration',function() {
   ok('foo' in obj, 'foo in obj should pass');
 });
 
+module('CP macros');
+
+testBoth('Ember.computed.not', function(get, set) {
+  var obj = {foo: true};
+  Ember.defineProperty(obj, 'notFoo', Ember.computed.not('foo'));
+  equal(get(obj, 'notFoo'), false);
+});
+
+testBoth('Ember.computed.empty', function(get, set) {
+  var obj = {foo: [], bar: undefined, baz: null, quz: ''};
+  Ember.defineProperty(obj, 'fooEmpty', Ember.computed.empty('foo'));
+  Ember.defineProperty(obj, 'barEmpty', Ember.computed.empty('bar'));
+  Ember.defineProperty(obj, 'bazEmpty', Ember.computed.empty('baz'));
+  Ember.defineProperty(obj, 'quzEmpty', Ember.computed.empty('quz'));
+
+  equal(get(obj, 'fooEmpty'), true);
+  set(obj, 'foo', [1]);
+  equal(get(obj, 'fooEmpty'), false);
+  equal(get(obj, 'barEmpty'), true);
+  equal(get(obj, 'bazEmpty'), true);
+  equal(get(obj, 'quzEmpty'), true);
+  set(obj, 'quz', 'asdf');
+  equal(get(obj, 'quzEmpty'), false);
+});
+
+testBoth('Ember.computed.bool', function(get, set) {
+  var obj = {foo: function(){}, bar: 'asdf', baz: null, quz: false};
+  Ember.defineProperty(obj, 'fooBool', Ember.computed.bool('foo'));
+  Ember.defineProperty(obj, 'barBool', Ember.computed.bool('bar'));
+  Ember.defineProperty(obj, 'bazBool', Ember.computed.bool('baz'));
+  Ember.defineProperty(obj, 'quzBool', Ember.computed.bool('quz'));
+  equal(get(obj, 'fooBool'), true);
+  equal(get(obj, 'barBool'), true);
+  equal(get(obj, 'bazBool'), false);
+  equal(get(obj, 'quzBool'), false);
+});
