@@ -63,11 +63,11 @@ test("if the URL is set, it doesn't trigger the hashchange event", function() {
   locationObject.setURL('/avoid/triggering');
 });
 
-module("Ember.Location, html5 implementation", {
+module("Ember.Location, history implementation", {
   setup: function() {
-    lastKnownLocation = window.location.pathname;
+    lastKnownLocation = window.location.pathname + window.location.search;
     locationObject = Ember.Location.create({
-      implementation: 'html5'
+      implementation: 'history'
     });
 
     locationObject.setURL('/');
@@ -92,4 +92,40 @@ test("it is possible to get the current URL", function() {
 test("it is possible to set the current URL", function() {
   locationObject.setURL("/foo");
   equal(locationObject.getURL(), "/foo", "the updated URL is '/foo'");
+});
+
+test("if the URL is set, it doesn't trigger the popstate event", function() {
+  expect(1);
+
+  stop();
+  var count = 0;
+
+  setTimeout(function() {
+    start();
+    equal(count, 0, "The update callback was not called");
+  }, 100);
+
+  locationObject.onUpdateURL(function(url) {
+    count++;
+  });
+
+  locationObject.setURL('/avoid/triggering');
+});
+
+test("if history is used, it triggers the popstate event", function() {
+  expect(1);
+
+  stop();
+  var count = 0;
+
+  setTimeout(function() {
+    start();
+    equal(count, 1, "The update callback was not called");
+  }, 300);
+
+  locationObject.onUpdateURL(function(url) {
+    count++;
+  });
+
+  window.history.back();
 });
