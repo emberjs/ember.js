@@ -55,7 +55,7 @@ Ember.State = Ember.Object.extend(Ember.Evented,
   init: function() {
     var states = get(this, 'states'), foundStates;
     set(this, 'childStates', Ember.A());
-    this.set('eventTransitions', this.get('eventTransitions') || {});
+    set(this, 'eventTransitions', get(this, 'eventTransitions') || {});
 
     var name, value, transitionTarget;
 
