@@ -18,7 +18,7 @@ var Mixin, REQUIRED, Alias,
     a_map = Ember.ArrayUtils.map,
     a_indexOf = Ember.ArrayUtils.indexOf,
     a_forEach = Ember.ArrayUtils.forEach,
-    a_slice = [].slice,
+    a_slice = Array.prototype.slice,
     EMPTY_META = {}, // dummy for non-writable meta
     META_SKIP = { __emberproto__: true, __ember_count__: true },
     o_create = Ember.create,
@@ -74,7 +74,7 @@ function mergeMixins(mixins, m, descs, values, base) {
 
   for(idx=0; idx < len; idx++) {
     mixin = mixins[idx];
-    if (!mixin) { throw new Error('Null value found in Ember.mixin()'); }
+    Ember.assert('Expected hash or Mixin instance, got ' + Object.prototype.toString.call(mixin), typeof mixin === 'object' && mixin !== null && Object.prototype.toString.call(mixin) !== '[object Array]');
 
     if (mixin instanceof Mixin) {
       guid = guidFor(mixin);
@@ -217,7 +217,7 @@ function applyMixin(obj, mixins, partial) {
 
     if (desc === REQUIRED) {
       if (!(key in obj)) {
-        if (!partial) { throw new Error('Required property not defined: '+key); }
+        Ember.assert('Required property not defined: '+key, !!partial);
 
         // for partial applies add to hash of required keys
         req = writableReq(obj);
@@ -300,7 +300,8 @@ function applyMixin(obj, mixins, partial) {
       if (META_SKIP[key]) { continue; }
       keys.push(key);
     }
-    throw new Error('Required properties not defined: '+keys.join(','));
+    // TODO: Remove surrounding if clause from production build
+    Ember.assert('Required properties not defined: '+keys.join(','));
   }
   return obj;
 }
@@ -378,6 +379,8 @@ MixinPrototype.reopen = function() {
 
   for(idx=0; idx < len; idx++) {
     mixin = arguments[idx];
+    Ember.assert('Expected hash or Mixin instance, got ' + Object.prototype.toString.call(mixin), typeof mixin === 'object' && mixin !== null && Object.prototype.toString.call(mixin) !== '[object Array]');
+
     if (mixin instanceof Mixin) {
       mixins.push(mixin);
     } else {
