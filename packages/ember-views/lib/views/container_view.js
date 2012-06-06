@@ -122,12 +122,13 @@ var childViewsProperty = Ember.computed(function() {
 
         aContainer.get('childViews') // [aContainer.aView, aContainer.bView]
         aContainer.get('childViews').pushObject(AnotherViewClass.create())
-        aContainer.get('childViews') // [aContainer.aView, <AnotherViewClass instance>]
+        aContainer.get('childViews') // [aContainer.aView, aContainer.bView, <AnotherViewClass instance>]
 
   Will result in the following HTML
 
         <div class="ember-view the-container">
           <div class="ember-view">A</div>
+          <div class="ember-view">B</div>
           <div class="ember-view">Another view</div>
         </div>
 
