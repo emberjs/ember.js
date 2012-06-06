@@ -120,6 +120,7 @@ module("Ember.Sortable with sortProperties", {
       sortedArrayController = Ember.ArrayController.create({
         sortProperties: ['name']
       });
+      var array = [{ id: 1, name: "Scumbag Dale" }, { id: 2, name: "Scumbag Katz" }, { id: 3, name: "Scumbag Bryn" }];
       unsortedArray = Ember.A(Ember.A(array).copy());
     });
   },
