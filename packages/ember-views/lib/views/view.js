@@ -501,7 +501,6 @@ Ember.View = Ember.Object.extend(Ember.Evented,
       return value;
     } else {
       parentView = get(this, 'parentView');
-
       return parentView ? get(parentView, 'controller') : null;
     }
   }).property().cacheable(),
@@ -756,7 +755,19 @@ Ember.View = Ember.Object.extend(Ember.Evented,
       view.propertyDidChange('itemView');
       view.propertyDidChange('contentView');
     });
+
+    if (getPath(this, 'parentView.controller') && !get(this, 'controller')) {
+      this.notifyPropertyChange('controller');
+    }
   }, '_parentView'),
+
+  _controllerDidChange: Ember.observer(function() {
+    if (this.isDestroying) { return; }
+
+    this.forEachChildView(function(view) {
+      view.propertyDidChange('controller');
+    });
+  }, 'controller'),
 
   cloneKeywords: function() {
     var templateData = get(this, 'templateData');
