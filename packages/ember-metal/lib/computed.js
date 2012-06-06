@@ -132,12 +132,7 @@ function mkCpSetter(keyName, desc) {
     oldSuspended = desc._suspended;
     desc._suspended = this;
 
-    watched = watched && m.lastSetValues[keyName]!==guidFor(value);
-    if (watched) {
-      m.lastSetValues[keyName] = guidFor(value);
-      Ember.propertyWillChange(this, keyName);
-    }
-
+    if (watched) { Ember.propertyWillChange(this, keyName); }
     if (cacheable) delete m.cache[keyName];
     ret = func.call(this, keyName, value);
     if (cacheable) m.cache[keyName] = ret;
@@ -298,12 +293,7 @@ Cp.set = function(obj, keyName, value) {
   oldSuspended = this._suspended;
   this._suspended = obj;
 
-  watched = watched && m.lastSetValues[keyName]!==guidFor(value);
-  if (watched) {
-    m.lastSetValues[keyName] = guidFor(value);
-    Ember.propertyWillChange(obj, keyName);
-  }
-
+  if (watched) { Ember.propertyWillChange(obj, keyName); }
   if (cacheable) delete m.cache[keyName];
   ret = this.func.call(obj, keyName, value);
   if (cacheable) m.cache[keyName] = ret;
