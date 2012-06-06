@@ -172,13 +172,8 @@ function mkCpSetter(keyName, desc) {
 
     desc._suspended = this;
 
-    watched = watched && m.lastSetValues[keyName] !== guidFor(value);
-    if (watched) {
-      m.lastSetValues[keyName] = guidFor(value);
-      Ember.propertyWillChange(this, keyName);
-    }
-
-    if (cacheable) { delete m.cache[keyName]; }
+    if (watched) { Ember.propertyWillChange(this, keyName); }
+    if (cacheable) delete m.cache[keyName];
     ret = func.call(this, keyName, value);
     if (cacheable) { m.cache[keyName] = ret; }
     if (watched) { Ember.propertyDidChange(this, keyName); }
@@ -340,13 +335,8 @@ ComputedPropertyPrototype.set = function(obj, keyName, value) {
 
   this._suspended = obj;
 
-  watched = watched && m.lastSetValues[keyName] !== guidFor(value);
-  if (watched) {
-    m.lastSetValues[keyName] = guidFor(value);
-    Ember.propertyWillChange(obj, keyName);
-  }
-
-  if (cacheable) { delete m.cache[keyName]; }
+  if (watched) { Ember.propertyWillChange(obj, keyName); }
+  if (cacheable) delete m.cache[keyName];
   ret = this.func.call(obj, keyName, value);
   if (cacheable) { m.cache[keyName] = ret; }
   if (watched) { Ember.propertyDidChange(obj, keyName); }
