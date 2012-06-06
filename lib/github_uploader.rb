@@ -64,21 +64,21 @@ class GithubUploader
     gh = Github.new :user => @username, :repo => @repo, :oauth_token => @token
 
     # remvove previous download with the same name
-    gh.repos.downloads do |download|
+    gh.repos.downloads.list @username, @repo do |download|
       if filename == download.name
-        gh.repos.delete_download @username, @repo, download.id
+        gh.repos.downloads.delete @username, @repo, download.id
         break
       end
     end
 
     # step 1
-    hash = gh.repos.create_download @username, @repo,
+    hash = gh.repos.downloads.create @username, @repo,
       "name" => filename,
       "size" => File.size(file),
       "description" => description
 
     # step 2
-    gh.repos.upload hash, file
+    gh.repos.downloads.upload hash, file
 
     return true
   end
