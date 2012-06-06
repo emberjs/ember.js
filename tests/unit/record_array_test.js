@@ -118,6 +118,18 @@ test("a record array returns undefined when asking for a member outside of its c
   strictEqual(recordArray.objectAt(20), undefined, "objects outside of the range just return undefined");
 });
 
+// This tests for a bug in the recordCache, where the records were being cached in the incorrect order.
+test("a record array should be able to be enumerated in any order", function() {
+  var store = DS.Store.create({ adapter: null });
+  store.loadMany(Person, [1,2,3], array);
+
+  var recordArray = store.find(Person);
+
+  equal(get(recordArray.objectAt(2), 'id'), 3, "should retrieve correct record at index 3");
+  equal(get(recordArray.objectAt(0), 'id'), 1, "should retrieve correct record at index 0");
+  equal(get(recordArray.objectAt(0), 'id'), 1, "should retrieve correct record at index 0");
+});
+
 var shouldContain = function(array, item) {
   ok(array.indexOf(item) !== -1, "array should contain "+item.get('name'));
 };
@@ -125,6 +137,7 @@ var shouldContain = function(array, item) {
 var shouldNotContain = function(array, item) {
   ok(array.indexOf(item) === -1, "array should not contain "+item.get('name'));
 };
+
 
 test("a Record Array can update its filter", function() {
   var store = DS.Store.create({
@@ -167,6 +180,70 @@ test("a Record Array can update its filter", function() {
   store.load(Person, 6, { name: "Scumbag Demon" });
 
   equal(get(recordArray, 'length'), 2, "The Record Array doesn't have objects matching the old filter");
+});
+
+test("a Record Array can update its filter and notify array observers", function() {
+  var store = DS.Store.create({
+    adapter: DS.Adapter.create({
+      deleteRecord: function(store, type, record) {
+        store.didDeleteRecord(record);
+      }
+    })
+  });
+
+  store.loadMany(Person, array);
+
+  var dickens = store.createRecord(Person, { id: 4, name: "Scumbag Dickens" });
+  dickens.deleteRecord();
+  store.commit();
+
+  var dale = store.find(Person, 1);
+  var katz = store.find(Person, 2);
+  var bryn = store.find(Person, 3);
+
+  var recordArray = store.filter(Person, function(hash) {
+    if (hash.get('name').match(/Scumbag [KD]/)) { return true; }
+  });
+
+  var didChangeIdx, didChangeRemoved = 0, didChangeAdded = 0;
+
+  var arrayObserver = {
+    arrayWillChange: Ember.K,
+
+    arrayDidChange: function(array, idx, removed, added) {
+      didChangeIdx = idx;
+      didChangeRemoved += removed;
+      didChangeAdded += added;
+    }
+  };
+
+  recordArray.addArrayObserver(arrayObserver);
+
+  recordArray.set('filterFunction', function(hash) {
+    if (hash.get('name').match(/Katz/)) { return true; }
+  });
+
+  equal(didChangeRemoved, 1, "removed one item from array");
+  didChangeRemoved = 0;
+
+  store.load(Person, 5, { name: "Other Katz" });
+
+  equal(didChangeAdded, 1, "one item was added");
+  didChangeAdded = 0;
+
+  equal(recordArray.objectAt(didChangeIdx).get('name'), "Other Katz");
+
+  store.load(Person, 6, { name: "Scumbag Demon" });
+
+  equal(didChangeAdded, 0, "did not get called when an object that doesn't match is added");
+
+  recordArray.set('filterFunction', function(hash) {
+    if (hash.get('name').match(/Scumbag [KD]/)) { return true; }
+  });
+
+  equal(didChangeAdded, 2, "one item is added when going back");
+  equal(recordArray.objectAt(didChangeIdx).get('name'), "Scumbag Demon");
+  equal(recordArray.objectAt(didChangeIdx-1).get('name'), "Scumbag Dale");
 });
 
 (function(){
@@ -311,7 +388,7 @@ test("a record array that backs a collection view functions properly", function(
     var recordCache = recordArray.get('recordCache');
     var content = recordArray.get('content');
     for(var i = 0; i < content.length; i++) {
-      var record = recordCache.objectAt(i);
+      var record = recordCache[i];
       var clientId = content.objectAt(i);
       equal(record && record.clientId, clientId, "The entries in the record cache should have matching client ids.");
     }
