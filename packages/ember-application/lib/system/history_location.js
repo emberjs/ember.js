@@ -33,7 +33,6 @@ Ember.HistoryLocation = Ember.Object.extend({
     if (!state || (state && state.path !== path)) {
       window.history.pushState({ path: path }, null, path);
     }
-    this.set('lastSetURL', path);
   },
 
   /**
