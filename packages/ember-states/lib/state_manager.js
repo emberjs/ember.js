@@ -390,7 +390,7 @@ Ember.StateManager = Ember.State.extend(
 
     if (initialState) {
       this.transitionTo(initialState);
-      Ember.assert('Failed to transition to initial state "' + initialState + '"', get(this, 'currentState'));
+      Ember.assert('Failed to transition to initial state "' + initialState + '"', !!get(this, 'currentState'));
     }
   },
 
@@ -414,7 +414,7 @@ Ember.StateManager = Ember.State.extend(
   errorOnUnhandledEvent: true,
 
   send: function(event, context) {
-    Ember.assert('Cannot send event "' + event + '" while currentState is ' + get(this, 'currentState'), get(this, 'currentState'));
+    Ember.assert('Cannot send event "' + event + '" while currentState is null or undefined.', !!get(this, 'currentState'));
     this.sendRecursively(event, get(this, 'currentState'), context);
   },
 
