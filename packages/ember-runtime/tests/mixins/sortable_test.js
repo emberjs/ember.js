@@ -27,7 +27,7 @@ module("Ember.Sortable with content", {
 
 test("if you do not specify `sortProperties` sortable have no effect", function() {
   equal(sortedArrayController.get('length'), 3, 'array has 3 items');
-  equal(sortedArrayController.objectAt(0).name, 'Scumbag Dale', 'arrey is in it natural order');
+  equal(sortedArrayController.objectAt(0).name, 'Scumbag Dale', 'array is in it natural order');
 
   unsortedArray.pushObject({id: 4, name: 'Scumbag Chavard'});
 
@@ -38,18 +38,18 @@ test("if you do not specify `sortProperties` sortable have no effect", function(
 test("you can change sorted properties", function() {
   sortedArrayController.set('sortProperties', ['id']);
 
-  equal(sortedArrayController.objectAt(0).name, 'Scumbag Dale', 'arrey is sorted by id');
+  equal(sortedArrayController.objectAt(0).name, 'Scumbag Dale', 'array is sorted by id');
   equal(sortedArrayController.get('length'), 3, 'array has 3 items');
 
   sortedArrayController.set('sortAscending', false);
 
-  equal(sortedArrayController.objectAt(0).name, 'Scumbag Bryn', 'arrey is sorted by id in DESC order');
-  equal(sortedArrayController.objectAt(2).name, 'Scumbag Dale', 'arrey is sorted by id in DESC order');
+  equal(sortedArrayController.objectAt(0).name, 'Scumbag Bryn', 'array is sorted by id in DESC order');
+  equal(sortedArrayController.objectAt(2).name, 'Scumbag Dale', 'array is sorted by id in DESC order');
   equal(sortedArrayController.get('length'), 3, 'array has 3 items');
 
   sortedArrayController.set('sortProperties', ['name']);
 
-  equal(sortedArrayController.objectAt(0).name, 'Scumbag Katz', 'arrey is sorted by name in DESC order');
+  equal(sortedArrayController.objectAt(0).name, 'Scumbag Katz', 'array is sorted by name in DESC order');
   equal(sortedArrayController.get('length'), 3, 'array has 3 items');
 });
 
@@ -74,7 +74,7 @@ module("Ember.Sortable with content and sortProperties", {
 
 test("sortable object will expose associated content in the right order", function() {
   equal(sortedArrayController.get('length'), 3, 'array has 3 items');
-  equal(sortedArrayController.objectAt(0).name, 'Scumbag Bryn', 'arrey is sorted by name');
+  equal(sortedArrayController.objectAt(0).name, 'Scumbag Bryn', 'array is sorted by name');
 });
 
 test("you can add objects in sorted order", function() {
@@ -140,5 +140,5 @@ test("you can set content later and it will be sorted", function() {
   });
 
   equal(sortedArrayController.get('length'), 3, 'array has 3 items');
-  equal(sortedArrayController.objectAt(0).name, 'Scumbag Bryn', 'arrey is sorted by name');
+  equal(sortedArrayController.objectAt(0).name, 'Scumbag Bryn', 'array is sorted by name');
 });
