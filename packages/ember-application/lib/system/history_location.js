@@ -48,7 +48,7 @@ Ember.HistoryLocation = Ember.Object.extend({
       callback(location.pathname);
     };
 
-    this.get('callbacks').pushObject(popstate);
+    get(this, 'callbacks').pushObject(popstate);
     window.addEventListener('popstate', popstate);
   },
 
