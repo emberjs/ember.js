@@ -226,13 +226,13 @@ ComputedPropertyPrototype.cacheable = function(aFlag) {
       MyApp.outsideService = Ember.Object.create({
         value: function() {
           return OutsideService.getValue();
-        }.property().volatile()
+        }.property().uncached()
       });
 
-  @name Ember.ComputedProperty.volatile
+  @name Ember.ComputedProperty.uncached
   @returns {Ember.ComputedProperty} receiver
 */
-ComputedPropertyPrototype.volatile = function() {
+ComputedPropertyPrototype.uncached = function() {
   return this.cacheable(false);
 };
 

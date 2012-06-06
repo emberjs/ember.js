@@ -107,7 +107,7 @@ Ember.SHIM_ES5 = (Ember.ENV.SHIM_ES5 === false) ? false : Ember.EXTEND_PROTOTYPE
   Determines whether computed properties are cacheable by default.
   This option will be removed for the 1.1 release.
 
-  When caching is enabled by default, you can use `volatile()` to disable
+  When caching is enabled by default, you can use `uncached()` to disable
   caching on individual computed properties.
 */
 Ember.CP_DEFAULT_CACHEABLE = (Ember.ENV.CP_DEFAULT_CACHEABLE !== false);
