@@ -8,6 +8,7 @@ var get = Ember.get, set = Ember.set;
   getURL: returns the current URL
   setURL(path): sets the current URL
   onUpdateURL(callback): triggers the callback when the URL changes
+  formatURL(url): formats `url` to be placed into `href` attribute
 
   Calling setURL will not trigger onUpdateURL callbacks.
 
