@@ -430,7 +430,7 @@ function invokeLaterTimers() {
   @param {Number} wait
     Number of milliseconds to wait.
 
-  @returns {Timer} an object you can use to cancel a timer at a later time.
+  @returns {String} a string you can use to cancel the timer in Ember.run.cancel() later.
 */
 Ember.run.later = function(target, method) {
   var args, expires, timer, guid, wait;
