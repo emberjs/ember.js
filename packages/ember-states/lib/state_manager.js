@@ -427,6 +427,7 @@ Ember.StateManager = Ember.State.extend(
     The name of transitionEvent that this stateManager will dispatch
 
     @property {String}
+    @default 'setup'
   */
   transitionEvent: 'setup',
 
