@@ -125,8 +125,8 @@ Ember.Application = Ember.Namespace.extend(
 
     Ember.runLoadHooks('application', this);
 
-    properties.forEach(function(property) {
-      injections.forEach(function(injection) {
+    injections.forEach(function(injection) {
+      properties.forEach(function(property) {
         injection[1](namespace, router, property);
       });
     });

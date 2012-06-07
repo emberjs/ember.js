@@ -205,22 +205,25 @@ test("initialize application with stateManager via initialize call from Router c
 });
 
 test("injections can be registered in a specified order", function() {
+
   var oldInjections = Ember.Application.injections;
-  var firstInjectionCalled;
+  var firstInjectionCalled = 0,
+      secondInjectionCalled = 0;
 
   Ember.Application.injections = Ember.A();
   Ember.Application.registerInjection({
     name: 'second',
     injection: function() {
-      ok(firstInjectionCalled, 'first injection should be called first');
-      firstInjectionCalled = false;
+      ok(firstInjectionCalled > 0, 'first injection should be called first');
+      secondInjectionCalled++;
     }
   });
 
   Ember.Application.registerInjection({
     name: 'first',
     injection: function() {
-      firstInjectionCalled = true;
+      firstInjectionCalled++;
+      ok(secondInjectionCalled === 0, "second injection should not have been called yet");
     },
     before: 'second'
   });
@@ -230,6 +233,7 @@ test("injections can be registered in a specified order", function() {
     app = Ember.Application.create({
       rootElement: '#qunit-fixture'
     });
+    expect(get(Ember.keys(app), 'length') * 2);
     router = Ember.Object.create();
 
     app.initialize(router);
