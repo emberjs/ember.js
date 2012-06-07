@@ -16,7 +16,7 @@ var EmberHandlebars = Ember.Handlebars;
 /** @private */
 EmberHandlebars.ViewHelper = Ember.Object.create({
 
-  viewClassFromHTMLOptions: function(viewClass, options, thisContext) {
+  propertiesFromHTMLOptions: function(options, thisContext) {
     var hash = options.hash, data = options.data;
     var extensions = {},
         classes = hash['class'],
@@ -85,7 +85,7 @@ EmberHandlebars.ViewHelper = Ember.Object.create({
     // for the bindings set up above.
     extensions.bindingContext = thisContext;
 
-    return viewClass.extend(hash, extensions);
+    return Ember.$.extend(hash, extensions);
   },
 
   helper: function(thisContext, path, options) {
@@ -105,11 +105,9 @@ EmberHandlebars.ViewHelper = Ember.Object.create({
 
     Ember.assert(Ember.String.fmt('You must pass a view class to the #view helper, not %@ (%@)', [path, newView]), Ember.View.detect(newView));
 
-    newView = this.viewClassFromHTMLOptions(newView, options, thisContext);
+    var viewOptions = this.propertiesFromHTMLOptions(options, thisContext);
     var currentView = data.view;
-    var viewOptions = {
-      templateData: options.data
-    };
+    viewOptions.templateData = options.data;
 
     if (fn) {
       Ember.assert("You cannot provide a template block if you also specified a templateName", !get(viewOptions, 'templateName') && !get(newView.proto(), 'templateName'));

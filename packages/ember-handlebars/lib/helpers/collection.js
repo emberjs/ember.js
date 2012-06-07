@@ -188,7 +188,8 @@ Ember.Handlebars.registerHelper('collection', function(path, options) {
     delete hash.eachHelper;
   }
 
-  hash.itemViewClass = Ember.Handlebars.ViewHelper.viewClassFromHTMLOptions(itemViewClass, { data: data, hash: itemHash }, this);
+  var viewOptions = Ember.Handlebars.ViewHelper.propertiesFromHTMLOptions({ data: data, hash: itemHash }, this);
+  hash.itemViewClass = itemViewClass.extend(viewOptions);
 
   return Ember.Handlebars.helpers.view.call(this, collectionClass, options);
 });
