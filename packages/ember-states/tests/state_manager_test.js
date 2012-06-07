@@ -488,6 +488,45 @@ test("if a context is passed to a transition, the state's setup event is trigger
   stateManager.send('goNext', context);
 });
 
+test("if a context is passed to a transition, the state's setup event is triggered after the async transition has completed", function() {
+  expect(1);
+  var context = {},
+      nextEntered = false;
+
+  Ember.run(function() {
+    stateManager = Ember.StateManager.create({
+      start: Ember.State.create({
+        goNext: function(manager, context) {
+          manager.transitionTo('next', context);
+        },
+
+        exit: function(manager, transition) {
+          //pause QUnit while we test some async functionality
+          stop();
+
+          transition.async();
+
+          setTimeout(function() {
+            transition.resume();
+          }, 50);
+        }
+      }),
+
+      next: Ember.State.create({
+        enter: function(manager, transition) {
+          nextEntered = true;
+          start();
+        },
+        setup: function(manager, passedContext) {
+          equal(nextEntered, true, "The context is passed through");
+        }
+      })
+    });
+  });
+
+  stateManager.send('goNext', context);
+});
+
 test("if a context is passed to a transition and the path is to the current state, the state's setup event is triggered again", function() {
   expect(2);
   var counter = 0;

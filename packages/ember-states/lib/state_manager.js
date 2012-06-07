@@ -613,8 +613,7 @@ Ember.StateManager = Ember.State.extend(
       };
     }
 
-    this.enterState(exitStates, enterStates, state);
-    this.triggerSetupContext(resolveState, segments);
+    this.enterState(exitStates, enterStates, state, resolveState, segments);
   },
 
   triggerSetupContext: function(root, segments) {
@@ -666,7 +665,7 @@ Ember.StateManager = Ember.State.extend(
     if (!async) { transition.resume(); }
   },
 
-  enterState: function(exitStates, enterStates, state) {
+  enterState: function(exitStates, enterStates, state, resolveState, segments) {
     var log = this.enableLogging,
         stateManager = this;
 
@@ -699,7 +698,7 @@ Ember.StateManager = Ember.State.extend(
             initialState = 'start';
           }
         }
-
+        this.triggerSetupContext(resolveState, segments);
         set(this, 'currentState', enteredState || state);
       });
     });
