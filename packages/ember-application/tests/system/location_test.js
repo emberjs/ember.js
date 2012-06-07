@@ -1,5 +1,5 @@
 var locationObject;
-var lastKnownLocation;
+var realPushState;
 
 module("Ember.Location, hash implementation", {
   setup: function() {
@@ -65,19 +65,17 @@ test("if the URL is set, it doesn't trigger the hashchange event", function() {
 
 module("Ember.Location, history implementation", {
   setup: function() {
-    lastKnownLocation = window.location.pathname + window.location.search;
+    realPushState = window.history.pushState;
     locationObject = Ember.Location.create({
       implementation: 'history'
     });
-
-    locationObject.setURL('/');
 
     stop();
     setTimeout(start, 1);
   },
 
   teardown: function() {
-    window.history.pushState(null, null, lastKnownLocation);
+    window.history.pushState = realPushState;
     Ember.run(function() {
       locationObject.destroy();
     });
@@ -85,13 +83,16 @@ module("Ember.Location, history implementation", {
 });
 
 test("it is possible to get the current URL", function() {
-  equal(locationObject.getURL(), "/", "the initial URL is '/'");
-  equal(window.location.pathname, "/", "the initial pathname is '/'");
+  equal(locationObject.getURL(), window.location.pathname, "current URL is set");
 });
 
 test("it is possible to set the current URL", function() {
+  var setPath;
+  window.history.pushState = function(data, title, path) {
+    setPath = path;
+  };
   locationObject.setURL("/foo");
-  equal(locationObject.getURL(), "/foo", "the updated URL is '/foo'");
+  equal(setPath, "/foo", "the updated URL is '/foo'");
 });
 
 test("if the URL is set, it doesn't trigger the popstate event", function() {
@@ -99,6 +100,7 @@ test("if the URL is set, it doesn't trigger the popstate event", function() {
 
   stop();
   var count = 0;
+  window.history.pushState = function(data, title, path) {};
 
   setTimeout(function() {
     start();
