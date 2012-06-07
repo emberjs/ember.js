@@ -8,10 +8,11 @@
 // TODO: Don't require the entire module
 require("ember-handlebars");
 
-var get = Ember.get, set = Ember.set;
+var get = Ember.get, set = Ember.set, getPath = Ember.getPath;
 var indexOf = Ember.ArrayUtils.indexOf;
 var PARENT_VIEW_PATH = /^parentView\./;
 var EmberHandlebars = Ember.Handlebars;
+var a_forEach = Ember.ArrayUtils.forEach;
 
 /** @private */
 EmberHandlebars.ViewHelper = Ember.Object.create({
@@ -19,6 +20,7 @@ EmberHandlebars.ViewHelper = Ember.Object.create({
   viewClassFromHTMLOptions: function(viewClass, options, thisContext) {
     var hash = options.hash, data = options.data;
     var extensions = {},
+        mixins = [],
         classes = hash['class'],
         dup = false;
 
@@ -49,11 +51,26 @@ EmberHandlebars.ViewHelper = Ember.Object.create({
       dup = true;
     }
 
+    if (hash.mixins) {
+      var mixinIds = hash.mixins.split(' '),
+          mixin;
+
+      a_forEach(mixinIds, function(mixinId) {
+        mixin = getPath(mixinId);
+
+        Ember.assert("You must pass available mixins to 'mixin property' ", !!mixin);
+        Ember.assert("'mixin property' must point to Ember.Mixin instances ", ( mixin instanceof Ember.Mixin ) );
+        mixins.push(mixin);
+      });
+      dup = true;
+    }
+
     if (dup) {
       hash = Ember.$.extend({}, hash);
       delete hash.id;
       delete hash['class'];
       delete hash.classBinding;
+      delete hash.mixins;
     }
 
     // Look for bindings passed to the helper and, if they are
@@ -80,12 +97,16 @@ EmberHandlebars.ViewHelper = Ember.Object.create({
         }
       }
     }
-
     // Make the current template context available to the view
     // for the bindings set up above.
     extensions.bindingContext = thisContext;
 
-    return viewClass.extend(hash, extensions);
+    var result = viewClass.extend(hash, extensions);
+    if ( mixins.length > 0 ) {
+      result.reopen.apply(result, mixins);
+    }
+    return result;
+
   },
 
   helper: function(thisContext, path, options) {
