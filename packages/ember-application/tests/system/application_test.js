@@ -204,6 +204,44 @@ test("initialize application with stateManager via initialize call from Router c
   equal(app.getPath('stateManager.currentState.path'), 'root.index', "The router moved the state into the right place");
 });
 
+test("injections can be registered in a specified order", function() {
+  var oldInjections = Ember.Application.injections;
+  var firstInjectionCalled;
+
+  Ember.Application.injections = Ember.A();
+  Ember.Application.registerInjection({
+    name: 'second',
+    injection: function() {
+      ok(firstInjectionCalled, 'first injection should be called first');
+      firstInjectionCalled = false;
+    }
+  });
+
+  Ember.Application.registerInjection({
+    name: 'first',
+    injection: function() {
+      firstInjectionCalled = true;
+    },
+    before: 'second'
+  });
+
+  var router;
+  Ember.run(function() {
+    app = Ember.Application.create({
+      rootElement: '#qunit-fixture'
+    });
+    router = Ember.Object.create();
+
+    app.initialize(router);
+  });
+
+  Ember.run(function() {
+    router.destroy();
+  });
+
+  Ember.Application.injections = oldInjections;
+});
+
 test("ApplicationView is inserted into the page", function() {
   Ember.$("#qunit-fixture").empty();
 

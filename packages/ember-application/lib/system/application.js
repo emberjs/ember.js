@@ -127,7 +127,7 @@ Ember.Application = Ember.Namespace.extend(
 
     properties.forEach(function(property) {
       injections.forEach(function(injection) {
-        injection(namespace, router, property);
+        injection[1](namespace, router, property);
       });
     });
 
@@ -193,27 +193,45 @@ Ember.Application = Ember.Namespace.extend(
     if (this._createdApplicationView) { this._createdApplicationView.destroy(); }
   },
 
-  registerInjection: function(callback) {
-    this.constructor.registerInjection(callback);
+  registerInjection: function(options) {
+    this.constructor.registerInjection(options);
   }
 });
 
 Ember.Application.reopenClass({
   concatenatedProperties: ['injections'],
   injections: Ember.A(),
-  registerInjection: function(callback) {
-    get(this, 'injections').pushObject(callback);
+  registerInjection: function(options) {
+    var injections = get(this, 'injections'),
+        before = options.before,
+        name = options.name,
+        injection = options.injection,
+        location;
+
+    if (before) {
+      location = injections.find(function(item) {
+        if (item[0] === before) { return true; }
+      });
+      location = injections.indexOf(location);
+    } else {
+      location = get(injections, 'length');
+    }
+
+    injections.splice(location, 0, [name, injection]);
   }
 });
 
-Ember.Application.registerInjection(function(app, router, property) {
-  if (!/^[A-Z].*Controller$/.test(property)) { return; }
+Ember.Application.registerInjection({
+  name: 'controllers',
+  injection: function(app, router, property) {
+    if (!/^[A-Z].*Controller$/.test(property)) { return; }
 
-  var name = property[0].toLowerCase() + property.substr(1),
-      controller = app[property].create();
+    var name = property[0].toLowerCase() + property.substr(1),
+        controller = app[property].create();
 
-  router.set(name, controller);
+    router.set(name, controller);
 
-  controller.set('target', router);
-  controller.set('controllers', router);
+    controller.set('target', router);
+    controller.set('controllers', router);
+  }
 });
