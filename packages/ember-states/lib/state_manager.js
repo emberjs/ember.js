@@ -101,12 +101,12 @@ require('ember-states/state');
       robotManager = Ember.StateManager.create({
         initialState: 'poweredDown',
         poweredDown: Ember.State.create({
-          exit: function(stateManager, transition){
+          exit: function(stateManager){
             console.log("exiting the poweredDown state")
           }
         }),
         poweredUp: Ember.State.create({
-          enter: function(stateManager, transition){
+          enter: function(stateManager){
             console.log("entering the poweredUp state. Destroy all humans.")
           }
         })
@@ -126,12 +126,12 @@ require('ember-states/state');
       robotManager = Ember.StateManager.create({
         initialState: 'poweredDown',
         poweredDown: Ember.State.create({
-          exit: function(stateManager, transition){
+          exit: function(stateManager){
             console.log("exiting the poweredDown state")
           }
         }),
         poweredUp: Ember.State.create({
-          enter: function(stateManager, transition){
+          enter: function(stateManager){
             console.log("entering the poweredUp state. Destroy all humans.")
           }
         })

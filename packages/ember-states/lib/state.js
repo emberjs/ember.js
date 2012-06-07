@@ -147,9 +147,6 @@ Ember.State = Ember.Object.extend(Ember.Evented,
 
     @event
     @param {Ember.StateManager} manager
-    @param {Object} transition
-    @param {Function} transition.async
-    @param {Function} transition.resume
   */
   enter: Ember.K,
 
@@ -158,9 +155,6 @@ Ember.State = Ember.Object.extend(Ember.Evented,
 
     @event
     @param {Ember.StateManager} manager
-    @param {Object} transition
-    @param {Function} transition.async
-    @param {Function} transition.resume
   */
   exit: Ember.K
 });
