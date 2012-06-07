@@ -101,30 +101,6 @@ test("route repeatedly descends into a nested hierarchy", function() {
   equal(router.getPath('currentState.path'), 'root.fooChild.barChild.bazChild');
 });
 
-test("route repeatedly descends into a nested hierarchy", function() {
-  var state = Ember.State.create({
-    fooChild: Ember.State.create({
-      route: 'foo',
-
-      barChild: Ember.State.create({
-        route: 'bar',
-
-        bazChild: Ember.State.create({
-          route: 'baz'
-        })
-      })
-    })
-  });
-
-  var router = Ember.Router.create({
-    root: state
-  });
-
-  router.route("/foo/bar/baz");
-
-  equal(router.getPath('currentState.path'), 'root.fooChild.barChild.bazChild');
-});
-
 test("when you descend into a state, the route is set", function() {
   var state = Ember.State.create({
     ready: function(manager) {
