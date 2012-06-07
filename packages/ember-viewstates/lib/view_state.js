@@ -137,10 +137,10 @@ var get = Ember.get, set = Ember.set;
       viewStates = Ember.StateManager.create({
         aState: Ember.ViewState.create({
           view: Ember.View.extend({}),
-          enter: function(manager, transition){
+          enter: function(manager){
             // calling _super ensures this view will be
             // properly inserted
-            this._super(manager, transition);
+            this._super(manager);
 
             // now you can do other things
           }
