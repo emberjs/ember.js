@@ -38,6 +38,13 @@ var obj, moduleOpts = {
 
 module('Ember.setPath', moduleOpts);
 
+test('[Foo, bar] -> Foo.bar', function() {
+  window.Foo = {toString: function() { return 'Foo'; }}; // Behave like an Ember.Namespace
+  Ember.setPath(Foo, 'bar', 'baz');
+  equal(Ember.getPath(Foo, 'bar'), 'baz');
+  delete window.Foo;
+});
+
 // ..........................................................
 // LOCAL PATHS
 //

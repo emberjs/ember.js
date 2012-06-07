@@ -248,7 +248,7 @@ Ember.getPath = function(root, path) {
 Ember.setPath = function(root, path, value, tolerant) {
   var keyName;
 
-  if (IS_GLOBAL.test(root)) {
+  if (typeof root === 'string' && IS_GLOBAL.test(root)) {
     value = path;
     path = root;
     root = null;
