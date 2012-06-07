@@ -350,24 +350,6 @@ require('ember-states/state');
       robotManager.send('beginExtermination', allHumans)
       robotManager.getPath('currentState.name') // 'rampaging'
 
-  ## Async transitions
-  When a state's `enter` and `exit` methods are called they passed a argument representing
-  the transition. By calling `async()` and `resume()` on the transition object, the
-  transition can be delayed. This can be useful to account for an animation between states.
-
-      robotManager = Ember.StateManager.create({
-        poweredUp: Ember.State.create({
-          exit: function(stateManager, transition){
-            console.log("beginning exit of the poweredUp state");
-            transition.async();
-            asyncStartShutdownDanceMoves().done(function(){
-              console.log("completing exit of the poweredUp state");
-              transition.resume();
-            });
-          }
-        });
-      });
-
 **/
 Ember.StateManager = Ember.State.extend(
 /** @scope Ember.StateManager.prototype */ {
@@ -642,66 +624,41 @@ Ember.StateManager = Ember.State.extend(
     }
   },
 
-  asyncEach: function(list, callback, doneCallback) {
-    var async = false,
-        self = this;
-
-    if (!list.length) {
-      if (doneCallback) { doneCallback.call(this); }
-      return;
-    }
-
-    var head = list[0],
-        tail = list.slice(1);
-
-    var transition = {
-      async: function() { async = true; },
-      resume: function() {
-        self.asyncEach(tail, callback, doneCallback);
-      }
-    };
-
-    callback.call(this, head, transition);
-
-    if (!async) { transition.resume(); }
-  },
-
   enterState: function(exitStates, enterStates, state) {
     var log = this.enableLogging,
         stateManager = this;
 
     exitStates = exitStates.slice(0).reverse();
-    this.asyncEach(exitStates, function(state, transition) {
-      state.fire('exit', stateManager, transition);
-    }, function() {
-      this.asyncEach(enterStates, function(state, transition) {
-        if (log) { Ember.Logger.log("STATEMANAGER: Entering " + get(state, 'path')); }
-        state.fire('enter', stateManager, transition);
-      }, function() {
-        var startState = state,
-            enteredState,
-            initialState = get(startState, 'initialState');
-
-        if (!initialState) {
-          initialState = 'start';
-        }
-
-        // right now, start states cannot be entered asynchronously
-        while (startState = get(get(startState, 'states'), initialState)) {
-          enteredState = startState;
-
-          if (log) { Ember.Logger.log("STATEMANAGER: Entering " + get(startState, 'path')); }
-          startState.fire('enter', stateManager);
-
-          initialState = get(startState, 'initialState');
-
-          if (!initialState) {
-            initialState = 'start';
-          }
-        }
-
-        set(this, 'currentState', enteredState || state);
-      });
+    exitStates.forEach(function(state) {
+      state.fire('exit', stateManager);
     });
+
+    enterStates.forEach(function(state) {
+      if (log) { Ember.Logger.log("STATEMANAGER: Entering " + get(state, 'path')); }
+      state.fire('enter', stateManager);
+    });
+
+    var startState = state,
+        enteredState,
+        initialState = get(startState, 'initialState');
+
+    if (!initialState) {
+      initialState = 'start';
+    }
+
+    while (startState = get(get(startState, 'states'), initialState)) {
+      enteredState = startState;
+
+      if (log) { Ember.Logger.log("STATEMANAGER: Entering " + get(startState, 'path')); }
+      startState.fire('enter', stateManager);
+
+      initialState = get(startState, 'initialState');
+
+      if (!initialState) {
+        initialState = 'start';
+      }
+    }
+
+    set(this, 'currentState', enteredState || state);
   }
 });
