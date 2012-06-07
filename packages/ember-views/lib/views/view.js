@@ -1859,10 +1859,14 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     also call methods with the given name.
   */
   fire: function(name) {
-    if (this[name]) {
-      this[name].apply(this, [].slice.call(arguments, 1));
-    }
     this._super.apply(this, arguments);
+    if (this[name]) {
+      return this[name].apply(this, [].slice.call(arguments, 1));
+    }
+  },
+
+  has: function(name) {
+    return Ember.typeOf(this[name]) === 'function' || this._super(name);
   },
 
   // .......................................................

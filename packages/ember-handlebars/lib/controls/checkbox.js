@@ -48,9 +48,9 @@ Ember.Checkbox = Ember.View.extend({
   checked: false,
   disabled: false,
 
-  change: function() {
-    Ember.run.once(this, this._updateElementValue);
-    // returning false will cause IE to not change checkbox state
+  init: function() {
+    this._super();
+    this.on("change", this, this._updateElementValue);
   },
 
   /**

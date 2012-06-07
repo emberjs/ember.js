@@ -143,7 +143,7 @@ test("should call the insertNewline method when return key is pressed", function
     wasCalled = true;
   };
 
-  textField.keyUp(event);
+  textField.fire('keyUp', event);
   ok(wasCalled, "invokes insertNewline method");
 });
 
@@ -157,7 +157,7 @@ test("should call the cancel method when escape key is pressed", function() {
     wasCalled = true;
   };
 
-  textField.keyUp(event);
+  textField.fire('keyUp', event);
   ok(wasCalled, "invokes cancel method");
 });
 

@@ -1362,7 +1362,7 @@ test("should not reset cursor position when text field receives keyUp event", fu
   view.$().setCaretPosition(5);
 
   Ember.run(function() {
-    view.keyUp({});
+    view.fire('keyUp', {});
   });
 
   equal(view.$().caretPosition(), 5, "The keyUp event should not result in the cursor being reset due to the bindAttr observers");
