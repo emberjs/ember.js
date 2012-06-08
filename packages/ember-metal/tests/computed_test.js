@@ -501,6 +501,10 @@ testBoth('Ember.computed.not', function(get, set) {
   var obj = {foo: true};
   Ember.defineProperty(obj, 'notFoo', Ember.computed.not('foo'));
   equal(get(obj, 'notFoo'), false);
+
+  obj = {foo: {bar: true}};
+  Ember.defineProperty(obj, 'notFoo', Ember.computed.not('foo.bar'));
+  equal(get(obj, 'notFoo'), false);
 });
 
 testBoth('Ember.computed.empty', function(get, set) {
