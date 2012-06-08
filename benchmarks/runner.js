@@ -1,7 +1,7 @@
 /*global jQuery Benchmark BenchWarmer:true*/
 
 var embers = {
-  before: "../lib/ember.js",
+  before: "../distold/ember.prod.js",
   after: "../dist/ember.prod.js"
 };
 
