@@ -37,6 +37,10 @@ function selectedOptions() {
   return rv;
 }
 
+test("has 'ember-view' and 'ember-select' CSS classes", function() {
+  deepEqual(select.get('classNames'), ['ember-view', 'ember-select']);
+});
+
 test("should render", function() {
   append();
 
