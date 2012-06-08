@@ -18,12 +18,12 @@ before(function() {
       "  </thead>" +
       "  <tbody>" +
       "  {{#each App.list}}" +
-      '    {{#view Em.View contentBinding="this" tagName="tr"}}' +
-      "      <td>{{content.id}}</td>" +
-      "      <td>{{content.dateIn}}</td>" +
-      "      <td>{{content.tag}}</td>" +
-      "      <td>{{content.speed}}</td>" +
-      "      <td>{{content.length}}</td>" +
+      '    {{#view Em.View tagName="tr"}}' +
+      "      <td>{{id}}</td>" +
+      "      <td>{{dateIn}}</td>" +
+      "      <td>{{tag}}</td>" +
+      "      <td>{{speed}}</td>" +
+      "      <td>{{length}}</td>" +
       "    {{/view}}" +
       "  {{/each}}" +
       "  </tbody>" +
