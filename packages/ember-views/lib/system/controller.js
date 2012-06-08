@@ -75,6 +75,17 @@ Ember.ControllerMixin.reopen({
     // outletName, viewClass
     // viewClass, context
     // outletName, viewClass, context
+    //
+    // Alternatively, an options hash may be passed:
+    //
+    //  {
+    //    name: 'outletName',
+    //    view: App.ViewClass,
+    //    context: {}
+    //  }
+
+    var controller;
+
     if (arguments.length === 2) {
       if (Ember.Object.detect(outletName)) {
         context = viewClass;
@@ -82,8 +93,16 @@ Ember.ControllerMixin.reopen({
         outletName = 'view';
       }
     } else if (arguments.length === 1) {
-      viewClass = outletName;
-      outletName = 'view';
+      if (Ember.typeOf(outletName) === 'object') {
+        var options = outletName;
+        outletName = options.name;
+        viewClass = options.view;
+        context = options.context;
+        controller = options.controller;
+      } else {
+        viewClass = outletName;
+        outletName = 'view';
+      }
     }
 
     var parts = viewClass.toString().split("."),
@@ -95,14 +114,19 @@ Ember.ControllerMixin.reopen({
     var bareName = match[1], controllerName;
     bareName = bareName.charAt(0).toLowerCase() + bareName.substr(1);
 
-    controllerName = bareName + "Controller";
+    if (controller === undefined) {
+      controllerName = bareName + "Controller";
+      controller = get(get(this, 'controllers'), controllerName);
 
-    var controller = get(get(this, 'controllers'), controllerName);
+      Ember.assert("You specified a context, but no " + controllerName + " was found", !context || !!controller);
+    } else if (controller === null) {
+      Ember.assert("You specified a context, but the controller passed to connectOutlet was null", !context || !!controller);
+    }
 
-    Ember.assert("You specified a context, but no " + controllerName + " was found", !context || !!controller);
     if (context) { controller.set('content', context); }
 
-    var view = viewClass.create({ controller: controller });
+    var view = viewClass.create();
+    if (controller) { set(view, 'controller', controller); }
     set(this, outletName, view);
 
     return view;
