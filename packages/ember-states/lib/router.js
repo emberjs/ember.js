@@ -1,6 +1,7 @@
 require('ember-states/state');
 require('ember-states/route_matcher');
 require('ember-states/routable');
+require('ember-application/system/location');
 
 var get = Ember.get, getPath = Ember.getPath, set = Ember.set;
 
@@ -31,6 +32,21 @@ Ember.Router = Ember.StateManager.extend(
   initialState: 'root',
 
   /**
+    The `Ember.Location` implementation to be used to manage the application
+    URL state. The following values are supported:
+
+    * 'hash': Uses URL fragment identifiers (like #/blog/1) for routing.
+    * 'none': Does not read or set the browser URL, but still allows for
+      routing to happen. Useful for testing.
+
+    @type String
+    @default 'hash'
+  */
+  location: 'hash',
+
+  /**
+    On router, transitionEvent should be called connectOutlets
+
     @property {String}
     @default 'connectOutlets'
   */
@@ -60,13 +76,9 @@ Ember.Router = Ember.StateManager.extend(
     Ember.assert("To get a URL for a state, it must have a `route` property.", !!get(state, 'routeMatcher'));
 
     var location = get(this, 'location'),
-        url = state.absoluteRoute(this, hash);
+        absoluteRoute = state.absoluteRoute(this, hash);
 
-    if (location) {
-      url = location.formatURL(url);
-    }
-
-    return url;
+    return location.formatURL(absoluteRoute);
   },
 
   urlForEvent: function(eventName, context) {
@@ -81,5 +93,20 @@ Ember.Router = Ember.StateManager.extend(
     var hash = targetState.serialize(this, context);
 
     return this.urlFor(targetStateName, hash);
+  },
+
+  /** @private */
+  init: function() {
+    this._super();
+
+    var location = get(this, 'location');
+    if ('string' === typeof location) {
+      set(this, 'location', Ember.Location.create({ implementation: location }));
+    }
+  },
+
+  /** @private */
+  willDestroy: function() {
+    get(this, 'location').destroy();
   }
 });
