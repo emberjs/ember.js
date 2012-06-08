@@ -232,6 +232,8 @@ Ember.Routable = Ember.Mixin.create({
   serialize: function(manager, context) {
     var modelClass, routeMatcher, namespace, param, id;
 
+    if (Ember.empty(context)) { return ''; }
+
     if (modelClass = this.modelClassFor(get(manager, 'namespace'))) {
       param = paramForClass(modelClass);
       id = get(context, 'id');

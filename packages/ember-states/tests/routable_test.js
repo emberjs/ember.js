@@ -368,6 +368,8 @@ module("default serialize and deserialize without modelType", {
   }
 });
 
+
+
 test("should use a specified String `modelType` in the default `serialize`", function() {
   router.transitionTo('post', firstPost);
   equal(url, "/posts/1");

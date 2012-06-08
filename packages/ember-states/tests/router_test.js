@@ -15,6 +15,8 @@ var locationStub = {
   setURL: Ember.K
 };
 
+var getPath = Ember.getPath;
+
 test("router.urlForEvent looks in the current state's eventTransitions hash", function() {
   var router = Ember.Router.create({
     location: locationStub,
@@ -210,4 +212,34 @@ test("rerouting doesn't exit all the way out", function() {
   exited = 0;
   equal(router.getPath('currentState.path'), "root.dashboard.component", "the router is in root.dashboard.index");
   equal(exited, 0, "exit wasn't called now");
+});
+
+test("should be able to unroute out of a state with context", function() {
+  var router = Ember.Router.create({
+    location: locationStub,
+    namespace: namespace,
+    root: Ember.State.create({
+      components: Ember.State.create({
+        route: '/components',
+
+        show: Ember.State.create({
+          route: '/:component_id',
+
+          index: Ember.State.create({
+            route: '/'
+          }),
+
+          edit: Ember.State.create({
+            route: '/edit'
+          })
+        })
+      })
+    })
+  });
+
+  router.route('/components/1/edit');
+  equal(getPath(router, 'currentState.path'), 'root.components.show.edit', "should go to the correct state");
+
+  router.route('/components/1');
+  equal(getPath(router, 'currentState.path'), 'root.components.show.index', "should go to the correct state");
 });
