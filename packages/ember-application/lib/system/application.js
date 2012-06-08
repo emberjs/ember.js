@@ -158,12 +158,6 @@ Ember.Application = Ember.Namespace.extend(
         rootElement = get(this, 'rootElement'),
         applicationController = get(stateManager, 'applicationController');
 
-    if (typeof location === 'string') {
-      location = Ember.Location.create({implementation: location});
-      set(stateManager, 'location', location);
-      this._createdLocation = location;
-    }
-
     if (this.ApplicationView && applicationController) {
       var applicationView = this.ApplicationView.create({
         controller: applicationController
@@ -189,7 +183,6 @@ Ember.Application = Ember.Namespace.extend(
   willDestroy: function() {
     get(this, 'eventDispatcher').destroy();
     if (this._createdRouter)          { this._createdRouter.destroy(); }
-    if (this._createdLocation)        { this._createdLocation.destroy(); }
     if (this._createdApplicationView) { this._createdApplicationView.destroy(); }
   },
 

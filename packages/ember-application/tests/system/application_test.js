@@ -164,7 +164,7 @@ test("initialize application with stateManager via initialize call", function() 
     });
 
     app.Router = Ember.Router.extend({
-      location: 'hash',
+      location: 'none',
 
       root: Ember.State.extend({
         index: Ember.State.extend({
@@ -177,7 +177,7 @@ test("initialize application with stateManager via initialize call", function() 
   });
 
   equal(app.getPath('stateManager') instanceof Ember.Router, true, "Router was set from initialize call");
-  equal(app.getPath('stateManager.location') instanceof Ember.HashLocation, true, "Location was set from location implementation name");
+  equal(app.getPath('stateManager.location') instanceof Ember.NoneLocation, true, "Location was set from location implementation name");
   equal(app.getPath('stateManager.currentState.path'), 'root.index', "The router moved the state into the right place");
 });
 
@@ -188,7 +188,7 @@ test("initialize application with stateManager via initialize call from Router c
     });
 
     app.Router = Ember.Router.extend({
-      location: 'hash',
+      location: 'none',
 
       root: Ember.State.extend({
         index: Ember.State.extend({
@@ -261,7 +261,7 @@ test("ApplicationView is inserted into the page", function() {
     app.ApplicationController = Ember.Controller.extend();
 
     app.Router = Ember.Router.extend({
-      location: 'hash',
+      location: 'none',
 
       root: Ember.State.extend({
         index: Ember.State.extend({
