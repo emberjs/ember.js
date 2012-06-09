@@ -15,10 +15,10 @@ require('ember-metal/binding');
 
 var Mixin, REQUIRED, Alias,
     classToString, superClassString,
-    a_map = Ember.ArrayUtils.map,
-    a_indexOf = Ember.ArrayUtils.indexOf,
-    a_forEach = Ember.ArrayUtils.forEach,
-    a_slice = Array.prototype.slice,
+    a_map = Ember.arrayMap,
+    a_indexOf = Ember.arrayIndexOf,
+    a_forEach = Ember.arrayForEach,
+    a_slice = [].slice,
     EMPTY_META = {}, // dummy for non-writable meta
     META_SKIP = { __emberproto__: true, __ember_count__: true },
     o_create = Ember.create,
@@ -41,7 +41,7 @@ function meta(obj, writable) {
 /** @private */
 function initMixin(mixin, args) {
   if (args && args.length > 0) {
-    mixin.mixins = a_map(args, function(x) {
+    mixin.mixins = a_map.call(args, function(x) {
       if (x instanceof Mixin) { return x; }
 
       // Note: Manually setup a primitive mixin here.  This is the only
@@ -59,7 +59,7 @@ var NATIVES = [Boolean, Object, Number, Array, Date, String];
 /** @private */
 function isMethod(obj) {
   if ('function' !== typeof obj || obj.isMethod === false) { return false; }
-  return a_indexOf(NATIVES, obj) < 0;
+  return a_indexOf.call(NATIVES, obj) < 0;
 }
 
 /** @private */
@@ -112,7 +112,7 @@ function mergeMixins(mixins, m, descs, values, base) {
               value.__ember_observes__ = o;
               value.__ember_observesBefore__ = ob;
             }
-          } else if ((concats && a_indexOf(concats, key) >= 0) || key === 'concatenatedProperties') {
+          } else if ((concats && a_indexOf.call(concats, key) >= 0) || key === 'concatenatedProperties') {
             var baseValue = values[key] || base[key];
             value = baseValue ? baseValue.concat(value) : Ember.makeArray(value);
           }
@@ -129,7 +129,7 @@ function mergeMixins(mixins, m, descs, values, base) {
 
     } else if (mixin.mixins) {
       mergeMixins(mixin.mixins, m, descs, values, base);
-      if (mixin._without) { a_forEach(mixin._without, removeKeys); }
+      if (mixin._without) { a_forEach.call(mixin._without, removeKeys); }
     }
   }
 }
@@ -449,7 +449,7 @@ function _keys(ret, mixin, seen) {
       if (props.hasOwnProperty(key)) { ret[key] = true; }
     }
   } else if (mixin.mixins) {
-    a_forEach(mixin.mixins, function(x) { _keys(ret, x, seen); });
+    a_forEach.call(mixin.mixins, function(x) { _keys(ret, x, seen); });
   }
 }
 

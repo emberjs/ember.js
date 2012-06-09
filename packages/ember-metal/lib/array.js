@@ -14,7 +14,7 @@ var isNativeFunc = function(func) {
 
 // From: https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/array/map
 /** @private */
-var arrayMap = isNativeFunc(Array.prototype.map) ? Array.prototype.map : function(fun /*, thisp */) {
+var arrayMap = Ember.arrayMap = isNativeFunc(Array.prototype.map) ? Array.prototype.map : function(fun /*, thisp */) {
   //"use strict";
 
   if (this === void 0 || this === null) {
@@ -40,7 +40,7 @@ var arrayMap = isNativeFunc(Array.prototype.map) ? Array.prototype.map : functio
 
 // From: https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/array/foreach
 /** @private */
-var arrayForEach = isNativeFunc(Array.prototype.forEach) ? Array.prototype.forEach : function(fun /*, thisp */) {
+var arrayForEach = Ember.arrayForEach = isNativeFunc(Array.prototype.forEach) ? Array.prototype.forEach : function(fun /*, thisp */) {
   //"use strict";
 
   if (this === void 0 || this === null) {
@@ -62,7 +62,7 @@ var arrayForEach = isNativeFunc(Array.prototype.forEach) ? Array.prototype.forEa
 };
 
 /** @private */
-var arrayIndexOf = isNativeFunc(Array.prototype.indexOf) ? Array.prototype.indexOf : function (obj, fromIndex) {
+var arrayIndexOf = Ember.arrayIndexOf = isNativeFunc(Array.prototype.indexOf) ? Array.prototype.indexOf : function (obj, fromIndex) {
   if (fromIndex === null || fromIndex === undefined) { fromIndex = 0; }
   else if (fromIndex < 0) { fromIndex = Math.max(0, this.length + fromIndex); }
   for (var i = fromIndex, j = this.length; i < j; i++) {
@@ -72,24 +72,25 @@ var arrayIndexOf = isNativeFunc(Array.prototype.indexOf) ? Array.prototype.index
 };
 
 
+var slice = [].slice;
+
 Ember.ArrayUtils = {
   map: function(obj) {
-    var args = Array.prototype.slice.call(arguments, 1);
+    var args = slice.call(arguments, 1);
     return obj.map ? obj.map.apply(obj, args) : arrayMap.apply(obj, args);
   },
 
   forEach: function(obj) {
-    var args = Array.prototype.slice.call(arguments, 1);
+    var args = slice.call(arguments, 1);
     return obj.forEach ? obj.forEach.apply(obj, args) : arrayForEach.apply(obj, args);
   },
 
-  indexOf: function(obj) {
-    var args = Array.prototype.slice.call(arguments, 1);
-    return obj.indexOf ? obj.indexOf.apply(obj, args) : arrayIndexOf.apply(obj, args);
+  indexOf: function(obj, element, index) {
+    return obj.indexOf ? obj.indexOf.call(obj, element, index) : arrayIndexOf.call(obj, element, index);
   },
 
   indexesOf: function(obj) {
-    var args = Array.prototype.slice.call(arguments, 1);
+    var args = slice.call(arguments, 1);
     return args[0] === undefined ? [] : Ember.ArrayUtils.map(args[0], function(item) {
       return Ember.ArrayUtils.indexOf(obj, item);
     });

@@ -23,7 +23,7 @@ require('ember-metal/utils');
 
 /** @private */
 var guidFor = Ember.guidFor,
-    indexOf = Ember.ArrayUtils.indexOf;
+    indexOf = Ember.arrayIndexOf;
 
 // This class is used internally by Ember.js and Ember Data.
 // Please do not use it at this time. We plan to clean it up
@@ -60,7 +60,7 @@ OrderedSet.prototype = {
 
     delete presenceSet[guid];
 
-    var index = indexOf(list, obj);
+    var index = indexOf.call(list, obj);
     if (index > -1) {
       list.splice(index, 1);
     }
