@@ -21,7 +21,7 @@ var guidFor = Ember.guidFor,
     GUID_KEY = Ember.GUID_KEY,
     META_KEY = Ember.META_KEY,
     notifyObservers = Ember.notifyObservers,
-    forEach = Ember.ArrayUtils.forEach,
+    forEach = Ember.arrayForEach,
     FIRST_KEY = /^([^\.\*]+)/,
     IS_PATH = /[\.\*]/;
 
@@ -125,7 +125,7 @@ function flushPendingChains() {
   var queue = pendingQueue;
   pendingQueue = [];
 
-  forEach(queue, function(q) { q[0].add(q[1]); });
+  forEach.call(queue, function(q) { q[0].add(q[1]); });
 
   Ember.warn('Watching an undefined global, Ember expects watched globals to be setup by the time the run loop is flushed, check for typos', pendingQueue.length > 0);
 }

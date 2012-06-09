@@ -16,7 +16,7 @@ require('ember-metal/array'); // Ember.ArrayUtils
 //
 
 var slice = [].slice,
-    forEach = Ember.ArrayUtils.forEach;
+    forEach = Ember.arrayForEach;
 
 // invokes passed params - normalizing so you can pass target/func,
 // target/string or just func
@@ -108,7 +108,7 @@ RunLoop.prototype = {
 
           Ember.beginPropertyChanges();
           try {
-            forEach(queue, iter);
+            forEach.call(queue, iter);
           } finally {
             Ember.endPropertyChanges();
           }
@@ -116,7 +116,7 @@ RunLoop.prototype = {
           if (log) { Ember.Logger.log('End: Flush Sync Queue'); }
 
         } else {
-          forEach(queue, iter);
+          forEach.call(queue, iter);
         }
       }
 
@@ -138,14 +138,14 @@ RunLoop.prototype = {
 
               Ember.beginPropertyChanges();
               try {
-                forEach(queue, iter);
+                forEach.call(queue, iter);
               } finally {
                 Ember.endPropertyChanges();
               }
 
               if (log) { Ember.Logger.log('End: Flush Sync Queue'); }
             } else {
-              forEach(queue, iter);
+              forEach.call(queue, iter);
             }
           }
         }
