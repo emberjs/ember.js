@@ -233,6 +233,7 @@ function applyMixin(obj, mixins, partial) {
           desc  = m.descs[altKey];
           value = desc.val(obj, altKey);
         } else {
+          desc = undefined;
           value = obj[altKey];
         }
       }
