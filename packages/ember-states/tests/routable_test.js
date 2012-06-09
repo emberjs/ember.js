@@ -79,17 +79,17 @@ test("a RouteMatcher generates routes with dynamic segments", function() {
   equal(url, "foo/1/Yehuda");
 });
 
-test("route repeatedly descends into a nested hierarchy", function() {
+test("route matches routes based on the order they are defined", function() {
   var state = Ember.State.create({
     fooChild: Ember.State.create({
       route: 'foo',
 
-      barChild: Ember.State.create({
-        route: 'bar',
+      bazChild: Ember.State.create({
+        route: 'baz'
+      }),
 
-        bazChild: Ember.State.create({
-          route: 'baz'
-        })
+      barChild: Ember.State.create({
+        route: ':bar'
       })
     })
   });
@@ -99,9 +99,9 @@ test("route repeatedly descends into a nested hierarchy", function() {
     root: state
   });
 
-  router.route("/foo/bar/baz");
+  router.route("/foo/baz");
 
-  equal(router.getPath('currentState.path'), 'root.fooChild.barChild.bazChild');
+  equal(router.getPath('currentState.path'), 'root.fooChild.bazChild');
 });
 
 test("route repeatedly descends into a nested hierarchy", function() {
