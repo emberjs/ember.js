@@ -88,7 +88,7 @@ var extractValue = function(obj, keyName, watching) {
       });
 
       // define a simple property
-      Ember.defineProperty(contact, 'lastName', Ember.SIMPLE_PROPERTY, 'Jolley');
+      Ember.defineProperty(contact, 'lastName', undefined, 'Jolley');
 
       // define a computed property
       Ember.defineProperty(contact, 'fullName', Ember.computed(function() {
