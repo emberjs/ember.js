@@ -7,4 +7,4 @@ before_script:
   - "rake clean"
 script: "rake test[all]"
 notifications:
-  webhooks: http://emberjs-master-builds.herokuapp.com/upload
+  webhooks: http://emberjs-master-builds.herokuapp.com/upload/ember.js
