@@ -49,7 +49,11 @@ Ember.HistoryLocation = Ember.Object.extend({
     };
 
     get(this, 'callbacks').pushObject(popstate);
-    window.addEventListener('popstate', popstate);
+
+    // This won't work on old browsers anyway, but this check prevents errors
+    if (window.addEventListener) {
+      window.addEventListener('popstate', popstate);
+    }
   },
 
   /**

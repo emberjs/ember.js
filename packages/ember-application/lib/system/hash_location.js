@@ -52,7 +52,11 @@ Ember.HashLocation = Ember.Object.extend({
     };
 
     get(this, 'callbacks').pushObject(hashchange);
-    window.addEventListener('hashchange', hashchange);
+
+    // This won't work on old browsers anyway, but this check prevents errors
+    if (window.addEventListener) {
+      window.addEventListener('hashchange', hashchange);
+    }
   },
 
   /**
