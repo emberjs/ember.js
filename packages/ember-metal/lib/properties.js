@@ -125,7 +125,7 @@ Ember.defineProperty = function(obj, keyName, desc, val) {
   } else {
     if (descs[keyName]) { metaFor(obj).descs[keyName] = null; }
 
-    if (desc === undefined) {
+    if (desc == null) {
       if (existingDesc) {
         objectDefineProperty(obj, keyName, {
           enumerable: true,
