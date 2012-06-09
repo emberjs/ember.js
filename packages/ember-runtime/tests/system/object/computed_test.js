@@ -143,7 +143,7 @@ test("can retrieve metadata for a computed property", function() {
 
   var ClassWithNoMetadata = Ember.Object.extend({
     computedProperty: Ember.computed(function() {
-    }).property().volatile(),
+    }).property().uncached(),
 
     staticProperty: 12
   });

@@ -130,7 +130,7 @@ test("should invalidate function property cache when notifyPropertyChange is cal
         return this;
       }
       return this._b;
-    }).volatile()
+    }).uncached()
   });
 
   a.set('b', 'foo');

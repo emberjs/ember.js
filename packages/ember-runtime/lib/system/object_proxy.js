@@ -75,7 +75,7 @@ function delegate(key, value) {
   }
 }
 
-delegateDesc = Ember.computed(delegate).volatile();
+delegateDesc = Ember.computed(delegate).uncached();
 
 /**
   @class

@@ -613,7 +613,7 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     } else {
       return parent;
     }
-  }).property('_parentView').volatile(),
+  }).property('_parentView').uncached(),
 
   _parentView: null,
 
@@ -621,7 +621,7 @@ Ember.View = Ember.Object.extend(Ember.Evented,
   concreteView: Ember.computed(function() {
     if (!this.isVirtual) { return this; }
     else { return get(this, 'parentView'); }
-  }).property('_parentView').volatile(),
+  }).property('_parentView').uncached(),
 
   /**
     If false, the view will appear hidden in DOM.
