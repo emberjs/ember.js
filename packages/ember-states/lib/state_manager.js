@@ -360,6 +360,15 @@ Ember.StateManager = Ember.State.extend(
     `initialState` property.
   */
   init: function() {
+    this.on('willSendEvent', function(state, event) {
+      var log = this.enableLogging;
+      if (log) { Ember.Logger.log(fmt("STATEMANAGER: Sending event '%@' to state %@", [event, get(state, 'path')])); }
+    });
+    this.on('didEnterState', function(state) {
+      var log = this.enableLogging;
+      if (log) { Ember.Logger.log("STATEMANAGER: Entering " + get(state, 'path')); }
+    });
+
     this._super();
 
     set(this, 'stateMeta', Ember.Map.create());
@@ -430,8 +439,7 @@ Ember.StateManager = Ember.State.extend(
   },
 
   sendRecursively: function(event, currentState, context) {
-    var log = this.enableLogging,
-        action = currentState[event];
+    var action = currentState[event];
 
     // Test to see if the action is a method that
     // can be invoked. Don't blindly check just for
@@ -440,7 +448,7 @@ Ember.StateManager = Ember.State.extend(
     // and we should still raise an exception in that
     // case.
     if (typeof action === 'function') {
-      if (log) { Ember.Logger.log(fmt("STATEMANAGER: Sending event '%@' to state %@.", [event, get(currentState, 'path')])); }
+      this.fire('willSendEvent', currentState, event);
       action.call(currentState, this, context);
     } else {
       var parentState = get(currentState, 'parentState');
@@ -634,8 +642,8 @@ Ember.StateManager = Ember.State.extend(
     });
 
     enterStates.forEach(function(state) {
-      if (log) { Ember.Logger.log("STATEMANAGER: Entering " + get(state, 'path')); }
       state.fire('enter', stateManager);
+      stateManager.fire('didEnterState', state);
     });
 
     var startState = state,
@@ -649,8 +657,8 @@ Ember.StateManager = Ember.State.extend(
     while (startState = get(get(startState, 'states'), initialState)) {
       enteredState = startState;
 
-      if (log) { Ember.Logger.log("STATEMANAGER: Entering " + get(startState, 'path')); }
       startState.fire('enter', stateManager);
+      stateManager.fire('didEnterState', startState);
 
       initialState = get(startState, 'initialState');
 
