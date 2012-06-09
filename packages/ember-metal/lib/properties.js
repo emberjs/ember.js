@@ -99,16 +99,11 @@ Ember.defineProperty = function(obj, keyName, desc, val) {
   var meta = obj[META_KEY] || EMPTY_META,
       descs = meta && meta.descs,
       watching = meta.watching[keyName],
-      descriptor = desc instanceof Ember.Descriptor,
-      override = true;
+      descriptor = desc instanceof Ember.Descriptor;
 
   var existingDesc = hasDesc(descs, keyName);
 
   if (val === undefined && descriptor) {
-    // if a value wasn't provided, the value is the old value
-    // (which can be obtained by calling teardown on a property
-    // with a descriptor).
-    override = false;
 
     if (existingDesc) { val = descs[keyName].teardown(obj, keyName); }
     else { val = extractValue(obj, keyName, watching); }
@@ -149,7 +144,7 @@ Ember.defineProperty = function(obj, keyName, desc, val) {
 
   // if key is being watched, override chains that
   // were initialized with the prototype
-  if (override && watching) { Ember.overrideChains(obj, keyName, meta); }
+  if (watching) { Ember.overrideChains(obj, keyName, meta); }
 
   return this;
 };
