@@ -13,7 +13,6 @@ var USE_ACCESSORS = Ember.USE_ACCESSORS,
     GUID_KEY = Ember.GUID_KEY,
     META_KEY = Ember.META_KEY,
     meta = Ember.meta,
-    o_create = Ember.create,
     objectDefineProperty = Ember.platform.defineProperty,
     SIMPLE_PROPERTY, WATCHED_PROPERTY;
 
