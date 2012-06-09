@@ -34,18 +34,41 @@ var basicGet = function get(obj, keyName) {
   }
 };
 
+var watchedSet = function(obj, keyName, value) {
+  meta(obj).values[keyName] = value;
+};
+
+// if there are no getters, keep the raw property up to date
+if (!Ember.platform.hasPropertyAccessors) {
+  watchedSet = function(obj, keyName, value, values) {
+    obj[keyName] = value;
+    meta(obj).values[keyName] = value;
+  };
+}
+
+var META_KEY = Ember.META_KEY;
+
 /** @private */
 var basicSet = function set(obj, keyName, value) {
   var isObject = 'object' === typeof obj;
   var hasProp = isObject && !(keyName in obj);
+  var changed;
 
   // setUnknownProperty is called if `obj` is an object,
   // the property does not already exist, and the
   // `setUnknownProperty` method exists on the object
-  var unknownProp = hasProp && 'function' === typeof obj.setUnknownProperty;
+  var unknownProp = hasProp && 'function' === typeof obj.setUnknownProperty,
+      meta = obj[META_KEY];
 
   if (unknownProp) {
     obj.setUnknownProperty(keyName, value);
+  } else if (meta && meta.watching[keyName]) {
+    // only trigger a change if the value has changed
+    if (value !== obj[keyName]) {
+      Ember.propertyWillChange(obj, keyName);
+      watchedSet(obj, keyName, value);
+      Ember.propertyDidChange(obj, keyName);
+    }
   } else {
     obj[keyName] = value;
   }

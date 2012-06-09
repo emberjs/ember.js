@@ -38,6 +38,8 @@ function performTest(binding, a, b, get, set, connect) {
   equal(get(b, 'bar'), 'BARF', 'a should have changed');
 }
 
+module("Ember.Binding");
+
 testBoth('Connecting a binding between two properties', function(get, set) {
   var a = { foo: 'FOO', bar: 'BAR' };
   
