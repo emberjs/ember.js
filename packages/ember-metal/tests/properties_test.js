@@ -9,6 +9,6 @@ module('Ember.defineProperty');
 test('toString', function() {
 
   var obj = {};
-  Ember.defineProperty(obj, 'toString', Ember.SIMPLE_PROPERTY, function() { return 'FOO'; });
+  Ember.defineProperty(obj, 'toString', undefined, function() { return 'FOO'; });
   equal(obj.toString(), 'FOO', 'should replace toString');
 });

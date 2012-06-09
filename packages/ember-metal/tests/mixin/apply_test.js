@@ -34,3 +34,10 @@ test('applying null values', function() {
     Ember.mixin({}, null);
   }, Error);
 });
+
+test('applying a property with an undefined value', function() {
+  var obj = { tagName: '' };
+  Ember.mixin(obj, { tagName: undefined });
+
+  strictEqual(Ember.get(obj, 'tagName'), '');
+});
