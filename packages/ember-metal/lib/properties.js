@@ -179,7 +179,7 @@ rawSet = function(obj, keyName, value, values) {
 };
 
 // if there are no getters, keep the raw property up to date
-if (!Ember.platform.hasPropertyAccessors) {
+if (!hasGetters) {
   rawSet = function(obj, keyName, value, values) {
     obj[keyName] = value;
     values[keyName] = value;
