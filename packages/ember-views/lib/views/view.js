@@ -1728,7 +1728,6 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     // the DOM again.
     if (parent) { parent.removeChild(this); }
 
-    // this.state = 'destroyed';
     this.get('renderStates').goToState('destroyed');
 
     childLen = get(childViews, 'length');
