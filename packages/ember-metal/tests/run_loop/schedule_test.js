@@ -36,3 +36,27 @@ test('nested runs should queue each phase independently', function() {
   equal(cnt, 2, 'should flush actions now');
 
 });
+
+test('prior queues should be flushed before moving on to next queue', function() {
+  var order = [];
+
+  Ember.run(function() {
+    Ember.run.schedule('sync', function() {
+      order.push('sync');
+    });
+    Ember.run.schedule('actions', function() {
+      order.push('actions');
+      Ember.run.schedule('actions', function() {
+        order.push('actions');
+      });
+      Ember.run.schedule('sync', function() {
+        order.push('sync');
+      });
+    });
+    Ember.run.schedule('timers', function() {
+      order.push('timers');
+    });
+  });
+
+  deepEqual(order, ['sync', 'actions', 'sync', 'actions', 'timers']);
+});
