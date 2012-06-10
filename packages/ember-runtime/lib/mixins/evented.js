@@ -22,5 +22,9 @@ Ember.Evented = Ember.Mixin.create({
 
   off: function(name, target, method) {
     Ember.removeListener(this, name, target, method);
+  },
+
+  has: function(name) {
+    return Ember.hasListeners(this, name);
   }
 });
