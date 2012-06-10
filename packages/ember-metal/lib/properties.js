@@ -98,7 +98,8 @@ var extractValue = function(obj, keyName, watching) {
 Ember.defineProperty = function(obj, keyName, desc, val) {
   var meta = obj[META_KEY] || EMPTY_META,
       descs = meta && meta.descs,
-      watching = meta.watching[keyName],
+      native = keyName in {},
+      watching = !native && meta.watching[keyName],
       descriptor = desc instanceof Ember.Descriptor;
 
   var existingDesc = hasDesc(descs, keyName);
@@ -123,7 +124,7 @@ Ember.defineProperty = function(obj, keyName, desc, val) {
     desc.setup(obj, keyName, val);
 
   } else {
-    if (descs[keyName]) { metaFor(obj).descs[keyName] = null; }
+    if (!native && descs[keyName]) { metaFor(obj).descs[keyName] = null; }
 
     if (desc == null) {
       if (existingDesc) {
