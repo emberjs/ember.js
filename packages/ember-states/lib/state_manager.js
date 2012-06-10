@@ -500,7 +500,7 @@ Ember.StateManager = Ember.State.extend(
     var r = route.split('.'),
         ret = [];
 
-    for (var i=0, len = r.length; i < len; i += 1) {
+    for (var i=0, len = r.length; i < len; i++) {
       var states = get(state, 'states');
 
       if (!states) { return undefined; }
@@ -520,7 +520,7 @@ Ember.StateManager = Ember.State.extend(
   },
 
   pathForSegments: function(array) {
-    return Ember.ArrayUtils.map(array, function(tuple) {
+    return Ember.arrayMap(array, function(tuple) {
       Ember.assert("A segment passed to transitionTo must be an Array", Ember.typeOf(tuple) === "array");
       return tuple[0];
     }).join(".");
@@ -537,7 +537,7 @@ Ember.StateManager = Ember.State.extend(
     var segments;
 
     if (Ember.typeOf(name) === "array") {
-      segments = Array.prototype.slice.call(arguments);
+      segments = [].slice.call(arguments);
     } else {
       segments = [[name, context]];
     }
