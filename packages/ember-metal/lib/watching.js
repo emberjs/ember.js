@@ -453,6 +453,7 @@ var switchToUnwatched = function(obj, keyName, meta) {
     var desc = {
       configurable: true,
       enumerable: true,
+      writable: true,
       value: value
     };
 
