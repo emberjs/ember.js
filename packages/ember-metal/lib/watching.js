@@ -437,7 +437,7 @@ var switchToWatched = function(obj, keyName, meta) {
       enumerable: true,
       set: mandatorySetter,
       get: function(key) {
-        return meta.values[keyName];
+        return metaFor(this).values[keyName];
       }
     };
 
