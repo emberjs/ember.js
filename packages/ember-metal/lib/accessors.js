@@ -26,7 +26,7 @@ var meta = Ember.meta;
 var get, set;
 
 /** @private */
-var basicGet = function get(obj, keyName) {
+var basicGet = function(obj, keyName) {
   var meta = obj[META_KEY],
       watching = meta && meta.watching[keyName],
       ret;
@@ -59,7 +59,7 @@ if (!Ember.platform.hasPropertyAccessors) {
 }
 
 /** @private */
-var basicSet = function set(obj, keyName, value) {
+var basicSet = function(obj, keyName, value) {
   var isObject = 'object' === typeof obj;
   var hasProp = isObject && !(keyName in obj);
   var changed;
