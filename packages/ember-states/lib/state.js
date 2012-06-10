@@ -161,16 +161,18 @@ Ember.State = Ember.Object.extend(Ember.Evented,
 
 var Event = Ember.$ && Ember.$.Event;
 
-Ember.State.transitionTo = function(target) {
-  var event = function(router, context) {
-    if (Event && context instanceof Event) {
-      context = context.context;
-    }
+Ember.State.reopenClass({
+  transitionTo: function(target) {
+    var event = function(router, context) {
+      if (Event && context instanceof Event) {
+        context = context.context;
+      }
 
-    router.transitionTo(target, context);
-  };
+      router.transitionTo(target, context);
+    };
 
-  event.transitionTarget = target;
+    event.transitionTarget = target;
 
-  return event;
-};
+    return event;
+  }
+});
