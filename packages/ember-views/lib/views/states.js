@@ -16,12 +16,15 @@ var get = Ember.get, set = Ember.set, getPath = Ember.getPath, fmt = Ember.Strin
 /** @private */
 Ember.View.RenderStateManager = Ember.StateManager.extend({
   initialState: '_default.preRender',
-  '_default': Ember.View.states.DefaultState.create({
-    preRender: Ember.View.states.PreRenderState.create(),
-    hasElement: Ember.View.states.HasElementState.create({
-      inDOM: Ember.View.states.InDomState.create()
-    }),
-    inBuffer: Ember.View.states.InBufferState.create(),
-    destroyed: Ember.View.states.DestroyedState.create()
-  })
+
+  states: {
+    '_default': Ember.View.states.DefaultState.create({
+      preRender: Ember.View.states.PreRenderState.create(),
+      hasElement: Ember.View.states.HasElementState.create({
+        inDOM: Ember.View.states.InDomState.create()
+      }),
+      inBuffer: Ember.View.states.InBufferState.create(),
+      destroyed: Ember.View.states.DestroyedState.create()
+    })
+  }
 });

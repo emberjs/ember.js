@@ -52,7 +52,7 @@ var childViewsProperty = Ember.computed(function() {
   The views in a container's `childViews` array should be added and removed by manipulating
   the `childViews` property directly.
 
-  To remove a view pass that view into a `removeObject` call on the container's `childViews` property. 
+  To remove a view pass that view into a `removeObject` call on the container's `childViews` property.
 
   Given an empty `<body>` the following code
 
@@ -89,7 +89,7 @@ var childViewsProperty = Ember.computed(function() {
         </div>
 
 
-  Similarly, adding a child view is accomplished by adding `Ember.View` instances to the 
+  Similarly, adding a child view is accomplished by adding `Ember.View` instances to the
   container's `childViews` property.
 
   Given an empty `<body>` the following code
@@ -133,7 +133,7 @@ var childViewsProperty = Ember.computed(function() {
         </div>
 
 
-  Direct manipulation of childViews presence or absence in the DOM via calls to 
+  Direct manipulation of childViews presence or absence in the DOM via calls to
   `remove` or `removeFromParent` or calls to a container's `removeChild` may not behave
   correctly.
 
@@ -177,7 +177,7 @@ var childViewsProperty = Ember.computed(function() {
 
   ## Templates and Layout
   A `template`, `templateName`, `defaultTemplate`, `layout`, `layoutName` or `defaultLayout`
-  property on a container view will not result in the template or layout being rendered. 
+  property on a container view will not result in the template or layout being rendered.
   The HTML contents of a `Ember.ContainerView`'s DOM representation will only be the rendered HTML
   of its child views.
 
@@ -364,7 +364,7 @@ Ember.ContainerView = Ember.View.extend({
       childViews.pushObject(currentView);
     }
   }, 'currentView'),
-  
+
   renderStates: Ember.computed(function(){
     return Ember.ContainerView.RenderStateManager.create({
       view: this
@@ -376,74 +376,77 @@ Ember.ContainerView = Ember.View.extend({
 // Ember.ContainerView extends the default view states to provide different
 // behavior for childViewsWillChange and childViewsDidChange.
 /** @private */
-Ember.ContainerView.RenderStateManager = Ember.View.RenderStateManager.extend({  
+Ember.ContainerView.RenderStateManager = Ember.View.RenderStateManager.extend({
   initialState: '_default.preRender',
-  '_default': Ember.View.states.DefaultState.create({
-    preRender: Ember.View.states.PreRenderState.create(),
-    destroyed: Ember.View.states.DestroyedState.create(),
-    
-    hasElement: Ember.View.states.HasElementState.create({
-      inDOM: Ember.View.states.InDomState.create(),
-      childViewsWillChange: function(manager, options) {
-        var view = get(manager, 'view'),
-            views = options.views,
-            start = options.start,
-            removed = options.removed;
-            
-        for (var i=start; i<start+removed; i++) {
-          views[i].remove();
-        }
-      },
-    
-      childViewsDidChange: function(manager, options) {
-        var view = get(manager, 'view'),
-            views = options.views,
-            start = options.start,
-            added = options.added;
-            
-        // If the DOM element for this container view already exists,
-        // schedule each child view to insert its DOM representation after
-        // bindings have finished syncing.
-        var insertedview;
-        var prev = start === 0 ? null : views[start-1];
 
-        for (var i=start; i<start+added; i++) {
-          insertedview = views[i];
-          view._scheduleInsertion(insertedview, prev);
-          prev = insertedview;
-        }
-      }
-    }),
-    inBuffer: Ember.View.states.InBufferState.create({
-      childViewsDidChange: function(manager, views, start, added) {
-        var parentView = get(manager, 'view'),
-            buffer = parentView.buffer,
-            startWith, prev, prevBuffer, view;
+  states: {
+    '_default': Ember.View.states.DefaultState.create({
+      preRender: Ember.View.states.PreRenderState.create(),
+      destroyed: Ember.View.states.DestroyedState.create(),
 
-        // Determine where to begin inserting the child view(s) in the
-        // render buffer.
-        if (start === 0) {
-          // If views were inserted at the beginning, prepend the first
-          // view to the render buffer, then begin inserting any
-          // additional views at the beginning.
-          view = views[start];
-          startWith = start + 1;
-          view.renderToBuffer(buffer, 'prepend');
-        } else {
-          // Otherwise, just insert them at the same place as the child
-          // views mutation.
-          view = views[start - 1];
-          startWith = start;
-        }
+      hasElement: Ember.View.states.HasElementState.create({
+        inDOM: Ember.View.states.InDomState.create(),
+        childViewsWillChange: function(manager, options) {
+          var view = get(manager, 'view'),
+              views = options.views,
+              start = options.start,
+              removed = options.removed;
 
-        for (var i=startWith; i<start+added; i++) {
-          prev = view;
-          view = views[i];
-          prevBuffer = prev.buffer;
-          view.renderToBuffer(prevBuffer, 'insertAfter');
+          for (var i=start; i<start+removed; i++) {
+            views[i].remove();
+          }
+        },
+
+        childViewsDidChange: function(manager, options) {
+          var view = get(manager, 'view'),
+              views = options.views,
+              start = options.start,
+              added = options.added;
+
+          // If the DOM element for this container view already exists,
+          // schedule each child view to insert its DOM representation after
+          // bindings have finished syncing.
+          var insertedview;
+          var prev = start === 0 ? null : views[start-1];
+
+          for (var i=start; i<start+added; i++) {
+            insertedview = views[i];
+            view._scheduleInsertion(insertedview, prev);
+            prev = insertedview;
+          }
         }
-      }
+      }),
+      inBuffer: Ember.View.states.InBufferState.create({
+        childViewsDidChange: function(manager, views, start, added) {
+          var parentView = get(manager, 'view'),
+              buffer = parentView.buffer,
+              startWith, prev, prevBuffer, view;
+
+          // Determine where to begin inserting the child view(s) in the
+          // render buffer.
+          if (start === 0) {
+            // If views were inserted at the beginning, prepend the first
+            // view to the render buffer, then begin inserting any
+            // additional views at the beginning.
+            view = views[start];
+            startWith = start + 1;
+            view.renderToBuffer(buffer, 'prepend');
+          } else {
+            // Otherwise, just insert them at the same place as the child
+            // views mutation.
+            view = views[start - 1];
+            startWith = start;
+          }
+
+          for (var i=startWith; i<start+added; i++) {
+            prev = view;
+            view = views[i];
+            prevBuffer = prev.buffer;
+            view.renderToBuffer(prevBuffer, 'insertAfter');
+          }
+        }
+      })
     })
-  })
+  }
 });
 

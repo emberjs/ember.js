@@ -95,12 +95,12 @@ Ember.State = Ember.Object.extend(Ember.Evented,
   setupChild: function(states, name, value) {
     if (!value) { return false; }
 
-    if (Ember.State.detect(value)) {
+    if (value.isState) {
+      set(value, 'name', name);
+    } else if (Ember.State.detect(value)) {
       value = value.create({
         name: name
       });
-    } else if (value.isState) {
-      set(value, 'name', name);
     }
 
     if (value.isState) {
