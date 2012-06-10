@@ -105,7 +105,7 @@ Ember.EachProxy = Ember.Object.extend({
   unknownProperty: function(keyName, value) {
     var ret;
     ret = new EachArray(this._content, keyName, this);
-    new Ember.Descriptor().setup(this, keyName, ret);
+    Ember.defineProperty(this, keyName, null, ret);
     this.beginObservingContentKey(keyName);
     return ret;
   },
