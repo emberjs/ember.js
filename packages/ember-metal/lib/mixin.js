@@ -117,6 +117,7 @@ function mergeMixins(mixins, m, descs, values, base) {
             value = baseValue ? baseValue.concat(value) : Ember.makeArray(value);
           }
 
+          descs[key] = undefined;
           values[key] = value;
         }
       }
