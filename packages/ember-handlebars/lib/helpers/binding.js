@@ -158,7 +158,7 @@ EmberHandlebars.registerHelper('boundIf', function(property, fn) {
 */
 EmberHandlebars.registerHelper('with', function(context, options) {
   if (arguments.length === 4) {
-    var keywordName, path;
+    var keywordName, path, rootPath, normalized;
 
     Ember.assert("If you pass more than one argument to the with helper, it must be in the form #with foo as bar", arguments[1] === "as");
     options = arguments[3];
@@ -170,10 +170,14 @@ EmberHandlebars.registerHelper('with', function(context, options) {
     if (Ember.isGlobal(path)) {
       Ember.bind(options.data.keywords, keywordName, path);
     } else {
+      normalized = normalizePath(this, path, options.data);
+      path = normalized.path;
+      rootPath = normalized.root;
+
       // This is a workaround for the fact that you cannot bind separate objects
       // together. When we implement that functionality, we should use it here.
-      var contextKey = Ember.$.expando + Ember.guidFor(this);
-      options.data.keywords[contextKey] = this;
+      var contextKey = Ember.$.expando + Ember.guidFor(rootPath);
+      options.data.keywords[contextKey] = rootPath;
 
       // if the path is '' ("this"), just bind directly to the current context
       var contextPath = path ? contextKey + '.' + path : contextKey;
