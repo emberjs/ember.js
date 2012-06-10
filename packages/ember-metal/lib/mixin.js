@@ -226,7 +226,7 @@ function applyMixin(obj, mixins, partial) {
     } else {
       while (desc && desc instanceof Alias) {
         var altKey = desc.methodName;
-        if (descs[altKey]) {
+        if (descs[altKey] || values[altKey]) {
           value = values[altKey];
           desc  = descs[altKey];
         } else if (m.descs[altKey]) {
