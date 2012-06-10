@@ -1728,7 +1728,7 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     // the DOM again.
     if (parent) { parent.removeChild(this); }
 
-    this.get('renderStates').goToState('destroyed');
+    this.get('renderStates').transitionTo('destroyed');
 
     childLen = get(childViews, 'length');
     for (var i=childLen-1; i>=0; i--) {
@@ -1842,8 +1842,8 @@ Ember.View = Ember.Object.extend(Ember.Evented,
   },
   
   transitionTo: function(state, children){
-    var states = this.get('renderStates');
-    states.goToState(state);
+    this.get('renderStates').transitionTo(state);
+
     if (children !== false) {
       this.forEachChildView(function(view) {
         view.transitionTo(state);
