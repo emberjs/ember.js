@@ -137,6 +137,7 @@ ComputedProperty.prototype = new Ember.Descriptor();
 var CP_DESC = {
   configurable: true,
   enumerable:   true,
+  writable:     true,
   get: function() { return undefined; }, // for when use_accessors is false.
   set: Ember.Descriptor.MUST_USE_SETTER  // for when use_accessors is false
 };
