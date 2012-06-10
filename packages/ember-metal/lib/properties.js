@@ -132,9 +132,11 @@ Ember.defineProperty = function(obj, keyName, desc, val) {
           enumerable: true,
           configurable: true,
           writable: true,
-          value: val
+          value: undefined
         });
-      } else if (watching) {
+      }
+
+      if (watching) {
         Ember.watchedSet(obj, keyName, val);
       } else {
         obj[keyName] = val;

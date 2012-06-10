@@ -8,7 +8,10 @@ require('ember-metal/core');
 require('ember-metal/platform');
 require('ember-metal/utils');
 
-var USE_ACCESSORS = Ember.platform.hasPropertyAccessors && Ember.ENV.USE_ACCESSORS;
+var USE_ACCESSORS = Ember.platform.hasPropertyAccessors && Ember.ENV.USE_ACCESSORS,
+    metaFor = Ember.meta,
+    META_KEY = Ember.META_KEY;
+
 Ember.USE_ACCESSORS = !!USE_ACCESSORS;
 
 var meta = Ember.meta;
@@ -24,7 +27,16 @@ var get, set;
 
 /** @private */
 var basicGet = function get(obj, keyName) {
-  var ret = obj[keyName];
+  var meta = obj[META_KEY],
+      watching = meta && meta.watching[keyName],
+      ret;
+
+  if (watching) {
+    ret = meta.values[keyName];
+  } else {
+    ret = obj[keyName];
+  }
+
   if (ret !== undefined) { return ret; }
 
   // if the property's value is undefined and the object defines
@@ -45,8 +57,6 @@ if (!Ember.platform.hasPropertyAccessors) {
     meta(obj).values[keyName] = value;
   };
 }
-
-var META_KEY = Ember.META_KEY;
 
 /** @private */
 var basicSet = function set(obj, keyName, value) {
