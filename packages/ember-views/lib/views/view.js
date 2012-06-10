@@ -41,14 +41,6 @@ Ember.warn("The way that the {{view}} helper affects templates is about to chang
 */
 Ember.TEMPLATES = {};
 
-var invokeForState = {
-  preRender: {},
-  inBuffer: {},
-  hasElement: {},
-  inDOM: {},
-  destroyed: {}
-};
-
 /**
   @class
 
@@ -821,41 +813,10 @@ Ember.View = Ember.Object.extend(Ember.Evented,
       if (output !== undefined) { buffer.push(output); }
     }
   },
-
-  invokeForState: function(name) {
-    var stateName = this.state, args, fn;
-
-    // try to find the function for the state in the cache
-    if (fn = invokeForState[stateName][name]) {
-      args = a_slice.call(arguments);
-      args[0] = this;
-
-      return fn.apply(this, args);
-    }
-
-    // otherwise, find and cache the function for this state
-    var parent = this, states = parent.states, state;
-
-    while (states) {
-      state = states[stateName];
-
-      while (state) {
-        fn = state[name];
-
-        if (fn) {
-          invokeForState[stateName][name] = fn;
-
-          args = a_slice.call(arguments, 1);
-          args.unshift(this);
-
-          return fn.apply(this, args);
-        }
-
-        state = state.parentState;
-      }
-
-      states = states.parent;
-    }
+  
+  invokeForState: function(methodName, options) {
+    var states = this.get('renderStates');
+    return states.send(methodName, options);
   },
 
   /**
@@ -1630,8 +1591,6 @@ Ember.View = Ember.Object.extend(Ember.Evented,
   */
   attributeBindings: [],
 
-  state: 'preRender',
-
   // .......................................................
   // CORE DISPLAY METHODS
   //
@@ -1671,8 +1630,14 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     }
   },
 
+  renderStates: Ember.computed(function(){
+    return Ember.View.RenderStateManager.create({
+      view: this
+    });
+  }).property().cacheable(),
+  
   appendChild: function(view, options) {
-    return this.invokeForState('appendChild', view, options);
+    return this.invokeForState('appendChild', {childView: view, options: options});
   },
 
   /**
@@ -1763,7 +1728,8 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     // the DOM again.
     if (parent) { parent.removeChild(this); }
 
-    this.state = 'destroyed';
+    // this.state = 'destroyed';
+    this.get('renderStates').goToState('destroyed');
 
     childLen = get(childViews, 'length');
     for (var i=childLen-1; i>=0; i--) {
@@ -1875,10 +1841,10 @@ Ember.View = Ember.Object.extend(Ember.Evented,
       this.buffer = null;
     });
   },
-
-  transitionTo: function(state, children) {
-    this.state = state;
-
+  
+  transitionTo: function(state, children){
+    var states = this.get('renderStates');
+    states.goToState(state);
     if (children !== false) {
       this.forEachChildView(function(view) {
         view.transitionTo(state);
@@ -1909,7 +1875,7 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     Handle events from `Ember.EventDispatcher`
   */
   handleEvent: function(eventName, evt) {
-    return this.invokeForState('handleEvent', eventName, evt);
+    return this.invokeForState('handleEvent', {eventName: eventName, event: evt});
   }
 
 });

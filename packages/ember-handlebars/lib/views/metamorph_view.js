@@ -42,7 +42,7 @@ var DOMManager = {
       view.invalidateRecursively('element');
       view._notifyWillInsertElement();
       morph.replaceWith(buffer.string());
-      view.transitionTo('inDOM');
+      view.transitionTo('hasElement.inDOM');
       view._notifyDidInsertElement();
     });
   },
