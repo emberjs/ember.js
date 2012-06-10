@@ -102,7 +102,7 @@ Ember.Select = Ember.View.extend(
   */
   optionValuePath: 'content',
 
-  change: function() {
+  _change: function() {
     if (get(this, 'multiple')) {
       this._changeMultiple();
     } else {
@@ -146,7 +146,7 @@ Ember.Select = Ember.View.extend(
 
     if (selection) { this.selectionDidChange(); }
 
-    this.change();
+    this._change();
   },
 
   _changeSingle: function() {
@@ -207,8 +207,8 @@ Ember.Select = Ember.View.extend(
   init: function() {
     this._super();
     this.on("didInsertElement", this, this._triggerChange);
+    this.on("change", this, this._change);
   }
-
 });
 
 Ember.SelectOption = Ember.View.extend({

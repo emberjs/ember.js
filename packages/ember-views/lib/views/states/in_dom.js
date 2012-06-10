@@ -43,7 +43,7 @@ Ember.View.states.HasElementState = Ember.State.extend({
   // deferred to allow bindings to synchronize.
   rerender: function(manager) {
     var view = get(manager, 'view');
-    
+
     view._notifyWillRerender();
 
     view.clearRenderedChildren();
@@ -58,7 +58,7 @@ Ember.View.states.HasElementState = Ember.State.extend({
 
   destroyElement: function(manager) {
     var view = get(manager, 'view');
-    
+
     view._notifyWillDestroyElement();
     view.domManager.remove(view);
     return view;
@@ -66,7 +66,7 @@ Ember.View.states.HasElementState = Ember.State.extend({
 
   empty: function(manager) {
     var view = get(manager, 'view');
-    
+
     var _childViews = get(view, '_childViews'), len, idx;
     if (_childViews) {
       len = get(_childViews, 'length');
@@ -82,10 +82,9 @@ Ember.View.states.HasElementState = Ember.State.extend({
     var view = get(manager, 'view'),
         eventName = options.eventName,
         evt = options.event;
-    
-    var handler = view[eventName];
-    if (Ember.typeOf(handler) === 'function') {
-      return handler.call(view, evt);
+
+    if (view.has(eventName)) {
+      return view.fire(eventName, evt);
     } else {
       return true; // continue event propagation
     }
@@ -95,7 +94,7 @@ Ember.View.states.HasElementState = Ember.State.extend({
 Ember.View.states.InDomState = Ember.State.extend({
   insertElement: function(manager, fn) {
     var view = get(manager, 'view');
-    
+
     if (view._lastInsert !== Ember.guidFor(fn)){
       return;
     }
