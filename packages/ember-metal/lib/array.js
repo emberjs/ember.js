@@ -75,23 +75,20 @@ var arrayIndexOf = Ember.arrayIndexOf = isNativeFunc(Array.prototype.indexOf) ? 
 var slice = [].slice;
 
 Ember.ArrayUtils = {
-  map: function(obj) {
-    var args = slice.call(arguments, 1);
-    return obj.map ? obj.map.apply(obj, args) : arrayMap.apply(obj, args);
+  map: function(obj, callback, thisArg) {
+    return obj.map ? obj.map.call(obj, callback, thisArg) : arrayMap.call(obj, callback, thisArg);
   },
 
-  forEach: function(obj) {
-    var args = slice.call(arguments, 1);
-    return obj.forEach ? obj.forEach.apply(obj, args) : arrayForEach.apply(obj, args);
+  forEach: function(obj, callback, thisArg) {
+    return obj.forEach ? obj.forEach.call(obj, callback, thisArg) : arrayForEach.call(obj, callback, thisArg);
   },
 
   indexOf: function(obj, element, index) {
     return obj.indexOf ? obj.indexOf.call(obj, element, index) : arrayIndexOf.call(obj, element, index);
   },
 
-  indexesOf: function(obj) {
-    var args = slice.call(arguments, 1);
-    return args[0] === undefined ? [] : Ember.ArrayUtils.map(args[0], function(item) {
+  indexesOf: function(obj, element) {
+    return element === undefined ? [] : Ember.ArrayUtils.map(element, function(item) {
       return Ember.ArrayUtils.indexOf(obj, item);
     });
   },
