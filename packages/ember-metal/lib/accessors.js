@@ -40,7 +40,7 @@ var watchedSet = function(obj, keyName, value) {
 
 // if there are no getters, keep the raw property up to date
 if (!Ember.platform.hasPropertyAccessors) {
-  watchedSet = function(obj, keyName, value, values) {
+  watchedSet = function(obj, keyName, value) {
     obj[keyName] = value;
     meta(obj).values[keyName] = value;
   };
@@ -73,6 +73,8 @@ var basicSet = function set(obj, keyName, value) {
     obj[keyName] = value;
   }
 };
+
+Ember.watchedSet = watchedSet;
 
 /** @private */
 get = function(obj, keyName) {

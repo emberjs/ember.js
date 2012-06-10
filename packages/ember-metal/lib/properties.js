@@ -133,6 +133,8 @@ Ember.defineProperty = function(obj, keyName, desc, val) {
           writable: true,
           value: val
         });
+      } else if (watching) {
+        Ember.watchedSet(obj, keyName, val);
       } else {
         obj[keyName] = val;
       }
