@@ -239,6 +239,7 @@ function applyMixin(obj, mixins, partial) {
         }
       }
 
+      if (desc === undefined && value === undefined) { continue; }
       if (willApply) { willApply.call(obj, key); }
 
       // If an observer replaces an existing superclass observer,
