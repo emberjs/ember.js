@@ -1,4 +1,5 @@
 var get = Ember.get, set = Ember.set, getPath = Ember.getPath, fmt = Ember.String.fmt;
+var arrayForEach = Ember.ArrayUtils.forEach;
 
 require('ember-states/state');
 
@@ -422,11 +423,11 @@ Ember.StateManager = Ember.State.extend(
     @default true
   */
   errorOnUnhandledEvent: true,
-
+  
   send: function(event, context) {
     Ember.assert('Cannot send event "' + event + '" while currentState is ' + get(this, 'currentState'), get(this, 'currentState'));
     if (arguments.length === 1) { context = {}; }
-    this.sendRecursively(event, get(this, 'currentState'), context);
+    return this.sendRecursively(event, get(this, 'currentState'), context);
   },
 
   sendRecursively: function(event, currentState, context) {
@@ -441,11 +442,11 @@ Ember.StateManager = Ember.State.extend(
     // case.
     if (typeof action === 'function') {
       if (log) { Ember.Logger.log(fmt("STATEMANAGER: Sending event '%@' to state %@.", [event, get(currentState, 'path')])); }
-      action.call(currentState, this, context);
+      return action.call(currentState, this, context);
     } else {
       var parentState = get(currentState, 'parentState');
       if (parentState) {
-        this.sendRecursively(event, parentState, context);
+        return this.sendRecursively(event, parentState, context);
       } else if (get(this, 'errorOnUnhandledEvent')) {
         throw new Ember.Error(this.toString() + " could not respond to event " + event + " in state " + getPath(this, 'currentState.path') + ".");
       }
@@ -602,7 +603,7 @@ Ember.StateManager = Ember.State.extend(
   triggerSetupContext: function(root, segments) {
     var state = root;
 
-    Ember.ArrayUtils.forEach(segments, function(tuple) {
+    arrayForEach(segments, function(tuple) {
       var path = tuple[0],
           context = tuple[1];
 
@@ -629,11 +630,11 @@ Ember.StateManager = Ember.State.extend(
         stateManager = this;
 
     exitStates = exitStates.slice(0).reverse();
-    exitStates.forEach(function(state) {
+    arrayForEach(exitStates, function(state) {
       state.fire('exit', stateManager);
     });
 
-    enterStates.forEach(function(state) {
+    arrayForEach(enterStates, function(state) {
       if (log) { Ember.Logger.log("STATEMANAGER: Entering " + get(state, 'path')); }
       state.fire('enter', stateManager);
     });

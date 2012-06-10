@@ -23,7 +23,6 @@ var USE_ACCESSORS = Ember.USE_ACCESSORS,
 
 /**
   @private
- EMPTY_META = Ember.EMPTY_META,
   @constructor
 
   Objects of this type can implement an interface to responds requests to
@@ -32,12 +31,6 @@ var USE_ACCESSORS = Ember.USE_ACCESSORS,
   You generally won't need to create or subclass this directly.
 */
 var Descriptor = Ember.Descriptor = function() {};
-
-// ..........................................................
-// SIMPLE AND WATCHED PROPERTIES
-//
-
-/** @private */
 
 // ..........................................................
 // DEFINING PROPERTIES API
