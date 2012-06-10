@@ -520,7 +520,7 @@ Ember.StateManager = Ember.State.extend(
   },
 
   pathForSegments: function(array) {
-    return Ember.arrayMap(array, function(tuple) {
+    return Ember.arrayMap.call(array, function(tuple) {
       Ember.assert("A segment passed to transitionTo must be an Array", Ember.typeOf(tuple) === "array");
       return tuple[0];
     }).join(".");
