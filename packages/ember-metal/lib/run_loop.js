@@ -85,9 +85,9 @@ RunLoop.prototype = {
   },
 
   flush: function(queueName) {
-    var queues = this._queues, queueNames, idx, len, queue, log;
+    var queueNames, idx, len, queue, log;
 
-    if (!queues) { return this; } // nothing to do
+    if (!this._queues) { return this; } // nothing to do
 
     function iter(item) {
       invoke(item.target, item.method, item.args);
@@ -122,33 +122,45 @@ RunLoop.prototype = {
     } else {
       queueNames = Ember.run.queues;
       len = queueNames.length;
-      do {
-        this._queues = null;
-        for (idx=0; idx < len; idx++) {
-          queueName = queueNames[idx];
-          queue = queues[queueName];
+      idx = 0;
 
-          if (queue) {
-            // the sync phase is to allow property changes to propagate.  don't
-            // invoke observers until that is finished.
-            if (queueName === 'sync') {
-              log = Ember.LOG_BINDINGS;
-              if (log) { Ember.Logger.log('Begin: Flush Sync Queue'); }
+      outerloop:
+      while (idx < len) {
+        queueName = queueNames[idx];
+        queue = this._queues && this._queues[queueName];
+        delete this._queues[queueName];
 
-              Ember.beginPropertyChanges();
-              try {
-                forEach.call(queue, iter);
-              } finally {
-                Ember.endPropertyChanges();
-              }
+        if (queue) {
+          // the sync phase is to allow property changes to propagate.  don't
+          // invoke observers until that is finished.
+          if (queueName === 'sync') {
+            log = Ember.LOG_BINDINGS;
+            if (log) { Ember.Logger.log('Begin: Flush Sync Queue'); }
 
-              if (log) { Ember.Logger.log('End: Flush Sync Queue'); }
-            } else {
+            Ember.beginPropertyChanges();
+            try {
               forEach.call(queue, iter);
+            } finally {
+              Ember.endPropertyChanges();
             }
+
+            if (log) { Ember.Logger.log('End: Flush Sync Queue'); }
+          } else {
+            forEach.call(queue, iter);
           }
         }
-      } while (queues = this._queues); // go until queues stay clean
+
+        // Loop through prior queues
+        for (var i = 0; i <= idx; i++) {
+          if (this._queues && this._queues[queueNames[i]]) {
+            // Start over at the first queue with contents
+            idx = i;
+            continue outerloop;
+          }
+        }
+
+        idx++;
+      }
     }
 
     timerMark = null;

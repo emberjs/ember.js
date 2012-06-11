@@ -103,7 +103,7 @@ function mergeMixins(mixins, m, descs, values, base) {
         } else {
           // impl super if needed...
           if (isMethod(value)) {
-            ovalue = descs[key] === Ember.SIMPLE_PROPERTY && values[key];
+            ovalue = descs[key] === undefined && values[key];
             if (!ovalue) { ovalue = base[key]; }
             if ('function' !== typeof ovalue) { ovalue = null; }
             if (ovalue) {
@@ -117,7 +117,7 @@ function mergeMixins(mixins, m, descs, values, base) {
             value = baseValue ? baseValue.concat(value) : Ember.makeArray(value);
           }
 
-          descs[key]  = Ember.SIMPLE_PROPERTY;
+          descs[key] = undefined;
           values[key] = value;
         }
       }
@@ -200,7 +200,7 @@ function applyMixin(obj, mixins, partial) {
   //
   // * Handle concatenated properties
   // * Set up _super wrapping if necessary
-  // * Set up descriptors (simple, watched or computed properties)
+  // * Set up computed property descriptors
   // * Copying `toString` in broken browsers
   mergeMixins(mixins, meta(obj), descs, values, obj);
 
@@ -209,8 +209,8 @@ function applyMixin(obj, mixins, partial) {
     didApply  = values.didApplyProperty || obj.didApplyProperty;
   }
 
-  for(key in descs) {
-    if (!descs.hasOwnProperty(key)) { continue; }
+  for(key in values) {
+    if (!values.hasOwnProperty(key)) { continue; }
 
     desc = descs[key];
     value = values[key];
@@ -225,22 +225,25 @@ function applyMixin(obj, mixins, partial) {
         req[key] = true;
       }
     } else {
-      while (desc instanceof Alias) {
+      while (desc && desc instanceof Alias) {
         var altKey = desc.methodName;
-        if (descs[altKey]) {
+        if (descs[altKey] || values[altKey]) {
           value = values[altKey];
           desc  = descs[altKey];
         } else if (m.descs[altKey]) {
           desc  = m.descs[altKey];
           value = desc.val(obj, altKey);
         } else {
+          desc = undefined;
           value = obj[altKey];
-          desc  = Ember.SIMPLE_PROPERTY;
         }
       }
 
+      if (desc === undefined && value === undefined) { continue; }
       if (willApply) { willApply.call(obj, key); }
 
+      // If an observer replaces an existing superclass observer,
+      // remove the superclass observers.
       var observerPaths = getObserverPaths(value),
           curObserverPaths = observerPaths && getObserverPaths(obj[key]),
           beforeObserverPaths = getBeforeObserverPaths(value),
