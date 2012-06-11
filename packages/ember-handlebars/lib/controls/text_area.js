@@ -12,11 +12,17 @@ var get = Ember.get, set = Ember.set;
 
 /**
   @class
-  
+
+  The `Ember.TextArea` view class renders a
+  [textarea](https://developer.mozilla.org/en/HTML/Element/textarea) element.
+  It allows for binding Ember properties to the text area contents (`value`),
+  live-updating as the user inputs text.
+
   ## Layout and LayoutName properties
+
   Because HTML `textarea` elements do not contain inner HTML the `layout` and `layoutName` 
   properties will not be applied. See `Ember.View`'s layout section for more information.
-  
+
   @extends Ember.TextSupport
 */
 Ember.TextArea = Ember.View.extend(Ember.TextSupport,
