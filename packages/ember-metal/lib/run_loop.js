@@ -15,7 +15,7 @@ require('ember-metal/utils'); // Ember.guidFor
 //
 
 var slice = [].slice,
-    forEach = Ember.arrayForEach;
+    forEach = Ember.ArrayPolyfills.forEach;
 
 // invokes passed params - normalizing so you can pass target/func,
 // target/string or just func

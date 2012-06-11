@@ -21,7 +21,7 @@ var guidFor = Ember.guidFor,
     GUID_KEY = Ember.GUID_KEY,
     META_KEY = Ember.META_KEY,
     notifyObservers = Ember.notifyObservers,
-    forEach = Ember.arrayForEach,
+    forEach = Ember.ArrayPolyfills.forEach,
     FIRST_KEY = /^([^\.\*]+)/,
     IS_PATH = /[\.\*]/;
 

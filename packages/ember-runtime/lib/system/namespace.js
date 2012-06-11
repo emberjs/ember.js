@@ -6,7 +6,7 @@
 
 require('ember-runtime/system/object');
 
-var indexOf = Ember.arrayIndexOf;
+var indexOf = Ember.ArrayPolyfills.indexOf;
 
 /**
   @private

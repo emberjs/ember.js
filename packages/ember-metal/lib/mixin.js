@@ -15,9 +15,9 @@ require('ember-metal/binding');
 
 var Mixin, REQUIRED, Alias,
     classToString, superClassString,
-    a_map = Ember.arrayMap,
-    a_indexOf = Ember.arrayIndexOf,
-    a_forEach = Ember.arrayForEach,
+    a_map = Ember.ArrayPolyfills.map,
+    a_indexOf = Ember.ArrayPolyfills.indexOf,
+    a_forEach = Ember.ArrayPolyfills.forEach,
     a_slice = [].slice,
     EMPTY_META = {}, // dummy for non-writable meta
     META_SKIP = { __emberproto__: true, __ember_count__: true },

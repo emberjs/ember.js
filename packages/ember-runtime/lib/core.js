@@ -15,7 +15,7 @@ var indexOf = Ember.EnumerableUtils.indexOf;
 
 var TYPE_MAP = {};
 var t = "Boolean Number String Function Array Date RegExp Object".split(" ");
-Ember.arrayForEach.call(t, function(name) {
+Ember.ArrayPolyfills.forEach.call(t, function(name) {
   TYPE_MAP[ "[object " + name + "]" ] = name.toLowerCase();
 });
 

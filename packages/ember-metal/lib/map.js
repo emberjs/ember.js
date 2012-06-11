@@ -23,7 +23,7 @@ require('ember-metal/utils');
 
 /** @private */
 var guidFor = Ember.guidFor,
-    indexOf = Ember.arrayIndexOf;
+    indexOf = Ember.ArrayPolyfills.indexOf;
 
 // This class is used internally by Ember.js and Ember Data.
 // Please do not use it at this time. We plan to clean it up

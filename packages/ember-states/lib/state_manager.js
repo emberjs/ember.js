@@ -1,5 +1,5 @@
 var get = Ember.get, set = Ember.set, getPath = Ember.getPath, fmt = Ember.String.fmt;
-var arrayForEach = Ember.arrayForEach;
+var arrayForEach = Ember.ArrayPolyfills.forEach;
 
 require('ember-states/state');
 
@@ -520,7 +520,7 @@ Ember.StateManager = Ember.State.extend(
   },
 
   pathForSegments: function(array) {
-    return Ember.arrayMap.call(array, function(tuple) {
+    return Ember.ArrayPolyfills.map.call(array, function(tuple) {
       Ember.assert("A segment passed to transitionTo must be an Array", Ember.typeOf(tuple) === "array");
       return tuple[0];
     }).join(".");

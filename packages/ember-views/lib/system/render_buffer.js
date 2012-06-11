@@ -6,7 +6,7 @@
 // ==========================================================================
 
 var get = Ember.get, set = Ember.set;
-var indexOf = Ember.arrayIndexOf;
+var indexOf = Ember.ArrayPolyfills.indexOf;
 
 /** @private */
 var ClassSet = function() {
@@ -372,7 +372,7 @@ Ember._RenderBuffer.prototype =
 
     var childBuffers = this.childBuffers;
 
-    Ember.arrayForEach.call(childBuffers, function(buffer) {
+    Ember.ArrayPolyfills.forEach.call(childBuffers, function(buffer) {
       var stringy = typeof buffer === 'string';
       content += (stringy ? buffer : buffer.string());
     });

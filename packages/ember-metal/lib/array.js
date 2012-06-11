@@ -4,7 +4,7 @@
 // as being ok unless both `newcap:false` and not `use strict`.
 // https://github.com/jshint/jshint/issues/392
 
-// Testing this is not ideal, but we want ArrayUtils to use native functions
+// Testing this is not ideal, but we want to use native functions
 // if available, but not to use versions created by libraries like Prototype
 /** @private */
 var isNativeFunc = function(func) {
@@ -14,7 +14,7 @@ var isNativeFunc = function(func) {
 
 // From: https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/array/map
 /** @private */
-var arrayMap = Ember.arrayMap = isNativeFunc(Array.prototype.map) ? Array.prototype.map : function(fun /*, thisp */) {
+var arrayMap = isNativeFunc(Array.prototype.map) ? Array.prototype.map : function(fun /*, thisp */) {
   //"use strict";
 
   if (this === void 0 || this === null) {
@@ -40,7 +40,7 @@ var arrayMap = Ember.arrayMap = isNativeFunc(Array.prototype.map) ? Array.protot
 
 // From: https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/array/foreach
 /** @private */
-var arrayForEach = Ember.arrayForEach = isNativeFunc(Array.prototype.forEach) ? Array.prototype.forEach : function(fun /*, thisp */) {
+var arrayForEach = isNativeFunc(Array.prototype.forEach) ? Array.prototype.forEach : function(fun /*, thisp */) {
   //"use strict";
 
   if (this === void 0 || this === null) {
@@ -62,13 +62,19 @@ var arrayForEach = Ember.arrayForEach = isNativeFunc(Array.prototype.forEach) ? 
 };
 
 /** @private */
-var arrayIndexOf = Ember.arrayIndexOf = isNativeFunc(Array.prototype.indexOf) ? Array.prototype.indexOf : function (obj, fromIndex) {
+var arrayIndexOf = isNativeFunc(Array.prototype.indexOf) ? Array.prototype.indexOf : function (obj, fromIndex) {
   if (fromIndex === null || fromIndex === undefined) { fromIndex = 0; }
   else if (fromIndex < 0) { fromIndex = Math.max(0, this.length + fromIndex); }
   for (var i = fromIndex, j = this.length; i < j; i++) {
     if (this[i] === obj) { return i; }
   }
   return -1;
+};
+
+Ember.ArrayPolyfills = {
+  map: arrayMap,
+  forEach: arrayForEach,
+  indexOf: arrayIndexOf
 };
 
 Ember.EnumerableUtils = {
