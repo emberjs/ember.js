@@ -8,7 +8,7 @@
 /*global Namespace:true DepObj:true*/
 
 var get = Ember.get, set = Ember.set;
-var forEach = Ember.ArrayUtils.forEach;
+var forEach = Ember.EnumerableUtils.forEach;
 
 /*
   NOTE: This test is adapted from the 1.x series of unit tests.  The tests

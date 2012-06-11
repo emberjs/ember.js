@@ -7,7 +7,7 @@
 
 require('ember-runtime/mixins/enumerable');
 
-var forEach = Ember.ArrayUtils.forEach;
+var forEach = Ember.EnumerableUtils.forEach;
 
 /**
   @class

@@ -1,4 +1,4 @@
-var map = Ember.ArrayUtils.map;
+var map = Ember.EnumerableUtils.map;
 
 var dispatcher, select;
 

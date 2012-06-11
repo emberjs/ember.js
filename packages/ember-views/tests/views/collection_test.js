@@ -6,7 +6,7 @@
 // ==========================================================================
 
 var set = Ember.set, get = Ember.get;
-var forEach = Ember.ArrayUtils.forEach;
+var forEach = Ember.EnumerableUtils.forEach;
 var view;
 
 module("Ember.CollectionView", {

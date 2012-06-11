@@ -6,7 +6,7 @@
 /*globals TemplateTests:true MyApp:true App:true */
 
 var getPath = Ember.getPath, setPath = Ember.setPath, get = Ember.get, set = Ember.set;
-var forEach = Ember.ArrayUtils.forEach;
+var forEach = Ember.EnumerableUtils.forEach;
 
 var firstGrandchild = function(view) {
   return get(get(view, 'childViews').objectAt(0), 'childViews').objectAt(0);

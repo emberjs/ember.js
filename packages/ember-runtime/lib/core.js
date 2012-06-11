@@ -7,7 +7,7 @@
 
 require('ember-metal');
 
-var indexOf = Ember.ArrayUtils.indexOf;
+var indexOf = Ember.EnumerableUtils.indexOf;
 
 // ........................................
 // TYPING & ARRAY MESSAGING

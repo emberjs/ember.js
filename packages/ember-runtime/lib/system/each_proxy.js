@@ -10,7 +10,7 @@ require('ember-runtime/mixins/array');
 
 
 var set = Ember.set, get = Ember.get, guidFor = Ember.guidFor;
-var forEach = Ember.ArrayUtils.forEach;
+var forEach = Ember.EnumerableUtils.forEach;
 
 var EachArray = Ember.Object.extend(Ember.Array, {
 

@@ -9,7 +9,7 @@ require("ember-views/system/render_buffer");
 var get = Ember.get, set = Ember.set, addObserver = Ember.addObserver;
 var getPath = Ember.getPath, meta = Ember.meta, fmt = Ember.String.fmt;
 var a_slice = [].slice;
-var a_forEach = Ember.ArrayUtils.forEach;
+var a_forEach = Ember.EnumerableUtils.forEach;
 
 var childViewsProperty = Ember.computed(function() {
   var childViews = get(this, '_childViews');
@@ -1657,7 +1657,7 @@ Ember.View = Ember.Object.extend(Ember.Evented,
 
     // remove view from childViews array.
     var childViews = get(this, '_childViews');
-    Ember.ArrayUtils.removeObject(childViews, view);
+    Ember.EnumerableUtils.removeObject(childViews, view);
 
     this.propertyDidChange('childViews');
 

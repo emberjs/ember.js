@@ -71,7 +71,7 @@ var arrayIndexOf = Ember.arrayIndexOf = isNativeFunc(Array.prototype.indexOf) ? 
   return -1;
 };
 
-Ember.ArrayUtils = {
+Ember.EnumerableUtils = {
   map: function(obj, callback, thisArg) {
     return obj.map ? obj.map.call(obj, callback, thisArg) : arrayMap.call(obj, callback, thisArg);
   },
@@ -85,8 +85,8 @@ Ember.ArrayUtils = {
   },
 
   indexesOf: function(obj, elements) {
-    return elements === undefined ? [] : Ember.ArrayUtils.map(elements, function(item) {
-      return Ember.ArrayUtils.indexOf(obj, item);
+    return elements === undefined ? [] : Ember.EnumerableUtils.map(elements, function(item) {
+      return Ember.EnumerableUtils.indexOf(obj, item);
     });
   },
 

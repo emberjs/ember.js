@@ -6,7 +6,7 @@
 
 require('ember-runtime/~tests/suites/enumerable');
 
-var indexOf = Ember.ArrayUtils.indexOf;
+var indexOf = Ember.EnumerableUtils.indexOf;
 
 /*
   Implement a basic fake enumerable.  This validates that any non-native
