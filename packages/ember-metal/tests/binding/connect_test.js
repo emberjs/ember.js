@@ -38,8 +38,6 @@ function performTest(binding, a, b, get, set, connect) {
   equal(get(b, 'bar'), 'BARF', 'a should have changed');
 }
 
-module("Ember.Binding");
-
 testBoth('Connecting a binding between two properties', function(get, set) {
   var a = { foo: 'FOO', bar: 'BAR' };
   
@@ -69,7 +67,7 @@ testBoth('Connecting a binding between two objects through property defined afte
   performTest(binding, a, b, get, set, function () {
     binding.connect(a);
 
-    Ember.defineProperty(a, 'b', undefined, b);
+    Ember.defineProperty(a, 'b', Ember.SIMPLE_PROPERTY, b);
   });
 });
 

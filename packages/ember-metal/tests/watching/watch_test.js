@@ -95,7 +95,7 @@ test("watching a chain then defining the property", function () {
   var foo = {bar: 'bar'};
   Ember.watch(obj, 'foo.bar');
 
-  Ember.defineProperty(obj, 'foo', undefined, foo);
+  Ember.defineProperty(obj, 'foo', Ember.SIMPLE_PROPERTY, foo);
   Ember.set(foo, 'bar', 'baz');
 
   deepEqual(willKeys, ['bar', 'foo.bar'], 'should have invoked willChange with bar, foo.bar');
@@ -110,7 +110,7 @@ test("watching a chain then defining the nested property", function () {
   var baz = {baz: 'baz'};
   Ember.watch(obj, 'foo.bar.baz');
 
-  Ember.defineProperty(bar, 'bar', undefined, baz);
+  Ember.defineProperty(bar, 'bar', Ember.SIMPLE_PROPERTY, baz);
   Ember.set(baz, 'baz', 'BOO');
 
   deepEqual(willKeys, ['baz', 'foo.bar.baz'], 'should have invoked willChange with bar, foo.bar');

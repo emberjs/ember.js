@@ -8,10 +8,7 @@ require('ember-metal/core');
 require('ember-metal/platform');
 require('ember-metal/utils');
 
-var USE_ACCESSORS = Ember.platform.hasPropertyAccessors && Ember.ENV.USE_ACCESSORS,
-    metaFor = Ember.meta,
-    META_KEY = Ember.META_KEY;
-
+var USE_ACCESSORS = Ember.platform.hasPropertyAccessors && Ember.ENV.USE_ACCESSORS;
 Ember.USE_ACCESSORS = !!USE_ACCESSORS;
 
 var meta = Ember.meta;
@@ -26,17 +23,8 @@ var meta = Ember.meta;
 var get, set;
 
 /** @private */
-var basicGet = function(obj, keyName) {
-  var meta = obj[META_KEY],
-      watching = meta && meta.watching[keyName],
-      ret;
-
-  if (watching) {
-    ret = meta.values[keyName];
-  } else {
-    ret = obj[keyName];
-  }
-
+var basicGet = function get(obj, keyName) {
+  var ret = obj[keyName];
   if (ret !== undefined) { return ret; }
 
   // if the property's value is undefined and the object defines
@@ -46,45 +34,22 @@ var basicGet = function(obj, keyName) {
   }
 };
 
-var watchedSet = function(obj, keyName, value) {
-  meta(obj).values[keyName] = value;
-};
-
-// if there are no getters, keep the raw property up to date
-if (!Ember.platform.hasPropertyAccessors) {
-  watchedSet = function(obj, keyName, value) {
-    obj[keyName] = value;
-    meta(obj).values[keyName] = value;
-  };
-}
-
 /** @private */
-var basicSet = function(obj, keyName, value) {
+var basicSet = function set(obj, keyName, value) {
   var isObject = 'object' === typeof obj;
   var hasProp = isObject && !(keyName in obj);
-  var changed;
 
   // setUnknownProperty is called if `obj` is an object,
   // the property does not already exist, and the
   // `setUnknownProperty` method exists on the object
-  var unknownProp = hasProp && 'function' === typeof obj.setUnknownProperty,
-      meta = obj[META_KEY];
+  var unknownProp = hasProp && 'function' === typeof obj.setUnknownProperty;
 
   if (unknownProp) {
     obj.setUnknownProperty(keyName, value);
-  } else if (meta && meta.watching[keyName]) {
-    // only trigger a change if the value has changed
-    if (value !== obj[keyName]) {
-      Ember.propertyWillChange(obj, keyName);
-      watchedSet(obj, keyName, value);
-      Ember.propertyDidChange(obj, keyName);
-    }
   } else {
     obj[keyName] = value;
   }
 };
-
-Ember.watchedSet = watchedSet;
 
 /** @private */
 get = function(obj, keyName) {

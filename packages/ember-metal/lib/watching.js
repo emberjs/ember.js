@@ -13,10 +13,11 @@ require('ember-metal/observer');
 require('ember-metal/array');
 
 var guidFor = Ember.guidFor,
-    metaFor = Ember.meta,
+    meta = Ember.meta,
     get = Ember.get,
     set = Ember.set,
     normalizeTuple = Ember.normalizeTuple.primitive,
+    SIMPLE_PROPERTY = Ember.SIMPLE_PROPERTY,
     GUID_KEY = Ember.GUID_KEY,
     META_KEY = Ember.META_KEY,
     notifyObservers = Ember.notifyObservers,
@@ -91,7 +92,7 @@ function dependentKeysDidChange(obj, depKey, meta) {
 /** @private */
 function addChainWatcher(obj, keyName, node) {
   if (!obj || ('object' !== typeof obj)) return; // nothing to do
-  var m = metaFor(obj);
+  var m = meta(obj);
   var nodes = m.chainWatchers;
   if (!nodes || nodes.__emberproto__ !== obj) {
     nodes = m.chainWatchers = { __emberproto__: obj };
@@ -105,7 +106,7 @@ function addChainWatcher(obj, keyName, node) {
 /** @private */
 function removeChainWatcher(obj, keyName, node) {
   if (!obj || 'object' !== typeof obj) { return; } // nothing to do
-  var m = metaFor(obj, false),
+  var m = meta(obj, false),
       nodes = m.chainWatchers;
   if (!nodes || nodes.__emberproto__ !== obj) { return; } //nothing to do
   if (nodes[keyName]) { delete nodes[keyName][guidFor(node)]; }
@@ -131,7 +132,7 @@ function flushPendingChains() {
 
 /** @private */
 function isProto(pvalue) {
-  return metaFor(pvalue, false).proto === pvalue;
+  return meta(pvalue, false).proto === pvalue;
 }
 
 // A ChainNode watches a single key on an object.  If you provide a starting
@@ -367,7 +368,7 @@ ChainNodePrototype.didChange = function(suppressEvent) {
 // the current object.
 /** @private */
 function chainsFor(obj) {
-  var m = metaFor(obj), ret = m.chains;
+  var m = meta(obj), ret = m.chains;
   if (!ret) {
     ret = m.chains = new ChainNode(null, null, obj);
   } else if (ret.value() !== obj) {
@@ -409,57 +410,7 @@ function chainsDidChange(obj, keyName, m) {
 // WATCH
 //
 
-
-// The exception to this is that any objects managed by Ember but not a descendant
-// of Ember.Object will not throw an exception, instead failing silently. This
-// prevent errors with other libraries that may attempt to access special
-// properties on standard objects like Array. Usually this happens when copying
-// an object by looping over all properties.
-//
-// QUESTION: What is this scenario exactly?
-var mandatorySetter = Ember.Descriptor.MUST_USE_SETTER = function() {
-  if (Ember.Object && this instanceof Ember.Object) {
-    if (this.isDestroyed) {
-      Ember.assert('You cannot set observed properties on destroyed objects', false);
-    } else {
-      Ember.assert('Must use Ember.set() to access this property', false);
-    }
-  }
-};
-
-var switchToWatched = function(obj, keyName, meta) {
-  var value = obj[keyName];
-  meta.values[keyName] = value;
-
-  if (Ember.platform.hasPropertyAccessors) {
-    var desc = {
-      configurable: true,
-      enumerable: true,
-      set: mandatorySetter,
-      get: function(key) {
-        return metaFor(this).values[keyName];
-      }
-    };
-
-    Ember.platform.defineProperty(obj, keyName, desc);
-  }
-};
-
-var switchToUnwatched = function(obj, keyName, meta) {
-  var value = obj[keyName];
-  delete meta.values[keyName];
-
-  if (Ember.platform.hasPropertyAccessors) {
-    var desc = {
-      configurable: true,
-      enumerable: true,
-      writable: true,
-      value: value
-    };
-
-    Ember.platform.defineProperty(obj, keyName, desc);
-  }
-};
+var WATCHED_PROPERTY = Ember.SIMPLE_PROPERTY.watched;
 
 /**
   @private
@@ -474,7 +425,7 @@ Ember.watch = function(obj, keyName) {
   // can't watch length on Array - it is special...
   if (keyName === 'length' && Ember.typeOf(obj) === 'array') { return this; }
 
-  var m = metaFor(obj), watching = m.watching, desc;
+  var m = meta(obj), watching = m.watching, desc;
 
   // activate watching first time
   if (!watching[keyName]) {
@@ -484,7 +435,9 @@ Ember.watch = function(obj, keyName) {
         obj.willWatchProperty(keyName);
       }
 
-      if (!desc) { switchToWatched(obj, keyName, m); }
+      desc = m.descs[keyName];
+      desc = desc ? desc.watched : WATCHED_PROPERTY;
+      if (desc) { Ember.defineProperty(obj, keyName, desc); }
     } else {
       chainsFor(obj).add(keyName);
     }
@@ -496,7 +449,7 @@ Ember.watch = function(obj, keyName) {
 };
 
 Ember.isWatching = function(obj, keyName) {
-  return !!metaFor(obj).watching[keyName];
+  return !!meta(obj).watching[keyName];
 };
 
 Ember.watch.flushPending = flushPendingChains;
@@ -506,15 +459,14 @@ Ember.unwatch = function(obj, keyName) {
   // can't watch length on Array - it is special...
   if (keyName === 'length' && Ember.typeOf(obj) === 'array') { return this; }
 
-  var watching = metaFor(obj).watching, desc, descs;
+  var watching = meta(obj).watching, desc, descs;
 
   if (watching[keyName] === 1) {
     watching[keyName] = 0;
     if (isKeyName(keyName)) {
-      var meta = metaFor(obj);
-      desc = meta.descs[keyName];
-
-      if (!desc) { switchToUnwatched(obj, keyName, meta); }
+      desc = meta(obj).descs[keyName];
+      desc = desc ? desc.unwatched : SIMPLE_PROPERTY;
+      if (desc) { Ember.defineProperty(obj, keyName, desc); }
 
       if ('function' === typeof obj.didUnwatchProperty) {
         obj.didUnwatchProperty(keyName);
@@ -538,7 +490,7 @@ Ember.unwatch = function(obj, keyName) {
   safe to call multiple times.
 */
 Ember.rewatch = function(obj) {
-  var m = metaFor(obj, false), chains = m.chains, bindings = m.bindings, key, b;
+  var m = meta(obj, false), chains = m.chains, bindings = m.bindings, key, b;
 
   // make sure the object has its own guid.
   if (GUID_KEY in obj && !obj.hasOwnProperty(GUID_KEY)) {
@@ -575,7 +527,7 @@ Ember.rewatch = function(obj) {
   @returns {void}
 */
 function propertyWillChange(obj, keyName, value) {
-  var m = metaFor(obj, false),
+  var m = meta(obj, false),
       watching = m.watching[keyName] > 0 || keyName === 'length',
       proto = m.proto,
       desc = m.descs[keyName];
@@ -610,7 +562,7 @@ Ember.propertyWillChange = propertyWillChange;
   @returns {void}
 */
 function propertyDidChange(obj, keyName) {
-  var m = metaFor(obj, false),
+  var m = meta(obj, false),
       watching = m.watching[keyName] > 0 || keyName === 'length',
       proto = m.proto,
       desc = m.descs[keyName];
