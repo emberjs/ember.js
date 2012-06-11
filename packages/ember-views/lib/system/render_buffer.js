@@ -6,8 +6,7 @@
 // ==========================================================================
 
 var get = Ember.get, set = Ember.set;
-var forEach = Ember.ArrayUtils.forEach;
-var indexOf = Ember.ArrayUtils.indexOf;
+var indexOf = Ember.arrayIndexOf;
 
 /** @private */
 var ClassSet = function() {
@@ -246,7 +245,7 @@ Ember._RenderBuffer.prototype =
 
     var childBuffers = parent.childBuffers;
 
-    var index = indexOf(childBuffers, this);
+    var index = indexOf.call(childBuffers, this);
 
     if (newBuffer) {
       childBuffers.splice(index, 1, newBuffer);
@@ -303,7 +302,7 @@ Ember._RenderBuffer.prototype =
 
     return this.newBuffer(tagName, parentBuffer, function(buffer) {
       var siblings = parentBuffer.childBuffers;
-      var index = indexOf(siblings, this);
+      var index = indexOf.call(siblings, this);
       siblings.splice(index + 1, 0, buffer);
     });
   },
@@ -373,7 +372,7 @@ Ember._RenderBuffer.prototype =
 
     var childBuffers = this.childBuffers;
 
-    forEach(childBuffers, function(buffer) {
+    Ember.arrayForEach.call(childBuffers, function(buffer) {
       var stringy = typeof buffer === 'string';
       content += (stringy ? buffer : buffer.string());
     });

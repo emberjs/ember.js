@@ -1,5 +1,5 @@
 var get = Ember.get, set = Ember.set, getPath = Ember.getPath, fmt = Ember.String.fmt;
-var arrayForEach = Ember.ArrayUtils.forEach;
+var arrayForEach = Ember.arrayForEach;
 
 require('ember-states/state');
 
@@ -603,7 +603,7 @@ Ember.StateManager = Ember.State.extend(
   triggerSetupContext: function(root, segments) {
     var state = root;
 
-    arrayForEach(segments, function(tuple) {
+    arrayForEach.call(segments, function(tuple) {
       var path = tuple[0],
           context = tuple[1];
 
@@ -630,11 +630,11 @@ Ember.StateManager = Ember.State.extend(
         stateManager = this;
 
     exitStates = exitStates.slice(0).reverse();
-    arrayForEach(exitStates, function(state) {
+    arrayForEach.call(exitStates, function(state) {
       state.fire('exit', stateManager);
     });
 
-    arrayForEach(enterStates, function(state) {
+    arrayForEach.call(enterStates, function(state) {
       if (log) { Ember.Logger.log("STATEMANAGER: Entering " + get(state, 'path')); }
       state.fire('enter', stateManager);
     });

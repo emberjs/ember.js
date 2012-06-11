@@ -9,7 +9,6 @@ require('ember-metal/core'); // Ember.Logger
 require('ember-metal/watching'); // Ember.watch.flushPending
 require('ember-metal/observer'); // Ember.beginPropertyChanges, Ember.endPropertyChanges
 require('ember-metal/utils'); // Ember.guidFor
-require('ember-metal/array'); // Ember.ArrayUtils
 
 // ..........................................................
 // HELPERS

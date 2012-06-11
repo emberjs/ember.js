@@ -10,7 +10,7 @@ require('ember-handlebars/views/metamorph_view');
 
 var get = Ember.get, set = Ember.set, fmt = Ember.String.fmt;
 var getPath = Ember.Handlebars.getPath, normalizePath = Ember.Handlebars.normalizePath;
-var forEach = Ember.ArrayUtils.forEach;
+var forEach = Ember.arrayForEach;
 
 var EmberHandlebars = Ember.Handlebars, helpers = EmberHandlebars.helpers;
 
@@ -259,7 +259,7 @@ EmberHandlebars.registerHelper('bindAttr', function(options) {
 
   // For each attribute passed, create an observer and emit the
   // current value of the property as an attribute.
-  forEach(attrKeys, function(attr) {
+  forEach.call(attrKeys, function(attr) {
     var path = attrs[attr],
         pathRoot, normalized;
 
@@ -387,7 +387,7 @@ EmberHandlebars.bindClasses = function(context, classBindings, view, bindAttrId,
 
   // For each property passed, loop through and setup
   // an observer.
-  forEach(classBindings.split(' '), function(binding) {
+  forEach.call(classBindings.split(' '), function(binding) {
 
     // Variable in which the old class value is saved. The observer function
     // closes over this variable, so it knows which string to remove when
