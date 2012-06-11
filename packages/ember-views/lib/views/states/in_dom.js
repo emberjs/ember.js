@@ -9,25 +9,22 @@ require('ember-views/views/states/default');
 
 var get = Ember.get, set = Ember.set, meta = Ember.meta;
 
-/** @private */
-Ember.View.states.HasElementState = Ember.State.extend({
-  $: function(manager, sel) {
-    var view = get(manager, 'view'),
-        elem = get(view, 'element');
+Ember.View.states.hasElement = {
+  parentState: Ember.View.states._default,
+
+  $: function(view, sel) {
+    var elem = get(view, 'element');
     return sel ? Ember.$(sel, elem) : Ember.$(elem);
   },
 
-  getElement: function(manager) {
-    var view = get(manager, 'view'),
-        parent = get(view, 'parentView');
+  getElement: function(view) {
+    var parent = get(view, 'parentView');
     if (parent) { parent = get(parent, 'element'); }
     if (parent) { return view.findElementInParentElement(parent); }
     return Ember.$("#" + get(view, 'elementId'))[0];
   },
 
-  setElement: function(manager, value) {
-    var view = get(manager, 'view');
-
+  setElement: function(view, value) {
     if (value === null) {
       view.invalidateRecursively('element');
 
@@ -41,9 +38,7 @@ Ember.View.states.HasElementState = Ember.State.extend({
 
   // once the view has been inserted into the DOM, rerendering is
   // deferred to allow bindings to synchronize.
-  rerender: function(manager) {
-    var view = get(manager, 'view');
-
+  rerender: function(view) {
     view._notifyWillRerender();
 
     view.clearRenderedChildren();
@@ -56,17 +51,13 @@ Ember.View.states.HasElementState = Ember.State.extend({
   // from the DOM, nukes its element, and puts it back into the
   // preRender state if inDOM.
 
-  destroyElement: function(manager) {
-    var view = get(manager, 'view');
-
+  destroyElement: function(view) {
     view._notifyWillDestroyElement();
     view.domManager.remove(view);
     return view;
   },
 
-  empty: function(manager) {
-    var view = get(manager, 'view');
-
+  empty: function(view) {
     var _childViews = get(view, '_childViews'), len, idx;
     if (_childViews) {
       len = get(_childViews, 'length');
@@ -78,27 +69,22 @@ Ember.View.states.HasElementState = Ember.State.extend({
   },
 
   // Handle events from `Ember.EventDispatcher`
-  handleEvent: function(manager, options) {
-    var view = get(manager, 'view'),
-        eventName = options.eventName,
-        evt = options.event;
-
+  handleEvent: function(view, eventName, evt) {
     if (view.has(eventName)) {
       return view.fire(eventName, evt);
     } else {
       return true; // continue event propagation
     }
   }
-});
+};
 
-Ember.View.states.InDomState = Ember.State.extend({
-  insertElement: function(manager, fn) {
-    var view = get(manager, 'view');
+Ember.View.states.inDOM = {
+  parentState: Ember.View.states.hasElement,
 
+  insertElement: function(view, fn) {
     if (view._lastInsert !== Ember.guidFor(fn)){
       return;
     }
     throw "You can't insert an element into the DOM that has already been inserted";
   }
-});
-
+};
