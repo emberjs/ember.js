@@ -11,6 +11,19 @@ var indexOf = Ember.EnumerableUtils.indexOf, indexesOf = Ember.EnumerableUtils.i
   allowing the user to choose from a list of options. The selected option(s)
   are updated live in the `selection` property.
 
+  Example:
+
+      {{view Ember.Select
+             contentBinding="controller.content"
+             optionLabelPath="content.label"
+             optionValuePath="content.value"
+             valueBinding="firstName"}}
+
+  ## Selection Binding vs. Value Binding
+  Usually you will bind to either the selection or the value attribute of the select.
+  Use `selectionBinding` if you would like to set the whole object as a property on the target.
+  Use `valueBinding` if you would like to set just the value.
+
   @extends Ember.View
 */
 Ember.Select = Ember.View.extend(
