@@ -6,11 +6,11 @@ var ActionHelper = EmberHandlebars.ActionHelper = {
   registeredActions: {}
 };
 
-ActionHelper.registerAction = function(actionName, eventName, target, view, context) {
+ActionHelper.registerAction = function(actionName, eventNames, target, view, context) {
   var actionId = (++Ember.$.uuid).toString();
 
   ActionHelper.registeredActions[actionId] = {
-    eventName: eventName,
+    eventNames: eventNames,
     handler: function(event) {
       event.view = view;
       event.context = context;
@@ -158,9 +158,15 @@ ActionHelper.registerAction = function(actionName, eventName, target, view, cont
 */
 EmberHandlebars.registerHelper('action', function(actionName, options) {
   var hash = options.hash,
-      eventName = hash.on || "click",
+      eventNames = {},
+      eventNamesStr = hash.on || "click",
       view = options.data.view,
       target, context, controller;
+
+
+  eventNamesStr.split('|').forEach(function(eventName){
+    eventNames[eventName] = true;
+  });
 
   view = get(view, 'concreteView');
 
@@ -181,7 +187,7 @@ EmberHandlebars.registerHelper('action', function(actionName, options) {
     output.push('href="' + url + '"');
   }
 
-  var actionId = ActionHelper.registerAction(actionName, eventName, target, view, context);
+  var actionId = ActionHelper.registerAction(actionName, eventNames, target, view, context);
   output.push('data-ember-action="' + actionId + '"');
 
   return new EmberHandlebars.SafeString(output.join(" "));
