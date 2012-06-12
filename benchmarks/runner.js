@@ -5,7 +5,7 @@ var embers = {
   after: "../dist/ember.prod.js"
 };
 
-function makeiframe(emberPath, suitePath, profile, callback) {
+function makeiframe(emberPath, suitePath, suiteCode, profile, callback) {
   var iframe = jQuery("<iframe>").appendTo("body")[0];
   var write = function(str) { iframe.contentDocument.write(str); };
 
@@ -27,17 +27,28 @@ function makeiframe(emberPath, suitePath, profile, callback) {
     jQuery("[data-ember-path='" + emberPath + "']").html(emberPath + ": " + string);
   };
 
-  setTimeout(function() {
-    jQuery.ajax({
-      url: suitePath,
-      async: false,
-      dataType: 'text',
-      complete: function(xhr) {
-        var bench = iframe.contentWindow.BenchWarmer.evalString(xhr.responseText, emberPath, logger, profile);
-        callback(bench);
-      }
-    });
-  }, 2000);
+  function wait() {
+    if ('BenchWarmer' in iframe.contentWindow) {
+      var bench = iframe.contentWindow.BenchWarmer.evalString(suiteCode, emberPath, logger, profile);
+      callback(bench);
+    } else {
+      setTimeout(wait, 100);
+    }
+  }
+
+  wait();
+}
+
+function loadSuite(suitePath, callback) {
+  function fail() {
+    jQuery('#error').text('Failed to load suite: '+suitePath);
+  }
+
+  jQuery.ajax({
+    url: suitePath,
+    async: false,
+    dataType: 'text'
+  }).then(callback, fail);
 }
 
 jQuery(function() {
@@ -52,15 +63,19 @@ jQuery(function() {
     options[decoded[i]] = decoded[i + 1];
   }
 
-  var beforeBench, afterBench;
+  var suitePath = "suites/" + options.suitePath;
 
-  makeiframe(embers.before, "suites/" + options.suitePath, options.profile, function(bench) {
-    beforeBench = bench;
+  loadSuite(suitePath, function (suiteCode) {
+    var beforeBench, afterBench;
 
-    makeiframe(embers.after, "suites/" + options.suitePath, options.profile, function(bench) {
-      afterBench = bench;
-      beforeBench.next = afterBench;
-      beforeBench.run();
+    makeiframe(embers.before, suitePath, suiteCode, options.profile, function(bench) {
+      beforeBench = bench;
+
+      makeiframe(embers.after, suitePath, suiteCode, options.profile, function(bench) {
+        afterBench = bench;
+        beforeBench.next = afterBench;
+        beforeBench.run();
+      });
     });
   });
 });
