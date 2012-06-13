@@ -401,7 +401,7 @@ Ember.StateManager = Ember.State.extend(
     The current state from among the manager's possible states. This property should
     not be set directly.  Use `transitionTo` to move between states by name.
 
-    @property {Ember.State}
+    @type Ember.State
     @readOnly
   */
   currentState: null,

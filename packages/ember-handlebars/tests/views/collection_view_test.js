@@ -1,5 +1,5 @@
 // ==========================================================================
-// Project:   Ember Handlebar Views
+// Project:   Ember Handlebars Views
 // Copyright: ©2011 Strobe Inc. and contributors.
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
@@ -263,7 +263,7 @@ test("should give its item views the property specified by itemPropertyBinding",
     tagName: 'li'
   });
 
-  // Use preserveContext=false so the itemView handlebar context is the view context
+  // Use preserveContext=false so the itemView handlebars context is the view context
   // Set itemView bindings using item*
   var view = Ember.View.create({
     baz: "baz",
