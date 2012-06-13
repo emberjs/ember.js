@@ -8,7 +8,6 @@
 module('system/mixin/binding_test');
 
 test('Defining a property ending in Binding should setup binding when applied', function() {
-
   var MyMixin = Ember.Mixin.create({
     fooBinding: 'bar.baz'
   });

@@ -144,21 +144,10 @@ function writableReq(obj) {
   return req;
 }
 
-/** @private */
-function getObserverPaths(value) {
-  return 'function' === typeof value && value.__ember_observes__;
-}
-
-/** @private */
-function getBeforeObserverPaths(value) {
-  return 'function' === typeof value && value.__ember_observesBefore__;
-}
-
 var IS_BINDING = Ember.IS_BINDING = /^.+Binding$/;
 
-
 /** @private */
-function detectBinding(obj, key, m) {
+function detectBinding(obj, key, value, m) {
   if (IS_BINDING.test(key)) {
     var bindings = m.bindings;
     if (!bindings) {
@@ -167,28 +156,77 @@ function detectBinding(obj, key, m) {
       bindings = m.bindings = o_create(m.bindings);
       bindings.__emberproto__ = obj;
     }
-    bindings[key] = true;
+    bindings[key] = value;
   }
 }
 
 /** @private */
 function connectBindings(obj, m) {
-  var bindings = (m || Ember.meta(obj)).bindings, key, binding;
+  // TODO Mixin.apply(instance) should disconnect binding if exists
+  var bindings = m.bindings, key, binding, to;
   if (bindings) {
     for (key in bindings) {
-      binding = key !== '__emberproto__' && obj[key];
+      binding = key !== '__emberproto__' && bindings[key];
       if (binding) {
+        to = key.slice(0, -7); // strip Binding off end
         if (binding instanceof Ember.Binding) {
           binding = binding.copy(); // copy prototypes' instance
-          binding.to(key.slice(0, -7));
-        } else {
-          binding = new Ember.Binding(key.slice(0, -7), binding);
+          binding.to(to);
+        } else { // binding is string path
+          binding = new Ember.Binding(to, binding);
         }
         binding.connect(obj);
         obj[key] = binding;
       }
     }
+    // mark as applied
+    m.bindings = { __emberproto__: obj };
   }
+}
+
+var addObserver = Ember.addObserver,
+    addBeforeObserver = Ember.addBeforeObserver;
+
+function applyBeforeObservers(obj, m) {
+  // TODO Mixin.apply should removeBeforeObserver if exists
+  var beforeObservers = m.beforeObservers,
+      methodName, method, paths, i, l;
+
+  for (methodName in beforeObservers) {
+    method = beforeObservers[methodName];
+    paths = method.__ember_observesBefore__;
+    for (i=0, l=paths.length; i<l; i++) {
+      addBeforeObserver(obj, paths[i], obj, method);
+    }
+  }
+
+  // mark as applied for future Mixin.apply()
+  m.beforeObservers = {};
+}
+
+function applyObservers(obj, m) {
+  // TODO Mixin.apply should removeObserver if exists
+  var observers = m.observers,
+      methodName, method, paths, i, l;
+
+  for (methodName in observers) {
+    method = observers[methodName];
+    paths = method.__ember_observes__;
+    for (i=0, l=paths.length; i<l; i++) {
+      addObserver(obj, paths[i], obj, method);
+    }
+  }
+
+  // mark as applied for future Mixin.apply()
+  m.beforeObservers = {};
+}
+
+function finishPartial(obj, m) {
+  m = m || Ember.meta(obj);
+  applyBeforeObservers(obj, m);
+  applyObservers(obj, m);
+  connectBindings(obj, m);
+  return obj;
 }
 
 /** @private */
@@ -242,45 +280,16 @@ function applyMixin(obj, mixins, partial) {
       if (desc === undefined && value === undefined) { continue; }
       if (willApply) { willApply.call(obj, key); }
 
-      // If an observer replaces an existing superclass observer,
-      // remove the superclass observers.
-      var observerPaths = getObserverPaths(value),
-          curObserverPaths = observerPaths && getObserverPaths(obj[key]),
-          beforeObserverPaths = getBeforeObserverPaths(value),
-          curBeforeObserverPaths = beforeObserverPaths && getBeforeObserverPaths(obj[key]),
-          len, idx;
-
-      if (curObserverPaths) {
-        len = curObserverPaths.length;
-        for (idx=0; idx < len; idx++) {
-          Ember.removeObserver(obj, curObserverPaths[idx], null, key);
+      if ('function' === typeof value) {
+        if (value.__ember_observesBefore__) {
+          m.beforeObservers[key] = value;
+        } else if (value.__ember_observes__) {
+          m.observers[key] = value;
         }
       }
 
-      if (curBeforeObserverPaths) {
-        len = curBeforeObserverPaths.length;
-        for (idx=0; idx < len; idx++) {
-          Ember.removeBeforeObserver(obj, curBeforeObserverPaths[idx], null, key);
-        }
-      }
-
-      detectBinding(obj, key, m);
-
+      detectBinding(obj, key, value, m);
       Ember.defineProperty(obj, key, desc, value);
-
-      if (observerPaths) {
-        len = observerPaths.length;
-        for(idx=0; idx < len; idx++) {
-          Ember.addObserver(obj, observerPaths[idx], null, key);
-        }
-      }
-
-      if (beforeObserverPaths) {
-        len = beforeObserverPaths.length;
-        for(idx=0; idx < len; idx++) {
-          Ember.addBeforeObserver(obj, beforeObserverPaths[idx], null, key);
-        }
-      }
 
       if (req && req[key]) {
         req = writableReq(obj);
@@ -293,7 +302,7 @@ function applyMixin(obj, mixins, partial) {
   }
 
   if (!partial) { // don't apply to prototype
-    value = connectBindings(obj, m);
+    finishPartial(obj, m);
   }
 
   // Make sure no required attrs remain
@@ -353,10 +362,7 @@ Mixin.applyPartial = function(obj) {
   return applyMixin(obj, args, true);
 };
 
-Mixin.finishPartial = function(obj) {
-  connectBindings(obj);
-  return obj;
-};
+Mixin.finishPartial = finishPartial;
 
 Mixin.create = function() {
   classToString.processed = false;
