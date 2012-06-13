@@ -21,8 +21,8 @@ test("router.urlForEvent looks in the current state's eventTransitions hash", fu
   var router = Ember.Router.create({
     location: locationStub,
     namespace: namespace,
-    root: Ember.State.create({
-      index: Ember.State.create({
+    root: Ember.Route.create({
+      index: Ember.Route.create({
         route: '/',
 
         showDashboard: function(router) {
@@ -34,7 +34,7 @@ test("router.urlForEvent looks in the current state's eventTransitions hash", fu
         }
       }),
 
-      dashboard: Ember.State.create({
+      dashboard: Ember.Route.create({
         route: '/dashboard'
       })
     })
@@ -54,16 +54,16 @@ test("router.urlForEvent looks in the eventTransitions hashes of the current sta
   var router = Ember.Router.create({
     location: locationStub,
     namespace: namespace,
-    root: Ember.State.create({
+    root: Ember.Route.create({
       eventTransitions: {
         showDashboard: 'dashboard'
       },
 
-      index: Ember.State.create({
+      index: Ember.Route.create({
         route: '/'
       }),
 
-      dashboard: Ember.State.create({
+      dashboard: Ember.Route.create({
         route: '/dashboard'
       })
     })
@@ -83,8 +83,8 @@ test("router.urlForEvent works with a context", function() {
   var router = Ember.Router.create({
     location: locationStub,
     namespace: namespace,
-    root: Ember.State.create({
-      index: Ember.State.create({
+    root: Ember.Route.create({
+      index: Ember.Route.create({
         route: '/',
 
         showDashboard: function(router) {
@@ -96,7 +96,7 @@ test("router.urlForEvent works with a context", function() {
         }
       }),
 
-      dashboard: Ember.State.create({
+      dashboard: Ember.Route.create({
         route: '/dashboard/:component_id'
       })
     })
@@ -116,14 +116,14 @@ test("router.urlForEvent works with Ember.State.transitionTo", function() {
   var router = Ember.Router.create({
     location: locationStub,
     namespace: namespace,
-    root: Ember.State.create({
-      index: Ember.State.create({
+    root: Ember.Route.create({
+      index: Ember.Route.create({
         route: '/',
 
-        showDashboard: Ember.State.transitionTo('dashboard')
+        showDashboard: Ember.Route.transitionTo('dashboard')
       }),
 
-      dashboard: Ember.State.create({
+      dashboard: Ember.Route.create({
         route: '/dashboard/:component_id'
       })
     })
@@ -145,27 +145,27 @@ test("rerouting doesn't exit all the way out", function() {
   var router = Ember.Router.create({
     location: locationStub,
     namespace: namespace,
-    root: Ember.State.create({
-      index: Ember.State.create({
+    root: Ember.Route.create({
+      index: Ember.Route.create({
         route: '/',
-        showDashboard: Ember.State.transitionTo('dashboard.index')
+        showDashboard: Ember.Route.transitionTo('dashboard.index')
       }),
 
-      dashboard: Ember.State.create({
+      dashboard: Ember.Route.create({
         route: '/dashboard',
 
         exit: function() {
           exited++;
         },
 
-        index: Ember.State.create({
+        index: Ember.Route.create({
           route: '/',
-          showComponent: Ember.State.transitionTo('component')
+          showComponent: Ember.Route.transitionTo('component')
         }),
 
-        component: Ember.State.create({
+        component: Ember.Route.create({
           route: '/:component_id',
-          showIndex: Ember.State.transitionTo('index')
+          showIndex: Ember.Route.transitionTo('index')
         })
       })
     })
@@ -218,18 +218,18 @@ test("should be able to unroute out of a state with context", function() {
   var router = Ember.Router.create({
     location: locationStub,
     namespace: namespace,
-    root: Ember.State.create({
-      components: Ember.State.create({
+    root: Ember.Route.create({
+      components: Ember.Route.create({
         route: '/components',
 
-        show: Ember.State.create({
+        show: Ember.Route.create({
           route: '/:component_id',
 
-          index: Ember.State.create({
+          index: Ember.Route.create({
             route: '/'
           }),
 
-          edit: Ember.State.create({
+          edit: Ember.Route.create({
             route: '/edit'
           })
         })

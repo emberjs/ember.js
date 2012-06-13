@@ -321,5 +321,3 @@ Ember.Routable = Ember.Mixin.create({
   */
   connectOutlets: Ember.K
 });
-
-Ember.State.reopen(Ember.Routable);

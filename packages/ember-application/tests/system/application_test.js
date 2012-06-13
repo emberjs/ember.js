@@ -131,8 +131,8 @@ test('initialized application go to initial route', function() {
         onUpdateURL: function() {}
       },
 
-      root: Ember.State.extend({
-        index: Ember.State.extend({
+      root: Ember.Route.extend({
+        index: Ember.Route.extend({
           route: '/'
         })
       })
@@ -166,8 +166,8 @@ test("initialize application with stateManager via initialize call", function() 
     app.Router = Ember.Router.extend({
       location: 'none',
 
-      root: Ember.State.extend({
-        index: Ember.State.extend({
+      root: Ember.Route.extend({
+        index: Ember.Route.extend({
           route: '/'
         })
       })
@@ -190,8 +190,8 @@ test("initialize application with stateManager via initialize call from Router c
     app.Router = Ember.Router.extend({
       location: 'none',
 
-      root: Ember.State.extend({
-        index: Ember.State.extend({
+      root: Ember.Route.extend({
+        index: Ember.Route.extend({
           route: '/'
         })
       })
@@ -263,8 +263,8 @@ test("ApplicationView is inserted into the page", function() {
     app.Router = Ember.Router.extend({
       location: 'none',
 
-      root: Ember.State.extend({
-        index: Ember.State.extend({
+      root: Ember.Route.extend({
+        index: Ember.Route.extend({
           route: '/'
         })
       })
