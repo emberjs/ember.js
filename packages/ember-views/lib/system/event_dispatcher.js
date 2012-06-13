@@ -138,7 +138,7 @@ Ember.EventDispatcher = Ember.Object.extend(
           action   = Ember.Handlebars.ActionHelper.registeredActions[actionId],
           handler  = action.handler;
 
-      if (action.eventName === eventName) {
+      if (action.eventNames[eventName] === true) {
         return handler(evt);
       }
     });
