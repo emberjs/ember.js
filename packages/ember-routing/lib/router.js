@@ -1,6 +1,5 @@
-require('ember-states/state');
-require('ember-states/route_matcher');
-require('ember-states/routable');
+require('ember-routing/route_matcher');
+require('ember-routing/routable');
 require('ember-application/system/location');
 
 var get = Ember.get, getPath = Ember.getPath, set = Ember.set;

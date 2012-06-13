@@ -1,5 +1,4 @@
-require('ember-states/state');
-require('ember-states/routable');
+require('ember-routing/routable');
 
 /**
   @class

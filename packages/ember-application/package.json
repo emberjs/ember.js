@@ -7,7 +7,8 @@
   "version": "0.9.8.1",
   "dependencies": {
     "ember-views": "0.9.8.1",
-    "ember-states": "0.9.8.1"
+    "ember-states": "0.9.8.1",
+    "ember-routing": "0.9.8.1"
   },
 
   "directories": {
