@@ -10,7 +10,8 @@ module("Ember.Location, hash implementation", {
 
     // make sure the onhashchange event fires
     stop();
-    setTimeout(start, 1);
+    // There are weird issues in FF 3.6 if we pass start itself as the parameter
+    setTimeout(function(){ start(); }, 1);
   },
 
   teardown: function() {
@@ -33,7 +34,7 @@ test("it is possible to set the current URL", function() {
 });
 
 test("if the hash changes, the onUpdateURL callback is invoked", function() {
-  expect(1);
+  stop();
 
   locationObject.onUpdateURL(function(url) {
     start();
@@ -42,13 +43,11 @@ test("if the hash changes, the onUpdateURL callback is invoked", function() {
   });
 
   window.location.hash = "#/foo/bar";
-  stop();
 });
 
 test("if the URL is set, it doesn't trigger the hashchange event", function() {
-  expect(1);
-
   stop();
+
   var count = 0;
 
   setTimeout(function() {
