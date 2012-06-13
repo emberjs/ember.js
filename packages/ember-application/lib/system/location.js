@@ -68,12 +68,12 @@ Ember.HashLocation = Ember.Object.extend({
     };
 
     get(this, 'callbacks').pushObject(hashchange);
-    window.addEventListener('hashchange', hashchange);
+    window.addEventListener('hashchange', hashchange, false);
   },
 
   willDestroy: function() {
     get(this, 'callbacks').forEach(function(callback) {
-      window.removeEventListener('hashchange', callback);
+      window.removeEventListener('hashchange', callback, false);
     });
     set(this, 'callbacks', null);
   }
