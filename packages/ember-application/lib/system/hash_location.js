@@ -55,7 +55,7 @@ Ember.HashLocation = Ember.Object.extend({
 
     // This won't work on old browsers anyway, but this check prevents errors
     if (window.addEventListener) {
-      window.addEventListener('hashchange', hashchange);
+      window.addEventListener('hashchange', hashchange, false);
     }
   },
 
@@ -74,7 +74,7 @@ Ember.HashLocation = Ember.Object.extend({
 
   willDestroy: function() {
     get(this, 'callbacks').forEach(function(callback) {
-      window.removeEventListener('hashchange', callback);
+      window.removeEventListener('hashchange', callback, false);
     });
     set(this, 'callbacks', null);
   }
