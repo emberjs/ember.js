@@ -174,6 +174,8 @@ Ember.meta = function meta(obj, writable) {
     ret = obj[META_KEY] = createMeta({
       descs: {},
       watching: {},
+      observers: {},
+      beforeObservers: {},
       values: {},
       lastSetValues: {},
       cache:  {},
@@ -188,6 +190,8 @@ Ember.meta = function meta(obj, writable) {
     ret.descs    = o_create(ret.descs);
     ret.values   = o_create(ret.values);
     ret.watching = o_create(ret.watching);
+    ret.observers = o_create(ret.observers);
+    ret.beforeObservers = o_create(ret.beforeObservers);
     ret.lastSetValues = {};
     ret.cache    = {};
     ret.source   = obj;

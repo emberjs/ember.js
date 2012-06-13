@@ -191,6 +191,31 @@ function connectBindings(obj, m) {
   }
 }
 
+function applyObservers(obj) {
+  var meta = Ember.meta(obj),
+      observers = meta.observers,
+      beforeObservers = meta.beforeObservers,
+      methodName, method, observerPaths, i, l;
+
+  for (methodName in observers) {
+    method = observers[methodName];
+    observerPaths = getObserverPaths(method);
+
+    for (i=0, l=observerPaths.length; i<l; i++) {
+      Ember.addObserver(obj, observerPaths[i], null, methodName);
+    }
+  }
+
+  for (methodName in beforeObservers) {
+    method = beforeObservers[methodName];
+    observerPaths = getBeforeObserverPaths(method);
+
+    for (i=0, l=observerPaths.length; i<l; i++) {
+      Ember.addBeforeObserver(obj, observerPaths[i], null, methodName);
+    }
+  }
+}
+
 /** @private */
 function applyMixin(obj, mixins, partial) {
   var descs = {}, values = {}, m = Ember.meta(obj), req = m.required,
@@ -242,45 +267,14 @@ function applyMixin(obj, mixins, partial) {
       if (desc === undefined && value === undefined) { continue; }
       if (willApply) { willApply.call(obj, key); }
 
-      // If an observer replaces an existing superclass observer,
-      // remove the superclass observers.
-      var observerPaths = getObserverPaths(value),
-          curObserverPaths = observerPaths && getObserverPaths(obj[key]),
-          beforeObserverPaths = getBeforeObserverPaths(value),
-          curBeforeObserverPaths = beforeObserverPaths && getBeforeObserverPaths(obj[key]),
-          len, idx;
+      var hasObservers = getObserverPaths(value),
+          hasBeforeObservers = getBeforeObserverPaths(value);
 
-      if (curObserverPaths) {
-        len = curObserverPaths.length;
-        for (idx=0; idx < len; idx++) {
-          Ember.removeObserver(obj, curObserverPaths[idx], null, key);
-        }
-      }
-
-      if (curBeforeObserverPaths) {
-        len = curBeforeObserverPaths.length;
-        for (idx=0; idx < len; idx++) {
-          Ember.removeBeforeObserver(obj, curBeforeObserverPaths[idx], null, key);
-        }
-      }
+      if (hasObservers) { m.observers[key] = value; }
+      if (hasBeforeObservers) { m.beforeObservers[key] = value; }
 
       detectBinding(obj, key, m);
-
       Ember.defineProperty(obj, key, desc, value);
-
-      if (observerPaths) {
-        len = observerPaths.length;
-        for(idx=0; idx < len; idx++) {
-          Ember.addObserver(obj, observerPaths[idx], null, key);
-        }
-      }
-
-      if (beforeObserverPaths) {
-        len = beforeObserverPaths.length;
-        for(idx=0; idx < len; idx++) {
-          Ember.addBeforeObserver(obj, beforeObserverPaths[idx], null, key);
-        }
-      }
 
       if (req && req[key]) {
         req = writableReq(obj);
@@ -292,9 +286,9 @@ function applyMixin(obj, mixins, partial) {
     }
   }
 
-  if (!partial) { // don't apply to prototype
-    value = connectBindings(obj, m);
-  }
+  //if (!partial) { // don't apply to prototype
+    //value = connectBindings(obj, m);
+  //}
 
   // Make sure no required attrs remain
   if (!partial && req && req.__ember_count__>0) {
@@ -311,7 +305,9 @@ function applyMixin(obj, mixins, partial) {
 
 Ember.mixin = function(obj) {
   var args = a_slice.call(arguments, 1);
-  return applyMixin(obj, args, false);
+  applyMixin(obj, args, false);
+  Mixin.finishPartial(obj);
+  return obj;
 };
 
 /**
@@ -355,6 +351,7 @@ Mixin.applyPartial = function(obj) {
 
 Mixin.finishPartial = function(obj) {
   connectBindings(obj);
+  applyObservers(obj);
   return obj;
 };
 
@@ -396,19 +393,15 @@ MixinPrototype.reopen = function() {
   return this;
 };
 
-var TMP_ARRAY = [];
 MixinPrototype.apply = function(obj) {
-  TMP_ARRAY[0] = this;
-  var ret = applyMixin(obj, TMP_ARRAY, false);
-  TMP_ARRAY.length=0;
-  return ret;
+  applyMixin(obj, [this], false);
+  Mixin.finishPartial(obj);
+  return obj;
 };
 
 MixinPrototype.applyPartial = function(obj) {
-  TMP_ARRAY[0] = this;
-  var ret = applyMixin(obj, TMP_ARRAY, true);
-  TMP_ARRAY.length=0;
-  return ret;
+  applyMixin(obj, [this], true);
+  return obj;
 };
 
 /** @private */
