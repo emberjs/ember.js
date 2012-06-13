@@ -500,7 +500,8 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     A view may contain a layout. A layout is a regular template but
     supersedes the `template` property during rendering. It is the
     responsibility of the layout template to retrieve the `template`
-    property from the view and render it in the correct location.
+    property from the view (or alternatively, call `Handlebars.helpers.yield`,
+    `{{yield}}`) to render it in the correct location.
 
     This is useful for a view that has a shared wrapper, but which delegates
     the rendering of the contents of the wrapper to the `template` property
@@ -793,7 +794,7 @@ Ember.View = Ember.Object.extend(Ember.Evented,
       // is the view by default. A hash of data is also passed that provides
       // the template with access to the view and render buffer.
 
-      Ember.assert('template must be a function. Did you mean to specify templateName instead?', typeof template === 'function');
+      Ember.assert('template must be a function. Did you mean to call Ember.Handlebars.compile("...") or specify templateName instead?', typeof template === 'function');
       // The template should write directly to the render buffer instead
       // of returning a string.
       var output = template(context, { data: data });
