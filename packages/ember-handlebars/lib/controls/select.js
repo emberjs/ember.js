@@ -9,15 +9,31 @@ var indexOf = Ember.EnumerableUtils.indexOf, indexesOf = Ember.EnumerableUtils.i
   The Ember.Select view class renders a
   [select](https://developer.mozilla.org/en/HTML/Element/select) HTML element,
   allowing the user to choose from a list of options. The selected option(s)
-  are updated live in the `selection` property.
+  are updated live in the `selection` property, while the corresponding value
+  is updated in the 'value' property.
 
   Example:
 
+      App.controller = Ember.Object.create({
+        content: [
+          {label: "Yehuda", value: 1}
+          {label: "Tom",    value: 2}
+        ]
+      })
+
       {{view Ember.Select
-             contentBinding="controller.content"
+             contentBinding="App.controller.content"
              optionLabelPath="content.label"
              optionValuePath="content.value"
-             valueBinding="firstName"}}
+             valueBinding="firstName"
+             prompt="Please Select"}}
+
+      <select class="ember-select">
+        <option value>Please Select</option>
+        <option value="1">Yehuda</option>
+        <option value="2">Tom</option>
+      </select>
+
 
   ## Selection Binding vs. Value Binding
   Usually you will bind to either the selection or the value attribute of the select.
