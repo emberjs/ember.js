@@ -396,19 +396,12 @@ MixinPrototype.reopen = function() {
   return this;
 };
 
-var TMP_ARRAY = [];
 MixinPrototype.apply = function(obj) {
-  TMP_ARRAY[0] = this;
-  var ret = applyMixin(obj, TMP_ARRAY, false);
-  TMP_ARRAY.length=0;
-  return ret;
+  return applyMixin(obj, [this], false);
 };
 
 MixinPrototype.applyPartial = function(obj) {
-  TMP_ARRAY[0] = this;
-  var ret = applyMixin(obj, TMP_ARRAY, true);
-  TMP_ARRAY.length=0;
-  return ret;
+  return applyMixin(obj, [this], true);
 };
 
 /** @private */
