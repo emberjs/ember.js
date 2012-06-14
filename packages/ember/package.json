@@ -11,6 +11,7 @@
     "ember-runtime": "0.9.8.1",
     "ember-views": "0.9.8.1",
     "ember-states": "0.9.8.1",
+    "ember-routing": "0.9.8.1",
     "ember-handlebars": "0.9.8.1"
   },
 
