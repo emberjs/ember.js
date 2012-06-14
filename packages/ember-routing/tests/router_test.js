@@ -7,19 +7,21 @@ var namespace = {
   }
 };
 
-var locationStub = {
+var location = {
   formatURL: function(url) {
     return '#!#' + url;
   },
 
-  setURL: Ember.K
+  setURL: function(url) {
+    this.url = url;
+  }
 };
 
 var getPath = Ember.getPath;
 
 test("router.urlForEvent looks in the current state's eventTransitions hash", function() {
   var router = Ember.Router.create({
-    location: locationStub,
+    location: location,
     namespace: namespace,
     root: Ember.Route.create({
       index: Ember.Route.create({
@@ -52,7 +54,7 @@ test("router.urlForEvent looks in the current state's eventTransitions hash", fu
 
 test("router.urlForEvent looks in the eventTransitions hashes of the current state's ancestors", function() {
   var router = Ember.Router.create({
-    location: locationStub,
+    location: location,
     namespace: namespace,
     root: Ember.Route.create({
       eventTransitions: {
@@ -81,7 +83,7 @@ test("router.urlForEvent looks in the eventTransitions hashes of the current sta
 
 test("router.urlForEvent works with a context", function() {
   var router = Ember.Router.create({
-    location: locationStub,
+    location: location,
     namespace: namespace,
     root: Ember.Route.create({
       index: Ember.Route.create({
@@ -114,7 +116,7 @@ test("router.urlForEvent works with a context", function() {
 
 test("router.urlForEvent works with Ember.State.transitionTo", function() {
   var router = Ember.Router.create({
-    location: locationStub,
+    location: location,
     namespace: namespace,
     root: Ember.Route.create({
       index: Ember.Route.create({
@@ -143,7 +145,7 @@ test("rerouting doesn't exit all the way out", function() {
   var exited = 0;
 
   var router = Ember.Router.create({
-    location: locationStub,
+    location: location,
     namespace: namespace,
     root: Ember.Route.create({
       index: Ember.Route.create({
@@ -216,7 +218,7 @@ test("rerouting doesn't exit all the way out", function() {
 
 test("should be able to unroute out of a state with context", function() {
   var router = Ember.Router.create({
-    location: locationStub,
+    location: location,
     namespace: namespace,
     root: Ember.Route.create({
       components: Ember.Route.create({
@@ -242,4 +244,25 @@ test("should be able to unroute out of a state with context", function() {
 
   router.route('/components/1');
   equal(getPath(router, 'currentState.path'), 'root.components.show.index', "should go to the correct state");
+});
+
+test("should update route for redirections", function() {
+  var router = Ember.Router.create({
+    location: location,
+    namespace: namespace,
+    root: Ember.Route.create({
+      index: Ember.Route.create({
+        route: '/',
+        redirectsTo: 'login'
+      }),
+
+      login: Ember.Route.create({
+        route: '/login'
+      })
+    })
+  });
+
+  router.route('/');
+
+  equal(location.url, '/login');
 });

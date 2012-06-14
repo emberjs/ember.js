@@ -66,6 +66,8 @@ Ember.Router = Ember.StateManager.extend(
     } finally {
       set(this, 'isRouting', false);
     }
+
+    get(this, 'currentState').updateRoute(this, get(this, 'location'));
   },
 
   urlFor: function(path, hash) {
