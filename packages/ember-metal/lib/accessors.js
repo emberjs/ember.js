@@ -180,7 +180,6 @@ function getPath(target, path) {
   return target;
 }
 
-var TUPLE_RET = [];
 var IS_GLOBAL = /^([A-Z$]|([0-9][A-Z$]))/;
 var IS_GLOBAL_PATH = /^([A-Z$]|([0-9][A-Z$])).*[\.\*]/;
 var HAS_THIS  = /^this[\.\*]/;
@@ -210,9 +209,7 @@ function normalizeTuple(target, path) {
   // must return some kind of path to be valid else other things will break.
   if (!path || path.length===0) throw new Error('Invalid Path');
 
-  TUPLE_RET[0] = target;
-  TUPLE_RET[1] = path;
-  return TUPLE_RET;
+  return [ target, path ];
 }
 
 /** @private */
