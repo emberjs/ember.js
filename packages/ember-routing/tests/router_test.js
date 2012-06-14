@@ -114,6 +114,40 @@ test("router.urlForEvent works with a context", function() {
   equal(url, "#!#/dashboard/1");
 });
 
+test("router.urlForEvent works with changing context in the current state", function() {
+  var router = Ember.Router.create({
+    location: location,
+    namespace: namespace,
+    root: Ember.Route.create({
+      index: Ember.Route.create({
+        route: '/'
+      }),
+
+      showDashboard: function(router) {
+        router.transitionTo('dashboard');
+      },
+
+      eventTransitions: {
+        showDashboard: 'dashboard'
+      },
+
+      dashboard: Ember.Route.create({
+        route: '/dashboard/:component_id'
+      })
+    })
+  });
+
+  Ember.run(function() {
+    router.route('/dashboard/1');
+  });
+
+  equal(router.getPath('currentState.path'), "root.dashboard", "precond - the router is in root.dashboard");
+
+  var url = router.urlForEvent('showDashboard', { id: 2 });
+  equal(url, "#!#/dashboard/2");
+});
+
+
 test("router.urlForEvent works with Ember.State.transitionTo", function() {
   var router = Ember.Router.create({
     location: location,
