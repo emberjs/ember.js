@@ -191,6 +191,17 @@ function connectBindings(obj, m) {
   }
 }
 
+function setupDescriptors(obj, m) {
+  var meta = m || Ember.meta(obj),
+      descriptors = meta.descs, descriptor;
+
+  for (var name in descriptors) {
+    if (descriptor = descriptors[name]) {
+      descriptor.setup(obj, name);
+    }
+  }
+}
+
 function applyObservers(obj) {
   var meta = Ember.meta(obj),
       observers = meta.observers,
@@ -235,6 +246,7 @@ function applyMixin(obj, mixins, partial) {
   }
 
   for(key in values) {
+    if (key === 'contructor') { continue; }
     if (!values.hasOwnProperty(key)) { continue; }
 
     desc = descs[key];
@@ -274,7 +286,8 @@ function applyMixin(obj, mixins, partial) {
       if (hasBeforeObservers) { m.beforeObservers[key] = value; }
 
       detectBinding(obj, key, m);
-      Ember.defineProperty(obj, key, desc, value);
+      if (desc) { m.descs[key] = desc; }
+      obj[key] = value;
 
       if (req && req[key]) {
         req = writableReq(obj);
@@ -352,6 +365,7 @@ Mixin.applyPartial = function(obj) {
 Mixin.finishPartial = function(obj) {
   connectBindings(obj);
   applyObservers(obj);
+  setupDescriptors(obj);
   return obj;
 };
 
