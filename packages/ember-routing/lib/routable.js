@@ -286,7 +286,8 @@ Ember.Routable = Ember.Mixin.create({
   */
   unroutePath: function(router, path) {
     // If we're at the root state, we're done
-    if (get(this, 'parentState') === router) {
+    var parentState = get(this, 'parentState');
+    if (parentState === router) {
       return;
     }
 
@@ -299,17 +300,29 @@ Ember.Routable = Ember.Mixin.create({
     // because the index ('/') state must be a leaf node.
     if (route !== '/') {
       // If the current path is a prefix of the path we're trying
-      // to go to, we're done.
+      // to go to, we're done if the next state resolves to this state.
       var index = path.indexOf(absolutePath),
-          next = path.charAt(absolutePath.length);
+          next = path.charAt(absolutePath.length),
+          nextPath = "" + route + path.substr(absolutePath.length);
 
       if (index === 0 && (next === "/" || next === "")) {
-        return;
+        var parentChildStates = get(parentState, 'childStates').sort(function(a, b) {
+          return getPath(b, 'route.length') - getPath(a, 'route.length');
+        });
+
+        var nextState = parentChildStates.find(function(state) {
+          var matcher = get(state, 'routeMatcher');
+          if (matcher.match(nextPath)) { return true; }
+        });
+
+        if (nextState === this) {
+          return;
+        }
       }
     }
 
     // Transition to the parent and call unroute again.
-    var parentPath = get(get(this, 'parentState'), 'path');
+    var parentPath = get(parentState, 'path');
     router.transitionTo(parentPath);
     router.send('unroutePath', path);
   },
