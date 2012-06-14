@@ -123,7 +123,7 @@ Ember.Routable = Ember.Mixin.create({
     property. This heuristic may change.
   */
   isRoutable: Ember.computed(function() {
-    return typeof this.route === 'string';
+    return typeof get(this, 'route') === 'string';
   }).cacheable(),
 
   /**
