@@ -22,7 +22,7 @@ test("isWatching is true for regular local observers", function() {
       didChange: Ember.observer(fn, key)
     }).apply(obj);
   }, function(obj, key, fn) {
-    Ember.removeObserver(obj, key, null, fn);
+    Ember.removeObserver(obj, key, obj, fn);
   });
 });
 
