@@ -304,7 +304,7 @@ function applyMixin(obj, mixins, partial) {
       }
 
       detectBinding(obj, key, value, m);
-      if (desc) { m.descs[key] = desc; }
+      m.descs[key] = desc;
       obj[key] = value;
 
       if (req && req[key]) {
