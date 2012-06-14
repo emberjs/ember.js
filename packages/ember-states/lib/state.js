@@ -163,12 +163,12 @@ var Event = Ember.$ && Ember.$.Event;
 
 Ember.State.reopenClass({
   transitionTo: function(target) {
-    var event = function(router, context) {
+    var event = function(stateManager, context) {
       if (Event && context instanceof Event) {
         context = context.context;
       }
 
-      router.transitionTo(target, context);
+      stateManager.transitionTo(target, context);
     };
 
     event.transitionTarget = target;

@@ -67,8 +67,8 @@ test("it sets an URL with a context", function() {
       setURL: Ember.K
     },
     namespace: namespace,
-    root: Ember.State.create({
-      index: Ember.State.create({
+    root: Ember.Route.create({
+      index: Ember.Route.create({
         route: '/',
 
         showDashboard: function(router) {
@@ -80,7 +80,7 @@ test("it sets an URL with a context", function() {
         }
       }),
 
-      dashboard: Ember.State.create({
+      dashboard: Ember.Route.create({
         route: '/dashboard/:component_id'
       })
     })
