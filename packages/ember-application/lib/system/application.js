@@ -224,7 +224,10 @@ Ember.Application.registerInjection({
 
     router.set(name, controller);
 
-    controller.set('target', router);
-    controller.set('controllers', router);
+    controller.setProperties({
+      target: router,
+      controllers: router,
+      namespace: app
+    });
   }
 });

@@ -114,6 +114,8 @@ test("initialize controllers into a state manager", function() {
 
   equal(getPath(stateManager, 'fooController.target'), stateManager, "the state manager is assigned");
   equal(getPath(stateManager, 'barController.target'), stateManager, "the state manager is assigned");
+  equal(getPath(stateManager, 'fooController.namespace'), app, "the namespace is assigned");
+  equal(getPath(stateManager, 'fooController.namespace'), app, "the namespace is assigned");
 });
 
 test('initialized application go to initial route', function() {
