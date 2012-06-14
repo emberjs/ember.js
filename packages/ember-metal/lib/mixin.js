@@ -313,6 +313,11 @@ function applyMixin(obj, mixins, partial) {
         req[key] = false;
       }
 
+      if (m.watching[key]) {
+        m.values[key] = value;
+        Ember.overrideChains(obj, key, m);
+      }
+
       if (didApply) { didApply.call(obj, key); }
     }
   }
