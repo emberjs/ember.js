@@ -1,6 +1,7 @@
 require('ember-handlebars/ext');
 
 var EmberHandlebars = Ember.Handlebars, getPath = EmberHandlebars.getPath, get = Ember.get;
+var forEach = Ember.ArrayPolyfills.forEach;
 
 var ActionHelper = EmberHandlebars.ActionHelper = {
   registeredActions: {}
@@ -162,7 +163,7 @@ EmberHandlebars.registerHelper('action', function(actionName, options) {
       view = options.data.view,
       target, context, controller;
 
-  Ember.String.w(hash.on || "click").forEach(function(eventName){
+  forEach.call(Ember.String.w(hash.on || "click") , function(eventName){
     eventNames[eventName] = true;
   });
 
