@@ -250,7 +250,7 @@ test("should properly capture events on child elements of a container with an ac
   ok(eventHandlerWasCalled, "Event on a child element triggered the action of it's parent");
 });
 
-test("should allow bubbling of events from action helper to original parent event", function() {
+test("should default to not bubbling of events from action helper to original parent event", function() {
   var eventHandlerWasCalled = false,
       originalEventHandlerWasCalled = false;
 
@@ -264,7 +264,8 @@ test("should allow bubbling of events from action helper to original parent even
 
   view.$('a').trigger('click');
 
-  ok(eventHandlerWasCalled && originalEventHandlerWasCalled, "Both event handlers were called");
+  ok(eventHandlerWasCalled, "The child handler was called");
+  ok(!originalEventHandlerWasCalled, "The parent handler was not called");
 });
 
 test("should be compatible with sending events to a state manager", function() {
