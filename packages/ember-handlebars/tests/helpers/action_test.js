@@ -43,7 +43,7 @@ test("should by default register a click event", function() {
 
   appendView();
 
-  equal(registeredEventName, 'click', "The click event was properly registered");
+  equal(registeredEventName['click'], true, "The click event was properly registered");
 
   ActionHelper.registerAction = originalRegisterAction;
 });
@@ -61,7 +61,26 @@ test("should allow alternative events to be handled", function() {
 
   appendView();
 
-  equal(registeredEventName, 'mouseUp', "The alternative mouseUp event was properly registered");
+  equal(registeredEventName['mouseUp'], true, "The alternative mouseUp event was properly registered");
+
+  ActionHelper.registerAction = originalRegisterAction;
+});
+
+test("should allow multiple events to be registered", function() {
+  var registeredEventName;
+
+  ActionHelper.registerAction = function(actionName, eventName) {
+    registeredEventName = eventName;
+  };
+
+  view = Ember.View.create({
+    template: Ember.Handlebars.compile('<a href="#" {{action "edit" on="mouseUp mouseDown"}}>edit</a>')
+  });
+
+  appendView();
+
+  equal(registeredEventName['mouseUp'], true, "The mouseUp event was properly registered");
+  equal(registeredEventName['mouseDown'], true, "The mouseDown event was properly registered");
 
   ActionHelper.registerAction = originalRegisterAction;
 });
