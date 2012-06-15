@@ -31,10 +31,10 @@ test("should output a data attribute with a guid", function() {
 });
 
 test("should by default register a click event", function() {
-  var registeredEventName;
+  var registeredeventNames;
 
-  ActionHelper.registerAction = function(actionName, eventName) {
-    registeredEventName = eventName;
+  ActionHelper.registerAction = function(actionName, eventNames) {
+    registeredeventNames = eventNames;
   };
 
   view = Ember.View.create({
@@ -43,16 +43,16 @@ test("should by default register a click event", function() {
 
   appendView();
 
-  equal(registeredEventName['click'], true, "The click event was properly registered");
+  equal(registeredeventNames['click'], true, "The click event was properly registered");
 
   ActionHelper.registerAction = originalRegisterAction;
 });
 
 test("should allow alternative events to be handled", function() {
-  var registeredEventName;
+  var registeredeventNames;
 
-  ActionHelper.registerAction = function(actionName, eventName) {
-    registeredEventName = eventName;
+  ActionHelper.registerAction = function(actionName, eventNames) {
+    registeredeventNames = eventNames;
   };
 
   view = Ember.View.create({
@@ -61,16 +61,16 @@ test("should allow alternative events to be handled", function() {
 
   appendView();
 
-  equal(registeredEventName['mouseUp'], true, "The alternative mouseUp event was properly registered");
+  equal(registeredeventNames['mouseUp'], true, "The alternative mouseUp event was properly registered");
 
   ActionHelper.registerAction = originalRegisterAction;
 });
 
 test("should allow multiple events to be registered", function() {
-  var registeredEventName;
+  var registeredeventNames;
 
-  ActionHelper.registerAction = function(actionName, eventName) {
-    registeredEventName = eventName;
+  ActionHelper.registerAction = function(actionName, eventNames) {
+    registeredeventNames = eventNames;
   };
 
   view = Ember.View.create({
@@ -79,8 +79,8 @@ test("should allow multiple events to be registered", function() {
 
   appendView();
 
-  equal(registeredEventName['mouseUp'], true, "The mouseUp event was properly registered");
-  equal(registeredEventName['mouseDown'], true, "The mouseDown event was properly registered");
+  equal(registeredeventNames['mouseUp'], true, "The mouseUp event was properly registered");
+  equal(registeredeventNames['mouseDown'], true, "The mouseDown event was properly registered");
 
   ActionHelper.registerAction = originalRegisterAction;
 });
@@ -88,7 +88,7 @@ test("should allow multiple events to be registered", function() {
 test("should by default target the parent view", function() {
   var registeredTarget;
 
-  ActionHelper.registerAction = function(actionName, eventName, target) {
+  ActionHelper.registerAction = function(actionName, eventNames, target) {
     registeredTarget = target;
   };
 
@@ -129,7 +129,7 @@ test("should by default target the state manager on the controller if it exists"
 test("should allow a target to be specified", function() {
   var registeredTarget;
 
-  ActionHelper.registerAction = function(actionName, eventName, target) {
+  ActionHelper.registerAction = function(actionName, eventNames, target) {
     registeredTarget = target;
   };
 
