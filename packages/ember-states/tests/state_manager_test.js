@@ -212,6 +212,34 @@ test("it automatically transitions to multiple substates specified using either 
   ok(get(stateManager, 'currentState').isStart, "automatically transitions to final substate");
 });
 
+test("it triggers setup on initialSubstate", function() {
+  var parentSetup = false,
+      childSetup = false,
+      grandchildSetup = false;
+
+  stateManager = Ember.StateManager.create({
+    start: Ember.State.create({
+      setup: function() { parentSetup = true; },
+
+      initialState: 'childState',
+
+      childState: Ember.State.create({
+        setup: function() { childSetup = true; },
+
+        initialState: 'grandchildState',
+
+        grandchildState: Ember.State.create({
+          setup: function() { grandchildSetup = true; }
+        })
+      })
+    })
+  });
+
+  ok(parentSetup, "sets up parent");
+  ok(childSetup, "sets up child");
+  ok(grandchildSetup, "sets up grandchild");
+});
+
 test("it throws an assertion error when the initialState does not exist", function() {
   raises(function() {
     Ember.StateManager.create({
