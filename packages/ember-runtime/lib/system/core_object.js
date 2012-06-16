@@ -11,7 +11,6 @@
 
 
 
-var rewatch = Ember.rewatch;
 var classToString = Ember.Mixin.prototype.toString;
 var set = Ember.set, get = Ember.get;
 var o_create = Ember.create,
@@ -33,27 +32,20 @@ function makeCtor() {
   // method a lot faster.  This is glue code so we want it to be as fast as
   // possible.
 
-  var wasApplied = false, initMixins, init = false, hasChains = false;
+  var wasApplied = false, initMixins, init = false;
 
   var Class = function() {
-    if (!wasApplied) { Class.proto(); } // prepare prototype...
+    if (!wasApplied) {
+      Class.proto(); // prepare prototype...
+    }
     if (initMixins) {
       this.reopen.apply(this, initMixins);
       initMixins = null;
-      rewatch(this); // always rewatch just in case
-      Ember.Mixin.finishPartial(this);
-      this.init.apply(this, arguments);
-    } else {
-      if (hasChains) {
-        rewatch(this);
-      } else {
-        o_defineProperty(this, Ember.GUID_KEY, undefinedDescriptor);
-      }
-      if (init===false) { init = this.init; } // cache for later instantiations
-      o_defineProperty(this, '_super', undefinedDescriptor);
-      Ember.Mixin.finishPartial(this);
-      init.apply(this, arguments);
     }
+    o_defineProperty(this, Ember.GUID_KEY, undefinedDescriptor);
+    o_defineProperty(this, '_super', undefinedDescriptor);
+    Ember.Mixin.finishPartial(this);
+    this.init.apply(this, arguments);
   };
 
   Class.toString = classToString;
@@ -73,8 +65,6 @@ function makeCtor() {
     if (!wasApplied) {
       wasApplied = true;
       Class.PrototypeMixin.applyPartial(Class.prototype);
-      Ember.rewatch(Class.prototype); // setup watch chains if needed.
-      hasChains = !!meta(Class.prototype, false).chains; // avoid rewatch
     }
 
     return this.prototype;

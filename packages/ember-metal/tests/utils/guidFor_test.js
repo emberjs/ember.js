@@ -36,12 +36,12 @@ test("Object with prototype", function() {
   var a = new Class();
   var b = new Class();
 
-  sameGuid( a, b , "without calling rewatch, objects copy the guid from their prototype");
+  sameGuid( a, b , "without calling generateGuid, objects copy the guid from their prototype");
 
-  Ember.rewatch(a);
-  Ember.rewatch(b);
+  Ember.generateGuid(a);
+  Ember.generateGuid(b);
 
-  diffGuid( a, b, "after calling rewatch, objects don't share guids" );
+  diffGuid( a, b, "after calling generateGuid, objects don't share guids" );
 });
 
 test("strings", function() {

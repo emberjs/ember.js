@@ -130,31 +130,6 @@ testBoth('Calling connect more than once', function(get, set) {
   });
 });
 
-testBoth('Bindings should be inherited', function(get, set) {
-
-  var a = { foo: 'FOO', b: { bar: 'BAR' } };
-  var binding = new Ember.Binding('foo', 'b.bar');
-  var a2;
-
-  Ember.run(function () {
-    binding.connect(a);
-
-    a2 = Ember.create(a);
-    Ember.rewatch(a2);
-  });
-
-  equal(get(a2, 'foo'), "BAR", "Should have synced binding on child");
-  equal(get(a,  'foo'), "BAR", "Should NOT have synced binding on parent");
-
-  Ember.run(function () {
-    set(a2, 'b', { bar: 'BAZZ' });
-  });
-
-  equal(get(a2, 'foo'), "BAZZ", "Should have synced binding on child");
-  equal(get(a,  'foo'), "BAR", "Should NOT have synced binding on parent");
-
-});
-
 test('inherited bindings should sync on create', function() {
   var a;
   Ember.run(function () {

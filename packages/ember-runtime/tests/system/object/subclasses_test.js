@@ -6,7 +6,6 @@
 
 module('system/object/subclasses');
 
-// TEST lazy prototype and Em.rewatch(prototype)
 test('chains should copy forward to subclasses when prototype created', function () {
   var ObjectWithChains, objWithChains, SubWithChains, SubSub, subSub;
   Ember.run(function () {
