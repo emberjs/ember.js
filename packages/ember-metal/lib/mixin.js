@@ -224,9 +224,9 @@ function applyObservers(obj, m) {
 function finishPartial(obj, m) {
   m = m || Ember.meta(obj);
 
+  connectBindings(obj, m);
   applyBeforeObservers(obj, m);
   applyObservers(obj, m);
-  connectBindings(obj, m);
   setupDescriptors(obj, m);
 
   return obj;
