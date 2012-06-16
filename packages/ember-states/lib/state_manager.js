@@ -582,6 +582,13 @@ Ember.StateManager = Ember.State.extend(
       if (enterStates.length > 0) {
         state = enterStates[enterStates.length - 1];
 
+        var initialState;
+        while(initialState = get(state, 'initialState')) {
+          state = getPath(state, 'states.'+initialState);
+          enterStates.push(state);
+          segments.push([initialState, context]);
+        }
+
         while (enterStates.length > 0 && enterStates[0] === exitStates[0]) {
           enterStates.shift();
           exitStates.shift();

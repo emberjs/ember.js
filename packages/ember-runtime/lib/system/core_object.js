@@ -183,10 +183,6 @@ var ClassMixin = Ember.Mixin.create(
     Ember.generateGuid(proto, 'ember');
     meta(proto).proto = proto; // this will disable observers on prototype
 
-
-    Class.subclasses = Ember.Set ? new Ember.Set() : null;
-    if (this.subclasses) { this.subclasses.add(Class); }
-
     Class.ClassMixin.apply(Class);
     return Class;
   },

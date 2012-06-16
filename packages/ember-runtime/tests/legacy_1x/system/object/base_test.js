@@ -157,12 +157,3 @@ test("Checking the detectInstance() function on an object and its subclass", fun
   ok(Ember.Object.detectInstance(obj.create()));
   ok(obj.detectInstance(obj.create()));
 });
-
-test("subclasses should contain defined subclasses", function() {
-  ok(inArray(obj1, obj.subclasses) > -1, 'obj.subclasses should contain obj1');
-
-  equal(get(obj1.subclasses, 'length'),0,'obj1.subclasses should be empty');
-
-  var kls2 = obj1.extend();
-  ok(inArray(kls2, obj1.subclasses) > -1, 'obj1.subclasses should contain kls2');
-});
