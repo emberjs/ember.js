@@ -17,11 +17,7 @@ function performTest(binding, a, b, get, set, connect) {
   equal(get(a, 'foo'), 'FOO', 'a should not have changed');
   equal(get(b, 'bar'), 'BAR', 'b should not have changed');
 
-  Ember.run(function () {
-    connect();
-    equal(get(a, 'foo'), 'FOO', 'a should not have changed before sync');
-    equal(get(b, 'bar'), 'BAR', 'b should not have changed before sync');
-  });
+  connect();
 
   equal(get(a, 'foo'), 'BAR', 'a should have changed');
   equal(get(b, 'bar'), 'BAR', 'b should have changed');
@@ -57,39 +53,6 @@ testBoth('Connecting a binding between two objects', function(get, set) {
   var binding = new Ember.Binding('foo', 'b.bar');
 
   performTest(binding, a, b, get, set);
-});
-
-testBoth('Connecting a binding between two objects through property defined after connect', function(get, set) {
-  var b = { bar: 'BAR' };
-  var a = { foo: 'FOO' };
-
-  // b.bar -> a.foo
-  var binding = new Ember.Binding('foo', 'b.bar');
-
-  performTest(binding, a, b, get, set, function () {
-    binding.connect(a);
-
-    Ember.defineProperty(a, 'b', undefined, b);
-  });
-});
-
-testBoth('Connecting a binding between two objects through property overriden after connect', function(get, set) {
-  var c = { bar: 'BAD!' };
-  var b = { bar: 'BAR' };
-  var a = { foo: 'FOO', b: c };
-
-  // b.bar -> a.foo
-  var binding = new Ember.Binding('foo', 'b.bar');
-
-  performTest(binding, a, b, get, set, function () {
-    binding.connect(a);
-
-    equal(Ember.isWatching(c, 'bar'), true, 'should be watching bar');
-
-    Ember.Mixin.create({b: b}).apply(a);
-
-    equal(Ember.isWatching(c, 'bar'), false, 'should not be watching bar');
-  });
 });
 
 testBoth('Connecting a binding to path', function(get, set) {

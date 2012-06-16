@@ -134,19 +134,17 @@ Binding.prototype = /** @scope Ember.Binding.prototype */ {
   connect: function(obj) {
     Ember.assert('Must pass a valid object to Ember.Binding.connect()', !!obj);
 
-    var twoWay = !this._oneWay;
+    var fromPath = this._from, toPath = this._to;
+    Ember.trySetPath(obj, toPath, getPathWithGlobals(obj, fromPath));
 
     // add an observer on the object to be notified when the binding should be updated
-    Ember.addObserver(obj, this._from, this, this.fromDidChange);
+    Ember.addObserver(obj, fromPath, this, this.fromDidChange);
 
     // if the binding is a two-way binding, also set up an observer on the target
-    // object.
-    if (twoWay) { Ember.addObserver(obj, this._to, this, this.toDidChange); }
-
-    // Don't schedule a sync if we're connecting an item on a prototype
-    if (Ember.meta(obj, false).proto !== obj) { this._scheduleSync(obj, 'fwd'); }
+    if (!this._oneWay) { Ember.addObserver(obj, toPath, this, this.toDidChange); }
 
     this._readyToSync = true;
+
     return this;
   },
 
@@ -230,10 +228,10 @@ Binding.prototype = /** @scope Ember.Binding.prototype */ {
         Ember.Logger.log(' ', this.toString(), '->', fromValue, obj);
       }
       if (this._oneWay) {
-        Ember.trySetPath(Ember.isGlobalPath(toPath) ? window : obj, toPath, fromValue);
+        Ember.trySetPath(obj, toPath, fromValue);
       } else {
         Ember._suspendObserver(obj, toPath, this, this.toDidChange, function () {
-          Ember.trySetPath(Ember.isGlobalPath(toPath) ? window : obj, toPath, fromValue);
+          Ember.trySetPath(obj, toPath, fromValue);
         });
       }
     // if we're synchronizing *to* the remote object

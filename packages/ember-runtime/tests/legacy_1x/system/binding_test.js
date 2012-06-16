@@ -270,18 +270,17 @@ test("two bindings to the same value should sync in the order they are initializ
 
 module("propertyNameBinding with longhand", {
   setup: function(){
+    TestNamespace = {};
     Ember.run(function () {
-      TestNamespace = {
-        fromObject: Ember.Object.create({
-          value: "originalValue"
-        }),
+      TestNamespace.fromObject = Ember.Object.create({
+        value: "originalValue"
+      });
 
-        toObject: Ember.Object.create({
+      TestNamespace.toObject = Ember.Object.create({
           valueBinding: Ember.Binding.from('TestNamespace.fromObject.value'),
           localValue: "originalLocal",
           relativeBinding: Ember.Binding.from('localValue')
-        })
-      };
+      });
     });
   },
   teardown: function(){
