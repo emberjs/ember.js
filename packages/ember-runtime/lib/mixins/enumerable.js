@@ -41,7 +41,8 @@ function iter(key, value) {
 
 /** @private */
 function xform(target, method, params) {
-  method.call(target, params[0], params[2], params[3]);
+  var args = [].slice.call(params, 2);
+  method.apply(target, args);
 }
 
 /**
@@ -707,7 +708,7 @@ Ember.Enumerable = Ember.Mixin.create( /** @lends Ember.Enumerable */ {
 
     Ember.propertyWillChange(this, '[]');
     if (hasDelta) Ember.propertyWillChange(this, 'length');
-    Ember.sendEvent(this, '@enumerable:before', removing, adding);
+    Ember.sendEvent(this, '@enumerable:before', this, removing, adding);
 
     return this;
   },
@@ -749,7 +750,7 @@ Ember.Enumerable = Ember.Mixin.create( /** @lends Ember.Enumerable */ {
     if (removing === -1) removing = null;
     if (adding   === -1) adding   = null;
 
-    Ember.sendEvent(this, '@enumerable:change', removing, adding);
+    Ember.sendEvent(this, '@enumerable:change', this, removing, adding);
     if (hasDelta) Ember.propertyDidChange(this, 'length');
     Ember.propertyDidChange(this, '[]');
 
