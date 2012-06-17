@@ -15,12 +15,6 @@ var get = Ember.get, set = Ember.set, meta = Ember.meta, map = Ember.EnumerableU
 /** @private */
 function none(obj) { return obj===null || obj===undefined; }
 
-/** @private */
-function xform(target, method, params) {
-  var args = [].slice.call(params, 2);
-  method.apply(target, args);
-}
-
 // ..........................................................
 // ARRAY
 //
@@ -263,8 +257,8 @@ Ember.Array = Ember.Mixin.create(Ember.Enumerable, /** @scope Ember.Array.protot
 
     var hasObservers = get(this, 'hasArrayObservers');
     if (!hasObservers) Ember.propertyWillChange(this, 'hasArrayObservers');
-    Ember.addListener(this, '@array:before', target, willChange, xform);
-    Ember.addListener(this, '@array:change', target, didChange, xform);
+    Ember.addListener(this, '@array:before', target, willChange);
+    Ember.addListener(this, '@array:change', target, didChange);
     if (!hasObservers) Ember.propertyDidChange(this, 'hasArrayObservers');
     return this;
   },
@@ -285,8 +279,8 @@ Ember.Array = Ember.Mixin.create(Ember.Enumerable, /** @scope Ember.Array.protot
 
     var hasObservers = get(this, 'hasArrayObservers');
     if (hasObservers) Ember.propertyWillChange(this, 'hasArrayObservers');
-    Ember.removeListener(this, '@array:before', target, willChange, xform);
-    Ember.removeListener(this, '@array:change', target, didChange, xform);
+    Ember.removeListener(this, '@array:before', target, willChange);
+    Ember.removeListener(this, '@array:change', target, didChange);
     if (hasObservers) Ember.propertyDidChange(this, 'hasArrayObservers');
     return this;
   },

@@ -142,14 +142,8 @@ function beforeEvent(keyName) {
   return keyName+BEFORE_OBSERVERS;
 }
 
-/** @private */
-function xform(target, method, params) {
-  var args = [].slice.call(params, 2);
-  method.apply(target, args);
-}
-
 Ember.addObserver = function(obj, path, target, method) {
-  Ember.addListener(obj, changeEvent(path), target, method, xform);
+  Ember.addListener(obj, changeEvent(path), target, method);
   Ember.watch(obj, path);
   return this;
 };
@@ -166,7 +160,7 @@ Ember.removeObserver = function(obj, path, target, method) {
 };
 
 Ember.addBeforeObserver = function(obj, path, target, method) {
-  Ember.addListener(obj, beforeEvent(path), target, method, xform);
+  Ember.addListener(obj, beforeEvent(path), target, method);
   Ember.watch(obj, path);
   return this;
 };

@@ -131,7 +131,7 @@ test('calling sendEvent with extra params should be passed to listeners', functi
   });
 
   Ember.sendEvent(obj, 'event!', 'foo', 'bar');
-  deepEqual(params, [obj, 'event!', 'foo', 'bar'], 'params should be saved');
+  deepEqual(params, ['foo', 'bar'], 'params should be saved');
 });
 
 test('implementing sendEvent on object should invoke', function() {

@@ -1,11 +1,5 @@
 var get = Ember.get, set = Ember.set, a_slice = Array.prototype.slice;
 
-/** @private */
-function xform(target, method, params) {
-  var args = a_slice.call(params, 2);
-  method.apply(target, args);
-}
-
 Ember.Evented = Ember.Mixin.create({
   on: function(name, target, method) {
     if (!method) {
@@ -13,7 +7,7 @@ Ember.Evented = Ember.Mixin.create({
       target = null;
     }
 
-    Ember.addListener(this, name, target, method, xform);
+    Ember.addListener(this, name, target, method);
   },
 
   fire: function(name) {
