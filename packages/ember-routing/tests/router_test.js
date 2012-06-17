@@ -246,6 +246,39 @@ test("should be able to unroute out of a state with context", function() {
   equal(getPath(router, 'currentState.path'), 'root.components.show.index', "should go to the correct state");
 });
 
+test("should be able to unroute out of non-nested states with nested paths", function() {
+  var router = Ember.Router.create({
+    location: location,
+    namespace: namespace,
+    root: Ember.Route.create({
+      products: Ember.Route.create({
+        route: '/products',
+        show: Ember.Route.create({
+          route: '/:product_id',
+          index: Ember.Route.create({
+            route: '/'
+          })
+        })
+      }),
+      services: Ember.Route.create({
+        route: '/products/services',
+        show: Ember.Route.create({
+          route: '/:service_id',
+          index: Ember.Route.create({
+            route: '/'
+          })
+        })
+      })
+    })
+  });
+
+  router.route('/products/1');
+  equal(getPath(router, 'currentState.path'), 'root.products.show.index', "should go to the correct state");
+
+  router.route('/products/services/1');
+  equal(getPath(router, 'currentState.path'), 'root.services.show.index', "should go to the correct state");
+});
+
 test("should update route for redirections", function() {
   var router = Ember.Router.create({
     location: location,
