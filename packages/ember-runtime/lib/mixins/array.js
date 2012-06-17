@@ -17,7 +17,8 @@ function none(obj) { return obj===null || obj===undefined; }
 
 /** @private */
 function xform(target, method, params) {
-  method.call(target, params[0], params[2], params[3], params[4]);
+  var args = [].slice.call(params, 2);
+  method.apply(target, args);
 }
 
 // ..........................................................
@@ -328,7 +329,7 @@ Ember.Array = Ember.Mixin.create(Ember.Enumerable, /** @scope Ember.Array.protot
       if (addAmt    === undefined) addAmt=-1;
     }
 
-    Ember.sendEvent(this, '@array:before', startIdx, removeAmt, addAmt);
+    Ember.sendEvent(this, '@array:before', this, startIdx, removeAmt, addAmt);
 
     var removing, lim;
     if (startIdx>=0 && removeAmt>=0 && get(this, 'hasEnumerableObservers')) {
@@ -368,7 +369,7 @@ Ember.Array = Ember.Mixin.create(Ember.Enumerable, /** @scope Ember.Array.protot
     }
 
     this.enumerableContentDidChange(removeAmt, adding);
-    Ember.sendEvent(this, '@array:change', startIdx, removeAmt, addAmt);
+    Ember.sendEvent(this, '@array:change', this, startIdx, removeAmt, addAmt);
 
     var length      = get(this, 'length'),
         cachedFirst = cacheFor(this, 'firstObject'),
