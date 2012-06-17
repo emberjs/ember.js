@@ -153,19 +153,13 @@ function beforeKey(eventName) {
 }
 
 /** @private */
-function xformForArgs(args) {
-  return function (target, method, params) {
-    var obj = params[0], keyName = changeKey(params[1]), val;
-    var copy_args = args.slice();
-    if (method.length>2) {
-      val = Ember.getPath(Ember.isGlobalPath(keyName) ? window : obj, keyName);
-    }
-    copy_args.unshift(obj, keyName, val);
-    method.apply(target, copy_args);
-  };
+function xformChange(target, method, params) {
+  var obj = params[0], keyName = changeKey(params[1]), val;
+  if (method.length>2) {
+    val = Ember.getPath(Ember.isGlobalPath(keyName) ? window : obj, keyName);
+  }
+  method.apply(target, [obj, keyName, val]);
 }
-
-var xformChange = xformForArgs([]);
 
 /** @private */
 function xformBefore(target, method, params) {
@@ -175,14 +169,7 @@ function xformBefore(target, method, params) {
 }
 
 Ember.addObserver = function(obj, path, target, method) {
-  var xform;
-  if (arguments.length > 4) {
-    var args = array_Slice.call(arguments, 4);
-    xform = xformForArgs(args);
-  } else {
-    xform = xformChange;
-  }
-  Ember.addListener(obj, changeEvent(path), target, method, xform);
+  Ember.addListener(obj, changeEvent(path), target, method, xformChange);
   Ember.watch(obj, path);
   return this;
 };
