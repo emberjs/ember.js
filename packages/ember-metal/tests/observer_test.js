@@ -237,7 +237,8 @@ testBoth('addObserver should respect targets with methods', function(get,set){
   var target1 = {
     count: 0,
 
-    didChange: function(obj, keyName, value) {
+    didChange: function(obj, keyName) {
+      var value = get(obj, keyName);
       equal(this, target1, 'should invoke with this');
       equal(obj, observed, 'param1 should be observed object');
       equal(keyName, 'foo', 'param2 should be keyName');
@@ -249,7 +250,8 @@ testBoth('addObserver should respect targets with methods', function(get,set){
   var target2 = {
     count: 0,
 
-    didChange: function(obj, keyName, value) {
+    didChange: function(obj, keyName) {
+      var value = get(obj, keyName);
       equal(this, target2, 'should invoke with this');
       equal(obj, observed, 'param1 should be observed object');
       equal(keyName, 'foo', 'param2 should be keyName');
@@ -432,7 +434,8 @@ testBoth('addBeforeObserver should respect targets with methods', function(get,s
   var target1 = {
     count: 0,
 
-    willChange: function(obj, keyName, value) {
+    willChange: function(obj, keyName) {
+      var value = get(obj, keyName);
       equal(this, target1, 'should invoke with this');
       equal(obj, observed, 'param1 should be observed object');
       equal(keyName, 'foo', 'param2 should be keyName');
@@ -444,7 +447,8 @@ testBoth('addBeforeObserver should respect targets with methods', function(get,s
   var target2 = {
     count: 0,
 
-    willChange: function(obj, keyName, value) {
+    willChange: function(obj, keyName) {
+      var value = get(obj, keyName);
       equal(this, target2, 'should invoke with this');
       equal(obj, observed, 'param1 should be observed object');
       equal(keyName, 'foo', 'param2 should be keyName');
@@ -501,8 +505,8 @@ module('Ember.addObserver - dependentkey with chained properties', {
 testBoth('depending on a simple chain', function(get, set) {
 
   var val ;
-  Ember.addObserver(obj, 'foo.bar.baz.biff', function(target, key, value) {
-    val = value;
+  Ember.addObserver(obj, 'foo.bar.baz.biff', function(target, key) {
+    val = Ember.getPath(target, key);
     count++;
   });
 
@@ -539,8 +543,8 @@ testBoth('depending on a simple chain', function(get, set) {
 testBoth('depending on a Global chain', function(get, set) {
 
   var val ;
-  Ember.addObserver(obj, 'Global.foo.bar.baz.biff', function(target, key, value){
-    val = value;
+  Ember.addObserver(obj, 'Global.foo.bar.baz.biff', function(target, key){
+    val = Ember.getPath(window, key);
     count++;
   });
 

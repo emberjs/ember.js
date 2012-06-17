@@ -154,18 +154,14 @@ function beforeKey(eventName) {
 
 /** @private */
 function xformChange(target, method, params) {
-  var obj = params[0], keyName = changeKey(params[1]), val;
-  if (method.length>2) {
-    val = Ember.getPath(Ember.isGlobalPath(keyName) ? window : obj, keyName);
-  }
-  method.apply(target, [obj, keyName, val]);
+  var obj = params[0], keyName = changeKey(params[1]);
+  method.call(target, obj, keyName);
 }
 
 /** @private */
 function xformBefore(target, method, params) {
-  var obj = params[0], keyName = beforeKey(params[1]), val;
-  if (method.length>2) val = Ember.getPath(obj, keyName);
-  method.call(target, obj, keyName, val);
+  var obj = params[0], keyName = beforeKey(params[1]);
+  method.call(target, obj, keyName);
 }
 
 Ember.addObserver = function(obj, path, target, method) {
