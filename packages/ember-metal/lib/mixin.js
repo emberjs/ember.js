@@ -256,11 +256,6 @@ function applyMixin(obj, mixins, partial) {
   // * Copying `toString` in broken browsers
   mergeMixins(mixins, meta(obj), descs, values, obj);
 
-  if (Ember.MixinDelegate.detect(obj)) {
-    willApply = values.willApplyProperty || obj.willApplyProperty;
-    didApply  = values.didApplyProperty || obj.didApplyProperty;
-  }
-
   for(key in values) {
     if (key === 'contructor') { continue; }
     if (!values.hasOwnProperty(key)) { continue; }
@@ -293,7 +288,6 @@ function applyMixin(obj, mixins, partial) {
       }
 
       if (desc === undefined && value === undefined) { continue; }
-      if (willApply) { willApply.call(obj, key); }
 
       if ('function' === typeof value) {
         if (value.__ember_observesBefore__) {
@@ -317,8 +311,6 @@ function applyMixin(obj, mixins, partial) {
         m.values[key] = value;
         Ember.overrideChains(obj, key, m);
       }
-
-      if (didApply) { didApply.call(obj, key); }
     }
   }
 
@@ -616,11 +608,6 @@ Alias.prototype = new Ember.Descriptor();
 Ember.alias = function(methodName) {
   return new Alias(methodName);
 };
-
-Ember.MixinDelegate = Mixin.create({
-  willApplyProperty: Ember.required(),
-  didApplyProperty:  Ember.required()
-});
 
 // ..........................................................
 // OBSERVER HELPER
