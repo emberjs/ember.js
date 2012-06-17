@@ -32,7 +32,7 @@ function makeCtor() {
   // method a lot faster.  This is glue code so we want it to be as fast as
   // possible.
 
-  var wasApplied = false, initMixins, init = false;
+  var wasApplied = false, initMixins;
 
   var Class = function() {
     if (!wasApplied) {
