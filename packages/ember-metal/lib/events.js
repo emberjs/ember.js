@@ -59,7 +59,8 @@ function targetSetFor(obj, eventName) {
 var SKIP_PROPERTIES = { __ember_source__: true };
 
 /** @private */
-function iterateSet(targetSet, callback, params) {
+function iterateSet(obj, eventName, callback, params) {
+  var targetSet = targetSetFor(obj, eventName);
   if (!targetSet) { return false; }
   // Iterate through all elements of the target set
   for(var targetGuid in targetSet) {
@@ -73,7 +74,7 @@ function iterateSet(targetSet, callback, params) {
 
         var action = actionSet[methodGuid];
         if (action) {
-          if (callback(action, params) === true) {
+          if (callback(action, params, obj) === true) {
             return true;
           }
         }
@@ -84,19 +85,13 @@ function iterateSet(targetSet, callback, params) {
 }
 
 /** @private */
-function invokeAction(action, params) {
+function invokeAction(action, params, sender) {
   var method = action.method, target = action.target;
   // If there is no target, the target is the object
   // on which the event was fired.
-  if (!target) { target = params[0]; }
+  if (!target) { target = sender; }
   if ('string' === typeof method) { method = target[method]; }
-
-  if (params.length > 2) {
-    var args = [].slice.call(params, 2);
-    method.apply(target, args);
-  } else {
-    method.call(target);
-  }
+  method.apply(target, params);
 }
 
 /**
@@ -186,38 +181,37 @@ function watchedEvents(obj) {
 }
 
 /** @memberOf Ember */
-function sendEvent(obj, eventName) {
+function sendEvent(obj, eventName, params) {
   // first give object a chance to handle it
   if (obj !== Ember && 'function' === typeof obj.sendEvent) {
-    obj.sendEvent.apply(obj, a_slice.call(arguments, 1));
+    obj.sendEvent(eventName, params);
   }
 
-  iterateSet(targetSetFor(obj, eventName), invokeAction, arguments);
+  iterateSet(obj, eventName, invokeAction, params);
   return true;
 }
 
 /** @memberOf Ember */
-function deferEvent(obj, eventName) {
-  var targetSet = targetSetFor(obj, eventName), actions = [], params = arguments;
-  iterateSet(targetSet, function (action) {
+function deferEvent(obj, eventName, params) {
+  var actions = [];
+  iterateSet(obj, eventName, function (action) {
     actions.push(action);
   });
 
   return function() {
     if (obj !== Ember && 'function' === typeof obj.sendEvent) {
-      obj.sendEvent.apply(obj, a_slice.call(params, 1));
+      obj.sendEvent(eventName, params);
     }
 
     for (var i=0, len=actions.length; i < len; ++i) {
-      invokeAction(actions[i], params);
+      invokeAction(actions[i], params, obj);
     }
   };
 }
 
 /** @memberOf Ember */
 function hasListeners(obj, eventName) {
-  var targetSet = targetSetFor(obj, eventName);
-  if (iterateSet(targetSet, function() { return true; })) {
+  if (iterateSet(obj, eventName, function() { return true; })) {
     return true;
   }
 
@@ -230,8 +224,8 @@ function hasListeners(obj, eventName) {
 
 /** @memberOf Ember */
 function listenersFor(obj, eventName) {
-  var targetSet = targetSetFor(obj, eventName), ret = [];
-  iterateSet(targetSet, function (action) {
+  var ret = [];
+  iterateSet(obj, eventName, function (action) {
     ret.push([action.target, action.method]);
   });
   return ret;

@@ -56,9 +56,9 @@ DeferredEventQueue.prototype.push = function(target, eventName, keyName) {
   }
   index = eventNameSet[eventName];
   if (index === undefined) {
-    eventNameSet[eventName] = queue.push(Ember.deferEvent(target, eventName, target, keyName)) - 1;
+    eventNameSet[eventName] = queue.push(Ember.deferEvent(target, eventName, [target, keyName])) - 1;
   } else {
-    queue[index] = Ember.deferEvent(target, eventName, target, keyName);
+    queue[index] = Ember.deferEvent(target, eventName, [target, keyName]);
   }
 };
 
@@ -78,7 +78,7 @@ function notifyObservers(obj, eventName, keyName, forceNotification) {
   if (deferred && !forceNotification) {
     queue.push(obj, eventName, keyName);
   } else {
-    Ember.sendEvent(obj, eventName, obj, keyName);
+    Ember.sendEvent(obj, eventName, [obj, keyName]);
   }
 }
 

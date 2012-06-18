@@ -130,16 +130,15 @@ test('calling sendEvent with extra params should be passed to listeners', functi
     params = Array.prototype.slice.call(arguments);
   });
 
-  Ember.sendEvent(obj, 'event!', 'foo', 'bar');
+  Ember.sendEvent(obj, 'event!', ['foo', 'bar']);
   deepEqual(params, ['foo', 'bar'], 'params should be saved');
 });
 
 test('implementing sendEvent on object should invoke', function() {
   var obj = {
-    sendEvent: function(eventName, param1, param2) {
+    sendEvent: function(eventName, params) {
       equal(eventName, 'event!', 'eventName');
-      equal(param1, 'foo', 'param1');
-      equal(param2, 'bar', 'param2');
+      deepEqual(params, ['foo', 'bar']);
       this.count++;
     },
 
@@ -148,7 +147,7 @@ test('implementing sendEvent on object should invoke', function() {
 
   Ember.addListener(obj, 'event!', obj, function() { this.count++; });
 
-  Ember.sendEvent(obj, 'event!', 'foo', 'bar');
+  Ember.sendEvent(obj, 'event!', ['foo', 'bar']);
   equal(obj.count, 2, 'should have invoked method & listener');
 });
 

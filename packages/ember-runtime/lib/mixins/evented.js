@@ -1,17 +1,14 @@
-var get = Ember.get, set = Ember.set, a_slice = Array.prototype.slice;
-
 Ember.Evented = Ember.Mixin.create({
   on: function(name, target, method) {
-    if (!method) {
-      method = target;
-      target = null;
-    }
-
     Ember.addListener(this, name, target, method);
   },
 
   fire: function(name) {
-    Ember.sendEvent.apply(null, [this, name].concat(a_slice.call(arguments, 1)));
+    var args = [], i, l;
+    for (i = 1, l = arguments.length; i < l; i++) {
+      args.push(arguments[i]);
+    }
+    Ember.sendEvent(this, name, args);
   },
 
   off: function(name, target, method) {
