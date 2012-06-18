@@ -13,7 +13,7 @@ test("fire should call method sharing event name if it exists on the view", func
 
   var view = Ember.View.create({
     fireMyEvent: function() {
-      this.fire('myEvent');
+      this.trigger('myEvent');
     },
 
     myEvent: function() {
@@ -33,7 +33,7 @@ test("fire does not require a view method with the same name", function() {
 
   var view = Ember.View.create({
     fireMyEvent: function() {
-      this.fire('myEvent');
+      this.trigger('myEvent');
     }
   });
 

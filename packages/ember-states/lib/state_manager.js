@@ -635,7 +635,7 @@ Ember.StateManager = Ember.State.extend(
       state = this.findStatesByRoute(state, path);
       state = state[state.length-1];
 
-      state.fire(get(this, 'transitionEvent'), this, context);
+      state.trigger(get(this, 'transitionEvent'), this, context);
     }, this);
   },
 
@@ -656,12 +656,12 @@ Ember.StateManager = Ember.State.extend(
 
     exitStates = exitStates.slice(0).reverse();
     arrayForEach.call(exitStates, function(state) {
-      state.fire('exit', stateManager);
+      state.trigger('exit', stateManager);
     });
 
     arrayForEach.call(enterStates, function(state) {
       if (log) { Ember.Logger.log("STATEMANAGER: Entering " + get(state, 'path')); }
-      state.fire('enter', stateManager);
+      state.trigger('enter', stateManager);
     });
 
     var startState = state,
@@ -676,7 +676,7 @@ Ember.StateManager = Ember.State.extend(
       enteredState = startState;
 
       if (log) { Ember.Logger.log("STATEMANAGER: Entering " + get(startState, 'path')); }
-      startState.fire('enter', stateManager);
+      startState.trigger('enter', stateManager);
 
       initialState = get(startState, 'initialState');
 

@@ -45,7 +45,7 @@ Ember.State = Ember.Object.extend(Ember.Evented,
     Override the default event firing from Ember.Evented to
     also call methods with the given name.
   */
-  fire: function(name) {
+  trigger: function(name) {
     if (this[name]) {
       this[name].apply(this, [].slice.call(arguments, 1));
     }
@@ -163,21 +163,21 @@ var Event = Ember.$ && Ember.$.Event;
 
 Ember.State.reopenClass(
 /** @scope Ember.State */{
-  
+
   /**
   @static
-  
+
   Creates an action function for transitioning to the named state while preserving context.
-  
-  The following example StateManagers are equivalent: 
-  
+
+  The following example StateManagers are equivalent:
+
       aManager = Ember.StateManager.create({
         stateOne: Ember.State.create({
           changeToStateTwo: Ember.State.transitionTo('stateTwo')
         }),
         stateTwo: Ember.State.create({})
       })
-      
+
       bManager = Ember.StateManager.create({
         stateOne: Ember.State.create({
           changeToStateTwo: function(manager, context){
@@ -186,7 +186,7 @@ Ember.State.reopenClass(
         }),
         stateTwo: Ember.State.create({})
       })
-  
+
   @param {String} target
   */
   transitionTo: function(target) {
