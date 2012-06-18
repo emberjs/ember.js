@@ -247,6 +247,11 @@ Ember.ViewState = Ember.State.extend(
 /** @scope Ember.ViewState.prototype */ {
   isViewState: true,
 
+  init: function() {
+    Ember.deprecate("Ember.ViewState is deprecated and will be removed from future releases. Consider using the outlet pattern to display nested views instead. For more informatin, see http://emberjs.com/guides/outlets/.");
+    return this._super();
+  },
+
   enter: function(stateManager) {
     var view = get(this, 'view'), root, childViews;
 
