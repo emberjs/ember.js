@@ -64,7 +64,7 @@ EmberHandlebars.ViewHelper = Ember.Object.create({
       if (!hash.hasOwnProperty(prop)) { continue; }
 
       // Test if the property ends in "Binding"
-      if (Ember.IS_BINDING.test(prop)) {
+      if (Ember.IS_BINDING.test(prop) && typeof hash[prop] === 'string') {
         path = hash[prop];
 
         normalized = Ember.Handlebars.normalizePath(null, path, data);
