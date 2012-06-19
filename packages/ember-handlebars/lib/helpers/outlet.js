@@ -1,4 +1,5 @@
 require('ember-handlebars/helpers/view');
+
 /**
   The `outlet` helper allows you to specify that the current
   view's controller will fill in the view for a given area.
@@ -21,32 +22,30 @@ require('ember-handlebars/helpers/view');
 
       controller.set('masterView', postsView);
       controller.set('detailView', postView);
-  
+
   The outlet can handle a custom ContainerView.
-  the custom ContainerView must be post fixed with "_Outlet".
+  the custom ContainerView must be of the form "App.MyCustomOutlet" where App is your application name and MyCustom the name of your custom ContainerView.
   
       {{outlet}}                                    <- standard 
       {{outlet view}}                               <- standard verbose 
       {{outlet masterView}}                         <- custom outlet name 
+      {{outlet App.CustomOutlet}}                   <- custom outlet view 
       
-      {{outlet view App.View_Outlet}}               <- standard + custom outlet view
-      {{outlet App.View_Outlet view}}               <- custom outlet view + standard 
-      
-      {{outlet masterView App.MasterView_Outlet}}   <- custom outlet name  + custom outlet view
-      {{outlet App.MasterView_Outlet masterView}}   <- custom outlet view + custom outlet name  
+      {{outlet masterView App.MasterOutlet}}        <- custom outlet name  + custom outlet view
+      {{outlet App.MasterOutlet masterView}}        <- custom outlet view + custom outlet name  
   
   @name Handlebars.helpers.outlet
   @param {String} property the property on the controller that holds the view for this outlet
-  @param {String} view the custom ContainerView settings html data for outlet block (id, tag, class, aria, ...)
+  @param {String} view the custom ContainerView providing html data for outlet block (id, tag, class, aria, ...)
 */
 Ember.Handlebars.registerHelper('outlet', function(property, view, options) {
   Ember.assert('you can provide an "outletName" and/or a custom "Ember.ContainerView" ... no more!', arguments.length <= 3);
   
-  var regex = /_Outlet$/;
+  var regex = /\.([a-zA-Z0-9]+)+Outlet$/;
   
   if (property && property.data && property.data.isRenderData) {
-      options = property;
-      property = 'view';
+    options = property;
+    property = 'view';
   } 
   else if (view && view.data && view.data.isRenderData) {
     options = view;
@@ -57,11 +56,13 @@ Ember.Handlebars.registerHelper('outlet', function(property, view, options) {
     }
   }
   
-  if ((typeof property === "string" && regex.test(property)) && (typeof view === "string" && !regex.test(view))) {
-    var v = view;
-    view = property;
-    property = v;
-    v = null;
+  if (typeof property === "string" && typeof view === "string") {
+    if (regex.test(property) && !regex.test(view)) {
+      var v = view;
+      view = property;
+      property = v;
+      v = null;
+    }
   }
   
   if (typeof view !== "string") {

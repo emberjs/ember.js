@@ -65,7 +65,7 @@ test("outlet should support an optional name", function() {
 
 
 test('outlet should support an optional custom ContainerView without outlet name specified.', function() {
-  Ember.MyCustomContainer_Outlet = Ember.ContainerView.extend({
+  Ember.MyCustomContainerOutlet = Ember.ContainerView.extend({
     elementId: "custom-id",
     tagName: "section"
   });
@@ -74,7 +74,7 @@ test('outlet should support an optional custom ContainerView without outlet name
 
   view = Ember.View.create({
     controller: controller,
-    template: compile("<h1>HELLO</h1>{{outlet Ember.MyCustomContainer_Outlet}}")
+    template: compile("<h1>HELLO</h1>{{outlet Ember.MyCustomContainerOutlet}}")
   });
 
   appendView(view);
@@ -89,7 +89,7 @@ test('outlet should support an optional custom ContainerView without outlet name
 });
 
 test('outlet should support an optional custom ContainerView with outlet name specified.', function() {
-  Ember.MyCustomContainer_Outlet = Ember.ContainerView.extend({
+  Ember.MyCustomContainerOutlet = Ember.ContainerView.extend({
     elementId: "custom-id",
     tagName: "section"
   });
@@ -98,7 +98,7 @@ test('outlet should support an optional custom ContainerView with outlet name sp
 
   view = Ember.View.create({
     controller: controller,
-    template: compile("<h1>HELLO</h1>{{outlet mainView Ember.MyCustomContainer_Outlet}}")
+    template: compile("<h1>HELLO</h1>{{outlet mainView Ember.MyCustomContainerOutlet}}")
   });
 
   appendView(view);
@@ -113,7 +113,7 @@ test('outlet should support an optional custom ContainerView with outlet name sp
 });
 
 test('outlet should support an optional custom ContainerView with outlet name specified in inversed position.', function() {
-  Ember.MyCustomContainer_Outlet = Ember.ContainerView.extend({
+  Ember.MyCustomContainerOutlet = Ember.ContainerView.extend({
     elementId: "custom-id",
     tagName: "section"
   });
@@ -122,7 +122,7 @@ test('outlet should support an optional custom ContainerView with outlet name sp
 
   view = Ember.View.create({
     controller: controller,
-    template: compile("<h1>HELLO</h1>{{outlet Ember.MyCustomContainer_Outlet mainView}}")
+    template: compile("<h1>HELLO</h1>{{outlet Ember.MyCustomContainerOutlet mainView}}")
   });
 
   appendView(view);
