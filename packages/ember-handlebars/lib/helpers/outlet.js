@@ -42,7 +42,10 @@ Ember.Handlebars.registerHelper('outlet', function(property, view, options) {
   if (property && property.data && property.data.isRenderData) {
     options = property;
     property = 'view';
-  } else if (view && view.data && view.data.isRenderData) {
+  // } else if (view && view.data && view.data.isRenderData) {
+  else if (typeof view === "object" && typeof options === "undefined") {
+    options = view;
+  }
     options = view;
   }
 

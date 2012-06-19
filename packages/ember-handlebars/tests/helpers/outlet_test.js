@@ -64,7 +64,7 @@ test("outlet should support an optional name", function() {
 });
 
 
-test('outlet should support an optional custom ContainerView. settings{ elementid: "custom-id", tagName: "section" }', function() {
+test('outlet should support an optional custom ContainerView.', function() {
   Ember.MyCustomContainerView = Ember.ContainerView.extend({
     elementId: "custom-id",
     tagName: "section"
@@ -72,15 +72,12 @@ test('outlet should support an optional custom ContainerView. settings{ elementi
   
   var controller = Ember.Object.create();
 
-  var template = "<h1>HI</h1>{{outlet mainView Ember.MyCustomContainerView}}";
   view = Ember.View.create({
     controller: controller,
-    template: Ember.Handlebars.compile(template)
+    template: compile("<h1>HI</h1>{{outlet mainView Ember.MyCustomContainerView}}")
   });
 
   appendView(view);
-
-  equal(view.$().text(), 'HI');
 
   Ember.run(function() {
     controller.set('mainView', Ember.View.create({
@@ -88,7 +85,5 @@ test('outlet should support an optional custom ContainerView. settings{ elementi
     }));
   });
 
-  equal(view.$().text(), 'HIBYE');
-  
-  equal(view.$("section#custom-id").text(), 'BYE', 'outlet with an elementId "custom-id" and tagName "section" has been successfully founded !');
+  equal(view.$("section#custom-id").text(), 'BYE', 'outlet with custom ContainerView has been successfully founded !');
 });
