@@ -112,7 +112,7 @@ Ember.Application = Ember.Namespace.extend(
     }
 
     if (router) {
-      set(this, 'stateManager', router);
+      set(this, 'router', router);
     }
 
     // By default, the router's namespace is the current application.
