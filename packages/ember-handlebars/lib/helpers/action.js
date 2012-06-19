@@ -48,7 +48,7 @@ ActionHelper.registerAction = function(actionName, eventName, target, view, cont
   And application code
 
       AView = Ember.View.extend({
-        templateName; 'a-template',
+        templateName: 'a-template',
         anActionName: function(event){}
       });
 
@@ -123,7 +123,7 @@ ActionHelper.registerAction = function(actionName, eventName, target, view, cont
   With the following application code
 
       AView = Ember.View.extend({
-        templateName; 'a-template',
+        templateName: 'a-template',
         // note: no method 'aMethodNameThatIsMissing'
         anActionName: function(event){}
       });
@@ -133,6 +133,12 @@ ActionHelper.registerAction = function(actionName, eventName, target, view, cont
 
   Will throw `Uncaught TypeError: Cannot call method 'call' of undefined` when
   "click me" is clicked.
+
+  ### Default Action Target
+
+  Actions will first try to use the `target` property of the view's controller
+  as the target. It will fallback to using the view's `controller` property
+  and finally the view itself as the target.
 
   ### Specifying DOM event type
 
@@ -182,7 +188,7 @@ EmberHandlebars.registerHelper('action', function(actionName, options) {
   if (hash.target) {
     target = getPath(this, hash.target, options);
   } else if (controller = options.data.keywords.controller) {
-    target = get(controller, 'target');
+    target = get(controller, 'target') || controller;
   }
 
   target = target || view;
