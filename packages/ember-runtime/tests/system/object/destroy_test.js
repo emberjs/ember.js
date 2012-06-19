@@ -38,3 +38,25 @@ test("should raise an exception when modifying watched properties on a destroyed
     expect(0);
   }
 });
+
+test("observers should not fire after an object has been destroyed", function() {
+  var count = 0;
+  var obj = Ember.Object.create({
+    fooDidChange: Ember.observer(function() {
+      count++;
+    }, 'foo')
+  });
+
+  obj.set('foo', 'bar');
+
+  equal(count, 1, "observer was fired once");
+
+  Ember.run(function() {
+    Ember.beginPropertyChanges();
+    obj.set('foo', 'quux');
+    obj.destroy();
+    Ember.endPropertyChanges();
+  });
+
+  equal(count, 1, "observer was not called after object was destroyed");
+});
