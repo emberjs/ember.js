@@ -43,8 +43,11 @@ Ember.Handlebars.registerHelper('outlet', function(property, view, options) {
     options = property;
     property = 'view';
   } else if (typeof view === "object" && typeof options === "undefined") {
+<<<<<<< HEAD
     options = view;
   }
+=======
+>>>>>>> doesn't know anymore what that must fix x)
     options = view;
   }
 
