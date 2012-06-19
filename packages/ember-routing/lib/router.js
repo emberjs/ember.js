@@ -57,6 +57,7 @@ Ember.Router = Ember.StateManager.extend(
     try {
       path = path.replace(/^(?=[^\/])/, "/");
 
+      this.send('navigateAway');
       this.send('unroutePath', path);
 
       var currentURL = get(this, 'currentState').absoluteRoute(this);
