@@ -40,17 +40,17 @@ Ember.Handlebars.registerHelper('outlet', function(property, view, options) {
   Ember.assert('you can provide an "outletName" and a custom "Ember.ContainerView" ... no more!', arguments.length <= 3);
   
   if (property && property.data && property.data.isRenderData) {
-    options = property;
-    property = 'view';
-  } else if (typeof view === "object" && typeof options === "undefined") {
+      options = property;
+      property = 'view';
+  } else if (view && view.data && view.data.isRenderData) {
     options = view;
   }
   
   if(typeof view !== "string") {
     view = Ember.ContainerView;
-  }
+  } 
   
   options.hash.currentViewBinding = "controller." + property;
 
-  return Ember.Handlebars.helpers.view.call(this, Ember.ContainerView, options);
+  return Ember.Handlebars.helpers.view.call(this, view, options);
 });
