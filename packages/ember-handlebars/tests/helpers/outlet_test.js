@@ -66,7 +66,7 @@ test("outlet should support an optional name", function() {
 
 test('outlet should support an optional custom ContainerView. settings{ elementid: "custom-id", tagName: "section" }', function() {
   Ember.MyCustomContainerView = Ember.ContainerView.extend({
-    elementid: "custom-id",
+    elementId: "custom-id",
     tagName: "section"
   });
   
