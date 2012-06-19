@@ -199,6 +199,8 @@ function deferEvent(obj, eventName, params) {
   });
 
   return function() {
+    if (obj.isDestroyed) { return; }
+
     if (obj !== Ember && 'function' === typeof obj.sendEvent) {
       obj.sendEvent(eventName, params);
     }

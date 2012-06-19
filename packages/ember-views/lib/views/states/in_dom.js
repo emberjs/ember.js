@@ -73,7 +73,7 @@ Ember.View.states.hasElement = {
     if (view.has(eventName)) {
       // Handler should be able to re-dispatch events, so we don't
       // preventDefault or stopPropagation.
-      return view.fire(eventName, evt);
+      return view.trigger(eventName, evt);
     } else {
       return true; // continue event propagation
     }
