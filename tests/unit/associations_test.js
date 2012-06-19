@@ -44,8 +44,21 @@ test("hasMany lazily loads associations as needed", function() {
     pets: DS.hasMany(Pet, { key: 'pet_ids'})
   });
 
-  var store = DS.Store.create();
-  store.loadMany(Tag, [5, 2, 12], [{ id: 5, name: "friendly" }, { id: 2, name: "smarmy" }, { id: 12, name: "oohlala" }]);
+  var store = DS.Store.create({
+    adapter: DS.Adapter.create({
+      find: function(store, type, id) {
+        if (type === Tag && id === 12) {
+          store.load(type, 12, {
+            id: 12,
+            name: "oohlala"
+          });
+        } else {
+          ok(false, "find() should not be called with these values");
+        }
+      }
+    })
+  });
+  store.loadMany(Tag, [5, 2], [{ id: 5, name: "friendly" }, { id: 2, name: "smarmy" }]);
   store.loadMany(Pet, [4, 7, 12], [{ id: 4, name: "fluffy" }, { id: 7, name: "snowy" }, { id: 12, name: "cerberus" }]);
   store.load(Person, 1, { id: 1, name: "Tom Dale", tags: [5] });
   store.load(Person, 2, { id: 2, name: "Yehuda Katz", tags: [12] });
@@ -89,6 +102,9 @@ test("hasMany lazily loads associations as needed", function() {
   store.load(Person, 4, { id: 4, name: "Cyvid Hamluck", pet_ids: [4, 12] });
   equal(pets, get(cyvid, 'pets'), "an association returns the same object every time");
   equal(get(get(cyvid, 'pets'), 'length'), 2, "the length is updated after new data is loaded");
+
+  var newTag = store.createRecord(Tag);
+  get(wycats, 'tags').pushObject(newTag);
 });
 
 test("should be able to retrieve the type for a hasMany association from its metadata", function() {

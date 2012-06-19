@@ -30,7 +30,7 @@ test("if a record is created, its association's isDirty is false", function() {
 });
 
 test("if a record is loaded from the server, its association's isDirty is false", function() {
-  store.load(Group, { id: 1, people: [ 1, 2 ] });   
+  store.load(Group, { id: 1, people: [ 1, 2 ] });
   store.loadMany(Person, [{ id: 1 }, { id: 2 }]);
 
   var group = store.find(Group, 1);
@@ -40,7 +40,7 @@ test("if a record is loaded from the server, its association's isDirty is false"
 });
 
 test("if an association has existing records added to it, its isDirty is true", function() {
-  store.load(Group, { id: 1, people: [ 1, 2 ] });   
+  store.load(Group, { id: 1, people: [ 1, 2 ] });
   store.loadMany(Person, [{ id: 1 }, { id: 2 }, { id: 3 }]);
 
   var group = store.find(Group, 1);
@@ -56,7 +56,7 @@ test("if an association has existing records added to it, its isDirty is true", 
 });
 
 test("if an association has newly created records added to it, its isDirty is true", function() {
-  store.load(Group, { id: 1, people: [ 1, 2 ] });   
+  store.load(Group, { id: 1, people: [ 1, 2 ] });
   store.loadMany(Person, [{ id: 1 }, { id: 2 }, { id: 3 }]);
 
   var group = store.find(Group, 1);
@@ -72,7 +72,7 @@ test("if an association has newly created records added to it, its isDirty is tr
 });
 
 test("if an association has records removed from it, its isDirty is true", function() {
-  store.load(Group, { id: 1, people: [ 1, 2 ] });   
+  store.load(Group, { id: 1, people: [ 1, 2 ] });
   store.loadMany(Person, [{ id: 1 }, { id: 2 }, { id: 3 }]);
 
   var group = store.find(Group, 1);
@@ -100,7 +100,7 @@ test("if an association's added and removed records are persisted, its isDirty i
     }
   }));
 
-  store.load(Group, { id: 1, people: [ 1, 2 ] });   
+  store.load(Group, { id: 1, people: [ 1, 2 ] });
   store.loadMany(Person, [{ id: 1 }, { id: 2 }, { id: 3 }]);
 
   var group = store.find(Group, 1);
