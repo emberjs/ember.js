@@ -77,7 +77,7 @@ Ember.ArrayPolyfills = {
   indexOf: arrayIndexOf
 };
 
-Ember.EnumerableUtils = {
+var utils = Ember.EnumerableUtils = {
   map: function(obj, callback, thisArg) {
     return obj.map ? obj.map.call(obj, callback, thisArg) : arrayMap.call(obj, callback, thisArg);
   },
@@ -91,13 +91,13 @@ Ember.EnumerableUtils = {
   },
 
   indexesOf: function(obj, elements) {
-    return elements === undefined ? [] : Ember.EnumerableUtils.map(elements, function(item) {
-      return Ember.EnumerableUtils.indexOf(obj, item);
+    return elements === undefined ? [] : utils.map(elements, function(item) {
+      return utils.indexOf(obj, item);
     });
   },
 
   removeObject: function(array, item) {
-    var index = this.indexOf(array, item);
+    var index = utils.indexOf(array, item);
     if (index !== -1) { array.splice(index, 1); }
   }
 };
