@@ -40,30 +40,39 @@ require('ember-handlebars/helpers/view');
   @param {String} view the custom ContainerView providing html data for outlet block (id, tag, class, aria, ...)
 */
 Ember.Handlebars.registerHelper('outlet', function(property, view, options) {
-  Ember.assert('you can provide an "outletName" and/or a custom "Ember.ContainerView" ... no more!', arguments.length <= 3);
+  Ember.assert(
+    'you can provide an "outletName" and/or a custom "Ember.ContainerView" ... no more!', 
+    arguments.length <= 3
+  );
   
   var regex = /\.([a-zA-Z]{1}[a-z0-9]*)*Outlet$/;
   
-  if (property && property.data && property.data.isRenderData) {
-    options = property;
-    property = 'view';
-  } 
-  else if (view && view.data && view.data.isRenderData) {
-    options = view;
-    
-    if (regex.test(property)) {
-      view = property;
-      property = 'view';
-    }
-  }
-  
-  if (typeof property === "string" && typeof view === "string") {
-    if (regex.test(property) && !regex.test(view)) {
-      var v = view;
-      view = property;
-      property = v;
-      v = null;
-    }
+  switch (arguments.length) {
+    case 1: 
+      if (property && property.data && property.data.isRenderData) {
+        options = property;
+        property = 'view';
+      } 
+      break;
+    case 2:
+      if (view && view.data && view.data.isRenderData) {
+        options = view;
+        
+        if (regex.test(property)) {
+          view = property;
+          property = 'view';
+        }
+      }
+      break;
+    case 3:
+      if ((typeof property === "string" && typeof view === "string") 
+        && (regex.test(property) && !regex.test(view))) {
+        var v = view;
+        view = property;
+        property = v;
+        v = null;
+      }
+      break;
   }
   
   if (typeof view !== "string") {
