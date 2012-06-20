@@ -310,3 +310,101 @@ test("modified records are reset when their transaction is rolled back", functio
 
   equal(person.get('isValid'), true, "invalid record is now marked as valid");
 });
+
+var Post = DS.Model.extend({
+  title: DS.attr('string'),
+  body: DS.attr('string')
+});
+
+var Comment = DS.Model.extend({
+  body: DS.attr('string'),
+  post: DS.belongsTo(Post)
+});
+
+Post.reopen({
+  comments: DS.hasMany(Comment)
+});
+
+var store, adapter;
+module("DS.Transaction - relationships", {
+  setup: function() {
+    adapter = DS.Adapter.create();
+    store = DS.Store.create({
+      adapter: adapter
+    });
+  },
+
+  teardown: function() {
+    Ember.run(function() {
+      adapter.destroy();
+      store.destroy();
+    });
+  }
+});
+
+test("If both the parent and child are clean and in the same transaction, a dirty relationship is added to the transaction", function() {
+  store.load(Post, { id: 1, title: "Ohai", body: "FIRST POST ZOMG" });
+  store.load(Comment, { id: 1, body: "Kthx" });
+
+  var post = store.find(Post, 1);
+  var comment = store.find(Comment, 1);
+
+  var transaction = store.transaction();
+
+  transaction.add(post);
+  transaction.add(comment);
+
+  post.get('comments').pushObject(comment);
+
+  var relationships = transaction.dirtyRelationships;
+
+  deepEqual(relationships.byChild.get(comment), [ { oldParent: null, newParent: post, child: comment } ]);
+  deepEqual(relationships.byNewParent.get(post), [ { oldParent: null, newParent: post, child: comment } ]);
+});
+
+test("If a child is removed from a parent, a dirty relationship is added to the transaction", function() {
+  store.load(Comment, { id: 1, body: "Kthx" });
+  store.load(Post, { id: 1, title: "Ohai", body: "FIRST POST ZOMG", comments: [ 1 ] });
+
+  var post = store.find(Post, 1);
+  var comment = store.find(Comment, 1);
+
+  var transaction = store.transaction();
+
+  transaction.add(post);
+  transaction.add(comment);
+
+  post.get('comments').removeObject(comment);
+
+  var relationships = transaction.dirtyRelationships;
+
+  deepEqual(relationships.byChild.get(comment), [ { oldParent: post, newParent: null, child: comment } ]);
+  deepEqual(relationships.byOldParent.get(post), [ { oldParent: post, newParent: null, child: comment } ]);
+});
+
+test("If a child is removed from a parent it was recently added to, the dirty relationship is removed", function() {
+  store.load(Comment, { id: 1, body: "Kthx" });
+  store.load(Post, { id: 1, title: "Ohai", body: "FIRST POST ZOMG", comments: [ 1 ] });
+
+  var post = store.find(Post, 1);
+  var comment = store.find(Comment, 1);
+
+  var transaction = store.transaction();
+
+  transaction.add(post);
+  transaction.add(comment);
+
+  Ember.run(function() {
+    post.get('comments').removeObject(comment);
+  });
+
+  Ember.run(function() {
+    post.get('comments').pushObject(comment);
+  });
+
+  var relationships = transaction.dirtyRelationships;
+
+  deepEqual(relationships.byChild.get(comment), [ ]);
+  deepEqual(relationships.byOldParent.get(post), [ ]);
+});
+
