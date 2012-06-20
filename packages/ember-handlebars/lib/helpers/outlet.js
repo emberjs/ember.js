@@ -24,14 +24,15 @@ require('ember-handlebars/helpers/view');
       controller.set('detailView', postView);
 
   The outlet can handle a custom ContainerView.
-  the custom ContainerView must be of the form "App.MyCustomOutlet" where App is your application name and MyCustom the name of your custom ContainerView.
+  the custom ContainerView name must:
+  - have a dot (required for regex test)
+  - be post fixed with Outlet instead of View (required for regex test)
   
       {{outlet}}                                    <- standard 
       {{outlet view}}                               <- standard verbose 
       {{outlet masterView}}                         <- custom outlet name 
       {{outlet App.CustomOutlet}}                   <- custom outlet view 
-      
-      {{outlet masterView App.MasterOutlet}}        <- custom outlet name  + custom outlet view
+      {{outlet masterView App.MasterOutlet}}        <- custom outlet name + custom outlet view
       {{outlet App.MasterOutlet masterView}}        <- custom outlet view + custom outlet name  
   
   @name Handlebars.helpers.outlet
@@ -41,7 +42,7 @@ require('ember-handlebars/helpers/view');
 Ember.Handlebars.registerHelper('outlet', function(property, view, options) {
   Ember.assert('you can provide an "outletName" and/or a custom "Ember.ContainerView" ... no more!', arguments.length <= 3);
   
-  var regex = /\.([a-zA-Z0-9]+)+Outlet$/;
+  var regex = /\.([a-zA-Z]{1}[a-z0-9]*)*Outlet$/;
   
   if (property && property.data && property.data.isRenderData) {
     options = property;

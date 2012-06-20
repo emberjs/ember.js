@@ -135,3 +135,27 @@ test('outlet should support an optional custom ContainerView with outlet name sp
 
   equal(view.$("section#custom-id").text(), 'WORLD', 'outlet with custom ContainerView has been successfully founded !');
 });
+
+test('outlet should support an optional custom ContainerView with minimal name.', function() {
+  Ember.Outlet = Ember.ContainerView.extend({
+    elementId: "custom-id",
+    tagName: "section"
+  });
+  
+  var controller = Ember.Object.create();
+
+  view = Ember.View.create({
+    controller: controller,
+    template: compile("<h1>HELLO</h1>{{outlet Ember.Outlet mainView}}")
+  });
+
+  appendView(view);
+
+  Ember.run(function() {
+    controller.set('mainView', Ember.View.create({
+      template: compile("<p>WORLD</p>")
+    }));
+  });
+
+  equal(view.$("section#custom-id").text(), 'WORLD', 'outlet with custom ContainerView has been successfully founded !');
+});
