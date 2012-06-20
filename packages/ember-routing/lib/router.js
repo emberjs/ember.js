@@ -17,7 +17,7 @@ var get = Ember.get, getPath = Ember.getPath, set = Ember.set;
 
   You can provide a subclass of Ember.Router as the `Router` property of your application. An instance
   of this Router class will be instantiated and route detection will be enabled when the application's
-  `initialize` method is called. The Router instance will be available as the `stateManager` property
+  `initialize` method is called. The Router instance will be available as the `router` property
   of the application:
 
       App = Ember.Application.create({
@@ -25,7 +25,7 @@ var get = Ember.get, getPath = Ember.getPath, set = Ember.set;
       });
 
       App.initialize();
-      App.get('stateManager') // an instance of App.Router
+      App.get('router') // an instance of App.Router
 
   If you want to define a Router instance elsewhere, you can pass the instance to the application's
   `initialize` method:
@@ -34,11 +34,12 @@ var get = Ember.get, getPath = Ember.getPath, set = Ember.set;
       aRouter = Ember.Router.create({ ... });
 
       App.initialize(aRouter);
-      App.get('stateManager') // aRouter
+      App.get('router') // aRouter
 
   ## Adding Routes to a Router
-  The `initialState` property of Ember.Router instances is `root`. The Ember.Route stored in this
-  property should have sub-states with `route` properties that describes the URL pattern you would
+  The `initialState` property of Ember.Router instances is named `root`. The state stored in this
+  property should be a subclass of Ember.Route. The `root` route should itself have states that are
+  also subclasses of Ember.Route and have `route` properties describing the URL pattern you would
   like to detect.
 
       App = Ember.Application.create({
@@ -81,15 +82,10 @@ var get = Ember.get, getPath = Ember.getPath, set = Ember.set;
   'root.bRoute' ('/alphabeta') and transition the router first to the state named 'root' and
   then to the substate 'bRoute'.
 
-  As with all Ember.State instances Ember.Routes can be nested within other Ember.Routes to
-  create expressive state sets. However, only Ember.States that are leaf states can have detectable
-  `route` properties. Parent states (or leaf states without a `route`
-  property) can be used to capture application state that cannot be re-entered later.
-
   ## Route Transition Events
   Transitioning between Ember.Route instances (including the transition into the detected
   route when loading the application)  triggers the same transition events as state transitions for
-  base Ember.States. However, the default `setup` transition event is named `connectOutlets` on
+  base `Ember.State`s. However, the default `setup` transition event is named `connectOutlets` on
   Ember.Router instances (see 'Changing View Hierarchy in Response To State Change').
 
   The following route structure when loaded with the URL "#/"
@@ -100,10 +96,10 @@ var get = Ember.get, getPath = Ember.getPath, set = Ember.set;
             aRoute: Ember.Route.extend({
               route: '/'
               enter: function(router){
-                console.log("entering root.aRoute from", manager.getPath('currentState.name'));
+                console.log("entering root.aRoute from", router.getPath('currentState.name'));
               },
               connectOutlets: function(router){
-                console.log("entered root.aRoute, fully transitioned to", manager.getPath('currentState.path'));
+                console.log("entered root.aRoute, fully transitioned to", router.getPath('currentState.path'));
               }
             })
           })
@@ -152,8 +148,7 @@ var get = Ember.get, getPath = Ember.getPath, set = Ember.set;
           root: Ember.Route.extend({
             aRoute: Ember.Route.extend({
               route: '/',
-              connectOutlets: function(router, context){},
-              moveElsewhere: Ember.State.transitionTo('bRoute')
+              moveElsewhere: Ember.Route.transitionTo('bRoute')
             }),
             bRoute: Ember.Route.extend({
               route: '/someOtherLocation'
@@ -165,7 +160,7 @@ var get = Ember.get, getPath = Ember.getPath, set = Ember.set;
 
   And application code:
 
-      App.get('stateManager').send('moveElsewhere');
+      App.get('router').send('moveElsewhere');
 
   Will transition the application's state to 'root.bRoute' and trigger an update of the URL to
   '#/someOtherLocation
@@ -179,11 +174,11 @@ var get = Ember.get, getPath = Ember.getPath, set = Ember.set;
           root: Ember.Route.extend({
             aRoute: Ember.Route.extend({
               route: '/',
-              connectOutlets: function(router, context){},
-              moveElsewhere: Ember.State.transitionTo('bRoute')
+              moveElsewhere: Ember.Route.transitionTo('bRoute')
             }),
             bRoute: Ember.Route.extend({
               route: '/a/route/:dynamicSection/:anotherDynamicSection'
+              connectOutlets: function(router, context){},
             })
           })
         })
@@ -192,7 +187,7 @@ var get = Ember.get, getPath = Ember.getPath, set = Ember.set;
 
   And application code:
 
-      App.get('stateManager').send('moveElsewhere', {
+      App.get('router').send('moveElsewhere', {
         dynamicSection: '42',
         anotherDynamicSection: 'Life'
       });
@@ -205,8 +200,9 @@ var get = Ember.get, getPath = Ember.getPath, set = Ember.set;
   ## Detecting Routing/Non-Routing Calls to `connectOutlets`
   Because `connectOutlets` will be called both for the initial route detection and on subsequent application
   state changes that affect the browser URL the router can differentiate between these two conditions with
-  its `isRouting` property. If you need to take special action for either condition (e.g. loading remote data),
-  check this property:
+  its `isRouting` property. During the application's initial loading, `isRouting` will be `true`, during state
+  transitions after the application has loaded `isRouting` will be false. If you need to take special action
+  for either condition (e.g. loading remote data), check this property:
 
       App = Ember.Application.create({
         Router: Ember.Router.extend({
@@ -215,7 +211,7 @@ var get = Ember.get, getPath = Ember.getPath, set = Ember.set;
               route: '/',
               connectOutlets: function(router, context){
                 if (router.get('isRouting')) {
-                  // load data from server
+                  // intitial app loading, get data from server
                 };
               },
             })
@@ -226,7 +222,7 @@ var get = Ember.get, getPath = Ember.getPath, set = Ember.set;
 
   ## Injection of Controller Singletons
   During application initialization Ember will detect properties of the application ending in 'Controller',
-  create a singleton instance of this class, and assign it as a property of the router.  The property name
+  create singleton instances of each class, and assign them as a properties on the router.  The property name
   will be the UpperCamel name converted to lowerCamel format. These controller classes should be subclasses
   of Ember.ObjectController, Ember.ArrayController, or a custom Ember.Object that includes the
   Ember.ControllerMixin mixin.
@@ -236,11 +232,11 @@ var get = Ember.get, getPath = Ember.getPath, set = Ember.set;
         Router: Ember.Router.extend({ ... })
       });
 
-      App.getPath('stateManager.fooController'); // instance of App.FooController
+      App.getPath('router.fooController'); // instance of App.FooController
 
   The controller singletons will have their `namespace` property set to the application and their `target` 
   property set to the application's router singleton for easy integration with Ember's user event system.
-  See 'Changing View Hierarchy in Response To State Change'
+  See 'Changing View Hierarchy in Response To State Change' and 'Responding to User-initiated Events'
 
   ## Responding to User-initiated Events
   Controller instances injected into the router at application initialization have their `target` property
@@ -279,7 +275,7 @@ var get = Ember.get, getPath = Ember.getPath, set = Ember.set;
   `anActionOnTheRouter` method of the state at 'root.aRoute' will be called with the view's controller
   as the context argument. This context will be passed to the `connectOutlets` as its second argument.
 
-  A different `context` can be supplied from within the `{{action}}` helper, allowing specific context passing
+  Different `context` can be supplied from within the `{{action}}` helper, allowing specific context passing
   between application states:
 
       <script type="text/x-handlebars" data-template-name="photos">
