@@ -342,7 +342,7 @@ module("DS.Transaction - relationships", {
   }
 });
 
-test("If both the parent and child are clean and in the same transaction, a dirty relationship is added to the transaction", function() {
+test("If both the parent and child are clean and in the same transaction, a dirty relationship is added to the transaction null->A", function() {
   store.load(Post, { id: 1, title: "Ohai", body: "FIRST POST ZOMG" });
   store.load(Comment, { id: 1, body: "Kthx" });
 
@@ -362,7 +362,7 @@ test("If both the parent and child are clean and in the same transaction, a dirt
   deepEqual(relationships.byNewParent.get(post), [ { oldParent: null, newParent: post, child: comment } ]);
 });
 
-test("If a child is removed from a parent, a dirty relationship is added to the transaction", function() {
+test("If a child is removed from a parent, a dirty relationship is added to the transaction A->null", function() {
   store.load(Comment, { id: 1, body: "Kthx" });
   store.load(Post, { id: 1, title: "Ohai", body: "FIRST POST ZOMG", comments: [ 1 ] });
 
@@ -382,7 +382,7 @@ test("If a child is removed from a parent, a dirty relationship is added to the 
   deepEqual(relationships.byOldParent.get(post), [ { oldParent: post, newParent: null, child: comment } ]);
 });
 
-test("If a child is removed from a parent it was recently added to, the dirty relationship is removed", function() {
+test("If a child is removed from a parent it was recently added to, the dirty relationship is removed. null->A, A->null", function() {
   store.load(Comment, { id: 1, body: "Kthx" });
   store.load(Post, { id: 1, title: "Ohai", body: "FIRST POST ZOMG", comments: [ 1 ] });
 
@@ -406,5 +406,44 @@ test("If a child is removed from a parent it was recently added to, the dirty re
 
   deepEqual(relationships.byChild.get(comment), [ ]);
   deepEqual(relationships.byOldParent.get(post), [ ]);
+});
+
+test("If a child was added to one parent, and then another, the changes coalesce. A->B, B->C", function() {
+  store.load(Comment, { id: 1, body: "Kthx" });
+  store.load(Post, { id: 1, title: "Ohai", body: "FIRST POST ZOMG", comments: [ 1 ] });
+  store.load(Post, { id: 2, title: "ZOMG", body: "SECOND POST WAT" });
+  store.load(Post, { id: 3, title: "ORLY?", body: "Why am I still here?" });
+
+  var post = store.find(Post, 1);
+  var post2 = store.find(Post, 2);
+  var post3 = store.find(Post, 3);
+  var comment = store.find(Comment, 1);
+
+  var transaction = store.transaction();
+
+  transaction.add(post);
+  transaction.add(comment);
+
+  Ember.run(function() {
+    post.get('comments').removeObject(comment);
+  });
+
+  Ember.run(function() {
+    post2.get('comments').pushObject(comment);
+  });
+
+  Ember.run(function() {
+    post2.get('comments').removeObject(comment);
+  });
+
+  Ember.run(function() {
+    post3.get('comments').pushObject(comment);
+  });
+
+  var relationships = transaction.dirtyRelationships;
+
+  deepEqual(relationships.byChild.get(comment), [ { child: comment, oldParent: post, newParent: post3 } ]);
+  deepEqual(relationships.byOldParent.get(post), [ { child: comment, oldParent: post, newParent: post3 } ]);
+  deepEqual(relationships.byNewParent.get(post3), [ { child: comment, oldParent: post, newParent: post3 } ]);
 });
 
