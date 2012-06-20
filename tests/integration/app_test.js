@@ -25,11 +25,11 @@ module("Application boot", {
 test("It injects the store into the router", function() {
   app.initialize();
 
-  ok(app.getPath('stateManager.store') instanceof DS.Store, "the store was injected");
+  ok(app.getPath('router.store') instanceof DS.Store, "the store was injected");
 });
 
 test("It injects the store into controllers", function() {
   app.initialize();
 
-  ok(app.getPath('stateManager.fooController.store') instanceof DS.Store, "the store was injected");
+  ok(app.getPath('router.fooController.store') instanceof DS.Store, "the store was injected");
 });
