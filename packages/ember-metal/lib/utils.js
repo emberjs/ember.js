@@ -338,3 +338,34 @@ Ember.makeArray = function(obj) {
   if (obj === null || obj === undefined) { return []; }
   return Ember.isArray(obj) ? obj : [obj];
 };
+
+function canInvoke(obj, methodName) {
+  return !!(obj && typeof obj[methodName] === 'function');
+}
+
+/**
+  Checks to see if the `methodName` exists on the `obj`.
+
+  @param {Object} obj The object to check for the method
+  @param {String} methodName The method name to check for
+*/
+Ember.canInvoke = canInvoke;
+
+/**
+  Checks to see if the `methodName` exists on the `obj`,
+  and if it does, invokes it with the arguments passed.
+
+  @function
+
+  @param {Object} obj The object to check for the method
+  @param {String} methodName The method name to check for
+  @param {Array} args The arguments to pass to the method
+
+  @returns {Boolean} true if the method does not return false
+  @returns {Boolean} false otherwise
+*/
+Ember.tryInvoke = function(obj, methodName, args) {
+  if (canInvoke(obj, methodName)) {
+    return obj[methodName].apply(obj, args);
+  }
+};
