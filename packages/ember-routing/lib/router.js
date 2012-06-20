@@ -94,7 +94,7 @@ var get = Ember.get, getPath = Ember.getPath, set = Ember.set;
         Router: Ember.Router.extend({
           root: Ember.Route.extend({
             aRoute: Ember.Route.extend({
-              route: '/'
+              route: '/',
               enter: function(router){
                 console.log("entering root.aRoute from", router.getPath('currentState.name'));
               },
@@ -122,7 +122,7 @@ var get = Ember.get, getPath = Ember.getPath, set = Ember.set;
         Router: Ember.Router.extend({
           root: Ember.Route.extend({
             aRoute: Ember.Route.extend({
-              route: '/fixed/:dynamicSectionA/anotherFixed/:dynamicSectionB'
+              route: '/fixed/:dynamicSectionA/anotherFixed/:dynamicSectionB',
               connectOutlets: function(router, context){}
             })
           })
