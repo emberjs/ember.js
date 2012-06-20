@@ -250,14 +250,31 @@ test("should properly capture events on child elements of a container with an ac
   ok(eventHandlerWasCalled, "Event on a child element triggered the action of it's parent");
 });
 
-test("should default to not bubbling of events from action helper to original parent event", function() {
+test("should allow bubbling of events from action helper to original parent event", function() {
   var eventHandlerWasCalled = false,
       originalEventHandlerWasCalled = false;
 
   view = Ember.View.create({
     template: Ember.Handlebars.compile('<a href="#" {{action "edit"}}>click me</a>'),
     click: function() { originalEventHandlerWasCalled = true; },
-    edit: function() { eventHandlerWasCalled = true; return true; }
+    edit: function() { eventHandlerWasCalled = true; }
+  });
+
+  appendView();
+
+  view.$('a').trigger('click');
+
+  ok(eventHandlerWasCalled && originalEventHandlerWasCalled, "Both event handlers were called");
+});
+
+test("should not bubble an event from action helper to original parent event if it returns false", function() {
+  var eventHandlerWasCalled = false,
+      originalEventHandlerWasCalled = false;
+
+  view = Ember.View.create({
+    template: Ember.Handlebars.compile('<a href="#" {{action "edit"}}>click me</a>'),
+    click: function() { originalEventHandlerWasCalled = true; },
+    edit: function() { eventHandlerWasCalled = true; return false; }
   });
 
   appendView();
