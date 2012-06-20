@@ -23,17 +23,62 @@ require('ember-handlebars/helpers/view');
       controller.set('masterView', postsView);
       controller.set('detailView', postView);
 
+  The outlet can handle a custom ContainerView.
+  the custom ContainerView name must:
+  - have a dot (required for regex test)
+  - be post fixed with Outlet instead of View (required for regex test)
+  
+      {{outlet}}                                    <- standard 
+      {{outlet view}}                               <- standard verbose 
+      {{outlet masterView}}                         <- custom outlet name 
+      {{outlet App.CustomOutlet}}                   <- custom outlet view 
+      {{outlet masterView App.MasterOutlet}}        <- custom outlet name + custom outlet view
+      {{outlet App.MasterOutlet masterView}}        <- custom outlet view + custom outlet name  
+  
   @name Handlebars.helpers.outlet
-  @param {String} property the property on the controller
-    that holds the view for this outlet
+  @param {String} property the property on the controller that holds the view for this outlet
+  @param {String} view the custom ContainerView providing html data for outlet block (id, tag, class, aria, ...)
 */
-Ember.Handlebars.registerHelper('outlet', function(property, options) {
-  if (property && property.data && property.data.isRenderData) {
-    options = property;
-    property = 'view';
+Ember.Handlebars.registerHelper('outlet', function(property, view, options) {
+  Ember.assert(
+    'you can provide an "outletName" and/or a custom "Ember.ContainerView" ... no more!', 
+    arguments.length <= 3
+  );
+  
+  var regex = /\.([a-zA-Z]{1}[a-z0-9]*)*Outlet$/;
+  
+  switch (arguments.length) {
+    case 1: 
+      if (property && property.data && property.data.isRenderData) {
+        options = property;
+        property = 'view';
+      } 
+      break;
+    case 2:
+      if (view && view.data && view.data.isRenderData) {
+        options = view;
+        
+        if (regex.test(property)) {
+          view = property;
+          property = 'view';
+        }
+      }
+      break;
+    case 3:
+      if (typeof property === "string" && typeof view === "string" && regex.test(property) && !regex.test(view)) {
+        var v = view;
+        view = property;
+        property = v;
+        v = null;
+      }
+      break;
   }
-
+  
+  if (typeof view !== "string") {
+    view = Ember.ContainerView;
+  } 
+  
   options.hash.currentViewBinding = "controller." + property;
 
-  return Ember.Handlebars.helpers.view.call(this, Ember.ContainerView, options);
+  return Ember.Handlebars.helpers.view.call(this, view, options);
 });
