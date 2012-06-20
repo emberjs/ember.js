@@ -65,8 +65,7 @@ Ember.Handlebars.registerHelper('outlet', function(property, view, options) {
       }
       break;
     case 3:
-      if ((typeof property === "string" && typeof view === "string") 
-        && (regex.test(property) && !regex.test(view))) {
+      if (typeof property === "string" && typeof view === "string" && regex.test(property) && !regex.test(view)) {
         var v = view;
         view = property;
         property = v;
