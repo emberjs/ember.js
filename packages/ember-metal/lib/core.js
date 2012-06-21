@@ -3,7 +3,9 @@
 // Copyright: ©2011 Strobe Inc. and contributors.
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
-/*globals Em:true ENV */
+/*globals exports:true ENV */
+
+if ('undefined' === typeof exports) { exports = window; }
 
 if ('undefined' === typeof Ember) {
 /**
@@ -31,18 +33,19 @@ if ('undefined' === typeof Ember) {
 // objects assigned to it are given a sane string representation.
 Ember = {};
 
-// aliases needed to keep minifiers from removing the global context
-if ('undefined' !== typeof window) {
-  window.Em = window.Ember = Em = Ember;
 }
 
-}
 
 // Make sure these are set whether Ember was already defined or not
 
 Ember.isNamespace = true;
 
 Ember.toString = function() { return "Ember"; };
+
+
+// Export Ember
+
+exports.Em = exports.Ember = Ember;
 
 
 /**

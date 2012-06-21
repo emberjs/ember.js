@@ -3,8 +3,27 @@ require "json"
 require "uglifier"
 require "execjs"
 
-class EmberProductionFilter < Rake::Pipeline::Filter
+class EmberExportsFilter < Rake::Pipeline::Filter
+  def generate_output(inputs, output)
+    inputs.each do |input|
+      result = File.read(input.fullpath)
+      output.write <<END
+(function() {
+  var exports = (typeof define === 'function' && define.amd) ? {} : window,
+      Ember;
 
+  #{result}
+
+  if (typeof define === 'function' && define.amd) {
+    define(function() { return exports; });
+  }
+})();
+END
+    end
+  end
+end
+
+class EmberProductionFilter < Rake::Pipeline::Filter
   def js_context
     # We're using Ember to build Ember! Inception!
     unless @context
@@ -155,6 +174,7 @@ distros.each do |name, modules|
     match "{#{name}.js,ember-debug.js}" do
       filter VersionInfo
       concat ["ember-debug.js"], "#{name}.js"
+      filter(EmberExportsFilter)
     end
 
     # Strip dev code
