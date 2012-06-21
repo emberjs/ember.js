@@ -39,11 +39,17 @@ require('ember-handlebars/helpers/view');
 */
 Ember.Handlebars.registerHelper('outlet', function(property, view, options) {
   Ember.assert(
-    'you can provide an outletName as "property" and/or a subclass of Ember.ContainerView as "view"', 
+    'you can provide an "outletName" as property and/or a subclass of "Ember.ContainerView as view" ... no more!', 
     arguments.length <= 3
   );
+
+  var container;
   
-  var viewPath;
+  var isContainer = function(container) {
+    var viewPath = (typeof container === "string" && Ember.getPath(container) !== undefined) ? Ember.getPath(container) : null;
+    if (viewPath !== null && Ember.ContainerView.detect(viewPath)) return true;
+    else return false;
+  };
   
   switch (arguments.length) {
     case 1: 
@@ -55,8 +61,8 @@ Ember.Handlebars.registerHelper('outlet', function(property, view, options) {
     case 2:
       if (view && view.data && view.data.isRenderData) {
         options = view;
-        viewPath = (typeof property === "string" && Ember.getPath(property) !== undefined) ? Ember.getPath(property) : null;
-        if (viewPath !== null && Ember.ContainerView.detect(viewPath)) {
+        
+        if (isContainer(property)) {
           view = property;
           property = 'view';
         }
@@ -66,11 +72,10 @@ Ember.Handlebars.registerHelper('outlet', function(property, view, options) {
       break;
   }
   
-  viewPath = (typeof view === "string" && Ember.getPath(view) !== undefined) ? Ember.getPath(view) : null;
-  if (viewPath === null || (viewPath !== null && !Ember.ContainerView.detect(viewPath))) {
+  if (!isContainer(view)) {
     view = Ember.ContainerView;
   }
-
+  
   options.hash.currentViewBinding = "controller." + property;
   
   return Ember.Handlebars.helpers.view.call(this, view, options);
