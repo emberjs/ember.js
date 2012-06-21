@@ -45,7 +45,7 @@ Ember.Handlebars.registerHelper('outlet', function(property, view, options) {
 
   var container;
   
-  var isContainer = function(container) {
+  isContainer = function(container) {
     var viewPath = (typeof container === "string" && Ember.getPath(container) !== undefined) ? Ember.getPath(container) : null;
     if (viewPath !== null && Ember.ContainerView.detect(viewPath)) return true;
     else return false;
