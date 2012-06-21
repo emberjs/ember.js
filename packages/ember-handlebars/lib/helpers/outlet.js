@@ -39,7 +39,7 @@ require('ember-handlebars/helpers/view');
 */
 Ember.Handlebars.registerHelper('outlet', function(property, view, options) {
   Ember.assert(
-    'you can provide an "outletName" as property and/or a subclass of Ember.ContainerView as "view".',
+    'you can provide an outletName as "property" and/or a subclass of Ember.ContainerView as "view".',
     arguments.length <= 3
   );
 
