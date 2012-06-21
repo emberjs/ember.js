@@ -303,3 +303,51 @@ test("if a ContainerView starts with a currentView and then a different currentV
   equal(getPath(container, 'childViews.length'), 1, "should have one child view");
   equal(getPath(container, 'childViews').objectAt(0), secondaryView, "should have the currentView as the only child view");
 });
+
+test("if a ContainerView starts with a shared currentView and then a different shared currentView is set, the old view is hiden and the new one is showed", function() {
+  var container = Ember.ContainerView.create();
+  var mainView = Ember.View.create({
+    isShared: true,
+    template: function() {
+      return "This is the main view.";
+    }
+  });
+
+  var secondaryView = Ember.View.create({
+    isShared: true,
+    template: function() {
+      return "This is the secondary view.";
+    }
+  });
+
+  Ember.run(function() {
+    set(container, 'currentView', mainView);
+  });
+
+  Ember.run(function() {
+    container.appendTo('#qunit-fixture');
+  });
+
+  equal(container.$().text(), "This is the main view.", "should render its child");
+  equal(getPath(container, 'childViews.length'), 1, "should have one child view");
+  equal(getPath(container, 'childViews').objectAt(0), mainView, "should have the currentView as the only child view");
+
+  Ember.run(function() {
+    set(container, 'currentView', secondaryView);
+  });
+
+  equal(container.$('div:last-child').text(), "This is the secondary view.", "should render its child");
+  equal(getPath(container, 'childViews.length'), 2, "should have two child views");
+  equal(getPath(container, 'childViews').objectAt(0).get('isVisible'), false, "should hide the first child view");
+  equal(getPath(container, 'childViews').objectAt(1), secondaryView, "should have the currentView as the second child view");
+
+  Ember.run(function() {
+    set(container, 'currentView', mainView);
+  });
+
+  equal(container.$('div:first-child').text(), "This is the main view.", "should render its child");
+  equal(getPath(container, 'childViews').objectAt(1).get('isVisible'), false, "should hide the last child view");
+  equal(getPath(container, 'childViews.length'), 2, "should have two child views");
+  equal(getPath(container, 'childViews').objectAt(0).get('isVisible'), true, "should show the first child view");
+  equal(getPath(container, 'childViews').objectAt(0), mainView, "should have the currentView as the first child view");
+});

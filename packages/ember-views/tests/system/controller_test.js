@@ -167,3 +167,45 @@ test("if the controller is not given while connecting an outlet, the instantiate
   equal(view.get('controller'), postController, "the controller was inherited from the parent");
 });
 
+test("connectOutlet instantiates a shared view, controller, and connects them", function() {
+  var postController = Ember.Controller.create();
+
+  TestApp.PostView.reopen({isShared: true});
+
+  TestApp.CommentView = Ember.View.extend({isShared: true});
+
+  var appController = TestApp.ApplicationController.create({
+    controllers: { postController: postController, commentController: Ember.Controller.create() },
+    namespace: { PostView: TestApp.PostView, CommentView: TestApp.CommentView }
+  });
+  var outlets = appController._outlets;
+  var view = appController.connectOutlet('post');
+
+  ok(view instanceof TestApp.PostView, "the view is an instance of PostView");
+  equal(view.get('controller'), postController, "the controller is looked up on the parent's controllers hash");
+  equal(appController.get('view'), view, "the app controller's view is set");
+  equal(outlets.get('view').get(TestApp.PostView), view, "the shared view instance is set on the controller");
+
+  view = appController.connectOutlet('comment');
+  equal(appController.get('view'), view, "the app controller's view is set to the new view");
+  equal(outlets.get('view').get(TestApp.CommentView), view, "the new shared view instance is set on the controller");
+});
+
+test("connectOutlet takes an optional outlet name with shared view", function() {
+  var postController = Ember.Controller.create();
+
+  TestApp.PostView.reopen({isShared: true});
+
+  var appController = TestApp.ApplicationController.create({
+    controllers: { postController: postController },
+    namespace: { PostView: TestApp.PostView }
+  });
+  var outlets = appController._outlets;
+  var view = appController.connectOutlet({ name: 'post', outletName: 'mainView' });
+
+  ok(view instanceof TestApp.PostView, "the view is an instance of PostView");
+  equal(view.get('controller'), postController, "the controller is looked up on the parent's controllers hash");
+  equal(appController.get('mainView'), view, "the app controller's view is set");
+  equal(outlets.get('mainView').get(TestApp.PostView), view, "the shared view instance is set on the controller");
+});
+

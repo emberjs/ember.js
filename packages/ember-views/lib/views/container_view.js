@@ -230,9 +230,6 @@ Ember.ContainerView = Ember.View.extend({
       _childViews[idx] = view;
     }, this);
 
-    var currentView = get(this, 'currentView');
-    if (currentView) _childViews.push(this.createChildView(currentView));
-
     // Make the _childViews array observable
     Ember.A(_childViews);
 
@@ -243,6 +240,10 @@ Ember.ContainerView = Ember.View.extend({
       willChange: 'childViewsWillChange',
       didChange: 'childViewsDidChange'
     });
+
+    // Make sure we initialize with currentView if it is present
+    var currentView = get(this, 'currentView');
+    if (currentView) { this._currentViewDidChange(); }
   },
 
   /**
@@ -350,12 +351,48 @@ Ember.ContainerView = Ember.View.extend({
 
   currentView: null,
 
+  /**
+    This method is responsible for presenting a new view.
+    Default implementation will simply call the callback.
+    You can override this method if you want to add an animation for example.
+
+    @param  {Ember.View} currentView a view to present
+    @param  {Function}   callback the callback called once operation is terminated
+   */
+  presentCurrentView: function(currentView, callback) {
+    callback();
+  },
+
+  /**
+    This method is responsible for dismissing a view.
+    Default implementation will simply call the callback.
+    You can override this method if you want to add an animation for example.
+
+    @param  {Ember.View} currentView a view to dismiss
+    @param  {Function}   callback the callback called once operation is terminated
+   */
+  dismissCurrentView: function(currentView, callback) {
+    callback();
+  },
+
   _currentViewWillChange: Ember.beforeObserver(function() {
     var childViews = get(this, 'childViews'),
         currentView = get(this, 'currentView');
 
     if (currentView) {
-      childViews.removeObject(currentView);
+      set(currentView, 'isBeingDismissed', true);
+      currentView.trigger('willDisappear', currentView);
+
+      this.dismissCurrentView(currentView, function() {
+        if (get(currentView, 'isShared')) {
+          set(currentView, 'isVisible', false);
+        } else {
+          childViews.removeObject(currentView);
+        }
+
+        set(currentView, 'isBeingDismissed', false);
+        currentView.trigger('didDisappear', currentView);
+      });
     }
   }, 'currentView'),
 
@@ -364,7 +401,26 @@ Ember.ContainerView = Ember.View.extend({
         currentView = get(this, 'currentView');
 
     if (currentView) {
-      childViews.pushObject(currentView);
+      set(currentView, 'isBeingPresented', true);
+      currentView.trigger('willAppear', currentView);
+
+      if (get(currentView, 'isShared')) {
+        set(currentView, 'isVisible', true);
+      }
+
+      var presentCurrentView = function() {
+        this.presentCurrentView(currentView, function() {
+          set(currentView, 'isBeingPresented', false);
+          currentView.trigger('didAppear', currentView);
+        });
+      };
+
+      if (!childViews.contains(currentView)) {
+        currentView.one('didInsertElement', this, presentCurrentView);
+        childViews.pushObject(currentView);
+      } else {
+        presentCurrentView.call(this);
+      }
     }
   }, 'currentView')
 });
