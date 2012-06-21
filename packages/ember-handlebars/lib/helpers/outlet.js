@@ -28,8 +28,8 @@ require('ember-handlebars/helpers/view');
       {{outlet}}                              <- standard
       {{outlet view}}                         <- standard verbose
       {{outlet masterView}}                   <- custom outlet name
-      {{outlet App.CustomOutlet}}             <- custom outlet view
-      {{outlet masterView App.MasterOutlet}}  <- custom outlet name + custom outlet view
+      {{outlet App.CustomView}}               <- custom outlet view
+      {{outlet masterView App.MasterView}}    <- custom outlet name + custom outlet view
 
   @name Handlebars.helpers.outlet
   @param {String} property the property on the controller
