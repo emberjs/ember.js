@@ -28,7 +28,7 @@ require('ember-handlebars/helpers/view');
       {{outlet}}                              <- standard
       {{outlet view}}                         <- standard verbose
       {{outlet masterView}}                   <- custom outlet name
-      {{outlet App.CustomView}}               <- custom outlet view
+      {{outlet App.MasterView}}               <- custom outlet view
       {{outlet masterView App.MasterView}}    <- custom outlet name + custom outlet view
 
   @name Handlebars.helpers.outlet
