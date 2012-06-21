@@ -618,3 +618,22 @@ test("embedded associations should respect namingConvention", function() {
   var person = store.find(Person, 1);
   equal(getPath(person, 'myCustomTags.firstObject.name'), "UN-friendly", "hasMany tag should be set properly");
 });
+
+test("calling createRecord and passing in an undefined value for an association should be treated as if null", function () {
+  expect(1);
+  
+  var Tag = DS.Model.extend({
+    name: DS.attr('string')
+  });
+
+  var Person = DS.Model.extend({
+    name: DS.attr('string'),
+    tag: DS.belongsTo(Tag, { embedded: true })
+  });
+  
+  var store = DS.Store.create();
+
+  store.createRecord(Person, {tag: undefined});
+  
+  ok(true);
+});
