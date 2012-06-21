@@ -295,6 +295,65 @@ test("embedded associations work the same as referenced ones, and have the same 
   equal(getPath(kselden, 'tags.length'), 0, "if no association is provided, an empty list is returned");
 });
 
+test("embedded associations work when the data hash has not been loaded", function() {
+  expect(13);
+
+  var Tag = DS.Model.extend({
+    name: DS.attr('string')
+  });
+
+  Tag.toString = function() { return "Tag"; };
+
+  var Person = DS.Model.extend({
+    name: DS.attr('string'),
+    tags: DS.hasMany(Tag, { embedded: true })
+  });
+
+  Person.toString = function() { return "Person"; };
+
+  var store = DS.Store.create({
+    adapter: DS.Adapter.create({
+      findMany: function(store, type, ids) {
+        equal(type, Tag, "type should be Tag");
+        deepEqual(ids, [5, 2], "ids should be 5 and 2");
+
+        stop();
+
+        setTimeout(function() {
+          start();
+          store.loadMany(type, ids, [{ id: 5, name: "friendly" }, { id: 2, name: "smarmy" }]);
+
+          equal(get(person, 'name'), "Tom Dale", "precond - the person is still Tom Dale");
+          equal(getPath(person, 'tags.length'), 2, "the tags object still exists");
+          equal(get(get(person, 'tags').objectAt(0), 'name'), "friendly", "Tom Dale is still friendly");
+          equal(get(get(person, 'tags').objectAt(0), 'isLoaded'), true, "Tom Dale is still loaded");
+        }, 1);
+      },
+
+      find: function(store, type, id) {
+        equal(type, Person, "type should be Person");
+        equal(id, 1, "id should be 1");
+
+        stop();
+
+        setTimeout(function() {
+          start();
+          store.load(type, id, { id: 1, name: "Tom Dale", tags: [{ id: 5, name: "friendly" }, { id: 2, name: "smarmy" }] });
+
+          equal(get(person, 'name'), "Tom Dale", "The person is now populated");
+          equal(getPath(person, 'tags.length'), 2, "the tags Array already exists");
+          equal(get(getPath(person, 'tags').objectAt(0), 'isLoaded'), false, "the tag objects exist, but are not yet loaded");
+        }, 1);
+      }
+    })
+  });
+
+  var person = store.find(Person, 1);
+
+  equal(get(person, 'isLoaded'), false, "isLoaded should be false");
+  equal(getPath(person, 'tags.length'), 0, "tags should be empty");
+});
+
 test("it is possible to add a new item to an association", function() {
   var Tag = DS.Model.extend({
     name: DS.attr('string')
