@@ -128,4 +128,25 @@ test("if the controller is explicitly set to null while connecting an outlet, th
   equal(view.get('controller'), postController, "the controller was inherited from the parent");
 });
 
+test("if the controller is not given while connecting an outlet, the instantiated view will inherit its controller from its parent view", function() {
+  var postController = Ember.Controller.create();
+
+  var appController = TestApp.ApplicationController.create({
+    controllers: {},
+    namespace: TestApp
+  });
+
+  var view = appController.connectOutlet('post');
+
+  ok(view instanceof TestApp.PostView, "the view is an instance of PostView");
+  equal(view.get('controller'), null, "the controller is looked up on the parent's controllers hash");
+  equal(appController.get('view'), view, "the app controller's view is set");
+
+  var containerView = Ember.ContainerView.create({
+    controller: postController
+  });
+
+  containerView.get('childViews').pushObject(view);
+  equal(view.get('controller'), postController, "the controller was inherited from the parent");
+});
 
