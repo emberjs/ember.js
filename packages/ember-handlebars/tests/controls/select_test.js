@@ -1,4 +1,4 @@
-var map = Ember.ArrayUtils.map;
+var map = Ember.EnumerableUtils.map;
 
 var dispatcher, select;
 
@@ -36,6 +36,10 @@ function selectedOptions() {
   }
   return rv;
 }
+
+test("has 'ember-view' and 'ember-select' CSS classes", function() {
+  deepEqual(select.get('classNames'), ['ember-view', 'ember-select']);
+});
 
 test("should render", function() {
   append();
@@ -212,7 +216,8 @@ test("a prompt can be specified", function() {
 
   equal(select.$('option').length, 3, "There should be three options");
   equal(select.$()[0].selectedIndex, 0, "By default, the prompt is selected in the DOM");
-  equal(select.$().val(), 'Pick a person', "By default, the prompt is selected in the DOM");
+  equal(select.$('option:selected').text(), 'Pick a person', "By default, the prompt is selected in the DOM");
+  equal(select.$().val(), '', "By default, the prompt has no value");
 
   equal(select.get('selection'), null, "When the prompt is selected, the selection should be null");
 

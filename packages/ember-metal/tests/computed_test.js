@@ -491,7 +491,7 @@ test('adding a computed property should show up in key iteration',function() {
 
   var found = [];
   for(var key in obj) found.push(key);
-  ok(Ember.ArrayUtils.indexOf(found, 'foo')>=0, 'should find computed property in iteration found='+found);
+  ok(Ember.EnumerableUtils.indexOf(found, 'foo')>=0, 'should find computed property in iteration found='+found);
   ok('foo' in obj, 'foo in obj should pass');
 });
 
@@ -500,6 +500,10 @@ module('CP macros');
 testBoth('Ember.computed.not', function(get, set) {
   var obj = {foo: true};
   Ember.defineProperty(obj, 'notFoo', Ember.computed.not('foo'));
+  equal(get(obj, 'notFoo'), false);
+
+  obj = {foo: {bar: true}};
+  Ember.defineProperty(obj, 'notFoo', Ember.computed.not('foo.bar'));
   equal(get(obj, 'notFoo'), false);
 });
 

@@ -257,7 +257,7 @@ test("should allow bubbling of events from action helper to original parent even
   view = Ember.View.create({
     template: Ember.Handlebars.compile('<a href="#" {{action "edit"}}>click me</a>'),
     click: function() { originalEventHandlerWasCalled = true; },
-    edit: function() { eventHandlerWasCalled = true; return true; }
+    edit: function() { eventHandlerWasCalled = true; }
   });
 
   appendView();
@@ -265,6 +265,24 @@ test("should allow bubbling of events from action helper to original parent even
   view.$('a').trigger('click');
 
   ok(eventHandlerWasCalled && originalEventHandlerWasCalled, "Both event handlers were called");
+});
+
+test("should not bubble an event from action helper to original parent event if it returns false", function() {
+  var eventHandlerWasCalled = false,
+      originalEventHandlerWasCalled = false;
+
+  view = Ember.View.create({
+    template: Ember.Handlebars.compile('<a href="#" {{action "edit"}}>click me</a>'),
+    click: function() { originalEventHandlerWasCalled = true; },
+    edit: function() { eventHandlerWasCalled = true; return false; }
+  });
+
+  appendView();
+
+  view.$('a').trigger('click');
+
+  ok(eventHandlerWasCalled, "The child handler was called");
+  ok(!originalEventHandlerWasCalled, "The parent handler was not called");
 });
 
 test("should be compatible with sending events to a state manager", function() {

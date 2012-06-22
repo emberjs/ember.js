@@ -61,7 +61,10 @@ Ember.assert = function(desc, test) {
 Ember.warn = function(message, test) {
   if (arguments.length === 1) { test = false; }
   if ('function' === typeof test) test = test()!==false;
-  if (!test) Ember.Logger.warn("WARNING: "+message);
+  if (!test) {
+    Ember.Logger.warn("WARNING: "+message);
+    if ('trace' in Ember.Logger) Ember.Logger.trace();
+  }
 };
 
 /**

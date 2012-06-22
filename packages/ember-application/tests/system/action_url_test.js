@@ -58,11 +58,17 @@ test("it does not generate the URL when href property is not specified", functio
   ok(!view.$().html().match(/href=['"]\/foo\/bar['"]/), "The html (" + view.$().html() + ") has the href /foo/bar in it");
 });
 
-test("it sets a URL with a context", function() {
+test("it sets an URL with a context", function() {
   var router = Ember.Router.create({
+    location: {
+      formatURL: function(url) {
+        return url;
+      },
+      setURL: Ember.K
+    },
     namespace: namespace,
-    root: Ember.State.create({
-      index: Ember.State.create({
+    root: Ember.Route.create({
+      index: Ember.Route.create({
         route: '/',
 
         showDashboard: function(router) {
@@ -74,7 +80,7 @@ test("it sets a URL with a context", function() {
         }
       }),
 
-      dashboard: Ember.State.create({
+      dashboard: Ember.Route.create({
         route: '/dashboard/:component_id'
       })
     })
@@ -87,7 +93,7 @@ test("it sets a URL with a context", function() {
   equal(router.getPath('currentState.path'), "root.index", "precond - the current stat is root.index");
 
   var view = Ember.View.create({
-    template: compile('<a {{action showDashboard context="controller.component" href=true}}>')
+    template: compile('<a {{action showDashboard context="controller.component" href=true}}>test</a>')
   });
 
   var controller = {

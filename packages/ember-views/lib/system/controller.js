@@ -4,6 +4,7 @@ Ember.ControllerMixin.reopen({
 
   target: null,
   controllers: null,
+  namespace: null,
   view: null,
 
   /**
@@ -25,19 +26,7 @@ Ember.ControllerMixin.reopen({
     following code will assign a new `App.PostsView` to
     that outlet:
 
-        applicationController.connectOutlet(App.PostsView);
-
-    You can specify a particular outlet to use as the first
-    parameter to `connectOutlet`. For example, if your
-    main template looks like:
-
-        <h1>My Blog</h1>
-        {{outlet master}}
-        {{outlet detail}}
-
-    You can assign an `App.PostsView` to the master outlet:
-
-        applicationController.connectOutlet('master', App.PostsView);
+        applicationController.connectOutlet('posts');
 
     In general, you will also want to assign a controller
     to the newly created view. By convention, a controller
@@ -55,77 +44,82 @@ Ember.ControllerMixin.reopen({
     You can supply a `content` for the controller by supplying
     a final argument after the view class:
 
-        applicationController.connectOutlet(App.PostsView, App.Post.find());
+        applicationController.connectOutlet('posts', App.Post.find());
 
-    The only required argument is `viewClass`. You can optionally
-    specify an `outletName` before `viewClass` and/or a `context`
-    after `viewClass` in any combination.
+    You can specify a particular outlet to use. For example, if your main
+    template looks like:
 
-    @param {String} outletName the name of the outlet to assign
-      the newly created view to (optional)
-    @param {Class} viewClass a view class to instantiate
+        <h1>My Blog</h1>
+        {{outlet master}}
+        {{outlet detail}}
+
+    You can assign an `App.PostsView` to the master outlet:
+
+        applicationController.connectOutlet({
+          name: 'posts',
+          outletName: 'master',
+          context: App.Post.find()
+        });
+
+    @param {Class} name a view class to instantiate
     @param {Object} context a context object to assign to the
       controller's `content` property, if a controller can be
-      found.
+      found (optional)
   */
-  connectOutlet: function(outletName, viewClass, context) {
+  connectOutlet: function(name, context) {
     // Normalize arguments. Supported arguments:
     //
-    // viewClass
-    // outletName, viewClass
-    // viewClass, context
-    // outletName, viewClass, context
+    // name
+    // name, context
+    // options
     //
-    // Alternatively, an options hash may be passed:
+    // The options hash has the following keys:
     //
-    //  {
-    //    name: 'outletName',
-    //    view: App.ViewClass,
-    //    context: {}
-    //  }
+    //   name: the name of the controller and view
+    //     to use. If this is passed, the name
+    //     determines the view and controller.
+    //   outletName: the name of the outlet to
+    //     fill in. default: 'view'
+    //   viewClass: the class of the view to instantiate
+    //   controller: the controller instance to pass
+    //     to the view
+    //   context: an object that should become the
+    //     controller's `content` and thus the
+    //     template's context.
 
-    var controller;
+    var outletName, viewClass, view, controller, options;
 
-    if (arguments.length === 2) {
-      if (Ember.Object.detect(outletName)) {
-        context = viewClass;
-        viewClass = outletName;
-        outletName = 'view';
-      }
-    } else if (arguments.length === 1) {
-      if (Ember.typeOf(outletName) === 'object') {
-        var options = outletName;
-        outletName = options.name;
-        viewClass = options.view;
-        context = options.context;
+    if (arguments.length === 1) {
+      if (Ember.typeOf(name) === 'object') {
+        options = name;
+        outletName = options.outletName;
+        name = options.name;
+        viewClass = options.viewClass;
         controller = options.controller;
-      } else {
-        viewClass = outletName;
-        outletName = 'view';
+        context = options.context;
       }
+    } else {
+      options = {};
     }
 
-    var parts = viewClass.toString().split("."),
-        last = parts[parts.length - 1],
-        match = last.match(/^(.*)View$/);
+    outletName = outletName || 'view';
 
-    Ember.assert("The parameter you pass to connectOutlet must be a class ending with View", !!match);
+    Ember.assert("You must supply a name or a view class to connectOutlets, but not both", (!!name && !viewClass && !controller) || (!name && !!viewClass));
 
-    var bareName = match[1], controllerName;
-    bareName = bareName.charAt(0).toLowerCase() + bareName.substr(1);
+    if (name) {
+      var namespace = get(this, 'namespace'),
+          controllers = get(this, 'controllers');
 
-    if (controller === undefined) {
-      controllerName = bareName + "Controller";
-      controller = get(get(this, 'controllers'), controllerName);
+      var viewClassName = name.charAt(0).toUpperCase() + name.substr(1) + "View";
+      viewClass = get(namespace, viewClassName);
+      controller = get(controllers, name + 'Controller');
 
-      Ember.assert("You specified a context, but no " + controllerName + " was found", !context || !!controller);
-    } else if (controller === null) {
-      Ember.assert("You specified a context, but the controller passed to connectOutlet was null", !context || !!controller);
+      Ember.assert("The name you supplied " + name + " did not resolve to a view " + viewClassName, !!viewClass);
+      Ember.assert("The name you supplied " + name + " did not resolve to a controller " + name + 'Controller', !!controller);
     }
 
-    if (context) { controller.set('content', context); }
-
-    var view = viewClass.create();
+    if (controller && context) { controller.set('content', context); }
+    view = viewClass.create();
     if (controller) { set(view, 'controller', controller); }
     set(this, outletName, view);
 

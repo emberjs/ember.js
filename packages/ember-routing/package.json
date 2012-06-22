@@ -1,7 +1,7 @@
 {
-  "name": "ember-states",
-  "summary": "Ember Storyboards",
-  "description": "The Ember state management system",
+  "name": "ember-routing",
+  "summary": "Ember Routing",
+  "description": "The Ember routing system",
   "homepage": "http://emberjs.com",
   "author": "Yehuda Katz",
   "version": "0.9.8.1",
@@ -11,8 +11,8 @@
   },
 
   "dependencies": {
-    "spade":              "~> 1.0",
-    "ember-runtime":      "0.9.8.1"
+    "spade":             "~> 1.0",
+    "ember-states":      "0.9.8.1"
   },
 
   "dependencies:development": {
@@ -27,4 +27,5 @@
     }
   }
 }
+
 

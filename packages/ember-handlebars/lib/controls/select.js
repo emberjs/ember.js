@@ -1,7 +1,7 @@
 /*jshint eqeqeq:false */
 
 var set = Ember.set, get = Ember.get, getPath = Ember.getPath;
-var indexOf = Ember.ArrayUtils.indexOf, indexesOf = Ember.ArrayUtils.indexesOf;
+var indexOf = Ember.EnumerableUtils.indexOf, indexesOf = Ember.EnumerableUtils.indexesOf;
 
 /**
   @class
@@ -17,7 +17,8 @@ Ember.Select = Ember.View.extend(
   /** @scope Ember.Select.prototype */ {
 
   tagName: 'select',
-  defaultTemplate: Ember.Handlebars.compile('{{#if view.prompt}}<option>{{view.prompt}}</option>{{/if}}{{#each view.content}}{{view Ember.SelectOption contentBinding="this"}}{{/each}}'),
+  classNames: ['ember-select'],
+  defaultTemplate: Ember.Handlebars.compile('{{#if view.prompt}}<option value>{{view.prompt}}</option>{{/if}}{{#each view.content}}{{view Ember.SelectOption contentBinding="this"}}{{/each}}'),
   attributeBindings: ['multiple'],
 
   /**
@@ -101,7 +102,7 @@ Ember.Select = Ember.View.extend(
   */
   optionValuePath: 'content',
 
-  change: function() {
+  _change: function() {
     if (get(this, 'multiple')) {
       this._changeMultiple();
     } else {
@@ -145,7 +146,7 @@ Ember.Select = Ember.View.extend(
 
     if (selection) { this.selectionDidChange(); }
 
-    this.change();
+    this._change();
   },
 
   _changeSingle: function() {
@@ -206,8 +207,8 @@ Ember.Select = Ember.View.extend(
   init: function() {
     this._super();
     this.on("didInsertElement", this, this._triggerChange);
+    this.on("change", this, this._change);
   }
-
 });
 
 Ember.SelectOption = Ember.View.extend({

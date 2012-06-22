@@ -23,7 +23,7 @@ require('ember-metal/utils');
 
 /** @private */
 var guidFor = Ember.guidFor,
-    indexOf = Ember.ArrayUtils.indexOf;
+    indexOf = Ember.ArrayPolyfills.indexOf;
 
 // This class is used internally by Ember.js and Ember Data.
 // Please do not use it at this time. We plan to clean it up
@@ -60,7 +60,7 @@ OrderedSet.prototype = {
 
     delete presenceSet[guid];
 
-    var index = indexOf(list, obj);
+    var index = indexOf.call(list, obj);
     if (index > -1) {
       list.splice(index, 1);
     }
@@ -199,3 +199,29 @@ Map.prototype = {
   }
 };
 
+var MapWithDefault = Ember.MapWithDefault = function(options) {
+  Map.call(this);
+  this.defaultValue = options.defaultValue;
+};
+
+MapWithDefault.create = function(options) {
+  if (options) {
+    return new MapWithDefault(options);
+  } else {
+    return new Map();
+  }
+};
+
+MapWithDefault.prototype = Ember.create(Map.prototype);
+
+MapWithDefault.prototype.get = function(key) {
+  var hasValue = this.has(key);
+
+  if (hasValue) {
+    return Map.prototype.get.call(this, key);
+  } else {
+    var defaultValue = this.defaultValue(key);
+    this.set(key, defaultValue);
+    return defaultValue;
+  }
+};

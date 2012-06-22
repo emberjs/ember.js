@@ -1,6 +1,14 @@
 var get = Ember.get, set = Ember.set, getPath = Ember.getPath, setPath = Ember.setPath;
 
-module("Ember.ViewState");
+module("Ember.ViewState", {
+  setup: function() {
+    Ember.TESTING_DEPRECATION = true;
+  },
+
+  teardown: function() {
+    Ember.TESTING_DEPRECATION = false;
+  }
+});
 
 test("it inherits from Ember.State", function() {
   ok(Ember.State.detect(Ember.ViewState), "Ember.ViewState is an Ember.State");
@@ -192,18 +200,18 @@ test("it appends and removes a view to the view specified in the state manager's
 
 test("it reports the view associated with the current view state, if any", function() {
   var view = Ember.View.create();
-   
+
   var stateManager = Ember.StateManager.create({
     foo: Ember.ViewState.create({
       view: view,
       bar: Ember.State.create()
     })
   });
-  
+
   Ember.run(function(){
     stateManager.transitionTo('foo.bar');
   });
-  
+
   equal(get(stateManager, 'currentView'), view, "returns nearest parent view state's view");
 });
 

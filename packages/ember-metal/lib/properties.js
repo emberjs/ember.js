@@ -13,7 +13,6 @@ var USE_ACCESSORS = Ember.USE_ACCESSORS,
     GUID_KEY = Ember.GUID_KEY,
     META_KEY = Ember.META_KEY,
     meta = Ember.meta,
-    o_create = Ember.create,
     objectDefineProperty = Ember.platform.defineProperty,
     SIMPLE_PROPERTY, WATCHED_PROPERTY;
 
@@ -179,7 +178,7 @@ rawSet = function(obj, keyName, value, values) {
 };
 
 // if there are no getters, keep the raw property up to date
-if (!Ember.platform.hasPropertyAccessors) {
+if (!hasGetters) {
   rawSet = function(obj, keyName, value, values) {
     obj[keyName] = value;
     values[keyName] = value;

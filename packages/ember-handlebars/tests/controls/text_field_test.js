@@ -1,5 +1,5 @@
 // ==========================================================================
-// Project:   Ember Handlebar Views
+// Project:   Ember Handlebars Views
 // Copyright: ©2011 Strobe Inc. and contributors.
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
@@ -143,7 +143,7 @@ test("should call the insertNewline method when return key is pressed", function
     wasCalled = true;
   };
 
-  textField.keyUp(event);
+  textField.trigger('keyUp', event);
   ok(wasCalled, "invokes insertNewline method");
 });
 
@@ -157,7 +157,7 @@ test("should call the cancel method when escape key is pressed", function() {
     wasCalled = true;
   };
 
-  textField.keyUp(event);
+  textField.trigger('keyUp', event);
   ok(wasCalled, "invokes cancel method");
 });
 

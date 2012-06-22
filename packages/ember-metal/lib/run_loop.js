@@ -9,14 +9,13 @@ require('ember-metal/core'); // Ember.Logger
 require('ember-metal/watching'); // Ember.watch.flushPending
 require('ember-metal/observer'); // Ember.beginPropertyChanges, Ember.endPropertyChanges
 require('ember-metal/utils'); // Ember.guidFor
-require('ember-metal/array'); // Ember.ArrayUtils
 
 // ..........................................................
 // HELPERS
 //
 
 var slice = [].slice,
-    forEach = Ember.ArrayUtils.forEach;
+    forEach = Ember.ArrayPolyfills.forEach;
 
 // invokes passed params - normalizing so you can pass target/func,
 // target/string or just func
@@ -86,9 +85,9 @@ RunLoop.prototype = {
   },
 
   flush: function(queueName) {
-    var queues = this._queues, queueNames, idx, len, queue, log;
+    var queueNames, idx, len, queue, log;
 
-    if (!queues) { return this; } // nothing to do
+    if (!this._queues) { return this; } // nothing to do
 
     function iter(item) {
       invoke(item.target, item.method, item.args);
@@ -108,7 +107,7 @@ RunLoop.prototype = {
 
           Ember.beginPropertyChanges();
           try {
-            forEach(queue, iter);
+            forEach.call(queue, iter);
           } finally {
             Ember.endPropertyChanges();
           }
@@ -116,40 +115,52 @@ RunLoop.prototype = {
           if (log) { Ember.Logger.log('End: Flush Sync Queue'); }
 
         } else {
-          forEach(queue, iter);
+          forEach.call(queue, iter);
         }
       }
 
     } else {
       queueNames = Ember.run.queues;
       len = queueNames.length;
-      do {
-        this._queues = null;
-        for (idx=0; idx < len; idx++) {
-          queueName = queueNames[idx];
-          queue = queues[queueName];
+      idx = 0;
 
-          if (queue) {
-            // the sync phase is to allow property changes to propagate.  don't
-            // invoke observers until that is finished.
-            if (queueName === 'sync') {
-              log = Ember.LOG_BINDINGS;
-              if (log) { Ember.Logger.log('Begin: Flush Sync Queue'); }
+      outerloop:
+      while (idx < len) {
+        queueName = queueNames[idx];
+        queue = this._queues && this._queues[queueName];
+        delete this._queues[queueName];
 
-              Ember.beginPropertyChanges();
-              try {
-                forEach(queue, iter);
-              } finally {
-                Ember.endPropertyChanges();
-              }
+        if (queue) {
+          // the sync phase is to allow property changes to propagate.  don't
+          // invoke observers until that is finished.
+          if (queueName === 'sync') {
+            log = Ember.LOG_BINDINGS;
+            if (log) { Ember.Logger.log('Begin: Flush Sync Queue'); }
 
-              if (log) { Ember.Logger.log('End: Flush Sync Queue'); }
-            } else {
-              forEach(queue, iter);
+            Ember.beginPropertyChanges();
+            try {
+              forEach.call(queue, iter);
+            } finally {
+              Ember.endPropertyChanges();
             }
+
+            if (log) { Ember.Logger.log('End: Flush Sync Queue'); }
+          } else {
+            forEach.call(queue, iter);
           }
         }
-      } while (queues = this._queues); // go until queues stay clean
+
+        // Loop through prior queues
+        for (var i = 0; i <= idx; i++) {
+          if (this._queues && this._queues[queueNames[i]]) {
+            // Start over at the first queue with contents
+            idx = i;
+            continue outerloop;
+          }
+        }
+
+        idx++;
+      }
     }
 
     timerMark = null;

@@ -63,9 +63,29 @@ class JSHintRC < Rake::Pipeline::Filter
   end
 end
 
+class VersionInfo < Rake::Pipeline::Filter
+  def version_info
+    @version_info ||= begin
+      latest_tag = `git describe --tags`
+      last_commit = `git log -n 1 --format="%h (%ci)"`
+
+      out = "// Version: #{latest_tag}"
+      out << "// Last commit: #{last_commit}"
+      out
+    end
+  end
+
+  def generate_output(inputs, output)
+    inputs.each do |input|
+      file = File.read(input.fullpath)
+      output.write "#{version_info}\n\n#{file}"
+    end
+  end
+end
+
 distros = {
   :runtime => %w(ember-metal ember-runtime),
-  :full    => %w(handlebars ember-metal ember-runtime ember-application ember-views ember-states ember-viewstates metamorph ember-handlebars)
+  :full    => %w(handlebars ember-metal ember-runtime ember-application ember-views ember-states ember-routing ember-viewstates metamorph ember-handlebars)
 }
 
 output "dist"
@@ -133,6 +153,7 @@ distros.each do |name, modules|
 
     # Add debug to the main distro
     match "{#{name}.js,ember-debug.js}" do
+      filter VersionInfo
       concat ["ember-debug.js"], "#{name}.js"
     end
 
@@ -144,6 +165,7 @@ distros.each do |name, modules|
     # Minify
     match "#{name}.min.js" do
       uglify{ "#{name}.min.js" }
+      filter VersionInfo
       filter EmberLicenseFilter
     end
   end

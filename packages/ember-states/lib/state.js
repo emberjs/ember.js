@@ -45,7 +45,7 @@ Ember.State = Ember.Object.extend(Ember.Evented,
     Override the default event firing from Ember.Evented to
     also call methods with the given name.
   */
-  fire: function(name) {
+  trigger: function(name) {
     if (this[name]) {
       this[name].apply(this, [].slice.call(arguments, 1));
     }
@@ -95,12 +95,12 @@ Ember.State = Ember.Object.extend(Ember.Evented,
   setupChild: function(states, name, value) {
     if (!value) { return false; }
 
-    if (Ember.State.detect(value)) {
+    if (value.isState) {
+      set(value, 'name', name);
+    } else if (Ember.State.detect(value)) {
       value = value.create({
         name: name
       });
-    } else if (value.isState) {
-      set(value, 'name', name);
     }
 
     if (value.isState) {
@@ -161,16 +161,45 @@ Ember.State = Ember.Object.extend(Ember.Evented,
 
 var Event = Ember.$ && Ember.$.Event;
 
-Ember.State.transitionTo = function(target) {
-  var event = function(router, context) {
-    if (Event && context instanceof Event) {
-      context = context.context;
-    }
+Ember.State.reopenClass(
+/** @scope Ember.State */{
 
-    router.transitionTo(target, context);
-  };
+  /**
+  @static
 
-  event.transitionTarget = target;
+  Creates an action function for transitioning to the named state while preserving context.
 
-  return event;
-};
+  The following example StateManagers are equivalent:
+
+      aManager = Ember.StateManager.create({
+        stateOne: Ember.State.create({
+          changeToStateTwo: Ember.State.transitionTo('stateTwo')
+        }),
+        stateTwo: Ember.State.create({})
+      })
+
+      bManager = Ember.StateManager.create({
+        stateOne: Ember.State.create({
+          changeToStateTwo: function(manager, context){
+            manager.transitionTo('stateTwo', context)
+          }
+        }),
+        stateTwo: Ember.State.create({})
+      })
+
+  @param {String} target
+  */
+  transitionTo: function(target) {
+    var event = function(stateManager, context) {
+      if (Event && context instanceof Event) {
+        context = context.context;
+      }
+
+      stateManager.transitionTo(target, context);
+    };
+
+    event.transitionTarget = target;
+
+    return event;
+  }
+});

@@ -270,48 +270,49 @@ test("two bindings to the same value should sync in the order they are initializ
 
 module("propertyNameBinding with longhand", {
   setup: function(){
-    TestNamespace = {
-      fromObject: Ember.Object.create({
-        value: "originalValue"
-      }),
+    Ember.run(function () {
+      TestNamespace = {
+        fromObject: Ember.Object.create({
+          value: "originalValue"
+        }),
 
-      toObject: Ember.Object.create({
-        valueBinding: Ember.Binding.from('TestNamespace.fromObject.value'),
-        localValue: "originalLocal",
-        relativeBinding: Ember.Binding.from('localValue')
-      })
-    };
-
-    Ember.run.sync();
+        toObject: Ember.Object.create({
+          valueBinding: Ember.Binding.from('TestNamespace.fromObject.value'),
+          localValue: "originalLocal",
+          relativeBinding: Ember.Binding.from('localValue')
+        })
+      };
+    });
   },
   teardown: function(){
-    TestNamespace = null;
-    Ember.run.end();
-    Ember.run.cancelTimers();
+    TestNamespace = undefined;
   }
 });
 
 test("works with full path", function(){
-
-  set(TestNamespace.fromObject, 'value', "updatedValue");
-  Ember.run.sync();
+  Ember.run(function () {
+    set(TestNamespace.fromObject, 'value', "updatedValue");
+  });
 
   equal(get(TestNamespace.toObject, 'value'), "updatedValue");
 
-  set(TestNamespace.fromObject, 'value', "newerValue");
-  Ember.run.sync();
+  Ember.run(function () {
+    set(TestNamespace.fromObject, 'value', "newerValue");
+  });
 
   equal(get(TestNamespace.toObject, 'value'), "newerValue");
 });
 
 test("works with local path", function(){
-  set(TestNamespace.toObject, 'localValue', "updatedValue");
-  Ember.run.sync();
+  Ember.run(function () {
+    set(TestNamespace.toObject, 'localValue', "updatedValue");
+  });
 
   equal(get(TestNamespace.toObject, 'relative'), "updatedValue");
 
-  set(TestNamespace.toObject, 'localValue', "newerValue");
-  Ember.run.sync();
+  Ember.run(function () {
+    set(TestNamespace.toObject, 'localValue', "newerValue");
+  });
 
   equal(get(TestNamespace.toObject, 'relative'), "newerValue");
 });

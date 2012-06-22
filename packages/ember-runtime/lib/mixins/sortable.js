@@ -1,4 +1,4 @@
-var get = Ember.get, set = Ember.set, forEach = Ember.ArrayUtils.forEach;
+var get = Ember.get, set = Ember.set, forEach = Ember.EnumerableUtils.forEach;
 
 Ember.SortableMixin = Ember.Mixin.create(Ember.MutableEnumerable, {
   sortProperties: null,
@@ -108,7 +108,7 @@ Ember.SortableMixin = Ember.Mixin.create(Ember.MutableEnumerable, {
       var removedObjects = array.slice(idx, idx+removedCount);
       var sortProperties = get(this, 'sortProperties');
 
-      removedObjects.forEach(function(item) {
+      forEach(removedObjects, function(item) {
         arrangedContent.removeObject(item);
 
         forEach(sortProperties, function(sortProperty) {
@@ -128,7 +128,7 @@ Ember.SortableMixin = Ember.Mixin.create(Ember.MutableEnumerable, {
       var addedObjects = array.slice(idx, idx+addedCount);
       var arrangedContent = get(this, 'arrangedContent');
 
-      addedObjects.forEach(function(item) {
+      forEach(addedObjects, function(item) {
         this.insertItemSorted(item);
 
         forEach(sortProperties, function(sortProperty) {

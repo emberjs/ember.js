@@ -1,12 +1,12 @@
 // ==========================================================================
-// Project:   Ember Handlebar Views
+// Project:   Ember Handlebars Views
 // Copyright: ©2011 Strobe Inc. and contributors.
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 /*globals TemplateTests:true MyApp:true App:true */
 
 var getPath = Ember.getPath, setPath = Ember.setPath, get = Ember.get, set = Ember.set;
-var forEach = Ember.ArrayUtils.forEach;
+var forEach = Ember.EnumerableUtils.forEach;
 
 var firstGrandchild = function(view) {
   return get(get(view, 'childViews').objectAt(0), 'childViews').objectAt(0);
@@ -1362,7 +1362,7 @@ test("should not reset cursor position when text field receives keyUp event", fu
   view.$().setCaretPosition(5);
 
   Ember.run(function() {
-    view.keyUp({});
+    view.trigger('keyUp', {});
   });
 
   equal(view.$().caretPosition(), 5, "The keyUp event should not result in the cursor being reset due to the bindAttr observers");
@@ -2180,4 +2180,27 @@ test("should bind to the property if no registered helper found for a mustache w
   ok(view.$().text() === 'foobarProperty', "Property was bound to correctly");
 });
 
+test("should accept bindings as a string or an Ember.Binding", function() {
+  var viewClass = Ember.View.extend({
+    template: Ember.Handlebars.compile("binding: {{view.bindingTest}}, string: {{view.stringTest}}")
+  });
+
+  Ember.Handlebars.registerHelper('boogie', function(id, options) {
+    options.hash = options.hash || {};
+    options.hash.bindingTestBinding = Ember.Binding.oneWay('bindingContext.' + id);
+    options.hash.stringTestBinding = id;
+    return Ember.Handlebars.ViewHelper.helper(this, viewClass, options);
+  });
+
+  view = Ember.View.create({
+    content: Ember.Object.create({
+      direction: 'down'
+    }),
+    template: Ember.Handlebars.compile("{{boogie content.direction}}")
+  });
+
+  appendView();
+
+  equal(Ember.$.trim(view.$().text()), "binding: down, string: down");
+});
 

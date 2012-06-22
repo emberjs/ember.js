@@ -15,8 +15,7 @@ var BEFORE_OBSERVERS = ':before';
 var guidFor = Ember.guidFor;
 
 var deferred = 0;
-var array_Slice = Array.prototype.slice;
-var array_ForEach = Ember.ArrayUtils.forEach;
+var array_Slice = [].slice;
 
 /** @private */
 var ObserverSet = function () {

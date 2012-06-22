@@ -20,6 +20,8 @@ var paramForClass = function(classObject) {
 var merge = function(original, hash) {
   for (var prop in hash) {
     if (!hash.hasOwnProperty(prop)) { continue; }
+    if (original.hasOwnProperty(prop)) { continue; }
+
     original[prop] = hash[prop];
   }
 };
@@ -74,7 +76,7 @@ Ember.Routable = Ember.Mixin.create({
     In general, this will update the browser's URL.
   */
   updateRoute: function(manager, location) {
-    if (location && get(this, 'isLeaf')) {
+    if (get(this, 'isLeaf')) {
       var path = this.absoluteRoute(manager);
       location.setURL(path);
     }
@@ -123,7 +125,7 @@ Ember.Routable = Ember.Mixin.create({
     property. This heuristic may change.
   */
   isRoutable: Ember.computed(function() {
-    return typeof this.route === 'string';
+    return typeof get(this, 'route') === 'string';
   }).cacheable(),
 
   /**
@@ -232,6 +234,8 @@ Ember.Routable = Ember.Mixin.create({
   serialize: function(manager, context) {
     var modelClass, routeMatcher, namespace, param, id;
 
+    if (Ember.empty(context)) { return ''; }
+
     if (modelClass = this.modelClassFor(get(manager, 'namespace'))) {
       param = paramForClass(modelClass);
       id = get(context, 'id');
@@ -258,6 +262,21 @@ Ember.Routable = Ember.Mixin.create({
     var childStates = get(this, 'childStates'), match;
 
     childStates = childStates.sort(function(a, b) {
+      var aDynamicSegments = getPath(a, 'routeMatcher.identifiers.length'),
+          bDynamicSegments = getPath(b, 'routeMatcher.identifiers.length'),
+          aRoute = get(a, 'route'),
+          bRoute = get(b, 'route');
+
+      if (aRoute.indexOf(bRoute) === 0) {
+        return -1;
+      } else if (bRoute.indexOf(aRoute) === 0) {
+        return 1;
+      }
+
+      if (aDynamicSegments !== bDynamicSegments) {
+        return aDynamicSegments - bDynamicSegments;
+      }
+
       return getPath(b, 'route.length') - getPath(a, 'route.length');
     });
 
@@ -313,11 +332,15 @@ Ember.Routable = Ember.Mixin.create({
   },
 
   /**
-    The `connectOutlets` method will be triggered once a
+    The `connectOutlets` event will be triggered once a
     state has been entered. It will be called with the
     route's context.
   */
-  connectOutlets: Ember.K
-});
+  connectOutlets: Ember.K,
 
-Ember.State.reopen(Ember.Routable);
+  /**
+   The `navigateAway` event will be triggered when the
+   URL changes due to the back/forward button
+  */
+  navigateAway: Ember.K
+});

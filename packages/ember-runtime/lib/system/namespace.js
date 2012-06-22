@@ -6,7 +6,7 @@
 
 require('ember-runtime/system/object');
 
-var indexOf = Ember.ArrayUtils.indexOf;
+var indexOf = Ember.ArrayPolyfills.indexOf;
 
 /**
   @private
@@ -37,7 +37,7 @@ Ember.Namespace = Ember.Object.extend({
   destroy: function() {
     var namespaces = Ember.Namespace.NAMESPACES;
     window[this.toString()] = undefined;
-    namespaces.splice(indexOf(namespaces, this), 1);
+    namespaces.splice(indexOf.call(namespaces, this), 1);
     this._super();
   }
 });

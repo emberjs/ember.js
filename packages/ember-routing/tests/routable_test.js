@@ -1,12 +1,14 @@
+require('ember-application/system/location');
+require('ember-application/system/none_location');
+
 module("Ember.Routable");
 
-var locationStub = { };
-
 test("it should have its updateRoute method called when it is entered", function() {
+  var locationStub = { };
+
   expect(2);
 
-
-  var state = Ember.State.create({
+  var state = Ember.Route.create({
     route: 'foo',
     updateRoute: function(manager, location) {
       ok(true, "updateRoute was called");
@@ -16,7 +18,7 @@ test("it should have its updateRoute method called when it is entered", function
 
   var router = Ember.Router.create({
     location: locationStub,
-    root: Ember.State.create({
+    root: Ember.Route.create({
       ready: function(manager) {
         manager.transitionTo('initial');
       },
@@ -78,14 +80,14 @@ test("a RouteMatcher generates routes with dynamic segments", function() {
 });
 
 test("route repeatedly descends into a nested hierarchy", function() {
-  var state = Ember.State.create({
-    fooChild: Ember.State.create({
+  var state = Ember.Route.create({
+    fooChild: Ember.Route.create({
       route: 'foo',
 
-      barChild: Ember.State.create({
+      barChild: Ember.Route.create({
         route: 'bar',
 
-        bazChild: Ember.State.create({
+        bazChild: Ember.Route.create({
           route: 'baz'
         })
       })
@@ -93,30 +95,7 @@ test("route repeatedly descends into a nested hierarchy", function() {
   });
 
   var router = Ember.Router.create({
-    root: state
-  });
-
-  router.route("/foo/bar/baz");
-
-  equal(router.getPath('currentState.path'), 'root.fooChild.barChild.bazChild');
-});
-
-test("route repeatedly descends into a nested hierarchy", function() {
-  var state = Ember.State.create({
-    fooChild: Ember.State.create({
-      route: 'foo',
-
-      barChild: Ember.State.create({
-        route: 'bar',
-
-        bazChild: Ember.State.create({
-          route: 'baz'
-        })
-      })
-    })
-  });
-
-  var router = Ember.Router.create({
+    location: 'none',
     root: state
   });
 
@@ -126,18 +105,18 @@ test("route repeatedly descends into a nested hierarchy", function() {
 });
 
 test("when you descend into a state, the route is set", function() {
-  var state = Ember.State.create({
+  var state = Ember.Route.create({
     ready: function(manager) {
       manager.transitionTo('fooChild.barChild.bazChild');
     },
 
-    fooChild: Ember.State.create({
+    fooChild: Ember.Route.create({
       route: 'foo',
 
-      barChild: Ember.State.create({
+      barChild: Ember.Route.create({
         route: 'bar',
 
-        bazChild: Ember.State.create({
+        bazChild: Ember.Route.create({
           route: 'baz'
         })
       })
@@ -181,7 +160,7 @@ module("Routing Serialization and Deserialization", {
   setup: function() {
     router = Ember.Router.create({
       location: locationMock,
-      root: Ember.State.create({
+      root: Ember.Route.create({
         ready: function(manager, post) {
           manager.transitionTo('post.show', { post: post });
         },
@@ -190,10 +169,10 @@ module("Routing Serialization and Deserialization", {
           manager.transitionTo('post.index');
         },
 
-        post: Ember.State.create({
+        post: Ember.Route.create({
           route: '/posts',
 
-          index: Ember.State.create({
+          index: Ember.Route.create({
             route: '/',
 
             showPost: function(manager, post) {
@@ -201,7 +180,7 @@ module("Routing Serialization and Deserialization", {
             }
           }),
 
-          show: Ember.State.create({
+          show: Ember.Route.create({
             route: "/:post_id",
 
             connectOutlets: function(manager, context) {
@@ -277,8 +256,8 @@ module("default serialize and deserialize with modelType", {
         }
       },
 
-      root: Ember.State.extend({
-        post: Ember.State.extend({
+      root: Ember.Route.extend({
+        post: Ember.Route.extend({
           route: '/posts/:post_id',
           modelType: 'TestApp.Post',
 
@@ -287,7 +266,7 @@ module("default serialize and deserialize with modelType", {
           }
         }),
 
-        user: Ember.State.extend({
+        user: Ember.Route.extend({
           route: '/users/:user_id',
           modelType: window.TestApp.User,
 
@@ -351,8 +330,8 @@ module("default serialize and deserialize without modelType", {
         }
       },
 
-      root: Ember.State.extend({
-        post: Ember.State.extend({
+      root: Ember.Route.extend({
+        post: Ember.Route.extend({
           route: '/posts/:post_id',
 
           connectOutlets: function(router, post) {
@@ -367,6 +346,8 @@ module("default serialize and deserialize without modelType", {
     window.TestApp = undefined;
   }
 });
+
+
 
 test("should use a specified String `modelType` in the default `serialize`", function() {
   router.transitionTo('post', firstPost);
@@ -383,14 +364,15 @@ module("redirectsTo");
 
 test("if a leaf state has a redirectsTo, it automatically transitions into that state", function() {
    var router = Ember.Router.create({
-     root: Ember.State.create({
+     location: 'none',
+     root: Ember.Route.create({
 
-       index: Ember.State.create({
+       index: Ember.Route.create({
          route: '/',
          redirectsTo: 'someOtherState'
        }),
 
-       someOtherState: Ember.State.create({
+       someOtherState: Ember.Route.create({
          route: '/other'
        })
      })
@@ -406,13 +388,14 @@ test("if a leaf state has a redirectsTo, it automatically transitions into that 
 test("you cannot define connectOutlets AND redirectsTo", function() {
   raises(function() {
     Ember.Router.create({
-     root: Ember.State.create({
-       index: Ember.State.create({
-         route: '/',
-         redirectsTo: 'someOtherState',
-         connectOutlets: function() {}
-       })
-     })
+      location: 'none',
+      root: Ember.Route.create({
+        index: Ember.Route.create({
+          route: '/',
+          redirectsTo: 'someOtherState',
+          connectOutlets: function() {}
+        })
+      })
     });
   });
 });
@@ -420,41 +403,37 @@ test("you cannot define connectOutlets AND redirectsTo", function() {
 test("you cannot have a redirectsTo in a non-leaf state", function () {
   raises(function() {
     Ember.Router.create({
-      root: Ember.State.create({
+      location: 'none',
+      root: Ember.Route.create({
         redirectsTo: 'someOtherState',
 
-        index: Ember.State.create()
+        index: Ember.Route.create()
       })
     });
   });
 });
 
-var formatURLArgument = null;
+module("urlFor");
 
+var formatURLArgument = null;
+var locationStub = {
+  formatURL: function(url) {
+    formatURLArgument = url;
+    return url;
+  },
+  setURL: Ember.K
+};
 var expectURL = function(url) {
   equal(url, formatURLArgument, "should invoke formatURL with URL "+url);
 };
-
-module("urlFor", {
-  setup: function() {
-    locationStub = {
-      formatURL: function(url) {
-        formatURLArgument = url;
-        return url;
-      },
-
-      setURL: Ember.K
-    };
-  }
-});
 
 test("urlFor returns an absolute route", function() {
   expect(2);
 
   var router = Ember.Router.create({
     location: locationStub,
-    root: Ember.State.create({
-      dashboard: Ember.State.create({
+    root: Ember.Route.create({
+      dashboard: Ember.Route.create({
         route: '/dashboard'
       })
     })
@@ -468,8 +447,8 @@ test("urlFor returns an absolute route", function() {
 test("urlFor raises an error when route property is not defined", function() {
   var router = Ember.Router.create({
     location: locationStub,
-    root: Ember.State.create({
-      dashboard: Ember.State.create({}) // state without route property
+    root: Ember.Route.create({
+      dashboard: Ember.Route.create({}) // state without route property
     })
   });
 
@@ -482,11 +461,11 @@ test("urlFor supports dynamic segments", function() {
   var router = Ember.Router.create({
     location: locationStub,
 
-    root: Ember.State.create({
-      dashboard: Ember.State.create({
+    root: Ember.Route.create({
+      dashboard: Ember.Route.create({
         route: '/dashboard',
 
-        posts: Ember.State.create({
+        posts: Ember.Route.create({
           route: '/posts/:post_id'
         })
       })
@@ -508,18 +487,18 @@ test("urlFor supports using the current information for dynamic segments", funct
       }
     },
 
-    root: Ember.State.create({
-      dashboard: Ember.State.create({
+    root: Ember.Route.create({
+      dashboard: Ember.Route.create({
         route: '/dashboard',
 
-        posts: Ember.State.create({
+        posts: Ember.Route.create({
           route: '/posts/:post_id',
 
-          index: Ember.State.create({
+          index: Ember.Route.create({
             route: '/'
           }),
 
-          manage: Ember.State.create({
+          manage: Ember.Route.create({
             route: '/manage'
           })
         })
@@ -551,18 +530,18 @@ test("urlFor supports merging the current information for dynamic segments", fun
       }
     },
 
-    root: Ember.State.create({
-      dashboard: Ember.State.create({
+    root: Ember.Route.create({
+      dashboard: Ember.Route.create({
         route: '/dashboard',
 
-        posts: Ember.State.create({
+        posts: Ember.Route.create({
           route: '/posts/:post_id',
 
-          index: Ember.State.create({
+          index: Ember.Route.create({
             route: '/'
           }),
 
-          manage: Ember.State.create({
+          manage: Ember.Route.create({
             route: '/manage/:widget_id'
           })
         })
@@ -579,3 +558,36 @@ test("urlFor supports merging the current information for dynamic segments", fun
   expectURL('/dashboard/posts/1/manage/2');
 });
 
+test("navigateAway is called if the URL changes", function() {
+  var navigated = 0;
+
+  var router = Ember.Router.create({
+    location: locationStub,
+    root: Ember.Route.create({
+      index: Ember.Route.create({
+        route: '/',
+
+        navigateAway: function(router) {
+          navigated++;
+        }
+      }),
+
+      show: Ember.Route.create({
+        route: '/show'
+      })
+    })
+  });
+
+  Ember.run(function() {
+    router.route('/');
+  });
+
+  equal(router.getPath('currentState.path'), 'root.index', "The current state is root.index");
+
+  Ember.run(function() {
+    router.route('/show');
+  });
+
+  equal(router.getPath('currentState.path'), 'root.show', "The current state is root.index");
+  equal(navigated, 1, "The navigateAway method was called");
+});
