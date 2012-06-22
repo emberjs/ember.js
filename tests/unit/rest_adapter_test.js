@@ -66,7 +66,10 @@ module("the REST adapter", {
     adapter.destroy();
     store.destroy();
 
-    if (person) { person.destroy(); }
+    if (person) {
+      person.destroy();
+      person = null;
+    }
   }
 });
 
@@ -599,7 +602,7 @@ test("creating several people (with bulkCommit) makes a POST to /people, with a 
 
 test("bulk commits can sideload data", function() {
   set(adapter, 'bulkCommit', true);
-  
+
   var tom = store.createRecord(Person, { name: "Tom Dale" });
   var yehuda = store.createRecord(Person, { name: "Yehuda Katz" });
 
@@ -631,7 +634,7 @@ test("bulk commits can sideload data", function() {
 
 test("updating several people (with bulkCommit) makes a PUT to /people/bulk with the data hash Array", function() {
   set(adapter, 'bulkCommit', true);
-  
+
   store.loadMany(Person, [
     { id: 1, name: "Yehuda Katz" },
     { id: 2, name: "Carl Lerche" }
@@ -669,7 +672,7 @@ test("updating several people (with bulkCommit) makes a PUT to /people/bulk with
 
 test("bulk updates can sideload data", function() {
   set(adapter, 'bulkCommit', true);
-  
+
   adapter.mappings = {
     groups: Group
   };
@@ -717,7 +720,7 @@ test("bulk updates can sideload data", function() {
 
 test("deleting several people (with bulkCommit) makes a PUT to /people/bulk", function() {
   set(adapter, 'bulkCommit', true);
-  
+
   store.loadMany(Person, [
     { id: 1, name: "Yehuda Katz" },
     { id: 2, name: "Carl Lerche" }
@@ -752,7 +755,7 @@ test("deleting several people (with bulkCommit) makes a PUT to /people/bulk", fu
 
 test("bulk deletes can sideload data", function() {
   set(adapter, 'bulkCommit', true);
-  
+
   adapter.mappings = {
     groups: Group
   };

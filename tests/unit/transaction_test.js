@@ -335,10 +335,8 @@ module("DS.Transaction - relationships", {
   },
 
   teardown: function() {
-    Ember.run(function() {
-      adapter.destroy();
-      store.destroy();
-    });
+    adapter.destroy();
+    store.destroy();
   }
 });
 
@@ -394,13 +392,8 @@ test("If a child is removed from a parent it was recently added to, the dirty re
   transaction.add(post);
   transaction.add(comment);
 
-  Ember.run(function() {
-    post.get('comments').removeObject(comment);
-  });
-
-  Ember.run(function() {
-    post.get('comments').pushObject(comment);
-  });
+  post.get('comments').removeObject(comment);
+  post.get('comments').pushObject(comment);
 
   var relationships = transaction.dirtyRelationships;
 
@@ -424,21 +417,10 @@ test("If a child was added to one parent, and then another, the changes coalesce
   transaction.add(post);
   transaction.add(comment);
 
-  Ember.run(function() {
-    post.get('comments').removeObject(comment);
-  });
-
-  Ember.run(function() {
-    post2.get('comments').pushObject(comment);
-  });
-
-  Ember.run(function() {
-    post2.get('comments').removeObject(comment);
-  });
-
-  Ember.run(function() {
-    post3.get('comments').pushObject(comment);
-  });
+  post.get('comments').removeObject(comment);
+  post2.get('comments').pushObject(comment);
+  post2.get('comments').removeObject(comment);
+  post3.get('comments').pushObject(comment);
 
   var relationships = transaction.dirtyRelationships;
 

@@ -178,9 +178,7 @@ test("if an adapter implements the generateIdForRecord method, it gets invoked w
 
   equal(comment.toJSON().post_id, "id-2", "assigned id is immediately available in JSON form of record");
 
-  Ember.run(function() {
-    store.commit();
-  });
+  store.commit();
 });
 
 test("when a store is committed, the adapter's commit method is called with updates", function() {

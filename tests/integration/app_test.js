@@ -6,19 +6,15 @@ module("Application boot", {
       root: Ember.Route.extend()
     });
 
-    Ember.run(function() {
-      app = Ember.Application.create({
-        Router: Router,
-        Store: DS.Store,
-        FooController: Ember.Controller.extend()
-      });
+    app = Ember.Application.create({
+      Router: Router,
+      Store: DS.Store,
+      FooController: Ember.Controller.extend()
     });
   },
 
   teardown: function() {
-    Ember.run(function() {
-      app.destroy();
-    });
+    app.destroy();
   }
 });
 

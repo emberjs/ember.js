@@ -265,16 +265,12 @@ test("when a DS.Model updates its attributes, its changes affect its filtered Ar
 
   equal(get(person, 'name'), "Scumbag Katz", "precond - the item is correct");
 
-  Ember.run(function() {
-    set(person, 'name', "Yehuda Katz");
-  });
+  set(person, 'name', "Yehuda Katz");
 
   equal(get(people, 'length'), 1, "there is still one item");
   equal(get(person, 'name'), "Yehuda Katz", "it has the updated item");
 
-  Ember.run(function() {
-    set(person, 'name', "Yehuda Katz-Foo");
-  });
+  set(person, 'name', "Yehuda Katz-Foo");
 
   equal(get(people, 'length'), 0, "there are now no items");
 });
@@ -307,16 +303,12 @@ test("when a DS.Model updates its attributes, its changes affect its filtered Ar
 
   equal(get(person, 'name'), "Scumbag Katz", "precond - the item is correct");
 
-  Ember.run(function() {
-    set(person, 'name', "Yehuda Katz");
-  });
+  set(person, 'name', "Yehuda Katz");
 
   equal(get(people, 'length'), 1, "there is still one item");
   equal(get(person, 'name'), "Yehuda Katz", "it has the updated item");
 
-  Ember.run(function() {
-    set(person, 'name', "Yehuda Katz-Foo");
-  });
+  set(person, 'name', "Yehuda Katz-Foo");
 
   equal(get(people, 'length'), 0, "there are now no items");
 });
@@ -342,9 +334,7 @@ test("when a new record depends on the state of another record, it enters the pe
 
   equal(get(childComment, 'isPending'), true, "Child comment is pending on the parent comment");
 
-  Ember.run(function() {
-    store.commit();
-  });
+  store.commit();
 
   equal(get(parentComment, 'isLoaded'), true, "precond - Parent comment is loaded");
   equal(get(parentComment, 'isDirty'), false, "precond - Parent comment is not dirty");
@@ -375,9 +365,7 @@ test("when a new record depends on the state of another record which depends on 
   equal(get(childComment, 'isPending'), true, "Child comment is pending on the parent comment");
   equal(get(grandchildComment, 'isPending'), true, "Grandchild comment is pending on the child comment");
 
-  Ember.run(function() {
-    store.commit();
-  });
+  store.commit();
 
   equal(get(parentComment, 'isLoaded'), true, "precond - Parent comment is loaded");
   equal(get(parentComment, 'isDirty'), false, "precond - Parent comment is not dirty");
@@ -411,9 +399,7 @@ test("when an updated record depends on the state of another record, it enters t
 
   var childComment = store.createRecord(Comment);
 
-  Ember.run(function() {
-    store.commit();
-  });
+  store.commit();
 
   parentComment = store.createRecord(Comment);
 
@@ -427,9 +413,7 @@ test("when an updated record depends on the state of another record, it enters t
 
   equal(get(childComment, 'isPending'), true, "Child comment is pending on the parent comment");
 
-  Ember.run(function() {
-    store.commit();
-  });
+  store.commit();
 
   equal(get(parentComment, 'isLoaded'), true, "precond - Parent comment is loaded");
   equal(get(parentComment, 'isDirty'), false, "precond - Parent comment is not dirty");
@@ -460,9 +444,7 @@ test("when a loaded record depends on the state of another record, it enters the
 
   childComment = store.createRecord(Comment);
 
-  Ember.run(function() {
-    store.commit();
-  });
+  store.commit();
 
   equal(childComment.get('isDirty'), false, "precond - record is not marked as dirty");
   equal(childComment.get('isNew'), false, "precond - record is not new");
@@ -473,9 +455,7 @@ test("when a loaded record depends on the state of another record, it enters the
   equal(get(childComment, 'isDirty'), true, "child comment is marked as dirty once a dependency has been created");
   equal(get(childComment, 'isPending'), true, "Child comment is pending on the parent comment");
 
-  Ember.run(function() {
-    store.commit();
-  });
+  store.commit();
 
   equal(get(parentComment, 'isLoaded'), true, "precond - Parent comment is loaded");
   equal(get(parentComment, 'isDirty'), false, "precond - Parent comment is not dirty");
@@ -514,9 +494,7 @@ test("when a record depends on another record, we can delete the first record an
   equal(get(childComment, 'isDirty'), false, "child record should not be dirty since it was deleted and never saved");
   equal(get(parentComment, 'isDirty'), true, "parent comment has not yet been saved");
 
-  Ember.run(function() {
-    store.commit();
-  });
+  store.commit();
 
   equal(get(parentComment, 'isDirty'), false, "parent comment has been saved");
   ok(true, "no exception was thrown");

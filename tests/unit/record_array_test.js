@@ -50,26 +50,25 @@ test("a newly created record is removed from a record array when it is deleted",
   var store = DS.Store.create({ adapter: null }),
       recordArray;
 
+  recordArray = store.findAll(Person);
+
+  var scumbag = store.createRecord(Person, {
+    name: "Scumbag Dale"
+  });
+
+  // guarantee coalescence
   Ember.run(function() {
-    recordArray = store.findAll(Person);
-
-    var scumbag = store.createRecord(Person, {
-      name: "Scumbag Dale"
-    });
-
     store.createRecord(Person, { name: 'p1'});
     store.createRecord(Person, { name: 'p2'});
     store.createRecord(Person, { name: 'p3'});
-
-    equal(get(recordArray, 'length'), 4, "precond - record array has the created item");
-    equal(get(recordArray.objectAt(0), 'name'), "Scumbag Dale", "item at index 0 is record with id 1");
-
-    scumbag.deleteRecord();
   });
 
-  Ember.run(function() {
-    equal(get(recordArray, 'length'), 3, "record is removed from the record array");
-  });
+  equal(get(recordArray, 'length'), 4, "precond - record array has the created item");
+  equal(get(recordArray.objectAt(0), 'name'), "Scumbag Dale", "item at index 0 is record with id 1");
+
+  scumbag.deleteRecord();
+
+  equal(get(recordArray, 'length'), 3, "record is removed from the record array");
 });
 
 test("a record array can have a filter on it", function() {
@@ -250,6 +249,8 @@ test("a Record Array can update its filter and notify array observers", function
   var store, recordArray;
 
   var clientEdits = function(ids) {
+    // wrap in an Ember.run to guarantee coalescence of the
+    // iterated `set` calls.
     Ember.run( function() {
       ids.forEach( function(id) {
         var person = store.find(Person, id);
@@ -259,6 +260,8 @@ test("a Record Array can update its filter and notify array observers", function
   };
 
   var clientCreates = function(names) {
+    // wrap in an Ember.run to guarantee coalescence of the
+    // iterated `set` calls.
     Ember.run( function() {
       names.forEach( function( name ) {
         Person.createRecord({ name: 'Client-side ' + name });
@@ -267,7 +270,7 @@ test("a Record Array can update its filter and notify array observers", function
   };
 
   var serverResponds = function(){
-    Ember.run(function() { store.commit(); });
+    store.commit();
   };
 
   var setup = function(serverCallbacks) {
@@ -379,9 +382,7 @@ test("a record array that backs a collection view functions properly", function(
     content: store.findAll(Person)
   });
 
-  Ember.run(function() {
-    container.appendTo('#qunit-fixture');
-  });
+  container.appendTo('#qunit-fixture');
 
   function compareArrays() {
     var recordArray = container.content;

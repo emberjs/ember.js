@@ -45,9 +45,7 @@ test("when adding a record to an association that belongs to another record that
     }
   };
 
-  Ember.run(function() {
-    transaction.commit();
-  });
+  transaction.commit();
 });
 
 test("if a record is added to the store while a child is pending, auto-committing the child record should not commit the new record", function() {
@@ -74,9 +72,7 @@ test("if a record is added to the store while a child is pending, auto-committin
     }
   };
 
-  Ember.run(function() {
-    store.commit();
-  });
+  store.commit();
 });
 
 test("if a parent record and an uncommitted pending child belong to different transactions, committing the parent's transaction does not cause the child's transaction to commit", function() {
@@ -102,9 +98,7 @@ test("if a parent record and an uncommitted pending child belong to different tr
     }
   };
 
-  Ember.run(function() {
-    parentTransaction.commit();
-  });
+  parentTransaction.commit();
 });
 
 var async = function(callback, timeout) {

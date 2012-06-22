@@ -117,9 +117,7 @@ test("if an association's added and removed records are persisted, its isDirty i
 
   equal(get(person3, 'isDirty'), true, "precond - person 3 is dirty");
 
-  Ember.run(function() {
-    store.commit();
-  });
+  store.commit();
 
   equal(get(person3, 'isDirty'), false, "precond - person 3 is clean");
   equal(get(people, 'isDirty'), false, "the association becomes clean after records are committed");
