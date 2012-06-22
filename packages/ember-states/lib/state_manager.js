@@ -354,6 +354,9 @@ require('ember-states/state');
 Ember.StateManager = Ember.State.extend(
 /** @scope Ember.StateManager.prototype */ {
 
+  fireOnTransition: false,
+  fireOnEvent: false,
+
   /**
     When creating a new statemanager, look for a default state to transition
     into. This state can either be named `start`, or can be specified using the
@@ -439,7 +442,8 @@ Ember.StateManager = Ember.State.extend(
   },
 
   sendRecursively: function(event, currentState, context) {
-    var action = currentState[event];
+    var action = currentState[event],
+        fireOnEvent = get(this, 'fireOnEvent');
 
     // Test to see if the action is a method that
     // can be invoked. Don't blindly check just for
@@ -448,7 +452,9 @@ Ember.StateManager = Ember.State.extend(
     // and we should still raise an exception in that
     // case.
     if (typeof action === 'function') {
-      this.fire('willSendEvent', currentState, event);
+      if (fireOnEvent) {
+        this.fire('willSendEvent', currentState, event);
+      }
       action.call(currentState, this, context);
     } else {
       var parentState = get(currentState, 'parentState');
@@ -634,7 +640,8 @@ Ember.StateManager = Ember.State.extend(
 
   enterState: function(exitStates, enterStates, state) {
     var log = this.enableLogging,
-        stateManager = this;
+        stateManager = this,
+        fireOnTransition = get(this, 'fireOnTransition');
 
     exitStates = exitStates.slice(0).reverse();
     exitStates.forEach(function(state) {
@@ -643,7 +650,9 @@ Ember.StateManager = Ember.State.extend(
 
     enterStates.forEach(function(state) {
       state.fire('enter', stateManager);
-      stateManager.fire('didEnterState', state);
+      if (fireOnTransition) {
+        stateManager.fire('didEnterState', state);
+      }
     });
 
     var startState = state,
@@ -658,7 +667,9 @@ Ember.StateManager = Ember.State.extend(
       enteredState = startState;
 
       startState.fire('enter', stateManager);
-      stateManager.fire('didEnterState', startState);
+      if (fireOnTransition) {
+        stateManager.fire('didEnterState', startState);
+      }
 
       initialState = get(startState, 'initialState');
 

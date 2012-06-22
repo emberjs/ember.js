@@ -309,7 +309,7 @@ test("it sends exit events in the correct order when changing to a state multipl
 });
 
 
-test("state entering & events sending can be hooked", function() {
+test("state entering & events sending can be hooked when needed", function() {
   var navigationLog = [],
       stateManager = Ember.StateManager.create({
       enableLogging: true,
@@ -323,6 +323,7 @@ test("state entering & events sending can be hooked", function() {
       this._super();
     },
     start: Ember.State.create(),
+    doNothing: Ember.K,
     show: Ember.State.create({
       showDetails: function(stateManager) {
         stateManager.transitionTo('show.details');
@@ -333,13 +334,15 @@ test("state entering & events sending can be hooked", function() {
   });
 
   stateManager.transitionTo('start');
+  stateManager.set('fireOnTransition', true);
+  stateManager.send('doNothing');
+  stateManager.set('fireOnEvent', true);
   stateManager.transitionTo('show');
   stateManager.send('showDetails');
   stateManager.transitionTo('terminate');
 
-  equal(navigationLog.length, 5, "logging hook was called as many times as needed");
+  equal(navigationLog.length, 4, "logging hook was called as many times as needed");
   deepEqual(navigationLog, [
-    "Entering state start",
     "Entering state show",
     "About to send 'showDetails' event to state show",
     "Entering state show.details",
