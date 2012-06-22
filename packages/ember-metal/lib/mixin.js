@@ -25,10 +25,8 @@ var Mixin, REQUIRED, Alias,
     guidFor = Ember.guidFor;
 
 /** @private */
-function meta(obj, writable) {
-  var m = Ember.meta(obj, writable!==false), ret = m.mixins;
-  if (writable===false) return ret || EMPTY_META;
-
+function mixinsMeta(obj) {
+  var m = Ember.meta(obj, true), ret = m.mixins;
   if (!ret) {
     ret = m.mixins = { __emberproto__: obj };
   } else if (ret.__emberproto__ !== obj) {
@@ -254,7 +252,7 @@ function applyMixin(obj, mixins, partial) {
   // * Set up _super wrapping if necessary
   // * Set up computed property descriptors
   // * Copying `toString` in broken browsers
-  mergeMixins(mixins, meta(obj), descs, values, obj);
+  mergeMixins(mixins, mixinsMeta(obj), descs, values, obj);
 
   for(key in values) {
     if (key === 'contructor') { continue; }
@@ -280,7 +278,7 @@ function applyMixin(obj, mixins, partial) {
           desc  = descs[altKey];
         } else if (m.descs[altKey]) {
           desc  = m.descs[altKey];
-          value = desc.val(obj, altKey);
+          value = undefined;
         } else {
           desc = undefined;
           value = obj[altKey];
@@ -308,7 +306,6 @@ function applyMixin(obj, mixins, partial) {
       }
 
       if (m.watching[key]) {
-        m.values[key] = value;
         Ember.overrideChains(obj, key, m);
       }
     }
@@ -443,7 +440,11 @@ function _detect(curMixin, targetMixin, seen) {
 MixinPrototype.detect = function(obj) {
   if (!obj) { return false; }
   if (obj instanceof Mixin) { return _detect(obj, this, {}); }
-  return !!meta(obj, false)[guidFor(this)];
+  var mixins = Ember.meta(obj, false).mixins;
+  if (mixins) {
+    return !!mixins[guidFor(this)];
+  }
+  return false;
 };
 
 MixinPrototype.without = function() {
@@ -581,13 +582,15 @@ MixinPrototype.toString = classToString;
 // returns the mixins currently applied to the specified object
 // TODO: Make Ember.mixin
 Mixin.mixins = function(obj) {
-  var ret = [], mixins = meta(obj, false), key, mixin;
-  for(key in mixins) {
-    if (META_SKIP[key]) { continue; }
-    mixin = mixins[key];
+  var ret = [], mixins = Ember.meta(obj, false).mixins, key, mixin;
+  if (mixins) {
+    for(key in mixins) {
+      if (META_SKIP[key]) { continue; }
+      mixin = mixins[key];
 
-    // skip primitive mixins since these are always anonymous
-    if (!mixin.properties) { ret.push(mixins[key]); }
+      // skip primitive mixins since these are always anonymous
+      if (!mixin.properties) { ret.push(mixins[key]); }
+    }
   }
   return ret;
 };

@@ -8,13 +8,7 @@ require('ember-metal/core');
 require('ember-metal/platform');
 require('ember-metal/utils');
 
-var USE_ACCESSORS = Ember.platform.hasPropertyAccessors && Ember.ENV.USE_ACCESSORS,
-    metaFor = Ember.meta,
-    META_KEY = Ember.META_KEY;
-
-Ember.USE_ACCESSORS = false; //!!USE_ACCESSORS;
-
-var meta = Ember.meta;
+var metaFor = Ember.meta, META_KEY = Ember.META_KEY;
 
 // ..........................................................
 // GET AND SET
@@ -23,88 +17,52 @@ var meta = Ember.meta;
 // Otherwise simulate accessors by looking up the property directly on the
 // object.
 
-var get, set;
-
 /** @private */
-var basicGet = function(obj, keyName) {
-  var meta = obj[META_KEY],
-      watching = meta && meta.watching[keyName],
-      ret;
-
-  if (watching) {
-    ret = meta.values[keyName] || obj[keyName]; // TODO
+function get(obj, keyName) {
+  Ember.assert("You need to provide an object and key to `get`.", !!obj && keyName);
+  var desc = metaFor(obj, false).descs[keyName], ret;
+  if (desc) {
+    return desc.get(obj, keyName);
   } else {
-    ret = obj[keyName];
+    var isUnknown = 'object' === typeof obj && !(keyName in obj);
+
+    if (isUnknown && 'function' === typeof obj.unknownProperty) {
+      return obj.unknownProperty(keyName);
+    }
+
+    return obj[keyName];
   }
-
-  if (ret !== undefined) { return ret; }
-
-  // if the property's value is undefined and the object defines
-  // unknownProperty, invoke unknownProperty
-  if ('function' === typeof obj.unknownProperty) {
-    return obj.unknownProperty(keyName);
-  }
-};
-
-var watchedSet = function(obj, keyName, value) {
-  obj[keyName] = value;
-  meta(obj).values[keyName] = value;
-};
-
-// if there are no getters, keep the raw property up to date
-if (!Ember.platform.hasPropertyAccessors) {
-  watchedSet = function(obj, keyName, value) {
-    obj[keyName] = value;
-    meta(obj).values[keyName] = value;
-  };
 }
 
 /** @private */
-var basicSet = function(obj, keyName, value) {
-  var isObject = 'object' === typeof obj;
-  var hasProp = isObject && !(keyName in obj);
-  var changed;
-
-  // setUnknownProperty is called if `obj` is an object,
-  // the property does not already exist, and the
-  // `setUnknownProperty` method exists on the object
-  var unknownProp = hasProp && 'function' === typeof obj.setUnknownProperty,
-      meta = obj[META_KEY];
-
-  if (unknownProp) {
-    obj.setUnknownProperty(keyName, value);
-  } else if (meta && meta.watching[keyName]) {
-    // only trigger a change if the value has changed
-    if (value !== obj[keyName]) {
-      Ember.propertyWillChange(obj, keyName);
-      watchedSet(obj, keyName, value);
-      Ember.propertyDidChange(obj, keyName);
-    }
-  } else {
-    obj[keyName] = value;
-  }
-};
-
-Ember.watchedSet = watchedSet;
-
-/** @private */
-get = function(obj, keyName) {
-  Ember.assert("You need to provide an object and key to `get`.", !!obj && keyName);
-
-  var desc = meta(obj, false).descs[keyName];
-  if (desc) { return desc.get(obj, keyName); }
-  else { return basicGet(obj, keyName); }
-};
-
-/** @private */
-set = function(obj, keyName, value) {
+function set(obj, keyName, value) {
   Ember.assert("You need to provide an object and key to `set`.", !!obj && keyName !== undefined);
 
-  var desc = meta(obj, false).descs[keyName];
-  if (desc) { desc.set(obj, keyName, value); }
-  else { basicSet(obj, keyName, value); }
+  var meta = metaFor(obj, false), desc = meta.descs[keyName];
+  if (desc) {
+    desc.set(obj, keyName, value);
+  }
+  else {
+    var isUnknown = 'object' === typeof obj && !(keyName in obj);
+
+    // setUnknownProperty is called if `obj` is an object,
+    // the property does not already exist, and the
+    // `setUnknownProperty` method exists on the object
+    if (isUnknown && 'function' === typeof obj.setUnknownProperty) {
+      obj.setUnknownProperty(keyName, value);
+    } else if (meta && meta.watching[keyName]) {
+      // only trigger a change if the value has changed
+      if (value !== obj[keyName]) {
+        Ember.propertyWillChange(obj, keyName);
+        obj[keyName] = value;
+        Ember.propertyDidChange(obj, keyName);
+      }
+    } else {
+      obj[keyName] = value;
+    }
+  }
   return value;
-};
+}
 
 /**
   @function

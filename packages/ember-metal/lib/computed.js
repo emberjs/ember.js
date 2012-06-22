@@ -17,10 +17,8 @@ var get = Ember.get,
     getPath = Ember.getPath,
     meta = Ember.meta,
     guidFor = Ember.guidFor,
-    USE_ACCESSORS = Ember.USE_ACCESSORS,
     a_slice = [].slice,
-    o_create = Ember.create,
-    o_defineProperty = Ember.platform.defineProperty;
+    o_create = Ember.create;
 
 // ..........................................................
 // DEPENDENT KEYS
@@ -134,55 +132,6 @@ function ComputedProperty(func, opts) {
 Ember.ComputedProperty = ComputedProperty;
 ComputedProperty.prototype = new Ember.Descriptor();
 
-var CP_DESC = {
-  configurable: true,
-  enumerable:   true,
-  get: function() { return undefined; }, // for when use_accessors is false.
-  set: Ember.Descriptor.MUST_USE_SETTER  // for when use_accessors is false
-};
-
-/** @private */
-function mkCpGetter(keyName, desc) {
-  var cacheable = desc._cacheable,
-      func     = desc.func;
-
-  if (cacheable) {
-    return function() {
-      var ret, cache = meta(this).cache;
-      if (keyName in cache) { return cache[keyName]; }
-      ret = cache[keyName] = func.call(this, keyName);
-      return ret;
-    };
-  } else {
-    return function() {
-      return func.call(this, keyName);
-    };
-  }
-}
-
-/** @private */
-function mkCpSetter(keyName, desc) {
-  var cacheable = desc._cacheable,
-      func      = desc.func;
-
-  return function(value) {
-    var m = meta(this, cacheable),
-        watched = m.source === this && m.watching[keyName] > 0,
-        oldSuspended = desc._suspended,
-        ret;
-
-    desc._suspended = this;
-
-    if (watched) { Ember.propertyWillChange(this, keyName); }
-    if (cacheable) delete m.cache[keyName];
-    ret = func.call(this, keyName, value);
-    if (cacheable) { m.cache[keyName] = ret; }
-    if (watched) { Ember.propertyDidChange(this, keyName); }
-    desc._suspended = oldSuspended;
-    return ret;
-  };
-}
-
 /**
   @extends Ember.ComputedProperty
   @private
@@ -250,7 +199,11 @@ ComputedPropertyPrototype.volatile = function() {
   @returns {Ember.ComputedProperty} receiver
 */
 ComputedPropertyPrototype.property = function() {
-  this._dependentKeys = a_slice.call(arguments);
+  var args = [];
+  for (var i = 0, l = arguments.length; i < l; i++) {
+    args.push(arguments[i]);
+  }
+  this._dependentKeys = args;
   return this;
 };
 
@@ -280,15 +233,6 @@ ComputedPropertyPrototype.property = function() {
 ComputedPropertyPrototype.meta = function(meta) {
   this._meta = meta;
   return this;
-};
-
-/** @private - impl descriptor API */
-ComputedPropertyPrototype.setup = function(obj, keyName, value) {
-  CP_DESC.get = mkCpGetter(keyName, this);
-  CP_DESC.set = mkCpSetter(keyName, this);
-  o_defineProperty(obj, keyName, CP_DESC);
-  CP_DESC.get = CP_DESC.set = null;
-  addDependentKeys(this, obj, keyName);
 };
 
 /** @private - impl descriptor API */
@@ -345,23 +289,9 @@ ComputedPropertyPrototype.set = function(obj, keyName, value) {
   return ret;
 };
 
-ComputedPropertyPrototype.val = function(obj, keyName) {
-  return meta(obj, false).values[keyName];
+ComputedPropertyPrototype.setup = function(obj, keyName, value) {
+  addDependentKeys(this, obj, keyName);
 };
-
-if (!Ember.platform.hasPropertyAccessors) {
-  ComputedPropertyPrototype.setup = function(obj, keyName, value) {
-    obj[keyName] = undefined; // so it shows up in key iteration
-    addDependentKeys(this, obj, keyName);
-  };
-
-} else if (!USE_ACCESSORS) {
-  ComputedPropertyPrototype.setup = function(obj, keyName) {
-    // throw exception if not using Ember.get() and Ember.set() when supported
-    o_defineProperty(obj, keyName, CP_DESC);
-    addDependentKeys(this, obj, keyName);
-  };
-}
 
 /**
   This helper returns a new property descriptor that wraps the passed

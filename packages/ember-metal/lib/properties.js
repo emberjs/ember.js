@@ -9,8 +9,7 @@ require('ember-metal/platform');
 require('ember-metal/utils');
 require('ember-metal/accessors');
 
-var USE_ACCESSORS = Ember.USE_ACCESSORS,
-    GUID_KEY = Ember.GUID_KEY,
+var GUID_KEY = Ember.GUID_KEY,
     META_KEY = Ember.META_KEY,
     EMPTY_META = Ember.EMPTY_META,
     metaFor = Ember.meta,
@@ -41,18 +40,6 @@ function hasDesc(descs, keyName) {
   if (keyName === 'toString') return 'function' !== typeof descs.toString;
   else return !!descs[keyName];
 }
-
-var extractValue = function(obj, keyName, watching) {
-  if (watching) {
-    var values = metaFor(obj).values,
-        ret = values[keyName];
-
-    delete values[keyName];
-    return ret;
-  } else {
-    return obj[keyName];
-  }
-};
 
 /**
   @private
@@ -100,7 +87,7 @@ Ember.defineProperty = function(obj, keyName, desc, val) {
   if (val === undefined && descriptor) {
 
     if (existingDesc) { val = descs[keyName].teardown(obj, keyName); }
-    else { val = extractValue(obj, keyName, watching); }
+    else { val = obj[keyName]; }
 
   } else if (existingDesc) {
     // otherwise, tear down the descriptor, but use the provided
@@ -114,8 +101,8 @@ Ember.defineProperty = function(obj, keyName, desc, val) {
     descs = meta.descs;
 
     descs[keyName] = desc;
+    obj[keyName] = val;
     desc.setup(obj, keyName, val);
-
   } else {
     if (!native && descs[keyName]) { metaFor(obj).descs[keyName] = null; }
 
@@ -128,12 +115,7 @@ Ember.defineProperty = function(obj, keyName, desc, val) {
           value: undefined
         });
       }
-
-      if (watching) {
-        Ember.watchedSet(obj, keyName, val);
-      } else {
-        obj[keyName] = val;
-      }
+      obj[keyName] = val;
     } else {
       // compatibility with ES5
       objectDefineProperty(obj, keyName, desc);

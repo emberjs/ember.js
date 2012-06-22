@@ -141,7 +141,7 @@ Ember.EMPTY_META = EMPTY_META;
 
 if (Object.freeze) Object.freeze(EMPTY_META);
 
-var createMeta = Ember.platform.defineProperty.isSimulated ? o_create : (function(meta) { return meta; });
+var isDefinePropertySimulated = Ember.platform.defineProperty.isSimulated;
 
 /**
   @private
@@ -171,16 +171,25 @@ Ember.meta = function meta(obj, writable) {
 
   if (!ret) {
     o_defineProperty(obj, META_KEY, META_DESC);
-    ret = obj[META_KEY] = createMeta({
+
+    if (isDefinePropertySimulated) {
+      // on platforms that don't support enumerable false
+      // make meta fail jQuery.isPlainObject() to hide from
+      // jQuery.extend() by having a property that fails
+      // hasOwnProperty check.
+      ret = o_create({__preventPlainObject__: true});
+    }
+
+    ret = {
       descs: {},
       watching: {},
       observers: {},
       beforeObservers: {},
-      values: {},
-      lastSetValues: {},
       cache:  {},
       source: obj
-    });
+    };
+
+    obj[META_KEY] = ret;
 
     // make sure we don't accidentally try to create constructor like desc
     ret.descs.constructor = null;
@@ -188,16 +197,14 @@ Ember.meta = function meta(obj, writable) {
   } else if (ret.source !== obj) {
     ret = o_create(ret);
     ret.descs    = o_create(ret.descs);
-    ret.values   = o_create(ret.values);
     ret.watching = o_create(ret.watching);
     ret.observers = o_create(ret.observers);
     ret.beforeObservers = o_create(ret.beforeObservers);
-    ret.lastSetValues = {};
     ret.cache    = {};
     ret.source   = obj;
 
     o_defineProperty(obj, META_KEY, META_DESC);
-    ret = obj[META_KEY] = createMeta(ret);
+    obj[META_KEY] = ret;
   }
   return ret;
 };

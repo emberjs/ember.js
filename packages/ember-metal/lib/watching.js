@@ -430,35 +430,6 @@ var mandatorySetter = Ember.Descriptor.MUST_USE_SETTER = function() {
 var switchToWatched = function(obj, keyName, meta) {
   var value = obj[keyName];
   meta.values[keyName] = value;
-
-  if (Ember.platform.hasPropertyAccessors) {
-    var desc = {
-      configurable: true,
-      enumerable: true,
-      set: mandatorySetter,
-      get: function(key) {
-        return metaFor(this).values[keyName];
-      }
-    };
-
-    Ember.platform.defineProperty(obj, keyName, desc);
-  }
-};
-
-var switchToUnwatched = function(obj, keyName, meta) {
-  var value = obj[keyName];
-  //delete meta.values[keyName];
-
-  if (Ember.platform.hasPropertyAccessors) {
-    var desc = {
-      configurable: true,
-      enumerable: true,
-      writable: true,
-      value: value
-    };
-
-    Ember.platform.defineProperty(obj, keyName, desc);
-  }
 };
 
 /**
@@ -483,8 +454,6 @@ Ember.watch = function(obj, keyName) {
       if ('function' === typeof obj.willWatchProperty) {
         obj.willWatchProperty(keyName);
       }
-
-      if (!desc) { switchToWatched(obj, keyName, m); }
     } else {
       chainsFor(obj).add(keyName);
     }
@@ -506,16 +475,12 @@ Ember.unwatch = function(obj, keyName) {
   // can't watch length on Array - it is special...
   if (keyName === 'length' && Ember.typeOf(obj) === 'array') { return this; }
 
-  var watching = metaFor(obj).watching, desc, descs;
+  var watching = metaFor(obj).watching;
 
   if (watching[keyName] === 1) {
     watching[keyName] = 0;
+
     if (isKeyName(keyName)) {
-      var meta = metaFor(obj);
-      desc = meta.descs[keyName];
-
-      if (!desc) { switchToUnwatched(obj, keyName, meta); }
-
       if ('function' === typeof obj.didUnwatchProperty) {
         obj.didUnwatchProperty(keyName);
       }
