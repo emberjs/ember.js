@@ -158,3 +158,43 @@ testBoth("should transition between watched and unwatched strategies", function(
   equal(get(content, 'foo'), 'foo');
   equal(get(proxy, 'foo'), 'foo');
 });
+
+testBoth("should be able directly set properties on proxy", function(get, set) {
+  var content = {},
+      cpValue = false,
+      proxy = Ember.ObjectProxy.create({
+        cp: Ember.computed(function (key, value) {
+          if (arguments.length === 1) {
+            return cpValue;
+          } else {
+            cpValue = value;
+            return value;
+          }
+        })
+      }),
+      count = 0;
+
+  function observer() {
+    count++;
+  }
+
+  proxy.proxySet('a', 'a'); // doesn't fail
+  equal(get(proxy, 'a'), 'a', 'proxySet can set properties of proxy without content');
+
+  proxy.set('content', content);
+  proxy.proxySet('b', 'b');
+
+  equal(get(proxy, 'b'), 'b', 'proxySet can set properties of proxy with content');
+  equal(get(content, 'b'), undefined, 'should not affect content');
+
+  proxy.proxySet('cp', 'foo');
+  equal(cpValue, 'foo', 'proxySet can set computed properties of proxy');
+
+  Ember.addObserver(proxy, 'watched', observer);
+  proxy.proxySet('watched', 'foo');
+  equal(get(proxy, 'watched'), 'foo', 'proxySet can set observed properties of proxy');
+  equal(count, 1, 'triggered change');
+  equal(get(content, 'watched'), undefined, 'should not affect content');
+
+  Ember.removeObserver(proxy, 'watched', observer);
+});

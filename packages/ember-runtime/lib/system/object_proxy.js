@@ -155,6 +155,16 @@ Ember.ObjectProxy = Ember.Object.extend(
     }
     return set(content, key, value);
   },
+  /**
+    Sets a property on the proxy itself without delegation. Normally
+    setup of proxy properties should be done with `extend` or `create`.
+  */
+  proxySet: function (key, value) {
+    if (!(key in this) || isDelegateDesc(this, key)) {
+      defineProperty(this, key);
+    }
+    set(this, key, value);
+  },
   /** @private */
   willWatchProperty: function (key) {
     if (key in this) return;
