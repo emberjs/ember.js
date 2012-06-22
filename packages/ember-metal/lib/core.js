@@ -6,10 +6,15 @@
 /*globals Em:true ENV */
 
 if ('undefined' === typeof Ember) {
+  // Create core object. Make it act like an instance of Ember.Namespace so that
+  // objects assigned to it are given a sane string representation.
+  Ember = {};
+}
+
 /**
   @namespace
   @name Ember
-  @version 0.9.8.1
+  @version 1.0.pre
 
   All Ember methods and functions are defined inside of this namespace.
   You generally should not add new properties to this namespace as it may be
@@ -27,15 +32,9 @@ if ('undefined' === typeof Ember) {
   performance optimizations.
 */
 
-// Create core object. Make it act like an instance of Ember.Namespace so that
-// objects assigned to it are given a sane string representation.
-Ember = {};
-
 // aliases needed to keep minifiers from removing the global context
 if ('undefined' !== typeof window) {
   window.Em = window.Ember = Em = Ember;
-}
-
 }
 
 // Make sure these are set whether Ember was already defined or not
@@ -48,10 +47,10 @@ Ember.toString = function() { return "Ember"; };
 /**
   @static
   @type String
-  @default '0.9.8.1'
+  @default '1.0.pre'
   @constant
 */
-Ember.VERSION = '0.9.8.1';
+Ember.VERSION = '1.0.pre';
 
 /**
   @static
@@ -64,6 +63,7 @@ Ember.VERSION = '0.9.8.1';
 */
 Ember.ENV = 'undefined' === typeof ENV ? {} : ENV;
 
+Ember.config = Ember.config || {};
 
 // ..........................................................
 // BOOTSTRAP
