@@ -459,8 +459,7 @@ test("should allow view objects to be swapped out without throwing an error (#78
 
     TemplateTests.CollectionView = Ember.CollectionView.extend({
       contentBinding: 'parentView.items',
-      tagName: 'ul',
-      template: Ember.Handlebars.compile("{{content}}")
+      tagName: 'ul'
     });
 
     view = TemplateTests.ReportingView.create();

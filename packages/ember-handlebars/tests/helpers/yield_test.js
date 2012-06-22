@@ -41,6 +41,30 @@ test("a view with a layout set renders its template where the {{yield}} helper a
   equal(view.$('div.wrapper div.page-body').length, 1, 'page-body is embedded within wrapping my-page');
 });
 
+test("a container view with a layout set renders its child views where the {{yield}} helper appears", function() {
+  TemplateTests.ViewWithLayout = Ember.ContainerView.extend({
+    childViews: [
+      Ember.View.create({
+        template: Ember.Handlebars.compile("content from the child A")
+      }),
+      Ember.View.create({
+        template: Ember.Handlebars.compile("content from the child B")
+      })
+    ],
+    layout: Ember.Handlebars.compile('<div class="wrapper"><h1>{{title}}</h1>{{yield}}</div>')
+  });
+
+  view = Ember.View.create({
+    template: Ember.Handlebars.compile('{{view TemplateTests.ViewWithLayout title="My Fancy Page"}}')
+  });
+
+  Ember.run(function() {
+    view.appendTo('#qunit-fixture');
+  });
+
+  equal(view.$('div.wrapper .ember-view').length, 2, 'child views are rendered inside the layout');
+});
+
 test("block should work properly even when templates are not hard-coded", function() {
   var templates = Ember.Object.create({
     nester: Ember.Handlebars.compile('<div class="wrapper"><h1>{{title}}</h1>{{yield}}</div>'),
