@@ -92,9 +92,21 @@ Ember.Router = Ember.StateManager.extend(
     var targetState = this.findStateByPath(currentState, targetStateName);
 
     Ember.assert("Your target state name " + targetStateName + " for event " + eventName + " did not resolve to a state", !!targetState);
-    var hash = targetState.serialize(this, context);
+
+    var hash = this.serializeRecursively(targetState, context);
 
     return this.urlFor(targetStateName, hash);
+  },
+
+  /** @private */
+  serializeRecursively: function(state, hash) {
+    hash = state.serialize(this, hash);
+    var parentState = state.get("parentState");
+    if (parentState && parentState instanceof Ember.Route) {
+      return this.serializeRecursively(parentState, hash);
+    } else {
+      return hash;
+    }
   },
 
   /** @private */
