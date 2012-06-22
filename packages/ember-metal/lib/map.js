@@ -199,3 +199,29 @@ Map.prototype = {
   }
 };
 
+var MapWithDefault = Ember.MapWithDefault = function(options) {
+  Map.call(this);
+  this.defaultValue = options.defaultValue;
+};
+
+MapWithDefault.create = function(options) {
+  if (options) {
+    return new MapWithDefault(options);
+  } else {
+    return new Map();
+  }
+};
+
+MapWithDefault.prototype = Ember.create(Map.prototype);
+
+MapWithDefault.prototype.get = function(key) {
+  var hasValue = this.has(key);
+
+  if (hasValue) {
+    return Map.prototype.get.call(this, key);
+  } else {
+    var defaultValue = this.defaultValue(key);
+    this.set(key, defaultValue);
+    return defaultValue;
+  }
+};

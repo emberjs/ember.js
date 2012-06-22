@@ -83,7 +83,7 @@ Ember.Application = Ember.Namespace.extend(
 
   /**
     Instantiate all controllers currently available on the namespace
-    and inject them onto a state manager.
+    and inject them onto a router.
 
     Example:
 
@@ -112,16 +112,16 @@ Ember.Application = Ember.Namespace.extend(
     }
 
     if (router) {
-      set(this, 'stateManager', router);
-    }
+      set(this, 'router', router);
 
-    // By default, the router's namespace is the current application.
-    //
-    // This allows it to find model classes when a state has a
-    // route like `/posts/:post_id`. In that case, it would first
-    // convert `post_id` into `Post`, and then look it up on its
-    // namespace.
-    set(router, 'namespace', this);
+      // By default, the router's namespace is the current application.
+      //
+      // This allows it to find model classes when a state has a
+      // route like `/posts/:post_id`. In that case, it would first
+      // convert `post_id` into `Post`, and then look it up on its
+      // namespace.
+      set(router, 'namespace', this);
+    }
 
     Ember.runLoadHooks('application', this);
 
@@ -149,14 +149,13 @@ Ember.Application = Ember.Namespace.extend(
   /**
     @private
 
-    If the application has a state manager, use it to route
-    to the current URL, and trigger a new call to `route`
-    whenever the URL changes.
+    If the application has a router, use it to route to the current URL, and
+    trigger a new call to `route` whenever the URL changes.
   */
-  startRouting: function(stateManager) {
-    var location = get(stateManager, 'location'),
+  startRouting: function(router) {
+    var location = get(router, 'location'),
         rootElement = get(this, 'rootElement'),
-        applicationController = get(stateManager, 'applicationController');
+        applicationController = get(router, 'applicationController');
 
     if (this.ApplicationView && applicationController) {
       var applicationView = this.ApplicationView.create({
@@ -167,9 +166,9 @@ Ember.Application = Ember.Namespace.extend(
       applicationView.appendTo(rootElement);
     }
 
-    stateManager.route(location.getURL());
+    router.route(location.getURL());
     location.onUpdateURL(function(url) {
-      stateManager.route(url);
+      router.route(url);
     });
   },
 

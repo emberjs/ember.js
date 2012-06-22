@@ -140,7 +140,6 @@ Ember.EventDispatcher = Ember.Object.extend(
 
       if (action.eventName === eventName) {
         evt.preventDefault();
-        evt.stopPropagation();
         return handler(evt);
       }
     });

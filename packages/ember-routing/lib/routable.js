@@ -332,9 +332,15 @@ Ember.Routable = Ember.Mixin.create({
   },
 
   /**
-    The `connectOutlets` method will be triggered once a
+    The `connectOutlets` event will be triggered once a
     state has been entered. It will be called with the
     route's context.
   */
-  connectOutlets: Ember.K
+  connectOutlets: Ember.K,
+
+  /**
+   The `navigateAway` event will be triggered when the
+   URL changes due to the back/forward button
+  */
+  navigateAway: Ember.K
 });

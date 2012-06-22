@@ -25,11 +25,18 @@ suite.test("[].insertAt(0, X) => [X] + notify", function() {
   deepEqual(this.toArray(obj), after, 'post item results');
   equal(Ember.get(obj, 'length'), after.length, 'length');
 
-  equal(observer.timesCalled('[]'), 1, 'should have notified [] once');
-  equal(observer.timesCalled('@each'), 1, 'should have notified @each once');
-  equal(observer.timesCalled('length'), 1, 'should have notified length once');
-  equal(observer.timesCalled('firstObject'), 1, 'should have notified firstObject once');
-  equal(observer.timesCalled('lastObject'), 1, 'should have notified lastObject once');
+
+  equal(observer.timesCalledBefore('[]'), 1, 'should have notified [] will change once');
+  equal(observer.timesCalledBefore('@each'), 1, 'should have notified @each will change once');
+  equal(observer.timesCalledBefore('length'), 1, 'should have notified length will change once');
+  equal(observer.timesCalledBefore('firstObject'), 1, 'should have notified firstObject will change once');
+  equal(observer.timesCalledBefore('lastObject'), 1, 'should have notified lastObject will change once');
+
+  equal(observer.timesCalled('[]'), 1, 'should have notified [] did change once');
+  equal(observer.timesCalled('@each'), 1, 'should have notified @each did change once');
+  equal(observer.timesCalled('length'), 1, 'should have notified length did change once');
+  equal(observer.timesCalled('firstObject'), 1, 'should have notified firstObject did change once');
+  equal(observer.timesCalled('lastObject'), 1, 'should have notified lastObject did change once');
 });
 
 suite.test("[].insertAt(200,X) => OUT_OF_RANGE_EXCEPTION exception", function() {
@@ -55,6 +62,12 @@ suite.test("[A].insertAt(0, X) => [X,A] + notify", function() {
   deepEqual(this.toArray(obj), after, 'post item results');
   equal(Ember.get(obj, 'length'), after.length, 'length');
 
+  equal(observer.timesCalledBefore('[]'), 1, 'should have notified [] will change once');
+  equal(observer.timesCalledBefore('@each'), 1, 'should have notified @each will change once');
+  equal(observer.timesCalledBefore('length'), 1, 'should have notified length will change once');
+  equal(observer.timesCalledBefore('firstObject'), 1, 'should have notified firstObject will change once');
+  equal(observer.timesCalledBefore('lastObject'), 0, 'should NOT have notified lastObject will change once');
+
   equal(observer.timesCalled('[]'), 1, 'should have notified [] once');
   equal(observer.timesCalled('@each'), 1, 'should have notified @each once');
   equal(observer.timesCalled('length'), 1, 'should have notified length once');
@@ -78,6 +91,12 @@ suite.test("[A].insertAt(1, X) => [A,X] + notify", function() {
 
   deepEqual(this.toArray(obj), after, 'post item results');
   equal(Ember.get(obj, 'length'), after.length, 'length');
+
+  equal(observer.timesCalledBefore('[]'), 1, 'should have notified [] will change once');
+  equal(observer.timesCalledBefore('@each'), 1, 'should have notified @each will change once');
+  equal(observer.timesCalledBefore('length'), 1, 'should have notified length will change once');
+  equal(observer.timesCalledBefore('firstObject'), 0, 'should NOT have notified firstObject will change once');
+  equal(observer.timesCalledBefore('lastObject'), 1, 'should have notified lastObject will change once');
 
   equal(observer.timesCalled('[]'), 1, 'should have notified [] once');
   equal(observer.timesCalled('@each'), 1, 'should have notified @each once');
@@ -110,6 +129,12 @@ suite.test("[A,B,C].insertAt(0,X) => [X,A,B,C] + notify", function() {
   deepEqual(this.toArray(obj), after, 'post item results');
   equal(Ember.get(obj, 'length'), after.length, 'length');
 
+  equal(observer.timesCalledBefore('[]'), 1, 'should have notified [] will change once');
+  equal(observer.timesCalledBefore('@each'), 1, 'should have notified @each will change once');
+  equal(observer.timesCalledBefore('length'), 1, 'should have notified length will change once');
+  equal(observer.timesCalledBefore('firstObject'), 1, 'should have notified firstObject will change once');
+  equal(observer.timesCalledBefore('lastObject'), 0, 'should NOT have notified lastObject will change once');
+
   equal(observer.timesCalled('[]'), 1, 'should have notified [] once');
   equal(observer.timesCalled('@each'), 1, 'should have notified @each once');
   equal(observer.timesCalled('length'), 1, 'should have notified length once');
@@ -134,6 +159,12 @@ suite.test("[A,B,C].insertAt(1,X) => [A,X,B,C] + notify", function() {
   deepEqual(this.toArray(obj), after, 'post item results');
   equal(Ember.get(obj, 'length'), after.length, 'length');
 
+  equal(observer.timesCalledBefore('[]'), 1, 'should have notified [] will change once');
+  equal(observer.timesCalledBefore('@each'), 1, 'should have notified @each will change once');
+  equal(observer.timesCalledBefore('length'), 1, 'should have notified length will change once');
+  equal(observer.timesCalledBefore('firstObject'), 0, 'should NOT have notified firstObject will change once');
+  equal(observer.timesCalledBefore('lastObject'), 0, 'should NOT have notified lastObject will change once');
+
   equal(observer.timesCalled('[]'), 1, 'should have notified [] once');
   equal(observer.timesCalled('@each'), 1, 'should have notified @each once');
   equal(observer.timesCalled('length'), 1, 'should have notified length once');
@@ -157,6 +188,12 @@ suite.test("[A,B,C].insertAt(3,X) => [A,B,C,X] + notify", function() {
 
   deepEqual(this.toArray(obj), after, 'post item results');
   equal(Ember.get(obj, 'length'), after.length, 'length');
+
+  equal(observer.timesCalledBefore('[]'), 1, 'should have notified [] will change once');
+  equal(observer.timesCalledBefore('@each'), 1, 'should have notified @each will change once');
+  equal(observer.timesCalledBefore('length'), 1, 'should have notified length will change once');
+  equal(observer.timesCalledBefore('firstObject'), 0, 'should NOT have notified firstObject will change once');
+  equal(observer.timesCalledBefore('lastObject'), 1, 'should have notified lastObject will change once');
 
   equal(observer.timesCalled('[]'), 1, 'should have notified [] once');
   equal(observer.timesCalled('@each'), 1, 'should have notified @each once');

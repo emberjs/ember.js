@@ -558,3 +558,36 @@ test("urlFor supports merging the current information for dynamic segments", fun
   expectURL('/dashboard/posts/1/manage/2');
 });
 
+test("navigateAway is called if the URL changes", function() {
+  var navigated = 0;
+
+  var router = Ember.Router.create({
+    location: locationStub,
+    root: Ember.Route.create({
+      index: Ember.Route.create({
+        route: '/',
+
+        navigateAway: function(router) {
+          navigated++;
+        }
+      }),
+
+      show: Ember.Route.create({
+        route: '/show'
+      })
+    })
+  });
+
+  Ember.run(function() {
+    router.route('/');
+  });
+
+  equal(router.getPath('currentState.path'), 'root.index', "The current state is root.index");
+
+  Ember.run(function() {
+    router.route('/show');
+  });
+
+  equal(router.getPath('currentState.path'), 'root.show', "The current state is root.index");
+  equal(navigated, 1, "The navigateAway method was called");
+});

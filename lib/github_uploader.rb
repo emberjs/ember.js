@@ -26,6 +26,8 @@ class GithubUploader
   def authorize
     return if authorized?
 
+    require 'cgi'
+
     puts "There is no file named .github-upload-token in this folder. This file holds the OAuth token needed to communicate with GitHub."
     puts "You will be asked to enter your GitHub password so a new OAuth token will be created."
     print "GitHub Password: "
@@ -35,7 +37,7 @@ class GithubUploader
     puts ""
 
     # check if the user already granted access for Ember.js Uploader by checking the available authorizations
-    response = RestClient.get "https://#{@login}:#{pw}@api.github.com/authorizations"
+    response = RestClient.get "https://#{CGI.escape(@login)}:#{CGI.escape(pw)}@api.github.com/authorizations"
     JSON.parse(response.to_str).each do |auth|
       if auth["note"] == "Ember.js Uploader"
         # user already granted access, so we reuse the existing token
