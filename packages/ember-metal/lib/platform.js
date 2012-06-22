@@ -138,7 +138,7 @@ platform.defineProperty = defineProperty;
   @memberOf Ember.platform
   @name hasPropertyAccessors
 */
-platform.hasPropertyAccessors = true;
+platform.hasPropertyAccessors = false;
 
 if (!platform.defineProperty) {
   platform.hasPropertyAccessors = false;

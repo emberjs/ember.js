@@ -12,7 +12,7 @@ var USE_ACCESSORS = Ember.platform.hasPropertyAccessors && Ember.ENV.USE_ACCESSO
     metaFor = Ember.meta,
     META_KEY = Ember.META_KEY;
 
-Ember.USE_ACCESSORS = !!USE_ACCESSORS;
+Ember.USE_ACCESSORS = false; //!!USE_ACCESSORS;
 
 var meta = Ember.meta;
 
@@ -32,7 +32,7 @@ var basicGet = function(obj, keyName) {
       ret;
 
   if (watching) {
-    ret = meta.values[keyName];
+    ret = meta.values[keyName] || obj[keyName]; // TODO
   } else {
     ret = obj[keyName];
   }
@@ -47,6 +47,7 @@ var basicGet = function(obj, keyName) {
 };
 
 var watchedSet = function(obj, keyName, value) {
+  obj[keyName] = value;
   meta(obj).values[keyName] = value;
 };
 

@@ -447,7 +447,7 @@ var switchToWatched = function(obj, keyName, meta) {
 
 var switchToUnwatched = function(obj, keyName, meta) {
   var value = obj[keyName];
-  delete meta.values[keyName];
+  //delete meta.values[keyName];
 
   if (Ember.platform.hasPropertyAccessors) {
     var desc = {

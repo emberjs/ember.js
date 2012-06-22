@@ -388,7 +388,11 @@ Ember.Observable = Ember.Mixin.create(/** @scope Ember.Observable.prototype */ {
     @param {Object} value The value the unknown property is to be set to.
   */
   setUnknownProperty: function(key, value) {
-    this[key] = value;
+    if (value !== this[key]) {
+      this.propertyWillChange(key);
+      this[key] = value;
+      this.propertyDidChange(key);
+    }
   },
 
   /**
