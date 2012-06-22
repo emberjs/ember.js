@@ -131,6 +131,12 @@ Ember.get = get;
 */
 Ember.set = set;
 
+if (Ember.config.overrideAccessors) {
+  Ember.config.overrideAccessors();
+  get = Ember.get;
+  set = Ember.set;
+}
+
 // ..........................................................
 // PATHS
 //

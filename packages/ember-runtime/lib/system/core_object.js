@@ -151,6 +151,10 @@ CoreObject.PrototypeMixin = Ember.Mixin.create(
   }
 });
 
+if (Ember.config.overridePrototypeMixin) {
+  Ember.config.overridePrototypeMixin(CoreObject.PrototypeMixin);
+}
+
 CoreObject.__super__ = null;
 
 var ClassMixin = Ember.Mixin.create(
@@ -267,6 +271,10 @@ var ClassMixin = Ember.Mixin.create(
   }
 
 });
+
+if (Ember.config.overrideClassMixin) {
+  Ember.config.overrideClassMixin(ClassMixin);
+}
 
 CoreObject.ClassMixin = ClassMixin;
 ClassMixin.apply(CoreObject);
