@@ -173,7 +173,6 @@ Ember.meta = function meta(obj, writable) {
       descs: {},
       watching: {},
       values: {},
-      lastSetValues: {},
       cache:  {},
       source: obj
     });
@@ -186,7 +185,6 @@ Ember.meta = function meta(obj, writable) {
     ret.descs    = o_create(ret.descs);
     ret.values   = o_create(ret.values);
     ret.watching = o_create(ret.watching);
-    ret.lastSetValues = {};
     ret.cache    = {};
     ret.source   = obj;
 
