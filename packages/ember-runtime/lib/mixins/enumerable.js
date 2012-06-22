@@ -79,9 +79,11 @@ function xform(target, method, params) {
   libraries by implementing only methods that mostly correspond to the
   JavaScript 1.8 API.
 
+  @extends Ember.Mixin
   @since Ember 0.9
 */
-Ember.Enumerable = Ember.Mixin.create( /** @lends Ember.Enumerable */ {
+Ember.Enumerable = Ember.Mixin.create(
+  /** @scope Ember.Enumerable.prototype */ {
 
   /** @private - compatibility */
   isEnumerable: true,
@@ -727,7 +729,7 @@ Ember.Enumerable = Ember.Mixin.create( /** @lends Ember.Enumerable */ {
       An enumerable of the objects to be removed or the number of items to
       be removed.
 
-    @param {Ember.Enumerable|Numbe} adding
+    @param {Ember.Enumerable|Number} adding
       An enumerable of the objects to be added or the number of items to be
       added.
 

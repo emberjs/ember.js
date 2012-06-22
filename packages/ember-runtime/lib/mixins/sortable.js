@@ -1,6 +1,13 @@
 var get = Ember.get, set = Ember.set, forEach = Ember.EnumerableUtils.forEach;
 
-Ember.SortableMixin = Ember.Mixin.create(Ember.MutableEnumerable, {
+/**
+ @class
+
+ @extends Ember.Mixin
+ @extends Ember.MutableEnumerable
+*/
+Ember.SortableMixin = Ember.Mixin.create(Ember.MutableEnumerable,
+  /** @scope Ember.Observable.prototype */ {
   sortProperties: null,
   sortAscending: true,
 

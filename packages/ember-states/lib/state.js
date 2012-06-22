@@ -2,6 +2,8 @@ var get = Ember.get, set = Ember.set, getPath = Ember.getPath;
 
 /**
   @class
+
+  @extends Ember.Object
 */
 Ember.State = Ember.Object.extend(Ember.Evented,
 /** @scope Ember.State.prototype */{
@@ -10,7 +12,7 @@ Ember.State = Ember.Object.extend(Ember.Evented,
   /**
     A reference to the parent state.
 
-    @type {Ember.State}
+    @type Ember.State
   */
   parentState: null,
   start: null,

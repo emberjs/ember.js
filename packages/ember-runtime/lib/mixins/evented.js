@@ -6,7 +6,13 @@ function xform(target, method, params) {
   method.apply(target, args);
 }
 
-Ember.Evented = Ember.Mixin.create({
+/**
+ @class
+
+ @extends Ember.Mixin
+ */
+Ember.Evented = Ember.Mixin.create(
+  /** @scope Ember.Evented.prototype */ {
   on: function(name, target, method) {
     if (!method) {
       method = target;
