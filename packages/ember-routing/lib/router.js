@@ -95,7 +95,7 @@ var get = Ember.get, getPath = Ember.getPath, set = Ember.set;
           root: Ember.Route.extend({
             aRoute: Ember.Route.extend({
               route: '/',
-              enter: function(router){
+              connectOutlets: function(router){
                 console.log("entering root.aRoute from", router.getPath('currentState.name'));
               },
               connectOutlets: function(router){
@@ -111,36 +111,91 @@ var get = Ember.get, getPath = Ember.getPath, set = Ember.set;
 
       'entering root.aRoute from root'
       'entered root.aRoute, fully transitioned to root.aRoute '
+  
+  Ember.Route has two additional callbacks for handling URL serializization and deserialization. See
+  'Serializing/Deserializing URLs'
 
   ## Routes With Dynamic Segments
   An Ember.Route's `route` property can reference dynamic sections of the URL by prefacing a URL segment
   with the ':' character.  The values of these dynamic segments will be passed as a hash to the
-  `connectOutlets` method of the matching Route. The following route structure when loaded with the URL
-  "#/fixed/thefirstvalue/anotherFixed/thesecondvalue":
+  `deserialize` method of the matching Route (see 'Serializing/Deserializing URLs').
+  
+  ## Serializing/Deserializing URLs
+  Ember.Route has two callbacks for assocating a particilar object context with a URL: `serialize`
+  for converting an object into a paramaters hash to fill dynamic segments of a URL and `deserialize`
+  for converting a hash of dynamic segments from the URL into the appropriate object.
+  
+  ### Deserializing A URL's Dynamic Segments
+  When an application is first loaded or the URL is changed manually (e.g. through the browser's
+  back button) the `deserialize` method of the URL's matching Ember.Route will be called with
+  the application's router as its first argument and a hash of the URLs dynamic segments and values
+  as its second argument.
+  
+  The following route structure when loaded with the URL "#/fixed/thefirstvalue/anotherFixed/thesecondvalue":
 
       App = Ember.Application.create({
         Router: Ember.Router.extend({
           root: Ember.Route.extend({
             aRoute: Ember.Route.extend({
               route: '/fixed/:dynamicSectionA/anotherFixed/:dynamicSectionB',
-              connectOutlets: function(router, context){}
+              deserialize: function(router, urlParts){}
             })
           })
         })
       });
       App.initialize();
 
-  Will call the 'connectOutlets' method of the Route instance at the path 'root.aRoute' with the
+  Will call the 'deserialize' method of the Route instance at the path 'root.aRoute' with the
   following hash as its second argument:
 
       {
         dynamicSectionA: 'thefirstvalue',
         dynamicSectionB: 'thesecondvalue'
       }
-
+  
+  Within `deserialize` you should use this information to retrieve or create an appropriate context
+  object for the given url (e.g. by loading from a remote API or accessing the browser's
+  `localStorage`). This object must be the the `return` value for `deserialize` and will be
+  passed to the Route's `connectOutlets` and `serialize` methods.
+  
+  When an application's state is changed from within the application itself, the context provided for
+  the transiton will be passed and `deserialize` is not called (see 'Transitions Between States').
+  
+  ### Serializing An Object For URLs with Dynamic Segments
+  When transitioning into a Route whose `route` property contains dynamic segments the Route's
+  `serialize` method is called with the Route's router as the first argument and the Route's 
+  context as the second argument.  The return value of `serialize` will be use to populate the
+  dynamic segments and should be a object with keys that match the names of the dynamic sections.
+  
+  Given the following route structure:
+  
+      App = Ember.Application.create({
+        Router: Ember.Router.extend({
+          root: Ember.Route.extend({
+            aRoute: Ember.Route.extend({
+              route: '/'
+            }),
+            bRoute: Ember.Route.extend({
+              route: '/staticSection/:someDynamicSegment
+              serialize: function(router, context){
+                return { 
+                  someDynamicSegment: context.get('name')
+                }
+              }
+            })
+          })
+        })
+      });
+      App.initialize();
+      
+  
+  Transitioning to "root.bRoute" with a context of `Object.create({name: 'Yehuda'})` will call
+  the Route's `serialize` method with the context as it second argument and update the URL to
+  '#/staticSection/Yehuda' 
+  
   ## Transitions Between States
   Once a routed application has initialized its state based on the entry URL subsequent transitions to other
-  states will update the URL if the entered State has a `route` property. Given the following state structure
+  states will update the URL if the entered Route has a `route` property. Given the following route structure
   loaded at the URL '#/':
 
       App = Ember.Application.create({
@@ -195,30 +250,7 @@ var get = Ember.get, getPath = Ember.getPath, set = Ember.set;
   Will transition the application's state to 'root.bRoute' and trigger an update of the URL to
   '#/a/route/42/Life'.
 
-  The context argument will also be passed as the second argument to the `connectOutlets` method call.
-
-  ## Detecting Routing/Non-Routing Calls to `connectOutlets`
-  Because `connectOutlets` will be called both for the initial route detection and on subsequent application
-  state changes that affect the browser URL the router can differentiate between these two conditions with
-  its `isRouting` property. During the application's initial loading, `isRouting` will be `true`, during state
-  transitions after the application has loaded `isRouting` will be false. If you need to take special action
-  for either condition (e.g. loading remote data), check this property:
-
-      App = Ember.Application.create({
-        Router: Ember.Router.extend({
-          root: Ember.Route.extend({
-            aRoute: Ember.Route.extend({
-              route: '/',
-              connectOutlets: function(router, context){
-                if (router.get('isRouting')) {
-                  // intitial app loading, get data from server
-                };
-              },
-            })
-          })
-        })
-      });
-      App.initialize();
+  The context argument will also be passed as the second argument to the `deserialize` method call.
 
   ## Injection of Controller Singletons
   During application initialization Ember will detect properties of the application ending in 'Controller',
@@ -317,8 +349,10 @@ var get = Ember.get, getPath = Ember.getPath, set = Ember.set;
   fill it with a rendered instance of `App.AnotherView` whose `context` will be the single instance of
   `App.AnotherController` stored on the router in the `anotherController` property.
 
-  For more information about Outlets see Ember.Handlebars.helpers.outlet. For more information about controller
-  injections see Ember.Application#initialize(). For additional information about view context see Ember.View.
+  For more information about Outlets see Ember.Handlebars.helpers.outlet. For additional inforamtion on
+  the `connectOutlet` method Controllers, see `Ember.Controller.connectOutlet`, For more information on
+  controller injections see Ember.Application#initialize(). For additional information about view context
+  see Ember.View.
   
   @extends Ember.StateManager
 */
