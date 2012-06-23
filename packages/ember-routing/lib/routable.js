@@ -60,6 +60,7 @@ Ember.Routable = Ember.Mixin.create({
   stashContext: function(manager, context) {
     var serialized = this.serialize(manager, context);
 
+    manager.setStateMeta(this, 'context', context);
     manager.setStateMeta(this, 'serialized', serialized);
 
     if (get(this, 'isRoutable') && !get(manager, 'isRouting')) {

@@ -511,22 +511,16 @@ test("if a context is passed to a transition and the path is to the current stat
 });
 
 test("if no context is provided, setup is triggered with an undefined context", function() {
-  expect(2);
+  expect(1);
 
   Ember.run(function() {
     stateManager = Ember.StateManager.create({
       start: Ember.State.create({
         goNext: function(manager) {
-          manager.transitionTo('foo.next');
-        }
-      }),
+          manager.transitionTo('next');
+        },
 
-      foo: Ember.State.create({
         next: Ember.State.create({
-          goNext: function(manager, context) {
-            manager.transitionTo('next');
-          },
-
           setup: function(manager, context) {
             equal(context, undefined, "setup is called with no context");
           }
@@ -536,7 +530,6 @@ test("if no context is provided, setup is triggered with an undefined context", 
   });
 
   stateManager.send('goNext');
-  stateManager.send('goNext');
 });
 
 test("multiple contexts can be provided in a single transitionTo", function() {
@@ -544,11 +537,7 @@ test("multiple contexts can be provided in a single transitionTo", function() {
 
   Ember.run(function() {
     stateManager = Ember.StateManager.create({
-      start: Ember.State.create({
-        goNuts: function(manager, context) {
-          manager.transitionTo('foo.next', context);
-        }
-      }),
+      start: Ember.State.create(),
 
       planters: Ember.State.create({
         setup: function(manager, context) {
@@ -565,4 +554,36 @@ test("multiple contexts can be provided in a single transitionTo", function() {
   });
 
   stateManager.transitionTo(['planters', { company: true }], ['nuts', { product: true }]);
+});
+
+test("transitionEvent is called for each nested state", function() {
+  expect(4);
+
+  var calledOnParent = false,
+      calledOnChild = true;
+
+  Ember.run(function() {
+    stateManager = Ember.StateManager.create({
+      start: Ember.State.create(),
+
+      planters: Ember.State.create({
+        setup: function(manager, context) {
+          calledOnParent = true;
+          equal(context, 'context', 'parent gets context');
+        },
+
+        nuts: Ember.State.create({
+          setup: function(manager, context) {
+            calledOnChild = true;
+            equal(context, 'context', 'child gets context');
+          }
+        })
+      })
+    });
+  });
+
+  stateManager.transitionTo('planters.nuts', 'context');
+
+  ok(calledOnParent, 'called transitionEvent on parent');
+  ok(calledOnChild, 'called transitionEvent on child');
 });

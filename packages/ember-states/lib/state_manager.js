@@ -552,12 +552,14 @@ Ember.StateManager = Ember.State.extend(
 
     if (Ember.empty(name)) { return; }
 
-    var segments;
+    var segments, explicitSegments;
 
     if (Ember.typeOf(name) === "array") {
       segments = [].slice.call(arguments);
+      explicitSegments = true;
     } else {
       segments = [[name, context]];
+      explicitSegments = false;
     }
 
     var path = this.pathForSegments(segments),
@@ -566,7 +568,8 @@ Ember.StateManager = Ember.State.extend(
         newState,
         exitStates = [],
         enterStates,
-        resolveState;
+        resolveState,
+        setupContexts = [];
 
     if (state.routes[path]) {
       // cache hit
@@ -604,12 +607,31 @@ Ember.StateManager = Ember.State.extend(
         while(initialState = get(state, 'initialState')) {
           state = getPath(state, 'states.'+initialState);
           enterStates.push(state);
-          segments.push([initialState, context]);
         }
 
-        while (enterStates.length > 0 && enterStates[0] === exitStates[0]) {
+        while (enterStates.length > 0) {
+          if (enterStates[0] !== exitStates[0]) { break; }
+
+          var newContext;
+          if (explicitSegments) {
+            var segmentIndex = segments.length - enterStates.length;
+            newContext = segments[segmentIndex][1];
+          } else if (enterStates.length === 1) {
+            newContext = context;
+          }
+
+          if (newContext) {
+            if (newContext !== this.getStateMeta(enterStates[0], 'context')) { break; }
+          }
+
           enterStates.shift();
           exitStates.shift();
+        }
+
+        if (enterStates.length > 0) {
+          setupContexts = Ember.EnumerableUtils.map(enterStates, function(state, index) {
+                            return [state, explicitSegments ? segments[index][1] : context];
+                          });
         }
       }
 
@@ -622,18 +644,13 @@ Ember.StateManager = Ember.State.extend(
     }
 
     this.enterState(exitStates, enterStates, state);
-    this.triggerSetupContext(resolveState, segments);
+    this.triggerSetupContext(setupContexts);
   },
 
-  triggerSetupContext: function(root, segments) {
-    var state = root;
-
+  triggerSetupContext: function(segments) {
     arrayForEach.call(segments, function(tuple) {
-      var path = tuple[0],
+      var state = tuple[0],
           context = tuple[1];
-
-      state = this.findStatesByRoute(state, path);
-      state = state[state.length-1];
 
       state.trigger(get(this, 'transitionEvent'), this, context);
     }, this);
