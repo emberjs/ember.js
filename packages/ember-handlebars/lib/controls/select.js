@@ -12,20 +12,61 @@ var indexOf = Ember.EnumerableUtils.indexOf, indexesOf = Ember.EnumerableUtils.i
   are updated live in the `selection` property, while the corresponding value
   is updated in the 'value' property.
 
+  ### Using Strings
+  The simplest version of an Ember.Select takes an array of strings for the options
+  of a select box and a valueBinding to set the value.
+
   Example:
 
       App.controller = Ember.Object.create({
+        selected: null,
         content: [
-          {label: "Yehuda", value: 1}
-          {label: "Tom",    value: 2}
+          "Yehuda",
+          "Tom"
         ]
       })
 
       {{view Ember.Select
              contentBinding="App.controller.content"
-             optionLabelPath="content.label"
-             optionValuePath="content.value"
-             valueBinding="firstName"
+             valueBinding="App.controller.selected"
+      }}
+
+  Would result in the following HTML:
+
+      <select class="ember-select">
+        <option value="Yehuda">Yehuda</option>
+        <option value="Tom">Tom</option>
+      </select>
+
+  Selecting Yehuda from the select box will set `App.controller.selected` to "Yehuda"
+
+  ### Using Objects
+  An Ember.Select can also take an array of objects.
+
+  When using objects you need to supply optionLabelPath and optionValuePath parameters
+  which will be used to get the HTML label and the values of the options.
+
+  Usually you will bind to either the selection or the value attribute of the select.
+
+  Use selectionBinding if you would like to set the whole object as a property on the target.
+  Use valueBinding if you would like to set just the value.
+
+  Example using selectionBinding:
+
+      App.controller = Ember.Object.create({
+        selectedPerson: null,
+        selectedPersonId: null,
+        content: [
+          Ember.Object.create({firstName: "Yehuda", id: 1}),
+          Ember.Object.create({firstName: "Tom",    id: 2})
+        ]
+      })
+
+      {{view Ember.Select
+             contentBinding="App.controller.content"
+             optionLabelPath="content.firstName"
+             optionValuePath="content.id"
+             selectionBinding="App.controller.selectedPerson"
              prompt="Please Select"}}
 
       <select class="ember-select">
@@ -34,11 +75,19 @@ var indexOf = Ember.EnumerableUtils.indexOf, indexesOf = Ember.EnumerableUtils.i
         <option value="2">Tom</option>
       </select>
 
+  Selecting Yehuda here will set `App.controller.selectedPerson` to
+  the Yehuda object.
 
-  ## Selection Binding vs. Value Binding
-  Usually you will bind to either the selection or the value attribute of the select.
-  Use `selectionBinding` if you would like to set the whole object as a property on the target.
-  Use `valueBinding` if you would like to set just the value.
+  Example using valueBinding:
+
+      {{view Ember.Select
+             contentBinding="App.controller.content"
+             optionLabelPath="content.firstName"
+             optionValuePath="content.id"
+             valueBinding="App.controller.selectedPersonId"
+             prompt="Please Select"}}
+
+  Selecting Yehuda in this case will set `App.controller.selectedPersonId` to 1.
 
   @extends Ember.View
 */
