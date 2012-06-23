@@ -472,6 +472,27 @@ Ember.unwatch = function(obj, keyName) {
   return this;
 };
 
+/**
+  @private
+
+  Call on an object when you first beget it from another object.  This will
+  setup any chained watchers on the object instance as needed.  This method is
+  safe to call multiple times.
+*/
+Ember.rewatch = function(obj) {
+  var m = metaFor(obj, false), chains = m.chains, bindings = m.bindings, key, b;
+
+  // make sure the object has its own guid.
+  if (GUID_KEY in obj && !obj.hasOwnProperty(GUID_KEY)) {
+    Ember.generateGuid(obj, 'ember');
+  }
+
+  // make sure any chained watchers update.
+  if (chains && chains.value() !== obj) { chainsFor(obj); }
+
+  return this;
+};
+
 // ..........................................................
 // PROPERTY CHANGES
 //
