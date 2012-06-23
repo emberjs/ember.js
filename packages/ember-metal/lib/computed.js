@@ -15,7 +15,7 @@ Ember.warn("Computed properties will soon be cacheable by default. To enable thi
 
 var get = Ember.get,
     getPath = Ember.getPath,
-    meta = Ember.meta,
+    metaFor = Ember.meta,
     guidFor = Ember.guidFor,
     a_slice = [].slice,
     o_create = Ember.create;
@@ -40,17 +40,17 @@ var get = Ember.get,
   given object and key.
 */
 function uniqDeps(obj, depKey) {
-  var m = meta(obj), deps = m.deps, ret;
+  var meta = metaFor(obj), deps = meta.deps, ret;
 
   // If the current object has no dependencies...
   if (!deps) {
     // initialize the dependencies with a pointer back to
     // the current object
-    deps = m.deps = { __emberproto__: obj };
+    deps = meta.deps = { __emberproto__: obj };
   } else if (deps.__emberproto__ !== obj) {
     // otherwise if the dependencies are inherited from the
     // object's superclass, clone the deps
-    deps = m.deps = o_create(deps);
+    deps = meta.deps = o_create(deps);
     deps.__emberproto__ = obj;
   }
 
@@ -244,7 +244,7 @@ ComputedPropertyPrototype.teardown = function(obj, keyName) {
     removeDependentKey(obj, keyName, keys[idx]);
   }
 
-  if (this._cacheable) { delete meta(obj).cache[keyName]; }
+  if (this._cacheable) { delete metaFor(obj).cache[keyName]; }
 
   return null; // no value to restore
 };
@@ -252,7 +252,7 @@ ComputedPropertyPrototype.teardown = function(obj, keyName) {
 /** @private - impl descriptor API */
 ComputedPropertyPrototype.didChange = function(obj, keyName) {
   if (this._cacheable && this._suspended !== obj) {
-    delete meta(obj).cache[keyName];
+    delete metaFor(obj).cache[keyName];
   }
 };
 
@@ -261,7 +261,7 @@ ComputedPropertyPrototype.get = function(obj, keyName) {
   var ret, cache;
 
   if (this._cacheable) {
-    cache = meta(obj).cache;
+    cache = metaFor(obj).cache;
     if (keyName in cache) { return cache[keyName]; }
     ret = cache[keyName] = this.func.call(obj, keyName);
   } else {
@@ -273,17 +273,17 @@ ComputedPropertyPrototype.get = function(obj, keyName) {
 /** @private - impl descriptor API */
 ComputedPropertyPrototype.set = function(obj, keyName, value) {
   var cacheable = this._cacheable,
-      m = meta(obj, cacheable),
-      watched = m.source === obj && m.watching[keyName] > 0,
+      meta = metaFor(obj, cacheable),
+      watched = meta.source === obj && meta.watching[keyName] > 0,
       oldSuspended = this._suspended,
       ret;
 
   this._suspended = obj;
 
   if (watched) { Ember.propertyWillChange(obj, keyName); }
-  if (cacheable) delete m.cache[keyName];
+  if (cacheable) delete meta.cache[keyName];
   ret = this.func.call(obj, keyName, value);
-  if (cacheable) { m.cache[keyName] = ret; }
+  if (cacheable) { meta.cache[keyName] = ret; }
   if (watched) { Ember.propertyDidChange(obj, keyName); }
   this._suspended = oldSuspended;
   return ret;
@@ -337,7 +337,7 @@ Ember.computed = function(func) {
 
 */
 Ember.cacheFor = function(obj, key) {
-  var cache = meta(obj, false).cache;
+  var cache = metaFor(obj, false).cache;
 
   if (cache && key in cache) {
     return cache[key];
