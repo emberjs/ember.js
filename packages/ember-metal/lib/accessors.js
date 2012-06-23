@@ -8,7 +8,7 @@ require('ember-metal/core');
 require('ember-metal/platform');
 require('ember-metal/utils');
 
-var metaFor = Ember.meta, META_KEY = Ember.META_KEY;
+var metaFor = Ember.meta, META_KEY = Ember.META_KEY, get, set;
 
 // ..........................................................
 // GET AND SET
@@ -18,7 +18,7 @@ var metaFor = Ember.meta, META_KEY = Ember.META_KEY;
 // object.
 
 /** @private */
-function get(obj, keyName) {
+get = function (obj, keyName) {
   Ember.assert("You need to provide an object and key to `get`.", !!obj && keyName);
   var desc = metaFor(obj, false).descs[keyName], ret;
   if (desc) {
@@ -32,10 +32,10 @@ function get(obj, keyName) {
 
     return obj[keyName];
   }
-}
+};
 
 /** @private */
-function set(obj, keyName, value) {
+set = function (obj, keyName, value) {
   Ember.assert("You need to provide an object and key to `set`.", !!obj && keyName !== undefined);
 
   var meta = metaFor(obj, false), desc = meta.descs[keyName];
@@ -62,7 +62,7 @@ function set(obj, keyName, value) {
     }
   }
   return value;
-}
+};
 
 /**
   @function
@@ -124,6 +124,12 @@ Ember.get = get;
   @returns {Object} the passed value.
 */
 Ember.set = set;
+
+if (Ember.config.overrideAccessors) {
+  Ember.config.overrideAccessors();
+  get = Ember.get;
+  set = Ember.set;
+}
 
 // ..........................................................
 // PATHS

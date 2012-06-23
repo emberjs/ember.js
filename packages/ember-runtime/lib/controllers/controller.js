@@ -11,7 +11,8 @@ Ember.ControllerMixin = Ember.Mixin.create({
     By default, a controller's `target` is set to the router after it is
     instantiated by `Ember.Application#initialize`.
   */
-  target: null
+  target: null,
+  store: null
 });
 
 Ember.Controller = Ember.Object.extend(Ember.ControllerMixin);
