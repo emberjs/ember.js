@@ -12,15 +12,17 @@ require('ember-metal/properties');
 require('ember-metal/observer');
 require('ember-metal/array');
 
-var guidFor = Ember.guidFor,
-    metaFor = Ember.meta,
-    get = Ember.get,
-    set = Ember.set,
-    normalizeTuple = Ember.normalizeTuple.primitive,
-    GUID_KEY = Ember.GUID_KEY,
-    META_KEY = Ember.META_KEY,
-    notifyObservers = Ember.notifyObservers,
-    forEach = Ember.ArrayPolyfills.forEach,
+var guidFor = Ember.guidFor, // utils.js
+    metaFor = Ember.meta, // utils.js
+    get = Ember.get, // accessors.js
+    set = Ember.set, // accessors.js
+    normalizeTuple = Ember.normalizeTuple.primitive, // accessors.js
+    GUID_KEY = Ember.GUID_KEY, // utils.js
+    META_KEY = Ember.META_KEY, // utils.js
+    // circular reference observer depends on Ember.watch
+    // we should move change events to this file or its own property_events.js
+    notifyObservers = Ember.notifyObservers, // observer.js
+    forEach = Ember.ArrayPolyfills.forEach, // array.js
     FIRST_KEY = /^([^\.\*]+)/,
     IS_PATH = /[\.\*]/;
 
