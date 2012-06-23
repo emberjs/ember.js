@@ -409,29 +409,6 @@ function chainsDidChange(obj, keyName, m) {
 // WATCH
 //
 
-
-// The exception to this is that any objects managed by Ember but not a descendant
-// of Ember.Object will not throw an exception, instead failing silently. This
-// prevent errors with other libraries that may attempt to access special
-// properties on standard objects like Array. Usually this happens when copying
-// an object by looping over all properties.
-//
-// QUESTION: What is this scenario exactly?
-var mandatorySetter = Ember.Descriptor.MUST_USE_SETTER = function() {
-  if (Ember.Object && this instanceof Ember.Object) {
-    if (this.isDestroyed) {
-      Ember.assert('You cannot set observed properties on destroyed objects', false);
-    } else {
-      Ember.assert('Must use Ember.set() to access this property', false);
-    }
-  }
-};
-
-var switchToWatched = function(obj, keyName, meta) {
-  var value = obj[keyName];
-  meta.values[keyName] = value;
-};
-
 /**
   @private
 
