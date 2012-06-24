@@ -182,6 +182,7 @@ Ember.meta = function meta(obj, writable) {
 
     ret = {
       descs: {},
+      setup: {},
       watching: {},
       observers: {},
       beforeObservers: {},
@@ -197,6 +198,7 @@ Ember.meta = function meta(obj, writable) {
   } else if (ret.source !== obj) {
     ret = o_create(ret);
     ret.descs    = o_create(ret.descs);
+    ret.setup    = o_create(ret.setup);
     ret.watching = o_create(ret.watching);
     ret.observers = o_create(ret.observers);
     ret.beforeObservers = o_create(ret.beforeObservers);

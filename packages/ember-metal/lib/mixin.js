@@ -225,20 +225,8 @@ function finishPartial(obj, m) {
   connectBindings(obj, m);
   applyBeforeObservers(obj, m);
   applyObservers(obj, m);
-  setupDescriptors(obj, m);
 
   return obj;
-}
-
-function setupDescriptors(obj, m) {
-  var meta = m || Ember.meta(obj),
-      descriptors = meta.descs, descriptor;
-
-  for (var name in descriptors) {
-    if (descriptor = descriptors[name]) {
-      descriptor.setup(obj, name);
-    }
-  }
 }
 
 /** @private */

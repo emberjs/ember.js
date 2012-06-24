@@ -236,6 +236,11 @@ ComputedPropertyPrototype.meta = function(meta) {
 };
 
 /** @private - impl descriptor API */
+ComputedPropertyPrototype.willWatch = function(obj, keyName) {
+  this.setup(obj, keyName);
+};
+
+/** @private - impl descriptor API */
 ComputedPropertyPrototype.didChange = function(obj, keyName) {
   if (this._cacheable && this._suspended !== obj) {
     delete metaFor(obj).cache[keyName];
@@ -250,6 +255,7 @@ ComputedPropertyPrototype.get = function(obj, keyName) {
     cache = metaFor(obj).cache;
     if (keyName in cache) { return cache[keyName]; }
     ret = cache[keyName] = this.func.call(obj, keyName);
+    this.setup(obj, keyName);
   } else {
     ret = this.func.call(obj, keyName);
   }
@@ -269,26 +275,36 @@ ComputedPropertyPrototype.set = function(obj, keyName, value) {
   if (watched) { Ember.propertyWillChange(obj, keyName); }
   if (cacheable) delete meta.cache[keyName];
   ret = this.func.call(obj, keyName, value);
-  if (cacheable) { meta.cache[keyName] = ret; }
+  if (cacheable) {
+    meta.cache[keyName] = ret;
+    this.setup(obj, keyName);
+  }
   if (watched) { Ember.propertyDidChange(obj, keyName); }
   this._suspended = oldSuspended;
   return ret;
 };
 
-ComputedPropertyPrototype.setup = function(obj, keyName, value) {
-  addDependentKeys(this, obj, keyName);
+ComputedPropertyPrototype.setup = function(obj, keyName) {
+  var meta = metaFor(obj);
+  if (!meta.setup[keyName]) {
+    meta.setup[keyName] = true;
+    addDependentKeys(this, obj, keyName);
+  }
 };
 
 /** @private - impl descriptor API */
 ComputedPropertyPrototype.teardown = function(obj, keyName) {
   var keys = this._dependentKeys,
-      len  = keys ? keys.length : 0;
+      len  = keys ? keys.length : 0,
+      meta = metaFor(obj);
 
   for(var idx=0; idx < len; idx++) {
     removeDependentKey(obj, keyName, keys[idx]);
   }
 
-  if (this._cacheable) { delete metaFor(obj).cache[keyName]; }
+  if (this._cacheable) { delete meta.cache[keyName]; }
+
+  meta.setup[keyName] = false;
 
   return null; // no value to restore
 };
