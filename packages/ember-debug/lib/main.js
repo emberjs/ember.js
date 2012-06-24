@@ -90,14 +90,13 @@ Ember.deprecate = function(message, test) {
 
   if (Ember && Ember.ENV.RAISE_ON_DEPRECATION) { throw new Error(message); }
 
-  var error, stackStr = '';
+  var error;
 
   // When using new Error, we can't do the arguments check for Chrome. Alternatives are welcome
   try { __fail__.fail(); } catch (e) { error = e; }
 
-  if (error.stack) {
-    var stack;
-
+  if (Ember.LOG_STACKTRACE_ON_DEPRECATION && error.stack) {
+    var stack, stackStr = '';
     if (error['arguments']) {
       // Chrome
       stack = error.stack.replace(/^\s+at\s+/gm, '').
@@ -111,9 +110,10 @@ Ember.deprecate = function(message, test) {
     }
 
     stackStr = "\n    " + stack.slice(2).join("\n    ");
+    message = message + stackStr;
   }
 
-  Ember.Logger.warn("DEPRECATION: "+message+stackStr);
+  Ember.Logger.warn("DEPRECATION: "+message);
 };
 
 
