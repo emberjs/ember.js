@@ -10,7 +10,7 @@ var indexOf = Ember.EnumerableUtils.indexOf, indexesOf = Ember.EnumerableUtils.i
   [select](https://developer.mozilla.org/en/HTML/Element/select) HTML element,
   allowing the user to choose from a list of options. The selected option(s)
   are updated live in the `selection` property, while the corresponding value
-  is updated in the 'value' property.
+  is updated in the `value` property.
 
   ### Using Strings
   The simplest version of an Ember.Select takes an array of strings for the options
@@ -41,10 +41,10 @@ var indexOf = Ember.EnumerableUtils.indexOf, indexesOf = Ember.EnumerableUtils.i
   Selecting Yehuda from the select box will set `App.controller.selected` to "Yehuda"
 
   ### Using Objects
-  An Ember.Select can also take an array of objects.
+  An Ember.Select can also take an array of JS or Ember objects.
 
   When using objects you need to supply optionLabelPath and optionValuePath parameters
-  which will be used to get the HTML label and the values of the options.
+  which will be used to get the label and value for each of the options.
 
   Usually you will bind to either the selection or the value attribute of the select.
 
