@@ -30,6 +30,13 @@ var o_defineProperty = Ember.platform.defineProperty,
 */
 Ember.GUID_KEY = GUID_KEY;
 
+var GUID_DESC = {
+  writable:    false,
+  configurable: false,
+  enumerable:  false,
+  value: null
+};
+
 /**
   @private
 
@@ -54,13 +61,9 @@ Ember.generateGuid = function(obj, prefix) {
   if (!prefix) prefix = 'ember';
   var ret = (prefix + (uuid++));
   if (obj) {
-    o_defineProperty(obj, GUID_KEY, {
-      configurable: true,
-      writable: true,
-      value: ret
-    });
+    GUID_DESC.value = ret;
+    o_defineProperty(obj, GUID_KEY, GUID_DESC);
   }
-
   return ret ;
 };
 
@@ -105,10 +108,12 @@ Ember.guidFor = function(obj) {
       if (obj[GUID_KEY]) return obj[GUID_KEY];
       if (obj === Object) return '(Object)';
       if (obj === Array)  return '(Array)';
-      return Ember.generateGuid(obj, 'ember');
+      ret = 'ember'+(uuid++);
+      GUID_DESC.value = ret;
+      o_defineProperty(obj, GUID_KEY, GUID_DESC);
+      return ret;
   }
 };
-
 
 // ..........................................................
 // META
