@@ -236,20 +236,6 @@ ComputedPropertyPrototype.meta = function(meta) {
 };
 
 /** @private - impl descriptor API */
-ComputedPropertyPrototype.teardown = function(obj, keyName) {
-  var keys = this._dependentKeys,
-      len  = keys ? keys.length : 0;
-
-  for(var idx=0; idx < len; idx++) {
-    removeDependentKey(obj, keyName, keys[idx]);
-  }
-
-  if (this._cacheable) { delete metaFor(obj).cache[keyName]; }
-
-  return null; // no value to restore
-};
-
-/** @private - impl descriptor API */
 ComputedPropertyPrototype.didChange = function(obj, keyName) {
   if (this._cacheable && this._suspended !== obj) {
     delete metaFor(obj).cache[keyName];
@@ -291,6 +277,20 @@ ComputedPropertyPrototype.set = function(obj, keyName, value) {
 
 ComputedPropertyPrototype.setup = function(obj, keyName, value) {
   addDependentKeys(this, obj, keyName);
+};
+
+/** @private - impl descriptor API */
+ComputedPropertyPrototype.teardown = function(obj, keyName) {
+  var keys = this._dependentKeys,
+      len  = keys ? keys.length : 0;
+
+  for(var idx=0; idx < len; idx++) {
+    removeDependentKey(obj, keyName, keys[idx]);
+  }
+
+  if (this._cacheable) { delete metaFor(obj).cache[keyName]; }
+
+  return null; // no value to restore
 };
 
 /**
