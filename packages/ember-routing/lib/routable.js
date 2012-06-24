@@ -59,6 +59,7 @@ Ember.Routable = Ember.Mixin.create({
   */
   stashContext: function(manager, context) {
     var serialized = this.serialize(manager, context);
+    Ember.assert('serialize must return a hash', typeof serialized === 'object');
 
     manager.setStateMeta(this, 'serialized', serialized);
 
