@@ -194,7 +194,7 @@ function applyBeforeObservers(obj, m) {
     method = beforeObservers[methodName];
     paths = method.__ember_observesBefore__;
     for (i=0, l=paths.length; i<l; i++) {
-      addBeforeObserver(obj, paths[i], obj, method);
+      addBeforeObserver(obj, paths[i], null, methodName);
     }
   }
 
@@ -211,12 +211,12 @@ function applyObservers(obj, m) {
     method = observers[methodName];
     paths = method.__ember_observes__;
     for (i=0, l=paths.length; i<l; i++) {
-      addObserver(obj, paths[i], obj, method);
+      addObserver(obj, paths[i], null, methodName);
     }
   }
 
   // mark as applied for future Mixin.apply()
-  m.beforeObservers = {};
+  m.observers = {};
 }
 
 function finishPartial(obj, m) {

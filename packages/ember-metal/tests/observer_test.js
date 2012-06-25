@@ -333,7 +333,7 @@ testBoth('local observers can be removed', function(get, set) {
   set(obj, 'bar', 'HI!');
   equal(barObserved, 2, 'precond - observers should be fired');
 
-  Ember.removeObserver(obj, 'bar', obj, obj.foo1);
+  Ember.removeObserver(obj, 'bar', null, 'foo1');
 
   barObserved = 0;
   set(obj, 'bar', 'HI AGAIN!');
