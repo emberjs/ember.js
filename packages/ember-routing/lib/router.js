@@ -250,7 +250,7 @@ var get = Ember.get, getPath = Ember.getPath, set = Ember.set;
   Will transition the application's state to 'root.bRoute' and trigger an update of the URL to
   '#/a/route/42/Life'.
 
-  The context argument will also be passed as the second argument to the `deserialize` method call.
+  The context argument will also be passed as the second argument to the `serialize` method call.
 
   ## Injection of Controller Singletons
   During application initialization Ember will detect properties of the application ending in 'Controller',
