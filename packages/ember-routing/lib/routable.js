@@ -61,6 +61,7 @@ Ember.Routable = Ember.Mixin.create({
     var serialized = this.serialize(manager, context);
     Ember.assert('serialize must return a hash', !serialized || typeof serialized === 'object');
 
+    manager.setStateMeta(this, 'context', context);
     manager.setStateMeta(this, 'serialized', serialized);
 
     if (get(this, 'isRoutable') && !get(manager, 'isRouting')) {
@@ -136,8 +137,21 @@ Ember.Routable = Ember.Mixin.create({
     string property.
   */
   routeMatcher: Ember.computed(function() {
-    if (get(this, 'route')) {
-      return Ember._RouteMatcher.create({ route: get(this, 'route') });
+    var route = get(this, 'route');
+    if (route) {
+      return Ember._RouteMatcher.create({ route: route });
+    }
+  }).cacheable(),
+
+  /**
+    @private
+
+    Check whether the route has dynamic segments
+  */
+  isDynamic: Ember.computed(function() {
+    var routeMatcher = get(this, 'routeMatcher');
+    if (routeMatcher) {
+      return routeMatcher.identifiers.length > 0;
     }
   }).cacheable(),
 
@@ -288,7 +302,7 @@ Ember.Routable = Ember.Mixin.create({
 
     Ember.assert("Could not find state for path " + path, !!state);
 
-    var object = state.deserialize(manager, match.hash) || {};
+    var object = state.deserialize(manager, match.hash);
     manager.transitionTo(get(state, 'path'), object);
     manager.send('routePath', match.remaining);
   },
