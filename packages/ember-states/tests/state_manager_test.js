@@ -336,6 +336,47 @@ test("it sends exit events in the correct order when changing to a state multipl
   equal(exitOrder[1], 'exitedOuter', "outer exit is called second");
 });
 
+test("it dispatch events on state entering & events sending (as needed)", function() {
+  var navigationLog = [],
+      stateManager = Ember.StateManager.create({
+      enableLogging: true,
+    init: function() {
+      this.on('willSendEvent', function(state, event) {
+        navigationLog.push("About to send '" + event + "' event to state " + get(state, 'path'));
+      });
+      this.on('didEnterState', function(state) {
+        navigationLog.push("Entering state " + get(state, 'path'));
+      });
+      this._super();
+    },
+    start: Ember.State.create(),
+    doNothing: Ember.K,
+    show: Ember.State.create({
+      showDetails: function(stateManager) {
+        stateManager.transitionTo('show.details');
+      },
+      details: Ember.State.create()
+    }),
+    terminate: Ember.State.create()
+  });
+
+  stateManager.transitionTo('start');
+  stateManager.set('triggerOnTransition', true);
+  stateManager.send('doNothing');
+  stateManager.set('triggerOnEvent', true);
+  stateManager.transitionTo('show');
+  stateManager.send('showDetails');
+  stateManager.transitionTo('terminate');
+
+  equal(navigationLog.length, 4, "logging hook was called as many times as needed");
+  deepEqual(navigationLog, [
+    "Entering state show",
+    "About to send 'showDetails' event to state show",
+    "Entering state show.details",
+    "Entering state terminate"
+  ], "logging hook was called when reaching states & handling events");
+});
+
 var passedContext, loadingEventCalled, loadedEventCalled, eventInChildCalled;
 loadingEventCalled = loadedEventCalled = eventInChildCalled = 0;
 
