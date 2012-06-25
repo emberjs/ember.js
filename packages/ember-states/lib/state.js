@@ -89,6 +89,7 @@ Ember.State = Ember.Object.extend(Ember.Evented,
     }
 
     set(this, 'pathsCache', {});
+    set(this, 'pathsCacheNoContext', {});
   },
 
   /** @private */

@@ -549,85 +549,93 @@ Ember.StateManager = Ember.State.extend(
         currentState = get(this, 'currentState') || this,
         resolveState = currentState,
         exitStates = [],
+        matchedContexts = [],
+        cachedPath,
         enterStates,
-        targetState,
         state,
-        initialState;
+        initialState,
+        stateIdx,
+        useContext;
 
-    // Is the cache useful anymore?
+    if (!context && (cachedPath = currentState.pathsCacheNoContext[path])) {
+      // fast path
 
-    if (currentState.pathsCache[path]) {
-      // cache hit
-
-      var cachedPath = currentState.pathsCache[name];
       exitStates = cachedPath.exitStates;
       enterStates = cachedPath.enterStates;
       resolveState = cachedPath.resolveState;
-      targetState = cachedPath.targetState;
     } else {
-      // cache miss
+      // normal path
 
-      enterStates = this.findStatesByPath(currentState, path);
+      if ((cachedPath = currentState.pathsCache[path])) {
+        // cache hit
 
-      while (resolveState && !enterStates) {
-        exitStates.unshift(resolveState);
-
-        resolveState = get(resolveState, 'parentState');
-        if (!resolveState) {
-          enterStates = this.findStatesByPath(this, path);
-          if (!enterStates) { return; }
-        }
-        enterStates = this.findStatesByPath(resolveState, path);
-      }
-
-      while (enterStates.length > 0 && enterStates[0] === exitStates[0]) {
-        resolveState = enterStates.shift();
-        exitStates.shift();
-      }
-
-      currentState.pathsCache[name] = {
-        exitStates: exitStates,
-        enterStates: enterStates,
-        resolveState: resolveState
-      };
-    }
-
-    var matchedContexts = [],
-        stateIdx = enterStates.length-1;
-    while (contexts.length > 0) {
-      if (stateIdx >= 0) {
-        state = enterStates[stateIdx--];
+        exitStates = cachedPath.exitStates;
+        enterStates = cachedPath.enterStates;
+        resolveState = cachedPath.resolveState;
       } else {
-        state = enterStates[0] ? get(enterStates[0], 'parentState') : resolveState;
-        if (!state) { throw "Cannot match all contexts to states"; }
-        enterStates.unshift(state);
-        exitStates.unshift(state);
-      }
+        // cache miss
 
-      var useContext = context && (!get(state, 'isRoutable') || get(state, 'isDynamic'));
-      matchedContexts.unshift(useContext ? contexts.pop() : null);
-    }
+        enterStates = this.findStatesByPath(currentState, path);
 
-    if (enterStates.length > 0) {
-      state = enterStates[enterStates.length - 1];
+        while (resolveState && !enterStates) {
+          exitStates.unshift(resolveState);
 
-      while(true) {
-        initialState = get(state, 'initialState') || 'start';
-        state = getPath(state, 'states.'+initialState);
-        if (!state) { break; }
-        enterStates.push(state);
-      }
-
-      while (enterStates.length > 0) {
-        if (enterStates[0] !== exitStates[0]) { break; }
-
-        if (enterStates.length === matchedContexts.length) {
-          if (this.getStateMeta(enterStates[0], 'context') !== matchedContexts[0]) { break; }
-          matchedContexts.shift();
+          resolveState = get(resolveState, 'parentState');
+          if (!resolveState) {
+            enterStates = this.findStatesByPath(this, path);
+            if (!enterStates) { return; }
+          }
+          enterStates = this.findStatesByPath(resolveState, path);
         }
 
-        resolveState = enterStates.shift();
-        exitStates.shift();
+        while (enterStates.length > 0 && enterStates[0] === exitStates[0]) {
+          resolveState = enterStates.shift();
+          exitStates.shift();
+        }
+
+        currentState.pathsCache[name] = {
+          exitStates: exitStates,
+          enterStates: enterStates,
+          resolveState: resolveState
+        };
+      }
+
+      stateIdx = enterStates.length-1;
+      while (contexts.length > 0) {
+        if (stateIdx >= 0) {
+          state = enterStates[stateIdx--];
+        } else {
+          state = enterStates[0] ? get(enterStates[0], 'parentState') : resolveState;
+          if (!state) { throw "Cannot match all contexts to states"; }
+          enterStates.unshift(state);
+          exitStates.unshift(state);
+        }
+
+        useContext = context && (!get(state, 'isRoutable') || get(state, 'isDynamic'));
+        matchedContexts.unshift(useContext ? contexts.pop() : null);
+      }
+
+      if (enterStates.length > 0) {
+        state = enterStates[enterStates.length - 1];
+
+        while(true) {
+          initialState = get(state, 'initialState') || 'start';
+          state = getPath(state, 'states.'+initialState);
+          if (!state) { break; }
+          enterStates.push(state);
+        }
+
+        while (enterStates.length > 0) {
+          if (enterStates[0] !== exitStates[0]) { break; }
+
+          if (enterStates.length === matchedContexts.length) {
+            if (this.getStateMeta(enterStates[0], 'context') !== matchedContexts[0]) { break; }
+            matchedContexts.shift();
+          }
+
+          resolveState = enterStates.shift();
+          exitStates.shift();
+        }
       }
     }
 
