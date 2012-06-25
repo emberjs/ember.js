@@ -379,6 +379,15 @@ Ember.StateManager = Ember.State.extend(
     `initialState` property.
   */
   init: function() {
+    this.on('willSendEvent', function(state, event) {
+      var log = this.enableLogging;
+      if (log) { Ember.Logger.log(fmt("STATEMANAGER: Sending event '%@' to state %@", [event, get(state, 'path')])); }
+    });
+    this.on('didEnterState', function(state) {
+      var log = this.enableLogging;
+      if (log) { Ember.Logger.log("STATEMANAGER: Entering " + get(state, 'path')); }
+    });
+
     this._super();
 
     set(this, 'stateMeta', Ember.Map.create());
@@ -431,6 +440,14 @@ Ember.StateManager = Ember.State.extend(
     @default 'setup'
   */
   transitionEvent: 'setup',
+  /**
+    Should an event be triggered after each state transition?
+  */
+  triggerOnTransition: false,
+  /**
+    Should an event be triggered before each event handling?
+  */
+  triggerOnEvent: false,
 
   /**
     If set to true, `errorOnUnhandledEvents` will cause an exception to be
@@ -449,7 +466,7 @@ Ember.StateManager = Ember.State.extend(
   },
 
   sendRecursively: function(event, currentState, context) {
-    var log = this.enableLogging,
+    var triggerOnEvent = get(this, 'triggerOnEvent'),
         action = currentState[event];
 
     // Test to see if the action is a method that
@@ -459,7 +476,9 @@ Ember.StateManager = Ember.State.extend(
     // and we should still raise an exception in that
     // case.
     if (typeof action === 'function') {
-      if (log) { Ember.Logger.log(fmt("STATEMANAGER: Sending event '%@' to state %@.", [event, get(currentState, 'path')])); }
+      if (triggerOnEvent) {
+        this.trigger('willSendEvent', currentState, event);
+      }
       return action.call(currentState, this, context);
     } else {
       var parentState = get(currentState, 'parentState');
@@ -651,7 +670,7 @@ Ember.StateManager = Ember.State.extend(
   },
 
   enterState: function(exitStates, enterStates, state) {
-    var log = this.enableLogging,
+    var triggerOnTransition = get(this, 'triggerOnTransition'),
         stateManager = this;
 
     exitStates = exitStates.slice(0).reverse();
@@ -660,8 +679,10 @@ Ember.StateManager = Ember.State.extend(
     });
 
     arrayForEach.call(enterStates, function(state) {
-      if (log) { Ember.Logger.log("STATEMANAGER: Entering " + get(state, 'path')); }
       state.trigger('enter', stateManager);
+      if (triggerOnTransition) {
+        stateManager.trigger('didEnterState', state);
+      }
     });
 
     var startState = state,
@@ -675,8 +696,10 @@ Ember.StateManager = Ember.State.extend(
     while (startState = get(get(startState, 'states'), initialState)) {
       enteredState = startState;
 
-      if (log) { Ember.Logger.log("STATEMANAGER: Entering " + get(startState, 'path')); }
       startState.trigger('enter', stateManager);
+      if (triggerOnTransition) {
+        stateManager.trigger('didEnterState', startState);
+      }
 
       initialState = get(startState, 'initialState');
 
