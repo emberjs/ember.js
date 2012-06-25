@@ -95,7 +95,7 @@ var get = Ember.get, getPath = Ember.getPath, set = Ember.set;
           root: Ember.Route.extend({
             aRoute: Ember.Route.extend({
               route: '/',
-              connectOutlets: function(router){
+              enter: function(router, transition){
                 console.log("entering root.aRoute from", router.getPath('currentState.name'));
               },
               connectOutlets: function(router){
@@ -155,7 +155,7 @@ var get = Ember.get, getPath = Ember.getPath, set = Ember.set;
   
   Within `deserialize` you should use this information to retrieve or create an appropriate context
   object for the given url (e.g. by loading from a remote API or accessing the browser's
-  `localStorage`). This object must be the the `return` value for `deserialize` and will be
+  `localStorage`). This object must be the `return` value for `deserialize` and will be
   passed to the Route's `connectOutlets` and `serialize` methods.
   
   When an application's state is changed from within the application itself, the context provided for
