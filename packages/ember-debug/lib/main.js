@@ -11,22 +11,12 @@ if ('undefined' === typeof Ember) {
 /**
   Define an assertion that will throw an exception if the condition is not
   met.  Ember build tools will remove any calls to Ember.assert() when
-  doing a production build.
+  doing a production build. Example:
 
-  ## Examples
-
-      #js:
-
-      // pass a simple Boolean value
-      Ember.assert('must pass a valid object', !!obj);
-
-      // pass a function.  If the function returns false the assertion fails
-      // any other return value (including void) will pass.
-      Ember.assert('a passed record must have a firstName', function() {
-        if (obj instanceof Ember.Record) {
-          return !Ember.empty(obj.firstName);
-        }
-      });
+      // Test for truthiness
+      Ember.assert('Must pass a valid object', obj);
+      // Fail unconditionally
+      Ember.assert('This code path should never be run')
 
   @static
   @function
@@ -35,12 +25,10 @@ if ('undefined' === typeof Ember) {
     thrown if the assertion fails.
 
   @param {Boolean} test
-    Must return true for the assertion to pass.  If you pass a function it
-    will be executed.  If the function returns false an exception will be
+    Must be truthy for the assertion to pass. If falsy, an exception will be
     thrown.
 */
 Ember.assert = function(desc, test) {
-  if ('function' === typeof test) test = test()!==false;
   if (!test) throw new Error("assertion failed: "+desc);
 };
 
@@ -55,12 +43,9 @@ Ember.assert = function(desc, test) {
     A warning to display.
 
   @param {Boolean} test
-    An optional boolean or function. If the test returns false, the warning
-    will be displayed.
+    An optional boolean. If falsy, the warning will be displayed.
 */
 Ember.warn = function(message, test) {
-  if (arguments.length === 1) { test = false; }
-  if ('function' === typeof test) test = test()!==false;
   if (!test) {
     Ember.Logger.warn("WARNING: "+message);
     if ('trace' in Ember.Logger) Ember.Logger.trace();
@@ -78,14 +63,12 @@ Ember.warn = function(message, test) {
     A description of the deprecation.
 
   @param {Boolean} test
-    An optional boolean or function. If the test returns false, the deprecation
-    will be displayed.
+    An optional boolean. If falsy, the deprecation will be displayed.
 */
 Ember.deprecate = function(message, test) {
   if (Ember && Ember.TESTING_DEPRECATION) { return; }
 
   if (arguments.length === 1) { test = false; }
-  if ('function' === typeof test) { test = test()!==false; }
   if (test) { return; }
 
   if (Ember && Ember.ENV.RAISE_ON_DEPRECATION) { throw new Error(message); }
