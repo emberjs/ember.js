@@ -40,7 +40,7 @@ Ember._RouteMatcher = Ember.Object.extend({
 
       return {
         remaining: path.substr(match[0].length),
-        hash: hash
+        hash: identifiers.length > 0 ? hash : null
       };
     }
   },

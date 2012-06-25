@@ -513,9 +513,9 @@ Ember.StateManager = Ember.State.extend(
     return possible;
   },
 
-  findStatesByRoute: function(state, route) {
-    if (!route || route === "") { return undefined; }
-    var r = route.split('.'),
+  findStatesByPath: function(state, path) {
+    if (!path || path === "") { return undefined; }
+    var r = path.split('.'),
         ret = [];
 
     for (var i=0, len = r.length; i < len; i++) {
@@ -537,122 +537,110 @@ Ember.StateManager = Ember.State.extend(
     return this.transitionTo.apply(this, arguments);
   },
 
-  pathForSegments: function(array) {
-    return Ember.ArrayPolyfills.map.call(array, function(tuple) {
-      Ember.assert("A segment passed to transitionTo must be an Array", Ember.typeOf(tuple) === "array");
-      return tuple[0];
-    }).join(".");
-  },
-
-  transitionTo: function(name, context) {
+  transitionTo: function(path, context) {
     // 1. Normalize arguments
     // 2. Ensure that we are in the correct state
     // 3. Map provided path to context objects and send
     //    appropriate transitionEvent events
 
-    if (Ember.empty(name)) { return; }
+    if (Ember.empty(path)) { return; }
 
-    var segments, explicitSegments;
-
-    if (Ember.typeOf(name) === "array") {
-      segments = [].slice.call(arguments);
-      explicitSegments = true;
-    } else {
-      segments = [[name, context]];
-      explicitSegments = false;
-    }
-
-    var path = this.pathForSegments(segments),
+    var contexts = context ? Array.prototype.slice.call(arguments, 1) : [],
         currentState = get(this, 'currentState') || this,
-        state = currentState,
-        newState,
+        resolveState = currentState,
         exitStates = [],
         enterStates,
-        resolveState,
-        setupContexts = [];
+        targetState,
+        state,
+        initialState;
 
-    if (state.routes[path]) {
+    // Is the cache useful anymore?
+
+    if (currentState.pathsCache[path]) {
       // cache hit
 
-      var route = state.routes[path];
-      exitStates = route.exitStates;
-      enterStates = route.enterStates;
-      state = route.futureState;
-      resolveState = route.resolveState;
+      var cachedPath = currentState.pathsCache[name];
+      exitStates = cachedPath.exitStates;
+      enterStates = cachedPath.enterStates;
+      resolveState = cachedPath.resolveState;
+      targetState = cachedPath.targetState;
     } else {
       // cache miss
 
-      newState = this.findStatesByRoute(currentState, path);
+      enterStates = this.findStatesByPath(currentState, path);
 
-      while (state && !newState) {
-        exitStates.unshift(state);
+      while (resolveState && !enterStates) {
+        exitStates.unshift(resolveState);
 
-        state = get(state, 'parentState');
-        if (!state) {
-          newState = this.findStatesByRoute(this, path);
-          if (!newState) { return; }
+        resolveState = get(resolveState, 'parentState');
+        if (!resolveState) {
+          enterStates = this.findStatesByPath(this, path);
+          if (!enterStates) { return; }
         }
-        newState = this.findStatesByRoute(state, path);
+        enterStates = this.findStatesByPath(resolveState, path);
       }
 
-      resolveState = state;
-
-      enterStates = newState.slice(0);
-      exitStates = exitStates.slice(0);
-
-      if (enterStates.length > 0) {
-        state = enterStates[enterStates.length - 1];
-
-        var initialState;
-        while(initialState = get(state, 'initialState')) {
-          state = getPath(state, 'states.'+initialState);
-          enterStates.push(state);
-        }
-
-        while (enterStates.length > 0) {
-          if (enterStates[0] !== exitStates[0]) { break; }
-
-          var newContext;
-          if (explicitSegments) {
-            var segmentIndex = segments.length - enterStates.length;
-            newContext = segments[segmentIndex][1];
-          } else if (enterStates.length === 1) {
-            newContext = context;
-          }
-
-          if (newContext) {
-            if (newContext !== this.getStateMeta(enterStates[0], 'context')) { break; }
-          }
-
-          enterStates.shift();
-          exitStates.shift();
-        }
-
-        if (enterStates.length > 0) {
-          setupContexts = Ember.EnumerableUtils.map(enterStates, function(state, index) {
-                            return [state, explicitSegments ? segments[index][1] : context];
-                          });
-        }
+      while (enterStates.length > 0 && enterStates[0] === exitStates[0]) {
+        resolveState = enterStates.shift();
+        exitStates.shift();
       }
 
-      currentState.routes[path] = {
+      currentState.pathsCache[name] = {
         exitStates: exitStates,
         enterStates: enterStates,
-        futureState: state,
         resolveState: resolveState
       };
     }
 
-    this.enterState(exitStates, enterStates, state);
-    this.triggerSetupContext(setupContexts);
+    var matchedContexts = [],
+        stateIdx = enterStates.length-1;
+    while (contexts.length > 0) {
+      if (stateIdx >= 0) {
+        state = enterStates[stateIdx--];
+      } else {
+        state = enterStates[0] ? get(enterStates[0], 'parentState') : resolveState;
+        if (!state) { throw "Cannot match all contexts to states"; }
+        enterStates.unshift(state);
+        exitStates.unshift(state);
+      }
+
+      var useContext = context && (!get(state, 'isRoutable') || get(state, 'isDynamic'));
+      matchedContexts.unshift(useContext ? contexts.pop() : null);
+    }
+
+    if (enterStates.length > 0) {
+      state = enterStates[enterStates.length - 1];
+
+      while(true) {
+        initialState = get(state, 'initialState') || 'start';
+        state = getPath(state, 'states.'+initialState);
+        if (!state) { break; }
+        enterStates.push(state);
+      }
+
+      while (enterStates.length > 0) {
+        if (enterStates[0] !== exitStates[0]) { break; }
+
+        if (enterStates.length === matchedContexts.length) {
+          if (this.getStateMeta(enterStates[0], 'context') !== matchedContexts[0]) { break; }
+          matchedContexts.shift();
+        }
+
+        resolveState = enterStates.shift();
+        exitStates.shift();
+      }
+    }
+
+    this.enterState(exitStates, enterStates, enterStates[enterStates.length-1] || resolveState);
+    this.triggerSetupContext(enterStates, matchedContexts);
   },
 
-  triggerSetupContext: function(segments) {
-    arrayForEach.call(segments, function(tuple) {
-      var state = tuple[0],
-          context = tuple[1];
+  triggerSetupContext: function(enterStates, contexts) {
+    var offset = enterStates.length - contexts.length;
+    Ember.assert("More contexts provided than states", offset >= 0);
 
-      state.trigger(get(this, 'transitionEvent'), this, context);
+    arrayForEach.call(enterStates, function(state, idx) {
+      state.trigger(get(this, 'transitionEvent'), this, contexts[idx-offset]);
     }, this);
   },
 
@@ -681,27 +669,6 @@ Ember.StateManager = Ember.State.extend(
       state.trigger('enter', stateManager);
     });
 
-    var startState = state,
-        enteredState,
-        initialState = get(startState, 'initialState');
-
-    if (!initialState) {
-      initialState = 'start';
-    }
-
-    while (startState = get(get(startState, 'states'), initialState)) {
-      enteredState = startState;
-
-      if (log) { Ember.Logger.log("STATEMANAGER: Entering " + get(startState, 'path')); }
-      startState.trigger('enter', stateManager);
-
-      initialState = get(startState, 'initialState');
-
-      if (!initialState) {
-        initialState = 'start';
-      }
-    }
-
-    set(this, 'currentState', enteredState || state);
+    set(this, 'currentState', state);
   }
 });

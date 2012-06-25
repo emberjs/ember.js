@@ -553,11 +553,11 @@ test("multiple contexts can be provided in a single transitionTo", function() {
     });
   });
 
-  stateManager.transitionTo(['planters', { company: true }], ['nuts', { product: true }]);
+  stateManager.transitionTo('planters.nuts', { company: true }, { product: true });
 });
 
 test("transitionEvent is called for each nested state", function() {
-  expect(4);
+  expect(8);
 
   var calledOnParent = false,
       calledOnChild = true;
@@ -569,7 +569,7 @@ test("transitionEvent is called for each nested state", function() {
       planters: Ember.State.create({
         setup: function(manager, context) {
           calledOnParent = true;
-          equal(context, 'context', 'parent gets context');
+          ok(!context, 'single context is not called on parent');
         },
 
         nuts: Ember.State.create({
@@ -581,6 +581,18 @@ test("transitionEvent is called for each nested state", function() {
       })
     });
   });
+
+  stateManager.transitionTo('planters.nuts', 'context');
+
+  ok(calledOnParent, 'called transitionEvent on parent');
+  ok(calledOnChild, 'called transitionEvent on child');
+
+  // repeat the test now that the path is cached
+
+  stateManager.transitionTo('start');
+
+  calledOnParent = false;
+  calledOnChild = false;
 
   stateManager.transitionTo('planters.nuts', 'context');
 

@@ -88,7 +88,7 @@ Ember.State = Ember.Object.extend(Ember.Evented,
       }
     }
 
-    set(this, 'routes', {});
+    set(this, 'pathsCache', {});
   },
 
   /** @private */
