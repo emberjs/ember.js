@@ -7,7 +7,8 @@ module("DS.Model", {
     store = DS.Store.create();
 
     Person = DS.Model.extend({
-      name: DS.attr('string')
+      name: DS.attr('string'),
+      isDrugAddict: DS.attr('boolean')
     });
   },
 
@@ -22,6 +23,16 @@ test("can have a property set on it", function() {
   set(record, 'name', 'bar');
 
   equal(get(record, 'name'), 'bar', "property was set on the record");
+});
+
+test("setting a property on a record that has not changed does not cause it to become dirty", function() {
+  store.load(Person, { id: 1, name: "Peter", is_drug_addict: true });
+  var person = store.find(Person, 1);
+
+  equal(person.get('isDirty'), false, "precond - person record should not be dirty");
+  person.set('name', "Peter");
+  person.set('isDrugAddict', true);
+  equal(person.get('isDirty'), false, "record does not become dirty after setting property to old value");
 });
 
 test("a record reports its unique id via the `id` property", function() {
