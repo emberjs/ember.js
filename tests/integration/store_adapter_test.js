@@ -77,6 +77,47 @@ test("when multiple records are requested, the adapter's find method is called m
   store.findMany(Person, [1,2,3]);
 });
 
+test("when an association is loaded, the adapter's find method should not be called if all its IDs are already loaded", function() {
+  expect(0);
+
+  adapter.findMany = function() {
+    ok(false, "The adapter's find method should not be called");
+  };
+
+  Person = DS.Model.extend({
+    updatedAt: DS.attr('string'),
+    name: DS.attr('string')
+  });
+
+  var Comment = DS.Model.extend({
+    person: DS.belongsTo(Person)
+  });
+
+  Person.reopen({
+    comments: DS.hasMany(Comment)
+  });
+
+  store.load(Person, { id: 1, comments: [ 1 ] });
+  store.load(Comment, { id: 1 });
+
+  var person = store.find(Person, 1);
+
+  person.get('comments');
+
+  store.load(Person, { id: 1, comments: [ 1 ] });
+});
+
+test("when a store already has all needed records records, it should not call findMany on the adapter", function() {
+  expect(0);
+
+  adapter.find = function(store, type, id) {
+    ok(false, "This should not be called");
+  };
+
+  store.load(Person, { id: 1 });
+  store.findMany(Person, [ 1 ]);
+});
+
 test("when many records are requested with query parameters, the adapter's findQuery method is called", function() {
   expect(6);
   adapter.findQuery = function(store, type, query, recordArray) {
