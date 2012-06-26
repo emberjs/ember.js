@@ -389,13 +389,19 @@ Ember.Router = Ember.StateManager.extend(
   route: function(path) {
     set(this, 'isRouting', true);
 
+    var routableState;
+
     try {
       path = path.replace(/^(?=[^\/])/, "/");
 
       this.send('navigateAway');
       this.send('unroutePath', path);
 
-      var currentURL = get(this, 'currentState').absoluteRoute(this);
+      routableState = get(this, 'currentState');
+      while (routableState && !routableState.get('isRoutable')) {
+        routableState = get(routableState, 'parentState');
+      }
+      var currentURL = routableState ? routableState.absoluteRoute(this) : '';
       var rest = path.substr(currentURL.length);
 
       this.send('routePath', rest);
@@ -403,7 +409,14 @@ Ember.Router = Ember.StateManager.extend(
       set(this, 'isRouting', false);
     }
 
-    get(this, 'currentState').updateRoute(this, get(this, 'location'));
+    routableState = get(this, 'currentState');
+    while (routableState && !routableState.get('isRoutable')) {
+      routableState = get(routableState, 'parentState');
+    }
+
+    if (routableState) {
+      routableState.updateRoute(this, get(this, 'location'));
+    }
   },
 
   urlFor: function(path, hash) {
