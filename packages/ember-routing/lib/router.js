@@ -316,7 +316,7 @@ var get = Ember.get, getPath = Ember.getPath, set = Ember.set;
         {{/each}}
       </script>
 
-  See Handlebars.helpers.actions for additional usage examples.
+  See Handlebars.helpers.action for additional usage examples.
 
 
   ## Changing View Hierarchy in Response To State Change
