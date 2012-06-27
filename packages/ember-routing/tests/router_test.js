@@ -334,7 +334,32 @@ test("should update route for redirections", function() {
     })
   });
 
-  router.route('/');
+  Ember.run(function() {
+    router.route('/');
+  });
 
   equal(location.url, '/login');
+});
+
+test("respects initialState if leafRoute with child states", function() {
+  var router = Ember.Router.create({
+    location: location,
+    namespace: namespace,
+    root: Ember.Route.create({
+      foo: Ember.Route.create({
+        route: '/foo',
+
+        initialState: 'bar',
+
+        bar: Ember.State.create()
+      })
+    })
+  });
+
+  Ember.run(function() {
+    router.route('/foo');
+  });
+
+  equal(location.url, '/foo');
+  equal(router.getPath('currentState.name'), 'bar');
 });
