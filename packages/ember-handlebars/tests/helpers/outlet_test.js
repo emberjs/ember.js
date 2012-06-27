@@ -62,3 +62,38 @@ test("outlet should support an optional name", function() {
 
   equal(view.$().text(), 'HIBYE');
 });
+
+test("outlets can be nested", function() {
+  var controller = Ember.Object.create();
+
+  var template = "<h1>MAIN</h1>{{outlet mainView}}";
+  view = Ember.View.create({
+    controller: controller,
+    template: Ember.Handlebars.compile(template)
+  });
+    
+  var subController = Ember.Object.create();
+  var subTemplate = "<h2>SUB</h2>{{outlet subView}}";
+  var subView = Ember.View.create({
+    controller: subController,
+    template: Ember.Handlebars.compile(subTemplate)
+  });
+
+  appendView(view);
+  equal(view.$().text(), 'MAIN');
+
+  Ember.run(function() {
+    controller.set('mainView', subView);
+  });
+
+  equal(view.$().text(), 'MAINSUB');
+
+  Ember.run(function() {
+    subController.set('subView', Ember.View.create({
+      template: compile("<p>BYE</p>")
+    }));
+  });
+
+  equal(view.$().text(), 'MAINSUBBYE');
+
+});
