@@ -13,22 +13,26 @@ function testMap(variety) {
     }
   });
 
-  var mapHasLength = function(expected) {
+  var mapHasLength = function(expected, theMap) {
+    theMap = theMap || map;
+
     var length = 0;
-    map.forEach(function() {
+    theMap.forEach(function() {
       length++;
     });
 
     equal(length, expected, "map should contain " + expected + " items");
   };
 
-  var mapHasEntries = function(entries) {
+  var mapHasEntries = function(entries, theMap) {
+    theMap = theMap || map;
+
     for (var i = 0, l = entries.length; i < l; i++) {
-      equal(map.get(entries[i][0]), entries[i][1]);
-      equal(map.has(entries[i][0]), true);
+      equal(theMap.get(entries[i][0]), entries[i][1]);
+      equal(theMap.has(entries[i][0]), true);
     }
 
-    mapHasLength(entries.length);
+    mapHasLength(entries.length, theMap);
   };
 
   test("add", function() {
@@ -70,6 +74,50 @@ function testMap(variety) {
 
     mapHasEntries([]);
   });
+
+  test("copy and then update", function() {
+    map.set(object, "winning");
+    map.set(number, "winning");
+    map.set(string, "winning");
+
+    var map2 = map.copy();
+
+    map2.set(object, "losing");
+    map2.set(number, "losing");
+    map2.set(string, "losing");
+
+    mapHasEntries([
+      [ object, "winning" ],
+      [ number, "winning" ],
+      [ string, "winning" ]
+    ]);
+
+    mapHasEntries([
+      [ object, "losing" ],
+      [ number, "losing" ],
+      [ string, "losing" ]
+    ], map2);
+  });
+
+  test("copy and then remove", function() {
+    map.set(object, "winning");
+    map.set(number, "winning");
+    map.set(string, "winning");
+
+    var map2 = map.copy();
+
+    map2.remove(object);
+    map2.remove(number);
+    map2.remove(string);
+
+    mapHasEntries([
+      [ object, "winning" ],
+      [ number, "winning" ],
+      [ string, "winning" ]
+    ]);
+
+    mapHasEntries([ ], map2);
+  });
 }
 
 for (var i = 0;  i < varieties.length;  i++) {
@@ -89,4 +137,33 @@ test("Retrieving a value that has not been set returns and sets a default value"
   deepEqual(value, [ 'ohai' ]);
 
   strictEqual(value, map.get('ohai'));
+});
+
+test("Copying a MapWithDefault copies the default value", function() {
+  var map = Ember.MapWithDefault.create({
+    defaultValue: function(key) {
+      return [key];
+    }
+  });
+
+  map.set('ohai', 1);
+  map.get('bai');
+
+  var map2 = map.copy();
+
+  equal(map2.get('ohai'), 1);
+  deepEqual(map2.get('bai'), ['bai']);
+
+  map2.set('kthx', 3);
+
+  deepEqual(map.get('kthx'), ['kthx']);
+  equal(map2.get('kthx'), 3);
+
+  deepEqual(map2.get('default'), ['default']);
+
+  map2.defaultValue = function(key) {
+    return ['tom is on', key];
+  };
+
+  deepEqual(map2.get('drugs'), ['tom is on', 'drugs']);
 });

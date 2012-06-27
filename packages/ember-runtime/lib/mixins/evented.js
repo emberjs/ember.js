@@ -1,4 +1,10 @@
-Ember.Evented = Ember.Mixin.create({
+/**
+ @class
+
+ @extends Ember.Mixin
+ */
+Ember.Evented = Ember.Mixin.create(
+  /** @scope Ember.Evented.prototype */ {
   on: function(name, target, method) {
     Ember.addListener(this, name, target, method);
   },

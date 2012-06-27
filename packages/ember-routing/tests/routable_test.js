@@ -39,11 +39,11 @@ test("a RouteMatcher matches routes", function() {
 
   match = matcher.match('foo');
   equal(match.remaining, "");
-  deepEqual(match.hash, {});
+  equal(match.hash, null);
 
   match = matcher.match('foo/bar');
   equal(match.remaining, "/bar");
-  deepEqual(match.hash, {});
+  equal(match.hash, null);
 
   match = matcher.match('bar');
   equal(match, undefined);
@@ -424,7 +424,7 @@ var locationStub = {
   setURL: Ember.K
 };
 var expectURL = function(url) {
-  equal(url, formatURLArgument, "should invoke formatURL with URL "+url);
+  equal(formatURLArgument, url, "should invoke formatURL with URL "+url);
 };
 
 test("urlFor returns an absolute route", function() {

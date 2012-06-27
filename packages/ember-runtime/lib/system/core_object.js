@@ -148,7 +148,7 @@ if (Ember.config.overridePrototypeMixin) {
 CoreObject.__super__ = null;
 
 var ClassMixin = Ember.Mixin.create(
-/** @scope Ember.CoreObject */ {
+/** @scope Ember.ClassMixin.prototype */ {
 
   ClassMixin: Ember.required(),
 
