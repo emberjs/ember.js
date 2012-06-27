@@ -192,6 +192,40 @@ test("it automatically transitions to a default substate specified using the ini
   ok(get(stateManager, 'currentState').isStart, "automatically transitions to beginning substate");
 });
 
+test("it automatically synchronously transitions into initialState in an event", function() {
+  var count = 0;
+
+  stateManager = Ember.StateManager.create({
+    root: Ember.State.create({
+      original: Ember.State.create({
+        zomgAnEvent: function(manager) {
+          manager.transitionTo('nextState');
+          manager.send('zomgAnotherEvent');
+        }
+      }),
+
+      nextState: Ember.State.create({
+        initialState: 'begin',
+
+        begin: Ember.State.create({
+          zomgAnotherEvent: function(manager) {
+            count++;
+          }
+        })
+      })
+    })
+  });
+
+  Ember.run(function() {
+    stateManager.transitionTo('root.original');
+  });
+
+  Ember.run(function() {
+    stateManager.send('zomgAnEvent');
+    equal(count, 1, "the initialState was synchronously effective");
+  });
+});
+
 test("it automatically transitions to multiple substates specified using either start or initialState property", function() {
   stateManager = Ember.StateManager.create({
     start: Ember.State.create({
