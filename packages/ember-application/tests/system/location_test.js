@@ -1,5 +1,5 @@
 var locationObject;
-var realPushState;
+var realPushState, realHistoryState;
 
 module("Ember.Location, hash implementation", {
   setup: function() {
@@ -64,6 +64,7 @@ test("if the URL is set, it doesn't trigger the hashchange event", function() {
 
 module("Ember.Location, history implementation", {
   setup: function() {
+    realHistoryState = window.history.state;
     realPushState = window.history.pushState;
     locationObject = Ember.Location.create({
       implementation: 'history'
@@ -75,6 +76,7 @@ module("Ember.Location, history implementation", {
 
   teardown: function() {
     window.history.pushState = realPushState;
+    window.history.state = realHistoryState;
     Ember.run(function() {
       locationObject.destroy();
     });
@@ -129,4 +131,21 @@ test("if history is used, it triggers the popstate event", function() {
   });
 
   window.history.back();
+});
+
+test("doesn't push a state if there is no state and path is '/'", function() {
+  expect(1);
+  stop();
+
+  var count = 0;
+  window.history.pushState = function(data, title, path) {
+    count++;
+  };
+
+  setTimeout(function() {
+    start();
+    equal(count, 0, "pushState should not have been called");
+  }, 100);
+
+  locationObject.setURL('/');
 });

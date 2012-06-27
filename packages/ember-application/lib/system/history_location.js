@@ -30,7 +30,7 @@ Ember.HistoryLocation = Ember.Object.extend({
     // We only want pushState to be executed if we are passing
     // in a new path, otherwise a new state will be inserted
     // for the same path.
-    if (!state || (state && state.path !== path)) {
+    if ((!state && path !== '/') || (state && state.path !== path)) {
       window.history.pushState({ path: path }, null, path);
     }
   },
