@@ -488,7 +488,7 @@ Ember.unwatch = function(obj, keyName) {
   safe to call multiple times.
 */
 Ember.rewatch = function(obj) {
-  var m = metaFor(obj, false), chains = m.chains, bindings = m.bindings, key, b;
+  var m = metaFor(obj, false), chains = m.chains;
 
   // make sure the object has its own guid.
   if (GUID_KEY in obj && !obj.hasOwnProperty(GUID_KEY)) {
@@ -496,9 +496,21 @@ Ember.rewatch = function(obj) {
   }
 
   // make sure any chained watchers update.
-  if (chains && chains.value() !== obj) { chainsFor(obj); }
+  if (chains && chains.value() !== obj) {
+    m.chains = chains.copy(obj);
+  }
 
   return this;
+};
+
+Ember.finishChains = function(obj) {
+  var m = metaFor(obj, false), chains = m.chains;
+  if (chains) {
+    if (chains.value() !== obj) {
+      m.chains = chains = chains.copy(obj);
+    }
+    chains.didChange(true);
+  }
 };
 
 // ..........................................................

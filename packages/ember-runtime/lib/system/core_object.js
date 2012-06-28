@@ -16,7 +16,10 @@ var set = Ember.set, get = Ember.get;
 var o_create = Ember.create,
     o_defineProperty = Ember.platform.defineProperty,
     a_slice = Array.prototype.slice,
-    meta = Ember.meta;
+    meta = Ember.meta,
+    rewatch = Ember.rewatch,
+    finishChains = Ember.finishChains,
+    finishPartial = Ember.Mixin.finishPartial;
 
 var undefinedDescriptor = {
   configurable: true,
@@ -38,13 +41,17 @@ function makeCtor() {
     if (!wasApplied) {
       Class.proto(); // prepare prototype...
     }
+    var m = Ember.meta(this);
+    m.proto = this;
     if (initMixins) {
       this.reopen.apply(this, initMixins);
       initMixins = null;
     }
     o_defineProperty(this, Ember.GUID_KEY, undefinedDescriptor);
     o_defineProperty(this, '_super', undefinedDescriptor);
-    Ember.Mixin.finishPartial(this);
+    finishPartial(this, m);
+    delete m.proto;
+    finishChains(this);
     this.init.apply(this, arguments);
   };
 
@@ -65,6 +72,7 @@ function makeCtor() {
     if (!wasApplied) {
       wasApplied = true;
       Class.PrototypeMixin.applyPartial(Class.prototype);
+      rewatch(Class.prototype);
     }
 
     return this.prototype;

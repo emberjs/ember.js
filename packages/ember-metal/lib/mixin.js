@@ -182,57 +182,16 @@ function connectBindings(obj, m) {
   }
 }
 
-var addObserver = Ember.addObserver,
-    addBeforeObserver = Ember.addBeforeObserver;
-
-function applyBeforeObservers(obj, m) {
-  // TODO Mixin.apply should removeBeforeObserver if exists
-  var beforeObservers = m.beforeObservers,
-      methodName, method, paths, i, l;
-
-  for (methodName in beforeObservers) {
-    method = beforeObservers[methodName];
-    paths = method.__ember_observesBefore__;
-    for (i=0, l=paths.length; i<l; i++) {
-      addBeforeObserver(obj, paths[i], null, methodName);
-    }
-  }
-
-  // mark as applied for future Mixin.apply()
-  m.beforeObservers = {};
-}
-
-function applyObservers(obj, m) {
-  // TODO Mixin.apply should removeObserver if exists
-  var observers = m.observers,
-      methodName, method, paths, i, l;
-
-  for (methodName in observers) {
-    method = observers[methodName];
-    paths = method.__ember_observes__;
-    for (i=0, l=paths.length; i<l; i++) {
-      addObserver(obj, paths[i], null, methodName);
-    }
-  }
-
-  // mark as applied for future Mixin.apply()
-  m.observers = {};
-}
-
 function finishPartial(obj, m) {
-  m = m || Ember.meta(obj);
-
-  connectBindings(obj, m);
-  applyBeforeObservers(obj, m);
-  applyObservers(obj, m);
-
+  connectBindings(obj, m || Ember.meta(obj));
   return obj;
 }
 
 /** @private */
 function applyMixin(obj, mixins, partial) {
   var descs = {}, values = {}, m = Ember.meta(obj), req = m.required,
-      key, willApply, didApply, value, desc;
+      watching, paths, len, idx,
+      key, prevDesc, prevValue, value, desc;
 
   // Go through all mixins and hashes passed in, and:
   //
@@ -275,17 +234,49 @@ function applyMixin(obj, mixins, partial) {
 
       if (desc === undefined && value === undefined) { continue; }
 
-      if ('function' === typeof value) {
-        if (value.__ember_observesBefore__) {
-          m.beforeObservers[key] = value;
-        } else if (value.__ember_observes__) {
-          m.observers[key] = value;
+      watching = m.watching[key];
+      // if a watched desc is overriding an existing one
+      if (watching && desc && (prevDesc = m.descs[key])) {
+        prevDesc.teardown(obj, key);
+      }
+
+      prevValue = obj[key];
+
+      if ('function' === typeof prevValue) {
+        if ((paths = prevValue.__ember_observesBefore__)) {
+          len = paths.length;
+          for (idx=0; idx < len; idx++) {
+            Ember.removeBeforeObserver(obj, paths[idx], null, key);
+          }
+        } else if ((paths = prevValue.__ember_observes__)) {
+          len = paths.length;
+          for (idx=0; idx < len; idx++) {
+            Ember.removeObserver(obj, paths[idx], null, key);
+          }
         }
       }
 
       detectBinding(obj, key, value, m);
       m.descs[key] = desc;
       obj[key] = value;
+
+      if (watching && desc) {
+        desc.setup(obj, key);
+      }
+
+      if ('function' === typeof value) {
+        if (paths = value.__ember_observesBefore__) {
+          len = paths.length;
+          for (idx=0; idx < len; idx++) {
+            Ember.addBeforeObserver(obj, paths[idx], null, key);
+          }
+        } else if (paths = value.__ember_observes__) {
+          len = paths.length;
+          for (idx=0; idx < len; idx++) {
+            Ember.addObserver(obj, paths[idx], null, key);
+          }
+        }
+      }
 
       if (req && req[key]) {
         req = writableReq(obj);
@@ -319,7 +310,6 @@ function applyMixin(obj, mixins, partial) {
 Ember.mixin = function(obj) {
   var args = a_slice.call(arguments, 1);
   applyMixin(obj, args, false);
-  Mixin.finishPartial(obj);
   return obj;
 };
 

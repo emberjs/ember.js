@@ -139,6 +139,7 @@ Ember.META_KEY = META_KEY;
 // Placeholder for non-writable metas.
 var EMPTY_META = {
   descs: {},
+  setup: {},
   watching: {}
 };
 
@@ -189,8 +190,6 @@ Ember.meta = function meta(obj, writable) {
       descs: {},
       setup: {},
       watching: {},
-      observers: {},
-      beforeObservers: {},
       cache:  {},
       source: obj
     };
@@ -205,8 +204,6 @@ Ember.meta = function meta(obj, writable) {
     ret.descs    = o_create(ret.descs);
     ret.setup    = o_create(ret.setup);
     ret.watching = o_create(ret.watching);
-    ret.observers = o_create(ret.observers);
-    ret.beforeObservers = o_create(ret.beforeObservers);
     ret.cache    = {};
     ret.source   = obj;
 
