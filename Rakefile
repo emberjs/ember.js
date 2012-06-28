@@ -67,12 +67,12 @@ end
 desc "Clean build artifacts from previous builds"
 task :clean do
   puts "Cleaning build..."
-  pipeline.clean
+  rm_rf "dist" # Make sure even things RakeP doesn't know about are cleaned
   puts "Done"
 end
 
 desc "Upload latest Ember.js build to GitHub repository"
-task :upload_latest => :dist do
+task :upload_latest => [:clean, :dist] do
   uploader = setup_uploader
 
   # Upload minified first, so non-minified shows up on top
