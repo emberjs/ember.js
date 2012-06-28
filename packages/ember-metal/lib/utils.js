@@ -207,7 +207,6 @@ Ember.meta = function meta(obj, writable) {
     ret.cache    = {};
     ret.source   = obj;
 
-    o_defineProperty(obj, META_KEY, META_DESC);
     obj[META_KEY] = ret;
   }
   return ret;

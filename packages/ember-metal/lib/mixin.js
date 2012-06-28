@@ -53,11 +53,11 @@ function initMixin(mixin, args) {
   return mixin;
 }
 
-var NATIVES = [Boolean, Object, Number, Array, Date, String];
 /** @private */
 function isMethod(obj) {
-  if ('function' !== typeof obj || obj.isMethod === false) { return false; }
-  return a_indexOf.call(NATIVES, obj) < 0;
+  return 'function' === typeof obj &&
+         obj.isMethod !== false &&
+         obj !== Boolean && obj !== Object && obj !== Number && obj !== Array && obj !== Date && obj !== String;
 }
 
 /** @private */

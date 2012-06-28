@@ -8,7 +8,7 @@ require('ember-metal/core');
 require('ember-metal/platform');
 require('ember-metal/utils');
 
-var metaFor = Ember.meta, META_KEY = Ember.META_KEY, get, set;
+var META_KEY = Ember.META_KEY, get, set;
 
 // ..........................................................
 // GET AND SET
@@ -18,9 +18,9 @@ var metaFor = Ember.meta, META_KEY = Ember.META_KEY, get, set;
 // object.
 
 /** @private */
-get = function (obj, keyName) {
+get = function get(obj, keyName) {
   Ember.assert("You need to provide an object and key to `get`.", !!obj && keyName);
-  var desc = metaFor(obj, false).descs[keyName], ret;
+  var meta = obj[META_KEY], desc = meta && meta.descs[keyName], ret;
   if (desc) {
     return desc.get(obj, keyName);
   } else {
@@ -35,10 +35,10 @@ get = function (obj, keyName) {
 };
 
 /** @private */
-set = function (obj, keyName, value) {
+set = function set(obj, keyName, value) {
   Ember.assert("You need to provide an object and key to `set`.", !!obj && keyName !== undefined);
 
-  var meta = metaFor(obj, false), desc = meta.descs[keyName];
+  var meta = obj[META_KEY], desc = meta && meta.descs[keyName];
   if (desc) {
     desc.set(obj, keyName, value);
   }

@@ -1896,8 +1896,13 @@ Ember.View = Ember.Object.extend(Ember.Evented,
   */
   trigger: function(name) {
     this._super.apply(this, arguments);
-    if (this[name]) {
-      return this[name].apply(this, [].slice.call(arguments, 1));
+    var method = this[name];
+    if (method) {
+      var args = [], i, l;
+      for (i = 1, l = arguments.length; i < l; i++) {
+        args.push(arguments[i]);
+      }
+      return method.apply(this, args);
     }
   },
 
