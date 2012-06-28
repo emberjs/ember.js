@@ -593,7 +593,7 @@ Ember.StateManager = Ember.State.extend(
           exitStates.shift();
         }
 
-        currentState.pathsCache[name] = {
+        currentState.pathsCache[path] = {
           exitStates: exitStates,
           enterStates: enterStates,
           resolveState: resolveState
