@@ -133,7 +133,7 @@ test("if history is used, it triggers the popstate event", function() {
   window.history.back();
 });
 
-test("doesn't push a state if there is no state and path is '/'", function() {
+test("doesn't push a state if path has not changed", function() {
   expect(1);
   stop();
 
@@ -147,5 +147,5 @@ test("doesn't push a state if there is no state and path is '/'", function() {
     equal(count, 0, "pushState should not have been called");
   }, 100);
 
-  locationObject.setURL('/');
+  locationObject.setURL(window.location.pathname);
 });
