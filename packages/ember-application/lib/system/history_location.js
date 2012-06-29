@@ -7,8 +7,16 @@ var get = Ember.get, set = Ember.set;
 Ember.HistoryLocation = Ember.Object.extend({
   init: function() {
     set(this, 'location', get(this, 'location') || window.location);
+    set(this, '_initialURL', get(this, 'location').pathname);
     set(this, 'callbacks', Ember.A());
   },
+
+  /**
+    @private
+
+    Used to give history a starting reference
+   */
+  _initialURL: null,
 
   /**
     @private
@@ -25,12 +33,13 @@ Ember.HistoryLocation = Ember.Object.extend({
     Uses `history.pushState` to update the url without a page reload.
   */
   setURL: function(path) {
-    var state = window.history.state;
+    var state = window.history.state,
+        initialURL = get(this, '_initialURL');
+
     if (path === "") { path = '/'; }
-    // We only want pushState to be executed if we are passing
-    // in a new path, otherwise a new state will be inserted
-    // for the same path.
-    if ((!state && path !== '/') || (state && state.path !== path)) {
+
+    if ((initialURL && initialURL !== path) || (state && state.path !== path)) {
+      set(this, '_initialURL', null);
       window.history.pushState({ path: path }, null, path);
     }
   },
