@@ -27,15 +27,9 @@ Ember.View.states.preRender = {
   empty: Ember.K,
 
   setElement: function(view, value) {
-    view.beginPropertyChanges();
-    view.invalidateRecursively('element');
-
     if (value !== null) {
       view.transitionTo('hasElement');
     }
-
-    view.endPropertyChanges();
-
     return value;
   }
 };

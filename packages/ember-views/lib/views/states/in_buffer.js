@@ -70,8 +70,6 @@ Ember.View.states.inBuffer = {
   },
 
   setElement: function(view, value) {
-    view.invalidateRecursively('element');
-
     if (value === null) {
       view.transitionTo('preRender');
     } else {
