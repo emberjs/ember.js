@@ -453,6 +453,36 @@ test("you cannot have a redirectsTo in a non-leaf state", function () {
   });
 });
 
+test("you can use a hash for redirectsTo to navigate to a dynamic state", function () {
+
+  var url;
+  var router = Ember.Router.create({
+    location: {
+      setURL: function(passedURL) { url = passedURL; }
+    },
+    root: Ember.Route.create({
+      index: Ember.Route.create({
+        route: '/',
+        redirectsTo: {
+          state: "section",
+          context: {category: "Foo", subcategory: "Bar"}
+        }
+      }),
+      section: Ember.Route.create({
+        route: '/:category/:subcategory',
+        connectOutlets: function(router, context) {}
+      })
+    })
+  });
+
+  Ember.run(function() {
+    router.route("/");
+  });
+
+  equal(url,"/Foo/Bar");
+  equal(router.getPath('currentState.path'),"root.section");
+});
+
 module("urlFor");
 
 var formatURLArgument = null;

@@ -35,7 +35,11 @@ Ember.Routable = Ember.Mixin.create({
       Ember.assert("You cannot use `redirectsTo` if you already have a `connectOutlets` method", this.connectOutlets === Ember.K);
 
       this.connectOutlets = function(router) {
-        router.transitionTo(redirection);
+        if (typeof redirection === 'object') {
+          router.transitionTo(redirection.state,redirection.context);
+        } else {
+          router.transitionTo(redirection);
+        }
       };
     }
 
