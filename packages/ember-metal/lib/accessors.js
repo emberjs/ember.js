@@ -309,5 +309,5 @@ Ember.trySetPath = function(root, path, value) {
   @returns Boolean
 */
 Ember.isGlobalPath = function(path) {
-  return !HAS_THIS.test(path) && IS_GLOBAL.test(path);
+  return IS_GLOBAL.test(path);
 };
