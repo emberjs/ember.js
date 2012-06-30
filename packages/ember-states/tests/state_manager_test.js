@@ -590,6 +590,46 @@ test("multiple contexts can be provided in a single transitionTo", function() {
   stateManager.transitionTo('planters.nuts', { company: true }, { product: true });
 });
 
+test("multiple contexts only apply to states that need them", function() {
+  expect(4);
+
+  Ember.run(function() {
+    stateManager = Ember.StateManager.create({
+      start: Ember.State.create(),
+
+      parent: Ember.State.create({
+        hasContext: false,
+
+        setup: function(manager, context) {
+          equal(context, undefined);
+        },
+
+        child: Ember.State.create({
+          setup: function(manager, context) {
+            equal(context, 'one');
+          },
+
+          grandchild: Ember.State.create({
+            initialState: 'greatGrandchild',
+
+            setup: function(manager, context) {
+              equal(context, 'two');
+            },
+
+            greatGrandchild: Ember.State.create({
+              setup: function(manager, context) {
+                equal(context, undefined);
+              }
+            })
+          })
+        })
+      })
+    });
+  });
+
+  stateManager.transitionTo('parent.child.grandchild', 'one', 'two');
+});
+
 test("transitionEvent is called for each nested state", function() {
   expect(4);
 

@@ -136,6 +136,12 @@ Ember.State = Ember.Object.extend(Ember.Evented,
   }).cacheable(),
 
   /**
+    A boolean value indicating whether the state takes a context.
+    By default we assume all states take contexts.
+  */
+  hasContext: true,
+
+  /**
     This is the default transition event.
 
     @event

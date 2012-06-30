@@ -156,9 +156,10 @@ Ember.Routable = Ember.Mixin.create({
   /**
     @private
 
-    Check whether the route has dynamic segments
+    Check whether the route has dynamic segments and therefore takes
+    a context.
   */
-  isDynamic: Ember.computed(function() {
+  hasContext: Ember.computed(function() {
     var routeMatcher = get(this, 'routeMatcher');
     if (routeMatcher) {
       return routeMatcher.identifiers.length > 0;

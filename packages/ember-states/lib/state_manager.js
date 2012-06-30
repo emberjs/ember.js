@@ -611,7 +611,7 @@ Ember.StateManager = Ember.State.extend(
           exitStates.unshift(state);
         }
 
-        useContext = context && (!get(state, 'isRoutable') || get(state, 'isDynamic'));
+        useContext = context && get(state, 'hasContext');
         matchedContexts.unshift(useContext ? contexts.pop() : null);
       }
 
@@ -623,6 +623,7 @@ Ember.StateManager = Ember.State.extend(
           state = getPath(state, 'states.'+initialState);
           if (!state) { break; }
           enterStates.push(state);
+          matchedContexts.push(undefined);
         }
 
         while (enterStates.length > 0) {
