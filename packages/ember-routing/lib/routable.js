@@ -427,12 +427,21 @@ Ember.Routable = Ember.Mixin.create({
     // because the index ('/') state must be a leaf node.
     if (route !== '/') {
       // If the current path is a prefix of the path we're trying
-      // to go to, we're done.
+      // to go to, compute the next state to see if we're done.
       var index = path.indexOf(absolutePath),
           next = path.charAt(absolutePath.length);
 
       if (index === 0 && (next === "/" || next === "")) {
-        return;
+        // Compute the path to the next state beginning at the root state.
+        // If we are in the path, we're done.
+        var state = router.findStateByPath(router, 'root'),
+            remainingPath = path;
+        while (state && !get(state, 'isLeafRoute')) {
+          if (state === this) { return; }
+          var match = state.matchPath(remainingPath);
+          state = match.state;
+          remainingPath = match.remaining;
+        }
       }
     }
 
