@@ -400,6 +400,39 @@ test("should be able to route with rootURL", function() {
   equal(get(router, 'currentState.path'), 'root.stateTwo', "should be in stateTwo");
 });
 
+test("should be able to route to non-nested states with nested paths", function() {
+  var router = Ember.Router.create({
+    location: location,
+    namespace: namespace,
+    root: Ember.Route.create({
+      products: Ember.Route.create({
+        route: '/products',
+        show: Ember.Route.create({
+          route: '/:product_id',
+          index: Ember.Route.create({
+            route: '/'
+          })
+        })
+      }),
+      users: Ember.Route.create({
+        route: '/users'
+      }),
+      services: Ember.Route.create({
+        route: '/products/:product_id/services',
+        show: Ember.Route.create({
+          route: '/:service_id',
+          index: Ember.Route.create({
+            route: '/'
+          })
+        })
+      })
+    })
+  });
+
+  router.route('/products/1/services/2');
+  equal(get(router, 'currentState.path'), 'root.services.show.index', "should go to the correct state");
+});
+
 test("should update route for redirections", function() {
   var router = Ember.Router.create({
     location: location,
