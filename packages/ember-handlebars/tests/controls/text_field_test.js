@@ -101,6 +101,19 @@ test("input size is updated when setting size property of view", function() {
   equal(textField.$().attr('size'), "40", "updates text field after size changes");
 });
 
+test("input tabindex is updated when setting tabindex property of view", function() {
+  Ember.run(function() {
+    set(textField, 'tabindex', '5');
+    textField.append();
+  });
+
+  equal(textField.$().attr('tabindex'), "5", "renders text field with the tabindex");
+
+  Ember.run(function() { set(textField, 'tabindex', '3'); });
+
+  equal(textField.$().attr('tabindex'), "3", "updates text field after tabindex changes");
+});
+
 test("input type is configurable when creating view", function() {
   Ember.run(function() {
     set(textField, 'type', 'password');

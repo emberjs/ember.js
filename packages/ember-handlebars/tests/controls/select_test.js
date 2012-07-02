@@ -56,6 +56,18 @@ test("can have options", function() {
   equal(select.$().text(), "123", "Options should have content");
 });
 
+
+test("select tabindex is updated when setting tabindex property of view", function() {
+  select.set('tabindex', '4');
+  append();
+
+  equal(select.$().attr('tabindex'), "4", "renders select with the tabindex");
+
+  select.set('tabindex', '1');
+
+  equal(select.$().attr('tabindex'), "1", "updates select after tabindex changes");
+});
+
 test("can specify the property path for an option's label and value", function() {
   select.set('content', Ember.A([
     { id: 1, firstName: 'Yehuda' },

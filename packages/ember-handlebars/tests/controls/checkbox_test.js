@@ -53,6 +53,19 @@ test("should become disabled if the disabled attribute is changed", function() {
   ok(checkboxView.$().is(":not(:disabled)"));
 });
 
+test("should support the tabindex property", function() {
+  checkboxView = Ember.Checkbox.create({});
+
+  checkboxView.set('tabindex', 6);
+  append();
+
+  equal(checkboxView.$().prop('tabindex'), '6', 'the initial checkbox tabindex is set in the DOM');
+
+  checkboxView.set('tabindex', 3);
+  equal(checkboxView.$().prop('tabindex'), '3', 'the checkbox tabindex changes when it is changed in the view');  
+});
+
+
 test("checked property mirrors input value", function() {
   checkboxView = Ember.Checkbox.create({});
   Ember.run(function() { checkboxView.append(); });
