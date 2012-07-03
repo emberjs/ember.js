@@ -17,7 +17,7 @@ var EmberHandlebars = Ember.Handlebars, helpers = EmberHandlebars.helpers;
 // Binds a property into the DOM. This will create a hook in DOM that the
 // KVO system will look for and update if the property changes.
 /** @private */
-var bind = function(property, options, preserveContext, shouldDisplay, valueNormalizer) {
+function bind(property, options, preserveContext, shouldDisplay, valueNormalizer) {
   var data = options.data,
       fn = options.fn,
       inverse = options.inverse,
@@ -67,7 +67,7 @@ var bind = function(property, options, preserveContext, shouldDisplay, valueNorm
     // be done with it.
     data.buffer.push(getPath(pathRoot, path, options));
   }
-};
+}
 
 /**
   '_triageMustache' is used internally select between a binding and helper for

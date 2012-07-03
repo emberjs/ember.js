@@ -57,7 +57,7 @@ var GUID_DESC = {
 
   @returns {String} the guid
 */
-Ember.generateGuid = function(obj, prefix) {
+Ember.generateGuid = function generateGuid(obj, prefix) {
   if (!prefix) prefix = 'ember';
   var ret = (prefix + (uuid++));
   if (obj) {
@@ -80,7 +80,7 @@ Ember.generateGuid = function(obj, prefix) {
   @param obj {Object} any object, string, number, Element, or primitive
   @returns {String} the unique guid for this instance.
 */
-Ember.guidFor = function(obj) {
+Ember.guidFor = function guidFor(obj) {
 
   // special cases where we don't want to add a key to object
   if (obj === undefined) return "(undefined)";
@@ -253,7 +253,7 @@ Ember.setMeta = function setMeta(obj, property, value) {
     (or meta property) if one does not already exist or if it's
     shared with its constructor
 */
-Ember.metaPath = function(obj, path, writable) {
+Ember.metaPath = function metaPath(obj, path, writable) {
   var meta = Ember.meta(obj, writable), keyName, value;
 
   for (var i=0, l=path.length; i<l; i++) {
