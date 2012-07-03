@@ -1651,7 +1651,7 @@ Ember.View = Ember.Object.extend(Ember.Evented,
 
     // Register the view for event handling. This hash is used by
     // Ember.EventDispatcher to dispatch incoming events.
-    Ember.View.views[get(this, 'elementId')] = this;
+    if (!this.isVirtual) Ember.View.views[get(this, 'elementId')] = this;
 
     var childViews = get(this, '_childViews').slice();
 
@@ -1745,7 +1745,6 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     // so collect any information we need before calling super.
     var childViews = get(this, '_childViews'),
         parent     = get(this, '_parentView'),
-        elementId  = get(this, 'elementId'),
         childLen;
 
     // destroy the element -- this will avoid each child view destroying
@@ -1774,7 +1773,7 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     }
 
     // next remove view from global hash
-    delete Ember.View.views[get(this, 'elementId')];
+    if (!this.isVirtual) delete Ember.View.views[get(this, 'elementId')];
   },
 
   /**
