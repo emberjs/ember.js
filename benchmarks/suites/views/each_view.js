@@ -1,7 +1,7 @@
 /*globals App:true Ember before after bench*/
 
 // shut up jshint
-var view, newContent;
+var view;
 
 before(function() {
   var view;
@@ -29,21 +29,19 @@ before(function() {
       "  </tbody>" +
       "</table>";
 
-  newContent = function() {
-    var newContent = [], i;
-
+  function newContent() {
+    var content = [], i;
     for (i = 0; i < 10; i++) {
-      newContent[newContent.length] = {
+      content.push({
         id: Math.round(Math.random() * 1000),
         dateIn: new Date(),
         tag: "TAG-0" + i,
         speed: Math.random() * 100,
         length: Math.random() * 1000
-      };
+      });
     }
-
-    return newContent;
-  };
+    return content;
+  }
 
   App.list = newContent();
 
@@ -60,7 +58,7 @@ after(function() {
   view.destroy();
 });
 
-bench("creating a new view", function() {
+bench("creating and appending a new view with each", function() {
   Ember.run(function() {
     App.set('list', newContent());
     view = App.View.create().append();
