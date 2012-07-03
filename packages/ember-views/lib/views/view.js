@@ -12,7 +12,7 @@ var a_slice = [].slice;
 var a_forEach = Ember.EnumerableUtils.forEach;
 
 var childViewsProperty = Ember.computed(function() {
-  var childViews = get(this, '_childViews');
+  var childViews = this._childViews;
 
   var ret = Ember.A();
 
@@ -887,7 +887,7 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     // we re-render.
 
     // VIEW-TODO: Unit test this path.
-    var childViews = get(this, '_childViews');
+    var childViews = this._childViews;
     for (var i=lengthAfter-1; i>=lengthBefore; i--) {
       if (childViews[i]) { childViews[i].destroy(); }
     }
@@ -1080,8 +1080,8 @@ Ember.View = Ember.Object.extend(Ember.Evented,
 
   /** @private */
   mutateChildViews: function(callback) {
-    var childViews = get(this, '_childViews'),
-        idx = get(childViews, 'length'),
+    var childViews = this._childViews,
+        idx = childViews.length,
         view;
 
     while(--idx >= 0) {
@@ -1094,11 +1094,11 @@ Ember.View = Ember.Object.extend(Ember.Evented,
 
   /** @private */
   forEachChildView: function(callback) {
-    var childViews = get(this, '_childViews');
+    var childViews = this._childViews;
 
     if (!childViews) { return this; }
 
-    var len = get(childViews, 'length'),
+    var len = childViews.length,
         view, idx;
 
     for(idx = 0; idx < len; idx++) {
@@ -1487,13 +1487,13 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     this.buffer = buffer;
     this.transitionTo('inBuffer', false);
 
-    this.lengthBeforeRender = get(get(this, '_childViews'), 'length');
+    this.lengthBeforeRender = this._childViews.length;
 
     this.beforeRender(buffer);
     this.render(buffer);
     this.afterRender(buffer);
 
-    this.lengthAfterRender = get(get(this, '_childViews'), 'length');
+    this.lengthAfterRender = this._childViews.length;
 
     return buffer;
   },
@@ -1653,10 +1653,8 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     // Ember.EventDispatcher to dispatch incoming events.
     if (!this.isVirtual) Ember.View.views[get(this, 'elementId')] = this;
 
-    var childViews = get(this, '_childViews').slice();
-
     // setup child views. be sure to clone the child views array first
-    set(this, '_childViews', childViews);
+    this._childViews = this._childViews.slice();
 
     Ember.assert("Only arrays are allowed for 'classNameBindings'", Ember.typeOf(this.classNameBindings) === 'array');
     this.classNameBindings = Ember.A(this.classNameBindings.slice());
@@ -1693,10 +1691,11 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     set(view, '_parentView', null);
 
     // remove view from childViews array.
-    var childViews = get(this, '_childViews');
+    var childViews = this._childViews;
+
     Ember.EnumerableUtils.removeObject(childViews, view);
 
-    this.propertyDidChange('childViews');
+    this.propertyDidChange('childViews'); // HUH?! what happened to will change?
 
     return this;
   },
@@ -1743,7 +1742,7 @@ Ember.View = Ember.Object.extend(Ember.Evented,
   willDestroy: function() {
     // calling this._super() will nuke computed properties and observers,
     // so collect any information we need before calling super.
-    var childViews = get(this, '_childViews'),
+    var childViews = this._childViews,
         parent     = get(this, '_parentView'),
         childLen;
 
@@ -1766,7 +1765,7 @@ Ember.View = Ember.Object.extend(Ember.Evented,
 
     this.state = 'destroyed';
 
-    childLen = get(childViews, 'length');
+    childLen = childViews.length;
     for (var i=childLen-1; i>=0; i--) {
       childViews[i].removedFromDOM = true;
       childViews[i].destroy();

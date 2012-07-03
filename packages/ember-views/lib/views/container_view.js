@@ -214,7 +214,7 @@ Ember.ContainerView = Ember.View.extend({
 
     this._super();
 
-    var _childViews = get(this, '_childViews');
+    var _childViews = this._childViews;
 
     forEach(childViews, function(viewName, idx) {
       var view;
