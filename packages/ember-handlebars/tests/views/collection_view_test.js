@@ -148,7 +148,12 @@ test("a block passed to a collection helper defaults to the content property of 
     view.appendTo('#qunit-fixture');
   });
 
-  equal(view.$('li:has(label:contains("foo")) + li:has(label:contains("bar")) + li:has(label:contains("baz"))').length, 1, 'one label element is created for each content item');
+  equal(view.$('li:nth-child(1) label').length, 1);
+  equal(view.$('li:nth-child(1) label').text(), 'foo');
+  equal(view.$('li:nth-child(2) label').length, 1);
+  equal(view.$('li:nth-child(2) label').text(), 'bar');
+  equal(view.$('li:nth-child(3) label').length, 1);
+  equal(view.$('li:nth-child(3) label').text(), 'baz');
 });
 
 test("a block passed to a collection helper defaults to the view", function() {
@@ -164,7 +169,14 @@ test("a block passed to a collection helper defaults to the view", function() {
   Ember.run(function() {
     view.appendTo('#qunit-fixture');
   });
-  equal(view.$('li:has(label:contains("foo")) + li:has(label:contains("bar")) + li:has(label:contains("baz"))').length, 1, 'precond - one aside element is created for each content item');
+
+  // Preconds
+  equal(view.$('li:nth-child(1) label').length, 1);
+  equal(view.$('li:nth-child(1) label').text(), 'foo');
+  equal(view.$('li:nth-child(2) label').length, 1);
+  equal(view.$('li:nth-child(2) label').text(), 'bar');
+  equal(view.$('li:nth-child(3) label').length, 1);
+  equal(view.$('li:nth-child(3) label').text(), 'baz');
 
   Ember.run(function() {
     set(firstChild(view), 'content', Ember.A());
