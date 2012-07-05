@@ -36,7 +36,7 @@ Ember.Handlebars.bootstrap = function(ctx) {
       // id if no name is found.
       templateName = script.attr('data-template-name') || script.attr('id'),
       template = compile(script.html()),
-      view, viewPath, elementId, tagName, options;
+      view, viewPath, elementId, options;
 
     if (templateName) {
       // For templates which have a name, we save them and then remove them from the DOM
@@ -65,13 +65,8 @@ Ember.Handlebars.bootstrap = function(ctx) {
       // Look for data-element-id attribute.
       elementId = script.attr('data-element-id');
 
-      // Users can optionally specify a custom tag name to use by setting the
-      // data-tag-name attribute on the script tag.
-      tagName = script.attr('data-tag-name');
-
       options = { template: template };
       if (elementId) { options.elementId = elementId; }
-      if (tagName)   { options.tagName   = tagName; }
 
       view = view.create(options);
 
