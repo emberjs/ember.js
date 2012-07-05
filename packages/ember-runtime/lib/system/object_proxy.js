@@ -141,6 +141,10 @@ Ember.ObjectProxy = Ember.Object.extend(
   */
   content: null,
   /** @private */
+  _contentDidChange: Ember.observer(function() {
+    Ember.assert("Can't set ObjectProxy's content to itself", this.get('content') !== this);
+  }, 'content'),
+  /** @private */
   delegateGet: function (key) {
     var content = get(this, 'content');
     if (content) {
