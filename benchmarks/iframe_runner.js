@@ -10,7 +10,6 @@ BenchWarmer.evalString = function(string, emberPath, logger, profile) {
   var benchWarmer = new BenchWarmer(emberPath, logger, profile);
 
   var bench = function(name, fn) {
-    ember_assert("Please pass in a name and function", arguments.length === 2);
     benchWarmer.bench(name, fn);
   };
 
