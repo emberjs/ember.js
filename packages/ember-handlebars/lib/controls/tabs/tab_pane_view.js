@@ -7,5 +7,10 @@ Ember.TabPaneView = Ember.View.extend({
 
   isVisible: Ember.computed(function() {
     return get(this, 'viewName') === getPath(this, 'tabsContainer.currentView');
-  }).property('tabsContainer.currentView').volatile()
+  }).property('tabsContainer.currentView').volatile(),
+
+  init: function() {
+    Ember.deprecate("Ember.TabPaneView is deprecated and will be removed from future releases.");
+    this._super();
+  }
 });

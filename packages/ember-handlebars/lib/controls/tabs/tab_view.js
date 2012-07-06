@@ -7,5 +7,10 @@ Ember.TabView = Ember.View.extend({
 
   mouseUp: function() {
     setPath(this, 'tabsContainer.currentView', get(this, 'value'));
+  },
+
+  init: function() {
+    Ember.deprecate("Ember.TabView is deprecated and will be removed from future releases.");
+    this._super();
   }
 });

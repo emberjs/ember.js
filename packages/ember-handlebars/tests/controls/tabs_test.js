@@ -15,6 +15,7 @@ var template =
 
 module("Ember.TabContainerView and components", {
   setup: function() {
+    Ember.TESTING_DEPRECATION = true;
     dispatcher = Ember.EventDispatcher.create({ rootElement: '#qunit-fixture' });
     dispatcher.setup();
 
@@ -29,6 +30,7 @@ module("Ember.TabContainerView and components", {
 
   teardown: function() {
     Ember.run(function(){ dispatcher.destroy(); });
+    Ember.TESTING_DEPRECATION = false;
   }
 });
 
