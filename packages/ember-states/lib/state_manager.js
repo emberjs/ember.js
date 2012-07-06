@@ -444,7 +444,6 @@ Ember.StateManager = Ember.State.extend(
   
   send: function(event, context) {
     Ember.assert('Cannot send event "' + event + '" while currentState is ' + get(this, 'currentState'), get(this, 'currentState'));
-    if (arguments.length === 1) { context = {}; }
     return this.sendRecursively(event, get(this, 'currentState'), context);
   },
 
@@ -593,7 +592,7 @@ Ember.StateManager = Ember.State.extend(
           exitStates.shift();
         }
 
-        currentState.pathsCache[name] = {
+        currentState.pathsCache[path] = {
           exitStates: exitStates,
           enterStates: enterStates,
           resolveState: resolveState
@@ -611,7 +610,7 @@ Ember.StateManager = Ember.State.extend(
           exitStates.unshift(state);
         }
 
-        useContext = context && (!get(state, 'isRoutable') || get(state, 'isDynamic'));
+        useContext = context && get(state, 'hasContext');
         matchedContexts.unshift(useContext ? contexts.pop() : null);
       }
 
@@ -623,6 +622,7 @@ Ember.StateManager = Ember.State.extend(
           state = getPath(state, 'states.'+initialState);
           if (!state) { break; }
           enterStates.push(state);
+          matchedContexts.push(undefined);
         }
 
         while (enterStates.length > 0) {

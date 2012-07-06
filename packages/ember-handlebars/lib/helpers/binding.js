@@ -167,7 +167,7 @@ EmberHandlebars.registerHelper('with', function(context, options) {
 
     Ember.assert("You must pass a block to the with helper", options.fn && options.fn !== Handlebars.VM.noop);
 
-    if (Ember.isGlobal(path)) {
+    if (Ember.isGlobalPath(path)) {
       Ember.bind(options.data.keywords, keywordName, path);
     } else {
       normalized = normalizePath(this, path, options.data);

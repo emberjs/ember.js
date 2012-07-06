@@ -78,7 +78,7 @@ Ember.Routable = Ember.Mixin.create({
     In general, this will update the browser's URL.
   */
   updateRoute: function(manager, location) {
-    if (get(this, 'isLeaf')) {
+    if (get(this, 'isLeafRoute')) {
       var path = this.absoluteRoute(manager);
       location.setURL(path);
     }
@@ -133,6 +133,16 @@ Ember.Routable = Ember.Mixin.create({
   /**
     @private
 
+    Determine if this is the last routeable state
+  */
+  isLeafRoute: Ember.computed(function() {
+    if (get(this, 'isLeaf')) { return true; }
+    return !get(this, 'childStates').findProperty('isRoutable');
+  }).cacheable(),
+
+  /**
+    @private
+
     A _RouteMatcher object generated from the current route's `route`
     string property.
   */
@@ -146,9 +156,10 @@ Ember.Routable = Ember.Mixin.create({
   /**
     @private
 
-    Check whether the route has dynamic segments
+    Check whether the route has dynamic segments and therefore takes
+    a context.
   */
-  isDynamic: Ember.computed(function() {
+  hasContext: Ember.computed(function() {
     var routeMatcher = get(this, 'routeMatcher');
     if (routeMatcher) {
       return routeMatcher.identifiers.length > 0;
@@ -272,9 +283,11 @@ Ember.Routable = Ember.Mixin.create({
     on the state whose path is `/posts` with the path `/2/comments`.
   */
   routePath: function(manager, path) {
-    if (get(this, 'isLeaf')) { return; }
+    if (get(this, 'isLeafRoute')) { return; }
 
     var childStates = get(this, 'childStates'), match;
+
+    childStates = Ember.A(childStates.filterProperty('isRoutable'));
 
     childStates = childStates.sort(function(a, b) {
       var aDynamicSegments = getPath(a, 'routeMatcher.identifiers.length'),

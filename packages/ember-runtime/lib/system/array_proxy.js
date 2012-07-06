@@ -130,6 +130,8 @@ Ember.ArrayProxy = Ember.Object.extend(Ember.MutableArray,
     var content = get(this, 'content'),
         len     = content ? get(content, 'length') : 0;
 
+    Ember.assert("Can't set ArrayProxy's content to itself", content !== this);
+
     if (content) {
       content.addArrayObserver(this, {
         willChange: 'contentArrayWillChange',
@@ -155,6 +157,8 @@ Ember.ArrayProxy = Ember.Object.extend(Ember.MutableArray,
   _arrangedContentDidChange: Ember.observer(function() {
     var arrangedContent = get(this, 'arrangedContent'),
         len = arrangedContent ? get(arrangedContent, 'length') : 0;
+
+    Ember.assert("Can't set ArrayProxy's content to itself", arrangedContent !== this);
 
     if (arrangedContent) {
       arrangedContent.addArrayObserver(this, {

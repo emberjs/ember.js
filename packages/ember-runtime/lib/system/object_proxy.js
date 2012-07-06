@@ -84,6 +84,9 @@ Ember.ObjectProxy = Ember.Object.extend(
     @default null
   */
   content: null,
+  _contentDidChange: Ember.observer(function() {
+    Ember.assert("Can't set ObjectProxy's content to itself", this.get('content') !== this);
+  }, 'content'),
   /** @private */
   willWatchProperty: function (key) {
     var contentKey = 'content.' + key;

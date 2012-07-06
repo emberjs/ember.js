@@ -142,6 +142,46 @@ test("when you descend into a state, the route is set", function() {
   router.send('ready');
 });
 
+test("when you descend into a state, the route is set even when child states (not routes) are present", function() {
+  var state = Ember.Route.create({
+    ready: function(manager) {
+      manager.transitionTo('fooChild.barChild.bazChild');
+    },
+
+    fooChild: Ember.Route.create({
+      route: 'foo',
+
+      barChild: Ember.Route.create({
+        route: 'bar',
+
+        bazChild: Ember.Route.create({
+          route: 'baz',
+
+          basicState: Ember.State.create()
+        })
+      })
+    })
+  });
+
+  var count = 0;
+
+  var router = Ember.Router.create({
+    root: state,
+    location: {
+      setURL: function(url) {
+        if (count === 0) {
+          equal(url, '/foo/bar/baz', "The current URL should be passed in");
+          count++;
+        } else {
+          ok(false, "Should not get here");
+        }
+      }
+    }
+  });
+
+  router.send('ready');
+});
+
 var router;
 var Post = {
   find: function(id) {
