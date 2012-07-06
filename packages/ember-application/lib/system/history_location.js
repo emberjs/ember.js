@@ -8,7 +8,6 @@ Ember.HistoryLocation = Ember.Object.extend({
   init: function() {
     set(this, 'location', get(this, 'location') || window.location);
     set(this, '_initialURL', get(this, 'location').pathname);
-    set(this, 'callbacks', Ember.A());
   },
 
   /**
@@ -51,18 +50,11 @@ Ember.HistoryLocation = Ember.Object.extend({
     history changes, including using forward and back buttons.
   */
   onUpdateURL: function(callback) {
-    var self = this;
+    var guid = Ember.guidFor(this);
 
-    var popstate = function(e) {
+    Ember.$(window).bind('popstate.ember-location-'+guid, function(e) {
       callback(location.pathname);
-    };
-
-    get(this, 'callbacks').pushObject(popstate);
-
-    // This won't work on old browsers anyway, but this check prevents errors
-    if (window.addEventListener) {
-      window.addEventListener('popstate', popstate, false);
-    }
+    });
   },
 
   /**
@@ -76,10 +68,9 @@ Ember.HistoryLocation = Ember.Object.extend({
   },
 
   willDestroy: function() {
-    get(this, 'callbacks').forEach(function(callback) {
-      window.removeEventListener('popstate', callback, false);
-    });
-    set(this, 'callbacks', null);
+    var guid = Ember.guidFor(this);
+
+    Ember.$(window).unbind('popstate.ember-location-'+guid);
   }
 });
 
