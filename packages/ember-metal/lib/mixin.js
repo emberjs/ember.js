@@ -190,8 +190,8 @@ function finishPartial(obj, m) {
 /** @private */
 function applyMixin(obj, mixins, partial) {
   var descs = {}, values = {}, m = Ember.meta(obj), req = m.required,
-      watching, paths, len, idx,
-      key, prevDesc, prevValue, value, desc;
+      key, value, desc,
+      prevDesc, prevValue, paths, len, idx;
 
   // Go through all mixins and hashes passed in, and:
   //
@@ -234,12 +234,6 @@ function applyMixin(obj, mixins, partial) {
 
       if (desc === undefined && value === undefined) { continue; }
 
-      watching = m.watching[key];
-      // if a watched desc is overriding an existing one
-      if (watching && desc && (prevDesc = m.descs[key])) {
-        prevDesc.teardown(obj, key);
-      }
-
       prevValue = obj[key];
 
       if ('function' === typeof prevValue) {
@@ -257,12 +251,20 @@ function applyMixin(obj, mixins, partial) {
       }
 
       detectBinding(obj, key, value, m);
+
+      // Ember.defineProperty
+      prevDesc = m.descs[key];
+      if (prevDesc && !(key in Object.prototype)) {
+        prevDesc.teardown(obj, key);
+      }
+
       m.descs[key] = desc;
       obj[key] = value;
 
-      if (watching && desc) {
+      if (desc) {
         desc.setup(obj, key);
       }
+      // Ember.defineProperty
 
       if ('function' === typeof value) {
         if (paths = value.__ember_observesBefore__) {

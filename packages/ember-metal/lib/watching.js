@@ -446,8 +446,9 @@ Ember.watch = function(obj, keyName) {
   return this;
 };
 
-Ember.isWatching = function(obj, keyName) {
-  return !!metaFor(obj).watching[keyName];
+Ember.isWatching = function isWatching(obj, key) {
+  var meta = obj[META_KEY];
+  return (meta && meta.watching[key]) > 0;
 };
 
 Ember.watch.flushPending = flushPendingChains;

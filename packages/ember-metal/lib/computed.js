@@ -8,6 +8,7 @@ require('ember-metal/core');
 require('ember-metal/platform');
 require('ember-metal/utils');
 require('ember-metal/properties');
+require('ember-metal/watching');
 
 
 Ember.warn("Computed properties will soon be cacheable by default. To enable this in your app, set `ENV.CP_DEFAULT_CACHEABLE = true`.", Ember.CP_DEFAULT_CACHEABLE);
@@ -18,7 +19,18 @@ var get = Ember.get,
     metaFor = Ember.meta,
     guidFor = Ember.guidFor,
     a_slice = [].slice,
-    o_create = Ember.create;
+    o_create = Ember.create,
+    META_KEY = Ember.META_KEY,
+    watch = Ember.watch,
+    unwatch = Ember.unwatch,
+    isWatching = Ember.isWatching;
+
+function hasCachedValue(obj, key) {
+  var meta, cache;
+  return (meta = obj[META_KEY]) &&
+         (cache = meta.cache) &&
+         (key in cache);
+}
 
 // ..........................................................
 // DEPENDENT KEYS
@@ -39,9 +51,28 @@ var get = Ember.get,
   This function returns a map of unique dependencies for a
   given object and key.
 */
-function uniqDeps(obj, depKey) {
-  var meta = metaFor(obj), deps = meta.deps, ret;
+function keysForDep(obj, depsMeta, depKey) {
+  var keys = depsMeta[depKey];
+  if (!keys) {
+    // if there are no dependencies yet for a the given key
+    // create a new empty list of dependencies for the key
+    keys = depsMeta[depKey] = { __emberproto__: obj };
+  } else if (keys.__emberproto__ !== obj) {
+    // otherwise if the dependency list is inherited from
+    // a superclass, clone the hash
+    keys = depsMeta[depKey] = o_create(keys);
+    keys.__emberproto__ = obj;
+  }
+  return keys;
+}
 
+/**
+  @private
+
+  return obj[META_KEY].deps
+  */
+function metaForDeps(obj, meta) {
+  var deps = meta.deps;
   // If the current object has no dependencies...
   if (!deps) {
     // initialize the dependencies with a pointer back to
@@ -53,66 +84,51 @@ function uniqDeps(obj, depKey) {
     deps = meta.deps = o_create(deps);
     deps.__emberproto__ = obj;
   }
-
-  ret = deps[depKey];
-
-  if (!ret) {
-    // if there are no dependencies yet for a the given key
-    // create a new empty list of dependencies for the key
-    ret = deps[depKey] = { __emberproto__: obj };
-  } else if (ret.__emberproto__ !== obj) {
-    // otherwise if the dependency list is inherited from
-    // a superclass, clone the hash
-    ret = deps[depKey] = o_create(ret);
-    ret.__emberproto__ = obj;
-  }
-
-  return ret;
-}
-
-/**
-  @private
-
-  This method allows us to register that a particular
-  property depends on another property.
-*/
-function addDependentKey(obj, keyName, depKey) {
-  var deps = uniqDeps(obj, depKey);
-
-  // Increment the number of times depKey depends on
-  // keyName.
-  deps[keyName] = (deps[keyName] || 0) + 1;
-
-  // Watch the depKey
-  Ember.watch(obj, depKey);
-}
-
-/**
-  @private
-
-  This method removes a dependency.
-*/
-function removeDependentKey(obj, keyName, depKey) {
-  var deps = uniqDeps(obj, depKey);
-
-  // Decrement the number of times depKey depends
-  // on keyName.
-  deps[keyName] = (deps[keyName] || 0) - 1;
-
-  // Unwatch the depKey
-  Ember.unwatch(obj, depKey);
+  return deps;
 }
 
 /** @private */
-function addDependentKeys(desc, obj, keyName) {
+function addDependentKeys(desc, obj, keyName, meta) {
   // the descriptor has a list of dependent keys, so
   // add all of its dependent keys.
-  var keys = desc._dependentKeys,
-      len  = keys ? keys.length : 0;
+  var depKeys = desc._dependentKeys, depsMeta, idx, len, depKey, keys;
+  if (!depKeys || meta.setup[keyName]) return;
 
-  for(var idx=0; idx<len; idx++) {
-    addDependentKey(obj, keyName, keys[idx]);
+  depsMeta = metaForDeps(obj, meta);
+
+  for(idx = 0, len = depKeys.length; idx < len; idx++) {
+    depKey = depKeys[idx];
+    // Lookup keys meta for depKey
+    keys = keysForDep(obj, depsMeta, depKey);
+    // Increment the number of times depKey depends on keyName.
+    keys[keyName] = (keys[keyName] || 0) + 1;
+    // Watch the depKey
+    watch(obj, depKey);
   }
+
+  meta.setup[keyName] = true;
+}
+
+/** @private */
+function removeDependentKeys(desc, obj, keyName, meta) {
+  // the descriptor has a list of dependent keys, so
+  // add all of its dependent keys.
+  var depKeys = desc._dependentKeys, depsMeta, idx, len, depKey, keys;
+  if (!depKeys || !meta.setup[keyName]) return;
+
+  depsMeta = metaForDeps(obj, meta);
+
+  for(idx = 0, len = depKeys.length; idx < len; idx++) {
+    depKey = depKeys[idx];
+    // Lookup keys meta for depKey
+    keys = keysForDep(obj, depsMeta, depKey);
+    // Increment the number of times depKey depends on keyName.
+    keys[keyName] = (keys[keyName] || 0) - 1;
+    // Watch the depKey
+    unwatch(obj, depKey);
+  }
+
+  meta.setup[keyName] = false;
 }
 
 // ..........................................................
@@ -237,7 +253,13 @@ ComputedPropertyPrototype.meta = function(meta) {
 
 /** @private - impl descriptor API */
 ComputedPropertyPrototype.willWatch = function(obj, keyName) {
-  this.setup(obj, keyName);
+  addDependentKeys(this, obj, keyName, metaFor(obj));
+};
+
+ComputedPropertyPrototype.didUnwatch = function(obj, keyName) {
+  if (!hasCachedValue(obj, keyName)) {
+    removeDependentKeys(this, obj, keyName, metaFor(obj));
+  }
 };
 
 /** @private - impl descriptor API */
@@ -249,13 +271,14 @@ ComputedPropertyPrototype.didChange = function(obj, keyName) {
 
 /** @private - impl descriptor API */
 ComputedPropertyPrototype.get = function(obj, keyName) {
-  var ret, cache;
+  var ret, cache, meta;
 
   if (this._cacheable) {
-    cache = metaFor(obj).cache;
+    meta = metaFor(obj);
+    cache = meta.cache;
     if (keyName in cache) { return cache[keyName]; }
     ret = cache[keyName] = this.func.call(obj, keyName);
-    this.setup(obj, keyName);
+    addDependentKeys(this, obj, keyName, meta);
   } else {
     ret = this.func.call(obj, keyName);
   }
@@ -277,34 +300,27 @@ ComputedPropertyPrototype.set = function(obj, keyName, value) {
   ret = this.func.call(obj, keyName, value);
   if (cacheable) {
     meta.cache[keyName] = ret;
-    this.setup(obj, keyName);
+    addDependentKeys(this, obj, keyName, meta);
   }
   if (watched) { Ember.propertyDidChange(obj, keyName); }
   this._suspended = oldSuspended;
   return ret;
 };
 
+/** @private - called when property is defined */
 ComputedPropertyPrototype.setup = function(obj, keyName) {
-  var meta = metaFor(obj);
-  if (!meta.setup[keyName]) {
-    meta.setup[keyName] = true;
-    addDependentKeys(this, obj, keyName);
+  if (isWatching(obj, keyName)) {
+    addDependentKeys(this, obj, keyName, metaFor(obj));
   }
 };
 
-/** @private - impl descriptor API */
+/** @private - called before property is overridden */
 ComputedPropertyPrototype.teardown = function(obj, keyName) {
-  var keys = this._dependentKeys,
-      len  = keys ? keys.length : 0,
-      meta = metaFor(obj);
+  var meta = metaFor(obj);
 
-  for(var idx=0; idx < len; idx++) {
-    removeDependentKey(obj, keyName, keys[idx]);
-  }
+  removeDependentKeys(this, obj, keyName, meta);
 
   if (this._cacheable) { delete meta.cache[keyName]; }
-
-  meta.setup[keyName] = false;
 
   return null; // no value to restore
 };
@@ -352,7 +368,7 @@ Ember.computed = function(func) {
                       to return
 
 */
-Ember.cacheFor = function(obj, key) {
+Ember.cacheFor = function cacheFor(obj, key) {
   var cache = metaFor(obj, false).cache;
 
   if (cache && key in cache) {

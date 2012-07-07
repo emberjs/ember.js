@@ -60,7 +60,6 @@ after(function() {
 
 bench("creating and appending a new view with each", function() {
   Ember.run(function() {
-    App.set('list', newContent());
     view = App.View.create().append();
   });
 });
