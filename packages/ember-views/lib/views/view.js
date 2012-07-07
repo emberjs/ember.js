@@ -606,8 +606,15 @@ Ember.View = Ember.Object.extend(Ember.Evented,
 
     @private
   */
-  _displayPropertyDidChange: Ember.observer(function() {
-    this.rerender();
+  _displayPropertyDidChange: Ember.observer(function(view, key) {
+    if (this._displayProperties[key] !== get(this, key)) {
+      this.rerender();
+    }
+    delete this._displayProperties[key];
+  }, 'context', 'controller'),
+
+  _displayPropertyWillChange: Ember.beforeObserver(function(view, key) {
+    this._displayProperties[key] = get(this, key);
   }, 'context', 'controller'),
 
   /**
@@ -1679,6 +1686,8 @@ Ember.View = Ember.Object.extend(Ember.Evented,
         set(viewController, 'view', this);
       }
     }
+
+    this._displayProperties = {};
   },
 
   appendChild: function(view, options) {

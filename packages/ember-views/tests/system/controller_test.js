@@ -1,5 +1,7 @@
 /*globals TestApp*/
 
+var get = Ember.get, getPath = Ember.getPath, set = Ember.set;
+
 module("Ember.Controller#connectOutlet", {
   setup: function() {
     Ember.run(function () {
@@ -209,3 +211,20 @@ test("connectOutlet takes an optional outlet name with shared view", function() 
   equal(outlets.get('mainView').get(TestApp.PostView), view, "the shared view instance is set on the controller");
 });
 
+test("setting the same controller on a view should not trigger rerendering", function() {
+  var postView = TestApp.PostView.create();
+  var postController = TestApp.PostController.create();
+
+  set(postView, 'controller', postController);
+
+  Ember.run(function() {
+    postView.appendTo('#qunit-fixture');
+    equal(postView.state, 'preRender', 'view is in preRender state');
+  });
+
+  Ember.run(function() {
+    equal(postView.state, 'inDOM', 'view is in DOM state');
+    set(postView, 'controller', postController);
+    equal(postView.state, 'inDOM', 'view still in DOM state');
+  });
+});
