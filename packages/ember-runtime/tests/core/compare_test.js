@@ -24,6 +24,8 @@ module("Ember.compare()", {
     v[11] = {a: 'hash'};
     v[12] = Ember.Object.create();
     v[13] = function (a) {return a;};
+    v[14] = new Date('2012/01/01');
+    v[15] = new Date('2012/06/06');
   }
 });
 
