@@ -35,12 +35,6 @@ var Descriptor = Ember.Descriptor = function() {};
 // DEFINING PROPERTIES API
 //
 
-/** @private */
-function hasDesc(descs, keyName) {
-  if (keyName === 'toString') return 'function' !== typeof descs.toString;
-  else return !!descs[keyName];
-}
-
 /**
   @private
 
@@ -76,45 +70,21 @@ function hasDesc(descs, keyName) {
       }).property('firstName', 'lastName').cacheable());
 */
 Ember.defineProperty = function(obj, keyName, desc, val) {
-  var meta = obj[META_KEY] || EMPTY_META,
-      descs = meta && meta.descs,
-      native = keyName in {},
-      watching = !native && meta.watching[keyName],
-      descriptor = desc instanceof Ember.Descriptor;
+  var meta = metaFor(obj),
+      descs = meta.descs,
+      existingDesc = meta.descs[keyName];
 
-  var existingDesc = hasDesc(descs, keyName);
-
-  if (val === undefined && descriptor) {
-
-    if (existingDesc) { val = descs[keyName].teardown(obj, keyName); }
-    else { val = obj[keyName]; }
-
-  } else if (existingDesc) {
-    // otherwise, tear down the descriptor, but use the provided
-    // value as the new value instead of the descriptor's current
-    // value.
-    descs[keyName].teardown(obj, keyName);
+  if (existingDesc instanceof Ember.Descriptor) {
+    existingDesc.teardown(obj, keyName);
   }
 
-  if (descriptor) {
-    meta = metaFor(obj);
-    descs = meta.descs;
-
+  if (desc instanceof Ember.Descriptor) {
     descs[keyName] = desc;
-    obj[keyName] = val;
-    desc.setup(obj, keyName, val);
+    obj[keyName] = undefined; // make enumerable
+    desc.setup(obj, keyName);
   } else {
-    if (!native && descs[keyName]) { metaFor(obj).descs[keyName] = null; }
-
+    descs[keyName] = undefined; // shadow descriptor in proto
     if (desc == null) {
-      if (existingDesc) {
-        objectDefineProperty(obj, keyName, {
-          enumerable: true,
-          configurable: true,
-          writable: true,
-          value: undefined
-        });
-      }
       obj[keyName] = val;
     } else {
       // compatibility with ES5
@@ -124,7 +94,7 @@ Ember.defineProperty = function(obj, keyName, desc, val) {
 
   // if key is being watched, override chains that
   // were initialized with the prototype
-  if (watching) { Ember.overrideChains(obj, keyName, meta); }
+  if (meta.watching[keyName]) { Ember.overrideChains(obj, keyName, meta); }
 
   return this;
 };
