@@ -22,15 +22,7 @@ var get = Ember.get,
     o_create = Ember.create,
     META_KEY = Ember.META_KEY,
     watch = Ember.watch,
-    unwatch = Ember.unwatch,
-    isWatching = Ember.isWatching;
-
-function hasCachedValue(obj, key) {
-  var meta, cache;
-  return (meta = obj[META_KEY]) &&
-         (cache = meta.cache) &&
-         (key in cache);
-}
+    unwatch = Ember.unwatch;
 
 // ..........................................................
 // DEPENDENT KEYS
@@ -92,7 +84,7 @@ function addDependentKeys(desc, obj, keyName, meta) {
   // the descriptor has a list of dependent keys, so
   // add all of its dependent keys.
   var depKeys = desc._dependentKeys, depsMeta, idx, len, depKey, keys;
-  if (!depKeys || meta.setup[keyName]) return;
+  if (!depKeys) return;
 
   depsMeta = metaForDeps(obj, meta);
 
@@ -105,8 +97,6 @@ function addDependentKeys(desc, obj, keyName, meta) {
     // Watch the depKey
     watch(obj, depKey);
   }
-
-  meta.setup[keyName] = true;
 }
 
 /** @private */
@@ -114,7 +104,7 @@ function removeDependentKeys(desc, obj, keyName, meta) {
   // the descriptor has a list of dependent keys, so
   // add all of its dependent keys.
   var depKeys = desc._dependentKeys, depsMeta, idx, len, depKey, keys;
-  if (!depKeys || !meta.setup[keyName]) return;
+  if (!depKeys) return;
 
   depsMeta = metaForDeps(obj, meta);
 
@@ -127,8 +117,6 @@ function removeDependentKeys(desc, obj, keyName, meta) {
     // Watch the depKey
     unwatch(obj, depKey);
   }
-
-  meta.setup[keyName] = false;
 }
 
 // ..........................................................
@@ -253,32 +241,49 @@ ComputedPropertyPrototype.meta = function(meta) {
 
 /** @private - impl descriptor API */
 ComputedPropertyPrototype.willWatch = function(obj, keyName) {
-  addDependentKeys(this, obj, keyName, metaFor(obj));
+  // watch already creates meta for this instance
+  var meta = obj[META_KEY];
+  Ember.assert('watch should have setup meta to be writable', meta.source === obj);
+  if (!(keyName in meta.cache)) {
+    addDependentKeys(this, obj, keyName, meta);
+  }
 };
 
 ComputedPropertyPrototype.didUnwatch = function(obj, keyName) {
-  if (!hasCachedValue(obj, keyName)) {
-    removeDependentKeys(this, obj, keyName, metaFor(obj));
+  var meta = obj[META_KEY];
+  Ember.assert('unwatch should have setup meta to be writable', meta.source === obj);
+  if (!(keyName in meta.cache)) {
+    // unwatch already creates meta for this instance
+    removeDependentKeys(this, obj, keyName, meta);
   }
 };
 
 /** @private - impl descriptor API */
 ComputedPropertyPrototype.didChange = function(obj, keyName) {
+  // _suspended is set via a CP.set to ensure we don't clear
+  // the cached value set by the setter
   if (this._cacheable && this._suspended !== obj) {
-    delete metaFor(obj).cache[keyName];
+    var meta = metaFor(obj);
+    if (keyName in meta.cache) {
+      delete meta.cache[keyName];
+      if (!meta.watching[keyName]) {
+        removeDependentKeys(this, obj, keyName, meta);
+      }
+    }
   }
 };
 
 /** @private - impl descriptor API */
 ComputedPropertyPrototype.get = function(obj, keyName) {
   var ret, cache, meta;
-
   if (this._cacheable) {
     meta = metaFor(obj);
     cache = meta.cache;
     if (keyName in cache) { return cache[keyName]; }
     ret = cache[keyName] = this.func.call(obj, keyName);
-    addDependentKeys(this, obj, keyName, meta);
+    if (!meta.watching[keyName]) {
+      addDependentKeys(this, obj, keyName, meta);
+    }
   } else {
     ret = this.func.call(obj, keyName);
   }
@@ -289,18 +294,26 @@ ComputedPropertyPrototype.get = function(obj, keyName) {
 ComputedPropertyPrototype.set = function(obj, keyName, value) {
   var cacheable = this._cacheable,
       meta = metaFor(obj, cacheable),
-      watched = meta.source === obj && meta.watching[keyName] > 0,
+      watched = meta.watching[keyName] > 0,
       oldSuspended = this._suspended,
+      hadCachedValue,
       ret;
 
   this._suspended = obj;
 
   if (watched) { Ember.propertyWillChange(obj, keyName); }
-  if (cacheable) delete meta.cache[keyName];
+  if (cacheable) {
+    if (keyName in meta.cache) {
+      delete meta.cache[keyName];
+      hadCachedValue = true;
+    }
+  }
   ret = this.func.call(obj, keyName, value);
   if (cacheable) {
+    if (!watched && !hadCachedValue) {
+      addDependentKeys(this, obj, keyName, meta);
+    }
     meta.cache[keyName] = ret;
-    addDependentKeys(this, obj, keyName, meta);
   }
   if (watched) { Ember.propertyDidChange(obj, keyName); }
   this._suspended = oldSuspended;
@@ -309,7 +322,8 @@ ComputedPropertyPrototype.set = function(obj, keyName, value) {
 
 /** @private - called when property is defined */
 ComputedPropertyPrototype.setup = function(obj, keyName) {
-  if (isWatching(obj, keyName)) {
+  var meta = obj[META_KEY];
+  if ((meta && meta.watching[keyName]) > 0) {
     addDependentKeys(this, obj, keyName, metaFor(obj));
   }
 };
@@ -318,7 +332,9 @@ ComputedPropertyPrototype.setup = function(obj, keyName) {
 ComputedPropertyPrototype.teardown = function(obj, keyName) {
   var meta = metaFor(obj);
 
-  removeDependentKeys(this, obj, keyName, meta);
+  if (meta.watching[keyName] > 0 || keyName in meta.cache) {
+    removeDependentKeys(this, obj, keyName, meta);
+  }
 
   if (this._cacheable) { delete meta.cache[keyName]; }
 

@@ -26,12 +26,6 @@ test('defining computed property should invoke property on get', function() {
 
   equal(Ember.get(obj, 'foo'), 'computed foo', 'should return value');
   equal(count, 1, 'should have invoked computed property');
-
-  if (Ember.USES_ACCESSORS) {
-    count = 0;
-    equal(Ember.get(obj, 'foo'), 'computed foo', 'should return value');
-    equal(count, 1, 'should have invoked computed property');
-  }
 });
 
 test('defining computed property should invoke property on set', function() {
@@ -49,13 +43,6 @@ test('defining computed property should invoke property on set', function() {
   equal(Ember.set(obj, 'foo', 'bar'), 'bar', 'should return set value');
   equal(count, 1, 'should have invoked computed property');
   equal(Ember.get(obj, 'foo'), 'computed bar', 'should return new value');
-
-  if (Ember.USES_ACCESSORS) {
-    count = 0;
-    equal(obj.foo = 'bar', 'bar', 'shoudl return set value');
-    equal(count, 1, 'should have invoked computed property');
-    equal(Ember.get(obj, 'foo'), 'computed bar', 'should return value');
-  }
 });
 
 var objA, objB;
@@ -255,8 +242,6 @@ testBoth('cacheFor should return falsy cached values', function(get, set) {
 // DEPENDENT KEYS
 //
 
-Ember.STOP = true;
-
 module('Ember.computed - dependentkey', {
   setup: function() {
     obj = { bar: 'baz' };
@@ -272,8 +257,28 @@ module('Ember.computed - dependentkey', {
   }
 });
 
+test('should lazily watch dependent keys when watched itself', function () {
+  equal(Ember.isWatching(obj, 'bar'), false, 'precond not watching dependent key');
+  Ember.watch(obj, 'foo');
+  equal(Ember.isWatching(obj, 'bar'), true, 'lazily watching dependent key');
+});
+
+testBoth('should lazily watch dependent keys on set', function (get, set) {
+  equal(Ember.isWatching(obj, 'bar'), false, 'precond not watching dependent key');
+  set(obj, 'foo', 'bar');
+  equal(Ember.isWatching(obj, 'bar'), true, 'lazily watching dependent key');
+});
+
+testBoth('should lazily watch dependent keys on get', function (get, set) {
+  equal(Ember.isWatching(obj, 'bar'), false, 'precond not watching dependent key');
+  get(obj, 'foo');
+  equal(Ember.isWatching(obj, 'bar'), true, 'lazily watching dependent key');
+});
+
 testBoth('local dependent key should invalidate cache', function(get, set) {
+  equal(Ember.isWatching(obj, 'bar'), false, 'precond not watching dependent key');
   equal(get(obj, 'foo'), 'bar 1', 'get once');
+  equal(Ember.isWatching(obj, 'bar'), true, 'lazily setup watching dependent key');
   equal(get(obj, 'foo'), 'bar 1', 'cached retrieve');
 
   set(obj, 'bar', 'BIFF'); // should invalidate foo
@@ -289,13 +294,21 @@ testBoth('should invalidate multiple nested dependent keys', function(get, set) 
     return 'baz '+count;
   }).property('baz').cacheable());
 
+  equal(Ember.isWatching(obj, 'bar'), false, 'precond not watching dependent key');
+  equal(Ember.isWatching(obj, 'baz'), false, 'precond not watching dependent key');
   equal(get(obj, 'foo'), 'bar 1', 'get once');
+  equal(Ember.isWatching(obj, 'bar'), true, 'lazily setup watching dependent key');
+  equal(Ember.isWatching(obj, 'baz'), true, 'lazily setup watching dependent key');
   equal(get(obj, 'foo'), 'bar 1', 'cached retrieve');
 
   set(obj, 'baz', 'BIFF'); // should invalidate bar -> foo
+  equal(Ember.isWatching(obj, 'bar'), false, 'should not be watching dependent key after cache cleared');
+  equal(Ember.isWatching(obj, 'baz'), false, 'should not be watching dependent key after cache cleared');
 
   equal(get(obj, 'foo'), 'bar 2', 'should recache');
   equal(get(obj, 'foo'), 'bar 2', 'cached retrieve');
+  equal(Ember.isWatching(obj, 'bar'), true, 'lazily setup watching dependent key');
+  equal(Ember.isWatching(obj, 'baz'), true, 'lazily setup watching dependent key');
 });
 
 testBoth('circular keys should not blow up', function(get, set) {
@@ -321,12 +334,16 @@ testBoth('circular keys should not blow up', function(get, set) {
 
 testBoth('redefining a property should undo old depenent keys', function(get ,set) {
 
+  equal(Ember.isWatching(obj, 'bar'), false, 'precond not watching dependent key');
   equal(get(obj, 'foo'), 'bar 1');
+  equal(Ember.isWatching(obj, 'bar'), true, 'lazily watching dependent key');
 
   Ember.defineProperty(obj, 'foo', Ember.computed(function() {
     count++;
     return 'baz '+count;
   }).property('baz').cacheable());
+
+  equal(Ember.isWatching(obj, 'bar'), false, 'after redefining should not be watching dependent key');
 
   equal(get(obj, 'foo'), 'baz 2');
 
