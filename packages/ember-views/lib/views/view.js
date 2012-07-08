@@ -775,8 +775,8 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     var templateData = get(this, 'templateData');
 
     var keywords = templateData ? Ember.copy(templateData.keywords) : {};
-    keywords.view = get(this, 'concreteView');
-    keywords.controller = get(this, 'controller');
+    set(keywords, 'view', get(this, 'concreteView'));
+    set(keywords, 'controller', get(this, 'controller'));
 
     return keywords;
   },

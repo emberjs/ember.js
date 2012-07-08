@@ -36,7 +36,11 @@ Ember.TextArea = Ember.View.extend(Ember.TextSupport,
   cols: null,
 
   _updateElementValue: Ember.observer(function() {
-    this.$().val(get(this, 'value'));
+    // We do this check so cursor position doesn't get affected in IE
+    var value = get(this, 'value');
+    if (value !== this.$().val()) {
+      this.$().val(value);
+    }
   }, 'value'),
 
   init: function() {
