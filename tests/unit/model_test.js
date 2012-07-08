@@ -510,3 +510,8 @@ test("when a record depends on another record, we can delete the first record an
   equal(get(parentComment, 'isDirty'), false, "parent comment has been saved");
   ok(true, "no exception was thrown");
 });
+
+test("can ask if record with a given id is loaded", function() {
+  equal(store.has(Person, 1), true, 'should have person with id 1');
+  equal(store.has(Person, 4), false, 'should not have person with id 2');
+});
