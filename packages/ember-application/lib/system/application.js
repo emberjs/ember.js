@@ -157,14 +157,14 @@ Ember.Application = Ember.Namespace.extend(
         rootElement = get(this, 'rootElement'),
         applicationController = get(router, 'applicationController');
 
-    if (this.ApplicationView && applicationController) {
-      var applicationView = this.ApplicationView.create({
-        controller: applicationController
-      });
-      this._createdApplicationView = applicationView;
+    Ember.assert("ApplicationView and ApplicationController must be defined on your application", (this.ApplicationView && applicationController) );
 
-      applicationView.appendTo(rootElement);
-    }
+    var applicationView = this.ApplicationView.create({
+      controller: applicationController
+    });
+    this._createdApplicationView = applicationView;
+
+    applicationView.appendTo(rootElement);
 
     router.route(location.getURL());
     location.onUpdateURL(function(url) {
