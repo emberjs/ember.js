@@ -26,6 +26,9 @@ var guidFor = Ember.guidFor, // utils.js
     FIRST_KEY = /^([^\.\*]+)/,
     IS_PATH = /[\.\*]/;
 
+var MANDATORY_SETTER = Ember.ENV.MANDATORY_SETTER,
+o_defineProperty = Ember.platform.defineProperty;
+
 /** @private */
 function firstKey(path) {
   return path.match(FIRST_KEY)[0];
@@ -436,6 +439,25 @@ Ember.watch = function(obj, keyName) {
       if ('function' === typeof obj.willWatchProperty) {
         obj.willWatchProperty(keyName);
       }
+
+      if (MANDATORY_SETTER && keyName in obj) {
+        m.values[keyName] = obj[keyName];
+        o_defineProperty(obj, keyName, {
+          configurable: true,
+          enumerable: true,
+          set: function() {
+            if (this.isDestroyed) {
+              Ember.assert('You cannot set observed properties on destroyed objects', false);
+            } else {
+              Ember.assert('Must use Ember.set() to access this property', false);
+            }
+          },
+          get: function() {
+            var meta = this[META_KEY];
+            return meta && meta.values[keyName];
+          }
+        });
+      }
     } else {
       chainsFor(obj).add(keyName);
     }
@@ -469,6 +491,15 @@ Ember.unwatch = function(obj, keyName) {
 
       if ('function' === typeof obj.didUnwatchProperty) {
         obj.didUnwatchProperty(keyName);
+      }
+
+      if (MANDATORY_SETTER && keyName in obj) {
+        o_defineProperty(obj, keyName, {
+          configurable: true,
+          enumerable: true,
+          writable: true,
+          value: m.values[keyName]
+        });
       }
     } else {
       chainsFor(obj).remove(keyName);

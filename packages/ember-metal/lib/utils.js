@@ -15,6 +15,8 @@ var o_defineProperty = Ember.platform.defineProperty,
     numberCache  = [],
     stringCache  = {};
 
+var MANDATORY_SETTER = Ember.ENV.MANDATORY_SETTER;
+
 /**
   @private
   @static
@@ -142,6 +144,8 @@ var EMPTY_META = {
   watching: {}
 };
 
+if (MANDATORY_SETTER) { EMPTY_META.values = {}; }
+
 Ember.EMPTY_META = EMPTY_META;
 
 if (Object.freeze) Object.freeze(EMPTY_META);
@@ -192,6 +196,8 @@ Ember.meta = function meta(obj, writable) {
       source: obj
     };
 
+    if (MANDATORY_SETTER) { ret.values = {}; }
+
     obj[META_KEY] = ret;
 
     // make sure we don't accidentally try to create constructor like desc
@@ -203,6 +209,8 @@ Ember.meta = function meta(obj, writable) {
     ret.watching = o_create(ret.watching);
     ret.cache    = {};
     ret.source   = obj;
+
+    if (MANDATORY_SETTER) { ret.values = o_create(ret.values); }
 
     obj[META_KEY] = ret;
   }

@@ -8,6 +8,13 @@ if ('undefined' === typeof Ember) {
   }
 }
 
+Ember.ENV = 'undefined' === typeof ENV ? {} : ENV;
+
+if (!('MANDATORY_SETTER' in Ember.ENV)) {
+  //Ember.ENV.MANDATORY_SETTER = 'defineProperty' in Object;
+  Ember.ENV.MANDATORY_SETTER = false;
+}
+
 /**
   Define an assertion that will throw an exception if the condition is not
   met.  Ember build tools will remove any calls to Ember.assert() when

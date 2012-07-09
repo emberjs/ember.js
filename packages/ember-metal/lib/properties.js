@@ -16,6 +16,8 @@ var GUID_KEY = Ember.GUID_KEY,
     o_create = Ember.create,
     objectDefineProperty = Ember.platform.defineProperty;
 
+var MANDATORY_SETTER = Ember.ENV.MANDATORY_SETTER;
+
 // ..........................................................
 // DESCRIPTOR
 //
@@ -69,10 +71,13 @@ var Descriptor = Ember.Descriptor = function() {};
         return this.firstName+' '+this.lastName;
       }).property('firstName', 'lastName').cacheable());
 */
-Ember.defineProperty = function(obj, keyName, desc, val) {
-  var meta = metaFor(obj),
-      descs = meta.descs,
-      existingDesc = meta.descs[keyName];
+Ember.defineProperty = function(obj, keyName, desc, val, meta) {
+  var descs, existingDesc, watching;
+
+  if (!meta) meta = metaFor(obj);
+  descs = meta.descs;
+  existingDesc = meta.descs[keyName];
+  watching = meta.watching[keyName] > 0;
 
   if (existingDesc instanceof Ember.Descriptor) {
     existingDesc.teardown(obj, keyName);
@@ -80,12 +85,25 @@ Ember.defineProperty = function(obj, keyName, desc, val) {
 
   if (desc instanceof Ember.Descriptor) {
     descs[keyName] = desc;
-    obj[keyName] = undefined; // make enumerable
+    if (MANDATORY_SETTER && watching) {
+      objectDefineProperty(obj, keyName, {
+        configurable: true,
+        enumerable: true,
+        writable: true,
+        value: undefined // make enumerable
+      });
+    } else {
+      obj[keyName] = undefined; // make enumerable
+    }
     desc.setup(obj, keyName);
   } else {
     descs[keyName] = undefined; // shadow descriptor in proto
     if (desc == null) {
-      obj[keyName] = val;
+      if (MANDATORY_SETTER && watching) {
+        meta.values[keyName] = val;
+      } else {
+        obj[keyName] = val;
+      }
     } else {
       // compatibility with ES5
       objectDefineProperty(obj, keyName, desc);
@@ -94,7 +112,7 @@ Ember.defineProperty = function(obj, keyName, desc, val) {
 
   // if key is being watched, override chains that
   // were initialized with the prototype
-  if (meta.watching[keyName]) { Ember.overrideChains(obj, keyName, meta); }
+  if (watching) { Ember.overrideChains(obj, keyName, meta); }
 
   return this;
 };

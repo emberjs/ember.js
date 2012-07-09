@@ -22,6 +22,7 @@ var Mixin, REQUIRED, Alias,
     EMPTY_META = {}, // dummy for non-writable meta
     META_SKIP = { __emberproto__: true, __ember_count__: true },
     o_create = Ember.create,
+    defineProperty = Ember.defineProperty,
     guidFor = Ember.guidFor;
 
 /** @private */
@@ -190,8 +191,7 @@ function finishPartial(obj, m) {
 /** @private */
 function applyMixin(obj, mixins, partial) {
   var descs = {}, values = {}, m = Ember.meta(obj), req = m.required,
-      key, value, desc,
-      prevDesc, prevValue, paths, len, idx;
+      key, value, desc, prevValue, paths, len, idx;
 
   // Go through all mixins and hashes passed in, and:
   //
@@ -252,19 +252,7 @@ function applyMixin(obj, mixins, partial) {
 
       detectBinding(obj, key, value, m);
 
-      // Ember.defineProperty
-      prevDesc = m.descs[key];
-      if (prevDesc && !(key in Object.prototype)) {
-        prevDesc.teardown(obj, key);
-      }
-
-      m.descs[key] = desc;
-      obj[key] = value;
-
-      if (desc) {
-        desc.setup(obj, key);
-      }
-      // Ember.defineProperty
+      defineProperty(obj, key, desc, value, m);
 
       if ('function' === typeof value) {
         if (paths = value.__ember_observesBefore__) {
@@ -284,10 +272,6 @@ function applyMixin(obj, mixins, partial) {
         req = writableReq(obj);
         req.__ember_count__--;
         req[key] = false;
-      }
-
-      if (m.watching[key]) {
-        Ember.overrideChains(obj, key, m);
       }
     }
   }

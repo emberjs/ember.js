@@ -266,7 +266,7 @@ ComputedPropertyPrototype.didChange = function(obj, keyName) {
     var meta = metaFor(obj);
     if (keyName in meta.cache) {
       delete meta.cache[keyName];
-      if (!meta.watching[keyName]) {
+      if (!(meta.watching[keyName] > 0)) {
         removeDependentKeys(this, obj, keyName, meta);
       }
     }
@@ -281,7 +281,7 @@ ComputedPropertyPrototype.get = function(obj, keyName) {
     cache = meta.cache;
     if (keyName in cache) { return cache[keyName]; }
     ret = cache[keyName] = this.func.call(obj, keyName);
-    if (!meta.watching[keyName]) {
+    if (!(meta.watching[keyName] > 0)) {
       addDependentKeys(this, obj, keyName, meta);
     }
   } else {

@@ -10,6 +10,8 @@ require('ember-metal/utils');
 
 var META_KEY = Ember.META_KEY, get, set;
 
+var MANDATORY_SETTER = Ember.ENV.MANDATORY_SETTER;
+
 // ..........................................................
 // GET AND SET
 //
@@ -30,6 +32,7 @@ get = function get(obj, keyName) {
       return obj.unknownProperty(keyName);
     }
 
+    if (MANDATORY_SETTER && meta && meta.watching[keyName] > 0) { return meta.values[keyName]; }
     return obj[keyName];
   }
 };
@@ -37,6 +40,8 @@ get = function get(obj, keyName) {
 /** @private */
 set = function set(obj, keyName, value) {
   Ember.assert("You need to provide an object and key to `set`.", !!obj && keyName !== undefined);
+
+  if (obj.isDestroyed) return;
 
   var meta = obj[META_KEY], desc = meta && meta.descs[keyName];
   if (desc) {
@@ -50,11 +55,15 @@ set = function set(obj, keyName, value) {
     // `setUnknownProperty` method exists on the object
     if (isUnknown && 'function' === typeof obj.setUnknownProperty) {
       obj.setUnknownProperty(keyName, value);
-    } else if (meta && meta.watching[keyName]) {
+    } else if (meta && meta.watching[keyName] > 0) {
       // only trigger a change if the value has changed
       if (value !== obj[keyName]) {
         Ember.propertyWillChange(obj, keyName);
-        obj[keyName] = value;
+        if (MANDATORY_SETTER) {
+          meta.values[keyName] = value;
+        } else {
+          obj[keyName] = value;
+        }
         Ember.propertyDidChange(obj, keyName);
       }
     } else {
