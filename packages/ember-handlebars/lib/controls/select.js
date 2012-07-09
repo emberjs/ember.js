@@ -163,6 +163,10 @@ Ember.Select = Ember.View.extend(
   */
   prompt: null,
 
+  _checkPromptMultiple: Ember.observer(function() {
+    Ember.assert("Can't have a prompt with multiple", !get(this, 'prompt') || !get(this, 'multiple'));
+  }, 'prompt', 'multiple'),
+
   /**
     The path of the option labels. See `content`.
 
@@ -284,6 +288,7 @@ Ember.Select = Ember.View.extend(
   init: function() {
     this._super();
     this.on("didInsertElement", this, this._triggerChange);
+    this._checkPromptMultiple();
   }
 
 });
