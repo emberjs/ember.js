@@ -134,12 +134,9 @@ task :test, [:suite] => :dist do |t, args|
   suites = {
     :default => packages.map{|p| "package=#{p}" },
     :runtime => [ "package=ember-metal,ember-runtime" ],
-    # testing older jQuery 1.6.4 for compatibility
     :all => packages.map{|p| "package=#{p}" } +
-            ["package=all&jquery=1.6.4&nojshint=true",
-             "package=all&jquery=git&nojshint=true",
+            ["package=all&jquery=git&nojshint=true",
               "package=all&extendprototypes=true&nojshint=true",
-              "package=all&extendprototypes=true&jquery=1.6.4&nojshint=true",
               "package=all&extendprototypes=true&jquery=git&nojshint=true",
               "package=all&nocpdefaultcacheable=true&nojshint=true",
               "package=all&noviewpreservescontext=true&nojshint=true",
