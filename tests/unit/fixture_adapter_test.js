@@ -77,7 +77,7 @@ test("should load data for a type asynchronously when it is requested", function
 });
 
 test("should create record asynchronously when it is commited", function() {
-  var paul = Person.createRecord({firstName: 'Paul', lastName: 'Chavard', height: 70});
+  var paul = store.createRecord(Person, {firstName: 'Paul', lastName: 'Chavard', height: 70});
 
   paul.on('didCreate', function() {
     clearTimeout(timer);
