@@ -512,6 +512,6 @@ test("when a record depends on another record, we can delete the first record an
 });
 
 test("can ask if record with a given id is loaded", function() {
-  equal(store.has(Person, 1), true, 'should have person with id 1');
-  equal(store.has(Person, 4), false, 'should not have person with id 2');
+  equal(store.recordIsLoaded(Person, 1), true, 'should have person with id 1');
+  equal(store.recordIsLoaded(Person, 4), false, 'should not have person with id 2');
 });
