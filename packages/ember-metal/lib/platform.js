@@ -138,7 +138,7 @@ platform.defineProperty = defineProperty;
   @memberOf Ember.platform
   @name hasPropertyAccessors
 */
-platform.hasPropertyAccessors = false;
+platform.hasPropertyAccessors = true;
 
 if (!platform.defineProperty) {
   platform.hasPropertyAccessors = false;
@@ -148,4 +148,8 @@ if (!platform.defineProperty) {
   };
 
   platform.defineProperty.isSimulated = true;
+}
+
+if (Ember.ENV.MANDATORY_SETTER && !platform.hasPropertyAccessors) {
+  Ember.ENV.MANDATORY_SETTER = false;
 }
