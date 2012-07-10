@@ -446,11 +446,7 @@ Ember.watch = function(obj, keyName) {
           configurable: true,
           enumerable: true,
           set: function() {
-            if (this.isDestroyed) {
-              Ember.assert('You cannot set observed properties on destroyed objects', false);
-            } else {
-              Ember.assert('Must use Ember.set() to access this property', false);
-            }
+            Ember.assert('Must use Ember.set() to access this property', false);
           },
           get: function() {
             var meta = this[META_KEY];
