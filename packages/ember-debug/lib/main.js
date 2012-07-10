@@ -11,8 +11,7 @@ if ('undefined' === typeof Ember) {
 Ember.ENV = 'undefined' === typeof ENV ? {} : ENV;
 
 if (!('MANDATORY_SETTER' in Ember.ENV)) {
-  //Ember.ENV.MANDATORY_SETTER = 'defineProperty' in Object;
-  Ember.ENV.MANDATORY_SETTER = false;
+  Ember.ENV.MANDATORY_SETTER = true; // default to true for debug dist
 }
 
 /**
