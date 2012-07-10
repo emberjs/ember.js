@@ -40,8 +40,7 @@ get = function get(obj, keyName) {
 /** @private */
 set = function set(obj, keyName, value) {
   Ember.assert("You need to provide an object and key to `set`.", !!obj && keyName !== undefined);
-
-  if (obj.isDestroyed) return;
+  Ember.assert('calling set on destroyed object', !obj.isDestroyed);
 
   var meta = obj[META_KEY], desc = meta && meta.descs[keyName],
       isUnknown, currentValue;
