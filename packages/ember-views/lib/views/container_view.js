@@ -209,10 +209,10 @@ var childViewsProperty = Ember.computed(function() {
 Ember.ContainerView = Ember.View.extend({
 
   init: function() {
+    this._super();
+
     var childViews = get(this, 'childViews');
     Ember.defineProperty(this, 'childViews', childViewsProperty);
-
-    this._super();
 
     var _childViews = this._childViews;
 
