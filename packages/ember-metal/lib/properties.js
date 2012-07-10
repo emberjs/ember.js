@@ -101,6 +101,17 @@ Ember.defineProperty = function(obj, keyName, desc, val, meta) {
     if (desc == null) {
       if (MANDATORY_SETTER && watching) {
         meta.values[keyName] = val;
+        objectDefineProperty(obj, keyName, {
+          configurable: true,
+          enumerable: true,
+          set: function() {
+            Ember.assert('Must use Ember.set() to access this property', false);
+          },
+          get: function() {
+            var meta = this[META_KEY];
+            return meta && meta.values[keyName];
+          }
+        });
       } else {
         obj[keyName] = val;
       }
