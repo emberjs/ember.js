@@ -100,7 +100,11 @@ test("can retrieve the current selected options when multiple=true", function() 
 
   deepEqual(select.get('selection'), [], "By default, nothing is selected");
 
-  select.$(':contains("Tom"), :contains("David")').each(function() { this.selected = true; });
+  select.$('option').each(function() {
+    if (this.value === 'Tom' || this.value === 'David') {
+      this.selected = true;
+    }
+  });
 
   select.$().trigger('change');
 
