@@ -91,7 +91,11 @@ function invokeAction(action, params, sender) {
   // on which the event was fired.
   if (!target) { target = sender; }
   if ('string' === typeof method) { method = target[method]; }
-  method.apply(target, params);
+  if (params) {
+    method.apply(target, params);
+  } else {
+    method.apply(target);
+  }
 }
 
 /**
