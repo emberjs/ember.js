@@ -266,7 +266,7 @@ ComputedPropertyPrototype.didChange = function(obj, keyName) {
     var meta = metaFor(obj);
     if (keyName in meta.cache) {
       delete meta.cache[keyName];
-      if (!(meta.watching[keyName] > 0)) {
+      if (!meta.watching[keyName]) {
         removeDependentKeys(this, obj, keyName, meta);
       }
     }
@@ -281,7 +281,7 @@ ComputedPropertyPrototype.get = function(obj, keyName) {
     cache = meta.cache;
     if (keyName in cache) { return cache[keyName]; }
     ret = cache[keyName] = this.func.call(obj, keyName);
-    if (!(meta.watching[keyName] > 0)) {
+    if (!meta.watching[keyName]) {
       addDependentKeys(this, obj, keyName, meta);
     }
   } else {
@@ -294,7 +294,7 @@ ComputedPropertyPrototype.get = function(obj, keyName) {
 ComputedPropertyPrototype.set = function(obj, keyName, value) {
   var cacheable = this._cacheable,
       meta = metaFor(obj, cacheable),
-      watched = meta.watching[keyName] > 0,
+      watched = meta.watching[keyName],
       oldSuspended = this._suspended,
       hadCachedValue,
       ret;
@@ -323,7 +323,7 @@ ComputedPropertyPrototype.set = function(obj, keyName, value) {
 /** @private - called when property is defined */
 ComputedPropertyPrototype.setup = function(obj, keyName) {
   var meta = obj[META_KEY];
-  if ((meta && meta.watching[keyName]) > 0) {
+  if (meta && meta.watching[keyName]) {
     addDependentKeys(this, obj, keyName, metaFor(obj));
   }
 };
@@ -332,7 +332,7 @@ ComputedPropertyPrototype.setup = function(obj, keyName) {
 ComputedPropertyPrototype.teardown = function(obj, keyName) {
   var meta = metaFor(obj);
 
-  if (meta.watching[keyName] > 0 || keyName in meta.cache) {
+  if (meta.watching[keyName] || keyName in meta.cache) {
     removeDependentKeys(this, obj, keyName, meta);
   }
 
