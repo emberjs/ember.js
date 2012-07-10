@@ -61,45 +61,62 @@ Ember.ControllerMixin.reopen({
           context: App.Post.find()
         });
 
-    @param {Class} name a view class to instantiate
+    In effort to allow typing ease without having to provide yet another
+    confguration object, the following sugar invocation is provided which
+    utilizes the conventions.  This invocation also provides a means to
+    summarize this methods arguments
+
+         applicationController.connectOutelet('hoot:owlet', { name: 'Woodsy' });
+
+    The first argument is split() into the value for 'name' and the value for
+    'outletName'.  The second argument, the object, is assigned to 'context'.
+
+   As such, this shortened format expresses:
+     * Assume that the Application defines HootView
+     * Assume that the Application defines HootController
+     * Application.ApplicationView uses a template that contains
+       and {{outlet}} called 'owlet' i.e. {{outlet owlet}}
+     * HootController's content should be set to the second argument
+     * Ergo, in HootView, a {{ content.name }} call should print 'Woodsy'
+
+    @param {String} name a view class to instantiate or a 'quickstring' containing the ':' character.  Alternatively it could be an object that defines they necessary pairs to which the argument list is a proxy.
     @param {Object} context a context object to assign to the
       controller's `content` property, if a controller can be
       found (optional)
   */
   connectOutlet: function(name, context) {
-    // Normalize arguments. Supported arguments:
-    //
-    // name
-    // name, context
-    // options
-    //
-    // The options hash has the following keys:
-    //
-    //   name: the name of the controller and view
-    //     to use. If this is passed, the name
-    //     determines the view and controller.
-    //   outletName: the name of the outlet to
-    //     fill in. default: 'view'
-    //   viewClass: the class of the view to instantiate
-    //   controller: the controller instance to pass
-    //     to the view
-    //   context: an object that should become the
-    //     controller's `content` and thus the
-    //     template's context.
+    var outletName, viewClass, view, controller, options,
 
-    var outletName, viewClass, view, controller, options;
-
-    if (arguments.length === 1) {
-      if (Ember.typeOf(name) === 'object') {
+      variableizeOptionsObject = function(options){
         options = name;
         outletName = options.outletName;
         name = options.name;
         viewClass = options.viewClass;
         controller = options.controller;
         context = options.context;
+      };
+
+    if ( arguments.length === 1 ){
+      if ( Ember.typeOf(name) === "string" ){
+        options = {};
+      } else if ( Ember.typeOf( name ) === "object" ){
+        variableizeOptionsObject( name );
       }
-    } else {
-      options = {};
+    }
+
+    if ( arguments.length === 2 ){
+      if (  /:/.test(name) ){  // String "short" syntax
+        var tokens = name.split(/:/);
+        name       = tokens[0];
+        outletName = tokens[1];
+        var mfgdObject = {
+              name: name,
+              outletName: outletName,
+              context: context
+            };
+        view = this.connectOutlet( mfgdObject );
+        set(this, 'view', view);
+      }
     }
 
     outletName = outletName || 'view';
@@ -107,19 +124,21 @@ Ember.ControllerMixin.reopen({
     Ember.assert("You must supply a name or a view class to connectOutlets, but not both", (!!name && !viewClass && !controller) || (!name && !!viewClass));
 
     if (name) {
-      var namespace = get(this, 'namespace'),
-          controllers = get(this, 'controllers');
+      var namespace     = get(this, 'namespace'),
+          controllers   = get(this, 'controllers');
 
-      var viewClassName = name.charAt(0).toUpperCase() + name.substr(1) + "View";
-      viewClass = get(namespace, viewClassName);
-      controller = get(controllers, name + 'Controller');
+      var viewClassName       = name.charAt(0).toUpperCase() + name.substr(1) + "View",
+          controllerClassName = name + 'Controller';
+
+      viewClass         = get(namespace, viewClassName);
+      controller        = get(controllers, controllerClassName);
 
       Ember.assert("The name you supplied " + name + " did not resolve to a view " + viewClassName, !!viewClass);
-      Ember.assert("The name you supplied " + name + " did not resolve to a controller " + name + 'Controller', (!!controller && !!context) || !context);
+      Ember.assert("The name you supplied " + name + " did not resolve to a controller " + controllerClassName, (!!controller && !!context) || !context);
     }
 
     if (controller && context) { controller.set('content', context); }
-    view = viewClass.create();
+    view = view || viewClass.create();
     if (controller) { set(view, 'controller', controller); }
     set(this, outletName, view);
 
