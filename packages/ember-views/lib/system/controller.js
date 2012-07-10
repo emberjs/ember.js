@@ -124,6 +124,17 @@ Ember.ControllerMixin.reopen({
     set(this, outletName, view);
 
     return view;
+  },
+
+  /**
+    `disconnectOutlet` removes previously attached view from given outlet.
+
+    @param  {String} outletName the outlet name. (optional)
+   */
+  disconnectOutlet: function(outletName) {
+    outletName = outletName || 'view';
+
+    set(this, outletName, null);
   }
 });
 

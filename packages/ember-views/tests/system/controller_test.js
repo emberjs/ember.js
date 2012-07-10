@@ -150,3 +150,25 @@ test("if the controller is not given while connecting an outlet, the instantiate
   equal(view.get('controller'), postController, "the controller was inherited from the parent");
 });
 
+test("can disconnect outlet from controller", function() {
+  var appController = TestApp.ApplicationController.create({
+    controllers: {},
+    namespace: TestApp
+  });
+
+  var view = appController.connectOutlet('post');
+
+  equal(appController.get('view'), view, "the app controller's view is set");
+
+  appController.disconnectOutlet();
+
+  equal(appController.get('view'), null, "the app controller's view is null");
+
+  view = appController.connectOutlet({outletName: 'master', name: 'post'});
+
+  equal(appController.get('master'), view, "the app controller's master view is set");
+
+  appController.disconnectOutlet('master');
+
+  equal(appController.get('master'), null, "the app controller's master view is null");
+});
