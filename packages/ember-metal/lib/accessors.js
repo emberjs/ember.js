@@ -43,12 +43,13 @@ set = function set(obj, keyName, value) {
 
   if (obj.isDestroyed) return;
 
-  var meta = obj[META_KEY], desc = meta && meta.descs[keyName];
+  var meta = obj[META_KEY], desc = meta && meta.descs[keyName],
+      isUnknown, currentValue;
   if (desc) {
     desc.set(obj, keyName, value);
   }
   else {
-    var isUnknown = 'object' === typeof obj && !(keyName in obj);
+    isUnknown = 'object' === typeof obj && !(keyName in obj);
 
     // setUnknownProperty is called if `obj` is an object,
     // the property does not already exist, and the
@@ -56,8 +57,13 @@ set = function set(obj, keyName, value) {
     if (isUnknown && 'function' === typeof obj.setUnknownProperty) {
       obj.setUnknownProperty(keyName, value);
     } else if (meta && meta.watching[keyName] > 0) {
+      if (MANDATORY_SETTER) {
+        currentValue = meta.values[keyName];
+      } else {
+        currentValue = obj[keyName];
+      }
       // only trigger a change if the value has changed
-      if (value !== obj[keyName]) {
+      if (value !== currentValue) {
         Ember.propertyWillChange(obj, keyName);
         if (MANDATORY_SETTER) {
           meta.values[keyName] = value;
