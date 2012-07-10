@@ -61,7 +61,12 @@ Ember.ControllerMixin.reopen({
           context: App.Post.find()
         });
 
-    @param {Class} name a view class to instantiate
+    You can write this as:
+
+        applicationController.connectOutlet('master', 'posts', App.Post.find());
+
+    @param {String} outletName a name for the outlet to set
+    @param {String} name a view/controller pair name
     @param {Object} context a context object to assign to the
       controller's `content` property, if a controller can be
       found (optional)
@@ -71,6 +76,8 @@ Ember.ControllerMixin.reopen({
     //
     // name
     // name, context
+    // outletName, name
+    // outletName, name, context
     // options
     //
     // The options hash has the following keys:
@@ -88,6 +95,12 @@ Ember.ControllerMixin.reopen({
     //     template's context.
 
     var outletName, viewClass, view, controller, options;
+
+    if (Ember.typeOf(context) === 'string') {
+      outletName = name;
+      name = context;
+      context = arguments[2];
+    }
 
     if (arguments.length === 1) {
       if (Ember.typeOf(name) === 'object') {
