@@ -214,6 +214,13 @@ Ember.compare = function compare(v, w) {
       }
       return 0;
 
+    case 'date':
+      var vNum = v.getTime();
+      var wNum = w.getTime();
+      if (vNum < wNum) { return -1; }
+      if (vNum > wNum) { return 1; }
+      return 0;
+
     default:
       return 0;
   }
@@ -329,7 +336,8 @@ Ember.ORDER_DEFINITION = Ember.ENV.ORDER_DEFINITION || [
   'object',
   'instance',
   'function',
-  'class'
+  'class',
+  'date'
 ];
 
 /**

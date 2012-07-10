@@ -27,17 +27,6 @@ var childViewsProperty = Ember.computed(function() {
   return ret;
 }).property().cacheable();
 
-var controllerProperty = Ember.computed(function(key, value) {
-  var parentView;
-
-  if (arguments.length === 2) {
-    return value;
-  } else {
-    parentView = get(this, 'parentView');
-    return parentView ? get(parentView, 'controller') : null;
-  }
-}).property().cacheable();
-
 var VIEW_PRESERVES_CONTEXT = Ember.VIEW_PRESERVES_CONTEXT;
 Ember.warn("The way that the {{view}} helper affects templates is about to change. Previously, templates inside child views would use the new view as the context. Soon, views will preserve their parent context when rendering their template. You can opt-in early to the new behavior by setting `ENV.VIEW_PRESERVES_CONTEXT = true`. For more information, see https://gist.github.com/2494968. You should update your templates as soon as possible; this default will change soon, and the option will be eliminated entirely before the 1.0 release.", VIEW_PRESERVES_CONTEXT);
 
@@ -506,7 +495,17 @@ Ember.View = Ember.Object.extend(Ember.Evented,
 
     @type Object
   */
-  controller: controllerProperty,
+  controller: Ember.computed(function(key, value) {
+    var parentView;
+
+    if (arguments.length === 2) {
+      return value;
+    } else {
+      parentView = get(this, 'parentView');
+      return parentView ? get(parentView, 'controller') : null;
+    }
+  }).property().cacheable(),
+
   /**
     A view may contain a layout. A layout is a regular template but
     supersedes the `template` property during rendering. It is the
@@ -571,22 +570,20 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     to be re-rendered.
   */
   _context: Ember.computed(function(key, value) {
-    var parentView, context;
+    var parentView, controller;
 
     if (arguments.length === 2) {
       return value;
     }
 
     if (VIEW_PRESERVES_CONTEXT) {
-      if (Ember.meta(this).descs.controller !== controllerProperty) {
-        if (context = get(this, 'controller')) {
-          return context;
-        }
+      if (controller = get(this, 'controller')) {
+        return controller;
       }
 
       parentView = get(this, '_parentView');
-      if (parentView && (context = get(parentView, '_context'))) {
-        return context;
+      if (parentView) {
+        return get(parentView, '_context');
       }
     }
 
@@ -778,8 +775,8 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     var templateData = get(this, 'templateData');
 
     var keywords = templateData ? Ember.copy(templateData.keywords) : {};
-    keywords.view = get(this, 'concreteView');
-    keywords.controller = get(this, 'controller');
+    set(keywords, 'view', get(this, 'concreteView'));
+    set(keywords, 'controller', get(this, 'controller'));
 
     return keywords;
   },

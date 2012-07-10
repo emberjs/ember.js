@@ -91,8 +91,6 @@ Hopefully you can see how all three of these powerful tools work together: start
 
 For new users, we recommend downloading the [Ember.js Starter Kit](https://github.com/emberjs/starter-kit/downloads), which includes everything you need to get started.
 
-We also recommend that you check out the [annotated Todos example](http://annotated-todos.strobeapp.com/), which shows you the best practices for architecting an MVC-based web application. You can also [browse or fork the code on Github](https://github.com/emberjs/todos).
-
 # Building Ember.js
 
 NOTE: Due to the rename, these instructions may be in flux

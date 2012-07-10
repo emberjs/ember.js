@@ -15,6 +15,7 @@ Ember.StateManager.reopen(
         view;
 
     while (currentState) {
+      // TODO: Remove this when view state is removed
       if (get(currentState, 'isViewState')) {
         view = get(currentState, 'view');
         if (view) { return view; }

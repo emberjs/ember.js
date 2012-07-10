@@ -68,6 +68,7 @@ desc "Clean build artifacts from previous builds"
 task :clean do
   puts "Cleaning build..."
   rm_rf "dist" # Make sure even things RakeP doesn't know about are cleaned
+  rm_f "tests/ember-tests.js"
   puts "Done"
 end
 
@@ -133,12 +134,9 @@ task :test, [:suite] => :dist do |t, args|
   suites = {
     :default => packages.map{|p| "package=#{p}" },
     :runtime => [ "package=ember-metal,ember-runtime" ],
-    # testing older jQuery 1.6.4 for compatibility
     :all => packages.map{|p| "package=#{p}" } +
-            ["package=all&jquery=1.6.4&nojshint=true",
-             "package=all&jquery=git&nojshint=true",
+            ["package=all&jquery=git&nojshint=true",
               "package=all&extendprototypes=true&nojshint=true",
-              "package=all&extendprototypes=true&jquery=1.6.4&nojshint=true",
               "package=all&extendprototypes=true&jquery=git&nojshint=true",
               "package=all&nocpdefaultcacheable=true&nojshint=true",
               "package=all&noviewpreservescontext=true&nojshint=true",
