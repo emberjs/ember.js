@@ -141,7 +141,6 @@ Ember.SortableMixin = Ember.Mixin.create(Ember.MutableEnumerable,
         forEach(sortProperties, function(sortProperty) {
           Ember.addObserver(item, sortProperty, this, 'contentItemSortPropertyDidChange');
         }, this);
-        this.arrayContentDidChange(idx, 0, 1);
       }, this);
     }
 

@@ -34,7 +34,7 @@ test("it generates the URL from the target", function() {
     view.appendTo('#qunit-fixture');
   });
 
-  ok(view.$().html().match(/href=['"]\/foo\/bar['"]/), "The html (" + view.$().html() + ") does not have the href /foo/bar in it");
+  ok(view.$().html().match(/href=['"].*\/foo\/bar['"]/), "The html (" + view.$().html() + ") does not have the href /foo/bar in it");
 });
 
 test("it does not generate the URL when href property is not specified", function() {
@@ -106,5 +106,5 @@ test("it sets an URL with a context", function() {
     view.appendTo('#qunit-fixture');
   });
 
-  ok(view.$().html().match(/href=['"]\/dashboard\/1['"]/), "The html (" + view.$().html() + ") has the href /dashboard/1 in it");
+  ok(view.$().html().match(/href=['"].*\/dashboard\/1['"]/), "The html (" + view.$().html() + ") has the href /dashboard/1 in it");
 });
