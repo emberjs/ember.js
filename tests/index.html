@@ -111,7 +111,7 @@
   <script>
     // Fallback to default jQuery
     if (jQueryVersion !== 'none' && !window.jQuery) {
-      if (console && console.warn) { console.warn("Unable to load jQuery "+jQueryVersion+". Using default."); }
+      if (window.console && console.warn) { console.warn("Unable to load jQuery "+jQueryVersion+". Using default."); }
       document.write('<script src="../lib/jquery-1.7.2.js"><\/script>');
     }
     // Close the script tag to make sure document.write happens
@@ -129,7 +129,7 @@
   <script>
     // Fallback to default Handlebars
     if (handlebarsVersion !== 'none' && !window.Handlebars) {
-      if (console && console.warn) { console.warn("Unable to load Handlebars "+handlebarsVersion+". Using default."); }
+      if (window.console && console.warn) { console.warn("Unable to load Handlebars "+handlebarsVersion+". Using default."); }
       document.write('<script src="../lib/handlebars-1.0.0.beta.6.js"><\/script>');
     }
     // Close the script tag to make sure document.write happens
