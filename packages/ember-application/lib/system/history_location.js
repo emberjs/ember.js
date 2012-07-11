@@ -11,6 +11,11 @@ Ember.HistoryLocation = Ember.Object.extend({
   },
 
   /**
+    Will be pre-pended to path upon state change
+   */
+  rootURL: '',
+
+  /**
     @private
 
     Used to give history a starting reference
@@ -35,7 +40,7 @@ Ember.HistoryLocation = Ember.Object.extend({
     var state = window.history.state,
         initialURL = get(this, '_initialURL');
 
-    if (path === "") { path = '/'; }
+    path = this.formatPath(path);
 
     if ((initialURL && initialURL !== path) || (state && state.path !== path)) {
       set(this, '_initialURL', null);
@@ -55,6 +60,21 @@ Ember.HistoryLocation = Ember.Object.extend({
     Ember.$(window).bind('popstate.ember-location-'+guid, function(e) {
       callback(location.pathname);
     });
+  },
+
+  /**
+    @private
+
+    returns the given path appended to rootURL
+   */
+  formatPath: function(path) {
+    var rootURL = get(this, 'rootURL');
+
+    if (rootURL.charAt(-1) === '/') {
+      rootURL = rootURL.substr(-1);
+    }
+
+    return rootURL + path;
   },
 
   /**
