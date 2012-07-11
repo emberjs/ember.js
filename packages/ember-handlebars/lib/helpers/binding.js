@@ -361,7 +361,15 @@ EmberHandlebars.bindClasses = function(context, classBindings, view, bindAttrId,
   // determine which class string to return, based on whether it is
   // a Boolean or not.
   var classStringForPath = function(root, path, className, options) {
-    var val = path !== '' ? getPath(root, path, options) : true;
+    var val;
+
+    if (path === 'this') {
+      val = root;
+    } else if (path === '') {
+      val = true;
+    } else {
+      val = getPath(root, path, options);
+    }
 
     // If the value is truthy and we're using the colon syntax,
     // we should return the className directly
@@ -372,7 +380,7 @@ EmberHandlebars.bindClasses = function(context, classBindings, view, bindAttrId,
     // name.
     } else if (val === true) {
       // Normalize property path to be suitable for use
-      // as a class name. For exaple, content.foo.barBaz
+      // as a class name. For example, content.foo.barBaz
       // becomes bar-baz.
       var parts = path.split('.');
       return Ember.String.dasherize(parts[parts.length-1]);
@@ -406,7 +414,7 @@ EmberHandlebars.bindClasses = function(context, classBindings, view, bindAttrId,
         pathRoot = context,
         normalized;
 
-    if (path !== '') {
+    if (path !== '' && path !== 'this') {
       normalized = normalizePath(context, path, options.data);
 
       pathRoot = normalized.root;
@@ -447,7 +455,7 @@ EmberHandlebars.bindClasses = function(context, classBindings, view, bindAttrId,
       Ember.run.once(observer);
     };
 
-    if (path !== '') {
+    if (path !== '' && path !== 'this') {
       Ember.addObserver(pathRoot, path, invoker);
     }
 

@@ -1521,6 +1521,24 @@ test("should be able to add multiple classes using {{bindAttr class}}", function
   ok(view.$('div').hasClass('is-super-duper'), "static class is still present");
 });
 
+test("should be able to bind classes to globals with {{bindAttr class}}", function() {
+  TemplateTests.set('isOpen', true);
+
+  view = Ember.View.create({
+    template: Ember.Handlebars.compile('<img src="test.jpg" {{bindAttr class="TemplateTests.isOpen"}}>')
+  });
+
+  appendView();
+
+  ok(view.$('img').hasClass('is-open'), "sets classname to the dasherized value of the global property");
+
+  Ember.run(function() {
+    TemplateTests.set('isOpen', false);
+  });
+
+  ok(!view.$('img').hasClass('is-open'), "removes the classname when the global property has changed");
+});
+
 test("should be able to bindAttr to 'this' in an {{#each}} block", function() {
   view = Ember.View.create({
     template: Ember.Handlebars.compile('{{#each images}}<img {{bindAttr src="this"}}>{{/each}}'),
@@ -1533,6 +1551,19 @@ test("should be able to bindAttr to 'this' in an {{#each}} block", function() {
   ok(/one\.png$/.test(images[0].src));
   ok(/two\.jpg$/.test(images[1].src));
   ok(/three\.gif$/.test(images[2].src));
+});
+
+test("should be able to bind classes to 'this' in an {{#each}} block with {{bindAttr class}}", function() {
+  view = Ember.View.create({
+    template: Ember.Handlebars.compile('{{#each items}}<li {{bindAttr class="this"}}>Item</li>{{/each}}'),
+    items: Ember.A(['a', 'b', 'c'])
+  });
+
+  appendView();
+
+  ok(view.$('li').eq(0).hasClass('a'), "sets classname to the value of the first item");
+  ok(view.$('li').eq(1).hasClass('b'), "sets classname to the value of the second item");
+  ok(view.$('li').eq(2).hasClass('c'), "sets classname to the value of the third item");
 });
 
 test("should be able to output a property without binding", function(){
