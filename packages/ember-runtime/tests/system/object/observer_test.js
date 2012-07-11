@@ -118,7 +118,7 @@ testBoth('observer should not fire after being destroyed', function(get, set) {
 
   Ember.run(function() { obj.destroy(); });
 
-  if (Ember.platform.hasPropertyAccessors) {
+  if (Ember.assert) {
     raises(function() {
       set(obj, 'bar', "BAZ");
     }, Error, "raises error when setting a property");
