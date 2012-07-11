@@ -152,6 +152,21 @@ if (Object.freeze) Object.freeze(EMPTY_META);
 
 var isDefinePropertySimulated = Ember.platform.defineProperty.isSimulated;
 
+function Meta(obj) {
+  this.descs = {};
+  this.watching = {};
+  this.cache = {};
+  this.source = obj;
+}
+
+if (isDefinePropertySimulated) {
+  // on platforms that don't support enumerable false
+  // make meta fail jQuery.isPlainObject() to hide from
+  // jQuery.extend() by having a property that fails
+  // hasOwnProperty check.
+  Meta.prototype.__preventPlainObject__ = true;
+}
+
 /**
   @private
   @function
@@ -179,22 +194,9 @@ Ember.meta = function meta(obj, writable) {
   if (writable===false) return ret || EMPTY_META;
 
   if (!ret) {
-    o_defineProperty(obj, META_KEY, META_DESC);
+    if (!isDefinePropertySimulated) o_defineProperty(obj, META_KEY, META_DESC);
 
-    if (isDefinePropertySimulated) {
-      // on platforms that don't support enumerable false
-      // make meta fail jQuery.isPlainObject() to hide from
-      // jQuery.extend() by having a property that fails
-      // hasOwnProperty check.
-      ret = o_create({__preventPlainObject__: true});
-    }
-
-    ret = {
-      descs: {},
-      watching: {},
-      cache:  {},
-      source: obj
-    };
+    ret = new Meta(obj);
 
     if (MANDATORY_SETTER) { ret.values = {}; }
 
