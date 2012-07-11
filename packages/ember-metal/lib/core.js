@@ -192,4 +192,4 @@ if ('undefined' === typeof ember_deprecateFunc) {
   Inside Ember-Metal, simply uses the window.console object.
   Override this to provide more robust logging functionality.
 */
-Ember.Logger = window.console || { log: Ember.K, warn: Ember.K, error: Ember.K };
+Ember.Logger = window.console || { log: Ember.K, warn: Ember.K, error: Ember.K, info: Ember.K, debug: Ember.K };
