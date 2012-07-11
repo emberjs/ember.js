@@ -151,6 +151,24 @@ test("if a ContainerView starts with a currentView, it is rendered as a child vi
   equal(getPath(container, 'childViews').objectAt(0), mainView, "should have the currentView as the only child view");
 });
 
+test("if a ContainerView is created with a currentView, it is rendered as a child view", function() {
+  var mainView = Ember.View.create({
+    template: function() {
+      return "This is the main view.";
+    }
+  });
+
+  var container = Ember.ContainerView.create({currentView: mainView});
+
+  Ember.run(function() {
+    container.appendTo('#qunit-fixture');
+  });
+
+  equal(container.$().text(), "This is the main view.", "should render its child");
+  equal(getPath(container, 'childViews.length'), 1, "should have one child view");
+  equal(getPath(container, 'childViews').objectAt(0), mainView, "should have the currentView as the only child view");
+});
+
 test("if a ContainerView starts with no currentView and then one is set, the ContainerView is updated", function() {
   var container = Ember.ContainerView.create();
   var mainView = Ember.View.create({
