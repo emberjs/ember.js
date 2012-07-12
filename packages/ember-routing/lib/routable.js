@@ -241,6 +241,7 @@ Ember.Routable = Ember.Mixin.create({
     var modelClass, routeMatcher, param;
 
     if (modelClass = this.modelClassFor(get(manager, 'namespace'))) {
+      Ember.assert("Expected "+modelClass.toString()+" to implement `find` for use in '"+this.get('path')+"' `deserialize`. Please implement the `find` method or overwrite `deserialize`.", modelClass.find);
       return modelClass.find(params[paramForClass(modelClass)]);
     }
 
