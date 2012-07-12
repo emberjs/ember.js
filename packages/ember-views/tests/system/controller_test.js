@@ -65,6 +65,23 @@ test("connectOutlet takes an optional controller context", function() {
   equal(view.getPath('controller.content'), context, "the controller receives the context");
 });
 
+test("connectOutlet with outletName, name syntax", function() {
+  var postController = Ember.Controller.create(),
+      context = {};
+
+  var appController = TestApp.ApplicationController.create({
+    controllers: { postController: postController },
+    namespace: { PostView: TestApp.PostView }
+  });
+
+  var view = appController.connectOutlet('main', 'post', context);
+
+  ok(view instanceof TestApp.PostView, "the view is an instance of PostView");
+  equal(view.get('controller'), postController, "the controller is looked up on the parent's controllers hash");
+  equal(appController.get('main'), view, "the app controller's view is set");
+  equal(view.getPath('controller.content'), context, "the controller receives the context");
+});
+
 test("connectOutlet works if all three parameters are provided", function() {
   var postController = Ember.Controller.create(),
       context = {};
