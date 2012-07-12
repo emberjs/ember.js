@@ -1144,41 +1144,121 @@ test("{{view}} should be able to point to a local view", function() {
   equal(view.$().text(), "common", "tries to look up view name locally");
 });
 
-test("should be able to bind view class names to properties", function() {
-  var templates = Ember.Object.create({
-    template: Ember.Handlebars.compile('{{#view "TemplateTests.classBindingView" classBinding="isDone"}}foo{{/view}}')
-  });
-
-  TemplateTests.classBindingView = Ember.View.extend({
-    isDone: true
+test("{{view}} should evaluate class bindings set to global paths", function() {
+  Ember.run(function() {
+    window.App = Ember.Application.create({
+      isApp:       true,
+      isGreat:     true,
+      directClass: "app-direct"
+    });
   });
 
   view = Ember.View.create({
-    templateName: 'template',
-    templates: templates
+    template: Ember.Handlebars.compile('{{view Ember.TextField class="unbound" classBinding="App.isGreat:great App.directClass App.isApp"}}')
   });
 
   appendView();
 
-  equal(view.$('.is-done').length, 1, "dasherizes property and sets class name");
+  ok(view.$('input').hasClass('unbound'),     "sets unbound classes directly");
+  ok(view.$('input').hasClass('great'),       "evaluates classes bound to global paths");
+  ok(view.$('input').hasClass('app-direct'),  "evaluates classes bound directly to global paths");
+  ok(view.$('input').hasClass('is-app'),      "evaluates classes bound directly to booleans in global paths - dasherizes and sets class when true");
 
   Ember.run(function() {
-    set(firstChild(view), 'isDone', false);
+    App.set('isApp', false);
   });
 
-  equal(view.$('.is-done').length, 0, "removes class name if bound property is set to false");
+  ok(!view.$('input').hasClass('is-app'),     "evaluates classes bound directly to booleans in global paths - removes class when false");
+
+  Ember.run(function() {
+    window.App.destroy();
+  });
 });
 
-test("should be able to bind view class names to truthy properties", function() {
+test("{{view}} should evaluate class bindings set in the current context", function() {
+  view = Ember.View.create({
+    isView:      true,
+    isEditable:  true,
+    directClass: "view-direct",
+    template: Ember.Handlebars.compile('{{view Ember.TextField class="unbound" classBinding="isEditable:editable directClass isView"}}')
+  });
+
+  appendView();
+
+  ok(view.$('input').hasClass('unbound'),     "sets unbound classes directly");
+  ok(view.$('input').hasClass('editable'),    "evaluates classes bound in the current context");
+  ok(view.$('input').hasClass('view-direct'), "evaluates classes bound directly in the current context");
+  ok(view.$('input').hasClass('is-view'),     "evaluates classes bound directly to booleans in the current context - dasherizes and sets class when true");
+
+  Ember.run(function() {
+    view.set('isView', false);
+  });
+
+  ok(!view.$('input').hasClass('is-view'),    "evaluates classes bound directly to booleans in the current context - removes class when false");
+});
+
+test("{{view}} should evaluate class bindings set with either classBinding or classNameBindings", function() {
+  Ember.run(function() {
+    window.App = Ember.Application.create({
+      isGreat: true
+    });
+  });
+
+  view = Ember.View.create({
+    template: Ember.Handlebars.compile('{{view Ember.TextField class="unbound" classBinding="App.isGreat:great" classNameBindings="App.isGreat:really-great"}}')
+  });
+
+  appendView();
+
+  ok(view.$('input').hasClass('unbound'),      "sets unbound classes directly");
+  ok(view.$('input').hasClass('great'),        "evaluates classBinding");
+  ok(view.$('input').hasClass('really-great'), "evaluates classNameBinding");
+
+  Ember.run(function() {
+    window.App.destroy();
+  });
+});
+
+test("{{view}} should evaluate other attribute bindings set to global paths", function() {
+  Ember.run(function() {
+    window.App = Ember.Application.create({
+      name: "myApp"
+    });
+  });
+
+  view = Ember.View.create({
+    template: Ember.Handlebars.compile('{{view Ember.TextField valueBinding="App.name"}}')
+  });
+
+  appendView();
+
+  equal(view.$('input').attr('value'), "myApp", "evaluates attributes bound to global paths");
+
+  Ember.run(function() {
+    window.App.destroy();
+  });
+});
+
+test("{{view}} should evaluate other attributes bindings set in the current context", function() {
+  view = Ember.View.create({
+    name: "myView",
+    template: Ember.Handlebars.compile('{{view Ember.TextField valueBinding="name"}}')
+  });
+
+  appendView();
+
+  equal(view.$('input').attr('value'), "myView", "evaluates attributes bound in the current context");
+});
+
+test("{{view}} should be able to bind class names to truthy properties", function() {
   var templates = Ember.Object.create({
     template: Ember.Handlebars.compile('{{#view "TemplateTests.classBindingView" classBinding="number:is-truthy"}}foo{{/view}}')
   });
 
-  TemplateTests.classBindingView = Ember.View.extend({
-    number: 5
-  });
+  TemplateTests.classBindingView = Ember.View.extend();
 
   view = Ember.View.create({
+    number: 5,
     templateName: 'template',
     templates: templates
   });
@@ -1188,7 +1268,7 @@ test("should be able to bind view class names to truthy properties", function() 
   equal(view.$('.is-truthy').length, 1, "sets class name");
 
   Ember.run(function() {
-    set(firstChild(view), 'number', 0);
+    set(view, 'number', 0);
   });
 
   equal(view.$('.is-truthy').length, 0, "removes class name if bound property is set to falsey");
@@ -2035,7 +2115,7 @@ test("should not enter an infinite loop when binding an attribute in Handlebars"
   expect(0);
 
   Ember.run(function() {
-    App = Ember.Application.create();
+    window.App = Ember.Application.create();
   });
 
   App.test = Ember.Object.create({ href: 'test' });
@@ -2066,8 +2146,7 @@ test("should not enter an infinite loop when binding an attribute in Handlebars"
   });
 
   Ember.run(function() {
-    App.destroy();
-    App = undefined;
+    window.App.destroy();
   });
 });
 
