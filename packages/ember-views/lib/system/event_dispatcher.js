@@ -138,6 +138,10 @@ Ember.EventDispatcher = Ember.Object.extend(
           action   = Ember.Handlebars.ActionHelper.registeredActions[actionId],
           handler  = action.handler;
 
+      if (action.eventName === "click" && evt.metaKey) {
+        return;
+      }
+
       if (action.eventName === eventName) {
         return handler(evt);
       }
