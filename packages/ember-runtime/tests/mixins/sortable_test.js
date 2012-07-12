@@ -53,6 +53,32 @@ test("you can change sorted properties", function() {
   equal(sortedArrayController.get('length'), 3, 'array has 3 items');
 });
 
+test("changing sort order triggers observers", function() {
+  var observer, changeCount = 0;
+  observer = Ember.Object.create({
+    array: sortedArrayController,
+    arrangedDidChange: Ember.observer(function() {
+      changeCount++;
+    }, 'array.[]')
+  });
+
+  equal(changeCount, 0, 'precond - changeCount starts at 0');
+
+  sortedArrayController.set('sortProperties', ['id']);
+
+  equal(changeCount, 1, 'setting sortProperties increments changeCount');
+
+  sortedArrayController.set('sortAscending', false);
+
+  equal(changeCount, 2, 'changing sortAscending increments changeCount');
+
+  sortedArrayController.set('sortAscending', true);
+
+  equal(changeCount, 3, 'changing sortAscending again increments changeCount');
+
+  Ember.run(function() { observer.destroy(); });
+});
+
 module("Ember.Sortable with content and sortProperties", {
   setup: function() {
     Ember.run(function() {
