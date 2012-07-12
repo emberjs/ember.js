@@ -222,6 +222,20 @@ Ember.MutableArray = Ember.Mixin.create(Ember.Array, Ember.MutableEnumerable,
     return this;
   },
 
+  /**
+    Reverse objects in the array.  Works just like reverse() but it is
+    KVO-compliant.
+
+    @return {Ember.Array} receiver
+   */
+  reverseObjects: function() {
+    var len = get(this, 'length');
+    if (len === 0) return this;
+    var objects = this.toArray().reverse();
+    this.replace(0, len, objects);
+    return this;
+  },
+
   // ..........................................................
   // IMPLEMENT Ember.MutableEnumerable
   //
