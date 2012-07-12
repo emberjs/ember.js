@@ -13,7 +13,7 @@ Ember.HistoryLocation = Ember.Object.extend({
   /**
     Will be pre-pended to path upon state change
    */
-  rootURL: '',
+  rootURL: '/',
 
   /**
     @private
@@ -70,8 +70,8 @@ Ember.HistoryLocation = Ember.Object.extend({
   formatPath: function(path) {
     var rootURL = get(this, 'rootURL');
 
-    if (rootURL.charAt(-1) === '/') {
-      rootURL = rootURL.substr(-1);
+    if (path !== '') {
+      rootURL = rootURL.replace(/\/$/, '');
     }
 
     return rootURL + path;

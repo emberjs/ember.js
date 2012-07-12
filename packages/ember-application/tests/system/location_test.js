@@ -150,6 +150,17 @@ test("doesn't push a state if path has not changed", function() {
   locationObject.setURL(window.location.pathname);
 });
 
+test("it handles an empty path as root", function() {
+  var setPath;
+
+  window.history.pushState = function(data, title, path) {
+    setPath = path;
+  };
+
+  locationObject.setURL('');
+  equal(setPath, '/', "The updated url is '/'");
+});
+
 test("it prepends rootURL to path", function() {
   var setPath;
 
@@ -160,5 +171,5 @@ test("it prepends rootURL to path", function() {
   locationObject.set('rootURL', '/test');
   locationObject.setURL("/foo");
 
-  equal(setPath, '/test/foo');
+  equal(setPath, '/test/foo', "The updated url is '/test/foot'");
 });

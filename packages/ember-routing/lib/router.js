@@ -383,10 +383,10 @@ Ember.Router = Ember.StateManager.extend(
     don't live at the root of the domain can append paths to their root.
 
     @type String
-    @default ''
+    @default '/'
   */
 
-  rootURL: '',
+  rootURL: '/',
 
   /**
     On router, transitionEvent should be called connectOutlets
