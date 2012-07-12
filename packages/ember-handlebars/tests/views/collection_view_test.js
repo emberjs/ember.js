@@ -248,26 +248,18 @@ test("should give its item views the classBinding specified by itemClassBinding"
   });
 
   var view = Ember.View.create({
-    template: Ember.Handlebars.compile('{{#collection "TemplateTests.itemClassBindingTestCollectionView" itemClassBinding="content.isBaz"}}foo{{/collection}}')
+    isBar: true,
+    template: Ember.Handlebars.compile('{{#collection "TemplateTests.itemClassBindingTestCollectionView" itemClassBinding="isBar"}}foo{{/collection}}')
   });
 
   Ember.run(function() {
     view.appendTo('#qunit-fixture');
   });
 
-  equal(view.$('ul li.is-baz').length, 2, "adds class on initial rendering");
+  equal(view.$('ul li.is-bar').length, 3, "adds class on initial rendering");
 
-  Ember.run(function() {
-    setPath(firstChild(view), 'content.0.isBaz', true);
-  });
-
-  equal(view.$('ul li.is-baz').length, 3, "adds class when property changes");
-
-  Ember.run(function() {
-    setPath(firstChild(view), 'content.0.isBaz', false);
-  });
-
-  equal(view.$('ul li.is-baz').length, 2, "removes class when property changes");
+  // NOTE: in order to bind an item's class to a property of the item itself (e.g. `isBaz` above), it will be necessary
+  // to introduce a new keyword that could be used from within `itemClassBinding`. For instance, `itemClassBinding="item.isBaz"`.
 });
 
 test("should give its item views the property specified by itemPropertyBinding", function() {

@@ -38,7 +38,8 @@ EmberHandlebars.ViewHelper = Ember.Object.create({
     }
 
     if (hash.classNameBindings) {
-      extensions.classNameBindings = hash.classNameBindings.split(' ');
+      if (extensions.classNameBindings === undefined) extensions.classNameBindings = [];
+      extensions.classNameBindings = extensions.classNameBindings.concat(hash.classNameBindings.split(' '));
       dup = true;
     }
 
@@ -55,26 +56,57 @@ EmberHandlebars.ViewHelper = Ember.Object.create({
       delete hash.classBinding;
     }
 
-    // Look for bindings passed to the helper and, if they are
-    // local, make them relative to the current context instead of the
-    // view.
-    var path, normalized;
+    // Set the proper context for all bindings passed to the helper. This applies to regular attribute bindings
+    // as well as class name bindings. If the bindings are local, make them relative to the current context
+    // instead of the view.
+    var path;
 
+    // Evaluate the context of regular attribute bindings:
     for (var prop in hash) {
       if (!hash.hasOwnProperty(prop)) { continue; }
 
       // Test if the property ends in "Binding"
       if (Ember.IS_BINDING.test(prop) && typeof hash[prop] === 'string') {
-        path = hash[prop];
+        path = this.contextualizeBindingPath(hash[prop], data);
+        if (path) { hash[prop] = path; }
+      }
+    }
 
-        normalized = Ember.Handlebars.normalizePath(null, path, data);
-        if (normalized.isKeyword) {
-          hash[prop] = 'templateData.keywords.'+path;
-        } else if (!Ember.isGlobalPath(path)) {
-          if (path === 'this') {
-            hash[prop] = 'bindingContext';
-          } else {
-            hash[prop] = 'bindingContext.'+path;
+    // Evaluate the context of class name bindings:
+    if (extensions.classNameBindings) {
+      var full,
+          parts;
+
+      for (var b in extensions.classNameBindings) {
+        full = extensions.classNameBindings[b];
+        if (typeof full === 'string') {
+          if (full.indexOf(':') > 0) {
+            // When a classNameBinding contains a colon anywhere after the first character,
+            // then the part preceding the colon is a binding path that needs to be
+            // contextualized.
+            //
+            // For example:
+            //   classNameBinding="isGreen:green"
+            //
+            // Will be converted to:
+            //   classNameBinding="bindingContext.isGreen:green"
+
+            parts = full.split(':');
+            path = this.contextualizeBindingPath(parts[0], data);
+            if (path) { extensions.classNameBindings[b] = path + ':' + parts[1]; }
+
+          } else if (full.indexOf(':') === -1 ) {
+            // When a classNameBinding doesn't contain any colons, then the entire binding
+            // needs to be contextualized.
+            //
+            // For example:
+            //   classNameBinding="myClass"
+            //
+            // Will be converted to:
+            //   classNameBinding="bindingContext.myClass"
+
+            path = this.contextualizeBindingPath(full, data);
+            if (path) { extensions.classNameBindings[b] = path; }
           }
         }
       }
@@ -85,6 +117,23 @@ EmberHandlebars.ViewHelper = Ember.Object.create({
     extensions.bindingContext = thisContext;
 
     return Ember.$.extend(hash, extensions);
+  },
+
+  // Transform bindings from the current context to a context that can be evaluated within the view.
+  // Returns null if the path shouldn't be changed.
+  //
+  // TODO: consider the addition of a prefix that would allow this method to return `path`.
+  contextualizeBindingPath: function(path, data) {
+    var normalized = Ember.Handlebars.normalizePath(null, path, data);
+    if (normalized.isKeyword) {
+      return 'templateData.keywords.' + path;
+    } else if (Ember.isGlobalPath(path)) {
+      return null;
+    } else if (path === 'this') {
+      return 'bindingContext';
+    } else {
+      return 'bindingContext.' + path;
+    }
   },
 
   helper: function(thisContext, path, options) {
