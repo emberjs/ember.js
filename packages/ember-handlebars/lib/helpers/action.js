@@ -6,12 +6,19 @@ var ActionHelper = EmberHandlebars.ActionHelper = {
   registeredActions: {}
 };
 
-ActionHelper.registerAction = function(actionName, eventName, target, view, context) {
+ActionHelper.registerAction = function(actionName, eventName, target, view, context, link) {
   var actionId = (++Ember.$.uuid).toString();
 
   ActionHelper.registeredActions[actionId] = {
     eventName: eventName,
     handler: function(event) {
+      if (link && (event.button !== 0 || event.shiftKey || event.metaKey || event.altKey || event.ctrlKey)) {
+        // Allow the browser to handle special link clicks normally
+        return;
+      }
+
+      event.preventDefault();
+
       event.view = view;
       event.context = context;
 
@@ -176,7 +183,7 @@ EmberHandlebars.registerHelper('action', function(actionName, options) {
   var hash = options.hash,
       eventName = hash.on || "click",
       view = options.data.view,
-      target, context, controller;
+      target, context, controller, link;
 
   view = get(view, 'concreteView');
 
@@ -195,9 +202,10 @@ EmberHandlebars.registerHelper('action', function(actionName, options) {
   if (hash.href && target.urlForEvent) {
     url = target.urlForEvent(actionName, context);
     output.push('href="' + url + '"');
+    link = true;
   }
 
-  var actionId = ActionHelper.registerAction(actionName, eventName, target, view, context);
+  var actionId = ActionHelper.registerAction(actionName, eventName, target, view, context, link);
   output.push('data-ember-action="' + actionId + '"');
 
   return new EmberHandlebars.SafeString(output.join(" "));
