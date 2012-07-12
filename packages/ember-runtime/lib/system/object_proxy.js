@@ -2,6 +2,7 @@ require('ember-runtime/system/object');
 
 var get = Ember.get,
     set = Ember.set,
+    fmt = Ember.String.fmt,
     addBeforeObserver = Ember.addBeforeObserver,
     addObserver = Ember.addObserver,
     removeBeforeObserver = Ember.removeBeforeObserver,
@@ -109,9 +110,7 @@ Ember.ObjectProxy = Ember.Object.extend(
   /** @private */
   setUnknownProperty: function (key, value) {
     var content = get(this, 'content');
-    if (!content) {
-      throw new Error('Unable to delegate set without content for property: ' + key);
-    }
+    Ember.assert(fmt("Cannot delegate set('%@', %@) to the 'content' property of object proxy %@: its 'content' is undefined.", [key, value, this]), content);
     return set(content, key, value);
   }
 });
