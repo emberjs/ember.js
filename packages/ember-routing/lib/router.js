@@ -379,6 +379,16 @@ Ember.Router = Ember.StateManager.extend(
   location: 'hash',
 
   /**
+    This is only used when a history location is used so that applications that
+    don't live at the root of the domain can append paths to their root.
+
+    @type String
+    @default '/'
+  */
+
+  rootURL: '/',
+
+  /**
     On router, transitionEvent should be called connectOutlets
 
     @property {String}
@@ -462,9 +472,14 @@ Ember.Router = Ember.StateManager.extend(
   init: function() {
     this._super();
 
-    var location = get(this, 'location');
+    var location = get(this, 'location'),
+        rootURL = get(this, 'rootURL');
+
     if ('string' === typeof location) {
-      set(this, 'location', Ember.Location.create({ implementation: location }));
+      set(this, 'location', Ember.Location.create({
+        implementation: location,
+        rootURL: rootURL
+      }));
     }
   },
 
