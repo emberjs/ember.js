@@ -614,28 +614,25 @@ Ember.StateManager = Ember.State.extend(
         matchedContexts.unshift(useContext ? contexts.pop() : null);
       }
 
-      if (enterStates.length > 0) {
-        state = enterStates[enterStates.length - 1];
+      state = enterStates[enterStates.length - 1] || resolveState;
+      while(true) {
+        initialState = get(state, 'initialState') || 'start';
+        state = getPath(state, 'states.'+initialState);
+        if (!state) { break; }
+        enterStates.push(state);
+        matchedContexts.push(undefined);
+      }
 
-        while(true) {
-          initialState = get(state, 'initialState') || 'start';
-          state = getPath(state, 'states.'+initialState);
-          if (!state) { break; }
-          enterStates.push(state);
-          matchedContexts.push(undefined);
+      while (enterStates.length > 0) {
+        if (enterStates[0] !== exitStates[0]) { break; }
+
+        if (enterStates.length === matchedContexts.length) {
+          if (this.getStateMeta(enterStates[0], 'context') !== matchedContexts[0]) { break; }
+          matchedContexts.shift();
         }
 
-        while (enterStates.length > 0) {
-          if (enterStates[0] !== exitStates[0]) { break; }
-
-          if (enterStates.length === matchedContexts.length) {
-            if (this.getStateMeta(enterStates[0], 'context') !== matchedContexts[0]) { break; }
-            matchedContexts.shift();
-          }
-
-          resolveState = enterStates.shift();
-          exitStates.shift();
-        }
+        resolveState = enterStates.shift();
+        exitStates.shift();
       }
     }
 

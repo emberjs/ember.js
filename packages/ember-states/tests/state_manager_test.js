@@ -715,3 +715,37 @@ test("transitionEvent is called for each nested state with context", function() 
   ok(calledOnParent, 'called transitionEvent on parent');
   ok(calledOnChild, 'called transitionEvent on child');
 });
+
+test("nothing happens if transitioning to a parent state when the current state is also the initial state", function() {
+  var calledOnParent = 0,
+      calledOnChild = 0;
+
+  Ember.run(function() {
+    stateManager = Ember.StateManager.create({
+      start: Ember.State.create({
+        initialState: 'first',
+
+        setup: function() {
+          calledOnParent++;
+        },
+
+        first: Ember.State.create({
+          setup: function() {
+            calledOnChild++;
+          }
+        })
+      })
+    });
+  });
+
+  equal(calledOnParent, 1, 'precond - setup parent');
+  equal(calledOnChild, 1, 'precond - setup child');
+  equal(stateManager.getPath('currentState.path'), 'start.first', 'precond - is in expected state');
+
+  stateManager.transitionTo('start');
+
+  equal(calledOnParent, 1, 'does not transition to parent again');
+  equal(calledOnChild, 1, 'does not transition to child again');
+  equal(stateManager.getPath('currentState.path'), 'start.first', 'does not change state');
+
+});
