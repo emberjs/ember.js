@@ -15,8 +15,11 @@ Ember.Evented = Ember.Mixin.create(
       target = null;
     }
 
+    var self = this;
     var wrapped = function() {
-      Ember.removeListener(this, name, target, wrapped);
+      Ember.removeListener(self, name, target, wrapped);
+
+      if ('string' === typeof method) { method = this[method]; }
 
       // Internally, a `null` target means that the target is
       // the first parameter to addListener. That means that

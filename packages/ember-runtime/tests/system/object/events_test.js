@@ -89,3 +89,19 @@ test("binding an event can specify a different target", function() {
   equal(self, target);
 });
 
+test("a listener registered with one can take method as string and can be added with different target", function() {
+  var count = 0;
+  var target = {};
+  target.fn = function() { count++; };
+
+  var obj = Ember.Object.create(Ember.Evented);
+
+  obj.one('event!', target, 'fn');
+  obj.trigger('event!');
+
+  equal(count, 1, "the event was triggered");
+
+  obj.trigger('event!');
+
+  equal(count, 1, "the event was not triggered again");
+});
