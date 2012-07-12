@@ -43,23 +43,38 @@ test("getMeta and setMeta", function() {
   equal(Ember.getMeta(obj, 'foo'), "bar", "foo property on meta now exists");
 });
 
-if (window.jQuery) {
-  // Tests fix for https://github.com/emberjs/ember.js/issues/344
-  // This is primarily for older browsers such as IE8
-  test("jQuery.extend works on an extended Array", function() {
-    var array = [1,2,3],
-        result = {};
-
-
-    // Apply a mixin to an array so we can check the behavior of extended arrays
-    // Since prototypes may not be extended and NativeArray isn't defined in metal, we have an alternate mixin
-    if (!Ember.NativeArray || !Ember.NativeArray.detect(array)) {
-      var mixin = Ember.Mixin.create({ prop: 'val' });
-      array = mixin.apply(array);
+module("Ember.meta enumerable");
+// Tests fix for https://github.com/emberjs/ember.js/issues/344
+// This is primarily for older browsers such as IE8
+if (Ember.platform.defineProperty.isSimulated) {
+  if (window.jQuery) {
+    test("meta is not jQuery.isPlainObject", function () {
+      var proto, obj;
+      proto = {foo: 'bar'};
+      equal(jQuery.isPlainObject(Ember.meta(proto)), false, 'meta should not be isPlainObject when meta property cannot be marked as enumerable: false');
+      obj = Ember.create(proto);
+      equal(jQuery.isPlainObject(Ember.meta(obj)), false, 'meta should not be isPlainObject when meta property cannot be marked as enumerable: false');
+    });
+  }
+} else {
+  test("meta is not enumerable", function () {
+    var proto, obj, props, prop;
+    proto = {foo: 'bar'};
+    Ember.meta(proto);
+    obj = Ember.create(proto);
+    Ember.meta(obj);
+    obj.bar = 'baz';
+    props = [];
+    for (prop in obj) {
+      props.push(prop);
     }
-
-    jQuery.extend(true, result, { arr: array });
-
-    equal(result.arr.length, 3);
+    deepEqual(props.sort(), ['bar', 'foo']);
+    if (window.JSON && 'stringify' in JSON) {
+      try {
+        JSON.stringify(obj);
+      } catch (e) {
+        ok(false, 'meta should not fail JSON.stringify');
+      }
+    }
   });
 }

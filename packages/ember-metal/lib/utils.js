@@ -206,6 +206,8 @@ Ember.meta = function meta(obj, writable) {
     ret.descs.constructor = null;
 
   } else if (ret.source !== obj) {
+    if (!isDefinePropertySimulated) o_defineProperty(obj, META_KEY, META_DESC);
+
     ret = o_create(ret);
     ret.descs    = o_create(ret.descs);
     ret.watching = o_create(ret.watching);
