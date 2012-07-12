@@ -86,6 +86,15 @@ Ember.config = Ember.config || {};
 */
 Ember.EXTEND_PROTOTYPES = (Ember.ENV.EXTEND_PROTOTYPES !== false);
 
+/**
+  @static
+  @type Boolean
+  @default true
+  @constant
+
+  Determines whether Ember logs a full stack trace during deprecation warnings
+*/
+Ember.LOG_STACKTRACE_ON_DEPRECATION = (Ember.ENV.LOG_STACKTRACE_ON_DEPRECATION !== false);
 
 /**
   @static
