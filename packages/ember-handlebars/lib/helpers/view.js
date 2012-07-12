@@ -162,6 +162,12 @@ EmberHandlebars.ViewHelper = Ember.Object.create({
       viewOptions.template = fn;
     }
 
+    // We only want to override the `_context` computed property if there is
+    // no specified controller. See View#_context for more information.
+    if (!newView.proto().controller && !newView.proto().controllerBinding && !viewOptions.controller && !newView.controllerBinding) {
+      viewOptions._context = thisContext;
+    }
+
     currentView.appendChild(newView, viewOptions);
   }
 });

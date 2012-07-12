@@ -191,4 +191,17 @@ if (Ember.VIEW_PRESERVES_CONTEXT) {
     equal(view.$().text(), "My Cool Each Test 1My Cool Each Test 2");
   });
 
+  test("views inside #each preserve the new context", function() {
+    var controller = Ember.A([ { name: "Adam" }, { name: "Steve" } ]);
+
+    view = Ember.View.create({
+      controller: controller,
+      template: templateFor('{{#each controller}}{{#view}}{{name}}{{/view}}{{/each}}')
+    });
+
+    append(view);
+
+    equal(view.$().text(), "AdamSteve");
+  });
+
 }

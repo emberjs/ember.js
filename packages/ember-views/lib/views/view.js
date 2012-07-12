@@ -568,9 +568,19 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     Private copy of the view's template context. This can be set directly
     by Handlebars without triggering the observer that causes the view
     to be re-rendered.
+
+    The context of a view is looked up as follows:
+
+    1. Specified controller
+    2. Supplied context (usually by Handlebars)
+    3. `parentView`'s context (for a child of a ContainerView)
+
+    The code in Handlebars that overrides the `_context` property first
+    checks to see whether the view has a specified controller. This is
+    something of a hack and should be revisited.
   */
   _context: Ember.computed(function(key, value) {
-    var parentView, controller;
+    var parentView, controller, context;
 
     if (arguments.length === 2) {
       return value;
