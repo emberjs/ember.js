@@ -15,7 +15,7 @@ Ember.TextSupport = Ember.Mixin.create(
 
   value: "",
 
-  attributeBindings: ['placeholder', 'disabled', 'maxlength'],
+  attributeBindings: ['placeholder', 'disabled', 'maxlength', 'tabindex'],
   placeholder: null,
   disabled: false,
   maxlength: null,

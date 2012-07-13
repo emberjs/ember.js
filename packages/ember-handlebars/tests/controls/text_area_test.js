@@ -114,6 +114,19 @@ test("input cols is updated when setting cols property of view", function() {
   equal(textArea.$().attr('cols'), "40", "updates text area after cols changes");
 });
 
+test("input tabindex is updated when setting tabindex property of view", function() {
+  Ember.run(function() {
+    set(textArea, 'tabindex', '4');
+    textArea.append();
+  });
+
+  equal(textArea.$().attr('tabindex'), "4", "renders text area with the tabindex");
+
+  Ember.run(function() { set(textArea, 'tabindex', '1'); });
+
+  equal(textArea.$().attr('tabindex'), "1", "updates text area after tabindex changes");
+});
+
 test("value binding works properly for inputs that haven't been created", function() {
 
   Ember.run(function() {
