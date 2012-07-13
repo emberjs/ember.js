@@ -97,7 +97,7 @@ Ember.Select = Ember.View.extend(
   tagName: 'select',
   classNames: ['ember-select'],
   defaultTemplate: Ember.Handlebars.compile('{{#if view.prompt}}<option value>{{view.prompt}}</option>{{/if}}{{#each view.content}}{{view Ember.SelectOption contentBinding="this"}}{{/each}}'),
-  attributeBindings: ['multiple'],
+  attributeBindings: ['multiple', 'tabindex'],
 
   /**
     The `multiple` attribute of the select element. Indicates whether multiple

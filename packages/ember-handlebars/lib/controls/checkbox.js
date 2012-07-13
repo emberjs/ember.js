@@ -42,7 +42,7 @@ Ember.Checkbox = Ember.View.extend({
 
   tagName: 'input',
 
-  attributeBindings: ['type', 'checked', 'disabled'],
+  attributeBindings: ['type', 'checked', 'disabled', 'tabindex'],
 
   type: "checkbox",
   checked: false,
