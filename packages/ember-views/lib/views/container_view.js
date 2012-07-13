@@ -231,7 +231,7 @@ Ember.ContainerView = Ember.View.extend({
     }, this);
 
     var currentView = get(this, 'currentView');
-    if (currentView) _childViews.push(currentView);
+    if (currentView) _childViews.push(this.createChildView(currentView));
 
     // Make the _childViews array observable
     Ember.A(_childViews);

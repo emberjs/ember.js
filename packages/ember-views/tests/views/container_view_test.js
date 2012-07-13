@@ -133,9 +133,16 @@ test("if a ContainerView starts with an empy currentView, nothing is displayed",
 });
 
 test("if a ContainerView starts with a currentView, it is rendered as a child view", function() {
-  var container = Ember.ContainerView.create();
+  var controller = Ember.Controller.create();
+  var container = Ember.ContainerView.create({
+    controller: controller
+  });
+  var context = null;
+  var templateData = null;
   var mainView = Ember.View.create({
-    template: function() {
+    template: function(ctx, opts) {
+      context = ctx;
+      templateData = opts.data;
       return "This is the main view.";
     }
   });
@@ -149,16 +156,31 @@ test("if a ContainerView starts with a currentView, it is rendered as a child vi
   equal(container.$().text(), "This is the main view.", "should render its child");
   equal(getPath(container, 'childViews.length'), 1, "should have one child view");
   equal(getPath(container, 'childViews').objectAt(0), mainView, "should have the currentView as the only child view");
+  equal(mainView.get('parentView'), container, "parentView is setup");
+  if (Ember.VIEW_PRESERVES_CONTEXT) {
+    equal(context, container.get('context'), 'context preserved');
+    equal(templateData.keywords.controller, controller, 'templateData is setup');
+    equal(templateData.keywords.view, mainView, 'templateData is setup');
+  }
 });
 
 test("if a ContainerView is created with a currentView, it is rendered as a child view", function() {
+  var context = null;
+  var templateData = null;
   var mainView = Ember.View.create({
-    template: function() {
+    template: function(ctx, opts) {
+      context = ctx;
+      templateData = opts.data;
       return "This is the main view.";
     }
   });
 
-  var container = Ember.ContainerView.create({currentView: mainView});
+  var controller = Ember.Controller.create();
+
+  var container = Ember.ContainerView.create({
+    currentView: mainView,
+    controller: controller
+  });
 
   Ember.run(function() {
     container.appendTo('#qunit-fixture');
@@ -167,6 +189,12 @@ test("if a ContainerView is created with a currentView, it is rendered as a chil
   equal(container.$().text(), "This is the main view.", "should render its child");
   equal(getPath(container, 'childViews.length'), 1, "should have one child view");
   equal(getPath(container, 'childViews').objectAt(0), mainView, "should have the currentView as the only child view");
+  equal(mainView.get('parentView'), container, "parentView is setup");
+  if (Ember.VIEW_PRESERVES_CONTEXT) {
+    equal(context, container.get('context'), 'context preserved');
+    equal(templateData.keywords.controller, controller, 'templateData is setup');
+    equal(templateData.keywords.view, mainView, 'templateData is setup');
+  }
 });
 
 test("if a ContainerView starts with no currentView and then one is set, the ContainerView is updated", function() {
