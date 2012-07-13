@@ -139,9 +139,17 @@ test('initialized application go to initial route', function() {
         })
       })
     });
+
+
+    app.ApplicationView = Ember.View.extend({
+      template: function() { return "Hello!"; }
+    });
+
+    app.ApplicationController = Ember.Controller.extend();
+
+    app.initialize(app.stateManager);
   });
 
-  app.initialize(app.stateManager);
   equal(app.getPath('router.currentState.path'), 'root.index', "The router moved the state into the right place");
 });
 
@@ -160,6 +168,12 @@ test("initialize application with stateManager via initialize call", function() 
         })
       })
     });
+
+    app.ApplicationView = Ember.View.extend({
+      template: function() { return "Hello!"; }
+    });
+
+    app.ApplicationController = Ember.Controller.extend();
 
     app.initialize(app.Router.create());
   });
@@ -184,6 +198,12 @@ test("initialize application with stateManager via initialize call from Router c
         })
       })
     });
+
+    app.ApplicationView = Ember.View.extend({
+      template: function() { return "Hello!"; }
+    });
+
+    app.ApplicationController = Ember.Controller.extend();
 
     app.initialize();
   });
@@ -262,6 +282,34 @@ test("ApplicationView is inserted into the page", function() {
   });
 
   equal(Ember.$("#qunit-fixture").text(), "Hello!");
+});
+
+test("ApplicationView and ApplicationController are assumed to exist in all Routers", function() {
+
+  Ember.run(function() {
+    app = Ember.Application.create({
+      rootElement: '#qunit-fixture'
+    });
+
+    app.OneView = Ember.View.extend({
+      template: function() { return "Hello!"; }
+    });
+    app.OneController = Ember.Controller.extend();
+
+    app.Router = Ember.Router.extend({
+      location: 'hash',
+
+      root: Ember.Route.extend({
+        index: Ember.Route.extend({
+          route: '/'
+        })
+      })
+    });
+
+
+    raises(function(){ app.initialize(); }, Error);
+  });
+
 });
 
 test("ControllerObject class can be initialized with target, controllers and view properties", function() {
