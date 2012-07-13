@@ -204,4 +204,19 @@ if (Ember.VIEW_PRESERVES_CONTEXT) {
     equal(view.$().text(), "AdamSteve");
   });
 
+  test("controller is assignable inside an #each", function() {
+    var controller = Ember.ArrayController.create({
+      content: Ember.A([ { name: "Adam" }, { name: "Steve" } ])
+    });
+
+    view = Ember.View.create({
+      controller: controller,
+      template: templateFor('{{#each itemController in this}}{{#view controllerBinding="itemController"}}{{name}}{{/view}}{{/each}}')
+    });
+
+    append(view);
+
+    equal(view.$().text(), "AdamSteve");
+  });
+
 }
