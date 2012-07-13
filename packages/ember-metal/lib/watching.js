@@ -496,6 +496,7 @@ Ember.unwatch = function(obj, keyName) {
           writable: true,
           value: m.values[keyName]
         });
+        delete m.values[keyName];
       }
     } else {
       chainsFor(obj).remove(keyName);
