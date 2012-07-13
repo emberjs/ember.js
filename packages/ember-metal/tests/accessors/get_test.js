@@ -24,21 +24,6 @@ test('should get arbitrary properties on an object', function() {
 
 });
 
-test('should call unknownProperty if defined and value is undefined', function() {
-
-  var obj = {
-    count: 0,
-    unknownProperty: function(key) {
-      equal(key, 'foo', 'should pass key');
-      this.count++;
-      return 'FOO';
-    }
-  };
-
-  equal(Ember.get(obj, 'foo'), 'FOO', 'should return value from unknown');
-  equal(obj.count, 1, 'should have invoked');
-});
-
 testBoth("should call unknownProperty on watched values if the value is undefined", function(get, set) {
   var obj = {
     count: 0,
