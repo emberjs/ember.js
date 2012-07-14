@@ -1991,6 +1991,23 @@ Ember.View.reopen({
 });
 
 Ember.View.reopenClass({
+
+  /**
+    @private
+
+    Parse a path and return an object which holds the parsed properties.
+
+    For example a path like "content.isEnabled:enabled:disabled" wil return the
+    following object:
+
+        {
+          path: "content.isEnabled",
+          className: "enabled",
+          falsyClassName: "disabled",
+          classNames: ":enabled:disabled"
+        }
+
+  */
   _parsePropertyPath: function(path) {
     var split = path.split(/:/),
         propertyPath = split[0],
@@ -2019,6 +2036,19 @@ Ember.View.reopenClass({
     };
   },
 
+  /**
+    @private
+
+    Get the class name for a given value, based on the path, optional className
+    and optional falsyClassName.
+
+    - if the value is truthy and a className is defined, the className is returned
+    - if the value is true, the dasherized last part of the supplied path is returned
+    - if the value is false and a falsyClassName is supplied, the falsyClassName is returned
+    - if the value is truthy, the value is returned
+    - if none of the above rules apply, null is returned
+
+  */
   _classStringForValue: function(path, val, className, falsyClassName) {
     // If the value is truthy and we're using the colon syntax,
     // we should return the className directly
