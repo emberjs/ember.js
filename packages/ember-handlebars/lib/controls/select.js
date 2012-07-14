@@ -119,7 +119,7 @@ Ember.Select = Ember.View.extend(
         content: Ember.A([
             { id: 1, firstName: 'Yehuda' },
             { id: 2, firstName: 'Tom' }
-          ])),
+          ]),
         optionLabelPath: 'content.firstName',
         optionValuePath: 'content.id'
 
