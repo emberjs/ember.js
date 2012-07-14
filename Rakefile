@@ -8,32 +8,9 @@ def pipeline
 end
 
 def setup_uploader(root=Dir.pwd)
-  require './lib/github_uploader'
-
-  login = origin = nil
-
-  Dir.chdir(root) do
-    # get the github user name
-    login = `git config github.user`.chomp
-
-    # get repo from git config's origin url
-    origin = `git config remote.origin.url`.chomp # url to origin
-    # extract USERNAME/REPO_NAME
-    # sample urls: https://github.com/emberjs/ember.js.git
-    #              git://github.com/emberjs/ember.js.git
-    #              git@github.com:emberjs/ember.js.git
-    #              git@github.com:emberjs/ember.js
-  end
-
-  repoUrl = origin.match(/github\.com[\/:]((.+?)\/(.+?))(\.git)?$/)
-  username = ENV['GH_USERNAME'] || repoUrl[2] # username part of origin url
-  repo = ENV['GH_REPO'] || repoUrl[3] # repository name part of origin url
-
-  token = ENV["GH_OAUTH_TOKEN"]
-
-  uploader = GithubUploader.new(login, username, repo, token)
+  require 'github_downloads'
+  uploader = GithubDownloads::Uploader.new
   uploader.authorize
-
   uploader
 end
 
