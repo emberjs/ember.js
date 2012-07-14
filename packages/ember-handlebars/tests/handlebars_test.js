@@ -1149,12 +1149,13 @@ test("{{view}} should evaluate class bindings set to global paths", function() {
     window.App = Ember.Application.create({
       isApp:       true,
       isGreat:     true,
-      directClass: "app-direct"
+      directClass: "app-direct",
+      isEnabled:   true
     });
   });
 
   view = Ember.View.create({
-    template: Ember.Handlebars.compile('{{view Ember.TextField class="unbound" classBinding="App.isGreat:great App.directClass App.isApp"}}')
+    template: Ember.Handlebars.compile('{{view Ember.TextField class="unbound" classBinding="App.isGreat:great App.directClass App.isApp App.isEnabled?enabled:disabled"}}')
   });
 
   appendView();
@@ -1163,12 +1164,17 @@ test("{{view}} should evaluate class bindings set to global paths", function() {
   ok(view.$('input').hasClass('great'),       "evaluates classes bound to global paths");
   ok(view.$('input').hasClass('app-direct'),  "evaluates classes bound directly to global paths");
   ok(view.$('input').hasClass('is-app'),      "evaluates classes bound directly to booleans in global paths - dasherizes and sets class when true");
+  ok(view.$('input').hasClass('enabled'),     "evaluates ternary operator in classBindings");
+  ok(!view.$('input').hasClass('disabled'),   "evaluates ternary operator in classBindings");
 
   Ember.run(function() {
     App.set('isApp', false);
+    App.set('isEnabled', false);
   });
 
   ok(!view.$('input').hasClass('is-app'),     "evaluates classes bound directly to booleans in global paths - removes class when false");
+  ok(!view.$('input').hasClass('enabled'),    "evaluates ternary operator in classBindings");
+  ok(view.$('input').hasClass('disabled'),    "evaluates ternary operator in classBindings");
 
   Ember.run(function() {
     window.App.destroy();
@@ -1180,7 +1186,8 @@ test("{{view}} should evaluate class bindings set in the current context", funct
     isView:      true,
     isEditable:  true,
     directClass: "view-direct",
-    template: Ember.Handlebars.compile('{{view Ember.TextField class="unbound" classBinding="isEditable:editable directClass isView"}}')
+    isEnabled: true,
+    template: Ember.Handlebars.compile('{{view Ember.TextField class="unbound" classBinding="isEditable:editable directClass isView isEnabled?enabled:disabled"}}')
   });
 
   appendView();
@@ -1189,30 +1196,49 @@ test("{{view}} should evaluate class bindings set in the current context", funct
   ok(view.$('input').hasClass('editable'),    "evaluates classes bound in the current context");
   ok(view.$('input').hasClass('view-direct'), "evaluates classes bound directly in the current context");
   ok(view.$('input').hasClass('is-view'),     "evaluates classes bound directly to booleans in the current context - dasherizes and sets class when true");
+  ok(view.$('input').hasClass('enabled'),     "evaluates ternary operator in classBindings");
+  ok(!view.$('input').hasClass('disabled'),   "evaluates ternary operator in classBindings");
 
   Ember.run(function() {
     view.set('isView', false);
+    view.set('isEnabled', false);
   });
 
   ok(!view.$('input').hasClass('is-view'),    "evaluates classes bound directly to booleans in the current context - removes class when false");
+  ok(!view.$('input').hasClass('enabled'),    "evaluates ternary operator in classBindings");
+  ok(view.$('input').hasClass('disabled'),    "evaluates ternary operator in classBindings");
 });
 
 test("{{view}} should evaluate class bindings set with either classBinding or classNameBindings", function() {
   Ember.run(function() {
     window.App = Ember.Application.create({
-      isGreat: true
+      isGreat: true,
+      isEnabled: true
     });
   });
 
   view = Ember.View.create({
-    template: Ember.Handlebars.compile('{{view Ember.TextField class="unbound" classBinding="App.isGreat:great" classNameBindings="App.isGreat:really-great"}}')
+    template: Ember.Handlebars.compile('{{view Ember.TextField class="unbound" classBinding="App.isGreat:great App.isEnabled?enabled:disabled" classNameBindings="App.isGreat:really-great App.isEnabled?really-enabled:really-disabled"}}')
   });
 
   appendView();
 
-  ok(view.$('input').hasClass('unbound'),      "sets unbound classes directly");
-  ok(view.$('input').hasClass('great'),        "evaluates classBinding");
-  ok(view.$('input').hasClass('really-great'), "evaluates classNameBinding");
+  ok(view.$('input').hasClass('unbound'),          "sets unbound classes directly");
+  ok(view.$('input').hasClass('great'),            "evaluates classBinding");
+  ok(view.$('input').hasClass('really-great'),     "evaluates classNameBinding");
+  ok(view.$('input').hasClass('enabled'),          "evaluates ternary operator in classBindings");
+  ok(view.$('input').hasClass('really-enabled'),   "evaluates ternary operator in classBindings");
+  ok(!view.$('input').hasClass('disabled'),        "evaluates ternary operator in classBindings");
+  ok(!view.$('input').hasClass('really-disabled'), "evaluates ternary operator in classBindings");
+
+  Ember.run(function() {
+    App.set('isEnabled', false);
+  });
+
+  ok(!view.$('input').hasClass('enabled'),        "evaluates ternary operator in classBindings");
+  ok(!view.$('input').hasClass('really-enabled'), "evaluates ternary operator in classBindings");
+  ok(view.$('input').hasClass('disabled'),        "evaluates ternary operator in classBindings");
+  ok(view.$('input').hasClass('really-disabled'), "evaluates ternary operator in classBindings");
 
   Ember.run(function() {
     window.App.destroy();
@@ -1545,11 +1571,10 @@ test("should not allow XSS injection via {{bindAttr}} with class", function() {
   equal(view.$('img').attr('class'), '" onmouseover="alert(\'I am in your classes hacking your app\');');
 });
 
-test("should be able to bind boolean element attributes using {{bindAttr}}", function() {
-  var template = Ember.Handlebars.compile('<input type="checkbox" {{bindAttr disabled="content.isDisabled" checked="content.isChecked"}} />');
+test("should be able to bind class attribute using ternary operator in {{bindAttr}}", function() {
+  var template = Ember.Handlebars.compile('<img {{bindAttr class="content.isDisabled?disabled:enabled"}} />');
   var content = Ember.Object.create({
-    isDisabled: false,
-    isChecked: true
+    isDisabled: true
   });
 
   view = Ember.View.create({
@@ -1559,24 +1584,24 @@ test("should be able to bind boolean element attributes using {{bindAttr}}", fun
 
   appendView();
 
-  ok(!view.$('input').attr('disabled'), 'attribute does not exist upon initial render');
-  ok(view.$('input').attr('checked'), 'attribute is present upon initial render');
+  ok(view.$('img').hasClass('disabled'), 'disabled class is rendered');
+  ok(!view.$('img').hasClass('enabled'), 'enabled class is not rendered');
 
   Ember.run(function() {
-    set(content, 'isDisabled', true);
-    set(content, 'isChecked', false);
+    set(content, 'isDisabled', false);
   });
 
-  ok(view.$('input').attr('disabled'), 'attribute exists after update');
-  ok(!view.$('input').attr('checked'), 'attribute is not present after update');
+  ok(!view.$('img').hasClass('disabled'), 'disabled class is not rendered');
+  ok(view.$('img').hasClass('enabled'), 'enabled class is rendered');
 });
 
 test("should be able to add multiple classes using {{bindAttr class}}", function() {
-  var template = Ember.Handlebars.compile('<div {{bindAttr class="content.isAwesomeSauce content.isAlsoCool content.isAmazing:amazing :is-super-duper"}}></div>');
+  var template = Ember.Handlebars.compile('<div {{bindAttr class="content.isAwesomeSauce content.isAlsoCool content.isAmazing:amazing :is-super-duper content.isEnabled?enabled:disabled"}}></div>');
   var content = Ember.Object.create({
     isAwesomeSauce: true,
     isAlsoCool: true,
-    isAmazing: true
+    isAmazing: true,
+    isEnabled: true
   });
 
   view = Ember.View.create({
@@ -1590,15 +1615,20 @@ test("should be able to add multiple classes using {{bindAttr class}}", function
   ok(view.$('div').hasClass('is-also-cool'), "dasherizes second property and sets classname");
   ok(view.$('div').hasClass('amazing'), "uses alias for third property and sets classname");
   ok(view.$('div').hasClass('is-super-duper'), "static class is present");
+  ok(view.$('div').hasClass('enabled'), "truthy class in ternary classname definition is rendered");
+  ok(!view.$('div').hasClass('disabled'), "falsy class in ternary classname definition is not rendered");
 
   Ember.run(function() {
     set(content, 'isAwesomeSauce', false);
     set(content, 'isAmazing', false);
+    set(content, 'isEnabled', false);
   });
 
   ok(!view.$('div').hasClass('is-awesome-sauce'), "removes dasherized class when property is set to false");
   ok(!view.$('div').hasClass('amazing'), "removes aliased class when property is set to false");
   ok(view.$('div').hasClass('is-super-duper'), "static class is still present");
+  ok(!view.$('div').hasClass('enabled'), "truthy class in ternary classname definition is not rendered");
+  ok(view.$('div').hasClass('disabled'), "falsy class in ternary classname definition is rendered");
 });
 
 test("should be able to bind classes to globals with {{bindAttr class}}", function() {

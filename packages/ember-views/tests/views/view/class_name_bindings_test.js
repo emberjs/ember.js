@@ -11,13 +11,15 @@ module("Ember.View - Class Name Bindings");
 test("should apply bound class names to the element", function() {
   var view = Ember.View.create({
     classNameBindings: ['priority', 'isUrgent', 'isClassified:classified',
-                        'canIgnore', 'messages.count', 'messages.resent:is-resent', 'isNumber:is-number'],
+                        'canIgnore', 'messages.count', 'messages.resent:is-resent', 'isNumber:is-number',
+                        'isEnabled?enabled:disabled'],
 
     priority: 'high',
     isUrgent: true,
     isClassified: true,
     canIgnore: false,
-		isNumber: 5,
+    isNumber: 5,
+    isEnabled: true,
 
     messages: {
       count: 'five-messages',
@@ -36,17 +38,21 @@ test("should apply bound class names to the element", function() {
   ok(view.$().hasClass('is-resent'), "supports customing class name for paths");
   ok(view.$().hasClass('is-number'), "supports colon syntax with truthy properties");
   ok(!view.$().hasClass('can-ignore'), "does not add false Boolean values as class");
+  ok(view.$().hasClass('enabled'), "supports customizing class name for Boolean values with negation");
+  ok(!view.$().hasClass('disabled'), "does not add class name for negated binding");
 });
 
 test("should add, remove, or change class names if changed after element is created", function() {
   var view = Ember.View.create({
     classNameBindings: ['priority', 'isUrgent', 'isClassified:classified',
-                        'canIgnore', 'messages.count', 'messages.resent:is-resent'],
+                        'canIgnore', 'messages.count', 'messages.resent:is-resent',
+                        'isEnabled?enabled:disabled'],
 
     priority: 'high',
     isUrgent: true,
     isClassified: true,
     canIgnore: false,
+    isEnabled: true,
 
     messages: Ember.Object.create({
       count: 'five-messages',
@@ -59,6 +65,7 @@ test("should add, remove, or change class names if changed after element is crea
     set(view, 'priority', 'orange');
     set(view, 'isUrgent', false);
     set(view, 'canIgnore', true);
+    set(view, 'isEnabled', false);
     setPath(view, 'messages.count', 'six-messages');
     setPath(view, 'messages.resent', true );
   });
@@ -73,6 +80,9 @@ test("should add, remove, or change class names if changed after element is crea
   ok(!view.$().hasClass('five-messages'), "removes old value when path changes");
 
   ok(view.$().hasClass('is-resent'), "adds customized class name when path changes");
+
+  ok(!view.$().hasClass('enabled'), "updates class name for negated binding");
+  ok(view.$().hasClass('disabled'), "adds negated class name for negated binding");
 });
 
 test("classNames should not be duplicated on rerender", function(){
