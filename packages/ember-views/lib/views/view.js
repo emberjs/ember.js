@@ -926,7 +926,7 @@ Ember.View = Ember.Object.extend(Ember.Evented,
       // Variable in which the old class value is saved. The observer function
       // closes over this variable, so it knows which string to remove when
       // the property changes.
-      var oldClass, property;
+      var oldClass;
 
       // Set up an observer on the context. If the property changes, toggle the
       // class name.
@@ -968,8 +968,8 @@ Ember.View = Ember.Object.extend(Ember.Evented,
       }
 
       // Extract just the property name from bindings like 'foo:bar'
-      property = binding.split(':')[0];
-      addObserver(this, property, observer);
+      var parsedPath = Ember.View._parsePropertyPath(binding);
+      addObserver(this, parsedPath.path, observer);
     }, this);
   },
 
@@ -1018,41 +1018,8 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     passing `isUrgent` to this method will return `"is-urgent"`.
   */
   _classStringForProperty: function(property) {
-    var split = property.split(':'),
-        className = split[1];
-
-    property = split[0];
-
-    // TODO: Remove this `false` when the `getPath` globals support is removed
-    var val = Ember.getPath(this, property, false);
-    if (val === undefined && Ember.isGlobalPath(property)) {
-      val = Ember.getPath(window, property);
-    }
-
-    // If the value is truthy and we're using the colon syntax,
-    // we should return the className directly
-    if (!!val && className) {
-      return className;
-
-    // If value is a Boolean and true, return the dasherized property
-    // name.
-    } else if (val === true) {
-      // Normalize property path to be suitable for use
-      // as a class name. For exaple, content.foo.barBaz
-      // becomes bar-baz.
-      var parts = property.split('.');
-      return Ember.String.dasherize(parts[parts.length-1]);
-
-    // If the value is not false, undefined, or null, return the current
-    // value of the property.
-    } else if (val !== false && val !== undefined && val !== null) {
-      return val;
-
-    // Nothing to display. Return null so that the old class is removed
-    // but no new class is added.
-    } else {
-      return null;
-    }
+    var parsedPath = Ember.View._parsePropertyPath(property);
+    return Ember.View._classStringForPath(this, parsedPath.path, parsedPath.className, parsedPath.falsyClassName);
   },
 
   // ..........................................................
@@ -2001,6 +1968,78 @@ var DOMManager = {
 Ember.View.reopen({
   states: Ember.View.states,
   domManager: DOMManager
+});
+
+Ember.View.reopenClass({
+  _parsePropertyPath: function(path) {
+    var split = path.split(/\?|:/),
+        propertyPath = split[0],
+        className,
+        falsyClassName;
+
+    // check if the property is defined as prop?trueClass:falseClass
+    if (split.length > 1) {
+      className = split[1];
+      if (split.length === 3) { falsyClassName = split[2]; }
+    }
+
+    var classNames = "";
+    if (className) {
+      if (falsyClassName) {
+        classNames = '?' + className + ':' + falsyClassName;
+      } else {
+        classNames = ':' + className;
+      }
+    }
+
+    return {
+      path: propertyPath,
+      classNames: classNames,
+      className: className,
+      falsyClassName: falsyClassName
+    };
+  },
+
+  _classStringForValue: function(path, val, className, falsyClassName) {
+    // If the value is truthy and we're using the colon syntax,
+    // we should return the className directly
+    if (!!val && className) {
+      return className;
+
+    // If value is a Boolean and true, return the dasherized property
+    // name.
+    } else if (val === true) {
+      // Normalize property path to be suitable for use
+      // as a class name. For exaple, content.foo.barBaz
+      // becomes bar-baz.
+      var parts = path.split('.');
+      return Ember.String.dasherize(parts[parts.length-1]);
+
+    // If the value is false and a falsyClassName is specified, return it
+    } else if (val === false && falsyClassName) {
+      return falsyClassName;
+
+    // If the value is not false, undefined, or null, return the current
+    // value of the property.
+    } else if (val !== false && val !== undefined && val !== null) {
+      return val;
+
+    // Nothing to display. Return null so that the old class is removed
+    // but no new class is added.
+    } else {
+      return null;
+    }
+  },
+
+  _classStringForPath: function(root, path, className, falsyClassName, options) {
+    // TODO: Remove this `false` when the `getPath` globals support is removed
+    var val = getPath(root, path, options);
+    if (val === undefined && Ember.isGlobalPath(path)) {
+      val = getPath(window, path);
+    }
+
+    return Ember.View._classStringForValue(path, val, className, falsyClassName);
+  }
 });
 
 // Create a global view hash.
