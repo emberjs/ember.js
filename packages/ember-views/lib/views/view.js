@@ -1019,7 +1019,15 @@ Ember.View = Ember.Object.extend(Ember.Evented,
   */
   _classStringForProperty: function(property) {
     var parsedPath = Ember.View._parsePropertyPath(property);
-    return Ember.View._classStringForPath(this, parsedPath.path, parsedPath.className, parsedPath.falsyClassName);
+    var path = parsedPath.path;
+
+    // TODO: Remove this `false` when the `getPath` globals support is removed
+    var val = getPath(this, path, false);
+    if (val === undefined && Ember.isGlobalPath(path)) {
+      val = getPath(window, path);
+    }
+
+    return Ember.View._classStringForValue(path, val, parsedPath.className, parsedPath.falsyClassName);
   },
 
   // ..........................................................
@@ -2028,16 +2036,6 @@ Ember.View.reopenClass({
     } else {
       return null;
     }
-  },
-
-  _classStringForPath: function(root, path, className, falsyClassName, options) {
-    // TODO: Remove this `false` when the `getPath` globals support is removed
-    var val = getPath(root, path, options);
-    if (val === undefined && Ember.isGlobalPath(path)) {
-      val = getPath(window, path);
-    }
-
-    return Ember.View._classStringForValue(path, val, className, falsyClassName);
   }
 });
 
