@@ -151,6 +151,18 @@ var invokeForState = {
 
       <div id="ember1" class="ember-view empty"></div>
 
+
+  If you want to add a class name for a property which evaluates to true and
+  and a different class name if it evaluates to false, you can pass a binding
+  like this:
+
+    // Applies 'enabled' class when isEnabled is true and 'disabled' when isEnabled is false
+    Ember.View.create({
+      classNameBindings: ['isEnabled:enabled:disabled']
+      isEnabled: true
+    });
+
+
   Updates to the the value of a class name binding will result in automatic update 
   of the  HTML `class` attribute in the view's rendered HTML representation.
   If the value becomes  `false` or `undefined` the class name will be removed.
