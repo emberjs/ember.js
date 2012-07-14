@@ -1972,12 +1972,12 @@ Ember.View.reopen({
 
 Ember.View.reopenClass({
   _parsePropertyPath: function(path) {
-    var split = path.split(/\?|:/),
+    var split = path.split(/:/),
         propertyPath = split[0],
         className,
         falsyClassName;
 
-    // check if the property is defined as prop?trueClass:falseClass
+    // check if the property is defined as prop:class or prop:trueClass:falseClass
     if (split.length > 1) {
       className = split[1];
       if (split.length === 3) { falsyClassName = split[2]; }
@@ -1985,10 +1985,9 @@ Ember.View.reopenClass({
 
     var classNames = "";
     if (className) {
+      classNames += ':' + className;
       if (falsyClassName) {
-        classNames = '?' + className + ':' + falsyClassName;
-      } else {
-        classNames = ':' + className;
+        classNames += ':' + falsyClassName;
       }
     }
 

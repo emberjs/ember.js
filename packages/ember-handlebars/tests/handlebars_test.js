@@ -1155,7 +1155,7 @@ test("{{view}} should evaluate class bindings set to global paths", function() {
   });
 
   view = Ember.View.create({
-    template: Ember.Handlebars.compile('{{view Ember.TextField class="unbound" classBinding="App.isGreat:great App.directClass App.isApp App.isEnabled?enabled:disabled"}}')
+    template: Ember.Handlebars.compile('{{view Ember.TextField class="unbound" classBinding="App.isGreat:great App.directClass App.isApp App.isEnabled:enabled:disabled"}}')
   });
 
   appendView();
@@ -1187,7 +1187,7 @@ test("{{view}} should evaluate class bindings set in the current context", funct
     isEditable:  true,
     directClass: "view-direct",
     isEnabled: true,
-    template: Ember.Handlebars.compile('{{view Ember.TextField class="unbound" classBinding="isEditable:editable directClass isView isEnabled?enabled:disabled"}}')
+    template: Ember.Handlebars.compile('{{view Ember.TextField class="unbound" classBinding="isEditable:editable directClass isView isEnabled:enabled:disabled"}}')
   });
 
   appendView();
@@ -1218,7 +1218,7 @@ test("{{view}} should evaluate class bindings set with either classBinding or cl
   });
 
   view = Ember.View.create({
-    template: Ember.Handlebars.compile('{{view Ember.TextField class="unbound" classBinding="App.isGreat:great App.isEnabled?enabled:disabled" classNameBindings="App.isGreat:really-great App.isEnabled?really-enabled:really-disabled"}}')
+    template: Ember.Handlebars.compile('{{view Ember.TextField class="unbound" classBinding="App.isGreat:great App.isEnabled:enabled:disabled" classNameBindings="App.isGreat:really-great App.isEnabled:really-enabled:really-disabled"}}')
   });
 
   appendView();
@@ -1572,7 +1572,7 @@ test("should not allow XSS injection via {{bindAttr}} with class", function() {
 });
 
 test("should be able to bind class attribute using ternary operator in {{bindAttr}}", function() {
-  var template = Ember.Handlebars.compile('<img {{bindAttr class="content.isDisabled?disabled:enabled"}} />');
+  var template = Ember.Handlebars.compile('<img {{bindAttr class="content.isDisabled:disabled:enabled"}} />');
   var content = Ember.Object.create({
     isDisabled: true
   });
@@ -1596,7 +1596,7 @@ test("should be able to bind class attribute using ternary operator in {{bindAtt
 });
 
 test("should be able to add multiple classes using {{bindAttr class}}", function() {
-  var template = Ember.Handlebars.compile('<div {{bindAttr class="content.isAwesomeSauce content.isAlsoCool content.isAmazing:amazing :is-super-duper content.isEnabled?enabled:disabled"}}></div>');
+  var template = Ember.Handlebars.compile('<div {{bindAttr class="content.isAwesomeSauce content.isAlsoCool content.isAmazing:amazing :is-super-duper content.isEnabled:enabled:disabled"}}></div>');
   var content = Ember.Object.create({
     isAwesomeSauce: true,
     isAlsoCool: true,

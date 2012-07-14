@@ -12,7 +12,7 @@ test("should apply bound class names to the element", function() {
   var view = Ember.View.create({
     classNameBindings: ['priority', 'isUrgent', 'isClassified:classified',
                         'canIgnore', 'messages.count', 'messages.resent:is-resent', 'isNumber:is-number',
-                        'isEnabled?enabled:disabled'],
+                        'isEnabled:enabled:disabled'],
 
     priority: 'high',
     isUrgent: true,
@@ -46,7 +46,7 @@ test("should add, remove, or change class names if changed after element is crea
   var view = Ember.View.create({
     classNameBindings: ['priority', 'isUrgent', 'isClassified:classified',
                         'canIgnore', 'messages.count', 'messages.resent:is-resent',
-                        'isEnabled?enabled:disabled'],
+                        'isEnabled:enabled:disabled'],
 
     priority: 'high',
     isUrgent: true,

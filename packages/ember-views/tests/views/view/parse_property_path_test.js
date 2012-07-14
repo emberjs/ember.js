@@ -28,10 +28,10 @@ test("className is extracted", function() {
 });
 
 test("falsyClassName is extracted", function() {
-  var parsed = Ember.View._parsePropertyPath("content.simpleProperty?class:falsyClass");
+  var parsed = Ember.View._parsePropertyPath("content.simpleProperty:class:falsyClass");
 
   equal(parsed.path, "content.simpleProperty", "path is parsed correctly");
   equal(parsed.className, "class", "className is extracted");
   equal(parsed.falsyClassName, "falsyClass", "falsyClassName is extracted");
-  equal(parsed.classNames, "?class:falsyClass", "there is a classNames");
+  equal(parsed.classNames, ":class:falsyClass", "there is a classNames");
 });
