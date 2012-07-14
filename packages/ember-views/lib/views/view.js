@@ -162,6 +162,14 @@ var invokeForState = {
       isEnabled: true
     });
 
+  Will result in view instances with an HTML representation of:
+
+      <div id="ember1" class="ember-view enabled"></div>
+
+  When isEnabled is `false`, the resulting HTML reprensentation looks like this:
+
+      <div id="ember1" class="ember-view disabled"></div>
+
 
   Updates to the the value of a class name binding will result in automatic update 
   of the  HTML `class` attribute in the view's rendered HTML representation.
