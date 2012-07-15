@@ -78,7 +78,7 @@ EmberHandlebars.ViewHelper = Ember.Object.create({
       for (var b in extensions.classNameBindings) {
         var full = extensions.classNameBindings[b];
         if (typeof full === 'string') {
-          // Contextulaize the path of classNameBinding so this:
+          // Contextualize the path of classNameBinding so this:
           //
           //     classNameBinding="isGreen:green"
           //
