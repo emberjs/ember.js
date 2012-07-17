@@ -33,6 +33,8 @@ namespace :travis do
     u = setup_uploader
 
     puts "Get Travis CI public key for #{u.username}/#{u.repo}"
+
+    # FIXME check how to use the returned public_key from Travis CI to encrypt the vars string
     json = Net::HTTP.get("travis-ci.org", "/#{u.username}/#{u.repo}.json")
     public_key = JSON.parse(json)["public_key"]
     public_key = public_key.gsub("-----BEGIN RSA PUBLIC KEY-----", "")
