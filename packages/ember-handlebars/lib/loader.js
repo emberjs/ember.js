@@ -18,10 +18,6 @@ require("ember-handlebars/ext");
 Ember.Handlebars.bootstrap = function(ctx) {
   var selectors = 'script[type="text/x-handlebars"], script[type="text/x-raw-handlebars"]';
 
-  if (Ember.ENV.LEGACY_HANDLEBARS_TAGS) { selectors += ', script[type="text/html"]'; }
-
-  Ember.warn("Ember no longer parses text/html script tags by default. Set ENV.LEGACY_HANDLEBARS_TAGS = true to restore this functionality.", Ember.ENV.LEGACY_HANDLEBARS_TAGS || Ember.$('script[type="text/html"]').length === 0);
-
   Ember.$(selectors, ctx)
     .each(function() {
     // Get a reference to the script tag

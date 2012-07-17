@@ -72,22 +72,6 @@ test('template without data-element-id should still get an attribute', function(
   ok(id && /^ember\d+$/.test(id), "has standard Ember id");
 });
 
-test('template with type text/html should work if LEGACY_HANDLEBARS_TAGS is true', function() {
-  Ember.ENV.LEGACY_HANDLEBARS_TAGS = true;
-
-  try {
-    Ember.$('#qunit-fixture').html('<script type="text/html" data-template-name="funkyTemplate">Tobias Fünke</script>');
-
-    Ember.run(function() {
-      Ember.Handlebars.bootstrap(Ember.$('#qunit-fixture'));
-    });
-
-    ok(Ember.TEMPLATES['funkyTemplate'], 'template with name funkyTemplate available');
-  } finally {
-    Ember.ENV.LEGACY_HANDLEBARS_TAGS = false;
-  }
-});
-
 test('template with type text/x-raw-handlebars should be parsed', function() {
   Ember.$('#qunit-fixture').html('<script type="text/x-raw-handlebars" data-template-name="funkyTemplate">{{name}}</script>');
 
