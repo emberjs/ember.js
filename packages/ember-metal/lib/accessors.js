@@ -295,9 +295,10 @@ Ember.setPath = Ember.deprecateFunc('setPath is deprecated since set now support
   This is primarily used when syncing bindings, which may try to update after
   an object has been destroyed.
 */
-Ember.trySetPath = function(root, path, value) {
+Ember.trySet = function(root, path, value) {
   return set(root, path, value, true);
 };
+Ember.trySetPath = Ember.deprecateFunc('trySetPath has been renamed to trySet', Ember.trySet);
 
 /**
   Returns true if the provided path is global (e.g., "MyApp.fooController.bar")

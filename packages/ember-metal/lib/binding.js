@@ -5,7 +5,7 @@
 // ==========================================================================
 
 require('ember-metal/core'); // Ember.Logger
-require('ember-metal/accessors'); // get, set, trySetPath
+require('ember-metal/accessors'); // get, set, trySet
 require('ember-metal/utils'); // guidFor, isArray, meta
 require('ember-metal/observer'); // addObserver, removeObserver
 require('ember-metal/run_loop'); // Ember.run.schedule
@@ -134,7 +134,7 @@ Binding.prototype = /** @scope Ember.Binding.prototype */ {
     Ember.assert('Must pass a valid object to Ember.Binding.connect()', !!obj);
 
     var fromPath = this._from, toPath = this._to;
-    Ember.trySetPath(obj, toPath, getWithGlobals(obj, fromPath));
+    Ember.trySet(obj, toPath, getWithGlobals(obj, fromPath));
 
     // add an observer on the object to be notified when the binding should be updated
     Ember.addObserver(obj, fromPath, this, this.fromDidChange);
@@ -227,10 +227,10 @@ Binding.prototype = /** @scope Ember.Binding.prototype */ {
         Ember.Logger.log(' ', this.toString(), '->', fromValue, obj);
       }
       if (this._oneWay) {
-        Ember.trySetPath(obj, toPath, fromValue);
+        Ember.trySet(obj, toPath, fromValue);
       } else {
         Ember._suspendObserver(obj, toPath, this, this.toDidChange, function () {
-          Ember.trySetPath(obj, toPath, fromValue);
+          Ember.trySet(obj, toPath, fromValue);
         });
       }
     // if we're synchronizing *to* the remote object
@@ -240,7 +240,7 @@ Binding.prototype = /** @scope Ember.Binding.prototype */ {
         Ember.Logger.log(' ', this.toString(), '<-', toValue, obj);
       }
       Ember._suspendObserver(obj, fromPath, this, this.fromDidChange, function () {
-        Ember.trySetPath(Ember.isGlobalPath(fromPath) ? window : obj, fromPath, toValue);
+        Ember.trySet(Ember.isGlobalPath(fromPath) ? window : obj, fromPath, toValue);
       });
     }
   }
