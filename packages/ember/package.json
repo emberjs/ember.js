@@ -4,15 +4,15 @@
   "summary": "Ember - JavaScript Application Framework",
   "homepage": "http://github.com/emberjs/ember.js",
   "author": "Charles Jolley",
-  "version": "0.9.8.1",
+  "version": "1.0.pre",
 
   "dependencies": {
     "spade":                 "~> 1.0.0",
-    "ember-runtime": "0.9.8.1",
-    "ember-views": "0.9.8.1",
-    "ember-states": "0.9.8.1",
-    "ember-routing": "0.9.8.1",
-    "ember-handlebars": "0.9.8.1"
+    "ember-runtime": "1.0.pre",
+    "ember-views": "1.0.pre",
+    "ember-states": "1.0.pre",
+    "ember-routing": "1.0.pre",
+    "ember-handlebars": "1.0.pre"
   },
 
   "directories": {
