@@ -217,8 +217,6 @@ Ember.normalizeTuple = function(target, path) {
   return normalizeTuple(target, path);
 };
 
-Ember.normalizeTuple.primitive = normalizeTuple;
-
 Ember.getWithDefault = function(root, key, defaultValue) {
   var value = get(root, key);
 
