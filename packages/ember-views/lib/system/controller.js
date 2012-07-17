@@ -131,12 +131,39 @@ Ember.ControllerMixin.reopen({
       Ember.assert("The name you supplied " + name + " did not resolve to a controller " + name + 'Controller', (!!controller && !!context) || !context);
     }
 
-    if (controller && context) { controller.set('content', context); }
-    view = viewClass.create();
+    if (controller && context) { set(controller, 'content', context); }
+
+    var views = this._outlets.get(outletName);
+    view = views.get(viewClass);
+
+    if (!view) {
+      view = viewClass.create();
+      if (get(view, 'isShared')) {
+        views.set(viewClass, view);
+        view.one('willDestroy', function() { views.remove(viewClass); });
+      }
+    }
+
+    var previousView = get(this, outletName);
+    if (previousView && !get(previousView, 'isShared')) {
+      previousView.one('didDisappear', function() {
+        previousView.destroy();
+      });
+    }
+
     if (controller) { set(view, 'controller', controller); }
     set(this, outletName, view);
 
     return view;
+  },
+
+  init: function() {
+    this._super();
+
+    this._outlets = Ember.MapWithDefault.create({
+      defaultValue: function() {
+        return Ember.Map.create();
+      }
+    });
   }
 });
-
