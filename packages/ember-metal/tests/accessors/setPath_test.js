@@ -93,12 +93,6 @@ module("Ember.setPath - deprecated", {
   }
 });
 
-test('[obj, Foo] -> EXCEPTION', function() {
-  raises(function() {
-    Ember.setPath(obj, 'Foo', "BAM");
-  }, Error);
-});
-
 test('[obj, foo.baz.bat] -> EXCEPTION', function() {
   raises(function() {
     Ember.setPath(obj, 'foo.baz.bat', "BAM");

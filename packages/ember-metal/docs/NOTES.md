@@ -60,7 +60,7 @@ You should consider using universal accessors when one of the following is true:
 
   * __You want to work with paths instead of keys.__  Walking down a path 
     (like 'foo.bar') is a fairly common task in many meta-programming models.
-    In these cases, the `Ember.getPath()` and `Ember.setPath()` accessors can walk
+    In these cases, the `Ember.get()` and `Ember.set()` accessors can walk
     the path for you.  They will also handle cases like null objects in the 
     path more elegantly.
     
@@ -79,15 +79,14 @@ You should consider using universal accessors when one of the following is true:
     instead.
     
     
-### `Ember.get(obj, keyName)`, `Ember.getPath(obj, path)`
+### `Ember.get(obj, keyName)`
 
-These two methods will retrieve a value on the passed object.  `Ember.get()` is
-the most simple, looking up just a key on the receiver object.  `Ember.getPath()`
+This method will retrieve a value on the passed object.  `Ember.get()`
 accepts a full property path, which it will walk down until it gets to the 
 end (and returns the value) or until it reaches a null object in which case it
 will return __undefined__.
 
-`Ember.getPath()` also can take just the path with no object in front.  In that
+`Ember.get()` also can take just the path with no object in front.  In that
 case it will search from the top level instead of starting at a root object.
 
 Unless you are coding for IE7-8 or you need to walk a path, you normally
@@ -96,13 +95,12 @@ using the normal dot syntax.  If you do want to work on IE7-8 then you should
 _always_ use Ember.get() to retrieve a property since it will enable support for
 computed properties and other features.
 
-### `Ember.set(obj, keyName, value)`, `Ember.setPath(obj, path, value)`
+### `Ember.set(obj, keyName, value)`
 
-These two methods will set a value on the passed object.  `Ember.set()` is the 
-most simple, setting the value on a simple key.  `Ember.setPath()` will actually
-walk down a property path until it gets to the end and then set the value for
-the last key in the chain.  If `Ember.setPath()` encounters a null object while
-walking the path it will throw an exception.
+These method will set a value on the passed object.  When used with a
+property path, `Ember.set()` will walk down the path until it gets to the end
+and then set the value for the last key in the chain.  If `Ember.set()`
+encounters a null object while walking the path it will throw an exception.
 
 Unless you are coding for IE7-8 or you need to walk a path, you normally
 will not need to use these methods.  Instead you can just set properties
