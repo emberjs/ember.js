@@ -19,7 +19,8 @@ var o_create = Ember.create,
     meta = Ember.meta,
     rewatch = Ember.rewatch,
     finishChains = Ember.finishChains,
-    finishPartial = Ember.Mixin.finishPartial;
+    finishPartial = Ember.Mixin.finishPartial,
+    reopen = Ember.Mixin.prototype.reopen;
 
 var undefinedDescriptor = {
   configurable: true,
@@ -174,8 +175,7 @@ var ClassMixin = Ember.Mixin.create(
     Class.ClassMixin.ownerConstructor = Class;
     Class.PrototypeMixin.ownerConstructor = Class;
 
-    var PrototypeMixin = Class.PrototypeMixin;
-    PrototypeMixin.reopen.apply(PrototypeMixin, arguments);
+    reopen.apply(Class.PrototypeMixin, arguments);
 
     Class.superclass = this;
     Class.__super__  = this.prototype;
@@ -197,14 +197,12 @@ var ClassMixin = Ember.Mixin.create(
 
   reopen: function() {
     this.willReopen();
-    var PrototypeMixin = this.PrototypeMixin;
-    PrototypeMixin.reopen.apply(PrototypeMixin, arguments);
+    reopen.apply(this.PrototypeMixin, arguments);
     return this;
   },
 
   reopenClass: function() {
-    var ClassMixin = this.ClassMixin;
-    ClassMixin.reopen.apply(ClassMixin, arguments);
+    reopen.apply(this.ClassMixin, arguments);
     Ember.Mixin._apply(this, arguments, false);
     return this;
   },
