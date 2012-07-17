@@ -10,7 +10,10 @@ test('should invoke after specified period of time - function only', function() 
 
   var invoked = false;
 
-  Ember.run.later(function() { invoked = true; }, 100);
+  Ember.run(function() {
+    Ember.run.later(function() { invoked = true; }, 100);
+  });
+
   stop();
 
   setTimeout(function() {
@@ -25,7 +28,10 @@ test('should invoke after specified period of time - target/method', function() 
 
   var obj = { invoked: false } ;
 
-  Ember.run.later(obj, function() { this.invoked = true; }, 100);
+  Ember.run(function() {
+    Ember.run.later(obj, function() { this.invoked = true; }, 100);
+  });
+
   stop();
 
   setTimeout(function() {
@@ -40,7 +46,10 @@ test('should invoke after specified period of time - target/method/args', functi
 
   var obj = { invoked: 0 } ;
 
-  Ember.run.later(obj, function(amt) { this.invoked += amt; }, 10, 100);
+  Ember.run(function() {
+    Ember.run.later(obj, function(amt) { this.invoked += amt; }, 10, 100);
+  });
+
   stop();
 
   setTimeout(function() {

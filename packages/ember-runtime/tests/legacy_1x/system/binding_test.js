@@ -129,30 +129,34 @@ test("binding disconnection actually works", function() {
 module("one way binding", {
 
   setup: function() {
-    fromObject = Ember.Object.create({ value: 'start' }) ;
-    toObject = Ember.Object.create({ value: 'end' }) ;
-    root = { fromObject: fromObject, toObject: toObject };
-    binding = Ember.oneWay(root, 'toObject.value', 'fromObject.value');
-    Ember.run.sync() ; // actually sets up up the connection
+    Ember.run(function() {
+      fromObject = Ember.Object.create({ value: 'start' }) ;
+      toObject = Ember.Object.create({ value: 'end' }) ;
+      root = { fromObject: fromObject, toObject: toObject };
+      binding = Ember.oneWay(root, 'toObject.value', 'fromObject.value');
+    });
   },
   teardown: function(){
-    Ember.run.end();
     Ember.run.cancelTimers();
   }
 });
 
 test("fromObject change should propagate after flush", function() {
-  set(fromObject, "value", "change") ;
-  equal(get(toObject, "value"), "start") ;
-  Ember.run.sync() ;
-  equal(get(toObject, "value"), "change") ;
+  Ember.run(function() {
+    set(fromObject, "value", "change") ;
+    equal(get(toObject, "value"), "start") ;
+    Ember.run.sync() ;
+    equal(get(toObject, "value"), "change") ;
+  });
 });
 
 test("toObject change should NOT propagate", function() {
-  set(toObject, "value", "change") ;
-  equal(get(fromObject, "value"), "start") ;
-  Ember.run.sync() ;
-  equal(get(fromObject, "value"), "start") ;
+  Ember.run(function() {
+    set(toObject, "value", "change") ;
+    equal(get(fromObject, "value"), "start") ;
+    Ember.run.sync() ;
+    equal(get(fromObject, "value"), "start") ;
+  });
 });
 
 var first, second, third, binding1, binding2; // global variables
@@ -164,42 +168,44 @@ var first, second, third, binding1, binding2; // global variables
 module("chained binding", {
 
   setup: function() {
-    first = Ember.Object.create({ output: 'first' }) ;
+    Ember.run(function() {
+      first = Ember.Object.create({ output: 'first' }) ;
 
-    second = Ember.Object.create({
-      input: 'second',
-      output: 'second',
+      second = Ember.Object.create({
+        input: 'second',
+        output: 'second',
 
-      inputDidChange: Ember.observer(function() {
-        set(this, "output", get(this, "input")) ;
-      }, "input")
-    }) ;
+        inputDidChange: Ember.observer(function() {
+          set(this, "output", get(this, "input")) ;
+        }, "input")
+      }) ;
 
-    third = Ember.Object.create({ input: "third" }) ;
+      third = Ember.Object.create({ input: "third" }) ;
 
-    root = { first: first, second: second, third: third };
-    binding1 = Ember.bind(root, 'second.input', 'first.output');
-    binding2 = Ember.bind(root, 'second.output', 'third.input');
-    Ember.run.sync() ; // actually sets up up the connection
+      root = { first: first, second: second, third: third };
+      binding1 = Ember.bind(root, 'second.input', 'first.output');
+      binding2 = Ember.bind(root, 'second.output', 'third.input');
+    });
   },
   teardown: function(){
-    Ember.run.end();
     Ember.run.cancelTimers();
   }
 });
 
 test("changing first output should propograte to third after flush", function() {
-  set(first, "output", "change") ;
-  equal("change", get(first, "output"), "first.output") ;
-  ok("change" !== get(third, "input"), "third.input") ;
+  Ember.run(function() {
+    set(first, "output", "change") ;
+    equal("change", get(first, "output"), "first.output") ;
+    ok("change" !== get(third, "input"), "third.input") ;
 
-  var didChange = true;
-  while(didChange) didChange = Ember.run.sync() ;
+    var didChange = true;
+    while(didChange) didChange = Ember.run.sync() ;
 
-  equal("change", get(first, "output"), "first.output") ;
-  equal("change", get(second, "input"), "second.input") ;
-  equal("change", get(second, "output"), "second.output") ;
-  equal("change", get(third,"input"), "third.input") ;
+    equal("change", get(first, "output"), "first.output") ;
+    equal("change", get(second, "input"), "second.input") ;
+    equal("change", get(second, "output"), "second.output") ;
+    equal("change", get(third,"input"), "third.input") ;
+  });
 });
 
 // ..........................................................
