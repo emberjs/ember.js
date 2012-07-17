@@ -76,8 +76,20 @@ Ember.Handlebars.bootstrap = function(ctx) {
   });
 };
 
-Ember.$(document).ready(
-  function(){
-    Ember.Handlebars.bootstrap( Ember.$(document) );
-  }
-);
+function bootstrap() {
+  Ember.Handlebars.bootstrap( Ember.$(document) );
+}
+
+/*
+  We tie this to application.load to ensure that we've at least
+  attempted to bootstrap at the point that the application is loaded.
+
+  We also tie this to document ready since we're guaranteed that all
+  the inline templates are present at this point.
+
+  There's no harm to running this twice, since we remove the templates
+  from the DOM after processing.
+*/
+
+Ember.$(document).ready(bootstrap);
+Ember.onLoad('application', bootstrap);
