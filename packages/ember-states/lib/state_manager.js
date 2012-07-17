@@ -599,6 +599,10 @@ Ember.StateManager = Ember.State.extend(
         };
       }
 
+      // Don't modify the cached versions
+      enterStates = enterStates.slice();
+      exitStates = exitStates.slice();
+
       stateIdx = enterStates.length-1;
       while (contexts.length > 0) {
         if (stateIdx >= 0) {
