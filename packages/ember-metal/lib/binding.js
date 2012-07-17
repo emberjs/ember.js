@@ -309,7 +309,7 @@ mixinProperties(Binding,
   The value of this property should be a string representing a path to another object or
   a custom binding instanced created using Binding helpers (see "Customizing Your Bindings"):
 
-        valueBinding: "MyApp.someController.title"
+      valueBinding: "MyApp.someController.title"
 
   This will create a binding from `MyApp.someController.title` to the `value`
   property of your object instance automatically. Now the two values will be
@@ -324,7 +324,7 @@ mixinProperties(Binding,
   has changed, but your object will not be changing the preference itself, you
   could do:
 
-        bigTitlesBinding: Ember.Binding.oneWay("MyApp.preferencesController.bigTitles")
+      bigTitlesBinding: Ember.Binding.oneWay("MyApp.preferencesController.bigTitles")
 
   This way if the value of MyApp.preferencesController.bigTitles changes the
   "bigTitles" property of your object will change also. However, if you
@@ -338,7 +338,7 @@ mixinProperties(Binding,
   may be created frequently and you do not intend to change a property; only
   to monitor it for changes. (such as in the example above).
 
-  ## How to Manually Add Binding
+  ## Adding Bindings Manually
 
   All of the examples above show you how to configure a custom binding, but
   the result of these customizations will be a binding template, not a fully
@@ -357,14 +357,14 @@ mixinProperties(Binding,
   examples above, during init, Ember objects will effectively call
   something like this on your binding:
 
-        binding = Ember.Binding.from(this.valueBinding).to("value");
+      binding = Ember.Binding.from(this.valueBinding).to("value");
 
   This creates a new binding instance based on the template you provide, and
   sets the to path to the "value" property of the new object. Now that the
   binding is fully configured with a "from" and a "to", it simply needs to be
   connected to become active. This is done through the connect() method:
 
-        binding.connect(this);
+      binding.connect(this);
 
   Note that when you connect a binding you pass the object you want it to be
   connected to.  This object will be used as the root for both the from and
@@ -379,17 +379,17 @@ mixinProperties(Binding,
   using the Ember.bind() helper method. (This is the same method used by
   to setup your bindings on objects):
 
-        Ember.bind(MyApp.anotherObject, "value", "MyApp.someController.value");
+      Ember.bind(MyApp.anotherObject, "value", "MyApp.someController.value");
 
   Both of these code fragments have the same effect as doing the most friendly
   form of binding creation like so:
 
-        MyApp.anotherObject = Ember.Object.create({
-          valueBinding: "MyApp.someController.value",
+      MyApp.anotherObject = Ember.Object.create({
+        valueBinding: "MyApp.someController.value",
 
-          // OTHER CODE FOR THIS OBJECT...
+        // OTHER CODE FOR THIS OBJECT...
 
-        });
+      });
 
   Ember's built in binding creation method makes it easy to automatically
   create bindings for you. You should always use the highest-level APIs
