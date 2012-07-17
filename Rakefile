@@ -23,6 +23,29 @@ def upload_file(uploader, filename, description, file)
   end
 end
 
+namespace :travis do
+  task :add_env do
+    require "json"
+    require "openssl"
+    require "base64"
+    require "net/http"
+
+    u = setup_uploader
+
+    puts "Get Travis CI public key for #{u.username}/#{u.repo}"
+    json = Net::HTTP.get("travis-ci.org", "/#{u.username}/#{u.repo}.json")
+    public_key = JSON.parse(json)["public_key"]
+    public_key = public_key.gsub("-----BEGIN RSA PUBLIC KEY-----", "")
+    public_key = public_key.gsub("-----END RSA PUBLIC KEY-----", "")
+    rsa = OpenSSL::PKey::RSA.new(Base64.decode64(public_key))
+    
+    vars = "GH_LOGIN=#{u.login} GH_USERNAME=#{u.username} GH_REPOSITORY=#{u.repo} GH_OAUTH_TOKEN=#{u.token}"
+    secure = Base64.encode64(rsa.public_encrypt(vars)).gsub(/\s/, "")
+
+    puts "Environment variables which whill be encoded:\n\t#{vars}\n\n"
+    puts "Add the following line to .travis.yml to add the environment variables:\n\n\tenv: {secure: #{secure}}\n\n"
+  end
+end
 
 desc "Strip trailing whitespace for JavaScript files in packages"
 task :strip_whitespace do
