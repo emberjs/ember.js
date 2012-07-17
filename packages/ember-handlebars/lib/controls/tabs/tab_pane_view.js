@@ -1,4 +1,4 @@
-var get = Ember.get, getPath = Ember.getPath;
+var get = Ember.get;
 
 Ember.TabPaneView = Ember.View.extend({
   tabsContainer: Ember.computed(function() {
@@ -6,7 +6,7 @@ Ember.TabPaneView = Ember.View.extend({
   }).property().volatile(),
 
   isVisible: Ember.computed(function() {
-    return get(this, 'viewName') === getPath(this, 'tabsContainer.currentView');
+    return get(this, 'viewName') === get(this, 'tabsContainer.currentView');
   }).property('tabsContainer.currentView').volatile(),
 
   init: function() {

@@ -55,7 +55,7 @@ Ember.Handlebars.bootstrap = function(ctx) {
       // Users can optionally specify a custom view subclass to use by setting the
       // data-view attribute of the script tag.
       viewPath = script.attr('data-view');
-      view = viewPath ? Ember.getPath(viewPath) : Ember.View;
+      view = viewPath ? Ember.get(viewPath) : Ember.View;
 
       // Get the id of the script, used by Ember.View's elementId property,
       // Look for data-element-id attribute.

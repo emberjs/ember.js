@@ -15,7 +15,6 @@ Ember.warn("Computed properties will soon be cacheable by default. To enable thi
 
 
 var get = Ember.get,
-    getPath = Ember.getPath,
     metaFor = Ember.meta,
     guidFor = Ember.guidFor,
     a_slice = [].slice,
@@ -394,19 +393,19 @@ Ember.cacheFor = function cacheFor(obj, key) {
 
 Ember.computed.not = function(dependentKey) {
   return Ember.computed(dependentKey, function(key) {
-    return !getPath(this, dependentKey);
+    return !get(this, dependentKey);
   }).cacheable();
 };
 
 Ember.computed.empty = function(dependentKey) {
   return Ember.computed(dependentKey, function(key) {
-    var val = getPath(this, dependentKey);
+    var val = get(this, dependentKey);
     return val === undefined || val === null || val === '' || (Ember.isArray(val) && get(val, 'length') === 0);
   }).cacheable();
 };
 
 Ember.computed.bool = function(dependentKey) {
   return Ember.computed(dependentKey, function(key) {
-    return !!getPath(this, dependentKey);
+    return !!get(this, dependentKey);
   }).cacheable();
 };

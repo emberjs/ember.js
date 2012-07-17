@@ -92,23 +92,23 @@ testBoth("should work with watched properties", function(get, set) {
   equal(get(content2, 'lastName'), 'Katzdale');
 });
 
-test("setPath and getPath should work", function () {
+test("set and get should work with paths", function () {
   var content = {foo: {bar: 'baz'}},
       proxy = Ember.ObjectProxy.create({content: content}),
       count = 0;
-  proxy.setPath('foo.bar', 'hello');
-  equal(proxy.getPath('foo.bar'), 'hello');
-  equal(proxy.getPath('content.foo.bar'), 'hello');
+  proxy.set('foo.bar', 'hello');
+  equal(proxy.get('foo.bar'), 'hello');
+  equal(proxy.get('content.foo.bar'), 'hello');
 
   proxy.addObserver('foo.bar', function () {
     count++;
   });
 
-  proxy.setPath('foo.bar', 'bye');
+  proxy.set('foo.bar', 'bye');
 
   equal(count, 1);
-  equal(proxy.getPath('foo.bar'), 'bye');
-  equal(proxy.getPath('content.foo.bar'), 'bye');
+  equal(proxy.get('foo.bar'), 'bye');
+  equal(proxy.get('content.foo.bar'), 'bye');
 });
 
 testBoth("should transition between watched and unwatched strategies", function(get, set) {

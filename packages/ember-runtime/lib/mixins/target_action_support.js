@@ -1,4 +1,4 @@
-var get = Ember.get, set = Ember.set, getPath = Ember.getPath;
+var get = Ember.get, set = Ember.set;
 
 Ember.TargetActionSupport = Ember.Mixin.create({
   target: null,
@@ -8,8 +8,8 @@ Ember.TargetActionSupport = Ember.Mixin.create({
     var target = get(this, 'target');
 
     if (Ember.typeOf(target) === "string") {
-      var value = getPath(this, target);
-      if (value === undefined) { value = getPath(window, target); }
+      var value = get(this, target);
+      if (value === undefined) { value = get(window, target); }
       return value;
     } else {
       return target;

@@ -5,7 +5,7 @@
 // ==========================================================================
 /*globals TemplateTests:true App:true */
 
-var set = Ember.set, get = Ember.get, setPath = Ember.setPath;
+var set = Ember.set, get = Ember.get;
 var firstGrandchild = function(view) {
   return get(get(view, 'childViews').objectAt(0), 'childViews').objectAt(0);
 };
@@ -286,7 +286,7 @@ test("should give its item views the property specified by itemPropertyBinding",
   });
 
   Ember.run(function() {
-    setPath(view, 'baz', "yobaz");
+    set(view, 'baz', "yobaz");
   });
 
   equal(view.$('ul li:first').text(), "yobaz", "change property of sub view");

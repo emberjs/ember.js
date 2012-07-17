@@ -4,7 +4,7 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
-var set = Ember.set, get = Ember.get, setPath = Ember.setPath;
+var set = Ember.set, get = Ember.get;
 
 module("Ember.View - Class Name Bindings");
 
@@ -66,8 +66,8 @@ test("should add, remove, or change class names if changed after element is crea
     set(view, 'isUrgent', false);
     set(view, 'canIgnore', true);
     set(view, 'isEnabled', false);
-    setPath(view, 'messages.count', 'six-messages');
-    setPath(view, 'messages.resent', true );
+    set(view, 'messages.count', 'six-messages');
+    set(view, 'messages.resent', true );
   });
 
   ok(view.$().hasClass('orange'), "updates string values");

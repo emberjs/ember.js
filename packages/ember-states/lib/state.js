@@ -1,4 +1,4 @@
-var get = Ember.get, set = Ember.set, getPath = Ember.getPath;
+var get = Ember.get, set = Ember.set;
 
 /**
   @class
@@ -31,7 +31,7 @@ Ember.State = Ember.Object.extend(Ember.Evented,
     @readOnly
   */
   path: Ember.computed(function() {
-    var parentPath = getPath(this, 'parentState.path'),
+    var parentPath = get(this, 'parentState.path'),
         path = get(this, 'name');
 
     if (parentPath) {

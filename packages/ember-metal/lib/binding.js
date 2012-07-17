@@ -5,7 +5,7 @@
 // ==========================================================================
 
 require('ember-metal/core'); // Ember.Logger
-require('ember-metal/accessors'); // get, getPath, setPath, trySetPath
+require('ember-metal/accessors'); // get, set, trySetPath
 require('ember-metal/utils'); // guidFor, isArray, meta
 require('ember-metal/observer'); // addObserver, removeObserver
 require('ember-metal/run_loop'); // Ember.run.schedule
@@ -28,15 +28,14 @@ require('ember-metal/map');
 Ember.LOG_BINDINGS = false || !!Ember.ENV.LOG_BINDINGS;
 
 var get     = Ember.get,
-    getPath = Ember.getPath,
-    setPath = Ember.setPath,
+    set     = Ember.set,
     guidFor = Ember.guidFor,
     isGlobalPath = Ember.isGlobalPath;
 
 
 /** @private */
-function getPathWithGlobals(obj, path) {
-  return getPath(isGlobalPath(path) ? window : obj, path);
+function getWithGlobals(obj, path) {
+  return get(isGlobalPath(path) ? window : obj, path);
 }
 
 // ..........................................................
@@ -73,7 +72,7 @@ Binding.prototype = /** @scope Ember.Binding.prototype */ {
 
     The binding will search for the property path starting at the root object
     you pass when you connect() the binding.  It follows the same rules as
-    `getPath()` - see that method for more information.
+    `get()` - see that method for more information.
 
     @param {String} propertyPath the property path to connect to
     @returns {Ember.Binding} receiver
@@ -90,7 +89,7 @@ Binding.prototype = /** @scope Ember.Binding.prototype */ {
 
     The binding will search for the property path starting at the root object
     you pass when you connect() the binding.  It follows the same rules as
-    `getPath()` - see that method for more information.
+    `get()` - see that method for more information.
 
     @param {String|Tuple} propertyPath A property path or tuple
     @returns {Ember.Binding} this
@@ -135,7 +134,7 @@ Binding.prototype = /** @scope Ember.Binding.prototype */ {
     Ember.assert('Must pass a valid object to Ember.Binding.connect()', !!obj);
 
     var fromPath = this._from, toPath = this._to;
-    Ember.trySetPath(obj, toPath, getPathWithGlobals(obj, fromPath));
+    Ember.trySetPath(obj, toPath, getWithGlobals(obj, fromPath));
 
     // add an observer on the object to be notified when the binding should be updated
     Ember.addObserver(obj, fromPath, this, this.fromDidChange);
@@ -223,7 +222,7 @@ Binding.prototype = /** @scope Ember.Binding.prototype */ {
 
     // if we're synchronizing from the remote object...
     if (direction === 'fwd') {
-      var fromValue = getPathWithGlobals(obj, this._from);
+      var fromValue = getWithGlobals(obj, this._from);
       if (log) {
         Ember.Logger.log(' ', this.toString(), '->', fromValue, obj);
       }
@@ -236,7 +235,7 @@ Binding.prototype = /** @scope Ember.Binding.prototype */ {
       }
     // if we're synchronizing *to* the remote object
     } else if (direction === 'back') {
-      var toValue = getPath(obj, this._to);
+      var toValue = get(obj, this._to);
       if (log) {
         Ember.Logger.log(' ', this.toString(), '<-', toValue, obj);
       }
