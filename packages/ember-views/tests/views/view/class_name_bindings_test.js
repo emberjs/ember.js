@@ -85,6 +85,21 @@ test("should add, remove, or change class names if changed after element is crea
   ok(view.$().hasClass('disabled'), "adds negated class name for negated binding");
 });
 
+test(":: class name syntax works with an empty true class", function() {
+  var view = Ember.View.create({
+    isEnabled: false,
+    classNameBindings: ['isEnabled::not-enabled']
+  });
+
+  Ember.run(function(){ view.createElement(); });
+
+  equal(view.$().attr('class'), 'ember-view not-enabled', "false class is rendered when property is false");
+
+  Ember.run(function(){ view.set('isEnabled', true); });
+
+  equal(view.$().attr('class'), 'ember-view', "no class is added when property is true and the class is empty");
+});
+
 test("classNames should not be duplicated on rerender", function(){
   var view;
   

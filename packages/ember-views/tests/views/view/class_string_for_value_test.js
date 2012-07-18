@@ -27,6 +27,11 @@ test("returns null if value is false", function() {
   equal(cSFV("content.propertyName", false), null, "returns null if value is false");
 });
 
+test("returns null if value is true and className is not specified and falsyClassName is specified", function() {
+  equal(cSFV("propertyName", true, undefined, "falsyClassName"), null, "returns null if value is true");
+  equal(cSFV("content.propertyName", true, undefined, "falsyClassName"), null, "returns null if value is true");
+});
+
 test("returns the value if the value is truthy", function() {
   equal(cSFV("propertyName", "myString"), "myString", "returns value if the value is truthy");
   equal(cSFV("content.propertyName", "myString"), "myString", "returns value if the value is truthy");

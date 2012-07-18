@@ -35,3 +35,12 @@ test("falsyClassName is extracted", function() {
   equal(parsed.falsyClassName, "falsyClass", "falsyClassName is extracted");
   equal(parsed.classNames, ":class:falsyClass", "there is a classNames");
 });
+
+test("it works with an empty true class", function() {
+  var parsed = Ember.View._parsePropertyPath("content.simpleProperty::falsyClass");
+
+  equal(parsed.path, "content.simpleProperty", "path is parsed correctly");
+  equal(parsed.className, undefined, "className is undefined");
+  equal(parsed.falsyClassName, "falsyClass", "falsyClassName is extracted");
+  equal(parsed.classNames, "::falsyClass", "there is a classNames");
+});

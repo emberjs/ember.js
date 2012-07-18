@@ -2019,6 +2019,7 @@ Ember.View.reopenClass({
   _parsePropertyPath: function(path) {
     var split = path.split(/:/),
         propertyPath = split[0],
+        classNames = "",
         className,
         falsyClassName;
 
@@ -2026,20 +2027,15 @@ Ember.View.reopenClass({
     if (split.length > 1) {
       className = split[1];
       if (split.length === 3) { falsyClassName = split[2]; }
-    }
 
-    var classNames = "";
-    if (className) {
-      classNames += ':' + className;
-      if (falsyClassName) {
-        classNames += ':' + falsyClassName;
-      }
+      classNames = ':' + className;
+      if (falsyClassName) { classNames += ":" + falsyClassName; }
     }
 
     return {
       path: propertyPath,
       classNames: classNames,
-      className: className,
+      className: (className === '') ? undefined : className,
       falsyClassName: falsyClassName
     };
   },
@@ -2062,6 +2058,10 @@ Ember.View.reopenClass({
     // we should return the className directly
     if (!!val && className) {
       return className;
+
+    // catch syntax like isEnabled::not-enabled
+    } else if (val === true && !className && falsyClassName) {
+      return null;
 
     // If value is a Boolean and true, return the dasherized property
     // name.
