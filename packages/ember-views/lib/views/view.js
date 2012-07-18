@@ -151,6 +151,43 @@ var invokeForState = {
 
       <div id="ember1" class="ember-view empty"></div>
 
+
+  If you want to add a class name for a property which evaluates to true and
+  and a different class name if it evaluates to false, you can pass a binding
+  like this:
+
+    // Applies 'enabled' class when isEnabled is true and 'disabled' when isEnabled is false
+    Ember.View.create({
+      classNameBindings: ['isEnabled:enabled:disabled']
+      isEnabled: true
+    });
+
+  Will result in view instances with an HTML representation of:
+
+      <div id="ember1" class="ember-view enabled"></div>
+
+  When isEnabled is `false`, the resulting HTML reprensentation looks like this:
+
+      <div id="ember1" class="ember-view disabled"></div>
+
+  This syntax offers the convenience to add a class if a property is `false`:
+
+    // Applies no class when isEnabled is true and class 'disabled' when isEnabled is false
+    Ember.View.create({
+      classNameBindings: ['isEnabled::disabled']
+      isEnabled: true
+    });
+
+  Will result in view instances with an HTML representation of:
+
+    <div id="ember1" class="ember-view"></div>
+
+  When the `isEnabled` property on the view is set to `false`, it will result
+  in view instances with an HTML representation of:
+
+    <div id="ember1" class="ember-view disabled"></div>
+
+
   Updates to the the value of a class name binding will result in automatic update 
   of the  HTML `class` attribute in the view's rendered HTML representation.
   If the value becomes  `false` or `undefined` the class name will be removed.
@@ -926,7 +963,7 @@ Ember.View = Ember.Object.extend(Ember.Evented,
       // Variable in which the old class value is saved. The observer function
       // closes over this variable, so it knows which string to remove when
       // the property changes.
-      var oldClass, property;
+      var oldClass;
 
       // Set up an observer on the context. If the property changes, toggle the
       // class name.
@@ -968,8 +1005,8 @@ Ember.View = Ember.Object.extend(Ember.Evented,
       }
 
       // Extract just the property name from bindings like 'foo:bar'
-      property = binding.split(':')[0];
-      addObserver(this, property, observer);
+      var parsedPath = Ember.View._parsePropertyPath(binding);
+      addObserver(this, parsedPath.path, observer);
     }, this);
   },
 
@@ -1018,41 +1055,16 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     passing `isUrgent` to this method will return `"is-urgent"`.
   */
   _classStringForProperty: function(property) {
-    var split = property.split(':'),
-        className = split[1];
-
-    property = split[0];
+    var parsedPath = Ember.View._parsePropertyPath(property);
+    var path = parsedPath.path;
 
     // TODO: Remove this `false` when the `getPath` globals support is removed
-    var val = Ember.getPath(this, property, false);
-    if (val === undefined && Ember.isGlobalPath(property)) {
-      val = Ember.getPath(window, property);
+    var val = getPath(this, path, false);
+    if (val === undefined && Ember.isGlobalPath(path)) {
+      val = getPath(window, path);
     }
 
-    // If the value is truthy and we're using the colon syntax,
-    // we should return the className directly
-    if (!!val && className) {
-      return className;
-
-    // If value is a Boolean and true, return the dasherized property
-    // name.
-    } else if (val === true) {
-      // Normalize property path to be suitable for use
-      // as a class name. For exaple, content.foo.barBaz
-      // becomes bar-baz.
-      var parts = property.split('.');
-      return Ember.String.dasherize(parts[parts.length-1]);
-
-    // If the value is not false, undefined, or null, return the current
-    // value of the property.
-    } else if (val !== false && val !== undefined && val !== null) {
-      return val;
-
-    // Nothing to display. Return null so that the old class is removed
-    // but no new class is added.
-    } else {
-      return null;
-    }
+    return Ember.View._classStringForValue(path, val, parsedPath.className, parsedPath.falsyClassName);
   },
 
   // ..........................................................
@@ -2001,6 +2013,96 @@ var DOMManager = {
 Ember.View.reopen({
   states: Ember.View.states,
   domManager: DOMManager
+});
+
+Ember.View.reopenClass({
+
+  /**
+    @private
+
+    Parse a path and return an object which holds the parsed properties.
+
+    For example a path like "content.isEnabled:enabled:disabled" wil return the
+    following object:
+
+        {
+          path: "content.isEnabled",
+          className: "enabled",
+          falsyClassName: "disabled",
+          classNames: ":enabled:disabled"
+        }
+
+  */
+  _parsePropertyPath: function(path) {
+    var split = path.split(/:/),
+        propertyPath = split[0],
+        classNames = "",
+        className,
+        falsyClassName;
+
+    // check if the property is defined as prop:class or prop:trueClass:falseClass
+    if (split.length > 1) {
+      className = split[1];
+      if (split.length === 3) { falsyClassName = split[2]; }
+
+      classNames = ':' + className;
+      if (falsyClassName) { classNames += ":" + falsyClassName; }
+    }
+
+    return {
+      path: propertyPath,
+      classNames: classNames,
+      className: (className === '') ? undefined : className,
+      falsyClassName: falsyClassName
+    };
+  },
+
+  /**
+    @private
+
+    Get the class name for a given value, based on the path, optional className
+    and optional falsyClassName.
+
+    - if the value is truthy and a className is defined, the className is returned
+    - if the value is true, the dasherized last part of the supplied path is returned
+    - if the value is false and a falsyClassName is supplied, the falsyClassName is returned
+    - if the value is truthy, the value is returned
+    - if none of the above rules apply, null is returned
+
+  */
+  _classStringForValue: function(path, val, className, falsyClassName) {
+    // If the value is truthy and we're using the colon syntax,
+    // we should return the className directly
+    if (!!val && className) {
+      return className;
+
+    // If value is a Boolean and true, return the dasherized property
+    // name.
+    } else if (val === true) {
+      // catch syntax like isEnabled::not-enabled
+      if (val === true && !className && falsyClassName) { return null; }
+
+      // Normalize property path to be suitable for use
+      // as a class name. For exaple, content.foo.barBaz
+      // becomes bar-baz.
+      var parts = path.split('.');
+      return Ember.String.dasherize(parts[parts.length-1]);
+
+    // If the value is false and a falsyClassName is specified, return it
+    } else if (val === false && falsyClassName) {
+      return falsyClassName;
+
+    // If the value is not false, undefined, or null, return the current
+    // value of the property.
+    } else if (val !== false && val !== undefined && val !== null) {
+      return val;
+
+    // Nothing to display. Return null so that the old class is removed
+    // but no new class is added.
+    } else {
+      return null;
+    }
+  }
 });
 
 // Create a global view hash.

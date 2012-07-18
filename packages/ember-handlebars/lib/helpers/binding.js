@@ -360,8 +360,9 @@ EmberHandlebars.bindClasses = function(context, classBindings, view, bindAttrId,
   // Helper method to retrieve the property from the context and
   // determine which class string to return, based on whether it is
   // a Boolean or not.
-  var classStringForPath = function(root, path, className, options) {
-    var val;
+  var classStringForPath = function(root, parsedPath, options) {
+    var val,
+        path = parsedPath.path;
 
     if (path === 'this') {
       val = root;
@@ -371,30 +372,7 @@ EmberHandlebars.bindClasses = function(context, classBindings, view, bindAttrId,
       val = getPath(root, path, options);
     }
 
-    // If the value is truthy and we're using the colon syntax,
-    // we should return the className directly
-    if (!!val && className) {
-      return className;
-
-    // If value is a Boolean and true, return the dasherized property
-    // name.
-    } else if (val === true) {
-      // Normalize property path to be suitable for use
-      // as a class name. For example, content.foo.barBaz
-      // becomes bar-baz.
-      var parts = path.split('.');
-      return Ember.String.dasherize(parts[parts.length-1]);
-
-    // If the value is not false, undefined, or null, return the current
-    // value of the property.
-    } else if (val !== false && val !== undefined && val !== null) {
-      return val;
-
-    // Nothing to display. Return null so that the old class is removed
-    // but no new class is added.
-    } else {
-      return null;
-    }
+    return Ember.View._classStringForValue(path, val, parsedPath.className, parsedPath.falsyClassName);
   };
 
   // For each property passed, loop through and setup
@@ -408,9 +386,8 @@ EmberHandlebars.bindClasses = function(context, classBindings, view, bindAttrId,
 
     var observer, invoker;
 
-    var split = binding.split(':'),
-        path = split[0],
-        className = split[1],
+    var parsedPath = Ember.View._parsePropertyPath(binding),
+        path = parsedPath.path,
         pathRoot = context,
         normalized;
 
@@ -426,7 +403,7 @@ EmberHandlebars.bindClasses = function(context, classBindings, view, bindAttrId,
     /** @private */
     observer = function() {
       // Get the current value of the property
-      newClass = classStringForPath(pathRoot, path, className, options);
+      newClass = classStringForPath(pathRoot, parsedPath, options);
       elem = bindAttrId ? view.$("[data-bindattr-" + bindAttrId + "='" + bindAttrId + "']") : view.$();
 
       // If we can't find the element anymore, a parent template has been
@@ -461,7 +438,7 @@ EmberHandlebars.bindClasses = function(context, classBindings, view, bindAttrId,
 
     // We've already setup the observer; now we just need to figure out the
     // correct behavior right now on the first pass through.
-    value = classStringForPath(pathRoot, path, className, options);
+    value = classStringForPath(pathRoot, parsedPath, options);
 
     if (value) {
       ret.push(value);

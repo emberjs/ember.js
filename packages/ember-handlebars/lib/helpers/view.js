@@ -75,40 +75,19 @@ EmberHandlebars.ViewHelper = Ember.Object.create({
 
     // Evaluate the context of class name bindings:
     if (extensions.classNameBindings) {
-      var full,
-          parts;
-
       for (var b in extensions.classNameBindings) {
-        full = extensions.classNameBindings[b];
+        var full = extensions.classNameBindings[b];
         if (typeof full === 'string') {
-          if (full.indexOf(':') > 0) {
-            // When a classNameBinding contains a colon anywhere after the first character,
-            // then the part preceding the colon is a binding path that needs to be
-            // contextualized.
-            //
-            // For example:
-            //   classNameBinding="isGreen:green"
-            //
-            // Will be converted to:
-            //   classNameBinding="bindingContext.isGreen:green"
-
-            parts = full.split(':');
-            path = this.contextualizeBindingPath(parts[0], data);
-            if (path) { extensions.classNameBindings[b] = path + ':' + parts[1]; }
-
-          } else if (full.indexOf(':') === -1 ) {
-            // When a classNameBinding doesn't contain any colons, then the entire binding
-            // needs to be contextualized.
-            //
-            // For example:
-            //   classNameBinding="myClass"
-            //
-            // Will be converted to:
-            //   classNameBinding="bindingContext.myClass"
-
-            path = this.contextualizeBindingPath(full, data);
-            if (path) { extensions.classNameBindings[b] = path; }
-          }
+          // Contextualize the path of classNameBinding so this:
+          //
+          //     classNameBinding="isGreen:green"
+          //
+          // is converted to this:
+          //
+          //     classNameBinding="bindingContext.isGreen:green"
+          var parsedPath = Ember.View._parsePropertyPath(full);
+          path = this.contextualizeBindingPath(parsedPath.path, data);
+          if (path) { extensions.classNameBindings[b] = path + parsedPath.classNames; }
         }
       }
     }
