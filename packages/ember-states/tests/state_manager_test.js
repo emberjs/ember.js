@@ -749,3 +749,68 @@ test("nothing happens if transitioning to a parent state when the current state 
   equal(stateManager.getPath('currentState.path'), 'start.first', 'does not change state');
 
 });
+
+test("when at least one initialState computed property is used, transitionTo should not cache path", function() {
+  var stateManager,
+      initialStateCalled = 0,
+      secondState = Ember.State.create(),
+      firstState = Ember.State.create({ second: secondState });
+
+  Ember.defineProperty(firstState, 'initialState', Ember.computed(function() {
+    initialStateCalled++;
+    return 'second';
+  }).volatile());
+
+  Ember.run(function() {
+    stateManager = Ember.StateManager.create({
+      initialState: 'foo',
+      foo: Ember.State.create({
+        initialState: 'first',       
+
+        goToFirst: Ember.StateManager.transitionTo('first'),
+
+        first: firstState
+      })
+    });
+  });
+
+  equal(initialStateCalled, 1, 'precond - initial state called');
+  equal(stateManager.getPath('currentState.path'), 'foo.first.second', 'precond - is in expected state');
+      
+  stateManager.send('goToFirst');
+  equal(initialStateCalled, 2, 'initial state should be called');
+  stateManager.send('goToFirst');
+  equal(initialStateCalled, 3, 'initial state should be called');
+
+  console.log(!secondState.get('pathsCache.first'));
+  ok(!secondState.getPath('pathsCache.first'), 'no path is cached');
+});
+
+test("when no initialState computed property is used, transitionTo should cache path", function() {
+  var stateManager,
+      initialStateCalled = 0,
+      secondState = Ember.State.create();
+
+  Ember.run(function() {
+    stateManager = Ember.StateManager.create({
+      initialState: 'foo',
+      foo: Ember.State.create({
+        initialState: 'first',       
+
+        goToFirst: Ember.StateManager.transitionTo('first'),
+
+        first: Ember.State.create({
+          initialState: 'second',
+          second: secondState
+        })
+      })
+    });
+  });
+
+  equal(stateManager.getPath('currentState.path'), 'foo.first.second', 'precond - is in expected state');
+      
+  stateManager.send('goToFirst');
+  stateManager.send('goToFirst');
+
+  ok(!!secondState.getPath('pathsCache.first'), 'path is cached');
+});
