@@ -2059,13 +2059,12 @@ Ember.View.reopenClass({
     if (!!val && className) {
       return className;
 
-    // catch syntax like isEnabled::not-enabled
-    } else if (val === true && !className && falsyClassName) {
-      return null;
-
     // If value is a Boolean and true, return the dasherized property
     // name.
     } else if (val === true) {
+      // catch syntax like isEnabled::not-enabled
+      if (val === true && !className && falsyClassName) { return null; }
+
       // Normalize property path to be suitable for use
       // as a class name. For exaple, content.foo.barBaz
       // becomes bar-baz.
