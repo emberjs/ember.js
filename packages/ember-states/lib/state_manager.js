@@ -1,4 +1,5 @@
-var get = Ember.get, set = Ember.set, getPath = Ember.getPath, fmt = Ember.String.fmt;
+var get = Ember.get, set = Ember.set, getPath = Ember.getPath,
+    fmt = Ember.String.fmt, metaFor = Ember.meta;
 var arrayForEach = Ember.ArrayPolyfills.forEach;
 
 require('ember-states/state');
@@ -554,7 +555,9 @@ Ember.StateManager = Ember.State.extend(
         state,
         initialState,
         stateIdx,
-        useContext;
+        useContext,
+        useCaching = true,
+        descs;
 
     if (!context && (cachedPath = currentState.pathsCacheNoContext[path])) {
       // fast path
@@ -579,6 +582,12 @@ Ember.StateManager = Ember.State.extend(
         while (resolveState && !enterStates) {
           exitStates.unshift(resolveState);
 
+          // detect dynamic initialState to prevent caching                                        
+          descs = metaFor(resolveState, false).descs;                             
+          if (useCaching && descs.initialState instanceof Ember.ComputedProperty) {
+            useCaching = false;                                                      
+          }          
+
           resolveState = get(resolveState, 'parentState');
           if (!resolveState) {
             enterStates = this.findStatesByPath(this, path);
@@ -592,11 +601,13 @@ Ember.StateManager = Ember.State.extend(
           exitStates.shift();
         }
 
-        currentState.pathsCache[path] = {
-          exitStates: exitStates,
-          enterStates: enterStates,
-          resolveState: resolveState
-        };
+        if (useCaching) {                                                            
+          currentState.pathsCache[path] = {                                          
+            exitStates: exitStates,                                                  
+            enterStates: enterStates,                                                
+            resolveState: resolveState                                               
+          };                                                                         
+        }              
       }
 
       // Don't modify the cached versions
