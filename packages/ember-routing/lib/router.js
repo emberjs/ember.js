@@ -4,6 +4,15 @@ require('ember-application/system/location');
 
 var get = Ember.get, getPath = Ember.getPath, set = Ember.set;
 
+var merge = function(original, hash) {
+  for (var prop in hash) {
+    if (!hash.hasOwnProperty(prop)) { continue; }
+    if (original.hasOwnProperty(prop)) { continue; }
+
+    original[prop] = hash[prop];
+  }
+};
+
 /**
   @class
 
@@ -443,6 +452,7 @@ Ember.Router = Ember.StateManager.extend(
   },
 
   urlForEvent: function(eventName, context) {
+    var contexts = context ? Array.prototype.slice.call(arguments, 1) : [];
     var currentState = get(this, 'currentState');
     var targetStateName = currentState.lookupEventTransition(eventName);
 
@@ -452,17 +462,19 @@ Ember.Router = Ember.StateManager.extend(
 
     Ember.assert("Your target state name " + targetStateName + " for event " + eventName + " did not resolve to a state", !!targetState);
 
-    var hash = this.serializeRecursively(targetState, context);
+    var hash = this.serializeRecursively(targetState, contexts, {});
 
     return this.urlFor(targetStateName, hash);
   },
 
   /** @private */
-  serializeRecursively: function(state, hash) {
-    hash = state.serialize(this, hash);
-    var parentState = state.get("parentState");
+  serializeRecursively: function(state, contexts, hash) {
+    var parentState,
+        context = get(state, 'hasContext') ? contexts.pop() : null;
+    merge(hash, state.serialize(this, context));
+    parentState = state.get("parentState");
     if (parentState && parentState instanceof Ember.Route) {
-      return this.serializeRecursively(parentState, hash);
+      return this.serializeRecursively(parentState, contexts, hash);
     } else {
       return hash;
     }

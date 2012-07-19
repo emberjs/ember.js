@@ -114,6 +114,43 @@ test("router.urlForEvent works with a context", function() {
   equal(url, "#!#/dashboard/1");
 });
 
+test("router.urlForEvent works with multiple contexts", function() {
+  var router = Ember.Router.create({
+    location: location,
+    namespace: namespace,
+    root: Ember.Route.create({
+      index: Ember.Route.create({
+        route: '/',
+
+        showDashboard: function(router) {
+          router.transitionTo('dashboard');
+        },
+
+        eventTransitions: {
+          showComment: 'post.comment'
+        }
+      }),
+
+      post: Ember.Route.create({
+        route: '/post/:post_id',
+
+        comment: Ember.Route.create({
+          route: '/comment/:comment_id'
+        })
+      })
+    })
+  });
+
+  Ember.run(function() {
+    router.route('/');
+  });
+
+  equal(router.getPath('currentState.path'), "root.index", "precond - the router is in root.index");
+
+  var url = router.urlForEvent('showComment', { post_id: 1 }, { comment_id: 2 });
+  equal(url, "#!#/post/1/comment/2");
+});
+
 test("router.urlForEvent works with changing context in the current state", function() {
   var router = Ember.Router.create({
     location: location,
