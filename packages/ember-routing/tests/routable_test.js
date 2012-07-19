@@ -345,6 +345,216 @@ test("should use a specified class `modelType` in the default `deserialize`", fu
   router.route("/users/1");
 });
 
+var postSuccessCallback, postFailureCallback,
+    userSuccessCallback, userFailureCallback,
+    connectedUser, connectedPost, connectedChild, connectedOther,
+    isLoading, userLoaded;
+
+module("modelType with promise", {
+  setup: function() {
+    window.TestApp = Ember.Namespace.create();
+
+    window.TestApp.User = Ember.Object.extend({
+      then: function(success, failure) {
+        userLoaded = true;
+        userSuccessCallback = success;
+        userFailureCallback = failure;
+      }
+    });
+    window.TestApp.User.find = function(id) {
+      if (id === "1") {
+        return firstUser;
+      }
+    };
+
+    window.TestApp.Post = Ember.Object.extend({
+      then: function(success, failure) {
+        postSuccessCallback = success;
+        postFailureCallback = failure;
+      }
+    });
+    window.TestApp.Post.find = function(id) {
+      // Simulate dependency on user
+      if (!userLoaded) { return; }
+      if (id === "1") { return firstPost; }
+    };
+
+    firstUser = window.TestApp.User.create({ id: 1 });
+    firstPost = window.TestApp.Post.create({ id: 1 });
+
+    router = Ember.Router.create({
+      location: {
+        setURL: function(passedURL) {
+          url = passedURL;
+        }
+      },
+
+      root: Ember.Route.extend({
+        users: Ember.Route.extend({
+          route: '/users',
+
+          user: Ember.Route.extend({
+            route: '/:user_id',
+            modelType: 'TestApp.User',
+
+            connectOutlets: function(router, obj) {
+              connectedUser = obj;
+            },
+
+            posts: Ember.Route.extend({
+              route: '/posts',
+
+              post: Ember.Route.extend({
+                route: '/:post_id',
+                modelType: 'TestApp.Post',
+
+                connectOutlets: function(router, obj) {
+                  connectedPost = obj;
+                },
+
+                show: Ember.Route.extend({
+                  route: '/',
+
+                  connectOutlets: function(router) {
+                    connectedChild = true;
+                  }
+                })
+              })
+            })
+          })
+        }),
+
+        other: Ember.Route.extend({
+          route: '/other',
+
+          connectOutlets: function() {
+            connectedOther = true;
+          }
+        }),
+
+        loading: Ember.State.extend({
+          connectOutlets: function() {
+            isLoading = true;
+          },
+
+          exit: function() {
+            isLoading = false;
+          }
+        })
+      })
+    });
+  },
+
+  teardown: function() {
+    window.TestApp = undefined;
+    postSuccessCallback = postFailureCallback = undefined;
+    userSuccessCallback = userFailureCallback = undefined;
+    connectedUser = connectedPost = connectedChild = connectedOther = undefined;
+    isLoading = userLoaded = undefined;
+  }
+});
+
+test("should handle promise success", function() {
+  ok(!isLoading, 'precond - should not start loading');
+
+  Ember.run(function() {
+    router.route('/users/1/posts/1');
+  });
+
+  ok(!connectedUser, 'precond - should not connect user immediately');
+  ok(!connectedPost, 'precond - should not connect post immediately');
+  ok(!connectedChild, 'precond - should not connect child immediately');
+  ok(isLoading, 'should be loading');
+
+  Ember.run(function() {
+    userSuccessCallback('loadedUser');
+  });
+
+  ok(!connectedUser, 'should not connect user until all promises are loaded');
+  ok(!connectedPost, 'should not connect post until all promises are loaded');
+  ok(!connectedChild, 'should not connect child until all promises are loaded');
+  ok(isLoading, 'should still be loading');
+
+  Ember.run(function() {
+    postSuccessCallback('loadedPost');
+  });
+
+  equal(connectedUser, 'loadedUser', 'should connect user after success callback');
+  equal(connectedPost, 'loadedPost', 'should connect post after success callback');
+  ok(connectedChild, "should connect child's outlets after success callback");
+  ok(!isLoading, 'should not be loading');
+});
+
+test("should handle early promise failure", function() {
+  router.route('/users/1/posts/1');
+
+  ok(userFailureCallback, 'precond - has failureCallback');
+
+  raises(function() {
+    userFailureCallback('failedUser');
+  }, "Unable to load record.", "should throw exception on failure");
+
+  ok(!connectedUser, 'should not connect user after early failure');
+  ok(!connectedPost, 'should not connect post after early failure');
+  ok(!connectedChild, 'should not connect child after early failure');
+});
+
+test("should handle late promise failure", function() {
+  router.route('/users/1/posts/1');
+
+  userSuccessCallback('loadedUser');
+
+  ok(postFailureCallback, 'precond - has failureCallback');
+
+  raises(function() {
+    postFailureCallback('failedPost');
+  }, "Unable to load record.", "should throw exception on failure");
+
+  ok(!connectedUser, 'should not connect user after late failure');
+  ok(!connectedPost, 'should not connect post after late failure');
+  ok(!connectedChild, 'should not connect child after late failure');
+});
+
+test("should stop promises if new route is targeted", function() {
+  router.route('/users/1/posts/1');
+
+  userSuccessCallback('loadedUser');
+
+  ok(!connectedOther, 'precond - has not yet connected other');
+
+  Ember.run(function() {
+    router.route('/other');
+  });
+
+  ok(connectedOther, 'should connect other');
+
+  postSuccessCallback('loadedPost');
+
+  ok(!connectedUser, 'should not connect user after reroute');
+  ok(!connectedPost, 'should not connect post after reroute');
+  ok(!connectedChild, 'should not connect child after reroute');
+});
+
+test("should stop promises if transitionTo is called", function() {
+  router.route('/users/1/posts/1');
+
+  userSuccessCallback('loadedUser');
+
+  ok(!connectedOther, 'precond - has not yet connected other');
+
+  Ember.run(function() {
+    router.transitionTo('other');
+  });
+
+  ok(connectedOther, 'should connect other');
+
+  postSuccessCallback('loadedPost');
+
+  ok(!connectedUser, 'should not connect user after reroute');
+  ok(!connectedPost, 'should not connect post after reroute');
+  ok(!connectedChild, 'should not connect child after reroute');
+});
+
 module("default serialize and deserialize without modelType", {
   setup: function() {
     window.TestApp = Ember.Namespace.create();
@@ -353,13 +563,7 @@ module("default serialize and deserialize without modelType", {
       if (id === "1") { return firstPost; }
     };
 
-    window.TestApp.User = Ember.Object.extend();
-    window.TestApp.User.find = function(id) {
-      if (id === "1") { return firstUser; }
-    };
-
     firstPost = window.TestApp.Post.create({ id: 1 });
-    firstUser = window.TestApp.User.create({ id: 1 });
 
     router = Ember.Router.create({
       namespace: window.TestApp,

@@ -1,3 +1,5 @@
+require('ember-routing/resolved_state');
+
 var get = Ember.get;
 
 // The Ember Routable mixin assumes the existance of a simple
@@ -275,16 +277,9 @@ Ember.Routable = Ember.Mixin.create({
 
   /**
     @private
-
-    Once `unroute` has finished unwinding, `routePath` will be called
-    with the remainder of the route.
-
-    For example, if you were in the /posts/1/comments state, and you
-    moved into the /posts/2/comments state, `routePath` will be called
-    on the state whose path is `/posts` with the path `/2/comments`.
   */
-  routePath: function(manager, path) {
-    if (get(this, 'isLeafRoute')) { return; }
+  resolvePath: function(manager, path) {
+    if (get(this, 'isLeafRoute')) { return Ember.A(); }
 
     var childStates = get(this, 'childStates'), match;
 
@@ -316,9 +311,47 @@ Ember.Routable = Ember.Mixin.create({
 
     Ember.assert("Could not find state for path " + path, !!state);
 
-    var object = state.deserialize(manager, match.hash);
-    manager.transitionTo(get(state, 'path'), object);
-    manager.send('routePath', match.remaining);
+    var resolvedState = Ember._ResolvedState.create({
+      manager: manager,
+      state: state,
+      match: match
+    });
+
+    var states = state.resolvePath(manager, match.remaining);
+
+    return Ember.A([resolvedState]).pushObjects(states);
+  },
+
+  /**
+    @private
+
+    Once `unroute` has finished unwinding, `routePath` will be called
+    with the remainder of the route.
+
+    For example, if you were in the /posts/1/comments state, and you
+    moved into the /posts/2/comments state, `routePath` will be called
+    on the state whose path is `/posts` with the path `/2/comments`.
+  */
+  routePath: function(manager, path) {
+    if (get(this, 'isLeafRoute')) { return; }
+
+    var resolvedStates = this.resolvePath(manager, path),
+        hasPromises = resolvedStates.some(function(s) { return get(s, 'hasPromise'); });
+
+    function runTransition() {
+      resolvedStates.forEach(function(rs) { rs.transition(); });
+    }
+
+    if (hasPromises) {
+      manager.transitionTo('loading');
+
+      Ember.assert('Loading state should be the child of a route', Ember.Routable.detect(get(manager, 'currentState.parentState')));
+      Ember.assert('Loading state should not be a route', !Ember.Routable.detect(get(manager, 'currentState')));
+
+      manager.handleStatePromises(resolvedStates, runTransition);
+    } else {
+      runTransition();
+    }
   },
 
   /**
