@@ -10,7 +10,7 @@ module("Ember.tryInvoke", {
   setup: function() {
     obj = {
       aMethodThatExists: function() { return true; },
-      aMethodThatTakesArguments: function(arg1, arg2) { return arg1 == arg2; }
+      aMethodThatTakesArguments: function(arg1, arg2) { return arg1 === arg2; }
     };
   },
 
@@ -32,5 +32,5 @@ test("should return what the method returns when asked to perform a method that 
 });
 
 test("should return what the method returns when asked to perform a method that takes arguments and exists on the object", function() {
-  equal(Ember.tryInvoke(obj, 'aMethodThatTakesArguments', 1, '1'), true);
+  equal(Ember.tryInvoke(obj, 'aMethodThatTakesArguments', [true, true]), true);
 });
