@@ -84,6 +84,9 @@
 
     // Don't worry about jQuery version
     ENV['FORCE_JQUERY'] = true;
+
+    // For use in Data tests
+    ENV['TESTING'] = true;
   </script>
 </head>
 <body>
@@ -139,6 +142,117 @@
   </script>
 
   <script>
+    var packages = (QUnit.urlParams.package || "all").split(","),
+        packageName, el, idx, re, match, moduleName,
+        testingData = false;
+
+    if (packages[0] === 'all') {
+      // NOTE: We intentionally don't include data here since it doesn't run well with other tests
+      packages = [
+        'ember-handlebars',
+        'ember-metal',
+        'ember-runtime',
+        'ember-states',
+        'ember-views',
+        'ember-routing',
+        'ember-viewstates',
+        'ember-application'
+      ];
+    } else {
+      for (idx=0; idx<packages.length; idx++) {
+        if (packages[idx] === 'ember-data') {
+          testingData = true;
+          break;
+        }
+      }
+
+      if (testingData && packages.length > 1) {
+        el = document.getElementById('qunit-header');
+        el.innerHTML = 'Cannot test ember-data with other packages.';
+        packages = [];
+      }
+    }
+  </script>
+
+  <script>
+    if (testingData) {
+      (function() {
+        window.Ember = { config: {} };
+
+        var syncForTest = function(fn) {
+          var callSuper;
+
+          if (typeof fn !== "function") { callSuper = true; }
+
+          return function() {
+            var override = false;
+            if (Ember.run && !Ember.run.currentRunloop) {
+              Ember.run.begin();
+              override = true;
+            }
+
+            if (callSuper) {
+              var ret = this._super.apply(this, arguments);
+            } else {
+              var ret = fn.apply(this, arguments);
+            }
+
+            if (override) {
+              Ember.run.end();
+            }
+
+            return ret;
+          }
+        }
+
+        Ember.config.overrideAccessors = function() {
+          Ember.set = syncForTest(Ember.set);
+          Ember.get = syncForTest(Ember.get);
+        };
+
+        Ember.config.overrideClassMixin = function(ClassMixin) {
+          ClassMixin.reopen({
+            create: syncForTest()
+          })
+        };
+
+        Ember.config.overridePrototypeMixin = function(PrototypeMixin) {
+          PrototypeMixin.reopen({
+            destroy: syncForTest()
+          })
+        };
+
+        minispade.register('ember-data/~test-setup', function() {
+          run = Ember.run;
+
+          Ember.View.reopen({
+            _insertElementLater: syncForTest()
+          });
+
+          DS.Store.reopen({
+            createRecord: syncForTest(),
+            deleteRecord: syncForTest(),
+            load: syncForTest(),
+            loadMany: syncForTest(),
+            didCreateRecord: syncForTest(),
+            didCreateRecords: syncForTest(),
+            didUpdateRecord: syncForTest(),
+            didUpdateRecords: syncForTest()
+          });
+
+          DS.Model.reopen({
+            deleteRecord: syncForTest()
+          });
+
+          DS.Transaction.reopen({
+            commit: syncForTest(),
+          });
+        });
+      })();
+    }
+  </script>
+
+  <script>
     // Load ember distribution from query vars
     var distMatch = location.search.match(/dist=([^&]+)/),
         dist = (distMatch && distMatch[1]) || 'spade';
@@ -178,35 +292,22 @@
 
 
     // Load Tests and Depenencies
-    var packages = (QUnit.urlParams.package || "all").split(","),
-        packageName, el, idx, len, re, match, moduleName;
-
-    if (packages[0] === 'all') {
-      packages = [
-        'ember-handlebars',
-        'ember-metal',
-        'ember-runtime',
-        'ember-states',
-        'ember-views',
-        'ember-routing',
-        'ember-viewstates',
-        'ember-application'
-      ];
-    }
-
-    len = packages.length;
 
     // There is no require for this in the code
     if (dist == 'spade') {
       minispade.require('ember-debug');
     }
 
-    for (idx=0; idx<len; idx++) {
+    for (idx=0; idx<packages.length; idx++) {
       packageName = packages[idx];
       re = new RegExp('^'+packageName+'/([^/]+)');
 
       if (dist == 'spade') {
         minispade.require(packageName);
+      }
+
+      if (packageName === 'ember-data') {
+        minispade.require('ember-data/~test-setup');
       }
 
       for (moduleName in minispade.modules) {

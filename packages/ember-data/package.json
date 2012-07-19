@@ -9,10 +9,10 @@
   "directories": {
     "lib": "lib"
   },
-  
+
   "dependencies": {
     "spade": "~> 1.0",
-    "ember-runtime": ">= 0"
+    "ember-application": ">= 0"
   },
   "dependencies:development": {
     "spade-qunit": "~> 1.0.0"
