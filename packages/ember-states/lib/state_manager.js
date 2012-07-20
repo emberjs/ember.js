@@ -178,7 +178,7 @@ require('ember-states/state');
       robotManager.transitionTo('poweredDown.charging')
       robotManager.getPath('currentState.name') // 'charging'
 
-      robotManager.getPath('currentState.get.path') // 'poweredDown.charging'
+      robotManager.getPath('currentState.path') // 'poweredDown.charging'
 
   Enter transition methods will be called for each state and nested child state in their
   hierarchical order.  Exit methods will be called for each state and its nested states in
@@ -226,7 +226,7 @@ require('ember-states/state');
       })
 
 
-      robotManager.get('currentState.get.path') // 'poweredDown'
+      robotManager.get('currentState.path') // 'poweredDown'
       robotManager.transitionTo('charged')
       // logs 'entered charged state'
       // but does *not* log  'exited poweredDown state'
