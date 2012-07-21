@@ -381,7 +381,7 @@ Ember.Enumerable = Ember.Mixin.create(
   },
 
   /**
-    Returns an the first item with a property matching the passed value.  You
+    Returns the first item with a property matching the passed value.  You
     can pass an optional second argument with the target value.  Otherwise
     this will match any property that evaluates to true.
 
@@ -565,9 +565,9 @@ Ember.Enumerable = Ember.Mixin.create(
 
   /**
     Returns a copy of the array with all null elements removed.
-    
+
         var arr = ["a", null, "c", null];
-        arr.compact(); => ["a", "c"] 
+        arr.compact(); => ["a", "c"]
 
     @returns {Array} the array without null elements.
   */
