@@ -40,7 +40,7 @@ test("updating the context should update the alias", function() {
 
 test("updating a property on the context should update the HTML", function() {
   Ember.run(function() {
-    Ember.setPath(view, 'person.name', "Yehuda Katz");
+    Ember.set(view, 'person.name', "Yehuda Katz");
   });
 
   equal(view.$().text(), "Señor Engineer: Yehuda Katz", "should be properly scoped after updating");
@@ -94,7 +94,7 @@ test("it should support #with view as foo", function() {
   equal(view.$().text(), "Sonics", "should be properly scoped");
 
   Ember.run(function() {
-    Ember.setPath(view, 'name', "Thunder");
+    Ember.set(view, 'name', "Thunder");
   });
 
   equal(view.$().text(), "Thunder", "should update");
@@ -110,7 +110,7 @@ test("it should support #with foo as bar, then #with bar as qux", function() {
   equal(view.$().text(), "caterpillar", "should be properly scoped");
 
   Ember.run(function() {
-    Ember.setPath(view, 'name', "butterfly");
+    Ember.set(view, 'name', "butterfly");
   });
 
   equal(view.$().text(), "butterfly", "should update");
@@ -129,7 +129,7 @@ if (Ember.VIEW_PRESERVES_CONTEXT) {
     equal(view.$().text(), "Los Pivots", "should be properly scoped");
 
     Ember.run(function() {
-      Ember.setPath(view, 'controller.name', "l'Pivots");
+      Ember.set(view, 'controller.name', "l'Pivots");
     });
 
     equal(view.$().text(), "l'Pivots", "should update");

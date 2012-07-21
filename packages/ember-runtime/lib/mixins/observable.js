@@ -138,7 +138,7 @@ Ember.Observable = Ember.Mixin.create(/** @scope Ember.Observable.prototype */ {
   },
 
   /**
-    Sets the key equal to value.
+    Sets the provided key or path to the value.
 
     This method is generally very similar to calling object[key] = value or
     object.key = value, except that it provides support for computed
@@ -393,37 +393,24 @@ Ember.Observable = Ember.Mixin.create(/** @scope Ember.Observable.prototype */ {
   },
 
   /**
-    This is like `get`, but allows you to pass in a dot-separated property
-    path.
-    
-        person.getPath('address.zip'); // return the zip
-        person.getPath('children.firstObject.age'); // return the first kid's age
-
-    This reads much better than chained `get` calls.
-
+    @deprecated
     @param {String} path The property path to retrieve
     @returns {Object} The property value or undefined.
   */
   getPath: function(path) {
-    return Ember.getPath(this, path);
+    Ember.deprecate("getPath is deprecated since get now supports paths");
+    return this.get(path);
   },
 
   /**
-    This is like `set`, but allows you to specify the property you want to
-    set as a dot-separated property path.
-    
-        person.setPath('address.zip', 10011); // set the zip to 10011
-        person.setPath('children.firstObject.age', 6); // set the first kid's age to 6
-
-    This is not as commonly used as `getPath`, but it can be useful.
-
+    @deprecated
     @param {String} path The path to the property that will be set
     @param {Object} value The value to set or null.
     @returns {Ember.Observable}
   */
   setPath: function(path, value) {
-    Ember.setPath(this, path, value);
-    return this;
+    Ember.deprecate("setPath is deprecated since set now supports paths");
+    return this.set(path, value);
   },
 
   /**

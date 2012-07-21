@@ -1,4 +1,4 @@
-var get = Ember.get, set = Ember.set, getPath = Ember.getPath, fmt = Ember.String.fmt;
+var get = Ember.get, set = Ember.set, fmt = Ember.String.fmt;
 var arrayForEach = Ember.ArrayPolyfills.forEach;
 
 require('ember-states/state');
@@ -51,14 +51,14 @@ require('ember-states/state');
         start: Ember.State.create({})
       })
 
-      managerA.getPath('currentState.name') // 'start'
+      managerA.get('currentState.name') // 'start'
 
       managerB = Ember.StateManager.create({
         initialState: 'beginHere',
         beginHere: Ember.State.create({})
       })
 
-      managerB.getPath('currentState.name') // 'beginHere'
+      managerB.get('currentState.name') // 'beginHere'
 
   Because it is a property you may also provide a computed function if you wish to derive
   an `initialState` programmatically:
@@ -87,9 +87,9 @@ require('ember-states/state');
         poweredUp: Ember.State.create({})
       })
 
-      robotManager.getPath('currentState.name') // 'poweredDown'
+      robotManager.get('currentState.name') // 'poweredDown'
       robotManager.transitionTo('poweredUp')
-      robotManager.getPath('currentState.name') // 'poweredUp'
+      robotManager.get('currentState.name') // 'poweredUp'
 
   Before transitioning into a new state the existing `currentState` will have its
   `exit` method called with the StateManager instance as its first argument and
@@ -113,7 +113,7 @@ require('ember-states/state');
         })
       })
 
-      robotManager.getPath('currentState.name') // 'poweredDown'
+      robotManager.get('currentState.name') // 'poweredDown'
       robotManager.transitionTo('poweredUp')
       // will log
       // 'exiting the poweredDown state'
@@ -138,7 +138,7 @@ require('ember-states/state');
         })
       })
 
-      robotManager.getPath('currentState.name') // 'poweredDown'
+      robotManager.get('currentState.name') // 'poweredDown'
       robotManager.transitionTo('poweredUp')
       // will log
       // 'exiting the poweredDown state'
@@ -146,7 +146,7 @@ require('ember-states/state');
       robotManager.transitionTo('poweredUp') // no logging, no state change
 
       robotManager.transitionTo('someUnknownState') // silently fails
-      robotManager.getPath('currentState.name') // 'poweredUp'
+      robotManager.get('currentState.name') // 'poweredUp'
 
 
   Each state property may itself contain properties that are instances of Ember.State.
@@ -166,19 +166,19 @@ require('ember-states/state');
         })
       })
 
-      robotManager.getPath('currentState.name') // 'poweredDown'
+      robotManager.get('currentState.name') // 'poweredDown'
 
       robotManager.transitionTo('poweredUp')
-      robotManager.getPath('currentState.name') // 'poweredUp'
+      robotManager.get('currentState.name') // 'poweredUp'
 
       robotManager.transitionTo('mobile')
-      robotManager.getPath('currentState.name') // 'mobile'
+      robotManager.get('currentState.name') // 'mobile'
 
       // transition via a state path
       robotManager.transitionTo('poweredDown.charging')
-      robotManager.getPath('currentState.name') // 'charging'
+      robotManager.get('currentState.name') // 'charging'
 
-      robotManager.getPath('currentState.path') // 'poweredDown.charging'
+      robotManager.get('currentState.path') // 'poweredDown.charging'
 
   Enter transition methods will be called for each state and nested child state in their
   hierarchical order.  Exit methods will be called for each state and its nested states in
@@ -230,7 +230,7 @@ require('ember-states/state');
       robotManager.transitionTo('charged')
       // logs 'entered charged state'
       // but does *not* log  'exited poweredDown state'
-      robotManager.getPath('currentState.name') // 'charged
+      robotManager.get('currentState.name') // 'charged
 
       robotManager.transitionTo('poweredUp.mobile')
       // logs
@@ -268,7 +268,7 @@ require('ember-states/state');
         })
       })
 
-      managerA.getPath('currentState.name') // 'subsubstateOne'
+      managerA.get('currentState.name') // 'subsubstateOne'
       managerA.send('anAction')
       // 'stateOne.substateOne.subsubstateOne' has no anAction method
       // so the 'anAction' method of 'stateOne.substateOne' is called
@@ -303,7 +303,7 @@ require('ember-states/state');
         })
       })
 
-      managerB.getPath('currentState.name') // 'subsubstateOne'
+      managerB.get('currentState.name') // 'subsubstateOne'
       managerB.send('anAction')
       // Error: <Ember.StateManager:ember132> could not
       // respond to event anAction in state stateOne.substateOne.subsubstateOne.
@@ -333,23 +333,23 @@ require('ember-states/state');
         })
       })
 
-      robotManager.getPath('currentState.name') // 'charging'
+      robotManager.get('currentState.name') // 'charging'
       robotManager.send('boot') // throws error, no boot action
                                 // in current hierarchy
-      robotManager.getPath('currentState.name') // remains 'charging'
+      robotManager.get('currentState.name') // remains 'charging'
 
       robotManager.send('beginExtermination') // throws error, no beginExtermination
                                               // action in current hierarchy
-      robotManager.getPath('currentState.name') // remains 'charging'
+      robotManager.get('currentState.name') // remains 'charging'
 
       robotManager.send('chargeComplete')
-      robotManager.getPath('currentState.name') // 'charged'
+      robotManager.get('currentState.name') // 'charged'
 
       robotManager.send('boot')
-      robotManager.getPath('currentState.name') // 'poweredUp'
+      robotManager.get('currentState.name') // 'poweredUp'
 
       robotManager.send('beginExtermination', allHumans)
-      robotManager.getPath('currentState.name') // 'rampaging'
+      robotManager.get('currentState.name') // 'rampaging'
 
   Transition actions can also be created using the `transitionTo` method of the Ember.State class. The
   following example StateManagers are equivalent: 
@@ -385,7 +385,7 @@ Ember.StateManager = Ember.State.extend(
 
     var initialState = get(this, 'initialState');
 
-    if (!initialState && getPath(this, 'states.start')) {
+    if (!initialState && get(this, 'states.start')) {
       initialState = 'start';
     }
 
@@ -465,7 +465,7 @@ Ember.StateManager = Ember.State.extend(
       if (parentState) {
         return this.sendRecursively(event, parentState, context);
       } else if (get(this, 'errorOnUnhandledEvent')) {
-        throw new Ember.Error(this.toString() + " could not respond to event " + event + " in state " + getPath(this, 'currentState.path') + ".");
+        throw new Ember.Error(this.toString() + " could not respond to event " + event + " in state " + get(this, 'currentState.path') + ".");
       }
     }
   },
@@ -621,7 +621,7 @@ Ember.StateManager = Ember.State.extend(
       state = enterStates[enterStates.length - 1] || resolveState;
       while(true) {
         initialState = get(state, 'initialState') || 'start';
-        state = getPath(state, 'states.'+initialState);
+        state = get(state, 'states.'+initialState);
         if (!state) { break; }
         enterStates.push(state);
         matchedContexts.push(undefined);

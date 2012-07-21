@@ -5,7 +5,7 @@
 // ==========================================================================
 /*global TemplateTests*/
 
-var set = Ember.set, get = Ember.get, setPath = Ember.setPath, getPath = Ember.getPath;
+var set = Ember.set, get = Ember.get;
 
 var view;
 

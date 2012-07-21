@@ -1,4 +1,4 @@
-var get = Ember.get, getPath = Ember.getPath;
+var get = Ember.get;
 
 // The Ember Routable mixin assumes the existance of a simple
 // routing shim that supports the following three behaviors:
@@ -177,7 +177,7 @@ Ember.Routable = Ember.Mixin.create({
     var modelType = get(this, 'modelType');
 
     if (typeof modelType === 'string') {
-      return Ember.getPath(window, modelType);
+      return Ember.get(window, modelType);
     } else {
       return modelType;
     }
@@ -291,8 +291,8 @@ Ember.Routable = Ember.Mixin.create({
     childStates = Ember.A(childStates.filterProperty('isRoutable'));
 
     childStates = childStates.sort(function(a, b) {
-      var aDynamicSegments = getPath(a, 'routeMatcher.identifiers.length'),
-          bDynamicSegments = getPath(b, 'routeMatcher.identifiers.length'),
+      var aDynamicSegments = get(a, 'routeMatcher.identifiers.length'),
+          bDynamicSegments = get(b, 'routeMatcher.identifiers.length'),
           aRoute = get(a, 'route'),
           bRoute = get(b, 'route');
 
@@ -306,7 +306,7 @@ Ember.Routable = Ember.Mixin.create({
         return aDynamicSegments - bDynamicSegments;
       }
 
-      return getPath(b, 'route.length') - getPath(a, 'route.length');
+      return get(b, 'route.length') - get(a, 'route.length');
     });
 
     var state = childStates.find(function(state) {

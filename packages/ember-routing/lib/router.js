@@ -2,7 +2,7 @@ require('ember-routing/route_matcher');
 require('ember-routing/routable');
 require('ember-application/system/location');
 
-var get = Ember.get, getPath = Ember.getPath, set = Ember.set;
+var get = Ember.get, set = Ember.set;
 
 /**
   @class
@@ -96,10 +96,10 @@ var get = Ember.get, getPath = Ember.getPath, set = Ember.set;
             aRoute: Ember.Route.extend({
               route: '/',
               enter: function(router) {
-                console.log("entering root.aRoute from", router.getPath('currentState.name'));
+                console.log("entering root.aRoute from", router.get('currentState.name'));
               },
               connectOutlets: function(router) {
-                console.log("entered root.aRoute, fully transitioned to", router.getPath('currentState.path'));
+                console.log("entered root.aRoute, fully transitioned to", router.get('currentState.path'));
               }
             })
           })
@@ -264,7 +264,7 @@ var get = Ember.get, getPath = Ember.getPath, set = Ember.set;
         Router: Ember.Router.extend({ ... })
       });
 
-      App.getPath('router.fooController'); // instance of App.FooController
+      App.get('router.fooController'); // instance of App.FooController
 
   The controller singletons will have their `namespace` property set to the application and their `target`
   property set to the application's router singleton for easy integration with Ember's user event system.

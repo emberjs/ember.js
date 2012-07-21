@@ -11,8 +11,8 @@ test('chains should copy forward to subclasses when prototype created', function
   Ember.run(function () {
     ObjectWithChains = Ember.Object.extend({
       obj: {
-          a: 'a',
-          hi: 'hi'
+        a: 'a',
+        hi: 'hi'
       },
       aBinding: 'obj.a' // add chain
     });
@@ -22,7 +22,7 @@ test('chains should copy forward to subclasses when prototype created', function
     SubWithChains = ObjectWithChains.extend({
       hiBinding: 'obj.hi', // add chain
       hello: Ember.computed(function() {
-          return this.getPath('obj.hi') + ' world';
+        return this.get('obj.hi') + ' world';
       }).property('hi').volatile(), // observe chain
       greetingBinding: 'hello'
     });
@@ -32,7 +32,7 @@ test('chains should copy forward to subclasses when prototype created', function
   });
   equal(subSub.get('greeting'), 'hi world');
   Ember.run(function () {
-    objWithChains.setPath('obj.hi', 'hello');
+    objWithChains.set('obj.hi', 'hello');
   });
   equal(subSub.get('greeting'), 'hello world');
 });

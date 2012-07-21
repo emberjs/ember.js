@@ -264,6 +264,6 @@ test("destroy removes a child view from its parent", function() {
     childView.destroy();
   });
 
-  ok(Ember.getPath(view, 'childViews.length') === 0, "Destroyed child views should be removed from their parent");
+  ok(get(view, 'childViews.length') === 0, "Destroyed child views should be removed from their parent");
 });
 

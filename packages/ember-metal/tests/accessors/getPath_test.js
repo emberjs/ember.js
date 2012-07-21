@@ -36,30 +36,30 @@ var obj, moduleOpts = {
   }
 };
 
-module('Ember.getPath', moduleOpts);
+module('Ember.get with path', moduleOpts);
 
 // ..........................................................
 // LOCAL PATHS
 //
 
 test('[obj, foo] -> obj.foo', function() {
-  deepEqual(Ember.getPath(obj, 'foo'), obj.foo);
+  deepEqual(Ember.get(obj, 'foo'), obj.foo);
 });
 
 test('[obj, foo.bar] -> obj.foo.bar', function() {
-  deepEqual(Ember.getPath(obj, 'foo.bar'), obj.foo.bar);
+  deepEqual(Ember.get(obj, 'foo.bar'), obj.foo.bar);
 });
 
 test('[obj, this.foo] -> obj.foo', function() {
-  deepEqual(Ember.getPath(obj, 'this.foo'), obj.foo);
+  deepEqual(Ember.get(obj, 'this.foo'), obj.foo);
 });
 
 test('[obj, this.foo.bar] -> obj.foo.bar', function() {
-  deepEqual(Ember.getPath(obj, 'this.foo.bar'), obj.foo.bar);
+  deepEqual(Ember.get(obj, 'this.foo.bar'), obj.foo.bar);
 });
 
 test('[obj, this.Foo.bar] -> (null)', function() {
-  deepEqual(Ember.getPath(obj, 'this.Foo.bar'), undefined);
+  deepEqual(Ember.get(obj, 'this.Foo.bar'), undefined);
 });
 
 // ..........................................................
@@ -67,10 +67,10 @@ test('[obj, this.Foo.bar] -> (null)', function() {
 //
 
 test('[null, Foo] -> Foo', function() {
-  deepEqual(Ember.getPath('Foo'), Foo);
+  deepEqual(Ember.get('Foo'), Foo);
 });
 
 test('[null, Foo.bar] -> Foo.bar', function() {
-  deepEqual(Ember.getPath('Foo.bar'), Foo.bar);
+  deepEqual(Ember.get('Foo.bar'), Foo.bar);
 });
 

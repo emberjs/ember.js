@@ -7,7 +7,7 @@
 
 var view;
 var application;
-var set = Ember.set, get = Ember.get, getPath = Ember.getPath;
+var set = Ember.set, get = Ember.get;
 
 module("Ember.Application", {
   setup: function() {
@@ -112,10 +112,10 @@ test("initialize controllers into a state manager", function() {
   ok(get(stateManager, 'barController') instanceof app.BarController, "barController was assigned");
   ok(get(stateManager, 'foo') === undefined, "foo was not assigned");
 
-  equal(getPath(stateManager, 'fooController.target'), stateManager, "the state manager is assigned");
-  equal(getPath(stateManager, 'barController.target'), stateManager, "the state manager is assigned");
-  equal(getPath(stateManager, 'fooController.namespace'), app, "the namespace is assigned");
-  equal(getPath(stateManager, 'fooController.namespace'), app, "the namespace is assigned");
+  equal(get(stateManager, 'fooController.target'), stateManager, "the state manager is assigned");
+  equal(get(stateManager, 'barController.target'), stateManager, "the state manager is assigned");
+  equal(get(stateManager, 'fooController.namespace'), app, "the namespace is assigned");
+  equal(get(stateManager, 'fooController.namespace'), app, "the namespace is assigned");
 });
 
 test('initialized application go to initial route', function() {
@@ -150,7 +150,7 @@ test('initialized application go to initial route', function() {
     app.initialize(app.stateManager);
   });
 
-  equal(app.getPath('router.currentState.path'), 'root.index', "The router moved the state into the right place");
+  equal(app.get('router.currentState.path'), 'root.index', "The router moved the state into the right place");
 });
 
 test("initialize application with stateManager via initialize call", function() {
@@ -178,9 +178,9 @@ test("initialize application with stateManager via initialize call", function() 
     app.initialize(app.Router.create());
   });
 
-  equal(app.getPath('router') instanceof Ember.Router, true, "Router was set from initialize call");
-  equal(app.getPath('router.location') instanceof Ember.NoneLocation, true, "Location was set from location implementation name");
-  equal(app.getPath('router.currentState.path'), 'root.index', "The router moved the state into the right place");
+  equal(app.get('router') instanceof Ember.Router, true, "Router was set from initialize call");
+  equal(app.get('router.location') instanceof Ember.NoneLocation, true, "Location was set from location implementation name");
+  equal(app.get('router.currentState.path'), 'root.index', "The router moved the state into the right place");
 });
 
 test("initialize application with stateManager via initialize call from Router class", function() {
@@ -208,8 +208,8 @@ test("initialize application with stateManager via initialize call from Router c
     app.initialize();
   });
 
-  equal(app.getPath('router') instanceof Ember.Router, true, "Router was set from initialize call");
-  equal(app.getPath('router.currentState.path'), 'root.index', "The router moved the state into the right place");
+  equal(app.get('router') instanceof Ember.Router, true, "Router was set from initialize call");
+  equal(app.get('router.currentState.path'), 'root.index', "The router moved the state into the right place");
 });
 
 test("injections can be registered in a specified order", function() {
@@ -329,7 +329,7 @@ test("ControllerObject class can be initialized with target, controllers and vie
     stateManager.get('postController').set('view', Ember.View.create());
   });
 
-  equal(app.getPath('router.postController.target') instanceof Ember.StateManager, true, "controller has target");
-  equal(app.getPath('router.postController.controllers') instanceof Ember.StateManager, true, "controller has controllers");
-  equal(app.getPath('router.postController.view') instanceof Ember.View, true, "controller has view");
+  equal(app.get('router.postController.target') instanceof Ember.StateManager, true, "controller has target");
+  equal(app.get('router.postController.controllers') instanceof Ember.StateManager, true, "controller has controllers");
+  equal(app.get('router.postController.view') instanceof Ember.View, true, "controller has view");
 });

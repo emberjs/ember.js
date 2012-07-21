@@ -73,13 +73,13 @@ test("when a virtual view's child views change, the parent's childViews should r
     rootView.appendTo("#qunit-fixture");
   });
 
-  equal(virtualView.getPath('childViews.length'), 1, "has childView - precond");
-  equal(rootView.getPath('childViews.length'), 1, "has childView - precond");
+  equal(virtualView.get('childViews.length'), 1, "has childView - precond");
+  equal(rootView.get('childViews.length'), 1, "has childView - precond");
 
   Ember.run(function() {
     childView.removeFromParent();
   });
 
-  equal(virtualView.getPath('childViews.length'), 0, "has no childView");
-  equal(rootView.getPath('childViews.length'), 0, "has no childView");
+  equal(virtualView.get('childViews.length'), 0, "has no childView");
+  equal(rootView.get('childViews.length'), 0, "has no childView");
 });

@@ -5,7 +5,7 @@
 // ==========================================================================
 /*globals TemplateTests:true MyApp:true App:true */
 
-var getPath = Ember.getPath, setPath = Ember.setPath, get = Ember.get, set = Ember.set;
+var get = Ember.get, set = Ember.set;
 var forEach = Ember.EnumerableUtils.forEach;
 
 var firstGrandchild = function(view) {
@@ -456,11 +456,11 @@ test("should not update when a property is removed from the view", function() {
   equal(view.$('#first').text(), 'ninjas', "updates to new content value");
 
   Ember.run(function() {
-    setPath(oldContent, 'foo.baz', 'rockstars');
+    set(oldContent, 'foo.baz', 'rockstars');
   });
 
   Ember.run(function() {
-    setPath(oldContent, 'foo.baz', 'ewoks');
+    set(oldContent, 'foo.baz', 'ewoks');
   });
 
   equal(view.$('#first').text(), "ninjas", "does not update removed object");
@@ -511,7 +511,7 @@ test("Handlebars templates update properties if a content object changes", funct
   equal(view.$('#price').text(), "$5.50", "should update price field when content changes");
 
   Ember.run(function() {
-    setPath(view, 'coffee.price', "$5");
+    set(view, 'coffee.price', "$5");
   });
 
   equal(view.$('#price').text(), "$5", "should update price field when price property is changed");
@@ -542,7 +542,7 @@ test("Template updates correctly if a path is passed to the bind helper", functi
   equal(view.$('h1').text(), "$4", "precond - renders price");
 
   Ember.run(function() {
-    setPath(view, 'coffee.price', "$5");
+    set(view, 'coffee.price', "$5");
   });
 
   equal(view.$('h1').text(), "$5", "updates when property changes");
@@ -751,7 +751,7 @@ test("Template views add an elementId to child views created using the view help
   });
 
   appendView();
-  var childView = getPath(view, 'childViews.firstObject');
+  var childView = get(view, 'childViews.firstObject');
   equal(view.$().children().first().children().first().attr('id'), get(childView, 'elementId'));
 });
 
@@ -1021,13 +1021,13 @@ test("should update boundIf blocks if the conditional changes", function() {
   equal(view.$('#first').text(), "bam", "renders block when condition is true");
 
   Ember.run(function() {
-    setPath(get(view, 'content'), 'myApp.isEnabled', false);
+    set(get(view, 'content'), 'myApp.isEnabled', false);
   });
 
   equal(view.$('#first').text(), "", "re-renders without block when condition is false");
 
   Ember.run(function() {
-    setPath(get(view, 'content'), 'myApp.isEnabled', true);
+    set(get(view, 'content'), 'myApp.isEnabled', true);
   });
 
   equal(view.$('#first').text(), "bam", "re-renders block when condition changes to true");
@@ -1317,7 +1317,7 @@ test("should be able to bind element attributes using {{bindAttr}}", function() 
   equal(view.$('img').attr('alt'), "The SproutCore Logo", "sets alt attribute");
 
   Ember.run(function() {
-    setPath(view, 'content.title', "El logo de Eember");
+    set(view, 'content.title', "El logo de Eember");
   });
 
   equal(view.$('img').attr('alt'), "El logo de Eember", "updates alt attribute when content's title attribute changes");
@@ -1419,7 +1419,7 @@ test("should be able to bind use {{bindAttr}} more than once on an element", fun
   equal(view.$('img').attr('alt'), "The SproutCore Logo", "sets alt attribute");
 
   Ember.run(function() {
-    setPath(view, 'content.title', "El logo de Eember");
+    set(view, 'content.title', "El logo de Eember");
   });
 
   equal(view.$('img').attr('alt'), "El logo de Eember", "updates alt attribute when content's title attribute changes");
@@ -1495,7 +1495,7 @@ test("should be able to bind element attributes using {{bindAttr}} inside a bloc
   equal(view.$('img').attr('alt'), "The SproutCore Logo", "sets alt attribute");
 
   Ember.run(function() {
-    setPath(view, 'content.title', "El logo de Eember");
+    set(view, 'content.title', "El logo de Eember");
   });
 
   equal(view.$('img').attr('alt'), "El logo de Eember", "updates alt attribute when content's title attribute changes");
@@ -1844,7 +1844,7 @@ test("should expose a controller keyword that persists through Ember.ContainerVi
     view.appendTo("#qunit-fixture");
   });
 
-  var containerView = getPath(view, 'childViews.firstObject');
+  var containerView = get(view, 'childViews.firstObject');
   var viewInstanceToBeInserted = Ember.View.create({
     template: Ember.Handlebars.compile('{{controller.foo}}')
   });
@@ -1983,7 +1983,7 @@ test("should be able to update when bound property updates", function(){
     template: Ember.Handlebars.compile('<i>{{value.name}}, {{computed}}</i>'),
     valueBinding: 'MyApp.controller',
     computed: Ember.computed(function(){
-      return this.getPath('value.name') + ' - computed';
+      return this.get('value.name') + ' - computed';
     }).property('value').volatile()
   });
   
