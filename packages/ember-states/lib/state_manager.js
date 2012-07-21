@@ -582,7 +582,10 @@ Ember.StateManager = Ember.State.extend(
           resolveState = get(resolveState, 'parentState');
           if (!resolveState) {
             enterStates = this.findStatesByPath(this, path);
-            if (!enterStates) { return; }
+            if (!enterStates) {
+              Ember.assert('Could not find state for path: "'+path+'"');
+              return;
+            }
           }
           enterStates = this.findStatesByPath(resolveState, path);
         }
