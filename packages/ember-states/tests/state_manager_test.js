@@ -125,7 +125,10 @@ test("it does not enter an infinite loop in transitionTo", function() {
   stateManager.transitionTo('');
   ok(stateManager.get('currentState') === emptyState, "transitionTo does nothing when given empty name");
 
-  stateManager.transitionTo('nonexistentState');
+  raises(function() {
+    stateManager.transitionTo('nonexistentState');
+  }, 'Could not find state for path: "nonexistentState"');
+
   ok(stateManager.get('currentState') === emptyState, "transitionTo does not infinite loop when given nonexistent State");
 });
 

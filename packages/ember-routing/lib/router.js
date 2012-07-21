@@ -396,7 +396,14 @@ Ember.Router = Ember.StateManager.extend(
   */
   transitionEvent: 'connectOutlets',
 
+  transitionTo: function() {
+    this.abortRoutingPromises();
+    this._super.apply(this, arguments);
+  },
+
   route: function(path) {
+    this.abortRoutingPromises();
+
     set(this, 'isRouting', true);
 
     var routableState;
@@ -466,6 +473,45 @@ Ember.Router = Ember.StateManager.extend(
     } else {
       return hash;
     }
+  },
+
+  abortRoutingPromises: function() {
+    if (this._routingPromises) {
+      this._routingPromises.abort();
+      this._routingPromises = null;
+    }
+  },
+
+  /**
+    @private
+  */
+  handleStatePromises: function(states, complete) {
+    this.abortRoutingPromises();
+
+    this.set('isLocked', true);
+
+    var manager = this;
+
+    this._routingPromises = Ember._PromiseChain.create({
+      promises: states.slice(),
+
+      successCallback: function() {
+        manager.set('isLocked', false);
+        complete();
+      },
+
+      failureCallback: function() {
+        throw "Unable to load object";
+      },
+
+      promiseSuccessCallback: function(item, args) {
+        set(item, 'object', args[0]);
+      },
+
+      abortCallback: function() {
+        manager.set('isLocked', false);
+      }
+    }).start();
   },
 
   /** @private */
