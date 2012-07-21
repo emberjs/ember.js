@@ -65,7 +65,7 @@
       outer.renderToBuffer();
     });
 
-    equal(outer.getPath('middle.childViews.length'), 2, 'precond middle has 2 child views rendered to buffer');
+    equal(outer.get('middle.childViews.length'), 2, 'precond middle has 2 child views rendered to buffer');
 
     try {
       Ember.TESTING_DEPRECATION = true;
@@ -76,7 +76,7 @@
       Ember.TESTING_DEPRECATION = false;
     }
 
-    equal(outer.getPath('middle.childViews.length'), 2, 'middle has 2 child views rendered to buffer');
+    equal(outer.get('middle.childViews.length'), 2, 'middle has 2 child views rendered to buffer');
 
   });
 

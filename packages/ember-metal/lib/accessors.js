@@ -12,6 +12,12 @@ var META_KEY = Ember.META_KEY, get, set;
 
 var MANDATORY_SETTER = Ember.ENV.MANDATORY_SETTER;
 
+/** @private */
+var IS_GLOBAL = /^([A-Z$]|([0-9][A-Z$]))/;
+var IS_GLOBAL_PATH = /^([A-Z$]|([0-9][A-Z$])).*[\.\*]/;
+var HAS_THIS  = /^this[\.\*]/;
+var FIRST_KEY = /^([^\.\*]+)/;
+
 // ..........................................................
 // GET AND SET
 //
@@ -21,6 +27,20 @@ var MANDATORY_SETTER = Ember.ENV.MANDATORY_SETTER;
 
 /** @private */
 get = function get(obj, keyName) {
+  // Helpers that operate with 'this' within an #each
+  if (keyName === '') {
+    return obj;
+  }
+
+  if (!keyName && 'string'===typeof obj) {
+    keyName = obj;
+    obj = null;
+  }
+
+  if (!obj || keyName.indexOf('.') !== -1) {
+    return getPath(obj, keyName);
+  }
+
   Ember.assert("You need to provide an object and key to `get`.", !!obj && keyName);
 
   var meta = obj[META_KEY], desc = meta && meta.descs[keyName], ret;
@@ -43,7 +63,18 @@ get = function get(obj, keyName) {
 };
 
 /** @private */
-set = function set(obj, keyName, value) {
+set = function set(obj, keyName, value, tolerant) {
+  if (typeof obj === 'string') {
+    Ember.assert("Path '" + obj + "' must be global if no obj is given.", IS_GLOBAL.test(obj));
+    value = keyName;
+    keyName = obj;
+    obj = null;
+  }
+
+  if (!obj || keyName.indexOf('.') !== -1) {
+    return setPath(obj, keyName, value, tolerant);
+  }
+
   Ember.assert("You need to provide an object and key to `set`.", !!obj && keyName !== undefined);
   Ember.assert('calling set on destroyed object', !obj.isDestroyed);
 
@@ -83,6 +114,117 @@ set = function set(obj, keyName, value) {
   return value;
 };
 
+/** @private */
+function firstKey(path) {
+  return path.match(FIRST_KEY)[0];
+}
+
+// assumes path is already normalized
+/** @private */
+function normalizeTuple(target, path) {
+  var hasThis  = HAS_THIS.test(path),
+      isGlobal = !hasThis && IS_GLOBAL_PATH.test(path),
+      key;
+
+  if (!target || isGlobal) target = window;
+  if (hasThis) path = path.slice(5);
+
+  if (target === window) {
+    key = firstKey(path);
+    target = get(target, key);
+    path   = path.slice(key.length+1);
+  }
+
+  // must return some kind of path to be valid else other things will break.
+  if (!path || path.length===0) throw new Error('Invalid Path');
+
+  return [ target, path ];
+}
+
+/** @private */
+function getPath(root, path) {
+  var hasThis, parts, tuple, idx, len;
+
+  // If there is no root and path is a key name, return that
+  // property from the global object.
+  // E.g. get('Ember') -> Ember
+  if (root === null && path.indexOf('.') === -1) { return get(window, path); }
+
+  // detect complicated paths and normalize them
+  hasThis  = HAS_THIS.test(path);
+
+  if (!root || hasThis) {
+    tuple = normalizeTuple(root, path);
+    root = tuple[0];
+    path = tuple[1];
+    tuple.length = 0;
+  }
+
+  parts = path.split(".");
+  len = parts.length;
+  for (idx=0; root && idx<len; idx++) {
+    root = get(root, parts[idx], true);
+    if (root && root.isDestroyed) { return undefined; }
+  }
+  return root;
+}
+
+/** @private */
+function setPath(root, path, value, tolerant) {
+  var keyName;
+
+  // get the last part of the path
+  keyName = path.slice(path.lastIndexOf('.') + 1);
+
+  // get the first part of the part
+  path    = path.slice(0, path.length-(keyName.length+1));
+
+  // unless the path is this, look up the first part to
+  // get the root
+  if (path !== 'this') {
+    root = getPath(root, path);
+  }
+
+  if (!keyName || keyName.length === 0) {
+    throw new Error('You passed an empty path');
+  }
+
+  if (!root) {
+    if (tolerant) { return; }
+    else { throw new Error('Object in path '+path+' could not be found or was destroyed.'); }
+  }
+
+  return set(root, keyName, value);
+}
+
+/**
+  @private
+
+  Normalizes a target/path pair to reflect that actual target/path that should
+  be observed, etc.  This takes into account passing in global property
+  paths (i.e. a path beginning with a captial letter not defined on the
+  target) and * separators.
+
+  @param {Object} target
+    The current target.  May be null.
+
+  @param {String} path
+    A path on the target or a global property path.
+
+  @returns {Array} a temporary array with the normalized target/path pair.
+*/
+Ember.normalizeTuple = function(target, path) {
+  return normalizeTuple(target, path);
+};
+
+Ember.getWithDefault = function(root, key, defaultValue) {
+  var value = get(root, key);
+
+  if (value === undefined) { return defaultValue; }
+  return value;
+};
+
+
 /**
   @function
 
@@ -112,6 +254,7 @@ set = function set(obj, keyName, value) {
   @returns {Object} the property value or null.
 */
 Ember.get = get;
+Ember.getPath = Ember.deprecateFunc('getPath is deprecated since get now supports paths', Ember.get);
 
 /**
   @function
@@ -143,168 +286,19 @@ Ember.get = get;
   @returns {Object} the passed value.
 */
 Ember.set = set;
-
-if (Ember.config.overrideAccessors) {
-  Ember.config.overrideAccessors();
-  get = Ember.get;
-  set = Ember.set;
-}
-
-// ..........................................................
-// PATHS
-//
-
-/** @private */
-function getPath(target, path) {
-  var parts = path.split(".");
-  for (var i=0, l=parts.length; target && i<l; i++) {
-    target = get(target, parts[i]);
-    if (target && target.isDestroyed) { return undefined; }
-  }
-  return target;
-}
-
-var IS_GLOBAL = /^([A-Z$]|([0-9][A-Z$]))/;
-var IS_GLOBAL_PATH = /^([A-Z$]|([0-9][A-Z$])).*[\.\*]/;
-var HAS_THIS  = /^this[\.\*]/;
-var FIRST_KEY = /^([^\.\*]+)/;
-
-/** @private */
-function firstKey(path) {
-  return path.match(FIRST_KEY)[0];
-}
-
-// assumes path is already normalized
-/** @private */
-function normalizeTuple(target, path) {
-  var hasThis  = HAS_THIS.test(path),
-      isGlobal = !hasThis && IS_GLOBAL_PATH.test(path),
-      key;
-
-  if (!target || isGlobal) target = window;
-  if (hasThis) path = path.slice(5);
-
-  if (target === window) {
-    key = firstKey(path);
-    target = get(target, key);
-    path   = path.slice(key.length+1);
-  }
-
-  // must return some kind of path to be valid else other things will break.
-  if (!path || path.length===0) throw new Error('Invalid Path');
-
-  return [ target, path ];
-}
+Ember.setPath = Ember.deprecateFunc('setPath is deprecated since set now supports paths', Ember.set);
 
 /**
-  @private
-
-  Normalizes a target/path pair to reflect that actual target/path that should
-  be observed, etc.  This takes into account passing in global property
-  paths (i.e. a path beginning with a captial letter not defined on the
-  target) and * separators.
-
-  @param {Object} target
-    The current target.  May be null.
-
-  @param {String} path
-    A path on the target or a global property path.
-
-  @returns {Array} a temporary array with the normalized target/path pair.
-*/
-Ember.normalizeTuple = function(target, path) {
-  return normalizeTuple(target, path);
-};
-
-Ember.normalizeTuple.primitive = normalizeTuple;
-
-Ember.getWithDefault = function(root, key, defaultValue) {
-  var value = Ember.get(root, key);
-
-  if (value === undefined) { return defaultValue; }
-  return value;
-};
-
-Ember.getPath = function(root, path) {
-  var hasThis, isGlobal, ret;
-
-  // Helpers that operate with 'this' within an #each
-  if (path === '') {
-    return root;
-  }
-
-  if (!path && 'string'===typeof root) {
-    path = root;
-    root = null;
-  }
-
-  // If there is no root and path is a key name, return that
-  // property from the global object.
-  // E.g. getPath('Ember') -> Ember
-  if (root === null && path.indexOf('.') < 0) { return get(window, path); }
-
-  // detect complicated paths and normalize them
-  hasThis  = HAS_THIS.test(path);
-
-  if (!root || hasThis) {
-    var tuple = normalizeTuple(root, path);
-    root = tuple[0];
-    path = tuple[1];
-    tuple.length = 0;
-  }
-
-  return getPath(root, path);
-};
-
-Ember.setPath = function(root, path, value, tolerant) {
-  var keyName;
-
-  if (typeof root === 'string') {
-    Ember.assert("Path '" + root + "' must be global if no root is given.", IS_GLOBAL.test(root));
-    value = path;
-    path = root;
-    root = null;
-  }
-
-  if (path.indexOf('.') > 0) {
-    // get the last part of the path
-    keyName = path.slice(path.lastIndexOf('.') + 1);
-
-    // get the first part of the part
-    path    = path.slice(0, path.length-(keyName.length+1));
-
-    // unless the path is this, look up the first part to
-    // get the root
-    if (path !== 'this') {
-      root = Ember.getPath(root, path);
-    }
-  } else {
-    Ember.assert("A global path passed to setPath must have at least one period", !IS_GLOBAL.test(path) || path.indexOf(".") > -1);
-    keyName = path;
-  }
-
-  if (!keyName || keyName.length === 0) {
-    throw new Error('You passed an empty path');
-  }
-
-  if (!root) {
-    if (tolerant) { return; }
-    else { throw new Error('Object in path '+path+' could not be found or was destroyed.'); }
-  }
-
-  return Ember.set(root, keyName, value);
-};
-
-/**
-  Error-tolerant form of Ember.setPath. Will not blow up if any part of the
+  Error-tolerant form of Ember.set. Will not blow up if any part of the
   chain is undefined, null, or destroyed.
 
   This is primarily used when syncing bindings, which may try to update after
   an object has been destroyed.
 */
-Ember.trySetPath = function(root, path, value) {
-  return Ember.setPath(root, path, value, true);
+Ember.trySet = function(root, path, value) {
+  return set(root, path, value, true);
 };
+Ember.trySetPath = Ember.deprecateFunc('trySetPath has been renamed to trySet', Ember.trySet);
 
 /**
   Returns true if the provided path is global (e.g., "MyApp.fooController.bar")
@@ -316,3 +310,11 @@ Ember.trySetPath = function(root, path, value) {
 Ember.isGlobalPath = function(path) {
   return IS_GLOBAL.test(path);
 };
+
+
+
+if (Ember.config.overrideAccessors) {
+  Ember.config.overrideAccessors();
+  get = Ember.get;
+  set = Ember.set;
+}

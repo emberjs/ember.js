@@ -506,15 +506,15 @@ testBoth('depending on a simple chain', function(get, set) {
 
   var val ;
   Ember.addObserver(obj, 'foo.bar.baz.biff', function(target, key) {
-    val = Ember.getPath(target, key);
+    val = Ember.get(target, key);
     count++;
   });
 
-  set(Ember.getPath(obj, 'foo.bar.baz'), 'biff', 'BUZZ');
+  set(Ember.get(obj, 'foo.bar.baz'), 'biff', 'BUZZ');
   equal(val, 'BUZZ');
   equal(count, 1);
 
-  set(Ember.getPath(obj, 'foo.bar'), 'baz', { biff: 'BLARG' });
+  set(Ember.get(obj, 'foo.bar'), 'baz', { biff: 'BLARG' });
   equal(val, 'BLARG');
   equal(count, 2);
 
@@ -526,7 +526,7 @@ testBoth('depending on a simple chain', function(get, set) {
   equal(val, 'BLARG');
   equal(count, 4);
 
-  set(Ember.getPath(obj, 'foo.bar.baz'), 'biff', 'BUZZ');
+  set(Ember.get(obj, 'foo.bar.baz'), 'biff', 'BUZZ');
   equal(val, 'BUZZ');
   equal(count, 5);
 
@@ -544,15 +544,15 @@ testBoth('depending on a Global chain', function(get, set) {
 
   var val ;
   Ember.addObserver(obj, 'Global.foo.bar.baz.biff', function(target, key){
-    val = Ember.getPath(window, key);
+    val = Ember.get(window, key);
     count++;
   });
 
-  set(Ember.getPath(Global, 'foo.bar.baz'),  'biff', 'BUZZ');
+  set(Ember.get(Global, 'foo.bar.baz'),  'biff', 'BUZZ');
   equal(val, 'BUZZ');
   equal(count, 1);
 
-  set(Ember.getPath(Global, 'foo.bar'),  'baz', { biff: 'BLARG' });
+  set(Ember.get(Global, 'foo.bar'),  'baz', { biff: 'BLARG' });
   equal(val, 'BLARG');
   equal(count, 2);
 
@@ -564,7 +564,7 @@ testBoth('depending on a Global chain', function(get, set) {
   equal(val, 'BLARG');
   equal(count, 4);
 
-  set(Ember.getPath(Global, 'foo.bar.baz'),  'biff', 'BUZZ');
+  set(Ember.get(Global, 'foo.bar.baz'),  'biff', 'BUZZ');
   equal(val, 'BUZZ');
   equal(count, 5);
 

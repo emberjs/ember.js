@@ -383,7 +383,7 @@ var func, moduleOpts = {
     count = 0;
     func = function() {
       count++;
-      return Ember.getPath(obj, 'foo.bar.baz.biff')+' '+count;
+      return Ember.get(obj, 'foo.bar.baz.biff')+' '+count;
     };
   },
 
@@ -402,15 +402,15 @@ testBoth('depending on simple chain', function(get, set) {
 
   equal(get(obj, 'prop'), 'BIFF 1');
 
-  set(Ember.getPath(obj, 'foo.bar.baz'), 'biff', 'BUZZ');
+  set(Ember.get(obj, 'foo.bar.baz'), 'biff', 'BUZZ');
   equal(get(obj, 'prop'), 'BUZZ 2');
   equal(get(obj, 'prop'), 'BUZZ 2');
 
-  set(Ember.getPath(obj, 'foo.bar'),  'baz', { biff: 'BLOB' });
+  set(Ember.get(obj, 'foo.bar'),  'baz', { biff: 'BLOB' });
   equal(get(obj, 'prop'), 'BLOB 3');
   equal(get(obj, 'prop'), 'BLOB 3');
 
-  set(Ember.getPath(obj, 'foo.bar.baz'), 'biff', 'BUZZ');
+  set(Ember.get(obj, 'foo.bar.baz'), 'biff', 'BUZZ');
   equal(get(obj, 'prop'), 'BUZZ 4');
   equal(get(obj, 'prop'), 'BUZZ 4');
 
@@ -418,7 +418,7 @@ testBoth('depending on simple chain', function(get, set) {
   equal(get(obj, 'prop'), 'BOOM 5');
   equal(get(obj, 'prop'), 'BOOM 5');
 
-  set(Ember.getPath(obj, 'foo.bar.baz'), 'biff', 'BUZZ');
+  set(Ember.get(obj, 'foo.bar.baz'), 'biff', 'BUZZ');
   equal(get(obj, 'prop'), 'BUZZ 6');
   equal(get(obj, 'prop'), 'BUZZ 6');
 
@@ -426,7 +426,7 @@ testBoth('depending on simple chain', function(get, set) {
   equal(get(obj, 'prop'), 'BLARG 7');
   equal(get(obj, 'prop'), 'BLARG 7');
 
-  set(Ember.getPath(obj, 'foo.bar.baz'), 'biff', 'BUZZ');
+  set(Ember.get(obj, 'foo.bar.baz'), 'biff', 'BUZZ');
   equal(get(obj, 'prop'), 'BUZZ 8');
   equal(get(obj, 'prop'), 'BUZZ 8');
 
@@ -445,20 +445,20 @@ testBoth('depending on Global chain', function(get, set) {
   // assign computed property
   Ember.defineProperty(obj, 'prop', Ember.computed(function() {
     count++;
-    return Ember.getPath('Global.foo.bar.baz.biff')+' '+count;
+    return Ember.get('Global.foo.bar.baz.biff')+' '+count;
   }).property('Global.foo.bar.baz.biff').cacheable());
 
   equal(get(obj, 'prop'), 'BIFF 1');
 
-  set(Ember.getPath(Global, 'foo.bar.baz'), 'biff', 'BUZZ');
+  set(Ember.get(Global, 'foo.bar.baz'), 'biff', 'BUZZ');
   equal(get(obj, 'prop'), 'BUZZ 2');
   equal(get(obj, 'prop'), 'BUZZ 2');
 
-  set(Ember.getPath(Global, 'foo.bar'), 'baz', { biff: 'BLOB' });
+  set(Ember.get(Global, 'foo.bar'), 'baz', { biff: 'BLOB' });
   equal(get(obj, 'prop'), 'BLOB 3');
   equal(get(obj, 'prop'), 'BLOB 3');
 
-  set(Ember.getPath(Global, 'foo.bar.baz'), 'biff', 'BUZZ');
+  set(Ember.get(Global, 'foo.bar.baz'), 'biff', 'BUZZ');
   equal(get(obj, 'prop'), 'BUZZ 4');
   equal(get(obj, 'prop'), 'BUZZ 4');
 
@@ -466,7 +466,7 @@ testBoth('depending on Global chain', function(get, set) {
   equal(get(obj, 'prop'), 'BOOM 5');
   equal(get(obj, 'prop'), 'BOOM 5');
 
-  set(Ember.getPath(Global, 'foo.bar.baz'), 'biff', 'BUZZ');
+  set(Ember.get(Global, 'foo.bar.baz'), 'biff', 'BUZZ');
   equal(get(obj, 'prop'), 'BUZZ 6');
   equal(get(obj, 'prop'), 'BUZZ 6');
 
@@ -474,7 +474,7 @@ testBoth('depending on Global chain', function(get, set) {
   equal(get(obj, 'prop'), 'BLARG 7');
   equal(get(obj, 'prop'), 'BLARG 7');
 
-  set(Ember.getPath(Global, 'foo.bar.baz'), 'biff', 'BUZZ');
+  set(Ember.get(Global, 'foo.bar.baz'), 'biff', 'BUZZ');
   equal(get(obj, 'prop'), 'BUZZ 8');
   equal(get(obj, 'prop'), 'BUZZ 8');
 

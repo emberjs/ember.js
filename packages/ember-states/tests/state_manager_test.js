@@ -1,4 +1,4 @@
-var get = Ember.get, set = Ember.set, getPath = Ember.getPath, setPath = Ember.setPath;
+var get = Ember.get, set = Ember.set;
 
 var stateManager, loadingState, loadedState, stateEventStub = {
   entered: 0,
@@ -740,12 +740,12 @@ test("nothing happens if transitioning to a parent state when the current state 
 
   equal(calledOnParent, 1, 'precond - setup parent');
   equal(calledOnChild, 1, 'precond - setup child');
-  equal(stateManager.getPath('currentState.path'), 'start.first', 'precond - is in expected state');
+  equal(stateManager.get('currentState.path'), 'start.first', 'precond - is in expected state');
 
   stateManager.transitionTo('start');
 
   equal(calledOnParent, 1, 'does not transition to parent again');
   equal(calledOnChild, 1, 'does not transition to child again');
-  equal(stateManager.getPath('currentState.path'), 'start.first', 'does not change state');
+  equal(stateManager.get('currentState.path'), 'start.first', 'does not change state');
 
 });

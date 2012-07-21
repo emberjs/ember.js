@@ -36,12 +36,12 @@ var obj, moduleOpts = {
   }
 };
 
-module('Ember.setPath', moduleOpts);
+module('Ember.set with path', moduleOpts);
 
 test('[Foo, bar] -> Foo.bar', function() {
   window.Foo = {toString: function() { return 'Foo'; }}; // Behave like an Ember.Namespace
-  Ember.setPath(Foo, 'bar', 'baz');
-  equal(Ember.getPath(Foo, 'bar'), 'baz');
+  Ember.set(Foo, 'bar', 'baz');
+  equal(Ember.get(Foo, 'bar'), 'baz');
   window.Foo = null;
 });
 
@@ -50,23 +50,23 @@ test('[Foo, bar] -> Foo.bar', function() {
 //
 
 test('[obj, foo] -> obj.foo', function() {
-  Ember.setPath(obj, 'foo', "BAM");
-  equal(Ember.getPath(obj, 'foo'), "BAM");
+  Ember.set(obj, 'foo', "BAM");
+  equal(Ember.get(obj, 'foo'), "BAM");
 });
 
 test('[obj, foo.bar] -> obj.foo.bar', function() {
-  Ember.setPath(obj, 'foo.bar', "BAM");
-  equal(Ember.getPath(obj, 'foo.bar'), "BAM");
+  Ember.set(obj, 'foo.bar', "BAM");
+  equal(Ember.get(obj, 'foo.bar'), "BAM");
 });
 
 test('[obj, this.foo] -> obj.foo', function() {
-  Ember.setPath(obj, 'this.foo', "BAM");
-  equal(Ember.getPath(obj, 'foo'), "BAM");
+  Ember.set(obj, 'this.foo', "BAM");
+  equal(Ember.get(obj, 'foo'), "BAM");
 });
 
 test('[obj, this.foo.bar] -> obj.foo.bar', function() {
-  Ember.setPath(obj, 'this.foo.bar', "BAM");
-  equal(Ember.getPath(obj, 'foo.bar'), "BAM");
+  Ember.set(obj, 'this.foo.bar', "BAM");
+  equal(Ember.get(obj, 'foo.bar'), "BAM");
 });
 
 // ..........................................................
@@ -74,15 +74,15 @@ test('[obj, this.foo.bar] -> obj.foo.bar', function() {
 //
 
 test('[null, Foo.bar] -> Foo.bar', function() {
-  Ember.setPath(null, 'Foo.bar', "BAM");
-  equal(Ember.getPath(Foo, 'bar'), "BAM");
+  Ember.set(null, 'Foo.bar', "BAM");
+  equal(Ember.get(Foo, 'bar'), "BAM");
 });
 
 // ..........................................................
 // DEPRECATED
 //
 
-module("Ember.setPath - deprecated", {
+module("Ember.set with path - deprecated", {
   setup: function() {
     Ember.TESTING_DEPRECATION = true;
     moduleOpts.setup();
@@ -93,19 +93,13 @@ module("Ember.setPath - deprecated", {
   }
 });
 
-test('[obj, Foo] -> EXCEPTION', function() {
+test('[obj, foo.baz.bat] -> EXCEPTION', function() {
   raises(function() {
-    Ember.setPath(obj, 'Foo', "BAM");
+    Ember.set(obj, 'foo.baz.bat', "BAM");
   }, Error);
 });
 
 test('[obj, foo.baz.bat] -> EXCEPTION', function() {
-  raises(function() {
-    Ember.setPath(obj, 'foo.baz.bat', "BAM");
-  }, Error);
-});
-
-test('[obj, foo.baz.bat] -> EXCEPTION', function() {
-  Ember.trySetPath(obj, 'foo.baz.bat', "BAM");
+  Ember.trySet(obj, 'foo.baz.bat', "BAM");
   ok(true, "does not raise");
 });

@@ -1,6 +1,6 @@
 /*jshint eqeqeq:false */
 
-var set = Ember.set, get = Ember.get, getPath = Ember.getPath;
+var set = Ember.set, get = Ember.get;
 var indexOf = Ember.EnumerableUtils.indexOf, indexesOf = Ember.EnumerableUtils.indexesOf;
 
 /**
@@ -152,7 +152,7 @@ Ember.Select = Ember.View.extend(
     if (arguments.length === 2) { return value; }
 
     var valuePath = get(this, 'optionValuePath').replace(/^content\.?/, '');
-    return valuePath ? getPath(this, 'selection.' + valuePath) : get(this, 'selection');
+    return valuePath ? get(this, 'selection.' + valuePath) : get(this, 'selection');
   }).property('selection').cacheable(),
 
   /**
@@ -206,7 +206,7 @@ Ember.Select = Ember.View.extend(
     var content = get(this, 'content'),
         value = get(this, 'value'),
         valuePath = get(this, 'optionValuePath').replace(/^content\.?/, ''),
-        selectedValue = (valuePath ? getPath(this, 'selection.' + valuePath) : get(this, 'selection')),
+        selectedValue = (valuePath ? get(this, 'selection.' + valuePath) : get(this, 'selection')),
         selection;
 
     if (value !== selectedValue) {
@@ -307,8 +307,8 @@ Ember.SelectOption = Ember.View.extend({
 
   selected: Ember.computed(function() {
     var content = get(this, 'content'),
-        selection = getPath(this, 'parentView.selection');
-    if (getPath(this, 'parentView.multiple')) {
+        selection = get(this, 'parentView.selection');
+    if (get(this, 'parentView.multiple')) {
       return selection && indexOf(selection, content) > -1;
     } else {
       // Primitives get passed through bindings as objects... since
@@ -318,22 +318,22 @@ Ember.SelectOption = Ember.View.extend({
   }).property('content', 'parentView.selection').volatile(),
 
   labelPathDidChange: Ember.observer(function() {
-    var labelPath = getPath(this, 'parentView.optionLabelPath');
+    var labelPath = get(this, 'parentView.optionLabelPath');
 
     if (!labelPath) { return; }
 
     Ember.defineProperty(this, 'label', Ember.computed(function() {
-      return getPath(this, labelPath);
+      return get(this, labelPath);
     }).property(labelPath).cacheable());
   }, 'parentView.optionLabelPath'),
 
   valuePathDidChange: Ember.observer(function() {
-    var valuePath = getPath(this, 'parentView.optionValuePath');
+    var valuePath = get(this, 'parentView.optionValuePath');
 
     if (!valuePath) { return; }
 
     Ember.defineProperty(this, 'value', Ember.computed(function() {
-      return getPath(this, valuePath);
+      return get(this, valuePath);
     }).property(valuePath).cacheable());
   }, 'parentView.optionValuePath')
 });

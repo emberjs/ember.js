@@ -16,7 +16,7 @@ var guidFor = Ember.guidFor, // utils.js
     metaFor = Ember.meta, // utils.js
     get = Ember.get, // accessors.js
     set = Ember.set, // accessors.js
-    normalizeTuple = Ember.normalizeTuple.primitive, // accessors.js
+    normalizeTuple = Ember.normalizeTuple, // accessors.js
     GUID_KEY = Ember.GUID_KEY, // utils.js
     META_KEY = Ember.META_KEY, // utils.js
     // circular reference observer depends on Ember.watch

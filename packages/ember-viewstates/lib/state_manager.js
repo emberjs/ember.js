@@ -1,4 +1,4 @@
-var get = Ember.get, set = Ember.set, getPath = Ember.getPath, fmt = Ember.String.fmt;
+var get = Ember.get;
 
 Ember.StateManager.reopen(
 /** @scope Ember.StateManager.prototype */ {

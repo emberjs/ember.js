@@ -31,8 +31,8 @@ function append() {
 
 function selectedOptions() {
   var rv = [];
-  for(var i=0, len = select.getPath('content.length'); i < len; ++i) {
-    rv.push(select.getPath('childViews.' + i + '.childViews.0.selected'));
+  for(var i=0, len = select.get('content.length'); i < len; ++i) {
+    rv.push(select.get('childViews.' + i + '.childViews.0.selected'));
   }
   return rv;
 }

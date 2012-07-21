@@ -101,7 +101,7 @@ test("route repeatedly descends into a nested hierarchy", function() {
 
   router.route("/foo/bar/baz");
 
-  equal(router.getPath('currentState.path'), 'root.fooChild.barChild.bazChild');
+  equal(router.get('currentState.path'), 'root.fooChild.barChild.bazChild');
 });
 
 test("when you descend into a state, the route is set", function() {
@@ -422,7 +422,7 @@ test("if a leaf state has a redirectsTo, it automatically transitions into that 
     router.route("/");
   });
 
-  equal(router.getPath('currentState.path'), "root.someOtherState");
+  equal(router.get('currentState.path'), "root.someOtherState");
 });
 
 test("you cannot define connectOutlets AND redirectsTo", function() {
@@ -622,12 +622,12 @@ test("navigateAway is called if the URL changes", function() {
     router.route('/');
   });
 
-  equal(router.getPath('currentState.path'), 'root.index', "The current state is root.index");
+  equal(router.get('currentState.path'), 'root.index', "The current state is root.index");
 
   Ember.run(function() {
     router.route('/show');
   });
 
-  equal(router.getPath('currentState.path'), 'root.show', "The current state is root.index");
+  equal(router.get('currentState.path'), 'root.show', "The current state is root.index");
   equal(navigated, 1, "The navigateAway method was called");
 });

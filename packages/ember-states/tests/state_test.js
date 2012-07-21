@@ -1,4 +1,4 @@
-var get = Ember.get, set = Ember.set, getPath = Ember.getPath, setPath = Ember.setPath;
+var get = Ember.get, set = Ember.set;
 
 module("Ember.State");
 
@@ -11,7 +11,7 @@ test("creating a state with substates sets the parentState property", function()
     child: Ember.State.create()
   });
 
-  equal(state.getPath('child.parentState'), state, "A child state gets its parent state");
+  equal(state.get('child.parentState'), state, "A child state gets its parent state");
   deepEqual(state.get('childStates'), [ state.get('child') ], "The childStates method returns a state's child states");
 });
 
@@ -134,10 +134,10 @@ test("states set up proper names on their children", function() {
   });
 
   manager.transitionTo('first');
-  equal(getPath(manager, 'currentState.path'), 'first');
+  equal(get(manager, 'currentState.path'), 'first');
 
   manager.transitionTo('first.insideFirst');
-  equal(getPath(manager, 'currentState.path'), 'first.insideFirst');
+  equal(get(manager, 'currentState.path'), 'first.insideFirst');
 });
 
 test("states with child instances set up proper names on their children", function() {
@@ -152,10 +152,10 @@ test("states with child instances set up proper names on their children", functi
   });
 
   manager.transitionTo('first');
-  equal(getPath(manager, 'currentState.path'), 'first');
+  equal(get(manager, 'currentState.path'), 'first');
 
   manager.transitionTo('first.insideFirst');
-  equal(getPath(manager, 'currentState.path'), 'first.insideFirst');
+  equal(get(manager, 'currentState.path'), 'first.insideFirst');
 });
 
 test("the isLeaf property is false when a state has child states", function() {
@@ -170,10 +170,10 @@ test("the isLeaf property is false when a state has child states", function() {
     }
   });
 
-  var first = manager.getPath('states.first');
-  var insideFirst = first.getPath('states.insideFirst');
-  var otherInsideFirst = first.getPath('states.otherInsideFirst');
-  var definitelyInside = otherInsideFirst.getPath('states.definitelyInside');
+  var first = manager.get('states.first');
+  var insideFirst = first.get('states.insideFirst');
+  var otherInsideFirst = first.get('states.otherInsideFirst');
+  var definitelyInside = otherInsideFirst.get('states.definitelyInside');
 
   equal(first.get('isLeaf'), false);
   equal(insideFirst.get('isLeaf'), true);

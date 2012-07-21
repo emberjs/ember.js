@@ -7,7 +7,7 @@
 
 require("ember-views/system/render_buffer");
 var get = Ember.get, set = Ember.set, addObserver = Ember.addObserver;
-var getPath = Ember.getPath, meta = Ember.meta, fmt = Ember.String.fmt;
+var meta = Ember.meta, fmt = Ember.String.fmt;
 var a_slice = [].slice;
 var a_forEach = Ember.EnumerableUtils.forEach;
 
@@ -269,7 +269,7 @@ var invokeForState = {
           firstName: 'Barry'
         })
         excitedGreeting: function(){
-          return this.getPath("content.firstName") + "!!!"
+          return this.get("content.firstName") + "!!!"
         }
       })
 
@@ -805,7 +805,7 @@ Ember.View = Ember.Object.extend(Ember.Evented,
       view.propertyDidChange('contentView');
     });
 
-    if (getPath(this, 'parentView.controller') && !get(this, 'controller')) {
+    if (get(this, 'parentView.controller') && !get(this, 'controller')) {
       this.notifyPropertyChange('controller');
     }
   }, '_parentView'),
@@ -1058,10 +1058,9 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     var parsedPath = Ember.View._parsePropertyPath(property);
     var path = parsedPath.path;
 
-    // TODO: Remove this `false` when the `getPath` globals support is removed
-    var val = getPath(this, path, false);
+    var val = get(this, path);
     if (val === undefined && Ember.isGlobalPath(path)) {
-      val = getPath(window, path);
+      val = get(window, path);
     }
 
     return Ember.View._classStringForValue(path, val, parsedPath.className, parsedPath.falsyClassName);
@@ -1685,7 +1684,7 @@ Ember.View = Ember.Object.extend(Ember.Evented,
 
     var viewController = get(this, 'viewController');
     if (viewController) {
-      viewController = Ember.getPath(viewController);
+      viewController = get(viewController);
       if (viewController) {
         set(viewController, 'view', this);
       }

@@ -99,7 +99,7 @@ Ember.Application = Ember.Namespace.extend(
         router.get('postsController')     // <App.PostsController:ember1234>
         router.get('commentsController')  // <App.CommentsController:ember1235>
 
-        router.getPath('postsController.router') // router
+        router.get('postsController.router') // router
   */
   initialize: function(router) {
     var properties = Ember.A(Ember.keys(this)),
