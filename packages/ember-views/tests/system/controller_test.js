@@ -167,3 +167,19 @@ test("if the controller is not given while connecting an outlet, the instantiate
   equal(view.get('controller'), postController, "the controller was inherited from the parent");
 });
 
+
+test("connectControllers injects other controllers", function() {
+  var postController = {}, commentController = {};
+
+  var controller = Ember.Controller.create({
+    controllers: {
+      postController: postController,
+      commentController: commentController
+    }
+  });
+
+  controller.connectControllers('post', 'comment');
+
+  equal(controller.get('postController'), postController, "should connect postController");
+  equal(controller.get('commentController'), commentController, "should connect commentController");
+});
