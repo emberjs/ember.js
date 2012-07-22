@@ -312,7 +312,7 @@ var get = Ember.get, set = Ember.set;
 
       <script type="text/x-handlebars" data-template-name="photos">
         {{#each photo in controller}}
-          <h1><a {{action showPhoto context="photo"}}>{{title}}</a></h1>
+          <h1><a {{action showPhoto photo}}>{{title}}</a></h1>
         {{/each}}
       </script>
 
