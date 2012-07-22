@@ -93,7 +93,7 @@ test("it sets an URL with a context", function() {
   equal(router.get('currentState.path'), "root.index", "precond - the current stat is root.index");
 
   var view = Ember.View.create({
-    template: compile('<a {{action showDashboard context="controller.component" href=true}}>test</a>')
+    template: compile('<a {{action showDashboard controller.component href=true}}>test</a>')
   });
 
   var controller = {
