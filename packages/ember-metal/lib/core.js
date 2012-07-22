@@ -61,7 +61,7 @@ Ember.VERSION = '1.0.pre';
   variable before loading Ember to control various configuration
   settings.
 */
-Ember.ENV = 'undefined' === typeof ENV ? {} : ENV;
+Ember.ENV = Ember.ENV || ('undefined' === typeof ENV ? {} : ENV);
 
 Ember.config = Ember.config || {};
 
