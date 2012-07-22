@@ -27,7 +27,10 @@ ActionHelper.registerAction = function(actionName, options) {
       event.preventDefault();
 
       event.view = options.view;
-      event.context = options.context;
+
+      if (options.hasOwnProperty('context')) {
+        event.context = options.context;
+      }
 
       var target = options.target;
 
