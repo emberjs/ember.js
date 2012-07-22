@@ -33,8 +33,8 @@ test("should output a data attribute with a guid", function() {
 test("should by default register a click event", function() {
   var registeredEventName;
 
-  ActionHelper.registerAction = function(actionName, eventName) {
-    registeredEventName = eventName;
+  ActionHelper.registerAction = function(actionName, options) {
+    registeredEventName = options.eventName;
   };
 
   view = Ember.View.create({
@@ -51,8 +51,8 @@ test("should by default register a click event", function() {
 test("should allow alternative events to be handled", function() {
   var registeredEventName;
 
-  ActionHelper.registerAction = function(actionName, eventName) {
-    registeredEventName = eventName;
+  ActionHelper.registerAction = function(actionName, options) {
+    registeredEventName = options.eventName;
   };
 
   view = Ember.View.create({
@@ -69,8 +69,8 @@ test("should allow alternative events to be handled", function() {
 test("should by default target the parent view", function() {
   var registeredTarget;
 
-  ActionHelper.registerAction = function(actionName, eventName, target) {
-    registeredTarget = target;
+  ActionHelper.registerAction = function(actionName, options) {
+    registeredTarget = options.target;
   };
 
   view = Ember.View.create({
@@ -110,8 +110,8 @@ test("should by default target the state manager on the controller if it exists"
 test("should allow a target to be specified", function() {
   var registeredTarget;
 
-  ActionHelper.registerAction = function(actionName, eventName, target) {
-    registeredTarget = target;
+  ActionHelper.registerAction = function(actionName, options) {
+    registeredTarget = options.target;
   };
 
   var anotherTarget = Ember.View.create();
@@ -341,7 +341,7 @@ test("should send the view, event and current Handlebars context to the action",
 
   view = Ember.View.create({
     aContext: aContext,
-    template: Ember.Handlebars.compile('{{#with aContext}}<a id="edit" href="#" {{action "edit" target="aTarget"}}>edit</a>{{/with}}')
+    template: Ember.Handlebars.compile('{{#with aContext}}<a id="edit" href="#" {{action edit this target="aTarget"}}>edit</a>{{/with}}')
   });
 
   appendView();
@@ -350,7 +350,7 @@ test("should send the view, event and current Handlebars context to the action",
 
   strictEqual(passedTarget, aTarget, "the action is called with the target as this");
   strictEqual(passedEvent.view, view, "the view passed is the view containing the action helper");
-  deepEqual(passedEvent.context, aContext, "the context passed is the context surrounding the action helper");
+  deepEqual(passedEvent.context, aContext, "the context is passed");
   equal(passedEvent.type, 'click', "the event passed is the event triggered for the action helper");
 });
 
@@ -375,7 +375,7 @@ test("should allow a context to be specified", function() {
 
   view = Ember.View.create({
     people: Ember.A([model]),
-    template: Ember.Handlebars.compile('{{#each person in people}}<button {{action "edit" context="person"}}>edit</button>{{/each}}'),
+    template: Ember.Handlebars.compile('{{#each person in people}}<button {{action edit person}}>edit</button>{{/each}}'),
     edit: function(event) {
       passedContext = event.context;
     }

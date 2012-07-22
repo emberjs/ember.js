@@ -1,26 +1,35 @@
 require('ember-handlebars/ext');
 
-var EmberHandlebars = Ember.Handlebars, getPath = EmberHandlebars.getPath, get = Ember.get;
+var EmberHandlebars = Ember.Handlebars,
+    getPath = EmberHandlebars.getPath,
+    get = Ember.get,
+    a_slice = Array.prototype.slice;
 
 var ActionHelper = EmberHandlebars.ActionHelper = {
   registeredActions: {}
 };
 
-ActionHelper.registerAction = function(actionName, eventName, target, view, context, link) {
+ActionHelper.registerAction = function(actionName, options) {
   var actionId = (++Ember.$.uuid).toString();
 
   ActionHelper.registeredActions[actionId] = {
-    eventName: eventName,
+    eventName: options.eventName,
     handler: function(event) {
-      if (link && (event.button !== 0 || event.shiftKey || event.metaKey || event.altKey || event.ctrlKey)) {
+      var modifier = event.shiftKey || event.metaKey || event.altKey || event.ctrlKey,
+          rightClick = event.button !== 0,
+          nonStandard = modifier || rightClick;
+
+      if (options.link && nonStandard) {
         // Allow the browser to handle special link clicks normally
         return;
       }
 
       event.preventDefault();
 
-      event.view = view;
-      event.context = context;
+      event.view = options.view;
+      event.context = options.context;
+
+      var target = options.target;
 
       // Check for StateManager (or compatible object)
       if (target.isState && typeof target.send === 'function') {
@@ -32,7 +41,7 @@ ActionHelper.registerAction = function(actionName, eventName, target, view, cont
     }
   };
 
-  view.on('willRerender', function() {
+  options.view.on('willRerender', function() {
     delete ActionHelper.registeredActions[actionId];
   });
 
@@ -169,7 +178,7 @@ ActionHelper.registerAction = function(actionName, eventName, target, view, cont
 
       <script type="text/x-handlebars" data-template-name='a-template'>
         {{#each person in people}}
-          <div {{action "edit" context="person"}}>
+          <div {{action edit person}}>
             click me
           </div>
         {{/each}}
@@ -177,15 +186,23 @@ ActionHelper.registerAction = function(actionName, eventName, target, view, cont
 
   @name Handlebars.helpers.action
   @param {String} actionName
+  @param {Object...} contexts
   @param {Hash} options
 */
-EmberHandlebars.registerHelper('action', function(actionName, options) {
+EmberHandlebars.registerHelper('action', function(actionName) {
+  var options = arguments[arguments.length - 1],
+      contexts = a_slice.call(arguments, 1, -1);
+
   var hash = options.hash,
-      eventName = hash.on || "click",
       view = options.data.view,
       target, context, controller, link;
 
-  view = get(view, 'concreteView');
+  // create a hash to pass along to registerAction
+  var action = {
+    eventName: hash.on || "click"
+  };
+
+  action.view = view = get(view, 'concreteView');
 
   if (hash.target) {
     target = getPath(this, hash.target, options);
@@ -193,19 +210,22 @@ EmberHandlebars.registerHelper('action', function(actionName, options) {
     target = get(controller, 'target');
   }
 
-  target = target || view;
+  action.target = target = target || view;
 
-  context = hash.context ? getPath(this, hash.context, options) : options.contexts[0];
+  // TODO: Support multiple contexts
+  if (contexts.length) {
+    action.context = context = getPath(this, contexts[0], options);
+  }
 
   var output = [], url;
 
   if (hash.href && target.urlForEvent) {
     url = target.urlForEvent(actionName, context);
     output.push('href="' + url + '"');
-    link = true;
+    action.link = true;
   }
 
-  var actionId = ActionHelper.registerAction(actionName, eventName, target, view, context, link);
+  var actionId = ActionHelper.registerAction(actionName, action);
   output.push('data-ember-action="' + actionId + '"');
 
   return new EmberHandlebars.SafeString(output.join(" "));
