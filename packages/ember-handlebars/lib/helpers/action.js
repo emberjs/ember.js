@@ -6,7 +6,7 @@ var ActionHelper = EmberHandlebars.ActionHelper = {
   registeredActions: {}
 };
 
-ActionHelper.registerAction = function(actionName, eventName, target, view, context, link) {
+ActionHelper.registerAction = function(actionName, eventName, target, view, contexts, link) {
   var actionId = (++Ember.$.uuid).toString();
 
   ActionHelper.registeredActions[actionId] = {
@@ -20,7 +20,8 @@ ActionHelper.registerAction = function(actionName, eventName, target, view, cont
       event.preventDefault();
 
       event.view = view;
-      event.context = context;
+      event.context = contexts[0];
+      event.contexts = contexts;
 
       // Check for StateManager (or compatible object)
       if (target.isState && typeof target.send === 'function') {
@@ -183,7 +184,7 @@ EmberHandlebars.registerHelper('action', function(actionName, options) {
   var hash = options.hash,
       eventName = hash.on || "click",
       view = options.data.view,
-      target, context, controller, link;
+      target, contexts, controller, link;
 
   view = get(view, 'concreteView');
 
@@ -195,17 +196,23 @@ EmberHandlebars.registerHelper('action', function(actionName, options) {
 
   target = target || view;
 
-  context = hash.context ? getPath(this, hash.context, options) : options.contexts[0];
+  if(hash.context) {
+    contexts = Ember.A(hash.context.split(' ')).map(function(context) {
+      return getPath(this, context, options);
+    }, this);
+  } else {
+    contexts = options.contexts;
+  }
 
   var output = [], url;
 
   if (hash.href && target.urlForEvent) {
-    url = target.urlForEvent(actionName, context);
+    url = target.urlForEvent.apply(target, [actionName].concat(contexts));
     output.push('href="' + url + '"');
     link = true;
   }
 
-  var actionId = ActionHelper.registerAction(actionName, eventName, target, view, context, link);
+  var actionId = ActionHelper.registerAction(actionName, eventName, target, view, contexts, link);
   output.push('data-ember-action="' + actionId + '"');
 
   return new EmberHandlebars.SafeString(output.join(" "));

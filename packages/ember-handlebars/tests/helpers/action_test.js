@@ -387,3 +387,23 @@ test("should allow a context to be specified", function() {
 
   equal(passedContext, model, "the action was called with the passed context");
 });
+
+test("should allow multiple contexts to be specified, separated by spaces", function() {
+  var passedContexts,
+      models = [Ember.Object.create(), Ember.Object.create()];
+
+  view = Ember.View.create({
+    modelA: models[0],
+    modelB: models[1],
+    template: Ember.Handlebars.compile('<button {{action "edit" context="modelA modelB"}}>edit</button>'),
+    edit: function(event) {
+      passedContexts = event.contexts;
+    }
+  });
+
+  appendView();
+
+  view.$('button').trigger('click');
+
+  deepEqual(passedContexts, models, "the action was called with the passed contexts");
+});
