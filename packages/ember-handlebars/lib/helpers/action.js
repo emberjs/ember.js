@@ -16,8 +16,8 @@ ActionHelper.registerAction = function(actionName, options) {
     eventName: options.eventName,
     handler: function(event) {
       var modifier = event.shiftKey || event.metaKey || event.altKey || event.ctrlKey,
-          rightClick = event.button !== 0,
-          nonStandard = modifier || rightClick;
+          secondaryClick = event.which > 1, // IE9 may return undefined
+          nonStandard = modifier || secondaryClick;
 
       if (options.link && nonStandard) {
         // Allow the browser to handle special link clicks normally

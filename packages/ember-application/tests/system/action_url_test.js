@@ -153,9 +153,10 @@ test("it does not trigger action with special clicks", function() {
   checkClick('altKey', true, false);
   checkClick('metaKey', true, false);
   checkClick('shiftKey', true, false);
-  checkClick('button', 1, false);
+  checkClick('which', 2, false);
 
-  checkClick('button', 0, true);
+  checkClick('which', 1, true);
+  checkClick('which', undefined, true); // IE <9
 
   Ember.run(function() {
     dispatcher.destroy();
