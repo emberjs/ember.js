@@ -228,6 +228,8 @@ EmberHandlebars.registerHelper('action', function(actionName) {
 
   if (hash.target) {
     target = getPath(this, hash.target, options);
+  } else if (view[actionName]) {
+    target = view;
   } else if (controller = options.data.keywords.controller) {
     target = get(controller, 'target');
   }

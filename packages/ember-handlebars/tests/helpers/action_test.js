@@ -128,6 +128,31 @@ test("should allow a target to be specified", function() {
   ActionHelper.registerAction = originalRegisterAction;
 });
 
+test("should allow a method on a view to supercede the router as a default target for an action", function() {
+  var eventHandlerWasCalled = false;
+
+  view = Ember.View.create({
+    edit: function() { eventHandlerWasCalled = true; },
+    controller: Ember.Object.create({
+      target: Ember.Object.create({
+        isState: true,
+        edit: function() { eventHandlerWasCalled = false; }
+      })
+    }),
+    template: Ember.Handlebars.compile('<a id="ember-link" href="#" {{action "edit"}}>edit</a>')
+  });
+
+  appendView();
+
+  var actionId = view.$('a[data-ember-action]').attr('data-ember-action');
+
+  ok(Ember.Handlebars.ActionHelper.registeredActions[actionId], "The action was registered");
+
+  view.$('a').trigger('click');
+
+  ok(eventHandlerWasCalled, "The event handler was called");
+});
+
 test("should register an event handler", function() {
   var eventHandlerWasCalled = false;
 
