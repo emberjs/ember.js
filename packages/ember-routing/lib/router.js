@@ -38,9 +38,9 @@ var get = Ember.get, set = Ember.set;
 
   ## Adding Routes to a Router
   The `initialState` property of Ember.Router instances is named `root`. The state stored in this
-  property should be a subclass of Ember.Route. The `root` route should itself have states that are
-  also subclasses of Ember.Route and have `route` properties describing the URL pattern you would
-  like to detect.
+  property must be a subclass of Ember.Route. The `root` route acts as the container for the
+  set of routable states but is not routable itself. It should have states that are also subclasses
+  of Ember.Route which each have a `route` property describing the URL pattern you would like to detect.
 
       App = Ember.Application.create({
         Router: Ember.Router.extend({
@@ -81,7 +81,47 @@ var get = Ember.get, set = Ember.set;
   Respectively, loading the page at the URL '#/alphabeta' would detect the route property of
   'root.bRoute' ('/alphabeta') and transition the router first to the state named 'root' and
   then to the substate 'bRoute'.
+  
+  ## Adding Nested Routes to a Router
+  Routes can contain nested subroutes each with their own `route` property describing the nested
+  portion of the URL they would like to detect and handle. Router, like all instances of StateManager,
+  cannot call `transitonTo` with an intermediary state. To avoid transitioning the Router into an
+  intermediary state when detecting URLs, a Route with nested routes must define both a base `route`
+  property for itself and a child Route with a `route` property of `'/'` which will be transitioned
+  to when the base route is detected in the URL:
+  
+  Given the following application code:
 
+      App = Ember.Application.create({
+        Router: Ember.Router.extend({
+          root: Ember.Route.extend({
+            aRoute: Ember.Route.extend({
+              route: '/theBaseRouteForThisSet', 
+              
+              indexSubRoute: Ember.Route.extend({
+                route: '/',
+              }),
+              
+              subRouteOne: Ember.Route.extend({
+                route: '/subroute1
+              }),
+              
+              subRouteTwo: Ember.Route.extend({
+                route: '/subRoute2'
+              })
+              
+            })
+          })
+        })
+      });
+      App.initialize();
+
+  When the application is loaded at '/theBaseRouteForThisSet' the Router will transition to the route
+  at path 'root.aRoute' and then transition to state 'indexSubRoute'.
+  
+  When the application is loaded at '/theBaseRouteForThisSet/subRoute1' the Router will transition to
+  the route at path 'root.aRoute' and then transition to state 'subRouteOne'.
+  
   ## Route Transition Events
   Transitioning between Ember.Route instances (including the transition into the detected
   route when loading the application)  triggers the same transition events as state transitions for
