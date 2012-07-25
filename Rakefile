@@ -58,6 +58,22 @@ task :upload_latest => [:clean, :dist] do
   upload_file(uploader, 'ember-latest.js', "Ember.js Master", "dist/ember.js")
 end
 
+desc "Update ember-data package from ember-data repo"
+task :update_data do
+  mkdir_p "tmp"
+  rm_rf "tmp/ember-data"
+  sh "git clone https://github.com/emberjs/data.git tmp/ember-data"
+  Dir.chdir("tmp/ember-data") do
+    sh "git filter-branch --prune-empty --subdirectory-filter packages/ember-data master"
+  end
+  if `git remote`.split("\n").include?("ember-data")
+    sh "git remote rm ember-data"
+  end
+  sh "git remote add ember-data tmp/ember-data"
+  sh "git pull --no-commit -s subtree ember-data master"
+  sh "git commit -m \"Merge branch 'master' of ember-data\""
+end
+
 namespace :docs do
   def doc_args
     "#{Dir.glob("packages/ember-*").join(' ')} -E #{Dir.glob("packages/ember-*/tests").join(' ')} -t docs.emberjs.com"
