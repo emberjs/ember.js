@@ -246,7 +246,7 @@ test("if a ContainerView starts with a currentView and then is set to null, the 
   equal(get(container, 'childViews.length'), 0, "should not have any child views");
 });
 
-test("if a ContainerView starts with a currentView and then is set to null, the ContainerView is updated", function() {
+test("if a ContainerView starts with a currentView and then is set to null, the ContainerView is updated and the previous currentView is destroyed", function() {
   var container = Ember.ContainerView.create();
   var mainView = Ember.View.create({
     template: function() {
@@ -267,11 +267,13 @@ test("if a ContainerView starts with a currentView and then is set to null, the 
     set(container, 'currentView', null);
   });
 
+  equal(mainView.isDestroyed, true, 'should destroy the previous currentView.');
+
   equal(container.$().text(), '', "has a empty contents");
   equal(get(container, 'childViews.length'), 0, "should not have any child views");
 });
 
-test("if a ContainerView starts with a currentView and then a different currentView is set, the old view is removed and the new one is added", function() {
+test("if a ContainerView starts with a currentView and then a different currentView is set, the old view is destroyed and the new one is added", function() {
   var container = Ember.ContainerView.create();
   var mainView = Ember.View.create({
     template: function() {
@@ -298,6 +300,8 @@ test("if a ContainerView starts with a currentView and then a different currentV
   Ember.run(function() {
     set(container, 'currentView', secondaryView);
   });
+
+  equal(mainView.isDestroyed, true, 'should destroy the previous currentView.');
 
   equal(container.$().text(), "This is the secondary view.", "should render its child");
   equal(get(container, 'childViews.length'), 1, "should have one child view");
