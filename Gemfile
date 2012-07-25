@@ -5,10 +5,10 @@ gem "rake-pipeline-web-filters", :git => "https://github.com/wycats/rake-pipelin
 gem "colored"
 # Using git to prevent deprecation warnings
 gem "uglifier", :git => "https://github.com/lautis/uglifier.git"
+gem "github_downloads"
 
 group :development do
   gem "rack"
-  gem "github_downloads"
   gem "ember-docs", :git => "https://github.com/emberjs/docs-generator.git"
   gem "kicker"
 end
