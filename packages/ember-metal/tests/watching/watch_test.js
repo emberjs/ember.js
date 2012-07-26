@@ -60,6 +60,26 @@ testBoth('watching a regular defined property', function(get, set) {
   set(obj, 'foo', 'bar');
   equal(willCount, 1, 'should have invoked willCount');
   equal(didCount, 1, 'should have invoked didCount');
+
+  equal(get(obj, 'foo'), 'bar', 'should get new value');
+  equal(obj.foo, 'bar', 'property should be accessible on obj');
+});
+
+testBoth('watching a regular undefined property', function(get, set) {
+
+  var obj = { };
+
+  Ember.watch(obj, 'foo');
+
+  equal('foo' in obj, false, 'precond undefined');
+
+  set(obj, 'foo', 'bar');
+
+  equal(willCount, 1, 'should have invoked willCount');
+  equal(didCount, 1, 'should have invoked didCount');
+
+  equal(get(obj, 'foo'), 'bar', 'should get new value');
+  equal(obj.foo, 'bar', 'property should be accessible on obj');
 });
 
 testBoth('watches should inherit', function(get, set) {
