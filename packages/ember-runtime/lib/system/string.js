@@ -201,5 +201,24 @@ Ember.String = {
   underscore: function(str) {
     return str.replace(STRING_UNDERSCORE_REGEXP_1, '$1_$2').
       replace(STRING_UNDERSCORE_REGEXP_2, '_').toLowerCase();
-  }
+  },
+
+  /**
+    Returns the Capitalized form of a string
+
+       'innerHTML'.capitalize()         => 'InnerHTML'
+       'action_name'.capitalize()       => 'Action_name'
+       'css-class-name'.capitalize()    => 'Css-class-name'
+       'my favorite items'.capitalize() => 'My Favorite Items'
+
+    @param {String} str
+
+    @returns {String}
+  */
+  capitalize: function(str) {
+    return str.w().map(function(word) {
+      return word.substr(0, 1).toUpperCase() + word.substr(1);
+    }).join(' ');
+  };
+
 };

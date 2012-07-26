@@ -16,7 +16,8 @@ var fmt = Ember.String.fmt,
     camelize = Ember.String.camelize,
     decamelize = Ember.String.decamelize,
     dasherize = Ember.String.dasherize,
-    underscore = Ember.String.underscore;
+    underscore = Ember.String.underscore,
+    capitalize = Ember.String.capitalize;
 
 if (Ember.EXTEND_PROTOTYPES) {
 
@@ -67,6 +68,13 @@ if (Ember.EXTEND_PROTOTYPES) {
   */
   String.prototype.underscore = function() {
     return underscore(this);
+  };
+
+  /**
+    @see Ember.String.capitalize
+  */
+  String.prototype.capitalize = function() {
+    return capitalize(this, arguments);
   };
 
 }
