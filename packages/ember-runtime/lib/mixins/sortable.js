@@ -36,6 +36,7 @@ var get = Ember.get, set = Ember.set, forEach = Ember.EnumerableUtils.forEach;
 Ember.SortableMixin = Ember.Mixin.create(Ember.MutableEnumerable, {
   sortProperties: null,
   sortAscending: true,
+  sortFunction: Ember.compare,
 
   addObject: function(obj) {
     var content = get(this, 'content');
@@ -50,13 +51,14 @@ Ember.SortableMixin = Ember.Mixin.create(Ember.MutableEnumerable, {
   orderBy: function(item1, item2) {
     var result = 0,
         sortProperties = get(this, 'sortProperties'),
-        sortAscending = get(this, 'sortAscending');
+        sortAscending = get(this, 'sortAscending'),
+        sortFunction = get(this, 'sortFunction');
 
     Ember.assert("you need to define `sortProperties`", !!sortProperties);
 
     forEach(sortProperties, function(propertyName) {
       if (result === 0) {
-        result = Ember.compare(get(item1, propertyName), get(item2, propertyName));
+        result = sortFunction(get(item1, propertyName), get(item2, propertyName));
         if ((result !== 0) && !sortAscending) {
           result = (-1) * result;
         }
