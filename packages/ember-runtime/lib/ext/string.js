@@ -15,6 +15,7 @@ var fmt = Ember.String.fmt,
     decamelize = Ember.String.decamelize,
     dasherize = Ember.String.dasherize,
     underscore = Ember.String.underscore,
+    capitalize = Ember.String.capitalize,
     classify = Ember.String.classify;
 
 if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.String) {
@@ -98,5 +99,16 @@ if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.String) {
   String.prototype.classify = function() {
     return classify(this);
   };
+
+  /**
+    See {{#crossLink "Ember.String/capitalize"}}{{/crossLink}}
+
+    @method capitalize
+    @for String
+  */
+  String.prototype.capitalize = function() {
+    return capitalize(this);
+  };
+
 }
 
