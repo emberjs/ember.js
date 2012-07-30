@@ -150,6 +150,24 @@ test("doesn't push a state if path has not changed", function() {
   locationObject.setURL(window.location.pathname);
 });
 
+test("it calls pushState if at initialURL and history.state does not exist", function() {
+  expect(1);
+  stop();
+
+  var count = 0;
+  window.history.pushState = function() {
+    count++;
+  };
+
+  setTimeout(function() {
+    start();
+    equal(count, 1, "pushState should have been called");
+  }, 100);
+
+  locationObject.set('_initialURL', window.location.pathname);
+  locationObject.setURL('/test');
+});
+
 test("it handles an empty path as root", function() {
   equal(locationObject.formatPath(''), '/', "The formatted url is '/'");
 });
