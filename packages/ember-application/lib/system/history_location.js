@@ -42,8 +42,7 @@ Ember.HistoryLocation = Ember.Object.extend({
 
     path = this.formatPath(path);
 
-    if ((initialURL && initialURL !== path) || (state && state.path !== path)) {
-      set(this, '_initialURL', null);
+    if ((initialURL !== path && !state) || (state && state.path !== path)) {
       window.history.pushState({ path: path }, null, path);
     }
   },
