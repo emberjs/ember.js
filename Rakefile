@@ -76,10 +76,14 @@ namespace :docs do
   end
 
   desc "Build and upload Ember Docs"
-  task :upload => :build do
+  task :upload, [:env] do |t, args|
     raise "missing environment variable EMBER_DOCS_UPLOAD_PATH" unless ENV.has_key?('EMBER_DOCS_UPLOAD_PATH')
-    Rake::Task["docs:build"].invoke
+
+    env = args[:env] || 'development'
     upload_path = ENV['EMBER_DOCS_UPLOAD_PATH']
+
+    Rake::Task["docs:build"].invoke
+
     FileUtils.cd(upload_path) do
       system "git pull"
     end
@@ -87,7 +91,8 @@ namespace :docs do
     FileUtils.mv("#{upload_path}/html", "#{upload_path}/html.old")
     FileUtils.cp_r("docs", "#{upload_path}/html")
     FileUtils.cd(upload_path) do
-      system "git add html && git commit --all -m 'Upload generated API docs' && git push heroku master"
+      remote = env === 'production' ? 'heroku-prod' : 'heroku'
+      system "git add html && git commit --all -m 'Upload generated API docs' && git push #{remote} master"
     end
     FileUtils.rm_rf("#{upload_path}/html.old")
   end
