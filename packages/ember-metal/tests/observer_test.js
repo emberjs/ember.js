@@ -629,3 +629,45 @@ testBoth('setting a cached computed property whose value has changed should trig
   equal(count, 3);
   equal(get(obj, 'foo'), 'bar');
 });
+
+module("Ember.immediateObserver");
+
+testBoth("immediate observers should fire synchronously", function(get, set) {
+  var obj = {},
+      observerCalled = 0,
+      mixin;
+
+  // explicitly create a run loop so we do not inadvertently
+  // trigger deferred behavior
+  Ember.run(function() {
+    mixin = Ember.Mixin.create({
+      fooDidChange: Ember.immediateObserver(function() {
+        observerCalled++;
+        equal(get(this, 'foo'), "barbaz", "newly set value is immediately available");
+      }, 'foo')
+    });
+
+    mixin.apply(obj);
+
+    Ember.defineProperty(obj, 'foo', Ember.computed(function(key, value) {
+      if (arguments.length > 1) {
+        return value;
+      }
+      return "yes hello this is foo";
+    }).cacheable());
+
+    equal(get(obj, 'foo'), "yes hello this is foo", "precond - computed property returns a value");
+    equal(observerCalled, 0, "observer has not yet been called");
+
+    set(obj, 'foo', 'barbaz');
+
+    equal(observerCalled, 1, "observer was called once");
+  });
+});
+
+testBoth("immediate observers are for internal properties only", function(get, set) {
+  raises(function() {
+    Ember.immediateObserver(Ember.K, 'foo.bar');
+  });
+});
+
