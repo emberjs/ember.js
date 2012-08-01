@@ -229,13 +229,17 @@ ComputedPropertyPrototype.property = function() {
   via the `metaForProperty()` function.
 
   @name Ember.ComputedProperty.meta
-  @param {Hash} metadata
+  @param {Hash} meta
   @returns {Ember.ComputedProperty} property descriptor instance
 */
 
 ComputedPropertyPrototype.meta = function(meta) {
-  this._meta = meta;
-  return this;
+  if (arguments.length === 0) {
+    return this._meta || {};
+  } else {
+    this._meta = meta;
+    return this;
+  }
 };
 
 /** @private - impl descriptor API */
