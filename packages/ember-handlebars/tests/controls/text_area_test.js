@@ -136,7 +136,7 @@ test("value binding works properly for inputs that haven't been created", functi
   });
 
   equal(get(textArea, 'value'), null, "precond - default value is null");
-  equal(textArea.$().length, 0, "precond - view doesn't have its layer created yet, thus no input element");
+  equal(textArea.$(), undefined, "precond - view doesn't have its layer created yet, thus no input element");
 
   Ember.run(function() {
     set(TestObject, 'value', 'ohai');
@@ -156,6 +156,8 @@ test("should call the insertNewline method when return key is pressed", function
     keyCode: 13
   });
 
+  Ember.run(function() { textArea.append(); });
+
   textArea.insertNewline = function() {
     wasCalled = true;
   };
@@ -169,6 +171,8 @@ test("should call the cancel method when escape key is pressed", function() {
   var event = Ember.Object.create({
     keyCode: 27
   });
+
+  Ember.run(function() { textArea.append(); });
 
   textArea.cancel = function() {
     wasCalled = true;
