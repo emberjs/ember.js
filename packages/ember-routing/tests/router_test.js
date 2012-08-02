@@ -145,7 +145,7 @@ test("router.urlForEvent works with multiple contexts", function() {
     router.route('/');
   });
 
-  equal(router.getPath('currentState.path'), "root.index", "precond - the router is in root.index");
+  equal(router.get('currentState.path'), "root.index", "precond - the router is in root.index");
 
   var url = router.urlForEvent('showComment', { post_id: 1 }, { comment_id: 2 });
   equal(url, "#!#/post/1/comment/2");
