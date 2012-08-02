@@ -355,6 +355,30 @@ test("should be able to unroute out of a state with context", function() {
   equal(get(router, 'currentState.path'), 'root.components.show.index', "should go to the correct state");
 });
 
+test("should be able to route with initialState", function() {
+  var router = Ember.Router.create({
+    location: location,
+    namespace: namespace,
+    root: Ember.Route.create({
+      initialState: 'stateOne',
+
+      stateOne: Ember.Route.create({
+        route: '/state_one'
+      }),
+
+      stateTwo: Ember.Route.create({
+        route: '/state_two'
+      })
+    })
+  });
+
+  equal(get(router, 'currentState.path'), 'root.stateOne', "should be in stateOne");
+
+  router.route('/state_two');
+
+  equal(get(router, 'currentState.path'), 'root.stateTwo', "should be in stateTwo");
+});
+
 test("should update route for redirections", function() {
   var router = Ember.Router.create({
     location: location,
