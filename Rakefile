@@ -471,13 +471,13 @@ namespace :release do
       about = File.read("tmp/website/source/about.html.erb")
       min_gz = Zlib::Deflate.deflate(File.read("dist/ember.min.js")).bytes.count / 1024
 
-      about.gsub! %r{https://github\.com/downloads/emberjs/ember\.js/ember-\d(\.\d+)*\.min\.js},
-        %{https://github.com/downloads/emberjs/ember.js/ember-#{EMBER_VERSION}.min.js}
+      about.gsub! %r{https://github\.com/downloads/emberjs/ember\.js/ember-\d(?:\.(?:(?:\d+)|pre))*?(\.min)?\.js},
+        %{https://github.com/downloads/emberjs/ember.js/ember-#{EMBER_VERSION}\\1.js}
 
-      about.gsub! %r{https://github\.com/downloads/emberjs/starter-kit/starter-kit\.\d(\.\d+)*\.zip},
+      about.gsub! %r{https://github\.com/downloads/emberjs/starter-kit/starter-kit\.\d(\.((\d+)|pre))*?*\.zip},
         %{https://github.com/downloads/emberjs/starter-kit/starter-kit.#{EMBER_VERSION}.zip}
 
-      about.gsub! /Ember \d(\.\d+)*/, "Ember #{EMBER_VERSION}"
+      about.gsub! /Ember \d(\.((\d+)|pre))*/, "Ember #{EMBER_VERSION}"
 
       about.gsub! /\d+k min\+gzip/, "#{min_gz}k min+gzip"
 
