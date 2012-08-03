@@ -1,12 +1,17 @@
 var get = Ember.get, set = Ember.set;
 
 /**
+  @class
+
   Ember.NoneLocation does not interact with the browser. It is useful for
   testing, or when you need to manage state with your Router, but temporarily
   don't want it to muck with the URL (for example when you embed your
   application in a larger page).
+
+  @extends Ember.Object
 */
-Ember.NoneLocation = Ember.Object.extend({
+Ember.NoneLocation = Ember.Object.extend(
+/** @scope Ember.NoneLocation.prototype */ {
   path: '',
 
   getURL: function() {

@@ -3,6 +3,7 @@ require('ember-states/state');
 var get = Ember.get, set = Ember.set;
 /**
   @class
+  @deprecated
 
   Ember.ViewState extends Ember.State to control the presence of a childView within a
   container based on the current state of the ViewState's StateManager.
