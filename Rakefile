@@ -340,7 +340,7 @@ namespace :release do
       mkdir_p "tmp"
 
       Dir.chdir("tmp") do
-        sh "git clone git@github.com:emberjs/starter-kit.git"
+        sh "git clone https://github.com/emberjs/starter-kit.git"
       end
     end
 
@@ -412,7 +412,7 @@ namespace :release do
       mkdir_p "tmp"
 
       Dir.chdir("tmp") do
-        sh "git clone git@github.com:emberjs/examples.git"
+        sh "git clone https://github.com/emberjs/examples.git"
       end
     end
 
@@ -453,7 +453,7 @@ namespace :release do
       mkdir_p "tmp"
 
       Dir.chdir("tmp") do
-        sh "git clone git@github.com:emberjs/website.git"
+        sh "git clone https://github.com/emberjs/website.git"
       end
     end
 
