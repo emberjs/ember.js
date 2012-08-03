@@ -44,7 +44,7 @@ def docs_upload_task(name)
         rm_rf "tmp/#{name}/html"
       end
 
-      file "tmp/#{name}/html" => [:build, :clean] do
+      file "tmp/#{name}/html" => ['docs:build', :clean] do
         cp_r "docs", "tmp/#{name}/html"
       end
 
