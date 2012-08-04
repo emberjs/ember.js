@@ -1,4 +1,4 @@
-require("ember-views/views/view");
+require("ember-handlebars/controls/control");
 
 var get = Ember.get, getPath = Ember.getPath, set = Ember.set, fmt = Ember.String.fmt;
 
@@ -11,11 +11,25 @@ var get = Ember.get, getPath = Ember.getPath, set = Ember.set, fmt = Ember.Strin
 
   @extends Ember.View
 */
-Ember.RadioButton = Ember.View.extend(
+Ember.RadioButton = Ember.Control.extend(
 /** @scope Ember.RadioButton.prototype */ {
 
-  attributeBindings: ["isDisabled:disabled", "type", "name", "value"],
+  attributeBindings: ["isDisabled:disabled", "type", "name", "value", "isChecked:checked"],
   classNames: ["ember-radio-button"],
+
+  /**
+    The value of this radio button.
+
+    @type Object
+  */
+  value: null,
+
+  /**
+    The selected value in this group of radio buttons.
+
+    @type Object
+  */
+  selectedValue: null,
 
   /**
     Sets the disabled property on the element.
@@ -31,83 +45,34 @@ Ember.RadioButton = Ember.View.extend(
     @default false
     @type Boolean
   */
-  isSelected: false,
+  isChecked: false,
 
   tagName: "input",
   type: "radio",
-  name: Ember.computed(function() {
-    return getPath(this, 'group.name');
-  }).property('group'),
 
-  /** @private */
+  selectedValueChanged: Ember.observer(function() {
+    if(get(this, "value") === get(this, 'selectedValue')) {
+      set(this, "isChecked", true);
+    }
+  }, 'selectedValue'),
+
+  isCheckedChanged: Ember.observer(function() {
+    this._updateElementValue();
+  }, 'isChecked'),
+
   init: function() {
     this._super();
-    this._groupDidChange();
+    this.selectedValueChanged();
   },
 
-  /**
-    The group this radio button is associated with.
-
-    @default null
-    @type Ember.RadioButtonGroup
-  */
-  group: null,
-
-  /**
-    Before the group changes, notify the current group to remove us.
-
-    @private
-  */
-  _groupWillChange: Ember.beforeObserver(function() {
-    var group = get(this, "group");
-
-    if(group) group._removeRadioButton(this);
-  }, "group"),
-
-  /**
-    After the group changes, notify the new group to add us.
-
-    @private
-  */
-  _groupDidChange: Ember.observer(function() {
-    var group = get(this, "group");
-
-    if(group) {
-      ember_assert("group must be an instance of Ember.RadioButtonGroup", Ember.RadioButtonGroup.detectInstance(group));
-
-      group._addRadioButton(this);
-    }
-  }, "group"),
-
-  /**
-    Watch for changes in the `checked` property of the
-    element and update the `isSelected` property accordingly.
-
-    @private
-  */
   change: function() {
-    Ember.run.once(this, this._elementCheckedDidChange);
+    Ember.run.once(this, this._updateElementValue);
   },
 
-  /** @private */
-  didInsertElement: function() {
-    this._isSelectedDidChange();
-  },
+  _updateElementValue: function() {
+    set(this, 'selectedValue', get(this, 'value'));
+  }
 
-  /** @private */
-  _elementCheckedDidChange: function() {
-    set(this, "isSelected", this.$().is(":checked"));
-  },
-
-  /**
-    Watch for changes in the `isSelected` property,
-    and update the `checked` property on the element.
-
-    @private
-  */
-  _isSelectedDidChange: Ember.observer(function() {
-    this.$().prop("checked", get(this, "isSelected"));
-  }, "isSelected")
 });
 
 /**
@@ -149,10 +114,10 @@ Ember.RadioButton = Ember.View.extend(
       #js
       // get the `value` property of the selected radio button
       // or `null` if no buttons are selected
-      group.get("selectedValue");
+      group.get("value");
 
       // select a different radio button by value
-      group.set("selectedValue", someValue);
+      group.set("value", someValue);
 
   ## Real world example
 
@@ -177,7 +142,7 @@ Ember.RadioButton = Ember.View.extend(
           // create a two-way binding so changes in the
           // view propogate to the `selectedAnswer` property
           // on the question object.
-          selectedValueBinding: "App.question.selectedAnswer"
+          value: "App.question.selectedAnswer"
         })
       });
 
@@ -187,7 +152,7 @@ Ember.RadioButton = Ember.View.extend(
 
       <script type="text/x-handlebars" data-template-name="question">
         <h2>{{question.content}}</h2>
-        {{#view Ember.RadioButtonGroup name="answer" selectedValueBinding="App.question.selectedAnswer"}}
+        {{#view Ember.RadioButtonGroup name="answer" value="App.question.selectedAnswer"}}
         {{#each question.possibleAnswers}}
           <label>
             {{view RadioButton valueBinding="value"}}
@@ -198,181 +163,27 @@ Ember.RadioButton = Ember.View.extend(
 
   @extends Ember.View
 */
-Ember.RadioButtonGroup = Ember.View.extend(
+Ember.RadioButtonGroup = Ember.Control.extend(
 /** @scope Ember.RadioButtonGroup.prototype */ {
-
-  /**
-    The number of radio buttons that belong to this group.
-
-    @default 0
-    @field
-    @type Number
-  */
 
   classNames: ['ember-radio-button-group'],
   attributeBindings: ['name:data-name'],
 
-  numRadioButtons: Ember.computed(function() {
-    return getPath(this, "_radioButtons.length");
-  }).property("_radioButtons.length").cacheable(),
-
   name: Ember.required(),
+
+  /**
+    The value of the selected radio button in this group
+
+    @type Object
+  */
+  value: null,
 
   RadioButton: Ember.computed(function() {
     return Ember.RadioButton.extend({
-      group: this
+      group: this,
+      selectedValueBinding: 'group.value',
+      nameBinding: 'group.name'
     });
-  }),
+  })
 
-  /**
-    Contains a reference to the `value` property of the currently
-    selected RadioButton control in the group.
-
-    Setting `selectedValue` to the value of a radio button in the
-    group will change the `selection` to that button.
-
-    @field
-    @default null
-  */
-  selectedValue: Ember.computed(function(key, value) {
-    // getter
-    if (arguments.length === 1) {
-      var currentSelection = get(this, "selection");
-
-      return currentSelection ? currentSelection.get("value") : null;
-    // setter
-    } else {
-      if (!Ember.none(value)) {
-        var buttonForValue = this.buttonForValue(value);
-
-        ember_assert(fmt("%@ - selectedValue can only be set to the value of a radio button in the group. You passed %@", [this, value]), !!buttonForValue);
-
-        set(this, "selection", buttonForValue);
-
-        return value;
-      }
-    }
-  }).property("selection").cacheable(),
-
-  buttonForValue: function(value) {
-    return get(this, "_radioButtons").findProperty("value", value);
-  },
-
-  _selection: null,
-
-  /**
-    Contains a reference to the currently selected RadioButton control in the group.
-
-    @field
-    @default null
-    @type Ember.RadioButton
-  */
-  selection: Ember.computed(function(key, value) {
-    // getter
-    if(arguments.length === 1) {
-      return get(this, "_selection");
-
-    // setter
-    } else {
-      var radioButtons = get(this, "_radioButtons");
-
-      ember_assert(
-        fmt("%@ - selection accepts null or an Ember.RadioButton. You passed %@", [this, value]),
-        function() {
-          var isRadioButton   = Ember.RadioButton.detectInstance(value),
-              isValidArgument = Ember.none(value) || isRadioButton;
-
-          return isValidArgument;
-        });
-
-      ember_assert(
-        fmt("%@ - cannot set selection to %@ because it's not in the group", [this, value]),
-        function() {
-          var isRadioButton = Ember.RadioButton.detectInstance(value),
-              isGroupMember = radioButtons.contains(value);
-
-          if (isRadioButton) return isGroupMember;
-
-          // If it wasn't a radio button then it was handled by the previous assertion.
-          return true;
-        });
-
-      // Notify the current selection, if any, that it has been deselected.
-      // However, if the current selection just left the group we won't
-      // modify the isSelected property on it.
-      var currentSelection = get(this, "_selection"),
-          currentSelectionDidLeaveGroup = !radioButtons.contains(currentSelection);
-      if(currentSelection && !currentSelectionDidLeaveGroup) set(currentSelection, "isSelected", false);
-
-      // Notify the new selection, if any, that it has been selected.
-      if(value) set(value, "isSelected", true);
-
-      set(this, "_selection", value);
-
-      return value;
-    }
-  }).property("_selection").cacheable(),
-
-  /** @private */
-  init: function() {
-    this._super();
-
-    set(this, "_radioButtons", Ember.A());
-  },
-
-  /**
-    Adds an {Ember.RadioButton} to the group.
-
-    You should not really call this function directly. Instead use
-    the `group` property on {@link Ember.RadioButton}.
-
-    @param {Ember.RadioButton} radioButton The radio button to add.
-    @private
-  */
-  _addRadioButton: function(radioButton) {
-    get(this, "_radioButtons").pushObject(radioButton);
-
-    Ember.addObserver(radioButton, "isSelected", this, this._isSelectedDidChange);
-
-    // If the button is selected, it becomes the new selection.
-    if(get(radioButton, "isSelected")) set(this, "selection", radioButton);
-  },
-
-  /**
-    Removes a radio button from the group.
-
-    You should not really call this function directly. Instead use
-    the `group` property on {@link Ember.RadioButton}.
-
-    @param {Ember.RadioButton} radioButton The radio button to remove.
-    @private
-  */
-  _removeRadioButton: function(radioButton) {
-    var radioButtons = get(this, "_radioButtons"),
-        isSelection  = get(this, "selection") === radioButton;
-
-    radioButtons.removeObject(radioButton);
-
-    Ember.removeObserver(radioButton, "isSelected", this, this._isSelectedDidChange);
-
-    // Clear the selection if it was just removed.
-    if(isSelection) set(this, "selection", null);
-  },
-
-  /**
-    Watch for changes to the `isSelected` property on radio buttons
-    in this group and update the `selection` property accordingly.
-
-    @private
-  */
-  _isSelectedDidChange: function(radioButton, keyName, value) {
-    var isSelected  = get(radioButton, "isSelected"),
-        isSelection = get(this, "selection") === radioButton;
-
-    // If the button is now selected, it becomes the new selection.
-    if (isSelected) set(this, "selection", radioButton);
-    // If the button is now deselected, but was the selection,
-    // we must clear the selection.
-    else if (isSelection) set(this, "selection", null);
-  }
 });
