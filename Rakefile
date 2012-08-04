@@ -9,8 +9,11 @@ end
 
 def setup_uploader(root=Dir.pwd)
   require 'github_downloads'
-  uploader = GithubDownloads::Uploader.new
-  uploader.authorize
+  uploader = nil
+  Dir.chdir(root) do
+    uploader = GithubDownloads::Uploader.new
+    uploader.authorize
+  end
   uploader
 end
 
