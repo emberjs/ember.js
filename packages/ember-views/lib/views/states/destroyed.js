@@ -29,6 +29,10 @@ Ember.View.states.destroyed = {
     throw fmt(destroyedError, ["set('element', ...)"]);
   },
 
+  renderToBufferIfNeeded: function() {
+    throw fmt(destroyedError, ["renderToBufferIfNeeded"]);
+  },
+
   // Since element insertion is scheduled, don't do anything if
   // the view has been destroyed between scheduling and execution
   insertElement: Ember.K

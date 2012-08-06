@@ -24,6 +24,10 @@ Ember.View.states.preRender = {
     view._notifyDidInsertElement();
   },
 
+  renderToBufferIfNeeded: function(view) {
+    return view.renderToBuffer();
+  },
+
   empty: Ember.K,
 
   setElement: function(view, value) {

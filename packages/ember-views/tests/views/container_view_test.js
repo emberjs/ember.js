@@ -307,3 +307,42 @@ test("if a ContainerView starts with a currentView and then a different currentV
   equal(get(container, 'childViews.length'), 1, "should have one child view");
   equal(get(container, 'childViews').objectAt(0), secondaryView, "should have the currentView as the only child view");
 });
+
+test("should be able to modify childViews many times during an run loop", function () {
+
+  var container = Ember.ContainerView.create();
+
+  Ember.run(function() {
+    container.appendTo('#qunit-fixture');
+  });
+
+  var one = Ember.View.create({
+    template: function() {
+      return 'one';
+    }
+  });
+
+  var two = Ember.View.create({
+    template: function() {
+      return 'two';
+    }
+  });
+
+  var three = Ember.View.create({
+    template: function() {
+      return 'three';
+    }
+  });
+
+  var childViews = container.get('childViews');
+
+  Ember.run(function() {
+    // initial order
+    childViews.pushObjects([three, one, two]);
+    // sort
+    childViews.removeObject(three);
+    childViews.pushObject(three);
+  });
+
+  equal(container.$().text(), 'onetwothree');
+});
