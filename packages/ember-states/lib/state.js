@@ -176,7 +176,8 @@ Ember.State.reopenClass(
   /**
   @static
 
-  Creates an action function for transitioning to the named state while preserving context.
+  Creates an action function for transitioning to the named state while preserving
+  context or multiple contexts
 
   The following example StateManagers are equivalent:
 
@@ -200,18 +201,39 @@ Ember.State.reopenClass(
   */
   transitionTo: function(target) {
     var event = function(stateManager, context) {
+      var contexts;
+      
+      // if the transition is the result of user interaction
+      // the context is a jQuery event with both
+      // context and contexts properties. We need to extact these.
       if (Event && context instanceof Event) {
-        if (context.hasOwnProperty('context')) {
-          context = context.context;
-        } else {
-          // If we received an event and it doesn't contain
-          // a context, don't pass along a superfluous
-          // context to the target of the event.
-          return stateManager.transitionTo(target);
-        }
+        if (context.hasOwnProperty('contexts')) { contexts = context.contexts; }
+        if (context.hasOwnProperty('context'))  { context = context.context;   }
       }
-
-      stateManager.transitionTo(target, context);
+      
+      
+      // if context itself has a length, then it is 'contexts'
+      // and it's first item is context.
+      if (context && context.length) {
+        contexts = context;
+        context  = contexts[0];
+      }
+      
+      // if there is no context, don't pass along a 
+      // superfluous context to the target of the event
+      // and we can return the transitionTo call on the manager.
+      if (!context) { return stateManager.transitionTo(target); }
+      
+      
+      // if we have multiple contexts we need to turn them
+      // into arguments passed to the transition
+      if (contexts && contexts.length) {
+        contexts.unshift(target);
+        stateManager.transitionTo.apply(stateManager, contexts);
+      } else {
+        // otherwise pass the context on
+        stateManager.transitionTo(target, context);
+      }
     };
 
     event.transitionTarget = target;
