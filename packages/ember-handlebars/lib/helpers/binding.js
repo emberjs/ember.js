@@ -293,7 +293,7 @@ EmberHandlebars.registerHelper('bindAttr', function(options) {
       // to which we were bound has been removed from the view.
       // In that case, we can assume the template has been re-rendered
       // and we need to clean up the observer.
-      if (elem.length === 0) {
+      if (!elem || elem.length === 0) {
         Ember.removeObserver(pathRoot, path, invoker);
         return;
       }
@@ -408,7 +408,7 @@ EmberHandlebars.bindClasses = function(context, classBindings, view, bindAttrId,
 
       // If we can't find the element anymore, a parent template has been
       // re-rendered and we've been nuked. Remove the observer.
-      if (elem.length === 0) {
+      if (!elem || elem.length === 0) {
         Ember.removeObserver(pathRoot, path, invoker);
       } else {
         // If we had previously added a class to the element, remove it.
