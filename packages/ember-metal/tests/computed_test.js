@@ -160,13 +160,19 @@ testBoth('using get() and set()', function(get, set) {
   equal(get(objB, 'foo'), 'B bar', 'should NOT change B');
 });
 
+module('Ember.computed - metadata');
 
-module("can set metadata on a computed property", function() {
+test("can set metadata on a computed property", function() {
   var computedProperty = Ember.computed(function() { });
   computedProperty.property();
   computedProperty.meta({ key: 'keyValue' });
 
-  equal(computedProperty._meta.key, 'keyValue', "saves passed meta hash to the _meta property");
+  equal(computedProperty.meta().key, 'keyValue', "saves passed meta hash to the _meta property");
+});
+
+test("meta should return an empty hash if no meta is set", function() {
+  var computedProperty = Ember.computed(function() { });
+  deepEqual(computedProperty.meta(), {}, "returned value is an empty hash");
 });
 
 // ..........................................................

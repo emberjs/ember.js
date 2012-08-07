@@ -16,6 +16,8 @@ var get = Ember.get, set = Ember.set;
   perhaps be moved so that it's visible in the JsDoc output.
 */
 /**
+  @class
+
   Ember.Location returns an instance of the correct implementation of
   the `location` API.
 

@@ -114,6 +114,43 @@ test("router.urlForEvent works with a context", function() {
   equal(url, "#!#/dashboard/1");
 });
 
+test("router.urlForEvent works with multiple contexts", function() {
+  var router = Ember.Router.create({
+    location: location,
+    namespace: namespace,
+    root: Ember.Route.create({
+      index: Ember.Route.create({
+        route: '/',
+
+        showDashboard: function(router) {
+          router.transitionTo('dashboard');
+        },
+
+        eventTransitions: {
+          showComment: 'post.comment'
+        }
+      }),
+
+      post: Ember.Route.create({
+        route: '/post/:post_id',
+
+        comment: Ember.Route.create({
+          route: '/comment/:comment_id'
+        })
+      })
+    })
+  });
+
+  Ember.run(function() {
+    router.route('/');
+  });
+
+  equal(router.get('currentState.path'), "root.index", "precond - the router is in root.index");
+
+  var url = router.urlForEvent('showComment', { post_id: 1 }, { comment_id: 2 });
+  equal(url, "#!#/post/1/comment/2");
+});
+
 test("router.urlForEvent works with changing context in the current state", function() {
   var router = Ember.Router.create({
     location: location,
@@ -316,6 +353,30 @@ test("should be able to unroute out of a state with context", function() {
 
   router.route('/components/1');
   equal(get(router, 'currentState.path'), 'root.components.show.index', "should go to the correct state");
+});
+
+test("should be able to route with initialState", function() {
+  var router = Ember.Router.create({
+    location: location,
+    namespace: namespace,
+    root: Ember.Route.create({
+      initialState: 'stateOne',
+
+      stateOne: Ember.Route.create({
+        route: '/state_one'
+      }),
+
+      stateTwo: Ember.Route.create({
+        route: '/state_two'
+      })
+    })
+  });
+
+  equal(get(router, 'currentState.path'), 'root.stateOne', "should be in stateOne");
+
+  router.route('/state_two');
+
+  equal(get(router, 'currentState.path'), 'root.stateTwo', "should be in stateTwo");
 });
 
 test("should update route for redirections", function() {

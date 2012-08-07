@@ -27,11 +27,11 @@ module("Ember.View#$", {
   }
 });
 
-test("returns an empty jQuery object if no element", function() {
+test("returns undefined if no element", function() {
   var view = Ember.View.create();
   ok(!get(view, 'element'), 'precond - should have no element');
-  equal(view.$().length, 0, 'should return empty jQuery object');
-  equal(view.$('span').length, 0, 'should return empty jQuery object even if filter passed');
+  equal(view.$(), undefined, 'should return undefined');
+  equal(view.$('span'), undefined, 'should undefined if filter passed');
 });
 
 test("returns jQuery object selecting element if provided", function() {

@@ -1,10 +1,17 @@
 var get = Ember.get, set = Ember.set;
 
 /**
+  @class
+
   Ember.HistoryLocation implements the location API using the browser's
   history.pushState API.
+
+  @extends Ember.Object
 */
-Ember.HistoryLocation = Ember.Object.extend({
+Ember.HistoryLocation = Ember.Object.extend(
+/** @scope Ember.HistoryLocation.prototype */ {
+
+  /** @private */
   init: function() {
     set(this, 'location', get(this, 'location') || window.location);
     set(this, '_initialURL', get(this, 'location').pathname);
@@ -42,8 +49,7 @@ Ember.HistoryLocation = Ember.Object.extend({
 
     path = this.formatPath(path);
 
-    if ((initialURL && initialURL !== path) || (state && state.path !== path)) {
-      set(this, '_initialURL', null);
+    if ((initialURL !== path && !state) || (state && state.path !== path)) {
       window.history.pushState({ path: path }, null, path);
     }
   },
@@ -87,6 +93,7 @@ Ember.HistoryLocation = Ember.Object.extend({
     return url;
   },
 
+  /** @private */
   willDestroy: function() {
     var guid = Ember.guidFor(this);
 

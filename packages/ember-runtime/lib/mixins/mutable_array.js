@@ -45,6 +45,8 @@ Ember.MutableArray = Ember.Mixin.create(Ember.Array, Ember.MutableEnumerable,
     should replace amt objects started at idx with the objects in the passed
     array.  You should also call this.enumerableContentDidChange() ;
 
+    @function
+
     @param {Number} idx
       Starting index in the array to replace.  If idx >= length, then append
       to the end of the array.

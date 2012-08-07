@@ -32,6 +32,10 @@ ActionHelper.registerAction = function(actionName, options) {
         event.context = options.context;
       }
 
+      if (options.hasOwnProperty('contexts')) {
+        event.contexts = options.contexts;
+      }
+
       var target = options.target;
 
       // Check for StateManager (or compatible object)
@@ -217,7 +221,7 @@ EmberHandlebars.registerHelper('action', function(actionName) {
 
   var hash = options.hash,
       view = options.data.view,
-      target, context, controller, link;
+      target, controller, link;
 
   // create a hash to pass along to registerAction
   var action = {
@@ -234,15 +238,17 @@ EmberHandlebars.registerHelper('action', function(actionName) {
 
   action.target = target = target || view;
 
-  // TODO: Support multiple contexts
   if (contexts.length) {
-    action.context = context = getPath(this, contexts[0], options);
+    action.contexts = contexts = Ember.EnumerableUtils.map(contexts, function(context) {
+      return getPath(this, context, options);
+    }, this);
+    action.context = contexts[0];
   }
 
   var output = [], url;
 
   if (hash.href && target.urlForEvent) {
-    url = target.urlForEvent(actionName, context);
+    url = target.urlForEvent.apply(target, [actionName].concat(contexts));
     output.push('href="' + url + '"');
     action.link = true;
   }
