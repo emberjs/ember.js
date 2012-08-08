@@ -117,7 +117,7 @@ Ember.ControllerMixin.reopen({
 
     outletName = outletName || 'view';
 
-    Ember.assert("You must supply a name or a view class to connectOutlets, but not both", (!!name && !viewClass && !controller) || (!name && !!viewClass));
+    Ember.assert("You must supply a name or a view class to connectOutlet, but not both", (!!name && !viewClass && !controller) || (!name && !!viewClass));
 
     if (name) {
       var namespace = get(this, 'namespace'),
