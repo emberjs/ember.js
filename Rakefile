@@ -131,7 +131,7 @@ task :test, [:suite] => :dist do |t, args|
     abort "PhantomJS is not installed. Download from http://phantomjs.org"
   end
 
-  packages = Dir['packages/*/tests'].map{|p| p.split('/')[1] }
+  packages = Dir['packages/*/tests'].sort.map { |p| p.split('/')[1] }
 
   suites = {
     :default => packages.map{|p| "package=#{p}" },
