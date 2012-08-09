@@ -1,5 +1,3 @@
-require('ember-routing/location');
-
 module("Ember.Routable");
 
 test("it should have its updateRoute method called when it is entered", function() {
