@@ -424,3 +424,28 @@ test("upon content change, the DOM should reflect the selection (#481)", functio
   equal(select.get('selection'), 'd', "Selection was properly set after content change");
   equal(selectEl.selectedIndex, 1, "The DOM reflects the correct selection");
 });
+
+test("select element should initialize with the correct selectedIndex when using valueBinding", function() {
+  var view = Ember.View.create({
+    collection: Ember.A([{name: 'Wes', value: 'w'}, {name: 'Gordon', value: 'g'}]),
+    val: 'g',
+    template: Ember.Handlebars.compile(
+      '{{view Ember.Select viewName="select"' +
+      '    contentBinding="collection"' +
+      '    optionLabelPath="content.name"' +
+      '    optionValuePath="content.value"' +
+      '    prompt="Please wait..."' +
+      '    valueBinding="val"}}'
+    )
+  });
+
+  Ember.run(function() {
+    view.appendTo('#qunit-fixture');
+  });
+
+  var select = view.get('select'),
+      selectEl = select.$()[0];
+
+  equal(select.get('value'), 'g', "Precond: Initial selection is correct");
+  equal(selectEl.selectedIndex, 2, "Precond: The DOM reflects the correct selection");
+});
