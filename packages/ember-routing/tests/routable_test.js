@@ -1,6 +1,3 @@
-require('ember-application/system/location');
-require('ember-application/system/none_location');
-
 module("Ember.Routable");
 
 test("it should have its updateRoute method called when it is entered", function() {

@@ -1,6 +1,6 @@
 require('ember-routing/route_matcher');
 require('ember-routing/routable');
-require('ember-application/system/location');
+require('ember-routing/location');
 
 var get = Ember.get, set = Ember.set;
 
@@ -90,7 +90,7 @@ var merge = function(original, hash) {
   Respectively, loading the page at the URL '#/alphabeta' would detect the route property of
   'root.bRoute' ('/alphabeta') and transition the router first to the state named 'root' and
   then to the substate 'bRoute'.
-  
+
   ## Adding Nested Routes to a Router
   Routes can contain nested subroutes each with their own `route` property describing the nested
   portion of the URL they would like to detect and handle. Router, like all instances of StateManager,
@@ -98,27 +98,27 @@ var merge = function(original, hash) {
   intermediary state when detecting URLs, a Route with nested routes must define both a base `route`
   property for itself and a child Route with a `route` property of `'/'` which will be transitioned
   to when the base route is detected in the URL:
-  
+
   Given the following application code:
 
       App = Ember.Application.create({
         Router: Ember.Router.extend({
           root: Ember.Route.extend({
             aRoute: Ember.Route.extend({
-              route: '/theBaseRouteForThisSet', 
-              
+              route: '/theBaseRouteForThisSet',
+
               indexSubRoute: Ember.Route.extend({
                 route: '/'
               }),
-              
+
               subRouteOne: Ember.Route.extend({
                 route: '/subroute1'
               }),
-              
+
               subRouteTwo: Ember.Route.extend({
                 route: '/subRoute2'
               })
-              
+
             })
           })
         })
@@ -127,10 +127,10 @@ var merge = function(original, hash) {
 
   When the application is loaded at '/theBaseRouteForThisSet' the Router will transition to the route
   at path 'root.aRoute' and then transition to state 'indexSubRoute'.
-  
+
   When the application is loaded at '/theBaseRouteForThisSet/subRoute1' the Router will transition to
   the route at path 'root.aRoute' and then transition to state 'subRouteOne'.
-  
+
   ## Route Transition Events
   Transitioning between Ember.Route instances (including the transition into the detected
   route when loading the application)  triggers the same transition events as state transitions for
