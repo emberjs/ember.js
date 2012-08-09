@@ -26,4 +26,17 @@ Ember.MutableArrayTests.extend({
   toArray: function(obj) {
     return obj.toArray ? obj.toArray() : obj.slice();
   }
+
 }).run();
+
+module("Ember.ArrayController");
+
+
+test("Ember.ArrayController content initialized to [] if not already defined", function() {
+  var controller = Ember.ArrayController.create();
+  equal(controller.get('content.length'), 0, "content initialized if not defined");
+
+  var initialContent = Ember.A([1, 2, 3]);
+  var initialized_controller = Ember.ArrayController.create({content: initialContent});
+  equal(initialized_controller.get('content'), initialContent, "initial content not overriden");  
+});
