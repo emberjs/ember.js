@@ -108,11 +108,11 @@ var merge = function(original, hash) {
               route: '/theBaseRouteForThisSet', 
               
               indexSubRoute: Ember.Route.extend({
-                route: '/',
+                route: '/'
               }),
               
               subRouteOne: Ember.Route.extend({
-                route: '/subroute1
+                route: '/subroute1'
               }),
               
               subRouteTwo: Ember.Route.extend({
