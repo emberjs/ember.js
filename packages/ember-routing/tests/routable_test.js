@@ -1,5 +1,4 @@
-require('ember-application/system/location');
-require('ember-application/system/none_location');
+require('ember-routing/location');
 
 module("Ember.Routable");
 
