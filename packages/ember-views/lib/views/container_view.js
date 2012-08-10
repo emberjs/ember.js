@@ -350,7 +350,11 @@ Ember.ContainerView = Ember.View.extend({
     if (currentView) {
       childViews.pushObject(currentView);
     }
-  }, 'currentView')
+  }, 'currentView'),
+
+  _ensureChildrenAreInDOM: function () {
+    this.invokeForState('ensureChildrenAreInDOM', this);
+  }
 });
 
 // Ember.ContainerView extends the default view states to provide different
@@ -396,14 +400,10 @@ Ember.ContainerView.states = {
     },
 
     childViewsDidChange: function(view, views, start, added) {
-      if (!view._ensureChildrenAreInDOMScheduled) {
-        view._ensureChildrenAreInDOMScheduled = true;
-        Ember.run.schedule('render', this, this.invokeForState, 'ensureChildrenAreInDOM', view);
-      }
+      Ember.run.scheduleOnce('render', this, '_ensureChildrenAreInDOM');
     },
 
     ensureChildrenAreInDOM: function(view) {
-      view._ensureChildrenAreInDOMScheduled = false;
       var childViews = view.get('childViews'), i, len, childView, previous, buffer;
       for (i = 0, len = childViews.length; i < len; i++) {
         childView = childViews[i];
