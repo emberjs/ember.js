@@ -27,7 +27,6 @@
         "ember-views",
         "ember-states",
         "ember-routing",
-        "ember-viewstates",
         "ember-handlebars"
       ]
     }
