@@ -346,3 +346,130 @@ test("should be able to modify childViews many times during an run loop", functi
 
   equal(container.$().text(), 'onetwothree');
 });
+
+test("should be able to modify childViews then remove the ContainerView in same run loop", function () {
+  var container = Ember.ContainerView.create();
+
+  Ember.run(function() {
+    container.appendTo('#qunit-fixture');
+  });
+
+  var childViews = container.get('childViews');
+  var count = 0;
+  var child = Ember.View.create({
+    template: function () { count++; return 'child'; }
+  });
+
+  Ember.run(function() {
+    childViews.pushObject(child);
+    container.remove();
+  });
+
+  equal(count, 0, 'did not render child');
+});
+
+test("should be able to modify childViews then destroy the ContainerView in same run loop", function () {
+    var container = Ember.ContainerView.create();
+
+  Ember.run(function() {
+    container.appendTo('#qunit-fixture');
+  });
+
+  var childViews = container.get('childViews');
+  var count = 0;
+  var child = Ember.View.create({
+    template: function () { count++; return 'child'; }
+  });
+
+  Ember.run(function() {
+    childViews.pushObject(child);
+    container.destroy();
+  });
+
+  equal(count, 0, 'did not render child');
+});
+
+
+test("should be able to modify childViews then rerender the ContainerView in same run loop", function () {
+    var container = Ember.ContainerView.create();
+
+  Ember.run(function() {
+    container.appendTo('#qunit-fixture');
+  });
+
+  var childViews = container.get('childViews');
+  var count = 0;
+  var child = Ember.View.create({
+    template: function () { count++; return 'child'; }
+  });
+
+  Ember.run(function() {
+    childViews.pushObject(child);
+    container.rerender();
+  });
+
+  equal(count, 1, 'rendered child only once');
+});
+
+test("should be able to modify childViews then rerender then modify again the ContainerView in same run loop", function () {
+  var container = Ember.ContainerView.create();
+
+  Ember.run(function() {
+    container.appendTo('#qunit-fixture');
+  });
+
+  var childViews = container.get('childViews');
+  var Child = Ember.View.extend({
+    count: 0,
+    render: function (buffer) {
+      this.count++;
+      buffer.push(this.label);
+    }
+  });
+  var one = Child.create({label: 'one'});
+  var two = Child.create({label: 'two'});
+
+  Ember.run(function() {
+    childViews.pushObject(one);
+    childViews.pushObject(two);
+  });
+
+  equal(one.count, 1, 'rendered child only once');
+  equal(two.count, 1, 'rendered child only once');
+  equal(container.$().text(), 'onetwo');
+});
+
+test("should be able to modify childViews then rerender again the ContainerView in same run loop and then modify again", function () {
+  var container = Ember.ContainerView.create();
+
+  Ember.run(function() {
+    container.appendTo('#qunit-fixture');
+  });
+
+  var childViews = container.get('childViews');
+  var Child = Ember.View.extend({
+    count: 0,
+    render: function (buffer) {
+      this.count++;
+      buffer.push(this.label);
+    }
+  });
+  var one = Child.create({label: 'one'});
+  var two = Child.create({label: 'two'});
+
+  Ember.run(function() {
+    childViews.pushObject(one);
+    container.rerender();
+  });
+
+  equal(one.count, 1, 'rendered child only once');
+  equal(container.$().text(), 'one');
+
+  Ember.run(function () {
+    childViews.pushObject(two);
+  });
+
+  equal(one.count, 1, 'rendered child only once');
+  equal(two.count, 1, 'rendered child only once');
+  equal(container.$().text(), 'onetwo');
+});
