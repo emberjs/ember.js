@@ -1,6 +1,7 @@
 var get = Ember.get, set = Ember.set;
 
-Ember.ControllerMixin.reopen({
+// @class declaration and documentation in runtime/lib/controllers/controller.js
+Ember.ControllerMixin.reopen(/** @scope Ember.ControllerMixin.prototype */ {
 
   target: null,
   controllers: null,
