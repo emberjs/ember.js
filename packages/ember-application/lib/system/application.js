@@ -17,10 +17,10 @@ var get = Ember.get, set = Ember.set;
   By default, Ember.Application will begin listening for events on the document.
   If your application is embedded inside a page, instead of controlling the
   entire document, you can specify which DOM element to attach to by setting
-  the `rootElement` property:
+  the `rootElement` property to a CSS selector.
 
       MyApp = Ember.Application.create({
-        rootElement: $('#my-app')
+        rootElement: '#my-app'
       });
 
   The root of an Ember.Application must not be removed during the course of the
