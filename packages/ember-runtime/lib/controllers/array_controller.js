@@ -47,6 +47,8 @@ var get = Ember.get, set = Ember.set;
   controller, use this class.
 
   @extends Ember.ArrayProxy
+  @extends Ember.SortableMixin
+  @extends Ember.ControllerMixin
 */
 
 Ember.ArrayController = Ember.ArrayProxy.extend(Ember.ControllerMixin,
