@@ -217,7 +217,7 @@ Ember.String = {
   */
   capitalize: function(str) {
     return str.w().map(function(word) {
-      return word.substr(0, 1).toUpperCase() + word.substr(1);
+      return word.charAt(0).toUpperCase() + word.substr(1);
     }).join(' ');
   }
 

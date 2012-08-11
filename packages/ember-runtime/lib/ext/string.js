@@ -74,7 +74,7 @@ if (Ember.EXTEND_PROTOTYPES) {
     @see Ember.String.capitalize
   */
   String.prototype.capitalize = function() {
-    return capitalize(this, arguments);
+    return capitalize(this);
   };
 
 }
