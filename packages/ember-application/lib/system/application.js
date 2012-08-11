@@ -58,6 +58,16 @@ Ember.Application = Ember.Namespace.extend(
   */
   customEvents: null,
 
+  /**
+    Determines whether URL routing should be started automatically (if
+    this Ember.Application has a router instance). Defaults to true, if set to
+    false you must manually call App.startRouting() to enable URL routing.
+
+    @type Boolean
+    @default true
+  */
+  autoStartRouting: true,
+
   /** @private */
   init: function() {
     var eventDispatcher,
@@ -132,7 +142,23 @@ Ember.Application = Ember.Namespace.extend(
     });
 
     if (router && router instanceof Ember.Router) {
-      this.startRouting(router);
+      var location = get(router, 'location'),
+          autoStartRouting = get(this, 'autoStartRouting'),
+          rootElement = get(this, 'rootElement'),
+          applicationController = get(router, 'applicationController');
+
+      Ember.assert("ApplicationView and ApplicationController must be defined on your application", (this.ApplicationView && applicationController) );
+
+      var applicationView = this.ApplicationView.create({
+        controller: applicationController
+      });
+      this._createdApplicationView = applicationView;
+
+      applicationView.appendTo(rootElement);
+
+      if (autoStartRouting) {
+        this.startRouting(router);
+      }
     }
   },
 
@@ -153,18 +179,7 @@ Ember.Application = Ember.Namespace.extend(
     trigger a new call to `route` whenever the URL changes.
   */
   startRouting: function(router) {
-    var location = get(router, 'location'),
-        rootElement = get(this, 'rootElement'),
-        applicationController = get(router, 'applicationController');
-
-    Ember.assert("ApplicationView and ApplicationController must be defined on your application", (this.ApplicationView && applicationController) );
-
-    var applicationView = this.ApplicationView.create({
-      controller: applicationController
-    });
-    this._createdApplicationView = applicationView;
-
-    applicationView.appendTo(rootElement);
+    var location = get(router, 'location');
 
     router.route(location.getURL());
     location.onUpdateURL(function(url) {

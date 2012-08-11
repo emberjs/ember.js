@@ -212,6 +212,44 @@ test("initialize application with stateManager via initialize call from Router c
   equal(app.get('router.currentState.path'), 'root.index', "The router moved the state into the right place");
 });
 
+test("initialize application with a router but start url routing manually", function() {
+  Ember.run(function() {
+    app = Ember.Application.create({
+      rootElement: '#qunit-fixture',
+      autoStartRouting: false
+    });
+
+    app.Router = Ember.Router.extend({
+      location: 'none',
+
+      root: Ember.Route.extend({
+        initialState: 'loading',
+
+        index: Ember.Route.extend({
+          route: '/'
+        }),
+
+        loading: Ember.State.extend()
+      })
+    });
+
+    app.ApplicationView = Ember.View.extend({
+      template: function() { return "Hello!"; }
+    });
+
+    app.ApplicationController = Ember.Controller.extend();
+
+    app.initialize();
+  });
+
+  equal(app.get('router.currentState.path'), 'root.loading', "The router moved to its initial state");
+
+  app.startRouting(app.router);
+
+  equal(app.get('router.currentState.path'), 'root.index', "Router moved to the correct state after url routing was started manually");
+
+});
+
 test("injections can be registered in a specified order", function() {
 
   var oldInjections = Ember.Application.injections;
