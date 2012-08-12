@@ -410,7 +410,7 @@ Ember.ContainerView.states = {
         buffer = childView.renderToBufferIfNeeded();
         if (buffer) {
           childView._notifyWillInsertElement();
-          if (previous) {
+          if (previous && previous.$()) {
             previous.domManager.after(previous, buffer.string());
           } else {
             view.domManager.prepend(view, buffer.string());
