@@ -70,6 +70,7 @@ Ember.RadioButton = Ember.Control.extend(
   },
 
   change: function() {
+    set(this, 'isChecked', this.$().prop('checked'));
     Ember.run.once(this, this._updateElementValue);
   },
 
