@@ -106,3 +106,24 @@ test("value should work even if the view is not in the DOM", function() {
   equal(view.$("[value='option1']").attr('checked'), 'checked', 'checkbox should be checked');
   equal(view.$("[value='option2']").attr('checked'), null, 'checkbox should not be checked');
 });
+
+test("should uncheck previous selection when new value is null", function() {
+  view = Ember.RadioButtonGroup.create({
+    value: 'option1',
+    name: 'testName',
+    template: Ember.Handlebars.compile(
+      '{{ view RadioButton value="option1" }}' +
+      '{{ view RadioButton value="option2" }}'
+    )
+  });
+
+  appendView();
+
+  Ember.run(function() {
+    set(view, 'value', null);
+  });
+
+  equal(get(view, 'value'), null, 'value should be set');
+  equal(view.$("[value='option1']").attr('checked'), null, 'checkbox should not be checked');
+  equal(view.$("[value='option2']").attr('checked'), null, 'checkbox should not be checked');
+});
