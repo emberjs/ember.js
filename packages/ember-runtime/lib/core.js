@@ -115,7 +115,7 @@ Ember.none = function(obj) {
   @returns {Boolean}
 */
 Ember.empty = function(obj) {
-  return obj === null || obj === undefined || (obj.length === 0 && typeof obj !== 'function');
+  return obj === null || obj === undefined || (obj.length === 0 && typeof obj !== 'function') || (typeof obj === 'object' && Ember.get(obj, 'length') === 0);
 };
 
 /**
