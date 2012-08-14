@@ -12,6 +12,7 @@
 
   "dependencies": {
     "spade":             "~> 1.0",
+    "ember-views": "1.0.pre",
     "ember-states": "1.0.pre"
   },
 
