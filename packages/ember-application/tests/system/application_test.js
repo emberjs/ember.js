@@ -312,7 +312,7 @@ test("ApplicationView and ApplicationController are assumed to exist in all Rout
 
 });
 
-test("ControllerObject class can be initialized with target, controllers and view properties", function() {
+test("ControllerObject class can be initialized with target, router and view properties", function() {
   var stateManager;
 
   Ember.run(function() {
@@ -330,6 +330,6 @@ test("ControllerObject class can be initialized with target, controllers and vie
   });
 
   equal(app.get('router.postController.target') instanceof Ember.StateManager, true, "controller has target");
-  equal(app.get('router.postController.controllers') instanceof Ember.StateManager, true, "controller has controllers");
+  strictEqual(app.get('router.postController.router'), stateManager, "controller has router");
   equal(app.get('router.postController.view') instanceof Ember.View, true, "controller has view");
 });
