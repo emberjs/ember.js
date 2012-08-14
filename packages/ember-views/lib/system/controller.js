@@ -4,7 +4,7 @@ var get = Ember.get, set = Ember.set;
 Ember.ControllerMixin.reopen(/** @scope Ember.ControllerMixin.prototype */ {
 
   target: null,
-  controllers: null,
+  router: null,
   namespace: null,
   view: null,
 
@@ -122,11 +122,11 @@ Ember.ControllerMixin.reopen(/** @scope Ember.ControllerMixin.prototype */ {
 
     if (name) {
       var namespace = get(this, 'namespace'),
-          controllers = get(this, 'controllers');
+          router    = get(this, 'router');
 
       var viewClassName = name.charAt(0).toUpperCase() + name.substr(1) + "View";
       viewClass = get(namespace, viewClassName);
-      controller = get(controllers, name + 'Controller');
+      controller = get(router, name + 'Controller');
 
       Ember.assert("The name you supplied " + name + " did not resolve to a view " + viewClassName, !!viewClass);
       Ember.assert("The name you supplied " + name + " did not resolve to a controller " + name + 'Controller', (!!controller && !!context) || !context);
@@ -152,13 +152,13 @@ Ember.ControllerMixin.reopen(/** @scope Ember.ControllerMixin.prototype */ {
     @param {String...} controllerNames the controllers to make available
   */
   connectControllers: function() {
-    var controllers = get(this, 'controllers'),
+    var router = get(this, 'router'),
         controllerNames = Array.prototype.slice.apply(arguments),
         controllerName;
 
     for (var i=0, l=controllerNames.length; i<l; i++) {
       controllerName = controllerNames[i] + 'Controller';
-      set(this, controllerName, get(controllers, controllerName));
+      set(this, controllerName, get(router, controllerName));
     }
   }
 });
