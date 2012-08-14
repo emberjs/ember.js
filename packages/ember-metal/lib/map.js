@@ -91,6 +91,13 @@ OrderedSet.prototype = {
     return this.list.length === 0;
   },
 
+  has: function(obj) {
+    var guid = guidFor(obj),
+        presenceSet = this.presenceSet;
+
+    return guid in presenceSet;
+  },
+
   forEach: function(fn, self) {
     // allow mutation during iteration
     var list = this.list.slice();
