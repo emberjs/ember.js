@@ -1902,6 +1902,27 @@ test("Ember.Button targets should respect keywords", function() {
   }
 });
 
+test("child view with self-closing div", function() {
+  expect(0);
+
+  view = Ember.View.create({
+    show: false,
+    arr: Ember.A(),
+    template: Ember.Handlebars.compile('{{#if show}}{{#view}}<div />{{/view}}{{/if}}')
+  });
+
+  appendView();
+
+  Ember.run(function() {
+    set(view, 'show', true);
+  });
+
+  Ember.run(function() {
+    set(view, 'show', false);
+  });
+
+});
+
 module("Ember.View - handlebars integration", {
   setup: function() {
     originalLog = Ember.Logger.log;
