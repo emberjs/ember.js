@@ -103,6 +103,7 @@ test("initialize controllers into a state manager", function() {
   app.BarController = Ember.ArrayController.extend();
   app.Foo = Ember.Object.create();
   app.fooController = Ember.Object.create();
+  app.BazController = {};
 
   var stateManager = Ember.Object.create();
 
@@ -111,6 +112,7 @@ test("initialize controllers into a state manager", function() {
   ok(get(stateManager, 'fooController') instanceof app.FooController, "fooController was assigned");
   ok(get(stateManager, 'barController') instanceof app.BarController, "barController was assigned");
   ok(get(stateManager, 'foo') === undefined, "foo was not assigned");
+  ok(get(stateManager, 'bazController') === undefined, "bazController was not assigned");
 
   equal(get(stateManager, 'fooController.target'), stateManager, "the state manager is assigned");
   equal(get(stateManager, 'barController.target'), stateManager, "the state manager is assigned");
