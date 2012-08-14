@@ -137,7 +137,8 @@ task :test, [:suite] => :dist do |t, args|
     :default => packages.map{|p| "package=#{p}" },
     :runtime => [ "package=ember-metal,ember-runtime" ],
     :all => packages.map{|p| "package=#{p}" } +
-            ["package=all&jquery=git&nojshint=true",
+            ["package=all&jquery=1.7.2&nojshint=true",
+              "package=all&jquery=git&nojshint=true",
               "package=all&extendprototypes=true&nojshint=true",
               "package=all&extendprototypes=true&jquery=git&nojshint=true",
               "package=all&nocpdefaultcacheable=true&nojshint=true",
