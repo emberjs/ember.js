@@ -133,7 +133,8 @@ test('initialized application go to initial route', function() {
           return '/';
         },
         setURL: function() {},
-        onUpdateURL: function() {}
+        onUpdateURL: function() {},
+        destroy: function () {}
       },
 
       root: Ember.Route.extend({
