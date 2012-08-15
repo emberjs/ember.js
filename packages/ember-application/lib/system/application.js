@@ -160,6 +160,8 @@ Ember.Application = Ember.Namespace.extend(
         applicationController = get(router, 'applicationController');
 
     Ember.assert("ApplicationView and ApplicationController must be defined on your application", (this.ApplicationView && applicationController) );
+    Ember.assert("application rootElement must be defined", this.rootElement );
+    Ember.assert("application rootElement must exist in DOM", ( Ember.$(this.rootElement).length > 0) );
 
     var applicationView = this.ApplicationView.create({
       controller: applicationController
