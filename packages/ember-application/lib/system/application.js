@@ -133,6 +133,8 @@ Ember.Application = Ember.Namespace.extend(
 
     if (router && router instanceof Ember.Router) {
       this.startRouting(router);
+    } else {
+      Ember.logger.warn("no router given or found to initialize Ember Application", this.toString());
     }
   },
 
