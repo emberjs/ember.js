@@ -17,4 +17,6 @@ require('ember-runtime/system/set');
 require('ember-runtime/system/string');
 require('ember-runtime/system/promise_chain');
 
+require('ember-runtime/system/callbacks');
+
 require('ember-runtime/system/lazy_load');
