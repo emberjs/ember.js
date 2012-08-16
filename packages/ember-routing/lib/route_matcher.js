@@ -24,7 +24,7 @@ Ember._RouteMatcher = Ember.Object.extend({
     });
 
     this.identifiers = identifiers;
-    this.regex = new RegExp("^/?" + regex);
+    this.regex = new RegExp("^/?" + regex, "i");
   },
 
   match: function(path) {
