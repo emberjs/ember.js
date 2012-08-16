@@ -280,7 +280,7 @@ Ember.Select = Ember.View.extend(
 
     if (options) {
       options.each(function() {
-        adjusted = this.index > -1 ? this.index + offset : -1;
+        adjusted = this.index > -1 ? this.index - offset : -1;
         this.selected = indexOf(selectedIndexes, adjusted) > -1;
       });
     }
