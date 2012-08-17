@@ -1902,6 +1902,25 @@ test("Ember.Button targets should respect keywords", function() {
   }
 });
 
+test("should be able to explicitly set a view's context", function() {
+  var context = Ember.Object.create({
+    test: 'test'
+  });
+
+  TemplateTests.CustomContextView = Ember.View.extend({
+    context: context,
+    template: Ember.Handlebars.compile("{{test}}")
+  });
+
+  view = Ember.View.create({
+    template: Ember.Handlebars.compile("{{view TemplateTests.CustomContextView}}")
+  });
+
+  appendView();
+
+  equal(view.$().text(), "test");
+});
+
 module("Ember.View - handlebars integration", {
   setup: function() {
     originalLog = Ember.Logger.log;
@@ -2343,4 +2362,3 @@ test("should accept bindings as a string or an Ember.Binding", function() {
 
   equal(Ember.$.trim(view.$().text()), "binding: down, string: down");
 });
-
