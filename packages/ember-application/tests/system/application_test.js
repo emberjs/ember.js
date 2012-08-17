@@ -14,11 +14,14 @@ module("Ember.Application", {
     Ember.$("#qunit-fixture").html("<div id='one'><div id='one-child'>HI</div></div><div id='two'>HI</div>");
     Ember.run(function() {
       application = Ember.Application.create({ rootElement: '#one' });
+      application.initialize();
     });
   },
 
   teardown: function() {
-    Ember.run(function(){ application.destroy(); });
+    if (application) {
+      Ember.run(function(){ application.destroy(); });
+    }
   }
 });
 
@@ -36,7 +39,7 @@ test("you can make a new application in a non-overlapping element", function() {
 test("you cannot make a new application that is a parent of an existing application", function() {
   raises(function() {
     Ember.run(function() {
-      Ember.Application.create({ rootElement: '#qunit-fixture' });
+      Ember.Application.create({ rootElement: '#qunit-fixture' }).initialize();
     });
   }, Error);
 });
@@ -44,7 +47,7 @@ test("you cannot make a new application that is a parent of an existing applicat
 test("you cannot make a new application that is a descendent of an existing application", function() {
   raises(function() {
     Ember.run(function() {
-      Ember.Application.create({ rootElement: '#one-child' });
+      Ember.Application.create({ rootElement: '#one-child' }).initialize();
     });
   }, Error);
 });
@@ -52,7 +55,7 @@ test("you cannot make a new application that is a descendent of an existing appl
 test("you cannot make a new application that is a duplicate of an existing application", function() {
   raises(function() {
     Ember.run(function() {
-      Ember.Application.create({ rootElement: '#one' });
+      Ember.Application.create({ rootElement: '#one' }).initialize();
     });
   }, Error);
 });
@@ -64,11 +67,11 @@ test("you cannot make two default applications without a rootElement error", fun
   });
 
   Ember.run(function() {
-    application = Ember.Application.create();
+    application = Ember.Application.create().initialize();
   });
   raises(function() {
     Ember.run(function() {
-      Ember.Application.create();
+      Ember.Application.create().initialize();
     });
   }, Error);
 });
@@ -106,7 +109,7 @@ test("initialize controllers into a state manager", function() {
 
   var stateManager = Ember.Object.create();
 
-  app.initialize(stateManager);
+  Ember.run(function() { app.initialize(stateManager); });
 
   ok(get(stateManager, 'fooController') instanceof app.FooController, "fooController was assigned");
   ok(get(stateManager, 'barController') instanceof app.BarController, "barController was assigned");
@@ -147,7 +150,7 @@ test('initialized application go to initial route', function() {
 
     app.ApplicationController = Ember.Controller.extend();
 
-    app.initialize(app.stateManager);
+    Ember.run(function() { app.initialize(app.stateManager); });
   });
 
   equal(app.get('router.currentState.path'), 'root.index', "The router moved the state into the right place");
@@ -285,12 +288,13 @@ test("ApplicationView is inserted into the page", function() {
 });
 
 test("ApplicationView and ApplicationController are assumed to exist in all Routers", function() {
-
   Ember.run(function() {
     app = Ember.Application.create({
       rootElement: '#qunit-fixture'
     });
+  });
 
+  Ember.run(function() {
     app.OneView = Ember.View.extend({
       template: function() { return "Hello!"; }
     });
@@ -305,10 +309,9 @@ test("ApplicationView and ApplicationController are assumed to exist in all Rout
         })
       })
     });
-
-
-    raises(function(){ app.initialize(); }, Error);
   });
+
+  raises(function(){ Ember.run(function() { app.initialize(); }); }, Error);
 
 });
 
@@ -324,7 +327,7 @@ test("ControllerObject class can be initialized with target, controllers and vie
 
     stateManager = Ember.StateManager.create();
 
-    app.initialize(stateManager);
+    Ember.run(function() { app.initialize(stateManager); });
 
     stateManager.get('postController').set('view', Ember.View.create());
   });
