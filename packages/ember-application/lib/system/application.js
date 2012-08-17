@@ -143,13 +143,13 @@ Ember.Application = Ember.Namespace.extend(
       set(router, 'namespace', this);
     }
 
-    Ember.runLoadHooks('application', this);
-
     injections.forEach(function(injection) {
       properties.forEach(function(property) {
         injection[1](namespace, router, property);
       });
     });
+
+    Ember.runLoadHooks('application', this);
 
     // At this point, any injections or load hooks that would have wanted
     // to defer readiness have fired.
@@ -259,3 +259,6 @@ Ember.Application.registerInjection({
     });
   }
 });
+
+Ember.runLoadHooks('Ember.Application', Ember.Application);
+
