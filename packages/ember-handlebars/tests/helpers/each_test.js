@@ -1,5 +1,5 @@
 var people, view;
-var template;
+var template, templateMyView;
 var templateFor = function(template) {
   return Ember.Handlebars.compile(template);
 };
@@ -11,7 +11,13 @@ module("the #each helper", {
 
     view = Ember.View.create({
       template: template,
-      people: people
+      people: people 
+    });
+
+
+    templateMyView = templateFor("{{name}}");
+    window.MyView = Ember.View.extend({
+        template: templateMyView
     });
 
     append(view);
@@ -39,6 +45,10 @@ var assertHTML = function(view, expectedHTML) {
   html = html.replace(/<script[^>]*><\/script>/ig, '').replace(/[\r\n]/g, '');
 
   equal(html, expectedHTML);
+};
+
+var assertText = function(view, expectedText) {
+  equal(view.$().text(), expectedText);
 };
 
 test("it renders the template for each item in an array", function() {
@@ -165,6 +175,55 @@ test("it works inside a table element", function() {
   });
 
   equal(tableView.$('td').length, 4, "renders an additional <td> when an object is inserted at the beginning of the array");
+});
+
+test("it supports {{itemViewClass=}}", function() {
+  view = Ember.View.create({
+    template: templateFor('{{each people itemViewClass="MyView"}}'),
+    people: people
+  });
+
+  append(view);
+
+  assertText(view, "Steve HoltAnnabelle");
+
+});
+
+test("it supports {{itemViewClass=}} with tagName", function() {
+
+  view = Ember.View.create({
+      template: templateFor('{{each people itemViewClass="MyView" tagName="ul"}}'),
+      people: people
+  });
+
+  append(view);
+
+  var html = view.$().html();
+
+  // IE 8 (and prior?) adds the \r\n
+  html = html.replace(/<script[^>]*><\/script>/ig, '').replace(/[\r\n]/g, '');
+  html = html.replace(/<div[^>]*><\/div>/ig, '').replace(/[\r\n]/g, '');
+  html = html.replace(/<li[^>]*/ig, '<li');
+
+  equal(html, "<ul><li>Steve Holt</li><li>Annabelle</li></ul>");
+
+});
+
+test("it supports {{itemViewClass=}} with in format", function() {
+
+  window.MyView = Ember.View.extend({
+      template: templateFor("{{person.name}}")
+  });
+
+  view = Ember.View.create({
+    template: templateFor('{{each person in people itemViewClass="MyView"}}'),
+    people: people
+  });
+
+  append(view);
+
+  assertText(view, "Steve HoltAnnabelle");
+
 });
 
 test("it supports {{else}}", function() {
