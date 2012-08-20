@@ -46,6 +46,25 @@ test("a RouteMatcher matches routes", function() {
   equal(match, undefined);
 });
 
+test("a RouteMatcher matches routes with different casings", function() {
+  var match;
+
+  var matcher = Ember._RouteMatcher.create({
+    route: "Foo"
+  });
+
+  match = matcher.match('foo');
+  equal(match.remaining, "");
+  equal(match.hash, null);
+
+  match = matcher.match('foo/bar');
+  equal(match.remaining, "/bar");
+  equal(match.hash, null);
+
+  match = matcher.match('bar');
+  equal(match, undefined);
+});
+
 test("a RouteMatcher matches routes with dynamic segments", function() {
   var match;
 
