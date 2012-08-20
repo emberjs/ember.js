@@ -108,6 +108,10 @@ Ember.ArrayProxy = Ember.Object.extend(Ember.MutableArray,
     entire array content will change.
   */
   _contentWillChange: Ember.beforeObserver(function() {
+    this._teardownContent();
+  }, 'content'),
+
+  _teardownContent: function() {
     var content = get(this, 'content');
 
     if (content) {
@@ -116,8 +120,7 @@ Ember.ArrayProxy = Ember.Object.extend(Ember.MutableArray,
         didChange: 'contentArrayDidChange'
       });
     }
-  }, 'content'),
-
+  },
 
   contentArrayWillChange: Ember.K,
   contentArrayDidChange: Ember.K,
@@ -127,10 +130,15 @@ Ember.ArrayProxy = Ember.Object.extend(Ember.MutableArray,
     entire array content has changed.
   */
   _contentDidChange: Ember.observer(function() {
-    var content = get(this, 'content'),
-        len     = content ? get(content, 'length') : 0;
+    var content = get(this, 'content');
 
     Ember.assert("Can't set ArrayProxy's content to itself", content !== this);
+
+    this._setupContent();
+  }, 'content'),
+
+  _setupContent: function() {
+    var content = get(this, 'content');
 
     if (content) {
       content.addArrayObserver(this, {
@@ -138,20 +146,16 @@ Ember.ArrayProxy = Ember.Object.extend(Ember.MutableArray,
         didChange: 'contentArrayDidChange'
       });
     }
-  }, 'content'),
+  },
 
   _arrangedContentWillChange: Ember.beforeObserver(function() {
     var arrangedContent = get(this, 'arrangedContent'),
         len = arrangedContent ? get(arrangedContent, 'length') : 0;
 
     this.arrangedContentArrayWillChange(this, 0, len, undefined);
+    this.arrangedContentWillChange(this);
 
-    if (arrangedContent) {
-      arrangedContent.removeArrayObserver(this, {
-        willChange: 'arrangedContentArrayWillChange',
-        didChange: 'arrangedContentArrayDidChange'
-      });
-    }
+    this._teardownArrangedContent(arrangedContent);
   }, 'arrangedContent'),
 
   _arrangedContentDidChange: Ember.observer(function() {
@@ -160,15 +164,36 @@ Ember.ArrayProxy = Ember.Object.extend(Ember.MutableArray,
 
     Ember.assert("Can't set ArrayProxy's content to itself", arrangedContent !== this);
 
+    this._setupArrangedContent();
+
+    this.arrangedContentDidChange(this);
+    this.arrangedContentArrayDidChange(this, 0, undefined, len);
+  }, 'arrangedContent'),
+
+  _setupArrangedContent: function() {
+    var arrangedContent = get(this, 'arrangedContent');
+
     if (arrangedContent) {
       arrangedContent.addArrayObserver(this, {
         willChange: 'arrangedContentArrayWillChange',
         didChange: 'arrangedContentArrayDidChange'
       });
     }
+  },
 
-    this.arrangedContentArrayDidChange(this, 0, undefined, len);
-  }, 'arrangedContent'),
+  _teardownArrangedContent: function() {
+    var arrangedContent = get(this, 'arrangedContent');
+
+    if (arrangedContent) {
+      arrangedContent.removeArrayObserver(this, {
+        willChange: 'arrangedContentArrayWillChange',
+        didChange: 'arrangedContentArrayDidChange'
+      });
+    }
+  },
+
+  arrangedContentWillChange: Ember.K,
+  arrangedContentDidChange: Ember.K,
 
   /** @private (nodoc) */
   objectAt: function(idx) {
@@ -201,13 +226,13 @@ Ember.ArrayProxy = Ember.Object.extend(Ember.MutableArray,
   /** @private (nodoc) */
   init: function() {
     this._super();
-    this._contentWillChange();
-    this._contentDidChange();
-    this._arrangedContentWillChange();
-    this._arrangedContentDidChange();
+    this._setupContent();
+    this._setupArrangedContent();
+  },
+
+  willDestroy: function() {
+    this._teardownArrangedContent();
+    this._teardownContent();
   }
-
 });
-
-
 

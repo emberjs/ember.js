@@ -597,7 +597,7 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     } else {
       return get(this, '_context');
     }
-  }).cacheable(),
+  }).volatile(),
 
   /**
     @private
@@ -846,7 +846,7 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     var template = get(this, 'layout') || get(this, 'template');
 
     if (template) {
-      var context = get(this, '_context');
+      var context = get(this, 'context');
       var keywords = this.cloneKeywords();
 
       var data = {
