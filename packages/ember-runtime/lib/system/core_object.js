@@ -10,17 +10,23 @@
 // Ember.Object.  We only define this separately so that Ember.Set can depend on it
 
 
-
-var classToString = Ember.Mixin.prototype.toString;
-var set = Ember.set, get = Ember.get;
-var o_create = Ember.create,
+var set = Ember.set, get = Ember.get,
+    o_create = Ember.create,
     o_defineProperty = Ember.platform.defineProperty,
     a_slice = Array.prototype.slice,
+    GUID_KEY = Ember.GUID_KEY,
+    guidFor = Ember.guidFor,
+    generateGuid = Ember.generateGuid,
     meta = Ember.meta,
     rewatch = Ember.rewatch,
     finishChains = Ember.finishChains,
-    finishPartial = Ember.Mixin.finishPartial,
-    reopen = Ember.Mixin.prototype.reopen;
+    destroy = Ember.destroy,
+    schedule = Ember.run.schedule,
+    Mixin = Ember.Mixin,
+    applyMixin = Mixin._apply,
+    finishPartial = Mixin.finishPartial,
+    reopen = Mixin.prototype.reopen,
+    classToString = Mixin.prototype.toString;
 
 var undefinedDescriptor = {
   configurable: true,
@@ -42,14 +48,14 @@ function makeCtor() {
     if (!wasApplied) {
       Class.proto(); // prepare prototype...
     }
-    var m = Ember.meta(this);
+    o_defineProperty(this, GUID_KEY, undefinedDescriptor);
+    o_defineProperty(this, '_super', undefinedDescriptor);
+    var m = meta(this);
     m.proto = this;
     if (initMixins) {
       this.reopen.apply(this, initMixins);
       initMixins = null;
     }
-    o_defineProperty(this, Ember.GUID_KEY, undefinedDescriptor);
-    o_defineProperty(this, '_super', undefinedDescriptor);
     finishPartial(this, m);
     delete m.proto;
     finishChains(this);
@@ -59,7 +65,7 @@ function makeCtor() {
   Class.toString = classToString;
   Class.willReopen = function() {
     if (wasApplied) {
-      Class.PrototypeMixin = Ember.Mixin.create(Class.PrototypeMixin);
+      Class.PrototypeMixin = Mixin.create(Class.PrototypeMixin);
     }
 
     wasApplied = false;
@@ -85,11 +91,11 @@ function makeCtor() {
 
 var CoreObject = makeCtor();
 
-CoreObject.PrototypeMixin = Ember.Mixin.create(
+CoreObject.PrototypeMixin = Mixin.create(
 /** @scope Ember.CoreObject.prototype */ {
 
   reopen: function() {
-    Ember.Mixin._apply(this, arguments, true);
+    applyMixin(this, arguments, true);
     return this;
   },
 
@@ -124,7 +130,7 @@ CoreObject.PrototypeMixin = Ember.Mixin.create(
     if (this.willDestroy) { this.willDestroy(); }
 
     set(this, 'isDestroyed', true);
-    Ember.run.schedule('destroy', this, this._scheduledDestroy);
+    schedule('destroy', this, this._scheduledDestroy);
     return this;
   },
 
@@ -135,7 +141,7 @@ CoreObject.PrototypeMixin = Ember.Mixin.create(
     @private
   */
   _scheduledDestroy: function() {
-    Ember.destroy(this);
+    destroy(this);
     if (this.didDestroy) { this.didDestroy(); }
   },
 
@@ -146,7 +152,7 @@ CoreObject.PrototypeMixin = Ember.Mixin.create(
   },
 
   toString: function() {
-    return '<'+this.constructor.toString()+':'+Ember.guidFor(this)+'>';
+    return '<'+this.constructor.toString()+':'+guidFor(this)+'>';
   }
 });
 
@@ -156,7 +162,7 @@ if (Ember.config.overridePrototypeMixin) {
 
 CoreObject.__super__ = null;
 
-var ClassMixin = Ember.Mixin.create(
+var ClassMixin = Mixin.create(
 /** @scope Ember.ClassMixin.prototype */ {
 
   ClassMixin: Ember.required(),
@@ -169,8 +175,8 @@ var ClassMixin = Ember.Mixin.create(
 
   extend: function() {
     var Class = makeCtor(), proto;
-    Class.ClassMixin = Ember.Mixin.create(this.ClassMixin);
-    Class.PrototypeMixin = Ember.Mixin.create(this.PrototypeMixin);
+    Class.ClassMixin = Mixin.create(this.ClassMixin);
+    Class.PrototypeMixin = Mixin.create(this.PrototypeMixin);
 
     Class.ClassMixin.ownerConstructor = Class;
     Class.PrototypeMixin.ownerConstructor = Class;
@@ -182,7 +188,7 @@ var ClassMixin = Ember.Mixin.create(
 
     proto = Class.prototype = o_create(this.prototype);
     proto.constructor = Class;
-    Ember.generateGuid(proto, 'ember');
+    generateGuid(proto, 'ember');
     meta(proto).proto = proto; // this will disable observers on prototype
 
     Class.ClassMixin.apply(Class);
@@ -203,7 +209,7 @@ var ClassMixin = Ember.Mixin.create(
 
   reopenClass: function() {
     reopen.apply(this.ClassMixin, arguments);
-    Ember.Mixin._apply(this, arguments, false);
+    applyMixin(this, arguments, false);
     return this;
   },
 
