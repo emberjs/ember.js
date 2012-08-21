@@ -177,7 +177,7 @@ var merge = function(original, hash) {
   ### Deserializing A URL's Dynamic Segments
   When an application is first loaded or the URL is changed manually (e.g. through the browser's
   back button) the `deserialize` method of the URL's matching Ember.Route will be called with
-  the application's router as its first argument and a hash of the URLs dynamic segments and values
+  the application's router as its first argument and a hash of the URL's dynamic segments and values
   as its second argument.
 
   The following route structure when loaded with the URL "#/fixed/thefirstvalue/anotherFixed/thesecondvalue":
@@ -213,8 +213,8 @@ var merge = function(original, hash) {
   ### Serializing An Object For URLs with Dynamic Segments
   When transitioning into a Route whose `route` property contains dynamic segments the Route's
   `serialize` method is called with the Route's router as the first argument and the Route's
-  context as the second argument.  The return value of `serialize` will be use to populate the
-  dynamic segments and should be a object with keys that match the names of the dynamic sections.
+  context as the second argument.  The return value of `serialize` will be used to populate the
+  dynamic segments and should be an object with keys that match the names of the dynamic sections.
 
   Given the following route structure:
 
@@ -303,7 +303,7 @@ var merge = function(original, hash) {
 
   ## Injection of Controller Singletons
   During application initialization Ember will detect properties of the application ending in 'Controller',
-  create singleton instances of each class, and assign them as a properties on the router.  The property name
+  create singleton instances of each class, and assign them as properties on the router.  The property name
   will be the UpperCamel name converted to lowerCamel format. These controller classes should be subclasses
   of Ember.ObjectController, Ember.ArrayController, Ember.Controller, or a custom Ember.Object that includes the
   Ember.ControllerMixin mixin.
@@ -317,7 +317,7 @@ var merge = function(original, hash) {
 
   The controller singletons will have their `namespace` property set to the application and their `target`
   property set to the application's router singleton for easy integration with Ember's user event system.
-  See 'Changing View Hierarchy in Response To State Change' and 'Responding to User-initiated Events'
+  See 'Changing View Hierarchy in Response To State Change' and 'Responding to User-initiated Events.'
 
   ## Responding to User-initiated Events
   Controller instances injected into the router at application initialization have their `target` property
