@@ -156,11 +156,11 @@ var invokeForState = {
   and a different class name if it evaluates to false, you can pass a binding
   like this:
 
-    // Applies 'enabled' class when isEnabled is true and 'disabled' when isEnabled is false
-    Ember.View.create({
-      classNameBindings: ['isEnabled:enabled:disabled']
-      isEnabled: true
-    });
+      // Applies 'enabled' class when isEnabled is true and 'disabled' when isEnabled is false
+      Ember.View.create({
+        classNameBindings: ['isEnabled:enabled:disabled']
+        isEnabled: true
+      });
 
   Will result in view instances with an HTML representation of:
 
