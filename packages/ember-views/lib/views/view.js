@@ -156,11 +156,11 @@ var invokeForState = {
   and a different class name if it evaluates to false, you can pass a binding
   like this:
 
-    // Applies 'enabled' class when isEnabled is true and 'disabled' when isEnabled is false
-    Ember.View.create({
-      classNameBindings: ['isEnabled:enabled:disabled']
-      isEnabled: true
-    });
+      // Applies 'enabled' class when isEnabled is true and 'disabled' when isEnabled is false
+      Ember.View.create({
+        classNameBindings: ['isEnabled:enabled:disabled']
+        isEnabled: true
+      });
 
   Will result in view instances with an HTML representation of:
 
@@ -172,21 +172,20 @@ var invokeForState = {
 
   This syntax offers the convenience to add a class if a property is `false`:
 
-    // Applies no class when isEnabled is true and class 'disabled' when isEnabled is false
-    Ember.View.create({
-      classNameBindings: ['isEnabled::disabled']
-      isEnabled: true
-    });
+      // Applies no class when isEnabled is true and class 'disabled' when isEnabled is false
+      Ember.View.create({
+        classNameBindings: ['isEnabled::disabled']
+        isEnabled: true
+      });
 
   Will result in view instances with an HTML representation of:
 
-    <div id="ember1" class="ember-view"></div>
+      <div id="ember1" class="ember-view"></div>
 
   When the `isEnabled` property on the view is set to `false`, it will result
   in view instances with an HTML representation of:
 
-    <div id="ember1" class="ember-view disabled"></div>
-
+      <div id="ember1" class="ember-view disabled"></div>
 
   Updates to the the value of a class name binding will result in automatic update 
   of the  HTML `class` attribute in the view's rendered HTML representation.
