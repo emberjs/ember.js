@@ -159,6 +159,25 @@ test("selection can be set when multiple=true", function() {
   deepEqual(select.get('selection'), [yehuda], "After changing it, selection should be correct");
 });
 
+test("selection can be set when multiple=true and prompt", function() {
+  var yehuda = { id: 1, firstName: 'Yehuda' },
+      tom = { id: 2, firstName: 'Tom' },
+      david = { id: 3, firstName: 'David' },
+      brennain = { id: 4, firstName: 'Brennain' };
+  select.set('content', Ember.A([yehuda, tom, david, brennain]));
+  select.set('multiple', true);
+  select.set('prompt', 'Pick one!');
+  select.set('selection', tom);
+
+  append();
+
+  deepEqual(select.get('selection'), [tom], "Initial selection should be correct");
+
+  select.set('selection', yehuda);
+
+  deepEqual(select.get('selection'), [yehuda], "After changing it, selection should be correct");
+});
+
 test("multiple selections can be set when multiple=true", function() {
   var yehuda = { id: 1, firstName: 'Yehuda' },
       tom = { id: 2, firstName: 'Tom' },
