@@ -35,7 +35,9 @@ Ember.SortableMixin = Ember.Mixin.create(Ember.MutableEnumerable,
 
   addObject: function(obj) {
     var content = get(this, 'content');
-    content.pushObject(obj);
+    if (!content.contains(obj)) {
+      content.pushObject(obj);
+    }
   },
 
   removeObject: function(obj) {

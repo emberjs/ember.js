@@ -168,3 +168,16 @@ test("you can set content later and it will be sorted", function() {
   equal(sortedArrayController.get('length'), 3, 'array has 3 items');
   equal(sortedArrayController.objectAt(0).name, 'Scumbag Bryn', 'array is sorted by name');
 });
+
+test("addObject does not insert duplicates", function() {
+  var sortedArrayProxy, obj = {};
+  sortedArrayProxy = Ember.ArrayProxy.create(Ember.SortableMixin, {
+    content: Ember.A([obj])
+  });
+
+  equal(sortedArrayProxy.get('length'), 1, 'array has 1 item');
+
+  sortedArrayProxy.addObject(obj);
+
+  equal(sortedArrayProxy.get('length'), 1, 'array still has 1 item');
+});
