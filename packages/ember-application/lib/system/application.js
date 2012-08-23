@@ -343,6 +343,36 @@ Ember.Application = Ember.Namespace.extend(
     return this;
   },
 
+  /**
+    Reset the application. Useful for testing - run this before each test.
+
+    The application must have been initialized, and the ready event must have
+    fired.
+  */
+  reset: function(router) {
+    var oldRouter = get(this, 'router'),
+        applicationView = this._createdApplicationView,
+        eventDispatcher = get(this, 'eventDispatcher');
+
+    // Destroy stuff.
+    if (oldRouter) {
+      oldRouter.destroy();
+    }
+    if (applicationView) {
+      applicationView.destroy();
+    }
+    if (eventDispatcher) {
+      eventDispatcher.destroy();
+      this.createEventDispatcher();
+    }
+
+    // Mimic initialize.
+    router = this.setupRouter(router);
+    this.runInjections(router);
+    Ember.runLoadHooks('application', this);
+    this.didBecomeReady();
+  },
+
   /** @private */
   runInjections: function(router) {
     var injections = get(this.constructor, 'injections'),
