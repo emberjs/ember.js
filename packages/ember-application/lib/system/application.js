@@ -315,22 +315,7 @@ Ember.Application = Ember.Namespace.extend(
     @param router {Ember.Router}
   */
   initialize: function(router) {
-    if (!router && Ember.Router.detect(this.Router)) {
-      router = this.Router.create();
-      this._createdRouter = router;
-    }
-
-    if (router) {
-      set(this, 'router', router);
-
-      // By default, the router's namespace is the current application.
-      //
-      // This allows it to find model classes when a state has a
-      // route like `/posts/:post_id`. In that case, it would first
-      // convert `post_id` into `Post`, and then look it up on its
-      // namespace.
-      set(router, 'namespace', this);
-    }
+    router = this.createRouter(router);
 
     this.runInjections(router);
 
@@ -363,6 +348,29 @@ Ember.Application = Ember.Namespace.extend(
     });
   },
 
+  /** @private */
+  createRouter: function(router) {
+    if (!router && Ember.Router.detect(this.Router)) {
+      router = this.Router.create();
+      this._createdRouter = router;
+    }
+
+    if (router) {
+      set(this, 'router', router);
+
+      // By default, the router's namespace is the current application.
+      //
+      // This allows it to find model classes when a state has a
+      // route like `/posts/:post_id`. In that case, it would first
+      // convert `post_id` into `Post`, and then look it up on its
+      // namespace.
+      set(router, 'namespace', this);
+    }
+
+    return router;
+  },
+
+  /** @private */
   didBecomeReady: function() {
     var eventDispatcher = get(this, 'eventDispatcher'),
         customEvents    = get(this, 'customEvents'),
