@@ -315,9 +315,6 @@ Ember.Application = Ember.Namespace.extend(
     @param router {Ember.Router}
   */
   initialize: function(router) {
-    var injections = get(this.constructor, 'injections'),
-        namespace = this;
-
     if (!router && Ember.Router.detect(this.Router)) {
       router = this.Router.create();
       this._createdRouter = router;
@@ -335,6 +332,22 @@ Ember.Application = Ember.Namespace.extend(
       set(router, 'namespace', this);
     }
 
+    this.runInjections(router);
+
+    Ember.runLoadHooks('application', this);
+
+    // At this point, any injections or load hooks that would have wanted
+    // to defer readiness have fired.
+    this.advanceReadiness();
+
+    return this;
+  },
+
+  /** @private */
+  runInjections: function(router) {
+    var injections = get(this.constructor, 'injections'),
+        namespace = this;
+
     var graph = new Ember.DAG(), i, injection;
     for (i=0; i<injections.length; i++) {
       injection = injections[i];
@@ -347,14 +360,6 @@ Ember.Application = Ember.Namespace.extend(
         injection(namespace, router, property);
       });
     });
-
-    Ember.runLoadHooks('application', this);
-
-    // At this point, any injections or load hooks that would have wanted
-    // to defer readiness have fired.
-    this.advanceReadiness();
-
-    return this;
   },
 
   didBecomeReady: function() {
