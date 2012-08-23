@@ -318,8 +318,8 @@ Ember.Application = Ember.Namespace.extend(
     var injections = get(this.constructor, 'injections'),
         namespace = this;
 
-    if (!router && Ember.Router.detect(namespace['Router'])) {
-      router = namespace['Router'].create();
+    if (!router && Ember.Router.detect(this.Router)) {
+      router = this.Router.create();
       this._createdRouter = router;
     }
 
