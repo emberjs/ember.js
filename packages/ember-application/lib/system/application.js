@@ -248,21 +248,25 @@ Ember.Application = Ember.Namespace.extend(
   init: function() {
     if (!this.$) { this.$ = Ember.$; }
 
-    var eventDispatcher,
-        rootElement = get(this, 'rootElement');
     this._super();
 
-    eventDispatcher = Ember.EventDispatcher.create({
-      rootElement: rootElement
-    });
-
-    set(this, 'eventDispatcher', eventDispatcher);
+    this.createEventDispatcher();
 
     // Start off the number of deferrals at 1. This will be
     // decremented by the Application's own `initialize` method.
     this._readinessDeferrals = 1;
 
     this.waitForDOMContentLoaded();
+  },
+
+  /** @private */
+  createEventDispatcher: function() {
+    var rootElement = get(this, 'rootElement'),
+        eventDispatcher = Ember.EventDispatcher.create({
+          rootElement: rootElement
+        });
+
+    set(this, 'eventDispatcher', eventDispatcher);
   },
 
   waitForDOMContentLoaded: function() {
