@@ -86,6 +86,7 @@ task :clean do
   puts "Cleaning build..."
   rm_rf "dist" # Make sure even things RakeP doesn't know about are cleaned
   rm_f "tests/ember-tests.js"
+  rm_rf "tmp"
   puts "Done"
 end
 
