@@ -157,7 +157,13 @@ Ember.CollectionView = Ember.ContainerView.extend(
   */
   itemViewClass: Ember.View,
 
-  /** @private */
+  /**
+    @type string
+    @default "content"
+  */
+  itemViewProperty: "content",
+
+/** @private */
   init: function() {
     var ret = this._super();
     this._contentDidChange();
@@ -247,7 +253,8 @@ Ember.CollectionView = Ember.ContainerView.extend(
   arrayDidChange: function(content, start, removed, added) {
     var itemViewClass = get(this, 'itemViewClass'),
         childViews = get(this, 'childViews'),
-        addedViews = [], view, item, idx, len, itemTagName;
+        property = get(this, 'itemViewProperty'),
+        addedViews = [], view, item, idx, len, itemTagName, childObject;
 
     if ('string' === typeof itemViewClass) {
       itemViewClass = get(itemViewClass);
@@ -260,10 +267,10 @@ Ember.CollectionView = Ember.ContainerView.extend(
       for (idx = start; idx < start+added; idx++) {
         item = content.objectAt(idx);
 
-        view = this.createChildView(itemViewClass, {
-          content: item,
-          contentIndex: idx
-        });
+        childObject = {};
+        childObject[property] = item;
+        childObject[property+"Index"] = idx;
+        view = this.createChildView(itemViewClass, childObject);
 
         addedViews.push(view);
       }
