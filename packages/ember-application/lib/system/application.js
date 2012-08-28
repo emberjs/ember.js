@@ -219,6 +219,26 @@ Ember.Application = Ember.Namespace.extend(
   eventDispatcher: null,
 
   /**
+    The DOM events for which the event dispatcher should listen.
+
+    By default, the application's `Ember.EventDispatcher` listens
+    for a set of standard DOM events, such as `mousedown` and
+    `keyup`, and delegates them to your application's `Ember.View`
+    instances.
+
+    If you would like additional events to be delegated to your
+    views, set your `Ember.Application`'s `customEvents` property
+    to a hash containing the DOM event name as the key and the
+    corresponding view method name as the value. For example:
+
+        App = Ember.Application.create({
+          customEvents: {
+            // add support for the loadedmetadata media
+            // player event
+            'loadedmetadata': "loadedMetadata"
+          }
+        });
+
     @type Object
     @default null
   */
