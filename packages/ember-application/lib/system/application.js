@@ -10,28 +10,181 @@ var get = Ember.get, set = Ember.set;
 /**
   @class
 
-  An Ember.Application instance serves as the namespace in which you define your
-  application's classes. You can also override the configuration of your
+  An instance of `Ember.Application` is the starting point for every Ember.js
+  application. It helps to instantiate, initialize and coordinate the many
+  objects that make up your app.
+
+  Each Ember.js app has one and only one `Ember.Application` object. In fact, the very
+  first thing you should do in your application is create the instance:
+
+  ```javascript
+  window.App = Ember.Application.create();
+  ```
+
+  Typically, the application object is the only global variable. All other
+  classes in your app should be properties on the `Ember.Application` instance,
+  which highlights its first role: a global namespace.
+
+  For example, if you define a view class, it might look like this:
+
+  ```javascript
+  App.MyView = Ember.View.extend();
+  ```
+
+  After all of your classes are defined, call `App.initialize()` to start the
   application.
 
-  By default, Ember.Application will begin listening for events on the document.
-  If your application is embedded inside a page, instead of controlling the
-  entire document, you can specify which DOM element to attach to by setting
-  the `rootElement` property to a CSS selector.
+  Because `Ember.Application` inherits from `Ember.Namespace`, any classes
+  you create will have useful string representations when calling `toString()`;
+  see the `Ember.Namespace` documentation for more information.
 
-      MyApp = Ember.Application.create({
-        rootElement: '#my-app'
-      });
+  While you can think of your `Ember.Application` as a container that holds the
+  other classes in your application, there are several other responsibilities
+  going on under-the-hood that you may want to understand.
 
-  The root of an Ember.Application must not be removed during the course of the
-  page's lifetime. If you have only a single conceptual application for the
-  entire page, and are not embedding any third-party Ember applications
-  in your page, use the default document root for your application.
+  ### Event Delegation
 
-  You only need to specify the root if your page contains multiple instances
-  of Ember.Application.
+  Ember.js uses a technique called _event delegation_. This allows the framework
+  to set up a global, shared event listener instead of requiring each view to do
+  it manually. For example, instead of each view registering its own `mousedown`
+  listener on its associated element, Ember.js sets up a `mousedown` listener on
+  the `body`.
 
-  @extends Ember.Object
+  If a `mousedown` event occurs, Ember.js will look at the target of the event and
+  start walking up the DOM node tree, finding corresponding views and invoking their
+  `mouseDown` method as it goes.
+
+  `Ember.Application` has a number of default events that it listens for, as well
+  as a mapping from lowercase events to camel-cased view method names. For
+  example, the `keypress` event causes the `keyPress` method on the view to be
+  called, the `dblclick` event causes `doubleClick` to be called, and so on.
+
+  If there is a browser event that Ember.js does not listen for by default, you
+  can specify custom events and their corresponding view method names by setting
+  the application's `customEvents` property:
+
+  ```javascript
+  App = Ember.Application.create({
+    customEvents: {
+      // add support for the loadedmetadata media
+      // player event
+      'loadedmetadata': "loadedMetadata"
+    }
+  });
+  ```
+
+  By default, the application sets up these event listeners on the document body.
+  However, in cases where you are embedding an Ember.js application inside an
+  existing page, you may want it to set up the listeners on an element inside
+  the body.
+
+  For example, if only events inside a DOM element with the ID of `ember-app` should
+  be delegated, set your application's `rootElement` property:
+
+  ```javascript
+  window.App = Ember.Application.create({
+    rootElement: '#ember-app'
+  });
+  ```
+
+  The `rootElement` can be either a DOM element or a jQuery-compatible selector
+  string. Note that *views appended to the DOM outside the root element will not
+  receive events.* If you specify a custom root element, make sure you only append
+  views inside it!
+
+  To learn more about the advantages of event delegation and the Ember.js view layer,
+  and a list of the event listeners that are setup by default, visit the
+  [Ember.js View Layer guide](http://emberjs.com/guides/view_layer#toc_event-delegation).
+
+  ### Dependency Injection
+
+  One thing you may have noticed while using Ember.js is that you define *classes*, not
+  *instances*. When your application loads, all of the instances are created for you.
+  Creating these instances is the responsibility of `Ember.Application`.
+
+  When the `Ember.Application` initializes, it will look for an `Ember.Router` class
+  defined on the applications's `Router` property, like this:
+
+  ```javascript
+  App.Router = Ember.Router.extend({
+  // ...
+  });
+  ```
+
+  If found, the router is instantiated and saved on the application's `router`
+  property (note the lowercase 'r'). While you should *not* reference this router
+  instance directly from your application code, having access to `App.router`
+  from the console can be useful during debugging.
+
+  After the router is created, the application loops through all of the
+  registered _injections_ and invokes them once for each property on the
+  `Ember.Application` object.
+
+  An injection is a function that is responsible for instantiating objects from
+  classes defined on the application. By default, the only injection registered
+  instantiates controllers and makes them available on the router.
+
+  For example, if you define a controller class:
+
+  ```javascript
+  App.MyController = Ember.Controller.extend({
+    // ...
+  });
+  ```
+
+  Your router will receive an instance of `App.MyController` saved on its
+  `myController` property.
+
+  Libraries on top of Ember.js can register additional injections. For example,
+  if your application is using Ember Data, it registers an injection that
+  instantiates `DS.Store`:
+
+  ```javascript
+  Ember.Application.registerInjection({
+    name: 'store',
+    before: 'controllers',
+
+    injection: function(app, router, property) {
+      if (property === 'Store') {
+        set(router, 'store', app[property].create());
+      }
+    }
+  });
+  ```
+
+  ### Routing
+
+  In addition to creating your application's router, `Ember.Application` is also
+  responsible for telling the router when to start routing.
+
+  By default, the router will begin trying to translate the current URL into
+  application state once the browser emits the `DOMContentReady` event. If you
+  need to defer routing, you can call the application's `deferReadiness()` method.
+  Once routing can begin, call the `advanceReadiness()` method.
+
+  If there is any setup required before routing begins, you can implement a `ready()`
+  method on your app that will be invoked immediately before routing begins:
+
+  ```javascript
+  window.App = Ember.Application.create({
+    ready: function() {
+      this.set('router.enableLogging', true);
+    }
+  });
+
+  To begin routing, you must have at a minimum a top-level controller and view.
+  You define these as `App.ApplicationController` and `App.ApplicationView`,
+  respectively. Your application will not work if you do not define these two
+  mandatory classes. For example:
+
+  ```javascript
+  App.ApplicationView = Ember.View.extend({
+    templateName: 'application'
+  });
+  App.ApplicationController = Ember.Controller.extend();
+  ```
+
+  @extends Ember.Namespace
 */
 Ember.Application = Ember.Namespace.extend(
 /** @scope Ember.Application.prototype */{
