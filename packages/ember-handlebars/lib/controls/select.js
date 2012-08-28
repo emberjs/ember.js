@@ -432,7 +432,7 @@ Ember.SelectOption = Ember.View.extend({
     var content = get(this, 'content'),
         selection = get(this, 'parentView.selection');
     if (get(this, 'parentView.multiple')) {
-      return selection && indexOf(selection, content) > -1;
+      return selection && indexOf(selection, content.valueOf()) > -1;
     } else {
       // Primitives get passed through bindings as objects... since
       // `new Number(4) !== 4`, we use `==` below
@@ -460,4 +460,3 @@ Ember.SelectOption = Ember.View.extend({
     }).property(valuePath).cacheable());
   }, 'parentView.optionValuePath')
 });
-
