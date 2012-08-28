@@ -190,9 +190,13 @@ Ember.Application = Ember.Namespace.extend(
 /** @scope Ember.Application.prototype */{
 
   /**
-    The root DOM element of the Application.
+    The root DOM element of the Application. This can be specified as an
+    element or a
+    [jQuery-compatible selector string](http://api.jquery.com/category/selectors/).
 
-    Can be specified as DOMElement or a selector string.
+    This is the element that will be passed to the Application's,
+    `eventDispatcher`, which sets up the listeners for event delegation. Every
+    view in your application should be a child of the element you specify here.
 
     @type DOMElement
     @default 'body'
@@ -200,6 +204,15 @@ Ember.Application = Ember.Namespace.extend(
   rootElement: 'body',
 
   /**
+    The `Ember.EventDispatcher` responsible for delegating events to this
+    application's views.
+
+    The event dispatcher is created by the application at initialization time
+    and sets up event listeners on the DOM element described by the
+    application's `rootElement` property.
+
+    See the documentation for `Ember.EventDispatcher` for more information.
+
     @type Ember.EventDispatcher
     @default null
   */
