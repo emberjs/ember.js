@@ -27,7 +27,7 @@ var get = Ember.get, getPath = Ember.Handlebars.getPath, fmt = Ember.String.fmt;
 
       <script type="text/x-handlebars">
         {{#collection contentBinding="App.items"}}
-          Hi {{content.name}}
+          Hi {{view.content.name}}
         {{/collection}}
       </script>
 
@@ -68,7 +68,7 @@ var get = Ember.get, getPath = Ember.Handlebars.getPath, fmt = Ember.String.fmt;
       ]
 
       App.AnItemView = Ember.View.extend({
-        template: Ember.Handlebars.compile("Greetings {{content.name}}")
+        template: Ember.Handlebars.compile("Greetings {{view.content.name}}")
       })
 
   Will result in the HTML structure below
@@ -86,7 +86,7 @@ var get = Ember.get, getPath = Ember.Handlebars.getPath, fmt = Ember.String.fmt;
 
       <script type="text/x-handlebars">
         {{#collection App.MyCustomCollectionClass contentBinding="App.items"}}
-          Hi {{content.name}}
+          Hi {{view.content.name}}
         {{/collection}}
       </script>
 
@@ -100,7 +100,7 @@ var get = Ember.get, getPath = Ember.Handlebars.getPath, fmt = Ember.String.fmt;
           {{#collection contentBinding="App.items"
                         itemTagName="p"
                         itemClassNames="greeting"}}
-            Howdy {{content.name}}
+            Howdy {{view.content.name}}
           {{/collection}}
         </script>
 
