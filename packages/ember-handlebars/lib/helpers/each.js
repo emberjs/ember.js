@@ -77,8 +77,6 @@ Ember.Handlebars.registerHelper('each', function(path, options) {
     options.hash.eachHelper = 'each';
   }
 
-  //Ember.assert("You must pass a block to the each helper", options.fn && options.fn !== Handlebars.VM.noop);
-
   options.hash.contentBinding = path;
   // Set up emptyView as a metamorph with no tag
   //options.hash.emptyViewClass = Ember._MetamorphView;
