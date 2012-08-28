@@ -172,6 +172,11 @@ test("it handles an empty path as root", function() {
   equal(locationObject.formatURL(''), '/', "The formatted url is '/'");
 });
 
+test("formatURL properly appends to rootURL", function() {
+  locationObject.set('rootURL', '/test');
+  equal(locationObject.formatURL('/foo'), '/test/foo', "The formatted url is '/test/foo'");
+});
+
 test("it prepends rootURL to path", function() {
   var setPath;
 
