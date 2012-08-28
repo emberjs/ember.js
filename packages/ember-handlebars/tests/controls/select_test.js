@@ -220,6 +220,21 @@ test("Ember.SelectedOption knows when it is selected when multiple=true", functi
   deepEqual(selectedOptions(), [false, true, true, false], "After changing it, selection should be correct");
 });
 
+test("Ember.SelectedOption knows when it is selected when multiple=true and options are primatives", function() {
+  select.set('content', Ember.A([1, 2, 3, 4]));
+  select.set('multiple', true);
+
+  select.set('selection', [1, 3]);
+
+  append();
+
+  deepEqual(selectedOptions(), [true, false, true, false], "Initial selection should be correct");
+
+  select.set('selection', [2, 3]);
+
+  deepEqual(selectedOptions(), [false, true, true, false], "After changing it, selection should be correct");
+});
+
 test("a prompt can be specified", function() {
   var yehuda = { id: 1, firstName: 'Yehuda' },
       tom = { id: 2, firstName: 'Tom' };
