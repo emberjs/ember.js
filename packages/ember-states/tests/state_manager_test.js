@@ -77,6 +77,16 @@ test("it reports its current state", function() {
   ok(get(stateManager, 'currentState') === loadedState, "currentState can change to a sibling state");
 });
 
+test("it reports its current state path", function() {
+  strictEqual(get(stateManager, 'currentPath'), null, "currentPath defaults to null if no state is specified");
+
+  stateManager.transitionTo('loadingState');
+  equal(get(stateManager, 'currentPath'), 'loadingState', "currentPath changes after transitionTo() is called");
+
+  stateManager.transitionTo('loadedState');
+  equal(get(stateManager, 'currentPath'), 'loadedState', "currentPath can change to a sibling state");
+});
+
 test("it sends enter and exit events during state transitions", function() {
   stateManager.transitionTo('loadingState');
 

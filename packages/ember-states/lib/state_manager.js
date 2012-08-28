@@ -586,6 +586,17 @@ Ember.StateManager = Ember.State.extend(
   currentState: null,
 
   /**
+   The path of the current state. Returns a string representation of the current
+   state.
+
+   @type String
+   @readOnly
+  */
+  currentPath: Ember.computed('currentState', function() {
+    return get(this, 'currentState.path');
+  }).cacheable(),
+
+  /**
     The name of transitionEvent that this stateManager will dispatch
 
     @property {String}
