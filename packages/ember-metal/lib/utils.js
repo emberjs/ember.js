@@ -393,6 +393,6 @@ Ember.canInvoke = canInvoke;
 */
 Ember.tryInvoke = function(obj, methodName, args) {
   if (canInvoke(obj, methodName)) {
-    return obj[methodName].apply(obj, args);
+    return obj[methodName].apply(obj, args || []);
   }
 };
