@@ -379,6 +379,27 @@ test("should be able to route with initialState", function() {
   equal(get(router, 'currentState.path'), 'root.stateTwo', "should be in stateTwo");
 });
 
+test("should be able to route with rootURL", function() {
+  var router = Ember.Router.create({
+    location: location,
+    namespace: namespace,
+    rootURL: '/test',
+    root: Ember.Route.create({
+      stateOne: Ember.Route.create({
+        route: '/one'
+      }),
+
+      stateTwo: Ember.Route.create({
+        route: '/two'
+      })
+    })
+  });
+
+  router.route('/test/two');
+
+  equal(get(router, 'currentState.path'), 'root.stateTwo', "should be in stateTwo");
+});
+
 test("should update route for redirections", function() {
   var router = Ember.Router.create({
     location: location,

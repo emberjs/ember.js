@@ -458,6 +458,7 @@ Ember.Router = Ember.StateManager.extend(
     var routableState;
 
     try {
+      path = path.replace(get(this, 'rootURL'), '');
       path = path.replace(/^(?=[^\/])/, "/");
 
       this.send('navigateAway');
