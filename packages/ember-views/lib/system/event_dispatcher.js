@@ -116,31 +116,34 @@ Ember.EventDispatcher = Ember.Object.extend(
     var self = this;
 
     rootElement.delegate('.ember-view', event + '.ember', function(evt, triggeringManager) {
+      return Ember.handleErrors(function() {
+        var view = Ember.View.views[this.id],
+            result = true, manager = null;
 
-      var view = Ember.View.views[this.id],
-          result = true, manager = null;
+        manager = self._findNearestEventManager(view,eventName);
 
-      manager = self._findNearestEventManager(view,eventName);
+        if (manager && manager !== triggeringManager) {
+          result = self._dispatchEvent(manager, evt, eventName, view);
+        } else if (view) {
+          result = self._bubbleEvent(view,evt,eventName);
+        } else {
+          evt.stopPropagation();
+        }
 
-      if (manager && manager !== triggeringManager) {
-        result = self._dispatchEvent(manager, evt, eventName, view);
-      } else if (view) {
-        result = self._bubbleEvent(view,evt,eventName);
-      } else {
-        evt.stopPropagation();
-      }
-
-      return result;
+        return result;
+      }, this);
     });
 
     rootElement.delegate('[data-ember-action]', event + '.ember', function(evt) {
-      var actionId = Ember.$(evt.currentTarget).attr('data-ember-action'),
-          action   = Ember.Handlebars.ActionHelper.registeredActions[actionId],
-          handler  = action.handler;
+      return Ember.handleErrors(function() {
+        var actionId = Ember.$(evt.currentTarget).attr('data-ember-action'),
+            action   = Ember.Handlebars.ActionHelper.registeredActions[actionId],
+            handler  = action.handler;
 
-      if (action.eventName === eventName) {
-        return handler(evt);
-      }
+        if (action.eventName === eventName) {
+          return handler(evt);
+        }
+      }, this);
     });
   },
 
