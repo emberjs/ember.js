@@ -202,3 +202,24 @@ if ('undefined' === typeof ember_deprecateFunc) {
   Override this to provide more robust logging functionality.
 */
 Ember.Logger = window.console || { log: Ember.K, warn: Ember.K, error: Ember.K, info: Ember.K, debug: Ember.K };
+
+
+// ..........................................................
+// ERROR HANDLING
+//
+
+Ember.onerror = null;
+
+Ember.handleErrors = function(func, context) {
+  // Unfortunately in some browsers we lose the backtrace if we rethrow the existing error,
+  // so in the event that we don't have an `onerror` handler we don't wrap in a try/catch
+  if ('function' === typeof Ember.onerror) {
+    try {
+      return func.apply(context || this);
+    } catch (error) {
+      Ember.onerror(error);
+    }
+  } else {
+    return func.apply(context || this);
+  }
+};
