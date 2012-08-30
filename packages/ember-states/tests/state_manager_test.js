@@ -287,6 +287,15 @@ test("it triggers setup on initialSubstate", function() {
   ok(grandchildSetup, "sets up grandchild");
 });
 
+test("it does not automatically transition to a default state when autoInitialState is false", function() {
+  stateManager = Ember.StateManager.create({
+    autoInitialState: false,
+    start: Ember.State.create()
+  });
+
+  equal(get(stateManager, 'currentState'), undefined, "does not transition to initial state");
+});
+
 test("it throws an assertion error when the initialState does not exist", function() {
   raises(function() {
     Ember.StateManager.create({

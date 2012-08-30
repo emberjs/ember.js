@@ -313,7 +313,7 @@ Ember.Application = Ember.Namespace.extend(
         namespace = this, controller, name;
 
     if (!router && Ember.Router.detect(namespace['Router'])) {
-      router = namespace['Router'].create();
+      router = namespace['Router'].create({ autoInitialState: false });
       this._createdRouter = router;
     }
 
@@ -381,6 +381,7 @@ Ember.Application = Ember.Namespace.extend(
 
     applicationView.appendTo(rootElement);
 
+    router.initialize();
     router.route(location.getURL());
     location.onUpdateURL(function(url) {
       router.route(url);

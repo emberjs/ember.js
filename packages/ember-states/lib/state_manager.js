@@ -534,6 +534,8 @@ Transition.prototype = {
 Ember.StateManager = Ember.State.extend(
 /** @scope Ember.StateManager.prototype */ {
 
+  autoInitialState: true,
+
   /**
     When creating a new statemanager, look for a default state to transition
     into. This state can either be named `start`, or can be specified using the
@@ -544,6 +546,16 @@ Ember.StateManager = Ember.State.extend(
 
     set(this, 'stateMeta', Ember.Map.create());
 
+    var initialState = get(this, 'initialState'),
+        autoInitialState = get(this, 'autoInitialState');
+
+
+    if (autoInitialState) {
+      this.initialize();
+    }
+  },
+
+  initialize: function() {
     var initialState = get(this, 'initialState');
 
     if (!initialState && get(this, 'states.start')) {
