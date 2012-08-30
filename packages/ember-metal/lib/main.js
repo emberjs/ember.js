@@ -4,6 +4,13 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
+/**
+Ember Metal
+
+@module ember
+@submodule ember-metal
+*/
+
 require('ember-metal/core');
 require('ember-metal/map');
 require('ember-metal/platform');

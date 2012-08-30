@@ -9,6 +9,10 @@ require('ember-metal/platform');
 require('ember-metal/utils');
 require('ember-metal/accessors');
 
+/**
+@module ember-metal
+*/
+
 var GUID_KEY = Ember.GUID_KEY,
     META_KEY = Ember.META_KEY,
     EMPTY_META = Ember.EMPTY_META,
@@ -23,13 +27,15 @@ var MANDATORY_SETTER = Ember.ENV.MANDATORY_SETTER;
 //
 
 /**
-  @private
-  @constructor
-
   Objects of this type can implement an interface to responds requests to
   get and set.  The default implementation handles simple properties.
 
   You generally won't need to create or subclass this directly.
+
+  @class Descriptor
+  @namespace Ember
+  @private
+  @constructor
 */
 var Descriptor = Ember.Descriptor = function() {};
 
@@ -70,22 +76,18 @@ var Descriptor = Ember.Descriptor = function() {};
       Ember.defineProperty(contact, 'fullName', Ember.computed(function() {
         return this.firstName+' '+this.lastName;
       }).property('firstName', 'lastName').cacheable());
+
+  @method defineProperty
+  @for Ember
+  @param {Object} obj the object to define this property on. This may be a prototype.
+  @param {String} keyName the name of the property
+  @param {Ember.Descriptor} [desc] an instance of Ember.Descriptor (typically a
+    computed property) or an ES5 descriptor.
+    You must provide this or `data` but not both.
+  @param {anything} [data] something other than a descriptor, that will
+    become the explicit value of this property.
 */
 Ember.defineProperty = function(obj, keyName, desc, data, meta) {
-  // The first two parameters to defineProperty are mandatory:
-  //
-  // * obj: the object to define this property on. This may be
-  //   a prototype.
-  // * keyName: the name of the property
-  //
-  // One and only one of the following two parameters must be
-  // provided:
-  //
-  // * desc: an instance of Ember.Descriptor (typically a
-  //   computed property) or an ES5 descriptor.
-  // * data: something other than a descriptor, that will
-  //   become the explicit value of this property.
-
   var descs, existingDesc, watching, value;
 
   if (!meta) meta = metaFor(obj);

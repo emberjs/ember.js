@@ -13,6 +13,10 @@ require('ember-metal/utils');
 require('ember-metal/array');
 require('ember-metal/binding');
 
+/**
+@module ember-metal
+*/
+
 var Mixin, REQUIRED, Alias,
     classToString, superClassString,
     a_map = Ember.ArrayPolyfills.map,
@@ -25,7 +29,6 @@ var Mixin, REQUIRED, Alias,
     defineProperty = Ember.defineProperty,
     guidFor = Ember.guidFor;
 
-/** @private */
 function mixinsMeta(obj) {
   var m = Ember.meta(obj, true), ret = m.mixins;
   if (!ret) {
@@ -37,7 +40,6 @@ function mixinsMeta(obj) {
   return ret;
 }
 
-/** @private */
 function initMixin(mixin, args) {
   if (args && args.length > 0) {
     mixin.mixins = a_map.call(args, function(x) {
@@ -54,18 +56,15 @@ function initMixin(mixin, args) {
   return mixin;
 }
 
-/** @private */
 function isMethod(obj) {
   return 'function' === typeof obj &&
          obj.isMethod !== false &&
          obj !== Boolean && obj !== Object && obj !== Number && obj !== Array && obj !== Date && obj !== String;
 }
 
-/** @private */
 function mergeMixins(mixins, m, descs, values, base) {
   var len = mixins.length, idx, mixin, guid, props, value, key, ovalue, concats;
 
-  /** @private */
   function removeKeys(keyName) {
     delete descs[keyName];
     delete values[keyName];
@@ -133,7 +132,6 @@ function mergeMixins(mixins, m, descs, values, base) {
   }
 }
 
-/** @private */
 function writableReq(obj) {
   var m = Ember.meta(obj), req = m.required;
   if (!req || req.__emberproto__ !== obj) {
@@ -145,7 +143,6 @@ function writableReq(obj) {
 
 var IS_BINDING = Ember.IS_BINDING = /^.+Binding$/;
 
-/** @private */
 function detectBinding(obj, key, value, m) {
   if (IS_BINDING.test(key)) {
     var bindings = m.bindings;
@@ -159,7 +156,6 @@ function detectBinding(obj, key, value, m) {
   }
 }
 
-/** @private */
 function connectBindings(obj, m) {
   // TODO Mixin.apply(instance) should disconnect binding if exists
   var bindings = m.bindings, key, binding, to;
@@ -188,7 +184,6 @@ function finishPartial(obj, m) {
   return obj;
 }
 
-/** @private */
 function applyMixin(obj, mixins, partial) {
   var descs = {}, values = {}, m = Ember.meta(obj), req = m.required,
       key, value, desc, prevValue, paths, len, idx;
@@ -293,6 +288,13 @@ function applyMixin(obj, mixins, partial) {
   return obj;
 }
 
+/**
+  @method mixin
+  @for Ember
+  @param obj
+  @param mixins*
+  @return obj
+*/
 Ember.mixin = function(obj) {
   var args = a_slice.call(arguments, 1);
   applyMixin(obj, args, false);
@@ -300,8 +302,6 @@ Ember.mixin = function(obj) {
 };
 
 /**
-  @class
-
   The `Ember.Mixin` class allows you to create mixins, whose properties can be
   added to other classes. For instance,
 
@@ -324,13 +324,14 @@ Ember.mixin = function(obj) {
 
   Note that Mixins are created with `Ember.Mixin.create`, not
   `Ember.Mixin.extend`.
+
+  @class Mixin
+  @namespace Ember
 */
 Ember.Mixin = function() { return initMixin(this, arguments); };
 
-/** @private */
 Mixin = Ember.Mixin;
 
-/** @private */
 Mixin._apply = applyMixin;
 
 Mixin.applyPartial = function(obj) {
@@ -340,6 +341,11 @@ Mixin.applyPartial = function(obj) {
 
 Mixin.finishPartial = finishPartial;
 
+/**
+  @method create
+  @static
+  @param arguments*
+*/
 Mixin.create = function() {
   classToString.processed = false;
   var M = this;
@@ -348,6 +354,10 @@ Mixin.create = function() {
 
 var MixinPrototype = Mixin.prototype;
 
+/**
+  @method reopen
+  @param arguments*
+*/
 MixinPrototype.reopen = function() {
   var mixin, tmp;
 
@@ -378,6 +388,11 @@ MixinPrototype.reopen = function() {
   return this;
 };
 
+/**
+  @method apply
+  @param obj
+  @return applied object
+*/
 MixinPrototype.apply = function(obj) {
   return applyMixin(obj, [this], false);
 };
@@ -386,7 +401,6 @@ MixinPrototype.applyPartial = function(obj) {
   return applyMixin(obj, [this], true);
 };
 
-/** @private */
 function _detect(curMixin, targetMixin, seen) {
   var guid = guidFor(curMixin);
 
@@ -401,6 +415,11 @@ function _detect(curMixin, targetMixin, seen) {
   return false;
 }
 
+/**
+  @method detect
+  @param obj
+  @return {Boolean}
+*/
 MixinPrototype.detect = function(obj) {
   if (!obj) { return false; }
   if (obj instanceof Mixin) { return _detect(obj, this, {}); }
@@ -417,7 +436,6 @@ MixinPrototype.without = function() {
   return ret;
 };
 
-/** @private */
 function _keys(ret, mixin, seen) {
   if (seen[guidFor(mixin)]) { return; }
   seen[guidFor(mixin)] = true;
@@ -441,12 +459,11 @@ MixinPrototype.keys = function() {
   return ret;
 };
 
-/** @private - make Mixin's have nice displayNames */
+/* make Mixins have nice displayNames */
 
 var NAME_KEY = Ember.GUID_KEY+'_name';
 var get = Ember.get;
 
-/** @private */
 function processNames(paths, root, seen) {
   var idx = paths.length;
   for(var key in root) {
@@ -465,7 +482,6 @@ function processNames(paths, root, seen) {
   paths.length = idx; // cut out last item
 }
 
-/** @private */
 function findNamespaces() {
   var Namespace = Ember.Namespace, obj, isNamespace;
 
@@ -494,9 +510,13 @@ function findNamespaces() {
   }
 }
 
+/**
+  @private
+  @method identifyNamespaces
+  @for Ember
+*/
 Ember.identifyNamespaces = findNamespaces;
 
-/** @private */
 superClassString = function(mixin) {
   var superclass = mixin.superclass;
   if (superclass) {
@@ -507,7 +527,6 @@ superClassString = function(mixin) {
   }
 };
 
-/** @private */
 classToString = function() {
   var Namespace = Ember.Namespace, namespace;
 
@@ -562,11 +581,16 @@ Mixin.mixins = function(obj) {
 REQUIRED = new Ember.Descriptor();
 REQUIRED.toString = function() { return '(Required Property)'; };
 
+/**
+  Denotes a required property for a mixin
+
+  @method required
+  @for Ember
+*/
 Ember.required = function() {
   return REQUIRED;
 };
 
-/** @private */
 Alias = function(methodName) {
   this.methodName = methodName;
 };
@@ -587,8 +611,10 @@ Alias.prototype = new Ember.Descriptor();
       paintSample.get('colour'); //=> 'red'
       paintSample.moniker(); //=> 'Zed'
 
+  @method alias
+  @for Ember
   @param {String} methodName name of the method or property to alias
-  @returns {Ember.Descriptor}
+  @return {Ember.Descriptor}
 */
 Ember.alias = function(methodName) {
   return new Alias(methodName);
@@ -598,6 +624,13 @@ Ember.alias = function(methodName) {
 // OBSERVER HELPER
 //
 
+/**
+  @method observer
+  @for Ember
+  @param {Function} func
+  @param {String} propertyNames*
+  @return func
+*/
 Ember.observer = function(func) {
   var paths = a_slice.call(arguments, 1);
   func.__ember_observes__ = paths;
@@ -606,6 +639,13 @@ Ember.observer = function(func) {
 
 // If observers ever become asynchronous, Ember.immediateObserver
 // must remain synchronous.
+/**
+  @method immediateObserver
+  @for Ember
+  @param {Function} func
+  @param {String} propertyNames*
+  @return func
+*/
 Ember.immediateObserver = function() {
   for (var i=0, l=arguments.length; i<l; i++) {
     var arg = arguments[i];
@@ -615,6 +655,13 @@ Ember.immediateObserver = function() {
   return Ember.observer.apply(this, arguments);
 };
 
+/**
+  @method beforeObserver
+  @for Ember
+  @param {Function} func
+  @param {String} propertyNames*
+  @return func
+*/
 Ember.beforeObserver = function(func) {
   var paths = a_slice.call(arguments, 1);
   func.__ember_observesBefore__ = paths;
