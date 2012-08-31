@@ -219,24 +219,69 @@ test("injections can be registered in a specified order", function() {
 
   var oldInjections = Ember.Application.injections;
   var firstInjectionCalled = 0,
-      secondInjectionCalled = 0;
+      secondInjectionCalled = 0,
+      thirdInjectionCalled = 0,
+      fourthInjectionCalled = 0,
+      fifthInjectionCalled = 0;
 
   Ember.Application.injections = Ember.A();
   Ember.Application.registerInjection({
-    name: 'second',
+    name: 'fourth',
+    after: 'third',
     injection: function() {
-      ok(firstInjectionCalled > 0, 'first injection should be called first');
+      ok(firstInjectionCalled > 1, "fourth: first injection should have been called");
+      ok(secondInjectionCalled > 1, "fourth: second injection should have been called");
+      ok(thirdInjectionCalled > 1, "fourth: third injection should have been called");
+      ok(fifthInjectionCalled === 0, "fourth: fifth injection should not have been called yet");
+      fourthInjectionCalled++;
+    }
+  });
+
+  Ember.Application.registerInjection({
+    name: 'second',
+    before: 'third',
+    injection: function() {
+      ok(firstInjectionCalled > 1, "second: first injection should have been called");
+      ok(thirdInjectionCalled === 0, "second: third injection should not have been called yet");
+      ok(fourthInjectionCalled === 0, "second: fourth injection should not have been called yet");
+      ok(fifthInjectionCalled === 0, "second: fifth injection should not have been called yet yet");
       secondInjectionCalled++;
     }
   });
 
   Ember.Application.registerInjection({
-    name: 'first',
+    name: 'fifth',
+    after: 'fourth',
     injection: function() {
+      ok(firstInjectionCalled > 1, "fifth: first injection should have been called");
+      ok(secondInjectionCalled > 1, "fifth: second injection should have been called");
+      ok(thirdInjectionCalled > 1, "fifth: third injection should have been called");
+      ok(fourthInjectionCalled > 1, "fifth: fourth injection should have been called");
+      fifthInjectionCalled++;
+    }
+  });
+
+  Ember.Application.registerInjection({
+    name: 'first',
+    before: 'second',
+    injection: function() {
+      ok(secondInjectionCalled === 0, "first: second injection should not have been called yet");
+      ok(thirdInjectionCalled === 0, "first: third injection should not have been called yet");
+      ok(fourthInjectionCalled === 0, "first: fourth injection should not have been called yet");
+      ok(fifthInjectionCalled === 0, "first: fifth injection should not have been called yet yet");
       firstInjectionCalled++;
-      ok(secondInjectionCalled === 0, "second injection should not have been called yet");
-    },
-    before: 'second'
+    }
+  });
+
+  Ember.Application.registerInjection({
+    name: 'third',
+    injection: function() {
+      ok(firstInjectionCalled > 1, "third: first injection should have been called");
+      ok(secondInjectionCalled > 1, "third: second injection should have been called");
+      ok(fourthInjectionCalled === 0, "third: fourth injection should not have been called yet");
+      ok(fifthInjectionCalled === 0, "third: fifth injection should not have been called yet yet");
+      thirdInjectionCalled++;
+    }
   });
 
   var router;
@@ -244,11 +289,53 @@ test("injections can be registered in a specified order", function() {
     app = Ember.Application.create({
       rootElement: '#qunit-fixture'
     });
-    expect(get(Ember.keys(app), 'length') * 2);
+    expect(get(Ember.keys(app), 'length') * 25);
     router = Ember.Object.create();
 
     app.initialize(router);
   });
+
+  Ember.run(function() {
+    router.destroy();
+  });
+
+  Ember.Application.injections = oldInjections;
+});
+
+test("injections are passed properties created from previous injections", function() {
+
+  var oldInjections = Ember.Application.injections;
+  var secondInjectionWasPassedProperty = false;
+
+  Ember.Application.injections = Ember.A();
+  Ember.Application.registerInjection({
+    name: 'first',
+    injection: function(app, router, property) {
+      app.set('foo', true);
+    }
+  });
+
+  Ember.Application.registerInjection({
+    name: 'second',
+    after: 'first',
+    injection: function(app, router, property) {
+      if (property === 'foo') {
+        secondInjectionWasPassedProperty = true;
+      }
+    }
+  });
+
+  var router;
+  Ember.run(function() {
+    app = Ember.Application.create({
+      rootElement: '#qunit-fixture'
+    });
+    router = Ember.Object.create();
+
+    app.initialize(router);
+  });
+
+  ok(secondInjectionWasPassedProperty, "second injections wasn't passed the property created in the first");
 
   Ember.run(function() {
     router.destroy();
