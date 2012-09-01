@@ -7,6 +7,11 @@
 
 require('ember-views/views/view');
 
+/**
+@module ember
+@submodule ember-views
+*/
+
 var get = Ember.get, set = Ember.set;
 
 Ember.View.states = {

@@ -5,6 +5,11 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
+/**
+@module ember
+@submodule ember-views
+*/
+
 // Add a new named queue for rendering views that happens
 // after bindings have synced.
 var queues = Ember.run.queues;

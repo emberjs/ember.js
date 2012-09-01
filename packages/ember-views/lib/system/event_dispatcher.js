@@ -5,14 +5,22 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
+/**
+@module ember
+@submodule ember-views
+*/
+
 var get = Ember.get, set = Ember.set, fmt = Ember.String.fmt;
 
 /**
-  @ignore
-
   Ember.EventDispatcher handles delegating browser events to their corresponding
   Ember.Views. For example, when you click on a view, Ember.EventDispatcher ensures
   that that view's `mouseDown` method gets called.
+
+  @class EventDispatcher
+  @namespace Ember
+  @private
+  @extends Ember.Object
 */
 Ember.EventDispatcher = Ember.Object.extend(
 /** @scope Ember.EventDispatcher.prototype */{
@@ -28,6 +36,7 @@ Ember.EventDispatcher = Ember.Object.extend(
     The default body is a string since this may be evaluated before document.body
     exists in the DOM.
 
+    @property rootElement
     @type DOMElement
     @default 'body'
   */
@@ -42,6 +51,9 @@ Ember.EventDispatcher = Ember.Object.extend(
     default, it will set up all of the listeners on the document body. If you
     would like to register the listeners on a different element, set the event
     dispatcher's `root` property.
+
+    @method setup
+    @param addedEvents {Hash}
   */
   setup: function(addedEvents) {
     var event, events = {
@@ -109,6 +121,8 @@ Ember.EventDispatcher = Ember.Object.extend(
 
         setupHandler('mousedown', 'mouseDown');
 
+    @method setupHandler
+    @param {Element} rootElement
     @param {String} event the browser-originated event to listen to
     @param {String} eventName the name of the method to call on the view
   */
@@ -147,7 +161,6 @@ Ember.EventDispatcher = Ember.Object.extend(
     });
   },
 
-  /** @private */
   _findNearestEventManager: function(view, eventName) {
     var manager = null;
 
@@ -161,7 +174,6 @@ Ember.EventDispatcher = Ember.Object.extend(
     return manager;
   },
 
-  /** @private */
   _dispatchEvent: function(object, evt, eventName, view) {
     var result = true;
 
@@ -178,14 +190,12 @@ Ember.EventDispatcher = Ember.Object.extend(
     return result;
   },
 
-  /** @private */
   _bubbleEvent: function(view, evt, eventName) {
     return Ember.run(function() {
       return view.handleEvent(eventName, evt);
     });
   },
 
-  /** @private */
   destroy: function() {
     var rootElement = get(this, 'rootElement');
     Ember.$(rootElement).undelegate('.ember').removeClass('ember-application');

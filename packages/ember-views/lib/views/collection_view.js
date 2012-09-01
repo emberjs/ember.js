@@ -8,11 +8,14 @@
 require('ember-views/views/container_view');
 require('ember-runtime/system/string');
 
+/**
+@module ember
+@submodule ember-views
+*/
+
 var get = Ember.get, set = Ember.set, fmt = Ember.String.fmt;
 
 /**
-  @class
-
   `Ember.CollectionView` is an `Ember.View` descendent responsible for managing a
   collection (an array or array-like object) by maintaing a child view object and 
   associated DOM representation for each item in the array and ensuring that child
@@ -120,8 +123,10 @@ var get = Ember.get, set = Ember.set, fmt = Ember.String.fmt;
   Ember.Handlebars provides a helper specifically for adding `CollectionView`s to templates.
   See `Ember.Handlebars.collection` for more details
 
-  @since Ember 0.9
+  @class CollectionView
+  @namespace Ember
   @extends Ember.ContainerView
+  @since Ember 0.9
 */
 Ember.CollectionView = Ember.ContainerView.extend(
 /** @scope Ember.CollectionView.prototype */ {
@@ -129,6 +134,7 @@ Ember.CollectionView = Ember.ContainerView.extend(
   /**
     A list of items to be displayed by the Ember.CollectionView.
 
+    @property content
     @type Ember.Array
     @default null
   */
@@ -140,24 +146,27 @@ Ember.CollectionView = Ember.ContainerView.extend(
     This provides metadata about what kind of empty view class this
     collection would like if it is being instantiated from another
     system (like Handlebars)
+
+    @property emptyViewClass
   */
   emptyViewClass: Ember.View,
 
   /**
     An optional view to display if content is set to an empty array.
 
+    @property emptyView
     @type Ember.View
     @default null
   */
   emptyView: null,
 
   /**
+    @property itemViewClass
     @type Ember.View
     @default Ember.View
   */
   itemViewClass: Ember.View,
 
-  /** @private */
   init: function() {
     var ret = this._super();
     this._contentDidChange();
@@ -179,6 +188,8 @@ Ember.CollectionView = Ember.ContainerView.extend(
     update the children directly. This is always scheduled
     asynchronously, to allow the element to be created before
     bindings have synchronized and vice versa.
+
+    @method _contentDidChange
   */
   _contentDidChange: Ember.observer(function() {
     var content = get(this, 'content');
@@ -235,14 +246,10 @@ Ember.CollectionView = Ember.ContainerView.extend(
 
     This array observer is added in contentDidChange.
 
-    @param {Array} addedObjects
-      the objects that were added to the content
-
-    @param {Array} removedObjects
-      the objects that were removed from the content
-
-    @param {Number} changeIndex
-      the index at which the changes occurred
+    @method arrayDidChange
+    @param {Array} addedObjects the objects that were added to the content
+    @param {Array} removedObjects the objects that were removed from the content
+    @param {Number} changeIndex the index at which the changes occurred
   */
   arrayDidChange: function(content, start, removed, added) {
     var itemViewClass = get(this, 'itemViewClass'),
@@ -291,14 +298,14 @@ Ember.CollectionView = Ember.ContainerView.extend(
 });
 
 /**
-  @static
-
   A map of parent tags to their default child tags. You can add
   additional parent tags if you want collection views that use
   a particular parent tag to default to a child tag.
 
+  @property CONTAINER_MAP
   @type Hash
-  @constant
+  @static
+  @final
 */
 Ember.CollectionView.CONTAINER_MAP = {
   ul: 'li',

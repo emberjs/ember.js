@@ -7,6 +7,11 @@
 
 require('ember-views/views/states/default');
 
+/**
+@module ember
+@submodule ember-views
+*/
+
 var destroyedError = "You can't call %@ on a destroyed view", fmt = Ember.String.fmt;
 
 Ember.View.states.destroyed = {

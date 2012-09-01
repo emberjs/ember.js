@@ -7,6 +7,11 @@
 
 require('ember-views/views/states/default');
 
+/**
+@module ember
+@submodule ember-views
+*/
+
 Ember.View.states.preRender = {
   parentState: Ember.View.states._default,
 

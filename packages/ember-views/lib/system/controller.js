@@ -1,7 +1,20 @@
+/**
+@module ember
+@submodule ember-views
+*/
+
 var get = Ember.get, set = Ember.set;
 
-// @class declaration and documentation in runtime/lib/controllers/controller.js
-Ember.ControllerMixin.reopen(/** @scope Ember.ControllerMixin.prototype */ {
+// Original class declaration and documentation in runtime/lib/controllers/controller.js
+// NOTE: It may be possible with YUIDoc to combine docs in two locations
+
+/**
+Additional methods for the ControllerMixin
+
+@class ControllerMixin
+@namespace Ember
+*/
+Ember.ControllerMixin.reopen({
 
   target: null,
   controllers: null,
@@ -66,6 +79,8 @@ Ember.ControllerMixin.reopen(/** @scope Ember.ControllerMixin.prototype */ {
 
         applicationController.connectOutlet('master', 'posts', App.Post.find());
 
+
+    @method connectOutlet
     @param {String} outletName a name for the outlet to set
     @param {String} name a view/controller pair name
     @param {Object} context a context object to assign to the
@@ -151,6 +166,7 @@ Ember.ControllerMixin.reopen(/** @scope Ember.ControllerMixin.prototype */ {
 
         overviewController.connectControllers('person', 'post');
 
+    @method connectControllers
     @param {String...} controllerNames the controllers to make available
   */
   connectControllers: function() {
@@ -167,6 +183,7 @@ Ember.ControllerMixin.reopen(/** @scope Ember.ControllerMixin.prototype */ {
   /**
     `disconnectOutlet` removes previously attached view from given outlet.
 
+    @method disconnectOutlet
     @param  {String} outletName the outlet name. (optional)
    */
   disconnectOutlet: function(outletName) {
@@ -179,6 +196,10 @@ Ember.ControllerMixin.reopen(/** @scope Ember.ControllerMixin.prototype */ {
     `createOutletView` is a hook you may want to override if you need to do
     something special with the view created for the outlet. For example
     you may want to implement views sharing across outlets.
+
+    @method createOutletView
+    @param outletName {String}
+    @param viewClass {Ember.View}
   */
   createOutletView: function(outletName, viewClass) {
     return viewClass.create();

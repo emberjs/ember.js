@@ -5,6 +5,11 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
+/**
+@module ember
+@submodule ember-views
+*/
+
 // http://www.whatwg.org/specs/web-apps/current-work/multipage/dnd.html#dndevents
 var dragEvents = Ember.String.w('dragstart drag dragenter dragleave dragover drop dragend');
 

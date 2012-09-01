@@ -6,6 +6,12 @@
 // ==========================================================================
 
 require('ember-views/views/view');
+
+/**
+@module ember
+@submodule ember-views
+*/
+
 var get = Ember.get, set = Ember.set, meta = Ember.meta;
 var forEach = Ember.EnumerableUtils.forEach;
 
@@ -14,8 +20,6 @@ var childViewsProperty = Ember.computed(function() {
 }).property('_childViews').cacheable();
 
 /**
-  @class
-
   A `ContainerView` is an `Ember.View` subclass that allows for manual or programatic
   management of a view's `childViews` array that will correctly update the `ContainerView`
   instance's rendered DOM representation.
@@ -203,6 +207,8 @@ var childViewsProperty = Ember.computed(function() {
       // Handlebars template
       {{view Ember.ContainerView currentViewBinding="App.appController.view"}}
 
+  @class ContainerView
+  @namespace Ember
   @extends Ember.View
 */
 
@@ -246,10 +252,12 @@ Ember.ContainerView = Ember.View.extend({
   },
 
   /**
+    @private
+
     Instructs each child view to render to the passed render buffer.
 
+    @method render
     @param {Ember.RenderBuffer} buffer the buffer to render to
-    @private
   */
   render: function(buffer) {
     this.forEachChildView(function(view) {
@@ -258,10 +266,12 @@ Ember.ContainerView = Ember.View.extend({
   },
 
   /**
+    @private
+
     When the container view is destroyed, tear down the child views
     array observer.
 
-    @private
+    @method willDestroy
   */
   willDestroy: function() {
     get(this, 'childViews').removeArrayObserver(this, {
@@ -273,13 +283,15 @@ Ember.ContainerView = Ember.View.extend({
   },
 
   /**
+    @private
+
     When a child view is removed, destroy its element so that
     it is removed from the DOM.
 
     The array observer that triggers this action is set up in the
     `renderToBuffer` method.
 
-    @private
+    @method childViewsWillChange
     @param {Ember.Array} views the child views array before mutation
     @param {Number} start the start position of the mutation
     @param {Number} removed the number of child views removed
@@ -294,6 +306,8 @@ Ember.ContainerView = Ember.View.extend({
   },
 
   /**
+    @private
+
     When a child view is added, make sure the DOM gets updated appropriately.
 
     If the view has already rendered an element, we tell the child view to
@@ -302,7 +316,7 @@ Ember.ContainerView = Ember.View.extend({
     element, we insert the string representation of the child into the appropriate
     place in the buffer.
 
-    @private
+    @method childViewsDidChange
     @param {Ember.Array} views the array of child views afte the mutation has occurred
     @param {Number} start the start position of the mutation
     @param {Number} removed the number of child views removed

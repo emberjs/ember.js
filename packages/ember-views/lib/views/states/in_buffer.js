@@ -7,6 +7,11 @@
 
 require('ember-views/views/states/default');
 
+/**
+@module ember
+@submodule ember-views
+*/
+
 var get = Ember.get, set = Ember.set, meta = Ember.meta;
 
 Ember.View.states.inBuffer = {
