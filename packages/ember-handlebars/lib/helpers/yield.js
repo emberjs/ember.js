@@ -1,3 +1,8 @@
+/**
+@module ember
+@submodule ember-handlebars
+*/
+
 var get = Ember.get, set = Ember.set;
 
 /**
@@ -41,9 +46,10 @@ var get = Ember.get, set = Ember.set;
       // throws
       // Uncaught Error: assertion failed: You called yield in a template that was not a layout
 
-  @name Handlebars.helpers.yield
+  @method yield
+  @for Ember.Handlebars.helpers
   @param {Hash} options
-  @returns {String} HTML string
+  @return {String} HTML string
 */
 Ember.Handlebars.registerHelper('yield', function(options) {
   var view = options.data.view, template;

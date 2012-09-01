@@ -8,11 +8,14 @@ require("ember-handlebars/ext");
 require("ember-views/views/view");
 require("ember-handlebars/controls/text_support");
 
+/**
+@module ember
+@submodule ember-handlebars
+*/
+
 var get = Ember.get, set = Ember.set;
 
 /**
-  @class
-
   The `Ember.TextArea` view class renders a
   [textarea](https://developer.mozilla.org/en/HTML/Element/textarea) element.
   It allows for binding Ember properties to the text area contents (`value`),
@@ -23,12 +26,12 @@ var get = Ember.get, set = Ember.set;
   Because HTML `textarea` elements do not contain inner HTML the `layout` and `layoutName` 
   properties will not be applied. See `Ember.View`'s layout section for more information.
 
+  @class TextArea
+  @namespace Ember
   @extends Ember.View
-  @extends Ember.TextSupport
+  @uses Ember.TextSupport
 */
-Ember.TextArea = Ember.View.extend(Ember.TextSupport,
-/** @scope Ember.TextArea.prototype */ {
-
+Ember.TextArea = Ember.View.extend(Ember.TextSupport, {
   classNames: ['ember-text-area'],
 
   tagName: "textarea",
@@ -45,7 +48,6 @@ Ember.TextArea = Ember.View.extend(Ember.TextSupport,
     }
   }, 'value'),
 
-  /** @private */
   init: function() {
     this._super();
     this.on("didInsertElement", this, this._updateElementValue);

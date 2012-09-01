@@ -8,6 +8,11 @@
 
 require('ember-handlebars/ext');
 
+/**
+@module ember
+@submodule ember-handlebars
+*/
+
 var getPath = Ember.Handlebars.getPath, normalizePath = Ember.Handlebars.normalizePath;
 
 /**
@@ -16,7 +21,8 @@ var getPath = Ember.Handlebars.getPath, normalizePath = Ember.Handlebars.normali
 
       {{log myVariable}}
 
-  @name Handlebars.helpers.log
+  @method log
+  @for Ember.Handlebars.helpers
   @param {String} property
 */
 Ember.Handlebars.registerHelper('log', function(property, options) {
@@ -34,7 +40,8 @@ Ember.Handlebars.registerHelper('log', function(property, options) {
 
       {{debugger}}
 
-  @name Handlebars.helpers.debugger
+  @method debugger
+  @for Ember.Handlebars.helpers
   @param {String} property
 */
 Ember.Handlebars.registerHelper('debugger', function() {

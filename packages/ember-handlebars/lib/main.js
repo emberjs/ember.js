@@ -12,3 +12,11 @@ require("ember-handlebars/helpers");
 require("ember-handlebars/views");
 require("ember-handlebars/controls");
 require("ember-handlebars/loader");
+
+/**
+Ember Handlebars
+
+@module ember
+@submodule ember-handlebars
+@requires ember-views
+*/

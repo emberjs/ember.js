@@ -1,11 +1,14 @@
 /*jshint eqeqeq:false */
 
+/**
+@module ember
+@submodule ember-handlebars
+*/
+
 var set = Ember.set, get = Ember.get;
 var indexOf = Ember.EnumerableUtils.indexOf, indexesOf = Ember.EnumerableUtils.indexesOf;
 
 /**
-  @class
-
   The Ember.Select view class renders a
   [select](https://developer.mozilla.org/en/HTML/Element/select) HTML element,
   allowing the user to choose from a list of options. 
@@ -208,6 +211,8 @@ var indexOf = Ember.EnumerableUtils.indexOf, indexesOf = Ember.EnumerableUtils.i
         <option value="Tom">Tom</option>
       </select>
 
+  @class Select
+  @namespace Ember
   @extends Ember.View
 */
 Ember.Select = Ember.View.extend(
@@ -222,6 +227,7 @@ Ember.Select = Ember.View.extend(
     The `multiple` attribute of the select element. Indicates whether multiple
     options can be selected.
 
+    @property multiple
     @type Boolean
     @default false
   */
@@ -242,6 +248,7 @@ Ember.Select = Ember.View.extend(
         optionLabelPath: 'content.firstName',
         optionValuePath: 'content.id'
 
+    @property content
     @type Array
     @default null
   */
@@ -253,6 +260,7 @@ Ember.Select = Ember.View.extend(
 
     When `multiple` is true, an array of such elements.
 
+    @property selection
     @type Object or Array
     @default null
   */
@@ -264,6 +272,7 @@ Ember.Select = Ember.View.extend(
 
     It is not currently supported in multiple selection mode.
 
+    @property value
     @type String
     @default null
   */
@@ -278,6 +287,7 @@ Ember.Select = Ember.View.extend(
     If given, a top-most dummy option will be rendered to serve as a user
     prompt.
 
+    @property prompt
     @type String
     @default null
   */
@@ -286,6 +296,7 @@ Ember.Select = Ember.View.extend(
   /**
     The path of the option labels. See `content`.
 
+    @property optionLabelPath
     @type String
     @default 'content'
   */
@@ -294,6 +305,7 @@ Ember.Select = Ember.View.extend(
   /**
     The path of the option values. See `content`.
 
+    @property optionValuePath
     @type String
     @default 'content'
   */

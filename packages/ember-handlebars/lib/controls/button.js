@@ -6,8 +6,20 @@
 
 require('ember-runtime/mixins/target_action_support');
 
+/**
+@module ember
+@submodule ember-handlebars
+*/
+
 var get = Ember.get, set = Ember.set;
 
+/**
+  @class Button
+  @namespace Ember
+  @extends Ember.View
+  @uses Ember.TargetActionSupport
+  @deprecated
+*/
 Ember.Button = Ember.View.extend(Ember.TargetActionSupport, {
   classNames: ['ember-button'],
   classNameBindings: ['isActive'],
@@ -18,9 +30,13 @@ Ember.Button = Ember.View.extend(Ember.TargetActionSupport, {
 
   attributeBindings: ['type', 'disabled', 'href', 'tabindex'],
 
-  /** @private
+  /**
+    @private
+
     Overrides TargetActionSupport's targetObject computed
     property to use Handlebars-specific path resolution.
+
+    @property targetObject
   */
   targetObject: Ember.computed(function() {
     var target = get(this, 'target'),

@@ -2,6 +2,11 @@ require("ember-handlebars/ext");
 require("ember-views/views/collection_view");
 require("ember-handlebars/views/metamorph_view");
 
+/**
+@module ember
+@submodule ember-handlebars
+*/
+
 var get = Ember.get, set = Ember.set;
 
 Ember.Handlebars.EachView = Ember.CollectionView.extend(Ember._Metamorph, {
@@ -35,31 +40,31 @@ Ember.Handlebars.EachView = Ember.CollectionView.extend(Ember._Metamorph, {
 });
 
 /**
-  
   The `{{#each}}` helper loops over elements in a collection, rendering its block once for each item:
-  
+
         Developers = [{name: 'Yehuda'},{name: 'Tom'}, {name: 'Paul'}];
-        
+
         {{#each Developers}}
           {{name}}
         {{/each}}
-        
-  
+
+
   `{{each}}` supports an alternative syntax with element naming:
-        
+
         {{#each person in Developers}}
           {{person.name}}
         {{/each}}
-  
+
   When looping over objects that do not have properties, `{{this}}` can be used to render the object:
-        
+
         DeveloperNames = ['Yehuda', 'Tom', 'Paul']
-        
+
         {{#each DeveloperNames}}
           {{this}}
         {{/each}}
-    
+
   ### Blockless Use
+
   If you provide an `itemViewClass` option that has its own `template` you can omit
   the block in a similar way to how it can be done with the collection helper.
 
@@ -97,8 +102,12 @@ Ember.Handlebars.EachView = Ember.CollectionView.extend(Ember._Metamorph, {
         <div class="ember-view">Greetings Mary</div>
         <div class="ember-view">Greetings Sara</div>
       </div>
-  
-  @name Handlebars.helpers.each
+
+
+  @method each
+  @for Ember.Handlebars.helpers
+  @param [name] {String} name for item (used with `in`)
+  @param path {String} path
 */
 Ember.Handlebars.registerHelper('each', function(path, options) {
   if (arguments.length === 4) {

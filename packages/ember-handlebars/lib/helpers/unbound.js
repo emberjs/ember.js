@@ -7,6 +7,11 @@
 
 require('ember-handlebars/ext');
 
+/**
+@module ember
+@submodule ember-handlebars
+*/
+
 var getPath = Ember.Handlebars.getPath;
 
 /**
@@ -15,9 +20,10 @@ var getPath = Ember.Handlebars.getPath;
 
       <div>{{unbound somePropertyThatDoesntChange}}</div>
 
-  @name Handlebars.helpers.unbound
+  @method unbound
+  @for Ember.Handlebars.helpers
   @param {String} property
-  @returns {String} HTML string
+  @return {String} HTML string
 */
 Ember.Handlebars.registerHelper('unbound', function(property, fn) {
   var context = (fn.contexts && fn.contexts[0]) || this;

@@ -1,5 +1,10 @@
 require('ember-handlebars/helpers/view');
 
+/**
+@module ember
+@submodule ember-handlebars
+*/
+
 Ember.Handlebars.OutletView = Ember.ContainerView.extend(Ember._Metamorph);
 
 /**
@@ -25,7 +30,8 @@ Ember.Handlebars.OutletView = Ember.ContainerView.extend(Ember._Metamorph);
       controller.set('masterView', postsView);
       controller.set('detailView', postView);
 
-  @name Handlebars.helpers.outlet
+  @method outlet
+  @for Ember.Handlebars.helpers
   @param {String} property the property on the controller
     that holds the view for this outlet
 */

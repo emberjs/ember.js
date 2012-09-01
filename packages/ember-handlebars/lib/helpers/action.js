@@ -1,5 +1,10 @@
 require('ember-handlebars/ext');
 
+/**
+@module ember
+@submodule ember-handlebars
+*/
+
 var EmberHandlebars = Ember.Handlebars,
     getPath = EmberHandlebars.getPath,
     get = Ember.get,
@@ -210,7 +215,8 @@ ActionHelper.registerAction = function(actionName, options) {
         {{/each}}
       </script>
 
-  @name Handlebars.helpers.action
+  @method action
+  @for Ember.Handlebars.helpers
   @param {String} actionName
   @param {Object...} contexts
   @param {Hash} options

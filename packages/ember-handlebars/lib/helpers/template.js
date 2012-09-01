@@ -1,6 +1,11 @@
 require('ember-handlebars/ext');
 
 /**
+@module ember
+@submodule ember-handlebars
+*/
+
+/**
   `template` allows you to render a template from inside another template.
   This allows you to re-use the same template in multiple places. For example:
 
@@ -24,7 +29,8 @@ require('ember-handlebars/ext');
 
       Ember.TEMPLATES["my_cool_template"] = Ember.Handlebars.compile('<b>{{user}}</b>');
 
-  @name Handlebars.helpers.template
+  @method template
+  @for Ember.Handlebars.helpers
   @param {String} templateName the template to render
 */
 

@@ -8,12 +8,16 @@
 // TODO: Don't require the entire module
 require("ember-handlebars");
 
+/**
+@module ember
+@submodule ember-handlebars
+*/
+
 var get = Ember.get, set = Ember.set;
 var PARENT_VIEW_PATH = /^parentView\./;
 var EmberHandlebars = Ember.Handlebars;
 var VIEW_PRESERVES_CONTEXT = Ember.VIEW_PRESERVES_CONTEXT;
 
-/** @private */
 EmberHandlebars.ViewHelper = Ember.Object.create({
 
   propertiesFromHTMLOptions: function(options, thisContext) {
@@ -291,10 +295,11 @@ Will result in the following HTML:
       aView.appendTo('body')
       aView.get('aChildByName') // the instance of Ember.View created by {{view}} helper
 
-  @name Handlebars.helpers.view
+  @method view
+  @for Ember.Handlebars.helpers
   @param {String} path
   @param {Hash} options
-  @returns {String} HTML string
+  @return {String} HTML string
 */
 EmberHandlebars.registerHelper('view', function(path, options) {
   Ember.assert("The view helper only takes a single argument", arguments.length <= 2);
