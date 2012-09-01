@@ -100,7 +100,7 @@ Ember.ArrayProxy = Ember.Object.extend(Ember.MutableArray,
     @returns {void}
   */
   replaceContent: function(idx, amt, objects) {
-    get(this, 'arrangedContent').replace(idx, amt, objects);
+    get(this, 'content').replace(idx, amt, objects);
   },
 
   /**

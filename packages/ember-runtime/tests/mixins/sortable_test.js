@@ -117,6 +117,20 @@ test("you can add objects in sorted order", function() {
   equal(sortedArrayController.objectAt(3).name, 'Scumbag Fucs', 'a new object added to controller was inserted according to given constraint');
 });
 
+test("you can push objects in sorted order", function() {
+  equal(sortedArrayController.get('length'), 3, 'array has 3 items');
+
+  unsortedArray.pushObject({id: 4, name: 'Scumbag Chavard'});
+
+  equal(sortedArrayController.get('length'), 4, 'array has 4 items');
+  equal(sortedArrayController.objectAt(1).name, 'Scumbag Chavard', 'a new object added to content was inserted according to given constraint');
+
+  sortedArrayController.pushObject({id: 5, name: 'Scumbag Fucs'});
+
+  equal(sortedArrayController.get('length'), 5, 'array has 5 items');
+  equal(sortedArrayController.objectAt(3).name, 'Scumbag Fucs', 'a new object added to controller was inserted according to given constraint');
+});
+
 test("you can unshift objects in sorted order", function() {
   equal(sortedArrayController.get('length'), 3, 'array has 3 items');
 
@@ -129,6 +143,19 @@ test("you can unshift objects in sorted order", function() {
 
   equal(sortedArrayController.get('length'), 5, 'array has 5 items');
   equal(sortedArrayController.objectAt(3).name, 'Scumbag Fucs', 'a new object added to controller was inserted according to given constraint');
+});
+
+test("addObject does not insert duplicates", function() {
+  var sortedArrayProxy, obj = {};
+  sortedArrayProxy = Ember.ArrayProxy.create(Ember.SortableMixin, {
+    content: Ember.A([obj])
+  });
+
+  equal(sortedArrayProxy.get('length'), 1, 'array has 1 item');
+
+  sortedArrayProxy.addObject(obj);
+
+  equal(sortedArrayProxy.get('length'), 1, 'array still has 1 item');
 });
 
 test("you can change a sort property and the content will rearrenge", function() {
