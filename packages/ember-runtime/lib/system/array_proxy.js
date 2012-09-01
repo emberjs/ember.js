@@ -82,28 +82,6 @@ Ember.ArrayProxy = Ember.Object.extend(Ember.MutableArray,
   },
 
   /**
-    Should actually replace the specified objects on the content array.
-    You can override this method in subclasses to transform the content item
-    into something new.
-
-    This method will only be called if content is non-null.
-
-    @param {Number} idx
-      The starting index
-
-    @param {Number} amt
-      The number of items to remove from the content.
-
-    @param {Array} objects
-      Optional array of objects to insert or null if no objects.
-
-    @returns {void}
-  */
-  replaceContent: function(idx, amt, objects) {
-    get(this, 'arrangedContent').replace(idx, amt, objects);
-  },
-
-  /**
     Invoked when the content property is about to change. Notifies observers that the
     entire array content will change.
   */
@@ -209,7 +187,8 @@ Ember.ArrayProxy = Ember.Object.extend(Ember.MutableArray,
 
   /** @private (nodoc) */
   replace: function(idx, amt, objects) {
-    if (get(this, 'content')) this.replaceContent(idx, amt, objects);
+    var content = get(this, 'content');
+    if (content) content.replace(idx, amt, objects);
     return this;
   },
 
