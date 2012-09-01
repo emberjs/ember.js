@@ -5,11 +5,14 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
+/**
+@module ember
+@submodule ember-application
+*/
+
 var get = Ember.get, set = Ember.set;
 
 /**
-  @class
-
   An instance of `Ember.Application` is the starting point for every Ember.js
   application. It helps to instantiate, initialize and coordinate the many
   objects that make up your app.
@@ -184,6 +187,8 @@ var get = Ember.get, set = Ember.set;
   App.ApplicationController = Ember.Controller.extend();
   ```
 
+  @class Application
+  @namespace Ember
   @extends Ember.Namespace
 */
 Ember.Application = Ember.Namespace.extend(
@@ -198,6 +203,7 @@ Ember.Application = Ember.Namespace.extend(
     `eventDispatcher`, which sets up the listeners for event delegation. Every
     view in your application should be a child of the element you specify here.
 
+    @property rootElement
     @type DOMElement
     @default 'body'
   */
@@ -213,6 +219,7 @@ Ember.Application = Ember.Namespace.extend(
 
     See the documentation for `Ember.EventDispatcher` for more information.
 
+    @property eventDispatcher
     @type Ember.EventDispatcher
     @default null
   */
@@ -239,12 +246,12 @@ Ember.Application = Ember.Namespace.extend(
           }
         });
 
+    @property customEvents
     @type Object
     @default null
   */
   customEvents: null,
 
-  /** @private */
   init: function() {
     if (!this.$) { this.$ = Ember.$; }
 
@@ -306,6 +313,9 @@ Ember.Application = Ember.Namespace.extend(
         router.get('commentsController')  // <App.CommentsController:ember1235>
 
         router.get('postsController.router') // router
+
+    @method initialize
+    @param router {Ember.Router}
   */
   initialize: function(router) {
     var injections = get(this.constructor, 'injections'),
@@ -350,7 +360,6 @@ Ember.Application = Ember.Namespace.extend(
     return this;
   },
 
-  /** @private */
   didBecomeReady: function() {
     var eventDispatcher = get(this, 'eventDispatcher'),
         customEvents    = get(this, 'customEvents'),
@@ -372,6 +381,9 @@ Ember.Application = Ember.Namespace.extend(
 
     If the application has a router, use it to route to the current URL, and
     trigger a new call to `route` whenever the URL changes.
+
+    @method startRouting
+    @property router {Ember.Router}
   */
   startRouting: function(router) {
     var location = get(router, 'location'),
@@ -396,10 +408,11 @@ Ember.Application = Ember.Namespace.extend(
   /**
     Called when the Application has become ready.
     The call will be delayed until the DOM has become ready.
+
+    @event ready
   */
   ready: Ember.K,
 
-  /** @private */
   willDestroy: function() {
     get(this, 'eventDispatcher').destroy();
     if (this._createdRouter)          { this._createdRouter.destroy(); }
