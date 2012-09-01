@@ -2,6 +2,11 @@ require('ember-routing/route_matcher');
 require('ember-routing/routable');
 require('ember-routing/location');
 
+/**
+@module ember
+@submodule ember-routing
+*/
+
 var get = Ember.get, set = Ember.set;
 
 var merge = function(original, hash) {
@@ -14,8 +19,6 @@ var merge = function(original, hash) {
 };
 
 /**
-  @class
-
   `Ember.Router` is the subclass of `Ember.StateManager` responsible for providing URL-based
   application state detection. The `Ember.Router` instance of an application detects the browser URL
   at application load time and attempts to match it to a specific application state. Additionally
@@ -403,13 +406,16 @@ var merge = function(original, hash) {
   controller injections, see `Ember.Application#initialize()`. For additional information about view context,
   see `Ember.View`.
 
+  @class Router
+  @namespace Ember
   @extends Ember.StateManager
 */
 Ember.Router = Ember.StateManager.extend(
 /** @scope Ember.Router.prototype */ {
 
   /**
-    @property {String}
+    @property initialState
+    @type String
     @default 'root'
   */
   initialState: 'root',
@@ -424,6 +430,7 @@ Ember.Router = Ember.StateManager.extend(
     * 'none': Does not read or set the browser URL, but still allows for
       routing to happen. Useful for testing.
 
+    @property location
     @type String
     @default 'hash'
   */
@@ -433,6 +440,7 @@ Ember.Router = Ember.StateManager.extend(
     This is only used when a history location is used so that applications that
     don't live at the root of the domain can append paths to their root.
 
+    @property rootURL
     @type String
     @default '/'
   */
@@ -442,7 +450,8 @@ Ember.Router = Ember.StateManager.extend(
   /**
     On router, transitionEvent should be called connectOutlets
 
-    @property {String}
+    @property transitionEvent
+    @type String
     @default 'connectOutlets'
   */
   transitionEvent: 'connectOutlets',
@@ -517,7 +526,6 @@ Ember.Router = Ember.StateManager.extend(
     return this.urlFor(targetStateName, hash);
   },
 
-  /** @private */
   serializeRecursively: function(state, contexts, hash) {
     var parentState,
         context = get(state, 'hasContext') ? contexts.pop() : null;
@@ -537,9 +545,6 @@ Ember.Router = Ember.StateManager.extend(
     }
   },
 
-  /**
-    @private
-  */
   handleStatePromises: function(states, complete) {
     this.abortRoutingPromises();
 
@@ -569,7 +574,6 @@ Ember.Router = Ember.StateManager.extend(
     }).start();
   },
 
-  /** @private */
   init: function() {
     this._super();
 
@@ -584,7 +588,6 @@ Ember.Router = Ember.StateManager.extend(
     }
   },
 
-  /** @private */
   willDestroy: function() {
     get(this, 'location').destroy();
   }
