@@ -1,5 +1,16 @@
 /*global __fail__*/
 
+/**
+Ember Debug
+
+@module ember
+@submodule ember-debug
+*/
+
+/**
+@class Ember
+*/
+
 if ('undefined' === typeof Ember) {
   Ember = {};
 
@@ -24,15 +35,12 @@ if (!('MANDATORY_SETTER' in Ember.ENV)) {
       // Fail unconditionally
       Ember.assert('This code path should never be run')
 
-  @static
-  @function
-  @param {String} desc
-    A description of the assertion.  This will become the text of the Error
-    thrown if the assertion fails.
+  @method assert
+  @param {String} desc A description of the assertion.  This will become
+    the text of the Error thrown if the assertion fails.
 
-  @param {Boolean} test
-    Must be truthy for the assertion to pass. If falsy, an exception will be
-    thrown.
+  @param {Boolean} test Must be truthy for the assertion to pass. If
+    falsy, an exception will be thrown.
 */
 Ember.assert = function(desc, test) {
   if (!test) throw new Error("assertion failed: "+desc);
@@ -43,13 +51,10 @@ Ember.assert = function(desc, test) {
   Display a warning with the provided message. Ember build tools will
   remove any calls to Ember.warn() when doing a production build.
 
-  @static
-  @function
-  @param {String} message
-    A warning to display.
-
-  @param {Boolean} test
-    An optional boolean. If falsy, the warning will be displayed.
+  @method warn
+  @param {String} message A warning to display.
+  @param {Boolean} test An optional boolean. If falsy, the warning
+    will be displayed.
 */
 Ember.warn = function(message, test) {
   if (!test) {
@@ -63,13 +68,10 @@ Ember.warn = function(message, test) {
   (Chrome and Firefox only). Ember build tools will remove any calls to
   Ember.deprecate() when doing a production build.
 
-  @static
-  @function
-  @param {String} message
-    A description of the deprecation.
-
-  @param {Boolean} test
-    An optional boolean. If falsy, the deprecation will be displayed.
+  @method deprecate
+  @param {String} message A description of the deprecation.
+  @param {Boolean} test An optional boolean. If falsy, the deprecation
+    will be displayed.
 */
 Ember.deprecate = function(message, test) {
   if (Ember && Ember.TESTING_DEPRECATION) { return; }
@@ -114,13 +116,9 @@ Ember.deprecate = function(message, test) {
   Ember build tools will not remove calls to Ember.deprecateFunc(), though
   no warnings will be shown in production.
 
-  @static
-  @function
-  @param {String} message
-    A description of the deprecation.
-
-  @param {Function} func
-    The function to be deprecated.
+  @method deprecateFunc
+  @param {String} message A description of the deprecation.
+  @param {Function} func The function to be deprecated.
 */
 Ember.deprecateFunc = function(message, func) {
   return function() {
