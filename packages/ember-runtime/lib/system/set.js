@@ -10,11 +10,14 @@ require('ember-runtime/mixins/mutable_enumerable');
 require('ember-runtime/mixins/copyable');
 require('ember-runtime/mixins/freezable');
 
+/**
+@module ember
+@submodule ember-runtime
+*/
+
 var get = Ember.get, set = Ember.set, guidFor = Ember.guidFor, none = Ember.none;
 
 /**
-  @class
-
   An unordered collection of objects.
 
   A Set works a bit like an array except that its items are not ordered.
@@ -102,11 +105,12 @@ var get = Ember.get, set = Ember.set, guidFor = Ember.guidFor, none = Ember.none
   code that can know with certainty when the underlying set data will or
   will not be modified.
 
-  @extends Ember.Enumerable
-  @extends Ember.MutableEnumerable
-  @extends Ember.Copyable
-  @extends Ember.Freezable
-
+  @class Set
+  @namespace Ember
+  @extends Ember.CoreObject
+  @uses Ember.MutableEnumerable
+  @uses Ember.Copyable
+  @uses Ember.Freezable
   @since Ember 0.9
 */
 Ember.Set = Ember.CoreObject.extend(Ember.MutableEnumerable, Ember.Copyable, Ember.Freezable,
@@ -119,6 +123,7 @@ Ember.Set = Ember.CoreObject.extend(Ember.MutableEnumerable, Ember.Copyable, Emb
   /**
     This property will change as the number of objects in the set changes.
 
+    @property length
     @type number
     @default 0
   */
@@ -133,7 +138,8 @@ Ember.Set = Ember.CoreObject.extend(Ember.MutableEnumerable, Ember.Copyable, Emb
         colors.clear();
         colors.length;  => 0
 
-    @returns {Ember.Set} An empty Set
+    @method clear
+    @return {Ember.Set} An empty Set
   */
   clear: function() {
     if (this.isFrozen) { throw new Error(Ember.FROZEN_ERROR); }
@@ -171,8 +177,9 @@ Ember.Set = Ember.CoreObject.extend(Ember.MutableEnumerable, Ember.Copyable, Emb
         same_colors.isEqual(colors); => true
         same_colors.isEqual(["purple", "brown"]); => false
 
+    @method isEqual
     @param {Ember.Set} obj the other object.
-    @returns {Boolean}
+    @return {Boolean}
   */
   isEqual: function(obj) {
     // fail fast
@@ -202,9 +209,9 @@ Ember.Set = Ember.CoreObject.extend(Ember.MutableEnumerable, Ember.Copyable, Emb
         colors.add(null);      => ["blue", "red"]
         colors.add(undefined); => ["blue", "red"]
 
-    @function
+    @method add
     @param {Object} obj The object to add.
-    @returns {Ember.Set} The set itself.
+    @return {Ember.Set} The set itself.
   */
   add: Ember.alias('addObject'),
 
@@ -218,9 +225,9 @@ Ember.Set = Ember.CoreObject.extend(Ember.MutableEnumerable, Ember.Copyable, Emb
         colors.remove("purple"); => ["blue", "green"]
         colors.remove(null);     => ["blue", "green"]
 
-    @function
+    @method remove
     @param {Object} obj The object to remove
-    @returns {Ember.Set} The set itself.
+    @return {Ember.Set} The set itself.
   */
   remove: Ember.alias('removeObject'),
 
@@ -232,7 +239,8 @@ Ember.Set = Ember.CoreObject.extend(Ember.MutableEnumerable, Ember.Copyable, Emb
         colors.pop(); => "green"
         colors.pop(); => null
 
-    @returns {Object} The removed object from the set or null.
+    @method pop
+    @return {Object} The removed object from the set or null.
   */
   pop: function() {
     if (get(this, 'isFrozen')) throw new Error(Ember.FROZEN_ERROR);
@@ -252,8 +260,8 @@ Ember.Set = Ember.CoreObject.extend(Ember.MutableEnumerable, Ember.Copyable, Emb
         colors.push("green"); => ["red", "green"]
         colors.push("blue");  => ["red", "green", "blue"]
 
-    @function
-    @returns {Ember.Set} The set itself.
+    @method push
+    @return {Ember.Set} The set itself.
   */
   push: Ember.alias('addObject'),
 
@@ -267,8 +275,8 @@ Ember.Set = Ember.CoreObject.extend(Ember.MutableEnumerable, Ember.Copyable, Emb
         colors.shift(); => "green"
         colors.shift(); => null
 
-    @function
-    @returns {Object} The removed object from the set or null.
+    @method shift
+    @return {Object} The removed object from the set or null.
   */
   shift: Ember.alias('pop'),
 
@@ -283,8 +291,8 @@ Ember.Set = Ember.CoreObject.extend(Ember.MutableEnumerable, Ember.Copyable, Emb
         colors.unshift("green"); => ["red", "green"]
         colors.unshift("blue");  => ["red", "green", "blue"]
 
-    @function
-    @returns {Ember.Set} The set itself.
+    @method unshift
+    @return {Ember.Set} The set itself.
   */
   unshift: Ember.alias('push'),
 
@@ -296,9 +304,9 @@ Ember.Set = Ember.CoreObject.extend(Ember.MutableEnumerable, Ember.Copyable, Emb
         var colors = new Ember.Set();
         colors.addEach(["red", "green", "blue"]); => ["red", "green", "blue"]
 
-    @function
+    @method addEach
     @param {Ember.Enumerable} objects the objects to add.
-    @returns {Ember.Set} The set itself.
+    @return {Ember.Set} The set itself.
   */
   addEach: Ember.alias('addObjects'),
 
@@ -310,9 +318,9 @@ Ember.Set = Ember.CoreObject.extend(Ember.MutableEnumerable, Ember.Copyable, Emb
         var colors = new Ember.Set(["red", "green", "blue"]);
         colors.removeEach(["red", "blue"]); => ["green"]
 
-    @function
+    @method removeEach
     @param {Ember.Enumerable} objects the objects to remove.
-    @returns {Ember.Set} The set itself.
+    @return {Ember.Set} The set itself.
   */
   removeEach: Ember.alias('removeObjects'),
 
@@ -320,28 +328,27 @@ Ember.Set = Ember.CoreObject.extend(Ember.MutableEnumerable, Ember.Copyable, Emb
   // PRIVATE ENUMERABLE SUPPORT
   //
 
-  /** @private */
   init: function(items) {
     this._super();
     if (items) this.addObjects(items);
   },
 
-  /** @private (nodoc) - implement Ember.Enumerable */
+  // implement Ember.Enumerable
   nextObject: function(idx) {
     return this[idx];
   },
 
-  /** @private - more optimized version */
+  // more optimized version
   firstObject: Ember.computed(function() {
     return this.length > 0 ? this[0] : undefined;
   }).property().cacheable(),
 
-  /** @private - more optimized version */
+  // more optimized version
   lastObject: Ember.computed(function() {
     return this.length > 0 ? this[this.length-1] : undefined;
   }).property().cacheable(),
 
-  /** @private (nodoc) - implements Ember.MutableEnumerable */
+  // implements Ember.MutableEnumerable
   addObject: function(obj) {
     if (get(this, 'isFrozen')) throw new Error(Ember.FROZEN_ERROR);
     if (none(obj)) return this; // nothing to do
@@ -369,7 +376,7 @@ Ember.Set = Ember.CoreObject.extend(Ember.MutableEnumerable, Ember.Copyable, Emb
     return this;
   },
 
-  /** @private (nodoc) - implements Ember.MutableEnumerable */
+  // implements Ember.MutableEnumerable
   removeObject: function(obj) {
     if (get(this, 'isFrozen')) throw new Error(Ember.FROZEN_ERROR);
     if (none(obj)) return this; // nothing to do
@@ -408,12 +415,11 @@ Ember.Set = Ember.CoreObject.extend(Ember.MutableEnumerable, Ember.Copyable, Emb
     return this;
   },
 
-  /** @private (nodoc) - optimized version */
+  // optimized version
   contains: function(obj) {
     return this[guidFor(obj)]>=0;
   },
 
-  /** @private (nodoc) */
   copy: function() {
     var C = this.constructor, ret = new C(), loc = get(this, 'length');
     set(ret, 'length', loc);
@@ -424,7 +430,6 @@ Ember.Set = Ember.CoreObject.extend(Ember.MutableEnumerable, Ember.Copyable, Emb
     return ret;
   },
 
-  /** @private */
   toString: function() {
     var len = this.length, idx, array = [];
     for(idx = 0; idx < len; idx++) {

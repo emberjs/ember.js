@@ -5,15 +5,15 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
-
-
+/**
+@module ember
+@submodule ember-runtime
+*/
 
 
 var get = Ember.get, set = Ember.set;
 
 /**
-  @namespace
-
   The Ember.Freezable mixin implements some basic methods for marking an object
   as frozen. Once an object is frozen it should be read only. No changes
   may be made the internal state of the object.
@@ -65,6 +65,8 @@ var get = Ember.get, set = Ember.set;
   Ember.Copyable protocol, which defines a frozenCopy() method that will return
   a frozen object, if the object implements this method as well.
 
+  @class Freezable
+  @namespace Ember
   @extends Ember.Mixin
   @since Ember 0.9
 */
@@ -75,6 +77,7 @@ Ember.Freezable = Ember.Mixin.create(
     Set to true when the object is frozen.  Use this property to detect whether
     your object is frozen or not.
 
+    @property isFrozen
     @type Boolean
   */
   isFrozen: false,
@@ -83,7 +86,8 @@ Ember.Freezable = Ember.Mixin.create(
     Freezes the object.  Once this method has been called the object should
     no longer allow any properties to be edited.
 
-    @returns {Object} receiver
+    @method freeze
+    @return {Object} receiver
   */
   freeze: function() {
     if (get(this, 'isFrozen')) return this;
@@ -94,6 +98,3 @@ Ember.Freezable = Ember.Mixin.create(
 });
 
 Ember.FROZEN_ERROR = "Frozen object cannot be modified.";
-
-
-

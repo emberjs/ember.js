@@ -6,6 +6,14 @@
 
 require('ember-runtime/license');
 
+/**
+Ember Runtime
+
+@module ember
+@submodule ember-runtime
+@requires ember-metal
+*/
+
 require('ember-metal');
 require('ember-runtime/core');
 require('ember-runtime/ext');

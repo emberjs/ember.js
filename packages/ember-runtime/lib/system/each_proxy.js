@@ -7,6 +7,10 @@
 require('ember-runtime/system/object');
 require('ember-runtime/mixins/array');
 
+/**
+@module ember
+@submodule ember-runtime
+*/
 
 
 var set = Ember.set, get = Ember.get, guidFor = Ember.guidFor;
@@ -35,7 +39,6 @@ var EachArray = Ember.Object.extend(Ember.Array, {
 
 var IS_OBSERVER = /^.+:(before|change)$/;
 
-/** @private */
 function addObserverForContentKey(content, keyName, proxy, idx, loc) {
   var objects = proxy._objects, guid;
   if (!objects) objects = proxy._objects = {};
@@ -55,7 +58,6 @@ function addObserverForContentKey(content, keyName, proxy, idx, loc) {
   }
 }
 
-/** @private */
 function removeObserverForContentKey(content, keyName, proxy, idx, loc) {
   var objects = proxy._objects;
   if (!objects) objects = proxy._objects = {};
@@ -75,13 +77,13 @@ function removeObserverForContentKey(content, keyName, proxy, idx, loc) {
 }
 
 /**
-  @private
-  @class
-
   This is the object instance returned when you get the @each property on an
   array.  It uses the unknownProperty handler to automatically create
   EachArray instances for property names.
 
+  @private
+  @class EachProxy
+  @namespace Ember
   @extends Ember.Object
 */
 Ember.EachProxy = Ember.Object.extend({
@@ -101,6 +103,10 @@ Ember.EachProxy = Ember.Object.extend({
   /**
     You can directly access mapped properties by simply requesting them.
     The unknownProperty handler will generate an EachArray of each item.
+
+    @method unknownProperty
+    @param keyName {String}
+    @param value {anything}
   */
   unknownProperty: function(keyName, value) {
     var ret;

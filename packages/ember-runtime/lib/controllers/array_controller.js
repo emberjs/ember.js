@@ -8,11 +8,14 @@ require('ember-runtime/system/array_proxy');
 require('ember-runtime/controllers/controller');
 require('ember-runtime/mixins/sortable');
 
+/**
+@module ember
+@submodule ember-runtime
+*/
+
 var get = Ember.get, set = Ember.set;
 
 /**
-  @class
-
   Ember.ArrayController provides a way for you to publish a collection of objects
   so that you can easily bind to the collection from a Handlebars #each helper,
   an Ember.CollectionView, or other controllers.
@@ -46,9 +49,11 @@ var get = Ember.get, set = Ember.set;
   selection support. If you are creating something that is conceptually a
   controller, use this class.
 
+  @class ArrayController
+  @namespace Ember
   @extends Ember.ArrayProxy
-  @extends Ember.SortableMixin
-  @extends Ember.ControllerMixin
+  @uses Ember.SortableMixin
+  @uses Ember.ControllerMixin
 */
 
 Ember.ArrayController = Ember.ArrayProxy.extend(Ember.ControllerMixin,

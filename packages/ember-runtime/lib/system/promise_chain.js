@@ -6,6 +6,11 @@
 
 require('ember-runtime/system/object');
 
+/**
+@module ember
+@submodule ember-runtime
+*/
+
 var get = Ember.get, set = Ember.set;
 
 Ember._PromiseChain = Ember.Object.extend({
@@ -15,9 +20,6 @@ Ember._PromiseChain = Ember.Object.extend({
   abortCallback: Ember.K,
   promiseSuccessCallback: Ember.K,
 
-  /**
-    @private
-  */
   runNextPromise: function() {
     if (get(this, 'isDestroyed')) { return; }
 

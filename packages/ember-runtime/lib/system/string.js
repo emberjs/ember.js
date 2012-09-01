@@ -4,7 +4,11 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
-/** @private **/
+/**
+@module ember
+@submodule ember-runtime
+*/
+
 var STRING_DASHERIZE_REGEXP = (/[ _]/g);
 var STRING_DASHERIZE_CACHE = {};
 var STRING_DECAMELIZE_REGEXP = (/([a-z])([A-Z])/g);
@@ -17,6 +21,8 @@ var STRING_UNDERSCORE_REGEXP_2 = (/\-|\s+/g);
   the `Ember.String.loc()` helper.  To localize, add string values to this
   hash.
 
+  @property STRINGS
+  @for Ember
   @type Hash
 */
 Ember.STRINGS = {};
@@ -26,7 +32,9 @@ Ember.STRINGS = {};
   Unless Ember.EXTEND_PROTOTYPES = false these methods will also be added to the
   String.prototype as well.
 
-  @namespace
+  @class String
+  @namespace Ember
+  @static
 */
 Ember.String = {
 
@@ -43,8 +51,9 @@ Ember.String = {
         "Hello %@ %@".fmt('John', 'Doe') => "Hello John Doe"
         "Hello %@2, %@1".fmt('John', 'Doe') => "Hello Doe, John"
 
+    @method fmt
     @param {Object...} [args]
-    @returns {String} formatted string
+    @return {String} formatted string
   */
   fmt: function(str, formats) {
     // first, replace any ORDERED replacements.
@@ -76,13 +85,10 @@ Ember.String = {
         Ember.String.loc("_Hello %@ %@", ["John", "Smith"]);
         => "Bonjour John Smith";
 
-    @param {String} str
-      The string to format
-
-    @param {Array} formats
-      Optional array of parameters to interpolate into string.
-
-    @returns {String} formatted string
+    @method loc
+    @param {String} str The string to format
+    @param {Array} formats Optional array of parameters to interpolate into string.
+    @return {String} formatted string
   */
   loc: function(str, formats) {
     str = Ember.STRINGS[str] || str;
@@ -101,10 +107,9 @@ Ember.String = {
         > beta
         > gamma
 
-    @param {String} str 
-      The string to split
-
-    @returns {String} split string
+    @method w
+    @param {String} str The string to split
+    @return {String} split string
   */
   w: function(str) { return str.split(/\s+/); },
 
@@ -116,10 +121,9 @@ Ember.String = {
         'css-class-name'.decamelize()    => 'css-class-name'
         'my favorite items'.decamelize() => 'my favorite items'
 
-    @param {String} str
-      The string to decamelize.
-
-    @returns {String} the decamelized string.
+    @method decamelize
+    @param {String} str The string to decamelize.
+    @return {String} the decamelized string.
   */
   decamelize: function(str) {
     return str.replace(STRING_DECAMELIZE_REGEXP, '$1_$2').toLowerCase();
@@ -133,10 +137,9 @@ Ember.String = {
         'css-class-name'.dasherize()    => 'css-class-name'
         'my favorite items'.dasherize() => 'my-favorite-items'
 
-    @param {String} str
-      The string to dasherize.
-
-    @returns {String} the dasherized string.
+    @method dasherize
+    @param {String} str The string to dasherize.
+    @return {String} the dasherized string.
   */
   dasherize: function(str) {
     var cache = STRING_DASHERIZE_CACHE,
@@ -160,10 +163,9 @@ Ember.String = {
         'css-class-name'.camelize()    => 'cssClassName'
         'my favorite items'.camelize() => 'myFavoriteItems'
 
-    @param {String} str
-      The string to camelize.
-
-    @returns {String} the camelized string.
+    @method camelize
+    @param {String} str The string to camelize.
+    @return {String} the camelized string.
   */
   camelize: function(str) {
     return str.replace(STRING_CAMELIZE_REGEXP, function(match, separator, chr) {
@@ -177,7 +179,11 @@ Ember.String = {
         'innerHTML'.classify()         => 'InnerHTML'
         'action_name'.classify()       => 'ActionName'
         'css-class-name'.classify()    => 'CssClassName'
-        'my favorite items'.classift() => 'MyFavoriteItems'
+        'my favorite items'.classify() => 'MyFavoriteItems'
+
+    @method classify
+    @param {String} str the string to classify
+    @return {String} the classified string
   */
   classify: function(str) {
     var camelized = Ember.String.camelize(str);
@@ -193,10 +199,9 @@ Ember.String = {
         'css-class-name'.underscore()    => 'css_class_name'
         'my favorite items'.underscore() => 'my_favorite_items'
 
-    @param {String} str
-      The string to underscore.
-
-    @returns {String} the underscored string.
+    @property underscore
+    @param {String} str The string to underscore.
+    @return {String} the underscored string.
   */
   underscore: function(str) {
     return str.replace(STRING_UNDERSCORE_REGEXP_1, '$1_$2').

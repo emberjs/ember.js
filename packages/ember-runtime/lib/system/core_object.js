@@ -4,6 +4,10 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
+/**
+@module ember
+@submodule ember-runtime
+*/
 
 
 // NOTE: this object should never be included directly.  Instead use Ember.
@@ -35,7 +39,6 @@ var undefinedDescriptor = {
   value: undefined
 };
 
-/** @private */
 function makeCtor() {
 
   // Note: avoid accessing any properties on the object since it makes the
@@ -91,8 +94,7 @@ function makeCtor() {
 
 var CoreObject = makeCtor();
 
-CoreObject.PrototypeMixin = Mixin.create(
-/** @scope Ember.CoreObject.prototype */ {
+CoreObject.PrototypeMixin = Mixin.create({
 
   reopen: function() {
     applyMixin(this, arguments, true);
@@ -101,13 +103,18 @@ CoreObject.PrototypeMixin = Mixin.create(
 
   isInstance: true,
 
-  /** @private */
   init: function() {},
 
-  /** @field */
+  /**
+    @property isDestroyed
+    @default false
+  */
   isDestroyed: false,
 
-  /** @field */
+  /**
+    @property isDestroying
+    @default false
+  */
   isDestroying: false,
 
   /**
@@ -120,7 +127,8 @@ CoreObject.PrototypeMixin = Mixin.create(
     Note that destruction is scheduled for the end of the run loop and does not
     happen immediately.
 
-    @returns {Ember.Object} receiver
+    @method destroy
+    @return {Ember.Object} receiver
   */
   destroy: function() {
     if (this.isDestroying) { return; }
@@ -135,10 +143,12 @@ CoreObject.PrototypeMixin = Mixin.create(
   },
 
   /**
+    @private
+
     Invoked by the run loop to actually destroy the object. This is
     scheduled for execution by the `destroy` method.
 
-    @private
+    @method _scheduledDestroy
   */
   _scheduledDestroy: function() {
     destroy(this);
@@ -162,8 +172,7 @@ if (Ember.config.overridePrototypeMixin) {
 
 CoreObject.__super__ = null;
 
-var ClassMixin = Mixin.create(
-/** @scope Ember.ClassMixin.prototype */ {
+var ClassMixin = Mixin.create({
 
   ClassMixin: Ember.required(),
 
@@ -245,6 +254,9 @@ var ClassMixin = Mixin.create(
         MyClass.metaForProperty('person');
 
     This will return the original hash that was passed to `meta()`.
+
+    @method metaForProperty
+    @param key {String} property name
   */
   metaForProperty: function(key) {
     var desc = meta(this.proto(), false).descs[key];
@@ -256,6 +268,10 @@ var ClassMixin = Mixin.create(
   /**
     Iterate over each computed property for the class, passing its name
     and any associated metadata (see `metaForProperty`) to the callback.
+
+    @method eachComputedProperty
+    @param {Function} callback
+    @param {Object} binding
   */
   eachComputedProperty: function(callback, binding) {
     var proto = this.proto(),
@@ -282,7 +298,8 @@ CoreObject.ClassMixin = ClassMixin;
 ClassMixin.apply(CoreObject);
 
 /**
-  @class
+  @class CoreObject
+  @namespace Ember
 */
 Ember.CoreObject = CoreObject;
 

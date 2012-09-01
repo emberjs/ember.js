@@ -1,5 +1,15 @@
+/**
+@module ember
+@submodule ember-runtime
+*/
+
 var get = Ember.get, set = Ember.set;
 
+/**
+@class TargetActionSupport
+@namespace Ember
+@extends Ember.Mixin
+*/
 Ember.TargetActionSupport = Ember.Mixin.create({
   target: null,
   action: null,
