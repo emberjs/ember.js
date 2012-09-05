@@ -52,7 +52,7 @@ function bind(property, options, preserveContext, shouldDisplay, valueNormalizer
 
     /** @private */
     var observer = function() {
-      Ember.run.once(bindView, 'rerenderIfNeeded');
+      Ember.run.scheduleOnce('render', bindView, 'rerenderIfNeeded');
     };
 
     // Observes the given property on the context and
@@ -303,7 +303,7 @@ EmberHandlebars.registerHelper('bindAttr', function(options) {
 
     /** @private */
     invoker = function() {
-      Ember.run.once(observer);
+      Ember.run.scheduleOnce('render', observer);
     };
 
     // Add an observer to the view for when the property changes.
@@ -429,7 +429,7 @@ EmberHandlebars.bindClasses = function(context, classBindings, view, bindAttrId,
 
     /** @private */
     invoker = function() {
-      Ember.run.once(observer);
+      Ember.run.scheduleOnce('render', observer);
     };
 
     if (path !== '' && path !== 'this') {
