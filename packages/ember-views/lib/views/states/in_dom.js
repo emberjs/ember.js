@@ -52,8 +52,11 @@ Ember.View.states.hasElement = {
   destroyElement: function(view) {
     view._notifyWillDestroyElement();
     view.domManager.remove(view);
-    view._lastInsert = null;
     set(view, 'element', null);
+    if (view._scheduledInsert) {
+      Ember.run.cancel(view._scheduledInsert);
+      view._scheduledInsert = null;
+    }
     return view;
   },
 
@@ -84,9 +87,6 @@ Ember.View.states.inDOM = {
   parentState: Ember.View.states.hasElement,
 
   insertElement: function(view, fn) {
-    if (view._lastInsert !== Ember.guidFor(fn)){
-      return;
-    }
     throw "You can't insert an element into the DOM that has already been inserted";
   }
 };

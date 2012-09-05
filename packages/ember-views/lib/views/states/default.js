@@ -31,7 +31,10 @@ Ember.View.states = {
 
     destroyElement: function(view) {
       set(view, 'element', null);
-      view._lastInsert = null;
+      if (view._scheduledInsert) {
+        Ember.run.cancel(view._scheduledInsert);
+        view._scheduledInsert = null;
+      }
       return view;
     },
 

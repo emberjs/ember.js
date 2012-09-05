@@ -1205,8 +1205,15 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     @param {Function} fn the function that inserts the element into the DOM
   */
   _insertElementLater: function(fn) {
-    this._lastInsert = Ember.guidFor(fn);
-    Ember.run.schedule('render', this, this.invokeForState, 'insertElement', fn);
+    this._scheduledInsert = Ember.run.scheduleOnce('render', this, '_insertElement', fn);
+  },
+
+  /**
+   @private
+  */
+  _insertElement: function (fn) {
+    this._scheduledInsert = null;
+    this.invokeForState('insertElement', fn);
   },
 
   /**
