@@ -461,7 +461,7 @@ Ember.run.later = function(target, method) {
 /** @private */
 function invokeOnceTimer(guid, onceTimers) {
   if (onceTimers[this.tguid]) { delete onceTimers[this.tguid][this.mguid]; }
-  if (timers[guid]) { invoke(this.target, this.method, this.args, 2); }
+  if (timers[guid]) { invoke(this.target, this.method, this.args); }
   delete timers[guid];
 }
 
@@ -523,11 +523,11 @@ function scheduleOnce(queue, target, method, args) {
   @returns {Object} timer
 */
 Ember.run.once = function(target, method) {
-  return scheduleOnce('actions', target, method, slice.call(arguments));
+  return scheduleOnce('actions', target, method, slice.call(arguments, 2));
 };
 
-Ember.run.scheduleOnce = function(queue, target, method) {
-  return scheduleOnce(queue, target, method, slice.call(arguments));
+Ember.run.scheduleOnce = function(queue, target, method, args) {
+  return scheduleOnce(queue, target, method, slice.call(arguments, 3));
 };
 
 var scheduledNext;
