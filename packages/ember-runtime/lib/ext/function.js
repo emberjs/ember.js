@@ -7,7 +7,7 @@ require('ember-runtime/core');
 
 var a_slice = Array.prototype.slice;
 
-if (Ember.EXTEND_PROTOTYPES) {
+if (Ember.EXTEND_PROTOTYPES && (Ember.PROTOTYPE_EXTENSIONS.all || Ember.PROTOTYPE_EXTENSIONS.Function)) {
 
   /**
     The `property` extension of Javascript's Function prototype is available
