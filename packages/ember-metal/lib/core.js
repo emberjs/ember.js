@@ -88,6 +88,22 @@ Ember.EXTEND_PROTOTYPES = (Ember.ENV.EXTEND_PROTOTYPES !== false);
 
 /**
   @static
+  @type Object
+  @constant
+
+  Determines which prototypes will be extended assuming Ember.EXTEND_PROTOTYPES
+  is true.
+*/
+Ember.PROTOTYPE_EXTENSIONS = Ember.ENV.PROTOTYPE_EXTENSIONS;
+
+if (Ember.PROTOTYPE_EXTENSIONS === undefined) {
+  Ember.PROTOTYPE_EXTENSIONS = {
+    all: true
+  };
+}
+
+/**
+  @static
   @type Boolean
   @default true
   @constant

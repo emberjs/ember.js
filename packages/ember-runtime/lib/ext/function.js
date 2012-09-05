@@ -9,11 +9,15 @@ require('ember-runtime/core');
 
 var a_slice = Array.prototype.slice;
 
-if (Ember.EXTEND_PROTOTYPES) {
+if (Ember.EXTEND_PROTOTYPES && (Ember.PROTOTYPE_EXTENSIONS.all || Ember.PROTOTYPE_EXTENSIONS.Function)) {
 
   /**
-    The `property` extension of Javascript's Function prototype is available
-    when Ember.EXTEND_PROTOTYPES is true, which is the default. 
+    The `property` extension of JavaScript's Function prototype is available
+    when Ember.EXTEND_PROTOTYPES and Ember.PROTOTYPE_EXTENSIONS.all or
+    Ember.PROTOTYPE_EXTENSIONS.Function are true.
+
+    The default is for Ember.EXTEND_PROTOTYPES and Ember.PROTOTYPE_EXtensions.all
+    to be true.
 
     Computed properties allow you to treat a function like a property:
 
@@ -67,8 +71,12 @@ if (Ember.EXTEND_PROTOTYPES) {
   };
 
   /**
-    The `observes` extension of Javascript's Function prototype is available
-    when Ember.EXTEND_PROTOTYPES is true, which is the default. 
+    The `observes` extension of JavaScript's Function prototype is available
+    when Ember.EXTEND_PROTOTYPES and Ember.PROTOTYPE_EXTENSIONS.all or
+    Ember.PROTOTYPE_EXTENSIONS.Function are true.
+
+    The default is for Ember.EXTEND_PROTOTYPES and Ember.PROTOTYPE_EXtensions.all
+    to be true.
 
     You can observe property changes simply by adding the `observes`
     call to the end of your method declarations in classes that you write.
@@ -79,7 +87,7 @@ if (Ember.EXTEND_PROTOTYPES) {
             // Executes whenever the "value" property changes
           }.observes('value')
         });
-    
+
     @see Ember.Observable
   */
   Function.prototype.observes = function() {
@@ -88,8 +96,12 @@ if (Ember.EXTEND_PROTOTYPES) {
   };
 
   /**
-    The `observesBefore` extension of Javascript's Function prototype is
-    available when Ember.EXTEND_PROTOTYPES is true, which is the default. 
+    The `observesBefore` extension of JavaScript's Function prototype is available
+    when Ember.EXTEND_PROTOTYPES and Ember.PROTOTYPE_EXTENSIONS.all or
+    Ember.PROTOTYPE_EXTENSIONS.Function are true.
+
+    The default is for Ember.EXTEND_PROTOTYPES and Ember.PROTOTYPE_EXtensions.all
+    to be true.
 
     You can get notified when a property changes is about to happen by
     by adding the `observesBefore` call to the end of your method
@@ -100,7 +112,7 @@ if (Ember.EXTEND_PROTOTYPES) {
             // Executes whenever the "value" property is about to change
           }.observesBefore('value')
         });
-    
+
     @see Ember.Observable
   */
   Function.prototype.observesBefore = function() {
