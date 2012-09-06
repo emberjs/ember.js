@@ -473,3 +473,24 @@ test("should be able to modify childViews then rerender again the ContainerView 
   equal(two.count, 1, 'rendered child only once');
   equal(container.$().text(), 'onetwo');
 });
+
+test("should invalidate `element` on itself and childViews when being rendered by ensureChildrenAreInDOM", function () {
+  var root = Ember.ContainerView.create(),
+      view = Ember.View.create({ template: function() {} }),
+      container = Ember.ContainerView.create({ childViews: ['child'], child: view });
+
+  Ember.run(function() {
+    root.appendTo('#qunit-fixture');
+  });
+
+  Ember.run(function() {
+    root.get('childViews').pushObject(container);
+
+    // Get the parent and child's elements to cause them to be cached as null
+    container.get('element');
+    view.get('element');
+  });
+
+  ok(!!container.get('element'), "Parent's element should have been recomputed after being rendered");
+  ok(!!view.get('element'), "Child's element should have been recomputed after being rendered");
+});
