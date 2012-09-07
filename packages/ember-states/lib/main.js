@@ -1,4 +1,5 @@
 require('ember-runtime');
+require('ember-views');
 
 /**
 Ember States

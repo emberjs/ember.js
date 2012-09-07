@@ -12,7 +12,8 @@
 
   "dependencies": {
     "spade":              "~> 1.0",
-    "ember-runtime": "1.0.pre"
+    "ember-runtime": "1.0.pre",
+    "ember-views": "1.0.pre"
   },
 
   "dependencies:development": {

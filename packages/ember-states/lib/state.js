@@ -181,8 +181,6 @@ Ember.State = Ember.Object.extend(Ember.Evented,
   exit: Ember.K
 });
 
-var Event = Ember.$ && Ember.$.Event;
-
 Ember.State.reopenClass(
 /** @scope Ember.State */{
 
@@ -211,24 +209,26 @@ Ember.State.reopenClass(
   @static
   @param {String} target
   */
+
   transitionTo: function(target) {
-    var event = function(stateManager, context) {
-      if (Event && context instanceof Event) {
-        if (context.hasOwnProperty('context')) {
-          context = context.context;
-        } else {
-          // If we received an event and it doesn't contain
-          // a context, don't pass along a superfluous
-          // context to the target of the event.
-          return stateManager.transitionTo(target);
-        }
+
+    var transitionFunction = function(stateManager, contextOrEvent) {
+      var contexts, transitionArgs;
+
+      if (contextOrEvent && (contextOrEvent instanceof Ember.$.Event) && contextOrEvent.hasOwnProperty('contexts')) {
+        contexts = contextOrEvent.contexts.slice();
+      }
+      else {
+        contexts = [].slice.call(arguments, 1);
       }
 
-      stateManager.transitionTo(target, context);
+      contexts.unshift(target);
+      stateManager.transitionTo.apply(stateManager, contexts);
     };
 
-    event.transitionTarget = target;
+    transitionFunction.transitionTarget = target;
 
-    return event;
+    return transitionFunction;
   }
+
 });
