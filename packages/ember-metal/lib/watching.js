@@ -59,6 +59,8 @@ function iterDeps(method, obj, depKey, seen, meta) {
   if (deps) {
     for(var key in deps) {
       if (DEP_SKIP[key]) continue;
+      var desc = meta.descs[key];
+      if (desc && desc._suspended === obj) continue;
       method(obj, key);
     }
   }
