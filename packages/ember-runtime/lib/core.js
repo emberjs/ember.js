@@ -108,6 +108,7 @@ Ember.none = function(obj) {
       Ember.empty(undefined);      => true
       Ember.empty('');             => true
       Ember.empty([]);             => true
+      Ember.empty({});             => true
       Ember.empty('tobias fünke'); => false
       Ember.empty([0,1,2]);        => false
 
@@ -115,7 +116,25 @@ Ember.none = function(obj) {
   @returns {Boolean}
 */
 Ember.empty = function(obj) {
-  return obj === null || obj === undefined || (obj.length === 0 && typeof obj !== 'function') || (typeof obj === 'object' && Ember.get(obj, 'length') === 0);
+  if (obj === null)
+    return true;
+  else if (obj === undefined)
+    return true;
+  else if (obj.length === 0 && typeof obj !== 'function')
+    return true;
+  else if (typeof(obj) === 'object') {
+    if (Ember.get(obj, 'length') === 0) {
+      return true;
+    } else {
+      var key;
+      for (key in obj) {
+        return false;
+      }
+      return true;
+    }
+  }
+
+  return false;
 };
 
 /**
