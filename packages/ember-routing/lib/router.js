@@ -419,6 +419,8 @@ Ember.Router = Ember.StateManager.extend(
     URL state. The following values are supported:
 
     * 'hash': Uses URL fragment identifiers (like #/blog/1) for routing.
+    * 'history': Uses the browser's history.pushstate API for routing. Only works in
+       modern browsers with pushstate support.
     * 'none': Does not read or set the browser URL, but still allows for
       routing to happen. Useful for testing.
 
