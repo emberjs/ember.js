@@ -308,9 +308,8 @@ Ember.Application = Ember.Namespace.extend(
         router.get('postsController.router') // router
   */
   initialize: function(router) {
-    var properties = Ember.A(Ember.keys(this)),
-        injections = get(this.constructor, 'injections'),
-        namespace = this, controller, name;
+    var injections = get(this.constructor, 'injections'),
+        namespace = this, properties;
 
     if (!router && Ember.Router.detect(namespace['Router'])) {
       router = namespace['Router'].create();
@@ -329,9 +328,30 @@ Ember.Application = Ember.Namespace.extend(
       set(router, 'namespace', this);
     }
 
+    // Sort injections by their befores and afters.
+    // NOTE: Injections cannot have both a before and an after.
+    injections.sort(function(a, b) {
+      if (a.before) {
+        if (!b.before || a.before === b.name) { return -1; }
+      } else if (a.after) {
+        if (!b.after || a.after === b.name) { return 1; }
+      }
+
+      if (b.before) {
+        if (!a.before || b.before === a.name) { return 1; }
+      } else if (b.after) {
+        if (!a.after || b.after === a.name) { return -1; }
+      }
+
+      return 0;
+    });
+
     injections.forEach(function(injection) {
+      // Grab properties before each injection, in case an injection added
+      // properties to the namespace.
+      properties = Ember.A(Ember.keys(namespace));
       properties.forEach(function(property) {
-        injection[1](namespace, router, property);
+        injection.injection(namespace, router, property);
       });
     });
 
@@ -408,23 +428,14 @@ Ember.Application = Ember.Namespace.extend(
 Ember.Application.reopenClass({
   concatenatedProperties: ['injections'],
   injections: Ember.A(),
-  registerInjection: function(options) {
-    var injections = get(this, 'injections'),
-        before = options.before,
-        name = options.name,
-        injection = options.injection,
-        location;
+  registerInjection: function(injection) {
+    var injections = get(this, 'injections');
 
-    if (before) {
-      location = injections.find(function(item) {
-        if (item[0] === before) { return true; }
-      });
-      location = injections.indexOf(location);
-    } else {
-      location = get(injections, 'length');
-    }
+    Ember.assert("The injection '" + injection.name + "' has already been registered", !injections.findProperty('name', injection.name));
+    Ember.assert("An injection cannot be registered with both a before and an after", !(injection.before && injection.after));
+    Ember.assert("An injection cannot be registered without an injection function", Ember.canInvoke(injection, 'injection'));
 
-    injections.splice(location, 0, [name, injection]);
+    injections.push(injection);
   }
 });
 
