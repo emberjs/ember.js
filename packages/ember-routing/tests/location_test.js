@@ -169,7 +169,12 @@ test("it calls pushState if at initialURL and history.state does not exist", fun
 });
 
 test("it handles an empty path as root", function() {
-  equal(locationObject.formatPath(''), '/', "The formatted url is '/'");
+  equal(locationObject.formatURL(''), '/', "The formatted url is '/'");
+});
+
+test("formatURL properly appends to rootURL", function() {
+  locationObject.set('rootURL', '/test');
+  equal(locationObject.formatURL('/foo'), '/test/foo', "The formatted url is '/test/foo'");
 });
 
 test("it prepends rootURL to path", function() {

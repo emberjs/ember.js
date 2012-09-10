@@ -47,7 +47,7 @@ Ember.HistoryLocation = Ember.Object.extend(
     var state = window.history.state,
         initialURL = get(this, '_initialURL');
 
-    path = this.formatPath(path);
+    path = this.formatURL(path);
 
     if ((initialURL !== path && !state) || (state && state.path !== path)) {
       window.history.pushState({ path: path }, null, path);
@@ -71,26 +71,16 @@ Ember.HistoryLocation = Ember.Object.extend(
   /**
     @private
 
-    returns the given path appended to rootURL
-   */
-  formatPath: function(path) {
+    Used when using {{action}} helper.  The url is always appended to the rootURL.
+  */
+  formatURL: function(url) {
     var rootURL = get(this, 'rootURL');
 
-    if (path !== '') {
+    if (url !== '') {
       rootURL = rootURL.replace(/\/$/, '');
     }
 
-    return rootURL + path;
-  },
-
-  /**
-    @private
-
-    Used when using {{action}} helper.  Since no formatting
-    is required we just return the url given.
-  */
-  formatURL: function(url) {
-    return url;
+    return rootURL + url;
   },
 
   /** @private */
