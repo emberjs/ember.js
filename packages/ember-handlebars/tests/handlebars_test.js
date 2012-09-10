@@ -1300,6 +1300,32 @@ test("{{view}} should be able to bind class names to truthy properties", functio
   equal(view.$('.is-truthy').length, 0, "removes class name if bound property is set to falsey");
 });
 
+test("{{view}} should be able to bind class names to truthy or falsy properties", function() {
+  var templates = Ember.Object.create({
+    template: Ember.Handlebars.compile('{{#view "TemplateTests.classBindingView" classBinding="number:is-truthy:is-falsy"}}foo{{/view}}')
+  });
+
+  TemplateTests.classBindingView = Ember.View.extend();
+
+  view = Ember.View.create({
+    number: 5,
+    templateName: 'template',
+    templates: templates
+  });
+
+  appendView();
+
+  equal(view.$('.is-truthy').length, 1, "sets class name to truthy value");
+  equal(view.$('.is-falsy').length, 0, "doesn't set class name to falsy value");
+
+  Ember.run(function() {
+    set(view, 'number', 0);
+  });
+
+  equal(view.$('.is-truthy').length, 0, "doesn't set class name to truthy value");
+  equal(view.$('.is-falsy').length, 1, "sets class name to falsy value");
+});
+
 test("should be able to bind element attributes using {{bindAttr}}", function() {
   var template = Ember.Handlebars.compile('<img {{bindAttr src="content.url" alt="content.title"}}>');
 

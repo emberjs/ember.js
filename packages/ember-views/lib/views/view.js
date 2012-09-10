@@ -2069,34 +2069,36 @@ Ember.View.reopenClass({
     Get the class name for a given value, based on the path, optional className
     and optional falsyClassName.
 
-    - if the value is truthy and a className is defined, the className is returned
+    - if a className or falsyClassName has been specified:
+      - if the value is truthy and className has been specified, className is returned
+      - if the value is falsy and falsyClassName has been specified, falsyClassName is returned
+      - otherwise null is returned
     - if the value is true, the dasherized last part of the supplied path is returned
-    - if the value is false and a falsyClassName is supplied, the falsyClassName is returned
-    - if the value is truthy, the value is returned
+    - if the value is not false, undefined or null, the value is returned
     - if none of the above rules apply, null is returned
-
   */
   _classStringForValue: function(path, val, className, falsyClassName) {
-    // If the value is truthy and we're using the colon syntax,
-    // we should return the className directly
-    if (!!val && className) {
-      return className;
+    // When using the colon syntax, evaluate the truthiness or falsiness
+    // of the value to determine which className to return
+    if (className || falsyClassName) {
+      if (className && !!val) {
+        return className;
+
+      } else if (falsyClassName && !val) {
+        return falsyClassName;
+
+      } else {
+        return null;
+      }
 
     // If value is a Boolean and true, return the dasherized property
     // name.
     } else if (val === true) {
-      // catch syntax like isEnabled::not-enabled
-      if (val === true && !className && falsyClassName) { return null; }
-
       // Normalize property path to be suitable for use
       // as a class name. For exaple, content.foo.barBaz
       // becomes bar-baz.
       var parts = path.split('.');
       return Ember.String.dasherize(parts[parts.length-1]);
-
-    // If the value is false and a falsyClassName is specified, return it
-    } else if (val === false && falsyClassName) {
-      return falsyClassName;
 
     // If the value is not false, undefined, or null, return the current
     // value of the property.
