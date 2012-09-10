@@ -56,8 +56,6 @@ if (Ember.EXTEND_PROTOTYPES) {
     will instead clear the cache so that it is updated when the next `get`
     is called on the property.
 
-    Note: you will usually want to use `property(...)` with `cacheable()`.
-
     @see Ember.ComputedProperty
     @see Ember.computed
   */
