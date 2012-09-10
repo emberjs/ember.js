@@ -1,0 +1,8 @@
+{
+  "name": "Ember.js",
+  "version": "1.0.pre",
+  "main": "lib/ember.js",
+  "dependencies": {
+    "jquery": "~1.7.2"
+  }
+}
