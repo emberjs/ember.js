@@ -434,7 +434,10 @@ Ember.Application.registerInjection({
     if (!/^[A-Z].*Controller$/.test(property)) { return; }
 
     var name = property.charAt(0).toLowerCase() + property.substr(1),
-        controller = app[property].create();
+        controllerClass = app[property], controller;
+
+    if(!Ember.Object.detect(controllerClass)){ return; }
+    controller = app[property].create();
 
     router.set(name, controller);
 
