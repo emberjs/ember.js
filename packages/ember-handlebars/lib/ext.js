@@ -21,7 +21,7 @@ var objectCreate = Ember.create;
   @description Helpers for Handlebars templates
 */
 
-Ember.assert("Ember Handlebars requires Handlebars 1.0.beta.5 or greater", window.Handlebars && window.Handlebars.VERSION.match(/^1\.0\.beta\.[56789]$|^1\.0\.rc\.[123456789]+/));
+Ember.assert("Ember Handlebars requires Handlebars 1.0.beta.5 or greater", Handlebars && Handlebars.VERSION.match(/^1\.0\.beta\.[56789]$|^1\.0\.rc\.[123456789]+/));
 
 /**
   @class
