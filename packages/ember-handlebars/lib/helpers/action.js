@@ -58,7 +58,7 @@ ActionHelper.registerAction = function(actionName, options) {
 /**
   The `{{action}}` helper registers an HTML element within a template for
   DOM event handling and forwards that interaction to the Application's router,
-  the template's `Ember.View` instance, or supplied `target` option (see 'Specifiying a Target').
+  the template's `Ember.View` instance, or supplied `target` option (see 'Specifying a Target').
   
   User interaction with that element will invoke the supplied action name on
   the appropriate target.
