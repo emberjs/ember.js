@@ -388,8 +388,7 @@ Ember.canInvoke = canInvoke;
   @param {String} methodName The method name to check for
   @param {Array} args The arguments to pass to the method
 
-  @returns {Boolean} true if the method does not return false
-  @returns {Boolean} false otherwise
+  @returns {*} whatever the invoked function returns if it can be invoked
 */
 Ember.tryInvoke = function(obj, methodName, args) {
   if (canInvoke(obj, methodName)) {
