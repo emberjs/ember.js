@@ -12,18 +12,18 @@ var set = Ember.set, get = Ember.get;
 /**
   @class
 
-  Creates an HTML input of type 'checkbox' with HTML related properties 
-  applied directly to the input.
+  The `Ember.Checkbox` view class renders a checkbox [input](https://developer.mozilla.org/en/HTML/Element/Input) 
+  element. It allows for binding an Ember property (`checked`) to the status of the checkbox.
 
-      {{view Ember.Checkbox classNames="applicaton-specific-checkbox"}}
+  Example:
 
-      <input id="ember1" class="ember-view ember-checkbox applicaton-specific-checkbox" type="checkbox">
+      {{view Ember.Checkbox checkedBinding="receiveEmail"}}
 
   You can add a `label` tag yourself in the template where the Ember.Checkbox is being used.
 
-      <label>
-        Some Title
+      <label>        
         {{view Ember.Checkbox classNames="applicaton-specific-checkbox"}}
+        Some Title
       </label>
 
 
