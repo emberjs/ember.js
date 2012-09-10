@@ -11,7 +11,8 @@ module("Ember.View - Class Name Bindings");
 test("should apply bound class names to the element", function() {
   var view = Ember.View.create({
     classNameBindings: ['priority', 'isUrgent', 'isClassified:classified',
-                        'canIgnore', 'messages.count', 'messages.resent:is-resent', 'isNumber:is-number',
+                        'canIgnore', 'messages.count', 'messages.resent:is-resent',
+                        'isNumber:is-number', 'isFalsy::is-falsy', 'isTruthy::is-not-truthy',
                         'isEnabled:enabled:disabled'],
 
     priority: 'high',
@@ -19,6 +20,8 @@ test("should apply bound class names to the element", function() {
     isClassified: true,
     canIgnore: false,
     isNumber: 5,
+    isFalsy: 0,
+    isTruthy: 'abc',
     isEnabled: true,
 
     messages: {
@@ -37,6 +40,9 @@ test("should apply bound class names to the element", function() {
   ok(view.$().hasClass('five-messages'), "supports paths in bindings");
   ok(view.$().hasClass('is-resent'), "supports customing class name for paths");
   ok(view.$().hasClass('is-number'), "supports colon syntax with truthy properties");
+  ok(view.$().hasClass('is-falsy'), "supports colon syntax with falsy properties");
+  ok(!view.$().hasClass('abc'), "does not add values as classes when falsy classes have been specified");
+  ok(!view.$().hasClass('is-not-truthy'), "does not add falsy classes when values are truthy");
   ok(!view.$().hasClass('can-ignore'), "does not add false Boolean values as class");
   ok(view.$().hasClass('enabled'), "supports customizing class name for Boolean values with negation");
   ok(!view.$().hasClass('disabled'), "does not add class name for negated binding");
