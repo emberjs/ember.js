@@ -58,7 +58,45 @@ Ember.Handlebars.EachView = Ember.CollectionView.extend(Ember._Metamorph, {
         {{#each DeveloperNames}}
           {{this}}
         {{/each}}
-        
+    
+  ### Blockless Use
+  If you provide an `itemViewClass` option that has its own `template` you can omit
+  the block in a similar way to how it can be done with the collection helper.
+
+  The following template:
+
+      <script type="text/x-handlebars">
+        {{#view App.MyView }}
+          {{each view.items itemViewClass="App.AnItemView"}} 
+        {{/view}}
+      </script>
+
+  And application code
+
+      App = Ember.Application.create({
+        MyView: Ember.View.extend({
+          items: [
+            Ember.Object.create({name: 'Dave'}),
+            Ember.Object.create({name: 'Mary'}),
+            Ember.Object.create({name: 'Sara'})
+          ]
+        })
+      });
+
+
+      App.AnItemView = Ember.View.extend({
+        template: Ember.Handlebars.compile("Greetings {{name}}")
+      })
+      
+      App.initialize();
+      
+  Will result in the HTML structure below
+
+      <div class="ember-view">
+        <div class="ember-view">Greetings Dave</div>
+        <div class="ember-view">Greetings Mary</div>
+        <div class="ember-view">Greetings Sara</div>
+      </div>
   
   @name Handlebars.helpers.each
 */
@@ -76,8 +114,6 @@ Ember.Handlebars.registerHelper('each', function(path, options) {
   } else {
     options.hash.eachHelper = 'each';
   }
-
-  Ember.assert("You must pass a block to the each helper", options.fn && options.fn !== Handlebars.VM.noop);
 
   options.hash.contentBinding = path;
   // Set up emptyView as a metamorph with no tag
