@@ -6,7 +6,7 @@
 // ==========================================================================
 
 require("ember-views/system/render_buffer");
-var get = Ember.get, set = Ember.set, addObserver = Ember.addObserver;
+var get = Ember.get, set = Ember.set, addObserver = Ember.addObserver, removeObserver = Ember.removeObserver;
 var meta = Ember.meta, fmt = Ember.String.fmt;
 var a_slice = [].slice;
 var a_forEach = Ember.EnumerableUtils.forEach;
@@ -963,6 +963,8 @@ Ember.View = Ember.Object.extend(Ember.Evented,
       // closes over this variable, so it knows which string to remove when
       // the property changes.
       var oldClass;
+      // Extract just the property name from bindings like 'foo:bar'
+      var parsedPath = Ember.View._parsePropertyPath(binding);
 
       // Set up an observer on the context. If the property changes, toggle the
       // class name.
@@ -970,6 +972,10 @@ Ember.View = Ember.Object.extend(Ember.Evented,
         // Get the current value of the property
         newClass = this._classStringForProperty(binding);
         elem = this.$();
+        if (!elem) {
+          removeObserver(this, parsedPath.path, observer);
+          return;
+        }
 
         // If we had previously added a class to the element, remove it.
         if (oldClass) {
@@ -1003,8 +1009,6 @@ Ember.View = Ember.Object.extend(Ember.Evented,
         oldClass = dasherizedClass;
       }
 
-      // Extract just the property name from bindings like 'foo:bar'
-      var parsedPath = Ember.View._parsePropertyPath(binding);
       addObserver(this, parsedPath.path, observer);
     }, this);
   },

@@ -154,3 +154,30 @@ test("classNames removed by a classNameBindings observer should not re-appear on
 
   equal(view.$().attr('class'), 'ember-view');
 });
+
+test("classNameBindings lifecycle test", function(){
+  var view;
+
+  Ember.run(function(){
+    view = Ember.View.create({
+      classNameBindings: ['priority'],
+      priority: 'high'
+    });
+  });
+
+  equal(Ember.isWatching(view, 'priority'), false);
+
+  Ember.run(function(){
+    view.createElement();
+  });
+
+  equal(view.$().attr('class'), 'ember-view high');
+  equal(Ember.isWatching(view, 'priority'), true);
+
+  Ember.run(function(){
+    view.remove();
+    view.set('priority', 'low');
+  });
+
+  equal(Ember.isWatching(view, 'priority'), false);
+});
