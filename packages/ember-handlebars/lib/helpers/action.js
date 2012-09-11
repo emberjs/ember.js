@@ -134,7 +134,7 @@ ActionHelper.registerAction = function(actionName, options) {
   current state of the Applications's Router. See Ember.Router 'Responding
   to User-initiated Events' for more information.
   
-  If you manaully set the `target` property on the controller of a template's
+  If you manually set the `target` property on the controller of a template's
   `Ember.View` instance, the specifed `controller.target` will become the target
   for any actions. Likely custom values for a controller's `target` are the
   controller itself or a StateManager other than the Application's Router.
