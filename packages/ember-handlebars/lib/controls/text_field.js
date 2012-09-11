@@ -23,7 +23,9 @@ var get = Ember.get, set = Ember.set;
 
   Example:
 
-      {{view Ember.TextField valueBinding="firstName"}}
+  ``` handlebars
+  {{view Ember.TextField valueBinding="firstName"}}
+  ```
 
   ## Layout and LayoutName properties
   Because HTML `input` elements are self closing `layout` and `layoutName` properties will

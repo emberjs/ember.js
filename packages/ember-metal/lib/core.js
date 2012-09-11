@@ -129,25 +129,31 @@ Ember.CP_DEFAULT_CACHEABLE = (Ember.ENV.CP_DEFAULT_CACHEABLE !== false);
   If you need to update your application to use the new context rules, simply
   prefix property access with `view.`:
 
-      // Before:
-      {{#each App.photosController}}
-        Photo Title: {{title}}
-        {{#view App.InfoView contentBinding="this"}}
-          {{content.date}}
-          {{content.cameraType}}
-          {{otherViewProperty}}
-        {{/view}}
-      {{/each}}
+  Before:
 
-      // After:
-      {{#each App.photosController}}
-        Photo Title: {{title}}
-        {{#view App.InfoView}}
-          {{date}}
-          {{cameraType}}
-          {{view.otherViewProperty}}
-        {{/view}}
-      {{/each}}
+  ``` handlebars
+  {{#each App.photosController}}
+    Photo Title: {{title}}
+    {{#view App.InfoView contentBinding="this"}}
+      {{content.date}}
+      {{content.cameraType}}
+      {{otherViewProperty}}
+    {{/view}}
+  {{/each}}
+  ```
+
+  After:
+
+  ``` handlebars
+  {{#each App.photosController}}
+    Photo Title: {{title}}
+    {{#view App.InfoView}}
+      {{date}}
+      {{cameraType}}
+      {{view.otherViewProperty}}
+    {{/view}}
+  {{/each}}
+  ```
 
   @property VIEW_PRESERVES_CONTEXT
   @type Boolean

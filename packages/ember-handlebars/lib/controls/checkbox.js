@@ -20,14 +20,18 @@ var set = Ember.set, get = Ember.get;
 
   Example:
 
-      {{view Ember.Checkbox checkedBinding="receiveEmail"}}
+  ``` handlebars
+  {{view Ember.Checkbox checkedBinding="receiveEmail"}}
+  ```
 
   You can add a `label` tag yourself in the template where the Ember.Checkbox is being used.
 
-      <label>        
-        {{view Ember.Checkbox classNames="applicaton-specific-checkbox"}}
-        Some Title
-      </label>
+  ``` html
+  <label>        
+    {{view Ember.Checkbox classNames="applicaton-specific-checkbox"}}
+    Some Title
+  </label>
+  ```
 
 
   The `checked` attribute of an Ember.Checkbox object should always be set

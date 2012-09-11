@@ -11,24 +11,32 @@ Ember.Handlebars.OutletView = Ember.ContainerView.extend(Ember._Metamorph);
   The `outlet` helper allows you to specify that the current
   view's controller will fill in the view for a given area.
 
-      {{outlet}}
+  ``` handlebars
+  {{outlet}}
+  ```
 
   By default, when the the current controller's `view`
   property changes, the outlet will replace its current
   view with the new view.
 
-      controller.set('view', someView);
+  ``` javascript
+  controller.set('view', someView);
+  ```
 
   You can also specify a particular name, other than view:
 
-      {{outlet masterView}}
-      {{outlet detailView}}
+  ``` handlebars
+  {{outlet masterView}}
+  {{outlet detailView}}
+  ```
 
   Then, you can control several outlets from a single
   controller:
 
-      controller.set('masterView', postsView);
-      controller.set('detailView', postView);
+  ``` javascript
+  controller.set('masterView', postsView);
+  controller.set('detailView', postView);
+  ```
 
   @method outlet
   @for Ember.Handlebars.helpers

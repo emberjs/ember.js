@@ -84,7 +84,7 @@ Ember.Handlebars.JavaScriptCompiler.prototype.appendToBuffer = function(string) 
 /**
   @private
 
-  Rewrite simple mustaches from {{foo}} to {{bind "foo"}}. This means that all simple
+  Rewrite simple mustaches from `{{foo}}` to `{{bind "foo"}}`. This means that all simple
   mustaches in Ember's Handlebars will also set up an observer to keep the DOM
   up to date when the underlying property changes.
 

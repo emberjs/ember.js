@@ -26,9 +26,11 @@ var get = Ember.get, set = Ember.set, fmt = Ember.String.fmt;
   The managed collection of objects is referenced as the `Ember.CollectionView` instance's
   `content` property.
 
-      someItemsView = Ember.CollectionView.create({
-        content: ['A', 'B','C']
-      })
+  ``` javascript
+  someItemsView = Ember.CollectionView.create({
+    content: ['A', 'B','C']
+  })
+  ```
 
   The view for each item in the collection will have its `content` property set
   to the item.
@@ -40,24 +42,27 @@ var get = Ember.get, set = Ember.set, fmt = Ember.String.fmt;
 
   Given an empty `<body>` and the following code:
 
+  ``` javascript 
+  someItemsView = Ember.CollectionView.create({
+    classNames: ['a-collection'],
+    content: ['A','B','C'],
+    itemViewClass: Ember.View.extend({
+      template: Ember.Handlebars.compile("the letter: {{view.content}}")
+    })
+  });
 
-        someItemsView = Ember.CollectionView.create({
-          classNames: ['a-collection'],
-          content: ['A','B','C'],
-          itemViewClass: Ember.View.extend({
-            template: Ember.Handlebars.compile("the letter: {{view.content}}")
-          })
-        })
-
-        someItemsView.appendTo('body')
+  someItemsView.appendTo('body');
+  ```
 
   Will result in the following HTML structure
 
-        <div class="ember-view a-collection">
-          <div class="ember-view">the letter: A</div>
-          <div class="ember-view">the letter: B</div>
-          <div class="ember-view">the letter: C</div>
-        </div>
+  ``` html
+  <div class="ember-view a-collection">
+    <div class="ember-view">the letter: A</div>
+    <div class="ember-view">the letter: B</div>
+    <div class="ember-view">the letter: C</div>
+  </div>
+  ```
 
   ## Automatic matching of parent/child tagNames
 
@@ -68,27 +73,33 @@ var get = Ember.get, set = Ember.set, fmt = Ember.String.fmt;
 
   Given an empty `<body>` and the following code:
 
-        anUndorderedListView = Ember.CollectionView.create({
-          tagName: 'ul',
-          content: ['A','B','C'],
-          itemViewClass: Ember.View.extend({
-            template: Ember.Handlebars.compile("the letter: {{view.content}}")
-          })
-        })
+  ``` javascript
+  anUndorderedListView = Ember.CollectionView.create({
+    tagName: 'ul',
+    content: ['A','B','C'],
+    itemViewClass: Ember.View.extend({
+      template: Ember.Handlebars.compile("the letter: {{view.content}}")
+    })
+  });
 
-        anUndorderedListView.appendTo('body')
+  anUndorderedListView.appendTo('body');
+  ```
 
   Will result in the following HTML structure
 
-        <ul class="ember-view a-collection">
-          <li class="ember-view">the letter: A</li>
-          <li class="ember-view">the letter: B</li>
-          <li class="ember-view">the letter: C</li>
-        </ul>
+  ``` html
+  <ul class="ember-view a-collection">
+    <li class="ember-view">the letter: A</li>
+    <li class="ember-view">the letter: B</li>
+    <li class="ember-view">the letter: C</li>
+  </ul>
+  ```
 
   Additional tagName pairs can be provided by adding to `Ember.CollectionView.CONTAINER_MAP `
 
-        Ember.CollectionView.CONTAINER_MAP['article'] = 'section'
+  ``` javascript
+  Ember.CollectionView.CONTAINER_MAP['article'] = 'section'
+  ```
 
 
   ## Empty View
@@ -96,23 +107,27 @@ var get = Ember.get, set = Ember.set, fmt = Ember.String.fmt;
   `emptyView` property. If the `content` property of a `CollectionView` is set to `null`
   or an empty array, an instance of this view will be the `CollectionView`s only child.
 
-        aListWithNothing = Ember.CollectionView.create({
-          classNames: ['nothing']
-          content: null,
-          emptyView: Ember.View.extend({
-            template: Ember.Handlebars.compile("The collection is empty")
-          })
-        })
+  ``` javascript
+  aListWithNothing = Ember.CollectionView.create({
+    classNames: ['nothing']
+    content: null,
+    emptyView: Ember.View.extend({
+      template: Ember.Handlebars.compile("The collection is empty")
+    })
+  });
 
-        aListWithNothing.appendTo('body')
+  aListWithNothing.appendTo('body');
+  ```
 
   Will result in the following HTML structure
 
-        <div class="ember-view nothing">
-          <div class="ember-view">
-            The collection is empty
-          </div>
-        </div>
+  ``` html
+  <div class="ember-view nothing">
+    <div class="ember-view">
+      The collection is empty
+    </div>
+  </div>
+  ```
 
   ## Adding and Removing items
   The `childViews` property of a `CollectionView` should not be directly manipulated. Instead,

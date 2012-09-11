@@ -13,38 +13,44 @@ var get = Ember.get, set = Ember.set;
 
   An empty `<body>` and the following application code:
 
-      AView = Ember.View.extend({
-        classNames: ['a-view-with-layout'],
-        layout: Ember.Handlebars.compile('<div class="wrapper">{{ yield }}</div>'),
-        template: Ember.Handlebars.compile('<span>I am wrapped</span>')
-      })
+  ``` javascript
+  AView = Ember.View.extend({
+    classNames: ['a-view-with-layout'],
+    layout: Ember.Handlebars.compile('<div class="wrapper">{{ yield }}</div>'),
+    template: Ember.Handlebars.compile('<span>I am wrapped</span>')
+  });
 
-      aView = AView.create()
-      aView.appendTo('body')
+  aView = AView.create();
+  aView.appendTo('body');
+  ```
 
   Will result in the following HTML output:
 
-      <body>
-        <div class='ember-view a-view-with-layout'>
-          <div class="wrapper">
-            <span>I am wrapped</span>
-          </div>
-        </div>
-      </body>
+  ``` html
+  <body>
+    <div class='ember-view a-view-with-layout'>
+      <div class="wrapper">
+        <span>I am wrapped</span>
+      </div>
+    </div>
+  </body>
+  ```
 
   The yield helper cannot be used outside of a template assigned to an `Ember.View`'s `layout` property
   and will throw an error if attempted.
 
-      BView = Ember.View.extend({
-        classNames: ['a-view-with-layout'],
-        template: Ember.Handlebars.compile('{{yield}}')
-      })
+  ``` javascript
+  BView = Ember.View.extend({
+    classNames: ['a-view-with-layout'],
+    template: Ember.Handlebars.compile('{{yield}}')
+  });
 
-      bView = BView.create()
-      bView.appendTo('body')
+  bView = BView.create();
+  bView.appendTo('body');
 
-      // throws
-      // Uncaught Error: assertion failed: You called yield in a template that was not a layout
+  // throws
+  // Uncaught Error: assertion failed: You called yield in a template that was not a layout
+  ```
 
   @method yield
   @for Ember.Handlebars.helpers

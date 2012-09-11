@@ -105,7 +105,9 @@ EmberHandlebars.registerHelper('_triageMustache', function(property, fn) {
   changes. For example, if you wanted to print the `title` property of
   `content`:
 
-      {{bind "content.title"}}
+  ``` handlebars
+  {{bind "content.title"}}
+  ```
 
   This will return the `title` property as a string, then create a new
   observer at the specified path. If it changes, it will update the value in
@@ -136,9 +138,11 @@ EmberHandlebars.registerHelper('bind', function(property, fn) {
   Use the `boundIf` helper to create a conditional that re-evaluates
   whenever the bound value changes.
 
-      {{#boundIf "content.shouldDisplayTitle"}}
-        {{content.title}}
-      {{/boundIf}}
+  ``` handlebars
+  {{#boundIf "content.shouldDisplayTitle"}}
+    {{content.title}}
+  {{/boundIf}}
+  ```
 
   @method boundIf
   @for Ember.Handlebars.helpers
@@ -242,7 +246,9 @@ EmberHandlebars.registerHelper('unless', function(context, options) {
   `bindAttr` allows you to create a binding between DOM element attributes and
   Ember objects. For example:
 
-      <img {{bindAttr src="imageUrl" alt="imageTitle"}}>
+  ``` handlebars
+  <img {{bindAttr src="imageUrl" alt="imageTitle"}}>
+  ```
 
   @method bindAttr
   @for Ember.Handlebars.helpers

@@ -88,7 +88,7 @@ Ember.HistoryLocation = Ember.Object.extend({
   /**
     @private
 
-    Used when using {{action}} helper.  The url is always appended to the rootURL.
+    Used when using `{{action}}` helper.  The url is always appended to the rootURL.
 
     @method formatURL
     @param url {String}

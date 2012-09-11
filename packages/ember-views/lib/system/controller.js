@@ -32,15 +32,19 @@ Ember.ControllerMixin.reopen({
     For example, an application view's template may look like
     this:
 
-        <h1>My Blog</h1>
-        {{outlet}}
+    ``` handlebars
+    <h1>My Blog</h1>
+    {{outlet}}
+    ```
 
     The view for this outlet is specified by assigning a
     `view` property to the application's controller. The
     following code will assign a new `App.PostsView` to
     that outlet:
 
-        applicationController.connectOutlet('posts');
+    ``` javascript
+    applicationController.connectOutlet('posts');
+    ```
 
     In general, you will also want to assign a controller
     to the newly created view. By convention, a controller
@@ -58,26 +62,34 @@ Ember.ControllerMixin.reopen({
     You can supply a `content` for the controller by supplying
     a final argument after the view class:
 
-        applicationController.connectOutlet('posts', App.Post.find());
+    ``` javascript
+    applicationController.connectOutlet('posts', App.Post.find());
+    ```
 
     You can specify a particular outlet to use. For example, if your main
     template looks like:
 
-        <h1>My Blog</h1>
-        {{outlet master}}
-        {{outlet detail}}
+    ``` handlebars
+    <h1>My Blog</h1>
+    {{outlet master}}
+    {{outlet detail}}
+    ```
 
     You can assign an `App.PostsView` to the master outlet:
 
-        applicationController.connectOutlet({
-          name: 'posts',
-          outletName: 'master',
-          context: App.Post.find()
-        });
+    ``` javascript
+    applicationController.connectOutlet({
+      name: 'posts',
+      outletName: 'master',
+      context: App.Post.find()
+    });
+    ```
 
     You can write this as:
 
-        applicationController.connectOutlet('master', 'posts', App.Post.find());
+    ``` javascript
+    applicationController.connectOutlet('master', 'posts', App.Post.find());
+    ```
 
 
     @method connectOutlet

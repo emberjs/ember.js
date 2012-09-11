@@ -27,17 +27,21 @@ var get = Ember.get, set = Ember.set;
   For example, imagine you wanted to display a list of items fetched via an XHR
   request. Create an Ember.ArrayController and set its `content` property:
 
-      MyApp.listController = Ember.ArrayController.create();
+  ``` javascript
+  MyApp.listController = Ember.ArrayController.create();
 
-      $.get('people.json', function(data) {
-        MyApp.listController.set('content', data);
-      });
+  $.get('people.json', function(data) {
+    MyApp.listController.set('content', data);
+  });
+  ```
 
   Then, create a view that binds to your new controller:
 
-      {{#each MyApp.listController}}
-        {{firstName}} {{lastName}}
-      {{/each}}
+  ``` handlebars
+  {{#each MyApp.listController}}
+    {{firstName}} {{lastName}}
+  {{/each}}
+  ```
 
   Although you are binding to the controller, the behavior of this controller
   is to pass through any methods or properties to the underlying array. This
