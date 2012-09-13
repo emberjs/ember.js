@@ -309,7 +309,7 @@ Ember.Application = Ember.Namespace.extend(
   */
   initialize: function(router) {
     var injections = get(this.constructor, 'injections'),
-        namespace = this, properties;
+        namespace = this;
 
     if (!router && Ember.Router.detect(namespace['Router'])) {
       router = namespace['Router'].create();
@@ -328,30 +328,16 @@ Ember.Application = Ember.Namespace.extend(
       set(router, 'namespace', this);
     }
 
-    // Sort injections by their befores and afters.
-    // NOTE: Injections cannot have both a before and an after.
-    injections.sort(function(a, b) {
-      if (a.before) {
-        if (!b.before || a.before === b.name) { return -1; }
-      } else if (a.after) {
-        if (!b.after || a.after === b.name) { return 1; }
-      }
+    var graph = new Ember.DAG(), i, injection;
+    for (i=0; i<injections.length; i++) {
+      injection = injections[i];
+      graph.addEdges(injection.name, injection.injection, injection.before, injection.after);
+    }
 
-      if (b.before) {
-        if (!a.before || b.before === a.name) { return 1; }
-      } else if (b.after) {
-        if (!a.after || b.after === a.name) { return -1; }
-      }
-
-      return 0;
-    });
-
-    injections.forEach(function(injection) {
-      // Grab properties before each injection, in case an injection added
-      // properties to the namespace.
-      properties = Ember.A(Ember.keys(namespace));
+    graph.topsort(function (vertex) {
+      var injection = vertex.value, properties = Ember.A(Ember.keys(namespace));
       properties.forEach(function(property) {
-        injection.injection(namespace, router, property);
+        injection(namespace, router, property);
       });
     });
 
