@@ -182,7 +182,7 @@ Ember.SortableMixin = Ember.Mixin.create(Ember.MutableEnumerable,
         oldIndex = arrangedContent.indexOf(item),
         newIndex = this._binarySearch(item, 0, get(arrangedContent, 'length'));
 
-    if (newIndex != oldIndex) {
+    if (newIndex !== oldIndex) {
       arrangedContent.removeObject(item);
       this.insertItemSorted(item);
     }
