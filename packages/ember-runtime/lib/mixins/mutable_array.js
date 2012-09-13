@@ -113,9 +113,6 @@ Ember.MutableArray = Ember.Mixin.create(Ember.Array, Ember.MutableEnumerable,
     @returns {Object} receiver
   */
   removeAt: function(start, len) {
-
-    var delta = 0;
-
     if ('number' === typeof start) {
 
       if ((start < 0) || (start >= get(this, 'length'))) {
