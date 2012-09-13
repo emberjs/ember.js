@@ -9,7 +9,7 @@ module("Ember.Sortable");
 module("Ember.Sortable with content", {
   setup: function() {
     Ember.run(function() {
-      unsortedArray = Ember.A(Ember.A(Ember.$.extend(true, [], array)).copy());
+      unsortedArray = Ember.A(Ember.A(array).copy());
 
       sortedArrayController = Ember.ArrayProxy.create(Ember.SortableMixin, {
         content: unsortedArray
@@ -89,9 +89,13 @@ test("don't remove and insert if position didn't change", function() {
     }
   });
 
+  var obj = {id: 4, name: 'Scumbag Tomhuda'};
+
+  sortedArrayController.pushObject(obj);
+
   sortedArrayController.set('sortProperties', ['name']);
 
-  Ember.set(sortedArrayController.objectAt(0), 'name', 'Scumbag Brynjolfsson');
+  Ember.set(obj, 'name', 'Scumbag Tomhuda Katzdale');
 
   ok(!insertItemSortedCalled, "insertItemSorted should not have been called");
 });
