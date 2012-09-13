@@ -1,9 +1,15 @@
 var get = Ember.get, set = Ember.set;
 
 /**
-  @class
+@module ember
+@submodule ember-states
+*/
 
+/**
+  @class State
+  @namespace Ember
   @extends Ember.Object
+  @uses Ember.Evented
 */
 Ember.State = Ember.Object.extend(Ember.Evented,
 /** @scope Ember.State.prototype */{
@@ -12,6 +18,7 @@ Ember.State = Ember.Object.extend(Ember.Evented,
   /**
     A reference to the parent state.
 
+    @property parentState
     @type Ember.State
   */
   parentState: null,
@@ -20,6 +27,7 @@ Ember.State = Ember.Object.extend(Ember.Evented,
   /**
     The name of this state.
 
+    @property name
     @type String
   */
   name: null,
@@ -27,8 +35,8 @@ Ember.State = Ember.Object.extend(Ember.Evented,
   /**
     The full path to this state.
 
+    @property path
     @type String
-    @readOnly
   */
   path: Ember.computed(function() {
     var parentPath = get(this, 'parentState.path'),
@@ -46,6 +54,9 @@ Ember.State = Ember.Object.extend(Ember.Evented,
 
     Override the default event firing from Ember.Evented to
     also call methods with the given name.
+
+    @method trigger
+    @param name
   */
   trigger: function(name) {
     if (this[name]) {
@@ -54,7 +65,6 @@ Ember.State = Ember.Object.extend(Ember.Evented,
     this._super.apply(this, arguments);
   },
 
-  /** @private */
   init: function() {
     var states = get(this, 'states'), foundStates;
     set(this, 'childStates', Ember.A());
@@ -94,7 +104,6 @@ Ember.State = Ember.Object.extend(Ember.Evented,
     set(this, 'pathsCacheNoContext', {});
   },
 
-  /** @private */
   setupChild: function(states, name, value) {
     if (!value) { return false; }
 
@@ -129,6 +138,7 @@ Ember.State = Ember.Object.extend(Ember.Evented,
     in the state hierarchy. This is false if the state has child
     states; otherwise it is true.
 
+    @property isLeaf
     @type Boolean
   */
   isLeaf: Ember.computed(function() {
@@ -138,13 +148,16 @@ Ember.State = Ember.Object.extend(Ember.Evented,
   /**
     A boolean value indicating whether the state takes a context.
     By default we assume all states take contexts.
+
+    @property hasContext
+    @default true
   */
   hasContext: true,
 
   /**
     This is the default transition event.
 
-    @event
+    @event setup
     @param {Ember.StateManager} manager
     @param context
     @see Ember.StateManager#transitionEvent
@@ -154,7 +167,7 @@ Ember.State = Ember.Object.extend(Ember.Evented,
   /**
     This event fires when the state is entered.
 
-    @event
+    @event enter
     @param {Ember.StateManager} manager
   */
   enter: Ember.K,
@@ -162,7 +175,7 @@ Ember.State = Ember.Object.extend(Ember.Evented,
   /**
     This event fires when the state is exited.
 
-    @event
+    @event exit
     @param {Ember.StateManager} manager
   */
   exit: Ember.K
@@ -174,8 +187,6 @@ Ember.State.reopenClass(
 /** @scope Ember.State */{
 
   /**
-  @static
-
   Creates an action function for transitioning to the named state while preserving context.
 
   The following example StateManagers are equivalent:
@@ -196,6 +207,8 @@ Ember.State.reopenClass(
         stateTwo: Ember.State.create({})
       })
 
+  @method transitionTo
+  @static
   @param {String} target
   */
   transitionTo: function(target) {

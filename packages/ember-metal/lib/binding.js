@@ -1,9 +1,3 @@
-// ==========================================================================
-// Project:  Ember Runtime
-// Copyright: ©2011 Strobe Inc. and contributors.
-// License:   Licensed under MIT license (see license.js)
-// ==========================================================================
-
 require('ember-metal/core'); // Ember.Logger
 require('ember-metal/accessors'); // get, set, trySet
 require('ember-metal/utils'); // guidFor, isArray, meta
@@ -11,17 +5,21 @@ require('ember-metal/observer'); // addObserver, removeObserver
 require('ember-metal/run_loop'); // Ember.run.schedule
 require('ember-metal/map');
 
+/**
+@module ember-metal
+*/
+
 // ..........................................................
 // CONSTANTS
 //
 
 /**
-  @static
-
   Debug parameter you can turn on. This will log all bindings that fire to
   the console. This should be disabled in production code. Note that you
   can also enable this from the console or temporarily.
 
+  @property LOG_BINDINGS
+  @for Ember
   @type Boolean
   @default false
 */
@@ -33,7 +31,6 @@ var get     = Ember.get,
     isGlobalPath = Ember.isGlobalPath;
 
 
-/** @private */
 function getWithGlobals(obj, path) {
   return get(isGlobalPath(path) ? window : obj, path);
 }
@@ -42,7 +39,6 @@ function getWithGlobals(obj, path) {
 // BINDING
 //
 
-/** @private */
 var Binding = function(toPath, fromPath) {
   this._direction = 'fwd';
   this._from = fromPath;
@@ -50,10 +46,17 @@ var Binding = function(toPath, fromPath) {
   this._directionMap = Ember.Map.create();
 };
 
-Binding.prototype = /** @scope Ember.Binding.prototype */ {
+/**
+@class Binding
+@namespace Ember
+*/
+
+Binding.prototype = {
   /**
     This copies the Binding so it can be connected to another object.
-    @returns {Ember.Binding}
+
+    @method copy
+    @return {Ember.Binding}
   */
   copy: function () {
     var copy = new Binding(this._to, this._from);
@@ -74,8 +77,9 @@ Binding.prototype = /** @scope Ember.Binding.prototype */ {
     you pass when you connect() the binding.  It follows the same rules as
     `get()` - see that method for more information.
 
+    @method from
     @param {String} propertyPath the property path to connect to
-    @returns {Ember.Binding} receiver
+    @return {Ember.Binding} receiver
   */
   from: function(path) {
     this._from = path;
@@ -91,8 +95,9 @@ Binding.prototype = /** @scope Ember.Binding.prototype */ {
     you pass when you connect() the binding.  It follows the same rules as
     `get()` - see that method for more information.
 
+    @method to
     @param {String|Tuple} propertyPath A property path or tuple
-    @returns {Ember.Binding} this
+    @return {Ember.Binding} this
   */
   to: function(path) {
     this._to = path;
@@ -105,14 +110,14 @@ Binding.prototype = /** @scope Ember.Binding.prototype */ {
     means that if you change the "to" side directly, the "from" side may have
     a different value.
 
-    @returns {Ember.Binding} receiver
+    @method oneWay
+    @return {Ember.Binding} receiver
   */
   oneWay: function() {
     this._oneWay = true;
     return this;
   },
 
-  /** @private */
   toString: function() {
     var oneWay = this._oneWay ? '[oneWay]' : '';
     return "Ember.Binding<" + guidFor(this) + ">(" + this._from + " -> " + this._to + ")" + oneWay;
@@ -127,8 +132,9 @@ Binding.prototype = /** @scope Ember.Binding.prototype */ {
     changes. This method will raise an exception if you have not set the
     from/to properties yet.
 
+    @method connect
     @param {Object} obj The root object for this binding.
-    @returns {Ember.Binding} this
+    @return {Ember.Binding} this
   */
   connect: function(obj) {
     Ember.assert('Must pass a valid object to Ember.Binding.connect()', !!obj);
@@ -151,10 +157,9 @@ Binding.prototype = /** @scope Ember.Binding.prototype */ {
     Disconnects the binding instance. Changes will no longer be relayed. You
     will not usually need to call this method.
 
-    @param {Object} obj
-      The root object you passed when connecting the binding.
-
-    @returns {Ember.Binding} this
+    @method disconnect
+    @param {Object} obj The root object you passed when connecting the binding.
+    @return {Ember.Binding} this
   */
   disconnect: function(obj) {
     Ember.assert('Must pass a valid object to Ember.Binding.disconnect()', !!obj);
@@ -176,17 +181,16 @@ Binding.prototype = /** @scope Ember.Binding.prototype */ {
   // PRIVATE
   //
 
-  /** @private - called when the from side changes */
+  /* called when the from side changes */
   fromDidChange: function(target) {
     this._scheduleSync(target, 'fwd');
   },
 
-  /** @private - called when the to side changes */
+  /* called when the to side changes */
   toDidChange: function(target) {
     this._scheduleSync(target, 'back');
   },
 
-  /** @private */
   _scheduleSync: function(obj, dir) {
     var directionMap = this._directionMap;
     var existingDir = directionMap.get(obj);
@@ -204,7 +208,6 @@ Binding.prototype = /** @scope Ember.Binding.prototype */ {
     }
   },
 
-  /** @private */
   _sync: function(obj) {
     var log = Ember.LOG_BINDINGS;
 
@@ -247,7 +250,6 @@ Binding.prototype = /** @scope Ember.Binding.prototype */ {
 
 };
 
-/** @private */
 function mixinProperties(to, from) {
   for (var key in from) {
     if (from.hasOwnProperty(key)) {
@@ -256,11 +258,13 @@ function mixinProperties(to, from) {
   }
 }
 
-mixinProperties(Binding,
-/** @scope Ember.Binding */ {
+mixinProperties(Binding, {
 
   /**
-    @see Ember.Binding.prototype.from
+    See {{#crossLink "Ember.Binding/from"}}{{/crossLink}}
+
+    @method from
+    @static
   */
   from: function() {
     var C = this, binding = new C();
@@ -268,7 +272,10 @@ mixinProperties(Binding,
   },
 
   /**
-    @see Ember.Binding.prototype.to
+    See {{#crossLink "Ember.Binding/to"}}{{/crossLink}}
+
+    @method to
+    @static
   */
   to: function() {
     var C = this, binding = new C();
@@ -277,16 +284,17 @@ mixinProperties(Binding,
 
   /**
     Creates a new Binding instance and makes it apply in a single direction.
-    A one-way binding will relay changes on the "from" side object (supplies
+    A one-way binding will relay changes on the "from" side object (supplied
     as the `from` argument) the "to" side, but not the other way around.
     This means that if you change the "to" side directly, the "from" side may have
     a different value.
 
+    See {{#crossLink "Binding/oneWay"}}{{/crossLink}}
+
+    @method oneWay
     @param {String} from from path.
     @param {Boolean} [flag] (Optional) passing nothing here will make the binding oneWay.  You can
-    instead pass false to disable oneWay, making the binding two way again.
-
-    @see Ember.Binding.prototype.oneWay
+      instead pass false to disable oneWay, making the binding two way again.
   */
   oneWay: function(from, flag) {
     var C = this, binding = new C(null, from);
@@ -296,8 +304,6 @@ mixinProperties(Binding,
 });
 
 /**
-  @class
-
   An Ember.Binding connects the properties of two objects so that whenever the
   value of one property changes, the other property will be changed also.
 
@@ -395,30 +401,46 @@ mixinProperties(Binding,
   create bindings for you. You should always use the highest-level APIs
   available, even if you understand how it works underneath.
 
+  @class Binding
+  @namespace Ember
   @since Ember 0.9
 */
 Ember.Binding = Binding;
+
 
 /**
   Global helper method to create a new binding.  Just pass the root object
   along with a to and from path to create and connect the binding.
 
-  @param {Object} obj
-    The root object of the transform.
+  @method bind
+  @for Ember
+  @param {Object} obj The root object of the transform.
 
-  @param {String} to
-    The path to the 'to' side of the binding.  Must be relative to obj.
+  @param {String} to The path to the 'to' side of the binding.
+    Must be relative to obj.
 
-  @param {String} from
-    The path to the 'from' side of the binding.  Must be relative to obj or
-    a global path.
+  @param {String} from The path to the 'from' side of the binding.
+    Must be relative to obj or a global path.
 
-  @returns {Ember.Binding} binding instance
+  @return {Ember.Binding} binding instance
 */
 Ember.bind = function(obj, to, from) {
   return new Ember.Binding(to, from).connect(obj);
 };
 
+/**
+  @method oneWay
+  @for Ember
+  @param {Object} obj The root object of the transform.
+
+  @param {String} to The path to the 'to' side of the binding.
+    Must be relative to obj.
+
+  @param {String} from The path to the 'from' side of the binding.
+    Must be relative to obj or a global path.
+
+  @return {Ember.Binding} binding instance
+*/
 Ember.oneWay = function(obj, to, from) {
   return new Ember.Binding(to, from).oneWay().connect(obj);
 };

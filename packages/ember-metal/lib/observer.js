@@ -1,14 +1,12 @@
-// ==========================================================================
-// Project:  Ember Metal
-// Copyright: ©2011 Strobe Inc. and contributors.
-// License:   Licensed under MIT license (see license.js)
-// ==========================================================================
-
 require('ember-metal/core');
 require('ember-metal/platform');
 require('ember-metal/utils');
 require('ember-metal/accessors');
 require('ember-metal/array');
+
+/**
+@module ember-metal
+*/
 
 var AFTER_OBSERVERS = ':change';
 var BEFORE_OBSERVERS = ':before';
@@ -17,7 +15,6 @@ var guidFor = Ember.guidFor;
 var deferred = 0;
 var array_Slice = [].slice;
 
-/** @private */
 var ObserverSet = function () {
   this.targetSet = {};
 };
@@ -38,7 +35,6 @@ ObserverSet.prototype.clear = function () {
   this.targetSet = {};
 };
 
-/** @private */
 var DeferredEventQueue = function() {
   this.targetSet = {};
   this.queue = [];
@@ -73,7 +69,6 @@ DeferredEventQueue.prototype.flush = function() {
 
 var queue = new DeferredEventQueue(), beforeObserverSet = new ObserverSet();
 
-/** @private */
 function notifyObservers(obj, eventName, keyName, forceNotification) {
   if (deferred && !forceNotification) {
     queue.push(obj, eventName, keyName);
@@ -82,18 +77,24 @@ function notifyObservers(obj, eventName, keyName, forceNotification) {
   }
 }
 
-/** @private */
 function flushObserverQueue() {
   beforeObserverSet.clear();
 
   queue.flush();
 }
 
+/**
+  @method beginPropertyChanges
+  @chainable
+*/
 Ember.beginPropertyChanges = function() {
   deferred++;
   return this;
 };
 
+/**
+  @method endPropertyChanges
+*/
 Ember.endPropertyChanges = function() {
   deferred--;
   if (deferred<=0) flushObserverQueue();
@@ -107,6 +108,10 @@ Ember.endPropertyChanges = function() {
         obj1.set('foo', mayBlowUpWhenSet);
         obj2.set('bar', baz);
       });
+
+  @method changeProperties
+  @param {Function} callback
+  @param [binding]
 */
 Ember.changeProperties = function(cb, binding){
   Ember.beginPropertyChanges();
@@ -121,6 +126,11 @@ Ember.changeProperties = function(cb, binding){
   Set a list of properties on an object. These properties are set inside
   a single `beginPropertyChanges` and `endPropertyChanges` batch, so
   observers will be buffered.
+
+  @method setProperties
+  @param target
+  @param {Hash} properties
+  @return target
 */
 Ember.setProperties = function(self, hash) {
   Ember.changeProperties(function(){
@@ -132,33 +142,51 @@ Ember.setProperties = function(self, hash) {
 };
 
 
-/** @private */
 function changeEvent(keyName) {
   return keyName+AFTER_OBSERVERS;
 }
 
-/** @private */
 function beforeEvent(keyName) {
   return keyName+BEFORE_OBSERVERS;
 }
 
+/**
+  @method addObserver
+  @param obj
+  @param {String} path
+  @param {Object|Function} targetOrMethod
+  @param {Function|String} [method]
+*/
 Ember.addObserver = function(obj, path, target, method) {
   Ember.addListener(obj, changeEvent(path), target, method);
   Ember.watch(obj, path);
   return this;
 };
 
-/** @private */
 Ember.observersFor = function(obj, path) {
   return Ember.listenersFor(obj, changeEvent(path));
 };
 
+/**
+  @method removeObserver
+  @param obj
+  @param {String} path
+  @param {Object|Function} targetOrMethod
+  @param {Function|String} [method]
+*/
 Ember.removeObserver = function(obj, path, target, method) {
   Ember.unwatch(obj, path);
   Ember.removeListener(obj, changeEvent(path), target, method);
   return this;
 };
 
+/**
+  @method addBeforeObserver
+  @param obj
+  @param {String} path
+  @param {Object|Function} targetOrMethod
+  @param {Function|String} [method]
+*/
 Ember.addBeforeObserver = function(obj, path, target, method) {
   Ember.addListener(obj, beforeEvent(path), target, method);
   Ember.watch(obj, path);
@@ -169,7 +197,6 @@ Ember.addBeforeObserver = function(obj, path, target, method) {
 //
 // This should only be used by the target of the observer
 // while it is setting the observed path.
-/** @private */
 Ember._suspendBeforeObserver = function(obj, path, target, method, callback) {
   return Ember._suspendListener(obj, beforeEvent(path), target, method, callback);
 };
@@ -190,25 +217,29 @@ Ember._suspendObservers = function(obj, paths, target, method, callback) {
   return Ember._suspendListeners(obj, events, target, method, callback);
 };
 
-/** @private */
 Ember.beforeObserversFor = function(obj, path) {
   return Ember.listenersFor(obj, beforeEvent(path));
 };
 
+/**
+  @method removeBeforeObserver
+  @param obj
+  @param {String} path
+  @param {Object|Function} targetOrMethod
+  @param {Function|String} [method]
+*/
 Ember.removeBeforeObserver = function(obj, path, target, method) {
   Ember.unwatch(obj, path);
   Ember.removeListener(obj, beforeEvent(path), target, method);
   return this;
 };
 
-/** @private */
 Ember.notifyObservers = function(obj, keyName) {
   if (obj.isDestroying) { return; }
 
   notifyObservers(obj, changeEvent(keyName), keyName);
 };
 
-/** @private */
 Ember.notifyBeforeObservers = function(obj, keyName) {
   if (obj.isDestroying) { return; }
 

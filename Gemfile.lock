@@ -1,12 +1,4 @@
 GIT
-  remote: https://github.com/emberjs/docs-generator.git
-  revision: cfbc2a3aabc08de305224b290ad8f37f3ef5f847
-  specs:
-    ember-docs (0.1)
-      rack
-      thor
-
-GIT
   remote: https://github.com/lautis/uglifier.git
   revision: 45133bfdadc8f5056cb93423d2eedad3aed936bf
   specs:
@@ -80,7 +72,6 @@ PLATFORMS
 
 DEPENDENCIES
   colored
-  ember-docs!
   github_downloads!
   kicker
   rack

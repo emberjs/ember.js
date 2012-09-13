@@ -2,6 +2,12 @@ var escapeForRegex = function(text) {
   return text.replace(/[\-\[\]{}()*+?.,\\\^\$|#\s]/g, "\\$&");
 };
 
+/**
+  @class _RouteMatcher
+  @namespace Ember
+  @private
+  @extends Ember.Object
+*/
 Ember._RouteMatcher = Ember.Object.extend({
   state: null,
 

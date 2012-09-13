@@ -1,16 +1,22 @@
+/**
+@module ember
+@submodule ember-states
+*/
+
 var get = Ember.get, set = Ember.set, fmt = Ember.String.fmt;
 var arrayForEach = Ember.ArrayPolyfills.forEach;
 
 require('ember-states/state');
 
 /**
-  @private
-
   A Transition takes the enter, exit and resolve states and normalizes
   them:
 
   * takes any passed in contexts into consideration
   * adds in `initialState`s
+
+  @class Transition
+  @private
 */
 var Transition = function(raw) {
   this.enterStates = raw.enterStates.slice();
@@ -22,12 +28,11 @@ var Transition = function(raw) {
 
 Transition.prototype = {
   /**
-    @private
-
     Normalize the passed in enter, exit and resolve states.
 
     This process also adds `finalState` and `contexts` to the Transition object.
 
+    @method normalize
     @param {Ember.StateManager} manager the state manager running the transition
     @param {Array} contexts a list of contexts passed into `transitionTo`
   */
@@ -39,12 +44,11 @@ Transition.prototype = {
   },
 
   /**
-    @private
-
     Match each of the contexts passed to `transitionTo` to a state.
     This process may also require adding additional enter and exit
     states if there are more contexts than enter states.
 
+    @method matchContextsToStates
     @param {Array} contexts a list of contexts passed into `transitionTo`
   */
   matchContextsToStates: function(contexts) {
@@ -117,9 +121,9 @@ Transition.prototype = {
   },
 
   /**
-    @private
-
     Add any `initialState`s to the list of enter states.
+
+    @method addInitialStates
   */
   addInitialStates: function() {
     var finalState = this.finalState, initialState;
@@ -137,12 +141,11 @@ Transition.prototype = {
   },
 
   /**
-    @private
-
     Remove any states that were added because the number of contexts
     exceeded the number of explicit enter states, but the context has
     not changed since the last time the state was entered.
 
+    @method removeUnchangedContexts
     @param {Ember.StateManager} manager passed in to look up the last
       context for a states
   */
@@ -165,8 +168,6 @@ Transition.prototype = {
 };
 
 /**
-  @class
-
   StateManager is part of Ember's implementation of a finite state machine. A StateManager
   instance manages a number of properties that are instances of `Ember.State`,
   tracks the current active state, and triggers callbacks when states have changed.
@@ -530,14 +531,20 @@ Transition.prototype = {
         }),
         stateTwo: Ember.State.create({})
       })
-**/
-Ember.StateManager = Ember.State.extend(
-/** @scope Ember.StateManager.prototype */ {
 
+  @class StateManager
+  @namespace Ember
+  @extends Ember.State
+**/
+Ember.StateManager = Ember.State.extend({
   /**
+    @private
+
     When creating a new statemanager, look for a default state to transition
     into. This state can either be named `start`, or can be specified using the
     `initialState` property.
+
+    @method init
   */
   init: function() {
     this._super();
@@ -580,8 +587,8 @@ Ember.StateManager = Ember.State.extend(
     The current state from among the manager's possible states. This property should
     not be set directly.  Use `transitionTo` to move between states by name.
 
+    @property currentState
     @type Ember.State
-    @readOnly
   */
   currentState: null,
 
@@ -589,8 +596,8 @@ Ember.StateManager = Ember.State.extend(
    The path of the current state. Returns a string representation of the current
    state.
 
+   @property currentPath
    @type String
-   @readOnly
   */
   currentPath: Ember.computed('currentState', function() {
     return get(this, 'currentState.path');
@@ -599,7 +606,8 @@ Ember.StateManager = Ember.State.extend(
   /**
     The name of transitionEvent that this stateManager will dispatch
 
-    @property {String}
+    @property transitionEvent
+    @type String
     @default 'setup'
   */
   transitionEvent: 'setup',
@@ -609,6 +617,7 @@ Ember.StateManager = Ember.State.extend(
     raised if you attempt to send an event to a state manager that is not
     handled by the current state or any of its parent states.
 
+    @property errorOnUnhandledEvents
     @type Boolean
     @default true
   */
@@ -657,9 +666,10 @@ Ember.StateManager = Ember.State.extend(
 
         // returns the dashboard state
 
+    @method getStateByPath
     @param {Ember.State} root the state to start searching from
     @param {String} path the state path to follow
-    @returns {Ember.State} the state at the end of the path
+    @return {Ember.State} the state at the end of the path
   */
   getStateByPath: function(root, path) {
     var parts = path.split('.'),
@@ -685,8 +695,6 @@ Ember.StateManager = Ember.State.extend(
   },
 
   /**
-    @private
-
     A state stores its child states in its `states` hash.
     This code takes a path like `posts.show` and looks
     up `origin.states.posts.states.show`.
@@ -694,6 +702,10 @@ Ember.StateManager = Ember.State.extend(
     It returns a list of all of the states from the
     origin, which is the list of states to call `enter`
     on.
+
+    @method findStateByPath
+    @param origin
+    @param path
   */
   findStatesByPath: function(origin, path) {
     if (!path || path === "") { return undefined; }

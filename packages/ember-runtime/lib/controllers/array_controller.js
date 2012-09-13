@@ -1,18 +1,15 @@
-// ==========================================================================
-// Project:  Ember Runtime
-// Copyright: ©2011 Strobe Inc. and contributors.
-// License:   Licensed under MIT license (see license.js)
-// ==========================================================================
-
 require('ember-runtime/system/array_proxy');
 require('ember-runtime/controllers/controller');
 require('ember-runtime/mixins/sortable');
 
+/**
+@module ember
+@submodule ember-runtime
+*/
+
 var get = Ember.get, set = Ember.set;
 
 /**
-  @class
-
   Ember.ArrayController provides a way for you to publish a collection of objects
   so that you can easily bind to the collection from a Handlebars #each helper,
   an Ember.CollectionView, or other controllers.
@@ -24,17 +21,21 @@ var get = Ember.get, set = Ember.set;
   For example, imagine you wanted to display a list of items fetched via an XHR
   request. Create an Ember.ArrayController and set its `content` property:
 
-      MyApp.listController = Ember.ArrayController.create();
+  ``` javascript
+  MyApp.listController = Ember.ArrayController.create();
 
-      $.get('people.json', function(data) {
-        MyApp.listController.set('content', data);
-      });
+  $.get('people.json', function(data) {
+    MyApp.listController.set('content', data);
+  });
+  ```
 
   Then, create a view that binds to your new controller:
 
-      {{#each MyApp.listController}}
-        {{firstName}} {{lastName}}
-      {{/each}}
+  ``` handlebars
+  {{#each MyApp.listController}}
+    {{firstName}} {{lastName}}
+  {{/each}}
+  ```
 
   Although you are binding to the controller, the behavior of this controller
   is to pass through any methods or properties to the underlying array. This
@@ -46,9 +47,11 @@ var get = Ember.get, set = Ember.set;
   selection support. If you are creating something that is conceptually a
   controller, use this class.
 
+  @class ArrayController
+  @namespace Ember
   @extends Ember.ArrayProxy
-  @extends Ember.SortableMixin
-  @extends Ember.ControllerMixin
+  @uses Ember.SortableMixin
+  @uses Ember.ControllerMixin
 */
 
 Ember.ArrayController = Ember.ArrayProxy.extend(Ember.ControllerMixin,

@@ -1,8 +1,3 @@
-// ==========================================================================
-// Project:  Ember Runtime
-// Copyright: ©2006-2011 Apple Inc. and contributors.
-// License:   Licensed under MIT license (see license.js)
-// ==========================================================================
 /*globals module ok equals same test MyApp */
 
 // test parsing of query string

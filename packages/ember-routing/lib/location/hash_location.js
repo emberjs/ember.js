@@ -1,18 +1,21 @@
+/**
+@module ember
+@submodule ember-routing
+*/
+
 var get = Ember.get, set = Ember.set;
 
 /**
-  @class
-
   Ember.HashLocation implements the location API using the browser's
   hash. At present, it relies on a hashchange event existing in the
   browser.
 
+  @class HashLocation
+  @namespace Ember
   @extends Ember.Object
 */
-Ember.HashLocation = Ember.Object.extend(
-/** @scope Ember.HashLocation.prototype */ {
+Ember.HashLocation = Ember.Object.extend({
 
-  /** @private */
   init: function() {
     set(this, 'location', get(this, 'location') || window.location);
   },
@@ -21,6 +24,8 @@ Ember.HashLocation = Ember.Object.extend(
     @private
 
     Returns the current `location.hash`, minus the '#' at the front.
+
+    @method getURL
   */
   getURL: function() {
     return get(this, 'location').hash.substr(1);
@@ -32,6 +37,9 @@ Ember.HashLocation = Ember.Object.extend(
     Set the `location.hash` and remembers what was set. This prevents
     `onUpdateURL` callbacks from triggering when the hash was set by
     `HashLocation`.
+
+    @method setURL
+    @param path {String}
   */
   setURL: function(path) {
     get(this, 'location').hash = path;
@@ -44,6 +52,9 @@ Ember.HashLocation = Ember.Object.extend(
     Register a callback to be invoked when the hash changes. These
     callbacks will execute when the user presses the back or forward
     button, but not after `setURL` is invoked.
+
+    @method onUpdateURL
+    @param callback {Function}
   */
   onUpdateURL: function(callback) {
     var self = this;
@@ -67,12 +78,14 @@ Ember.HashLocation = Ember.Object.extend(
 
     This is used, for example, when using the {{action}} helper
     to generate a URL based on an event.
+
+    @method formatURL
+    @param url {String}
   */
   formatURL: function(url) {
     return '#'+url;
   },
 
-  /** @private */
   willDestroy: function() {
     var guid = Ember.guidFor(this);
 

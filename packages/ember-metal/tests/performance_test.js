@@ -1,4 +1,4 @@
-/**
+/*
   This test file is designed to capture performance regressions related to
   deferred computation. Things like run loops, computed properties, and bindings
   should run the minimum amount of times to achieve best performance, so any

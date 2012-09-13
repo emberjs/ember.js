@@ -1,9 +1,3 @@
-// ==========================================================================
-// Project:   Ember Views
-// Copyright: ©2006-2011 Strobe Inc. and contributors.
-// License:   Licensed under MIT license (see license.js)
-// ==========================================================================
-
 var set = Ember.set, get = Ember.get;
 
 module("Ember.View - Class Name Bindings");

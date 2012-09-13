@@ -1,9 +1,3 @@
-// ==========================================================================
-// Project:  Ember Runtime
-// Copyright: ©2011 Strobe Inc. and contributors.
-// License:   Licensed under MIT license (see license.js)
-// ==========================================================================
-
 module('system/run_loop/once_test');
 
 test('calling invokeOnce more than once invokes only once', function() {

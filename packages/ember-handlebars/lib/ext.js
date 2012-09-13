@@ -1,31 +1,18 @@
-// ==========================================================================
-// Project:   Ember Handlebars Views
-// Copyright: ©2011 Strobe Inc. and contributors.
-// License:   Licensed under MIT license (see license.js)
-// ==========================================================================
 /*globals Handlebars */
 
 require("ember-views/system/render_buffer");
 
+/**
+@module ember
+@submodule ember-handlebars
+*/
+
 var objectCreate = Ember.create;
 
-/**
-  @namespace
-  @name Handlebars
-  @private
-*/
-
-/**
-  @namespace
-  @name Handlebars.helpers
-  @description Helpers for Handlebars templates
-*/
 
 Ember.assert("Ember Handlebars requires Handlebars 1.0.beta.5 or greater", window.Handlebars && window.Handlebars.VERSION.match(/^1\.0\.beta\.[56789]$|^1\.0\.rc\.[123456789]+/));
 
 /**
-  @class
-
   Prepares the Handlebars templating library for use inside Ember's view
   system.
 
@@ -35,20 +22,36 @@ Ember.assert("Ember Handlebars requires Handlebars 1.0.beta.5 or greater", windo
 
   To create an Ember.Handlebars template, call Ember.Handlebars.compile().  This will
   return a function that can be used by Ember.View for rendering.
+
+  @class Handlebars
+  @namespace Ember
 */
 Ember.Handlebars = objectCreate(Handlebars);
 
+/**
+@class helpers
+@namespace Ember.Handlebars
+*/
 Ember.Handlebars.helpers = objectCreate(Handlebars.helpers);
 
 /**
   Override the the opcode compiler and JavaScript compiler for Handlebars.
+
+  @class Compiler
+  @namespace Ember.Handlebars
   @private
+  @constructor
 */
 Ember.Handlebars.Compiler = function() {};
 Ember.Handlebars.Compiler.prototype = objectCreate(Handlebars.Compiler.prototype);
 Ember.Handlebars.Compiler.prototype.compiler = Ember.Handlebars.Compiler;
 
-/** @private */
+/**
+  @class JavaScriptCompiler
+  @namespace Ember.Handlebars
+  @private
+  @constructor
+*/
 Ember.Handlebars.JavaScriptCompiler = function() {};
 Ember.Handlebars.JavaScriptCompiler.prototype = objectCreate(Handlebars.JavaScriptCompiler.prototype);
 Ember.Handlebars.JavaScriptCompiler.prototype.compiler = Ember.Handlebars.JavaScriptCompiler;
@@ -60,22 +63,29 @@ Ember.Handlebars.JavaScriptCompiler.prototype.initializeBuffer = function() {
 };
 
 /**
+  @private
+
   Override the default buffer for Ember Handlebars. By default, Handlebars creates
   an empty String at the beginning of each invocation and appends to it. Ember's
   Handlebars overrides this to append to a single shared buffer.
 
-  @private
+  @method appendToBuffer
+  @param string {String}
 */
 Ember.Handlebars.JavaScriptCompiler.prototype.appendToBuffer = function(string) {
   return "data.buffer.push("+string+");";
 };
 
 /**
-  Rewrite simple mustaches from {{foo}} to {{bind "foo"}}. This means that all simple
+  @private
+
+  Rewrite simple mustaches from `{{foo}}` to `{{bind "foo"}}`. This means that all simple
   mustaches in Ember's Handlebars will also set up an observer to keep the DOM
   up to date when the underlying property changes.
 
-  @private
+  @method mustache
+  @for Ember.Handlebars.Compiler
+  @param mustache
 */
 Ember.Handlebars.Compiler.prototype.mustache = function(mustache) {
   if (mustache.params.length || mustache.hash) {
@@ -99,6 +109,9 @@ Ember.Handlebars.Compiler.prototype.mustache = function(mustache) {
   Used for precompilation of Ember Handlebars templates. This will not be used during normal
   app execution.
 
+  @method precompile
+  @for Ember.Handlebars
+  @static
   @param {String} string The template to precompile
 */
 Ember.Handlebars.precompile = function(string) {
@@ -125,7 +138,11 @@ Ember.Handlebars.precompile = function(string) {
   The entry point for Ember Handlebars. This replaces the default Handlebars.compile and turns on
   template-local data and String parameters.
 
+  @method compile
+  @for Ember.Handlebars
+  @static
   @param {String} string The template to compile
+  @return {Function}
 */
 Ember.Handlebars.compile = function(string) {
   var ast = Handlebars.parse(string);
@@ -137,10 +154,16 @@ Ember.Handlebars.compile = function(string) {
 };
 
 /**
+  @private
+
   If a path starts with a reserved keyword, returns the root
   that should be used.
 
-  @private
+  @method normalizePath
+  @for Ember
+  @param root {Object}
+  @param path {String}
+  @param data {Hash}
 */
 var normalizePath = Ember.Handlebars.normalizePath = function(root, path, data) {
   var keywords = (data && data.keywords) || {},
@@ -171,16 +194,19 @@ var normalizePath = Ember.Handlebars.normalizePath = function(root, path, data) 
 
   return { root: root, path: path, isKeyword: isKeyword };
 };
+
+
 /**
   Lookup both on root and on window. If the path starts with
   a keyword, the corresponding object will be looked up in the
   template's data hash and used to resolve the path.
 
+  @method getPath
+  @for Ember.Handlebars
   @param {Object} root The object to look up the property on
   @param {String} path The path to be lookedup
   @param {Object} options The template's option hash
 */
-
 Ember.Handlebars.getPath = function(root, path, options) {
   var data = options && options.data,
       normalizedPath = normalizePath(root, path, data),
@@ -201,6 +227,8 @@ Ember.Handlebars.getPath = function(root, path, options) {
 };
 
 /**
+  @private
+
   Registers a helper in Handlebars that will be called if no property with the
   given name can be found on the current context object, and no helper with
   that name is registered.
@@ -208,7 +236,8 @@ Ember.Handlebars.getPath = function(root, path, options) {
   This throws an exception with a more helpful error message so the user can
   track down where the problem is happening.
 
-  @name Handlebars.helpers.helperMissing
+  @method helperMissing
+  @for Ember.Handlebars.helpers
   @param {String} path
   @param {Hash} options
 */

@@ -1,8 +1,14 @@
 require('ember-routing/routable');
 
 /**
-  @class
+@module ember
+@submodule ember-routing
+*/
+
+/**
+  @class Route
+  @namespace Ember
   @extends Ember.State
-  @extends Ember.Routable
+  @uses Ember.Routable
 */
 Ember.Route = Ember.State.extend(Ember.Routable);

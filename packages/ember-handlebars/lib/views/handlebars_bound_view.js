@@ -1,9 +1,9 @@
-// ==========================================================================
-// Project:   Ember Handlebars Views
-// Copyright: ©2011 Strobe Inc. and contributors.
-// License:   Licensed under MIT license (see license.js)
-// ==========================================================================
 /*globals Handlebars */
+
+/**
+@module ember
+@submodule ember-handlebars
+*/
 
 var get = Ember.get, set = Ember.set, getPath = Ember.Handlebars.getPath;
 
@@ -11,10 +11,6 @@ require('ember-views/views/view');
 require('ember-handlebars/views/metamorph_view');
 
 /**
-  @ignore
-  @private
-  @class
-
   Ember._HandlebarsBoundView is a private view created by the Handlebars `{{bind}}`
   helpers that is used to keep track of bound properties.
 
@@ -22,15 +18,20 @@ require('ember-handlebars/views/metamorph_view');
   of Ember._HandlebarsBoundView is created with the appropriate sub-template and
   context set up. When the associated property changes, just the template for
   this view will re-render.
+
+  @class _HandlebarsBoundView
+  @namespace Ember
+  @extends Ember._MetamorphView
+  @private
 */
 Ember._HandlebarsBoundView = Ember._MetamorphView.extend({
-/** @scope Ember._HandlebarsBoundView.prototype */
 
   /**
     The function used to determine if the `displayTemplate` or
     `inverseTemplate` should be rendered. This should be a function that takes
     a value and returns a Boolean.
 
+    @property shouldDisplayFunc
     @type Function
     @default null
   */
@@ -47,6 +48,7 @@ Ember._HandlebarsBoundView = Ember._MetamorphView.extend({
     foo}}` because the template should receive the object found by evaluating
     `foo`.
 
+    @property preserveContext
     @type Boolean
     @default false
   */
@@ -56,6 +58,7 @@ Ember._HandlebarsBoundView = Ember._MetamorphView.extend({
     If `preserveContext` is true, this is the object that will be used
     to render the template.
 
+    @property previousContext
     @type Object
   */
   previousContext: null,
@@ -63,6 +66,7 @@ Ember._HandlebarsBoundView = Ember._MetamorphView.extend({
   /**
     The template to render when `shouldDisplayFunc` evaluates to true.
 
+    @property displayTemplate
     @type Function
     @default null
   */
@@ -71,6 +75,7 @@ Ember._HandlebarsBoundView = Ember._MetamorphView.extend({
   /**
     The template to render when `shouldDisplayFunc` evaluates to false.
 
+    @property inverseTemplate
     @type Function
     @default null
   */
@@ -84,6 +89,7 @@ Ember._HandlebarsBoundView = Ember._MetamorphView.extend({
     In addition, if `preserveContext` is false, the object at this path will
     be passed to the template when rendering.
 
+    @property path
     @type String
     @default null
   */
@@ -95,6 +101,7 @@ Ember._HandlebarsBoundView = Ember._MetamorphView.extend({
     for paths that start with a keyword such as `view` or `controller`, the
     path root will be that resolved object.
 
+    @property pathRoot
     @type Object
   */
   pathRoot: null,
@@ -134,11 +141,12 @@ Ember._HandlebarsBoundView = Ember._MetamorphView.extend({
     true, the `displayTemplate` function will be rendered to DOM. Otherwise,
     `inverseTemplate`, if specified, will be rendered.
 
-    For example, if this Ember._HandlebarsBoundView represented the {{#with foo}}
+    For example, if this Ember._HandlebarsBoundView represented the `{{#with foo}}`
     helper, it would look up the `foo` property of its context, and
     `shouldDisplayFunc` would always return true. The object found by looking
     up `foo` would be passed to `displayTemplate`.
 
+    @method render
     @param {Ember.RenderBuffer} buffer
   */
   render: function(buffer) {

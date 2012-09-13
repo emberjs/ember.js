@@ -3,6 +3,11 @@
 require("metamorph");
 require("ember-views/views/view");
 
+/**
+@module ember
+@submodule ember-handlebars
+*/
+
 var set = Ember.set, get = Ember.get;
 
 // DOMManager should just abstract dom manipulation between jquery and metamorph
@@ -49,6 +54,12 @@ var DOMManager = {
 // The `morph` and `outerHTML` properties are internal only
 // and not observable.
 
+/**
+  @class _Metamorph
+  @namespace Ember
+  @extends Ember.Mixin
+  @private
+*/
 Ember._Metamorph = Ember.Mixin.create({
   isVirtual: true,
   tagName: '',
@@ -75,5 +86,12 @@ Ember._Metamorph = Ember.Mixin.create({
   domManager: DOMManager
 });
 
+/**
+  @class _MetamorphView
+  @namespace Ember
+  @extends Ember.View
+  @uses Ember._Metamorph
+  @private
+*/
 Ember._MetamorphView = Ember.View.extend(Ember._Metamorph);
 

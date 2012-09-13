@@ -1,9 +1,3 @@
-// ==========================================================================
-// Project:  Ember Runtime
-// Copyright: ©2011 Strobe Inc. and contributors.
-// License:   Licensed under MIT license (see license.js)
-// ==========================================================================
-
 module('Ember.isGlobalPath');
 
 test("global path's are recognized", function(){

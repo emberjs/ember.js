@@ -1,21 +1,19 @@
-// ==========================================================================
-// Project:  Ember Runtime
-// Copyright: ©2006-2011 Strobe Inc. and contributors.
-//            Portions ©2008-2011 Apple Inc. All rights reserved.
-// License:   Licensed under MIT license (see license.js)
-// ==========================================================================
-
 require('ember-runtime/core');
+
+/**
+@module ember
+@submodule ember-runtime
+*/
 
 
 /**
-  @namespace
-
   Implements some standard methods for comparing objects. Add this mixin to
   any class you create that can compare its instances.
 
   You should implement the compare() method.
 
+  @class Comparable
+  @namespace Ember
   @extends Ember.Mixin
   @since Ember 0.9
 */
@@ -24,9 +22,9 @@ Ember.Comparable = Ember.Mixin.create( /** @scope Ember.Comparable.prototype */{
   /**
     walk like a duck. Indicates that the object can be compared.
 
+    @property isComparable
     @type Boolean
     @default true
-    @constant
   */
   isComparable: true,
 
@@ -40,9 +38,10 @@ Ember.Comparable = Ember.Mixin.create( /** @scope Ember.Comparable.prototype */{
 
     Default implementation raises an exception.
 
+    @method compare
     @param a {Object} the first object to compare
     @param b {Object} the second object to compare
-    @returns {Integer} the result of the comparison
+    @return {Integer} the result of the comparison
   */
   compare: Ember.required(Function)
 
