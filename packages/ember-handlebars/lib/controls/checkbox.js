@@ -1,9 +1,3 @@
-// ==========================================================================
-// Project:   Ember Handlebars Views
-// Copyright: ©2011 Strobe Inc. and contributors.
-// License:   Licensed under MIT license (see license.js)
-// ==========================================================================
-
 require("ember-views/views/view");
 require("ember-handlebars/ext");
 

@@ -1,9 +1,3 @@
-// ==========================================================================
-// Project:  Ember Runtime
-// Copyright: ©2011 Strobe Inc.
-// License:   Licensed under MIT license (see license.js)
-// ==========================================================================
-
 /**
 @module ember
 @submodule ember-runtime

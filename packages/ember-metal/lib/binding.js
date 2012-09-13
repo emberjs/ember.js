@@ -1,9 +1,3 @@
-// ==========================================================================
-// Project:  Ember Runtime
-// Copyright: ©2011 Strobe Inc. and contributors.
-// License:   Licensed under MIT license (see license.js)
-// ==========================================================================
-
 require('ember-metal/core'); // Ember.Logger
 require('ember-metal/accessors'); // get, set, trySet
 require('ember-metal/utils'); // guidFor, isArray, meta

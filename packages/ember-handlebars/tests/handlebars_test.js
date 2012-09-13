@@ -1,8 +1,3 @@
-// ==========================================================================
-// Project:   Ember Handlebars Views
-// Copyright: ©2011 Strobe Inc. and contributors.
-// License:   Licensed under MIT license (see license.js)
-// ==========================================================================
 /*globals TemplateTests:true MyApp:true App:true */
 
 var get = Ember.get, set = Ember.set;

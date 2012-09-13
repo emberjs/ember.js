@@ -1,9 +1,3 @@
-// ==========================================================================
-// Project:   Ember Runtime
-// Copyright: ©2012 Strobe Inc. and contributors.
-// License:   Licensed under MIT license (see license.js)
-// ==========================================================================
-
 var obj;
 
 module("Ember.tryInvoke", {

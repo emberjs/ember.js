@@ -1,10 +1,3 @@
-// ==========================================================================
-// Project:  Ember Runtime
-// Copyright: ©2011 Strobe Inc.
-// License:   Licensed under MIT license (see license.js)
-// ==========================================================================
-
-
 module('system/mixin/binding_test');
 
 test('Defining a property ending in Binding should setup binding when applied', function() {

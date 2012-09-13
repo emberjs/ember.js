@@ -1,9 +1,3 @@
-// ==========================================================================
-// Project:   Ember Handlebars Views
-// Copyright: ©2011 Strobe Inc. and contributors.
-// License:   Licensed under MIT license (see license.js)
-// ==========================================================================
-
 var get = Ember.get, set = Ember.set, checkboxView, dispatcher;
 
 module("Ember.Checkbox", {
