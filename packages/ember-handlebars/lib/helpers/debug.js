@@ -1,12 +1,11 @@
-// ==========================================================================
-// Project:   Ember Handlebars Views
-// Copyright: ©2011 Strobe Inc. and contributors.
-// License:   Licensed under MIT license (see license.js)
-// ==========================================================================
-
 /*jshint debug:true*/
 
 require('ember-handlebars/ext');
+
+/**
+@module ember
+@submodule ember-handlebars
+*/
 
 var getPath = Ember.Handlebars.getPath, normalizePath = Ember.Handlebars.normalizePath;
 
@@ -14,9 +13,12 @@ var getPath = Ember.Handlebars.getPath, normalizePath = Ember.Handlebars.normali
   `log` allows you to output the value of a value in the current rendering
   context.
 
-      {{log myVariable}}
+  ``` handlebars
+  {{log myVariable}}
+  ```
 
-  @name Handlebars.helpers.log
+  @method log
+  @for Ember.Handlebars.helpers
   @param {String} property
 */
 Ember.Handlebars.registerHelper('log', function(property, options) {
@@ -32,9 +34,12 @@ Ember.Handlebars.registerHelper('log', function(property, options) {
   The `debugger` helper executes the `debugger` statement in the current
   context.
 
-      {{debugger}}
+  ``` handlebars
+  {{debugger}}
+  ```
 
-  @name Handlebars.helpers.debugger
+  @method debugger
+  @for Ember.Handlebars.helpers
   @param {String} property
 */
 Ember.Handlebars.registerHelper('debugger', function() {

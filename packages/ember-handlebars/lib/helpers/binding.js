@@ -1,12 +1,11 @@
-// ==========================================================================
-// Project:   Ember Handlebars Views
-// Copyright: ©2011 Strobe Inc. and contributors.
-// License:   Licensed under MIT license (see license.js)
-// ==========================================================================
-
 require('ember-handlebars/ext');
 require('ember-handlebars/views/handlebars_bound_view');
 require('ember-handlebars/views/metamorph_view');
+
+/**
+@module ember
+@submodule ember-handlebars
+*/
 
 var get = Ember.get, set = Ember.set, fmt = Ember.String.fmt;
 var getPath = Ember.Handlebars.getPath, normalizePath = Ember.Handlebars.normalizePath;
@@ -16,7 +15,6 @@ var EmberHandlebars = Ember.Handlebars, helpers = EmberHandlebars.helpers;
 
 // Binds a property into the DOM. This will create a hook in DOM that the
 // KVO system will look for and update if the property changes.
-/** @private */
 function bind(property, options, preserveContext, shouldDisplay, valueNormalizer) {
   var data = options.data,
       fn = options.fn,
@@ -50,7 +48,6 @@ function bind(property, options, preserveContext, shouldDisplay, valueNormalizer
 
     view.appendChild(bindView);
 
-    /** @private */
     var observer = function() {
       Ember.run.scheduleOnce('render', bindView, 'rerenderIfNeeded');
     };
@@ -70,6 +67,8 @@ function bind(property, options, preserveContext, shouldDisplay, valueNormalizer
 }
 
 /**
+  @private
+
   '_triageMustache' is used internally select between a binding and helper for
   the given context. Until this point, it would be hard to determine if the
   mustache is a property reference or a regular helper reference. This triage
@@ -77,11 +76,11 @@ function bind(property, options, preserveContext, shouldDisplay, valueNormalizer
 
   This would not be typically invoked by directly.
 
-  @private
-  @name Handlebars.helpers._triageMustache
+  @method _triageMustache
+  @for Ember.Handlebars.helpers
   @param {String} property Property/helperID to triage
   @param {Function} fn Context to provide for rendering
-  @returns {String} HTML string
+  @return {String} HTML string
 */
 EmberHandlebars.registerHelper('_triageMustache', function(property, fn) {
   Ember.assert("You cannot pass more than one argument to the _triageMustache helper", arguments.length <= 2);
@@ -94,11 +93,15 @@ EmberHandlebars.registerHelper('_triageMustache', function(property, fn) {
 });
 
 /**
+  @private
+
   `bind` can be used to display a value, then update that value if it
   changes. For example, if you wanted to print the `title` property of
   `content`:
 
-      {{bind "content.title"}}
+  ``` handlebars
+  {{bind "content.title"}}
+  ```
 
   This will return the `title` property as a string, then create a new
   observer at the specified path. If it changes, it will update the value in
@@ -107,11 +110,11 @@ EmberHandlebars.registerHelper('_triageMustache', function(property, fn) {
   it relies on Ember's KVO system.  For all other browsers this will be handled
   for you automatically.
 
-  @private
-  @name Handlebars.helpers.bind
+  @method bind
+  @for Ember.Handlebars.helpers
   @param {String} property Property to bind
   @param {Function} fn Context to provide for rendering
-  @returns {String} HTML string
+  @return {String} HTML string
 */
 EmberHandlebars.registerHelper('bind', function(property, fn) {
   Ember.assert("You cannot pass more than one argument to the bind helper", arguments.length <= 2);
@@ -124,18 +127,22 @@ EmberHandlebars.registerHelper('bind', function(property, fn) {
 });
 
 /**
+  @private
+
   Use the `boundIf` helper to create a conditional that re-evaluates
   whenever the bound value changes.
 
-      {{#boundIf "content.shouldDisplayTitle"}}
-        {{content.title}}
-      {{/boundIf}}
+  ``` handlebars
+  {{#boundIf "content.shouldDisplayTitle"}}
+    {{content.title}}
+  {{/boundIf}}
+  ```
 
-  @private
-  @name Handlebars.helpers.boundIf
+  @method boundIf
+  @for Ember.Handlebars.helpers
   @param {String} property Property to bind
   @param {Function} fn Context to provide for rendering
-  @returns {String} HTML string
+  @return {String} HTML string
 */
 EmberHandlebars.registerHelper('boundIf', function(property, fn) {
   var context = (fn.contexts && fn.contexts[0]) || this;
@@ -151,10 +158,11 @@ EmberHandlebars.registerHelper('boundIf', function(property, fn) {
 });
 
 /**
-  @name Handlebars.helpers.with
+  @method with
+  @for Ember.Handlebars.helpers
   @param {Function} context
   @param {Hash} options
-  @returns {String} HTML string
+  @return {String} HTML string
 */
 EmberHandlebars.registerHelper('with', function(context, options) {
   if (arguments.length === 4) {
@@ -196,10 +204,11 @@ EmberHandlebars.registerHelper('with', function(context, options) {
 
 
 /**
-  @name Handlebars.helpers.if
+  @method if
+  @for Ember.Handlebars.helpers
   @param {Function} context
   @param {Hash} options
-  @returns {String} HTML string
+  @return {String} HTML string
 */
 EmberHandlebars.registerHelper('if', function(context, options) {
   Ember.assert("You must pass exactly one argument to the if helper", arguments.length === 2);
@@ -209,10 +218,11 @@ EmberHandlebars.registerHelper('if', function(context, options) {
 });
 
 /**
-  @name Handlebars.helpers.unless
+  @method unless
+  @for Ember.Handlebars.helpers
   @param {Function} context
   @param {Hash} options
-  @returns {String} HTML string
+  @return {String} HTML string
 */
 EmberHandlebars.registerHelper('unless', function(context, options) {
   Ember.assert("You must pass exactly one argument to the unless helper", arguments.length === 2);
@@ -230,11 +240,14 @@ EmberHandlebars.registerHelper('unless', function(context, options) {
   `bindAttr` allows you to create a binding between DOM element attributes and
   Ember objects. For example:
 
-      <img {{bindAttr src="imageUrl" alt="imageTitle"}}>
+  ``` handlebars
+  <img {{bindAttr src="imageUrl" alt="imageTitle"}}>
+  ```
 
-  @name Handlebars.helpers.bindAttr
+  @method bindAttr
+  @for Ember.Handlebars.helpers
   @param {Hash} options
-  @returns {String} HTML string
+  @return {String} HTML string
 */
 EmberHandlebars.registerHelper('bindAttr', function(options) {
 
@@ -281,7 +294,6 @@ EmberHandlebars.registerHelper('bindAttr', function(options) {
 
     var observer, invoker;
 
-    /** @private */
     observer = function observer() {
       var result = getPath(pathRoot, path, options);
 
@@ -301,7 +313,6 @@ EmberHandlebars.registerHelper('bindAttr', function(options) {
       Ember.View.applyAttributeBindings(elem, attr, result);
     };
 
-    /** @private */
     invoker = function() {
       Ember.run.scheduleOnce('render', observer);
     };
@@ -329,6 +340,8 @@ EmberHandlebars.registerHelper('bindAttr', function(options) {
 });
 
 /**
+  @private
+
   Helper that, given a space-separated string of property paths and a context,
   returns an array of class names. Calling this method also has the side
   effect of setting up observers at those property paths, such that if they
@@ -340,19 +353,13 @@ EmberHandlebars.registerHelper('bindAttr', function(options) {
   "fooBar"). If the value is a string, it will add that string as the class.
   Otherwise, it will not add any new class name.
 
-  @param {Ember.Object} context
-    The context from which to lookup properties
-
-  @param {String} classBindings
-    A string, space-separated, of class bindings to use
-
-  @param {Ember.View} view
-    The view in which observers should look for the element to update
-
-  @param {Srting} bindAttrId
-    Optional bindAttr id used to lookup elements
-
-  @returns {Array} An array of class names to add
+  @method bindClasses
+  @for Ember.Handlebars
+  @param {Ember.Object} context The context from which to lookup properties
+  @param {String} classBindings A string, space-separated, of class bindings to use
+  @param {Ember.View} view The view in which observers should look for the element to update
+  @param {Srting} bindAttrId Optional bindAttr id used to lookup elements
+  @return {Array} An array of class names to add
 */
 EmberHandlebars.bindClasses = function(context, classBindings, view, bindAttrId, options) {
   var ret = [], newClass, value, elem;
@@ -400,7 +407,6 @@ EmberHandlebars.bindClasses = function(context, classBindings, view, bindAttrId,
 
     // Set up an observer on the context. If the property changes, toggle the
     // class name.
-    /** @private */
     observer = function() {
       // Get the current value of the property
       newClass = classStringForPath(pathRoot, parsedPath, options);
@@ -427,7 +433,6 @@ EmberHandlebars.bindClasses = function(context, classBindings, view, bindAttrId,
       }
     };
 
-    /** @private */
     invoker = function() {
       Ember.run.scheduleOnce('render', observer);
     };

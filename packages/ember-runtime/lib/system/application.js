@@ -1,14 +1,11 @@
-// ==========================================================================
-// Project:  Ember Runtime
-// Copyright: ©2011 Strobe Inc. and contributors.
-// License:   Licensed under MIT license (see license.js)
-// ==========================================================================
-
 require('ember-runtime/system/namespace');
 
 /**
-  @private
+@module ember
+@submodule ember-runtime
+*/
 
+/**
   Defines a namespace that will contain an executable application.  This is
   very similar to a normal namespace except that it is expected to include at
   least a 'ready' function which can be run to initialize the application.
@@ -28,6 +25,9 @@ require('ember-runtime/system/namespace');
         //..init code goes here...
       }
 
+  @class Application
+  @namespace Ember
+  @extends Ember.Namespace
 */
 Ember.Application = Ember.Namespace.extend();
 

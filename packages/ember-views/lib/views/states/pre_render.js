@@ -1,11 +1,9 @@
-// ==========================================================================
-// Project:   Ember - JavaScript Application Framework
-// Copyright: ©2006-2011 Strobe Inc. and contributors.
-//            Portions ©2008-2011 Apple Inc. All rights reserved.
-// License:   Licensed under MIT license (see license.js)
-// ==========================================================================
-
 require('ember-views/views/states/default');
+
+/**
+@module ember
+@submodule ember-views
+*/
 
 Ember.View.states.preRender = {
   parentState: Ember.View.states._default,

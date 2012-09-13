@@ -1,13 +1,13 @@
-// ==========================================================================
-// Project:   Ember Handlebars Views
-// Copyright: ©2011 Strobe Inc. and contributors.
-// License:   Licensed under MIT license (see license.js)
-// ==========================================================================
 /*globals Handlebars */
 
 // TODO: Don't require all of this module
 require('ember-handlebars');
 require('ember-handlebars/helpers/view');
+
+/**
+@module ember
+@submodule ember-handlebars
+*/
 
 var get = Ember.get, getPath = Ember.Handlebars.getPath, fmt = Ember.String.fmt;
 
@@ -25,28 +25,34 @@ var get = Ember.get, getPath = Ember.Handlebars.getPath, fmt = Ember.String.fmt;
 
   Given an empty `<body>` the following template:
 
-      <script type="text/x-handlebars">
-        {{#collection contentBinding="App.items"}}
-          Hi {{view.content.name}}
-        {{/collection}}
-      </script>
+  ``` handlebars
+  <script type="text/x-handlebars">
+    {{#collection contentBinding="App.items"}}
+      Hi {{view.content.name}}
+    {{/collection}}
+  </script>
+  ```
 
   And the following application code
 
-      App = Ember.Application.create()
-      App.items = [
-        Ember.Object.create({name: 'Dave'}),
-        Ember.Object.create({name: 'Mary'}),
-        Ember.Object.create({name: 'Sara'})
-      ]
+  ``` javascript
+  App = Ember.Application.create()
+  App.items = [
+    Ember.Object.create({name: 'Dave'}),
+    Ember.Object.create({name: 'Mary'}),
+    Ember.Object.create({name: 'Sara'})
+  ]
+  ```
 
   Will result in the HTML structure below
 
-      <div class="ember-view">
-        <div class="ember-view">Hi Dave</div>
-        <div class="ember-view">Hi Mary</div>
-        <div class="ember-view">Hi Sara</div>
-      </div>
+  ``` html
+  <div class="ember-view">
+    <div class="ember-view">Hi Dave</div>
+    <div class="ember-view">Hi Mary</div>
+    <div class="ember-view">Hi Sara</div>
+  </div>
+  ```
 
   ### Blockless Use
   If you provide an `itemViewClass` option that has its own `template` you can omit
@@ -54,68 +60,83 @@ var get = Ember.get, getPath = Ember.Handlebars.getPath, fmt = Ember.String.fmt;
 
   The following template:
 
-      <script type="text/x-handlebars">
-        {{collection contentBinding="App.items" itemViewClass="App.AnItemView"}}
-      </script>
+  ``` handlebars
+  <script type="text/x-handlebars">
+    {{collection contentBinding="App.items" itemViewClass="App.AnItemView"}}
+  </script>
+  ```
 
   And application code
 
-      App = Ember.Application.create()
-      App.items = [
-        Ember.Object.create({name: 'Dave'}),
-        Ember.Object.create({name: 'Mary'}),
-        Ember.Object.create({name: 'Sara'})
-      ]
+  ``` javascript
+  App = Ember.Application.create();
+  App.items = [
+    Ember.Object.create({name: 'Dave'}),
+    Ember.Object.create({name: 'Mary'}),
+    Ember.Object.create({name: 'Sara'})
+  ];
 
-      App.AnItemView = Ember.View.extend({
-        template: Ember.Handlebars.compile("Greetings {{view.content.name}}")
-      })
+  App.AnItemView = Ember.View.extend({
+    template: Ember.Handlebars.compile("Greetings {{view.content.name}}")
+  });
+  ```
 
   Will result in the HTML structure below
 
-      <div class="ember-view">
-        <div class="ember-view">Greetings Dave</div>
-        <div class="ember-view">Greetings Mary</div>
-        <div class="ember-view">Greetings Sara</div>
-      </div>
+  ``` html
+  <div class="ember-view">
+    <div class="ember-view">Greetings Dave</div>
+    <div class="ember-view">Greetings Mary</div>
+    <div class="ember-view">Greetings Sara</div>
+  </div>
+  ```
 
   ### Specifying a CollectionView subclass
+
   By default the `{{collection}}` helper will create an instance of `Ember.CollectionView`.
   You can supply a `Ember.CollectionView` subclass to the helper by passing it
   as the first argument:
 
-      <script type="text/x-handlebars">
-        {{#collection App.MyCustomCollectionClass contentBinding="App.items"}}
-          Hi {{view.content.name}}
-        {{/collection}}
-      </script>
+  ``` handlebars
+  <script type="text/x-handlebars">
+    {{#collection App.MyCustomCollectionClass contentBinding="App.items"}}
+      Hi {{view.content.name}}
+    {{/collection}}
+  </script>
+  ```
 
 
   ### Forwarded `item.*`-named Options
+
   As with the `{{view}}`, helper options passed to the `{{collection}}` will be set on
   the resulting `Ember.CollectionView` as properties. Additionally, options prefixed with
   `item` will be applied to the views rendered for each item (note the camelcasing):
 
-        <script type="text/x-handlebars">
-          {{#collection contentBinding="App.items"
-                        itemTagName="p"
-                        itemClassNames="greeting"}}
-            Howdy {{view.content.name}}
-          {{/collection}}
-        </script>
+  ``` handlebars
+  <script type="text/x-handlebars">
+    {{#collection contentBinding="App.items"
+                  itemTagName="p"
+                  itemClassNames="greeting"}}
+      Howdy {{view.content.name}}
+    {{/collection}}
+  </script>
+  ```
 
   Will result in the following HTML structure:
 
-      <div class="ember-view">
-        <p class="ember-view greeting">Howdy Dave</p>
-        <p class="ember-view greeting">Howdy Mary</p>
-        <p class="ember-view greeting">Howdy Sara</p>
-      </div>
-  
-  @name Handlebars.helpers.collection
+  ``` html
+  <div class="ember-view">
+    <p class="ember-view greeting">Howdy Dave</p>
+    <p class="ember-view greeting">Howdy Mary</p>
+    <p class="ember-view greeting">Howdy Sara</p>
+  </div>
+  ```
+
+  @method collection
+  @for Ember.Handlebars.helpers
   @param {String} path
   @param {Hash} options
-  @returns {String} HTML string
+  @return {String} HTML string
 */
 Ember.Handlebars.registerHelper('collection', function(path, options) {
   // If no path is provided, treat path param as options.
@@ -193,6 +214,4 @@ Ember.Handlebars.registerHelper('collection', function(path, options) {
 
   return Ember.Handlebars.helpers.view.call(this, collectionClass, options);
 });
-
-
 

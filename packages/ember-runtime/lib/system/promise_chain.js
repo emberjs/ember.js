@@ -1,10 +1,9 @@
-// ==========================================================================
-// Project:  Ember Runtime
-// Copyright: ©2011 Strobe Inc. and contributors.
-// License:   Licensed under MIT license (see license.js)
-// ==========================================================================
-
 require('ember-runtime/system/object');
+
+/**
+@module ember
+@submodule ember-runtime
+*/
 
 var get = Ember.get, set = Ember.set;
 
@@ -15,9 +14,6 @@ Ember._PromiseChain = Ember.Object.extend({
   abortCallback: Ember.K,
   promiseSuccessCallback: Ember.K,
 
-  /**
-    @private
-  */
   runNextPromise: function() {
     if (get(this, 'isDestroyed')) { return; }
 

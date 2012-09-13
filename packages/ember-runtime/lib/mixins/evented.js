@@ -1,10 +1,14 @@
 /**
- @class
+@module ember
+@submodule ember-runtime
+*/
 
- @extends Ember.Mixin
+/**
+  @class Evented
+  @namespace Ember
+  @extends Ember.Mixin
  */
-Ember.Evented = Ember.Mixin.create(
-  /** @scope Ember.Evented.prototype */ {
+Ember.Evented = Ember.Mixin.create({
   on: function(name, target, method) {
     Ember.addListener(this, name, target, method);
   },

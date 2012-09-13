@@ -1,9 +1,3 @@
-// ==========================================================================
-// Project:  Ember Metal
-// Copyright: ©2011 Strobe Inc. and contributors.
-// License:   Licensed under MIT license (see license.js)
-// ==========================================================================
-
 module("Ember.create()");
 
 test("should inherit the properties from the parent object", function() {

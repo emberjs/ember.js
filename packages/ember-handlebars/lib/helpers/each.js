@@ -2,6 +2,11 @@ require("ember-handlebars/ext");
 require("ember-views/views/collection_view");
 require("ember-handlebars/views/metamorph_view");
 
+/**
+@module ember
+@submodule ember-handlebars
+*/
+
 var get = Ember.get, set = Ember.set;
 
 Ember.Handlebars.EachView = Ember.CollectionView.extend(Ember._Metamorph, {
@@ -35,70 +40,88 @@ Ember.Handlebars.EachView = Ember.CollectionView.extend(Ember._Metamorph, {
 });
 
 /**
-  
   The `{{#each}}` helper loops over elements in a collection, rendering its block once for each item:
-  
-        Developers = [{name: 'Yehuda'},{name: 'Tom'}, {name: 'Paul'}];
-        
-        {{#each Developers}}
-          {{name}}
-        {{/each}}
-        
-  
+
+  ``` javascript
+  Developers = [{name: 'Yehuda'},{name: 'Tom'}, {name: 'Paul'}];
+  ```
+
+  ``` handlebars
+  {{#each Developers}}
+    {{name}}
+  {{/each}}
+  ```
+
   `{{each}}` supports an alternative syntax with element naming:
-        
-        {{#each person in Developers}}
-          {{person.name}}
-        {{/each}}
-  
+
+  ``` handlebars
+  {{#each person in Developers}}
+    {{person.name}}
+  {{/each}}
+  ```
+
   When looping over objects that do not have properties, `{{this}}` can be used to render the object:
-        
-        DeveloperNames = ['Yehuda', 'Tom', 'Paul']
-        
-        {{#each DeveloperNames}}
-          {{this}}
-        {{/each}}
-    
+
+  ``` javascript
+  DeveloperNames = ['Yehuda', 'Tom', 'Paul']
+  ```
+
+  ``` handlebars
+  {{#each DeveloperNames}}
+    {{this}}
+  {{/each}}
+  ```
+
   ### Blockless Use
+
   If you provide an `itemViewClass` option that has its own `template` you can omit
   the block in a similar way to how it can be done with the collection helper.
 
   The following template:
 
-      <script type="text/x-handlebars">
-        {{#view App.MyView }}
-          {{each view.items itemViewClass="App.AnItemView"}} 
-        {{/view}}
-      </script>
+  ``` handlebars
+  <script type="text/x-handlebars">
+    {{#view App.MyView }}
+      {{each view.items itemViewClass="App.AnItemView"}} 
+    {{/view}}
+  </script>
+  ```
 
   And application code
 
-      App = Ember.Application.create({
-        MyView: Ember.View.extend({
-          items: [
-            Ember.Object.create({name: 'Dave'}),
-            Ember.Object.create({name: 'Mary'}),
-            Ember.Object.create({name: 'Sara'})
-          ]
-        })
-      });
+  ``` javascript
+  App = Ember.Application.create({
+    MyView: Ember.View.extend({
+      items: [
+        Ember.Object.create({name: 'Dave'}),
+        Ember.Object.create({name: 'Mary'}),
+        Ember.Object.create({name: 'Sara'})
+      ]
+    })
+  });
 
-
-      App.AnItemView = Ember.View.extend({
-        template: Ember.Handlebars.compile("Greetings {{name}}")
-      })
+  App.AnItemView = Ember.View.extend({
+    template: Ember.Handlebars.compile("Greetings {{name}}")
+  });
       
-      App.initialize();
+  App.initialize();
+  ```
       
   Will result in the HTML structure below
 
-      <div class="ember-view">
-        <div class="ember-view">Greetings Dave</div>
-        <div class="ember-view">Greetings Mary</div>
-        <div class="ember-view">Greetings Sara</div>
-      </div>
-  
-  @name Handlebars.helpers.each
+  ``` html
+  <div class="ember-view">
+    <div class="ember-view">Greetings Dave</div>
+    <div class="ember-view">Greetings Mary</div>
+    <div class="ember-view">Greetings Sara</div>
+  </div>
+  ```
+
+
+  @method each
+  @for Ember.Handlebars.helpers
+  @param [name] {String} name for item (used with `in`)
+  @param path {String} path
 */
 Ember.Handlebars.registerHelper('each', function(path, options) {
   if (arguments.length === 4) {

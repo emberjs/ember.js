@@ -1,5 +1,10 @@
 require('ember-routing/resolved_state');
 
+/**
+@module ember
+@submodule ember-routing
+*/
+
 var get = Ember.get;
 
 // The Ember Routable mixin assumes the existance of a simple
@@ -29,7 +34,8 @@ var merge = function(original, hash) {
 };
 
 /**
-  @class
+  @class Routable
+  @namespace Ember
   @extends Ember.Mixin
 */
 Ember.Routable = Ember.Mixin.create({
@@ -62,6 +68,10 @@ Ember.Routable = Ember.Mixin.create({
     Whenever a routable state is entered, the context it was entered with
     is stashed so that we can regenerate the state's `absoluteURL` on
     demand.
+
+    @method stashContext
+    @param manager {Ember.StateManager}
+    @param context
   */
   stashContext: function(manager, context) {
     var serialized = this.serialize(manager, context);
@@ -82,6 +92,10 @@ Ember.Routable = Ember.Mixin.create({
     is notified to set the URL to the current absolute path.
 
     In general, this will update the browser's URL.
+
+    @method updateRoute
+    @param manager {Ember.StateManager}
+    @param location {Ember.Location}
   */
   updateRoute: function(manager, location) {
     if (get(this, 'isLeafRoute')) {
@@ -98,6 +112,10 @@ Ember.Routable = Ember.Mixin.create({
 
     This method is private, as it expects a serialized hash,
     not the original context object.
+
+    @method absoluteRoute
+    @param manager {Ember.StateManager}
+    @param hash {Hash}
   */
   absoluteRoute: function(manager, hash) {
     var parentState = get(this, 'parentState');
@@ -131,6 +149,9 @@ Ember.Routable = Ember.Mixin.create({
 
     At the moment, a state is routable if it has a string `route`
     property. This heuristic may change.
+
+    @property isRoutable
+    @type Boolean
   */
   isRoutable: Ember.computed(function() {
     return typeof get(this, 'route') === 'string';
@@ -140,6 +161,9 @@ Ember.Routable = Ember.Mixin.create({
     @private
 
     Determine if this is the last routeable state
+
+    @property isLeafRoute
+    @type Boolean
   */
   isLeafRoute: Ember.computed(function() {
     if (get(this, 'isLeaf')) { return true; }
@@ -151,6 +175,9 @@ Ember.Routable = Ember.Mixin.create({
 
     A _RouteMatcher object generated from the current route's `route`
     string property.
+
+    @property routeMatcher
+    @type Ember._RouteMatcher
   */
   routeMatcher: Ember.computed(function() {
     var route = get(this, 'route');
@@ -164,6 +191,9 @@ Ember.Routable = Ember.Mixin.create({
 
     Check whether the route has dynamic segments and therefore takes
     a context.
+
+    @property hasContext
+    @type Boolean
   */
   hasContext: Ember.computed(function() {
     var routeMatcher = get(this, 'routeMatcher');
@@ -178,6 +208,9 @@ Ember.Routable = Ember.Mixin.create({
     The model class associated with the current state. This property
     uses the `modelType` property, in order to allow it to be
     specified as a String.
+
+    @property modelClass
+    @type Ember.Object
   */
   modelClass: Ember.computed(function() {
     var modelType = get(this, 'modelType');
@@ -202,6 +235,9 @@ Ember.Routable = Ember.Mixin.create({
     The process of initializing an application with a router will
     pass the application's namespace into the router, which will be
     used here.
+
+    @method modelClassFor
+    @param namespace {Ember.Namespace}
   */
   modelClassFor: function(namespace) {
     var modelClass, routeMatcher, identifiers, match, className;
@@ -242,6 +278,10 @@ Ember.Routable = Ember.Mixin.create({
     will be looked up as `namespace.Post.find(1)`. This is
     designed to work seamlessly with Ember Data, but will work
     fine with any class that has a `find` method.
+
+    @method deserialize
+    @param manager {Ember.StateManager}
+    @param params {Hash}
   */
   deserialize: function(manager, params) {
     var modelClass, routeMatcher, param;
@@ -263,6 +303,10 @@ Ember.Routable = Ember.Mixin.create({
     `id` of `12`, the serialize method will produce:
 
         { blog_post_id: 12 }
+
+    @method serialize
+    @param manager {Ember.StateManager}
+    @param context
   */
   serialize: function(manager, context) {
     var modelClass, routeMatcher, namespace, param, id;
@@ -281,6 +325,9 @@ Ember.Routable = Ember.Mixin.create({
 
   /**
     @private
+    @method resolvePath
+    @param manager {Ember.StateManager}
+    @param path {String}
   */
   resolvePath: function(manager, path) {
     if (get(this, 'isLeafRoute')) { return Ember.A(); }
@@ -335,6 +382,10 @@ Ember.Routable = Ember.Mixin.create({
     For example, if you were in the /posts/1/comments state, and you
     moved into the /posts/2/comments state, `routePath` will be called
     on the state whose path is `/posts` with the path `/2/comments`.
+
+    @method routePath
+    @param manager {Ember.StateManager}
+    @param path {String}
   */
   routePath: function(manager, path) {
     if (get(this, 'isLeafRoute')) { return; }
@@ -366,6 +417,10 @@ Ember.Routable = Ember.Mixin.create({
 
     Its job is to move the state manager into a parent
     state of the state it will eventually move into.
+
+    @method unroutePath
+    @param router {Ember.Router}
+    @param path {String}
   */
   unroutePath: function(router, path) {
     var parentState = get(this, 'parentState');
@@ -407,12 +462,18 @@ Ember.Routable = Ember.Mixin.create({
     The `connectOutlets` event will be triggered once a
     state has been entered. It will be called with the
     route's context.
+
+    @event connectOutlets
+    @param router {Ember.Router}
+    @param [context*]
   */
   connectOutlets: Ember.K,
 
   /**
    The `navigateAway` event will be triggered when the
    URL changes due to the back/forward button
+
+   @event navigateAway
   */
   navigateAway: Ember.K
 });

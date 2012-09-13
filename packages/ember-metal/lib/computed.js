@@ -1,15 +1,12 @@
-// ==========================================================================
-// Project:  Ember Metal
-// Copyright: ©2011 Strobe Inc. and contributors.
-// License:   Licensed under MIT license (see license.js)
-// ==========================================================================
-
 require('ember-metal/core');
 require('ember-metal/platform');
 require('ember-metal/utils');
 require('ember-metal/properties');
 require('ember-metal/watching');
 
+/**
+@module ember-metal
+*/
 
 Ember.warn("Computed properties will soon be cacheable by default. To enable this in your app, set `ENV.CP_DEFAULT_CACHEABLE = true`.", Ember.CP_DEFAULT_CACHEABLE);
 
@@ -36,9 +33,7 @@ var get = Ember.get,
 //   __emberproto__: SRC_OBJ
 //  }
 
-/**
-  @private
-
+/*
   This function returns a map of unique dependencies for a
   given object and key.
 */
@@ -57,11 +52,7 @@ function keysForDep(obj, depsMeta, depKey) {
   return keys;
 }
 
-/**
-  @private
-
-  return obj[META_KEY].deps
-  */
+/* return obj[META_KEY].deps */
 function metaForDeps(obj, meta) {
   var deps = meta.deps;
   // If the current object has no dependencies...
@@ -78,7 +69,6 @@ function metaForDeps(obj, meta) {
   return deps;
 }
 
-/** @private */
 function addDependentKeys(desc, obj, keyName, meta) {
   // the descriptor has a list of dependent keys, so
   // add all of its dependent keys.
@@ -98,7 +88,6 @@ function addDependentKeys(desc, obj, keyName, meta) {
   }
 }
 
-/** @private */
 function removeDependentKeys(desc, obj, keyName, meta) {
   // the descriptor has a list of dependent keys, so
   // add all of its dependent keys.
@@ -122,23 +111,21 @@ function removeDependentKeys(desc, obj, keyName, meta) {
 // COMPUTED PROPERTY
 //
 
-/** @private */
+/**
+  @class ComputedProperty
+  @namespace Ember
+  @extends Ember.Descriptor
+  @constructor
+*/
 function ComputedProperty(func, opts) {
   this.func = func;
   this._cacheable = (opts && opts.cacheable !== undefined) ? opts.cacheable : Ember.CP_DEFAULT_CACHEABLE;
   this._dependentKeys = opts && opts.dependentKeys;
 }
 
-/**
-  @constructor
-*/
 Ember.ComputedProperty = ComputedProperty;
 ComputedProperty.prototype = new Ember.Descriptor();
 
-/**
-  @extends Ember.ComputedProperty
-  @private
-*/
 var ComputedPropertyPrototype = ComputedProperty.prototype;
 
 /**
@@ -158,11 +145,9 @@ var ComputedPropertyPrototype = ComputedProperty.prototype;
 
   Properties are cacheable by default.
 
-  @memberOf Ember.ComputedProperty.prototype
-  @name cacheable
-  @function
+  @method cacheable
   @param {Boolean} aFlag optional set to false to disable caching
-  @returns {Ember.ComputedProperty} receiver
+  @chainable
 */
 ComputedPropertyPrototype.cacheable = function(aFlag) {
   this._cacheable = aFlag !== false;
@@ -179,10 +164,8 @@ ComputedPropertyPrototype.cacheable = function(aFlag) {
         }.property().volatile()
       });
 
-  @memberOf Ember.ComputedProperty.prototype
-  @name volatile
-  @function
-  @returns {Ember.ComputedProperty} receiver
+  @method volatile
+  @chainable
 */
 ComputedPropertyPrototype.volatile = function() {
   return this.cacheable(false);
@@ -201,11 +184,9 @@ ComputedPropertyPrototype.volatile = function() {
         }).property('firstName', 'lastName')
       });
 
-  @memberOf Ember.ComputedProperty.prototype
-  @name property
-  @function
-  @param {String} path... zero or more property paths
-  @returns {Ember.ComputedProperty} receiver
+  @method property
+  @param {String} path* zero or more property paths
+  @chainable
 */
 ComputedPropertyPrototype.property = function() {
   var args = [];
@@ -234,11 +215,9 @@ ComputedPropertyPrototype.property = function() {
   exposes a public API for retrieving these values from classes,
   via the `metaForProperty()` function.
 
-  @memberOf Ember.ComputedProperty.prototype
-  @name meta
-  @function
+  @method meta
   @param {Hash} meta
-  @returns {Ember.ComputedProperty} property descriptor instance
+  @chainable
 */
 
 ComputedPropertyPrototype.meta = function(meta) {
@@ -250,7 +229,7 @@ ComputedPropertyPrototype.meta = function(meta) {
   }
 };
 
-/** @private - impl descriptor API */
+/* impl descriptor API */
 ComputedPropertyPrototype.willWatch = function(obj, keyName) {
   // watch already creates meta for this instance
   var meta = obj[META_KEY];
@@ -269,7 +248,7 @@ ComputedPropertyPrototype.didUnwatch = function(obj, keyName) {
   }
 };
 
-/** @private - impl descriptor API */
+/* impl descriptor API */
 ComputedPropertyPrototype.didChange = function(obj, keyName) {
   // _suspended is set via a CP.set to ensure we don't clear
   // the cached value set by the setter
@@ -284,7 +263,7 @@ ComputedPropertyPrototype.didChange = function(obj, keyName) {
   }
 };
 
-/** @private - impl descriptor API */
+/* impl descriptor API */
 ComputedPropertyPrototype.get = function(obj, keyName) {
   var ret, cache, meta;
   if (this._cacheable) {
@@ -301,7 +280,7 @@ ComputedPropertyPrototype.get = function(obj, keyName) {
   return ret;
 };
 
-/** @private - impl descriptor API */
+/* impl descriptor API */
 ComputedPropertyPrototype.set = function(obj, keyName, value) {
   var cacheable = this._cacheable,
       meta = metaFor(obj, cacheable),
@@ -339,7 +318,7 @@ ComputedPropertyPrototype.set = function(obj, keyName, value) {
   return ret;
 };
 
-/** @private - called when property is defined */
+/* called when property is defined */
 ComputedPropertyPrototype.setup = function(obj, keyName) {
   var meta = obj[META_KEY];
   if (meta && meta.watching[keyName]) {
@@ -347,7 +326,7 @@ ComputedPropertyPrototype.setup = function(obj, keyName) {
   }
 };
 
-/** @private - called before property is overridden */
+/* called before property is overridden */
 ComputedPropertyPrototype.teardown = function(obj, keyName) {
   var meta = metaFor(obj);
 
@@ -360,6 +339,7 @@ ComputedPropertyPrototype.teardown = function(obj, keyName) {
   return null; // no value to restore
 };
 
+
 /**
   This helper returns a new property descriptor that wraps the passed
   computed property function.  You can use this helper to define properties
@@ -370,10 +350,10 @@ ComputedPropertyPrototype.teardown = function(obj, keyName) {
   undefined you should set the value first.  In either case return the
   current value of the property.
 
-  @param {Function} func
-    The computed property function.
-
-  @returns {Ember.ComputedProperty} property descriptor instance
+  @method computed
+  @for Ember
+  @param {Function} func The computed property function.
+  @return {Ember.ComputedProperty} property descriptor instance
 */
 Ember.computed = function(func) {
   var args;
@@ -398,10 +378,11 @@ Ember.computed = function(func) {
   property that is generated lazily, without accidentally causing
   it to be created.
 
+  @method cacheFor
+  @for Ember
   @param {Object} obj the object whose property you want to check
   @param {String} key the name of the property whose cached value you want
                       to return
-
 */
 Ember.cacheFor = function cacheFor(obj, key) {
   var cache = metaFor(obj, false).cache;
@@ -411,12 +392,22 @@ Ember.cacheFor = function cacheFor(obj, key) {
   }
 };
 
+/**
+  @method computed.not
+  @for Ember
+  @param {String} dependentKey
+*/
 Ember.computed.not = function(dependentKey) {
   return Ember.computed(dependentKey, function(key) {
     return !get(this, dependentKey);
   }).cacheable();
 };
 
+/**
+  @method computed.empty
+  @for Ember
+  @param {String} dependentKey
+*/
 Ember.computed.empty = function(dependentKey) {
   return Ember.computed(dependentKey, function(key) {
     var val = get(this, dependentKey);
@@ -424,6 +415,11 @@ Ember.computed.empty = function(dependentKey) {
   }).cacheable();
 };
 
+/**
+  @method computed.bool
+  @for Ember
+  @param {String} dependentKey
+*/
 Ember.computed.bool = function(dependentKey) {
   return Ember.computed(dependentKey, function(key) {
     return !!get(this, dependentKey);

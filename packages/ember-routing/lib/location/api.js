@@ -1,6 +1,11 @@
+/**
+@module ember
+@submodule ember-routing
+*/
+
 var get = Ember.get, set = Ember.set;
 
-/**
+/*
   This file implements the `location` API used by Ember's router.
 
   That API is:
@@ -12,17 +17,19 @@ var get = Ember.get, set = Ember.set;
 
   Calling setURL will not trigger onUpdateURL callbacks.
 
-  TODO: This, as well as the Ember.Location documentation below, should
-  perhaps be moved so that it's visible in the JsDoc output.
+  TODO: This should perhaps be moved so that it's visible in the doc output.
 */
-/**
-  @class
 
+/**
   Ember.Location returns an instance of the correct implementation of
   the `location` API.
 
   You can pass it a `implementation` ('hash', 'history', 'none') to force a
   particular implementation.
+
+  @class Location
+  @namespace Ember
+  @static
 */
 Ember.Location = {
   create: function(options) {

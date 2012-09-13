@@ -1,9 +1,3 @@
-// ==========================================================================
-// Project:  Ember Runtime
-// Copyright: ©2011 Strobe Inc. and contributors.
-// License:   Licensed under MIT license (see license.js)
-// ==========================================================================
-
 // NOTE: A previous iteration differentiated between public and private props
 // as well as methods vs props.  We are just keeping these for testing; the
 // current impl doesn't care about the differences as much...

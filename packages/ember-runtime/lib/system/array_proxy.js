@@ -1,19 +1,15 @@
-// ==========================================================================
-// Project:  Ember Runtime
-// Copyright: ©2011 Strobe Inc. and contributors.
-// License:   Licensed under MIT license (see license.js)
-// ==========================================================================
-
 require('ember-runtime/mixins/mutable_array');
 require('ember-runtime/system/object');
 
+/**
+@module ember
+@submodule ember-runtime
+*/
 
 
 var get = Ember.get, set = Ember.set;
 
 /**
-  @class
-
   An ArrayProxy wraps any other object that implements Ember.Array and/or
   Ember.MutableArray, forwarding all requests. This makes it very useful for
   a number of binding use cases or other cases where being able to swap
@@ -41,9 +37,10 @@ var get = Ember.get, set = Ember.set;
       ap.get('firstObject'); // => 'DOG'
 
 
+  @class ArrayProxy
+  @namespace Ember
   @extends Ember.Object
-  @extends Ember.Array
-  @extends Ember.MutableArray
+  @uses Ember.MutableArray
 */
 Ember.ArrayProxy = Ember.Object.extend(Ember.MutableArray,
 /** @scope Ember.ArrayProxy.prototype */ {
@@ -52,6 +49,7 @@ Ember.ArrayProxy = Ember.Object.extend(Ember.MutableArray,
     The content array.  Must be an object that implements Ember.Array and/or
     Ember.MutableArray.
 
+    @property content
     @type Ember.Array
   */
   content: null,
@@ -60,6 +58,8 @@ Ember.ArrayProxy = Ember.Object.extend(Ember.MutableArray,
    The array that the proxy pretends to be. In the default `ArrayProxy`
    implementation, this and `content` are the same. Subclasses of `ArrayProxy`
    can override this property to provide things like sorting and filtering.
+   
+   @property arrangedContent
   */
   arrangedContent: Ember.computed('content', function() {
     return get(this, 'content');
@@ -72,10 +72,9 @@ Ember.ArrayProxy = Ember.Object.extend(Ember.MutableArray,
 
     This method will only be called if content is non-null.
 
-    @param {Number} idx
-      The index to retrieve.
-
-    @returns {Object} the value or undefined if none found
+    @method objectAtContent
+    @param {Number} idx The index to retrieve.
+    @return {Object} the value or undefined if none found
   */
   objectAtContent: function(idx) {
     return get(this, 'arrangedContent').objectAt(idx);
@@ -88,24 +87,23 @@ Ember.ArrayProxy = Ember.Object.extend(Ember.MutableArray,
 
     This method will only be called if content is non-null.
 
-    @param {Number} idx
-      The starting index
-
-    @param {Number} amt
-      The number of items to remove from the content.
-
-    @param {Array} objects
-      Optional array of objects to insert or null if no objects.
-
-    @returns {void}
+    @method replaceContent
+    @param {Number} idx The starting index
+    @param {Number} amt The number of items to remove from the content.
+    @param {Array} objects Optional array of objects to insert or null if no objects.
+    @return {void}
   */
   replaceContent: function(idx, amt, objects) {
     get(this, 'arrangedContent').replace(idx, amt, objects);
   },
 
   /**
+    @private
+
     Invoked when the content property is about to change. Notifies observers that the
     entire array content will change.
+
+    @method _contentWillChange
   */
   _contentWillChange: Ember.beforeObserver(function() {
     this._teardownContent();
@@ -126,8 +124,12 @@ Ember.ArrayProxy = Ember.Object.extend(Ember.MutableArray,
   contentArrayDidChange: Ember.K,
 
   /**
+    @private
+
     Invoked when the content property changes.  Notifies observers that the
     entire array content has changed.
+
+    @method _contentDidChange
   */
   _contentDidChange: Ember.observer(function() {
     var content = get(this, 'content');
@@ -195,35 +197,29 @@ Ember.ArrayProxy = Ember.Object.extend(Ember.MutableArray,
   arrangedContentWillChange: Ember.K,
   arrangedContentDidChange: Ember.K,
 
-  /** @private (nodoc) */
   objectAt: function(idx) {
     return get(this, 'content') && this.objectAtContent(idx);
   },
 
-  /** @private (nodoc) */
   length: Ember.computed(function() {
     var arrangedContent = get(this, 'arrangedContent');
     return arrangedContent ? get(arrangedContent, 'length') : 0;
     // No dependencies since Enumerable notifies length of change
   }).property().cacheable(),
 
-  /** @private (nodoc) */
   replace: function(idx, amt, objects) {
     if (get(this, 'content')) this.replaceContent(idx, amt, objects);
     return this;
   },
 
-  /** @private (nodoc) */
   arrangedContentArrayWillChange: function(item, idx, removedCnt, addedCnt) {
     this.arrayContentWillChange(idx, removedCnt, addedCnt);
   },
 
-  /** @private (nodoc) */
   arrangedContentArrayDidChange: function(item, idx, removedCnt, addedCnt) {
     this.arrayContentDidChange(idx, removedCnt, addedCnt);
   },
 
-  /** @private (nodoc) */
   init: function() {
     this._super();
     this._setupContent();

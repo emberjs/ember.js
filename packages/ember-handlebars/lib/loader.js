@@ -1,20 +1,29 @@
-// ==========================================================================
-// Project:   Ember Handlebars Views
-// Copyright: ©2011 Strobe Inc. and contributors.
-// License:   Licensed under MIT license (see license.js)
-// ==========================================================================
 /*globals Handlebars */
 
 require("ember-handlebars/ext");
 
-// Find templates stored in the head tag as script tags and make them available
-// to Ember.CoreView in the global Ember.TEMPLATES object. This will be run as as
-// jQuery DOM-ready callback.
-//
-// Script tags with "text/x-handlebars" will be compiled
-// with Ember's Handlebars and are suitable for use as a view's template.
-// Those with type="text/x-raw-handlebars" will be compiled with regular
-// Handlebars and are suitable for use in views' computed properties.
+/**
+@module ember
+@submodule ember-handlebars
+*/
+
+/**
+  @private
+
+  Find templates stored in the head tag as script tags and make them available
+  to Ember.CoreView in the global Ember.TEMPLATES object. This will be run as as
+  jQuery DOM-ready callback.
+
+  Script tags with "text/x-handlebars" will be compiled
+  with Ember's Handlebars and are suitable for use as a view's template.
+  Those with type="text/x-raw-handlebars" will be compiled with regular
+  Handlebars and are suitable for use in views' computed properties.
+
+  @method bootstrap
+  @for Ember.Handlebars
+  @static
+  @param ctx
+*/
 Ember.Handlebars.bootstrap = function(ctx) {
   var selectors = 'script[type="text/x-handlebars"], script[type="text/x-raw-handlebars"]';
 
@@ -76,7 +85,6 @@ Ember.Handlebars.bootstrap = function(ctx) {
   });
 };
 
-/** @private */
 function bootstrap() {
   Ember.Handlebars.bootstrap( Ember.$(document) );
 }
