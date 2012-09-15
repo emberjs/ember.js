@@ -458,6 +458,35 @@ Ember.Routable = Ember.Mixin.create({
     router.send('unroutePath', path);
   },
 
+  parentTemplate: Ember.computed(function() {
+    var state = this, parentState, template;
+
+    while (state = get(state, 'parentState')) {
+      if (template = get(state, 'template')) {
+        return template;
+      }
+    }
+
+    return 'application';
+  }).cacheable(),
+
+  render: function(router, options) {
+    options = options || {};
+
+    var template = options.template || get(this, 'template'),
+        parentTemplate = options.into || get(this, 'parentTemplate'),
+        controller = get(router, parentTemplate + "Controller");
+
+    var viewName = Ember.String.classify(template) + "View",
+        viewClass = get(get(router, 'namespace'), viewName);
+
+    viewClass = (viewClass || Ember.View).extend({
+      templateName: template
+    });
+
+    controller.set('view', viewClass.create());
+  },
+
   /**
     The `connectOutlets` event will be triggered once a
     state has been entered. It will be called with the
