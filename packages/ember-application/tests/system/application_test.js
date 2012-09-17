@@ -86,6 +86,7 @@ var app;
 
 module("Ember.Application initialization", {
   teardown: function() {
+    Ember.TEMPLATES = {};
     Ember.run(function(){ app.destroy(); });
   }
 });
@@ -288,4 +289,49 @@ test("ControllerObject class can be initialized with target, controllers and vie
   equal(app.get('router.postController.target') instanceof Ember.StateManager, true, "controller has target");
   equal(app.get('router.postController.controllers') instanceof Ember.StateManager, true, "controller has controllers");
   equal(app.get('router.postController.view') instanceof Ember.View, true, "controller has view");
+});
+
+test("Application initialized twice raises error", function() {
+  Ember.run(function() {
+    app = Ember.Application.create({
+      rootElement: '#qunit-fixture'
+    }).initialize();
+  });
+
+  raises(function(){
+    Ember.run(function() {
+      app.initialize();
+    });
+  }, Error, 'raises error');
+});
+
+test("Minimal Application initialized with just an application template", function() {
+  Ember.$('#qunit-fixture').html('<script type="text/x-handlebars">Hello World</script>');
+  Ember.run(function () {
+    app = Ember.Application.create({
+      rootElement: '#qunit-fixture'
+    }).initialize();
+  });
+
+  equal(Ember.$('#qunit-fixture').text(), 'Hello World');
+});
+
+test("Minimal Application initialized with an application template and injections", function() {
+  Ember.$('#qunit-fixture').html('<script type="text/x-handlebars">Hello {{controller.name}}!</script>');
+
+  Ember.run(function () {
+    app = Ember.Application.create({
+      rootElement: '#qunit-fixture'
+    });
+  });
+
+  app.ApplicationController = Ember.Controller.extend({name: 'Kris'});
+
+  Ember.run(function () {
+    // required to receive injections
+    var stateManager = Ember.Object.create();
+    app.initialize(stateManager);
+  });
+
+  equal(Ember.$('#qunit-fixture').text(), 'Hello Kris!');
 });

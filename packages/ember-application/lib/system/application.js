@@ -245,6 +245,10 @@ Ember.Application = Ember.Namespace.extend(
   */
   customEvents: null,
 
+  autoinit: !Ember.testing,
+
+  isInitialized: false,
+
   init: function() {
     if (!this.$) { this.$ = Ember.$; }
 
@@ -257,6 +261,14 @@ Ember.Application = Ember.Namespace.extend(
     this._readinessDeferrals = 1;
 
     this.waitForDOMContentLoaded();
+
+    if (this.autoinit) {
+      var self = this;
+      this.$().ready(function() {
+        if (self.isDestroyed || self.isInitialized) return;
+        self.initialize();
+      });
+    }
   },
 
   /** @private */
@@ -315,11 +327,16 @@ Ember.Application = Ember.Namespace.extend(
     @param router {Ember.Router}
   */
   initialize: function(router) {
+    Ember.assert("Application initialize may only be call once", !this.isInitialized);
+    Ember.assert("Application not destroyed", !this.isDestroyed);
+
     router = this.setupRouter(router);
 
     this.runInjections(router);
 
     Ember.runLoadHooks('application', this);
+
+    this.isInitialized = true;
 
     // At this point, any injections or load hooks that would have wanted
     // to defer readiness have fired.
