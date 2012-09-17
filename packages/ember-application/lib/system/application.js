@@ -248,21 +248,25 @@ Ember.Application = Ember.Namespace.extend(
   init: function() {
     if (!this.$) { this.$ = Ember.$; }
 
-    var eventDispatcher,
-        rootElement = get(this, 'rootElement');
     this._super();
 
-    eventDispatcher = Ember.EventDispatcher.create({
-      rootElement: rootElement
-    });
-
-    set(this, 'eventDispatcher', eventDispatcher);
+    this.createEventDispatcher();
 
     // Start off the number of deferrals at 1. This will be
     // decremented by the Application's own `initialize` method.
     this._readinessDeferrals = 1;
 
     this.waitForDOMContentLoaded();
+  },
+
+  /** @private */
+  createEventDispatcher: function() {
+    var rootElement = get(this, 'rootElement'),
+        eventDispatcher = Ember.EventDispatcher.create({
+          rootElement: rootElement
+        });
+
+    set(this, 'eventDispatcher', eventDispatcher);
   },
 
   waitForDOMContentLoaded: function() {
@@ -311,11 +315,42 @@ Ember.Application = Ember.Namespace.extend(
     @param router {Ember.Router}
   */
   initialize: function(router) {
+    router = this.createRouter(router);
+
+    this.runInjections(router);
+
+    Ember.runLoadHooks('application', this);
+
+    // At this point, any injections or load hooks that would have wanted
+    // to defer readiness have fired.
+    this.advanceReadiness();
+
+    return this;
+  },
+
+  /** @private */
+  runInjections: function(router) {
     var injections = get(this.constructor, 'injections'),
         namespace = this;
 
-    if (!router && Ember.Router.detect(namespace['Router'])) {
-      router = namespace['Router'].create();
+    var graph = new Ember.DAG(), i, injection;
+    for (i=0; i<injections.length; i++) {
+      injection = injections[i];
+      graph.addEdges(injection.name, injection.injection, injection.before, injection.after);
+    }
+
+    graph.topsort(function (vertex) {
+      var injection = vertex.value, properties = Ember.A(Ember.keys(namespace));
+      properties.forEach(function(property) {
+        injection(namespace, router, property);
+      });
+    });
+  },
+
+  /** @private */
+  createRouter: function(router) {
+    if (!router && Ember.Router.detect(this.Router)) {
+      router = this.Router.create();
       this._createdRouter = router;
     }
 
@@ -331,26 +366,7 @@ Ember.Application = Ember.Namespace.extend(
       set(router, 'namespace', this);
     }
 
-    var graph = new Ember.DAG(), i, injection;
-    for (i=0; i<injections.length; i++) {
-      injection = injections[i];
-      graph.addEdges(injection.name, injection.injection, injection.before, injection.after);
-    }
-
-    graph.topsort(function (vertex) {
-      var injection = vertex.value, properties = Ember.A(Ember.keys(namespace));
-      properties.forEach(function(property) {
-        injection(namespace, router, property);
-      });
-    });
-
-    Ember.runLoadHooks('application', this);
-
-    // At this point, any injections or load hooks that would have wanted
-    // to defer readiness have fired.
-    this.advanceReadiness();
-
-    return this;
+    return router;
   },
 
   didBecomeReady: function() {
