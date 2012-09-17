@@ -381,11 +381,50 @@ Ember.Application = Ember.Namespace.extend(
 
     this.ready();
 
+
     router = get(this, 'router');
+
+    this.createApplicationView(router);
 
     if (router && router instanceof Ember.Router) {
       this.startRouting(router);
     }
+  },
+
+  createApplicationView: function (router) {
+    var rootElement = get(this, 'rootElement'),
+        applicationViewOptions = {},
+        applicationViewClass = this.ApplicationView,
+        applicationTemplate = Ember.TEMPLATES.application,
+        applicationController, applicationView;
+
+    // don't do anything unless there is an ApplicationView or application template
+    if (!applicationViewClass && !applicationTemplate) return;
+
+    if (router) {
+      applicationController = get(router, 'applicationController');
+      if (applicationController) {
+        applicationViewOptions.controller = applicationController;
+      }
+    }
+
+    if (applicationTemplate) {
+      applicationViewOptions.template = applicationTemplate;
+    }
+
+    if (!applicationViewClass) {
+      applicationViewClass = Ember.View;
+    }
+
+    applicationView = applicationViewClass.create(applicationViewOptions);
+
+    this._createdApplicationView = applicationView;
+
+    if (router) {
+      set(router, 'applicationView', applicationView);
+    }
+
+    applicationView.appendTo(rootElement);
   },
 
   /**
@@ -398,18 +437,10 @@ Ember.Application = Ember.Namespace.extend(
     @property router {Ember.Router}
   */
   startRouting: function(router) {
-    var location = get(router, 'location'),
-        rootElement = get(this, 'rootElement'),
-        applicationController = get(router, 'applicationController');
+    var location = get(router, 'location');
 
-    Ember.assert("ApplicationView and ApplicationController must be defined on your application", (this.ApplicationView && applicationController) );
-
-    var applicationView = this.ApplicationView.create({
-      controller: applicationController
-    });
-    this._createdApplicationView = applicationView;
-
-    applicationView.appendTo(rootElement);
+    Ember.assert("You must have an application template or ApplicationView defined on your application", get(router, 'applicationView') );
+    Ember.assert("You must have an ApplicationController defined on your application", get(router, 'applicationController') );
 
     router.route(location.getURL());
     location.onUpdateURL(function(url) {
