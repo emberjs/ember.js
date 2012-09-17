@@ -315,7 +315,7 @@ Ember.Application = Ember.Namespace.extend(
     @param router {Ember.Router}
   */
   initialize: function(router) {
-    router = this.createRouter(router);
+    router = this.setupRouter(router);
 
     this.runInjections(router);
 
@@ -341,7 +341,8 @@ Ember.Application = Ember.Namespace.extend(
     }
 
     graph.topsort(function (vertex) {
-      var injection = vertex.value, properties = Ember.A(Ember.keys(namespace));
+      var injection = vertex.value,
+          properties = Ember.A(Ember.keys(namespace));
       properties.forEach(function(property) {
         injection(namespace, router, property);
       });
@@ -349,7 +350,7 @@ Ember.Application = Ember.Namespace.extend(
   },
 
   /** @private */
-  createRouter: function(router) {
+  setupRouter: function(router) {
     if (!router && Ember.Router.detect(this.Router)) {
       router = this.Router.create();
       this._createdRouter = router;
