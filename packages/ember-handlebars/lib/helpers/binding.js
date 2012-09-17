@@ -192,7 +192,7 @@ EmberHandlebars.registerHelper('with', function(context, options) {
       Ember.bind(options.data.keywords, keywordName, contextPath);
     }
 
-    return bind.call(this, path, options.fn, true, function(result) {
+    return bind.call(this, path, options, true, function(result) {
       return !Ember.none(result);
     });
   } else {
