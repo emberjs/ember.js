@@ -430,7 +430,7 @@ module("modelType with promise", {
         }),
 
         loading: Ember.State.extend({
-          connectOutlets: function() {
+          setup: function() {
             isLoading = true;
           },
 

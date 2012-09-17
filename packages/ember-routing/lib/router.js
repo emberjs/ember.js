@@ -458,15 +458,6 @@ Ember.Router = Ember.StateManager.extend(
 
   rootURL: '/',
 
-  /**
-    On router, transitionEvent should be called connectOutlets
-
-    @property transitionEvent
-    @type String
-    @default 'connectOutlets'
-  */
-  transitionEvent: 'connectOutlets',
-
   transitionTo: function() {
     this.abortRoutingPromises();
     this._super.apply(this, arguments);
@@ -596,6 +587,21 @@ Ember.Router = Ember.StateManager.extend(
         implementation: location,
         rootURL: rootURL
       }));
+    }
+
+    this.assignRouter(this, this);
+  },
+
+  assignRouter: function(state, router) {
+    state.router = router;
+
+    var childStates = state.states;
+
+    if (childStates) {
+      for (var stateName in childStates) {
+        if (!childStates.hasOwnProperty(stateName)) { continue; }
+        this.assignRouter(childStates[stateName], router);
+      }
     }
   },
 

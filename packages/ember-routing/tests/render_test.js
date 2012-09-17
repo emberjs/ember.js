@@ -24,7 +24,7 @@ test("By default, `render` renders into the application's outlet", function() {
   var postsRoute = router.get('states.root.states.posts');
 
   Ember.run(function() {
-    postsRoute.render(router);
+    postsRoute.render();
   });
 });
 
@@ -57,7 +57,7 @@ test("If a view class for a given template exists, use it and update it with the
   var postsRoute = router.get('states.root.states.posts');
 
   Ember.run(function() {
-    postsRoute.render(router);
+    postsRoute.render();
   });
 });
 
@@ -83,7 +83,7 @@ test("The default template to render into is `application`", function() {
   var postsRoute = router.get('states.root.states.posts');
 
   Ember.run(function() {
-    postsRoute.render(router);
+    postsRoute.render();
   });
 });
 
@@ -109,6 +109,34 @@ test("You can override the template to render and the template to render into", 
   var postsRoute = router.get('states.root.states.posts');
 
   Ember.run(function() {
-    postsRoute.render(router, { into: 'app', template: 'other' });
+    postsRoute.render({ into: 'app', template: 'other' });
+  });
+});
+
+test("By default, the route's class name is used to infer its template name", function() {
+  var PostsRoute = Ember.Route.extend();
+  PostsRoute.toString = function() { return "App.PostsRoute"; };
+
+  var ApplicationRoute = Ember.Route.extend({
+    posts: PostsRoute
+  });
+  ApplicationRoute.toString = function() { return "App.ApplicationRoute"; };
+
+  var router = Ember.Router.extend({
+    applicationController: Ember.Controller.extend({
+      viewDidChange: Ember.observer(function() {
+        equal(this.get('view.templateName'), 'posts');
+      }, 'view')
+    }).create(),
+
+    namespace: {},
+
+    root: Ember.Route.extend({
+      posts: PostsRoute
+    })
+  }).create();
+
+  Ember.run(function() {
+    router.get('states.root.states.posts').render();
   });
 });

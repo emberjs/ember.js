@@ -119,6 +119,7 @@ Ember.State = Ember.Object.extend(Ember.Evented,
       set(value, 'parentState', this);
       get(this, 'childStates').pushObject(value);
       states[name] = value;
+      return value;
     }
   },
 

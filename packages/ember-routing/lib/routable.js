@@ -41,7 +41,7 @@ var merge = function(original, hash) {
 Ember.Routable = Ember.Mixin.create({
   init: function() {
     var redirection;
-    this.on('connectOutlets', this, this.stashContext);
+    this.on('setup', this, this.stashContext);
 
     if (redirection = get(this, 'redirectsTo')) {
       Ember.assert("You cannot use `redirectsTo` if you already have a `connectOutlets` method", this.connectOutlets === Ember.K);
@@ -62,6 +62,10 @@ Ember.Routable = Ember.Mixin.create({
     Ember.assert("You cannot use `redirectsTo` on a state that has child states", !redirection || (!!redirection && !!get(this, 'isLeaf')));
   },
 
+  setup: function() {
+    return this.connectOutlets.apply(this, arguments);
+  },
+
   /**
     @private
 
@@ -74,6 +78,8 @@ Ember.Routable = Ember.Mixin.create({
     @param context
   */
   stashContext: function(manager, context) {
+    this.router = manager;
+
     var serialized = this.serialize(manager, context);
     Ember.assert('serialize must return a hash', !serialized || typeof serialized === 'object');
 
@@ -470,15 +476,33 @@ Ember.Routable = Ember.Mixin.create({
     return 'application';
   }).cacheable(),
 
-  render: function(router, options) {
+  _template: Ember.computed(function(key, value) {
+    if (arguments.length > 1) { return value; }
+
+    if (value = get(this, 'template')) {
+      return value;
+    }
+
+    // If no template was explicitly supplied convert
+    // the class name into a template name. For example,
+    // App.PostRoute will return `post`.
+    var className = this.constructor.toString(), baseName;
+    if (/^[^\[].*Route$/.test(className)) {
+      baseName = className.match(/([^\.]+\.)*([^\.]+)/)[2];
+      baseName = baseName.replace(/Route$/, '');
+      return baseName.charAt(0).toLowerCase() + baseName.substr(1);
+    }
+  }).cacheable(),
+
+  render: function(options) {
     options = options || {};
 
-    var template = options.template || get(this, 'template'),
+    var template = options.template || get(this, '_template'),
         parentTemplate = options.into || get(this, 'parentTemplate'),
-        controller = get(router, parentTemplate + "Controller");
+        controller = get(this.router, parentTemplate + "Controller");
 
     var viewName = Ember.String.classify(template) + "View",
-        viewClass = get(get(router, 'namespace'), viewName);
+        viewClass = get(get(this.router, 'namespace'), viewName);
 
     viewClass = (viewClass || Ember.View).extend({
       templateName: template
