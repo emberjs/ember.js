@@ -711,7 +711,7 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     @property _context
   */
   _context: Ember.computed(function(key, value) {
-    var parentView, controller, context;
+    var parentView, controller;
 
     if (arguments.length === 2) {
       return value;
