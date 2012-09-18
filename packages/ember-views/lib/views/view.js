@@ -700,8 +700,8 @@ Ember.View = Ember.Object.extend(Ember.Evented,
 
     The context of a view is looked up as follows:
 
-    1. Specified controller
-    2. Supplied context (usually by Handlebars)
+    1. Supplied context (usually by Handlebars)
+    2. Specified controller
     3. `parentView`'s context (for a child of a ContainerView)
 
     The code in Handlebars that overrides the `_context` property first
