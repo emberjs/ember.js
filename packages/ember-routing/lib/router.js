@@ -409,8 +409,9 @@ var merge = function(original, hash) {
 
 
   This will detect the '{{outlet}}' portion of `oneController`'s view (an instance of `App.OneView`) and
-  fill it with a rendered instance of `App.AnotherView` whose `context` will be the single instance of
-  `App.AnotherController` stored on the router in the `anotherController` property.
+  fill it with a rendered instance of `App.AnotherView`, setting the view's `controller` to the single
+  instance of `App.AnotherController` stored on the router in the `anotherController` property. The view's
+  `controller` property is used as the view's default `context`.
 
   For more information about Outlets, see `Ember.Handlebars.helpers.outlet`. For additional information on
   the `connectOutlet` method, see `Ember.Controller.connectOutlet`. For more information on
