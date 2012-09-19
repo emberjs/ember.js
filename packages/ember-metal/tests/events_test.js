@@ -166,3 +166,17 @@ test('hasListeners tells you if there are listeners for a given event', function
   equal(Ember.hasListeners(obj, 'event!'), true, 'has listeners');
 });
 
+test('calling removeListener without method should remove all listeners', function() {
+  var obj = {}, F = function() {}, F2 = function() {};
+
+  equal(Ember.hasListeners(obj, 'event!'), false, 'no listeners at first');
+
+  Ember.addListener(obj, 'event!', F);
+  Ember.addListener(obj, 'event!', F2);
+
+  equal(Ember.hasListeners(obj, 'event!'), true, 'has listeners');
+
+  Ember.removeListener(obj, 'event!');
+
+  equal(Ember.hasListeners(obj, 'event!'), false, 'has no more listeners');
+});
