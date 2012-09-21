@@ -43,7 +43,12 @@ Ember.Handlebars.helpers = objectCreate(Handlebars.helpers);
   @constructor
 */
 Ember.Handlebars.Compiler = function() {};
-Ember.Handlebars.Compiler.prototype = objectCreate(Handlebars.Compiler.prototype);
+
+// Handlebars.Compiler doesn't exist in runtime-only
+if (Handlebars.Compiler) {
+  Ember.Handlebars.Compiler.prototype = objectCreate(Handlebars.Compiler.prototype);
+}
+
 Ember.Handlebars.Compiler.prototype.compiler = Ember.Handlebars.Compiler;
 
 /**
@@ -53,8 +58,14 @@ Ember.Handlebars.Compiler.prototype.compiler = Ember.Handlebars.Compiler;
   @constructor
 */
 Ember.Handlebars.JavaScriptCompiler = function() {};
-Ember.Handlebars.JavaScriptCompiler.prototype = objectCreate(Handlebars.JavaScriptCompiler.prototype);
-Ember.Handlebars.JavaScriptCompiler.prototype.compiler = Ember.Handlebars.JavaScriptCompiler;
+
+// Handlebars.JavaScriptCompiler doesn't exist in runtime-only
+if (Handlebars.JavaScriptCompiler) {
+  Ember.Handlebars.JavaScriptCompiler.prototype = objectCreate(Handlebars.JavaScriptCompiler.prototype);
+  Ember.Handlebars.JavaScriptCompiler.prototype.compiler = Ember.Handlebars.JavaScriptCompiler;
+}
+
+
 Ember.Handlebars.JavaScriptCompiler.prototype.namespace = "Ember.Handlebars";
 
 
@@ -134,24 +145,27 @@ Ember.Handlebars.precompile = function(string) {
   return new Ember.Handlebars.JavaScriptCompiler().compile(environment, options, undefined, true);
 };
 
-/**
-  The entry point for Ember Handlebars. This replaces the default Handlebars.compile and turns on
-  template-local data and String parameters.
+// We don't support this for Handlebars runtime-only
+if (Handlebars.compile) {
+  /**
+    The entry point for Ember Handlebars. This replaces the default Handlebars.compile and turns on
+    template-local data and String parameters.
 
-  @method compile
-  @for Ember.Handlebars
-  @static
-  @param {String} string The template to compile
-  @return {Function}
-*/
-Ember.Handlebars.compile = function(string) {
-  var ast = Handlebars.parse(string);
-  var options = { data: true, stringParams: true };
-  var environment = new Ember.Handlebars.Compiler().compile(ast, options);
-  var templateSpec = new Ember.Handlebars.JavaScriptCompiler().compile(environment, options, undefined, true);
+    @method compile
+    @for Ember.Handlebars
+    @static
+    @param {String} string The template to compile
+    @return {Function}
+  */
+  Ember.Handlebars.compile = function(string) {
+    var ast = Handlebars.parse(string);
+    var options = { data: true, stringParams: true };
+    var environment = new Ember.Handlebars.Compiler().compile(ast, options);
+    var templateSpec = new Ember.Handlebars.JavaScriptCompiler().compile(environment, options, undefined, true);
 
-  return Handlebars.template(templateSpec);
-};
+    return Handlebars.template(templateSpec);
+  };
+}
 
 /**
   @private
