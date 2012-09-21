@@ -630,7 +630,7 @@ Ember.StateManager = Ember.State.extend({
 
   sendRecursively: function(event, currentState, context) {
     var log = this.enableLogging,
-        action = currentState[event];
+        action = get(currentState, event);
 
     // Test to see if the action is a method that
     // can be invoked. Don't blindly check just for
