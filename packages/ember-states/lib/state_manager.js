@@ -675,7 +675,7 @@ Ember.StateManager = Ember.State.extend({
     var parts = path.split('.'),
         state = root;
 
-    for (var i=0, l=parts.length; i<l; i++) {
+    for (var i=0, len=parts.length; i<len; i++) {
       state = get(get(state, 'states'), parts[i]);
       if (!state) { break; }
     }
@@ -697,32 +697,32 @@ Ember.StateManager = Ember.State.extend({
   /**
     A state stores its child states in its `states` hash.
     This code takes a path like `posts.show` and looks
-    up `origin.states.posts.states.show`.
+    up `root.states.posts.states.show`.
 
     It returns a list of all of the states from the
-    origin, which is the list of states to call `enter`
+    root, which is the list of states to call `enter`
     on.
 
-    @method findStateByPath
-    @param origin
+    @method getStatesInPath
+    @param root
     @param path
   */
-  findStatesByPath: function(origin, path) {
+  getStatesInPath: function(root, path) {
     if (!path || path === "") { return undefined; }
-    var r = path.split('.'),
-        ret = [];
+    var parts = path.split('.'),
+        result = [],
+        states,
+        state;
 
-    for (var i=0, len = r.length; i < len; i++) {
-      var states = get(origin, 'states');
-
+    for (var i=0, len=parts.length; i<len; i++) {
+      states = get(root, 'states');
       if (!states) { return undefined; }
-
-      var s = get(states, r[i]);
-      if (s) { origin = s; ret.push(s); }
+      state = get(states, parts[i]);
+      if (state) { root = state; result.push(state); }
       else { return undefined; }
     }
 
-    return ret;
+    return result;
   },
 
   goToState: function() {
@@ -754,7 +754,7 @@ Ember.StateManager = Ember.State.extend({
     var cache = currentState.pathsCache[path];
     if (cache) { return cache; }
 
-    var enterStates = this.findStatesByPath(currentState, path),
+    var enterStates = this.getStatesInPath(currentState, path),
         exitStates = [],
         resolveState = currentState;
 
@@ -796,13 +796,13 @@ Ember.StateManager = Ember.State.extend({
 
       resolveState = get(resolveState, 'parentState');
       if (!resolveState) {
-        enterStates = this.findStatesByPath(this, path);
+        enterStates = this.getStatesInPath(this, path);
         if (!enterStates) {
           Ember.assert('Could not find state for path: "'+path+'"');
           return;
         }
       }
-      enterStates = this.findStatesByPath(resolveState, path);
+      enterStates = this.getStatesInPath(resolveState, path);
     }
 
     // If the path contains some states that are parents of both the
