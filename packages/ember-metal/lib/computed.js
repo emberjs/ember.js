@@ -289,32 +289,33 @@ ComputedPropertyPrototype.set = function(obj, keyName, value) {
       hadCachedValue = false,
       ret;
   this._suspended = obj;
+  try {
+    ret = this.func.call(obj, keyName, value);
 
-  ret = this.func.call(obj, keyName, value);
-
-  if (cacheable && keyName in meta.cache) {
-    if (meta.cache[keyName] === ret) {
-      return;
+    if (cacheable && keyName in meta.cache) {
+      if (meta.cache[keyName] === ret) {
+        return;
+      }
+      hadCachedValue = true;
     }
-    hadCachedValue = true;
-  }
 
-  if (watched) { Ember.propertyWillChange(obj, keyName); }
+    if (watched) { Ember.propertyWillChange(obj, keyName); }
 
-  if (cacheable && hadCachedValue) {
-    delete meta.cache[keyName];
-  }
-
-  if (cacheable) {
-    if (!watched && !hadCachedValue) {
-      addDependentKeys(this, obj, keyName, meta);
+    if (cacheable && hadCachedValue) {
+      delete meta.cache[keyName];
     }
-    meta.cache[keyName] = ret;
+
+    if (cacheable) {
+      if (!watched && !hadCachedValue) {
+        addDependentKeys(this, obj, keyName, meta);
+      }
+      meta.cache[keyName] = ret;
+    }
+
+    if (watched) { Ember.propertyDidChange(obj, keyName); }
+  } finally {
+    this._suspended = oldSuspended;
   }
-
-  if (watched) { Ember.propertyDidChange(obj, keyName); }
-
-  this._suspended = oldSuspended;
   return ret;
 };
 
