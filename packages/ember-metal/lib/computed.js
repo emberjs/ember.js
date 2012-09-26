@@ -290,8 +290,10 @@ ComputedPropertyPrototype.set = function(obj, keyName, value) {
       ret;
   this._suspended = obj;
 
+  ret = this.func.call(obj, keyName, value);
+
   if (cacheable && keyName in meta.cache) {
-    if (meta.cache[keyName] === value) {
+    if (meta.cache[keyName] === ret) {
       return;
     }
     hadCachedValue = true;
@@ -302,8 +304,6 @@ ComputedPropertyPrototype.set = function(obj, keyName, value) {
   if (cacheable && hadCachedValue) {
     delete meta.cache[keyName];
   }
-
-  ret = this.func.call(obj, keyName, value);
 
   if (cacheable) {
     if (!watched && !hadCachedValue) {
