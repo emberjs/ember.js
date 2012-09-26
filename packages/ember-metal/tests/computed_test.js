@@ -575,6 +575,35 @@ testBoth('setting a watched computed property', function(get, set) {
   equal(lastNameDidChange, 1);
 });
 
+testBoth('setting a cached computed property that modifies the value you give it', function(get, set) {
+  var obj = {};
+  Ember.defineProperty(obj, 'plusOne', Ember.computed(
+    function(key, value) {
+      if (arguments.length > 1) {
+        return value + 1;
+      }
+      return 0;
+    }).property().cacheable()
+  );
+  var plusOneWillChange = 0,
+      plusOneDidChange = 0;
+  Ember.addBeforeObserver(obj, 'plusOne', function () {
+    plusOneWillChange++;
+  });
+  Ember.addObserver(obj, 'plusOne', function () {
+    plusOneDidChange++;
+  });
+
+  equal(get(obj, 'plusOne'), 0);
+  set(obj, 'plusOne', 0);
+  equal(get(obj, 'plusOne'), 1);
+  set(obj, 'plusOne', 0);
+  equal(get(obj, 'plusOne'), 1);
+
+  equal(plusOneWillChange, 1);
+  equal(plusOneDidChange, 1);
+});
+
 module('CP macros');
 
 testBoth('Ember.computed.not', function(get, set) {
