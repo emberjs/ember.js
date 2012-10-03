@@ -58,6 +58,10 @@ function bind(property, options, preserveContext, shouldDisplay, valueNormalizer
     // object ({{this}}) so updating it is not our responsibility.
     if (path !== '') {
       Ember.addObserver(pathRoot, path, observer);
+
+      view.one('willRerender', function() {
+        Ember.removeObserver(pathRoot, path, observer);
+      });
     }
   } else {
     // The object is not observable, so just render it out and
@@ -322,6 +326,10 @@ EmberHandlebars.registerHelper('bindAttr', function(options) {
     // unique data id and update the attribute to the new value.
     if (path !== 'this') {
       Ember.addObserver(pathRoot, path, invoker);
+
+      view.one('willRerender', function() {
+        Ember.removeObserver(pathRoot, path, invoker);
+      });
     }
 
     // if this changes, also change the logic in ember-views/lib/views/view.js
@@ -439,6 +447,10 @@ EmberHandlebars.bindClasses = function(context, classBindings, view, bindAttrId,
 
     if (path !== '' && path !== 'this') {
       Ember.addObserver(pathRoot, path, invoker);
+
+      view.one('willRerender', function() {
+        Ember.removeObserver(pathRoot, path, invoker);
+      });
     }
 
     // We've already setup the observer; now we just need to figure out the

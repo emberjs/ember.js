@@ -2383,3 +2383,37 @@ test("should accept bindings as a string or an Ember.Binding", function() {
 
   equal(Ember.$.trim(view.$().text()), "binding: down, string: down");
 });
+
+test("should teardown observers from bound properties on rerender", function() {
+  view = Ember.View.create({
+    template: Ember.Handlebars.compile("{{view.foo}}"),
+    foo: 'bar'
+  });
+
+  appendView();
+
+  equal(Ember.observersFor(view, 'foo').length, 1);
+
+  Ember.run(function() {
+    view.rerender();
+  });
+
+  equal(Ember.observersFor(view, 'foo').length, 1);
+});
+
+test("should teardown observers from bindAttr on rerender", function() {
+  view = Ember.View.create({
+    template: Ember.Handlebars.compile('<span {{bindAttr class="foo" name="foo"}}>wat</span>'),
+    foo: 'bar'
+  });
+
+  appendView();
+
+  equal(Ember.observersFor(view, 'foo').length, 2);
+
+  Ember.run(function() {
+    view.rerender();
+  });
+
+  equal(Ember.observersFor(view, 'foo').length, 2);
+});
