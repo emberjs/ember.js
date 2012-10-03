@@ -1120,6 +1120,10 @@ Ember.View = Ember.Object.extend(Ember.Evented,
       }
 
       addObserver(this, parsedPath.path, observer);
+
+      this.one('willRerender', function() {
+        removeObserver(this, parsedPath.path, observer);
+      });
     }, this);
   },
 
@@ -1155,6 +1159,10 @@ Ember.View = Ember.Object.extend(Ember.Evented,
       };
 
       addObserver(this, property, observer);
+
+      this.one('willRerender', function() {
+        removeObserver(this, property, observer);
+      });
 
       // Determine the current value and add it to the render buffer
       // if necessary.
