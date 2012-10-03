@@ -302,11 +302,3 @@ Ember.trySetPath = Ember.deprecateFunc('trySetPath has been renamed to trySet', 
 Ember.isGlobalPath = function(path) {
   return IS_GLOBAL.test(path);
 };
-
-
-
-if (Ember.config.overrideAccessors) {
-  Ember.config.overrideAccessors();
-  get = Ember.get;
-  set = Ember.set;
-}
