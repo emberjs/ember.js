@@ -149,13 +149,17 @@ See <http://emberjs.com/> for annotated introductory documentation.
 
 ## Preview API documenation
 
-* run `rake docs:preview`
+* Clone https://github.com/emberjs/website.git at the same level as the
+  main Ember repo.
 
-* The `docs:preview` task will build the documentation and make it available at <http://localhost:9292/index.html>
+* From the website repo, run `rake preview`
+
+* The docs will be available at <http://localhost:4567/api>
 
 
 ## Build API documentation
 
-* run `rake docs:build`
+* From the website repo, run `rake build`
 
-* HTML documentation is built in the `docs` directory
+* The website, along with documentation will be built into the `build`
+  directory
