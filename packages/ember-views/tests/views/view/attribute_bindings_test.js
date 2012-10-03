@@ -3,6 +3,10 @@ var set = Ember.set, get = Ember.get;
 
 var view;
 
+var appendView = function() {
+  Ember.run(function() { view.appendTo('#qunit-fixture'); });
+};
+
 module("Ember.View - Attribute Bindings", {
   teardown: function() {
     if (view) {
@@ -163,4 +167,22 @@ test("should allow binding to String objects", function() {
   
 
   equal(view.$().attr('foo'), 'bar', "should convert String object to bare string");
+});
+
+test("should teardown observers on rerender", function() {
+  view = Ember.View.create({
+    attributeBindings: ['foo'],
+    classNameBindings: ['foo'],
+    foo: 'bar'
+  });
+
+  appendView();
+
+  equal(Ember.observersFor(view, 'foo').length, 2);
+
+  Ember.run(function() {
+    view.rerender();
+  });
+
+  equal(Ember.observersFor(view, 'foo').length, 2);
 });
