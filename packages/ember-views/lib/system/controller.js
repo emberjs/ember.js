@@ -71,16 +71,16 @@ Ember.ControllerMixin.reopen({
 
     ``` handlebars
     <h1>My Blog</h1>
-    {{outlet master}}
-    {{outlet detail}}
+    {{outlet masterView}}
+    {{outlet detailView}}
     ```
 
-    You can assign an `App.PostsView` to the master outlet:
+    You can assign an `App.PostsView` to the masterView outlet:
 
     ``` javascript
     applicationController.connectOutlet({
+      outletName: 'masterView',
       name: 'posts',
-      outletName: 'master',
       context: App.Post.find()
     });
     ```
@@ -88,7 +88,7 @@ Ember.ControllerMixin.reopen({
     You can write this as:
 
     ``` javascript
-    applicationController.connectOutlet('master', 'posts', App.Post.find());
+    applicationController.connectOutlet('masterView', 'posts', App.Post.find());
     ```
 
 
@@ -144,9 +144,9 @@ Ember.ControllerMixin.reopen({
     }
 
     outletName = outletName || 'view';
-    
+
     Ember.assert("The viewClass is either missing or the one provided did not resolve to a view", !!name || (!name && !!viewClass));
-    
+
     Ember.assert("You must supply a name or a viewClass to connectOutlet, but not both", (!!name && !viewClass && !controller) || (!name && !!viewClass));
 
     if (name) {

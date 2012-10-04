@@ -15,27 +15,29 @@ Ember.Handlebars.OutletView = Ember.ContainerView.extend(Ember._Metamorph);
   {{outlet}}
   ```
 
-  By default, when the the current controller's `view`
-  property changes, the outlet will replace its current
-  view with the new view.
+  By default, when the the current controller's `view` property changes, the
+  outlet will replace its current view with the new view. You can set the
+  `view` property directly, but it's normally best to use `connectOutlet`.
 
   ``` javascript
-  controller.set('view', someView);
+  # Instantiate App.PostsView and assign to `view`, so as to render into outlet.
+  controller.connectOutlet('posts');
   ```
 
-  You can also specify a particular name, other than view:
+  You can also specify a particular name other than `view`:
 
   ``` handlebars
   {{outlet masterView}}
   {{outlet detailView}}
   ```
 
-  Then, you can control several outlets from a single
-  controller:
+  Then, you can control several outlets from a single controller.
 
   ``` javascript
-  controller.set('masterView', postsView);
-  controller.set('detailView', postView);
+  # Instantiate App.PostsView and assign to controller.masterView.
+  controller.connectOutlet('masterView', 'posts');
+  # Also, instantiate App.PostInfoView and assign to controller.detailView.
+  controller.connectOutlet('detailView', 'postInfo');
   ```
 
   @method outlet
