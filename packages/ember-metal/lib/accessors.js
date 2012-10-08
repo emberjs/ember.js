@@ -160,6 +160,13 @@ set = function set(obj, keyName, value, tolerant) {
   return value;
 };
 
+// Currently used only by Ember Data tests
+if (Ember.config.overrideAccessors) {
+  Ember.config.overrideAccessors();
+  get = Ember.get;
+  set = Ember.set;
+}
+
 function firstKey(path) {
   return path.match(FIRST_KEY)[0];
 }
@@ -303,10 +310,3 @@ Ember.isGlobalPath = function(path) {
   return IS_GLOBAL.test(path);
 };
 
-
-
-if (Ember.config.overrideAccessors) {
-  Ember.config.overrideAccessors();
-  get = Ember.get;
-  set = Ember.set;
-}
