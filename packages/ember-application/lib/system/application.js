@@ -501,6 +501,7 @@ Ember.Application.reopenClass({
 Ember.Application.registerInjection({
   name: 'controllers',
   injection: function(app, router, property) {
+    if (!router) { return; }
     if (!/^[A-Z].*Controller$/.test(property)) { return; }
 
     var name = property.charAt(0).toLowerCase() + property.substr(1),
