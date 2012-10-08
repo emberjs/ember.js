@@ -5,8 +5,12 @@
 @submodule ember-handlebars
 */
 
-var set = Ember.set, get = Ember.get;
-var indexOf = Ember.EnumerableUtils.indexOf, indexesOf = Ember.EnumerableUtils.indexesOf;
+var set = Ember.set,
+    get = Ember.get,
+    indexOf = Ember.EnumerableUtils.indexOf,
+    indexesOf = Ember.EnumerableUtils.indexesOf,
+    replace = Ember.EnumerableUtils.replace,
+    isArray = Ember.isArray;
 
 /**
   The Ember.Select view class renders a
@@ -360,10 +364,9 @@ Ember.Select = Ember.View.extend(
   },
 
   selectionDidChange: Ember.observer(function() {
-    var selection = get(this, 'selection'),
-        isArray = Ember.isArray(selection);
+    var selection = get(this, 'selection');
     if (get(this, 'multiple')) {
-      if (!isArray) {
+      if (!isArray(selection)) {
         set(this, 'selection', Ember.A([selection]));
         return;
       }
@@ -371,7 +374,7 @@ Ember.Select = Ember.View.extend(
     } else {
       this._selectionDidChangeSingle();
     }
-  }, 'selection'),
+  }, 'selection.@each'),
 
   valueDidChange: Ember.observer(function() {
     var content = get(this, 'content'),
@@ -412,18 +415,26 @@ Ember.Select = Ember.View.extend(
     set(this, 'selection', content.objectAt(selectedIndex));
   },
 
+
   _changeMultiple: function() {
     var options = this.$('option:selected'),
         prompt = get(this, 'prompt'),
         offset = prompt ? 1 : 0,
-        content = get(this, 'content');
+        content = get(this, 'content'),
+        selection = get(this, 'selection');
 
     if (!content){ return; }
     if (options) {
       var selectedIndexes = options.map(function(){
         return this.index - offset;
       }).toArray();
-      set(this, 'selection', content.objectsAt(selectedIndexes));
+      var newSelection = content.objectsAt(selectedIndexes);
+
+      if (isArray(selection)) {
+        replace(selection, 0, get(selection, 'length'), newSelection);
+      } else {
+        set(this, 'selection', newSelection);
+      }
     }
   },
 

@@ -201,6 +201,94 @@ test("multiple selections can be set when multiple=true", function() {
     "After changing it, selection should be correct");
 });
 
+test("multiple selections can be set by changing in place the selection array when multiple=true", function() {
+  var yehuda = { id: 1, firstName: 'Yehuda' },
+      tom = { id: 2, firstName: 'Tom' },
+      david = { id: 3, firstName: 'David' },
+      brennain = { id: 4, firstName: 'Brennain' },
+      selection = Ember.A([yehuda, tom]);
+
+  select.set('content', Ember.A([yehuda, tom, david, brennain]));
+  select.set('optionLabelPath', 'content.firstName');
+  select.set('multiple', true);
+  select.set('selection', selection);
+
+  append();
+
+  deepEqual(select.get('selection'), [yehuda, tom], "Initial selection should be correct");
+
+  selection.replace(0, selection.get('length'), Ember.A([david, brennain]));
+
+  deepEqual(
+    select.$(':selected').map(function(){ return Ember.$(this).text();}).toArray(),
+    ['David', 'Brennain'],
+    "After updating the selection array in-place, selection should be correct");
+});
+
+
+test("multiple selections can be set indirectly via bindings and in-place when multiple=true (issue #1058)", function() {
+  var indirectContent = Ember.Object.create();
+
+  var yehuda = { id: 1, firstName: 'Yehuda' },
+      tom = { id: 2, firstName: 'Tom' },
+      david = { id: 3, firstName: 'David' },
+      brennain = { id: 4, firstName: 'Brennain' },
+      cyril = { id: 5, firstName: 'Cyril' };
+
+  Ember.run(function() {
+    select = Ember.Select.extend({
+      indirectContent: indirectContent,
+      contentBinding: 'indirectContent.controller.content',
+      selectionBinding: 'indirectContent.controller.selection',
+      multiple: true,
+      optionLabelPath: 'content.firstName'
+    }).create();
+
+    indirectContent.set('controller', Ember.Object.create({
+      content: Ember.A([tom, david, brennain]),
+      selection: Ember.A([david])
+    }));
+
+    append();
+  });
+
+  deepEqual(select.get('content'), [tom, david, brennain], "Initial content should be correct");
+  deepEqual(select.get('selection'), [david], "Initial selection should be correct");
+
+  Ember.run(function() {
+    indirectContent.set('controller.content', Ember.A([david, cyril]));
+    indirectContent.set('controller.selection', Ember.A([cyril]));
+  });
+
+  deepEqual(select.get('content'), [david, cyril], "After updating bound content, content should be correct");
+  deepEqual(select.get('selection'), [cyril], "After updating bound selection, selection should be correct");
+});
+
+test("selection uses the same array when multiple=true", function() {
+  var yehuda = { id: 1, firstName: 'Yehuda' },
+      tom = { id: 2, firstName: 'Tom' },
+      david = { id: 3, firstName: 'David' },
+      brennain = { id: 4, firstName: 'Brennain' },
+      selection = Ember.A([yehuda, david]);
+
+  select.set('content', Ember.A([yehuda, tom, david, brennain]));
+  select.set('multiple', true);
+  select.set('optionLabelPath', 'content.firstName');
+  select.set('selection', selection);
+
+  append();
+
+  deepEqual(select.get('selection'), [yehuda, david], "Initial selection should be correct");
+
+  select.$('option').each(function() { this.selected = false; });
+  select.$(':contains("Tom"), :contains("David")').each(function() { this.selected = true; });
+
+  select.$().trigger('change');
+
+  deepEqual(select.get('selection'), [tom,david], "On change the selection is updated");
+  deepEqual(selection, [tom,david], "On change the original selection array is updated");
+});
+
 test("Ember.SelectedOption knows when it is selected when multiple=false", function() {
   var yehuda = { id: 1, firstName: 'Yehuda' },
       tom = { id: 2, firstName: 'Tom' },
