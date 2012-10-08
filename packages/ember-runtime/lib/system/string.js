@@ -209,16 +209,14 @@ Ember.String = {
        'innerHTML'.capitalize()         => 'InnerHTML'
        'action_name'.capitalize()       => 'Action_name'
        'css-class-name'.capitalize()    => 'Css-class-name'
-       'my favorite items'.capitalize() => 'My Favorite Items'
+       'my favorite items'.capitalize() => 'My favorite items'
 
     @param {String} str
 
     @returns {String}
   */
   capitalize: function(str) {
-    return Ember.String.w(str).map(function(word) {
-      return word.charAt(0).toUpperCase() + word.substr(1);
-    }).join(' ');
+    return str.charAt(0).toUpperCase() + str.substr(1);
   }
 
 };

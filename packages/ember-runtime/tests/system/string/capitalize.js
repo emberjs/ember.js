@@ -8,9 +8,9 @@
 module('Ember.String.capitalize');
 
 test("capitalize normal string", function() {
-  deepEqual(Ember.String.capitalize('my favorite items'), 'My Favorite Items');
+  deepEqual(Ember.String.capitalize('my favorite items'), 'My favorite items');
   if (Ember.EXTEND_PROTOTYPES) {
-    deepEqual('my favorite items'.capitalize(), 'My Favorite Items');
+    deepEqual('my favorite items'.capitalize(), 'My favorite items');
   }
 });
 
@@ -36,9 +36,9 @@ test("capitalize camelcased string", function() {
 });
 
 test("does nothing with capitalized string", function() {
-  deepEqual(Ember.String.capitalize('Capitalized String'), 'Capitalized String');
+  deepEqual(Ember.String.capitalize('Capitalized string'), 'Capitalized string');
   if (Ember.EXTEND_PROTOTYPES) {
-    deepEqual('Capitalized String'.capitalize(), 'Capitalized String');
+    deepEqual('Capitalized string'.capitalize(), 'Capitalized string');
   }
 });
 
