@@ -31,6 +31,10 @@ ActionHelper.registerAction = function(actionName, options) {
 
       event.preventDefault();
 
+      if (options.confirm && !window.confirm(options.confirm)) {
+        return;
+      }
+
       event.view = options.view;
 
       if (options.hasOwnProperty('context')) {
@@ -275,6 +279,10 @@ EmberHandlebars.registerHelper('action', function(actionName) {
     url = target.urlForEvent.apply(target, [actionName].concat(contexts));
     output.push('href="' + url + '"');
     action.link = true;
+  }
+
+  if (hash.confirm) {
+    action.confirm = hash.confirm;
   }
 
   var actionId = ActionHelper.registerAction(actionName, action);

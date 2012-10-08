@@ -407,3 +407,69 @@ test("should allow multiple contexts to be specified", function() {
 
   deepEqual(passedContexts, models, "the action was called with the passed contexts");
 });
+
+test("should allow a confirm dialog to be shown", function(){
+  var shown = 0,
+      _confirm = window.confirm;
+
+  window.confirm = function(){
+    return shown++;
+  };
+
+  view = Ember.View.create({
+    edit: function() {},
+    template: Ember.Handlebars.compile('<a href="#" {{action "edit" confirm="Are you sure?"}}>edit</a>')
+  });
+
+  appendView();
+
+  view.$('a').click();
+
+  equal(shown, 1, "the confirm dialog was shown");
+
+  window.confirm = _confirm;
+});
+
+test("should show the provided dialog text", function(){
+  var _confirm = window.confirm,
+      dialogText;
+
+  window.confirm = function(text){
+    dialogText = text;
+  };
+
+  view = Ember.View.create({
+    edit: function() {},
+    template: Ember.Handlebars.compile('<a href="#" {{action "edit" confirm="Are you sure?"}}>edit</a>')
+  });
+
+  appendView();
+
+  view.$('a').click();
+
+  equal(dialogText, "Are you sure?", "the dialog shows the passed text");
+
+  window.confirm = _confirm;
+});
+
+test("should not send the action to the target when canceled", function(){
+  var _confirm = window.confirm,
+      called = 0;
+
+  window.confirm = function(){
+    return false;
+  };
+
+  view = Ember.View.create({
+    edit: function() { called++; },
+    template: Ember.Handlebars.compile('<a href="#" {{action "edit" confirm="Are you sure?"}}>edit</a>')
+  });
+
+  appendView();
+
+  view.$('a').click();
+
+  equal(called, 0, "the action is not called when the dialog is canceled");
+
+  window.confirm = _confirm;
+});
