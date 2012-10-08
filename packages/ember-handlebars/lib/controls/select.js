@@ -26,11 +26,11 @@ var indexOf = Ember.EnumerableUtils.indexOf, indexesOf = Ember.EnumerableUtils.i
   Example:
 
   ``` javascript
-  App.Names = ["Yehuda", "Tom"];
+  App.names = ["Yehuda", "Tom"];
   ```
 
   ``` handlebars
-  {{view Ember.Select contentBinding="App.Names"}}
+  {{view Ember.Select contentBinding="App.names"}}
   ```
 
   Would result in the following HTML:
@@ -46,7 +46,7 @@ var indexOf = Ember.EnumerableUtils.indexOf, indexesOf = Ember.EnumerableUtils.i
   `value` property directly or as a binding:
 
   ``` javascript
-  App.Names = Ember.Object.create({
+  App.names = Ember.Object.create({
     selected: 'Tom',
     content: ["Yehuda", "Tom"]
   });
@@ -54,8 +54,8 @@ var indexOf = Ember.EnumerableUtils.indexOf, indexesOf = Ember.EnumerableUtils.i
 
   ``` handlebars
   {{view Ember.Select
-         contentBinding="App.controller.content"
-         valueBinding="App.controller.selected"
+         contentBinding="App.names.content"
+         valueBinding="App.names.selected"
   }}
   ```
 
@@ -69,7 +69,7 @@ var indexOf = Ember.EnumerableUtils.indexOf, indexesOf = Ember.EnumerableUtils.i
   ```
 
   A user interacting with the rendered `<select>` to choose "Yehuda" would update
-  the value of `App.controller.selected` to "Yehuda". 
+  the value of `App.names.selected` to "Yehuda".
 
   ### `content` as an Array of Objects
   An Ember.Select can also take an array of JavaScript or Ember objects
@@ -85,7 +85,7 @@ var indexOf = Ember.EnumerableUtils.indexOf, indexesOf = Ember.EnumerableUtils.i
   element's text. Both paths must reference each object itself as 'content':
 
   ``` javascript
-  App.Programmers = [
+  App.programmers = [
       Ember.Object.create({firstName: "Yehuda", id: 1}),
       Ember.Object.create({firstName: "Tom",    id: 2})
     ];
@@ -93,7 +93,7 @@ var indexOf = Ember.EnumerableUtils.indexOf, indexesOf = Ember.EnumerableUtils.i
 
   ``` handlebars
   {{view Ember.Select
-         contentBinding="App.Programmers"
+         contentBinding="App.programmers"
          optionValuePath="content.id"
          optionLabelPath="content.firstName"}}
   ```
@@ -114,7 +114,7 @@ var indexOf = Ember.EnumerableUtils.indexOf, indexesOf = Ember.EnumerableUtils.i
   `valueBinding` option:
 
   ``` javascript
-  App.Programmers = [
+  App.programmers = [
       Ember.Object.create({firstName: "Yehuda", id: 1}),
       Ember.Object.create({firstName: "Tom",    id: 2})
     ];
@@ -126,7 +126,7 @@ var indexOf = Ember.EnumerableUtils.indexOf, indexesOf = Ember.EnumerableUtils.i
 
   ``` handlebars
   {{view Ember.Select
-         contentBinding="App.controller.content"
+         contentBinding="App.programmers"
          optionValuePath="content.id"
          optionLabelPath="content.firstName"
          valueBinding="App.currentProgrammer.id"}}
