@@ -1,3 +1,4 @@
+require('ember-views');
 var get = Ember.get, set = Ember.set;
 
 module("Ember.State");
@@ -219,28 +220,6 @@ test("Ember.State.transitionTo passes no context arguments when there are no con
   transitionFunction(stateManager, event);
 
   equal( contextArgsCount, 0);
-});
-
-test("Ember.State.transitionTo passes through a single context", function(){
-  var contextArgsCount,
-      stateManager,
-      transitionFunction,
-      event;
-
-  event = new Ember.$.Event();
-  event.contexts = [];
-
-  stateManager = {
-    transitionTo: function(){
-      contextArgsCount = [].slice.call(arguments, 1).length;
-    }
-  };
-
-  transitionFunction = Ember.State.transitionTo('targetState');
-
-  transitionFunction(stateManager, event);
-
-  equal(contextArgsCount, 0);
 });
 
 test("Ember.State.transitionTo passes through a single context", function(){
