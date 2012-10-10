@@ -65,3 +65,33 @@ test('adding a prop that is not an array should make array', function() {
   var obj = Ember.mixin({}, MixinA);
   deepEqual(Ember.get(obj, 'foo'), ['bar']);
 });
+
+test('adding a non-concatenable property that already has a defined value should result in an array with both values', function() {
+
+  var mixinA = Ember.Mixin.create({
+    foo: 1
+  });
+
+  var mixinB = Ember.Mixin.create({
+    concatenatedProperties: ['foo'],
+    foo: 2
+  });
+
+  var obj = Ember.mixin({}, mixinA, mixinB);
+  deepEqual(Ember.get(obj, 'foo'), [1, 2]);
+});
+
+test('adding a concatenable property that already has a defined value should result in a concatenated value', function() {
+
+  var mixinA = Ember.Mixin.create({
+    foobar: 'foo'
+  });
+
+  var mixinB = Ember.Mixin.create({
+    concatenatedProperties: ['foobar'],
+    foobar: 'bar'
+  });
+
+  var obj = Ember.mixin({}, mixinA, mixinB);
+  equal(Ember.get(obj, 'foobar'), 'foobar');
+});
