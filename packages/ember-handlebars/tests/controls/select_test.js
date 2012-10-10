@@ -32,7 +32,7 @@ function append() {
 function selectedOptions() {
   var rv = [];
   for(var i=0, len = select.get('content.length'); i < len; ++i) {
-    rv.push(select.get('childViews.' + i + '.childViews.0.selected'));
+    rv.push(select.get('childViews.' + i + '.selected'));
   }
   return rv;
 }

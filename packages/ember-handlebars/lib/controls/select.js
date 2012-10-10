@@ -257,15 +257,16 @@ var set = Ember.set,
 
   @class Select
   @namespace Ember
-  @extends Ember.View
+  @extends Ember.CollectionView
 */
-Ember.Select = Ember.View.extend(
+Ember.Select = Ember.CollectionView.extend(
   /** @scope Ember.Select.prototype */ {
 
   tagName: 'select',
   classNames: ['ember-select'],
-  defaultTemplate: Ember.Handlebars.compile('{{#if view.prompt}}<option value>{{view.prompt}}</option>{{/if}}{{#each view.content}}{{view Ember.SelectOption contentBinding="this"}}{{/each}}'),
   attributeBindings: ['multiple', 'tabindex'],
+
+  itemViewClass: 'Ember.SelectOption',
 
   /**
     The `multiple` attribute of the select element. Indicates whether multiple
@@ -354,6 +355,8 @@ Ember.Select = Ember.View.extend(
     @default 'content'
   */
   optionValuePath: 'content',
+
+  _promptView: null,
 
   _change: function() {
     if (get(this, 'multiple')) {
@@ -468,10 +471,72 @@ Ember.Select = Ember.View.extend(
     }
   },
 
+  /** @private */
   init: function() {
     this._super();
     this.on("didInsertElement", this, this._triggerChange);
     this.on("change", this, this._change);
+    this._promptDidChange();
+  },
+
+  /**
+    @private
+
+    Remove old prompt view from childViews before change
+  */
+  _promptViewWillChange: Ember.beforeObserver(function() {
+    var promptView = get(this, '_promptView');
+
+    if (promptView) {
+      promptView.removeFromParent();
+    }
+  }, '_promptView'),
+
+  /**
+    @private
+
+    Add prompt view to childViews when it changed
+  */
+  _promptViewDidChange: Ember.observer(function() {
+    var promptView = get(this, '_promptView'),
+        childViews = get(this, 'childViews');
+
+    if (promptView) {
+      childViews.unshift(promptView);
+    }
+  }, '_promptView'),
+
+  /**
+    @private
+
+    Setup prompt view when prompt message changed.
+  */
+  _promptDidChange: Ember.observer(function() {
+    var prompt = get(this, 'prompt'), viewClass;
+
+    if (!prompt) { return; }
+
+    viewClass = Ember.View.extend({
+      attributeBindings: ['value'],
+      value: '',
+      render: function(buffer) {
+        buffer.push(prompt);
+      }
+    });
+
+    set(this, '_promptView', this.createChildView(viewClass));
+  }, 'prompt'),
+
+  /** @private */
+  arrayWillChange: function() {
+    this._promptViewWillChange();
+    this._super.apply(this, arguments);
+  },
+
+  /** @private */
+  arrayDidChange: function() {
+    this._super.apply(this, arguments);
+    this._promptViewDidChange();
   }
 });
 
@@ -479,10 +544,15 @@ Ember.SelectOption = Ember.View.extend({
   tagName: 'option',
   attributeBindings: ['value', 'selected'],
 
-  defaultTemplate: function(context, options) {
-    options = { data: options.data, hash: {} };
-    Ember.Handlebars.helpers.bind.call(context, "view.label", options);
+  render: function(buffer) {
+    var label = get(this, 'label');
+
+    if (label) { buffer.push(label); }
   },
+
+  labelDidChange: Ember.observer(function() {
+    this.rerender();
+  }, 'label'),
 
   init: function() {
     this.labelPathDidChange();
