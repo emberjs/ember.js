@@ -102,6 +102,8 @@ task :test, [:suite] => :dist do |t, args|
 
   success = true
   opts.each do |opt|
+    puts "\n"
+
     cmd = "phantomjs tests/qunit/run-qunit.js \"file://localhost#{File.dirname(__FILE__)}/tests/index.html?#{opt}\""
     system(cmd)
 
@@ -109,7 +111,7 @@ task :test, [:suite] => :dist do |t, args|
     tries = 0
     while tries < 3 && $?.exitstatus === 124
       tries += 1
-      puts "Timed Out. Trying again..."
+      puts "\nTimed Out. Trying again...\n"
       system(cmd)
     end
 
@@ -117,9 +119,9 @@ task :test, [:suite] => :dist do |t, args|
   end
 
   if success
-    puts "Tests Passed".green
+    puts "\nTests Passed".green
   else
-    puts "Tests Failed".red
+    puts "\nTests Failed".red
     exit(1)
   end
 end
