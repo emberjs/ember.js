@@ -623,14 +623,24 @@ Ember.StateManager = Ember.State.extend({
   */
   errorOnUnhandledEvent: true,
 
-  send: function(event, context) {
+  send: function(event) {
+    var contexts, sendRecursiveArguments;
+
     Ember.assert('Cannot send event "' + event + '" while currentState is ' + get(this, 'currentState'), get(this, 'currentState'));
-    return this.sendRecursively(event, get(this, 'currentState'), context);
+
+    contexts = [].slice.call(arguments, 1);
+    sendRecursiveArguments = contexts;
+    sendRecursiveArguments.unshift(event, get(this, 'currentState'));
+
+    return this.sendRecursively.apply(this, sendRecursiveArguments);
   },
 
-  sendRecursively: function(event, currentState, context) {
+  sendRecursively: function(event, currentState) {
     var log = this.enableLogging,
-        action = currentState[event];
+        action = currentState[event],
+        contexts, sendRecursiveArguments, actionArguments;
+
+    contexts = [].slice.call(arguments, 2);
 
     // Test to see if the action is a method that
     // can be invoked. Don't blindly check just for
@@ -640,11 +650,19 @@ Ember.StateManager = Ember.State.extend({
     // case.
     if (typeof action === 'function') {
       if (log) { Ember.Logger.log(fmt("STATEMANAGER: Sending event '%@' to state %@.", [event, get(currentState, 'path')])); }
-      return action.call(currentState, this, context);
+
+      actionArguments = contexts;
+      actionArguments.unshift(this);
+
+      return action.apply(currentState, actionArguments);
     } else {
       var parentState = get(currentState, 'parentState');
       if (parentState) {
-        return this.sendRecursively(event, parentState, context);
+
+        sendRecursiveArguments = contexts;
+        sendRecursiveArguments.unshift(event, parentState);
+
+        return this.sendRecursively.apply(this, sendRecursiveArguments);
       } else if (get(this, 'errorOnUnhandledEvent')) {
         throw new Ember.Error(this.toString() + " could not respond to event " + event + " in state " + get(this, 'currentState.path') + ".");
       }
