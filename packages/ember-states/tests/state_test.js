@@ -1,5 +1,4 @@
-require('ember-views');
-var get = Ember.get, set = Ember.set;
+var get = Ember.get, set = Ember.set, _$;
 
 module("Ember.State");
 
@@ -182,7 +181,17 @@ test("the isLeaf property is false when a state has child states", function() {
   equal(definitelyInside.get('isLeaf'), true);
 });
 
-test("Ember.State.transitionTo sets the transition target", function(){
+module("Ember.State.transitionTo", {
+  setup: function(){
+    _$ = Ember.$;
+    Ember.$ = {};
+    Ember.$.Event = function(){};
+  },
+  teardown: function(){
+    Ember.$ = _$;
+  }
+});
+test("sets the transition target", function(){
   var receivedTarget,
       stateManager,
       transitionFunction;
@@ -200,7 +209,7 @@ test("Ember.State.transitionTo sets the transition target", function(){
   equal( receivedTarget, 'targetState' );
 });
 
-test("Ember.State.transitionTo passes no context arguments when there are no contexts", function(){
+test("passes no context arguments when there are no contexts", function(){
   var contextArgsCount,
       stateManager,
       transitionFunction,
@@ -222,7 +231,7 @@ test("Ember.State.transitionTo passes no context arguments when there are no con
   equal( contextArgsCount, 0);
 });
 
-test("Ember.State.transitionTo passes through a single context", function(){
+test("passes through a single context", function(){
   var receivedContext,
       stateManager,
       transitionFunction,
@@ -244,7 +253,7 @@ test("Ember.State.transitionTo passes through a single context", function(){
   equal( receivedContext, event.contexts[0]);
 });
 
-test("Ember.State.transitionTo passes through multiple contexts as additional arguments", function(){
+test("passes through multiple contexts as additional arguments", function(){
   var receivedContexts,
       stateManager,
       transitionFunction,
@@ -266,7 +275,7 @@ test("Ember.State.transitionTo passes through multiple contexts as additional ar
   deepEqual( receivedContexts, event.contexts);
 });
 
-test("Ember.State.transtionTo does not mutate the event contexts value", function(){
+test("does not mutate the event contexts value", function(){
   var receivedContexts,
       stateManager,
       transitionFunction,
@@ -291,7 +300,7 @@ test("Ember.State.transtionTo does not mutate the event contexts value", functio
   deepEqual(event.contexts, originalContext);
 });
 
-test("Ember.State.transitionTo passes no context arguments when called with no context or event", function(){
+test("passes no context arguments when called with no context or event", function(){
   var receivedContexts,
       stateManager,
       transitionFunction;
@@ -309,7 +318,7 @@ test("Ember.State.transitionTo passes no context arguments when called with no c
   equal( receivedContexts.length, 0, "transitionTo receives no context");
 });
 
-test("Ember.State.transitionTo handles contexts without an event", function(){
+test("handles contexts without an event", function(){
   var receivedContexts,
       stateManager,
       transitionFunction,
