@@ -383,7 +383,7 @@ test("it sends exit events in the correct order when changing to a state multipl
   equal(exitOrder[1], 'exitedOuter', "outer exit is called second");
 });
 
-var passedContext, loadingEventCalled, loadedEventCalled, eventInChildCalled;
+var passedContext, passedContexts, loadingEventCalled, loadedEventCalled, eventInChildCalled;
 loadingEventCalled = loadedEventCalled = eventInChildCalled = 0;
 
 module("Ember.StateManager - Event Dispatching", {
@@ -393,6 +393,7 @@ module("Ember.StateManager - Event Dispatching", {
         anEvent: function(manager, context) {
           loadingEventCalled++;
           passedContext = context;
+          passedContexts = [].slice.call(arguments, 1);
         }
       }),
 
@@ -440,6 +441,12 @@ test("it does not dispatch events to parents if the child responds to it", funct
 test("it supports arguments to events", function() {
   stateManager.send('anEvent', { context: true });
   equal(passedContext.context, true, "send passes along a context");
+});
+
+test("it supports multiple arguments to events", function() {
+  stateManager.send('anEvent', {name: 'bestie'}, {name: 'crofty'});
+  equal(passedContexts[0].name, 'bestie', "send passes along the first context");
+  equal(passedContexts[1].name, 'crofty', "send passes along the second context");
 });
 
 test("it throws an exception if an event is dispatched that is unhandled", function() {
