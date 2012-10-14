@@ -70,16 +70,21 @@ test("you cannot make two default applications without a rootElement error", fun
 });
 
 test("acts like a namespace", function() {
-  var app;
-  Ember.run(function() {
-    app = window.TestApp = Ember.Application.create({rootElement: '#two'});
-  });
-  app.Foo = Ember.Object.extend();
-  equal(app.Foo.toString(), "TestApp.Foo", "Classes pick up their parent namespace");
-  Ember.run(function() {
-    app.destroy();
-  });
-  window.TestApp = undefined;
+  var originalLookup = Ember.lookup;
+
+  try {
+    var lookup = Ember.lookup = {}, app;
+    Ember.run(function() {
+      app = lookup.TestApp = Ember.Application.create({rootElement: '#two'});
+    });
+    app.Foo = Ember.Object.extend();
+    equal(app.Foo.toString(), "TestApp.Foo", "Classes pick up their parent namespace");
+    Ember.run(function() {
+      app.destroy();
+    });
+  } finally {
+    Ember.lookup = originalLookup;
+  }
 });
 
 var app;

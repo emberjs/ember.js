@@ -5,9 +5,12 @@ var appendView = function(view) {
 };
 
 var view;
+var originalLookup = Ember.lookup, lookup;
 
 module("Handlebars {{#with}} helper", {
   setup: function() {
+    Ember.lookup = lookup = { Ember: Ember };
+
     view = Ember.View.create({
       template: Ember.Handlebars.compile("{{#with person as tom}}{{title}}: {{tom.name}}{{/with}}"),
       title: "Señor Engineer",
@@ -21,6 +24,7 @@ module("Handlebars {{#with}} helper", {
     Ember.run(function(){
       view.destroy();
     });
+    Ember.lookup = originalLookup;
   }
 });
 
@@ -56,7 +60,9 @@ test("updating a property on the view should update the HTML", function() {
 
 module("Handlebars {{#with}} globals helper", {
   setup: function() {
-    window.Foo = { bar: 'baz' };
+    Ember.lookup = lookup = { Ember: Ember };
+
+    lookup.Foo = { bar: 'baz' };
     view = Ember.View.create({
       template: Ember.Handlebars.compile("{{#with Foo.bar as qux}}{{qux}}{{/with}}")
     });
@@ -66,9 +72,9 @@ module("Handlebars {{#with}} globals helper", {
 
   teardown: function() {
     Ember.run(function(){
-      window.Foo = null;
       view.destroy();
     });
+    Ember.lookup = originalLookup;
   }
 });
 
@@ -76,7 +82,7 @@ test("it should support #with Foo.bar as qux", function() {
   equal(view.$().text(), "baz", "should be properly scoped");
 
   Ember.run(function() {
-    Ember.set(Foo, 'bar', 'updated');
+    Ember.set(lookup.Foo, 'bar', 'updated');
   });
 
   equal(view.$().text(), "updated", "should update");

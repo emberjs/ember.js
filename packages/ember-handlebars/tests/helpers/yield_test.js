@@ -1,12 +1,12 @@
-/*global TemplateTests*/
-
 var set = Ember.set, get = Ember.get;
 
-var view;
+var originalLookup = Ember.lookup, lookup, TemplateTests, view;
 
 module("Support for {{yield}} helper (#307)", {
   setup: function() {
-    window.TemplateTests = Ember.Namespace.create();
+    Ember.lookup = lookup = { Ember: Ember };
+
+    lookup.TemplateTests = TemplateTests = Ember.Namespace.create();
   },
   teardown: function() {
     Ember.run(function(){
@@ -15,8 +15,7 @@ module("Support for {{yield}} helper (#307)", {
       }}
     );
 
-
-    window.TemplateTests = undefined;
+    Ember.lookup = originalLookup;
   }
 });
 

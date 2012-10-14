@@ -537,6 +537,7 @@ testBoth('addBeforeObserver should respect targets with methods', function(get,s
 //
 
 var obj, count;
+var originalLookup = Ember.lookup, lookup;
 
 module('Ember.addObserver - dependentkey with chained properties', {
   setup: function() {
@@ -550,11 +551,13 @@ module('Ember.addObserver - dependentkey with chained properties', {
       }
     };
 
-    Global = {
-      foo: {
-        bar: {
-          baz: {
-            biff: "BIFF"
+    Ember.lookup = lookup = {
+      Global: {
+        foo: {
+          bar: {
+            baz: {
+              biff: "BIFF"
+            }
           }
         }
       }
@@ -564,7 +567,8 @@ module('Ember.addObserver - dependentkey with chained properties', {
   },
 
   teardown: function() {
-    obj = count = Global = null;
+    obj = count = null;
+    Ember.lookup = originalLookup;
   }
 });
 
@@ -607,10 +611,10 @@ testBoth('depending on a simple chain', function(get, set) {
 });
 
 testBoth('depending on a Global chain', function(get, set) {
+  var Global = lookup.Global, val;
 
-  var val ;
   Ember.addObserver(obj, 'Global.foo.bar.baz.biff', function(target, key){
-    val = Ember.get(window, key);
+    val = Ember.get(lookup, key);
     count++;
   });
 

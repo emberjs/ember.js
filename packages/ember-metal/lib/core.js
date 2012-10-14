@@ -32,10 +32,13 @@ if ('undefined' === typeof Ember) {
   Ember = {};
 }
 
+// Default imports, exports and lookup to the global object;
+var imports = Ember.imports = Ember.imports || this;
+var exports = Ember.exports = Ember.exports || this;
+var lookup  = Ember.lookup  = Ember.lookup  || this;
+
 // aliases needed to keep minifiers from removing the global context
-if ('undefined' !== typeof window) {
-  window.Em = window.Ember = Em = Ember;
-}
+exports.Em = exports.Ember = Em = Ember;
 
 // Make sure these are set whether Ember was already defined or not
 
@@ -177,11 +180,11 @@ if ('undefined' === typeof Ember.deprecateFunc) {
 
 // These are deprecated but still supported
 
-if ('undefined' === typeof ember_assert) { window.ember_assert = Ember.K; }
-if ('undefined' === typeof ember_warn) { window.ember_warn = Ember.K; }
-if ('undefined' === typeof ember_deprecate) { window.ember_deprecate = Ember.K; }
+if ('undefined' === typeof ember_assert) { exports.ember_assert = Ember.K; }
+if ('undefined' === typeof ember_warn) { exports.ember_warn = Ember.K; }
+if ('undefined' === typeof ember_deprecate) { exports.ember_deprecate = Ember.K; }
 if ('undefined' === typeof ember_deprecateFunc) {
-  window.ember_deprecateFunc = function(_, func) { return func; };
+  exports.ember_deprecateFunc = function(_, func) { return func; };
 }
 
 
@@ -190,13 +193,13 @@ if ('undefined' === typeof ember_deprecateFunc) {
 //
 
 /**
-  Inside Ember-Metal, simply uses the window.console object.
+  Inside Ember-Metal, simply uses the imports.console object.
   Override this to provide more robust logging functionality.
 
   @class Logger
   @namespace Ember
 */
-Ember.Logger = window.console || { log: Ember.K, warn: Ember.K, error: Ember.K, info: Ember.K, debug: Ember.K };
+Ember.Logger = imports.console || { log: Ember.K, warn: Ember.K, error: Ember.K, info: Ember.K, debug: Ember.K };
 
 
 // ..........................................................

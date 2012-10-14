@@ -177,10 +177,10 @@ function normalizeTuple(target, path) {
       isGlobal = !hasThis && IS_GLOBAL_PATH.test(path),
       key;
 
-  if (!target || isGlobal) target = window;
+  if (!target || isGlobal) target = Ember.lookup;
   if (hasThis) path = path.slice(5);
 
-  if (target === window) {
+  if (target === Ember.lookup) {
     key = firstKey(path);
     target = get(target, key);
     path   = path.slice(key.length+1);
@@ -198,7 +198,7 @@ function getPath(root, path) {
   // If there is no root and path is a key name, return that
   // property from the global object.
   // E.g. get('Ember') -> Ember
-  if (root === null && path.indexOf('.') === -1) { return get(window, path); }
+  if (root === null && path.indexOf('.') === -1) { return get(Ember.lookup, path); }
 
   // detect complicated paths and normalize them
   hasThis  = HAS_THIS.test(path);

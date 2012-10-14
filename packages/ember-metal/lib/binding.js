@@ -32,7 +32,7 @@ var get     = Ember.get,
 
 
 function getWithGlobals(obj, path) {
-  return get(isGlobalPath(path) ? window : obj, path);
+  return get(isGlobalPath(path) ? Ember.lookup : obj, path);
 }
 
 // ..........................................................
@@ -243,7 +243,7 @@ Binding.prototype = {
         Ember.Logger.log(' ', this.toString(), '<-', toValue, obj);
       }
       Ember._suspendObserver(obj, fromPath, this, this.fromDidChange, function () {
-        Ember.trySet(Ember.isGlobalPath(fromPath) ? window : obj, fromPath, toValue);
+        Ember.trySet(Ember.isGlobalPath(fromPath) ? Ember.lookup : obj, fromPath, toValue);
       });
     }
   }

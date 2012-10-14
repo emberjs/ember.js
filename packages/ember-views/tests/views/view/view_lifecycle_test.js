@@ -1,10 +1,10 @@
 /*global ViewTest:true*/
 
-var view;
+var originalLookup = Ember.lookup, lookup, view;
 
 module("views/view/view_lifecycle_test - pre-render", {
   setup: function() {
-
+    Ember.lookup = lookup = {};
   },
 
   teardown: function() {
@@ -13,6 +13,7 @@ module("views/view/view_lifecycle_test - pre-render", {
         view.destroy();
       });
     }
+    Ember.lookup = originalLookup;
   }
 });
 
@@ -23,7 +24,9 @@ function tmpl(str) {
 }
 
 test("should create and append a DOM element after bindings have synced", function() {
-  window.ViewTest = {};
+  var ViewTest;
+
+  lookup.ViewTest = ViewTest = {};
 
   Ember.run(function() {
     ViewTest.fakeController = Ember.Object.create({
@@ -44,7 +47,6 @@ test("should create and append a DOM element after bindings have synced", functi
   });
 
   equal(view.$().text(), 'controllerPropertyValue', "renders and appends after bindings have synced");
-  window.ViewTest = undefined;
 });
 
 test("should throw an exception if trying to append a child before rendering has begun", function() {

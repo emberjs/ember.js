@@ -37,7 +37,7 @@ Ember.Namespace = Ember.Object.extend({
 
   destroy: function() {
     var namespaces = Ember.Namespace.NAMESPACES;
-    window[this.toString()] = undefined;
+    Ember.lookup[this.toString()] = undefined;
     namespaces.splice(indexOf.call(namespaces, this), 1);
     this._super();
   }

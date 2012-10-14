@@ -1189,7 +1189,7 @@ Ember.View = Ember.Object.extend(Ember.Evented,
 
     var val = get(this, path);
     if (val === undefined && Ember.isGlobalPath(path)) {
-      val = get(window, path);
+      val = get(Ember.lookup, path);
     }
 
     return Ember.View._classStringForValue(path, val, parsedPath.className, parsedPath.falsyClassName);

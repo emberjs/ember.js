@@ -19,7 +19,7 @@ Ember.TargetActionSupport = Ember.Mixin.create({
 
     if (Ember.typeOf(target) === "string") {
       var value = get(this, target);
-      if (value === undefined) { value = get(window, target); }
+      if (value === undefined) { value = get(Ember.lookup, target); }
       return value;
     } else {
       return target;

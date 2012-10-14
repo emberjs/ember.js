@@ -1,3 +1,5 @@
+var originalLookup = Ember.lookup, lookup, TestApp;
+
 module("Ember.Routable");
 
 test("it should have its updateRoute method called when it is entered", function() {
@@ -272,19 +274,21 @@ var url, firstPost, firstUser;
 
 module("default serialize and deserialize with modelType", {
   setup: function() {
-    window.TestApp = Ember.Namespace.create();
-    window.TestApp.Post = Ember.Object.extend();
-    window.TestApp.Post.find = function(id) {
+    Ember.lookup = lookup = {};
+
+    lookup.TestApp = TestApp = Ember.Namespace.create();
+    TestApp.Post = Ember.Object.extend();
+    TestApp.Post.find = function(id) {
       if (id === "1") { return firstPost; }
     };
 
-    window.TestApp.User = Ember.Object.extend();
-    window.TestApp.User.find = function(id) {
+    TestApp.User = Ember.Object.extend();
+    TestApp.User.find = function(id) {
       if (id === "1") { return firstUser; }
     };
 
-    firstPost = window.TestApp.Post.create({ id: 1 });
-    firstUser = window.TestApp.User.create({ id: 1 });
+    firstPost = TestApp.Post.create({ id: 1 });
+    firstUser = TestApp.User.create({ id: 1 });
 
     router = Ember.Router.create({
       location: {
@@ -305,7 +309,7 @@ module("default serialize and deserialize with modelType", {
 
         user: Ember.Route.extend({
           route: '/users/:user_id',
-          modelType: window.TestApp.User,
+          modelType: TestApp.User,
 
           connectOutlets: function(router, user) {
             equal(user, firstUser, "the post should have deserialized correctly");
@@ -316,7 +320,7 @@ module("default serialize and deserialize with modelType", {
   },
 
   teardown: function() {
-    window.TestApp = undefined;
+    Ember.lookup = originalLookup;
   }
 });
 
@@ -349,35 +353,36 @@ var postSuccessCallback, postFailureCallback,
 
 module("modelType with promise", {
   setup: function() {
-    window.TestApp = Ember.Namespace.create();
+    Ember.lookup = lookup = {};
+    lookup.TestApp = TestApp = Ember.Namespace.create();
 
-    window.TestApp.User = Ember.Object.extend({
+    TestApp.User = Ember.Object.extend({
       then: function(success, failure) {
         userLoaded = true;
         userSuccessCallback = success;
         userFailureCallback = failure;
       }
     });
-    window.TestApp.User.find = function(id) {
+    TestApp.User.find = function(id) {
       if (id === "1") {
         return firstUser;
       }
     };
 
-    window.TestApp.Post = Ember.Object.extend({
+    TestApp.Post = Ember.Object.extend({
       then: function(success, failure) {
         postSuccessCallback = success;
         postFailureCallback = failure;
       }
     });
-    window.TestApp.Post.find = function(id) {
+    TestApp.Post.find = function(id) {
       // Simulate dependency on user
       if (!userLoaded) { return; }
       if (id === "1") { return firstPost; }
     };
 
-    firstUser = window.TestApp.User.create({ id: 1 });
-    firstPost = window.TestApp.Post.create({ id: 1 });
+    firstUser = TestApp.User.create({ id: 1 });
+    firstPost = TestApp.Post.create({ id: 1 });
 
     router = Ember.Router.create({
       location: {
@@ -443,11 +448,11 @@ module("modelType with promise", {
   },
 
   teardown: function() {
-    window.TestApp = undefined;
     postSuccessCallback = postFailureCallback = undefined;
     userSuccessCallback = userFailureCallback = undefined;
     connectedUser = connectedPost = connectedChild = connectedOther = undefined;
     isLoading = userLoaded = undefined;
+    Ember.lookup = originalLookup;
   }
 });
 
@@ -554,16 +559,17 @@ test("should stop promises if transitionTo is called", function() {
 
 module("default serialize and deserialize without modelType", {
   setup: function() {
-    window.TestApp = Ember.Namespace.create();
-    window.TestApp.Post = Ember.Object.extend();
-    window.TestApp.Post.find = function(id) {
+    Ember.lookup = lookup = {};
+    lookup.TestApp = TestApp = Ember.Namespace.create();
+    TestApp.Post = Ember.Object.extend();
+    TestApp.Post.find = function(id) {
       if (id === "1") { return firstPost; }
     };
 
-    firstPost = window.TestApp.Post.create({ id: 1 });
+    firstPost = TestApp.Post.create({ id: 1 });
 
     router = Ember.Router.create({
-      namespace: window.TestApp,
+      namespace: TestApp,
 
       location: {
         setURL: function(passedURL) {
@@ -584,7 +590,7 @@ module("default serialize and deserialize without modelType", {
   },
 
   teardown: function() {
-    window.TestApp = undefined;
+    Ember.lookup = originalLookup;
   }
 });
 

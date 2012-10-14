@@ -41,7 +41,7 @@ module("Ember.meta enumerable");
 // Tests fix for https://github.com/emberjs/ember.js/issues/344
 // This is primarily for older browsers such as IE8
 if (Ember.platform.defineProperty.isSimulated) {
-  if (window.jQuery) {
+  if (Ember.imports.jQuery) {
     test("meta is not jQuery.isPlainObject", function () {
       var proto, obj;
       proto = {foo: 'bar'};
@@ -63,7 +63,7 @@ if (Ember.platform.defineProperty.isSimulated) {
       props.push(prop);
     }
     deepEqual(props.sort(), ['bar', 'foo']);
-    if (window.JSON && 'stringify' in JSON) {
+    if (typeof JSON !== 'undefiend' && 'stringify' in JSON) {
       try {
         JSON.stringify(obj);
       } catch (e) {

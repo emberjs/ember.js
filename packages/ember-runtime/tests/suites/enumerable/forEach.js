@@ -1,6 +1,6 @@
 require('ember-runtime/~tests/suites/enumerable');
 
-var suite = Ember.EnumerableTests;
+var suite = Ember.EnumerableTests, global = this;
 
 suite.module('forEach');
 
@@ -38,9 +38,8 @@ suite.test('forEach should iterate over list after mutation', function() {
 suite.test('2nd target parameter', function() {
   var obj = this.newObject(), target = this;
 
-
   obj.forEach(function() {
-    equal(Ember.guidFor(this), Ember.guidFor(window), 'should pass window as this if no context');
+    equal(Ember.guidFor(this), Ember.guidFor(global), 'should pass the global object as this if no context');
   });
 
   obj.forEach(function() {

@@ -1,9 +1,12 @@
-/*global Tobias:true*/
+var originalLookup = Ember.lookup, lookup, Tobias;
 
 module("test Ember.Handlebars.bootstrap", {
+  setup: function() {
+    Ember.lookup = lookup = { Ember: Ember };
+  },
   teardown: function() {
     Ember.TEMPLATES = {};
-    window.Tobias = undefined;
+    Ember.lookup = originalLookup;
   }
 });
 

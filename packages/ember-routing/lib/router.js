@@ -576,7 +576,26 @@ Ember.Router = Ember.StateManager.extend(
     }).start();
   },
 
+  moveStatesIntoRoot: function() {
+    this.root = Ember.Route.extend();
+
+    for (var name in this) {
+      if (name === "constructor") { continue; }
+
+      var state = this[name];
+
+      if (state instanceof Ember.Route || Ember.Route.detect(state)) {
+        this.root[name] = state;
+        delete this[name];
+      }
+    }
+  },
+
   init: function() {
+    if (!this.root) {
+      this.moveStatesIntoRoot();
+    }
+
     this._super();
 
     var location = get(this, 'location'),

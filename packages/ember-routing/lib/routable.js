@@ -222,7 +222,7 @@ Ember.Routable = Ember.Mixin.create({
     var modelType = get(this, 'modelType');
 
     if (typeof modelType === 'string') {
-      return Ember.get(window, modelType);
+      return Ember.get(Ember.lookup, modelType);
     } else {
       return modelType;
     }

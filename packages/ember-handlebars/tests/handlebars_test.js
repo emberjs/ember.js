@@ -62,6 +62,8 @@ var appendView = function() {
 };
 
 var additionalTeardown;
+var originalLookup = Ember.lookup, lookup;
+var TemplateTests;
 
 /**
   This module specifically tests integration with Handlebars and Ember-specific
@@ -72,7 +74,8 @@ var additionalTeardown;
 */
 module("Ember.View - handlebars integration", {
   setup: function() {
-    window.TemplateTests = Ember.Namespace.create();
+    Ember.lookup = lookup = { Ember: Ember };
+    lookup.TemplateTests = TemplateTests = Ember.Namespace.create();
   },
 
   teardown: function() {
@@ -82,7 +85,7 @@ module("Ember.View - handlebars integration", {
       });
       view = null;
     }
-    window.TemplateTests = undefined;
+    Ember.lookup = originalLookup;
   }
 });
 
@@ -197,8 +200,6 @@ test("should not escape HTML if string is a Handlebars.SafeString", function() {
 
   equal(view.$('i').length, 1, "creates an element when value is updated");
 });
-
-TemplateTests = {};
 
 test("child views can be inserted using the {{view}} Handlebars helper", function() {
   var templates = Ember.Object.create({
@@ -1140,8 +1141,10 @@ test("{{view}} should be able to point to a local view", function() {
 });
 
 test("{{view}} should evaluate class bindings set to global paths", function() {
+  var App;
+
   Ember.run(function() {
-    window.App = Ember.Application.create({
+    lookup.App = App = Ember.Application.create({
       isApp:       true,
       isGreat:     true,
       directClass: "app-direct",
@@ -1172,7 +1175,7 @@ test("{{view}} should evaluate class bindings set to global paths", function() {
   ok(view.$('input').hasClass('disabled'),    "evaluates ternary operator in classBindings");
 
   Ember.run(function() {
-    window.App.destroy();
+    lookup.App.destroy();
   });
 });
 
@@ -1205,8 +1208,10 @@ test("{{view}} should evaluate class bindings set in the current context", funct
 });
 
 test("{{view}} should evaluate class bindings set with either classBinding or classNameBindings", function() {
+  var App;
+
   Ember.run(function() {
-    window.App = Ember.Application.create({
+    lookup.App = App = Ember.Application.create({
       isGreat: true,
       isEnabled: true
     });
@@ -1236,13 +1241,13 @@ test("{{view}} should evaluate class bindings set with either classBinding or cl
   ok(view.$('input').hasClass('really-disabled'), "evaluates ternary operator in classBindings");
 
   Ember.run(function() {
-    window.App.destroy();
+    lookup.App.destroy();
   });
 });
 
 test("{{view}} should evaluate other attribute bindings set to global paths", function() {
   Ember.run(function() {
-    window.App = Ember.Application.create({
+    lookup.App = Ember.Application.create({
       name: "myApp"
     });
   });
@@ -1256,7 +1261,7 @@ test("{{view}} should evaluate other attribute bindings set to global paths", fu
   equal(view.$('input').attr('value'), "myApp", "evaluates attributes bound to global paths");
 
   Ember.run(function() {
-    window.App.destroy();
+    lookup.App.destroy();
   });
 });
 
@@ -1944,6 +1949,8 @@ test("should be able to explicitly set a view's context", function() {
 
 module("Ember.View - handlebars integration", {
   setup: function() {
+    Ember.lookup = lookup = { Ember: Ember };
+
     originalLog = Ember.Logger.log;
     logCalls = [];
     Ember.Logger.log = function(arg) { logCalls.push(arg); };
@@ -1958,6 +1965,7 @@ module("Ember.View - handlebars integration", {
     }
 
     Ember.Logger.log = originalLog;
+    Ember.lookup = originalLookup;
   }
 });
 
@@ -2003,16 +2011,18 @@ test("should be able to log `this`", function() {
   equal(logCalls[1], 'two', "should call log with item two");
 });
 
+var MyApp;
 
 module("Templates redrawing and bindings", {
   setup: function(){
-    MyApp = Ember.Object.create({});
+    Ember.lookup = lookup = { Ember: Ember };
+    MyApp = lookup.MyApp = Ember.Object.create({});
   },
   teardown: function(){
     Ember.run(function() {
       if (view) view.destroy();
     });
-    window.MyApp = null;
+    Ember.lookup = originalLookup;
   }
 });
 
@@ -2184,8 +2194,10 @@ test("bindings can be 'this', in which case they *are* the current context", fun
 test("should not enter an infinite loop when binding an attribute in Handlebars", function() {
   expect(0);
 
+  var App;
+
   Ember.run(function() {
-    window.App = Ember.Application.create();
+    lookup.App = App = Ember.Application.create();
   });
 
   App.test = Ember.Object.create({ href: 'test' });
@@ -2216,7 +2228,7 @@ test("should not enter an infinite loop when binding an attribute in Handlebars"
   });
 
   Ember.run(function() {
-    window.App.destroy();
+    lookup.App.destroy();
   });
 });
 

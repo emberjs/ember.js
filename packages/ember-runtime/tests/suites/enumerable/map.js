@@ -1,6 +1,6 @@
 require('ember-runtime/~tests/suites/enumerable');
 
-var suite = Ember.EnumerableTests;
+var suite = Ember.EnumerableTests, global = this;
 
 suite.module('map');
 
@@ -40,7 +40,7 @@ suite.test('2nd target parameter', function() {
 
 
   obj.map(function() {
-    equal(Ember.guidFor(this), Ember.guidFor(window), 'should pass window as this if no context');
+    equal(Ember.guidFor(this), Ember.guidFor(global), 'should pass the global object as this if no context');
   });
 
   obj.map(function() {

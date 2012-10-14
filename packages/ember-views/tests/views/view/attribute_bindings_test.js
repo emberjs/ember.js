@@ -1,13 +1,16 @@
 /*global Test:true*/
 var set = Ember.set, get = Ember.get;
 
-var view;
+var originalLookup = Ember.lookup, lookup, view;
 
 var appendView = function() {
   Ember.run(function() { view.appendTo('#qunit-fixture'); });
 };
 
 module("Ember.View - Attribute Bindings", {
+  setup: function() {
+    Ember.lookup = lookup = {};
+  },
   teardown: function() {
     if (view) {
       Ember.run(function(){
@@ -15,6 +18,7 @@ module("Ember.View - Attribute Bindings", {
       });
       view = null;
     }
+    Ember.lookup = originalLookup;
   }
 });
 
@@ -99,9 +103,9 @@ test("should update attribute bindings", function() {
 });
 
 test("should allow attributes to be set in the inBuffer state", function() {
-  var parentView, childViews;
+  var parentView, childViews, Test;
   Ember.run(function() {
-    window.Test = Ember.Namespace.create();
+    lookup.Test = Test = Ember.Namespace.create();
     Test.controller = Ember.Object.create({
       foo: 'bar'
     });

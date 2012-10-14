@@ -1,5 +1,3 @@
-/*globals Handlebars */
-
 require("ember-views/system/render_buffer");
 
 /**
@@ -9,8 +7,8 @@ require("ember-views/system/render_buffer");
 
 var objectCreate = Ember.create;
 
-
-Ember.assert("Ember Handlebars requires Handlebars 1.0.beta.5 or greater", window.Handlebars && window.Handlebars.VERSION.match(/^1\.0\.beta\.[56789]$|^1\.0\.rc\.[123456789]+/));
+var Handlebars = Ember.imports.Handlebars;
+Ember.assert("Ember Handlebars requires Handlebars 1.0.beta.5 or greater", Handlebars && Handlebars.VERSION.match(/^1\.0\.beta\.[56789]$|^1\.0\.rc\.[123456789]+/));
 
 /**
   Prepares the Handlebars templating library for use inside Ember's view
@@ -234,8 +232,10 @@ Ember.Handlebars.getPath = function(root, path, options) {
 
   value = Ember.get(root, path);
 
-  if (value === undefined && root !== window && Ember.isGlobalPath(path)) {
-    value = Ember.get(window, path);
+  // If the path starts with a capital letter, look it up on Ember.lookup,
+  // which defaults to the `window` object in browsers.
+  if (value === undefined && root !== Ember.lookup && Ember.isGlobalPath(path)) {
+    value = Ember.get(Ember.lookup, path);
   }
   return value;
 };

@@ -4,8 +4,12 @@ var templateFor = function(template) {
   return Ember.Handlebars.compile(template);
 };
 
+var originalLookup = Ember.lookup, lookup;
+
 module("the #each helper", {
   setup: function() {
+    Ember.lookup = lookup = { Ember: Ember };
+
     template = templateFor("{{#each people}}{{name}}{{/each}}");
     people = Ember.A([{ name: "Steve Holt" }, { name: "Annabelle" }]);
 
@@ -16,7 +20,7 @@ module("the #each helper", {
 
 
     templateMyView = templateFor("{{name}}");
-    window.MyView = Ember.View.extend({
+    lookup.MyView = Ember.View.extend({
         template: templateMyView
     });
 
@@ -28,6 +32,7 @@ module("the #each helper", {
       view.destroy();
       view = null;
     });
+    Ember.lookup = originalLookup;
   }
 });
 
@@ -211,7 +216,7 @@ test("it supports {{itemViewClass=}} with tagName", function() {
 
 test("it supports {{itemViewClass=}} with in format", function() {
 
-  window.MyView = Ember.View.extend({
+  lookup.MyView = Ember.View.extend({
       template: templateFor("{{person.name}}")
   });
 

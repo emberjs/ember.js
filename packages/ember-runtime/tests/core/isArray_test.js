@@ -1,5 +1,7 @@
 module("Ember Type Checking");
 
+var global = this;
+
 test("Ember.isArray" ,function(){
   var numarray      = [1,2,3],
       number        = 23,
@@ -15,6 +17,6 @@ test("Ember.isArray" ,function(){
   equal( Ember.isArray(string),   false, '"Hello"' );
   equal( Ember.isArray(object),   false, "{}" );
   equal( Ember.isArray(length),   true,  "{length: 12}" );
-  equal( Ember.isArray(window),   false, "window" );
+  equal( Ember.isArray(global),   false, "global" );
   equal( Ember.isArray(fn),       false, "function() {}" );
 });

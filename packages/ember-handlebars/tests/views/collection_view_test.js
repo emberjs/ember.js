@@ -9,11 +9,12 @@ var nthChild = function(view, nth) {
 };
 var firstChild = nthChild;
 
-var view;
+var originalLookup = Ember.lookup, lookup, TemplateTests, view;
 
 module("ember-handlebars/tests/views/collection_view_test", {
   setup: function() {
-    window.TemplateTests = Ember.Namespace.create();
+    Ember.lookup = lookup = { Ember: Ember };
+    lookup.TemplateTests = TemplateTests = Ember.Namespace.create();
   },
   teardown: function() {
     Ember.run(function(){
@@ -22,8 +23,7 @@ module("ember-handlebars/tests/views/collection_view_test", {
       }
     });
 
-    window.TemplateTests = undefined;
-    window.App = undefined;
+    Ember.lookup = originalLookup;
   }
 });
 
@@ -62,8 +62,10 @@ test("collection helper should accept relative paths", function() {
 });
 
 test("empty views should be removed when content is added to the collection (regression, ht: msofaer)", function() {
+  var App;
+
   Ember.run(function() {
-    window.App = Ember.Application.create();
+    lookup.App = App = Ember.Application.create();
   });
 
   App.EmptyView = Ember.View.extend({
@@ -92,12 +94,14 @@ test("empty views should be removed when content is added to the collection (reg
 
   equal(view.$('tr').length, 1, 'has one row');
 
-  Ember.run(function(){ window.App.destroy(); });
+  Ember.run(function(){ App.destroy(); });
 });
 
 test("should be able to specify which class should be used for the empty view", function() {
+  var App;
+
   Ember.run(function() {
-    window.App = Ember.Application.create();
+    lookup.App = App = Ember.Application.create();
   });
 
   App.EmptyView = Ember.View.extend({
@@ -115,7 +119,7 @@ test("should be able to specify which class should be used for the empty view", 
   equal(view.$().text(), 'This is an empty view', "Empty view should be rendered.");
 
   Ember.run(function() {
-    window.App.destroy();
+    App.destroy();
   });
 });
 
