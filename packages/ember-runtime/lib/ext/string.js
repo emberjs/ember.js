@@ -16,7 +16,7 @@ var fmt = Ember.String.fmt,
     dasherize = Ember.String.dasherize,
     underscore = Ember.String.underscore;
 
-if (Ember.EXTEND_PROTOTYPES) {
+if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.String) {
 
   /**
     See {{#crossLink "Ember.String/fmt"}}{{/crossLink}}

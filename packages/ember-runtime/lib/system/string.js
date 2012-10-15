@@ -23,8 +23,8 @@ Ember.STRINGS = {};
 
 /**
   Defines string helper methods including string formatting and localization.
-  Unless Ember.EXTEND_PROTOTYPES = false these methods will also be added to the
-  String.prototype as well.
+  Unless Ember.EXTEND_PROTOTYPES.String is false these methods will also be added
+  to the String.prototype as well.
 
   @class String
   @namespace Ember
@@ -109,7 +109,7 @@ Ember.String = {
 
   /**
     Converts a camelized string into all lower case separated by underscores.
-    
+
         'innerHTML'.decamelize()         => 'inner_html'
         'action_name'.decamelize()       => 'action_name'
         'css-class-name'.decamelize()    => 'css-class-name'
@@ -125,7 +125,7 @@ Ember.String = {
 
   /**
     Replaces underscores or spaces with dashes.
-    
+
         'innerHTML'.dasherize()         => 'inner-html'
         'action_name'.dasherize()       => 'action-name'
         'css-class-name'.dasherize()    => 'css-class-name'
