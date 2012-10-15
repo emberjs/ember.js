@@ -5,7 +5,7 @@ Ember.String.htmlSafe = function(str) {
 
 var htmlSafe = Ember.String.htmlSafe;
 
-if (Ember.EXTEND_PROTOTYPES && (Ember.PROTOTYPE_EXTENSIONS.all || Ember.PROTOTYPE_EXTENSIONS.String)) {
+if (Ember.EXTEND_PROTOTYPES) {
 
   /**
     @see Ember.String.htmlSafe
