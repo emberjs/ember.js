@@ -26,43 +26,6 @@ def upload_file(uploader, filename, description, file)
   end
 end
 
-def docs_upload_task(name)
-  instance_eval <<-end_eval
-    namespace :upload do
-      file "tmp/#{name}" do
-        mkdir_p "tmp"
-
-        Dir.chdir("tmp") do
-          sh "git clone git@heroku.com:#{name}.git"
-        end
-      end
-
-      task :pull => "tmp/#{name}" do
-        Dir.chdir("tmp/#{name}") do
-          sh "git pull origin master"
-        end
-      end
-
-      task :clean => :pull do
-        rm_rf "tmp/#{name}/html"
-      end
-
-      file "tmp/#{name}/html" => ['docs:build', :clean] do
-        cp_r "docs", "tmp/#{name}/html"
-      end
-
-      task :run => "tmp/#{name}/html" do
-        Dir.chdir "tmp/#{name}" do
-          sh "git add -A html && git commit -m 'Upload generated API docs' && git push origin master"
-        end
-      end
-    end
-
-    desc "Upload docs to #{name}"
-    task :upload => 'upload:run'
-  end_eval
-end
-
 
 desc "Strip trailing whitespace for JavaScript files in packages"
 task :strip_whitespace do
@@ -97,31 +60,6 @@ task :upload_latest => [:clean, :dist] do
   # Upload minified first, so non-minified shows up on top
   upload_file(uploader, 'ember-latest.min.js', "Ember.js Master (minified)", "dist/ember.min.js")
   upload_file(uploader, 'ember-latest.js', "Ember.js Master", "dist/ember.js")
-end
-
-namespace :docs do
-  def doc_args
-    "#{Dir.glob("packages/ember-*").join(' ')} -E #{Dir.glob("packages/ember-*/tests").join(' ')} -t docs.emberjs.com"
-  end
-
-  desc "Preview Ember Docs (does not auto update)"
-  task :preview do
-    require "ember_docs/cli"
-    EmberDocs::CLI.start("preview #{doc_args}".split(' '))
-  end
-
-  desc "Build Ember Docs"
-  task :build do
-    require "ember_docs/cli"
-    EmberDocs::CLI.start("generate #{doc_args} -o docs".split(' '))
-  end
-
-  docs_upload_task("ember-edge-docs")
-
-  desc "Remove Ember Docs"
-  task :clean do
-    rm_r "docs"
-  end
 end
 
 desc "Run tests with phantomjs"
@@ -164,6 +102,8 @@ task :test, [:suite] => :dist do |t, args|
 
   success = true
   opts.each do |opt|
+    puts "\n"
+
     cmd = "phantomjs tests/qunit/run-qunit.js \"file://localhost#{File.dirname(__FILE__)}/tests/index.html?#{opt}\""
     system(cmd)
 
@@ -171,7 +111,7 @@ task :test, [:suite] => :dist do |t, args|
     tries = 0
     while tries < 3 && $?.exitstatus === 124
       tries += 1
-      puts "Timed Out. Trying again..."
+      puts "\nTimed Out. Trying again...\n"
       system(cmd)
     end
 
@@ -179,9 +119,9 @@ task :test, [:suite] => :dist do |t, args|
   end
 
   if success
-    puts "Tests Passed".green
+    puts "\nTests Passed".green
   else
-    puts "Tests Failed".red
+    puts "\nTests Failed".red
     exit(1)
   end
 end
@@ -519,21 +459,11 @@ namespace :release do
     task :deploy => [:update]
   end
 
-  namespace :docs do
-    docs_upload_task("ember-docs")
-
-    desc "Prepare docs for release"
-    task :prepare => []
-
-    desc "Deploy docs"
-    task :deploy => [:upload]
-  end
-
   desc "Prepare Ember for new release"
-  task :prepare => [:clean, 'framework:prepare', 'starter_kit:prepare', 'examples:prepare', 'website:prepare', 'docs:prepare']
+  task :prepare => [:clean, 'framework:prepare', 'starter_kit:prepare', 'examples:prepare', 'website:prepare']
 
   desc "Deploy a new Ember release"
-  task :deploy => ['framework:deploy', 'starter_kit:deploy', 'examples:deploy', 'website:deploy', 'docs:deploy']
+  task :deploy => ['framework:deploy', 'starter_kit:deploy', 'examples:deploy', 'website:deploy']
 
 end
 

@@ -2,22 +2,27 @@
 // Project:  Ember Runtime
 // ==========================================================================
 
-var get = Ember.get;
+var get = Ember.get, originalLookup = Ember.lookup, lookup;
 
 module('Ember.Namespace', {
+  setup: function() {
+    lookup = Ember.lookup = {};
+  },
   teardown: function() {
-    if (window.NamespaceA) { Ember.run(function(){ window.NamespaceA.destroy(); }); }
-    if (window.NamespaceB) { Ember.run(function(){ window.NamespaceB.destroy(); }); }
-    if (window.namespaceC) {
+    if (lookup.NamespaceA) { Ember.run(function(){ lookup.NamespaceA.destroy(); }); }
+    if (lookup.NamespaceB) { Ember.run(function(){ lookup.NamespaceB.destroy(); }); }
+    if (lookup.namespaceC) {
       try {
         Ember.TESTING_DEPRECATION = true;
         Ember.run(function(){
-          window.namespaceC.destroy();
+          lookup.namespaceC.destroy();
         });
       } finally {
         Ember.TESTING_DEPRECATION = false;
       }
     }
+
+    Ember.lookup = originalLookup;
   }
 });
 
@@ -30,22 +35,22 @@ test("Ember.Namespace should be duck typed", function() {
 });
 
 test('Ember.Namespace is found and named', function() {
-  var nsA = window.NamespaceA = Ember.Namespace.create();
-  equal(nsA.toString(), "NamespaceA", "namespaces should have a name if they are on window");
+  var nsA = lookup.NamespaceA = Ember.Namespace.create();
+  equal(nsA.toString(), "NamespaceA", "namespaces should have a name if they are on lookup");
 
-  var nsB = window.NamespaceB = Ember.Namespace.create();
+  var nsB = lookup.NamespaceB = Ember.Namespace.create();
   equal(nsB.toString(), "NamespaceB", "namespaces work if created after the first namespace processing pass");
 });
 
 test("Classes under an Ember.Namespace are properly named", function() {
-  var nsA = window.NamespaceA = Ember.Namespace.create();
+  var nsA = lookup.NamespaceA = Ember.Namespace.create();
   nsA.Foo = Ember.Object.extend();
   equal(nsA.Foo.toString(), "NamespaceA.Foo", "Classes pick up their parent namespace");
 
   nsA.Bar = Ember.Object.extend();
   equal(nsA.Bar.toString(), "NamespaceA.Bar", "New Classes get the naming treatment too");
 
-  var nsB = window.NamespaceB = Ember.Namespace.create();
+  var nsB = lookup.NamespaceB = Ember.Namespace.create();
   nsB.Foo = Ember.Object.extend();
   equal(nsB.Foo.toString(), "NamespaceB.Foo", "Classes in new namespaces get the naming treatment");
 });
@@ -58,7 +63,7 @@ test("Classes under Ember are properly named", function() {
 });
 
 test("Lowercase namespaces should be deprecated", function() {
-  window.namespaceC = Ember.Namespace.create();
+  lookup.namespaceC = Ember.Namespace.create();
 
   var originalWarn = Ember.Logger.warn,
       loggerWarning;

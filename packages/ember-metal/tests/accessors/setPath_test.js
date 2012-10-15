@@ -1,9 +1,4 @@
-// ==========================================================================
-// Project:  Ember Runtime
-// Copyright: ©2011 Strobe Inc. and contributors.
-// License:   Licensed under MIT license (see license.js)
-// ==========================================================================
-/*globals Foo:true $foo:true */
+var originalLookup = Ember.lookup;
 
 var obj, moduleOpts = {
   setup: function() {
@@ -16,33 +11,34 @@ var obj, moduleOpts = {
 
     };
 
-    Foo = {
-      bar: {
-        baz: { biff: 'FooBiff' }
-      }
-    };
+    Ember.lookup = {
+      Foo: {
+        bar: {
+          baz: { biff: 'FooBiff' }
+        }
+      },
 
-    $foo = {
-      bar: {
-        baz: { biff: '$FOOBIFF' }
+      $foo: {
+        bar: {
+          baz: { biff: '$FOOBIFF' }
+        }
       }
     };
   },
 
   teardown: function() {
     obj = null;
-    Foo = null;
-    $foo = null;
+    Ember.lookup = originalLookup;
   }
 };
 
 module('Ember.set with path', moduleOpts);
 
 test('[Foo, bar] -> Foo.bar', function() {
-  window.Foo = {toString: function() { return 'Foo'; }}; // Behave like an Ember.Namespace
-  Ember.set(Foo, 'bar', 'baz');
-  equal(Ember.get(Foo, 'bar'), 'baz');
-  window.Foo = null;
+  Ember.lookup.Foo = {toString: function() { return 'Foo'; }}; // Behave like an Ember.Namespace
+
+  Ember.set(Ember.lookup.Foo, 'bar', 'baz');
+  equal(Ember.get(Ember.lookup.Foo, 'bar'), 'baz');
 });
 
 // ..........................................................
@@ -75,7 +71,7 @@ test('[obj, this.foo.bar] -> obj.foo.bar', function() {
 
 test('[null, Foo.bar] -> Foo.bar', function() {
   Ember.set(null, 'Foo.bar', "BAM");
-  equal(Ember.get(Foo, 'bar'), "BAM");
+  equal(Ember.get(Ember.lookup.Foo, 'bar'), "BAM");
 });
 
 // ..........................................................

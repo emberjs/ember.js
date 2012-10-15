@@ -1,10 +1,3 @@
-// ==========================================================================
-// Project:   Ember - JavaScript Application Framework
-// Copyright: ©2006-2011 Strobe Inc. and contributors.
-//            Portions ©2008-2011 Apple Inc. All rights reserved.
-// License:   Licensed under MIT license (see license.js)
-// ==========================================================================
-
 var view;
 var application;
 var set = Ember.set, get = Ember.get;
@@ -77,22 +70,28 @@ test("you cannot make two default applications without a rootElement error", fun
 });
 
 test("acts like a namespace", function() {
-  var app;
-  Ember.run(function() {
-    app = window.TestApp = Ember.Application.create({rootElement: '#two'});
-  });
-  app.Foo = Ember.Object.extend();
-  equal(app.Foo.toString(), "TestApp.Foo", "Classes pick up their parent namespace");
-  Ember.run(function() {
-    app.destroy();
-  });
-  window.TestApp = undefined;
+  var originalLookup = Ember.lookup;
+
+  try {
+    var lookup = Ember.lookup = {}, app;
+    Ember.run(function() {
+      app = lookup.TestApp = Ember.Application.create({rootElement: '#two'});
+    });
+    app.Foo = Ember.Object.extend();
+    equal(app.Foo.toString(), "TestApp.Foo", "Classes pick up their parent namespace");
+    Ember.run(function() {
+      app.destroy();
+    });
+  } finally {
+    Ember.lookup = originalLookup;
+  }
 });
 
 var app;
 
 module("Ember.Application initialization", {
   teardown: function() {
+    Ember.TEMPLATES = {};
     Ember.run(function(){ app.destroy(); });
   }
 });
@@ -106,6 +105,7 @@ test("initialize controllers into a state manager", function() {
   app.BarController = Ember.ArrayController.extend();
   app.Foo = Ember.Object.create();
   app.fooController = Ember.Object.create();
+  app.BazController = {};
 
   var stateManager = Ember.Object.create();
 
@@ -114,6 +114,7 @@ test("initialize controllers into a state manager", function() {
   ok(get(stateManager, 'fooController') instanceof app.FooController, "fooController was assigned");
   ok(get(stateManager, 'barController') instanceof app.BarController, "barController was assigned");
   ok(get(stateManager, 'foo') === undefined, "foo was not assigned");
+  ok(get(stateManager, 'bazController') === undefined, "bazController was not assigned");
 
   equal(get(stateManager, 'fooController.target'), stateManager, "the state manager is assigned");
   equal(get(stateManager, 'barController.target'), stateManager, "the state manager is assigned");
@@ -215,48 +216,6 @@ test("initialize application with stateManager via initialize call from Router c
   equal(app.get('router.currentState.path'), 'root.index', "The router moved the state into the right place");
 });
 
-test("injections can be registered in a specified order", function() {
-
-  var oldInjections = Ember.Application.injections;
-  var firstInjectionCalled = 0,
-      secondInjectionCalled = 0;
-
-  Ember.Application.injections = Ember.A();
-  Ember.Application.registerInjection({
-    name: 'second',
-    injection: function() {
-      ok(firstInjectionCalled > 0, 'first injection should be called first');
-      secondInjectionCalled++;
-    }
-  });
-
-  Ember.Application.registerInjection({
-    name: 'first',
-    injection: function() {
-      firstInjectionCalled++;
-      ok(secondInjectionCalled === 0, "second injection should not have been called yet");
-    },
-    before: 'second'
-  });
-
-  var router;
-  Ember.run(function() {
-    app = Ember.Application.create({
-      rootElement: '#qunit-fixture'
-    });
-    expect(get(Ember.keys(app), 'length') * 2);
-    router = Ember.Object.create();
-
-    app.initialize(router);
-  });
-
-  Ember.run(function() {
-    router.destroy();
-  });
-
-  Ember.Application.injections = oldInjections;
-});
-
 test("ApplicationView is inserted into the page", function() {
   Ember.$("#qunit-fixture").empty();
 
@@ -335,4 +294,49 @@ test("ControllerObject class can be initialized with target, controllers and vie
   equal(app.get('router.postController.target') instanceof Ember.StateManager, true, "controller has target");
   equal(app.get('router.postController.controllers') instanceof Ember.StateManager, true, "controller has controllers");
   equal(app.get('router.postController.view') instanceof Ember.View, true, "controller has view");
+});
+
+test("Application initialized twice raises error", function() {
+  Ember.run(function() {
+    app = Ember.Application.create({
+      rootElement: '#qunit-fixture'
+    }).initialize();
+  });
+
+  raises(function(){
+    Ember.run(function() {
+      app.initialize();
+    });
+  }, Error, 'raises error');
+});
+
+test("Minimal Application initialized with just an application template", function() {
+  Ember.$('#qunit-fixture').html('<script type="text/x-handlebars">Hello World</script>');
+  Ember.run(function () {
+    app = Ember.Application.create({
+      rootElement: '#qunit-fixture'
+    }).initialize();
+  });
+
+  equal(Ember.$('#qunit-fixture').text(), 'Hello World');
+});
+
+test("Minimal Application initialized with an application template and injections", function() {
+  Ember.$('#qunit-fixture').html('<script type="text/x-handlebars">Hello {{controller.name}}!</script>');
+
+  Ember.run(function () {
+    app = Ember.Application.create({
+      rootElement: '#qunit-fixture'
+    });
+  });
+
+  app.ApplicationController = Ember.Controller.extend({name: 'Kris'});
+
+  Ember.run(function () {
+    // required to receive injections
+    var stateManager = Ember.Object.create();
+    app.initialize(stateManager);
+  });
+
+  equal(Ember.$('#qunit-fixture').text(), 'Hello Kris!');
 });

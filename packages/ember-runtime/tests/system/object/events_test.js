@@ -105,3 +105,20 @@ test("a listener registered with one can take method as string and can be added 
 
   equal(count, 1, "the event was not triggered again");
 });
+
+test("a listener registered with one can be removed with off", function() {
+  var obj = Ember.Object.create(Ember.Evented, {
+    F: function() {}
+  });
+  var F = function() {};
+
+  obj.one('event!', F);
+  obj.one('event!', obj, 'F');
+
+  equal(obj.has('event!'), true, 'has events');
+
+  obj.off('event!', F);
+  obj.off('event!', obj, 'F');
+
+  equal(obj.has('event!'), false, 'has no more events');
+});

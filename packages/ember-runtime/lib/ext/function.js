@@ -1,11 +1,9 @@
-// ==========================================================================
-// Project:  Ember Runtime
-// Copyright: ©2006-2011 Strobe Inc. and contributors.
-//            Portions ©2008-2011 Apple Inc. All rights reserved.
-// License:   Licensed under MIT license (see license.js)
-// ==========================================================================
-
 require('ember-runtime/core');
+
+/**
+@module ember
+@submodule ember-runtime
+*/
 
 var a_slice = Array.prototype.slice;
 
@@ -13,7 +11,7 @@ if (Ember.EXTEND_PROTOTYPES) {
 
   /**
     The `property` extension of Javascript's Function prototype is available
-    when Ember.EXTEND_PROTOTYPES is true, which is the default. 
+    when Ember.EXTEND_PROTOTYPES is true, which is the default.
 
     Computed properties allow you to treat a function like a property:
 
@@ -56,10 +54,11 @@ if (Ember.EXTEND_PROTOTYPES) {
     will instead clear the cache so that it is updated when the next `get`
     is called on the property.
 
-    Note: you will usually want to use `property(...)` with `cacheable()`.
+    See {{#crossLink "Ember.ComputedProperty"}}{{/crossLink}},
+      {{#crossLink "Ember/computed"}}{{/crossLink}}
 
-    @see Ember.ComputedProperty
-    @see Ember.computed
+    @method property
+    @for Function
   */
   Function.prototype.property = function() {
     var ret = Ember.computed(this);
@@ -68,7 +67,7 @@ if (Ember.EXTEND_PROTOTYPES) {
 
   /**
     The `observes` extension of Javascript's Function prototype is available
-    when Ember.EXTEND_PROTOTYPES is true, which is the default. 
+    when Ember.EXTEND_PROTOTYPES is true, which is the default.
 
     You can observe property changes simply by adding the `observes`
     call to the end of your method declarations in classes that you write.
@@ -79,8 +78,11 @@ if (Ember.EXTEND_PROTOTYPES) {
             // Executes whenever the "value" property changes
           }.observes('value')
         });
-    
-    @see Ember.Observable
+
+    See {{#crossLink "Ember.Observable/observes"}}{{/crossLink}}
+
+    @method observes
+    @for Function
   */
   Function.prototype.observes = function() {
     this.__ember_observes__ = a_slice.call(arguments);
@@ -89,7 +91,7 @@ if (Ember.EXTEND_PROTOTYPES) {
 
   /**
     The `observesBefore` extension of Javascript's Function prototype is
-    available when Ember.EXTEND_PROTOTYPES is true, which is the default. 
+    available when Ember.EXTEND_PROTOTYPES is true, which is the default.
 
     You can get notified when a property changes is about to happen by
     by adding the `observesBefore` call to the end of your method
@@ -100,8 +102,11 @@ if (Ember.EXTEND_PROTOTYPES) {
             // Executes whenever the "value" property is about to change
           }.observesBefore('value')
         });
-    
-    @see Ember.Observable
+
+    See {{#crossLink "Ember.Observable/observesBefore"}}{{/crossLink}}
+
+    @method observesBefore
+    @for Function
   */
   Function.prototype.observesBefore = function() {
     this.__ember_observesBefore__ = a_slice.call(arguments);

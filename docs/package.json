@@ -1,0 +1,7 @@
+{
+  "name": "ember-docs",
+  "version": "0.0.1",
+  "dependencies": {
+    "yuidoc": "git://github.com/wagenet/yuidoc.git"
+  }
+}

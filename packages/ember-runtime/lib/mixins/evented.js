@@ -1,10 +1,14 @@
 /**
- @class
+@module ember
+@submodule ember-runtime
+*/
 
- @extends Ember.Mixin
+/**
+  @class Evented
+  @namespace Ember
+  @extends Ember.Mixin
  */
-Ember.Evented = Ember.Mixin.create(
-  /** @scope Ember.Evented.prototype */ {
+Ember.Evented = Ember.Mixin.create({
   on: function(name, target, method) {
     Ember.addListener(this, name, target, method);
   },
@@ -17,7 +21,7 @@ Ember.Evented = Ember.Mixin.create(
 
     var self = this;
     var wrapped = function() {
-      Ember.removeListener(self, name, target, wrapped);
+      Ember.removeListener(self, name, target, method);
 
       if ('string' === typeof method) { method = this[method]; }
 
@@ -28,7 +32,7 @@ Ember.Evented = Ember.Mixin.create(
       method.apply(this, arguments);
     };
 
-    this.on(name, target, wrapped);
+    Ember.addListener(this, name, target, wrapped, Ember.guidFor(method));
   },
 
   trigger: function(name) {

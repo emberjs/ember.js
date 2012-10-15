@@ -1,30 +1,31 @@
-// ==========================================================================
-// Project:   Ember Handlebars Views
-// Copyright: ©2011 Strobe Inc. and contributors.
-// License:   Licensed under MIT license (see license.js)
-// ==========================================================================
-
 require("ember-views/views/view");
 require("ember-handlebars/ext");
+
+/**
+@module ember
+@submodule ember-handlebars
+*/
 
 var set = Ember.set, get = Ember.get;
 
 /**
-  @class
+  The `Ember.Checkbox` view class renders a checkbox [input](https://developer.mozilla.org/en/HTML/Element/Input) 
+  element. It allows for binding an Ember property (`checked`) to the status of the checkbox.
 
-  Creates an HTML input of type 'checkbox' with HTML related properties 
-  applied directly to the input.
+  Example:
 
-      {{view Ember.Checkbox classNames="applicaton-specific-checkbox"}}
-
-      <input id="ember1" class="ember-view ember-checkbox applicaton-specific-checkbox" type="checkbox">
+  ``` handlebars
+  {{view Ember.Checkbox checkedBinding="receiveEmail"}}
+  ```
 
   You can add a `label` tag yourself in the template where the Ember.Checkbox is being used.
 
-      <label>
-        Some Title
-        {{view Ember.Checkbox classNames="applicaton-specific-checkbox"}}
-      </label>
+  ``` html
+  <label>        
+    {{view Ember.Checkbox classNames="applicaton-specific-checkbox"}}
+    Some Title
+  </label>
+  ```
 
 
   The `checked` attribute of an Ember.Checkbox object should always be set
@@ -36,6 +37,8 @@ var set = Ember.set, get = Ember.get;
   Because HTML `input` elements are self closing `layout` and `layoutName` properties will
   not be applied. See `Ember.View`'s layout section for more information.
 
+  @class Checkbox
+  @namespace Ember
   @extends Ember.View
 */
 Ember.Checkbox = Ember.View.extend({
@@ -54,9 +57,6 @@ Ember.Checkbox = Ember.View.extend({
     this.on("change", this, this._updateElementValue);
   },
 
-  /**
-    @private
-  */
   _updateElementValue: function() {
     set(this, 'checked', this.$().prop('checked'));
   }

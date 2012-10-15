@@ -1,31 +1,47 @@
 require('ember-handlebars/helpers/view');
 
+/**
+@module ember
+@submodule ember-handlebars
+*/
+
 Ember.Handlebars.OutletView = Ember.ContainerView.extend(Ember._Metamorph);
 
 /**
   The `outlet` helper allows you to specify that the current
   view's controller will fill in the view for a given area.
 
-      {{outlet}}
+  ``` handlebars
+  {{outlet}}
+  ```
 
-  By default, when the the current controller's `view`
-  property changes, the outlet will replace its current
-  view with the new view.
+  By default, when the the current controller's `view` property changes, the
+  outlet will replace its current view with the new view. You can set the
+  `view` property directly, but it's normally best to use `connectOutlet`.
 
-      controller.set('view', someView);
+  ``` javascript
+  # Instantiate App.PostsView and assign to `view`, so as to render into outlet.
+  controller.connectOutlet('posts');
+  ```
 
-  You can also specify a particular name, other than view:
+  You can also specify a particular name other than `view`:
 
-      {{outlet masterView}}
-      {{outlet detailView}}
+  ``` handlebars
+  {{outlet masterView}}
+  {{outlet detailView}}
+  ```
 
-  Then, you can control several outlets from a single
-  controller:
+  Then, you can control several outlets from a single controller.
 
-      controller.set('masterView', postsView);
-      controller.set('detailView', postView);
+  ``` javascript
+  # Instantiate App.PostsView and assign to controller.masterView.
+  controller.connectOutlet('masterView', 'posts');
+  # Also, instantiate App.PostInfoView and assign to controller.detailView.
+  controller.connectOutlet('detailView', 'postInfo');
+  ```
 
-  @name Handlebars.helpers.outlet
+  @method outlet
+  @for Ember.Handlebars.helpers
   @param {String} property the property on the controller
     that holds the view for this outlet
 */
@@ -35,7 +51,11 @@ Ember.Handlebars.registerHelper('outlet', function(property, options) {
     property = 'view';
   }
 
-  options.hash.currentViewBinding = "controller." + property;
+  if(Ember.VIEW_PRESERVES_CONTEXT) {
+    options.hash.currentViewBinding = "view.context." + property;
+  } else {
+    options.hash.currentViewBinding = "controller." + property;
+  }
 
   return Ember.Handlebars.helpers.view.call(this, Ember.Handlebars.OutletView, options);
 });

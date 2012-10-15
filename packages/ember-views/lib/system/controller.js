@@ -1,7 +1,20 @@
+/**
+@module ember
+@submodule ember-views
+*/
+
 var get = Ember.get, set = Ember.set;
 
-// @class declaration and documentation in runtime/lib/controllers/controller.js
-Ember.ControllerMixin.reopen(/** @scope Ember.ControllerMixin.prototype */ {
+// Original class declaration and documentation in runtime/lib/controllers/controller.js
+// NOTE: It may be possible with YUIDoc to combine docs in two locations
+
+/**
+Additional methods for the ControllerMixin
+
+@class ControllerMixin
+@namespace Ember
+*/
+Ember.ControllerMixin.reopen({
 
   target: null,
   controllers: null,
@@ -19,15 +32,19 @@ Ember.ControllerMixin.reopen(/** @scope Ember.ControllerMixin.prototype */ {
     For example, an application view's template may look like
     this:
 
-        <h1>My Blog</h1>
-        {{outlet}}
+    ``` handlebars
+    <h1>My Blog</h1>
+    {{outlet}}
+    ```
 
     The view for this outlet is specified by assigning a
     `view` property to the application's controller. The
     following code will assign a new `App.PostsView` to
     that outlet:
 
-        applicationController.connectOutlet('posts');
+    ``` javascript
+    applicationController.connectOutlet('posts');
+    ```
 
     In general, you will also want to assign a controller
     to the newly created view. By convention, a controller
@@ -45,27 +62,37 @@ Ember.ControllerMixin.reopen(/** @scope Ember.ControllerMixin.prototype */ {
     You can supply a `content` for the controller by supplying
     a final argument after the view class:
 
-        applicationController.connectOutlet('posts', App.Post.find());
+    ``` javascript
+    applicationController.connectOutlet('posts', App.Post.find());
+    ```
 
     You can specify a particular outlet to use. For example, if your main
     template looks like:
 
-        <h1>My Blog</h1>
-        {{outlet master}}
-        {{outlet detail}}
+    ``` handlebars
+    <h1>My Blog</h1>
+    {{outlet masterView}}
+    {{outlet detailView}}
+    ```
 
-    You can assign an `App.PostsView` to the master outlet:
+    You can assign an `App.PostsView` to the masterView outlet:
 
-        applicationController.connectOutlet({
-          name: 'posts',
-          outletName: 'master',
-          context: App.Post.find()
-        });
+    ``` javascript
+    applicationController.connectOutlet({
+      outletName: 'masterView',
+      name: 'posts',
+      context: App.Post.find()
+    });
+    ```
 
     You can write this as:
 
-        applicationController.connectOutlet('master', 'posts', App.Post.find());
+    ``` javascript
+    applicationController.connectOutlet('masterView', 'posts', App.Post.find());
+    ```
 
+
+    @method connectOutlet
     @param {String} outletName a name for the outlet to set
     @param {String} name a view/controller pair name
     @param {Object} context a context object to assign to the
@@ -118,7 +145,9 @@ Ember.ControllerMixin.reopen(/** @scope Ember.ControllerMixin.prototype */ {
 
     outletName = outletName || 'view';
 
-    Ember.assert("You must supply a name or a view class to connectOutlet, but not both", (!!name && !viewClass && !controller) || (!name && !!viewClass));
+    Ember.assert("The viewClass is either missing or the one provided did not resolve to a view", !!name || (!name && !!viewClass));
+
+    Ember.assert("You must supply a name or a viewClass to connectOutlet, but not both", (!!name && !viewClass && !controller) || (!name && !!viewClass));
 
     if (name) {
       var namespace = get(this, 'namespace'),
@@ -151,6 +180,7 @@ Ember.ControllerMixin.reopen(/** @scope Ember.ControllerMixin.prototype */ {
 
         overviewController.connectControllers('person', 'post');
 
+    @method connectControllers
     @param {String...} controllerNames the controllers to make available
   */
   connectControllers: function() {
@@ -167,6 +197,7 @@ Ember.ControllerMixin.reopen(/** @scope Ember.ControllerMixin.prototype */ {
   /**
     `disconnectOutlet` removes previously attached view from given outlet.
 
+    @method disconnectOutlet
     @param  {String} outletName the outlet name. (optional)
    */
   disconnectOutlet: function(outletName) {
@@ -179,6 +210,10 @@ Ember.ControllerMixin.reopen(/** @scope Ember.ControllerMixin.prototype */ {
     `createOutletView` is a hook you may want to override if you need to do
     something special with the view created for the outlet. For example
     you may want to implement views sharing across outlets.
+
+    @method createOutletView
+    @param outletName {String}
+    @param viewClass {Ember.View}
   */
   createOutletView: function(outletName, viewClass) {
     return viewClass.create();

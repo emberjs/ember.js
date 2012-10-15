@@ -1,15 +1,13 @@
-// ==========================================================================
-// Project:   Ember Handlebars Views
-// Copyright: ©2011 Strobe Inc. and contributors.
-// License:   Licensed under MIT license (see license.js)
-// ==========================================================================
-
 var button, dispatcher;
 
 var get = Ember.get, set = Ember.set;
 
+var originalLookup = Ember.lookup, lookup;
+
 module("Ember.Button", {
   setup: function() {
+    lookup = Ember.lookup = {};
+
     Ember.TESTING_DEPRECATION = true;
     dispatcher = Ember.EventDispatcher.create();
     dispatcher.setup();
@@ -22,6 +20,7 @@ module("Ember.Button", {
       dispatcher.destroy();
     });
     Ember.TESTING_DEPRECATION = false;
+    Ember.lookup = originalLookup;
   }
 });
 
@@ -184,7 +183,7 @@ test("should not trigger an action when another key is pressed", function() {
 test("should trigger an action on a String target when clicked", function() {
   var wasClicked = false;
 
-  window.MyApp = {
+  lookup.MyApp = {
     myActionObject: Ember.Object.create({
       myAction: function() {
         wasClicked = true;
@@ -205,8 +204,6 @@ test("should trigger an action on a String target when clicked", function() {
   synthesizeEvent('mouseup', button);
 
   ok(wasClicked);
-
-  window.MyApp = undefined;
 });
 
 test("should not trigger action if mouse leaves area before mouseup", function() {

@@ -1,10 +1,3 @@
-// ==========================================================================
-// Project:  Ember Runtime
-// Copyright: ©2006-2011 Strobe Inc. and contributors.
-//            ©2008-2011 Apple Inc. All rights reserved.
-// License:   Licensed under MIT license (see license.js)
-// ==========================================================================
-
 /*global Namespace:true DepObj:true*/
 
 var get = Ember.get, set = Ember.set;
@@ -39,6 +32,7 @@ var forEach = Ember.EnumerableUtils.forEach;
 var object, ObjectC, ObjectD, objectA, objectB ;
 
 var ObservableObject = Ember.Object.extend(Ember.Observable);
+var originalLookup = Ember.lookup, lookup;
 
 // ..........................................................
 // GET()
@@ -174,20 +168,24 @@ test("should work when object is Ember (used in Ember.get)", function() {
   equal(Ember.get(Ember, 'RunLoop'), Ember.RunLoop, 'Ember.get(Ember, RunLoop)');
 });
 
-module("Ember.get() with paths");
+module("Ember.get() with paths", {
+  setup: function() {
+    lookup = Ember.lookup = {};
+  },
 
-test("should return a property at a given path relative to the window", function() {
-  window.Foo = ObservableObject.create({
+  teardown: function() {
+    Ember.lookup = originalLookup;
+  }
+});
+
+test("should return a property at a given path relative to the lookup", function() {
+  lookup.Foo = ObservableObject.create({
     Bar: ObservableObject.create({
       Baz: Ember.computed(function() { return "blargh"; }).property().volatile()
     })
   });
 
-  try {
-    equal(Ember.get('Foo.Bar.Baz'), "blargh");
-  } finally {
-    window.Foo = undefined;
-  }
+  equal(Ember.get('Foo.Bar.Baz'), "blargh");
 });
 
 test("should return a property at a given path relative to the passed object", function() {
@@ -200,18 +198,14 @@ test("should return a property at a given path relative to the passed object", f
   equal(Ember.get(foo, 'bar.baz'), "blargh");
 });
 
-test("should return a property at a given path relative to the window - JavaScript hash", function() {
-  window.Foo = {
+test("should return a property at a given path relative to the lookup - JavaScript hash", function() {
+  lookup.Foo = {
     Bar: {
       Baz: "blargh"
     }
   };
 
-  try {
-    equal(Ember.get('Foo.Bar.Baz'), "blargh");
-  } finally {
-    window.Foo = undefined;
-  }
+  equal(Ember.get('Foo.Bar.Baz'), "blargh");
 });
 
 test("should return a property at a given path relative to the passed object - JavaScript hash", function() {
@@ -321,6 +315,8 @@ test("should call unknownProperty with value when property is undefined", functi
 
 module("Computed properties", {
   setup: function() {
+    lookup = Ember.lookup = {};
+
     object = ObservableObject.create({
 
       // REGULAR
@@ -385,6 +381,9 @@ module("Computed properties", {
       }).property('state').volatile()
 
     }) ;
+  },
+  teardown: function() {
+    Ember.lookup = originalLookup;
   }
 });
 
@@ -552,7 +551,7 @@ test("dependent keys should be able to be specified as property paths", function
 test("nested dependent keys should propagate after they update", function() {
   var bindObj;
   Ember.run(function () {
-    window.DepObj = ObservableObject.create({
+    lookup.DepObj = ObservableObject.create({
       restaurant: ObservableObject.create({
         menu: ObservableObject.create({
           price: 5
@@ -572,13 +571,13 @@ test("nested dependent keys should propagate after they update", function() {
   equal(bindObj.get('price'), 5, "precond - binding propagates");
 
   Ember.run(function () {
-    DepObj.set('restaurant.menu.price', 10);
+    lookup.DepObj.set('restaurant.menu.price', 10);
   });
 
   equal(bindObj.get('price'), 10, "binding propagates after a nested dependent keys updates");
 
   Ember.run(function () {
-    DepObj.set('restaurant.menu', ObservableObject.create({
+    lookup.DepObj.set('restaurant.menu', ObservableObject.create({
       price: 15
     }));
   });
@@ -588,49 +587,51 @@ test("nested dependent keys should propagate after they update", function() {
 
 test("cacheable nested dependent keys should clear after their dependencies update", function() {
   ok(true);
-  
+
+  var DepObj;
+
   Ember.run(function(){
-    window.DepObj = ObservableObject.create({
+    lookup.DepObj = DepObj = ObservableObject.create({
       restaurant: ObservableObject.create({
         menu: ObservableObject.create({
           price: 5
         })
       }),
-    
+
       price: Ember.computed(function() {
         return this.get('restaurant.menu.price');
       }).property('restaurant.menu.price').cacheable()
     });
   });
-  
+
   equal(DepObj.get('price'), 5, "precond - computed property is correct");
-  
+
   Ember.run(function(){
     DepObj.set('restaurant.menu.price', 10);
   });
   equal(DepObj.get('price'), 10, "cacheable computed properties are invalidated even if no run loop occurred");
-  
+
   Ember.run(function(){
     DepObj.set('restaurant.menu.price', 20);
   });
   equal(DepObj.get('price'), 20, "cacheable computed properties are invalidated after a second get before a run loop");
   equal(DepObj.get('price'), 20, "precond - computed properties remain correct after a run loop");
-  
+
   Ember.run(function(){
     DepObj.set('restaurant.menu', ObservableObject.create({
       price: 15
     }));
   });
-  
-  
+
+
   equal(DepObj.get('price'), 15, "cacheable computed properties are invalidated after a middle property changes");
-  
+
   Ember.run(function(){
     DepObj.set('restaurant.menu', ObservableObject.create({
       price: 25
     }));
   });
-  
+
   equal(DepObj.get('price'), 25, "cacheable computed properties are invalidated after a middle property changes again, before a run loop");
 });
 
@@ -861,12 +862,12 @@ test("should bind property with method parameter as undefined", function() {
   Ember.run(function(){
     objectA.bind("name", "Namespace.objectB.normal",undefined) ;
   });
-  
+
   // now make a change to see if the binding triggers.
   Ember.run(function(){
     objectB.set("normal", "changedValue") ;
   });
-  
+
   // support new-style bindings if available
   equal("changedValue", objectA.get("name"), "objectA.name is binded");
 });

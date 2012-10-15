@@ -1,5 +1,16 @@
+/**
+@module ember
+@submodule ember-handlebars
+*/
+
 var get = Ember.get;
 
+/**
+  @class TabPaneView
+  @namespace Ember
+  @extends Ember.View
+  @deprecated
+*/
 Ember.TabPaneView = Ember.View.extend({
   tabsContainer: Ember.computed(function() {
     return this.nearestInstanceOf(Ember.TabContainerView);

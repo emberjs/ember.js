@@ -1,5 +1,15 @@
+/**
+@module ember
+@submodule ember-runtime
+*/
+
 var get = Ember.get, set = Ember.set;
 
+/**
+@class TargetActionSupport
+@namespace Ember
+@extends Ember.Mixin
+*/
 Ember.TargetActionSupport = Ember.Mixin.create({
   target: null,
   action: null,
@@ -9,7 +19,7 @@ Ember.TargetActionSupport = Ember.Mixin.create({
 
     if (Ember.typeOf(target) === "string") {
       var value = get(this, target);
-      if (value === undefined) { value = get(window, target); }
+      if (value === undefined) { value = get(Ember.lookup, target); }
       return value;
     } else {
       return target;

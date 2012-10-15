@@ -1,15 +1,13 @@
-// ==========================================================================
-// Project:  Ember Runtime
-// Copyright: ©2011 Strobe Inc. and contributors.
-// License:   Licensed under MIT license (see license.js)
-// ==========================================================================
-
 require('ember-runtime/system/object');
+
+/**
+@module ember
+@submodule ember-runtime
+*/
 
 var indexOf = Ember.ArrayPolyfills.indexOf;
 
 /**
-  @private
   A Namespace is an object usually used to contain other objects or methods
   such as an application or framework.  Create a namespace anytime you want
   to define one of these new containers.
@@ -20,6 +18,9 @@ var indexOf = Ember.ArrayPolyfills.indexOf;
         VERSION: '1.0.0'
       });
 
+  @class Namespace
+  @namespace Ember
+  @extends Ember.Object
 */
 Ember.Namespace = Ember.Object.extend({
   isNamespace: true,
@@ -36,7 +37,7 @@ Ember.Namespace = Ember.Object.extend({
 
   destroy: function() {
     var namespaces = Ember.Namespace.NAMESPACES;
-    window[this.toString()] = undefined;
+    Ember.lookup[this.toString()] = undefined;
     namespaces.splice(indexOf.call(namespaces, this), 1);
     this._super();
   }

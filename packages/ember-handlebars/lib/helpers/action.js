@@ -1,5 +1,10 @@
 require('ember-handlebars/ext');
 
+/**
+@module ember
+@submodule ember-handlebars
+*/
+
 var EmberHandlebars = Ember.Handlebars,
     getPath = EmberHandlebars.getPath,
     get = Ember.get,
@@ -58,36 +63,42 @@ ActionHelper.registerAction = function(actionName, options) {
 /**
   The `{{action}}` helper registers an HTML element within a template for
   DOM event handling and forwards that interaction to the Application's router,
-  the template's `Ember.View` instance, or supplied `target` option (see 'Specifiying a Target').
+  the template's `Ember.View` instance, or supplied `target` option (see 'Specifying a Target').
   
   User interaction with that element will invoke the supplied action name on
   the appropriate target.
 
   Given the following Handlebars template on the page
 
-      <script type="text/x-handlebars" data-template-name='a-template'>
-        <div {{action anActionName}}>
-          click me
-        </div>
-      </script>
+  ``` handlebars
+  <script type="text/x-handlebars" data-template-name='a-template'>
+    <div {{action anActionName}}>
+      click me
+    </div>
+  </script>
+  ```
 
   And application code
 
-      AView = Ember.View.extend({
-        templateName; 'a-template',
-        anActionName: function(event){}
-      });
+  ``` javascript
+  AView = Ember.View.extend({
+    templateName; 'a-template',
+    anActionName: function(event){}
+  });
 
-      aView = AView.create();
-      aView.appendTo('body');
+  aView = AView.create();
+  aView.appendTo('body');
+  ```
 
   Will results in the following rendered HTML
 
-      <div class="ember-view">
-        <div data-ember-action="1">
-          click me
-        </div>
-      </div>
+  ``` html
+  <div class="ember-view">
+    <div data-ember-action="1">
+      click me
+    </div>
+  </div>
+  ```
 
   Clicking "click me" will trigger the `anActionName` method of the `aView`
   object with a  `jQuery.Event` object as its argument. The `jQuery.Event`
@@ -110,11 +121,13 @@ ActionHelper.registerAction = function(actionName, options) {
   By default the `{{action}}` helper registers for DOM `click` events. You can
   supply an `on` option to the helper to specify a different DOM event name:
 
-      <script type="text/x-handlebars" data-template-name='a-template'>
-        <div {{action anActionName on="doubleClick"}}>
-          click me
-        </div>
-      </script>
+  ``` handlebars
+  <script type="text/x-handlebars" data-template-name='a-template'>
+    <div {{action anActionName on="doubleClick"}}>
+      click me
+    </div>
+  </script>
+  ```
 
   See Ember.View 'Responding to Browser Events' for a list of
   acceptable DOM event names.
@@ -134,7 +147,7 @@ ActionHelper.registerAction = function(actionName, options) {
   current state of the Applications's Router. See Ember.Router 'Responding
   to User-initiated Events' for more information.
   
-  If you manaully set the `target` property on the controller of a template's
+  If you manually set the `target` property on the controller of a template's
   `Ember.View` instance, the specifed `controller.target` will become the target
   for any actions. Likely custom values for a controller's `target` are the
   controller itself or a StateManager other than the Application's Router.
@@ -145,11 +158,13 @@ ActionHelper.registerAction = function(actionName, options) {
   will receive the method call. This option must be a string representing a
   path to an object:
 
-      <script type="text/x-handlebars" data-template-name='a-template'>
-        <div {{action anActionName target="MyApplication.someObject"}}>
-          click me
-        </div>
-      </script>
+  ``` handlebars
+  <script type="text/x-handlebars" data-template-name='a-template'>
+    <div {{action anActionName target="MyApplication.someObject"}}>
+      click me
+    </div>
+  </script>
+  ```
 
   Clicking "click me" in the rendered HTML of the above template will trigger
   the  `anActionName` method of the object at `MyApplication.someObject`.
@@ -159,11 +174,13 @@ ActionHelper.registerAction = function(actionName, options) {
   A path relative to the template's `Ember.View` instance can also be used as
   a target:
 
-      <script type="text/x-handlebars" data-template-name='a-template'>
-        <div {{action anActionName target="parentView"}}>
-          click me
-        </div>
-      </script>
+  ``` handlebars
+  <script type="text/x-handlebars" data-template-name='a-template'>
+    <div {{action anActionName target="parentView"}}>
+      click me
+    </div>
+  </script>
+  ```
 
   Clicking "click me" in the rendered HTML of the above template will trigger
   the `anActionName` method of the view's parent view.
@@ -176,22 +193,26 @@ ActionHelper.registerAction = function(actionName, options) {
   If an action's target does not implement a method that matches the supplied
   action name an error will be thrown.
 
-      <script type="text/x-handlebars" data-template-name='a-template'>
-        <div {{action aMethodNameThatIsMissing}}>
-          click me
-        </div>
-      </script>
+  ``` handlebars
+  <script type="text/x-handlebars" data-template-name='a-template'>
+    <div {{action aMethodNameThatIsMissing}}>
+      click me
+    </div>
+  </script>
+  ```
 
   With the following application code
 
-      AView = Ember.View.extend({
-        templateName; 'a-template',
-        // note: no method 'aMethodNameThatIsMissing'
-        anActionName: function(event){}
-      });
+  ``` javascript
+  AView = Ember.View.extend({
+    templateName; 'a-template',
+    // note: no method 'aMethodNameThatIsMissing'
+    anActionName: function(event){}
+  });
 
-      aView = AView.create();
-      aView.appendTo('body');
+  aView = AView.create();
+  aView.appendTo('body');
+  ```
 
   Will throw `Uncaught TypeError: Cannot call method 'call' of undefined` when
   "click me" is clicked.
@@ -202,15 +223,18 @@ ActionHelper.registerAction = function(actionName, options) {
   along in the `jQuery.Event` object. You may specify an alternate object to
   pass as the context by providing a property path:
 
-      <script type="text/x-handlebars" data-template-name='a-template'>
-        {{#each person in people}}
-          <div {{action edit person}}>
-            click me
-          </div>
-        {{/each}}
-      </script>
+  ``` handlebars
+  <script type="text/x-handlebars" data-template-name='a-template'>
+    {{#each person in people}}
+      <div {{action edit person}}>
+        click me
+      </div>
+    {{/each}}
+  </script>
+  ```
 
-  @name Handlebars.helpers.action
+  @method action
+  @for Ember.Handlebars.helpers
   @param {String} actionName
   @param {Object...} contexts
   @param {Hash} options

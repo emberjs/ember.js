@@ -79,6 +79,27 @@ test("changing sort order triggers observers", function() {
   Ember.run(function() { observer.destroy(); });
 });
 
+test("don't remove and insert if position didn't change", function() {
+  var insertItemSortedCalled = false;
+
+  sortedArrayController.reopen({
+    insertItemSorted: function(item) {
+      insertItemSortedCalled = true;
+      this._super(item);
+    }
+  });
+
+  var obj = {id: 4, name: 'Scumbag Tomhuda'};
+
+  sortedArrayController.pushObject(obj);
+
+  sortedArrayController.set('sortProperties', ['name']);
+
+  Ember.set(obj, 'name', 'Scumbag Tomhuda Katzdale');
+
+  ok(!insertItemSortedCalled, "insertItemSorted should not have been called");
+});
+
 module("Ember.Sortable with content and sortProperties", {
   setup: function() {
     Ember.run(function() {

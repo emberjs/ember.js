@@ -1,6 +1,15 @@
 /*global Test:true*/
 
-module("Ember.TargetActionSupport");
+var originalLookup;
+
+module("Ember.TargetActionSupport", {
+  setup: function() {
+    originalLookup = Ember.lookup;
+  },
+  teardown: function() {
+    Ember.lookup = originalLookup;
+  }
+});
 
 test("it should return false if no target or action are specified", function() {
   expect(1);
@@ -45,7 +54,8 @@ test("it should invoke the send() method on objects that implement it", function
 test("it should find targets specified using a property path", function() {
   expect(2);
 
-  window.Test = {};
+  var Test = {};
+  Ember.lookup = { Test: Test };
 
   Test.targetObj = Ember.Object.create({
     anEvent: function() {
@@ -59,6 +69,4 @@ test("it should find targets specified using a property path", function() {
   });
 
   ok(true === myObj.triggerAction(), "a valid target and action were specified");
-
-  window.Test = undefined;
 });

@@ -1,8 +1,3 @@
-// ==========================================================================
-// Project:  Ember Runtime
-// Copyright: ©2011 Strobe Inc. and contributors.
-// License:   Licensed under MIT license (see license.js)
-// ==========================================================================
 /*globals Global:true */
 
 require('ember-metal/~tests/props_helper');
@@ -516,6 +511,106 @@ test('adding a computed property should show up in key iteration',function() {
   for(var key in obj) found.push(key);
   ok(Ember.EnumerableUtils.indexOf(found, 'foo')>=0, 'should find computed property in iteration found='+found);
   ok('foo' in obj, 'foo in obj should pass');
+});
+
+
+module('Ember.computed - setter');
+
+testBoth('setting a watched computed property', function(get, set) {
+  var obj = {
+    firstName: 'Yehuda',
+    lastName: 'Katz'
+  };
+  Ember.defineProperty(obj, 'fullName', Ember.computed(
+    function(key, value) {
+      if (arguments.length > 1) {
+        var values = value.split(' ');
+        set(this, 'firstName', values[0]);
+        set(this, 'lastName', values[1]);
+        return value;
+      }
+      return get(this, 'firstName') + ' ' + get(this, 'lastName');
+    }).property('firstName', 'lastName').cacheable()
+  );
+  var fullNameWillChange = 0,
+      fullNameDidChange = 0,
+      firstNameWillChange = 0,
+      firstNameDidChange = 0,
+      lastNameWillChange = 0,
+      lastNameDidChange = 0;
+  Ember.addBeforeObserver(obj, 'fullName', function () {
+    fullNameWillChange++;
+  });
+  Ember.addObserver(obj, 'fullName', function () {
+    fullNameDidChange++;
+  });
+  Ember.addBeforeObserver(obj, 'firstName', function () {
+    firstNameWillChange++;
+  });
+  Ember.addObserver(obj, 'firstName', function () {
+    firstNameDidChange++;
+  });
+  Ember.addBeforeObserver(obj, 'lastName', function () {
+    lastNameWillChange++;
+  });
+  Ember.addObserver(obj, 'lastName', function () {
+    lastNameDidChange++;
+  });
+
+  equal(get(obj, 'fullName'), 'Yehuda Katz');
+
+  set(obj, 'fullName', 'Yehuda Katz');
+
+  set(obj, 'fullName', 'Kris Selden');
+
+  equal(get(obj, 'fullName'), 'Kris Selden');
+  equal(get(obj, 'firstName'), 'Kris');
+  equal(get(obj, 'lastName'), 'Selden');
+
+  equal(fullNameWillChange, 1);
+  equal(fullNameDidChange, 1);
+  equal(firstNameWillChange, 1);
+  equal(firstNameDidChange, 1);
+  equal(lastNameWillChange, 1);
+  equal(lastNameDidChange, 1);
+});
+
+testBoth('setting a cached computed property that modifies the value you give it', function(get, set) {
+  var obj = {
+    foo: 0
+  };
+  Ember.defineProperty(obj, 'plusOne', Ember.computed(
+    function(key, value) {
+      if (arguments.length > 1) {
+        set(this, 'foo', value);
+        return value + 1;
+      }
+      return get(this, 'foo') + 1;
+    }).property('foo').cacheable()
+  );
+  var plusOneWillChange = 0,
+      plusOneDidChange = 0;
+  Ember.addBeforeObserver(obj, 'plusOne', function () {
+    plusOneWillChange++;
+  });
+  Ember.addObserver(obj, 'plusOne', function () {
+    plusOneDidChange++;
+  });
+
+  equal(get(obj, 'plusOne'), 1);
+  set(obj, 'plusOne', 1);
+  equal(get(obj, 'plusOne'), 2);
+  set(obj, 'plusOne', 1);
+  equal(get(obj, 'plusOne'), 2);
+
+  equal(plusOneWillChange, 1);
+  equal(plusOneDidChange, 1);
+
+  set(obj, 'foo', 5);
+  equal(get(obj, 'plusOne'), 6);
+
+  equal(plusOneWillChange, 2);
+  equal(plusOneDidChange, 2);
 });
 
 module('CP macros');

@@ -1,9 +1,11 @@
-/*globals TestApp*/
+var originalLookup = Ember.lookup, TestApp, lookup;
 
 module("Ember.Controller#connectOutlet", {
   setup: function() {
+    lookup = Ember.lookup = {};
+
     Ember.run(function () {
-      window.TestApp = Ember.Application.create();
+      lookup.TestApp = TestApp = Ember.Application.create();
     });
 
 
@@ -15,9 +17,9 @@ module("Ember.Controller#connectOutlet", {
 
   teardown: function() {
     Ember.run(function () {
-      window.TestApp.destroy();
+      lookup.TestApp.destroy();
     });
-    window.TestApp = undefined;
+    Ember.lookup = originalLookup;
   }
 });
 

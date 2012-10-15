@@ -1,14 +1,11 @@
-// ==========================================================================
-// Project:  Ember Runtime
-// Copyright: ©2011 Strobe Inc. and contributors.
-// License:   Licensed under MIT license (see license.js)
-// ==========================================================================
-
-
 require('ember-runtime/mixins/observable');
 require('ember-runtime/mixins/mutable_array');
 require('ember-runtime/mixins/copyable');
 
+/**
+@module ember
+@submodule ember-runtime
+*/
 
 
 var get = Ember.get, set = Ember.set;
@@ -112,13 +109,13 @@ if (ignore.length>0) {
   Otherwise you can apply the mixin at anytime by calling
   `Ember.NativeArray.activate`.
 
-  @namespace
-  @extends Ember.MutableArray
-  @extends Ember.Array
-  @extends Ember.Enumerable
-  @extends Ember.MutableEnumerable
-  @extends Ember.Copyable
-  @extends Ember.Freezable
+  @class NativeArray
+  @namespace Ember
+  @extends Ember.Mixin
+  @uses Ember.MutableArray
+  @uses Ember.MutableEnumerable
+  @uses Ember.Copyable
+  @uses Ember.Freezable
 */
 Ember.NativeArray = NativeArray;
 
@@ -126,7 +123,9 @@ Ember.NativeArray = NativeArray;
   Creates an Ember.NativeArray from an Array like object.
   Does not modify the original object.
 
-  @returns {Ember.NativeArray}
+  @method A
+  @for Ember
+  @return {Ember.NativeArray}
 */
 Ember.A = function(arr){
   if (arr === undefined) { arr = []; }
@@ -137,7 +136,10 @@ Ember.A = function(arr){
   Activates the mixin on the Array.prototype if not already applied.  Calling
   this method more than once is safe.
 
-  @returns {void}
+  @method activate
+  @for Ember.NativeArray
+  @static
+  @return {void}
 */
 Ember.NativeArray.activate = function() {
   NativeArray.apply(Array.prototype);

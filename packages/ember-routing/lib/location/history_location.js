@@ -1,17 +1,21 @@
+/**
+@module ember
+@submodule ember-routing
+*/
+
 var get = Ember.get, set = Ember.set;
+var popstateReady = false;
 
 /**
-  @class
-
   Ember.HistoryLocation implements the location API using the browser's
   history.pushState API.
 
+  @class HistoryLocation
+  @namespace Ember
   @extends Ember.Object
 */
-Ember.HistoryLocation = Ember.Object.extend(
-/** @scope Ember.HistoryLocation.prototype */ {
+Ember.HistoryLocation = Ember.Object.extend({
 
-  /** @private */
   init: function() {
     set(this, 'location', get(this, 'location') || window.location);
     set(this, '_initialURL', get(this, 'location').pathname);
@@ -19,20 +23,28 @@ Ember.HistoryLocation = Ember.Object.extend(
 
   /**
     Will be pre-pended to path upon state change
-   */
+
+    @property rootURL
+    @default '/'
+  */
   rootURL: '/',
 
   /**
     @private
 
     Used to give history a starting reference
-   */
+
+    @property _initialURL
+    @default null
+  */
   _initialURL: null,
 
   /**
     @private
 
     Returns the current `location.pathname`.
+
+    @method getURL
   */
   getURL: function() {
     return get(this, 'location').pathname;
@@ -42,14 +54,18 @@ Ember.HistoryLocation = Ember.Object.extend(
     @private
 
     Uses `history.pushState` to update the url without a page reload.
+
+    @method setURL
+    @param path {String}
   */
   setURL: function(path) {
     var state = window.history.state,
         initialURL = get(this, '_initialURL');
 
-    path = this.formatPath(path);
+    path = this.formatURL(path);
 
     if ((initialURL !== path && !state) || (state && state.path !== path)) {
+      popstateReady = true;
       window.history.pushState({ path: path }, null, path);
     }
   },
@@ -59,11 +75,17 @@ Ember.HistoryLocation = Ember.Object.extend(
 
     Register a callback to be invoked whenever the browser
     history changes, including using forward and back buttons.
+
+    @method onUpdateURL
+    @param callback {Function}
   */
   onUpdateURL: function(callback) {
     var guid = Ember.guidFor(this);
 
     Ember.$(window).bind('popstate.ember-location-'+guid, function(e) {
+      if(!popstateReady) {
+        return;
+      }
       callback(location.pathname);
     });
   },
@@ -71,29 +93,21 @@ Ember.HistoryLocation = Ember.Object.extend(
   /**
     @private
 
-    returns the given path appended to rootURL
-   */
-  formatPath: function(path) {
+    Used when using `{{action}}` helper.  The url is always appended to the rootURL.
+
+    @method formatURL
+    @param url {String}
+  */
+  formatURL: function(url) {
     var rootURL = get(this, 'rootURL');
 
-    if (path !== '') {
+    if (url !== '') {
       rootURL = rootURL.replace(/\/$/, '');
     }
 
-    return rootURL + path;
+    return rootURL + url;
   },
 
-  /**
-    @private
-
-    Used when using {{action}} helper.  Since no formatting
-    is required we just return the url given.
-  */
-  formatURL: function(url) {
-    return url;
-  },
-
-  /** @private */
   willDestroy: function() {
     var guid = Ember.guidFor(this);
 

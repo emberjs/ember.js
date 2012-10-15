@@ -1,35 +1,39 @@
+/**
+@module ember
+@submodule ember-runtime
+*/
+
 var get = Ember.get, set = Ember.set, forEach = Ember.EnumerableUtils.forEach;
 
 /**
- @class
- 
- Ember.SortableMixin provides a standard interface for array proxies
- to specify a sort order and maintain this sorting when objects are added,
- removed, or updated without changing the implicit order of their underlying
- content array:
- 
-      songs = [ 
+  Ember.SortableMixin provides a standard interface for array proxies
+  to specify a sort order and maintain this sorting when objects are added,
+  removed, or updated without changing the implicit order of their underlying
+  content array:
+
+      songs = [
         {trackNumber: 4, title: 'Ob-La-Di, Ob-La-Da'},
         {trackNumber: 2, title: 'Back in the U.S.S.R.'},
         {trackNumber: 3, title: 'Glass Onion'},
-      ];  
+      ];
 
       songsController = Ember.ArrayController.create({
         content: songs,
         sortProperties: ['trackNumber']
       });
-      
+
       songsController.get('firstObject'); // {trackNumber: 2, title: 'Back in the U.S.S.R.'}
-      
+
       songsController.addObject({trackNumber: 1, title: 'Dear Prudence'});
       songsController.get('firstObject'); // {trackNumber: 1, title: 'Dear Prudence'}
-      
- 
- @extends Ember.Mixin
- @extends Ember.MutableEnumerable
+
+
+  @class SortableMixin
+  @namespace Ember
+  @extends Ember.Mixin
+  @uses Ember.MutableEnumerable
 */
-Ember.SortableMixin = Ember.Mixin.create(Ember.MutableEnumerable,
-  /** @scope Ember.Observable.prototype */ {
+Ember.SortableMixin = Ember.Mixin.create(Ember.MutableEnumerable, {
   sortProperties: null,
   sortAscending: true,
 
@@ -179,10 +183,13 @@ Ember.SortableMixin = Ember.Mixin.create(Ember.MutableEnumerable,
 
   contentItemSortPropertyDidChange: function(item) {
     var arrangedContent = get(this, 'arrangedContent'),
-        index = arrangedContent.indexOf(item);
+        oldIndex = arrangedContent.indexOf(item),
+        newIndex = this._binarySearch(item, 0, get(arrangedContent, 'length'));
 
-    arrangedContent.removeObject(item);
-    this.insertItemSorted(item);
+    if (newIndex !== oldIndex) {
+      arrangedContent.removeObject(item);
+      this.insertItemSorted(item);
+    }
   },
 
   _binarySearch: function(item, low, high) {

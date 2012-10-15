@@ -1,19 +1,21 @@
 /*jshint newcap:false*/
 
+/**
+@module ember-metal
+*/
+
 // NOTE: There is a bug in jshint that doesn't recognize `Object()` without `new`
 // as being ok unless both `newcap:false` and not `use strict`.
 // https://github.com/jshint/jshint/issues/392
 
 // Testing this is not ideal, but we want to use native functions
 // if available, but not to use versions created by libraries like Prototype
-/** @private */
 var isNativeFunc = function(func) {
   // This should probably work in all browsers likely to have ES5 array methods
   return func && Function.prototype.toString.call(func).indexOf('[native code]') > -1;
 };
 
 // From: https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/array/map
-/** @private */
 var arrayMap = isNativeFunc(Array.prototype.map) ? Array.prototype.map : function(fun /*, thisp */) {
   //"use strict";
 
@@ -39,7 +41,6 @@ var arrayMap = isNativeFunc(Array.prototype.map) ? Array.prototype.map : functio
 };
 
 // From: https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/array/foreach
-/** @private */
 var arrayForEach = isNativeFunc(Array.prototype.forEach) ? Array.prototype.forEach : function(fun /*, thisp */) {
   //"use strict";
 
@@ -61,7 +62,6 @@ var arrayForEach = isNativeFunc(Array.prototype.forEach) ? Array.prototype.forEa
   }
 };
 
-/** @private */
 var arrayIndexOf = isNativeFunc(Array.prototype.indexOf) ? Array.prototype.indexOf : function (obj, fromIndex) {
   if (fromIndex === null || fromIndex === undefined) { fromIndex = 0; }
   else if (fromIndex < 0) { fromIndex = Math.max(0, this.length + fromIndex); }
@@ -99,23 +99,29 @@ var utils = Ember.EnumerableUtils = {
   removeObject: function(array, item) {
     var index = utils.indexOf(array, item);
     if (index !== -1) { array.splice(index, 1); }
+  },
+
+  replace: function(array, idx, amt, objects) {
+    if (array.replace) {
+      return array.replace(idx, amt, objects);
+    } else {
+      var args = Array.prototype.concat.apply([idx, amt], objects);
+      return array.splice.apply(array, args);
+    }
   }
 };
 
 
 if (Ember.SHIM_ES5) {
   if (!Array.prototype.map) {
-    /** @private */
     Array.prototype.map = arrayMap;
   }
 
   if (!Array.prototype.forEach) {
-    /** @private */
     Array.prototype.forEach = arrayForEach;
   }
 
   if (!Array.prototype.indexOf) {
-    /** @private */
     Array.prototype.indexOf = arrayIndexOf;
   }
 }

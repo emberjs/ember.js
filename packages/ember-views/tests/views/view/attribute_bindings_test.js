@@ -1,15 +1,16 @@
-// ==========================================================================
-// Project:   Ember Views
-// Copyright: ©2006-2011 Strobe Inc. and contributors.
-// License:   Licensed under MIT license (see license.js)
-// ==========================================================================
-
 /*global Test:true*/
 var set = Ember.set, get = Ember.get;
 
-var view;
+var originalLookup = Ember.lookup, lookup, view;
+
+var appendView = function() {
+  Ember.run(function() { view.appendTo('#qunit-fixture'); });
+};
 
 module("Ember.View - Attribute Bindings", {
+  setup: function() {
+    Ember.lookup = lookup = {};
+  },
   teardown: function() {
     if (view) {
       Ember.run(function(){
@@ -17,6 +18,7 @@ module("Ember.View - Attribute Bindings", {
       });
       view = null;
     }
+    Ember.lookup = originalLookup;
   }
 });
 
@@ -101,9 +103,9 @@ test("should update attribute bindings", function() {
 });
 
 test("should allow attributes to be set in the inBuffer state", function() {
-  var parentView, childViews;
+  var parentView, childViews, Test;
   Ember.run(function() {
-    window.Test = Ember.Namespace.create();
+    lookup.Test = Test = Ember.Namespace.create();
     Test.controller = Ember.Object.create({
       foo: 'bar'
     });
@@ -169,4 +171,22 @@ test("should allow binding to String objects", function() {
   
 
   equal(view.$().attr('foo'), 'bar', "should convert String object to bare string");
+});
+
+test("should teardown observers on rerender", function() {
+  view = Ember.View.create({
+    attributeBindings: ['foo'],
+    classNameBindings: ['foo'],
+    foo: 'bar'
+  });
+
+  appendView();
+
+  equal(Ember.observersFor(view, 'foo').length, 2);
+
+  Ember.run(function() {
+    view.rerender();
+  });
+
+  equal(Ember.observersFor(view, 'foo').length, 2);
 });

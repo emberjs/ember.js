@@ -1,20 +1,15 @@
-// ==========================================================================
-// Project:  Ember Runtime
-// Copyright: ©2006-2011 Strobe Inc. and contributors.
-//            Portions ©2008-2010 Apple Inc. All rights reserved.
-// License:   Licensed under MIT license (see license.js)
-// ==========================================================================
-
-
 require('ember-runtime/system/string');
+
+/**
+@module ember
+@submodule ember-runtime
+*/
 
 
 
 var get = Ember.get, set = Ember.set;
 
 /**
-  @namespace
-
   Implements some standard methods for copying an object.  Add this mixin to
   any object you create that can create a copy of itself.  This mixin is
   added automatically to the built-in array.
@@ -24,6 +19,8 @@ var get = Ember.get, set = Ember.set;
 
   Note that frozenCopy() will only work if you also implement Ember.Freezable.
 
+  @class Copyable
+  @namespace Ember
   @extends Ember.Mixin
   @since Ember 0.9
 */
@@ -34,9 +31,9 @@ Ember.Copyable = Ember.Mixin.create(
     Override to return a copy of the receiver.  Default implementation raises
     an exception.
 
-    @function
+    @method copy
     @param deep {Boolean} if true, a deep copy of the object should be made
-    @returns {Object} copy of receiver
+    @return {Object} copy of receiver
   */
   copy: Ember.required(Function),
 
@@ -51,7 +48,8 @@ Ember.Copyable = Ember.Mixin.create(
     since a freezable object can simply return itself without actually
     consuming more memory.
 
-    @returns {Object} copy of receiver or receiver
+    @method frozenCopy
+    @return {Object} copy of receiver or receiver
   */
   frozenCopy: function() {
     if (Ember.Freezable && Ember.Freezable.detect(this)) {

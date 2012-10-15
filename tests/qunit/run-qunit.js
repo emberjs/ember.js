@@ -8,10 +8,23 @@ if (args.length < 1 || args.length > 2) {
   phantom.exit(1);
 }
 
+var fs = require('fs');
+function print(str) {
+  fs.write('/dev/stdout', str, 'w');
+}
+
 var page = require('webpage').create();
 
 page.onConsoleMessage = function(msg) {
   if (msg.slice(0,8) === 'WARNING:') { return; }
+
+  // Hack to access the print method
+  // If there's a better way to do this, please change
+  if (msg.slice(0,6) === 'PRINT:') {
+    print(msg.slice(7));
+    return;
+  }
+
   console.log(msg);
 };
 
@@ -47,15 +60,16 @@ page.open(args[0], function(status) {
 });
 
 function logQUnit() {
+  var moduleErrors = [];
   var testErrors = [];
   var assertionErrors = [];
 
-  console.log("Running: " + JSON.stringify(QUnit.urlParams));
+  console.log("\nRunning: " + JSON.stringify(QUnit.urlParams) + "\n");
 
   QUnit.moduleDone(function(context) {
     if (context.failed) {
       var msg = "Module Failed: " + context.name + "\n" + testErrors.join("\n");
-      console.error(msg);
+      moduleErrors.push(msg);
       testErrors = [];
     }
   });
@@ -65,11 +79,14 @@ function logQUnit() {
       var msg = "  Test Failed: " + context.name + assertionErrors.join("    ");
       testErrors.push(msg);
       assertionErrors = [];
+      console.log('PRINT: F');
+    } else {
+      console.log('PRINT: .');
     }
   });
 
   QUnit.log(function(context) {
-    if (context.result) return;
+    if (context.result) { return; }
 
     var msg = "\n    Assertion Failed:";
     if (context.message) {
@@ -84,6 +101,14 @@ function logQUnit() {
   });
 
   QUnit.done(function(context) {
+    console.log('\n');
+
+    if (moduleErrors.length > 0) {
+      for (var idx=0; idx<moduleErrors.length; idx++) {
+        console.error(moduleErrors[idx]+"\n");
+      }
+    }
+
     var stats = [
       "Time: " + context.runtime + "ms",
       "Total: " + context.total,

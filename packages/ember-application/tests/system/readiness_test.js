@@ -1,5 +1,5 @@
 var jQuery, Application, application;
-var readyWasCalled, domReady, readyCallback;
+var readyWasCalled, domReady, readyCallbacks;
 
 // We are using a small mock of jQuery because jQuery is third-party code with
 // very well-defined semantics, and we want to confirm that a jQuery stub run
@@ -9,10 +9,11 @@ var readyWasCalled, domReady, readyCallback;
 module("Application readiness", {
   setup: function() {
     readyWasCalled = 0;
+    readyCallbacks = [];
 
     var jQueryInstance = {
       ready: function(callback) {
-        readyCallback = callback;
+        readyCallbacks.push(callback);
         if (jQuery.isReady) {
           domReady();
         }
@@ -28,7 +29,10 @@ module("Application readiness", {
     domReady = function() {
       if (domReadyCalled !== 0) { return; }
       domReadyCalled++;
-      readyCallback();
+      var i;
+      for (i=0; i<readyCallbacks.length; i++) {
+        readyCallbacks[i]();
+      }
     };
 
     Application = Ember.Application.extend({
@@ -70,6 +74,22 @@ test("Ember.Application's ready event is called right away if jQuery is already 
 test("Ember.Application's ready event is called after the document becomes ready", function() {
   Ember.run(function() {
     application = Application.create().initialize();
+  });
+
+  equal(readyWasCalled, 0, "ready wasn't called yet");
+
+  Ember.run(function() {
+    domReady();
+  });
+
+  equal(readyWasCalled, 1, "ready was called now that DOM is ready");
+});
+
+test("Ember.Application's ready event is called after the document becomes ready without initialize if autoinit is set", function() {
+  Ember.run(function() {
+    application = Application.create({
+      autoinit: true
+    });
   });
 
   equal(readyWasCalled, 0, "ready wasn't called yet");

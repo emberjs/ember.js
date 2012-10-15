@@ -1,9 +1,3 @@
-// ==========================================================================
-// Project:  Ember Runtime
-// Copyright: ©2011 Strobe Inc. and contributors.
-// License:   Licensed under MIT license (see license.js)
-// ==========================================================================
-
 module('system/props/events_test');
 
 test('listener should receive event - removing should remove', function() {
@@ -172,3 +166,17 @@ test('hasListeners tells you if there are listeners for a given event', function
   equal(Ember.hasListeners(obj, 'event!'), true, 'has listeners');
 });
 
+test('calling removeListener without method should remove all listeners', function() {
+  var obj = {}, F = function() {}, F2 = function() {};
+
+  equal(Ember.hasListeners(obj, 'event!'), false, 'no listeners at first');
+
+  Ember.addListener(obj, 'event!', F);
+  Ember.addListener(obj, 'event!', F2);
+
+  equal(Ember.hasListeners(obj, 'event!'), true, 'has listeners');
+
+  Ember.removeListener(obj, 'event!');
+
+  equal(Ember.hasListeners(obj, 'event!'), false, 'has no more listeners');
+});

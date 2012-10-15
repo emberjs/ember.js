@@ -1,5 +1,10 @@
 require('ember-runtime/system/object');
 
+/**
+@module ember
+@submodule ember-runtime
+*/
+
 var get = Ember.get,
     set = Ember.set,
     fmt = Ember.String.fmt,
@@ -23,8 +28,6 @@ function contentPropertyDidChange(content, contentKey) {
 }
 
 /**
-  @class
-
   `Ember.ObjectProxy` forwards all properties not defined by the proxy itself
   to a proxied `content` object.
 
@@ -75,12 +78,17 @@ function contentPropertyDidChange(content, contentKey) {
         firstName: 'Tom', lastName: 'Dale'
       }); // triggers property change for fullName on proxy
       proxy.get('fullName'); => 'Tom Dale'
+
+  @class ObjectProxy
+  @namespace Ember
+  @extends Ember.Object
 */
 Ember.ObjectProxy = Ember.Object.extend(
 /** @scope Ember.ObjectProxy.prototype */ {
   /**
     The object whose properties will be forwarded.
 
+    @property content
     @type Ember.Object
     @default null
   */
@@ -88,26 +96,26 @@ Ember.ObjectProxy = Ember.Object.extend(
   _contentDidChange: Ember.observer(function() {
     Ember.assert("Can't set ObjectProxy's content to itself", this.get('content') !== this);
   }, 'content'),
-  /** @private */
+
   willWatchProperty: function (key) {
     var contentKey = 'content.' + key;
     addBeforeObserver(this, contentKey, null, contentPropertyWillChange);
     addObserver(this, contentKey, null, contentPropertyDidChange);
   },
-  /** @private */
+
   didUnwatchProperty: function (key) {
     var contentKey = 'content.' + key;
     removeBeforeObserver(this, contentKey, null, contentPropertyWillChange);
     removeObserver(this, contentKey, null, contentPropertyDidChange);
   },
-  /** @private */
+
   unknownProperty: function (key) {
     var content = get(this, 'content');
     if (content) {
       return get(content, key);
     }
   },
-  /** @private */
+
   setUnknownProperty: function (key, value) {
     var content = get(this, 'content');
     Ember.assert(fmt("Cannot delegate set('%@', %@) to the 'content' property of object proxy %@: its 'content' is undefined.", [key, value, this]), content);

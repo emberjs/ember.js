@@ -1,0 +1,20 @@
+{
+  "name": "The Ember API",
+  "description": "The Ember API: a framework for building ambitious web applications",
+  "version": "1.0 pre",
+  "url": "http://emberjs.com/",
+  "options": {
+    "paths": [
+      "../packages/ember/lib",
+      "../packages/ember-debug/lib",
+      "../packages/ember-metal/lib",
+      "../packages/ember-runtime/lib",
+      "../packages/ember-states/lib",
+      "../packages/ember-views/lib",
+      "../packages/ember-handlebars/lib",
+      "../packages/ember-routing/lib",
+      "../packages/ember-application/lib"
+    ],
+    "outdir":   "./build"
+  }
+}
