@@ -214,11 +214,13 @@ Ember.State.reopenClass(
   transitionTo: function(target) {
 
     var transitionFunction = function(stateManager, contextOrEvent) {
-      var contexts, transitionArgs, Event;
-      Event = Ember.$ && Ember.$.Event;
+      var contexts = [], transitionArgs,
+          Event = Ember.$ && Ember.$.Event;
 
-      if (contextOrEvent && (Event && contextOrEvent instanceof Event) && contextOrEvent.hasOwnProperty('contexts')) {
-        contexts = contextOrEvent.contexts.slice();
+      if (contextOrEvent && (Event && contextOrEvent instanceof Event)) {
+        if (contextOrEvent.hasOwnProperty('contexts')) {
+          contexts = contextOrEvent.contexts.slice();
+        }
       }
       else {
         contexts = [].slice.call(arguments, 1);
