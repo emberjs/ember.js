@@ -102,7 +102,7 @@ function invokeAction(action, params, sender) {
   @param {Object|Function} targetOrMethod A target object or a function
   @param {Function|String} method A function or the name of a function to be called on `target`
 */
-function addListener(obj, eventName, target, method) {
+function addListener(obj, eventName, target, method, guid) {
   Ember.assert("You must pass at least an object and event name to Ember.addListener", !!obj && !!eventName);
 
   if (!method && 'function' === typeof target) {
@@ -111,7 +111,9 @@ function addListener(obj, eventName, target, method) {
   }
 
   var actionSet = actionSetFor(obj, eventName, target, true),
-      methodGuid = guidFor(method);
+      // guid is used in case we wrapp given method to register
+      // listener with method guid instead of the wrapper guid
+      methodGuid = guid || guidFor(method);
 
   if (!actionSet[methodGuid]) {
     actionSet[methodGuid] = { target: target, method: method };
@@ -142,15 +144,25 @@ function removeListener(obj, eventName, target, method) {
     target = null;
   }
 
-  var actionSet = actionSetFor(obj, eventName, target, true),
-      methodGuid = guidFor(method);
+  function _removeListener(target, method) {
+    var actionSet = actionSetFor(obj, eventName, target, true),
+        methodGuid = guidFor(method);
 
-  // we can't simply delete this parameter, because if we do, we might
-  // re-expose the property from the prototype chain.
-  if (actionSet && actionSet[methodGuid]) { actionSet[methodGuid] = null; }
+    // we can't simply delete this parameter, because if we do, we might
+    // re-expose the property from the prototype chain.
+    if (actionSet && actionSet[methodGuid]) { actionSet[methodGuid] = null; }
 
-  if ('function' === typeof obj.didRemoveListener) {
-    obj.didRemoveListener(eventName, target, method);
+    if ('function' === typeof obj.didRemoveListener) {
+      obj.didRemoveListener(eventName, target, method);
+    }
+  }
+
+  if (method) {
+    _removeListener(target, method);
+  } else {
+    iterateSet(obj, eventName, function(action) {
+      _removeListener(action.target, action.method);
+    });
   }
 }
 
