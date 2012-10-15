@@ -18,7 +18,19 @@ Ember.HistoryLocation = Ember.Object.extend({
 
   init: function() {
     set(this, 'location', get(this, 'location') || window.location);
-    set(this, '_initialURL', get(this, 'location').pathname);
+    this.initState();
+  },
+
+  /**
+    @private
+
+    Used to set state on first call to setURL
+
+    @method initState
+  */
+  initState: function() {
+    this.replaceState(get(this, 'location').pathname);
+    set(this, 'history', window.history);
   },
 
   /**
@@ -28,16 +40,6 @@ Ember.HistoryLocation = Ember.Object.extend({
     @default '/'
   */
   rootURL: '/',
-
-  /**
-    @private
-
-    Used to give history a starting reference
-
-    @property _initialURL
-    @default null
-  */
-  _initialURL: null,
 
   /**
     @private
@@ -59,15 +61,47 @@ Ember.HistoryLocation = Ember.Object.extend({
     @param path {String}
   */
   setURL: function(path) {
-    var state = window.history.state,
-        initialURL = get(this, '_initialURL');
-
     path = this.formatURL(path);
 
-    if ((initialURL !== path && !state) || (state && state.path !== path)) {
+    if (this.getState().path !== path) {
       popstateReady = true;
-      window.history.pushState({ path: path }, null, path);
+      this.pushState(path);
     }
+  },
+
+  /**
+   @private
+
+   Get the current `history.state`
+
+   @method getState
+  */
+  getState: function() {
+    return get(this, 'history').state;
+  },
+
+  /**
+   @private
+
+   Pushes a new state
+
+   @method pushState
+   @param path {String}
+  */
+  pushState: function(path) {
+    window.history.pushState({ path: path }, null, path);
+  },
+
+  /**
+   @private
+
+   Replaces the current state
+
+   @method replaceState
+   @param path {String}
+  */
+  replaceState: function(path) {
+    window.history.replaceState({ path: path }, null, path);
   },
 
   /**

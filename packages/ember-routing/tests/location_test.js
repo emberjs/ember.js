@@ -1,5 +1,4 @@
 var locationObject;
-var realPushState, realHistoryState;
 
 module("Ember.Location, hash implementation", {
   setup: function() {
@@ -64,8 +63,25 @@ test("if the URL is set, it doesn't trigger the hashchange event", function() {
 
 module("Ember.Location, history implementation", {
   setup: function() {
-    realHistoryState = window.history.state;
-    realPushState = window.history.pushState;
+
+    var setHistory = function(obj, path) {
+      obj.set('history', { state: { path: path } });
+    };
+
+    Ember.HistoryLocation.reopen({
+      initState: function() {
+        setHistory(this, window.location.pathname);
+      },
+
+      replaceState: function(path) {
+        setHistory(this, path);
+      },
+
+      pushState: function(path) {
+        setHistory(this, path);
+      }
+    });
+
     locationObject = Ember.Location.create({
       implementation: 'history'
     });
@@ -75,12 +91,14 @@ module("Ember.Location, history implementation", {
   },
 
   teardown: function() {
-    window.history.pushState = realPushState;
-    window.history.state = realHistoryState;
     Ember.run(function() {
       locationObject.destroy();
     });
   }
+});
+
+test("it sets the initial state", function() {
+  equal(locationObject.getState().path, window.location.pathname, "the initial state is set");
 });
 
 test("it is possible to get the current URL", function() {
@@ -89,9 +107,11 @@ test("it is possible to get the current URL", function() {
 
 test("it is possible to set the current URL", function() {
   var setPath;
-  window.history.pushState = function(data, title, path) {
+
+  locationObject.pushState = function(path) {
     setPath = path;
   };
+
   locationObject.setURL("/foo");
   equal(setPath, "/foo", "the updated URL is '/foo'");
 });
@@ -101,7 +121,7 @@ test("if the URL is set, it doesn't trigger the popstate event", function() {
 
   stop();
   var count = 0;
-  window.history.pushState = function(data, title, path) {};
+  locationObject.pushState = function(data, title, path) {};
 
   setTimeout(function() {
     start();
@@ -138,7 +158,7 @@ test("doesn't push a state if path has not changed", function() {
   stop();
 
   var count = 0;
-  window.history.pushState = function(data, title, path) {
+  locationObject.pushState = function() {
     count++;
   };
 
@@ -150,12 +170,13 @@ test("doesn't push a state if path has not changed", function() {
   locationObject.setURL(window.location.pathname);
 });
 
-test("it calls pushState if at initialURL and history.state does not exist", function() {
+test("it calls pushState if state.path is different than given path", function() {
   expect(1);
   stop();
 
   var count = 0;
-  window.history.pushState = function() {
+
+  locationObject.pushState = function() {
     count++;
   };
 
@@ -164,7 +185,6 @@ test("it calls pushState if at initialURL and history.state does not exist", fun
     equal(count, 1, "pushState should have been called");
   }, 100);
 
-  locationObject.set('_initialURL', window.location.pathname);
   locationObject.setURL('/test');
 });
 
@@ -180,7 +200,7 @@ test("formatURL properly appends to rootURL", function() {
 test("it prepends rootURL to path", function() {
   var setPath;
 
-  window.history.pushState = function(data, title, path) {
+  locationObject.pushState = function(path) {
     setPath = path;
   };
 
