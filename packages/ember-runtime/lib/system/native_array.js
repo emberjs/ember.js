@@ -105,9 +105,9 @@ if (ignore.length>0) {
 /**
   The NativeArray mixin contains the properties needed to to make the native
   Array support Ember.MutableArray and all of its dependent APIs.  Unless you
-  have Ember.EXTEND_PROTOTYPES set to false, this will be applied automatically.
-  Otherwise you can apply the mixin at anytime by calling
-  `Ember.NativeArray.activate`.
+  have Ember.EXTEND_PROTOTYPES or Ember.EXTEND_PROTOTYPES.Array set to false, this
+  will be applied automatically. Otherwise you can apply the mixin at anytime by
+  calling `Ember.NativeArray.activate`.
 
   @class NativeArray
   @namespace Ember
@@ -147,6 +147,7 @@ Ember.NativeArray.activate = function() {
   Ember.A = function(arr) { return arr || []; };
 };
 
-if (Ember.EXTEND_PROTOTYPES) Ember.NativeArray.activate();
-
+if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.Array) {
+  Ember.NativeArray.activate();
+}
 
