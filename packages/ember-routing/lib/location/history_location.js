@@ -4,6 +4,7 @@
 */
 
 var get = Ember.get, set = Ember.set;
+var popstateReady = false;
 
 /**
   Ember.HistoryLocation implements the location API using the browser's
@@ -64,6 +65,7 @@ Ember.HistoryLocation = Ember.Object.extend({
     path = this.formatURL(path);
 
     if ((initialURL !== path && !state) || (state && state.path !== path)) {
+      popstateReady = true;
       window.history.pushState({ path: path }, null, path);
     }
   },
@@ -81,6 +83,9 @@ Ember.HistoryLocation = Ember.Object.extend({
     var guid = Ember.guidFor(this);
 
     Ember.$(window).bind('popstate.ember-location-'+guid, function(e) {
+      if(!popstateReady) {
+        return;
+      }
       callback(location.pathname);
     });
   },
