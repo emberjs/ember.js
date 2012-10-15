@@ -1,6 +1,4 @@
 /**
-  @class Ember.Instrumentation
-
   The purpose of the Ember Instrumentation module is
   to provide efficient, general-purpose instrumentation
   for Ember.
@@ -37,6 +35,10 @@
   `render`. It would receive callbacks for events named
   `render`, `render.handlebars`, `render.container`, or
   even `render.handlebars.layout`.
+
+  @class Instrumentation
+  @namespace Ember
+  @static
 */
 Ember.Instrumentation = {};
 
