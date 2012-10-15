@@ -494,3 +494,53 @@ test("should invalidate `element` on itself and childViews when being rendered b
   ok(!!container.get('element'), "Parent's element should have been recomputed after being rendered");
   ok(!!view.get('element'), "Child's element should have been recomputed after being rendered");
 });
+
+test("should execut all the hooks when removing or adding a currentView", function() {
+  expect(9);
+  var viewsCount = 0;
+  var container = Ember.ContainerView.create({
+    presentCurrentView: function(currentView, callback) {
+      if (viewsCount === 1) {
+        equal(currentView, child1, 'will present child1');
+        equal(child1.get('isBeingPresented'), true);
+      } else {
+        equal(currentView, child2, 'will present child2');
+        equal(child2.get('isBeingPresented'), true);
+      }
+      callback();
+    },
+    appendCurrentView: function(currentView, callback) {
+      viewsCount++;
+      if (viewsCount === 1) {
+        equal(currentView, child1, 'will append child1');
+      } else {
+        equal(currentView, child2, 'will append child2');
+      }
+      this._super(currentView, callback);
+    },
+    dismissCurrentView: function(currentView, callback) {
+      equal(child1.get('isBeingDismissed'), true);
+      equal(currentView, child1, 'will dismiss child1');
+      callback();
+    },
+    removeCurrentView: function(currentView, callback) {
+      equal(currentView, child1, 'will remove child1');
+      this._super(currentView, callback);
+    }
+  });
+
+  var child1 = Ember.View.create();
+  var child2 = Ember.View.create();
+
+  Ember.run(function() {
+    container.appendTo('#qunit-fixture');
+  });
+
+  Ember.run(function() {
+    set(container, 'currentView', child1);
+  });
+
+  Ember.run(function() {
+    set(container, 'currentView', child2);
+  });
+});
