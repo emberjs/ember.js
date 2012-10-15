@@ -53,11 +53,11 @@
   };
 
   startTagFunc = function() {
-    return "<script id='" + this.start + "' type='text/x-placeholder'></script>";
+    return "<script id='" + this.start + "' type='text/x-placeholder'>\x3C/script>";
   };
 
   endTagFunc = function() {
-    return "<script id='" + this.end + "' type='text/x-placeholder'></script>";
+    return "<script id='" + this.end + "' type='text/x-placeholder'>\x3C/script>";
   };
 
   // If we have the W3C range API, this process is relatively straight forward.
