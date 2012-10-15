@@ -1,3 +1,8 @@
+/**
+@module ember
+@submodule ember-runtime
+*/
+
 var get = Ember.get, set = Ember.set,
     slice = Array.prototype.slice,
     forEach = Ember.ArrayPolyfills.forEach;
@@ -42,15 +47,19 @@ Callbacks.prototype = {
 
 
 /**
- @class
-
- @extends Ember.Mixin
+  @class Deferred
+  @namespace Ember
+  @extends Ember.Mixin
  */
-Ember.Deferred = Ember.Mixin.create(
-  /** @scope Ember.Deferred.prototype */ {
+Ember.Deferred = Ember.Mixin.create({
 
   /**
     Add handlers to be called when the Deferred object is resolved or rejected.
+
+    @method then
+    @param {Function} doneCallback a callback function to be called when done
+    @param {Function} failCallback a callback function to be called when failed
+    @param {Function} progressCallback a callback function to be called when progressed
   */
   then: function(doneCallback, failCallback, progressCallback) {
     if (doneCallback) {
@@ -68,6 +77,8 @@ Ember.Deferred = Ember.Mixin.create(
 
   /**
     Call the progressCallbacks on a Deferred object with the given args.
+
+    @method notify
   */
   notify: function() {
     var callbacks = get(this, 'deferredProgress');
@@ -78,6 +89,8 @@ Ember.Deferred = Ember.Mixin.create(
 
   /**
     Resolve a Deferred object and call any doneCallbacks with the given args.
+
+    @method resolve
   */
   resolve: function() {
     var callbacks = get(this, 'deferredDone');
@@ -90,6 +103,8 @@ Ember.Deferred = Ember.Mixin.create(
 
   /**
     Reject a Deferred object and call any failCallbacks with the given args.
+
+    @method reject
   */
   reject: function() {
     var callbacks = get(this, 'deferredFail');

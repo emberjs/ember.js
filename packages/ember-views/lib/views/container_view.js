@@ -415,6 +415,7 @@ Ember.ContainerView = Ember.View.extend({
     Default implementation will simply call the callback.
     You can override this method if you want to add an animation for example.
 
+    @method presentCurrentView
     @param  {Ember.View} currentView a view to present
     @param  {Function}   callback the callback called once operation is terminated
    */
@@ -425,6 +426,7 @@ Ember.ContainerView = Ember.View.extend({
   /**
     This method is responsible for adding view to containerView
 
+    @method appendCurrentView
     @param  {Ember.View} currentView a view to present
     @param  {Function}   callback the callback called once view is appended
   */
@@ -441,6 +443,7 @@ Ember.ContainerView = Ember.View.extend({
     Default implementation will simply call the callback.
     You can override this method if you want to add an animation for example.
 
+    @method dismissCurrentView
     @param  {Ember.View} currentView a view to dismiss
     @param  {Function}   callback the callback called once operation is terminated
    */
@@ -452,6 +455,7 @@ Ember.ContainerView = Ember.View.extend({
     This method is responsible for removing a view from the containerView
     You may want to override it in case you implementing views sharing for example
 
+    @method removeCurrentView
     @param  {Ember.View} currentView a view to present
     @param  {Function}   callback the callback called once view is removed
   */
