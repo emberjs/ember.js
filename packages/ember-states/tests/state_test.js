@@ -193,20 +193,23 @@ module("Ember.State.transitionTo", {
 });
 test("sets the transition target", function(){
   var receivedTarget,
+      receivedContext,
       stateManager,
       transitionFunction;
 
   stateManager = {
     transitionTo: function(target, context){
       receivedTarget = target;
+      receivedContext = context;
     }
   };
 
   transitionFunction = Ember.State.transitionTo('targetState');
 
-  transitionFunction(stateManager);
+  transitionFunction(stateManager, new Ember.$.Event());
 
-  equal( receivedTarget, 'targetState' );
+  equal(receivedTarget, 'targetState');
+  ok(!receivedContext, "does not pass a context when given an event without context");
 });
 
 test("passes no context arguments when there are no contexts", function(){
