@@ -7,11 +7,12 @@ require('ember-runtime/core');
 
 var a_slice = Array.prototype.slice;
 
-if (Ember.EXTEND_PROTOTYPES && (Ember.PROTOTYPE_EXTENSIONS.all || Ember.PROTOTYPE_EXTENSIONS.Function)) {
+if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.Function) {
 
   /**
     The `property` extension of Javascript's Function prototype is available
-    when Ember.EXTEND_PROTOTYPES is true, which is the default.
+    when Ember.EXTEND_PROTOTYPES or Ember.EXTEND_PROTOTYPES.Function is true,
+    which is the default.
 
     Computed properties allow you to treat a function like a property:
 
@@ -67,7 +68,8 @@ if (Ember.EXTEND_PROTOTYPES && (Ember.PROTOTYPE_EXTENSIONS.all || Ember.PROTOTYP
 
   /**
     The `observes` extension of Javascript's Function prototype is available
-    when Ember.EXTEND_PROTOTYPES is true, which is the default.
+    when Ember.EXTEND_PROTOTYPES or Ember.EXTEND_PROTOTYPES.Function is true,
+    which is the default.
 
     You can observe property changes simply by adding the `observes`
     call to the end of your method declarations in classes that you write.
@@ -90,8 +92,9 @@ if (Ember.EXTEND_PROTOTYPES && (Ember.PROTOTYPE_EXTENSIONS.all || Ember.PROTOTYP
   };
 
   /**
-    The `observesBefore` extension of Javascript's Function prototype is
-    available when Ember.EXTEND_PROTOTYPES is true, which is the default.
+    The `observesBefore` extension of Javascript's Function prototype is available
+    when Ember.EXTEND_PROTOTYPES or Ember.EXTEND_PROTOTYPES.Function is true,
+    which is the default.
 
     You can get notified when a property changes is about to happen by
     by adding the `observesBefore` call to the end of your method

@@ -75,7 +75,7 @@ Ember.config = Ember.config || {};
   Determines whether Ember should enhances some built-in object
   prototypes to provide a more friendly API.  If enabled, a few methods
   will be added to Function, String, and Array.  Object.prototype will not be
-  enhanced, which is the one that causes most troubles for people.
+  enhanced, which is the one that causes most trouble for people.
 
   In general we recommend leaving this option set to true since it rarely
   conflicts with other code.  If you need to turn it off however, you can
@@ -85,32 +85,16 @@ Ember.config = Ember.config || {};
   @type Boolean
   @default true
 */
-Ember.EXTEND_PROTOTYPES = (Ember.ENV.EXTEND_PROTOTYPES !== false);
+Ember.EXTEND_PROTOTYPES = Ember.ENV.EXTEND_PROTOTYPES;
 
-/**
-<<<<<<< HEAD
-  Determines whether Ember logs a full stack trace during deprecation warnings
-
-  @property LOG_STACKTRACE_ON_DEPRECATION
-=======
-  @static
-  @type Object
-  @constant
-
-  Determines which prototypes will be extended assuming Ember.EXTEND_PROTOTYPES
-  is true.
-*/
-Ember.PROTOTYPE_EXTENSIONS = Ember.ENV.PROTOTYPE_EXTENSIONS;
-
-if (Ember.PROTOTYPE_EXTENSIONS === undefined) {
-  Ember.PROTOTYPE_EXTENSIONS = {
-    all: true
-  };
+if (typeof Ember.EXTEND_PROTOTYPES === 'undefined') {
+  Ember.EXTEND_PROTOTYPES = true;
 }
 
 /**
-  @static
->>>>>>> 8750700... Allow extension of chosen prototypes instead of the current all or none.
+  Determines whether Ember logs a full stack trace during deprecation warnings
+
+  @property LOG_STACKTRACE_ON_DEPRECATION
   @type Boolean
   @default true
 */

@@ -23,8 +23,8 @@ Ember.STRINGS = {};
 
 /**
   Defines string helper methods including string formatting and localization.
-  Unless Ember.EXTEND_PROTOTYPES or Ember.PROTOTYPE_EXTENSIONS.String are false
-  these methods will also be added to the String.prototype as well.
+  Unless Ember.EXTEND_PROTOTYPES.String is false these methods will also be added
+  to the String.prototype as well.
 
   @class String
   @namespace Ember

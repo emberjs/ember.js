@@ -9,7 +9,7 @@ Ember.String.htmlSafe = function(str) {
 
 var htmlSafe = Ember.String.htmlSafe;
 
-if (Ember.EXTEND_PROTOTYPES && (Ember.PROTOTYPE_EXTENSIONS.all || Ember.PROTOTYPE_EXTENSIONS.String)) {
+if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.String) {
 
   /**
     See {{#crossLink "Ember.String/htmlSafe"}}{{/crossLink}}
@@ -20,5 +20,4 @@ if (Ember.EXTEND_PROTOTYPES && (Ember.PROTOTYPE_EXTENSIONS.all || Ember.PROTOTYP
   String.prototype.htmlSafe = function() {
     return htmlSafe(this);
   };
-
 }
