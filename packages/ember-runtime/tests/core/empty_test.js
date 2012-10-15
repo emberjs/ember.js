@@ -14,7 +14,7 @@ test("Ember.empty", function() {
   equal(false, Ember.empty(fn),        "for a Function");
   equal(false, Ember.empty(0),         "for 0");
   equal(true,  Ember.empty([]),        "for an empty Array");
-  equal(false, Ember.empty({}),        "for an empty Object");
+  equal(true,  Ember.empty({}),        "for an empty Object");
   equal(true,  Ember.empty(object),     "for an Object that has zero 'length'");
   equal(true,  Ember.empty(arrayProxy), "for an ArrayProxy that has empty content");
 });
