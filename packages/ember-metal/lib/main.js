@@ -5,6 +5,7 @@ Ember Metal
 @submodule ember-metal
 */
 
+require('ember-metal/instrumentation');
 require('ember-metal/core');
 require('ember-metal/map');
 require('ember-metal/platform');
