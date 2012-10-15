@@ -378,6 +378,9 @@ testBoth('removing observer should stop firing', function(get,set) {
   equal(count, 1, 'should have invoked observer');
 
   Ember.removeObserver(obj, 'foo', F);
+
+  set(obj, 'foo', 'baz');
+  equal(count, 1, "removed observer shouldn't fire");
 });
 
 testBoth('local observers can be removed', function(get, set) {
