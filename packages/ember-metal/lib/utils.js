@@ -376,6 +376,26 @@ function canInvoke(obj, methodName) {
 }
 
 /**
+  Returns true if the passed object is empty.
+  
+      Ember.isEmptyObject({}); // true
+      var userData = {name: "Hal"};
+      Ember.isEmptyObject(userData); // false
+  
+  @param {Object} obj The object to test
+  @returns {Boolean}
+*/
+
+Ember.isEmptyObject = function(obj) {
+  for (var prop in obj) {
+    if (obj[prop] !== obj.constructor.prototype[obj]) {
+      return false; 
+    }
+  }
+  return true;
+};
+
+/**
   Checks to see if the `methodName` exists on the `obj`.
 
   @method canInvoke
