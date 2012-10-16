@@ -177,3 +177,47 @@ test("by default it tests if all filterProperties are truthy", function() {
 
   equal(filteredArrayController.get('length'), 3, "it doesn't add invalid items to the filtered array");
 });
+
+test("the content can be swapped out and the array still filters", function() {
+  filteredArrayController.set('content', Ember.A([{id: 1, name: 'James'}, {id: 2, name: null}]));
+
+  equal(filteredArrayController.get('length'), 1, 'filters the new array');
+});
+
+module("Ember.Filterable with bound content and filterProperties", {
+  setup: function() {
+    Ember.run(function() {
+      array = [{ id: 1 }, { id: 2 }, { id: null }];
+      unfilteredArray = Ember.ArrayProxy.create({
+        content: Ember.A(array)
+      });
+
+      filteredArrayController = Ember.ArrayProxy.create(Ember.FilterableMixin, {
+        filterProperties: ['id'],
+        unfilteredArray: unfilteredArray
+      });
+
+      var binding = new Ember.Binding('content', 'unfilteredArray');
+      binding.connect(filteredArrayController);
+    });
+  },
+
+  teardown: function() {
+    Ember.run(function() {
+      filteredArrayController.destroy();
+    });
+  }
+});
+
+test("the content can be bound to another ArrayProxy", function() {
+  expect(2);
+  equal( filteredArrayController.get('content.length'), 3, 'the content is bound');
+  equal( filteredArrayController.get('length'), 2, 'the content is filtered');
+});
+
+test("the content of the original ArrayProxy can be swapped out", function() {
+  expect(2);
+  unfilteredArray.set('content', Ember.A([{id: 4},{id: null}]));
+  equal( filteredArrayController.get('content.length'), 2, 'the content updates');
+  equal( filteredArrayController.get('length'), 1, 'the updated content is filtered');
+});
