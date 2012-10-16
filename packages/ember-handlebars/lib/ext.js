@@ -88,6 +88,37 @@ Ember.Handlebars.JavaScriptCompiler.prototype.appendToBuffer = function(string) 
 /**
   @private
 
+  Supports re-writing {{property}} as {{unbound property}} when within a 
+  {{#unbound}} block. Also will re-write if/unless as unboundIf/unboundUnless.
+
+  @method block
+  @for Ember.Handlebars.Compiler
+  @param block
+*/
+Ember.Handlebars.Compiler.prototype.block = function(block) {
+
+  // If we have an {{unbound}} block, set the option so nested output can 
+  // be automatically unbound.
+  if (block.mustache.id.string === "unbound") { 
+    var originalValue = this.options.insideUnboundBlock;
+    this.options.insideUnboundBlock = true;
+    var result = Handlebars.Compiler.prototype.block.call(this, block);
+    this.options.insideUnboundBlock = originalValue;
+    return result;
+  }
+
+  // Substitute unboundIf/unboundUnless for if/unless
+  if (this.options.insideUnboundBlock) {
+    if (block.mustache.id.string === "if") block.mustache.id.parts[0] = "unboundIf";
+    if (block.mustache.id.string === "unless") block.mustache.id.parts[0] = "unboundUnless";
+  }
+
+  return Handlebars.Compiler.prototype.block.call(this, block);
+};
+
+/**
+  @private
+
   Rewrite simple mustaches from `{{foo}}` to `{{bind "foo"}}`. This means that all simple
   mustaches in Ember's Handlebars will also set up an observer to keep the DOM
   up to date when the underlying property changes.
@@ -100,7 +131,9 @@ Ember.Handlebars.Compiler.prototype.mustache = function(mustache) {
   if (mustache.params.length || mustache.hash) {
     return Handlebars.Compiler.prototype.mustache.call(this, mustache);
   } else {
-    var id = new Handlebars.AST.IdNode(['_triageMustache']);
+    // If we're inside a {{unbound}}, rewrite the output to be {{unbound foo}}. Otherwise, 
+    // set it up for the triage.
+    var id = new Handlebars.AST.IdNode(this.options.insideUnboundBlock ? ['unbound'] : ['_triageMustache']);
 
     // Update the mustache node to include a hash value indicating whether the original node
     // was escaped. This will allow us to properly escape values when the underlying value
