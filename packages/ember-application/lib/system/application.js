@@ -321,8 +321,6 @@ Ember.Application = Ember.Namespace.extend(
         router.get('postsController')     // <App.PostsController:ember1234>
         router.get('commentsController')  // <App.CommentsController:ember1235>
 
-        router.get('postsController.router') // router
-
     @method initialize
     @param router {Ember.Router}
   */
