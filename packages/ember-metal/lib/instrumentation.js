@@ -58,6 +58,14 @@ var populateListeners = function(name) {
   return listeners;
 };
 
+var time = (function() {
+	var perf = window.performance || {};
+	var fn = perf.now || perf.mozNow || perf.webkitNow || perf.msNow || perf.oNow;
+	// fn.bind will be available in all the browsers that support the advanced window.performance... ;-)
+	return fn ? fn.bind(perf) : function() { return +new Date(); };
+})();
+
+
 Ember.Instrumentation.instrument = function(name, payload, callback, binding) {
   var listeners = cache[name];
 
@@ -72,7 +80,7 @@ Ember.Instrumentation.instrument = function(name, payload, callback, binding) {
   try {
     for (i=0, l=listeners.length; i<l; i++) {
       listener = listeners[i];
-      beforeValues[i] = listener.before(name, new Date(), payload);
+      beforeValues[i] = listener.before(name, time(), payload);
     }
 
     ret = callback.call(binding);
@@ -82,7 +90,7 @@ Ember.Instrumentation.instrument = function(name, payload, callback, binding) {
   } finally {
     for (i=0, l=listeners.length; i<l; i++) {
       listener = listeners[i];
-      listener.after(name, new Date(), payload, beforeValues[i]);
+      listener.after(name, time(), payload, beforeValues[i]);
     }
   }
 

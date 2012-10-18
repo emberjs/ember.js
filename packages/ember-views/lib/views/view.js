@@ -1642,7 +1642,9 @@ Ember.View = Ember.Object.extend(Ember.Evented,
   */
   renderToBuffer: function(parentBuffer, bufferOperation) {
     var name = get(this, 'instrumentName'),
-        details = this.instrumentDetails({});
+        details = {};
+
+    this.instrumentDetails(details);
 
     return Ember.instrument(name, details, function() {
       return this._renderToBuffer(parentBuffer, bufferOperation);
