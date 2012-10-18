@@ -328,6 +328,8 @@ Ember.ContainerView = Ember.View.extend({
     });
   },
 
+  instrumentName: 'render.container',
+
   /**
     @private
 

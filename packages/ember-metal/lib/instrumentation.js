@@ -65,9 +65,9 @@ Ember.Instrumentation.instrument = function(name, payload, callback, binding) {
     listeners = populateListeners(name);
   }
 
-  if (listeners.length === 0) { return; }
+  if (listeners.length === 0) { return callback.call(binding); }
 
-  var beforeValues = [], listener, i, l;
+  var beforeValues = [], listener, ret, i, l;
 
   try {
     for (i=0, l=listeners.length; i<l; i++) {
@@ -75,7 +75,7 @@ Ember.Instrumentation.instrument = function(name, payload, callback, binding) {
       beforeValues[i] = listener.before(name, new Date(), payload);
     }
 
-    callback.call(binding);
+    ret = callback.call(binding);
   } catch(e) {
     payload = payload || {};
     payload.exception = e;
@@ -85,6 +85,8 @@ Ember.Instrumentation.instrument = function(name, payload, callback, binding) {
       listener.after(name, new Date(), payload, beforeValues[i]);
     }
   }
+
+  return ret;
 };
 
 Ember.Instrumentation.subscribe = function(pattern, object) {

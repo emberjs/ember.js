@@ -25,6 +25,7 @@ require('ember-handlebars/views/metamorph_view');
   @private
 */
 Ember._HandlebarsBoundView = Ember._MetamorphView.extend({
+  instrumentName: 'render.boundHandlebars',
 
   /**
     The function used to determine if the `displayTemplate` or
