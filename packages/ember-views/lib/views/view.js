@@ -49,6 +49,14 @@ var invokeForState = {
 };
 
 Ember.CoreView = Ember.Object.extend(Ember.Evented, {
+  init: function() {
+    this._super();
+
+    // Register the view for event handling. This hash is used by
+    // Ember.EventDispatcher to dispatch incoming events.
+    if (!this.isVirtual) Ember.View.views[get(this, 'elementId')] = this;
+  },
+
   /**
     If the view is currently inserted into the DOM of a parent view, this
     property will point to the parent of the view.
@@ -194,10 +202,29 @@ Ember.CoreView = Ember.Object.extend(Ember.Evented, {
     return Ember.typeOf(this[name]) === 'function' || this._super(name);
   },
 
+  willDestroy: function() {
+    var parent = get(this, '_parentView');
+
+    // destroy the element -- this will avoid each child view destroying
+    // the element over and over again...
+    if (!this.removedFromDOM) { this.destroyElement(); }
+
+    // remove from parent if found. Don't call removeFromParent,
+    // as removeFromParent will try to remove the element from
+    // the DOM again.
+    if (parent) { parent.removeChild(this); }
+
+    this.state = 'destroyed';
+
+    // next remove view from global hash
+    if (!this.isVirtual) delete Ember.View.views[get(this, 'elementId')];
+  },
+
   clearRenderedChildren: Ember.K,
   invokeRecursively: Ember.K,
   invalidateRecursively: Ember.K,
   transitionTo: Ember.K,
+  destroyElement: Ember.K,
   _notifyWillInsertElement: Ember.K,
   _notifyDidInsertElement: Ember.K
 });
@@ -1901,10 +1928,6 @@ Ember.View = Ember.CoreView.extend(
   */
   init: function() {
     this._super();
-
-    // Register the view for event handling. This hash is used by
-    // Ember.EventDispatcher to dispatch incoming events.
-    if (!this.isVirtual) Ember.View.views[get(this, 'elementId')] = this;
 
     // setup child views. be sure to clone the child views array first
     this._childViews = this._childViews.slice();

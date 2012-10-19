@@ -62,6 +62,10 @@ function bind(property, options, preserveContext, shouldDisplay, valueNormalizer
       view.one('willRerender', function() {
         Ember.removeObserver(pathRoot, path, observer);
       });
+
+      view.one('willDestroyElement', function() {
+        Ember.removeObserver(pathRoot, path, observer);
+      });
     }
   } else {
     // The object is not observable, so just render it out and
@@ -106,6 +110,10 @@ function simpleBind(property, options) {
 
       // TODO: willClear
       view.one('willRerender', function() {
+        Ember.removeObserver(pathRoot, path, observer);
+      });
+
+      view.one('willDestroyElement', function() {
         Ember.removeObserver(pathRoot, path, observer);
       });
     }
