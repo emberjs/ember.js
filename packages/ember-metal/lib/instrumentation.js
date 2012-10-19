@@ -98,22 +98,23 @@ Ember.Instrumentation.instrument = function(name, payload, callback, binding) {
 };
 
 Ember.Instrumentation.subscribe = function(pattern, object) {
-  var paths = pattern.split("."), path, regex = "^";
+  var paths = pattern.split("."), path, regex = [];
 
   for (var i=0, l=paths.length; i<l; i++) {
     path = paths[i];
     if (path === "*") {
-      regex = regex + "[^\\.]*";
+      regex.push("[^\\.]*");
     } else {
-      regex = regex + path;
+      regex.push(path);
     }
   }
 
+  regex = regex.join("\\.");
   regex = regex + "(\\..*)?";
 
   var subscriber = {
     pattern: pattern,
-    regex: new RegExp(regex + "$"),
+    regex: new RegExp("^" + regex + "$"),
     object: object
   };
 
