@@ -22,7 +22,7 @@ test("subscribing to a simple path receives the listener", function() {
         strictEqual(name, "render.handlebars");
       }
 
-      ok(timestamp instanceof Date);
+      ok(typeof timestamp === 'number');
       strictEqual(payload, sentPayload);
     },
 
@@ -33,7 +33,7 @@ test("subscribing to a simple path receives the listener", function() {
         strictEqual(name, "render.handlebars");
       }
 
-      ok(timestamp instanceof Date);
+      ok(typeof timestamp === 'number');
       strictEqual(payload, sentPayload);
 
       count++;
@@ -111,7 +111,7 @@ test("it is possible to add a new subscriber after the first instrument", functi
     }
   });
 
-  instrument.instrument("render.handlebars", function() {});
+  instrument.instrument("render.handlebars", null, function() {});
 });
 
 test("it is possible to remove a subscriber", function() {
@@ -131,9 +131,9 @@ test("it is possible to remove a subscriber", function() {
     }
   });
 
-  instrument.instrument("render.handlebars", function() {});
+  instrument.instrument("render.handlebars", null, function() {});
 
   instrument.unsubscribe(subscriber);
 
-  instrument.instrument("render.handlebars", function() {});
+  instrument.instrument("render.handlebars", null, function() {});
 });
