@@ -1276,7 +1276,7 @@ Ember.View = Ember.CoreView.extend(
 
       addObserver(this, parsedPath.path, observer);
 
-      this.one('willRerender', function() {
+      this.one('willClearRender', function() {
         removeObserver(this, parsedPath.path, observer);
       });
     }, this);
@@ -1315,7 +1315,7 @@ Ember.View = Ember.CoreView.extend(
 
       addObserver(this, property, observer);
 
-      this.one('willRerender', function() {
+      this.one('willClearRender', function() {
         removeObserver(this, property, observer);
       });
 
@@ -1608,9 +1608,9 @@ Ember.View = Ember.CoreView.extend(
     been torn down. This is a good opportunity to tear down any manual
     observers you have installed based on the DOM state
 
-    @event willRerender
+    @event willClearRender
   */
-  willRerender: Ember.K,
+  willClearRender: Ember.K,
 
   /**
     @private
@@ -1673,14 +1673,14 @@ Ember.View = Ember.CoreView.extend(
   /**
     @private
 
-    Invokes the receiver's willRerender() method if it exists and then
-    invokes the same on all child views.
+    Triggers the `willClearRender` event (which invokes the `willClearRender()`
+    method if it exists) on this view and all child views.
 
-    @method _notifyWillRerender
+    @method _notifyWillClearRender
   */
-  _notifyWillRerender: function() {
+  _notifyWillClearRender: function() {
     this.invokeRecursively(function(view) {
-      view.trigger('willRerender');
+      view.trigger('willClearRender');
     });
   },
 
@@ -1718,11 +1718,14 @@ Ember.View = Ember.CoreView.extend(
   /**
     @private
 
-    Invokes the `willDestroyElement` callback on the view and child views.
+    Triggers the `willClearRender` event (which invokes the `willClearRender()`
+    method if it exists) on this view and all child views.
 
     @method _notifyWillDestroyElement
   */
   _notifyWillDestroyElement: function() {
+    this._notifyWillClearRender();
+
     this.invokeRecursively(function(view) {
       view.trigger('willDestroyElement');
     });

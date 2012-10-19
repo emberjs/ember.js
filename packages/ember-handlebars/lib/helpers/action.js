@@ -53,7 +53,7 @@ ActionHelper.registerAction = function(actionName, options) {
     }
   };
 
-  options.view.on('willRerender', function() {
+  options.view.on('willClearRender', function() {
     delete ActionHelper.registeredActions[actionId];
   });
 

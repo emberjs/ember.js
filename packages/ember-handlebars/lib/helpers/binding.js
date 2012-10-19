@@ -59,11 +59,7 @@ function bind(property, options, preserveContext, shouldDisplay, valueNormalizer
     if (path !== '') {
       Ember.addObserver(pathRoot, path, observer);
 
-      view.one('willRerender', function() {
-        Ember.removeObserver(pathRoot, path, observer);
-      });
-
-      view.one('willDestroyElement', function() {
+      view.one('willClearRender', function() {
         Ember.removeObserver(pathRoot, path, observer);
       });
     }
@@ -87,7 +83,7 @@ function simpleBind(property, options) {
 
   // Set up observers for observable objects
   if ('object' === typeof this) {
-    var bindView = view.createChildView(Ember._SimpleHandlebarsView, {
+    var bindView = Ember._SimpleHandlebarsView.create().setProperties({
       path: path,
       pathRoot: pathRoot,
       isEscaped: !options.hash.unescaped,
@@ -95,6 +91,7 @@ function simpleBind(property, options) {
       templateData: options.data
     });
 
+    view.createChildView(bindView);
     view.appendChild(bindView);
 
     var observer = function() {
@@ -108,12 +105,7 @@ function simpleBind(property, options) {
     if (path !== '') {
       Ember.addObserver(pathRoot, path, observer);
 
-      // TODO: willClear
-      view.one('willRerender', function() {
-        Ember.removeObserver(pathRoot, path, observer);
-      });
-
-      view.one('willDestroyElement', function() {
+      view.one('willClearRender', function() {
         Ember.removeObserver(pathRoot, path, observer);
       });
     }
@@ -385,7 +377,7 @@ EmberHandlebars.registerHelper('bindAttr', function(options) {
     if (path !== 'this') {
       Ember.addObserver(pathRoot, path, invoker);
 
-      view.one('willRerender', function() {
+      view.one('willClearRender', function() {
         Ember.removeObserver(pathRoot, path, invoker);
       });
     }
@@ -506,7 +498,7 @@ EmberHandlebars.bindClasses = function(context, classBindings, view, bindAttrId,
     if (path !== '' && path !== 'this') {
       Ember.addObserver(pathRoot, path, invoker);
 
-      view.one('willRerender', function() {
+      view.one('willClearRender', function() {
         Ember.removeObserver(pathRoot, path, invoker);
       });
     }

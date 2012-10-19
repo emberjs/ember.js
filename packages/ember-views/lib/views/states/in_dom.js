@@ -35,7 +35,7 @@ Ember.View.states.hasElement = {
   // once the view has been inserted into the DOM, rerendering is
   // deferred to allow bindings to synchronize.
   rerender: function(view) {
-    view._notifyWillRerender();
+    view._notifyWillClearRender();
 
     view.clearRenderedChildren();
 
