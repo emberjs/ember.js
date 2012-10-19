@@ -208,6 +208,7 @@ Ember.ArrayProxy = Ember.Object.extend(Ember.MutableArray,
   }).property().cacheable(),
 
   replace: function(idx, amt, objects) {
+    Ember.assert('The content property of '+ this.constructor + ' should be set before modifying it', this.get('content'));
     if (get(this, 'content')) this.replaceContent(idx, amt, objects);
     return this;
   },
