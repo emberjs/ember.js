@@ -1718,8 +1718,11 @@ Ember.View = Ember.CoreView.extend(
   /**
     @private
 
-    Triggers the `willClearRender` event (which invokes the `willClearRender()`
+    Triggers the `willDestroyElement` event (which invokes the `willDestroyElement()`
     method if it exists) on this view and all child views.
+
+    Before triggering `willDestroyElement`, it first triggers the `willClearRender`
+    event recursively.
 
     @method _notifyWillDestroyElement
   */
