@@ -174,17 +174,16 @@ Ember.SortableMixin = Ember.Mixin.create(Ember.MutableEnumerable, {
   },
 
   insertItemSorted: function(item) {
-    var arrangedContent = get(this, 'arrangedContent');
-    var length = get(arrangedContent, 'length');
-
-    var idx = this._binarySearch(item, 0, length);
+    var arrangedContent = get(this, 'arrangedContent'),
+        idx = this._binarySearch(arrangedContent, item);
     arrangedContent.insertAt(idx, item);
   },
 
   contentItemSortPropertyDidChange: function(item) {
     var arrangedContent = get(this, 'arrangedContent'),
         oldIndex = arrangedContent.indexOf(item),
-        newIndex = this._binarySearch(item, 0, get(arrangedContent, 'length'));
+        arrangedContentWithoutItem = Ember.A(arrangedContent.filter(function(i){ return i !== item; })),
+        newIndex = this._binarySearch(arrangedContentWithoutItem, item);
 
     if (newIndex !== oldIndex) {
       arrangedContent.removeObject(item);
@@ -192,24 +191,28 @@ Ember.SortableMixin = Ember.Mixin.create(Ember.MutableEnumerable, {
     }
   },
 
-  _binarySearch: function(item, low, high) {
-    var mid, midItem, res, arrangedContent;
+  _binarySearch: function(array, item, low, high) {
+    var mid, midItem, res;
+    if (low == null){
+      low = 0;
+    }
+    if (high == null){
+      high = get(array, 'length');
+    }
 
     if (low === high) {
       return low;
     }
 
-    arrangedContent = get(this, 'arrangedContent');
-
     mid = low + Math.floor((high - low) / 2);
-    midItem = arrangedContent.objectAt(mid);
+    midItem = array.objectAt(mid);
 
     res = this.orderBy(midItem, item);
 
     if (res < 0) {
-      return this._binarySearch(item, mid+1, high);
+      return this._binarySearch(array, item, mid+1, high);
     } else if (res > 0) {
-      return this._binarySearch(item, low, mid);
+      return this._binarySearch(array, item, low, mid);
     }
 
     return mid;
