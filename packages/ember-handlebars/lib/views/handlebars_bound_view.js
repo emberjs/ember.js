@@ -10,6 +10,66 @@ var get = Ember.get, set = Ember.set, getPath = Ember.Handlebars.getPath;
 require('ember-views/views/view');
 require('ember-handlebars/views/metamorph_view');
 
+Ember._SimpleHandlebarsView = Ember._SimpleMetamorphView.extend({
+  instrumentName: 'render.simpleHandlebars',
+
+  normalizedValue: Ember.computed(function() {
+    var path = get(this, 'path'),
+        pathRoot  = get(this, 'pathRoot'),
+        result, templateData;
+
+    // Use the pathRoot as the result if no path is provided. This
+    // happens if the path is `this`, which gets normalized into
+    // a `pathRoot` of the current Handlebars context and a path
+    // of `''`.
+    if (path === '') {
+      result = pathRoot;
+    } else {
+      templateData = get(this, 'templateData');
+      result = getPath(pathRoot, path, { data: templateData });
+    }
+
+    return result;
+  }).property('path', 'pathRoot').volatile(),
+
+  render: function(buffer) {
+    // If not invoked via a triple-mustache ({{{foo}}}), escape
+    // the content of the template.
+    var escape = get(this, 'isEscaped');
+    var result = get(this, 'normalizedValue');
+
+    if (result === null || result === undefined) {
+      result = "";
+    } else if (!(result instanceof Handlebars.SafeString)) {
+      result = String(result);
+    }
+
+    if (escape) { result = Handlebars.Utils.escapeExpression(result); }
+    buffer.push(result);
+    return;
+  },
+
+  rerender: function() {
+    switch(this.state) {
+      case 'preRender':
+      case 'destroyed':
+        break;
+      case 'inBuffer':
+        throw new Error("Something you did tried to replace an {{expression}} before it was inserted into the DOM.");
+      case 'hasElement':
+      case 'inDOM':
+        this.domManager.replace(this);
+        break;
+    }
+
+    return this;
+  },
+
+  transitionTo: function(state) {
+    this.state = state;
+  }
+});
+
 /**
   Ember._HandlebarsBoundView is a private view created by the Handlebars `{{bind}}`
   helpers that is used to keep track of bound properties.

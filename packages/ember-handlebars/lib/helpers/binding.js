@@ -70,6 +70,52 @@ function bind(property, options, preserveContext, shouldDisplay, valueNormalizer
   }
 }
 
+function simpleBind(property, options) {
+  var data = options.data,
+      view = data.view,
+      currentContext = this,
+      pathRoot, path, normalized;
+
+  normalized = normalizePath(currentContext, property, data);
+
+  pathRoot = normalized.root;
+  path = normalized.path;
+
+  // Set up observers for observable objects
+  if ('object' === typeof this) {
+    var bindView = view.createChildView(Ember._SimpleHandlebarsView, {
+      path: path,
+      pathRoot: pathRoot,
+      isEscaped: !options.hash.unescaped,
+      previousContext: currentContext,
+      templateData: options.data
+    });
+
+    view.appendChild(bindView);
+
+    var observer = function() {
+      Ember.run.scheduleOnce('render', bindView, 'rerender');
+    };
+
+    // Observes the given property on the context and
+    // tells the Ember._HandlebarsBoundView to re-render. If property
+    // is an empty string, we are printing the current context
+    // object ({{this}}) so updating it is not our responsibility.
+    if (path !== '') {
+      Ember.addObserver(pathRoot, path, observer);
+
+      // TODO: willClear
+      view.one('willRerender', function() {
+        Ember.removeObserver(pathRoot, path, observer);
+      });
+    }
+  } else {
+    // The object is not observable, so just render it out and
+    // be done with it.
+    data.buffer.push(getPath(pathRoot, path, options));
+  }
+}
+
 /**
   @private
 
@@ -120,12 +166,16 @@ EmberHandlebars.registerHelper('_triageMustache', function(property, fn) {
   @param {Function} fn Context to provide for rendering
   @return {String} HTML string
 */
-EmberHandlebars.registerHelper('bind', function(property, fn) {
+EmberHandlebars.registerHelper('bind', function(property, options) {
   Ember.assert("You cannot pass more than one argument to the bind helper", arguments.length <= 2);
 
-  var context = (fn.contexts && fn.contexts[0]) || this;
+  var context = (options.contexts && options.contexts[0]) || this;
 
-  return bind.call(context, property, fn, false, function(result) {
+  if (!options.fn) {
+    return simpleBind.call(context, property, options);
+  }
+
+  return bind.call(context, property, options, false, function(result) {
     return !Ember.none(result);
   });
 });

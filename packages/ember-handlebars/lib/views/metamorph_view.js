@@ -64,6 +64,8 @@ Ember._Metamorph = Ember.Mixin.create({
   isVirtual: true,
   tagName: '',
 
+  instrumentName: 'render.metamorph',
+
   init: function() {
     this._super();
     this.morph = Metamorph();
@@ -94,4 +96,13 @@ Ember._Metamorph = Ember.Mixin.create({
   @private
 */
 Ember._MetamorphView = Ember.View.extend(Ember._Metamorph);
+
+/**
+  @class _SimpleMetamorphView
+  @namespace Ember
+  @extends Ember.View
+  @uses Ember._Metamorph
+  @private
+*/
+Ember._SimpleMetamorphView = Ember.CoreView.extend(Ember._Metamorph);
 

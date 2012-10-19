@@ -48,6 +48,160 @@ var invokeForState = {
   destroyed: {}
 };
 
+Ember.CoreView = Ember.Object.extend(Ember.Evented, {
+  /**
+    If the view is currently inserted into the DOM of a parent view, this
+    property will point to the parent of the view.
+
+    @property parentView
+    @type Ember.View
+    @default null
+  */
+  parentView: Ember.computed(function() {
+    var parent = get(this, '_parentView');
+
+    if (parent && parent.isVirtual) {
+      return get(parent, 'parentView');
+    } else {
+      return parent;
+    }
+  }).property('_parentView').volatile(),
+
+  state: 'preRender',
+
+  _parentView: null,
+
+  // return the current view, not including virtual views
+  concreteView: Ember.computed(function() {
+    if (!this.isVirtual) { return this; }
+    else { return get(this, 'parentView'); }
+  }).property('_parentView').volatile(),
+
+  /**
+    Creates a new renderBuffer with the passed tagName. You can override this
+    method to provide further customization to the buffer if needed. Normally
+    you will not need to call or override this method.
+
+    @method renderBuffer
+    @param [tagName] {String}
+    @return {Ember.RenderBuffer}
+  */
+  renderBuffer: function(tagName) {
+    tagName = tagName || get(this, 'tagName');
+
+    // Explicitly check for null or undefined, as tagName
+    // may be an empty string, which would evaluate to false.
+    if (tagName === null || tagName === undefined) {
+      tagName = 'div';
+    }
+
+    return Ember.RenderBuffer(tagName);
+  },
+
+  instrumentName: 'render.core_view',
+
+  instrumentDetails: function(hash) {
+    hash.type = this.constructor.toString();
+  },
+
+  /**
+    @private
+
+    Invoked by the view system when this view needs to produce an HTML
+    representation. This method will create a new render buffer, if needed,
+    then apply any default attributes, such as class names and visibility.
+    Finally, the `render()` method is invoked, which is responsible for
+    doing the bulk of the rendering.
+
+    You should not need to override this method; instead, implement the
+    `template` property, or if you need more control, override the `render`
+    method.
+
+    @method renderToBuffer
+    @param {Ember.RenderBuffer} buffer the render buffer. If no buffer is
+      passed, a default buffer, using the current view's `tagName`, will
+      be used.
+  */
+  renderToBuffer: function(parentBuffer, bufferOperation) {
+    var name = get(this, 'instrumentName'),
+        details = {};
+
+    this.instrumentDetails(details);
+
+    return Ember.instrument(name, details, function() {
+      return this._renderToBuffer(parentBuffer, bufferOperation);
+    }, this);
+  },
+
+  _renderToBuffer: function(parentBuffer, bufferOperation) {
+    var buffer;
+
+    Ember.run.sync();
+
+    // Determine where in the parent buffer to start the new buffer.
+    // By default, a new buffer will be appended to the parent buffer.
+    // The buffer operation may be changed if the child views array is
+    // mutated by Ember.ContainerView.
+    bufferOperation = bufferOperation || 'begin';
+
+    // If this is the top-most view, start a new buffer. Otherwise,
+    // create a new buffer relative to the original using the
+    // provided buffer operation (for example, `insertAfter` will
+    // insert a new buffer after the "parent buffer").
+    if (parentBuffer) {
+      var tagName = get(this, 'tagName');
+      if (tagName === null || tagName === undefined) {
+        tagName = 'div';
+      }
+
+      buffer = parentBuffer[bufferOperation](tagName);
+    } else {
+      buffer = this.renderBuffer();
+    }
+
+    this.buffer = buffer;
+    this.transitionTo('inBuffer', false);
+
+    this.beforeRender(buffer);
+    this.render(buffer);
+    this.afterRender(buffer);
+
+    return buffer;
+  },
+
+  /**
+    @private
+
+    Override the default event firing from Ember.Evented to
+    also call methods with the given name.
+
+    @method trigger
+    @param name {String}
+  */
+  trigger: function(name) {
+    this._super.apply(this, arguments);
+    var method = this[name];
+    if (method) {
+      var args = [], i, l;
+      for (i = 1, l = arguments.length; i < l; i++) {
+        args.push(arguments[i]);
+      }
+      return method.apply(this, args);
+    }
+  },
+
+  has: function(name) {
+    return Ember.typeOf(this[name]) === 'function' || this._super(name);
+  },
+
+  clearRenderedChildren: Ember.K,
+  invokeRecursively: Ember.K,
+  invalidateRecursively: Ember.K,
+  transitionTo: Ember.K,
+  _notifyWillInsertElement: Ember.K,
+  _notifyDidInsertElement: Ember.K
+});
+
 /**
   `Ember.View` is the class in Ember responsible for encapsulating templates of HTML
   content, combining templates with data to render as sections of a page's DOM, and
@@ -544,7 +698,7 @@ var invokeForState = {
   @extends Ember.Object
   @uses Ember.Evented
 */
-Ember.View = Ember.Object.extend(Ember.Evented,
+Ember.View = Ember.CoreView.extend(
 /** @scope Ember.View.prototype */ {
 
   concatenatedProperties: ['classNames', 'classNameBindings', 'attributeBindings'],
@@ -742,32 +896,6 @@ Ember.View = Ember.Object.extend(Ember.Evented,
   _displayPropertyDidChange: Ember.observer(function() {
     this.rerender();
   }, 'context', 'controller'),
-
-  /**
-    If the view is currently inserted into the DOM of a parent view, this
-    property will point to the parent of the view.
-
-    @property parentView
-    @type Ember.View
-    @default null
-  */
-  parentView: Ember.computed(function() {
-    var parent = get(this, '_parentView');
-
-    if (parent && parent.isVirtual) {
-      return get(parent, 'parentView');
-    } else {
-      return parent;
-    }
-  }).property('_parentView').volatile(),
-
-  _parentView: null,
-
-  // return the current view, not including virtual views
-  concreteView: Ember.computed(function() {
-    if (!this.isVirtual) { return this; }
-    else { return get(this, 'parentView'); }
-  }).property('_parentView').volatile(),
 
   /**
     If false, the view will appear hidden in DOM.
@@ -1414,27 +1542,6 @@ Ember.View = Ember.Object.extend(Ember.Evented,
   },
 
   /**
-    Creates a new renderBuffer with the passed tagName. You can override this
-    method to provide further customization to the buffer if needed. Normally
-    you will not need to call or override this method.
-
-    @method renderBuffer
-    @param [tagName] {String}
-    @return {Ember.RenderBuffer}
-  */
-  renderBuffer: function(tagName) {
-    tagName = tagName || get(this, 'tagName');
-
-    // Explicitly check for null or undefined, as tagName
-    // may be an empty string, which would evaluate to false.
-    if (tagName === null || tagName === undefined) {
-      tagName = 'div';
-    }
-
-    return Ember.RenderBuffer(tagName);
-  },
-
-  /**
     Creates a DOM representation of the view and all of its
     child views by recursively calling the `render()` method.
 
@@ -1622,77 +1729,16 @@ Ember.View = Ember.Object.extend(Ember.Evented,
   */
   parentViewDidChange: Ember.K,
 
-  /**
-    @private
-
-    Invoked by the view system when this view needs to produce an HTML
-    representation. This method will create a new render buffer, if needed,
-    then apply any default attributes, such as class names and visibility.
-    Finally, the `render()` method is invoked, which is responsible for
-    doing the bulk of the rendering.
-
-    You should not need to override this method; instead, implement the
-    `template` property, or if you need more control, override the `render`
-    method.
-
-    @method renderToBuffer
-    @param {Ember.RenderBuffer} buffer the render buffer. If no buffer is
-      passed, a default buffer, using the current view's `tagName`, will
-      be used.
-  */
-  renderToBuffer: function(parentBuffer, bufferOperation) {
-    var name = get(this, 'instrumentName'),
-        details = {};
-
-    this.instrumentDetails(details);
-
-    return Ember.instrument(name, details, function() {
-      return this._renderToBuffer(parentBuffer, bufferOperation);
-    }, this);
-  },
-
   instrumentName: 'render.view',
 
   instrumentDetails: function(hash) {
     hash.template = get(this, 'templateName');
-    hash.type = this.constructor.toString();
+    this._super(hash);
   },
 
   _renderToBuffer: function(parentBuffer, bufferOperation) {
-    var buffer;
-
-    Ember.run.sync();
-
-    // Determine where in the parent buffer to start the new buffer.
-    // By default, a new buffer will be appended to the parent buffer.
-    // The buffer operation may be changed if the child views array is
-    // mutated by Ember.ContainerView.
-    bufferOperation = bufferOperation || 'begin';
-
-    // If this is the top-most view, start a new buffer. Otherwise,
-    // create a new buffer relative to the original using the
-    // provided buffer operation (for example, `insertAfter` will
-    // insert a new buffer after the "parent buffer").
-    if (parentBuffer) {
-      var tagName = get(this, 'tagName');
-      if (tagName === null || tagName === undefined) {
-        tagName = 'div';
-      }
-
-      buffer = parentBuffer[bufferOperation](tagName);
-    } else {
-      buffer = this.renderBuffer();
-    }
-
-    this.buffer = buffer;
-    this.transitionTo('inBuffer', false);
-
     this.lengthBeforeRender = this._childViews.length;
-
-    this.beforeRender(buffer);
-    this.render(buffer);
-    this.afterRender(buffer);
-
+    var buffer = this._super(parentBuffer, bufferOperation);
     this.lengthAfterRender = this._childViews.length;
 
     return buffer;
@@ -1838,8 +1884,6 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     @property attributeBindings
   */
   attributeBindings: [],
-
-  state: 'preRender',
 
   // .......................................................
   // CORE DISPLAY METHODS
@@ -2002,7 +2046,7 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     @return {Ember.View} new instance
   */
   createChildView: function(view, attrs) {
-    if (Ember.View.detect(view)) {
+    if (Ember.CoreView.detect(view)) {
       attrs = attrs || {};
       attrs._parentView = this;
       attrs.templateData = attrs.templateData || get(this, 'templateData');
@@ -2013,7 +2057,7 @@ Ember.View = Ember.Object.extend(Ember.Evented,
       // consumers of the view API
       if (view.viewName) { set(get(this, 'concreteView'), view.viewName, view); }
     } else {
-      Ember.assert('You must pass instance or subclass of View', view instanceof Ember.View);
+      Ember.assert('You must pass instance or subclass of View', view instanceof Ember.CoreView);
       Ember.assert("You can only pass attributes when a class is provided", !attrs);
 
       if (!get(view, 'templateData')) {
@@ -2103,31 +2147,6 @@ Ember.View = Ember.Object.extend(Ember.Evented,
         view.transitionTo(state);
       });
     }
-  },
-
-  /**
-    @private
-
-    Override the default event firing from Ember.Evented to
-    also call methods with the given name.
-
-    @method trigger
-    @param name {String}
-  */
-  trigger: function(name) {
-    this._super.apply(this, arguments);
-    var method = this[name];
-    if (method) {
-      var args = [], i, l;
-      for (i = 1, l = arguments.length; i < l; i++) {
-        args.push(arguments[i]);
-      }
-      return method.apply(this, args);
-    }
-  },
-
-  has: function(name) {
-    return Ember.typeOf(this[name]) === 'function' || this._super(name);
   },
 
   // .......................................................
