@@ -123,43 +123,7 @@ test("can call resolve multiple times", function() {
   }, 20);
 });
 
-test("deferred has progress", function() {
-
-  var deferred, count = 0;
-
-  Ember.run(function() {
-    deferred = Ember.Object.create(Ember.Deferred);
-  });
-
-  deferred.then(function() {}, function() {}, function() {
-    count++;
-  });
-
-  stop();
-  Ember.run(function() {
-    deferred.notify();
-    deferred.notify();
-    deferred.notify();
-  });
-  Ember.run(function() {
-    deferred.notify();
-  });
-  Ember.run(function() {
-    deferred.notify();
-    deferred.resolve();
-    deferred.notify();
-  });
-  Ember.run(function() {
-    deferred.notify();
-  });
-
-  setTimeout(function() {
-    start();
-    equal(count, 3, "progress called three times");
-  }, 20);
-});
-
-test("resolve prevent reject and stop progress", function() {
+test("resolve prevent reject", function() {
   var deferred, resolved = false, rejected = false, progress = 0;
 
   Ember.run(function() {
@@ -170,33 +134,24 @@ test("resolve prevent reject and stop progress", function() {
     resolved = true;
   }, function() {
     rejected = true;
-  }, function() {
-    progress++;
   });
 
   stop();
-  Ember.run(function() {
-    deferred.notify();
-  });
   Ember.run(function() {
     deferred.resolve();
   });
   Ember.run(function() {
     deferred.reject();
-  });
-  Ember.run(function() {
-    deferred.notify();
   });
 
   setTimeout(function() {
     start();
     equal(resolved, true, "is resolved");
     equal(rejected, false, "is not rejected");
-    equal(progress, 1, "progress called once");
   }, 20);
 });
 
-test("reject prevent resolve and stop progress", function() {
+test("reject prevent resolve", function() {
   var deferred, resolved = false, rejected = false, progress = 0;
 
   Ember.run(function() {
@@ -207,29 +162,20 @@ test("reject prevent resolve and stop progress", function() {
     resolved = true;
   }, function() {
     rejected = true;
-  }, function() {
-    progress++;
   });
 
   stop();
-  Ember.run(function() {
-    deferred.notify();
-  });
   Ember.run(function() {
     deferred.reject();
   });
   Ember.run(function() {
     deferred.resolve();
   });
-  Ember.run(function() {
-    deferred.notify();
-  });
 
   setTimeout(function() {
     start();
     equal(resolved, false, "is not resolved");
     equal(rejected, true, "is rejected");
-    equal(progress, 1, "progress called once");
   }, 20);
 });
 
