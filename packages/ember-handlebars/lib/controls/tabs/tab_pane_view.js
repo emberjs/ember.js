@@ -13,7 +13,7 @@ var get = Ember.get;
 */
 Ember.TabPaneView = Ember.View.extend({
   tabsContainer: Ember.computed(function() {
-    return this.nearestInstanceOf(Ember.TabContainerView);
+    return this.nearestOfType(Ember.TabContainerView);
   }).property().volatile(),
 
   isVisible: Ember.computed(function() {
