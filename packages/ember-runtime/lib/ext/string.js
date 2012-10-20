@@ -14,7 +14,8 @@ var fmt = Ember.String.fmt,
     camelize = Ember.String.camelize,
     decamelize = Ember.String.decamelize,
     dasherize = Ember.String.dasherize,
-    underscore = Ember.String.underscore;
+    underscore = Ember.String.underscore,
+    classify = Ember.String.classify;
 
 if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.String) {
 
@@ -88,5 +89,14 @@ if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.String) {
     return underscore(this);
   };
 
+  /**
+    See {{#crossLink "Ember.String/classify"}}{{/crossLink}}
+
+    @method classify
+    @for String
+  */
+  String.prototype.classify = function() {
+    return classify(this);
+  };
 }
 
