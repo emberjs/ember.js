@@ -325,7 +325,7 @@ Ember.Select = Ember.View.extend(
 
     var valuePath = get(this, 'optionValuePath').replace(/^content\.?/, '');
     return valuePath ? get(this, 'selection.' + valuePath) : get(this, 'selection');
-  }).property('selection').cacheable(),
+  }).property('selection'),
 
   /**
     If given, a top-most dummy option will be rendered to serve as a user
@@ -510,7 +510,7 @@ Ember.SelectOption = Ember.View.extend({
 
     Ember.defineProperty(this, 'label', Ember.computed(function() {
       return get(this, labelPath);
-    }).property(labelPath).cacheable());
+    }).property(labelPath));
   }, 'parentView.optionLabelPath'),
 
   valuePathDidChange: Ember.observer(function() {
@@ -520,6 +520,6 @@ Ember.SelectOption = Ember.View.extend({
 
     Ember.defineProperty(this, 'value', Ember.computed(function() {
       return get(this, valuePath);
-    }).property(valuePath).cacheable());
+    }).property(valuePath));
   }, 'parentView.optionValuePath')
 });

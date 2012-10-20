@@ -47,7 +47,7 @@ Ember.State = Ember.Object.extend(Ember.Evented,
     }
 
     return path;
-  }).property().cacheable(),
+  }).property(),
 
   /**
     @private
@@ -144,7 +144,7 @@ Ember.State = Ember.Object.extend(Ember.Evented,
   */
   isLeaf: Ember.computed(function() {
     return !get(this, 'childStates').length;
-  }).cacheable(),
+  }),
 
   /**
     A boolean value indicating whether the state takes a context.

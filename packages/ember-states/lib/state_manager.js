@@ -601,7 +601,7 @@ Ember.StateManager = Ember.State.extend({
   */
   currentPath: Ember.computed('currentState', function() {
     return get(this, 'currentState.path');
-  }).cacheable(),
+  }),
 
   /**
     The name of transitionEvent that this stateManager will dispatch

@@ -24,7 +24,7 @@ Ember.TargetActionSupport = Ember.Mixin.create({
     } else {
       return target;
     }
-  }).property('target').cacheable(),
+  }).property('target'),
 
   triggerAction: function() {
     var action = get(this, 'action'),

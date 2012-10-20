@@ -161,7 +161,7 @@ Ember.Routable = Ember.Mixin.create({
   */
   isRoutable: Ember.computed(function() {
     return typeof get(this, 'route') === 'string';
-  }).cacheable(),
+  }),
 
   /**
     @private
@@ -174,7 +174,7 @@ Ember.Routable = Ember.Mixin.create({
   isLeafRoute: Ember.computed(function() {
     if (get(this, 'isLeaf')) { return true; }
     return !get(this, 'childStates').findProperty('isRoutable');
-  }).cacheable(),
+  }),
 
   /**
     @private
@@ -190,7 +190,7 @@ Ember.Routable = Ember.Mixin.create({
     if (route) {
       return Ember._RouteMatcher.create({ route: route });
     }
-  }).cacheable(),
+  }),
 
   /**
     @private
@@ -206,7 +206,7 @@ Ember.Routable = Ember.Mixin.create({
     if (routeMatcher) {
       return routeMatcher.identifiers.length > 0;
     }
-  }).cacheable(),
+  }),
 
   /**
     @private
@@ -226,7 +226,7 @@ Ember.Routable = Ember.Mixin.create({
     } else {
       return modelType;
     }
-  }).cacheable(),
+  }),
 
   /**
     @private
@@ -474,7 +474,7 @@ Ember.Routable = Ember.Mixin.create({
     }
 
     return 'application';
-  }).cacheable(),
+  }),
 
   _template: Ember.computed(function(key, value) {
     if (arguments.length > 1) { return value; }
@@ -492,7 +492,7 @@ Ember.Routable = Ember.Mixin.create({
       baseName = baseName.replace(/Route$/, '');
       return baseName.charAt(0).toLowerCase() + baseName.substr(1);
     }
-  }).cacheable(),
+  }),
 
   render: function(options) {
     options = options || {};

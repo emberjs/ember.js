@@ -105,7 +105,7 @@ Ember.SortableMixin = Ember.Mixin.create(Ember.MutableEnumerable, {
     }
 
     return content;
-  }).cacheable(),
+  }),
 
   _contentWillChange: Ember.beforeObserver(function() {
     var content = get(this, 'content'),

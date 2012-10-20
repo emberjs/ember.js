@@ -10,7 +10,7 @@ var forEach = Ember.EnumerableUtils.forEach;
 
 var childViewsProperty = Ember.computed(function() {
   return get(this, '_childViews');
-}).property('_childViews').cacheable();
+}).property('_childViews');
 
 /**
   A `ContainerView` is an `Ember.View` subclass that allows for manual or programatic

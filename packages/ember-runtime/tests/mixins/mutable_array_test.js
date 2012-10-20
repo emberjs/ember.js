@@ -33,7 +33,7 @@ var TestMutableArray = Ember.Object.extend(Ember.MutableArray, {
 
   length: Ember.computed(function() {
     return this._content.length;
-  }).property().cacheable(),
+  }).property(),
 
   slice: function() {
     return this._content.slice();

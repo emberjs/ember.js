@@ -109,20 +109,6 @@ Ember.LOG_STACKTRACE_ON_DEPRECATION = (Ember.ENV.LOG_STACKTRACE_ON_DEPRECATION !
 */
 Ember.SHIM_ES5 = (Ember.ENV.SHIM_ES5 === false) ? false : Ember.EXTEND_PROTOTYPES;
 
-
-/**
-  Determines whether computed properties are cacheable by default.
-  This option will be removed for the 1.1 release.
-
-  When caching is enabled by default, you can use `volatile()` to disable
-  caching on individual computed properties.
-
-  @property CP_DEFAULT_CACHEABLE
-  @type Boolean
-  @default true
-*/
-Ember.CP_DEFAULT_CACHEABLE = (Ember.ENV.CP_DEFAULT_CACHEABLE !== false);
-
 /**
   Empty function.  Useful for some operations.
 

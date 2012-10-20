@@ -461,7 +461,7 @@ test("works from a template with bindings", function() {
 
     fullName: Ember.computed(function() {
       return this.get('firstName') + " " + this.get('lastName');
-    }).property('firstName', 'lastName').cacheable()
+    }).property('firstName', 'lastName')
   });
 
   var erik = Person.create({id: 4, firstName: 'Erik', lastName: 'Bryn'});

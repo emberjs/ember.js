@@ -69,7 +69,7 @@ var Descriptor = Ember.Descriptor = function() {};
       // define a computed property
       Ember.defineProperty(contact, 'fullName', Ember.computed(function() {
         return this.firstName+' '+this.lastName;
-      }).property('firstName', 'lastName').cacheable());
+      }).property('firstName', 'lastName'));
 
   @method defineProperty
   @for Ember

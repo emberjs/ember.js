@@ -24,7 +24,7 @@ var childViewsProperty = Ember.computed(function() {
   });
 
   return ret;
-}).property().cacheable();
+}).property();
 
 Ember.warn("The VIEW_PRESERVES_CONTEXT flag has been removed and the functionality can no longer be disabled.", Ember.ENV.VIEW_PRESERVES_CONTEXT !== false);
 
@@ -794,7 +794,7 @@ Ember.View = Ember.CoreView.extend(
         template = this.templateForName(templateName, 'template');
 
     return template || get(this, 'defaultTemplate');
-  }).property('templateName').cacheable(),
+  }).property('templateName'),
 
   /**
     The controller managing this view. If this property is set, it will be
@@ -812,7 +812,7 @@ Ember.View = Ember.CoreView.extend(
       parentView = get(this, 'parentView');
       return parentView ? get(parentView, 'controller') : null;
     }
-  }).property().cacheable(),
+  }).property(),
 
   /**
     A view may contain a layout. A layout is a regular template but
@@ -835,7 +835,7 @@ Ember.View = Ember.CoreView.extend(
         layout = this.templateForName(layoutName, 'layout');
 
     return layout || get(this, 'defaultLayout');
-  }).property('layoutName').cacheable(),
+  }).property('layoutName'),
 
   templateForName: function(name, type) {
     if (!name) { return; }
@@ -907,7 +907,7 @@ Ember.View = Ember.CoreView.extend(
     }
 
     return this;
-  }).cacheable(),
+  }),
 
   /**
     @private
@@ -1020,7 +1020,7 @@ Ember.View = Ember.CoreView.extend(
   */
   collectionView: Ember.computed(function() {
     return this.nearestInstanceOf(Ember.CollectionView);
-  }).cacheable(),
+  }),
 
   /**
     Return the nearest ancestor that is a direct child of
@@ -1031,7 +1031,7 @@ Ember.View = Ember.CoreView.extend(
   */
   itemView: Ember.computed(function() {
     return this.nearestChildOf(Ember.CollectionView);
-  }).cacheable(),
+  }),
 
   /**
     Return the nearest ancestor that has the property
@@ -1042,7 +1042,7 @@ Ember.View = Ember.CoreView.extend(
   */
   contentView: Ember.computed(function() {
     return this.nearestWithProperty('content');
-  }).cacheable(),
+  }),
 
   /**
     @private
@@ -1363,7 +1363,7 @@ Ember.View = Ember.CoreView.extend(
     } else {
       return this.invokeForState('getElement');
     }
-  }).property('_parentView').cacheable(),
+  }).property('_parentView'),
 
   /**
     Returns a jQuery object for this view's element. If you pass in a selector
@@ -1542,7 +1542,7 @@ Ember.View = Ember.CoreView.extend(
   */
   elementId: Ember.computed(function(key, value) {
     return value !== undefined ? value : Ember.guidFor(this);
-  }).cacheable(),
+  }),
 
   // TODO: Perhaps this should be removed from the production build somehow.
   _elementIdDidChange: Ember.beforeObserver(function() {

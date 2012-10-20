@@ -63,7 +63,7 @@ Ember.ArrayProxy = Ember.Object.extend(Ember.MutableArray,
   */
   arrangedContent: Ember.computed('content', function() {
     return get(this, 'content');
-  }).cacheable(),
+  }),
 
   /**
     Should actually retrieve the object at the specified index from the
@@ -205,7 +205,7 @@ Ember.ArrayProxy = Ember.Object.extend(Ember.MutableArray,
     var arrangedContent = get(this, 'arrangedContent');
     return arrangedContent ? get(arrangedContent, 'length') : 0;
     // No dependencies since Enumerable notifies length of change
-  }).property().cacheable(),
+  }).property(),
 
   replace: function(idx, amt, objects) {
     Ember.assert('The content property of '+ this.constructor + ' should be set before modifying it', this.get('content'));

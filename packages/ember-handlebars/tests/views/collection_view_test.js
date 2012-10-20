@@ -446,7 +446,7 @@ test("should render multiple, bound nested collections (#68)", function() {
       template: Ember.Handlebars.compile('{{#collection TemplateTests.InnerList class="inner"}}{{content}}{{/collection}}{{content}}'),
       innerListContent: Ember.computed(function() {
         return Ember.A([1,2,3]);
-      }).cacheable()
+      })
     });
 
     TemplateTests.OuterList = Ember.CollectionView.extend({

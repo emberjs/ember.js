@@ -137,7 +137,7 @@ Ember.Enumerable = Ember.Mixin.create(
     ret = this.nextObject(0, null, context);
     pushCtx(context);
     return ret ;
-  }).property('[]').cacheable(),
+  }).property('[]'),
 
   /**
     Helper method returns the last object from a collection. If your enumerable
@@ -163,7 +163,7 @@ Ember.Enumerable = Ember.Mixin.create(
     } while (cur !== undefined);
     pushCtx(context);
     return last;
-  }).property('[]').cacheable(),
+  }).property('[]'),
 
   /**
     Returns true if the passed object can be found in the receiver.  The
@@ -637,7 +637,7 @@ Ember.Enumerable = Ember.Mixin.create(
   */
   '[]': Ember.computed(function(key, value) {
     return this;
-  }).property().cacheable(),
+  }).property(),
 
   // ..........................................................
   // ENUMERABLE OBSERVERS
@@ -691,7 +691,7 @@ Ember.Enumerable = Ember.Mixin.create(
   */
   hasEnumerableObservers: Ember.computed(function() {
     return Ember.hasListeners(this, '@enumerable:change') || Ember.hasListeners(this, '@enumerable:before');
-  }).property().cacheable(),
+  }).property(),
 
 
   /**

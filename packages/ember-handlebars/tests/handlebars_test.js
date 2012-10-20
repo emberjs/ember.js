@@ -112,7 +112,7 @@ test("template view should call the function of the associated template with its
     personName: Ember.computed(function() {
       this._i++;
       return this._personName + this._i;
-    }).cacheable(),
+    }),
 
     templates: Ember.Object.create({
       test_template: Ember.Handlebars.compile("<h1 id='twas-called'>template was called for {{personName}}. Yea {{personName}}</h1>")

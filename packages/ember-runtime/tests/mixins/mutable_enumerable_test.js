@@ -37,7 +37,7 @@ var TestMutableEnumerable = Ember.Object.extend(Ember.MutableEnumerable, {
 
   length: Ember.computed(function() {
     return this._content.length;
-  }).property().cacheable(),
+  }).property(),
 
   slice: function() {
     return this._content.slice();

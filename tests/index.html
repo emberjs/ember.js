@@ -70,12 +70,6 @@
     var extendPrototypes = QUnit.urlParams.extendprototypes;
     ENV['EXTEND_PROTOTYPES'] = !!extendPrototypes;
 
-    // Handle CP cacheable by default
-    QUnit.config.urlConfig.push('nocpdefaultcacheable');
-
-    var noCpDefaultCacheable = QUnit.urlParams.nocpdefaultcacheable;
-    ENV['CP_DEFAULT_CACHEABLE'] = !noCpDefaultCacheable;
-
     // Don't worry about jQuery version
     ENV['FORCE_JQUERY'] = true;
   </script>

@@ -181,7 +181,7 @@ module('Ember.computed - cacheable', {
     Ember.defineProperty(obj, 'foo', Ember.computed(function() {
       count++;
       return 'bar '+count;
-    }).cacheable());
+    }));
   },
 
   teardown: function() {
@@ -230,7 +230,7 @@ testBoth('cacheFor should return falsy cached values', function(get, set) {
 
   Ember.defineProperty(obj, 'falsy', Ember.computed(function() {
     return false;
-  }).cacheable());
+  }));
 
   equal(Ember.cacheFor(obj, 'falsy'), undefined, "should not yet be a cached value");
 
@@ -250,7 +250,7 @@ module('Ember.computed - dependentkey', {
     Ember.defineProperty(obj, 'foo', Ember.computed(function() {
       count++;
       return 'bar '+count;
-    }).property('bar').cacheable());
+    }).property('bar'));
   },
 
   teardown: function() {
@@ -293,7 +293,7 @@ testBoth('should invalidate multiple nested dependent keys', function(get, set) 
   Ember.defineProperty(obj, 'bar', Ember.computed(function() {
     count++;
     return 'baz '+count;
-  }).property('baz').cacheable());
+  }).property('baz'));
 
   equal(Ember.isWatching(obj, 'bar'), false, 'precond not watching dependent key');
   equal(Ember.isWatching(obj, 'baz'), false, 'precond not watching dependent key');
@@ -317,12 +317,12 @@ testBoth('circular keys should not blow up', function(get, set) {
   Ember.defineProperty(obj, 'bar', Ember.computed(function() {
     count++;
     return 'bar '+count;
-  }).property('foo').cacheable());
+  }).property('foo'));
 
   Ember.defineProperty(obj, 'foo', Ember.computed(function() {
     count++;
     return 'foo '+count;
-  }).property('bar').cacheable());
+  }).property('bar'));
 
   equal(get(obj, 'foo'), 'foo 1', 'get once');
   equal(get(obj, 'foo'), 'foo 1', 'cached retrieve');
@@ -342,7 +342,7 @@ testBoth('redefining a property should undo old depenent keys', function(get ,se
   Ember.defineProperty(obj, 'foo', Ember.computed(function() {
     count++;
     return 'baz '+count;
-  }).property('baz').cacheable());
+  }).property('baz'));
 
   equal(Ember.isWatching(obj, 'bar'), false, 'after redefining should not be watching dependent key');
 
@@ -399,7 +399,7 @@ testBoth('depending on simple chain', function(get, set) {
 
   // assign computed property
   Ember.defineProperty(obj, 'prop',
-    Ember.computed(func).property('foo.bar.baz.biff').cacheable());
+    Ember.computed(func).property('foo.bar.baz.biff'));
 
   equal(get(obj, 'prop'), 'BIFF 1');
 
@@ -447,7 +447,7 @@ testBoth('depending on Global chain', function(get, set) {
   Ember.defineProperty(obj, 'prop', Ember.computed(function() {
     count++;
     return Ember.get('Global.foo.bar.baz.biff')+' '+count;
-  }).property('Global.foo.bar.baz.biff').cacheable());
+  }).property('Global.foo.bar.baz.biff'));
 
   equal(get(obj, 'prop'), 'BIFF 1');
 
@@ -490,8 +490,8 @@ testBoth('depending on Global chain', function(get, set) {
 });
 
 testBoth('chained dependent keys should evaluate computed properties lazily', function(get,set){
-  Ember.defineProperty(obj.foo.bar, 'b', Ember.computed(func).property().cacheable());
-  Ember.defineProperty(obj.foo, 'c', Ember.computed(function(){}).property('bar.b').cacheable());
+  Ember.defineProperty(obj.foo.bar, 'b', Ember.computed(func).property());
+  Ember.defineProperty(obj.foo, 'c', Ember.computed(function(){}).property('bar.b'));
   equal(count, 0, 'b should not run');
 });
 
@@ -530,7 +530,7 @@ testBoth('setting a watched computed property', function(get, set) {
         return value;
       }
       return get(this, 'firstName') + ' ' + get(this, 'lastName');
-    }).property('firstName', 'lastName').cacheable()
+    }).property('firstName', 'lastName')
   );
   var fullNameWillChange = 0,
       fullNameDidChange = 0,
@@ -586,7 +586,7 @@ testBoth('setting a cached computed property that modifies the value you give it
         return value + 1;
       }
       return get(this, 'foo') + 1;
-    }).property('foo').cacheable()
+    }).property('foo')
   );
   var plusOneWillChange = 0,
       plusOneDidChange = 0;

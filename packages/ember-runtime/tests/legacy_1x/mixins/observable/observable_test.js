@@ -331,7 +331,7 @@ module("Computed properties", {
       computedCached: Ember.computed(function(key, value) {
         this.computedCachedCalls.push(value);
         return 'computedCached';
-      }).property().cacheable(),
+      }).property(),
 
 
       // DEPENDENT KEYS
@@ -354,19 +354,19 @@ module("Computed properties", {
       dependentCached: Ember.computed(function(key, value) {
         this.dependentCachedCalls.push(value);
         return 'dependentCached';
-      }).property('changer').cacheable(),
+      }).property('changer'),
 
       // everytime it is recomputed, increments call
       incCallCount: 0,
       inc: Ember.computed(function() {
         return this.incCallCount++;
-      }).property('changer').cacheable(),
+      }).property('changer'),
 
       // depends on cached property which depends on another property...
       nestedIncCallCount: 0,
       nestedInc: Ember.computed(function(key, value) {
         return this.nestedIncCallCount++;
-      }).property('inc').cacheable(),
+      }).property('inc'),
 
       // two computed properties that depend on a third property
       state: 'on',
@@ -538,7 +538,7 @@ test("dependent keys should be able to be specified as property paths", function
 
     menuPrice: Ember.computed(function() {
       return this.get('menu.price');
-    }).property('menu.price').cacheable()
+    }).property('menu.price')
   });
 
   equal(depObj.get('menuPrice'), 5, "precond - initial value returns 5");
@@ -600,7 +600,7 @@ test("cacheable nested dependent keys should clear after their dependencies upda
 
       price: Ember.computed(function() {
         return this.get('restaurant.menu.price');
-      }).property('restaurant.menu.price').cacheable()
+      }).property('restaurant.menu.price')
     });
   });
 

@@ -37,7 +37,7 @@ var TestArray = Ember.Object.extend(Ember.Array, {
 
   length: Ember.computed(function() {
     return this._content.length;
-  }).property().cacheable(),
+  }).property(),
 
   slice: function() {
     return this._content.slice();
@@ -374,7 +374,7 @@ testBoth("should be clear caches for computed properties that have dependent key
 
     common: Ember.computed(function() {
       return get(get(this, 'resources').objectAt(0), 'common');
-    }).property('resources.@each.common').cacheable()
+    }).property('resources.@each.common')
   });
 
   get(obj, 'resources').pushObject(Ember.Object.create({ common: "HI!" }));

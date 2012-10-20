@@ -683,7 +683,7 @@ testBoth('setting a cached computed property whose value has changed should trig
   Ember.defineProperty(obj, 'foo', Ember.computed(function(key, value) {
     if (arguments.length === 2) { return value; }
     return get(this, 'baz');
-  }).property('baz').cacheable());
+  }).property('baz'));
 
   var count = 0;
 
@@ -727,7 +727,7 @@ testBoth("immediate observers should fire synchronously", function(get, set) {
         return value;
       }
       return "yes hello this is foo";
-    }).cacheable());
+    }));
 
     equal(get(obj, 'foo'), "yes hello this is foo", "precond - computed property returns a value");
     equal(observerCalled, 0, "observer has not yet been called");

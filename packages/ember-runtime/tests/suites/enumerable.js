@@ -219,7 +219,7 @@ var EnumerableTests = Ember.Object.extend({
   */
   canTestMutation: Ember.computed(function() {
     return this.mutate !== EnumerableTests.prototype.mutate;
-  }).property().cacheable(),
+  }).property(),
 
   /**
     Invoked to actually run the test - overridden by mixins

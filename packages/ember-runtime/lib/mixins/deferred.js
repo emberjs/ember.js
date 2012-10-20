@@ -46,5 +46,5 @@ Ember.Deferred = Ember.Mixin.create({
 
   promise: Ember.computed(function() {
     return new RSVP.Promise();
-  }).cacheable()
+  })
 });

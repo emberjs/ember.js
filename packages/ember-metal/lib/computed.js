@@ -8,7 +8,7 @@ require('ember-metal/watching');
 @module ember-metal
 */
 
-Ember.warn("Computed properties will soon be cacheable by default. To enable this in your app, set `ENV.CP_DEFAULT_CACHEABLE = true`.", Ember.CP_DEFAULT_CACHEABLE);
+Ember.warn("The CP_DEFAULT_CACHEABLE flag has been removed and computed properties are always cached by default. Use `volatile` if you don't want caching.", Ember.ENV.CP_DEFAULT_CACHEABLE !== false);
 
 
 var get = Ember.get,
@@ -119,7 +119,7 @@ function removeDependentKeys(desc, obj, keyName, meta) {
 */
 function ComputedProperty(func, opts) {
   this.func = func;
-  this._cacheable = (opts && opts.cacheable !== undefined) ? opts.cacheable : Ember.CP_DEFAULT_CACHEABLE;
+  this._cacheable = (opts && opts.cacheable !== undefined) ? opts.cacheable : true;
   this._dependentKeys = opts && opts.dependentKeys;
 }
 
@@ -140,7 +140,7 @@ var ComputedPropertyPrototype = ComputedProperty.prototype;
           // After calculating the value of this function, Ember.js will
           // return that value without re-executing this function until
           // one of the dependent properties change.
-        }.property('firstName', 'lastName').cacheable()
+        }.property('firstName', 'lastName')
       });
 
   Properties are cacheable by default.
@@ -401,7 +401,7 @@ Ember.cacheFor = function cacheFor(obj, key) {
 Ember.computed.not = function(dependentKey) {
   return Ember.computed(dependentKey, function(key) {
     return !get(this, dependentKey);
-  }).cacheable();
+  });
 };
 
 /**
@@ -413,7 +413,7 @@ Ember.computed.empty = function(dependentKey) {
   return Ember.computed(dependentKey, function(key) {
     var val = get(this, dependentKey);
     return val === undefined || val === null || val === '' || (Ember.isArray(val) && get(val, 'length') === 0);
-  }).cacheable();
+  });
 };
 
 /**
@@ -424,5 +424,5 @@ Ember.computed.empty = function(dependentKey) {
 Ember.computed.bool = function(dependentKey) {
   return Ember.computed(dependentKey, function(key) {
     return !!get(this, dependentKey);
-  }).cacheable();
+  });
 };
