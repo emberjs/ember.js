@@ -433,7 +433,9 @@ Ember.Select = Ember.View.extend(
       var newSelection = content.objectsAt(selectedIndexes);
 
       if (isArray(selection)) {
+        Ember.propertyWillChange(this, 'selection');
         replace(selection, 0, get(selection, 'length'), newSelection);
+        Ember.propertyDidChange(this, 'selection');
       } else {
         set(this, 'selection', newSelection);
       }
