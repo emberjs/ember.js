@@ -980,6 +980,27 @@ Ember.View = Ember.CoreView.extend(
   },
 
   /**
+    Return the nearest ancestor that is an instance of the provided
+    class or mixin.
+
+    @proprty nearestOfType
+    @param {Class,Mixin} klass Subclass of Ember.View (or Ember.View itself),
+           or an instance of Ember.Mixin.
+    @return Ember.View
+  */
+  nearestOfType: function(klass) {
+    var view = get(this, 'parentView'),
+        isOfType = klass instanceof Ember.Mixin ?
+                   function(view) { return klass.detect(view); } :
+                   function(view) { return klass.detect(view.constructor); };
+
+    while (view) {
+      if( isOfType(view) ) { return view; }
+      view = get(view, 'parentView');
+    }
+  },
+
+  /**
     Return the nearest ancestor that has a given property.
 
     @property nearestWithProperty
