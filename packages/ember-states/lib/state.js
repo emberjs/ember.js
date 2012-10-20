@@ -182,33 +182,32 @@ Ember.State = Ember.Object.extend(Ember.Evented,
   exit: Ember.K
 });
 
-Ember.State.reopenClass(
-/** @scope Ember.State */{
+Ember.State.reopenClass({
 
   /**
-  Creates an action function for transitioning to the named state while preserving context.
+    Creates an action function for transitioning to the named state while preserving context.
 
-  The following example StateManagers are equivalent:
+    The following example StateManagers are equivalent:
 
-      aManager = Ember.StateManager.create({
-        stateOne: Ember.State.create({
-          changeToStateTwo: Ember.State.transitionTo('stateTwo')
-        }),
-        stateTwo: Ember.State.create({})
-      })
+        aManager = Ember.StateManager.create({
+          stateOne: Ember.State.create({
+            changeToStateTwo: Ember.State.transitionTo('stateTwo')
+          }),
+          stateTwo: Ember.State.create({})
+        })
 
-      bManager = Ember.StateManager.create({
-        stateOne: Ember.State.create({
-          changeToStateTwo: function(manager, context){
-            manager.transitionTo('stateTwo', context)
-          }
-        }),
-        stateTwo: Ember.State.create({})
-      })
+        bManager = Ember.StateManager.create({
+          stateOne: Ember.State.create({
+            changeToStateTwo: function(manager, context){
+              manager.transitionTo('stateTwo', context)
+            }
+          }),
+          stateTwo: Ember.State.create({})
+        })
 
-  @method transitionTo
-  @static
-  @param {String} target
+    @method transitionTo
+    @static
+    @param {String} target
   */
 
   transitionTo: function(target) {
