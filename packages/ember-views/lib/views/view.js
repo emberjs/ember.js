@@ -969,12 +969,35 @@ Ember.View = Ember.CoreView.extend(
     @property nearestInstanceOf
     @param {Class} klass Subclass of Ember.View (or Ember.View itself)
     @return Ember.View
+    @deprecated
   */
   nearestInstanceOf: function(klass) {
+    Ember.deprecate("nearestInstanceOf is deprecated and will be removed from future releases. Use nearestOfType.");
     var view = get(this, 'parentView');
 
     while (view) {
       if(view instanceof klass) { return view; }
+      view = get(view, 'parentView');
+    }
+  },
+
+  /**
+    Return the nearest ancestor that is an instance of the provided
+    class or mixin.
+
+    @proprty nearestOfType
+    @param {Class,Mixin} klass Subclass of Ember.View (or Ember.View itself),
+           or an instance of Ember.Mixin.
+    @return Ember.View
+  */
+  nearestOfType: function(klass) {
+    var view = get(this, 'parentView'),
+        isOfType = klass instanceof Ember.Mixin ?
+                   function(view) { return klass.detect(view); } :
+                   function(view) { return klass.detect(view.constructor); };
+
+    while (view) {
+      if( isOfType(view) ) { return view; }
       view = get(view, 'parentView');
     }
   },
@@ -1019,7 +1042,7 @@ Ember.View = Ember.CoreView.extend(
     @return Ember.CollectionView
   */
   collectionView: Ember.computed(function() {
-    return this.nearestInstanceOf(Ember.CollectionView);
+    return this.nearestOfType(Ember.CollectionView);
   }),
 
   /**
