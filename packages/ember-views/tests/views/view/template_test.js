@@ -1,7 +1,5 @@
 var set = Ember.set, get = Ember.get;
 
-var VIEW_PRESERVES_CONTEXT = Ember.VIEW_PRESERVES_CONTEXT;
-
 module("Ember.View - Template Functionality");
 
 test("should call the function of the associated template", function() {
@@ -111,7 +109,7 @@ test("should render an empty element if no template is specified", function() {
 });
 
 test("should provide a controller to the template if a controller is specified on the view", function() {
-  expect(VIEW_PRESERVES_CONTEXT ? 7 : 5);
+  expect(7);
 
   var Controller1 = Ember.Object.extend({
     toString: function() { return "Controller1"; }
@@ -194,9 +192,6 @@ test("should provide a controller to the template if a controller is specified o
 
   strictEqual(optionsDataKeywordsControllerForView, controller1, "passes the original controller in the data");
   strictEqual(optionsDataKeywordsControllerForChildView, controller1, "passes the controller in the data to child views");
-
-  if (VIEW_PRESERVES_CONTEXT) {
-    strictEqual(contextForView, controller2, "passes the controller in as the main context of the parent view");
-    strictEqual(contextForControllerlessView, controller1, "passes the controller in as the main context of the child view");
-  }
+  strictEqual(contextForView, controller2, "passes the controller in as the main context of the parent view");
+  strictEqual(contextForControllerlessView, controller1, "passes the controller in as the main context of the child view");
 });

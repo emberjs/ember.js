@@ -270,72 +270,68 @@ test("it works with the controller keyword", function() {
   equal(view.$().text(), "foobarbaz");
 });
 
-if (Ember.VIEW_PRESERVES_CONTEXT) {
+module("{{#each foo in bar}}");
 
-  module("{{#each foo in bar}}");
-
-  test("#each accepts a name binding and does not change the context", function() {
-    view = Ember.View.create({
-      template: templateFor("{{#each item in items}}{{title}} {{item}}{{/each}}"),
-      title: "My Cool Each Test",
-      items: Ember.A([1, 2])
-    });
-
-    append(view);
-
-    equal(view.$().text(), "My Cool Each Test 1My Cool Each Test 2");
+test("#each accepts a name binding and does not change the context", function() {
+  view = Ember.View.create({
+    template: templateFor("{{#each item in items}}{{title}} {{item}}{{/each}}"),
+    title: "My Cool Each Test",
+    items: Ember.A([1, 2])
   });
 
-  test("#each accepts a name binding and can display child properties", function() {
-    view = Ember.View.create({
-      template: templateFor("{{#each item in items}}{{title}} {{item.name}}{{/each}}"),
-      title: "My Cool Each Test",
-      items: Ember.A([{ name: 1 }, { name: 2 }])
-    });
+  append(view);
 
-    append(view);
+  equal(view.$().text(), "My Cool Each Test 1My Cool Each Test 2");
+});
 
-    equal(view.$().text(), "My Cool Each Test 1My Cool Each Test 2");
+test("#each accepts a name binding and can display child properties", function() {
+  view = Ember.View.create({
+    template: templateFor("{{#each item in items}}{{title}} {{item.name}}{{/each}}"),
+    title: "My Cool Each Test",
+    items: Ember.A([{ name: 1 }, { name: 2 }])
   });
 
-  test("#each accepts 'this' as the right hand side", function() {
-    view = Ember.View.create({
-      template: templateFor("{{#each item in this}}{{view.title}} {{item.name}}{{/each}}"),
-      title: "My Cool Each Test",
-      controller: Ember.A([{ name: 1 }, { name: 2 }])
-    });
+  append(view);
 
-    append(view);
+  equal(view.$().text(), "My Cool Each Test 1My Cool Each Test 2");
+});
 
-    equal(view.$().text(), "My Cool Each Test 1My Cool Each Test 2");
+test("#each accepts 'this' as the right hand side", function() {
+  view = Ember.View.create({
+    template: templateFor("{{#each item in this}}{{view.title}} {{item.name}}{{/each}}"),
+    title: "My Cool Each Test",
+    controller: Ember.A([{ name: 1 }, { name: 2 }])
   });
 
-  test("views inside #each preserve the new context", function() {
-    var controller = Ember.A([ { name: "Adam" }, { name: "Steve" } ]);
+  append(view);
 
-    view = Ember.View.create({
-      controller: controller,
-      template: templateFor('{{#each controller}}{{#view}}{{name}}{{/view}}{{/each}}')
-    });
+  equal(view.$().text(), "My Cool Each Test 1My Cool Each Test 2");
+});
 
-    append(view);
+test("views inside #each preserve the new context", function() {
+  var controller = Ember.A([ { name: "Adam" }, { name: "Steve" } ]);
 
-    equal(view.$().text(), "AdamSteve");
+  view = Ember.View.create({
+    controller: controller,
+    template: templateFor('{{#each controller}}{{#view}}{{name}}{{/view}}{{/each}}')
   });
 
-  test("controller is assignable inside an #each", function() {
-    var controller = Ember.ArrayController.create({
-      content: Ember.A([ { name: "Adam" }, { name: "Steve" } ])
-    });
+  append(view);
 
-    view = Ember.View.create({
-      controller: controller,
-      template: templateFor('{{#each itemController in this}}{{#view controllerBinding="itemController"}}{{name}}{{/view}}{{/each}}')
-    });
+  equal(view.$().text(), "AdamSteve");
+});
 
-    append(view);
-
-    equal(view.$().text(), "AdamSteve");
+test("controller is assignable inside an #each", function() {
+  var controller = Ember.ArrayController.create({
+    content: Ember.A([ { name: "Adam" }, { name: "Steve" } ])
   });
 
-}
+  view = Ember.View.create({
+    controller: controller,
+    template: templateFor('{{#each itemController in this}}{{#view controllerBinding="itemController"}}{{name}}{{/view}}{{/each}}')
+  });
+
+  append(view);
+
+  equal(view.$().text(), "AdamSteve");
+});

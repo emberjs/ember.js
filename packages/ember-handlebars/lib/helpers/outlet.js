@@ -51,11 +51,7 @@ Ember.Handlebars.registerHelper('outlet', function(property, options) {
     property = 'view';
   }
 
-  if(Ember.VIEW_PRESERVES_CONTEXT) {
-    options.hash.currentViewBinding = "view.context." + property;
-  } else {
-    options.hash.currentViewBinding = "controller." + property;
-  }
+  options.hash.currentViewBinding = "view.context." + property;
 
   return Ember.Handlebars.helpers.view.call(this, Ember.Handlebars.OutletView, options);
 });

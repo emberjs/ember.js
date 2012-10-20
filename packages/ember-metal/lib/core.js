@@ -124,46 +124,6 @@ Ember.SHIM_ES5 = (Ember.ENV.SHIM_ES5 === false) ? false : Ember.EXTEND_PROTOTYPE
 Ember.CP_DEFAULT_CACHEABLE = (Ember.ENV.CP_DEFAULT_CACHEABLE !== false);
 
 /**
-  Determines whether views render their templates using themselves
-  as the context, or whether it is inherited from the parent. This option
-  will be removed in the 1.1 release.
-
-  If you need to update your application to use the new context rules, simply
-  prefix property access with `view.`:
-
-  Before:
-
-  ``` handlebars
-  {{#each App.photosController}}
-    Photo Title: {{title}}
-    {{#view App.InfoView contentBinding="this"}}
-      {{content.date}}
-      {{content.cameraType}}
-      {{otherViewProperty}}
-    {{/view}}
-  {{/each}}
-  ```
-
-  After:
-
-  ``` handlebars
-  {{#each App.photosController}}
-    Photo Title: {{title}}
-    {{#view App.InfoView}}
-      {{date}}
-      {{cameraType}}
-      {{view.otherViewProperty}}
-    {{/view}}
-  {{/each}}
-  ```
-
-  @property VIEW_PRESERVES_CONTEXT
-  @type Boolean
-  @default true
-*/
-Ember.VIEW_PRESERVES_CONTEXT = (Ember.ENV.VIEW_PRESERVES_CONTEXT !== false);
-
-/**
   Empty function.  Useful for some operations.
 
   @method K

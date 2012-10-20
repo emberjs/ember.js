@@ -122,22 +122,20 @@ test("it should support #with foo as bar, then #with bar as qux", function() {
   equal(view.$().text(), "butterfly", "should update");
 });
 
-if (Ember.VIEW_PRESERVES_CONTEXT) {
-  module("Handlebars {{#with this as foo}}");
+module("Handlebars {{#with this as foo}}");
 
-  test("it should support #with this as qux", function() {
-    var view = Ember.View.create({
-      template: Ember.Handlebars.compile("{{#with this as person}}{{person.name}}{{/with}}"),
-      controller: Ember.Object.create({ name: "Los Pivots" })
-    });
-
-    appendView(view);
-    equal(view.$().text(), "Los Pivots", "should be properly scoped");
-
-    Ember.run(function() {
-      Ember.set(view, 'controller.name', "l'Pivots");
-    });
-
-    equal(view.$().text(), "l'Pivots", "should update");
+test("it should support #with this as qux", function() {
+  var view = Ember.View.create({
+    template: Ember.Handlebars.compile("{{#with this as person}}{{person.name}}{{/with}}"),
+    controller: Ember.Object.create({ name: "Los Pivots" })
   });
-}
+
+  appendView(view);
+  equal(view.$().text(), "Los Pivots", "should be properly scoped");
+
+  Ember.run(function() {
+    Ember.set(view, 'controller.name', "l'Pivots");
+  });
+
+  equal(view.$().text(), "l'Pivots", "should update");
+});

@@ -81,7 +81,6 @@ task :test, [:suite] => :dist do |t, args|
               "package=all&extendprototypes=true&nojshint=true",
               "package=all&extendprototypes=true&jquery=git&nojshint=true",
               "package=all&nocpdefaultcacheable=true&nojshint=true",
-              "package=all&noviewpreservescontext=true&nojshint=true",
               "package=all&dist=build&nojshint=true"]
   }
 

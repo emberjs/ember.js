@@ -76,12 +76,6 @@
     var noCpDefaultCacheable = QUnit.urlParams.nocpdefaultcacheable;
     ENV['CP_DEFAULT_CACHEABLE'] = !noCpDefaultCacheable;
 
-    // Handle preserving context
-    QUnit.config.urlConfig.push('noviewpreservescontext');
-
-    var noViewPreservesContext = QUnit.urlParams.noviewpreservescontext;
-    ENV['VIEW_PRESERVES_CONTEXT'] = !noViewPreservesContext;
-
     // Don't worry about jQuery version
     ENV['FORCE_JQUERY'] = true;
   </script>

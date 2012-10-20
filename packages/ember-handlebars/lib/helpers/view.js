@@ -11,7 +11,6 @@ require("ember-handlebars");
 var get = Ember.get, set = Ember.set;
 var PARENT_VIEW_PATH = /^parentView\./;
 var EmberHandlebars = Ember.Handlebars;
-var VIEW_PRESERVES_CONTEXT = Ember.VIEW_PRESERVES_CONTEXT;
 
 EmberHandlebars.ViewHelper = Ember.Object.create({
 
@@ -143,7 +142,7 @@ EmberHandlebars.ViewHelper = Ember.Object.create({
 
     // We only want to override the `_context` computed property if there is
     // no specified controller. See View#_context for more information.
-    if (VIEW_PRESERVES_CONTEXT && !newView.proto().controller && !newView.proto().controllerBinding && !viewOptions.controller && !viewOptions.controllerBinding) {
+    if (!newView.proto().controller && !newView.proto().controllerBinding && !viewOptions.controller && !viewOptions.controllerBinding) {
       viewOptions._context = thisContext;
     }
 

@@ -157,11 +157,9 @@ test("if a ContainerView starts with a currentView, it is rendered as a child vi
   equal(get(container, 'childViews.length'), 1, "should have one child view");
   equal(get(container, 'childViews').objectAt(0), mainView, "should have the currentView as the only child view");
   equal(mainView.get('parentView'), container, "parentView is setup");
-  if (Ember.VIEW_PRESERVES_CONTEXT) {
-    equal(context, container.get('context'), 'context preserved');
-    equal(templateData.keywords.controller, controller, 'templateData is setup');
-    equal(templateData.keywords.view, mainView, 'templateData is setup');
-  }
+  equal(context, container.get('context'), 'context preserved');
+  equal(templateData.keywords.controller, controller, 'templateData is setup');
+  equal(templateData.keywords.view, mainView, 'templateData is setup');
 });
 
 test("if a ContainerView is created with a currentView, it is rendered as a child view", function() {
@@ -190,11 +188,9 @@ test("if a ContainerView is created with a currentView, it is rendered as a chil
   equal(get(container, 'childViews.length'), 1, "should have one child view");
   equal(get(container, 'childViews').objectAt(0), mainView, "should have the currentView as the only child view");
   equal(mainView.get('parentView'), container, "parentView is setup");
-  if (Ember.VIEW_PRESERVES_CONTEXT) {
-    equal(context, container.get('context'), 'context preserved');
-    equal(templateData.keywords.controller, controller, 'templateData is setup');
-    equal(templateData.keywords.view, mainView, 'templateData is setup');
-  }
+  equal(context, container.get('context'), 'context preserved');
+  equal(templateData.keywords.controller, controller, 'templateData is setup');
+  equal(templateData.keywords.view, mainView, 'templateData is setup');
 });
 
 test("if a ContainerView starts with no currentView and then one is set, the ContainerView is updated", function() {
