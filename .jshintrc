@@ -5,6 +5,7 @@
         "DS",
         "Handlebars",
         "Metamorph",
+        "RSVP",
         "ember_assert",
         "ember_warn",
         "ember_deprecate",
