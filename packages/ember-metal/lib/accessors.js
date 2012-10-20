@@ -162,6 +162,8 @@ set = function set(obj, keyName, value, tolerant) {
 
 // Currently used only by Ember Data tests
 if (Ember.config.overrideAccessors) {
+  Ember.get = get;
+  Ember.set = set;
   Ember.config.overrideAccessors();
   get = Ember.get;
   set = Ember.set;
