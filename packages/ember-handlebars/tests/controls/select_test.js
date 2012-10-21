@@ -370,6 +370,12 @@ test("a prompt can be specified", function() {
   select.$()[0].selectedIndex = 2;
   select.$().trigger('change');
   equal(select.get('selection'), tom, "Properly accounts for the prompt when DOM change occurs");
+
+  setAndFlush(select, 'prompt', 'new prompt');
+  equal(select.$('option').eq(0).text(), 'new prompt', "the prompt should be changed");
+
+  setAndFlush(select, 'prompt', null);
+  equal(select.$('option').length, 2, "The prompt should be removed");
 });
 
 test("handles null content", function() {

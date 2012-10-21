@@ -502,7 +502,7 @@ Ember.Select = Ember.CollectionView.extend(
         childViews = get(this, 'childViews');
 
     if (promptView) {
-      childViews.unshift(promptView);
+      childViews.unshiftObject(promptView);
     }
   }, '_promptView'),
 
@@ -512,19 +512,15 @@ Ember.Select = Ember.CollectionView.extend(
     Setup prompt view when prompt message changed.
   */
   _promptDidChange: Ember.observer(function() {
-    var prompt = get(this, 'prompt'), viewClass;
+    var prompt = get(this, 'prompt'), promptView;
 
-    if (!prompt) { return; }
+    if (prompt) {
+      promptView = this.createChildView(Ember.SelectPrompt, { prompt: prompt });
+    } else {
+      promptView = null;
+    }
 
-    viewClass = Ember.View.extend({
-      attributeBindings: ['value'],
-      value: '',
-      render: function(buffer) {
-        buffer.push(prompt);
-      }
-    });
-
-    set(this, '_promptView', this.createChildView(viewClass));
+    set(this, '_promptView', promptView);
   }, 'prompt'),
 
   /** @private */
@@ -540,8 +536,20 @@ Ember.Select = Ember.CollectionView.extend(
   }
 });
 
+Ember.SelectPrompt = Ember.View.extend({
+  attributeBindings: ['value'],
+  value: '',
+
+  prompt: null,
+
+  render: function(buffer) {
+    var prompt = get(this, 'prompt');
+
+    buffer.push(prompt);
+  }
+});
+
 Ember.SelectOption = Ember.View.extend({
-  tagName: 'option',
   attributeBindings: ['value', 'selected'],
 
   render: function(buffer) {
