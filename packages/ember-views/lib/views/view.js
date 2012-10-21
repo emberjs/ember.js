@@ -232,7 +232,7 @@ Ember.CoreView = Ember.Object.extend(Ember.Evented, {
   `Ember.View` is the class in Ember responsible for encapsulating templates of HTML
   content, combining templates with data to render as sections of a page's DOM, and
   registering and responding to user-initiated events.
-  
+
   ## HTML Tag
   The default HTML tag name used for a view's DOM representation is `div`. This can be
   customized by setting the `tagName` property. The following view class:
@@ -266,7 +266,7 @@ Ember.CoreView = Ember.Object.extend(Ember.Evented, {
   ```
 
   `class` attribute values can also be set by providing a `classNameBindings` property
-  set to an array of properties names for the view. The return value of these properties 
+  set to an array of properties names for the view. The return value of these properties
   will be added as part of the value for the view's `class` attribute. These properties
   can be computed properties:
 
@@ -303,7 +303,7 @@ Ember.CoreView = Ember.Object.extend(Ember.Evented, {
   <div id="ember1" class="ember-view hovered"></div>
   ```
 
-  When using boolean class name bindings you can supply a string value other than the 
+  When using boolean class name bindings you can supply a string value other than the
   property name for use as the `class` HTML attribute by appending the preferred value after
   a ":" character when defining the binding:
 
@@ -373,7 +373,7 @@ Ember.CoreView = Ember.Object.extend(Ember.Evented, {
 
   ``` html
   <div id="ember1" class="ember-view enabled"></div>
-  ``` 
+  ```
 
   When isEnabled is `false`, the resulting HTML reprensentation looks like this:
 
@@ -404,11 +404,11 @@ Ember.CoreView = Ember.Object.extend(Ember.Evented, {
   <div id="ember1" class="ember-view disabled"></div>
   ```
 
-  Updates to the the value of a class name binding will result in automatic update 
+  Updates to the the value of a class name binding will result in automatic update
   of the  HTML `class` attribute in the view's rendered HTML representation.
   If the value becomes  `false` or `undefined` the class name will be removed.
 
-  Both `classNames` and `classNameBindings` are concatenated properties. 
+  Both `classNames` and `classNameBindings` are concatenated properties.
   See `Ember.Object` documentation for more information about concatenated properties.
 
   ## HTML Attributes
@@ -465,13 +465,14 @@ Ember.CoreView = Ember.Object.extend(Ember.Evented, {
   });
   ```
 
-  Updates to the the property of an attribute binding will result in automatic update 
+  Updates to the the property of an attribute binding will result in automatic update
   of the  HTML attribute in the view's rendered HTML representation.
 
   `attributeBindings` is a concatenated property. See `Ember.Object` documentation
   for more information about concatenated properties.
 
   ## Templates
+
   The HTML contents of a view's rendered representation are determined by its template.
   Templates can be any function that accepts an optional context parameter and returns
   a string of HTML that will be inserted within the view's tag. Most
@@ -487,29 +488,6 @@ Ember.CoreView = Ember.Object.extend(Ember.Evented, {
 
   ``` html
   <div id="ember1" class="ember-view">I am the template</div>
-  ``` 
-
-  The default context of the compiled template will be the view instance itself:
-
-  ``` javascript
-  AView = Ember.View.extend({
-    template: Ember.Handlebars.compile('Hello {{excitedGreeting}}')
-  });
-
-  aView = AView.create({
-    content: Ember.Object.create({
-      firstName: 'Barry'
-    })
-    excitedGreeting: function(){
-      return this.get("content.firstName") + "!!!"
-    }
-  });
-  ```
-
-  Will result in an HTML representation of:
-
-  ``` html
-  <div id="ember1" class="ember-view">Hello Barry!!!</div>
   ```
 
   Within an Ember application is more common to define a Handlebars templates as
@@ -571,13 +549,44 @@ Ember.CoreView = Ember.Object.extend(Ember.Evented, {
   <div id="ember1" class="ember-view">I was the template, not default</div>
   ```
 
+  ## View Context
+
+  The default context of the compiled template is the view's controller:
+
+  ``` javascript
+  AView = Ember.View.extend({
+    template: Ember.Handlebars.compile('Hello {{excitedGreeting}}')
+  });
+
+  aController = Ember.Object.create({
+    firstName: 'Barry',
+    excitedGreeting: function(){
+      return this.get("content.firstName") + "!!!"
+    }.property()
+  });
+
+  aView = AView.create({
+    controller: aController,
+  });
+  ```
+
+  Will result in an HTML representation of:
+
+  ``` html
+  <div id="ember1" class="ember-view">Hello Barry!!!</div>
+  ```
+
+  A context can also be explicitly supplied through the view's `context` property.
+  If the view has neither `context` nor `controller` properties, the parentView's
+  context will be used.
+
   ## Layouts
 
   Views can have a secondary template that wraps their main template. Like
   primary templates, layouts can be any function that  accepts an optional context
   parameter and returns a string of HTML that will be inserted inside view's tag. Views whose HTML
   element is self closing (e.g. `<input />`) cannot have a layout and this property will be ignored.
-  
+
   Most typically in Ember a layout will be a compiled Ember.Handlebars template.
 
   A view's layout can be set directly with the `layout` property or reference an
@@ -607,7 +616,7 @@ Ember.CoreView = Ember.Object.extend(Ember.Evented, {
 
   ## Responding to Browser Events
 
-  Views can respond to user-initiated events in one of three ways: method implementation, 
+  Views can respond to user-initiated events in one of three ways: method implementation,
   through an event manager, and through `{{action}}` helper use in their template or layout.
 
   ### Method Implementation
@@ -628,8 +637,8 @@ Ember.CoreView = Ember.Object.extend(Ember.Evented, {
 
   Views can define an object as their `eventManager` property. This object can then
   implement methods that match the desired event names. Matching events that occur
-  on the view's rendered HTML or the rendered HTML of any of its DOM descendants 
-  will trigger this method.  A `jQuery.Event` object will be passed as the first 
+  on the view's rendered HTML or the rendered HTML of any of its DOM descendants
+  will trigger this method.  A `jQuery.Event` object will be passed as the first
   argument to the method and an  `Ember.View` object as the second. The `Ember.View`
   will be the view whose rendered HTML was interacted with. This may be the view with
   the `eventManager` property or one of its descendent views.
@@ -646,7 +655,6 @@ Ember.CoreView = Ember.Object.extend(Ember.Evented, {
     })
   });
   ```
-
 
   An event defined for an event manager takes precedence over events of the same
   name handled through methods on the view.
@@ -666,7 +674,7 @@ Ember.CoreView = Ember.Object.extend(Ember.Evented, {
 
   Similarly a view's event manager will take precedence for events of any views
   rendered as a descendent. A method name that matches an event name will not be called
-  if the view instance was rendered inside the HTML representation of a view that has 
+  if the view instance was rendered inside the HTML representation of a view that has
   an `eventManager` property defined that handles events of the name.  Events not handled
   by the event manager will still trigger method calls on the descendent.
 
@@ -689,7 +697,7 @@ Ember.CoreView = Ember.Object.extend(Ember.Evented, {
       // eventManager doesn't handle click events
     },
     mouseEnter: function(event){
-      // will never be called if rendered inside 
+      // will never be called if rendered inside
       // an OuterView.
     }
   });
@@ -713,9 +721,9 @@ Ember.CoreView = Ember.Object.extend(Ember.Evented, {
   Form events: 'submit', 'change', 'focusIn', 'focusOut', 'input'
 
   HTML5 drag and drop events: 'dragStart', 'drag', 'dragEnter', 'dragLeave', 'drop', 'dragEnd'
-  
+
   ## Handlebars `{{view}}` Helper
-  
+
   Other `Ember.View` instances can be included as part of a view's template by using the `{{view}}`
   Handlebars helper. See `Handlebars.helpers.view` for additional information.
 
@@ -857,7 +865,7 @@ Ember.View = Ember.CoreView.extend(
     method is called, but it is up to the individual function to decide what
     to do with it.
 
-    By default, this will be the view itself.
+    By default, this will be the view's controller.
 
     @property context
     @type Object
@@ -1137,7 +1145,7 @@ Ember.View = Ember.CoreView.extend(
       };
 
       // Invoke the template with the provided template context, which
-      // is the view by default. A hash of data is also passed that provides
+      // is the view's controller by default. A hash of data is also passed that provides
       // the template with access to the view and render buffer.
 
       Ember.assert('template must be a function. Did you mean to call Ember.Handlebars.compile("...") or specify templateName instead?', typeof template === 'function');
