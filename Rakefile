@@ -465,4 +465,4 @@ namespace :release do
 
 end
 
-task :default => :dist
+task :default => :test
