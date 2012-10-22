@@ -7,7 +7,7 @@ require('ember-handlebars/ext');
 @submodule ember-handlebars
 */
 
-var getPath = Ember.Handlebars.getPath;
+var handlebarsGet = Ember.Handlebars.get;
 
 /**
   `unbound` allows you to output a property without binding. *Important:* The
@@ -24,5 +24,5 @@ var getPath = Ember.Handlebars.getPath;
 */
 Ember.Handlebars.registerHelper('unbound', function(property, fn) {
   var context = (fn.contexts && fn.contexts[0]) || this;
-  return getPath(context, property, fn);
+  return handlebarsGet(context, property, fn);
 });

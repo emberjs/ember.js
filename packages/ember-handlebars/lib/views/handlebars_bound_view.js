@@ -5,7 +5,7 @@
 @submodule ember-handlebars
 */
 
-var get = Ember.get, set = Ember.set, getPath = Ember.Handlebars.getPath;
+var get = Ember.get, set = Ember.set, handlebarsGet = Ember.Handlebars.get;
 
 require('ember-views/views/view');
 require('ember-handlebars/views/metamorph_view');
@@ -26,7 +26,7 @@ Ember._SimpleHandlebarsView = Ember._SimpleMetamorphView.extend({
       result = pathRoot;
     } else {
       templateData = get(this, 'templateData');
-      result = getPath(pathRoot, path, { data: templateData });
+      result = handlebarsGet(pathRoot, path, { data: templateData });
     }
 
     return result;
@@ -181,7 +181,7 @@ Ember._HandlebarsBoundView = Ember._MetamorphView.extend({
       result = pathRoot;
     } else {
       templateData = get(this, 'templateData');
-      result = getPath(pathRoot, path, { data: templateData });
+      result = handlebarsGet(pathRoot, path, { data: templateData });
     }
 
     return valueNormalizer ? valueNormalizer(result) : result;

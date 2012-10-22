@@ -6,7 +6,7 @@ require('ember-handlebars/ext');
 */
 
 var EmberHandlebars = Ember.Handlebars,
-    getPath = EmberHandlebars.getPath,
+    handlebarsGet = EmberHandlebars.get,
     get = Ember.get,
     a_slice = Array.prototype.slice;
 
@@ -255,7 +255,7 @@ EmberHandlebars.registerHelper('action', function(actionName) {
   action.view = view = get(view, 'concreteView');
 
   if (hash.target) {
-    target = getPath(this, hash.target, options);
+    target = handlebarsGet(this, hash.target, options);
   } else if (controller = options.data.keywords.controller) {
     target = get(controller, 'target');
   }
@@ -264,7 +264,7 @@ EmberHandlebars.registerHelper('action', function(actionName) {
 
   if (contexts.length) {
     action.contexts = contexts = Ember.EnumerableUtils.map(contexts, function(context) {
-      return getPath(this, context, options);
+      return handlebarsGet(this, context, options);
     }, this);
     action.context = contexts[0];
   }

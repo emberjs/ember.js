@@ -39,7 +39,7 @@ Ember.Button = Ember.View.extend(Ember.TargetActionSupport, {
 
     if (typeof target !== 'string') { return target; }
 
-    return Ember.Handlebars.getPath(root, target, { data: data });
+    return Ember.Handlebars.get(root, target, { data: data });
   }).property('target'),
 
   // Defaults to 'button' if tagName is 'input' or 'button'
