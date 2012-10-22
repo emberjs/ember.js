@@ -9,7 +9,7 @@ require('ember-handlebars/helpers/view');
 @submodule ember-handlebars
 */
 
-var get = Ember.get, getPath = Ember.Handlebars.getPath, fmt = Ember.String.fmt;
+var get = Ember.get, handlebarsGet = Ember.Handlebars.get, fmt = Ember.String.fmt;
 
 /**
   `{{collection}}` is a `Ember.Handlebars` helper for adding instances of
@@ -155,7 +155,7 @@ Ember.Handlebars.registerHelper('collection', function(path, options) {
   // If passed a path string, convert that into an object.
   // Otherwise, just default to the standard class.
   var collectionClass;
-  collectionClass = path ? getPath(this, path, options) : Ember.CollectionView;
+  collectionClass = path ? handlebarsGet(this, path, options) : Ember.CollectionView;
   Ember.assert(fmt("%@ #collection: Could not find collection class %@", [data.view, path]), !!collectionClass);
 
   var hash = options.hash, itemHash = {}, match;
@@ -164,7 +164,7 @@ Ember.Handlebars.registerHelper('collection', function(path, options) {
   var itemViewClass, itemViewPath = hash.itemViewClass;
   var collectionPrototype = collectionClass.proto();
   delete hash.itemViewClass;
-  itemViewClass = itemViewPath ? getPath(collectionPrototype, itemViewPath, options) : collectionPrototype.itemViewClass;
+  itemViewClass = itemViewPath ? handlebarsGet(collectionPrototype, itemViewPath, options) : collectionPrototype.itemViewClass;
   Ember.assert(fmt("%@ #collection: Could not find itemViewClass %@", [data.view, itemViewPath]), !!itemViewClass);
 
   // Go through options passed to the {{collection}} helper and extract options
@@ -198,7 +198,7 @@ Ember.Handlebars.registerHelper('collection', function(path, options) {
           tagName: itemHash.tagName
     });
   } else if (hash.emptyViewClass) {
-    emptyViewClass = getPath(this, hash.emptyViewClass, options);
+    emptyViewClass = handlebarsGet(this, hash.emptyViewClass, options);
   }
   hash.emptyView = emptyViewClass;
 

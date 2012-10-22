@@ -7,7 +7,7 @@ require('ember-handlebars/ext');
 @submodule ember-handlebars
 */
 
-var getPath = Ember.Handlebars.getPath, normalizePath = Ember.Handlebars.normalizePath;
+var handlebarsGet = Ember.Handlebars.get, normalizePath = Ember.Handlebars.normalizePath;
 
 /**
   `log` allows you to output the value of a value in the current rendering
@@ -26,7 +26,7 @@ Ember.Handlebars.registerHelper('log', function(property, options) {
       normalized = normalizePath(context, property, options.data),
       pathRoot = normalized.root,
       path = normalized.path,
-      value = (path === 'this') ? pathRoot : getPath(pathRoot, path, options);
+      value = (path === 'this') ? pathRoot : handlebarsGet(pathRoot, path, options);
   Ember.Logger.log(value);
 });
 

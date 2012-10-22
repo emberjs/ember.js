@@ -8,7 +8,7 @@ require('ember-handlebars/views/metamorph_view');
 */
 
 var get = Ember.get, set = Ember.set, fmt = Ember.String.fmt;
-var getPath = Ember.Handlebars.getPath, normalizePath = Ember.Handlebars.normalizePath;
+var handlebarsGet = Ember.Handlebars.get, normalizePath = Ember.Handlebars.normalizePath;
 var forEach = Ember.ArrayPolyfills.forEach;
 
 var EmberHandlebars = Ember.Handlebars, helpers = EmberHandlebars.helpers;
@@ -66,7 +66,7 @@ function bind(property, options, preserveContext, shouldDisplay, valueNormalizer
   } else {
     // The object is not observable, so just render it out and
     // be done with it.
-    data.buffer.push(getPath(pathRoot, path, options));
+    data.buffer.push(handlebarsGet(pathRoot, path, options));
   }
 }
 
@@ -112,7 +112,7 @@ function simpleBind(property, options) {
   } else {
     // The object is not observable, so just render it out and
     // be done with it.
-    data.buffer.push(getPath(pathRoot, path, options));
+    data.buffer.push(handlebarsGet(pathRoot, path, options));
   }
 }
 
@@ -341,7 +341,7 @@ EmberHandlebars.registerHelper('bindAttr', function(options) {
     pathRoot = normalized.root;
     path = normalized.path;
 
-    var value = (path === 'this') ? pathRoot : getPath(pathRoot, path, options),
+    var value = (path === 'this') ? pathRoot : handlebarsGet(pathRoot, path, options),
         type = Ember.typeOf(value);
 
     Ember.assert(fmt("Attributes must be numbers, strings or booleans, not %@", [value]), value === null || value === undefined || type === 'number' || type === 'string' || type === 'boolean');
@@ -349,7 +349,7 @@ EmberHandlebars.registerHelper('bindAttr', function(options) {
     var observer, invoker;
 
     observer = function observer() {
-      var result = getPath(pathRoot, path, options);
+      var result = handlebarsGet(pathRoot, path, options);
 
       Ember.assert(fmt("Attributes must be numbers, strings or booleans, not %@", [result]), result === null || result === undefined || typeof result === 'number' || typeof result === 'string' || typeof result === 'boolean');
 
@@ -434,7 +434,7 @@ EmberHandlebars.bindClasses = function(context, classBindings, view, bindAttrId,
     } else if (path === '') {
       val = true;
     } else {
-      val = getPath(root, path, options);
+      val = handlebarsGet(root, path, options);
     }
 
     return Ember.View._classStringForValue(path, val, parsedPath.className, parsedPath.falsyClassName);

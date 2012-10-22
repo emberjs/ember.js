@@ -213,13 +213,13 @@ var normalizePath = Ember.Handlebars.normalizePath = function(root, path, data) 
   a keyword, the corresponding object will be looked up in the
   template's data hash and used to resolve the path.
 
-  @method getPath
+  @method get
   @for Ember.Handlebars
   @param {Object} root The object to look up the property on
   @param {String} path The path to be lookedup
   @param {Object} options The template's option hash
 */
-Ember.Handlebars.getPath = function(root, path, options) {
+Ember.Handlebars.get = function(root, path, options) {
   var data = options && options.data,
       normalizedPath = normalizePath(root, path, data),
       value;
@@ -239,6 +239,7 @@ Ember.Handlebars.getPath = function(root, path, options) {
   }
   return value;
 };
+Ember.Handlebars.getPath = Ember.deprecateFunc('`Ember.Handlebars.getPath` has been changed to `Ember.Handlebars.get` for consistency.', Ember.Handlebars.get);
 
 /**
   @private
