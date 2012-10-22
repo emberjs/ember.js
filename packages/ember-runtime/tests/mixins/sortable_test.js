@@ -1,7 +1,5 @@
 var get = Ember.get, set = Ember.set;
 
-var array = [{ id: 1, name: "Scumbag Dale" }, { id: 2, name: "Scumbag Katz" }, { id: 3, name: "Scumbag Bryn" }];
-
 var unsortedArray, sortedArrayController;
 
 module("Ember.Sortable");
@@ -9,6 +7,8 @@ module("Ember.Sortable");
 module("Ember.Sortable with content", {
   setup: function() {
     Ember.run(function() {
+      var array = [{ id: 1, name: "Scumbag Dale" }, { id: 2, name: "Scumbag Katz" }, { id: 3, name: "Scumbag Bryn" }];
+
       unsortedArray = Ember.A(Ember.A(array).copy());
 
       sortedArrayController = Ember.ArrayProxy.create(Ember.SortableMixin, {
@@ -82,6 +82,8 @@ test("changing sort order triggers observers", function() {
 module("Ember.Sortable with content and sortProperties", {
   setup: function() {
     Ember.run(function() {
+      var array = [{ id: 1, name: "Scumbag Dale" }, { id: 2, name: "Scumbag Katz" }, { id: 3, name: "Scumbag Bryn" }];
+
       unsortedArray = Ember.A(Ember.A(array).copy());
 
       sortedArrayController = Ember.ArrayController.create({
@@ -138,6 +140,15 @@ test("you can change a sort property and the content will rearrenge", function()
   set(sortedArrayController.objectAt(0), 'name', 'Scumbag Fucs');
   equal(sortedArrayController.objectAt(0).name, 'Scumbag Dale', 'dale is first now');
   equal(sortedArrayController.objectAt(1).name, 'Scumbag Fucs', 'foucs is second');
+});
+
+test("you can change the position of the middle item", function() {
+  equal(sortedArrayController.get('length'), 3, 'array has 3 items');
+
+  equal(sortedArrayController.objectAt(1).name, 'Scumbag Dale', 'Dale is second');
+  set(sortedArrayController.objectAt(1), 'name', 'Alice'); // Change Dale to Alice
+
+  equal(sortedArrayController.objectAt(0).name, 'Alice', 'Alice (previously Dale) is first now');
 });
 
 module("Ember.Sortable with sortProperties", {
