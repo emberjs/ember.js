@@ -67,6 +67,21 @@ test("a RouteMatcher matches routes with dynamic segments", function() {
   equal(match, undefined);
 });
 
+test("a RouteMatcher matches routes with dynamic segments (the last being globbed)", function() {
+  var match;
+
+  var matcher = Ember._RouteMatcher.create({
+    route: "foo/:id/:name/*ok_tom"
+  });
+
+  match = matcher.match('foo/bar/baz/common/bro');
+  equal(match.remaining, "");
+  deepEqual(match.hash, {"id": "bar", "name": "baz", "ok_tom": "common/bro"});
+
+  match = matcher.match('foo/bar');
+  equal(match, undefined);
+});
+
 test("a RouteMatcher generates routes with dynamic segments", function() {
   var url;
 
@@ -76,6 +91,17 @@ test("a RouteMatcher generates routes with dynamic segments", function() {
 
   url = matcher.generate({ id: 1, first_name: "Yehuda" });
   equal(url, "foo/1/Yehuda");
+});
+
+test("a RouteMatcher generates routes with dynamic segments (with glob)", function() {
+  var url;
+
+  var matcher = Ember._RouteMatcher.create({
+    route: "foo/:id/*first_name"
+  });
+
+  url = matcher.generate({ id: 1, first_name: "Yehuda/test" });
+  equal(url, "foo/1/Yehuda/test");
 });
 
 test("route repeatedly descends into a nested hierarchy", function() {
