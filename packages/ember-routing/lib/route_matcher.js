@@ -24,9 +24,14 @@ Ember._RouteMatcher = Ember.Object.extend({
 
     escaped = escapeForRegex(route);
 
-    var regex = escaped.replace(/:([a-z_]+)(?=$|\/)/gi, function(match, id) {
+    var regex = escaped.replace(/(:|(?:\\\*))([a-z_]+)(?=$|\/)/gi, function(match, type, id) {
       identifiers[count++] = id;
-      return "([^/]+)";
+      switch (type) {
+        case ":":
+          return "([^/]+)";
+        case "\\*":
+          return "(.+)";
+      }
     });
 
     this.identifiers = identifiers;
@@ -55,7 +60,7 @@ Ember._RouteMatcher = Ember.Object.extend({
     var identifiers = this.identifiers, route = this.route, id;
     for (var i=1, l=identifiers.length; i<l; i++) {
       id = identifiers[i];
-      route = route.replace(new RegExp(":" + id), hash[id]);
+      route = route.replace(new RegExp("(:|(\\*))" + id), hash[id]);
     }
     return route;
   }
