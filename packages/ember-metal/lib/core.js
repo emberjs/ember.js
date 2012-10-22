@@ -137,6 +137,15 @@ if ('undefined' === typeof ember_deprecateFunc) {
   exports.ember_deprecateFunc = function(_, func) { return func; };
 }
 
+/**
+  Previously we used `Ember.$.uuid`, however `$.uuid` has been removed from jQuery master.
+  We'll just bootstrap our own uuid now.
+
+  @property uuid
+  @type Number
+  @private
+*/
+Ember.uuid = 0;
 
 // ..........................................................
 // LOGGER
