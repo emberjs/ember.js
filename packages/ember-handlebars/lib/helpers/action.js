@@ -15,7 +15,7 @@ var ActionHelper = EmberHandlebars.ActionHelper = {
 };
 
 ActionHelper.registerAction = function(actionName, options) {
-  var actionId = (++Ember.$.uuid).toString();
+  var actionId = (++Ember.uuid).toString();
 
   ActionHelper.registeredActions[actionId] = {
     eventName: options.eventName,
