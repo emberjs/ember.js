@@ -45,20 +45,25 @@ test("passing a block to the collection helper sets it as the template for examp
 });
 
 test("collection helper should accept relative paths", function() {
+  Ember.TESTING_DEPRECATION = true;
 
-  view = Ember.View.create({
-    template: Ember.Handlebars.compile('{{#collection collection}} <label></label> {{/collection}}'),
-    collection: Ember.CollectionView.extend({
-      tagName: 'ul',
-      content: Ember.A(['foo', 'bar', 'baz'])
-    })
-  });
+  try {
+    view = Ember.View.create({
+      template: Ember.Handlebars.compile('{{#collection collection}} <label></label> {{/collection}}'),
+      collection: Ember.CollectionView.extend({
+        tagName: 'ul',
+        content: Ember.A(['foo', 'bar', 'baz'])
+      })
+    });
 
-  Ember.run(function() {
-    view.appendTo('#qunit-fixture');
-  });
+    Ember.run(function() {
+      view.appendTo('#qunit-fixture');
+    });
 
-  equal(view.$('label').length, 3, 'one label element is created for each content item');
+    equal(view.$('label').length, 3, 'one label element is created for each content item');
+  } finally {
+    Ember.TESTING_DEPRECATION = false;
+  }
 });
 
 test("empty views should be removed when content is added to the collection (regression, ht: msofaer)", function() {
@@ -98,29 +103,35 @@ test("empty views should be removed when content is added to the collection (reg
 });
 
 test("should be able to specify which class should be used for the empty view", function() {
-  var App;
+  Ember.TESTING_DEPRECATION = true;
 
-  Ember.run(function() {
-    lookup.App = App = Ember.Application.create();
-  });
+  try {
+    var App;
 
-  App.EmptyView = Ember.View.extend({
-    template: Ember.Handlebars.compile('This is an empty view')
-  });
+    Ember.run(function() {
+      lookup.App = App = Ember.Application.create();
+    });
 
-  var view = Ember.View.create({
-    template: Ember.Handlebars.compile('{{collection emptyViewClass="App.EmptyView"}}')
-  });
+    App.EmptyView = Ember.View.extend({
+      template: Ember.Handlebars.compile('This is an empty view')
+    });
 
-  Ember.run(function() {
-    view.appendTo('#qunit-fixture');
-  });
+    var view = Ember.View.create({
+      template: Ember.Handlebars.compile('{{collection emptyViewClass="App.EmptyView"}}')
+    });
 
-  equal(view.$().text(), 'This is an empty view', "Empty view should be rendered.");
+    Ember.run(function() {
+      view.appendTo('#qunit-fixture');
+    });
 
-  Ember.run(function() {
-    App.destroy();
-  });
+    equal(view.$().text(), 'This is an empty view', "Empty view should be rendered.");
+
+    Ember.run(function() {
+      App.destroy();
+    });
+  } finally {
+    Ember.TESTING_DEPRECATION = false;
+  }
 });
 
 test("if no content is passed, and no 'else' is specified, nothing is rendered", function() {
@@ -262,33 +273,39 @@ test("should give its item views the classBinding specified by itemClassBinding"
 });
 
 test("should give its item views the property specified by itemPropertyBinding", function() {
-  TemplateTests.itemPropertyBindingTestItemView = Ember.View.extend({
-    tagName: 'li'
-  });
+  Ember.TESTING_DEPRECATION = true;
 
-  // Use preserveContext=false so the itemView handlebars context is the view context
-  // Set itemView bindings using item*
-  var view = Ember.View.create({
-    baz: "baz",
-    content: Ember.A([Ember.Object.create(), Ember.Object.create(), Ember.Object.create()]),
-    template: Ember.Handlebars.compile('{{#collection contentBinding="content" tagName="ul" itemViewClass="TemplateTests.itemPropertyBindingTestItemView" itemPropertyBinding="baz" preserveContext=false}}{{view.property}}{{/collection}}')
-  });
+  try {
+    TemplateTests.itemPropertyBindingTestItemView = Ember.View.extend({
+      tagName: 'li'
+    });
 
-  Ember.run(function() {
-    view.appendTo('#qunit-fixture');
-  });
+    // Use preserveContext=false so the itemView handlebars context is the view context
+    // Set itemView bindings using item*
+    var view = Ember.View.create({
+      baz: "baz",
+      content: Ember.A([Ember.Object.create(), Ember.Object.create(), Ember.Object.create()]),
+      template: Ember.Handlebars.compile('{{#collection contentBinding="content" tagName="ul" itemViewClass="TemplateTests.itemPropertyBindingTestItemView" itemPropertyBinding="baz" preserveContext=false}}{{view.property}}{{/collection}}')
+    });
 
-  equal(view.$('ul li').length, 3, "adds 3 itemView");
+    Ember.run(function() {
+      view.appendTo('#qunit-fixture');
+    });
 
-  view.$('ul li').each(function(i, li){
-    equal(Ember.$(li).text(), "baz", "creates the li with the property = baz");
-  });
+    equal(view.$('ul li').length, 3, "adds 3 itemView");
 
-  Ember.run(function() {
-    set(view, 'baz', "yobaz");
-  });
+    view.$('ul li').each(function(i, li){
+      equal(Ember.$(li).text(), "baz", "creates the li with the property = baz");
+    });
 
-  equal(view.$('ul li:first').text(), "yobaz", "change property of sub view");
+    Ember.run(function() {
+      set(view, 'baz', "yobaz");
+    });
+
+    equal(view.$('ul li:first').text(), "yobaz", "change property of sub view");
+  } finally {
+    Ember.TESTING_DEPRECATION = false;
+  }
 });
 
 test("should work inside a bound {{#if}}", function() {

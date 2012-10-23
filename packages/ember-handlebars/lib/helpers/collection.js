@@ -137,8 +137,11 @@ var get = Ember.get, handlebarsGet = Ember.Handlebars.get, fmt = Ember.String.fm
   @param {String} path
   @param {Hash} options
   @return {String} HTML string
+  @deprecated Use `{{each}}` helper instead.
 */
 Ember.Handlebars.registerHelper('collection', function(path, options) {
+  Ember.deprecate("Using the {{collection}} helper with the default class has been deprecated as the {{each}} helper now supports the same functionality.", path !== 'collection');
+
   // If no path is provided, treat path param as options.
   if (path && path.data && path.data.isRenderData) {
     options = path;
