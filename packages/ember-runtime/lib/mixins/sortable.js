@@ -72,8 +72,7 @@ Ember.SortableMixin = Ember.Mixin.create(Ember.MutableEnumerable, {
   _orderBy: function(item1, item2) {
     var result = 0,
         sortProperties = get(this, 'sortProperties'),
-        sortAscending = get(this, 'sortAscending'),
-        orderBy = get(this, 'orderBy');
+        sortAscending = get(this, 'sortAscending');
 
     Ember.assert("you need to define `sortProperties`", !!sortProperties);
 
