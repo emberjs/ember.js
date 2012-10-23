@@ -42,7 +42,7 @@ function iter(key, value) {
   can use any of these methods on simple arrays.  If Array already implements
   one of these methods, the mixin will not override them.
 
-  h3. Writing Your Own Enumerable
+  ## Writing Your Own Enumerable
 
   To make your own custom class enumerable, you need two items:
 
@@ -57,7 +57,7 @@ function iter(key, value) {
   to your class and you will be able to enumerate the contents of your object
   like any other collection.
 
-  h3. Using Ember Enumeration with Other Libraries
+  ## Using Ember Enumeration with Other Libraries
 
   Many other libraries provide some kind of iterator or enumeration like
   facility.  This is often where the most common API conflicts occur.
