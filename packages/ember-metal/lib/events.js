@@ -54,8 +54,7 @@ function targetSetFor(obj, eventName) {
 // meta system.
 var SKIP_PROPERTIES = { __ember_source__: true };
 
-function iterateSet(obj, eventName, callback, params) {
-  var targetSet = targetSetFor(obj, eventName);
+function iterateSet(targetSet, callback) {
   if (!targetSet) { return false; }
   // Iterate through all elements of the target set
   for(var targetGuid in targetSet) {
@@ -69,7 +68,7 @@ function iterateSet(obj, eventName, callback, params) {
 
         var action = actionSet[methodGuid];
         if (action) {
-          if (callback(action, params, obj) === true) {
+          if (callback(action) === true) {
             return true;
           }
         }
@@ -90,6 +89,32 @@ function invokeAction(action, params, sender) {
   } else {
     method.apply(target);
   }
+}
+
+function targetSetUnion(obj, eventName, targetSet) {
+  iterateSet(targetSetFor(obj, eventName), function (action) {
+    var targetGuid = guidFor(action.target),
+        methodGuid = guidFor(action.method),
+        actionSet = targetSet[targetGuid];
+    if (!actionSet) actionSet = targetSet[targetGuid] = {};
+    actionSet[methodGuid] = action;
+  });
+}
+
+function targetSetDiff(obj, eventName, targetSet) {
+  var diffTargetSet = {};
+  iterateSet(targetSetFor(obj, eventName), function (action) {
+    var targetGuid = guidFor(action.target),
+        methodGuid = guidFor(action.method),
+        actionSet = targetSet[targetGuid],
+        diffActionSet = diffTargetSet[targetGuid];
+    if (!actionSet) actionSet = targetSet[targetGuid] = {};
+    if (actionSet[methodGuid]) return;
+    actionSet[methodGuid] = action;
+    if (!diffActionSet) diffActionSet = diffTargetSet[targetGuid] = {};
+    diffActionSet[methodGuid] = action;
+  });
+  return diffTargetSet;
 }
 
 /**
@@ -160,7 +185,7 @@ function removeListener(obj, eventName, target, method) {
   if (method) {
     _removeListener(target, method);
   } else {
-    iterateSet(obj, eventName, function(action) {
+    iterateSet(targetSetFor(obj, eventName), function(action) {
       _removeListener(action.target, action.method);
     });
   }
@@ -281,41 +306,18 @@ function watchedEvents(obj) {
   @param {Array} params
   @return true
 */
-function sendEvent(obj, eventName, params) {
+function sendEvent(obj, eventName, params, targetSet) {
   // first give object a chance to handle it
   if (obj !== Ember && 'function' === typeof obj.sendEvent) {
     obj.sendEvent(eventName, params);
   }
 
-  iterateSet(obj, eventName, invokeAction, params);
-  return true;
-}
+  if (!targetSet) targetSet = targetSetFor(obj, eventName);
 
-/**
-  @private
-  @method deferEvent
-  @for Ember
-  @param obj
-  @param {String} eventName
-  @param {Array} params
-*/
-function deferEvent(obj, eventName, params) {
-  var actions = [];
-  iterateSet(obj, eventName, function (action) {
-    actions.push(action);
+  iterateSet(targetSet, function (action) {
+    invokeAction(action, params, obj);
   });
-
-  return function() {
-    if (obj.isDestroyed) { return; }
-
-    if (obj !== Ember && 'function' === typeof obj.sendEvent) {
-      obj.sendEvent(eventName, params);
-    }
-
-    for (var i=0, len=actions.length; i < len; ++i) {
-      invokeAction(actions[i], params, obj);
-    }
-  };
+  return true;
 }
 
 /**
@@ -326,7 +328,7 @@ function deferEvent(obj, eventName, params) {
   @param {String} eventName
 */
 function hasListeners(obj, eventName) {
-  if (iterateSet(obj, eventName, function() { return true; })) {
+  if (iterateSet(targetSetFor(obj, eventName), function() { return true; })) {
     return true;
   }
 
@@ -346,7 +348,7 @@ function hasListeners(obj, eventName) {
 */
 function listenersFor(obj, eventName) {
   var ret = [];
-  iterateSet(obj, eventName, function (action) {
+  iterateSet(targetSetFor(obj, eventName), function (action) {
     ret.push([action.target, action.method]);
   });
   return ret;
@@ -360,4 +362,5 @@ Ember.sendEvent = sendEvent;
 Ember.hasListeners = hasListeners;
 Ember.watchedEvents = watchedEvents;
 Ember.listenersFor = listenersFor;
-Ember.deferEvent = deferEvent;
+Ember.listenersDiff = targetSetDiff;
+Ember.listenersUnion = targetSetUnion;
