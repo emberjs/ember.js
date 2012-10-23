@@ -27,6 +27,27 @@ var get = Ember.get, set = Ember.set, forEach = Ember.EnumerableUtils.forEach;
       songsController.addObject({trackNumber: 1, title: 'Dear Prudence'});
       songsController.get('firstObject'); // {trackNumber: 1, title: 'Dear Prudence'}
 
+  By default the sort algorithm uses Ember#compare in order to compare the elements.
+  It is possible to modify this behavior by overriding the `orderBy` function.
+
+      songsController = Ember.ArrayController.create({
+        content: [{ id: 1, name: "Scumbag Dale" }, { id: 2, name: "Scumbag Katz" }, { id: 3, name: "Scumbag bryn" }],
+        sortProperties: ['name'],
+        orderBy: function(v, w){
+            var lowerV = v.toLowerCase(),
+                lowerW = w.toLowerCase();
+
+            if(lowerV < lowerW){
+              return -1;
+            }
+            if(lowerV > lowerW){
+              return 1;
+            }
+            return 0;
+        }
+      });
+
+      songsController.get('firstObject'); // {id3: 1, name: 'Scumbag bryn'}
 
   @class SortableMixin
   @namespace Ember
@@ -36,7 +57,7 @@ var get = Ember.get, set = Ember.set, forEach = Ember.EnumerableUtils.forEach;
 Ember.SortableMixin = Ember.Mixin.create(Ember.MutableEnumerable, {
   sortProperties: null,
   sortAscending: true,
-  sortFunction: Ember.compare,
+  orderBy: Ember.compare,
 
   addObject: function(obj) {
     var content = get(this, 'content');
@@ -48,17 +69,17 @@ Ember.SortableMixin = Ember.Mixin.create(Ember.MutableEnumerable, {
     content.removeObject(obj);
   },
 
-  orderBy: function(item1, item2) {
+  _orderBy: function(item1, item2) {
     var result = 0,
         sortProperties = get(this, 'sortProperties'),
         sortAscending = get(this, 'sortAscending'),
-        sortFunction = get(this, 'sortFunction');
+        orderBy = get(this, 'orderBy');
 
     Ember.assert("you need to define `sortProperties`", !!sortProperties);
 
     forEach(sortProperties, function(propertyName) {
       if (result === 0) {
-        result = sortFunction(get(item1, propertyName), get(item2, propertyName));
+        result = orderBy(get(item1, propertyName), get(item2, propertyName));
         if ((result !== 0) && !sortAscending) {
           result = (-1) * result;
         }
@@ -96,7 +117,7 @@ Ember.SortableMixin = Ember.Mixin.create(Ember.MutableEnumerable, {
     if (content && isSorted) {
       content = content.slice();
       content.sort(function(item1, item2) {
-        return self.orderBy(item1, item2);
+        return self._orderBy(item1, item2);
       });
       forEach(content, function(item) {
         forEach(sortProperties, function(sortProperty) {
@@ -209,7 +230,7 @@ Ember.SortableMixin = Ember.Mixin.create(Ember.MutableEnumerable, {
     mid = low + Math.floor((high - low) / 2);
     midItem = arrangedContent.objectAt(mid);
 
-    res = this.orderBy(midItem, item);
+    res = this._orderBy(midItem, item);
 
     if (res < 0) {
       return this._binarySearch(item, mid+1, high);

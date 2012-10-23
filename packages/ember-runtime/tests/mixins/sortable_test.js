@@ -197,12 +197,12 @@ test("you can set content later and it will be sorted", function() {
   equal(sortedArrayController.objectAt(0).name, 'Scumbag Bryn', 'array is sorted by name');
 });
 
-module("Ember.Sortable with sortFunction and sortProperties", {
+module("Ember.Sortable with custom orderBy function and sortProperties", {
   setup: function() {
     Ember.run(function() {
       sortedArrayController = Ember.ArrayController.create({
         sortProperties: ['name'],
-        sortFunction: function(v, w){
+        orderBy: function(v, w){
             var lowerV = v.toLowerCase(),
                 lowerW = w.toLowerCase();
 
