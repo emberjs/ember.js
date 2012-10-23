@@ -774,8 +774,10 @@ testBoth("observers added/removed during changeProperties should do the right th
   var addedAfterFirstChangeObserver = new Observer();
   var addedAfterLastChangeObserver = new Observer();
   var removedBeforeFirstChangeObserver = new Observer();
+  var removedBeforeLastChangeObserver = new Observer();
   var removedAfterLastChangeObserver = new Observer();
   removedBeforeFirstChangeObserver.add();
+  removedBeforeLastChangeObserver.add();
   removedAfterLastChangeObserver.add();
   Ember.changeProperties(function () {
     removedBeforeFirstChangeObserver.remove();
@@ -787,6 +789,7 @@ testBoth("observers added/removed during changeProperties should do the right th
     equal(addedBeforeFirstChangeObserver.didChangeCount, 0, 'addObserver called before the first change is deferred');
 
     addedAfterFirstChangeObserver.add();
+    removedBeforeLastChangeObserver.remove();
 
     set(obj, 'foo', 2);
 
@@ -805,6 +808,8 @@ testBoth("observers added/removed during changeProperties should do the right th
   equal(addedAfterFirstChangeObserver.didChangeCount,     1, 'addObserver called after the first change sees 1');
   equal(addedAfterLastChangeObserver.willChangeCount,     0, 'addBeforeObserver called after the last change sees none');
   equal(addedAfterLastChangeObserver.didChangeCount,      0, 'addObserver called after the last change sees none');
+  equal(removedBeforeLastChangeObserver.willChangeCount,  1, 'removeBeforeObserver called before the last change still sees 1');
+  equal(removedBeforeLastChangeObserver.didChangeCount,   1, 'removeObserver called before the last change still sees 1');
   equal(removedAfterLastChangeObserver.willChangeCount,   1, 'removeBeforeObserver called after the last change still sees 1');
   equal(removedAfterLastChangeObserver.didChangeCount,    1, 'removeObserver called after the last change still sees 1');
 });
