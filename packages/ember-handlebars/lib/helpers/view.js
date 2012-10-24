@@ -119,18 +119,9 @@ EmberHandlebars.ViewHelper = Ember.Object.create({
         data = options.data,
         view = data.view,
         fn = options.fn,
-        hash = options.hash,
-        newView;
+        hash = options.hash;
 
-    if ('string' === typeof path) {
-      newView = EmberHandlebars.get(thisContext, path, options);
-      Ember.assert("Unable to find view at path '" + path + "'", !!newView);
-    } else {
-      newView = path;
-    }
-
-    Ember.assert(Ember.String.fmt('You must pass a view class to the #view helper, not %@ (%@)', [path, newView]), Ember.View.detect(newView));
-
+    var newView = this.viewClass(thisContext, path, options);
     var viewOptions = this.propertiesFromHTMLOptions(options, thisContext);
     var currentView = data.view;
     viewOptions.templateData = options.data;
@@ -147,6 +138,19 @@ EmberHandlebars.ViewHelper = Ember.Object.create({
     }
 
     currentView.appendChild(newView, viewOptions);
+  },
+
+  viewClass: function(thisContext, path, options) {
+    var result;
+    if ('string' === typeof path) {
+      result = EmberHandlebars.get(thisContext, path, options);
+      Ember.assert("Unable to find view at path '" + path + "'", !!result);
+    } else {
+      result = path;
+    }
+
+    Ember.assert(Ember.String.fmt('You must pass a view class to the #view helper, not %@ (%@)', [path, result]), Ember.View.detect(result));
+    return result;
   }
 });
 
