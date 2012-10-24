@@ -265,7 +265,7 @@ Ember.Select = Ember.View.extend(
   tagName: 'select',
   classNames: ['ember-select'],
   defaultTemplate: Ember.Handlebars.compile('{{#if view.prompt}}<option value>{{view.prompt}}</option>{{/if}}{{#each view.content}}{{view Ember.SelectOption contentBinding="this"}}{{/each}}'),
-  attributeBindings: ['multiple', 'tabindex'],
+  attributeBindings: ['multiple', 'disabled', 'tabindex'],
 
   /**
     The `multiple` attribute of the select element. Indicates whether multiple
@@ -276,6 +276,8 @@ Ember.Select = Ember.View.extend(
     @default false
   */
   multiple: false,
+
+  disabled: false,
 
   /**
     The list of options.
