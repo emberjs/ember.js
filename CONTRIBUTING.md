@@ -2,11 +2,11 @@
 
 This is the issue tracker for Ember.js. The Ember.js community uses this site
 to collect and track bugs and discussions of new features. If you are having
-difficulties using Ember.js or have a question about usage please ask a 
-question on StackOverflow: http://stackoverflow.com/questions/ask and tag 
+difficulties using Ember.js or have a question about usage please ask a
+question on StackOverflow: http://stackoverflow.com/questions/ask and tag
 your question with `ember.js`.
 
-The Ember.js community is very active on StackOverflow and most questions 
+The Ember.js community is very active on StackOverflow and most questions
 receive attention the same day they're posted:
 http://stackoverflow.com/questions/tagged/ember.js
 
@@ -23,12 +23,12 @@ this bug already.
 
 3. Provide JSFiddle or JSBin demo that specifically shows the problem. This
 demo should be fully operational with the exception of the bug you want to
-demonstrate. The more pared down, the better.
+demonstrate. The more pared down, the better. Preconfigured starting points: [JSFiddle](http://jsfiddle.net/6p6XJ/) | [JSBin](http://jsbin.com/ijicor/3/edit)
 
 4. If possible, submit a Pull Request with a failing test. Better yet, take
 a stab at fixing the bug yourself if you can!
 
-The more information you provide the easier it is for us to validate that
+The more information you provide, the easier it is for us to validate that
 there is a bug and the faster we'll be able to take action.
 
 ## Requesting a Feature
@@ -73,7 +73,7 @@ explain a standard use case to us.
 
 We try to be quick about responding to tickets but sometimes we get a bit
 backlogged. If the response is slow, try to find someone on IRC (#emberjs) to
-give the ticket a review. 
+give the ticket a review.
 
 Some things that will increase the chance that your pull request is accepted,
 taken straight from the Ruby on Rails guide:
