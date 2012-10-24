@@ -985,7 +985,7 @@ Ember.View = Ember.CoreView.extend(
     Return the nearest ancestor that is an instance of the provided
     class or mixin.
 
-    @proprty nearestOfType
+    @property nearestOfType
     @param {Class,Mixin} klass Subclass of Ember.View (or Ember.View itself),
            or an instance of Ember.Mixin.
     @return Ember.View
