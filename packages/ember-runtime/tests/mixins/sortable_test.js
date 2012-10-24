@@ -151,6 +151,23 @@ test("you can change the position of the middle item", function() {
   equal(sortedArrayController.objectAt(0).name, 'Alice', 'Alice (previously Dale) is first now');
 });
 
+test("don't remove and insert if position didn't change", function() {
+  var insertItemSortedCalled = false;
+
+  sortedArrayController.reopen({
+    insertItemSorted: function(item) {
+      insertItemSortedCalled = true;
+      this._super(item);
+    }
+  });
+
+  sortedArrayController.set('sortProperties', ['name']);
+
+  Ember.set(sortedArrayController.objectAt(0), 'name', 'Scumbag Brynjolfsson');
+
+  ok(!insertItemSortedCalled, "insertItemSorted should not have been called");
+});
+
 module("Ember.Sortable with sortProperties", {
   setup: function() {
     Ember.run(function() {
