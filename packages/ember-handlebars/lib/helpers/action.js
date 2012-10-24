@@ -62,9 +62,10 @@ ActionHelper.registerAction = function(actionName, options) {
 
 /**
   The `{{action}}` helper registers an HTML element within a template for
-  DOM event handling and forwards that interaction to the Application's router,
-  the template's `Ember.View` instance, or supplied `target` option (see 'Specifying a Target').
-  
+  DOM event handling and forwards that interaction to the view's `controller.target`
+  or supplied `target` option (see 'Specifying a Target'). By default the
+  `controller.target` is set to the Application's router.
+
   User interaction with that element will invoke the supplied action name on
   the appropriate target.
 
@@ -72,7 +73,7 @@ ActionHelper.registerAction = function(actionName, options) {
 
   ``` handlebars
   <script type="text/x-handlebars" data-template-name='a-template'>
-    <div {{action anActionName}}>
+    <div {{action anActionName target="view"}}>
       click me
     </div>
   </script>
@@ -82,7 +83,7 @@ ActionHelper.registerAction = function(actionName, options) {
 
   ``` javascript
   AView = Ember.View.extend({
-    templateName; 'a-template',
+    templateName: 'a-template',
     anActionName: function(event){}
   });
 
@@ -115,7 +116,7 @@ ActionHelper.registerAction = function(actionName, options) {
   If you need the default handler to trigger you should either register your
   own event handler, or use event methods on your view class. See Ember.View
   'Responding to Browser Events' for more information.
-  
+
   ### Specifying DOM event type
 
   By default the `{{action}}` helper registers for DOM `click` events. You can
@@ -137,23 +138,24 @@ ActionHelper.registerAction = function(actionName, options) {
   `Ember.EventDispatcher` instance will be created when a new
   `Ember.Application` is created. Having an instance of `Ember.Application`
   will satisfy this requirement.
-  
-  
+
+
   ### Specifying a Target
+
   There are several possible target objects for `{{action}}` helpers:
-  
+
   In a typical `Ember.Router`-backed Application where views are managed
   through use of the `{{outlet}}` helper, actions will be forwarded to the
   current state of the Applications's Router. See Ember.Router 'Responding
   to User-initiated Events' for more information.
-  
+
   If you manually set the `target` property on the controller of a template's
   `Ember.View` instance, the specifed `controller.target` will become the target
   for any actions. Likely custom values for a controller's `target` are the
   controller itself or a StateManager other than the Application's Router.
-  
+
   If the templates's view lacks a controller property the view itself is the target.
-  
+
   Finally, a `target` option can be provided to the helper to change which object
   will receive the method call. This option must be a string representing a
   path to an object:
@@ -216,12 +218,13 @@ ActionHelper.registerAction = function(actionName, options) {
 
   Will throw `Uncaught TypeError: Cannot call method 'call' of undefined` when
   "click me" is clicked.
-  
+
   ### Specifying a context
 
-  By default the `{{action}}` helper passes the current Handlebars context
-  along in the `jQuery.Event` object. You may specify an alternate object to
-  pass as the context by providing a property path:
+  You may optionally specify objects to pass as contexts to the `{{action}}` helper
+  by providing property paths as the subsequent parameters. These objects are made
+  available as the `contexts` (also `context` if there is only one) properties in the
+  `jQuery.Event` object:
 
   ``` handlebars
   <script type="text/x-handlebars" data-template-name='a-template'>
@@ -232,6 +235,9 @@ ActionHelper.registerAction = function(actionName, options) {
     {{/each}}
   </script>
   ```
+
+  Clicking "click me" will trigger the `edit` method of the view's context with a
+  `jQuery.Event` object containing the person object as its context.
 
   @method action
   @for Ember.Handlebars.helpers
