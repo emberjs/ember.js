@@ -47,6 +47,24 @@ test("should render", function() {
   ok(select.$().length, "Select renders");
 });
 
+test("should begin disabled if the disabled attribute is true", function() {
+  select.set('disabled', true);
+  append();
+
+  ok(select.$().is(":disabled"));
+});
+
+test("should become disabled if the disabled attribute is changed", function() {
+  append();
+  ok(select.$().is(":not(:disabled)"));
+
+  Ember.run(function() { select.set('disabled', true); });
+  ok(select.$().is(":disabled"));
+
+  Ember.run(function() { select.set('disabled', false); });
+  ok(select.$().is(":not(:disabled)"));
+});
+
 test("can have options", function() {
   select.set('content', Ember.A([1, 2, 3]));
 
