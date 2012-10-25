@@ -229,7 +229,7 @@ namespace :release do
     end
 
     desc "Upload release"
-    task :upload => [:clean, :dist] do
+    task :upload do
       uploader = setup_uploader
 
       # Upload minified first, so non-minified shows up on top
@@ -330,10 +330,10 @@ namespace :release do
     task :build => "dist/starter-kit.#{EMBER_VERSION}.zip"
 
     desc "Prepare starter-kit for release"
-    task :prepare => [:build]
+    task :prepare => []
 
     desc "Release starter-kit"
-    task :deploy => [:update, :upload]
+    task :deploy => [:build, :update, :upload]
   end
 
   namespace :examples do
