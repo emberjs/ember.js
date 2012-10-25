@@ -229,7 +229,7 @@ namespace :release do
     end
 
     desc "Upload release"
-    task :upload do
+    task :upload => [:clean, :dist] do
       uploader = setup_uploader
 
       # Upload minified first, so non-minified shows up on top
