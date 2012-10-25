@@ -1,3 +1,86 @@
+*Ember 1.0.0-pre.2 (October 25, 2012)*
+
+* Ember.SortableMixin: don't remove and reinsert items when their sort order doesn't change.  Fixes #1486.
+* Fix edge cases with adding/removing observers
+* Added 'disabled' attribute binding to Select
+* Deprecate usage of {{collection}} without a class in favor of {{each}}
+* Changing `Ember.Handlebars.getPath` to `Ember.Handlebars.get` for consistency. This addresses #1469.
+* Since `$.uuid` was removed from jQuery master, we're switching to using `Ember.uuid` instead.
+* Add Ember.View#nearestOfType, deprecate nearestInstanceOf
+* Adds support for globbed routes
+* Remove CP_DEFAULT_CACHEABLE flag
+* Remove VIEW_PRESERVES_CONTEXT flag
+* Replace willRerender with willClearRender
+* Bumped jQuery requirement to 1.7.2+, explicitly forbidding 1.7 and 1.7.1 (see: #1448)
+* Add Ember.String.classify() to string extensions
+* HistoryLocation now utilizes history.replaceState
+* Add a basic instrumentation API
+* Allow extension of chosen prototypes instead of the current all or none.
+* Remove dependency on `window` throughout Ember
+* Don't attempt to concat a concatenatedProperty onto an object that doesn't have a concat method
+* Remove ember-views dependency from ember-states
+* Multiselect updates array content in place.
+* Support applications without a router
+* Add Ember.Deferred mixin which implements promises using RSVP.js
+* Fix for popstate firing on page load.
+* Fixed bug in CP setter where observers could be suspended and never restored.
+* Fixed a bug with setting computed properties that modify the passed in value.
+* Initial work to allow operation with handlebars runtime only
+* A listener registered with one can be removed with off
+* Calling removeListener without method should remove all listeners
+* Add autoinit flag to Application to call initialize on DOM ready.
+* Create view for application template if no ApplicationView.
+* Remove support for inline anonymous templates.
+* Rename createRouter to setupRouter to make clear.
+* Extract createRouter from Application#initialize
+* Extract runInjections from Application#initialize
+* Simplify syntax so we can extract more easily
+* Extract createEventDispatcher from Application#init
+* Update for Handlebars 1.0.rc.1
+* Fix State.transitionTo to handle multiple contexts
+* Cleanup classNameBindings on remove
+* Support defining injections to occur after other injections
+* Computed prop setter improvements
+* fix :: syntax in classNameBindings to work with falsy values
+* Fix Ember.Error properties
+* Improved error handling with Ember.onerror
+* Adds currentPath to Ember.StateManager
+* Provide default args to tryInvoke - fixes #1327
+* Fix a bug in multi-selects with primitive options
+* Fix formatURL to use rootURL and remove formatPath
+* Fixing Ember.Router.route when rootURL is used
+* ContainerViews should invalidate `element` on children when rendering.
+* Add test for selecting in multi selects with prompts
+* Fix: Passing a regex to split in IE8 returns a single item array, causing class names beginning with a colon to fail to render in IE8.
+* Adding itemViewClass attribute to the each helper.
+* Reorganize load hooks to be more sane
+* Improve application readiness framework
+* Small restructuring of ArrayProxy
+* Add #setObjects to mutable array. A helper for replacing whole content of the array with a new one.
+* Fixed selecting items in ember multi-selects
+* Add disconnectOutlet method to controller
+* The content property of an ArrayProxy instance should be defined before modifying it
+* Adds a has() method to Ember.OrderedSet
+* Adds hooks for suspending observers
+* Check that a controller inherits from Ember.Object before instantiating it to the router.
+* Support jQuery 1.8 - fixes #1267
+* Ember.empty returns true if empty Ember.ArrayProxy
+* add scheduleOnce and remove flag
+* add various lifecycle tests to check updated ContainerView path. Expose problem with flag for scheduling one time.
+* Moving location tests to routing package
+* Make outlet a Metamorph view
+* Tests showing problem with adding and replacing
+* refactor ContainerView children rendering to not make assumptions at scheduling time, just at render time.
+* Remove remaining references to viewstates
+* Select element should initialize with the correct selectedIndex when using valueBinding
+* Remove deprecated Ember.ViewState.
+* Handle undefined element in bindAttr and classNameBindings
+* Render now uses context instead of _context
+* Better version replacement regexp
+* Outlets reference context instead of controller.
+* Rakefile :clean remove 'tmp' folder
+* Performance improvements
+
 *Ember 1.0.pre (August 03, 2012)*
 
 * Return undefined instead of empty jQuery object for Ember.View#$ when not in DOM
