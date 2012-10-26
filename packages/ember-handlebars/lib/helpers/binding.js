@@ -184,7 +184,7 @@ EmberHandlebars.registerHelper('bind', function(property, options) {
   @private
 
   Use the `boundIf` helper to create a conditional that re-evaluates
-  whenever the bound value changes.
+  whenever the truthiness of the bound value changes.
 
   ``` handlebars
   {{#boundIf "content.shouldDisplayTitle"}}
@@ -258,6 +258,8 @@ EmberHandlebars.registerHelper('with', function(context, options) {
 
 
 /**
+  See `boundIf`
+
   @method if
   @for Ember.Handlebars.helpers
   @param {Function} context
