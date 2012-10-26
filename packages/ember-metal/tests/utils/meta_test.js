@@ -63,7 +63,7 @@ if (Ember.platform.defineProperty.isSimulated) {
       props.push(prop);
     }
     deepEqual(props.sort(), ['bar', 'foo']);
-    if (typeof JSON !== 'undefiend' && 'stringify' in JSON) {
+    if (typeof JSON !== 'undefined' && 'stringify' in JSON) {
       try {
         JSON.stringify(obj);
       } catch (e) {
