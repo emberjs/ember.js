@@ -212,8 +212,8 @@ Ember.SortableMixin = Ember.Mixin.create(Ember.MutableEnumerable, {
         oldIndex = arrangedContent.indexOf(item),
         leftItem = arrangedContent.objectAt(oldIndex - 1),
         rightItem = arrangedContent.objectAt(oldIndex + 1),
-        leftResult = leftItem && this.orderBy(item, leftItem),
-        rightResult = rightItem && this.orderBy(item, rightItem);
+        leftResult = leftItem && this._orderBy(item, leftItem),
+        rightResult = rightItem && this._orderBy(item, rightItem);
 
     if (leftResult < 0 || rightResult > 0) {
       arrangedContent.removeObject(item);
