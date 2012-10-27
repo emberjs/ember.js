@@ -29,6 +29,10 @@ var get = Ember.get, set = Ember.set, forEach = Ember.EnumerableUtils.forEach;
 
   By default the sort algorithm uses Ember#compare in order to compare the elements.
   It is possible to modify this behavior by overriding the `orderBy` function.
+  This function as Ember#compare must return an integer:
+    - `-1` if `v < w`
+    - `0` if `v == w`
+    - `1` if `v > w`
 
       songsController = Ember.ArrayController.create({
         content: [{ id: 1, name: "Scumbag Dale" }, { id: 2, name: "Scumbag Katz" }, { id: 3, name: "Scumbag bryn" }],
