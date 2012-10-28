@@ -33,7 +33,7 @@ var childViewsProperty = Ember.computed(function() {
   aContainer = Ember.ContainerView.create({
     childViews: ['aView', 'bView', 'cView'],
     aView: Ember.View.create(),
-    bView: Ember.View.create()
+    bView: Ember.View.create(),
     cView: Ember.View.create()
   });
   ```
