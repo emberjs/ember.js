@@ -97,6 +97,9 @@ Ember.Handlebars.JavaScriptCompiler.prototype.appendToBuffer = function(string) 
 */
 Ember.Handlebars.Compiler.prototype.block = function(block) {
 
+  Ember.assert("You must pass exactly one argument to the block prototype", arguments.length === 1 );
+  Ember.assert("You must pass a block", block.type === 'block' );
+
   // If we have an {{unbound}} block, set the option so nested output can 
   // be automatically unbound.
   var emberOptions = this.options.ember = (this.options.ember || {});
