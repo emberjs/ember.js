@@ -77,7 +77,7 @@ Ember.Handlebars.registerHelper('unboundIf', function(property, options) {
   var context = (options.contexts && options.contexts[0]) || this;
   var normalized = Ember.Handlebars.normalizePath(context, property, options.data);
   
-  if (Ember.Handlebars.getPath(normalized.root,normalized.path,options))
+  if (handlebarsGet(normalized.root,normalized.path,options))
     return options.fn(context,property);
   else
     return options.inverse(context,property);
@@ -109,7 +109,7 @@ Ember.Handlebars.registerHelper('unboundUnless', function(property, options) {
   var context = (options.contexts && options.contexts[0]) || this;
   var normalized = Ember.Handlebars.normalizePath(context, property, options.data);
   
-  if (Ember.Handlebars.getPath(normalized.root,normalized.path,options))
+  if (handlebarsGet(normalized.root,normalized.path,options))
     return options.inverse(context,property);
   else
     return options.fn(context,property);
