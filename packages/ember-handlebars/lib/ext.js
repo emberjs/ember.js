@@ -99,16 +99,17 @@ Ember.Handlebars.Compiler.prototype.block = function(block) {
 
   // If we have an {{unbound}} block, set the option so nested output can 
   // be automatically unbound.
+  var emberOptions = this.options.ember = (this.options.ember || {});
   if (block.mustache.id.string === "unbound") { 
-    var originalValue = this.options.insideUnboundBlock;
-    this.options.insideUnboundBlock = true;
+    var originalValue = emberOptions.insideUnboundBlock;
+    emberOptions.insideUnboundBlock = true;
     var result = Handlebars.Compiler.prototype.block.call(this, block);
-    this.options.insideUnboundBlock = originalValue;
+    emberOptions.insideUnboundBlock = originalValue;
     return result;
   }
 
   // Substitute unboundIf/unboundUnless for if/unless
-  if (this.options.insideUnboundBlock) {
+  if (emberOptions.insideUnboundBlock) {
     if (block.mustache.id.string === "if") block.mustache.id.parts[0] = "unboundIf";
     if (block.mustache.id.string === "unless") block.mustache.id.parts[0] = "unboundUnless";
   }
@@ -132,8 +133,9 @@ Ember.Handlebars.Compiler.prototype.mustache = function(mustache) {
     return Handlebars.Compiler.prototype.mustache.call(this, mustache);
   } else {
     // If we're inside a {{unbound}}, rewrite the output to be {{unbound foo}}. Otherwise, 
-    // set it up for the triage.
-    var id = new Handlebars.AST.IdNode(this.options.insideUnboundBlock ? ['unbound'] : ['_triageMustache']);
+    // set it up for the triage.\
+    var insideUnboundBlock = this.options.ember && this.options.ember.insideUnboundBlock;
+    var id = new Handlebars.AST.IdNode(insideUnboundBlock ? ['unbound'] : ['_triageMustache']);
 
     // Update the mustache node to include a hash value indicating whether the original node
     // was escaped. This will allow us to properly escape values when the underlying value
