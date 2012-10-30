@@ -17,7 +17,7 @@ var get = Ember.get, set = Ember.set, forEach = Ember.EnumerableUtils.forEach;
         {trackNumber: 3, title: 'Glass Onion'},
       ];
 
-      songsController = Ember.ArrayController.create({
+      songsController = Ember.ArrayController.create(Ember.SortableMixin, {
         content: songs,
         sortProperties: ['trackNumber']
       });
