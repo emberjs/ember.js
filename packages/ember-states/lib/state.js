@@ -59,10 +59,8 @@ Ember.State = Ember.Object.extend(Ember.Evented,
     @param name
   */
   trigger: function(name) {
-    if (this[name]) {
-      this[name].apply(this, [].slice.call(arguments, 1));
-    }
     this._super.apply(this, arguments);
+    Ember.tryInvoke(this, name, [].slice.call(arguments, 1));
   },
 
   init: function() {
