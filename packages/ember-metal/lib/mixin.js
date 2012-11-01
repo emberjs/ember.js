@@ -57,11 +57,20 @@ function isMethod(obj) {
 }
 
 function mergeMixins(mixins, m, descs, values, base) {
-  var len = mixins.length, idx, mixin, guid, props, value, key, ovalue, concats;
+  var len = mixins.length, idx, mixin, guid, props, value, key, ovalue, concats, meta;
 
   function removeKeys(keyName) {
     delete descs[keyName];
     delete values[keyName];
+  }
+
+  function cloneDescriptor(desc) {
+    var newDesc = new Ember.ComputedProperty();
+    newDesc._cacheable = desc._cacheable;
+    newDesc._dependentKeys = desc._dependentKeys;
+    newDesc.func = desc.func;
+
+    return newDesc;
   }
 
   for(idx=0; idx < len; idx++) {
@@ -78,6 +87,8 @@ function mergeMixins(mixins, m, descs, values, base) {
     }
 
     if (props) {
+      meta = Ember.meta(base);
+
       // reset before adding each new mixin to pickup concats from previous
       concats = values.concatenatedProperties || base.concatenatedProperties;
       if (props.concatenatedProperties) {
@@ -89,6 +100,21 @@ function mergeMixins(mixins, m, descs, values, base) {
         value = props[key];
         if (value instanceof Ember.Descriptor) {
           if (value === REQUIRED && descs[key]) { continue; }
+
+          // Wrap descriptor function to implement
+          // _super() if needed
+          if (value.func) {
+            ovalue = values[key] === undefined && descs[key];
+            if (!ovalue) { ovalue = meta.descs[key]; }
+            if (ovalue && ovalue.func) {
+              // Since multiple mixins may inherit from the
+              // same parent, we need to clone the computed
+              // property so that other mixins do not receive
+              // the wrapped version.
+              value = cloneDescriptor(value);
+              value.func = Ember.wrap(value.func, ovalue.func);
+            }
+          }
 
           descs[key]  = value;
           values[key] = undefined;
