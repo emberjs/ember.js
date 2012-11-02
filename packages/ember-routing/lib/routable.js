@@ -121,16 +121,33 @@ Ember.Routable = Ember.Mixin.create({
 
     @method absoluteRoute
     @param manager {Ember.StateManager}
-    @param hash {Hash}
+    @param hashes {Array}
   */
-  absoluteRoute: function(manager, hash) {
-    var parentState = get(this, 'parentState');
-    var path = '', generated;
+  absoluteRoute: function(manager, hashes) {
+    var parentState = get(this, 'parentState'),
+      path = '', 
+      generated,
+      currentHash;
+
+    // check if object passed instead of array
+    // in this case set currentHash = hashes 
+    // this allows hashes to be a single hash 
+    // (it will be applied to state and all parents)
+    currentHash = null;
+    if (hashes) {
+      if (hashes instanceof Array) {
+        if (hashes.length > 0) {
+          currentHash = hashes.shift();
+        }
+      } else {
+        currentHash = hashes;
+      }
+    }
 
     // If the parent state is routable, use its current path
     // as this route's prefix.
     if (get(parentState, 'isRoutable')) {
-      path = parentState.absoluteRoute(manager, hash);
+      path = parentState.absoluteRoute(manager, hashes);
     }
 
     var matcher = get(this, 'routeMatcher'),
@@ -138,10 +155,10 @@ Ember.Routable = Ember.Mixin.create({
 
     // merge the existing serialized object in with the passed
     // in hash.
-    hash = hash || {};
-    merge(hash, serialized);
+    currentHash = currentHash || {};
+    merge(currentHash, serialized);
 
-    generated = matcher && matcher.generate(hash);
+    generated = matcher && matcher.generate(currentHash);
 
     if (generated) {
       path = path + '/' + generated;
