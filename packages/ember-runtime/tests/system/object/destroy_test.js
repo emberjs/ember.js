@@ -1,8 +1,3 @@
-// ==========================================================================
-// Project:  Ember Runtime
-// Copyright: ©2011 Strobe Inc. and contributors.
-// License:   Licensed under MIT license (see license.js)
-// ==========================================================================
 /*globals raises TestObject */
 
 module('ember-runtime/system/object/destroy_test');
@@ -37,4 +32,26 @@ test("should raise an exception when modifying watched properties on a destroyed
   } else {
     expect(0);
   }
+});
+
+test("observers should not fire after an object has been destroyed", function() {
+  var count = 0;
+  var obj = Ember.Object.create({
+    fooDidChange: Ember.observer(function() {
+      count++;
+    }, 'foo')
+  });
+
+  obj.set('foo', 'bar');
+
+  equal(count, 1, "observer was fired once");
+
+  Ember.run(function() {
+    Ember.beginPropertyChanges();
+    obj.set('foo', 'quux');
+    obj.destroy();
+    Ember.endPropertyChanges();
+  });
+
+  equal(count, 1, "observer was not called after object was destroyed");
 });

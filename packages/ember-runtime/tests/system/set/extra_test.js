@@ -1,9 +1,3 @@
-// ==========================================================================
-// Project:  Ember Runtime
-// Copyright: ©2011 Strobe Inc. and contributors.
-// License:   Licensed under MIT license (see license.js)
-// ==========================================================================
-
 // ..........................................................
 // Ember.Set.init
 //
@@ -19,7 +13,7 @@ test('passing an array to new Ember.Set() should instantiate w/ items', function
 
   equal(get(aSet, 'length'), 3, 'should have three items');
   aSet.forEach(function(x) {
-    ok(Ember.ArrayUtils.indexOf(ary, x)>=0, 'should find passed item in array');
+    ok(Ember.EnumerableUtils.indexOf(ary, x)>=0, 'should find passed item in array');
     count++;
   });
   equal(count, 3, 'iterating should have returned three objects');
@@ -36,14 +30,20 @@ test('should clear a set of its content', function() {
 
   var get = Ember.get, set = Ember.set;
   var aSet = new Ember.Set([1,2,3]);
+  var count = 0;
 
   equal(get(aSet, 'length'), 3, 'should have three items');
+  ok(get(aSet, 'firstObject'), 'firstObject should return an object');
+  ok(get(aSet, 'lastObject'), 'lastObject should return an object');
+  Ember.addObserver(aSet, '[]', function() { count++; });
 
   aSet.clear();
   equal(get(aSet, 'length'), 0, 'should have 0 items');
-  equal(aSet.contains(1), false, 'should not contain items');
+  equal(count, 1, 'should have notified of content change');
+  equal(get(aSet, 'firstObject'), null, 'firstObject should return nothing');
+  equal(get(aSet, 'lastObject'), null, 'lastObject should return nothing');
 
-  var count = 0;
+  count = 0;
   aSet.forEach(function() { count++; });
   equal(count, 0, 'iterating over items should not invoke callback');
 

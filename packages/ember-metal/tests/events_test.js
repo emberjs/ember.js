@@ -1,9 +1,3 @@
-// ==========================================================================
-// Project:  Ember Runtime
-// Copyright: ©2011 Strobe Inc. and contributors.
-// License:   Licensed under MIT license (see license.js)
-// ==========================================================================
-
 module('system/props/events_test');
 
 test('listener should receive event - removing should remove', function() {
@@ -130,16 +124,15 @@ test('calling sendEvent with extra params should be passed to listeners', functi
     params = Array.prototype.slice.call(arguments);
   });
 
-  Ember.sendEvent(obj, 'event!', 'foo', 'bar');
-  deepEqual(params, [obj, 'event!', 'foo', 'bar'], 'params should be saved');
+  Ember.sendEvent(obj, 'event!', ['foo', 'bar']);
+  deepEqual(params, ['foo', 'bar'], 'params should be saved');
 });
 
 test('implementing sendEvent on object should invoke', function() {
   var obj = {
-    sendEvent: function(eventName, param1, param2) {
+    sendEvent: function(eventName, params) {
       equal(eventName, 'event!', 'eventName');
-      equal(param1, 'foo', 'param1');
-      equal(param2, 'bar', 'param2');
+      deepEqual(params, ['foo', 'bar']);
       this.count++;
     },
 
@@ -148,7 +141,7 @@ test('implementing sendEvent on object should invoke', function() {
 
   Ember.addListener(obj, 'event!', obj, function() { this.count++; });
 
-  Ember.sendEvent(obj, 'event!', 'foo', 'bar');
+  Ember.sendEvent(obj, 'event!', ['foo', 'bar']);
   equal(obj.count, 2, 'should have invoked method & listener');
 });
 
@@ -173,3 +166,17 @@ test('hasListeners tells you if there are listeners for a given event', function
   equal(Ember.hasListeners(obj, 'event!'), true, 'has listeners');
 });
 
+test('calling removeListener without method should remove all listeners', function() {
+  var obj = {}, F = function() {}, F2 = function() {};
+
+  equal(Ember.hasListeners(obj, 'event!'), false, 'no listeners at first');
+
+  Ember.addListener(obj, 'event!', F);
+  Ember.addListener(obj, 'event!', F2);
+
+  equal(Ember.hasListeners(obj, 'event!'), true, 'has listeners');
+
+  Ember.removeListener(obj, 'event!');
+
+  equal(Ember.hasListeners(obj, 'event!'), false, 'has no more listeners');
+});

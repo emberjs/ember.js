@@ -1,5 +1,15 @@
-var get = Ember.get, set = Ember.set, getPath = Ember.getPath;
+/**
+@module ember
+@submodule ember-runtime
+*/
 
+var get = Ember.get, set = Ember.set;
+
+/**
+@class TargetActionSupport
+@namespace Ember
+@extends Ember.Mixin
+*/
 Ember.TargetActionSupport = Ember.Mixin.create({
   target: null,
   action: null,
@@ -8,14 +18,13 @@ Ember.TargetActionSupport = Ember.Mixin.create({
     var target = get(this, 'target');
 
     if (Ember.typeOf(target) === "string") {
-      // TODO: Remove the false when deprecation is done
-      var value = getPath(this, target, false);
-      if (value === undefined) { value = getPath(window, target); }
+      var value = get(this, target);
+      if (value === undefined) { value = get(Ember.lookup, target); }
       return value;
     } else {
       return target;
     }
-  }).property('target').cacheable(),
+  }).property('target'),
 
   triggerAction: function() {
     var action = get(this, 'action'),

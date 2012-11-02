@@ -1,11 +1,5 @@
-// ==========================================================================
-// Project:   Ember - JavaScript Application Framework
-// Copyright: ©2006-2011 Apple Inc. and contributors.
-// License:   Licensed under MIT license (see license.js)
-// ==========================================================================
-
-var set = Ember.set, get = Ember.get, getPath = Ember.getPath;
-var indexOf = Ember.ArrayUtils.indexOf;
+var set = Ember.set, get = Ember.get;
+var indexOf = Ember.EnumerableUtils.indexOf;
 
 // .......................................................
 // removeChild()
@@ -48,10 +42,10 @@ module("Ember.View#removeAllChildren", {
 });
 
 test("removes all child views", function() {
-  equal(getPath(view, 'childViews.length'), 3, 'precond - has child views');
+  equal(get(view, 'childViews.length'), 3, 'precond - has child views');
 
   view.removeAllChildren();
-  equal(getPath(view, 'childViews.length'), 0, 'removed all children');
+  equal(get(view, 'childViews.length'), 0, 'removed all children');
 });
 
 test("returns receiver", function() {
@@ -65,10 +59,12 @@ module("Ember.View#removeFromParent");
 
 test("removes view from parent view", function() {
   var parentView = Ember.ContainerView.create({ childViews: [Ember.View] });
-  var child = getPath(parentView, 'childViews').objectAt(0);
+  var child = get(parentView, 'childViews').objectAt(0);
   ok(get(child, 'parentView'), 'precond - has parentView');
 
-  parentView.createElement();
+  Ember.run(function(){
+    parentView.createElement();
+  });
 
   ok(parentView.$('div').length, "precond - has a child DOM element");
 
@@ -80,7 +76,7 @@ test("removes view from parent view", function() {
 
 test("returns receiver", function() {
   var parentView = Ember.ContainerView.create({ childViews: [Ember.View] });
-  var child = getPath(parentView, 'childViews').objectAt(0);
+  var child = get(parentView, 'childViews').objectAt(0);
   equal(child.removeFromParent(), child, 'receiver');
 });
 

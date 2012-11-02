@@ -1,14 +1,7 @@
-// ==========================================================================
-// Project:  Ember Runtime
-// Copyright: ©2006-2011 Strobe Inc. and contributors.
-//            ©2008-2011 Apple Inc. All rights reserved.
-// License:   Licensed under MIT license (see license.js)
-// ==========================================================================
-
 /*global Namespace:true DepObj:true*/
 
 var get = Ember.get, set = Ember.set;
-var forEach = Ember.ArrayUtils.forEach;
+var forEach = Ember.EnumerableUtils.forEach;
 
 /*
   NOTE: This test is adapted from the 1.x series of unit tests.  The tests
@@ -39,6 +32,7 @@ var forEach = Ember.ArrayUtils.forEach;
 var object, ObjectC, ObjectD, objectA, objectB ;
 
 var ObservableObject = Ember.Object.extend(Ember.Observable);
+var originalLookup = Ember.lookup, lookup;
 
 // ..........................................................
 // GET()
@@ -155,11 +149,13 @@ test("should return null when property is null on standard objects", function() 
   equal(Ember.get(objectB, 'nullProperty'), null);
 });
 
+/*
 test("raise if the provided object is null", function() {
   raises(function() {
     Ember.get(null, 'key');
   });
 });
+*/
 
 test("raise if the provided object is undefined", function() {
   raises(function() {
@@ -167,26 +163,29 @@ test("raise if the provided object is undefined", function() {
   });
 });
 
-test("should work when object is Ember (used in Ember.getPath)", function() {
-  equal(Ember.getPath('Ember.RunLoop'), Ember.RunLoop, 'Ember.getPath');
-  equal(Ember.get('RunLoop'), Ember.RunLoop, 'Ember.get(RunLoop)');
+test("should work when object is Ember (used in Ember.get)", function() {
+  equal(Ember.get('Ember.RunLoop'), Ember.RunLoop, 'Ember.get');
   equal(Ember.get(Ember, 'RunLoop'), Ember.RunLoop, 'Ember.get(Ember, RunLoop)');
 });
 
-module("Ember.getPath()");
+module("Ember.get() with paths", {
+  setup: function() {
+    lookup = Ember.lookup = {};
+  },
 
-test("should return a property at a given path relative to the window", function() {
-  window.Foo = ObservableObject.create({
+  teardown: function() {
+    Ember.lookup = originalLookup;
+  }
+});
+
+test("should return a property at a given path relative to the lookup", function() {
+  lookup.Foo = ObservableObject.create({
     Bar: ObservableObject.create({
       Baz: Ember.computed(function() { return "blargh"; }).property().volatile()
     })
   });
 
-  try {
-    equal(Ember.getPath('Foo.Bar.Baz'), "blargh");
-  } finally {
-    window.Foo = undefined;
-  }
+  equal(Ember.get('Foo.Bar.Baz'), "blargh");
 });
 
 test("should return a property at a given path relative to the passed object", function() {
@@ -196,21 +195,17 @@ test("should return a property at a given path relative to the passed object", f
     })
   });
 
-  equal(Ember.getPath(foo, 'bar.baz'), "blargh");
+  equal(Ember.get(foo, 'bar.baz'), "blargh");
 });
 
-test("should return a property at a given path relative to the window - JavaScript hash", function() {
-  window.Foo = {
+test("should return a property at a given path relative to the lookup - JavaScript hash", function() {
+  lookup.Foo = {
     Bar: {
       Baz: "blargh"
     }
   };
 
-  try {
-    equal(Ember.getPath('Foo.Bar.Baz'), "blargh");
-  } finally {
-    window.Foo = undefined;
-  }
+  equal(Ember.get('Foo.Bar.Baz'), "blargh");
 });
 
 test("should return a property at a given path relative to the passed object - JavaScript hash", function() {
@@ -220,7 +215,7 @@ test("should return a property at a given path relative to the passed object - J
     }
   };
 
-  equal(Ember.getPath(foo, 'bar.baz'), "blargh");
+  equal(Ember.get(foo, 'bar.baz'), "blargh");
 });
 
 // ..........................................................
@@ -320,6 +315,8 @@ test("should call unknownProperty with value when property is undefined", functi
 
 module("Computed properties", {
   setup: function() {
+    lookup = Ember.lookup = {};
+
     object = ObservableObject.create({
 
       // REGULAR
@@ -334,7 +331,7 @@ module("Computed properties", {
       computedCached: Ember.computed(function(key, value) {
         this.computedCachedCalls.push(value);
         return 'computedCached';
-      }).property().cacheable(),
+      }).property(),
 
 
       // DEPENDENT KEYS
@@ -357,19 +354,19 @@ module("Computed properties", {
       dependentCached: Ember.computed(function(key, value) {
         this.dependentCachedCalls.push(value);
         return 'dependentCached';
-      }).property('changer').cacheable(),
+      }).property('changer'),
 
       // everytime it is recomputed, increments call
       incCallCount: 0,
       inc: Ember.computed(function() {
         return this.incCallCount++;
-      }).property('changer').cacheable(),
+      }).property('changer'),
 
       // depends on cached property which depends on another property...
       nestedIncCallCount: 0,
       nestedInc: Ember.computed(function(key, value) {
         return this.nestedIncCallCount++;
-      }).property('inc').cacheable(),
+      }).property('inc'),
 
       // two computed properties that depend on a third property
       state: 'on',
@@ -384,6 +381,9 @@ module("Computed properties", {
       }).property('state').volatile()
 
     }) ;
+  },
+  teardown: function() {
+    Ember.lookup = originalLookup;
   }
 });
 
@@ -537,90 +537,100 @@ test("dependent keys should be able to be specified as property paths", function
     }),
 
     menuPrice: Ember.computed(function() {
-      return this.getPath('menu.price');
-    }).property('menu.price').cacheable()
+      return this.get('menu.price');
+    }).property('menu.price')
   });
 
   equal(depObj.get('menuPrice'), 5, "precond - initial value returns 5");
 
-  depObj.setPath('menu.price', 6);
+  depObj.set('menu.price', 6);
 
   equal(depObj.get('menuPrice'), 6, "cache is properly invalidated after nested property changes");
 });
 
 test("nested dependent keys should propagate after they update", function() {
-  window.DepObj = ObservableObject.create({
-    restaurant: ObservableObject.create({
-      menu: ObservableObject.create({
-        price: 5
-      })
-    }),
+  var bindObj;
+  Ember.run(function () {
+    lookup.DepObj = ObservableObject.create({
+      restaurant: ObservableObject.create({
+        menu: ObservableObject.create({
+          price: 5
+        })
+      }),
 
-    price: Ember.computed(function() {
-      return this.getPath('restaurant.menu.price');
-    }).property('restaurant.menu.price').volatile()
+      price: Ember.computed(function() {
+        return this.get('restaurant.menu.price');
+      }).property('restaurant.menu.price').volatile()
+    });
+
+    bindObj = ObservableObject.create({
+      priceBinding: "DepObj.price"
+    });
   });
-
-  var bindObj = ObservableObject.create({
-    priceBinding: "DepObj.price"
-  });
-
-  Ember.run.sync();
 
   equal(bindObj.get('price'), 5, "precond - binding propagates");
 
-  DepObj.setPath('restaurant.menu.price', 10);
-
-  Ember.run.sync();
+  Ember.run(function () {
+    lookup.DepObj.set('restaurant.menu.price', 10);
+  });
 
   equal(bindObj.get('price'), 10, "binding propagates after a nested dependent keys updates");
 
-  DepObj.setPath('restaurant.menu', ObservableObject.create({
-    price: 15
-  }));
-
-  Ember.run.sync();
+  Ember.run(function () {
+    lookup.DepObj.set('restaurant.menu', ObservableObject.create({
+      price: 15
+    }));
+  });
 
   equal(bindObj.get('price'), 15, "binding propagates after a middle dependent keys updates");
 });
 
 test("cacheable nested dependent keys should clear after their dependencies update", function() {
-  window.DepObj = ObservableObject.create({
-    restaurant: ObservableObject.create({
-      menu: ObservableObject.create({
-        price: 5
-      })
-    }),
+  ok(true);
 
-    price: Ember.computed(function() {
-      return this.getPath('restaurant.menu.price');
-    }).property('restaurant.menu.price').cacheable()
+  var DepObj;
+
+  Ember.run(function(){
+    lookup.DepObj = DepObj = ObservableObject.create({
+      restaurant: ObservableObject.create({
+        menu: ObservableObject.create({
+          price: 5
+        })
+      }),
+
+      price: Ember.computed(function() {
+        return this.get('restaurant.menu.price');
+      }).property('restaurant.menu.price')
+    });
   });
-
-  Ember.run.sync();
 
   equal(DepObj.get('price'), 5, "precond - computed property is correct");
 
-  DepObj.setPath('restaurant.menu.price', 10);
-
+  Ember.run(function(){
+    DepObj.set('restaurant.menu.price', 10);
+  });
   equal(DepObj.get('price'), 10, "cacheable computed properties are invalidated even if no run loop occurred");
-  DepObj.setPath('restaurant.menu.price', 20);
 
+  Ember.run(function(){
+    DepObj.set('restaurant.menu.price', 20);
+  });
   equal(DepObj.get('price'), 20, "cacheable computed properties are invalidated after a second get before a run loop");
-
-  Ember.run.sync();
-
   equal(DepObj.get('price'), 20, "precond - computed properties remain correct after a run loop");
 
-  DepObj.setPath('restaurant.menu', ObservableObject.create({
-    price: 15
-  }));
+  Ember.run(function(){
+    DepObj.set('restaurant.menu', ObservableObject.create({
+      price: 15
+    }));
+  });
+
 
   equal(DepObj.get('price'), 15, "cacheable computed properties are invalidated after a middle property changes");
 
-  DepObj.setPath('restaurant.menu', ObservableObject.create({
-    price: 25
-  }));
+  Ember.run(function(){
+    DepObj.set('restaurant.menu', ObservableObject.create({
+      price: 25
+    }));
+  });
 
   equal(DepObj.get('price'), 25, "cacheable computed properties are invalidated after a middle property changes again, before a run loop");
 });
@@ -648,7 +658,7 @@ module("Observable objects & object properties ", {
         var keys = ['normal','abnormal'];
         var ret = [];
         for(var idx=0; idx<keys.length;idx++) {
-          ret[ret.length] = this.getPath(keys[idx]);
+          ret[ret.length] = this.get(keys[idx]);
         }
         return ret ;
       },
@@ -663,10 +673,11 @@ module("Observable objects & object properties ", {
 
       testArrayObserver: Ember.observer(function(){
         this.abnormal = 'notifiedObserver';
-      }, 'normalArray.@each')
+      }, 'normalArray.[]')
 
     });
   }
+
 });
 
 test('incrementProperty and decrementProperty',function(){
@@ -848,14 +859,16 @@ module("Bind function ", {
 
 test("should bind property with method parameter as undefined", function() {
   // creating binding
-  objectA.bind("name", "Namespace.objectB.normal",undefined) ;
-  Ember.run.sync() ; // actually sets up up the binding
+  Ember.run(function(){
+    objectA.bind("name", "Namespace.objectB.normal",undefined) ;
+  });
 
   // now make a change to see if the binding triggers.
-  objectB.set("normal", "changedValue") ;
+  Ember.run(function(){
+    objectB.set("normal", "changedValue") ;
+  });
 
   // support new-style bindings if available
-  Ember.run.sync();
   equal("changedValue", objectA.get("name"), "objectA.name is binded");
 });
 

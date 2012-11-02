@@ -1,38 +1,22 @@
-// ==========================================================================
-// Project:  Ember Metal
-// Copyright: ©2011 Strobe Inc. and contributors.
-// License:   Licensed under MIT license (see license.js)
-// ==========================================================================
-
 require('ember-metal/core');
 require('ember-metal/platform');
 
-// ..........................................................
-// GUIDS
-//
+/**
+@module ember-metal
+*/
 
-// Used for guid generation...
-var GUID_KEY = '__ember'+ (+ new Date());
-var uuid, numberCache, stringCache;
+var o_defineProperty = Ember.platform.defineProperty,
+    o_create = Ember.create,
+    // Used for guid generation...
+    GUID_KEY = '__ember'+ (+ new Date()),
+    uuid         = 0,
+    numberCache  = [],
+    stringCache  = {};
 
-uuid         = 0;
-numberCache  = [];
-stringCache  = {};
-
-var GUID_DESC = Ember.GUID_DESC = {
-  configurable: true,
-  writable: true,
-  enumerable: false
-};
-
-var o_defineProperty = Ember.platform.defineProperty;
-var o_create = Ember.platform.create;
+var MANDATORY_SETTER = Ember.ENV.MANDATORY_SETTER;
 
 /**
   @private
-  @static
-  @type String
-  @constant
 
   A unique key used to assign guids and other private metadata to objects.
   If you inspect an object in your browser debugger you will often see these.
@@ -40,8 +24,20 @@ var o_create = Ember.platform.create;
 
   On browsers that support it, these properties are added with enumeration
   disabled so they won't show up when you iterate over your properties.
+
+  @property GUID_KEY
+  @for Ember
+  @type String
+  @final
 */
 Ember.GUID_KEY = GUID_KEY;
+
+var GUID_DESC = {
+  writable:    false,
+  configurable: false,
+  enumerable:  false,
+  value: null
+};
 
 /**
   @private
@@ -50,28 +46,26 @@ Ember.GUID_KEY = GUID_KEY;
   pass in.  You will rarely need to use this method.  Instead you should
   call Ember.guidFor(obj), which return an existing guid if available.
 
-  @param {Object} obj
-    Optional object the guid will be used for.  If passed in, the guid will
+  @method generateGuid
+  @for Ember
+  @param {Object} [obj] Object the guid will be used for.  If passed in, the guid will
     be saved on the object and reused whenever you pass the same object
     again.
 
     If no object is passed, just generate a new guid.
 
-  @param {String} prefix
-    Optional prefix to place in front of the guid.  Useful when you want to
+  @param {String} [prefix] Prefix to place in front of the guid.  Useful when you want to
     separate the guid into separate namespaces.
 
-  @returns {String} the guid
+  @return {String} the guid
 */
-Ember.generateGuid = function(obj, prefix) {
+Ember.generateGuid = function generateGuid(obj, prefix) {
   if (!prefix) prefix = 'ember';
   var ret = (prefix + (uuid++));
   if (obj) {
     GUID_DESC.value = ret;
     o_defineProperty(obj, GUID_KEY, GUID_DESC);
-    GUID_DESC.value = null;
   }
-
   return ret ;
 };
 
@@ -84,11 +78,12 @@ Ember.generateGuid = function(obj, prefix) {
 
   You can also use this method on DOM Element objects.
 
-  @method
+  @method guidFor
+  @for Ember
   @param obj {Object} any object, string, number, Element, or primitive
-  @returns {String} the unique guid for this instance.
+  @return {String} the unique guid for this instance.
 */
-Ember.guidFor = function(obj) {
+Ember.guidFor = function guidFor(obj) {
 
   // special cases where we don't want to add a key to object
   if (obj === undefined) return "(undefined)";
@@ -116,10 +111,12 @@ Ember.guidFor = function(obj) {
       if (obj[GUID_KEY]) return obj[GUID_KEY];
       if (obj === Object) return '(Object)';
       if (obj === Array)  return '(Array)';
-      return Ember.generateGuid(obj, 'ember');
+      ret = 'ember'+(uuid++);
+      GUID_DESC.value = ret;
+      o_defineProperty(obj, GUID_KEY, GUID_DESC);
+      return ret;
   }
 };
-
 
 // ..........................................................
 // META
@@ -137,8 +134,11 @@ var META_KEY = Ember.GUID_KEY+'_meta';
 /**
   The key used to store meta information on object for property observing.
 
-  @static
-  @property
+  @property META_KEY
+  @for Ember
+  @private
+  @final
+  @type String
 */
 Ember.META_KEY = META_KEY;
 
@@ -148,14 +148,30 @@ var EMPTY_META = {
   watching: {}
 };
 
+if (MANDATORY_SETTER) { EMPTY_META.values = {}; }
+
+Ember.EMPTY_META = EMPTY_META;
+
 if (Object.freeze) Object.freeze(EMPTY_META);
 
-var createMeta = Ember.platform.defineProperty.isSimulated ? o_create : (function(meta) { return meta; });
+var isDefinePropertySimulated = Ember.platform.defineProperty.isSimulated;
+
+function Meta(obj) {
+  this.descs = {};
+  this.watching = {};
+  this.cache = {};
+  this.source = obj;
+}
+
+if (isDefinePropertySimulated) {
+  // on platforms that don't support enumerable false
+  // make meta fail jQuery.isPlainObject() to hide from
+  // jQuery.extend() by having a property that fails
+  // hasOwnProperty check.
+  Meta.prototype.__preventPlainObject__ = true;
+}
 
 /**
-  @private
-  @function
-
   Retrieves the meta hash for an object.  If 'writable' is true ensures the
   hash is writable for this object as well.
 
@@ -164,14 +180,16 @@ var createMeta = Ember.platform.defineProperty.isSimulated ? o_create : (functio
   not access this information directly but instead work with higher level
   methods that manipulate this hash indirectly.
 
-  @param {Object} obj
-    The object to retrieve meta for
+  @method meta
+  @for Ember
+  @private
 
-  @param {Boolean} writable
-    Pass false if you do not intend to modify the meta hash, allowing the
-    method to avoid making an unnecessary copy.
+  @param {Object} obj The object to retrieve meta for
 
-  @returns {Hash}
+  @param {Boolean} [writable=true] Pass false if you do not intend to modify
+    the meta hash, allowing the method to avoid making an unnecessary copy.
+
+  @return {Hash}
 */
 Ember.meta = function meta(obj, writable) {
 
@@ -179,30 +197,29 @@ Ember.meta = function meta(obj, writable) {
   if (writable===false) return ret || EMPTY_META;
 
   if (!ret) {
-    o_defineProperty(obj, META_KEY, META_DESC);
-    ret = obj[META_KEY] = createMeta({
-      descs: {},
-      watching: {},
-      values: {},
-      lastSetValues: {},
-      cache:  {},
-      source: obj
-    });
+    if (!isDefinePropertySimulated) o_defineProperty(obj, META_KEY, META_DESC);
+
+    ret = new Meta(obj);
+
+    if (MANDATORY_SETTER) { ret.values = {}; }
+
+    obj[META_KEY] = ret;
 
     // make sure we don't accidentally try to create constructor like desc
     ret.descs.constructor = null;
 
   } else if (ret.source !== obj) {
+    if (!isDefinePropertySimulated) o_defineProperty(obj, META_KEY, META_DESC);
+
     ret = o_create(ret);
     ret.descs    = o_create(ret.descs);
-    ret.values   = o_create(ret.values);
     ret.watching = o_create(ret.watching);
-    ret.lastSetValues = {};
     ret.cache    = {};
     ret.source   = obj;
 
-    o_defineProperty(obj, META_KEY, META_DESC);
-    ret = obj[META_KEY] = createMeta(ret);
+    if (MANDATORY_SETTER) { ret.values = o_create(ret.values); }
+
+    obj[META_KEY] = ret;
   }
   return ret;
 };
@@ -242,13 +259,15 @@ Ember.setMeta = function setMeta(obj, property, value) {
   undefined if `prepareMetaPath` discovers any part of the path that
   shared or undefined.
 
+  @method metaPath
+  @for Ember
   @param {Object} obj The object whose meta we are examining
   @param {Array} path An array of keys to walk down
   @param {Boolean} writable whether or not to create a new meta
     (or meta property) if one does not already exist or if it's
     shared with its constructor
 */
-Ember.metaPath = function(obj, path, writable) {
+Ember.metaPath = function metaPath(obj, path, writable) {
   var meta = Ember.meta(obj, writable), keyName, value;
 
   for (var i=0, l=path.length; i<l; i++) {
@@ -277,13 +296,11 @@ Ember.metaPath = function(obj, path, writable) {
   when the function is invoked.  This is the primitive we use to implement
   calls to super.
 
-  @param {Function} func
-    The function to call
-
-  @param {Function} superFunc
-    The super function.
-
-  @returns {Function} wrapped function.
+  @method wrap
+  @for Ember
+  @param {Function} func The function to call
+  @param {Function} superFunc The super function.
+  @return {Function} wrapped function.
 */
 Ember.wrap = function(func, superFunc) {
 
@@ -317,8 +334,10 @@ Ember.wrap = function(func, superFunc) {
       Ember.isArray([]); // true
       Ember.isArray( Ember.ArrayProxy.create({ content: [] }) ); // true
 
+  @method isArray
+  @for Ember
   @param {Object} obj The object to test
-  @returns {Boolean}
+  @return {Boolean}
 */
 Ember.isArray = function(obj) {
   if (!obj || obj.setInterval) { return false; }
@@ -336,18 +355,49 @@ Ember.isArray = function(obj) {
       Ember.makeArray();          => []
       Ember.makeArray(null);      => []
       Ember.makeArray(undefined); => []
-      Ember.makeArray('lindsay'); => ['lindsay'] 
+      Ember.makeArray('lindsay'); => ['lindsay']
       Ember.makeArray([1,2,42]);  => [1,2,42]
 
       var controller = Ember.ArrayProxy.create({ content: [] });
       Ember.makeArray(controller) === controller;   => true
 
+  @method makeArray
+  @for Ember
   @param {Object} obj the object
-  @returns {Array}
+  @return {Array}
 */
 Ember.makeArray = function(obj) {
-  if (obj === null || obj === undefined) return [];
+  if (obj === null || obj === undefined) { return []; }
   return Ember.isArray(obj) ? obj : [obj];
 };
 
+function canInvoke(obj, methodName) {
+  return !!(obj && typeof obj[methodName] === 'function');
+}
 
+/**
+  Checks to see if the `methodName` exists on the `obj`.
+
+  @method canInvoke
+  @for Ember
+  @param {Object} obj The object to check for the method
+  @param {String} methodName The method name to check for
+*/
+Ember.canInvoke = canInvoke;
+
+/**
+  Checks to see if the `methodName` exists on the `obj`,
+  and if it does, invokes it with the arguments passed.
+
+  @method tryInvoke
+  @for Ember
+  @param {Object} obj The object to check for the method
+  @param {String} methodName The method name to check for
+  @param {Array} [args] The arguments to pass to the method
+  @return {anything} the return value of the invoked method or undefined if it cannot be invoked
+*/
+Ember.tryInvoke = function(obj, methodName, args) {
+  if (canInvoke(obj, methodName)) {
+    return obj[methodName].apply(obj, args || []);
+  }
+};

@@ -1,18 +1,19 @@
-// ==========================================================================
-// Project:  Ember Metal
-// Copyright: ©2011 Strobe Inc. and contributors.
-// License:   Licensed under MIT license (see license.js)
-// ==========================================================================
-/*globals ember_assert */
-
 require('ember-metal/core');
 require('ember-metal/platform');
 require('ember-metal/utils');
 
-var USE_ACCESSORS = Ember.platform.hasPropertyAccessors && Ember.ENV.USE_ACCESSORS;
-Ember.USE_ACCESSORS = !!USE_ACCESSORS;
+/**
+@module ember-metal
+*/
 
-var meta = Ember.meta;
+var META_KEY = Ember.META_KEY, get, set;
+
+var MANDATORY_SETTER = Ember.ENV.MANDATORY_SETTER;
+
+var IS_GLOBAL = /^([A-Z$]|([0-9][A-Z$]))/;
+var IS_GLOBAL_PATH = /^([A-Z$]|([0-9][A-Z$])).*[\.\*]/;
+var HAS_THIS  = /^this[\.\*]/;
+var FIRST_KEY = /^([^\.\*]+)/;
 
 // ..........................................................
 // GET AND SET
@@ -21,70 +22,7 @@ var meta = Ember.meta;
 // Otherwise simulate accessors by looking up the property directly on the
 // object.
 
-var get, set;
-
-/** @private */
-get = function get(obj, keyName) {
-  if (keyName === undefined && 'string' === typeof obj) {
-    keyName = obj;
-    obj = Ember;
-  }
-
-  if (!obj) return undefined;
-  var ret = obj[keyName];
-  if (ret===undefined && 'function'===typeof obj.unknownProperty) {
-    ret = obj.unknownProperty(keyName);
-  }
-  return ret;
-};
-
-/** @private */
-set = function set(obj, keyName, value) {
-  if (('object'===typeof obj) && !(keyName in obj)) {
-    if ('function' === typeof obj.setUnknownProperty) {
-      obj.setUnknownProperty(keyName, value);
-    } else if ('function' === typeof obj.unknownProperty) {
-      obj.unknownProperty(keyName, value);
-    } else obj[keyName] = value;
-  } else {
-    obj[keyName] = value;
-  }
-  return value;
-};
-
-if (!USE_ACCESSORS) {
-
-  var o_get = get, o_set = set;
-
-  /** @private */
-  get = function(obj, keyName) {
-    if (keyName === undefined && 'string' === typeof obj) {
-      keyName = obj;
-      obj = Ember;
-    }
-
-    ember_assert("You need to provide an object and key to `get`.", !!obj && keyName);
-
-    if (!obj) return undefined;
-    var desc = meta(obj, false).descs[keyName];
-    if (desc) return desc.get(obj, keyName);
-    else return o_get(obj, keyName);
-  };
-
-  /** @private */
-  set = function(obj, keyName, value) {
-    ember_assert("You need to provide an object and key to `set`.", !!obj && keyName !== undefined);
-    var desc = meta(obj, false).descs[keyName];
-    if (desc) desc.set(obj, keyName, value);
-    else o_set(obj, keyName, value);
-    return value;
-  };
-
-}
-
 /**
-  @function
-
   Gets the value of a property on an object.  If the property is computed,
   the function will be invoked.  If the property is not defined but the
   object implements the unknownProperty() method then that will be invoked.
@@ -102,19 +40,49 @@ if (!USE_ACCESSORS) {
   Note that if the obj itself is null, this method will simply return
   undefined.
 
-  @param {Object} obj
-    The object to retrieve from.
-
-  @param {String} keyName
-    The property key to retrieve
-
-  @returns {Object} the property value or null.
+  @method get
+  @for Ember
+  @param {Object} obj The object to retrieve from.
+  @param {String} keyName The property key to retrieve
+  @return {Object} the property value or null.
 */
-Ember.get = get;
+get = function get(obj, keyName) {
+  // Helpers that operate with 'this' within an #each
+  if (keyName === '') {
+    return obj;
+  }
+
+  if (!keyName && 'string'===typeof obj) {
+    keyName = obj;
+    obj = null;
+  }
+
+  if (!obj || keyName.indexOf('.') !== -1) {
+    return getPath(obj, keyName);
+  }
+
+  Ember.assert("You need to provide an object and key to `get`.", !!obj && keyName);
+
+  var meta = obj[META_KEY], desc = meta && meta.descs[keyName], ret;
+  if (desc) {
+    return desc.get(obj, keyName);
+  } else {
+    if (MANDATORY_SETTER && meta && meta.watching[keyName] > 0) {
+      ret = meta.values[keyName];
+    } else {
+      ret = obj[keyName];
+    }
+
+    if (ret === undefined &&
+        'object' === typeof obj && !(keyName in obj) && 'function' === typeof obj.unknownProperty) {
+      return obj.unknownProperty(keyName);
+    }
+
+    return ret;
+  }
+};
 
 /**
-  @function
-
   Sets the value of a property on an object, respecting computed properties
   and notifying observers and other listeners of the change.  If the
   property is not defined but the object implements the unknownProperty()
@@ -130,92 +98,91 @@ Ember.get = get;
   to respect the unknownProperty() handler.  Otherwise you can ignore this
   method.
 
-  @param {Object} obj
-    The object to modify.
-
-  @param {String} keyName
-    The property key to set
-
-  @param {Object} value
-    The value to set
-
-  @returns {Object} the passed value.
+  @method set
+  @for Ember
+  @param {Object} obj The object to modify.
+  @param {String} keyName The property key to set
+  @param {Object} value The value to set
+  @return {Object} the passed value.
 */
-Ember.set = set;
-
-// ..........................................................
-// PATHS
-//
-
-/** @private */
-function normalizePath(path) {
-  ember_assert('must pass non-empty string to normalizePath()', path && path!=='');
-
-  if (path==='*') return path; //special case...
-  var first = path.charAt(0);
-  if(first==='.') return 'this'+path;
-  if (first==='*' && path.charAt(1)!=='.') return 'this.'+path.slice(1);
-  return path;
-}
-
-// assumes normalized input; no *, normalized path, always a target...
-/** @private */
-function getPath(target, path) {
-  var len = path.length, idx, next, key;
-
-  idx = path.indexOf('*');
-  if (idx>0 && path.charAt(idx-1)!=='.') {
-    return getPath(getPath(target, path.slice(0, idx)), path.slice(idx+1));
+set = function set(obj, keyName, value, tolerant) {
+  if (typeof obj === 'string') {
+    Ember.assert("Path '" + obj + "' must be global if no obj is given.", IS_GLOBAL.test(obj));
+    value = keyName;
+    keyName = obj;
+    obj = null;
   }
 
-  idx = 0;
-  while(target && idx<len) {
-    next = path.indexOf('.', idx);
-    if (next<0) next = len;
-    key = path.slice(idx, next);
-    target = key==='*' ? target : get(target, key);
-
-    if (target && target.isDestroyed) { return undefined; }
-
-    idx = next+1;
+  if (!obj || keyName.indexOf('.') !== -1) {
+    return setPath(obj, keyName, value, tolerant);
   }
-  return target ;
+
+  Ember.assert("You need to provide an object and key to `set`.", !!obj && keyName !== undefined);
+  Ember.assert('calling set on destroyed object', !obj.isDestroyed);
+
+  var meta = obj[META_KEY], desc = meta && meta.descs[keyName],
+      isUnknown, currentValue;
+  if (desc) {
+    desc.set(obj, keyName, value);
+  }
+  else {
+    isUnknown = 'object' === typeof obj && !(keyName in obj);
+
+    // setUnknownProperty is called if `obj` is an object,
+    // the property does not already exist, and the
+    // `setUnknownProperty` method exists on the object
+    if (isUnknown && 'function' === typeof obj.setUnknownProperty) {
+      obj.setUnknownProperty(keyName, value);
+    } else if (meta && meta.watching[keyName] > 0) {
+      if (MANDATORY_SETTER) {
+        currentValue = meta.values[keyName];
+      } else {
+        currentValue = obj[keyName];
+      }
+      // only trigger a change if the value has changed
+      if (value !== currentValue) {
+        Ember.propertyWillChange(obj, keyName);
+        if (MANDATORY_SETTER) {
+          if (currentValue === undefined && !(keyName in obj)) {
+            Ember.defineProperty(obj, keyName, null, value); // setup mandatory setter
+          } else {
+            meta.values[keyName] = value;
+          }
+        } else {
+          obj[keyName] = value;
+        }
+        Ember.propertyDidChange(obj, keyName);
+      }
+    } else {
+      obj[keyName] = value;
+    }
+  }
+  return value;
+};
+
+// Currently used only by Ember Data tests
+if (Ember.config.overrideAccessors) {
+  Ember.get = get;
+  Ember.set = set;
+  Ember.config.overrideAccessors();
+  get = Ember.get;
+  set = Ember.set;
 }
 
-var TUPLE_RET = [];
-var IS_GLOBAL = /^([A-Z$]|([0-9][A-Z$]))/;
-var IS_GLOBAL_PATH = /^([A-Z$]|([0-9][A-Z$])).*[\.\*]/;
-var HAS_THIS  = /^this[\.\*]/;
-var FIRST_KEY = /^([^\.\*]+)/;
-
-/** @private */
 function firstKey(path) {
   return path.match(FIRST_KEY)[0];
 }
 
 // assumes path is already normalized
-/** @private */
 function normalizeTuple(target, path) {
   var hasThis  = HAS_THIS.test(path),
       isGlobal = !hasThis && IS_GLOBAL_PATH.test(path),
       key;
 
-  if (!target || isGlobal) target = window;
+  if (!target || isGlobal) target = Ember.lookup;
   if (hasThis) path = path.slice(5);
 
-  var idx = path.indexOf('*');
-  if (idx>0 && path.charAt(idx-1)!=='.') {
-
-    // should not do lookup on a prototype object because the object isn't
-    // really live yet.
-    if (target && meta(target,false).proto!==target) {
-      target = getPath(target, path.slice(0, idx));
-    } else {
-      target = null;
-    }
-    path   = path.slice(idx+1);
-
-  } else if (target === window) {
+  if (target === Ember.lookup) {
     key = firstKey(path);
     target = get(target, key);
     path   = path.slice(key.length+1);
@@ -224,21 +191,62 @@ function normalizeTuple(target, path) {
   // must return some kind of path to be valid else other things will break.
   if (!path || path.length===0) throw new Error('Invalid Path');
 
-  TUPLE_RET[0] = target;
-  TUPLE_RET[1] = path;
-  return TUPLE_RET;
+  return [ target, path ];
 }
 
-/**
-  @private
+function getPath(root, path) {
+  var hasThis, parts, tuple, idx, len;
 
-  Normalizes a path to support older-style property paths beginning with . or
+  // If there is no root and path is a key name, return that
+  // property from the global object.
+  // E.g. get('Ember') -> Ember
+  if (root === null && path.indexOf('.') === -1) { return get(Ember.lookup, path); }
 
-  @function
-  @param {String} path path to normalize
-  @returns {String} normalized path
-*/
-Ember.normalizePath = normalizePath;
+  // detect complicated paths and normalize them
+  hasThis  = HAS_THIS.test(path);
+
+  if (!root || hasThis) {
+    tuple = normalizeTuple(root, path);
+    root = tuple[0];
+    path = tuple[1];
+    tuple.length = 0;
+  }
+
+  parts = path.split(".");
+  len = parts.length;
+  for (idx=0; root && idx<len; idx++) {
+    root = get(root, parts[idx], true);
+    if (root && root.isDestroyed) { return undefined; }
+  }
+  return root;
+}
+
+function setPath(root, path, value, tolerant) {
+  var keyName;
+
+  // get the last part of the path
+  keyName = path.slice(path.lastIndexOf('.') + 1);
+
+  // get the first part of the part
+  path    = path.slice(0, path.length-(keyName.length+1));
+
+  // unless the path is this, look up the first part to
+  // get the root
+  if (path !== 'this') {
+    root = getPath(root, path);
+  }
+
+  if (!keyName || keyName.length === 0) {
+    throw new Error('You passed an empty path');
+  }
+
+  if (!root) {
+    if (tolerant) { return; }
+    else { throw new Error('Object in path '+path+' could not be found or was destroyed.'); }
+  }
+
+  return set(root, keyName, value);
+}
 
 /**
   @private
@@ -248,143 +256,59 @@ Ember.normalizePath = normalizePath;
   paths (i.e. a path beginning with a captial letter not defined on the
   target) and * separators.
 
-  @param {Object} target
-    The current target.  May be null.
-
-  @param {String} path
-    A path on the target or a global property path.
-
-  @returns {Array} a temporary array with the normalized target/path pair.
+  @method normalizeTuple
+  @for Ember
+  @param {Object} target The current target.  May be null.
+  @param {String} path A path on the target or a global property path.
+  @return {Array} a temporary array with the normalized target/path pair.
 */
 Ember.normalizeTuple = function(target, path) {
-  return normalizeTuple(target, normalizePath(path));
+  return normalizeTuple(target, path);
 };
 
-Ember.normalizeTuple.primitive = normalizeTuple;
-
 Ember.getWithDefault = function(root, key, defaultValue) {
-  var value = Ember.get(root, key);
+  var value = get(root, key);
 
   if (value === undefined) { return defaultValue; }
   return value;
 };
 
-Ember.getPath = function(root, path, _checkGlobal) {
-  var pathOnly, hasThis, hasStar, isGlobal, ret;
 
-  // Helpers that operate with 'this' within an #each
-  if (path === '') {
-    return root;
-  }
+Ember.get = get;
+Ember.getPath = Ember.deprecateFunc('getPath is deprecated since get now supports paths', Ember.get);
 
-  if (!path && 'string'===typeof root) {
-    path = root;
-    root = null;
-    pathOnly = true;
-  }
-
-  hasStar = path.indexOf('*') > -1;
-
-  // If there is no root and path is a key name, return that
-  // property from the global object.
-  // E.g. getPath('Ember') -> Ember
-  if (root === null && !hasStar && path.indexOf('.') < 0) { return get(window, path); }
-
-  // detect complicated paths and normalize them
-  path = normalizePath(path);
-  hasThis  = HAS_THIS.test(path);
-
-  if (!root || hasThis || hasStar) {
-    ember_deprecate("Fetching globals with Ember.getPath is deprecated (root: "+root+", path: "+path+")", !root || root === window || !IS_GLOBAL.test(path));
-
-    var tuple = normalizeTuple(root, path);
-    root = tuple[0];
-    path = tuple[1];
-    tuple.length = 0;
-  }
-
-  ret = getPath(root, path);
-
-  if (ret === undefined && !pathOnly && !hasThis && root !== window && IS_GLOBAL.test(path) && _checkGlobal !== false) {
-    ember_deprecate("Fetching globals with Ember.getPath is deprecated (root: "+root+", path: "+path+")");
-    return Ember.getPath(window, path);
-  } else {
-    return ret;
-  }
-};
-
-Ember.setPath = function(root, path, value, tolerant) {
-  var keyName;
-
-  if (arguments.length===2 && 'string' === typeof root) {
-    value = path;
-    path = root;
-    root = null;
-  }
-
-  path = normalizePath(path);
-  if (path.indexOf('*')>0) {
-    ember_deprecate("Setting globals with Ember.setPath is deprecated (path: "+path+")", !root || root === window || !IS_GLOBAL.test(path));
-
-    var tuple = normalizeTuple(root, path);
-    root = tuple[0];
-    path = tuple[1];
-    tuple.length = 0;
-  }
-
-  if (path.indexOf('.') > 0) {
-    keyName = path.slice(path.lastIndexOf('.')+1);
-    path    = path.slice(0, path.length-(keyName.length+1));
-    if (path !== 'this') {
-      // Remove the `false` when we're done with this deprecation
-      root = Ember.getPath(root, path, false);
-      if (!root && IS_GLOBAL.test(path)) {
-        ember_deprecate("Setting globals with Ember.setPath is deprecated (path: "+path+")");
-        root = Ember.getPath(window, path);
-      }
-    }
-
-  } else {
-    if (IS_GLOBAL.test(path)) throw new Error('Invalid Path');
-    keyName = path;
-  }
-
-  if (!keyName || keyName.length===0 || keyName==='*') {
-    throw new Error('Invalid Path');
-  }
-
-  if (!root) {
-    if (tolerant) { return; }
-    else { throw new Error('Object in path '+path+' could not be found or was destroyed.'); }
-  }
-
-  return Ember.set(root, keyName, value);
-};
+Ember.set = set;
+Ember.setPath = Ember.deprecateFunc('setPath is deprecated since set now supports paths', Ember.set);
 
 /**
-  Error-tolerant form of Ember.setPath. Will not blow up if any part of the
+  Error-tolerant form of Ember.set. Will not blow up if any part of the
   chain is undefined, null, or destroyed.
 
   This is primarily used when syncing bindings, which may try to update after
   an object has been destroyed.
-*/
-Ember.trySetPath = function(root, path, value) {
-  if (arguments.length===2 && 'string' === typeof root) {
-    value = path;
-    path = root;
-    root = null;
-  }
 
-  return Ember.setPath(root, path, value, true);
+  @method trySet
+  @for Ember
+  @param {Object} obj The object to modify.
+  @param {String} keyName The property key to set
+  @param {Object} value The value to set
+*/
+Ember.trySet = function(root, path, value) {
+  return set(root, path, value, true);
 };
+Ember.trySetPath = Ember.deprecateFunc('trySetPath has been renamed to trySet', Ember.trySet);
 
 /**
   Returns true if the provided path is global (e.g., "MyApp.fooController.bar")
   instead of local ("foo.bar.baz").
 
+  @method isGlobalPath
+  @for Ember
+  @private
   @param {String} path
-  @returns Boolean
+  @return Boolean
 */
 Ember.isGlobalPath = function(path) {
-  return !HAS_THIS.test(path) && IS_GLOBAL.test(path);
+  return IS_GLOBAL.test(path);
 };
+

@@ -1,9 +1,3 @@
-// ==========================================================================
-// Project:  Ember Runtime
-// Copyright: ©2011 Strobe Inc. and contributors.
-// License:   Licensed under MIT license (see license.js)
-// ==========================================================================
-
 // NOTE: A previous iteration differentiated between public and private props
 // as well as methods vs props.  We are just keeping these for testing; the
 // current impl doesn't care about the differences as much...
@@ -48,7 +42,7 @@ module('Basic introspection', {
 test('Ember.mixins()', function() {
 
   function mapGuids(ary) {
-    return Ember.ArrayUtils.map(ary, function(x) { return Ember.guidFor(x); });
+    return Ember.EnumerableUtils.map(ary, function(x) { return Ember.guidFor(x); });
   }
 
   deepEqual(mapGuids(Ember.Mixin.mixins(obj)), mapGuids([PrivateProperty, PublicProperty, PrivateMethod, PublicMethod, Combined, BarProperties, BarMethods]), 'should return included mixins');

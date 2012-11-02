@@ -1,18 +1,13 @@
-// ==========================================================================
-// Project:   Ember Handlebar Views
-// Copyright: ©2011 Strobe Inc. and contributors.
-// License:   Licensed under MIT license (see license.js)
-// ==========================================================================
-
-var get = Ember.get, set = Ember.set, checkboxView, application;
+var get = Ember.get, set = Ember.set, checkboxView, dispatcher;
 
 module("Ember.Checkbox", {
   setup: function() {
-    application = Ember.Application.create();
+    dispatcher = Ember.EventDispatcher.create();
+    dispatcher.setup();
   },
   teardown: function() {
     Ember.run(function() {
-      application.destroy();
+      dispatcher.destroy();
       checkboxView.destroy();
     });
   }
@@ -51,6 +46,19 @@ test("should become disabled if the disabled attribute is changed", function() {
   Ember.run(function() { checkboxView.set('disabled', false); });
   ok(checkboxView.$().is(":not(:disabled)"));
 });
+
+test("should support the tabindex property", function() {
+  checkboxView = Ember.Checkbox.create({});
+
+  checkboxView.set('tabindex', 6);
+  append();
+
+  equal(checkboxView.$().prop('tabindex'), '6', 'the initial checkbox tabindex is set in the DOM');
+
+  checkboxView.set('tabindex', 3);
+  equal(checkboxView.$().prop('tabindex'), '3', 'the checkbox tabindex changes when it is changed in the view');  
+});
+
 
 test("checked property mirrors input value", function() {
   checkboxView = Ember.Checkbox.create({});
@@ -94,37 +102,3 @@ test("checking the checkbox updates the value", function() {
   equal(checkboxView.$().prop('checked'), false, "after clicking a checkbox, the checked property changed");
   equal(get(checkboxView, 'checked'), false, "changing the checkbox causes the view's value to get updated");
 });
-
-// deprecated behaviors
-test("wraps the checkbox in a label if a title attribute is provided", function(){
-  Ember.TESTING_DEPRECATION = true;
-
-  try {
-    checkboxView = Ember.Checkbox.create({ title: "I have a title" });
-    append();
-    equal(checkboxView.$('label').length, 1);
-  } finally {
-    Ember.TESTING_DEPRECATION = false;
-  }
-});
-
-test("proxies the checked attribute to value for backwards compatibility", function(){
-  Ember.TESTING_DEPRECATION = true;
-
-  try {
-    checkboxView = Ember.Checkbox.create({ title: "I have a title" });
-    append();
-
-    set(checkboxView, 'value', true);
-    equal(get(checkboxView, 'checked'), true, 'checked is updated when value set');
-    equal(get(checkboxView, 'value'), true, 'value is updated when value set');
-
-    set(checkboxView, 'checked', false);
-
-    equal(get(checkboxView, 'checked'), false, 'checked is updated when checked set');
-    equal(get(checkboxView, 'value'), false, 'value is updated when checked set');
-  } finally {
-    Ember.TESTING_DEPRECATION = false;
-  }
-});
-

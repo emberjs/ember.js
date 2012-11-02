@@ -5,6 +5,7 @@
         "DS",
         "Handlebars",
         "Metamorph",
+        "RSVP",
         "ember_assert",
         "ember_warn",
         "ember_deprecate",
@@ -48,5 +49,6 @@
     "undef": true,
     "sub": true,
     "strict": false,
-    "white": false
+    "white": false,
+    "eqnull": true
 }

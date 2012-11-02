@@ -1,6 +1,6 @@
 var set = Ember.set, get = Ember.get;
 
-module("Ember.View - Template Functionality");
+module("Ember.View - Layout Functionality");
 
 test("should call the function of the associated layout", function() {
   var view;
@@ -21,7 +21,9 @@ test("should call the function of the associated layout", function() {
     }
   });
 
-  view.createElement();
+  Ember.run(function(){
+    view.createElement();
+  });
 
   equal(templateCalled, 0, "template is not called when layout is present");
   equal(layoutCalled, 1, "layout is called when layout is present");
@@ -42,7 +44,9 @@ test("should call the function of the associated template with itself as the con
     })
   });
 
-  view.createElement();
+  Ember.run(function(){
+    view.createElement();
+  });
 
   equal("template was called for Tom DAAAALE", view.$('#twas-called').text(), "the named template was called with the view as the data source");
 });
@@ -58,7 +62,9 @@ test("should fall back to defaultTemplate if neither template nor templateName a
     personName: "Tom DAAAALE"
   });
 
-  view.createElement();
+  Ember.run(function(){
+    view.createElement();
+  });
 
   equal("template was called for Tom DAAAALE", view.$('#twas-called').text(), "the named template was called with the view as the data source");
 });
@@ -72,7 +78,10 @@ test("should not use defaultLayout if layout is provided", function() {
   });
 
   view = View.create();
-  view.createElement();
+  Ember.run(function(){
+    view.createElement();
+  });
+  
 
   equal("foo", view.$().text(), "default layout was not printed");
 });
@@ -89,7 +98,9 @@ test("the template property is available to the layout template", function() {
     }
   });
 
-  view.createElement();
+  Ember.run(function(){
+    view.createElement();
+  });
 
   equal("Herp derp", view.$().text(), "the layout has access to the template");
 });

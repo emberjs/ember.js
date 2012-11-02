@@ -1,9 +1,3 @@
-// ==========================================================================
-// Project:  Ember Runtime
-// Copyright: ©2011 Strobe Inc. and contributors.
-// License:   Licensed under MIT license (see license.js)
-// ==========================================================================
-
 require('ember-metal/~tests/props_helper');
 
 module('Ember.get');
@@ -22,21 +16,6 @@ test('should get arbitrary properties on an object', function() {
     equal(Ember.get(obj, key), obj[key], key);
   }
 
-});
-
-test('should call unknownProperty if defined and value is undefined', function() {
-
-  var obj = {
-    count: 0,
-    unknownProperty: function(key) {
-      equal(key, 'foo', 'should pass key');
-      this.count++;
-      return 'FOO';
-    }
-  };
-
-  equal(Ember.get(obj, 'foo'), 'FOO', 'should return value from unknown');
-  equal(obj.count, 1, 'should have invoked');
 });
 
 testBoth("should call unknownProperty on watched values if the value is undefined", function(get, set) {

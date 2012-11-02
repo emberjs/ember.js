@@ -1,9 +1,3 @@
-// ==========================================================================
-// Project:  Ember Runtime
-// Copyright: ©2011 Strobe Inc. and contributors.
-// License:   Licensed under MIT license (see license.js)
-// ==========================================================================
-
 require('ember-runtime/~tests/suites/suite');
 
 Ember.CopyableTests = Ember.Suite.extend({
@@ -35,7 +29,7 @@ Ember.CopyableTests = Ember.Suite.extend({
     you say you can't test freezable it will verify that your objects really
     aren't freezable.)
 
-    @property {Boolean}
+    @type Boolean
   */
   shouldBeFreezable: false
 

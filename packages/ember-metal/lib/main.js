@@ -1,10 +1,13 @@
-// ==========================================================================
-// Project:  Ember Metal
-// Copyright: ©2011 Strobe Inc. and contributors.
-// License:   Licensed under MIT license (see license.js)
-// ==========================================================================
+/**
+Ember Metal
+
+@module ember
+@submodule ember-metal
+*/
 
 require('ember-metal/core');
+require('ember-metal/instrumentation');
+require('ember-metal/map');
 require('ember-metal/platform');
 require('ember-metal/utils');
 require('ember-metal/accessors');

@@ -1,21 +1,25 @@
-// ==========================================================================
-// Project:   Ember Handlebar Views
-// Copyright: ©2011 Strobe Inc. and contributors.
-// License:   Licensed under MIT license (see license.js)
-// ==========================================================================
-
 require("ember-handlebars/ext");
 require("ember-views/views/view");
 
+/**
+@module ember
+@submodule ember-handlebars
+*/
+
 var get = Ember.get, set = Ember.set;
 
-/** @class */
-Ember.TextSupport = Ember.Mixin.create(
-/** @scope Ember.TextSupport.prototype */ {
+/**
+  Shared mixin used by Ember.TextField and Ember.TextArea.
 
+  @class TextSupport
+  @namespace Ember
+  @extends Ember.Mixin
+  @private
+*/
+Ember.TextSupport = Ember.Mixin.create({
   value: "",
 
-  attributeBindings: ['placeholder', 'disabled', 'maxlength'],
+  attributeBindings: ['placeholder', 'disabled', 'maxlength', 'tabindex'],
   placeholder: null,
   disabled: false,
   maxlength: null,
@@ -23,21 +27,13 @@ Ember.TextSupport = Ember.Mixin.create(
   insertNewline: Ember.K,
   cancel: Ember.K,
 
-  focusOut: function(event) {
-    this._elementValueDidChange();
+  init: function() {
+    this._super();
+    this.on("focusOut", this, this._elementValueDidChange);
+    this.on("change", this, this._elementValueDidChange);
+    this.on("keyUp", this, this.interpretKeyEvents);
   },
 
-  change: function(event) {
-    this._elementValueDidChange();
-  },
-
-  keyUp: function(event) {
-    this.interpretKeyEvents(event);
-  },
-
-  /**
-    @private
-  */
   interpretKeyEvents: function(event) {
     var map = Ember.TextSupport.KEY_EVENTS;
     var method = map[event.keyCode];

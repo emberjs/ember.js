@@ -1,9 +1,3 @@
-// ==========================================================================
-// Project:   Ember Views
-// Copyright: ©2006-2011 Strobe Inc. and contributors.
-// License:   Licensed under MIT license (see license.js)
-// ==========================================================================
-
 var set = Ember.set, get = Ember.get;
 
 var View, view, willDestroyCalled, childView;
@@ -14,7 +8,9 @@ module("Ember.View - append() and appendTo()", {
   },
 
   teardown: function() {
-    if (!view.isDestroyed) { view.destroy(); }
+    Ember.run(function(){
+      if (!view.isDestroyed) { view.destroy(); }
+    });
   }
 });
 
@@ -148,7 +144,9 @@ module("Ember.View - append() and appendTo() in a view hierarchy", {
   },
 
   teardown: function() {
-    if (!view.isDestroyed) { view.destroy(); }
+    Ember.run(function(){
+      if (!view.isDestroyed) { view.destroy(); }
+    });
   }
 });
 
@@ -199,7 +197,9 @@ module("Ember.View - removing views in a view hierarchy", {
   },
 
   teardown: function() {
-    if (!view.isDestroyed) { view.destroy(); }
+    Ember.run(function(){
+      if (!view.isDestroyed) { view.destroy(); }
+    });
   }
 });
 
@@ -258,6 +258,6 @@ test("destroy removes a child view from its parent", function() {
     childView.destroy();
   });
 
-  ok(Ember.getPath(view, 'childViews.length') === 0, "Destroyed child views should be removed from their parent");
+  ok(get(view, 'childViews.length') === 0, "Destroyed child views should be removed from their parent");
 });
 

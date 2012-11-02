@@ -1,33 +1,22 @@
-// ==========================================================================
-// Project:  Ember Runtime
-// Copyright: ©2011 Strobe Inc. and contributors.
-// License:   Licensed under MIT license (see license.js)
-// ==========================================================================
-/*globals ENV ember_assert */
+/*globals ENV */
 
 require('ember-metal');
 
-var indexOf = Ember.ArrayUtils.indexOf;
+/**
+@module ember
+@submodule ember-runtime
+*/
 
-// ........................................
-// GLOBAL CONSTANTS
-//
-
-// ensure no undefined errors in browsers where console doesn't exist
-if (typeof console === 'undefined') {
-  window.console = {};
-  console.log = console.info = console.warn = console.error = function() {};
-}
-
+var indexOf = Ember.EnumerableUtils.indexOf;
 
 // ........................................
 // TYPING & ARRAY MESSAGING
 //
 
 var TYPE_MAP = {};
-var t ="Boolean Number String Function Array Date RegExp Object".split(" ");
-Ember.ArrayUtils.forEach(t, function(name) {
-	TYPE_MAP[ "[object " + name + "]" ] = name.toLowerCase();
+var t = "Boolean Number String Function Array Date RegExp Object".split(" ");
+Ember.ArrayPolyfills.forEach.call(t, function(name) {
+  TYPE_MAP[ "[object " + name + "]" ] = name.toLowerCase();
 });
 
 var toString = Object.prototype.toString;
@@ -35,7 +24,7 @@ var toString = Object.prototype.toString;
 /**
   Returns a consistent type for the passed item.
 
-  Use this instead of the built-in Ember.typeOf() to get the type of an item.
+  Use this instead of the built-in `typeof` to get the type of an item.
   It will return the same result across all browsers and includes a bit
   more detail.  Here is what will be returned:
 
@@ -70,8 +59,10 @@ var toString = Object.prototype.toString;
       // "normal" JavaScript object
       Ember.typeOf({a: 'b'});              => 'object'
 
+  @method typeOf
+  @for Ember
   @param item {Object} the item to check
-  @returns {String} the type
+  @return {String} the type
 */
 Ember.typeOf = function(item) {
   var ret;
@@ -101,8 +92,10 @@ Ember.typeOf = function(item) {
       Ember.none([]);           => false
       Ember.none(function(){}); => false
 
+  @method none
+  @for Ember
   @param {Object} obj Value to test
-  @returns {Boolean}
+  @return {Boolean}
 */
 Ember.none = function(obj) {
   return obj === null || obj === undefined;
@@ -122,11 +115,13 @@ Ember.none = function(obj) {
       Ember.empty('tobias fünke'); => false
       Ember.empty([0,1,2]);        => false
 
+  @method empty
+  @for Ember
   @param {Object} obj Value to test
-  @returns {Boolean}
+  @return {Boolean}
 */
 Ember.empty = function(obj) {
-  return obj === null || obj === undefined || (obj.length === 0 && typeof obj !== 'function');
+  return obj === null || obj === undefined || (obj.length === 0 && typeof obj !== 'function') || (typeof obj === 'object' && Ember.get(obj, 'length') === 0);
 };
 
 /**
@@ -144,9 +139,11 @@ Ember.empty = function(obj) {
     Ember.compare('abc', 'dfg');      => -1
     Ember.compare(2, 1);              => 1
 
+ @method compare
+ @for Ember
  @param {Object} v First value to compare
  @param {Object} w Second value to compare
- @returns {Number} -1 if v < w, 0 if v = w and 1 if v > w.
+ @return {Number} -1 if v < w, 0 if v = w and 1 if v > w.
 */
 Ember.compare = function compare(v, w) {
   if (v === w) { return 0; }
@@ -225,12 +222,18 @@ Ember.compare = function compare(v, w) {
       }
       return 0;
 
+    case 'date':
+      var vNum = v.getTime();
+      var wNum = w.getTime();
+      if (vNum < wNum) { return -1; }
+      if (vNum > wNum) { return 1; }
+      return 0;
+
     default:
       return 0;
   }
 };
 
-/** @private */
 function _copy(obj, deep, seen, copies) {
   var ret, loc, key;
 
@@ -240,7 +243,7 @@ function _copy(obj, deep, seen, copies) {
   // avoid cyclical loops
   if (deep && (loc=indexOf(seen, obj))>=0) return copies[loc];
 
-  ember_assert('Cannot clone an Ember.Object that does not implement Ember.Copyable', !(obj instanceof Ember.Object) || (Ember.Copyable && Ember.Copyable.detect(obj)));
+  Ember.assert('Cannot clone an Ember.Object that does not implement Ember.Copyable', !(obj instanceof Ember.Object) || (Ember.Copyable && Ember.Copyable.detect(obj)));
 
   // IMPORTANT: this specific test will detect a native array only.  Any other
   // object will need to implement Copyable.
@@ -276,9 +279,11 @@ function _copy(obj, deep, seen, copies) {
   If the passed object implements the clone() method, then this function
   will simply call that method and return the result.
 
+  @method copy
+  @for Ember
   @param {Object} object The object to clone
   @param {Boolean} deep If true, a deep copy of the object is made
-  @returns {Object} The cloned object
+  @return {Object} The cloned object
 */
 Ember.copy = function(obj, deep) {
   // fast paths
@@ -291,8 +296,10 @@ Ember.copy = function(obj, deep) {
   Convenience method to inspect an object. This method will attempt to
   convert the object into a useful string description.
 
+  @method inspect
+  @for Ember
   @param {Object} obj The object you want to inspect.
-  @returns {String} A description of the object
+  @return {String} A description of the object
 */
 Ember.inspect = function(obj) {
   var v, ret = [];
@@ -317,19 +324,18 @@ Ember.inspect = function(obj) {
       Ember.isEqual(1, 2);              => false
       Ember.isEqual([4,2], [4,2]);      => false
 
+  @method isEqual
+  @for Ember
   @param {Object} a first object to compare
   @param {Object} b second object to compare
-  @returns {Boolean}
+  @return {Boolean}
 */
 Ember.isEqual = function(a, b) {
   if (a && 'function'===typeof a.isEqual) return a.isEqual(b);
   return a === b;
 };
 
-/**
-  @private
-  Used by Ember.compare
-*/
+// Used by Ember.compare
 Ember.ORDER_DEFINITION = Ember.ENV.ORDER_DEFINITION || [
   'undefined',
   'null',
@@ -340,7 +346,8 @@ Ember.ORDER_DEFINITION = Ember.ENV.ORDER_DEFINITION || [
   'object',
   'instance',
   'function',
-  'class'
+  'class',
+  'date'
 ];
 
 /**
@@ -348,9 +355,10 @@ Ember.ORDER_DEFINITION = Ember.ENV.ORDER_DEFINITION || [
   when inspecting objects for debugging.  On browsers that support it, this
   uses the native Object.keys implementation.
 
-  @function
+  @method keys
+  @for Ember
   @param {Object} obj
-  @returns {Array} Array containing keys of obj
+  @return {Array} Array containing keys of obj
 */
 Ember.keys = Object.keys;
 
@@ -368,18 +376,23 @@ if (!Ember.keys) {
 // ERROR
 //
 
-/**
-  @class
+var errorProps = ['description', 'fileName', 'lineNumber', 'message', 'name', 'number', 'stack'];
 
+/**
   A subclass of the JavaScript Error object for use in Ember.
+
+  @class Error
+  @namespace Ember
+  @extends Error
+  @constructor
 */
 Ember.Error = function() {
   var tmp = Error.prototype.constructor.apply(this, arguments);
 
-  for (var p in tmp) {
-    if (tmp.hasOwnProperty(p)) { this[p] = tmp[p]; }
+  // Unfortunately errors are not enumerable in Chrome (at least), so `for prop in tmp` doesn't work.
+  for (var idx = 0; idx < errorProps.length; idx++) {
+    this[errorProps[idx]] = tmp[errorProps[idx]];
   }
-  this.message = tmp.message;
 };
 
 Ember.Error.prototype = Ember.create(Error.prototype);

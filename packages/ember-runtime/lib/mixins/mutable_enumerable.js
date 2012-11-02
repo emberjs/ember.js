@@ -1,17 +1,13 @@
-// ==========================================================================
-// Project:  Ember Runtime
-// Copyright: ©2011 Strobe Inc. and contributors.
-// License:   Licensed under MIT license (see license.js)
-// ==========================================================================
-
-
 require('ember-runtime/mixins/enumerable');
 
-var forEach = Ember.ArrayUtils.forEach;
+/**
+@module ember
+@submodule ember-runtime
+*/
+
+var forEach = Ember.EnumerableUtils.forEach;
 
 /**
-  @class
-
   This mixin defines the API for modifying generic enumerables.  These methods
   can be applied to an object regardless of whether it is ordered or
   unordered.
@@ -42,8 +38,10 @@ var forEach = Ember.ArrayUtils.forEach;
   this mixin in your class and implement the required methods.  In your unit
   tests, be sure to apply the Ember.MutableEnumerableTests to your object.
 
+  @class MutableEnumerable
+  @namespace Ember
   @extends Ember.Mixin
-  @extends Ember.Enumerable
+  @uses Ember.Enumerable
 */
 Ember.MutableEnumerable = Ember.Mixin.create(Ember.Enumerable,
   /** @scope Ember.MutableEnumerable.prototype */ {
@@ -58,18 +56,18 @@ Ember.MutableEnumerable = Ember.Mixin.create(Ember.Enumerable,
     If the passed object is of a type not supported by the receiver
     then this method should raise an exception.
 
-    @param {Object} object
-      The object to add to the enumerable.
-
-    @returns {Object} the passed object
+    @method addObject
+    @param {Object} object The object to add to the enumerable.
+    @return {Object} the passed object
   */
   addObject: Ember.required(Function),
 
   /**
     Adds each object in the passed enumerable to the receiver.
 
+    @method addObjects
     @param {Ember.Enumerable} objects the objects to add.
-    @returns {Object} receiver
+    @return {Object} receiver
   */
   addObjects: function(objects) {
     Ember.beginPropertyChanges(this);
@@ -88,10 +86,9 @@ Ember.MutableEnumerable = Ember.Mixin.create(Ember.Enumerable,
     If the passed object is of a type not supported by the receiver
     then this method should raise an exception.
 
-    @param {Object} object
-      The object to remove from the enumerable.
-
-    @returns {Object} the passed object
+    @method removeObject
+    @param {Object} object The object to remove from the enumerable.
+    @return {Object} the passed object
   */
   removeObject: Ember.required(Function),
 
@@ -99,8 +96,9 @@ Ember.MutableEnumerable = Ember.Mixin.create(Ember.Enumerable,
   /**
     Removes each objects in the passed enumerable from the receiver.
 
+    @method removeObjects
     @param {Ember.Enumerable} objects the objects to remove
-    @returns {Object} receiver
+    @return {Object} receiver
   */
   removeObjects: function(objects) {
     Ember.beginPropertyChanges(this);

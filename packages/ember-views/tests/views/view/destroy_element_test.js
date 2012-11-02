@@ -1,9 +1,3 @@
-// ==========================================================================
-// Project:   Ember - JavaScript Application Framework
-// Copyright: ©2006-2011 Apple Inc. and contributors.
-// License:   Licensed under MIT license (see license.js)
-// ==========================================================================
-
 var set = Ember.set, get = Ember.get;
 
 module("Ember.View#destroyElement");
@@ -36,7 +30,10 @@ test("if it has a element, calls willDestroyElement on receiver and child views 
     })]
   });
 
-  view.createElement();
+  Ember.run(function(){
+    view.createElement();
+  });
+
   ok(get(view, 'element'), 'precond - view has element');
 
   Ember.run(function() {
@@ -50,8 +47,14 @@ test("if it has a element, calls willDestroyElement on receiver and child views 
 });
 
 test("returns receiver", function() {
-  var view = Ember.View.create().createElement();
-  equal(view.destroyElement(), view, 'returns receiver');
+  var view = Ember.View.create(), ret;
+
+  Ember.run(function(){
+    view.createElement();
+    ret = view.destroyElement();
+  });
+
+  equal(ret, view, 'returns receiver');
 });
 
 test("removes element from parentNode if in DOM", function() {
@@ -61,11 +64,14 @@ test("removes element from parentNode if in DOM", function() {
     view.append();
   });
 
+  var parent = view.$().parent();
+
   ok(get(view, 'element'), 'precond - has element');
 
   Ember.run(function() {
     view.destroyElement();
   });
 
-  ok(!view.$().parent().length, 'element no longer in parent node');
+  equal(view.$(), undefined, 'view has no selector');
+  ok(!parent.find('#'+view.get('elementId')).length, 'element no longer in parent node');
 });

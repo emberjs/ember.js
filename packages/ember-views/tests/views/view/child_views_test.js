@@ -17,8 +17,11 @@
     },
 
     teardown: function() {
-      parentView.destroy();
-      childView.destroy();
+      Ember.run(function(){
+        parentView.destroy();
+            childView.destroy();
+      });
+      
       childViews = null;
     }
   });
@@ -37,24 +40,24 @@
 
   test("should not duplicate childViews when rerendering in buffer", function() {
 
-    var inner = Ember.View.create({
+    var Inner = Ember.View.extend({
       template: function() { return ''; }
     });
 
-     var inner2 = Ember.View.create({
-       template: function() { return ''; }
-     });
+    var Inner2 = Ember.View.extend({
+      template: function() { return ''; }
+    });
 
-    var middle = Ember.View.create({
+    var Middle = Ember.View.extend({
       render: function(buffer) {
-        this.appendChild(inner);
-        this.appendChild(inner2);
+        this.appendChild(Inner);
+        this.appendChild(Inner2);
       }
     });
 
     var outer = Ember.View.create({
       render: function(buffer) {
-        this.appendChild(middle);
+        this.middle = this.appendChild(Middle);
       }
     });
 
@@ -62,18 +65,18 @@
       outer.renderToBuffer();
     });
 
-    equal(middle.getPath('childViews.length'), 2);
+    equal(outer.get('middle.childViews.length'), 2, 'precond middle has 2 child views rendered to buffer');
 
     try {
       Ember.TESTING_DEPRECATION = true;
       Ember.run(function() {
-        middle.rerender();
+        outer.middle.rerender();
       });
     } finally {
       Ember.TESTING_DEPRECATION = false;
     }
 
-    equal(middle.getPath('childViews.length'), 2);
+    equal(outer.get('middle.childViews.length'), 2, 'middle has 2 child views rendered to buffer');
 
   });
 

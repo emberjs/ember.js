@@ -1,9 +1,3 @@
-// ==========================================================================
-// Project:   Ember Views
-// Copyright: ©2006-2011 Strobe Inc. and contributors.
-// License:   Licensed under MIT license (see license.js)
-// ==========================================================================
-
 var set = Ember.set, get = Ember.get;
 
 var view ;
@@ -21,15 +15,17 @@ module("Ember.View#$", {
   },
 
   teardown: function() {
-    view.destroy();
+    Ember.run(function(){
+      view.destroy();
+    });
   }
 });
 
-test("returns an empty jQuery object if no element", function() {
+test("returns undefined if no element", function() {
   var view = Ember.View.create();
   ok(!get(view, 'element'), 'precond - should have no element');
-  equal(view.$().length, 0, 'should return empty jQuery object');
-  equal(view.$('span').length, 0, 'should return empty jQuery object even if filter passed');
+  equal(view.$(), undefined, 'should return undefined');
+  equal(view.$('span'), undefined, 'should undefined if filter passed');
 });
 
 test("returns jQuery object selecting element if provided", function() {

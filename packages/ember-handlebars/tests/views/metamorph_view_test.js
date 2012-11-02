@@ -11,14 +11,16 @@ module("Metamorph views", {
   },
 
   teardown: function() {
-    view.destroy();
-    if (childView && !childView.isDestroyed) {
-      childView.destroy();
-    }
+    Ember.run(function(){
+      view.destroy();
+      if (childView && !childView.isDestroyed) {
+        childView.destroy();
+      }
 
-    if (metamorphView && !metamorphView.isDestroyed) {
-      metamorphView.destroy();
-    }
+      if (metamorphView && !metamorphView.isDestroyed) {
+        metamorphView.destroy();
+      }
+    });
   }
 });
 
@@ -31,7 +33,7 @@ test("a Metamorph view is not a view's parentView", function() {
     }
   });
 
-  metamorphView = Ember.View.create(Ember.Metamorph, {
+  metamorphView = Ember._MetamorphView.create({
     render: function(buffer) {
       buffer.push("<h2>Meta</h2>");
       this.appendChild(childView);
@@ -59,7 +61,7 @@ module("Metamorph views correctly handle DOM", {
       }
     });
 
-    metamorphView = Ember.View.create(Ember.Metamorph, {
+    metamorphView = Ember._MetamorphView.create({
       powerRanger: "Jason",
 
       render: function(buffer) {
@@ -73,10 +75,12 @@ module("Metamorph views correctly handle DOM", {
   },
 
   teardown: function() {
-    view.destroy();
-    if (!metamorphView.isDestroyed) {
-      metamorphView.destroy();
-    }
+    Ember.run(function(){
+      view.destroy();
+      if (!metamorphView.isDestroyed) {
+        metamorphView.destroy();
+      }
+    });
   }
 });
 
@@ -143,8 +147,10 @@ test("a metamorph view calls its childrens' willInsertElement and didInsertEleme
   ok(willInsertElementCalled, "willInsertElement called");
   ok(didInsertElementCalled, "didInsertElement called");
   ok(didInsertElementSawElement, "didInsertElement saw element");
-
-  parentView.destroy();
+  
+  Ember.run(function(){
+    parentView.destroy();
+  });
 
 });
 
@@ -177,5 +183,5 @@ test("replacing a Metamorph should invalidate childView elements", function() {
 
   ok(insertedElement, "should have an element");
 
-  view.destroy();
+  Ember.run(function(){ view.destroy(); });
 });

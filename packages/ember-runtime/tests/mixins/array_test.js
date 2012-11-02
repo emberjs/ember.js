@@ -1,8 +1,3 @@
-// ==========================================================================
-// Project:  Ember Runtime
-// Copyright: ©2011 Strobe Inc. and contributors.
-// License:   Licensed under MIT license (see license.js)
-// ==========================================================================
 /*globals testBoth */
 
 require('ember-runtime/~tests/props_helper');
@@ -42,7 +37,7 @@ var TestArray = Ember.Object.extend(Ember.Array, {
 
   length: Ember.computed(function() {
     return this._content.length;
-  }).property('@each').cacheable(),
+  }).property(),
 
   slice: function() {
     return this._content.slice();
@@ -90,13 +85,13 @@ var obj, observer;
 
 module('mixins/array/arrayContent[Will|Did]Change');
 
-test('should notify observers of @each', function() {
+test('should notify observers of []', function() {
 
   obj = DummyArray.create({
     _count: 0,
     enumerablePropertyDidChange: Ember.observer(function() {
       this._count++;
-    }, '@each')
+    }, '[]')
   });
 
   equal(obj._count, 0, 'should not have invoked yet');
@@ -379,7 +374,7 @@ testBoth("should be clear caches for computed properties that have dependent key
 
     common: Ember.computed(function() {
       return get(get(this, 'resources').objectAt(0), 'common');
-    }).property('resources.@each.common').cacheable()
+    }).property('resources.@each.common')
   });
 
   get(obj, 'resources').pushObject(Ember.Object.create({ common: "HI!" }));

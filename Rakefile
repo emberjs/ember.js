@@ -1,36 +1,19 @@
 abort "Please use Ruby 1.9 to build Ember.js!" if RUBY_VERSION !~ /^1\.9/
 
 require "bundler/setup"
-require "erb"
-require 'rake-pipeline'
-require "ember_docs/cli"
-require "colored"
 
 def pipeline
+  require 'rake-pipeline'
   Rake::Pipeline::Project.new("Assetfile")
 end
 
-def setup_uploader
-  require './lib/github_uploader'
-
-  # get the github user name
-  login = `git config github.user`.chomp
-
-  # get repo from git config's origin url
-  origin = `git config remote.origin.url`.chomp # url to origin
-  # extract USERNAME/REPO_NAME
-  # sample urls: https://github.com/emberjs/ember.js.git
-  #              git://github.com/emberjs/ember.js.git
-  #              git@github.com:emberjs/ember.js.git
-  #              git@github.com:emberjs/ember.js
-
-  repoUrl = origin.match(/github\.com[\/:]((.+?)\/(.+?))(\.git)?$/)
-  username = repoUrl[2] # username part of origin url
-  repo = repoUrl[3] # repository name part of origin url
-
-  uploader = GithubUploader.new(login, username, repo)
-  uploader.authorize
-
+def setup_uploader(root=Dir.pwd)
+  require 'github_downloads'
+  uploader = nil
+  Dir.chdir(root) do
+    uploader = GithubDownloads::Uploader.new
+    uploader.authorize
+  end
   uploader
 end
 
@@ -64,12 +47,14 @@ end
 desc "Clean build artifacts from previous builds"
 task :clean do
   puts "Cleaning build..."
-  pipeline.clean
+  rm_rf "dist" # Make sure even things RakeP doesn't know about are cleaned
+  rm_f "tests/ember-tests.js"
+  rm_rf "tmp"
   puts "Done"
 end
 
 desc "Upload latest Ember.js build to GitHub repository"
-task :upload_latest => :dist do
+task :upload_latest => [:clean, :dist] do
   uploader = setup_uploader
 
   # Upload minified first, so non-minified shows up on top
@@ -77,49 +62,32 @@ task :upload_latest => :dist do
   upload_file(uploader, 'ember-latest.js', "Ember.js Master", "dist/ember.js")
 end
 
-
-namespace :docs do
-  def doc_args
-    "#{Dir.glob("packages/ember-*").join(' ')} -E #{Dir.glob("packages/ember-*/tests").join(' ')} -t docs.emberjs.com"
-  end
-
-  desc "Preview Ember Docs (does not auto update)"
-  task :preview do
-    EmberDocs::CLI.start("preview #{doc_args}".split(' '))
-  end
-
-  desc "Build Ember Docs"
-  task :build do
-    EmberDocs::CLI.start("generate #{doc_args} -o docs".split(' '))
-  end
-
-  desc "Remove Ember Docs"
-  task :clean do
-    rm_r "docs"
-  end
-end
-
-
 desc "Run tests with phantomjs"
 task :test, [:suite] => :dist do |t, args|
+  require "colored"
+
   unless system("which phantomjs > /dev/null 2>&1")
     abort "PhantomJS is not installed. Download from http://phantomjs.org"
   end
 
-  packages = Dir['packages/*/tests'].map{|p| p.split('/')[1] }
+  packages = Dir['packages/*/tests'].sort.map { |p| p.split('/')[1] }
 
   suites = {
     :default => packages.map{|p| "package=#{p}" },
-    # testing older jQuery 1.6.4 for compatibility
+    :runtime => [ "package=ember-metal,ember-runtime" ],
     :all => packages.map{|p| "package=#{p}" } +
-            ["package=all&jquery=1.6.4&nojshint=true",
-             "package=all&jquery=git&nojshint=true",
+            ["package=all&jquery=1.7.2&nojshint=true",
+              "package=all&jquery=git&nojshint=true",
               "package=all&extendprototypes=true&nojshint=true",
-              "package=all&extendprototypes=true&jquery=1.6.4&nojshint=true",
               "package=all&extendprototypes=true&jquery=git&nojshint=true",
-              "package=all&cpdefaultcacheable=true&nojshint=true",
+              "package=all&nocpdefaultcacheable=true&nojshint=true",
+              "package=all&noviewpreservescontext=true&nojshint=true",
               "package=all&dist=build&nojshint=true"]
   }
+
+  packages.each do |package|
+    suites[package.to_sym] = ["package=#{package}"]
+  end
 
   if ENV['TEST']
     opts = [ENV['TEST']]
@@ -134,6 +102,8 @@ task :test, [:suite] => :dist do |t, args|
 
   success = true
   opts.each do |opt|
+    puts "\n"
+
     cmd = "phantomjs tests/qunit/run-qunit.js \"file://localhost#{File.dirname(__FILE__)}/tests/index.html?#{opt}\""
     system(cmd)
 
@@ -141,7 +111,7 @@ task :test, [:suite] => :dist do |t, args|
     tries = 0
     while tries < 3 && $?.exitstatus === 124
       tries += 1
-      puts "Timed Out. Trying again..."
+      puts "\nTimed Out. Trying again...\n"
       system(cmd)
     end
 
@@ -149,9 +119,9 @@ task :test, [:suite] => :dist do |t, args|
   end
 
   if success
-    puts "Tests Passed".green
+    puts "\nTests Passed".green
   else
-    puts "Tests Failed".red
+    puts "\nTests Failed".red
     exit(1)
   end
 end
@@ -166,42 +136,44 @@ end
 
 EMBER_VERSION = File.read("VERSION").strip
 
+namespace :npm do
+  
+  def npm_command
+    npm_paths = %w(ember-metal-node ember-runtime-node ember-states-node ember-routing-node ember-application-node)
+    pwd = Dir.pwd
+    
+    begin
+      npm_paths.each_with_index do |path, i|
+        Dir.chdir "#{pwd}/dist/npm/#{path}"
+        yield(npm_paths, i)
+      end
+    ensure
+      Dir.chdir pwd
+    end
+  end
+  
+  desc "Publish packages in dist/npm to npmjs.org"
+  task :publish do
+    npm_command do |paths, i|
+      system "npm publish"
+    end
+  end
+  
+  desc "Link npm modules to global namespace"
+  task :link do
+    npm_command do |paths, i|
+      paths[1..i-1].each do |path|
+        system "npm link #{path}" # link to just-linked dependencies
+      end
+      system "npm link" # then link this
+    end
+  end
+end
+
 namespace :release do
 
   def pretend?
     ENV['PRETEND']
-  end
-  
-  namespace :npm do
-    
-    def npm_command
-      npm_paths = %w(ember-metal ember-runtime ember-states)
-      pwd = Dir.pwd
-      
-      begin
-        npm_paths.each_with_index do |path, i|
-          Dir.chdir "#{pwd}/dist/npm/#{path}"
-          yield(npm_paths, i)
-        end
-      ensure
-        Dir.chdir pwd
-      end
-    end
-    
-    desc "Publish packages in dist/npm to npmjs.org"
-    task :publish do
-      npm_command do |paths, i|
-        system "npm publish"
-      end
-    end
-    
-    desc "Link npm modules to global namespace"
-    task :link do
-      npm_command do |paths, i|
-        system "npm link #{paths[i - 1]}" if i > 0 # link to just-linked dependencies
-        system "npm link" # then link this
-      end
-    end
   end
 
   namespace :framework do
@@ -240,7 +212,7 @@ namespace :release do
 
       unless pretend?
         # Bump the version of each component package
-        Dir["packages/ember*/package.json", "ember.json"].each do |package|
+        Dir["packages/ember*/package.json", "packages/ember*/npm-package.json", "ember.json"].each do |package|
           contents = File.read(package)
           contents.gsub! %r{"version": .*$}, %{"version": "#{EMBER_VERSION}",}
           contents.gsub! %r{"(ember[\w-]*)": [^,\n]+(,)?$} do
@@ -324,6 +296,9 @@ namespace :release do
       end
     end
 
+    file "dist/ember.js" => :dist
+    file "dist/ember.min.js" => :dist
+
     task "dist/starter-kit.#{EMBER_VERSION}.zip" => ["tmp/starter-kit/index.html"] do
       mkdir_p "dist"
 
@@ -344,7 +319,7 @@ namespace :release do
       mkdir_p "tmp"
 
       Dir.chdir("tmp") do
-        sh "git clone git@github.com:emberjs/starter-kit.git"
+        sh "git clone https://github.com/emberjs/starter-kit.git"
       end
     end
 
@@ -381,7 +356,7 @@ namespace :release do
 
     desc "Upload release"
     task :upload do
-      uploader = setup_uploader
+      uploader = setup_uploader("tmp/starter-kit")
 
       # Upload minified first, so non-minified shows up on top
       upload_file(uploader, "starter-kit.#{EMBER_VERSION}.zip", "Ember.js #{EMBER_VERSION} Starter Kit", "dist/starter-kit.#{EMBER_VERSION}.zip")
@@ -391,10 +366,10 @@ namespace :release do
     task :build => "dist/starter-kit.#{EMBER_VERSION}.zip"
 
     desc "Prepare starter-kit for release"
-    task :prepare => [:build]
+    task :prepare => []
 
     desc "Release starter-kit"
-    task :deploy => [:update, :upload]
+    task :deploy => [:build, :update, :upload]
   end
 
   namespace :examples do
@@ -416,8 +391,12 @@ namespace :release do
       mkdir_p "tmp"
 
       Dir.chdir("tmp") do
-        sh "git clone git@github.com:emberjs/examples.git"
+        sh "git clone https://github.com/emberjs/examples.git"
       end
+    end
+
+    file ember_min_output => [:clean, "tmp/examples", "dist/ember.min.js"] do
+      sh "cp dist/ember.min.js #{ember_min_output}"
     end
 
     desc "Update examples repo"
@@ -449,41 +428,45 @@ namespace :release do
 
   namespace :website do
 
+    file "tmp/website" do
+      mkdir_p "tmp"
+
+      Dir.chdir("tmp") do
+        sh "git clone https://github.com/emberjs/website.git"
+      end
+    end
+
     task :pull => "tmp/website" do
       Dir.chdir("tmp/website") do
         sh "git pull origin master"
       end
     end
 
-    file "tmp/website" do
-      mkdir_p "tmp"
+    file "dist/ember.min.js" => :dist
 
-      Dir.chdir("tmp") do
-        sh "git clone git@github.com:emberjs/website.git"
-      end
-    end
-
-    file "tmp/website/source/layout.erb" => [:pull, "dist/ember.min.js"] do
+    file "tmp/website/source/about.html.erb" => [:pull, "dist/ember.min.js"] do
       require 'zlib'
 
-      layout = File.read("tmp/website/source/layout.erb")
+      about = File.read("tmp/website/source/about.html.erb")
       min_gz = Zlib::Deflate.deflate(File.read("dist/ember.min.js")).bytes.count / 1024
 
-      layout.gsub! %r{<a href="https://github\.com/downloads/emberjs/ember\.js/ember-\d(\.\d+)*.min\.js">},
-        %{<a href="https://github.com/downloads/emberjs/ember.js/ember-#{EMBER_VERSION}.min.js">}
+      about.gsub! %r{https://github\.com/downloads/emberjs/ember\.js/ember-\d(?:\.(?:(?:\d+)|pre))*?(\.min)?\.js},
+        %{https://github.com/downloads/emberjs/ember.js/ember-#{EMBER_VERSION}\\1.js}
 
-      layout.gsub! %r{<a href="https://github\.com/downloads/emberjs/starter-kit/starter-kit\.\d(\.\d+)*\.zip">},
-        %{<a href="https://github.com/downloads/emberjs/starter-kit/starter-kit.#{EMBER_VERSION}.zip">}
+      about.gsub! %r{https://github\.com/downloads/emberjs/starter-kit/starter-kit\.\d(\.((\d+)|pre))*?*\.zip},
+        %{https://github.com/downloads/emberjs/starter-kit/starter-kit.#{EMBER_VERSION}.zip}
 
-      layout.gsub! /\d+k min\+gzip/, "#{min_gz}k min+gzip"
+      about.gsub! /Ember \d(\.((\d+)|pre))*/, "Ember #{EMBER_VERSION}"
 
-      File.open("tmp/website/index.html", "w") { |f| f.write index }
+      about.gsub! /\d+k min\+gzip/, "#{min_gz}k min+gzip"
+
+      File.open("tmp/website/source/about.html.erb", "w") { |f| f.write about }
     end
 
-    task :layout => "tmp/website/source/layout.erb"
+    task :about => "tmp/website/source/about.html.erb"
 
     desc "Update website repo"
-    task :update => :layout do
+    task :update => :about do
       puts "Updating website repo"
       unless pretend?
         Dir.chdir("tmp/website") do
@@ -511,11 +494,11 @@ namespace :release do
   end
 
   desc "Prepare Ember for new release"
-  task :prepare => ['framework:prepare', 'starter_kit:prepare', 'examples:prepare']
+  task :prepare => [:clean, 'framework:prepare', 'starter_kit:prepare', 'examples:prepare', 'website:prepare']
 
   desc "Deploy a new Ember release"
-  task :deploy => ['framework:deploy', 'starter_kit:deploy', 'examples:deploy']
+  task :deploy => ['framework:deploy', 'starter_kit:deploy', 'examples:deploy', 'website:deploy']
 
 end
 
-task :default => :dist
+task :default => :test

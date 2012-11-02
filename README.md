@@ -91,8 +91,6 @@ Hopefully you can see how all three of these powerful tools work together: start
 
 For new users, we recommend downloading the [Ember.js Starter Kit](https://github.com/emberjs/starter-kit/downloads), which includes everything you need to get started.
 
-We also recommend that you check out the [annotated Todos example](http://annotated-todos.strobeapp.com/), which shows you the best practices for architecting an MVC-based web application. You can also [browse or fork the code on Github](https://github.com/emberjs/todos).
-
 # Building Ember.js
 
 NOTE: Due to the rename, these instructions may be in flux
@@ -109,7 +107,7 @@ therubyracer`.
 
 ## Setup
 
-1. Install Ruby 1.9.2+. There are many resources on the web can help; one of the best is [rvm](http://rvm.beginrescueend.com/).
+1. Install Ruby 1.9.2+. There are many resources on the web can help; one of the best is [rvm](https://rvm.io/).
 
 2. Install Bundler: `gem install bundler`
 
@@ -151,13 +149,17 @@ See <http://emberjs.com/> for annotated introductory documentation.
 
 ## Preview API documenation
 
-* run `rake docs:preview`
+* Clone https://github.com/emberjs/website.git at the same level as the
+  main Ember repo.
 
-* The `docs:preview` task will build the documentation and make it available at <http://localhost:9292/index.html>
+* From the website repo, run `rake preview`
+
+* The docs will be available at <http://localhost:4567/api>
 
 
 ## Build API documentation
 
-* run `rake docs:build`
+* From the website repo, run `rake build`
 
-* HTML documentation is built in the `docs` directory
+* The website, along with documentation will be built into the `build`
+  directory

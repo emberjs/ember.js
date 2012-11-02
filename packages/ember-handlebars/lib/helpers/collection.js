@@ -1,22 +1,17 @@
-// ==========================================================================
-// Project:   Ember Handlebar Views
-// Copyright: ©2011 Strobe Inc. and contributors.
-// License:   Licensed under MIT license (see license.js)
-// ==========================================================================
-/*globals Handlebars ember_assert */
+/*globals Handlebars */
 
 // TODO: Don't require all of this module
 require('ember-handlebars');
 require('ember-handlebars/helpers/view');
 
-var get = Ember.get, getPath = Ember.Handlebars.getPath, fmt = Ember.String.fmt;
+/**
+@module ember
+@submodule ember-handlebars
+*/
+
+var get = Ember.get, handlebarsGet = Ember.Handlebars.get, fmt = Ember.String.fmt;
 
 /**
-  @name Handlebars.helpers.collection
-  @param {String} path
-  @param {Hash} options
-  @returns {String} HTML string
-  
   `{{collection}}` is a `Ember.Handlebars` helper for adding instances of
   `Ember.CollectionView` to a template.  See `Ember.CollectionView` for additional
   information on how a `CollectionView` functions.
@@ -30,28 +25,34 @@ var get = Ember.get, getPath = Ember.Handlebars.getPath, fmt = Ember.String.fmt;
 
   Given an empty `<body>` the following template:
 
-      <script type="text/x-handlebars">
-        {{#collection contentBinding="App.items"}}
-          Hi {{content.name}}
-        {{/collection}}
-      </script>
+  ``` handlebars
+  <script type="text/x-handlebars">
+    {{#collection contentBinding="App.items"}}
+      Hi {{view.content.name}}
+    {{/collection}}
+  </script>
+  ```
 
   And the following application code
 
-      App = Ember.Application.create()
-      App.items = [
-        Ember.Object.create({name: 'Dave'}),
-        Ember.Object.create({name: 'Mary'}),
-        Ember.Object.create({name: 'Sara'})
-      ]
+  ``` javascript
+  App = Ember.Application.create()
+  App.items = [
+    Ember.Object.create({name: 'Dave'}),
+    Ember.Object.create({name: 'Mary'}),
+    Ember.Object.create({name: 'Sara'})
+  ]
+  ```
 
   Will result in the HTML structure below
 
-      <div class="ember-view">
-        <div class="ember-view">Hi Dave</div>
-        <div class="ember-view">Hi Mary</div>
-        <div class="ember-view">Hi Sara</div>
-      </div>
+  ``` html
+  <div class="ember-view">
+    <div class="ember-view">Hi Dave</div>
+    <div class="ember-view">Hi Mary</div>
+    <div class="ember-view">Hi Sara</div>
+  </div>
+  ```
 
   ### Blockless Use
   If you provide an `itemViewClass` option that has its own `template` you can omit
@@ -59,74 +60,95 @@ var get = Ember.get, getPath = Ember.Handlebars.getPath, fmt = Ember.String.fmt;
 
   The following template:
 
-      <script type="text/x-handlebars">
-        {{collection contentBinding="App.items" itemViewClass="App.AnItemView"}}
-      </script>
+  ``` handlebars
+  <script type="text/x-handlebars">
+    {{collection contentBinding="App.items" itemViewClass="App.AnItemView"}}
+  </script>
+  ```
 
   And application code
 
-      App = Ember.Application.create()
-      App.items = [
-        Ember.Object.create({name: 'Dave'}),
-        Ember.Object.create({name: 'Mary'}),
-        Ember.Object.create({name: 'Sara'})
-      ]
+  ``` javascript
+  App = Ember.Application.create();
+  App.items = [
+    Ember.Object.create({name: 'Dave'}),
+    Ember.Object.create({name: 'Mary'}),
+    Ember.Object.create({name: 'Sara'})
+  ];
 
-      App.AnItemView = Ember.View.extend({
-        template: Ember.Handlebars.compile("Greetings {{content.name}}")
-      })
+  App.AnItemView = Ember.View.extend({
+    template: Ember.Handlebars.compile("Greetings {{view.content.name}}")
+  });
+  ```
 
   Will result in the HTML structure below
 
-      <div class="ember-view">
-        <div class="ember-view">Greetings Dave</div>
-        <div class="ember-view">Greetings Mary</div>
-        <div class="ember-view">Greetings Sara</div>
-      </div>
+  ``` html
+  <div class="ember-view">
+    <div class="ember-view">Greetings Dave</div>
+    <div class="ember-view">Greetings Mary</div>
+    <div class="ember-view">Greetings Sara</div>
+  </div>
+  ```
 
   ### Specifying a CollectionView subclass
+
   By default the `{{collection}}` helper will create an instance of `Ember.CollectionView`.
   You can supply a `Ember.CollectionView` subclass to the helper by passing it
   as the first argument:
 
-      <script type="text/x-handlebars">
-        {{#collection App.MyCustomCollectionClass contentBinding="App.items"}}
-          Hi {{content.name}}
-        {{/collection}}
-      </script>
+  ``` handlebars
+  <script type="text/x-handlebars">
+    {{#collection App.MyCustomCollectionClass contentBinding="App.items"}}
+      Hi {{view.content.name}}
+    {{/collection}}
+  </script>
+  ```
 
 
   ### Forwarded `item.*`-named Options
+
   As with the `{{view}}`, helper options passed to the `{{collection}}` will be set on
   the resulting `Ember.CollectionView` as properties. Additionally, options prefixed with
   `item` will be applied to the views rendered for each item (note the camelcasing):
 
-        <script type="text/x-handlebars">
-          {{#collection contentBinding="App.items"
-                        itemTagName="p"
-                        itemClassNames="greeting"}}
-            Howdy {{content.name}}
-          {{/collection}}
-        </script>
+  ``` handlebars
+  <script type="text/x-handlebars">
+    {{#collection contentBinding="App.items"
+                  itemTagName="p"
+                  itemClassNames="greeting"}}
+      Howdy {{view.content.name}}
+    {{/collection}}
+  </script>
+  ```
 
   Will result in the following HTML structure:
 
-      <div class="ember-view">
-        <p class="ember-view greeting">Howdy Dave</p>
-        <p class="ember-view greeting">Howdy Mary</p>
-        <p class="ember-view greeting">Howdy Sara</p>
-      </div>
-  
-  
+  ``` html
+  <div class="ember-view">
+    <p class="ember-view greeting">Howdy Dave</p>
+    <p class="ember-view greeting">Howdy Mary</p>
+    <p class="ember-view greeting">Howdy Sara</p>
+  </div>
+  ```
+
+  @method collection
+  @for Ember.Handlebars.helpers
+  @param {String} path
+  @param {Hash} options
+  @return {String} HTML string
+  @deprecated Use `{{each}}` helper instead.
 */
 Ember.Handlebars.registerHelper('collection', function(path, options) {
+  Ember.deprecate("Using the {{collection}} helper without specifying a class has been deprecated as the {{each}} helper now supports the same functionality.", path !== 'collection');
+
   // If no path is provided, treat path param as options.
   if (path && path.data && path.data.isRenderData) {
     options = path;
     path = undefined;
-    ember_assert("You cannot pass more than one argument to the collection helper", arguments.length === 1);
+    Ember.assert("You cannot pass more than one argument to the collection helper", arguments.length === 1);
   } else {
-    ember_assert("You cannot pass more than one argument to the collection helper", arguments.length === 2);
+    Ember.assert("You cannot pass more than one argument to the collection helper", arguments.length === 2);
   }
 
   var fn = options.fn;
@@ -136,8 +158,8 @@ Ember.Handlebars.registerHelper('collection', function(path, options) {
   // If passed a path string, convert that into an object.
   // Otherwise, just default to the standard class.
   var collectionClass;
-  collectionClass = path ? getPath(this, path, options) : Ember.CollectionView;
-  ember_assert(fmt("%@ #collection: Could not find %@", data.view, path), !!collectionClass);
+  collectionClass = path ? handlebarsGet(this, path, options) : Ember.CollectionView;
+  Ember.assert(fmt("%@ #collection: Could not find collection class %@", [data.view, path]), !!collectionClass);
 
   var hash = options.hash, itemHash = {}, match;
 
@@ -145,8 +167,8 @@ Ember.Handlebars.registerHelper('collection', function(path, options) {
   var itemViewClass, itemViewPath = hash.itemViewClass;
   var collectionPrototype = collectionClass.proto();
   delete hash.itemViewClass;
-  itemViewClass = itemViewPath ? getPath(collectionPrototype, itemViewPath, options) : collectionPrototype.itemViewClass;
-  ember_assert(fmt("%@ #collection: Could not find %@", data.view, itemViewPath), !!itemViewClass);
+  itemViewClass = itemViewPath ? handlebarsGet(collectionPrototype, itemViewPath, options) : collectionPrototype.itemViewClass;
+  Ember.assert(fmt("%@ #collection: Could not find itemViewClass %@", [data.view, itemViewPath]), !!itemViewClass);
 
   // Go through options passed to the {{collection}} helper and extract options
   // that configure item views instead of the collection itself.
@@ -171,31 +193,28 @@ Ember.Handlebars.registerHelper('collection', function(path, options) {
     delete options.fn;
   }
 
+  var emptyViewClass;
   if (inverse && inverse !== Handlebars.VM.noop) {
-    var emptyViewClass = Ember.View;
-
-    if (hash.emptyViewClass) {
-      emptyViewClass = Ember.View.detect(hash.emptyViewClass) ?
-                          hash.emptyViewClass : getPath(this, hash.emptyViewClass, options);
-    }
-
-    hash.emptyView = emptyViewClass.extend({
-      template: inverse,
-      tagName: itemHash.tagName
+    emptyViewClass = get(collectionPrototype, 'emptyViewClass');
+    emptyViewClass = emptyViewClass.extend({
+          template: inverse,
+          tagName: itemHash.tagName
     });
+  } else if (hash.emptyViewClass) {
+    emptyViewClass = handlebarsGet(this, hash.emptyViewClass, options);
   }
+  hash.emptyView = emptyViewClass;
 
-  if (hash.preserveContext) {
-    itemHash._templateContext = Ember.computed(function() {
+  if (hash.eachHelper === 'each') {
+    itemHash._context = Ember.computed(function() {
       return get(this, 'content');
     }).property('content');
-    delete hash.preserveContext;
+    delete hash.eachHelper;
   }
 
-  hash.itemViewClass = Ember.Handlebars.ViewHelper.viewClassFromHTMLOptions(itemViewClass, { data: data, hash: itemHash }, this);
+  var viewOptions = Ember.Handlebars.ViewHelper.propertiesFromHTMLOptions({ data: data, hash: itemHash }, this);
+  hash.itemViewClass = itemViewClass.extend(viewOptions);
 
   return Ember.Handlebars.helpers.view.call(this, collectionClass, options);
 });
-
-
 

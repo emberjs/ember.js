@@ -1,9 +1,3 @@
-// ==========================================================================
-// Project:  Ember Runtime
-// Copyright: ©2011 Strobe Inc. and contributors.
-// License:   Licensed under MIT license (see license.js)
-// ==========================================================================
-
 module('Ember.isWatching');
 
 var testObserver = function(setup, teardown) {
@@ -22,7 +16,7 @@ test("isWatching is true for regular local observers", function() {
       didChange: Ember.observer(fn, key)
     }).apply(obj);
   }, function(obj, key, fn) {
-    Ember.removeObserver(obj, key, null, fn);
+    Ember.removeObserver(obj, key, obj, fn);
   });
 });
 
@@ -45,14 +39,16 @@ test("isWatching is true for chained observers", function() {
 test("isWatching is true for computed properties", function() {
   testObserver(function(obj, key, fn) {
     Ember.defineProperty(obj, 'computed', Ember.computed(fn).property(key));
+    Ember.watch(obj, 'computed');
   }, function(obj, key, fn) {
     Ember.defineProperty(obj, 'computed', null);
   });
 });
 
-test("isWatching is true for computed properties", function() {
+test("isWatching is true for chained computed properties", function() {
   testObserver(function(obj, key, fn) {
     Ember.defineProperty(obj, 'computed', Ember.computed(fn).property(key + '.bar'));
+    Ember.watch(obj, 'computed');
   }, function(obj, key, fn) {
     Ember.defineProperty(obj, 'computed', null);
   });

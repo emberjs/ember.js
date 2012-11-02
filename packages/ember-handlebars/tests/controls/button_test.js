@@ -1,26 +1,26 @@
-// ==========================================================================
-// Project:   Ember Handlebar Views
-// Copyright: ©2011 Strobe Inc. and contributors.
-// License:   Licensed under MIT license (see license.js)
-// ==========================================================================
-
-var button, application;
+var button, dispatcher;
 
 var get = Ember.get, set = Ember.set;
 
+var originalLookup = Ember.lookup, lookup;
+
 module("Ember.Button", {
   setup: function() {
+    lookup = Ember.lookup = {};
+
     Ember.TESTING_DEPRECATION = true;
-    application = Ember.Application.create();
+    dispatcher = Ember.EventDispatcher.create();
+    dispatcher.setup();
     button = Ember.Button.create();
   },
 
   teardown: function() {
     Ember.run(function() {
       button.destroy();
-      application.destroy();
+      dispatcher.destroy();
     });
     Ember.TESTING_DEPRECATION = false;
+    Ember.lookup = originalLookup;
   }
 });
 
@@ -57,6 +57,17 @@ test("should become disabled if the disabled attribute is changed", function() {
   Ember.run(function() { button.set('disabled', false); });
   ok(button.$().is(":not(:disabled)"));
 });
+
+test("should support the tabindex property", function() {
+  button.set('tabindex', 6);
+  append();
+
+  equal(button.$().prop('tabindex'), '6', 'the initial button tabindex is set in the DOM');
+
+  button.set('tabindex', 3);
+  equal(button.$().prop('tabindex'), '3', 'the button tabindex changes when it is changed in the view');  
+});
+
 
 test("should trigger an action when clicked", function() {
   var wasClicked = false;
@@ -172,7 +183,7 @@ test("should not trigger an action when another key is pressed", function() {
 test("should trigger an action on a String target when clicked", function() {
   var wasClicked = false;
 
-  window.MyApp = {
+  lookup.MyApp = {
     myActionObject: Ember.Object.create({
       myAction: function() {
         wasClicked = true;
@@ -193,8 +204,6 @@ test("should trigger an action on a String target when clicked", function() {
   synthesizeEvent('mouseup', button);
 
   ok(wasClicked);
-
-  window.MyApp = undefined;
 });
 
 test("should not trigger action if mouse leaves area before mouseup", function() {

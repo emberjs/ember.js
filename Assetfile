@@ -17,7 +17,7 @@ class EmberProductionFilter < Rake::Pipeline::Filter
 
   def strip_debug(data)
     # Strip debug code
-    data.gsub!(%r{^(\s)+ember_(assert|deprecate|warn)\((.*)\).*$}, "")
+    data.gsub!(%r{^(\s)*Ember\.(assert|deprecate|warn)\((.*)\).*$}, "")
   end
 
   def precompile_templates(data)
@@ -63,10 +63,30 @@ class JSHintRC < Rake::Pipeline::Filter
   end
 end
 
+class VersionInfo < Rake::Pipeline::Filter
+  def version_info
+    @version_info ||= begin
+      latest_tag = `git describe --tags`
+      last_commit = `git log -n 1 --format="%h (%ci)"`
+
+      out = "// Version: #{latest_tag}"
+      out << "// Last commit: #{last_commit}"
+      out
+    end
+  end
+
+  def generate_output(inputs, output)
+    inputs.each do |input|
+      file = File.read(input.fullpath)
+      output.write "#{version_info}\n\n#{file}"
+    end
+  end
+end
+
 distros = {
-  :runtime  => %w(ember-metal ember-runtime),
-  :stateful => %w(ember-metal ember-runtime ember-states),
-  :full     => %w(handlebars ember-metal ember-runtime ember-views ember-states ember-viewstates metamorph ember-handlebars)
+  :runtime => %w(ember-metal ember-runtime),
+  :server_side => %w(ember-metal ember-runtime ember-states ember-routing ember-application),
+  :full => %w(ember-metal rsvp ember-runtime ember-application ember-views ember-states ember-routing ember-viewstates metamorph ember-handlebars)
 }
 
 output "dist"
@@ -123,29 +143,8 @@ input "packages" do
   end
 end
 
-# npm build
-input "dist/modules" do
-  module_paths = distros[:stateful].map{|m| "#{m}.js" }
-  
-  match "{#{module_paths.join(',')}}" do
-    concat do |filename|
-      File.join("npm/", filename.gsub('.js', ''), '/index.js')
-    end
-  end
-end
-
-input "packages" do
-  package_paths = distros[:stateful].map{|m| "#{m}/npm-package.json" }
-  
-  match "{#{package_paths.join(',')}}" do
-    concat do |filename|
-      File.join("npm/", filename.gsub('npm-package.json', ''), '/package.json')
-    end
-  end
-end
-
 distros.each do |name, modules|
-  next if name == :stateful
+  next if name == :server_side
   
   name = name == :full ? "ember" : "ember-#{name}"
   
@@ -158,6 +157,7 @@ distros.each do |name, modules|
     
     # Add debug to the main distro
     match "{#{name}.js,ember-debug.js}" do
+      filter VersionInfo
       concat ["ember-debug.js"], "#{name}.js"
     end
     
@@ -169,7 +169,30 @@ distros.each do |name, modules|
     # Minify
     match "#{name}.min.js" do
       uglify{ "#{name}.min.js" }
+      filter VersionInfo
       filter EmberLicenseFilter
+    end
+  end
+end
+
+# npm build
+input "dist/modules" do
+  module_paths = distros[:server_side].map{|m| "#{m}.js" }
+  
+  match "{#{module_paths.join(',')}}" do
+    concat do |filename|
+      File.join("npm/", filename.gsub('.js', '').to_s + '-node', '/index.js')
+    end
+  end
+end
+
+input "packages" do
+  package_paths = distros[:server_side].map{|m| "#{m}/npm-package.json" }
+  
+  match "{#{package_paths.join(',')}}" do
+    concat do |filename|
+      folder = filename.gsub('/npm-package.json', '').to_s + '-node'
+      File.join("npm/", folder, '/package.json')
     end
   end
 end

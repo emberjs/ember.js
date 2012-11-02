@@ -1,8 +1,3 @@
-// ==========================================================================
-// Project:  Ember Runtime
-// Copyright: ©2011 Strobe Inc. and contributors.
-// License:   Licensed under MIT license (see license.js)
-// ==========================================================================
 /*globals Global:true */
 
 require('ember-metal/~tests/props_helper');
@@ -60,6 +55,26 @@ testBoth('watching a regular defined property', function(get, set) {
   set(obj, 'foo', 'bar');
   equal(willCount, 1, 'should have invoked willCount');
   equal(didCount, 1, 'should have invoked didCount');
+
+  equal(get(obj, 'foo'), 'bar', 'should get new value');
+  equal(obj.foo, 'bar', 'property should be accessible on obj');
+});
+
+testBoth('watching a regular undefined property', function(get, set) {
+
+  var obj = { };
+
+  Ember.watch(obj, 'foo');
+
+  equal('foo' in obj, false, 'precond undefined');
+
+  set(obj, 'foo', 'bar');
+
+  equal(willCount, 1, 'should have invoked willCount');
+  equal(didCount, 1, 'should have invoked didCount');
+
+  equal(get(obj, 'foo'), 'bar', 'should get new value');
+  equal(obj.foo, 'bar', 'property should be accessible on obj');
 });
 
 testBoth('watches should inherit', function(get, set) {
@@ -95,7 +110,7 @@ test("watching a chain then defining the property", function () {
   var foo = {bar: 'bar'};
   Ember.watch(obj, 'foo.bar');
 
-  Ember.defineProperty(obj, 'foo', Ember.SIMPLE_PROPERTY, foo);
+  Ember.defineProperty(obj, 'foo', undefined, foo);
   Ember.set(foo, 'bar', 'baz');
 
   deepEqual(willKeys, ['bar', 'foo.bar'], 'should have invoked willChange with bar, foo.bar');
@@ -110,7 +125,7 @@ test("watching a chain then defining the nested property", function () {
   var baz = {baz: 'baz'};
   Ember.watch(obj, 'foo.bar.baz');
 
-  Ember.defineProperty(bar, 'bar', Ember.SIMPLE_PROPERTY, baz);
+  Ember.defineProperty(bar, 'bar', undefined, baz);
   Ember.set(baz, 'baz', 'BOO');
 
   deepEqual(willKeys, ['baz', 'foo.bar.baz'], 'should have invoked willChange with bar, foo.bar');

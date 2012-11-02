@@ -1,14 +1,19 @@
 /*global ViewTest:true*/
 
-var view;
+var originalLookup = Ember.lookup, lookup, view;
 
 module("views/view/view_lifecycle_test - pre-render", {
   setup: function() {
-
+    Ember.lookup = lookup = {};
   },
 
   teardown: function() {
-    if (view) { view.destroy(); }
+    if (view) { 
+      Ember.run(function(){
+        view.destroy();
+      });
+    }
+    Ember.lookup = originalLookup;
   }
 });
 
@@ -19,7 +24,9 @@ function tmpl(str) {
 }
 
 test("should create and append a DOM element after bindings have synced", function() {
-  window.ViewTest = {};
+  var ViewTest;
+
+  lookup.ViewTest = ViewTest = {};
 
   Ember.run(function() {
     ViewTest.fakeController = Ember.Object.create({
@@ -40,7 +47,6 @@ test("should create and append a DOM element after bindings have synced", functi
   });
 
   equal(view.$().text(), 'controllerPropertyValue', "renders and appends after bindings have synced");
-  window.ViewTest = undefined;
 });
 
 test("should throw an exception if trying to append a child before rendering has begun", function() {
@@ -85,7 +91,11 @@ module("views/view/view_lifecycle_test - in render", {
   },
 
   teardown: function() {
-    if (view) { view.destroy(); }
+    if (view) { 
+      Ember.run(function(){
+        view.destroy();
+      }); 
+    }
   }
 });
 
@@ -144,13 +154,19 @@ test("rerender should work inside a template", function() {
     Ember.TESTING_DEPRECATION = false;
   }
 
-  ok(view.$('div:contains(2), div:contains(Inside child2').length === 2,
-     "Rerendering a view causes it to rerender");
+  equal(view.$('div:nth-child(1)').length, 1);
+  equal(view.$('div:nth-child(1)').text(), '2');
+  equal(view.$('div:nth-child(2)').length, 1);
+  equal(view.$('div:nth-child(2)').text(), 'Inside child2');
 });
 
 module("views/view/view_lifecycle_test - in DOM", {
   teardown: function() {
-    if (view) { view.destroy(); }
+    if (view) { 
+      Ember.run(function(){
+        view.destroy();
+      });
+    }
   }
 });
 
@@ -187,12 +203,12 @@ test("should replace DOM representation if rerender() is called after element is
   });
 
   equal(view.$().text(), "Do not taunt happy fun sphere", "precond - creates DOM element");
-
+  
   view.set('shape', 'ball');
   Ember.run(function() {
     view.rerender();
   });
-
+  
   equal(view.$().text(), "Do not taunt happy fun ball", "rerenders DOM element when rerender() is called");
 });
 

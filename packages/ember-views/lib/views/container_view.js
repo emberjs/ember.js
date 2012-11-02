@@ -1,21 +1,18 @@
-// ==========================================================================
-// Project:   Ember - JavaScript Application Framework
-// Copyright: ©2006-2011 Strobe Inc. and contributors.
-//            Portions ©2008-2011 Apple Inc. All rights reserved.
-// License:   Licensed under MIT license (see license.js)
-// ==========================================================================
-
 require('ember-views/views/view');
+
+/**
+@module ember
+@submodule ember-views
+*/
+
 var get = Ember.get, set = Ember.set, meta = Ember.meta;
-var forEach = Ember.ArrayUtils.forEach;
+var forEach = Ember.EnumerableUtils.forEach;
 
 var childViewsProperty = Ember.computed(function() {
   return get(this, '_childViews');
-}).property('_childViews').cacheable();
+}).property('_childViews');
 
 /**
-  @class
-
   A `ContainerView` is an `Ember.View` subclass that allows for manual or programatic
   management of a view's `childViews` array that will correctly update the `ContainerView`
   instance's rendered DOM representation.
@@ -24,26 +21,31 @@ var childViewsProperty = Ember.computed(function() {
   The initial array of child views can be set in one of two ways. You can provide
   a `childViews` property at creation time that contains instance of `Ember.View`:
 
-
-        aContainer = Ember.ContainerView.create({
-          childViews: [Ember.View.create(), Ember.View.create()]
-        })
+  ``` javascript
+  aContainer = Ember.ContainerView.create({
+    childViews: [Ember.View.create(), Ember.View.create()]
+  });
+  ```
 
   You can also provide a list of property names whose values are instances of `Ember.View`:
 
-        aContainer = Ember.ContainerView.create({
-          childViews: ['aView', 'bView', 'cView'],
-          aView: Ember.View.create(),
-          bView: Ember.View.create()
-          cView: Ember.View.create()
-        })
+  ``` javascript
+  aContainer = Ember.ContainerView.create({
+    childViews: ['aView', 'bView', 'cView'],
+    aView: Ember.View.create(),
+    bView: Ember.View.create(),
+    cView: Ember.View.create()
+  });
+  ```
 
   The two strategies can be combined:
 
-        aContainer = Ember.ContainerView.create({
-          childViews: ['aView', Ember.View.create()],
-          aView: Ember.View.create()
-        })
+  ``` javascript
+  aContainer = Ember.ContainerView.create({
+    childViews: ['aView', Ember.View.create()],
+    aView: Ember.View.create()
+  });
+  ```
 
   Each child view's rendering will be inserted into the container's rendered HTML in the same
   order as its position in the `childViews` property.
@@ -52,87 +54,104 @@ var childViewsProperty = Ember.computed(function() {
   The views in a container's `childViews` array should be added and removed by manipulating
   the `childViews` property directly.
 
-  To remove a view pass that view into a `removeObject` call on the container's `childViews` property. 
+  To remove a view pass that view into a `removeObject` call on the container's `childViews` property.
 
   Given an empty `<body>` the following code
 
-        aContainer = Ember.ContainerView.create({
-          classNames: ['the-container'],
-          childViews: ['aView', 'bView'],
-          aView: Ember.View.create({
-            template: Ember.Handlebars.compile("A")
-          }),
-          bView: Ember.View.create({
-            template: Ember.Handlebars.compile("B")
-          })
-        })
+  ``` javascript
+  aContainer = Ember.ContainerView.create({
+    classNames: ['the-container'],
+    childViews: ['aView', 'bView'],
+    aView: Ember.View.create({
+      template: Ember.Handlebars.compile("A")
+    }),
+    bView: Ember.View.create({
+      template: Ember.Handlebars.compile("B")
+    })
+  });
 
-        aContainer.appendTo('body')
+  aContainer.appendTo('body');
+  ``` 
 
   Results in the HTML
 
-        <div class="ember-view the-container">
-          <div class="ember-view">A</div>
-          <div class="ember-view">B</div>
-        </div>
+  ``` html
+  <div class="ember-view the-container">
+    <div class="ember-view">A</div>
+    <div class="ember-view">B</div>
+  </div>
+  ```
 
   Removing a view
 
-        aContainer.get('childViews') // [aContainer.aView, aContainer.bView]
-        aContainer.get('childViews').removeObject(aContainer.get('bView'))
-        aContainer.get('childViews') // [aContainer.aView]
+  ``` javascript
+  aContainer.get('childViews'); // [aContainer.aView, aContainer.bView]
+  aContainer.get('childViews').removeObject(aContainer.get('bView'));
+  aContainer.get('childViews'); // [aContainer.aView]
+  ```
 
   Will result in the following HTML
 
-        <div class="ember-view the-container">
-          <div class="ember-view">A</div>
-        </div>
+  ``` html
+  <div class="ember-view the-container">
+    <div class="ember-view">A</div>
+  </div>
+  ```
 
 
-  Similarly, adding a child view is accomplished by adding `Ember.View` instances to the 
+  Similarly, adding a child view is accomplished by adding `Ember.View` instances to the
   container's `childViews` property.
 
   Given an empty `<body>` the following code
 
-        aContainer = Ember.ContainerView.create({
-          classNames: ['the-container'],
-          childViews: ['aView', 'bView'],
-          aView: Ember.View.create({
-            template: Ember.Handlebars.compile("A")
-          }),
-          bView: Ember.View.create({
-            template: Ember.Handlebars.compile("B")
-          })
-        })
+  ``` javascript
+  aContainer = Ember.ContainerView.create({
+    classNames: ['the-container'],
+    childViews: ['aView', 'bView'],
+    aView: Ember.View.create({
+      template: Ember.Handlebars.compile("A")
+    }),
+    bView: Ember.View.create({
+      template: Ember.Handlebars.compile("B")
+    })
+  });
 
-        aContainer.appendTo('body')
+  aContainer.appendTo('body');
+  ```
 
   Results in the HTML
 
-        <div class="ember-view the-container">
-          <div class="ember-view">A</div>
-          <div class="ember-view">B</div>
-        </div>
+  ``` html
+  <div class="ember-view the-container">
+    <div class="ember-view">A</div>
+    <div class="ember-view">B</div>
+  </div>
+  ```
 
   Adding a view
 
-        AnotherViewClass = Ember.View.extend({
-          template: Ember.Handlebars.compile("Another view")
-        })
+  ``` javascript
+  AnotherViewClass = Ember.View.extend({
+    template: Ember.Handlebars.compile("Another view")
+  });
 
-        aContainer.get('childViews') // [aContainer.aView, aContainer.bView]
-        aContainer.get('childViews').pushObject(AnotherViewClass.create())
-        aContainer.get('childViews') // [aContainer.aView, <AnotherViewClass instance>]
+  aContainer.get('childViews'); // [aContainer.aView, aContainer.bView]
+  aContainer.get('childViews').pushObject(AnotherViewClass.create());
+  aContainer.get('childViews'); // [aContainer.aView, aContainer.bView, <AnotherViewClass instance>]
+  ```
 
   Will result in the following HTML
 
-        <div class="ember-view the-container">
-          <div class="ember-view">A</div>
-          <div class="ember-view">Another view</div>
-        </div>
+  ``` html
+  <div class="ember-view the-container">
+    <div class="ember-view">A</div>
+    <div class="ember-view">B</div>
+    <div class="ember-view">Another view</div>
+  </div>
+  ```
 
 
-  Direct manipulation of childViews presence or absence in the DOM via calls to 
+  Direct manipulation of childViews presence or absence in the DOM via calls to
   `remove` or `removeFromParent` or calls to a container's `removeChild` may not behave
   correctly.
 
@@ -145,55 +164,86 @@ var childViewsProperty = Ember.computed(function() {
   Calling `removeFromParent()` behaves as expected but should be avoided in favor of direct
   manipulation of a container's `childViews` property.
 
-        aContainer = Ember.ContainerView.create({
-          classNames: ['the-container'],
-          childViews: ['aView', 'bView'],
-          aView: Ember.View.create({
-            template: Ember.Handlebars.compile("A")
-          }),
-          bView: Ember.View.create({
-            template: Ember.Handlebars.compile("B")
-          })
-        })
+  ``` javascript
+  aContainer = Ember.ContainerView.create({
+    classNames: ['the-container'],
+    childViews: ['aView', 'bView'],
+    aView: Ember.View.create({
+      template: Ember.Handlebars.compile("A")
+    }),
+    bView: Ember.View.create({
+      template: Ember.Handlebars.compile("B")
+    })
+  });
 
-        aContainer.appendTo('body')
+  aContainer.appendTo('body');
+  ```
 
   Results in the HTML
 
-        <div class="ember-view the-container">
-          <div class="ember-view">A</div>
-          <div class="ember-view">B</div>
-        </div>
+  ``` html
+  <div class="ember-view the-container">
+    <div class="ember-view">A</div>
+    <div class="ember-view">B</div>
+  </div>
+  ```
 
   Calling `aContainer.get('aView').removeFromParent()` will result in the following HTML
 
-        <div class="ember-view the-container">
-          <div class="ember-view">A</div>
-          <div class="ember-view">B</div>
-        </div>
+  ``` html
+  <div class="ember-view the-container">
+    <div class="ember-view">B</div>
+  </div>
+  ```
 
   And the `Ember.View` instance stored in `aContainer.aView` will be removed from `aContainer`'s
   `childViews` array.
 
-
   ## Templates and Layout
+
   A `template`, `templateName`, `defaultTemplate`, `layout`, `layoutName` or `defaultLayout`
-  property on a container view will not result in the template or layout being rendered. 
+  property on a container view will not result in the template or layout being rendered.
   The HTML contents of a `Ember.ContainerView`'s DOM representation will only be the rendered HTML
   of its child views.
 
+  ## Binding a View to Display
+
+  If you would like to display a single view in your ContainerView, you can set its `currentView`
+  property. When the `currentView` property is set to a view instance, it will be added to the
+  ContainerView's `childViews` array. If the `currentView` property is later changed to a
+  different view, the new view will replace the old view. If `currentView` is set to `null`, the
+  last `currentView` will be removed.
+
+  This functionality is useful for cases where you want to bind the display of a ContainerView to
+  a controller or state manager. For example, you can bind the `currentView` of a container to
+  a controller like this:
+
+  ``` javascript
+  App.appController = Ember.Object.create({
+    view: Ember.View.create({
+      templateName: 'person_template'
+    })
+  });
+  ```
+
+  ``` handlebars
+  {{view Ember.ContainerView currentViewBinding="App.appController.view"}}
+  ```
+
+  @class ContainerView
+  @namespace Ember
   @extends Ember.View
 */
 
 Ember.ContainerView = Ember.View.extend({
 
   init: function() {
+    this._super();
+
     var childViews = get(this, 'childViews');
     Ember.defineProperty(this, 'childViews', childViewsProperty);
 
-    this._super();
-
-    var _childViews = get(this, '_childViews');
+    var _childViews = this._childViews;
 
     forEach(childViews, function(viewName, idx) {
       var view;
@@ -209,6 +259,9 @@ Ember.ContainerView = Ember.View.extend({
       _childViews[idx] = view;
     }, this);
 
+    var currentView = get(this, 'currentView');
+    if (currentView) _childViews.push(this.createChildView(currentView));
+
     // Make the _childViews array observable
     Ember.A(_childViews);
 
@@ -222,10 +275,12 @@ Ember.ContainerView = Ember.View.extend({
   },
 
   /**
+    @private
+
     Instructs each child view to render to the passed render buffer.
 
+    @method render
     @param {Ember.RenderBuffer} buffer the buffer to render to
-    @private
   */
   render: function(buffer) {
     this.forEachChildView(function(view) {
@@ -233,11 +288,15 @@ Ember.ContainerView = Ember.View.extend({
     });
   },
 
+  instrumentName: 'render.container',
+
   /**
+    @private
+
     When the container view is destroyed, tear down the child views
     array observer.
 
-    @private
+    @method willDestroy
   */
   willDestroy: function() {
     get(this, 'childViews').removeArrayObserver(this, {
@@ -249,13 +308,15 @@ Ember.ContainerView = Ember.View.extend({
   },
 
   /**
+    @private
+
     When a child view is removed, destroy its element so that
     it is removed from the DOM.
 
     The array observer that triggers this action is set up in the
     `renderToBuffer` method.
 
-    @private
+    @method childViewsWillChange
     @param {Ember.Array} views the child views array before mutation
     @param {Number} start the start position of the mutation
     @param {Number} removed the number of child views removed
@@ -270,6 +331,8 @@ Ember.ContainerView = Ember.View.extend({
   },
 
   /**
+    @private
+
     When a child view is added, make sure the DOM gets updated appropriately.
 
     If the view has already rendered an element, we tell the child view to
@@ -278,7 +341,7 @@ Ember.ContainerView = Ember.View.extend({
     element, we insert the string representation of the child into the appropriate
     place in the buffer.
 
-    @private
+    @method childViewsDidChange
     @param {Ember.Array} views the array of child views afte the mutation has occurred
     @param {Number} start the start position of the mutation
     @param {Number} removed the number of child views removed
@@ -300,25 +363,36 @@ Ember.ContainerView = Ember.View.extend({
   initializeViews: function(views, parentView, templateData) {
     forEach(views, function(view) {
       set(view, '_parentView', parentView);
-      set(view, 'templateData', templateData);
+
+      if (!get(view, 'templateData')) {
+        set(view, 'templateData', templateData);
+      }
     });
   },
 
-  /**
-    Schedules a child view to be inserted into the DOM after bindings have
-    finished syncing for this run loop.
+  currentView: null,
 
-    @param {Ember.View} view the child view to insert
-    @param {Ember.View} prev the child view after which the specified view should
-                     be inserted
-    @private
-  */
-  _scheduleInsertion: function(view, prev) {
-    if (prev) {
-      prev.domManager.after(prev, view);
-    } else {
-      this.domManager.prepend(this, view);
+  _currentViewWillChange: Ember.beforeObserver(function() {
+    var childViews = get(this, 'childViews'),
+        currentView = get(this, 'currentView');
+
+    if (currentView) {
+      childViews.removeObject(currentView);
+      currentView.destroy();
     }
+  }, 'currentView'),
+
+  _currentViewDidChange: Ember.observer(function() {
+    var childViews = get(this, 'childViews'),
+        currentView = get(this, 'currentView');
+
+    if (currentView) {
+      childViews.pushObject(currentView);
+    }
+  }, 'currentView'),
+
+  _ensureChildrenAreInDOM: function () {
+    this.invokeForState('ensureChildrenAreInDOM', this);
   }
 });
 
@@ -365,15 +439,26 @@ Ember.ContainerView.states = {
     },
 
     childViewsDidChange: function(view, views, start, added) {
-      // If the DOM element for this container view already exists,
-      // schedule each child view to insert its DOM representation after
-      // bindings have finished syncing.
-      var prev = start === 0 ? null : views[start-1];
+      Ember.run.scheduleOnce('render', this, '_ensureChildrenAreInDOM');
+    },
 
-      for (var i=start; i<start+added; i++) {
-        view = views[i];
-        this._scheduleInsertion(view, prev);
-        prev = view;
+    ensureChildrenAreInDOM: function(view) {
+      var childViews = view.get('childViews'), i, len, childView, previous, buffer;
+      for (i = 0, len = childViews.length; i < len; i++) {
+        childView = childViews[i];
+        buffer = childView.renderToBufferIfNeeded();
+        if (buffer) {
+          childView._notifyWillInsertElement();
+          if (previous) {
+            previous.domManager.after(previous, buffer.string());
+          } else {
+            view.domManager.prepend(view, buffer.string());
+          }
+          childView.transitionTo('inDOM');
+          childView.propertyDidChange('element');
+          childView._notifyDidInsertElement();
+        }
+        previous = childView;
       }
     }
   }

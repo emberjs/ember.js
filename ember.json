@@ -2,7 +2,7 @@
   "name": "ember",
   "bpm": "1.0.0",
   "dependencies": {
-    "ember": "0.9.7.1"
+    "ember": "1.0.0-pre.2"
   },
   "dependencies:development": {
     "spade-qunit": "~> 1.0.0"
@@ -26,7 +26,7 @@
         "handlebars",
         "ember-views",
         "ember-states",
-        "ember-viewstates",
+        "ember-routing",
         "ember-handlebars"
       ]
     }

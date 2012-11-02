@@ -1,8 +1,3 @@
-// ==========================================================================
-// Project:   Ember Handlebar Views
-// Copyright: ©2011 Strobe Inc. and contributors.
-// License:   Licensed under MIT license (see license.js)
-// ==========================================================================
 /*globals TestObject:true */
 
 var textArea;
@@ -18,7 +13,9 @@ module("Ember.TextArea", {
   },
 
   teardown: function() {
-    textArea.destroy();
+    Ember.run(function() {
+      textArea.destroy();
+    });
     TestObject = textArea = null;
   }
 });
@@ -112,6 +109,19 @@ test("input cols is updated when setting cols property of view", function() {
   equal(textArea.$().attr('cols'), "40", "updates text area after cols changes");
 });
 
+test("input tabindex is updated when setting tabindex property of view", function() {
+  Ember.run(function() {
+    set(textArea, 'tabindex', '4');
+    textArea.append();
+  });
+
+  equal(textArea.$().attr('tabindex'), "4", "renders text area with the tabindex");
+
+  Ember.run(function() { set(textArea, 'tabindex', '1'); });
+
+  equal(textArea.$().attr('tabindex'), "1", "updates text area after tabindex changes");
+});
+
 test("value binding works properly for inputs that haven't been created", function() {
 
   Ember.run(function() {
@@ -121,7 +131,7 @@ test("value binding works properly for inputs that haven't been created", functi
   });
 
   equal(get(textArea, 'value'), null, "precond - default value is null");
-  equal(textArea.$().length, 0, "precond - view doesn't have its layer created yet, thus no input element");
+  equal(textArea.$(), undefined, "precond - view doesn't have its layer created yet, thus no input element");
 
   Ember.run(function() {
     set(TestObject, 'value', 'ohai');
@@ -141,11 +151,13 @@ test("should call the insertNewline method when return key is pressed", function
     keyCode: 13
   });
 
+  Ember.run(function() { textArea.append(); });
+
   textArea.insertNewline = function() {
     wasCalled = true;
   };
 
-  textArea.keyUp(event);
+  textArea.trigger('keyUp', event);
   ok(wasCalled, "invokes insertNewline method");
 });
 
@@ -155,11 +167,13 @@ test("should call the cancel method when escape key is pressed", function() {
     keyCode: 27
   });
 
+  Ember.run(function() { textArea.append(); });
+
   textArea.cancel = function() {
     wasCalled = true;
   };
 
-  textArea.keyUp(event);
+  textArea.trigger('keyUp', event);
   ok(wasCalled, "invokes cancel method");
 });
 

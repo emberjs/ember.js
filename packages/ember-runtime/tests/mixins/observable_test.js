@@ -1,9 +1,3 @@
-// ==========================================================================
-// Project:  Ember Runtime
-// Copyright: ©2011 Strobe Inc. and contributors.
-// License:   Licensed under MIT license (see license.js)
-// ==========================================================================
-
 module('mixins/observable');
 
 test('should be able to use getProperties to get a POJO of provided keys', function() {
@@ -78,7 +72,7 @@ testBoth("should be able to retrieve cached values of computed properties withou
   var obj = Ember.Object.create({
     foo: Ember.computed(function() {
       return "foo";
-    }).cacheable(),
+    }),
 
     bar: "bar"
   });

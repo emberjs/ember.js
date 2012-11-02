@@ -1,0 +1,13 @@
+{
+  "name": "ember-application-node",
+  "summary": "Ember Extensions to Handlebars",
+  "description": "Extensions to the Handlebars templating engine for use with Ember. These extensions make Handlebars aware of property observing, which allows it to automatically update the DOM when the referenced properties change. It also provides Handlebars helpers for creating Ember views and working with collections.",
+  "homepage": "http://emberjs.com",
+  "author": "Yehuda Katz",
+  "version": "1.0.0-pre.2",
+  "main": "./index.js",
+  "dependencies": {
+    "ember-states-node": "1.0.0-pre.2",
+    "ember-routing-node": "1.0.0-pre.2"
+  }
+}

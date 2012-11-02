@@ -1,9 +1,3 @@
-// ==========================================================================
-// Project:   Ember Views
-// Copyright: ©2006-2011 Strobe Inc. and contributors.
-// License:   Licensed under MIT license (see license.js)
-// ==========================================================================
-
 var set = Ember.set, get = Ember.get;
 
 var View, view, willDestroyCalled, childView;
@@ -14,7 +8,9 @@ module("Ember.View - replaceIn()", {
   },
 
   teardown: function() {
-    view.destroy();
+    Ember.run(function(){
+      view.destroy();
+    });
   }
 });
 
@@ -60,7 +56,9 @@ module("Ember.View - replaceIn() in a view hierarchy", {
   },
 
   teardown: function() {
-    view.destroy();
+    Ember.run(function(){
+      view.destroy();
+    });
   }
 });
 

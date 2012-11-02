@@ -1,7 +1,7 @@
 /*globals App:true Ember before after bench*/
 
 // shut up jshint
-var view, newContent;
+var view;
 
 before(function() {
   var view;
@@ -18,32 +18,30 @@ before(function() {
       "  </thead>" +
       "  <tbody>" +
       "  {{#each App.list}}" +
-      '    {{#view Em.View contentBinding="this" tagName="tr"}}' +
-      "      <td>{{content.id}}</td>" +
-      "      <td>{{content.dateIn}}</td>" +
-      "      <td>{{content.tag}}</td>" +
-      "      <td>{{content.speed}}</td>" +
-      "      <td>{{content.length}}</td>" +
+      '    {{#view Em.View tagName="tr"}}' +
+      "      <td>{{id}}</td>" +
+      "      <td>{{dateIn}}</td>" +
+      "      <td>{{tag}}</td>" +
+      "      <td>{{speed}}</td>" +
+      "      <td>{{length}}</td>" +
       "    {{/view}}" +
       "  {{/each}}" +
       "  </tbody>" +
       "</table>";
 
-  newContent = function() {
-    var newContent = [], i;
-
+  function newContent() {
+    var content = [], i;
     for (i = 0; i < 10; i++) {
-      newContent[newContent.length] = {
+      content.push({
         id: Math.round(Math.random() * 1000),
         dateIn: new Date(),
         tag: "TAG-0" + i,
         speed: Math.random() * 100,
         length: Math.random() * 1000
-      };
+      });
     }
-
-    return newContent;
-  };
+    return content;
+  }
 
   App.list = newContent();
 
@@ -60,9 +58,8 @@ after(function() {
   view.destroy();
 });
 
-bench("creating a new view", function() {
+bench("creating and appending a new view with each", function() {
   Ember.run(function() {
-    App.set('list', newContent());
     view = App.View.create().append();
   });
 });

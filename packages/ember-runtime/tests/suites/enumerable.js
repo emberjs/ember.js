@@ -1,11 +1,6 @@
-// ==========================================================================
-// Project:  Ember Runtime
-// Copyright: ©2011 Strobe Inc. and contributors.
-// License:   Licensed under MIT license (see license.js)
-// ==========================================================================
-
 var ObserverClass = Ember.Object.extend({
 
+  _keysBefore: null,
   _keys: null,
   _values: null,
   _before : null,
@@ -18,13 +13,20 @@ var ObserverClass = Ember.Object.extend({
     this.reset();
   },
 
+
+  propertyWillChange: function(target, key) {
+    if (this._keysBefore[key] === undefined) { this._keysBefore[key] = 0; }
+    this._keysBefore[key]++;
+  },
+
   /**
     Invoked when the property changes.  Just records the parameters for
     later analysis.
   */
   propertyDidChange: function(target, key, value) {
-      this._keys[key] = true;
-      this._values[key] = value;
+    if (this._keys[key] === undefined) { this._keys[key] = 0; }
+    this._keys[key]++;
+    this._values[key] = value;
   },
 
   /**
@@ -33,10 +35,21 @@ var ObserverClass = Ember.Object.extend({
     @returns {Object} receiver
   */
   reset: function() {
+    this._keysBefore = {};
     this._keys = {};
     this._values = {};
     this._before = null;
     this._after = null;
+    return this;
+  },
+
+
+  observeBefore: function(obj) {
+    if (obj.addBeforeObserver) {
+      var keys = Array.prototype.slice.call(arguments, 1),
+          loc  = keys.length;
+      while(--loc>=0) obj.addBeforeObserver(keys[loc], this, 'propertyWillChange');
+    }
     return this;
   },
 
@@ -50,7 +63,7 @@ var ObserverClass = Ember.Object.extend({
     @returns {Object} receiver
   */
   observe: function(obj) {
-    if (Ember.Observer && Ember.Observer.detect(obj)) {
+    if (obj.addObserver) {
       var keys = Array.prototype.slice.call(arguments, 1),
           loc  = keys.length;
       while(--loc>=0) obj.addObserver(keys[loc], this, 'propertyDidChange');
@@ -77,6 +90,26 @@ var ObserverClass = Ember.Object.extend({
     if (!this._keys[key]) return false;
     if (arguments.length>1) return this._values[key] === value;
     else return true;
+  },
+
+  /**
+    Returns times the before observer as invoked.
+
+    @param {String} key
+      Key to check
+  */
+  timesCalledBefore: function(key) {
+    return this._keysBefore[key] || 0;
+  },
+
+  /**
+    Returns times the observer as invoked.
+
+    @param {String} key
+      Key to check
+  */
+  timesCalled: function(key) {
+    return this._keys[key] || 0;
   },
 
   /**
@@ -118,7 +151,7 @@ var EnumerableTests = Ember.Object.extend({
   /**
     Define a name for these tests - all modules are prefixed w/ it.
 
-    @property {String}
+    @type String
   */
   name: Ember.required(String),
 
@@ -182,11 +215,11 @@ var EnumerableTests = Ember.Object.extend({
     Becomes true when you define a new mutate() method, indicating that
     mutation tests should run.  This is calculated automatically.
 
-    @property {Boolean}
+    @type Boolean
   */
   canTestMutation: Ember.computed(function() {
     return this.mutate !== EnumerableTests.prototype.mutate;
-  }).property().cacheable(),
+  }).property(),
 
   /**
     Invoked to actually run the test - overridden by mixins
@@ -202,6 +235,7 @@ var EnumerableTests = Ember.Object.extend({
   */
   newObserver: function(obj) {
     var ret = Ember.get(this, 'observerClass').create();
+    if (arguments.length>0) ret.observeBefore.apply(ret, arguments);
     if (arguments.length>0) ret.observe.apply(ret, arguments);
     return ret;
   },

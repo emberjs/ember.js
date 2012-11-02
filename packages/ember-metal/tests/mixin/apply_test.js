@@ -1,8 +1,3 @@
-// ==========================================================================
-// Project:  Ember Runtime
-// Copyright: ©2011 Strobe Inc. and contributors.
-// License:   Licensed under MIT license (see license.js)
-// ==========================================================================
 /*globals raises */
 
 module('Ember.Mixin.apply');
@@ -33,4 +28,11 @@ test('applying null values', function() {
   raises(function() {
     Ember.mixin({}, null);
   }, Error);
+});
+
+test('applying a property with an undefined value', function() {
+  var obj = { tagName: '' };
+  Ember.mixin(obj, { tagName: undefined });
+
+  strictEqual(Ember.get(obj, 'tagName'), '');
 });

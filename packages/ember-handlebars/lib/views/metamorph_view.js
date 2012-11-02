@@ -3,33 +3,32 @@
 require("metamorph");
 require("ember-views/views/view");
 
-var set = Ember.set, get = Ember.get, getPath = Ember.getPath;
+/**
+@module ember
+@submodule ember-handlebars
+*/
 
+var set = Ember.set, get = Ember.get;
+
+// DOMManager should just abstract dom manipulation between jquery and metamorph
 var DOMManager = {
   remove: function(view) {
-    var morph = view.morph;
-    if (morph.isRemoved()) { return; }
-    set(view, 'element', null);
-    view._lastInsert = null;
-    morph.remove();
+    view.morph.remove();
   },
 
-  prepend: function(view, childView) {
-    childView._insertElementLater(function() {
-      var morph = view.morph;
-      morph.prepend(childView.outerHTML);
-      childView.outerHTML = null;
-    });
+  prepend: function(view, html) {
+    view.morph.prepend(html);
   },
 
-  after: function(view, nextView) {
-    nextView._insertElementLater(function() {
-      var morph = view.morph;
-      morph.after(nextView.outerHTML);
-      nextView.outerHTML = null;
-    });
+  after: function(view, html) {
+    view.morph.after(html);
   },
 
+  html: function(view, html) {
+    view.morph.html(html);
+  },
+
+  // This is messed up.
   replace: function(view) {
     var morph = view.morph;
 
@@ -55,9 +54,17 @@ var DOMManager = {
 // The `morph` and `outerHTML` properties are internal only
 // and not observable.
 
-Ember.Metamorph = Ember.Mixin.create({
+/**
+  @class _Metamorph
+  @namespace Ember
+  @extends Ember.Mixin
+  @private
+*/
+Ember._Metamorph = Ember.Mixin.create({
   isVirtual: true,
   tagName: '',
+
+  instrumentName: 'render.metamorph',
 
   init: function() {
     this._super();
@@ -80,4 +87,22 @@ Ember.Metamorph = Ember.Mixin.create({
 
   domManager: DOMManager
 });
+
+/**
+  @class _MetamorphView
+  @namespace Ember
+  @extends Ember.View
+  @uses Ember._Metamorph
+  @private
+*/
+Ember._MetamorphView = Ember.View.extend(Ember._Metamorph);
+
+/**
+  @class _SimpleMetamorphView
+  @namespace Ember
+  @extends Ember.View
+  @uses Ember._Metamorph
+  @private
+*/
+Ember._SimpleMetamorphView = Ember.CoreView.extend(Ember._Metamorph);
 

@@ -1,15 +1,9 @@
-// ==========================================================================
-// Project:  Ember Metal
-// Copyright: ©2011 Strobe Inc. and contributors.
-// License:   Licensed under MIT license (see license.js)
-// ==========================================================================
-
 function isEnumerable(obj, keyName) {
   var keys = [];
   for(var key in obj) {
     if (obj.hasOwnProperty(key)) keys.push(key);
   }
-  return Ember.ArrayUtils.indexOf(keys, keyName)>=0;
+  return Ember.EnumerableUtils.indexOf(keys, keyName)>=0;
 }
 
 module("Ember.platform.defineProperty()");
@@ -63,52 +57,52 @@ test('defining a non enumerable property', function() {
   }
 });
 
-test('defining a getter/setter', function() {
-  var obj = {}, getCnt = 0, setCnt = 0, v = 'FOO';
+// If accessors don't exist, behavior that relies on getters
+// and setters don't do anything
+if (Ember.platform.hasPropertyAccessors) {
+  test('defining a getter/setter', function() {
+    var obj = {}, getCnt = 0, setCnt = 0, v = 'FOO';
 
-  var desc = {
-    enumerable: true,
-    get: function() { getCnt++; return v; },
-    set: function(val) { setCnt++; v = val; }
-  };
+    var desc = {
+      enumerable: true,
+      get: function() { getCnt++; return v; },
+      set: function(val) { setCnt++; v = val; }
+    };
 
-  if (Ember.platform.hasPropertyAccessors) {
-    Ember.platform.defineProperty(obj, 'foo', desc);
-    equal(obj.foo, 'FOO', 'should return getter');
-    equal(getCnt, 1, 'should have invoked getter');
-
-    obj.foo = 'BAR';
-    equal(obj.foo, 'BAR', 'setter should have worked');
-    equal(setCnt, 1, 'should have invoked setter');
-
-  } else {
-    raises(function() {
+    if (Ember.platform.hasPropertyAccessors) {
       Ember.platform.defineProperty(obj, 'foo', desc);
-    }, Error, 'should throw exception if getters/setters not supported');
-  }
+      equal(obj.foo, 'FOO', 'should return getter');
+      equal(getCnt, 1, 'should have invoked getter');
 
-});
+      obj.foo = 'BAR';
+      equal(obj.foo, 'BAR', 'setter should have worked');
+      equal(setCnt, 1, 'should have invoked setter');
 
-test('defining getter/setter along with writable', function() {
-  var obj  ={};
-  raises(function() {
-    Ember.platform.defineProperty(obj, 'foo', {
-      enumerable: true,
-      get: function() {},
-      set: function() {},
-      writable: true
-    });
-  }, Error, 'defining writable and get/set should throw exception');
-});
+    }
 
-test('defining getter/setter along with value', function() {
-  var obj  ={};
-  raises(function() {
-    Ember.platform.defineProperty(obj, 'foo', {
-      enumerable: true,
-      get: function() {},
-      set: function() {},
-      value: 'FOO'
-    });
-  }, Error, 'defining value and get/set should throw exception');
-});
+  });
+
+  test('defining getter/setter along with writable', function() {
+    var obj  ={};
+    raises(function() {
+      Ember.platform.defineProperty(obj, 'foo', {
+        enumerable: true,
+        get: function() {},
+        set: function() {},
+        writable: true
+      });
+    }, Error, 'defining writable and get/set should throw exception');
+  });
+
+  test('defining getter/setter along with value', function() {
+    var obj  ={};
+    raises(function() {
+      Ember.platform.defineProperty(obj, 'foo', {
+        enumerable: true,
+        get: function() {},
+        set: function() {},
+        value: 'FOO'
+      });
+    }, Error, 'defining value and get/set should throw exception');
+  });
+}

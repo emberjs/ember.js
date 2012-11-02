@@ -1,4 +1,4 @@
-/**
+/*
   This test file is designed to capture performance regressions related to
   deferred computation. Things like run loops, computed properties, and bindings
   should run the minimum amount of times to achieve best performance, so any
@@ -62,7 +62,7 @@ test("computed properties are not executed if they are the last segment of an ob
 
   Ember.addObserver(foo, 'bar.baz.bam', function() {});
 
-  Ember.propertyDidChange(foo.bar.baz, 'bam');
+  Ember.propertyDidChange(Ember.get(foo, 'bar.baz'), 'bam');
 
   equal(count, 0, "should not have recomputed property");
 });

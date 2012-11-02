@@ -2,12 +2,39 @@
 <html>
 <head>
   <meta charset="UTF-8" />
-  <title>QUnit Test Suite</title>
+  <title>Ember.js Test Suite</title>
   <link rel="stylesheet" href="qunit/qunit.css" type="text/css" media="screen">
   <script type="text/javascript" src="qunit/qunit.js"></script>
   <script type="text/javascript" src="minispade.js"></script>
 
   <script type="text/javascript">
+    var originalModule = module;
+    module = function(name, origOpts) {
+      var opts = {};
+      if (origOpts && origOpts.setup) { opts.setup = origOpts.setup; }
+      opts.teardown = function() {
+        if (origOpts && origOpts.teardown) { origOpts.teardown(); }
+        if (Ember.run.currentRunLoop) {
+          ok(false, "Should not be in a run loop at end of test");
+          while (Ember.run.currentRunLoop) {
+            Ember.run.end();
+          }
+        }
+        if (Ember.run.hasScheduledTimers()) {
+          // Use `ok` so we get full description.
+          // Gate inside of `if` so that we don't mess up `expects` counts
+          ok(false, "Ember run should not have scheduled timers at end of test");
+          Ember.run.cancelTimers();
+        }
+      }
+      return originalModule(name, opts);
+    };
+  </script>
+
+  <script type="text/javascript">
+    // Tests should time out after 5 seconds
+    QUnit.config.testTimeout = 5000;
+
     // Handle JSHint
     QUnit.config.urlConfig.push('nojshint');
 
@@ -32,6 +59,9 @@
     }
 
 
+    window.Ember = {
+      testing: true
+    }
     window.ENV = window.ENV || {};
 
     // Handle extending prototypes
@@ -40,17 +70,12 @@
     var extendPrototypes = QUnit.urlParams.extendprototypes;
     ENV['EXTEND_PROTOTYPES'] = !!extendPrototypes;
 
-    // Handle CP cacheable by default
-    QUnit.config.urlConfig.push('cpdefaultcacheable');
-
-    var cpDefaultCacheable = QUnit.urlParams.cpdefaultcacheable;
-    ENV['CP_DEFAULT_CACHEABLE'] = !!cpDefaultCacheable;
-
-    ENV.VIEW_PRESERVES_CONTEXT = true;
+    // Don't worry about jQuery version
+    ENV['FORCE_JQUERY'] = true;
   </script>
 </head>
 <body>
-  <h1 id="qunit-header">QUnit Test Suite</h1>
+  <h1 id="qunit-header">Ember.js Test Suite</h1>
   <h2 id="qunit-banner"></h2>
   <div id="qunit-testrunner-toolbar"></div>
   <h2 id="qunit-userAgent"></h2>
@@ -60,16 +85,16 @@
   <script>
     // Load jshint if being used (can cause failurs in old environments if always loaded)
     if (jsHint) {
-      document.write(unescape('%3Cscript src="jshint.js"%3E%3C/script%3E'));
+      document.write('<script src="jshint.js"><\/script>');
     }
     // Close the script tag to make sure document.write happens
   </script>
 
   <script>
     // Load custom version of jQuery if possible
-    var jQueryVersion = QUnit.urlParams.jquery || "1.7.2";
+    var jQueryVersion = QUnit.urlParams.jquery || "1.8.0";
     if (jQueryVersion !== 'none') {
-      document.write(unescape('%3Cscript src="http://code.jquery.com/jquery-'+jQueryVersion+'.js"%3E%3C/script%3E'));
+      document.write('<script src="http://code.jquery.com/jquery-'+jQueryVersion+'.js"><\/script>');
     }
     // Close the script tag to make sure document.write happens
   </script>
@@ -77,8 +102,26 @@
   <script>
     // Fallback to default jQuery
     if (jQueryVersion !== 'none' && !window.jQuery) {
-      if (console && console.warn) { console.warn("Unable to load jQuery "+jQueryVersion+". Using default."); }
-      document.write(unescape('%3Cscript src="../lib/jquery-1.7.2.js"%3E%3C/script%3E'));
+      if (window.console && console.warn) { console.warn("Unable to load jQuery "+jQueryVersion+". Using default."); }
+      document.write('<script src="../lib/jquery-1.7.2.js"><\/script>');
+    }
+    // Close the script tag to make sure document.write happens
+  </script>
+
+  <script>
+    // Load custom version of Handlebars if possible
+    var handlebarsVersion = QUnit.urlParams.handlebars || "1.0.rc.1";
+    if (handlebarsVersion !== 'none') {
+      document.write('<script src="https://github.com/downloads/wycats/handlebars.js/handlebars-'+handlebarsVersion+'.js"><\/script>');
+    }
+    // Close the script tag to make sure document.write happens
+  </script>
+
+  <script>
+    // Fallback to default Handlebars
+    if (handlebarsVersion !== 'none' && !window.Handlebars) {
+      if (window.console && console.warn) { console.warn("Unable to load Handlebars "+handlebarsVersion+". Using default."); }
+      document.write('<script src="../lib/handlebars-1.0.rc.1.js"><\/script>');
     }
     // Close the script tag to make sure document.write happens
   </script>
@@ -98,7 +141,7 @@
     var emberFile = distros[dist];
     if (!emberFile) { throw 'Unknown dist'; }
 
-    document.write(unescape('%3Cscript src="../dist/'+emberFile+'"%3E%3C/script%3E'));
+    document.write('<script src="../dist/'+emberFile+'"><\/script>');
     // Close the script tag to make sure document.write happens
   </script>
 
@@ -123,63 +166,58 @@
 
 
     // Load Tests and Depenencies
-    var packages = (QUnit.urlParams.package || "").split(","),
+    var packages = (QUnit.urlParams.package || "all").split(","),
         packageName, el, idx, len, re, match, moduleName;
 
-    if (!packages.length) {
-      el = document.getElementById('qunit-header');
-      el.innerHTML = 'Add package=package1,package2 in the URL to test packages';
-    } else {
-      if (packages[0] === 'all') {
-        packages = [
-          'ember-handlebars',
-          'ember-metal',
-          'ember-runtime',
-          'ember-states',
-          'ember-views',
-          'ember-viewstates'
-        ];
-      }
+    if (packages[0] === 'all') {
+      packages = [
+        'ember-handlebars',
+        'ember-metal',
+        'ember-runtime',
+        'ember-states',
+        'ember-views',
+        'ember-routing',
+        'ember-application'
+      ];
+    }
 
-      len = packages.length;
+    len = packages.length;
 
-      // There is no require for this in the code
+    // There is no require for this in the code
+    if (dist == 'spade') {
+      minispade.require('ember-debug');
+    }
+
+    for (idx=0; idx<len; idx++) {
+      packageName = packages[idx];
+      re = new RegExp('^'+packageName+'/([^/]+)');
+
       if (dist == 'spade') {
-        minispade.require('handlebars');
-        minispade.require('ember-debug');
+        minispade.require(packageName);
       }
 
-      for (idx=0; idx<len; idx++) {
-        packageName = packages[idx];
-        re = new RegExp('^'+packageName+'/([^/]+)');
+      for (moduleName in minispade.modules) {
+        if (!minispade.modules.hasOwnProperty(moduleName)) { continue; }
 
-        if (dist == 'spade') {
-          minispade.require(packageName);
-        }
+        match = moduleName.match(re);
+        if (match) {
+          if (match[1] === '~tests') {
+            // Only require the actual tests since we already required the module
+            minispade.require(moduleName);
+          }
 
-        for (moduleName in minispade.modules) {
-          if (!minispade.modules.hasOwnProperty(moduleName)) { continue; }
-
-          match = moduleName.match(re);
-          if (match) {
-            if (match[1] === '~tests') {
-              // Only require the actual tests since we already required the module
-              minispade.require(moduleName);
-            }
-
-            if (jsHint) {
-              // JSHint all modules in this package, tests and code
-              // (closure to preserve variable values)
-              (function() {
-                var jshintModule = moduleName;
-                module(jshintModule);
-                test('should pass jshint', function() {
-                  var passed = JSHINT(minispade.modules[jshintModule], JSHINTRC),
-                      errors = jsHintReporter(jshintModule, JSHINT.errors);
-                  ok(passed, jshintModule+" should pass jshint."+(errors ? "\n"+errors : ''));
-                });
-              })();
-            }
+          if (jsHint) {
+            // JSHint all modules in this package, tests and code
+            // (closure to preserve variable values)
+            (function() {
+              var jshintModule = moduleName;
+              module(jshintModule);
+              test('should pass jshint', function() {
+                var passed = JSHINT(minispade.modules[jshintModule], JSHINTRC),
+                    errors = jsHintReporter(jshintModule, JSHINT.errors);
+                ok(passed, jshintModule+" should pass jshint."+(errors ? "\n"+errors : ''));
+              });
+            })();
           }
         }
       }

@@ -1,24 +1,21 @@
-// ==========================================================================
-// Project:   Ember Handlebar Views
-// Copyright: ©2011 Strobe Inc. and contributors.
-// License:   Licensed under MIT license (see license.js)
-// ==========================================================================
-/*global TemplateTests*/
+var set = Ember.set, get = Ember.get;
 
-var set = Ember.set, get = Ember.get, setPath = Ember.setPath, getPath = Ember.getPath;
-
-var view;
+var originalLookup = Ember.lookup, lookup, TemplateTests, view;
 
 module("Support for {{yield}} helper (#307)", {
   setup: function() {
-    window.TemplateTests = Ember.Namespace.create();
+    Ember.lookup = lookup = { Ember: Ember };
+
+    lookup.TemplateTests = TemplateTests = Ember.Namespace.create();
   },
   teardown: function() {
-    if (view) {
-      view.destroy();
-    }
+    Ember.run(function(){
+      if (view) {
+        view.destroy();
+      }}
+    );
 
-    window.TemplateTests = undefined;
+    Ember.lookup = originalLookup;
   }
 });
 
@@ -72,7 +69,7 @@ test("templates should yield to block, when the yield is embedded in a hierarchy
         indexArray[i] = i;
       }
       return indexArray;
-    }).property().cacheable()
+    }).property()
   });
 
   view = Ember.View.create({

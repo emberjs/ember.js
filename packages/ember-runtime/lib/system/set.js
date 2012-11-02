@@ -1,20 +1,17 @@
-// ==========================================================================
-// Project:  Ember Runtime
-// Copyright: ©2011 Strobe Inc. and contributors.
-// License:   Licensed under MIT license (see license.js)
-// ==========================================================================
-
 require('ember-runtime/core');
 require('ember-runtime/system/core_object');
 require('ember-runtime/mixins/mutable_enumerable');
 require('ember-runtime/mixins/copyable');
 require('ember-runtime/mixins/freezable');
 
+/**
+@module ember
+@submodule ember-runtime
+*/
+
 var get = Ember.get, set = Ember.set, guidFor = Ember.guidFor, none = Ember.none;
 
 /**
-  @class
-
   An unordered collection of objects.
 
   A Set works a bit like an array except that its items are not ordered.
@@ -22,11 +19,8 @@ var get = Ember.get, set = Ember.set, guidFor = Ember.guidFor, none = Ember.none
   can also iterate through a set just like an array, even accessing objects
   by index, however there is no guarantee as to their order.
 
-  Starting with Ember 2.0 all Sets are now observable since there is no
-  added cost to providing this support.  Sets also do away with the more
-  specialized Set Observer API in favor of the more generic Enumerable
-  Observer API - which works on any enumerable object including both Sets and
-  Arrays.
+  All Sets are observable via the Enumerable Observer API - which works
+  on any enumerable object including both Sets and Arrays.
 
   ## Creating a Set
 
@@ -78,9 +72,11 @@ var get = Ember.get, set = Ember.set, guidFor = Ember.guidFor, none = Ember.none
 
   ## Observing changes
 
-  When using `Ember.Set`, you can add an enumerable observer to the set to
-  be notified of specific objects that are added and removed from the set.
-  See `Ember.Enumerable` for more information on enumerables.
+  When using `Ember.Set`, you can observe the `"[]"` property to be
+  alerted whenever the content changes.  You can also add an enumerable
+  observer to the set to be notified of specific objects that are added and
+  removed from the set.  See `Ember.Enumerable` for more information on
+  enumerables.
 
   This is often unhelpful. If you are filtering sets of objects, for instance,
   it is very inefficient to re-filter all of the items each time the set
@@ -103,11 +99,12 @@ var get = Ember.get, set = Ember.set, guidFor = Ember.guidFor, none = Ember.none
   code that can know with certainty when the underlying set data will or
   will not be modified.
 
-  @extends Ember.Enumerable
-  @extends Ember.MutableEnumerable
-  @extends Ember.Copyable
-  @extends Ember.Freezable
-
+  @class Set
+  @namespace Ember
+  @extends Ember.CoreObject
+  @uses Ember.MutableEnumerable
+  @uses Ember.Copyable
+  @uses Ember.Freezable
   @since Ember 0.9
 */
 Ember.Set = Ember.CoreObject.extend(Ember.MutableEnumerable, Ember.Copyable, Ember.Freezable,
@@ -120,7 +117,8 @@ Ember.Set = Ember.CoreObject.extend(Ember.MutableEnumerable, Ember.Copyable, Emb
   /**
     This property will change as the number of objects in the set changes.
 
-    @property Number
+    @property length
+    @type number
     @default 0
   */
   length: 0,
@@ -134,20 +132,33 @@ Ember.Set = Ember.CoreObject.extend(Ember.MutableEnumerable, Ember.Copyable, Emb
         colors.clear();
         colors.length;  => 0
 
-    @returns {Ember.Set} An empty Set
+    @method clear
+    @return {Ember.Set} An empty Set
   */
   clear: function() {
     if (this.isFrozen) { throw new Error(Ember.FROZEN_ERROR); }
+
     var len = get(this, 'length');
+    if (len === 0) { return this; }
+
     var guid;
+
     this.enumerableContentWillChange(len, 0);
+    Ember.propertyWillChange(this, 'firstObject');
+    Ember.propertyWillChange(this, 'lastObject');
+
     for (var i=0; i < len; i++){
       guid = guidFor(this[i]);
       delete this[guid];
       delete this[i];
     }
+
     set(this, 'length', 0);
+
+    Ember.propertyDidChange(this, 'firstObject');
+    Ember.propertyDidChange(this, 'lastObject');
     this.enumerableContentDidChange(len, 0);
+
     return this;
   },
 
@@ -160,8 +171,9 @@ Ember.Set = Ember.CoreObject.extend(Ember.MutableEnumerable, Ember.Copyable, Emb
         same_colors.isEqual(colors); => true
         same_colors.isEqual(["purple", "brown"]); => false
 
+    @method isEqual
     @param {Ember.Set} obj the other object.
-    @returns {Boolean}
+    @return {Boolean}
   */
   isEqual: function(obj) {
     // fail fast
@@ -191,9 +203,9 @@ Ember.Set = Ember.CoreObject.extend(Ember.MutableEnumerable, Ember.Copyable, Emb
         colors.add(null);      => ["blue", "red"]
         colors.add(undefined); => ["blue", "red"]
 
-    @function
+    @method add
     @param {Object} obj The object to add.
-    @returns {Ember.Set} The set itself.
+    @return {Ember.Set} The set itself.
   */
   add: Ember.alias('addObject'),
 
@@ -207,21 +219,22 @@ Ember.Set = Ember.CoreObject.extend(Ember.MutableEnumerable, Ember.Copyable, Emb
         colors.remove("purple"); => ["blue", "green"]
         colors.remove(null);     => ["blue", "green"]
 
-    @function
+    @method remove
     @param {Object} obj The object to remove
-    @returns {Ember.Set} The set itself.
+    @return {Ember.Set} The set itself.
   */
   remove: Ember.alias('removeObject'),
 
   /**
     Removes the last element from the set and returns it, or null if it's empty.
-    
+
         var colors = new Ember.Set(["green", "blue"]);
         colors.pop(); => "blue"
         colors.pop(); => "green"
         colors.pop(); => null
 
-    @returns {Object} The removed object from the set or null.
+    @method pop
+    @return {Object} The removed object from the set or null.
   */
   pop: function() {
     if (get(this, 'isFrozen')) throw new Error(Ember.FROZEN_ERROR);
@@ -241,8 +254,8 @@ Ember.Set = Ember.CoreObject.extend(Ember.MutableEnumerable, Ember.Copyable, Emb
         colors.push("green"); => ["red", "green"]
         colors.push("blue");  => ["red", "green", "blue"]
 
-    @function
-    @returns {Ember.Set} The set itself.
+    @method push
+    @return {Ember.Set} The set itself.
   */
   push: Ember.alias('addObject'),
 
@@ -256,8 +269,8 @@ Ember.Set = Ember.CoreObject.extend(Ember.MutableEnumerable, Ember.Copyable, Emb
         colors.shift(); => "green"
         colors.shift(); => null
 
-    @function
-    @returns {Object} The removed object from the set or null.
+    @method shift
+    @return {Object} The removed object from the set or null.
   */
   shift: Ember.alias('pop'),
 
@@ -272,8 +285,8 @@ Ember.Set = Ember.CoreObject.extend(Ember.MutableEnumerable, Ember.Copyable, Emb
         colors.unshift("green"); => ["red", "green"]
         colors.unshift("blue");  => ["red", "green", "blue"]
 
-    @function
-    @returns {Ember.Set} The set itself.
+    @method unshift
+    @return {Ember.Set} The set itself.
   */
   unshift: Ember.alias('push'),
 
@@ -285,9 +298,9 @@ Ember.Set = Ember.CoreObject.extend(Ember.MutableEnumerable, Ember.Copyable, Emb
         var colors = new Ember.Set();
         colors.addEach(["red", "green", "blue"]); => ["red", "green", "blue"]
 
-    @function
+    @method addEach
     @param {Ember.Enumerable} objects the objects to add.
-    @returns {Ember.Set} The set itself.
+    @return {Ember.Set} The set itself.
   */
   addEach: Ember.alias('addObjects'),
 
@@ -299,9 +312,9 @@ Ember.Set = Ember.CoreObject.extend(Ember.MutableEnumerable, Ember.Copyable, Emb
         var colors = new Ember.Set(["red", "green", "blue"]);
         colors.removeEach(["red", "blue"]); => ["green"]
 
-    @function
+    @method removeEach
     @param {Ember.Enumerable} objects the objects to remove.
-    @returns {Ember.Set} The set itself.
+    @return {Ember.Set} The set itself.
   */
   removeEach: Ember.alias('removeObjects'),
 
@@ -309,28 +322,27 @@ Ember.Set = Ember.CoreObject.extend(Ember.MutableEnumerable, Ember.Copyable, Emb
   // PRIVATE ENUMERABLE SUPPORT
   //
 
-  /** @private */
   init: function(items) {
     this._super();
     if (items) this.addObjects(items);
   },
 
-  /** @private (nodoc) - implement Ember.Enumerable */
+  // implement Ember.Enumerable
   nextObject: function(idx) {
     return this[idx];
   },
 
-  /** @private - more optimized version */
+  // more optimized version
   firstObject: Ember.computed(function() {
     return this.length > 0 ? this[0] : undefined;
-  }).property('[]').cacheable(),
+  }).property(),
 
-  /** @private - more optimized version */
+  // more optimized version
   lastObject: Ember.computed(function() {
     return this.length > 0 ? this[this.length-1] : undefined;
-  }).property('[]').cacheable(),
+  }).property(),
 
-  /** @private (nodoc) - implements Ember.MutableEnumerable */
+  // implements Ember.MutableEnumerable
   addObject: function(obj) {
     if (get(this, 'isFrozen')) throw new Error(Ember.FROZEN_ERROR);
     if (none(obj)) return this; // nothing to do
@@ -343,17 +355,22 @@ Ember.Set = Ember.CoreObject.extend(Ember.MutableEnumerable, Ember.Copyable, Emb
     if (idx>=0 && idx<len && (this[idx] === obj)) return this; // added
 
     added = [obj];
+
     this.enumerableContentWillChange(null, added);
+    Ember.propertyWillChange(this, 'lastObject');
+
     len = get(this, 'length');
     this[guid] = len;
     this[len] = obj;
     set(this, 'length', len+1);
+
+    Ember.propertyDidChange(this, 'lastObject');
     this.enumerableContentDidChange(null, added);
 
     return this;
   },
 
-  /** @private (nodoc) - implements Ember.MutableEnumerable */
+  // implements Ember.MutableEnumerable
   removeObject: function(obj) {
     if (get(this, 'isFrozen')) throw new Error(Ember.FROZEN_ERROR);
     if (none(obj)) return this; // nothing to do
@@ -361,6 +378,8 @@ Ember.Set = Ember.CoreObject.extend(Ember.MutableEnumerable, Ember.Copyable, Emb
     var guid = guidFor(obj),
         idx  = this[guid],
         len = get(this, 'length'),
+        isFirst = idx === 0,
+        isLast = idx === len-1,
         last, removed;
 
 
@@ -368,6 +387,8 @@ Ember.Set = Ember.CoreObject.extend(Ember.MutableEnumerable, Ember.Copyable, Emb
       removed = [obj];
 
       this.enumerableContentWillChange(removed, null);
+      if (isFirst) { Ember.propertyWillChange(this, 'firstObject'); }
+      if (isLast)  { Ember.propertyWillChange(this, 'lastObject'); }
 
       // swap items - basically move the item to the end so it can be removed
       if (idx < len-1) {
@@ -380,18 +401,19 @@ Ember.Set = Ember.CoreObject.extend(Ember.MutableEnumerable, Ember.Copyable, Emb
       delete this[len-1];
       set(this, 'length', len-1);
 
+      if (isFirst) { Ember.propertyDidChange(this, 'firstObject'); }
+      if (isLast)  { Ember.propertyDidChange(this, 'lastObject'); }
       this.enumerableContentDidChange(removed, null);
     }
 
     return this;
   },
 
-  /** @private (nodoc) - optimized version */
+  // optimized version
   contains: function(obj) {
     return this[guidFor(obj)]>=0;
   },
 
-  /** @private (nodoc) */
   copy: function() {
     var C = this.constructor, ret = new C(), loc = get(this, 'length');
     set(ret, 'length', loc);
@@ -402,45 +424,12 @@ Ember.Set = Ember.CoreObject.extend(Ember.MutableEnumerable, Ember.Copyable, Emb
     return ret;
   },
 
-  /** @private */
   toString: function() {
     var len = this.length, idx, array = [];
     for(idx = 0; idx < len; idx++) {
       array[idx] = this[idx];
     }
     return "Ember.Set<%@>".fmt(array.join(','));
-  },
-
-  // ..........................................................
-  // DEPRECATED
-  //
-
-  /** @deprecated
-
-    This property is often used to determine that a given object is a set.
-    Instead you should use instanceof:
-
-        #js:
-        // SproutCore 1.x:
-        isSet = myobject && myobject.isSet;
-
-        // Ember:
-        isSet = myobject instanceof Ember.Set
-
-    @type Boolean
-    @default true
-  */
-  isSet: true
+  }
 
 });
-
-// Support the older API
-var o_create = Ember.Set.create;
-Ember.Set.create = function(items) {
-  if (items && Ember.Enumerable.detect(items)) {
-    ember_deprecate('Passing an enumerable to Ember.Set.create() is deprecated and will be removed in a future version of Ember.  Use new Ember.Set(items) instead.');
-    return new Ember.Set(items);
-  } else {
-    return o_create.apply(this, arguments);
-  }
-};

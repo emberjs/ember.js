@@ -1,8 +1,3 @@
-// ==========================================================================
-// Project:   Ember - JavaScript Application Framework
-// Copyright: ©2006-2011 Apple Inc. and contributors.
-// License:   Licensed under MIT license (see license.js)
-// ==========================================================================
 /*global module test equals context ok same */
 
 var set = Ember.set, get = Ember.get;
@@ -31,7 +26,9 @@ test("default implementation does not render child views", function() {
     })
   });
 
-  view.createElement();
+  Ember.run(function(){
+    view.createElement();
+  });
   equal(rendered, 1, 'rendered the child once');
   equal(parentRendered, 1);
   equal(view.$('div').length, 1);
@@ -73,7 +70,9 @@ test("should invoke renderChildViews if layer is destroyed then re-rendered", fu
   equal(parentRendered, 2);
   equal(view.$('div').length, 1);
 
-  view.destroy();
+  Ember.run(function(){
+    view.destroy();
+  });
 });
 
 test("should render child views with a different tagName", function() {
@@ -87,30 +86,39 @@ test("should render child views with a different tagName", function() {
     })
   });
 
-  view.createElement();
+  Ember.run(function(){
+    view.createElement();
+  });
+  
   equal(view.$('aside').length, 1);
 });
 
 test("should add ember-view to views", function() {
   var view = Ember.View.create();
 
-  view.createElement();
+  Ember.run(function(){
+    view.createElement();
+  });
+  
   ok(view.$().hasClass('ember-view'), "the view has ember-view");
 });
 
 test("should not add role attribute unless one is specified", function() {
   var view = Ember.View.create();
 
-  view.createElement();
+  Ember.run(function(){
+    view.createElement();
+  });
+  
   ok(view.$().attr('role') === undefined, "does not have a role attribute");
 });
 
-test("should re-render if the templateContext is changed", function() {
+test("should re-render if the context is changed", function() {
   var view = Ember.View.create({
     elementId: 'template-context-test',
-    templateContext: { foo: "bar" },
+    context: { foo: "bar" },
     render: function(buffer) {
-      var value = get(get(this, 'templateContext'), 'foo');
+      var value = get(get(this, 'context'), 'foo');
       buffer.push(value);
     }
   });
@@ -122,10 +130,10 @@ test("should re-render if the templateContext is changed", function() {
   equal(Ember.$('#qunit-fixture #template-context-test').text(), "bar", "precond - renders the view with the initial value");
 
   Ember.run(function() {
-    view.set('templateContext', {
+    view.set('context', {
       foo: "bang baz"
     });
   });
 
-  equal(Ember.$('#qunit-fixture #template-context-test').text(), "bang baz", "re-renders the view with the updated templateContext");
+  equal(Ember.$('#qunit-fixture #template-context-test').text(), "bang baz", "re-renders the view with the updated context");
 });

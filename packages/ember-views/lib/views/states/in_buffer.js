@@ -1,11 +1,9 @@
-// ==========================================================================
-// Project:   Ember - JavaScript Application Framework
-// Copyright: ©2006-2011 Strobe Inc. and contributors.
-//            Portions ©2008-2011 Apple Inc. All rights reserved.
-// License:   Licensed under MIT license (see license.js)
-// ==========================================================================
-
 require('ember-views/views/states/default');
+
+/**
+@module ember
+@submodule ember-views
+*/
 
 var get = Ember.get, set = Ember.set, meta = Ember.meta;
 
@@ -24,9 +22,9 @@ Ember.View.states.inBuffer = {
   // when a view is rendered in a buffer, rerendering it simply
   // replaces the existing buffer with a new one
   rerender: function(view) {
-    ember_deprecate("Something you did caused a view to re-render after it rendered but before it was inserted into the DOM. Because this is avoidable and the cause of significant performance issues in applications, this behavior is deprecated. If you want to use the debugger to find out what caused this, you can set ENV.RAISE_ON_DEPRECATION to true.");
+    Ember.deprecate("Something you did caused a view to re-render after it rendered but before it was inserted into the DOM. Because this is avoidable and the cause of significant performance issues in applications, this behavior is deprecated. If you want to use the debugger to find out what caused this, you can set ENV.RAISE_ON_DEPRECATION to true.");
 
-    view._notifyWillRerender();
+    view._notifyWillClearRender();
 
     view.clearRenderedChildren();
     view.renderToBuffer(view.buffer, 'replaceWith');
@@ -39,7 +37,7 @@ Ember.View.states.inBuffer = {
     var buffer = view.buffer;
 
     childView = this.createChildView(childView, options);
-    get(view, '_childViews').push(childView);
+    view._childViews.push(childView);
 
     childView.renderToBuffer(buffer);
 
@@ -60,7 +58,11 @@ Ember.View.states.inBuffer = {
   },
 
   empty: function() {
-    throw "EWOT";
+    Ember.assert("Emptying a view in the inBuffer state is not allowed and should not happen under normal circumstances. Most likely there is a bug in your application. This may be due to excessive property change notifications.");
+  },
+
+  renderToBufferIfNeeded: function (view) {
+    return view.buffer;
   },
 
   // It should be impossible for a rendered view to be scheduled for
@@ -70,8 +72,6 @@ Ember.View.states.inBuffer = {
   },
 
   setElement: function(view, value) {
-    view.invalidateRecursively('element');
-
     if (value === null) {
       view.transitionTo('preRender');
     } else {

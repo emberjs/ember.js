@@ -1,4 +1,4 @@
-var view, app;
+var view, dispatcher;
 var template =
   '{{#view Ember.TabContainerView currentView="foo"}}\n' +
   '  <ul>\n' +
@@ -15,7 +15,9 @@ var template =
 
 module("Ember.TabContainerView and components", {
   setup: function() {
-    app = Ember.Application.create({ rootElement: '#qunit-fixture' });
+    Ember.TESTING_DEPRECATION = true;
+    dispatcher = Ember.EventDispatcher.create({ rootElement: '#qunit-fixture' });
+    dispatcher.setup();
 
     view = Ember.View.create({
       template: Ember.Handlebars.compile(template)
@@ -27,7 +29,8 @@ module("Ember.TabContainerView and components", {
   },
 
   teardown: function() {
-    Ember.run(function(){ app.destroy(); });
+    Ember.run(function(){ dispatcher.destroy(); });
+    Ember.TESTING_DEPRECATION = false;
   }
 });
 

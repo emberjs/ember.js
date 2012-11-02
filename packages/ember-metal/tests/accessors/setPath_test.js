@@ -1,9 +1,4 @@
-// ==========================================================================
-// Project:  Ember Runtime
-// Copyright: ©2011 Strobe Inc. and contributors.
-// License:   Licensed under MIT license (see license.js)
-// ==========================================================================
-/*globals Foo:true $foo:true */
+var originalLookup = Ember.lookup;
 
 var obj, moduleOpts = {
   setup: function() {
@@ -16,137 +11,74 @@ var obj, moduleOpts = {
 
     };
 
-    Foo = {
-      bar: {
-        baz: { biff: 'FooBiff' }
-      }
-    };
+    Ember.lookup = {
+      Foo: {
+        bar: {
+          baz: { biff: 'FooBiff' }
+        }
+      },
 
-    $foo = {
-      bar: {
-        baz: { biff: '$FOOBIFF' }
+      $foo: {
+        bar: {
+          baz: { biff: '$FOOBIFF' }
+        }
       }
     };
   },
 
   teardown: function() {
     obj = null;
-    Foo = null;
-    $foo = null;
+    Ember.lookup = originalLookup;
   }
 };
 
-module('Ember.setPath', moduleOpts);
+module('Ember.set with path', moduleOpts);
+
+test('[Foo, bar] -> Foo.bar', function() {
+  Ember.lookup.Foo = {toString: function() { return 'Foo'; }}; // Behave like an Ember.Namespace
+
+  Ember.set(Ember.lookup.Foo, 'bar', 'baz');
+  equal(Ember.get(Ember.lookup.Foo, 'bar'), 'baz');
+});
 
 // ..........................................................
 // LOCAL PATHS
 //
 
 test('[obj, foo] -> obj.foo', function() {
-  Ember.setPath(obj, 'foo', "BAM");
-  equal(Ember.getPath(obj, 'foo'), "BAM");
-});
-
-test('[obj, *] -> EXCEPTION [cannot set *]', function() {
-  raises(function() {
-    Ember.setPath(obj, '*', "BAM");
-  }, Error);
+  Ember.set(obj, 'foo', "BAM");
+  equal(Ember.get(obj, 'foo'), "BAM");
 });
 
 test('[obj, foo.bar] -> obj.foo.bar', function() {
-  Ember.setPath(obj, 'foo.bar', "BAM");
-  equal(Ember.getPath(obj, 'foo.bar'), "BAM");
-});
-
-test('[obj, foo.*] -> EXCEPTION', function() {
-  raises(function() {
-    Ember.setPath(obj, 'foo.*', "BAM");
-  }, Error);
-});
-
-test('[obj, foo.*.baz] -> obj.foo.baz', function() {
-  Ember.setPath(obj, 'foo.*.baz', "BAM");
-  equal(Ember.getPath(obj, 'foo.baz'), "BAM");
-});
-
-
-test('[obj, foo*bar] -> obj.foo.bar', function() {
-  Ember.setPath(obj, 'foo*bar', "BAM");
-  equal(Ember.getPath(obj, 'foo.bar'), "BAM");
-});
-
-test('[obj, foo*bar.*] -> EXCEPTION', function() {
-  raises(function() {
-    Ember.setPath(obj, 'foo.*.baz.*', "BAM");
-  }, Error);
-});
-
-test('[obj, foo.bar*baz.biff] -> obj.foo.bar.baz.biff', function() {
-  Ember.setPath(obj, 'foo.bar*baz.biff', "BAM");
-  equal(Ember.getPath(obj, 'foo.bar.baz.biff'), "BAM");
+  Ember.set(obj, 'foo.bar', "BAM");
+  equal(Ember.get(obj, 'foo.bar'), "BAM");
 });
 
 test('[obj, this.foo] -> obj.foo', function() {
-  Ember.setPath(obj, 'this.foo', "BAM");
-  equal(Ember.getPath(obj, 'foo'), "BAM");
+  Ember.set(obj, 'this.foo', "BAM");
+  equal(Ember.get(obj, 'foo'), "BAM");
 });
 
 test('[obj, this.foo.bar] -> obj.foo.bar', function() {
-  Ember.setPath(obj, 'this.foo.bar', "BAM");
-  equal(Ember.getPath(obj, 'foo.bar'), "BAM");
+  Ember.set(obj, 'this.foo.bar', "BAM");
+  equal(Ember.get(obj, 'foo.bar'), "BAM");
 });
-
-test('[obj, .foo.bar] -> obj.foo.bar', function() {
-  Ember.setPath(obj, '.foo.bar', "BAM");
-  equal(Ember.getPath(obj, 'foo.bar'), "BAM");
-});
-
-test('[obj, *foo.bar] -> obj.foo.bar', function() {
-  Ember.setPath(obj, '*foo.bar', "BAM");
-  equal(Ember.getPath(obj, 'foo.bar'), "BAM");
-});
-
-test('[obj, this.foo*bar] -> obj.foo.bar', function() {
-  Ember.setPath(obj, 'this.foo*bar', "BAM");
-  equal(Ember.getPath(obj, 'foo.bar'), "BAM");
-});
-
-test('[obj, this.foo.bar*baz.biff] -> obj.foo.bar.baz.biff', function() {
-  Ember.setPath(obj, 'this.foo.bar*baz.biff', "BAM");
-  equal(Ember.getPath(obj, 'foo.bar.baz.biff'), "BAM");
-});
-
 
 // ..........................................................
 // NO TARGET
 //
 
 test('[null, Foo.bar] -> Foo.bar', function() {
-  Ember.setPath(null, 'Foo.bar', "BAM");
-  equal(Ember.getPath(Foo, 'bar'), "BAM");
+  Ember.set(null, 'Foo.bar', "BAM");
+  equal(Ember.get(Ember.lookup.Foo, 'bar'), "BAM");
 });
-
-test('[null, Foo*bar] -> Foo.bar', function() {
-  Ember.setPath(null, 'Foo*bar', "BAM");
-  equal(Ember.getPath(Foo, 'bar'), "BAM");
-});
-
-test('[null, Foo.bar*baz.biff] -> Foo.bar.baz.biff', function() {
-  Ember.setPath(null, 'Foo.bar*baz.biff', "BAM");
-  equal(Ember.getPath(Foo, 'bar.baz.biff'), "BAM");
-});
-
-test('[null, Foo.bar.baz*biff] -> Foo.bar.baz.biff', function() {
-  Ember.setPath(null, 'Foo.bar.baz*biff', "BAM");
-  equal(Ember.getPath(Foo, 'bar.baz.biff'), "BAM");
-});
-
 
 // ..........................................................
-// GLOBAL PATHS (DEPRECATED)
+// DEPRECATED
 //
 
-module("Ember.setPath - deprecated", {
+module("Ember.set with path - deprecated", {
   setup: function() {
     Ember.TESTING_DEPRECATION = true;
     moduleOpts.setup();
@@ -157,44 +89,13 @@ module("Ember.setPath - deprecated", {
   }
 });
 
-test('[obj, Foo] -> EXCEPTION', function() {
+test('[obj, foo.baz.bat] -> EXCEPTION', function() {
   raises(function() {
-    Ember.setPath(obj, 'Foo', "BAM");
+    Ember.set(obj, 'foo.baz.bat', "BAM");
   }, Error);
 });
 
 test('[obj, foo.baz.bat] -> EXCEPTION', function() {
-  raises(function() {
-    Ember.setPath(obj, 'foo.baz.bat', "BAM");
-  }, Error);
-});
-
-test('[obj, foo.baz.bat] -> EXCEPTION', function() {
-  Ember.trySetPath(obj, 'foo.baz.bat', "BAM");
+  Ember.trySet(obj, 'foo.baz.bat', "BAM");
   ok(true, "does not raise");
-});
-
-test('[obj, Foo.bar] -> Foo.bar', function() {
-  Ember.setPath(obj, 'Foo.bar', "BAM");
-  equal(Ember.getPath(Foo, 'bar'), "BAM");
-});
-
-test('[obj, Foo*bar] -> Foo.bar', function() {
-  Ember.setPath(obj, 'Foo*bar', "BAM");
-  equal(Ember.getPath(Foo, 'bar'), "BAM");
-});
-
-test('[obj, Foo.bar*baz.biff] -> Foo.bar.baz.biff', function() {
-  Ember.setPath(obj, 'Foo.bar*baz.biff', "BAM");
-  equal(Ember.getPath(Foo, 'bar.baz.biff'), "BAM");
-});
-
-test('[obj, Foo.bar.baz*biff] -> Foo.bar.baz.biff', function() {
-  Ember.setPath(obj, 'Foo.bar.baz*biff', "BAM");
-  equal(Ember.getPath(Foo, 'bar.baz.biff'), "BAM");
-});
-
-test('[obj, $foo.bar.baz] -> $foo.bar.baz', function() {
-  Ember.setPath(obj, '$foo.bar.baz', "BAM");
-  equal(Ember.getPath($foo, 'bar.baz'), "BAM");
 });

@@ -1,36 +1,45 @@
-// ==========================================================================
-// Project:   Ember Handlebar Views
-// Copyright: ©2011 Strobe Inc. and contributors.
-// License:   Licensed under MIT license (see license.js)
-// ==========================================================================
-
 /*jshint debug:true*/
 
 require('ember-handlebars/ext');
 
-var getPath = Ember.getPath;
+/**
+@module ember
+@submodule ember-handlebars
+*/
+
+var handlebarsGet = Ember.Handlebars.get, normalizePath = Ember.Handlebars.normalizePath;
 
 /**
   `log` allows you to output the value of a value in the current rendering
   context.
 
-      {{log myVariable}}
+  ``` handlebars
+  {{log myVariable}}
+  ```
 
-  @name Handlebars.helpers.log
+  @method log
+  @for Ember.Handlebars.helpers
   @param {String} property
 */
-Ember.Handlebars.registerHelper('log', function(property, fn) {
-  var context = (fn.contexts && fn.contexts[0]) || this;
-  Ember.Logger.log(getPath(context, property));
+Ember.Handlebars.registerHelper('log', function(property, options) {
+  var context = (options.contexts && options.contexts[0]) || this,
+      normalized = normalizePath(context, property, options.data),
+      pathRoot = normalized.root,
+      path = normalized.path,
+      value = (path === 'this') ? pathRoot : handlebarsGet(pathRoot, path, options);
+  Ember.Logger.log(value);
 });
 
 /**
   The `debugger` helper executes the `debugger` statement in the current
   context.
 
-      {{debugger}}
+  ``` handlebars
+  {{debugger}}
+  ```
 
-  @name Handlebars.helpers.debugger
+  @method debugger
+  @for Ember.Handlebars.helpers
   @param {String} property
 */
 Ember.Handlebars.registerHelper('debugger', function() {

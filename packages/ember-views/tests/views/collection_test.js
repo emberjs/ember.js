@@ -1,12 +1,5 @@
-// ==========================================================================
-// Project:   Ember - JavaScript Application Framework
-// Copyright: ©2006-2011 Strobe Inc. and contributors.
-//            ©2008-2011 Apple Inc. All rights reserved.
-// License:   Licensed under MIT license (see license.js)
-// ==========================================================================
-
 var set = Ember.set, get = Ember.get;
-var forEach = Ember.ArrayUtils.forEach;
+var forEach = Ember.EnumerableUtils.forEach;
 var view;
 
 module("Ember.CollectionView", {
@@ -15,7 +8,9 @@ module("Ember.CollectionView", {
   },
   teardown: function() {
     delete Ember.CollectionView.CONTAINER_MAP.del;
-    if (view) { view.destroy(); }
+    Ember.run(function(){
+      if (view) { view.destroy(); }
+    });
   }
 });
 
@@ -172,16 +167,176 @@ test("should remove an item from DOM when an item is removed from the content ar
   });
 });
 
+test("it updates the view if an item is replaced", function() {
+  var content = Ember.A(['foo', 'bar', 'baz']);
+  view = Ember.CollectionView.create({
+    content: content,
+
+    itemViewClass: Ember.View.extend({
+      render: function(buf) {
+        buf.push(get(this, 'content'));
+      }
+    })
+  });
+
+  Ember.run(function() {
+    view.append();
+  });
+
+  forEach(content, function(item) {
+    equal(view.$(':contains("'+item+'")').length, 1, "precond - generates pre-existing items");
+  });
+
+  Ember.run(function() {
+    content.removeAt(1);
+    content.insertAt(1, "Kazuki" );
+  });
+
+  forEach(content, function(item, idx) {
+    equal(view.$(Ember.String.fmt(':nth-child(%@)', [String(idx+1)])).text(), item, "postcond - correct array update");
+  });
+});
+
+test("can add and replace in the same runloop", function() {
+  var content = Ember.A(['foo', 'bar', 'baz']);
+  view = Ember.CollectionView.create({
+    content: content,
+
+    itemViewClass: Ember.View.extend({
+      render: function(buf) {
+        buf.push(get(this, 'content'));
+      }
+    })
+  });
+
+  Ember.run(function() {
+    view.append();
+  });
+
+  forEach(content, function(item) {
+    equal(view.$(':contains("'+item+'")').length, 1, "precond - generates pre-existing items");
+  });
+
+  Ember.run(function() {
+    content.pushObject("Tom Dale" );
+    content.removeAt(0);
+    content.insertAt(0, "Kazuki" );
+  });
+
+  forEach(content, function(item, idx) {
+    equal(view.$(Ember.String.fmt(':nth-child(%@)', [String(idx+1)])).text(), item, "postcond - correct array update");
+  });
+
+});
+
+test("can add and replace the object before the add in the same runloop", function() {
+  var content = Ember.A(['foo', 'bar', 'baz']);
+  view = Ember.CollectionView.create({
+    content: content,
+
+    itemViewClass: Ember.View.extend({
+      render: function(buf) {
+        buf.push(get(this, 'content'));
+      }
+    })
+  });
+
+  Ember.run(function() {
+    view.append();
+  });
+
+  forEach(content, function(item) {
+    equal(view.$(':contains("'+item+'")').length, 1, "precond - generates pre-existing items");
+  });
+
+  Ember.run(function() {
+    content.pushObject("Tom Dale" );
+    content.removeAt(1);
+    content.insertAt(1, "Kazuki" );
+  });
+
+  forEach(content, function(item, idx) {
+    equal(view.$(Ember.String.fmt(':nth-child(%@)', [String(idx+1)])).text(), item, "postcond - correct array update");
+  });
+});
+
+test("can add and replace complicatedly", function() {
+  var content = Ember.A(['foo', 'bar', 'baz']);
+  view = Ember.CollectionView.create({
+    content: content,
+
+    itemViewClass: Ember.View.extend({
+      render: function(buf) {
+        buf.push(get(this, 'content'));
+      }
+    })
+  });
+
+  Ember.run(function() {
+    view.append();
+  });
+
+  forEach(content, function(item) {
+    equal(view.$(':contains("'+item+'")').length, 1, "precond - generates pre-existing items");
+  });
+
+  Ember.run(function() {
+    content.pushObject("Tom Dale" );
+    content.removeAt(1);
+    content.insertAt(1, "Kazuki" );
+    content.pushObject("Firestone" );
+    content.pushObject("McMunch" );
+  });
+
+  forEach(content, function(item, idx) {
+    equal(view.$(Ember.String.fmt(':nth-child(%@)', [String(idx+1)])).text(), item, "postcond - correct array update: "+item.name+"!="+view.$(Ember.String.fmt(':nth-child(%@)', [String(idx+1)])).text());
+  });
+});
+
+test("can add and replace complicatedly harder", function() {
+  var content = Ember.A(['foo', 'bar', 'baz']);
+  view = Ember.CollectionView.create({
+    content: content,
+
+    itemViewClass: Ember.View.extend({
+      render: function(buf) {
+        buf.push(get(this, 'content'));
+      }
+    })
+  });
+
+  Ember.run(function() {
+    view.append();
+  });
+
+  forEach(content, function(item) {
+    equal(view.$(':contains("'+item+'")').length, 1, "precond - generates pre-existing items");
+  });
+
+  Ember.run(function() {
+    content.pushObject("Tom Dale" );
+    content.removeAt(1);
+    content.insertAt(1, "Kazuki" );
+    content.pushObject("Firestone" );
+    content.pushObject("McMunch" );
+    content.removeAt(2);
+  });
+
+  forEach(content, function(item, idx) {
+    equal(view.$(Ember.String.fmt(':nth-child(%@)', [String(idx+1)])).text(), item, "postcond - correct array update");
+  });
+});
+
 test("should allow changes to content object before layer is created", function() {
   view = Ember.CollectionView.create({
     content: null
   });
 
-  set(view, 'content', Ember.A());
-  set(view, 'content', Ember.A([1, 2, 3]));
-  set(view, 'content', Ember.A([1, 2]));
 
   Ember.run(function() {
+    set(view, 'content', Ember.A());
+    set(view, 'content', Ember.A([1, 2, 3]));
+    set(view, 'content', Ember.A([1, 2]));
     view.append();
   });
 
@@ -339,4 +494,35 @@ test("should not render the emptyView if content is emptied and refilled in the 
   });
   equal(view.$('div').length, 1);
   equal(view.$().find('kbd:contains("OY SORRY GUVNAH")').length, 0);
+});
+
+test("a array_proxy that backs an sorted array_controller that backs a collection view functions properly", function() {
+
+  var array = Ember.A([{ name: "Other Katz" }]);
+  var arrayProxy = Ember.ArrayProxy.create({content: array});
+
+  var sortedController = Ember.ArrayController.create({
+    content: arrayProxy,
+    sortProperties: ['name']
+  });
+
+  var container = Ember.CollectionView.create({
+    content: sortedController
+  });
+
+  Ember.run(function() {
+    container.appendTo('#qunit-fixture');
+  });
+
+  Ember.run(function() {
+    arrayProxy.addObjects([{ name: "Scumbag Demon" }, { name: "Lord British" }]);
+  });
+
+  equal(container.get('content.length'), 3, 'ArrayController should have 3 entries');
+  equal(container.get('content.content.length'), 3, 'RecordArray should have 3 entries');
+  equal(container.get('childViews.length'), 3, 'CollectionView should have 3 entries');
+
+  Ember.run(function() {
+    container.destroy();
+  });
 });

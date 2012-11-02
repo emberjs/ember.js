@@ -1,12 +1,6 @@
-// ==========================================================================
-// Project:  Ember Runtime
-// Copyright: ©2011 Strobe Inc. and contributors.
-// License:   Licensed under MIT license (see license.js)
-// ==========================================================================
-
 require('ember-runtime/~tests/suites/enumerable');
 
-var indexOf = Ember.ArrayUtils.indexOf;
+var indexOf = Ember.EnumerableUtils.indexOf;
 
 /*
   Implement a basic fake enumerable.  This validates that any non-native
@@ -32,7 +26,7 @@ var TestEnumerable = Ember.Object.extend(Ember.Enumerable, {
 
   length: Ember.computed(function() {
     return this._content.length;
-  }).property('[]').cacheable(),
+  }).property(),
 
   slice: function() {
     return this._content.slice();
@@ -77,6 +71,24 @@ var obj, observer;
 //
 
 module('mixins/enumerable/enumerableContentDidChange');
+
+test('should notify observers of []', function() {
+
+  var obj = Ember.Object.create(Ember.Enumerable, {
+    nextObject: function() {}, // avoid exceptions
+
+    _count: 0,
+    enumerablePropertyDidChange: Ember.observer(function() {
+      this._count++;
+    }, '[]')
+  });
+
+  equal(obj._count, 0, 'should not have invoked yet');
+  obj.enumerableContentWillChange();
+  obj.enumerableContentDidChange();
+  equal(obj._count, 1, 'should have invoked');
+
+});
 
 // ..........................................................
 // NOTIFY CHANGES TO LENGTH

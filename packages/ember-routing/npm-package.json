@@ -1,0 +1,12 @@
+{
+  "name": "ember-routing-node",
+  "summary": "Ember Routing",
+  "description": "The Ember routing system",
+  "homepage": "http://emberjs.com",
+  "author": "Yehuda Katz",
+  "version": "1.0.0-pre.2",
+  "main": "./index.js",
+  "dependencies": {
+    "ember-states-node": "1.0.0-pre.2"
+  }
+}

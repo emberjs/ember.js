@@ -1,8 +1,3 @@
-// ==========================================================================
-// Project:  Ember Runtime
-// Copyright: ©2011 Strobe Inc. and contributors.
-// License:   Licensed under MIT license (see license.js)
-// ==========================================================================
 /*globals MyApp:true */
 
 module('system/mixin/binding/oneWay_test', {
@@ -19,21 +14,27 @@ module('system/mixin/binding/oneWay_test', {
 });
 
 test('oneWay(true) should only sync one way', function() {
-  var binding = Ember.oneWay(MyApp, 'bar.value', 'foo.value');
-  Ember.run.sync();
+  var binding;
+  Ember.run(function(){
+    binding = Ember.oneWay(MyApp, 'bar.value', 'foo.value');
+  });
+  
+  equal(Ember.get('MyApp.foo.value'), 'FOO', 'foo synced');
+  equal(Ember.get('MyApp.bar.value'), 'FOO', 'bar synced');
 
-  equal(Ember.getPath('MyApp.foo.value'), 'FOO', 'foo synced');
-  equal(Ember.getPath('MyApp.bar.value'), 'FOO', 'bar synced');
+  Ember.run(function(){
+    Ember.set('MyApp.bar.value', 'BAZ');
+  });
+  
+  equal(Ember.get('MyApp.foo.value'), 'FOO', 'foo synced');
+  equal(Ember.get('MyApp.bar.value'), 'BAZ', 'bar not synced');
 
-  Ember.setPath('MyApp.bar.value', 'BAZ');
-  Ember.run.sync();
-  equal(Ember.getPath('MyApp.foo.value'), 'FOO', 'foo synced');
-  equal(Ember.getPath('MyApp.bar.value'), 'BAZ', 'bar not synced');
-
-  Ember.setPath('MyApp.foo.value', 'BIFF');
-  Ember.run.sync();
-  equal(Ember.getPath('MyApp.foo.value'), 'BIFF', 'foo synced');
-  equal(Ember.getPath('MyApp.bar.value'), 'BIFF', 'foo synced');
+  Ember.run(function(){
+    Ember.set('MyApp.foo.value', 'BIFF');
+  });
+  
+  equal(Ember.get('MyApp.foo.value'), 'BIFF', 'foo synced');
+  equal(Ember.get('MyApp.bar.value'), 'BIFF', 'foo synced');
 
 });
 
