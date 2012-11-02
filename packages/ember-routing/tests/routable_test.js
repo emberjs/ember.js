@@ -248,7 +248,7 @@ module("Routing Serialization and Deserialization", {
           show: Ember.Route.create({
             route: "/:post_id",
 
-            connectOutlets: function(manager, context) {
+            setupControllers: function(context) {
               equal(context.post.id, 2, "should be the same value regardless of entry point");
             },
 
@@ -328,7 +328,7 @@ module("default serialize and deserialize with modelType", {
           route: '/posts/:post_id',
           modelType: 'TestApp.Post',
 
-          connectOutlets: function(router, post) {
+          setupControllers: function(post) {
             equal(post, firstPost, "the post should have deserialized correctly");
           }
         }),
@@ -337,7 +337,7 @@ module("default serialize and deserialize with modelType", {
           route: '/users/:user_id',
           modelType: TestApp.User,
 
-          connectOutlets: function(router, user) {
+          setupControllers: function(user) {
             equal(user, firstUser, "the post should have deserialized correctly");
           }
         })
@@ -425,7 +425,7 @@ module("modelType with promise", {
             route: '/:user_id',
             modelType: 'TestApp.User',
 
-            connectOutlets: function(router, obj) {
+            setupControllers: function(obj) {
               connectedUser = obj;
             },
 
@@ -436,14 +436,14 @@ module("modelType with promise", {
                 route: '/:post_id',
                 modelType: 'TestApp.Post',
 
-                connectOutlets: function(router, obj) {
+                setupControllers: function(obj) {
                   connectedPost = obj;
                 },
 
                 show: Ember.Route.extend({
                   route: '/',
 
-                  connectOutlets: function(router) {
+                  setupControllers: function() {
                     connectedChild = true;
                   }
                 })
@@ -455,7 +455,7 @@ module("modelType with promise", {
         other: Ember.Route.extend({
           route: '/other',
 
-          connectOutlets: function() {
+          setupControllers: function() {
             connectedOther = true;
           }
         }),
@@ -607,7 +607,7 @@ module("default serialize and deserialize without modelType", {
         post: Ember.Route.extend({
           route: '/posts/:post_id',
 
-          connectOutlets: function(router, post) {
+          setupControllers: function(post) {
             equal(post, firstPost, "the post should have deserialized correctly");
           }
         })
@@ -658,7 +658,7 @@ test("if a leaf state has a redirectsTo, it automatically transitions into that 
   equal(router.get('currentState.path'), "root.someOtherState");
 });
 
-test("you cannot define connectOutlets AND redirectsTo", function() {
+test("you cannot define setupControllers AND redirectsTo", function() {
   raises(function() {
     Ember.Router.create({
       location: 'none',
@@ -666,7 +666,7 @@ test("you cannot define connectOutlets AND redirectsTo", function() {
         index: Ember.Route.create({
           route: '/',
           redirectsTo: 'someOtherState',
-          connectOutlets: function() {}
+          setupControllers: function() {}
         })
       })
     });

@@ -5,7 +5,7 @@ require('ember-routing/resolved_state');
 @submodule ember-routing
 */
 
-var get = Ember.get;
+var get = Ember.get, slice = Array.prototype.slice;
 
 // The Ember Routable mixin assumes the existance of a simple
 // routing shim that supports the following three behaviors:
@@ -44,9 +44,9 @@ Ember.Routable = Ember.Mixin.create({
     this.on('setup', this, this.stashContext);
 
     if (redirection = get(this, 'redirectsTo')) {
-      Ember.assert("You cannot use `redirectsTo` if you already have a `connectOutlets` method", this.connectOutlets === Ember.K);
+      Ember.assert("You cannot use `redirectsTo` if you already have a `setupControllers` method", this.setupControllers === Ember.K);
 
-      this.connectOutlets = function(router) {
+      this.setup = function(router) {
         router.transitionTo(redirection);
       };
     }
@@ -63,7 +63,8 @@ Ember.Routable = Ember.Mixin.create({
   },
 
   setup: function() {
-    return this.connectOutlets.apply(this, arguments);
+    this.setupControllers.apply(this, slice.call(arguments, 1));
+    this.renderTemplates();
   },
 
   /**
@@ -511,33 +512,73 @@ Ember.Routable = Ember.Mixin.create({
     }
   }),
 
+  _controller: Ember.computed(function(key, value) {
+    if (arguments.length > 1) { return value; }
+
+    value = get(this, 'controller');
+
+    if (!value) {
+      var template = get(this, '_template');
+      if (template) {
+        value = Ember.String.classify(template) + 'Controller';
+      }
+    }
+
+    if (Ember.typeOf(value) === 'string') {
+      value = get(get(this, 'router'), value);
+    }
+
+    return value;
+  }),
+
   render: function(options) {
     options = options || {};
 
     var template = options.template || get(this, '_template'),
         parentTemplate = options.into || get(this, 'parentTemplate'),
-        controller = get(this.router, parentTemplate + "Controller");
+        parentController = get(this, 'router.' + parentTemplate + 'Controller');
 
-    var viewName = Ember.String.classify(template) + "View",
-        viewClass = get(get(this.router, 'namespace'), viewName);
+    if (!parentController || !template || template === parentTemplate) {
+      return;
+    }
 
-    viewClass = (viewClass || Ember.View).extend({
-      templateName: template
+    var outletName = options.outletName || 'view',
+        controller = options.controller || get(this, '_controller'),
+        viewClass = this.buildViewClass(options.viewClass, controller, template);
+
+    parentController.connectOutlet(outletName, viewClass);
+  },
+
+  buildViewClass: function(viewClass, controller, templateName) {
+    var namespace = get(this, 'router.namespace');
+
+    if (!viewClass) {
+      viewClass = get(namespace, Ember.String.classify(templateName) + 'View');
+    }
+
+    return (viewClass || Ember.View).extend({
+      controller: controller,
+      templateName: templateName
     });
-
-    controller.set('view', viewClass.create());
   },
 
   /**
-    The `connectOutlets` event will be triggered once a
+    The `setupControllers` method will be called once a
     state has been entered. It will be called with the
     route's context.
 
-    @event connectOutlets
-    @param router {Ember.Router}
+    @method setupControllers
     @param [context*]
   */
-  connectOutlets: Ember.K,
+  setupControllers: Ember.K,
+
+  /**
+    The `renderTemplates` method will be caled
+    once controllers are setup.
+
+    @method renderTemplates
+  */
+  renderTemplates: Ember.alias('render'),
 
   /**
    The `navigateAway` event will be triggered when the
