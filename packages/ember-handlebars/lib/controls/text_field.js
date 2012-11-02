@@ -51,7 +51,7 @@ Ember.TextField = Ember.View.extend(Ember.TextSupport,
 
   classNames: ['ember-text-field'],
   tagName: "input",
-  attributeBindings: ['type', 'value', 'size'],
+  attributeBindings: ['max', 'min', 'size', 'step','type', 'value'],
 
   /**
     The value attribute of the input element. As the user inputs text, this
