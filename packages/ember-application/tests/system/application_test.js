@@ -340,3 +340,69 @@ test("Minimal Application initialized with an application template and injection
 
   equal(Ember.$('#qunit-fixture').text(), 'Hello Kris!');
 });
+
+test("reset application with stateManager", function() {
+  Ember.run(function() {
+    app = Ember.Application.create({
+      rootElement: '#qunit-fixture'
+    });
+
+    app.Router = Ember.Router.extend({
+      location: 'none',
+
+      root: Ember.Route.extend({
+        index: Ember.Route.extend({
+          route: '/'
+        }),
+
+        other: Ember.Route.extend({
+          router: '/other'
+        })
+      })
+    });
+
+    app.ApplicationView = Ember.View.extend({
+      template: function() { return "<a>Hello!</a>"; },
+      click: function() {
+        app.receivedClick = true;
+      }
+    });
+
+    app.ApplicationController = Ember.Controller.extend();
+
+    app.initialize();
+  });
+
+  Ember.run(function() {
+    Ember.$('#qunit-fixture a').click();
+  });
+
+  var appShouldBeRunning = function() {
+    ok(Ember.$('#qunit-fixture').text().indexOf('Hello') !== -1, "The ApplicationView is inserted");
+    ok(Ember.$('#qunit-fixture').text().indexOf('extra HTML') === -1, "Extra HTML has been removed");
+    equal(app.get('router.currentState.path'), 'root.index', "The router moved the state into the right place");
+    ok(app.receivedClick, "Received click event");
+  };
+
+  // Just to be safe, things should work OK *before* the reset.
+  appShouldBeRunning();
+
+  // Mess up router and DOM.
+  Ember.run(function() {
+    app.get('router').transitionTo('root.other');
+  });
+  Ember.$('#qunit-fixture div').append('extra HTML');
+
+  Ember.run(function() {
+    app.reset();
+  });
+
+  // Re-trigger event dispatcher test.
+  Ember.run(function() {
+    app.receivedClick = false;
+    Ember.$('#qunit-fixture a').click();
+  });
+
+  // Things should work *after* the reset.
+  appShouldBeRunning();
+});
