@@ -93,8 +93,24 @@ var get = Ember.get, set = Ember.set, fmt = Ember.String.fmt;
   ``` javascript
   Ember.CollectionView.CONTAINER_MAP['article'] = 'section'
   ```
-
-
+  ## Programatic creation of child views
+  For cases where additional customization beyond the use of a single `itemViewClass`
+  or `tagName` matching is required CollectionView's `createChildView` method can be
+  overidden:
+  
+  ``` javascript
+  CustomCollectionView = Ember.CollectionView.extend({
+    createChildView: function(viewClass, attrs) {
+      if (attrs.content.kind == 'album') {
+        viewClass = App.AlbumView;
+      } else {
+        viewClass = App.SongView;
+      }
+      this._super(viewClass, attrs);
+    }
+  });
+  ```
+  
   ## Empty View
   You can provide an `Ember.View` subclass to the `Ember.CollectionView` instance as its
   `emptyView` property. If the `content` property of a `CollectionView` is set to `null`
