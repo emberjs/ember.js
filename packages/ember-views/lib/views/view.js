@@ -213,7 +213,7 @@ Ember.CoreView = Ember.Object.extend(Ember.Evented, {
     // the DOM again.
     if (parent) { parent.removeChild(this); }
 
-    this.state = 'destroyed';
+    Ember.set(this, 'state', 'destroyed');
 
     // next remove view from global hash
     if (!this.isVirtual) delete Ember.View.views[get(this, 'elementId')];
@@ -2080,7 +2080,7 @@ Ember.View = Ember.CoreView.extend(
     // the DOM again.
     if (parent) { parent.removeChild(this); }
 
-    this.state = 'destroyed';
+    Ember.set(this, 'state', 'destroyed');
 
     childLen = childViews.length;
     for (var i=childLen-1; i>=0; i--) {
@@ -2199,7 +2199,7 @@ Ember.View = Ember.CoreView.extend(
   },
 
   transitionTo: function(state, children) {
-    this.state = state;
+    Ember.set(this, 'state', state);
 
     if (children !== false) {
       this.forEachChildView(function(view) {
