@@ -324,3 +324,30 @@ test("should throw an exception when rerender is called after view is destroyed"
   }, null, "throws an exception when calling appendChild");
 });
 
+module("views/view/view_lifecycle_test - full lifecycle");
+
+
+test("should allow to observe state", function() {
+  Ember.run(function() {
+    view = Ember.View.create({
+      foo: Ember.computed(function() {
+        return this.get('state');
+      }).property('state')
+    });
+
+  });
+
+  equal(view.get('foo'), 'preRender');
+
+  Ember.run(function() {
+    view.append();
+  });
+
+  equal(view.get('foo'), 'inDOM');
+
+  Ember.run(function() {
+    view.destroy();
+  });
+
+  equal(view.get('foo'), undefined);
+});
