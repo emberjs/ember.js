@@ -27,7 +27,7 @@ test("should be able to insert views after the DOM representation is created", f
   Ember.run(function(){
     container.destroy();
   });
-  
+
 });
 
 test("should be able to observe properties that contain child views", function() {
@@ -74,22 +74,22 @@ test("should set the parentView property on views that are added to the child vi
   Ember.run(function(){
     childViews.pushObject(view);
   });
-  
+
   equal(get(view, 'parentView'), container, "sets the parent view after the childView is appended");
 
   var secondView = View.create(),
       thirdView = View.create(),
       fourthView = View.create();
-  
+
   Ember.run(function(){
     childViews.pushObject(secondView);
     childViews.replace(1, 0, [thirdView, fourthView]);
   });
-  
+
   equal(get(secondView, 'parentView'), container, "sets the parent view of the second view");
   equal(get(thirdView, 'parentView'), container, "sets the parent view of the third view");
   equal(get(fourthView, 'parentView'), container, "sets the parent view of the fourth view");
-  
+
   childViews.replace(2, 2);
   equal(get(view, 'parentView'), container, "doesn't change non-removed view");
   equal(get(thirdView, 'parentView'), container, "doesn't change non-removed view");

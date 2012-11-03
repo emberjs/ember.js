@@ -15,7 +15,7 @@ module("the #each helper", {
 
     view = Ember.View.create({
       template: template,
-      people: people 
+      people: people
     });
 
 

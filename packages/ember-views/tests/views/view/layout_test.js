@@ -81,7 +81,7 @@ test("should not use defaultLayout if layout is provided", function() {
   Ember.run(function(){
     view.createElement();
   });
-  
+
 
   equal("foo", view.$().text(), "default layout was not printed");
 });

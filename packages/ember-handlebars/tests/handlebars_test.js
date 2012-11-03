@@ -1986,11 +1986,11 @@ test("should be able to update when bound property updates", function(){
       return this.get('value.name') + ' - computed';
     }).property('value').volatile()
   });
-  
+
   Ember.run(function(){
     view = View.create();
   });
-  
+
   appendView();
 
   Ember.run(function(){
@@ -2212,22 +2212,22 @@ test("should update bound values after the view is removed and then re-appended"
     showStuff: true,
     boundValue: "foo"
   });
-  
+
   Ember.run(function() {
     view.appendTo('#qunit-fixture');
   });
-  
+
   equal(Ember.$.trim(view.$().text()), "foo");
   Ember.run(function() {
     set(view, 'showStuff', false);
   });
   equal(Ember.$.trim(view.$().text()), "Not true.");
-  
+
   Ember.run(function() {
     set(view, 'showStuff', true);
   });
   equal(Ember.$.trim(view.$().text()), "foo");
-  
+
   Ember.run(function() {
     view.remove();
     set(view, 'showStuff', false);
@@ -2238,7 +2238,7 @@ test("should update bound values after the view is removed and then re-appended"
   Ember.run(function() {
     view.appendTo('#qunit-fixture');
   });
-  
+
   Ember.run(function() {
     set(view, 'boundValue', "bar");
   });
@@ -2248,34 +2248,34 @@ test("should update bound values after the view is removed and then re-appended"
 test("should update bound values after view's parent is removed and then re-appended", function() {
   var parentView = Ember.ContainerView.create({
     childViews: ['testView'],
-  
+
     testView: Ember.View.create({
       template: Ember.Handlebars.compile("{{#if showStuff}}{{boundValue}}{{else}}Not true.{{/if}}")
     })
   });
-  
+
   parentView.setProperties({
     showStuff: true,
     boundValue: "foo"
   });
-  
+
   Ember.run(function() {
     parentView.appendTo('#qunit-fixture');
   });
   view = parentView.get('testView');
-  
+
   equal(Ember.$.trim(view.$().text()), "foo");
   Ember.run(function() {
     set(parentView, 'showStuff', false);
   });
   equal(Ember.$.trim(view.$().text()), "Not true.");
-  
+
   Ember.run(function() {
     set(parentView, 'showStuff', true);
   });
   equal(Ember.$.trim(view.$().text()), "foo");
-  
-  
+
+
   Ember.run(function() {
     parentView.remove();
     set(parentView, 'showStuff', false);
@@ -2286,7 +2286,7 @@ test("should update bound values after view's parent is removed and then re-appe
   Ember.run(function() {
     parentView.appendTo('#qunit-fixture');
   });
-  
+
   Ember.run(function() {
     set(parentView, 'boundValue', "bar");
   });

@@ -219,19 +219,19 @@ test("should unregister event handlers on rerender", function() {
     template: Ember.Handlebars.compile('<a href="#" {{action "edit"}}>click me</a>'),
     edit: function() { eventHandlerWasCalled = true; }
   });
-  
+
   appendView();
-  
+
   var previousActionId = view.$('a[data-ember-action]').attr('data-ember-action');
-  
+
   Ember.run(function(){
     view.rerender();
   });
-  
+
   ok(!Ember.Handlebars.ActionHelper.registeredActions[previousActionId], "On rerender, the event handler was removed");
-  
+
   var newActionId = view.$('a[data-ember-action]').attr('data-ember-action');
-  
+
   ok(Ember.Handlebars.ActionHelper.registeredActions[newActionId], "After rerender completes, a new event handler was added");
 });
 
@@ -363,7 +363,7 @@ test("should only trigger actions for the event they were registered on", functi
   });
 
   appendView();
-  
+
   view.$('a').trigger('mouseover');
 
   ok(!editWasCalled, "The action wasn't called");

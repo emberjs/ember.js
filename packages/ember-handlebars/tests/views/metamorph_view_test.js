@@ -147,7 +147,7 @@ test("a metamorph view calls its childrens' willInsertElement and didInsertEleme
   ok(willInsertElementCalled, "willInsertElement called");
   ok(didInsertElementCalled, "didInsertElement called");
   ok(didInsertElementSawElement, "didInsertElement saw element");
-  
+
   Ember.run(function(){
     parentView.destroy();
   });

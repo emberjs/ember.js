@@ -520,16 +520,16 @@ test("works from a template with bindings", function() {
   equal(select.$('option').length, 5, "Options were rendered");
   equal(select.$().text(), "Pick a person:Yehuda KatzTom DalePeter WagenetErik Bryn", "Option values were rendered");
   equal(select.get('selection'), null, "Nothing has been selected");
-  
+
   Ember.run(function(){
     application.selectedPersonController.set('person', erik);
   });
-  
+
   equal(select.get('selection'), erik, "Selection was updated through binding");
   Ember.run(function(){
     application.peopleController.pushObject(Person.create({id: 5, firstName: "James", lastName: "Rosen"}));
   });
-  
+
   equal(select.$('option').length, 6, "New option was added");
   equal(select.get('selection'), erik, "Selection was maintained after new option was added");
 });

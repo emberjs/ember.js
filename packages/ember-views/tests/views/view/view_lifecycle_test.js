@@ -8,7 +8,7 @@ module("views/view/view_lifecycle_test - pre-render", {
   },
 
   teardown: function() {
-    if (view) { 
+    if (view) {
       Ember.run(function(){
         view.destroy();
       });
@@ -91,10 +91,10 @@ module("views/view/view_lifecycle_test - in render", {
   },
 
   teardown: function() {
-    if (view) { 
+    if (view) {
       Ember.run(function(){
         view.destroy();
-      }); 
+      });
     }
   }
 });
@@ -162,7 +162,7 @@ test("rerender should work inside a template", function() {
 
 module("views/view/view_lifecycle_test - in DOM", {
   teardown: function() {
-    if (view) { 
+    if (view) {
       Ember.run(function(){
         view.destroy();
       });
@@ -203,12 +203,12 @@ test("should replace DOM representation if rerender() is called after element is
   });
 
   equal(view.$().text(), "Do not taunt happy fun sphere", "precond - creates DOM element");
-  
+
   view.set('shape', 'ball');
   Ember.run(function() {
     view.rerender();
   });
-  
+
   equal(view.$().text(), "Do not taunt happy fun ball", "rerenders DOM element when rerender() is called");
 });
 
