@@ -9,27 +9,29 @@ require('ember-handlebars/ext');
   `template` allows you to render a template from inside another template.
   This allows you to re-use the same template in multiple places. For example:
 
-  ``` handlebars
-  <script type="text/x-handlebars">
+  ```handlebars
+  <script type="text/x-handlebars" data-template-name="logged_in_user">
     {{#with loggedInUser}}
       Last Login: {{lastLogin}}
       User Info: {{template "user_info"}}
     {{/with}}
   </script>
+  ```
 
+  ```handlebars
   <script type="text/x-handlebars" data-template-name="user_info">
     Name: <em>{{name}}</em>
     Karma: <em>{{karma}}</em>
   </script>
   ```
 
-  This helper looks for templates in the global Ember.TEMPLATES hash. If you
-  add &lt;script&gt; tags to your page with the `data-template-name` attribute set,
+  This helper looks for templates in the global `Ember.TEMPLATES` hash. If you
+  add `<script>` tags to your page with the `data-template-name` attribute set,
   they will be compiled and placed in this hash automatically.
 
   You can also manually register templates by adding them to the hash:
 
-  ``` javascript
+  ```javascript
   Ember.TEMPLATES["my_cool_template"] = Ember.Handlebars.compile('<b>{{user}}</b>');
   ```
 

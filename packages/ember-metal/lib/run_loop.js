@@ -109,7 +109,7 @@ RunLoop.prototype = {
       while (this._queues && (queue = this._queues[queueName])) {
         this._queues[queueName] = null;
 
-        // the sync phase is to allow property changes to propagate.  don't
+        // the sync phase is to allow property changes to propagate. don't
         // invoke observers until that is finished.
         if (queueName === 'sync') {
           log = Ember.LOG_BINDINGS;
@@ -141,7 +141,7 @@ RunLoop.prototype = {
         delete this._queues[queueName];
 
         if (queue) {
-          // the sync phase is to allow property changes to propagate.  don't
+          // the sync phase is to allow property changes to propagate. don't
           // invoke observers until that is finished.
           if (queueName === 'sync') {
             log = Ember.LOG_BINDINGS;
@@ -191,14 +191,16 @@ Ember.RunLoop = RunLoop;
   deferred actions including bindings and views updates are flushed at the
   end.
 
-  Normally you should not need to invoke this method yourself.  However if
+  Normally you should not need to invoke this method yourself. However if
   you are implementing raw event handlers when interfacing with other
   libraries or plugins, you should probably wrap all of your code inside this
   call.
 
-      Ember.run(function(){
-        // code to be execute within a RunLoop
-      });
+  ```javascript
+  Ember.run(function(){
+    // code to be execute within a RunLoop 
+  });
+  ```
 
   @class run
   @namespace Ember
@@ -206,7 +208,7 @@ Ember.RunLoop = RunLoop;
   @constructor
   @param {Object} [target] target of method to call
   @param {Function|String} method Method to invoke.
-    May be a function or a string.  If you pass a string
+    May be a function or a string. If you pass a string
     then it will be looked up on the passed target.
   @param {Object} [args*] Any additional arguments you wish to pass to the method.
   @return {Object} return value from invoking the passed function.
@@ -226,13 +228,15 @@ var run = Ember.run;
 
 
 /**
-  Begins a new RunLoop.  Any deferred actions invoked after the begin will
-  be buffered until you invoke a matching call to Ember.run.end().  This is
-  an lower-level way to use a RunLoop instead of using Ember.run().
+  Begins a new RunLoop. Any deferred actions invoked after the begin will
+  be buffered until you invoke a matching call to `Ember.run.end()`. This is
+  an lower-level way to use a RunLoop instead of using `Ember.run()`.
 
-      Ember.run.begin();
-      // code to be execute within a RunLoop
-      Ember.run.end();
+  ```javascript
+  Ember.run.begin();
+  // code to be execute within a RunLoop 
+  Ember.run.end();
+  ```
 
   @method begin
   @return {void}
@@ -242,13 +246,15 @@ Ember.run.begin = function() {
 };
 
 /**
-  Ends a RunLoop.  This must be called sometime after you call Ember.run.begin()
-  to flush any deferred actions.  This is a lower-level way to use a RunLoop
-  instead of using Ember.run().
+  Ends a RunLoop. This must be called sometime after you call
+  `Ember.run.begin()` to flush any deferred actions. This is a lower-level way
+  to use a RunLoop instead of using `Ember.run()`.
 
-      Ember.run.begin();
-      // code to be execute within a RunLoop
-      Ember.run.end();
+  ```javascript
+  Ember.run.begin();
+  // code to be execute within a RunLoop 
+  Ember.run.end();
+  ```
 
   @method end
   @return {void}
@@ -264,9 +270,9 @@ Ember.run.end = function() {
 };
 
 /**
-  Array of named queues.  This array determines the order in which queues
-  are flushed at the end of the RunLoop.  You can define your own queues by
-  simply adding the queue name to this array.  Normally you should not need
+  Array of named queues. This array determines the order in which queues
+  are flushed at the end of the RunLoop. You can define your own queues by
+  simply adding the queue name to this array. Normally you should not need
   to inspect or modify this property.
 
   @property queues
@@ -277,38 +283,38 @@ Ember.run.queues = ['sync', 'actions', 'destroy', 'timers'];
 
 /**
   Adds the passed target/method and any optional arguments to the named
-  queue to be executed at the end of the RunLoop.  If you have not already
+  queue to be executed at the end of the RunLoop. If you have not already
   started a RunLoop when calling this method one will be started for you
   automatically.
 
   At the end of a RunLoop, any methods scheduled in this way will be invoked.
   Methods will be invoked in an order matching the named queues defined in
-  the run.queues property.
+  the `run.queues` property.
 
-      Ember.run.schedule('timers', this, function(){
-        // this will be executed at the end of the RunLoop, when timers are run
-        console.log("scheduled on timers queue");
-      });
-      Ember.run.schedule('sync', this, function(){
-        // this will be executed at the end of the RunLoop, when bindings are synced
-        console.log("scheduled on sync queue");
-      });
-      // Note the functions will be run in order based on the run queues order. Output would be:
-      //   scheduled on sync queue
-      //   scheduled on timers queue
+  ```javascript
+  Ember.run.schedule('timers', this, function(){
+    // this will be executed at the end of the RunLoop, when timers are run
+    console.log("scheduled on timers queue");
+  });
+
+  Ember.run.schedule('sync', this, function(){
+    // this will be executed at the end of the RunLoop, when bindings are synced
+    console.log("scheduled on sync queue");
+  });
+
+  // Note the functions will be run in order based on the run queues order. Output would be:
+  //   scheduled on sync queue
+  //   scheduled on timers queue
+  ```
 
   @method schedule
   @param {String} queue The name of the queue to schedule against.
     Default queues are 'sync' and 'actions'
-
   @param {Object} [target] target object to use as the context when invoking a method.
-
-  @param {String|Function} method The method to invoke.  If you pass a string it
+  @param {String|Function} method The method to invoke. If you pass a string it
     will be resolved on the target object at the time the scheduled item is
     invoked allowing you to change the target function.
-
   @param {Object} [arguments*] Optional arguments to be passed to the queued method.
-
   @return {void}
 */
 Ember.run.schedule = function(queue, target, method) {
@@ -346,10 +352,9 @@ Ember.run.cancelTimers = function () {
 
 /**
   Begins a new RunLoop if necessary and schedules a timer to flush the
-  RunLoop at a later time.  This method is used by parts of Ember to
-  ensure the RunLoop always finishes.  You normally do not need to call this
-  method directly.  Instead use Ember.run().
-
+  RunLoop at a later time. This method is used by parts of Ember to
+  ensure the RunLoop always finishes. You normally do not need to call this
+  method directly. Instead use `Ember.run()`
 
   @method autorun
   @example
@@ -371,14 +376,16 @@ Ember.run.autorun = function() {
 };
 
 /**
-  Immediately flushes any events scheduled in the 'sync' queue.  Bindings
+  Immediately flushes any events scheduled in the 'sync' queue. Bindings
   use this queue so this method is a useful way to immediately force all
   bindings in the application to sync.
 
   You should call this method anytime you need any changed state to propagate
   throughout the app immediately without repainting the UI.
 
-      Ember.run.sync();
+  ```javascript
+  Ember.run.sync();
+  ```
 
   @method sync
   @return {void}
@@ -417,30 +424,28 @@ function invokeLaterTimers() {
 
 /**
   Invokes the passed target/method and optional arguments after a specified
-  period if time.  The last parameter of this method must always be a number
+  period if time. The last parameter of this method must always be a number
   of milliseconds.
 
   You should use this method whenever you need to run some action after a
-  period of time instead of using setTimeout().  This method will ensure that
+  period of time instead of using `setTimeout()`. This method will ensure that
   items that expire during the same script execution cycle all execute
   together, which is often more efficient than using a real setTimeout.
 
-      Ember.run.later(myContext, function(){
-        // code here will execute within a RunLoop in about 500ms with this == myContext
-      }, 500);
+  ```javascript
+  Ember.run.later(myContext, function(){
+    // code here will execute within a RunLoop in about 500ms with this == myContext
+  }, 500);
+  ```
 
   @method later
   @param {Object} [target] target of method to invoke
-
   @param {Function|String} method The method to invoke.
     If you pass a string it will be resolved on the
     target at the time the method is invoked.
-
   @param {Object} [args*] Optional arguments to pass to the timeout.
-
   @param {Number} wait
     Number of milliseconds to wait.
-
   @return {String} a string you can use to cancel the timer in
     {{#crossLink "Ember/run.cancel"}}{{/crossLink}} later.
 */
@@ -502,30 +507,28 @@ function scheduleOnce(queue, target, method, args) {
 }
 
 /**
-  Schedules an item to run one time during the current RunLoop.  Calling
+  Schedules an item to run one time during the current RunLoop. Calling
   this method with the same target/method combination will have no effect.
 
   Note that although you can pass optional arguments these will not be
-  considered when looking for duplicates.  New arguments will replace previous
+  considered when looking for duplicates. New arguments will replace previous
   calls.
 
-      Ember.run(function(){
-        var doFoo = function() { foo(); }
-        Ember.run.once(myContext, doFoo);
-        Ember.run.once(myContext, doFoo);
-        // doFoo will only be executed once at the end of the RunLoop
-      });
+  ```javascript
+  Ember.run(function(){
+    var doFoo = function() { foo(); }
+    Ember.run.once(myContext, doFoo);
+    Ember.run.once(myContext, doFoo);
+    // doFoo will only be executed once at the end of the RunLoop
+  });
+  ```
 
   @method once
   @param {Object} [target] target of method to invoke
-
   @param {Function|String} method The method to invoke.
     If you pass a string it will be resolved on the
     target at the time the method is invoked.
-
   @param {Object} [args*] Optional arguments to pass to the timeout.
-
-
   @return {Object} timer
 */
 Ember.run.once = function(target, method) {
@@ -551,21 +554,20 @@ function invokeNextTimers() {
 
 /**
   Schedules an item to run after control has been returned to the system.
-  This is often equivalent to calling setTimeout(function...,1).
+  This is often equivalent to calling `setTimeout(function() {}, 1)`.
 
-      Ember.run.next(myContext, function(){
-        // code to be executed in the next RunLoop, which will be scheduled after the current one
-      });
+  ```javascript
+  Ember.run.next(myContext, function(){
+    // code to be executed in the next RunLoop, which will be scheduled after the current one
+  });
+  ```
 
   @method next
   @param {Object} [target] target of method to invoke
-
   @param {Function|String} method The method to invoke.
     If you pass a string it will be resolved on the
     target at the time the method is invoked.
-
   @param {Object} [args*] Optional arguments to pass to the timeout.
-
   @return {Object} timer
 */
 Ember.run.next = function(target, method) {
@@ -585,23 +587,25 @@ Ember.run.next = function(target, method) {
 };
 
 /**
-  Cancels a scheduled item.  Must be a value returned by `Ember.run.later()`,
+  Cancels a scheduled item. Must be a value returned by `Ember.run.later()`,
   `Ember.run.once()`, or `Ember.run.next()`.
 
-      var runNext = Ember.run.next(myContext, function(){
-        // will not be executed
-      });
-      Ember.run.cancel(runNext);
+  ```javascript
+  var runNext = Ember.run.next(myContext, function(){
+    // will not be executed
+  });
+  Ember.run.cancel(runNext);
 
-      var runLater = Ember.run.later(myContext, function(){
-        // will not be executed
-      }, 500);
-      Ember.run.cancel(runLater);
+  var runLater = Ember.run.later(myContext, function(){
+    // will not be executed
+  }, 500);
+  Ember.run.cancel(runLater);
 
-      var runOnce = Ember.run.once(myContext, function(){
-        // will not be executed
-      });
-      Ember.run.cancel(runOnce);
+  var runOnce = Ember.run.once(myContext, function(){
+    // will not be executed
+  });
+  Ember.run.cancel(runOnce);
+  ```
 
   @method cancel
   @param {Object} timer Timer object to cancel

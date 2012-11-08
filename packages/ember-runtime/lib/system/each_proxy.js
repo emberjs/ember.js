@@ -71,8 +71,8 @@ function removeObserverForContentKey(content, keyName, proxy, idx, loc) {
 }
 
 /**
-  This is the object instance returned when you get the @each property on an
-  array.  It uses the unknownProperty handler to automatically create
+  This is the object instance returned when you get the `@each` property on an
+  array. It uses the unknownProperty handler to automatically create
   EachArray instances for property names.
 
   @private
@@ -96,7 +96,7 @@ Ember.EachProxy = Ember.Object.extend({
 
   /**
     You can directly access mapped properties by simply requesting them.
-    The unknownProperty handler will generate an EachArray of each item.
+    The `unknownProperty` handler will generate an EachArray of each item.
 
     @method unknownProperty
     @param keyName {String}

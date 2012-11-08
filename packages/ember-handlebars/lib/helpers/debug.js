@@ -13,7 +13,7 @@ var handlebarsGet = Ember.Handlebars.get, normalizePath = Ember.Handlebars.norma
   `log` allows you to output the value of a value in the current rendering
   context.
 
-  ``` handlebars
+  ```handlebars
   {{log myVariable}}
   ```
 
@@ -31,10 +31,9 @@ Ember.Handlebars.registerHelper('log', function(property, options) {
 });
 
 /**
-  The `debugger` helper executes the `debugger` statement in the current
-  context.
+  Execute the `debugger` statement in the current context.
 
-  ``` handlebars
+  ```handlebars
   {{debugger}}
   ```
 

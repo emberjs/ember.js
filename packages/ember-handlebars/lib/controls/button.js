@@ -27,7 +27,7 @@ Ember.Button = Ember.View.extend(Ember.TargetActionSupport, {
   /**
     @private
 
-    Overrides TargetActionSupport's targetObject computed
+    Overrides `TargetActionSupport`'s `targetObject` computed
     property to use Handlebars-specific path resolution.
 
     @property targetObject
@@ -107,7 +107,7 @@ Ember.Button = Ember.View.extend(Ember.TargetActionSupport, {
     }
   },
 
-  // TODO: Handle proper touch behavior.  Including should make inactive when
+  // TODO: Handle proper touch behavior. Including should make inactive when
   // finger moves more than 20x outside of the edge of the button (vs mouse
   // which goes inactive as soon as mouse goes out of edges.)
 

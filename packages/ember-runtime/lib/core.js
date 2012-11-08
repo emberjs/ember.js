@@ -26,7 +26,7 @@ var toString = Object.prototype.toString;
 
   Use this instead of the built-in `typeof` to get the type of an item.
   It will return the same result across all browsers and includes a bit
-  more detail.  Here is what will be returned:
+  more detail. Here is what will be returned:
 
       | Return Value  | Meaning                                              |
       |---------------|------------------------------------------------------|
@@ -44,20 +44,22 @@ var toString = Object.prototype.toString;
 
   Examples:
 
-      Ember.typeOf();                      => 'undefined'
-      Ember.typeOf(null);                  => 'null'
-      Ember.typeOf(undefined);             => 'undefined'
-      Ember.typeOf('michael');             => 'string'
-      Ember.typeOf(101);                   => 'number'
-      Ember.typeOf(true);                  => 'boolean'
-      Ember.typeOf(Ember.makeArray);       => 'function'
-      Ember.typeOf([1,2,90]);              => 'array'
-      Ember.typeOf(Ember.Object.extend()); => 'class'
-      Ember.typeOf(Ember.Object.create()); => 'instance'
-      Ember.typeOf(new Error('teamocil')); => 'error'
+  ```javascript
+  Ember.typeOf();                       // 'undefined'
+  Ember.typeOf(null);                   // 'null'
+  Ember.typeOf(undefined);              // 'undefined'
+  Ember.typeOf('michael');              // 'string'
+  Ember.typeOf(101);                    // 'number'
+  Ember.typeOf(true);                   // 'boolean'
+  Ember.typeOf(Ember.makeArray);        // 'function'
+  Ember.typeOf([1,2,90]);               // 'array'
+  Ember.typeOf(Ember.Object.extend());  // 'class'
+  Ember.typeOf(Ember.Object.create());  // 'instance'
+  Ember.typeOf(new Error('teamocil'));  // 'error'
 
-      // "normal" JavaScript object
-      Ember.typeOf({a: 'b'});              => 'object'
+  // "normal" JavaScript object
+  Ember.typeOf({a: 'b'});              // 'object'
+  ```
 
   @method typeOf
   @for Ember
@@ -81,16 +83,18 @@ Ember.typeOf = function(item) {
 };
 
 /**
-  Returns true if the passed value is null or undefined.  This avoids errors
+  Returns true if the passed value is null or undefined. This avoids errors
   from JSLint complaining about use of ==, which can be technically
   confusing.
 
-      Ember.none();             => true
-      Ember.none(null);         => true
-      Ember.none(undefined);    => true
-      Ember.none('');           => false
-      Ember.none([]);           => false
-      Ember.none(function(){}); => false
+  ```javascript
+  Ember.none();              // true
+  Ember.none(null);          // true
+  Ember.none(undefined);     // true
+  Ember.none('');            // false
+  Ember.none([]);            // false
+  Ember.none(function(){});  // false
+  ```
 
   @method none
   @for Ember
@@ -102,18 +106,21 @@ Ember.none = function(obj) {
 };
 
 /**
-  Verifies that a value is null or an empty string | array | function.
+  Verifies that a value is `null` or an empty string, empty array,
+  or empty function.
 
   Constrains the rules on `Ember.none` by returning false for empty
   string and empty arrays.
 
-      Ember.empty();               => true
-      Ember.empty(null);           => true
-      Ember.empty(undefined);      => true
-      Ember.empty('');             => true
-      Ember.empty([]);             => true
-      Ember.empty('tobias fünke'); => false
-      Ember.empty([0,1,2]);        => false
+  ```javascript
+  Ember.empty();                // true
+  Ember.empty(null);            // true
+  Ember.empty(undefined);       // true
+  Ember.empty('');              // true
+  Ember.empty([]);              // true
+  Ember.empty('Adam Hawkins');  // false
+  Ember.empty([0,1,2]);         // false
+  ```
 
   @method empty
   @for Ember
@@ -132,12 +139,14 @@ Ember.empty = function(obj) {
   - 0 if both are equal,
   - 1 if the first is greater than the second.
 
- The order is calculated based on Ember.ORDER_DEFINITION, if types are different.
+ The order is calculated based on `Ember.ORDER_DEFINITION`, if types are different.
  In case they have the same type an appropriate comparison for this type is made.
 
-    Ember.compare('hello', 'hello');  => 0
-    Ember.compare('abc', 'dfg');      => -1
-    Ember.compare(2, 1);              => 1
+  ```javascript
+  Ember.compare('hello', 'hello');  // 0
+  Ember.compare('abc', 'dfg');      // -1
+  Ember.compare(2, 1);              // 1
+  ```javascript
 
  @method compare
  @for Ember
@@ -245,7 +254,7 @@ function _copy(obj, deep, seen, copies) {
 
   Ember.assert('Cannot clone an Ember.Object that does not implement Ember.Copyable', !(obj instanceof Ember.Object) || (Ember.Copyable && Ember.Copyable.detect(obj)));
 
-  // IMPORTANT: this specific test will detect a native array only.  Any other
+  // IMPORTANT: this specific test will detect a native array only. Any other
   // object will need to implement Copyable.
   if (Ember.typeOf(obj) === 'array') {
     ret = obj.slice();
@@ -276,7 +285,7 @@ function _copy(obj, deep, seen, copies) {
   any type of object and create a clone of it, including primitive values
   (which are not actually cloned because they are immutable).
 
-  If the passed object implements the clone() method, then this function
+  If the passed object implements the `clone()` method, then this function
   will simply call that method and return the result.
 
   @method copy
@@ -315,14 +324,16 @@ Ember.inspect = function(obj) {
 };
 
 /**
-  Compares two objects, returning true if they are logically equal.  This is
+  Compares two objects, returning true if they are logically equal. This is
   a deeper comparison than a simple triple equal. For sets it will compare the
-  internal objects.  For any other object that implements `isEqual()` it will
+  internal objects. For any other object that implements `isEqual()` it will
   respect that method.
 
-      Ember.isEqual('hello', 'hello');  => true
-      Ember.isEqual(1, 2);              => false
-      Ember.isEqual([4,2], [4,2]);      => false
+  ```javascript
+  Ember.isEqual('hello', 'hello');  // true
+  Ember.isEqual(1, 2);              // false
+  Ember.isEqual([4,2], [4,2]);      // false
+  ```
 
   @method isEqual
   @for Ember
@@ -352,8 +363,8 @@ Ember.ORDER_DEFINITION = Ember.ENV.ORDER_DEFINITION || [
 
 /**
   Returns all of the keys defined on an object or hash. This is useful
-  when inspecting objects for debugging.  On browsers that support it, this
-  uses the native Object.keys implementation.
+  when inspecting objects for debugging. On browsers that support it, this
+  uses the native `Object.keys` implementation.
 
   @method keys
   @for Ember

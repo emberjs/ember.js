@@ -10,32 +10,37 @@ require('ember-runtime/system/object');
 var get = Ember.get, set = Ember.set;
 
 /**
-  An ArrayProxy wraps any other object that implements Ember.Array and/or
-  Ember.MutableArray, forwarding all requests. This makes it very useful for
+  An ArrayProxy wraps any other object that implements `Ember.Array` and/or
+  `Ember.MutableArray,` forwarding all requests. This makes it very useful for
   a number of binding use cases or other cases where being able to swap
   out the underlying array is useful.
 
   A simple example of usage:
 
-      var pets = ['dog', 'cat', 'fish'];
-      var ap = Ember.ArrayProxy.create({ content: Ember.A(pets) });
-      ap.get('firstObject'); // => 'dog'
-      ap.set('content', ['amoeba', 'paramecium']);
-      ap.get('firstObject'); // => 'amoeba'
+  ```javascript
+  var pets = ['dog', 'cat', 'fish'];
+  var ap = Ember.ArrayProxy.create({ content: Ember.A(pets) });
+
+  ap.get('firstObject');                        // 'dog'
+  ap.set('content', ['amoeba', 'paramecium']);
+  ap.get('firstObject');                        // 'amoeba'
+  ```
 
   This class can also be useful as a layer to transform the contents of
   an array, as they are accessed. This can be done by overriding
   `objectAtContent`:
 
-      var pets = ['dog', 'cat', 'fish'];
-      var ap = Ember.ArrayProxy.create({
-          content: Ember.A(pets),
-          objectAtContent: function(idx) {
-              return this.get('content').objectAt(idx).toUpperCase();
-          }
-      });
-      ap.get('firstObject'); // => 'DOG'
+  ```javascript
+  var pets = ['dog', 'cat', 'fish'];
+  var ap = Ember.ArrayProxy.create({
+      content: Ember.A(pets),
+      objectAtContent: function(idx) {
+          return this.get('content').objectAt(idx).toUpperCase();
+      }
+  });
 
+  ap.get('firstObject'); // . 'DOG'
+  ```
 
   @class ArrayProxy
   @namespace Ember
@@ -46,8 +51,8 @@ Ember.ArrayProxy = Ember.Object.extend(Ember.MutableArray,
 /** @scope Ember.ArrayProxy.prototype */ {
 
   /**
-    The content array.  Must be an object that implements Ember.Array and/or
-    Ember.MutableArray.
+    The content array. Must be an object that implements `Ember.Array` and/or
+    `Ember.MutableArray.`
 
     @property content
     @type Ember.Array
@@ -70,7 +75,7 @@ Ember.ArrayProxy = Ember.Object.extend(Ember.MutableArray,
     content. You can override this method in subclasses to transform the
     content item to something new.
 
-    This method will only be called if content is non-null.
+    This method will only be called if content is non-`null`.
 
     @method objectAtContent
     @param {Number} idx The index to retrieve.
@@ -85,12 +90,13 @@ Ember.ArrayProxy = Ember.Object.extend(Ember.MutableArray,
     You can override this method in subclasses to transform the content item
     into something new.
 
-    This method will only be called if content is non-null.
+    This method will only be called if content is non-`null`.
 
     @method replaceContent
     @param {Number} idx The starting index
     @param {Number} amt The number of items to remove from the content.
-    @param {Array} objects Optional array of objects to insert or null if no objects.
+    @param {Array} objects Optional array of objects to insert or null if no
+      objects.
     @return {void}
   */
   replaceContent: function(idx, amt, objects) {
@@ -126,7 +132,7 @@ Ember.ArrayProxy = Ember.Object.extend(Ember.MutableArray,
   /**
     @private
 
-    Invoked when the content property changes.  Notifies observers that the
+    Invoked when the content property changes. Notifies observers that the
     entire array content has changed.
 
     @method _contentDidChange

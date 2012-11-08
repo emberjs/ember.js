@@ -6,27 +6,28 @@
 var get = Ember.get, set = Ember.set, forEach = Ember.EnumerableUtils.forEach;
 
 /**
-  Ember.SortableMixin provides a standard interface for array proxies
+  `Ember.SortableMixin` provides a standard interface for array proxies
   to specify a sort order and maintain this sorting when objects are added,
   removed, or updated without changing the implicit order of their underlying
   content array:
 
-      songs = [
-        {trackNumber: 4, title: 'Ob-La-Di, Ob-La-Da'},
-        {trackNumber: 2, title: 'Back in the U.S.S.R.'},
-        {trackNumber: 3, title: 'Glass Onion'},
-      ];
+  ```javascript
+  songs = [
+    {trackNumber: 4, title: 'Ob-La-Di, Ob-La-Da'},
+    {trackNumber: 2, title: 'Back in the U.S.S.R.'},
+    {trackNumber: 3, title: 'Glass Onion'},
+  ];
 
-      songsController = Ember.ArrayController.create({
-        content: songs,
-        sortProperties: ['trackNumber']
-      });
+  songsController = Ember.ArrayController.create({
+    content: songs,
+    sortProperties: ['trackNumber']
+  });
 
-      songsController.get('firstObject'); // {trackNumber: 2, title: 'Back in the U.S.S.R.'}
+  songsController.get('firstObject');  // {trackNumber: 2, title: 'Back in the U.S.S.R.'}
 
-      songsController.addObject({trackNumber: 1, title: 'Dear Prudence'});
-      songsController.get('firstObject'); // {trackNumber: 1, title: 'Dear Prudence'}
-
+  songsController.addObject({trackNumber: 1, title: 'Dear Prudence'});
+  songsController.get('firstObject');  // {trackNumber: 1, title: 'Dear Prudence'}
+  ```
 
   @class SortableMixin
   @namespace Ember

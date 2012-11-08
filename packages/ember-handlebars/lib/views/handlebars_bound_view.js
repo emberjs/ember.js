@@ -71,13 +71,13 @@ Ember._SimpleHandlebarsView = Ember._SimpleMetamorphView.extend({
 });
 
 /**
-  Ember._HandlebarsBoundView is a private view created by the Handlebars `{{bind}}`
-  helpers that is used to keep track of bound properties.
+  `Ember._HandlebarsBoundView` is a private view created by the Handlebars
+  `{{bind}}` helpers that is used to keep track of bound properties.
 
   Every time a property is bound using a `{{mustache}}`, an anonymous subclass
-  of Ember._HandlebarsBoundView is created with the appropriate sub-template and
-  context set up. When the associated property changes, just the template for
-  this view will re-render.
+  of `Ember._HandlebarsBoundView` is created with the appropriate sub-template
+  and context set up. When the associated property changes, just the template
+  for this view will re-render.
 
   @class _HandlebarsBoundView
   @namespace Ember
@@ -105,7 +105,7 @@ Ember._HandlebarsBoundView = Ember._MetamorphView.extend({
 
     For example, this is true when using the `{{#if}}` helper, because the
     template inside the helper should look up properties relative to the same
-    object as outside the block. This would be false when used with `{{#with
+    object as outside the block. This would be `false` when used with `{{#with
     foo}}` because the template should receive the object found by evaluating
     `foo`.
 
@@ -125,7 +125,7 @@ Ember._HandlebarsBoundView = Ember._MetamorphView.extend({
   previousContext: null,
 
   /**
-    The template to render when `shouldDisplayFunc` evaluates to true.
+    The template to render when `shouldDisplayFunc` evaluates to `true`.
 
     @property displayTemplate
     @type Function
@@ -134,7 +134,7 @@ Ember._HandlebarsBoundView = Ember._MetamorphView.extend({
   displayTemplate: null,
 
   /**
-    The template to render when `shouldDisplayFunc` evaluates to false.
+    The template to render when `shouldDisplayFunc` evaluates to `false`.
 
     @property inverseTemplate
     @type Function
@@ -147,7 +147,7 @@ Ember._HandlebarsBoundView = Ember._MetamorphView.extend({
     The path to look up on `pathRoot` that is passed to
     `shouldDisplayFunc` to determine which template to render.
 
-    In addition, if `preserveContext` is false, the object at this path will
+    In addition, if `preserveContext` is `false,` the object at this path will
     be passed to the template when rendering.
 
     @property path
@@ -158,9 +158,9 @@ Ember._HandlebarsBoundView = Ember._MetamorphView.extend({
 
   /**
     The object from which the `path` will be looked up. Sometimes this is the
-    same as the `previousContext`, but in cases where this view has been generated
-    for paths that start with a keyword such as `view` or `controller`, the
-    path root will be that resolved object.
+    same as the `previousContext`, but in cases where this view has been
+    generated for paths that start with a keyword such as `view` or
+    `controller`, the path root will be that resolved object.
 
     @property pathRoot
     @type Object
@@ -195,15 +195,15 @@ Ember._HandlebarsBoundView = Ember._MetamorphView.extend({
 
   /**
     Determines which template to invoke, sets up the correct state based on
-    that logic, then invokes the default Ember.View `render` implementation.
+    that logic, then invokes the default `Ember.View` `render` implementation.
 
     This method will first look up the `path` key on `pathRoot`,
     then pass that value to the `shouldDisplayFunc` function. If that returns
-    true, the `displayTemplate` function will be rendered to DOM. Otherwise,
+    `true,` the `displayTemplate` function will be rendered to DOM. Otherwise,
     `inverseTemplate`, if specified, will be rendered.
 
-    For example, if this Ember._HandlebarsBoundView represented the `{{#with foo}}`
-    helper, it would look up the `foo` property of its context, and
+    For example, if this `Ember._HandlebarsBoundView` represented the `{{#with
+    foo}}` helper, it would look up the `foo` property of its context, and
     `shouldDisplayFunc` would always return true. The object found by looking
     up `foo` would be passed to `displayTemplate`.
 

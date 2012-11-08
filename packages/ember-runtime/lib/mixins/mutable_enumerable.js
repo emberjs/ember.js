@@ -8,7 +8,7 @@ require('ember-runtime/mixins/enumerable');
 var forEach = Ember.EnumerableUtils.forEach;
 
 /**
-  This mixin defines the API for modifying generic enumerables.  These methods
+  This mixin defines the API for modifying generic enumerables. These methods
   can be applied to an object regardless of whether it is ordered or
   unordered.
 
@@ -18,24 +18,28 @@ var forEach = Ember.EnumerableUtils.forEach;
 
   ## Adding Objects
 
-  To add an object to an enumerable, use the addObject() method.  This
+  To add an object to an enumerable, use the `addObject()` method. This
   method will only add the object to the enumerable if the object is not
   already present and the object if of a type supported by the enumerable.
 
-      set.addObject(contact);
+  ```javascript
+  set.addObject(contact);
+  ```
 
   ## Removing Objects
 
-  To remove an object form an enumerable, use the removeObject() method.  This
+  To remove an object form an enumerable, use the `removeObject()` method. This
   will only remove the object if it is already in the enumerable, otherwise
   this method has no effect.
 
-      set.removeObject(contact);
+  ```javascript
+  set.removeObject(contact);
+  ```
 
   ## Implementing In Your Own Code
 
   If you are implementing an object and want to support this API, just include
-  this mixin in your class and implement the required methods.  In your unit
+  this mixin in your class and implement the required methods. In your unit
   tests, be sure to apply the Ember.MutableEnumerableTests to your object.
 
   @class MutableEnumerable
@@ -80,7 +84,7 @@ Ember.MutableEnumerable = Ember.Mixin.create(Ember.Enumerable,
     __Required.__ You must implement this method to apply this mixin.
 
     Attempts to remove the passed object from the receiver collection if the
-    object is in present in the collection.  If the object is not present,
+    object is in present in the collection. If the object is not present,
     this method has no effect.
 
     If the passed object is of a type not supported by the receiver

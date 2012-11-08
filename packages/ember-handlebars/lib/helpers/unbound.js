@@ -13,7 +13,7 @@ var handlebarsGet = Ember.Handlebars.get;
   `unbound` allows you to output a property without binding. *Important:* The
   output will not be updated if the property changes. Use with caution.
 
-  ``` handlebars
+  ```handlebars
   <div>{{unbound somePropertyThatDoesntChange}}</div>
   ```
 

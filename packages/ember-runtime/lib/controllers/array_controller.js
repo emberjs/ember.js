@@ -10,18 +10,18 @@ require('ember-runtime/mixins/sortable');
 var get = Ember.get, set = Ember.set;
 
 /**
-  Ember.ArrayController provides a way for you to publish a collection of objects
-  so that you can easily bind to the collection from a Handlebars #each helper,
-  an Ember.CollectionView, or other controllers.
+  `Ember.ArrayController` provides a way for you to publish a collection of
+  objects so that you can easily bind to the collection from a Handlebars
+  `#each` helper, an `Ember.CollectionView`, or other controllers.
 
-  The advantage of using an ArrayController is that you only have to set up
+  The advantage of using an `ArrayController` is that you only have to set up
   your view bindings once; to change what's displayed, simply swap out the
   `content` property on the controller.
 
   For example, imagine you wanted to display a list of items fetched via an XHR
-  request. Create an Ember.ArrayController and set its `content` property:
+  request. Create an `Ember.ArrayController` and set its `content` property:
 
-  ``` javascript
+  ```javascript
   MyApp.listController = Ember.ArrayController.create();
 
   $.get('people.json', function(data) {
@@ -31,7 +31,7 @@ var get = Ember.get, set = Ember.set;
 
   Then, create a view that binds to your new controller:
 
-  ``` handlebars
+  ```handlebars
   {{#each MyApp.listController}}
     {{firstName}} {{lastName}}
   {{/each}}

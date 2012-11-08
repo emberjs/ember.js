@@ -9,33 +9,38 @@ require("ember-handlebars/ext");
 var set = Ember.set, get = Ember.get;
 
 /**
-  The `Ember.Checkbox` view class renders a checkbox [input](https://developer.mozilla.org/en/HTML/Element/Input)
-  element. It allows for binding an Ember property (`checked`) to the status of the checkbox.
+  The `Ember.Checkbox` view class renders a checkbox
+  [input](https://developer.mozilla.org/en/HTML/Element/Input) element. It
+  allows for binding an Ember property (`checked`) to the status of the
+  checkbox.
 
   Example:
 
-  ``` handlebars
+  ```handlebars
   {{view Ember.Checkbox checkedBinding="receiveEmail"}}
   ```
 
-  You can add a `label` tag yourself in the template where the Ember.Checkbox is being used.
+  You can add a `label` tag yourself in the template where the `Ember.Checkbox`
+  is being used.
 
-  ``` html
+  ```html
   <label>
     {{view Ember.Checkbox classNames="applicaton-specific-checkbox"}}
     Some Title
   </label>
   ```
 
-
-  The `checked` attribute of an Ember.Checkbox object should always be set
-  through the Ember object or by interacting with its rendered element representation
-  via the mouse, keyboard, or touch.  Updating the value of the checkbox via jQuery will
-  result in the checked value of the object and its element losing synchronization.
+  The `checked` attribute of an `Ember.Checkbox` object should always be set
+  through the Ember object or by interacting with its rendered element
+  representation via the mouse, keyboard, or touch. Updating the value of the
+  checkbox via jQuery will result in the checked value of the object and its
+  element losing synchronization.
 
   ## Layout and LayoutName properties
-  Because HTML `input` elements are self closing `layout` and `layoutName` properties will
-  not be applied. See `Ember.View`'s layout section for more information.
+
+  Because HTML `input` elements are self closing `layout` and `layoutName`
+  properties will not be applied. See `Ember.View`'s layout section for more
+  information.
 
   @class Checkbox
   @namespace Ember

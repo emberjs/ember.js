@@ -32,7 +32,7 @@ Ember.ControllerMixin.reopen({
     For example, an application view's template may look like
     this:
 
-    ``` handlebars
+    ```handlebars
     <h1>My Blog</h1>
     {{outlet}}
     ```
@@ -42,7 +42,7 @@ Ember.ControllerMixin.reopen({
     following code will assign a new `App.PostsView` to
     that outlet:
 
-    ``` javascript
+    ```javascript
     applicationController.connectOutlet('posts');
     ```
 
@@ -62,14 +62,14 @@ Ember.ControllerMixin.reopen({
     You can supply a `content` for the controller by supplying
     a final argument after the view class:
 
-    ``` javascript
+    ```javascript
     applicationController.connectOutlet('posts', App.Post.find());
     ```
 
     You can specify a particular outlet to use. For example, if your main
     template looks like:
 
-    ``` handlebars
+    ```handlebars
     <h1>My Blog</h1>
     {{outlet masterView}}
     {{outlet detailView}}
@@ -77,7 +77,7 @@ Ember.ControllerMixin.reopen({
 
     You can assign an `App.PostsView` to the masterView outlet:
 
-    ``` javascript
+    ```javascript
     applicationController.connectOutlet({
       outletName: 'masterView',
       name: 'posts',
@@ -87,10 +87,9 @@ Ember.ControllerMixin.reopen({
 
     You can write this as:
 
-    ``` javascript
+    ```javascript
     applicationController.connectOutlet('masterView', 'posts', App.Post.find());
     ```
-
 
     @method connectOutlet
     @param {String} outletName a name for the outlet to set
@@ -178,7 +177,9 @@ Ember.ControllerMixin.reopen({
     For example, to make the `personController` and the `postController` available
     on the `overviewController`, you would call:
 
-        overviewController.connectControllers('person', 'post');
+    ```javascript
+    overviewController.connectControllers('person', 'post');
+    ```
 
     @method connectControllers
     @param {String...} controllerNames the controllers to make available
