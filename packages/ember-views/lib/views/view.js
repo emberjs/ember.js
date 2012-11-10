@@ -1267,10 +1267,6 @@ Ember.View = Ember.CoreView.extend(
         // Get the current value of the property
         newClass = this._classStringForProperty(binding);
         elem = this.$();
-        if (!elem) {
-          removeObserver(this, parsedPath.path, observer);
-          return;
-        }
 
         // If we had previously added a class to the element, remove it.
         if (oldClass) {
