@@ -492,16 +492,14 @@ test("should invalidate `element` on itself and childViews when being rendered b
 });
 
 test("should execut all the hooks when removing or adding a currentView", function() {
-  expect(9);
+  expect(6);
   var viewsCount = 0;
   var container = Ember.ContainerView.create({
-    presentCurrentView: function(currentView, callback) {
+    showCurrentView: function(currentView, callback) {
       if (viewsCount === 1) {
         equal(currentView, child1, 'will present child1');
-        equal(child1.get('isBeingPresented'), true);
       } else {
         equal(currentView, child2, 'will present child2');
-        equal(child2.get('isBeingPresented'), true);
       }
       callback();
     },
@@ -514,8 +512,7 @@ test("should execut all the hooks when removing or adding a currentView", functi
       }
       this._super(currentView, callback);
     },
-    dismissCurrentView: function(currentView, callback) {
-      equal(child1.get('isBeingDismissed'), true);
+    hideCurrentView: function(currentView, callback) {
       equal(currentView, child1, 'will dismiss child1');
       callback();
     },

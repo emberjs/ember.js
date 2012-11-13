@@ -260,10 +260,10 @@ var childViewsProperty = Ember.computed(function() {
 
   ```` javascript
   App.ContainerView = Ember.ContainerView.extend({
-    presentCurrentView: function(currentView, callback) {
+    showCurrentView: function(currentView, callback) {
       currentView.$().animate({top: '0px'}, callback);
     },
-    dismissCurrentView: function(currentView, callback) {
+    hideCurrentView: function(currentView, callback) {
       currentView.$().animate({top: '-100px'}, callback);
     }
   });
@@ -417,11 +417,11 @@ Ember.ContainerView = Ember.View.extend({
     Default implementation will simply call the callback.
     You can override this method if you want to add an animation for example.
 
-    @method presentCurrentView
+    @method showCurrentView
     @param  {Ember.View} currentView a view to present
     @param  {Function}   callback the callback called once operation is terminated
    */
-  presentCurrentView: function(currentView, callback) {
+  showCurrentView: function(currentView, callback) {
     callback();
   },
 
@@ -445,11 +445,11 @@ Ember.ContainerView = Ember.View.extend({
     Default implementation will simply call the callback.
     You can override this method if you want to add an animation for example.
 
-    @method dismissCurrentView
+    @method hideCurrentView
     @param  {Ember.View} currentView a view to dismiss
     @param  {Function}   callback the callback called once operation is terminated
    */
-  dismissCurrentView: function(currentView, callback) {
+  hideCurrentView: function(currentView, callback) {
     callback();
   },
 
@@ -464,7 +464,7 @@ Ember.ContainerView = Ember.View.extend({
   removeCurrentView: function(currentView, callback) {
     var childViews = get(this, 'childViews');
 
-    currentView.one('didDisappear', function() {
+    currentView.one('didHideCurrentView', function() {
       currentView.destroy();
     });
 
@@ -478,11 +478,11 @@ Ember.ContainerView = Ember.View.extend({
         containerView = this;
 
     if (currentView) {
-      currentView.trigger('willDisappear', currentView);
+      currentView.trigger('willHideCurrentView', currentView);
 
-      this.dismissCurrentView(currentView, function() {
+      this.hideCurrentView(currentView, function() {
         containerView.removeCurrentView(currentView, function() {
-          currentView.trigger('didDisappear', currentView);
+          currentView.trigger('didHideCurrentView', currentView);
         });
       });
     }
@@ -493,11 +493,11 @@ Ember.ContainerView = Ember.View.extend({
         containerView = this;
 
     if (currentView) {
-      currentView.trigger('willAppear', currentView);
+      currentView.trigger('willShowCurrentView', currentView);
 
       this.appendCurrentView(currentView, function() {
-        containerView.presentCurrentView(currentView, function() {
-          currentView.trigger('didAppear', currentView);
+        containerView.showCurrentView(currentView, function() {
+          currentView.trigger('didShowCurrentView', currentView);
         });
       });
     }
