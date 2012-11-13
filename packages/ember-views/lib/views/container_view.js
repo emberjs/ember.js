@@ -230,6 +230,45 @@ var childViewsProperty = Ember.computed(function() {
   {{view Ember.ContainerView currentViewBinding="App.appController.view"}}
   ```
 
+  ## Use lifecycle hooks
+
+  This is an example of how you could implement reusable currentView view.
+
+  ``` javascript
+  App.ContainerView = Ember.ContainerView.extend({
+    appendCurrentView: function(currentView, callback) {
+      currentView.set('isVisible', true);
+
+      if (!this.get('childViews').contains(currentView)) {
+        this._super(currentView, callback);
+      } else {
+        callback();
+      }
+    },
+    removeCurrentView: function(currentView, callback) {
+      if (currentView.get('isShared')) {
+        currentView.set('isVisible', false);
+        callback();
+      } else {
+        this._super(currentView, callback);
+      }
+    }
+  });
+  ````
+
+  This is an example of how you could implement animations.
+
+  ```` javascript
+  App.ContainerView = Ember.ContainerView.extend({
+    showCurrentView: function(currentView, callback) {
+      currentView.$().animate({top: '0px'}, callback);
+    },
+    hideCurrentView: function(currentView, callback) {
+      currentView.$().animate({top: '-100px'}, callback);
+    }
+  });
+  ````
+
   @class ContainerView
   @namespace Ember
   @extends Ember.View
@@ -259,9 +298,6 @@ Ember.ContainerView = Ember.View.extend({
       _childViews[idx] = view;
     }, this);
 
-    var currentView = get(this, 'currentView');
-    if (currentView) _childViews.push(this.createChildView(currentView));
-
     // Make the _childViews array observable
     Ember.A(_childViews);
 
@@ -272,6 +308,10 @@ Ember.ContainerView = Ember.View.extend({
       willChange: 'childViewsWillChange',
       didChange: 'childViewsDidChange'
     });
+
+    // Make sure we initialize with currentView if it is present
+    var currentView = get(this, 'currentView');
+    if (currentView) { this._currentViewDidChange(); }
   },
 
   /**
@@ -372,22 +412,94 @@ Ember.ContainerView = Ember.View.extend({
 
   currentView: null,
 
+  /**
+    This method is responsible for presenting a new view.
+    Default implementation will simply call the callback.
+    You can override this method if you want to add an animation for example.
+
+    @method showCurrentView
+    @param  {Ember.View} currentView a view to present
+    @param  {Function}   callback the callback called once operation is terminated
+   */
+  showCurrentView: function(currentView, callback) {
+    callback();
+  },
+
+  /**
+    This method is responsible for adding view to containerView
+
+    @method appendCurrentView
+    @param  {Ember.View} currentView a view to present
+    @param  {Function}   callback the callback called once view is appended
+  */
+  appendCurrentView: function(currentView, callback) {
+    var childViews = get(this, 'childViews');
+
+    currentView.one('didInsertElement', callback);
+
+    childViews.pushObject(currentView);
+  },
+
+  /**
+    This method is responsible for dismissing a view.
+    Default implementation will simply call the callback.
+    You can override this method if you want to add an animation for example.
+
+    @method hideCurrentView
+    @param  {Ember.View} currentView a view to dismiss
+    @param  {Function}   callback the callback called once operation is terminated
+   */
+  hideCurrentView: function(currentView, callback) {
+    callback();
+  },
+
+  /**
+    This method is responsible for removing a view from the containerView
+    You may want to override it in case you implementing views sharing for example
+
+    @method removeCurrentView
+    @param  {Ember.View} currentView a view to present
+    @param  {Function}   callback the callback called once view is removed
+  */
+  removeCurrentView: function(currentView, callback) {
+    var childViews = get(this, 'childViews');
+
+    currentView.one('didHideCurrentView', function() {
+      currentView.destroy();
+    });
+
+    childViews.removeObject(currentView);
+
+    callback();
+  },
+
   _currentViewWillChange: Ember.beforeObserver(function() {
-    var childViews = get(this, 'childViews'),
-        currentView = get(this, 'currentView');
+    var currentView = get(this, 'currentView'),
+        containerView = this;
 
     if (currentView) {
-      childViews.removeObject(currentView);
-      currentView.destroy();
+      currentView.trigger('willHideCurrentView', currentView);
+
+      this.hideCurrentView(currentView, function() {
+        containerView.removeCurrentView(currentView, function() {
+          currentView.trigger('didHideCurrentView', currentView);
+        });
+      });
     }
   }, 'currentView'),
 
   _currentViewDidChange: Ember.observer(function() {
-    var childViews = get(this, 'childViews'),
-        currentView = get(this, 'currentView');
+    var currentView = get(this, 'currentView'),
+        containerView = this;
 
     if (currentView) {
-      childViews.pushObject(currentView);
+      currentView.trigger('willShowCurrentView', currentView);
+
+      this.appendCurrentView(currentView, function() {
+        containerView.showCurrentView(currentView, function() {
+          currentView.trigger('didShowCurrentView', currentView);
+        });
+      });
     }
   }, 'currentView'),
 
