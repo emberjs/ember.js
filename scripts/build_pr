@@ -30,7 +30,13 @@ if git remote | grep -Fq "$github_user" ; then
   echo "$github_user's repo already added as a remote"
 else
   echo "Adding new remote: $github_user"
+
   git remote add "$github_user" "$git_path"
+fi
+
+if ! git ls-remote "$github_user" ; then
+  echo "Could not connect to remote repo for $github_user!"
+  exit 1
 fi
 
 # So building always pulls in the most up to date branches
