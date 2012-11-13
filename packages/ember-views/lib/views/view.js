@@ -927,9 +927,9 @@ Ember.View = Ember.CoreView.extend(
 
     @method _displayPropertyDidChange
   */
-  _displayPropertyDidChange: Ember.observer(function() {
+  _contextDidChange: Ember.observer(function() {
     this.rerender();
-  }, 'context', 'controller'),
+  }, 'context'),
 
   /**
     If false, the view will appear hidden in DOM.
@@ -1101,6 +1101,8 @@ Ember.View = Ember.CoreView.extend(
 
   _controllerDidChange: Ember.observer(function() {
     if (this.isDestroying) { return; }
+
+    this.rerender();
 
     this.forEachChildView(function(view) {
       view.propertyDidChange('controller');
