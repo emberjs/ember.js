@@ -57,11 +57,11 @@ test("bind(TestNamespace.fromObject.bar) should follow absolute path", function(
   Ember.run(function(){
     // create binding
     testObject.bind("foo", "TestNamespace.fromObject.bar");
-    
+
     // now make a change to see if the binding triggers.
     set(fromObject, "bar", "changedValue");
   });
-  
+
   equal("changedValue", get(testObject, "foo"), "testObject.foo");
 });
 
@@ -73,7 +73,7 @@ test("bind(.bar) should bind to relative path", function() {
     // now make a change to see if the binding triggers.
     set(testObject, "bar", "changedValue") ;
   });
-  
+
   equal("changedValue", get(testObject, "foo"), "testObject.foo");
 });
 
@@ -121,7 +121,7 @@ test("fooBinding: TestNamespace.fromObject.bar should follow absolute path", fun
     // now make a change to see if the binding triggers.
     set(fromObject, "bar", "changedValue") ;
   });
-  
+
 
   equal("changedValue", get(testObject, "foo"), "testObject.foo");
 });
@@ -134,7 +134,7 @@ test("fooBinding: .bar should bind to relative path", function() {
     // now make a change to see if the binding triggers.
     set(testObject, "bar", "changedValue");
   });
-  
+
   equal("changedValue", get(testObject, "foo"), "testObject.foo");
 });
 
@@ -146,14 +146,14 @@ test('fooBinding: should disconnect bindings when destroyed', function () {
 
     set(TestNamespace.fromObject, 'bar', 'BAZ');
   });
-  
+
   equal(get(testObject, 'foo'), 'BAZ', 'binding should have synced');
 
   Ember.destroy(testObject);
-  
+
   Ember.run(function(){
     set(TestNamespace.fromObject, 'bar', 'BIFF');
   });
-  
+
   ok(get(testObject, 'foo') !== 'bar', 'binding should not have synced');
 });

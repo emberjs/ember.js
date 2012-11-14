@@ -169,7 +169,7 @@ EmberHandlebars.ViewHelper = Ember.Object.create({
 
   ``` html
   <body>
-    <!-- Note: the handlebars template script 
+    <!-- Note: the handlebars template script
          also results in a rendered Ember.View
          which is the outer <div> here -->
 
@@ -194,7 +194,7 @@ EmberHandlebars.ViewHelper = Ember.Object.create({
 
   aView.appendTo('body');
   ```
-    
+
   Will result in HTML structure:
 
   ``` html
@@ -284,7 +284,7 @@ EmberHandlebars.ViewHelper = Ember.Object.create({
 
   ``` html
   <div id="ember1" class="ember-view">
-    <div id="ember2" class="ember-view a-custom-view-class-as-property"> 
+    <div id="ember2" class="ember-view a-custom-view-class-as-property">
       hi
     </div>
   </div>

@@ -32,7 +32,7 @@ module("Ember.View#isVisible", {
   },
 
   teardown: function() {
-    if (view) { 
+    if (view) {
       Ember.run(function(){ view.destroy(); });
     }
   }

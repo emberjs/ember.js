@@ -152,7 +152,7 @@ test("should allow attributes to be set in the inBuffer state", function() {
     parentView.destroy();
     Test.destroy();
   });
-  
+
 });
 
 // This comes into play when using the {{#each}} helper. If the
@@ -168,7 +168,7 @@ test("should allow binding to String objects", function() {
   Ember.run(function(){
     view.createElement();
   });
-  
+
 
   equal(view.$().attr('foo'), 'bar', "should convert String object to bare string");
 });

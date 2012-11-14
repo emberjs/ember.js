@@ -21,7 +21,7 @@
         parentView.destroy();
             childView.destroy();
       });
-      
+
       childViews = null;
     }
   });

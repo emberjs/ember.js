@@ -58,7 +58,7 @@ Ember.ArrayProxy = Ember.Object.extend(Ember.MutableArray,
    The array that the proxy pretends to be. In the default `ArrayProxy`
    implementation, this and `content` are the same. Subclasses of `ArrayProxy`
    can override this property to provide things like sorting and filtering.
-   
+
    @property arrangedContent
   */
   arrangedContent: Ember.computed('content', function() {

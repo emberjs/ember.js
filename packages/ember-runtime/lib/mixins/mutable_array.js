@@ -64,7 +64,7 @@ Ember.MutableArray = Ember.Mixin.create(Ember.Array, Ember.MutableEnumerable,
         colors.length(); => 0
 
     @method clear
-    @return {Ember.Array} An empty Array. 
+    @return {Ember.Array} An empty Array.
   */
   clear: function () {
     var len = get(this, 'length');

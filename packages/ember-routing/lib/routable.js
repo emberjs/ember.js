@@ -125,13 +125,13 @@ Ember.Routable = Ember.Mixin.create({
   */
   absoluteRoute: function(manager, hashes) {
     var parentState = get(this, 'parentState'),
-      path = '', 
+      path = '',
       generated,
       currentHash;
 
     // check if object passed instead of array
-    // in this case set currentHash = hashes 
-    // this allows hashes to be a single hash 
+    // in this case set currentHash = hashes
+    // this allows hashes to be a single hash
     // (it will be applied to state and all parents)
     currentHash = null;
     if (hashes) {
