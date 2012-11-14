@@ -423,7 +423,7 @@ EmberHandlebars.registerHelper('unless', function(context, options) {
   ```
 
   Results in the following rendered output:
-  <img class=":class-name-to-always-apply">
+  <img class="class-name-to-always-apply">
 
   All three strategies - string return value, boolean return value, and
   hard-coded value – can be combined in a single declaration:
