@@ -61,6 +61,7 @@ test("outlet should allow controllers to fill in slots in prerender state", func
 test("outlet should allow a view's default context to fill in slots", function() {
   var template = "<h1>HI</h1>{{outlet}}";
   view = Ember.View.create({
+    context: {},
     template: Ember.Handlebars.compile(template)
   });
 
@@ -69,7 +70,7 @@ test("outlet should allow a view's default context to fill in slots", function()
   equal(view.$().text(), 'HI');
 
   Ember.run(function() {
-    view.set('view', Ember.View.create({
+    view.set('context.view', Ember.View.create({
       template: compile("<p>BYE</p>")
     }));
   });

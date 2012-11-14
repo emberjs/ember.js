@@ -916,7 +916,7 @@ Ember.View = Ember.CoreView.extend(
       return get(parentView, '_context');
     }
 
-    return this;
+    return null;
   }),
 
   /**

@@ -49,7 +49,7 @@ test("collection helper should accept relative paths", function() {
 
   try {
     view = Ember.View.create({
-      template: Ember.Handlebars.compile('{{#collection collection}} <label></label> {{/collection}}'),
+      template: Ember.Handlebars.compile('{{#collection view.collection}} <label></label> {{/collection}}'),
       collection: Ember.CollectionView.extend({
         tagName: 'ul',
         content: Ember.A(['foo', 'bar', 'baz'])
@@ -259,7 +259,7 @@ test("should give its item views the classBinding specified by itemClassBinding"
 
   var view = Ember.View.create({
     isBar: true,
-    template: Ember.Handlebars.compile('{{#collection "TemplateTests.itemClassBindingTestCollectionView" itemClassBinding="isBar"}}foo{{/collection}}')
+    template: Ember.Handlebars.compile('{{#collection "TemplateTests.itemClassBindingTestCollectionView" itemClassBinding="view.isBar"}}foo{{/collection}}')
   });
 
   Ember.run(function() {
@@ -285,7 +285,7 @@ test("should give its item views the property specified by itemPropertyBinding",
     var view = Ember.View.create({
       baz: "baz",
       content: Ember.A([Ember.Object.create(), Ember.Object.create(), Ember.Object.create()]),
-      template: Ember.Handlebars.compile('{{#collection contentBinding="content" tagName="ul" itemViewClass="TemplateTests.itemPropertyBindingTestItemView" itemPropertyBinding="baz" preserveContext=false}}{{view.property}}{{/collection}}')
+      template: Ember.Handlebars.compile('{{#collection contentBinding="view.content" tagName="ul" itemViewClass="TemplateTests.itemPropertyBindingTestItemView" itemPropertyBinding="view.baz" preserveContext=false}}{{view.property}}{{/collection}}')
     });
 
     Ember.run(function() {
@@ -316,7 +316,7 @@ test("should work inside a bound {{#if}}", function() {
   });
 
   var view = Ember.View.create({
-    template: Ember.Handlebars.compile('{{#if shouldDisplay}}{{#collection "TemplateTests.ifTestCollectionView"}}{{content.isBaz}}{{/collection}}{{/if}}'),
+    template: Ember.Handlebars.compile('{{#if view.shouldDisplay}}{{#collection "TemplateTests.ifTestCollectionView"}}{{content.isBaz}}{{/collection}}{{/if}}'),
     shouldDisplay: true
   });
 
@@ -335,7 +335,7 @@ test("should work inside a bound {{#if}}", function() {
 
 test("should pass content as context when using {{#each}} helper", function() {
   var view = Ember.View.create({
-    template: Ember.Handlebars.compile('{{#each releases}}Mac OS X {{version}}: {{name}} {{/each}}'),
+    template: Ember.Handlebars.compile('{{#each view.releases}}Mac OS X {{version}}: {{name}} {{/each}}'),
 
     releases: Ember.A([
                 { version: '10.7',
@@ -498,13 +498,13 @@ test("should allow view objects to be swapped out without throwing an error (#78
       datasetBinding: 'TemplateTests.datasetController.dataset',
       readyBinding: 'dataset.ready',
       itemsBinding: 'dataset.items',
-      template: Ember.Handlebars.compile("{{#if ready}}{{collection TemplateTests.CollectionView}}{{else}}Loading{{/if}}")
+      template: Ember.Handlebars.compile("{{#if view.ready}}{{collection TemplateTests.CollectionView}}{{else}}Loading{{/if}}")
     });
 
     TemplateTests.CollectionView = Ember.CollectionView.extend({
       contentBinding: 'parentView.items',
       tagName: 'ul',
-      template: Ember.Handlebars.compile("{{content}}")
+      template: Ember.Handlebars.compile("{{view.content}}")
     });
 
     view = TemplateTests.ReportingView.create();

@@ -117,7 +117,7 @@ test("should allow a target to be specified", function() {
   var anotherTarget = Ember.View.create();
 
   view = Ember.View.create({
-    template: Ember.Handlebars.compile('<a href="#" {{action "edit" target="anotherTarget"}}>edit</a>'),
+    template: Ember.Handlebars.compile('<a href="#" {{action "edit" target="view.anotherTarget"}}>edit</a>'),
     anotherTarget: anotherTarget
   });
 
@@ -185,7 +185,7 @@ test("should work properly in an #each block", function() {
 
   view = Ember.View.create({
     items: Ember.A([1, 2, 3, 4]),
-    template: Ember.Handlebars.compile('{{#each items}}<a href="#" {{action "edit"}}>click me</a>{{/each}}'),
+    template: Ember.Handlebars.compile('{{#each view.items}}<a href="#" {{action "edit"}}>click me</a>{{/each}}'),
     edit: function() { eventHandlerWasCalled = true; }
   });
 
@@ -201,7 +201,7 @@ test("should work properly in a #with block", function() {
 
   view = Ember.View.create({
     something: {ohai: 'there'},
-    template: Ember.Handlebars.compile('{{#with something}}<a href="#" {{action "edit"}}>click me</a>{{/with}}'),
+    template: Ember.Handlebars.compile('{{#with view.something}}<a href="#" {{action "edit"}}>click me</a>{{/with}}'),
     edit: function() { eventHandlerWasCalled = true; }
   });
 
@@ -294,7 +294,7 @@ test("should be compatible with sending events to a state manager", function() {
       };
 
   view = Ember.View.create({
-    template: Ember.Handlebars.compile('<a href="#" {{action "edit" target="manager"}}>click me</a>'),
+    template: Ember.Handlebars.compile('<a href="#" {{action "edit" target="view.manager"}}>click me</a>'),
     manager: manager
   });
 
@@ -341,7 +341,7 @@ test("should send the view, event and current Handlebars context to the action",
 
   view = Ember.View.create({
     aContext: aContext,
-    template: Ember.Handlebars.compile('{{#with aContext}}<a id="edit" href="#" {{action edit this target="aTarget"}}>edit</a>{{/with}}')
+    template: Ember.Handlebars.compile('{{#with view.aContext}}<a id="edit" href="#" {{action edit this target="aTarget"}}>edit</a>{{/with}}')
   });
 
   appendView();
@@ -375,7 +375,7 @@ test("should allow a context to be specified", function() {
 
   view = Ember.View.create({
     people: Ember.A([model]),
-    template: Ember.Handlebars.compile('{{#each person in people}}<button {{action edit person}}>edit</button>{{/each}}'),
+    template: Ember.Handlebars.compile('{{#each person in view.people}}<button {{action edit person}}>edit</button>{{/each}}'),
     edit: function(event) {
       passedContext = event.context;
     }
@@ -395,7 +395,7 @@ test("should allow multiple contexts to be specified", function() {
   view = Ember.View.create({
     modelA: models[0],
     modelB: models[1],
-    template: Ember.Handlebars.compile('<button {{action edit modelA modelB}}>edit</button>'),
+    template: Ember.Handlebars.compile('<button {{action edit view.modelA view.modelB}}>edit</button>'),
     edit: function(event) {
       passedContexts = event.contexts;
     }

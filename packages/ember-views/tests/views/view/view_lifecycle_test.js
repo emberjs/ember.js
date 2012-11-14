@@ -196,7 +196,9 @@ test("should replace DOM representation if rerender() is called after element is
         buffer.push("Do not taunt happy fun "+value);
       },
 
-      shape: 'sphere'
+      context: Ember.Object.create({
+        shape: 'sphere'
+      })
     });
 
     view.append();
@@ -204,7 +206,7 @@ test("should replace DOM representation if rerender() is called after element is
 
   equal(view.$().text(), "Do not taunt happy fun sphere", "precond - creates DOM element");
 
-  view.set('shape', 'ball');
+  view.set('context.shape', 'ball');
   Ember.run(function() {
     view.rerender();
   });

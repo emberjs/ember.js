@@ -28,7 +28,9 @@ test("should call the function of the associated template with itself as the con
   view = Ember.View.create({
     templateName: 'test_template',
 
-    personName: "Tom DAAAALE",
+    context: {
+      personName: "Tom DAAAALE"
+    },
 
     templates: Ember.Object.create({
       test_template: function(dataSource) {
@@ -52,7 +54,9 @@ test("should fall back to defaultTemplate if neither template nor templateName a
   });
 
   view = View.create({
-    personName: "Tom DAAAALE"
+    context: {
+      personName: "Tom DAAAALE"
+    }
   });
 
   Ember.run(function(){

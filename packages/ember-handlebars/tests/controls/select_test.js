@@ -503,11 +503,11 @@ test("works from a template with bindings", function() {
     app: application,
     template: Ember.Handlebars.compile(
       '{{view Ember.Select viewName="select"' +
-      '                    contentBinding="app.peopleController"' +
+      '                    contentBinding="view.app.peopleController"' +
       '                    optionLabelPath="content.fullName"' +
       '                    optionValuePath="content.id"' +
       '                    prompt="Pick a person:"' +
-      '                    selectionBinding="app.selectedPersonController.person"}}'
+      '                    selectionBinding="view.app.selectedPersonController.person"}}'
     )
   });
 
@@ -542,8 +542,8 @@ test("upon content change, the DOM should reflect the selection (#481)", functio
     user: userOne,
     template: Ember.Handlebars.compile(
       '{{view Ember.Select viewName="select"' +
-      '    contentBinding="user.options"' +
-      '    selectionBinding="user.selectedOption"}}'
+      '    contentBinding="view.user.options"' +
+      '    selectionBinding="view.user.selectedOption"}}'
     )
   });
 
@@ -571,11 +571,11 @@ test("select element should initialize with the correct selectedIndex when using
     val: 'g',
     template: Ember.Handlebars.compile(
       '{{view Ember.Select viewName="select"' +
-      '    contentBinding="collection"' +
+      '    contentBinding="view.collection"' +
       '    optionLabelPath="content.name"' +
       '    optionValuePath="content.value"' +
       '    prompt="Please wait..."' +
-      '    valueBinding="val"}}'
+      '    valueBinding="view.val"}}'
     )
   });
 

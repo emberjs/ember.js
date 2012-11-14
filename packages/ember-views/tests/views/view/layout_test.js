@@ -35,7 +35,9 @@ test("should call the function of the associated template with itself as the con
   view = Ember.View.create({
     layoutName: 'test_template',
 
-    personName: "Tom DAAAALE",
+    context: {
+      personName: "Tom DAAAALE"
+    },
 
     templates: Ember.Object.create({
       test_template: function(dataSource) {
@@ -59,7 +61,9 @@ test("should fall back to defaultTemplate if neither template nor templateName a
   });
 
   view = View.create({
-    personName: "Tom DAAAALE"
+    context: {
+      personName: "Tom DAAAALE"
+    }
   });
 
   Ember.run(function(){
@@ -94,7 +98,7 @@ test("the template property is available to the layout template", function() {
 
     layout: function(context, options) {
       options.data.buffer.push("Herp");
-      get(context, 'template')(context, options);
+      get(options.data.view, 'template')(context, options);
     }
   });
 

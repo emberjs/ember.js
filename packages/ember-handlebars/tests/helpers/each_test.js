@@ -10,7 +10,7 @@ module("the #each helper", {
   setup: function() {
     Ember.lookup = lookup = { Ember: Ember };
 
-    template = templateFor("{{#each people}}{{name}}{{/each}}");
+    template = templateFor("{{#each view.people}}{{name}}{{/each}}");
     people = Ember.A([{ name: "Steve Holt" }, { name: "Annabelle" }]);
 
     view = Ember.View.create({
@@ -70,7 +70,7 @@ test("it updates the view if an item is added", function() {
 
 test("it allows you to access the current context using {{this}}", function() {
   view = Ember.View.create({
-    template: templateFor("{{#each people}}{{this}}{{/each}}"),
+    template: templateFor("{{#each view.people}}{{this}}{{/each}}"),
     people: Ember.A(['Black Francis', 'Joey Santiago', 'Kim Deal', 'David Lovering'])
   });
 
@@ -144,7 +144,7 @@ test("can add and replace complicatedly harder", function() {
 
 test("it works inside a ul element", function() {
   var ulView = Ember.View.create({
-    template: templateFor('<ul>{{#each people}}<li>{{name}}</li>{{/each}}</ul>'),
+    template: templateFor('<ul>{{#each view.people}}<li>{{name}}</li>{{/each}}</ul>'),
     people: people
   });
 
@@ -161,7 +161,7 @@ test("it works inside a ul element", function() {
 
 test("it works inside a table element", function() {
   var tableView = Ember.View.create({
-    template: templateFor('<table><tbody>{{#each people}}<tr><td>{{name}}</td></tr>{{/each}}</tbody></table>'),
+    template: templateFor('<table><tbody>{{#each view.people}}<tr><td>{{name}}</td></tr>{{/each}}</tbody></table>'),
     people: people
   });
 
@@ -184,7 +184,7 @@ test("it works inside a table element", function() {
 
 test("it supports {{itemViewClass=}}", function() {
   view = Ember.View.create({
-    template: templateFor('{{each people itemViewClass="MyView"}}'),
+    template: templateFor('{{each view.people itemViewClass="MyView"}}'),
     people: people
   });
 
@@ -197,7 +197,7 @@ test("it supports {{itemViewClass=}}", function() {
 test("it supports {{itemViewClass=}} with tagName", function() {
 
   view = Ember.View.create({
-      template: templateFor('{{each people itemViewClass="MyView" tagName="ul"}}'),
+      template: templateFor('{{each view.people itemViewClass="MyView" tagName="ul"}}'),
       people: people
   });
 
@@ -221,7 +221,7 @@ test("it supports {{itemViewClass=}} with in format", function() {
   });
 
   view = Ember.View.create({
-    template: templateFor('{{each person in people itemViewClass="MyView"}}'),
+    template: templateFor('{{each person in view.people itemViewClass="MyView"}}'),
     people: people
   });
 
@@ -233,7 +233,7 @@ test("it supports {{itemViewClass=}} with in format", function() {
 
 test("it supports {{else}}", function() {
   view = Ember.View.create({
-    template: templateFor("{{#each items}}{{this}}{{else}}Nothing{{/each}}"),
+    template: templateFor("{{#each view.items}}{{this}}{{else}}Nothing{{/each}}"),
     items: Ember.A(['one', 'two'])
   });
 
@@ -274,7 +274,7 @@ module("{{#each foo in bar}}");
 
 test("#each accepts a name binding and does not change the context", function() {
   view = Ember.View.create({
-    template: templateFor("{{#each item in items}}{{title}} {{item}}{{/each}}"),
+    template: templateFor("{{#each item in view.items}}{{view.title}} {{item}}{{/each}}"),
     title: "My Cool Each Test",
     items: Ember.A([1, 2])
   });
@@ -286,7 +286,7 @@ test("#each accepts a name binding and does not change the context", function() 
 
 test("#each accepts a name binding and can display child properties", function() {
   view = Ember.View.create({
-    template: templateFor("{{#each item in items}}{{title}} {{item.name}}{{/each}}"),
+    template: templateFor("{{#each item in view.items}}{{view.title}} {{item.name}}{{/each}}"),
     title: "My Cool Each Test",
     items: Ember.A([{ name: 1 }, { name: 2 }])
   });
