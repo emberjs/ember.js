@@ -532,7 +532,7 @@ Ember.Router = Ember.StateManager.extend(
   },
 
   serializeRecursively: function(state, contexts, hashes) {
-    var parentState, 
+    var parentState,
 			context = get(state, 'hasContext') ? contexts.pop() : null,
       hash = context ? state.serialize(this, context) : null;
 
