@@ -307,6 +307,37 @@ test("selection uses the same array when multiple=true", function() {
   deepEqual(selection, [tom,david], "On change the original selection array is updated");
 });
 
+test("selection notifies observers when multiple=true", function() {
+  var yehuda = { id: 1, firstName: 'Yehuda' },
+      tom = { id: 2, firstName: 'Tom' },
+      david = { id: 3, firstName: 'David' },
+      brennain = { id: 4, firstName: 'Brennain' },
+      selection = Ember.A([yehuda, david]),
+      count = 0,
+      watcher = Ember.Object.create({
+        select: select,
+        value: Ember.observer(function() {
+          count++;
+        }, 'select.selection')
+      });
+
+  select.set('content', Ember.A([yehuda, tom, david, brennain]));
+  select.set('multiple', true);
+  select.set('optionLabelPath', 'content.firstName');
+  select.set('selection', selection);
+
+  append();
+
+  deepEqual(select.get('selection'), [yehuda, david], "Initial selection should be correct");
+  count = 0;
+  select.$('option').each(function() { this.selected = false; });
+  select.$(':contains("Tom"), :contains("David")').each(function() { this.selected = true; });
+
+  select.$().trigger('change');
+
+  equal(count, 1, "On change the selection's observers are fired");
+});
+
 test("Ember.SelectedOption knows when it is selected when multiple=false", function() {
   var yehuda = { id: 1, firstName: 'Yehuda' },
       tom = { id: 2, firstName: 'Tom' },
@@ -440,6 +471,27 @@ test("should be able to get the current selection's value", function() {
   equal(select.get('value'), 'wycats');
 });
 
+test("should be able to get the current selection's value when multiple is true", function() {
+  select.set('content', Ember.A([
+    {label: 'Yehuda', value: 'wycats'},
+    {label: 'Tom', value: 'tomdale'},
+    {label: 'Peter', value: 'wagenet'},
+    {label: 'Erik', value: 'ebryn'}
+  ]));
+  select.set('multiple', true );
+  select.set('optionLabelPath', 'content.label');
+  select.set('optionValuePath', 'content.value');
+
+  append();
+
+  deepEqual(select.get('value'), [], "By default, nothing is selected");
+
+  select.$(':contains("Yehuda"), :contains("Erik")').each(function() { this.selected = true; });
+  select.$().trigger('change');
+
+  deepEqual(select.get('value'), ['wycats', 'ebryn'], "Returns an array of values");
+});
+
 test("should be able to set the current selection by value", function() {
   var ebryn = {label: 'Erik Bryn', value: 'ebryn'};
   select.set('content', Ember.A([
@@ -458,6 +510,25 @@ test("should be able to set the current selection by value", function() {
   equal(select.get('selection'), ebryn);
 });
 
+test("should be able to set the current selection by value when multiple is true", function() {
+  var ebryn = {label: 'Erik Bryn', value: 'ebryn'};
+  var wagenet = {label: 'Peter', value: 'wagenet'};
+  select.set('content', Ember.A([
+    {label: 'Yehuda Katz', value: 'wycats'},
+    {label: 'Tom', value: 'tomdale'},
+    ebryn,
+    wagenet
+  ]));
+  select.set('multiple', true );
+  select.set('optionLabelPath', 'content.label');
+  select.set('optionValuePath', 'content.value');
+  select.set('value', ['ebryn', 'wagenet']);
+
+  append();
+
+  deepEqual(select.get('value'), ['ebryn', 'wagenet'], "Value is set");
+  deepEqual(select.get('selection'), [ebryn, wagenet],  "Corresponding selections are set");
+});
 module("Ember.Select - usage inside templates", {
   setup: function() {
     dispatcher = Ember.EventDispatcher.create();

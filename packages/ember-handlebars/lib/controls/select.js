@@ -313,10 +313,10 @@ Ember.Select = Ember.View.extend(
   selection: null,
 
   /**
-    In single selection mode (when `multiple` is false), value can be used to get
-    the current selection's value or set the selection by it's value.
+    Value can be used to get the current selection's value or set the selection
+    by it's value.
 
-    It is not currently supported in multiple selection mode.
+    When 'multiple' is true, value is an array of values
 
     @property value
     @type String
@@ -326,6 +326,10 @@ Ember.Select = Ember.View.extend(
     if (arguments.length === 2) { return value; }
 
     var valuePath = get(this, 'optionValuePath').replace(/^content\.?/, '');
+    if(valuePath && get(this, 'multiple')){
+      if(!get(this, 'selection')){return;}
+      return get(this, 'selection').map( function(obj){ return get(obj, valuePath);} );
+    }
     return valuePath ? get(this, 'selection.' + valuePath) : get(this, 'selection');
   }).property('selection'),
 
@@ -386,9 +390,15 @@ Ember.Select = Ember.View.extend(
         selection;
 
     if (value !== selectedValue) {
-      selection = content.find(function(obj) {
-        return value === (valuePath ? get(obj, valuePath) : obj);
-      });
+      if (get(this, 'multiple')){
+        selection = content.filter(function(obj) {
+          return Ember.A(value).contains(valuePath ? get(obj, valuePath) : obj);
+        });
+      } else {
+        selection = content.find(function(obj) {
+          return value === (valuePath ? get(obj, valuePath) : obj);
+        });
+      }
 
       this.set('selection', selection);
     }
@@ -433,7 +443,9 @@ Ember.Select = Ember.View.extend(
       var newSelection = content.objectsAt(selectedIndexes);
 
       if (isArray(selection)) {
+        Ember.propertyWillChange(this, 'selection');
         replace(selection, 0, get(selection, 'length'), newSelection);
+        Ember.propertyDidChange(this, 'selection');
       } else {
         set(this, 'selection', newSelection);
       }
