@@ -23,9 +23,18 @@ this bug already.
 
 3. Provide JSFiddle or JSBin demo that specifically shows the problem. This
 demo should be fully operational with the exception of the bug you want to
-demonstrate. The more pared down, the better. Preconfigured starting points: [JSFiddle](http://jsfiddle.net/6p6XJ/) | [JSBin](http://jsbin.com/ijicor/3/edit)
+demonstrate. The more pared down, the better. 
+Preconfigured starting points: [JSFiddle](http://jsfiddle.net/6p6XJ/) | [JSBin](http://jsbin.com/ijicor/3/edit)
+Issues with fiddles are priotized.
 
-4. If possible, submit a Pull Request with a failing test. Better yet, take
+4. Your issue will be verified. The provided fiddle will be tested for
+correctness. The Ember team will work with you until your issue can
+be verified.
+
+5. Keep up to date with feedback from the Ember team on your ticket. Your
+ticket may be closed if it becomes stale.
+
+6. If possible, submit a Pull Request with a failing test. Better yet, take
 a stab at fixing the bug yourself if you can!
 
 The more information you provide, the easier it is for us to validate that
@@ -67,7 +76,10 @@ a test!
 
 4. Make the test pass.
 
-5. Push to your fork and submit a pull request. Please provide us with some
+5. Commit your changes. If your pull request fixes an issue specify it in the commit message.
+Here's an example: `git commit -m "Close #52 - Fix controller and viewbindings"`
+
+6. Push to your fork and submit a pull request. Please provide us with some
 explanation of why you made the changes you made. For new features make sure to
 explain a standard use case to us.
 
