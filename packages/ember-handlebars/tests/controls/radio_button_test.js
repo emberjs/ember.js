@@ -91,6 +91,14 @@ test("value should update correctly", function() {
   equal(get(view, 'value'), 'option1', 'value should be set');
   equal(view.$("[value='option1']").prop('checked'), true, 'checkbox should be checked');
   equal(view.$("[value='option2']").prop('checked'), false, 'checkbox should not be checked');
+
+  Ember.run(function() {
+    set(view, 'value', 'option2');
+  });
+
+  equal(get(view, 'value'), 'option2', 'value should be set');
+  equal(view.$("[value='option2']").prop('checked'), true, 'checkbox should be checked');
+  equal(view.$("[value='option1']").prop('checked'), false, 'checkbox should not be checked');
 });
 
 test("value should work even if the view is not in the DOM", function() {
@@ -184,4 +192,3 @@ test("checked property is removed when value changes to an unknown value", funct
 
   equal(button1.prop('checked'), false, "option1 should not be checked");
 });
-
