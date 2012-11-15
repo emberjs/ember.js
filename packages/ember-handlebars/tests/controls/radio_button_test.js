@@ -28,12 +28,12 @@ test("setting selectedValue should update the checked property", function() {
 
   appendView();
 
-  strictEqual(view.$().is(":checked"), false, "precond - the element is not checked");
+  strictEqual(view.$().prop('checked'), false, "precond - the element is not checked");
   strictEqual(get(view, "isChecked"), false, "precond - isChecked returns false");
 
   set(view, 'selectedValue', 'tahoe');
 
-  ok(view.$().is(":checked"), "after clicking a radio button, the checked property changed in the DOM.");
+  ok(view.$().prop('checked'), "after clicking a radio button, the checked property changed in the DOM.");
   equal(get(view, "isChecked"), true, "after clicking a radio button, the isChecked property changed in the view.");
 });
 
@@ -49,7 +49,7 @@ test("setting isChecked should update the selected value", function() {
     set(view, 'isChecked', true);
   });
 
-  ok(view.$().is(":checked"), "checked attribute should be set");
+  ok(view.$().prop('checked'), "checked attribute should be set");
   equal(get(view, 'selectedValue'), 'tahoe', 'selectedValue should be set');
 });
 
@@ -89,8 +89,8 @@ test("value should update correctly", function() {
   });
 
   equal(get(view, 'value'), 'option1', 'value should be set');
-  equal(view.$("[value='option1']").attr('checked'), 'checked', 'checkbox should be checked');
-  equal(view.$("[value='option2']").attr('checked'), null, 'checkbox should not be checked');
+  equal(view.$("[value='option1']").prop('checked'), true, 'checkbox should be checked');
+  equal(view.$("[value='option2']").prop('checked'), false, 'checkbox should not be checked');
 });
 
 test("value should work even if the view is not in the DOM", function() {
@@ -109,8 +109,8 @@ test("value should work even if the view is not in the DOM", function() {
   appendView();
 
   equal(get(view, 'value'), 'option1', 'value should be set');
-  equal(view.$("[value='option1']").attr('checked'), 'checked', 'checkbox should be checked');
-  equal(view.$("[value='option2']").attr('checked'), null, 'checkbox should not be checked');
+  equal(view.$("[value='option1']").prop('checked'), true, 'checkbox should be checked');
+  equal(view.$("[value='option2']").prop('checked'), false, 'checkbox should not be checked');
 });
 
 test("should uncheck previous selection when new value is null", function() {
@@ -130,8 +130,8 @@ test("should uncheck previous selection when new value is null", function() {
   });
 
   equal(get(view, 'value'), null, 'value should be set');
-  equal(view.$("[value='option1']").attr('checked'), null, 'checkbox should not be checked');
-  equal(view.$("[value='option2']").attr('checked'), null, 'checkbox should not be checked');
+  equal(view.$("[value='option1']").prop('checked'), false, 'checkbox should not be checked');
+  equal(view.$("[value='option2']").prop('checked'), false, 'checkbox should not be checked');
 });
 
 test("value should update correctly after change event", function() {
@@ -153,12 +153,12 @@ test("value should update correctly after change event", function() {
     button[0].click();
   } else {
     button.trigger('click');
-    button.attr('checked', 'checked').trigger('change');
+    button.prop('checked', true).trigger('change');
   }
 
   equal(get(view, 'value'), 'option1', 'value should be set');
-  equal(view.$("[value='option1']").attr('checked'), 'checked', 'checkbox should be checked');
-  equal(view.$("[value='option2']").attr('checked'), null, 'checkbox should not be checked');
+  equal(view.$("[value='option1']").prop('checked'), true, 'checkbox should be checked');
+  equal(view.$("[value='option2']").prop('checked'), false, 'checkbox should not be checked');
 });
 
 test("checked property is removed when value changes to an unknown value", function() {
