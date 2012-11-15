@@ -29,15 +29,15 @@ test("setting selectedValue should update the checked property", function() {
   appendView();
 
   strictEqual(view.$().prop('checked'), false, "precond - the element is not checked");
-  strictEqual(get(view, "isChecked"), false, "precond - isChecked returns false");
+  strictEqual(get(view, "checked"), false, "precond - checked returns false");
 
   set(view, 'selectedValue', 'tahoe');
 
   ok(view.$().prop('checked'), "after clicking a radio button, the checked property changed in the DOM.");
-  equal(get(view, "isChecked"), true, "after clicking a radio button, the isChecked property changed in the view.");
+  equal(get(view, "checked"), true, "after clicking a radio button, the checked property changed in the view.");
 });
 
-test("setting isChecked should update the selected value", function() {
+test("setting checked should update the selected value", function() {
   view = Ember.RadioButton.create({
     name: 'radio_button',
     value: 'tahoe'
@@ -46,7 +46,7 @@ test("setting isChecked should update the selected value", function() {
   appendView();
 
   Ember.run(function() {
-    set(view, 'isChecked', true);
+    set(view, 'checked', true);
   });
 
   ok(view.$().prop('checked'), "checked attribute should be set");

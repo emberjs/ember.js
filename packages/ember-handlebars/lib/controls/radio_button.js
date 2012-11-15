@@ -14,7 +14,7 @@ var get = Ember.get, getPath = Ember.getPath, set = Ember.set, fmt = Ember.Strin
 Ember.RadioButton = Ember.Control.extend(
 /** @scope Ember.RadioButton.prototype */ {
 
-  attributeBindings: ["isDisabled:disabled", "type", "name", "value", "isChecked:checked"],
+  attributeBindings: ["disabled", "type", "name", "value", "checked"],
   classNames: ["ember-radio-button"],
 
   /**
@@ -45,7 +45,7 @@ Ember.RadioButton = Ember.Control.extend(
     @default false
     @type Boolean
   */
-  isChecked: false,
+  checked: false,
 
   tagName: "input",
   type: "radio",
@@ -53,15 +53,15 @@ Ember.RadioButton = Ember.Control.extend(
   selectedValueChanged: Ember.observer(function() {
     var selectedValue = get(this, "selectedValue");
     if(!Ember.empty(selectedValue) && get(this, "value") === selectedValue) {
-      set(this, "isChecked", true);
+      set(this, "checked", true);
     } else {
-      set(this, "isChecked", false);
+      set(this, "checked", false);
     }
   }, 'selectedValue'),
 
-  isCheckedChanged: Ember.observer(function() {
+  checkedChanged: Ember.observer(function() {
     this._updateElementValue();
-  }, 'isChecked'),
+  }, 'checked'),
 
   init: function() {
     this._super();
@@ -69,12 +69,12 @@ Ember.RadioButton = Ember.Control.extend(
   },
 
   change: function() {
-    set(this, 'isChecked', this.$().prop('checked'));
+    set(this, 'checked', this.$().prop('checked'));
     Ember.run.once(this, this._updateElementValue);
   },
 
   _updateElementValue: function() {
-    if(!get(this, 'isChecked')) return;
+    if(!get(this, 'checked')) return;
     set(this, 'selectedValue', get(this, 'value'));
   }
 
