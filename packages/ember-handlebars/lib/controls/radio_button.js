@@ -52,11 +52,10 @@ Ember.RadioButton = Ember.Control.extend(
 
   selectedValueChanged: Ember.observer(function() {
     var selectedValue = get(this, "selectedValue");
-    if(Ember.empty(selectedValue)) {
-      set(this, "isChecked", false);
-    }
-    else if(get(this, "value") === selectedValue) {
+    if(!Ember.empty(selectedValue) && get(this, "value") === selectedValue) {
       set(this, "isChecked", true);
+    } else {
+      set(this, "isChecked", false);
     }
   }, 'selectedValue'),
 

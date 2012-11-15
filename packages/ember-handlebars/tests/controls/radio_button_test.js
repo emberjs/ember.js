@@ -160,3 +160,28 @@ test("value should update correctly after change event", function() {
   equal(view.$("[value='option1']").attr('checked'), 'checked', 'checkbox should be checked');
   equal(view.$("[value='option2']").attr('checked'), null, 'checkbox should not be checked');
 });
+
+test("checked property is removed when value changes to an unknown value", function() {
+  view = Ember.RadioButtonGroup.create({
+    name: 'testName',
+    template: Ember.Handlebars.compile(
+      '{{ view RadioButton value="option1" }}' 
+    )
+  });
+
+  appendView();
+
+  var button1 = view.$("[value='option1']");
+
+  Ember.run(function() {
+    set(view, 'value', 'option1');
+  });
+  equal(button1.prop('checked'), true, "option1 should be checked");
+
+  Ember.run(function() {
+    set(view, 'value', 'foobar');
+  });
+
+  equal(button1.prop('checked'), false, "option1 should not be checked");
+});
+
