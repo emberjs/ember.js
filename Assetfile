@@ -159,11 +159,11 @@ distros.each do |name, modules|
 
     # Strip dev code
     match "#{name}.prod.js" do
-      filter(EmberProductionFilter) { ["#{name}.prod.js", "#{name}.min.js"] }
+      filter(EmberProductionFilter) { ["#{name}.prod.js", "min/#{name}.js"] }
     end
 
     # Minify
-    match "#{name}.min.js" do
+    match "min/#{name}.js" do
       uglify{ "#{name}.min.js" }
       filter VersionInfo
       filter EmberLicenseFilter
