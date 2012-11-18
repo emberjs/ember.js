@@ -12,6 +12,15 @@ var set = Ember.set,
     replace = Ember.EnumerableUtils.replace,
     isArray = Ember.isArray;
 
+Ember.SelectOption = Ember.View.extend({
+  tagName: 'option',
+  attributeBindings: ['value', 'selected'],
+
+  template: function(controller, context) {
+      return get(context, 'data.view.label');
+  }
+});
+
 /**
   The Ember.Select view class renders a
   [select](https://developer.mozilla.org/en/HTML/Element/select) HTML element,
@@ -259,12 +268,52 @@ var set = Ember.set,
   @namespace Ember
   @extends Ember.View
 */
-Ember.Select = Ember.View.extend(
+Ember.Select = Ember.CollectionView.extend(
   /** @scope Ember.Select.prototype */ {
 
   tagName: 'select',
   classNames: ['ember-select'],
-  defaultTemplate: Ember.Handlebars.compile('{{#if view.prompt}}<option value>{{view.prompt}}</option>{{/if}}{{#each view.content}}{{view Ember.SelectOption contentBinding="this"}}{{/each}}'),
+  itemViewClass: Ember.SelectOption.extend({
+
+    init: function() {
+      this.labelPathDidChange();
+      this.valuePathDidChange();
+      this._super();
+    },
+
+    labelPathDidChange: Ember.observer(function() {
+      var labelPath = get(this, 'parentView.optionLabelPath');
+
+      if (!labelPath) { return; }
+
+      Ember.defineProperty(this, 'label', Ember.computed(function() {
+        return get(this, labelPath);
+      }).property(labelPath));
+    }, 'parentView.optionLabelPath'),
+
+    valuePathDidChange: Ember.observer(function() {
+      var valuePath = get(this, 'parentView.optionValuePath');
+
+      if (!valuePath) { return; }
+
+      Ember.defineProperty(this, 'value', Ember.computed(function() {
+        return get(this, valuePath);
+      }).property(valuePath));
+    }, 'parentView.optionValuePath'),
+
+    selected: Ember.computed(function() {
+      var content = get(this, 'content'),
+          selection = get(this, 'parentView.selection');
+      if (get(this, 'parentView.multiple')) {
+        return selection && indexOf(selection, content.valueOf()) > -1;
+      } else {
+        // Primitives get passed through bindings as objects... since
+        // `new Number(4) !== 4`, we use `==` below
+        return content == selection;
+      }
+    }).property('content', 'parentView.selection').volatile()
+
+  }),
   attributeBindings: ['multiple', 'disabled', 'tabindex'],
 
   /**
@@ -472,56 +521,49 @@ Ember.Select = Ember.View.extend(
 
   init: function() {
     this._super();
+    this.initPromptView();
     this.on("didInsertElement", this, this._triggerChange);
     this.on("change", this, this._change);
-  }
-});
-
-Ember.SelectOption = Ember.View.extend({
-  tagName: 'option',
-  attributeBindings: ['value', 'selected'],
-
-  defaultTemplate: function(context, options) {
-    options = { data: options.data, hash: {} };
-    Ember.Handlebars.helpers.bind.call(context, "view.label", options);
   },
 
-  init: function() {
-    this.labelPathDidChange();
-    this.valuePathDidChange();
-
-    this._super();
+  initPromptView: function() {
+    this.updatePromptView();
+    this.arrayDidChange = this.executeWithPromptViewRemovedFromChildViews(this.arrayDidChange);
+    this.arrayWillChange = this.executeWithPromptViewRemovedFromChildViews(this.arrayWillChange);
   },
 
-  selected: Ember.computed(function() {
-    var content = get(this, 'content'),
-        selection = get(this, 'parentView.selection');
-    if (get(this, 'parentView.multiple')) {
-      return selection && indexOf(selection, content.valueOf()) > -1;
+  updatePromptView: function() {
+    var childViews = this.get('childViews');
+    var prompt = this.get('prompt');
+    if ( prompt ) {
+      if ( ! this.promptView ) {
+        this.promptView = Ember.SelectOption.create({ content: {}, value: '' });
+        childViews.insertAt(0, this.promptView);
+      }
+      this.promptView.set('label', prompt);
     } else {
-      // Primitives get passed through bindings as objects... since
-      // `new Number(4) !== 4`, we use `==` below
-      return content == selection;
+      if ( this.promptView ) {
+        childViews.removeObject(this.promptView);
+        this.promptView = null;
+      }
     }
-  }).property('content', 'parentView.selection').volatile(),
+  },
 
-  labelPathDidChange: Ember.observer(function() {
-    var labelPath = get(this, 'parentView.optionLabelPath');
+  promptDidChange: Ember.observer(function() {
+    this.updatePromptView();
+  }, 'prompt'),
 
-    if (!labelPath) { return; }
+  executeWithPromptViewRemovedFromChildViews: function( method ) {
+    return Ember.wrap(function() {
+      var childViews = get(this, 'childViews');
+      if (this.promptView) {
+        childViews.removeAt(0);
+      }
+      this._super.apply(this, arguments);
+      if (this.promptView) {
+        childViews.insertAt(0, this.promptView);
+      }
+    }, method);
+  }
 
-    Ember.defineProperty(this, 'label', Ember.computed(function() {
-      return get(this, labelPath);
-    }).property(labelPath));
-  }, 'parentView.optionLabelPath'),
-
-  valuePathDidChange: Ember.observer(function() {
-    var valuePath = get(this, 'parentView.optionValuePath');
-
-    if (!valuePath) { return; }
-
-    Ember.defineProperty(this, 'value', Ember.computed(function() {
-      return get(this, valuePath);
-    }).property(valuePath));
-  }, 'parentView.optionValuePath')
 });
