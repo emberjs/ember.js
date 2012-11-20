@@ -2141,9 +2141,9 @@ Ember.View = Ember.CoreView.extend(
     var $el = this.$();
     if (!$el) { return; }
 
-    var isVisible = get(this, 'isVisible');
+    this.toggleVisibility();
 
-    $el.toggle(isVisible);
+    var isVisible = get(this, 'isVisible');
 
     if (this._isAncestorHidden()) { return; }
 
@@ -2153,6 +2153,16 @@ Ember.View = Ember.CoreView.extend(
       this._notifyBecameHidden();
     }
   }, 'isVisible'),
+
+
+  /**
+    Override to provide different toggle visibility behaviour
+   **/
+  toggleVisibility: function(){
+    var isVisible = get(this, 'isVisible');
+
+    this.$().toggle(isVisible);
+  },
 
   _notifyBecameVisible: function() {
     this.trigger('becameVisible');
