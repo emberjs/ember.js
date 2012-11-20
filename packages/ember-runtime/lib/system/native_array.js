@@ -87,7 +87,11 @@ var NativeArray = Ember.Mixin.create(Ember.MutableArray, Ember.Observable, Ember
     return -1;
   },
 
-  copy: function() {
+  copy: function(deep) {
+    if (deep) {
+      return this.map(function(item){ return Ember.copy(item, true); });
+    }
+
     return this.slice();
   }
 });
