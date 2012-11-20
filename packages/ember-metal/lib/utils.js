@@ -169,6 +169,10 @@ if (isDefinePropertySimulated) {
   // jQuery.extend() by having a property that fails
   // hasOwnProperty check.
   Meta.prototype.__preventPlainObject__ = true;
+
+  // Without non-enumerable properties, meta objects will be output in JSON
+  // unless explicitly suppressed
+  Meta.prototype.toJSON = function () { };
 }
 
 /**
