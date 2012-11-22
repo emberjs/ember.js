@@ -144,7 +144,7 @@ input "packages" do
 end
 
 distros.each do |name, modules|
-  name = name == :full ? "ember" : "ember-#{name}"
+  name = name == "full" ? "ember" : "ember-#{name}"
 
   input "dist/modules" do
     module_paths = modules.map{|m| "#{m}.js" }
