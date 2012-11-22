@@ -62,7 +62,7 @@ function actionsFor(obj, eventName) {
 
 function actionsUnion(obj, eventName, otherActions) {
   var meta = obj[META_KEY],
-      actions = meta.listeners && meta.listeners[eventName];
+      actions = meta && meta.listeners && meta.listeners[eventName];
 
   if (!actions) { return; }
   for (var i = actions.length - 1; i >= 0; i--) {
@@ -79,7 +79,7 @@ function actionsUnion(obj, eventName, otherActions) {
 
 function actionsDiff(obj, eventName, otherActions) {
   var meta = obj[META_KEY],
-      actions = meta.listeners && meta.listeners[eventName],
+      actions = meta && meta.listeners && meta.listeners[eventName],
       diffActions = [];
 
   if (!actions) { return; }
@@ -166,7 +166,7 @@ function removeListener(obj, eventName, target, method) {
     _removeListener(target, method);
   } else {
     var meta = obj[META_KEY],
-        actions = meta.listeners && meta.listeners[eventName];
+        actions = meta && meta.listeners && meta.listeners[eventName];
 
     if (!actions) { return; }
     for (var i = actions.length - 1; i >= 0; i--) {
@@ -302,7 +302,7 @@ function sendEvent(obj, eventName, params, actions) {
 
   if (!actions) {
     var meta = obj[META_KEY];
-    actions = meta.listeners && meta.listeners[eventName];
+    actions = meta && meta.listeners && meta.listeners[eventName];
   }
 
   if (!actions) { return; }
@@ -350,7 +350,7 @@ function hasListeners(obj, eventName) {
 function listenersFor(obj, eventName) {
   var ret = [];
   var meta = obj[META_KEY],
-      actions = meta.listeners && meta.listeners[eventName];
+      actions = meta && meta.listeners && meta.listeners[eventName];
 
   if (!actions) { return ret; }
 
