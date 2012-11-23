@@ -181,6 +181,9 @@
       ];
     }
 
+    // External dependencies are loaded via the AMD shim
+    packages.unshift('rsvp');
+
     len = packages.length;
 
     // There is no require for this in the code

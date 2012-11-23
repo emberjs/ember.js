@@ -50,6 +50,31 @@ class EmberLicenseFilter < Rake::Pipeline::Filter
   end
 end
 
+class AddMicroLoader < Rake::Pipeline::Filter
+  LOADER = File.expand_path("../packages/loader/lib/main.js", __FILE__)
+
+  def initialize(options={}, &block)
+    super(&block)
+    @global = options[:global]
+  end
+
+  def generate_output(inputs, output)
+    output.write "(function() {\n" unless @global
+
+    output.write File.read(LOADER)
+
+    inputs.each do |input|
+      output.write input.read
+    end
+
+    output.write "\n})();\n" unless @global
+  end
+
+  def additional_dependencies(input)
+    [ LOADER ]
+  end
+end
+
 class JSHintRC < Rake::Pipeline::Filter
   def jshintrc
     @jshintrc ||= File.read(".jshintrc")
@@ -122,6 +147,7 @@ input "packages" do
     }
 
     concat "ember-spade.js"
+    filter AddMicroLoader, :global => true
   end
 end
 
@@ -150,6 +176,7 @@ distros.each do |name, modules|
     module_paths = modules.map{|m| "#{m}.js" }
     match "{#{module_paths.join(',')}}" do
       concat(module_paths){ ["#{name}.js", "#{name}.prod.js"] }
+      filter AddMicroLoader
     end
 
     # Add debug to the main distro
