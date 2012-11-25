@@ -511,15 +511,13 @@ function processNames(paths, root, seen) {
 }
 
 function findNamespaces() {
-  var Namespace = Ember.Namespace, lookup = Ember.lookup, obj, isNamespace, isFramed;
+  var Namespace = Ember.Namespace, lookup = Ember.lookup, obj, isNamespace;
 
   if (Namespace.PROCESSED) { return; }
 
-  if (lookup.top !== lookup.self) { isFramed = true; }
-
   for (var prop in lookup) {
     // prevent console errors complaining of "unsafe javascript" in framed (like jsfiddle) or sandboxed/CSP (like chrome extensions) environments
-    if (isFramed && Ember.A(["parent", "top", "frameElement"]).indexOf(prop) > -1) { continue; }
+    if (Ember.A(["parent", "top", "frameElement"]).indexOf(prop) > -1) { continue; }
     //  get(window.globalStorage, 'isNamespace') would try to read the storage for domain isNamespace and cause exception in Firefox.
     // globalStorage is a storage obsoleted by the WhatWG storage specification. See https://developer.mozilla.org/en/DOM/Storage#globalStorage
     if (prop === "globalStorage" && lookup.StorageList && lookup.globalStorage instanceof lookup.StorageList) { continue; }
