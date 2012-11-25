@@ -157,7 +157,7 @@ test("value should update correctly after change event", function() {
 
   // Can't find a way to programatically trigger a checkbox in IE and have it generate the
   // same events as if a user actually clicks.
-  if (!Ember.$.browser.msie) {
+  if (Ember.$.support.changeBubbles) {
     button[0].click();
   } else {
     button.trigger('click');
