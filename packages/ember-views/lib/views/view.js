@@ -848,6 +848,8 @@ Ember.View = Ember.CoreView.extend(
   templateForName: function(name, type) {
     if (!name) { return; }
 
+    Ember.assert("templateNames are not allowed to contain periods: "+name, name.indexOf('.') === -1);
+
     var templates = get(this, 'templates'),
         template = get(templates, name);
 
@@ -914,7 +916,7 @@ Ember.View = Ember.CoreView.extend(
       return get(parentView, '_context');
     }
 
-    return this;
+    return null;
   }),
 
   /**
@@ -925,9 +927,9 @@ Ember.View = Ember.CoreView.extend(
 
     @method _displayPropertyDidChange
   */
-  _displayPropertyDidChange: Ember.observer(function() {
+  _contextDidChange: Ember.observer(function() {
     this.rerender();
-  }, 'context', 'controller'),
+  }, 'context'),
 
   /**
     If false, the view will appear hidden in DOM.
@@ -1100,6 +1102,8 @@ Ember.View = Ember.CoreView.extend(
   _controllerDidChange: Ember.observer(function() {
     if (this.isDestroying) { return; }
 
+    this.rerender();
+
     this.forEachChildView(function(view) {
       view.propertyDidChange('controller');
     });
@@ -1141,7 +1145,8 @@ Ember.View = Ember.CoreView.extend(
         view: this,
         buffer: buffer,
         isRenderData: true,
-        keywords: keywords
+        keywords: keywords,
+        insideGroup: get(this, 'templateData.insideGroup')
       };
 
       // Invoke the template with the provided template context, which
@@ -1265,10 +1270,6 @@ Ember.View = Ember.CoreView.extend(
         // Get the current value of the property
         newClass = this._classStringForProperty(binding);
         elem = this.$();
-        if (!elem) {
-          removeObserver(this, parsedPath.path, observer);
-          return;
-        }
 
         // If we had previously added a class to the element, remove it.
         if (oldClass) {

@@ -50,6 +50,31 @@ class EmberLicenseFilter < Rake::Pipeline::Filter
   end
 end
 
+class AddMicroLoader < Rake::Pipeline::Filter
+  LOADER = File.expand_path("../packages/loader/lib/main.js", __FILE__)
+
+  def initialize(options={}, &block)
+    super(&block)
+    @global = options[:global]
+  end
+
+  def generate_output(inputs, output)
+    output.write "(function() {\n" unless @global
+
+    output.write File.read(LOADER)
+
+    inputs.each do |input|
+      output.write input.read
+    end
+
+    output.write "\n})();\n" unless @global
+  end
+
+  def additional_dependencies(input)
+    [ LOADER ]
+  end
+end
+
 class JSHintRC < Rake::Pipeline::Filter
   def jshintrc
     @jshintrc ||= File.read(".jshintrc")
@@ -84,8 +109,9 @@ class VersionInfo < Rake::Pipeline::Filter
 end
 
 distros = {
-  :runtime => %w(ember-metal ember-runtime),
-  :full    => %w(ember-metal rsvp ember-runtime ember-application ember-views ember-states ember-routing ember-viewstates metamorph ember-handlebars)
+  "runtime"   => %w(ember-metal ember-runtime),
+  "data-deps" => %w(ember-metal ember-runtime ember-states),
+  "full"      => %w(ember-metal rsvp ember-runtime ember-application ember-views ember-states ember-routing ember-viewstates metamorph ember-handlebars)
 }
 
 output "dist"
@@ -121,6 +147,7 @@ input "packages" do
     }
 
     concat "ember-spade.js"
+    filter AddMicroLoader, :global => true
   end
 end
 
@@ -143,12 +170,13 @@ input "packages" do
 end
 
 distros.each do |name, modules|
-  name = name == :full ? "ember" : "ember-#{name}"
+  name = name == "full" ? "ember" : "ember-#{name}"
 
   input "dist/modules" do
     module_paths = modules.map{|m| "#{m}.js" }
     match "{#{module_paths.join(',')}}" do
       concat(module_paths){ ["#{name}.js", "#{name}.prod.js"] }
+      filter AddMicroLoader
     end
 
     # Add debug to the main distro
@@ -159,11 +187,11 @@ distros.each do |name, modules|
 
     # Strip dev code
     match "#{name}.prod.js" do
-      filter(EmberProductionFilter) { ["#{name}.prod.js", "#{name}.min.js"] }
+      filter(EmberProductionFilter) { ["#{name}.prod.js", "min/#{name}.js"] }
     end
 
     # Minify
-    match "#{name}.min.js" do
+    match "min/#{name}.js" do
       uglify{ "#{name}.min.js" }
       filter VersionInfo
       filter EmberLicenseFilter

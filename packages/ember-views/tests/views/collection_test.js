@@ -485,7 +485,7 @@ test("should not render the emptyView if content is emptied and refilled in the 
   Ember.run(function() {
     view.append();
   });
-  
+
   equal(view.$().find('kbd:contains("OY SORRY GUVNAH")').length, 0);
 
   Ember.run(function() {

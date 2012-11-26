@@ -503,11 +503,11 @@ test("works from a template with bindings", function() {
     app: application,
     template: Ember.Handlebars.compile(
       '{{view Ember.Select viewName="select"' +
-      '                    contentBinding="app.peopleController"' +
+      '                    contentBinding="view.app.peopleController"' +
       '                    optionLabelPath="content.fullName"' +
       '                    optionValuePath="content.id"' +
       '                    prompt="Pick a person:"' +
-      '                    selectionBinding="app.selectedPersonController.person"}}'
+      '                    selectionBinding="view.app.selectedPersonController.person"}}'
     )
   });
 
@@ -520,16 +520,16 @@ test("works from a template with bindings", function() {
   equal(select.$('option').length, 5, "Options were rendered");
   equal(select.$().text(), "Pick a person:Yehuda KatzTom DalePeter WagenetErik Bryn", "Option values were rendered");
   equal(select.get('selection'), null, "Nothing has been selected");
-  
+
   Ember.run(function(){
     application.selectedPersonController.set('person', erik);
   });
-  
+
   equal(select.get('selection'), erik, "Selection was updated through binding");
   Ember.run(function(){
     application.peopleController.pushObject(Person.create({id: 5, firstName: "James", lastName: "Rosen"}));
   });
-  
+
   equal(select.$('option').length, 6, "New option was added");
   equal(select.get('selection'), erik, "Selection was maintained after new option was added");
 });
@@ -542,8 +542,8 @@ test("upon content change, the DOM should reflect the selection (#481)", functio
     user: userOne,
     template: Ember.Handlebars.compile(
       '{{view Ember.Select viewName="select"' +
-      '    contentBinding="user.options"' +
-      '    selectionBinding="user.selectedOption"}}'
+      '    contentBinding="view.user.options"' +
+      '    selectionBinding="view.user.selectedOption"}}'
     )
   });
 
@@ -571,11 +571,11 @@ test("select element should initialize with the correct selectedIndex when using
     val: 'g',
     template: Ember.Handlebars.compile(
       '{{view Ember.Select viewName="select"' +
-      '    contentBinding="collection"' +
+      '    contentBinding="view.collection"' +
       '    optionLabelPath="content.name"' +
       '    optionValuePath="content.value"' +
       '    prompt="Please wait..."' +
-      '    valueBinding="val"}}'
+      '    valueBinding="view.val"}}'
     )
   });
 

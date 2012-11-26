@@ -15,7 +15,7 @@ var set = Ember.set,
 /**
   The Ember.Select view class renders a
   [select](https://developer.mozilla.org/en/HTML/Element/select) HTML element,
-  allowing the user to choose from a list of options. 
+  allowing the user to choose from a list of options.
 
   The text and `value` property of each `<option>` element within the `<select>` element
   are populated from the objects in the Element.Select's `content` property. The
@@ -84,8 +84,8 @@ var set = Ember.set,
   and which property should be used to supply the element text.
 
   The `optionValuePath` option is used to specify the path on each object to
-  the desired property for the `value` attribute.  The `optionLabelPath` 
-  specifies the path on each object to the desired property for the 
+  the desired property for the `value` attribute.  The `optionLabelPath`
+  specifies the path on each object to the desired property for the
   element's text. Both paths must reference each object itself as 'content':
 
   ``` javascript
@@ -154,7 +154,7 @@ var set = Ember.set,
   used to render each object providing a `selectionBinding`. When the selected
   `<option>` is changed, the property path provided to `selectionBinding`
   will be updated to match the content object of the rendered `<option>`
-  element: 
+  element:
 
   ``` javascript
   App.controller = Ember.Object.create({
@@ -188,7 +188,7 @@ var set = Ember.set,
   Interacting with the rendered element by selecting the first option
   ('Yehuda') will update the `selectedPerson` value of `App.controller`
   to match the content object of the newly selected `<option>`. In this
-  case it is the first object in the `App.content.content` 
+  case it is the first object in the `App.content.content`
 
   ### Supplying a Prompt
 

@@ -80,7 +80,7 @@ testBoth('suspending an observer should not fire during callback', function(get,
   }
 
   set(obj, 'foo', '1');
-  
+
   equal(Ember._suspendObserver(obj, 'foo', target, target.method, callback), 'result');
 
   set(obj, 'foo', '3');
@@ -115,7 +115,7 @@ testBoth('suspending an observer should not defer change notifications during ca
   }
 
   set(obj, 'foo', '1');
-  
+
   Ember.beginPropertyChanges();
   equal(Ember._suspendObserver(obj, 'foo', target, target.method, callback), 'result');
   Ember.endPropertyChanges();

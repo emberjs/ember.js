@@ -10,7 +10,7 @@ var get = Ember.get, set = Ember.set, fmt = Ember.String.fmt;
 
 /**
   `Ember.CollectionView` is an `Ember.View` descendent responsible for managing a
-  collection (an array or array-like object) by maintaing a child view object and 
+  collection (an array or array-like object) by maintaing a child view object and
   associated DOM representation for each item in the array and ensuring that child
   views and their associated rendered HTML are updated when items in the array
   are added, removed, or replaced.
@@ -35,7 +35,7 @@ var get = Ember.get, set = Ember.set, fmt = Ember.String.fmt;
 
   Given an empty `<body>` and the following code:
 
-  ``` javascript 
+  ``` javascript
   someItemsView = Ember.CollectionView.create({
     classNames: ['a-collection'],
     content: ['A','B','C'],
@@ -59,7 +59,7 @@ var get = Ember.get, set = Ember.set, fmt = Ember.String.fmt;
 
   ## Automatic matching of parent/child tagNames
 
-  Setting the `tagName` property of a `CollectionView` to any of 
+  Setting the `tagName` property of a `CollectionView` to any of
   "ul", "ol", "table", "thead", "tbody", "tfoot", "tr", or "select" will result
   in the item views receiving an appropriately matched `tagName` property.
 
@@ -93,7 +93,23 @@ var get = Ember.get, set = Ember.set, fmt = Ember.String.fmt;
   ``` javascript
   Ember.CollectionView.CONTAINER_MAP['article'] = 'section'
   ```
+  ## Programatic creation of child views
+  For cases where additional customization beyond the use of a single `itemViewClass`
+  or `tagName` matching is required CollectionView's `createChildView` method can be
+  overidden:
 
+  ``` javascript
+  CustomCollectionView = Ember.CollectionView.extend({
+    createChildView: function(viewClass, attrs) {
+      if (attrs.content.kind == 'album') {
+        viewClass = App.AlbumView;
+      } else {
+        viewClass = App.SongView;
+      }
+      this._super(viewClass, attrs);
+    }
+  });
+  ```
 
   ## Empty View
   You can provide an `Ember.View` subclass to the `Ember.CollectionView` instance as its

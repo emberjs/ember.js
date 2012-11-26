@@ -283,33 +283,46 @@ ComputedPropertyPrototype.get = function(obj, keyName) {
 /* impl descriptor API */
 ComputedPropertyPrototype.set = function(obj, keyName, value) {
   var cacheable = this._cacheable,
+      func = this.func,
       meta = metaFor(obj, cacheable),
       watched = meta.watching[keyName],
       oldSuspended = this._suspended,
       hadCachedValue = false,
-      ret;
-  this._suspended = obj;
-  try {
-    ret = this.func.call(obj, keyName, value);
+      cache = meta.cache,
+      cachedValue, ret;
 
-    if (cacheable && keyName in meta.cache) {
-      if (meta.cache[keyName] === ret) {
-        return;
-      }
+  this._suspended = obj;
+
+  try {
+    if (cacheable && cache.hasOwnProperty(keyName)) {
+      cachedValue = cache[keyName];
       hadCachedValue = true;
     }
 
+    // For backwards-compatibility with computed properties
+    // that check for arguments.length === 2 to determine if
+    // they are being get or set, only pass the old cached
+    // value if the computed property opts into a third
+    // argument.
+    if (func.length === 3) {
+      ret = func.call(obj, keyName, value, cachedValue);
+    } else {
+      ret = func.call(obj, keyName, value);
+    }
+
+    if (hadCachedValue && cachedValue === ret) { return; }
+
     if (watched) { Ember.propertyWillChange(obj, keyName); }
 
-    if (cacheable && hadCachedValue) {
-      delete meta.cache[keyName];
+    if (hadCachedValue) {
+      delete cache[keyName];
     }
 
     if (cacheable) {
       if (!watched && !hadCachedValue) {
         addDependentKeys(this, obj, keyName, meta);
       }
-      meta.cache[keyName] = ret;
+      cache[keyName] = ret;
     }
 
     if (watched) { Ember.propertyDidChange(obj, keyName); }

@@ -72,7 +72,7 @@ test("Should propagate bindings after the RunLoop completes (using Ember.RunLoop
   equal(MyApp.second.get("output"), "change") ;
 
   Ember.TESTING_DEPRECATION = false;
-  
+
 });
 
 test("Should propagate bindings after the RunLoop completes", function() {

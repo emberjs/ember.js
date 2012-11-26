@@ -58,7 +58,7 @@ ObserverSet.prototype.add = function(sender, keyName, eventName) {
       sender: sender,
       keyName: keyName,
       eventName: eventName,
-      listeners: {}
+      listeners: []
     }) - 1;
     keySet[keyName] = index;
   }

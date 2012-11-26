@@ -27,7 +27,7 @@ test("should apply bound class names to the element", function() {
   Ember.run(function(){
     view.createElement();
   });
-  
+
   ok(view.$().hasClass('high'), "adds string values as class name");
   ok(view.$().hasClass('is-urgent'), "adds true Boolean values by dasherizing");
   ok(view.$().hasClass('classified'), "supports customizing class name for Boolean values");
@@ -102,14 +102,14 @@ test(":: class name syntax works with an empty true class", function() {
 
 test("classNames should not be duplicated on rerender", function(){
   var view;
-  
+
   Ember.run(function(){
     view = Ember.View.create({
       classNameBindings: ['priority'],
       priority: 'high'
     });
   });
-  
+
 
   Ember.run(function(){
     view.createElement();

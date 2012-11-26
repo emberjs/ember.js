@@ -831,6 +831,33 @@ test("urlFor supports merging the current information for dynamic segments", fun
   expectURL('/dashboard/posts/1/manage/2');
 });
 
+
+test("urlForEvent supports nested routes that have different contexts but share property names", function() {
+  var router = Ember.Router.create({
+    location: locationStub,
+
+    root: Ember.Route.create({
+      goToComments: Ember.Route.transitionTo('root.dashboard.posts.comments'),
+
+      dashboard: Ember.Route.create({
+        route: '/dashboard',
+
+        posts: Ember.Route.create({
+          route: '/posts/:id',
+          comments: Ember.Route.create({
+            route: '/comments/:id'
+          })
+        })
+      })
+    })
+  });
+
+  var url = router.urlForEvent('goToComments', { id: 1 }, {id: 5});
+  equal(url, "/dashboard/posts/1/comments/5");
+  expectURL('/dashboard/posts/1/comments/5');
+});
+
+
 test("navigateAway is called if the URL changes", function() {
   var navigated = 0;
 

@@ -133,7 +133,7 @@ test("a metamorph view calls its childrens' willInsertElement and didInsertEleme
       }
     }),
 
-    template: Ember.Handlebars.compile('{{#if condition}}{{view "ViewWithCallback"}}{{/if}}'),
+    template: Ember.Handlebars.compile('{{#if view.condition}}{{view "view.ViewWithCallback"}}{{/if}}'),
     condition: false
   });
 
@@ -147,7 +147,7 @@ test("a metamorph view calls its childrens' willInsertElement and didInsertEleme
   ok(willInsertElementCalled, "willInsertElement called");
   ok(didInsertElementCalled, "didInsertElement called");
   ok(didInsertElementSawElement, "didInsertElement saw element");
-  
+
   Ember.run(function(){
     parentView.destroy();
   });
@@ -174,7 +174,7 @@ test("replacing a Metamorph should invalidate childView elements", function() {
       }
     }),
 
-    template: Ember.Handlebars.compile("{{#if show}}{{view CustomView}}{{/if}}")
+    template: Ember.Handlebars.compile("{{#if view.show}}{{view view.CustomView}}{{/if}}")
   });
 
   Ember.run(function(){ view.append(); });

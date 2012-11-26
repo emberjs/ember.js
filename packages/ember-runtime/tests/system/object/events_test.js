@@ -16,7 +16,7 @@ test("a listener can be added to an object", function() {
   equal(count, 2, "the event was triggered");
 });
 
-test("a listener can be added and removed automatically the first time it is triggerd", function() {
+test("a listener can be added and removed automatically the first time it is triggered", function() {
   var count = 0;
   var F = function() { count++; };
 

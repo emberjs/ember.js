@@ -1,4 +1,4 @@
-require("rsvp");
+var RSVP = requireModule("rsvp");
 
 /**
 @module ember

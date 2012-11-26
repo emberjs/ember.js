@@ -1,4 +1,6 @@
-var get = Ember.get, set = Ember.set, checkboxView, dispatcher;
+var get = Ember.get, set = Ember.set,
+    isInternetExplorer = window.navigator.userAgent.match(/msie/i),
+    checkboxView, dispatcher;
 
 module("Ember.Checkbox", {
   setup: function() {
@@ -56,7 +58,7 @@ test("should support the tabindex property", function() {
   equal(checkboxView.$().prop('tabindex'), '6', 'the initial checkbox tabindex is set in the DOM');
 
   checkboxView.set('tabindex', 3);
-  equal(checkboxView.$().prop('tabindex'), '3', 'the checkbox tabindex changes when it is changed in the view');  
+  equal(checkboxView.$().prop('tabindex'), '3', 'the checkbox tabindex changes when it is changed in the view');
 });
 
 
@@ -92,7 +94,7 @@ test("checking the checkbox updates the value", function() {
 
   // Can't find a way to programatically trigger a checkbox in IE and have it generate the
   // same events as if a user actually clicks.
-  if (!Ember.$.browser.msie) {
+  if (!isInternetExplorer) {
     checkboxView.$()[0].click();
   } else {
     checkboxView.$().trigger('click');
