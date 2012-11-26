@@ -516,6 +516,8 @@ function findNamespaces() {
   if (Namespace.PROCESSED) { return; }
 
   for (var prop in lookup) {
+    // prevent console errors complaining of "unsafe javascript" in framed (like jsfiddle) or sandboxed/CSP (like chrome extensions) environments
+    if (Ember.A(["parent", "top", "frameElement"]).indexOf(prop) > -1) { continue; }
     //  get(window.globalStorage, 'isNamespace') would try to read the storage for domain isNamespace and cause exception in Firefox.
     // globalStorage is a storage obsoleted by the WhatWG storage specification. See https://developer.mozilla.org/en/DOM/Storage#globalStorage
     if (prop === "globalStorage" && lookup.StorageList && lookup.globalStorage instanceof lookup.StorageList) { continue; }
