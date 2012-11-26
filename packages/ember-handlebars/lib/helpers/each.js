@@ -39,6 +39,94 @@ Ember.Handlebars.EachView = Ember.CollectionView.extend(Ember._Metamorph, {
   }
 });
 
+var GroupedEach = Ember.Handlebars.GroupedEach = function(context, path, options) {
+  var self = this,
+      normalized = Ember.Handlebars.normalizePath(context, path, options.data);
+
+  this.context = context;
+  this.path = path;
+  this.options = options;
+  this.template = options.fn;
+  this.containingView = options.data.view;
+  this.normalizedRoot = normalized.root;
+  this.normalizedPath = normalized.path;
+  this.content = this.lookupContent();
+
+  this.addContentObservers();
+  this.addArrayObservers();
+
+  this.containingView.on('willClearRender', function() {
+    self.destroy();
+  });
+};
+
+GroupedEach.prototype = {
+  contentWillChange: function() {
+    this.removeArrayObservers();
+  },
+
+  contentDidChange: function() {
+    this.content = this.lookupContent();
+    this.addArrayObservers();
+    this.rerenderContainingView();
+  },
+
+  contentArrayWillChange: Ember.K,
+
+  contentArrayDidChange: function() {
+    this.rerenderContainingView();
+  },
+
+  lookupContent: function() {
+    return Ember.Handlebars.get(this.normalizedRoot, this.normalizedPath, this.options);
+  },
+
+  addArrayObservers: function() {
+    this.content.addArrayObserver(this, {
+      willChange: 'contentArrayWillChange',
+      didChange: 'contentArrayDidChange'
+    });
+  },
+
+  removeArrayObservers: function() {
+    this.content.removeArrayObserver(this, {
+      willChange: 'contentArrayWillChange',
+      didChange: 'contentArrayDidChange'
+    });
+  },
+
+  addContentObservers: function() {
+    Ember.addBeforeObserver(this.normalizedRoot, this.normalizedPath, this, this.contentWillChange);
+    Ember.addObserver(this.normalizedRoot, this.normalizedPath, this, this.contentDidChange);
+  },
+
+  removeContentObservers: function() {
+    Ember.removeBeforeObserver(this.normalizedRoot, this.normalizedPath, this.contentWillChange);
+    Ember.removeObserver(this.normalizedRoot, this.normalizedPath, this.contentDidChange);
+  },
+
+  render: function() {
+    var content = this.content,
+        contentLength = get(content, 'length'),
+        data = this.options.data,
+        template = this.template;
+
+    data.insideEach = true;
+    for (var i = 0; i < contentLength; i++) {
+      template(content.objectAt(i), { data: data });
+    }
+  },
+
+  rerenderContainingView: function() {
+    Ember.run.scheduleOnce('render', this.containingView, 'rerender');
+  },
+
+  destroy: function() {
+    this.removeContentObservers();
+    this.removeArrayObservers();
+  }
+};
+
 /**
   The `{{#each}}` helper loops over elements in a collection, rendering its block once for each item:
 
@@ -82,7 +170,7 @@ Ember.Handlebars.EachView = Ember.CollectionView.extend(Ember._Metamorph, {
   ``` handlebars
   <script type="text/x-handlebars">
     {{#view App.MyView }}
-      {{each view.items itemViewClass="App.AnItemView"}} 
+      {{each view.items itemViewClass="App.AnItemView"}}
     {{/view}}
   </script>
   ```
@@ -103,10 +191,10 @@ Ember.Handlebars.EachView = Ember.CollectionView.extend(Ember._Metamorph, {
   App.AnItemView = Ember.View.extend({
     template: Ember.Handlebars.compile("Greetings {{name}}")
   });
-      
+
   App.initialize();
   ```
-      
+
   Will result in the HTML structure below
 
   ``` html
@@ -142,5 +230,9 @@ Ember.Handlebars.registerHelper('each', function(path, options) {
   // Set up emptyView as a metamorph with no tag
   //options.hash.emptyViewClass = Ember._MetamorphView;
 
-  return Ember.Handlebars.helpers.collection.call(this, 'Ember.Handlebars.EachView', options);
+  if (options.data.insideGroup && !options.hash.groupedRows && !options.hash.itemViewClass) {
+    new Ember.Handlebars.GroupedEach(this, path, options).render();
+  } else {
+    return Ember.Handlebars.helpers.collection.call(this, 'Ember.Handlebars.EachView', options);
+  }
 });

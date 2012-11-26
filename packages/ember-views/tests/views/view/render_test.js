@@ -89,7 +89,7 @@ test("should render child views with a different tagName", function() {
   Ember.run(function(){
     view.createElement();
   });
-  
+
   equal(view.$('aside').length, 1);
 });
 
@@ -99,7 +99,7 @@ test("should add ember-view to views", function() {
   Ember.run(function(){
     view.createElement();
   });
-  
+
   ok(view.$().hasClass('ember-view'), "the view has ember-view");
 });
 
@@ -109,7 +109,7 @@ test("should not add role attribute unless one is specified", function() {
   Ember.run(function(){
     view.createElement();
   });
-  
+
   ok(view.$().attr('role') === undefined, "does not have a role attribute");
 });
 

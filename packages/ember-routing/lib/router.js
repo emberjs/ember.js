@@ -499,7 +499,7 @@ Ember.Router = Ember.StateManager.extend(
     }
   },
 
-  urlFor: function(path, hash) {
+  urlFor: function(path, hashes) {
     var currentState = get(this, 'currentState') || this,
         state = this.findStateByPath(currentState, path);
 
@@ -507,36 +507,42 @@ Ember.Router = Ember.StateManager.extend(
     Ember.assert(Ember.String.fmt("To get a URL for the state '%@', it must have a `route` property.", [path]), get(state, 'routeMatcher'));
 
     var location = get(this, 'location'),
-        absoluteRoute = state.absoluteRoute(this, hash);
+        absoluteRoute = state.absoluteRoute(this, hashes);
 
     return location.formatURL(absoluteRoute);
   },
 
   urlForEvent: function(eventName) {
-    var contexts = Array.prototype.slice.call(arguments, 1);
-    var currentState = get(this, 'currentState');
-    var targetStateName = currentState.lookupEventTransition(eventName);
+    var contexts = Array.prototype.slice.call(arguments, 1),
+      currentState = get(this, 'currentState'),
+      targetStateName = currentState.lookupEventTransition(eventName),
+      targetState,
+      hashes;
 
     Ember.assert(Ember.String.fmt("You must specify a target state for event '%@' in order to link to it in the current state '%@'.", [eventName, get(currentState, 'path')]), targetStateName);
 
-    var targetState = this.findStateByPath(currentState, targetStateName);
+    targetState = this.findStateByPath(currentState, targetStateName);
 
     Ember.assert("Your target state name " + targetStateName + " for event " + eventName + " did not resolve to a state", targetState);
 
-    var hash = this.serializeRecursively(targetState, contexts, {});
 
-    return this.urlFor(targetStateName, hash);
+    hashes = this.serializeRecursively(targetState, contexts, []);
+
+    return this.urlFor(targetStateName, hashes);
   },
 
-  serializeRecursively: function(state, contexts, hash) {
+  serializeRecursively: function(state, contexts, hashes) {
     var parentState,
-        context = get(state, 'hasContext') ? contexts.pop() : null;
-    merge(hash, state.serialize(this, context));
-    parentState = state.get("parentState");
-    if (parentState && parentState instanceof Ember.Route) {
-      return this.serializeRecursively(parentState, contexts, hash);
+			context = get(state, 'hasContext') ? contexts.pop() : null,
+      hash = context ? state.serialize(this, context) : null;
+
+		hashes.push(hash);
+		parentState = state.get("parentState");
+
+		if (parentState && parentState instanceof Ember.Route) {
+      return this.serializeRecursively(parentState, contexts, hashes);
     } else {
-      return hash;
+      return hashes;
     }
   },
 

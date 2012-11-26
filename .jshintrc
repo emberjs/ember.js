@@ -11,6 +11,7 @@
         "ember_deprecate",
         "ember_deprecateFunc",
         "require",
+        "requireModule",
         "equal",
         "test",
         "testBoth",

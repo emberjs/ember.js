@@ -239,6 +239,49 @@ testBoth('cacheFor should return falsy cached values', function(get, set) {
   equal(Ember.cacheFor(obj, 'falsy'), false, "should retrieve cached value");
 });
 
+testBoth("setting a cached computed property passes the old value as the third argument", function(get, set) {
+  var obj = {
+    foo: 0
+  };
+
+  var receivedOldValue;
+
+  Ember.defineProperty(obj, 'plusOne', Ember.computed(
+    function(key, value, oldValue) {
+      receivedOldValue = oldValue;
+      return value;
+    }).property('foo')
+  );
+
+  set(obj, 'plusOne', 1);
+  strictEqual(receivedOldValue, undefined, "oldValue should be undefined");
+
+  set(obj, 'plusOne', 2);
+  strictEqual(receivedOldValue, 1, "oldValue should be 1");
+
+  set(obj, 'plusOne', 3);
+  strictEqual(receivedOldValue, 2, "oldValue should be 2");
+});
+
+testBoth("the old value is only passed in if the computed property specifies three arguments", function(get, set) {
+  var obj = {
+    foo: 0
+  };
+
+  var receivedOldValue;
+
+  Ember.defineProperty(obj, 'plusOne', Ember.computed(
+    function(key, value) {
+      equal(arguments.length, 2, "computed property is only invoked with two arguments");
+      return value;
+    }).property('foo')
+  );
+
+  set(obj, 'plusOne', 1);
+  set(obj, 'plusOne', 2);
+  set(obj, 'plusOne', 3);
+});
+
 // ..........................................................
 // DEPENDENT KEYS
 //

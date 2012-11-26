@@ -18,7 +18,7 @@ test("unless should keep the current context (#784)", function() {
   view = Ember.View.create({
     o: Ember.Object.create({foo: '42'}),
 
-    template: Ember.Handlebars.compile('{{#with o}}{{#view Ember.View}}{{#unless view.doesNotExist}}foo: {{foo}}{{/unless}}{{/view}}{{/with}}')
+    template: Ember.Handlebars.compile('{{#with view.o}}{{#view Ember.View}}{{#unless view.doesNotExist}}foo: {{foo}}{{/unless}}{{/view}}{{/with}}')
   });
 
   appendView(view);

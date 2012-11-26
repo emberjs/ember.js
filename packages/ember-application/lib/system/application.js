@@ -325,7 +325,7 @@ Ember.Application = Ember.Namespace.extend(
     @param router {Ember.Router}
   */
   initialize: function(router) {
-    Ember.assert("Application initialize may only be call once", !this.isInitialized);
+    Ember.assert("Application initialize may only be called once", !this.isInitialized);
     Ember.assert("Application not destroyed", !this.isDestroyed);
 
     router = this.setupRouter(router);

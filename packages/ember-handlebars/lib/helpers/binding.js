@@ -21,7 +21,8 @@ function bind(property, options, preserveContext, shouldDisplay, valueNormalizer
       inverse = options.inverse,
       view = data.view,
       currentContext = this,
-      pathRoot, path, normalized;
+      pathRoot, path, normalized,
+      observer;
 
   normalized = normalizePath(currentContext, property, data);
 
@@ -30,27 +31,47 @@ function bind(property, options, preserveContext, shouldDisplay, valueNormalizer
 
   // Set up observers for observable objects
   if ('object' === typeof this) {
-    // Create the view that will wrap the output of this template/property
-    // and add it to the nearest view's childViews array.
-    // See the documentation of Ember._HandlebarsBoundView for more.
-    var bindView = view.createChildView(Ember._HandlebarsBoundView, {
-      preserveContext: preserveContext,
-      shouldDisplayFunc: shouldDisplay,
-      valueNormalizerFunc: valueNormalizer,
-      displayTemplate: fn,
-      inverseTemplate: inverse,
-      path: path,
-      pathRoot: pathRoot,
-      previousContext: currentContext,
-      isEscaped: !options.hash.unescaped,
-      templateData: options.data
-    });
+    if (data.insideGroup) {
+      observer = function() {
+        Ember.run.once(view, 'rerender');
+      };
 
-    view.appendChild(bindView);
+      var template, context, result = handlebarsGet(pathRoot, path, options);
 
-    var observer = function() {
-      Ember.run.scheduleOnce('render', bindView, 'rerenderIfNeeded');
-    };
+      result = valueNormalizer(result);
+
+      context = preserveContext ? currentContext : result;
+      if (shouldDisplay(result)) {
+        template = fn;
+      } else if (inverse) {
+        template = inverse;
+      }
+
+      template(context, { data: options.data });
+    } else {
+      // Create the view that will wrap the output of this template/property
+      // and add it to the nearest view's childViews array.
+      // See the documentation of Ember._HandlebarsBoundView for more.
+      var bindView = view.createChildView(Ember._HandlebarsBoundView, {
+        preserveContext: preserveContext,
+        shouldDisplayFunc: shouldDisplay,
+        valueNormalizerFunc: valueNormalizer,
+        displayTemplate: fn,
+        inverseTemplate: inverse,
+        path: path,
+        pathRoot: pathRoot,
+        previousContext: currentContext,
+        isEscaped: !options.hash.unescaped,
+        templateData: options.data
+      });
+
+      view.appendChild(bindView);
+
+      /** @private */
+      observer = function() {
+        Ember.run.scheduleOnce('render', bindView, 'rerenderIfNeeded');
+      };
+    }
 
     // Observes the given property on the context and
     // tells the Ember._HandlebarsBoundView to re-render. If property
@@ -74,7 +95,8 @@ function simpleBind(property, options) {
   var data = options.data,
       view = data.view,
       currentContext = this,
-      pathRoot, path, normalized;
+      pathRoot, path, normalized,
+      observer;
 
   normalized = normalizePath(currentContext, property, data);
 
@@ -83,20 +105,30 @@ function simpleBind(property, options) {
 
   // Set up observers for observable objects
   if ('object' === typeof this) {
-    var bindView = Ember._SimpleHandlebarsView.create().setProperties({
-      path: path,
-      pathRoot: pathRoot,
-      isEscaped: !options.hash.unescaped,
-      previousContext: currentContext,
-      templateData: options.data
-    });
+    if (data.insideGroup) {
+      observer = function() {
+        Ember.run.once(view, 'rerender');
+      };
 
-    view.createChildView(bindView);
-    view.appendChild(bindView);
+      var result = handlebarsGet(pathRoot, path, options);
+      if (result === null || result === undefined) { result = ""; }
+      data.buffer.push(result);
+    } else {
+      var bindView = Ember._SimpleHandlebarsView.create().setProperties({
+        path: path,
+        pathRoot: pathRoot,
+        isEscaped: !options.hash.unescaped,
+        previousContext: currentContext,
+        templateData: options.data
+      });
 
-    var observer = function() {
-      Ember.run.scheduleOnce('render', bindView, 'rerender');
-    };
+      view.createChildView(bindView);
+      view.appendChild(bindView);
+
+      observer = function() {
+        Ember.run.scheduleOnce('render', bindView, 'rerender');
+      };
+    }
 
     // Observes the given property on the context and
     // tells the Ember._HandlebarsBoundView to re-render. If property
@@ -296,8 +328,108 @@ EmberHandlebars.registerHelper('unless', function(context, options) {
   `bindAttr` allows you to create a binding between DOM element attributes and
   Ember objects. For example:
 
+
   ``` handlebars
   <img {{bindAttr src="imageUrl" alt="imageTitle"}}>
+  ```
+
+  The above handlebars template will fill the `<img>`'s `src` attribute
+  will the value of the property referenced with `"imageUrl"` and its
+  `alt` attribute with the value of the property referenced with `"imageTitle"`.
+
+  If the rendering context of this template is the following object:
+
+  ``` javascript
+  {
+    imageUrl: 'http://lolcats.info/haz-a-funny',
+    imageTitle: 'A humorous image of a cat'
+  }
+  ```
+
+  The resulting HTML output will be:
+
+  ``` html
+    <img src="http://lolcats.info/haz-a-funny" alt="A humorous image of a cat">
+  ```
+
+  `bindAttr` cannot redeclare existing DOM element attributes. The use
+  of `src` in the following `bindAttr` example will be ignored and the hard coded value
+  of `src="/failwhale.gif"` will take precedence:
+
+  ``` handlebars
+  <img src="/failwhale.gif" {{bindAttr src="imageUrl" alt="imageTitle"}}>
+  ```
+
+  ### `bindAttr` and the `class` attribute
+  `bindAttr` supports a special syntax for handling a number of cases unique
+  to the `class` DOM element attribute. The `class` attribute combines
+  multiple discreet values into a single attribute as a space-delimited
+  list of strings. Each string can be
+
+    * a string return value of an object's property.
+    * a boolean return value of an object's property
+    * a hard-coded value
+
+  A string return value works identically to other uses of `bindAttr`. The return
+  value of the property will become the value of the attribute. For example,
+  the following view and template:
+
+  ``` javascript
+    AView = Ember.View.extend({
+      someProperty: function(){
+        return "aValue";
+      }.property()
+    })
+  ```
+
+  ``` handlebars
+  <img {{bindAttr class="view.someProperty}}>
+  ```
+
+  Result in the following rendered output:
+  <img class="aValue">
+
+  A boolean return value will insert a specified class name if the property
+  returns `true` and remove the class name if the property returns `false`.
+
+  A class name is provided via the syntax `somePropertyName:class-name-if-true`.
+
+  ``` javascript
+    AView = Ember.View.extend({
+      someBool: true
+    })
+  ```
+
+  ``` handlebars
+  <img {{bindAttr class="view.someBool:class-name-if-true"}}>
+  ```
+
+  Result in the following rendered output:
+  <img class="class-name-if-true">
+
+  An additional section of the binding can be provided if you want to
+  replace the existing class instead of removing it when the boolean
+  value changes:
+
+  ``` handlebars
+  <img {{bindAttr class="view.someBool:class-name-if-true:class-name-if-false"}}>
+  ```
+
+  A hard-coded value can be used by prepending `:` to the desired
+  class name: `:class-name-to-always-apply`.
+
+  ``` handlebars
+  <img {{bindAttr class=":class-name-to-always-apply"}}>
+  ```
+
+  Results in the following rendered output:
+  <img class="class-name-to-always-apply">
+
+  All three strategies - string return value, boolean return value, and
+  hard-coded value – can be combined in a single declaration:
+
+  ```handlebars
+  <img {{bindAttr class=":class-name-to-always-apply view.someBool:class-name-if-true view.someProperty"}}>
   ```
 
   @method bindAttr
