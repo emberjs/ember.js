@@ -110,9 +110,9 @@ test("unbound all output within a block", function() {
     occasion: 'bar mitzvah',
     notSpooky: false,
     werewolf: true,
-    template: Ember.Handlebars.compile("{{#unbound}}{{occasion}}: {{#unless notSpooky}}spooky! {{/unless}}{{#if werewolf}}scary!{{/if}}{{/unbound}}")
+    template: Ember.Handlebars.compile("{{#unbound}}{{view.occasion}}: {{#unless view.notSpooky}}spooky! {{/unless}}{{#if view.werewolf}}scary!{{/if}}{{/unbound}}")
   });
-  appendView(view);
+  appendView(view);  
   equal(view.$().text(), "bar mitzvah: spooky! scary!");  
 });
 
@@ -121,7 +121,7 @@ test("unbound blocks don't change", function() {
     occasion: 'bar mitzvah',
     notSpooky: false,
     werewolf: true,
-    template: Ember.Handlebars.compile("{{#unbound}}{{occasion}}: {{#unless notSpooky}}spooky! {{/unless}}{{#if werewolf}}scary!{{/if}}{{/unbound}}")
+    template: Ember.Handlebars.compile("{{#unbound}}{{view.occasion}}: {{#unless view.notSpooky}}spooky! {{/unless}}{{#if view.werewolf}}scary!{{/if}}{{/unbound}}")
   });
   appendView(view);
   Ember.run(function () {
