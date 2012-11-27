@@ -22,7 +22,7 @@ var o_create = Ember.create,
       {
         listeners: {       // variable name: `listenerSet`
           "foo:changed": [ // variable name: `actions`
-            [target, method, onceFlag]
+            [target, method, onceFlag, suspendedFlag]
           ]
         }
       }
@@ -69,10 +69,11 @@ function actionsUnion(obj, eventName, otherActions) {
     var target = actions[i][0],
         method = actions[i][1],
         once = actions[i][2],
+        suspended = actions[i][3],
         actionIndex = indexOf(otherActions, target, method);
 
     if (actionIndex === -1) {
-      otherActions.push([target, method, once]);
+      otherActions.push([target, method, once, suspended]);
     }
   }
 }
@@ -87,12 +88,13 @@ function actionsDiff(obj, eventName, otherActions) {
     var target = actions[i][0],
         method = actions[i][1],
         once = actions[i][2],
+        suspended = actions[i][3],
         actionIndex = indexOf(otherActions, target, method);
 
     if (actionIndex !== -1) { continue; }
 
-    otherActions.push([target, method, once]);
-    diffActions.push([target, method, once]);
+    otherActions.push([target, method, once, suspended]);
+    diffActions.push([target, method, once, suspended]);
   }
 
   return diffActions;
@@ -121,7 +123,7 @@ function addListener(obj, eventName, target, method, once) {
 
   if (actionIndex !== -1) { return; }
 
-  actions.push([target, method, once]);
+  actions.push([target, method, once, undefined]);
 
   if ('function' === typeof obj.didAddListener) {
     obj.didAddListener(eventName, target, method);
@@ -204,13 +206,15 @@ function suspendListener(obj, eventName, target, method, callback) {
       action;
 
   if (actionIndex !== -1) {
-    action = actions.splice(actionIndex, 1)[0];
+    action = actions[actionIndex].slice(); // copy it, otherwise we're modifying a shared object
+    action[3] = true; // mark the action as suspended
+    actions[actionIndex] = action; // replace the shared object with our copy
   }
 
   try {
     return callback.call(target);
   } finally {
-    if (action) { actions.push(action); }
+    if (action) { action[3] = undefined; }
   }
 }
 
@@ -238,7 +242,7 @@ function suspendListeners(obj, eventNames, target, method, callback) {
     target = null;
   }
 
-  var removedActions = [],
+  var suspendedActions = [],
       eventName, actions, action, i, l;
 
   for (i=0, l=eventNames.length; i<l; i++) {
@@ -247,15 +251,18 @@ function suspendListeners(obj, eventNames, target, method, callback) {
     var actionIndex = indexOf(actions, target, method);
 
     if (actionIndex !== -1) {
-      removedActions.push(actions.splice(actionIndex, 1)[0]);
+      action = actions[actionIndex].slice();
+      action[3] = true;
+      actions[actionIndex] = action;
+      suspendedActions.push(action);
     }
   }
 
   try {
     return callback.call(target);
   } finally {
-    for (i = 0, l = removedActions.length; i < l; i++) {
-      actions.push(removedActions[i]);
+    for (i = 0, l = suspendedActions.length; i < l; i++) {
+      suspendedActions[i][3] = undefined;
     }
   }
 }
@@ -308,7 +315,7 @@ function sendEvent(obj, eventName, params, actions) {
   if (!actions) { return; }
 
   for (var i = actions.length - 1; i >= 0; i--) { // looping in reverse for once listeners
-    if (!actions[i]) { continue; }
+    if (!actions[i] || actions[i][3] === true) { continue; }
 
     var target = actions[i][0],
         method = actions[i][1],
