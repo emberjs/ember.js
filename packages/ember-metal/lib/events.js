@@ -267,10 +267,6 @@ function suspendListeners(obj, eventNames, target, method, callback) {
   }
 }
 
-// TODO: This knowledge should really be a part of the
-// meta system.
-var SKIP_PROPERTIES = { __ember_source__: true };
-
 /**
   @private
 
@@ -285,9 +281,7 @@ function watchedEvents(obj) {
 
   if (listeners) {
     for(var eventName in listeners) {
-      if (!SKIP_PROPERTIES[eventName] && listeners[eventName]) {
-        ret.push(eventName);
-      }
+      if (listeners[eventName]) { ret.push(eventName); }
     }
   }
   return ret;
