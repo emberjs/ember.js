@@ -26,14 +26,9 @@ var deferred = 0;
       sender: obj,
       keyName: keyName,
       eventName: eventName,
-      listeners: {
-        [targetGuid]: {        // variable name: `actionSet`
-          [methodGuid]: {      // variable name: `action`
-            target: [Object object],
-            method: [Function function]
-          }
-        }
-      }
+      listeners: [
+        [target, method, onceFlag, suspendedFlag]
+      ]
     },
     ...
   ]
