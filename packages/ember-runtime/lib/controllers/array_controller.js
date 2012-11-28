@@ -1,7 +1,6 @@
 require('ember-runtime/system/array_proxy');
 require('ember-runtime/controllers/controller');
-require('ember-runtime/mixins/sortable');
-require('ember-runtime/mixins/filterable');
+require('ember-runtime/mixins/arrangable');
 
 /**
 @module ember
@@ -56,4 +55,4 @@ var get = Ember.get, set = Ember.set;
 */
 
 Ember.ArrayController = Ember.ArrayProxy.extend(Ember.ControllerMixin,
-  Ember.SortableMixin);
+  Ember.ArrangableMixin);
