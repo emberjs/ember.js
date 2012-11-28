@@ -96,8 +96,8 @@ function addChainWatcher(obj, keyName, node) {
     nodes = m.chainWatchers = { __emberproto__: obj };
   }
 
-  if (!nodes[keyName]) { nodes[keyName] = {}; }
-  nodes[keyName][guidFor(node)] = node;
+  if (!nodes[keyName]) { nodes[keyName] = []; }
+  nodes[keyName].push(node);
   Ember.watch(obj, keyName);
 }
 
@@ -106,7 +106,12 @@ function removeChainWatcher(obj, keyName, node) {
   var m = metaFor(obj, false),
       nodes = m.chainWatchers;
   if (!nodes || nodes.__emberproto__ !== obj) { return; } //nothing to do
-  if (nodes[keyName]) { delete nodes[keyName][guidFor(node)]; }
+  if (nodes[keyName]) {
+    nodes = nodes[keyName];
+    for (var i = 0, l = nodes.length; i < l; i++) {
+      if (nodes[i] === node) { nodes.splice(i, 1); }
+    }
+  }
   Ember.unwatch(obj, keyName);
 }
 
@@ -378,9 +383,8 @@ function notifyChains(obj, m, keyName, methodName, arg) {
   nodes = nodes[keyName];
   if (!nodes) { return; }
 
-  for(var key in nodes) {
-    if (!nodes.hasOwnProperty(key)) { continue; }
-    nodes[key][methodName](arg);
+  for(var i = 0, l = nodes.length; i < l; i++) {
+    nodes[i][methodName](arg);
   }
 }
 

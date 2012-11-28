@@ -181,15 +181,16 @@ test('when watching a global object, destroy should remove chain watchers from t
 
   var meta_Global = Ember.meta(Global);
   var chainNode = Ember.meta(obj).chains._chains.Global._chains.foo;
-  var guid = Ember.guidFor(chainNode);
+  var index = meta_Global.chainWatchers.foo.indexOf(chainNode);
 
   equal(meta_Global.watching.foo, 1, 'should be watching foo');
-  strictEqual(meta_Global.chainWatchers.foo[guid], chainNode, 'should have chain watcher');
+  strictEqual(meta_Global.chainWatchers.foo[index], chainNode, 'should have chain watcher');
 
   Ember.destroy(obj);
 
+  index = meta_Global.chainWatchers.foo.indexOf(chainNode);
   equal(meta_Global.watching.foo, 0, 'should not be watching foo');
-  strictEqual(meta_Global.chainWatchers.foo[guid], undefined, 'should not have chain watcher');
+  equal(index, -1, 'should not have chain watcher');
 
   Global = null; // reset
 });
@@ -204,13 +205,14 @@ test('when watching another object, destroy should remove chain watchers from th
 
   var meta_objB = Ember.meta(objB);
   var chainNode = Ember.meta(objA).chains._chains.b._chains.foo;
-  var guid = Ember.guidFor(chainNode);
+  var index = meta_objB.chainWatchers.foo.indexOf(chainNode);
 
   equal(meta_objB.watching.foo, 1, 'should be watching foo');
-  strictEqual(meta_objB.chainWatchers.foo[guid], chainNode, 'should have chain watcher');
+  strictEqual(meta_objB.chainWatchers.foo[index], chainNode, 'should have chain watcher');
 
   Ember.destroy(objA);
 
+  index = meta_objB.chainWatchers.foo.indexOf(chainNode);
   equal(meta_objB.watching.foo, 0, 'should not be watching foo');
-  strictEqual(meta_objB.chainWatchers.foo[guid], undefined, 'should not have chain watcher');
+  equal(index, -1, 'should not have chain watcher');
 });
