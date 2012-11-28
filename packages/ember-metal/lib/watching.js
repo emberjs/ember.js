@@ -375,7 +375,11 @@ function chainsFor(obj) {
   return ret;
 }
 
-function notifyChains(obj, m, keyName, methodName, arg) {
+Ember.overrideChains = function(obj, keyName, m) {
+  chainsDidChange(obj, keyName, m, true);
+};
+
+function chainsWillChange(obj, keyName, m, arg) {
   var nodes = m.chainWatchers;
 
   if (!nodes || nodes.__emberproto__ !== obj) { return; } // nothing to do
@@ -384,20 +388,21 @@ function notifyChains(obj, m, keyName, methodName, arg) {
   if (!nodes) { return; }
 
   for(var i = 0, l = nodes.length; i < l; i++) {
-    nodes[i][methodName](arg);
+    nodes[i].willChange(arg);
   }
 }
 
-Ember.overrideChains = function(obj, keyName, m) {
-  notifyChains(obj, m, keyName, 'didChange', true);
-};
+function chainsDidChange(obj, keyName, m, arg) {
+  var nodes = m.chainWatchers;
 
-function chainsWillChange(obj, keyName, m) {
-  notifyChains(obj, m, keyName, 'willChange');
-}
+  if (!nodes || nodes.__emberproto__ !== obj) { return; } // nothing to do
 
-function chainsDidChange(obj, keyName, m) {
-  notifyChains(obj, m, keyName, 'didChange');
+  nodes = nodes[keyName];
+  if (!nodes) { return; }
+
+  for(var i = 0, l = nodes.length; i < l; i++) {
+    nodes[i].didChange(arg);
+  }
 }
 
 // ..........................................................
