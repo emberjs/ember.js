@@ -89,11 +89,12 @@ function dependentKeysDidChange(obj, depKey, meta) {
 //
 
 function addChainWatcher(obj, keyName, node) {
-  if (!obj || ('object' !== typeof obj)) return; // nothing to do
-  var m = metaFor(obj);
-  var nodes = m.chainWatchers;
-  if (!nodes || nodes.__emberproto__ !== obj) {
-    nodes = m.chainWatchers = { __emberproto__: obj };
+  if (!obj || ('object' !== typeof obj)) { return; } // nothing to do
+
+  var m = metaFor(obj), nodes = m.chainWatchers;
+
+  if (!m.hasOwnProperty('chainWatchers')) {
+    nodes = m.chainWatchers = {};
   }
 
   if (!nodes[keyName]) { nodes[keyName] = []; }
@@ -103,9 +104,12 @@ function addChainWatcher(obj, keyName, node) {
 
 function removeChainWatcher(obj, keyName, node) {
   if (!obj || 'object' !== typeof obj) { return; } // nothing to do
-  var m = metaFor(obj, false),
-      nodes = m.chainWatchers;
-  if (!nodes || nodes.__emberproto__ !== obj) { return; } //nothing to do
+
+  var m = metaFor(obj, false);
+  if (!m.hasOwnProperty('chainWatchers')) { return; } // nothing to do
+
+  var nodes = m.chainWatchers;
+
   if (nodes[keyName]) {
     nodes = nodes[keyName];
     for (var i = 0, l = nodes.length; i < l; i++) {
@@ -380,9 +384,9 @@ Ember.overrideChains = function(obj, keyName, m) {
 };
 
 function chainsWillChange(obj, keyName, m, arg) {
-  var nodes = m.chainWatchers;
+  if (!m.hasOwnProperty('chainWatchers')) { return; } // nothing to do
 
-  if (!nodes || nodes.__emberproto__ !== obj) { return; } // nothing to do
+  var nodes = m.chainWatchers;
 
   nodes = nodes[keyName];
   if (!nodes) { return; }
@@ -393,9 +397,9 @@ function chainsWillChange(obj, keyName, m, arg) {
 }
 
 function chainsDidChange(obj, keyName, m, arg) {
-  var nodes = m.chainWatchers;
+  if (!m.hasOwnProperty('chainWatchers')) { return; } // nothing to do
 
-  if (!nodes || nodes.__emberproto__ !== obj) { return; } // nothing to do
+  var nodes = m.chainWatchers;
 
   nodes = nodes[keyName];
   if (!nodes) { return; }
