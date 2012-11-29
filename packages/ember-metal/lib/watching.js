@@ -142,7 +142,7 @@ function isProto(pvalue) {
 // A ChainNode watches a single key on an object.  If you provide a starting
 // value for the key then the node won't actually watch it.  For a root node
 // pass null for parent and key and object for value.
-var ChainNode = function(parent, key, value, separator) {
+var ChainNode = function(parent, key, value) {
   var obj;
   this._parent = parent;
   this._key    = key;
@@ -156,7 +156,6 @@ var ChainNode = function(parent, key, value, separator) {
   this._watching = value===undefined;
 
   this._value  = value;
-  this._separator = separator || '.';
   this._paths = {};
   if (this._watching) {
     this._object = parent.value();
@@ -193,7 +192,7 @@ ChainNodePrototype.destroy = function() {
 
 // copies a top level object only
 ChainNodePrototype.copy = function(obj) {
-  var ret = new ChainNode(null, null, obj, this._separator),
+  var ret = new ChainNode(null, null, obj),
       paths = this._paths, path;
   for (path in paths) {
     if (paths[path] <= 0) { continue; } // this check will also catch non-number vals.
@@ -205,7 +204,7 @@ ChainNodePrototype.copy = function(obj) {
 // called on the root node of a chain to setup watchers on the specified
 // path.
 ChainNodePrototype.add = function(path) {
-  var obj, tuple, key, src, separator, paths;
+  var obj, tuple, key, src, paths;
 
   paths = this._paths;
   paths[path] = (paths[path] || 0) + 1;
@@ -230,12 +229,11 @@ ChainNodePrototype.add = function(path) {
   } else {
     src  = tuple[0];
     key  = path.slice(0, 0-(tuple[1].length+1));
-    separator = path.slice(key.length, key.length+1);
     path = tuple[1];
   }
 
   tuple.length = 0;
-  this.chain(key, path, src, separator);
+  this.chain(key, path, src);
 };
 
 // called on the root node of a chain to teardown watcher on the specified
@@ -264,12 +262,12 @@ ChainNodePrototype.remove = function(path) {
 
 ChainNodePrototype.count = 0;
 
-ChainNodePrototype.chain = function(key, path, src, separator) {
+ChainNodePrototype.chain = function(key, path, src) {
   var chains = this._chains, node;
   if (!chains) { chains = this._chains = {}; }
 
   node = chains[key];
-  if (!node) { node = chains[key] = new ChainNode(this, key, src, separator); }
+  if (!node) { node = chains[key] = new ChainNode(this, key, src); }
   node.count++; // count chains...
 
   // chain rest of path if there is one
@@ -312,7 +310,7 @@ ChainNodePrototype.willChange = function() {
 };
 
 ChainNodePrototype.chainWillChange = function(chain, path, depth) {
-  if (this._key) { path = this._key + this._separator + path; }
+  if (this._key) { path = this._key + '.' + path; }
 
   if (this._parent) {
     this._parent.chainWillChange(this, path, depth+1);
@@ -324,7 +322,7 @@ ChainNodePrototype.chainWillChange = function(chain, path, depth) {
 };
 
 ChainNodePrototype.chainDidChange = function(chain, path, depth) {
-  if (this._key) { path = this._key + this._separator + path; }
+  if (this._key) { path = this._key + '.' + path; }
   if (this._parent) {
     this._parent.chainDidChange(this, path, depth+1);
   } else {
