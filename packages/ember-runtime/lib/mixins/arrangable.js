@@ -7,19 +7,20 @@
 var get = Ember.get, set = Ember.set, forEach = Ember.EnumerableUtils.forEach;
 
 /**
-  `Ember.SortableMixin` provides a standard interface for array proxies
-  to specify a sort order and maintain this sorting when objects are added,
-  removed, or updated without changing the implicit order of their underlying
-  content array:
+  `Ember.ArrangableMixin` provides a standard interface for array proxies
+  to specify filtering and sort order. The arrangment is maintained when new
+  objects are added, updated, or removed. The ordering does not effect
+  the underlying content array.
 
   ```javascript
-  songs = [
+  var songs = [
     {trackNumber: 4, title: 'Ob-La-Di, Ob-La-Da'},
     {trackNumber: 2, title: 'Back in the U.S.S.R.'},
     {trackNumber: 3, title: 'Glass Onion'},
   ];
 
-  songsController = Ember.ArrayController.create({
+  // Sorting
+  var songsController = Ember.ArrayController.create({
     content: songs,
     sortProperties: ['trackNumber']
   });
@@ -28,6 +29,23 @@ var get = Ember.get, set = Ember.set, forEach = Ember.EnumerableUtils.forEach;
 
   songsController.addObject({trackNumber: 1, title: 'Dear Prudence'});
   songsController.get('firstObject');  // {trackNumber: 1, title: 'Dear Prudence'}
+
+  // Filtering
+  var songs = [
+    {trackNumber: 4, title: 'Ob-La-Di, Ob-La-Da', favorite: true},
+    {trackNumber: 2, title: 'Back in the U.S.S.R.'},
+    {trackNumber: 3, title: 'Glass Onion', favorite: true},
+  ];
+
+  var songsController = Ember.ArrayController.create({
+    content: songs,
+    filterProperites: ['favorite']
+  });
+
+  songsController.get('firstObject');  // {trackNumber: 4, title: 'Ob-La-Di, Ob-La-Da', favorite: true}
+
+  songsController.addObject({trackNumber: 1, title: 'Dear Prudence', favorite: true});
+  songsController.get('lastObject');  // {trackNumber: 1, title: 'Dear Prudence', favorite: true}
   ```
 
   @class SortableMixin
