@@ -58,6 +58,7 @@ Ember.ArrangableMixin = Ember.Mixin.create(Ember.MutableEnumerable, {
   sortAscending: true,
 
   filterProperties: null,
+  filterAllProperties: true,
 
   arrangableProperties: Ember.computed('sortProperties', 'filterProperties', function() {
     var sortProperties = get(this, 'sortProperties'),
@@ -81,8 +82,12 @@ Ember.ArrangableMixin = Ember.Mixin.create(Ember.MutableEnumerable, {
   }),
 
   filterCondition: function(item){
-    var filterProperties = get(this, 'filterProperties');
-    return Ember.A(filterProperties).every(function(property){
+    var filterProperties = Ember.A(get(this, 'filterProperties')),
+        filterAllProperties = get(this, 'filterAllProperties');
+
+    var filterer = filterAllProperties ? 'every' : 'some';
+
+    return filterProperties[filterer](function(property) {
       return !!get(item, property);
     });
   },
@@ -134,7 +139,7 @@ Ember.ArrangableMixin = Ember.Mixin.create(Ember.MutableEnumerable, {
     return get(this, 'isFiltered') || get(this, 'isSorted');
   }),
 
-  arrangedContent: Ember.computed('content', 'sortProperties.@each', 'filterProperties.@each', function(key, value) {
+  arrangedContent: Ember.computed('content', 'sortProperties.@each', 'filterProperties.@each', 'filterAllProperties', function(key, value) {
     var content = get(this, 'content'),
         isArranged = get(this, 'isArranged'),
         isSorted = get(this, 'isSorted'),

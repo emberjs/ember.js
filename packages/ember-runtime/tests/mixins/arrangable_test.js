@@ -279,6 +279,27 @@ test("you can change the filterProperties and filterCondition", function() {
   equal(arrangedArrayController.objectAt(0).name, 'Scumbag Dale', 'array is filtered by id');
 });
 
+test("you can change filtering to match any or all properties", function() {
+  var array = [
+    { a: false, b: false }, 
+    { a: false, b: true }, 
+    { a: true, b: false },
+    { a: true, b: true }
+  ];
+
+  unarrangedArray = Ember.A(array);
+
+  arrangedArrayController = Ember.ArrayProxy.create(Ember.ArrangableMixin, {
+    content: unarrangedArray,
+    filterProperties: ['a', 'b']
+  });
+
+  set(arrangedArrayController, 'filterAllProperties', true);
+  equal(arrangedArrayController.get('length'), 1, "Only one should match all properties");
+
+  set(arrangedArrayController, 'filterAllProperties', false);
+  equal(arrangedArrayController.get('length'), 3, "Only one item doesn't match any properties");
+});
 
 module("Ember.Arrangable with content, filterProperties and filterCondition", {
   setup: function() {
