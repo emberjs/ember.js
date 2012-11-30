@@ -126,7 +126,7 @@ Ember.ArrangableMixin = Ember.Mixin.create(Ember.MutableEnumerable, {
     return get(this, 'isFiltered') || get(this, 'isSorted');
   }),
 
-  arrangedContent: Ember.computed('content', 'sortProperties.@each','sortFunction','filterProperties.@each', 'filterAllProperties', function(key, value) {
+  arrangedContent: Ember.computed('content', 'sortProperties.@each','filterProperties.@each', 'filterAllProperties', function(key, value) {
     var content = get(this, 'content'),
         isArranged = get(this, 'isArranged'),
         isSorted = get(this, 'isSorted'),
