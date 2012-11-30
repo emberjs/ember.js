@@ -56,6 +56,7 @@ var get = Ember.get, set = Ember.set, forEach = Ember.EnumerableUtils.forEach;
 Ember.ArrangableMixin = Ember.Mixin.create(Ember.MutableEnumerable, {
   sortProperties: null,
   sortAscending: true,
+  sortFunction: Ember.compare,
 
   filterProperties: null,
   filterAllProperties: true,
@@ -96,24 +97,6 @@ Ember.ArrangableMixin = Ember.Mixin.create(Ember.MutableEnumerable, {
     });
   },
 
-  orderBy: function(item1, item2) {
-    var result = 0,
-        sortProperties = get(this, 'sortProperties'),
-        sortAscending = get(this, 'sortAscending');
-
-    Ember.assert("you need to define `sortProperties`", !!sortProperties);
-
-    forEach(sortProperties, function(propertyName) {
-      if (result === 0) {
-        result = Ember.compare(get(item1, propertyName), get(item2, propertyName));
-        if ((result !== 0) && !sortAscending) {
-          result = (-1) * result;
-        }
-      }
-    });
-
-    return result;
-  },
 
   destroy: function() {
     var content = get(this, 'content'),
@@ -143,7 +126,7 @@ Ember.ArrangableMixin = Ember.Mixin.create(Ember.MutableEnumerable, {
     return get(this, 'isFiltered') || get(this, 'isSorted');
   }),
 
-  arrangedContent: Ember.computed('content', 'sortProperties.@each', 'filterProperties.@each', 'filterAllProperties', function(key, value) {
+  arrangedContent: Ember.computed('content', 'sortProperties.@each','sortFunction','filterProperties.@each', 'filterAllProperties', function(key, value) {
     var content = get(this, 'content'),
         isArranged = get(this, 'isArranged'),
         isSorted = get(this, 'isSorted'),
@@ -176,7 +159,7 @@ Ember.ArrangableMixin = Ember.Mixin.create(Ember.MutableEnumerable, {
 
     if (isSorted) {
       content.sort(function(item1, item2) {
-        return self.orderBy(item1, item2);
+        return self._orderBy(item1, item2);
       });
     }
 
@@ -290,8 +273,8 @@ Ember.ArrangableMixin = Ember.Mixin.create(Ember.MutableEnumerable, {
         oldIndex = arrangedContent.indexOf(item),
         leftItem = arrangedContent.objectAt(oldIndex - 1),
         rightItem = arrangedContent.objectAt(oldIndex + 1),
-        leftResult = leftItem && this.orderBy(item, leftItem),
-        rightResult = rightItem && this.orderBy(item, rightItem);
+        leftResult = leftItem && this._orderBy(item, leftItem),
+        rightResult = rightItem && this._orderBy(item, rightItem);
 
     return (leftResult < 0 || rightResult > 0);
   },
@@ -312,6 +295,26 @@ Ember.ArrangableMixin = Ember.Mixin.create(Ember.MutableEnumerable, {
     arrangedContent.insertAt(idx, item);
   },
 
+  _orderBy: function(item1, item2) {
+    var result = 0,
+        sortProperties = get(this, 'sortProperties'),
+        sortAscending = get(this, 'sortAscending'),
+        sortFunction = get(this, 'sortFunction');
+
+    Ember.assert("you need to define `sortProperties`", !!sortProperties);
+
+    forEach(sortProperties, function(propertyName) {
+      if (result === 0) {
+        result = sortFunction(get(item1, propertyName), get(item2, propertyName));
+        if ((result !== 0) && !sortAscending) {
+          result = (-1) * result;
+        }
+      }
+    });
+
+    return result;
+  },
+
   _binarySearch: function(item, low, high) {
     var mid, midItem, res, arrangedContent;
 
@@ -324,7 +327,7 @@ Ember.ArrangableMixin = Ember.Mixin.create(Ember.MutableEnumerable, {
     mid = low + Math.floor((high - low) / 2);
     midItem = arrangedContent.objectAt(mid);
 
-    res = this.orderBy(midItem, item);
+    res = this._orderBy(midItem, item);
 
     if (res < 0) {
       return this._binarySearch(item, mid+1, high);

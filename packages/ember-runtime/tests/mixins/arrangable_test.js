@@ -57,6 +57,19 @@ test("you can change sorted properties", function() {
   equal(arrangedArrayController.get('length'), 3, 'array has 3 items');
 });
 
+test("you can pass your own sorter", function() {
+  equal(arrangedArrayController.get('length'), 3, 'array has 3 items');
+  equal(arrangedArrayController.objectAt(0).name, 'Scumbag Dale', 'array is in it natural order');
+
+  arrangedArrayController.set('sortProperties', ['id']);
+  arrangedArrayController.set('sortFunction', function(item1, item2) {
+    return Ember.compare(item1, item2) * -1;
+  });
+
+  equal(arrangedArrayController.get('length'), 3, 'array has 3 items');
+  equal(arrangedArrayController.objectAt(0).name, 'Scumbag Bryn', 'Erik should be first');
+});
+
 test("changing sort order triggers observers", function() {
   var observer, changeCount = 0;
   observer = Ember.Object.create({
