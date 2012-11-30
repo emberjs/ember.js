@@ -48,7 +48,7 @@ var get = Ember.get, set = Ember.set, forEach = Ember.EnumerableUtils.forEach;
   songsController.get('lastObject');  // {trackNumber: 1, title: 'Dear Prudence', favorite: true}
   ```
 
-  @class SortableMixin
+  @class ArrangableMixin
   @namespace Ember
   @extends Ember.Mixin
   @uses Ember.MutableEnumerable
