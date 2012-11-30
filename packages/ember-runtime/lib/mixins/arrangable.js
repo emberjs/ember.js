@@ -88,7 +88,11 @@ Ember.ArrangableMixin = Ember.Mixin.create(Ember.MutableEnumerable, {
     var filterer = filterAllProperties ? 'every' : 'some';
 
     return filterProperties[filterer](function(property) {
-      return !!get(item, property);
+      if(Ember.typeOf(property) === 'array') {
+        return get(item, property[0]) === property[1];
+      } else {
+        return !!get(item, property);
+      }
     });
   },
 

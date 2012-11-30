@@ -279,6 +279,15 @@ test("you can change the filterProperties and filterCondition", function() {
   equal(arrangedArrayController.objectAt(0).name, 'Scumbag Dale', 'array is filtered by id');
 });
 
+test("you can pass values to filter agains", function() {
+  equal(arrangedArrayController.get('length'), 3, 'precond - array has 3 items');
+
+  arrangedArrayController.set('filterProperties', [['name', 'Scumbag Dale']]);
+
+  equal(arrangedArrayController.get('length'), 1, 'array has 1 item');
+  equal(arrangedArrayController.objectAt(0).name, "Scumbag Dale",  'Tom Dale should be filtered');
+});
+
 test("you can change filtering to match any or all properties", function() {
   var array = [
     { a: false, b: false }, 
