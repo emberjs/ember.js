@@ -89,24 +89,33 @@ function dependentKeysDidChange(obj, depKey, meta) {
 //
 
 function addChainWatcher(obj, keyName, node) {
-  if (!obj || ('object' !== typeof obj)) return; // nothing to do
-  var m = metaFor(obj);
-  var nodes = m.chainWatchers;
-  if (!nodes || nodes.__emberproto__ !== obj) {
-    nodes = m.chainWatchers = { __emberproto__: obj };
+  if (!obj || ('object' !== typeof obj)) { return; } // nothing to do
+
+  var m = metaFor(obj), nodes = m.chainWatchers;
+
+  if (!m.hasOwnProperty('chainWatchers')) {
+    nodes = m.chainWatchers = {};
   }
 
-  if (!nodes[keyName]) { nodes[keyName] = {}; }
-  nodes[keyName][guidFor(node)] = node;
+  if (!nodes[keyName]) { nodes[keyName] = []; }
+  nodes[keyName].push(node);
   Ember.watch(obj, keyName);
 }
 
 function removeChainWatcher(obj, keyName, node) {
   if (!obj || 'object' !== typeof obj) { return; } // nothing to do
-  var m = metaFor(obj, false),
-      nodes = m.chainWatchers;
-  if (!nodes || nodes.__emberproto__ !== obj) { return; } //nothing to do
-  if (nodes[keyName]) { delete nodes[keyName][guidFor(node)]; }
+
+  var m = metaFor(obj, false);
+  if (!m.hasOwnProperty('chainWatchers')) { return; } // nothing to do
+
+  var nodes = m.chainWatchers;
+
+  if (nodes[keyName]) {
+    nodes = nodes[keyName];
+    for (var i = 0, l = nodes.length; i < l; i++) {
+      if (nodes[i] === node) { nodes.splice(i, 1); }
+    }
+  }
   Ember.unwatch(obj, keyName);
 }
 
@@ -133,7 +142,7 @@ function isProto(pvalue) {
 // A ChainNode watches a single key on an object.  If you provide a starting
 // value for the key then the node won't actually watch it.  For a root node
 // pass null for parent and key and object for value.
-var ChainNode = function(parent, key, value, separator) {
+var ChainNode = function(parent, key, value) {
   var obj;
   this._parent = parent;
   this._key    = key;
@@ -147,7 +156,6 @@ var ChainNode = function(parent, key, value, separator) {
   this._watching = value===undefined;
 
   this._value  = value;
-  this._separator = separator || '.';
   this._paths = {};
   if (this._watching) {
     this._object = parent.value();
@@ -184,7 +192,7 @@ ChainNodePrototype.destroy = function() {
 
 // copies a top level object only
 ChainNodePrototype.copy = function(obj) {
-  var ret = new ChainNode(null, null, obj, this._separator),
+  var ret = new ChainNode(null, null, obj),
       paths = this._paths, path;
   for (path in paths) {
     if (paths[path] <= 0) { continue; } // this check will also catch non-number vals.
@@ -196,7 +204,7 @@ ChainNodePrototype.copy = function(obj) {
 // called on the root node of a chain to setup watchers on the specified
 // path.
 ChainNodePrototype.add = function(path) {
-  var obj, tuple, key, src, separator, paths;
+  var obj, tuple, key, src, paths;
 
   paths = this._paths;
   paths[path] = (paths[path] || 0) + 1;
@@ -221,12 +229,11 @@ ChainNodePrototype.add = function(path) {
   } else {
     src  = tuple[0];
     key  = path.slice(0, 0-(tuple[1].length+1));
-    separator = path.slice(key.length, key.length+1);
     path = tuple[1];
   }
 
   tuple.length = 0;
-  this.chain(key, path, src, separator);
+  this.chain(key, path, src);
 };
 
 // called on the root node of a chain to teardown watcher on the specified
@@ -255,12 +262,12 @@ ChainNodePrototype.remove = function(path) {
 
 ChainNodePrototype.count = 0;
 
-ChainNodePrototype.chain = function(key, path, src, separator) {
+ChainNodePrototype.chain = function(key, path, src) {
   var chains = this._chains, node;
   if (!chains) { chains = this._chains = {}; }
 
   node = chains[key];
-  if (!node) { node = chains[key] = new ChainNode(this, key, src, separator); }
+  if (!node) { node = chains[key] = new ChainNode(this, key, src); }
   node.count++; // count chains...
 
   // chain rest of path if there is one
@@ -303,7 +310,7 @@ ChainNodePrototype.willChange = function() {
 };
 
 ChainNodePrototype.chainWillChange = function(chain, path, depth) {
-  if (this._key) { path = this._key + this._separator + path; }
+  if (this._key) { path = this._key + '.' + path; }
 
   if (this._parent) {
     this._parent.chainWillChange(this, path, depth+1);
@@ -315,7 +322,7 @@ ChainNodePrototype.chainWillChange = function(chain, path, depth) {
 };
 
 ChainNodePrototype.chainDidChange = function(chain, path, depth) {
-  if (this._key) { path = this._key + this._separator + path; }
+  if (this._key) { path = this._key + '.' + path; }
   if (this._parent) {
     this._parent.chainDidChange(this, path, depth+1);
   } else {
@@ -370,30 +377,34 @@ function chainsFor(obj) {
   return ret;
 }
 
-function notifyChains(obj, m, keyName, methodName, arg) {
-  var nodes = m.chainWatchers;
+Ember.overrideChains = function(obj, keyName, m) {
+  chainsDidChange(obj, keyName, m, true);
+};
 
-  if (!nodes || nodes.__emberproto__ !== obj) { return; } // nothing to do
+function chainsWillChange(obj, keyName, m, arg) {
+  if (!m.hasOwnProperty('chainWatchers')) { return; } // nothing to do
+
+  var nodes = m.chainWatchers;
 
   nodes = nodes[keyName];
   if (!nodes) { return; }
 
-  for(var key in nodes) {
-    if (!nodes.hasOwnProperty(key)) { continue; }
-    nodes[key][methodName](arg);
+  for(var i = 0, l = nodes.length; i < l; i++) {
+    nodes[i].willChange(arg);
   }
 }
 
-Ember.overrideChains = function(obj, keyName, m) {
-  notifyChains(obj, m, keyName, 'didChange', true);
-};
+function chainsDidChange(obj, keyName, m, arg) {
+  if (!m.hasOwnProperty('chainWatchers')) { return; } // nothing to do
 
-function chainsWillChange(obj, keyName, m) {
-  notifyChains(obj, m, keyName, 'willChange');
-}
+  var nodes = m.chainWatchers;
 
-function chainsDidChange(obj, keyName, m) {
-  notifyChains(obj, m, keyName, 'didChange');
+  nodes = nodes[keyName];
+  if (!nodes) { return; }
+
+  for(var i = 0, l = nodes.length; i < l; i++) {
+    nodes[i].didChange(arg);
+  }
 }
 
 // ..........................................................
