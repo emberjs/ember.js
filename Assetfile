@@ -109,8 +109,8 @@ class VersionInfo < Rake::Pipeline::Filter
 end
 
 distros = {
-  "runtime"   => %w(ember-metal ember-runtime),
-  "data-deps" => %w(ember-metal ember-runtime ember-states),
+  "runtime"   => %w(ember-metal rsvp ember-runtime),
+  "data-deps" => %w(ember-metal rsvp ember-runtime ember-states),
   "full"      => %w(ember-metal rsvp ember-runtime ember-application ember-views ember-states ember-routing ember-viewstates metamorph ember-handlebars)
 }
 
