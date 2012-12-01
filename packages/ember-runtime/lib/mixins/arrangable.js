@@ -75,7 +75,11 @@ Ember.ArrangableMixin = Ember.Mixin.create(Ember.MutableEnumerable, {
 
     if(filterProperties) {
       forEach(filterProperties, function(property) {
-        base.pushObject(property);
+        if (Ember.typeOf(property) === 'array') {
+          base.pushObject(property[0]);
+        } else {
+          base.pushObject(property);
+        }
       });
     }
 
@@ -89,14 +93,27 @@ Ember.ArrangableMixin = Ember.Mixin.create(Ember.MutableEnumerable, {
     var filterer = filterAllProperties ? 'every' : 'some';
 
     return filterProperties[filterer](function(property) {
-      if(Ember.typeOf(property) === 'array') {
-        return get(item, property[0]) === property[1];
+      if (Ember.typeOf(property) === 'array') {
+        return this.filterFunction(property, get(item, property[0]), property[1]);
       } else {
-        return !!get(item, property);
+        return this.filterFunction(property, get(item, property));
       }
-    });
+    }, this);
   },
 
+  filterFunction: function(key, value, match) {
+    if (match) {
+      if (Ember.typeOf(match) === 'regexp') {
+        return value.match(match);
+      } else if(Ember.typeOf(match) === 'function') {
+        return match(key, value);
+      } else {
+        return value === match;
+      }
+    } else {
+      return !!value;
+    }
+  },
 
   destroy: function() {
     var content = get(this, 'content'),

@@ -290,20 +290,28 @@ test("if you do not specify `filterProperties` filterable has no effect", functi
   equal(arrangedArrayController.get('length'), 4, 'array has 4 items');
 });
 
-test("you can change the filterProperties and filterCondition", function() {
-  equal(arrangedArrayController.get('length'), 3, 'precond - array has 3 items');
-
-  arrangedArrayController.filterCondition = function(item){ return get(item, 'id') === 1; };
-  arrangedArrayController.set('filterProperties', ['id']);
-
-  equal(arrangedArrayController.get('length'), 1, 'array has 1 item');
-  equal(arrangedArrayController.objectAt(0).name, 'Scumbag Dale', 'array is filtered by id');
-});
-
-test("you can pass values to filter agains", function() {
+test("you can pass values to filter against", function() {
   equal(arrangedArrayController.get('length'), 3, 'precond - array has 3 items');
 
   arrangedArrayController.set('filterProperties', [['name', 'Scumbag Dale']]);
+
+  equal(arrangedArrayController.get('length'), 1, 'array has 1 item');
+  equal(arrangedArrayController.objectAt(0).name, "Scumbag Dale",  'Tom Dale should be filtered');
+});
+
+test("you can pass a regex to filter against", function() {
+  equal(arrangedArrayController.get('length'), 3, 'precond - array has 3 items');
+
+  arrangedArrayController.set('filterProperties', [['name', /dale/i]]);
+
+  equal(arrangedArrayController.get('length'), 1, 'array has 1 item');
+  equal(arrangedArrayController.objectAt(0).name, "Scumbag Dale",  'Tom Dale should be filtered');
+});
+
+test("you can pass a function to filter against", function() {
+  equal(arrangedArrayController.get('length'), 3, 'precond - array has 3 items');
+
+  arrangedArrayController.set('filterProperties', [['name', function(k,v) { return v === "Scumbag Dale"; }]]);
 
   equal(arrangedArrayController.get('length'), 1, 'array has 1 item');
   equal(arrangedArrayController.objectAt(0).name, "Scumbag Dale",  'Tom Dale should be filtered');
@@ -331,7 +339,7 @@ test("you can change filtering to match any or all properties", function() {
   equal(arrangedArrayController.get('length'), 3, "Only one item doesn't match any properties");
 });
 
-module("Ember.Arrangable with content, filterProperties and filterCondition", {
+module("Ember.Arrangable with content and filterProperties", {
   setup: function() {
     Ember.run(function() {
       var array = [
@@ -344,8 +352,7 @@ module("Ember.Arrangable with content, filterProperties and filterCondition", {
 
       arrangedArrayController = Ember.ArrayProxy.create(Ember.ArrangableMixin, {
         content: unarrangedArray,
-        filterProperties: ['id'],
-        filterCondition: function(item){ return get(item, 'id') === 1; }
+        filterProperties: [['id', 1]]
       });
     });
   },
@@ -355,11 +362,6 @@ module("Ember.Arrangable with content, filterProperties and filterCondition", {
       arrangedArrayController.destroy();
     });
   }
-});
-
-test("filtered object will expose filtered content", function() {
-  equal(arrangedArrayController.get('length'), 1, 'array is filtered by id');
-  equal(arrangedArrayController.objectAt(0).name, 'Scumbag Dale', 'the object is the correct one');
 });
 
 test("you can add objects in the filtered array", function() {
@@ -415,10 +417,7 @@ module("Ember.Arrangable with filterProperties and filterCondition", {
       unarrangedArray = Ember.A(array);
 
       arrangedArrayController = Ember.ArrayProxy.create(Ember.ArrangableMixin, {
-        filterProperties: ['id'],
-        filterCondition: function(item){
-          return get(item,'id') === 1;
-        }
+        filterProperties: [['id', 1]]
       });
     });
   },
@@ -439,50 +438,6 @@ test("you can set content later and it will be filtered", function() {
 
   equal(arrangedArrayController.get('length'), 1, 'array has 1 item');
   equal(arrangedArrayController.objectAt(0).name, 'Scumbag Dale', 'dale is in the filtered array');
-});
-
-module("Ember.Arrangable with content and filterProperties", {
-  setup: function() {
-    Ember.run(function() {
-      var array = [
-        { id: 1, name: "Scumbag Dale" }, 
-        { id: 2, name: "Scumbag Katz" }, 
-        { id: 3, name: null }
-      ];
-
-      unarrangedArray = Ember.A(array);
-
-      arrangedArrayController = Ember.ArrayProxy.create(Ember.ArrangableMixin, {
-        content: unarrangedArray,
-        filterProperties: ['id', 'name']
-      });
-    });
-  },
-
-  teardown: function() {
-    Ember.run(function() {
-      arrangedArrayController.destroy();
-    });
-  }
-});
-
-test("by default it tests if all filterProperties are truthy", function() {
-  equal(arrangedArrayController.get('length'), 2, 'array has 2 items');
-
-  unarrangedArray.pushObject({id: 4, name: 'Scumbag Chavard'});
-
-  equal(arrangedArrayController.get('length'), 3, 'adds valid items to the filtered array');
-
-  unarrangedArray.pushObject({id: undefined, name: 'Scumbag Chavard'});
-  unarrangedArray.pushObject({id: 6, name: ''});
-
-  equal(arrangedArrayController.get('length'), 3, "it doesn't add invalid items to the filtered array");
-});
-
-test("the content can be swapped out and the array still filters", function() {
-  arrangedArrayController.set('content', Ember.A([{id: 1, name: 'James'}, {id: 2, name: null}]));
-
-  equal(arrangedArrayController.get('length'), 1, 'filters the new array');
 });
 
 module("Ember.Arrangable with bound content and filterProperties", {
