@@ -9,12 +9,19 @@ Ember.Route = Ember.Object.extend({
     This hook is the entry point for router.js
   */
   setup: function(context) {
-    this.setupControllers(context);
+    var templateName = get(this, 'templateName'),
+        controller = this.lookup('controller', templateName);
+
+    this.setupControllers(controller, context);
     this.renderTemplates(context);
   },
 
   setupControllers: function(context) {
 
+  },
+
+  controller: function(name) {
+    return this.lookup('controller', name);
   },
 
   renderTemplates: function(context) {
@@ -37,6 +44,8 @@ Ember.Route = Ember.Object.extend({
       controller = this.lookup('controller', controller);
     }
 
+    set(view, 'controller', controller);
+
     var parentView = this.lookup('view', into);
     parentView.connectOutlet(outlet, view);
   },
@@ -49,7 +58,6 @@ Ember.Route = Ember.Object.extend({
       this._container[kind][name] = object;
     }
 
-    Ember.assert("You tried to look up the " + kind + " " + name + " but it did not exist", object);
     return object;
   }
 });

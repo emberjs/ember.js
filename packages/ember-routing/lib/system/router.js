@@ -34,6 +34,10 @@ function getHandlerFunction(router, container) {
     var className = classify(name) + "Route",
         handler = get(namespace, className);
 
+    if (!handler && name === 'loading') {
+      return {};
+    }
+
     Ember.assert("Your router tried to route a URL to " + name + ", but " + namespace.toString() + "." + className + " did not exist.", handler);
 
     return handlers[name] = handler.create({
