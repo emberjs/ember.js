@@ -76,8 +76,10 @@ class AddMicroLoader < Rake::Pipeline::Filter
 end
 
 class JSHintRC < Rake::Pipeline::Filter
+  JSHINTRC = File.expand_path("../.jshintrc", __FILE__)
+
   def jshintrc
-    @jshintrc ||= File.read(".jshintrc")
+    @jshintrc ||= File.read(JSHINTRC)
   end
 
   def generate_output(inputs, output)
@@ -85,6 +87,10 @@ class JSHintRC < Rake::Pipeline::Filter
       file = File.read(input.fullpath)
       output.write "var JSHINTRC = #{jshintrc};\n\n#{file}"
     end
+  end
+
+  def additional_dependencies(input)
+    [ JSHINTRC ]
   end
 end
 

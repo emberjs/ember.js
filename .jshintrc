@@ -1,5 +1,6 @@
 {
     "predef": [
+        "define",
         "console",
         "Ember",
         "DS",
