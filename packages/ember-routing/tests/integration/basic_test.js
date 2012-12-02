@@ -1,8 +1,12 @@
-var Router, App, AppView, templates, router;
+var Router, App, AppView, templates, router, urls;
 var get = Ember.get, set = Ember.set;
 
 function bootApplication() {
-  router = Router.create();
+  router = Router.create({
+    updateURL: function(url) {
+      urls.push(url);
+    }
+  });
 
   Ember.run(function() {
     router._container.view.application = AppView.create().appendTo('#qunit-fixture');
@@ -17,6 +21,8 @@ module("Basic Routing", {
 
       App.LoadingRoute = Ember.Route.extend({
       });
+
+      urls = [];
 
       Ember.TEMPLATES.app = Ember.Handlebars.compile("{{outlet}}");
       Ember.TEMPLATES.home = Ember.Handlebars.compile("<h3>Hours</h3>");
@@ -253,11 +259,6 @@ test("The Special Page returning a promise puts the app into a loading state unt
   });
 
   App.SpecialRoute = Ember.Route.extend({
-    //setup: function() {
-      //var self = this, args = arguments;
-      //Ember.run(function() { self._super.apply(self, args); });
-    //},
-
     setupControllers: function(controller, model) {
       set(controller, 'content', model);
     }
@@ -290,3 +291,153 @@ test("The Special Page returning a promise puts the app into a loading state unt
     start();
   }, 100);
 });
+
+test("Moving from one page to another triggers the correct callbacks", function() {
+  Router.map(function(match) {
+    match("/").to("home");
+    match("/specials/:menu_item_id").to("special");
+  });
+
+  var menuItem;
+
+  App.MenuItem = Ember.Object.extend(Ember.Deferred);
+  App.MenuItem.find = function(id) {
+    menuItem = App.MenuItem.create({ id: id });
+    return menuItem;
+  };
+
+  App.LoadingRoute = Ember.Route.extend({
+
+  });
+
+  App.HomeRoute = Ember.Route.extend({
+
+  });
+
+  App.SpecialRoute = Ember.Route.extend({
+    setupControllers: function(controller, model) {
+      set(controller, 'content', model);
+    }
+  });
+
+  Ember.TEMPLATES.home = Ember.Handlebars.compile(
+    "<h3>Home</h3>"
+  );
+
+  Ember.TEMPLATES.special = Ember.Handlebars.compile(
+    "<p>{{content.id}}</p>"
+  );
+
+  Ember.TEMPLATES.loading = Ember.Handlebars.compile(
+    "<p>LOADING!</p>"
+  );
+
+  bootApplication();
+
+  router._container.controller.special = Ember.Controller.create();
+
+  Ember.run(function() {
+    router.handleURL("/");
+  });
+
+  equal(Ember.$('h3', '#qunit-fixture').text(), "Home", "The app is now in the initial state");
+
+  Ember.run(function() {
+    router.transitionTo('special', App.MenuItem.create({ id: 1 }));
+  });
+
+  deepEqual(urls, ['/specials/1']);
+});
+
+test("Nested callbacks are not exited when moving to siblings", function() {
+  Router.map(function(match) {
+    match("/").to("root", function(match) {
+      match("/").to("home");
+      match("/specials/:menu_item_id").to("special");
+    });
+  });
+
+  var menuItem;
+
+  App.MenuItem = Ember.Object.extend(Ember.Deferred);
+  App.MenuItem.find = function(id) {
+    menuItem = App.MenuItem.create({ id: id });
+    return menuItem;
+  };
+
+  App.LoadingRoute = Ember.Route.extend({
+
+  });
+
+  var rootSetup = 0, rootRender = 0, rootModel = 0, rootSerialize = 0;
+
+  App.RootRoute = Ember.Route.extend({
+    model: function() {
+      rootModel++;
+      return this._super.apply(this, arguments);
+    },
+
+    serialize: function() {
+      rootSerialize++;
+      return this._super.apply(this, arguments);
+    },
+
+    setupControllers: function() {
+      rootSetup++;
+    },
+
+    renderTemplates: function() {
+      rootRender++;
+    }
+  });
+
+  App.HomeRoute = Ember.Route.extend({
+
+  });
+
+  App.SpecialRoute = Ember.Route.extend({
+    setupControllers: function(controller, model) {
+      set(controller, 'content', model);
+    }
+  });
+
+  Ember.TEMPLATES.home = Ember.Handlebars.compile(
+    "<h3>Home</h3>"
+  );
+
+  Ember.TEMPLATES.special = Ember.Handlebars.compile(
+    "<p>{{content.id}}</p>"
+  );
+
+  Ember.TEMPLATES.loading = Ember.Handlebars.compile(
+    "<p>LOADING!</p>"
+  );
+
+  bootApplication();
+
+  router._container.controller.special = Ember.Controller.create();
+
+  Ember.run(function() {
+    router.handleURL("/");
+  });
+
+  equal(Ember.$('h3', '#qunit-fixture').text(), "Home", "The app is now in the initial state");
+  equal(rootSetup, 1, "The root setup was triggered");
+  equal(rootRender, 1, "The root render was triggered");
+  equal(rootSerialize, 0, "The root serialize was not called");
+  equal(rootModel, 1, "The root model was called");
+
+  Ember.run(function() {
+    router.transitionTo('special', App.MenuItem.create({ id: 1 }));
+  });
+  equal(rootSetup, 1, "The root setup was not triggered again");
+  equal(rootRender, 1, "The root render was not triggered again");
+  equal(rootSerialize, 0, "The root serialize was not called");
+
+  // TODO: Should this be changed?
+  equal(rootModel, 2, "The root model was called again");
+
+  deepEqual(urls, ['/specials/1']);
+});
+
+// TODO: Parent context change

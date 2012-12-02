@@ -20,6 +20,15 @@ Ember.Route = Ember.Object.extend({
     return this.model(params);
   },
 
+  serialize: function(model, params) {
+    if (params.length !== 1) { return; }
+
+    var name = params[0], object = {};
+    object[name] = get(model, 'id');
+
+    return object;
+  },
+
   model: function(params) {
     var match, name, value;
 

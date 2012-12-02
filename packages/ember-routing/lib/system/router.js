@@ -16,10 +16,16 @@ Ember.Router = Ember.Object.extend({
 
     router.map(this.constructor.callback);
     router.getHandler = getHandlerFunction(this, container);
+    router.updateURL = this.updateURL;
   },
 
   handleURL: function(url) {
     this.router.handleURL(url);
+  },
+
+  transitionTo: function(handler) {
+    var args = [].slice.call(arguments);
+    this.router.transitionTo.apply(this.router, args);
   }
 });
 
