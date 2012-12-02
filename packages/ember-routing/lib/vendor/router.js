@@ -1,5 +1,5 @@
 define("router",
-  ["route_recognizer"],
+  ["route-recognizer"],
   function(RouteRecognizer) {
     "use strict";
     /**
@@ -99,7 +99,7 @@ define("router",
           var handlerObj = handlers[i],
               handler = this.getHandler(handlerObj.handler),
               names = handlerObj.names,
-              object, params;
+              object;
 
           if (names.length) {
             object = objects.shift();
@@ -111,15 +111,15 @@ define("router",
           toSetup.push({ handler: handlerObj.handler, context: object });
         }
 
-        setupContexts(router, toSetup);
+        setupContexts(this, toSetup);
         var url = this.recognizer.generate(name, params);
         this.updateURL(url);
       },
 
       trigger: function(name) {
-        trigger(router, name);
+        trigger(this, name);
       }
-    }
+    };
 
     function merge(hash, other) {
       for (var prop in other) {
@@ -145,8 +145,8 @@ define("router",
         var handler = router.getHandler('loading');
 
         if (handler) {
-          handler.enter && handler.enter();
-          handler.setup && handler.setup();
+          if (handler.enter) { handler.enter(); }
+          if (handler.setup) { handler.setup(); }
         }
       }
     }
@@ -164,7 +164,7 @@ define("router",
     function loaded(router) {
       router.isLoading = false;
       var handler = router.getHandler('loading');
-      if (handler) { handler.exit && handler.exit(); }
+      if (handler && handler.exit) { handler.exit(); }
     }
 
     /**
@@ -186,7 +186,7 @@ define("router",
     function failure(router, error) {
       loaded(router);
       var handler = router.getHandler('failure');
-      if (handler) { handler.setup && handler.setup(error); }
+      if (handler && handler.setup) { handler.setup(error); }
     }
 
     /**
@@ -283,18 +283,18 @@ define("router",
 
       eachHandler(partition.exited, function(handler, context) {
         delete handler.context;
-        handler.exit && handler.exit();
+        if (handler.exit) { handler.exit(); }
       });
 
       eachHandler(partition.updatedContext, function(handler, context) {
         handler.context = context;
-        handler.setup && handler.setup(context);
+        if (handler.setup) { handler.setup(context); }
       });
 
       eachHandler(partition.entered, function(handler, context) {
-        handler.enter && handler.enter();
+        if (handler.enter) { handler.enter(); }
         handler.context = context;
-        handler.setup && handler.setup(context);
+        if (handler.setup) { handler.setup(context); }
       });
     }
 
@@ -381,9 +381,9 @@ define("router",
             entered: []
           };
 
-      var handlerChanged, contextChanged;
+      var handlerChanged, contextChanged, i, l;
 
-      for (var i=0, l=newHandlers.length; i<l; i++) {
+      for (i=0, l=newHandlers.length; i<l; i++) {
         var oldHandler = oldHandlers[i], newHandler = newHandlers[i];
 
         if (!oldHandler || oldHandler.handler !== newHandler.handler) {
@@ -399,7 +399,7 @@ define("router",
         }
       }
 
-      for (var i=newHandlers.length, l=oldHandlers.length; i<l; i++) {
+      for (i=newHandlers.length, l=oldHandlers.length; i<l; i++) {
         handlers.exited.unshift(oldHandlers[i]);
       }
 

@@ -2203,27 +2203,17 @@ test("should not enter an infinite loop when binding an attribute in Handlebars"
 });
 
 test("should render other templates using the {{template}} helper", function() {
-  // save a reference to the current global templates hash so we can restore it
-  // after the test.
-  var oldTemplates = Ember.TEMPLATES;
+  Ember.TEMPLATES.sub_template = Ember.Handlebars.compile("sub-template");
 
-  try {
-    Ember.TEMPLATES = {
-      sub_template: Ember.Handlebars.compile("sub-template")
-    };
+  view = Ember.View.create({
+    template: Ember.Handlebars.compile('This {{template "sub_template"}} is pretty great.')
+  });
 
-    view = Ember.View.create({
-      template: Ember.Handlebars.compile('This {{template "sub_template"}} is pretty great.')
-    });
+  Ember.run(function() {
+    view.appendTo('#qunit-fixture');
+  });
 
-    Ember.run(function() {
-      view.appendTo('#qunit-fixture');
-    });
-
-    equal(Ember.$.trim(view.$().text()), "This sub-template is pretty great.");
-  } finally {
-   Ember.TEMPLATES = oldTemplates;
-  }
+  equal(Ember.$.trim(view.$().text()), "This sub-template is pretty great.");
 });
 
 test("should update bound values after the view is removed and then re-appended", function() {

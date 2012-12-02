@@ -1,8 +1,8 @@
-require('ember-routing/resolved_state');
+require('ember-old-router/resolved_state');
 
 /**
 @module ember
-@submodule ember-routing
+@submodule ember-old-router
 */
 
 var get = Ember.get;
