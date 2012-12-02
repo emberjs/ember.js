@@ -24,7 +24,8 @@ var set = Ember.set, get = Ember.get,
     applyMixin = Mixin._apply,
     finishPartial = Mixin.finishPartial,
     reopen = Mixin.prototype.reopen,
-    classToString = Mixin.prototype.toString;
+    classToString = Mixin.prototype.toString,
+    MANDATORY_SETTER = Ember.ENV.MANDATORY_SETTER;
 
 var undefinedDescriptor = {
   configurable: true,
@@ -39,7 +40,7 @@ function makeCtor() {
   // method a lot faster. This is glue code so we want it to be as fast as
   // possible.
 
-  var wasApplied = false, initMixins;
+  var wasApplied = false, initMixins, initProperties;
 
   var Class = function() {
     if (!wasApplied) {
@@ -50,8 +51,56 @@ function makeCtor() {
     var m = meta(this);
     m.proto = this;
     if (initMixins) {
-      this.reopen.apply(this, initMixins);
+      // capture locally so we can clear the closed over variable
+      var mixins = initMixins;
       initMixins = null;
+      this.reopen.apply(this, mixins);
+    }
+    if (initProperties) {
+      // capture locally so we can clear the closed over variable
+      var props = initProperties;
+      initProperties = null;
+
+      var concatenatedProperties = this.concatenatedProperties;
+
+      for (var i = 0, l = props.length; i < l; i++) {
+        var properties = props[i];
+        for (var keyName in properties) {
+          if (!properties.hasOwnProperty(keyName)) { continue; }
+
+          var desc = m.descs[keyName],
+              value = properties[keyName];
+
+          Ember.assert("Ember.Object.create no longer supports defining computed properties.", !(value instanceof Ember.ComputedProperty));
+          Ember.assert("Ember.Object.create no longer supports defining bindings.", keyName.substr(-7) !== "Binding");
+
+          if (concatenatedProperties && concatenatedProperties.indexOf(keyName) >= 0) {
+            var baseValue = this[keyName];
+
+            if (baseValue) {
+              if ('function' === typeof baseValue.concat) {
+                value = baseValue.concat(value);
+              } else {
+                value = Ember.makeArray(baseValue).concat(value);
+              }
+            } else {
+              value = Ember.makeArray(value);
+            }
+          }
+
+          if (desc) {
+            desc.set(this, keyName, value);
+          } else {
+            if (typeof this.setUnknownProperty === 'function' && !(keyName in this)) {
+              this.setUnknownProperty(keyName, value);
+            } else if (MANDATORY_SETTER) {
+              Ember.defineProperty(this, keyName, null, value); // setup mandatory setter
+            } else {
+              this[keyName] = value;
+            }
+          }
+        }
+      }
     }
     finishPartial(this, m);
     delete m.proto;
@@ -68,6 +117,7 @@ function makeCtor() {
     wasApplied = false;
   };
   Class._initMixins = function(args) { initMixins = args; };
+  Class._initProperties = function(args) { initProperties = args; };
 
   Class.proto = function() {
     var superclass = Class.superclass;
@@ -198,9 +248,15 @@ var ClassMixin = Mixin.create({
     return Class;
   },
 
-  create: function() {
+  createWithMixins: function() {
     var C = this;
     if (arguments.length>0) { this._initMixins(arguments); }
+    return new C();
+  },
+
+  create: function() {
+    var C = this;
+    if (arguments.length>0) { this._initProperties(arguments); }
     return new C();
   },
 

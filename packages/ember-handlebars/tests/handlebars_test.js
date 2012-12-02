@@ -103,7 +103,7 @@ test("template view should call the function of the associated template", functi
 });
 
 test("template view should call the function of the associated template with itself as the context", function() {
-  view = Ember.View.create({
+  view = Ember.View.createWithMixins({
     templateName: 'test_template',
 
     _personName: "Tom DAAAALE",
@@ -1331,7 +1331,7 @@ test("should be able to bind element attributes using {{bindAttr}}", function() 
   equal(view.$('img').attr('alt'), "The SproutCore Logo", "updates alt attribute when content object is a hash");
 
   Ember.run(function() {
-    set(view, 'content', Ember.Object.create({
+    set(view, 'content', Ember.Object.createWithMixins({
       url: "http://www.emberjs.com/assets/images/logo.png",
       title: Ember.computed(function() {
         return "Nanananana Ember!";
@@ -1433,7 +1433,7 @@ test("should be able to bind use {{bindAttr}} more than once on an element", fun
   equal(view.$('img').attr('alt'), "The SproutCore Logo", "updates alt attribute when content object is a hash");
 
   Ember.run(function() {
-    set(view, 'content', Ember.Object.create({
+    set(view, 'content', Ember.Object.createWithMixins({
       url: "http://www.emberjs.com/assets/images/logo.png",
       title: Ember.computed(function() {
         return "Nanananana Ember!";
@@ -2332,7 +2332,7 @@ test("should call a registered helper for mustache without parameters", function
 });
 
 test("should bind to the property if no registered helper found for a mustache without parameters", function() {
-  view = Ember.View.create({
+  view = Ember.View.createWithMixins({
     template: Ember.Handlebars.compile("{{view.foobarProperty}}"),
     foobarProperty: Ember.computed(function() {
       return 'foobarProperty';

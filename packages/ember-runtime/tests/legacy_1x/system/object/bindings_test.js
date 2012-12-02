@@ -114,7 +114,7 @@ module("fooBinding method", fooBindingModuleOpts);
 test("fooBinding: TestNamespace.fromObject.bar should follow absolute path", function() {
   // create binding
   Ember.run(function(){
-    testObject = TestObject.create({
+    testObject = TestObject.createWithMixins({
       fooBinding: "TestNamespace.fromObject.bar"
     }) ;
 
@@ -128,7 +128,7 @@ test("fooBinding: TestNamespace.fromObject.bar should follow absolute path", fun
 
 test("fooBinding: .bar should bind to relative path", function() {
   Ember.run(function(){
-    testObject = TestObject.create({
+    testObject = TestObject.createWithMixins({
       fooBinding: "bar"
     });
     // now make a change to see if the binding triggers.
@@ -140,7 +140,7 @@ test("fooBinding: .bar should bind to relative path", function() {
 
 test('fooBinding: should disconnect bindings when destroyed', function () {
   Ember.run(function(){
-    testObject = TestObject.create({
+    testObject = TestObject.createWithMixins({
       fooBinding: "TestNamespace.fromObject.bar"
     });
 

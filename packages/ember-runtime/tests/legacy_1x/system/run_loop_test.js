@@ -21,7 +21,7 @@ module("System:run_loop() - chained binding", {
       output: 'MyApp.first'
     }) ;
 
-    MyApp.second = Ember.Object.create(Ember.Observable, {
+    MyApp.second = Ember.Object.createWithMixins(Ember.Observable, {
       input: 'MyApp.second',
       output: 'MyApp.second',
 

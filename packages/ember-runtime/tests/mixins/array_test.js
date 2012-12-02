@@ -87,7 +87,7 @@ module('mixins/array/arrayContent[Will|Did]Change');
 
 test('should notify observers of []', function() {
 
-  obj = DummyArray.create({
+  obj = DummyArray.createWithMixins({
     _count: 0,
     enumerablePropertyDidChange: Ember.observer(function() {
       this._count++;
@@ -109,7 +109,7 @@ test('should notify observers of []', function() {
 
 module('notify observers of length', {
   setup: function() {
-    obj = DummyArray.create({
+    obj = DummyArray.createWithMixins({
       _after: 0,
       lengthDidChange: Ember.observer(function() {
         this._after++;
@@ -159,7 +159,7 @@ module('notify array observers', {
   setup: function() {
     obj = DummyArray.create();
 
-    observer = Ember.Object.create({
+    observer = Ember.Object.createWithMixins({
       _before: null,
       _after: null,
 
@@ -224,7 +224,7 @@ module('notify enumerable observers as well', {
   setup: function() {
     obj = DummyArray.create();
 
-    observer = Ember.Object.create({
+    observer = Ember.Object.createWithMixins({
       _before: null,
       _after: null,
 
@@ -367,7 +367,7 @@ test('modifying the array should also indicate the isDone prop itself has change
 
 
 testBoth("should be clear caches for computed properties that have dependent keys on arrays that are changed after object initialization", function(get, set) {
-  var obj = Ember.Object.create({
+  var obj = Ember.Object.createWithMixins({
     init: function() {
       set(this, 'resources', Ember.A());
     },
@@ -387,7 +387,7 @@ testBoth("should be clear caches for computed properties that have dependent key
 testBoth("observers that contain @each in the path should fire only once the first time they are accessed", function(get, set) {
   var count = 0;
 
-  var obj = Ember.Object.create({
+  var obj = Ember.Object.createWithMixins({
     init: function() {
       // Observer fires once when resources changes
       set(this, 'resources', Ember.A());

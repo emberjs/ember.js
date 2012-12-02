@@ -17,7 +17,7 @@ test("should schedule objects to be destroyed at the end of the run loop", funct
 
 test("should raise an exception when modifying watched properties on a destroyed object", function() {
   if (Ember.platform.hasAccessors) {
-    var obj = Ember.Object.create({
+    var obj = Ember.Object.createWithMixins({
       foo: "bar",
       fooDidChange: Ember.observer(function() { }, 'foo')
     });
@@ -36,7 +36,7 @@ test("should raise an exception when modifying watched properties on a destroyed
 
 test("observers should not fire after an object has been destroyed", function() {
   var count = 0;
-  var obj = Ember.Object.create({
+  var obj = Ember.Object.createWithMixins({
     fooDidChange: Ember.observer(function() {
       count++;
     }, 'foo')

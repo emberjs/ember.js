@@ -11,7 +11,7 @@ module("Ember.Sortable with content", {
 
       unsortedArray = Ember.A(Ember.A(array).copy());
 
-      sortedArrayController = Ember.ArrayProxy.create(Ember.SortableMixin, {
+      sortedArrayController = Ember.ArrayProxy.createWithMixins(Ember.SortableMixin, {
         content: unsortedArray
       });
     });
@@ -55,7 +55,7 @@ test("you can change sorted properties", function() {
 
 test("changing sort order triggers observers", function() {
   var observer, changeCount = 0;
-  observer = Ember.Object.create({
+  observer = Ember.Object.createWithMixins({
     array: sortedArrayController,
     arrangedDidChange: Ember.observer(function() {
       changeCount++;
@@ -149,7 +149,7 @@ test("you can unshift objects in sorted order", function() {
 
 test("addObject does not insert duplicates", function() {
   var sortedArrayProxy, obj = {};
-  sortedArrayProxy = Ember.ArrayProxy.create(Ember.SortableMixin, {
+  sortedArrayProxy = Ember.ArrayProxy.createWithMixins(Ember.SortableMixin, {
     content: Ember.A([obj])
   });
 

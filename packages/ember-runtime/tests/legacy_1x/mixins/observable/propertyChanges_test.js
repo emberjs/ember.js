@@ -24,7 +24,7 @@ var revMatches = false , ObjectA;
 
 module("object.propertyChanges", {
   setup: function() {
-    ObjectA = ObservableObject.create({
+    ObjectA = ObservableObject.createWithMixins({
       foo  : 'fooValue',
       prop : 'propValue',
 
@@ -115,7 +115,7 @@ test("should notify that the property of an object has changed", function() {
 
 test("should invalidate function property cache when notifyPropertyChange is called", function() {
 
-  var a = ObservableObject.create({
+  var a = ObservableObject.createWithMixins({
     _b: null,
     b: Ember.computed(function(key, value) {
       if (value !== undefined) {

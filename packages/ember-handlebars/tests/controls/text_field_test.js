@@ -121,7 +121,7 @@ test("input type is configurable when creating view", function() {
 test("value binding works properly for inputs that haven't been created", function() {
 
   Ember.run(function() {
-    textField = Ember.TextField.create({
+    textField = Ember.TextField.createWithMixins({
       valueBinding: 'TestObject.value'
     });
   });

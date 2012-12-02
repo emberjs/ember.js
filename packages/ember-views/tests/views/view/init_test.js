@@ -28,9 +28,11 @@ test("registers itself with a controller if the viewController property is set",
   equal(lookup.TestApp.fooController.get('view'), v, "sets the view property of the controller");
 });
 
+module("Ember.View.createWithMixins");
+
 test("should warn if a non-array is used for classNames", function() {
   raises(function() {
-    Ember.View.create({
+    Ember.View.createWithMixins({
       classNames: Ember.computed(function() {
         return ['className'];
       }).property().volatile()
@@ -40,7 +42,7 @@ test("should warn if a non-array is used for classNames", function() {
 
 test("should warn if a non-array is used for classNamesBindings", function() {
   raises(function() {
-    Ember.View.create({
+    Ember.View.createWithMixins({
       classNameBindings: Ember.computed(function() {
         return ['className'];
       }).property().volatile()

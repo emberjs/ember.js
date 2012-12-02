@@ -80,7 +80,7 @@ module("Ember.Object observers", {
     };
 
     // create an object
-    obj = Ember.Object.create({
+    obj = Ember.Object.createWithMixins({
       prop1: null,
 
       // normal observer

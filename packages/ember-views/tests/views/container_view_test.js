@@ -34,7 +34,7 @@ test("should be able to observe properties that contain child views", function()
   var container;
 
   Ember.run(function() {
-    container = Ember.ContainerView.create({
+    container = Ember.ContainerView.createWithMixins({
       childViews: ['displayView'],
       displayIsDisplayedBinding: 'displayView.isDisplayed',
 
@@ -99,7 +99,7 @@ test("should set the parentView property on views that are added to the child vi
 
 test("views that are removed from a ContainerView should have their child views cleared", function() {
   var container = Ember.ContainerView.create();
-  var view = Ember.View.create({
+  var view = Ember.View.createWithMixins({
     remove: function() {
       this._super();
     },

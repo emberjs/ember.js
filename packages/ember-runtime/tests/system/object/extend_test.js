@@ -42,7 +42,7 @@ test('Overriding a method several layers deep', function() {
   equal(obj.barCnt, 2, 'should invoke both');
 
   // Try overriding on create also
-  obj = FinalClass.create({
+  obj = FinalClass.createWithMixins({
     foo: function() { this.fooCnt++; this._super(); }
   });
 

@@ -2159,7 +2159,7 @@ Ember.View = Ember.CoreView.extend(
       attrs._parentView = this;
       attrs.templateData = attrs.templateData || get(this, 'templateData');
 
-      view = view.create(attrs);
+      view = view.createWithMixins(attrs);
 
       // don't set the property on a virtual view, as they are invisible to
       // consumers of the view API
