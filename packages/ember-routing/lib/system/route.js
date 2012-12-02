@@ -16,6 +16,14 @@ Ember.Route = Ember.Object.extend({
     this.renderTemplates(context);
   },
 
+  deserialize: function(params) {
+    return this.model(params);
+  },
+
+  model: function() {
+
+  },
+
   setupControllers: function(context) {
 
   },
