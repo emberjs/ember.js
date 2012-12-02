@@ -14,3 +14,5 @@ Ember Handlebars
 @submodule ember-handlebars
 @requires ember-views
 */
+
+Ember.runLoadHooks('Ember.Handlebars', Ember.Handlebars);
