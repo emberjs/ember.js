@@ -42,6 +42,7 @@ function getHandlerFunction(router, container) {
 
     return handlers[name] = handler.create({
       templateName: name,
+      namespace: namespace,
       _container: container
     });
   };

@@ -165,7 +165,7 @@ test("The Homepage getting its controller context via controllerContext", functi
   equal(Ember.$('ul li', '#qunit-fixture').eq(2).text(), "Sunday: Noon to 6pm", "The template was rendered with the hours context");
 });
 
-test("The Homepage getting its controller context by deserializing the params hash", function() {
+test("The Specials Page getting its controller context by deserializing the params hash", function() {
   Router.map(function(match) {
     match("/").to("home");
     match("/specials/:menu_item_id").to("special");
@@ -196,4 +196,97 @@ test("The Homepage getting its controller context by deserializing the params ha
   });
 
   equal(Ember.$('p', '#qunit-fixture').text(), "1", "The model was used to render the template");
+});
+
+test("The Specials Page defaults to looking models up via `find`", function() {
+  Router.map(function(match) {
+    match("/").to("home");
+    match("/specials/:menu_item_id").to("special");
+  });
+
+  App.MenuItem = Ember.Object.extend();
+  App.MenuItem.find = function(id) {
+    return Ember.Object.create({
+      id: id
+    });
+  };
+
+  App.SpecialRoute = Ember.Route.extend({
+    setupControllers: function(controller, model) {
+      set(controller, 'content', model);
+    }
+  });
+
+  Ember.TEMPLATES.special = Ember.Handlebars.compile(
+    "<p>{{content.id}}</p>"
+  );
+
+  bootApplication();
+
+  router._container.controller.special = Ember.Controller.create();
+
+  Ember.run(function() {
+    router.handleURL("/specials/1");
+  });
+
+  equal(Ember.$('p', '#qunit-fixture').text(), "1", "The model was used to render the template");
+});
+
+test("The Special Page returning a promise puts the app into a loading state until the promise is resolved", function() {
+  stop();
+
+  Router.map(function(match) {
+    match("/").to("home");
+    match("/specials/:menu_item_id").to("special");
+  });
+
+  var menuItem;
+
+  App.MenuItem = Ember.Object.extend(Ember.Deferred);
+  App.MenuItem.find = function(id) {
+    menuItem = App.MenuItem.create({ id: id });
+    return menuItem;
+  };
+
+  App.LoadingRoute = Ember.Route.extend({
+
+  });
+
+  App.SpecialRoute = Ember.Route.extend({
+    //setup: function() {
+      //var self = this, args = arguments;
+      //Ember.run(function() { self._super.apply(self, args); });
+    //},
+
+    setupControllers: function(controller, model) {
+      set(controller, 'content', model);
+    }
+  });
+
+  Ember.TEMPLATES.special = Ember.Handlebars.compile(
+    "<p>{{content.id}}</p>"
+  );
+
+  Ember.TEMPLATES.loading = Ember.Handlebars.compile(
+    "<p>LOADING!</p>"
+  );
+
+  bootApplication();
+
+  router._container.controller.special = Ember.Controller.create();
+
+  Ember.run(function() {
+    router.handleURL("/specials/1");
+  });
+
+  equal(Ember.$('p', '#qunit-fixture').text(), "LOADING!", "The app is in the loading state");
+
+  Ember.run(function() {
+    menuItem.resolve(menuItem);
+  });
+
+  setTimeout(function() {
+    equal(Ember.$('p', '#qunit-fixture').text(), "1", "The app is now in the specials state");
+    start();
+  }, 100);
 });
