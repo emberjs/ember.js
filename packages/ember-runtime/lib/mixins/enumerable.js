@@ -32,6 +32,17 @@ function iter(key, value) {
   return i ;
 }
 
+iterForStartWith: function(key, value) {
+  Ember.assert("Key must be a valid string.", (Ember.typeOf(key) === "string"));
+  Ember.assert("Value must be a valid string.", (Ember.typeOf(value) === "string"));
+  var valueProvided = arguments.length === 2;
+  function i(item) {
+    var cur = Ember.get(item, key);
+    return valueProvided ? (cur.indexOf(value) == 0) : !!cur;
+    }
+  return i ;
+}
+
 /**
   This mixin defines the common interface implemented by enumerable objects
   in Ember.  Most of these methods follow the standard Array iteration
@@ -342,6 +353,18 @@ Ember.Enumerable = Ember.Mixin.create(
     return this.filter(iter.apply(this, arguments));
   },
 
+  /**
+    Returns an array with just the items with the property start with the value.
+    @param {String} key the property to test. It must be a valid string.
+    @param {String} value to test against. It must be a valid string.
+    @returns {Array} filtered array
+  */
+  filterPropertyStartWith: function(key, value) {
+    Ember.assert("Key must be a valid string.", (Ember.typeOf(key) === "string"));
+    Ember.assert("Value must be a valid string.", (Ember.typeOf(value) === "string"));
+    return this.filter(this.iterForStartWith.apply(this, arguments));
+  },
+  
   /**
     Returns the first item in the array for which the callback returns true.
     This method works similar to the filter() method defined in JavaScript 1.6
