@@ -362,7 +362,7 @@ Ember.Enumerable = Ember.Mixin.create(
   filterPropertyStartWith: function(key, value) {
     Ember.assert("Key must be a valid string.", (Ember.typeOf(key) === "string"));
     Ember.assert("Value must be a valid string.", (Ember.typeOf(value) === "string"));
-    return this.filter(iterForStartWith.apply(this, arguments));
+    return this.filter(this.iterForStartWith.apply(this, arguments));
   },
   
   /**
