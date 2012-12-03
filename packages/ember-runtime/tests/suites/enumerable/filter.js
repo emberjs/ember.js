@@ -131,3 +131,24 @@ suite.test('should not match undefined properties without second argument', func
 
   deepEqual(obj.filterProperty('foo'), ary.slice(0, 2), "filterProperty('foo', 3)')");
 });
+
+
+//..........................................................
+//filterPropertyStartWith()
+//
+
+suite.module('filterPropertyStartWith');
+
+suite.test('should filter based on object', function() {
+var obj, ary;
+
+ary = [
+ { foo: 'foo', bar: 'BAZ' },
+ Ember.Object.create({ foo: 'foo', bar: 'bar' })
+];
+
+obj = this.newObject(ary);
+
+deepEqual(obj.filterPropertyStartWith('foo', 'fo'), ary, 'filterPropertyStartWith(foo)');
+deepEqual(obj.filterPropertyStartWith('bar', 'ba'), [ary[1]], 'filterPropertyStartWith(bar)');
+});
