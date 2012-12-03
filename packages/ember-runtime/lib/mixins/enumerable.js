@@ -33,9 +33,15 @@ function iter(key, value) {
 }
 
 function iterForStartWith(key, value) {
-  Ember.assert("Key must be a valid string.", (Ember.typeOf(key) === "string"));
-  Ember.assert("Value must be a valid string.", (Ember.typeOf(value) === "string"));
   var valueProvided = arguments.length === 2;
+  if("string" !== typeof key) {
+	  console.error("Key must be a valid string.")
+	  valueProvided = false;
+  }
+  if("string" !== typeof value) {
+	  console.error("Value must be a valid string.")
+	  valueProvided = false;
+  }
   function i(item) {
     var cur = Ember.get(item, key);
     return valueProvided ? (cur.indexOf(value) == 0) : !!cur;
@@ -360,9 +366,7 @@ Ember.Enumerable = Ember.Mixin.create(
     @returns {Array} filtered array
   */
   filterPropertyStartWith: function(key, value) {
-    Ember.assert("Key must be a valid string.", (Ember.typeOf(key) === "string"));
-    Ember.assert("Value must be a valid string.", (Ember.typeOf(value) === "string"));
-    return this.filter(this.iterForStartWith.apply(this, arguments));
+    return this.filter(iterForStartWith.apply(this, arguments));
   },
   
   /**
