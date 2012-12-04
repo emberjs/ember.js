@@ -311,6 +311,7 @@ require('ember-runtime/~tests/suites/enumerable/invoke');
 require('ember-runtime/~tests/suites/enumerable/lastObject');
 require('ember-runtime/~tests/suites/enumerable/map');
 require('ember-runtime/~tests/suites/enumerable/reduce');
+require('ember-runtime/~tests/suites/enumerable/reject');
 require('ember-runtime/~tests/suites/enumerable/some');
 require('ember-runtime/~tests/suites/enumerable/toArray');
 require('ember-runtime/~tests/suites/enumerable/uniq');
