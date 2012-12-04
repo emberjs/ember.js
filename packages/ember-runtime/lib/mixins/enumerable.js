@@ -440,7 +440,7 @@ Ember.Enumerable = Ember.Mixin.create(
     @method everyProperty
     @param {String} key the property to test
     @param {String} [value] optional value to test against.
-    @return {Array} filtered array
+    @return {Boolean}
   */
   everyProperty: function(key, value) {
     return this.every(iter.apply(this, arguments));
