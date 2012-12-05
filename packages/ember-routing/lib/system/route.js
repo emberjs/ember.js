@@ -49,8 +49,10 @@ Ember.Route = Ember.Object.extend({
     return modelClass.find(value);
   },
 
-  setupControllers: function(context) {
-
+  setupControllers: function(controller, context) {
+    if (controller) {
+      controller.set('content', context);
+    }
   },
 
   controller: function(name) {
@@ -76,6 +78,8 @@ Ember.Route = Ember.Object.extend({
     if (typeof controller === 'string') {
       controller = this.lookup('controller', controller);
     }
+
+    controller = controller || this.context;
 
     set(view, 'controller', controller);
 

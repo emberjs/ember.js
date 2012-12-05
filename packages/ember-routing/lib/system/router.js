@@ -26,6 +26,14 @@ Ember.Router = Ember.Object.extend({
   transitionTo: function(handler) {
     var args = [].slice.call(arguments);
     this.router.transitionTo.apply(this.router, args);
+  },
+
+  send: function(name, context) {
+    if (Ember.$ && context instanceof Ember.$.Event) {
+      context = context.context;
+    }
+
+    this.router.trigger(name, context);
   }
 });
 

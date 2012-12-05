@@ -137,7 +137,7 @@ test("The Homepage with a `setupControllers` hook modifying other controllers", 
   equal(Ember.$('ul li', '#qunit-fixture').eq(2).text(), "Sunday: Noon to 6pm", "The template was rendered with the hours context");
 });
 
-test("The Homepage getting its controller context via controllerContext", function() {
+test("The Homepage getting its controller context via model", function() {
   Router.map(function(match) {
     match("/").to("home");
   });
@@ -438,6 +438,90 @@ test("Nested callbacks are not exited when moving to siblings", function() {
   equal(rootModel, 2, "The root model was called again");
 
   deepEqual(urls, ['/specials/1']);
+});
+
+asyncTest("Events are triggered on the current state", function() {
+  Router.map(function(match) {
+    match("/").to("home");
+  });
+
+  var model = { name: "Tom Dale" };
+
+  App.HomeRoute = Ember.Route.extend({
+    model: function() {
+      return model;
+    },
+
+    events: {
+      showStuff: function(handler, obj) {
+        ok(handler instanceof App.HomeRoute, "the handler is an App.HomeRoute");
+        deepEqual(obj, { name: "Tom Dale" }, "the context is correct");
+        start();
+      }
+    }
+  });
+
+  Ember.TEMPLATES.home = Ember.Handlebars.compile(
+    "<a {{action showStuff content}}>{{name}}</a>"
+  );
+
+  bootApplication();
+
+  var controller = router._container.controller.home = Ember.Controller.create();
+  controller.target = router;
+
+  Ember.run(function() {
+    router.handleURL("/");
+  });
+
+  var actionId = Ember.$("#qunit-fixture a").data("ember-action");
+  var action = Ember.Handlebars.ActionHelper.registeredActions[actionId];
+  var event = new Ember.$.Event("click");
+  action.handler(event);
+});
+
+asyncTest("Events are triggered on the current state", function() {
+  Router.map(function(match) {
+    match("/").to("root", function(match) {
+      match("/").to("home");
+    });
+  });
+
+  var model = { name: "Tom Dale" };
+
+  App.RootRoute = Ember.Route.extend({
+    events: {
+      showStuff: function(handler, obj) {
+        ok(handler instanceof App.RootRoute, "the handler is an App.HomeRoute");
+        deepEqual(obj, { name: "Tom Dale" }, "the context is correct");
+        start();
+      }
+    }
+  });
+
+  App.HomeRoute = Ember.Route.extend({
+    model: function() {
+      return model;
+    }
+  });
+
+  Ember.TEMPLATES.home = Ember.Handlebars.compile(
+    "<a {{action showStuff content}}>{{name}}</a>"
+  );
+
+  bootApplication();
+
+  var controller = router._container.controller.home = Ember.Controller.create();
+  controller.target = router;
+
+  Ember.run(function() {
+    router.handleURL("/");
+  });
+
+  var actionId = Ember.$("#qunit-fixture a").data("ember-action");
+  var action = Ember.Handlebars.ActionHelper.registeredActions[actionId];
+  var event = new Ember.$.Event("click");
+  action.handler(event);
 });
 
 // TODO: Parent context change

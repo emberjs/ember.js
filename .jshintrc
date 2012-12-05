@@ -15,6 +15,7 @@
         "requireModule",
         "equal",
         "test",
+        "asyncTest",
         "testBoth",
         "testWithDefault",
         "raises",

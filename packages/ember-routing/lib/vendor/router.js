@@ -116,8 +116,8 @@ define("router",
         this.updateURL(url);
       },
 
-      trigger: function(name) {
-        trigger(this, name);
+      trigger: function(name, context) {
+        trigger(this, name, context);
       }
     };
 
@@ -406,7 +406,7 @@ define("router",
       return handlers;
     }
 
-    function trigger(router, name) {
+    function trigger(router, name, context) {
       var currentHandlerInfos = router.currentHandlerInfos;
 
       if (!currentHandlerInfos) {
@@ -418,7 +418,7 @@ define("router",
             handler = handlerInfo.handler;
 
         if (handler.events && handler.events[name]) {
-          handler.events[name](handler);
+          handler.events[name](handler, context);
           break;
         }
       }

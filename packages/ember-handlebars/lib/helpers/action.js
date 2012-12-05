@@ -44,7 +44,7 @@ ActionHelper.registerAction = function(actionName, options) {
       var target = options.target;
 
       // Check for StateManager (or compatible object)
-      if (target.isState && typeof target.send === 'function') {
+      if (typeof target.send === 'function') {
         return target.send(actionName, event);
       } else {
         Ember.assert(Ember.String.fmt('Target %@ does not have action %@', [target, actionName]), target[actionName]);
