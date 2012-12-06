@@ -402,7 +402,8 @@ function chainsDidChange(obj, keyName, m, arg) {
   nodes = nodes[keyName];
   if (!nodes) { return; }
 
-  for(var i = 0, l = nodes.length; i < l; i++) {
+  // looping in reverse because the chainWatchers array can be modified inside didChange
+  for (var i = nodes.length - 1; i >= 0; i--) {
     nodes[i].didChange(arg);
   }
 }
