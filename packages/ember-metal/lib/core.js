@@ -6,17 +6,16 @@
 */
 
 /**
-  All Ember methods and functions are defined inside of this namespace.
-  You generally should not add new properties to this namespace as it may be
+  All Ember methods and functions are defined inside of this namespace. You
+  generally should not add new properties to this namespace as it may be
   overwritten by future versions of Ember.
 
-  You can also use the shorthand "Em" instead of "Ember".
+  You can also use the shorthand `Em` instead of `Ember`.
 
-  Ember-Runtime is a framework that provides core functions for
-  Ember including cross-platform functions, support for property
-  observing and objects. Its focus is on small size and performance. You can
-  use this in place of or along-side other cross-platform libraries such as
-  jQuery.
+  Ember-Runtime is a framework that provides core functions for Ember including
+  cross-platform functions, support for property observing and objects. Its
+  focus is on small size and performance. You can use this in place of or
+  along-side other cross-platform libraries such as jQuery.
 
   The core Runtime framework is based on the jQuery API with a number of
   performance optimizations.
@@ -56,7 +55,7 @@ Ember.toString = function() { return "Ember"; };
 Ember.VERSION = '1.0.0-pre.2';
 
 /**
-  Standard environmental variables.  You can define these in a global `ENV`
+  Standard environmental variables. You can define these in a global `ENV`
   variable before loading Ember to control various configuration
   settings.
 
@@ -72,14 +71,14 @@ Ember.config = Ember.config || {};
 //
 
 /**
-  Determines whether Ember should enhances some built-in object
-  prototypes to provide a more friendly API.  If enabled, a few methods
-  will be added to Function, String, and Array.  Object.prototype will not be
-  enhanced, which is the one that causes most trouble for people.
+  Determines whether Ember should enhances some built-in object prototypes to
+  provide a more friendly API. If enabled, a few methods will be added to
+  `Function`, `String`, and `Array`. `Object.prototype` will not be enhanced,
+  which is the one that causes most trouble for people.
 
   In general we recommend leaving this option set to true since it rarely
-  conflicts with other code.  If you need to turn it off however, you can
-  define an ENV.EXTEND_PROTOTYPES config to disable it.
+  conflicts with other code. If you need to turn it off however, you can
+  define an `ENV.EXTEND_PROTOTYPES` config to disable it.
 
   @property EXTEND_PROTOTYPES
   @type Boolean
@@ -110,7 +109,7 @@ Ember.LOG_STACKTRACE_ON_DEPRECATION = (Ember.ENV.LOG_STACKTRACE_ON_DEPRECATION !
 Ember.SHIM_ES5 = (Ember.ENV.SHIM_ES5 === false) ? false : Ember.EXTEND_PROTOTYPES;
 
 /**
-  Empty function.  Useful for some operations.
+  Empty function. Useful for some operations.
 
   @method K
   @private
@@ -138,8 +137,8 @@ if ('undefined' === typeof ember_deprecateFunc) {
 }
 
 /**
-  Previously we used `Ember.$.uuid`, however `$.uuid` has been removed from jQuery master.
-  We'll just bootstrap our own uuid now.
+  Previously we used `Ember.$.uuid`, however `$.uuid` has been removed from
+  jQuery master. We'll just bootstrap our own uuid now.
 
   @property uuid
   @type Number
@@ -152,7 +151,7 @@ Ember.uuid = 0;
 //
 
 /**
-  Inside Ember-Metal, simply uses the imports.console object.
+  Inside Ember-Metal, simply uses the `imports.console` object.
   Override this to provide more robust logging functionality.
 
   @class Logger
@@ -166,8 +165,9 @@ Ember.Logger = imports.console || { log: Ember.K, warn: Ember.K, error: Ember.K,
 //
 
 /**
-  A function may be assigned to `Ember.onerror` to be called when Ember internals encounter an error.
-  This is useful for specialized error handling and reporting code.
+  A function may be assigned to `Ember.onerror` to be called when Ember
+  internals encounter an error. This is useful for specialized error handling
+  and reporting code.
 
   @event onerror
   @for Ember

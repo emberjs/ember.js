@@ -11,12 +11,12 @@
   keys. Because it is commonly used in low-level bookkeeping, Map is
   implemented as a pure JavaScript object for performance.
 
-  This implementation follows the current iteration of the ES6 proposal
-  for maps (http://wiki.ecmascript.org/doku.php?id=harmony:simple_maps_and_sets),
-  with two exceptions. First, because we need our implementation to be
-  pleasant on older browsers, we do not use the `delete` name (using
-  `remove` instead). Second, as we do not have the luxury of in-VM
-  iteration, we implement a forEach method for iteration.
+  This implementation follows the current iteration of the ES6 proposal for
+  maps (http://wiki.ecmascript.org/doku.php?id=harmony:simple_maps_and_sets),
+  with two exceptions. First, because we need our implementation to be pleasant
+  on older browsers, we do not use the `delete` name (using `remove` instead).
+  Second, as we do not have the luxury of in-VM iteration, we implement a
+  forEach method for iteration.
 
   Map is mocked out to look like an Ember object, so you can do
   `Ember.Map.create()` for symmetry with other Ember classes.
@@ -50,7 +50,7 @@ var copyMap = function(original, newObject) {
 };
 
 /**
-  This class is used internally by Ember.js and Ember Data.
+  This class is used internally by Ember and Ember Data.
   Please do not use it at this time. We plan to clean it up
   and add many tests soon.
 
@@ -177,9 +177,8 @@ OrderedSet.prototype = {
 
   Internally, a Map has two data structures:
 
-    `keys`: an OrderedSet of all of the existing keys
-    `values`: a JavaScript Object indexed by the
-      Ember.guidFor(key)
+  1. `keys`: an OrderedSet of all of the existing keys
+  2. `values`: a JavaScript Object indexed by the `Ember.guidFor(key)`
 
   When a key/value pair is added for the first time, we
   add the key to the `keys` OrderedSet, and create or
@@ -210,7 +209,7 @@ Map.prototype = {
 
     @method get
     @param {anything} key
-    @return {anything} the value associated with the key, or undefined
+    @return {anything} the value associated with the key, or `undefined`
   */
   get: function(key) {
     var values = this.values,
@@ -324,7 +323,8 @@ var MapWithDefault = Ember.MapWithDefault = function(options) {
   @static
   @param [options]
     @param {anything} [options.defaultValue]
-  @return {Ember.MapWithDefault|Ember.Map} If options are passed, returns Ember.MapWithDefault otherwise returns Ember.Map
+  @return {Ember.MapWithDefault|Ember.Map} If options are passed, returns 
+    `Ember.MapWithDefault` otherwise returns `Ember.Map`
 */
 MapWithDefault.create = function(options) {
   if (options) {

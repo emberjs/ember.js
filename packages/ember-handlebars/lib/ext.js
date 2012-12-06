@@ -14,12 +14,12 @@ Ember.assert("Ember Handlebars requires Handlebars 1.0.beta.5 or greater", Handl
   Prepares the Handlebars templating library for use inside Ember's view
   system.
 
-  The Ember.Handlebars object is the standard Handlebars library, extended to use
-  Ember's get() method instead of direct property access, which allows
+  The `Ember.Handlebars` object is the standard Handlebars library, extended to
+  use Ember's `get()` method instead of direct property access, which allows
   computed properties to be used inside templates.
 
-  To create an Ember.Handlebars template, call Ember.Handlebars.compile().  This will
-  return a function that can be used by Ember.View for rendering.
+  To create an `Ember.Handlebars` template, call `Ember.Handlebars.compile()`.
+  This will return a function that can be used by `Ember.View` for rendering.
 
   @class Handlebars
   @namespace Ember
@@ -74,9 +74,9 @@ Ember.Handlebars.JavaScriptCompiler.prototype.initializeBuffer = function() {
 /**
   @private
 
-  Override the default buffer for Ember Handlebars. By default, Handlebars creates
-  an empty String at the beginning of each invocation and appends to it. Ember's
-  Handlebars overrides this to append to a single shared buffer.
+  Override the default buffer for Ember Handlebars. By default, Handlebars
+  creates an empty String at the beginning of each invocation and appends to
+  it. Ember's Handlebars overrides this to append to a single shared buffer.
 
   @method appendToBuffer
   @param string {String}
@@ -88,9 +88,9 @@ Ember.Handlebars.JavaScriptCompiler.prototype.appendToBuffer = function(string) 
 /**
   @private
 
-  Rewrite simple mustaches from `{{foo}}` to `{{bind "foo"}}`. This means that all simple
-  mustaches in Ember's Handlebars will also set up an observer to keep the DOM
-  up to date when the underlying property changes.
+  Rewrite simple mustaches from `{{foo}}` to `{{bind "foo"}}`. This means that
+  all simple mustaches in Ember's Handlebars will also set up an observer to
+  keep the DOM up to date when the underlying property changes.
 
   @method mustache
   @for Ember.Handlebars.Compiler
@@ -115,8 +115,8 @@ Ember.Handlebars.Compiler.prototype.mustache = function(mustache) {
 };
 
 /**
-  Used for precompilation of Ember Handlebars templates. This will not be used during normal
-  app execution.
+  Used for precompilation of Ember Handlebars templates. This will not be used
+  during normal app execution.
 
   @method precompile
   @for Ember.Handlebars
@@ -146,8 +146,9 @@ Ember.Handlebars.precompile = function(string) {
 // We don't support this for Handlebars runtime-only
 if (Handlebars.compile) {
   /**
-    The entry point for Ember Handlebars. This replaces the default Handlebars.compile and turns on
-    template-local data and String parameters.
+    The entry point for Ember Handlebars. This replaces the default
+    `Handlebars.compile` and turns on template-local data and String
+    parameters.
 
     @method compile
     @for Ember.Handlebars

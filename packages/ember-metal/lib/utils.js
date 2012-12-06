@@ -43,20 +43,18 @@ var GUID_DESC = {
   @private
 
   Generates a new guid, optionally saving the guid to the object that you
-  pass in.  You will rarely need to use this method.  Instead you should
-  call Ember.guidFor(obj), which return an existing guid if available.
+  pass in. You will rarely need to use this method. Instead you should
+  call `Ember.guidFor(obj)`, which return an existing guid if available.
 
   @method generateGuid
   @for Ember
-  @param {Object} [obj] Object the guid will be used for.  If passed in, the guid will
+  @param {Object} [obj] Object the guid will be used for. If passed in, the guid will
     be saved on the object and reused whenever you pass the same object
     again.
 
     If no object is passed, just generate a new guid.
-
-  @param {String} [prefix] Prefix to place in front of the guid.  Useful when you want to
+  @param {String} [prefix] Prefix to place in front of the guid. Useful when you want to
     separate the guid into separate namespaces.
-
   @return {String} the guid
 */
 Ember.generateGuid = function generateGuid(obj, prefix) {
@@ -72,9 +70,10 @@ Ember.generateGuid = function generateGuid(obj, prefix) {
 /**
   @private
 
-  Returns a unique id for the object.  If the object does not yet have
-  a guid, one will be assigned to it.  You can call this on any object,
-  Ember.Object-based or not, but be aware that it will add a _guid property.
+  Returns a unique id for the object. If the object does not yet have a guid,
+  one will be assigned to it. You can call this on any object,
+  `Ember.Object`-based or not, but be aware that it will add a `_guid`
+  property.
 
   You can also use this method on DOM Element objects.
 
@@ -176,11 +175,11 @@ if (isDefinePropertySimulated) {
 }
 
 /**
-  Retrieves the meta hash for an object.  If 'writable' is true ensures the
+  Retrieves the meta hash for an object. If `writable` is true ensures the
   hash is writable for this object as well.
 
   The meta object contains information about computed property descriptors as
-  well as any watched properties and other information.  You generally will
+  well as any watched properties and other information. You generally will
   not access this information directly but instead work with higher level
   methods that manipulate this hash indirectly.
 
@@ -189,10 +188,8 @@ if (isDefinePropertySimulated) {
   @private
 
   @param {Object} obj The object to retrieve meta for
-
-  @param {Boolean} [writable=true] Pass false if you do not intend to modify
+  @param {Boolean} [writable=true] Pass `false` if you do not intend to modify
     the meta hash, allowing the method to avoid making an unnecessary copy.
-
   @return {Hash}
 */
 Ember.meta = function meta(obj, writable) {
@@ -252,7 +249,7 @@ Ember.setMeta = function setMeta(obj, property, value) {
 
   This method allows extensions to deeply clone a series of nested hashes or
   other complex objects. For instance, the event system might pass
-  ['listeners', 'foo:change', 'ember157'] to `prepareMetaPath`, which will
+  `['listeners', 'foo:change', 'ember157']` to `prepareMetaPath`, which will
   walk down the keys provided.
 
   For each key, if the key does not exist, it is created. If it already
@@ -297,7 +294,7 @@ Ember.metaPath = function metaPath(obj, path, writable) {
   @private
 
   Wraps the passed function so that `this._super` will point to the superFunc
-  when the function is invoked.  This is the primitive we use to implement
+  when the function is invoked. This is the primitive we use to implement
   calls to super.
 
   @method wrap
@@ -331,12 +328,14 @@ Ember.wrap = function(func, superFunc) {
     - the object is a native Array
     - the object is an Object, and has a length property
 
-  Unlike Ember.typeOf this method returns true even if the passed object is
-  not formally array but appears to be array-like (i.e. implements Ember.Array)
+  Unlike `Ember.typeOf` this method returns true even if the passed object is
+  not formally array but appears to be array-like (i.e. implements `Ember.Array`)
 
-      Ember.isArray(); // false
-      Ember.isArray([]); // true
-      Ember.isArray( Ember.ArrayProxy.create({ content: [] }) ); // true
+  ```javascript
+  Ember.isArray();                                            // false
+  Ember.isArray([]);                                          // true
+  Ember.isArray( Ember.ArrayProxy.create({ content: [] }) );  // true
+  ```
 
   @method isArray
   @for Ember
@@ -352,18 +351,20 @@ Ember.isArray = function(obj) {
 };
 
 /**
-  Forces the passed object to be part of an array.  If the object is already
-  an array or array-like, returns the object.  Otherwise adds the object to
-  an array.  If obj is null or undefined, returns an empty array.
+  Forces the passed object to be part of an array. If the object is already
+  an array or array-like, returns the object. Otherwise adds the object to
+  an array. If obj is `null` or `undefined`, returns an empty array.
 
-      Ember.makeArray();          => []
-      Ember.makeArray(null);      => []
-      Ember.makeArray(undefined); => []
-      Ember.makeArray('lindsay'); => ['lindsay']
-      Ember.makeArray([1,2,42]);  => [1,2,42]
+  ```javascript
+  Ember.makeArray();                           // []
+  Ember.makeArray(null);                       // []
+  Ember.makeArray(undefined);                  // []
+  Ember.makeArray('lindsay');                  // ['lindsay']
+  Ember.makeArray([1,2,42]);                   // [1,2,42]
 
-      var controller = Ember.ArrayProxy.create({ content: [] });
-      Ember.makeArray(controller) === controller;   => true
+  var controller = Ember.ArrayProxy.create({ content: [] });
+  Ember.makeArray(controller) === controller;  // true
+  ```
 
   @method makeArray
   @for Ember

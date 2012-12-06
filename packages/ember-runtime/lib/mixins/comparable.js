@@ -10,7 +10,7 @@ require('ember-runtime/core');
   Implements some standard methods for comparing objects. Add this mixin to
   any class you create that can compare its instances.
 
-  You should implement the compare() method.
+  You should implement the `compare()` method.
 
   @class Comparable
   @namespace Ember
@@ -32,9 +32,9 @@ Ember.Comparable = Ember.Mixin.create( /** @scope Ember.Comparable.prototype */{
     Override to return the result of the comparison of the two parameters. The
     compare method should return:
 
-      - `-1` if `a < b`
-      - `0` if `a == b`
-      - `1` if `a > b`
+    - `-1` if `a < b`
+    - `0` if `a == b`
+    - `1` if `a > b`
 
     Default implementation raises an exception.
 

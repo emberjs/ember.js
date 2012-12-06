@@ -181,16 +181,16 @@ EmberHandlebars.registerHelper('_triageMustache', function(property, fn) {
   changes. For example, if you wanted to print the `title` property of
   `content`:
 
-  ``` handlebars
+  ```handlebars
   {{bind "content.title"}}
   ```
 
-  This will return the `title` property as a string, then create a new
-  observer at the specified path. If it changes, it will update the value in
-  DOM. Note that if you need to support IE7 and IE8 you must modify the
-  model objects properties using Ember.get() and Ember.set() for this to work as
-  it relies on Ember's KVO system.  For all other browsers this will be handled
-  for you automatically.
+  This will return the `title` property as a string, then create a new observer
+  at the specified path. If it changes, it will update the value in DOM. Note
+  that if you need to support IE7 and IE8 you must modify the model objects
+  properties using `Ember.get()` and `Ember.set()` for this to work as it
+  relies on Ember's KVO system. For all other browsers this will be handled for
+  you automatically.
 
   @method bind
   @for Ember.Handlebars.helpers
@@ -218,7 +218,7 @@ EmberHandlebars.registerHelper('bind', function(property, options) {
   Use the `boundIf` helper to create a conditional that re-evaluates
   whenever the truthiness of the bound value changes.
 
-  ``` handlebars
+  ```handlebars
   {{#boundIf "content.shouldDisplayTitle"}}
     {{content.title}}
   {{/boundIf}}
@@ -328,18 +328,17 @@ EmberHandlebars.registerHelper('unless', function(context, options) {
   `bindAttr` allows you to create a binding between DOM element attributes and
   Ember objects. For example:
 
-
-  ``` handlebars
+  ```handlebars
   <img {{bindAttr src="imageUrl" alt="imageTitle"}}>
   ```
 
-  The above handlebars template will fill the `<img>`'s `src` attribute
-  will the value of the property referenced with `"imageUrl"` and its
-  `alt` attribute with the value of the property referenced with `"imageTitle"`.
+  The above handlebars template will fill the `<img>`'s `src` attribute will
+  the value of the property referenced with `"imageUrl"` and its `alt`
+  attribute with the value of the property referenced with `"imageTitle"`.
 
   If the rendering context of this template is the following object:
 
-  ``` javascript
+  ```javascript
   {
     imageUrl: 'http://lolcats.info/haz-a-funny',
     imageTitle: 'A humorous image of a cat'
@@ -348,33 +347,34 @@ EmberHandlebars.registerHelper('unless', function(context, options) {
 
   The resulting HTML output will be:
 
-  ``` html
-    <img src="http://lolcats.info/haz-a-funny" alt="A humorous image of a cat">
+  ```html
+  <img src="http://lolcats.info/haz-a-funny" alt="A humorous image of a cat">
   ```
 
-  `bindAttr` cannot redeclare existing DOM element attributes. The use
-  of `src` in the following `bindAttr` example will be ignored and the hard coded value
+  `bindAttr` cannot redeclare existing DOM element attributes. The use of `src`
+  in the following `bindAttr` example will be ignored and the hard coded value
   of `src="/failwhale.gif"` will take precedence:
 
-  ``` handlebars
+  ```handlebars
   <img src="/failwhale.gif" {{bindAttr src="imageUrl" alt="imageTitle"}}>
   ```
 
   ### `bindAttr` and the `class` attribute
+
   `bindAttr` supports a special syntax for handling a number of cases unique
   to the `class` DOM element attribute. The `class` attribute combines
   multiple discreet values into a single attribute as a space-delimited
-  list of strings. Each string can be
+  list of strings. Each string can be:
 
-    * a string return value of an object's property.
-    * a boolean return value of an object's property
-    * a hard-coded value
+  * a string return value of an object's property.
+  * a boolean return value of an object's property
+  * a hard-coded value
 
-  A string return value works identically to other uses of `bindAttr`. The return
-  value of the property will become the value of the attribute. For example,
-  the following view and template:
+  A string return value works identically to other uses of `bindAttr`. The
+  return value of the property will become the value of the attribute. For
+  example, the following view and template:
 
-  ``` javascript
+  ```javascript
     AView = Ember.View.extend({
       someProperty: function(){
         return "aValue";
@@ -382,48 +382,58 @@ EmberHandlebars.registerHelper('unless', function(context, options) {
     })
   ```
 
-  ``` handlebars
+  ```handlebars
   <img {{bindAttr class="view.someProperty}}>
   ```
 
   Result in the following rendered output:
+
+  ```html 
   <img class="aValue">
+  ```
 
   A boolean return value will insert a specified class name if the property
   returns `true` and remove the class name if the property returns `false`.
 
-  A class name is provided via the syntax `somePropertyName:class-name-if-true`.
+  A class name is provided via the syntax 
+  `somePropertyName:class-name-if-true`.
 
-  ``` javascript
-    AView = Ember.View.extend({
-      someBool: true
-    })
+  ```javascript
+  AView = Ember.View.extend({
+    someBool: true
+  })
   ```
 
-  ``` handlebars
+  ```handlebars
   <img {{bindAttr class="view.someBool:class-name-if-true"}}>
   ```
 
   Result in the following rendered output:
+
+  ```html
   <img class="class-name-if-true">
+  ```
 
   An additional section of the binding can be provided if you want to
   replace the existing class instead of removing it when the boolean
   value changes:
 
-  ``` handlebars
+  ```handlebars
   <img {{bindAttr class="view.someBool:class-name-if-true:class-name-if-false"}}>
   ```
 
   A hard-coded value can be used by prepending `:` to the desired
   class name: `:class-name-to-always-apply`.
 
-  ``` handlebars
+  ```handlebars
   <img {{bindAttr class=":class-name-to-always-apply"}}>
   ```
 
   Results in the following rendered output:
-  <img class="class-name-to-always-apply">
+
+  ```html
+  <img class=":class-name-to-always-apply">
+  ```
 
   All three strategies - string return value, boolean return value, and
   hard-coded value – can be combined in a single declaration:
@@ -548,8 +558,10 @@ EmberHandlebars.registerHelper('bindAttr', function(options) {
   @method bindClasses
   @for Ember.Handlebars
   @param {Ember.Object} context The context from which to lookup properties
-  @param {String} classBindings A string, space-separated, of class bindings to use
-  @param {Ember.View} view The view in which observers should look for the element to update
+  @param {String} classBindings A string, space-separated, of class bindings 
+    to use
+  @param {Ember.View} view The view in which observers should look for the 
+    element to update
   @param {Srting} bindAttrId Optional bindAttr id used to lookup elements
   @return {Array} An array of class names to add
 */
