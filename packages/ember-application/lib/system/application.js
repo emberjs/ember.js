@@ -6,12 +6,12 @@
 var get = Ember.get, set = Ember.set;
 
 /**
-  An instance of `Ember.Application` is the starting point for every Ember.js
+  An instance of `Ember.Application` is the starting point for every Ember
   application. It helps to instantiate, initialize and coordinate the many
   objects that make up your app.
 
-  Each Ember.js app has one and only one `Ember.Application` object. In fact, the very
-  first thing you should do in your application is create the instance:
+  Each Ember app has one and only one `Ember.Application` object. In fact, the
+  very first thing you should do in your application is create the instance:
 
   ```javascript
   window.App = Ember.Application.create();
@@ -31,8 +31,8 @@ var get = Ember.get, set = Ember.set;
   application.
 
   Because `Ember.Application` inherits from `Ember.Namespace`, any classes
-  you create will have useful string representations when calling `toString()`;
-  see the `Ember.Namespace` documentation for more information.
+  you create will have useful string representations when calling `toString()`.
+  See the `Ember.Namespace` documentation for more information.
 
   While you can think of your `Ember.Application` as a container that holds the
   other classes in your application, there are several other responsibilities
@@ -40,24 +40,24 @@ var get = Ember.get, set = Ember.set;
 
   ### Event Delegation
 
-  Ember.js uses a technique called _event delegation_. This allows the framework
-  to set up a global, shared event listener instead of requiring each view to do
-  it manually. For example, instead of each view registering its own `mousedown`
-  listener on its associated element, Ember.js sets up a `mousedown` listener on
-  the `body`.
+  Ember uses a technique called _event delegation_. This allows the framework
+  to set up a global, shared event listener instead of requiring each view to
+  do it manually. For example, instead of each view registering its own
+  `mousedown` listener on its associated element, Ember sets up a `mousedown`
+  listener on the `body`.
 
-  If a `mousedown` event occurs, Ember.js will look at the target of the event and
-  start walking up the DOM node tree, finding corresponding views and invoking their
-  `mouseDown` method as it goes.
+  If a `mousedown` event occurs, Ember will look at the target of the event and
+  start walking up the DOM node tree, finding corresponding views and invoking
+  their `mouseDown` method as it goes.
 
-  `Ember.Application` has a number of default events that it listens for, as well
-  as a mapping from lowercase events to camel-cased view method names. For
+  `Ember.Application` has a number of default events that it listens for, as
+  well as a mapping from lowercase events to camel-cased view method names. For
   example, the `keypress` event causes the `keyPress` method on the view to be
   called, the `dblclick` event causes `doubleClick` to be called, and so on.
 
-  If there is a browser event that Ember.js does not listen for by default, you
-  can specify custom events and their corresponding view method names by setting
-  the application's `customEvents` property:
+  If there is a browser event that Ember does not listen for by default, you
+  can specify custom events and their corresponding view method names by
+  setting the application's `customEvents` property:
 
   ```javascript
   App = Ember.Application.create({
@@ -69,13 +69,13 @@ var get = Ember.get, set = Ember.set;
   });
   ```
 
-  By default, the application sets up these event listeners on the document body.
-  However, in cases where you are embedding an Ember.js application inside an
-  existing page, you may want it to set up the listeners on an element inside
-  the body.
+  By default, the application sets up these event listeners on the document
+  body. However, in cases where you are embedding an Ember application inside
+  an existing page, you may want it to set up the listeners on an element
+  inside the body.
 
-  For example, if only events inside a DOM element with the ID of `ember-app` should
-  be delegated, set your application's `rootElement` property:
+  For example, if only events inside a DOM element with the ID of `ember-app`
+  should be delegated, set your application's `rootElement` property:
 
   ```javascript
   window.App = Ember.Application.create({
@@ -84,22 +84,23 @@ var get = Ember.get, set = Ember.set;
   ```
 
   The `rootElement` can be either a DOM element or a jQuery-compatible selector
-  string. Note that *views appended to the DOM outside the root element will not
-  receive events.* If you specify a custom root element, make sure you only append
-  views inside it!
+  string. Note that *views appended to the DOM outside the root element will
+  not receive events.* If you specify a custom root element, make sure you only
+  append views inside it!
 
-  To learn more about the advantages of event delegation and the Ember.js view layer,
-  and a list of the event listeners that are setup by default, visit the
-  [Ember.js View Layer guide](http://emberjs.com/guides/view_layer#toc_event-delegation).
+  To learn more about the advantages of event delegation and the Ember view
+  layer, and a list of the event listeners that are setup by default, visit the
+  [Ember View Layer guide](http://emberjs.com/guides/view_layer#toc_event-delegation).
 
   ### Dependency Injection
 
-  One thing you may have noticed while using Ember.js is that you define *classes*, not
-  *instances*. When your application loads, all of the instances are created for you.
-  Creating these instances is the responsibility of `Ember.Application`.
+  One thing you may have noticed while using Ember is that you define
+  *classes*, not *instances*. When your application loads, all of the instances
+  are created for you. Creating these instances is the responsibility of
+  `Ember.Application`.
 
-  When the `Ember.Application` initializes, it will look for an `Ember.Router` class
-  defined on the applications's `Router` property, like this:
+  When the `Ember.Application` initializes, it will look for an `Ember.Router`
+  class defined on the applications's `Router` property, like this:
 
   ```javascript
   App.Router = Ember.Router.extend({
@@ -108,9 +109,9 @@ var get = Ember.get, set = Ember.set;
   ```
 
   If found, the router is instantiated and saved on the application's `router`
-  property (note the lowercase 'r'). While you should *not* reference this router
-  instance directly from your application code, having access to `App.router`
-  from the console can be useful during debugging.
+  property (note the lowercase 'r'). While you should *not* reference this
+  router instance directly from your application code, having access to
+  `App.router` from the console can be useful during debugging.
 
   After the router is created, the application loops through all of the
   registered _injections_ and invokes them once for each property on the
@@ -131,7 +132,7 @@ var get = Ember.get, set = Ember.set;
   Your router will receive an instance of `App.MyController` saved on its
   `myController` property.
 
-  Libraries on top of Ember.js can register additional injections. For example,
+  Libraries on top of Ember can register additional injections. For example,
   if your application is using Ember Data, it registers an injection that
   instantiates `DS.Store`:
 
@@ -150,16 +151,17 @@ var get = Ember.get, set = Ember.set;
 
   ### Routing
 
-  In addition to creating your application's router, `Ember.Application` is also
-  responsible for telling the router when to start routing.
+  In addition to creating your application's router, `Ember.Application` is
+  also responsible for telling the router when to start routing.
 
   By default, the router will begin trying to translate the current URL into
   application state once the browser emits the `DOMContentReady` event. If you
-  need to defer routing, you can call the application's `deferReadiness()` method.
-  Once routing can begin, call the `advanceReadiness()` method.
+  need to defer routing, you can call the application's `deferReadiness()`
+  method. Once routing can begin, call the `advanceReadiness()` method.
 
-  If there is any setup required before routing begins, you can implement a `ready()`
-  method on your app that will be invoked immediately before routing begins:
+  If there is any setup required before routing begins, you can implement a
+  `ready()` method on your app that will be invoked immediately before routing
+  begins:
 
   ```javascript
   window.App = Ember.Application.create({
@@ -231,13 +233,15 @@ Ember.Application = Ember.Namespace.extend(
     to a hash containing the DOM event name as the key and the
     corresponding view method name as the value. For example:
 
-        App = Ember.Application.create({
-          customEvents: {
-            // add support for the loadedmetadata media
-            // player event
-            'loadedmetadata': "loadedMetadata"
-          }
-        });
+    ```javascript
+    App = Ember.Application.create({
+      customEvents: {
+        // add support for the loadedmetadata media
+        // player event
+        'loadedmetadata': "loadedMetadata"
+      }
+    });
+    ```
 
     @property customEvents
     @type Object
@@ -245,6 +249,14 @@ Ember.Application = Ember.Namespace.extend(
   */
   customEvents: null,
 
+  /**
+    Should the application initialize itself after it's created. You can
+    set this to `false` if you'd like to choose when to initialize your 
+    application. This defaults to `!Ember.testing`
+
+    @property autoinit
+    @type Boolean
+  */
   autoinit: !Ember.testing,
 
   isInitialized: false,
@@ -309,17 +321,19 @@ Ember.Application = Ember.Namespace.extend(
 
     Example:
 
-        App.PostsController = Ember.ArrayController.extend();
-        App.CommentsController = Ember.ArrayController.extend();
+    ```javascript
+    App.PostsController = Ember.ArrayController.extend();
+    App.CommentsController = Ember.ArrayController.extend();
 
-        var router = Ember.Router.create({
-          ...
-        });
+    var router = Ember.Router.create({
+      ...
+    });
 
-        App.initialize(router);
+    App.initialize(router);
 
-        router.get('postsController')     // <App.PostsController:ember1234>
-        router.get('commentsController')  // <App.CommentsController:ember1235>
+    router.get('postsController');     // <App.PostsController:ember1234>
+    router.get('commentsController');  // <App.CommentsController:ember1235>
+    ```
 
     @method initialize
     @param router {Ember.Router}

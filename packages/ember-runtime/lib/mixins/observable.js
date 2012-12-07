@@ -17,14 +17,14 @@ var get = Ember.get, set = Ember.set, defineProperty = Ember.defineProperty;
   application.
 
   Any object that has this mixin applied can be used in observer
-  operations. That includes Ember.Object and most objects you will
+  operations. That includes `Ember.Object` and most objects you will
   interact with as you write your Ember application.
 
   Note that you will not generally apply this mixin to classes yourself,
   but you will use the features provided by this module frequently, so it
   is important to understand how to use it.
 
-  ## Using get() and set()
+  ## Using `get()` and `set()`
 
   Because of Ember's support for bindings and observers, you will always
   access properties using the get method, and set properties using the
@@ -39,21 +39,25 @@ var get = Ember.get, set = Ember.set, defineProperty = Ember.defineProperty;
   call to the end of your method declarations in classes that you write.
   For example:
 
-      Ember.Object.create({
-        valueObserver: function() {
-          // Executes whenever the "value" property changes
-        }.observes('value')
-      });
+  ```javascript
+  Ember.Object.create({
+    valueObserver: function() {
+      // Executes whenever the "value" property changes
+    }.observes('value')
+  });
+  ```
 
   Although this is the most common way to add an observer, this capability
-  is actually built into the Ember.Object class on top of two methods
+  is actually built into the `Ember.Object` class on top of two methods
   defined in this mixin: `addObserver` and `removeObserver`. You can use
   these two methods to add and remove observers yourself if you need to
   do so at runtime.
 
   To add an observer for a property, call:
 
-      object.addObserver('propertyKey', targetObject, targetAction)
+  ```javascript
+  object.addObserver('propertyKey', targetObject, targetAction)
+  ```
 
   This will call the `targetAction` method on the `targetObject` to be called
   whenever the value of the `propertyKey` changes.
@@ -75,7 +79,7 @@ Ember.Observable = Ember.Mixin.create(/** @scope Ember.Observable.prototype */ {
   /**
     Retrieves the value of a property from the object.
 
-    This method is usually similar to using object[keyName] or object.keyName,
+    This method is usually similar to using `object[keyName]` or `object.keyName`,
     however it supports both computed properties and the unknownProperty
     handler.
 
@@ -88,9 +92,11 @@ Ember.Observable = Ember.Mixin.create(/** @scope Ember.Observable.prototype */ {
     Computed properties are methods defined with the `property` modifier
     declared at the end, such as:
 
-          fullName: function() {
-            return this.getEach('firstName', 'lastName').compact().join(' ');
-          }.property('firstName', 'lastName')
+    ```javascript
+    fullName: function() {
+      return this.getEach('firstName', 'lastName').compact().join(' ');
+    }.property('firstName', 'lastName')
+    ```
 
     When you call `get` on a computed property, the function will be
     called and the return value will be returned instead of the function
@@ -99,8 +105,8 @@ Ember.Observable = Ember.Mixin.create(/** @scope Ember.Observable.prototype */ {
     ### Unknown Properties
 
     Likewise, if you try to call `get` on a property whose value is
-    undefined, the unknownProperty() method will be called on the object.
-    If this method returns any value other than undefined, it will be returned
+    `undefined`, the `unknownProperty()` method will be called on the object.
+    If this method returns any value other than `undefined`, it will be returned
     instead. This allows you to implement "virtual" properties that are
     not defined upfront.
 
@@ -113,14 +119,18 @@ Ember.Observable = Ember.Mixin.create(/** @scope Ember.Observable.prototype */ {
   },
 
   /**
-    To get multiple properties at once, call getProperties
+    To get multiple properties at once, call `getProperties`
     with a list of strings or an array:
 
-          record.getProperties('firstName', 'lastName', 'zipCode'); // => { firstName: 'John', lastName: 'Doe', zipCode: '10011' }
+    ```javascript
+    record.getProperties('firstName', 'lastName', 'zipCode');  // { firstName: 'John', lastName: 'Doe', zipCode: '10011' }
+    ```
 
-   is equivalent to:
+    is equivalent to:
 
-          record.getProperties(['firstName', 'lastName', 'zipCode']); // => { firstName: 'John', lastName: 'Doe', zipCode: '10011' }
+    ```javascript
+    record.getProperties(['firstName', 'lastName', 'zipCode']);  // { firstName: 'John', lastName: 'Doe', zipCode: '10011' }
+    ```
 
     @method getProperties
     @param {String...|Array} list of keys to get
@@ -141,14 +151,14 @@ Ember.Observable = Ember.Mixin.create(/** @scope Ember.Observable.prototype */ {
   /**
     Sets the provided key or path to the value.
 
-    This method is generally very similar to calling object[key] = value or
-    object.key = value, except that it provides support for computed
-    properties, the unknownProperty() method and property observers.
+    This method is generally very similar to calling `object[key] = value` or
+    `object.key = value`, except that it provides support for computed
+    properties, the `unknownProperty()` method and property observers.
 
     ### Computed Properties
 
     If you try to set a value on a key that has a computed property handler
-    defined (see the get() method for an example), then set() will call
+    defined (see the `get()` method for an example), then `set()` will call
     that method, passing both the value and key instead of simply changing
     the value itself. This is useful for those times when you need to
     implement a property that is composed of one or more member
@@ -157,31 +167,33 @@ Ember.Observable = Ember.Mixin.create(/** @scope Ember.Observable.prototype */ {
     ### Unknown Properties
 
     If you try to set a value on a key that is undefined in the target
-    object, then the unknownProperty() handler will be called instead. This
+    object, then the `unknownProperty()` handler will be called instead. This
     gives you an opportunity to implement complex "virtual" properties that
-    are not predefined on the object. If unknownProperty() returns
-    undefined, then set() will simply set the value on the object.
+    are not predefined on the object. If `unknownProperty()` returns
+    undefined, then `set()` will simply set the value on the object.
 
     ### Property Observers
 
-    In addition to changing the property, set() will also register a
-    property change with the object. Unless you have placed this call
-    inside of a beginPropertyChanges() and endPropertyChanges(), any "local"
-    observers (i.e. observer methods declared on the same object), will be
-    called immediately. Any "remote" observers (i.e. observer methods
-    declared on another object) will be placed in a queue and called at a
-    later time in a coalesced manner.
+    In addition to changing the property, `set()` will also register a property
+    change with the object. Unless you have placed this call inside of a
+    `beginPropertyChanges()` and `endPropertyChanges(),` any "local" observers
+    (i.e. observer methods declared on the same object), will be called
+    immediately. Any "remote" observers (i.e. observer methods declared on
+    another object) will be placed in a queue and called at a later time in a
+    coalesced manner.
 
     ### Chaining
 
-    In addition to property changes, set() returns the value of the object
+    In addition to property changes, `set()` returns the value of the object
     itself so you can do chaining like this:
 
-          record.set('firstName', 'Charles').set('lastName', 'Jolley');
+    ```javascript
+    record.set('firstName', 'Charles').set('lastName', 'Jolley');
+    ```
 
     @method set
     @param {String} key The property to set
-    @param {Object} value The value to set or null.
+    @param {Object} value The value to set or `null`.
     @return {Ember.Observable}
   */
   set: function(keyName, value) {
@@ -190,10 +202,12 @@ Ember.Observable = Ember.Mixin.create(/** @scope Ember.Observable.prototype */ {
   },
 
   /**
-    To set multiple properties at once, call setProperties
+    To set multiple properties at once, call `setProperties`
     with a Hash:
 
-          record.setProperties({ firstName: 'Charles', lastName: 'Jolley' });
+    ```javascript
+    record.setProperties({ firstName: 'Charles', lastName: 'Jolley' });
+    ```
 
     @method setProperties
     @param {Hash} hash the hash of keys and values to set
@@ -210,8 +224,9 @@ Ember.Observable = Ember.Mixin.create(/** @scope Ember.Observable.prototype */ {
     will not be sent until the changes are finished. If you plan to make a
     large number of changes to an object at one time, you should call this
     method at the beginning of the changes to begin deferring change
-    notifications. When you are done making changes, call endPropertyChanges()
-    to deliver the deferred change notifications and end deferring.
+    notifications. When you are done making changes, call
+    `endPropertyChanges()` to deliver the deferred change notifications and end
+    deferring.
 
     @method beginPropertyChanges
     @return {Ember.Observable}
@@ -227,7 +242,7 @@ Ember.Observable = Ember.Mixin.create(/** @scope Ember.Observable.prototype */ {
     You can use this method to group property changes so that notifications
     will not be sent until the changes are finished. If you plan to make a
     large number of changes to an object at one time, you should call
-    beginPropertyChanges() at the beginning of the changes to defer change
+    `beginPropertyChanges()` at the beginning of the changes to defer change
     notifications. When you are done making changes, call this method to
     deliver the deferred change notifications and end deferring.
 
@@ -243,14 +258,15 @@ Ember.Observable = Ember.Mixin.create(/** @scope Ember.Observable.prototype */ {
     Notify the observer system that a property is about to change.
 
     Sometimes you need to change a value directly or indirectly without
-    actually calling get() or set() on it. In this case, you can use this
-    method and propertyDidChange() instead. Calling these two methods
+    actually calling `get()` or `set()` on it. In this case, you can use this
+    method and `propertyDidChange()` instead. Calling these two methods
     together will notify all observers that the property has potentially
     changed value.
 
-    Note that you must always call propertyWillChange and propertyDidChange as
-    a pair. If you do not, it may get the property change groups out of order
-    and cause notifications to be delivered more often than you would like.
+    Note that you must always call `propertyWillChange` and `propertyDidChange`
+    as a pair. If you do not, it may get the property change groups out of
+    order and cause notifications to be delivered more often than you would
+    like.
 
     @method propertyWillChange
     @param {String} key The property key that is about to change.
@@ -265,14 +281,15 @@ Ember.Observable = Ember.Mixin.create(/** @scope Ember.Observable.prototype */ {
     Notify the observer system that a property has just changed.
 
     Sometimes you need to change a value directly or indirectly without
-    actually calling get() or set() on it. In this case, you can use this
-    method and propertyWillChange() instead. Calling these two methods
+    actually calling `get()` or `set()` on it. In this case, you can use this
+    method and `propertyWillChange()` instead. Calling these two methods
     together will notify all observers that the property has potentially
     changed value.
 
-    Note that you must always call propertyWillChange and propertyDidChange as
-    a pair. If you do not, it may get the property change groups out of order
-    and cause notifications to be delivered more often than you would like.
+    Note that you must always call `propertyWillChange` and `propertyDidChange`
+    as a pair. If you do not, it may get the property change groups out of
+    order and cause notifications to be delivered more often than you would
+    like.
 
     @method propertyDidChange
     @param {String} keyName The property key that has just changed.
@@ -320,19 +337,23 @@ Ember.Observable = Ember.Mixin.create(/** @scope Ember.Observable.prototype */ {
     ### Observer Methods
 
     Observer methods you pass should generally have the following signature if
-    you do not pass a "context" parameter:
+    you do not pass a `context` parameter:
 
-          fooDidChange: function(sender, key, value, rev);
+    ```javascript
+    fooDidChange: function(sender, key, value, rev) { };
+    ```
 
     The sender is the object that changed. The key is the property that
     changes. The value property is currently reserved and unused. The rev
     is the last property revision of the object when it changed, which you can
     use to detect if the key value has really changed or not.
 
-    If you pass a "context" parameter, the context will be passed before the
+    If you pass a `context` parameter, the context will be passed before the
     revision like so:
 
-          fooDidChange: function(sender, key, value, context, rev);
+    ```javascript
+    fooDidChange: function(sender, key, value, context, rev) { };
+    ```
 
     Usually you will not need the value, context or revision parameters at
     the end. In this case, it is common to write observer methods that take
@@ -351,7 +372,7 @@ Ember.Observable = Ember.Mixin.create(/** @scope Ember.Observable.prototype */ {
 
   /**
     Remove an observer you have previously registered on this object. Pass
-    the same key, target, and method you passed to addObserver() and your
+    the same key, target, and method you passed to `addObserver()` and your
     target will no longer receive notifications.
 
     @method removeObserver
@@ -365,7 +386,7 @@ Ember.Observable = Ember.Mixin.create(/** @scope Ember.Observable.prototype */ {
   },
 
   /**
-    Returns true if the object currently has observers registered for a
+    Returns `true` if the object currently has observers registered for a
     particular key. You can use this method to potentially defer performing
     an expensive action until someone begins observing a particular property
     on the object.
@@ -420,7 +441,7 @@ Ember.Observable = Ember.Mixin.create(/** @scope Ember.Observable.prototype */ {
     @deprecated
     @method setPath
     @param {String} path The path to the property that will be set
-    @param {Object} value The value to set or null.
+    @param {Object} value The value to set or `null`.
     @return {Ember.Observable}
   */
   setPath: function(path, value) {
@@ -429,10 +450,12 @@ Ember.Observable = Ember.Mixin.create(/** @scope Ember.Observable.prototype */ {
   },
 
   /**
-    Retrieves the value of a property, or a default value in the case that the property
-    returns undefined.
+    Retrieves the value of a property, or a default value in the case that the
+    property returns `undefined`.
 
-        person.getWithDefault('lastName', 'Doe');
+    ```javascript
+    person.getWithDefault('lastName', 'Doe');
+    ```
 
     @method getWithDefault
     @param {String} keyName The name of the property to retrieve
@@ -446,8 +469,10 @@ Ember.Observable = Ember.Mixin.create(/** @scope Ember.Observable.prototype */ {
   /**
     Set the value of a property to the current value plus some amount.
 
-        person.incrementProperty('age');
-        team.incrementProperty('score', 2);
+    ```javascript
+    person.incrementProperty('age');
+    team.incrementProperty('score', 2);
+    ```
 
     @method incrementProperty
     @param {String} keyName The name of the property to increment
@@ -463,8 +488,10 @@ Ember.Observable = Ember.Mixin.create(/** @scope Ember.Observable.prototype */ {
   /**
     Set the value of a property to the current value minus some amount.
 
-        player.decrementProperty('lives');
-        orc.decrementProperty('health', 5);
+    ```javascript
+    player.decrementProperty('lives');
+    orc.decrementProperty('health', 5);
+    ```
 
     @method decrementProperty
     @param {String} keyName The name of the property to decrement
@@ -481,7 +508,9 @@ Ember.Observable = Ember.Mixin.create(/** @scope Ember.Observable.prototype */ {
     Set the value of a boolean property to the opposite of it's
     current value.
 
-        starship.toggleProperty('warpDriveEnaged');
+    ```javascript
+    starship.toggleProperty('warpDriveEnaged');
+    ```
 
     @method toggleProperty
     @param {String} keyName The name of the property to toggle

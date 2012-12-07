@@ -128,13 +128,14 @@ GroupedEach.prototype = {
 };
 
 /**
-  The `{{#each}}` helper loops over elements in a collection, rendering its block once for each item:
+  The `{{#each}}` helper loops over elements in a collection, rendering its
+  block once for each item:
 
-  ``` javascript
+  ```javascript
   Developers = [{name: 'Yehuda'},{name: 'Tom'}, {name: 'Paul'}];
   ```
 
-  ``` handlebars
+  ```handlebars
   {{#each Developers}}
     {{name}}
   {{/each}}
@@ -142,19 +143,20 @@ GroupedEach.prototype = {
 
   `{{each}}` supports an alternative syntax with element naming:
 
-  ``` handlebars
+  ```handlebars
   {{#each person in Developers}}
     {{person.name}}
   {{/each}}
   ```
 
-  When looping over objects that do not have properties, `{{this}}` can be used to render the object:
+  When looping over objects that do not have properties, `{{this}}` can be used
+  to render the object:
 
-  ``` javascript
+  ```javascript
   DeveloperNames = ['Yehuda', 'Tom', 'Paul']
   ```
 
-  ``` handlebars
+  ```handlebars
   {{#each DeveloperNames}}
     {{this}}
   {{/each}}
@@ -162,22 +164,21 @@ GroupedEach.prototype = {
 
   ### Blockless Use
 
-  If you provide an `itemViewClass` option that has its own `template` you can omit
-  the block in a similar way to how it can be done with the collection helper.
+  If you provide an `itemViewClass` option that has its own `template` you can
+  omit the block in a similar way to how it can be done with the collection
+  helper.
 
   The following template:
 
-  ``` handlebars
-  <script type="text/x-handlebars">
-    {{#view App.MyView }}
-      {{each view.items itemViewClass="App.AnItemView"}}
-    {{/view}}
-  </script>
+  ```handlebars
+  {{#view App.MyView }}
+    {{each view.items itemViewClass="App.AnItemView"}} 
+  {{/view}}
   ```
 
   And application code
 
-  ``` javascript
+  ```javascript
   App = Ember.Application.create({
     MyView: Ember.View.extend({
       items: [
@@ -197,14 +198,13 @@ GroupedEach.prototype = {
 
   Will result in the HTML structure below
 
-  ``` html
+  ```html
   <div class="ember-view">
     <div class="ember-view">Greetings Dave</div>
     <div class="ember-view">Greetings Mary</div>
     <div class="ember-view">Greetings Sara</div>
   </div>
   ```
-
 
   @method each
   @for Ember.Handlebars.helpers

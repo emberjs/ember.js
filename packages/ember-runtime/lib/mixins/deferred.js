@@ -27,7 +27,7 @@ Ember.Deferred = Ember.Mixin.create({
   },
 
   /**
-    Resolve a Deferred object and call any doneCallbacks with the given args.
+    Resolve a Deferred object and call any `doneCallbacks` with the given args.
 
     @method resolve
   */
@@ -36,7 +36,7 @@ Ember.Deferred = Ember.Mixin.create({
   },
 
   /**
-    Reject a Deferred object and call any failCallbacks with the given args.
+    Reject a Deferred object and call any `failCallbacks` with the given args.
 
     @method reject
   */

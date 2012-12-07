@@ -11,12 +11,12 @@ require("ember-handlebars/ext");
   @private
 
   Find templates stored in the head tag as script tags and make them available
-  to Ember.CoreView in the global Ember.TEMPLATES object. This will be run as as
-  jQuery DOM-ready callback.
+  to `Ember.CoreView` in the global `Ember.TEMPLATES` object. This will be run
+  as as jQuery DOM-ready callback.
 
-  Script tags with "text/x-handlebars" will be compiled
+  Script tags with `text/x-handlebars` will be compiled
   with Ember's Handlebars and are suitable for use as a view's template.
-  Those with type="text/x-raw-handlebars" will be compiled with regular
+  Those with type `text/x-raw-handlebars` will be compiled with regular
   Handlebars and are suitable for use in views' computed properties.
 
   @method bootstrap

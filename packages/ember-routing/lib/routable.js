@@ -196,7 +196,7 @@ Ember.Routable = Ember.Mixin.create({
   /**
     @private
 
-    A _RouteMatcher object generated from the current route's `route`
+    A `_RouteMatcher` object generated from the current route's `route`
     string property.
 
     @property routeMatcher
@@ -325,7 +325,9 @@ Ember.Routable = Ember.Mixin.create({
     `blog_post_id` and the object is a `BlogPost` with an
     `id` of `12`, the serialize method will produce:
 
-        { blog_post_id: 12 }
+    ```javascript
+    { blog_post_id: 12 }
+    ```
 
     @method serialize
     @param manager {Ember.StateManager}
@@ -402,8 +404,8 @@ Ember.Routable = Ember.Mixin.create({
     Once `unroute` has finished unwinding, `routePath` will be called
     with the remainder of the route.
 
-    For example, if you were in the /posts/1/comments state, and you
-    moved into the /posts/2/comments state, `routePath` will be called
+    For example, if you were in the `/posts/1/comments` state, and you
+    moved into the `/posts/2/comments` state, `routePath` will be called
     on the state whose path is `/posts` with the path `/2/comments`.
 
     @method routePath

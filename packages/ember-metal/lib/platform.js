@@ -17,7 +17,8 @@ var platform = Ember.platform = {};
 
 
 /**
-  Identical to Object.create().  Implements if not available natively.
+  Identical to `Object.create()`. Implements if not available natively.
+
   @method create
   @for Ember
 */
@@ -118,7 +119,7 @@ if (defineProperty) {
 */
 
 /**
-  Identical to Object.defineProperty().  Implements as much functionality
+  Identical to `Object.defineProperty()`. Implements as much functionality
   as possible if not available natively.
 
   @method defineProperty
