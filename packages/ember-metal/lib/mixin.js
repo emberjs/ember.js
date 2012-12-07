@@ -531,7 +531,7 @@ function findNamespaces() {
     // There are also times where even if we can access them, we are not allowed to access their properties.
     try {
       obj = Ember.lookup[prop];
-      isNamespace = obj && get(obj, 'isNamespace');
+      isNamespace = obj && obj.isNamespace;
     } catch (e) {
       continue;
     }
