@@ -314,8 +314,11 @@ ComputedPropertyPrototype.set = function(obj, keyName, value) {
     // argument.
     if (func.length === 3) {
       ret = func.call(obj, keyName, value, cachedValue);
-    } else {
+    } else if (func.length === 2) {
       ret = func.call(obj, keyName, value);
+    } else {
+      Ember.defineProperty(obj, keyName, null, value);
+      return;
     }
 
     if (hadCachedValue && cachedValue === ret) { return; }
