@@ -358,7 +358,12 @@ Ember._RenderBuffer.prototype =
     @return {String} The generated HTMl
   */
   string: function() {
-    var content = '', tag = this.elementTag, openTag;
+    var content = [];
+    return this.array(content).join('');
+  },
+
+  array: function(content) {
+    var tag = this.elementTag, openTag;
 
     if (tag) {
       var id = this.elementId,
@@ -367,44 +372,49 @@ Ember._RenderBuffer.prototype =
           style = this.elementStyle,
           styleBuffer = '', prop;
 
-      openTag = ["<" + tag];
+      content.push("<" + tag);
 
-      if (id) { openTag.push('id="' + this._escapeAttribute(id) + '"'); }
-      if (classes) { openTag.push('class="' + this._escapeAttribute(classes.toDOM()) + '"'); }
+      if (id) { content.push(' id="' + this._escapeAttribute(id) + '"'); }
+      if (classes) { content.push(' class="' + this._escapeAttribute(classes.toDOM()) + '"'); }
 
       if (style) {
+        content.push(' style="');
+
         for (prop in style) {
           if (style.hasOwnProperty(prop)) {
-            styleBuffer += (prop + ':' + this._escapeAttribute(style[prop]) + ';');
+            content.push(prop + ':' + this._escapeAttribute(style[prop]) + ';');
           }
         }
 
-        openTag.push('style="' + styleBuffer + '"');
+        content.push('"');
       }
 
       if (attrs) {
         for (prop in attrs) {
           if (attrs.hasOwnProperty(prop)) {
-            openTag.push(prop + '="' + this._escapeAttribute(attrs[prop]) + '"');
+            content.push(' ' + prop + '="' + this._escapeAttribute(attrs[prop]) + '"');
           }
         }
       }
 
-      openTag = openTag.join(" ") + '>';
+      content.push('>');
     }
 
     var childBuffers = this.childBuffers;
 
     Ember.ArrayPolyfills.forEach.call(childBuffers, function(buffer) {
       var stringy = typeof buffer === 'string';
-      content += (stringy ? buffer : buffer.string());
+      if (stringy) {
+        content.push(buffer);
+      } else {
+        buffer.array(content);
+      }
     });
 
     if (tag) {
-      return openTag + content + "</" + tag + ">";
-    } else {
-      return content;
+      content.push("</" + tag + ">");
     }
+    return content;
   },
 
   _escapeAttribute: function(value) {
