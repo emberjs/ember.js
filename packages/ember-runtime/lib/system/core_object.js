@@ -46,7 +46,6 @@ function makeCtor() {
       Class.proto(); // prepare prototype...
     }
     o_defineProperty(this, GUID_KEY, undefinedDescriptor);
-    o_defineProperty(this, '_super', undefinedDescriptor);
     var m = meta(this);
     m.proto = this;
     if (initMixins) {
@@ -157,7 +156,9 @@ CoreObject.PrototypeMixin = Mixin.create({
 
   toString: function() {
     return '<'+this.constructor.toString()+':'+guidFor(this)+'>';
-  }
+  },
+
+  _super: Ember.K
 });
 
 if (Ember.config.overridePrototypeMixin) {
