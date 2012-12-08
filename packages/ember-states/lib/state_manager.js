@@ -167,6 +167,55 @@ Transition.prototype = {
   }
 };
 
+var sendRecursively = function(event, currentState, isUnhandledPass) {
+  var log = this.enableLogging,
+      eventName = isUnhandledPass ? 'unhandledEvent' : event,
+      action = currentState[eventName],
+      contexts, sendRecursiveArguments, actionArguments;
+
+  contexts = [].slice.call(arguments, 3);
+
+  // Test to see if the action is a method that
+  // can be invoked. Don't blindly check just for
+  // existence, because it is possible the state
+  // manager has a child state of the given name,
+  // and we should still raise an exception in that
+  // case.
+  if (typeof action === 'function') {
+    if (log) {
+      if (isUnhandledPass) {
+        Ember.Logger.log(fmt("STATEMANAGER: Unhandled event '%@' being sent to state %@.", [event, get(currentState, 'path')]));
+      } else {
+        Ember.Logger.log(fmt("STATEMANAGER: Sending event '%@' to state %@.", [event, get(currentState, 'path')]));
+      }
+    }
+
+    actionArguments = contexts;
+    if (isUnhandledPass) {
+      actionArguments.unshift(event);
+    }
+    actionArguments.unshift(this);
+
+    return action.apply(currentState, actionArguments);
+  } else {
+    var parentState = get(currentState, 'parentState');
+    if (parentState) {
+
+      sendRecursiveArguments = contexts;
+      sendRecursiveArguments.unshift(event, parentState, isUnhandledPass);
+
+      return sendRecursively.apply(this, sendRecursiveArguments);
+    } else if (!isUnhandledPass) {
+      return sendEvent.call(this, event, contexts, true);
+    }
+  }
+};
+
+var sendEvent = function(eventName, sendRecursiveArguments, isUnhandledPass) {
+  sendRecursiveArguments.unshift(eventName, get(this, 'currentState'), isUnhandledPass);
+  return sendRecursively.apply(this, sendRecursiveArguments);
+};
+
 /**
   StateManager is part of Ember's implementation of a finite state machine. A
   StateManager instance manages a number of properties that are instances of
@@ -436,12 +485,13 @@ Transition.prototype = {
 
   ## Managing currentState with Actions
 
-  To control which transitions between states are possible for a given state,
-  StateManager can receive and route action messages to its states via the
-  `send` method. Calling to `send` with an action name will begin searching for
-  a method with the same name starting at the current state and moving up
-  through the parent states in a state hierarchy until an appropriate method is
-  found or the StateManager instance itself is reached.
+  To control which transitions are possible for a given state, and
+  appropriately handle external events, the StateManager can receive and
+  route action messages to its states via the `send` method. Calling to
+  `send` with an action name will begin searching for a method with the same
+  name starting at the current state and moving up through the parent states
+  in a state hierarchy until an appropriate method is found or the StateManager
+  instance itself is reached.
 
   If an appropriately named method is found it will be called with the state
   manager as the first argument and an optional `context` object as the second
@@ -475,14 +525,39 @@ Transition.prototype = {
   // someObject as the second argument.
   ```
 
-  If the StateManager attempts to send an action but does not find an
-  appropriately named method in the current state or while moving upwards
-  through the state hierarchy it will throw a new `Ember.Error`. Action
-  detection only moves upwards through the state hierarchy from the current
-  state. It does not search in other portions of the hierarchy.
+  If the StateManager attempts to send an action but does not find an appropriately named
+  method in the current state or while moving upwards through the state hierarchy, it will
+  repeat the process looking for a `unhandledEvent` method. If an `unhandledEvent` method is
+  found, it will be called with the original event name as the second argument. If an
+  `unhandledEvent` method is not found, the StateManager will throw a new Ember.Error.
 
   ```javascript
   managerB = Ember.StateManager.create({
+    initialState: 'stateOne.substateOne.subsubstateOne',
+    stateOne: Ember.State.create({
+      substateOne: Ember.State.create({
+        subsubstateOne: Ember.State.create({}),
+        unhandledEvent: function(manager, eventName, context) {
+          console.log("got an unhandledEvent with name " + eventName);
+        }
+      })
+    })
+  })
+
+  managerB.get('currentState.name') // 'subsubstateOne'
+  managerB.send('anAction')
+  // neither `stateOne.substateOne.subsubstateOne` nor any of it's
+  // parent states have a handler for `anAction`. `subsubstateOne`
+  // also does not have a `unhandledEvent` method, but its parent
+  // state, `substateOne`, does, and it gets fired. It will log
+  // "got an unhandledEvent with name anAction"
+  ```
+
+  Action detection only moves upwards through the state hierarchy from the current state.
+  It does not search in other portions of the hierarchy.
+
+  ```javascript
+  managerC = Ember.StateManager.create({
     initialState: 'stateOne.substateOne.subsubstateOne',
     stateOne: Ember.State.create({
       substateOne: Ember.State.create({
@@ -497,8 +572,8 @@ Transition.prototype = {
     })
   })
 
-  managerB.get('currentState.name') // 'subsubstateOne'
-  managerB.send('anAction')
+  managerC.get('currentState.name') // 'subsubstateOne'
+  managerC.send('anAction')
   // Error: <Ember.StateManager:ember132> could not
   // respond to event anAction in state stateOne.substateOne.subsubstateOne.
   ```
@@ -661,48 +736,13 @@ Ember.StateManager = Ember.State.extend({
   errorOnUnhandledEvent: true,
 
   send: function(event) {
-    var contexts, sendRecursiveArguments;
-
+    var contexts = [].slice.call(arguments, 1);
     Ember.assert('Cannot send event "' + event + '" while currentState is ' + get(this, 'currentState'), get(this, 'currentState'));
-
-    contexts = [].slice.call(arguments, 1);
-    sendRecursiveArguments = contexts;
-    sendRecursiveArguments.unshift(event, get(this, 'currentState'));
-
-    return this.sendRecursively.apply(this, sendRecursiveArguments);
+    return sendEvent.call(this, event, contexts, false);
   },
-
-  sendRecursively: function(event, currentState) {
-    var log = this.enableLogging,
-        action = currentState[event],
-        contexts, sendRecursiveArguments, actionArguments;
-
-    contexts = [].slice.call(arguments, 2);
-
-    // Test to see if the action is a method that
-    // can be invoked. Don't blindly check just for
-    // existence, because it is possible the state
-    // manager has a child state of the given name,
-    // and we should still raise an exception in that
-    // case.
-    if (typeof action === 'function') {
-      if (log) { Ember.Logger.log(fmt("STATEMANAGER: Sending event '%@' to state %@.", [event, get(currentState, 'path')])); }
-
-      actionArguments = contexts;
-      actionArguments.unshift(this);
-
-      return action.apply(currentState, actionArguments);
-    } else {
-      var parentState = get(currentState, 'parentState');
-      if (parentState) {
-
-        sendRecursiveArguments = contexts;
-        sendRecursiveArguments.unshift(event, parentState);
-
-        return this.sendRecursively.apply(this, sendRecursiveArguments);
-      } else if (get(this, 'errorOnUnhandledEvent')) {
-        throw new Ember.Error(this.toString() + " could not respond to event " + event + " in state " + get(this, 'currentState.path') + ".");
-      }
+  unhandledEvent: function(manager, event) {
+    if (get(this, 'errorOnUnhandledEvent')) {
+      throw new Ember.Error(this.toString() + " could not respond to event " + event + " in state " + get(this, 'currentState.path') + ".");
     }
   },
 
