@@ -179,6 +179,6 @@ test("properly handles old IE's zero-scope bug", function() {
   buffer.push('<script></script>foo');
 
   var element = buffer.element();
-  ok($(element).html().match(/script/i), "should have script tag");
-  ok(!$(element).html().match(/&shy;/), "should not have &shy;");
+  ok(Ember.$(element).html().match(/script/i), "should have script tag");
+  ok(!Ember.$(element).html().match(/&shy;/), "should not have &shy;");
 });
