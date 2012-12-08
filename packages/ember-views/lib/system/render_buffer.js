@@ -349,14 +349,15 @@ Ember._RenderBuffer.prototype =
   */
   element: function() {
     var element = document.createElement(this.elementTag),
+        $element = Ember.$(element),
         id = this.elementId,
         classes = this.elementClasses,
         attrs = this.elementAttributes,
         style = this.elementStyle,
         styleBuffer = '', prop;
 
-    if (id) { element.setAttribute('id', id); }
-    if (classes) { element.setAttribute('class', classes.toDOM()); }
+    if (id) { $element.attr('id', id); }
+    if (classes) { $element.attr('class', classes.toDOM()); }
 
     if (style) {
       for (prop in style) {
@@ -365,19 +366,37 @@ Ember._RenderBuffer.prototype =
         }
       }
 
-      element.setAttribute('style', styleBuffer);
+      $element.attr('style', styleBuffer);
     }
 
     if (attrs) {
       for (prop in attrs) {
         if (attrs.hasOwnProperty(prop)) {
-          element.setAttribute(prop, attrs[prop]);
+          $element.attr(prop, attrs[prop]);
         }
       }
     }
 
     this.elementTag = ''; // hack to avoid creating an innerString function
-    element.innerHTML = this.string();
+    var html = this.string();
+
+    if (!Ember.$.support.htmlSerialize) { // work around IE zero-scope bug by inserting a script tag
+      html = '&shy;' + html;
+    }
+
+    element.innerHTML = html;
+
+    if (!Ember.$.support.htmlSerialize) {
+      // This code is copied from Metamorph
+      var shyElement = element.firstChild;
+      while (shyElement.nodeType === 1 && !shyElement.nodeName) {
+        shyElement = shyElement.firstChild;
+      }
+      if (shyElement.nodeType === 3 && shyElement.nodeValue.charAt(0) === "\u00AD") {
+        shyElement.nodeValue = shyElement.nodeValue.slice(1);
+      }
+    }
+
     return element;
   },
 
