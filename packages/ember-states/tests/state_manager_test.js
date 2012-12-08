@@ -466,6 +466,47 @@ test("it throws an exception if an event is dispatched that is unhandled", funct
   ok(true, "does not raise exception when errorOnUnhandledEvent is set to false");
 });
 
+test("it looks for unhandledEvent handler in the currentState if event is not handled by named handler", function() {
+  var wasCalled = 0,
+      evt = "foo",
+      calledWithOriginalEventName,
+      calledWithEvent;
+  stateManager = Ember.StateManager.create({
+    initialState: 'loading',
+    loading: Ember.State.create({
+      unhandledEvent: function(manager, originalEventName, event) {
+        wasCalled = true;
+        calledWithOriginalEventName = originalEventName;
+        calledWithEvent = event;
+      }
+    })
+  });
+  stateManager.send("somethingUnhandled", evt);
+  ok(wasCalled);
+  equal(calledWithOriginalEventName, 'somethingUnhandled');
+  equal(calledWithEvent, evt);
+});
+
+test("it looks for unhandledEvent handler in the stateManager if event is not handled by named handler", function() {
+  var wasCalled = 0,
+      evt = "foo",
+      calledWithOriginalEventName,
+      calledWithEvent;
+  stateManager = Ember.StateManager.create({
+    initialState: 'loading',
+    unhandledEvent: function(manager, originalEventName, event) {
+      wasCalled = true;
+      calledWithOriginalEventName = originalEventName;
+      calledWithEvent = event;
+    },
+    loading: Ember.State.create({})
+  });
+  stateManager.send("somethingUnhandled", evt);
+  ok(wasCalled);
+  equal(calledWithOriginalEventName, 'somethingUnhandled');
+  equal(calledWithEvent, evt);
+});
+
 module("Ember.Statemanager - Pivot states", {
   setup: function() {
     var State = Ember.State.extend(stateEventStub);
