@@ -860,15 +860,9 @@ Ember.View = Ember.CoreView.extend(
     @property controller
     @type Object
   */
-  controller: Ember.computed(function(key, value) {
-    var parentView;
-
-    if (arguments.length === 2) {
-      return value;
-    } else {
-      parentView = get(this, 'parentView');
-      return parentView ? get(parentView, 'controller') : null;
-    }
+  controller: Ember.computed(function(key) {
+    var parentView = get(this, 'parentView');
+    return parentView ? get(parentView, 'controller') : null;
   }).property(),
 
   /**
@@ -885,9 +879,7 @@ Ember.View = Ember.CoreView.extend(
     @property layout
     @type Function
   */
-  layout: Ember.computed(function(key, value) {
-    if (arguments.length === 2) { return value; }
-
+  layout: Ember.computed(function(key) {
     var layoutName = get(this, 'layoutName'),
         layout = this.templateForName(layoutName, 'layout');
 
@@ -949,12 +941,8 @@ Ember.View = Ember.CoreView.extend(
 
     @property _context
   */
-  _context: Ember.computed(function(key, value) {
+  _context: Ember.computed(function(key) {
     var parentView, controller;
-
-    if (arguments.length === 2) {
-      return value;
-    }
 
     if (controller = get(this, 'controller')) {
       return controller;

@@ -326,9 +326,7 @@ Ember.Select = Ember.View.extend(
     @type String
     @default null
   */
-  value: Ember.computed(function(key, value) {
-    if (arguments.length === 2) { return value; }
-
+  value: Ember.computed(function(key) {
     var valuePath = get(this, 'optionValuePath').replace(/^content\.?/, '');
     return valuePath ? get(this, 'selection.' + valuePath) : get(this, 'selection');
   }).property('selection'),

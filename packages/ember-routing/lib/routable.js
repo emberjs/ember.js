@@ -495,12 +495,10 @@ Ember.Routable = Ember.Mixin.create({
     return 'application';
   }),
 
-  _template: Ember.computed(function(key, value) {
-    if (arguments.length > 1) { return value; }
+  _template: Ember.computed(function(key) {
+    var value = get(this, 'template');
 
-    if (value = get(this, 'template')) {
-      return value;
-    }
+    if (value) { return value; }
 
     // If no template was explicitly supplied convert
     // the class name into a template name. For example,

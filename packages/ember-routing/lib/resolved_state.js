@@ -5,19 +5,14 @@ Ember._ResolvedState = Ember.Object.extend({
   state: null,
   match: null,
 
-  object: Ember.computed(function(key, value) {
-    if (arguments.length === 2) {
-      this._object = value;
-      return value;
+  object: Ember.computed(function(key) {
+    if (this._object) {
+      return this._object;
     } else {
-      if (this._object) {
-        return this._object;
-      } else {
-        var state = get(this, 'state'),
-            match = get(this, 'match'),
-            manager = get(this, 'manager');
-        return state.deserialize(manager, match.hash);
-      }
+      var state = get(this, 'state'),
+          match = get(this, 'match'),
+          manager = get(this, 'manager');
+      return state.deserialize(manager, match.hash);
     }
   }).property(),
 
