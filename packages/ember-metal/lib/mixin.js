@@ -123,7 +123,7 @@ function mergeMixins(mixins, m, descs, values, base) {
           if (isMethod(value)) {
             ovalue = descs[key] === undefined && values[key];
             if (!ovalue) { ovalue = base[key]; }
-            if ('function' !== typeof ovalue || ovalue === Ember.K) { ovalue = null; }
+            if ('function' !== typeof ovalue) { ovalue = null; }
             if (ovalue) {
               var o = value.__ember_observes__, ob = value.__ember_observesBefore__;
               value = Ember.wrap(value, ovalue);
