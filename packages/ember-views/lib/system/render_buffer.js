@@ -348,14 +348,44 @@ Ember._RenderBuffer.prototype =
       of this buffer
   */
   element: function() {
-    return Ember.$(this.string())[0];
+    var element = document.createElement(this.elementTag),
+        id = this.elementId,
+        classes = this.elementClasses,
+        attrs = this.elementAttributes,
+        style = this.elementStyle,
+        styleBuffer = '', prop;
+
+    if (id) { element.setAttribute('id', id); }
+    if (classes) { element.setAttribute('class', classes.toDOM()); }
+
+    if (style) {
+      for (prop in style) {
+        if (style.hasOwnProperty(prop)) {
+          styleBuffer += (prop + ':' + style[prop] + ';');
+        }
+      }
+
+      element.setAttribute('style', styleBuffer);
+    }
+
+    if (attrs) {
+      for (prop in attrs) {
+        if (attrs.hasOwnProperty(prop)) {
+          element.setAttribute(prop, attrs[prop]);
+        }
+      }
+    }
+
+    this.elementTag = ''; // hack to avoid creating an innerString function
+    element.innerHTML = this.string();
+    return element;
   },
 
   /**
     Generates the HTML content for this buffer.
 
     @method string
-    @return {String} The generated HTMl
+    @return {String} The generated HTML
   */
   string: function() {
     var content = [];
