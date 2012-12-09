@@ -503,7 +503,7 @@ function processNames(paths, root, seen) {
 
     if (obj && obj.toString === classToString) {
       obj[NAME_KEY] = paths.join('.');
-    } else if (obj && get(obj, 'isNamespace')) {
+    } else if (obj && obj.isNamespace) {
       if (seen[guidFor(obj)]) { continue; }
       seen[guidFor(obj)] = true;
       processNames(paths, obj, seen);
@@ -564,7 +564,7 @@ classToString = function() {
   var Namespace = Ember.Namespace, namespace;
 
   // TODO: Namespace should really be in Metal
-  if (Namespace) {
+  if (Namespace && !Ember.BOOTED) {
     if (!this[NAME_KEY] && !classToString.processed) {
       if (!Namespace.PROCESSED) {
         findNamespaces();

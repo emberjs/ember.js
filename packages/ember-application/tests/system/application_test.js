@@ -77,6 +77,7 @@ test("acts like a namespace", function() {
     Ember.run(function() {
       app = lookup.TestApp = Ember.Application.create({rootElement: '#two'});
     });
+    Ember.BOOTED = false;
     app.Foo = Ember.Object.extend();
     equal(app.Foo.toString(), "TestApp.Foo", "Classes pick up their parent namespace");
     Ember.run(function() {
