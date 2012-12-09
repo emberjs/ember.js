@@ -69,7 +69,7 @@ test("should not allow the elementId to be changed", function() {
 
   raises(function() {
     view.set('elementId', 'two');
-  }, /Changing a view's elementId after creation is not allowed./, "raises elementId changed exception");
+  }, "raises elementId changed exception");
 
   equal(view.get('elementId'), 'one', 'elementId is still "one"');
 });

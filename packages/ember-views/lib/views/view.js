@@ -42,6 +42,8 @@ Ember.warn("The VIEW_PRESERVES_CONTEXT flag has been removed and the functionali
 Ember.TEMPLATES = {};
 
 Ember.CoreView = Ember.Object.extend(Ember.Evented, {
+  isView: true,
+
   states: states,
 
   init: function() {
@@ -49,7 +51,12 @@ Ember.CoreView = Ember.Object.extend(Ember.Evented, {
 
     // Register the view for event handling. This hash is used by
     // Ember.EventDispatcher to dispatch incoming events.
-    if (!this.isVirtual) Ember.View.views[get(this, 'elementId')] = this;
+    if (!this.isVirtual) Ember.View.views[this.elementId] = this;
+
+    this.addBeforeObserver('elementId', function() {
+      throw new Error("Changing a view's elementId after creation is not allowed");
+    });
+
     this.transitionTo('preRender');
   },
 
@@ -62,14 +69,14 @@ Ember.CoreView = Ember.Object.extend(Ember.Evented, {
     @default null
   */
   parentView: Ember.computed(function() {
-    var parent = get(this, '_parentView');
+    var parent = this._parentView;
 
     if (parent && parent.isVirtual) {
       return get(parent, 'parentView');
     } else {
       return parent;
     }
-  }).property('_parentView').volatile(),
+  }).property('_parentView'),
 
   state: null,
 
@@ -79,7 +86,7 @@ Ember.CoreView = Ember.Object.extend(Ember.Evented, {
   concreteView: Ember.computed(function() {
     if (!this.isVirtual) { return this; }
     else { return get(this, 'parentView'); }
-  }).property('_parentView').volatile(),
+  }).property('parentView').volatile(),
 
   /**
     Creates a new `renderBuffer` with the passed `tagName`. You can override
@@ -91,7 +98,7 @@ Ember.CoreView = Ember.Object.extend(Ember.Evented, {
     @return {Ember.RenderBuffer}
   */
   renderBuffer: function(tagName) {
-    tagName = tagName || get(this, 'tagName');
+    tagName = tagName || this.tagName;
 
     // Explicitly check for null or undefined, as tagName
     // may be an empty string, which would evaluate to false.
@@ -127,7 +134,7 @@ Ember.CoreView = Ember.Object.extend(Ember.Evented, {
       be used.
   */
   renderToBuffer: function(parentBuffer, bufferOperation) {
-    var name = get(this, 'instrumentName'),
+    var name = 'render-to-buffer.' + this.instrumentName,
         details = {};
 
     this.instrumentDetails(details);
@@ -153,7 +160,7 @@ Ember.CoreView = Ember.Object.extend(Ember.Evented, {
     // provided buffer operation (for example, `insertAfter` will
     // insert a new buffer after the "parent buffer").
     if (parentBuffer) {
-      var tagName = get(this, 'tagName');
+      var tagName = this.tagName;
       if (tagName === null || tagName === undefined) {
         tagName = 'div';
       }
@@ -199,7 +206,7 @@ Ember.CoreView = Ember.Object.extend(Ember.Evented, {
   },
 
   willDestroy: function() {
-    var parent = get(this, '_parentView');
+    var parent = this._parentView;
 
     // destroy the element -- this will avoid each child view destroying
     // the element over and over again...
@@ -943,7 +950,7 @@ Ember.View = Ember.CoreView.extend(
       return controller;
     }
 
-    parentView = get(this, '_parentView');
+    parentView = this._parentView;
     if (parentView) {
       return get(parentView, '_context');
     }
@@ -1203,12 +1210,9 @@ Ember.View = Ember.CoreView.extend(
 
     @method _applyClassNameBindings
   */
-  _applyClassNameBindings: function() {
-    var classBindings = get(this, 'classNameBindings'),
-        classNames = get(this, 'classNames'),
-        elem, newClass, dasherizedClass;
-
-    if (!classBindings) { return; }
+  _applyClassNameBindings: function(classBindings) {
+    var classNames = this.classNames,
+    elem, newClass, dasherizedClass;
 
     // Loop through all of the configured bindings. These will be either
     // property names ('isUrgent') or property paths relative to the view
@@ -1253,7 +1257,7 @@ Ember.View = Ember.CoreView.extend(
       if (dasherizedClass) {
         // Ensure that it gets into the classNames array
         // so it is displayed when we render.
-        classNames.push(dasherizedClass);
+        a_addObject(classNames, dasherizedClass);
 
         // Save a reference to the class name so we can remove it
         // if the observer fires. Remember that this variable has
@@ -1278,11 +1282,8 @@ Ember.View = Ember.CoreView.extend(
     @method _applyAttributeBindings
     @param {Ember.RenderBuffer} buffer
   */
-  _applyAttributeBindings: function(buffer) {
-    var attributeBindings = get(this, 'attributeBindings'),
-        attributeValue, elem, type;
-
-    if (!attributeBindings) { return; }
+  _applyAttributeBindings: function(buffer, attributeBindings) {
+    var attributeValue, elem, type;
 
     a_forEach(attributeBindings, function(binding) {
       var split = binding.split(':'),
@@ -1524,22 +1525,7 @@ Ember.View = Ember.CoreView.extend(
     });
   },
 
-  /**
-    The ID to use when trying to locate the element in the DOM. If you do not
-    set the elementId explicitly, then the view's GUID will be used instead.
-    This ID must be set at the time the view is created.
-
-    @property elementId
-    @type String
-  */
-  elementId: Ember.computed(function(key, value) {
-    return value !== undefined ? value : Ember.guidFor(this);
-  }),
-
-  // TODO: Perhaps this should be removed from the production build somehow.
-  _elementIdDidChange: Ember.beforeObserver(function() {
-    throw "Changing a view's elementId after creation is not allowed.";
-  }, 'elementId'),
+  elementId: null,
 
   /**
     Attempts to discover the element in the parent element. The default
@@ -1553,7 +1539,7 @@ Ember.View = Ember.CoreView.extend(
     @return {DOMElement} The discovered element
   */
   findElementInParentElement: function(parentElem) {
-    var id = "#" + get(this, 'elementId');
+    var id = "#" + this.elementId;
     return Ember.$(id)[0] || Ember.$(id, parentElem)[0];
   },
 
@@ -1687,11 +1673,8 @@ Ember.View = Ember.CoreView.extend(
     @method _notifyWillDestroyElement
   */
   _notifyWillDestroyElement: function() {
-    this._notifyWillClearRender();
-
-    this.invokeRecursively(function(view) {
-      view.trigger('willDestroyElement');
-    });
+    this.triggerRecursively('willClearRender');
+    this.triggerRecursively('willDestroyElement');
   },
 
   _elementWillChange: Ember.beforeObserver(function() {
@@ -1750,16 +1733,21 @@ Ember.View = Ember.CoreView.extend(
   applyAttributesToBuffer: function(buffer) {
     // Creates observers for all registered class name and attribute bindings,
     // then adds them to the element.
-    this._applyClassNameBindings();
+    var classNameBindings = get(this, 'classNameBindings');
+    if (classNameBindings.length) {
+      this._applyClassNameBindings(classNameBindings);
+    }
 
     // Pass the render buffer so the method can apply attributes directly.
     // This isn't needed for class name bindings because they use the
     // existing classNames infrastructure.
-    this._applyAttributeBindings(buffer);
+    var attributeBindings = get(this, 'attributeBindings');
+    if (attributeBindings.length) {
+      this._applyAttributeBindings(buffer, attributeBindings);
+    }
 
-
-    a_forEach(get(this, 'classNames'), function(name){ buffer.addClass(name); });
-    buffer.id(get(this, 'elementId'));
+    buffer.setClasses(this.classNames);
+    buffer.id(this.elementId);
 
     var role = get(this, 'ariaRole');
     if (role) {
@@ -1903,6 +1891,8 @@ Ember.View = Ember.CoreView.extend(
     @method init
   */
   init: function() {
+    this.elementId = this.elementId || guidFor(this);
+
     this._super();
 
     // setup child views. be sure to clone the child views array first
@@ -1979,7 +1969,7 @@ Ember.View = Ember.CoreView.extend(
     @return {Ember.View} receiver
   */
   removeFromParent: function() {
-    var parent = get(this, '_parentView');
+    var parent = this._parentView;
 
     // Remove DOM element from parent
     this.remove();
@@ -2000,7 +1990,7 @@ Ember.View = Ember.CoreView.extend(
     // calling this._super() will nuke computed properties and observers,
     // so collect any information we need before calling super.
     var childViews = this._childViews,
-        parent     = get(this, '_parentView'),
+        parent = this._parentView,
         childLen;
 
     // destroy the element -- this will avoid each child view destroying
@@ -2045,6 +2035,8 @@ Ember.View = Ember.CoreView.extend(
     @return {Ember.View} new instance
   */
   createChildView: function(view, attrs) {
+    if (view.isView && view._parentView === this) { return view; }
+
     if (Ember.CoreView.detect(view)) {
       attrs = attrs || {};
       attrs._parentView = this;
@@ -2056,7 +2048,7 @@ Ember.View = Ember.CoreView.extend(
       // consumers of the view API
       if (view.viewName) { set(get(this, 'concreteView'), view.viewName, view); }
     } else {
-      Ember.assert('You must pass instance or subclass of View', view instanceof Ember.CoreView);
+      Ember.assert('You must pass instance or subclass of View', view.isView);
       Ember.assert("You can only pass attributes when a class is provided", !attrs);
 
       if (!get(view, 'templateData')) {
@@ -2134,12 +2126,12 @@ Ember.View = Ember.CoreView.extend(
 
   clearBuffer: function() {
     this.invokeRecursively(function(view) {
-      this.buffer = null;
+      view.buffer = null;
     });
   },
 
   transitionTo: function(state, children) {
-    this.currentState = Ember.View.states[state];
+    this.currentState = this.states[state];
     this.state = state;
 
     if (children !== false) {
