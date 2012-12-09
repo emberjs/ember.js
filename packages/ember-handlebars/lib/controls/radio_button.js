@@ -5,9 +5,12 @@ var get = Ember.get, getPath = Ember.getPath, set = Ember.set, fmt = Ember.Strin
 /**
   @class
 
-  A radio button view that enables `Ember.RadioButtonGroup` membership and binding.
+  The `Ember.RadioButton` view class renders an html radio input, allowing the
+  user to select a single value from a list of values.
 
-  See the {@link Ember.RadioButtonGroup} documentation for more information.
+  Dealing with multiple radio buttons can be simplified by using an
+  `Ember.RadioButtonGroup`. See the {@link Ember.RadioButtonGroup} documentation
+  for more information.
 
   @extends Ember.View
 */
@@ -81,97 +84,52 @@ Ember.RadioButton = Ember.Control.extend(
 });
 
 /**
-  @class A view for a group of radio buttons.
+  @class
 
-  ## Creating a RadioButtonGroup
+  The `Ember.RadioButtonGroup` view class provides a simplfied method for dealing
+  with multiple `Ember.RadioButton` instances.
 
-  You can create radio buttons like this:
+  ## Simple Example
 
   ```handlebars
-  {{#view Ember.RadioButtonGroup name="someName"}}
-    <label>
-      {{view RadioButton value="option1"}}
-      Option 1
-    </label>
-    <label>
-      {{view RadioButton value="option2"}}
-    </label>
+  {{#view Ember.RadioButtonGroup name="role" valueBinding="content.role"}}
+    {{view RadioButton value="admin"}}
+    {{view RadioButton value="owner"}}
+    {{view RadioButton value="user"}}
   {{/view}}
   ```
 
-  ## Getting/Setting the selected radio button
+  Note that the radio buttons are declared as `{{view RadioButton ...}}` as opposed
+  to `{{view Ember.RadioButton ...}}`. When inside the body of a RadioButtonGroup,
+  a `RadioButton` view is provided which automatically picks up the same name and value
+  binding as the containing group.
+
+  ## More Complex Example
 
   ```javascript
-  // get a reference to the selected radio button
-  group.get("selection");
-
-  // select a different radio button
-  group.set("selection", someRadioButton);
-
-  // or set a button as selected
-  someRadioButton.set("isSelected", true);
-
-  // clear the selection
-  group.set("selection", null);
-
-  // or deselect the selected button
-  selectedButton.set("isSelected", false);
-  ```
-
-  ## Getting/Setting the selected value
-
-  ```javascipt
-  // get the `value` property of the selected radio button
-  // or `null` if no buttons are selected
-  group.get("value");
-
-  // Select a different radio button by value.
-  // This also selects the proper radio button in the UI
-  group.set("value", someValue);
-  ```
-
-  ## Real world example
-
-  ```javascript
-  window.App = Ember.Application.create();
-
-  App.question = Ember.Object.create({
-    content: "Which of the following is the largest?",
-    possibleAnswers: [
-      Ember.Object.create({ label: "A peanut"      value: "peanut"      }),
-      Ember.Object.create({ label: "An elephant"   value: "elephant"    }),
-      Ember.Object.create({ label: "The moon"      value: "moon"        }),
-      Ember.Object.create({ label: "A tennis ball" value: "tennis ball" })
-    ],
-    selectedAnswer: null
+  App.person = Ember.Object.create({name: 'Gordon', role: 'admin'})
+  App.PersonController = Ember.Controller.extend({
+    contentBinding: 'App.person',
+    roleOptions: ['admin', 'owner', 'user', 'banned']
   });
-
-  App.questionView = Ember.View.create({
-    templateName: "question",
-    questionBinding: "App.question",
-    group: Ember.RadioButtonGroup.create({
-      // create a two-way binding so changes in the
-      // view propogate to the `selectedAnswer` property
-      // on the question object.
-      value: "App.question.selectedAnswer"
-    })
-  });
-
-  App.questionView.append();
   ```
-
-  The question template could look like this:
 
   ```handlebars
-  <h2>{{question.content}}</h2>
-  {{#view Ember.RadioButtonGroup name="answer" value="App.question.selectedAnswer"}}
-  {{#each question.possibleAnswers}}
-    <label>
-      {{view RadioButton valueBinding="value"}}
-      {{label}}
-    </label>
-  {{/each}}
+  {{#view Ember.RadioButtonGroup name="role" valueBinding="content.role"}}
+    {{#each role in controller.roleOptions}}
+      <label>
+        {{view RadioButton valueBinding="role"}}
+        {{role}}
+      </label>
+    {{/each}}
+  {{/view}}
   ```
+
+  The above controller/template combination will render html containing a
+  radio input for each item in the `roleOptions` property of the controller.
+  Initially, the `admin` option will be checked. If the user selects a different
+  radio, the `role` property of the controller's `content` will be updated
+  accordingly.
 
   @extends Ember.View
 */
