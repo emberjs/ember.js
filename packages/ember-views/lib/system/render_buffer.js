@@ -37,6 +37,7 @@ Ember.RenderBuffer = function(tagName) {
   return new Ember._RenderBuffer(tagName);
 };
 
+
 Ember._RenderBuffer = function(tagName) {
   this.elementTag = tagName;
   this.childBuffers = [];
@@ -46,16 +47,29 @@ Ember._RenderBuffer.prototype =
 /** @scope Ember.RenderBuffer.prototype */ {
 
   /**
-    Array of class-names which will be applied in the class attribute.
+    @private
 
-    You should not maintain this array yourself, rather, you should use
-    the `addClass()` method of `Ember.RenderBuffer.`
+    An internal set used to de-dupe class names when `addClass()` is
+    used. After each call to `addClass()`, the `classes` property
+    will be updated.
 
     @property elementClasses
     @type Array
     @default []
   */
   elementClasses: null,
+
+  /**
+    Array of class names which will be applied in the class attribute.
+
+    You can use `setClasses()` to set this property directly. If you
+    use `addClass()`, it will be maintained for you.
+
+    @property classes
+    @type Array
+    @default []
+  */
+  classes: null,
 
   /**
     The id in of the element, to be applied in the id attribute.
@@ -147,8 +161,13 @@ Ember._RenderBuffer.prototype =
     // lazily create elementClasses
     var elementClasses = this.elementClasses = (this.elementClasses || new ClassSet());
     this.elementClasses.add(className);
+    this.classes = this.elementClasses.list;
 
     return this;
+  },
+
+  setClasses: function(classNames) {
+    this.classes = classNames;
   },
 
   /**
@@ -351,13 +370,13 @@ Ember._RenderBuffer.prototype =
     var element = document.createElement(this.elementTag),
         $element = Ember.$(element),
         id = this.elementId,
-        classes = this.elementClasses,
+        classes = this.classes,
         attrs = this.elementAttributes,
         style = this.elementStyle,
         styleBuffer = '', prop;
 
     if (id) { $element.attr('id', id); }
-    if (classes) { $element.attr('class', classes.toDOM()); }
+    if (classes) { $element.attr('class', classes.join(' ')); }
 
     if (style) {
       for (prop in style) {
@@ -416,7 +435,7 @@ Ember._RenderBuffer.prototype =
 
     if (tag) {
       var id = this.elementId,
-          classes = this.elementClasses,
+          classes = this.classes,
           attrs = this.elementAttributes,
           style = this.elementStyle,
           styleBuffer = '', prop;
@@ -424,7 +443,7 @@ Ember._RenderBuffer.prototype =
       content.push("<" + tag);
 
       if (id) { content.push(' id="' + this._escapeAttribute(id) + '"'); }
-      if (classes) { content.push(' class="' + this._escapeAttribute(classes.toDOM()) + '"'); }
+      if (classes) { content.push(' class="' + this._escapeAttribute(classes.join(' ')) + '"'); }
 
       if (style) {
         content.push(' style="');
