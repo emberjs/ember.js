@@ -110,10 +110,10 @@ Ember.CoreView = Ember.Object.extend(Ember.Evented, {
     return Ember.RenderBuffer(tagName);
   },
 
-  instrumentName: 'render.core_view',
+  instrumentName: 'core_view',
 
   instrumentDetails: function(hash) {
-    hash.type = this.constructor.toString();
+    hash.object = this.toString();
   },
 
   /**
@@ -1088,8 +1088,7 @@ Ember.View = Ember.CoreView.extend(
   /**
     @private
 
-    When the parent view changes, recursively invalidate
-    `collectionView`, `itemView,` and `contentView`.
+    When the parent view changes, recursively invalidate `controller`
 
     @method _parentViewDidChange
   */
@@ -1142,6 +1141,7 @@ Ember.View = Ember.CoreView.extend(
     if (template) {
       var context = get(this, 'context');
       var keywords = this.cloneKeywords();
+      var output;
 
       var data = {
         view: this,
@@ -1158,7 +1158,9 @@ Ember.View = Ember.CoreView.extend(
       Ember.assert('template must be a function. Did you mean to call Ember.Handlebars.compile("...") or specify templateName instead?', typeof template === 'function');
       // The template should write directly to the render buffer instead
       // of returning a string.
-      var output = template(context, { data: data });
+      Ember.instrument('template.' + this.instrumentName,
+        { object: this.toString() },
+        function() { output = template(context, { data: data }); });
 
       // If the template returned a string instead of writing to the buffer,
       // push the string onto the buffer.
@@ -1522,7 +1524,7 @@ Ember.View = Ember.CoreView.extend(
     // important than elements get garbage collected.
     this.destroyElement();
     this.invokeRecursively(function(view) {
-      view.clearRenderedChildren();
+      if (view.clearRenderedChildren) { view.clearRenderedChildren(); }
     });
   },
 
@@ -1706,7 +1708,7 @@ Ember.View = Ember.CoreView.extend(
   */
   parentViewDidChange: Ember.K,
 
-  instrumentName: 'render.view',
+  instrumentName: 'view',
 
   instrumentDetails: function(hash) {
     hash.template = get(this, 'templateName');

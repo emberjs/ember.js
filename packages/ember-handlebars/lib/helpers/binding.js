@@ -20,6 +20,7 @@ function bind(property, options, preserveContext, shouldDisplay, valueNormalizer
       fn = options.fn,
       inverse = options.inverse,
       view = data.view,
+      instrumentName = view.instrumentName,
       currentContext = this,
       pathRoot, path, normalized,
       observer;
@@ -49,23 +50,28 @@ function bind(property, options, preserveContext, shouldDisplay, valueNormalizer
 
       template(context, { data: options.data });
     } else {
-      // Create the view that will wrap the output of this template/property
-      // and add it to the nearest view's childViews array.
-      // See the documentation of Ember._HandlebarsBoundView for more.
-      var bindView = view.createChildView(Ember._HandlebarsBoundView, {
-        preserveContext: preserveContext,
-        shouldDisplayFunc: shouldDisplay,
-        valueNormalizerFunc: valueNormalizer,
-        displayTemplate: fn,
-        inverseTemplate: inverse,
-        path: path,
-        pathRoot: pathRoot,
-        previousContext: currentContext,
-        isEscaped: !options.hash.unescaped,
-        templateData: options.data
-      });
+      var bindView = Ember.instrument('bind-view.' + instrumentName,
+        { object: view.toString() },
+        function() {
+          // Create the view that will wrap the output of this template/property
+          // and add it to the nearest view's childViews array.
+          // See the documentation of Ember._HandlebarsBoundView for more.
+          var bindView = view.createChildView(Ember._HandlebarsBoundView, {
+            preserveContext: preserveContext,
+            shouldDisplayFunc: shouldDisplay,
+            valueNormalizerFunc: valueNormalizer,
+            displayTemplate: fn,
+            inverseTemplate: inverse,
+            path: path,
+            pathRoot: pathRoot,
+            previousContext: currentContext,
+            isEscaped: !options.hash.unescaped,
+            templateData: options.data
+          });
 
-      view.appendChild(bindView);
+          view.appendChild(bindView);
+          return bindView;
+        });
 
       /** @private */
       observer = function() {
@@ -94,6 +100,7 @@ function bind(property, options, preserveContext, shouldDisplay, valueNormalizer
 function simpleBind(property, options) {
   var data = options.data,
       view = data.view,
+      instrumentName = view.instrumentName,
       currentContext = this,
       pathRoot, path, normalized,
       observer;
@@ -114,16 +121,17 @@ function simpleBind(property, options) {
       if (result === null || result === undefined) { result = ""; }
       data.buffer.push(result);
     } else {
-      var bindView = Ember._SimpleHandlebarsView.create().setProperties({
-        path: path,
-        pathRoot: pathRoot,
-        isEscaped: !options.hash.unescaped,
-        previousContext: currentContext,
-        templateData: options.data
-      });
+      var bindView = Ember.instrument('simple-bind-view.' + instrumentName,
+        { object: view.toString() },
+        function() {
+          var bindView = new Ember._SimpleHandlebarsView(
+            path, pathRoot, !options.hash.unescaped, options.data
+          );
 
-      view.createChildView(bindView);
-      view.appendChild(bindView);
+          bindView._parentView = view;
+          view.appendChild(bindView);
+          return bindView;
+        });
 
       observer = function() {
         Ember.run.scheduleOnce('render', bindView, 'rerender');
@@ -453,7 +461,7 @@ EmberHandlebars.registerHelper('bindAttr', function(options) {
 
   Ember.assert("You must specify at least one hash argument to bindAttr", !!Ember.keys(attrs).length);
 
-  var view = options.data.view;
+  var view = options.data.view, instrumentName = view.instrumentName;
   var ret = [];
   var ctx = this;
 
@@ -465,7 +473,12 @@ EmberHandlebars.registerHelper('bindAttr', function(options) {
   // Handle classes differently, as we can bind multiple classes
   var classBindings = attrs['class'];
   if (classBindings !== null && classBindings !== undefined) {
-    var classResults = EmberHandlebars.bindClasses(this, classBindings, view, dataId, options);
+    var classResults = Ember.instrument('class-bindings.' + instrumentName,
+      { object: view.toString() },
+      function() {
+        return EmberHandlebars.bindClasses(this, classBindings, view, dataId, options);
+      }, this);
+
     ret.push('class="' + Handlebars.Utils.escapeExpression(classResults.join(' ')) + '"');
     delete attrs['class'];
   }

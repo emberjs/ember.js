@@ -148,6 +148,8 @@ Ember.Handlebars.registerHelper('collection', function(path, options) {
   var fn = options.fn;
   var data = options.data;
   var inverse = options.inverse;
+  var view = options.data.view;
+  var instrumentName = view.instrumentName;
 
   // If passed a path string, convert that into an object.
   // Otherwise, just default to the standard class.
@@ -206,9 +208,20 @@ Ember.Handlebars.registerHelper('collection', function(path, options) {
     delete hash.eachHelper;
   }
 
-  var viewOptions = Ember.Handlebars.ViewHelper.propertiesFromHTMLOptions({ data: data, hash: itemHash }, this);
-  hash.itemViewClass = itemViewClass.extend(viewOptions);
+  var viewString = view.toString();
 
-  return Ember.Handlebars.helpers.view.call(this, collectionClass, options);
+  Ember.instrument('collection-setup.' + instrumentName,
+    { object: viewString },
+    function() {
+      var viewOptions = Ember.Handlebars.ViewHelper.propertiesFromHTMLOptions({ data: data, hash: itemHash }, this);
+      viewOptions._anonymous = true;
+      hash.itemViewClass = itemViewClass.extend(viewOptions);
+    });
+
+  return Ember.instrument('collection-view.' + instrumentName,
+    { object: viewString },
+    function() {
+      return Ember.Handlebars.helpers.view.call(this, collectionClass, options);
+    }, this);
 });
 
