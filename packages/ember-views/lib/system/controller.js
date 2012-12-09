@@ -28,7 +28,9 @@ Ember.ControllerMixin.reopen({
     For example, to make the `personController` and the `postController` available
     on the `overviewController`, you would call:
 
-        overviewController.connectControllers('person', 'post');
+    ```javascript
+    overviewController.connectControllers('person', 'post');
+    ```
 
     @method connectControllers
     @param {String...} controllerNames the controllers to make available

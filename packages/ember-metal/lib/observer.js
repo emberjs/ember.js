@@ -101,10 +101,12 @@ Ember.endPropertyChanges = function() {
   Make a series of property changes together in an
   exception-safe way.
 
-      Ember.changeProperties(function() {
-        obj1.set('foo', mayBlowUpWhenSet);
-        obj2.set('bar', baz);
-      });
+  ```javascript
+  Ember.changeProperties(function() {
+    obj1.set('foo', mayBlowUpWhenSet);
+    obj2.set('bar', baz);
+  });
+  ```
 
   @method changeProperties
   @param {Function} callback

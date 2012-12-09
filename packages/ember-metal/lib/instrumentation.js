@@ -5,15 +5,17 @@
 
   Subscribe to a listener by using `Ember.subscribe`:
 
-      Ember.subscribe("render", {
-        before: function(name, timestamp, payload) {
+  ```javascript
+  Ember.subscribe("render", {
+    before: function(name, timestamp, payload) {
 
-        },
+    },
 
-        after: function(name, timestamp, payload) {
+    after: function(name, timestamp, payload) {
 
-        }
-      });
+    }
+  });
+  ```
 
   If you return a value from the `before` callback, that same
   value will be passed as a fourth parameter to the `after`
@@ -21,9 +23,11 @@
 
   Instrument a block of code by using `Ember.instrument`:
 
-      Ember.instrument("render.handlebars", payload, function() {
-        // rendering logic
-      }, binding);
+  ```javascript
+  Ember.instrument("render.handlebars", payload, function() {
+    // rendering logic
+  }, binding);
+  ```
 
   Event names passed to `Ember.instrument` are namespaced
   by periods, from more general to more specific. Subscribers
@@ -59,7 +63,7 @@ var populateListeners = function(name) {
 };
 
 var time = (function() {
-	var perf = window.performance || {};
+	var perf = 'undefined' !== typeof window ? window.performance || {} : {};
 	var fn = perf.now || perf.mozNow || perf.webkitNow || perf.msNow || perf.oNow;
 	// fn.bind will be available in all the browsers that support the advanced window.performance... ;-)
 	return fn ? fn.bind(perf) : function() { return +new Date(); };

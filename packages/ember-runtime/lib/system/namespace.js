@@ -9,14 +9,16 @@ var indexOf = Ember.ArrayPolyfills.indexOf;
 
 /**
   A Namespace is an object usually used to contain other objects or methods
-  such as an application or framework.  Create a namespace anytime you want
+  such as an application or framework. Create a namespace anytime you want
   to define one of these new containers.
 
   # Example Usage
 
-      MyFramework = Ember.Namespace.create({
-        VERSION: '1.0.0'
-      });
+  ```javascript
+  MyFramework = Ember.Namespace.create({
+    VERSION: '1.0.0'
+  });
+  ```
 
   @class Namespace
   @namespace Ember

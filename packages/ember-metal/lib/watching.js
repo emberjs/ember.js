@@ -121,7 +121,7 @@ function removeChainWatcher(obj, keyName, node) {
 
 var pendingQueue = [];
 
-// attempts to add the pendingQueue chains again.  If some of them end up
+// attempts to add the pendingQueue chains again. If some of them end up
 // back in the queue and reschedule is true, schedules a timeout to try
 // again.
 function flushPendingChains() {
@@ -139,8 +139,8 @@ function isProto(pvalue) {
   return metaFor(pvalue, false).proto === pvalue;
 }
 
-// A ChainNode watches a single key on an object.  If you provide a starting
-// value for the key then the node won't actually watch it.  For a root node
+// A ChainNode watches a single key on an object. If you provide a starting
+// value for the key then the node won't actually watch it. For a root node
 // pass null for parent and key and object for value.
 var ChainNode = function(parent, key, value) {
   var obj;
@@ -364,7 +364,7 @@ ChainNodePrototype.didChange = function(suppressEvent) {
   if (this._parent) { this._parent.chainDidChange(this, this._key, 1); }
 };
 
-// get the chains for the current object.  If the current object has
+// get the chains for the current object. If the current object has
 // chains inherited from the proto they will be cloned and reconfigured for
 // the current object.
 function chainsFor(obj) {
@@ -402,7 +402,8 @@ function chainsDidChange(obj, keyName, m, arg) {
   nodes = nodes[keyName];
   if (!nodes) { return; }
 
-  for(var i = 0, l = nodes.length; i < l; i++) {
+  // looping in reverse because the chainWatchers array can be modified inside didChange
+  for (var i = nodes.length - 1; i >= 0; i--) {
     nodes[i].didChange(arg);
   }
 }
@@ -414,11 +415,11 @@ function chainsDidChange(obj, keyName, m, arg) {
 /**
   @private
 
-  Starts watching a property on an object.  Whenever the property changes,
-  invokes Ember.propertyWillChange and Ember.propertyDidChange.  This is the
+  Starts watching a property on an object. Whenever the property changes,
+  invokes `Ember.propertyWillChange` and `Ember.propertyDidChange`. This is the
   primitive used by observers and dependent keys; usually you will never call
   this method directly but instead use higher level methods like
-  Ember.addObserver().
+  `Ember.addObserver()`
 
   @method watch
   @for Ember
@@ -513,8 +514,8 @@ Ember.unwatch = function(obj, keyName) {
 /**
   @private
 
-  Call on an object when you first beget it from another object.  This will
-  setup any chained watchers on the object instance as needed.  This method is
+  Call on an object when you first beget it from another object. This will
+  setup any chained watchers on the object instance as needed. This method is
   safe to call multiple times.
 
   @method rewatch

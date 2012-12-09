@@ -7,8 +7,8 @@ var get = Ember.get, set = Ember.set;
 var popstateReady = false;
 
 /**
-  Ember.HistoryLocation implements the location API using the browser's
-  history.pushState API.
+  `Ember.HistoryLocation` implements the location API using the browser's
+  `history.pushState` API.
 
   @class HistoryLocation
   @namespace Ember
@@ -24,7 +24,7 @@ Ember.HistoryLocation = Ember.Object.extend({
   /**
     @private
 
-    Used to set state on first call to setURL
+    Used to set state on first call to `setURL`
 
     @method initState
   */
@@ -127,7 +127,7 @@ Ember.HistoryLocation = Ember.Object.extend({
   /**
     @private
 
-    Used when using `{{action}}` helper.  The url is always appended to the rootURL.
+    Used when using `{{action}}` helper. The url is always appended to the rootURL.
 
     @method formatURL
     @param url {String}

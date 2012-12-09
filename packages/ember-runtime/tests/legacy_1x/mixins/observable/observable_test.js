@@ -55,7 +55,6 @@ module("object.get()", {
 
       unknownProperty: function(key, value) {
         this.lastUnknownProperty = key ;
-        this._super(key, value);
         return "unknown" ;
       }
 
@@ -105,7 +104,6 @@ module("Ember.get()", {
 
       unknownProperty: function(key, value) {
         this.lastUnknownProperty = key ;
-        this._super(key, value);
         return "unknown" ;
       }
 
@@ -254,13 +252,11 @@ module("object.set()", {
       // unknown property
       _unknown: 'unknown',
       unknownProperty: function(key) {
-        this._super(key);
         return this._unknown ;
       },
 
       setUnknownProperty: function(key, value) {
         this._unknown = value ;
-        this._super(key, value);
         return this._unknown ;
       }
     });

@@ -39,8 +39,8 @@ function initMixin(mixin, args) {
     mixin.mixins = a_map.call(args, function(x) {
       if (x instanceof Mixin) { return x; }
 
-      // Note: Manually setup a primitive mixin here.  This is the only
-      // way to actually get a primitive mixin.  This way normal creation
+      // Note: Manually setup a primitive mixin here. This is the only
+      // way to actually get a primitive mixin. This way normal creation
       // of mixins will give you combined mixins...
       var mixin = new Mixin();
       mixin.properties = x;
@@ -333,22 +333,24 @@ Ember.mixin = function(obj) {
   The `Ember.Mixin` class allows you to create mixins, whose properties can be
   added to other classes. For instance,
 
-      App.Editable = Ember.Mixin.create({
-        edit: function() {
-          console.log('starting to edit');
-          this.set('isEditing', true);
-        },
-        isEditing: false
-      });
+  ```javascript
+  App.Editable = Ember.Mixin.create({
+    edit: function() {
+      console.log('starting to edit');
+      this.set('isEditing', true);
+    },
+    isEditing: false
+  });
 
-      // Mix mixins into classes by passing them as the first arguments to
-      // .extend or .create.
-      App.CommentView = Ember.View.extend(App.Editable, {
-        template: Ember.Handlebars.compile('{{#if isEditing}}...{{else}}...{{/if}}')
-      });
+  // Mix mixins into classes by passing them as the first arguments to
+  // .extend or .create.
+  App.CommentView = Ember.View.extend(App.Editable, {
+    template: Ember.Handlebars.compile('{{#if isEditing}}...{{else}}...{{/if}}')
+  });
 
-      commentView = App.CommentView.create();
-      commentView.edit(); // => outputs 'starting to edit'
+  commentView = App.CommentView.create();
+  commentView.edit(); // outputs 'starting to edit'
+  ```
 
   Note that Mixins are created with `Ember.Mixin.create`, not
   `Ember.Mixin.extend`.
@@ -529,7 +531,7 @@ function findNamespaces() {
     // There are also times where even if we can access them, we are not allowed to access their properties.
     try {
       obj = Ember.lookup[prop];
-      isNamespace = obj && get(obj, 'isNamespace');
+      isNamespace = obj && obj.isNamespace;
     } catch (e) {
       continue;
     }
@@ -630,17 +632,20 @@ Alias.prototype = new Ember.Descriptor();
 /**
   Makes a property or method available via an additional name.
 
-      App.PaintSample = Ember.Object.extend({
-        color: 'red',
-        colour: Ember.alias('color'),
-        name: function(){
-          return "Zed";
-        },
-        moniker: Ember.alias("name")
-      });
-      var paintSample = App.PaintSample.create()
-      paintSample.get('colour'); //=> 'red'
-      paintSample.moniker(); //=> 'Zed'
+  ```javascript
+  App.PaintSample = Ember.Object.extend({
+    color: 'red',
+    colour: Ember.alias('color'),
+    name: function(){
+      return "Zed";
+    },
+    moniker: Ember.alias("name")
+  });
+
+  var paintSample = App.PaintSample.create()
+  paintSample.get('colour');  // 'red'
+  paintSample.moniker();      // 'Zed'
+  ```
 
   @method alias
   @for Ember

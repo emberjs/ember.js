@@ -52,7 +52,7 @@ Ember.State = Ember.Object.extend(Ember.Evented,
   /**
     @private
 
-    Override the default event firing from Ember.Evented to
+    Override the default event firing from `Ember.Evented` to
     also call methods with the given name.
 
     @method trigger
@@ -136,7 +136,7 @@ Ember.State = Ember.Object.extend(Ember.Evented,
 
   /**
     A Boolean value indicating whether the state is a leaf state
-    in the state hierarchy. This is false if the state has child
+    in the state hierarchy. This is `false` if the state has child
     states; otherwise it is true.
 
     @property isLeaf
@@ -185,25 +185,28 @@ Ember.State = Ember.Object.extend(Ember.Evented,
 Ember.State.reopenClass({
 
   /**
-    Creates an action function for transitioning to the named state while preserving context.
+    Creates an action function for transitioning to the named state while
+    preserving context.
 
     The following example StateManagers are equivalent:
 
-        aManager = Ember.StateManager.create({
-          stateOne: Ember.State.create({
-            changeToStateTwo: Ember.State.transitionTo('stateTwo')
-          }),
-          stateTwo: Ember.State.create({})
-        })
+    ```javascript
+    aManager = Ember.StateManager.create({
+      stateOne: Ember.State.create({
+        changeToStateTwo: Ember.State.transitionTo('stateTwo')
+      }),
+      stateTwo: Ember.State.create({})
+    })
 
-        bManager = Ember.StateManager.create({
-          stateOne: Ember.State.create({
-            changeToStateTwo: function(manager, context){
-              manager.transitionTo('stateTwo', context)
-            }
-          }),
-          stateTwo: Ember.State.create({})
-        })
+    bManager = Ember.StateManager.create({
+      stateOne: Ember.State.create({
+        changeToStateTwo: function(manager, context){
+          manager.transitionTo('stateTwo', context)
+        }
+      }),
+      stateTwo: Ember.State.create({})
+    })
+    ```
 
     @method transitionTo
     @static

@@ -178,7 +178,7 @@ module('Ember.computed - cacheable', {
   setup: function() {
     obj = {};
     count = 0;
-    Ember.defineProperty(obj, 'foo', Ember.computed(function() {
+    Ember.defineProperty(obj, 'foo', Ember.computed(function(key, value) {
       count++;
       return 'bar '+count;
     }));
@@ -290,7 +290,7 @@ module('Ember.computed - dependentkey', {
   setup: function() {
     obj = { bar: 'baz' };
     count = 0;
-    Ember.defineProperty(obj, 'foo', Ember.computed(function() {
+    Ember.defineProperty(obj, 'foo', Ember.computed(function(key, value) {
       count++;
       return 'bar '+count;
     }).property('bar'));
@@ -357,12 +357,12 @@ testBoth('should invalidate multiple nested dependent keys', function(get, set) 
 
 testBoth('circular keys should not blow up', function(get, set) {
 
-  Ember.defineProperty(obj, 'bar', Ember.computed(function() {
+  Ember.defineProperty(obj, 'bar', Ember.computed(function(key, value) {
     count++;
     return 'bar '+count;
   }).property('foo'));
 
-  Ember.defineProperty(obj, 'foo', Ember.computed(function() {
+  Ember.defineProperty(obj, 'foo', Ember.computed(function(key, value) {
     count++;
     return 'foo '+count;
   }).property('bar'));
@@ -654,6 +654,21 @@ testBoth('setting a cached computed property that modifies the value you give it
 
   equal(plusOneWillChange, 2);
   equal(plusOneDidChange, 2);
+});
+
+module('Ember.computed - default setter');
+
+testBoth("when setting a value on a computed property that doesn't handle sets", function(get, set) {
+  var obj = {};
+
+  Ember.defineProperty(obj, 'foo', Ember.computed(function() {
+    return 'foo';
+  }));
+
+  Ember.set(obj, 'foo', 'bar');
+
+  equal(Ember.get(obj, 'foo'), 'bar', 'The set value is properly returned');
+  ok(!Ember.meta(obj).descs.foo, 'The computed property was removed');
 });
 
 module('CP macros');

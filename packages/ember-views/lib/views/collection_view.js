@@ -9,17 +9,18 @@ require('ember-runtime/system/string');
 var get = Ember.get, set = Ember.set, fmt = Ember.String.fmt;
 
 /**
-  `Ember.CollectionView` is an `Ember.View` descendent responsible for managing a
-  collection (an array or array-like object) by maintaing a child view object and
-  associated DOM representation for each item in the array and ensuring that child
-  views and their associated rendered HTML are updated when items in the array
-  are added, removed, or replaced.
+  `Ember.CollectionView` is an `Ember.View` descendent responsible for managing
+  a collection (an array or array-like object) by maintaing a child view object
+  and associated DOM representation for each item in the array and ensuring
+  that child views and their associated rendered HTML are updated when items in
+  the array are added, removed, or replaced.
 
   ## Setting content
-  The managed collection of objects is referenced as the `Ember.CollectionView` instance's
-  `content` property.
 
-  ``` javascript
+  The managed collection of objects is referenced as the `Ember.CollectionView`
+  instance's `content` property.
+
+  ```javascript
   someItemsView = Ember.CollectionView.create({
     content: ['A', 'B','C']
   })
@@ -29,13 +30,14 @@ var get = Ember.get, set = Ember.set, fmt = Ember.String.fmt;
   to the item.
 
   ## Specifying itemViewClass
-  By default the view class for each item in the managed collection will be an instance
-  of `Ember.View`. You can supply a different class by setting the `CollectionView`'s
-  `itemViewClass` property.
+
+  By default the view class for each item in the managed collection will be an
+  instance of `Ember.View`. You can supply a different class by setting the
+  `CollectionView`'s `itemViewClass` property.
 
   Given an empty `<body>` and the following code:
 
-  ``` javascript
+  ```javascript 
   someItemsView = Ember.CollectionView.create({
     classNames: ['a-collection'],
     content: ['A','B','C'],
@@ -49,7 +51,7 @@ var get = Ember.get, set = Ember.set, fmt = Ember.String.fmt;
 
   Will result in the following HTML structure
 
-  ``` html
+  ```html
   <div class="ember-view a-collection">
     <div class="ember-view">the letter: A</div>
     <div class="ember-view">the letter: B</div>
@@ -63,10 +65,9 @@ var get = Ember.get, set = Ember.set, fmt = Ember.String.fmt;
   "ul", "ol", "table", "thead", "tbody", "tfoot", "tr", or "select" will result
   in the item views receiving an appropriately matched `tagName` property.
 
-
   Given an empty `<body>` and the following code:
 
-  ``` javascript
+  ```javascript
   anUndorderedListView = Ember.CollectionView.create({
     tagName: 'ul',
     content: ['A','B','C'],
@@ -80,7 +81,7 @@ var get = Ember.get, set = Ember.set, fmt = Ember.String.fmt;
 
   Will result in the following HTML structure
 
-  ``` html
+  ```html
   <ul class="ember-view a-collection">
     <li class="ember-view">the letter: A</li>
     <li class="ember-view">the letter: B</li>
@@ -88,17 +89,20 @@ var get = Ember.get, set = Ember.set, fmt = Ember.String.fmt;
   </ul>
   ```
 
-  Additional tagName pairs can be provided by adding to `Ember.CollectionView.CONTAINER_MAP `
+  Additional `tagName` pairs can be provided by adding to
+  `Ember.CollectionView.CONTAINER_MAP `
 
-  ``` javascript
+  ```javascript
   Ember.CollectionView.CONTAINER_MAP['article'] = 'section'
   ```
-  ## Programatic creation of child views
-  For cases where additional customization beyond the use of a single `itemViewClass`
-  or `tagName` matching is required CollectionView's `createChildView` method can be
-  overidden:
 
-  ``` javascript
+  ## Programatic creation of child views
+
+  For cases where additional customization beyond the use of a single
+  `itemViewClass` or `tagName` matching is required CollectionView's
+  `createChildView` method can be overidden:
+
+  ```javascript
   CustomCollectionView = Ember.CollectionView.extend({
     createChildView: function(viewClass, attrs) {
       if (attrs.content.kind == 'album') {
@@ -112,11 +116,13 @@ var get = Ember.get, set = Ember.set, fmt = Ember.String.fmt;
   ```
 
   ## Empty View
-  You can provide an `Ember.View` subclass to the `Ember.CollectionView` instance as its
-  `emptyView` property. If the `content` property of a `CollectionView` is set to `null`
-  or an empty array, an instance of this view will be the `CollectionView`s only child.
 
-  ``` javascript
+  You can provide an `Ember.View` subclass to the `Ember.CollectionView`
+  instance as its `emptyView` property. If the `content` property of a
+  `CollectionView` is set to `null` or an empty array, an instance of this view
+  will be the `CollectionView`s only child.
+
+  ```javascript
   aListWithNothing = Ember.CollectionView.create({
     classNames: ['nothing']
     content: null,
@@ -130,7 +136,7 @@ var get = Ember.get, set = Ember.set, fmt = Ember.String.fmt;
 
   Will result in the following HTML structure
 
-  ``` html
+  ```html
   <div class="ember-view nothing">
     <div class="ember-view">
       The collection is empty
@@ -139,13 +145,16 @@ var get = Ember.get, set = Ember.set, fmt = Ember.String.fmt;
   ```
 
   ## Adding and Removing items
-  The `childViews` property of a `CollectionView` should not be directly manipulated. Instead,
-  add, remove, replace items from its `content` property. This will trigger
-  appropriate changes to its rendered HTML.
 
-  ## Use in templates via the `{{collection}}` Ember.Handlebars helper
-  Ember.Handlebars provides a helper specifically for adding `CollectionView`s to templates.
-  See `Ember.Handlebars.collection` for more details
+  The `childViews` property of a `CollectionView` should not be directly
+  manipulated. Instead, add, remove, replace items from its `content` property.
+  This will trigger appropriate changes to its rendered HTML.
+
+  ## Use in templates via the `{{collection}}` `Ember.Handlebars` helper
+
+  `Ember.Handlebars` provides a helper specifically for adding
+  `CollectionView`s to templates. See `Ember.Handlebars.collection` for more
+  details
 
   @class CollectionView
   @namespace Ember
@@ -156,7 +165,7 @@ Ember.CollectionView = Ember.ContainerView.extend(
 /** @scope Ember.CollectionView.prototype */ {
 
   /**
-    A list of items to be displayed by the Ember.CollectionView.
+    A list of items to be displayed by the `Ember.CollectionView`.
 
     @property content
     @type Ember.Array
@@ -266,9 +275,9 @@ Ember.CollectionView = Ember.ContainerView.extend(
     Called when a mutation to the underlying content array occurs.
 
     This method will replay that mutation against the views that compose the
-    Ember.CollectionView, ensuring that the view reflects the model.
+    `Ember.CollectionView`, ensuring that the view reflects the model.
 
-    This array observer is added in contentDidChange.
+    This array observer is added in `contentDidChange`.
 
     @method arrayDidChange
     @param {Array} addedObjects the objects that were added to the content

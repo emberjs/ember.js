@@ -102,6 +102,31 @@ Syntax:
 * a = b and not a=b.
 * Follow the conventions you see used in the source already.
 
+Inline Documenation Guidelines:
+
+All inline documentation is written using YUIDoc. Follow these rules when
+updating or writing new documenation:
+
+1. All code blocks must be fenced
+2. All code blocks must have a language declared
+3. All code blocks must be valid code for syntax highlighting
+4. All examples in code blocks must be aligned
+5. Use two spaces between the code and the example: `foo();  // result`
+6. All references to code words must be enclosed in backticks
+7. Prefer a single space between sentences
+8. Reference Ember.js as Ember.
+9. Wrap long markdown blocks > 80 characters
+10. Don't include blank lines after `@param` defintions
+
+Code words are:
+
+* `thisPropertyName`
+* `Global.Class.attribute`
+* `thisFunction()`
+* `Global.CONSTANT_NAME`
+* `true`, `false`, `null`, `undefined` (when refering to programming values)
+* references to other properties/methods
+
 And in case we didn't emphasize it enough: we love tests!
 
 NOTE: Partially copied from https://raw.github.com/thoughtbot/factory_girl_rails/master/CONTRIBUTING.md

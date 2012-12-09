@@ -25,8 +25,8 @@ ClassSet.prototype = {
 };
 
 /**
-  Ember.RenderBuffer gathers information regarding the a view and generates the
-  final representation. Ember.RenderBuffer will generate HTML which can be pushed
+  `Ember.RenderBuffer` gathers information regarding the a view and generates the
+  final representation. `Ember.RenderBuffer` will generate HTML which can be pushed
   to the DOM.
 
   @class RenderBuffer
@@ -46,10 +46,10 @@ Ember._RenderBuffer.prototype =
 /** @scope Ember.RenderBuffer.prototype */ {
 
   /**
-    Array of class-names which will be applied in the class="" attribute
+    Array of class-names which will be applied in the class attribute.
 
     You should not maintain this array yourself, rather, you should use
-    the addClass() method of Ember.RenderBuffer.
+    the `addClass()` method of `Ember.RenderBuffer.`
 
     @property elementClasses
     @type Array
@@ -58,10 +58,10 @@ Ember._RenderBuffer.prototype =
   elementClasses: null,
 
   /**
-    The id in of the element, to be applied in the id="" attribute
+    The id in of the element, to be applied in the id attribute.
 
     You should not set this property yourself, rather, you should use
-    the id() method of Ember.RenderBuffer.
+    the `id()` method of `Ember.RenderBuffer`.
 
     @property elementId
     @type String
@@ -72,11 +72,11 @@ Ember._RenderBuffer.prototype =
   /**
     A hash keyed on the name of the attribute and whose value will be
     applied to that attribute. For example, if you wanted to apply a
-    data-view="Foo.bar" property to an element, you would set the
-    elementAttributes hash to {'data-view':'Foo.bar'}
+    `data-view="Foo.bar"` property to an element, you would set the
+    elementAttributes hash to `{'data-view':'Foo.bar'}`.
 
     You should not maintain this hash yourself, rather, you should use
-    the attr() method of Ember.RenderBuffer.
+    the `attr()` method of `Ember.RenderBuffer`.
 
     @property elementAttributes
     @type Hash
@@ -85,12 +85,14 @@ Ember._RenderBuffer.prototype =
   elementAttributes: null,
 
   /**
-    The tagname of the element an instance of Ember.RenderBuffer represents.
+    The tagname of the element an instance of `Ember.RenderBuffer` represents.
 
-    Usually, this gets set as the first parameter to Ember.RenderBuffer. For
+    Usually, this gets set as the first parameter to `Ember.RenderBuffer`. For
     example, if you wanted to create a `p` tag, then you would call
 
-      Ember.RenderBuffer('p')
+    ```javascript
+    Ember.RenderBuffer('p')
+    ```
 
     @property elementTag
     @type String
@@ -101,11 +103,11 @@ Ember._RenderBuffer.prototype =
   /**
     A hash keyed on the name of the style attribute and whose value will
     be applied to that attribute. For example, if you wanted to apply a
-    background-color:black;" style to an element, you would set the
-    elementStyle hash to {'background-color':'black'}
+    `background-color:black;` style to an element, you would set the
+    elementStyle hash to `{'background-color':'black'}`.
 
     You should not maintain this hash yourself, rather, you should use
-    the style() method of Ember.RenderBuffer.
+    the `style()` method of `Ember.RenderBuffer`.
 
     @property elementStyle
     @type Hash
@@ -114,7 +116,7 @@ Ember._RenderBuffer.prototype =
   elementStyle: null,
 
   /**
-    Nested RenderBuffers will set this to their parent RenderBuffer
+    Nested `RenderBuffers` will set this to their parent `RenderBuffer`
     instance.
 
     @property parentBuffer
@@ -123,7 +125,7 @@ Ember._RenderBuffer.prototype =
   parentBuffer: null,
 
   /**
-    Adds a string of HTML to the RenderBuffer.
+    Adds a string of HTML to the `RenderBuffer`.
 
     @method push
     @param {String} string HTML to push into the buffer
@@ -269,9 +271,9 @@ Ember._RenderBuffer.prototype =
   },
 
   /**
-    Creates a new Ember.RenderBuffer object with the provided tagName as
-    the element tag and with its parentBuffer property set to the current
-    Ember.RenderBuffer.
+    Creates a new `Ember.RenderBuffer` object with the provided tagName as
+    the element tag and with its `parentBuffer` property set to the current
+    `Ember.RenderBuffer`.
 
     @method begin
     @param {String} tagName Tag name to use for the child buffer's element
@@ -346,17 +348,71 @@ Ember._RenderBuffer.prototype =
       of this buffer
   */
   element: function() {
-    return Ember.$(this.string())[0];
+    var element = document.createElement(this.elementTag),
+        $element = Ember.$(element),
+        id = this.elementId,
+        classes = this.elementClasses,
+        attrs = this.elementAttributes,
+        style = this.elementStyle,
+        styleBuffer = '', prop;
+
+    if (id) { $element.attr('id', id); }
+    if (classes) { $element.attr('class', classes.toDOM()); }
+
+    if (style) {
+      for (prop in style) {
+        if (style.hasOwnProperty(prop)) {
+          styleBuffer += (prop + ':' + style[prop] + ';');
+        }
+      }
+
+      $element.attr('style', styleBuffer);
+    }
+
+    if (attrs) {
+      for (prop in attrs) {
+        if (attrs.hasOwnProperty(prop)) {
+          $element.attr(prop, attrs[prop]);
+        }
+      }
+    }
+
+    this.elementTag = ''; // hack to avoid creating an innerString function
+    var html = this.string();
+
+    if (!Ember.$.support.htmlSerialize) { // work around IE zero-scope bug by inserting a script tag
+      html = '&shy;' + html;
+    }
+
+    element.innerHTML = html;
+
+    if (!Ember.$.support.htmlSerialize) {
+      // This code is copied from Metamorph
+      var shyElement = element.firstChild;
+      while (shyElement.nodeType === 1 && !shyElement.nodeName) {
+        shyElement = shyElement.firstChild;
+      }
+      if (shyElement.nodeType === 3 && shyElement.nodeValue.charAt(0) === "\u00AD") {
+        shyElement.nodeValue = shyElement.nodeValue.slice(1);
+      }
+    }
+
+    return element;
   },
 
   /**
     Generates the HTML content for this buffer.
 
     @method string
-    @return {String} The generated HTMl
+    @return {String} The generated HTML
   */
   string: function() {
-    var content = '', tag = this.elementTag, openTag;
+    var content = [];
+    return this.array(content).join('');
+  },
+
+  array: function(content) {
+    var tag = this.elementTag, openTag;
 
     if (tag) {
       var id = this.elementId,
@@ -365,44 +421,49 @@ Ember._RenderBuffer.prototype =
           style = this.elementStyle,
           styleBuffer = '', prop;
 
-      openTag = ["<" + tag];
+      content.push("<" + tag);
 
-      if (id) { openTag.push('id="' + this._escapeAttribute(id) + '"'); }
-      if (classes) { openTag.push('class="' + this._escapeAttribute(classes.toDOM()) + '"'); }
+      if (id) { content.push(' id="' + this._escapeAttribute(id) + '"'); }
+      if (classes) { content.push(' class="' + this._escapeAttribute(classes.toDOM()) + '"'); }
 
       if (style) {
+        content.push(' style="');
+
         for (prop in style) {
           if (style.hasOwnProperty(prop)) {
-            styleBuffer += (prop + ':' + this._escapeAttribute(style[prop]) + ';');
+            content.push(prop + ':' + this._escapeAttribute(style[prop]) + ';');
           }
         }
 
-        openTag.push('style="' + styleBuffer + '"');
+        content.push('"');
       }
 
       if (attrs) {
         for (prop in attrs) {
           if (attrs.hasOwnProperty(prop)) {
-            openTag.push(prop + '="' + this._escapeAttribute(attrs[prop]) + '"');
+            content.push(' ' + prop + '="' + this._escapeAttribute(attrs[prop]) + '"');
           }
         }
       }
 
-      openTag = openTag.join(" ") + '>';
+      content.push('>');
     }
 
     var childBuffers = this.childBuffers;
 
     Ember.ArrayPolyfills.forEach.call(childBuffers, function(buffer) {
       var stringy = typeof buffer === 'string';
-      content += (stringy ? buffer : buffer.string());
+      if (stringy) {
+        content.push(buffer);
+      } else {
+        buffer.array(content);
+      }
     });
 
     if (tag) {
-      return openTag + content + "</" + tag + ">";
-    } else {
-      return content;
+      content.push("</" + tag + ">");
     }
+    return content;
   },
 
   _escapeAttribute: function(value) {

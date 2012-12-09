@@ -171,3 +171,14 @@ test("it is possible to replace a child render buffer initially created without 
 
   equal(buffer.string(), "<div>anew-midbc</div>", "Replacements can operate on tagName-less buffers");
 });
+
+module("Ember.RenderBuffer#element");
+
+test("properly handles old IE's zero-scope bug", function() {
+  var buffer = new Ember.RenderBuffer('div');
+  buffer.push('<script></script>foo');
+
+  var element = buffer.element();
+  ok(Ember.$(element).html().match(/script/i), "should have script tag");
+  ok(!Ember.$(element).html().match(/&shy;/), "should not have &shy;");
+});

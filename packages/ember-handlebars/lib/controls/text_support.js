@@ -9,7 +9,7 @@ require("ember-views/views/view");
 var get = Ember.get, set = Ember.set;
 
 /**
-  Shared mixin used by Ember.TextField and Ember.TextArea.
+  Shared mixin used by `Ember.TextField` and `Ember.TextArea`.
 
   @class TextSupport
   @namespace Ember

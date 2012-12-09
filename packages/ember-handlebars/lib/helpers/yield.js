@@ -6,17 +6,16 @@
 var get = Ember.get, set = Ember.set;
 
 /**
-
-  When used in a Handlebars template that is assigned to an `Ember.View` instance's
-  `layout` property Ember will render the layout template first, inserting the view's
-  own rendered output at the `{{ yield }}` location.
+  When used in a Handlebars template that is assigned to an `Ember.View`
+  instance's `layout` property Ember will render the layout template first,
+  inserting the view's own rendered output at the `{{yield}}` location.
 
   An empty `<body>` and the following application code:
 
-  ``` javascript
+  ```javascript
   AView = Ember.View.extend({
     classNames: ['a-view-with-layout'],
-    layout: Ember.Handlebars.compile('<div class="wrapper">{{ yield }}</div>'),
+    layout: Ember.Handlebars.compile('<div class="wrapper">{{yield}}</div>'),
     template: Ember.Handlebars.compile('<span>I am wrapped</span>')
   });
 
@@ -26,7 +25,7 @@ var get = Ember.get, set = Ember.set;
 
   Will result in the following HTML output:
 
-  ``` html
+  ```html
   <body>
     <div class='ember-view a-view-with-layout'>
       <div class="wrapper">
@@ -36,10 +35,10 @@ var get = Ember.get, set = Ember.set;
   </body>
   ```
 
-  The yield helper cannot be used outside of a template assigned to an `Ember.View`'s `layout` property
-  and will throw an error if attempted.
+  The `yield` helper cannot be used outside of a template assigned to an
+  `Ember.View`'s `layout` property and will throw an error if attempted.
 
-  ``` javascript
+  ```javascript
   BView = Ember.View.extend({
     classNames: ['a-view-with-layout'],
     template: Ember.Handlebars.compile('{{yield}}')

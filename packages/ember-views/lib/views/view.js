@@ -85,9 +85,9 @@ Ember.CoreView = Ember.Object.extend(Ember.Evented, {
   }).property('_parentView').volatile(),
 
   /**
-    Creates a new renderBuffer with the passed tagName. You can override this
-    method to provide further customization to the buffer if needed. Normally
-    you will not need to call or override this method.
+    Creates a new `renderBuffer` with the passed `tagName`. You can override
+    this method to provide further customization to the buffer if needed.
+    Normally you will not need to call or override this method.
 
     @method renderBuffer
     @param [tagName] {String}
@@ -179,7 +179,7 @@ Ember.CoreView = Ember.Object.extend(Ember.Evented, {
   /**
     @private
 
-    Override the default event firing from Ember.Evented to
+    Override the default event firing from `Ember.Evented` to
     also call methods with the given name.
 
     @method trigger
@@ -229,15 +229,17 @@ Ember.CoreView = Ember.Object.extend(Ember.Evented, {
 });
 
 /**
-  `Ember.View` is the class in Ember responsible for encapsulating templates of HTML
-  content, combining templates with data to render as sections of a page's DOM, and
-  registering and responding to user-initiated events.
+  `Ember.View` is the class in Ember responsible for encapsulating templates of
+  HTML content, combining templates with data to render as sections of a page's
+  DOM, and registering and responding to user-initiated events.
 
   ## HTML Tag
-  The default HTML tag name used for a view's DOM representation is `div`. This can be
-  customized by setting the `tagName` property. The following view class:
 
-  ``` javascript
+  The default HTML tag name used for a view's DOM representation is `div`. This
+  can be customized by setting the `tagName` property. The following view
+class:
+
+  ```javascript
   ParagraphView = Ember.View.extend({
     tagName: 'em'
   });
@@ -245,15 +247,16 @@ Ember.CoreView = Ember.Object.extend(Ember.Evented, {
 
   Would result in instances with the following HTML:
 
-  ``` html
+  ```html
   <em id="ember1" class="ember-view"></em>
   ```
 
   ## HTML `class` Attribute
-  The HTML `class` attribute of a view's tag can be set by providing a `classNames` property
-  that is set to an array of strings:
 
-  ``` javascript
+  The HTML `class` attribute of a view's tag can be set by providing a
+  `classNames` property that is set to an array of strings:
+
+  ```javascript
   MyView = Ember.View.extend({
     classNames: ['my-class', 'my-other-class']
   });
@@ -261,16 +264,16 @@ Ember.CoreView = Ember.Object.extend(Ember.Evented, {
 
   Will result in view instances with an HTML representation of:
 
-  ``` html
+  ```html
   <div id="ember1" class="ember-view my-class my-other-class"></div>
   ```
 
-  `class` attribute values can also be set by providing a `classNameBindings` property
-  set to an array of properties names for the view. The return value of these properties
-  will be added as part of the value for the view's `class` attribute. These properties
-  can be computed properties:
+  `class` attribute values can also be set by providing a `classNameBindings`
+  property set to an array of properties names for the view. The return value
+  of these properties will be added as part of the value for the view's `class`
+  attribute. These properties can be computed properties:
 
-  ``` javascript
+  ```javascript
   MyView = Ember.View.extend({
     classNameBindings: ['propertyA', 'propertyB'],
     propertyA: 'from-a',
@@ -282,15 +285,15 @@ Ember.CoreView = Ember.Object.extend(Ember.Evented, {
 
   Will result in view instances with an HTML representation of:
 
-  ``` html
+  ```html
   <div id="ember1" class="ember-view from-a from-b"></div>
   ```
 
-  If the value of a class name binding returns a boolean the property name itself
-  will be used as the class name if the property is true. The class name will
-  not be added if the value is `false` or `undefined`.
+  If the value of a class name binding returns a boolean the property name
+  itself will be used as the class name if the property is true. The class name
+  will not be added if the value is `false` or `undefined`.
 
-  ``` javascript
+  ```javascript
   MyView = Ember.View.extend({
     classNameBindings: ['hovered'],
     hovered: true
@@ -299,15 +302,15 @@ Ember.CoreView = Ember.Object.extend(Ember.Evented, {
 
   Will result in view instances with an HTML representation of:
 
-  ``` html
+  ```html
   <div id="ember1" class="ember-view hovered"></div>
   ```
 
-  When using boolean class name bindings you can supply a string value other than the
-  property name for use as the `class` HTML attribute by appending the preferred value after
-  a ":" character when defining the binding:
+  When using boolean class name bindings you can supply a string value other
+  than the property name for use as the `class` HTML attribute by appending the
+  preferred value after a ":" character when defining the binding:
 
-  ``` javascript
+  ```javascript
   MyView = Ember.View.extend({
     classNameBindings: ['awesome:so-very-cool'],
     awesome: true
@@ -316,15 +319,14 @@ Ember.CoreView = Ember.Object.extend(Ember.Evented, {
 
   Will result in view instances with an HTML representation of:
 
-  ``` html
+  ```html
   <div id="ember1" class="ember-view so-very-cool"></div>
   ```
 
+  Boolean value class name bindings whose property names are in a
+  camelCase-style format will be converted to a dasherized format:
 
-  Boolean value class name bindings whose property names are in a camelCase-style
-  format will be converted to a dasherized format:
-
-  ``` javascript
+  ```javascript
   MyView = Ember.View.extend({
     classNameBindings: ['isUrgent'],
     isUrgent: true
@@ -333,15 +335,14 @@ Ember.CoreView = Ember.Object.extend(Ember.Evented, {
 
   Will result in view instances with an HTML representation of:
 
-  ``` html
+  ```html
   <div id="ember1" class="ember-view is-urgent"></div>
   ```
-
 
   Class name bindings can also refer to object values that are found by
   traversing a path relative to the view itself:
 
-  ``` javascript
+  ```javascript
   MyView = Ember.View.extend({
     classNameBindings: ['messages.empty']
     messages: Ember.Object.create({
@@ -352,16 +353,15 @@ Ember.CoreView = Ember.Object.extend(Ember.Evented, {
 
   Will result in view instances with an HTML representation of:
 
-  ``` html
+  ```html
   <div id="ember1" class="ember-view empty"></div>
   ```
-
 
   If you want to add a class name for a property which evaluates to true and
   and a different class name if it evaluates to false, you can pass a binding
   like this:
 
-  ```
+  ```javascript
   // Applies 'enabled' class when isEnabled is true and 'disabled' when isEnabled is false
   Ember.View.create({
     classNameBindings: ['isEnabled:enabled:disabled']
@@ -371,19 +371,20 @@ Ember.CoreView = Ember.Object.extend(Ember.Evented, {
 
   Will result in view instances with an HTML representation of:
 
-  ``` html
+  ```html
   <div id="ember1" class="ember-view enabled"></div>
   ```
 
-  When isEnabled is `false`, the resulting HTML reprensentation looks like this:
+  When isEnabled is `false`, the resulting HTML reprensentation looks like
+  this:
 
-  ``` html
+  ```html
   <div id="ember1" class="ember-view disabled"></div>
   ```
 
   This syntax offers the convenience to add a class if a property is `false`:
 
-  ``` javascript
+  ```javascript
   // Applies no class when isEnabled is true and class 'disabled' when isEnabled is false
   Ember.View.create({
     classNameBindings: ['isEnabled::disabled']
@@ -393,31 +394,34 @@ Ember.CoreView = Ember.Object.extend(Ember.Evented, {
 
   Will result in view instances with an HTML representation of:
 
-  ``` html
+  ```html
   <div id="ember1" class="ember-view"></div>
   ```
 
   When the `isEnabled` property on the view is set to `false`, it will result
   in view instances with an HTML representation of:
 
-  ``` html
+  ```html
   <div id="ember1" class="ember-view disabled"></div>
   ```
 
-  Updates to the the value of a class name binding will result in automatic update
-  of the  HTML `class` attribute in the view's rendered HTML representation.
-  If the value becomes  `false` or `undefined` the class name will be removed.
+  Updates to the the value of a class name binding will result in automatic
+  update of the  HTML `class` attribute in the view's rendered HTML
+  representation. If the value becomes `false` or `undefined` the class name
+  will be removed.
 
-  Both `classNames` and `classNameBindings` are concatenated properties.
-  See `Ember.Object` documentation for more information about concatenated properties.
+  Both `classNames` and `classNameBindings` are concatenated properties. See
+  `Ember.Object` documentation for more information about concatenated
+  properties.
 
   ## HTML Attributes
 
-  The HTML attribute section of a view's tag can be set by providing an `attributeBindings`
-  property set to an array of property names on the view. The return value of these properties
-  will be used as the value of the view's HTML associated attribute:
+  The HTML attribute section of a view's tag can be set by providing an
+  `attributeBindings` property set to an array of property names on the view.
+  The return value of these properties will be used as the value of the view's
+  HTML associated attribute:
 
-  ``` javascript
+  ```javascript
   AnchorView = Ember.View.extend({
     tagName: 'a',
     attributeBindings: ['href'],
@@ -427,7 +431,7 @@ Ember.CoreView = Ember.Object.extend(Ember.Evented, {
 
   Will result in view instances with an HTML representation of:
 
-  ``` html
+  ```html
   <a id="ember1" class="ember-view" href="http://google.com"></a>
   ```
 
@@ -435,7 +439,7 @@ Ember.CoreView = Ember.Object.extend(Ember.Evented, {
   the property will follow HTML's pattern of repeating the attribute's name as
   its value:
 
-  ``` javascript
+  ```javascript
   MyTextInput = Ember.View.extend({
     tagName: 'input',
     attributeBindings: ['disabled'],
@@ -445,13 +449,13 @@ Ember.CoreView = Ember.Object.extend(Ember.Evented, {
 
   Will result in view instances with an HTML representation of:
 
-  ``` html
+  ```html
   <input id="ember1" class="ember-view" disabled="disabled" />
   ```
 
   `attributeBindings` can refer to computed properties:
 
-  ``` javascript
+  ```javascript
   MyTextInput = Ember.View.extend({
     tagName: 'input',
     attributeBindings: ['disabled'],
@@ -465,20 +469,21 @@ Ember.CoreView = Ember.Object.extend(Ember.Evented, {
   });
   ```
 
-  Updates to the the property of an attribute binding will result in automatic update
-  of the  HTML attribute in the view's rendered HTML representation.
+  Updates to the the property of an attribute binding will result in automatic
+  update of the  HTML attribute in the view's rendered HTML representation.
 
-  `attributeBindings` is a concatenated property. See `Ember.Object` documentation
-  for more information about concatenated properties.
+  `attributeBindings` is a concatenated property. See `Ember.Object`
+  documentation for more information about concatenated properties.
 
   ## Templates
 
-  The HTML contents of a view's rendered representation are determined by its template.
-  Templates can be any function that accepts an optional context parameter and returns
-  a string of HTML that will be inserted within the view's tag. Most
-  typically in Ember this function will be a compiled Ember.Handlebars template.
+  The HTML contents of a view's rendered representation are determined by its
+  template. Templates can be any function that accepts an optional context
+  parameter and returns a string of HTML that will be inserted within the
+  view's tag. Most typically in Ember this function will be a compiled
+  `Ember.Handlebars` template.
 
-  ``` javascript
+  ```javascript
   AView = Ember.View.extend({
     template: Ember.Handlebars.compile('I am the template')
   });
@@ -486,14 +491,14 @@ Ember.CoreView = Ember.Object.extend(Ember.Evented, {
 
   Will result in view instances with an HTML representation of:
 
-  ``` html
+  ```html
   <div id="ember1" class="ember-view">I am the template</div>
   ```
 
   Within an Ember application is more common to define a Handlebars templates as
   part of a page:
 
-  ``` handlebars
+  ```handlebars
   <script type='text/x-handlebars' data-template-name='some-template'>
     Hello
   </script>
@@ -501,23 +506,25 @@ Ember.CoreView = Ember.Object.extend(Ember.Evented, {
 
   And associate it by name using a view's `templateName` property:
 
-  ``` javascript
+  ```javascript
   AView = Ember.View.extend({
     templateName: 'some-template'
   });
   ```
 
-  Using a value for `templateName` that does not have a Handlebars template with a
-  matching `data-template-name` attribute will throw an error.
+  Using a value for `templateName` that does not have a Handlebars template
+  with a matching `data-template-name` attribute will throw an error.
 
-  Assigning a value to both `template` and `templateName` properties will throw an error.
+  Assigning a value to both `template` and `templateName` properties will throw
+  an error.
 
-  For views classes that may have a template later defined (e.g. as the block portion of a `{{view}}`
-  Handlebars helper call in another template or in a subclass), you can provide a `defaultTemplate`
-  property set to compiled template function. If a template is not later provided for the view
-  instance the `defaultTemplate` value will be used:
+  For views classes that may have a template later defined (e.g. as the block
+  portion of a `{{view}}` Handlebars helper call in another template or in
+  a subclass), you can provide a `defaultTemplate` property set to compiled
+  template function. If a template is not later provided for the view instance
+  the `defaultTemplate` value will be used:
 
-  ``` javascript
+  ```javascript
   AView = Ember.View.extend({
     defaultTemplate: Ember.Handlebars.compile('I was the default'),
     template: null,
@@ -527,13 +534,14 @@ Ember.CoreView = Ember.Object.extend(Ember.Evented, {
 
   Will result in instances with an HTML representation of:
 
-  ``` html
+  ```html
   <div id="ember1" class="ember-view">I was the default</div>
   ```
 
-  If a `template` or `templateName` is provided it will take precedence over `defaultTemplate`:
+  If a `template` or `templateName` is provided it will take precedence over
+  `defaultTemplate`:
 
-  ``` javascript
+  ```javascript
   AView = Ember.View.extend({
     defaultTemplate: Ember.Handlebars.compile('I was the default')
   });
@@ -545,7 +553,7 @@ Ember.CoreView = Ember.Object.extend(Ember.Evented, {
 
   Will result in the following HTML representation when rendered:
 
-  ``` html
+  ```html
   <div id="ember1" class="ember-view">I was the template, not default</div>
   ```
 
@@ -553,7 +561,7 @@ Ember.CoreView = Ember.Object.extend(Ember.Evented, {
 
   The default context of the compiled template is the view's controller:
 
-  ``` javascript
+  ```javascript
   AView = Ember.View.extend({
     template: Ember.Handlebars.compile('Hello {{excitedGreeting}}')
   });
@@ -572,30 +580,33 @@ Ember.CoreView = Ember.Object.extend(Ember.Evented, {
 
   Will result in an HTML representation of:
 
-  ``` html
+  ```html
   <div id="ember1" class="ember-view">Hello Barry!!!</div>
   ```
 
-  A context can also be explicitly supplied through the view's `context` property.
-  If the view has neither `context` nor `controller` properties, the parentView's
-  context will be used.
+  A context can also be explicitly supplied through the view's `context`
+  property. If the view has neither `context` nor `controller` properties, the
+  `parentView`'s context will be used.
 
   ## Layouts
 
   Views can have a secondary template that wraps their main template. Like
-  primary templates, layouts can be any function that  accepts an optional context
-  parameter and returns a string of HTML that will be inserted inside view's tag. Views whose HTML
-  element is self closing (e.g. `<input />`) cannot have a layout and this property will be ignored.
+  primary templates, layouts can be any function that  accepts an optional
+  context parameter and returns a string of HTML that will be inserted inside
+  view's tag. Views whose HTML element is self closing (e.g. `<input />`)
+  cannot have a layout and this property will be ignored.
 
-  Most typically in Ember a layout will be a compiled Ember.Handlebars template.
+  Most typically in Ember a layout will be a compiled `Ember.Handlebars`
+  template.
 
-  A view's layout can be set directly with the `layout` property or reference an
-  existing Handlebars template by name with the `layoutName` property.
+  A view's layout can be set directly with the `layout` property or reference
+  an existing Handlebars template by name with the `layoutName` property.
 
-  A template used as a layout must contain a single use of the Handlebars `{{yield}}`
-  helper. The HTML contents of a view's rendered `template` will be inserted at this location:
+  A template used as a layout must contain a single use of the Handlebars
+  `{{yield}}` helper. The HTML contents of a view's rendered `template` will be
+  inserted at this location:
 
-  ``` javascript
+  ```javascript
   AViewWithLayout = Ember.View.extend({
     layout: Ember.Handlebars.compile("<div class='my-decorative-class'>{{yield}}</div>")
     template: Ember.Handlebars.compile("I got wrapped"),
@@ -604,7 +615,7 @@ Ember.CoreView = Ember.Object.extend(Ember.Evented, {
 
   Will result in view instances with an HTML representation of:
 
-  ``` html
+  ```html
   <div id="ember1" class="ember-view">
     <div class="my-decorative-class">
       I got wrapped
@@ -616,15 +627,17 @@ Ember.CoreView = Ember.Object.extend(Ember.Evented, {
 
   ## Responding to Browser Events
 
-  Views can respond to user-initiated events in one of three ways: method implementation,
-  through an event manager, and through `{{action}}` helper use in their template or layout.
+  Views can respond to user-initiated events in one of three ways: method
+  implementation, through an event manager, and through `{{action}}` helper use
+  in their template or layout.
 
   ### Method Implementation
 
-  Views can respond to user-initiated events by implementing a method that matches the
-  event name. A `jQuery.Event` object will be passed as the argument to this method.
+  Views can respond to user-initiated events by implementing a method that
+  matches the event name. A `jQuery.Event` object will be passed as the
+  argument to this method.
 
-  ``` javascript
+  ```javascript
   AView = Ember.View.extend({
     click: function(event){
       // will be called when when an instance's
@@ -635,15 +648,16 @@ Ember.CoreView = Ember.Object.extend(Ember.Evented, {
 
   ### Event Managers
 
-  Views can define an object as their `eventManager` property. This object can then
-  implement methods that match the desired event names. Matching events that occur
-  on the view's rendered HTML or the rendered HTML of any of its DOM descendants
-  will trigger this method.  A `jQuery.Event` object will be passed as the first
-  argument to the method and an  `Ember.View` object as the second. The `Ember.View`
-  will be the view whose rendered HTML was interacted with. This may be the view with
-  the `eventManager` property or one of its descendent views.
+  Views can define an object as their `eventManager` property. This object can
+  then implement methods that match the desired event names. Matching events
+  that occur on the view's rendered HTML or the rendered HTML of any of its DOM
+  descendants will trigger this method. A `jQuery.Event` object will be passed
+  as the first argument to the method and an  `Ember.View` object as the
+  second. The `Ember.View` will be the view whose rendered HTML was interacted
+  with. This may be the view with the `eventManager` property or one of its
+  descendent views.
 
-  ``` javascript
+  ```javascript
   AView = Ember.View.extend({
     eventManager: Ember.Object.create({
       doubleClick: function(event, view){
@@ -656,10 +670,10 @@ Ember.CoreView = Ember.Object.extend(Ember.Evented, {
   });
   ```
 
-  An event defined for an event manager takes precedence over events of the same
-  name handled through methods on the view.
+  An event defined for an event manager takes precedence over events of the
+  same name handled through methods on the view.
 
-  ``` javascript
+  ```javascript
   AView = Ember.View.extend({
     mouseEnter: function(event){
       // will never trigger.
@@ -673,12 +687,13 @@ Ember.CoreView = Ember.Object.extend(Ember.Evented, {
   ```
 
   Similarly a view's event manager will take precedence for events of any views
-  rendered as a descendent. A method name that matches an event name will not be called
-  if the view instance was rendered inside the HTML representation of a view that has
-  an `eventManager` property defined that handles events of the name.  Events not handled
-  by the event manager will still trigger method calls on the descendent.
+  rendered as a descendent. A method name that matches an event name will not
+  be called if the view instance was rendered inside the HTML representation of
+  a view that has an `eventManager` property defined that handles events of the
+  name. Events not handled by the event manager will still trigger method calls
+  on the descendent.
 
-  ``` javascript
+  ```javascript
   OuterView = Ember.View.extend({
     template: Ember.Handlebars.compile("outer {{#view InnerView}}inner{{/view}} outer"),
     eventManager: Ember.Object.create({
@@ -709,23 +724,57 @@ Ember.CoreView = Ember.Object.extend(Ember.Evented, {
 
   ### Event Names
 
-  Possible events names for any of the responding approaches described above are:
+  Possible events names for any of the responding approaches described above
+  are:
 
-  Touch events: 'touchStart', 'touchMove', 'touchEnd', 'touchCancel'
+  Touch events:
 
-  Keyboard events: 'keyDown', 'keyUp', 'keyPress'
+  * `touchStart`
+  * `touchMove`
+  * `touchEnd`
+  * `touchCancel`
 
-  Mouse events: 'mouseDown', 'mouseUp', 'contextMenu', 'click', 'doubleClick', 'mouseMove',
-  'focusIn', 'focusOut', 'mouseEnter', 'mouseLeave'
+  Keyboard events
 
-  Form events: 'submit', 'change', 'focusIn', 'focusOut', 'input'
+  * `keyDown`
+  * `keyUp`
+  * `keyPress`
 
-  HTML5 drag and drop events: 'dragStart', 'drag', 'dragEnter', 'dragLeave', 'drop', 'dragEnd'
+  Mouse events
+
+  * `mouseDown`
+  * `mouseUp`
+  * `contextMenu`
+  * `click`
+  * `doubleClick`
+  * `mouseMove`
+  * `focusIn`
+  * `focusOut`
+  * `mouseEnter`
+  * `mouseLeave`
+
+  Form events: 
+
+  * `submit`
+  * `change`
+  * `focusIn`
+  * `focusOut`
+  * `input`
+
+  HTML5 drag and drop events: 
+
+  * `dragStart`
+  * `drag`
+  * `dragEnter`
+  * `dragLeave`
+  * `drop`
+  * `dragEnd`
 
   ## Handlebars `{{view}}` Helper
 
-  Other `Ember.View` instances can be included as part of a view's template by using the `{{view}}`
-  Handlebars helper. See `Handlebars.helpers.view` for additional information.
+  Other `Ember.View` instances can be included as part of a view's template by
+  using the `{{view}}` Handlebars helper. See `Handlebars.helpers.view` for
+  additional information.
 
   @class View
   @namespace Ember
@@ -752,7 +801,7 @@ Ember.View = Ember.CoreView.extend(
   /**
     The name of the template to lookup if no template is provided.
 
-    Ember.View will look for a template with this name in this view's
+    `Ember.View` will look for a template with this name in this view's
     `templates` object. By default, this will be a global object
     shared in `Ember.TEMPLATES`.
 
@@ -765,7 +814,7 @@ Ember.View = Ember.CoreView.extend(
   /**
     The name of the layout to lookup if no layout is provided.
 
-    Ember.View will look for a template with this name in this view's
+    `Ember.View` will look for a template with this name in this view's
     `templates` object. By default, this will be a global object
     shared in `Ember.TEMPLATES`.
 
@@ -811,15 +860,9 @@ Ember.View = Ember.CoreView.extend(
     @property controller
     @type Object
   */
-  controller: Ember.computed(function(key, value) {
-    var parentView;
-
-    if (arguments.length === 2) {
-      return value;
-    } else {
-      parentView = get(this, 'parentView');
-      return parentView ? get(parentView, 'controller') : null;
-    }
+  controller: Ember.computed(function(key) {
+    var parentView = get(this, 'parentView');
+    return parentView ? get(parentView, 'controller') : null;
   }).property(),
 
   /**
@@ -836,9 +879,7 @@ Ember.View = Ember.CoreView.extend(
     @property layout
     @type Function
   */
-  layout: Ember.computed(function(key, value) {
-    if (arguments.length === 2) { return value; }
-
+  layout: Ember.computed(function(key) {
     var layoutName = get(this, 'layoutName'),
         layout = this.templateForName(layoutName, 'layout');
 
@@ -900,12 +941,8 @@ Ember.View = Ember.CoreView.extend(
 
     @property _context
   */
-  _context: Ember.computed(function(key, value) {
+  _context: Ember.computed(function(key) {
     var parentView, controller;
-
-    if (arguments.length === 2) {
-      return value;
-    }
 
     if (controller = get(this, 'controller')) {
       return controller;
@@ -932,7 +969,7 @@ Ember.View = Ember.CoreView.extend(
   }, 'context'),
 
   /**
-    If false, the view will appear hidden in DOM.
+    If `false`, the view will appear hidden in DOM.
 
     @property isVisible
     @type Boolean
@@ -944,7 +981,7 @@ Ember.View = Ember.CoreView.extend(
     @private
 
     Array of child views. You should never edit this array directly.
-    Instead, use appendChild and removeFromParent.
+    Instead, use `appendChild` and `removeFromParent`.
 
     @property childViews
     @type Array
@@ -1046,7 +1083,7 @@ Ember.View = Ember.CoreView.extend(
   },
 
   /**
-    Return the nearest ancestor that is an Ember.CollectionView
+    Return the nearest ancestor that is an `Ember.CollectionView`
 
     @property collectionView
     @return Ember.CollectionView
@@ -1057,7 +1094,7 @@ Ember.View = Ember.CoreView.extend(
 
   /**
     Return the nearest ancestor that is a direct child of
-    an Ember.CollectionView
+    an `Ember.CollectionView`
 
     @property itemView
     @return Ember.View
@@ -1081,7 +1118,7 @@ Ember.View = Ember.CoreView.extend(
     @private
 
     When the parent view changes, recursively invalidate
-    collectionView, itemView, and contentView
+    `collectionView`, `itemView,` and `contentView`.
 
     @method _parentViewDidChange
   */
@@ -1121,10 +1158,10 @@ Ember.View = Ember.CoreView.extend(
 
   /**
     Called on your view when it should push strings of HTML into a
-    Ember.RenderBuffer. Most users will want to override the `template`
+    `Ember.RenderBuffer`. Most users will want to override the `template`
     or `templateName` properties instead of this method.
 
-    By default, Ember.View will look for a function in the `template`
+    By default, `Ember.View` will look for a function in the `template`
     property and invoke it with the value of `context`. The value of
     `context` will be the view's controller unless you override it.
 
@@ -1452,11 +1489,11 @@ Ember.View = Ember.CoreView.extend(
     element will not be appended to the given element until all bindings have
     finished synchronizing.
 
-    This is not typically a function that you will need to call directly
-    when building your application. You might consider using Ember.ContainerView
-    instead. If you do need to use appendTo, be sure that the target element you
-    are providing is associated with an Ember.Application and does not have an
-    ancestor element that is associated with an Ember view.
+    This is not typically a function that you will need to call directly when
+    building your application. You might consider using `Ember.ContainerView`
+    instead. If you do need to use `appendTo`, be sure that the target element
+    you are providing is associated with an `Ember.Application` and does not
+    have an ancestor element that is associated with an Ember view.
 
     @method appendTo
     @param {String|DOMElement|jQuery} A selector, element, HTML string, or jQuery object
@@ -1474,9 +1511,9 @@ Ember.View = Ember.CoreView.extend(
   },
 
   /**
-    Replaces the content of the specified parent element with this view's element.
-    If the view does not have an HTML representation yet, `createElement()`
-    will be called automatically.
+    Replaces the content of the specified parent element with this view's
+    element. If the view does not have an HTML representation yet,
+    `createElement()` will be called automatically.
 
     Note that this method just schedules the view to be appended; the DOM
     element will not be appended to the given element until all bindings have
@@ -1504,16 +1541,18 @@ Ember.View = Ember.CoreView.extend(
     ensures that all bindings have finished synchronizing before the view is
     rendered.
 
-    To use, pass a function that performs a DOM operation..
+    To use, pass a function that performs a DOM operation.
 
     Before your function is called, this view and all child views will receive
     the `willInsertElement` event. After your function is invoked, this view
     and all of its child views will receive the `didInsertElement` event.
 
-        view._insertElementLater(function() {
-          this.createElement();
-          this.$().appendTo('body');
-        });
+    ```javascript
+    view._insertElementLater(function() {
+      this.createElement();
+      this.$().appendTo('body');
+    });
+    ```
 
     @method _insertElementLater
     @param {Function} fn the function that inserts the element into the DOM
@@ -1583,10 +1622,10 @@ Ember.View = Ember.CoreView.extend(
 
   /**
     Attempts to discover the element in the parent element. The default
-    implementation looks for an element with an ID of elementId (or the view's
-    guid if elementId is null). You can override this method to provide your
-    own form of lookup. For example, if you want to discover your element
-    using a CSS class name instead of an ID.
+    implementation looks for an element with an ID of `elementId` (or the
+    view's guid if `elementId` is null). You can override this method to
+    provide your own form of lookup. For example, if you want to discover your
+    element using a CSS class name instead of an ID.
 
     @method findElementInParentElement
     @param {DOMElement} parentElement The parent's DOM element
@@ -1671,7 +1710,7 @@ Ember.View = Ember.CoreView.extend(
   /**
     @private
 
-    Invokes the receiver's willInsertElement() method if it exists and then
+    Invokes the receiver's `willInsertElement()` method if it exists and then
     invokes the same on all child views.
 
     NOTE: In some cases this was called when the element existed. This no longer
@@ -1688,7 +1727,7 @@ Ember.View = Ember.CoreView.extend(
   /**
     @private
 
-    Invokes the receiver's didInsertElement() method if it exists and then
+    Invokes the receiver's `didInsertElement()` method if it exists and then
     invokes the same on all child views.
 
     @method _notifyDidInsertElement
@@ -1718,12 +1757,12 @@ Ember.View = Ember.CoreView.extend(
     as well. If the view does not currently have a element, then this method
     will do nothing.
 
-    If you implement willDestroyElement() on your view, then this method will
+    If you implement `willDestroyElement()` on your view, then this method will
     be invoked on your view before your element is destroyed to give you a
     chance to clean up any event handlers, etc.
 
-    If you write a willDestroyElement() handler, you can assume that your
-    didInsertElement() handler was called earlier for the same element.
+    If you write a `willDestroyElement()` handler, you can assume that your
+    `didInsertElement()` handler was called earlier for the same element.
 
     Normally you will not call or override this method yourself, but you may
     want to implement the above callbacks when it is run.
@@ -1747,11 +1786,12 @@ Ember.View = Ember.CoreView.extend(
   /**
     @private
 
-    Triggers the `willDestroyElement` event (which invokes the `willDestroyElement()`
-    method if it exists) on this view and all child views.
+    Triggers the `willDestroyElement` event (which invokes the
+    `willDestroyElement()` method if it exists) on this view and all child
+    views.
 
-    Before triggering `willDestroyElement`, it first triggers the `willClearRender`
-    event recursively.
+    Before triggering `willDestroyElement`, it first triggers the
+    `willClearRender` event recursively.
 
     @method _notifyWillDestroyElement
   */
@@ -1845,8 +1885,8 @@ Ember.View = Ember.CoreView.extend(
   //
 
   /**
-    Tag name for the view's outer element. The tag name is only used when
-    an element is first created. If you change the tagName for an element, you
+    Tag name for the view's outer element. The tag name is only used when an
+    element is first created. If you change the `tagName` for an element, you
     must destroy and recreate the view element.
 
     By default, the render buffer will use a `<div>` tag for views.
@@ -1891,29 +1931,35 @@ Ember.View = Ember.CoreView.extend(
     is a string value, the value of that string will be applied as a class
     name.
 
-        // Applies the 'high' class to the view element
-        Ember.View.create({
-          classNameBindings: ['priority']
-          priority: 'high'
-        });
+    ```javascript
+    // Applies the 'high' class to the view element
+    Ember.View.create({
+      classNameBindings: ['priority']
+      priority: 'high'
+    });
+    ```
 
     If the value of the property is a Boolean, the name of that property is
     added as a dasherized class name.
 
-        // Applies the 'is-urgent' class to the view element
-        Ember.View.create({
-          classNameBindings: ['isUrgent']
-          isUrgent: true
-        });
+    ```javascript
+    // Applies the 'is-urgent' class to the view element
+    Ember.View.create({
+      classNameBindings: ['isUrgent']
+      isUrgent: true
+    });
+    ```
 
     If you would prefer to use a custom value instead of the dasherized
     property name, you can pass a binding like this:
 
-        // Applies the 'urgent' class to the view element
-        Ember.View.create({
-          classNameBindings: ['isUrgent:urgent']
-          isUrgent: true
-        });
+    ```javascript
+    // Applies the 'urgent' class to the view element
+    Ember.View.create({
+      classNameBindings: ['isUrgent:urgent']
+      isUrgent: true
+    });
+    ```
 
     This list of properties is inherited from the view's superclasses as well.
 
@@ -1927,21 +1973,25 @@ Ember.View = Ember.CoreView.extend(
     A list of properties of the view to apply as attributes. If the property is
     a string value, the value of that string will be applied as the attribute.
 
-        // Applies the type attribute to the element
-        // with the value "button", like <div type="button">
-        Ember.View.create({
-          attributeBindings: ['type'],
-          type: 'button'
-        });
+    ```javascript
+    // Applies the type attribute to the element
+    // with the value "button", like <div type="button">
+    Ember.View.create({
+      attributeBindings: ['type'],
+      type: 'button'
+    });
+    ```
 
     If the value of the property is a Boolean, the name of that property is
     added as an attribute.
 
-        // Renders something like <div enabled="enabled">
-        Ember.View.create({
-          attributeBindings: ['enabled'],
-          enabled: true
-        });
+    ```javascript
+    // Renders something like <div enabled="enabled">
+    Ember.View.create({
+      attributeBindings: ['enabled'],
+      enabled: true
+    });
+    ```
 
     @property attributeBindings
   */
@@ -1955,7 +2005,7 @@ Ember.View = Ember.CoreView.extend(
     @private
 
     Setup a view, but do not finish waking it up.
-    - configure childViews
+    - configure `childViews`
     - register the view with the global views hash, which is used for event
       dispatch
 
@@ -2013,7 +2063,7 @@ Ember.View = Ember.CoreView.extend(
   },
 
   /**
-    Removes all children from the parentView.
+    Removes all children from the `parentView`.
 
     @method removeAllChildren
     @return {Ember.View} receiver
@@ -2031,7 +2081,7 @@ Ember.View = Ember.CoreView.extend(
   },
 
   /**
-    Removes the view from its parentView, if one is found. Otherwise
+    Removes the view from its `parentView`, if one is found. Otherwise
     does nothing.
 
     @method removeFromParent
@@ -2094,7 +2144,7 @@ Ember.View = Ember.CoreView.extend(
   /**
     Instantiates a view to be added to the childViews array during view
     initialization. You generally will not call this method directly unless
-    you are overriding createChildViews(). Note that this method will
+    you are overriding `createChildViews()`. Note that this method will
     automatically configure the correct settings on the new view instance to
     act as a child of the parent.
 
@@ -2298,12 +2348,14 @@ Ember.View.reopenClass({
     For example a path like "content.isEnabled:enabled:disabled" wil return the
     following object:
 
-        {
-          path: "content.isEnabled",
-          className: "enabled",
-          falsyClassName: "disabled",
-          classNames: ":enabled:disabled"
-        }
+    ```javascript
+    {
+      path: "content.isEnabled",
+      className: "enabled",
+      falsyClassName: "disabled",
+      classNames: ":enabled:disabled"
+    }
+    ```
 
     @method _parsePropertyPath
     @static
@@ -2335,16 +2387,20 @@ Ember.View.reopenClass({
   /**
     @private
 
-    Get the class name for a given value, based on the path, optional className
-    and optional falsyClassName.
+    Get the class name for a given value, based on the path, optional
+    `className` and optional `falsyClassName`.
 
-    - if a className or falsyClassName has been specified:
-      - if the value is truthy and className has been specified, className is returned
-      - if the value is falsy and falsyClassName has been specified, falsyClassName is returned
-      - otherwise null is returned
-    - if the value is true, the dasherized last part of the supplied path is returned
-    - if the value is not false, undefined or null, the value is returned
-    - if none of the above rules apply, null is returned
+    - if a `className` or `falsyClassName` has been specified:
+      - if the value is truthy and `className` has been specified, 
+        `className` is returned
+      - if the value is falsy and `falsyClassName` has been specified, 
+        `falsyClassName` is returned
+      - otherwise `null` is returned
+    - if the value is `true`, the dasherized last part of the supplied path 
+      is returned
+    - if the value is not `false`, `undefined` or `null`, the `value` 
+      is returned
+    - if none of the above rules apply, `null` is returned
 
     @method _classStringForValue
     @param path
