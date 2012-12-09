@@ -1,6 +1,6 @@
 var set = Ember.set, get = Ember.get;
 
-module("Ember.View#nearestOfType");
+module("Ember.View#nearest*");
 
 (function() {
   var Mixin = Ember.Mixin.create({}),
@@ -33,5 +33,25 @@ module("Ember.View#nearestOfType");
     child = parent.get('childViews')[0];
     equal(child.nearestOfType(Mixin), parent, "finds closest view in the hierarchy by class");
   });
+
+test("nearestWithProperty should search immediate parent", function(){
+  var childView;
+
+  var view = Ember.View.create({
+    myProp: true,
+
+    render: function(buffer) {
+      this.appendChild(Ember.View.create());
+    }
+  });
+
+  Ember.run(function() {
+    view.appendTo('#qunit-fixture');
+  });
+
+  childView = view.get('childViews')[0];
+  equal(childView.nearestWithProperty('myProp'), view);
+
+});
 
 }());
