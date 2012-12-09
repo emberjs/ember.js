@@ -36,6 +36,15 @@ test("sets up mandatory setters for watched simple properties", function() {
   ok(!descriptor.set, 'Mandatory setter was not setup');
 });
 
+test("allows bindings to be defined", function() {
+  var obj = Ember.Object.create({
+    foo: 'foo',
+    barBinding: 'foo'
+  });
+
+  equal(obj.get('bar'), 'foo', 'The binding value is correct');
+});
+
 test("calls setUnknownProperty if defined", function() {
   var setUnknownPropertyCalled = false;
 
@@ -55,14 +64,6 @@ test("throws if you try to define a computed property", function() {
       foo: Ember.computed(function(){})
     });
   }, 'should warn that a computed property was passed to create');
-});
-
-test("throws if you try to define a binding", function() {
-  raises(function() {
-    var obj = Ember.Object.create({
-      fooBinding: 'zomg'
-    });
-  }, 'should warn that a binding was passed to create');
 });
 
 test("throws if you try to call _super in a method", function() {

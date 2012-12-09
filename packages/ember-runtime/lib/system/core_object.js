@@ -68,12 +68,24 @@ function makeCtor() {
         for (var keyName in properties) {
           if (!properties.hasOwnProperty(keyName)) { continue; }
 
-          var desc = m.descs[keyName],
-              value = properties[keyName];
+          var value = properties[keyName],
+              IS_BINDING = Ember.IS_BINDING;
+
+          if (IS_BINDING.test(keyName)) {
+            var bindings = m.bindings;
+            if (!bindings) {
+              bindings = m.bindings = { __emberproto__: this };
+            } else if (bindings.__emberproto__ !== this) {
+              bindings = m.bindings = o_create(m.bindings);
+              bindings.__emberproto__ = this;
+            }
+            bindings[keyName] = value;
+          }
+
+          var desc = m.descs[keyName];
 
           Ember.assert("Ember.Object.create no longer supports defining computed properties.", !(value instanceof Ember.ComputedProperty));
-          Ember.assert("Ember.Object.create no longer supports defining bindings.", keyName.substr(-7) !== "Binding");
-          Ember.assert("Ember.Object.create no longer supports calling _super.", !(typeof value === 'function' && value.toString().indexOf('_super') !== -1));
+          Ember.assert("Ember.Object.create no longer supports defining methods that call _super.", !(typeof value === 'function' && value.toString().indexOf('_super') !== -1));
 
           if (concatenatedProperties && concatenatedProperties.indexOf(keyName) >= 0) {
             var baseValue = this[keyName];
