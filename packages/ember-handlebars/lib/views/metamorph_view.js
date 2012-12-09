@@ -38,11 +38,13 @@ var DOMManager = {
 
     Ember.run.schedule('render', this, function() {
       if (get(view, 'isDestroyed')) { return; }
-      view.invalidateRecursively('element');
-      view._notifyWillInsertElement();
+      view.invokeRecursively(function(view) {
+        view.propertyDidChange('element');
+      });
+      view.triggerRecursively('willInsertElement');
       morph.replaceWith(buffer.string());
       view.transitionTo('inDOM');
-      view._notifyDidInsertElement();
+      view.triggerRecursively('didInsertElement');
     });
   },
 

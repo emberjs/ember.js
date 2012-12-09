@@ -1610,67 +1610,37 @@ Ember.View = Ember.CoreView.extend(
     @param fn {Function}
   */
   invokeRecursively: function(fn) {
-    fn.call(this, this);
+    var childViews = [this], currentViews, view;
 
-    this.forEachChildView(function(view) {
-      view.invokeRecursively(fn);
-    });
+    while (childViews.length) {
+      currentViews = childViews.slice();
+      childViews = [];
+
+      for (var i=0, l=currentViews.length; i<l; i++) {
+        view = currentViews[i];
+        fn.call(view, view);
+        if (view._childViews) {
+          childViews.push.apply(childViews, view._childViews);
+        }
+      }
+    }
   },
 
-  /**
-    Invalidates the cache for a property on all child views.
+  triggerRecursively: function(eventName) {
+    var childViews = [this], currentViews, view;
 
-    @method invalidateRecursively
-  */
-  invalidateRecursively: function(key) {
-    this.forEachChildView(function(view) {
-      view.propertyDidChange(key);
-    });
-  },
+    while (childViews.length) {
+      currentViews = childViews.slice();
+      childViews = [];
 
-  /**
-    @private
-
-    Invokes the receiver's `willInsertElement()` method if it exists and then
-    invokes the same on all child views.
-
-    NOTE: In some cases this was called when the element existed. This no longer
-    works so we let people know. We can remove this warning code later.
-
-    @method _notifyWillInsertElement
-  */
-  _notifyWillInsertElement: function() {
-    this.invokeRecursively(function(view) {
-      view.trigger('willInsertElement');
-    });
-  },
-
-  /**
-    @private
-
-    Invokes the receiver's `didInsertElement()` method if it exists and then
-    invokes the same on all child views.
-
-    @method _notifyDidInsertElement
-  */
-  _notifyDidInsertElement: function() {
-    this.invokeRecursively(function(view) {
-      view.trigger('didInsertElement');
-    });
-  },
-
-  /**
-    @private
-
-    Triggers the `willClearRender` event (which invokes the `willClearRender()`
-    method if it exists) on this view and all child views.
-
-    @method _notifyWillClearRender
-  */
-  _notifyWillClearRender: function() {
-    this.invokeRecursively(function(view) {
-      view.trigger('willClearRender');
-    });
+      for (var i=0, l=currentViews.length; i<l; i++) {
+        view = currentViews[i];
+        if (view.trigger) { view.trigger(eventName); }
+        if (view._childViews) {
+          childViews.push.apply(childViews, view._childViews);
+        }
+      }
+    }
   },
 
   /**
