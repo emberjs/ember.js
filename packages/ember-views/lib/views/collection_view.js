@@ -261,7 +261,7 @@ Ember.CollectionView = Ember.ContainerView.extend(
     var removingAll = removedCount === len;
 
     if (removingAll) {
-      this.invokeForState('empty');
+      this.currentState.empty(this);
     }
 
     for (idx = start + removedCount - 1; idx >= start; idx--) {

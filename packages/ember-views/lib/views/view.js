@@ -1,5 +1,7 @@
 require("ember-views/system/render_buffer");
 
+var states = {};
+
 /**
 @module ember
 @submodule ember-views
@@ -39,21 +41,16 @@ Ember.warn("The VIEW_PRESERVES_CONTEXT flag has been removed and the functionali
 */
 Ember.TEMPLATES = {};
 
-var invokeForState = {
-  preRender: {},
-  inBuffer: {},
-  hasElement: {},
-  inDOM: {},
-  destroyed: {}
-};
-
 Ember.CoreView = Ember.Object.extend(Ember.Evented, {
+  states: states,
+
   init: function() {
     this._super();
 
     // Register the view for event handling. This hash is used by
     // Ember.EventDispatcher to dispatch incoming events.
     if (!this.isVirtual) Ember.View.views[get(this, 'elementId')] = this;
+    this.transitionTo('preRender');
   },
 
   /**
@@ -74,7 +71,7 @@ Ember.CoreView = Ember.Object.extend(Ember.Evented, {
     }
   }).property('_parentView').volatile(),
 
-  state: 'preRender',
+  state: null,
 
   _parentView: null,
 
@@ -213,19 +210,17 @@ Ember.CoreView = Ember.Object.extend(Ember.Evented, {
     // the DOM again.
     if (parent) { parent.removeChild(this); }
 
-    this.state = 'destroyed';
+    this.transitionTo('destroyed');
 
     // next remove view from global hash
-    if (!this.isVirtual) delete Ember.View.views[get(this, 'elementId')];
+    if (!this.isVirtual) delete Ember.View.views[this.elementId];
   },
 
   clearRenderedChildren: Ember.K,
+  triggerRecursively: Ember.K,
   invokeRecursively: Ember.K,
-  invalidateRecursively: Ember.K,
   transitionTo: Ember.K,
-  destroyElement: Ember.K,
-  _notifyWillInsertElement: Ember.K,
-  _notifyDidInsertElement: Ember.K
+  destroyElement: Ember.K
 });
 
 /**
@@ -1163,42 +1158,6 @@ Ember.View = Ember.CoreView.extend(
     }
   },
 
-  invokeForState: function(name) {
-    var stateName = this.state, args, fn;
-
-    // try to find the function for the state in the cache
-    if (fn = invokeForState[stateName][name]) {
-      args = a_slice.call(arguments);
-      args[0] = this;
-
-      return fn.apply(this, args);
-    }
-
-    // otherwise, find and cache the function for this state
-    var parent = this, states = parent.states, state;
-
-    while (states) {
-      state = states[stateName];
-
-      while (state) {
-        fn = state[name];
-
-        if (fn) {
-          invokeForState[stateName][name] = fn;
-
-          args = a_slice.call(arguments, 1);
-          args.unshift(this);
-
-          return fn.apply(this, args);
-        }
-
-        state = state.parentState;
-      }
-
-      states = states.parent;
-    }
-  },
-
   /**
     Renders the view again. This will work regardless of whether the
     view is already in the DOM or not. If the view is in the DOM, the
@@ -1216,7 +1175,7 @@ Ember.View = Ember.CoreView.extend(
     @method rerender
   */
   rerender: function() {
-    return this.invokeForState('rerender');
+    return this.currentState.rerender(this);
   },
 
   clearRenderedChildren: function() {
@@ -1390,9 +1349,9 @@ Ember.View = Ember.CoreView.extend(
   */
   element: Ember.computed(function(key, value) {
     if (value !== undefined) {
-      return this.invokeForState('setElement', value);
+      return this.currentState.setElement(this, value);
     } else {
-      return this.invokeForState('getElement');
+      return this.currentState.getElement(this);
     }
   }).property('_parentView'),
 
@@ -1409,7 +1368,7 @@ Ember.View = Ember.CoreView.extend(
     @return {jQuery} the CoreQuery object for the DOM node
   */
   $: function(sel) {
-    return this.invokeForState('$', sel);
+    return this.currentState.$(this, sel);
   },
 
   mutateChildViews: function(callback) {
@@ -1528,7 +1487,7 @@ Ember.View = Ember.CoreView.extend(
   */
   _insertElement: function (fn) {
     this._scheduledInsert = null;
-    this.invokeForState('insertElement', fn);
+    this.currentState.insertElement(this, fn);
   },
 
   /**
@@ -1733,7 +1692,7 @@ Ember.View = Ember.CoreView.extend(
     @return {Ember.View} receiver
   */
   destroyElement: function() {
-    return this.invokeForState('destroyElement');
+    return this.currentState.destroyElement(this);
   },
 
   /**
@@ -1809,7 +1768,7 @@ Ember.View = Ember.CoreView.extend(
   },
 
   renderToBufferIfNeeded: function () {
-    return this.invokeForState('renderToBufferIfNeeded', this);
+    return this.currentState.renderToBufferIfNeeded(this, this);
   },
 
   beforeRender: function(buffer) {
@@ -1995,7 +1954,7 @@ Ember.View = Ember.CoreView.extend(
   },
 
   appendChild: function(view, options) {
-    return this.invokeForState('appendChild', view, options);
+    return this.currentState.appendChild(this, view, options);
   },
 
   /**
@@ -2091,7 +2050,7 @@ Ember.View = Ember.CoreView.extend(
     // the DOM again.
     if (parent) { parent.removeChild(this); }
 
-    this.state = 'destroyed';
+    this.transitionTo('destroyed');
 
     childLen = childViews.length;
     for (var i=childLen-1; i>=0; i--) {
@@ -2210,6 +2169,7 @@ Ember.View = Ember.CoreView.extend(
   },
 
   transitionTo: function(state, children) {
+    this.currentState = Ember.View.states[state];
     this.state = state;
 
     if (children !== false) {
@@ -2233,7 +2193,7 @@ Ember.View = Ember.CoreView.extend(
     @param evt {Event}
   */
   handleEvent: function(eventName, evt) {
-    return this.invokeForState('handleEvent', eventName, evt);
+    return this.currentState.handleEvent(this, eventName, evt);
   }
 
 });
@@ -2296,7 +2256,6 @@ var DOMManager = {
 };
 
 Ember.View.reopen({
-  states: Ember.View.states,
   domManager: DOMManager
 });
 
@@ -2436,3 +2395,5 @@ Ember.View.applyAttributeBindings = function(elem, name, value) {
     elem.removeAttr(name);
   }
 };
+
+Ember.View.states = states;

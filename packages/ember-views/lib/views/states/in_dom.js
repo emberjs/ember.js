@@ -7,9 +7,9 @@ require('ember-views/views/states/default');
 
 var get = Ember.get, set = Ember.set, meta = Ember.meta;
 
-Ember.View.states.hasElement = {
-  parentState: Ember.View.states._default,
+var hasElement = Ember.View.states.hasElement = Ember.create(Ember.View.states._default);
 
+Ember.merge(hasElement, {
   $: function(view, sel) {
     var elem = get(view, 'element');
     return sel ? Ember.$(sel, elem) : Ember.$(elem);
@@ -79,12 +79,12 @@ Ember.View.states.hasElement = {
       return true; // continue event propagation
     }
   }
-};
+});
 
-Ember.View.states.inDOM = {
-  parentState: Ember.View.states.hasElement,
+var inDOM = Ember.View.states.inDOM = Ember.create(hasElement);
 
+Ember.merge(inDOM, {
   insertElement: function(view, fn) {
     throw "You can't insert an element into the DOM that has already been inserted";
   }
-};
+});

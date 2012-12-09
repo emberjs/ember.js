@@ -7,9 +7,9 @@ require('ember-views/views/states/default');
 
 var get = Ember.get, set = Ember.set, meta = Ember.meta;
 
-Ember.View.states.inBuffer = {
-  parentState: Ember.View.states._default,
+var inBuffer = Ember.View.states.inBuffer = Ember.create(Ember.View.states._default);
 
+Ember.merge(inBuffer, {
   $: function(view, sel) {
     // if we don't have an element yet, someone calling this.$() is
     // trying to update an element that isn't in the DOM. Instead,
@@ -36,7 +36,7 @@ Ember.View.states.inBuffer = {
   appendChild: function(view, childView, options) {
     var buffer = view.buffer;
 
-    childView = this.createChildView(childView, options);
+    childView = view.createChildView(childView, options);
     view._childViews.push(childView);
 
     childView.renderToBuffer(buffer);
@@ -81,5 +81,5 @@ Ember.View.states.inBuffer = {
 
     return value;
   }
-};
+});
 
