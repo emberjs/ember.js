@@ -71,15 +71,24 @@ var time = (function() {
 
 
 Ember.Instrumentation.instrument = function(name, payload, callback, binding) {
-  var listeners = cache[name];
+  var listeners = cache[name], timeName, ret;
+
+  if (Ember.STRUCTURED_PROFILE) {
+    timeName = name + ": " + payload.object;
+    console.time(timeName);
+  }
 
   if (!listeners) {
     listeners = populateListeners(name);
   }
 
-  if (listeners.length === 0) { return callback.call(binding); }
+  if (listeners.length === 0) {
+    ret = callback.call(binding);
+    if (Ember.STRUCTURED_PROFILE) { console.timeEnd(timeName); }
+    return ret;
+  }
 
-  var beforeValues = [], listener, ret, i, l;
+  var beforeValues = [], listener, i, l;
 
   try {
     for (i=0, l=listeners.length; i<l; i++) {
@@ -95,6 +104,10 @@ Ember.Instrumentation.instrument = function(name, payload, callback, binding) {
     for (i=0, l=listeners.length; i<l; i++) {
       listener = listeners[i];
       listener.after(name, time(), payload, beforeValues[i]);
+    }
+
+    if (Ember.STRUCTURED_PROFILE) {
+      console.timeEnd(timeName);
     }
   }
 
