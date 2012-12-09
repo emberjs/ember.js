@@ -41,7 +41,7 @@ var originalLookup = Ember.lookup, lookup;
 module("object.get()", {
 
   setup: function() {
-    object = ObservableObject.create(Ember.Observable, {
+    object = ObservableObject.createWithMixins(Ember.Observable, {
 
       normal: 'value',
       numberVal: 24,
@@ -90,7 +90,7 @@ test("should call unknownProperty when value is undefined", function() {
 //
 module("Ember.get()", {
   setup: function() {
-    objectA = ObservableObject.create({
+    objectA = ObservableObject.createWithMixins({
 
       normal: 'value',
       numberVal: 24,
@@ -178,7 +178,7 @@ module("Ember.get() with paths", {
 
 test("should return a property at a given path relative to the lookup", function() {
   lookup.Foo = ObservableObject.create({
-    Bar: ObservableObject.create({
+    Bar: ObservableObject.createWithMixins({
       Baz: Ember.computed(function() { return "blargh"; }).property().volatile()
     })
   });
@@ -188,7 +188,7 @@ test("should return a property at a given path relative to the lookup", function
 
 test("should return a property at a given path relative to the passed object", function() {
   var foo = ObservableObject.create({
-    bar: ObservableObject.create({
+    bar: ObservableObject.createWithMixins({
       baz: Ember.computed(function() { return "blargh"; }).property().volatile()
     })
   });
@@ -223,7 +223,7 @@ test("should return a property at a given path relative to the passed object - J
 module("object.set()", {
 
   setup: function() {
-    object = ObservableObject.create({
+    object = ObservableObject.createWithMixins({
 
       // normal property
       normal: 'value',
@@ -313,7 +313,7 @@ module("Computed properties", {
   setup: function() {
     lookup = Ember.lookup = {};
 
-    object = ObservableObject.create({
+    object = ObservableObject.createWithMixins({
 
       // REGULAR
 
@@ -527,7 +527,7 @@ test('setting one of two computed properties that depend on a third property sho
 });
 
 test("dependent keys should be able to be specified as property paths", function() {
-  var depObj = ObservableObject.create({
+  var depObj = ObservableObject.createWithMixins({
     menu: ObservableObject.create({
       price: 5
     }),
@@ -547,7 +547,7 @@ test("dependent keys should be able to be specified as property paths", function
 test("nested dependent keys should propagate after they update", function() {
   var bindObj;
   Ember.run(function () {
-    lookup.DepObj = ObservableObject.create({
+    lookup.DepObj = ObservableObject.createWithMixins({
       restaurant: ObservableObject.create({
         menu: ObservableObject.create({
           price: 5
@@ -559,7 +559,7 @@ test("nested dependent keys should propagate after they update", function() {
       }).property('restaurant.menu.price').volatile()
     });
 
-    bindObj = ObservableObject.create({
+    bindObj = ObservableObject.createWithMixins({
       priceBinding: "DepObj.price"
     });
   });
@@ -587,7 +587,7 @@ test("cacheable nested dependent keys should clear after their dependencies upda
   var DepObj;
 
   Ember.run(function(){
-    lookup.DepObj = DepObj = ObservableObject.create({
+    lookup.DepObj = DepObj = ObservableObject.createWithMixins({
       restaurant: ObservableObject.create({
         menu: ObservableObject.create({
           price: 5
@@ -640,7 +640,7 @@ test("cacheable nested dependent keys should clear after their dependencies upda
 module("Observable objects & object properties ", {
 
   setup: function() {
-    object = ObservableObject.create({
+    object = ObservableObject.createWithMixins({
 
       normal: 'value',
       abnormal: 'zeroValue',

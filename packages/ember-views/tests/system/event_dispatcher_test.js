@@ -24,7 +24,7 @@ test("should dispatch events to views", function() {
   var childKeyDownCalled = 0;
   var parentKeyDownCalled = 0;
 
-  view = Ember.ContainerView.create({
+  view = Ember.ContainerView.createWithMixins({
     childViews: ['child'],
 
     child: Ember.View.extend({
@@ -80,7 +80,7 @@ test("should dispatch events to views", function() {
 test("should not dispatch events to views not inDOM", function() {
   var receivedEvent;
 
-  view = Ember.View.create({
+  view = Ember.View.createWithMixins({
     render: function(buffer) {
       buffer.push('some <span id="awesome">awesome</span> content');
       this._super(buffer);
@@ -220,7 +220,7 @@ test("should dispatch events to nearest event manager", function() {
 test("event manager should be able to re-dispatch events to view", function() {
 
   var receivedEvent=0;
-  view = Ember.ContainerView.create({
+  view = Ember.ContainerView.createWithMixins({
     elementId: 'containerView',
 
     eventManager: Ember.Object.create({

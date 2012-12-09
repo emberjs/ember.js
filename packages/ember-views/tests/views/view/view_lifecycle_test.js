@@ -33,7 +33,7 @@ test("should create and append a DOM element after bindings have synced", functi
       fakeThing: 'controllerPropertyValue'
     });
 
-    view = Ember.View.create({
+    view = Ember.View.createWithMixins({
       fooBinding: 'ViewTest.fakeController.fakeThing',
 
       render: function(buffer) {

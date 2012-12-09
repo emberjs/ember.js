@@ -80,7 +80,7 @@ test("deferred observing during bindings", function() {
     value2: 'value2'
   });
 
-  toObject = Ember.Object.create({
+  toObject = Ember.Object.createWithMixins({
     value1: 'value1',
     value2: 'value2',
 
@@ -164,7 +164,7 @@ module("chained binding", {
     Ember.run(function() {
       first = Ember.Object.create({ output: 'first' }) ;
 
-      second = Ember.Object.create({
+      second = Ember.Object.createWithMixins({
         input: 'second',
         output: 'second',
 
@@ -238,7 +238,7 @@ test("two bindings to the same value should sync in the order they are initializ
     foo: "bar"
   });
 
-  var b = Ember.Object.create({
+  var b = Ember.Object.createWithMixins({
     foo: "baz",
     fooBinding: "a.foo",
 
@@ -275,7 +275,7 @@ module("propertyNameBinding with longhand", {
         value: "originalValue"
       });
 
-      TestNamespace.toObject = Ember.Object.create({
+      TestNamespace.toObject = Ember.Object.createWithMixins({
           valueBinding: Ember.Binding.from('TestNamespace.fromObject.value'),
           localValue: "originalLocal",
           relativeBinding: Ember.Binding.from('localValue')

@@ -74,7 +74,7 @@ module('mixins/enumerable/enumerableContentDidChange');
 
 test('should notify observers of []', function() {
 
-  var obj = Ember.Object.create(Ember.Enumerable, {
+  var obj = Ember.Object.createWithMixins(Ember.Enumerable, {
     nextObject: function() {}, // avoid exceptions
 
     _count: 0,
@@ -96,7 +96,7 @@ test('should notify observers of []', function() {
 
 module('notify observers of length', {
   setup: function() {
-    obj = DummyEnum.create({
+    obj = DummyEnum.createWithMixins({
       _after: 0,
       lengthDidChange: Ember.observer(function() {
         this._after++;
@@ -165,7 +165,7 @@ module('notify enumerable observers', {
   setup: function() {
     obj = DummyEnum.create();
 
-    observer = Ember.Object.create({
+    observer = Ember.Object.createWithMixins({
       _before: null,
       _after: null,
 

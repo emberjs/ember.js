@@ -10,7 +10,7 @@ test("The `contentArrayDidChange` method is invoked after `content` is updated."
 
   var proxy, observerCalled = false;
 
-  proxy = Ember.ArrayProxy.create({
+  proxy = Ember.ArrayProxy.createWithMixins({
     content: Ember.A([]),
 
     arrangedContent: Ember.computed('content', function(key, value) {

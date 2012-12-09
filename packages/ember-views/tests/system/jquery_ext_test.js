@@ -53,7 +53,7 @@ test("drop handler should receive event with dataTransfer property", function() 
   var receivedEvent;
   var dropCalled = 0;
 
-  view = Ember.View.create({
+  view = Ember.View.createWithMixins({
     render: function(buffer) {
       buffer.push('please drop stuff on me');
       this._super(buffer);

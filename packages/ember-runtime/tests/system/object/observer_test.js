@@ -55,7 +55,7 @@ testBoth('observer on subclass', function(get, set) {
 
 testBoth('observer on instance', function(get, set) {
 
-  var obj = Ember.Object.create({
+  var obj = Ember.Object.createWithMixins({
 
     count: 0,
 
@@ -84,7 +84,7 @@ testBoth('observer on instance overridding class', function(get, set) {
 
   });
 
-  var obj = MyClass.create({
+  var obj = MyClass.createWithMixins({
     foo: Ember.observer(function() {
       set(this, 'count', get(this, 'count')+1);
     }, 'baz') // <-- change property we observe
@@ -102,7 +102,7 @@ testBoth('observer on instance overridding class', function(get, set) {
 
 testBoth('observer should not fire after being destroyed', function(get, set) {
 
-  var obj = Ember.Object.create({
+  var obj = Ember.Object.createWithMixins({
     count: 0,
     foo: Ember.observer(function() {
       set(this, 'count', get(this, 'count')+1);
@@ -169,11 +169,11 @@ testBoth('chain observer on class', function(get, set) {
     }, 'bar.baz')
   });
 
-  var obj1 = MyClass.create({
+  var obj1 = MyClass.createWithMixins({
     bar: { baz: 'biff' }
   });
 
-  var obj2 = MyClass.create({
+  var obj2 = MyClass.createWithMixins({
     bar: { baz: 'biff2' },
     bar2: { baz: 'biff3' },
 

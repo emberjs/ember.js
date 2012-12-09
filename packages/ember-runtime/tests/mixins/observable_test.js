@@ -38,7 +38,7 @@ test('should be able to use setProperties to set multiple properties at once', f
 
 testBoth('calling setProperties completes safely despite exceptions', function(get,set) {
   var exc = new Error("Something unexpected happened!");
-  var obj = Ember.Object.create({
+  var obj = Ember.Object.createWithMixins({
     firstName: "Steve",
     lastName: "Jobs",
     companyName: Ember.computed(function(key, value) {
@@ -69,7 +69,7 @@ testBoth('calling setProperties completes safely despite exceptions', function(g
 });
 
 testBoth("should be able to retrieve cached values of computed properties without invoking the computed property", function(get) {
-  var obj = Ember.Object.create({
+  var obj = Ember.Object.createWithMixins({
     foo: Ember.computed(function() {
       return "foo";
     }),
