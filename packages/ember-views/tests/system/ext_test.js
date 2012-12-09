@@ -12,6 +12,7 @@ test("View hierarchy is done rendering to DOM when functions queued in afterRend
     }
   });
   var parentView = Ember.View.create({
+    elementId: 'parent_view',
     render: function(buffer) {
       buffer.push('parent');
       this.appendChild(childView);
