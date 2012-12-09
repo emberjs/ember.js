@@ -27,8 +27,11 @@ var get = Ember.get, set = Ember.set;
   App.MyView = Ember.View.extend();
   ```
 
-  After all of your classes are defined, call `App.initialize()` to start the
-  application.
+  Calling `Ember.Application.create()` will automatically initialize your
+  application by calling the `Ember.Application.initialize()` method. If you
+  need to delay initialization, you can pass `{autoinit: false}` to the
+  `Ember.Application.create()` method, and call `App.initialize()`
+  later.
 
   Because `Ember.Application` inherits from `Ember.Namespace`, any classes
   you create will have useful string representations when calling `toString()`.
