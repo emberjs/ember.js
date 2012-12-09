@@ -421,6 +421,8 @@ Ember.Application = Ember.Namespace.extend(
     if (router && router instanceof Ember.Router) {
       this.startRouting(router);
     }
+
+    Ember.BOOTED = true;
   },
 
   createApplicationView: function (router) {
