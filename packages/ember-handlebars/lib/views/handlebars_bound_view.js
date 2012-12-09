@@ -1,4 +1,7 @@
 /*globals Handlebars */
+/*jshint newcap:false*/
+
+require("metamorph");
 
 /**
 @module ember
@@ -10,12 +13,28 @@ var get = Ember.get, set = Ember.set, handlebarsGet = Ember.Handlebars.get;
 require('ember-views/views/view');
 require('ember-handlebars/views/metamorph_view');
 
-Ember._SimpleHandlebarsView = Ember._SimpleMetamorphView.extend({
-  instrumentName: 'render.simpleHandlebars',
+function SimpleHandlebarsView(path, pathRoot, isEscaped, templateData) {
+  this.path = path;
+  this.pathRoot = pathRoot;
+  this.isEscaped = isEscaped;
+  this.templateData = templateData;
 
-  normalizedValue: Ember.computed(function() {
-    var path = get(this, 'path'),
-        pathRoot  = get(this, 'pathRoot'),
+  this.morph = Metamorph();
+  this.state = 'preRender';
+}
+
+Ember._SimpleHandlebarsView = SimpleHandlebarsView;
+
+SimpleHandlebarsView.prototype = {
+  isVirtual: true,
+  isView: true,
+
+  destroy: Ember.K,
+  propertyDidChange: Ember.K,
+
+  normalizedValue: function() {
+    var path = this.path,
+        pathRoot = this.pathRoot,
         result, templateData;
 
     // Use the pathRoot as the result if no path is provided. This
@@ -25,18 +44,37 @@ Ember._SimpleHandlebarsView = Ember._SimpleMetamorphView.extend({
     if (path === '') {
       result = pathRoot;
     } else {
-      templateData = get(this, 'templateData');
+      templateData = this.templateData;
       result = handlebarsGet(pathRoot, path, { data: templateData });
     }
 
     return result;
-  }).property('path', 'pathRoot').volatile(),
+  },
 
-  render: function(buffer) {
+  renderToBuffer: function(parentBuffer) {
+    var name = 'render-to-buffer.simpleHandlebars',
+        details = { object: '<Ember._SimpleHandlebarsView>' };
+
+    return Ember.instrument(name, details, function() {
+      return this._renderToBuffer(parentBuffer);
+    }, this);
+  },
+
+  _renderToBuffer: function(buffer) {
+    var string = '';
+
+    string += this.morph.startTag();
+    string += this.render();
+    string += this.morph.endTag();
+
+    buffer.push(string);
+  },
+
+  render: function() {
     // If not invoked via a triple-mustache ({{{foo}}}), escape
     // the content of the template.
-    var escape = get(this, 'isEscaped');
-    var result = get(this, 'normalizedValue');
+    var escape = this.isEscaped;
+    var result = this.normalizedValue();
 
     if (result === null || result === undefined) {
       result = "";
@@ -45,8 +83,7 @@ Ember._SimpleHandlebarsView = Ember._SimpleMetamorphView.extend({
     }
 
     if (escape) { result = Handlebars.Utils.escapeExpression(result); }
-    buffer.push(result);
-    return;
+    return result;
   },
 
   rerender: function() {
@@ -58,7 +95,12 @@ Ember._SimpleHandlebarsView = Ember._SimpleMetamorphView.extend({
         throw new Error("Something you did tried to replace an {{expression}} before it was inserted into the DOM.");
       case 'hasElement':
       case 'inDOM':
-        this.domManager.replace(this);
+        var morph = this.morph;
+
+        Ember.run.schedule('render', this, function() {
+          if (get(this, 'isDestroyed')) { return; }
+          morph.html(this.render());
+        });
         break;
     }
 
@@ -68,7 +110,7 @@ Ember._SimpleHandlebarsView = Ember._SimpleMetamorphView.extend({
   transitionTo: function(state) {
     this.state = state;
   }
-});
+};
 
 /**
   `Ember._HandlebarsBoundView` is a private view created by the Handlebars
