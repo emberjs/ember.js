@@ -659,16 +659,21 @@ testBoth('setting a cached computed property that modifies the value you give it
 module('Ember.computed - default setter');
 
 testBoth("when setting a value on a computed property that doesn't handle sets", function(get, set) {
-  var obj = {};
+  var obj = {}, observerFired = false;
 
   Ember.defineProperty(obj, 'foo', Ember.computed(function() {
     return 'foo';
   }));
 
+  Ember.addObserver(obj, 'foo', null, function() {
+    observerFired = true;
+  });
+
   Ember.set(obj, 'foo', 'bar');
 
   equal(Ember.get(obj, 'foo'), 'bar', 'The set value is properly returned');
   ok(!Ember.meta(obj).descs.foo, 'The computed property was removed');
+  ok(observerFired, 'The observer was still notified');
 });
 
 module('CP macros');

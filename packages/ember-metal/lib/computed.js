@@ -317,7 +317,8 @@ ComputedPropertyPrototype.set = function(obj, keyName, value) {
     } else if (func.length === 2) {
       ret = func.call(obj, keyName, value);
     } else {
-      Ember.defineProperty(obj, keyName, null, value);
+      Ember.defineProperty(obj, keyName, null, cachedValue);
+      Ember.set(obj, keyName, value);
       return;
     }
 
