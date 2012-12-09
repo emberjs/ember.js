@@ -73,6 +73,7 @@ function makeCtor() {
 
           Ember.assert("Ember.Object.create no longer supports defining computed properties.", !(value instanceof Ember.ComputedProperty));
           Ember.assert("Ember.Object.create no longer supports defining bindings.", keyName.substr(-7) !== "Binding");
+          Ember.assert("Ember.Object.create no longer supports calling _super.", !(typeof value === 'function' && value.toString().indexOf('_super') !== -1));
 
           if (concatenatedProperties && concatenatedProperties.indexOf(keyName) >= 0) {
             var baseValue = this[keyName];
@@ -205,8 +206,40 @@ CoreObject.PrototypeMixin = Mixin.create({
     return from;
   },
 
+  /**
+    Returns a string representation which attempts to provide more information
+    than Javascript's `toString` typically does, in a generic way for all Ember
+    objects.
+
+        App.Person = Em.Object.extend()
+        person = App.Person.create()
+        person.toString() //=> "<App.Person:ember1024>"
+
+    If the object's class is not defined on an Ember namespace, it will
+    indicate it is a subclass of the registered superclass:
+
+        Student = App.Person.extend()
+        student = Student.create()
+        student.toString() //=> "<(subclass of App.Person):ember1025>"
+
+    If the method `toStringExtension` is defined, its return value will be
+    included in the output.
+
+        App.Teacher = App.Person.extend({
+          toStringExtension: function(){
+            return @get('fullName');
+          }
+        });
+        teacher = App.Teacher.create()
+        teacher.toString(); // #=> "<App.Teacher:ember1026:Tom Dale>"
+
+    @method toString
+    @return {String} string representation
+  */
   toString: function() {
-    return '<'+this.constructor.toString()+':'+guidFor(this)+'>';
+    var hasToStringExtension = Ember.typeOf(this.toStringExtension) === 'function',
+        extension = hasToStringExtension ? ":" + this.toStringExtension() : '';
+    return '<'+this.constructor.toString()+':'+guidFor(this)+extension+'>';
   }
 });
 

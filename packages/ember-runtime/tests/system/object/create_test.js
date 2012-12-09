@@ -65,6 +65,16 @@ test("throws if you try to define a binding", function() {
   }, 'should warn that a binding was passed to create');
 });
 
+test("throws if you try to call _super in a method", function() {
+  raises(function() {
+    var obj = Ember.Object.create({
+      foo: function() {
+        this._super();
+      }
+    });
+  }, 'should warn that a method that calls _super was passed to create');
+});
+
 module('Ember.Object.createWithMixins');
 
 test("Creates a new object that contains passed properties", function() {

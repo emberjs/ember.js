@@ -124,8 +124,7 @@ set = function set(obj, keyName, value, tolerant) {
       isUnknown, currentValue;
   if (desc) {
     desc.set(obj, keyName, value);
-  }
-  else {
+  } else {
     isUnknown = 'object' === typeof obj && !(keyName in obj);
 
     // setUnknownProperty is called if `obj` is an object,
