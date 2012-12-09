@@ -1083,38 +1083,6 @@ Ember.View = Ember.CoreView.extend(
   },
 
   /**
-    Return the nearest ancestor that is an `Ember.CollectionView`
-
-    @property collectionView
-    @return Ember.CollectionView
-  */
-  collectionView: Ember.computed(function() {
-    return this.nearestOfType(Ember.CollectionView);
-  }),
-
-  /**
-    Return the nearest ancestor that is a direct child of
-    an `Ember.CollectionView`
-
-    @property itemView
-    @return Ember.View
-  */
-  itemView: Ember.computed(function() {
-    return this.nearestChildOf(Ember.CollectionView);
-  }),
-
-  /**
-    Return the nearest ancestor that has the property
-    `content`.
-
-    @property contentView
-    @return Ember.View
-  */
-  contentView: Ember.computed(function() {
-    return this.nearestWithProperty('content');
-  }),
-
-  /**
     @private
 
     When the parent view changes, recursively invalidate
@@ -1124,12 +1092,6 @@ Ember.View = Ember.CoreView.extend(
   */
   _parentViewDidChange: Ember.observer(function() {
     if (this.isDestroying) { return; }
-
-    this.invokeRecursively(function(view) {
-      view.propertyDidChange('collectionView');
-      view.propertyDidChange('itemView');
-      view.propertyDidChange('contentView');
-    });
 
     if (get(this, 'parentView.controller') && !get(this, 'controller')) {
       this.notifyPropertyChange('controller');
