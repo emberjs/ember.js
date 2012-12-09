@@ -198,3 +198,10 @@ Ember.handleErrors = function(func, context) {
     return func.apply(context || this);
   }
 };
+
+Ember.merge = function(original, updates) {
+  for (var prop in updates) {
+    if (!updates.hasOwnProperty(prop)) { continue; }
+    original[prop] = updates[prop];
+  }
+};

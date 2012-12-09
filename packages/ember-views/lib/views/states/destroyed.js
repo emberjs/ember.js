@@ -7,9 +7,9 @@ require('ember-views/views/states/default');
 
 var destroyedError = "You can't call %@ on a destroyed view", fmt = Ember.String.fmt;
 
-Ember.View.states.destroyed = {
-  parentState: Ember.View.states._default,
+var destroyed = Ember.View.states.destroyed = Ember.create(Ember.View.states._default);
 
+Ember.merge(destroyed, {
   appendChild: function() {
     throw fmt(destroyedError, ['appendChild']);
   },
@@ -34,5 +34,5 @@ Ember.View.states.destroyed = {
   // Since element insertion is scheduled, don't do anything if
   // the view has been destroyed between scheduling and execution
   insertElement: Ember.K
-};
+});
 

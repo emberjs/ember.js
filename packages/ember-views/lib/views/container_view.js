@@ -1,5 +1,7 @@
 require('ember-views/views/view');
 
+var states = {};
+
 /**
 @module ember
 @submodule ember-views
@@ -242,6 +244,7 @@ var childViewsProperty = Ember.computed(function() {
 */
 
 Ember.ContainerView = Ember.View.extend({
+  states: states,
 
   init: function() {
     this._super();
@@ -333,7 +336,7 @@ Ember.ContainerView = Ember.View.extend({
     var changedViews = views.slice(start, start+removed);
     this.initializeViews(changedViews, null, null);
 
-    this.invokeForState('childViewsWillChange', views, start, removed);
+    this.currentState.childViewsWillChange(this, views, start, removed);
   },
 
   /**
@@ -363,7 +366,7 @@ Ember.ContainerView = Ember.View.extend({
     this.initializeViews(changedViews, this, get(this, 'templateData'));
 
     // Let the current state handle the changes
-    this.invokeForState('childViewsDidChange', views, start, added);
+    this.currentState.childViewsDidChange(this, views, start, added);
   },
 
   initializeViews: function(views, parentView, templateData) {
@@ -398,82 +401,88 @@ Ember.ContainerView = Ember.View.extend({
   }, 'currentView'),
 
   _ensureChildrenAreInDOM: function () {
-    this.invokeForState('ensureChildrenAreInDOM', this);
+    this.currentState.ensureChildrenAreInDOM(this);
   }
 });
 
-// Ember.ContainerView extends the default view states to provide different
-// behavior for childViewsWillChange and childViewsDidChange.
-Ember.ContainerView.states = {
-  parent: Ember.View.states,
+states._default = {};
+states.preRender = Ember.create(states._default);
+states.destroyed = Ember.create(states._default);
+states.inBuffer = Ember.create(states._default);
+states.hasElement = Ember.create(states._default);
+states.inDOM = Ember.create(states.hasElement);
 
-  inBuffer: {
-    childViewsDidChange: function(parentView, views, start, added) {
-      var buffer = parentView.buffer,
-          startWith, prev, prevBuffer, view;
+var viewStates = Ember.View.states, viewState;
 
-      // Determine where to begin inserting the child view(s) in the
-      // render buffer.
-      if (start === 0) {
-        // If views were inserted at the beginning, prepend the first
-        // view to the render buffer, then begin inserting any
-        // additional views at the beginning.
-        view = views[start];
-        startWith = start + 1;
-        view.renderToBuffer(buffer, 'prepend');
-      } else {
-        // Otherwise, just insert them at the same place as the child
-        // views mutation.
-        view = views[start - 1];
-        startWith = start;
-      }
+for (var stateName in viewStates) {
+  if (!viewStates.hasOwnProperty(stateName)) { continue; }
+  Ember.merge(states[stateName], viewStates[stateName]);
+}
 
-      for (var i=startWith; i<start+added; i++) {
-        prev = view;
-        view = views[i];
-        prevBuffer = prev.buffer;
-        view.renderToBuffer(prevBuffer, 'insertAfter');
-      }
+Ember.merge(states._default, {
+  childViewsWillChange: Ember.K,
+  childViewsDidChange: Ember.K,
+  ensureChildrenAreInDOM: Ember.K
+});
+
+Ember.merge(states.inBuffer, {
+  childViewsDidChange: function(parentView, views, start, added) {
+    var buffer = parentView.buffer,
+        startWith, prev, prevBuffer, view;
+
+    // Determine where to begin inserting the child view(s) in the
+    // render buffer.
+    if (start === 0) {
+      // If views were inserted at the beginning, prepend the first
+      // view to the render buffer, then begin inserting any
+      // additional views at the beginning.
+      view = views[start];
+      startWith = start + 1;
+      view.renderToBuffer(buffer, 'prepend');
+    } else {
+      // Otherwise, just insert them at the same place as the child
+      // views mutation.
+      view = views[start - 1];
+      startWith = start;
+    }
+
+    for (var i=startWith; i<start+added; i++) {
+      prev = view;
+      view = views[i];
+      prevBuffer = prev.buffer;
+      view.renderToBuffer(prevBuffer, 'insertAfter');
+    }
+  }
+});
+
+Ember.merge(states.hasElement, {
+  childViewsWillChange: function(view, views, start, removed) {
+    for (var i=start; i<start+removed; i++) {
+      views[i].remove();
     }
   },
 
-  hasElement: {
-    childViewsWillChange: function(view, views, start, removed) {
-      for (var i=start; i<start+removed; i++) {
-        views[i].remove();
-      }
-    },
+  childViewsDidChange: function(view, views, start, added) {
+    Ember.run.scheduleOnce('render', view, '_ensureChildrenAreInDOM');
+  },
 
-    childViewsDidChange: function(view, views, start, added) {
-      Ember.run.scheduleOnce('render', this, '_ensureChildrenAreInDOM');
-    },
-
-    ensureChildrenAreInDOM: function(view) {
-      var childViews = view.get('childViews'), i, len, childView, previous, buffer;
-      for (i = 0, len = childViews.length; i < len; i++) {
-        childView = childViews[i];
-        buffer = childView.renderToBufferIfNeeded();
-        if (buffer) {
-          childView._notifyWillInsertElement();
-          if (previous) {
-            previous.domManager.after(previous, buffer.string());
-          } else {
-            view.domManager.prepend(view, buffer.string());
-          }
-          childView.transitionTo('inDOM');
-          childView.propertyDidChange('element');
-          childView._notifyDidInsertElement();
+  ensureChildrenAreInDOM: function(view) {
+    var childViews = view.get('childViews'), i, len, childView, previous, buffer;
+    for (i = 0, len = childViews.length; i < len; i++) {
+      childView = childViews[i];
+      buffer = childView.renderToBufferIfNeeded();
+      if (buffer) {
+        childView.triggerRecursively('willInsertElement');
+        if (previous) {
+          previous.domManager.after(previous, buffer.string());
+        } else {
+          view.domManager.prepend(view, buffer.string());
         }
-        previous = childView;
+        childView.transitionTo('inDOM');
+        childView.propertyDidChange('element');
+        childView.triggerRecursively('didInsertElement');
       }
+      previous = childView;
     }
   }
-};
-
-Ember.ContainerView.states.inDOM = {
-  parentState: Ember.ContainerView.states.hasElement
-};
-
-Ember.ContainerView.reopen({
-  states: Ember.ContainerView.states
 });
