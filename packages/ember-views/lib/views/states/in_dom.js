@@ -35,7 +35,7 @@ Ember.merge(hasElement, {
   // once the view has been inserted into the DOM, rerendering is
   // deferred to allow bindings to synchronize.
   rerender: function(view) {
-    view._notifyWillClearRender();
+    view.triggerRecursively('willClearRender');
 
     view.clearRenderedChildren();
 

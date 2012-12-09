@@ -12,11 +12,11 @@ Ember.merge(preRender, {
   // created (createElement).
   insertElement: function(view, fn) {
     view.createElement();
-    view._notifyWillInsertElement();
+    view.triggerRecursively('willInsertElement');
     // after createElement, the view will be in the hasElement state.
     fn.call(view);
     view.transitionTo('inDOM');
-    view._notifyDidInsertElement();
+    view.triggerRecursively('didInsertElement');
   },
 
   renderToBufferIfNeeded: function(view) {
