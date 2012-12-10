@@ -239,7 +239,7 @@ CoreObject.PrototypeMixin = Mixin.create({
 
         App.Teacher = App.Person.extend({
           toStringExtension: function(){
-            return @get('fullName');
+            return this.get('fullName');
           }
         });
         teacher = App.Teacher.create()
