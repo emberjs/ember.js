@@ -135,7 +135,7 @@ Ember.CoreView = Ember.Object.extend(Ember.Evented, {
       be used.
   */
   renderToBuffer: function(parentBuffer, bufferOperation) {
-    var name = 'render-to-buffer.' + this.instrumentName,
+    var name = 'render.' + this.instrumentName,
         details = {};
 
     this.instrumentDetails(details);
@@ -1158,9 +1158,7 @@ Ember.View = Ember.CoreView.extend(
       Ember.assert('template must be a function. Did you mean to call Ember.Handlebars.compile("...") or specify templateName instead?', typeof template === 'function');
       // The template should write directly to the render buffer instead
       // of returning a string.
-      Ember.instrument('template.' + this.instrumentName,
-        { object: this.toString() },
-        function() { output = template(context, { data: data }); });
+      output = template(context, { data: data });
 
       // If the template returned a string instead of writing to the buffer,
       // push the string onto the buffer.

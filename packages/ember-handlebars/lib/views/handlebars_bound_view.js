@@ -51,16 +51,7 @@ SimpleHandlebarsView.prototype = {
     return result;
   },
 
-  renderToBuffer: function(parentBuffer) {
-    var name = 'render-to-buffer.simpleHandlebars',
-        details = { object: '<Ember._SimpleHandlebarsView>' };
-
-    return Ember.instrument(name, details, function() {
-      return this._renderToBuffer(parentBuffer);
-    }, this);
-  },
-
-  _renderToBuffer: function(buffer) {
+  renderToBuffer: function(buffer) {
     var string = '';
 
     string += this.morph.startTag();
