@@ -1,5 +1,6 @@
 require('ember-views');
-require('ember-application/system');
+require('ember-states');
+require('ember-old-router/application/system');
 
 /**
 Ember Application

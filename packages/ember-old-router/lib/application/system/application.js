@@ -269,10 +269,6 @@ Ember.Application = Ember.Namespace.extend(
 
     this._super();
 
-    if (this.Router === undefined && this.router === undefined) {
-      this.Router = Ember.Router.extend();
-    }
-
     this.createEventDispatcher();
 
     // Start off the number of deferrals at 1. This will be
@@ -393,6 +389,8 @@ Ember.Application = Ember.Namespace.extend(
     }
 
     if (router) {
+      set(this, 'router', router);
+
       // By default, the router's namespace is the current application.
       //
       // This allows it to find model classes when a state has a
@@ -409,13 +407,16 @@ Ember.Application = Ember.Namespace.extend(
   didBecomeReady: function() {
     var eventDispatcher = get(this, 'eventDispatcher'),
         customEvents    = get(this, 'customEvents'),
-        router          = this._createdRouter;
+        router;
 
     eventDispatcher.setup(customEvents);
 
     this.ready();
 
-    this.createApplicationView();
+
+    router = get(this, 'router');
+
+    this.createApplicationView(router);
 
     if (router && router instanceof Ember.Router) {
       this.startRouting(router);
@@ -424,9 +425,8 @@ Ember.Application = Ember.Namespace.extend(
     Ember.BOOTED = true;
   },
 
-  createApplicationView: function () {
+  createApplicationView: function (router) {
     var rootElement = get(this, 'rootElement'),
-        router = this._createdRouter,
         applicationViewOptions = {},
         applicationViewClass = this.ApplicationView,
         applicationTemplate = Ember.TEMPLATES.application,
@@ -455,7 +455,7 @@ Ember.Application = Ember.Namespace.extend(
     this._createdApplicationView = applicationView;
 
     if (router) {
-      router._activeViews.application = applicationView;
+      set(router, 'applicationView', applicationView);
     }
 
     applicationView.appendTo(rootElement);
@@ -473,9 +473,10 @@ Ember.Application = Ember.Namespace.extend(
   startRouting: function(router) {
     var location = get(router, 'location');
 
-    router.startRouting();
+    Ember.assert("You must have an application template or ApplicationView defined on your application", get(router, 'applicationView') );
+    Ember.assert("You must have an ApplicationController defined on your application", get(router, 'applicationController') );
 
-    router.handleURL(location.getURL());
+    router.route(location.getURL());
     location.onUpdateURL(function(url) {
       router.route(url);
     });
@@ -523,14 +524,10 @@ Ember.Application.registerInjection({
     var name = property.charAt(0).toLowerCase() + property.substr(1),
         controllerClass = app[property], controller;
 
-    name = name.replace(/Controller$/, '');
-
     if(!Ember.Object.detect(controllerClass)){ return; }
     controller = app[property].create();
 
-    if (router._container) {
-      router._container.controller[name] = controller;
-    }
+    router.set(name, controller);
 
     controller.setProperties({
       target: router,

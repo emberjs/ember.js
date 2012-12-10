@@ -1,15 +1,14 @@
-var Router, App, AppView, templates, router, urls;
+var Router, App, AppView, templates, router;
 var get = Ember.get, set = Ember.set;
 
 function bootApplication() {
   router = Router.create({
-    updateURL: function(url) {
-      urls.push(url);
-    }
+    location: 'none'
   });
 
   Ember.run(function() {
-    router._container.view.application = AppView.create().appendTo('#qunit-fixture');
+    router._activeViews.application = AppView.create().appendTo('#qunit-fixture');
+    router.startRouting();
   });
 }
 
@@ -21,8 +20,6 @@ module("Basic Routing", {
 
       App.LoadingRoute = Ember.Route.extend({
       });
-
-      urls = [];
 
       Ember.TEMPLATES.app = Ember.Handlebars.compile("{{outlet}}");
       Ember.TEMPLATES.home = Ember.Handlebars.compile("<h3>Hours</h3>");
@@ -346,7 +343,7 @@ test("Moving from one page to another triggers the correct callbacks", function(
     router.transitionTo('special', App.MenuItem.create({ id: 1 }));
   });
 
-  deepEqual(urls, ['/specials/1']);
+  deepEqual(router.location.path, '/specials/1');
 });
 
 test("Nested callbacks are not exited when moving to siblings", function() {
@@ -368,8 +365,6 @@ test("Nested callbacks are not exited when moving to siblings", function() {
   App.LoadingRoute = Ember.Route.extend({
 
   });
-
-  var rootSetup = 0, rootRender = 0, rootModel = 0, rootSerialize = 0;
 
   App.RootRoute = Ember.Route.extend({
     model: function() {
@@ -413,13 +408,13 @@ test("Nested callbacks are not exited when moving to siblings", function() {
     "<p>LOADING!</p>"
   );
 
-  bootApplication();
-
-  router._container.controller.special = Ember.Controller.create();
+  var rootSetup = 0, rootRender = 0, rootModel = 0, rootSerialize = 0;
 
   Ember.run(function() {
-    router.handleURL("/");
+    bootApplication();
   });
+
+  router._container.controller.special = Ember.Controller.create();
 
   equal(Ember.$('h3', '#qunit-fixture').text(), "Home", "The app is now in the initial state");
   equal(rootSetup, 1, "The root setup was triggered");
@@ -435,9 +430,9 @@ test("Nested callbacks are not exited when moving to siblings", function() {
   equal(rootSerialize, 0, "The root serialize was not called");
 
   // TODO: Should this be changed?
-  equal(rootModel, 2, "The root model was called again");
+  equal(rootModel, 1, "The root model was called again");
 
-  deepEqual(urls, ['/specials/1']);
+  deepEqual(router.location.path, '/specials/1');
 });
 
 asyncTest("Events are triggered on the current state", function() {

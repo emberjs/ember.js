@@ -300,6 +300,8 @@ var url, firstPost, firstUser;
 
 module("default serialize and deserialize with modelType", {
   setup: function() {
+    Ember.BOOTED = false;
+
     Ember.lookup = lookup = {};
 
     lookup.TestApp = TestApp = Ember.Namespace.create();
@@ -307,11 +309,13 @@ module("default serialize and deserialize with modelType", {
     TestApp.Post.find = function(id) {
       if (id === "1") { return firstPost; }
     };
+    TestApp.Post.toString();
 
     TestApp.User = Ember.Object.extend();
     TestApp.User.find = function(id) {
       if (id === "1") { return firstUser; }
     };
+    TestApp.User.toString();
 
     firstPost = TestApp.Post.create({ id: 1 });
     firstUser = TestApp.User.create({ id: 1 });
@@ -343,6 +347,8 @@ module("default serialize and deserialize with modelType", {
         })
       })
     });
+
+    Ember.BOOTED = true;
   },
 
   teardown: function() {
@@ -351,7 +357,9 @@ module("default serialize and deserialize with modelType", {
 });
 
 test("should use a specified String `modelType` in the default `serialize`", function() {
+  window.billy = true;
   router.transitionTo('post', firstPost);
+  window.billy = false;
   equal(url, "/posts/1");
 });
 
@@ -379,6 +387,7 @@ var postSuccessCallback, postFailureCallback,
 
 module("modelType with promise", {
   setup: function() {
+    Ember.BOOTED = false;
     Ember.lookup = lookup = {};
     lookup.TestApp = TestApp = Ember.Namespace.create();
 
@@ -394,6 +403,7 @@ module("modelType with promise", {
         return firstUser;
       }
     };
+    TestApp.User.toString();
 
     TestApp.Post = Ember.Object.extend({
       then: function(success, failure) {
@@ -406,6 +416,7 @@ module("modelType with promise", {
       if (!userLoaded) { return; }
       if (id === "1") { return firstPost; }
     };
+    TestApp.Post.toString();
 
     firstUser = TestApp.User.create({ id: 1 });
     firstPost = TestApp.Post.create({ id: 1 });

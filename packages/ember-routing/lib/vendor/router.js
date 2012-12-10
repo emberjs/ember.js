@@ -48,21 +48,6 @@ define("router",
       },
 
       /**
-        Take a named route and a list of params and generate a
-        URL. Used by `transitionTo` to set the new URL when a
-        route is directly transitioned to from inside the app.
-
-        @param {String} name the name of the route to generate
-          a URL for
-        @param {Object} params a hash of parameters
-
-        @returns {String} a URL
-      */
-      generate: function(name, params) {
-        return this.recognizer.generate(name, params);
-      },
-
-      /**
         The entry point for handling a change to the URL (usually
         via the back and forward button).
 
@@ -89,31 +74,80 @@ define("router",
         @param {String} name the name of the route
       */
       transitionTo: function(name) {
-        var handlers = this.recognizer.handlersFor(name),
-            objects = [].slice.call(arguments, 1),
-            params = {},
-            setupHandlers = false,
-            toSetup = [];
+        var output = this._paramsForHandler(name, [].slice.call(arguments, 1), function(handler) {
+          if (handler.hasOwnProperty('context')) { return handler.context; }
+          if (handler.deserialize) { return handler.deserialize({}); }
+          return null;
+        });
 
-        for (var i=0, l=handlers.length; i<l; i++) {
-          var handlerObj = handlers[i],
-              handler = this.getHandler(handlerObj.handler),
-              names = handlerObj.names,
-              object;
-
-          if (names.length) {
-            object = objects.shift();
-            if (handler.serialize) { merge(params, handler.serialize(object, names)); }
-          } else {
-            object = handler.deserialize && handler.deserialize({});
-          }
-
-          toSetup.push({ handler: handlerObj.handler, context: object });
-        }
+        var params = output.params, toSetup = output.toSetup;
 
         setupContexts(this, toSetup);
         var url = this.recognizer.generate(name, params);
         this.updateURL(url);
+      },
+
+      /**
+        @private
+
+        This method takes a handler name and a list of contexts and returns
+        a serialized parameter hash suitable to pass to `recognizer.generate()`.
+
+        @param {String} handlerName
+        @param {Array[Object]} contexts
+        @returns {Object} a serialized parameter hash
+      */
+      paramsForHandler: function(handlerName, callback) {
+        var output = this._paramsForHandler(handlerName, [].slice.call(arguments, 1));
+        return output.params;
+      },
+
+      /**
+        Take a named route and context objects and generate a
+        URL.
+
+        @param {String} name the name of the route to generate
+          a URL for
+        @param {...Object} objects a list of objects to serialize
+
+        @returns {String} a URL
+      */
+      generate: function(handlerName) {
+        var params = this.paramsForHandler.apply(this, arguments);
+        return this.recognizer.generate(handlerName, params);
+      },
+
+      /**
+        @private
+
+        Used internally by `generate` and `transitionTo`.
+      */
+      _paramsForHandler: function(handlerName, objects, callback) {
+        var handlers = this.recognizer.handlersFor(handlerName),
+            params = {},
+            toSetup = [],
+            object, handlerObj, handler, names;
+
+        for (var i=handlers.length-1; i>=0; i--) {
+          handlerObj = handlers[i];
+          handler = this.getHandler(handlerObj.handler);
+          names = handlerObj.names;
+
+          if (names.length) {
+            if (objects.length) { object = objects.pop(); }
+            else { object = handler.context; }
+
+            if (handler.serialize) {
+              merge(params, handler.serialize(object, names));
+            }
+          } else if (callback) {
+            object = callback(handler);
+          }
+
+          toSetup.unshift({ handler: handlerObj.handler, context: object });
+        }
+
+        return { params: params, toSetup: toSetup };
       },
 
       trigger: function(name, context) {

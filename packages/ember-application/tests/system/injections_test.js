@@ -1,4 +1,6 @@
-var oldInjections;
+require('ember-routing');
+
+var oldInjections, app;
 var indexOf = Ember.ArrayPolyfills.indexOf;
 
 module("Ember.Application injections", {
@@ -9,6 +11,10 @@ module("Ember.Application injections", {
 
   teardown: function() {
     Ember.Application.injections = oldInjections;
+
+    if (app) {
+      Ember.run(function() { app.destroy(); });
+    }
   }
 });
 
@@ -53,7 +59,6 @@ test("injections can be registered in a specified order", function() {
     }
   });
 
-  var app;
   Ember.run(function() {
     app = Ember.Application.create({
       order: order,
@@ -111,7 +116,6 @@ test("injections can have multiple dependencies", function () {
   Ember.Application.registerInjection(afterB);
   Ember.Application.registerInjection(c);
 
-  var app;
   Ember.run(function() {
     app = Ember.Application.create({
       order: order,
@@ -150,7 +154,6 @@ test("injections are passed properties created from previous injections", functi
     }
   });
 
-  var app;
   Ember.run(function() {
     app = Ember.Application.create({
       rootElement: '#qunit-fixture'

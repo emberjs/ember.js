@@ -1,5 +1,3 @@
-require('ember-application');
-
 var set = Ember.set, get = Ember.get;
 var app;
 

@@ -1,3 +1,5 @@
+require('ember-routing');
+
 var jQuery, Application, application;
 var readyWasCalled, domReady, readyCallbacks;
 

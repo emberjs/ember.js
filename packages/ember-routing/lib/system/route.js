@@ -3,14 +3,27 @@ var get = Ember.get, set = Ember.set, classify = Ember.String.classify;
 var DefaultView = Ember.View.extend(Ember._Metamorph);
 
 Ember.Route = Ember.Object.extend({
+  init: function() {
+    var router = this.router;
+    this._container = router._container;
+    this._activeViews = router._activeViews;
+    this.namespace = router.namespace;
+  },
+
   /**
     @private
 
     This hook is the entry point for router.js
   */
   setup: function(context) {
-    var templateName = get(this, 'templateName'),
-        controller = this.lookup('controller', templateName);
+    var templateName = this.templateName,
+        controller = this.lookup('controller', templateName, function() {
+          if (context) {
+            return Ember.ObjectController.create({ content: context });
+          } else {
+            return Ember.Controller.create();
+          }
+        });
 
     this.setupControllers(controller, context);
     this.renderTemplates(context);
@@ -42,8 +55,8 @@ Ember.Route = Ember.Object.extend({
     if (!name) { return; }
 
     var className = classify(name),
-        namespace = get(this, 'namespace'),
-        modelClass = get(namespace, className);
+        namespace = this.namespace,
+        modelClass = namespace[className];
 
     Ember.assert("You used the dynamic segment " + name + "_id in your router, but " + namespace + "." + className + " did not exist and you did not override your state's `model` hook.", modelClass);
     return modelClass.find(value);
@@ -64,11 +77,13 @@ Ember.Route = Ember.Object.extend({
   },
 
   render: function(name, options) {
-    var templateName = get(this, 'templateName');
+    var templateName = this.templateName,
+        className = classify(templateName),
+        viewClassName = className + "View",
+        viewClass = this.namespace[viewClassName] || DefaultView;
 
-    var view = this.lookup('view', templateName, function() {
-      return DefaultView.create({ templateName: templateName });
-    });
+    var view = this._activeViews[templateName] =
+      viewClass.create({ templateName: templateName });
 
     options = options || {};
     var into = options.into || 'application';
@@ -79,11 +94,10 @@ Ember.Route = Ember.Object.extend({
       controller = this.lookup('controller', controller);
     }
 
-    controller = controller || this.context;
-
+    set(controller, 'target', this.router);
     set(view, 'controller', controller);
 
-    var parentView = this.lookup('view', into);
+    var parentView = this._activeViews[into];
     parentView.connectOutlet(outlet, view);
   },
 
@@ -91,7 +105,7 @@ Ember.Route = Ember.Object.extend({
     var object = this._container[kind][name];
 
     if (!object && callback) {
-      object = callback();
+      object = callback.call(this);
       this._container[kind][name] = object;
     }
 
