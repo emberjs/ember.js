@@ -375,3 +375,48 @@ test('normalization is indempotent', function() {
     equal(locator.normalize(locator.normalize(example)), locator.normalize(example));
   });
 });
+
+test('can define computed macros on application namespace', function() {
+  application.computedMacro('match', function(key, regexp) {
+    return !!this.get(key).match(regexp);
+  });
+
+  notEqual(application.computed, Ember.computed);
+
+  var obj = Ember.Object.extend({
+    message: 'sgb, yeah!',
+    isSgb: application.computed.match('message', /sgb/)
+  }).create();
+
+  equal(obj.get('isSgb'), true, 'is sgb');
+  obj.set('message', 'meh!');
+  equal(obj.get('isSgb'), false, 'is not sgb');
+});
+
+test('can define bi directonal computed macros on application namespace', function() {
+  application.computedMacro('aliasBis', function(key, value) {
+    if (arguments.length === 2) {
+      this.set(key, value);
+      return value;
+    } else {
+      return this.get(key);
+    }
+  });
+
+  var obj = Ember.Object.extend({
+    message: 'sgb, yeah!',
+    messageAlias: application.computed.aliasBis('message')
+  }).create();
+
+  equal(obj.get('messageAlias'), obj.get('message'), 'read from alias');
+  obj.set('messageAlias', 'hello!');
+  equal(obj.get('message'), 'hello!', 'write to alias');
+  obj.set('message', 'by!');
+  equal(obj.get('messageAlias'), 'by!', 'write to original');
+});
+
+test('can not override computed macros defined by framework on application namespace', function() {
+  raises(function() {
+    application.computedMacro('not', function() {});
+  }, 'should raise if overriding macro');
+});
