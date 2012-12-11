@@ -239,7 +239,7 @@ CoreObject.PrototypeMixin = Mixin.create({
 
         App.Teacher = App.Person.extend({
           toStringExtension: function(){
-            return @get('fullName');
+            return this.get('fullName');
           }
         });
         teacher = App.Teacher.create()
@@ -248,12 +248,18 @@ CoreObject.PrototypeMixin = Mixin.create({
     @method toString
     @return {String} string representation
   */
-  toString: function() {
-    var hasToStringExtension = Ember.typeOf(this.toStringExtension) === 'function',
+  toString: function toString() {
+    var hasToStringExtension = typeof this.toStringExtension === 'function',
         extension = hasToStringExtension ? ":" + this.toStringExtension() : '';
-    return '<'+this.constructor.toString()+':'+guidFor(this)+extension+'>';
+    var ret = '<'+this.constructor.toString()+':'+guidFor(this)+extension+'>';
+    this.toString = makeToString(ret);
+    return ret;
   }
 });
+
+function makeToString(ret) {
+  return function() { return ret; };
+}
 
 if (Ember.config.overridePrototypeMixin) {
   Ember.config.overridePrototypeMixin(CoreObject.PrototypeMixin);

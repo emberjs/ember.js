@@ -1,7 +1,25 @@
 module('system/object/toString');
 
-test('toString includes toStringExtension if defined', function() {
+var guidFor = Ember.guidFor;
 
+test("toString() returns the same value if called twice", function() {
+  var Foo = Ember.Namespace.create();
+  Foo.toString = function() { return "Foo"; };
+
+  Foo.Bar = Ember.Object.extend();
+
+  equal(Foo.Bar.toString(), "Foo.Bar");
+  equal(Foo.Bar.toString(), "Foo.Bar");
+
+  var obj = Foo.Bar.create();
+
+  equal(obj.toString(), "<Foo.Bar:" + guidFor(obj) + ">");
+  equal(obj.toString(), "<Foo.Bar:" + guidFor(obj) + ">");
+
+  equal(Foo.Bar.toString(), "Foo.Bar");
+});
+
+test('toString includes toStringExtension if defined', function() {
   var Foo = Ember.Object.extend({
         toStringExtension: function(){
           return "fooey";

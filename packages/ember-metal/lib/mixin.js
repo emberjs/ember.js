@@ -581,17 +581,26 @@ classToString = function() {
     }
   }
 
+  var ret;
+
   if (this[NAME_KEY]) {
-    return this[NAME_KEY];
+    ret = this[NAME_KEY];
   } else {
     var str = superClassString(this);
     if (str) {
-      return "(subclass of " + str + ")";
+      ret = "(subclass of " + str + ")";
     } else {
-      return "(unknown mixin)";
+      ret = "(unknown mixin)";
     }
   }
+
+  this.toString = makeToString(ret);
+  return ret;
 };
+
+function makeToString(ret) {
+  return function() { return ret; };
+}
 
 MixinPrototype.toString = classToString;
 
