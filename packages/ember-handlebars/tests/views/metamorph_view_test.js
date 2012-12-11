@@ -185,3 +185,23 @@ test("replacing a Metamorph should invalidate childView elements", function() {
 
   Ember.run(function(){ view.destroy(); });
 });
+
+test("trigger rerender of parent and SimpleHandlebarsView", function () {
+  view = Ember.View.create({
+    show: true,
+    foo: 'bar',
+    template: Ember.Handlebars.compile("{{#if view.show}}{{#if view.foo}}{{view.foo}}{{/if}}{{/if}}")
+  });
+
+  Ember.run(function(){ view.append(); });
+
+  equal(view.$().text(), 'bar');
+
+  Ember.run(function(){
+    view.set('foo', 'baz'); // schedule render of simple bound
+    view.set('show', false); // destroy tree
+  });
+
+  equal(view.$().text(), '');
+
+});
