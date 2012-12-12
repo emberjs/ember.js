@@ -102,6 +102,53 @@ test("should update attribute bindings", function() {
   ok(!view.$().attr('notNumber'), "removes notNumber attribute when NaN");
 });
 
+test("should throw if attributes are changed in the inBuffer state", function() {
+  var parentView, childViews, Test;
+  Ember.run(function() {
+    lookup.Test = Test = Ember.Namespace.create();
+    Test.controller = Ember.Object.create({
+      foo: 'bar'
+    });
+
+    parentView = Ember.ContainerView.create();
+
+    childViews = parentView.get('childViews');
+    childViews.pushObject(parentView.createChildView(Ember.View, {
+      template: function() {
+        return "foo";
+      },
+
+      fooBinding: 'Test.controller.foo',
+      attributeBindings: ['foo']
+    }));
+
+    childViews.pushObject(parentView.createChildView(Ember.View, {
+      template: function() {
+        Test.controller.set('foo', 'baz');
+        return "bar";
+      }
+    }));
+
+    childViews.pushObject(parentView.createChildView(Ember.View, {
+      template: function() {
+        return "bat";
+      }
+    }));
+  });
+
+  raises(function() {
+    Ember.run(function() {
+      parentView.append();
+    });
+  }, /Something you did caused a view to re-render after it rendered but before it was inserted into the DOM./);
+
+  Ember.run(function(){
+    parentView.destroy();
+    Test.destroy();
+  });
+
+});
+
 // This comes into play when using the {{#each}} helper. If the
 // passed array item is a String, it will be converted into a
 // String object instead of a normal string.

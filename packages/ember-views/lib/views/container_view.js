@@ -427,6 +427,9 @@ Ember.merge(states._default, {
 
 Ember.merge(states.inBuffer, {
   childViewsDidChange: function(parentView, views, start, added) {
+    throw new Error('You cannot modify child views while in the inBuffer state');
+
+    /*
     var buffer = parentView.buffer,
         startWith, prev, prevBuffer, view;
 
@@ -452,6 +455,7 @@ Ember.merge(states.inBuffer, {
       prevBuffer = prev.buffer;
       view.renderToBuffer(prevBuffer, 'insertAfter');
     }
+    */
   }
 });
 
