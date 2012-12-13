@@ -308,6 +308,15 @@ test("you can pass a regex to filter against", function() {
   equal(arrangedArrayController.objectAt(0).name, "Scumbag Dale",  'Tom Dale should be filtered');
 });
 
+test("you can pass a false value to filter against", function() {
+  unarrangedArray.pushObject({id: 4, name: "Adam Hawkins", female: false});
+
+  arrangedArrayController.set('filterProperties', [['female', false]]);
+
+  equal(arrangedArrayController.get('length'), 1, 'array has 1 item');
+  equal(arrangedArrayController.objectAt(0).name, 'Adam Hawkins',  'Adam Hawkins should be filtered');
+});
+
 test("you can pass a function to filter against", function() {
   equal(arrangedArrayController.get('length'), 3, 'precond - array has 3 items');
 

@@ -102,16 +102,17 @@ Ember.ArrangeableMixin = Ember.Mixin.create(Ember.MutableEnumerable, {
   },
 
   filterFunction: function(key, value, match) {
-    if (match) {
-      if (Ember.typeOf(match) === 'regexp') {
-        return value.match(match);
-      } else if(Ember.typeOf(match) === 'function') {
-        return match(key, value);
-      } else {
-        return value === match;
-      }
-    } else {
+    switch(Ember.typeOf(match)) {
+    case "regexp":
+      return value.match(match);
+    case "function":
+      return match(key, value);
+    case "undefined":
       return !!value;
+    case "null":
+      return !!value;
+    default:
+      return value === match;
     }
   },
 
