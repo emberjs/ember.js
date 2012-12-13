@@ -290,7 +290,7 @@ test("if you do not specify `filterProperties` filterable has no effect", functi
   equal(arrangedArrayController.get('length'), 4, 'array has 4 items');
 });
 
-test("you can pass values to filter against", function() {
+test("filters properties by string equality", function() {
   equal(arrangedArrayController.get('length'), 3, 'precond - array has 3 items');
 
   arrangedArrayController.set('filterProperties', [['name', 'Scumbag Dale']]);
@@ -299,7 +299,7 @@ test("you can pass values to filter against", function() {
   equal(arrangedArrayController.objectAt(0).name, "Scumbag Dale",  'Tom Dale should be filtered');
 });
 
-test("you can pass a regex to filter against", function() {
+test("filters properties by regex matching", function() {
   equal(arrangedArrayController.get('length'), 3, 'precond - array has 3 items');
 
   arrangedArrayController.set('filterProperties', [['name', /dale/i]]);
@@ -308,7 +308,7 @@ test("you can pass a regex to filter against", function() {
   equal(arrangedArrayController.objectAt(0).name, "Scumbag Dale",  'Tom Dale should be filtered');
 });
 
-test("you can pass a false value to filter against", function() {
+test("filters properties by booleans", function() {
   unarrangedArray.pushObject({id: 4, name: "Adam Hawkins", female: false});
 
   arrangedArrayController.set('filterProperties', [['female', false]]);
@@ -317,7 +317,7 @@ test("you can pass a false value to filter against", function() {
   equal(arrangedArrayController.objectAt(0).name, 'Adam Hawkins',  'Adam Hawkins should be filtered');
 });
 
-test("you can pass a function to filter against", function() {
+test("filters properties by functions", function() {
   equal(arrangedArrayController.get('length'), 3, 'precond - array has 3 items');
 
   arrangedArrayController.set('filterProperties', [['name', function(k,v) { return v === "Scumbag Dale"; }]]);
