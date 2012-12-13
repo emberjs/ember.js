@@ -803,6 +803,29 @@ test("views make a view keyword available that allows template to reference view
   equal(view.$('h1').text(), "Brodele del Heeeyyyyyy", "renders properties from parent context");
 });
 
+test("a view helper's bindings are to the parent context", function(){
+  var Subview = Ember.View.extend({
+    classNameBindings: ['color'],
+    controller: Ember.Object.create({
+      color: 'green',
+      name: "bar"
+    }),
+    template: Ember.Handlebars.compile('{{view.someController.name}} {{name}}')
+  });
+  var View = Ember.View.extend({
+    controller: Ember.Object.create({
+      color: "mauve",
+      name: 'foo'
+    }),
+    Subview: Subview,
+    template: Ember.Handlebars.compile('<h1>{{view view.Subview colorBinding="color" someControllerBinding="this"}}</h1>')
+  });
+  view = View.create();
+  appendView();
+  equal(view.$('h1 .mauve').length, 1, "renders property on helper declaration from parent context");
+  equal(view.$('h1 .mauve').text(), "foo bar", "renders property bound in template from subview context");
+});
+
 test("should warn if setting a template on a view with a templateName already specified", function() {
   view = Ember.View.create({
     childView: Ember.View.extend({

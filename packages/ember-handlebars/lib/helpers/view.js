@@ -82,7 +82,7 @@ EmberHandlebars.ViewHelper = Ember.Object.create({
           //
           // is converted to this:
           //
-          //     classNameBinding="context.isGreen:green"
+          //     classNameBinding="_parentView.context.isGreen:green"
           var parsedPath = Ember.View._parsePropertyPath(full);
           path = this.contextualizeBindingPath(parsedPath.path, data);
           if (path) { extensions.classNameBindings[b] = path + parsedPath.classNames; }
@@ -104,9 +104,9 @@ EmberHandlebars.ViewHelper = Ember.Object.create({
     } else if (Ember.isGlobalPath(path)) {
       return null;
     } else if (path === 'this') {
-      return 'context';
+      return '_parentView.context';
     } else {
-      return 'context.' + path;
+      return '_parentView.context.' + path;
     }
   },
 
