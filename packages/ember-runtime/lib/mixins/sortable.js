@@ -1,12 +1,12 @@
-require('ember-runtime/mixins/arrangable');
+require('ember-runtime/mixins/arrangeable');
 
 /**
 
-  Deprecated. See `Ember.ArrangableMixin`.
+  Deprecated. See `Ember.ArrangeableMixin`.
 
   @class SortableMixin
   @namespace Ember
-  @extends Ember.ArrangableMixin
+  @extends Ember.ArrangeableMixin
 */
 
 Ember.SortableMixin = Ember.Mixin.create(Ember.ArrangeableMixin, {

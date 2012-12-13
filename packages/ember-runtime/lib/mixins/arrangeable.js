@@ -7,7 +7,7 @@
 var get = Ember.get, set = Ember.set, forEach = Ember.EnumerableUtils.forEach;
 
 /**
-  `Ember.ArrangableMixin` provides a standard interface for array proxies
+  `Ember.ArrangeableMixin` provides a standard interface for array proxies
   to specify filtering and sort order. The arrangment is maintained when new
   objects are added, updated, or removed. The ordering does not effect
   the underlying content array.
@@ -48,12 +48,12 @@ var get = Ember.get, set = Ember.set, forEach = Ember.EnumerableUtils.forEach;
   songsController.get('lastObject');  // {trackNumber: 1, title: 'Dear Prudence', favorite: true}
   ```
 
-  @class ArrangableMixin
+  @class ArrangeableMixin
   @namespace Ember
   @extends Ember.Mixin
   @uses Ember.MutableEnumerable
 */
-Ember.ArrangableMixin = Ember.Mixin.create(Ember.MutableEnumerable, {
+Ember.ArrangeableMixin = Ember.Mixin.create(Ember.MutableEnumerable, {
   sortProperties: null,
   sortAscending: true,
   sortFunction: Ember.compare,
@@ -61,7 +61,7 @@ Ember.ArrangableMixin = Ember.Mixin.create(Ember.MutableEnumerable, {
   filterProperties: null,
   filterAllProperties: true,
 
-  arrangableProperties: Ember.computed('sortProperties', 'filterProperties', function() {
+  arrangeableProperties: Ember.computed('sortProperties', 'filterProperties', function() {
     var sortProperties = get(this, 'sortProperties'),
         filterProperties = get(this, 'filterProperties');
 
@@ -117,13 +117,13 @@ Ember.ArrangableMixin = Ember.Mixin.create(Ember.MutableEnumerable, {
 
   destroy: function() {
     var content = get(this, 'content'),
-        arrangableProperties = get(this, 'arrangableProperties'),
+        arrangeableProperties = get(this, 'arrangeableProperties'),
         isArranged = get(this, 'isArranged');
 
     if (content && isArranged) {
       forEach(content, function(item) {
-        forEach(arrangableProperties, function(arrangableProperty) {
-          Ember.removeObserver(item, arrangableProperty, this, 'contentItemArrangablePropertyDidChange');
+        forEach(arrangeableProperties, function(arrangeableProperty) {
+          Ember.removeObserver(item, arrangeableProperty, this, 'contentItemArrangeablePropertyDidChange');
         }, this);
       }, this);
     }
@@ -150,7 +150,7 @@ Ember.ArrangableMixin = Ember.Mixin.create(Ember.MutableEnumerable, {
         isFiltered = get(this, 'isFiltered'),
         sortProperties = get(this, 'sortProperties'),
         filterProperties = get(this, 'filterProperties'),
-        arrangableProperties = get(this, 'arrangableProperties'),
+        arrangeableProperties = get(this, 'arrangeableProperties'),
         self = this;
 
     if (!content) {
@@ -165,8 +165,8 @@ Ember.ArrangableMixin = Ember.Mixin.create(Ember.MutableEnumerable, {
     // add an observer that will update the array
     // when sorting or filtering information changes
     forEach(content, function(item) {
-      forEach(arrangableProperties, function(filterProperty) {
-        Ember.addObserver(item, filterProperty, this, 'contentItemArrangablePropertyDidChange');
+      forEach(arrangeableProperties, function(filterProperty) {
+        Ember.addObserver(item, filterProperty, this, 'contentItemArrangeablePropertyDidChange');
       }, this);
     }, this);
 
@@ -185,12 +185,12 @@ Ember.ArrangableMixin = Ember.Mixin.create(Ember.MutableEnumerable, {
 
   _contentWillChange: Ember.beforeObserver(function() {
     var content = get(this, 'content'),
-        arrangableProperties = get(this, 'arrangableProperties');
+        arrangeableProperties = get(this, 'arrangeableProperties');
 
     if (content) {
       forEach(content, function(item) {
-        forEach(arrangableProperties, function(arrangableProperty) {
-          Ember.removeObserver(item, arrangableProperty, this, 'contentItemArrangablePropertyDidChange');
+        forEach(arrangeableProperties, function(arrangeableProperty) {
+          Ember.removeObserver(item, arrangeableProperty, this, 'contentItemArrangeablePropertyDidChange');
         }, this);
       }, this);
     }
@@ -211,7 +211,7 @@ Ember.ArrangableMixin = Ember.Mixin.create(Ember.MutableEnumerable, {
 
   contentArrayWillChange: function(array, idx, removedCount, addedCount) {
     var content = get(this, 'content'),
-        arrangableProperties = get(this, 'arrangableProperties'),
+        arrangeableProperties = get(this, 'arrangeableProperties'),
         isArranged = get(this, 'isArranged');
 
     if (isArranged) {
@@ -221,8 +221,8 @@ Ember.ArrangableMixin = Ember.Mixin.create(Ember.MutableEnumerable, {
       forEach(removedObjects, function(item) {
         arrangedContent.removeObject(item);
 
-        forEach(arrangableProperties, function(arrangableProperty) {
-          Ember.removeObserver(item, arrangableProperty, this, 'contentItemArrangablePropertyDidChange');
+        forEach(arrangeableProperties, function(arrangeableProperty) {
+          Ember.removeObserver(item, arrangeableProperty, this, 'contentItemArrangeablePropertyDidChange');
         }, this);
       });
     }
@@ -232,7 +232,7 @@ Ember.ArrangableMixin = Ember.Mixin.create(Ember.MutableEnumerable, {
 
   contentArrayDidChange: function(array, idx, removedCount, addedCount) {
     var isArranged = get(this, 'isArranged'),
-        arrangableProperties = get(this, 'arrangableProperties');
+        arrangeableProperties = get(this, 'arrangeableProperties');
 
     if (isArranged) {
       var addedObjects = array.slice(idx, idx+addedCount);
@@ -241,8 +241,8 @@ Ember.ArrangableMixin = Ember.Mixin.create(Ember.MutableEnumerable, {
       forEach(addedObjects, function(item) {
         this.insertItemArranged(item);
 
-        forEach(arrangableProperties, function(arrangableProperty) {
-          Ember.addObserver(item, arrangableProperty, this, 'contentItemArrangablePropertyDidChange');
+        forEach(arrangeableProperties, function(arrangeableProperty) {
+          Ember.addObserver(item, arrangeableProperty, this, 'contentItemArrangeablePropertyDidChange');
         }, this);
       }, this);
     }
@@ -250,7 +250,7 @@ Ember.ArrangableMixin = Ember.Mixin.create(Ember.MutableEnumerable, {
     return this._super(array, idx, removedCount, addedCount);
   },
 
-  contentItemArrangablePropertyDidChange: function(item) {
+  contentItemArrangeablePropertyDidChange: function(item) {
     var arrangedContent = get(this, 'arrangedContent');
 
     if(this.hasItemArrangementChanged(item)) {
