@@ -15,7 +15,7 @@ module("Ember.Arrangeable with content - sorting", {
 
       unarrangedArray = Ember.A(Ember.A(array).copy());
 
-      arrangedArrayController = Ember.ArrayProxy.create(Ember.ArrangeableMixin, {
+      arrangedArrayController = Ember.ArrayProxy.createWithMixins(Ember.ArrangeableMixin, {
         content: unarrangedArray
       });
     });
@@ -80,7 +80,7 @@ test("you can override sortFunction", function() {
 
 test("changing sort order triggers observers", function() {
   var observer, changeCount = 0;
-  observer = Ember.Object.create({
+  observer = Ember.Object.createWithMixins({
     array: arrangedArrayController,
     arrangedDidChange: Ember.observer(function() {
       changeCount++;
@@ -268,7 +268,7 @@ module("Ember.Arrangeable with content - filtering", {
 
       unarrangedArray = Ember.A(Ember.A(array).copy());
 
-      arrangedArrayController = Ember.ArrayProxy.create(Ember.ArrangeableMixin, {
+      arrangedArrayController = Ember.ArrayProxy.createWithMixins(Ember.ArrangeableMixin, {
         content: unarrangedArray
       });
     });
@@ -336,7 +336,7 @@ test("you can change filtering to match any or all properties", function() {
 
   unarrangedArray = Ember.A(array);
 
-  arrangedArrayController = Ember.ArrayProxy.create(Ember.ArrangeableMixin, {
+  arrangedArrayController = Ember.ArrayProxy.createWithMixins(Ember.ArrangeableMixin, {
     content: unarrangedArray,
     filterProperties: ['a', 'b']
   });
@@ -359,7 +359,7 @@ module("Ember.Arrangeable with content and filterProperties", {
 
       unarrangedArray = Ember.A(array);
 
-      arrangedArrayController = Ember.ArrayProxy.create(Ember.ArrangeableMixin, {
+      arrangedArrayController = Ember.ArrayProxy.createWithMixins(Ember.ArrangeableMixin, {
         content: unarrangedArray,
         filterProperties: [['id', 1]]
       });
@@ -425,7 +425,7 @@ module("Ember.Arrangeable with filterProperties and filterCondition", {
       ];
       unarrangedArray = Ember.A(array);
 
-      arrangedArrayController = Ember.ArrayProxy.create(Ember.ArrangeableMixin, {
+      arrangedArrayController = Ember.ArrayProxy.createWithMixins(Ember.ArrangeableMixin, {
         filterProperties: [['id', 1]]
       });
     });
@@ -458,7 +458,7 @@ module("Ember.Arrangeable with bound content and filterProperties", {
         content: Ember.A(array)
       });
 
-      arrangedArrayController = Ember.ArrayProxy.create(Ember.ArrangeableMixin, {
+      arrangedArrayController = Ember.ArrayProxy.createWithMixins(Ember.ArrangeableMixin, {
         filterProperties: ['id'],
         unarrangedArray: unarrangedArray
       });
@@ -501,7 +501,7 @@ module("Ember.Arrangeable with sorting and filtering", {
 
       unarrangedArray = Ember.A(Ember.A(array).copy());
 
-      arrangedArrayController = Ember.ArrayProxy.create(Ember.ArrangeableMixin, {
+      arrangedArrayController = Ember.ArrayProxy.createWithMixins(Ember.ArrangeableMixin, {
         content: unarrangedArray,
         sortProperties: ['name'],
         filterProperties: ['include']
