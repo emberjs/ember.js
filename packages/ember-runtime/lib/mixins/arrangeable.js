@@ -54,95 +54,73 @@ var get = Ember.get, set = Ember.set, forEach = Ember.EnumerableUtils.forEach;
   @uses Ember.MutableEnumerable
 */
 Ember.ArrangeableMixin = Ember.Mixin.create(Ember.MutableEnumerable, {
+  /**
+    An array of properties to sort using. The content will not be
+    sorted unless this property is set.
+
+    ```javascript
+    ['name']         // sort according to name
+    ['name', 'age']  // sort by name then age
+    ````
+
+    @property sortProperties
+    @type {Array}
+  */
   sortProperties: null,
+
+  /**
+    Set if the array should be sorted in ascending order (lowest first). 
+    Set to `false` if you'd like descending order.
+
+    @property sortAscending
+    @type {Boolean}
+    @default true
+  */
   sortAscending: true,
+
+  /**
+    The function used to compare to values. You can override this if you 
+    want to do custom comparisions.
+
+    @property sortFunction
+    @type {Function}
+    @default Ember.compare
+  */
   sortFunction: Ember.compare,
 
+  /**
+    An array of properties to filter against. The content will not be
+    filtered unless this property is set. You can specifiy filter
+    conditions in multiple ways. Properties can be filtered by
+    truthyness, given values, regexes, or functions. Each property
+    is compared against a given value. This is an inclusive filter.
+    Items matching these filters will be included in the content array.
+
+    ```javascript
+    var controller = Ember.ArrayController.create({
+      filterProperties: ['name']                    // Only items with a name property
+      filterProperties: [['name', 'Adam Hawkins']]  // Only items with name === 'Adam Hawkins'
+      filterProperties: [['name', /x/]              // Only items with names with an x
+      filterProperties: [['name', function(item) {  // Only items with names starting with 'A'
+        return item.name[0] === 'A';
+      }]]
+    });
+    ```
+
+    @property filterProperties
+    @type {Array}
+  */
   filterProperties: null,
+
+  /**
+    Filter items if they match all filters. Set this to `false` if
+    the can match any condition.
+
+    @property filterAllProperties
+    @type {Boolean}
+    @default {true}
+  */
   filterAllProperties: true,
-
-  arrangeableProperties: Ember.computed('sortProperties', 'filterProperties', function() {
-    var sortProperties = get(this, 'sortProperties'),
-        filterProperties = get(this, 'filterProperties');
-
-    var base = Ember.A();
-
-    if(sortProperties) {
-      forEach(sortProperties, function(property) {
-        base.pushObject(property);
-      });
-    }
-
-    if(filterProperties) {
-      forEach(filterProperties, function(property) {
-        if (Ember.typeOf(property) === 'array') {
-          base.pushObject(property[0]);
-        } else {
-          base.pushObject(property);
-        }
-      });
-    }
-
-    return base.uniq();
-  }),
-
-  filterCondition: function(item){
-    var filterProperties = Ember.A(get(this, 'filterProperties')),
-        filterAllProperties = get(this, 'filterAllProperties');
-
-    var filterer = filterAllProperties ? 'every' : 'some';
-
-    return filterProperties[filterer](function(property) {
-      if (Ember.typeOf(property) === 'array') {
-        return this.filterFunction(property, get(item, property[0]), property[1]);
-      } else {
-        return this.filterFunction(property, get(item, property));
-      }
-    }, this);
-  },
-
-  filterFunction: function(key, value, match) {
-    switch(Ember.typeOf(match)) {
-    case "regexp":
-      return value.match(match);
-    case "function":
-      return match(key, value);
-    case "undefined":
-      return !!value;
-    case "null":
-      return !!value;
-    default:
-      return value === match;
-    }
-  },
-
-  destroy: function() {
-    var content = get(this, 'content'),
-        arrangeableProperties = get(this, 'arrangeableProperties'),
-        isArranged = get(this, 'isArranged');
-
-    if (content && isArranged) {
-      forEach(content, function(item) {
-        forEach(arrangeableProperties, function(arrangeableProperty) {
-          Ember.removeObserver(item, arrangeableProperty, this, 'contentItemArrangeablePropertyDidChange');
-        }, this);
-      }, this);
-    }
-
-    return this._super();
-  },
-
-  isSorted: Ember.computed('sortProperties', function() {
-    return !!get(this, 'sortProperties');
-  }),
-
-  isFiltered: Ember.computed('filterProperties', function() {
-    return !!get(this, 'filterProperties');
-  }),
-
-  isArranged: Ember.computed('isFiltered', 'isSorted', function() {
-    return get(this, 'isFiltered') || get(this, 'isSorted');
-  }),
 
   arrangedContent: Ember.computed('content', 'sortProperties.@each','filterProperties.@each', 'filterAllProperties', function(key, value) {
     var content = get(this, 'content'),
@@ -184,20 +162,6 @@ Ember.ArrangeableMixin = Ember.Mixin.create(Ember.MutableEnumerable, {
     return Ember.A(content);
   }),
 
-  _contentWillChange: Ember.beforeObserver(function() {
-    var content = get(this, 'content'),
-        arrangeableProperties = get(this, 'arrangeableProperties');
-
-    if (content) {
-      forEach(content, function(item) {
-        forEach(arrangeableProperties, function(arrangeableProperty) {
-          Ember.removeObserver(item, arrangeableProperty, this, 'contentItemArrangeablePropertyDidChange');
-        }, this);
-      }, this);
-    }
-
-    this._super();
-  }, 'content'),
 
   sortAscendingWillChange: Ember.beforeObserver(function() {
     this._lastSortAscending = get(this, 'sortAscending');
@@ -313,6 +277,89 @@ Ember.ArrangeableMixin = Ember.Mixin.create(Ember.MutableEnumerable, {
     arrangedContent.insertAt(idx, item);
   },
 
+  arrangeableProperties: Ember.computed('sortProperties', 'filterProperties', function() {
+    var sortProperties = get(this, 'sortProperties'),
+        filterProperties = get(this, 'filterProperties');
+
+    var base = Ember.A();
+
+    if(sortProperties) {
+      forEach(sortProperties, function(property) {
+        base.pushObject(property);
+      });
+    }
+
+    if(filterProperties) {
+      forEach(filterProperties, function(property) {
+        if (Ember.typeOf(property) === 'array') {
+          base.pushObject(property[0]);
+        } else {
+          base.pushObject(property);
+        }
+      });
+    }
+
+    return base.uniq();
+  }),
+
+  filterCondition: function(item){
+    var filterProperties = Ember.A(get(this, 'filterProperties')),
+        filterAllProperties = get(this, 'filterAllProperties');
+
+    var filterer = filterAllProperties ? 'every' : 'some';
+
+    return filterProperties[filterer](function(property) {
+      if (Ember.typeOf(property) === 'array') {
+        return this.filterFunction(property, get(item, property[0]), property[1]);
+      } else {
+        return this.filterFunction(property, get(item, property));
+      }
+    }, this);
+  },
+
+  filterFunction: function(key, value, match) {
+    switch(Ember.typeOf(match)) {
+    case "regexp":
+      return value.match(match);
+    case "function":
+      return match(key, value);
+    case "undefined":
+      return !!value;
+    case "null":
+      return !!value;
+    default:
+      return value === match;
+    }
+  },
+
+  destroy: function() {
+    var content = get(this, 'content'),
+        arrangeableProperties = get(this, 'arrangeableProperties'),
+        isArranged = get(this, 'isArranged');
+
+    if (content && isArranged) {
+      forEach(content, function(item) {
+        forEach(arrangeableProperties, function(arrangeableProperty) {
+          Ember.removeObserver(item, arrangeableProperty, this, 'contentItemArrangeablePropertyDidChange');
+        }, this);
+      }, this);
+    }
+
+    return this._super();
+  },
+
+  isSorted: Ember.computed('sortProperties', function() {
+    return !!get(this, 'sortProperties');
+  }),
+
+  isFiltered: Ember.computed('filterProperties', function() {
+    return !!get(this, 'filterProperties');
+  }),
+
+  isArranged: Ember.computed('isFiltered', 'isSorted', function() {
+    return get(this, 'isFiltered') || get(this, 'isSorted');
+  }),
+
   _orderBy: function(item1, item2) {
     var result = 0,
         sortProperties = get(this, 'sortProperties'),
@@ -332,6 +379,21 @@ Ember.ArrangeableMixin = Ember.Mixin.create(Ember.MutableEnumerable, {
 
     return result;
   },
+
+  _contentWillChange: Ember.beforeObserver(function() {
+    var content = get(this, 'content'),
+        arrangeableProperties = get(this, 'arrangeableProperties');
+
+    if (content) {
+      forEach(content, function(item) {
+        forEach(arrangeableProperties, function(arrangeableProperty) {
+          Ember.removeObserver(item, arrangeableProperty, this, 'contentItemArrangeablePropertyDidChange');
+        }, this);
+      }, this);
+    }
+
+    this._super();
+  }, 'content'),
 
   _binarySearch: function(item, low, high) {
     var mid, midItem, res, arrangedContent;
