@@ -830,7 +830,7 @@ Ember.StateManager = Ember.State.extend({
 
   transitionTo: function(path, context) {
     // XXX When is transitionTo called with no path
-    if (Ember.empty(path)) { return; }
+    if (Ember.isEmpty(path)) { return; }
 
     // The ES6 signature of this function is `path, ...contexts`
     var contexts = context ? Array.prototype.slice.call(arguments, 1) : [],

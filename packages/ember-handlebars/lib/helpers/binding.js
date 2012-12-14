@@ -204,7 +204,7 @@ EmberHandlebars.registerHelper('bind', function(property, options) {
   }
 
   return bind.call(context, property, options, false, function(result) {
-    return !Ember.none(result);
+    return !Ember.isNone(result);
   });
 });
 
@@ -275,7 +275,7 @@ EmberHandlebars.registerHelper('with', function(context, options) {
     }
 
     return bind.call(this, path, options, true, function(result) {
-      return !Ember.none(result);
+      return !Ember.isNone(result);
     });
   } else {
     Ember.assert("You must pass exactly one argument to the with helper", arguments.length === 2);

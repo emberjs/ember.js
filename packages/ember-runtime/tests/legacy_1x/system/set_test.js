@@ -290,7 +290,7 @@ module("Ember.Set.pop + Ember.Set.copy", {
 test("the pop() should remove an arbitrary object from the set", function() {
   var oldLength = set.length ;
   var obj = set.pop();
-  ok(!Ember.none(obj), 'pops up an item');
+  ok(!Ember.isNone(obj), 'pops up an item');
   equal(set.length, oldLength-1, 'length shorter by 1');
 });
 
