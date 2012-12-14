@@ -864,9 +864,9 @@ Ember.View = Ember.CoreView.extend(
     @type Object
   */
   controller: Ember.computed(function(key) {
-    var parentView = get(this, 'parentView');
+    var parentView = get(this, '_parentView');
     return parentView ? get(parentView, 'controller') : null;
-  }).property(),
+  }).property('_parentView'),
 
   /**
     A view may contain a layout. A layout is a regular template but

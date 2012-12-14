@@ -18,7 +18,9 @@ Ember.Route = Ember.Object.extend({
   setup: function(context) {
     var templateName = this.templateName,
         controller = this.lookup('controller', templateName, function() {
-          if (context) {
+          if (context && context.isSCArray) {
+            return Ember.ArrayController.create({ content: context });
+          } else if (context) {
             return Ember.ObjectController.create({ content: context });
           } else {
             return Ember.Controller.create();
