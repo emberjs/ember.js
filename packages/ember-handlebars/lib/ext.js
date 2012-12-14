@@ -267,3 +267,110 @@ Ember.Handlebars.registerHelper('helperMissing', function(path, options) {
   throw new Ember.Error(Ember.String.fmt(error, [view, path, this]));
 });
 
+/**
+  Register a bound handlebars helper. Bound helpers behave similarly to regular
+  handlebars helpers, with the added ability to re-render when the underlying data
+  changes.
+
+  ## Simple example
+
+  ```javascript
+  Ember.Handlebars.registerBoundHelper('capitalize', function(value) {
+    return value.toUpperCase();
+  });
+  ```
+
+  The above bound helper can be used inside of templates as follows:
+
+  ```handlebars
+  {{capitalize name}}
+  ```
+
+  In this case, when the `name` property of the template's context changes,
+  the rendered value of the helper will update to reflect this change.
+
+  ## Example with options
+
+  Like normal handlebars helpers, bound helpers have access to the options
+  passed into the helper call.
+
+  ```javascript
+  Ember.Handlebars.registerBoundHelper('repeat', function(value, options) {
+    var count = options.hash.count;
+    var a = [];
+    while(a.length < count){
+        a.push(value);
+    }
+    return a.join('');
+  });
+  ```
+
+  This helper could be used in a template as follows:
+
+  ```handlebars
+  {{repeat text count=3}}
+  ```
+
+  ## Example with extra dependencies
+
+  The `Ember.Handlebars.registerBoundHelper` method takes a variable length
+  third parameter which indicates extra dependencies on the passed in value.
+  This allows the handlebars helper to update when these dependencies change.
+
+  ```javascript
+  Ember.Handlebars.registerBoundHelper('capitalizeName', function(value) {
+    return value.get('name').toUpperCase();
+  }, 'name');
+  ```
+
+  @method registerBoundHelper
+  @for Ember.Handlebars
+  @param {String} name
+  @param {Function} function
+  @param {String} dependentKeys*
+*/
+Ember.Handlebars.registerBoundHelper = function(name, fn) {
+  var dependentKeys = Array.prototype.slice.call(arguments, 2);
+  Ember.Handlebars.registerHelper(name, function(property, options) {
+    var data = options.data,
+      view = data.view,
+      currentContext = (options.contexts && options.contexts[0]) || this,
+      pathRoot, path, normalized,
+      observer, loc;
+
+    normalized = Ember.Handlebars.normalizePath(currentContext, property, data);
+
+    pathRoot = normalized.root;
+    path = normalized.path;
+    
+    var bindView = new Ember._SimpleHandlebarsView(
+      path, pathRoot, !options.hash.unescaped, options.data
+    );
+    bindView.normalizedValue = function() {
+      var value = Ember._SimpleHandlebarsView.prototype.normalizedValue.call(bindView);
+      return fn.call(view, value, options);
+    };
+
+    view.appendChild(bindView);
+
+    observer = function() {
+      Ember.run.scheduleOnce('render', bindView, 'rerender');
+    };
+
+    Ember.addObserver(pathRoot, path, observer);
+    loc = 0;
+    while(loc < dependentKeys.length) {
+      Ember.addObserver(pathRoot, path + '.' + dependentKeys[loc], observer);
+      loc += 1;
+    }
+
+    view.one('willClearRender', function() {
+      Ember.removeObserver(pathRoot, path, observer);
+      loc = 0;
+      while(loc < dependentKeys.length) {
+        Ember.removeObserver(pathRoot, path + '.' + dependentKeys[loc], observer);
+        loc += 1;
+      }
+    });
+  });
+};
