@@ -1,6 +1,13 @@
-module('system/object/toString');
+var guidFor = Ember.guidFor, originalLookup = Ember.lookup, lookup;
 
-var guidFor = Ember.guidFor;
+module('system/object/toString', {
+  setup: function() {
+    lookup = Ember.lookup = {};
+  },
+  teardown: function() {
+    Ember.lookup = originalLookup;
+  }
+});
 
 test("toString() returns the same value if called twice", function() {
   var Foo = Ember.Namespace.create();
@@ -17,6 +24,45 @@ test("toString() returns the same value if called twice", function() {
   equal(obj.toString(), "<Foo.Bar:" + guidFor(obj) + ">");
 
   equal(Foo.Bar.toString(), "Foo.Bar");
+});
+
+test("toString on a class returns a useful value when nested in a namespace", function() {
+  var obj;
+
+  var Foo = Ember.Namespace.create();
+  Foo.toString = function() { return "Foo"; };
+
+  Foo.Bar = Ember.Object.extend();
+  equal(Foo.Bar.toString(), "Foo.Bar");
+
+  obj = Foo.Bar.create();
+  equal(obj.toString(), "<Foo.Bar:" + guidFor(obj) + ">");
+
+  Foo.Baz = Foo.Bar.extend();
+  equal(Foo.Baz.toString(), "Foo.Baz");
+
+  obj = Foo.Baz.create();
+  equal(obj.toString(), "<Foo.Baz:" + guidFor(obj) + ">");
+
+  obj = Foo.Bar.create();
+  equal(obj.toString(), "<Foo.Bar:" + guidFor(obj) + ">");
+});
+
+test("toString on a namespace finds the namespace in Ember.lookup", function() {
+  var Foo = lookup.Foo = Ember.Namespace.create();
+
+  equal(Foo.toString(), "Foo");
+});
+
+test("toString on a namespace finds the namespace in Ember.lookup", function() {
+  var Foo = lookup.Foo = Ember.Namespace.create(), obj;
+
+  Foo.Bar = Ember.Object.extend();
+
+  equal(Foo.Bar.toString(), "Foo.Bar");
+
+  obj = Foo.Bar.create();
+  equal(obj.toString(), "<Foo.Bar:" + guidFor(obj) + ">");
 });
 
 test('toString includes toStringExtension if defined', function() {
