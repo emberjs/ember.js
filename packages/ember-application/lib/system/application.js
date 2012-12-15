@@ -422,7 +422,9 @@ Ember.Application = Ember.Namespace.extend(
       this.startRouting(router);
     }
 
-    Ember.BOOTED = true;
+    if (!Ember.testing) {
+      Ember.BOOTED = true;
+    }
   },
 
   createApplicationView: function (router) {
@@ -491,6 +493,8 @@ Ember.Application = Ember.Namespace.extend(
   ready: Ember.K,
 
   willDestroy: function() {
+    Ember.BOOTED = false;
+
     get(this, 'eventDispatcher').destroy();
     if (this._createdRouter)          { this._createdRouter.destroy(); }
     if (this._createdApplicationView) { this._createdApplicationView.destroy(); }
