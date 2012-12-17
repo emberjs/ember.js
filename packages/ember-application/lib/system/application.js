@@ -430,6 +430,7 @@ var Application = Ember.Application = Ember.Namespace.extend(
   runInitializers: function() {
     var router = this.container.lookup('router:main'),
         initializers = get(this.constructor, 'initializers'),
+        container = this.container,
         graph = new Ember.DAG(),
         namespace = this,
         properties, i, initializer;
@@ -441,7 +442,7 @@ var Application = Ember.Application = Ember.Namespace.extend(
 
     graph.topsort(function (vertex) {
       var initializer = vertex.value;
-      initializer(this.container);
+      initializer(container, namespace);
     });
   },
 
