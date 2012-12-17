@@ -66,7 +66,7 @@ ObserverSet.prototype.flush = function() {
   for (i=0, len=observers.length; i < len; ++i) {
     observer = observers[i];
     sender = observer.sender;
-    if (sender.isDestroyed) { continue; }
+    if (sender.isDestroying || sender.isDestroyed) { continue; }
     Ember.sendEvent(sender, observer.eventName, [sender, observer.keyName], observer.listeners);
   }
 };

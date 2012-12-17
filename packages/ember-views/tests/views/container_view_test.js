@@ -90,7 +90,10 @@ test("should set the parentView property on views that are added to the child vi
   equal(get(thirdView, 'parentView'), container, "sets the parent view of the third view");
   equal(get(fourthView, 'parentView'), container, "sets the parent view of the fourth view");
 
-  childViews.replace(2, 2);
+  Ember.run(function() {
+    childViews.replace(2, 2);
+  });
+
   equal(get(view, 'parentView'), container, "doesn't change non-removed view");
   equal(get(thirdView, 'parentView'), container, "doesn't change non-removed view");
   equal(get(secondView, 'parentView'), null, "clears the parent view of the third view");

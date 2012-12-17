@@ -1,10 +1,8 @@
-var Router, App, AppView, templates, router;
+var Router, App, AppView, templates, router, container;
 var get = Ember.get, set = Ember.set;
 
 function bootApplication() {
-  router = Router.create({
-    location: 'none'
-  });
+  router = container.lookup('router:main');
 
   Ember.run(function() {
     router._activeViews.application = AppView.create().appendTo('#qunit-fixture');
@@ -18,6 +16,9 @@ module("Basic Routing", {
       App = Ember.Namespace.create();
       App.toString = function() { return "App"; };
 
+
+      container = Ember.Application.buildContainer(App);
+
       App.LoadingRoute = Ember.Route.extend({
       });
 
@@ -25,14 +26,16 @@ module("Basic Routing", {
       Ember.TEMPLATES.home = Ember.Handlebars.compile("<h3>Hours</h3>");
       Ember.TEMPLATES.homepage = Ember.TEMPLATES.home;
 
+      Router = Ember.Router.extend({
+        location: 'none'
+      });
+
       AppView = Ember.View.extend({
         template: Ember.TEMPLATES.app
       });
 
-      Router = Ember.Router.extend({
-        namespace: App,
-        templates: Ember.TEMPLATES
-      });
+      container.register('view', 'app');
+      container.register('router', 'main', Router);
     });
   }
 });
@@ -95,7 +98,7 @@ test("The Homepage with a `setupControllers` hook", function() {
 
   bootApplication();
 
-  router._container.controller.home = Ember.Controller.create();
+  container.register('controller', 'home', Ember.Controller.extend());
 
   Ember.run(function() {
     router.handleURL("/");
@@ -125,7 +128,7 @@ test("The Homepage with a `setupControllers` hook modifying other controllers", 
 
   bootApplication();
 
-  router._container.controller.home = Ember.Controller.create();
+  container.register('controller', 'home', Ember.Controller.extend());
 
   Ember.run(function() {
     router.handleURL("/");
@@ -159,7 +162,7 @@ test("The Homepage getting its controller context via model", function() {
 
   bootApplication();
 
-  router._container.controller.home = Ember.Controller.create();
+  container.register('controller', 'home', Ember.Controller.extend());
 
   Ember.run(function() {
     router.handleURL("/");
@@ -192,7 +195,7 @@ test("The Specials Page getting its controller context by deserializing the para
 
   bootApplication();
 
-  router._container.controller.special = Ember.Controller.create();
+  container.register('controller', 'special', Ember.Controller.extend());
 
   Ember.run(function() {
     router.handleURL("/specials/1");
@@ -226,7 +229,7 @@ test("The Specials Page defaults to looking models up via `find`", function() {
 
   bootApplication();
 
-  router._container.controller.special = Ember.Controller.create();
+  container.register('controller', 'special', Ember.Controller.extend());
 
   Ember.run(function() {
     router.handleURL("/specials/1");
@@ -271,7 +274,7 @@ test("The Special Page returning a promise puts the app into a loading state unt
 
   bootApplication();
 
-  router._container.controller.special = Ember.Controller.create();
+  container.register('controller', 'special', Ember.Controller.extend());
 
   Ember.run(function() {
     router.handleURL("/specials/1");
@@ -331,7 +334,7 @@ test("Moving from one page to another triggers the correct callbacks", function(
 
   bootApplication();
 
-  router._container.controller.special = Ember.Controller.create();
+  container.register('controller', 'special', Ember.Controller.extend());
 
   Ember.run(function() {
     router.handleURL("/");
@@ -414,7 +417,7 @@ test("Nested callbacks are not exited when moving to siblings", function() {
     bootApplication();
   });
 
-  router._container.controller.special = Ember.Controller.create();
+  container.register('controller', 'special', Ember.Controller.extend());
 
   equal(Ember.$('h3', '#qunit-fixture').text(), "Home", "The app is now in the initial state");
   equal(rootSetup, 1, "The root setup was triggered");
@@ -462,8 +465,10 @@ asyncTest("Events are triggered on the current state", function() {
 
   bootApplication();
 
-  var controller = router._container.controller.home = Ember.Controller.create();
-  controller.target = router;
+  container.register('controller', 'home', Ember.Controller.extend());
+
+  //var controller = router._container.controller.home = Ember.Controller.create();
+  //controller.target = router;
 
   Ember.run(function() {
     router.handleURL("/");
@@ -506,8 +511,8 @@ asyncTest("Events are triggered on the current state", function() {
 
   bootApplication();
 
-  var controller = router._container.controller.home = Ember.Controller.create();
-  controller.target = router;
+  //var controller = router._container.controller.home = Ember.Controller.create();
+  //controller.target = router;
 
   Ember.run(function() {
     router.handleURL("/");

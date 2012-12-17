@@ -62,11 +62,11 @@ test("you cannot make two default applications without a rootElement error", fun
   });
 
   Ember.run(function() {
-    application = Ember.Application.create().initialize();
+    application = Ember.Application.create({ router: false }).initialize();
   });
   raises(function() {
     Ember.run(function() {
-      Ember.Application.create().initialize();
+      Ember.Application.create({ router: false }).initialize();
     });
   }, Error);
 });
@@ -94,6 +94,7 @@ var app;
 
 module("Ember.Application initialization", {
   teardown: function() {
+    Ember.TEMPLATES = {};
     Ember.run(function(){ app.destroy(); });
   }
 });
@@ -112,8 +113,8 @@ test('initialized application go to initial route', function() {
       match("/").to("index");
     });
 
-    Ember.TEMPLATES.application = Ember.Handlebars.compile(
-      "{{outlet}}"
+    app.container.register('template', 'application',
+      Ember.Handlebars.compile("{{outlet}}")
     );
 
     Ember.TEMPLATES.index = Ember.Handlebars.compile(
@@ -149,8 +150,9 @@ test("initialize application via initialize call", function() {
     app.initialize();
   });
 
-  equal(app._createdRouter instanceof Ember.Router, true, "Router was set from initialize call");
-  equal(app._createdRouter.location instanceof Ember.NoneLocation, true, "Location was set from location implementation name");
+  var router = app.container.lookup('router:main');
+  equal(router instanceof Ember.Router, true, "Router was set from initialize call");
+  equal(router.location instanceof Ember.NoneLocation, true, "Location was set from location implementation name");
 });
 
 test("initialize application with stateManager via initialize call from Router class", function() {
@@ -178,7 +180,8 @@ test("initialize application with stateManager via initialize call from Router c
     app.initialize();
   });
 
-  equal(app._createdRouter instanceof Ember.Router, true, "Router was set from initialize call");
+  var router = app.container.lookup('router:main');
+  equal(router instanceof Ember.Router, true, "Router was set from initialize call");
   equal(Ember.$("#qunit-fixture h1").text(), "Hello!");
 });
 
@@ -213,6 +216,7 @@ test("ApplicationView is inserted into the page", function() {
 test("Application initialized twice raises error", function() {
   Ember.run(function() {
     app = Ember.Application.create({
+      router: false,
       rootElement: '#qunit-fixture'
     }).initialize();
   });
@@ -228,6 +232,7 @@ test("Minimal Application initialized with just an application template", functi
   Ember.$('#qunit-fixture').html('<script type="text/x-handlebars">Hello World</script>');
   Ember.run(function () {
     app = Ember.Application.create({
+      router: false,
       rootElement: '#qunit-fixture'
     }).initialize();
   });

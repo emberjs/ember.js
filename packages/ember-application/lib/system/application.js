@@ -3,7 +3,9 @@
 @submodule ember-application
 */
 
-var get = Ember.get, set = Ember.set;
+var get = Ember.get, set = Ember.set, classify = Ember.String.classify;
+
+Ember.Container.set = Ember.set;
 
 /**
   An instance of `Ember.Application` is the starting point for every Ember
@@ -189,7 +191,7 @@ var get = Ember.get, set = Ember.set;
   @namespace Ember
   @extends Ember.Namespace
 */
-Ember.Application = Ember.Namespace.extend(
+var Application = Ember.Application = Ember.Namespace.extend(
 /** @scope Ember.Application.prototype */{
 
   /**
@@ -267,11 +269,10 @@ Ember.Application = Ember.Namespace.extend(
   init: function() {
     if (!this.$) { this.$ = Ember.$; }
 
-    this._super();
+    var container = this.container = Application.buildContainer(this);
+    container.register('view', 'application', Ember.View.extend());
 
-    if (this.Router === undefined && this.router === undefined) {
-      this.Router = Ember.Router.extend();
-    }
+    this._super();
 
     this.createEventDispatcher();
 
@@ -345,13 +346,15 @@ Ember.Application = Ember.Namespace.extend(
     @method initialize
     @param router {Ember.Router}
   */
-  initialize: function(router) {
+  initialize: function() {
     Ember.assert("Application initialize may only be called once", !this.isInitialized);
     Ember.assert("Application not destroyed", !this.isDestroyed);
 
-    router = this.setupRouter(router);
+    var Router = this.Router;
+    if (!Router && this.router === undefined) { Router = Ember.Router.extend(); }
+    this.container.register('router', 'main', Router);
 
-    this.runInjections(router);
+    this.runInjections();
 
     Ember.runLoadHooks('application', this);
 
@@ -365,8 +368,9 @@ Ember.Application = Ember.Namespace.extend(
   },
 
   /** @private */
-  runInjections: function(router) {
-    var injections = get(this.constructor, 'injections'),
+  runInjections: function() {
+    var router = this.container.lookup('router:main'),
+        injections = get(this.constructor, 'injections'),
         graph = new Ember.DAG(),
         namespace = this,
         properties, i, injection;
@@ -386,30 +390,10 @@ Ember.Application = Ember.Namespace.extend(
   },
 
   /** @private */
-  setupRouter: function(router) {
-    if (!router && Ember.Router.detect(this.Router)) {
-      router = this.Router.create();
-      this._createdRouter = router;
-    }
-
-    if (router) {
-      // By default, the router's namespace is the current application.
-      //
-      // This allows it to find model classes when a state has a
-      // route like `/posts/:post_id`. In that case, it would first
-      // convert `post_id` into `Post`, and then look it up on its
-      // namespace.
-      set(router, 'namespace', this);
-    }
-
-    return router;
-  },
-
-  /** @private */
   didBecomeReady: function() {
     var eventDispatcher = get(this, 'eventDispatcher'),
         customEvents    = get(this, 'customEvents'),
-        router          = this._createdRouter;
+        router          = this.container.lookup('router:main');
 
     eventDispatcher.setup(customEvents);
 
@@ -426,33 +410,8 @@ Ember.Application = Ember.Namespace.extend(
 
   createApplicationView: function () {
     var rootElement = get(this, 'rootElement'),
-        router = this._createdRouter,
-        applicationViewOptions = {},
-        applicationViewClass = this.ApplicationView,
-        applicationTemplate = Ember.TEMPLATES.application,
-        applicationController, applicationView;
-
-    // don't do anything unless there is an ApplicationView or application template
-    if (!applicationViewClass && !applicationTemplate) return;
-
-    if (router) {
-      applicationController = get(router, 'applicationController');
-      if (applicationController) {
-        applicationViewOptions.controller = applicationController;
-      }
-    }
-
-    if (applicationTemplate) {
-      applicationViewOptions.template = applicationTemplate;
-    }
-
-    if (!applicationViewClass) {
-      applicationViewClass = Ember.View;
-    }
-
-    applicationView = applicationViewClass.create(applicationViewOptions);
-
-    this._createdApplicationView = applicationView;
+        router = this.container.lookup('router:main'),
+        applicationView = this.container.lookup('view:application');
 
     if (router) {
       router._activeViews.application = applicationView;
@@ -491,7 +450,7 @@ Ember.Application = Ember.Namespace.extend(
 
   willDestroy: function() {
     get(this, 'eventDispatcher').destroy();
-    if (this._createdRouter)          { this._createdRouter.destroy(); }
+    this.container.destroy();
     if (this._createdApplicationView) { this._createdApplicationView.destroy(); }
   },
 
@@ -511,8 +470,42 @@ Ember.Application.reopenClass({
     Ember.assert("An injection cannot be registered without an injection function", Ember.canInvoke(injection, 'injection'));
 
     injections.push(injection);
+  },
+
+  buildContainer: function(namespace) {
+    var container = new Ember.Container();
+    container.set = Ember.set;
+    container.resolve = resolveFor(namespace);
+    container.optionsForType('view', { singleton: false });
+    container.optionsForType('template', { instantiate: false });
+    container.register('application', 'main', namespace, { instantiate: false });
+    container.injection('router:main', 'namespace', 'application:main');
+    container.typeInjection('controller', 'target', 'router:main');
+
+    container.injection('view:application', 'controller', 'controller:application');
+    container.injection('view:application', 'defaultTemplate', 'template:application');
+
+    return container;
   }
 });
+
+function resolveFor(namespace) {
+  return function(fullName) {
+    var nameParts = fullName.split(":"),
+        type = nameParts[0], name = nameParts[1];
+
+    if (type === 'template' && Ember.TEMPLATES[name]) {
+      return Ember.TEMPLATES[name];
+    }
+
+    var className = classify(name) + classify(type);
+    var factory = get(namespace, className);
+
+    if (factory) { return factory; }
+
+    return Ember.Container.prototype.resolve.call(this, fullName);
+  };
+}
 
 Ember.Application.registerInjection({
   name: 'controllers',

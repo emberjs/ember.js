@@ -19,6 +19,7 @@
         "testBoth",
         "testWithDefault",
         "raises",
+        "throws",
         "deepEqual",
         "start",
         "stop",

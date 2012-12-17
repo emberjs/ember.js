@@ -1,10 +1,10 @@
-var Router, App, AppView, templates, router, eventDispatcher;
+require('ember-application');
+
+var Router, App, AppView, templates, router, eventDispatcher, container;
 var get = Ember.get, set = Ember.set;
 
 function bootApplication() {
-  router = Router.create({
-    location: 'none'
-  });
+  router = container.lookup('router:main');
 
   Ember.run(function() {
     router._activeViews.application = AppView.create().appendTo('#qunit-fixture');
@@ -18,19 +18,23 @@ module("The {{linkTo}} helper", {
       App = Ember.Namespace.create();
       App.toString = function() { return "App"; };
 
+      container = Ember.Application.buildContainer(App);
+
       Ember.TEMPLATES.app = Ember.Handlebars.compile("{{outlet}}");
       Ember.TEMPLATES.home = Ember.Handlebars.compile("<h3>Home</h3>{{#linkTo about id='about-link'}}About{{/linkTo}}");
       Ember.TEMPLATES.about = Ember.Handlebars.compile("<h3>About</h3>{{#linkTo home id='home-link'}}Home{{/linkTo}}");
       Ember.TEMPLATES.item = Ember.Handlebars.compile("<h3>Item</h3><p>{{name}}</p>{{#linkTo home id='home-link'}}Home{{/linkTo}}");
 
-      AppView = Ember.View.extend({
-        template: Ember.TEMPLATES.app
+      Router = Ember.Router.extend({
+        location: 'none'
       });
 
-      Router = Ember.Router.extend({
-        namespace: App,
-        templates: Ember.TEMPLATES
+      AppView = Ember.View.extend({
+        templateName: 'app'
       });
+
+      container.register('view', 'app');
+      container.register('router', 'main', Router);
 
       eventDispatcher = Ember.EventDispatcher.create();
       eventDispatcher.setup();
@@ -55,8 +59,6 @@ test("The {{linkTo}} helper moves into the named route", function() {
   });
 
   equal(Ember.$('h3:contains(Home)', '#qunit-fixture').length, 1, "The home template was rendered");
-
-  console.log(Ember.$('#qunit-fixture')[0]);
 
   Ember.run(function() {
     Ember.$('a', '#qunit-fixture').click();

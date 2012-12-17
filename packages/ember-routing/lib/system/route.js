@@ -5,7 +5,6 @@ var DefaultView = Ember.View.extend(Ember._Metamorph);
 Ember.Route = Ember.Object.extend({
   init: function() {
     var router = this.router;
-    this._container = router._container;
     this._activeViews = router._activeViews;
     this.namespace = router.namespace;
   },
@@ -16,16 +15,23 @@ Ember.Route = Ember.Object.extend({
     This hook is the entry point for router.js
   */
   setup: function(context) {
+    var container = this.router.container;
+
     var templateName = this.templateName,
-        controller = this.lookup('controller', templateName, function() {
-          if (context && context.isSCArray) {
-            return Ember.ArrayController.create({ content: context });
-          } else if (context) {
-            return Ember.ObjectController.create({ content: context });
-          } else {
-            return Ember.Controller.create();
-          }
-        });
+        controller = container.lookup('controller:' + templateName);
+
+    if (!controller) {
+      if (context && context.isSCArray) {
+        controller = Ember.ArrayController.extend({ content: context });
+      } else if (context) {
+        controller = Ember.ObjectController.extend({ content: context });
+      } else {
+        controller = Ember.Controller.extend();
+      }
+
+      container.register('controller', templateName, controller);
+      controller = container.lookup('controller:' + templateName);
+    }
 
     this.setupControllers(controller, context);
     this.renderTemplates(context);
@@ -71,7 +77,7 @@ Ember.Route = Ember.Object.extend({
   },
 
   controller: function(name) {
-    return this.lookup('controller', name);
+    return this.router.container.lookup('controller:' + name);
   },
 
   renderTemplates: function(context) {
@@ -80,12 +86,11 @@ Ember.Route = Ember.Object.extend({
 
   render: function(name, options) {
     var templateName = this.templateName,
+        container = this.router.container,
         className = classify(templateName),
-        viewClassName = className + "View",
-        viewClass = this.namespace[viewClassName] || DefaultView;
+        view = container.lookup('view:' + templateName) || DefaultView.create();
 
-    var view = this._activeViews[templateName] =
-      viewClass.create({ templateName: templateName });
+    set(view, 'template', container.lookup('template:' + templateName));
 
     options = options || {};
     var into = options.into || 'application';
@@ -93,24 +98,12 @@ Ember.Route = Ember.Object.extend({
     var controller = options.controller || templateName;
 
     if (typeof controller === 'string') {
-      controller = this.lookup('controller', controller);
+      controller = container.lookup('controller:' + controller);
     }
 
-    set(controller, 'target', this.router);
     set(view, 'controller', controller);
 
     var parentView = this._activeViews[into];
     parentView.connectOutlet(outlet, view);
-  },
-
-  lookup: function(kind, name, callback) {
-    var object = this._container[kind][name];
-
-    if (!object && callback) {
-      object = callback.call(this);
-      this._container[kind][name] = object;
-    }
-
-    return object;
   }
 });

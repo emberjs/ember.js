@@ -386,8 +386,8 @@ Ember.ContainerView = Ember.View.extend({
         currentView = get(this, 'currentView');
 
     if (currentView) {
-      childViews.removeObject(currentView);
       currentView.destroy();
+      childViews.removeObject(currentView);
     }
   }, 'currentView'),
 

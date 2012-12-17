@@ -14,17 +14,20 @@
       if (origOpts && origOpts.setup) { opts.setup = origOpts.setup; }
       opts.teardown = function() {
         if (origOpts && origOpts.teardown) { origOpts.teardown(); }
-        if (Ember.run.currentRunLoop) {
-          ok(false, "Should not be in a run loop at end of test");
-          while (Ember.run.currentRunLoop) {
-            Ember.run.end();
+
+        if (Ember && Ember.run) {
+          if (Ember.run.currentRunLoop) {
+            ok(false, "Should not be in a run loop at end of test");
+            while (Ember.run.currentRunLoop) {
+              Ember.run.end();
+            }
           }
-        }
-        if (Ember.run.hasScheduledTimers()) {
-          // Use `ok` so we get full description.
-          // Gate inside of `if` so that we don't mess up `expects` counts
-          ok(false, "Ember run should not have scheduled timers at end of test");
-          Ember.run.cancelTimers();
+          if (Ember.run.hasScheduledTimers()) {
+            // Use `ok` so we get full description.
+            // Gate inside of `if` so that we don't mess up `expects` counts
+            ok(false, "Ember run should not have scheduled timers at end of test");
+            Ember.run.cancelTimers();
+          }
         }
       }
       return originalModule(name, opts);

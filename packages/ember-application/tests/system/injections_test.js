@@ -61,10 +61,11 @@ test("injections can be registered in a specified order", function() {
 
   Ember.run(function() {
     app = Ember.Application.create({
+      router: false,
       order: order,
       rootElement: '#qunit-fixture'
     });
-    app.initialize(Ember.Object.create());
+    app.initialize();
   });
 
   deepEqual(order, ['first', 'second', 'third', 'fourth', 'fifth']);
@@ -118,10 +119,11 @@ test("injections can have multiple dependencies", function () {
 
   Ember.run(function() {
     app = Ember.Application.create({
+      router: false,
       order: order,
       rootElement: '#qunit-fixture'
     });
-    app.initialize(Ember.Object.create());
+    app.initialize();
   });
 
   ok(indexOf.call(order, a.name) < indexOf.call(order, b.name), 'a < b');
@@ -156,9 +158,10 @@ test("injections are passed properties created from previous injections", functi
 
   Ember.run(function() {
     app = Ember.Application.create({
+      router: false,
       rootElement: '#qunit-fixture'
     });
-    app.initialize(Ember.Object.create());
+    app.initialize();
   });
 
   ok(secondInjectionWasPassedProperty, "second injections wasn't passed the property created in the first");

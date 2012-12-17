@@ -20,6 +20,7 @@ Ember.ControllerMixin.reopen({
   controllers: null,
   namespace: null,
   view: null,
+  container: null,
 
   /**
     Convenience method to connect controllers. This method makes other controllers

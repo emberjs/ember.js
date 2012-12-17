@@ -3,6 +3,18 @@ var get = Ember.get, set = Ember.set, classify = Ember.String.classify;
 
 var DefaultView = Ember.View.extend(Ember._Metamorph);
 
+function setupLocation(router) {
+  var location = get(router, 'location'),
+      rootURL = get(router, 'rootURL');
+
+  if ('string' === typeof location) {
+    set(router, 'location', Ember.Location.create({
+      implementation: location,
+      rootURL: rootURL
+    }));
+  }
+}
+
 Ember.Router = Ember.Object.extend({
   location: 'hash',
 
@@ -10,25 +22,9 @@ Ember.Router = Ember.Object.extend({
     var router = this.router = new Router(),
         self = this, handlers = {};
 
-    // This is a temporary implementation. Apps should go through
-    // the `lookup` API and not try to use this data structure
-    // directly.
-    var container = this._container = {
-      view: {},
-      controller: {}
-    };
-
     var activeViews = this._activeViews = {};
 
-    var location = get(this, 'location'),
-        rootURL = get(this, 'rootURL');
-
-    if ('string' === typeof location) {
-      location = set(this, 'location', Ember.Location.create({
-        implementation: location,
-        rootURL: rootURL
-      }));
-    }
+    setupLocation(this);
 
     Ember.assert("You must call " + this.constructor.toString() + ".map() before your application is initialized", this.constructor.callback);
     router.map(this.constructor.callback);
@@ -36,17 +32,18 @@ Ember.Router = Ember.Object.extend({
 
   startRouting: function() {
     var router = this.router,
-        location = get(this, 'location');
+        location = get(this, 'location'),
+        container = this.container;
 
-    router.getHandler = getHandlerFunction(this, this._container, this._activeViews);
+    router.getHandler = getHandlerFunction(this, this._activeViews);
     router.updateURL = function() {
       location.setURL.apply(location, arguments);
     };
 
-    if (!this._container.view.application) {
-      this._container.view.application = DefaultView.create({
+    if (!container.lookup('view:application')) {
+      container.register('view', 'application', DefaultView.create({
         templateName: 'application'
-      });
+      }));
     }
 
     router.handleURL(location.getURL());
@@ -76,7 +73,7 @@ Ember.Router = Ember.Object.extend({
   }
 });
 
-function getHandlerFunction(router, container, activeViews) {
+function getHandlerFunction(router, activeViews) {
   var handlers = {}, namespace = get(router, 'namespace');
 
   return function(name) {
