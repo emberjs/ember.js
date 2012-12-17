@@ -601,6 +601,8 @@ Ember.Application.reopenClass({
     container.typeInjection('controller', 'controllers', 'router:main');
     container.typeInjection('controller', 'namespace', 'application:main');
 
+    container.typeInjection('route', 'router', 'router:main');
+
     container.injection('view:application', 'controller', 'controller:application');
     container.injection('view:application', 'defaultTemplate', 'template:application');
 

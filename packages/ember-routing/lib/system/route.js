@@ -3,12 +3,6 @@ var get = Ember.get, set = Ember.set, classify = Ember.String.classify;
 var DefaultView = Ember.View.extend(Ember._Metamorph);
 
 Ember.Route = Ember.Object.extend({
-  init: function() {
-    var router = this.router;
-    this._activeViews = router._activeViews;
-    this.namespace = router.namespace;
-  },
-
   /**
     @private
 
@@ -63,7 +57,7 @@ Ember.Route = Ember.Object.extend({
     if (!name) { return; }
 
     var className = classify(name),
-        namespace = this.namespace,
+        namespace = this.router.namespace,
         modelClass = namespace[className];
 
     Ember.assert("You used the dynamic segment " + name + "_id in your router, but " + namespace + "." + className + " did not exist and you did not override your state's `model` hook.", modelClass);
@@ -77,6 +71,7 @@ Ember.Route = Ember.Object.extend({
   },
 
   controller: function(name) {
+    name = name || this.templateName;
     return this.router.container.lookup('controller:' + name);
   },
 
@@ -103,7 +98,7 @@ Ember.Route = Ember.Object.extend({
 
     set(view, 'controller', controller);
 
-    var parentView = this._activeViews[into];
+    var parentView = this.router._activeViews[into];
     parentView.connectOutlet(outlet, view);
   }
 });

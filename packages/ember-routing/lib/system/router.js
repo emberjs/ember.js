@@ -19,9 +19,7 @@ Ember.Router = Ember.Object.extend({
   location: 'hash',
 
   init: function() {
-    var router = this.router = new Router(),
-        self = this, handlers = {};
-
+    var router = this.router = new Router();
     var activeViews = this._activeViews = {};
 
     setupLocation(this);
@@ -74,27 +72,23 @@ Ember.Router = Ember.Object.extend({
 });
 
 function getHandlerFunction(router, activeViews) {
-  var handlers = {}, namespace = get(router, 'namespace');
+  var seen = {}, container = router.container;
 
   return function(name) {
-    if (handlers.hasOwnProperty(name)) {
-      return handlers[name];
-    }
+    var handler = container.lookup('route:' + name);
+    if (seen[name]) { return handler; }
 
-    var className = classify(name) + "Route",
-        handler = get(namespace, className);
+    seen[name] = true;
 
     if (!handler) {
       if (name === 'loading') { return {}; }
-      else { handler = Ember.Route.extend(); }
+
+      container.register('route', name, Ember.Route.extend());
+      handler = container.lookup('route:' + name);
     }
 
-    //Ember.assert("Your router tried to route a URL to " + name + ", but " + namespace.toString() + "." + className + " did not exist.", handler);
-
-    return handlers[name] = handler.create({
-      router: router,
-      templateName: name
-    });
+    handler.templateName = name;
+    return handler;
   };
 }
 

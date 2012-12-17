@@ -152,6 +152,8 @@ test("The Homepage getting its controller context via model", function() {
     },
 
     setupControllers: function(controller, model) {
+      equal(this.controller(), controller);
+
       set(this.controller('home'), 'hours', model);
     }
   });
