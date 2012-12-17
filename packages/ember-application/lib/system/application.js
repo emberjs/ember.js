@@ -453,7 +453,9 @@ var Application = Ember.Application = Ember.Namespace.extend(
     this.createApplicationView();
     this.startRouting();
 
-    Ember.BOOTED = true;
+    if (!Ember.testing) {
+      Ember.BOOTED = true;
+    }
   },
 
   /**
@@ -536,15 +538,16 @@ var Application = Ember.Application = Ember.Namespace.extend(
   ready: Ember.K,
 
   willDestroy: function() {
+    Ember.BOOTED = false;
+
     var eventDispatcher = get(this, 'eventDispatcher');
     if (eventDispatcher) { eventDispatcher.destroy(); }
 
     this.container.destroy();
-    if (this._createdApplicationView) { this._createdApplicationView.destroy(); }
   },
 
-  registerInjection: function(options) {
-    this.constructor.registerInjection(options);
+  initializer: function(options) {
+    this.constructor.initializer(options);
   }
 });
 

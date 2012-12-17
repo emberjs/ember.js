@@ -502,6 +502,7 @@ function processNames(paths, root, seen) {
     paths[idx] = key;
 
     if (obj && obj.toString === classToString) {
+      obj.toString = makeToString(paths.join('.'));
       obj[NAME_KEY] = paths.join('.');
     } else if (obj && obj.isNamespace) {
       if (seen[guidFor(obj)]) { continue; }
@@ -592,9 +593,9 @@ classToString = function() {
     } else {
       ret = "(unknown mixin)";
     }
+    this.toString = makeToString(ret);
   }
 
-  this.toString = makeToString(ret);
   return ret;
 };
 

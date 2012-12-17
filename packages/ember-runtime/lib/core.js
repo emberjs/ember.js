@@ -88,48 +88,50 @@ Ember.typeOf = function(item) {
   confusing.
 
   ```javascript
-  Ember.none();              // true
-  Ember.none(null);          // true
-  Ember.none(undefined);     // true
-  Ember.none('');            // false
-  Ember.none([]);            // false
-  Ember.none(function(){});  // false
+  Ember.isNone();              // true
+  Ember.isNone(null);          // true
+  Ember.isNone(undefined);     // true
+  Ember.isNone('');            // false
+  Ember.isNone([]);            // false
+  Ember.isNone(function(){});  // false
   ```
 
-  @method none
+  @method isNone
   @for Ember
   @param {Object} obj Value to test
   @return {Boolean}
 */
-Ember.none = function(obj) {
+Ember.isNone = function(obj) {
   return obj === null || obj === undefined;
 };
+Ember.none = Ember.deprecateFunc("Ember.none is deprecated. Please use Ember.isNone instead.", Ember.isNone);
 
 /**
   Verifies that a value is `null` or an empty string, empty array,
   or empty function.
 
-  Constrains the rules on `Ember.none` by returning false for empty
+  Constrains the rules on `Ember.isNone` by returning false for empty
   string and empty arrays.
 
   ```javascript
-  Ember.empty();                // true
-  Ember.empty(null);            // true
-  Ember.empty(undefined);       // true
-  Ember.empty('');              // true
-  Ember.empty([]);              // true
-  Ember.empty('Adam Hawkins');  // false
-  Ember.empty([0,1,2]);         // false
+  Ember.isEmpty();                // true
+  Ember.isEmpty(null);            // true
+  Ember.isEmpty(undefined);       // true
+  Ember.isEmpty('');              // true
+  Ember.isEmpty([]);              // true
+  Ember.isEmpty('Adam Hawkins');  // false
+  Ember.isEmpty([0,1,2]);         // false
   ```
 
-  @method empty
+  @method isEmpty
   @for Ember
   @param {Object} obj Value to test
   @return {Boolean}
 */
-Ember.empty = function(obj) {
+Ember.isEmpty = function(obj) {
   return obj === null || obj === undefined || (obj.length === 0 && typeof obj !== 'function') || (typeof obj === 'object' && Ember.get(obj, 'length') === 0);
 };
+Ember.empty = Ember.deprecateFunc("Ember.empty is deprecated. Please use Ember.isEmpty instead.", Ember.isEmpty) ;
 
 /**
  This will compare two javascript values of possibly different types.

@@ -565,7 +565,7 @@ test("upon content change, the DOM should reflect the selection (#481)", functio
   equal(selectEl.selectedIndex, 1, "The DOM reflects the correct selection");
 });
 
-test("select element should initialize with the correct selectedIndex when using valueBinding", function() {
+test("select element should correctly initialize and update selectedIndex and bound properties when using valueBinding", function() {
   var view = Ember.View.create({
     collection: Ember.A([{name: 'Wes', value: 'w'}, {name: 'Gordon', value: 'g'}]),
     val: 'g',
@@ -586,6 +586,15 @@ test("select element should initialize with the correct selectedIndex when using
   var select = view.get('select'),
       selectEl = select.$()[0];
 
+  equal(view.get('val'), 'g', "Precond: Initial bound property is correct");
   equal(select.get('value'), 'g', "Precond: Initial selection is correct");
   equal(selectEl.selectedIndex, 2, "Precond: The DOM reflects the correct selection");
+
+  select.$('option:eq(2)').removeAttr('selected');
+  select.$('option:eq(1)').attr('selected', true);
+  select.$().trigger('change');
+
+  equal(view.get('val'), 'w', "Updated bound property is correct");
+  equal(select.get('value'), 'w', "Updated selection is correct");
+  equal(selectEl.selectedIndex, 1, "The DOM is updated to reflect the new selection");
 });
