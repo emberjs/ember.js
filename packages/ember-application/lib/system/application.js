@@ -272,6 +272,10 @@ var Application = Ember.Application = Ember.Namespace.extend(
     var container = this.container = Application.buildContainer(this);
     container.register('view', 'application', Ember.View.extend());
 
+    if (!this.Router && this.router !== false) {
+      this.Router = Ember.Router.extend();
+    }
+
     this._super();
 
     this.createEventDispatcher();
