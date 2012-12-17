@@ -52,7 +52,7 @@ function none(obj) { return obj===null || obj===undefined; }
 Ember.Array = Ember.Mixin.create(Ember.Enumerable, /** @scope Ember.Array.prototype */ {
 
   // compatibility
-  isSCArray: true,
+  isEmArray: true,
 
   /**
     Your array must support the `length` property. Your replace methods should
