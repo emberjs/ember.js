@@ -1,16 +1,16 @@
 require('ember-routing');
 
-var oldInjections, app;
+var oldInitializers, app;
 var indexOf = Ember.ArrayPolyfills.indexOf;
 
-module("Ember.Application injections", {
+module("Ember.Application initializers", {
   setup: function() {
-    oldInjections = Ember.Application.injections;
-    Ember.Application.injections = Ember.A();
+    oldInitializers = Ember.Application.initializers;
+    Ember.Application.initializers = Ember.A();
   },
 
   teardown: function() {
-    Ember.Application.injections = oldInjections;
+    Ember.Application.initializers = oldInitializers;
 
     if (app) {
       Ember.run(function() { app.destroy(); });
@@ -18,54 +18,52 @@ module("Ember.Application injections", {
   }
 });
 
-test("injections can be registered in a specified order", function() {
+test("initializers can be registered in a specified order", function() {
   var order = [];
-  Ember.Application.registerInjection({
+  Ember.Application.initializer({
     name: 'fourth',
     after: 'third',
-    injection: function(app, router, property) {
-      if (property === 'order') order.push('fourth');
+    initialize: function(container) {
+      order.push('fourth');
     }
   });
 
-  Ember.Application.registerInjection({
+  Ember.Application.initializer({
     name: 'second',
     before: 'third',
-    injection: function(app, router, property) {
-      if (property === 'order') order.push('second');
+    initialize: function(container) {
+      order.push('second');
     }
   });
 
-  Ember.Application.registerInjection({
+  Ember.Application.initializer({
     name: 'fifth',
     after: 'fourth',
-    injection: function(app, router, property) {
-      if (property === 'order') order.push('fifth');
+    initialize: function(container) {
+      order.push('fifth');
     }
   });
 
-  Ember.Application.registerInjection({
+  Ember.Application.initializer({
     name: 'first',
     before: 'second',
-    injection: function(app, router, property) {
-      if (property === 'order') order.push('first');
+    initialize: function(container) {
+      order.push('first');
     }
   });
 
-  Ember.Application.registerInjection({
+  Ember.Application.initializer({
     name: 'third',
-    injection: function(app, router, property) {
-      if (property === 'order') order.push('third');
+    initialize: function(container) {
+      order.push('third');
     }
   });
 
   Ember.run(function() {
     app = Ember.Application.create({
       router: false,
-      order: order,
       rootElement: '#qunit-fixture'
     });
-    app.initialize();
   });
 
   deepEqual(order, ['first', 'second', 'third', 'fourth', 'fifth']);
@@ -75,96 +73,59 @@ test("injections can be registered in a specified order", function() {
   });
 });
 
-test("injections can have multiple dependencies", function () {
+test("initializers can have multiple dependencies", function () {
   var order = [],
       a = {
         name: "a",
         before: "b",
-        injection: function(app, router, property) {
-          if (property === 'order') order.push('a');
+        initialize: function(container) {
+          order.push('a');
         }
       },
       b = {
         name: "b",
-        injection: function(app, router, property) {
-          if (property === 'order') order.push('b');
+        initialize: function(container) {
+          order.push('b');
         }
       },
       c = {
         name: "c",
         after: "b",
-        injection: function(app, router, property) {
-          if (property === 'order') order.push('c');
+        initialize: function(container) {
+          order.push('c');
         }
       },
       afterB = {
         name: "after b",
         after: "b",
-        injection: function(app, router, property) {
-          if (property === 'order') order.push("after b");
+        initialize: function(container) {
+          order.push("after b");
         }
       },
       afterC = {
         name: "after c",
         after: "c",
-        injection: function(app, router, property) {
-          if (property === 'order') order.push("after c");
+        initialize: function(container) {
+          order.push("after c");
         }
       };
-  Ember.Application.registerInjection(b);
-  Ember.Application.registerInjection(a);
-  Ember.Application.registerInjection(afterC);
-  Ember.Application.registerInjection(afterB);
-  Ember.Application.registerInjection(c);
+  Ember.Application.initializer(b);
+  Ember.Application.initializer(a);
+  Ember.Application.initializer(afterC);
+  Ember.Application.initializer(afterB);
+  Ember.Application.initializer(c);
 
   Ember.run(function() {
     app = Ember.Application.create({
       router: false,
-      order: order,
       rootElement: '#qunit-fixture'
     });
-    app.initialize();
   });
 
   ok(indexOf.call(order, a.name) < indexOf.call(order, b.name), 'a < b');
   ok(indexOf.call(order, b.name) < indexOf.call(order, c.name), 'b < c');
   ok(indexOf.call(order, b.name) < indexOf.call(order, afterB.name), 'b < afterB');
   ok(indexOf.call(order, c.name) < indexOf.call(order, afterC.name), 'c < afterC');
-
-  Ember.run(function() {
-    app.destroy();
-  });
-});
-
-test("injections are passed properties created from previous injections", function() {
-  var secondInjectionWasPassedProperty = false;
-
-  Ember.Application.registerInjection({
-    name: 'first',
-    injection: function(app, router, property) {
-      app.set('foo', true);
-    }
-  });
-
-  Ember.Application.registerInjection({
-    name: 'second',
-    after: 'first',
-    injection: function(app, router, property) {
-      if (property === 'foo') {
-        secondInjectionWasPassedProperty = true;
-      }
-    }
-  });
-
-  Ember.run(function() {
-    app = Ember.Application.create({
-      router: false,
-      rootElement: '#qunit-fixture'
-    });
-    app.initialize();
-  });
-
-  ok(secondInjectionWasPassedProperty, "second injections wasn't passed the property created in the first");
 
   Ember.run(function() {
     app.destroy();
