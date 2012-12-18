@@ -490,3 +490,22 @@ test("should invalidate `element` on itself and childViews when being rendered b
   ok(!!container.get('element'), "Parent's element should have been recomputed after being rendered");
   ok(!!view.get('element'), "Child's element should have been recomputed after being rendered");
 });
+
+test("should set the child view context in template", function() {
+  var container = Ember.ContainerView.create({
+    name: 'container'
+  });
+
+  set(container, 'currentView', Ember.View.create({
+    name: 'child',
+    template: function(context, options) {
+      return 'In ' + context.get('name') + ' context';
+    }
+  }));
+
+  Ember.run(function() {
+    container.appendTo('#qunit-fixture');
+  });
+
+  equal(container.$().text(), 'In child context', '');
+});
