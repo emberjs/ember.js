@@ -343,6 +343,36 @@ Ember.Enumerable = Ember.Mixin.create(
   },
 
   /**
+    Returns an array with all of the items in the enumeration where the passed
+    function returns false for. This method is the inverse of filter().
+
+    The callback method you provide should have the following signature (all
+    parameters are optional):
+
+          function(item, index, enumerable);
+
+    - *item* is the current item in the iteration.
+    - *index* is the current index in the iteration
+    - *enumerable* is the enumerable object itself.
+
+    It should return the a falsey value to include the item in the results.
+
+    Note that in addition to a callback, you can also pass an optional target
+    object that will be set as "this" on the context. This is a good way
+    to give your iterator function access to the current object.
+
+    @method reject
+    @param {Function} callback The callback to execute
+    @param {Object} [target] The target object to use
+    @return {Array} A rejected array.
+   */
+  reject: function(callback, target) {
+    return this.filter(function() {
+      return !(callback.apply(target, arguments));
+    });
+  },
+
+  /**
     Returns an array with just the items with the matched property. You
     can pass an optional second argument with the target value. Otherwise
     this will match any property that evaluates to `true`.
@@ -354,6 +384,24 @@ Ember.Enumerable = Ember.Mixin.create(
   */
   filterProperty: function(key, value) {
     return this.filter(iter.apply(this, arguments));
+  },
+
+  /**
+    Returns an array with the items that do not have truthy values for
+    key.  You can pass an optional second argument with the target value.  Otherwise
+    this will match any property that evaluates to false.
+
+    @method rejectProperty
+    @param {String} key the property to test
+    @param {String} [value] optional value to test against.
+    @return {Array} rejected array
+  */
+  rejectProperty: function(key, value) {
+    var exactValue = function(item) { return get(item, key) === value; },
+        hasValue = function(item) { return !!get(item, key); },
+        use = (arguments.length === 2 ? exactValue : hasValue);
+
+    return this.reject(use);
   },
 
   /**
