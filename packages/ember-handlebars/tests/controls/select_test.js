@@ -591,7 +591,7 @@ test("select element should correctly initialize and update selectedIndex and bo
   equal(selectEl.selectedIndex, 2, "Precond: The DOM reflects the correct selection");
 
   select.$('option:eq(2)').removeAttr('selected');
-  select.$('option:eq(1)').attr('selected', true);
+  select.$('option:eq(1)').prop('selected', true);
   select.$().trigger('change');
 
   equal(view.get('val'), 'w', "Updated bound property is correct");
