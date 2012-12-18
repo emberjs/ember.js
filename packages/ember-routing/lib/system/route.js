@@ -80,13 +80,14 @@ Ember.Route = Ember.Object.extend({
   },
 
   render: function(name, options) {
-    var templateName = this.templateName,
-        container = this.router.container,
+    
+    var templateName = name || this.templateName;
+    var container = this.router.container,
         className = classify(templateName),
         view = container.lookup('view:' + templateName) || DefaultView.create();
 
     set(view, 'template', container.lookup('template:' + templateName));
-
+    
     options = options || {};
     var into = options.into || 'application';
     var outlet = options.outlet || 'main';
