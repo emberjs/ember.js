@@ -10,24 +10,7 @@ Ember.Route = Ember.Object.extend({
     This hook is the entry point for router.js
   */
   setup: function(context) {
-    var container = this.router.container;
-
-    var templateName = this.templateName,
-        controller = container.lookup('controller:' + templateName);
-
-    if (!controller) {
-      if (context && Ember.isArray(context)) {
-        controller = Ember.ArrayController.extend({ content: context });
-      } else if (context) {
-        controller = Ember.ObjectController.extend({ content: context });
-      } else {
-        controller = Ember.Controller.extend();
-      }
-
-      container.register('controller', templateName, controller);
-      controller = container.lookup('controller:' + templateName);
-    }
-
+    var controller = this.lookupController(context);
     this.setupControllers(controller, context);
     this.renderTemplates(context);
   },
@@ -63,6 +46,28 @@ Ember.Route = Ember.Object.extend({
 
     Ember.assert("You used the dynamic segment " + name + "_id in your router, but " + namespace + "." + className + " did not exist and you did not override your state's `model` hook.", modelClass);
     return modelClass.find(value);
+  },
+
+  lookupController: function(context, controllerName) {
+    var container = this.router.container;
+
+    controllerName = controllerName || this.templateName;
+    var controller = container.lookup('controller:' + controllerName);
+
+    if (!controller) {
+      if (context && Ember.isArray(context)) {
+        controller = Ember.ArrayController.extend();
+      } else if (context) {
+        controller = Ember.ObjectController.extend();
+      } else {
+        controller = Ember.Controller.extend();
+      }
+
+      container.register('controller', controllerName, controller);
+      controller = container.lookup('controller:' + controllerName);
+    }
+
+    return controller;
   },
 
   setupControllers: function(controller, context) {
