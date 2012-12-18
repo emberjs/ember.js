@@ -5,6 +5,6 @@ before_script:
   - "export DISPLAY=:99.0"
   - "sh -e /etc/init.d/xvfb start"
   - "rake clean"
-script: "rake test[all]"
+script: "rake test[standard]"
 notifications:
   webhooks: http://emberjs-master-builds.herokuapp.com/upload/ember.js
