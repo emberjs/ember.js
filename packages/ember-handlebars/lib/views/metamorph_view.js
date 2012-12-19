@@ -33,10 +33,11 @@ var DOMManager = {
     var morph = view.morph;
 
     view.transitionTo('preRender');
-    view.clearRenderedChildren();
-    var buffer = view.renderToBuffer();
 
     Ember.run.schedule('render', this, function() {
+      view.clearRenderedChildren();
+      var buffer = view.renderToBuffer();
+
       if (get(view, 'isDestroyed')) { return; }
       view.invokeRecursively(function(view) {
         view.propertyDidChange('element');
