@@ -33,6 +33,14 @@ var merge = function(original, hash) {
   }
 };
 
+var without = function(ary, value) {
+  var ret = [] ;
+  Ember.EnumerableUtils.forEach(ary, function(k) {
+    if (k !== value) ret[ret.length] = k;
+  }) ;
+  return ret ;
+};
+
 /**
   @class Routable
   @namespace Ember
@@ -357,34 +365,8 @@ Ember.Routable = Ember.Mixin.create({
   resolvePath: function(manager, path) {
     if (get(this, 'isLeafRoute')) { return Ember.A(); }
 
-    var childStates = get(this, 'childStates'), match;
-
-    childStates = Ember.A(childStates.filterProperty('isRoutable'));
-
-    childStates = childStates.sort(function(a, b) {
-      var aDynamicSegments = get(a, 'routeMatcher.identifiers.length'),
-          bDynamicSegments = get(b, 'routeMatcher.identifiers.length'),
-          aRoute = get(a, 'route'),
-          bRoute = get(b, 'route');
-
-      if (aRoute.indexOf(bRoute) === 0) {
-        return -1;
-      } else if (bRoute.indexOf(aRoute) === 0) {
-        return 1;
-      }
-
-      if (aDynamicSegments !== bDynamicSegments) {
-        return aDynamicSegments - bDynamicSegments;
-      }
-
-      return get(b, 'route.length') - get(a, 'route.length');
-    });
-
-    var state = childStates.find(function(state) {
-      var matcher = get(state, 'routeMatcher');
-      if (match = matcher.match(path)) { return true; }
-    });
-
+    var match = this.matchPath(path),
+        state = match.state;
     Ember.assert("Could not find state for path " + path, !!state);
 
     var resolvedState = Ember._ResolvedState.create({
@@ -464,12 +446,21 @@ Ember.Routable = Ember.Mixin.create({
     // because the index ('/') state must be a leaf node.
     if (route !== '/') {
       // If the current path is a prefix of the path we're trying
-      // to go to, we're done.
+      // to go to, compute the next state to see if we're done.
       var index = path.indexOf(absolutePath),
           next = path.charAt(absolutePath.length);
 
       if (index === 0 && (next === "/" || next === "")) {
-        return;
+        // Compute the path to the next state beginning at the root state.
+        // If we are in the path, we're done.
+        var state = router.findStateByPath(router, 'root'),
+            remainingPath = path;
+        while (state && !get(state, 'isLeafRoute')) {
+          if (state === this) { return; }
+          var match = state.matchPath(remainingPath);
+          state = match.state;
+          remainingPath = match.remaining;
+        }
       }
     }
 
@@ -526,6 +517,61 @@ Ember.Routable = Ember.Mixin.create({
     });
 
     controller.set('view', viewClass.create());
+  },
+
+  /**
+    @private
+
+    Find the state and RouteMatcher parameters for the state matching the
+    given path.
+  */
+  matchPath: function(path) {
+    var childStates = get(this, 'childStates'), match;
+
+    childStates = Ember.A(childStates.filterProperty('isRoutable'));
+    childStates = childStates.sort(function(a, b) {
+      var aRoute = get(a, 'route'),
+          bRoute = get(b, 'route'),
+          aSegments = without(aRoute.split('/'), ""),
+          bSegments = without(bRoute.split('/'), ""),
+          aSegment, bSegment;
+
+      while (aSegments.length > 0 && bSegments.length > 0) {
+        aSegment = aSegments.shift();
+        bSegment = bSegments.shift();
+
+        if (aSegment !== bSegment) {
+          // Prefer static segment over dynamic segment
+          if (aSegment.indexOf(':') === 0 && bSegment.indexOf(':') !== 0) {
+            return 1;
+          } else if (bSegment.indexOf(':') === 0 && aSegment.indexOf(':') !== 0) {
+            return -1;
+          }
+
+          // Prefer longer segment
+          if (aSegment.length !== bSegment.length) {
+            return bSegment.length - aSegment.length;
+          }
+
+          // Sort alphabetically to ensure deterministic search
+          return aSegment < bSegment ? -1 : 1;
+        }
+      }
+
+      // Prefer more segments
+      return bSegments.length - aSegments.length;
+    });
+
+    var state = childStates.find(function(state) {
+      var matcher = get(state, 'routeMatcher');
+      if (match = matcher.match(path)) { return true; }
+    });
+
+    return {
+      state: state,
+      remaining: match.remaining,
+      hash: match.hash
+    };
   },
 
   /**
