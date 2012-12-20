@@ -85,6 +85,8 @@ Ember.Route = Ember.Object.extend({
         className = classify(templateName),
         view = container.lookup('view:' + templateName) || DefaultView.create();
 
+    this.router._activeViews[templateName] = view;
+
     set(view, 'template', container.lookup('template:' + templateName));
 
     options = options || {};
