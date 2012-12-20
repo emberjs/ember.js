@@ -102,59 +102,6 @@ test("should update attribute bindings", function() {
   ok(!view.$().attr('notNumber'), "removes notNumber attribute when NaN");
 });
 
-test("should allow attributes to be set in the inBuffer state", function() {
-  var parentView, childViews, Test;
-  Ember.run(function() {
-    lookup.Test = Test = Ember.Namespace.create();
-    Test.controller = Ember.Object.create({
-      foo: 'bar'
-    });
-
-    parentView = Ember.ContainerView.create();
-
-    childViews = parentView.get('childViews');
-    childViews.pushObject(parentView.createChildView(Ember.View, {
-      template: function() {
-        return "foo";
-      },
-
-      fooBinding: 'Test.controller.foo',
-      attributeBindings: ['foo']
-    }));
-
-    childViews.pushObject(parentView.createChildView(Ember.View, {
-      template: function() {
-        Test.controller.set('foo', 'baz');
-        return "bar";
-      }
-    }));
-
-    childViews.pushObject(parentView.createChildView(Ember.View, {
-      template: function() {
-        return "bat";
-      }
-    }));
-  });
-
-  try {
-    Ember.TESTING_DEPRECATION = true;
-
-    Ember.run(function() {
-      parentView.append();
-    });
-  } finally {
-    Ember.TESTING_DEPRECATION = false;
-  }
-
-  equal(parentView.get('childViews')[0].$().attr('foo'), 'baz');
-
-  Ember.run(function(){
-    parentView.destroy();
-    Test.destroy();
-  });
-
-});
-
 // This comes into play when using the {{#each}} helper. If the
 // passed array item is a String, it will be converted into a
 // String object instead of a normal string.

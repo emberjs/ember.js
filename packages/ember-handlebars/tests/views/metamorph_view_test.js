@@ -205,3 +205,23 @@ test("trigger rerender of parent and SimpleHandlebarsView", function () {
   equal(view.$().text(), '');
 
 });
+
+test("re-rendering and then changing the property does not raise an exception", function() {
+  view = Ember.View.create({
+    show: true,
+    foo: 'bar',
+    metamorphView: Ember._MetamorphView,
+    template: Ember.Handlebars.compile("{{#view view.metamorphView}}truth{{/view}}")
+  });
+
+  Ember.run(function(){ view.appendTo('#qunit-fixture'); });
+
+  equal(view.$().text(), 'truth');
+
+  Ember.run(function(){
+    view.get('_childViews')[0].rerender();
+    view.get('_childViews')[0].rerender();
+  });
+
+  equal(view.$().text(), 'truth');
+});

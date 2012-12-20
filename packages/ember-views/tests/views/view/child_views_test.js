@@ -38,46 +38,4 @@
     equal(parentView.$().text(), 'Ember', 'renders the child view after the parent view');
   });
 
-  test("should not duplicate childViews when rerendering in buffer", function() {
-
-    var Inner = Ember.View.extend({
-      template: function() { return ''; }
-    });
-
-    var Inner2 = Ember.View.extend({
-      template: function() { return ''; }
-    });
-
-    var Middle = Ember.View.extend({
-      render: function(buffer) {
-        this.appendChild(Inner);
-        this.appendChild(Inner2);
-      }
-    });
-
-    var outer = Ember.View.create({
-      render: function(buffer) {
-        this.middle = this.appendChild(Middle);
-      }
-    });
-
-    Ember.run(function() {
-      outer.renderToBuffer();
-    });
-
-    equal(outer.get('middle.childViews.length'), 2, 'precond middle has 2 child views rendered to buffer');
-
-    try {
-      Ember.TESTING_DEPRECATION = true;
-      Ember.run(function() {
-        outer.middle.rerender();
-      });
-    } finally {
-      Ember.TESTING_DEPRECATION = false;
-    }
-
-    equal(outer.get('middle.childViews.length'), 2, 'middle has 2 child views rendered to buffer');
-
-  });
-
 })();
