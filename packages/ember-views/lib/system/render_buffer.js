@@ -306,7 +306,8 @@ Ember._RenderBuffer.prototype =
   },
 
   generateElement: function() {
-    var element = document.createElement(this.currentTagName()),
+    var tagName = this.tagNames.pop(), // pop since we don't need to close
+        element = document.createElement(tagName),
         $element = Ember.$(element),
         id = this.elementId,
         classes = this.classes,
