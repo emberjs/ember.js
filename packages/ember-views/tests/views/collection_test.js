@@ -134,7 +134,7 @@ test("should insert a new item in DOM when an item is added to the content array
     content.insertAt(1, 'quux');
   });
 
-  equal(view.$(':nth-child(2)').text(), 'quux');
+  equal(Ember.$.trim(view.$(':nth-child(2)').text()), 'quux');
 });
 
 test("should remove an item from DOM when an item is removed from the content array", function() {
@@ -193,7 +193,7 @@ test("it updates the view if an item is replaced", function() {
   });
 
   forEach(content, function(item, idx) {
-    equal(view.$(Ember.String.fmt(':nth-child(%@)', [String(idx+1)])).text(), item, "postcond - correct array update");
+    equal(Ember.$.trim(view.$(Ember.String.fmt(':nth-child(%@)', [String(idx+1)])).text()), item, "postcond - correct array update");
   });
 });
 
@@ -224,7 +224,7 @@ test("can add and replace in the same runloop", function() {
   });
 
   forEach(content, function(item, idx) {
-    equal(view.$(Ember.String.fmt(':nth-child(%@)', [String(idx+1)])).text(), item, "postcond - correct array update");
+    equal(Ember.$.trim(view.$(Ember.String.fmt(':nth-child(%@)', [String(idx+1)])).text()), item, "postcond - correct array update");
   });
 
 });
@@ -256,7 +256,7 @@ test("can add and replace the object before the add in the same runloop", functi
   });
 
   forEach(content, function(item, idx) {
-    equal(view.$(Ember.String.fmt(':nth-child(%@)', [String(idx+1)])).text(), item, "postcond - correct array update");
+    equal(Ember.$.trim(view.$(Ember.String.fmt(':nth-child(%@)', [String(idx+1)])).text()), item, "postcond - correct array update");
   });
 });
 
@@ -289,7 +289,7 @@ test("can add and replace complicatedly", function() {
   });
 
   forEach(content, function(item, idx) {
-    equal(view.$(Ember.String.fmt(':nth-child(%@)', [String(idx+1)])).text(), item, "postcond - correct array update: "+item.name+"!="+view.$(Ember.String.fmt(':nth-child(%@)', [String(idx+1)])).text());
+    equal(Ember.$.trim(view.$(Ember.String.fmt(':nth-child(%@)', [String(idx+1)])).text()), item, "postcond - correct array update: "+item.name+"!="+view.$(Ember.String.fmt(':nth-child(%@)', [String(idx+1)])).text());
   });
 });
 
@@ -323,7 +323,7 @@ test("can add and replace complicatedly harder", function() {
   });
 
   forEach(content, function(item, idx) {
-    equal(view.$(Ember.String.fmt(':nth-child(%@)', [String(idx+1)])).text(), item, "postcond - correct array update");
+    equal(Ember.$.trim(view.$(Ember.String.fmt(':nth-child(%@)', [String(idx+1)])).text()), item, "postcond - correct array update");
   });
 });
 
@@ -434,7 +434,7 @@ test("should allow changing content property to be null", function() {
     set(view, 'content', null);
   });
 
-  equal(view.$().children().text(), "(empty)", "should display empty view");
+  equal(Ember.$.trim(view.$().children().text()), "(empty)", "should display empty view");
 });
 
 test("should allow items to access to the CollectionView's current index in the content array", function() {

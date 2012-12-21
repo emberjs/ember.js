@@ -22,7 +22,7 @@ test("should be able to insert views after the DOM representation is created", f
     container.get('childViews').pushObject(view);
   });
 
-  equal(container.$().text(), "This is my moment");
+  equal(Ember.$.trim(container.$().text()), "This is my moment");
 
   Ember.run(function(){
     container.destroy();
@@ -153,7 +153,7 @@ test("if a ContainerView starts with a currentView, it is rendered as a child vi
     container.appendTo('#qunit-fixture');
   });
 
-  equal(container.$().text(), "This is the main view.", "should render its child");
+  equal(Ember.$.trim(container.$().text()), "This is the main view.", "should render its child");
   equal(get(container, 'childViews.length'), 1, "should have one child view");
   equal(get(container, 'childViews').objectAt(0), mainView, "should have the currentView as the only child view");
   equal(mainView.get('parentView'), container, "parentView is setup");
@@ -212,7 +212,7 @@ test("if a ContainerView starts with no currentView and then one is set, the Con
     set(container, 'currentView', mainView);
   });
 
-  equal(container.$().text(), "This is the main view.", "should render its child");
+  equal(Ember.$.trim(container.$().text()), "This is the main view.", "should render its child");
   equal(get(container, 'childViews.length'), 1, "should have one child view");
   equal(get(container, 'childViews').objectAt(0), mainView, "should have the currentView as the only child view");
 });
@@ -299,7 +299,7 @@ test("if a ContainerView starts with a currentView and then a different currentV
 
   equal(mainView.isDestroyed, true, 'should destroy the previous currentView.');
 
-  equal(container.$().text(), "This is the secondary view.", "should render its child");
+  equal(Ember.$.trim(container.$().text()), "This is the secondary view.", "should render its child");
   equal(get(container, 'childViews.length'), 1, "should have one child view");
   equal(get(container, 'childViews').objectAt(0), secondaryView, "should have the currentView as the only child view");
 });

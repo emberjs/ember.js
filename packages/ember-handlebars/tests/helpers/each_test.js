@@ -210,7 +210,8 @@ test("it supports {{itemViewClass=}} with tagName", function() {
   html = html.replace(/<div[^>]*><\/div>/ig, '').replace(/[\r\n]/g, '');
   html = html.replace(/<li[^>]*/ig, '<li');
 
-  equal(html, "<ul><li>Steve Holt</li><li>Annabelle</li></ul>");
+  // Use lowercase since IE 8 make tagnames uppercase
+  equal(html.toLowerCase(), "<ul><li>steve holt</li><li>annabelle</li></ul>");
 
 });
 

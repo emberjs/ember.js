@@ -1,6 +1,6 @@
 /*globals TemplateTests:true App:true */
 
-var set = Ember.set, get = Ember.get;
+var set = Ember.set, get = Ember.get, trim = Ember.$.trim;
 var firstGrandchild = function(view) {
   return get(get(view, 'childViews').objectAt(0), 'childViews').objectAt(0);
 };
@@ -375,7 +375,7 @@ test("should re-render when the content object changes", function() {
   });
 
   equal(view.$('li').length, 1, "rerenders with correct number of items");
-  equal(view.$('li:eq(0)').text(), "ramalamadingdong");
+  equal(trim(view.$('li:eq(0)').text()), "ramalamadingdong");
 
 });
 
@@ -417,7 +417,7 @@ test("tagName works in the #collection helper", function() {
   });
 
   equal(view.$('li').length, 3, "rerenders with correct number of items");
-  equal(view.$('li:eq(0)').text(), "bing");
+  equal(trim(view.$('li:eq(0)').text()), "bing");
 });
 
 test("should render nested collections", function() {

@@ -1,3 +1,5 @@
+var trim = Ember.$.trim;
+
 var view;
 
 module("Ember.Handlebars - group flag", {
@@ -60,13 +62,13 @@ test("property changes inside views should only rerender their view", function()
   });
   appendView();
   equal(view.$('script').length, 0, "No Metamorph markers are output");
-  equal(view.$().text().trim(), 'ohai', 'Original value was rendered');
+  equal(trim(view.$().text()), 'ohai', 'Original value was rendered');
 
   Ember.run(function() {
     view.set('context.msg', 'ohbai');
   });
   ok(!rerenderWasCalled, "The GroupView rerender method was not called");
-  equal(view.$().text().trim(), 'ohbai', "The updated value was rendered");
+  equal(trim(view.$().text()), 'ohbai', "The updated value was rendered");
 });
 
 test("should work with bindAttr", function() {
@@ -96,12 +98,12 @@ test("should work with the #if helper", function() {
   appendView();
 
   equal(view.$('script').length, 0, "No Metamorph markers are output");
-  equal(view.$().text().trim(), 'hooray', 'Truthy text was rendered');
+  equal(trim(view.$().text()), 'hooray', 'Truthy text was rendered');
 
   Ember.run(function() {
     view.set('context.something', false);
   });
-  equal(view.$().text().trim(), 'boo', "The falsy value was rendered");
+  equal(trim(view.$().text()), 'boo', "The falsy value was rendered");
 });
 
 test("#each can be nested", function() {
