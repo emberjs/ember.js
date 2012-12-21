@@ -91,8 +91,8 @@
   </script>
 
   <script>
-    // Load custom version of jQuery if possible
-    var jQueryVersion = QUnit.urlParams.jquery || "1.8.0";
+    // Load custom version of jQuery if possible (assign to window so IE8 can use in later blocks)
+    window.jQueryVersion = QUnit.urlParams.jquery || "1.8.0";
     if (jQueryVersion !== 'none') {
       document.write('<script src="http://code.jquery.com/jquery-'+jQueryVersion+'.js"><\/script>');
     }
