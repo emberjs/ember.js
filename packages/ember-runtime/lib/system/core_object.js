@@ -25,7 +25,8 @@ var set = Ember.set, get = Ember.get,
     finishPartial = Mixin.finishPartial,
     reopen = Mixin.prototype.reopen,
     classToString = Mixin.prototype.toString,
-    MANDATORY_SETTER = Ember.ENV.MANDATORY_SETTER;
+    MANDATORY_SETTER = Ember.ENV.MANDATORY_SETTER,
+    indexOf = Ember.EnumerableUtils.indexOf;
 
 var undefinedDescriptor = {
   configurable: true,
@@ -87,7 +88,7 @@ function makeCtor() {
           Ember.assert("Ember.Object.create no longer supports defining computed properties.", !(value instanceof Ember.ComputedProperty));
           Ember.assert("Ember.Object.create no longer supports defining methods that call _super.", !(typeof value === 'function' && value.toString().indexOf('_super') !== -1));
 
-          if (concatenatedProperties && concatenatedProperties.indexOf(keyName) >= 0) {
+          if (concatenatedProperties && indexOf(concatenatedProperties, keyName) >= 0) {
             var baseValue = this[keyName];
 
             if (baseValue) {
