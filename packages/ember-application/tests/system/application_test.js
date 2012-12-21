@@ -1,6 +1,7 @@
 var view;
 var application;
 var set = Ember.set, get = Ember.get;
+var trim = Ember.$.trim;
 
 module("Ember.Application", {
   setup: function() {
@@ -319,7 +320,7 @@ test("Minimal Application initialized with just an application template", functi
     }).initialize();
   });
 
-  equal(Ember.$('#qunit-fixture').text(), 'Hello World');
+  equal(trim(Ember.$('#qunit-fixture').text()), 'Hello World');
 });
 
 test("Minimal Application initialized with an application template and injections", function() {
@@ -339,5 +340,5 @@ test("Minimal Application initialized with an application template and injection
     app.initialize(stateManager);
   });
 
-  equal(Ember.$('#qunit-fixture').text(), 'Hello Kris!');
+  equal(trim(Ember.$('#qunit-fixture').text()), 'Hello Kris!');
 });

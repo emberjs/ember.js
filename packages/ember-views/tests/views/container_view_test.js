@@ -467,7 +467,8 @@ test("should be able to modify childViews then rerender again the ContainerView 
 
   equal(one.count, 1, 'rendered child only once');
   equal(two.count, 1, 'rendered child only once');
-  equal(container.$().text(), 'onetwo');
+  // IE 8 adds a line break but this shouldn't affect validity
+  equal(container.$().text().replace(/\s/g, ''), 'onetwo');
 });
 
 test("should invalidate `element` on itself and childViews when being rendered by ensureChildrenAreInDOM", function () {
