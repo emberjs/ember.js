@@ -81,6 +81,27 @@ var setInnerHTML = function(element, html) {
 
 /*** END METAMORPH HELPERS */
 
+var allowedTags = {};
+var allowedAsRoot = function(tagName) {
+  if (allowedTags[tagName] !== undefined) {
+    return allowedTags[tagName];
+  }
+
+  var allowed = true;
+
+  // IE 8 and earlier don't allow us to do innerHTML on select
+  if (tagName.toLowerCase() === 'select') {
+    var el = document.createElement('select');
+    setInnerHTML(el, '<option value="test">Test</option>');
+    allowed = el.options.length === 1;
+  }
+
+  allowedTags[tagName] = allowed;
+
+  return allowed;
+};
+
+
 
 var ClassSet = function() {
   this.seen = {};
@@ -390,6 +411,8 @@ Ember._RenderBuffer.prototype =
         attrs = this.elementAttributes,
         style = this.elementStyle,
         styleBuffer = '', prop;
+
+    Ember.assert("Can't create a RenderBuffer for "+tagName+" in this browser.", allowedAsRoot(tagName));
 
     if (id) {
       $element.attr('id', id);
