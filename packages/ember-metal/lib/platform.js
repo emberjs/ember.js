@@ -27,7 +27,6 @@ Ember.create = Object.create;
 // STUB_OBJECT_CREATE allows us to override other libraries that stub
 // Object.create different than we would prefer
 if (!Ember.create || Ember.ENV.STUB_OBJECT_CREATE) {
-  console.log('stubbing Ember.create');
   var K = function() {};
 
   Ember.create = function(obj, props) {
