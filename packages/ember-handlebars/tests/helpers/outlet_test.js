@@ -37,7 +37,8 @@ test("outlet should allow controllers to fill in slots", function() {
     }));
   });
 
-  equal(view.$().text(), 'HIBYE');
+  // IE likes to add newlines
+  equal(view.$().text().replace(/\s+/g, ''), 'HIBYE');
 });
 
 test("outlet should allow controllers to fill in slots in prerender state", function() {
@@ -55,7 +56,8 @@ test("outlet should allow controllers to fill in slots in prerender state", func
 
   appendView(view);
 
-  equal(view.$().text(), 'HIBYE');
+  // IE likes to add newlines
+  equal(view.$().text().replace(/\s+/g, ''), 'HIBYE');
 });
 
 test("outlet should allow a view's default context to fill in slots", function() {
@@ -75,7 +77,8 @@ test("outlet should allow a view's default context to fill in slots", function()
     }));
   });
 
-  equal(view.$().text(), 'HIBYE');
+  // IE likes to add newlines
+  equal(view.$().text().replace(/\s+/g, ''), 'HIBYE');
 });
 
 test("outlet should support an optional name", function() {
@@ -97,5 +100,6 @@ test("outlet should support an optional name", function() {
     }));
   });
 
-  equal(view.$().text(), 'HIBYE');
+  // IE likes to add newlines
+  equal(view.$().text().replace(/\s+/g, ''), 'HIBYE');
 });

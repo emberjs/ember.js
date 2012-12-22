@@ -188,5 +188,6 @@ test("#each with itemViewClass behaves like a normal bound #each", function() {
 
   equal(view.$('script').length, 2, "Correct number of Metamorph markers are output");
   equal(view.$('.ember-view').length, 3, "Correct number of views are output");
-  equal(view.$().text(), 'ErikPeterTom');
+  // IE likes to add newlines
+  equal(view.$().text().replace(/\s+/g, ''), 'ErikPeterTom');
 });
