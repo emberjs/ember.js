@@ -101,3 +101,28 @@ test("Outlets bind to the current view, not the current concrete view", function
   var output = Ember.$('#qunit-fixture h1 ~ h2 ~ h3').text();
   equal(output, "BOTTOM", "all templates were rendered");
 });
+
+test("view should support disconnectOutlet for the main outlet", function() {
+  var template = "<h1>HI</h1>{{outlet}}";
+  view = Ember.View.create({
+    template: Ember.Handlebars.compile(template)
+  });
+
+  appendView(view);
+
+  equal(view.$().text(), 'HI');
+
+  Ember.run(function() {
+    view.connectOutlet('main', Ember.View.create({
+      template: compile("<p>BYE</p>")
+    }));
+  });
+
+  equal(view.$().text(), 'HIBYE');
+
+  Ember.run(function() {
+    view.disconnectOutlet('main');
+  });
+
+  equal(view.$().text(), 'HI');
+});

@@ -20,7 +20,7 @@ Ember.Router = Ember.Object.extend({
 
   init: function() {
     var router = this.router = new Router();
-    var activeViews = this._activeViews = {};
+    this._activeViews = {};
 
     setupLocation(this);
 
@@ -45,11 +45,7 @@ Ember.Router = Ember.Object.extend({
       Ember.run.once(updateURL);
     };
 
-    if (!container.lookup('view:application')) {
-      container.register('view', 'application', DefaultView.create({
-        templateName: 'application'
-      }));
-    }
+    container.register('view', 'default', DefaultView);
 
     router.handleURL(location.getURL());
     location.onUpdateURL(function(url) {
@@ -75,6 +71,26 @@ Ember.Router = Ember.Object.extend({
     }
 
     this.router.trigger(name, context);
+  },
+
+  _lookupActiveView: function(templateName) {
+    return this._activeViews[templateName];
+  },
+
+  _connectActiveView: function(templateName, view) {
+    this._activeViews[templateName] = view;
+  },
+
+  _disconnectActiveView: function(view) {
+    var activeViews = this._activeViews,
+        templateName;
+    for (templateName in activeViews) {
+      if (!activeViews.hasOwnProperty(templateName)) { continue; }
+      if (activeViews[templateName] === view) {
+        delete activeViews[templateName];
+        break;
+      }
+    }
   }
 });
 
