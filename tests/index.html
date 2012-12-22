@@ -83,8 +83,9 @@
   <div id="qunit-fixture">test markup</div>
 
   <script>
-    // Load jshint if being used (can cause failurs in old environments if always loaded)
     if (jsHint) {
+      // jsHint makes its own Object.create stub, we don't want to use this
+      ENV['STUB_OBJECT_CREATE'] = !Object.create;
       document.write('<script src="jshint.js"><\/script>');
     }
     // Close the script tag to make sure document.write happens
