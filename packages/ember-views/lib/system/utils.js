@@ -101,13 +101,16 @@ var canSetInnerHTML = function(tagName) {
 var setInnerHTML = function(element, html) {
   var tagName = element.tagName;
 
-  setInnerHTMLWithoutFix(element, html);
-
-  if (!canSetInnerHTML(tagName)) {
+  if (canSetInnerHTML(tagName)) {
+    setInnerHTMLWithoutFix(element, html);
+  } else {
     Ember.assert("Can't set innerHTML on "+element.tagName+" in this browser", element.outerHTML);
 
+    var startTag = element.outerHTML.match(new RegExp("<"+tagName+"([^>]*)>", 'i'))[0],
+        endTag = '</'+tagName+'>';
+
     var wrapper = document.createElement('div');
-    setInnerHTMLWithoutFix(wrapper, element.outerHTML);
+    setInnerHTMLWithoutFix(wrapper, startTag + html + endTag);
     element = wrapper.firstChild;
     while (element.tagName !== tagName) {
       element = element.nextSibling;
