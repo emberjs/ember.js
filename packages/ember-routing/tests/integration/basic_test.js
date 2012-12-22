@@ -24,7 +24,7 @@ module("Basic Routing", {
 
       Ember.TEMPLATES.app = Ember.Handlebars.compile("{{outlet}}");
       Ember.TEMPLATES.home = Ember.Handlebars.compile("<h3>Hours</h3>");
-      Ember.TEMPLATES.homepage = Ember.TEMPLATES.home;
+      Ember.TEMPLATES.homepage = Ember.Handlebars.compile("<h3>Megatroll</h3><p>{{home}}</p>");
 
       Router = Ember.Router.extend({
         location: 'none'
@@ -74,7 +74,31 @@ test("The Homepage with explicit template name in renderTemplates", function() {
     router.handleURL("/");
   });
 
-  equal(Ember.$('h3:contains(Hours)', '#qunit-fixture').length, 1, "The home template was rendered");
+  equal(Ember.$('h3:contains(Megatroll)', '#qunit-fixture').length, 1, "The homepage template was rendered");
+});
+
+test("The Homepage with explicit template name in renderTemplates", function() {
+  Router.map(function(match) {
+    match("/").to("home");
+  });
+
+  App.HomeController = Ember.Route.extend({
+    home: "YES I AM HOME"
+  });
+
+  App.HomeRoute = Ember.Route.extend({
+    renderTemplates: function() {
+      this.render('homepage');
+    }
+  });
+
+  bootApplication();
+
+  Ember.run(function() {
+    router.handleURL("/");
+  });
+
+  equal(Ember.$('h3:contains(Megatroll) + p:contains(YES I AM HOME)', '#qunit-fixture').length, 1, "The homepage template was rendered");
 });
 
 test("The Homepage with a `setupControllers` hook", function() {

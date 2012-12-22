@@ -80,7 +80,12 @@ Ember.Route = Ember.Object.extend({
   },
 
   render: function(name, options) {
-    var templateName = this.templateName,
+    if (typeof name === 'object' && !options) {
+      options = name;
+      name = this.templateName;
+    }
+
+    var templateName = name || this.templateName,
         container = this.router.container,
         className = classify(templateName),
         view = container.lookup('view:' + templateName) || DefaultView.create();
@@ -92,7 +97,7 @@ Ember.Route = Ember.Object.extend({
     options = options || {};
     var into = options.into || 'application';
     var outlet = options.outlet || 'main';
-    var controller = options.controller || templateName;
+    var controller = options.controller || this.templateName;
 
     if (typeof controller === 'string') {
       controller = container.lookup('controller:' + controller);
