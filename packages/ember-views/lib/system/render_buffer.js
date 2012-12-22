@@ -434,7 +434,9 @@ Ember._RenderBuffer.prototype =
     var element = this._element,
         html = this.innerString();
 
-    setInnerHTML(element, html);
+    if (html) {
+      setInnerHTML(element, html);
+    }
 
     return element;
   },
