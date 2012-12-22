@@ -54,7 +54,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
       property = 'main';
     }
 
-    options.hash.currentViewBinding = "view._outlets." + property;
+    options.hash.currentViewBinding = "_view._outlets." + property;
 
     return Handlebars.helpers.view.call(this, Handlebars.OutletView, options);
   });

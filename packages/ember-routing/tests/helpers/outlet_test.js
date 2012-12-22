@@ -70,3 +70,34 @@ test("outlet should support an optional name", function() {
 
   equal(view.$().text(), 'HIBYE');
 });
+
+test("Outlets bind to the current view, not the current concrete view", function() {
+  var parentTemplate = "<h1>HI</h1>{{outlet}}";
+  var middleTemplate = "<h2>MIDDLE</h2>{{outlet}}";
+  var bottomTemplate = "<h3>BOTTOM</h3>";
+
+  view = Ember.View.create({
+    template: compile(parentTemplate)
+  });
+
+  var middleView = Ember._MetamorphView.create({
+    template: compile(middleTemplate)
+  });
+
+  var bottomView = Ember._MetamorphView.create({
+    template: compile(bottomTemplate)
+  });
+
+  appendView(view);
+
+  Ember.run(function() {
+    view.connectOutlet('main', middleView);
+  });
+
+  Ember.run(function() {
+    middleView.connectOutlet('main', bottomView);
+  });
+
+  var output = Ember.$('#qunit-fixture h1 ~ h2 ~ h3').text();
+  equal(output, "BOTTOM", "all templates were rendered");
+});
