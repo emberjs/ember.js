@@ -33,9 +33,16 @@ Ember.Router = Ember.Object.extend({
         location = get(this, 'location'),
         container = this.container;
 
+    var lastURL;
+
+    function updateURL() {
+      location.setURL(lastURL);
+    }
+
     router.getHandler = getHandlerFunction(this, this._activeViews);
-    router.updateURL = function() {
-      location.setURL.apply(location, arguments);
+    router.updateURL = function(path) {
+      lastURL = path;
+      Ember.run.once(updateURL);
     };
 
     if (!container.lookup('view:application')) {

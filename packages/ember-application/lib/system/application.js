@@ -525,7 +525,7 @@ var Application = Ember.Application = Ember.Namespace.extend(
 
     router.handleURL(location.getURL());
     location.onUpdateURL(function(url) {
-      router.route(url);
+      router.handleURL(url);
     });
   },
 

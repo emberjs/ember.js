@@ -550,4 +550,35 @@ asyncTest("Events are triggered on the current state", function() {
   action.handler(event);
 });
 
+test("transitioning multiple times in a single run loop only sets the URL once", function() {
+  Router.map(function(match) {
+    match("/").to("root");
+    match("/foo").to("foo");
+    match("/bar").to("bar");
+  });
+
+  bootApplication();
+
+  var urlSetCount = 0;
+
+  router.get('location').setURL = function(path) {
+    urlSetCount++;
+    set(this, 'path', path);
+  };
+
+  Ember.run(function() {
+    router.handleURL("/");
+  });
+
+  equal(urlSetCount, 0);
+
+  Ember.run(function() {
+    router.transitionTo("foo");
+    router.transitionTo("bar");
+  });
+
+  equal(urlSetCount, 1);
+  equal(router.get('location').getURL(), "/bar");
+});
+
 // TODO: Parent context change
