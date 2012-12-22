@@ -128,6 +128,7 @@ test("can retrieve the current selected options when multiple=true", function() 
   select.set('content', Ember.A([yehuda, tom, david, brennain]));
   select.set('multiple', true);
   select.set('optionLabelPath', 'content.firstName');
+  select.set('optionValuePath', 'content.firstName');
 
   append();
 
