@@ -55,7 +55,7 @@ test("should dispatch events to views", function() {
   });
 
   Ember.run(function() {
-    view.append();
+    view.appendTo('#qunit-fixture');
   });
 
   view.$().trigger('mousedown');
