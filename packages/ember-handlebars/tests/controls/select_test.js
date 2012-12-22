@@ -1,21 +1,19 @@
-var map = Ember.EnumerableUtils.map;
+var map = Ember.EnumerableUtils.map,
+    trim = Ember.$.trim;
 
-var dispatcher, wrapper, select;
+var dispatcher, select;
 
 module("Ember.Select", {
   setup: function() {
     dispatcher = Ember.EventDispatcher.create();
     dispatcher.setup();
-    wrapper = Ember.ContainerView.create();
     select = Ember.Select.create();
-    wrapper.get('childViews').pushObject(select);
   },
 
   teardown: function() {
     Ember.run(function() {
       dispatcher.destroy();
       select.destroy();
-      wrapper.destroy();
     });
   }
 });
@@ -28,7 +26,7 @@ function setAndFlush(view, key, value) {
 
 function append() {
   Ember.run(function() {
-    wrapper.appendTo('#qunit-fixture');
+    select.appendTo('body');
   });
 }
 
