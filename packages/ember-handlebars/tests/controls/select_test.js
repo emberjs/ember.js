@@ -26,7 +26,7 @@ function setAndFlush(view, key, value) {
 
 function append() {
   Ember.run(function() {
-    select.appendTo('body');
+    select.appendTo('#qunit-fixture');
   });
 }
 
