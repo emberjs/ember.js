@@ -385,7 +385,8 @@ test("should fire life cycle events when elements are added and removed", functi
   equal(didInsertElement, 5);
   equal(willDestroyElement, 0);
   equal(willDestroy, 0);
-  equal(view.$().text(), '01234');
+  // Remove whitspace added by IE 8
+  equal(view.$().text().replace(/\s+/g,''), '01234');
 
   Ember.run(function () {
     content.popObject();
@@ -395,7 +396,8 @@ test("should fire life cycle events when elements are added and removed", functi
   equal(didInsertElement, 5);
   equal(willDestroyElement, 2);
   equal(willDestroy, 2);
-  equal(view.$().text(), '123');
+  // Remove whitspace added by IE 8
+  equal(view.$().text().replace(/\s+/g,''), '123');
 
   Ember.run(function () {
     view.set('content', Ember.A([7,8,9]));
@@ -404,7 +406,8 @@ test("should fire life cycle events when elements are added and removed", functi
   equal(didInsertElement, 8);
   equal(willDestroyElement, 5);
   equal(willDestroy, 5);
-  equal(view.$().text(), '789');
+  // Remove whitspace added by IE 8
+  equal(view.$().text().replace(/\s+/g,''), '789');
 
   Ember.run(function () {
     view.destroy();

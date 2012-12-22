@@ -340,7 +340,8 @@ test("should be able to modify childViews many times during an run loop", functi
     childViews.pushObject(three);
   });
 
-  equal(container.$().text(), 'onetwothree');
+  // Remove whitespace added by IE 8
+  equal(container.$().text().replace(/\s+/g,''), 'onetwothree');
 });
 
 test("should be able to modify childViews then remove the ContainerView in same run loop", function () {
@@ -432,7 +433,8 @@ test("should be able to modify childViews then rerender then modify again the Co
 
   equal(one.count, 1, 'rendered child only once');
   equal(two.count, 1, 'rendered child only once');
-  equal(container.$().text(), 'onetwo');
+  // Remove whitespace added by IE 8
+  equal(container.$().text().replace(/\s+/g, ''), 'onetwo');
 });
 
 test("should be able to modify childViews then rerender again the ContainerView in same run loop and then modify again", function () {
