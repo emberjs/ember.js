@@ -1767,7 +1767,7 @@ test("should be able to use unbound helper in #each helper (with objects)", func
 
 test("should work with precompiled templates", function() {
   var templateString = Ember.Handlebars.precompile("{{view.value}}"),
-      compiledTemplate = Ember.Handlebars.template(eval('('+templateString+')'));
+      compiledTemplate = Ember.Handlebars.template(eval(templateString));
   view = Ember.View.create({
     value: "rendered",
     template: compiledTemplate
