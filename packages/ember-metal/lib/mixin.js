@@ -18,7 +18,6 @@ var Mixin, REQUIRED, Alias,
     a_forEach = Ember.ArrayPolyfills.forEach,
     a_slice = [].slice,
     EMPTY_META = {}, // dummy for non-writable meta
-    META_SKIP = { __ember_count__: true },
     o_create = Ember.create,
     defineProperty = Ember.defineProperty,
     guidFor = Ember.guidFor;
@@ -53,15 +52,6 @@ function isMethod(obj) {
   return 'function' === typeof obj &&
          obj.isMethod !== false &&
          obj !== Boolean && obj !== Object && obj !== Number && obj !== Array && obj !== Date && obj !== String;
-}
-
-function cloneDescriptor(desc) {
-  var newDesc = new Ember.ComputedProperty();
-  newDesc._cacheable = desc._cacheable;
-  newDesc._dependentKeys = desc._dependentKeys;
-  newDesc.func = desc.func;
-
-  return newDesc;
 }
 
 var CONTINUE = {};
@@ -99,7 +89,7 @@ function giveDescriptorSuper(meta, key, value, values, descs) {
     // same parent, we need to clone the computed
     // property so that other mixins do not receive
     // the wrapped version.
-    value = cloneDescriptor(value);
+    value = o_create(value);
     value.func = Ember.wrap(value.func, ovalue.func);
   }
 
@@ -195,7 +185,7 @@ function mergeMixins(mixins, m, descs, values, base) {
 function writableReq(obj) {
   var m = Ember.meta(obj), req = m.required;
   if (!req || !m.hasOwnProperty('required')) {
-    req = m.required = req ? o_create(req) : { __ember_count__: 0 };
+    req = m.required = req ? o_create(req) : {};
   }
   return req;
 }
@@ -612,16 +602,17 @@ MixinPrototype.toString = classToString;
 // returns the mixins currently applied to the specified object
 // TODO: Make Ember.mixin
 Mixin.mixins = function(obj) {
-  var ret = [], mixins = Ember.meta(obj, false).mixins, key, mixin;
-  if (mixins) {
-    for(key in mixins) {
-      if (META_SKIP[key]) { continue; }
-      mixin = mixins[key];
+  var mixins = Ember.meta(obj, false).mixins, ret = [];
 
-      // skip primitive mixins since these are always anonymous
-      if (!mixin.properties) { ret.push(mixins[key]); }
-    }
+  if (!mixins) { return ret; }
+
+  for (var key in mixins) {
+    var mixin = mixins[key];
+
+    // skip primitive mixins since these are always anonymous
+    if (!mixin.properties) { ret.push(mixin); }
   }
+
   return ret;
 };
 
