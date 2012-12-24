@@ -75,10 +75,9 @@ function makeCtor() {
           if (IS_BINDING.test(keyName)) {
             var bindings = m.bindings;
             if (!bindings) {
-              bindings = m.bindings = { __emberproto__: this };
-            } else if (bindings.__emberproto__ !== this) {
+              bindings = m.bindings = {};
+            } else if (!m.hasOwnProperty('bindings')) {
               bindings = m.bindings = o_create(m.bindings);
-              bindings.__emberproto__ = this;
             }
             bindings[keyName] = value;
           }

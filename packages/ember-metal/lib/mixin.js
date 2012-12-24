@@ -18,7 +18,7 @@ var Mixin, REQUIRED, Alias,
     a_forEach = Ember.ArrayPolyfills.forEach,
     a_slice = [].slice,
     EMPTY_META = {}, // dummy for non-writable meta
-    META_SKIP = { __emberproto__: true, __ember_count__: true },
+    META_SKIP = { __ember_count__: true },
     o_create = Ember.create,
     defineProperty = Ember.defineProperty,
     guidFor = Ember.guidFor;
@@ -26,10 +26,9 @@ var Mixin, REQUIRED, Alias,
 function mixinsMeta(obj) {
   var m = Ember.meta(obj, true), ret = m.mixins;
   if (!ret) {
-    ret = m.mixins = { __emberproto__: obj };
-  } else if (ret.__emberproto__ !== obj) {
+    ret = m.mixins = {};
+  } else if (!m.hasOwnProperty('mixins')) {
     ret = m.mixins = o_create(ret);
-    ret.__emberproto__ = obj;
   }
   return ret;
 }
@@ -195,9 +194,8 @@ function mergeMixins(mixins, m, descs, values, base) {
 
 function writableReq(obj) {
   var m = Ember.meta(obj), req = m.required;
-  if (!req || req.__emberproto__ !== obj) {
+  if (!req || !m.hasOwnProperty('required')) {
     req = m.required = req ? o_create(req) : { __ember_count__: 0 };
-    req.__emberproto__ = obj;
   }
   return req;
 }
@@ -208,10 +206,9 @@ function detectBinding(obj, key, value, m) {
   if (IS_BINDING.test(key)) {
     var bindings = m.bindings;
     if (!bindings) {
-      bindings = m.bindings = { __emberproto__: obj };
-    } else if (bindings.__emberproto__ !== obj) {
+      bindings = m.bindings = {};
+    } else if (!m.hasOwnProperty('bindings')) {
       bindings = m.bindings = o_create(m.bindings);
-      bindings.__emberproto__ = obj;
     }
     bindings[key] = value;
   }
@@ -222,7 +219,7 @@ function connectBindings(obj, m) {
   var bindings = m.bindings, key, binding, to;
   if (bindings) {
     for (key in bindings) {
-      binding = key !== '__emberproto__' && bindings[key];
+      binding = bindings[key];
       if (binding) {
         to = key.slice(0, -7); // strip Binding off end
         if (binding instanceof Ember.Binding) {
@@ -236,7 +233,7 @@ function connectBindings(obj, m) {
       }
     }
     // mark as applied
-    m.bindings = { __emberproto__: obj };
+    m.bindings = {};
   }
 }
 

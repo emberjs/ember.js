@@ -28,9 +28,7 @@ var get = Ember.get,
 //  meta.deps = {
 //   'depKey': {
 //     'keyName': count,
-//     __emberproto__: SRC_OBJ [to detect clones]
-//     },
-//   __emberproto__: SRC_OBJ
+//   }
 //  }
 
 /*
@@ -42,12 +40,11 @@ function keysForDep(obj, depsMeta, depKey) {
   if (!keys) {
     // if there are no dependencies yet for a the given key
     // create a new empty list of dependencies for the key
-    keys = depsMeta[depKey] = { __emberproto__: obj };
-  } else if (keys.__emberproto__ !== obj) {
+    keys = depsMeta[depKey] = {};
+  } else if (!depsMeta.hasOwnProperty(depKey)) {
     // otherwise if the dependency list is inherited from
     // a superclass, clone the hash
     keys = depsMeta[depKey] = o_create(keys);
-    keys.__emberproto__ = obj;
   }
   return keys;
 }
@@ -59,12 +56,11 @@ function metaForDeps(obj, meta) {
   if (!deps) {
     // initialize the dependencies with a pointer back to
     // the current object
-    deps = meta.deps = { __emberproto__: obj };
-  } else if (deps.__emberproto__ !== obj) {
+    deps = meta.deps = {};
+  } else if (!meta.hasOwnProperty('deps')) {
     // otherwise if the dependencies are inherited from the
     // object's superclass, clone the deps
     deps = meta.deps = o_create(deps);
-    deps.__emberproto__ = obj;
   }
   return deps;
 }
