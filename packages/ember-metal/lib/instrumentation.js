@@ -1,3 +1,5 @@
+require('ember-metal/utils'); // Ember.tryCatchFinally
+
 /**
   The purpose of the Ember Instrumentation module is
   to provide efficient, general-purpose instrumentation
@@ -90,17 +92,21 @@ Ember.Instrumentation.instrument = function(name, payload, callback, binding) {
 
   var beforeValues = [], listener, i, l;
 
-  try {
+  function tryable(){
     for (i=0, l=listeners.length; i<l; i++) {
       listener = listeners[i];
       beforeValues[i] = listener.before(name, time(), payload);
     }
 
-    ret = callback.call(binding);
-  } catch(e) {
+    return callback.call(binding);
+  }
+
+  function catchable(e){
     payload = payload || {};
     payload.exception = e;
-  } finally {
+  }
+
+  function finalizer() {
     for (i=0, l=listeners.length; i<l; i++) {
       listener = listeners[i];
       listener.after(name, time(), payload, beforeValues[i]);
@@ -111,7 +117,7 @@ Ember.Instrumentation.instrument = function(name, payload, callback, binding) {
     }
   }
 
-  return ret;
+  return Ember.tryCatchFinally(tryable, catchable, finalizer);
 };
 
 Ember.Instrumentation.subscribe = function(pattern, object) {

@@ -1,7 +1,7 @@
 require('ember-metal/core'); // Ember.Logger
 require('ember-metal/watching'); // Ember.watch.flushPending
 require('ember-metal/observer'); // Ember.beginPropertyChanges, Ember.endPropertyChanges
-require('ember-metal/utils'); // Ember.guidFor
+require('ember-metal/utils'); // Ember.guidFor, Ember.tryFinally
 
 /**
 @module ember-metal
@@ -103,6 +103,10 @@ RunLoop.prototype = {
       invoke(item.target, item.method, item.args);
     }
 
+    function tryable() {
+      forEach.call(queue, iter);
+    }
+
     Ember.watch.flushPending(); // make sure all chained watchers are setup
 
     if (queueName) {
@@ -116,11 +120,8 @@ RunLoop.prototype = {
           if (log) { Ember.Logger.log('Begin: Flush Sync Queue'); }
 
           Ember.beginPropertyChanges();
-          try {
-            forEach.call(queue, iter);
-          } finally {
-            Ember.endPropertyChanges();
-          }
+
+          Ember.tryFinally(tryable, Ember.endPropertyChanges);
 
           if (log) { Ember.Logger.log('End: Flush Sync Queue'); }
 
@@ -148,11 +149,8 @@ RunLoop.prototype = {
             if (log) { Ember.Logger.log('Begin: Flush Sync Queue'); }
 
             Ember.beginPropertyChanges();
-            try {
-              forEach.call(queue, iter);
-            } finally {
-              Ember.endPropertyChanges();
-            }
+
+            Ember.tryFinally(tryable, Ember.endPropertyChanges);
 
             if (log) { Ember.Logger.log('End: Flush Sync Queue'); }
           } else {
@@ -214,14 +212,17 @@ Ember.RunLoop = RunLoop;
   @return {Object} return value from invoking the passed function.
 */
 Ember.run = function(target, method) {
-  var ret, loop;
+  var loop,
+  args = arguments;
   run.begin();
-  try {
-    if (target || method) { ret = invoke(target, method, arguments, 2); }
-  } finally {
-    run.end();
+
+  function tryable() {
+    if (target || method) {
+      return invoke(target, method, args, 2);
+    }
   }
-  return ret;
+
+  return Ember.tryFinally(tryable, run.end);
 };
 
 var run = Ember.run;
@@ -261,12 +262,11 @@ Ember.run.begin = function() {
 */
 Ember.run.end = function() {
   Ember.assert('must have a current run loop', run.currentRunLoop);
-  try {
-    run.currentRunLoop.end();
-  }
-  finally {
-    run.currentRunLoop = run.currentRunLoop.prev();
-  }
+
+  function tryable()   { run.currentRunLoop.end();  }
+  function finalizer() { run.currentRunLoop = run.currentRunLoop.prev(); }
+
+  Ember.tryFinally(tryable, finalizer);
 };
 
 /**
