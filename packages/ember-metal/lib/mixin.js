@@ -81,33 +81,51 @@ function concatenatedProperties(props, values, base) {
   return concats;
 }
 
-function giveDescriptorSuper(meta, key, value, values, descs) {
-  var ovalue = values[key] === undefined && descs[key];
-  if (!ovalue) { ovalue = meta.descs[key]; }
-  if (ovalue && ovalue.func) {
-    // Since multiple mixins may inherit from the
-    // same parent, we need to clone the computed
-    // property so that other mixins do not receive
-    // the wrapped version.
-    value = o_create(value);
-    value.func = Ember.wrap(value.func, ovalue.func);
+function giveDescriptorSuper(meta, key, property, values, descs) {
+  var superProperty;
+
+  // Computed properties override methods, and do not call super to them
+  if (values[key] === undefined) {
+    // Find the original descriptor in a parent mixin
+    superProperty = descs[key];
   }
 
-  return value;
+  // If we didn't find the original descriptor in a parent mixin, find
+  // it on the original object.
+  superProperty = superProperty || meta.descs[key];
+
+  if (!superProperty || !(superProperty instanceof Ember.ComputedProperty)) {
+    return property;
+  }
+
+  // Since multiple mixins may inherit from the same parent, we need
+  // to clone the computed property so that other mixins do not receive
+  // the wrapped version.
+  property = o_create(property);
+  property.func = Ember.wrap(property.func, superProperty.func);
+
+  return property;
 }
 
-function giveMethodSuper(obj, key, value, values, descs) {
-  var ovalue = descs[key] === undefined && values[key];
-  if (!ovalue) { ovalue = obj[key]; }
-  if ('function' !== typeof ovalue) { ovalue = null; }
-  if (ovalue) {
-    var o = value.__ember_observes__, ob = value.__ember_observesBefore__;
-    value = Ember.wrap(value, ovalue);
-    value.__ember_observes__ = o;
-    value.__ember_observesBefore__ = ob;
+function giveMethodSuper(obj, key, method, values, descs) {
+  var superMethod;
+
+  // Methods overwrite computed properties, and do not call super to them.
+  if (descs[key] === undefined) {
+    // Find the original method in a parent mixin
+    superMethod = values[key];
   }
 
-  return value;
+  // If we didn't find the original value in a parent mixin, find it in
+  // the original object
+  superMethod = superMethod || obj[key];
+
+  // Only wrap the new method if the original method was a function
+  if ('function' !== typeof superMethod) {
+    return method;
+  }
+
+  return Ember.wrap(method, superMethod);
 }
 
 function applyConcatenatedProperties(obj, key, value, values) {
