@@ -211,11 +211,10 @@ function suspendListener(obj, eventName, target, method, callback) {
     actions[actionIndex] = action; // replace the shared object with our copy
   }
 
-  try {
-    return callback.call(target);
-  } finally {
-    if (action) { action[3] = undefined; }
-  }
+  function tryable()   { return callback.call(target); }
+  function finalizer() { if (action) { action[3] = undefined; } }
+
+  return Ember.tryFinally(tryable, finalizer);
 }
 
 /**
@@ -258,13 +257,15 @@ function suspendListeners(obj, eventNames, target, method, callback) {
     }
   }
 
-  try {
-    return callback.call(target);
-  } finally {
+  function tryable() { return callback.call(target); }
+
+  function finalizer() {
     for (i = 0, l = suspendedActions.length; i < l; i++) {
       suspendedActions[i][3] = undefined;
     }
   }
+
+  return Ember.tryFinally(tryable, finalizer);
 }
 
 /**
