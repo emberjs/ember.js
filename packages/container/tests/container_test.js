@@ -1,4 +1,4 @@
-var get = Ember.get;
+var Container = requireModule('container');
 
 module("Container");
 
@@ -19,7 +19,7 @@ function factory() {
 }
 
 test("A registered factory returns the same instance each time", function() {
-  var container = new Ember.Container();
+  var container = new Container();
   var PostController = factory();
 
   container.register('controller', 'post', PostController);
@@ -32,7 +32,7 @@ test("A registered factory returns the same instance each time", function() {
 });
 
 test("A container lookup has access to the container", function() {
-  var container = new Ember.Container();
+  var container = new Container();
   var PostController = factory();
 
   container.register('controller', 'post', PostController);
@@ -43,7 +43,7 @@ test("A container lookup has access to the container", function() {
 });
 
 test("A factory type with a registered injection receives the injection", function() {
-  var container = new Ember.Container();
+  var container = new Container();
   var PostController = factory();
   var Store = factory();
 
@@ -59,7 +59,7 @@ test("A factory type with a registered injection receives the injection", functi
 });
 
 test("An individual factory with a registered injection receives the injection", function() {
-  var container = new Ember.Container();
+  var container = new Container();
   var PostController = factory();
   var Store = factory();
 
@@ -75,7 +75,7 @@ test("An individual factory with a registered injection receives the injection",
 });
 
 test("A factory with both type and individual injections", function() {
-  var container = new Ember.Container();
+  var container = new Container();
   var PostController = factory();
   var Store = factory();
   var Router = factory();
@@ -96,7 +96,7 @@ test("A factory with both type and individual injections", function() {
 });
 
 test("A non-singleton factory is never cached", function() {
-  var container = new Ember.Container();
+  var container = new Container();
   var PostView = factory();
 
   container.register('view', 'post', PostView, { singleton: false });
@@ -108,7 +108,7 @@ test("A non-singleton factory is never cached", function() {
 });
 
 test("A non-instantiated property is not instantiated", function() {
-  var container = new Ember.Container();
+  var container = new Container();
 
   var template = function() {};
   container.register('template', 'foo', template, { instantiate: false });
@@ -116,13 +116,13 @@ test("A non-instantiated property is not instantiated", function() {
 });
 
 test("A failed lookup returns undefined", function() {
-  var container = new Ember.Container();
+  var container = new Container();
 
   equal(container.lookup("doesnot:exist"), undefined);
 });
 
 test("Destroying the container destroys any cached singletons", function() {
-  var container = new Ember.Container();
+  var container = new Container();
   var PostController = factory();
   var PostView = factory();
   var template = function() {};
@@ -145,7 +145,7 @@ test("Destroying the container destroys any cached singletons", function() {
 });
 
 test("The container can take a hook to resolve factories lazily", function() {
-  var container = new Ember.Container();
+  var container = new Container();
   var PostController = factory();
 
   container.resolve = function(fullName) {
@@ -160,7 +160,7 @@ test("The container can take a hook to resolve factories lazily", function() {
 });
 
 test("The container can get options that should be applied to all factories for a given type", function() {
-  var container = new Ember.Container();
+  var container = new Container();
   var PostView = factory();
 
   container.resolve = function(fullName) {
