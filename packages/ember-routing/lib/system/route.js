@@ -1,7 +1,5 @@
 var get = Ember.get, set = Ember.set, classify = Ember.String.classify;
 
-var DefaultView = Ember.View.extend(Ember._Metamorph);
-
 Ember.Route = Ember.Object.extend({
   /**
     @private
@@ -88,11 +86,10 @@ Ember.Route = Ember.Object.extend({
     var templateName = name || this.templateName,
         container = this.router.container,
         className = classify(templateName),
-        view = container.lookup('view:' + templateName) || DefaultView.create();
-
-    this.router._activeViews[templateName] = view;
+        view = container.lookup('view:' + templateName) || container.lookup('view:default');
 
     set(view, 'template', container.lookup('template:' + templateName));
+    set(view, 'viewName', templateName);
 
     options = options || {};
     var into = options.into || 'application';
@@ -105,7 +102,7 @@ Ember.Route = Ember.Object.extend({
 
     set(view, 'controller', controller);
 
-    var parentView = this.router._activeViews[into];
+    var parentView = this.router._lookupActiveView(into);
     parentView.connectOutlet(outlet, view);
   }
 });
