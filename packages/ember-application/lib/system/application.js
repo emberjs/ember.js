@@ -517,14 +517,7 @@ var Application = Ember.Application = Ember.Namespace.extend(
     var router = this.container.lookup('router:main');
     if (!router) { return; }
 
-    var location = get(router, 'location');
-
     router.startRouting();
-
-    router.handleURL(location.getURL());
-    location.onUpdateURL(function(url) {
-      router.handleURL(url);
-    });
   },
 
   /**
