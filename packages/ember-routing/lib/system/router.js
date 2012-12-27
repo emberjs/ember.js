@@ -59,14 +59,20 @@ Ember.Router = Ember.Object.extend({
 
   handleURL: function(url) {
     this.router.handleURL(url);
+    this.notifyPropertyChange('url');
   },
 
   transitionTo: function() {
     this.router.transitionTo.apply(this.router, arguments);
+    this.notifyPropertyChange('url');
   },
 
   generate: function() {
     return this.router.generate.apply(this.router, arguments);
+  },
+
+  isActive: function(routeName) {
+    return handlerIsActive(this, routeName);
   },
 
   send: function(name, context) {
@@ -97,6 +103,19 @@ function getHandlerFunction(router, activeViews) {
     handler.templateName = name;
     return handler;
   };
+}
+
+function handlerIsActive(router, handlerName) {
+  var handler = router.container.lookup('route:' + handlerName),
+      currentHandlerInfos = router.router.currentHandlerInfos,
+      handlerInfo;
+
+  for (var i=0, l=currentHandlerInfos.length; i<l; i++) {
+    handlerInfo = currentHandlerInfos[i];
+    if (handlerInfo.handler === handler) { return true; }
+  }
+
+  return false;
 }
 
 Ember.Router.reopenClass({

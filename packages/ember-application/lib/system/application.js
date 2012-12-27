@@ -3,7 +3,9 @@
 @submodule ember-application
 */
 
-var get = Ember.get, set = Ember.set, classify = Ember.String.classify;
+var get = Ember.get, set = Ember.set,
+    classify = Ember.String.classify,
+    decamelize = Ember.String.decamelize;
 
 Ember.Container.set = Ember.set;
 
@@ -590,6 +592,8 @@ Ember.Application.reopenClass({
   */
   buildContainer: function(namespace) {
     var container = new Ember.Container();
+    Ember.Container.defaultContainer = container;
+
     container.set = Ember.set;
     container.resolve = resolveFor(namespace);
     container.optionsForType('view', { singleton: false });
@@ -631,8 +635,11 @@ function resolveFor(namespace) {
     var nameParts = fullName.split(":"),
         type = nameParts[0], name = nameParts[1];
 
-    if (type === 'template' && Ember.TEMPLATES[name]) {
-      return Ember.TEMPLATES[name];
+    if (type === 'template') {
+      var templateName = decamelize(name);
+      if (Ember.TEMPLATES[templateName]) {
+        return Ember.TEMPLATES[templateName];
+      }
     }
 
     var className = classify(name) + classify(type);

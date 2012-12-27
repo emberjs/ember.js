@@ -1,4 +1,7 @@
-var get = Ember.get, set = Ember.set, classify = Ember.String.classify;
+var get = Ember.get, set = Ember.set,
+    classify = Ember.String.classify,
+    decamelize = Ember.String.decamelize;
+
 
 var DefaultView = Ember.View.extend(Ember._Metamorph);
 
@@ -85,14 +88,15 @@ Ember.Route = Ember.Object.extend({
       name = this.templateName;
     }
 
-    var templateName = name || this.templateName,
-        container = this.router.container,
-        className = classify(templateName),
-        view = container.lookup('view:' + templateName) || DefaultView.create();
+    name = name || this.templateName;
 
-    this.router._activeViews[templateName] = view;
+    var container = this.router.container,
+        className = classify(name),
+        view = container.lookup('view:' + name) || DefaultView.create();
 
-    set(view, 'template', container.lookup('template:' + templateName));
+    this.router._activeViews[name] = view;
+
+    set(view, 'template', container.lookup('template:' + name));
 
     options = options || {};
     var into = options.into || 'application';
