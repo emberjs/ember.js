@@ -16,7 +16,7 @@ Ember.Route = Ember.Object.extend({
         controller = container.lookup('controller:' + templateName);
 
     if (!controller) {
-      if (context && context.isSCArray) {
+      if (context && Ember.isArray(context)) {
         controller = Ember.ArrayController.extend({ content: context });
       } else if (context) {
         controller = Ember.ObjectController.extend({ content: context });
