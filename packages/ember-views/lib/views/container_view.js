@@ -1,6 +1,7 @@
 require('ember-views/views/view');
+require('ember-views/views/states');
 
-var states = {};
+var states = Ember.View.cloneStates(Ember.View.states);
 
 /**
 @module ember
@@ -404,20 +405,6 @@ Ember.ContainerView = Ember.View.extend({
     this.currentState.ensureChildrenAreInDOM(this);
   }
 });
-
-states._default = {};
-states.preRender = Ember.create(states._default);
-states.destroyed = Ember.create(states._default);
-states.inBuffer = Ember.create(states._default);
-states.hasElement = Ember.create(states._default);
-states.inDOM = Ember.create(states.hasElement);
-
-var viewStates = Ember.View.states, viewState;
-
-for (var stateName in viewStates) {
-  if (!viewStates.hasOwnProperty(stateName)) { continue; }
-  Ember.merge(states[stateName], viewStates[stateName]);
-}
 
 Ember.merge(states._default, {
   childViewsWillChange: Ember.K,
