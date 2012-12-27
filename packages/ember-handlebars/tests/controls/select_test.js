@@ -569,6 +569,41 @@ test("upon content change, the DOM should reflect the selection (#481)", functio
   equal(selectEl.selectedIndex, 1, "The DOM reflects the correct selection");
 });
 
+test("upon content change with Array-like content, the DOM should reflect the selection", function() {
+  var tom = {id: 4, name: 'Tom'},
+      sylvain = {id: 5, name: 'Sylvain'};
+
+  var proxy = Ember.ArrayProxy.create({
+    content: Ember.A([]),
+    selectedOption: sylvain
+  });
+
+  var view = Ember.View.create({
+    proxy: proxy,
+    template: Ember.Handlebars.compile(
+      '{{view Ember.Select viewName="select"' +
+      '    contentBinding="view.proxy"' +
+      '    selectionBinding="view.proxy.selectedOption"}}'
+    )
+  });
+
+  Ember.run(function() {
+    view.appendTo('#qunit-fixture');
+  });
+
+  var select = view.get('select'),
+      selectEl = select.$()[0];
+
+  equal(selectEl.selectedIndex, -1, "Precond: The DOM reflects the lack of selection");
+
+  Ember.run(function() {
+    proxy.set('content', Ember.A([tom, sylvain]));
+  });
+
+  equal(select.get('selection'), sylvain, "Selection was properly set after content change");
+  equal(selectEl.selectedIndex, 1, "The DOM reflects the correct selection");
+});
+
 test("select element should correctly initialize and update selectedIndex and bound properties when using valueBinding", function() {
   var view = Ember.View.create({
     collection: Ember.A([{name: 'Wes', value: 'w'}, {name: 'Gordon', value: 'g'}]),
