@@ -5,7 +5,7 @@ function bootApplication() {
   router = container.lookup('router:main');
 
   Ember.run(function() {
-    router._activeViews.application = AppView.create().appendTo('#qunit-fixture');
+    router._activeViews.application = container.lookup('view:application').appendTo('#qunit-fixture');
     router.startRouting();
   });
 }
@@ -34,7 +34,7 @@ module("Basic Routing", {
         template: Ember.TEMPLATES.app
       });
 
-      container.register('view', 'app');
+      container.register('view', 'application', AppView);
       container.register('router', 'main', Router);
     });
   }
@@ -55,6 +55,34 @@ test("The Homepage", function() {
   });
 
   equal(Ember.$('h3:contains(Hours)', '#qunit-fixture').length, 1, "The home template was rendered");
+});
+
+test("The Homepage register as activeView", function() {
+  Router.map(function(match) {
+    match("/").to("home");
+    match("/homepage").to("homepage");
+  });
+
+  App.HomeRoute = Ember.Route.extend({
+  });
+
+  App.HomepageRoute = Ember.Route.extend({
+  });
+
+  bootApplication();
+
+  Ember.run(function() {
+    router.handleURL("/");
+  });
+
+  ok(router._lookupActiveView('home'), '`home` active view is connected');
+
+  Ember.run(function() {
+    router.handleURL("/homepage");
+  });
+
+  ok(router._lookupActiveView('homepage'), '`homepage` active view is connected');
+  equal(router._lookupActiveView('home'), undefined, '`home` active view is disconnected');
 });
 
 test("The Homepage with explicit template name in renderTemplates", function() {

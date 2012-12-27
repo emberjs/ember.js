@@ -286,10 +286,6 @@ var Application = Ember.Application = Ember.Namespace.extend(
   buildContainer: function() {
     var container = this.container = Application.buildContainer(this);
 
-    // Register a fallback application view. App.ApplicationView will
-    // take precedence.
-    container.register('view', 'application', Ember.View.extend());
-
     return container;
   },
 
@@ -502,7 +498,7 @@ var Application = Ember.Application = Ember.Namespace.extend(
         applicationView = this.container.lookup('view:application');
 
     if (router) {
-      router._activeViews.application = applicationView;
+      router._connectActiveView('application', applicationView);
     }
 
     applicationView.appendTo(rootElement);
@@ -593,6 +589,7 @@ Ember.Application.reopenClass({
   buildContainer: function(namespace) {
     var container = new Ember.Container();
     Ember.Container.defaultContainer = container;
+    var ApplicationView = Ember.View.extend();
 
     container.set = Ember.set;
     container.resolve = resolveFor(namespace);
@@ -609,6 +606,10 @@ Ember.Application.reopenClass({
 
     container.injection('view:application', 'controller', 'controller:application');
     container.injection('view:application', 'defaultTemplate', 'template:application');
+
+    // Register a fallback application view. App.ApplicationView will
+    // take precedence.
+    container.register('view', 'application', ApplicationView);
 
     return container;
   }

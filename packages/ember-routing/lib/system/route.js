@@ -3,8 +3,6 @@ var get = Ember.get, set = Ember.set,
     decamelize = Ember.String.decamelize;
 
 
-var DefaultView = Ember.View.extend(Ember._Metamorph);
-
 Ember.Route = Ember.Object.extend({
   /**
     @private
@@ -92,11 +90,10 @@ Ember.Route = Ember.Object.extend({
 
     var container = this.router.container,
         className = classify(name),
-        view = container.lookup('view:' + name) || DefaultView.create();
-
-    this.router._activeViews[name] = view;
+        view = container.lookup('view:' + name) || container.lookup('view:default');
 
     set(view, 'template', container.lookup('template:' + name));
+    set(view, 'viewName', name);
 
     options = options || {};
     var into = options.into || 'application';
@@ -109,7 +106,7 @@ Ember.Route = Ember.Object.extend({
 
     set(view, 'controller', controller);
 
-    var parentView = this.router._activeViews[into];
+    var parentView = this.router._lookupActiveView(into);
     parentView.connectOutlet(outlet, view);
   }
 });

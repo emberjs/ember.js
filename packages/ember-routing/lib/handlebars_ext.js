@@ -66,8 +66,35 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     },
 
     connectOutlet: function(outletName, view) {
-      var outlets = get(this, '_outlets');
+      var outlets = get(this, '_outlets'),
+          container = get(this, 'container'),
+          router = container && container.lookup('router:main'),
+          oldView = get(outlets, outletName),
+          viewName = get(view, 'viewName');
+
       set(outlets, outletName, view);
+
+      if (router) {
+        if (oldView) {
+          router._disconnectActiveView(oldView);
+        }
+        if (viewName) {
+          router._connectActiveView(viewName, view);
+        }
+      }
+    },
+
+    disconnectOutlet: function(outletName) {
+      var outlets = get(this, '_outlets'),
+          container = get(this, 'container'),
+          router = container && container.lookup('router:main'),
+          view = get(outlets, outletName);
+
+      set(outlets, outletName, null);
+
+      if (router && view) {
+        router._disconnectActiveView(view);
+      }
     }
   });
 
