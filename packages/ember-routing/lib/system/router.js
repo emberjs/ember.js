@@ -68,7 +68,8 @@ Ember.Router = Ember.Object.extend({
   },
 
   isActive: function(routeName) {
-    return handlerIsActive(this, routeName);
+    var router = this.router;
+    return router.isActive.apply(router, arguments);
   },
 
   send: function(name, context) {
