@@ -235,6 +235,25 @@ test("should unregister event handlers on rerender", function() {
   ok(Ember.Handlebars.ActionHelper.registeredActions[newActionId], "After rerender completes, a new event handler was added");
 });
 
+test("should gracefully ignore actions that have been removed", function() {
+  var editHandlerWasCalled = false;
+
+  view = Ember.View.create({
+    template: Ember.Handlebars.compile('<div {{action edit}}>click me</div>'),
+    edit: function() {
+      editHandlerWasCalled = true;
+    }
+  });
+
+  appendView();
+  view._notifyWillDestroyElement();
+
+  view.$("div").trigger("click");
+
+  ok(!editHandlerWasCalled, "gracefully ignored a removed action handler");
+});
+
+
 test("should properly capture events on child elements of a container with an action", function() {
   var eventHandlerWasCalled = false;
 
