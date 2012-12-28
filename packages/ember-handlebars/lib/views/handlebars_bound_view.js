@@ -117,7 +117,7 @@ merge(states._default, {
   rerenderIfNeeded: Ember.K
 });
 
-merge(states.hasElement, {
+merge(states.inDOM, {
   rerenderIfNeeded: function(view) {
     if (get(view, 'normalizedValue') !== view._lastNormalizedValue) {
       view.rerender();
