@@ -64,7 +64,8 @@ Ember.Router = Ember.Object.extend({
   },
 
   generate: function() {
-    return this.router.generate.apply(this.router, arguments);
+    var url = this.router.generate.apply(this.router, arguments);
+    return this.location.formatURL(url);
   },
 
   isActive: function(routeName) {
