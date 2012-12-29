@@ -98,55 +98,78 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     }
   });
 
-});
+  function args(linkView, route) {
+    var ret = [ route || linkView.namedRoute ],
+        params = linkView.parameters,
+        contexts = params.contexts,
+        roots = params.roots,
+        data = params.data;
 
-function args(linkView) {
-  var ret = [ linkView.namedRoute ],
-      params = linkView.parameters,
-      contexts = params.contexts,
-      roots = params.roots,
-      data = params.data;
+    for (var i=0, l=contexts.length; i<l; i++) {
+      ret.push( Ember.Handlebars.get(roots[i], contexts[i], { data: data }) );
+    }
 
-  for (var i=0, l=contexts.length; i<l; i++) {
-    ret.push( Ember.Handlebars.get(roots[i], contexts[i], { data: data }) );
+    return ret;
   }
 
-  return ret;
-}
+  function simpleClick(event) {
+    var modifier = event.shiftKey || event.metaKey || event.altKey || event.ctrlKey,
+        secondaryClick = event.which > 1; // IE9 may return undefined
 
-var LinkView = Ember.View.extend({
-  tagName: 'a',
-  attributeBindings: 'href',
+    return !modifier && !secondaryClick;
+  }
 
-  click: function() {
-    this.router.transitionTo.apply(this.router, args(this));
-    return false;
-  },
+  var LinkView = Ember.View.extend({
+    tagName: 'a',
+    namedRoute: null,
+    currentWhen: null,
+    activeClass: 'active',
+    attributeBindings: 'href',
+    classNameBindings: 'active',
 
-  href: Ember.computed(function() {
-    // TODO: Fix this in route-recognizer
-    return this.router.generate.apply(this.router, args(this)) || "/";
-  })
-});
+    active: Ember.computed(function() {
+      var router = this.get('router'),
+          isActive = router.isActive.apply(router, args(this, this.currentWhen));
 
-LinkView.toString = function() { return "LinkView"; };
+      if (isActive) { return get(this, 'activeClass'); }
+    }).property('namedRoute', 'router.url'),
 
-Ember.Handlebars.registerHelper('linkTo', function(name) {
-  var options = [].slice.call(arguments, -1)[0];
-  var contexts = [].slice.call(arguments, 1, -1);
+    router: Ember.computed(function() {
+      return this.get('controller').container.lookup('router:main');
+    }),
 
-  var hash = options.hash;
+    click: function(event) {
+      if (!simpleClick(event)) { return true; }
 
-  var controller = options.data.keywords.controller;
-  Ember.assert("You cannot use the {{linkTo}} helper because your current template does not have a controller", controller.target);
+      var router = this.get('router');
+      router.transitionTo.apply(router, args(this));
+      return false;
+    },
 
-  hash.namedRoute = name;
-  hash.router = controller.target;
-  hash.parameters = {
-    data: options.data,
-    contexts: contexts,
-    roots: options.contexts
-  };
+    href: Ember.computed(function() {
+      var router = this.get('router');
+      return router.generate.apply(router, args(this));
+    })
+  });
 
-  return Ember.Handlebars.helpers.view.call(this, LinkView, options);
+  LinkView.toString = function() { return "LinkView"; };
+
+  Ember.Handlebars.registerHelper('linkTo', function(name) {
+    var options = [].slice.call(arguments, -1)[0];
+    var contexts = [].slice.call(arguments, 1, -1);
+
+    var hash = options.hash;
+
+    hash.namedRoute = name;
+    hash.currentWhen = hash.currentWhen || name;
+
+    hash.parameters = {
+      data: options.data,
+      contexts: contexts,
+      roots: options.contexts
+    };
+
+    return Ember.Handlebars.helpers.view.call(this, LinkView, options);
+  });
+
 });
