@@ -47,10 +47,10 @@ test("it sets an URL with a context", function() {
     template: compile('<a {{action showDashboard controller.component href=true}}>test</a>')
   });
 
-  var controller = {
+  var controller = Ember.Controller.create({
     target: router,
     component: { id: 1 }
-  };
+  });
 
   Ember.run(function() {
     view.set('controller', controller);
@@ -70,10 +70,14 @@ test("it does not trigger action with special clicks", function() {
     template: compile("<a {{action show href=true}}>Hi</a>")
   });
 
-  var controller = Ember.Object.create(Ember.ControllerMixin, {
+  var controller = Ember.Controller.create({
     target: {
       urlForEvent: function(event, context) {
         return "/foo/bar";
+      },
+
+      send: function(event, context) {
+        this[event](context);
       },
 
       show: function() {

@@ -186,6 +186,14 @@ Ember.ControllerMixin.reopen({
   */
   createOutletView: function(outletName, viewClass) {
     return viewClass.create();
+  },
+
+  urlForEvent: function(event, context) {
+    var target = get(this, 'target');
+
+    if (target) {
+      return target.urlForEvent(event, context);
+    }
   }
 });
 
