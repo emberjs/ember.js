@@ -33,7 +33,8 @@ Ember.Route = Ember.Object.extend({
   },
 
   deserialize: function(params) {
-    return this.model(params);
+    var model = this.model(params);
+    return this.currentModel = model;
   },
 
   serialize: function(model, params) {
@@ -71,9 +72,12 @@ Ember.Route = Ember.Object.extend({
     }
   },
 
-  controller: function(name) {
-    name = name || this.templateName;
+  controllerFor: function(name) {
     return this.router.container.lookup('controller:' + name);
+  },
+
+  modelFor: function(name) {
+    return this.router.container.lookup('route:' + name).currentModel;
   },
 
   renderTemplates: function(context) {
