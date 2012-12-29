@@ -1,6 +1,8 @@
 require('ember-runtime/system/object');
 require('ember-runtime/system/string');
 
+var get = Ember.get;
+
 /**
 @module ember
 @submodule ember-runtime
@@ -51,7 +53,17 @@ Ember.ControllerMixin = Ember.Mixin.create({
   */
   target: null,
 
-  store: null
+  store: null,
+
+  send: function(actionName, event) {
+    var target;
+
+    if (this.hasOwnProperty(actionName)) {
+      this[actionName](event);
+    } else if(target = get(this, 'target')) {
+      target.send(actionName, event);
+    }
+  }
 });
 
 /**

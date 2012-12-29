@@ -5,7 +5,7 @@ require('ember-runtime/system/object');
 @submodule ember-runtime
 */
 
-var indexOf = Ember.ArrayPolyfills.indexOf;
+var get = Ember.get, indexOf = Ember.ArrayPolyfills.indexOf;
 
 /**
   A Namespace is an object usually used to contain other objects or methods
@@ -33,6 +33,9 @@ Ember.Namespace = Ember.Object.extend({
   },
 
   toString: function() {
+    var name = get(this, 'name');
+    if (name) { return name; }
+
     Ember.identifyNamespaces();
     return this[Ember.GUID_KEY+'_name'];
   },

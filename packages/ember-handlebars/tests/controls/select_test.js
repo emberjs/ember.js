@@ -1,4 +1,5 @@
-var map = Ember.EnumerableUtils.map;
+var map = Ember.EnumerableUtils.map,
+    trim = Ember.$.trim;
 
 var dispatcher, select;
 
@@ -71,7 +72,8 @@ test("can have options", function() {
   append();
 
   equal(select.$('option').length, 3, "Should have three options");
-  equal(select.$().text(), "123", "Options should have content");
+  // IE 8 adds whitespace
+  equal(select.$().text().replace(/\s+/g,''), "123", "Options should have content");
 });
 
 
@@ -98,7 +100,8 @@ test("can specify the property path for an option's label and value", function()
   append();
 
   equal(select.$('option').length, 2, "Should have two options");
-  equal(select.$().text(), "YehudaTom", "Options should have content");
+  // IE 8 adds whitespace
+  equal(select.$().text().replace(/\s+/g,''), "YehudaTom", "Options should have content");
   deepEqual(map(select.$('option').toArray(), function(el) { return Ember.$(el).attr('value'); }), ["1", "2"], "Options should have values");
 });
 
@@ -125,6 +128,7 @@ test("can retrieve the current selected options when multiple=true", function() 
   select.set('content', Ember.A([yehuda, tom, david, brennain]));
   select.set('multiple', true);
   select.set('optionLabelPath', 'content.firstName');
+  select.set('optionValuePath', 'content.firstName');
 
   append();
 
@@ -214,7 +218,7 @@ test("multiple selections can be set when multiple=true", function() {
   select.set('selection', Ember.A([tom, brennain]));
 
   deepEqual(
-    select.$(':selected').map(function(){ return Ember.$(this).text();}).toArray(),
+    select.$(':selected').map(function(){ return trim(Ember.$(this).text());}).toArray(),
     ['Tom', 'Brennain'],
     "After changing it, selection should be correct");
 });
@@ -238,7 +242,7 @@ test("multiple selections can be set by changing in place the selection array wh
   selection.replace(0, selection.get('length'), Ember.A([david, brennain]));
 
   deepEqual(
-    select.$(':selected').map(function(){ return Ember.$(this).text();}).toArray(),
+    select.$(':selected').map(function(){ return trim(Ember.$(this).text());}).toArray(),
     ['David', 'Brennain'],
     "After updating the selection array in-place, selection should be correct");
 });
@@ -372,7 +376,7 @@ test("a prompt can be specified", function() {
 
   equal(select.$('option').length, 3, "There should be three options");
   equal(select.$()[0].selectedIndex, 0, "By default, the prompt is selected in the DOM");
-  equal(select.$('option:selected').text(), 'Pick a person', "By default, the prompt is selected in the DOM");
+  equal(trim(select.$('option:selected').text()), 'Pick a person', "By default, the prompt is selected in the DOM");
   equal(select.$().val(), '', "By default, the prompt has no value");
 
   equal(select.get('selection'), null, "When the prompt is selected, the selection should be null");

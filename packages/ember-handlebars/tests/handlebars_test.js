@@ -2,6 +2,7 @@
 
 var get = Ember.get, set = Ember.set;
 var forEach = Ember.EnumerableUtils.forEach;
+var trim = Ember.$.trim;
 
 var firstGrandchild = function(view) {
   return get(get(view, 'childViews').objectAt(0), 'childViews').objectAt(0);
@@ -1719,7 +1720,7 @@ test("should be able to use unbound helper in #each helper (with objects)", func
 
 test("should work with precompiled templates", function() {
   var templateString = Ember.Handlebars.precompile("{{view.value}}"),
-      compiledTemplate = Ember.Handlebars.template(eval('('+templateString+')'));
+      compiledTemplate = Ember.Handlebars.template(eval(templateString));
   view = Ember.View.create({
     value: "rendered",
     template: compiledTemplate
@@ -1822,7 +1823,7 @@ test("should expose a controller keyword that persists through Ember.ContainerVi
     get(containerView, 'childViews').pushObject(viewInstanceToBeInserted);
   });
 
-  equal(viewInstanceToBeInserted.$().text(), "bar", "renders value from parent's controller");
+  equal(trim(viewInstanceToBeInserted.$().text()), "bar", "renders value from parent's controller");
 });
 
 test("should expose a view keyword", function() {

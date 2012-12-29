@@ -27,7 +27,7 @@ function checkTemplate(templateName) {
   Ember.run(function() {
     view.createElement();
   });
-  equal(view.$().text(), 'Tobias takes teamocil', 'template works');
+  equal(Ember.$.trim(view.$().text()), 'Tobias takes teamocil', 'template works');
   Ember.run(function() {
     view.destroy();
   });
@@ -61,5 +61,5 @@ test('template with type text/x-raw-handlebars should be parsed', function() {
   ok(Ember.TEMPLATES['funkyTemplate'], 'template with name funkyTemplate available');
 
   // This won't even work with Ember templates
-  equal(Ember.TEMPLATES['funkyTemplate']({ name: 'Tobias' }), "Tobias");
+  equal(Ember.$.trim(Ember.TEMPLATES['funkyTemplate']({ name: 'Tobias' })), "Tobias");
 });

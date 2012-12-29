@@ -122,6 +122,35 @@ test("appendChild should work inside a template", function() {
      "The appended child is visible");
 });
 
+test("rerender should throw inside a template", function() {
+  raises(function() {
+    Ember.run(function() {
+      var renderCount = 0;
+      view = Ember.View.create({
+        template: function(context, options) {
+          var view = options.data.view;
+
+          var child1 = view.appendChild(Ember.View, {
+            template: function(context, options) {
+              renderCount++;
+              options.data.buffer.push(String(renderCount));
+            }
+          });
+
+          var child2 = view.appendChild(Ember.View, {
+            template: function(context, options) {
+              options.data.buffer.push("Inside child2");
+              child1.rerender();
+            }
+          });
+        }
+      });
+
+      view.appendTo("#qunit-fixture");
+    });
+  }, /Something you did caused a view to re-render after it rendered but before it was inserted into the DOM./);
+});
+
 module("views/view/view_lifecycle_test - in DOM", {
   teardown: function() {
     if (view) {

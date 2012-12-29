@@ -1,5 +1,3 @@
-require('ember-routing');
-
 // FIXME: Move this to an integration test pacakge with proper requires
 try {
   require('ember-handlebars');
@@ -23,7 +21,7 @@ test("it generates the URL from the target", function() {
     template: compile("<a {{action show href=true}}>Hi</a>")
   });
 
-  var controller = Ember.Object.create(Ember.ControllerMixin, {
+  var controller = Ember.Object.createWithMixins(Ember.ControllerMixin, {
     target: {
       urlForEvent: function(event, context) {
         return "/foo/bar";
@@ -59,3 +57,4 @@ test("it does not generate the URL when href property is not specified", functio
 
   ok(!view.$().html().match(/href=['"]\/foo\/bar['"]/), "The html (" + view.$().html() + ") has the href /foo/bar in it");
 });
+

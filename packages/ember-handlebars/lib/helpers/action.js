@@ -264,7 +264,7 @@ EmberHandlebars.registerHelper('action', function(actionName) {
   if (hash.target) {
     target = handlebarsGet(this, hash.target, options);
   } else if (controller = options.data.keywords.controller) {
-    target = get(controller, 'target');
+    target = controller;
   }
 
   action.target = target = target || view;

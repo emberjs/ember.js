@@ -149,8 +149,8 @@ Ember.ControllerMixin.reopen({
       viewClass = get(namespace, viewClassName);
       controller = get(controllers, name + 'Controller');
 
-      Ember.assert("The name you supplied " + name + " did not resolve to a view " + viewClassName, !!viewClass);
-      Ember.assert("The name you supplied " + name + " did not resolve to a controller " + name + 'Controller', (!!controller && !!context) || !context);
+      Ember.assert("The name you supplied '" + name + "' did not resolve to a view " + viewClassName, !!viewClass);
+      Ember.assert("The name you supplied '" + name + "' did not resolve to a controller " + name + 'Controller', (!!controller && !!context) || !context);
     }
 
     if (controller && context) { set(controller, 'content', context); }
@@ -186,6 +186,14 @@ Ember.ControllerMixin.reopen({
   */
   createOutletView: function(outletName, viewClass) {
     return viewClass.create();
+  },
+
+  urlForEvent: function(event, context) {
+    var target = get(this, 'target');
+
+    if (target) {
+      return target.urlForEvent(event, context);
+    }
   }
 });
 

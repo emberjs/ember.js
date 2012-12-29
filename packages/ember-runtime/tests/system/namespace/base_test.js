@@ -79,3 +79,19 @@ test("Lowercase namespaces should be deprecated", function() {
   // Ignore backtrace
   equal(loggerWarning.split("\n")[0], "DEPRECATION: Namespaces should not begin with lowercase.");
 });
+
+test("A namespace can be assigned a custom name", function() {
+  var nsA = Ember.Namespace.create({
+    name: "NamespaceA"
+  });
+
+  var nsB = lookup.NamespaceB = Ember.Namespace.create({
+    name: "CustomNamespaceB"
+  });
+
+  nsA.Foo = Ember.Object.extend();
+  nsB.Foo = Ember.Object.extend();
+
+  equal(nsA.Foo.toString(), "NamespaceA.Foo", "The namespace's name is used when the namespace is not in the lookup object");
+  equal(nsB.Foo.toString(), "CustomNamespaceB.Foo", "The namespace's name is used when the namespace is in the lookup object");
+});

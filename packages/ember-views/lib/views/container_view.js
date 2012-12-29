@@ -414,31 +414,7 @@ Ember.merge(states._default, {
 
 Ember.merge(states.inBuffer, {
   childViewsDidChange: function(parentView, views, start, added) {
-    var buffer = parentView.buffer,
-        startWith, prev, prevBuffer, view;
-
-    // Determine where to begin inserting the child view(s) in the
-    // render buffer.
-    if (start === 0) {
-      // If views were inserted at the beginning, prepend the first
-      // view to the render buffer, then begin inserting any
-      // additional views at the beginning.
-      view = views[start];
-      startWith = start + 1;
-      view.renderToBuffer(buffer, 'prepend');
-    } else {
-      // Otherwise, just insert them at the same place as the child
-      // views mutation.
-      view = views[start - 1];
-      startWith = start;
-    }
-
-    for (var i=startWith; i<start+added; i++) {
-      prev = view;
-      view = views[i];
-      prevBuffer = prev.buffer;
-      view.renderToBuffer(prevBuffer, 'insertAfter');
-    }
+    throw new Error('You cannot modify child views while in the inBuffer state');
   }
 });
 

@@ -3,6 +3,7 @@ require('ember-routing');
 var view;
 var application;
 var set = Ember.set, get = Ember.get;
+var trim = Ember.$.trim;
 
 module("Ember.Application", {
   setup: function() {
@@ -226,6 +227,5 @@ test("Minimal Application initialized with just an application template", functi
     });
   });
 
-  equal(Ember.$('#qunit-fixture').text(), 'Hello World');
+  equal(trim(Ember.$('#qunit-fixture').text()), 'Hello World');
 });
-

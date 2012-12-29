@@ -166,7 +166,7 @@ test("The Homepage with a `setupControllers` hook modifying other controllers", 
 
   App.HomeRoute = Ember.Route.extend({
     setupControllers: function(controller) {
-      set(this.controller('home'), 'hours', Ember.A([
+      set(this.controllerFor('home'), 'hours', Ember.A([
         "Monday through Friday: 9am to 5pm",
         "Saturday: Noon to Midnight",
         "Sunday: Noon to 6pm"
@@ -204,9 +204,9 @@ test("The Homepage getting its controller context via model", function() {
     },
 
     setupControllers: function(controller, model) {
-      equal(this.controller(), controller);
+      equal(this.controllerFor('home'), controller);
 
-      set(this.controller('home'), 'hours', model);
+      set(this.controllerFor('home'), 'hours', model);
     }
   });
 
@@ -607,6 +607,54 @@ test("transitioning multiple times in a single run loop only sets the URL once",
 
   equal(urlSetCount, 1);
   equal(router.get('location').getURL(), "/bar");
+});
+
+test("It is possible to get the model from a parent route", function() {
+  expect(3);
+
+  Router.map(function(match) {
+    match("/").to("index");
+    match("/posts/:post_id").to("post", function(match) {
+      match("/comments").to("comments");
+    });
+  });
+
+  var post1 = {}, post2 = {}, post3 = {}, currentPost;
+
+  var posts = {
+    1: post1,
+    2: post2,
+    3: post3
+  };
+
+  App.PostRoute = Ember.Route.extend({
+    model: function(params) {
+      return posts[params.post_id];
+    }
+  });
+
+  App.CommentsRoute = Ember.Route.extend({
+    model: function() {
+      equal(this.modelFor('post'), currentPost);
+    }
+  });
+
+  bootApplication();
+
+  Ember.run(function() {
+    currentPost = post1;
+    router.handleURL("/posts/1/comments");
+  });
+
+  Ember.run(function() {
+    currentPost = post2;
+    router.handleURL("/posts/2/comments");
+  });
+
+  Ember.run(function() {
+    currentPost = post3;
+    router.handleURL("/posts/3/comments");
+  });
 });
 
 // TODO: Parent context change

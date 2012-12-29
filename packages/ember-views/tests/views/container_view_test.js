@@ -22,7 +22,7 @@ test("should be able to insert views after the DOM representation is created", f
     container.get('childViews').pushObject(view);
   });
 
-  equal(container.$().text(), "This is my moment");
+  equal(Ember.$.trim(container.$().text()), "This is my moment");
 
   Ember.run(function(){
     container.destroy();
@@ -156,7 +156,7 @@ test("if a ContainerView starts with a currentView, it is rendered as a child vi
     container.appendTo('#qunit-fixture');
   });
 
-  equal(container.$().text(), "This is the main view.", "should render its child");
+  equal(Ember.$.trim(container.$().text()), "This is the main view.", "should render its child");
   equal(get(container, 'childViews.length'), 1, "should have one child view");
   equal(get(container, 'childViews').objectAt(0), mainView, "should have the currentView as the only child view");
   equal(mainView.get('parentView'), container, "parentView is setup");
@@ -215,7 +215,7 @@ test("if a ContainerView starts with no currentView and then one is set, the Con
     set(container, 'currentView', mainView);
   });
 
-  equal(container.$().text(), "This is the main view.", "should render its child");
+  equal(Ember.$.trim(container.$().text()), "This is the main view.", "should render its child");
   equal(get(container, 'childViews.length'), 1, "should have one child view");
   equal(get(container, 'childViews').objectAt(0), mainView, "should have the currentView as the only child view");
 });
@@ -302,7 +302,7 @@ test("if a ContainerView starts with a currentView and then a different currentV
 
   equal(mainView.isDestroyed, true, 'should destroy the previous currentView.');
 
-  equal(container.$().text(), "This is the secondary view.", "should render its child");
+  equal(Ember.$.trim(container.$().text()), "This is the secondary view.", "should render its child");
   equal(get(container, 'childViews.length'), 1, "should have one child view");
   equal(get(container, 'childViews').objectAt(0), secondaryView, "should have the currentView as the only child view");
 });
@@ -343,7 +343,8 @@ test("should be able to modify childViews many times during an run loop", functi
     childViews.pushObject(three);
   });
 
-  equal(container.$().text(), 'onetwothree');
+  // Remove whitespace added by IE 8
+  equal(container.$().text().replace(/\s+/g,''), 'onetwothree');
 });
 
 test("should be able to modify childViews then remove the ContainerView in same run loop", function () {
@@ -435,7 +436,8 @@ test("should be able to modify childViews then rerender then modify again the Co
 
   equal(one.count, 1, 'rendered child only once');
   equal(two.count, 1, 'rendered child only once');
-  equal(container.$().text(), 'onetwo');
+  // Remove whitespace added by IE 8
+  equal(container.$().text().replace(/\s+/g, ''), 'onetwo');
 });
 
 test("should be able to modify childViews then rerender again the ContainerView in same run loop and then modify again", function () {
@@ -470,7 +472,8 @@ test("should be able to modify childViews then rerender again the ContainerView 
 
   equal(one.count, 1, 'rendered child only once');
   equal(two.count, 1, 'rendered child only once');
-  equal(container.$().text(), 'onetwo');
+  // IE 8 adds a line break but this shouldn't affect validity
+  equal(container.$().text().replace(/\s/g, ''), 'onetwo');
 });
 
 test("should invalidate `element` on itself and childViews when being rendered by ensureChildrenAreInDOM", function () {

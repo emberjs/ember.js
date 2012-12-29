@@ -20,6 +20,17 @@
         testEl.innerHTML = "<div></div>";
         testEl.firstChild.innerHTML = "<script></script>";
         return testEl.firstChild.innerHTML === '';
+      })(),
+
+
+      // IE 8 (and likely earlier) likes to move whitespace preceeding
+      // a script tag to appear after it. This means that we can
+      // accidentally remove whitespace when updating a morph.
+      movesWhitespace = (function() {
+        var testEl = document.createElement('div');
+        testEl.innerHTML = "Test: <script type='text/x-placeholder'></script>Value";
+        return testEl.childNodes[0].nodeValue === 'Test:' &&
+                testEl.childNodes[2].nodeValue === ' Value';
       })();
 
   // Constructor that supports either Metamorph('foo') or new
@@ -53,11 +64,21 @@
   };
 
   startTagFunc = function() {
-    return "<script id='" + this.start + "' type='text/x-placeholder'></script>";
+    /*
+     * We replace chevron by its hex code in order to prevent escaping problems.
+     * Check this thread for more explaination:
+     * http://stackoverflow.com/questions/8231048/why-use-x3c-instead-of-when-generating-html-from-javascript
+     */
+    return "<script id='" + this.start + "' type='text/x-placeholder'>\x3C/script>";
   };
 
   endTagFunc = function() {
-    return "<script id='" + this.end + "' type='text/x-placeholder'></script>";
+    /*
+     * We replace chevron by its hex code in order to prevent escaping problems.
+     * Check this thread for more explaination:
+     * http://stackoverflow.com/questions/8231048/why-use-x3c-instead-of-when-generating-html-from-javascript
+     */
+    return "<script id='" + this.end + "' type='text/x-placeholder'>\x3C/script>";
   };
 
   // If we have the W3C range API, this process is relatively straight forward.
@@ -155,6 +176,41 @@
       _default: [ 0, "", "" ]
     };
 
+    var findChildById = function(element, id) {
+      if (element.getAttribute('id') === id) { return element; }
+
+      var len = element.childNodes.length, idx, node, found;
+      for (idx=0; idx<len; idx++) {
+        node = element.childNodes[idx];
+        found = node.nodeType === 1 && findChildById(node, id);
+        if (found) { return found; }
+      }
+    };
+
+    var setInnerHTML = function(element, html) {
+      var matches = [];
+      if (movesWhitespace) {
+        // Right now we only check for script tags with ids with the
+        // goal of targeting morphs.
+        html = html.replace(/(\s+)(<script id='([^']+)')/g, function(match, spaces, tag, id) {
+          matches.push([id, spaces]);
+          return tag;
+        });
+      }
+
+      element.innerHTML = html;
+
+      // If we have to do any whitespace adjustments do them now
+      if (matches.length > 0) {
+        var len = matches.length, idx;
+        for (idx=0; idx<len; idx++) {
+          var script = findChildById(element, matches[idx][0]),
+              node = document.createTextNode(matches[idx][1]);
+          script.parentNode.insertBefore(node, script);
+        }
+      }
+    };
+
     /**
      * Given a parent node and some HTML, generate a set of nodes. Return the first
      * node, which will allow us to traverse the rest using nextSibling.
@@ -168,7 +224,8 @@
       if (needsShy) { html = '&shy;'+html; }
 
       var element = document.createElement('div');
-      element.innerHTML = start + html + end;
+
+      setInnerHTML(element, start + html + end);
 
       for (var i=0; i<=depth; i++) {
         element = element.firstChild;
