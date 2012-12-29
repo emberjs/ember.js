@@ -62,9 +62,11 @@ var appendView = function() {
   Ember.run(function() { view.appendTo('#qunit-fixture'); });
 };
 
+require('container');
+
 var additionalTeardown;
 var originalLookup = Ember.lookup, lookup;
-var TemplateTests;
+var TemplateTests, container;
 
 /**
   This module specifically tests integration with Handlebars and Ember-specific
@@ -77,6 +79,9 @@ module("Ember.View - handlebars integration", {
   setup: function() {
     Ember.lookup = lookup = { Ember: Ember };
     lookup.TemplateTests = TemplateTests = Ember.Namespace.create();
+
+    container = new Ember.Container();
+    container.optionsForType('template', { instantiate: false });
   },
 
   teardown: function() {
@@ -91,11 +96,11 @@ module("Ember.View - handlebars integration", {
 });
 
 test("template view should call the function of the associated template", function() {
+  container.register('template', 'testTemplate', Ember.Handlebars.compile("<h1 id='twas-called'>template was called</h1>"));
+
   view = Ember.View.create({
-    templateName: 'test_template',
-    templates: Ember.Object.create({
-      test_template: Ember.Handlebars.compile("<h1 id='twas-called'>template was called</h1>")
-    })
+    container: container,
+    templateName: 'testTemplate'
   });
 
   appendView();
@@ -104,8 +109,11 @@ test("template view should call the function of the associated template", functi
 });
 
 test("template view should call the function of the associated template with itself as the context", function() {
+  container.register('template', 'testTemplate', Ember.Handlebars.compile("<h1 id='twas-called'>template was called for {{view.personName}}. Yea {{view.personName}}</h1>"));
+
   view = Ember.View.createWithMixins({
-    templateName: 'test_template',
+    container: container,
+    templateName: 'testTemplate',
 
     _personName: "Tom DAAAALE",
     _i: 0,
@@ -113,10 +121,6 @@ test("template view should call the function of the associated template with its
     personName: Ember.computed(function() {
       this._i++;
       return this._personName + this._i;
-    }),
-
-    templates: Ember.Object.create({
-      test_template: Ember.Handlebars.compile("<h1 id='twas-called'>template was called for {{view.personName}}. Yea {{view.personName}}</h1>")
     })
   });
 
@@ -203,24 +207,22 @@ test("should not escape HTML if string is a Handlebars.SafeString", function() {
 });
 
 test("child views can be inserted using the {{view}} Handlebars helper", function() {
-  var templates = Ember.Object.create({
-    nester: Ember.Handlebars.compile("<h1 id='hello-world'>Hello {{world}}</h1>{{view \"TemplateTests.LabelView\"}}"),
-    nested: Ember.Handlebars.compile("<div id='child-view'>Goodbye {{cruel}} {{world}}</div>")
-  });
+  container.register('template', 'nester', Ember.Handlebars.compile("<h1 id='hello-world'>Hello {{world}}</h1>{{view \"TemplateTests.LabelView\"}}"));
+  container.register('template', 'nested', Ember.Handlebars.compile("<div id='child-view'>Goodbye {{cruel}} {{world}}</div>"));
 
   var context = {
     world: "world!"
   };
 
   TemplateTests.LabelView = Ember.View.extend({
+    container: container,
     tagName: "aside",
-    templateName: 'nested',
-    templates: templates
+    templateName: 'nested'
   });
 
   view = Ember.View.create({
+    container: container,
     templateName: 'nester',
-    templates: templates,
     context: context
   });
 
@@ -250,31 +252,29 @@ test("should accept relative paths to views", function() {
 });
 
 test("child views can be inserted inside a bind block", function() {
-  var templates = Ember.Object.create({
-    nester: Ember.Handlebars.compile("<h1 id='hello-world'>Hello {{world}}</h1>{{view \"TemplateTests.BQView\"}}"),
-    nested: Ember.Handlebars.compile("<div id='child-view'>Goodbye {{#with content}}{{blah}} {{view \"TemplateTests.OtherView\"}}{{/with}} {{world}}</div>"),
-    other: Ember.Handlebars.compile("cruel")
-  });
+  container.register('template', 'nester', Ember.Handlebars.compile("<h1 id='hello-world'>Hello {{world}}</h1>{{view \"TemplateTests.BQView\"}}"));
+  container.register('template', 'nested', Ember.Handlebars.compile("<div id='child-view'>Goodbye {{#with content}}{{blah}} {{view \"TemplateTests.OtherView\"}}{{/with}} {{world}}</div>"));
+  container.register('template', 'other', Ember.Handlebars.compile("cruel"));
 
   var context = {
     world: "world!"
   };
 
   TemplateTests.BQView = Ember.View.extend({
+    container: container,
     tagName: "blockquote",
-    templateName: 'nested',
-    templates: templates
+    templateName: 'nested'
   });
 
   TemplateTests.OtherView = Ember.View.extend({
-    templates: templates,
+    container: container,
     templateName: 'other'
   });
 
   view = Ember.View.create({
+    container: container,
     context: context,
-    templateName: 'nester',
-    templates: templates
+    templateName: 'nester'
   });
 
   Ember.set(context, 'content', Ember.Object.create({ blah: "wot" }));
@@ -334,13 +334,11 @@ test("Ember.View should bind properties in the grandparent context", function() 
 });
 
 test("Ember.View should update when a property changes and the bind helper is used", function() {
-  var templates = Ember.Object.create({
-   foo: Ember.Handlebars.compile('<h1 id="first">{{#with view.content}}{{bind "wham"}}{{/with}}</h1>')
-  });
+  container.register('template', 'foo', Ember.Handlebars.compile('<h1 id="first">{{#with view.content}}{{bind "wham"}}{{/with}}</h1>'));
 
   view = Ember.View.create({
+    container: container,
     templateName: 'foo',
-    templates: templates,
 
     content: Ember.Object.create({
       wham: 'bam',
@@ -359,13 +357,15 @@ test("Ember.View should update when a property changes and the bind helper is us
 });
 
 test("Ember.View should update when a property changes and no bind helper is used", function() {
+  container.register('template', 'foo', Ember.Handlebars.compile('<h1 id="first">{{#with view.content}}{{wham}}{{/with}}</h1>'));
+
   var templates = Ember.Object.create({
    foo: Ember.Handlebars.compile('<h1 id="first">{{#with view.content}}{{wham}}{{/with}}</h1>')
   });
 
   view = Ember.View.create({
+    container: container,
     templateName: 'foo',
-    templates: templates,
 
     content: Ember.Object.create({
       wham: 'bam',
@@ -385,13 +385,11 @@ test("Ember.View should update when a property changes and no bind helper is use
 });
 
 test("Ember.View should update when the property used with the #with helper changes", function() {
-  var templates = Ember.Object.create({
-   foo: Ember.Handlebars.compile('<h1 id="first">{{#with view.content}}{{wham}}{{/with}}</h1>')
-  });
+  container.register('template', 'foo', Ember.Handlebars.compile('<h1 id="first">{{#with view.content}}{{wham}}{{/with}}</h1>'));
 
   view = Ember.View.create({
+    container: container,
     templateName: 'foo',
-    templates: templates,
 
     content: Ember.Object.create({
       wham: 'bam',
@@ -413,13 +411,11 @@ test("Ember.View should update when the property used with the #with helper chan
 });
 
 test("should not update when a property is removed from the view", function() {
-  var templates = Ember.Object.create({
-    foo: Ember.Handlebars.compile('<h1 id="first">{{#bind "view.content"}}{{#bind "foo"}}{{bind "baz"}}{{/bind}}{{/bind}}</h1>')
-  });
+  container.register('template', 'foo', Ember.Handlebars.compile('<h1 id="first">{{#bind "view.content"}}{{#bind "foo"}}{{bind "baz"}}{{/bind}}{{/bind}}</h1>'));
 
   view = Ember.View.create({
+    container: container,
     templateName: 'foo',
-    templates: templates,
 
     content: Ember.Object.create({
       foo: Ember.Object.create({
@@ -456,16 +452,12 @@ test("should not update when a property is removed from the view", function() {
 });
 
 test("Handlebars templates update properties if a content object changes", function() {
-  var templates;
-
-  templates = Ember.Object.create({
-    menu: Ember.Handlebars.compile('<h1>Today\'s Menu</h1>{{#bind "view.coffee"}}<h2>{{color}} coffee</h2><span id="price">{{bind "price"}}</span>{{/bind}}')
-  });
+  container.register('template', 'menu', Ember.Handlebars.compile('<h1>Today\'s Menu</h1>{{#bind "view.coffee"}}<h2>{{color}} coffee</h2><span id="price">{{bind "price"}}</span>{{/bind}}'));
 
   Ember.run(function() {
     view = Ember.View.create({
+      container: container,
       templateName: 'menu',
-      templates: templates,
 
       coffee: Ember.Object.create({
         color: 'brown',
@@ -511,15 +503,11 @@ test("Handlebars templates update properties if a content object changes", funct
 });
 
 test("Template updates correctly if a path is passed to the bind helper", function() {
-  var templates;
-
-  templates = Ember.Object.create({
-    menu: Ember.Handlebars.compile('<h1>{{bind "view.coffee.price"}}</h1>')
-  });
+  container.register('template', 'menu', Ember.Handlebars.compile('<h1>{{bind "view.coffee.price"}}</h1>'));
 
   view = Ember.View.create({
+    container: container,
     templateName: 'menu',
-    templates: templates,
 
     coffee: Ember.Object.create({
       price: '$4'
@@ -580,15 +568,11 @@ test("Template updates correctly if a path is passed to the bind helper", functi
 // });
 
 test("should update the block when object passed to #if helper changes", function() {
-  var templates;
-
-  templates = Ember.Object.create({
-    menu: Ember.Handlebars.compile('<h1>{{#if view.inception}}{{view.INCEPTION}}{{/if}}</h1>')
-  });
+  container.register('template', 'menu', Ember.Handlebars.compile('<h1>{{#if view.inception}}{{view.INCEPTION}}{{/if}}</h1>'));
 
   view = Ember.View.create({
+    container: container,
     templateName: 'menu',
-    templates: templates,
 
     INCEPTION: "BOOOOOOOONG doodoodoodoodooodoodoodoo",
     inception: 'OOOOoooooOOOOOOooooooo'
@@ -616,15 +600,11 @@ test("should update the block when object passed to #if helper changes", functio
 });
 
 test("should update the block when object passed to #unless helper changes", function() {
-  var templates;
-
-  templates = Ember.Object.create({
-    advice: Ember.Handlebars.compile('<h1>{{#unless view.onDrugs}}{{view.doWellInSchool}}{{/unless}}</h1>')
-  });
+  container.register('template', 'advice', Ember.Handlebars.compile('<h1>{{#unless view.onDrugs}}{{view.doWellInSchool}}{{/unless}}</h1>'));
 
   view = Ember.View.create({
+    container: container,
     templateName: 'advice',
-    templates: templates,
 
     onDrugs: true,
     doWellInSchool: "Eat your vegetables"
@@ -652,15 +632,11 @@ test("should update the block when object passed to #unless helper changes", fun
 });
 
 test("should update the block when object passed to #if helper changes and an inverse is supplied", function() {
-  var templates;
-
-  templates = Ember.Object.create({
-    menu: Ember.Handlebars.compile('<h1>{{#if view.inception}}{{view.INCEPTION}}{{else}}{{view.SAD}}{{/if}}</h1>')
-  });
+  container.register('template', 'menu', Ember.Handlebars.compile('<h1>{{#if view.inception}}{{view.INCEPTION}}{{else}}{{view.SAD}}{{/if}}</h1>'));
 
   view = Ember.View.create({
+    container: container,
     templateName: 'menu',
-    templates: templates,
 
     INCEPTION: "BOOOOOOOONG doodoodoodoodooodoodoodoo",
     inception: false,
@@ -710,32 +686,25 @@ test("should update the block when object passed to #if helper changes and an in
 //   equal(view.$('h1').text(), 'Country: Brasilia', "returns localized value");
 // });
 
-test("Template views return a no-op function if their template cannot be found", function() {
+test("Template views return undefined if their template cannot be found", function() {
   view = Ember.View.create({
     templateName: 'cantBeFound'
   });
 
-  raises(function() {
-    var template = get(view, 'template');
-
-    ok(Ember.typeOf(template) === 'function', 'template should be a function');
-    equal(template(), '', 'should return an empty string');
-  });
+  equal(get(view, 'template'), undefined);
 });
 
 test("Template views add an elementId to child views created using the view helper", function() {
-  var templates = Ember.Object.create({
-    parent: Ember.Handlebars.compile('<div>{{view "TemplateTests.ChildView"}}</div>'),
-    child: Ember.Handlebars.compile("I can't believe it's not butter.")
-  });
+  container.register('template', 'parent', Ember.Handlebars.compile('<div>{{view "TemplateTests.ChildView"}}</div>'));
+  container.register('template', 'child', Ember.Handlebars.compile("I can't believe it's not butter."));
 
   TemplateTests.ChildView = Ember.View.extend({
-    templates: templates,
+    container: container,
     templateName: 'child'
   });
 
   view = Ember.View.create({
-    templates: templates,
+    container: container,
     templateName: 'parent'
   });
 
@@ -745,14 +714,12 @@ test("Template views add an elementId to child views created using the view help
 });
 
 test("views set the template of their children to a passed block", function() {
-  var templates = Ember.Object.create({
-    parent: Ember.Handlebars.compile('<h1>{{#view "TemplateTests.NoTemplateView"}}<span>It worked!</span>{{/view}}</h1>')
-  });
+  container.register('template', 'parent', Ember.Handlebars.compile('<h1>{{#view "TemplateTests.NoTemplateView"}}<span>It worked!</span>{{/view}}</h1>'));
 
   TemplateTests.NoTemplateView = Ember.View.extend();
 
   view = Ember.View.create({
-    templates: templates,
+    container: container,
     templateName: 'parent'
   });
 
@@ -761,9 +728,7 @@ test("views set the template of their children to a passed block", function() {
 });
 
 test("views render their template in the context of the parent view's context", function() {
-  var templates = Ember.Object.create({
-    parent: Ember.Handlebars.compile('<h1>{{#with content}}{{#view}}{{firstName}} {{lastName}}{{/view}}{{/with}}</h1>')
-  });
+  container.register('template', 'parent', Ember.Handlebars.compile('<h1>{{#with content}}{{#view}}{{firstName}} {{lastName}}{{/view}}{{/with}}</h1>'));
 
   var context = {
     content: {
@@ -773,7 +738,7 @@ test("views render their template in the context of the parent view's context", 
   };
 
   view = Ember.View.create({
-    templates: templates,
+    container: container,
     templateName: 'parent',
     context: context
   });
@@ -783,12 +748,10 @@ test("views render their template in the context of the parent view's context", 
 });
 
 test("views make a view keyword available that allows template to reference view context", function() {
-  var templates = Ember.Object.create({
-    parent: Ember.Handlebars.compile('<h1>{{#with view.content}}{{#view subview}}{{view.firstName}} {{lastName}}{{/view}}{{/with}}</h1>')
-  });
+  container.register('template', 'parent', Ember.Handlebars.compile('<h1>{{#with view.content}}{{#view subview}}{{view.firstName}} {{lastName}}{{/view}}{{/with}}</h1>'));
 
   view = Ember.View.create({
-    templates: templates,
+    container: container,
     templateName: 'parent',
 
     content: {
@@ -983,13 +946,11 @@ test("itemViewClass works in the #collection helper relatively", function() {
 });
 
 test("should update boundIf blocks if the conditional changes", function() {
-  var templates = Ember.Object.create({
-   foo: Ember.Handlebars.compile('<h1 id="first">{{#boundIf "view.content.myApp.isEnabled"}}{{view.content.wham}}{{/boundIf}}</h1>')
-  });
+  container.register('template', 'foo', Ember.Handlebars.compile('<h1 id="first">{{#boundIf "view.content.myApp.isEnabled"}}{{view.content.wham}}{{/boundIf}}</h1>'));
 
   view = Ember.View.create({
+    container: container,
     templateName: 'foo',
-    templates: templates,
 
     content: Ember.Object.create({
       wham: 'bam',
@@ -1070,15 +1031,13 @@ test("boundIf should support parent access", function(){
 });
 
 test("{{view}} id attribute should set id on layer", function() {
-  var templates = Ember.Object.create({
-    foo: Ember.Handlebars.compile('{{#view "TemplateTests.IdView" id="bar"}}baz{{/view}}')
-  });
+  container.register('template', 'foo', Ember.Handlebars.compile('{{#view "TemplateTests.IdView" id="bar"}}baz{{/view}}'));
 
   TemplateTests.IdView = Ember.View;
 
   view = Ember.View.create({
-    templateName: 'foo',
-    templates: templates
+    container: container,
+    templateName: 'foo'
   });
 
   appendView();
@@ -1088,15 +1047,13 @@ test("{{view}} id attribute should set id on layer", function() {
 });
 
 test("{{view}} class attribute should set class on layer", function() {
-  var templates = Ember.Object.create({
-    foo: Ember.Handlebars.compile('{{#view "TemplateTests.IdView" class="bar"}}baz{{/view}}')
-  });
+  container.register('template', 'foo', Ember.Handlebars.compile('{{#view "TemplateTests.IdView" class="bar"}}baz{{/view}}'));
 
   TemplateTests.IdView = Ember.View;
 
   view = Ember.View.create({
-    templateName: 'foo',
-    templates: templates
+    container: container,
+    templateName: 'foo'
   });
 
   appendView();
@@ -1265,16 +1222,14 @@ test("{{view}} should evaluate other attributes bindings set in the current cont
 });
 
 test("{{view}} should be able to bind class names to truthy properties", function() {
-  var templates = Ember.Object.create({
-    template: Ember.Handlebars.compile('{{#view "TemplateTests.classBindingView" classBinding="view.number:is-truthy"}}foo{{/view}}')
-  });
+  container.register('template', 'template', Ember.Handlebars.compile('{{#view "TemplateTests.classBindingView" classBinding="view.number:is-truthy"}}foo{{/view}}'));
 
   TemplateTests.classBindingView = Ember.View.extend();
 
   view = Ember.View.create({
+    container: container,
     number: 5,
-    templateName: 'template',
-    templates: templates
+    templateName: 'template'
   });
 
   appendView();
@@ -1289,16 +1244,14 @@ test("{{view}} should be able to bind class names to truthy properties", functio
 });
 
 test("{{view}} should be able to bind class names to truthy or falsy properties", function() {
-  var templates = Ember.Object.create({
-    template: Ember.Handlebars.compile('{{#view "TemplateTests.classBindingView" classBinding="view.number:is-truthy:is-falsy"}}foo{{/view}}')
-  });
+  container.register('template', 'template', Ember.Handlebars.compile('{{#view "TemplateTests.classBindingView" classBinding="view.number:is-truthy:is-falsy"}}foo{{/view}}'));
 
   TemplateTests.classBindingView = Ember.View.extend();
 
   view = Ember.View.create({
+    container: container,
     number: 5,
-    templateName: 'template',
-    templates: templates
+    templateName: 'template'
   });
 
   appendView();
@@ -2227,27 +2180,17 @@ test("should not enter an infinite loop when binding an attribute in Handlebars"
 });
 
 test("should render other templates using the {{template}} helper", function() {
-  // save a reference to the current global templates hash so we can restore it
-  // after the test.
-  var oldTemplates = Ember.TEMPLATES;
+  Ember.TEMPLATES.sub_template = Ember.Handlebars.compile("sub-template");
 
-  try {
-    Ember.TEMPLATES = {
-      sub_template: Ember.Handlebars.compile("sub-template")
-    };
+  view = Ember.View.create({
+    template: Ember.Handlebars.compile('This {{template "sub_template"}} is pretty great.')
+  });
 
-    view = Ember.View.create({
-      template: Ember.Handlebars.compile('This {{template "sub_template"}} is pretty great.')
-    });
+  Ember.run(function() {
+    view.appendTo('#qunit-fixture');
+  });
 
-    Ember.run(function() {
-      view.appendTo('#qunit-fixture');
-    });
-
-    equal(Ember.$.trim(view.$().text()), "This sub-template is pretty great.");
-  } finally {
-   Ember.TEMPLATES = oldTemplates;
-  }
+  equal(Ember.$.trim(view.$().text()), "This sub-template is pretty great.");
 });
 
 test("should update bound values after the view is removed and then re-appended", function() {

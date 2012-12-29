@@ -1,10 +1,11 @@
-require('ember-routing/route_matcher');
-require('ember-routing/routable');
-require('ember-routing/location');
+require('ember-old-router/route_matcher');
+require('ember-old-router/routable');
+require('ember-old-router/location');
+require('ember-metal/utils'); // Ember.tryFinally
 
 /**
 @module ember
-@submodule ember-routing
+@submodule ember-old-router
 */
 
 var get = Ember.get, set = Ember.set;
@@ -539,8 +540,7 @@ Ember.Router = Ember.StateManager.extend(
     set(this, 'isRouting', true);
 
     var routableState;
-
-    try {
+    function tryable() {
       path = path.replace(get(this, 'rootURL'), '');
       path = path.replace(/^(?=[^\/])/, "/");
 
@@ -555,9 +555,13 @@ Ember.Router = Ember.StateManager.extend(
       var rest = path.substr(currentURL.length);
 
       this.send('routePath', rest);
-    } finally {
+    }
+
+    function finalizer() {
       set(this, 'isRouting', false);
     }
+
+    Ember.tryFinally(tryable, finalizer, this);
 
     routableState = get(this, 'currentState');
     while (routableState && !routableState.get('isRoutable')) {

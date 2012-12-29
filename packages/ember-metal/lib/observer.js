@@ -1,6 +1,6 @@
 require('ember-metal/core');
 require('ember-metal/platform');
-require('ember-metal/utils');
+require('ember-metal/utils'); // Ember.tryFinally
 require('ember-metal/accessors');
 require('ember-metal/array');
 
@@ -66,7 +66,7 @@ ObserverSet.prototype.flush = function() {
   for (i=0, len=observers.length; i < len; ++i) {
     observer = observers[i];
     sender = observer.sender;
-    if (sender.isDestroyed) { continue; }
+    if (sender.isDestroying || sender.isDestroyed) { continue; }
     Ember.sendEvent(sender, observer.eventName, [sender, observer.keyName], observer.listeners);
   }
 };
@@ -114,11 +114,7 @@ Ember.endPropertyChanges = function() {
 */
 Ember.changeProperties = function(cb, binding){
   Ember.beginPropertyChanges();
-  try {
-    cb.call(binding);
-  } finally {
-    Ember.endPropertyChanges();
-  }
+  Ember.tryFinally(cb, Ember.endPropertyChanges, binding);
 };
 
 /**

@@ -1,18 +1,22 @@
-var set = Ember.set, get = Ember.get;
+var set = Ember.set, get = Ember.get, container;
 
-module("Ember.View - Template Functionality");
+module("Ember.View - Template Functionality", {
+  setup: function() {
+    container = new Ember.Container();
+    container.optionsForType('template', { instantiate: false });
+  }
+});
 
 test("should call the function of the associated template", function() {
   var view;
 
-  view = Ember.View.create({
-    templateName: 'test_template',
+  container.register('template', 'testTemplate', function() {
+    return "<h1 id='twas-called'>template was called</h1>";
+  });
 
-    templates: Ember.Object.create({
-      test_template: function(dataSource) {
-        return "<h1 id='twas-called'>template was called</h1>";
-      }
-    })
+  view = Ember.View.create({
+    container: container,
+    templateName: 'testTemplate'
   });
 
   Ember.run(function(){
@@ -25,18 +29,17 @@ test("should call the function of the associated template", function() {
 test("should call the function of the associated template with itself as the context", function() {
   var view;
 
+  container.register('template', 'testTemplate', function(dataSource) {
+    return "<h1 id='twas-called'>template was called for " + get(dataSource, 'personName') + "</h1>";
+  });
+
   view = Ember.View.create({
-    templateName: 'test_template',
+    container: container,
+    templateName: 'testTemplate',
 
     context: {
       personName: "Tom DAAAALE"
-    },
-
-    templates: Ember.Object.create({
-      test_template: function(dataSource) {
-        return "<h1 id='twas-called'>template was called for " + get(dataSource, 'personName') + "</h1>";
-      }
-    })
+    }
   });
 
   Ember.run(function(){
@@ -85,11 +88,11 @@ test("should not use defaultTemplate if template is provided", function() {
 test("should not use defaultTemplate if template is provided", function() {
   var View, view;
 
+  container.register('template', 'foobar', function() { return 'foo'; });
+
   View = Ember.View.extend({
+    container: container,
     templateName: 'foobar',
-    templates: Ember.Object.create({
-      foobar: function() { return "foo"; }
-    }),
     defaultTemplate: function(dataSource) { return "<h1 id='twas-called'>template was called for " + get(dataSource, 'personName') + "</h1>"; }
   });
 

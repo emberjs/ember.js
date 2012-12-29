@@ -13,7 +13,7 @@
   "dependencies": {
     "spade":             "~> 1.0",
     "ember-views": "1.0.0-pre.2",
-    "ember-states": "1.0.0-pre.2"
+    "container": "1.0.0-pre.2"
   },
 
   "dependencies:development": {

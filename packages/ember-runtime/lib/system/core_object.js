@@ -85,7 +85,7 @@ function makeCtor() {
           var desc = m.descs[keyName];
 
           Ember.assert("Ember.Object.create no longer supports defining computed properties.", !(value instanceof Ember.ComputedProperty));
-          Ember.assert("Ember.Object.create no longer supports defining methods that call _super.", !(typeof value === 'function' && value.toString().indexOf('_super') !== -1));
+          Ember.assert("Ember.Object.create no longer supports defining methods that call _super.", !(typeof value === 'function' && value.toString().indexOf('._super') !== -1));
 
           if (concatenatedProperties && indexOf(concatenatedProperties, keyName) >= 0) {
             var baseValue = this[keyName];
@@ -194,7 +194,6 @@ CoreObject.PrototypeMixin = Mixin.create({
 
     if (this.willDestroy) { this.willDestroy(); }
 
-    set(this, 'isDestroyed', true);
     schedule('destroy', this, this._scheduledDestroy);
     return this;
   },
@@ -209,6 +208,8 @@ CoreObject.PrototypeMixin = Mixin.create({
   */
   _scheduledDestroy: function() {
     destroy(this);
+    set(this, 'isDestroyed', true);
+
     if (this.didDestroy) { this.didDestroy(); }
   },
 
@@ -407,6 +408,3 @@ ClassMixin.apply(CoreObject);
   @namespace Ember
 */
 Ember.CoreObject = CoreObject;
-
-
-

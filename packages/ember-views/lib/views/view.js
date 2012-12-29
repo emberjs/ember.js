@@ -822,6 +822,14 @@ Ember.View = Ember.CoreView.extend(
     return template || get(this, 'defaultTemplate');
   }).property('templateName'),
 
+  container: Ember.computed(function() {
+    var parentView = get(this, '_parentView');
+
+    if (parentView) { return get(parentView, 'container'); }
+
+    return Ember.Container && Ember.Container.defaultContainer;
+  }),
+
   /**
     The controller managing this view. If this property is set, it will be
     made available for use by the template.
@@ -830,9 +838,9 @@ Ember.View = Ember.CoreView.extend(
     @type Object
   */
   controller: Ember.computed(function(key) {
-    var parentView = get(this, 'parentView');
+    var parentView = get(this, '_parentView');
     return parentView ? get(parentView, 'controller') : null;
-  }).property(),
+  }).property('_parentView'),
 
   /**
     A view may contain a layout. A layout is a regular template but
@@ -860,14 +868,11 @@ Ember.View = Ember.CoreView.extend(
 
     Ember.assert("templateNames are not allowed to contain periods: "+name, name.indexOf('.') === -1);
 
-    var templates = get(this, 'templates'),
-        template = get(templates, name);
+    var container = get(this, 'container');
 
-    if (!template) {
-     throw new Ember.Error(fmt('%@ - Unable to find %@ "%@".', [this, type, name]));
+    if (container) {
+      return container.lookup('template:' + name);
     }
-
-    return template;
   },
 
   /**
@@ -1081,6 +1086,7 @@ Ember.View = Ember.CoreView.extend(
 
     var keywords = templateData ? Ember.copy(templateData.keywords) : {};
     set(keywords, 'view', get(this, 'concreteView'));
+    set(keywords, '_view', this);
     set(keywords, 'controller', get(this, 'controller'));
 
     return keywords;

@@ -1,5 +1,6 @@
 {
     "predef": [
+        "define",
         "console",
         "Ember",
         "DS",
@@ -14,9 +15,11 @@
         "requireModule",
         "equal",
         "test",
+        "asyncTest",
         "testBoth",
         "testWithDefault",
         "raises",
+        "throws",
         "deepEqual",
         "start",
         "stop",

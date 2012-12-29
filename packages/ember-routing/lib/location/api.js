@@ -1,6 +1,6 @@
 /**
 @module ember
-@submodule ember-routing
+@submodule ember-old-router
 */
 
 var get = Ember.get, set = Ember.set;
@@ -24,7 +24,7 @@ var get = Ember.get, set = Ember.set;
   Ember.Location returns an instance of the correct implementation of
   the `location` API.
 
-  You can pass it a `implementation` (`hash`, `history`, `none`) to force a
+  You can pass it a `implementation` ('hash', 'history', 'none') to force a
   particular implementation.
 
   @class Location
