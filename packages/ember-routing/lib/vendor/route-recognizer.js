@@ -363,6 +363,8 @@ define("route-recognizer",
           output += segment.generate(params);
         }
 
+        if (output.charAt(0) !== '/') { output = '/' + output; }
+
         return output;
       },
 
