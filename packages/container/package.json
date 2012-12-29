@@ -1,0 +1,30 @@
+{
+  "name": "container",
+  "summary": "A lightweight dependency injection container",
+  "description": "A lightweight library that provides a pluggable dependency injection container designed for use in Ember.js",
+  "homepage": "https://github.com/emberjs/ember.js",
+  "authors": ["Yehuda Katz", "Tom Dale"],
+  "version": "1.0.0-pre.2",
+
+  "dependencies": {
+    "spade": "~> 1.0.0"
+  },
+
+  "directories": {
+    "lib": "lib"
+  },
+
+  "bpm:build": {
+    "bpm_libs.js": {
+      "files": ["lib"],
+      "modes": "*"
+    },
+
+    "handlebars/bpm_tests.js": {
+      "files": ["tests"],
+      "modes": ["debug"]
+    }
+  }
+}
+
+

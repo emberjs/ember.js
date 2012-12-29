@@ -1,8 +1,8 @@
-require('ember-routing/routable');
+require('ember-old-router/routable');
 
 /**
 @module ember
-@submodule ember-routing
+@submodule ember-old-router
 */
 
 /**

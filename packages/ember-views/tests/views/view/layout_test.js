@@ -1,24 +1,25 @@
-var set = Ember.set, get = Ember.get;
+var set = Ember.set, get = Ember.get, container;
 
-module("Ember.View - Layout Functionality");
+require('container');
+
+module("Ember.View - Layout Functionality", {
+  setup: function() {
+    container = new Ember.Container();
+    container.optionsForType('template', { instantiate: false });
+  }
+});
 
 test("should call the function of the associated layout", function() {
   var view;
   var templateCalled = 0, layoutCalled = 0;
 
+  container.register('template', 'template', function() { templateCalled++; });
+  container.register('template', 'layout', function() { layoutCalled++; });
+
   view = Ember.View.create({
+    container: container,
     layoutName: 'layout',
-    templateName: 'template',
-
-    templates: {
-      template: function() {
-        templateCalled++;
-      },
-
-      layout: function() {
-        layoutCalled++;
-      }
-    }
+    templateName: 'template'
   });
 
   Ember.run(function(){
@@ -32,18 +33,17 @@ test("should call the function of the associated layout", function() {
 test("should call the function of the associated template with itself as the context", function() {
   var view;
 
+  container.register('template', 'testTemplate', function(dataSource) {
+    return "<h1 id='twas-called'>template was called for " + get(dataSource, 'personName') + "</h1>";
+  });
+
   view = Ember.View.create({
-    layoutName: 'test_template',
+    container: container,
+    layoutName: 'testTemplate',
 
     context: {
       personName: "Tom DAAAALE"
-    },
-
-    templates: Ember.Object.create({
-      test_template: function(dataSource) {
-        return "<h1 id='twas-called'>template was called for " + get(dataSource, 'personName') + "</h1>";
-      }
-    })
+    }
   });
 
   Ember.run(function(){

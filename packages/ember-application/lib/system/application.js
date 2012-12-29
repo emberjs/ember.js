@@ -3,7 +3,11 @@
 @submodule ember-application
 */
 
-var get = Ember.get, set = Ember.set;
+var get = Ember.get, set = Ember.set,
+    classify = Ember.String.classify,
+    decamelize = Ember.String.decamelize;
+
+Ember.Container.set = Ember.set;
 
 /**
   An instance of `Ember.Application` is the starting point for every Ember
@@ -189,7 +193,7 @@ var get = Ember.get, set = Ember.set;
   @namespace Ember
   @extends Ember.Namespace
 */
-Ember.Application = Ember.Namespace.extend(
+var Application = Ember.Application = Ember.Namespace.extend(
 /** @scope Ember.Application.prototype */{
 
   /**
@@ -252,51 +256,75 @@ Ember.Application = Ember.Namespace.extend(
   */
   customEvents: null,
 
-  /**
-    Should the application initialize itself after it's created. You can
-    set this to `false` if you'd like to choose when to initialize your 
-    application. This defaults to `!Ember.testing`
-
-    @property autoinit
-    @type Boolean
-  */
-  autoinit: !Ember.testing,
-
   isInitialized: false,
+
+  // Start off the number of deferrals at 1. This will be
+  // decremented by the Application's own `initialize` method.
+  _readinessDeferrals: 1,
 
   init: function() {
     if (!this.$) { this.$ = Ember.$; }
+    this.container = this.buildContainer();
+    this.Router = this.Router || this.defaultRouter();
 
     this._super();
 
-    this.createEventDispatcher();
+    this.deferUntilDOMReady();
+    this.scheduleInitialize();
+  },
 
-    // Start off the number of deferrals at 1. This will be
-    // decremented by the Application's own `initialize` method.
-    this._readinessDeferrals = 1;
+  /**
+    @private
 
-    this.waitForDOMContentLoaded();
+    Build the container for the current application.
 
-    if (this.autoinit) {
-      var self = this;
-      this.$().ready(function() {
-        if (self.isDestroyed || self.isInitialized) return;
-        self.initialize();
-      });
+    Also register a default application view in case the application
+    itself does not.
+
+    @return {Ember.Container} the configured container
+  */
+  buildContainer: function() {
+    var container = this.container = Application.buildContainer(this);
+
+    return container;
+  },
+
+  /**
+    @private
+
+    If the application has not opted out of routing and has not explicitly
+    defined a router, supply a default router for the application author
+    to configure.
+
+    This allows application developers to do:
+
+    ```javascript
+    App = Ember.Application.create();
+
+    App.Router.map(function(match) {
+      match("/").to("index");
+    });
+    ```
+
+    @return {Ember.Router} the default router
+  */
+  defaultRouter: function() {
+    // Create a default App.Router if one was not supplied to make
+    // it possible to do App.Router.map(...) without explicitly
+    // creating a router first.
+    if (this.router === undefined) {
+      return Ember.Router.extend();
     }
   },
 
-  /** @private */
-  createEventDispatcher: function() {
-    var rootElement = get(this, 'rootElement'),
-        eventDispatcher = Ember.EventDispatcher.create({
-          rootElement: rootElement
-        });
+  /**
+    @private
 
-    set(this, 'eventDispatcher', eventDispatcher);
-  },
-
-  waitForDOMContentLoaded: function() {
+    Defer Ember readiness until DOM readiness. By default, Ember
+    will wait for both DOM readiness and application initialization,
+    as well as any deferrals registered by initializers.
+  */
+  deferUntilDOMReady: function() {
     this.deferReadiness();
 
     var self = this;
@@ -305,11 +333,58 @@ Ember.Application = Ember.Namespace.extend(
     });
   },
 
+  /**
+    @private
+
+    Automatically initialize the application once the DOM has
+    become ready.
+
+    The initialization itself is deferred using Ember.run.once,
+    which ensures that application loading finishes before
+    booting.
+
+    If you are asynchronously loading code, you should call
+    `deferReadiness()` to defer booting, and then call
+    `advanceReadiness()` once all of your code has finished
+    loading.
+  */
+  scheduleInitialize: function() {
+    var self = this;
+    this.$().ready(function() {
+      if (self.isDestroyed || self.isInitialized) return;
+      Ember.run.once(self, 'initialize');
+    });
+  },
+
+  /**
+    Use this to defer readiness until some condition is true.
+
+    Example:
+
+    ```javascript
+    App = Ember.Application.create();
+    App.deferReadiness();
+
+    jQuery.getJSON("/auth-token", function(token) {
+      App.token = token;
+      App.advanceReadiness();
+    });
+    ```
+
+    This allows you to perform asynchronous setup logic and defer
+    booting your application until the setup has finished.
+
+    However, if the setup requires a loading UI, it might be better
+    to use the router for this purpose.
+  */
   deferReadiness: function() {
     Ember.assert("You cannot defer readiness since the `ready()` hook has already been called.", this._readinessDeferrals > 0);
     this._readinessDeferrals++;
   },
 
+  /**
+    @see {Ember.Application#deferReadiness}
+  */
   advanceReadiness: function() {
     this._readinessDeferrals--;
 
@@ -319,145 +394,111 @@ Ember.Application = Ember.Namespace.extend(
   },
 
   /**
-    Instantiate all controllers currently available on the namespace
-    and inject them onto a router.
+    @private
 
-    Example:
+    Initialize the application. This happens automatically.
 
-    ```javascript
-    App.PostsController = Ember.ArrayController.extend();
-    App.CommentsController = Ember.ArrayController.extend();
-
-    var router = Ember.Router.create({
-      ...
-    });
-
-    App.initialize(router);
-
-    router.get('postsController');     // <App.PostsController:ember1234>
-    router.get('commentsController');  // <App.CommentsController:ember1235>
-    ```
-
-    @method initialize
-    @param router {Ember.Router}
+    Run any injections and run the application load hook. These hooks may
+    choose to defer readiness. For example, an authentication hook might want
+    to defer readiness until the auth token has been retrieved.
   */
-  initialize: function(router) {
+  initialize: function() {
     Ember.assert("Application initialize may only be called once", !this.isInitialized);
-    Ember.assert("Application not destroyed", !this.isDestroyed);
-
-    router = this.setupRouter(router);
-
-    this.runInjections(router);
-
-    Ember.runLoadHooks('application', this);
-
+    Ember.assert("Cannot initialize a destroyed application", !this.isDestroyed);
     this.isInitialized = true;
 
+    // At this point, the App.Router must already be assigned
+    this.container.register('router', 'main', this.Router);
+
+    // Run any injections and run the application load hook. These hooks may
+    // choose to defer readiness. For example, an authentication hook might want
+    // to defer readiness until the auth token has been retrieved.
+    this.runInitializers();
+    Ember.runLoadHooks('application', this);
+
     // At this point, any injections or load hooks that would have wanted
-    // to defer readiness have fired.
+    // to defer readiness have fired. In general, advancing readiness here
+    // will proceed to didBecomeReady.
     this.advanceReadiness();
 
     return this;
   },
 
   /** @private */
-  runInjections: function(router) {
-    var injections = get(this.constructor, 'injections'),
+  runInitializers: function() {
+    var router = this.container.lookup('router:main'),
+        initializers = get(this.constructor, 'initializers'),
+        container = this.container,
         graph = new Ember.DAG(),
         namespace = this,
-        properties, i, injection;
+        properties, i, initializer;
 
-    for (i=0; i<injections.length; i++) {
-      injection = injections[i];
-      graph.addEdges(injection.name, injection.injection, injection.before, injection.after);
+    for (i=0; i<initializers.length; i++) {
+      initializer = initializers[i];
+      graph.addEdges(initializer.name, initializer.initialize, initializer.before, initializer.after);
     }
 
     graph.topsort(function (vertex) {
-      var injection = vertex.value,
-          properties = Ember.A(Ember.keys(namespace));
-      properties.forEach(function(property) {
-        injection(namespace, router, property);
-      });
+      var initializer = vertex.value;
+      initializer(container, namespace);
     });
   },
 
   /** @private */
-  setupRouter: function(router) {
-    if (!router && Ember.Router.detect(this.Router)) {
-      router = this.Router.create();
-      this._createdRouter = router;
-    }
-
-    if (router) {
-      set(this, 'router', router);
-
-      // By default, the router's namespace is the current application.
-      //
-      // This allows it to find model classes when a state has a
-      // route like `/posts/:post_id`. In that case, it would first
-      // convert `post_id` into `Post`, and then look it up on its
-      // namespace.
-      set(router, 'namespace', this);
-    }
-
-    return router;
-  },
-
-  /** @private */
   didBecomeReady: function() {
-    var eventDispatcher = get(this, 'eventDispatcher'),
-        customEvents    = get(this, 'customEvents'),
-        router;
-
-    eventDispatcher.setup(customEvents);
-
-    this.ready();
-
-
-    router = get(this, 'router');
-
-    this.createApplicationView(router);
-
-    if (router && router instanceof Ember.Router) {
-      this.startRouting(router);
-    }
+    this.setupEventDispatcher();
+    this.ready(); // user hook
+    this.createApplicationView();
+    this.startRouting();
 
     if (!Ember.testing) {
       Ember.BOOTED = true;
     }
   },
 
-  createApplicationView: function (router) {
+  /**
+    @private
+
+    Setup up the event dispatcher to receive events on the
+    application's `rootElement` with any registered
+    `customEvents`.
+  */
+  setupEventDispatcher: function() {
+    var eventDispatcher = this.createEventDispatcher(),
+        customEvents    = get(this, 'customEvents');
+
+    eventDispatcher.setup(customEvents);
+  },
+
+  /**
+    @private
+
+    Create an event dispatcher for the application's `rootElement`.
+  */
+  createEventDispatcher: function() {
     var rootElement = get(this, 'rootElement'),
-        applicationViewOptions = {},
-        applicationViewClass = this.ApplicationView,
-        applicationTemplate = Ember.TEMPLATES.application,
-        applicationController, applicationView;
+        eventDispatcher = Ember.EventDispatcher.create({
+          rootElement: rootElement
+        });
 
-    // don't do anything unless there is an ApplicationView or application template
-    if (!applicationViewClass && !applicationTemplate) return;
+    set(this, 'eventDispatcher', eventDispatcher);
+    return eventDispatcher;
+  },
 
-    if (router) {
-      applicationController = get(router, 'applicationController');
-      if (applicationController) {
-        applicationViewOptions.controller = applicationController;
-      }
-    }
+  /**
+    @private
 
-    if (applicationTemplate) {
-      applicationViewOptions.template = applicationTemplate;
-    }
-
-    if (!applicationViewClass) {
-      applicationViewClass = Ember.View;
-    }
-
-    applicationView = applicationViewClass.create(applicationViewOptions);
-
-    this._createdApplicationView = applicationView;
+    Create and append the application view. This will look up
+    `view:application` in the container, which defaults to
+    creating an instance of `App.ApplicationView`.
+  */
+  createApplicationView: function () {
+    var rootElement = get(this, 'rootElement'),
+        router = this.container.lookup('router:main'),
+        applicationView = this.container.lookup('view:application');
 
     if (router) {
-      set(router, 'applicationView', applicationView);
+      router._connectActiveView('application', applicationView);
     }
 
     applicationView.appendTo(rootElement);
@@ -472,16 +513,11 @@ Ember.Application = Ember.Namespace.extend(
     @method startRouting
     @property router {Ember.Router}
   */
-  startRouting: function(router) {
-    var location = get(router, 'location');
+  startRouting: function() {
+    var router = this.container.lookup('router:main');
+    if (!router) { return; }
 
-    Ember.assert("You must have an application template or ApplicationView defined on your application", get(router, 'applicationView') );
-    Ember.assert("You must have an ApplicationController defined on your application", get(router, 'applicationController') );
-
-    router.route(location.getURL());
-    location.onUpdateURL(function(url) {
-      router.route(url);
-    });
+    router.startRouting();
   },
 
   /**
@@ -495,51 +531,119 @@ Ember.Application = Ember.Namespace.extend(
   willDestroy: function() {
     Ember.BOOTED = false;
 
-    get(this, 'eventDispatcher').destroy();
-    if (this._createdRouter)          { this._createdRouter.destroy(); }
-    if (this._createdApplicationView) { this._createdApplicationView.destroy(); }
+    var eventDispatcher = get(this, 'eventDispatcher');
+    if (eventDispatcher) { eventDispatcher.destroy(); }
+
+    this.container.destroy();
   },
 
-  registerInjection: function(options) {
-    this.constructor.registerInjection(options);
+  initializer: function(options) {
+    this.constructor.initializer(options);
   }
 });
 
 Ember.Application.reopenClass({
-  concatenatedProperties: ['injections'],
-  injections: Ember.A(),
-  registerInjection: function(injection) {
-    var injections = get(this, 'injections');
+  concatenatedProperties: ['initializers'],
+  initializers: Ember.A(),
+  initializer: function(initializer) {
+    var initializers = get(this, 'initializers');
 
-    Ember.assert("The injection '" + injection.name + "' has already been registered", !injections.findProperty('name', injection.name));
-    Ember.assert("An injection cannot be registered with both a before and an after", !(injection.before && injection.after));
-    Ember.assert("An injection cannot be registered without an injection function", Ember.canInvoke(injection, 'injection'));
+    Ember.assert("The initializer '" + initializer.name + "' has already been registered", !initializers.findProperty('name', initializers.name));
+    Ember.assert("An injection cannot be registered with both a before and an after", !(initializer.before && initializer.after));
+    Ember.assert("An injection cannot be registered without an injection function", Ember.canInvoke(initializer, 'initialize'));
 
-    injections.push(injection);
+    initializers.push(initializer);
+  },
+
+  /**
+    @private
+
+    This creates a container with the default Ember naming conventions.
+
+    It also configures the container:
+
+    * registered views are created every time they are looked up (they are
+      not singletons)
+    * registered templates are not factories; the registered value is
+      returned directly.
+    * the router receives the application as its `namespace` property
+    * all controllers receive the router as their `target` and `controllers`
+      properties
+    * all controllers receive the application as their `namespace` property
+    * the application view receives the application controller as its
+      `controller` property
+    * the application view receives the application template as its
+      `defaultTemplate` property
+
+    @param {Ember.Application} namespace the application to build the
+      container for.
+    @return {Ember.Container} the built container
+  */
+  buildContainer: function(namespace) {
+    var container = new Ember.Container();
+    Ember.Container.defaultContainer = container;
+    var ApplicationView = Ember.View.extend();
+
+    container.set = Ember.set;
+    container.resolve = resolveFor(namespace);
+    container.optionsForType('view', { singleton: false });
+    container.optionsForType('template', { instantiate: false });
+    container.register('application', 'main', namespace, { instantiate: false });
+    container.injection('router:main', 'namespace', 'application:main');
+
+    container.typeInjection('controller', 'target', 'router:main');
+    container.typeInjection('controller', 'controllers', 'router:main');
+    container.typeInjection('controller', 'namespace', 'application:main');
+
+    container.typeInjection('route', 'router', 'router:main');
+
+    container.injection('view:application', 'controller', 'controller:application');
+    container.injection('view:application', 'defaultTemplate', 'template:application');
+
+    // Register a fallback application view. App.ApplicationView will
+    // take precedence.
+    container.register('view', 'application', ApplicationView);
+
+    return container;
   }
 });
 
-Ember.Application.registerInjection({
-  name: 'controllers',
-  injection: function(app, router, property) {
-    if (!router) { return; }
-    if (!/^[A-Z].*Controller$/.test(property)) { return; }
+/**
+  @private
 
-    var name = property.charAt(0).toLowerCase() + property.substr(1),
-        controllerClass = app[property], controller;
+  This function defines the default lookup rules for container lookups:
 
-    if(!Ember.Object.detect(controllerClass)){ return; }
-    controller = app[property].create();
+  * templates are looked up on `Ember.TEMPLATES`
+  * other names are looked up on the application after classifying the name.
+    For example, `controller:post` looks up `App.PostController` by default.
+  * if the default lookup fails, look for registered classes on the container
 
-    router.set(name, controller);
+  This allows the application to register default injections in the container
+  that could be overridden by the normal naming convention.
 
-    controller.setProperties({
-      target: router,
-      controllers: router,
-      namespace: app
-    });
-  }
-});
+  @param {Ember.Namespace} namespace the namespace to look for classes
+  @return {any} the resolved value for a given lookup
+*/
+function resolveFor(namespace) {
+  return function(fullName) {
+    var nameParts = fullName.split(":"),
+        type = nameParts[0], name = nameParts[1];
+
+    if (type === 'template') {
+      var templateName = decamelize(name);
+      if (Ember.TEMPLATES[templateName]) {
+        return Ember.TEMPLATES[templateName];
+      }
+    }
+
+    var className = classify(name) + classify(type);
+    var factory = get(namespace, className);
+
+    if (factory) { return factory; }
+
+    return Ember.Container.prototype.resolve.call(this, fullName);
+  };
+}
 
 Ember.runLoadHooks('Ember.Application', Ember.Application);
 

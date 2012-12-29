@@ -1,3 +1,5 @@
+require('ember-routing');
+
 var jQuery, Application, application;
 var readyWasCalled, domReady, readyCallbacks;
 
@@ -59,7 +61,7 @@ test("Ember.Application's ready event is called right away if jQuery is already 
   jQuery.isReady = true;
 
   Ember.run(function() {
-    application = Application.create().initialize();
+    application = Application.create({ router: false }).initialize();
   });
 
   equal(readyWasCalled, 1, "ready was called");
@@ -73,7 +75,7 @@ test("Ember.Application's ready event is called right away if jQuery is already 
 
 test("Ember.Application's ready event is called after the document becomes ready", function() {
   Ember.run(function() {
-    application = Application.create().initialize();
+    application = Application.create({ router: false }).initialize();
   });
 
   equal(readyWasCalled, 0, "ready wasn't called yet");
@@ -88,6 +90,7 @@ test("Ember.Application's ready event is called after the document becomes ready
 test("Ember.Application's ready event is called after the document becomes ready without initialize if autoinit is set", function() {
   Ember.run(function() {
     application = Application.create({
+      router: false,
       autoinit: true
     });
   });
@@ -103,7 +106,7 @@ test("Ember.Application's ready event is called after the document becomes ready
 
 test("Ember.Application's ready event can be deferred by other components", function() {
   Ember.run(function() {
-    application = Application.create();
+    application = Application.create({ router: false });
   });
 
   application.deferReadiness();
@@ -131,7 +134,7 @@ test("Ember.Application's ready event can be deferred by other components", func
   jQuery.isReady = true;
 
   Ember.run(function() {
-    application = Application.create();
+    application = Application.create({ router: false });
   });
 
   application.deferReadiness();

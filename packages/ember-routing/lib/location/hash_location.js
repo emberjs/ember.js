@@ -1,12 +1,12 @@
 /**
 @module ember
-@submodule ember-routing
+@submodule ember-old-router
 */
 
 var get = Ember.get, set = Ember.set;
 
 /**
-  `Ember.HashLocation` implements the location API using the browser's
+  Ember.HashLocation implements the location API using the browser's
   hash. At present, it relies on a hashchange event existing in the
   browser.
 
@@ -76,7 +76,7 @@ Ember.HashLocation = Ember.Object.extend({
     Given a URL, formats it to be placed into the page as part
     of an element's `href` attribute.
 
-    This is used, for example, when using the `{{action}}` helper
+    This is used, for example, when using the {{action}} helper
     to generate a URL based on an event.
 
     @method formatURL

@@ -1,11 +1,11 @@
-require('ember-routing/route_matcher');
-require('ember-routing/routable');
-require('ember-routing/location');
+require('ember-old-router/route_matcher');
+require('ember-old-router/routable');
+require('ember-old-router/location');
 require('ember-metal/utils'); // Ember.tryFinally
 
 /**
 @module ember
-@submodule ember-routing
+@submodule ember-old-router
 */
 
 var get = Ember.get, set = Ember.set;

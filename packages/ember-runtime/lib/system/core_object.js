@@ -194,7 +194,6 @@ CoreObject.PrototypeMixin = Mixin.create({
 
     if (this.willDestroy) { this.willDestroy(); }
 
-    set(this, 'isDestroyed', true);
     schedule('destroy', this, this._scheduledDestroy);
     return this;
   },
@@ -209,6 +208,8 @@ CoreObject.PrototypeMixin = Mixin.create({
   */
   _scheduledDestroy: function() {
     destroy(this);
+    set(this, 'isDestroyed', true);
+
     if (this.didDestroy) { this.didDestroy(); }
   },
 
@@ -407,6 +408,3 @@ ClassMixin.apply(CoreObject);
   @namespace Ember
 */
 Ember.CoreObject = CoreObject;
-
-
-

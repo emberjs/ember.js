@@ -1,11 +1,8 @@
-require('ember-states');
-require('ember-routing/route');
-require('ember-routing/router');
-
-/**
-Ember Routing
-
-@module ember
-@submodule ember-routing
-@requires ember-states
-*/
+require('ember-runtime');
+require('ember-views');
+require('ember-handlebars');
+require('ember-routing/vendor/route-recognizer');
+require('ember-routing/vendor/router');
+require('ember-routing/system');
+require('ember-routing/handlebars_ext');
+require('ember-routing/location');
