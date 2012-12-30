@@ -644,4 +644,32 @@ test("It is possible to get the model from a parent route", function() {
   });
 });
 
+test("A redirection hook is provided", function() {
+  Router.map(function(match) {
+    match("/").to("choose");
+    match("/home").to("home");
+  });
+
+  var chooseFollowed = 0, destination;
+
+  App.ChooseRoute = Ember.Route.extend({
+    redirect: function() {
+      if (destination) {
+        this.transitionTo(destination);
+      }
+    },
+
+    setupControllers: function() {
+      chooseFollowed++;
+    }
+  });
+
+  destination = 'home';
+
+  bootApplication();
+
+  equal(chooseFollowed, 0, "The choose route wasn't entered since a transition occurred");
+  equal(Ember.$("h3:contains(Hours)", "#qunit-fixture").length, 1, "The home template was rendered");
+});
+
 // TODO: Parent context change

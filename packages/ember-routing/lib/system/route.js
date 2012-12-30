@@ -5,12 +5,30 @@ var get = Ember.get, set = Ember.set,
 
 Ember.Route = Ember.Object.extend({
   /**
+    Transition into another route. Optionally supply a model for the
+    route in question. The model will be serialized into the URL
+    using the `serialize` hook.
+
+    @param {String} name the name of the route
+    @param {...Object} models the
+  */
+  transitionTo: function() {
+    this.transitioned = true;
+    return this.router.transitionTo.apply(this.router, arguments);
+  },
+
+  /**
     @private
 
     This hook is the entry point for router.js
   */
   setup: function(context) {
     var container = this.container;
+
+    this.transitioned = false;
+    this.redirect(context);
+
+    if (this.transitioned) { return; }
 
     var templateName = this.templateName,
         controller = container.lookup('controller:' + templateName);
@@ -32,20 +50,48 @@ Ember.Route = Ember.Object.extend({
     this.renderTemplates(context);
   },
 
+  /**
+    A hook you can implement to optionally redirect to another route.
+
+    If you call `this.transitionTo` from inside of this hook, this route
+    will not be entered in favor of the other hook.
+
+    @param {Object} model the model for this route
+  */
+  redirect: Ember.K,
+
+  /**
+    @private
+
+    The hook called by `router.js` to convert parameters into the context
+    for this handler. The public Ember hook is `model`.
+  */
   deserialize: function(params) {
     var model = this.model(params);
     return this.currentModel = model;
   },
 
-  serialize: function(model, params) {
-    if (params.length !== 1) { return; }
+  /**
+    A hook you can implement to convert the URL into the model for
+    this route.
 
-    var name = params[0], object = {};
-    object[name] = get(model, 'id');
+    ```js
+    App.Route.map(function(match) {
+      match("/posts/:post_id").to("post");
+    });
+    ```
 
-    return object;
-  },
+    The model for the `post` route is `App.Post.find(params.post_id)`.
 
+    By default, if your route has a dynamic segment ending in `_id`:
+
+    * The model class is determined from the segment (`post_id`'s
+      class is `App.Post`)
+    * The find method is called on the model class with the value of
+      the dynamic segment.
+
+    @param {Object} params the parameters extracted from the URL
+  */
   model: function(params) {
     var match, name, value;
 
@@ -66,16 +112,113 @@ Ember.Route = Ember.Object.extend({
     return modelClass.find(value);
   },
 
-  setupControllers: function(controller, context) {
+  /**
+    A hook you can implement to convert the route's model into parameters
+    for the URL.
+
+    ```js
+    App.Route.map(function(match) {
+      match("/posts/:post_id").to("post");
+    });
+
+    App.PostRoute = Ember.Route.extend({
+      model: function(params) {
+        // the server returns `{ id: 12 }`
+        return jQuery.getJSON("/posts/" + params.post_id);
+      },
+
+      serialize: function(model) {
+        // this will make the URL `/posts/12`
+        return { post_id: model.id };
+      }
+    });
+    ```
+
+    The default `serialize` method inserts the model's `id` into the
+    route's dynamic segment (in this case, `:post_id`).
+
+    This method is called when `transitionTo` is called with a context
+    in order to populate the URL.
+
+    @param {Object} model the route's model
+    @param {Array} params an Array of parameter names for the current
+      route (in the example, `['post_id']`.
+    @return {Object} the serialized parameters
+  */
+  serialize: function(model, params) {
+    if (params.length !== 1) { return; }
+
+    var name = params[0], object = {};
+    object[name] = get(model, 'id');
+
+    return object;
+  },
+
+  /**
+    A hook you can use to setup the necessary controllers for the current
+    route.
+
+    This method is called with the controller for the current route and the
+    model supplied by the `model` hook.
+
+    ```js
+    App.Route.map(function(match) {
+      match("/posts/:post_id").to("post");
+    });
+    ```
+
+    For the `post` route, the controller is `App.PostController`.
+
+    By default, the `setupController` hook sets the `content` property of
+    the controller to the `model`.
+
+    If no explicit controller is defined, the route will automatically create
+    an appropriate controller for the model:
+
+    * if the model is an `Ember.Array` (including record arrays from Ember
+      Data), the controller is an `Ember.ArrayController`.
+    * otherwise, the controller is an `Ember.ObjectController`.
+
+    This means that your template will get a proxy for the model as its
+    context, and you can act as though the model itself was the context.
+  */
+  setupControllers: function(controller, model) {
     if (controller) {
-      controller.set('content', context);
+      controller.set('content', model);
     }
   },
 
+  /**
+    Returns the controller for a particular route.
+
+    ```js
+    App.PostRoute = Ember.Route.extend({
+      setupControllers: function(controller, post) {
+        this._super(controller, post);
+        this.controllerFor('posts').set('currentPost', post);
+      }
+    });
+    ```
+
+    By default, the controller for `post` is the shared instance of
+    `App.PostController`.
+
+    @param {String} name the name of the route
+    @return {Ember.Controller}
+  */
   controllerFor: function(name) {
     return this.container.lookup('controller:' + name);
   },
 
+  /**
+    Returns the current model for a given route.
+
+    This is the object returned by the `model` hook of the route
+    in question.
+
+    @param {String} name the name of the route
+    @return {Object} the model object
+  */
   modelFor: function(name) {
     return this.container.lookup('route:' + name).currentModel;
   },
