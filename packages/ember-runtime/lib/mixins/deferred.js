@@ -17,8 +17,7 @@ var get = Ember.get,
   @namespace Ember
   @extends Ember.Mixin
  */
-Ember.Deferred = Ember.Mixin.create({
-
+Ember.DeferredMixin = Ember.Mixin.create({
   /**
     Add handlers to be called when the Deferred object is resolved or rejected.
 
@@ -27,7 +26,8 @@ Ember.Deferred = Ember.Mixin.create({
     @param {Function} failCallback a callback function to be called when failed
   */
   then: function(doneCallback, failCallback) {
-    return get(this, 'promise').then(doneCallback, failCallback);
+    var promise = get(this, 'promise');
+    promise.then.apply(promise, arguments);
   },
 
   /**
@@ -52,3 +52,4 @@ Ember.Deferred = Ember.Mixin.create({
     return new RSVP.Promise();
   })
 });
+
