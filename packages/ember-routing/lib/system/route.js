@@ -84,6 +84,56 @@ Ember.Route = Ember.Object.extend({
     this.render();
   },
 
+  /**
+    Renders a template into an outlet.
+
+    This method has a number of defaults, based on the name of the
+    route specified in the router.
+
+    For example:
+
+    ```js
+    App.Router.map(function(match) {
+      match("/").to("index");
+      match("/posts/:post_id").to("post");
+    });
+
+    App.PostRoute = App.Route.extend({
+      renderTemplates: function() {
+        this.render();
+      }
+    });
+    ```
+
+    The name of the `PostRoute`, as defined by the router, is `post`.
+
+    By default, render will:
+
+    * render the `post` template
+    * with the `post` view (`PostView`) for event handling, if one exists
+    * and the `post` controller (`PostController`), if one exists
+    * into the `main` outlet of the `application` template
+
+    You can override this behavior:
+
+    ```js
+    App.PostRoute = App.Route.extend({
+      renderTemplates: function() {
+        this.render('myPost', {   // the template to render
+          into: 'index',          // the template to render into
+          outlet: 'detail',       // the name of the outlet in that template
+          controller: 'blogPost'  // the controller to use for the template
+        });
+      }
+    });
+    ```
+
+    Remember that the controller's `content` will be the route's model. In
+    this case, the default model will be `App.Post.find(params.post_id)`.
+
+    @param {String} name the name of the template to render
+    @param {Object} options the options
+  */
   render: function(name, options) {
     if (typeof name === 'object' && !options) {
       options = name;
