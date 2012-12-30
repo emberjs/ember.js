@@ -65,6 +65,10 @@ define("router",
         var results = this.recognizer.recognize(url),
             objects = [];
 
+        if (!results) {
+          throw new Error("No route matched the URL '" + url + "'");
+        }
+
         collectObjects(this, results, 0, []);
       },
 
