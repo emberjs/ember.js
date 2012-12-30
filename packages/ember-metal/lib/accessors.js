@@ -37,8 +37,8 @@ var FIRST_KEY = /^([^\.\*]+)/;
   to respect the `unknownProperty` handler. Otherwise you can ignore this
   method.
 
-  Note that if the obj itself is `null`, this method will simply return
-  `undefined`.
+  Note that if the object itself is `undefined`, this method will throw
+  an error.
 
   @method get
   @for Ember
@@ -58,6 +58,7 @@ get = function get(obj, keyName) {
   }
 
   if (!obj || keyName.indexOf('.') !== -1) {
+    Ember.assert("Cannot call get with '"+ keyName +"' on an undefined object.", obj !== undefined);
     return getPath(obj, keyName);
   }
 
