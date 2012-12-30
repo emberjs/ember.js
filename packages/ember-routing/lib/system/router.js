@@ -24,8 +24,11 @@ Ember.Router = Ember.Object.extend({
 
     setupLocation(this);
 
-    Ember.assert("You must call " + this.constructor.toString() + ".map() before your application is initialized", this.constructor.callback);
-    router.map(this.constructor.callback);
+    var callback = this.constructor.callback;
+
+    router.map(function(match) {
+      match("/").to("application", callback);
+    });
   },
 
   startRouting: function() {

@@ -5,7 +5,6 @@ function bootApplication() {
   router = container.lookup('router:main');
 
   Ember.run(function() {
-    router._activeViews.application = container.lookup('view:application').appendTo('#qunit-fixture');
     router.startRouting();
   });
 }
@@ -13,16 +12,16 @@ function bootApplication() {
 module("Basic Routing", {
   setup: function() {
     Ember.run(function() {
-      App = Ember.Namespace.create();
+      App = Ember.Namespace.create({
+        rootElement: '#qunit-fixture'
+      });
       App.toString = function() { return "App"; };
-
 
       container = Ember.Application.buildContainer(App);
 
       App.LoadingRoute = Ember.Route.extend({
       });
 
-      Ember.TEMPLATES.app = Ember.Handlebars.compile("{{outlet}}");
       Ember.TEMPLATES.home = Ember.Handlebars.compile("<h3>Hours</h3>");
       Ember.TEMPLATES.homepage = Ember.Handlebars.compile("<h3>Megatroll</h3><p>{{home}}</p>");
 
@@ -30,11 +29,6 @@ module("Basic Routing", {
         location: 'none'
       });
 
-      AppView = Ember.View.extend({
-        template: Ember.TEMPLATES.app
-      });
-
-      container.register('view', 'application', AppView);
       container.register('router', 'main', Router);
     });
   }
@@ -564,13 +558,6 @@ asyncTest("Events are triggered on the current state", function() {
   );
 
   bootApplication();
-
-  //var controller = router._container.controller.home = Ember.Controller.create();
-  //controller.target = router;
-
-  Ember.run(function() {
-    router.handleURL("/");
-  });
 
   var actionId = Ember.$("#qunit-fixture a").data("ember-action");
   var action = Ember.Handlebars.ActionHelper.registeredActions[actionId];

@@ -167,8 +167,8 @@ test("initialize application with stateManager via initialize call from Router c
       match("/").to("index");
     });
 
-    app.ApplicationView = Ember.View.extend({
-      template: function() { return "<h1>Hello!</h1>"; }
+    app.container.register('template', 'application', function() {
+      return "<h1>Hello!</h1>";
     });
   });
 
@@ -186,7 +186,9 @@ test("ApplicationView is inserted into the page", function() {
     });
 
     app.ApplicationView = Ember.View.extend({
-      template: function() { return "<h1>Hello!</h1>"; }
+      render: function(buffer) {
+        buffer.push("<h1>Hello!</h1>");
+      }
     });
 
     app.ApplicationController = Ember.Controller.extend();
@@ -222,7 +224,6 @@ test("Minimal Application initialized with just an application template", functi
   Ember.$('#qunit-fixture').html('<script type="text/x-handlebars">Hello World</script>');
   Ember.run(function () {
     app = Ember.Application.create({
-      router: false,
       rootElement: '#qunit-fixture'
     });
   });

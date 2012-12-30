@@ -7,7 +7,6 @@ function bootApplication() {
   router = container.lookup('router:main');
 
   Ember.run(function() {
-    router._activeViews.application = AppView.create().appendTo('#qunit-fixture');
     router.startRouting();
   });
 }
@@ -15,7 +14,9 @@ function bootApplication() {
 module("The {{linkTo}} helper", {
   setup: function() {
     Ember.run(function() {
-      App = Ember.Namespace.create();
+      App = Ember.Namespace.create({
+        rootElement: '#qunit-fixture'
+      });
       App.toString = function() { return "App"; };
 
       container = Ember.Application.buildContainer(App);

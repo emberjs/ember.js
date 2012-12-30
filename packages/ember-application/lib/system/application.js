@@ -448,7 +448,6 @@ var Application = Ember.Application = Ember.Namespace.extend(
   didBecomeReady: function() {
     this.setupEventDispatcher();
     this.ready(); // user hook
-    this.createApplicationView();
     this.startRouting();
 
     if (!Ember.testing) {
@@ -483,25 +482,6 @@ var Application = Ember.Application = Ember.Namespace.extend(
 
     set(this, 'eventDispatcher', eventDispatcher);
     return eventDispatcher;
-  },
-
-  /**
-    @private
-
-    Create and append the application view. This will look up
-    `view:application` in the container, which defaults to
-    creating an instance of `App.ApplicationView`.
-  */
-  createApplicationView: function () {
-    var rootElement = get(this, 'rootElement'),
-        router = this.container.lookup('router:main'),
-        applicationView = this.container.lookup('view:application');
-
-    if (router) {
-      router._connectActiveView('application', applicationView);
-    }
-
-    applicationView.appendTo(rootElement);
   },
 
   /**
@@ -582,7 +562,12 @@ Ember.Application.reopenClass({
   buildContainer: function(namespace) {
     var container = new Ember.Container();
     Ember.Container.defaultContainer = container;
-    var ApplicationView = Ember.View.extend();
+    var ApplicationView = Ember.ContainerView.extend({
+      currentView: Ember.computed(function(key, value) {
+        if (arguments.length > 1) { return value; }
+        return get(this, '_outlets.main');
+      }).property('_outlets.main')
+    });
 
     container.set = Ember.set;
     container.resolve = resolveFor(namespace);
@@ -596,9 +581,6 @@ Ember.Application.reopenClass({
     container.typeInjection('controller', 'namespace', 'application:main');
 
     container.typeInjection('route', 'router', 'router:main');
-
-    container.injection('view:application', 'controller', 'controller:application');
-    container.injection('view:application', 'defaultTemplate', 'template:application');
 
     // Register a fallback application view. App.ApplicationView will
     // take precedence.

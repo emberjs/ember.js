@@ -94,10 +94,30 @@ Ember.Route = Ember.Object.extend({
 
     var container = this.router.container,
         className = classify(name),
-        view = container.lookup('view:' + name) || container.lookup('view:default');
+        view = container.lookup('view:' + name),
+        containerView;
 
-    set(view, 'template', container.lookup('template:' + name));
+    var template = container.lookup('template:' + name);
+
+    if (!view && !template) { return; }
+
+    // Trying to set a template on a container view won't work,
+    // so instead create a new default view with the template
+    // and set it as the container view's `currentView`
+    if (view instanceof Ember.ContainerView && template) {
+      containerView = view;
+      view = null;
+    }
+
+    view = view || container.lookup('view:default');
+
+    set(view, 'template', template);
     set(view, 'viewName', name);
+
+    if (containerView) {
+      set(containerView, 'currentView', view);
+      view = containerView;
+    }
 
     options = options || {};
     var into = options.into || 'application';
@@ -110,7 +130,13 @@ Ember.Route = Ember.Object.extend({
 
     set(view, 'controller', controller);
 
-    var parentView = this.router._lookupActiveView(into);
-    parentView.connectOutlet(outlet, view);
+    if (name === 'application') {
+      var rootElement = get(this, 'router.namespace.rootElement');
+      this.router._connectActiveView('application', view);
+      view.appendTo(rootElement);
+    } else {
+      var parentView = this.router._lookupActiveView(into);
+      parentView.connectOutlet(outlet, view);
+    }
   }
 });
