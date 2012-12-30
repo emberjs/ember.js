@@ -10,7 +10,7 @@ Ember.Route = Ember.Object.extend({
     This hook is the entry point for router.js
   */
   setup: function(context) {
-    var container = this.router.container;
+    var container = this.container;
 
     var templateName = this.templateName,
         controller = container.lookup('controller:' + templateName);
@@ -73,11 +73,11 @@ Ember.Route = Ember.Object.extend({
   },
 
   controllerFor: function(name) {
-    return this.router.container.lookup('controller:' + name);
+    return this.container.lookup('controller:' + name);
   },
 
   modelFor: function(name) {
-    return this.router.container.lookup('route:' + name).currentModel;
+    return this.container.lookup('route:' + name).currentModel;
   },
 
   renderTemplates: function(context) {
@@ -92,51 +92,74 @@ Ember.Route = Ember.Object.extend({
 
     name = name || this.templateName;
 
-    var container = this.router.container,
-        className = classify(name),
+    var container = this.container,
         view = container.lookup('view:' + name),
-        containerView;
-
-    var template = container.lookup('template:' + name);
+        template = container.lookup('template:' + name);
 
     if (!view && !template) { return; }
 
-    // Trying to set a template on a container view won't work,
-    // so instead create a new default view with the template
-    // and set it as the container view's `currentView`
-    if (view instanceof Ember.ContainerView && template) {
-      containerView = view;
-      view = null;
-    }
-
-    view = view || container.lookup('view:default');
-
-    set(view, 'template', template);
-    set(view, 'viewName', name);
-
-    if (containerView) {
-      set(containerView, 'currentView', view);
-      view = containerView;
-    }
-
-    options = options || {};
-    var into = options.into || 'application';
-    var outlet = options.outlet || 'main';
-    var controller = options.controller || this.templateName;
-
-    if (typeof controller === 'string') {
-      controller = container.lookup('controller:' + controller);
-    }
-
-    set(view, 'controller', controller);
+    options = normalizeOptions(this, name, template, options);
+    view = setupView(view, container, options);
 
     if (name === 'application') {
-      var rootElement = get(this, 'router.namespace.rootElement');
-      this.router._connectActiveView('application', view);
-      view.appendTo(rootElement);
+      appendApplicationView(this, view);
     } else {
-      var parentView = this.router._lookupActiveView(into);
-      parentView.connectOutlet(outlet, view);
+      appendView(this, view, options);
     }
   }
 });
+
+function normalizeOptions(route, name, template, options) {
+  options = options || {};
+  options.into = options.into || 'application';
+  options.outlet = options.outlet || 'main';
+  options.name = name;
+  options.template = template;
+
+  var controller = options.controller || route.templateName;
+
+  if (typeof controller === 'string') {
+    controller = route.container.lookup('controller:' + controller);
+  }
+
+  options.controller = controller;
+
+  return options;
+}
+
+function setupView(view, container, options) {
+  var containerView;
+
+  // Trying to set a template on a container view won't work,
+  // so instead create a new default view with the template
+  // and set it as the container view's `currentView`
+  if (view instanceof Ember.ContainerView && options.template) {
+    containerView = view;
+    view = null;
+  }
+
+  view = view || container.lookup('view:default');
+
+  set(view, 'template', options.template);
+  set(view, 'viewName', options.name);
+
+  if (containerView) {
+    set(containerView, 'currentView', view);
+    view = containerView;
+  }
+
+  set(view, 'controller', options.controller);
+
+  return view;
+}
+
+function appendApplicationView(route, view) {
+  var rootElement = get(route, 'router.namespace.rootElement');
+  route.router._connectActiveView('application', view);
+  view.appendTo(rootElement);
+}
+
+function appendView(route, view, options) {
+  var parentView = route.router._lookupActiveView(options.into);
+  parentView.connectOutlet(options.outlet, view);
+}
