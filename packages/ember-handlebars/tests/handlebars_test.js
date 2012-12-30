@@ -62,8 +62,6 @@ var appendView = function() {
   Ember.run(function() { view.appendTo('#qunit-fixture'); });
 };
 
-require('container');
-
 var additionalTeardown;
 var originalLookup = Ember.lookup, lookup;
 var TemplateTests, container;

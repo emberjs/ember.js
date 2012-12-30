@@ -1,6 +1,7 @@
 /*globals jQuery*/
 
 require("ember-runtime");
+require("container");
 
 /**
 Ember Views

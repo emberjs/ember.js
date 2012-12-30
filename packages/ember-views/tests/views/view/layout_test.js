@@ -1,7 +1,5 @@
 var set = Ember.set, get = Ember.get, container;
 
-require('container');
-
 module("Ember.View - Layout Functionality", {
   setup: function() {
     container = new Ember.Container();
