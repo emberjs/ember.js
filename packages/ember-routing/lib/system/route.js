@@ -323,24 +323,10 @@ function normalizeOptions(route, name, template, options) {
 function setupView(view, container, options) {
   var containerView;
 
-  // Trying to set a template on a container view won't work,
-  // so instead create a new default view with the template
-  // and set it as the container view's `currentView`
-  if (view instanceof Ember.ContainerView && options.template) {
-    containerView = view;
-    view = null;
-  }
-
   view = view || container.lookup('view:default');
 
   set(view, 'template', options.template);
   set(view, 'viewName', options.name);
-
-  if (containerView) {
-    set(containerView, 'currentView', view);
-    view = containerView;
-  }
-
   set(view, 'controller', options.controller);
 
   return view;

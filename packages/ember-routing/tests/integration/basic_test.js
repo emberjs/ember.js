@@ -296,7 +296,7 @@ test("The Special Page returning a promise puts the app into a loading state unt
 
   var menuItem;
 
-  App.MenuItem = Ember.Object.extend(Ember.Deferred);
+  App.MenuItem = Ember.Object.extend(Ember.DeferredMixin);
   App.MenuItem.find = function(id) {
     menuItem = App.MenuItem.create({ id: id });
     return menuItem;
@@ -348,7 +348,7 @@ test("Moving from one page to another triggers the correct callbacks", function(
 
   var menuItem;
 
-  App.MenuItem = Ember.Object.extend(Ember.Deferred);
+  App.MenuItem = Ember.Object.extend(Ember.DeferredMixin);
   App.MenuItem.find = function(id) {
     menuItem = App.MenuItem.create({ id: id });
     return menuItem;
@@ -407,7 +407,7 @@ test("Nested callbacks are not exited when moving to siblings", function() {
 
   var menuItem;
 
-  App.MenuItem = Ember.Object.extend(Ember.Deferred);
+  App.MenuItem = Ember.Object.extend(Ember.DeferredMixin);
   App.MenuItem.find = function(id) {
     menuItem = App.MenuItem.create({ id: id });
     return menuItem;
