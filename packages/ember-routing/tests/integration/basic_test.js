@@ -672,4 +672,28 @@ test("A redirection hook is provided", function() {
   equal(Ember.$("h3:contains(Hours)", "#qunit-fixture").length, 1, "The home template was rendered");
 });
 
+test("Star matching works correctly", function()
+{
+  Router.map(function(match) {
+    match("/").to("home");
+    match("/*blah").to("star");
+  });
+
+  var chooseFollowed = 0;
+
+  App.StarRoute = Ember.Route.extend({
+    setupControllers: function() {
+      chooseFollowed++;
+    }
+  });
+
+  bootApplication();
+
+  Ember.run(function() {
+    router.handleURL("/" + String(Math.random()).substr(2));
+  });
+
+  equal(chooseFollowed, 1, "The 404 route was followed");
+});
+
 // TODO: Parent context change
