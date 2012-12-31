@@ -58,7 +58,7 @@ Ember.ControllerMixin = Ember.Mixin.create({
   send: function(actionName, event) {
     var target;
 
-    if (this.hasOwnProperty(actionName)) {
+    if (this[actionName]) {
       this[actionName](event);
     } else if(target = get(this, 'target')) {
       target.send(actionName, event);
