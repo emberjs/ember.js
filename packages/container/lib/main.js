@@ -1,3 +1,5 @@
+require('ember-runtime');
+
 var get = Ember.get, set = Ember.set;
 
 function Container() {
@@ -74,16 +76,20 @@ function isSingleton(container, fullName) {
   return singleton !== false;
 }
 
-function applyInjections(container, value, injections) {
-  if (!injections) { return; }
+function buildInjections(container, injections) {
+  var hash = {};
+
+  if (!injections) { return hash; }
 
   var injection, lookup;
 
   for (var i=0, l=injections.length; i<l; i++) {
     injection = injections[i];
     lookup = container.lookup(injection.fullName);
-    container.set(value, injection.property, lookup);
+    hash[injection.property] = lookup;
   }
+
+  return hash;
 }
 
 function option(container, fullName, optionName) {
@@ -113,13 +119,14 @@ function instantiate(container, fullName) {
   }
 
   if (factory) {
-    value = factory.create({ container: container });
-
     var injections = [];
     injections = injections.concat(container.typeInjections[type] || []);
     injections = injections.concat(container.injections[fullName] || []);
 
-    applyInjections(container, value, injections);
+    var hash = buildInjections(container, injections);
+    hash.container = container;
+
+    value = factory.create(hash);
 
     return value;
   }

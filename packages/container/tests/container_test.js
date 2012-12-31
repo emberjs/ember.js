@@ -1,10 +1,10 @@
-var get = Ember.get;
+var get = Ember.get, setProperties = Ember.setProperties, passedOptions;
 
 module("Container");
 
 function factory() {
-  var Klass = function(container) {
-    this.container = container;
+  var Klass = function(options) {
+    setProperties(this, options);
   };
 
   Klass.prototype.destroy = function() {
@@ -12,7 +12,8 @@ function factory() {
   };
 
   Klass.create = function(options) {
-    return new Klass(options.container);
+    passedOptions = options;
+    return new Klass(options);
   };
 
   return Klass;
@@ -71,7 +72,10 @@ test("An individual factory with a registered injection receives the injection",
   var postController = container.lookup('controller:post');
   var store = container.lookup('store:main');
 
-  equal(postController.store, store);
+  deepEqual(passedOptions, {
+    store: store,
+    container: container
+  });
 });
 
 test("A factory with both type and individual injections", function() {
