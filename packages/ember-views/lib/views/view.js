@@ -467,7 +467,7 @@ class:
   Within an Ember application is more common to define a Handlebars templates as
   part of a page:
 
-  ```handlebars
+  ```html
   <script type='text/x-handlebars' data-template-name='some-template'>
     Hello
   </script>
