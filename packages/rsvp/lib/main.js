@@ -148,27 +148,31 @@ define("rsvp",
     var noop = function() {};
 
     var invokeCallback = function(type, promise, callback, event) {
-      var value, error;
+      var hasCallback = typeof callback === 'function',
+          value, error, succeeded, failed;
 
-      if (callback) {
+      if (hasCallback) {
         try {
           value = callback(event.detail);
+          succeeded = true;
         } catch(e) {
+          failed = true;
           error = e;
         }
       } else {
         value = event.detail;
+        succeeded = true;
       }
 
-      if (value instanceof Promise) {
+      if (value && typeof value.then === 'function') {
         value.then(function(value) {
           promise.resolve(value);
         }, function(error) {
           promise.reject(error);
         });
-      } else if (callback && value) {
+      } else if (hasCallback && succeeded) {
         promise.resolve(value);
-      } else if (error) {
+      } else if (failed) {
         promise.reject(error);
       } else {
         promise[type](value);
