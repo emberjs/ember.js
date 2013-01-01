@@ -581,7 +581,7 @@ asyncTest("Events are triggered on the current state", function() {
   action.handler(event);
 });
 
-asyncTest("Events are triggered on the current state", function() {
+asyncTest("Events are triggered on the current state when routes are nested", function() {
   Router.map(function(match) {
     match("/").to("root", function(match) {
       match("/").to("home");
