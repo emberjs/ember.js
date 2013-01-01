@@ -1,5 +1,3 @@
-require('ember-application');
-
 var Router, App, AppView, templates, router, eventDispatcher, container;
 var get = Ember.get, set = Ember.set;
 

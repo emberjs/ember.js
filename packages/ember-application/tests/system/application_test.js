@@ -1,5 +1,3 @@
-require('ember-routing');
-
 var view;
 var application;
 var set = Ember.set, get = Ember.get;

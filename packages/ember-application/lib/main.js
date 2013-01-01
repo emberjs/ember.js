@@ -1,4 +1,5 @@
 require('ember-views');
+require('ember-routing');
 require('ember-application/system');
 
 /**

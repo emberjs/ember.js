@@ -1,6 +1,4 @@
-require('ember-metal');
-require('ember-views');
-require('ember-handlebars');
+require('ember-application');
 
 /**
 Ember

@@ -1,5 +1,3 @@
-require('ember-routing');
-
 var oldInitializers, app;
 var indexOf = Ember.ArrayPolyfills.indexOf;
 
