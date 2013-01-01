@@ -37,11 +37,15 @@ test("prevents XSS injection via `attr`", function() {
   buffer.attr('class', "hax><img src=\"trollface.png\"");
   buffer.pushOpeningTag();
 
-  var cleanedString = Ember.$.trim(buffer.string()).toLowerCase();
-  ok(cleanedString === '<div id="trololol&quot; onmouseover=&quot;pwn()" class="hax&gt;&lt;img src=&quot;trollface.png&quot;"></div>' || // Webkit
-      cleanedString === '<div class="hax><img src=&quot;trollface.png&quot;" id="trololol&quot; onmouseover=&quot;pwn()"></div>' || // FF
-      cleanedString === "<div id='trololol\" onmouseover=\"pwn()' class='hax><img src=\"trollface.png\"'></div>", // IE
-      'expected safe string but was: '+cleanedString);
+  var el = buffer.element(),
+      elId = el.getAttribute('id'),
+      elOnmouseover = el.getAttribute('onmouseover'),
+      elClass = el.getAttribute('class');
+
+  equal(elId, 'trololol" onmouseover="pwn()', 'id should be escaped');
+  equal(elOnmouseover, undefined, 'should not have onmouseover');
+  ok(elClass === 'hax><img src=\"trollface.png\"' || !elClass, 'should have escaped class');
+  equal(el.childNodes.length, 0, 'should not have children');
 });
 
 test("prevents XSS injection via `addClass`", function() {
@@ -63,11 +67,12 @@ test("prevents XSS injection via `style`", function() {
   buffer.style('color', 'blue;" xss="true" style="color:red');
   buffer.pushOpeningTag();
 
-  // Regular check then check for IE
-  var cleanedString = Ember.$.trim(buffer.string()).toLowerCase();
-  ok(cleanedString === '<div style="color:blue;&quot; xss=&quot;true&quot; style=&quot;color:red;"></div>' ||
-      cleanedString.match(/<div style="color: blue;?"><\/div>/),
-      'expected safe string but was: '+cleanedString);
+  var el = buffer.element(),
+      elColor = el.style.color,
+      elXss = el.getAttribute('xss');
+
+  equal(elColor, 'blue', 'should have escaped style');
+  equal(elXss, undefined, 'should not have xss attr');
 });
 
 module("Ember.RenderBuffer - without tagName");
