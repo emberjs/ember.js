@@ -95,7 +95,7 @@ For new users, we recommend downloading the [Ember.js Starter Kit](https://githu
 
 NOTE: Due to the rename, these instructions may be in flux
 
-1. Run `rake` to build Ember.js. Two builds will be placed in the `dist/` directory.
+1. Run `rake dist` to build Ember.js. Two builds will be placed in the `dist/` directory.
   * `ember.js` and `ember.min.js` - unminified and minified
     builds of Ember.js
 
