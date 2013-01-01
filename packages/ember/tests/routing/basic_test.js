@@ -486,6 +486,53 @@ test("Nested callbacks are not exited when moving to siblings", function() {
   deepEqual(router.location.path, '/specials/1');
 });
 
+asyncTest("Events are triggered on the controller if a matching action name is implemented", function() {
+  Router.map(function(match) {
+    match("/").to("home");
+  });
+
+  var model = { name: "Tom Dale" };
+  var stateIsNotCalled = true;
+
+  App.HomeRoute = Ember.Route.extend({
+    model: function() {
+      return model;
+    },
+
+    events: {
+      showStuff: function(handler, obj) {
+        stateIsNotCalled = false;
+      }
+    }
+  });
+
+  Ember.TEMPLATES.home = Ember.Handlebars.compile(
+    "<a {{action showStuff content}}>{{name}}</a>"
+  );
+
+  var controller = Ember.Controller.extend({
+    showStuff: function(event){
+      ok (stateIsNotCalled, "an event on the state is not triggered");
+      deepEqual(event.context, { name: "Tom Dale" }, "an event with context is passed");
+      start();
+    }
+  });
+
+  container.register('controller', 'home', controller);
+
+  bootApplication();
+
+
+  Ember.run(function() {
+    router.handleURL("/");
+  });
+
+  var actionId = Ember.$("#qunit-fixture a").data("ember-action");
+  var action = Ember.Handlebars.ActionHelper.registeredActions[actionId];
+  var event = new Ember.$.Event("click");
+  action.handler(event);
+});
+
 asyncTest("Events are triggered on the current state", function() {
   Router.map(function(match) {
     match("/").to("home");
