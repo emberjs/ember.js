@@ -315,6 +315,7 @@ Ember.wrap = function(func, superFunc) {
     return ret;
   }
 
+  superWrapper.wrappedFunction = func;
   superWrapper.__ember_observes__ = func.__ember_observes__;
   superWrapper.__ember_observesBefore__ = func.__ember_observesBefore__;
 
