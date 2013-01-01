@@ -2022,7 +2022,10 @@ Ember.View = Ember.CoreView.extend(
       if (view.viewName) { set(get(this, 'concreteView'), view.viewName, view); }
     } else {
       Ember.assert('You must pass instance or subclass of View', view.isView);
-      Ember.assert("You can only pass attributes when a class is provided", !attrs);
+
+      if (attrs) {
+        view.setProperties(attrs);
+      }
 
       if (!get(view, 'templateData')) {
         set(view, 'templateData', get(this, 'templateData'));
