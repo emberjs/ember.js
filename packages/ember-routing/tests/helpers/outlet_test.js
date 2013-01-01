@@ -34,7 +34,8 @@ test("view should support connectOutlet for the main outlet", function() {
     }));
   });
 
-  equal(view.$().text(), 'HIBYE');
+  // Replace whitespace for older IE
+  equal(view.$().text().replace(/\s+/,''), 'HIBYE');
 });
 
 test("outlet should support connectOutlet in slots in prerender state", function() {
@@ -68,7 +69,8 @@ test("outlet should support an optional name", function() {
     }));
   });
 
-  equal(view.$().text(), 'HIBYE');
+  // Replace whitespace for older IE
+  equal(view.$().text().replace(/\s+/,''), 'HIBYE');
 });
 
 test("Outlets bind to the current view, not the current concrete view", function() {
@@ -118,11 +120,13 @@ test("view should support disconnectOutlet for the main outlet", function() {
     }));
   });
 
-  equal(view.$().text(), 'HIBYE');
+  // Replace whitespace for older IE
+  equal(view.$().text().replace(/\s+/,''), 'HIBYE');
 
   Ember.run(function() {
     view.disconnectOutlet('main');
   });
 
-  equal(view.$().text(), 'HI');
+  // Replace whitespace for older IE
+  equal(view.$().text().replace(/\s+/,''), 'HI');
 });
