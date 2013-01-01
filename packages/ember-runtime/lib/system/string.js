@@ -207,7 +207,7 @@ Ember.String = {
     'my favorite items'.underscore();  // 'my_favorite_items'
     ```
 
-    @property underscore
+    @method underscore
     @param {String} str The string to underscore.
     @return {String} the underscored string.
   */
@@ -224,9 +224,9 @@ Ember.String = {
        'css-class-name'.capitalize()    => 'Css-class-name'
        'my favorite items'.capitalize() => 'My favorite items'
 
+    @method capitalize
     @param {String} str
-
-    @returns {String}
+    @return {String}
   */
   capitalize: function(str) {
     return str.charAt(0).toUpperCase() + str.substr(1);

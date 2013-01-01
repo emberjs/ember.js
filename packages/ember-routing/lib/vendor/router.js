@@ -3,8 +3,6 @@ define("router",
   function(RouteRecognizer) {
     "use strict";
     /**
-      @private
-
       This file references several internal structures:
 
       ## `RecognizedHandler`
@@ -25,8 +23,6 @@ define("router",
       * `{Object} handler`: a handler object
       * `{Object} context`: the active context for the handler
     */
-
-
     function Router() {
       this.recognizer = new RouteRecognizer();
     }
@@ -40,6 +36,7 @@ define("router",
         This method extracts the String handler at the last `.to()`
         call and uses it as the name of the whole route.
 
+        @method map
         @param {Function} callback
       */
       map: function(callback) {
@@ -57,9 +54,9 @@ define("router",
         Returns an Array of handlers and the parameters associated
         with those parameters.
 
+        @method handleURL
         @param {String} url a URL to process
-
-        @returns {Array} an Array of `[handler, parameter]` tuples
+        @return {Array} an Array of `[handler, parameter]` tuples
       */
       handleURL: function(url) {
         var results = this.recognizer.recognize(url),
@@ -78,6 +75,7 @@ define("router",
         If necessary, trigger the exit callback on any handlers
         that are no longer represented by the target route.
 
+        @method transitionTo
         @param {String} name the name of the route
       */
       transitionTo: function(name) {
@@ -101,9 +99,10 @@ define("router",
         This method takes a handler name and a list of contexts and returns
         a serialized parameter hash suitable to pass to `recognizer.generate()`.
 
+        @method paramsForHandler
         @param {String} handlerName
         @param {Array[Object]} contexts
-        @returns {Object} a serialized parameter hash
+        @return {Object} a serialized parameter hash
       */
       paramsForHandler: function(handlerName, callback) {
         var output = this._paramsForHandler(handlerName, [].slice.call(arguments, 1));
@@ -114,11 +113,13 @@ define("router",
         Take a named route and context objects and generate a
         URL.
 
+        @method generate
+
         @param {String} name the name of the route to generate
           a URL for
         @param {...Object} objects a list of objects to serialize
 
-        @returns {String} a URL
+        @return {String} a URL
       */
       generate: function(handlerName) {
         var params = this.paramsForHandler.apply(this, arguments);
@@ -455,7 +456,7 @@ define("router",
       @param {Array[HandlerInfo]} newHandlers a list of the handler
         information for the new URL
 
-      @returns {Partition}
+      @return {Partition}
     */
     function partitionHandlers(oldHandlers, newHandlers) {
       var handlers = {

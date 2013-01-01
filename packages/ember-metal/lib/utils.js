@@ -5,6 +5,7 @@ require('ember-metal/platform');
 @module ember-metal
 */
 
+
 var o_defineProperty = Ember.platform.defineProperty,
     o_create = Ember.create,
     // Used for guid generation...

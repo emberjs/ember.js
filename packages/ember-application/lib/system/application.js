@@ -281,6 +281,7 @@ var Application = Ember.Application = Ember.Namespace.extend(
     Also register a default application view in case the application
     itself does not.
 
+    @method buildContainer
     @return {Ember.Container} the configured container
   */
   buildContainer: function() {
@@ -306,6 +307,7 @@ var Application = Ember.Application = Ember.Namespace.extend(
     });
     ```
 
+    @method defaultRouter
     @return {Ember.Router} the default router
   */
   defaultRouter: function() {
@@ -323,6 +325,8 @@ var Application = Ember.Application = Ember.Namespace.extend(
     Defer Ember readiness until DOM readiness. By default, Ember
     will wait for both DOM readiness and application initialization,
     as well as any deferrals registered by initializers.
+
+    @method deferUntilDOMReady
   */
   deferUntilDOMReady: function() {
     this.deferReadiness();
@@ -347,6 +351,8 @@ var Application = Ember.Application = Ember.Namespace.extend(
     `deferReadiness()` to defer booting, and then call
     `advanceReadiness()` once all of your code has finished
     loading.
+
+    @method scheduleInitialize
   */
   scheduleInitialize: function() {
     var self = this;
@@ -376,6 +382,8 @@ var Application = Ember.Application = Ember.Namespace.extend(
 
     However, if the setup requires a loading UI, it might be better
     to use the router for this purpose.
+
+    @method deferReadiness
   */
   deferReadiness: function() {
     Ember.assert("You cannot defer readiness since the `ready()` hook has already been called.", this._readinessDeferrals > 0);
@@ -383,6 +391,7 @@ var Application = Ember.Application = Ember.Namespace.extend(
   },
 
   /**
+    @method advanceReadiness
     @see {Ember.Application#deferReadiness}
   */
   advanceReadiness: function() {
@@ -401,6 +410,8 @@ var Application = Ember.Application = Ember.Namespace.extend(
     Run any injections and run the application load hook. These hooks may
     choose to defer readiness. For example, an authentication hook might want
     to defer readiness until the auth token has been retrieved.
+
+    @method initialize
   */
   initialize: function() {
     Ember.assert("Application initialize may only be called once", !this.isInitialized);
@@ -424,7 +435,10 @@ var Application = Ember.Application = Ember.Namespace.extend(
     return this;
   },
 
-  /** @private */
+  /**
+    @private
+    @method runInitializers
+  */
   runInitializers: function() {
     var router = this.container.lookup('router:main'),
         initializers = get(this.constructor, 'initializers'),
@@ -444,7 +458,10 @@ var Application = Ember.Application = Ember.Namespace.extend(
     });
   },
 
-  /** @private */
+  /**
+    @private
+    @method didBecomeReady
+  */
   didBecomeReady: function() {
     this.setupEventDispatcher();
     this.ready(); // user hook
@@ -461,6 +478,8 @@ var Application = Ember.Application = Ember.Namespace.extend(
     Setup up the event dispatcher to receive events on the
     application's `rootElement` with any registered
     `customEvents`.
+
+    @method setupEventDispatcher
   */
   setupEventDispatcher: function() {
     var eventDispatcher = this.createEventDispatcher(),
@@ -473,6 +492,8 @@ var Application = Ember.Application = Ember.Namespace.extend(
     @private
 
     Create an event dispatcher for the application's `rootElement`.
+
+    @method createEventDispatcher
   */
   createEventDispatcher: function() {
     var rootElement = get(this, 'rootElement'),
@@ -555,6 +576,8 @@ Ember.Application.reopenClass({
     * the application view receives the application template as its
       `defaultTemplate` property
 
+    @method buildContainer
+    @static
     @param {Ember.Application} namespace the application to build the
       container for.
     @return {Ember.Container} the built container

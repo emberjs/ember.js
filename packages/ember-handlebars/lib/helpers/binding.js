@@ -67,7 +67,6 @@ function bind(property, options, preserveContext, shouldDisplay, valueNormalizer
 
       view.appendChild(bindView);
 
-      /** @private */
       observer = function() {
         Ember.run.scheduleOnce('render', bindView, 'rerenderIfNeeded');
       };

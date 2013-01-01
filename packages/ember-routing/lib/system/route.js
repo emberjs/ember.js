@@ -9,6 +9,7 @@ Ember.Route = Ember.Object.extend({
     route in question. The model will be serialized into the URL
     using the `serialize` hook.
 
+    @method transitionTo
     @param {String} name the name of the route
     @param {...Object} models the
   */
@@ -21,6 +22,8 @@ Ember.Route = Ember.Object.extend({
     @private
 
     This hook is the entry point for router.js
+
+    @method setup
   */
   setup: function(context) {
     var container = this.container;
@@ -56,6 +59,7 @@ Ember.Route = Ember.Object.extend({
     If you call `this.transitionTo` from inside of this hook, this route
     will not be entered in favor of the other hook.
 
+    @method redirect
     @param {Object} model the model for this route
   */
   redirect: Ember.K,
@@ -65,6 +69,8 @@ Ember.Route = Ember.Object.extend({
 
     The hook called by `router.js` to convert parameters into the context
     for this handler. The public Ember hook is `model`.
+
+    @method deserialize
   */
   deserialize: function(params) {
     var model = this.model(params);
@@ -90,6 +96,7 @@ Ember.Route = Ember.Object.extend({
     * The find method is called on the model class with the value of
       the dynamic segment.
 
+    @method model
     @param {Object} params the parameters extracted from the URL
   */
   model: function(params) {
@@ -140,6 +147,7 @@ Ember.Route = Ember.Object.extend({
     This method is called when `transitionTo` is called with a context
     in order to populate the URL.
 
+    @method serialize
     @param {Object} model the route's model
     @param {Array} params an Array of parameter names for the current
       route (in the example, `['post_id']`.
@@ -181,6 +189,8 @@ Ember.Route = Ember.Object.extend({
 
     This means that your template will get a proxy for the model as its
     context, and you can act as though the model itself was the context.
+
+    @method setupControllers
   */
   setupControllers: function(controller, model) {
     if (controller) {
@@ -203,6 +213,7 @@ Ember.Route = Ember.Object.extend({
     By default, the controller for `post` is the shared instance of
     `App.PostController`.
 
+    @method controllerFor
     @param {String} name the name of the route
     @return {Ember.Controller}
   */
@@ -216,6 +227,7 @@ Ember.Route = Ember.Object.extend({
     This is the object returned by the `model` hook of the route
     in question.
 
+    @method modelFor
     @param {String} name the name of the route
     @return {Object} the model object
   */
@@ -274,6 +286,7 @@ Ember.Route = Ember.Object.extend({
     Remember that the controller's `content` will be the route's model. In
     this case, the default model will be `App.Post.find(params.post_id)`.
 
+    @method render
     @param {String} name the name of the template to render
     @param {Object} options the options
   */
