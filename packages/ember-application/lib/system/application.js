@@ -31,11 +31,11 @@ Ember.Container.set = Ember.set;
   App.MyView = Ember.View.extend();
   ```
 
-  Calling `Ember.Application.create()` will automatically initialize your
-  application by calling the `Ember.Application.initialize()` method. If you
-  need to delay initialization, you can pass `{autoinit: false}` to the
-  `Ember.Application.create()` method, and call `App.initialize()`
-  later.
+  By default, calling `Ember.Application.create()` will automatically initialize
+  your  application by calling the `Ember.Application.initialize()` method. If
+  you need to delay initialization, you can call your app's `deferReadiness()`
+  method. When you are ready for your app to be initialized, call its
+  `advanceReadiness()` method.
 
   Because `Ember.Application` inherits from `Ember.Namespace`, any classes
   you create will have useful string representations when calling `toString()`.
