@@ -91,7 +91,7 @@ SimpleHandlebarsView.prototype = {
       case 'destroyed':
         break;
       case 'inBuffer':
-        throw new Error("Something you did tried to replace an {{expression}} before it was inserted into the DOM.");
+        throw new Ember.Error("Something you did tried to replace an {{expression}} before it was inserted into the DOM.");
       case 'hasElement':
       case 'inDOM':
         this.updateId = Ember.run.scheduleOnce('render', this, 'update');

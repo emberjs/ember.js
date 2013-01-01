@@ -22,7 +22,7 @@ Ember.merge(inBuffer, {
   // when a view is rendered in a buffer, rerendering it simply
   // replaces the existing buffer with a new one
   rerender: function(view) {
-    throw new Error("Something you did caused a view to re-render after it rendered but before it was inserted into the DOM.");
+    throw new Ember.Error("Something you did caused a view to re-render after it rendered but before it was inserted into the DOM.");
   },
 
   // when a view is rendered in a buffer, appending a child
