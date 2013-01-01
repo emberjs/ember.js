@@ -422,7 +422,7 @@ var merge = function(original, hash) {
 
   The following template:
 
-  ```handlebars
+  ```html
   <script type="text/x-handlebars" data-template-name="aView">
       <h1><a {{action anActionOnTheRouter}}>{{title}}</a></h1>
   </script>
@@ -437,7 +437,7 @@ var merge = function(original, hash) {
   Different `context` can be supplied from within the `{{action}}` helper,
   allowing specific context passing between application states:
 
-  ```handlebars
+  ```html
   <script type="text/x-handlebars" data-template-name="photos">
     {{#each photo in controller}}
       <h1><a {{action showPhoto photo}}>{{title}}</a></h1>
