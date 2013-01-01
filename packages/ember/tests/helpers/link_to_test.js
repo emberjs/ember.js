@@ -9,6 +9,11 @@ function bootApplication() {
   });
 }
 
+// IE includes the host name
+function normalizeUrl(url) {
+  return url.replace(/https?:\/\/[^\/]+/,'');
+}
+
 module("The {{linkTo}} helper", {
   setup: function() {
     Ember.run(function() {
@@ -152,7 +157,7 @@ test("The {{linkTo}} helper moves into the named route with context", function()
   });
 
   equal(Ember.$('h3:contains(List)', '#qunit-fixture').length, 1, "The home template was rendered");
-  equal(Ember.$('#home-link').attr('href'), '/', "The home link points back at /");
+  equal(normalizeUrl(Ember.$('#home-link').attr('href')), '/', "The home link points back at /");
 
   Ember.run(function() {
     Ember.$('li a:contains(Yehuda)', '#qunit-fixture').click();
@@ -164,9 +169,9 @@ test("The {{linkTo}} helper moves into the named route with context", function()
   Ember.run(function() { Ember.$('#home-link').click(); });
   Ember.run(function() { Ember.$('#about-link').click(); });
 
-  equal(Ember.$('li a:contains(Yehuda)').attr('href'), "/item/yehuda");
-  equal(Ember.$('li a:contains(Tom)').attr('href'), "/item/tom");
-  equal(Ember.$('li a:contains(Erik)').attr('href'), "/item/erik");
+  equal(normalizeUrl(Ember.$('li a:contains(Yehuda)').attr('href')), "/item/yehuda");
+  equal(normalizeUrl(Ember.$('li a:contains(Tom)').attr('href')), "/item/tom");
+  equal(normalizeUrl(Ember.$('li a:contains(Erik)').attr('href')), "/item/erik");
 
   Ember.run(function() {
     Ember.$('li a:contains(Erik)', '#qunit-fixture').click();
