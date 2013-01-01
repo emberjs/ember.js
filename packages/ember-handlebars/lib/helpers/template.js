@@ -9,7 +9,7 @@ require('ember-handlebars/ext');
   `template` allows you to render a template from inside another template.
   This allows you to re-use the same template in multiple places. For example:
 
-  ```handlebars
+  ```html
   <script type="text/x-handlebars" data-template-name="logged_in_user">
     {{#with loggedInUser}}
       Last Login: {{lastLogin}}
@@ -18,7 +18,7 @@ require('ember-handlebars/ext');
   </script>
   ```
 
-  ```handlebars
+  ```html
   <script type="text/x-handlebars" data-template-name="user_info">
     Name: <em>{{name}}</em>
     Karma: <em>{{karma}}</em>
