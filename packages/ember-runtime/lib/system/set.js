@@ -313,8 +313,10 @@ Ember.Set = Ember.CoreObject.extend(Ember.MutableEnumerable, Ember.Copyable, Emb
 
     This is an alias of `Ember.MutableEnumerable.addObjects()`
 
+    ```javascript
     var colors = new Ember.Set();
     colors.addEach(["red", "green", "blue"]);  // ["red", "green", "blue"]
+    ```
 
     @method addEach
     @param {Ember.Enumerable} objects the objects to add.
