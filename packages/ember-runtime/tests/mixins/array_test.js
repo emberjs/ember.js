@@ -37,7 +37,7 @@ var TestArray = Ember.Object.extend(Ember.Array, {
 
   length: Ember.computed(function() {
     return this._content.length;
-  }).property(),
+  }),
 
   slice: function() {
     return this._content.slice();

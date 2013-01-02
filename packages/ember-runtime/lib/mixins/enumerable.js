@@ -719,7 +719,7 @@ Ember.Enumerable = Ember.Mixin.create(
   */
   '[]': Ember.computed(function(key, value) {
     return this;
-  }).property(),
+  }),
 
   // ..........................................................
   // ENUMERABLE OBSERVERS
@@ -773,7 +773,7 @@ Ember.Enumerable = Ember.Mixin.create(
   */
   hasEnumerableObservers: Ember.computed(function() {
     return Ember.hasListeners(this, '@enumerable:change') || Ember.hasListeners(this, '@enumerable:before');
-  }).property(),
+  }),
 
 
   /**

@@ -58,7 +58,7 @@ test("computed properties are not executed if they are the last segment of an ob
 
   Ember.defineProperty(foo.bar.baz, 'bam', Ember.computed(function() {
     count++;
-  }).property());
+  }));
 
   Ember.addObserver(foo, 'bar.baz.bam', function() {});
 

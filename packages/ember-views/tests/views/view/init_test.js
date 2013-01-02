@@ -35,7 +35,7 @@ test("should warn if a non-array is used for classNames", function() {
     Ember.View.createWithMixins({
       classNames: Ember.computed(function() {
         return ['className'];
-      }).property().volatile()
+      }).volatile()
     });
   }, /Only arrays are allowed/i, 'should warn that an array was not used');
 });
@@ -45,7 +45,7 @@ test("should warn if a non-array is used for classNamesBindings", function() {
     Ember.View.createWithMixins({
       classNameBindings: Ember.computed(function() {
         return ['className'];
-      }).property().volatile()
+      }).volatile()
     });
   }, /Only arrays are allowed/i, 'should warn that an array was not used');
 });

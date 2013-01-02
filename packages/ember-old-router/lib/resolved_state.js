@@ -14,7 +14,7 @@ Ember._ResolvedState = Ember.Object.extend({
           manager = get(this, 'manager');
       return state.deserialize(manager, match.hash);
     }
-  }).property(),
+  }),
 
   hasPromise: Ember.computed(function() {
     return Ember.canInvoke(get(this, 'object'), 'then');

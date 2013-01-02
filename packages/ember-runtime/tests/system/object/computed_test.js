@@ -130,14 +130,14 @@ test("can retrieve metadata for a computed property", function() {
 
   var MyClass = Ember.Object.extend({
     computedProperty: Ember.computed(function() {
-    }).property().meta({ key: 'keyValue' })
+    }).meta({ key: 'keyValue' })
   });
 
   equal(get(MyClass.metaForProperty('computedProperty'), 'key'), 'keyValue', "metadata saved on the computed property can be retrieved");
 
   var ClassWithNoMetadata = Ember.Object.extend({
     computedProperty: Ember.computed(function() {
-    }).property().volatile(),
+    }).volatile(),
 
     staticProperty: 12
   });
