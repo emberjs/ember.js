@@ -47,7 +47,7 @@ Ember.State = Ember.Object.extend(Ember.Evented,
     }
 
     return path;
-  }).property(),
+  }),
 
   /**
     @private

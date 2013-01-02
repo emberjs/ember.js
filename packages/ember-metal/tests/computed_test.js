@@ -159,7 +159,6 @@ module('Ember.computed - metadata');
 
 test("can set metadata on a computed property", function() {
   var computedProperty = Ember.computed(function() { });
-  computedProperty.property();
   computedProperty.meta({ key: 'keyValue' });
 
   equal(computedProperty.meta().key, 'keyValue', "saves passed meta hash to the _meta property");
@@ -533,7 +532,7 @@ testBoth('depending on Global chain', function(get, set) {
 });
 
 testBoth('chained dependent keys should evaluate computed properties lazily', function(get,set){
-  Ember.defineProperty(obj.foo.bar, 'b', Ember.computed(func).property());
+  Ember.defineProperty(obj.foo.bar, 'b', Ember.computed(func));
   Ember.defineProperty(obj.foo, 'c', Ember.computed(function(){}).property('bar.b'));
   equal(count, 0, 'b should not run');
 });

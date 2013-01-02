@@ -355,12 +355,12 @@ Ember.Set = Ember.CoreObject.extend(Ember.MutableEnumerable, Ember.Copyable, Emb
   // more optimized version
   firstObject: Ember.computed(function() {
     return this.length > 0 ? this[0] : undefined;
-  }).property(),
+  }),
 
   // more optimized version
   lastObject: Ember.computed(function() {
     return this.length > 0 ? this[this.length-1] : undefined;
-  }).property(),
+  }),
 
   // implements Ember.MutableEnumerable
   addObject: function(obj) {

@@ -70,7 +70,7 @@ test("templates should yield to block, when the yield is embedded in a hierarchy
         indexArray[i] = i;
       }
       return indexArray;
-    }).property()
+    })
   });
 
   view = Ember.View.create({

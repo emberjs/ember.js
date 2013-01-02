@@ -14,7 +14,7 @@ var get = Ember.get;
 Ember.TabPaneView = Ember.View.extend({
   tabsContainer: Ember.computed(function() {
     return this.nearestOfType(Ember.TabContainerView);
-  }).property().volatile(),
+  }).volatile(),
 
   isVisible: Ember.computed(function() {
     return get(this, 'viewName') === get(this, 'tabsContainer.currentView');

@@ -27,7 +27,7 @@ var childViewsProperty = Ember.computed(function() {
   });
 
   return ret;
-}).property();
+});
 
 Ember.warn("The VIEW_PRESERVES_CONTEXT flag has been removed and the functionality can no longer be disabled.", Ember.ENV.VIEW_PRESERVES_CONTEXT !== false);
 
