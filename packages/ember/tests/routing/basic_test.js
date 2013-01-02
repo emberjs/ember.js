@@ -9,6 +9,10 @@ function bootApplication() {
   });
 }
 
+function compile(string) {
+  return Ember.Handlebars.compile(string);
+}
+
 module("Basic Routing", {
   setup: function() {
     Ember.run(function() {
@@ -22,8 +26,9 @@ module("Basic Routing", {
       App.LoadingRoute = Ember.Route.extend({
       });
 
-      Ember.TEMPLATES.home = Ember.Handlebars.compile("<h3>Hours</h3>");
-      Ember.TEMPLATES.homepage = Ember.Handlebars.compile("<h3>Megatroll</h3><p>{{home}}</p>");
+      Ember.TEMPLATES.application = compile("{{outlet}}");
+      Ember.TEMPLATES.home = compile("<h3>Hours</h3>");
+      Ember.TEMPLATES.homepage = compile("<h3>Megatroll</h3><p>{{home}}</p>");
 
       Router = Ember.Router.extend({
         location: 'none'
@@ -717,6 +722,31 @@ test("A redirection hook is provided", function() {
 
   equal(chooseFollowed, 0, "The choose route wasn't entered since a transition occurred");
   equal(Ember.$("h3:contains(Hours)", "#qunit-fixture").length, 1, "The home template was rendered");
+});
+
+test("Child routes render into their parent route's template by default", function() {
+  Ember.TEMPLATES.index = compile("<div>Index</div>");
+  Ember.TEMPLATES.application = compile("<h1>Home</h1><div class='main'>{{outlet}}</div>");
+  Ember.TEMPLATES.top = compile("<div class='middle'>{{outlet}}</div>");
+  Ember.TEMPLATES.middle = compile("<div class='bottom'>{{outlet}}</div>");
+  Ember.TEMPLATES.bottom = compile("<p>Bottom!</p>");
+
+  Router.map(function(match) {
+    match("/").to('index');
+    match("/top").to("top", function(match) {
+      match("/middle").to("middle", function(match) {
+        match("/bottom").to("bottom");
+      });
+    });
+  });
+
+  bootApplication();
+
+  Ember.run(function() {
+    router.handleURL("/top/middle/bottom");
+  });
+
+  equal(Ember.$('.main .middle .bottom p', '#qunit-fixture').text(), "Bottom!", "The templates were rendered into their appropriate parents");
 });
 
 // TODO: Parent context change

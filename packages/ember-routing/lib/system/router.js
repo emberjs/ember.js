@@ -49,6 +49,7 @@ Ember.Router = Ember.Object.extend({
     };
 
     container.register('view', 'default', DefaultView);
+    container.register('view', 'toplevel', Ember.View.extend());
 
     router.handleURL(location.getURL());
     location.onUpdateURL(function(url) {

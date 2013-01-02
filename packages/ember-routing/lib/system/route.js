@@ -4,6 +4,10 @@ var get = Ember.get, set = Ember.set,
 
 
 Ember.Route = Ember.Object.extend({
+  exit: function() {
+    teardownView(this);
+  },
+
   /**
     Transition into another route. Optionally supply a model for the
     route in question. The model will be serialized into the URL
@@ -304,20 +308,42 @@ Ember.Route = Ember.Object.extend({
 
     if (!view && !template) { return; }
 
+    this.lastRenderedTemplate = name;
+
     options = normalizeOptions(this, name, template, options);
     view = setupView(view, container, options);
 
-    if (name === 'application') {
-      appendApplicationView(this, view);
-    } else {
-      appendView(this, view, options);
-    }
+    appendView(this, view, options);
   }
 });
 
+function parentRoute(route) {
+  var handlerInfos = route.router.router.currentHandlerInfos;
+
+  var parent, current;
+
+  for (var i=0, l=handlerInfos.length; i<l; i++) {
+    current = handlerInfos[i].handler;
+    if (current === route) { return parent; }
+    parent = current;
+  }
+}
+
+function parentTemplate(route) {
+  var parent = parentRoute(route), template;
+
+  if (!parent) { return; }
+
+  if (template = parent.lastRenderedTemplate) {
+    return template;
+  } else {
+    return parentTemplate(parent);
+  }
+}
+
 function normalizeOptions(route, name, template, options) {
   options = options || {};
-  options.into = options.into || 'application';
+  options.into = options.into || parentTemplate(route);
   options.outlet = options.outlet || 'main';
   options.name = name;
   options.template = template;
@@ -334,9 +360,9 @@ function normalizeOptions(route, name, template, options) {
 }
 
 function setupView(view, container, options) {
-  var containerView;
+  var defaultView = options.into ? 'view:default' : 'view:toplevel';
 
-  view = view || container.lookup('view:default');
+  view = view || container.lookup(defaultView);
 
   set(view, 'template', options.template);
   set(view, 'viewName', options.name);
@@ -345,13 +371,30 @@ function setupView(view, container, options) {
   return view;
 }
 
-function appendApplicationView(route, view) {
-  var rootElement = get(route, 'router.namespace.rootElement');
-  route.router._connectActiveView('application', view);
-  view.appendTo(rootElement);
+function appendView(route, view, options) {
+  if (options.into) {
+    var parentView = route.router._lookupActiveView(options.into);
+    route.teardownView = teardownOutlet(parentView, options.outlet);
+    parentView.connectOutlet(options.outlet, view);
+  } else {
+    var rootElement = get(route, 'router.namespace.rootElement');
+    route.router._connectActiveView(options.name, view);
+    route.teardownView = teardownTopLevel(view);
+    view.appendTo(rootElement);
+  }
 }
 
-function appendView(route, view, options) {
-  var parentView = route.router._lookupActiveView(options.into);
-  parentView.connectOutlet(options.outlet, view);
+function teardownTopLevel(view) {
+  return function() { view.remove(); };
+}
+
+function teardownOutlet(parentView, outlet) {
+  return function() { parentView.disconnectOutlet(outlet); };
+}
+
+function teardownView(route) {
+  if (route.teardownView) { route.teardownView(); }
+
+  delete route.teardownView;
+  delete route.lastRenderedTemplate;
 }

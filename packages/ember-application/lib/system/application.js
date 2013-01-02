@@ -587,7 +587,6 @@ Ember.Application.reopenClass({
   buildContainer: function(namespace) {
     var container = new Ember.Container();
     Ember.Container.defaultContainer = container;
-    var ApplicationView = Ember.View.extend();
 
     container.set = Ember.set;
     container.resolve = resolveFor(namespace);
@@ -601,14 +600,6 @@ Ember.Application.reopenClass({
     container.typeInjection('controller', 'namespace', 'application:main');
 
     container.typeInjection('route', 'router', 'router:main');
-
-    // Register a fallback application view. App.ApplicationView will
-    // take precedence.
-    container.register('view', 'application', ApplicationView);
-    if (Ember.Handlebars) {
-      var template = Ember.Handlebars.compile("{{outlet}}");
-      container.register('template', 'application', template);
-    }
 
     return container;
   }
