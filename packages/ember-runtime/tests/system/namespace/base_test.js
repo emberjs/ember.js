@@ -6,9 +6,13 @@ var get = Ember.get, originalLookup = Ember.lookup, lookup;
 
 module('Ember.Namespace', {
   setup: function() {
+    Ember.BOOTED = false;
+
     lookup = Ember.lookup = {};
   },
   teardown: function() {
+    Ember.BOOTED = false;
+
     if (lookup.NamespaceA) { Ember.run(function(){ lookup.NamespaceA.destroy(); }); }
     if (lookup.NamespaceB) { Ember.run(function(){ lookup.NamespaceB.destroy(); }); }
     if (lookup.namespaceC) {
@@ -71,7 +75,7 @@ test("Lowercase namespaces should be deprecated", function() {
   Ember.Logger.warn = function(msg) { loggerWarning = msg; };
 
   try {
-    Ember.identifyNamespaces();
+    lookup.namespaceC.toString();
   } finally {
     Ember.Logger.warn = originalWarn;
   }
@@ -94,4 +98,18 @@ test("A namespace can be assigned a custom name", function() {
 
   equal(nsA.Foo.toString(), "NamespaceA.Foo", "The namespace's name is used when the namespace is not in the lookup object");
   equal(nsB.Foo.toString(), "CustomNamespaceB.Foo", "The namespace's name is used when the namespace is in the lookup object");
+});
+
+test("Calling namespace.nameClasses() eagerly names all classes", function() {
+  Ember.BOOTED = true;
+
+  var namespace = lookup.NS = Ember.Namespace.create();
+
+  namespace.ClassA = Ember.Object.extend();
+  namespace.ClassB = Ember.Object.extend();
+
+  Ember.Namespace.processAll();
+
+  equal(namespace.ClassA.toString(), "NS.ClassA");
+  equal(namespace.ClassB.toString(), "NS.ClassB");
 });

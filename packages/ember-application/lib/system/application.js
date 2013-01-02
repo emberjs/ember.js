@@ -468,6 +468,8 @@ var Application = Ember.Application = Ember.Namespace.extend(
     this.startRouting();
 
     if (!Ember.testing) {
+      // Eagerly name all classes that are already loaded
+      Ember.Namespace.processAll();
       Ember.BOOTED = true;
     }
   },

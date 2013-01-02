@@ -1,3 +1,5 @@
+require('ember-runtime/system/namespace');
+
 /**
 @module ember
 @submodule ember-runtime
@@ -24,7 +26,6 @@ var set = Ember.set, get = Ember.get,
     applyMixin = Mixin._apply,
     finishPartial = Mixin.finishPartial,
     reopen = Mixin.prototype.reopen,
-    classToString = Mixin.prototype.toString,
     MANDATORY_SETTER = Ember.ENV.MANDATORY_SETTER,
     indexOf = Ember.EnumerableUtils.indexOf;
 
@@ -121,7 +122,7 @@ function makeCtor() {
     this.init.apply(this, arguments);
   };
 
-  Class.toString = classToString;
+  Class.toString = Mixin.prototype.toString;
   Class.willReopen = function() {
     if (wasApplied) {
       Class.PrototypeMixin = Mixin.create(Class.PrototypeMixin);

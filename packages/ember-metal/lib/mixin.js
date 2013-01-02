@@ -12,7 +12,6 @@ require('ember-metal/binding');
 */
 
 var Mixin, REQUIRED, Alias,
-    classToString, superClassString,
     a_map = Ember.ArrayPolyfills.map,
     a_indexOf = Ember.ArrayPolyfills.indexOf,
     a_forEach = Ember.ArrayPolyfills.forEach,
@@ -383,13 +382,15 @@ Mixin.applyPartial = function(obj) {
 
 Mixin.finishPartial = finishPartial;
 
+Ember.anyUnprocessedMixins = false;
+
 /**
   @method create
   @static
   @param arguments*
 */
 Mixin.create = function() {
-  classToString.processed = false;
+  Ember.anyUnprocessedMixins = true;
   var M = this;
   return initMixin(new M(), arguments);
 };
@@ -500,122 +501,6 @@ MixinPrototype.keys = function() {
   }
   return ret;
 };
-
-/* make Mixins have nice displayNames */
-
-var NAME_KEY = Ember.GUID_KEY+'_name';
-var get = Ember.get;
-
-function processNames(paths, root, seen) {
-  var idx = paths.length;
-  for(var key in root) {
-    if (!root.hasOwnProperty || !root.hasOwnProperty(key)) { continue; }
-    var obj = root[key];
-    paths[idx] = key;
-
-    if (obj && obj.toString === classToString) {
-      obj.toString = makeToString(paths.join('.'));
-      obj[NAME_KEY] = paths.join('.');
-    } else if (obj && obj.isNamespace) {
-      if (seen[guidFor(obj)]) { continue; }
-      seen[guidFor(obj)] = true;
-      processNames(paths, obj, seen);
-    }
-  }
-  paths.length = idx; // cut out last item
-}
-
-function findNamespaces() {
-  var Namespace = Ember.Namespace, lookup = Ember.lookup, obj, isNamespace;
-
-  if (Namespace.PROCESSED) { return; }
-
-  for (var prop in lookup) {
-    // These don't raise exceptions but can cause warnings
-    if (prop === "parent" || prop === "top" || prop === "frameElement") { continue; }
-
-    //  get(window.globalStorage, 'isNamespace') would try to read the storage for domain isNamespace and cause exception in Firefox.
-    // globalStorage is a storage obsoleted by the WhatWG storage specification. See https://developer.mozilla.org/en/DOM/Storage#globalStorage
-    if (prop === "globalStorage" && lookup.StorageList && lookup.globalStorage instanceof lookup.StorageList) { continue; }
-    // Unfortunately, some versions of IE don't support window.hasOwnProperty
-    if (lookup.hasOwnProperty && !lookup.hasOwnProperty(prop)) { continue; }
-
-    // At times we are not allowed to access certain properties for security reasons.
-    // There are also times where even if we can access them, we are not allowed to access their properties.
-    try {
-      obj = Ember.lookup[prop];
-      isNamespace = obj && obj.isNamespace;
-    } catch (e) {
-      continue;
-    }
-
-    if (isNamespace) {
-      Ember.deprecate("Namespaces should not begin with lowercase.", /^[A-Z]/.test(prop));
-      obj[NAME_KEY] = prop;
-    }
-  }
-}
-
-/**
-  @private
-  @method identifyNamespaces
-  @for Ember
-*/
-Ember.identifyNamespaces = findNamespaces;
-
-superClassString = function(mixin) {
-  var superclass = mixin.superclass;
-  if (superclass) {
-    if (superclass[NAME_KEY]) { return superclass[NAME_KEY]; }
-    else { return superClassString(superclass); }
-  } else {
-    return;
-  }
-};
-
-classToString = function() {
-  var Namespace = Ember.Namespace, namespace;
-
-  // TODO: Namespace should really be in Metal
-  if (Namespace && !Ember.BOOTED) {
-    if (!this[NAME_KEY] && !classToString.processed) {
-      if (!Namespace.PROCESSED) {
-        findNamespaces();
-        Namespace.PROCESSED = true;
-      }
-
-      classToString.processed = true;
-
-      var namespaces = Namespace.NAMESPACES;
-      for (var i=0, l=namespaces.length; i<l; i++) {
-        namespace = namespaces[i];
-        processNames([namespace.toString()], namespace, {});
-      }
-    }
-  }
-
-  var ret;
-
-  if (this[NAME_KEY]) {
-    ret = this[NAME_KEY];
-  } else {
-    var str = superClassString(this);
-    if (str) {
-      ret = "(subclass of " + str + ")";
-    } else {
-      ret = "(unknown mixin)";
-    }
-    this.toString = makeToString(ret);
-  }
-
-  return ret;
-};
-
-function makeToString(ret) {
-  return function() { return ret; };
-}
-
-MixinPrototype.toString = classToString;
 
 // returns the mixins currently applied to the specified object
 // TODO: Make Ember.mixin
