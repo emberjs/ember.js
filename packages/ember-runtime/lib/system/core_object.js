@@ -163,6 +163,50 @@ CoreObject.PrototypeMixin = Mixin.create({
   init: function() {},
 
   /**
+    Defines the properties that must be concatenated in the inheritance process.
+
+    When we create objects from other objects, the properties defined in the
+    child object overrides the properties defined in the parent object when
+    names are the same.
+
+    ```javascript
+    ParentObj = Em.Object.extend({
+      contributors: ['Yehuda'],
+    });
+
+    child = ParentObj.create({
+      contributors: ['Tom'],
+    });
+
+    child.get('contributors'); // ['Tom']
+    ```
+
+    Using the `concatenatedProperties` property, we can tell to Ember that mix
+    the content of the properties.
+
+    ```javascript
+    ParentObj = Em.Object.extend({
+      concatenatedProperties: ['contributors'],
+      contributors: ['Yehuda'],
+    });
+
+    child = ParentObj.create({
+      contributors: ['Tom'],
+    });
+
+    child.get('contributors'); // ['Yehuda', 'Tom']
+    ```
+
+    As an example, the `classNames`, `classNameBindings` and `attributeBindings`
+    properties are concatenated properties of `Ember.View`.
+
+    @property concatenatedProperties
+    @type Array
+    @default null
+  */
+  concatenatedProperties: null,
+
+  /**
     @property isDestroyed
     @default false
   */
