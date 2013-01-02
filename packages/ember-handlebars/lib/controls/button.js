@@ -46,14 +46,14 @@ Ember.Button = Ember.View.extend(Ember.TargetActionSupport, {
   type: Ember.computed(function(key) {
     var tagName = this.tagName;
     if (tagName === 'input' || tagName === 'button') { return 'button'; }
-  }).property(),
+  }),
 
   disabled: false,
 
   // Allow 'a' tags to act like buttons
   href: Ember.computed(function() {
     return this.tagName === 'a' ? '#' : null;
-  }).property(),
+  }),
 
   mouseDown: function() {
     if (!get(this, 'disabled')) {

@@ -47,7 +47,7 @@ module("object.get()", {
       numberVal: 24,
       toggleVal: true,
 
-      computed: Ember.computed(function() { return 'value'; }).property().volatile(),
+      computed: Ember.computed(function() { return 'value'; }).volatile(),
 
       method: function() { return "value"; },
 
@@ -96,7 +96,7 @@ module("Ember.get()", {
       numberVal: 24,
       toggleVal: true,
 
-      computed: Ember.computed(function() { return 'value'; }).property().volatile(),
+      computed: Ember.computed(function() { return 'value'; }).volatile(),
 
       method: function() { return "value"; },
 
@@ -179,7 +179,7 @@ module("Ember.get() with paths", {
 test("should return a property at a given path relative to the lookup", function() {
   lookup.Foo = ObservableObject.create({
     Bar: ObservableObject.createWithMixins({
-      Baz: Ember.computed(function() { return "blargh"; }).property().volatile()
+      Baz: Ember.computed(function() { return "blargh"; }).volatile()
     })
   });
 
@@ -189,7 +189,7 @@ test("should return a property at a given path relative to the lookup", function
 test("should return a property at a given path relative to the passed object", function() {
   var foo = ObservableObject.create({
     bar: ObservableObject.createWithMixins({
-      baz: Ember.computed(function() { return "blargh"; }).property().volatile()
+      baz: Ember.computed(function() { return "blargh"; }).volatile()
     })
   });
 
@@ -235,7 +235,7 @@ module("object.set()", {
           this._computed = value ;
         }
         return this._computed ;
-      }).property().volatile(),
+      }).volatile(),
 
       // method, but not a property
       _method: "method",
@@ -321,13 +321,13 @@ module("Computed properties", {
       computed: Ember.computed(function(key, value) {
         this.computedCalls.push(value);
         return 'computed';
-      }).property().volatile(),
+      }).volatile(),
 
       computedCachedCalls: [],
       computedCached: Ember.computed(function(key, value) {
         this.computedCachedCalls.push(value);
         return 'computedCached';
-      }).property(),
+      }),
 
 
       // DEPENDENT KEYS

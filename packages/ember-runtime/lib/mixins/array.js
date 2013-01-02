@@ -122,15 +122,15 @@ Ember.Array = Ember.Mixin.create(Ember.Enumerable, /** @scope Ember.Array.protot
   '[]': Ember.computed(function(key, value) {
     if (value !== undefined) this.replace(0, get(this, 'length'), value) ;
     return this ;
-  }).property(),
+  }),
 
   firstObject: Ember.computed(function() {
     return this.objectAt(0);
-  }).property(),
+  }),
 
   lastObject: Ember.computed(function() {
     return this.objectAt(get(this, 'length')-1);
-  }).property(),
+  }),
 
   // optimized version from Enumerable
   contains: function(obj){
@@ -301,7 +301,7 @@ Ember.Array = Ember.Mixin.create(Ember.Enumerable, /** @scope Ember.Array.protot
   */
   hasArrayObservers: Ember.computed(function() {
     return Ember.hasListeners(this, '@array:change') || Ember.hasListeners(this, '@array:before');
-  }).property(),
+  }),
 
   /**
     If you are implementing an object that supports `Ember.Array`, call this
@@ -400,6 +400,6 @@ Ember.Array = Ember.Mixin.create(Ember.Enumerable, /** @scope Ember.Array.protot
   '@each': Ember.computed(function() {
     if (!this.__each) this.__each = new Ember.EachProxy(this);
     return this.__each;
-  }).property()
+  })
 
 }) ;
