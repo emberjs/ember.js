@@ -627,6 +627,10 @@ function resolveFor(namespace) {
         type = nameParts[0], name = nameParts[1];
 
     if (type === 'template') {
+      if (Ember.TEMPLATES[name]) {
+        return Ember.TEMPLATES[name];
+      }
+
       var templateName = decamelize(name);
       if (Ember.TEMPLATES[templateName]) {
         return Ember.TEMPLATES[templateName];
