@@ -8,7 +8,7 @@ GIT
 
 GIT
   remote: https://github.com/livingsocial/rake-pipeline.git
-  revision: ae0795842a8958934d872a005d18b16161aa05fe
+  revision: 50b8d77b703c96539a433ee53a680c43542aaa75
   specs:
     rake-pipeline (0.8.0)
       json
@@ -47,7 +47,7 @@ GEM
       oauth2
     hashie (1.2.0)
     httpauth (0.2.0)
-    json (1.7.5)
+    json (1.7.6)
     jwt (0.1.5)
       multi_json (>= 1.0)
     kicker (2.6.1)
@@ -64,7 +64,7 @@ GEM
       multi_json (~> 1.0)
       rack (~> 1.2)
     rack (1.4.1)
-    rake (0.9.5)
+    rake (0.9.6)
     rest-client (1.6.7)
       mime-types (>= 1.16)
     thor (0.16.0)

@@ -71,7 +71,7 @@ ActionHelper.registerAction = function(actionName, options) {
 
   Given the following Handlebars template on the page
 
-  ```html
+  ```handlebars
   <script type="text/x-handlebars" data-template-name='a-template'>
     <div {{action anActionName target="view"}}>
       click me
@@ -122,7 +122,7 @@ ActionHelper.registerAction = function(actionName, options) {
   By default the `{{action}}` helper registers for DOM `click` events. You can
   supply an `on` option to the helper to specify a different DOM event name:
 
-  ```html
+  ```handlebars
   <script type="text/x-handlebars" data-template-name='a-template'>
     <div {{action anActionName on="doubleClick"}}>
       click me
@@ -161,7 +161,7 @@ ActionHelper.registerAction = function(actionName, options) {
   object will receive the method call. This option must be a string
   representing a path to an object:
 
-  ```html
+  ```handlebars
   <script type="text/x-handlebars" data-template-name='a-template'>
     <div {{action anActionName target="MyApplication.someObject"}}>
       click me
@@ -177,7 +177,7 @@ ActionHelper.registerAction = function(actionName, options) {
   A path relative to the template's `Ember.View` instance can also be used as
   a target:
 
-  ```html
+  ```handlebars
   <script type="text/x-handlebars" data-template-name='a-template'>
     <div {{action anActionName target="parentView"}}>
       click me
@@ -196,7 +196,7 @@ ActionHelper.registerAction = function(actionName, options) {
   If an action's target does not implement a method that matches the supplied
   action name an error will be thrown.
 
-  ```html
+  ```handlebars
   <script type="text/x-handlebars" data-template-name='a-template'>
     <div {{action aMethodNameThatIsMissing}}>
       click me
@@ -227,7 +227,7 @@ ActionHelper.registerAction = function(actionName, options) {
   objects are made available as the `contexts` (also `context` if there is only
   one) properties in the `jQuery.Event` object:
 
-  ```html
+  ```handlebars
   <script type="text/x-handlebars" data-template-name='a-template'>
     {{#each person in people}}
       <div {{action edit person}}>

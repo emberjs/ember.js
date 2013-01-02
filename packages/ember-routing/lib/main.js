@@ -4,6 +4,6 @@ require('ember-handlebars');
 require('ember-routing/vendor/route-recognizer');
 require('ember-routing/vendor/router');
 require('ember-routing/system');
-require('ember-routing/ext/handlebars');
+require('ember-routing/helpers');
 require('ember-routing/ext/view');
 require('ember-routing/location');

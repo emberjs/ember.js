@@ -145,8 +145,8 @@
     var emberFile = distros[dist];
     if (!emberFile) { throw 'Unknown dist'; }
 
+    document.write('<script src="'+emberFile+'"><\/script>');
     document.write('<script src="../dist/'+emberFile+'"><\/script>');
-    // Close the script tag to make sure document.write happens
   </script>
 
   <script type="text/javascript" src="ember-tests.js"></script>

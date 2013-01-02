@@ -55,13 +55,13 @@ Ember.ControllerMixin = Ember.Mixin.create({
 
   store: null,
 
-  send: function(actionName, event) {
-    var target;
+  send: function(actionName) {
+    var args = [].slice.call(arguments, 1), target;
 
     if (this[actionName]) {
-      this[actionName](event);
+      this[actionName].apply(this, args);
     } else if(target = get(this, 'target')) {
-      target.send(actionName, event);
+      target.send.apply(target, arguments);
     }
   }
 });

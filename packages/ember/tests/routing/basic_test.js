@@ -511,9 +511,9 @@ asyncTest("Events are triggered on the controller if a matching action name is i
   );
 
   var controller = Ember.Controller.extend({
-    showStuff: function(event){
+    showStuff: function(context){
       ok (stateIsNotCalled, "an event on the state is not triggered");
-      deepEqual(event.context, { name: "Tom Dale" }, "an event with context is passed");
+      deepEqual(context, { name: "Tom Dale" }, "an event with context is passed");
       start();
     }
   });
