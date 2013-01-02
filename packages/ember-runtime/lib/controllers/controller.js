@@ -59,8 +59,10 @@ Ember.ControllerMixin = Ember.Mixin.create({
     var args = [].slice.call(arguments, 1), target;
 
     if (this[actionName]) {
+      Ember.assert("The controller " + this + " does not have the action " + actionName, typeof this[actionName] === 'function');
       this[actionName].apply(this, args);
     } else if(target = get(this, 'target')) {
+      Ember.assert("The target for controller " + this + " (" + target + ") did not define a `send` method", typeof target.send === 'function');
       target.send.apply(target, arguments);
     }
   }

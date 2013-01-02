@@ -14,7 +14,8 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
       a_slice = Array.prototype.slice;
 
   function args(options, actionName) {
-    var ret = [ actionName ];
+    var ret = [];
+    if (actionName) { ret.push(actionName); }
     return ret.concat(resolvePaths(options.parameters));
   }
 
@@ -39,7 +40,12 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
             contexts = options.contexts,
             target = options.target;
 
-        return target.send.apply(target, args(options, actionName));
+        if (target.send) {
+          return target.send.apply(target, args(options, actionName));
+        } else {
+          Ember.assert("The action '" + actionName + "' did not exist on " + target, typeof target[actionName] === 'function');
+          return target[actionName].apply(target, args(options));
+        }
       }
     };
 
@@ -52,9 +58,11 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
 
   /**
     The `{{action}}` helper registers an HTML element within a template for DOM
-    event handling and forwards that interaction to the view's
-    `controller.target` or supplied `target` option (see 'Specifying a Target').
-    By default the `controller.target` is set to the application's router.
+    event handling and forwards that interaction to the view's controller
+    or supplied `target` option (see 'Specifying a Target').
+
+    If the view's controller does not implement the event, the event is sent
+    to the current route, and it bubbles up the route hierarchy from there.
 
     User interaction with that element will invoke the supplied action name on
     the appropriate target.
@@ -63,7 +71,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
 
     ```handlebars
     <script type="text/x-handlebars" data-template-name='a-template'>
-      <div {{action anActionName target="view"}}>
+      <div {{action anActionName}}>
         click me
       </div>
     </script>
@@ -72,9 +80,13 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     And application code
 
     ```javascript
+    AController = Ember.Controller.extend({
+      anActionName: function() {}
+    });
+
     AView = Ember.View.extend({
-      templateName: 'a-template',
-      anActionName: function(event){}
+      controller: AController.create(),
+      templateName: 'a-template'
     });
 
     aView = AView.create();
@@ -91,17 +103,29 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     </div>
     ```
 
-    Clicking "click me" will trigger the `anActionName` method of the `aView`
-    object with a  `jQuery.Event` object as its argument. The `jQuery.Event`
-    object will be extended to include a `view` property that is set to the
-    original view interacted with (in this case the `aView` object).
+    Clicking "click me" will trigger the `anActionName` method of the
+    `AController`. In this case, no additional parameters will be passed.
+
+    If you provide additional parameters to the helper:
+
+    ```handlebars
+    <button {{action 'edit' post}}>Edit</button>
+    ```
+
+    Those parameters will be passed along as arguments to the JavaScript
+    function implementing the action.
 
     ### Event Propagation
 
     Events triggered through the action helper will automatically have
     `.preventDefault()` called on them. You do not need to do so in your event
-    handlers. To stop propagation of the event, simply return `false` from your
-    handler.
+    handlers.
+
+    To also disable bubbling, pass `bubbles=false` to the helper:
+
+    ```handlebars
+    <button {{action 'edit' post bubbles=false}}>Edit</button>
+    ```
 
     If you need the default handler to trigger you should either register your
     own event handler, or use event methods on your view class. See `Ember.View`
@@ -123,33 +147,23 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     See `Ember.View` 'Responding to Browser Events' for a list of
     acceptable DOM event names.
 
-    Because `{{action}}` depends on Ember's event dispatch system it will only
-    function if an `Ember.EventDispatcher` instance is available. An
-    `Ember.EventDispatcher` instance will be created when a new
-    `Ember.Application` is created. Having an instance of `Ember.Application`
-    will satisfy this requirement.
+    NOTE: Because `{{action}}` depends on Ember's event dispatch system it will
+    only function if an `Ember.EventDispatcher` instance is available. An
+    `Ember.EventDispatcher` instance will be created when a new `Ember.Application`
+    is created. Having an instance of `Ember.Application` will satisfy this
+    requirement.
 
     ### Specifying a Target
 
     There are several possible target objects for `{{action}}` helpers:
 
-    In a typical `Ember.Router`-backed Application where views are managed
-    through use of the `{{outlet}}` helper, actions will be forwarded to the
-    current state of the Applications's Router. See `Ember.Router` 'Responding
-    to User-initiated Events' for more information.
+    In a typical Ember application, where views are managed through use of the
+    `{{outlet}}` helper, actions will bubble to the current controller, then
+    to the current route, and then up the route hierarchy.
 
-    If you manually set the `target` property on the controller of a template's
-    `Ember.View` instance, the specifed `controller.target` will become the
-    target for any actions. Likely custom values for a controller's `target` are
-    the controller itself or a StateManager other than the Application's
-    router.
-
-    If the templates's view lacks a controller property the view itself is the
-    target.
-
-    Finally, a `target` option can be provided to the helper to change which
-    object will receive the method call. This option must be a string
-    representing a path to an object:
+    Alternatively, a `target` option can be provided to the helper to change
+    which object will receive the method call. This option must be a path
+    path to an object, accessible in the current context:
 
     ```handlebars
     <script type="text/x-handlebars" data-template-name='a-template'>
@@ -161,27 +175,6 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
 
     Clicking "click me" in the rendered HTML of the above template will trigger
     the  `anActionName` method of the object at `MyApplication.someObject`.
-    The first argument to this method will be a `jQuery.Event` extended to
-    include a `view` property that is set to the original view interacted with.
-
-    A path relative to the template's `Ember.View` instance can also be used as
-    a target:
-
-    ```handlebars
-    <script type="text/x-handlebars" data-template-name='a-template'>
-      <div {{action anActionName target="parentView"}}>
-        click me
-      </div>
-    </script>
-    ```
-
-    Clicking "click me" in the rendered HTML of the above template will trigger
-    the `anActionName` method of the view's parent view.
-
-    The `{{action}}` helper is `Ember.StateManager` aware. If the target of the
-    action is an `Ember.StateManager` instance `{{action}}` will use the `send`
-    functionality of StateManagers. The documentation for `Ember.StateManager`
-    has additional information about this use.
 
     If an action's target does not implement a method that matches the supplied
     action name an error will be thrown.
@@ -200,7 +193,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     AView = Ember.View.extend({
       templateName; 'a-template',
       // note: no method 'aMethodNameThatIsMissing'
-      anActionName: function(event){}
+      anActionName: function(event) {}
     });
 
     aView = AView.create();
@@ -210,12 +203,11 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     Will throw `Uncaught TypeError: Cannot call method 'call' of undefined` when
     "click me" is clicked.
 
-    ### Specifying a context
+    ### Additional Parameters
 
-    You may optionally specify objects to pass as contexts to the `{{action}}`
-    helper by providing property paths as the subsequent parameters. These
-    objects are made available as the `contexts` (also `context` if there is only
-    one) properties in the `jQuery.Event` object:
+    You may specify additional parameters to the `{{action}}` helper. These
+    parameters are passed along as the arguments to the JavaScript function
+    implementing the action.
 
     ```handlebars
     <script type="text/x-handlebars" data-template-name='a-template'>
@@ -227,8 +219,8 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     </script>
     ```
 
-    Clicking "click me" will trigger the `edit` method of the view's context with
-    a `jQuery.Event` object containing the person object as its context.
+    Clicking "click me" will trigger the `edit` method on the current view's
+    controller with the current person as a parameter.
 
     @method action
     @for Ember.Handlebars.helpers
