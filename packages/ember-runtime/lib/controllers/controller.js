@@ -53,6 +53,8 @@ Ember.ControllerMixin = Ember.Mixin.create({
   */
   target: null,
 
+  container: null,
+
   store: null,
 
   send: function(actionName) {
