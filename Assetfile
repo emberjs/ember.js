@@ -118,7 +118,7 @@ distros = {
   "runtime"    => %w(ember-metal ember-runtime),
   "data-deps"  => %w(ember-metal ember-runtime ember-states),
   "full"       => %w(ember-metal rsvp container ember-runtime ember-views metamorph ember-handlebars ember-routing ember-application ember-states),
-  "old-router" => %w(ember-metal rsvp ember-runtime ember-views ember-states ember-old-router ember-viewstates metamorph ember-handlebars)
+  "old-router" => %w(ember-metal rsvp ember-runtime ember-views ember-states ember-viewstates metamorph ember-handlebars ember-old-router )
 }
 
 output "dist"
