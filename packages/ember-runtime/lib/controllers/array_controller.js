@@ -7,7 +7,8 @@ require('ember-runtime/mixins/sortable');
 @submodule ember-runtime
 */
 
-var get = Ember.get, set = Ember.set;
+var get = Ember.get, set = Ember.set, isGlobalPath = Ember.isGlobalPath,
+    forEach = Ember.EnumerableUtils.forEach;
 
 /**
   `Ember.ArrayController` provides a way for you to publish a collection of
@@ -55,4 +56,79 @@ var get = Ember.get, set = Ember.set;
 */
 
 Ember.ArrayController = Ember.ArrayProxy.extend(Ember.ControllerMixin,
-  Ember.SortableMixin);
+  Ember.SortableMixin, {
+
+  /**
+  */
+  objectController: null,
+
+  /**
+  */
+  objectControllerAt: function(idx, object) {
+    var controllerName = get(this, 'objectController');
+
+    if ('string' === typeof controllerName) {
+      return this.objectControllerFor(controllerName, object);
+    }
+
+    return null;
+  },
+
+  /**
+  */
+  objectControllerFor: function(name, object) {
+    Ember.assert("ArrayController can not have null members", object !== null);
+
+    var container = this.containerFor(object),
+        controller = container.lookup('controller:'+name);
+
+    set(controller, 'content', object);
+    set(controller, 'target', this);
+
+    return controller;
+  },
+
+  /**
+  */
+  containerFor: function(object) {
+    var containers = get(this, '_containers'),
+        container = containers.get(object);
+
+    if (!container) {
+      container = this.container.child();
+      containers.set(object, container);
+    }
+
+    return container;
+  },
+
+  objectAtContent: function(idx) {
+    var length = get(this, 'length'),
+        object = get(this,'arrangedContent').objectAt(idx),
+        controller = idx < length && this.objectControllerAt(idx, object);
+
+    return controller || object;
+  },
+
+  arrayContentWillChange: function(idx, removedCount, addedCount) {
+    this._super(idx, removedCount, addedCount);
+
+    var removedObjects = this.slice(idx, idx+removedCount),
+        containers = get(this, '_containers');
+
+    forEach(removedObjects, function(object) {
+      if (Ember.ObjectController.detectInstance(object)) {
+        object = get(object, 'content');
+        var container = containers.get(object);
+        if (container) {
+          container.destroy();
+          containers.remove(object);
+        }
+      }
+    });
+  },
+
+  _containers: Ember.computed(function() {
+    return Ember.Map.create();
+  })
+});
