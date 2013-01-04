@@ -17,6 +17,8 @@ function setupLocation(router) {
 
 Ember.Router = Ember.Object.extend({
   location: 'hash',
+  
+  rootURL: '/',
 
   init: function() {
     var router = this.router = new Router();
