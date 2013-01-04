@@ -30,6 +30,12 @@ define("rsvp",
       var element = document.createElement('div');
       observer.observe(element, { attributes: true });
 
+      // Chrome Memory Leak: https://bugs.webkit.org/show_bug.cgi?id=93661
+      window.addEventListener('unload', function(){
+        observer.disconnect();
+        observer = null;
+      });
+
       async = function(callback, binding) {
         queue.push([callback, binding]);
         element.setAttribute('drainQueue', 'drainQueue');
