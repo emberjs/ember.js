@@ -57,7 +57,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     }
 
     outletSource = options.data.view;
-    while (outletSource.get('controller') && outletSource.get('controller')===outletSource.get('_parentView.controller')){
+    while (!(outletSource.get('template.isTop'))){
       outletSource = outletSource.get('_parentView');
     }
 
