@@ -16,8 +16,9 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     tagName: 'a',
     namedRoute: null,
     currentWhen: null,
+    title: null,
     activeClass: 'active',
-    attributeBindings: 'href',
+    attributeBindings: ['href', 'title'],
     classNameBindings: 'active',
 
     active: Ember.computed(function() {
