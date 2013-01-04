@@ -102,10 +102,10 @@ Syntax:
 * a = b and not a=b.
 * Follow the conventions you see used in the source already.
 
-Inline Documenation Guidelines:
+Inline Documentation Guidelines:
 
 All inline documentation is written using YUIDoc. Follow these rules when
-updating or writing new documenation:
+updating or writing new documentation:
 
 1. All code blocks must be fenced
 2. All code blocks must have a language declared
