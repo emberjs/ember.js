@@ -181,3 +181,14 @@ test("The {{linkTo}} helper moves into the named route with context", function()
   equal(Ember.$('p', '#qunit-fixture').text(), "Erik Brynroflsson", "The name is correct");
 });
 
+test("The {{linkTo}} helper binds some anchor html tag common attributes", function() {
+  Router.map(function(match) {
+      match("/").to("home");
+  });
+   Ember.TEMPLATES.home = Ember.Handlebars.compile("<h3>Home</h3>{{#linkTo home id='self-link' title='title-attr'}}Self{{/linkTo}}");
+   bootApplication();
+   Ember.run(function() {
+      router.handleURL("/");
+  });
+   equal(Ember.$('#self-link', '#qunit-fixture').attr('title'), 'title-attr', "The self-link contains title attribute");
+});
