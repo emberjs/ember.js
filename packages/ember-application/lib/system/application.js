@@ -637,7 +637,18 @@ function resolveFor(namespace) {
       }
     }
 
-    var className = classify(name) + classify(type);
+    var components = name.split("/");
+
+    var classifiedComponents =
+      components.map(function(component){
+        return classify(component);
+      });
+
+    var className = classifiedComponents.length > 1 ?
+      classifiedComponents.join(".") : classifiedComponents[0];
+
+    className = className + classify(type);
+
     var factory = get(namespace, className);
 
     if (factory) { return factory; }
