@@ -130,3 +130,26 @@ test("view should support disconnectOutlet for the main outlet", function() {
   // Replace whitespace for older IE
   equal(view.$().text().replace(/\s+/,''), 'HI');
 });
+
+test("Outlets bind to the current template's view, not inner contexts", function() {
+  var parentTemplate = "<h1>HI</h1>{{#if view.alwaysTrue}}{{#with this}}{{outlet}}{{/with}}{{/if}}";
+  var bottomTemplate = "<h3>BOTTOM</h3>";
+
+  view = Ember.View.create({
+    alwaysTrue: true,
+    template: compile(parentTemplate)
+  });
+
+  var bottomView = Ember._MetamorphView.create({
+    template: compile(bottomTemplate)
+  });
+
+  appendView(view);
+
+  Ember.run(function() {
+    view.connectOutlet('main', bottomView);
+  });
+
+  var output = Ember.$('#qunit-fixture h1 ~ h3').text();
+  equal(output, "BOTTOM", "all templates were rendered");
+});
