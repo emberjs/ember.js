@@ -83,7 +83,7 @@ task :test, [:suite] => :dist do |t, args|
     :default  => packages.map{|p| "package=#{p}" },
     :built    => [ "package=all&dist=build" ],
     :runtime  => [ "package=ember-metal,ember-runtime" ],
-    :views    => [ "package=ember-views,ember-handlebars" ],
+    :views    => [ "package=container,ember-views,ember-handlebars" ],
     :standard => packages.map{|p| "package=#{p}" } +
                   ["package=all&jquery=1.7.2&nojshint=true",
                     "package=all&extendprototypes=true&nojshint=true",
