@@ -8,10 +8,13 @@ function setupLocation(router) {
       rootURL = get(router, 'rootURL');
 
   if ('string' === typeof location) {
-    set(router, 'location', Ember.Location.create({
-      implementation: location,
-      rootURL: rootURL
+    location = set(router, 'location', Ember.Location.create({
+      implementation: location
     }));
+
+    if (typeof rootURL === 'string') {
+      set(location, 'rootURL', rootURL);
+    }
   }
 }
 
