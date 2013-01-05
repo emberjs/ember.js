@@ -111,7 +111,7 @@ test('initialized application go to initial route', function() {
       match("/").to("index");
     });
 
-    app.container.register('template', 'application',
+    app.register('template', 'application',
       Ember.Handlebars.compile("{{outlet}}")
     );
 
@@ -144,7 +144,9 @@ test("initialize application via initialize call", function() {
     });
   });
 
-  var router = app.container.lookup('router:main');
+  // This is not a public way to access the container; we just
+  // need to make some assertions about the created router
+  var router = app.__container__.lookup('router:main');
   equal(router instanceof Ember.Router, true, "Router was set from initialize call");
   equal(router.location instanceof Ember.NoneLocation, true, "Location was set from location implementation name");
 });
@@ -165,12 +167,12 @@ test("initialize application with stateManager via initialize call from Router c
       match("/").to("index");
     });
 
-    app.container.register('template', 'application', function() {
+    app.register('template', 'application', function() {
       return "<h1>Hello!</h1>";
     });
   });
 
-  var router = app.container.lookup('router:main');
+  var router = app.__container__.lookup('router:main');
   equal(router instanceof Ember.Router, true, "Router was set from initialize call");
   equal(Ember.$("#qunit-fixture h1").text(), "Hello!");
 });

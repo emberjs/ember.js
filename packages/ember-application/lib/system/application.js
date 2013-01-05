@@ -264,7 +264,7 @@ var Application = Ember.Application = Ember.Namespace.extend(
 
   init: function() {
     if (!this.$) { this.$ = Ember.$; }
-    this.container = this.buildContainer();
+    this.__container__ = this.buildContainer();
     this.Router = this.Router || this.defaultRouter();
 
     this._super();
@@ -285,7 +285,7 @@ var Application = Ember.Application = Ember.Namespace.extend(
     @return {Ember.Container} the configured container
   */
   buildContainer: function() {
-    var container = this.container = Application.buildContainer(this);
+    var container = this.__container__ = Application.buildContainer(this);
 
     return container;
   },
@@ -402,6 +402,11 @@ var Application = Ember.Application = Ember.Namespace.extend(
     }
   },
 
+  register: function() {
+    var container = this.__container__;
+    return container.register.apply(container, arguments);
+  },
+
   /**
     @private
 
@@ -419,7 +424,7 @@ var Application = Ember.Application = Ember.Namespace.extend(
     this.isInitialized = true;
 
     // At this point, the App.Router must already be assigned
-    this.container.register('router', 'main', this.Router);
+    this.__container__.register('router', 'main', this.Router);
 
     // Run any injections and run the application load hook. These hooks may
     // choose to defer readiness. For example, an authentication hook might want
@@ -440,9 +445,9 @@ var Application = Ember.Application = Ember.Namespace.extend(
     @method runInitializers
   */
   runInitializers: function() {
-    var router = this.container.lookup('router:main'),
+    var router = this.__container__.lookup('router:main'),
         initializers = get(this.constructor, 'initializers'),
-        container = this.container,
+        container = this.__container__,
         graph = new Ember.DAG(),
         namespace = this,
         properties, i, initializer;
@@ -517,7 +522,7 @@ var Application = Ember.Application = Ember.Namespace.extend(
     @property router {Ember.Router}
   */
   startRouting: function() {
-    var router = this.container.lookup('router:main');
+    var router = this.__container__.lookup('router:main');
     if (!router) { return; }
 
     router.startRouting();
@@ -537,7 +542,7 @@ var Application = Ember.Application = Ember.Namespace.extend(
     var eventDispatcher = get(this, 'eventDispatcher');
     if (eventDispatcher) { eventDispatcher.destroy(); }
 
-    this.container.destroy();
+    this.__container__.destroy();
   },
 
   initializer: function(options) {
