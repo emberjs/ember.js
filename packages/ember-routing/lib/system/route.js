@@ -39,8 +39,7 @@ Ember.Route = Ember.Object.extend({
 
     if (this.transitioned) { return; }
 
-    var controller = this.lookupController(context);
-
+    var controller = this.controllerFor(this.templateName, context);
     this.setupController(controller, context);
     this.renderTemplates(context);
   },
@@ -155,23 +154,6 @@ Ember.Route = Ember.Object.extend({
   },
 
   /**
-    A hook you can use to lookup the controller used to render current route.
-
-    By default, the `lookupController` hook try to find a controller by route name.
-    If no controller is found, a default controller will be registered.
-    Based on context presence and type, the method will return an
-    Ember.ObjectController, Ember.ArrayController or an Ember.Controller.
-
-    @param {Object} context the context for this controller
-    @param {String} controllerName the name of the controller to lookup
-    @return {Ember.Controller}
-  */
-  lookupController: function(context, controllerName) {
-    controllerName = controllerName || this.templateName;
-    return Ember.controllerFor(this.router.container, controllerName, context);
-  },
-
-  /**
     A hook you can use to setup the controller for the current route.
 
     This method is called with the controller for the current route and the
@@ -223,10 +205,19 @@ Ember.Route = Ember.Object.extend({
 
     @method controllerFor
     @param {String} name the name of the route
+    @param {Object} model the model associated with the route (optional)
     @return {Ember.Controller}
   */
-  controllerFor: function(name) {
-    return this.container.lookup('controller:' + name);
+  controllerFor: function(name, model) {
+    var container = this.router.container,
+        controller = container.lookup('controller:' + name);
+
+    if (!controller) {
+      model = model || this.modelFor(name);
+      controller = Ember.generateController(container, name, model);
+    }
+
+    return controller;
   },
 
   /**
