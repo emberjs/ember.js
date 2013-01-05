@@ -40,7 +40,8 @@ Ember.Route = Ember.Object.extend({
     if (this.transitioned) { return; }
 
     var controller = this.lookupController(context);
-    this.setupControllers(controller, context);
+
+    this.setupController(controller, context);
     this.renderTemplates(context);
   },
 
@@ -171,8 +172,7 @@ Ember.Route = Ember.Object.extend({
   },
 
   /**
-    A hook you can use to setup the necessary controllers for the current
-    route.
+    A hook you can use to setup the controller for the current route.
 
     This method is called with the controller for the current route and the
     model supplied by the `model` hook.
@@ -198,9 +198,9 @@ Ember.Route = Ember.Object.extend({
     This means that your template will get a proxy for the model as its
     context, and you can act as though the model itself was the context.
 
-    @method setupControllers
+    @method setupController
   */
-  setupControllers: function(controller, model) {
+  setupController: function(controller, model) {
     if (controller) {
       controller.set('content', model);
     }
@@ -211,7 +211,7 @@ Ember.Route = Ember.Object.extend({
 
     ```js
     App.PostRoute = Ember.Route.extend({
-      setupControllers: function(controller, post) {
+      setupController: function(controller, post) {
         this._super(controller, post);
         this.controllerFor('posts').set('currentPost', post);
       }
