@@ -37,7 +37,7 @@ Ember.Route = Ember.Object.extend({
 
     var controller = this.lookupController(context);
     this.setupControllers(controller, context);
-    this.renderTemplates(context);
+    this.renderTemplates(controller, context);
   },
 
   /**
@@ -239,8 +239,8 @@ Ember.Route = Ember.Object.extend({
     return this.container.lookup('route:' + name).currentModel;
   },
 
-  renderTemplates: function(context) {
-    this.render();
+  renderTemplates: function(controller, context) {
+    this.render({controller: controller});
   },
 
   /**
