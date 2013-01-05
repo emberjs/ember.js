@@ -11,6 +11,10 @@ Ember.controllerFor = function(container, controllerName, context) {
       controller = Ember.Controller.extend();
     }
 
+    controller.toString = function() {
+      return "(generated " + controllerName + " controller)";
+    };
+
     container.register('controller', controllerName, controller);
     controller = container.lookup('controller:' + controllerName);
   }
