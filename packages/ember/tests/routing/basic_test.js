@@ -505,7 +505,7 @@ asyncTest("Events are triggered on the controller if a matching action name is i
     },
 
     events: {
-      showStuff: function(handler, obj) {
+      showStuff: function(obj) {
         stateIsNotCalled = false;
       }
     }
@@ -551,8 +551,8 @@ asyncTest("Events are triggered on the current state", function() {
     },
 
     events: {
-      showStuff: function(handler, obj) {
-        ok(handler instanceof App.HomeRoute, "the handler is an App.HomeRoute");
+      showStuff: function(obj) {
+        ok(this instanceof App.HomeRoute, "the handler is an App.HomeRoute");
         // Using Ember.copy removes any private Ember vars which older IE would be confused by
         deepEqual(Ember.copy(obj, true), { name: "Tom Dale" }, "the context is correct");
         start();
@@ -592,8 +592,8 @@ asyncTest("Events are triggered on the current state when routes are nested", fu
 
   App.RootRoute = Ember.Route.extend({
     events: {
-      showStuff: function(handler, obj) {
-        ok(handler instanceof App.RootRoute, "the handler is an App.HomeRoute");
+      showStuff: function(obj) {
+        ok(this instanceof App.RootRoute, "the handler is an App.HomeRoute");
         // Using Ember.copy removes any private Ember vars which older IE would be confused by
         deepEqual(Ember.copy(obj, true), { name: "Tom Dale" }, "the context is correct");
         start();
