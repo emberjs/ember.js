@@ -74,6 +74,7 @@ task :test, [:suite] => :dist do |t, args|
 
   suites = {
     :default  => packages.map{|p| "package=#{p}" },
+    :built    => [ "package=all&dist=build" ],
     :runtime  => [ "package=ember-metal,ember-runtime" ],
     :views    => [ "package=ember-views,ember-handlebars" ],
     :standard => packages.map{|p| "package=#{p}" } +

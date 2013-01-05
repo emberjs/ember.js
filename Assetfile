@@ -114,11 +114,25 @@ class VersionInfo < Rake::Pipeline::Filter
   end
 end
 
+class EmberStub < Rake::Pipeline::Filter
+  def generate_output(inputs, output)
+    inputs.each do |input|
+      file = File.read(input.fullpath)
+      out = "(function() {\nvar Ember = { assert: function() {} };\n"
+      out << file
+      out << "\nexports.precompile = Ember.Handlebars.precompile;"
+      out << "\n})()"
+      output.write out
+    end
+  end
+end
+
 distros = {
-  "runtime"    => %w(ember-metal ember-runtime),
-  "data-deps"  => %w(ember-metal ember-runtime ember-states),
-  "full"       => %w(ember-metal rsvp container ember-runtime ember-views metamorph ember-handlebars ember-routing ember-application ember-states),
-  "old-router" => %w(ember-metal rsvp ember-runtime ember-views ember-states ember-viewstates metamorph ember-handlebars ember-old-router )
+  "runtime"           => %w(ember-metal ember-runtime),
+  "template-compiler" => %w(handlebars ember-handlebars-compiler),
+  "data-deps"         => %w(ember-metal ember-runtime ember-states),
+  "full"              => %w(ember-metal rsvp container ember-runtime ember-views metamorph ember-handlebars-compiler ember-handlebars ember-routing ember-application ember-states),
+  "old-router"        => %w(ember-metal rsvp ember-runtime ember-views ember-states ember-viewstates metamorph ember-handlebars-compiler ember-handlebars ember-old-router )
 }
 
 output "dist"
@@ -183,13 +197,14 @@ distros.each do |name, modules|
     module_paths = modules.map{|m| "#{m}.js" }
     match "{#{module_paths.join(',')}}" do
       concat(module_paths){ ["#{name}.js", "#{name}.prod.js"] }
-      filter AddMicroLoader
+      filter AddMicroLoader unless name == "ember-template-compiler"
     end
 
     # Add debug to the main distro
     match "{#{name}.js,ember-debug.js}" do
       filter VersionInfo
-      concat ["ember-debug.js"], "#{name}.js"
+      concat ["ember-debug.js"], "#{name}.js" unless name == "ember-template-compiler"
+      filter EmberStub if name == "ember-template-compiler"
     end
 
     # Strip dev code
