@@ -59,7 +59,7 @@ define("router",
 
         @param {String} url a URL to process
 
-        @returns {Array} an Array of `[handler, parameter]` tuples
+        @return {Array} an Array of `[handler, parameter]` tuples
       */
       handleURL: function(url) {
         var results = this.recognizer.recognize(url),
@@ -103,7 +103,7 @@ define("router",
 
         @param {String} handlerName
         @param {Array[Object]} contexts
-        @returns {Object} a serialized parameter hash
+        @return {Object} a serialized parameter hash
       */
       paramsForHandler: function(handlerName, callback) {
         var output = this._paramsForHandler(handlerName, [].slice.call(arguments, 1));
@@ -118,7 +118,7 @@ define("router",
           a URL for
         @param {...Object} objects a list of objects to serialize
 
-        @returns {String} a URL
+        @return {String} a URL
       */
       generate: function(handlerName) {
         var params = this.paramsForHandler.apply(this, arguments);
@@ -375,6 +375,10 @@ define("router",
         handler.context = context;
         if (handler.setup) { handler.setup(context); }
       });
+
+      if (router.didTransition) {
+        router.didTransition(handlerInfos);
+      }
     }
 
     /**
@@ -456,7 +460,7 @@ define("router",
       @param {Array[HandlerInfo]} newHandlers a list of the handler
         information for the new URL
 
-      @returns {Partition}
+      @return {Partition}
     */
     function partitionHandlers(oldHandlers, newHandlers) {
       var handlers = {

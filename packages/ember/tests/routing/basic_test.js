@@ -47,12 +47,21 @@ test("The Homepage", function() {
   App.HomeRoute = Ember.Route.extend({
   });
 
+  var currentPath;
+
+  App.ApplicationController = Ember.Route.extend({
+    currentPathDidChange: Ember.observer(function() {
+      currentPath = get(this, 'currentPath');
+    }, 'currentPath')
+  });
+
   bootApplication();
 
   Ember.run(function() {
     router.handleURL("/");
   });
 
+  equal(currentPath, 'home');
   equal(Ember.$('h3:contains(Hours)', '#qunit-fixture').length, 1, "The home template was rendered");
 });
 
@@ -410,6 +419,14 @@ test("Nested callbacks are not exited when moving to siblings", function() {
     });
   });
 
+  var currentPath;
+
+  App.ApplicationController = Ember.Route.extend({
+    currentPathDidChange: Ember.observer(function() {
+      currentPath = get(this, 'currentPath');
+    }, 'currentPath')
+  });
+
   var menuItem;
 
   App.MenuItem = Ember.Object.extend(Ember.DeferredMixin);
@@ -489,6 +506,7 @@ test("Nested callbacks are not exited when moving to siblings", function() {
   equal(rootModel, 1, "The root model was called again");
 
   deepEqual(router.location.path, '/specials/1');
+  equal(currentPath, 'root.special');
 });
 
 asyncTest("Events are triggered on the controller if a matching action name is implemented", function() {

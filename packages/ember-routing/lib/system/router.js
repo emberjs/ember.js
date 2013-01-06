@@ -37,7 +37,8 @@ Ember.Router = Ember.Object.extend({
   startRouting: function() {
     var router = this.router,
         location = get(this, 'location'),
-        container = this.container;
+        container = this.container,
+        self = this;
 
     var lastURL;
 
@@ -51,6 +52,10 @@ Ember.Router = Ember.Object.extend({
       Ember.run.once(updateURL);
     };
 
+    router.didTransition = function(infos) {
+      self.didTransition(infos);
+    };
+
     container.register('view', 'default', DefaultView);
     container.register('view', 'toplevel', Ember.View.extend());
 
@@ -58,6 +63,17 @@ Ember.Router = Ember.Object.extend({
     location.onUpdateURL(function(url) {
       router.handleURL(url);
     });
+  },
+
+  didTransition: function(infos) {
+    var appController = this.container.lookup('controller:application'),
+        path = routePath(infos);
+
+    set(appController, 'currentPath', path);
+
+    if (get(this, 'namespace').LOG_TRANSITIONS) {
+      Ember.Logger.log("Transitioned into '" + path + "'");
+    }
   },
 
   handleURL: function(url) {
@@ -132,6 +148,16 @@ function handlerIsActive(router, handlerName) {
   }
 
   return false;
+}
+
+function routePath(handlerInfos) {
+  var path = [];
+
+  for (var i=1, l=handlerInfos.length; i<l; i++) {
+    path.push(handlerInfos[i].name);
+  }
+
+  return path.join(".");
 }
 
 Ember.Router.reopenClass({
