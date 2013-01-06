@@ -39,9 +39,21 @@ Ember.Route = Ember.Object.extend({
 
     if (this.transitioned) { return; }
 
-    var controller = this.lookupController(context);
-    this.setupControllers(controller, context);
-    this.renderTemplates(context);
+    var controller = this.controllerFor(this.templateName, context);
+
+    if (this.setupControllers) {
+      Ember.deprecate("Ember.Route.setupControllers is deprecated. Please use Ember.Route.setupController(controller, model) instead.");
+      this.setupControllers(controller, context);
+    } else {
+      this.setupController(controller, context);
+    }
+
+    if (this.renderTemplates) {
+      Ember.deprecate("Ember.Route.renderTemplates is deprecated. Please use Ember.Route.renderTemplate(controller, model) instead.");
+      this.renderTemplates(context);
+    } else {
+      this.renderTemplate(controller, context);
+    }
   },
 
   /**
@@ -154,25 +166,7 @@ Ember.Route = Ember.Object.extend({
   },
 
   /**
-    A hook you can use to lookup the controller used to render current route.
-
-    By default, the `lookupController` hook try to find a controller by route name.
-    If no controller is found, a default controller will be registered.
-    Based on context presence and type, the method will return an
-    Ember.ObjectController, Ember.ArrayController or an Ember.Controller.
-
-    @param {Object} context the context for this controller
-    @param {String} controllerName the name of the controller to lookup
-    @return {Ember.Controller}
-  */
-  lookupController: function(context, controllerName) {
-    controllerName = controllerName || this.templateName;
-    return Ember.controllerFor(this.router.container, controllerName, context);
-  },
-
-  /**
-    A hook you can use to setup the necessary controllers for the current
-    route.
+    A hook you can use to setup the controller for the current route.
 
     This method is called with the controller for the current route and the
     model supplied by the `model` hook.
@@ -198,9 +192,9 @@ Ember.Route = Ember.Object.extend({
     This means that your template will get a proxy for the model as its
     context, and you can act as though the model itself was the context.
 
-    @method setupControllers
+    @method setupController
   */
-  setupControllers: function(controller, model) {
+  setupController: function(controller, model) {
     if (controller) {
       controller.set('content', model);
     }
@@ -211,7 +205,7 @@ Ember.Route = Ember.Object.extend({
 
     ```js
     App.PostRoute = Ember.Route.extend({
-      setupControllers: function(controller, post) {
+      setupController: function(controller, post) {
         this._super(controller, post);
         this.controllerFor('posts').set('currentPost', post);
       }
@@ -223,10 +217,19 @@ Ember.Route = Ember.Object.extend({
 
     @method controllerFor
     @param {String} name the name of the route
+    @param {Object} model the model associated with the route (optional)
     @return {Ember.Controller}
   */
-  controllerFor: function(name) {
-    return this.container.lookup('controller:' + name);
+  controllerFor: function(name, model) {
+    var container = this.router.container,
+        controller = container.lookup('controller:' + name);
+
+    if (!controller) {
+      model = model || this.modelFor(name);
+      controller = Ember.generateController(container, name, model);
+    }
+
+    return controller;
   },
 
   /**
@@ -243,7 +246,21 @@ Ember.Route = Ember.Object.extend({
     return this.container.lookup('route:' + name).currentModel;
   },
 
-  renderTemplates: function(context) {
+  /**
+    A hook you can use to render the template for the current route.
+
+    This method is called with the controller for the current route and the
+    model supplied by the `model` hook. By default, it renders the route's
+    template, configured with the controller for the route.
+
+    This method can be overridden to set up and render additional or
+    alternative templates.
+
+    @method renderTemplate
+    @param {Object} controller the route's controller
+    @param {Object} model the route's model
+  */
+  renderTemplate: function(controller, model) {
     this.render();
   },
 
@@ -262,7 +279,7 @@ Ember.Route = Ember.Object.extend({
     });
 
     App.PostRoute = App.Route.extend({
-      renderTemplates: function() {
+      renderTemplate: function() {
         this.render();
       }
     });
@@ -281,7 +298,7 @@ Ember.Route = Ember.Object.extend({
 
     ```js
     App.PostRoute = App.Route.extend({
-      renderTemplates: function() {
+      renderTemplate: function() {
         this.render('myPost', {   // the template to render
           into: 'index',          // the template to render into
           outlet: 'detail',       // the name of the outlet in that template
