@@ -43,6 +43,14 @@ Container.prototype = {
     return value;
   },
 
+  has: function(fullName) {
+    if (this.cache.hasOwnProperty(fullName)) {
+      return true;
+    }
+
+    return !!factoryFor(this, fullName);
+  },
+
   optionsForType: function(type, options) {
     this.typeOptions[type] = options;
   },
@@ -107,12 +115,16 @@ function option(container, fullName, optionName) {
   }
 }
 
+function factoryFor(container, fullName) {
+  return container.resolve(fullName);
+}
+
 function instantiate(container, fullName) {
+  var factory = factoryFor(container, fullName);
+
   var splitName = fullName.split(":"),
       type = splitName[0], name = splitName[1],
       value;
-
-  var factory = container.resolve(fullName);
 
   if (option(container, fullName, 'instantiate') === false) {
     return factory;

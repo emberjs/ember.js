@@ -32,6 +32,16 @@ test("A registered factory returns the same instance each time", function() {
   equal(postController, container.lookup('controller:post'));
 });
 
+test("A registered factory returns true for `has` if an item is registered", function() {
+  var container = new Ember.Container();
+  var PostController = factory();
+
+  container.register('controller', 'post', PostController);
+
+  equal(container.has('controller:post'), true, "The `has` method returned true for registered factories");
+  equal(container.has('controller:posts'), false, "The `has` method returned false for unregistered factories");
+});
+
 test("A container lookup has access to the container", function() {
   var container = new Ember.Container();
   var PostController = factory();
@@ -161,6 +171,19 @@ test("The container can take a hook to resolve factories lazily", function() {
   var postController = container.lookup('controller:post');
 
   ok(postController instanceof PostController, "The correct factory was provided");
+});
+
+test("The container respect the resolver hook for `has`", function() {
+  var container = new Ember.Container();
+  var PostController = factory();
+
+  container.resolve = function(fullName) {
+    if (fullName === 'controller:post') {
+      return PostController;
+    }
+  };
+
+  ok(container.has('controller:post'), "the `has` method uses the resolver hook");
 });
 
 test("The container can get options that should be applied to all factories for a given type", function() {
