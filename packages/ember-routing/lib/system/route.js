@@ -40,8 +40,20 @@ Ember.Route = Ember.Object.extend({
     if (this.transitioned) { return; }
 
     var controller = this.controllerFor(this.templateName, context);
-    this.setupController(controller, context);
-    this.renderTemplate(controller, context);
+
+    if (this.setupControllers) {
+      Ember.deprecate("Ember.Route.setupControllers is deprecated. Please use Ember.Route.setupController(controller, model) instead.");
+      this.setupControllers(controller, context);
+    } else {
+      this.setupController(controller, context);
+    }
+
+    if (this.renderTemplates) {
+      Ember.deprecate("Ember.Route.renderTemplates is deprecated. Please use Ember.Route.renderTemplate(controller, model) instead.");
+      this.renderTemplates(context);
+    } else {
+      this.renderTemplate(controller, context);
+    }
   },
 
   /**
