@@ -1,23 +1,23 @@
-
 Ember.controllerFor = function(container, controllerName, context) {
-  var controller = container.lookup('controller:' + controllerName);
+  return container.lookup('controller:' + controllerName) ||
+         Ember.generateController(container, controllerName, context);
+};
 
-  if (!controller) {
-    if (context && Ember.isArray(context)) {
-      controller = Ember.ArrayController.extend({content: context});
-    } else if (context) {
-      controller = Ember.ObjectController.extend({content: context});
-    } else {
-      controller = Ember.Controller.extend();
-    }
+Ember.generateController = function(container, controllerName, context) {
+  var controller;
 
-    controller.toString = function() {
-      return "(generated " + controllerName + " controller)";
-    };
-
-    container.register('controller', controllerName, controller);
-    controller = container.lookup('controller:' + controllerName);
+  if (context && Ember.isArray(context)) {
+    controller = Ember.ArrayController.extend({content: context});
+  } else if (context) {
+    controller = Ember.ObjectController.extend({content: context});
+  } else {
+    controller = Ember.Controller.extend();
   }
 
-  return controller;
+  controller.toString = function() {
+    return "(generated " + controllerName + " controller)";
+  };
+
+  container.register('controller', controllerName, controller);
+  return container.lookup('controller:' + controllerName);
 };

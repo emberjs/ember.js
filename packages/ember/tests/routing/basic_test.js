@@ -84,13 +84,13 @@ test("The Homepage register as activeView", function() {
   equal(router._lookupActiveView('home'), undefined, '`home` active view is disconnected');
 });
 
-test("The Homepage with explicit template name in renderTemplates", function() {
+test("The Homepage with explicit template name in renderTemplate", function() {
   Router.map(function(match) {
     match("/").to("home");
   });
 
   App.HomeRoute = Ember.Route.extend({
-    renderTemplates: function() {
+    renderTemplate: function() {
       this.render('homepage');
     }
   });
@@ -104,7 +104,7 @@ test("The Homepage with explicit template name in renderTemplates", function() {
   equal(Ember.$('h3:contains(Megatroll)', '#qunit-fixture').length, 1, "The homepage template was rendered");
 });
 
-test("The Homepage with explicit template name in renderTemplates", function() {
+test("The Homepage with explicit template name in renderTemplate", function() {
   Router.map(function(match) {
     match("/").to("home");
   });
@@ -114,7 +114,7 @@ test("The Homepage with explicit template name in renderTemplates", function() {
   });
 
   App.HomeRoute = Ember.Route.extend({
-    renderTemplates: function() {
+    renderTemplate: function() {
       this.render('homepage');
     }
   });
@@ -128,13 +128,13 @@ test("The Homepage with explicit template name in renderTemplates", function() {
   equal(Ember.$('h3:contains(Megatroll) + p:contains(YES I AM HOME)', '#qunit-fixture').length, 1, "The homepage template was rendered");
 });
 
-test("The Homepage with a `setupControllers` hook", function() {
+test("The Homepage with a `setupController` hook", function() {
   Router.map(function(match) {
     match("/").to("home");
   });
 
   App.HomeRoute = Ember.Route.extend({
-    setupControllers: function(controller) {
+    setupController: function(controller) {
       set(controller, 'hours', Ember.A([
         "Monday through Friday: 9am to 5pm",
         "Saturday: Noon to Midnight",
@@ -158,13 +158,13 @@ test("The Homepage with a `setupControllers` hook", function() {
   equal(Ember.$('ul li', '#qunit-fixture').eq(2).text(), "Sunday: Noon to 6pm", "The template was rendered with the hours context");
 });
 
-test("The Homepage with a `setupControllers` hook modifying other controllers", function() {
+test("The Homepage with a `setupController` hook modifying other controllers", function() {
   Router.map(function(match) {
     match("/").to("home");
   });
 
   App.HomeRoute = Ember.Route.extend({
-    setupControllers: function(controller) {
+    setupController: function(controller) {
       set(this.controllerFor('home'), 'hours', Ember.A([
         "Monday through Friday: 9am to 5pm",
         "Saturday: Noon to Midnight",
@@ -202,7 +202,7 @@ test("The Homepage getting its controller context via model", function() {
       ]);
     },
 
-    setupControllers: function(controller, model) {
+    setupController: function(controller, model) {
       equal(this.controllerFor('home'), controller);
 
       set(this.controllerFor('home'), 'hours', model);
@@ -237,7 +237,7 @@ test("The Specials Page getting its controller context by deserializing the para
       });
     },
 
-    setupControllers: function(controller, model) {
+    setupController: function(controller, model) {
       set(controller, 'content', model);
     }
   });
@@ -271,7 +271,7 @@ test("The Specials Page defaults to looking models up via `find`", function() {
   };
 
   App.SpecialRoute = Ember.Route.extend({
-    setupControllers: function(controller, model) {
+    setupController: function(controller, model) {
       set(controller, 'content', model);
     }
   });
@@ -312,7 +312,7 @@ test("The Special Page returning a promise puts the app into a loading state unt
   });
 
   App.SpecialRoute = Ember.Route.extend({
-    setupControllers: function(controller, model) {
+    setupController: function(controller, model) {
       set(controller, 'content', model);
     }
   });
@@ -368,7 +368,7 @@ test("Moving from one page to another triggers the correct callbacks", function(
   });
 
   App.SpecialRoute = Ember.Route.extend({
-    setupControllers: function(controller, model) {
+    setupController: function(controller, model) {
       set(controller, 'content', model);
     }
   });
@@ -433,11 +433,11 @@ test("Nested callbacks are not exited when moving to siblings", function() {
       return this._super.apply(this, arguments);
     },
 
-    setupControllers: function() {
+    setupController: function() {
       rootSetup++;
     },
 
-    renderTemplates: function() {
+    renderTemplate: function() {
       rootRender++;
     }
   });
@@ -447,7 +447,7 @@ test("Nested callbacks are not exited when moving to siblings", function() {
   });
 
   App.SpecialRoute = Ember.Route.extend({
-    setupControllers: function(controller, model) {
+    setupController: function(controller, model) {
       set(controller, 'content', model);
     }
   });
@@ -713,7 +713,7 @@ test("A redirection hook is provided", function() {
       }
     },
 
-    setupControllers: function() {
+    setupController: function() {
       chooseFollowed++;
     }
   });
