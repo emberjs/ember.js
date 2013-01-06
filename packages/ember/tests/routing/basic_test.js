@@ -84,13 +84,13 @@ test("The Homepage register as activeView", function() {
   equal(router._lookupActiveView('home'), undefined, '`home` active view is disconnected');
 });
 
-test("The Homepage with explicit template name in renderTemplates", function() {
+test("The Homepage with explicit template name in renderTemplate", function() {
   Router.map(function(match) {
     match("/").to("home");
   });
 
   App.HomeRoute = Ember.Route.extend({
-    renderTemplates: function() {
+    renderTemplate: function() {
       this.render('homepage');
     }
   });
@@ -104,7 +104,7 @@ test("The Homepage with explicit template name in renderTemplates", function() {
   equal(Ember.$('h3:contains(Megatroll)', '#qunit-fixture').length, 1, "The homepage template was rendered");
 });
 
-test("The Homepage with explicit template name in renderTemplates", function() {
+test("The Homepage with explicit template name in renderTemplate", function() {
   Router.map(function(match) {
     match("/").to("home");
   });
@@ -114,7 +114,7 @@ test("The Homepage with explicit template name in renderTemplates", function() {
   });
 
   App.HomeRoute = Ember.Route.extend({
-    renderTemplates: function() {
+    renderTemplate: function() {
       this.render('homepage');
     }
   });
@@ -437,7 +437,7 @@ test("Nested callbacks are not exited when moving to siblings", function() {
       rootSetup++;
     },
 
-    renderTemplates: function() {
+    renderTemplate: function() {
       rootRender++;
     }
   });

@@ -41,7 +41,7 @@ Ember.Route = Ember.Object.extend({
 
     var controller = this.controllerFor(this.templateName, context);
     this.setupController(controller, context);
-    this.renderTemplates(context);
+    this.renderTemplate(controller, context);
   },
 
   /**
@@ -234,7 +234,21 @@ Ember.Route = Ember.Object.extend({
     return this.container.lookup('route:' + name).currentModel;
   },
 
-  renderTemplates: function(context) {
+  /**
+    A hook you can use to render the template for the current route.
+
+    This method is called with the controller for the current route and the
+    model supplied by the `model` hook. By default, it renders the route's
+    template, configured with the controller for the route.
+
+    This method can be overridden to set up and render additional or
+    alternative templates.
+
+    @method renderTemplate
+    @param {Object} controller the route's controller
+    @param {Object} model the route's model
+  */
+  renderTemplate: function(controller, model) {
     this.render();
   },
 
@@ -253,7 +267,7 @@ Ember.Route = Ember.Object.extend({
     });
 
     App.PostRoute = App.Route.extend({
-      renderTemplates: function() {
+      renderTemplate: function() {
         this.render();
       }
     });
@@ -272,7 +286,7 @@ Ember.Route = Ember.Object.extend({
 
     ```js
     App.PostRoute = App.Route.extend({
-      renderTemplates: function() {
+      renderTemplate: function() {
         this.render('myPost', {   // the template to render
           into: 'index',          // the template to render into
           outlet: 'detail',       // the name of the outlet in that template
