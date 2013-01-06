@@ -2,9 +2,65 @@ require('ember-runtime');
 
 var get = Ember.get, set = Ember.set;
 
-function Container() {
-  this.registry = {};
-  this.cache = {};
+var objectCreate = Object.create || function(parent) {
+  function F() {}
+  F.prototype = parent;
+  return new F();
+};
+
+function InheritingDict(parent) {
+  this.parent = parent;
+  this.dict = {};
+}
+
+InheritingDict.prototype = {
+  get: function(key) {
+    var dict = this.dict;
+
+    if (dict.hasOwnProperty(key)) {
+      return dict[key];
+    }
+
+    if (this.parent) {
+      return this.parent.get(key);
+    }
+  },
+
+  set: function(key, value) {
+    this.dict[key] = value;
+  },
+
+  has: function(key) {
+    var dict = this.dict;
+
+    if (dict.hasOwnProperty(key)) {
+      return true;
+    }
+
+    if (this.parent) {
+      return this.parent.has(key);
+    }
+
+    return false;
+  },
+
+  eachLocal: function(callback, binding) {
+    var dict = this.dict;
+
+    for (var prop in dict) {
+      if (dict.hasOwnProperty(prop)) {
+        callback.call(binding, prop, dict[prop]);
+      }
+    }
+  }
+};
+
+function Container(parent) {
+  this.parent = parent;
+  this.children = [];
+
+  this.registry = new InheritingDict(parent && parent.registry);
+  this.cache = new InheritingDict(parent && parent.cache);
   this.typeInjections = {};
   this.injections = {};
   this.options = {};
@@ -12,24 +68,28 @@ function Container() {
 }
 
 Container.prototype = {
+  child: function() {
+    var container = new Container(this);
+    this.children.push(container);
+    return container;
+  },
+
   set: function(object, key, value) {
     object[key] = value;
   },
 
   register: function(type, name, factory, options) {
-    this.registry[type + ":" + name] = factory;
+    this.registry.set(type + ":" + name, factory);
     this.options[type + ":" + name] = options || {};
   },
 
   resolve: function(fullName) {
-    if (this.registry.hasOwnProperty(fullName)) {
-      return this.registry[fullName];
-    }
+    return this.registry.get(fullName);
   },
 
   lookup: function(fullName) {
-    if (this.cache.hasOwnProperty(fullName)) {
-      return this.cache[fullName];
+    if (this.cache.has(fullName)) {
+      return this.cache.get(fullName);
     }
 
     var value = instantiate(this, fullName);
@@ -37,14 +97,14 @@ Container.prototype = {
     if (!value) { return; }
 
     if (isSingleton(this, fullName)) {
-      this.cache[fullName] = value;
+      this.cache.set(fullName, value);
     }
 
     return value;
   },
 
   has: function(fullName) {
-    if (this.cache.hasOwnProperty(fullName)) {
+    if (this.cache.has(fullName)) {
       return true;
     }
 
@@ -52,20 +112,34 @@ Container.prototype = {
   },
 
   optionsForType: function(type, options) {
+    if (this.parent) { illegalChildOperation('optionsForType'); }
+
     this.typeOptions[type] = options;
   },
 
   typeInjection: function(type, property, fullName) {
+    if (this.parent) { illegalChildOperation('typeInjection'); }
+
     var injections = this.typeInjections[type] = this.typeInjections[type] || [];
     injections.push({ property: property, fullName: fullName });
   },
 
   injection: function(factoryName, property, injectionName) {
+    if (this.parent) { illegalChildOperation('injection'); }
+
     var injections = this.injections[factoryName] = this.injections[factoryName] || [];
     injections.push({ property: property, fullName: injectionName });
   },
 
   destroy: function() {
+    this.isDestroyed = true;
+
+    for (var i=0, l=this.children.length; i<l; i++) {
+      this.children[i].destroy();
+    }
+
+    this.children = [];
+
     eachDestroyable(this, function(item) {
       item.isDestroying = true;
     });
@@ -74,9 +148,14 @@ Container.prototype = {
       item.destroy();
     });
 
+    delete this.parent;
     this.isDestroyed = true;
   }
 };
+
+function illegalChildOperation(operation) {
+  throw new Error(operation + " is not currently supported on child containers");
+}
 
 function isSingleton(container, fullName) {
   var singleton = option(container, fullName, 'singleton');
@@ -145,13 +224,10 @@ function instantiate(container, fullName) {
 }
 
 function eachDestroyable(container, callback) {
-  var cache = container.cache;
-
-  for (var prop in cache) {
-    if (!cache.hasOwnProperty(prop)) { continue; }
-    if (option(container, prop, 'instantiate') === false) { continue; }
-    callback(cache[prop]);
-  }
+  container.cache.eachLocal(function(key, value) {
+    if (option(container, key, 'instantiate') === false) { return; }
+    callback(value);
+  });
 }
 
 Ember.Container = Container;
