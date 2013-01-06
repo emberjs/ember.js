@@ -22,6 +22,10 @@ Ember.Route = Ember.Object.extend({
     return this.router.transitionTo.apply(this.router, arguments);
   },
 
+  send: function() {
+    return this.router.send.apply(this.router, arguments);
+  },
+
   /**
     @private
 
