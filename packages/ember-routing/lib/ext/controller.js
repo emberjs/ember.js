@@ -1,4 +1,4 @@
-var get = Ember.get, set = Ember.set;
+var get = Ember.get;
 
 Ember.ControllerMixin.reopen({
   concatenatedProperties: ['needs'],
@@ -22,15 +22,7 @@ Ember.ControllerMixin.reopen({
   controllerFor: function(controllerName) {
     var container = get(this, 'container');
     return container.lookup('controller:' + controllerName);
-  },
-
-  model: Ember.computed(function(key, value) {
-    if (arguments.length > 1) {
-      return set(this, 'content', value);
-    } else {
-      return get(this, 'content');
-    }
-  }).property('content')
+  }
 });
 
 function verifyDependencies(controller) {

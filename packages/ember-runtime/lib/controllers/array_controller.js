@@ -55,4 +55,12 @@ var get = Ember.get, set = Ember.set;
 */
 
 Ember.ArrayController = Ember.ArrayProxy.extend(Ember.ControllerMixin,
-  Ember.SortableMixin);
+  Ember.SortableMixin, {
+  models: Ember.computed(function(key, value) {
+    if (arguments.length > 1) {
+      return set(this, 'content', value);
+    } else {
+      return get(this, 'content');
+    }
+  }).property('content')
+});
