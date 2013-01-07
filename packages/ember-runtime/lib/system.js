@@ -1,3 +1,4 @@
+require('ember-runtime/system/container');
 require('ember-runtime/system/application');
 require('ember-runtime/system/array_proxy');
 require('ember-runtime/system/object_proxy');
