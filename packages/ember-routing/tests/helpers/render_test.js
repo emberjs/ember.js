@@ -10,7 +10,7 @@ var buildContainer = function(namespace) {
   var container = new Ember.Container();
 
   container.set = Ember.set;
-  container.resolve = resolveFor(namespace);
+  container.resolver = resolverFor(namespace);
   container.optionsForType('view', { singleton: false });
   container.optionsForType('template', { instantiate: false });
   container.register('application', 'main', namespace, { instantiate: false });
@@ -21,7 +21,7 @@ var buildContainer = function(namespace) {
   return container;
 };
 
-function resolveFor(namespace) {
+function resolverFor(namespace) {
   return function(fullName) {
     var nameParts = fullName.split(":"),
         type = nameParts[0], name = nameParts[1];
@@ -37,8 +37,6 @@ function resolveFor(namespace) {
     var factory = Ember.get(namespace, className);
 
     if (factory) { return factory; }
-
-    return Ember.Container.prototype.resolve.call(this, fullName);
   };
 }
 

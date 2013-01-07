@@ -71,3 +71,14 @@ test("Destroying a parent container destroys the sub-containers", function() {
   equal(postController1.isDestroyed, true, "The child's singleton is destroyed");
   equal(postController2.isDestroyed, true, "The child's singleton is destroyed");
 });
+
+test("Resolver is inherited from parent container", function() {
+  var otherController = factory();
+  container.resolver = function(fullName) {
+    return otherController;
+  };
+  var subContainer = container.child();
+
+  equal(subContainer.resolve('controller:post'), otherController, 'should use parent resolver');
+  equal(container.resolve('controller:post'), otherController, 'should use resolver');
+});
