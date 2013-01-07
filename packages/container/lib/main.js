@@ -59,6 +59,7 @@ function Container(parent) {
   this.parent = parent;
   this.children = [];
 
+  this.resolver = parent && parent.resolver || function() {};
   this.registry = new InheritingDict(parent && parent.registry);
   this.cache = new InheritingDict(parent && parent.cache);
   this.typeInjections = {};
@@ -84,7 +85,7 @@ Container.prototype = {
   },
 
   resolve: function(fullName) {
-    return this.registry.get(fullName);
+    return this.resolver(fullName) || this.registry.get(fullName);
   },
 
   lookup: function(fullName) {
