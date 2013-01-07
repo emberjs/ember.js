@@ -195,6 +195,15 @@ test("don't remove and insert if position didn't change", function() {
   ok(!insertItemSortedCalled, "insertItemSorted should not have been called");
 });
 
+test("sortProperties observers removed on content removal", function() {
+  var removedObject = unsortedArray.objectAt(2);
+  equal(Ember.listenersFor(removedObject, 'name:change').length, 1,
+    "Before removal, there should be one listener for sortProperty change.");
+  unsortedArray.replace(2, 1, []);
+  equal(Ember.listenersFor(removedObject, 'name:change').length, 0,
+    "After removal, there should be no listeners for sortProperty change.");
+});
+
 module("Ember.Sortable with sortProperties", {
   setup: function() {
     Ember.run(function() {
