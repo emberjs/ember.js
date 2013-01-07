@@ -1,4 +1,5 @@
 require('ember-states');
+require('ember-old-router/promise_chain');
 require('ember-old-router/application');
 require('ember-old-router/route');
 require('ember-old-router/router');
