@@ -1,6 +1,8 @@
 require('ember-runtime/system/object_proxy');
 require('ember-runtime/controllers/controller');
 
+var get = Ember.get, set = Ember.set;
+
 /**
 @module ember
 @submodule ember-runtime
@@ -20,4 +22,12 @@ require('ember-runtime/controllers/controller');
   @extends Ember.ObjectProxy
   @uses Ember.ControllerMixin
 **/
-Ember.ObjectController = Ember.ObjectProxy.extend(Ember.ControllerMixin);
+Ember.ObjectController = Ember.ObjectProxy.extend(Ember.ControllerMixin, {
+  model: Ember.computed(function(key, value) {
+    if (arguments.length > 1) {
+      return set(this, 'content', value);
+    } else {
+      return get(this, 'content');
+    }
+  }).property('content')
+});
