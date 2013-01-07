@@ -13,7 +13,8 @@
 
   "dependencies": {
     "spade":            "~> 1.0",
-    "ember-metal": "1.0.0-pre.2"
+    "ember-metal": "1.0.0-pre.2",
+    "container": "1.0.0-pre.2"
   },
 
   "dependencies:development": {
