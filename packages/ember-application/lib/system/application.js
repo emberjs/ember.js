@@ -594,7 +594,7 @@ Ember.Application.reopenClass({
     Ember.Container.defaultContainer = container;
 
     container.set = Ember.set;
-    container.resolve = resolveFor(namespace);
+    container.resolver = resolverFor(namespace);
     container.optionsForType('view', { singleton: false });
     container.optionsForType('template', { instantiate: false });
     container.register('application', 'main', namespace, { instantiate: false });
@@ -625,7 +625,7 @@ Ember.Application.reopenClass({
   @param {Ember.Namespace} namespace the namespace to look for classes
   @return {any} the resolved value for a given lookup
 */
-function resolveFor(namespace) {
+function resolverFor(namespace) {
   return function(fullName) {
     var nameParts = fullName.split(":"),
         type = nameParts[0], name = nameParts[1];
@@ -645,8 +645,6 @@ function resolveFor(namespace) {
     var factory = get(namespace, className);
 
     if (factory) { return factory; }
-
-    return Ember.Container.prototype.resolve.call(this, fullName);
   };
 }
 
