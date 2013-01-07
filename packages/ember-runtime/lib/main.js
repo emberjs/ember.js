@@ -6,6 +6,7 @@ Ember Runtime
 @requires ember-metal
 */
 
+require('container');
 require('ember-metal');
 require('ember-runtime/core');
 require('ember-runtime/ext');
