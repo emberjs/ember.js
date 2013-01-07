@@ -22,7 +22,8 @@ Ember.Router = Ember.Object.extend({
   location: 'hash',
 
   init: function() {
-    var router = this.router = new Router();
+    var router = this.router = new Router(),
+        application = this.container.lookup('application:main');
     this._activeViews = {};
 
     setupLocation(this);
@@ -32,6 +33,10 @@ Ember.Router = Ember.Object.extend({
     router.map(function(match) {
       match("/").to("application", callback);
     });
+
+    if (!get(application, 'router')) {
+      set(application, 'router', this);
+    }
   },
 
   startRouting: function() {
