@@ -1,0 +1,9 @@
+[submodule "cookbooks/phantomjs"]
+	path = cookbooks/phantomjs
+	url = git@github.com:customink-webops/phantomjs.git
+[submodule "cookbooks/build-essential"]
+	path = cookbooks/build-essential
+	url = git@github.com:opscode-cookbooks/build-essential.git
+[submodule "cookbooks/nodejs"]
+	path = cookbooks/nodejs
+	url = git@github.com:mdxp/nodejs-cookbook.git
