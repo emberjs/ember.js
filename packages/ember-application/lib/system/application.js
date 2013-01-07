@@ -402,9 +402,28 @@ var Application = Ember.Application = Ember.Namespace.extend(
     }
   },
 
+  /**
+    @method register
+  */
   register: function() {
     var container = this.__container__;
     return container.register.apply(container, arguments);
+  },
+
+  /**
+    @method injection
+  */
+  injection: function() {
+    var container = this.__container__;
+    return container.injection.apply(container, arguments);
+  },
+
+  /**
+    @method typeInjection
+  */
+  typeInjection: function() {
+    var container = this.__container__;
+    return container.typeInjection.apply(container, arguments);
   },
 
   /**
