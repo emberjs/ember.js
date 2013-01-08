@@ -107,8 +107,12 @@ var utils = Ember.EnumerableUtils = {
   },
 
   replace: function(array, idx, amt, objects) {
-    var args = Array.prototype.concat.apply([idx, amt], objects);
-    return array.splice.apply(array, args);
+    if (array.replace) {
+      return array.replace(idx, amt, objects);
+    } else {
+      var args = Array.prototype.concat.apply([idx, amt], objects);
+      return array.splice.apply(array, args);
+    }
   }
 };
 

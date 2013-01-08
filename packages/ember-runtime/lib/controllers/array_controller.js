@@ -78,10 +78,10 @@ var get = Ember.get, set = Ember.set, isGlobalPath = Ember.isGlobalPath,
   ```javascript
   App.MyArrayController = Ember.ArrayController.extend({
     lookupItemController: function( object ) {
-      if(object.get('isSpecial')) {
-        return "SpecialObject"; // use SpecialObjectController
+      if (object.get('isSpecial')) {
+        return "special"; // use App.SpecialController
       } else {
-        return "RegularObject"; // use RegularObjectController
+        return "regular"; // use App.RegularController
       }
     }
   });
@@ -117,10 +117,10 @@ Ember.ArrayController = Ember.ArrayProxy.extend(Ember.ControllerMixin,
     ```javascript
     App.MyArrayController = Ember.ArrayController.extend({
       lookupItemController: function( object ) {
-        if(object.get('isSpecial')) {
-          return "SpecialObject"; // use SpecialObjectController
+        if (object.get('isSpecial')) {
+          return "special"; // use App.SpecialController
         } else {
-          return "RegularObject"; // use RegularObjectController
+          return "regular"; // use App.RegularController
         }
       }
     });
@@ -133,7 +133,6 @@ Ember.ArrayController = Ember.ArrayProxy.extend(Ember.ControllerMixin,
   lookupItemController: function(object) {
     return get(this, 'itemController');
   },
-
 
   objectAtContent: function(idx) {
     var length = get(this, 'length'),
