@@ -152,12 +152,7 @@ Ember.ArrayController = Ember.ArrayProxy.extend(Ember.ControllerMixin,
     }
   },
 
-  arrangedContentDidChange: function() {
-    this._super();
-    this._resetSubContainers();
-  },
-
-  arrayContentDidChange: function(idx, removedCnt, addedCnt) {
+  arrayContentWillChange: function(idx, removedCnt, addedCnt) {
     this._super(idx, removedCnt, addedCnt);
 
     var subContainers = get(this, 'subContainers'),
@@ -168,11 +163,6 @@ Ember.ArrayController = Ember.ArrayProxy.extend(Ember.ControllerMixin,
     });
 
     replace(subContainers, idx, removedCnt, new Array(addedCnt));
-  },
-
-  init: function() {
-    this._super();
-    this._resetSubContainers();
   },
 
   controllerAt: function(idx, object, controllerClass) {
@@ -196,17 +186,7 @@ Ember.ArrayController = Ember.ArrayProxy.extend(Ember.ControllerMixin,
     return controller;
   },
 
-  subContainers: null,
-
-  _resetSubContainers: function() {
-    var subContainers = get(this, 'subContainers');
-
-    if (subContainers) {
-      forEach(subContainers, function(subContainer) {
-        if (subContainer) { subContainer.destroy(); }
-      });
-    }
-
-    this.set('subContainers', Ember.A());
-  }
+  subContainers: Ember.computed(function() {
+    return Ember.A();
+  })
 });
