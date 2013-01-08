@@ -1,10 +1,19 @@
-var get = Ember.get, setProperties = Ember.setProperties, passedOptions;
+var passedOptions;
+var Container = requireModule('container');
+
+var setProperties = function(object, properties) {
+  for (var key in properties) {
+    if (properties.hasOwnProperty(key)) {
+      object[key] = properties[key];
+    }
+  }
+};
 
 var container;
 
 module("Container (sub-containers)", {
   setup: function() {
-    container = new Ember.Container();
+    container = new Container();
     var PostController = factory();
 
     container.register('controller', 'post', PostController);
@@ -70,4 +79,15 @@ test("Destroying a parent container destroys the sub-containers", function() {
 
   equal(postController1.isDestroyed, true, "The child's singleton is destroyed");
   equal(postController2.isDestroyed, true, "The child's singleton is destroyed");
+});
+
+test("Resolver is inherited from parent container", function() {
+  var otherController = factory();
+  container.resolver = function(fullName) {
+    return otherController;
+  };
+  var subContainer = container.child();
+
+  equal(subContainer.resolve('controller:post'), otherController, 'should use parent resolver');
+  equal(container.resolve('controller:post'), otherController, 'should use resolver');
 });

@@ -27,7 +27,7 @@ Ember.DeferredMixin = Ember.Mixin.create({
   */
   then: function(doneCallback, failCallback) {
     var promise = get(this, 'promise');
-    promise.then.apply(promise, arguments);
+    return promise.then.apply(promise, arguments);
   },
 
   /**
