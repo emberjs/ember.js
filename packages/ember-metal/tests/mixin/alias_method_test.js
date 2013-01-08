@@ -23,7 +23,7 @@ test('copies the property values from another key when the mixin is applied', fu
   validateAliasMethod(obj);
 });
 
-test('should follow aliasMethodes all the way down', function() {
+test('should follow aliasMethods all the way down', function() {
   var MyMixin = Ember.Mixin.create({
     bar: Ember.aliasMethod('foo'), // put first to break ordered iteration
     baz: 'baz',
@@ -31,7 +31,7 @@ test('should follow aliasMethodes all the way down', function() {
   });
 
   var obj = MyMixin.apply({});
-  equal(Ember.get(obj, 'bar'), 'baz', 'should have followed aliasMethodes');
+  equal(Ember.get(obj, 'bar'), 'baz', 'should have followed aliasMethods');
 });
 
 test('should copy from other dependent mixins', function() {
