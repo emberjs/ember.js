@@ -443,8 +443,7 @@ var Application = Ember.Application = Ember.Namespace.extend(
     @method runInitializers
   */
   runInitializers: function() {
-    var router = this.__container__.lookup('router:main'),
-        initializers = get(this.constructor, 'initializers'),
+    var initializers = get(this.constructor, 'initializers'),
         container = this.__container__,
         graph = new Ember.DAG(),
         namespace = this,

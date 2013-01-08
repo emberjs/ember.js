@@ -149,6 +149,7 @@ test("initialize application via initialize call", function() {
   var router = app.__container__.lookup('router:main');
   equal(router instanceof Ember.Router, true, "Router was set from initialize call");
   equal(router.location instanceof Ember.NoneLocation, true, "Location was set from location implementation name");
+  equal(get(app, 'router'), router, 'App.router was set to the main instance of router');
 });
 
 test("initialize application with stateManager via initialize call from Router class", function() {
