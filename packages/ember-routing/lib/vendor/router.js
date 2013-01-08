@@ -295,7 +295,8 @@ define("router",
       if (object && typeof object.then === 'function') {
         loading(router);
 
-        object.then(proceed, function(error) {
+        // The chained `then` means that we can also catch errors that happen in `proceed`
+        object.then(proceed).then(null, function(error) {
           failure(router, error);
         });
       } else {
