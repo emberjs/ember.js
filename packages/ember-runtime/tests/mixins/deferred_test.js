@@ -211,3 +211,28 @@ test("will call callbacks if they are added after resolution", function() {
     equal(count1, 2, "callbacks called after resolution");
   }, 20);
 });
+
+test("then is chainable", function() {
+  var deferred, count = 0;
+
+  Ember.run(function() {
+    deferred = Ember.Object.createWithMixins(Ember.DeferredMixin);
+  });
+
+  deferred.then(function() {
+    eval('error'); // Use eval to pass JSHint
+  }).then(null, function() {
+    count++;
+  });
+
+  stop();
+  Ember.run(function() {
+    deferred.resolve();
+  });
+
+  setTimeout(function() {
+    start();
+    equal(count, 1, "chained callback was called");
+  }, 20);
+
+});
