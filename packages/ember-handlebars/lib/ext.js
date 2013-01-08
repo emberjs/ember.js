@@ -176,10 +176,11 @@ Ember.Handlebars.registerBoundHelper = function(name, fn) {
 
     pathRoot = normalized.root;
     path = normalized.path;
-    
+
     var bindView = new Ember._SimpleHandlebarsView(
       path, pathRoot, !options.hash.unescaped, options.data
     );
+
     bindView.normalizedValue = function() {
       var value = Ember._SimpleHandlebarsView.prototype.normalizedValue.call(bindView);
       return fn.call(view, value, options);
@@ -208,3 +209,20 @@ Ember.Handlebars.registerBoundHelper = function(name, fn) {
     });
   });
 };
+
+/**
+  @private
+
+  Overrides Handlebars.template so that we can distinguish
+  user-created, top-level templates from inner contexts.
+
+  @method template
+  @for Ember.Handlebars
+  @param {String} template spec
+*/
+Ember.Handlebars.template = function(spec){
+  var t = Handlebars.template(spec);
+  t.isTop = true;
+  return t;
+};
+
