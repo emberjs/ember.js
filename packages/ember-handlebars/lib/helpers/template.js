@@ -41,6 +41,9 @@ require('ember-handlebars/ext');
 */
 
 Ember.Handlebars.registerHelper('template', function(name, options) {
+  var handlebarsGet = Ember.Handlebars.get;
+  var context = (options.contexts && options.contexts[0]) || this;
+  name =  handlebarsGet(context, name, options) || name;
   var template = Ember.TEMPLATES[name];
 
   Ember.assert("Unable to find template with name '"+name+"'.", !!template);
