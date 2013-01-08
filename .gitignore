@@ -36,3 +36,5 @@ tmp.spade
 tests/source
 node_modules
 .vagrant
+/.vim
+/.vimrc
