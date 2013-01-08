@@ -3,7 +3,9 @@
 // Copyright: ©2011 My Company Inc. All rights reserved.
 // ==========================================================================
 
-(function(window) {
+define("metamorph",
+  [],
+  function() {
 
   var K = function(){},
       guid = 0,
@@ -451,6 +453,6 @@
     }
   };
 
-  window.Metamorph = Metamorph;
-})(this);
+  return Metamorph;
+});
 
