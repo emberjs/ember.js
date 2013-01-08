@@ -12,6 +12,7 @@ Ember.warn("The CP_DEFAULT_CACHEABLE flag has been removed and computed properti
 
 
 var get = Ember.get,
+    set = Ember.set,
     metaFor = Ember.meta,
     guidFor = Ember.guidFor,
     a_slice = [].slice,
@@ -457,7 +458,12 @@ Ember.computed.bool = function(dependentKey) {
   @param {String} dependentKey
 */
 Ember.computed.alias = function(dependentKey) {
-  return Ember.computed(dependentKey, function(key){
-    return get(this, dependentKey);
+  return Ember.computed(dependentKey, function(key, value){
+    if (arguments.length === 1) {
+      return get(this, dependentKey);
+    } else {
+      set(this, dependentKey, value);
+      return value;
+    }
   });
 };
