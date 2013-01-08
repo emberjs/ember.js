@@ -116,6 +116,17 @@ Ember.Router = Ember.Object.extend({
   }
 });
 
+Ember.Router.reopenClass({
+  defaultFailureHandler: {
+    setup: function(error) {
+      Ember.Logger.error('Error while loading route:', error);
+
+      // Using setTimeout allows us to escape from the Promise's try/catch block
+      setTimeout(function() { throw error; });
+    }
+  }
+});
+
 function getHandlerFunction(router, activeViews) {
   var seen = {}, container = router.container;
 
@@ -127,6 +138,7 @@ function getHandlerFunction(router, activeViews) {
 
     if (!handler) {
       if (name === 'loading') { return {}; }
+      if (name === 'failure') { return router.constructor.defaultFailureHandler; }
 
       container.register('route', name, Ember.Route.extend());
       handler = container.lookup('route:' + name);

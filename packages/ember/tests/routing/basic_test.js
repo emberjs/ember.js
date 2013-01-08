@@ -1,4 +1,4 @@
-var Router, App, AppView, templates, router, container;
+var Router, App, AppView, templates, router, container, originalTemplates;
 var get = Ember.get, set = Ember.set;
 
 function bootApplication() {
@@ -26,6 +26,7 @@ module("Basic Routing", {
       App.LoadingRoute = Ember.Route.extend({
       });
 
+      originalTemplates = Ember.$.extend({}, Ember.TEMPLATES);
       Ember.TEMPLATES.application = compile("{{outlet}}");
       Ember.TEMPLATES.home = compile("<h3>Hours</h3>");
       Ember.TEMPLATES.homepage = compile("<h3>Megatroll</h3><p>{{home}}</p>");
@@ -35,6 +36,17 @@ module("Basic Routing", {
       });
 
       container.register('router', 'main', Router);
+    });
+  },
+
+  teardown: function() {
+    Ember.run(function() {
+      App.destroy();
+      App = null;
+
+      container.destroy();
+
+      Ember.TEMPLATES = originalTemplates;
     });
   }
 });
@@ -350,6 +362,92 @@ test("The Special Page returning a promise puts the app into a loading state unt
 
   setTimeout(function() {
     equal(Ember.$('p', '#qunit-fixture').text(), "1", "The app is now in the specials state");
+    start();
+  }, 100);
+});
+
+test("The Special page returning an error puts the app into the failure state", function() {
+  stop();
+
+  Router.map(function(match) {
+    match("/").to("home");
+    match("/specials/:menu_item_id").to("special");
+  });
+
+  var menuItem;
+
+  App.MenuItem = Ember.Object.extend(Ember.DeferredMixin);
+  App.MenuItem.find = function(id) {
+    menuItem = App.MenuItem.create({ id: id });
+    return menuItem;
+  };
+
+  App.SpecialRoute = Ember.Route.extend({
+    setup: function() {
+      throw 'Setup error';
+    }
+  });
+
+  App.FailureRoute = Ember.Route.extend({
+  });
+
+  Ember.TEMPLATES.failure = Ember.Handlebars.compile(
+    "<p>FAILURE!</p>"
+  );
+
+  bootApplication();
+
+  Ember.run(function() {
+    router.handleURL("/specials/1");
+    menuItem.resolve(menuItem);
+  });
+
+  setTimeout(function() {
+    equal(Ember.$('p', '#qunit-fixture').text(), "FAILURE!", "The app is now in the failure state");
+    start();
+  }, 100);
+});
+
+test("The Special page returning an error puts the app into a default failure state if none provided", function() {
+  stop();
+
+  Router.map(function(match) {
+    match("/").to("home");
+    match("/specials/:menu_item_id").to("special");
+  });
+
+  var lastFailure;
+  Router.reopenClass({
+    defaultFailureHandler: {
+      setup: function(error) {
+        lastFailure = error;
+      }
+    }
+  });
+
+  var menuItem;
+
+  App.MenuItem = Ember.Object.extend(Ember.DeferredMixin);
+  App.MenuItem.find = function(id) {
+    menuItem = App.MenuItem.create({ id: id });
+    return menuItem;
+  };
+
+  App.SpecialRoute = Ember.Route.extend({
+    setup: function() {
+      throw 'Setup error';
+    }
+  });
+
+  bootApplication();
+
+  Ember.run(function() {
+    router.handleURL("/specials/1");
+    menuItem.resolve(menuItem);
+  });
+
+  setTimeout(function() {
+    equal(lastFailure, 'Setup error');
     start();
   }, 100);
 });
