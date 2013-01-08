@@ -543,11 +543,11 @@ Alias.prototype = new Ember.Descriptor();
   ```javascript
   App.PaintSample = Ember.Object.extend({
     color: 'red',
-    colour: Ember.aliasMethod('color'),
+    colour: Ember.alias('color'),
     name: function(){
       return "Zed";
     },
-    moniker: Ember.aliasMethod("name")
+    moniker: Ember.alias("name")
   });
 
   var paintSample = App.PaintSample.create()
@@ -559,33 +559,31 @@ Alias.prototype = new Ember.Descriptor();
   @for Ember
   @param {String} methodName name of the method or property to alias
   @return {Ember.Descriptor}
+  @deprecated Use `Ember.aliasMethod` or `Ember.computed.alias` instead
 */
 Ember.alias = function(methodName) {
   return new Alias(methodName);
 };
+
 Ember.deprecateFunc("Ember.alias is deprecated. Please use Ember.aliasMethod or Ember.computed.alias instead.", Ember.alias);
 
 /**
-  Makes a property or method available via an additional name.
+  Makes a method available via an additional name.
 
   ```javascript
-  App.PaintSample = Ember.Object.extend({
-    color: 'red',
-    colour: Ember.aliasMethod('color'),
+  App.Person = Ember.Object.extend({
     name: function(){
-      return "Zed";
+      return 'Tomhuda Katzdale';
     },
-    moniker: Ember.aliasMethod("name")
+    moniker: Ember.aliasMethod('name')
   });
 
-  var paintSample = App.PaintSample.create()
-  paintSample.get('colour');  // 'red'
-  paintSample.moniker();      // 'Zed'
+  var goodGuy = App.Person.create()
   ```
 
   @method aliasMethod
   @for Ember
-  @param {String} methodName name of the method or property to alias
+  @param {String} methodName name of the method to alias
   @return {Ember.Descriptor}
 */
 Ember.aliasMethod = function(methodName) {
