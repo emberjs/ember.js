@@ -1,20 +1,13 @@
 module('Ember.aliasMethod');
 
 function validateAliasMethod(obj) {
-  var get = Ember.get;
-  equal(get(obj, 'foo'), 'foo', 'obj.foo');
-  equal(get(obj, 'bar'), 'foo', 'obj.bar should be a copy of foo');
-
   equal(obj.fooMethod(), 'FOO', 'obj.fooMethod()');
   equal(obj.barMethod(), 'FOO', 'obj.barMethod should be a copy of foo');
 }
 
-test('copies the property values from another key when the mixin is applied', function() {
+test('methods of another name are aliased when the mixin is applied', function() {
 
   var MyMixin = Ember.Mixin.create({
-    foo: 'foo',
-    bar: Ember.aliasMethod('foo'),
-
     fooMethod: function() { return 'FOO'; },
     barMethod: Ember.aliasMethod('fooMethod')
   });
@@ -26,24 +19,21 @@ test('copies the property values from another key when the mixin is applied', fu
 test('should follow aliasMethods all the way down', function() {
   var MyMixin = Ember.Mixin.create({
     bar: Ember.aliasMethod('foo'), // put first to break ordered iteration
-    baz: 'baz',
+    baz: function(){ return 'baz'; },
     foo: Ember.aliasMethod('baz')
   });
 
   var obj = MyMixin.apply({});
-  equal(Ember.get(obj, 'bar'), 'baz', 'should have followed aliasMethods');
+  equal(Ember.get(obj, 'bar')(), 'baz', 'should have followed aliasMethods');
 });
 
-test('should copy from other dependent mixins', function() {
+test('should alias methods from other dependent mixins', function() {
 
   var BaseMixin = Ember.Mixin.create({
-    foo: 'foo',
-
     fooMethod: function() { return 'FOO'; }
   });
 
   var MyMixin = Ember.Mixin.create(BaseMixin, {
-    bar: Ember.aliasMethod('foo'),
     barMethod: Ember.aliasMethod('fooMethod')
   });
 
@@ -51,16 +41,13 @@ test('should copy from other dependent mixins', function() {
   validateAliasMethod(obj);
 });
 
-test('should copy from other mixins applied at same time', function() {
+test('should alias methods from other mixins applied at same time', function() {
 
   var BaseMixin = Ember.Mixin.create({
-    foo: 'foo',
-
     fooMethod: function() { return 'FOO'; }
   });
 
   var MyMixin = Ember.Mixin.create({
-    bar: Ember.aliasMethod('foo'),
     barMethod: Ember.aliasMethod('fooMethod')
   });
 
@@ -68,10 +55,10 @@ test('should copy from other mixins applied at same time', function() {
   validateAliasMethod(obj);
 });
 
-test('should copy from properties already applied on object', function() {
+test('should alias methods from mixins already applied on object', function() {
 
   var BaseMixin = Ember.Mixin.create({
-    foo: 'foo'
+    quxMethod: function() { return 'qux'; }
   });
 
   var MyMixin = Ember.Mixin.create({
