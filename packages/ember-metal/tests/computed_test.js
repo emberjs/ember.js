@@ -715,3 +715,14 @@ testBoth('Ember.computed.bool', function(get, set) {
   equal(get(obj, 'bazBool'), false);
   equal(get(obj, 'quzBool'), false);
 });
+
+testBoth('Ember.computed.alias', function(get, set) {
+  var obj = {foo: function(){}, bar: 'asdf', baz: null, quz: false};
+  Ember.defineProperty(obj, 'fooAlias', Ember.computed.alias('foo'));
+  Ember.defineProperty(obj, 'barAlias', Ember.computed.alias('bar'));
+  Ember.defineProperty(obj, 'bazAlias', Ember.computed.alias('baz'));
+  Ember.defineProperty(obj, 'quzAlias', Ember.computed.alias('quz'));
+  equal(get(obj, 'barAlias'), 'asdf');
+  equal(get(obj, 'bazAlias'), null);
+  equal(get(obj, 'quzAlias'), false);
+});

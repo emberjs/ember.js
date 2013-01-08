@@ -450,3 +450,14 @@ Ember.computed.bool = function(dependentKey) {
     return !!get(this, dependentKey);
   });
 };
+
+/**
+  @method computed.alias
+  @for Ember
+  @param {String} dependentKey
+*/
+Ember.computed.alias = function(dependentKey) {
+  return Ember.computed(dependentKey, function(key){
+    return get(this, dependentKey);
+  });
+};
