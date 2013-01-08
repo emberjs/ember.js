@@ -55,6 +55,8 @@ Ember.ControllerMixin = Ember.Mixin.create({
 
   store: null,
 
+  container: null,
+
   send: function(actionName) {
     var args = [].slice.call(arguments, 1), target;
 
