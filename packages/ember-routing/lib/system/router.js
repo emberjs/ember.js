@@ -196,12 +196,14 @@ function setupRouterDelegate(router, namespace) {
   };
 }
 
+var emptyMatcherCallback = function(match) { };
+
 Ember.Router.reopenClass({
   map: function(callback) {
     var router = this.router = new Router();
     setupRouterDelegate(router, this.namespace);
     router.map(function(match) {
-      match("/").to("application", callback || Ember.K);
+      match("/").to("application", callback || emptyMatcherCallback);
     });
     return router;
   }
