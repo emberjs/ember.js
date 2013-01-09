@@ -3,10 +3,7 @@ var get = Ember.get, set = Ember.set;
 
 function bootApplication() {
   router = container.lookup('router:main');
-
-  Ember.run(function() {
-    router.startRouting();
-  });
+  Ember.run(App, 'advanceReadiness');
 }
 
 // IE includes the host name
@@ -14,45 +11,49 @@ function normalizeUrl(url) {
   return url.replace(/https?:\/\/[^\/]+/,'');
 }
 
+function compile(template) {
+  return Ember.Handlebars.compile(template);
+}
+
 module("The {{linkTo}} helper", {
   setup: function() {
     Ember.run(function() {
-      App = Ember.Namespace.create({
+      App = Ember.Application.create({
+        name: "App",
         rootElement: '#qunit-fixture'
       });
-      App.toString = function() { return "App"; };
 
-      container = Ember.Application.buildContainer(App);
+      App.deferReadiness();
 
-      Ember.TEMPLATES.app = Ember.Handlebars.compile("{{outlet}}");
-      Ember.TEMPLATES.home = Ember.Handlebars.compile("<h3>Home</h3>{{#linkTo about id='about-link'}}About{{/linkTo}}{{#linkTo home id='self-link'}}Self{{/linkTo}}");
-      Ember.TEMPLATES.about = Ember.Handlebars.compile("<h3>About</h3>{{#linkTo home id='home-link'}}Home{{/linkTo}}{{#linkTo about id='self-link'}}Self{{/linkTo}}");
-      Ember.TEMPLATES.item = Ember.Handlebars.compile("<h3>Item</h3><p>{{name}}</p>{{#linkTo home id='home-link'}}Home{{/linkTo}}");
-
-      Router = Ember.Router.extend({
+      App.Router.reopen({
         location: 'none'
       });
+
+      Router = App.Router;
+
+      Ember.TEMPLATES.app = Ember.Handlebars.compile("{{outlet}}");
+      Ember.TEMPLATES.index = Ember.Handlebars.compile("<h3>Home</h3>{{#linkTo about id='about-link'}}About{{/linkTo}}{{#linkTo index id='self-link'}}Self{{/linkTo}}");
+      Ember.TEMPLATES.about = Ember.Handlebars.compile("<h3>About</h3>{{#linkTo index id='home-link'}}Home{{/linkTo}}{{#linkTo about id='self-link'}}Self{{/linkTo}}");
+      Ember.TEMPLATES.item = Ember.Handlebars.compile("<h3>Item</h3><p>{{name}}</p>{{#linkTo index id='home-link'}}Home{{/linkTo}}");
 
       AppView = Ember.View.extend({
         templateName: 'app'
       });
 
+      container = App.__container__;
+
       container.register('view', 'app');
       container.register('router', 'main', Router);
-
-      eventDispatcher = Ember.EventDispatcher.create();
-      eventDispatcher.setup();
     });
   },
 
   teardown: function() {
-    Ember.run(function() { eventDispatcher.destroy(); });
+    Ember.run(function() { App.destroy(); });
   }
 });
 
 test("The {{linkTo}} helper moves into the named route", function() {
   Router.map(function(match) {
-    match("/").to("home");
     match("/about").to("about");
   });
 
@@ -76,10 +77,9 @@ test("The {{linkTo}} helper moves into the named route", function() {
 });
 
 test("The {{linkTo}} helper supports a custom activeClass", function() {
-  Ember.TEMPLATES.home = Ember.Handlebars.compile("<h3>Home</h3>{{#linkTo about id='about-link'}}About{{/linkTo}}{{#linkTo home id='self-link' activeClass='zomg-active'}}Self{{/linkTo}}");
+  Ember.TEMPLATES.index = Ember.Handlebars.compile("<h3>Home</h3>{{#linkTo about id='about-link'}}About{{/linkTo}}{{#linkTo index id='self-link' activeClass='zomg-active'}}Self{{/linkTo}}");
 
   Router.map(function(match) {
-    match("/").to("home");
     match("/about").to("about");
   });
 
@@ -94,17 +94,36 @@ test("The {{linkTo}} helper supports a custom activeClass", function() {
   equal(Ember.$('#about-link:not(.active)', '#qunit-fixture').length, 1, "The other link was rendered without active class");
 });
 
+test("The {{linkTo}} helper supports leaving off .index for nested routes", function() {
+  Router.map(function(match) {
+    match("/about").to("about", function(match) {
+      match("/item").to("item");
+    });
+  });
+
+  Ember.TEMPLATES.about = compile("<h1>About</h1>{{outlet}}");
+  Ember.TEMPLATES['about/index'] = compile("<div id='index'>Index</div>");
+  Ember.TEMPLATES['about/item'] = compile("<div id='item'>{{#linkTo 'about'}}About{{/linkTo}}</div>");
+
+  bootApplication();
+
+  Ember.run(function() {
+    router.handleURL("/about/item");
+  });
+
+  equal(Ember.$('#item a', '#qunit-fixture').attr('href'), '/about');
+});
+
 test("The {{linkTo}} helper supports custom, nested, currentWhen", function() {
   Router.map(function(match) {
-    match("/").to("home", function(match) {
-      match("/").to("index");
+    match("/").to("index", function(match) {
       match("/about").to("about");
     });
     match("/item").to("item");
   });
 
-  Ember.TEMPLATES.home = Ember.Handlebars.compile("<h3>Home</h3>{{outlet}}");
-  Ember.TEMPLATES.about = Ember.Handlebars.compile("{{#linkTo item id='other-link' currentWhen='home'}}ITEM{{/linkTo}}");
+  Ember.TEMPLATES.index = Ember.Handlebars.compile("<h3>Home</h3>{{outlet}}");
+  Ember.TEMPLATES['index/about'] = Ember.Handlebars.compile("{{#linkTo item id='other-link' currentWhen='index'}}ITEM{{/linkTo}}");
 
   bootApplication();
 
@@ -117,12 +136,11 @@ test("The {{linkTo}} helper supports custom, nested, currentWhen", function() {
 
 test("The {{linkTo}} helper moves into the named route with context", function() {
   Router.map(function(match) {
-    match("/").to("home");
     match("/about").to("about");
     match("/item/:id").to("item");
   });
 
-  Ember.TEMPLATES.about = Ember.Handlebars.compile("<h3>List</h3><ul>{{#each controller}}<li>{{#linkTo item this}}{{name}}{{/linkTo}}<li>{{/each}}</ul>{{#linkTo home id='home-link'}}Home{{/linkTo}}");
+  Ember.TEMPLATES.about = Ember.Handlebars.compile("<h3>List</h3><ul>{{#each controller}}<li>{{#linkTo item this}}{{name}}{{/linkTo}}<li>{{/each}}</ul>{{#linkTo index id='home-link'}}Home{{/linkTo}}");
 
   var people = {
     yehuda: "Yehuda Katz",
@@ -182,13 +200,12 @@ test("The {{linkTo}} helper moves into the named route with context", function()
 });
 
 test("The {{linkTo}} helper binds some anchor html tag common attributes", function() {
-  Router.map(function(match) {
-      match("/").to("home");
+  Ember.TEMPLATES.index = Ember.Handlebars.compile("<h3>Home</h3>{{#linkTo index id='self-link' title='title-attr'}}Self{{/linkTo}}");
+  bootApplication();
+
+  Ember.run(function() {
+    router.handleURL("/");
   });
-   Ember.TEMPLATES.home = Ember.Handlebars.compile("<h3>Home</h3>{{#linkTo home id='self-link' title='title-attr'}}Self{{/linkTo}}");
-   bootApplication();
-   Ember.run(function() {
-      router.handleURL("/");
-  });
-   equal(Ember.$('#self-link', '#qunit-fixture').attr('title'), 'title-attr', "The self-link contains title attribute");
+
+  equal(Ember.$('#self-link', '#qunit-fixture').attr('title'), 'title-attr', "The self-link contains title attribute");
 });

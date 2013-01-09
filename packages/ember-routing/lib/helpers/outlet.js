@@ -78,7 +78,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
           container = get(this, 'container'),
           router = container && container.lookup('router:main'),
           oldView = get(outlets, outletName),
-          viewName = get(view, 'viewName');
+          renderedName = get(view, 'renderedName');
 
       set(outlets, outletName, view);
 
@@ -86,8 +86,8 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
         if (oldView) {
           router._disconnectActiveView(oldView);
         }
-        if (viewName) {
-          router._connectActiveView(viewName, view);
+        if (renderedName) {
+          router._connectActiveView(renderedName, view);
         }
       }
     },

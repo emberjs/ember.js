@@ -263,7 +263,9 @@ var Application = Ember.Application = Ember.Namespace.extend(
   init: function() {
     if (!this.$) { this.$ = Ember.$; }
     this.__container__ = this.buildContainer();
+
     this.Router = this.Router || this.defaultRouter();
+    if (this.Router) { this.Router.namespace = this; }
 
     this._super();
 
@@ -443,8 +445,7 @@ var Application = Ember.Application = Ember.Namespace.extend(
     @method runInitializers
   */
   runInitializers: function() {
-    var router = this.__container__.lookup('router:main'),
-        initializers = get(this.constructor, 'initializers'),
+    var initializers = get(this.constructor, 'initializers'),
         container = this.__container__,
         graph = new Ember.DAG(),
         namespace = this,
@@ -629,11 +630,12 @@ function resolverFor(namespace) {
         type = nameParts[0], name = nameParts[1];
 
     if (type === 'template') {
-      if (Ember.TEMPLATES[name]) {
-        return Ember.TEMPLATES[name];
+      var templateName = name.replace(/\./g, '/');
+      if (Ember.TEMPLATES[templateName]) {
+        return Ember.TEMPLATES[templateName];
       }
 
-      var templateName = decamelize(name);
+      templateName = decamelize(templateName);
       if (Ember.TEMPLATES[templateName]) {
         return Ember.TEMPLATES[templateName];
       }

@@ -192,8 +192,15 @@ Ember.String = {
     @return {String} the classified string
   */
   classify: function(str) {
-    var camelized = Ember.String.camelize(str);
-    return camelized.charAt(0).toUpperCase() + camelized.substr(1);
+    var parts = str.split("."),
+        out = [];
+
+    for (var i=0, l=parts.length; i<l; i++) {
+      var camelized = Ember.String.camelize(parts[i]);
+      out.push(camelized.charAt(0).toUpperCase() + camelized.substr(1));
+    }
+
+    return out.join(".");
   },
 
   /**

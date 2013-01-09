@@ -7,8 +7,26 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
   var resolvePaths = Ember.Handlebars.resolvePaths,
       isSimpleClick = Ember.ViewUtils.isSimpleClick;
 
-  function args(linkView, route) {
-    var ret = [ route || linkView.namedRoute ];
+  function fullRouteName(router, name) {
+    if (!router.hasRoute(name)) {
+      name = name + '.index';
+    }
+
+    return name;
+  }
+
+  function resolvedPaths(linkView) {
+    return resolvePaths(linkView.parameters);
+  }
+
+  function args(linkView, router, route) {
+    var passedRouteName = route || linkView.namedRoute, routeName;
+
+    routeName = fullRouteName(router, passedRouteName);
+
+    Ember.assert("The route " + passedRouteName + " was not found", router.hasRoute(routeName));
+
+    var ret = [ routeName ];
     return ret.concat(resolvePaths(linkView.parameters));
   }
 
@@ -23,7 +41,10 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
 
     active: Ember.computed(function() {
       var router = this.get('router'),
-          isActive = router.isActive.apply(router, args(this, this.currentWhen));
+          params = resolvedPaths(this),
+          currentWithIndex = this.currentWhen + '.index',
+          isActive = router.isActive.apply(router, [this.currentWhen].concat(params)) ||
+                     router.isActive.apply(router, [currentWithIndex].concat(params));
 
       if (isActive) { return get(this, 'activeClass'); }
     }).property('namedRoute', 'router.url'),
@@ -36,13 +57,13 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
       if (!isSimpleClick(event)) { return true; }
 
       var router = this.get('router');
-      router.transitionTo.apply(router, args(this));
+      router.transitionTo.apply(router, args(this, router));
       return false;
     },
 
     href: Ember.computed(function() {
       var router = this.get('router');
-      return router.generate.apply(router, args(this));
+      return router.generate.apply(router, args(this, router));
     })
   });
 

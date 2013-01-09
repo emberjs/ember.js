@@ -3,10 +3,7 @@ var get = Ember.get, set = Ember.set;
 
 function bootApplication() {
   router = container.lookup('router:main');
-
-  Ember.run(function() {
-    router.startRouting();
-  });
+  Ember.run(App, 'advanceReadiness');
 }
 
 function compile(string) {
@@ -16,26 +13,28 @@ function compile(string) {
 module("Basic Routing", {
   setup: function() {
     Ember.run(function() {
-      App = Ember.Namespace.create({
+      App = Ember.Application.create({
+        name: "App",
         rootElement: '#qunit-fixture'
       });
-      App.toString = function() { return "App"; };
 
-      container = Ember.Application.buildContainer(App);
+      App.deferReadiness();
+
+      App.Router.reopen({
+        location: 'none'
+      });
+
+      Router = App.Router;
 
       App.LoadingRoute = Ember.Route.extend({
       });
+
+      container = App.__container__;
 
       originalTemplates = Ember.$.extend({}, Ember.TEMPLATES);
       Ember.TEMPLATES.application = compile("{{outlet}}");
       Ember.TEMPLATES.home = compile("<h3>Hours</h3>");
       Ember.TEMPLATES.homepage = compile("<h3>Megatroll</h3><p>{{home}}</p>");
-
-      Router = Ember.Router.extend({
-        location: 'none'
-      });
-
-      container.register('router', 'main', Router);
     });
   },
 
@@ -43,8 +42,6 @@ module("Basic Routing", {
     Ember.run(function() {
       App.destroy();
       App = null;
-
-      container.destroy();
 
       Ember.TEMPLATES = originalTemplates;
     });
@@ -512,7 +509,6 @@ test("Moving from one page to another triggers the correct callbacks", function(
 test("Nested callbacks are not exited when moving to siblings", function() {
   Router.map(function(match) {
     match("/").to("root", function(match) {
-      match("/").to("home");
       match("/specials/:menu_item_id").to("special");
     });
   });
@@ -561,17 +557,17 @@ test("Nested callbacks are not exited when moving to siblings", function() {
 
   });
 
-  App.SpecialRoute = Ember.Route.extend({
+  App.Root.SpecialRoute = Ember.Route.extend({
     setupController: function(controller, model) {
       set(controller, 'content', model);
     }
   });
 
-  Ember.TEMPLATES.home = Ember.Handlebars.compile(
+  Ember.TEMPLATES['root/index'] = Ember.Handlebars.compile(
     "<h3>Home</h3>"
   );
 
-  Ember.TEMPLATES.special = Ember.Handlebars.compile(
+  Ember.TEMPLATES['root/special'] = Ember.Handlebars.compile(
     "<p>{{content.id}}</p>"
   );
 
@@ -593,8 +589,10 @@ test("Nested callbacks are not exited when moving to siblings", function() {
   equal(rootSerialize, 0, "The root serialize was not called");
   equal(rootModel, 1, "The root model was called");
 
+  router = container.lookup('router:main');
+
   Ember.run(function() {
-    router.transitionTo('special', App.MenuItem.create({ id: 1 }));
+    router.transitionTo('root.special', App.MenuItem.create({ id: 1 }));
   });
   equal(rootSetup, 1, "The root setup was not triggered again");
   equal(rootRender, 1, "The root render was not triggered again");
@@ -700,7 +698,6 @@ asyncTest("Events are triggered on the current state", function() {
 asyncTest("Events are triggered on the current state when routes are nested", function() {
   Router.map(function(match) {
     match("/").to("root", function(match) {
-      match("/").to("home");
     });
   });
 
@@ -717,13 +714,13 @@ asyncTest("Events are triggered on the current state when routes are nested", fu
     }
   });
 
-  App.HomeRoute = Ember.Route.extend({
+  App.Root.IndexRoute = Ember.Route.extend({
     model: function() {
       return model;
     }
   });
 
-  Ember.TEMPLATES.home = Ember.Handlebars.compile(
+  Ember.TEMPLATES['root/index'] = Ember.Handlebars.compile(
     "<a {{action showStuff content}}>{{name}}</a>"
   );
 
@@ -790,7 +787,7 @@ test("It is possible to get the model from a parent route", function() {
     }
   });
 
-  App.CommentsRoute = Ember.Route.extend({
+  App.Post.CommentsRoute = Ember.Route.extend({
     model: function() {
       equal(this.modelFor('post'), currentPost);
     }
@@ -847,10 +844,9 @@ test("Child routes render into their parent route's template by default", functi
   Ember.TEMPLATES.application = compile("<h1>Home</h1><div class='main'>{{outlet}}</div>");
   Ember.TEMPLATES.top = compile("<div class='middle'>{{outlet}}</div>");
   Ember.TEMPLATES.middle = compile("<div class='bottom'>{{outlet}}</div>");
-  Ember.TEMPLATES.bottom = compile("<p>Bottom!</p>");
+  Ember.TEMPLATES['middle/bottom'] = compile("<p>Bottom!</p>");
 
   Router.map(function(match) {
-    match("/").to('index');
     match("/top").to("top", function(match) {
       match("/middle").to("middle", function(match) {
         match("/bottom").to("bottom");

@@ -348,6 +348,10 @@ define("route-recognizer",
         return result;
       },
 
+      hasRoute: function(name) {
+        return !!this.names[name];
+      },
+
       generate: function(name, params) {
         var route = this.names[name], output = "";
         if (!route) { throw new Error("There is no route named " + name); }
@@ -403,24 +407,32 @@ define("route-recognizer",
       }
     };
 
-    function Target(path, matcher) {
+    function Target(path, matcher, delegate) {
       this.path = path;
       this.matcher = matcher;
+      this.delegate = delegate;
     }
 
     Target.prototype = {
       to: function(target, callback) {
+        var delegate = this.delegate;
+
+        if (!callback && delegate && delegate.willAddRoute) {
+          target = delegate.willAddRoute(this.matcher.target, target);
+        }
+
         this.matcher.add(this.path, target);
 
         if (callback) {
-          this.matcher.addChild(this.path, callback);
+          this.matcher.addChild(this.path, target, callback, this.delegate);
         }
       }
     };
 
-    function Matcher() {
+    function Matcher(target) {
       this.routes = {};
       this.children = {};
+      this.target = target;
     }
 
     Matcher.prototype = {
@@ -428,21 +440,28 @@ define("route-recognizer",
         this.routes[path] = handler;
       },
 
-      addChild: function(path, callback) {
-        var matcher = new Matcher();
+      addChild: function(path, target, callback, delegate) {
+        var matcher = new Matcher(target);
         this.children[path] = matcher;
-        callback(generateMatch(path, matcher));
+
+        var match = generateMatch(path, matcher, delegate);
+
+        if (delegate && delegate.contextEntered) {
+          delegate.contextEntered(target, match);
+        }
+
+        callback(match);
       }
     };
 
-    function generateMatch(startingPath, matcher) {
+    function generateMatch(startingPath, matcher, delegate) {
       return function(path, nestedCallback) {
         var fullPath = startingPath + path;
 
         if (nestedCallback) {
-          nestedCallback(generateMatch(fullPath, matcher));
+          nestedCallback(generateMatch(fullPath, matcher, delegate));
         } else {
-          return new Target(startingPath + path, matcher);
+          return new Target(startingPath + path, matcher, delegate);
         }
       };
     }
@@ -477,11 +496,7 @@ define("route-recognizer",
     RouteRecognizer.prototype.map = function(callback, addRouteCallback) {
       var matcher = new Matcher();
 
-      function match(path, nestedCallback) {
-        return new Target(path, matcher);
-      }
-
-      callback(generateMatch("", matcher));
+      callback(generateMatch("", matcher, this.delegate));
 
       eachRoute([], matcher, function(route) {
         if (addRouteCallback) { addRouteCallback(this, route); }

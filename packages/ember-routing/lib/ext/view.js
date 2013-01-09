@@ -10,12 +10,12 @@ Ember.View.reopen({
     var outlets = get(this, '_outlets'),
         container = get(this, 'container'),
         router = container && container.lookup('router:main'),
-        viewName = get(view, 'viewName');
+        renderedName = get(view, 'renderedName');
 
     set(outlets, outletName, view);
 
-    if (router && viewName) {
-      router._connectActiveView(viewName, view);
+    if (router && renderedName) {
+      router._connectActiveView(renderedName, view);
     }
   },
 

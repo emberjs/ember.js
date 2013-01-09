@@ -105,10 +105,8 @@ test('initialized application go to initial route', function() {
       rootElement: '#qunit-fixture'
     });
 
-    app.Router = Ember.Router.extend();
-
-    app.Router.map(function(match) {
-      match("/").to("index");
+    app.Router.reopen({
+      location: 'none'
     });
 
     app.register('template', 'application',
@@ -131,12 +129,8 @@ test("initialize application via initialize call", function() {
       rootElement: '#qunit-fixture'
     });
 
-    app.Router = Ember.Router.extend({
+    app.Router.reopen({
       location: 'none'
-    });
-
-    app.Router.map(function(match) {
-      match("/").to("index");
     });
 
     app.ApplicationView = Ember.View.extend({
@@ -159,12 +153,8 @@ test("initialize application with stateManager via initialize call from Router c
       rootElement: '#qunit-fixture'
     });
 
-    app.Router = Ember.Router.extend({
+    app.Router.reopen({
       location: 'none'
-    });
-
-    app.Router.map(function(match) {
-      match("/").to("index");
     });
 
     app.register('template', 'application', function() {
@@ -193,12 +183,8 @@ test("ApplicationView is inserted into the page", function() {
 
     app.ApplicationController = Ember.Controller.extend();
 
-    app.Router = Ember.Router.extend({
+    app.Router.reopen({
       location: 'none'
-    });
-
-    app.Router.map(function(match) {
-      match("/").to("index");
     });
   });
 

@@ -22,39 +22,20 @@ Ember.Router = Ember.Object.extend({
   location: 'hash',
 
   init: function() {
-    var router = this.router = new Router();
+    this.router = this.constructor.router;
     this._activeViews = {};
-
     setupLocation(this);
-
-    var callback = this.constructor.callback;
-
-    router.map(function(match) {
-      match("/").to("application", callback);
-    });
   },
 
   startRouting: function() {
+    this.router = this.router || this.constructor.map();
+
     var router = this.router,
         location = get(this, 'location'),
         container = this.container,
         self = this;
 
-    var lastURL;
-
-    function updateURL() {
-      location.setURL(lastURL);
-    }
-
-    router.getHandler = getHandlerFunction(this, this._activeViews);
-    router.updateURL = function(path) {
-      lastURL = path;
-      Ember.run.once(updateURL);
-    };
-
-    router.didTransition = function(infos) {
-      self.didTransition(infos);
-    };
+    setupRouter(this, router, location);
 
     container.register('view', 'default', DefaultView);
     container.register('view', 'toplevel', Ember.View.extend());
@@ -102,6 +83,10 @@ Ember.Router = Ember.Object.extend({
     }
 
     this.router.trigger(name, context);
+  },
+
+  hasRoute: function(route) {
+    return this.router.hasRoute(route);
   },
 
   _lookupActiveView: function(templateName) {
@@ -166,14 +151,58 @@ function routePath(handlerInfos) {
   var path = [];
 
   for (var i=1, l=handlerInfos.length; i<l; i++) {
-    path.push(handlerInfos[i].name);
+    var name = handlerInfos[i].name,
+        nameParts = name.split(".");
+
+    path.push(nameParts[nameParts.length - 1]);
   }
 
   return path.join(".");
 }
 
+function setupRouter(emberRouter, router, location) {
+  var lastURL;
+
+  function updateURL() {
+    location.setURL(lastURL);
+  }
+
+  router.getHandler = getHandlerFunction(emberRouter, emberRouter._activeViews);
+  router.updateURL = function(path) {
+    lastURL = path;
+    Ember.run.once(updateURL);
+  };
+
+  router.didTransition = function(infos) {
+    emberRouter.didTransition(infos);
+  };
+}
+
+function setupRouterDelegate(router, namespace) {
+  router.delegate = {
+    willAddRoute: function(context, handler) {
+      if (context === 'application' || context === undefined) {
+        return handler;
+      } else {
+        return context + '.' + handler;
+      }
+    },
+
+    contextEntered: function(target, match) {
+      match('/').to('index');
+
+      namespace[classify(target)] = Ember.Namespace.create();
+    }
+  };
+}
+
 Ember.Router.reopenClass({
   map: function(callback) {
-    this.callback = callback;
+    var router = this.router = new Router();
+    setupRouterDelegate(router, this.namespace);
+    router.map(function(match) {
+      match("/").to("application", callback || Ember.K);
+    });
+    return router;
   }
 });
