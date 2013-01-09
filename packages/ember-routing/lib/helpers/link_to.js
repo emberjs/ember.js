@@ -56,9 +56,10 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     click: function(event) {
       if (!isSimpleClick(event)) { return true; }
 
+      event.preventDefault();
+
       var router = this.get('router');
       router.transitionTo.apply(router, args(this, router));
-      return false;
     },
 
     href: Ember.computed(function() {
