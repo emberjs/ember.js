@@ -927,3 +927,13 @@ test("Parent route context change", function() {
 
   equal(editCount, 2, 'set up the edit route twice without failure');
 });
+
+test("Router does not create namespace for nested routes", function() {
+  Router.map(function(match) {
+    match("/posts").to("posts", function(match) {
+      match("/post").to("post");
+    });
+  });
+
+  equal(App.Posts, undefined, 'no namespace should exist');
+});
