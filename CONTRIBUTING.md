@@ -68,8 +68,8 @@ Using Vagrant to buid latest version of Ember.js is quite simple. Just follow ne
 2. Retrieve chef cookbooks
 
 ~~~
-git submodules init
-git submodules update
+git submodule init
+git submodule update
 ~~~
 3. Lauch your vagrant virtual machine
 
