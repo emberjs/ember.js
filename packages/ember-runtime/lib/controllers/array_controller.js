@@ -158,8 +158,6 @@ Ember.ArrayController = Ember.ArrayProxy.extend(Ember.ControllerMixin,
   },
 
   arrayContentDidChange: function(idx, removedCnt, addedCnt) {
-    this._super(idx, removedCnt, addedCnt);
-
     var subContainers = get(this, 'subContainers'),
         subContainersToRemove = subContainers.slice(idx, idx+removedCnt);
 
@@ -168,6 +166,11 @@ Ember.ArrayController = Ember.ArrayProxy.extend(Ember.ControllerMixin,
     });
 
     replace(subContainers, idx, removedCnt, new Array(addedCnt));
+
+    // The shadow array of subcontainers must be updated before we trigger
+    // observers, otherwise observers will get the wrong subcontainer when
+    // calling `objectAt`
+    this._super(idx, removedCnt, addedCnt);
   },
 
   init: function() {

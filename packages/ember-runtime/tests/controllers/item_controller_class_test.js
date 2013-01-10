@@ -223,3 +223,30 @@ test("if `lookupItemController` returns a string, it must be resolvable by the c
     /NonExistant/,
     "`lookupItemController` must return either null or a valid controller name");
 });
+
+test("array observers can invoke `objectAt` without overwriting existing item controllers", function() {
+  createArrayController();
+
+  var tywinController = arrayController.objectAtContent(0),
+      arrayObserverCalled = false;
+
+  arrayController.reopen({
+    lannistersWillChange: Ember.K,
+    lannistersDidChange: function(_, idx, removedAmt, addedAmt) {
+      arrayObserverCalled = true;
+      equal(this.objectAt(idx).get('name'), "Tyrion", "Array observers get the right object via `objectAt`");
+    }
+  });
+  arrayController.addArrayObserver(arrayController, {
+    willChange: 'lannistersWillChange',
+    didChange: 'lannistersDidChange'
+  });
+
+  Ember.run(function() {
+    lannisters.unshiftObject(tyrion);
+  });
+
+  equal(arrayObserverCalled, true, "Array observers are called normally");
+  equal(tywinController.get('name'), "Tywin", "Array observers calling `objectAt` does not overwrite existing controllers' content");
+});
+
