@@ -33,6 +33,7 @@ Ember.TextSupport = Ember.Mixin.create({
     this.on("change", this, this._elementValueDidChange);
     this.on("paste", this, this._elementValueDidChange);
     this.on("cut", this, this._elementValueDidChange);
+    this.on("input", this, this._elementValueDidChange);
     this.on("keyUp", this, this.interpretKeyEvents);
   },
 
