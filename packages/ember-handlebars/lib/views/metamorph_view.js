@@ -9,6 +9,7 @@ require("ember-views/views/view");
 */
 
 var set = Ember.set, get = Ember.get;
+var Metamorph = requireModule('metamorph');
 
 // DOMManager should just abstract dom manipulation between jquery and metamorph
 var DOMManager = {
