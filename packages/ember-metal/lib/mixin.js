@@ -559,8 +559,34 @@ Alias.prototype = new Ember.Descriptor();
   @for Ember
   @param {String} methodName name of the method or property to alias
   @return {Ember.Descriptor}
+  @deprecated Use `Ember.aliasMethod` or `Ember.computed.alias` instead
 */
 Ember.alias = function(methodName) {
+  return new Alias(methodName);
+};
+
+Ember.deprecateFunc("Ember.alias is deprecated. Please use Ember.aliasMethod or Ember.computed.alias instead.", Ember.alias);
+
+/**
+  Makes a method available via an additional name.
+
+  ```javascript
+  App.Person = Ember.Object.extend({
+    name: function(){
+      return 'Tomhuda Katzdale';
+    },
+    moniker: Ember.aliasMethod('name')
+  });
+
+  var goodGuy = App.Person.create()
+  ```
+
+  @method aliasMethod
+  @for Ember
+  @param {String} methodName name of the method to alias
+  @return {Ember.Descriptor}
+*/
+Ember.aliasMethod = function(methodName) {
   return new Alias(methodName);
 };
 
