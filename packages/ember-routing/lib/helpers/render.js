@@ -31,7 +31,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     }
 
     if (controller && context) {
-      controller.set('context', context);
+      controller.set('model', context);
     }
 
     options.hash.viewName = name;

@@ -77,6 +77,33 @@ test("{{render}} helper should render given template", function() {
   ok(container.lookup('router:main')._lookupActiveView('home'), 'should register home as active view');
 });
 
+test("{{render}} helper should render given template with a supplied model", function() {
+  var template = "<h1>HI</h1>{{render 'post' post}}";
+  var post = {
+    title: "Rails is omakase"
+  };
+
+  var controller = Ember.Controller.extend({
+    container: container,
+    post: post
+  });
+
+  view = Ember.View.create({
+    controller: controller.create(),
+    template: Ember.Handlebars.compile(template)
+  });
+
+  var PostController = Ember.Controller.extend();
+  container.register('controller', 'post', PostController);
+
+  Ember.TEMPLATES['post'] = compile("<p>{{model.title}}</p>");
+
+  appendView(view);
+
+  equal(view.$().text(), 'HIRails is omakase');
+  equal(container.lookup('controller:post').get('model'), post);
+});
+
 test("{{render}} helper should render with given controller", function() {
   var template = '<h1>HI</h1>{{render home controller="posts"}}';
   var controller = Ember.Controller.extend({container: container});
