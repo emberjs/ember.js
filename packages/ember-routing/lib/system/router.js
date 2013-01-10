@@ -202,8 +202,6 @@ function setupRouterDelegate(router, namespace) {
 
     contextEntered: function(target, match) {
       match('/').to('index');
-
-      namespace[classify(target)] = Ember.Namespace.create();
     }
   };
 }

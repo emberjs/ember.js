@@ -557,7 +557,7 @@ test("Nested callbacks are not exited when moving to siblings", function() {
 
   });
 
-  App.Root.SpecialRoute = Ember.Route.extend({
+  App.RootSpecialRoute = Ember.Route.extend({
     setupController: function(controller, model) {
       set(controller, 'content', model);
     }
