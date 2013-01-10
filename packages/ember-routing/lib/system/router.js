@@ -90,14 +90,23 @@ Ember.Router = Ember.Object.extend({
   },
 
   _lookupActiveView: function(templateName) {
-    return this._activeViews[templateName];
+    var active = this._activeViews[templateName];
+    return active && active[0];
   },
 
   _connectActiveView: function(templateName, view) {
-    this._activeViews[templateName] = view;
-    view.one('willDestroyElement', this, function() {
+    var existing = this._activeViews[templateName];
+
+    if (existing) {
+      existing[0].off('willDestroyElement', this, existing[1]);
+    }
+
+    var disconnect = function() {
       delete this._activeViews[templateName];
-    });
+    };
+
+    this._activeViews[templateName] = [view, disconnect];
+    view.one('willDestroyElement', this, disconnect);
   }
 });
 
@@ -112,7 +121,7 @@ Ember.Router.reopenClass({
   }
 });
 
-function getHandlerFunction(router, activeViews) {
+function getHandlerFunction(router) {
   var seen = {}, container = router.container;
 
   return function(name) {
@@ -167,7 +176,7 @@ function setupRouter(emberRouter, router, location) {
     location.setURL(lastURL);
   }
 
-  router.getHandler = getHandlerFunction(emberRouter, emberRouter._activeViews);
+  router.getHandler = getHandlerFunction(emberRouter);
   router.updateURL = function(path) {
     lastURL = path;
     Ember.run.once(updateURL);
