@@ -863,4 +863,67 @@ test("Child routes render into their parent route's template by default", functi
   equal(Ember.$('.main .middle .bottom p', '#qunit-fixture').text(), "Bottom!", "The templates were rendered into their appropriate parents");
 });
 
-// TODO: Parent context change
+test("Parent route context change", function() {
+  var editCount = 0;
+
+  Ember.TEMPLATES.application = compile("{{outlet}}");
+  Ember.TEMPLATES.posts = compile("{{outlet}}");
+  Ember.TEMPLATES['posts/post'] = compile("{{outlet}}");
+  Ember.TEMPLATES['post/index'] = compile("showing");
+  Ember.TEMPLATES['post/edit'] = compile("editing");
+
+  Router.map(function(match) {
+    match("/posts").to("posts", function(match) {
+      match("/:postId").to('post', function(match) {
+        match("/edit").to('edit');
+      });
+    });
+  });
+
+  App.PostsRoute = Ember.Route.extend({
+    events: {
+      showPost: function(context) {
+        this.transitionTo('post.index', context);
+      }
+    }
+  });
+
+  App.PostsPostRoute = Ember.Route.extend({
+    model: function(params) {
+      return {id: params.postId};
+    },
+
+    events: {
+      editPost: function(context) {
+        this.transitionTo('post.edit');
+      }
+    }
+  });
+
+  App.PostEditRoute = Ember.Route.extend({
+    setup: function() {
+      this._super.apply(this, arguments);
+      editCount++;
+    }
+  });
+
+  bootApplication();
+
+  Ember.run(function() {
+    router.handleURL("/posts/1");
+  });
+
+  Ember.run(function() {
+    router.send('editPost');
+  });
+
+  Ember.run(function() {
+    router.send('showPost', {id: 2});
+  });
+
+  Ember.run(function() {
+    router.send('editPost');
+  });
+
+  equal(editCount, 2, 'set up the edit route twice without failure');
+});
