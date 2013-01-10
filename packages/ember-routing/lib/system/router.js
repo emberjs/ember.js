@@ -194,9 +194,11 @@ function setupRouterDelegate(router, namespace) {
 
       if (context === 'application' || context === undefined) {
         return handler;
-      } else {
+      } else if (handler.indexOf('.') === -1) {
         context = context.split('.').slice(-1)[0];
         return context + '.' + handler;
+      } else {
+        return handler;
       }
     },
 
