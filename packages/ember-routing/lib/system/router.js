@@ -181,9 +181,12 @@ function setupRouter(emberRouter, router, location) {
 function setupRouterDelegate(router, namespace) {
   router.delegate = {
     willAddRoute: function(context, handler) {
+      if (!context) { return handler; }
+
       if (context === 'application' || context === undefined) {
         return handler;
       } else {
+        context = context.split('.').slice(-1)[0];
         return context + '.' + handler;
       }
     },

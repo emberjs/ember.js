@@ -641,6 +641,10 @@ function resolverFor(namespace) {
       }
     }
 
+    if (type === 'controller' || type === 'route' || type === 'view') {
+      name = name.replace(/\./g, '_');
+    }
+
     var className = classify(name) + classify(type);
     var factory = get(namespace, className);
 

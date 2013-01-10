@@ -417,7 +417,7 @@ define("route-recognizer",
       to: function(target, callback) {
         var delegate = this.delegate;
 
-        if (!callback && delegate && delegate.willAddRoute) {
+        if (delegate && delegate.willAddRoute) {
           target = delegate.willAddRoute(this.matcher.target, target);
         }
 

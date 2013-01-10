@@ -714,7 +714,7 @@ asyncTest("Events are triggered on the current state when routes are nested", fu
     }
   });
 
-  App.Root.IndexRoute = Ember.Route.extend({
+  App.RootIndexRoute = Ember.Route.extend({
     model: function() {
       return model;
     }
@@ -787,7 +787,7 @@ test("It is possible to get the model from a parent route", function() {
     }
   });
 
-  App.Post.CommentsRoute = Ember.Route.extend({
+  App.PostCommentsRoute = Ember.Route.extend({
     model: function() {
       equal(this.modelFor('post'), currentPost);
     }
@@ -843,7 +843,7 @@ test("Child routes render into their parent route's template by default", functi
   Ember.TEMPLATES.index = compile("<div>Index</div>");
   Ember.TEMPLATES.application = compile("<h1>Home</h1><div class='main'>{{outlet}}</div>");
   Ember.TEMPLATES.top = compile("<div class='middle'>{{outlet}}</div>");
-  Ember.TEMPLATES.middle = compile("<div class='bottom'>{{outlet}}</div>");
+  Ember.TEMPLATES['top/middle'] = compile("<div class='bottom'>{{outlet}}</div>");
   Ember.TEMPLATES['middle/bottom'] = compile("<p>Bottom!</p>");
 
   Router.map(function(match) {
