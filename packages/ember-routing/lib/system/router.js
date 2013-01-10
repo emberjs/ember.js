@@ -96,7 +96,9 @@ Ember.Router = Ember.Object.extend({
   _connectActiveView: function(templateName, view) {
     this._activeViews[templateName] = view;
     view.one('willDestroyElement', this, function() {
-      delete this._activeViews[templateName];
+      if (this._activeViews[templateName] === view){
+        delete this._activeViews[templateName];
+      }
     });
   }
 });
