@@ -67,6 +67,11 @@ Ember.Router = Ember.Object.extend({
     this.notifyPropertyChange('url');
   },
 
+  replaceWith: function() {
+    this.router.replaceWith.apply(this.router, arguments);
+    this.notifyPropertyChange('url');
+  },
+
   generate: function() {
     var url = this.router.generate.apply(this.router, arguments);
     return this.location.formatURL(url);
@@ -172,15 +177,27 @@ function routePath(handlerInfos) {
 function setupRouter(emberRouter, router, location) {
   var lastURL;
 
-  function updateURL() {
-    location.setURL(lastURL);
-  }
-
   router.getHandler = getHandlerFunction(emberRouter);
+
+  var doUpdateURL = function() {
+    location.setURL(lastURL);
+  };
+
   router.updateURL = function(path) {
     lastURL = path;
-    Ember.run.once(updateURL);
+    Ember.run.once(doUpdateURL);
   };
+
+  if (location.replaceURL) {
+    var doReplaceURL = function() {
+      location.replaceURL(lastURL);
+    };
+
+    router.replaceURL = function(path) {
+      lastURL = path;
+      Ember.run.once(doReplaceURL);
+    };
+  }
 
   router.didTransition = function(infos) {
     emberRouter.didTransition(infos);

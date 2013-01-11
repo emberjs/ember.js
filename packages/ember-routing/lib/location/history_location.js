@@ -70,6 +70,24 @@ Ember.HistoryLocation = Ember.Object.extend({
   },
 
   /**
+    @private
+
+    Uses `history.replaceState` to update the url without a page reload
+    or history modification.
+
+    @method replaceURL
+    @param path {String}
+  */
+  replaceURL: function(path) {
+    path = this.formatURL(path);
+
+    if (this.getState() && this.getState().path !== path) {
+      popstateReady = true;
+      this.replaceState(path);
+    }
+  },
+
+  /**
    @private
 
    Get the current `history.state`
