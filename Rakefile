@@ -7,26 +7,6 @@ def pipeline
   Rake::Pipeline::Project.new("Assetfile")
 end
 
-def setup_uploader(root=Dir.pwd)
-  require 'github_downloads'
-  uploader = nil
-  Dir.chdir(root) do
-    uploader = GithubDownloads::Uploader.new
-    uploader.authorize
-  end
-  uploader
-end
-
-def upload_file(uploader, filename, description, file)
-  print "Uploading #{filename}..."
-  if uploader.upload_file(filename, description, file)
-    puts "Success"
-  else
-    puts "Failure"
-  end
-end
-
-
 desc "Strip trailing whitespace for JavaScript files in packages"
 task :strip_whitespace do
   Dir["packages/**/*.js"].each do |name|
@@ -54,12 +34,24 @@ task :clean do
 end
 
 desc "Upload latest Ember.js build to GitHub repository"
-task :upload_latest => [:clean, :dist] do
-  uploader = setup_uploader
-
-  # Upload minified first, so non-minified shows up on top
-  upload_file(uploader, 'ember-latest.min.js', "Ember.js Master (minified)", "dist/ember.min.js")
-  upload_file(uploader, 'ember-latest.js', "Ember.js Master", "dist/ember.js")
+task :commit_latest => [:clean, :dist] do
+  raise "Save your changes" unless `git status --porcelain`.empty?
+  unless `git branch`.include?("dist")
+    puts "Creating a new dist branch"
+    system 'git checkout --orphan dist'
+    puts "Removing junk in index"
+    system 'git rm --cached -r .'
+    puts "Removing non-dist files"
+    system "rm -rf `find * -type d -prune -o -type f | grep -ve '^dist$'`"
+    puts "Removing silly dotfiles"
+    system "rm -rf `find .* -type d -prune -o -type f | grep -ve '^.git$' | grep -ve '^dist$'`"
+  else
+    system 'git checkout dist'
+  end
+  puts "Committing latest release builds ember.js"
+  system 'git add dist/ember.min.js'
+  system 'git add dist/ember.js'
+  system 'git commit -m "Pushing latests builds of ember.js"'
 end
 
 desc "Run tests with phantomjs"
