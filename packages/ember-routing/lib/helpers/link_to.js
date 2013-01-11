@@ -34,6 +34,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     tagName: 'a',
     namedRoute: null,
     currentWhen: null,
+    bubbles: true,
     title: null,
     activeClass: 'active',
     attributeBindings: ['href', 'title'],
@@ -56,9 +57,14 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     click: function(event) {
       if (!isSimpleClick(event)) { return true; }
 
+      event.preventDefault();
+
+      if (this.bubbles === false) {
+        event.stopPropagation();
+      }
+
       var router = this.get('router');
       router.transitionTo.apply(router, args(this, router));
-      return false;
     },
 
     href: Ember.computed(function() {
