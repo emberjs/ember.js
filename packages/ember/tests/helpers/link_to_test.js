@@ -1,4 +1,4 @@
-var Router, App, AppView, templates, router, eventDispatcher, container;
+var Router, App, AppView, templates, router, eventDispatcher, container, originalTemplates;
 var get = Ember.get, set = Ember.set;
 
 function bootApplication() {
@@ -31,6 +31,7 @@ module("The {{linkTo}} helper", {
 
       Router = App.Router;
 
+      originalTemplates = Ember.$.extend({}, Ember.TEMPLATES);
       Ember.TEMPLATES.app = Ember.Handlebars.compile("{{outlet}}");
       Ember.TEMPLATES.index = Ember.Handlebars.compile("<h3>Home</h3>{{#linkTo about id='about-link'}}About{{/linkTo}}{{#linkTo index id='self-link'}}Self{{/linkTo}}");
       Ember.TEMPLATES.about = Ember.Handlebars.compile("<h3>About</h3>{{#linkTo index id='home-link'}}Home{{/linkTo}}{{#linkTo about id='self-link'}}Self{{/linkTo}}");
@@ -48,6 +49,7 @@ module("The {{linkTo}} helper", {
   },
 
   teardown: function() {
+    Ember.TEMPLATES = originalTemplates;
     Ember.run(function() { App.destroy(); });
   }
 });
@@ -208,4 +210,79 @@ test("The {{linkTo}} helper binds some anchor html tag common attributes", funct
   });
 
   equal(Ember.$('#self-link', '#qunit-fixture').attr('title'), 'title-attr', "The self-link contains title attribute");
+});
+
+test("The {{linkTo}} helper moves into the named route", function() {
+  Router.map(function(match) {
+    match("/about").to("about");
+  });
+
+  bootApplication();
+
+  Ember.run(function() {
+    router.handleURL("/");
+  });
+
+  equal(Ember.$('h3:contains(Home)', '#qunit-fixture').length, 1, "The home template was rendered");
+  equal(Ember.$('#self-link.active', '#qunit-fixture').length, 1, "The self-link was rendered with active class");
+  equal(Ember.$('#about-link:not(.active)', '#qunit-fixture').length, 1, "The other link was rendered without active class");
+
+  Ember.run(function() {
+    Ember.$('#about-link', '#qunit-fixture').click();
+  });
+
+  equal(Ember.$('h3:contains(About)', '#qunit-fixture').length, 1, "The about template was rendered");
+  equal(Ember.$('#self-link.active', '#qunit-fixture').length, 1, "The self-link was rendered with active class");
+  equal(Ember.$('#home-link:not(.active)', '#qunit-fixture').length, 1, "The other link was rendered without active class");
+});
+
+test("The event should bubble by default", function() {
+  var wasClicked = false,
+      defaultPrevented = false;
+
+  Router.map(function(match) {
+    match("/about").to("about");
+  });
+
+  bootApplication();
+
+  Ember.run(function() {
+    router.handleURL("/");
+  });
+
+  Ember.$('#qunit-fixture').on('click', '#about-link', function(event) {
+    defaultPrevented = event.isDefaultPrevented(),
+    wasClicked = true;
+  });
+
+  Ember.$('#about-link', '#qunit-fixture').click();
+
+  equal(Ember.$('h3:contains(About)', '#qunit-fixture').length, 1, "The about template was rendered");
+  equal(wasClicked, true, "The click should have bubbled");
+  equal(defaultPrevented, true, "The default action should have been prevented");
+});
+
+test("The event should not bubble if bubbles=false is passed", function() {
+  var isPropagationStopped = false;
+
+  Ember.TEMPLATES.index = Ember.Handlebars.compile("<h3>Home</h3>{{#linkTo about id='about-link' bubbles=false}}About{{/linkTo}}{{#linkTo index id='self-link'}}Self{{/linkTo}}");
+
+  Router.map(function(match) {
+    match("/about").to("about");
+  });
+
+  bootApplication();
+
+  Ember.$('#qunit-fixture').on('click', '#about-link', function(event) {
+    isPropagationStopped = event.isPropagationStopped();
+  });
+
+  Ember.run(function() {
+    router.handleURL("/");
+  });
+
+  Ember.$('#about-link', '#qunit-fixture').click();
+
+  equal(Ember.$('h3:contains(About)', '#qunit-fixture').length, 1, "The about template was rendered");
+  equal(isPropagationStopped, true, "Propagation should have stopped");
 });
