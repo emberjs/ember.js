@@ -76,6 +76,47 @@ test("The {{linkTo}} helper moves into the named route", function() {
   equal(Ember.$('#home-link:not(.active)', '#qunit-fixture').length, 1, "The other link was rendered without active class");
 });
 
+test("The {{linkTo}} helper supports URL replacement", function() {
+  var setCount = 0,
+      replaceCount = 0;
+
+  Ember.TEMPLATES.index = Ember.Handlebars.compile("<h3>Home</h3>{{#linkTo about id='about-link' replace=true}}About{{/linkTo}}");
+
+  Router.reopen({
+    location: Ember.NoneLocation.createWithMixins({
+      setURL: function(path) {
+        setCount++;
+        set(this, 'path', path);
+      },
+
+      replaceURL: function(path) {
+        replaceCount++;
+        set(this, 'path', path);
+      }
+    })
+  });
+
+  Router.map(function(match) {
+    match("/about").to("about");
+  });
+
+  bootApplication();
+
+  Ember.run(function() {
+    router.handleURL("/");
+  });
+
+  equal(setCount, 0, 'precond: setURL has not been called');
+  equal(replaceCount, 0, 'precond: replaceURL has not been called');
+
+  Ember.run(function() {
+    Ember.$('#about-link', '#qunit-fixture').click();
+  });
+
+  equal(setCount, 0, 'setURL should not be called');
+  equal(replaceCount, 1, 'replaceURL should be called once');
+});
+
 test("The {{linkTo}} helper supports a custom activeClass", function() {
   Ember.TEMPLATES.index = Ember.Handlebars.compile("<h3>Home</h3>{{#linkTo about id='about-link'}}About{{/linkTo}}{{#linkTo index id='self-link' activeClass='zomg-active'}}Self{{/linkTo}}");
 

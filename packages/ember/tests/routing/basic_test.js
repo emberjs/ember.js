@@ -763,6 +763,80 @@ test("transitioning multiple times in a single run loop only sets the URL once",
   equal(router.get('location').getURL(), "/bar");
 });
 
+test("using replaceWith calls location.replaceURL if available", function() {
+  var setCount = 0,
+      replaceCount = 0;
+
+  Router.reopen({
+    location: Ember.NoneLocation.createWithMixins({
+      setURL: function(path) {
+        setCount++;
+        set(this, 'path', path);
+      },
+
+      replaceURL: function(path) {
+        replaceCount++;
+        set(this, 'path', path);
+      }
+    })
+  });
+
+  Router.map(function(match) {
+    match("/").to("root");
+    match("/foo").to("foo");
+  });
+
+  bootApplication();
+
+  Ember.run(function() {
+    router.handleURL("/");
+  });
+
+  equal(setCount, 0);
+  equal(replaceCount, 0);
+
+  Ember.run(function() {
+    router.replaceWith("foo");
+  });
+
+  equal(setCount, 0, 'should not call setURL');
+  equal(replaceCount, 1, 'should call replaceURL once');
+  equal(router.get('location').getURL(), "/foo");
+});
+
+test("using replaceWith calls setURL if location.replaceURL is not defined", function() {
+  var setCount = 0;
+
+  Router.reopen({
+    location: Ember.NoneLocation.createWithMixins({
+      setURL: function(path) {
+        setCount++;
+        set(this, 'path', path);
+      }
+    })
+  });
+
+  Router.map(function(match) {
+    match("/").to("root");
+    match("/foo").to("foo");
+  });
+
+  bootApplication();
+
+  Ember.run(function() {
+    router.handleURL("/");
+  });
+
+  equal(setCount, 0);
+
+  Ember.run(function() {
+    router.replaceWith("foo");
+  });
+
+  equal(setCount, 1, 'should call setURL once');
+  equal(router.get('location').getURL(), "/foo");
+});
+
 test("It is possible to get the model from a parent route", function() {
   expect(3);
 
