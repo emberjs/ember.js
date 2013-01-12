@@ -557,7 +557,7 @@ test("Nested callbacks are not exited when moving to siblings", function() {
 
   });
 
-  App.Root.SpecialRoute = Ember.Route.extend({
+  App.RootSpecialRoute = Ember.Route.extend({
     setupController: function(controller, model) {
       set(controller, 'content', model);
     }
@@ -839,6 +839,54 @@ test("A redirection hook is provided", function() {
   equal(Ember.$("h3:contains(Hours)", "#qunit-fixture").length, 1, "The home template was rendered");
 });
 
+test("Generated names can be customized when providing routes with dot notation", function() {
+  expect(3);
+
+  Ember.TEMPLATES.index = compile("<div>Index</div>");
+  Ember.TEMPLATES.application = compile("<h1>Home</h1><div class='main'>{{outlet}}</div>");
+  Ember.TEMPLATES.top = compile("<div class='middle'>{{outlet}}</div>");
+  Ember.TEMPLATES['foo/bar'] = compile("<div class='bottom'>{{outlet}}</div>");
+  Ember.TEMPLATES['baz/bang'] = compile("<p>{{name}}Bottom!</p>");
+
+  Router.map(function(match) {
+    match("/top").to("top", function(match) {
+      match("/middle").to("foo.bar", function(match) {
+        match("/bottom").to("baz.bang");
+      });
+    });
+  });
+
+  App.FooBarRoute = Ember.Route.extend({
+    renderTemplate: function() {
+      ok(true, "FooBarRoute was called");
+      return this._super.apply(this, arguments);
+    }
+  });
+
+  App.BazBangRoute = Ember.Route.extend({
+    renderTemplate: function() {
+      ok(true, "BazBangRoute was called");
+      return this._super.apply(this, arguments);
+    }
+  });
+
+  App.FooBarController = Ember.Controller.extend({
+    name: "FooBar"
+  });
+
+  App.BazBangController = Ember.Controller.extend({
+    name: "BazBang"
+  });
+
+  bootApplication();
+
+  Ember.run(function() {
+    router.handleURL("/top/middle/bottom");
+  });
+
+  equal(Ember.$('.main .middle .bottom p', '#qunit-fixture').text(), "BazBangBottom!", "The templates were rendered into their appropriate parents");
+});
+
 test("Child routes render into their parent route's template by default", function() {
   Ember.TEMPLATES.index = compile("<div>Index</div>");
   Ember.TEMPLATES.application = compile("<h1>Home</h1><div class='main'>{{outlet}}</div>");
@@ -863,6 +911,7 @@ test("Child routes render into their parent route's template by default", functi
   equal(Ember.$('.main .middle .bottom p', '#qunit-fixture').text(), "Bottom!", "The templates were rendered into their appropriate parents");
 });
 
+
 test("Parent route context change", function() {
   var editCount = 0;
 
@@ -883,7 +932,7 @@ test("Parent route context change", function() {
   App.PostsRoute = Ember.Route.extend({
     events: {
       showPost: function(context) {
-        this.transitionTo('post.index', context);
+        this.transitionTo('post', context);
       }
     }
   });
