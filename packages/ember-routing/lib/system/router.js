@@ -62,8 +62,18 @@ Ember.Router = Ember.Object.extend({
     this.notifyPropertyChange('url');
   },
 
-  transitionTo: function() {
-    this.router.transitionTo.apply(this.router, arguments);
+  transitionTo: function(passedName) {
+    var args = [].slice.call(arguments), name;
+
+    if (!this.router.hasRoute(passedName)) {
+      name = args[0] = passedName + '.index';
+    } else {
+      name = passedName;
+    }
+
+    Ember.assert("The route " + passedName + " was not found", this.router.hasRoute(name));
+
+    this.router.transitionTo.apply(this.router, args);
     this.notifyPropertyChange('url');
   },
 

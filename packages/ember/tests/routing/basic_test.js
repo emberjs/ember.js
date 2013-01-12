@@ -932,7 +932,7 @@ test("Parent route context change", function() {
   App.PostsRoute = Ember.Route.extend({
     events: {
       showPost: function(context) {
-        this.transitionTo('post.index', context);
+        this.transitionTo('post', context);
       }
     }
   });
