@@ -34,6 +34,8 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
       controller.set('model', context);
     }
 
+    controller.set('target', options.data.keywords.controller);
+
     options.hash.viewName = name;
     options.hash.template = container.lookup('template:' + name);
     options.hash.controller = controller;
