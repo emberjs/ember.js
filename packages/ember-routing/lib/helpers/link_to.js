@@ -36,6 +36,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     currentWhen: null,
     title: null,
     activeClass: 'active',
+    replace: false,
     attributeBindings: ['href', 'title'],
     classNameBindings: 'active',
 
@@ -57,7 +58,13 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
       if (!isSimpleClick(event)) { return true; }
 
       var router = this.get('router');
-      router.transitionTo.apply(router, args(this, router));
+
+      if (this.get('replace')) {
+        router.replaceWith.apply(router, args(this, router));
+      } else {
+        router.transitionTo.apply(router, args(this, router));
+      }
+
       return false;
     },
 
