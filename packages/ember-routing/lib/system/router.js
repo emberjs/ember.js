@@ -51,6 +51,7 @@ Ember.Router = Ember.Object.extend({
         path = routePath(infos);
 
     set(appController, 'currentPath', path);
+    this.notifyPropertyChange('url');
 
     if (get(this, 'namespace').LOG_TRANSITIONS) {
       Ember.Logger.log("Transitioned into '" + path + "'");
