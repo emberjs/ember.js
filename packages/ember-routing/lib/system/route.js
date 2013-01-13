@@ -398,7 +398,10 @@ function setupView(view, container, options) {
 
   view = view || container.lookup(defaultView);
 
-  set(view, 'template', options.template);
+  if (!get(view, 'templateName')) {
+    set(view, 'template', options.template);
+  }
+
   set(view, 'renderedName', options.name);
   set(view, 'controller', options.controller);
 
