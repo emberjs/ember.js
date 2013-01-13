@@ -175,6 +175,76 @@ test("The {{linkTo}} helper supports custom, nested, currentWhen", function() {
   equal(Ember.$('#other-link.active', '#qunit-fixture').length, 1, "The link is active since currentWhen is a parent route");
 });
 
+test("The {{linkTo}} helper defaults to bubbling", function() {
+  Ember.TEMPLATES.about = Ember.Handlebars.compile("<button {{action 'hide'}}>{{#linkTo 'about.contact' id='about-contact'}}About{{/linkTo}}</button>{{outlet}}");
+  Ember.TEMPLATES['about/contact'] = Ember.Handlebars.compile("<h1 id='contact'>Contact</h1>");
+
+  Router.map(function(match) {
+    match("/about").to("about", function(match) {
+      match("/contact").to("contact");
+    });
+  });
+
+  var hidden = 0;
+
+  App.AboutRoute = Ember.Route.extend({
+    events: {
+      hide: function() {
+        hidden++;
+      }
+    }
+  });
+
+  bootApplication();
+
+  Ember.run(function() {
+    router.handleURL("/about");
+  });
+
+  Ember.run(function() {
+    Ember.$('#about-contact', '#qunit-fixture').click();
+  });
+
+  equal(Ember.$("#contact", "#qunit-fixture").text(), "Contact", "precond - the link worked");
+
+  equal(hidden, 1, "The link bubbles");
+});
+
+test("The {{linkTo}} helper supports bubbles=false", function() {
+  Ember.TEMPLATES.about = Ember.Handlebars.compile("<button {{action 'hide'}}>{{#linkTo 'about.contact' id='about-contact' bubbles=false}}About{{/linkTo}}</button>{{outlet}}");
+  Ember.TEMPLATES['about/contact'] = Ember.Handlebars.compile("<h1 id='contact'>Contact</h1>");
+
+  Router.map(function(match) {
+    match("/about").to("about", function(match) {
+      match("/contact").to("contact");
+    });
+  });
+
+  var hidden = 0;
+
+  App.AboutRoute = Ember.Route.extend({
+    events: {
+      hide: function() {
+        hidden++;
+      }
+    }
+  });
+
+  bootApplication();
+
+  Ember.run(function() {
+    router.handleURL("/about");
+  });
+
+  Ember.run(function() {
+    Ember.$('#about-contact', '#qunit-fixture').click();
+  });
+
+  equal(Ember.$("#contact", "#qunit-fixture").text(), "Contact", "precond - the link worked");
+
+  equal(hidden, 0, "The link didn't bubble");
+});
+
 test("The {{linkTo}} helper moves into the named route with context", function() {
   Router.map(function(match) {
     match("/about").to("about");
