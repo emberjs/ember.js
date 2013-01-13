@@ -399,7 +399,6 @@ function setupView(view, container, options) {
   view = view || container.lookup(defaultView);
 
   if (!get(view, 'templateName')) {
-    Ember.assert('template should be set', options.template);
     set(view, 'template', options.template);
   }
 
