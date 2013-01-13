@@ -787,6 +787,42 @@ test("transitioning multiple times in a single run loop only sets the URL once",
   equal(router.get('location').getURL(), "/bar");
 });
 
+test('navigating away triggers a url property change', function() {
+  var urlPropertyChangeCount = 0;
+
+  Router.map(function(match) {
+    match("/").to("root");
+    match("/foo").to("foo");
+    match("/bar").to("bar");
+  });
+
+  bootApplication();
+
+  Ember.run(function() {
+    Ember.addObserver(router, 'url', function() {
+      urlPropertyChangeCount++;
+    });
+  });
+
+  equal(urlPropertyChangeCount, 0);
+
+  Ember.run(function() {
+    router.handleURL("/");
+  });
+
+  equal(urlPropertyChangeCount, 2);
+
+  Ember.run(function() {
+    // Trigger the callback that would otherwise be triggered
+    // when a user clicks the back or forward button.
+    router.router.transitionTo('foo');
+    router.router.transitionTo('bar');
+  });
+
+  equal(urlPropertyChangeCount, 4, 'triggered url property change');
+});
+
+
 test("using replaceWith calls location.replaceURL if available", function() {
   var setCount = 0,
       replaceCount = 0;
