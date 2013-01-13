@@ -146,6 +146,30 @@ test("The Homepage with explicit template name in renderTemplate", function() {
   equal(Ember.$('h3:contains(Megatroll) + p:contains(YES I AM HOME)', '#qunit-fixture').length, 1, "The homepage template was rendered");
 });
 
+test('render does not replace templateName if user provided', function() {
+  Router.map(function(match) {
+    match("/").to("home");
+  });
+
+  Ember.TEMPLATES.the_real_home_template = Ember.Handlebars.compile(
+    "<p>THIS IS THE REAL HOME</p>"
+  );
+
+  App.HomeView = Ember.View.extend({
+    templateName: 'the_real_home_template'
+  });
+  App.HomeController = Ember.Route.extend();
+  App.HomeRoute = Ember.Route.extend();
+
+  bootApplication();
+
+  Ember.run(function() {
+    router.handleURL("/");
+  });
+
+  equal(Ember.$('p', '#qunit-fixture').text(), "THIS IS THE REAL HOME", "The homepage template was rendered");
+});
+
 test("The Homepage with a `setupController` hook", function() {
   Router.map(function(match) {
     match("/").to("home");
