@@ -33,7 +33,7 @@ test("If a controller doesn't specify a dependency it is not available to `contr
 
   var postController = container.lookup('controller:post');
 
-  equal(null, postController.get('postsController'), "Controller dependencies need to be specified in the `needs` property.")
+  equal(null, postController.get('postsController'), "Controller dependencies need to be specified in the `needs` property.");
 });
 
 test("If a controller specifies an unavailable dependency, it raises", function() {

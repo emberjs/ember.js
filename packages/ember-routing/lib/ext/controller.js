@@ -2,7 +2,7 @@ var get = Ember.get, set = Ember.set;
 
 Ember.ControllerMixin.reopen({
   concatenatedProperties: ['needs'],
-  needs: Em.A(),
+  needs: [],
 
   init: function() {
     this._super.apply(this, arguments);
@@ -31,7 +31,7 @@ Ember.ControllerMixin.reopen({
   },
 
   controllerFor: function(controllerName) {
-    if ( this.needs.contains(controllerName) ){
+    if (canAccessController(this, controllerName)) {
       var container = get(this, 'container');
       return container.lookup('controller:' + controllerName);
     } else {
@@ -66,4 +66,20 @@ function verifyDependencies(controller) {
   }
 
   return satisfied;
+}
+
+function canAccessController(controller, controllerName) {
+  var needs = get(controller, 'needs'),
+    canAccess = false,
+    dependency;
+
+  for (var i=0, l=needs.length; i<l; i++) {
+    dependency = needs[i];
+    if (dependency === controllerName) {
+      canAccess = true;
+    }
+  }
+
+  return canAccess;
+
 }
