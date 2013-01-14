@@ -2,7 +2,7 @@ var get = Ember.get, set = Ember.set;
 
 Ember.ControllerMixin.reopen({
   concatenatedProperties: ['needs'],
-  needs: [],
+  needs: Em.A(),
 
   init: function() {
     this._super.apply(this, arguments);
@@ -31,8 +31,12 @@ Ember.ControllerMixin.reopen({
   },
 
   controllerFor: function(controllerName) {
-    var container = get(this, 'container');
-    return container.lookup('controller:' + controllerName);
+    if ( this.needs.contains(controllerName) ){
+      var container = get(this, 'container');
+      return container.lookup('controller:' + controllerName);
+    } else {
+      return null;
+    }
   },
 
   model: Ember.computed(function(key, value) {
