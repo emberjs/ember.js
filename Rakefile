@@ -15,9 +15,10 @@ end
 def distribution_files
   ["dist/ember.js", "dist/ember.min.js"]
 end
-  def pretend?
-    ENV['PRETEND']
-  end
+
+def pretend?
+  ENV['PRETEND']
+end
 
 desc "Strip trailing whitespace for JavaScript files in packages"
 task :strip_whitespace do
