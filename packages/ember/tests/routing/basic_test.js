@@ -148,7 +148,7 @@ test("The Homepage with explicit template name in renderTemplate", function() {
 
 test('render does not replace templateName if user provided', function() {
   Router.map(function(match) {
-    match("/").to("home");
+    this.route("home", { path: "/" });
   });
 
   Ember.TEMPLATES.the_real_home_template = Ember.Handlebars.compile(
@@ -792,9 +792,9 @@ test('navigating away triggers a url property change', function() {
   var urlPropertyChangeCount = 0;
 
   Router.map(function(match) {
-    match("/").to("root");
-    match("/foo").to("foo");
-    match("/bar").to("bar");
+    this.route('root', { path: '/' });
+    this.route('foo', { path: '/foo' });
+    this.route('bar', { path: '/bar' });
   });
 
   bootApplication();
