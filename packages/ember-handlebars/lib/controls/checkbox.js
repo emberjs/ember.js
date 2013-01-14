@@ -57,12 +57,34 @@ Ember.Checkbox = Ember.View.extend({
   checked: false,
   disabled: false,
 
+  /**
+    The action to be sent when the user checks the checkbox.
+
+    This is similar to the `{{action}}` helper, but is fired when
+    the user checks the checkbox, and sends the checked state
+    of the checkbox as the context.
+
+   @property action
+   @type String
+   @default null
+  */
+  action: null,
+
   init: function() {
     this._super();
     this.on("change", this, this._updateElementValue);
   },
 
   _updateElementValue: function() {
-    set(this, 'checked', this.$().prop('checked'));
+    var checked = this.$().prop('checked');
+
+    set(this, 'checked', checked);
+
+    var controller = get(this, 'controller'),
+        action = get(this, 'action');
+
+    if (action) {
+      controller.send(action, checked);
+    }
   }
 });
