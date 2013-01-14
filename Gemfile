@@ -10,4 +10,5 @@ group :development do
   gem "rack"
   gem "github_downloads", :git => "https://github.com/pangratz/github_downloads.git"
   gem "kicker"
+  gem "distribute", "~> 1.0"
 end
