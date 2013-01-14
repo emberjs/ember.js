@@ -51,6 +51,7 @@ Ember.Router = Ember.Object.extend({
         path = routePath(infos);
 
     set(appController, 'currentPath', path);
+    this.notifyPropertyChange('url');
 
     if (get(this, 'namespace').LOG_TRANSITIONS) {
       Ember.Logger.log("Transitioned into '" + path + "'");
@@ -74,6 +75,11 @@ Ember.Router = Ember.Object.extend({
     Ember.assert("The route " + passedName + " was not found", this.router.hasRoute(name));
 
     this.router.transitionTo.apply(this.router, args);
+    this.notifyPropertyChange('url');
+  },
+
+  replaceWith: function() {
+    this.router.replaceWith.apply(this.router, arguments);
     this.notifyPropertyChange('url');
   },
 
@@ -182,15 +188,27 @@ function routePath(handlerInfos) {
 function setupRouter(emberRouter, router, location) {
   var lastURL;
 
-  function updateURL() {
-    location.setURL(lastURL);
-  }
-
   router.getHandler = getHandlerFunction(emberRouter);
+
+  var doUpdateURL = function() {
+    location.setURL(lastURL);
+  };
+
   router.updateURL = function(path) {
     lastURL = path;
-    Ember.run.once(updateURL);
+    Ember.run.once(doUpdateURL);
   };
+
+  if (location.replaceURL) {
+    var doReplaceURL = function() {
+      location.replaceURL(lastURL);
+    };
+
+    router.replaceURL = function(path) {
+      lastURL = path;
+      Ember.run.once(doReplaceURL);
+    };
+  }
 
   router.didTransition = function(infos) {
     emberRouter.didTransition(infos);

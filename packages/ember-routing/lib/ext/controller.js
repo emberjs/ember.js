@@ -13,10 +13,21 @@ Ember.ControllerMixin.reopen({
     }
   },
 
-  transitionTo: function() {
+  transitionToRoute: function() {
     var router = get(this, 'target');
 
     return router.transitionTo.apply(router, arguments);
+  },
+
+  transitionTo: function() {
+    Ember.deprecate("transitionTo is deprecated. Please use transitionToRoute.");
+    return this.transitionToRoute.apply(this, arguments);
+  },
+
+  replaceRoute: function() {
+    var router = get(this, 'target');
+
+    return router.replaceWith.apply(router, arguments);
   },
 
   controllerFor: function(controllerName) {

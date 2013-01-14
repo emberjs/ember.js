@@ -136,6 +136,38 @@ test("{{render}} helper should render a template only once", function() {
   }, 'should raise an exception');
 });
 
+test("{{render}} helper should link child controllers to the parent controller", function() {
+  var parentTriggered = 0;
+
+  var template = '<h1>HI</h1>{{render "posts"}}';
+  var controller = Ember.Controller.extend({
+    container: container,
+
+    parentPlease: function() {
+      parentTriggered++;
+    }
+  });
+
+  container.register('controller', 'posts', Ember.ArrayController.extend());
+
+  view = Ember.View.create({
+    controller: controller.create(),
+    template: Ember.Handlebars.compile(template)
+  });
+
+  Ember.TEMPLATES['posts'] = compile('<button id="parent-action" {{action "parentPlease"}}>Go to Parent</button>');
+
+  appendView(view);
+
+  var actionId = Ember.$("#parent-action").data('ember-action'),
+      action = Ember.Handlebars.ActionHelper.registeredActions[actionId],
+      handler = action.handler;
+
+  Ember.run(null, handler, new Ember.$.Event("click"));
+
+  equal(parentTriggered, 1, "The event bubbled to the parent");
+});
+
 test("{{render}} helper should be able to render a template again when it was removed", function() {
   var template = "<h1>HI</h1>{{outlet}}";
   var controller = Ember.Controller.extend({container: container});

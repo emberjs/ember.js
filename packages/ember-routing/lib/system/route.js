@@ -22,6 +22,19 @@ Ember.Route = Ember.Object.extend({
     return this.router.transitionTo.apply(this.router, arguments);
   },
 
+  /**
+    Transition into another route while replacing the current URL if
+    possible. Identical to `transitionTo` in all other respects.
+
+    @method replaceWith
+    @param {String} name the name of the route
+    @param {...Object} models the
+  */
+  replaceWith: function() {
+    this.transitioned = true;
+    return this.router.replaceWith.apply(this.router, arguments);
+  },
+
   send: function() {
     return this.router.send.apply(this.router, arguments);
   },
@@ -393,7 +406,10 @@ function setupView(view, container, options) {
 
   view = view || container.lookup(defaultView);
 
-  set(view, 'template', options.template);
+  if (!get(view, 'templateName')) {
+    set(view, 'template', options.template);
+  }
+
   set(view, 'renderedName', options.name);
   set(view, 'controller', options.controller);
 

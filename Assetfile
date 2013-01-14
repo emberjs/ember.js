@@ -20,6 +20,15 @@ class EmberProductionFilter < Rake::Pipeline::Filter
     data.gsub!(%r{^(\s)*Ember\.(assert|deprecate|warn)\((.*)\).*$}, "")
   end
 
+  def add_localhost_warning(data)
+    data << "\n\n" + <<END
+if (typeof location !== 'undefined' && (location.hostname === 'localhost' || location.hostname === '127.0.0.1')) {
+  console.warn("You are running a production build of Ember on localhost and won't receive detailed error messages. "+
+               "If you want full error messages please use the non-minified build provided on the Ember website.");
+}
+END
+  end
+
   def precompile_templates(data)
     # Precompile defaultTemplates
     data.gsub!(%r{(defaultTemplate(?:\s*=|:)\s*)Ember\.Handlebars\.compile\(['"](.*)['"]\)}) do
@@ -31,6 +40,7 @@ class EmberProductionFilter < Rake::Pipeline::Filter
     inputs.each do |input|
       result = File.read(input.fullpath)
       strip_debug(result)
+      add_localhost_warning(result)
       precompile_templates(result)
       output.write result
     end
@@ -128,7 +138,7 @@ class EmberStub < Rake::Pipeline::Filter
 end
 
 distros = {
-  "runtime"           => %w(ember-metal ember-runtime),
+  "runtime"           => %w(ember-metal rsvp container ember-runtime),
   "template-compiler" => %w(handlebars ember-handlebars-compiler),
   "data-deps"         => %w(ember-metal ember-runtime ember-states),
   "full"              => %w(ember-metal rsvp container ember-runtime ember-views metamorph ember-handlebars-compiler ember-handlebars ember-routing ember-application ember-states),

@@ -146,6 +146,30 @@ test("The Homepage with explicit template name in renderTemplate", function() {
   equal(Ember.$('h3:contains(Megatroll) + p:contains(YES I AM HOME)', '#qunit-fixture').length, 1, "The homepage template was rendered");
 });
 
+test('render does not replace templateName if user provided', function() {
+  Router.map(function(match) {
+    match("/").to("home");
+  });
+
+  Ember.TEMPLATES.the_real_home_template = Ember.Handlebars.compile(
+    "<p>THIS IS THE REAL HOME</p>"
+  );
+
+  App.HomeView = Ember.View.extend({
+    templateName: 'the_real_home_template'
+  });
+  App.HomeController = Ember.Route.extend();
+  App.HomeRoute = Ember.Route.extend();
+
+  bootApplication();
+
+  Ember.run(function() {
+    router.handleURL("/");
+  });
+
+  equal(Ember.$('p', '#qunit-fixture').text(), "THIS IS THE REAL HOME", "The homepage template was rendered");
+});
+
 test("The Homepage with a `setupController` hook", function() {
   Router.map(function(match) {
     match("/").to("home");
@@ -761,6 +785,116 @@ test("transitioning multiple times in a single run loop only sets the URL once",
 
   equal(urlSetCount, 1);
   equal(router.get('location').getURL(), "/bar");
+});
+
+test('navigating away triggers a url property change', function() {
+  var urlPropertyChangeCount = 0;
+
+  Router.map(function(match) {
+    match("/").to("root");
+    match("/foo").to("foo");
+    match("/bar").to("bar");
+  });
+
+  bootApplication();
+
+  Ember.run(function() {
+    Ember.addObserver(router, 'url', function() {
+      urlPropertyChangeCount++;
+    });
+  });
+
+  equal(urlPropertyChangeCount, 0);
+
+  Ember.run(function() {
+    router.handleURL("/");
+  });
+
+  equal(urlPropertyChangeCount, 2);
+
+  Ember.run(function() {
+    // Trigger the callback that would otherwise be triggered
+    // when a user clicks the back or forward button.
+    router.router.transitionTo('foo');
+    router.router.transitionTo('bar');
+  });
+
+  equal(urlPropertyChangeCount, 4, 'triggered url property change');
+});
+
+
+test("using replaceWith calls location.replaceURL if available", function() {
+  var setCount = 0,
+      replaceCount = 0;
+
+  Router.reopen({
+    location: Ember.NoneLocation.createWithMixins({
+      setURL: function(path) {
+        setCount++;
+        set(this, 'path', path);
+      },
+
+      replaceURL: function(path) {
+        replaceCount++;
+        set(this, 'path', path);
+      }
+    })
+  });
+
+  Router.map(function(match) {
+    match("/").to("root");
+    match("/foo").to("foo");
+  });
+
+  bootApplication();
+
+  Ember.run(function() {
+    router.handleURL("/");
+  });
+
+  equal(setCount, 0);
+  equal(replaceCount, 0);
+
+  Ember.run(function() {
+    router.replaceWith("foo");
+  });
+
+  equal(setCount, 0, 'should not call setURL');
+  equal(replaceCount, 1, 'should call replaceURL once');
+  equal(router.get('location').getURL(), "/foo");
+});
+
+test("using replaceWith calls setURL if location.replaceURL is not defined", function() {
+  var setCount = 0;
+
+  Router.reopen({
+    location: Ember.NoneLocation.createWithMixins({
+      setURL: function(path) {
+        setCount++;
+        set(this, 'path', path);
+      }
+    })
+  });
+
+  Router.map(function(match) {
+    match("/").to("root");
+    match("/foo").to("foo");
+  });
+
+  bootApplication();
+
+  Ember.run(function() {
+    router.handleURL("/");
+  });
+
+  equal(setCount, 0);
+
+  Ember.run(function() {
+    router.replaceWith("foo");
+  });
+
+  equal(setCount, 1, 'should call setURL once');
+  equal(router.get('location').getURL(), "/foo");
 });
 
 test("It is possible to get the model from a parent route", function() {

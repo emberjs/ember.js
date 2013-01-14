@@ -36,6 +36,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     currentWhen: null,
     title: null,
     activeClass: 'active',
+    replace: false,
     attributeBindings: ['href', 'title'],
     classNameBindings: 'active',
 
@@ -56,9 +57,16 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     click: function(event) {
       if (!isSimpleClick(event)) { return true; }
 
+      event.preventDefault();
+      if (this.bubbles === false) { event.stopPropagation(); }
+
       var router = this.get('router');
-      router.transitionTo.apply(router, args(this, router));
-      return false;
+
+      if (this.get('replace')) {
+        router.replaceWith.apply(router, args(this, router));
+      } else {
+        router.transitionTo.apply(router, args(this, router));
+      }
     },
 
     href: Ember.computed(function() {
