@@ -4,7 +4,7 @@ EMBER_VERSION = File.read("VERSION").strip
 
 require_relative 'tasks/distribute'
 require_relative 'tasks/release'
-require_relative 'tasks/test'
+require_relative 'tasks/testing'
 
 
 def pipeline
