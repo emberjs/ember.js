@@ -9,7 +9,7 @@ namespace :distribute do
   end
 
   desc "Build ember.js"
-  task :build => :build do
+  task :build => :clean do
     pipeline.invoke
   end
 
