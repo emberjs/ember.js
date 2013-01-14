@@ -6,6 +6,11 @@ require_relative 'tasks/distribute'
 require_relative 'tasks/release'
 require_relative 'tasks/testing'
 
+def system(command)
+  puts command
+  `#{command}` unless pretend?
+end
+
 
 def pipeline
   require 'rake-pipeline'

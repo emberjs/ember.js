@@ -45,14 +45,14 @@ task :test, [:suite] => :dist do |t, args|
     puts "\n"
 
     cmd = "phantomjs tests/qunit/run-qunit.js \"file://localhost#{File.dirname(__FILE__)}/tests/index.html?#{opt}\""
-    system(cmd)
+    system cmd
 
     # A bit of a hack until we can figure this out on Travis
     tries = 0
     while tries < 3 && $?.exitstatus === 124
       tries += 1
-      puts "\nTimed Out. Trying again...\n"
-      system(cmd)
+      puts "Timed Out. Trying again..."
+      system cmd
     end
 
     success &&= $?.success?
