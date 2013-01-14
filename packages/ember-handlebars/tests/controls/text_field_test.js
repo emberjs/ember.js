@@ -173,6 +173,29 @@ test("should call the cancel method when escape key is pressed", function() {
   ok(wasCalled, "invokes cancel method");
 });
 
+test("should sent an action if one is defined when the return key is pressed", function() {
+  expect(2);
+
+  var StubController = Ember.Object.extend({
+    send: function(actionName, arg1) {
+      equal(actionName, 'didTriggerAction', "text field sent correct action name");
+      equal(arg1, "textFieldValue", "text field sent its current value as first argument");
+    }
+  });
+
+  textField.set('action', 'didTriggerAction');
+  textField.set('value', "textFieldValue");
+  textField.set('controller', StubController.create());
+
+  Ember.run(function() { textField.append(); });
+
+  var event = {
+    keyCode: 13
+  };
+
+  textField.trigger('keyUp', event);
+});
+
 // test("listens for focus and blur events", function() {
 //   var focusCalled = 0;
 //   var blurCalled = 0;

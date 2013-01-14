@@ -54,7 +54,7 @@ module("The {{linkTo}} helper", {
 
 test("The {{linkTo}} helper moves into the named route", function() {
   Router.map(function(match) {
-    match("/about").to("about");
+    this.route("about");
   });
 
   bootApplication();
@@ -96,8 +96,8 @@ test("The {{linkTo}} helper supports URL replacement", function() {
     })
   });
 
-  Router.map(function(match) {
-    match("/about").to("about");
+  Router.map(function() {
+    this.route("about");
   });
 
   bootApplication();
@@ -120,8 +120,8 @@ test("The {{linkTo}} helper supports URL replacement", function() {
 test("The {{linkTo}} helper supports a custom activeClass", function() {
   Ember.TEMPLATES.index = Ember.Handlebars.compile("<h3>Home</h3>{{#linkTo about id='about-link'}}About{{/linkTo}}{{#linkTo index id='self-link' activeClass='zomg-active'}}Self{{/linkTo}}");
 
-  Router.map(function(match) {
-    match("/about").to("about");
+  Router.map(function() {
+    this.route("about");
   });
 
   bootApplication();
@@ -136,9 +136,9 @@ test("The {{linkTo}} helper supports a custom activeClass", function() {
 });
 
 test("The {{linkTo}} helper supports leaving off .index for nested routes", function() {
-  Router.map(function(match) {
-    match("/about").to("about", function(match) {
-      match("/item").to("item");
+  Router.map(function() {
+    this.resource("about", function() {
+      this.route("item");
     });
   });
 
@@ -157,10 +157,11 @@ test("The {{linkTo}} helper supports leaving off .index for nested routes", func
 
 test("The {{linkTo}} helper supports custom, nested, currentWhen", function() {
   Router.map(function(match) {
-    match("/").to("index", function(match) {
-      match("/about").to("about");
+    this.resource("index", { path: "/" }, function() {
+      this.route("about");
     });
-    match("/item").to("item");
+
+    this.route("item");
   });
 
   Ember.TEMPLATES.index = Ember.Handlebars.compile("<h3>Home</h3>{{outlet}}");
@@ -179,9 +180,9 @@ test("The {{linkTo}} helper defaults to bubbling", function() {
   Ember.TEMPLATES.about = Ember.Handlebars.compile("<button {{action 'hide'}}>{{#linkTo 'about.contact' id='about-contact'}}About{{/linkTo}}</button>{{outlet}}");
   Ember.TEMPLATES['about/contact'] = Ember.Handlebars.compile("<h1 id='contact'>Contact</h1>");
 
-  Router.map(function(match) {
-    match("/about").to("about", function(match) {
-      match("/contact").to("contact");
+  Router.map(function() {
+    this.resource("about", function() {
+      this.route("contact");
     });
   });
 
@@ -214,9 +215,9 @@ test("The {{linkTo}} helper supports bubbles=false", function() {
   Ember.TEMPLATES.about = Ember.Handlebars.compile("<button {{action 'hide'}}>{{#linkTo 'about.contact' id='about-contact' bubbles=false}}About{{/linkTo}}</button>{{outlet}}");
   Ember.TEMPLATES['about/contact'] = Ember.Handlebars.compile("<h1 id='contact'>Contact</h1>");
 
-  Router.map(function(match) {
-    match("/about").to("about", function(match) {
-      match("/contact").to("contact");
+  Router.map(function() {
+    this.resource("about", function() {
+      this.route("contact");
     });
   });
 
@@ -247,8 +248,8 @@ test("The {{linkTo}} helper supports bubbles=false", function() {
 
 test("The {{linkTo}} helper moves into the named route with context", function() {
   Router.map(function(match) {
-    match("/about").to("about");
-    match("/item/:id").to("item");
+    this.route("about");
+    this.resource("item", { path: "/item/:id" });
   });
 
   Ember.TEMPLATES.about = Ember.Handlebars.compile("<h3>List</h3><ul>{{#each controller}}<li>{{#linkTo item this}}{{name}}{{/linkTo}}<li>{{/each}}</ul>{{#linkTo index id='home-link'}}Home{{/linkTo}}");

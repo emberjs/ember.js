@@ -50,7 +50,7 @@ module("Basic Routing", {
 
 test("The Homepage", function() {
   Router.map(function(match) {
-    match("/").to("home");
+    this.route("home", { path: "/" });
   });
 
   App.HomeRoute = Ember.Route.extend({
@@ -76,8 +76,8 @@ test("The Homepage", function() {
 
 test("The Homepage register as activeView", function() {
   Router.map(function(match) {
-    match("/").to("home");
-    match("/homepage").to("homepage");
+    this.route("home", { path: "/" });
+    this.route("homepage");
   });
 
   App.HomeRoute = Ember.Route.extend({
@@ -104,7 +104,7 @@ test("The Homepage register as activeView", function() {
 
 test("The Homepage with explicit template name in renderTemplate", function() {
   Router.map(function(match) {
-    match("/").to("home");
+    this.route("home", { path: "/" });
   });
 
   App.HomeRoute = Ember.Route.extend({
@@ -124,7 +124,7 @@ test("The Homepage with explicit template name in renderTemplate", function() {
 
 test("The Homepage with explicit template name in renderTemplate", function() {
   Router.map(function(match) {
-    match("/").to("home");
+    this.route("home", { path: "/" });
   });
 
   App.HomeController = Ember.Route.extend({
@@ -148,7 +148,7 @@ test("The Homepage with explicit template name in renderTemplate", function() {
 
 test('render does not replace templateName if user provided', function() {
   Router.map(function(match) {
-    match("/").to("home");
+    this.route("home", { path: "/" });
   });
 
   Ember.TEMPLATES.the_real_home_template = Ember.Handlebars.compile(
@@ -172,7 +172,7 @@ test('render does not replace templateName if user provided', function() {
 
 test("The Homepage with a `setupController` hook", function() {
   Router.map(function(match) {
-    match("/").to("home");
+    this.route("home", { path: "/" });
   });
 
   App.HomeRoute = Ember.Route.extend({
@@ -202,7 +202,7 @@ test("The Homepage with a `setupController` hook", function() {
 
 test("The Homepage with a `setupController` hook modifying other controllers", function() {
   Router.map(function(match) {
-    match("/").to("home");
+    this.route("home", { path: "/" });
   });
 
   App.HomeRoute = Ember.Route.extend({
@@ -232,7 +232,7 @@ test("The Homepage with a `setupController` hook modifying other controllers", f
 
 test("The Homepage getting its controller context via model", function() {
   Router.map(function(match) {
-    match("/").to("home");
+    this.route("home", { path: "/" });
   });
 
   App.HomeRoute = Ember.Route.extend({
@@ -268,8 +268,8 @@ test("The Homepage getting its controller context via model", function() {
 
 test("The Specials Page getting its controller context by deserializing the params hash", function() {
   Router.map(function(match) {
-    match("/").to("home");
-    match("/specials/:menu_item_id").to("special");
+    this.route("home", { path: "/" });
+    this.resource("special", { path: "/specials/:menu_item_id" });
   });
 
   App.SpecialRoute = Ember.Route.extend({
@@ -301,8 +301,8 @@ test("The Specials Page getting its controller context by deserializing the para
 
 test("The Specials Page defaults to looking models up via `find`", function() {
   Router.map(function(match) {
-    match("/").to("home");
-    match("/specials/:menu_item_id").to("special");
+    this.route("home", { path: "/" });
+    this.resource("special", { path: "/specials/:menu_item_id" });
   });
 
   App.MenuItem = Ember.Object.extend();
@@ -337,8 +337,8 @@ test("The Special Page returning a promise puts the app into a loading state unt
   stop();
 
   Router.map(function(match) {
-    match("/").to("home");
-    match("/specials/:menu_item_id").to("special");
+    this.route("home", { path: "/" });
+    this.resource("special", { path: "/specials/:menu_item_id" });
   });
 
   var menuItem;
@@ -391,8 +391,8 @@ test("The Special page returning an error puts the app into the failure state", 
   stop();
 
   Router.map(function(match) {
-    match("/").to("home");
-    match("/specials/:menu_item_id").to("special");
+    this.route("home", { path: "/" });
+    this.resource("special", { path: "/specials/:menu_item_id" });
   });
 
   var menuItem;
@@ -433,8 +433,8 @@ test("The Special page returning an error puts the app into a default failure st
   stop();
 
   Router.map(function(match) {
-    match("/").to("home");
-    match("/specials/:menu_item_id").to("special");
+    this.route("home", { path: "/" });
+    this.resource("special", { path: "/specials/:menu_item_id" });
   });
 
   var lastFailure;
@@ -475,8 +475,8 @@ test("The Special page returning an error puts the app into a default failure st
 
 test("Moving from one page to another triggers the correct callbacks", function() {
   Router.map(function(match) {
-    match("/").to("home");
-    match("/specials/:menu_item_id").to("special");
+    this.route("home", { path: "/" });
+    this.resource("special", { path: "/specials/:menu_item_id" });
   });
 
   var menuItem;
@@ -532,8 +532,8 @@ test("Moving from one page to another triggers the correct callbacks", function(
 
 test("Nested callbacks are not exited when moving to siblings", function() {
   Router.map(function(match) {
-    match("/").to("root", function(match) {
-      match("/specials/:menu_item_id").to("special");
+    this.resource("root", { path: "/" }, function(match) {
+      this.resource("special", { path: "/specials/:menu_item_id" });
     });
   });
 
@@ -581,7 +581,7 @@ test("Nested callbacks are not exited when moving to siblings", function() {
 
   });
 
-  App.RootSpecialRoute = Ember.Route.extend({
+  App.SpecialRoute = Ember.Route.extend({
     setupController: function(controller, model) {
       set(controller, 'content', model);
     }
@@ -591,7 +591,7 @@ test("Nested callbacks are not exited when moving to siblings", function() {
     "<h3>Home</h3>"
   );
 
-  Ember.TEMPLATES['root/special'] = Ember.Handlebars.compile(
+  Ember.TEMPLATES.special = Ember.Handlebars.compile(
     "<p>{{content.id}}</p>"
   );
 
@@ -616,7 +616,7 @@ test("Nested callbacks are not exited when moving to siblings", function() {
   router = container.lookup('router:main');
 
   Ember.run(function() {
-    router.transitionTo('root.special', App.MenuItem.create({ id: 1 }));
+    router.transitionTo('special', App.MenuItem.create({ id: 1 }));
   });
   equal(rootSetup, 1, "The root setup was not triggered again");
   equal(rootRender, 1, "The root render was not triggered again");
@@ -631,7 +631,7 @@ test("Nested callbacks are not exited when moving to siblings", function() {
 
 asyncTest("Events are triggered on the controller if a matching action name is implemented", function() {
   Router.map(function(match) {
-    match("/").to("home");
+    this.route("home", { path: "/" });
   });
 
   var model = { name: "Tom Dale" };
@@ -678,7 +678,7 @@ asyncTest("Events are triggered on the controller if a matching action name is i
 
 asyncTest("Events are triggered on the current state", function() {
   Router.map(function(match) {
-    match("/").to("home");
+    this.route("home", { path: "/" });
   });
 
   var model = { name: "Tom Dale" };
@@ -721,7 +721,8 @@ asyncTest("Events are triggered on the current state", function() {
 
 asyncTest("Events are triggered on the current state when routes are nested", function() {
   Router.map(function(match) {
-    match("/").to("root", function(match) {
+    this.resource("root", { path: "/" }, function() {
+      this.route("index", { path: "/" });
     });
   });
 
@@ -758,9 +759,9 @@ asyncTest("Events are triggered on the current state when routes are nested", fu
 
 test("transitioning multiple times in a single run loop only sets the URL once", function() {
   Router.map(function(match) {
-    match("/").to("root");
-    match("/foo").to("foo");
-    match("/bar").to("bar");
+    this.route("root", { path: "/" });
+    this.route("foo");
+    this.route("bar");
   });
 
   bootApplication();
@@ -791,9 +792,9 @@ test('navigating away triggers a url property change', function() {
   var urlPropertyChangeCount = 0;
 
   Router.map(function(match) {
-    match("/").to("root");
-    match("/foo").to("foo");
-    match("/bar").to("bar");
+    this.route('root', { path: '/' });
+    this.route('foo', { path: '/foo' });
+    this.route('bar', { path: '/bar' });
   });
 
   bootApplication();
@@ -842,8 +843,8 @@ test("using replaceWith calls location.replaceURL if available", function() {
   });
 
   Router.map(function(match) {
-    match("/").to("root");
-    match("/foo").to("foo");
+    this.route("root", { path: "/" });
+    this.route("foo");
   });
 
   bootApplication();
@@ -877,8 +878,8 @@ test("using replaceWith calls setURL if location.replaceURL is not defined", fun
   });
 
   Router.map(function(match) {
-    match("/").to("root");
-    match("/foo").to("foo");
+    this.route("root", { path: "/" });
+    this.route("foo");
   });
 
   bootApplication();
@@ -901,9 +902,8 @@ test("It is possible to get the model from a parent route", function() {
   expect(3);
 
   Router.map(function(match) {
-    match("/").to("index");
-    match("/posts/:post_id").to("post", function(match) {
-      match("/comments").to("comments");
+    this.resource("post", { path: "/posts/:post_id" }, function() {
+      this.resource("comments");
     });
   });
 
@@ -921,7 +921,7 @@ test("It is possible to get the model from a parent route", function() {
     }
   });
 
-  App.PostCommentsRoute = Ember.Route.extend({
+  App.CommentsRoute = Ember.Route.extend({
     model: function() {
       equal(this.modelFor('post'), currentPost);
     }
@@ -947,8 +947,8 @@ test("It is possible to get the model from a parent route", function() {
 
 test("A redirection hook is provided", function() {
   Router.map(function(match) {
-    match("/").to("choose");
-    match("/home").to("home");
+    this.route("choose", { path: "/" });
+    this.route("home");
   });
 
   var chooseFollowed = 0, destination;
@@ -978,38 +978,38 @@ test("Generated names can be customized when providing routes with dot notation"
 
   Ember.TEMPLATES.index = compile("<div>Index</div>");
   Ember.TEMPLATES.application = compile("<h1>Home</h1><div class='main'>{{outlet}}</div>");
-  Ember.TEMPLATES.top = compile("<div class='middle'>{{outlet}}</div>");
-  Ember.TEMPLATES['foo/bar'] = compile("<div class='bottom'>{{outlet}}</div>");
-  Ember.TEMPLATES['baz/bang'] = compile("<p>{{name}}Bottom!</p>");
+  Ember.TEMPLATES.foo = compile("<div class='middle'>{{outlet}}</div>");
+  Ember.TEMPLATES.bar = compile("<div class='bottom'>{{outlet}}</div>");
+  Ember.TEMPLATES['bar/baz'] = compile("<p>{{name}}Bottom!</p>");
 
   Router.map(function(match) {
-    match("/top").to("top", function(match) {
-      match("/middle").to("foo.bar", function(match) {
-        match("/bottom").to("baz.bang");
+    this.resource("foo", { path: "/top" }, function() {
+      this.resource("bar", { path: "/middle" }, function() {
+        this.route("baz", { path: "/bottom" });
       });
     });
   });
 
-  App.FooBarRoute = Ember.Route.extend({
+  App.FooRoute = Ember.Route.extend({
     renderTemplate: function() {
       ok(true, "FooBarRoute was called");
       return this._super.apply(this, arguments);
     }
   });
 
-  App.BazBangRoute = Ember.Route.extend({
+  App.BarBazRoute = Ember.Route.extend({
     renderTemplate: function() {
-      ok(true, "BazBangRoute was called");
+      ok(true, "BarBazRoute was called");
       return this._super.apply(this, arguments);
     }
   });
 
-  App.FooBarController = Ember.Controller.extend({
-    name: "FooBar"
+  App.BarController = Ember.Controller.extend({
+    name: "Bar"
   });
 
-  App.BazBangController = Ember.Controller.extend({
-    name: "BazBang"
+  App.BarBazController = Ember.Controller.extend({
+    name: "BarBaz"
   });
 
   bootApplication();
@@ -1018,20 +1018,20 @@ test("Generated names can be customized when providing routes with dot notation"
     router.handleURL("/top/middle/bottom");
   });
 
-  equal(Ember.$('.main .middle .bottom p', '#qunit-fixture').text(), "BazBangBottom!", "The templates were rendered into their appropriate parents");
+  equal(Ember.$('.main .middle .bottom p', '#qunit-fixture').text(), "BarBazBottom!", "The templates were rendered into their appropriate parents");
 });
 
 test("Child routes render into their parent route's template by default", function() {
   Ember.TEMPLATES.index = compile("<div>Index</div>");
   Ember.TEMPLATES.application = compile("<h1>Home</h1><div class='main'>{{outlet}}</div>");
   Ember.TEMPLATES.top = compile("<div class='middle'>{{outlet}}</div>");
-  Ember.TEMPLATES['top/middle'] = compile("<div class='bottom'>{{outlet}}</div>");
+  Ember.TEMPLATES.middle = compile("<div class='bottom'>{{outlet}}</div>");
   Ember.TEMPLATES['middle/bottom'] = compile("<p>Bottom!</p>");
 
   Router.map(function(match) {
-    match("/top").to("top", function(match) {
-      match("/middle").to("middle", function(match) {
-        match("/bottom").to("bottom");
+    this.resource("top", function() {
+      this.resource("middle", function() {
+        this.route("bottom");
       });
     });
   });
@@ -1051,14 +1051,14 @@ test("Parent route context change", function() {
 
   Ember.TEMPLATES.application = compile("{{outlet}}");
   Ember.TEMPLATES.posts = compile("{{outlet}}");
-  Ember.TEMPLATES['posts/post'] = compile("{{outlet}}");
+  Ember.TEMPLATES.post = compile("{{outlet}}");
   Ember.TEMPLATES['post/index'] = compile("showing");
   Ember.TEMPLATES['post/edit'] = compile("editing");
 
-  Router.map(function(match) {
-    match("/posts").to("posts", function(match) {
-      match("/:postId").to('post', function(match) {
-        match("/edit").to('edit');
+  Router.map(function() {
+    this.resource("posts", function() {
+      this.resource("post", { path: "/:postId" }, function() {
+        this.route("edit");
       });
     });
   });
@@ -1071,7 +1071,7 @@ test("Parent route context change", function() {
     }
   });
 
-  App.PostsPostRoute = Ember.Route.extend({
+  App.PostRoute = Ember.Route.extend({
     model: function(params) {
       return {id: params.postId};
     },

@@ -81,5 +81,29 @@ Ember.TextField = Ember.View.extend(Ember.TextSupport,
     @type String
     @default null
   */
-  size: null
+  size: null,
+
+  /**
+    The action to be sent when the user presses the return key.
+
+    This is similar to the `{{action}}` helper, but is fired when
+    the user presses the return key when editing a text field, and sends
+    the value of the field as the context.
+
+   @property action
+   @type String
+   @default null
+  */
+  action: null,
+
+  insertNewline: function() {
+    var controller = get(this, 'controller'),
+        action = get(this, 'action');
+
+    if (action) {
+      controller.send(action, get(this, 'value'));
+    }
+
+    return false;
+  }
 });
