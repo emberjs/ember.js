@@ -41,19 +41,17 @@ namespace :release do
     desc "Update website repo"
     task :update => :about do
       puts "Updating website repo"
-      unless pretend?
-        Dir.chdir("tmp/website") do
-          system %|git add -A|
-          system %|git commit -m 'Updated to #{EMBER_VERSION}'|
+      Dir.chdir("tmp/website") do
+        system %|git add -A|
+        system %|git commit -m 'Updated to #{EMBER_VERSION}'|
 
-          print "Are you sure you want to push the website repo to github? (y/N) "
-          res = STDIN.gets.chomp
-          if res == 'y'
-            system %|git push origin master|
-            system %|git push --tags|
-          else
-            puts "Not pushing"
-          end
+        print "Are you sure you want to push the website repo to github? (y/N) "
+        res = STDIN.gets.chomp
+        if res == 'y'
+          system %|git push origin master|
+          system %|git push --tags|
+        else
+          puts "Not pushing"
         end
         puts "NOTE: You still need to run |rake deploy| from within the website repo."
       end

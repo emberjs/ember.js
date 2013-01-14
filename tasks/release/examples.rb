@@ -29,19 +29,17 @@ namespace :release do
     desc "Update examples repo"
     task :update => ember_min_output do
       puts "Updating examples repo"
-      unless pretend?
-        Dir.chdir("tmp/examples") do
-          system %|git add -A|
-          system %|git commit -m 'Updated to #{EMBER_VERSION}'|
+      Dir.chdir("tmp/examples") do
+        system %|git add -A|
+        system %|git commit -m 'Updated to #{EMBER_VERSION}'|
 
-          print "Are you sure you want to push the examples repo to github? (y/N) "
-          res = STDIN.gets.chomp
-          if res == 'y'
-            system %|git push origin master|
-            system %|git push --tags|
-          else
-            puts "Not pushing"
-          end
+        print "Are you sure you want to push the examples repo to github? (y/N) "
+        res = STDIN.gets.chomp
+        if res == 'y'
+          system %|git push origin master|
+          system %|git push --tags|
+        else
+          puts "Not pushing"
         end
       end
     end

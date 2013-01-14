@@ -67,21 +67,19 @@ namespace :release do
     desc "Tag new version"
     task :tag do
       puts "Tagging v#{EMBER_VERSION}"
-      system %|git tag v#{EMBER_VERSION}| unless pretend?
+      system %|git tag v#{EMBER_VERSION}|
     end
 
     desc "Push new commit to git"
     task :push do
       puts "Pushing Repo"
-      unless pretend?
-        print "Are you sure you want to push the ember.js repo to github? (y/N) "
-        res = STDIN.gets.chomp
-        if res == 'y'
-          system %|git push|
-          system %|git push --tags|
-        else
-          puts "Not Pushing"
-        end
+      print "Are you sure you want to push the ember.js repo to github? (y/N) "
+      res = STDIN.gets.chomp
+      if res == 'y'
+        system %|git push|
+        system %|git push --tags|
+      else
+        puts "Not Pushing"
       end
     end
 

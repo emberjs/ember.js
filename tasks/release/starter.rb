@@ -55,20 +55,18 @@ namespace :release do
     desc "Update starter-kit repo"
     task :update => :index do
       puts "Updating starter-kit repo"
-      unless pretend?
-        Dir.chdir("tmp/starter-kit") do
-          system %|git add -A|
-          system %|git commit -m 'Updated to #{EMBER_VERSION}'|
-          system %|git tag v#{EMBER_VERSION}|
+      Dir.chdir "tmp/starter-kit" do
+        system %|git add -A|
+        system %|git commit -m 'Updated to #{EMBER_VERSION}'|
+        system %|git tag v#{EMBER_VERSION}|
 
-          print "Are you sure you want to push the starter-kit repo to github? (y/N) "
-          res = STDIN.gets.chomp
-          if res == 'y'
-            system %|git push origin master|
-            system %|git push --tags|
-          else
-            puts "Not pushing"
-          end
+        print "Are you sure you want to push the starter-kit repo to github? (y/N) "
+        res = STDIN.gets.chomp
+        if res == 'y'
+          system %|git push origin master|
+          system %|git push --tags|
+        else
+          puts "Not pushing"
         end
       end
     end
