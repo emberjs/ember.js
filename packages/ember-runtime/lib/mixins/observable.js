@@ -314,8 +314,22 @@ Ember.Observable = Ember.Mixin.create(/** @scope Ember.Observable.prototype */ {
     return this;
   },
 
-  addBeforeObserver: function(key, target, method) {
-    Ember.addBeforeObserver(this, key, target, method);
+  /**
+    Adds a before observer on a property.
+
+    Once you call this method, anytime the key's value is set, your observer
+    will be notified before the value being set is accepted. Use the
+    `addObserver()` method to add after observer.
+
+    @method addBeforeObserver
+    @param {String} key The key to observer
+    @param {Object} target The target object to invoke
+    @param {String|Function} method The method to invoke.
+    @param {Boolean} once True to removeListener after first invoked.
+    @return {Ember.Object} self
+  */
+  addBeforeObserver: function(key, target, method, once) {
+    Ember.addBeforeObserver(this, key, target, method, once);
   },
 
   /**
@@ -364,10 +378,11 @@ Ember.Observable = Ember.Mixin.create(/** @scope Ember.Observable.prototype */ {
     @param {String} key The key to observer
     @param {Object} target The target object to invoke
     @param {String|Function} method The method to invoke.
+    @param {Boolean} once True to removeListener after first invoked.
     @return {Ember.Object} self
   */
-  addObserver: function(key, target, method) {
-    Ember.addObserver(this, key, target, method);
+  addObserver: function(key, target, method, once) {
+    Ember.addObserver(this, key, target, method, once);
   },
 
   /**

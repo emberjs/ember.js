@@ -151,9 +151,10 @@ function beforeEvent(keyName) {
   @param {String} path
   @param {Object|Function} targetOrMethod
   @param {Function|String} [method]
+  @param {Boolean} [once]
 */
-Ember.addObserver = function(obj, path, target, method) {
-  Ember.addListener(obj, changeEvent(path), target, method);
+Ember.addObserver = function(obj, path, target, method, once) {
+  Ember.addListener(obj, changeEvent(path), target, method, once);
   Ember.watch(obj, path);
   return this;
 };
@@ -181,9 +182,10 @@ Ember.removeObserver = function(obj, path, target, method) {
   @param {String} path
   @param {Object|Function} targetOrMethod
   @param {Function|String} [method]
+  @param {Boolean} [once]
 */
-Ember.addBeforeObserver = function(obj, path, target, method) {
-  Ember.addListener(obj, beforeEvent(path), target, method);
+Ember.addBeforeObserver = function(obj, path, target, method, once) {
+  Ember.addListener(obj, beforeEvent(path), target, method, once);
   Ember.watch(obj, path);
   return this;
 };
