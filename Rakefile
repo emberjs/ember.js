@@ -1,9 +1,11 @@
 require "bundler/setup"
-require_relative 'tasks/distribution.rake'
-require_relative 'tasks/release.rake'
-require_relative 'tasks/test.rake'
 
 EMBER_VERSION = File.read("VERSION").strip
+
+require_relative 'tasks/distribute'
+require_relative 'tasks/release'
+require_relative 'tasks/test'
+
 
 def pipeline
   require 'rake-pipeline'
