@@ -3,7 +3,7 @@ namespace :release do
     desc "Update repo"
     task :update do
       puts "Making sure repo is up to date..."
-      system %|git pull| unless pretend?
+      system %|git pull|
     end
 
     desc "Update Changelog"
@@ -59,11 +59,9 @@ namespace :release do
     desc "Commit framework version bump"
     task :commit do
       puts "Commiting Version Bump"
-      unless pretend?
-        system %|git reset|
-        system %|git add VERSION CHANGELOG packages/ember-metal/lib/core.js ember.json packages/**/package.json|
-        system %|git commit -m 'Version bump - #{EMBER_VERSION}'|
-      end
+      system %|git reset|
+      system %|git add VERSION CHANGELOG packages/ember-metal/lib/core.js ember.json packages/**/package.json|
+      system %|git commit -m 'Version bump - #{EMBER_VERSION}'|
     end
 
     desc "Tag new version"
