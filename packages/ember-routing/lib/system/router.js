@@ -3,6 +3,8 @@ var get = Ember.get, set = Ember.set, classify = Ember.String.classify;
 
 var DefaultView = Ember.View.extend(Ember._Metamorph);
 
+require("ember-routing/system/dsl");
+
 function setupLocation(router) {
   var location = get(router, 'location'),
       rootURL = get(router, 'rootURL');
@@ -28,7 +30,7 @@ Ember.Router = Ember.Object.extend({
   },
 
   startRouting: function() {
-    this.router = this.router || this.constructor.map();
+    this.router = this.router || this.constructor.map(Ember.K);
 
     var router = this.router,
         location = get(this, 'location'),
@@ -215,36 +217,17 @@ function setupRouter(emberRouter, router, location) {
   };
 }
 
-function setupRouterDelegate(router, namespace) {
-  router.delegate = {
-    willAddRoute: function(context, handler) {
-      if (!context) { return handler; }
-
-      if (context === 'application' || context === undefined) {
-        return handler;
-      } else if (handler.indexOf('.') === -1) {
-        context = context.split('.').slice(-1)[0];
-        return context + '.' + handler;
-      } else {
-        return handler;
-      }
-    },
-
-    contextEntered: function(target, match) {
-      match('/').to('index');
-    }
-  };
-}
-
-var emptyMatcherCallback = function(match) { };
-
 Ember.Router.reopenClass({
   map: function(callback) {
     var router = this.router = new Router();
-    setupRouterDelegate(router, this.namespace);
-    router.map(function(match) {
-      match("/").to("application", callback || emptyMatcherCallback);
+
+    var dsl = Ember.RouterDSL.map(function() {
+      this.resource('application', { path: "/" }, function() {
+        callback.call(this);
+      });
     });
+
+    router.map(dsl.generate());
     return router;
   }
 });
