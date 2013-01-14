@@ -173,13 +173,14 @@ test("should call the cancel method when escape key is pressed", function() {
   ok(wasCalled, "invokes cancel method");
 });
 
-test("should sent an action if one is defined when the return key is pressed", function() {
-  expect(2);
+test("should send an action if one is defined when the return key is pressed", function() {
+  expect(3);
 
   var StubController = Ember.Object.extend({
-    send: function(actionName, arg1) {
+    send: function(actionName, value, sender) {
       equal(actionName, 'didTriggerAction', "text field sent correct action name");
-      equal(arg1, "textFieldValue", "text field sent its current value as first argument");
+      equal(value, "textFieldValue", "text field sent its current value as first argument");
+      equal(sender, textField, "text field sent itself as second argument");
     }
   });
 
@@ -190,10 +191,37 @@ test("should sent an action if one is defined when the return key is pressed", f
   Ember.run(function() { textField.append(); });
 
   var event = {
-    keyCode: 13
+    keyCode: 13,
+    stopPropagation: Ember.K
   };
 
   textField.trigger('keyUp', event);
+});
+
+test("bubbling of handled actions can be enabled via bubbles property", function() {
+  textField.set('bubbles', true);
+  textField.set('action', 'didTriggerAction');
+
+  textField.set('controller', Ember.Object.create({
+    send: Ember.K
+  }));
+
+  append();
+
+  var stopPropagationCount = 0;
+  var event = {
+    keyCode: 13,
+    stopPropagation: function() {
+      stopPropagationCount++;
+    }
+  };
+
+  textField.trigger('keyUp', event);
+  equal(stopPropagationCount, 0, "propagation was not prevented if bubbles is true");
+
+  textField.set('bubbles', false);
+  textField.trigger('keyUp', event);
+  equal(stopPropagationCount, 1, "propagation was prevented if bubbles is false");
 });
 
 // test("listens for focus and blur events", function() {

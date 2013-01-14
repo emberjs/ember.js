@@ -96,14 +96,33 @@ Ember.TextField = Ember.View.extend(Ember.TextSupport,
   */
   action: null,
 
-  insertNewline: function() {
+  /**
+    Whether they `keyUp` event that triggers an `action` to be sent continues
+    propagating to other views.
+
+    By default, when the user presses the return key on their keyboard and
+    the text field has an `action` set, the action will be sent to the view's
+    controller and the key event will stop propagating.
+
+    If you would like parent views to receive the `keyUp` event even after an
+    action has been dispatched, set `bubbles` to true.
+
+    @property bubbles
+    @type Boolean
+    @default false
+  */
+  bubbles: false,
+
+  insertNewline: function(event) {
     var controller = get(this, 'controller'),
         action = get(this, 'action');
 
     if (action) {
-      controller.send(action, get(this, 'value'));
-    }
+      controller.send(action, get(this, 'value'), this);
 
-    return false;
+      if (!get(this, 'bubbles')) {
+        event.stopPropagation();
+      }
+    }
   }
 });
