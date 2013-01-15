@@ -122,7 +122,7 @@ test("The Homepage with explicit template name in renderTemplate", function() {
   equal(Ember.$('h3:contains(Megatroll)', '#qunit-fixture').length, 1, "The homepage template was rendered");
 });
 
-test("The Homepage with explicit template name in renderTemplate", function() {
+test("The Homepage with explicit template name in renderTemplate and controller", function() {
   Router.map(function(match) {
     this.route("home", { path: "/" });
   });
