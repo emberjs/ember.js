@@ -1071,6 +1071,61 @@ test("Child routes render into their parent route's template by default", functi
   equal(Ember.$('.main .middle .bottom p', '#qunit-fixture').text(), "Bottom!", "The templates were rendered into their appropriate parents");
 });
 
+test("Child routes render into specified template", function() {
+  Ember.TEMPLATES.index = compile("<div>Index</div>");
+  Ember.TEMPLATES.application = compile("<h1>Home</h1><div class='main'>{{outlet}}</div>");
+  Ember.TEMPLATES.top = compile("<div class='middle'>{{outlet}}</div>");
+  Ember.TEMPLATES.middle = compile("<div class='bottom'>{{outlet}}</div>");
+  Ember.TEMPLATES['middle/bottom'] = compile("<p>Bottom!</p>");
+
+  Router.map(function() {
+    this.resource("top", function() {
+      this.resource("middle", function() {
+        this.route("bottom");
+      });
+    });
+  });
+
+  App.MiddleBottomRoute = Ember.Route.extend({
+    renderTemplate: function() {
+      this.render('middle/bottom', { into: 'top' });
+    }
+  });
+
+  bootApplication();
+
+  Ember.run(function() {
+    router.handleURL("/top/middle/bottom");
+  });
+
+  equal(Ember.$('.main .middle .bottom p', '#qunit-fixture').length, 0, "should not render into the middle template");
+  equal(Ember.$('.main .middle > p', '#qunit-fixture').text(), "Bottom!", "The template was rendered into the top template");
+});
+
+test("Rendering into specified template with slash notation", function() {
+  Ember.TEMPLATES['person/profile'] = compile("profile {{outlet}}");
+  Ember.TEMPLATES['person/details'] = compile("details!");
+
+  Router.map(function() {
+    this.resource("home", { path: '/' });
+  });
+
+  App.HomeRoute = Ember.Route.extend({
+    renderTemplate: function() {
+      this.render('person/profile');
+      this.render('person/details', { into: 'person/profile' });
+    }
+  });
+
+  bootApplication();
+
+  Ember.run(function() {
+    router.handleURL("/");
+  });
+
+  equal(Ember.$('#qunit-fixture:contains(profile details!)').length, 1, "The templates were rendered");
+});
+
 
 test("Parent route context change", function() {
   var editCount = 0,

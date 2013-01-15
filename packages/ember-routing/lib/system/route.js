@@ -378,7 +378,7 @@ function parentTemplate(route) {
 
 function normalizeOptions(route, name, template, options) {
   options = options || {};
-  options.into = options.into || parentTemplate(route);
+  options.into = options.into ? options.into.replace(/\//g, '.') : parentTemplate(route);
   options.outlet = options.outlet || 'main';
   options.name = name;
   options.template = template;
