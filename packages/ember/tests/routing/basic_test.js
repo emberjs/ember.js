@@ -58,7 +58,7 @@ test("The Homepage", function() {
 
   var currentPath;
 
-  App.ApplicationController = Ember.Route.extend({
+  App.ApplicationController = Ember.Controller.extend({
     currentPathDidChange: Ember.observer(function() {
       currentPath = get(this, 'currentPath');
     }, 'currentPath')
@@ -127,7 +127,7 @@ test("The Homepage with explicit template name in renderTemplate", function() {
     this.route("home", { path: "/" });
   });
 
-  App.HomeController = Ember.Route.extend({
+  App.HomeController = Ember.Controller.extend({
     home: "YES I AM HOME"
   });
 
@@ -158,7 +158,7 @@ test('render does not replace templateName if user provided', function() {
   App.HomeView = Ember.View.extend({
     templateName: 'the_real_home_template'
   });
-  App.HomeController = Ember.Route.extend();
+  App.HomeController = Ember.Controller.extend();
   App.HomeRoute = Ember.Route.extend();
 
   bootApplication();
@@ -539,7 +539,7 @@ test("Nested callbacks are not exited when moving to siblings", function() {
 
   var currentPath;
 
-  App.ApplicationController = Ember.Route.extend({
+  App.ApplicationController = Ember.Controller.extend({
     currentPathDidChange: Ember.observer(function() {
       currentPath = get(this, 'currentPath');
     }, 'currentPath')
