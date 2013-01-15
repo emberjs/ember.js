@@ -335,7 +335,7 @@ Ember.Route = Ember.Object.extend({
       name = this.templateName;
     }
 
-    name = name || this.templateName;
+    name = name ? name.replace(/\//g, '.') : this.templateName;
 
     var container = this.container,
         view = container.lookup('view:' + name),

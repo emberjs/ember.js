@@ -146,6 +146,32 @@ test("The Homepage with explicit template name in renderTemplate", function() {
   equal(Ember.$('h3:contains(Megatroll) + p:contains(YES I AM HOME)', '#qunit-fixture').length, 1, "The homepage template was rendered");
 });
 
+test("Renders correct view with slash notation", function() {
+  Ember.TEMPLATES['home/page'] = compile("<p>{{view.name}}</p>");
+
+  Router.map(function(match) {
+    this.route("home", { path: "/" });
+  });
+
+  App.HomeRoute = Ember.Route.extend({
+    renderTemplate: function() {
+      this.render('home/page');
+    }
+  });
+
+  App.HomePageView = Ember.View.extend({
+    name: "Home/Page"
+  });
+
+  bootApplication();
+
+  Ember.run(function() {
+    router.handleURL("/");
+  });
+
+  equal(Ember.$('p:contains(Home/Page)', '#qunit-fixture').length, 1, "The homepage template was rendered");
+});
+
 test('render does not replace templateName if user provided', function() {
   Router.map(function(match) {
     this.route("home", { path: "/" });
