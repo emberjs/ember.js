@@ -49,7 +49,7 @@ module("Basic Routing", {
 });
 
 test("The Homepage", function() {
-  Router.map(function(match) {
+  Router.map(function() {
     this.route("home", { path: "/" });
   });
 
@@ -75,7 +75,7 @@ test("The Homepage", function() {
 });
 
 test("The Homepage register as activeView", function() {
-  Router.map(function(match) {
+  Router.map(function() {
     this.route("home", { path: "/" });
     this.route("homepage");
   });
@@ -103,7 +103,7 @@ test("The Homepage register as activeView", function() {
 });
 
 test("The Homepage with explicit template name in renderTemplate", function() {
-  Router.map(function(match) {
+  Router.map(function() {
     this.route("home", { path: "/" });
   });
 
@@ -123,7 +123,7 @@ test("The Homepage with explicit template name in renderTemplate", function() {
 });
 
 test("The Homepage with explicit template name in renderTemplate and controller", function() {
-  Router.map(function(match) {
+  Router.map(function() {
     this.route("home", { path: "/" });
   });
 
@@ -149,7 +149,7 @@ test("The Homepage with explicit template name in renderTemplate and controller"
 test("Renders correct view with slash notation", function() {
   Ember.TEMPLATES['home/page'] = compile("<p>{{view.name}}</p>");
 
-  Router.map(function(match) {
+  Router.map(function() {
     this.route("home", { path: "/" });
   });
 
@@ -173,7 +173,7 @@ test("Renders correct view with slash notation", function() {
 });
 
 test('render does not replace templateName if user provided', function() {
-  Router.map(function(match) {
+  Router.map(function() {
     this.route("home", { path: "/" });
   });
 
@@ -197,7 +197,7 @@ test('render does not replace templateName if user provided', function() {
 });
 
 test("The Homepage with a `setupController` hook", function() {
-  Router.map(function(match) {
+  Router.map(function() {
     this.route("home", { path: "/" });
   });
 
@@ -227,7 +227,7 @@ test("The Homepage with a `setupController` hook", function() {
 });
 
 test("The Homepage with a `setupController` hook modifying other controllers", function() {
-  Router.map(function(match) {
+  Router.map(function() {
     this.route("home", { path: "/" });
   });
 
@@ -257,7 +257,7 @@ test("The Homepage with a `setupController` hook modifying other controllers", f
 });
 
 test("The Homepage getting its controller context via model", function() {
-  Router.map(function(match) {
+  Router.map(function() {
     this.route("home", { path: "/" });
   });
 
@@ -293,7 +293,7 @@ test("The Homepage getting its controller context via model", function() {
 });
 
 test("The Specials Page getting its controller context by deserializing the params hash", function() {
-  Router.map(function(match) {
+  Router.map(function() {
     this.route("home", { path: "/" });
     this.resource("special", { path: "/specials/:menu_item_id" });
   });
@@ -326,7 +326,7 @@ test("The Specials Page getting its controller context by deserializing the para
 });
 
 test("The Specials Page defaults to looking models up via `find`", function() {
-  Router.map(function(match) {
+  Router.map(function() {
     this.route("home", { path: "/" });
     this.resource("special", { path: "/specials/:menu_item_id" });
   });
@@ -362,7 +362,7 @@ test("The Specials Page defaults to looking models up via `find`", function() {
 test("The Special Page returning a promise puts the app into a loading state until the promise is resolved", function() {
   stop();
 
-  Router.map(function(match) {
+  Router.map(function() {
     this.route("home", { path: "/" });
     this.resource("special", { path: "/specials/:menu_item_id" });
   });
@@ -416,7 +416,7 @@ test("The Special Page returning a promise puts the app into a loading state unt
 test("The Special page returning an error puts the app into the failure state", function() {
   stop();
 
-  Router.map(function(match) {
+  Router.map(function() {
     this.route("home", { path: "/" });
     this.resource("special", { path: "/specials/:menu_item_id" });
   });
@@ -458,7 +458,7 @@ test("The Special page returning an error puts the app into the failure state", 
 test("The Special page returning an error puts the app into a default failure state if none provided", function() {
   stop();
 
-  Router.map(function(match) {
+  Router.map(function() {
     this.route("home", { path: "/" });
     this.resource("special", { path: "/specials/:menu_item_id" });
   });
@@ -500,7 +500,7 @@ test("The Special page returning an error puts the app into a default failure st
 });
 
 test("Moving from one page to another triggers the correct callbacks", function() {
-  Router.map(function(match) {
+  Router.map(function() {
     this.route("home", { path: "/" });
     this.resource("special", { path: "/specials/:menu_item_id" });
   });
@@ -557,8 +557,8 @@ test("Moving from one page to another triggers the correct callbacks", function(
 });
 
 test("Nested callbacks are not exited when moving to siblings", function() {
-  Router.map(function(match) {
-    this.resource("root", { path: "/" }, function(match) {
+  Router.map(function() {
+    this.resource("root", { path: "/" }, function() {
       this.resource("special", { path: "/specials/:menu_item_id" });
     });
   });
@@ -656,7 +656,7 @@ test("Nested callbacks are not exited when moving to siblings", function() {
 });
 
 asyncTest("Events are triggered on the controller if a matching action name is implemented", function() {
-  Router.map(function(match) {
+  Router.map(function() {
     this.route("home", { path: "/" });
   });
 
@@ -703,7 +703,7 @@ asyncTest("Events are triggered on the controller if a matching action name is i
 });
 
 asyncTest("Events are triggered on the current state", function() {
-  Router.map(function(match) {
+  Router.map(function() {
     this.route("home", { path: "/" });
   });
 
@@ -746,7 +746,7 @@ asyncTest("Events are triggered on the current state", function() {
 });
 
 asyncTest("Events are triggered on the current state when routes are nested", function() {
-  Router.map(function(match) {
+  Router.map(function() {
     this.resource("root", { path: "/" }, function() {
       this.route("index", { path: "/" });
     });
@@ -784,7 +784,7 @@ asyncTest("Events are triggered on the current state when routes are nested", fu
 });
 
 test("transitioning multiple times in a single run loop only sets the URL once", function() {
-  Router.map(function(match) {
+  Router.map(function() {
     this.route("root", { path: "/" });
     this.route("foo");
     this.route("bar");
@@ -817,7 +817,7 @@ test("transitioning multiple times in a single run loop only sets the URL once",
 test('navigating away triggers a url property change', function() {
   var urlPropertyChangeCount = 0;
 
-  Router.map(function(match) {
+  Router.map(function() {
     this.route('root', { path: '/' });
     this.route('foo', { path: '/foo' });
     this.route('bar', { path: '/bar' });
@@ -868,7 +868,7 @@ test("using replaceWith calls location.replaceURL if available", function() {
     })
   });
 
-  Router.map(function(match) {
+  Router.map(function() {
     this.route("root", { path: "/" });
     this.route("foo");
   });
@@ -903,7 +903,7 @@ test("using replaceWith calls setURL if location.replaceURL is not defined", fun
     })
   });
 
-  Router.map(function(match) {
+  Router.map(function() {
     this.route("root", { path: "/" });
     this.route("foo");
   });
@@ -927,7 +927,7 @@ test("using replaceWith calls setURL if location.replaceURL is not defined", fun
 test("It is possible to get the model from a parent route", function() {
   expect(3);
 
-  Router.map(function(match) {
+  Router.map(function() {
     this.resource("post", { path: "/posts/:post_id" }, function() {
       this.resource("comments");
     });
@@ -972,7 +972,7 @@ test("It is possible to get the model from a parent route", function() {
 });
 
 test("A redirection hook is provided", function() {
-  Router.map(function(match) {
+  Router.map(function() {
     this.route("choose", { path: "/" });
     this.route("home");
   });
@@ -1008,7 +1008,7 @@ test("Generated names can be customized when providing routes with dot notation"
   Ember.TEMPLATES.bar = compile("<div class='bottom'>{{outlet}}</div>");
   Ember.TEMPLATES['bar/baz'] = compile("<p>{{name}}Bottom!</p>");
 
-  Router.map(function(match) {
+  Router.map(function() {
     this.resource("foo", { path: "/top" }, function() {
       this.resource("bar", { path: "/middle" }, function() {
         this.route("baz", { path: "/bottom" });
@@ -1054,7 +1054,7 @@ test("Child routes render into their parent route's template by default", functi
   Ember.TEMPLATES.middle = compile("<div class='bottom'>{{outlet}}</div>");
   Ember.TEMPLATES['middle/bottom'] = compile("<p>Bottom!</p>");
 
-  Router.map(function(match) {
+  Router.map(function() {
     this.resource("top", function() {
       this.resource("middle", function() {
         this.route("bottom");
