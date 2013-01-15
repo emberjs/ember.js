@@ -36,7 +36,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
 
     controller.set('target', options.data.keywords.controller);
 
-    options.hash.viewName = name;
+    options.hash.viewName = Ember.String.camelize(name);
     options.hash.template = container.lookup('template:' + name);
     options.hash.controller = controller;
 
