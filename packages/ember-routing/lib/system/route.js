@@ -47,6 +47,7 @@ Ember.Route = Ember.Object.extend({
     @method setup
   */
   setup: function(context) {
+    this.currentModel = context;
     this.transitioned = false;
     this.redirect(context);
 

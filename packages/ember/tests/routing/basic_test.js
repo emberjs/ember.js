@@ -1047,7 +1047,8 @@ test("Child routes render into their parent route's template by default", functi
 
 
 test("Parent route context change", function() {
-  var editCount = 0;
+  var editCount = 0,
+      editedPostIds = Ember.A();
 
   Ember.TEMPLATES.application = compile("{{outlet}}");
   Ember.TEMPLATES.posts = compile("{{outlet}}");
@@ -1084,6 +1085,11 @@ test("Parent route context change", function() {
   });
 
   App.PostEditRoute = Ember.Route.extend({
+    model: function(params) {
+      var postId = this.modelFor("post").id;
+      editedPostIds.push(postId);
+      return null;
+    },
     setup: function() {
       this._super.apply(this, arguments);
       editCount++;
@@ -1101,7 +1107,7 @@ test("Parent route context change", function() {
   });
 
   Ember.run(function() {
-    router.send('showPost', {id: 2});
+    router.send('showPost', {id: '2'});
   });
 
   Ember.run(function() {
@@ -1109,4 +1115,5 @@ test("Parent route context change", function() {
   });
 
   equal(editCount, 2, 'set up the edit route twice without failure');
+  deepEqual(editedPostIds, ['1', '2'], 'modelFor posts.post returns the right context');
 });
