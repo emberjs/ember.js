@@ -31,8 +31,12 @@ Ember.ControllerMixin.reopen({
   },
 
   controllerFor: function(controllerName) {
-    var container = get(this, 'container');
-    return container.lookup('controller:' + controllerName);
+    if (canAccessController(this, controllerName)) {
+      var container = get(this, 'container');
+      return container.lookup('controller:' + controllerName);
+    } else {
+      return null;
+    }
   },
 
   model: Ember.computed(function(key, value) {
@@ -62,4 +66,20 @@ function verifyDependencies(controller) {
   }
 
   return satisfied;
+}
+
+function canAccessController(controller, controllerName) {
+  var needs = get(controller, 'needs'),
+    canAccess = false,
+    dependency;
+
+  for (var i=0, l=needs.length; i<l; i++) {
+    dependency = needs[i];
+    if (dependency === controllerName) {
+      canAccess = true;
+    }
+  }
+
+  return canAccess;
+
 }
