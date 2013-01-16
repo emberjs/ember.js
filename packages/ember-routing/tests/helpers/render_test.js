@@ -197,3 +197,43 @@ test("{{render}} helper should be able to render a template again when it was re
 
   equal(view.$().text(), 'HI2BYE');
 });
+
+test("{{render}} works with dot notation", function() {
+  var template = '<h1>BLOG</h1>{{render blog.post}}';
+
+  var controller = Ember.Controller.extend({container: container});
+  container.register('controller', 'blog.post', Ember.ObjectController.extend());
+
+  view = Ember.View.create({
+    controller: controller.create(),
+    template: Ember.Handlebars.compile(template)
+  });
+
+  Ember.TEMPLATES['blog/post'] = compile("<p>POST</p>");
+
+  appendView(view);
+
+  var renderedView = container.lookup('router:main')._lookupActiveView('blog.post');
+  equal(renderedView.get('viewName'), 'blogPost', 'camelizes the view name');
+  equal(container.lookup('controller:blog.post'), renderedView.get('controller'), 'rendered with correct controller');
+});
+
+test("{{render}} works with slash notation", function() {
+  var template = '<h1>BLOG</h1>{{render "blog/post"}}';
+
+  var controller = Ember.Controller.extend({container: container});
+  container.register('controller', 'blog.post', Ember.ObjectController.extend());
+
+  view = Ember.View.create({
+    controller: controller.create(),
+    template: Ember.Handlebars.compile(template)
+  });
+
+  Ember.TEMPLATES['blog/post'] = compile("<p>POST</p>");
+
+  appendView(view);
+
+  var renderedView = container.lookup('router:main')._lookupActiveView('blog.post');
+  equal(renderedView.get('viewName'), 'blogPost', 'camelizes the view name');
+  equal(container.lookup('controller:blog.post'), renderedView.get('controller'), 'rendered with correct controller');
+});

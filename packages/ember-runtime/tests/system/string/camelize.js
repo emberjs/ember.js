@@ -21,6 +21,13 @@ test("camelize underscored string", function() {
   }
 });
 
+test("camelize dot notation string", function() {
+  deepEqual(Ember.String.camelize('action.name'), 'actionName');
+  if (Ember.EXTEND_PROTOTYPES) {
+    deepEqual('action.name'.camelize(), 'actionName');
+  }
+});
+
 test("does nothing with camelcased string", function() {
   deepEqual(Ember.String.camelize('innerHTML'), 'innerHTML');
   if (Ember.EXTEND_PROTOTYPES) {
