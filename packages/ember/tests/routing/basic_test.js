@@ -226,6 +226,35 @@ test("The Homepage with a `setupController` hook", function() {
   equal(Ember.$('ul li', '#qunit-fixture').eq(2).text(), "Sunday: Noon to 6pm", "The template was rendered with the hours context");
 });
 
+test("The default controller's model is still set when overriding the setupController hook", function() {
+  Router.map(function() {
+    this.route("home", { path: "/" });
+  });
+
+  App.HomeRoute = Ember.Route.extend({
+    model: function() {
+      return {
+        isModel: true
+      };
+    },
+
+    setupController: function(controller) {
+      // no-op
+      // importantly, we are not calling this._super here
+    }
+  });
+
+  Ember.TEMPLATES.home = Ember.Handlebars.compile(
+    "<ul>{{#each entry in hours}}<li>{{entry}}</li>{{/each}}</ul>"
+  );
+
+  container.register('controller', 'home', Ember.Controller.extend());
+
+  bootApplication();
+
+  deepEqual(container.lookup('controller:home').get('model'), { isModel: true }, "model is still set on controller");
+});
+
 test("The Homepage with a `setupController` hook modifying other controllers", function() {
   Router.map(function() {
     this.route("home", { path: "/" });

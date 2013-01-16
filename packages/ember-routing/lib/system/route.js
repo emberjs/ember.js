@@ -55,6 +55,10 @@ Ember.Route = Ember.Object.extend({
 
     var controller = this.controllerFor(this.templateName, context);
 
+    if (controller) {
+      set(controller, 'model', context);
+    }
+
     if (this.setupControllers) {
       Ember.deprecate("Ember.Route.setupControllers is deprecated. Please use Ember.Route.setupController(controller, model) instead.");
       this.setupControllers(controller, context);
@@ -208,11 +212,7 @@ Ember.Route = Ember.Object.extend({
 
     @method setupController
   */
-  setupController: function(controller, model) {
-    if (controller) {
-      controller.set('content', model);
-    }
-  },
+  setupController: Ember.K,
 
   /**
     Returns the controller for a particular route.
