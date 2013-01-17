@@ -1026,6 +1026,7 @@ test("A redirection hook is provided", function() {
 
   equal(chooseFollowed, 0, "The choose route wasn't entered since a transition occurred");
   equal(Ember.$("h3:contains(Hours)", "#qunit-fixture").length, 1, "The home template was rendered");
+  equal(router.container.lookup('controller:application').get('currentPath'), 'home');
 });
 
 test("Generated names can be customized when providing routes with dot notation", function() {
