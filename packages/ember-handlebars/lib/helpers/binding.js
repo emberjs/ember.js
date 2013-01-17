@@ -383,14 +383,14 @@ EmberHandlebars.registerHelper('unless', function(context, options) {
 
   Result in the following rendered output:
 
-  ```html 
+  ```html
   <img class="aValue">
   ```
 
   A boolean return value will insert a specified class name if the property
   returns `true` and remove the class name if the property returns `false`.
 
-  A class name is provided via the syntax 
+  A class name is provided via the syntax
   `somePropertyName:class-name-if-true`.
 
   ```javascript
@@ -484,14 +484,14 @@ EmberHandlebars.registerHelper('bindAttr', function(options) {
     var value = (path === 'this') ? pathRoot : handlebarsGet(pathRoot, path, options),
         type = Ember.typeOf(value);
 
-    Ember.assert(fmt("Attributes must be numbers, strings or booleans, not %@", [value]), value === null || value === undefined || type === 'number' || type === 'string' || type === 'boolean');
+    Ember.assert(fmt("Attributes must be numbers, strings, booleans or dates, not %@", [value]), value === null || value === undefined || type === 'number' || type === 'string' || type === 'boolean' || type === 'date');
 
     var observer, invoker;
 
     observer = function observer() {
       var result = handlebarsGet(pathRoot, path, options);
 
-      Ember.assert(fmt("Attributes must be numbers, strings or booleans, not %@", [result]), result === null || result === undefined || typeof result === 'number' || typeof result === 'string' || typeof result === 'boolean');
+      Ember.assert(fmt("Attributes must be numbers, strings, booleans or dates, not %@", [result]), result === null || result === undefined || typeof result === 'number' || typeof result === 'string' || typeof result === 'boolean' || typeof result === 'date');
 
       var elem = view.$("[data-bindattr-" + dataId + "='" + dataId + "']");
 
@@ -523,7 +523,7 @@ EmberHandlebars.registerHelper('bindAttr', function(options) {
     }
 
     // if this changes, also change the logic in ember-views/lib/views/view.js
-    if ((type === 'string' || (type === 'number' && !isNaN(value)))) {
+    if ((type === 'string' || type === 'date' || (type === 'number' && !isNaN(value)))) {
       ret.push(attr + '="' + Handlebars.Utils.escapeExpression(value) + '"');
     } else if (value && type === 'boolean') {
       // The developer controls the attr name, so it should always be safe
@@ -554,9 +554,9 @@ EmberHandlebars.registerHelper('bindAttr', function(options) {
   @method bindClasses
   @for Ember.Handlebars
   @param {Ember.Object} context The context from which to lookup properties
-  @param {String} classBindings A string, space-separated, of class bindings 
+  @param {String} classBindings A string, space-separated, of class bindings
     to use
-  @param {Ember.View} view The view in which observers should look for the 
+  @param {Ember.View} view The view in which observers should look for the
     element to update
   @param {Srting} bindAttrId Optional bindAttr id used to lookup elements
   @return {Array} An array of class names to add
