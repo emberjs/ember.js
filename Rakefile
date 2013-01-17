@@ -64,7 +64,7 @@ task :upload_latest => [:clean, :dist] do
     cp "../../dist/ember.js", ".", :verbose => false
     cp "../../dist/ember.min.js", ".", :verbose => false
     system("git add ember.js ember.min.js")
-    system('git commit --amend -m "Latest Builds"')
+    system('git commit --amend --reset-author -m "Latest Builds"')
     system("git push -f origin latest-builds") unless ENV['PRETEND']
   end
 end
