@@ -52,7 +52,7 @@ Ember.Route = Ember.Object.extend({
 
     if (this.transitioned) { return; }
 
-    var controller = this.controllerFor(this.templateName, context);
+    var controller = this.controllerFor(this.routeName, context);
 
     if (controller) {
       set(controller, 'model', context);
@@ -344,10 +344,10 @@ Ember.Route = Ember.Object.extend({
   render: function(name, options) {
     if (typeof name === 'object' && !options) {
       options = name;
-      name = this.templateName;
+      name = this.routeName;
     }
 
-    name = name ? name.replace(/\//g, '.') : this.templateName;
+    name = name ? name.replace(/\//g, '.') : this.routeName;
 
     var container = this.container,
         view = container.lookup('view:' + name),
@@ -395,7 +395,7 @@ function normalizeOptions(route, name, template, options) {
   options.name = name;
   options.template = template;
 
-  var controller = options.controller || route.templateName;
+  var controller = options.controller || route.routeName;
 
   if (typeof controller === 'string') {
     controller = route.container.lookup('controller:' + controller);

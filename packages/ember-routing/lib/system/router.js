@@ -156,7 +156,7 @@ function getHandlerFunction(router) {
       handler = container.lookup('route:' + name);
     }
 
-    handler.templateName = name;
+    handler.routeName = name;
     return handler;
   };
 }
