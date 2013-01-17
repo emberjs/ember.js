@@ -7,3 +7,12 @@ require('ember-routing/system');
 require('ember-routing/helpers');
 require('ember-routing/ext');
 require('ember-routing/location');
+
+/**
+Ember Routing
+
+@module ember
+@submodule ember-routing
+@requires ember-states
+@requires ember-views
+*/

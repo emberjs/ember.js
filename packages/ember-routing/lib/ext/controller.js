@@ -1,3 +1,8 @@
+/**
+@module ember
+@submodule ember-routing
+*/
+
 var get = Ember.get, set = Ember.set;
 var ControllersProxy = Ember.Object.extend({
   controller: null,

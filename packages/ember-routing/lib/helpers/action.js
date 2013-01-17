@@ -1,3 +1,8 @@
+/**
+@module ember
+@submodule ember-routing
+*/
+
 require('ember-handlebars/ext');
 
 require('ember-handlebars/helpers/view');

@@ -1,3 +1,8 @@
+/**
+@module ember
+@submodule ember-routing
+*/
+
 function DSL(name) {
   this.parent = name;
   this.matches = [];
