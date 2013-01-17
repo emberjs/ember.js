@@ -201,7 +201,7 @@ namespace :release do
 
         # Bump ember-metal/core version
         contents = File.read("packages/ember-metal/lib/core.js")
-        current_version = contents.match(/@version ([\w\.]+)/) && $1
+        current_version = contents.match(/@version ([\w\.-]+)/) && $1
         contents.gsub!(current_version, EMBER_VERSION);
 
         File.open("packages/ember-metal/lib/core.js", "w") do |file|
@@ -433,10 +433,10 @@ namespace :release do
       about = File.read("tmp/website/source/about.html.erb")
       min_gz = Zlib::Deflate.deflate(File.read("dist/ember.min.js")).bytes.count / 1024
 
-      about.gsub! %r{https://raw\.github\.com/emberjs/ember\.js/release-builds/ember-\d(?:\.(?:(?:\d+)|pre))*?(\.min)?\.js},
+      about.gsub! %r{https://raw\.github\.com/emberjs/ember\.js/release-builds/ember-\d(?:[\.-](?:(?:\d+)|pre))*?(\.min)?\.js},
         %{https://raw.github.com/emberjs/ember.js/release-builds/ember-#{EMBER_VERSION}\\1.js}
 
-      about.gsub!(/Ember \d(\.((\d+)|pre))*/, "Ember #{EMBER_VERSION}")
+      about.gsub!(/Ember \d([\.-]((\d+)|pre))*/, "Ember #{EMBER_VERSION}")
 
       about.gsub!(/\d+k min\+gzip/, "#{min_gz}k min+gzip")
 
