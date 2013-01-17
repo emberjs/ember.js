@@ -1,0 +1,4 @@
+branches:
+  except:
+    - latest-builds
+    - release-builds
