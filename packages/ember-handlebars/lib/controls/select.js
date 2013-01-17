@@ -10,7 +10,8 @@ var set = Ember.set,
     indexOf = Ember.EnumerableUtils.indexOf,
     indexesOf = Ember.EnumerableUtils.indexesOf,
     replace = Ember.EnumerableUtils.replace,
-    isArray = Ember.isArray;
+    isArray = Ember.isArray,
+    precompileTemplate = Ember.Handlebars.compile;
 
 /**
   The `Ember.Select` view class renders a
@@ -264,7 +265,7 @@ Ember.Select = Ember.View.extend(
 
   tagName: 'select',
   classNames: ['ember-select'],
-  defaultTemplate: Ember.Handlebars.compile('{{#if view.prompt}}<option value="">{{view.prompt}}</option>{{/if}}{{#each view.content}}{{view Ember.SelectOption contentBinding="this"}}{{/each}}'),
+  defaultTemplate: precompileTemplate('{{#if view.prompt}}<option value="">{{view.prompt}}</option>{{/if}}{{#each view.content}}{{view Ember.SelectOption contentBinding="this"}}{{/each}}'),
   attributeBindings: ['multiple', 'disabled', 'tabindex'],
 
   /**
