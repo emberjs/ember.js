@@ -477,7 +477,7 @@ namespace :release do
   task :prepare => [:clean, 'framework:prepare', 'website:prepare']
 
   desc "Deploy a new Ember release"
-  task :deploy => ['framework:deploy', 'website:deploy']
+  task :deploy => [:dist, 'framework:deploy', 'website:deploy']
 
 end
 
