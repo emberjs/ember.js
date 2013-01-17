@@ -29,19 +29,26 @@ END
 end
 
 class HandlebarsPrecompiler < Rake::Pipeline::Filter
-  def js_context
-    # We're using Ember to build Ember! Inception!
-    unless @context
-      compiler = "exports={};#{File.read('dist/ember-template-compiler.js')}"
-      @context = ExecJS.compile(compiler)
+  class << self
+    def context
+      unless @context
+        contents = <<END
+exports = {};
+#{File.read("dist/ember-template-compiler.js")}
+function precompileEmberHandlebars(string) {
+  return exports.precompile(string).toString();
+}
+END
+        @context = ExecJS.compile(contents)
+      end
+      @context
     end
-    @context
   end
 
   def precompile_templates(data)
     # Precompile defaultTemplates
    data.gsub!(%r{(defaultTemplate(?:\s*=|:)\s*)precompileTemplate\(['"](.*)['"]\)}) do
-     "#{$1}Ember.Handlebars.template(#{js_context.call("exports.precompile", $2)})"
+     "#{$1}Ember.Handlebars.template(#{self.class.context.call("precompileEmberHandlebars", $2)})"
    end
   end
 
