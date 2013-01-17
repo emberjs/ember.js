@@ -30,20 +30,25 @@ Ember.ControllerMixin.reopen({
   },
 
   transitionToRoute: function() {
-    var router = get(this, 'target');
+    var target = get(this, 'target');
 
-    return router.transitionTo.apply(router, arguments);
+    return target.transitionTo.apply(target, arguments);
   },
 
+  // TODO: Deprecate this, see https://github.com/emberjs/ember.js/issues/1785
   transitionTo: function() {
-    Ember.deprecate("transitionTo is deprecated. Please use transitionToRoute.");
     return this.transitionToRoute.apply(this, arguments);
   },
 
   replaceRoute: function() {
-    var router = get(this, 'target');
+    var target = get(this, 'target');
 
-    return router.replaceWith.apply(router, arguments);
+    return target.replaceWith.apply(target, arguments);
+  },
+
+  // TODO: Deprecate this, see https://github.com/emberjs/ember.js/issues/1785
+  replaceWith: function() {
+    return this.replaceRoute.apply(this, arguments);
   },
 
   controllerFor: function(controllerName) {
