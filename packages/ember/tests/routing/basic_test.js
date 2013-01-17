@@ -1227,3 +1227,17 @@ test("Parent route context change", function() {
   equal(editCount, 2, 'set up the edit route twice without failure');
   deepEqual(editedPostIds, ['1', '2'], 'modelFor posts.post returns the right context');
 });
+
+test("Calling controllerFor for a non-route controller returns a controller", function() {
+  var controller;
+
+  App.ApplicationRoute = Ember.Route.extend({
+    setupController: function() {
+      controller = this.controllerFor('nonDefinedRoute', {});
+    }
+  });
+
+  bootApplication();
+
+  ok(controller instanceof Ember.ObjectController, "controller was able to be retrieved");
+});

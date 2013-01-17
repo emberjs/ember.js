@@ -1,4 +1,20 @@
 var get = Ember.get, set = Ember.set;
+var ControllersProxy = Ember.Object.extend({
+  controller: null,
+
+  unknownProperty: function(controllerName) {
+    var controller = get(this, 'controller'),
+      needs = get(controller, 'needs'),
+      dependency;
+
+    for (var i=0, l=needs.length; i<l; i++) {
+      dependency = needs[i];
+      if (dependency === controllerName) {
+        return controller.controllerFor(controllerName);
+      }
+    }
+  }
+});
 
 Ember.ControllerMixin.reopen({
   concatenatedProperties: ['needs'],
@@ -41,7 +57,11 @@ Ember.ControllerMixin.reopen({
     } else {
       return get(this, 'content');
     }
-  }).property('content')
+  }).property('content'),
+
+  controllers: Ember.computed(function() {
+    return ControllersProxy.create({ controller: this });
+  })
 });
 
 function verifyDependencies(controller) {
@@ -57,7 +77,7 @@ function verifyDependencies(controller) {
 
     if (!container.has(dependency)) {
       satisfied = false;
-      Ember.assert(this + " needs " + dependency + " but it does not exist", false);
+      Ember.assert(controller + " needs " + dependency + " but it does not exist", false);
     }
   }
 
