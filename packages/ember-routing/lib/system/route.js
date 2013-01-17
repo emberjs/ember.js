@@ -47,7 +47,6 @@ Ember.Route = Ember.Object.extend({
     @method setup
   */
   setup: function(context) {
-    this.currentModel = context;
     this.transitioned = false;
     this.redirect(context);
 
@@ -92,6 +91,15 @@ Ember.Route = Ember.Object.extend({
   deserialize: function(params) {
     var model = this.model(params);
     return this.currentModel = model;
+  },
+
+  /**
+    @private
+
+    Called when the context is changed by router.js.
+  */
+  contextDidChange: function() {
+    this.currentModel = this.context;
   },
 
   /**
