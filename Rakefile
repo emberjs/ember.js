@@ -7,6 +7,28 @@ def pipeline
   Rake::Pipeline::Project.new("Assetfile")
 end
 
+def setup_uploads
+  unless File.exist?('tmp/dist')
+    remotes = `git remote -v`
+    remotes = remotes.split("\n").map do |r|
+      m = r.match(/(?<name>.+)\t(?<url>.+) \((?<type>.+)\)$/)
+      Hash[*m.names.map{|n| [n, m[n]]}.flatten]
+    end
+
+    remote = remotes.find{|r| r['name'] == 'origin' && r['type'] == 'push' }
+
+    unless remote
+      raise "Couldn't find url for pushing to origin"
+    end
+
+    mkdir_p 'tmp'
+
+    # TODO: See if we can only fetch the branches we need
+    system("git clone #{remote['url']} tmp/dist")
+  end
+end
+
+
 desc "Strip trailing whitespace for JavaScript files in packages"
 task :strip_whitespace do
   Dir["packages/**/*.js"].each do |name|
@@ -34,24 +56,17 @@ task :clean do
 end
 
 desc "Upload latest Ember.js build to GitHub repository"
-task :commit_latest => [:clean, :dist] do
-  raise "Save your changes" unless `git status --porcelain`.empty?
-  unless `git branch`.include?("dist")
-    puts "Creating a new dist branch"
-    system 'git checkout --orphan dist'
-    puts "Removing junk in index"
-    system 'git rm --cached -r .'
-    puts "Removing non-dist files"
-    system "rm -rf `find * -type d -prune -o -type f | grep -ve '^dist$'`"
-    puts "Removing silly dotfiles"
-    system "rm -rf `find .* -type d -prune -o -type f | grep -ve '^.git$' | grep -ve '^dist$'`"
-  else
-    system 'git checkout dist'
+task :upload_latest => [:clean, :dist] do
+  setup_uploads
+
+  Dir.chdir "tmp/dist" do
+    system("git checkout latest-builds")
+    cp "../../dist/ember.js", ".", :verbose => false
+    cp "../../dist/ember.min.js", ".", :verbose => false
+    system("git add ember.js ember.min.js")
+    system('git commit --amend --reset-author -m "Latest Builds"')
+    system("git push -f origin latest-builds") unless ENV['PRETEND']
   end
-  puts "Committing latest release builds ember.js"
-  system 'git add dist/ember.min.js'
-  system 'git add dist/ember.js'
-  system 'git commit -m "Pushing latests builds of ember.js"'
 end
 
 desc "Run tests with phantomjs"
@@ -186,7 +201,7 @@ namespace :release do
 
         # Bump ember-metal/core version
         contents = File.read("packages/ember-metal/lib/core.js")
-        current_version = contents.match(/@version ([\w\.]+)/) && $1
+        current_version = contents.match(/@version ([\w\.-]+)/) && $1
         contents.gsub!(current_version, EMBER_VERSION);
 
         File.open("packages/ember-metal/lib/core.js", "w") do |file|
@@ -228,11 +243,17 @@ namespace :release do
 
     desc "Upload release"
     task :upload do
-      uploader = setup_uploader
+      setup_uploads
 
-      # Upload minified first, so non-minified shows up on top
-      upload_file(uploader, "ember-#{EMBER_VERSION}.min.js", "Ember.js #{EMBER_VERSION} (minified)", "dist/ember.min.js")
-      upload_file(uploader, "ember-#{EMBER_VERSION}.js", "Ember.js #{EMBER_VERSION}", "dist/ember.js")
+      Dir.chdir "tmp/dist" do
+        system("git checkout release-builds")
+        system("git pull")
+        cp "../../dist/ember.js", "ember-#{EMBER_VERSION}.js", :verbose => false
+        cp "../../dist/ember.min.js", "ember-#{EMBER_VERSION}.min.js", :verbose => false
+        system("git add ember-#{EMBER_VERSION}.js ember-#{EMBER_VERSION}.min.js")
+        system("git commit -m '#{EMBER_VERSION} Release'")
+        system("git push origin release-builds") unless ENV['PRETEND']
+      end
     end
 
     desc "Prepare for a new release"
@@ -412,15 +433,12 @@ namespace :release do
       about = File.read("tmp/website/source/about.html.erb")
       min_gz = Zlib::Deflate.deflate(File.read("dist/ember.min.js")).bytes.count / 1024
 
-      about.gsub! %r{https://github\.com/downloads/emberjs/ember\.js/ember-\d(?:\.(?:(?:\d+)|pre))*?(\.min)?\.js},
-        %{https://github.com/downloads/emberjs/ember.js/ember-#{EMBER_VERSION}\\1.js}
+      about.gsub! %r{https://raw\.github\.com/emberjs/ember\.js/release-builds/ember-\d(?:[\.-](?:(?:\d+)|pre))*?(\.min)?\.js},
+        %{https://raw.github.com/emberjs/ember.js/release-builds/ember-#{EMBER_VERSION}\\1.js}
 
-      about.gsub! %r{https://github\.com/downloads/emberjs/starter-kit/starter-kit\.\d(\.((\d+)|pre))*?*\.zip},
-        %{https://github.com/downloads/emberjs/starter-kit/starter-kit.#{EMBER_VERSION}.zip}
+      about.gsub!(/Ember \d([\.-]((\d+)|pre))*/, "Ember #{EMBER_VERSION}")
 
-      about.gsub! /Ember \d(\.((\d+)|pre))*/, "Ember #{EMBER_VERSION}"
-
-      about.gsub! /\d+k min\+gzip/, "#{min_gz}k min+gzip"
+      about.gsub!(/\d+k min\+gzip/, "#{min_gz}k min+gzip")
 
       File.open("tmp/website/source/about.html.erb", "w") { |f| f.write about }
     end
@@ -456,10 +474,10 @@ namespace :release do
   end
 
   desc "Prepare Ember for new release"
-  task :prepare => [:clean, 'framework:prepare', 'starter_kit:prepare', 'examples:prepare', 'website:prepare']
+  task :prepare => [:clean, 'framework:prepare', 'website:prepare']
 
   desc "Deploy a new Ember release"
-  task :deploy => ['framework:deploy', 'starter_kit:deploy', 'examples:deploy', 'website:deploy']
+  task :deploy => [:dist, 'framework:deploy', 'website:deploy']
 
 end
 

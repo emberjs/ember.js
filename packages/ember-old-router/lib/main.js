@@ -9,7 +9,7 @@ require('ember-old-router/controller_ext');
 require('ember-old-router/view_ext');
 
 /**
-Ember Routing
+Ember Old Router
 
 @module ember
 @submodule ember-old-router

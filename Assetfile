@@ -3,23 +3,12 @@ require "json"
 require "uglifier"
 require "execjs"
 
-class EmberProductionFilter < Rake::Pipeline::Filter
-
-  def js_context
-    # We're using Ember to build Ember! Inception!
-    unless @context
-      headless = File.read("lib/headless-ember.js")
-      ember    = File.read("lib/ember.js")
-      @context = ExecJS.compile([headless, ember].join("\n"))
-    end
-    @context
-  end
-
+class EmberStripDebugMessagesFilter < Rake::Pipeline::Filter
   def strip_debug(data)
     # Strip debug code
     data.gsub!(%r{^(\s)*Ember\.(assert|deprecate|warn)\((.*)\).*$}, "")
   end
-
+  
   def add_localhost_warning(data)
     data << "\n\n" + <<END
 if (typeof location !== 'undefined' && (location.hostname === 'localhost' || location.hostname === '127.0.0.1')) {
@@ -29,18 +18,43 @@ if (typeof location !== 'undefined' && (location.hostname === 'localhost' || loc
 END
   end
 
-  def precompile_templates(data)
-    # Precompile defaultTemplates
-    data.gsub!(%r{(defaultTemplate(?:\s*=|:)\s*)Ember\.Handlebars\.compile\(['"](.*)['"]\)}) do
-      "#{$1}Ember.Handlebars.template(#{js_context.call("precompileEmberHandlebars", $2)})"
-    end
-  end
-
   def generate_output(inputs, output)
     inputs.each do |input|
       result = File.read(input.fullpath)
       strip_debug(result)
       add_localhost_warning(result)
+      output.write result
+    end
+  end
+end
+
+class HandlebarsPrecompiler < Rake::Pipeline::Filter
+  class << self
+    def context
+      unless @context
+        contents = <<END
+exports = {};
+#{File.read("dist/ember-template-compiler.js")}
+function precompileEmberHandlebars(string) {
+  return exports.precompile(string).toString();
+}
+END
+        @context = ExecJS.compile(contents)
+      end
+      @context
+    end
+  end
+
+  def precompile_templates(data)
+    # Precompile defaultTemplates
+   data.gsub!(%r{(defaultTemplate(?:\s*=|:)\s*)precompileTemplate\(['"](.*)['"]\)}) do
+     "#{$1}Ember.Handlebars.template(#{self.class.context.call("precompileEmberHandlebars", $2)})"
+   end
+  end
+
+  def generate_output(inputs, output)
+    inputs.each do |input|
+      result = File.read(input.fullpath)
       precompile_templates(result)
       output.write result
     end
@@ -207,6 +221,7 @@ distros.each do |name, modules|
     module_paths = modules.map{|m| "#{m}.js" }
     match "{#{module_paths.join(',')}}" do
       concat(module_paths){ ["#{name}.js", "#{name}.prod.js"] }
+      filter HandlebarsPrecompiler
       filter AddMicroLoader unless name == "ember-template-compiler"
     end
 
@@ -219,7 +234,7 @@ distros.each do |name, modules|
 
     # Strip dev code
     match "#{name}.prod.js" do
-      filter(EmberProductionFilter) { ["#{name}.prod.js", "min/#{name}.js"] }
+      filter(EmberStripDebugMessagesFilter) { ["#{name}.prod.js", "min/#{name}.js"] }
     end
 
     # Minify

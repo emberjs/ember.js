@@ -1,3 +1,8 @@
+/**
+@module ember
+@submodule ember-routing
+*/
+
 var Router = requireModule("router");
 var get = Ember.get, set = Ember.set, classify = Ember.String.classify;
 
@@ -49,6 +54,9 @@ Ember.Router = Ember.Object.extend({
   },
 
   didTransition: function(infos) {
+    // Don't do any further action here if we redirected
+    if (infos[infos.length-1].handler.transitioned) { return; }
+
     var appController = this.container.lookup('controller:application'),
         path = routePath(infos);
 
@@ -156,7 +164,7 @@ function getHandlerFunction(router) {
       handler = container.lookup('route:' + name);
     }
 
-    handler.templateName = name;
+    handler.routeName = name;
     return handler;
   };
 }

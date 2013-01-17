@@ -1,3 +1,38 @@
+*Ember 1.0.0-pre.3 (January 17, 2013)*
+
+* BREAKING CHANGE: New Router API
+* BREAKING CHANGE: `Ember.Object.create` behaves like `setProperties`. Use `createWithMixins` for the old behavior.
+* BREAKING CHANGE: No longer default a view's context to itself
+* BREAKING CHANGE: Remove the nearest view computed properties
+* Significant performance improvements
+* Bound handlebars helpers with `registerBoundHelper`
+* Ember.String improvements
+* TextSupport handles input, cut, and paste events
+* Add `action` support to Ember.TextField
+* Warn about using production builds in localhost
+* Update Metamorph
+* Deprecate Ember.alias in favour of Ember.aliasMethod
+* Add Ember.computed.alias
+* Allow chaining on DeferredMixin#then
+* ArrayController learned itemControllerClass.
+* Added VagrantFile and chef cookbooks to ease ember build for developers.
+* Provide an Ember.Handlebars precompilation package
+* Removed Tab controls
+* Fix Chrome (pre v25) MutationObserver Memory Leak
+* Update to Promises/A+ compatible RSVP
+* Improved instrumentation
+* Rename empty to isEmpty and none to isNone
+* Added support for toStringExtension to augment toString
+* Implement a default computed property setter.
+* Add support for unhandledEvent to StateManager.
+* Load external dependencies via an AMD shim
+* Pass in the old value into the CP as a third argument
+* Deep copy support for NativeArray
+* Added an afterRender queue for scheduling code to run after the render queue has been drained
+* Implement _super() for computed properties
+* Miscellaneous bug fixes
+* General cleanup
+
 *Ember 1.0.0-pre.2 (October 25, 2012)*
 
 * Ember.SortableMixin: don't remove and reinsert items when their sort order doesn't change.  Fixes #1486.

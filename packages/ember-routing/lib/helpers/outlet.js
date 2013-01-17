@@ -1,3 +1,8 @@
+/**
+@module ember
+@submodule ember-routing
+*/
+
 var get = Ember.get, set = Ember.set;
 
 require('ember-handlebars/helpers/view');

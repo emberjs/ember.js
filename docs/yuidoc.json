@@ -15,6 +15,7 @@
       "../packages/ember-routing/lib",
       "../packages/ember-application/lib"
     ],
+    "exclude": "vendor",
     "outdir":   "./build"
   }
 }

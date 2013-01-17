@@ -7,3 +7,7 @@ before_script:
 script: "rake test\\[standard]"
 notifications:
   webhooks: http://emberjs-master-builds.herokuapp.com/upload/ember.js
+branches:
+  except:
+    - latest-builds
+    - release-builds
