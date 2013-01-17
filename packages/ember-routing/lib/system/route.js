@@ -248,6 +248,9 @@ Ember.Route = Ember.Object.extend({
 
     if (!controller) {
       model = model || this.modelFor(name);
+
+      Ember.assert("You are trying to look up a controller that you did not define, and for which Ember does not know the model.\n\nThis is not a controller for a route, so you must explicitly define the controller ("+this.router.namespace.toString() + "." + Ember.String.capitalize(Ember.String.camelize(name))+"Controller) or pass a model as the second parameter to `controllerFor`, so that Ember knows which type of controller to create for you.", model || this.container.lookup('route:' + name));
+
       controller = Ember.generateController(container, name, model);
     }
 
@@ -265,7 +268,8 @@ Ember.Route = Ember.Object.extend({
     @return {Object} the model object
   */
   modelFor: function(name) {
-    return this.container.lookup('route:' + name).currentModel;
+    var route = this.container.lookup('route:' + name);
+    return route && route.currentModel;
   },
 
   /**
