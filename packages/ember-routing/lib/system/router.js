@@ -73,24 +73,14 @@ Ember.Router = Ember.Object.extend({
     this.notifyPropertyChange('url');
   },
 
-  transitionTo: function(passedName) {
-    var args = [].slice.call(arguments), name;
-
-    if (!this.router.hasRoute(passedName)) {
-      name = args[0] = passedName + '.index';
-    } else {
-      name = passedName;
-    }
-
-    Ember.assert("The route " + passedName + " was not found", this.router.hasRoute(name));
-
-    this.router.transitionTo.apply(this.router, args);
-    this.notifyPropertyChange('url');
+  transitionTo: function(name) {
+    var args = [].slice.call(arguments);
+    doTransition(this, 'transitionTo', args);
   },
 
   replaceWith: function() {
-    this.router.replaceWith.apply(this.router, arguments);
-    this.notifyPropertyChange('url');
+    var args = [].slice.call(arguments);
+    doTransition(this, 'replaceWith', args);
   },
 
   generate: function() {
@@ -223,6 +213,21 @@ function setupRouter(emberRouter, router, location) {
   router.didTransition = function(infos) {
     emberRouter.didTransition(infos);
   };
+}
+
+function doTransition(router, method, args) {
+  var passedName = args[0], name;
+
+  if (!router.router.hasRoute(args[0])) {
+    name = args[0] = passedName + '.index';
+  } else {
+    name = passedName;
+  }
+
+  Ember.assert("The route " + passedName + " was not found", router.router.hasRoute(name));
+
+  router.router[method].apply(router.router, args);
+  router.notifyPropertyChange('url');
 }
 
 Ember.Router.reopenClass({
