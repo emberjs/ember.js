@@ -426,9 +426,7 @@ namespace :release do
       end
     end
 
-    file "dist/ember.min.js" => :dist
-
-    file "tmp/website/source/about.html.erb" => [:pull, "dist/ember.min.js"] do
+    task :about => :pull do
       require 'zlib'
 
       about = File.read("tmp/website/source/about.html.erb")
@@ -443,8 +441,6 @@ namespace :release do
 
       File.open("tmp/website/source/about.html.erb", "w") { |f| f.write about }
     end
-
-    task :about => "tmp/website/source/about.html.erb"
 
     desc "Update website repo"
     task :update => :about do
