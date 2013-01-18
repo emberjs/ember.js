@@ -159,13 +159,13 @@ define("router",
 
         Used internally by `generate` and `transitionTo`.
       */
-      _paramsForHandler: function(handlerName, objects, callback) {
+      _paramsForHandler: function(handlerName, objects, doUpdate) {
         var handlers = this.recognizer.handlersFor(handlerName),
             params = {},
             toSetup = [],
             startIdx = handlers.length,
             objectsToMatch = objects.length,
-            object, handlerObj, handler, names, i, len;
+            object, objectChanged, handlerObj, handler, names, i, len;
 
         // Find out which handler to start matching at
         for (i=handlers.length-1; i>=0 && objectsToMatch>0; i--) {
@@ -184,25 +184,42 @@ define("router",
           handlerObj = handlers[i];
           handler = this.getHandler(handlerObj.handler);
           names = handlerObj.names;
+          objectChanged = false;
 
+          // If it's a dynamic segment
           if (names.length) {
-            // Don't use objects if we haven't gotten to the match point yet
-            if (i >= startIdx && objects.length) { object = objects.shift(); }
-            else { object = handler.context; }
+            // If we have objects, use them
+            if (i >= startIdx) {
+              object = objects.shift();
+              objectChanged = true;
+            // Otherwise use existing context
+            } else {
+              object = handler.context;
+            }
 
+            // Serialize to generate params
             if (handler.serialize) {
               merge(params, handler.serialize(object, names));
             }
-          } else if (callback) {
-            object = callback(handler);
-          } else {
-            object = undefined;
+          // If it's not a dynamic segment and we're updating
+          } else if (doUpdate) {
+            // If we've passed the match point we need to deserialize again
+            // or if we never had a context
+            if (i > startIdx || !handler.hasOwnProperty('context')) {
+              if (handler.deserialize) {
+                object = handler.deserialize({});
+                objectChanged = true;
+              }
+            // Otherwise use existing context
+            } else {
+              object = handler.context;
+            }
           }
-
 
           // Make sure that we update the context here so it's available to
           // subsequent deserialize calls
-          if (handler.context !== object) {
+          if (doUpdate && objectChanged) {
+            // TODO: It's a bit awkward to set the context twice, see if we can DRY things up
             setContext(handler, object);
           }
 
@@ -322,12 +339,7 @@ define("router",
       @private
     */
     function doTransition(router, name, method, args) {
-      var output = router._paramsForHandler(name, args, function(handler) {
-        if (handler.hasOwnProperty('context')) { return handler.context; }
-        if (handler.deserialize) { return handler.deserialize({}); }
-        return null;
-      });
-
+      var output = router._paramsForHandler(name, args, true);
       var params = output.params, toSetup = output.toSetup;
 
       var url = router.recognizer.generate(name, params);
@@ -376,6 +388,10 @@ define("router",
       }
 
       function proceed(value) {
+        if (handler.context !== object) {
+          setContext(handler, object);
+        }
+
         var updatedObjects = objects.concat([{
           context: value,
           handler: result.handler,
