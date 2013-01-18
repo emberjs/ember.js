@@ -122,6 +122,30 @@ test("The Homepage with explicit template name in renderTemplate", function() {
   equal(Ember.$('h3:contains(Megatroll)', '#qunit-fixture').length, 1, "The homepage template was rendered");
 });
 
+test("An alternate template will pull in an alternate controller", function() {
+  Router.map(function() {
+    this.route("home", { path: "/" });
+  });
+
+  App.HomeRoute = Ember.Route.extend({
+    renderTemplate: function() {
+      this.render('homepage');
+    }
+  });
+
+  App.HomepageController = Ember.Controller.extend({
+    home: "Comes from homepage"
+  });
+
+  bootApplication();
+
+  Ember.run(function() {
+    router.handleURL("/");
+  });
+
+  equal(Ember.$('h3:contains(Megatroll) + p:contains(Comes from homepage)', '#qunit-fixture').length, 1, "The homepage template was rendered");
+});
+
 test("The Homepage with explicit template name in renderTemplate and controller", function() {
   Router.map(function() {
     this.route("home", { path: "/" });
