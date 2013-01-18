@@ -1,3 +1,10 @@
+*Ember 1.0.0-pre.4 (January 17, 2013)*
+
+* Add {{partial}}
+* Fix regressions in router.js
+* Support jQuery 1.9.0
+* Use the controller with the same name as the template passed to render, if it exists
+
 *Ember 1.0.0-pre.3 (January 17, 2013)*
 
 * BREAKING CHANGE: New Router API
