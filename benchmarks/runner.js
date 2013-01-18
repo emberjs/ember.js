@@ -13,7 +13,7 @@ function makeiframe(emberPath, suitePath, suiteCode, profile, callback) {
   iframe.name = name;
 
   write("<title>" + name + "</title>");
-  write("<script src='../lib/jquery-1.7.2.js'></script>");
+  write("<script src='../lib/jquery-1.9.0.js'></script>");
   write("<script>ENV = {VIEW_PRESERVES_CONTEXT: true};</script>");
   write("<script src='../lib/handlebars-1.0.rc.1.js'></script>");
   write("<script src='" + emberPath + "'></script>");
