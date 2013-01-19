@@ -321,3 +321,18 @@ test("The {{linkTo}} helper binds some anchor html tag common attributes", funct
 
   equal(Ember.$('#self-link', '#qunit-fixture').attr('title'), 'title-attr', "The self-link contains title attribute");
 });
+
+test("The {{linkTo}} helper accepts string arguments", function() {
+  Router.map(function() {
+    this.route('filter', { path: '/filters/:filter' });
+  });
+
+  Ember.TEMPLATES.filter = compile('<p>{{filter}}</p>{{#linkTo filter "unpopular" id="link"}}Unpopular{{/linkTo}}');
+  Ember.TEMPLATES.index = compile('');
+
+  bootApplication();
+
+  Ember.run(function() { router.handleURL("/filters/popular"); });
+
+  equal(Ember.$('#link', '#qunit-fixture').attr('href'), "/filters/unpopular");
+});
