@@ -9,7 +9,7 @@ require('ember-handlebars/helpers/view');
 
 Ember.onLoad('Ember.Handlebars', function(Handlebars) {
 
-  var resolvePaths = Ember.Handlebars.resolvePaths,
+  var resolveParams = Ember.Handlebars.resolveParams,
       isSimpleClick = Ember.ViewUtils.isSimpleClick;
 
   var EmberHandlebars = Ember.Handlebars,
@@ -21,7 +21,11 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
   function args(options, actionName) {
     var ret = [];
     if (actionName) { ret.push(actionName); }
-    return ret.concat(resolvePaths(options.parameters));
+
+    var types = options.options.types.slice(1),
+        data = options.options.data;
+
+    return ret.concat(resolveParams(options.context, options.params, { types: types, data: data }));
   }
 
   var ActionHelper = EmberHandlebars.ActionHelper = {
@@ -46,10 +50,10 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
             target = options.target;
 
         if (target.send) {
-          return target.send.apply(target, args(options, actionName));
+          return target.send.apply(target, args(options.parameters, actionName));
         } else {
           Ember.assert("The action '" + actionName + "' did not exist on " + target, typeof target[actionName] === 'function');
-          return target[actionName].apply(target, args(options));
+          return target[actionName].apply(target, args(options.parameters));
         }
       }
     };
@@ -247,9 +251,9 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     };
 
     action.parameters = {
-      data: options.data,
-      contexts: contexts,
-      roots: options.contexts
+      context: this,
+      options: options,
+      params: contexts
     };
 
     action.view = view = get(view, 'concreteView');

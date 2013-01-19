@@ -446,6 +446,29 @@ test("should allow multiple contexts to be specified", function() {
   deepEqual(passedContexts, models, "the action was called with the passed contexts");
 });
 
+test("should allow multiple contexts to be specified", function() {
+  var passedParams,
+      model = Ember.Object.create();
+
+  var controller = Ember.Controller.extend({
+    edit: function() {
+      passedParams = [].slice.call(arguments);
+    }
+  }).create();
+
+  view = Ember.View.create({
+    controller: controller,
+    modelA: model,
+    template: Ember.Handlebars.compile('<button {{action edit "herp" view.modelA}}>edit</button>')
+  });
+
+  appendView();
+
+  view.$('button').trigger('click');
+
+  deepEqual(passedParams, ["herp", model], "the action was called with the passed contexts");
+});
+
 var namespace = {
   "Component": {
     toString: function() { return "Component"; },
