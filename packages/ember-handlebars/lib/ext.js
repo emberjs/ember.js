@@ -145,7 +145,7 @@ Ember.Handlebars.registerHelper('helperMissing', function(path, options) {
   {{repeat text count=3}}
   ```
 
-  ## Example with options
+  ## Example with bound options
 
   Bound hash options are also supported. Example: 
 
