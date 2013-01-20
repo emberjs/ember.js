@@ -13,15 +13,15 @@ test("controller property should be inherited from nearest ancestor with control
     grandparent.set('controller', grandparentController);
     parent.set('controller', parentController);
 
-    grandparent.get('childViews').pushObject(parent);
-    parent.get('childViews').pushObject(child);
+    grandparent.pushObject(parent);
+    parent.pushObject(child);
 
     strictEqual(grandparent.get('controller'), grandparentController);
     strictEqual(parent.get('controller'), parentController);
     strictEqual(child.get('controller'), parentController);
     strictEqual(grandchild.get('controller'), null);
 
-    child.get('childViews').pushObject(grandchild);
+    child.pushObject(grandchild);
     strictEqual(grandchild.get('controller'), parentController);
 
     var newController = {};

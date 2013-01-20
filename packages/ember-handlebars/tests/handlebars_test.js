@@ -1856,7 +1856,7 @@ test("should expose a controller keyword that persists through Ember.ContainerVi
   });
 
   Ember.run(function() {
-    get(containerView, 'childViews').pushObject(viewInstanceToBeInserted);
+    containerView.pushObject(viewInstanceToBeInserted);
   });
 
   equal(trim(viewInstanceToBeInserted.$().text()), "bar", "renders value from parent's controller");

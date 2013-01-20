@@ -31,11 +31,7 @@ function append() {
 }
 
 function selectedOptions() {
-  var rv = [];
-  for(var i=0, len = select.get('content.length'); i < len; ++i) {
-    rv.push(select.get('childViews.' + i + '.childViews.0.selected'));
-  }
-  return rv;
+  return select.get('childViews').mapProperty('selected');
 }
 
 test("has 'ember-view' and 'ember-select' CSS classes", function() {

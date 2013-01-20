@@ -14,9 +14,7 @@ var a_forEach = Ember.EnumerableUtils.forEach;
 var a_addObject = Ember.EnumerableUtils.addObject;
 
 var childViewsProperty = Ember.computed(function() {
-  var childViews = this._childViews;
-
-  var ret = Ember.A();
+  var childViews = this._childViews, ret = Ember.A(), view = this;
 
   a_forEach(childViews, function(view) {
     if (view.isVirtual) {
@@ -25,6 +23,14 @@ var childViewsProperty = Ember.computed(function() {
       ret.push(view);
     }
   });
+
+  ret.replace = function (idx, removedCount, addedViews) {
+    if (view instanceof Ember.ContainerView) {
+      Ember.deprecate("Manipulating a Ember.ContainerView through its childViews property is deprecated. Please use the ContainerView instance itself as an Ember.MutableArray.");
+      return view.replace(idx, removedCount, addedViews);
+    }
+    throw new Error("childViews is immutable");
+  };
 
   return ret;
 });
