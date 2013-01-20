@@ -24,7 +24,7 @@ this bug already.
 3. Provide JSFiddle or JSBin demo that specifically shows the problem. This
 demo should be fully operational with the exception of the bug you want to
 demonstrate. The more pared down, the better. 
-Preconfigured starting points: [JSFiddle](http://jsfiddle.net/6p6XJ/) | [JSBin](http://jsbin.com/ijicor/3/edit)
+Preconfigured starting points: [JSFiddle](http://jsfiddle.net/BTXxG/20/) | [JSBin](http://jsbin.com/oqawew/1/edit)
 Issues with fiddles are priotized.
 
 4. Your issue will be verified. The provided fiddle will be tested for
