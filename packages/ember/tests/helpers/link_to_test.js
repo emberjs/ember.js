@@ -176,7 +176,7 @@ test("The {{linkTo}} helper supports custom, nested, currentWhen", function() {
   equal(Ember.$('#other-link.active', '#qunit-fixture').length, 1, "The link is active since currentWhen is a parent route");
 });
 
-test("The {{linkTo}} helper defaults to bubbling", function() {
+test("The {{linkTo}} helper defaults to not bubbling", function() {
   Ember.TEMPLATES.about = Ember.Handlebars.compile("<button {{action 'hide'}}>{{#linkTo 'about.contact' id='about-contact'}}About{{/linkTo}}</button>{{outlet}}");
   Ember.TEMPLATES['about/contact'] = Ember.Handlebars.compile("<h1 id='contact'>Contact</h1>");
 
@@ -208,11 +208,11 @@ test("The {{linkTo}} helper defaults to bubbling", function() {
 
   equal(Ember.$("#contact", "#qunit-fixture").text(), "Contact", "precond - the link worked");
 
-  equal(hidden, 1, "The link bubbles");
+  equal(hidden, 0, "The link does not bubble");
 });
 
-test("The {{linkTo}} helper supports bubbles=false", function() {
-  Ember.TEMPLATES.about = Ember.Handlebars.compile("<button {{action 'hide'}}>{{#linkTo 'about.contact' id='about-contact' bubbles=false}}About{{/linkTo}}</button>{{outlet}}");
+test("The {{linkTo}} helper supports bubbles=true", function() {
+  Ember.TEMPLATES.about = Ember.Handlebars.compile("<button {{action 'hide'}}>{{#linkTo 'about.contact' id='about-contact' bubbles=true}}About{{/linkTo}}</button>{{outlet}}");
   Ember.TEMPLATES['about/contact'] = Ember.Handlebars.compile("<h1 id='contact'>Contact</h1>");
 
   Router.map(function() {
@@ -243,7 +243,7 @@ test("The {{linkTo}} helper supports bubbles=false", function() {
 
   equal(Ember.$("#contact", "#qunit-fixture").text(), "Contact", "precond - the link worked");
 
-  equal(hidden, 0, "The link didn't bubble");
+  equal(hidden, 1, "The link bubbles");
 });
 
 test("The {{linkTo}} helper moves into the named route with context", function() {

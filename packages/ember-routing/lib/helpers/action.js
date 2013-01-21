@@ -39,9 +39,9 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
       eventName: options.eventName,
       handler: function(event) {
         if (!isSimpleClick(event)) { return true; }
-        event.preventDefault();
 
-        if (options.bubbles === false) {
+        event.preventDefault();
+        if (!options.bubbles) {
           event.stopPropagation();
         }
 
@@ -127,13 +127,14 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     ### Event Propagation
 
     Events triggered through the action helper will automatically have
-    `.preventDefault()` called on them. You do not need to do so in your event
-    handlers.
+    `.preventDefault()` and `.stopPropagation()` called on them. You do not
+    need to do so in your event handlers.
 
-    To also disable bubbling, pass `bubbles=false` to the helper:
+    To suppress the `.stopPropagation()` call, pass `bubbles=true` to the
+    helper:
 
     ```handlebars
-    <button {{action 'edit' post bubbles=false}}>Edit</button>
+    <button {{action 'edit' post bubbles=true}}>Edit</button>
     ```
 
     If you need the default handler to trigger you should either register your
