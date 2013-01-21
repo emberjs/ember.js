@@ -227,21 +227,11 @@ Ember.Handlebars.registerBoundHelper = function(name, fn) {
       Ember.run.scheduleOnce('render', bindView, 'rerender');
     };
 
-    Ember.addObserver(pathRoot, path, observer);
-    loc = 0;
-    while(loc < dependentKeys.length) {
-      Ember.addObserver(pathRoot, path + '.' + dependentKeys[loc], observer);
-      loc += 1;
-    }
+    view.registerObserver(pathRoot, path, observer);
 
-    view.one('willClearRender', function() {
-      Ember.removeObserver(pathRoot, path, observer);
-      loc = 0;
-      while(loc < dependentKeys.length) {
-        Ember.removeObserver(pathRoot, path + '.' + dependentKeys[loc], observer);
-        loc += 1;
-      }
-    });
+    for (var i=0, l=dependentKeys.length; i<l; i++) {
+      view.registerObserver(pathRoot, path + '.' + dependentKeys[i], observer);
+    }
   });
 };
 

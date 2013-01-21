@@ -1238,11 +1238,7 @@ Ember.View = Ember.CoreView.extend(
         oldClass = dasherizedClass;
       }
 
-      addObserver(this, parsedPath.path, observer);
-
-      this.one('willClearRender', function() {
-        removeObserver(this, parsedPath.path, observer);
-      });
+      this.registerObserver(this, parsedPath.path, observer);
     }, this);
   },
 
@@ -1274,11 +1270,7 @@ Ember.View = Ember.CoreView.extend(
         Ember.View.applyAttributeBindings(elem, attributeName, attributeValue);
       };
 
-      addObserver(this, property, observer);
-
-      this.one('willClearRender', function() {
-        removeObserver(this, property, observer);
-      });
+      this.registerObserver(this, property, observer);
 
       // Determine the current value and add it to the render buffer
       // if necessary.
@@ -2132,6 +2124,14 @@ Ember.View = Ember.CoreView.extend(
   */
   handleEvent: function(eventName, evt) {
     return this.currentState.handleEvent(this, eventName, evt);
+  },
+
+  registerObserver: function(root, path, observer) {
+    Ember.addObserver(root, path, observer);
+
+    this.one('willClearRender', function() {
+      Ember.removeObserver(root, path, observer);
+    });
   }
 
 });
