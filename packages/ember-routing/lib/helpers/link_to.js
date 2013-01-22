@@ -16,8 +16,10 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
   }
 
   function resolvedPaths(options) {
-    var types = options.options.types.slice(1),
+    var types = options.options.types,
         data = options.options.data;
+
+    types = types ? types.slice(1) : [];
 
     return resolveParams(options.context, options.params, { types: types, data: data });
   }
