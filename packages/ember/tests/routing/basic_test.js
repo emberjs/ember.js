@@ -1266,3 +1266,60 @@ test("Calling controllerFor for a non-route controller returns a controller", fu
 
   ok(controller instanceof Ember.ObjectController, "controller was able to be retrieved");
 });
+
+test("Router accounts for rootURL on page load when using history location", function() {
+  var rootURL = window.location.pathname + '/app',
+      postsTemplateRendered = false,
+      setHistory,
+      HistoryTestLocation;
+
+  setHistory = function(obj, path) {
+    obj.set('history', { state: { path: path } });
+  };
+
+  // Create new implementation that extends HistoryLocation
+  // and set current location to rootURL + '/posts'
+  HistoryTestLocation = Ember.HistoryLocation.extend({
+    initState: function() {
+      var path = rootURL + '/posts';
+
+      setHistory(this, path);
+      this.set('location', {
+        pathname: path
+      });
+    },
+
+    replaceState: function(path) {
+      setHistory(this, path);
+    },
+
+    pushState: function(path) {
+      setHistory(this, path);
+    }
+  });
+
+  Ember.Location.registerImplementation('historyTest', HistoryTestLocation);
+
+  Router.reopen({
+    location: 'historyTest',
+    rootURL: rootURL
+  });
+
+  Router.map(function() {
+    this.resource("posts", { path: '/posts' });
+  });
+
+  App.PostsRoute = Ember.Route.extend({
+    model: function() {},
+    renderTemplate: function() {
+      postsTemplateRendered = true;
+    }
+  });
+
+  bootApplication();
+
+  ok(postsTemplateRendered, "Posts route successfully stripped from rootURL");
+
+  // clean after test
+  delete Ember.Location.implementations['historyTest'];
+});

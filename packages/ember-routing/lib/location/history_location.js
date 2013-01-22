@@ -44,12 +44,18 @@ Ember.HistoryLocation = Ember.Object.extend({
   /**
     @private
 
-    Returns the current `location.pathname`.
+    Returns the current `location.pathname` without rootURL
 
     @method getURL
   */
   getURL: function() {
-    return get(this, 'location').pathname;
+    var rootURL = get(this, 'rootURL'),
+        url = get(this, 'location').pathname;
+
+    rootURL = rootURL.replace(/\/$/, '');
+    url = url.replace(rootURL, '');
+
+    return url;
   },
 
   /**
@@ -132,13 +138,14 @@ Ember.HistoryLocation = Ember.Object.extend({
     @param callback {Function}
   */
   onUpdateURL: function(callback) {
-    var guid = Ember.guidFor(this);
+    var guid = Ember.guidFor(this),
+        self = this;
 
     Ember.$(window).bind('popstate.ember-location-'+guid, function(e) {
       if(!popstateReady) {
         return;
       }
-      callback(location.pathname);
+      callback(self.getURL());
     });
   },
 
