@@ -55,7 +55,7 @@ Ember.Route = Ember.Object.extend({
     this.transitioned = false;
     this.redirect(context);
 
-    if (this.transitioned) { return; }
+    if (this.transitioned) { return false; }
 
     var controller = this.controllerFor(this.routeName, context);
 

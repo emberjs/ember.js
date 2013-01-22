@@ -55,7 +55,9 @@ Ember.Router = Ember.Object.extend({
 
   didTransition: function(infos) {
     // Don't do any further action here if we redirected
-    if (infos[infos.length-1].handler.transitioned) { return; }
+    for (var i=0, l=infos.length; i<l; i++) {
+      if (infos[i].handler.transitioned) { return; }
+    }
 
     var appController = this.container.lookup('controller:application'),
         path = routePath(infos);
