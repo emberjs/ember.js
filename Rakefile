@@ -87,14 +87,16 @@ task :test, [:suite] => :dist do |t, args|
     :standard => packages.map{|p| "package=#{p}" } +
                   ["package=all&jquery=1.7.2&nojshint=true",
                     "package=all&extendprototypes=true&nojshint=true",
-                    "package=all&dist=build&nojshint=true"],
+                    # container isn't publicly available in the built version
+                    "package=all&skipPackage=container&dist=build&nojshint=true"],
     :all      => packages.map{|p| "package=#{p}" } +
                   ["package=all&jquery=1.7.2&nojshint=true",
                     "package=all&jquery=1.8.3&nojshint=true",
                     "package=all&jquery=git&nojshint=true",
                     "package=all&extendprototypes=true&nojshint=true",
                     "package=all&extendprototypes=true&jquery=git&nojshint=true",
-                    "package=all&dist=build&nojshint=true"]
+                    # container isn't publicly available in the built version
+                    "package=all&skipPackage=container&dist=build&nojshint=true"]
   }
 
   packages.each do |package|
