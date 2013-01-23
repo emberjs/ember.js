@@ -42,5 +42,9 @@ Ember.Handlebars.registerHelper('log', function(property, options) {
   @param {String} property
 */
 Ember.Handlebars.registerHelper('debugger', function() {
-  eval('debugger');
+  if (window.execScript) {
+    window.execScript('debugger');
+  } else {
+    window['eval'].call(this, 'debugger');
+  }
 });
