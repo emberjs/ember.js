@@ -30,7 +30,7 @@ Ember.onLoad = function(name, callback) {
 @param object {Object} object to pass to callbacks
 */
 Ember.runLoadHooks = function(name, object) {
-  var hooks;
+  var hooks, i, len;
 
   loaded[name] = object;
 
@@ -38,5 +38,14 @@ Ember.runLoadHooks = function(name, object) {
     loadHooks[name].forEach(function(callback) {
       callback(object);
     });
+  }
+
+  if(Ember.ENV.EMBER_LOAD_HOOKS) {
+    hooks = Ember.ENV.EMBER_LOAD_HOOKS[name];
+    if(hooks) {
+      for(i = 0, len = hooks.length; i < len; ++i) {
+        hooks[i](object);
+      }
+    }
   }
 };
