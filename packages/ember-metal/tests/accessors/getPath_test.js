@@ -11,13 +11,13 @@ var obj, moduleOpts = {
 
     };
 
-    Foo = {
+    window.Foo = {
       bar: {
         baz: { biff: 'FooBiff' }
       }
     };
 
-    $foo = {
+    window.$foo = {
       bar: {
         baz: { biff: '$FOOBIFF' }
       }
@@ -25,9 +25,9 @@ var obj, moduleOpts = {
   },
 
   teardown: function() {
-    obj = null;
-    Foo = null;
-    $foo = null;
+    obj = undefined;
+    window.Foo = undefined;
+    window.$foo = undefined;
   }
 };
 
