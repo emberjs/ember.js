@@ -33,14 +33,13 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     return ret.concat(resolvedPaths(linkView.parameters));
   }
 
-  var LinkView = Ember.View.extend({
+  var LinkViewMixin = Ember.Mixin.create({
     tagName: 'a',
     namedRoute: null,
     currentWhen: null,
     title: null,
     activeClass: 'active',
     replace: false,
-    attributeBindings: ['href', 'title'],
     classNameBindings: 'active',
 
     active: Ember.computed(function() {
@@ -78,7 +77,17 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     })
   });
 
+  var LinkView = Ember.View.extend(LinkViewMixin, {
+    attributeBindings: ['href', 'title']
+  });
+
   LinkView.toString = function() { return "LinkView"; };
+
+  var LinkContainerView = Ember.View.extend(LinkViewMixin, {
+    layout: Ember.Handlebars.compile('<a {{bindAttr href=view.href title=view.title}}>{{yield}}</a>')
+  });
+
+  LinkContainerView.toString = function() { return "LinkContainerView"; };
 
   Ember.Handlebars.registerHelper('linkTo', function(name) {
     var options = [].slice.call(arguments, -1)[0];
@@ -95,7 +104,14 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
       params: params
     };
 
-    return Ember.Handlebars.helpers.view.call(this, LinkView, options);
+    var viewClass;
+    if (hash.tagName && hash.tagName !== 'a') {
+      viewClass = LinkContainerView;
+    } else {
+      viewClass = LinkView;
+    }
+
+    return Ember.Handlebars.helpers.view.call(this, viewClass, options);
   });
 
 });

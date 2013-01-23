@@ -336,3 +336,27 @@ test("The {{linkTo}} helper accepts string arguments", function() {
 
   equal(Ember.$('#link', '#qunit-fixture').attr('href'), "/filters/unpopular");
 });
+
+test("The {{linkTo}} helper nests the A tag if a different tagName is given", function() {
+
+  Ember.TEMPLATES.index = Ember.Handlebars.compile("<h3>Home</h3>{{#linkTo about id='about-link' tagName='p' title='title-attr'}}About{{/linkTo}}{{#linkTo index id='self-link' activeClass='zomg-active' tagName='p'}}Self{{/linkTo}}");
+
+  Router.map(function() {
+    this.route("about");
+  });
+
+  bootApplication();
+
+  Ember.run(function() {
+    router.handleURL("/");
+  });
+
+  equal(Ember.$('h3:contains(Home)', '#qunit-fixture').length, 1, "The home template was rendered");
+  equal(Ember.$('#self-link.zomg-active', '#qunit-fixture').length, 1, "The self-link was rendered with active class");
+  equal(Ember.$('#about-link:not(.active)', '#qunit-fixture').length, 1, "The other link was rendered without active class");
+
+  equal(Ember.$('#self-link a', '#qunit-fixture').attr('href'), "/");
+  equal(Ember.$('#about-link a', '#qunit-fixture').attr('href'), "/about");
+
+  equal(Ember.$('#about-link a', '#qunit-fixture').attr('title'), 'title-attr', "The about-link contains title attribute");
+});
