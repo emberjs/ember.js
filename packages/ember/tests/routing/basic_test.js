@@ -1360,3 +1360,44 @@ test("Router accounts for rootURL on page load when using history location", fun
   // clean after test
   delete Ember.Location.implementations['historyTest'];
 });
+
+test("Only use route rendered into main outlet for default into property on child", function() {
+  Ember.TEMPLATES.application = compile("{{outlet menu}}{{outlet}}");
+  Ember.TEMPLATES.posts = compile("{{outlet}}");
+  Ember.TEMPLATES['posts/index'] = compile("postsIndex");
+  Ember.TEMPLATES['posts/menu'] = compile("postsMenu");
+
+  Router.map(function() {
+    this.resource("posts", function() {});
+  });
+
+  App.PostsMenuView = Ember.View.extend({
+    tagName: 'div',
+    templateName: 'posts/menu',
+    classNames: ['posts-menu']
+  });
+
+  App.PostsIndexView = Ember.View.extend({
+    tagName: 'section',
+    classNames: ['posts-index']
+  });
+
+  App.PostsRoute = Ember.Route.extend({
+    renderTemplate: function() {
+      this.render();
+      this.render('postsMenu', {
+        into: 'application',
+        outlet: 'menu'
+      });
+    }
+  });
+
+  bootApplication();
+
+  Ember.run(function() {
+    router.handleURL("/posts");
+  });
+
+  equal(Ember.$('div.posts-menu:contains(postsMenu)', '#qunit-fixture').length, 1, "The posts/menu template was rendered");
+  equal(Ember.$('section.posts-index:contains(postsIndex)', '#qunit-fixture').length, 1, "The posts/index template was rendered");
+});
