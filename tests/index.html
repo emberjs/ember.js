@@ -179,6 +179,21 @@
       ];
     }
 
+    var newPackages = [],
+        skipPackages = (QUnit.urlParams.skipPackage || '').split(","),
+        skip;
+    for (var i=0; i<packages.length; i++) {
+      skip = false;
+      for (var k=0; k<skipPackages.length; k++) {
+        if (packages[i] === skipPackages[k]) {
+          skip = true;
+          break;
+        }
+      }
+      if (!skip) { newPackages.push(packages[i]); }
+    }
+    packages = newPackages;
+
     // External dependencies are loaded via the AMD shim
     packages.unshift('rsvp');
 
