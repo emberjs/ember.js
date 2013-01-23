@@ -194,14 +194,12 @@
     }
     packages = newPackages;
 
-    // External dependencies are loaded via the AMD shim
-    packages.unshift('rsvp');
-
     len = packages.length;
 
-    // There is no require for this in the code
+    // There is no require for these in the code
     if (dist == 'spade') {
       minispade.require('ember-debug');
+      minispade.require('rsvp');
     }
 
     for (idx=0; idx<len; idx++) {
