@@ -1053,6 +1053,43 @@ test("A redirection hook is provided", function() {
   equal(router.container.lookup('controller:application').get('currentPath'), 'home');
 });
 
+test("Redirecting from the middle of a route aborts the remainder of the routes", function() {
+  expect(2);
+
+  Router.map(function() {
+    this.route("home");
+    this.resource("foo", function() {
+      this.resource("bar", function() {
+        this.route("baz");
+      });
+    });
+  });
+
+  App.BarRoute = Ember.Route.extend({
+    redirect: function() {
+      this.transitionTo("home");
+    },
+    setupController: function() {
+      ok(false, "Should transition before setupController");
+    }
+  });
+
+  App.BarBazRoute = Ember.Route.extend({
+    enter: function() {
+      ok(false, "Should abort transition getting to next route");
+    }
+  });
+
+  bootApplication();
+
+  Ember.run(function() {
+    router.handleURL("/foo/bar/baz");
+  });
+
+  equal(router.container.lookup('controller:application').get('currentPath'), 'home');
+  equal(router.get('location').getURL(), "/home");
+});
+
 test("Generated names can be customized when providing routes with dot notation", function() {
   expect(3);
 
