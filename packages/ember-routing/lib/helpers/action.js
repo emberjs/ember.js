@@ -22,8 +22,10 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     var ret = [];
     if (actionName) { ret.push(actionName); }
 
-    var types = options.options.types.slice(1),
+    var types = options.options.types,
         data = options.options.data;
+
+    types = types ? types.slice(1) : [];
 
     return ret.concat(resolveParams(options.context, options.params, { types: types, data: data }));
   }
