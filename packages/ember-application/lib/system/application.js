@@ -97,59 +97,16 @@ var get = Ember.get, set = Ember.set,
   layer, and a list of the event listeners that are setup by default, visit the
   [Ember View Layer guide](http://emberjs.com/guides/view_layer#toc_event-delegation).
 
-  ### Dependency Injection
+  ### Initializers
 
-  One thing you may have noticed while using Ember is that you define
-  *classes*, not *instances*. When your application loads, all of the instances
-  are created for you. Creating these instances is the responsibility of
-  `Ember.Application`.
-
-  When the `Ember.Application` initializes, it will look for an `Ember.Router`
-  class defined on the applications's `Router` property, like this:
+  Libraries on top of Ember can register additional initializers, like so:
 
   ```javascript
-  App.Router = Ember.Router.extend({
-  // ...
-  });
-  ```
+  Ember.Application.initializer({
+    name: "store",
 
-  If found, the router is instantiated and saved on the application's `router`
-  property (note the lowercase 'r'). While you should *not* reference this
-  router instance directly from your application code, having access to
-  `App.router` from the console can be useful during debugging.
-
-  After the router is created, the application loops through all of the
-  registered _injections_ and invokes them once for each property on the
-  `Ember.Application` object.
-
-  An injection is a function that is responsible for instantiating objects from
-  classes defined on the application. By default, the only injection registered
-  instantiates controllers and makes them available on the router.
-
-  For example, if you define a controller class:
-
-  ```javascript
-  App.MyController = Ember.Controller.extend({
-    // ...
-  });
-  ```
-
-  Your router will receive an instance of `App.MyController` saved on its
-  `myController` property.
-
-  Libraries on top of Ember can register additional injections. For example,
-  if your application is using Ember Data, it registers an injection that
-  instantiates `DS.Store`:
-
-  ```javascript
-  Ember.Application.registerInjection({
-    name: 'store',
-    before: 'controllers',
-
-    injection: function(app, router, property) {
-      if (property === 'Store') {
-        set(router, 'store', app[property].create());
-      }
+    initialize: function(container, application) {
+      container.register('store', 'main', application.Store);
     }
   });
   ```
@@ -412,7 +369,7 @@ var Application = Ember.Application = Ember.Namespace.extend(
 
     Initialize the application. This happens automatically.
 
-    Run any injections and run the application load hook. These hooks may
+    Run any initializers and run the application load hook. These hooks may
     choose to defer readiness. For example, an authentication hook might want
     to defer readiness until the auth token has been retrieved.
 
@@ -426,13 +383,10 @@ var Application = Ember.Application = Ember.Namespace.extend(
     // At this point, the App.Router must already be assigned
     this.__container__.register('router', 'main', this.Router);
 
-    // Run any injections and run the application load hook. These hooks may
-    // choose to defer readiness. For example, an authentication hook might want
-    // to defer readiness until the auth token has been retrieved.
     this.runInitializers();
     Ember.runLoadHooks('application', this);
 
-    // At this point, any injections or load hooks that would have wanted
+    // At this point, any initializers or load hooks that would have wanted
     // to defer readiness have fired. In general, advancing readiness here
     // will proceed to didBecomeReady.
     this.advanceReadiness();
