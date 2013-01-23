@@ -42,5 +42,5 @@ Ember.Handlebars.registerHelper('log', function(property, options) {
   @param {String} property
 */
 Ember.Handlebars.registerHelper('debugger', function() {
-  debugger;
+  eval('debugger');
 });
