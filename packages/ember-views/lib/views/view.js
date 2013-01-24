@@ -1239,6 +1239,15 @@ Ember.View = Ember.CoreView.extend(
       }
 
       this.registerObserver(this, parsedPath.path, observer);
+      // Remove className so when the view is rerendered,
+      // the className is added based on binding reevaluation
+      this.one('willClearRender', function() {
+        if (oldClass) {
+          classNames.removeObject(oldClass);
+          oldClass = null;
+        }
+      });
+
     }, this);
   },
 
