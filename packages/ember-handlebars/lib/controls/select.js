@@ -361,11 +361,31 @@ Ember.Select = Ember.View.extend(
   */
   optionValuePath: 'content',
 
+  /**
+    The action to be sent when the user selects an option.
+
+    This is similar to the `{{action}}` helper, but is fired when
+    the user selects an option, and sends the value of the option
+    as the context.
+
+   @property action
+   @type String
+   @default null
+  */
+  action: null,
+
   _change: function() {
     if (get(this, 'multiple')) {
       this._changeMultiple();
     } else {
       this._changeSingle();
+    }
+
+    var controller = get(this, 'controller'),
+        action = get(this, 'action');
+
+    if (action) {
+      controller.send(action, get(this, 'value'));
     }
   },
 
