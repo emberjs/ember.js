@@ -3,15 +3,17 @@
 module('ember-runtime/system/object/destroy_test');
 
 test("should schedule objects to be destroyed at the end of the run loop", function() {
-  var obj = Ember.Object.create();
+  var obj = Ember.Object.create(), meta;
 
   Ember.run(function() {
-    var meta;
     obj.destroy();
-    meta = Ember.meta(obj);
-    ok(meta, "object is not destroyed immediately");
+    meta = obj[Ember.META_KEY];
+    ok(meta, "meta is not destroyed immediately");
+    ok(!obj.get('isDestroyed'), "object is not destroyed immediately");
   });
 
+  meta = obj[Ember.META_KEY];
+  ok(!meta, "meta is destroyed after run loop finishes");
   ok(obj.get('isDestroyed'), "object is destroyed after run loop finishes");
 });
 
