@@ -64,8 +64,8 @@ define("container",
       this.cache = new InheritingDict(parent && parent.cache);
       this.typeInjections = {};
       this.injections = {};
-      this.options = {};
-      this.typeOptions = {};
+      this._options = new InheritingDict(parent && parent._options);
+      this._typeOptions = new InheritingDict(parent && parent._typeOptions);
     }
 
     Container.prototype = {
@@ -80,8 +80,18 @@ define("container",
       },
 
       register: function(type, name, factory, options) {
-        this.registry.set(type + ":" + name, factory);
-        this.options[type + ":" + name] = options || {};
+        var fullName;
+
+        if (type.indexOf(':') !== -1 && arguments.length < 4) {
+          options = factory;
+          factory = name;
+          fullName = type;
+        } else {
+          fullName = type + ":" + name;
+        }
+
+        this.registry.set(fullName, factory);
+        this._options.set(fullName, options || {});
       },
 
       resolve: function(fullName) {
@@ -115,7 +125,11 @@ define("container",
       optionsForType: function(type, options) {
         if (this.parent) { illegalChildOperation('optionsForType'); }
 
-        this.typeOptions[type] = options;
+        this._typeOptions.set(type, options);
+      },
+
+      options: function(type, options) {
+        this.optionsForType(type, options);
       },
 
       typeInjection: function(type, property, fullName) {
@@ -127,6 +141,10 @@ define("container",
 
       injection: function(factoryName, property, injectionName) {
         if (this.parent) { illegalChildOperation('injection'); }
+
+        if (factoryName.indexOf(':') === -1) {
+          return this.typeInjection(factoryName, property, injectionName);
+        }
 
         var injections = this.injections[factoryName] = this.injections[factoryName] || [];
         injections.push({ property: property, fullName: injectionName });
@@ -188,14 +206,14 @@ define("container",
     }
 
     function option(container, fullName, optionName) {
-      var options = container.options[fullName];
+      var options = container._options.get(fullName);
 
       if (options && options[optionName] !== undefined) {
         return options[optionName];
       }
 
       var type = fullName.split(":")[0];
-      options = container.typeOptions[type];
+      options = container._typeOptions.get(type);
 
       if (options) {
         return options[optionName];

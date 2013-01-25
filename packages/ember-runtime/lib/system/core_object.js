@@ -151,9 +151,9 @@ function makeCtor() {
 }
 
 var CoreObject = makeCtor();
+CoreObject.toString = function() { return "Ember.CoreObject"; };
 
 CoreObject.PrototypeMixin = Mixin.create({
-
   reopen: function() {
     applyMixin(this, arguments, true);
     return this;
@@ -324,6 +324,8 @@ CoreObject.PrototypeMixin = Mixin.create({
   }
 });
 
+CoreObject.PrototypeMixin.ownerConstructor = CoreObject;
+
 function makeToString(ret) {
   return function() { return ret; };
 }
@@ -461,6 +463,8 @@ var ClassMixin = Mixin.create({
   }
 
 });
+
+ClassMixin.ownerConstructor = CoreObject;
 
 if (Ember.config.overrideClassMixin) {
   Ember.config.overrideClassMixin(ClassMixin);

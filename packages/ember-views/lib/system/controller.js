@@ -18,5 +18,22 @@ Ember.ControllerMixin.reopen({
   target: null,
   namespace: null,
   view: null,
-  container: null
+  container: null,
+
+  init: function() {
+    this._super();
+    set(this, '_childContainers', {});
+  },
+
+  _modelDidChange: Ember.observer(function() {
+    var containers = get(this, '_childContainers'),
+        container;
+
+    for (var prop in containers) {
+      if (!containers.hasOwnProperty(prop)) { continue; }
+      containers[prop].destroy();
+    }
+
+    set(this, '_childContainers', {});
+  }, 'model')
 });

@@ -18,3 +18,4 @@ require('ember-runtime/system/set');
   @uses Ember.Observable
 */
 Ember.Object = Ember.CoreObject.extend(Ember.Observable);
+Ember.Object.toString = function() { return "Ember.Object"; };
