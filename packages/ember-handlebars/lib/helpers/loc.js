@@ -15,6 +15,9 @@ require('ember-handlebars/ext');
   </script>
   ```
 
+  Take note that `welcome` is a string and not an object
+  reference.
+
   @method loc
   @for Ember.Handlebars.helpers
   @param {String} str The string to format
