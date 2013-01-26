@@ -88,6 +88,24 @@ test("should not use defaultLayout if layout is provided", function() {
   equal("foo", view.$().text(), "default layout was not printed");
 });
 
+test("should warn if provided layout doesn't exist", function() {
+  var originalWarn = Ember.warn;
+  var warnCalled = false;
+  Ember.warn = function(message, test) { warnCalled = true; };
+
+  var view = Ember.View.create({
+    container: container,
+    layoutName: 'santa clause'
+  });
+  Ember.run(function(){
+    view.createElement();
+  });
+
+  ok(warnCalled, "warning is displayed when the layout doesn't exist");
+
+  Ember.warn = originalWarn;
+});
+
 test("the template property is available to the layout template", function() {
   var view = Ember.View.create({
     template: function(context, options) {
