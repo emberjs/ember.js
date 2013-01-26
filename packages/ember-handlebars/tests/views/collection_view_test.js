@@ -93,6 +93,8 @@ test("empty views should be removed when content is added to the collection (reg
     view.appendTo('#qunit-fixture');
   });
 
+  equal(view.$('tr').length, 1, 'Make sure the empty view is there (regression)');
+
   Ember.run(function() {
     App.ListController.pushObject({title : "Go Away, Placeholder Row!"});
   });
