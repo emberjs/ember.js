@@ -182,6 +182,50 @@ test("it works inside a table element", function() {
   equal(tableView.$('td').length, 4, "renders an additional <td> when an object is inserted at the beginning of the array");
 });
 
+test("it supports itemController", function() {
+  var Controller = Ember.Controller.extend({
+    controllerName: Ember.computed(function() {
+      return "controller:"+this.get('model.name');
+    })
+  });
+
+  view = Ember.View.create({
+    template: templateFor('{{#each view.people itemController="person"}}{{controllerName}}{{/each}}'),
+    people: people,
+    container: {
+      lookup: function(controller) {
+        return Controller.create();
+      }
+    }
+  });
+
+  append(view);
+
+  equal(view.$().text(), "controller:Steve Holtcontroller:Annabelle");
+});
+
+test("it supports itemController when using a custom keyword", function() {
+  var Controller = Ember.Controller.extend({
+    controllerName: Ember.computed(function() {
+      return "controller:"+this.get('model.name');
+    })
+  });
+
+  view = Ember.View.create({
+    template: templateFor('{{#each person in view.people itemController="person"}}{{person.controllerName}}{{/each}}'),
+    people: people,
+    container: {
+      lookup: function(controller) {
+        return Controller.create();
+      }
+    }
+  });
+
+  append(view);
+
+  equal(view.$().text(), "controller:Steve Holtcontroller:Annabelle");
+});
+
 test("it supports {{itemViewClass=}}", function() {
   view = Ember.View.create({
     template: templateFor('{{each view.people itemViewClass="MyView"}}'),

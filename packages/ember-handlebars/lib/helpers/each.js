@@ -22,6 +22,14 @@ Ember.Handlebars.EachView = Ember.CollectionView.extend(Ember._Metamorph, {
     var keyword = get(this, 'keyword');
     var content = get(view, 'content');
 
+    var itemController = get(this, 'itemController');
+    if (itemController) {
+      var controller = get(this, 'container').lookup('controller:'+itemController);
+      set(controller, 'model', content);
+      content = controller;
+      set(view, 'content', controller);
+    }
+
     if (keyword) {
       var data = get(view, 'templateData');
 
