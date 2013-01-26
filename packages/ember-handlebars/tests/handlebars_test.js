@@ -664,6 +664,32 @@ test("should update the block when object passed to #if helper changes and an in
   });
 });
 
+test("edge case: child conditional should not render children if parent conditional becomes false", function() {
+  var childCreated = false;
+
+  view = Ember.View.create({
+    cond1: true,
+    cond2: false,
+    viewClass: Ember.View.extend({
+      init: function() {
+        this._super();
+        childCreated = true;
+      }
+    }),
+    template: Ember.Handlebars.compile('{{#if view.cond1}}{{#if view.cond2}}{{#view view.viewClass}}test{{/view}}{{/if}}{{/if}}')
+  });
+
+  appendView();
+
+  Ember.run(function() {
+    // The order of these sets is important for the test
+    view.set('cond2', true);
+    view.set('cond1', false);
+  });
+
+  ok(!childCreated, 'child should not be created');
+});
+
 // test("Should insert a localized string if the {{loc}} helper is used", function() {
 //   Ember.stringsFor('en', {
 //     'Brazil': 'Brasilia'
