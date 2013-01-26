@@ -85,6 +85,38 @@ test("should by default target the view's controller", function() {
   ActionHelper.registerAction = originalRegisterAction;
 });
 
+test("should target the current controller inside an {{each}} loop", function() {
+  var registeredTarget;
+
+  ActionHelper.registerAction = function(actionName, options) {
+    registeredTarget = options.target;
+  };
+
+  var itemController = Ember.ObjectController.create();
+
+  var ArrayController = Ember.ArrayController.extend({
+    itemController: 'stub',
+    controllerAt: function(idx, object) {
+      return itemController;
+    }
+  });
+
+  var controller = ArrayController.create({
+    model: Ember.A([1])
+  });
+
+  view = Ember.View.create({
+    controller: controller,
+    template: Ember.Handlebars.compile('{{#each controller}}{{action "editTodo"}}{{/each}}')
+  });
+
+  appendView();
+
+  equal(registeredTarget, itemController, "the item controller is the target of action");
+
+  ActionHelper.registerAction = originalRegisterAction;
+});
+
 test("should allow a target to be specified", function() {
   var registeredTarget;
 
