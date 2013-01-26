@@ -860,6 +860,8 @@ Ember.View = Ember.CoreView.extend(
     var layoutName = get(this, 'layoutName'),
         layout = this.templateForName(layoutName, 'layout');
 
+    Ember.warn("Could not find layout named '" + layoutName + "'. Check for typos. Using the default layout instead.", !layoutName || layout);
+
     return layout || get(this, 'defaultLayout');
   }).property('layoutName'),
 
