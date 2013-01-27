@@ -1,3 +1,4 @@
+var get = Ember.get, set = Ember.set;
 var people, view;
 var template, templateMyView;
 var templateFor = function(template) {
@@ -185,43 +186,69 @@ test("it works inside a table element", function() {
 test("it supports itemController", function() {
   var Controller = Ember.Controller.extend({
     controllerName: Ember.computed(function() {
-      return "controller:"+this.get('model.name');
+      return "controller:"+this.get('content.name');
     })
   });
 
+  var container = new Ember.Container();
   view = Ember.View.create({
     template: templateFor('{{#each view.people itemController="person"}}{{controllerName}}{{/each}}'),
     people: people,
-    container: {
-      lookup: function(controller) {
-        return Controller.create();
-      }
+    controller: {
+      container: container
     }
   });
+
+  container.register('controller', 'person', Controller);
 
   append(view);
 
   equal(view.$().text(), "controller:Steve Holtcontroller:Annabelle");
+
+  Ember.run(function() {
+    view.rerender();
+  });
+
+  assertText(view, "controller:Steve Holtcontroller:Annabelle");
+
+  Ember.run(function() {
+    people.pushObject({ name: "Yehuda Katz" });
+  });
+
+  assertText(view, "controller:Steve Holtcontroller:Annabellecontroller:Yehuda Katz");
+
+  Ember.run(function() {
+    set(view, 'people', Ember.A([{ name: "Trek Glowacki" }, { name: "Geoffrey Grosenbach" }]));
+  });
+
+  assertText(view, "controller:Trek Glowackicontroller:Geoffrey Grosenbach");
 });
 
 test("it supports itemController when using a custom keyword", function() {
   var Controller = Ember.Controller.extend({
     controllerName: Ember.computed(function() {
-      return "controller:"+this.get('model.name');
+      return "controller:"+this.get('content.name');
     })
   });
 
+  var container = new Ember.Container();
   view = Ember.View.create({
     template: templateFor('{{#each person in view.people itemController="person"}}{{person.controllerName}}{{/each}}'),
     people: people,
-    container: {
-      lookup: function(controller) {
-        return Controller.create();
-      }
+    controller: {
+      container: container
     }
   });
 
+  container.register('controller', 'person', Controller);
+
   append(view);
+
+  equal(view.$().text(), "controller:Steve Holtcontroller:Annabelle");
+
+  Ember.run(function() {
+    view.rerender();
+  });
 
   equal(view.$().text(), "controller:Steve Holtcontroller:Annabelle");
 });
