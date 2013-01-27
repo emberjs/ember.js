@@ -67,6 +67,13 @@ DSL.prototype = {
         match(dslMatch[0]).to(dslMatch[1], dslMatch[2]);
       }
     };
+  },
+
+  mount: function(name, options) {
+    options = options || {};
+    var definition = definitions[name];
+    Ember.assert("The route definition " + name + " was not found", definition);
+    this.resource(name, options, definition);
   }
 };
 
@@ -74,6 +81,11 @@ DSL.map = function(callback) {
   var dsl = new DSL();
   callback.call(dsl);
   return dsl;
+};
+
+var definitions = {};
+DSL.define = function(name, callback) {
+  definitions[name] = callback;
 };
 
 Ember.RouterDSL = DSL;
