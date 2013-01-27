@@ -711,9 +711,7 @@ Ember.StateManager = Ember.State.extend({
    @property currentPath
    @type String
   */
-  currentPath: Ember.computed('currentState', function() {
-    return get(this, 'currentState.path');
-  }),
+  currentPath: Ember.computed.alias('currentState.path'),
 
   /**
     The name of transitionEvent that this stateManager will dispatch

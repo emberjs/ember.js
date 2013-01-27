@@ -66,9 +66,7 @@ Ember.ArrayProxy = Ember.Object.extend(Ember.MutableArray,
 
    @property arrangedContent
   */
-  arrangedContent: Ember.computed('content', function() {
-    return get(this, 'content');
-  }),
+  arrangedContent: Ember.computed.alias('content'),
 
   /**
     Should actually retrieve the object at the specified index from the

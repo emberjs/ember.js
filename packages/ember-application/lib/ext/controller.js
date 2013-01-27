@@ -61,14 +61,6 @@ Ember.ControllerMixin.reopen({
     return container.lookup('controller:' + controllerName);
   },
 
-  model: Ember.computed(function(key, value) {
-    if (arguments.length > 1) {
-      return set(this, 'content', value);
-    } else {
-      return get(this, 'content');
-    }
-  }).property('content'),
-
   controllers: Ember.computed(function() {
     return ControllersProxy.create({ controller: this });
   })
