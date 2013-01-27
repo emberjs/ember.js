@@ -90,9 +90,11 @@ test("A control's state is persisted if the view is destroyed and re-rendered", 
     })
   }));
 
+  var template = compile("{{control 'widget' person1}}{{control 'widget' person2}}");
+
   appendView({
     controller: controller,
-    template: compile("{{control 'widget' person1 name='person1'}}{{control 'widget' person2 name='person2'}}")
+    template: template
   });
 
   var text = view.$().text();
@@ -102,7 +104,7 @@ test("A control's state is persisted if the view is destroyed and re-rendered", 
 
   appendView({
     controller: controller,
-    template: compile("{{control 'widget' person1 name='person1'}}{{control 'widget' person2 name='person2'}}")
+    template: template
   });
 
   equal(view.$().text(), text);
@@ -122,7 +124,7 @@ test("if a controller's model changes, its child controllers are destroyed", fun
 
   appendView({
     controller: controller,
-    template: compile("{{control 'widget' model name='person1'}}")
+    template: compile("{{control 'widget' model}}")
   });
 
   var childController = view.get('childViews').objectAt(0).get('controller');

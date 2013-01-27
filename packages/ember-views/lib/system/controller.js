@@ -19,6 +19,7 @@ Ember.ControllerMixin.reopen({
   namespace: null,
   view: null,
   container: null,
+  _childContainers: null,
 
   init: function() {
     this._super();

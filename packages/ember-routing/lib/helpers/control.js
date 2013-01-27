@@ -15,15 +15,15 @@ Ember.Handlebars.registerHelper('control', function(path, modelPath, options) {
   var controller = options.data.keywords.controller,
       view = options.data.keywords.view,
       children = get(controller, '_childContainers'),
-      name = options.hash.name,
+      controlID = options.hash.controlID,
       container, subContainer;
 
-  if (name && children.hasOwnProperty(name)) {
-    subContainer = children[name];
+  if (children.hasOwnProperty(controlID)) {
+    subContainer = children[controlID];
   } else {
     container = get(controller, 'container'),
     subContainer = container.child();
-    children[name] = subContainer;
+    children[controlID] = subContainer;
   }
 
   var childView = subContainer.lookup('view:' + path),

@@ -88,6 +88,8 @@ Ember.Handlebars.JavaScriptCompiler.prototype.appendToBuffer = function(string) 
   return "data.buffer.push("+string+");";
 };
 
+var prefix = "ember" + (+new Date()), incr = 1;
+
 /**
   @private
 
@@ -100,8 +102,11 @@ Ember.Handlebars.JavaScriptCompiler.prototype.appendToBuffer = function(string) 
   @param mustache
 */
 Ember.Handlebars.Compiler.prototype.mustache = function(mustache) {
-  if (mustache.params.length || mustache.hash) {
-    return Handlebars.Compiler.prototype.mustache.call(this, mustache);
+  if (mustache.isHelper && mustache.id.string === 'control') {
+    mustache.hash = mustache.hash || new Handlebars.AST.HashNode([]);
+    mustache.hash.pairs.push(["controlID", new Handlebars.AST.StringNode(prefix + incr++)]);
+  } else if (mustache.params.length || mustache.hash) {
+    // no changes required
   } else {
     var id = new Handlebars.AST.IdNode(['_triageMustache']);
 
@@ -113,8 +118,9 @@ Ember.Handlebars.Compiler.prototype.mustache = function(mustache) {
       mustache.hash.pairs.push(["unescaped", new Handlebars.AST.StringNode("true")]);
     }
     mustache = new Handlebars.AST.MustacheNode([id].concat([mustache.id]), mustache.hash, !mustache.escaped);
-    return Handlebars.Compiler.prototype.mustache.call(this, mustache);
   }
+
+  return Handlebars.Compiler.prototype.mustache.call(this, mustache);
 };
 
 /**
