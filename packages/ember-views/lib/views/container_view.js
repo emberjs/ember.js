@@ -11,9 +11,7 @@ var states = Ember.View.cloneStates(Ember.View.states);
 var get = Ember.get, set = Ember.set, meta = Ember.meta;
 var forEach = Ember.EnumerableUtils.forEach;
 
-var childViewsProperty = Ember.computed(function() {
-  return get(this, '_childViews');
-}).property('_childViews');
+var childViewsProperty = Ember.computed.alias('_childViews');
 
 /**
   A `ContainerView` is an `Ember.View` subclass that allows for manual or
