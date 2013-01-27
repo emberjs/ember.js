@@ -627,7 +627,8 @@ Ember.Application.reopenClass({
 function resolverFor(namespace) {
   return function(fullName) {
     var nameParts = fullName.split(":"),
-        type = nameParts[0], name = nameParts[1];
+        type = nameParts[0], name = nameParts[1],
+        originalName = name;
 
     if (type === 'template') {
       var templateName = name.replace(/\./g, '/');
@@ -648,7 +649,25 @@ function resolverFor(namespace) {
     var className = classify(name) + classify(type);
     var factory = get(namespace, className);
 
-    if (factory) { return factory; }
+    if (factory) { 
+      return factory;
+    } else {
+      // if not found a factory into the application object
+      // search in any namespace in window object
+      if (originalName.indexOf('.') >= 0) { // dot notation for nested namespaces
+        originalName = originalName.split('.');
+        var obj = window, index = 0, length = originalName.length;
+        while (index < (length - 1)) {
+          if (!obj) { return; } // return if nothing to do
+          obj = get(obj, originalName[index]);
+          index++;
+        }
+        if (!obj) { return; } // return if nothing to do
+        className = classify(originalName[index]) + classify(type);
+        factory = get(obj, className);
+        if (factory) { return factory; }
+      }
+    }
   };
 }
 
