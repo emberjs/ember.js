@@ -73,9 +73,6 @@ var get = Ember.get, set = Ember.set, defineProperty = Ember.defineProperty;
 */
 Ember.Observable = Ember.Mixin.create(/** @scope Ember.Observable.prototype */ {
 
-  // compatibility
-  isObserverable: true,
-
   /**
     Retrieves the value of a property from the object.
 

@@ -47,15 +47,17 @@ Ember.Router = Ember.Object.extend({
     container.register('view', 'default', DefaultView);
     container.register('view', 'toplevel', Ember.View.extend());
 
-    router.handleURL(location.getURL());
+    this.handleURL(location.getURL());
     location.onUpdateURL(function(url) {
-      router.handleURL(url);
+      self.handleURL(url);
     });
   },
 
   didTransition: function(infos) {
     // Don't do any further action here if we redirected
-    if (infos[infos.length-1].handler.transitioned) { return; }
+    for (var i=0, l=infos.length; i<l; i++) {
+      if (infos[i].handler.transitioned) { return; }
+    }
 
     var appController = this.container.lookup('controller:application'),
         path = routePath(infos);

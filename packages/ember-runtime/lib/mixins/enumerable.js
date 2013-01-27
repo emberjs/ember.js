@@ -430,7 +430,7 @@ Ember.Enumerable = Ember.Mixin.create(
     @method find
     @param {Function} callback The callback to execute
     @param {Object} [target] The target object to use
-    @return {Object} Found item or `null`.
+    @return {Object} Found item or `undefined`.
   */
   find: function(callback, target) {
     var len = get(this, 'length') ;
@@ -458,7 +458,7 @@ Ember.Enumerable = Ember.Mixin.create(
     @method findProperty
     @param {String} key the property to test
     @param {String} [value] optional value to test against.
-    @return {Object} found item or `null`
+    @return {Object} found item or `undefined`
   */
   findProperty: function(key, value) {
     return this.find(iter.apply(this, arguments));
@@ -518,7 +518,7 @@ Ember.Enumerable = Ember.Mixin.create(
 
   /**
     Returns `true` if the passed function returns true for any item in the
-    enumeration. This corresponds with the `every()` method in JavaScript 1.6.
+    enumeration. This corresponds with the `some()` method in JavaScript 1.6.
 
     The callback method you provide should have the following signature (all
     parameters are optional):

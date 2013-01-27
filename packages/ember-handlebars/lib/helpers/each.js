@@ -10,6 +10,42 @@ require("ember-handlebars/views/metamorph_view");
 var get = Ember.get, set = Ember.set;
 
 Ember.Handlebars.EachView = Ember.CollectionView.extend(Ember._Metamorph, {
+  init: function() {
+    var itemController = get(this, 'itemController');
+    var binding;
+
+    if (itemController) {
+      var controller = Ember.ArrayController.create();
+      set(controller, 'itemController', itemController);
+      set(controller, 'container', get(this, 'controller.container'));
+      set(controller, '_eachView', this);
+      this.disableContentObservers(function() {
+        set(this, 'content', controller);
+        binding = new Ember.Binding('content', '_eachView.dataSource').oneWay();
+        binding.connect(controller);
+      });
+
+      set(this, '_arrayController', controller);
+    } else {
+      this.disableContentObservers(function() {
+        binding = new Ember.Binding('content', 'dataSource').oneWay();
+        binding.connect(this);
+      });
+    }
+
+    return this._super();
+  },
+
+  disableContentObservers: function(callback) {
+    Ember.removeBeforeObserver(this, 'content', null, '_contentWillChange');
+    Ember.removeObserver(this, 'content', null, '_contentDidChange');
+
+    callback.apply(this);
+
+    Ember.addBeforeObserver(this, 'content', null, '_contentWillChange');
+    Ember.addObserver(this, 'content', null, '_contentDidChange');
+  },
+
   itemViewClass: Ember._MetamorphView,
   emptyViewClass: Ember._MetamorphView,
 
@@ -20,6 +56,7 @@ Ember.Handlebars.EachView = Ember.CollectionView.extend(Ember._Metamorph, {
     // to insert keywords, it is responsible for cloning
     // the keywords hash. This will be fixed momentarily.
     var keyword = get(this, 'keyword');
+    var content = get(view, 'content');
 
     if (keyword) {
       var data = get(view, 'templateData');
@@ -28,14 +65,28 @@ Ember.Handlebars.EachView = Ember.CollectionView.extend(Ember._Metamorph, {
       data.keywords = view.cloneKeywords();
       set(view, 'templateData', data);
 
-      var content = get(view, 'content');
-
       // In this case, we do not bind, because the `content` of
       // a #each item cannot change.
       data.keywords[keyword] = content;
     }
 
+    // If {{#each}} is looping over an array of controllers,
+    // point each child view at their respective controller.
+    if (content && get(content, 'isController')) {
+      set(view, 'controller', content);
+    }
+
     return view;
+  },
+
+  willDestroy: function() {
+    var arrayController = get(this, '_arrayController');
+
+    if (arrayController) {
+      arrayController.destroy();
+    }
+
+    return this._super();
   }
 });
 
@@ -226,7 +277,7 @@ Ember.Handlebars.registerHelper('each', function(path, options) {
     options.hash.eachHelper = 'each';
   }
 
-  options.hash.contentBinding = path;
+  options.hash.dataSourceBinding = path;
   // Set up emptyView as a metamorph with no tag
   //options.hash.emptyViewClass = Ember._MetamorphView;
 

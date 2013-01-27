@@ -3,7 +3,7 @@
 @submodule ember-runtime
 */
 
-var loadHooks = {};
+var loadHooks = Ember.ENV.EMBER_LOAD_HOOKS || {};
 var loaded = {};
 
 /**

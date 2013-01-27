@@ -67,6 +67,14 @@
     }
     window.ENV = window.ENV || {};
 
+    // Test for "hooks in ENV.EMBER_LOAD_HOOKS['hookName'] get executed"
+    ENV.EMBER_LOAD_HOOKS = ENV.EMBER_LOAD_HOOKS || {};
+    ENV.EMBER_LOAD_HOOKS.__before_ember_test_hook__ = ENV.EMBER_LOAD_HOOKS.__before_ember_test_hook__ || [];
+    ENV.__test_hook_count__ = 0;
+    ENV.EMBER_LOAD_HOOKS.__before_ember_test_hook__.push(function(object) {
+      ENV.__test_hook_count__ += object;
+    });
+
     // Handle extending prototypes
     QUnit.config.urlConfig.push('extendprototypes');
 
@@ -167,25 +175,39 @@
 
     if (packages[0] === 'all') {
       packages = [
-        'ember-handlebars',
+        'container',
         'ember-metal',
         'ember-runtime',
         'ember-states',
         'ember-views',
+        'ember-handlebars',
         'ember-routing',
         'ember-application',
         'ember'
       ];
     }
 
-    // External dependencies are loaded via the AMD shim
-    packages.unshift('rsvp');
+    var newPackages = [],
+        skipPackages = (QUnit.urlParams.skipPackage || '').split(","),
+        skip;
+    for (var i=0; i<packages.length; i++) {
+      skip = false;
+      for (var k=0; k<skipPackages.length; k++) {
+        if (packages[i] === skipPackages[k]) {
+          skip = true;
+          break;
+        }
+      }
+      if (!skip) { newPackages.push(packages[i]); }
+    }
+    packages = newPackages;
 
     len = packages.length;
 
-    // There is no require for this in the code
+    // There is no require for these in the code
     if (dist == 'spade') {
       minispade.require('ember-debug');
+      minispade.require('rsvp');
     }
 
     for (idx=0; idx<len; idx++) {

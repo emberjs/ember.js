@@ -346,7 +346,7 @@ var merge = function(original, hash) {
     })
   });
   App.initialize();
-  ```javascript
+  ```
 
   And application code:
 

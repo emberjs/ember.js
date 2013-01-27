@@ -55,7 +55,7 @@ Ember.Route = Ember.Object.extend({
     this.transitioned = false;
     this.redirect(context);
 
-    if (this.transitioned) { return; }
+    if (this.transitioned) { return false; }
 
     var controller = this.controllerFor(this.routeName, context);
 
@@ -367,10 +367,10 @@ Ember.Route = Ember.Object.extend({
 
     if (!view && !template) { return; }
 
-    this.lastRenderedTemplate = name;
-
     options = normalizeOptions(this, name, template, options);
     view = setupView(view, container, options);
+
+    if (options.outlet === 'main') { this.lastRenderedTemplate = name; }
 
     appendView(this, view, options);
   }
