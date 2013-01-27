@@ -10,12 +10,13 @@ var ControllersProxy = Ember.Object.extend({
   unknownProperty: function(controllerName) {
     var controller = get(this, 'controller'),
       needs = get(controller, 'needs'),
+      container = controller.get('container'),
       dependency;
 
     for (var i=0, l=needs.length; i<l; i++) {
       dependency = needs[i];
       if (dependency === controllerName) {
-        return controller.controllerFor(controllerName);
+        return container.lookup('controller:' + controllerName);
       }
     }
   }
@@ -57,6 +58,7 @@ Ember.ControllerMixin.reopen({
   },
 
   controllerFor: function(controllerName) {
+    Ember.deprecate("Controller#controllerFor is depcrecated, please use Controller#needs instead");
     var container = get(this, 'container');
     return container.lookup('controller:' + controllerName);
   },
