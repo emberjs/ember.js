@@ -229,10 +229,10 @@ module("Ember.Application Depedency Injection", {
     application.Email  = Ember.Object.extend({});
     application.User   = Ember.Object.extend({});
 
-    application.register('model', 'person', application.Person, {singleton: false });
-    application.register('model', 'user', application.User, {singleton: false });
-    application.register('fruit', 'favorite', application.Orange);
-    application.register('communication', 'main', application.Email, {singleton: false});
+    application.register('model:person', application.Person, {singleton: false });
+    application.register('model:user', application.User, {singleton: false });
+    application.register('fruit:favorite', application.Orange);
+    application.register('communication:main', application.Email, {singleton: false});
 
     locator = application.__container__;
   },
