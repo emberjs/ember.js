@@ -592,11 +592,11 @@ define("router",
     function trigger(router, args) {
       var currentHandlerInfos = router.currentHandlerInfos;
 
-      if (!currentHandlerInfos) {
-        throw new Error("Could not trigger event. There are no active handlers");
-      }
-
       var name = args.shift();
+
+      if (!currentHandlerInfos) {
+        throw new Error("Could not trigger event '" + name + "'. There are no active handlers");
+      }
 
       for (var i=currentHandlerInfos.length-1; i>=0; i--) {
         var handlerInfo = currentHandlerInfos[i],
@@ -604,9 +604,11 @@ define("router",
 
         if (handler.events && handler.events[name]) {
           handler.events[name].apply(handler, args);
-          break;
+          return;
         }
       }
+
+      throw new Error("Nothing handled the event '" + name + "'.");
     }
 
     function setContext(handler, context) {
