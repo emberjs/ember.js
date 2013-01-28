@@ -86,18 +86,21 @@ test("empty views should be removed when content is added to the collection (reg
   });
 
   view = Ember.View.create({
-    template: Ember.Handlebars.compile('{{#collection App.ListView contentBinding="App.ListController" tagName="table"}} <td>{{content.title}}</td> {{/collection}}')
+    template: Ember.Handlebars.compile('{{#collection App.ListView contentBinding="App.ListController" tagName="table"}} <td>{{view.content.title}}</td> {{/collection}}')
   });
 
   Ember.run(function() {
     view.appendTo('#qunit-fixture');
   });
 
+  equal(view.$('tr').length, 1, 'Make sure the empty view is there (regression)');
+
   Ember.run(function() {
     App.ListController.pushObject({title : "Go Away, Placeholder Row!"});
   });
 
   equal(view.$('tr').length, 1, 'has one row');
+  equal(view.$('tr:nth-child(1) td').text(), 'Go Away, Placeholder Row!', 'The content is the updated data.');
 
   Ember.run(function(){ App.destroy(); });
 });
