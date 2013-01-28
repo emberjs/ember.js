@@ -404,12 +404,7 @@ var Application = Ember.Application = Ember.Namespace.extend(
   **/
   inject: function(factoryNameOrType, property, injectionName){
     var container = this.__container__;
-
-    if (~factoryNameOrType.indexOf(':')) {
-      container.injection.apply(container, arguments);
-    } else {
-      container.typeInjection.apply(container, arguments);
-    }
+    container.typeInjection.apply(container, arguments);
   },
 
   /**
