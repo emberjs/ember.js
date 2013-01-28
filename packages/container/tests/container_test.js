@@ -32,7 +32,7 @@ test("A registered factory returns the same instance each time", function() {
   var container = new Container();
   var PostController = factory();
 
-  container.register('controller', 'post', PostController);
+  container.register('controller:post', PostController);
 
   var postController = container.lookup('controller:post');
 
@@ -45,7 +45,7 @@ test("A registered factory returns true for `has` if an item is registered", fun
   var container = new Container();
   var PostController = factory();
 
-  container.register('controller', 'post', PostController);
+  container.register('controller:post', PostController);
 
   equal(container.has('controller:post'), true, "The `has` method returned true for registered factories");
   equal(container.has('controller:posts'), false, "The `has` method returned false for unregistered factories");
@@ -55,7 +55,7 @@ test("A container lookup has access to the container", function() {
   var container = new Container();
   var PostController = factory();
 
-  container.register('controller', 'post', PostController);
+  container.register('controller:post', PostController);
 
   var postController = container.lookup('controller:post');
 
@@ -67,8 +67,8 @@ test("A factory type with a registered injection receives the injection", functi
   var PostController = factory();
   var Store = factory();
 
-  container.register('controller', 'post', PostController);
-  container.register('store', 'main', Store);
+  container.register('controller:post', PostController);
+  container.register('store:main', Store);
 
   container.typeInjection('controller', 'store', 'store:main');
 
@@ -83,8 +83,8 @@ test("An individual factory with a registered injection receives the injection",
   var PostController = factory();
   var Store = factory();
 
-  container.register('controller', 'post', PostController);
-  container.register('store', 'main', Store);
+  container.register('controller:post', PostController);
+  container.register('store:main', Store);
 
   container.injection('controller:post', 'store', 'store:main');
 
@@ -103,9 +103,9 @@ test("A factory with both type and individual injections", function() {
   var Store = factory();
   var Router = factory();
 
-  container.register('controller', 'post', PostController);
-  container.register('store', 'main', Store);
-  container.register('router', 'main', Router);
+  container.register('controller:post', PostController);
+  container.register('store:main', Store);
+  container.register('router:main', Router);
 
   container.injection('controller:post', 'store', 'store:main');
   container.typeInjection('controller', 'router', 'router:main');
@@ -122,7 +122,7 @@ test("A non-singleton factory is never cached", function() {
   var container = new Container();
   var PostView = factory();
 
-  container.register('view', 'post', PostView, { singleton: false });
+  container.register('view:post', PostView, { singleton: false });
 
   var postView1 = container.lookup('view:post');
   var postView2 = container.lookup('view:post');
@@ -134,7 +134,7 @@ test("A non-instantiated property is not instantiated", function() {
   var container = new Container();
 
   var template = function() {};
-  container.register('template', 'foo', template, { instantiate: false });
+  container.register('template:foo', template, { instantiate: false });
   equal(container.lookup('template:foo'), template);
 });
 
@@ -150,9 +150,9 @@ test("Destroying the container destroys any cached singletons", function() {
   var PostView = factory();
   var template = function() {};
 
-  container.register('controller', 'post', PostController);
-  container.register('view', 'post', PostView, { singleton: false });
-  container.register('template', 'post', template, { instantiate: false });
+  container.register('controller:post', PostController);
+  container.register('view:post', PostView, { singleton: false });
+  container.register('template:post', template, { instantiate: false });
 
   container.injection('controller:post', 'postView', 'view:post');
 
