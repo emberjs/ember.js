@@ -710,12 +710,24 @@ test("edge case: child conditional should not render children if parent conditio
 //   equal(view.$('h1').text(), 'Country: Brasilia', "returns localized value");
 // });
 
-test("Template views return undefined if their template cannot be found", function() {
+test("Template views return throw if their template cannot be found", function() {
   view = Ember.View.create({
     templateName: 'cantBeFound'
   });
 
-  equal(get(view, 'template'), undefined);
+  throws(function() {
+    get(view, 'template');
+  }, /cantBeFound/);
+});
+
+test("Layout views return throw if their layout cannot be found", function() {
+  view = Ember.View.create({
+    layoutName: 'cantBeFound'
+  });
+
+  throws(function() {
+    get(view, 'layout');
+  }, /cantBeFound/);
 });
 
 test("Template views add an elementId to child views created using the view helper", function() {
