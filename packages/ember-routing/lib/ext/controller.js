@@ -26,13 +26,5 @@ Ember.ControllerMixin.reopen({
   // TODO: Deprecate this, see https://github.com/emberjs/ember.js/issues/1785
   replaceWith: function() {
     return this.replaceRoute.apply(this, arguments);
-  },
-
-  model: Ember.computed(function(key, value) {
-    if (arguments.length > 1) {
-      return set(this, 'content', value);
-    } else {
-      return get(this, 'content');
-    }
-  }).property('content')
+  }
 });
