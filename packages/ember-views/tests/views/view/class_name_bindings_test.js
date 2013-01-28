@@ -124,6 +124,37 @@ test("classNames should not be duplicated on rerender", function(){
   equal(view.$().attr('class'), 'ember-view high');
 });
 
+test("classNameBindings should work when the binding property is updated and the view has been removed of the DOM", function(){
+  var view;
+
+  Ember.run(function(){
+    view = Ember.View.create({
+      classNameBindings: ['priority'],
+      priority: 'high'
+    });
+  });
+
+
+  Ember.run(function(){
+    view.createElement();
+  });
+
+  equal(view.$().attr('class'), 'ember-view high');
+
+  Ember.run(function(){
+    view.remove();
+  });
+
+  view.set('priority', 'low');
+
+  Ember.run(function() {
+    view.append();
+  });
+
+  equal(view.$().attr('class'), 'ember-view low');
+
+});
+
 test("classNames removed by a classNameBindings observer should not re-appear on rerender", function(){
   var view = Ember.View.create({
     classNameBindings: ['isUrgent'],
