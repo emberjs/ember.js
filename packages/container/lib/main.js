@@ -82,11 +82,13 @@ define("container",
       register: function(type, name, factory, options) {
         var fullName;
 
-        if (type.indexOf(':') !== -1 && arguments.length < 4) {
+
+        if (type.indexOf(':') !== -1){
           options = factory;
           factory = name;
           fullName = type;
         } else {
+          Ember.deprecate('register("'+type +'", "'+ name+'") is now deprecated in-favour of register("'+type+':'+name+'");', true);
           fullName = type + ":" + name;
         }
 
