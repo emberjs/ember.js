@@ -253,3 +253,18 @@ test('registered entities can be looked up later', function(){
   equal(locator.lookup('fruit:favorite'), locator.lookup('fruit:favorite'), 'singleton lookup worked');
   ok(locator.lookup('model:user') !== locator.lookup('model:user'), 'non-singleton lookup worked');
 });
+
+test('injections', function(){
+
+  application.inject('model', 'fruit', 'fruit:favorite');
+  application.inject('model:user', 'communication', 'communication:main');
+
+  var user = locator.lookup('model:user'),
+  person = locator.lookup('model:person'),
+  fruit = locator.lookup('fruit:favorite');
+
+  equal(user.get('fruit'), fruit);
+  equal(person.get('fruit'), fruit);
+
+  ok(application.Email.detectInstance(user.get('communication')));
+});
