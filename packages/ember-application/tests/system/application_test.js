@@ -216,3 +216,40 @@ test("Minimal Application initialized with just an application template", functi
 
   equal(trim(Ember.$('#qunit-fixture').text()), 'Hello World');
 });
+
+var locator;
+module("Ember.Application Depedency Injection", {
+  setup: function(){
+    Ember.run(function(){
+      application = Ember.Application.create();
+    });
+
+    application.Person = Ember.Object.extend({});
+    application.Orange = Ember.Object.extend({});
+    application.Email  = Ember.Object.extend({});
+    application.User   = Ember.Object.extend({});
+
+    application.register('model', 'person', application.Person, {singleton: false });
+    application.register('model', 'user', application.User, {singleton: false });
+    application.register('fruit', 'favorite', application.Orange);
+    application.register('communication', 'main', application.Email, {singleton: false});
+
+    locator = application.__container__;
+  },
+  teardown: function() {
+    Ember.run(function(){
+      application.destroy();
+    });
+    application = locator = null;
+  }
+});
+
+test('registered entities can be looked up later', function(){
+  equal(locator.resolve('model:person'), application.Person);
+  equal(locator.resolve('model:user'), application.User);
+  equal(locator.resolve('fruit:favorite'), application.Orange);
+  equal(locator.resolve('communication:main'), application.Email);
+
+  equal(locator.lookup('fruit:favorite'), locator.lookup('fruit:favorite'), 'singleton lookup worked');
+  ok(locator.lookup('model:user') !== locator.lookup('model:user'), 'non-singleton lookup worked');
+});
