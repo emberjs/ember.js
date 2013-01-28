@@ -361,7 +361,7 @@ var Application = Ember.Application = Ember.Namespace.extend(
 
   register: function() {
     var container = this.__container__;
-    return container.register.apply(container, arguments);
+    container.register.apply(container, arguments);
   },
 
   /**
