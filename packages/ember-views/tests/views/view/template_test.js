@@ -104,6 +104,24 @@ test("should not use defaultTemplate if template is provided", function() {
   equal("foo", view.$().text(), "default template was not printed");
 });
 
+test("should warn if provided template doesn't exist", function() {
+  var originalWarn = Ember.warn;
+  var warnCalled = false;
+  Ember.warn = function(message, test) { warnCalled = true; };
+
+  var view = Ember.View.create({
+    container: container,
+    templateName: 'santa clause'
+  });
+  Ember.run(function(){
+    view.createElement();
+  });
+
+  ok(warnCalled, "warning is displayed when the template doesn't exist");
+
+  Ember.warn = originalWarn;
+});
+
 test("should render an empty element if no template is specified", function() {
   var view;
 

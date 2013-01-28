@@ -819,6 +819,8 @@ Ember.View = Ember.CoreView.extend(
     var templateName = get(this, 'templateName'),
         template = this.templateForName(templateName, 'template');
 
+    Ember.warn("Could not find template named '" + templateName + "'. Check for typos. Using the default template instead.", !templateName || template);
+
     return template || get(this, 'defaultTemplate');
   }).property('templateName'),
 
