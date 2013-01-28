@@ -371,9 +371,9 @@ var Application = Ember.Application = Ember.Namespace.extend(
     App.Orange = Ember.Object.extend({});
     App.Email  = Ember.Object.extend({});
 
-    App.register('model', 'user', App.Person, {singleton: false });
-    App.register('fruit', 'favorite', App.Orange);
-    App.register('communication', 'main', App.Email, {singleton: false});
+    App.register('model:user', App.Person, {singleton: false });
+    App.register('fruit:favorite', App.Orange);
+    App.register('communication:main', App.Email, {singleton: false});
     ```
 
     @method register
