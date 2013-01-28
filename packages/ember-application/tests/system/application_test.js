@@ -255,7 +255,6 @@ test('registered entities can be looked up later', function(){
 });
 
 test('injections', function(){
-
   application.inject('model', 'fruit', 'fruit:favorite');
   application.inject('model:user', 'communication', 'communication:main');
 

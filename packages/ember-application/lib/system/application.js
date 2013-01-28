@@ -402,9 +402,9 @@ var Application = Ember.Application = Ember.Namespace.extend(
     @param  property {String}
     @param  injectionName {String}
   **/
-  inject: function(factoryNameOrType, property, injectionName){
+  inject: function(){
     var container = this.__container__;
-    container.typeInjection.apply(container, arguments);
+    container.injection.apply(container, arguments);
   },
 
   /**
