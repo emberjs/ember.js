@@ -175,3 +175,16 @@ test("classNameBindings lifecycle test", function(){
 
   equal(Ember.isWatching(view, 'priority'), false);
 });
+
+test("class names can be bound to properties named 'one'", function() {
+  var view = Ember.View.create({
+    one: 'james',
+    classNameBindings: ['one']
+  });
+
+  Ember.run(function() {
+    view.createElement();
+  });
+
+  ok(view.$().hasClass('james'), "adds the class of the one property");
+});
