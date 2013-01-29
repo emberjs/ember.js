@@ -201,7 +201,6 @@ Ember.Handlebars.registerHelper('collection', function(path, options) {
   hash.emptyView = emptyViewClass;
 
   itemHash._context = Ember.computed.alias('content');
-  delete hash.eachHelper;
 
   var viewString = view.toString();
 
