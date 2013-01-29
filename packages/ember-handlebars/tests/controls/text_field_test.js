@@ -141,6 +141,35 @@ test("value binding works properly for inputs that haven't been created", functi
   equal(textField.$().val(), 'ohai', "value is reflected in the input element once it is created");
 });
 
+test("value binding sets value on the element", function() {
+  Ember.run(function() {
+    textField = Ember.TextField.createWithMixins({
+      valueBinding: 'TestObject.value'
+    });
+    textField.append();
+  });
+
+  // Set the value via the DOM
+  Ember.run(function() {
+    textField.$().val('via dom');
+    // Trigger lets the view know we changed this value (like a real user editing)
+    textField.trigger('input', Ember.Object.create({
+      type: 'input'
+    }));
+  });
+
+  equal(get(textField, 'value'), 'via dom', "value property was properly updated via dom");
+  equal(textField.$().val(), 'via dom', "dom property was properly updated via dom");
+
+  // Now, set it via the binding
+  Ember.run(function() {
+    set(TestObject, 'value', 'via view');
+  });
+
+  equal(get(textField, 'value'), 'via view', "value property was properly updated via view");
+  equal(textField.$().val(), 'via view', "dom property was properly updated via view");
+});
+
 test("should call the insertNewline method when return key is pressed", function() {
   var wasCalled;
   var event = Ember.Object.create({

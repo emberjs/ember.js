@@ -105,6 +105,19 @@ Ember._RenderBuffer.prototype =
   elementAttributes: null,
 
   /**
+    The value for this attribute. Values cannot be set via attr after
+    jQuery 1.9, they need to be set with val() instead.
+
+    You should not maintain this value yourself, rather, you should use
+    the `val()` method of `Ember.RenderBuffer`.
+
+    @property elementValue
+    @type String
+    @default null
+  */
+  elementValue: null,
+
+  /**
     The tagname of the element an instance of `Ember.RenderBuffer` represents.
 
     Usually, this gets set as the first parameter to `Ember.RenderBuffer`. For
@@ -213,6 +226,26 @@ Ember._RenderBuffer.prototype =
   },
 
   /**
+    Adds an value which will be rendered to the element.
+
+    @method val
+    @param {String} value The value to set
+    @chainable
+    @return {Ember.RenderBuffer|String} this or the current value
+  */
+  val: function(value) {
+    var elementValue = this.elementValue;
+
+    if (arguments.length === 0) {
+      return elementValue;
+    } else {
+      this.elementValue = value;
+    }
+
+    return this;
+  },
+
+  /**
     Remove an attribute from the list of attributes to render.
 
     @method removeAttr
@@ -259,6 +292,7 @@ Ember._RenderBuffer.prototype =
         id = this.elementId,
         classes = this.classes,
         attrs = this.elementAttributes,
+        value = this.elementValue,
         style = this.elementStyle,
         prop;
 
@@ -297,6 +331,12 @@ Ember._RenderBuffer.prototype =
       this.elementAttributes = null;
     }
 
+    if (value) {
+      buffer.push(' value="' + this._escapeAttribute(value) + '"');
+
+      this.elementValue = null;
+    }
+
     buffer.push('>');
   },
 
@@ -316,6 +356,7 @@ Ember._RenderBuffer.prototype =
         id = this.elementId,
         classes = this.classes,
         attrs = this.elementAttributes,
+        value = this.elementValue,
         style = this.elementStyle,
         styleBuffer = '', prop;
 
@@ -348,6 +389,12 @@ Ember._RenderBuffer.prototype =
       }
 
       this.elementAttributes = null;
+    }
+
+    if (value) {
+      $element.val(value);
+
+      this.elementValue = null;
     }
 
     return element;
