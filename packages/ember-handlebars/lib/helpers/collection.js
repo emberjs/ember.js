@@ -200,7 +200,9 @@ Ember.Handlebars.registerHelper('collection', function(path, options) {
   }
   if (emptyViewClass) { hash.emptyView = emptyViewClass; }
 
-  itemHash._context = Ember.computed.alias('content');
+  if(!hash.keyword){
+    itemHash._context = Ember.computed.alias('content');
+  }
 
   var viewString = view.toString();
 
