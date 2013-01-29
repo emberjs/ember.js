@@ -48,6 +48,20 @@ test("prevents XSS injection via `attr`", function() {
   equal(el.childNodes.length, 0, 'should not have children');
 });
 
+test("prevents XSS injection via `val`", function() {
+  var buffer = new Ember.RenderBuffer('input');
+
+  buffer.val('trololol" onmouseover="pwn()');
+  buffer.pushOpeningTag();
+
+  var el = buffer.element(),
+      elValue = el.value,
+      elOnmouseover = el.getAttribute('onmouseover');
+
+  equal(elValue, 'trololol" onmouseover="pwn()', 'value should be escaped');
+  equal(elOnmouseover, undefined, 'should not have onmouseover');
+});
+
 test("prevents XSS injection via `addClass`", function() {
   var buffer = new Ember.RenderBuffer('div');
 
