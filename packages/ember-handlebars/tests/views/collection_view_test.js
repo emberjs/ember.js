@@ -538,3 +538,36 @@ test("should allow view objects to be swapped out without throwing an error (#78
 
 });
 
+test("context should be content", function(){
+  var App, view;
+
+  Ember.run(function(){
+    lookup.App = App = Ember.Application.create();
+  });
+
+  App.items = Ember.A([
+    Ember.Object.create({name: 'Dave'}),
+    Ember.Object.create({name: 'Mary'}),
+    Ember.Object.create({name: 'Sara'})
+  ]);
+
+  App.AnItemView = Ember.View.extend({
+    template: Ember.Handlebars.compile("Greetings {{name}}")
+  });
+
+  App.AView = Ember.View.extend({
+    template: Ember.Handlebars.compile('{{collection contentBinding="App.items" itemViewClass="App.AnItemView"}}')
+  });
+
+  Ember.run(function(){
+    view = App.AView.create();
+  });
+
+  Ember.run(function(){
+    view.appendTo('#qunit-fixture');
+  });
+
+  equal(view.$().text(), "Greetings DaveGreetings MaryGreetings Sara");
+
+  Ember.run(function(){ App.destroy(); });
+});
