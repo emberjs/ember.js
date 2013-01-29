@@ -60,6 +60,7 @@ Ember.Route = Ember.Object.extend({
     var controller = this.controllerFor(this.routeName, context);
 
     if (controller) {
+      this.controller = controller;
       set(controller, 'model', context);
     }
 
