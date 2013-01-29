@@ -2139,11 +2139,11 @@ Ember.View = Ember.CoreView.extend(
     return this.currentState.handleEvent(this, eventName, evt);
   },
 
-  registerObserver: function(root, path, observer) {
-    Ember.addObserver(root, path, observer);
+  registerObserver: function(root, path, target, observer) {
+    Ember.addObserver(root, path, target, observer);
 
     this.one('willClearRender', function() {
-      Ember.removeObserver(root, path, observer);
+      Ember.removeObserver(root, path, target, observer);
     });
   }
 
