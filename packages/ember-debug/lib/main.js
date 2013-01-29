@@ -65,6 +65,21 @@ Ember.warn = function(message, test) {
 };
 
 /**
+  Display a debug notice. Ember build tools will remove any calls to
+  `Ember.debug()` when doing a production build.
+
+  ```javascript
+  Ember.debug("I'm a debug notice!");
+  ```
+
+  @method debug
+  @param {String} message A debug message to display.
+*/
+Ember.debug = function(message) {
+  Ember.Logger.debug("DEBUG: "+message);
+};
+
+/**
   Display a deprecation warning with the provided message and a stack trace
   (Chrome and Firefox only). Ember build tools will remove any calls to
   `Ember.deprecate()` when doing a production build.

@@ -8,7 +8,7 @@ require "execjs"
 class EmberStripDebugMessagesFilter < Rake::Pipeline::Filter
   def strip_debug(data)
     # Strip debug code
-    data.gsub!(%r{^(\s)*Ember\.(assert|deprecate|warn)\((.*)\).*$}, "")
+    data.gsub!(%r{^(\s)*Ember\.(assert|deprecate|warn|debug)\((.*)\).*$}, "")
   end
   
   def add_localhost_warning(data)
