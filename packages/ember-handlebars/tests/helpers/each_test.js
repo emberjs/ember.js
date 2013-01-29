@@ -344,7 +344,7 @@ test("it works with the controller keyword", function() {
 
 module("{{#each foo in bar}}");
 
-test("#each accepts a name binding and does not change the context", function() {
+test("#each accepts a name binding", function() {
   view = Ember.View.create({
     template: templateFor("{{#each item in view.items}}{{view.title}} {{item}}{{/each}}"),
     title: "My Cool Each Test",
@@ -355,6 +355,27 @@ test("#each accepts a name binding and does not change the context", function() 
 
   equal(view.$().text(), "My Cool Each Test 1My Cool Each Test 2");
 });
+
+test("#each accepts a name binding and does not change the context", function() {
+  var controller = Ember.Controller.create({
+    name: 'bob the controller'
+  }),
+  obj = Ember.Object.create({
+    name: 'henry the item'
+  });
+
+  view = Ember.View.create({
+    template: templateFor("{{#each item in view.items}}{{name}}{{/each}}"),
+    title: "My Cool Each Test",
+    items: Ember.A([obj]),
+    controller: controller
+  });
+
+  append(view);
+
+  equal(view.$().text(), "bob the controller");
+});
+
 
 test("#each accepts a name binding and can display child properties", function() {
   view = Ember.View.create({
@@ -368,6 +389,17 @@ test("#each accepts a name binding and can display child properties", function()
   equal(view.$().text(), "My Cool Each Test 1My Cool Each Test 2");
 });
 
+test("#each accepts 'this' as the right hand side", function() {
+  view = Ember.View.create({
+    template: templateFor("{{#each item in this}}{{view.title}} {{item.name}}{{/each}}"),
+    title: "My Cool Each Test",
+    controller: Ember.A([{ name: 1 }, { name: 2 }])
+  });
+
+  append(view);
+
+  equal(view.$().text(), "My Cool Each Test 1My Cool Each Test 2");
+});
 test("#each accepts 'this' as the right hand side", function() {
   view = Ember.View.create({
     template: templateFor("{{#each item in this}}{{view.title}} {{item.name}}{{/each}}"),
