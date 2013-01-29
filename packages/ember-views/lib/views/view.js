@@ -1467,19 +1467,63 @@ Ember.View = Ember.CoreView.extend(
   },
 
   /**
-    Appends the view's element to the document body. If the view does
-    not have an HTML representation yet, `createElement()` will be called
-    automatically.
+    Appends the view's element to application under which is has been defined.
+    If the view does not have an HTML representation yet, `createElement()`
+    will be called automatically.
+
+    Consider the following setup:
+
+        App = Ember.Application.create({ rootElement: '#my-root' });
+        App.MyView = Ember.View.extend({...});
+        App.view = Ember.View.create({...});
+
+    Invoking `append()` on a view instance, in this case `App.view`, adds it
+    to the rootElement of the application, in this case to the element
+    with id `my-root`.
+
+    Creating an instance of a view, which has been defined on an application,
+    it is appended to the rootElement. So `App.MyView.create().append()` is
+    appended to the element with id `my-root`.
+
+    Appending a general Ember.View, adds it to the first defined application,
+    so `Ember.View.create().append()` is appended to the element with id `my-root`.
+
+    If you pass an instance of an application, its `rootElement` will be used.
 
     Note that this method just schedules the view to be appended; the DOM
     element will not be appended to the document body until all bindings have
     finished synchronizing.
 
-    @method append
-    @return {Ember.View} receiver
+    @parameter {Ember.Application} application, to which this view shall be appended
+    @returns {Ember.View} receiver
   */
-  append: function() {
-    return this.appendTo(document.body);
+  append: function(application) {
+    Ember.assert('application must be an instance of Ember.Application', !application || Ember.Application.detectInstance(application));
+
+    Ember.identifyNamespaces();
+
+    var firstApp;
+    var app = Ember.A(Ember.Namespace.NAMESPACES).find(function(ns) {
+      // sorry, we're looking only for instances of Ember.Application
+      if (!Ember.Application.detectInstance(ns)) return;
+
+      if (!firstApp) firstApp = ns;
+
+      // check each property of the application
+      return Ember.A(Ember.keys(ns)).find(function(prop) {
+        // concrete instance
+        if (ns[prop] === this) return true;
+
+        // check if the property is a view and if this view is an instance of it
+        if (Ember.View.detect(ns[prop]) && ns[prop].detectInstance(this)) return true;
+      }, this);
+    }, this);
+
+    Ember.assert('appending to another application is not allowed', !app || !application || (application === app));
+
+    app = application || app || firstApp;
+
+    return this.appendTo(app ? app.get('rootElement') : document.body);
   },
 
   /**
