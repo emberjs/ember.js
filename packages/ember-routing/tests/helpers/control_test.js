@@ -48,6 +48,19 @@ test("A control renders a template with a new instance of the named controller a
   renderedText("Hello");
 });
 
+test("A control's controller and view are lookuped up via template name", function() {
+  container.register('template:widgets/foo', compile("Hello"));
+  container.register('controller:widgets.foo', Ember.Controller.extend());
+  container.register('view:widgets.foo', Ember.View.extend());
+
+  appendView({
+    controller: container.lookup('controller:parent'),
+    template: compile("{{control 'widgets/foo'}}")
+  });
+
+  renderedText("Hello");
+});
+
 test("A control can specify a model to use in its template", function() {
   container.register('template:widget', compile("{{model.name}}"));
 
