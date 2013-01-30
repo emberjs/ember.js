@@ -61,7 +61,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
       if (!isSimpleClick(event)) { return true; }
 
       event.preventDefault();
-      if (this.bubbles === false) { event.stopPropagation(); }
+      if (!this.bubbles) { event.stopPropagation(); }
 
       var router = this.get('router');
 

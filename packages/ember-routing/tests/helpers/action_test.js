@@ -201,49 +201,6 @@ test("should be able to use action more than once for the same event within a vi
   equal(deleteWasCalled, false, "The delete action was not called");
 });
 
-test("the event should not bubble if `bubbles=false` is passed", function() {
-  var editWasCalled = false,
-      deleteWasCalled = false,
-      originalEventHandlerWasCalled = false;
-
-  var controller = Ember.Controller.extend({
-    edit: function() { editWasCalled = true; },
-    "delete": function() { deleteWasCalled = true; }
-  }).create();
-
-  view = Ember.View.create({
-    controller: controller,
-    template: Ember.Handlebars.compile(
-      '<a id="edit" href="#" {{action "edit" bubbles=false}}>edit</a><a id="delete" href="#" {{action "delete" bubbles=false}}>delete</a>'
-    ),
-    click: function() { originalEventHandlerWasCalled = true; }
-  });
-
-  appendView();
-
-  view.$('#edit').trigger('click');
-
-  equal(editWasCalled, true, "The edit action was called");
-  equal(deleteWasCalled, false, "The delete action was not called");
-  equal(originalEventHandlerWasCalled, false, "The original event handler was not called");
-
-  editWasCalled = deleteWasCalled = originalEventHandlerWasCalled = false;
-
-  view.$('#delete').trigger('click');
-
-  equal(editWasCalled, false, "The edit action was not called");
-  equal(deleteWasCalled, true, "The delete action was called");
-  equal(originalEventHandlerWasCalled, false, "The original event handler was not called");
-
-  editWasCalled = deleteWasCalled = originalEventHandlerWasCalled = false;
-
-  view.$().trigger('click');
-
-  equal(editWasCalled, false, "The edit action was not called");
-  equal(deleteWasCalled, false, "The delete action was not called");
-  equal(originalEventHandlerWasCalled, true, "The original event handler was called");
-});
-
 test("should work properly in an #each block", function() {
   var eventHandlerWasCalled = false;
 
@@ -326,7 +283,7 @@ test("should properly capture events on child elements of a container with an ac
   ok(eventHandlerWasCalled, "Event on a child element triggered the action of it's parent");
 });
 
-test("should allow bubbling of events from action helper to original parent event", function() {
+test("should not bubble events from action helper to original parent event", function() {
   var eventHandlerWasCalled = false,
       originalEventHandlerWasCalled = false;
 
@@ -344,10 +301,11 @@ test("should allow bubbling of events from action helper to original parent even
 
   view.$('a').trigger('click');
 
-  ok(eventHandlerWasCalled && originalEventHandlerWasCalled, "Both event handlers were called");
+  ok(eventHandlerWasCalled, "The child handler was called");
+  ok(!originalEventHandlerWasCalled, "The parent handler was not called");
 });
 
-test("should not bubble an event from action helper to original parent event if `bubbles=false` is passed", function() {
+test("should bubble an event from action helper to original parent event if `bubbles=true` is passed", function() {
   var eventHandlerWasCalled = false,
       originalEventHandlerWasCalled = false;
 
@@ -357,7 +315,7 @@ test("should not bubble an event from action helper to original parent event if 
 
   view = Ember.View.create({
     controller: controller,
-    template: Ember.Handlebars.compile('<a href="#" {{action "edit" bubbles=false}}>click me</a>'),
+    template: Ember.Handlebars.compile('<a href="#" {{action "edit" bubbles=true}}>click me</a>'),
     click: function() { originalEventHandlerWasCalled = true; }
   });
 
@@ -365,8 +323,7 @@ test("should not bubble an event from action helper to original parent event if 
 
   view.$('a').trigger('click');
 
-  ok(eventHandlerWasCalled, "The child handler was called");
-  ok(!originalEventHandlerWasCalled, "The parent handler was not called");
+  ok(eventHandlerWasCalled && originalEventHandlerWasCalled, "Both event handlers were called");
 });
 
 test("should allow 'send' as action name (#594)", function() {
