@@ -37,6 +37,54 @@ function renderedText(expected, msg) {
   QUnit.push(actual === expected, actual, expected, msg);
 }
 
+test("A control raises an error when a view cannot be found", function() {
+  container = new Ember.Container();
+  container.options('template', { instantiate: false });
+  container.options('view', { singleton: false });
+  container.register('controller:parent', Ember.Controller.extend());
+  container.register('controller:widget', Ember.Controller.extend());
+  container.register('template:widget', compile("Hello"));
+
+  throws(function() {
+    appendView({
+      controller: container.lookup('controller:parent'),
+      template: compile("{{control widget}}")
+    });
+  }, /find view/, "Must raise an error if no view is defined");
+});
+
+test("A control raises an error when a controller cannot be found", function() {
+  container = new Ember.Container();
+  container.options('template', { instantiate: false });
+  container.options('view', { singleton: false });
+  container.register('controller:parent', Ember.Controller.extend());
+  container.register('view:widget', Ember.View.extend());
+  container.register('template:widget', compile("Hello"));
+
+  throws(function() {
+    appendView({
+      controller: container.lookup('controller:parent'),
+      template: compile("{{control widget}}")
+    });
+  }, /find controller/, "Must raise an error when no controller is defined");
+});
+
+test("A control raises an error when a template cannot be found", function() {
+  container = new Ember.Container();
+  container.options('template', { instantiate: false });
+  container.options('view', { singleton: false });
+  container.register('controller:parent', Ember.Controller.extend());
+  container.register('controller:widget', Ember.Controller.extend());
+  container.register('view:widget', Ember.View.extend());
+
+  throws(function() {
+    appendView({
+      controller: container.lookup('controller:parent'),
+      template: compile("{{control widget}}")
+    });
+  }, /find template/, "Must raise an error when no template is defined");
+});
+
 test("A control renders a template with a new instance of the named controller and view", function() {
   container.register('template:widget', compile("Hello"));
 
