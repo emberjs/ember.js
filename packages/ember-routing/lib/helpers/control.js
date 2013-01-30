@@ -26,9 +26,15 @@ Ember.Handlebars.registerHelper('control', function(path, modelPath, options) {
     children[controlID] = subContainer;
   }
 
-  var childView = subContainer.lookup('view:' + path),
-      childController = subContainer.lookup('controller:' + path),
+  var normalizedPath = path.replace(/\//g, '.');
+
+  var childView = subContainer.lookup('view:' + normalizedPath),
+      childController = subContainer.lookup('controller:' + normalizedPath),
       childTemplate = subContainer.lookup('template:' + path);
+
+  Ember.assert("Could not find controller for path: " + normalizedPath, childController);
+  Ember.assert("Could not find view for path: " + normalizedPath, childView);
+  Ember.assert("Could not find template for path: " + path, childTemplate);
 
   set(childController, 'target', controller);
   set(childController, 'model', model);
