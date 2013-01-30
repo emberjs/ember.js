@@ -379,7 +379,6 @@ Ember.ContainerView = Ember.View.extend(Ember.MutableArray, {
     var currentView = get(this, 'currentView');
     if (currentView) {
       currentView.destroy();
-      this.removeObject(currentView);
     }
   }, 'currentView'),
 
