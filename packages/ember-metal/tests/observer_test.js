@@ -361,6 +361,44 @@ testBoth('addObserver should allow multiple objects to observe a property', func
   equal(target2.count, 1, 'target2 observer should have fired');
 });
 
+testBoth('addObserver once flag should removeObserver after invoked', function(get, set) { var observed = { foo: 'foo' };
+
+  var target = {
+    count: 0,
+
+    didChange: function(obj, keyName, value) {
+      this.count++;
+    }
+  };
+
+  // function once observer
+  target.count = 0;
+  Ember.addObserver(observed, 'foo', function() { target.didChange.call(target); }, true);
+
+  set(observed, 'foo', 'FOO');
+  equal(target.count, 1, 'target observer should have fired');
+  set(observed, 'foo', 'BAZ');
+  equal(target.count, 1, 'target observer should have fired only once');
+
+  // target-method once observer
+  target.count = 0;
+  Ember.addObserver(observed, 'foo', target, 'didChange', true);
+
+  set(observed, 'foo', 'FOO');
+  equal(target.count, 1, 'target observer should have fired');
+  set(observed, 'foo', 'BAZ');
+  equal(target.count, 1, 'target observer should have fired only once');
+
+  // test once === false to work as expected
+  target.count = 0;
+  Ember.addObserver(observed, 'foo', target, 'didChange', false);
+
+  set(observed, 'foo', 'FOO');
+  equal(target.count, 1, 'target observer should have fired');
+  set(observed, 'foo', 'BAZ');
+  equal(target.count, 2, 'target observer should have fired');
+});
+
 // ..........................................................
 // REMOVE OBSERVER
 //
@@ -533,6 +571,44 @@ testBoth('addBeforeObserver should respect targets with methods', function(get,s
   equal(target1.count, 1, 'target1 observer should have fired');
   equal(target2.count, 1, 'target2 observer should have fired');
 
+});
+
+testBoth('addBeforeObserver once flag should removeObserver after invoked', function(get, set) { var observed = { foo: 'foo' };
+
+  var target = {
+    count: 0,
+
+    didChange: function(obj, keyName, value) {
+      this.count++;
+    }
+  };
+
+  // function once observer
+  target.count = 0;
+  Ember.addBeforeObserver(observed, 'foo', function() { target.didChange.call(target); }, true);
+
+  set(observed, 'foo', 'FOO');
+  equal(target.count, 1, 'target observer should have fired');
+  set(observed, 'foo', 'BAZ');
+  equal(target.count, 1, 'target observer should have fired only once');
+
+  // target-method once observer
+  target.count = 0;
+  Ember.addBeforeObserver(observed, 'foo', target, 'didChange', true);
+
+  set(observed, 'foo', 'FOO');
+  equal(target.count, 1, 'target observer should have fired');
+  set(observed, 'foo', 'BAZ');
+  equal(target.count, 1, 'target observer should have fired only once');
+
+  // test once === false to work as expected
+  target.count = 0;
+  Ember.addBeforeObserver(observed, 'foo', target, 'didChange', false);
+
+  set(observed, 'foo', 'FOO');
+  equal(target.count, 1, 'target observer should have fired');
+  set(observed, 'foo', 'BAZ');
+  equal(target.count, 2, 'target observer should have fired');
 });
 
 // ..........................................................
