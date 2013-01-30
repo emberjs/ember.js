@@ -331,8 +331,9 @@ Ember.ContainerView = Ember.View.extend(Ember.MutableArray, {
 
     if (removed > 0) {
       var changedViews = views.slice(start, start+removed);
-      this.initializeViews(changedViews, null, null);
+      // transition to preRender before clearing parentView
       this.currentState.childViewsWillChange(this, views, start, removed);
+      this.initializeViews(changedViews, null, null);
     }
   },
 
