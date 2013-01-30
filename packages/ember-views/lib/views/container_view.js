@@ -151,56 +151,6 @@ var forEach = Ember.EnumerableUtils.forEach;
   </div>
   ```
 
-  Direct manipulation of `childViews` presence or absence in the DOM via calls
-  to `remove` or `removeFromParent` or calls to a container's `removeChild` may
-  not behave correctly.
-
-  Calling `remove()` on a child view will remove the view's HTML, but it will
-  remain as part of its container's `childView`s property.
-
-  Calling `removeChild()` on the container will remove the passed view instance
-  from the container's `childView`s but keep its HTML within the container's
-  rendered view.
-
-  Calling `removeFromParent()` behaves as expected but should be avoided in
-  favor of direct manipulation of a container as an array.
-
-  ```javascript
-  aContainer = Ember.ContainerView.create({
-    classNames: ['the-container'],
-    childViews: ['aView', 'bView'],
-    aView: Ember.View.create({
-      template: Ember.Handlebars.compile("A")
-    }),
-    bView: Ember.View.create({
-      template: Ember.Handlebars.compile("B")
-    })
-  });
-
-  aContainer.appendTo('body');
-  ```
-
-  Results in the HTML
-
-  ```html
-  <div class="ember-view the-container">
-    <div class="ember-view">A</div>
-    <div class="ember-view">B</div>
-  </div>
-  ```
-
-  Calling `aContainer.get('aView').removeFromParent()` will result in the
-  following HTML
-
-  ```html
-  <div class="ember-view the-container">
-    <div class="ember-view">B</div>
-  </div>
-  ```
-
-  And the `Ember.View` instance stored in `aContainer.aView` will be removed from `aContainer`'s
-  `childViews` array.
-
   ## Templates and Layout
 
   A `template`, `templateName`, `defaultTemplate`, `layout`, `layoutName` or
@@ -335,6 +285,11 @@ Ember.ContainerView = Ember.View.extend(Ember.MutableArray, {
       this.currentState.childViewsWillChange(this, views, start, removed);
       this.initializeViews(changedViews, null, null);
     }
+  },
+
+  removeChild: function(child) {
+    this.removeObject(child);
+    return this;
   },
 
   /**

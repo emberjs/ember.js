@@ -1500,7 +1500,7 @@ Ember.View = Ember.CoreView.extend(
     // element.
     // In the interim, we will just re-render if that happens. It is more
     // important than elements get garbage collected.
-    this.destroyElement();
+    if (!this.removedFromDOM) { this.destroyElement(); }
     this.invokeRecursively(function(view) {
       if (view.clearRenderedChildren) { view.clearRenderedChildren(); }
     });
