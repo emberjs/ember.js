@@ -158,7 +158,7 @@ test("events should stop propagating if the view is destroyed", function() {
     }
   });
 
-  Ember.get(parentView, 'childViews').pushObject(view);
+  parentView.pushObject(view);
 
   Ember.run(function() {
     parentView.append();

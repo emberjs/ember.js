@@ -143,7 +143,7 @@ test("if the controller is explicitly set to null while connecting an outlet, th
     controller: postController
   });
 
-  containerView.get('childViews').pushObject(view);
+  containerView.pushObject(view);
   equal(view.get('controller'), postController, "the controller was inherited from the parent");
 });
 
@@ -165,7 +165,7 @@ test("if the controller is not given while connecting an outlet, the instantiate
     controller: postController
   });
 
-  containerView.get('childViews').pushObject(view);
+  containerView.pushObject(view);
   equal(view.get('controller'), postController, "the controller was inherited from the parent");
 });
 

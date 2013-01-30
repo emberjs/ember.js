@@ -103,7 +103,7 @@ test("should update attribute bindings", function() {
 });
 
 test("should throw if attributes are changed in the inBuffer state", function() {
-  var parentView, childViews, Test;
+  var parentView, Test;
   Ember.run(function() {
     lookup.Test = Test = Ember.Namespace.create();
     Test.controller = Ember.Object.create({
@@ -112,8 +112,7 @@ test("should throw if attributes are changed in the inBuffer state", function() 
 
     parentView = Ember.ContainerView.create();
 
-    childViews = parentView.get('childViews');
-    childViews.pushObject(parentView.createChildView(Ember.View, {
+    parentView.pushObject(parentView.createChildView(Ember.View, {
       template: function() {
         return "foo";
       },
@@ -122,14 +121,14 @@ test("should throw if attributes are changed in the inBuffer state", function() 
       attributeBindings: ['foo']
     }));
 
-    childViews.pushObject(parentView.createChildView(Ember.View, {
+    parentView.pushObject(parentView.createChildView(Ember.View, {
       template: function() {
         Test.controller.set('foo', 'baz');
         return "bar";
       }
     }));
 
-    childViews.pushObject(parentView.createChildView(Ember.View, {
+    parentView.pushObject(parentView.createChildView(Ember.View, {
       template: function() {
         return "bat";
       }
