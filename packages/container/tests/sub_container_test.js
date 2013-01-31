@@ -91,3 +91,21 @@ test("Resolver is inherited from parent container", function() {
   equal(subContainer.resolve('controller:post'), otherController, 'should use parent resolver');
   equal(container.resolve('controller:post'), otherController, 'should use resolver');
 });
+
+test("Type injections should be inherited", function() {
+  var container = new Container();
+  var PostController = factory();
+  var Store = factory();
+
+  container.register('controller:post', PostController);
+  container.register('store:main', Store);
+
+  container.typeInjection('controller', 'store', 'store:main');
+
+  var store = container.lookup('store:main');
+
+  var childContainer = container.child();
+  var postController = childContainer.lookup('controller:post');
+
+  equal(postController.store, store);
+});
