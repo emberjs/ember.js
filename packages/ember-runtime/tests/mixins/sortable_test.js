@@ -232,3 +232,15 @@ test("you can set content later and it will be sorted", function() {
   equal(sortedArrayController.get('length'), 3, 'array has 3 items');
   equal(sortedArrayController.objectAt(0).name, 'Scumbag Bryn', 'array is sorted by name');
 });
+
+test("removing the last item of a sorted array proxy only removes last item - Bug #1537", function() {
+  var sortedArrayProxy = Ember.ArrayProxy.createWithMixins(Ember.SortableMixin,{
+    sortProperties: ['id'],
+    sortAscending: false,
+    content: Ember.A([{id: 1}, {id: 2}])
+  });
+
+  equal( sortedArrayProxy.get('length'), 2, 'precond - array has 2 items');
+  sortedArrayProxy.removeObject(sortedArrayProxy.get('lastObject'));
+  equal( sortedArrayProxy.get('length'), 1, 'array has 1 item');
+});
