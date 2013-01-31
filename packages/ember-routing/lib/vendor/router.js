@@ -384,10 +384,13 @@ define("router",
           failure(router, error);
         });
         // `loading` depends on the initial `collectObjects` call returning first.
-        Ember.run.once(this, function () {
-          setupContexts(router, objects);
-          loading(router);
-        });
+       (function() {
+          var doLoading = function() {
+            setupContexts(router, objects);
+            loading(router);
+          };
+          Ember.run.once(this, doLoading);
+        })();
       } else {
         proceed(object);
       }
