@@ -17,6 +17,7 @@ var page = require('webpage').create();
 
 page.onConsoleMessage = function(msg) {
   if (msg.slice(0,8) === 'WARNING:') { return; }
+  if (msg.slice(0,6) === 'DEBUG:') { return; }
 
   // Hack to access the print method
   // If there's a better way to do this, please change
