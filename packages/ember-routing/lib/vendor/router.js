@@ -367,7 +367,6 @@ define("router",
     */
     function collectObjects(router, results, index, objects) {
       if (results.length === index) {
-        loaded(router);
         setupContexts(router, objects);
         return;
       }
@@ -377,12 +376,21 @@ define("router",
       var object = handler.deserialize && handler.deserialize(result.params);
 
       if (object && typeof object.then === 'function') {
-        loading(router);
-
         // The chained `then` means that we can also catch errors that happen in `proceed`
-        object.then(proceed).then(null, function(error) {
+        object.then(function (obj) {
+          loaded(router);
+          proceed(obj);
+        }).then(null, function(error) {
           failure(router, error);
         });
+        // `loading` depends on the initial `collectObjects` call returning first.
+       (function() {
+          var doLoading = function() {
+            setupContexts(router, objects);
+            loading(router);
+          };
+          Ember.run.once(this, doLoading);
+        })();
       } else {
         proceed(object);
       }
@@ -461,7 +469,9 @@ define("router",
 
       var aborted = false;
       eachHandler(partition.entered, function(handler, context) {
-        if (aborted) { return; }
+        var rerender = handler.lastRenderedTemplate &&
+                       handler.lastRenderedTemplate === handler.routeName;
+        if (rerender || aborted) { return; }
         if (handler.enter) { handler.enter(); }
         setContext(handler, context);
         if (handler.setup) {
