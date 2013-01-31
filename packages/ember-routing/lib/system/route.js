@@ -410,6 +410,8 @@ function normalizeOptions(route, name, template, options) {
   options.name = name;
   options.template = template;
 
+  Ember.assert("An outlet ("+options.outlet+") was specified but this view will render at the root level.", options.outlet === 'main' || options.into);
+
   var controller = options.controller, namedController;
 
   if (options.controller) {
