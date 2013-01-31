@@ -2243,6 +2243,21 @@ test("should render other templates using the {{partial}} helper", function() {
   equal(Ember.$.trim(view.$().text()), "This sub-template is pretty great.");
 });
 
+test("should render other templates using the {{partial}} helper by name referenced in view property", function() {
+  Ember.TEMPLATES._subTemplate = Ember.Handlebars.compile("sub-template");
+
+  view = Ember.View.create({
+    template: Ember.Handlebars.compile('This {{partial view.partialName}} is pretty great.'),
+    partialName: 'subTemplate'
+  });
+
+  Ember.run(function() {
+    view.appendTo('#qunit-fixture');
+  });
+
+  equal(Ember.$.trim(view.$().text()), "This sub-template is pretty great.");
+});
+
 test("should render other slash-separated templates using the {{partial}} helper", function() {
   Ember.TEMPLATES["child/_subTemplate"] = Ember.Handlebars.compile("sub-template");
 
