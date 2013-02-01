@@ -70,6 +70,7 @@ test("it updates the view if an item is added", function() {
 });
 
 test("it allows you to access the current context using {{this}}", function() {
+  Ember.run(function() { view.destroy(); }); // destroy existing view
   view = Ember.View.create({
     template: templateFor("{{#each view.people}}{{this}}{{/each}}"),
     people: Ember.A(['Black Francis', 'Joey Santiago', 'Kim Deal', 'David Lovering'])
@@ -158,6 +159,10 @@ test("it works inside a ul element", function() {
   });
 
   equal(ulView.$('li').length, 3, "renders an additional <li> element when an object is added");
+
+  Ember.run(function() {
+    ulView.destroy();
+  });
 });
 
 test("it works inside a table element", function() {
@@ -181,6 +186,10 @@ test("it works inside a table element", function() {
   });
 
   equal(tableView.$('td').length, 4, "renders an additional <td> when an object is inserted at the beginning of the array");
+
+  Ember.run(function() {
+    tableView.destroy();
+  });
 });
 
 test("it supports itemController", function() {
@@ -191,6 +200,8 @@ test("it supports itemController", function() {
   });
 
   var container = new Ember.Container();
+
+  Ember.run(function() { view.destroy(); }); // destroy existing view
   view = Ember.View.create({
     template: templateFor('{{#each view.people itemController="person"}}{{controllerName}}{{/each}}'),
     people: people,
@@ -232,6 +243,8 @@ test("it supports itemController when using a custom keyword", function() {
   });
 
   var container = new Ember.Container();
+
+  Ember.run(function() { view.destroy(); }); // destroy existing view
   view = Ember.View.create({
     template: templateFor('{{#each person in view.people itemController="person"}}{{person.controllerName}}{{/each}}'),
     people: people,
@@ -254,6 +267,7 @@ test("it supports itemController when using a custom keyword", function() {
 });
 
 test("it supports {{itemViewClass=}}", function() {
+  Ember.run(function() { view.destroy(); }); // destroy existing view
   view = Ember.View.create({
     template: templateFor('{{each view.people itemViewClass="MyView"}}'),
     people: people
@@ -266,7 +280,7 @@ test("it supports {{itemViewClass=}}", function() {
 });
 
 test("it supports {{itemViewClass=}} with tagName", function() {
-
+  Ember.run(function() { view.destroy(); }); // destroy existing view
   view = Ember.View.create({
       template: templateFor('{{each view.people itemViewClass="MyView" tagName="ul"}}'),
       people: people
@@ -292,6 +306,7 @@ test("it supports {{itemViewClass=}} with in format", function() {
       template: templateFor("{{person.name}}")
   });
 
+  Ember.run(function() { view.destroy(); }); // destroy existing view
   view = Ember.View.create({
     template: templateFor('{{each person in view.people itemViewClass="MyView"}}'),
     people: people
@@ -304,6 +319,7 @@ test("it supports {{itemViewClass=}} with in format", function() {
 });
 
 test("it supports {{else}}", function() {
+  Ember.run(function() { view.destroy(); }); // destroy existing view
   view = Ember.View.create({
     template: templateFor("{{#each view.items}}{{this}}{{else}}Nothing{{/each}}"),
     items: Ember.A(['one', 'two'])
@@ -332,6 +348,7 @@ test("it works with the controller keyword", function() {
     content: Ember.A(["foo", "bar", "baz"])
   });
 
+  Ember.run(function() { view.destroy(); }); // destroy existing view
   view = Ember.View.create({
     controller: controller,
     template: templateFor("{{#view}}{{#each controller}}{{this}}{{/each}}{{/view}}")
@@ -342,7 +359,13 @@ test("it works with the controller keyword", function() {
   equal(view.$().text(), "foobarbaz");
 });
 
-module("{{#each foo in bar}}");
+module("{{#each foo in bar}}", {
+  teardown: function() {
+    Ember.run(function() {
+      view.destroy();
+    });
+  }
+});
 
 test("#each accepts a name binding", function() {
   view = Ember.View.create({

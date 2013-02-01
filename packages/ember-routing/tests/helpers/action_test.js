@@ -136,6 +136,10 @@ test("should allow a target to be specified", function() {
   equal(registeredTarget, anotherTarget, "The specified target was registered");
 
   ActionHelper.registerAction = originalRegisterAction;
+
+  Ember.run(function() {
+    anotherTarget.destroy();
+  });
 });
 
 test("should register an event handler", function() {
@@ -515,7 +519,7 @@ var compile = function(string) {
 test("it does not trigger action with special clicks", function() {
   var showCalled = false;
 
-  var view = Ember.View.create({
+  view = Ember.View.create({
     template: compile("<a {{action show href=true}}>Hi</a>")
   });
 

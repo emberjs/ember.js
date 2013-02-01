@@ -1,9 +1,16 @@
-module("virtual views");
+var get = Ember.get, set = Ember.set, rootView, childView;
 
-var get = Ember.get, set = Ember.set;
+module("virtual views", {
+  teardown: function() {
+    Ember.run(function() {
+      rootView.destroy();
+      childView.destroy();
+    });
+  }
+});
 
 test("a virtual view does not appear as a view's parentView", function() {
-  var rootView = Ember.View.create({
+  rootView = Ember.View.create({
     elementId: 'root-view',
 
     render: function(buffer) {
@@ -22,7 +29,7 @@ test("a virtual view does not appear as a view's parentView", function() {
     }
   });
 
-  var childView = Ember.View.create({
+  childView = Ember.View.create({
     render: function(buffer) {
       buffer.push("<p>Bye!</p>");
     }
@@ -43,7 +50,7 @@ test("a virtual view does not appear as a view's parentView", function() {
 });
 
 test("when a virtual view's child views change, the parent's childViews should reflect", function() {
-  var rootView = Ember.View.create({
+  rootView = Ember.View.create({
     elementId: 'root-view',
 
     render: function(buffer) {
@@ -62,7 +69,7 @@ test("when a virtual view's child views change, the parent's childViews should r
     }
   });
 
-  var childView = Ember.View.create({
+  childView = Ember.View.create({
     render: function(buffer) {
       buffer.push("<p>Bye!</p>");
     }

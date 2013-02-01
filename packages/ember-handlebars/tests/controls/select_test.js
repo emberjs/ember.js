@@ -1,7 +1,7 @@
 var map = Ember.EnumerableUtils.map,
     trim = Ember.$.trim;
 
-var dispatcher, select;
+var dispatcher, select, view;
 
 module("Ember.Select", {
   setup: function() {
@@ -254,6 +254,8 @@ test("multiple selections can be set indirectly via bindings and in-place when m
       cyril = { id: 5, firstName: 'Cyril' };
 
   Ember.run(function() {
+    select.destroy(); // Destroy the existing select
+
     select = Ember.Select.extend({
       indirectContent: indirectContent,
       contentBinding: 'indirectContent.controller.content',
@@ -467,6 +469,7 @@ module("Ember.Select - usage inside templates", {
   teardown: function() {
     Ember.run(function() {
       dispatcher.destroy();
+      if (view) { view.destroy(); }
     });
   }
 });
@@ -499,7 +502,7 @@ test("works from a template with bindings", function() {
     person: null
   });
 
-  var view = Ember.View.create({
+  view = Ember.View.create({
     app: application,
     template: Ember.Handlebars.compile(
       '{{view Ember.Select viewName="select"' +
@@ -538,7 +541,7 @@ test("upon content change, the DOM should reflect the selection (#481)", functio
   var userOne = {name: 'Mike', options: Ember.A(['a', 'b']), selectedOption: 'a'},
       userTwo = {name: 'John', options: Ember.A(['c', 'd']), selectedOption: 'd'};
 
-  var view = Ember.View.create({
+  view = Ember.View.create({
     user: userOne,
     template: Ember.Handlebars.compile(
       '{{view Ember.Select viewName="select"' +
@@ -574,7 +577,7 @@ test("upon content change with Array-like content, the DOM should reflect the se
     selectedOption: sylvain
   });
 
-  var view = Ember.View.create({
+  view = Ember.View.create({
     proxy: proxy,
     template: Ember.Handlebars.compile(
       '{{view Ember.Select viewName="select"' +
@@ -601,7 +604,7 @@ test("upon content change with Array-like content, the DOM should reflect the se
 });
 
 test("select element should correctly initialize and update selectedIndex and bound properties when using valueBinding", function() {
-  var view = Ember.View.create({
+  view = Ember.View.create({
     collection: Ember.A([{name: 'Wes', value: 'w'}, {name: 'Gordon', value: 'g'}]),
     val: 'g',
     template: Ember.Handlebars.compile(

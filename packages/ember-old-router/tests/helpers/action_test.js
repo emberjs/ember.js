@@ -126,6 +126,8 @@ test("should allow a target to be specified", function() {
   equal(registeredTarget, anotherTarget, "The specified target was registered");
 
   ActionHelper.registerAction = originalRegisterAction;
+
+  Ember.run(function() { anotherTarget.destroy(); });
 });
 
 test("should register an event handler", function() {
@@ -352,6 +354,8 @@ test("should send the view, event and current Handlebars context to the action",
   strictEqual(passedEvent.view, view, "the view passed is the view containing the action helper");
   deepEqual(passedEvent.context, aContext, "the context is passed");
   equal(passedEvent.type, 'click', "the event passed is the event triggered for the action helper");
+
+  Ember.run(function(){ aTarget.destroy(); });
 });
 
 test("should only trigger actions for the event they were registered on", function() {
@@ -453,7 +457,7 @@ test("it sets an URL with a context", function() {
 
   equal(router.get('currentState.path'), "root.index", "precond - the current stat is root.index");
 
-  var view = Ember.View.create({
+  view = Ember.View.create({
     template: compile('<a {{action showDashboard controller.component href=true}}>test</a>')
   });
 
@@ -473,7 +477,7 @@ test("it sets an URL with a context", function() {
 test("it does not trigger action with special clicks", function() {
   var showCalled = false;
 
-  var view = Ember.View.create({
+  view = Ember.View.create({
     template: compile("<a {{action show href=true}}>Hi</a>")
   });
 

@@ -2346,6 +2346,10 @@ test("should update bound values after view's parent is removed and then re-appe
     set(controller, 'boundValue', "bar");
   });
   equal(Ember.$.trim(view.$().text()), "bar");
+
+  Ember.run(function() {
+    parentView.destroy();
+  });
 });
 
 test("should call a registered helper for mustache without parameters", function() {

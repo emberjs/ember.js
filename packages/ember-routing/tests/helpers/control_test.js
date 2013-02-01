@@ -67,6 +67,13 @@ test("A control raises an error when a controller cannot be found", function() {
       template: compile("{{control widget}}")
     });
   }, /find controller/, "Must raise an error when no controller is defined");
+
+  // The assertion causes some views to be left behind
+  Ember.run(function() {
+    for (var viewId in Ember.View.views) {
+      Ember.View.views[viewId].destroy();
+    }
+  });
 });
 
 test("A control renders a template with a new instance of the named controller and view", function() {

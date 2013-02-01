@@ -1,9 +1,16 @@
-var get = Ember.get, set = Ember.set;
+var get = Ember.get, set = Ember.set, container, view;
 
-module("ember-views/views/container_view_test");
+module("ember-views/views/container_view_test", {
+  teardown: function() {
+    Ember.run(function() {
+      container.destroy();
+      if (view) { view.destroy(); }
+    });
+  }
+});
 
 test("should be able to insert views after the DOM representation is created", function() {
-  var container = Ember.ContainerView.create({
+  container = Ember.ContainerView.create({
     classNameBindings: ['name'],
     name: 'foo'
   });
@@ -12,7 +19,7 @@ test("should be able to insert views after the DOM representation is created", f
     container.appendTo('#qunit-fixture');
   });
 
-  var view = Ember.View.create({
+  view = Ember.View.create({
     template: function() {
       return "This is my moment";
     }
@@ -31,8 +38,6 @@ test("should be able to insert views after the DOM representation is created", f
 });
 
 test("should be able to observe properties that contain child views", function() {
-  var container;
-
   Ember.run(function() {
     container = Ember.ContainerView.create({
       childViews: ['displayView'],
@@ -49,13 +54,15 @@ test("should be able to observe properties that contain child views", function()
 });
 
 test("should set the parentView property on views that are added to the child views array", function() {
-  var container = Ember.ContainerView.create(),
-      View = Ember.View.extend({
-        template: function() {
-          return "This is my moment";
-        }
-      }),
-      view = View.create();
+  container = Ember.ContainerView.create();
+
+  var View = Ember.View.extend({
+      template: function() {
+        return "This is my moment";
+      }
+    });
+
+  view = View.create();
 
   container.pushObject(view);
   equal(view.get('parentView'), container, "sets the parent view after the childView is appended");
@@ -96,11 +103,17 @@ test("should set the parentView property on views that are added to the child vi
   equal(get(thirdView, 'parentView'), container, "doesn't change non-removed view");
   equal(get(secondView, 'parentView'), null, "clears the parent view of the third view");
   equal(get(fourthView, 'parentView'), null, "clears the parent view of the fourth view");
+
+  Ember.run(function() {
+    secondView.destroy();
+    thirdView.destroy();
+    fourthView.destroy();
+  });
 });
 
 test("views that are removed from a ContainerView should have their child views cleared", function() {
-  var container = Ember.ContainerView.create();
-  var view = Ember.View.createWithMixins({
+  container = Ember.ContainerView.create();
+  view = Ember.View.createWithMixins({
     remove: function() {
       this._super();
     },
@@ -124,7 +137,7 @@ test("views that are removed from a ContainerView should have their child views 
 });
 
 test("if a ContainerView starts with an empy currentView, nothing is displayed", function() {
-  var container = Ember.ContainerView.create();
+  container = Ember.ContainerView.create();
 
   Ember.run(function() {
     container.appendTo('#qunit-fixture');
@@ -136,7 +149,7 @@ test("if a ContainerView starts with an empy currentView, nothing is displayed",
 
 test("if a ContainerView starts with a currentView, it is rendered as a child view", function() {
   var controller = Ember.Controller.create();
-  var container = Ember.ContainerView.create({
+  container = Ember.ContainerView.create({
     controller: controller
   });
   var context = null;
@@ -177,7 +190,7 @@ test("if a ContainerView is created with a currentView, it is rendered as a chil
 
   var controller = Ember.Controller.create();
 
-  var container = Ember.ContainerView.create({
+  container = Ember.ContainerView.create({
     currentView: mainView,
     controller: controller
   });
@@ -208,7 +221,7 @@ test("if a ContainerView starts with no currentView and then one is set, the Con
 
   var controller = Ember.Controller.create();
 
-  var container = Ember.ContainerView.create({
+  container = Ember.ContainerView.create({
     controller: controller
   });
 
@@ -245,7 +258,7 @@ test("if a ContainerView starts with a currentView and then is set to null, the 
 
   var controller = Ember.Controller.create();
 
-  var container = Ember.ContainerView.create({
+  container = Ember.ContainerView.create({
     controller: controller
   });
 
@@ -284,7 +297,7 @@ test("if a ContainerView starts with a currentView and then is set to null, the 
 
   var controller = Ember.Controller.create();
 
-  var container = Ember.ContainerView.create({
+  container = Ember.ContainerView.create({
     controller: controller
   });
 
@@ -313,7 +326,7 @@ test("if a ContainerView starts with a currentView and then is set to null, the 
 });
 
 test("if a ContainerView starts with a currentView and then a different currentView is set, the old view is destroyed and the new one is added", function() {
-  var container = Ember.ContainerView.create();
+  container = Ember.ContainerView.create();
   var mainView = Ember.View.create({
     template: function() {
       return "This is the main view.";
@@ -365,7 +378,7 @@ test("if a ContainerView starts with a currentView and then a different currentV
 
 test("should be able to modify childViews many times during an run loop", function () {
 
-  var container = Ember.ContainerView.create();
+  container = Ember.ContainerView.create();
 
   Ember.run(function() {
     container.appendTo('#qunit-fixture');
@@ -402,7 +415,7 @@ test("should be able to modify childViews many times during an run loop", functi
 });
 
 test("should be able to modify childViews then remove the ContainerView in same run loop", function () {
-  var container = Ember.ContainerView.create();
+  container = Ember.ContainerView.create();
 
   Ember.run(function() {
     container.appendTo('#qunit-fixture');
@@ -422,7 +435,7 @@ test("should be able to modify childViews then remove the ContainerView in same 
 });
 
 test("should be able to modify childViews then destroy the ContainerView in same run loop", function () {
-    var container = Ember.ContainerView.create();
+    container = Ember.ContainerView.create();
 
   Ember.run(function() {
     container.appendTo('#qunit-fixture');
@@ -443,7 +456,7 @@ test("should be able to modify childViews then destroy the ContainerView in same
 
 
 test("should be able to modify childViews then rerender the ContainerView in same run loop", function () {
-    var container = Ember.ContainerView.create();
+    container = Ember.ContainerView.create();
 
   Ember.run(function() {
     container.appendTo('#qunit-fixture');
@@ -463,7 +476,7 @@ test("should be able to modify childViews then rerender the ContainerView in sam
 });
 
 test("should be able to modify childViews then rerender then modify again the ContainerView in same run loop", function () {
-  var container = Ember.ContainerView.create();
+  container = Ember.ContainerView.create();
 
   Ember.run(function() {
     container.appendTo('#qunit-fixture');
@@ -491,7 +504,7 @@ test("should be able to modify childViews then rerender then modify again the Co
 });
 
 test("should be able to modify childViews then rerender again the ContainerView in same run loop and then modify again", function () {
-  var container = Ember.ContainerView.create();
+  container = Ember.ContainerView.create();
 
   Ember.run(function() {
     container.appendTo('#qunit-fixture');
@@ -526,9 +539,10 @@ test("should be able to modify childViews then rerender again the ContainerView 
 });
 
 test("should invalidate `element` on itself and childViews when being rendered by ensureChildrenAreInDOM", function () {
-  var root = Ember.ContainerView.create(),
-      view = Ember.View.create({ template: function() {} }),
-      container = Ember.ContainerView.create({ childViews: ['child'], child: view });
+  var root = Ember.ContainerView.create();
+
+  view = Ember.View.create({ template: function() {} });
+  container = Ember.ContainerView.create({ childViews: ['child'], child: view });
 
   Ember.run(function() {
     root.appendTo('#qunit-fixture');
@@ -544,4 +558,8 @@ test("should invalidate `element` on itself and childViews when being rendered b
 
   ok(!!container.get('element'), "Parent's element should have been recomputed after being rendered");
   ok(!!view.get('element'), "Child's element should have been recomputed after being rendered");
+
+  Ember.run(function() {
+    root.destroy();
+  });
 });
