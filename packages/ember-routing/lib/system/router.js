@@ -252,5 +252,8 @@ Ember.Router.reopenClass({
 
     router.map(dsl.generate());
     return router;
+  },
+  define: function(name, callback) {
+    Ember.RouterDSL.define(name, callback);
   }
 });

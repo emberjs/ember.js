@@ -1420,3 +1420,72 @@ test("Only use route rendered into main outlet for default into property on chil
   equal(Ember.$('div.posts-menu:contains(postsMenu)', '#qunit-fixture').length, 1, "The posts/menu template was rendered");
   equal(Ember.$('section.posts-index:contains(postsIndex)', '#qunit-fixture').length, 1, "The posts/index template was rendered");
 });
+
+
+test("Defined routes can be mounted", function() {
+  Ember.TEMPLATES['post/edit'] = compile("<p>postsEdit</p>");
+
+  Router.define("posts", function() {
+    this.resource("post", { path: "/:postId" }, function() {
+      this.route("edit");
+    });
+  });
+
+  Router.map(function(){
+    this.mount("posts");
+  });
+
+  bootApplication();
+
+  Ember.run(function() {
+    router.handleURL("/posts/1/edit");
+  });
+
+  equal(Ember.$('#qunit-fixture:contains(postsEdit)').length, 1, "The templates were rendered");
+});
+
+test("Defined routes can be mounted under other resources", function() {
+  Ember.TEMPLATES['post/edit'] = compile("<p>postsEdit</p>");
+
+  Router.define("posts", function() {
+    this.resource("post", { path: "/:postId" }, function() {
+      this.route("edit");
+    });
+  });
+
+  Router.map(function(){
+    this.resource("blog", function(){
+      this.mount("posts");
+    });
+  });
+
+  bootApplication();
+
+  Ember.run(function() {
+    router.handleURL("/blog/posts/1/edit");
+  });
+
+  equal(Ember.$('#qunit-fixture:contains(postsEdit)').length, 1, "The templates were rendered");
+});
+
+test("Defined routes can be mounted with custom options", function() {
+  Ember.TEMPLATES['post/edit'] = compile("<p>postsEdit</p>");
+
+  Router.define("posts", function() {
+    this.resource("post", { path: "/:postId" }, function() {
+      this.route("edit");
+    });
+  });
+
+  Router.map(function(){
+    this.mount("posts", { path: "/articles" });
+  });
+
+  bootApplication();
+
+  Ember.run(function() {
+    router.handleURL("/articles/1/edit");
+  });
+
+  equal(Ember.$('#qunit-fixture:contains(postsEdit)').length, 1, "The templates were rendered");
+});
