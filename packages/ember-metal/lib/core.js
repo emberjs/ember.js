@@ -142,6 +142,14 @@ Ember.uuid = 0;
 // LOGGER
 //
 
+function consoleMethod(name) {
+  if (imports.console && imports.console[name]) {
+    return function() {
+      imports.console[name].apply(imports.console, arguments);
+    };
+  }
+}
+
 /**
   Inside Ember-Metal, simply uses the methods from `imports.console`.
   Override this to provide more robust logging functionality.
@@ -150,11 +158,11 @@ Ember.uuid = 0;
   @namespace Ember
 */
 Ember.Logger = {
-  log:   imports.console.log   || Ember.K,
-  warn:  imports.console.warn  || Ember.K,
-  error: imports.console.error || Ember.K,
-  info:  imports.console.info  || Ember.K,
-  debug: imports.console.debug || imports.console.info || Ember.K
+  log:   consoleMethod('log')   || Ember.K,
+  warn:  consoleMethod('warn')  || Ember.K,
+  error: consoleMethod('error') || Ember.K,
+  info:  consoleMethod('info')  || Ember.K,
+  debug: consoleMethod('debug') || consoleMethod('info') || Ember.K
 };
 
 
