@@ -374,6 +374,10 @@ Ember.Route = Ember.Object.extend({
     if (options.outlet === 'main') { this.lastRenderedTemplate = name; }
 
     appendView(this, view, options);
+  },
+
+  willDestroy: function() {
+    teardownView(this);
   }
 });
 
@@ -460,7 +464,7 @@ function appendView(route, view, options) {
 }
 
 function teardownTopLevel(view) {
-  return function() { view.remove(); };
+  return function() { view.destroy(); };
 }
 
 function teardownOutlet(parentView, outlet) {
