@@ -106,6 +106,25 @@ test("A control defaults to the default view", function() {
   renderedText("Hello");
 });
 
+test("A control with a default view survives re-render", function() {
+  container.register('template:widgets/foo', compile("Hello"));
+  container.register('controller:widgets.foo', Ember.Controller.extend());
+  container.register('view:default', Ember.View.extend());
+
+  appendView({
+    controller: container.lookup('controller:parent'),
+    template: compile("{{control 'widgets/foo'}}")
+  });
+
+  renderedText("Hello");
+
+  Ember.run(function() {
+    view.rerender();
+  });
+
+  renderedText("Hello");
+});
+
 test("A control can specify a model to use in its template", function() {
   container.register('template:widget', compile("{{model.name}}"));
 
