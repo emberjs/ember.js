@@ -30,4 +30,11 @@ test("controller property should be inherited from nearest ancestor with control
     strictEqual(child.get('controller'), newController);
     strictEqual(grandchild.get('controller'), newController);
   });
+
+  Ember.run(function() {
+    grandparent.destroy();
+    parent.destroy();
+    child.destroy();
+    grandchild.destroy();
+  });
 });

@@ -1,13 +1,17 @@
-var set = Ember.set, get = Ember.get;
+var set = Ember.set, get = Ember.get, view;
 
 module("Ember.View - Old Router Functionality", {
   setup: function() {
     Ember.TEMPLATES = {};
+  },
+  teardown: function() {
+    Ember.run(function() {
+      view.destroy();
+    });
   }
 });
 
 test("should load named templates from View.templates", function() {
-  var view;
 
 
   view = Ember.View.create({

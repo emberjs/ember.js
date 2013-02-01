@@ -1,4 +1,4 @@
-var originalLookup = Ember.lookup, TestApp, lookup;
+var originalLookup = Ember.lookup, TestApp, lookup, view, containerView;
 
 module("Ember.Controller#connectOutlet", {
   setup: function() {
@@ -17,6 +17,8 @@ module("Ember.Controller#connectOutlet", {
 
   teardown: function() {
     Ember.run(function () {
+      if (view) { view.destroy(); }
+      if (containerView) { containerView.destroy(); }
       lookup.TestApp.destroy();
     });
     Ember.lookup = originalLookup;
@@ -30,7 +32,7 @@ test("connectOutlet instantiates a view, controller, and connects them", functio
     controllers: { postController: postController },
     namespace: { PostView: TestApp.PostView }
   });
-  var view = appController.connectOutlet('post');
+  view = appController.connectOutlet('post');
 
   ok(view instanceof TestApp.PostView, "the view is an instance of PostView");
   equal(view.get('controller'), postController, "the controller is looked up on the parent's controllers hash");
@@ -44,7 +46,7 @@ test("connectOutlet takes an optional outlet name", function() {
     controllers: { postController: postController },
     namespace: { PostView: TestApp.PostView }
   });
-  var view = appController.connectOutlet({ name: 'post', outletName: 'mainView' });
+  view = appController.connectOutlet({ name: 'post', outletName: 'mainView' });
 
   ok(view instanceof TestApp.PostView, "the view is an instance of PostView");
   equal(view.get('controller'), postController, "the controller is looked up on the parent's controllers hash");
@@ -59,7 +61,7 @@ test("connectOutlet takes an optional controller context", function() {
     controllers: { postController: postController },
     namespace: { PostView: TestApp.PostView }
   });
-  var view = appController.connectOutlet('post', context);
+  view = appController.connectOutlet('post', context);
 
   ok(view instanceof TestApp.PostView, "the view is an instance of PostView");
   equal(view.get('controller'), postController, "the controller is looked up on the parent's controllers hash");
@@ -76,7 +78,7 @@ test("connectOutlet with outletName, name syntax", function() {
     namespace: { PostView: TestApp.PostView }
   });
 
-  var view = appController.connectOutlet('main', 'post', context);
+  view = appController.connectOutlet('main', 'post', context);
 
   ok(view instanceof TestApp.PostView, "the view is an instance of PostView");
   equal(view.get('controller'), postController, "the controller is looked up on the parent's controllers hash");
@@ -92,7 +94,7 @@ test("connectOutlet works if all three parameters are provided", function() {
     controllers: { postController: postController },
     namespace: { PostView: TestApp.PostView }
   });
-  var view = appController.connectOutlet({ name: 'post', outletName: 'mainView', context: context });
+  view = appController.connectOutlet({ name: 'post', outletName: 'mainView', context: context });
 
   ok(view instanceof TestApp.PostView, "the view is an instance of PostView");
   equal(view.get('controller'), postController, "the controller is looked up on the parent's controllers hash");
@@ -108,7 +110,7 @@ test("connectOutlet works if a hash of options is passed", function() {
     controllers: { postController: postController }
   });
 
-  var view = appController.connectOutlet({
+  view = appController.connectOutlet({
     outletName: 'mainView',
     viewClass: TestApp.PostView,
     controller: postController,
@@ -129,7 +131,7 @@ test("if the controller is explicitly set to null while connecting an outlet, th
     controllers: { postController: postController }
   });
 
-  var view = appController.connectOutlet({
+  view = appController.connectOutlet({
     outletName: 'mainView',
     viewClass: TestApp.PostView,
     controller: null
@@ -139,7 +141,7 @@ test("if the controller is explicitly set to null while connecting an outlet, th
   equal(view.get('controller'), null, "the controller is looked up on the parent's controllers hash");
   equal(appController.get('mainView'), view, "the app controller's view is set");
 
-  var containerView = Ember.ContainerView.create({
+  containerView = Ember.ContainerView.create({
     controller: postController
   });
 
@@ -155,13 +157,13 @@ test("if the controller is not given while connecting an outlet, the instantiate
     namespace: TestApp
   });
 
-  var view = appController.connectOutlet('post');
+  view = appController.connectOutlet('post');
 
   ok(view instanceof TestApp.PostView, "the view is an instance of PostView");
   equal(view.get('controller'), null, "the controller is looked up on the parent's controllers hash");
   equal(appController.get('view'), view, "the app controller's view is set");
 
-  var containerView = Ember.ContainerView.create({
+  containerView = Ember.ContainerView.create({
     controller: postController
   });
 
@@ -175,7 +177,7 @@ test("can disconnect outlet from controller", function() {
     namespace: TestApp
   });
 
-  var view = appController.connectOutlet('post');
+  view = appController.connectOutlet('post');
 
   equal(appController.get('view'), view, "the app controller's view is set");
 
@@ -183,6 +185,7 @@ test("can disconnect outlet from controller", function() {
 
   equal(appController.get('view'), null, "the app controller's view is null");
 
+  Ember.run(function() { view.destroy(); });
   view = appController.connectOutlet({outletName: 'master', name: 'post'});
 
   equal(appController.get('master'), view, "the app controller's master view is set");

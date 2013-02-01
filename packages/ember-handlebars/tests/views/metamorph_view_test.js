@@ -187,7 +187,7 @@ test("replacing a Metamorph should invalidate childView elements", function() {
 });
 
 test("trigger rerender of parent and SimpleHandlebarsView", function () {
-  view = Ember.View.create({
+  var view = Ember.View.create({
     show: true,
     foo: 'bar',
     template: Ember.Handlebars.compile("{{#if view.show}}{{#if view.foo}}{{view.foo}}{{/if}}{{/if}}")
@@ -204,6 +204,9 @@ test("trigger rerender of parent and SimpleHandlebarsView", function () {
 
   equal(view.$().text(), '');
 
+  Ember.run(function() {
+    view.destroy();
+  });
 });
 
 test("re-rendering and then changing the property does not raise an exception", function() {
@@ -224,4 +227,8 @@ test("re-rendering and then changing the property does not raise an exception", 
   });
 
   equal(view.$().text(), 'truth');
+
+  Ember.run(function() {
+    view.destroy();
+  });
 });

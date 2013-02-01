@@ -204,6 +204,10 @@ test("should trigger an action on a String target when clicked", function() {
   synthesizeEvent('mouseup', button);
 
   ok(wasClicked);
+
+  Ember.run(function() {
+    button.destroy();
+  });
 });
 
 test("should not trigger action if mouse leaves area before mouseup", function() {

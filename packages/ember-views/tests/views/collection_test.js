@@ -477,7 +477,7 @@ test("should not render the emptyView if content is emptied and refilled in the 
     tagName: 'div',
     content: Ember.A(['NEWS GUVNAH']),
 
-    emptyView: Ember.View.create({
+    emptyView: Ember.View.extend({
       tagName: 'kbd',
       render: function(buf) {
         buf.push("OY SORRY GUVNAH NO NEWS TODAY EH");

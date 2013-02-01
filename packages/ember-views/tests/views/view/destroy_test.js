@@ -14,5 +14,9 @@ test("should teardown viewName on parentView when childView is destroyed", funct
   });
 
   equal(get(parentView, viewName), null, "viewName reference was removed on parent");
+
+  Ember.run(function() {
+    parentView.destroy();
+  });
 });
 
