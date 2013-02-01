@@ -143,13 +143,19 @@ Ember.uuid = 0;
 //
 
 /**
-  Inside Ember-Metal, simply uses the `imports.console` object.
+  Inside Ember-Metal, simply uses the methods from `imports.console`.
   Override this to provide more robust logging functionality.
 
   @class Logger
   @namespace Ember
 */
-Ember.Logger = imports.console || { log: Ember.K, warn: Ember.K, error: Ember.K, info: Ember.K, debug: Ember.K };
+Ember.Logger = {
+  log:   imports.console.log   || Ember.K,
+  warn:  imports.console.warn  || Ember.K,
+  error: imports.console.error || Ember.K,
+  info:  imports.console.info  || Ember.K,
+  debug: imports.console.debug || imports.console.info || Ember.K
+};
 
 
 // ..........................................................
