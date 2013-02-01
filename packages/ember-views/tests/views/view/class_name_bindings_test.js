@@ -1,9 +1,15 @@
-var set = Ember.set, get = Ember.get;
+var set = Ember.set, get = Ember.get, view;
 
-module("Ember.View - Class Name Bindings");
+module("Ember.View - Class Name Bindings", {
+  teardown: function() {
+    Ember.run(function() {
+      view.destroy();
+    });
+  }
+});
 
 test("should apply bound class names to the element", function() {
-  var view = Ember.View.create({
+  view = Ember.View.create({
     classNameBindings: ['priority', 'isUrgent', 'isClassified:classified',
                         'canIgnore', 'messages.count', 'messages.resent:is-resent',
                         'isNumber:is-number', 'isFalsy::is-falsy', 'isTruthy::is-not-truthy',
@@ -43,7 +49,7 @@ test("should apply bound class names to the element", function() {
 });
 
 test("should add, remove, or change class names if changed after element is created", function() {
-  var view = Ember.View.create({
+  view = Ember.View.create({
     classNameBindings: ['priority', 'isUrgent', 'isClassified:classified',
                         'canIgnore', 'messages.count', 'messages.resent:is-resent',
                         'isEnabled:enabled:disabled'],
@@ -86,7 +92,7 @@ test("should add, remove, or change class names if changed after element is crea
 });
 
 test(":: class name syntax works with an empty true class", function() {
-  var view = Ember.View.create({
+  view = Ember.View.create({
     isEnabled: false,
     classNameBindings: ['isEnabled::not-enabled']
   });
@@ -101,8 +107,6 @@ test(":: class name syntax works with an empty true class", function() {
 });
 
 test("classNames should not be duplicated on rerender", function(){
-  var view;
-
   Ember.run(function(){
     view = Ember.View.create({
       classNameBindings: ['priority'],
@@ -125,8 +129,6 @@ test("classNames should not be duplicated on rerender", function(){
 });
 
 test("classNameBindings should work when the binding property is updated and the view has been removed of the DOM", function(){
-  var view;
-
   Ember.run(function(){
     view = Ember.View.create({
       classNameBindings: ['priority'],
@@ -156,7 +158,7 @@ test("classNameBindings should work when the binding property is updated and the
 });
 
 test("classNames removed by a classNameBindings observer should not re-appear on rerender", function(){
-  var view = Ember.View.create({
+  view = Ember.View.create({
     classNameBindings: ['isUrgent'],
     isUrgent: true
   });
@@ -181,8 +183,6 @@ test("classNames removed by a classNameBindings observer should not re-appear on
 });
 
 test("classNameBindings lifecycle test", function(){
-  var view;
-
   Ember.run(function(){
     view = Ember.View.create({
       classNameBindings: ['priority'],

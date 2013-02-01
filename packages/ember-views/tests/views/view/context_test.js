@@ -1,6 +1,6 @@
 module("Ember.View - context property");
 
-test("setting a controller on a inner view should change it context", function() {
+test("setting a controller on an inner view should change it context", function() {
   var App = {};
   var a = { name: 'a' };
   var b = { name: 'b' };
@@ -28,5 +28,11 @@ test("setting a controller on a inner view should change it context", function()
   equal(outerView.get('context'), a, 'outer context correct');
   equal(middleView.get('context'), a, 'middle context correct');
   equal(innerView.get('context'), b, 'inner context correct');
+
+  Ember.run(function() {
+    innerView.destroy();
+    middleView.destroy();
+    outerView.destroy();
+  });
 });
 

@@ -106,6 +106,10 @@ test("it should support #with view as foo", function() {
   });
 
   equal(view.$().text(), "Thunder", "should update");
+
+  Ember.run(function() {
+    view.destroy();
+  });
 });
 
 test("it should support #with name as food, then #with foo as bar", function() {
@@ -122,6 +126,10 @@ test("it should support #with name as food, then #with foo as bar", function() {
   });
 
   equal(view.$().text(), "butterfly", "should update");
+
+  Ember.run(function() {
+    view.destroy();
+  });
 });
 
 module("Handlebars {{#with this as foo}}");
@@ -140,4 +148,8 @@ test("it should support #with this as qux", function() {
   });
 
   equal(view.$().text(), "l'Pivots", "should update");
+
+  Ember.run(function() {
+    view.destroy();
+  });
 });

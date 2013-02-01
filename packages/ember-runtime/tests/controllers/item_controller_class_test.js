@@ -32,6 +32,11 @@ module("Ember.ArrayController - itemController", {
 
     container.register("controller", "Item", controllerClass);
     container.register("controller", "OtherItem", otherControllerClass);
+  },
+  teardown: function() {
+    Ember.run(function() {
+      container.destroy();
+    });
   }
 });
 
@@ -133,7 +138,9 @@ test("when the underlying array changes, old subcontainers are destroyed", funct
   equal(!!jaimeContainer.isDestroyed, false, "precond - nobody is destroyed yet");
   equal(!!!!cerseiContainer.isDestroyed, false, "precond - nobody is destroyed yet");
 
-  arrayController.set('content', Ember.A());
+  Ember.run(function() {
+    arrayController.set('content', Ember.A());
+  });
 
   equal(!!jaimeContainer.isDestroyed, true, "old subcontainers are destroyed");
   equal(!!cerseiContainer.isDestroyed, true, "old subcontainers are destroyed");
@@ -161,7 +168,9 @@ test("when items are removed from the arrayController, their respective subconta
   equal(!!cerseiContainer.isDestroyed, false, "precond - nobody is destroyed yet");
   equal(!!jaimeContainer.isDestroyed, false, "precond - nobody is destroyed yet");
 
-  arrayController.removeObject(cerseiController);
+  Ember.run(function() {
+    arrayController.removeObject(cerseiController);
+  });
 
   equal(!!cerseiContainer.isDestroyed, true, "Removed objects' containers are cleaned up");
   equal(!!jaimeContainer.isDestroyed, false, "Retained objects' containers are not cleaned up");
@@ -177,7 +186,9 @@ test("one cannot remove wrapped content directly when specifying `itemController
 
   equal(arrayController.get('length'), 3, "cannot remove wrapped objects directly");
 
-  arrayController.removeObject(cerseiController);
+  Ember.run(function() {
+    arrayController.removeObject(cerseiController);
+  });
   equal(arrayController.get('length'), 2, "can remove wrapper objects");
 });
 
@@ -192,7 +203,9 @@ test("when items are removed from the underlying array, their respective subcont
   equal(!!jaimeContainer.isDestroyed, false, "precond - nobody is destroyed yet");
   equal(!!cerseiContainer.isDestroyed, false, "precond - nobody is destroyed yet");
 
-  lannisters.removeObject(cersei); // if only it were that easy
+  Ember.run(function() {
+    lannisters.removeObject(cersei); // if only it were that easy
+  });
 
   equal(!!jaimeContainer.isDestroyed, false, "Retained objects' containers are not cleaned up");
   equal(!!cerseiContainer.isDestroyed, true, "Removed objects' containers are cleaned up");

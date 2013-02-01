@@ -19,7 +19,7 @@
     teardown: function() {
       Ember.run(function(){
         parentView.destroy();
-            childView.destroy();
+        childView.destroy();
       });
 
       childViews = null;
@@ -75,6 +75,9 @@
 
     equal(outer.get('middle.childViews.length'), 2, 'middle has 2 child views rendered to buffer');
 
+    Ember.run(function() {
+      outer.destroy();
+    });
   });
 
 })();

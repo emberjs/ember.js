@@ -29,6 +29,20 @@
             Ember.run.cancelTimers();
           }
         }
+
+        if (Ember && Ember.View) {
+          var viewIds = [], id;
+          for (id in Ember.View.views) {
+            if (Ember.View.views[id] != null) {
+              viewIds.push(id);
+            }
+          }
+
+          if (viewIds.length > 0) {
+            deepEqual(viewIds, [], "Ember.View.views should be empty");
+            Ember.View.views = [];
+          }
+        }
       }
       return originalModule(name, opts);
     };

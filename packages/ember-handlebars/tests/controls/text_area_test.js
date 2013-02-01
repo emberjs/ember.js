@@ -125,6 +125,7 @@ test("input tabindex is updated when setting tabindex property of view", functio
 test("value binding works properly for inputs that haven't been created", function() {
 
   Ember.run(function() {
+    textArea.destroy(); // destroy existing textarea
     textArea = Ember.TextArea.createWithMixins({
       valueBinding: 'TestObject.value'
     });

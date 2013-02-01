@@ -1,10 +1,16 @@
-var set = Ember.set, get = Ember.get;
+var set = Ember.set, get = Ember.get, view;
 
-module("Ember.View#destroyElement");
+module("Ember.View#destroyElement", {
+  teardown: function() {
+    Ember.run(function() {
+      view.destroy();
+    });
+  }
+});
 
-test("it if has no element, does nothing", function() {
+test("if it has no element, does nothing", function() {
   var callCount = 0;
-  var view = Ember.View.create({
+  view = Ember.View.create({
     willDestroyElement: function() { callCount++; }
   });
 
@@ -20,7 +26,7 @@ test("it if has no element, does nothing", function() {
 test("if it has a element, calls willDestroyElement on receiver and child views then deletes the element", function() {
   var parentCount = 0, childCount = 0;
 
-  var view = Ember.ContainerView.create({
+  view = Ember.ContainerView.create({
     willDestroyElement: function() { parentCount++; },
     childViews: [Ember.ContainerView.extend({
       // no willDestroyElement here... make sure no errors are thrown
@@ -47,7 +53,8 @@ test("if it has a element, calls willDestroyElement on receiver and child views 
 });
 
 test("returns receiver", function() {
-  var view = Ember.View.create(), ret;
+  var ret;
+  view = Ember.View.create();
 
   Ember.run(function(){
     view.createElement();
@@ -58,7 +65,7 @@ test("returns receiver", function() {
 });
 
 test("removes element from parentNode if in DOM", function() {
-  var view = Ember.View.create();
+  view = Ember.View.create();
 
   Ember.run(function() {
     view.append();

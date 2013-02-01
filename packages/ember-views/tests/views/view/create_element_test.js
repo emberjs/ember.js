@@ -1,9 +1,17 @@
-var set = Ember.set, get = Ember.get;
+var set = Ember.set, get = Ember.get, view;
 
-module("Ember.View#createElement");
+module("Ember.View#createElement", {
+  teardown: function() {
+    Ember.run(function() {
+      view.destroy();
+    });
+  }
+});
 
 test("returns the receiver", function() {
-  var view = Ember.View.create(), ret;
+  var ret;
+
+  view = Ember.View.create();
 
   Ember.run(function(){
     ret = view.createElement();
@@ -13,7 +21,7 @@ test("returns the receiver", function() {
 });
 
 test("calls render and turns resultant string into element", function() {
-  var view = Ember.View.create({
+  view = Ember.View.create({
     tagName: 'span',
 
     render: function(buffer) {
@@ -34,7 +42,7 @@ test("calls render and turns resultant string into element", function() {
 });
 
 test("generated element include HTML from child views as well", function() {
-  var view = Ember.ContainerView.create({
+  view = Ember.ContainerView.create({
     childViews: [ Ember.View.create({ elementId: "foo" })]
   });
 

@@ -3,7 +3,15 @@ try {
   require('ember-handlebars');
 } catch(e) { }
 
-module("the {{action}} helper with href attribute");
+var view;
+
+module("the {{action}} helper with href attribute", {
+  teardown: function() {
+    Ember.run(function() {
+      view.destroy();
+    });
+  }
+});
 
 var compile = function(string) {
   return Ember.Handlebars.compile(string);
@@ -17,7 +25,7 @@ var namespace = {
 };
 
 test("it generates the URL from the target", function() {
-  var view = Ember.View.create({
+  view = Ember.View.create({
     template: compile("<a {{action show href=true}}>Hi</a>")
   });
 
@@ -38,7 +46,7 @@ test("it generates the URL from the target", function() {
 });
 
 test("it does not generate the URL when href property is not specified", function() {
-  var view = Ember.View.create({
+  view = Ember.View.create({
     template: compile("<a {{action show}}>Hi</a>")
   });
 

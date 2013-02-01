@@ -1,9 +1,20 @@
-module("Rendering in the router");
+var router;
+
+module("Rendering in the router", {
+  teardown: function() {
+    Ember.run(function() {
+      var view = router.get('applicationController.view') ||
+                 router.get('appController.view');
+      if (view) { view.destroy(); }
+      router.destroy();
+    });
+  }
+});
 
 test("By default, `render` renders into the application's outlet", function() {
   expect(1);
 
-  var router = Ember.Router.extend({
+  router = Ember.Router.extend({
     applicationController: Ember.Controller.extend({
       viewDidChange: Ember.observer(function() {
         equal(this.get('view.templateName'), 'posts');
@@ -33,7 +44,7 @@ test("If a view class for a given template exists, use it and update it with the
 
   var PostView = Ember.Object.extend();
 
-  var router = Ember.Router.extend({
+  router = Ember.Router.extend({
     applicationController: Ember.Controller.extend({
       viewDidChange: Ember.observer(function() {
         ok(this.get('view') instanceof PostView, "The view is an instance of PostView");
@@ -64,7 +75,7 @@ test("If a view class for a given template exists, use it and update it with the
 test("The default template to render into is `application`", function() {
   expect(1);
 
-  var router = Ember.Router.extend({
+  router = Ember.Router.extend({
     applicationController: Ember.Controller.extend({
       viewDidChange: Ember.observer(function() {
         equal(this.get('view.templateName'), 'posts');
@@ -90,7 +101,7 @@ test("The default template to render into is `application`", function() {
 test("You can override the template to render and the template to render into", function() {
   expect(1);
 
-  var router = Ember.Router.extend({
+  router = Ember.Router.extend({
     appController: Ember.Controller.extend({
       viewDidChange: Ember.observer(function() {
         equal(this.get('view.templateName'), 'other');
@@ -122,7 +133,7 @@ test("By default, the route's class name is used to infer its template name", fu
   });
   ApplicationRoute.toString = function() { return "App.ApplicationRoute"; };
 
-  var router = Ember.Router.extend({
+  router = Ember.Router.extend({
     applicationController: Ember.Controller.extend({
       viewDidChange: Ember.observer(function() {
         equal(this.get('view.templateName'), 'posts');
