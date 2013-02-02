@@ -204,3 +204,27 @@ test("if a controller's model changes, its child controllers are destroyed", fun
   equal(childController.isDestroying, true);
   ok(view.$().text().match(/^.*Yehuda Katz.*$/), "The view rendered");
 });
+
+test("A control should correctly remove model observers", function() {
+  var Controller = Ember.Controller.extend({
+    message: 'bro'
+  });
+
+  container.register('template:widget', compile("{{content}}"));
+  container.register('controller:bro', Controller);
+
+  appendView({
+    controller: container.lookup('controller:bro'),
+    template: compile("{{control widget message}}")
+  });
+
+  renderedText("bro");
+
+  Ember.run(function() {
+    view.destroy();
+  });
+
+  Ember.run(function() {
+    Ember.set(container.lookup('controller:bro'), 'message', 'grammer');
+  });
+});
