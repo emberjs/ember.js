@@ -235,25 +235,6 @@ ComputedPropertyPrototype.meta = function(meta) {
 };
 
 /* impl descriptor API */
-ComputedPropertyPrototype.willWatch = function(obj, keyName) {
-  // watch already creates meta for this instance
-  var meta = obj[META_KEY];
-  Ember.assert('watch should have setup meta to be writable', meta.source === obj);
-  if (!(keyName in meta.cache)) {
-    addDependentKeys(this, obj, keyName, meta);
-  }
-};
-
-ComputedPropertyPrototype.didUnwatch = function(obj, keyName) {
-  var meta = obj[META_KEY];
-  Ember.assert('unwatch should have setup meta to be writable', meta.source === obj);
-  if (!(keyName in meta.cache)) {
-    // unwatch already creates meta for this instance
-    removeDependentKeys(this, obj, keyName, meta);
-  }
-};
-
-/* impl descriptor API */
 ComputedPropertyPrototype.didChange = function(obj, keyName) {
   // _suspended is set via a CP.set to ensure we don't clear
   // the cached value set by the setter
@@ -261,9 +242,7 @@ ComputedPropertyPrototype.didChange = function(obj, keyName) {
     var meta = metaFor(obj);
     if (keyName in meta.cache) {
       delete meta.cache[keyName];
-      if (!meta.watching[keyName]) {
-        removeDependentKeys(this, obj, keyName, meta);
-      }
+      removeDependentKeys(this, obj, keyName, meta);
     }
   }
 };
@@ -276,9 +255,7 @@ ComputedPropertyPrototype.get = function(obj, keyName) {
     cache = meta.cache;
     if (keyName in cache) { return cache[keyName]; }
     ret = cache[keyName] = this.func.call(obj, keyName);
-    if (!meta.watching[keyName]) {
-      addDependentKeys(this, obj, keyName, meta);
-    }
+    addDependentKeys(this, obj, keyName, meta);
   } else {
     ret = this.func.call(obj, keyName);
   }
@@ -331,7 +308,7 @@ ComputedPropertyPrototype.set = function(obj, keyName, value) {
     }
 
     if (cacheable) {
-      if (!watched && !hadCachedValue) {
+      if (!hadCachedValue) {
         addDependentKeys(this, obj, keyName, meta);
       }
       cache[keyName] = ret;
@@ -344,19 +321,11 @@ ComputedPropertyPrototype.set = function(obj, keyName, value) {
   return ret;
 };
 
-/* called when property is defined */
-ComputedPropertyPrototype.setup = function(obj, keyName) {
-  var meta = obj[META_KEY];
-  if (meta && meta.watching[keyName]) {
-    addDependentKeys(this, obj, keyName, metaFor(obj));
-  }
-};
-
 /* called before property is overridden */
 ComputedPropertyPrototype.teardown = function(obj, keyName) {
   var meta = metaFor(obj);
 
-  if (meta.watching[keyName] || keyName in meta.cache) {
+  if (keyName in meta.cache) {
     removeDependentKeys(this, obj, keyName, meta);
   }
 

@@ -2038,7 +2038,7 @@ test("should be able to update when bound property updates", function(){
     valueBinding: 'MyApp.controller',
     computed: Ember.computed(function(){
       return this.get('value.name') + ' - computed';
-    }).property('value').volatile()
+    }).property('value')
   });
 
   Ember.run(function(){
