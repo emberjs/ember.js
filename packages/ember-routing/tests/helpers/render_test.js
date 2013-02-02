@@ -2,6 +2,10 @@ var appendView = function(view) {
   Ember.run(function() { view.appendTo('#qunit-fixture'); });
 };
 
+var set = function(object, key, value) {
+  Ember.run(function() { Ember.set(object, key, value); });
+};
+
 var compile = function(template) {
   return Ember.Handlebars.compile(template);
 };
@@ -83,25 +87,34 @@ test("{{render}} helper should render given template with a supplied model", fun
     title: "Rails is omakase"
   };
 
-  var controller = Ember.Controller.extend({
+  var Controller = Ember.Controller.extend({
     container: container,
     post: post
   });
 
+  var controller = Controller.create();
+
   view = Ember.View.create({
-    controller: controller.create(),
+    controller: controller,
     template: Ember.Handlebars.compile(template)
   });
 
-  var PostController = Ember.Controller.extend();
+  var PostController = Ember.ObjectController.extend();
   container.register('controller', 'post', PostController);
 
-  Ember.TEMPLATES['post'] = compile("<p>{{model.title}}</p>");
+  Ember.TEMPLATES['post'] = compile("<p>{{title}}</p>");
+
+  var postController = container.lookup('controller:post');
 
   appendView(view);
 
   equal(view.$().text(), 'HIRails is omakase');
-  equal(container.lookup('controller:post').get('model'), post);
+  equal(postController.get('model'), post);
+
+  set(controller, 'post', { title: "Rails is unagi" });
+
+  equal(view.$().text(), 'HIRails is unagi');
+  deepEqual(postController.get('model'), { title: "Rails is unagi" });
 });
 
 test("{{render}} helper should render with given controller", function() {
