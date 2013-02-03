@@ -10,8 +10,25 @@ var get = Ember.get, set = Ember.set,
 
 Ember.Route = Ember.Object.extend({
   exit: function() {
+    this.deactivate();
     teardownView(this);
   },
+
+  enter: function() {
+    this.activate();
+  },
+
+  /**
+    This hook is executed when the router completely exits this route. It is
+    not executed when the model for the route changes.
+  */
+  deactivate: Ember.K,
+
+  /**
+    This hook is executed when the router enters the route for the first time.
+    It is not executed when the model for the route changes.
+  */
+  activate: Ember.K,
 
   /**
     Transition into another route. Optionally supply a model for the
