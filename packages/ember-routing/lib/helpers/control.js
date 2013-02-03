@@ -48,7 +48,7 @@ Ember.Handlebars.registerHelper('control', function(path, modelPath, options) {
   }
 
   Ember.addObserver(this, modelPath, observer);
-  childView.one('willDestroyElement', function() {
+  childView.one('willDestroyElement', this, function() {
     Ember.removeObserver(this, modelPath, observer);
   });
 
