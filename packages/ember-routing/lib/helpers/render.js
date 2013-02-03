@@ -9,6 +9,23 @@ require('ember-handlebars/helpers/view');
 
 Ember.onLoad('Ember.Handlebars', function(Handlebars) {
 
+  /**
+    Renders the named template in the current context using the singleton
+    instance of the same-named controller.
+
+    If a view class with the same name exists, uses the view class.
+
+    If a `model` is specified, it becomes the model for that controller.
+
+    The default target for `{{action}}`s in the rendered template is the
+    named controller.
+
+    @method action
+    @for Ember.Handlebars.helpers
+    @param {String} actionName
+    @param {Object?} model
+    @param {Hash} options
+  */
   Ember.Handlebars.registerHelper('render', function(name, contextString, options) {
     Ember.assert("You must pass a template to render", arguments.length >= 2);
     var container, router, controller, view, context;
