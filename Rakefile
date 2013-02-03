@@ -481,3 +481,31 @@ namespace :release do
 end
 
 task :default => :test
+
+
+desc "Build Ember.js from a given fork & branch"
+task :build, :username, :branch do |t, args|
+  require "grit"
+
+  if args.to_hash.keys.length != 2
+    puts "Usage: rake build[wycats,some-cool-feature]"
+    exit 1
+  end
+
+  username, branch = args[:username], args[:branch]
+
+  remote_path = "https://github.com/#{username}/ember.js.git"
+
+  repo = Grit::Repo.new(File.dirname(File.expand_path(__FILE__)))
+
+  unless repo.remotes.map(&:name).grep(/#{username}/).length == 0
+    repo.remote_add(username, remote_path)
+  end
+
+  repo.remote_fetch username
+
+  `git checkout -B testing-#{username}-#{branch} master`
+  `git merge #{username}/#{branch}`
+
+  puts "Resolve possible merge conflicts and run `rake dist`"
+end
