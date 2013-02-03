@@ -28,7 +28,7 @@ Ember.Handlebars.registerHelper('control', function(path, modelPath, options) {
 
   var normalizedPath = path.replace(/\//g, '.');
 
-  var childView = subContainer.lookup('view:' + normalizedPath) || container.lookup('view:default'),
+  var childView = subContainer.lookup('view:' + normalizedPath) || subContainer.lookup('view:default'),
       childController = subContainer.lookup('controller:' + normalizedPath),
       childTemplate = subContainer.lookup('template:' + path);
 
