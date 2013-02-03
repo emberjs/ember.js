@@ -9,4 +9,5 @@ gem "uglifier", :git => "https://github.com/lautis/uglifier.git"
 group :development do
   gem "rack"
   gem "kicker"
+  gem "grit"
 end
