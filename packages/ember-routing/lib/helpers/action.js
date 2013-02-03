@@ -49,6 +49,12 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
             contexts = options.contexts,
             target = options.target;
 
+        if (target.target) {
+          target = handlebarsGet(target.root, target.target, target.options);
+        } else {
+          target = target.root;
+        }
+
         if (target.send) {
           return target.send.apply(target, args(options.parameters, actionName));
         } else {
@@ -243,7 +249,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
 
     var hash = options.hash,
         view = options.data.view,
-        target, controller, link;
+        controller, link;
 
     // create a hash to pass along to registerAction
     var action = {
@@ -258,13 +264,16 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
 
     action.view = view = get(view, 'concreteView');
 
+    var root, target;
+
     if (hash.target) {
-      target = handlebarsGet(this, hash.target, options);
+      root = this;
+      target = hash.target;
     } else if (controller = options.data.keywords.controller) {
-      target = controller;
+      root = controller;
     }
 
-    action.target = target;
+    action.target = { root: root, target: target, options: options };
     action.bubbles = hash.bubbles;
 
     var actionId = ActionHelper.registerAction(actionName, action);

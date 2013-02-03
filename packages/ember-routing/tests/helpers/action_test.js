@@ -80,7 +80,7 @@ test("should by default target the view's controller", function() {
 
   appendView();
 
-  equal(registeredTarget, controller, "The controller was registered as the target");
+  equal(registeredTarget.root, controller, "The controller was registered as the target");
 
   ActionHelper.registerAction = originalRegisterAction;
 });
@@ -112,7 +112,7 @@ test("should target the current controller inside an {{each}} loop", function() 
 
   appendView();
 
-  equal(registeredTarget, itemController, "the item controller is the target of action");
+  equal(registeredTarget.root, itemController, "the item controller is the target of action");
 
   ActionHelper.registerAction = originalRegisterAction;
 });
@@ -127,19 +127,62 @@ test("should allow a target to be specified", function() {
   var anotherTarget = Ember.View.create();
 
   view = Ember.View.create({
+    controller: {},
     template: Ember.Handlebars.compile('<a href="#" {{action "edit" target="view.anotherTarget"}}>edit</a>'),
     anotherTarget: anotherTarget
   });
 
   appendView();
 
-  equal(registeredTarget, anotherTarget, "The specified target was registered");
+  equal(registeredTarget.options.data.keywords.view, view, "The specified target was registered");
+  equal(registeredTarget.target, 'view.anotherTarget', "The specified target was registered");
 
   ActionHelper.registerAction = originalRegisterAction;
 
   Ember.run(function() {
     anotherTarget.destroy();
   });
+});
+
+test("should lazily evaluate the target", function() {
+  var firstEdit = 0, secondEdit = 0;
+
+  var controller = {};
+  var first = {
+    edit: function() {
+      firstEdit++;
+    }
+  };
+
+  var second = {
+    edit: function() {
+      secondEdit++;
+    }
+  };
+
+  controller.theTarget = first;
+
+  view = Ember.View.create({
+    controller: controller,
+    template: Ember.Handlebars.compile('<a href="#" {{action "edit" target="theTarget"}}>edit</a>')
+  });
+
+  appendView();
+
+  Ember.run(function() {
+    Ember.$('a').trigger('click');
+  });
+
+  equal(firstEdit, 1);
+
+  Ember.set(controller, 'theTarget', second);
+
+  Ember.run(function() {
+    Ember.$('a').trigger('click');
+  });
+
+  equal(firstEdit, 1);
+  equal(secondEdit, 1);
 });
 
 test("should register an event handler", function() {
