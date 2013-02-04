@@ -110,6 +110,8 @@ Ember.ObjectProxy = Ember.Object.extend(
 
   isTruthy: Ember.computed.bool('content'),
 
+  _debugContainerKey: null,
+
   willWatchProperty: function (key) {
     var contentKey = 'content.' + key;
     addBeforeObserver(this, contentKey, null, contentPropertyWillChange);

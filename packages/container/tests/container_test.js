@@ -93,7 +93,8 @@ test("An individual factory with a registered injection receives the injection",
 
   deepEqual(passedOptions, {
     store: store,
-    container: container
+    container: container,
+    _debugContainerKey: 'controller:post'
   });
 });
 
