@@ -221,6 +221,18 @@ test("`itemController` can be dynamic by overwriting `lookupItemController`", fu
   ok(otherControllerClass.detectInstance(jaimeController), "lookupItemController can return different classes for different objects");
 });
 
+test("when `idx` is out of range, `lookupItemController` is not called", function() {
+  arrayController = Ember.ArrayController.create({
+    container: container,
+    lookupItemController: function(object) {
+      ok(false, "`lookupItemController` should not be called when `idx` is out of range");
+    },
+    content: lannisters
+  });
+
+  strictEqual(arrayController.objectAtContent(50), undefined, "no controllers are created for out of range indexes");
+});
+
 test("if `lookupItemController` returns a string, it must be resolvable by the container", function() {
   arrayController = Ember.ArrayController.create({
     container: container,
