@@ -103,7 +103,8 @@ Ember.Router = Ember.Object.extend({
     return router.isActive.apply(router, arguments);
   },
 
-  send: function(name, context) {
+  send: function(name) {
+    context = [].slice.call(arguments,1);
     if (Ember.$ && context instanceof Ember.$.Event) {
       context = context.context;
     }
