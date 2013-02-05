@@ -230,7 +230,7 @@ namespace :release do
     end
 
     desc "Push new commit to git"
-    task :push do
+    task :push => :dist do
       puts "Pushing Repo"
       unless pretend?
         print "Are you sure you want to push the ember.js repo to github? (y/N) "
@@ -428,7 +428,7 @@ namespace :release do
       end
     end
 
-    task :about => :pull do
+    task :about => [:pull, :dist] do
       require 'zlib'
 
       about = File.read("tmp/website/source/about.html.erb")
@@ -476,7 +476,7 @@ namespace :release do
   task :prepare => [:clean, 'framework:prepare', 'website:prepare']
 
   desc "Deploy a new Ember release"
-  task :deploy => [:dist, 'framework:deploy', 'website:deploy']
+  task :deploy => ['framework:deploy', 'website:deploy']
 
 end
 
