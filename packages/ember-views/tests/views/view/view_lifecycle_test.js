@@ -296,10 +296,10 @@ test("should throw an exception when rerender is called after view is destroyed"
 
   raises(function() {
     view.rerender();
-  }, null, "throws an exception when calling appendChild");
+  }, null, "throws an exception when calling rerender");
 });
 
-test("should throw an exception when rerender is called after view is destroyed", function() {
+test("should throw an exception when destroyElement is called after view is destroyed", function() {
   Ember.run(function() {
     view = Ember.View.create({
       template: tmpl('foo')
@@ -314,6 +314,6 @@ test("should throw an exception when rerender is called after view is destroyed"
 
   raises(function() {
     view.destroyElement();
-  }, null, "throws an exception when calling appendChild");
+  }, null, "throws an exception when calling destroyElement");
 });
 
