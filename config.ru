@@ -1,19 +1,9 @@
 require 'bundler/setup'
-require 'rake-pipeline'
-require 'rake-pipeline/middleware'
+require 'ember-dev'
 
-class NoCache
-  def initialize(app)
-    @app = app
-  end
-
-  def call(env)
-    @app.call(env).tap do |status, headers, body|
-      headers["Cache-Control"] = "no-store"
-    end
-  end
+# This is not ideal
+map "/lib" do
+  run Rack::Directory.new('lib')
 end
 
-use NoCache
-use Rake::Pipeline::Middleware, Rake::Pipeline::Project.new("Assetfile")
-run Rack::Directory.new('.')
+run EmberDev::Server.new

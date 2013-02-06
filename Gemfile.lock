@@ -1,27 +1,26 @@
 GIT
-  remote: https://github.com/lautis/uglifier.git
-  revision: 2f6c31a67d6dbd04c3153603339fab49a06ec4ec
+  remote: https://github.com/emberjs/ember-dev.git
+  revision: a8d16307d65fc4ccb8395a53bb7654b7a084cefc
+  branch: master
   specs:
-    uglifier (1.3.0)
-      execjs (>= 0.3.0)
-      multi_json (~> 1.0, >= 1.0.2)
+    ember-dev (0.1)
+      colored
+      execjs
+      grit
+      kicker
+      rack
+      rake-pipeline (~> 0.8.0)
+      rake-pipeline-web-filters (~> 0.7.0)
+      uglifier
 
 GIT
   remote: https://github.com/livingsocial/rake-pipeline.git
-  revision: 50b8d77b703c96539a433ee53a680c43542aaa75
+  revision: ee992cbcda5172075062be035bcbef2cf1b0ff5d
   specs:
     rake-pipeline (0.8.0)
       json
-      rake (~> 0.9.0)
+      rake (~> 10.0.0)
       thor
-
-GIT
-  remote: https://github.com/wycats/rake-pipeline-web-filters.git
-  revision: 1a6dc173776b188836aa2ce2ac35b61c7f7daafe
-  specs:
-    rake-pipeline-web-filters (0.6.0)
-      rack
-      rake-pipeline (~> 0.6)
 
 GEM
   remote: http://rubygems.org/
@@ -37,22 +36,23 @@ GEM
     json (1.7.6)
     kicker (2.6.1)
       listen
-    listen (0.6.0)
-    mime-types (1.19)
-    multi_json (1.3.7)
+    listen (0.7.2)
+    mime-types (1.20.1)
+    multi_json (1.5.0)
     posix-spawn (0.3.6)
-    rack (1.4.1)
-    rake (0.9.6)
-    thor (0.16.0)
+    rack (1.5.1)
+    rake (10.0.3)
+    rake-pipeline-web-filters (0.7.0)
+      rack
+      rake-pipeline (~> 0.6)
+    thor (0.17.0)
+    uglifier (1.3.0)
+      execjs (>= 0.3.0)
+      multi_json (~> 1.0, >= 1.0.2)
 
 PLATFORMS
   ruby
 
 DEPENDENCIES
-  colored
-  grit
-  kicker
-  rack
+  ember-dev!
   rake-pipeline!
-  rake-pipeline-web-filters!
-  uglifier!
