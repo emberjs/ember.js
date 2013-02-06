@@ -331,7 +331,7 @@ Ember._RenderBuffer.prototype =
       this.elementAttributes = null;
     }
 
-    if (value) {
+    if (value || typeof value === 'number') {
       buffer.push(' value="' + this._escapeAttribute(value) + '"');
 
       this.elementValue = null;
@@ -391,7 +391,7 @@ Ember._RenderBuffer.prototype =
       this.elementAttributes = null;
     }
 
-    if (value) {
+    if (value || typeof value === 'number') {
       $element.val(value);
 
       this.elementValue = null;
