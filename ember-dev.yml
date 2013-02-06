@@ -34,3 +34,4 @@ testing_packages:
 testing_additional_requires:
   - ember-debug
   - rsvp
+testing_ember: true
