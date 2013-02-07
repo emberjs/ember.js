@@ -230,7 +230,8 @@ test("when `idx` is out of range, `lookupItemController` is not called", functio
     content: lannisters
   });
 
-  strictEqual(arrayController.objectAtContent(50), undefined, "no controllers are created for out of range indexes");
+  strictEqual(arrayController.objectAtContent(50), undefined, "no controllers are created for indexes that are superior to the length");
+  strictEqual(arrayController.objectAtContent(-1), undefined, "no controllers are created for indexes less than zero");
 });
 
 test("if `lookupItemController` returns a string, it must be resolvable by the container", function() {
@@ -274,4 +275,3 @@ test("array observers can invoke `objectAt` without overwriting existing item co
   equal(arrayObserverCalled, true, "Array observers are called normally");
   equal(tywinController.get('name'), "Tywin", "Array observers calling `objectAt` does not overwrite existing controllers' content");
 });
-
