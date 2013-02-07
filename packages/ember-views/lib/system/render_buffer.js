@@ -105,17 +105,19 @@ Ember._RenderBuffer.prototype =
   elementAttributes: null,
 
   /**
-    The value for this attribute. Values cannot be set via attr after
-    jQuery 1.9, they need to be set with val() instead.
+    A hash keyed on the name of the properties and whose value will be
+    applied to that property. For example, if you wanted to apply a
+    `checked=true` property to an element, you would set the
+    elementProperties hash to `{'checked':true}`.
 
-    You should not maintain this value yourself, rather, you should use
-    the `val()` method of `Ember.RenderBuffer`.
+    You should not maintain this hash yourself, rather, you should use
+    the `prop()` method of `Ember.RenderBuffer`.
 
-    @property elementValue
-    @type String
-    @default null
+    @property elementProperties
+    @type Hash
+    @default {}
   */
-  elementValue: null,
+  elementProperties: null,
 
   /**
     The tagname of the element an instance of `Ember.RenderBuffer` represents.
@@ -226,26 +228,6 @@ Ember._RenderBuffer.prototype =
   },
 
   /**
-    Adds an value which will be rendered to the element.
-
-    @method val
-    @param {String} value The value to set
-    @chainable
-    @return {Ember.RenderBuffer|String} this or the current value
-  */
-  val: function(value) {
-    var elementValue = this.elementValue;
-
-    if (arguments.length === 0) {
-      return elementValue;
-    } else {
-      this.elementValue = value;
-    }
-
-    return this;
-  },
-
-  /**
     Remove an attribute from the list of attributes to render.
 
     @method removeAttr
@@ -255,6 +237,41 @@ Ember._RenderBuffer.prototype =
   removeAttr: function(name) {
     var attributes = this.elementAttributes;
     if (attributes) { delete attributes[name]; }
+
+    return this;
+  },
+
+  /**
+    Adds an property which will be rendered to the element.
+
+    @method prop
+    @param {String} name The name of the property
+    @param {String} value The value to add to the property
+    @chainable
+    @return {Ember.RenderBuffer|String} this or the current property value
+  */
+  prop: function(name, value) {
+    var properties = this.elementProperties = (this.elementProperties || {});
+
+    if (arguments.length === 1) {
+      return properties[name];
+    } else {
+      properties[name] = value;
+    }
+
+    return this;
+  },
+
+  /**
+    Remove an property from the list of properties to render.
+
+    @method removeProp
+    @param {String} name The name of the property
+    @chainable
+  */
+  removeProp: function(name) {
+    var properties = this.elementProperties;
+    if (properties) { delete properties[name]; }
 
     return this;
   },
@@ -292,9 +309,9 @@ Ember._RenderBuffer.prototype =
         id = this.elementId,
         classes = this.classes,
         attrs = this.elementAttributes,
-        value = this.elementValue,
+        props = this.elementProperties,
         style = this.elementStyle,
-        prop;
+        attr, prop;
 
     buffer.push('<' + tagName);
 
@@ -322,19 +339,30 @@ Ember._RenderBuffer.prototype =
     }
 
     if (attrs) {
-      for (prop in attrs) {
-        if (attrs.hasOwnProperty(prop)) {
-          buffer.push(' ' + prop + '="' + this._escapeAttribute(attrs[prop]) + '"');
+      for (attr in attrs) {
+        if (attrs.hasOwnProperty(attr)) {
+          buffer.push(' ' + attr + '="' + this._escapeAttribute(attrs[attr]) + '"');
         }
       }
 
       this.elementAttributes = null;
     }
 
-    if (value || typeof value === 'number') {
-      buffer.push(' value="' + this._escapeAttribute(value) + '"');
+    if (props) {
+      for (prop in props) {
+        if (props.hasOwnProperty(prop)) {
+          var value = props[prop];
+          if (typeof value === 'boolean') {
+            if (value) {
+              buffer.push(' ' + prop + '="' + prop + '"');
+            }
+          } else {
+            buffer.push(' ' + prop + '="' + this._escapeAttribute(props[prop]) + '"');
+          }
+        }
+      }
 
-      this.elementValue = null;
+      this.elementProperties = null;
     }
 
     buffer.push('>');
@@ -356,9 +384,9 @@ Ember._RenderBuffer.prototype =
         id = this.elementId,
         classes = this.classes,
         attrs = this.elementAttributes,
-        value = this.elementValue,
+        props = this.elementProperties,
         style = this.elementStyle,
-        styleBuffer = '', prop;
+        styleBuffer = '', attr, prop;
 
     if (id) {
       $element.attr('id', id);
@@ -382,19 +410,23 @@ Ember._RenderBuffer.prototype =
     }
 
     if (attrs) {
-      for (prop in attrs) {
-        if (attrs.hasOwnProperty(prop)) {
-          $element.attr(prop, attrs[prop]);
+      for (attr in attrs) {
+        if (attrs.hasOwnProperty(attr)) {
+          $element.attr(attr, attrs[attr]);
         }
       }
 
       this.elementAttributes = null;
     }
 
-    if (value || typeof value === 'number') {
-      $element.val(value);
+    if (props) {
+      for (prop in props) {
+        if (props.hasOwnProperty(prop)) {
+          $element.prop(prop, props[prop]);
+        }
+      }
 
-      this.elementValue = null;
+      this.elementProperties = null;
     }
 
     return element;
