@@ -104,11 +104,7 @@ Ember.Router = Ember.Object.extend({
   },
 
   send: function(name, context) {
-    if (Ember.$ && context instanceof Ember.$.Event) {
-      context = context.context;
-    }
-
-    this.router.trigger(name, context);
+    this.router.trigger.apply(this.router, arguments);
   },
 
   hasRoute: function(route) {

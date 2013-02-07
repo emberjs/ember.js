@@ -855,6 +855,45 @@ asyncTest("Events are triggered on the current state when routes are nested", fu
   action.handler(event);
 });
 
+asyncTest("actions can be triggered with multiple arguments", function() {
+  Router.map(function() {
+    this.resource("root", { path: "/" }, function() {
+      this.route("index", { path: "/" });
+    });
+  });
+
+  var model1 = { name: "Tilde" },
+      model2 = { name: "Tom Dale" };
+
+  App.RootRoute = Ember.Route.extend({
+    events: {
+      showStuff: function(obj1, obj2) {
+        ok(this instanceof App.RootRoute, "the handler is an App.HomeRoute");
+        // Using Ember.copy removes any private Ember vars which older IE would be confused by
+        deepEqual(Ember.copy(obj1, true), { name: "Tilde" }, "the first context is correct");
+        deepEqual(Ember.copy(obj2, true), { name: "Tom Dale" }, "the second context is correct");
+        start();
+      }
+    }
+  });
+
+  App.RootIndexController = Ember.Controller.extend({
+    model1: model1,
+    model2: model2
+  });
+
+  Ember.TEMPLATES['root/index'] = Ember.Handlebars.compile(
+    "<a {{action showStuff model1 model2}}>{{model1.name}}</a>"
+  );
+
+  bootApplication();
+
+  var actionId = Ember.$("#qunit-fixture a").data("ember-action");
+  var action = Ember.Handlebars.ActionHelper.registeredActions[actionId];
+  var event = new Ember.$.Event("click");
+  action.handler(event);
+});
+
 test("transitioning multiple times in a single run loop only sets the URL once", function() {
   Router.map(function() {
     this.route("root", { path: "/" });
