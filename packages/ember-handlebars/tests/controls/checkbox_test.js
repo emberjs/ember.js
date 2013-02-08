@@ -90,7 +90,7 @@ test("checking the checkbox updates the value", function() {
   Ember.run(function() { checkboxView.appendTo('#qunit-fixture'); });
 
   equal(get(checkboxView, 'checked'), true, "precond - initially starts with a true value");
-  equal(!!checkboxView.$().attr('checked'), true, "precond - the initial checked property is true");
+  equal(!!checkboxView.$().prop('checked'), true, "precond - the initial checked property is true");
 
   // Can't find a way to programatically trigger a checkbox in IE and have it generate the
   // same events as if a user actually clicks.
@@ -101,6 +101,6 @@ test("checking the checkbox updates the value", function() {
     checkboxView.$().removeAttr('checked').trigger('change');
   }
 
-  equal(checkboxView.$().prop('checked'), false, "after clicking a checkbox, the checked property changed");
+  equal(!!checkboxView.$().prop('checked'), false, "after clicking a checkbox, the checked property changed");
   equal(get(checkboxView, 'checked'), false, "changing the checkbox causes the view's value to get updated");
 });

@@ -17,26 +17,6 @@ test("RenderBuffers combine strings", function() {
   equal("<div>ab</div>", cleanedString, "Multiple pushes should concatenate");
 });
 
-test("value of 0 is included in output", function() {
-  var buffer, $el;
-
-  buffer = new Ember.RenderBuffer('input');
-  buffer.val(0);
-  buffer.pushOpeningTag();
-  $el = buffer.element();
-
-  strictEqual($el.value, '0', "generated element has value of '0'");
-
-  buffer = new Ember.RenderBuffer('input');
-  buffer.val(0);
-  buffer.push('<div>');
-  buffer.pushOpeningTag();
-  buffer.push('</div>');
-  $el = Ember.$(buffer.innerString());
-
-  strictEqual($el.find('input').val(), '0', "raw tag has value of '0'");
-});
-
 test("prevents XSS injection via `id`", function() {
   var buffer = new Ember.RenderBuffer('div');
 
@@ -66,20 +46,6 @@ test("prevents XSS injection via `attr`", function() {
   equal(elOnmouseover, undefined, 'should not have onmouseover');
   ok(elClass === 'hax><img src=\"trollface.png\"' || !elClass, 'should have escaped class');
   equal(el.childNodes.length, 0, 'should not have children');
-});
-
-test("prevents XSS injection via `val`", function() {
-  var buffer = new Ember.RenderBuffer('input');
-
-  buffer.val('trololol" onmouseover="pwn()');
-  buffer.pushOpeningTag();
-
-  var el = buffer.element(),
-      elValue = el.value,
-      elOnmouseover = el.getAttribute('onmouseover');
-
-  equal(elValue, 'trololol" onmouseover="pwn()', 'value should be escaped');
-  equal(elOnmouseover, undefined, 'should not have onmouseover');
 });
 
 test("prevents XSS injection via `addClass`", function() {
