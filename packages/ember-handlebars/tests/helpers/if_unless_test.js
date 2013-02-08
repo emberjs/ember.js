@@ -53,3 +53,51 @@ test("The `if` helper does not print the contents for an object proxy without co
 
   equal(view.$().text(), 'Yep');
 });
+
+test("The `if` helper updates if an object proxy gains or loses context", function() {
+  view = Ember.View.create({
+    proxy: Ember.ObjectProxy.create({ content: null }),
+
+    template: compile('{{#if view.proxy}}Yep{{/if}}')
+  });
+
+  appendView(view);
+
+  equal(view.$().text(), '');
+
+  Ember.run(function() {
+    view.set('proxy.content', {});
+  });
+
+  equal(view.$().text(), 'Yep');
+
+  Ember.run(function() {
+    view.set('proxy.content', null);
+  });
+
+  equal(view.$().text(), '');
+});
+
+test("The `if` helper updates if an array is empty or not", function() {
+  view = Ember.View.create({
+    array: Ember.A([]),
+
+    template: compile('{{#if view.array}}Yep{{/if}}')
+  });
+
+  appendView(view);
+
+  equal(view.$().text(), '');
+
+  Ember.run(function() {
+    view.get('array').pushObject(1);
+  });
+
+  equal(view.$().text(), 'Yep');
+
+  Ember.run(function() {
+    view.get('array').removeObject(1);
+  });
+
+  equal(view.$().text(), '');
+});

@@ -15,14 +15,14 @@ var EmberHandlebars = Ember.Handlebars, helpers = EmberHandlebars.helpers;
 
 // Binds a property into the DOM. This will create a hook in DOM that the
 // KVO system will look for and update if the property changes.
-function bind(property, options, preserveContext, shouldDisplay, valueNormalizer) {
+function bind(property, options, preserveContext, shouldDisplay, valueNormalizer, childProperties) {
   var data = options.data,
       fn = options.fn,
       inverse = options.inverse,
       view = data.view,
       currentContext = this,
       pathRoot, path, normalized,
-      observer;
+      observer, i;
 
   normalized = normalizePath(currentContext, property, data);
 
@@ -78,6 +78,11 @@ function bind(property, options, preserveContext, shouldDisplay, valueNormalizer
     // object ({{this}}) so updating it is not our responsibility.
     if (path !== '') {
       view.registerObserver(pathRoot, path, observer);
+      if (childProperties) {
+        for (i=0; i<childProperties.length; i++) {
+          view.registerObserver(pathRoot, path+'.'+childProperties[i], observer);
+        }
+      }
     }
   } else {
     // The object is not observable, so just render it out and
@@ -223,14 +228,14 @@ EmberHandlebars.registerHelper('boundIf', function(property, fn) {
     var truthy = result && get(result, 'isTruthy');
     if (typeof truthy === 'boolean') { return truthy; }
 
-    if (Ember.typeOf(result) === 'array') {
+    if (Ember.isArray(result)) {
       return get(result, 'length') !== 0;
     } else {
       return !!result;
     }
   };
 
-  return bind.call(context, property, fn, true, func, func);
+  return bind.call(context, property, fn, true, func, func, ['isTruthy', 'length']);
 });
 
 /**
