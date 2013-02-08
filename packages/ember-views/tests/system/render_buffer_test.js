@@ -12,67 +12,49 @@ test("RenderBuffers combine strings", function() {
   buffer.push('a');
   buffer.push('b');
 
-  // trim and toLowerCase since IE8 returns uppercase tags and line breaks
-  var cleanedString = Ember.$.trim(buffer.string().toLowerCase());
-  equal("<div>ab</div>", cleanedString, "Multiple pushes should concatenate");
+  equal("<div>ab</div>", buffer.string(), "Multiple pushes should concatenate");
 });
 
 test("prevents XSS injection via `id`", function() {
   var buffer = new Ember.RenderBuffer('div');
 
+  buffer.push('<span></span>'); // We need the buffer to not be empty so we use the string path
   buffer.id('hacked" megahax="yes');
   buffer.pushOpeningTag();
 
-  // Regular check, then check for IE 8
-  var cleanedString = Ember.$.trim(buffer.string()).toLowerCase();
-  ok(cleanedString === '<div id="hacked&quot; megahax=&quot;yes"></div>' ||
-      cleanedString === Ember.$.trim("<div id='hacked\" megahax=\"yes'></div>"),
-      'expected safe string but was: '+cleanedString);
+  equal('<span></span><div id="hacked&quot; megahax=&quot;yes">', buffer.string());
 });
 
 test("prevents XSS injection via `attr`", function() {
   var buffer = new Ember.RenderBuffer('div');
 
+  buffer.push('<span></span>'); // We need the buffer to not be empty so we use the string path
   buffer.attr('id', 'trololol" onmouseover="pwn()');
   buffer.attr('class', "hax><img src=\"trollface.png\"");
   buffer.pushOpeningTag();
 
-  var el = buffer.element(),
-      elId = el.getAttribute('id'),
-      elOnmouseover = el.getAttribute('onmouseover'),
-      elClass = el.getAttribute('class');
-
-  equal(elId, 'trololol" onmouseover="pwn()', 'id should be escaped');
-  equal(elOnmouseover, undefined, 'should not have onmouseover');
-  ok(elClass === 'hax><img src=\"trollface.png\"' || !elClass, 'should have escaped class');
-  equal(el.childNodes.length, 0, 'should not have children');
+  equal('<span></span><div id="trololol&quot; onmouseover=&quot;pwn()" class="hax&gt;&lt;img src=&quot;trollface.png&quot;">', buffer.string());
 });
 
 test("prevents XSS injection via `addClass`", function() {
   var buffer = new Ember.RenderBuffer('div');
 
+  buffer.push('<span></span>'); // We need the buffer to not be empty so we use the string path
   buffer.addClass('megahax" xss="true');
   buffer.pushOpeningTag();
 
   // Regular check then check for IE
-  var cleanedString = Ember.$.trim(buffer.string()).toLowerCase();
-  ok(cleanedString === '<div class="megahax&quot; xss=&quot;true"></div>' ||
-      cleanedString === "<div class='megahax\" xss=\"true'></div>",
-      'expected safe string but was: '+cleanedString);
+  equal('<span></span><div class="megahax&quot; xss=&quot;true">', buffer.string());
 });
 
 test("prevents XSS injection via `style`", function() {
   var buffer = new Ember.RenderBuffer('div');
 
+  buffer.push('<span></span>'); // We need the buffer to not be empty so we use the string path
   buffer.style('color', 'blue;" xss="true" style="color:red');
   buffer.pushOpeningTag();
 
-  var el = buffer.element(),
-      elColor = el.style.color,
-      elXss = el.getAttribute('xss');
-
-  equal(elColor, 'blue', 'should have escaped style');
-  equal(elXss, undefined, 'should not have xss attr');
+  equal('<span></span><div style="color:blue;&quot; xss=&quot;true&quot; style=&quot;color:red;">', buffer.string());
 });
 
 module("Ember.RenderBuffer - without tagName");
