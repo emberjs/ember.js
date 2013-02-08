@@ -2347,56 +2347,20 @@ Ember.View.views = {};
 Ember.View.childViewsProperty = childViewsProperty;
 
 Ember.View.applyAttributeBindings = function(elem, name, value) {
-  if (name === 'value') {
-    Ember.View.applyValueBinding(elem, value);
-  } else {
-    Ember.View.applyAttributeBinding(elem, name, value);
-  }
-};
-
-Ember.View.applyAttributeBinding = function(elem, name, value) {
   var type = Ember.typeOf(value);
-  var currentValue = elem.attr(name);
 
   // if this changes, also change the logic in ember-handlebars/lib/helpers/binding.js
-  if (
-    (
-      ( type === 'string' ) ||
-      ( type === 'number' && !isNaN(value) ) ||
-      ( type === 'boolean' && value )
-    ) && (
-      value !== currentValue
-    )
-  ) {
-    elem.attr(name, value);
-  } else if (!value) {
-    elem.removeAttr(name);
-  }
-};
-
-Ember.View.applyValueBinding = function(elem, value) {
-  var type = Ember.typeOf(value);
-  var currentValue = elem.val();
-
-  // if this changes, also change the logic in ember-handlebars/lib/helpers/binding.js
-  if (
-    (
-      ( type === 'string' ) ||
-      ( type === 'number' && !isNaN(value) ) ||
-      ( type === 'boolean' && value )
-    ) && (
-      value !== currentValue
-    )
-  ) {
-    if (elem.caretPosition) {
-      var caretPosition = elem.caretPosition();
-      elem.val(value);
-      elem.setCaretPosition(caretPosition);
-    } else {
-      elem.val(value);
+  if (name !== 'value' && (type === 'string' || (type === 'number' && !isNaN(value)))) {
+    if (value !== elem.attr(name)) {
+      elem.attr(name, value);
+    }
+  } else if (name === 'value' || type === 'boolean') {
+    if (value !== elem.prop(name)) {
+      // value and booleans should always be properties
+      elem.prop(name, value);
     }
   } else if (!value) {
-    elem.val('');
+    elem.removeAttr(name);
   }
 };
 
