@@ -354,6 +354,27 @@ test("Ember.View should update when a property changes and the bind helper is us
   equal(view.$('#first').text(), "bazam", "view updates when a bound property changes");
 });
 
+test("Ember.View should not use keyword incorrectly - Issue #1315", function() {
+  container.register('template', 'foo', Ember.Handlebars.compile('{{#each value in view.content}}{{value}}-{{#each option in view.options}}{{option.value}}:{{option.label}} {{/each}}{{/each}}'));
+
+  view = Ember.View.create({
+    container: container,
+    templateName: 'foo',
+
+    content: Ember.A(['X', 'Y']),
+    options: Ember.A([
+      { label: 'One', value: 1 },
+      { label: 'Two', value: 2 }
+    ])
+  });
+
+  Ember.run(function() {
+    view.appendTo('#qunit-fixture');
+  });
+
+  equal(view.$().text(), 'X-1:One 2:Two Y-1:One 2:Two ');
+});
+
 test("Ember.View should update when a property changes and no bind helper is used", function() {
   container.register('template', 'foo', Ember.Handlebars.compile('<h1 id="first">{{#with view.content}}{{wham}}{{/with}}</h1>'));
 
