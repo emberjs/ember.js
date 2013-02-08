@@ -336,3 +336,20 @@ test("The {{linkTo}} helper accepts string arguments", function() {
 
   equal(Ember.$('#link', '#qunit-fixture').attr('href'), "/filters/unpopular");
 });
+
+test("The {{linkTo}} helper doesn't change view context", function() {
+  App.IndexView = Ember.View.extend({
+    elementId: 'index',
+    name: 'test'
+  });
+
+  Ember.TEMPLATES.index = Ember.Handlebars.compile("{{view.name}}-{{#linkTo index id='self-link'}}Link: {{view.name}}{{/linkTo}}");
+
+  bootApplication();
+
+  Ember.run(function() {
+    router.handleURL("/");
+  });
+
+  equal(Ember.$('#index', '#qunit-fixture').text(), 'test-Link: test', "accesses correct view");
+});
