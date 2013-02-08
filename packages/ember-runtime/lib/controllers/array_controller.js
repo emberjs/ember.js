@@ -138,7 +138,7 @@ Ember.ArrayController = Ember.ArrayProxy.extend(Ember.ControllerMixin,
     var length = get(this, 'length'),
         object = get(this,'arrangedContent').objectAt(idx);
 
-    if (idx < length) {
+    if (idx >= 0 && idx < length) {
       var controllerClass = this.lookupItemController(object);
       if (controllerClass) {
         return this.controllerAt(idx, object, controllerClass);
