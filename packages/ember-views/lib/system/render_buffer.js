@@ -352,12 +352,12 @@ Ember._RenderBuffer.prototype =
       for (prop in props) {
         if (props.hasOwnProperty(prop)) {
           var value = props[prop];
-          if (typeof value === 'boolean') {
-            if (value) {
+          if (value) {
+            if (value === true) {
               buffer.push(' ' + prop + '="' + prop + '"');
+            } else {
+              buffer.push(' ' + prop + '="' + this._escapeAttribute(props[prop]) + '"');
             }
-          } else {
-            buffer.push(' ' + prop + '="' + this._escapeAttribute(props[prop]) + '"');
           }
         }
       }

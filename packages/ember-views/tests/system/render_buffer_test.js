@@ -57,6 +57,16 @@ test("prevents XSS injection via `style`", function() {
   equal('<span></span><div style="color:blue;&quot; xss=&quot;true&quot; style=&quot;color:red;">', buffer.string());
 });
 
+test("handles null props - Issue #2019", function() {
+  var buffer = new Ember.RenderBuffer('div');
+
+  buffer.push('<span></span>'); // We need the buffer to not be empty so we use the string path
+  buffer.prop('value', null);
+  buffer.pushOpeningTag();
+
+  equal('<span></span><div>', buffer.string());
+});
+
 module("Ember.RenderBuffer - without tagName");
 
 test("It is possible to create a RenderBuffer without a tagName", function() {
