@@ -11,6 +11,7 @@
         "requireModule",
         "equal",
         "notEqual",
+        "notStrictEqual",
         "test",
         "asyncTest",
         "testBoth",
