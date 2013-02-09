@@ -55,6 +55,12 @@ Ember.TextField = Ember.View.extend(Ember.TextSupport,
   tagName: "input",
   attributeBindings: ['type', 'value', 'size', 'pattern'],
 
+  /** 
+    The `clearOnEnter` attribute of the input element. When `insertNewLine` is called, 
+    if this property is true, the text field will clear.
+  */
+  clearOnEnter: false,
+
   /**
     The `value` attribute of the input element. As the user inputs text, this
     property is updated live.
@@ -132,6 +138,10 @@ Ember.TextField = Ember.View.extend(Ember.TextSupport,
       if (!get(this, 'bubbles')) {
         event.stopPropagation();
       }
+    }
+
+    if ( get(this, 'clearOnEnter') ) {
+      set(this, 'value', null);
     }
   }
 });
