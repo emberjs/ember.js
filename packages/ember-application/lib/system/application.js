@@ -114,7 +114,14 @@ var get = Ember.get, set = Ember.set,
   ### Routing
 
   In addition to creating your application's router, `Ember.Application` is
-  also responsible for telling the router when to start routing.
+  also responsible for telling the router when to start routing. Transitions
+  between routes can be logged with the LOG_TRANSITIONS flag:
+
+  ```javascript
+  window.App = Ember.Application.create({
+    LOG_TRANSITIONS: true
+  });
+  ```
 
   By default, the router will begin trying to translate the current URL into
   application state once the browser emits the `DOMContentReady` event. If you
@@ -123,14 +130,7 @@ var get = Ember.get, set = Ember.set,
 
   If there is any setup required before routing begins, you can implement a
   `ready()` method on your app that will be invoked immediately before routing
-  begins:
-
-  ```javascript
-  window.App = Ember.Application.create({
-    ready: function() {
-      this.set('router.enableLogging', true);
-    }
-  });
+  begins.
 
   To begin routing, you must have at a minimum a top-level controller and view.
   You define these as `App.ApplicationController` and `App.ApplicationView`,
