@@ -72,30 +72,35 @@ Ember.Route = Ember.Object.extend({
     this.redirected = false;
     this._checkingRedirect = true;
 
-    this.redirect(context);
+    var model = context;
+    if (model && get(model, 'isController')){
+      model = get(model, 'content');
+    }
+
+    this.redirect(model);
 
     this._checkingRedirect = false;
     if (this.redirected) { return false; }
 
-    var controller = this.controllerFor(this.routeName, context);
+    var controller = this.controllerFor(this.routeName, model);
 
     if (controller) {
       this.controller = controller;
-      set(controller, 'model', context);
+      set(controller, 'model', model);
     }
 
     if (this.setupControllers) {
       Ember.deprecate("Ember.Route.setupControllers is deprecated. Please use Ember.Route.setupController(controller, model) instead.");
-      this.setupControllers(controller, context);
+      this.setupControllers(controller, model);
     } else {
-      this.setupController(controller, context);
+      this.setupController(controller, model);
     }
 
     if (this.renderTemplates) {
       Ember.deprecate("Ember.Route.renderTemplates is deprecated. Please use Ember.Route.renderTemplate(controller, model) instead.");
-      this.renderTemplates(context);
+      this.renderTemplates(model);
     } else {
-      this.renderTemplate(controller, context);
+      this.renderTemplate(controller, model);
     }
   },
 
