@@ -246,7 +246,7 @@ Ember.Handlebars.registerHelper('helperMissing', function(path, options) {
 Ember.Handlebars.registerBoundHelper = function(name, fn) {
   var dependentKeys = slice.call(arguments, 2);
 
-  Ember.Handlebars.registerHelper(name, function() {
+  function helper() {
     var properties = slice.call(arguments, 0, -1),
       numProperties = properties.length,
       options = arguments[arguments.length - 1],
@@ -308,7 +308,10 @@ Ember.Handlebars.registerBoundHelper = function(name, fn) {
     for (var i=0, l=dependentKeys.length; i<l; i++) {
       view.registerObserver(pathRoot, path + '.' + dependentKeys[i], bindView, rerenderBoundHelperView);
     }
-  });
+  }
+
+  helper._rawFunction = fn;
+  Ember.Handlebars.registerHelper(name, helper);
 };
 
 /**
