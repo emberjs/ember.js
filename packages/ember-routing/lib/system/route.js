@@ -655,7 +655,7 @@ Ember.Route = Ember.Object.extend({
 
     var container = this.container,
         view = container.lookup('view:' + name),
-        template = container.lookup('template:' + name);
+        template = (view && get(view, 'template')) || container.lookup('template:' + name);
 
     if (!view && !template) {
       if (get(this.router, 'namespace.LOG_VIEW_LOOKUPS')) {
