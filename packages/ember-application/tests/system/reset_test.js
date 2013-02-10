@@ -64,7 +64,7 @@ test("When an application is reset, the ApplicationView is torn down", function(
 });
 
 test("When an application is reset, the router URL is reset to `/`", function() {
-  var location;
+  var location, router;
 
   Ember.run(function() {
     application = Application.create();
@@ -78,7 +78,7 @@ test("When an application is reset, the router URL is reset to `/`", function() 
     });
   });
 
-  var router = application.__container__.lookup('router:main');
+  router = application.__container__.lookup('router:main');
 
   location = router.get('location');
   location.handleURL('/one');
@@ -88,6 +88,10 @@ test("When an application is reset, the router URL is reset to `/`", function() 
   });
 
   var applicationController = application.__container__.lookup('controller:application');
+  router = application.__container__.lookup('router:main');
+  location = router.get('location');
+
+  equal(location.getURL(), '');
 
   equal(get(applicationController, 'currentPath'), "index");
 
