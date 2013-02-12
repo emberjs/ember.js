@@ -1172,6 +1172,42 @@ test("Redirecting from the middle of a route aborts the remainder of the routes"
   equal(router.get('location').getURL(), "/home");
 });
 
+test("Transitioning from a parent event does not prevent currentPath from being set", function() {
+  Router.map(function() {
+    this.resource("foo", function() {
+      this.resource("bar", function() {
+        this.route("baz");
+      });
+      this.route("qux");
+    });
+  });
+
+  App.FooRoute = Ember.Route.extend({
+    events: {
+      goToQux: function() {
+        this.transitionTo('foo.qux');
+      }
+    }
+  });
+
+  bootApplication();
+
+  var applicationController = router.container.lookup('controller:application');
+
+  Ember.run(function() {
+    router.handleURL("/foo/bar/baz");
+  });
+
+  equal(applicationController.get('currentPath'), 'foo.bar.baz');
+
+  Ember.run(function() {
+    router.send("goToQux");
+  });
+
+  equal(applicationController.get('currentPath'), 'foo.qux');
+  equal(router.get('location').getURL(), "/foo/qux");
+});
+
 test("Generated names can be customized when providing routes with dot notation", function() {
   expect(3);
 
