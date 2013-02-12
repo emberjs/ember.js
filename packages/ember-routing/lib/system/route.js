@@ -73,8 +73,11 @@ Ember.Route = Ember.Object.extend({
     this._checkingRedirect = true;
 
     var model = context;
-    if (model && get(model, 'isController')){
+    if (model && get(model, 'isController')) {
+      this.container = model.container;
       model = get(model, 'content');
+    } else {
+      this.container = this.router.container;
     }
 
     this.redirect(model);
@@ -281,7 +284,7 @@ Ember.Route = Ember.Object.extend({
     @return {Ember.Controller}
   */
   controllerFor: function(name, model) {
-    var container = this.router.container,
+    var container = this.container,
         controller = container.lookup('controller:' + name);
 
     if (!controller) {
