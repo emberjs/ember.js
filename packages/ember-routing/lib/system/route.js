@@ -88,9 +88,9 @@ Ember.Route = Ember.Object.extend({
     this._checkingRedirect = false;
     if (this.redirected) { return false; }
 
-    var controller = this.controllerFor(this.routeName, context);
+    var controller = this.controller = this.controllerFor(this.routeName, context);
 
-    this.defaultSetupController(controller, context);
+    this.setupControllerModel(controller, context);
 
     if (this.setupControllers) {
       Ember.deprecate("Ember.Route.setupControllers is deprecated. Please use Ember.Route.setupController(controller, model) instead.");
@@ -98,8 +98,6 @@ Ember.Route = Ember.Object.extend({
     } else {
       this.setupController(controller, context);
     }
-
-    this.defaultRenderTemplate(controller, context);
 
     if (this.renderTemplates) {
       Ember.deprecate("Ember.Route.renderTemplates is deprecated. Please use Ember.Route.renderTemplate(controller, model) instead.");
@@ -110,29 +108,14 @@ Ember.Route = Ember.Object.extend({
   },
 
   /**
-    @private
-
     This hook sets the `model` property of the controller to the model.
 
-    @method defaultSetupController
+    @method setupControllerModel
   */
-  defaultSetupController: function(controller, model) {
+  setupControllerModel: function(controller, model) {
     if (controller) {
-      this.controller = controller;
       set(controller, 'model', model);
     }
-  },
-
-  /**
-    @private
-
-    This hook renders the route's template, configured with the controller
-    for the route.
-
-    @method defaultRenderTemplate
-  */
-  defaultRenderTemplate: function(controller, model) {
-    this.render();
   },
 
   /**
@@ -342,7 +325,8 @@ Ember.Route = Ember.Object.extend({
     A hook you can use to render the template for the current route.
 
     This method is called with the controller for the current route and the
-    model supplied by the `model` hook.
+    model supplied by the `model` hook. By default, it renders the route's
+    template, configured with the controller for the route.
 
     This method can be overridden to set up and render additional or
     alternative templates.
@@ -351,7 +335,9 @@ Ember.Route = Ember.Object.extend({
     @param {Object} controller the route's controller
     @param {Object} model the route's model
   */
-  renderTemplate: Ember.K,
+  renderTemplate: function(controller, model) {
+    this.render();
+  },
 
   /**
     Renders a template into an outlet.
