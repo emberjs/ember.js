@@ -19,6 +19,8 @@ Ember.Handlebars.EachView = Ember.CollectionView.extend(Ember._Metamorph, {
       set(controller, 'itemController', itemController);
       set(controller, 'container', get(this, 'controller.container'));
       set(controller, '_eachView', this);
+      set(controller, 'target', get(this, 'controller'));
+
       this.disableContentObservers(function() {
         set(this, 'content', controller);
         binding = new Ember.Binding('content', '_eachView.dataSource').oneWay();

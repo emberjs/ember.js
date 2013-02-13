@@ -202,12 +202,15 @@ test("it supports itemController", function() {
   var container = new Ember.Container();
 
   Ember.run(function() { view.destroy(); }); // destroy existing view
+
+  var parentController = {
+    container: container
+  };
+
   view = Ember.View.create({
     template: templateFor('{{#each view.people itemController="person"}}{{controllerName}}{{/each}}'),
     people: people,
-    controller: {
-      container: container
-    }
+    controller: parentController
   });
 
   container.register('controller', 'person', Controller);
@@ -233,6 +236,9 @@ test("it supports itemController", function() {
   });
 
   assertText(view, "controller:Trek Glowackicontroller:Geoffrey Grosenbach");
+
+  var controller = view.get('_childViews')[0].get('controller');
+  strictEqual(view.get('_childViews')[0].get('_arrayController.target'), parentController, "the target property of the child controllers are set correctly");
 });
 
 test("it supports itemController when using a custom keyword", function() {
