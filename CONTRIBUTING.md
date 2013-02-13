@@ -64,21 +64,21 @@ then that will speed the process along.
 The stack needed to build emberjs can be quite complex to setup for new developers. A VagrantFile is here to ease things for newcomers.
 Using Vagrant to buid latest version of Ember.js is quite simple. Just follow nexts 4 steps:
 
-1. Install Vagrant
-2. Retrieve chef cookbooks
+1. Install Virtual Box - [Download](https://www.virtualbox.org/wiki/Downloads)
 
+2. Install Vagrant - [Download](http://downloads.vagrantup.com/)
+
+3. Retrieve chef cookbooks
 ~~~
 git submodule init
 git submodule update
 ~~~
-3. Lauch your vagrant virtual machine
-
+4. Lauch your vagrant virtual machine
 ~~~
 vagrant up
 vagrant ssh
 ~~~
-4. Use it!
-
+5. Use it!
 ~~~
 cd /vagrant
 bundle install
