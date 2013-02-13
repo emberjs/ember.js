@@ -368,7 +368,6 @@ Ember.Array = Ember.Mixin.create(Ember.Enumerable, /** @scope Ember.Array.protot
     }
 
     this.enumerableContentDidChange(removeAmt, adding);
-    Ember.sendEvent(this, '@array:change', [this, startIdx, removeAmt, addAmt]);
 
     var length      = get(this, 'length'),
         cachedFirst = cacheFor(this, 'firstObject'),
@@ -381,6 +380,8 @@ Ember.Array = Ember.Mixin.create(Ember.Enumerable, /** @scope Ember.Array.protot
       Ember.propertyWillChange(this, 'lastObject');
       Ember.propertyDidChange(this, 'lastObject');
     }
+
+    Ember.sendEvent(this, '@array:change', [this, startIdx, removeAmt, addAmt]);
 
     return this;
   },
