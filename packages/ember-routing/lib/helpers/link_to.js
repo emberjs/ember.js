@@ -1,3 +1,8 @@
+/**
+@module ember
+@submodule ember-routing
+*/
+
 var get = Ember.get, set = Ember.set;
 
 require('ember-handlebars/helpers/view');
@@ -86,6 +91,13 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
 
   LinkView.toString = function() { return "LinkView"; };
 
+  /**
+    @method linkTo
+    @for Ember.Handlebars.helpers
+    @param {String} routeName
+    @param {Object} [context]*
+    @return {String} HTML string
+  */
   Ember.Handlebars.registerHelper('linkTo', function(name) {
     var options = [].slice.call(arguments, -1)[0];
     var params = [].slice.call(arguments, 1, -1);

@@ -7,7 +7,14 @@ var get = Ember.get, set = Ember.set,
     classify = Ember.String.classify,
     decamelize = Ember.String.decamelize;
 
+/**
+  The `Ember.Route` class is used to define individual routes. Refer to
+  the [routing guide](http://emberjs.com/guides/routing/) for documentation.
 
+  @class Route
+  @namespace Ember
+  @extends Ember.Object
+*/
 Ember.Route = Ember.Object.extend({
   exit: function() {
     this.deactivate();
@@ -21,12 +28,16 @@ Ember.Route = Ember.Object.extend({
   /**
     This hook is executed when the router completely exits this route. It is
     not executed when the model for the route changes.
+
+    @method deactivate
   */
   deactivate: Ember.K,
 
   /**
     This hook is executed when the router enters the route for the first time.
     It is not executed when the model for the route changes.
+
+    @method activate
   */
   activate: Ember.K,
 

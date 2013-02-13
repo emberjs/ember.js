@@ -242,7 +242,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     @method action
     @for Ember.Handlebars.helpers
     @param {String} actionName
-    @param {Object...} contexts
+    @param {Object} [context]*
     @param {Hash} options
   */
   EmberHandlebars.registerHelper('action', function(actionName) {

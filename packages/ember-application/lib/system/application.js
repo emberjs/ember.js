@@ -148,8 +148,7 @@ var get = Ember.get, set = Ember.set,
   @namespace Ember
   @extends Ember.Namespace
 */
-var Application = Ember.Application = Ember.Namespace.extend(
-/** @scope Ember.Application.prototype */{
+var Application = Ember.Application = Ember.Namespace.extend({
 
   /**
     The root DOM element of the Application. This can be specified as an

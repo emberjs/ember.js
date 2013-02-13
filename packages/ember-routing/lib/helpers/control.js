@@ -1,5 +1,19 @@
+/**
+@module ember
+@submodule ember-routing
+*/
+
+
 var get = Ember.get, set = Ember.set;
 
+/**
+  @method control
+  @for Ember.Handlebars.helpers
+  @param {String} path
+  @param {String} modelPath
+  @param {Hash} options
+  @return {String} HTML string
+*/
 Ember.Handlebars.registerHelper('control', function(path, modelPath, options) {
   if (arguments.length === 2) {
     options = modelPath;
