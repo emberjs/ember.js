@@ -24,8 +24,8 @@ this bug already.
 3. Provide JSFiddle or JSBin demo that specifically shows the problem. This
 demo should be fully operational with the exception of the bug you want to
 demonstrate. The more pared down, the better. 
-Preconfigured starting points: [JSFiddle](http://jsfiddle.net/sSdHm/) | [JSBin](http://jsbin.com/adedag/1/edit)
-Issues with fiddles are priotized.
+Preconfigured starting points: [JSFiddle](http://jsfiddle.net/mnfmv/) | [JSBin](http://jsbin.com/adedag/173/edit)
+Issues with fiddles are prioritized.
 
 4. Your issue will be verified. The provided fiddle will be tested for
 correctness. The Ember team will work with you until your issue can
