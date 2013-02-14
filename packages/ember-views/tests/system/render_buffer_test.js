@@ -15,6 +15,26 @@ test("RenderBuffers combine strings", function() {
   equal("<div>ab</div>", buffer.string(), "Multiple pushes should concatenate");
 });
 
+test("value of 0 is included in output", function() {
+  var buffer, $el;
+
+  buffer = new Ember.RenderBuffer('input');
+  buffer.prop('value', 0);
+  buffer.pushOpeningTag();
+  $el = buffer.element();
+
+  strictEqual($el.value, '0', "generated element has value of '0'");
+
+  buffer = new Ember.RenderBuffer('input');
+  buffer.prop('value', 0);
+  buffer.push('<div>');
+  buffer.pushOpeningTag();
+  buffer.push('</div>');
+  $el = Ember.$(buffer.innerString());
+
+  strictEqual($el.find('input').val(), '0', "raw tag has value of '0'");
+});
+
 test("prevents XSS injection via `id`", function() {
   var buffer = new Ember.RenderBuffer('div');
 
