@@ -38,7 +38,7 @@ Bindings allow you to architect your application using the MVC (Model-View-Contr
 Computed properties allow you to treat a function like a property:
 
 ``` javascript
-MyApp.president = Ember.Object.create({
+MyApp.President = Ember.Object.extend({
   firstName: "Barack",
   lastName: "Obama",
 
@@ -49,6 +49,7 @@ MyApp.president = Ember.Object.create({
   }.property()
 });
 
+MyApp.president = MyApp.President.create();
 MyApp.president.get('fullName');
 // "Barack Obama"
 ```
@@ -58,7 +59,7 @@ Treating a function like a property is useful because they can work with binding
 Many computed properties have dependencies on other properties. For example, in the above example, the `fullName` property depends on `firstName` and `lastName` to determine its value. You can tell Ember.js about these dependencies like this:
 
 ``` javascript
-MyApp.president = Ember.Object.create({
+MyApp.President = Ember.Object.extend({
   firstName: "Barack",
   lastName: "Obama",
 
