@@ -1519,3 +1519,34 @@ test("Only use route rendered into main outlet for default into property on chil
   equal(Ember.$('div.posts-menu:contains(postsMenu)', '#qunit-fixture').length, 1, "The posts/menu template was rendered");
   equal(Ember.$('section.posts-index:contains(postsIndex)', '#qunit-fixture').length, 1, "The posts/index template was rendered");
 });
+
+test("Generating a URL should not affect currentModel", function() {
+  Router.map(function() {
+    this.route("post", { path: "/posts/:post_id" });
+  });
+
+  var posts = {
+    1: { id: 1 },
+    2: { id: 2 }
+  };
+
+  App.PostRoute = Ember.Route.extend({
+    model: function(params) {
+      return posts[params.post_id];
+    }
+  });
+
+  bootApplication();
+
+  Ember.run(function() {
+    router.handleURL("/posts/1");
+  });
+
+  var route = container.lookup('route:post');
+  equal(route.modelFor('post'), posts[1]);
+
+  var url = router.generate('post', posts[2]);
+  equal(url, "/posts/2");
+
+  equal(route.modelFor('post'), posts[1]);
+});
