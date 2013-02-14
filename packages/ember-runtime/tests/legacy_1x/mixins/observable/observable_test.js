@@ -361,7 +361,6 @@ module("Computed properties", {
       // depends on cached property which depends on another property...
       nestedIncCallCount: 0,
       nestedInc: Ember.computed(function(key, value) {
-        Ember.get(this, 'inc');
         return this.nestedIncCallCount++;
       }).property('inc'),
 
@@ -557,7 +556,7 @@ test("nested dependent keys should propagate after they update", function() {
 
       price: Ember.computed(function() {
         return this.get('restaurant.menu.price');
-      }).property('restaurant.menu.price')
+      }).property('restaurant.menu.price').volatile()
     });
 
     bindObj = ObservableObject.createWithMixins({

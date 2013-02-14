@@ -28,8 +28,6 @@ testBoth('observer should fire when dependent property is modified', function(ge
     return get(this,'bar').toUpperCase();
   }).property('bar'));
 
-  get(obj, 'foo');
-
   var count = 0;
   Ember.addObserver(obj, 'foo', function() {
     equal(get(obj, 'foo'), 'BAZ', 'should have invoked after prop change');
@@ -472,8 +470,6 @@ testBoth('observer should fire before dependent property is modified', function(
   Ember.defineProperty(obj, 'foo', Ember.computed(function() {
     return get(this,'bar').toUpperCase();
   }).property('bar'));
-
-  get(obj, 'foo');
 
   var count = 0;
   Ember.addBeforeObserver(obj, 'foo', function() {
