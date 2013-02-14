@@ -1,22 +1,6 @@
 /*global QUnit*/
+
 var container, view;
-
-module("Handlebars {{control}} helper", {
-  setup: function() {
-    container = new Ember.Container();
-    container.options('template', { instantiate: false });
-    container.options('view', { singleton: false });
-    container.register('controller:parent', Ember.Controller.extend());
-    container.register('controller:widget', Ember.Controller.extend());
-    container.register('view:widget', Ember.View.extend());
-  },
-
-  teardown: function() {
-    destroy(view);
-    destroy(container);
-  }
-});
-
 var compile = Ember.Handlebars.compile;
 
 function destroy(object) {
@@ -37,213 +21,231 @@ function renderedText(expected, msg) {
   QUnit.push(actual === expected, actual, expected, msg);
 }
 
-test("A control raises an error when a view cannot be found", function() {
-  container = new Ember.Container();
-  container.options('template', { instantiate: false });
-  container.options('view', { singleton: false });
-  container.register('controller:parent', Ember.Controller.extend());
-  container.register('controller:widget', Ember.Controller.extend());
-  container.register('template:widget', compile("Hello"));
+if (Ember.ENV.EXPERIMENTAL_CONTROL_HELPER) {
+  module("Handlebars {{control}} helper", {
+    setup: function() {
+      container = new Ember.Container();
+      container.options('template', { instantiate: false });
+      container.options('view', { singleton: false });
+      container.register('controller:parent', Ember.Controller.extend());
+      container.register('controller:widget', Ember.Controller.extend());
+      container.register('view:widget', Ember.View.extend());
+    },
 
-  throws(function() {
-    appendView({
-      controller: container.lookup('controller:parent'),
-      template: compile("{{control widget}}")
-    });
-  }, /find view/, "Must raise an error if no view is defined");
-});
-
-test("A control raises an error when a controller cannot be found", function() {
-  container = new Ember.Container();
-  container.options('template', { instantiate: false });
-  container.options('view', { singleton: false });
-  container.register('controller:parent', Ember.Controller.extend());
-  container.register('view:widget', Ember.View.extend());
-  container.register('template:widget', compile("Hello"));
-
-  throws(function() {
-    appendView({
-      controller: container.lookup('controller:parent'),
-      template: compile("{{control widget}}")
-    });
-  }, /find controller/, "Must raise an error when no controller is defined");
-
-  // The assertion causes some views to be left behind
-  Ember.run(function() {
-    for (var viewId in Ember.View.views) {
-      Ember.View.views[viewId].destroy();
+    teardown: function() {
+      destroy(view);
+      destroy(container);
     }
   });
-});
 
-test("A control renders a template with a new instance of the named controller and view", function() {
-  container.register('template:widget', compile("Hello"));
+  test("A control raises an error when a view cannot be found", function() {
+    container = new Ember.Container();
+    container.options('template', { instantiate: false });
+    container.options('view', { singleton: false });
+    container.register('controller:parent', Ember.Controller.extend());
+    container.register('controller:widget', Ember.Controller.extend());
+    container.register('template:widget', compile("Hello"));
 
-  appendView({
-    controller: container.lookup('controller:parent'),
-    template: compile("{{control widget}}")
+    throws(function() {
+      appendView({
+        controller: container.lookup('controller:parent'),
+        template: compile("{{control widget}}")
+      });
+    }, /find view/, "Must raise an error if no view is defined");
   });
 
-  renderedText("Hello");
-});
+  test("A control raises an error when a controller cannot be found", function() {
+    container = new Ember.Container();
+    container.options('template', { instantiate: false });
+    container.options('view', { singleton: false });
+    container.register('controller:parent', Ember.Controller.extend());
+    container.register('view:widget', Ember.View.extend());
+    container.register('template:widget', compile("Hello"));
 
-test("A control's controller and view are lookuped up via template name", function() {
-  container.register('template:widgets/foo', compile("Hello"));
-  container.register('controller:widgets.foo', Ember.Controller.extend());
-  container.register('view:widgets.foo', Ember.View.extend());
+    throws(function() {
+      appendView({
+        controller: container.lookup('controller:parent'),
+        template: compile("{{control widget}}")
+      });
+    }, /find controller/, "Must raise an error when no controller is defined");
 
-  appendView({
-    controller: container.lookup('controller:parent'),
-    template: compile("{{control 'widgets/foo'}}")
+    // The assertion causes some views to be left behind
+    Ember.run(function() {
+      for (var viewId in Ember.View.views) {
+        Ember.View.views[viewId].destroy();
+      }
+    });
   });
 
-  renderedText("Hello");
-});
+  test("A control renders a template with a new instance of the named controller and view", function() {
+    container.register('template:widget', compile("Hello"));
 
-test("A control defaults to the default view", function() {
-  container.register('template:widgets/foo', compile("Hello"));
-  container.register('controller:widgets.foo', Ember.Controller.extend());
-  container.register('view:default', Ember.View.extend());
+    appendView({
+      controller: container.lookup('controller:parent'),
+      template: compile("{{control widget}}")
+    });
 
-  appendView({
-    controller: container.lookup('controller:parent'),
-    template: compile("{{control 'widgets/foo'}}")
+    renderedText("Hello");
   });
 
-  renderedText("Hello");
-});
+  test("A control's controller and view are lookuped up via template name", function() {
+    container.register('template:widgets/foo', compile("Hello"));
+    container.register('controller:widgets.foo', Ember.Controller.extend());
+    container.register('view:widgets.foo', Ember.View.extend());
 
-test("A control with a default view survives re-render", function() {
-  container.register('template:widgets/foo', compile("Hello"));
-  container.register('controller:widgets.foo', Ember.Controller.extend());
-  container.register('view:default', Ember.View.extend());
+    appendView({
+      controller: container.lookup('controller:parent'),
+      template: compile("{{control 'widgets/foo'}}")
+    });
 
-  appendView({
-    controller: container.lookup('controller:parent'),
-    template: compile("{{control 'widgets/foo'}}")
+    renderedText("Hello");
   });
 
-  renderedText("Hello");
+  test("A control defaults to the default view", function() {
+    container.register('template:widgets/foo', compile("Hello"));
+    container.register('controller:widgets.foo', Ember.Controller.extend());
+    container.register('view:default', Ember.View.extend());
 
-  Ember.run(function() {
-    view.rerender();
+    appendView({
+      controller: container.lookup('controller:parent'),
+      template: compile("{{control 'widgets/foo'}}")
+    });
+
+    renderedText("Hello");
   });
 
-  renderedText("Hello");
-});
+  test("A control with a default view survives re-render", function() {
+    container.register('template:widgets/foo', compile("Hello"));
+    container.register('controller:widgets.foo', Ember.Controller.extend());
+    container.register('view:default', Ember.View.extend());
 
-test("A control can specify a model to use in its template", function() {
-  container.register('template:widget', compile("{{model.name}}"));
+    appendView({
+      controller: container.lookup('controller:parent'),
+      template: compile("{{control 'widgets/foo'}}")
+    });
 
-  var controller = container.lookup('controller:parent');
-  controller.set('person', { name: "Tom Dale" });
+    renderedText("Hello");
 
-  appendView({
-    controller: controller,
-    template: compile("{{control 'widget' person}}")
+    Ember.run(function() {
+      view.rerender();
+    });
+
+    renderedText("Hello");
   });
 
-  renderedText("Tom Dale");
-});
+  test("A control can specify a model to use in its template", function() {
+    container.register('template:widget', compile("{{model.name}}"));
 
-test("A control can be used multiple times", function() {
-  container.register('template:widget', compile("{{model.name}}"));
+    var controller = container.lookup('controller:parent');
+    controller.set('person', { name: "Tom Dale" });
 
-  var controller = container.lookup('controller:parent');
-  controller.set('person1', { name: "Tom Dale" });
-  controller.set('person2', { name: "Peter Wagenet" });
+    appendView({
+      controller: controller,
+      template: compile("{{control 'widget' person}}")
+    });
 
-  appendView({
-    controller: controller,
-    template: compile("{{control 'widget' person1}}{{control 'widget' person2}}")
+    renderedText("Tom Dale");
   });
 
-  renderedText("Tom DalePeter Wagenet");
-});
+  test("A control can be used multiple times", function() {
+    container.register('template:widget', compile("{{model.name}}"));
 
-test("A control's state is persisted if the view is destroyed and re-rendered", function() {
-  container.register('template:widget', compile("{{randomValue}}{{model.name}}"));
+    var controller = container.lookup('controller:parent');
+    controller.set('person1', { name: "Tom Dale" });
+    controller.set('person2', { name: "Peter Wagenet" });
 
-  var controller = container.lookup('controller:parent');
-  controller.set('person1', { name: "Tom Dale" });
-  controller.set('person2', { name: "Peter Wagenet" });
+    appendView({
+      controller: controller,
+      template: compile("{{control 'widget' person1}}{{control 'widget' person2}}")
+    });
 
-  container.register('controller:widget', Ember.Controller.extend({
-    randomValue: Ember.computed(function() {
-      return Math.random() + '' + (+new Date());
-    })
-  }));
-
-  var template = compile("{{control 'widget' person1}}{{control 'widget' person2}}");
-
-  appendView({
-    controller: controller,
-    template: template
+    renderedText("Tom DalePeter Wagenet");
   });
 
-  var text = view.$().text();
-  ok(text.match(/^.*Tom Dale.*Peter Wagenet.*$/), "The view rendered");
+  test("A control's state is persisted if the view is destroyed and re-rendered", function() {
+    container.register('template:widget', compile("{{randomValue}}{{model.name}}"));
 
-  destroy(view);
+    var controller = container.lookup('controller:parent');
+    controller.set('person1', { name: "Tom Dale" });
+    controller.set('person2', { name: "Peter Wagenet" });
 
-  appendView({
-    controller: controller,
-    template: template
+    container.register('controller:widget', Ember.Controller.extend({
+      randomValue: Ember.computed(function() {
+        return Math.random() + '' + (+new Date());
+      })
+    }));
+
+    var template = compile("{{control 'widget' person1}}{{control 'widget' person2}}");
+
+    appendView({
+      controller: controller,
+      template: template
+    });
+
+    var text = view.$().text();
+    ok(text.match(/^.*Tom Dale.*Peter Wagenet.*$/), "The view rendered");
+
+    destroy(view);
+
+    appendView({
+      controller: controller,
+      template: template
+    });
+
+    equal(view.$().text(), text);
   });
 
-  equal(view.$().text(), text);
-});
+  test("if a controller's model changes, its child controllers are destroyed", function() {
+    container.register('template:widget', compile("{{randomValue}}{{model.name}}"));
 
-test("if a controller's model changes, its child controllers are destroyed", function() {
-  container.register('template:widget', compile("{{randomValue}}{{model.name}}"));
+    var controller = container.lookup('controller:parent');
+    controller.set('model', { name: "Tom Dale" });
 
-  var controller = container.lookup('controller:parent');
-  controller.set('model', { name: "Tom Dale" });
+    container.register('controller:widget', Ember.Controller.extend({
+      randomValue: Ember.computed(function() {
+        return Math.random() + '' + (+new Date());
+      })
+    }));
 
-  container.register('controller:widget', Ember.Controller.extend({
-    randomValue: Ember.computed(function() {
-      return Math.random() + '' + (+new Date());
-    })
-  }));
+    appendView({
+      controller: controller,
+      template: compile("{{control 'widget' model}}")
+    });
 
-  appendView({
-    controller: controller,
-    template: compile("{{control 'widget' model}}")
+    var childController = view.get('childViews').objectAt(0).get('controller');
+
+    ok(view.$().text().match(/^.*Tom Dale.*$/), "The view rendered");
+    deepEqual(childController.get('model'), { name: "Tom Dale" });
+
+    Ember.run(function() {
+      controller.set('model', { name: "Yehuda Katz" });
+    });
+
+    equal(childController.isDestroying, true);
+    ok(view.$().text().match(/^.*Yehuda Katz.*$/), "The view rendered");
   });
 
-  var childController = view.get('childViews').objectAt(0).get('controller');
+  test("A control should correctly remove model observers", function() {
+    var Controller = Ember.Controller.extend({
+      message: 'bro'
+    });
 
-  ok(view.$().text().match(/^.*Tom Dale.*$/), "The view rendered");
-  deepEqual(childController.get('model'), { name: "Tom Dale" });
+    container.register('template:widget', compile("{{content}}"));
+    container.register('controller:bro', Controller);
 
-  Ember.run(function() {
-    controller.set('model', { name: "Yehuda Katz" });
+    appendView({
+      controller: container.lookup('controller:bro'),
+      template: compile("{{control widget message}}")
+    });
+
+    renderedText("bro");
+
+    Ember.run(function() {
+      view.destroy();
+    });
+
+    Ember.run(function() {
+      Ember.set(container.lookup('controller:bro'), 'message', 'grammer');
+    });
   });
-
-  equal(childController.isDestroying, true);
-  ok(view.$().text().match(/^.*Yehuda Katz.*$/), "The view rendered");
-});
-
-test("A control should correctly remove model observers", function() {
-  var Controller = Ember.Controller.extend({
-    message: 'bro'
-  });
-
-  container.register('template:widget', compile("{{content}}"));
-  container.register('controller:bro', Controller);
-
-  appendView({
-    controller: container.lookup('controller:bro'),
-    template: compile("{{control widget message}}")
-  });
-
-  renderedText("bro");
-
-  Ember.run(function() {
-    view.destroy();
-  });
-
-  Ember.run(function() {
-    Ember.set(container.lookup('controller:bro'), 'message', 'grammer');
-  });
-});
+}
