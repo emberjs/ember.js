@@ -125,7 +125,8 @@ define("rsvp",
             callbacks, callbackTuple, callback, binding, event;
 
         if (callbacks = allCallbacks[eventName]) {
-          for (var i=0, l=callbacks.length; i<l; i++) {
+          // Don't cache the callbacks.length since it may grow
+          for (var i=0; i<callbacks.length; i++) {
             callbackTuple = callbacks[i];
             callback = callbackTuple[0];
             binding = callbackTuple[1];
@@ -243,8 +244,40 @@ define("rsvp",
       });
     }
 
+    function all(promises) {
+    	var i, results = [];
+    	var allPromise = new Promise();
+    	var remaining = promises.length;
+
+      if (remaining === 0) {
+        allPromise.resolve([]);
+      }
+
+    	var resolver = function(index) {
+    		return function(value) {
+    			resolve(index, value);
+    		};
+    	};
+
+    	var resolve = function(index, value) {
+    		results[index] = value;
+    		if (--remaining === 0) {
+    			allPromise.resolve(results);
+    		}
+    	};
+
+    	var reject = function(error) {
+    		allPromise.reject(error);
+    	};
+
+    	for (i = 0; i < remaining; i++) {
+    		promises[i].then(resolver(i), reject);
+    	}
+    	return allPromise;
+    }
+
     EventTarget.mixin(Promise.prototype);
 
-    RSVP = { async: async, Promise: Promise, Event: Event, EventTarget: EventTarget };
+    RSVP = { async: async, Promise: Promise, Event: Event, EventTarget: EventTarget, all: all, raiseOnUncaughtExceptions: true };
     return RSVP;
   });
