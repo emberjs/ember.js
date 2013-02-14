@@ -48,20 +48,5 @@ Ember.TextArea = Ember.View.extend(Ember.TextSupport, {
   tagName: "textarea",
   attributeBindings: ['rows', 'cols'],
   rows: null,
-  cols: null,
-
-  _updateElementValue: Ember.observer(function() {
-    // We do this check so cursor position doesn't get affected in IE
-    var value = get(this, 'value'),
-        $el = this.$();
-    if ($el && value !== $el.val()) {
-      $el.val(value);
-    }
-  }, 'value'),
-
-  init: function() {
-    this._super();
-    this.on("didInsertElement", this, this._updateElementValue);
-  }
-
+  cols: null
 });

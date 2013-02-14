@@ -142,6 +142,27 @@ test("value binding works properly for inputs that haven't been created", functi
   equal(textField.$().val(), 'ohai', "value is reflected in the input element once it is created");
 });
 
+test("input value is updated when setting content property of view", function() {
+  Ember.run(function() {
+    textField.destroy();
+    textField = Ember.TextField.createWithMixins({
+      valueBinding: 'TestObject.content.value'
+    });
+    set(TestObject, 'content', Ember.Object.create({
+      value: 'foo'
+    }));
+    textField.append();
+  });
+
+  equal(textField.$().val(), "foo", "renders text field with value");
+
+  Ember.run(function() {
+    set(TestObject, 'content', Ember.Object.create({}));
+  });
+
+  equal(textField.$().val(), '', "updates text field after content changes without value property");
+});
+
 test("value binding sets value on the element", function() {
   Ember.run(function() {
     textField.destroy(); // destroy existing textField
