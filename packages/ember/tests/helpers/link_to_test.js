@@ -261,7 +261,7 @@ test("The {{linkTo}} helper moves into the named route with context", function()
   };
 
   App.AboutRoute = Ember.Route.extend({
-    model: function() {
+    deserializedModel: function() {
       return Ember.A([
         { id: "yehuda", name: "Yehuda Katz" },
         { id: "tom", name: "Tom Dale" },
