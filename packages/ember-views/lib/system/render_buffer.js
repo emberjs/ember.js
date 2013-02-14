@@ -352,7 +352,7 @@ Ember._RenderBuffer.prototype =
       for (prop in props) {
         if (props.hasOwnProperty(prop)) {
           var value = props[prop];
-          if (value) {
+          if (value || typeof(value) === 'number') {
             if (value === true) {
               buffer.push(' ' + prop + '="' + prop + '"');
             } else {
