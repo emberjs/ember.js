@@ -161,6 +161,23 @@ test("A control can be used multiple times", function() {
   renderedText("Tom DalePeter Wagenet");
 });
 
+test("A control can be nested", function() {
+  container.register('template:widget', compile("{{model.name}}{{#if model.submodel}}{{control 'widget' model.submodel}}{{/if}}"));
+
+  var controller = container.lookup('controller:parent');
+  controller.set('person', {
+    name: "Tom Dale",
+    submodel: { name: "Yehuda Katz" }
+  });
+
+  appendView({
+    controller: controller,
+    template: compile("{{control 'widget' person}}")
+  });
+
+  renderedText("TomDaleYehuda Katz");
+});
+
 test("A control's state is persisted if the view is destroyed and re-rendered", function() {
   container.register('template:widget', compile("{{randomValue}}{{model.name}}"));
 
