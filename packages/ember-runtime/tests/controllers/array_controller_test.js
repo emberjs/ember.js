@@ -21,3 +21,8 @@ Ember.MutableArrayTests.extend({
     return obj.toArray ? obj.toArray() : obj.slice();
   }
 }).run();
+
+test("defaults it's `content` to an empty array", function () {
+  var Controller = Ember.ArrayController.extend();
+  equal(Controller.create().get("content"), [], "`ArrayController` defaults it's content to an empty array");
+});
