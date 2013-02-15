@@ -8,7 +8,7 @@ require("ember-views/system/render_buffer");
 var objectCreate = Ember.create;
 
 var Handlebars = Ember.imports.Handlebars;
-Ember.assert("Ember Handlebars requires Handlebars 1.0.beta.5 or greater", Handlebars && Handlebars.VERSION.match(/^1\.0\.beta\.[56789]$|^1\.0\.rc\.[123456789]+/));
+Ember.assert("Ember Handlebars requires Handlebars 1.0.beta.5 or greater", Handlebars && Handlebars.VERSION.match(/^1\.0\.beta\.[56789]$|^1\.0\.rc\.[123456789]+|^1\.0\.0\-rc\.[123456789]+/));
 
 /**
   Prepares the Handlebars templating library for use inside Ember's view
