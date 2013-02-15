@@ -1,3 +1,40 @@
+*Ember 1.0.0-rc.1 (February 15, 2013)*
+
+* Upgrade to Handlebars 1.0.0-rc.3
+* Update RSVP.js
+* Update router.js
+* Support 0 values for input tags
+* Support for jQuery 1.9
+* ArrayController now defaults to empty array
+* Added Vagrant support for setting up a development environment
+* Adds {{each itemController="..."}}
+* Fix issues where route transitions would not register properly
+* Initial support for Application#reset
+* Fix handling of keywords in bind helpers
+* Better handling of DOM properties
+* Better handling of complex {{#if}} targets
+* {{linkTo}} shouldn't change view context
+* Router#send accepts multiple params
+* Provide a view's template name for debugging
+* Create activate and deactivate hooks for router
+* {{action}} targets are now looked up lazily
+* The model for Route#render is now bound
+* Improvements to ContainerView
+* Added 'pattern' attribute to text field for iOS.
+* CollectionView context is now its content
+* Various enhancements to bound helpers: adds multiple property support to bound helpers, adds bind-able options hash properties, adds {{unbound}} helper support to render unbound form of helpers.
+* Add App.inject
+* Add Ember.EnumberableUtils.intersection
+* Deprecate Controller#controllerFor in favour of Controller#needs
+* Adds `bubbles` property to Ember.TextField
+* Allow overriding of Ember.Router#handleURL
+* Allow libraries loaded before Ember to tie into Ember load hooks
+* Fixed behavior with Route#render and named outlets
+* Fix bug where history location does not account for root URL
+* Allow redirecting from mid-route
+* Support string literals as param for {{linkTo}} and {{action}}
+* Empty object proxies are no longer truthy in {{#if}}
+
 *Ember 1.0.0-pre.4 (January 17, 2013)*
 
 * Add {{partial}}
