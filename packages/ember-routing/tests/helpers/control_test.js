@@ -199,7 +199,6 @@ if (Ember.ENV.EXPERIMENTAL_CONTROL_HELPER) {
     container.register('template:widget', compile("{{randomValue}}{{model.name}}"));
 
     var controller = container.lookup('controller:parent');
-    controller.set('model', { name: "Tom Dale" });
 
     container.register('controller:widget', Ember.Controller.extend({
       randomValue: Ember.computed(function() {
@@ -210,6 +209,10 @@ if (Ember.ENV.EXPERIMENTAL_CONTROL_HELPER) {
     appendView({
       controller: controller,
       template: compile("{{control 'widget' model}}")
+    });
+
+    Ember.run(function() {
+      controller.set('model', { name: "Tom Dale" });
     });
 
     var childController = view.get('childViews').objectAt(0).get('controller');
