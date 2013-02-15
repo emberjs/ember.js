@@ -218,10 +218,10 @@ namespace :release do
   end
 
   desc "Prepare Ember for new release"
-  task :prepare => ['ember:clean', 'ember:framework:prepare', 'website:prepare']
+  task :prepare => ['ember:clean', 'ember:release:prepare', 'website:prepare']
 
   desc "Deploy a new Ember release"
-  task :deploy => ['ember:framework:deploy', 'website:deploy']
+  task :deploy => ['ember:release:deploy', 'website:deploy']
 end
 
 task :clean => "ember:clean"
