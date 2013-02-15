@@ -1,14 +1,12 @@
 # Ember.js [![Build Status](https://secure.travis-ci.org/emberjs/ember.js.png?branch=master)](http://travis-ci.org/emberjs/ember.js)
 
-Ember.js (formerly SproutCore 2.0) is a JavaScript framework that does all of the heavy lifting that you'd normally have to do by hand. There are tasks that are common to every web app; Ember.js does those things for you, so you can focus on building killer features and UI.
+Ember.js is a JavaScript framework that does all of the heavy lifting that you'd normally have to do by hand. There are tasks that are common to every web app; Ember.js does those things for you, so you can focus on building killer features and UI.
 
 These are the three features that make Ember.js a joy to use:
 
 1. Bindings
 2. Computed properties
 3. Auto-updating templates
-
-Ember.js has strong roots in SproutCore; you can read more about its evolution in [the Ember.js launch announcement](http://yehudakatz.com/2011/12/08/announcing-amber-js/).
 
 ## Bindings
 
