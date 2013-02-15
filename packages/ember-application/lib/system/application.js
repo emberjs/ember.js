@@ -5,6 +5,7 @@
 
 var get = Ember.get, set = Ember.set,
     classify = Ember.String.classify,
+    capitalize = Ember.String.capitalize,
     decamelize = Ember.String.decamelize;
 
 /**
@@ -644,7 +645,8 @@ Ember.Application.reopenClass({
 function resolverFor(namespace) {
   return function(fullName) {
     var nameParts = fullName.split(":"),
-        type = nameParts[0], name = nameParts[1];
+        type = nameParts[0], name = nameParts[1],
+        root = namespace;
 
     if (type === 'template') {
       var templateName = name.replace(/\./g, '/');
@@ -662,8 +664,17 @@ function resolverFor(namespace) {
       name = name.replace(/\./g, '_');
     }
 
+    if (type !== 'template' && name.indexOf('/') !== -1) {
+      var parts = name.split('/');
+      name = parts[parts.length - 1];
+      var namespaceName = capitalize(parts.slice(0, -1).join('.'));
+      root = Ember.Namespace.byName(namespaceName);
+
+      Ember.assert('You are looking for a ' + name + ' ' + type + ' in the ' + namespaceName + ' namespace, but it could not be found', root);
+    }
+
     var className = classify(name) + classify(type);
-    var factory = get(namespace, className);
+    var factory = get(root, className);
 
     if (factory) { return factory; }
   };

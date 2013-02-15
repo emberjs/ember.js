@@ -217,7 +217,8 @@ test("Minimal Application initialized with just an application template", functi
   equal(trim(Ember.$('#qunit-fixture').text()), 'Hello World');
 });
 
-var locator;
+var locator, originalLookup = Ember.lookup, lookup;
+
 module("Ember.Application Depedency Injection", {
   setup: function(){
     Ember.run(function(){
@@ -235,12 +236,15 @@ module("Ember.Application Depedency Injection", {
     application.register('communication:main', application.Email, {singleton: false});
 
     locator = application.__container__;
+
+    lookup = Ember.lookup = {};
   },
   teardown: function() {
     Ember.run(function(){
       application.destroy();
     });
     application = locator = null;
+    Ember.lookup = originalLookup;
   }
 });
 
@@ -266,4 +270,13 @@ test('injections', function(){
   equal(person.get('fruit'), fruit);
 
   ok(application.Email.detectInstance(user.get('communication')));
+});
+
+test('the default resolver hook can look things up in other namespaces', function() {
+  var UserInterface = lookup.UserInterface = Ember.Namespace.create();
+  UserInterface.NavigationController = Ember.Controller.extend();
+
+  var nav = locator.lookup('controller:userInterface/navigation');
+
+  ok(nav instanceof UserInterface.NavigationController, "the result should be an instance of the specified class");
 });
