@@ -54,15 +54,27 @@ var Namespace = Ember.Namespace = Ember.Object.extend({
 
 Namespace.reopenClass({
   NAMESPACES: [Ember],
+  NAMESPACES_BY_ID: {},
   PROCESSED: false,
-  processAll: processAllNamespaces
+  processAll: processAllNamespaces,
+  byName: function(name) {
+    if (!Ember.BOOTED) {
+      processAllNamespaces();
+    }
+
+    return NAMESPACES_BY_ID[name];
+  }
 });
+
+var NAMESPACES_BY_ID = Namespace.NAMESPACES_BY_ID;
 
 var hasOwnProp = ({}).hasOwnProperty,
     guidFor = Ember.guidFor;
 
 function processNamespace(paths, root, seen) {
   var idx = paths.length;
+
+  NAMESPACES_BY_ID[paths.join('.')] = root;
 
   // Loop over all of the keys in the namespace, looking for classes
   for(var key in root) {
@@ -163,12 +175,15 @@ function classToString() {
 }
 
 function processAllNamespaces() {
-  if (!Namespace.PROCESSED) {
+  var unprocessedNamespaces = !Namespace.PROCESSED,
+      unprocessedMixins = Ember.anyUnprocessedMixins;
+
+  if (unprocessedNamespaces) {
     findNamespaces();
     Namespace.PROCESSED = true;
   }
 
-  if (Ember.anyUnprocessedMixins) {
+  if (unprocessedNamespaces || unprocessedMixins) {
     var namespaces = Namespace.NAMESPACES, namespace;
     for (var i=0, l=namespaces.length; i<l; i++) {
       namespace = namespaces[i];

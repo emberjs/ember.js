@@ -113,3 +113,20 @@ test("Calling namespace.nameClasses() eagerly names all classes", function() {
   equal(namespace.ClassA.toString(), "NS.ClassA");
   equal(namespace.ClassB.toString(), "NS.ClassB");
 });
+
+test("A namespace can be looked up by its name", function() {
+  var NS = lookup.NS = Ember.Namespace.create();
+  var UI = lookup.UI = Ember.Namespace.create();
+  var CF = lookup.CF = Ember.Namespace.create();
+
+  equal(Ember.Namespace.byName('NS'), NS);
+  equal(Ember.Namespace.byName('UI'), UI);
+  equal(Ember.Namespace.byName('CF'), CF);
+});
+
+test("A nested namespace can be looked up by its name", function() {
+  var UI = lookup.UI = Ember.Namespace.create();
+  UI.Nav = Ember.Namespace.create();
+
+  equal(Ember.Namespace.byName('UI.Nav'), UI.Nav);
+});
