@@ -25,6 +25,14 @@ require('ember-handlebars/ext');
   </script>
   ```
 
+  ```handlebars
+  {{#if isUser}}
+    {{template "user_info"}}
+  {{else}}
+    {{template "unlogged_user_info"}}
+  {{/if}}
+  ```
+
   This helper looks for templates in the global `Ember.TEMPLATES` hash. If you
   add `<script>` tags to your page with the `data-template-name` attribute set,
   they will be compiled and placed in this hash automatically.
