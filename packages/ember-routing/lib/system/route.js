@@ -16,14 +16,44 @@ var get = Ember.get, set = Ember.set,
   @extends Ember.Object
 */
 Ember.Route = Ember.Object.extend({
+  /**
+    @private
+
+    @method exit
+  */
   exit: function() {
     this.deactivate();
     teardownView(this);
   },
 
+  /**
+    @private
+
+    @method enter
+  */
   enter: function() {
     this.activate();
   },
+
+  /**
+    The collection of functions keyed by name available on this route as
+    action targets.
+
+    These functions will be invoked when a matching `{{action}}` is triggered
+    from within a template and the application's current route is this route.
+
+    Events can also be invoked from other parts of your application via `Route#send`.
+
+    The context of event will be the this route.
+
+    @see {Ember.Route#send}
+    @see {Handlebars.helpers.action}
+
+    @property events
+    @type Hash
+    @default null
+  */
+  events: null,
 
   /**
     This hook is executed when the router completely exits this route. It is
