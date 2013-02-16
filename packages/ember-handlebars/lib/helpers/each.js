@@ -234,7 +234,7 @@ GroupedEach.prototype = {
 
   ```handlebars
   {{#view App.MyView }}
-    {{each view.items itemViewClass="App.AnItemView"}} 
+    {{each view.items itemViewClass="App.AnItemView"}}
   {{/view}}
   ```
 
@@ -265,7 +265,7 @@ GroupedEach.prototype = {
     <div class="ember-view">Greetings Sara</div>
   </div>
   ```
-  
+
   ### Representing each item with a Controller.
   By default the controller lookup within an `{{#each}}` block will be
   the controller of the template where the `{{#each}}` was used. If each
@@ -273,10 +273,10 @@ GroupedEach.prototype = {
   `itemController` option which references a controller by lookup name.
   Each item in the loop will be wrapped in an instance of this controller
   and the item itself will be set to the `content` property of that controller.
-  
+
   This is useful in cases where properties of model objects need transformation
   or synthesis for display:
-  
+
   ```javascript
   App.DeveloperController = Ember.ObjectController.extend({
     isAvailableForHire: function(){
@@ -284,17 +284,17 @@ GroupedEach.prototype = {
     }.property('isEmployed', 'isSeekingWork')
   })
   ```
-  
+
   ```handlebars
-  {{#each person in Developers itemController="developer"}}
+  {{#each person in developers itemController="developer"}}
     {{person.name}} {{#if person.isAvailableForHire}}Hire me!{{/if}}
   {{/each}}
   ```
-  
+
   @method each
   @for Ember.Handlebars.helpers
   @param [name] {String} name for item (used with `in`)
-  @param path {String} path
+  @param [path] {String} path
   @param [options] {Object} Handlebars key/value pairs of options
   @param [options.itemViewClass] {String} a path to a view class used for each item
   @param [options.itemController] {String} name of a controller to be created for each item
