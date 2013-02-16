@@ -96,7 +96,7 @@ var get = Ember.get, set = Ember.set,
 
   To learn more about the advantages of event delegation and the Ember view
   layer, and a list of the event listeners that are setup by default, visit the
-  [Ember View Layer guide](http://emberjs.com/guides/view_layer#toc_event-delegation).
+  [Ember View Layer guide](http://emberjs.com/guides/understanding-ember/the-view-layer/#toc_event-delegation).
 
   ### Initializers
 
