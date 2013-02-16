@@ -2,12 +2,6 @@ define("container",
   [],
   function() {
 
-    var objectCreate = Object.create || function(parent) {
-      function F() {}
-      F.prototype = parent;
-      return new F();
-    };
-
     function InheritingDict(parent) {
       this.parent = parent;
       this.dict = {};
