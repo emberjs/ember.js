@@ -110,7 +110,7 @@ var get = Ember.get, set = Ember.set, fmt = Ember.String.fmt;
       } else {
         viewClass = App.SongView;
       }
-      this._super(viewClass, attrs);
+      return this._super(viewClass, attrs);
     }
   });
   ```
