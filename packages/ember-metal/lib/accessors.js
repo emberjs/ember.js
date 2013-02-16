@@ -290,7 +290,7 @@ Ember.setPath = Ember.deprecateFunc('setPath is deprecated since set now support
   @method trySet
   @for Ember
   @param {Object} obj The object to modify.
-  @param {String} keyName The property key to set
+  @param {String} path The property path to set
   @param {Object} value The value to set
 */
 Ember.trySet = function(root, path, value) {
