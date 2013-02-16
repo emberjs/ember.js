@@ -11,13 +11,20 @@ var setProperties = function(object, properties) {
 
 module("Container");
 
+var guids = 0;
+
 function factory() {
   var Klass = function(options) {
     setProperties(this, options);
+    this._guid = guids++;
   };
 
   Klass.prototype.destroy = function() {
     this.isDestroyed = true;
+  };
+
+  Klass.prototype.toString = function() {
+    return "<Factory:" + this._guid + ">";
   };
 
   Klass.create = function(options) {
@@ -39,6 +46,28 @@ test("A registered factory returns the same instance each time", function() {
   ok(postController instanceof PostController, "The lookup is an instance of the factory");
 
   equal(postController, container.lookup('controller:post'));
+});
+
+test("A registered factory returns a fresh instance if singleton: false is passed as an option", function() {
+  var container = new Container();
+  var PostController = factory();
+
+  container.register('controller:post', PostController);
+
+  var postController1 = container.lookup('controller:post');
+  var postController2 = container.lookup('controller:post', { singleton: false });
+  var postController3 = container.lookup('controller:post', { singleton: false });
+  var postController4 = container.lookup('controller:post');
+
+  equal(postController1.toString(), postController4.toString(), "Singleton factories looked up normally return the same value");
+  notEqual(postController1.toString(), postController2.toString(), "Singleton factories are not equal to factories looked up with singleton: false");
+  notEqual(postController2.toString(), postController3.toString(), "Two factories looked up with singleton: false are not equal");
+  notEqual(postController3.toString(), postController4.toString(), "A singleton factory looked up after a factory called with singleton: false is not equal");
+
+  ok(postController1 instanceof PostController, "All instances are instances of the registered factory");
+  ok(postController2 instanceof PostController, "All instances are instances of the registered factory");
+  ok(postController3 instanceof PostController, "All instances are instances of the registered factory");
+  ok(postController4 instanceof PostController, "All instances are instances of the registered factory");
 });
 
 test("A registered factory returns true for `has` if an item is registered", function() {
