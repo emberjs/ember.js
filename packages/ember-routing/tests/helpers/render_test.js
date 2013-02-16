@@ -104,9 +104,9 @@ test("{{render}} helper should render given template with a supplied model", fun
 
   Ember.TEMPLATES['post'] = compile("<p>{{title}}</p>");
 
-  var postController = container.lookup('controller:post');
-
   appendView(view);
+
+  var postController = view.get('_childViews')[0].get('controller');
 
   equal(view.$().text(), 'HIRails is omakase');
   equal(postController.get('model'), post);

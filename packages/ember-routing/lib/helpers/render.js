@@ -28,7 +28,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
   */
   Ember.Handlebars.registerHelper('render', function(name, contextString, options) {
     Ember.assert("You must pass a template to render", arguments.length >= 2);
-    var container, router, controller, view, context;
+    var container, router, controller, view, context, lookupOptions;
 
     if (arguments.length === 2) {
       options = contextString;
@@ -37,6 +37,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
 
     if (typeof contextString === 'string') {
       context = Ember.Handlebars.get(options.contexts[1], contextString, options);
+      lookupOptions = { singleton: false };
     }
 
     name = name.replace(/\//g, '.');
@@ -48,9 +49,9 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     view = container.lookup('view:' + name) || container.lookup('view:default');
 
     if (controller = options.hash.controller) {
-      controller = container.lookup('controller:' + controller);
+      controller = container.lookup('controller:' + controller, lookupOptions);
     } else {
-      controller = Ember.controllerFor(container, name, context);
+      controller = Ember.controllerFor(container, name, context, lookupOptions);
     }
 
     if (controller && context) {

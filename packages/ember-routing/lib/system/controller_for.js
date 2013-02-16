@@ -3,8 +3,8 @@
 @submodule ember-routing
 */
 
-Ember.controllerFor = function(container, controllerName, context) {
-  return container.lookup('controller:' + controllerName) ||
+Ember.controllerFor = function(container, controllerName, context, lookupOptions) {
+  return container.lookup('controller:' + controllerName, lookupOptions) ||
          Ember.generateController(container, controllerName, context);
 };
 
