@@ -37,8 +37,8 @@ var toString = Object.prototype.toString;
       | 'undefined'   | Undefined value                                      |
       | 'function'    | A function                                           |
       | 'array'       | An instance of Array                                 |
-      | 'class'       | A Ember class (created using Ember.Object.extend())  |
-      | 'instance'    | A Ember object instance                              |
+      | 'class'       | An Ember class (created using Ember.Object.extend()) |
+      | 'instance'    | An Ember object instance                             |
       | 'error'       | An instance of the Error object                      |
       | 'object'      | A JavaScript object not inheriting from Ember.Object |
 
