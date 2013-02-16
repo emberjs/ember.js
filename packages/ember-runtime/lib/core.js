@@ -37,8 +37,8 @@ var toString = Object.prototype.toString;
       | 'undefined'   | Undefined value                                      |
       | 'function'    | A function                                           |
       | 'array'       | An instance of Array                                 |
-      | 'class'       | A Ember class (created using Ember.Object.extend())  |
-      | 'instance'    | A Ember object instance                              |
+      | 'class'       | An Ember class (created using Ember.Object.extend()) |
+      | 'instance'    | An Ember object instance                             |
       | 'error'       | An instance of the Error object                      |
       | 'object'      | A JavaScript object not inheriting from Ember.Object |
 
@@ -63,7 +63,7 @@ var toString = Object.prototype.toString;
 
   @method typeOf
   @for Ember
-  @param item {Object} the item to check
+  @param {Object} item the item to check
   @return {String} the type
 */
 Ember.typeOf = function(item) {
@@ -297,7 +297,7 @@ function _copy(obj, deep, seen, copies) {
 
   @method copy
   @for Ember
-  @param {Object} object The object to clone
+  @param {Object} obj The object to clone
   @param {Boolean} deep If true, a deep copy of the object is made
   @return {Object} The cloned object
 */

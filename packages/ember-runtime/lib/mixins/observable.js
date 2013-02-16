@@ -108,7 +108,7 @@ Ember.Observable = Ember.Mixin.create(/** @scope Ember.Observable.prototype */ {
     not defined upfront.
 
     @method get
-    @param {String} key The property to retrieve
+    @param {String} keyName The property to retrieve
     @return {Object} The property value or undefined.
   */
   get: function(keyName) {
@@ -189,7 +189,7 @@ Ember.Observable = Ember.Mixin.create(/** @scope Ember.Observable.prototype */ {
     ```
 
     @method set
-    @param {String} key The property to set
+    @param {String} keyName The property to set
     @param {Object} value The value to set or `null`.
     @return {Ember.Observable}
   */
@@ -266,7 +266,7 @@ Ember.Observable = Ember.Mixin.create(/** @scope Ember.Observable.prototype */ {
     like.
 
     @method propertyWillChange
-    @param {String} key The property key that is about to change.
+    @param {String} keyName The property key that is about to change.
     @return {Ember.Observable}
   */
   propertyWillChange: function(keyName){

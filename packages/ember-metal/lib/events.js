@@ -109,6 +109,7 @@ function actionsDiff(obj, eventName, otherActions) {
   @param {String} eventName
   @param {Object|Function} targetOrMethod A target object or a function
   @param {Function|String} method A function or the name of a function to be called on `target`
+  @param {Boolean} once A flag whether a function should only be called once
 */
 function addListener(obj, eventName, target, method, once) {
   Ember.assert("You must pass at least an object and event name to Ember.addListener", !!obj && !!eventName);
@@ -294,6 +295,7 @@ function watchedEvents(obj) {
   @param obj
   @param {String} eventName
   @param {Array} params
+  @param {Array} actions
   @return true
 */
 function sendEvent(obj, eventName, params, actions) {

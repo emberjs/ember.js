@@ -33,7 +33,7 @@ Ember.Copyable = Ember.Mixin.create(
     an exception.
 
     @method copy
-    @param deep {Boolean} if `true`, a deep copy of the object should be made
+    @param {Boolean} deep if `true`, a deep copy of the object should be made
     @return {Object} copy of receiver
   */
   copy: Ember.required(Function),

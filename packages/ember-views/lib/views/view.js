@@ -26,7 +26,7 @@ var childViewsProperty = Ember.computed(function() {
 
   ret.replace = function (idx, removedCount, addedViews) {
     if (view instanceof Ember.ContainerView) {
-      Ember.deprecate("Manipulating a Ember.ContainerView through its childViews property is deprecated. Please use the ContainerView instance itself as an Ember.MutableArray.");
+      Ember.deprecate("Manipulating an Ember.ContainerView through its childViews property is deprecated. Please use the ContainerView instance itself as an Ember.MutableArray.");
       return view.replace(idx, removedCount, addedViews);
     }
     throw new Error("childViews is immutable");
