@@ -7,6 +7,13 @@ test("camelize normal string", function() {
   }
 });
 
+test("camelize capitalized string", function() {
+  deepEqual(Ember.String.camelize('I Love Ramen'), 'iLoveRamen');
+  if (Ember.EXTEND_PROTOTYPES) {
+    deepEqual('I Love Ramen'.camelize(), 'iLoveRamen');
+  }
+});
+
 test("camelize dasherized string", function() {
   deepEqual(Ember.String.camelize('css-class-name'), 'cssClassName');
   if (Ember.EXTEND_PROTOTYPES) {
