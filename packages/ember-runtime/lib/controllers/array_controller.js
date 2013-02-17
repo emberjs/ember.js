@@ -156,20 +156,20 @@ Ember.ArrayController = Ember.ArrayProxy.extend(Ember.ControllerMixin,
 
   arrangedContentDidChange: function() {
     this._super();
-    this._resetSubContainers();
+    this._resetSubControllers();
   },
 
   arrayContentDidChange: function(idx, removedCnt, addedCnt) {
-    var subContainers = get(this, 'subContainers'),
-        subContainersToRemove = subContainers.slice(idx, idx+removedCnt);
+    var subControllers = get(this, '_subControllers'),
+        subControllersToRemove = subControllers.slice(idx, idx+removedCnt);
 
-    forEach(subContainersToRemove, function(subContainer) {
-      if (subContainer) { subContainer.destroy(); }
+    forEach(subControllersToRemove, function(subController) {
+      if (subController) { subController.destroy(); }
     });
 
-    replace(subContainers, idx, removedCnt, new Array(addedCnt));
+    replace(subControllers, idx, removedCnt, new Array(addedCnt));
 
-    // The shadow array of subcontainers must be updated before we trigger
+    // The shadow array of subcontrollers must be updated before we trigger
     // observers, otherwise observers will get the wrong subcontainer when
     // calling `objectAt`
     this._super(idx, removedCnt, addedCnt);
@@ -177,42 +177,39 @@ Ember.ArrayController = Ember.ArrayProxy.extend(Ember.ControllerMixin,
 
   init: function() {
     this._super();
-    if (!this.get('content')) { this.set('content', Ember.A()); }
-    this._resetSubContainers();
+    if (!this.get('content')) { Ember.defineProperty(this, 'content', undefined, Ember.A()); }
+    this.set('_subControllers', Ember.A());
   },
 
   controllerAt: function(idx, object, controllerClass) {
     var container = get(this, 'container'),
-        subContainers = get(this, 'subContainers'),
-        subContainer = subContainers[idx],
-        controller;
+        subControllers = get(this, '_subControllers'),
+        subController = subControllers[idx];
 
-    if (!subContainer) {
-      subContainer = subContainers[idx] = container.child();
+    if (!subController) {
+      subController = container.lookup("controller:" + controllerClass, { singleton: false });
+      subControllers[idx] = subController;
     }
 
-    controller = subContainer.lookup("controller:" + controllerClass);
-    if (!controller) {
+    if (!subController) {
       throw new Error('Could not resolve itemController: "' + controllerClass + '"');
     }
 
-    controller.set('target', this);
-    controller.set('content', object);
+    subController.set('target', this);
+    subController.set('content', object);
 
-    return controller;
+    return subController;
   },
 
-  subContainers: null,
+  _subControllers: null,
 
-  _resetSubContainers: function() {
-    var subContainers = get(this, 'subContainers');
+  _resetSubControllers: function() {
+    var subControllers = get(this, '_subControllers');
 
-    if (subContainers) {
-      forEach(subContainers, function(subContainer) {
-        if (subContainer) { subContainer.destroy(); }
-      });
-    }
+    forEach(subControllers, function(subController) {
+      if (subControllers) { subController.destroy(); }
+    });
 
-    this.set('subContainers', Ember.A());
+    this.set('_subControllers', Ember.A());
   }
 });

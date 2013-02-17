@@ -131,19 +131,19 @@ test("when the underlying array changes, old subcontainers are destroyed", funct
   arrayController.objectAtContent(2);
 
   // Not a public API; just checking for cleanup
-  var subContainers = get(arrayController, 'subContainers'),
-      jaimeContainer = subContainers[1],
-      cerseiContainer = subContainers[2];
+  var subControllers = get(arrayController, '_subControllers'),
+      jaimeController = subControllers[1],
+      cerseiController = subControllers[2];
 
-  equal(!!jaimeContainer.isDestroyed, false, "precond - nobody is destroyed yet");
-  equal(!!!!cerseiContainer.isDestroyed, false, "precond - nobody is destroyed yet");
+  equal(!!jaimeController.isDestroying, false, "precond - nobody is destroyed yet");
+  equal(!!!!cerseiController.isDestroying, false, "precond - nobody is destroyed yet");
 
   Ember.run(function() {
     arrayController.set('content', Ember.A());
   });
 
-  equal(!!jaimeContainer.isDestroyed, true, "old subcontainers are destroyed");
-  equal(!!cerseiContainer.isDestroyed, true, "old subcontainers are destroyed");
+  equal(!!jaimeController.isDestroying, true, "old subcontainers are destroyed");
+  equal(!!cerseiController.isDestroying, true, "old subcontainers are destroyed");
 });
 
 
@@ -161,19 +161,17 @@ test("when items are removed from the arrayController, their respective subconta
   createArrayController();
   var jaimeController = arrayController.objectAtContent(1),
       cerseiController = arrayController.objectAtContent(2),
-      subContainers = get(arrayController, 'subContainers'),
-      jaimeContainer = subContainers[1],
-      cerseiContainer = subContainers[2];
+      subControllers = get(arrayController, '_subControllers');
 
-  equal(!!cerseiContainer.isDestroyed, false, "precond - nobody is destroyed yet");
-  equal(!!jaimeContainer.isDestroyed, false, "precond - nobody is destroyed yet");
+  equal(!!jaimeController.isDestroyed, false, "precond - nobody is destroyed yet");
+  equal(!!cerseiController.isDestroyed, false, "precond - nobody is destroyed yet");
 
   Ember.run(function() {
     arrayController.removeObject(cerseiController);
   });
 
-  equal(!!cerseiContainer.isDestroyed, true, "Removed objects' containers are cleaned up");
-  equal(!!jaimeContainer.isDestroyed, false, "Retained objects' containers are not cleaned up");
+  equal(!!cerseiController.isDestroying, true, "Removed objects' containers are cleaned up");
+  equal(!!jaimeController.isDestroying, false, "Retained objects' containers are not cleaned up");
 });
 
 test("one cannot remove wrapped content directly when specifying `itemController`", function() {
@@ -196,19 +194,17 @@ test("when items are removed from the underlying array, their respective subcont
   createArrayController();
   var jaimeController = arrayController.objectAtContent(1),
       cerseiController = arrayController.objectAtContent(2),
-      subContainers = get(arrayController, 'subContainers'),
-      jaimeContainer = subContainers[1],
-      cerseiContainer = subContainers[2];
+      subContainers = get(arrayController, 'subContainers');
 
-  equal(!!jaimeContainer.isDestroyed, false, "precond - nobody is destroyed yet");
-  equal(!!cerseiContainer.isDestroyed, false, "precond - nobody is destroyed yet");
+  equal(!!jaimeController.isDestroying, false, "precond - nobody is destroyed yet");
+  equal(!!cerseiController.isDestroying, false, "precond - nobody is destroyed yet");
 
   Ember.run(function() {
     lannisters.removeObject(cersei); // if only it were that easy
   });
 
-  equal(!!jaimeContainer.isDestroyed, false, "Retained objects' containers are not cleaned up");
-  equal(!!cerseiContainer.isDestroyed, true, "Removed objects' containers are cleaned up");
+  equal(!!jaimeController.isDestroyed, false, "Retained objects' containers are not cleaned up");
+  equal(!!cerseiController.isDestroyed, true, "Removed objects' containers are cleaned up");
 });
 
 test("`itemController` can be dynamic by overwriting `lookupItemController`", function() {
