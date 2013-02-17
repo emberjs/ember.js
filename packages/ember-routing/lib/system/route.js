@@ -416,6 +416,8 @@ Ember.Route = Ember.Object.extend({
     @param {Object} options the options
   */
   render: function(name, options) {
+    Ember.assert("The name in the given arguments is undefined", arguments.length > 0 ? !Ember.isNone(arguments[0]) : true);
+
     if (typeof name === 'object' && !options) {
       options = name;
       name = this.routeName;
