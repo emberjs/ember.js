@@ -467,3 +467,21 @@ Ember.computed.alias = function(dependentKey) {
     }
   });
 };
+
+/**
+  Creates a computed property that acts like a standard getter and setter,
+  but defaults to the value from `defaultPath`.
+
+  @method computed.defaultTo
+  @for Ember
+  @param {String} defaultPath
+*/
+Ember.computed.defaultTo = function(defaultPath) {
+  return Ember.computed(function(key, newValue, cachedValue) {
+    var result;
+    if (arguments.length === 1) {
+      return cachedValue != null ? cachedValue : get(this, defaultPath);
+    }
+    return newValue != null ? newValue : get(this, defaultPath);
+  });
+};

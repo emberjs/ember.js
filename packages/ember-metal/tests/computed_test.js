@@ -744,3 +744,20 @@ testBoth('Ember.computed.alias', function(get, set) {
   equal(get(obj, 'baz'), 'newBaz');
   equal(get(obj, 'quz'), null);
 });
+
+testBoth('Ember.computed.defaultTo', function(get, set) {
+  var obj = { source: 'original source value' };
+  Ember.defineProperty(obj, 'copy', Ember.computed.defaultTo('source'));
+
+  equal(get(obj, 'copy'), 'original source value');
+
+  set(obj, 'copy', 'new copy value');
+  equal(get(obj, 'source'), 'original source value');
+  equal(get(obj, 'copy'), 'new copy value');
+
+  set(obj, 'source', 'new source value');
+  equal(get(obj, 'copy'), 'new copy value');
+
+  set(obj, 'copy', null);
+  equal(get(obj, 'copy'), 'new source value');
+});
