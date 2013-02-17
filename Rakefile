@@ -3,8 +3,6 @@ require "ember-dev/tasks"
 
 ### RELEASE TASKS ###
 
-EMBER_VERSION = File.read("VERSION").strip
-
 namespace :release do
 
   def pretend?
