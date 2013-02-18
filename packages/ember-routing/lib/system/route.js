@@ -178,8 +178,8 @@ Ember.Route = Ember.Object.extend({
     this route.
 
     ```js
-    App.Router.map(function(match) {
-      match("/posts/:post_id").to("post");
+    App.Router.map(function() {
+      this.resource('post', {path: '/posts/:post_id'});
     });
     ```
 
@@ -222,8 +222,8 @@ Ember.Route = Ember.Object.extend({
     for the URL.
 
     ```js
-    App.Router.map(function(match) {
-      match("/posts/:post_id").to("post");
+    App.Router.map(function() {
+      this.resource('post', {path: '/posts/:post_id'});
     });
 
     App.PostRoute = Ember.Route.extend({
@@ -272,8 +272,8 @@ Ember.Route = Ember.Object.extend({
     model supplied by the `model` hook.
 
     ```js
-    App.Router.map(function(match) {
-      match("/posts/:post_id").to("post");
+    App.Router.map(function() {
+      this.resource('post', {path: '/posts/:post_id'});
     });
     ```
 
@@ -373,9 +373,9 @@ Ember.Route = Ember.Object.extend({
     For example:
 
     ```js
-    App.Router.map(function(match) {
-      match("/").to("index");
-      match("/posts/:post_id").to("post");
+    App.Router.map(function() {
+      this.route('index');
+      this.resource('post', {path: '/posts/:post_id'});
     });
 
     App.PostRoute = App.Route.extend({
