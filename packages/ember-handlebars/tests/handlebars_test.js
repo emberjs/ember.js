@@ -1700,6 +1700,30 @@ test("should be able to bind classes to 'this' in an {{#each}} block with {{bind
   ok(view.$('li').eq(2).hasClass('c'), "sets classname to the value of the third item");
 });
 
+test("should be able to bindAttr to var in {{#each var in list}} block", function() {
+  view = Ember.View.create({
+    template: Ember.Handlebars.compile('{{#each image in view.images}}<img {{bindAttr src="image"}}>{{/each}}'),
+    images: Ember.A(['one.png', 'two.jpg', 'three.gif'])
+  });
+
+  appendView();
+
+  var images = view.$('img');
+  ok(/one\.png$/.test(images[0].src));
+  ok(/two\.jpg$/.test(images[1].src));
+  ok(/three\.gif$/.test(images[2].src));
+
+  Ember.run(function() {
+    var imagesArray = view.get('images');
+    imagesArray.removeAt(0);
+  });
+
+  images = view.$('img');
+  ok(images.length === 2, "");
+  ok(/two\.jpg$/.test(images[0].src));
+  ok(/three\.gif$/.test(images[1].src));
+});
+
 test("should be able to output a property without binding", function(){
   var context = {
     content: Ember.Object.create({
