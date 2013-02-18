@@ -56,7 +56,7 @@ Ember.ControllerMixin.reopen({
   },
 
   controllerFor: function(controllerName) {
-    Ember.deprecate("Controller#controllerFor is depcrecated, please use Controller#needs instead");
+    Ember.deprecate("Controller#controllerFor is deprecated, please use Controller#needs instead");
     var container = get(this, 'container');
     return container.lookup('controller:' + controllerName);
   },
