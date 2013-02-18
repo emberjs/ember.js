@@ -117,15 +117,15 @@ therubyracer`.
 
 1. To start the development server, run `rackup`.
 
-2. Then visit: `http://localhost:9292/tests/index.html?package=PACKAGE_NAME`.  Replace `PACKAGE_NAME` with the name of the package you want to run.  For example:
+2. Then visit: `http://localhost:9292/?package=PACKAGE_NAME`.  Replace `PACKAGE_NAME` with the name of the package you want to run.  For example:
 
-  * [Ember.js Runtime](http://localhost:9292/tests/index.html?package=ember-runtime)
-  * [Ember.js Views](http://localhost:9292/tests/index.html?package=ember-views)
-  * [Ember.js Handlebars](http://localhost:9292/tests/index.html?package=ember-handlebars)
+  * [Ember.js Runtime](http://localhost:9292/?package=ember-runtime)
+  * [Ember.js Views](http://localhost:9292/?package=ember-views)
+  * [Ember.js Handlebars](http://localhost:9292/?package=ember-handlebars)
 
 To run multiple packages, you can separate them with commas. You can run all the tests using the `all` package:
 
-<http://localhost:9292/tests/index.html?package=all>
+<http://localhost:9292/?package=all>
 
 You can also pass `jquery=VERSION` in the test URL to test different versions of jQuery. Default is 1.9.0.
 
