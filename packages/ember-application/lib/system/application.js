@@ -8,6 +8,23 @@ var get = Ember.get, set = Ember.set,
     capitalize = Ember.String.capitalize,
     decamelize = Ember.String.decamelize;
 
+function onReady(target, callback) {
+  if (Ember.testing && !Ember.testingDeferred) {
+    // Avoid the async $().ready when testing
+    if (Ember.run.currentRunLoop) {
+      // Force the callback to the end of the current run loop to mimic async
+      Ember.run.once(target, callback);
+    } else {
+      Ember.run(target, callback);
+    }
+  } else {
+    var self = target;
+    target.$().ready(function() {
+      Ember.run(self, callback);
+    });
+  }
+}
+
 /**
   An instance of `Ember.Application` is the starting point for every Ember
   application. It helps to instantiate, initialize and coordinate the many
@@ -293,11 +310,7 @@ var Application = Ember.Application = Ember.Namespace.extend({
   */
   deferUntilDOMReady: function() {
     this.deferReadiness();
-
-    var self = this;
-    this.$().ready(function() {
-      self.advanceReadiness();
-    });
+    onReady(this, 'advanceReadiness');
   },
 
   /**
@@ -318,10 +331,9 @@ var Application = Ember.Application = Ember.Namespace.extend({
     @method scheduleInitialize
   */
   scheduleInitialize: function() {
-    var self = this;
-    this.$().ready(function() {
-      if (self.isDestroyed || self.isInitialized) return;
-      Ember.run.once(self, 'initialize');
+    onReady(this, function() {
+      if (this.isDestroyed || this.isInitialized) return;
+      this.initialize();
     });
   },
 
