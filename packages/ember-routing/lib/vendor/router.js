@@ -608,7 +608,7 @@ define("router",
         }
       }
 
-      throw new Error("Nothing handled the event '" + name + "'.");
+      Ember.warn("Nothing handled the event '" + name + "'.");
     }
 
     function setContext(handler, context) {
