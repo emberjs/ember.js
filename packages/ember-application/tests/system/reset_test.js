@@ -22,6 +22,7 @@ test("When an application is reset, new instances of controllers are generated",
   Ember.run(function() {
     application = Application.create();
     application.AcademicController = Ember.Controller.extend();
+    application.initialize();
   });
 
   var firstController = application.__container__.lookup('controller:academic');
@@ -46,6 +47,7 @@ test("When an application is reset, the ApplicationView is torn down", function(
     application.ApplicationView = Ember.View.extend({
       elementId: "application-view"
     });
+    application.initialize();
   });
 
   equal(Ember.$('#qunit-fixture #application-view').length, 1, "precond - the application view is rendered");
@@ -76,6 +78,8 @@ test("When an application is reset, the router URL is reset to `/`", function() 
       this.route('one');
       this.route('two');
     });
+
+    application.initialize();
   });
 
   router = application.__container__.lookup('router:main');

@@ -44,6 +44,8 @@ module("The {{linkTo}} helper", {
 
       container.register('view', 'app');
       container.register('router', 'main', Router);
+
+      App.initialize();
     });
   },
 
