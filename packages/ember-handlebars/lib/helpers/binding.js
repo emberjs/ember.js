@@ -503,7 +503,9 @@ EmberHandlebars.registerHelper('bindAttr', function(options) {
     // Add an observer to the view for when the property changes.
     // When the observer fires, find the element using the
     // unique data id and update the attribute to the new value.
-    if (path !== 'this') {
+    // Note: don't add observer when path is 'this' or path
+    // is whole keyword e.g. {{#each x in list}} ... {{bindAttr attr="x"}}
+    if (path !== 'this' && !(normalized.isKeyword && normalized.path === '' )) {
       view.registerObserver(normalized.root, normalized.path, invoker);
     }
 
