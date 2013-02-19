@@ -304,7 +304,7 @@ var Application = Ember.Application = Ember.Namespace.extend({
     var self = this;
     this.$().ready(function() {
       if (self.isDestroyed || self.isInitialized) return;
-      self.initialize();
+      Ember.run(self, 'initialize');
     });
   },
 
