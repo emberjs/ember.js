@@ -24,6 +24,8 @@ module("Basic Routing", {
         location: 'none'
       });
 
+      Ember._testingLocation = true;
+
       Router = App.Router;
 
       App.LoadingRoute = Ember.Route.extend({
@@ -45,6 +47,7 @@ module("Basic Routing", {
       App.destroy();
       App = null;
 
+      Ember._testingLocation = false;
       Ember.TEMPLATES = originalTemplates;
     });
   }

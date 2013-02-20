@@ -15,6 +15,12 @@ function setupLocation(router) {
       rootURL = get(router, 'rootURL');
 
   if ('string' === typeof location) {
+    // Force NoneLocation in testing mode, but only if a string is given.
+    // Otherwise respect the location set by the user.
+    if (Ember.testing && !Ember._testingLocation) {
+      location = 'none';
+    }
+
     location = set(router, 'location', Ember.Location.create({
       implementation: location
     }));
