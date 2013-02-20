@@ -1987,6 +1987,7 @@ Ember.View = Ember.CoreView.extend(
     childLen = childViews.length;
     for (i=childLen-1; i>=0; i--) {
       childViews[i].removedFromDOM = true;
+      childViews[i].destroy();
     }
 
     // remove from non-virtual parent view if viewName was specified
@@ -2003,11 +2004,6 @@ Ember.View = Ember.CoreView.extend(
     if (parent) { parent.removeChild(this); }
 
     this.transitionTo('destroyed');
-
-    childLen = childViews.length;
-    for (i=childLen-1; i>=0; i--) {
-      childViews[i].destroy();
-    }
 
     // next remove view from global hash
     if (!this.isVirtual) delete Ember.View.views[get(this, 'elementId')];

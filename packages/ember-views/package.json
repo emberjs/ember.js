@@ -14,7 +14,8 @@
     "spade":              "~> 1.0",
     "jquery":             "~> 1.7",
     "ember-runtime": "1.0.0-rc.1",
-    "container": "1.0.0-pre.2"
+    "container": "1.0.0-pre.2",
+    "ember-handlebars": "1.0.0-rc.1"
   },
 
   "dependencies:development": {
