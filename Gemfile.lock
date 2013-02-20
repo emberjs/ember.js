@@ -1,12 +1,13 @@
 GIT
   remote: https://github.com/emberjs/ember-dev.git
-  revision: 659bf4c415f87151f407106aab923a4a36fac4b4
+  revision: 9e2b101001e417cf762ebccb13413515d2788705
   branch: master
   specs:
     ember-dev (0.1)
       colored
       execjs
       grit
+      handlebars-source
       kicker
       rack
       rake-pipeline (~> 0.8.0)
@@ -33,6 +34,7 @@ GEM
       diff-lcs (~> 1.1)
       mime-types (~> 1.15)
       posix-spawn (~> 0.3.6)
+    handlebars-source (1.0.0.rc.3)
     json (1.7.7)
     kicker (2.6.1)
       listen
@@ -55,4 +57,5 @@ PLATFORMS
 
 DEPENDENCIES
   ember-dev!
+  handlebars-source (= 1.0.0.rc3)
   rake-pipeline!
