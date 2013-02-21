@@ -425,7 +425,10 @@ function chainsDidChange(obj, keyName, m, arg) {
 */
 Ember.watch = function(obj, keyName) {
   // can't watch length on Array - it is special...
-  if (keyName === 'length' && Ember.typeOf(obj) === 'array') { return this; }
+  if (keyName === 'length' && Ember.typeOf(obj) === 'array') {
+    Ember.warn("Can't watch length on Array.");
+    return this;
+  }
 
   var m = metaFor(obj), watching = m.watching, desc;
 
@@ -433,6 +436,14 @@ Ember.watch = function(obj, keyName) {
   if (!watching[keyName]) {
     watching[keyName] = 1;
     if (isKeyName(keyName)) {
+      if (!(keyName in m.descs)) {
+        // It doesn't exist in the normal sense, but it might exist as
+        // a virtual property.
+        if (typeof obj.unknownProperty !== 'function' ||
+            (obj.unknownProperty(keyName) === undefined)) {
+          Ember.debug('Watching nonexistent property ' + keyName);
+        }
+      }
       desc = m.descs[keyName];
       if (desc && desc.willWatch) { desc.willWatch(obj, keyName); }
 
