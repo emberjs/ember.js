@@ -179,7 +179,7 @@ test("The {{linkTo}} helper supports custom, nested, currentWhen", function() {
 });
 
 test("The {{linkTo}} helper defaults to bubbling", function() {
-  Ember.TEMPLATES.about = Ember.Handlebars.compile("<button {{action 'hide'}}>{{#linkTo 'about.contact' id='about-contact'}}About{{/linkTo}}</button>{{outlet}}");
+  Ember.TEMPLATES.about = Ember.Handlebars.compile("<div {{action 'hide'}}>{{#linkTo 'about.contact' id='about-contact'}}About{{/linkTo}}</div>{{outlet}}");
   Ember.TEMPLATES['about/contact'] = Ember.Handlebars.compile("<h1 id='contact'>Contact</h1>");
 
   Router.map(function() {
@@ -214,7 +214,7 @@ test("The {{linkTo}} helper defaults to bubbling", function() {
 });
 
 test("The {{linkTo}} helper supports bubbles=false", function() {
-  Ember.TEMPLATES.about = Ember.Handlebars.compile("<button {{action 'hide'}}>{{#linkTo 'about.contact' id='about-contact' bubbles=false}}About{{/linkTo}}</button>{{outlet}}");
+  Ember.TEMPLATES.about = Ember.Handlebars.compile("<div {{action 'hide'}}>{{#linkTo 'about.contact' id='about-contact' bubbles=false}}About{{/linkTo}}</div>{{outlet}}");
   Ember.TEMPLATES['about/contact'] = Ember.Handlebars.compile("<h1 id='contact'>Contact</h1>");
 
   Router.map(function() {
