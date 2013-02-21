@@ -1,3 +1,4 @@
+require('ember-routing/helpers/shared');
 require('ember-routing/helpers/link_to');
 require('ember-routing/helpers/outlet');
 require('ember-routing/helpers/render');

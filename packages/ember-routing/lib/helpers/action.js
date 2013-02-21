@@ -9,28 +9,14 @@ require('ember-handlebars/helpers/view');
 
 Ember.onLoad('Ember.Handlebars', function(Handlebars) {
 
-  var resolveParams = Ember.Handlebars.resolveParams,
+  var resolveParams = Ember.Router.resolveParams,
       isSimpleClick = Ember.ViewUtils.isSimpleClick;
 
   var EmberHandlebars = Ember.Handlebars,
       handlebarsGet = EmberHandlebars.get,
       SafeString = EmberHandlebars.SafeString,
       get = Ember.get,
-      a_slice = Array.prototype.slice,
-      map = Ember.ArrayPolyfills.map;
-
-  function resolveAndUnwrap(context, params, options) {
-    var resolved = resolveParams(context, params, options);
-    return map.call(resolved, unwrap);
-  }
-
-  function unwrap(object) {
-    if (Ember.ControllerMixin.detect(object)) {
-      return unwrap(get(object, 'model'));
-    } else {
-      return object;
-    }
-  }
+      a_slice = Array.prototype.slice;
 
   function args(options, actionName) {
     var ret = [];
@@ -39,7 +25,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     var types = options.options.types.slice(1),
         data = options.options.data;
 
-    return ret.concat(resolveAndUnwrap(options.context, options.params, { types: types, data: data }));
+    return ret.concat(resolveParams(options.context, options.params, { types: types, data: data }));
   }
 
   var ActionHelper = EmberHandlebars.ActionHelper = {
