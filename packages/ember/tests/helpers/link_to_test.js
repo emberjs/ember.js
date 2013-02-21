@@ -339,6 +339,44 @@ test("The {{linkTo}} helper accepts string arguments", function() {
   equal(Ember.$('#link', '#qunit-fixture').attr('href'), "/filters/unpopular");
 });
 
+test("The {{linkTo}} helper unwraps controllers", function() {
+  // The serialize hook is called twice: once to generate the href for the
+  // link and once to generate the URL when the link is clicked.
+  expect(2);
+
+  Router.map(function() {
+    this.route('filter', { path: '/filters/:filter' });
+  });
+
+  var indexObject = { filter: 'popular' };
+
+  App.FilterRoute = Ember.Route.extend({
+    model: function(params) {
+      return indexObject;
+    },
+
+    serialize: function(passedObject) {
+      equal(passedObject, indexObject, "The unwrapped object is passed");
+      return { filter: 'popular' };
+    }
+  });
+
+  App.IndexRoute = Ember.Route.extend({
+    model: function() {
+      return indexObject;
+    }
+  });
+
+  Ember.TEMPLATES.filter = compile('<p>{{filter}}</p>');
+  Ember.TEMPLATES.index = compile('{{#linkTo filter this id="link"}}Filter{{/linkTo}}');
+
+  bootApplication();
+
+  Ember.run(function() { router.handleURL("/"); });
+
+  Ember.$('#link', '#qunit-fixture').trigger('click');
+});
+
 test("The {{linkTo}} helper doesn't change view context", function() {
   App.IndexView = Ember.View.extend({
     elementId: 'index',
