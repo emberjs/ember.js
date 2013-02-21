@@ -25,4 +25,6 @@ Ember.MutableArrayTests.extend({
 test("defaults it's `content` to an empty array", function () {
   var Controller = Ember.ArrayController.extend();
   deepEqual(Controller.create().get("content"), [], "`ArrayController` defaults it's content to an empty array");
+  equal(Controller.create().get('firstObject'), undefined, 'can fetch firstObject');
+  equal(Controller.create().get('lastObject'), undefined, 'can fetch lastObject');
 });
