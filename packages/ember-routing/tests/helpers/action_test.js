@@ -501,6 +501,28 @@ test("should allow a context to be specified", function() {
   equal(passedContext, model, "the action was called with the passed context");
 });
 
+test("should unwrap controllers passed as a context", function() {
+  var passedContext,
+      model = Ember.Object.create(),
+      controller = Ember.ObjectController.extend({
+        model: model,
+        edit: function(context) {
+          passedContext = context;
+        }
+      }).create();
+
+  view = Ember.View.create({
+    controller: controller,
+    template: Ember.Handlebars.compile('<button {{action "edit" this}}>edit</button>')
+  });
+
+  appendView();
+
+  view.$('button').trigger('click');
+
+  equal(passedContext, model, "the action was passed the unwrapped model");
+});
+
 test("should allow multiple contexts to be specified", function() {
   var passedContexts,
       models = [Ember.Object.create(), Ember.Object.create()];
