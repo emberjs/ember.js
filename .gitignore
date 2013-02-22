@@ -36,3 +36,4 @@ tmp.spade
 tests/source
 node_modules
 .vagrant
+*.swp
