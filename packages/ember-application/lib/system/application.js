@@ -214,6 +214,14 @@ var Application = Ember.Application = Ember.Namespace.extend({
   */
   customEvents: null,
 
+  /**
+   For performance reasons move events are not delegated 
+   (touchmove and mousemove).
+
+   If you would like to enable move event delegation, set this to true
+   */
+  moveEvents: false,
+
   isInitialized: false,
 
   // Start off the number of deferrals at 1. This will be
@@ -488,6 +496,14 @@ var Application = Ember.Application = Ember.Namespace.extend({
   setupEventDispatcher: function() {
     var eventDispatcher = this.createEventDispatcher(),
         customEvents    = get(this, 'customEvents');
+
+    if(get(this, 'moveEvents')) {
+      customEvents = Ember.$.extend({
+        mousemove: 'mouseMove',
+        touchmove: 'touchMove'
+      } ,customEvents || {});
+
+    }
 
     eventDispatcher.setup(customEvents);
   },

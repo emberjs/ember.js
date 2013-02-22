@@ -257,3 +257,69 @@ test("event manager should be able to re-dispatch events to view", function() {
   Ember.$('#nestedView').trigger('mousedown');
   equal(receivedEvent, 2, "event should go to manager and not view");
 });
+
+
+test("Should not delegate move events by defaults", function(){
+  var receivedEvent=0;
+  view = Ember.View.createWithMixins({
+    elementId: 'myView',
+    mouseMove: function(evt) {
+      receivedEvent++;
+    },
+    touchMove: function(evt) {
+      receivedEvent++;
+    }
+  });
+
+  Ember.run(function() { view.append(); });
+
+  Ember.$('#myView')
+    .trigger('mousemove')
+    .trigger('touchmove');
+
+  equal(receivedEvent, 0, "mouse move and touch move should not fire");
+});
+
+
+
+module("Ember.EventDispatcher custom", {
+  setup: function() {
+    Ember.run(function() {
+      dispatcher = Ember.EventDispatcher.create({});
+      dispatcher.setup({
+        mousemove: 'mouseMove',
+        touchmove: 'touchMove'
+      });
+    });
+  },
+
+  teardown: function() {
+    Ember.run(function() {
+      if (view) { view.destroy(); }
+      dispatcher.destroy();
+    });
+  }
+});
+
+
+test("Should delegate move events if enabled", function(){
+  var receivedEvent=0;
+  view = Ember.View.createWithMixins({
+    elementId: 'myView',
+    mouseMove: function(evt) {
+      receivedEvent++;
+    },
+    touchMove: function(evt) {
+      receivedEvent++;
+    }
+  });
+
+  Ember.run(function() { view.append(); });
+
+  Ember.$('#myView')
+    .trigger('mousemove')
+    .trigger('touchmove');
+
+  equal(receivedEvent, 2, "mouse move and touch move should fire");
+});
+
