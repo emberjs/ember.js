@@ -225,6 +225,20 @@ test("The container respect the resolver hook for `has`", function() {
   ok(container.has('controller:post'), "the `has` method uses the resolver hook");
 });
 
+test("The container normalizes names before resolving", function() {
+  var container = new Container();
+  var PostController = factory();
+
+  container.normalize = function(fullName) {
+    return 'controller:post';
+  };
+
+  container.register('controller:post', PostController);
+  var postController = container.lookup('wycats');
+
+  ok(postController instanceof PostController, "Normalizes the name before resolving");
+});
+
 test("The container can get options that should be applied to all factories for a given type", function() {
   var container = new Container();
   var PostView = factory();

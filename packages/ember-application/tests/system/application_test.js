@@ -233,15 +233,17 @@ module("Ember.Application Depedency Injection", {
       application = Ember.Application.create().initialize();
     });
 
-    application.Person = Ember.Object.extend({});
-    application.Orange = Ember.Object.extend({});
-    application.Email  = Ember.Object.extend({});
-    application.User   = Ember.Object.extend({});
+    application.Person              = Ember.Object.extend({});
+    application.Orange              = Ember.Object.extend({});
+    application.Email               = Ember.Object.extend({});
+    application.User                = Ember.Object.extend({});
+    application.PostIndexController = Ember.Object.extend({});
 
     application.register('model:person', application.Person, {singleton: false });
     application.register('model:user', application.User, {singleton: false });
     application.register('fruit:favorite', application.Orange);
     application.register('communication:main', application.Email, {singleton: false});
+    application.register('controller:postIndex', application.PostIndexController, {singleton: true});
 
     locator = application.__container__;
 
@@ -256,15 +258,22 @@ module("Ember.Application Depedency Injection", {
   }
 });
 
+test('container lookup is normalized', function() {
+  ok(locator.lookup('controller:post.index') instanceof application.PostIndexController);
+  ok(locator.lookup('controller:postIndex') instanceof application.PostIndexController);
+});
+
 test('registered entities can be looked up later', function(){
   equal(locator.resolve('model:person'), application.Person);
   equal(locator.resolve('model:user'), application.User);
   equal(locator.resolve('fruit:favorite'), application.Orange);
   equal(locator.resolve('communication:main'), application.Email);
+  equal(locator.resolve('controller:postIndex'), application.PostIndexController);
 
   equal(locator.lookup('fruit:favorite'), locator.lookup('fruit:favorite'), 'singleton lookup worked');
   ok(locator.lookup('model:user') !== locator.lookup('model:user'), 'non-singleton lookup worked');
 });
+
 
 test('injections', function(){
   application.inject('model', 'fruit', 'fruit:favorite');
