@@ -67,7 +67,7 @@ Ember.HashLocation = Ember.Object.extend({
 
         set(self, 'lastSetURL', null);
 
-        callback(location.hash.substr(1));
+        callback(path);
       });
     });
   },
