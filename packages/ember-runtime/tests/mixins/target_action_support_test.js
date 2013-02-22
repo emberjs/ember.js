@@ -85,3 +85,18 @@ test("if no target is specified, actions should be sent to the controller", func
 
   ok(true === myObj.triggerAction(), "a valid controller and action were specified");
 });
+
+test("namespaced targets and actions can be specified", function() {
+  expect(2);
+  var myObj = Ember.Object.createWithMixins(Ember.TargetActionSupport, {
+    controller: {
+      anEvent: function() {
+        ok(true, "anEvent method was called");
+      }
+    },
+    mouseEnterTarget: 'controller',
+    mouseEnterAction: 'anEvent'
+  });
+
+  ok(true === myObj.triggerAction('mouseEnter'), "a valid controller and action were specified");
+});
