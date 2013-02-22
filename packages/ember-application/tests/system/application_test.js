@@ -88,6 +88,37 @@ test("acts like a namespace", function() {
   }
 });
 
+test("move events are not delegated", function(){
+
+  var receivedEvent = 0;
+
+  var view = Ember.View.createWithMixins({
+    elementId: 'myView',
+    mouseMove: function(evt) {
+      receivedEvent++;
+    },
+    touchMove: function(evt) {
+      receivedEvent++;
+    }
+  });
+
+  
+  Ember.run(function(){
+    view.appendTo('#one');
+  });
+
+  Ember.$('#myView')
+    .trigger('mousemove')
+    .trigger('touchmove');
+
+  Ember.run(function(){
+    view.destroy();
+  });
+
+  equal(receivedEvent, 0, "mouse move and touch move should not fire");
+
+});
+
 var app;
 
 module("Ember.Application initialization", {
@@ -296,4 +327,52 @@ test('the default resolver hook can look things up in other namespaces', functio
   var nav = locator.lookup('controller:userInterface/navigation');
 
   ok(nav instanceof UserInterface.NavigationController, "the result should be an instance of the specified class");
+});
+
+
+module("Ember.Application with move", {
+  setup: function() {
+    Ember.$("#qunit-fixture").html("<div id='one'><div id='one-child'>HI</div></div><div id='two'>HI</div>");
+    Ember.run(function() {
+      application = Ember.Application.create({ moveEvents: true, rootElement: '#one', router: null }).initialize();
+    });
+  },
+
+  teardown: function() {
+    if (application) {
+      Ember.run(function(){ application.destroy(); });
+    }
+  }
+});
+
+
+test("move events are delegated", function(){
+
+  var receivedEvent = 0;
+
+  var view = Ember.View.createWithMixins({
+    elementId: 'myView',
+    mouseMove: function(evt) {
+      receivedEvent++;
+    },
+    touchMove: function(evt) {
+      receivedEvent++;
+    }
+  });
+
+  
+  Ember.run(function(){
+    view.appendTo('#one');
+  });
+
+  Ember.$('#myView')
+    .trigger('mousemove')
+    .trigger('touchmove');
+
+  Ember.run(function(){
+    view.destroy();
+  });
+
+  equal(receivedEvent, 2, "mouse move and touch move should fire");
+
 });
