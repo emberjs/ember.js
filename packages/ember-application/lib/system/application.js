@@ -673,8 +673,19 @@ function normalize(fullName) {
       type = split[0],
       name = split[1];
 
-  if (type !== 'template' && name.indexOf('.') > -1) {
-    return type + ':' + name.replace(/\.(.)/g, function(m) { return m[1].toUpperCase(); });
+
+  if (type !== 'template') {
+    var result = name;
+
+    if (result.indexOf('.') > -1) {
+      result = result.replace(/\.(.)/g, function(m) { return m[1].toUpperCase(); });
+    }
+
+    if (name.indexOf('_') > -1) {
+      result = result.replace(/_(.)/g, function(m) { return m[1].toUpperCase(); });
+    }
+
+    return type + ':' + result;
   } else {
     return fullName;
   }
