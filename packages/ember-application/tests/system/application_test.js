@@ -275,7 +275,7 @@ test('registered entities can be looked up later', function(){
 });
 
 
-test('injections', function(){
+test('injections', function() {
   application.inject('model', 'fruit', 'fruit:favorite');
   application.inject('model:user', 'communication', 'communication:main');
 
@@ -296,4 +296,30 @@ test('the default resolver hook can look things up in other namespaces', functio
   var nav = locator.lookup('controller:userInterface/navigation');
 
   ok(nav instanceof UserInterface.NavigationController, "the result should be an instance of the specified class");
+});
+
+test('normalization', function() {
+  equal(locator.normalize('foo:bar'), 'foo:bar');
+
+  equal(locator.normalize('controller:posts'), 'controller:posts');
+  equal(locator.normalize('controller:posts_index'), 'controller:postsIndex');
+  equal(locator.normalize('controller:posts.index'), 'controller:postsIndex');
+  equal(locator.normalize('controller:posts.post.index'), 'controller:postsPostIndex');
+  equal(locator.normalize('controller:posts_post.index'), 'controller:postsPostIndex');
+  equal(locator.normalize('controller:posts.post_index'), 'controller:postsPostIndex');
+  equal(locator.normalize('controller:postsIndex'), 'controller:postsIndex');
+  equal(locator.normalize('controller:blogPosts.index'), 'controller:blogPostsIndex');
+  equal(locator.normalize('controller:blog/posts.index'), 'controller:blog/postsIndex');
+  equal(locator.normalize('controller:blog/posts.post.index'), 'controller:blog/postsPostIndex');
+  equal(locator.normalize('controller:blog/posts_post.index'), 'controller:blog/postsPostIndex');
+
+  equal(locator.normalize('template:blog/posts_index'), 'template:blog/posts_index');
+});
+
+test('normalization is indempotent', function() {
+  var examples = ['controller:posts', 'controller:posts.post.index', 'controller:blog/posts.post_index', 'template:foo_bar'];
+
+  examples.forEach(function (example) {
+    equal(locator.normalize(locator.normalize(example)), locator.normalize(example));
+  });
 });
