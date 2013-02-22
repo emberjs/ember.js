@@ -597,6 +597,7 @@ Ember.Application.reopenClass({
     Ember.Container.defaultContainer = Ember.Container.defaultContainer || container;
 
     container.set = Ember.set;
+    container.normalize = normalize;
     container.resolver = resolverFor(namespace);
     container.optionsForType('view', { singleton: false });
     container.optionsForType('template', { instantiate: false });
@@ -636,6 +637,7 @@ function resolverFor(namespace) {
 
     if (type === 'template') {
       var templateName = name.replace(/\./g, '/');
+
       if (Ember.TEMPLATES[templateName]) {
         return Ember.TEMPLATES[templateName];
       }
@@ -666,5 +668,16 @@ function resolverFor(namespace) {
   };
 }
 
-Ember.runLoadHooks('Ember.Application', Ember.Application);
+function normalize(fullName) {
+  var split = fullName.split(':'),
+      type = split[0],
+      name = split[1];
 
+  if (type !== 'template' && name.indexOf('.') > -1) {
+    return type + ':' + name.replace(/\.(.)/g, function(m) { return m[1].toUpperCase(); });
+  } else {
+    return fullName;
+  }
+}
+
+Ember.runLoadHooks('Ember.Application', Ember.Application);

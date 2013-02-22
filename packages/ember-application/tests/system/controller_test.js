@@ -26,4 +26,3 @@ test("If a controller specifies an unavailable dependency, it raises", function(
     container.lookup('controller:post');
   }, /controller:posts/);
 });
-

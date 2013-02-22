@@ -76,7 +76,6 @@ define("container",
       register: function(type, name, factory, options) {
         var fullName;
 
-
         if (type.indexOf(':') !== -1){
           options = factory;
           factory = name;
@@ -86,12 +85,18 @@ define("container",
           fullName = type + ":" + name;
         }
 
-        this.registry.set(fullName, factory);
-        this._options.set(fullName, options || {});
+        var normalizedName = this.normalize(fullName);
+
+        this.registry.set(normalizedName, factory);
+        this._options.set(normalizedName, options || {});
       },
 
       resolve: function(fullName) {
         return this.resolver(fullName) || this.registry.get(fullName);
+      },
+
+      normalize: function(fullName) {
+        return fullName;
       },
 
       lookup: function(fullName, options) {
@@ -223,7 +228,8 @@ define("container",
     }
 
     function factoryFor(container, fullName) {
-      return container.resolve(fullName);
+      var name = container.normalize(fullName);
+      return container.resolve(name);
     }
 
     function instantiate(container, fullName) {
