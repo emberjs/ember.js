@@ -22,7 +22,7 @@ Ember.TargetActionSupport = Ember.Mixin.create({
       if (value === undefined) { value = get(Ember.lookup, target); }
       return value;
     } else {
-      return target;
+      return target || get(this, 'controller');
     }
   }).property('target'),
 

@@ -70,3 +70,18 @@ test("it should find targets specified using a property path", function() {
 
   ok(true === myObj.triggerAction(), "a valid target and action were specified");
 });
+
+test("if no target is specified, actions should be sent to the controller", function() {
+  expect(2);
+
+  var myObj = Ember.Object.createWithMixins(Ember.TargetActionSupport, {
+    controller: {
+      send: function(evt) {
+        equal(evt, 'anEvent', "send() method was invoked with correct event name");
+      }
+    },
+    action: 'anEvent'
+  });
+
+  ok(true === myObj.triggerAction(), "a valid controller and action were specified");
+});
