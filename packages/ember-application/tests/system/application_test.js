@@ -237,7 +237,7 @@ module("Ember.Application Depedency Injection", {
     application.Orange              = Ember.Object.extend({});
     application.Email               = Ember.Object.extend({});
     application.User                = Ember.Object.extend({});
-    application.PostIndexController = Ember.Object.extend({});
+    application.PostIndexController = Ember.ObjectController.extend({});
 
     application.register('model:person', application.Person, {singleton: false });
     application.register('model:user', application.User, {singleton: false });
@@ -289,6 +289,15 @@ test('injections', function() {
   ok(application.Email.detectInstance(user.get('communication')));
 });
 
+test('injection defines a property on ObjectController', function() {
+  application.inject('controller:postIndex', 'fruit', 'fruit:favorite');
+
+  var controller = locator.lookup('controller:postIndex'),
+      fruit = locator.lookup('fruit:favorite');
+
+  equal(controller.get('fruit'), fruit);
+});
+
 test('the default resolver hook can look things up in other namespaces', function() {
   var UserInterface = lookup.UserInterface = Ember.Namespace.create();
   UserInterface.NavigationController = Ember.Controller.extend();
@@ -323,3 +332,4 @@ test('normalization is indempotent', function() {
     equal(locator.normalize(locator.normalize(example)), locator.normalize(example));
   });
 });
+
