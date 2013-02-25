@@ -89,7 +89,10 @@ test("removes view from parent view", function() {
 
   ok(parentView.$('div').length, "precond - has a child DOM element");
 
-  child.removeFromParent();
+  Ember.run(function() {
+    child.removeFromParent();
+  });
+
   ok(!get(child, 'parentView'), 'no longer has parentView');
   ok(indexOf(get(parentView, 'childViews'), child)<0, 'no longer in parent childViews');
   equal(parentView.$('div').length, 0, "removes DOM element from parent");
@@ -98,7 +101,11 @@ test("removes view from parent view", function() {
 test("returns receiver", function() {
   parentView = Ember.ContainerView.create({ childViews: [Ember.View] });
   child = get(parentView, 'childViews').objectAt(0);
-  equal(child.removeFromParent(), child, 'receiver');
+  var removed = Ember.run(function() {
+    return child.removeFromParent();
+  });
+
+  equal(removed, child, 'receiver');
 });
 
 test("does nothing if not in parentView", function() {

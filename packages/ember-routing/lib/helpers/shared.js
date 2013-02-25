@@ -8,13 +8,15 @@ Ember.onLoad('Ember.Handlebars', function() {
   function resolveParams(context, params, options) {
     var resolved = handlebarsResolve(context, params, options);
     return map.call(resolved, unwrap);
-  }
 
-  function unwrap(object) {
-    if (Ember.ControllerMixin.detect(object)) {
-      return unwrap(get(object, 'model'));
-    } else {
-      return object;
+    function unwrap(object, i) {
+      if (params[i] === 'controller') { return object; }
+
+      if (Ember.ControllerMixin.detect(object)) {
+        return unwrap(get(object, 'model'));
+      } else {
+        return object;
+      }
     }
   }
 

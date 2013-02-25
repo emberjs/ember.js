@@ -73,7 +73,7 @@ test("checked property mirrors input value", function() {
 
   equal(checkboxView.$().prop('checked'), true, "changing the value property changes the DOM");
 
-  checkboxView.remove();
+  Ember.run(function() { checkboxView.remove(); });
   Ember.run(function() { checkboxView.append(); });
 
   equal(checkboxView.$().prop('checked'), true, "changing the value property changes the DOM");
