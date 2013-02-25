@@ -731,7 +731,7 @@ class:
   * `mouseEnter`
   * `mouseLeave`
 
-  Form events: 
+  Form events:
 
   * `submit`
   * `change`
@@ -739,7 +739,7 @@ class:
   * `focusOut`
   * `input`
 
-  HTML5 drag and drop events: 
+  HTML5 drag and drop events:
 
   * `dragStart`
   * `drag`
@@ -963,6 +963,26 @@ Ember.View = Ember.CoreView.extend(
     @default null
   */
   isVisible: true,
+
+  /**
+    @private
+
+    A reference to the event dispatcher looked up from the container.
+    For use in registering/deregistering the view for 'mousemove' events.
+
+    @property eventDispatcher
+  */
+  eventDispatcher: Ember.computed(function() {
+    var container = get(this, 'container');
+    return container.lookup('event_dispatcher:main');
+  }),
+
+  hasMoveEvents: Ember.computed(function() {
+    var eventManager = get(this, 'eventManager');
+    return this.has('mouseMove') || (eventManager && eventManager['mouseMove']);
+  }).property('eventManager'),
+
+  registeredForMoveEvents: null,
 
   /**
     @private
@@ -2276,14 +2296,14 @@ Ember.View.reopenClass({
     `className` and optional `falsyClassName`.
 
     - if a `className` or `falsyClassName` has been specified:
-      - if the value is truthy and `className` has been specified, 
+      - if the value is truthy and `className` has been specified,
         `className` is returned
-      - if the value is falsy and `falsyClassName` has been specified, 
+      - if the value is falsy and `falsyClassName` has been specified,
         `falsyClassName` is returned
       - otherwise `null` is returned
-    - if the value is `true`, the dasherized last part of the supplied path 
+    - if the value is `true`, the dasherized last part of the supplied path
       is returned
-    - if the value is not `false`, `undefined` or `null`, the `value` 
+    - if the value is not `false`, `undefined` or `null`, the `value`
       is returned
     - if none of the above rules apply, `null` is returned
 
