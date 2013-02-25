@@ -229,9 +229,7 @@ var Application = Ember.Application = Ember.Namespace.extend({
 
     this._super();
 
-    if (!Ember.testing || Ember.testingDeferred) {
-      this.scheduleInitialize();
-    }
+    this.scheduleInitialize();
 
     Ember.debug('-------------------------------');
     Ember.debug('Ember.VERSION : ' + Ember.VERSION);
@@ -306,6 +304,10 @@ var Application = Ember.Application = Ember.Namespace.extend({
   scheduleInitialize: function() {
     var self = this;
     this.$().ready(function() {
+      // We need to guard against Ember.testing in here, rather than around
+      // $().ready, because Ember.testing might only be enabled after the app
+      // code is parsed and Ember.Application is instantiated.
+      if (Ember.testing && !Ember._testingDeferred) return;
       if (self.isDestroyed || self.isInitialized) return;
       Ember.run(self, 'initialize');
     });
