@@ -601,6 +601,7 @@ Ember.Application.reopenClass({
     container.set = Ember.set;
     container.normalize = normalize;
     container.resolver = resolverFor(namespace);
+    container.injectProperty = injectProperty;
     container.optionsForType('view', { singleton: false });
     container.optionsForType('template', { instantiate: false });
     container.register('application', 'main', namespace, { instantiate: false });
@@ -668,6 +669,10 @@ function resolverFor(namespace) {
 
     if (factory) { return factory; }
   };
+}
+
+function injectProperty(factory, property) {
+  Ember.defineProperty(factory.prototype, property);
 }
 
 function normalize(fullName) {

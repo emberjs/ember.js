@@ -53,6 +53,7 @@ define("container",
       this.parent = parent;
       this.children = [];
 
+      this.injectProperty = injectProperty;
       this.resolver = parent && parent.resolver || function() {};
       this.registry = new InheritingDict(parent && parent.registry);
       this.cache = new InheritingDict(parent && parent.cache);
@@ -239,7 +240,7 @@ define("container",
 
       var splitName = fullName.split(":"),
           type = splitName[0], name = splitName[1],
-          value;
+          instance;
 
       if (option(container, fullName, 'instantiate') === false) {
         return factory;
@@ -254,11 +255,19 @@ define("container",
         hash.container = container;
         hash._debugContainerKey = fullName;
 
-        value = factory.create(hash);
+        for (var key in hash) {
+          if (hash.hasOwnProperty(key)) {
+            container.injectProperty(factory, key);
+          }
+        }
 
-        return value;
+        instance = factory.create(hash);
+
+        return instance;
       }
     }
+
+    function injectProperty(factory, property) { }
 
     function eachDestroyable(container, callback) {
       container.cache.eachLocal(function(key, value) {
