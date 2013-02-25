@@ -306,6 +306,51 @@ test("it supports {{itemViewClass=}} with tagName", function() {
 
 });
 
+test("tagName is preserved when list is empty", function() {
+  Ember.run(function() { view.destroy(); }); // destroy existing view
+  view = Ember.View.create({
+      template: templateFor('{{#each view.people tagName="ul"}}<li>{{name}}</li>{{/each}}'),
+      people: people
+  });
+
+  append(view);
+
+  var html = view.$().html();
+
+  // IE 8 (and prior?) adds the \r\n
+  html = html.replace(/<script[^>]*><\/script>/ig, '').replace(/[\r\n]/g, '');
+  html = html.replace(/<div[^>]*><\/div>/ig, '').replace(/[\r\n]/g, '');
+  html = html.replace(/<li[^>]*/ig, '<li');
+
+  // Use lowercase since IE 8 make tagnames uppercase
+  equal(html.toLowerCase(), "<ul><li>steve holt</li><li>annabelle</li></ul>");
+
+  Ember.run(function() {
+    people.clear();
+  });
+
+  // IE 8 (and prior?) adds the \r\n
+  html = view.$().html();
+  html = html.replace(/<script[^>]*><\/script>/ig, '').replace(/[\r\n]/g, '');
+  html = html.replace(/<div[^>]*><\/div>/ig, '').replace(/[\r\n]/g, '');
+  html = html.replace(/<li[^>]*/ig, '<li');
+
+  equal(html.toLowerCase(), "<ul></ul>");
+
+  Ember.run(function() {
+    people.pushObject({name: "Borf"});
+  });
+
+  // IE 8 (and prior?) adds the \r\n
+  html = view.$().html();
+  html = html.replace(/<script[^>]*><\/script>/ig, '').replace(/[\r\n]/g, '');
+  html = html.replace(/<div[^>]*><\/div>/ig, '').replace(/[\r\n]/g, '');
+  html = html.replace(/<li[^>]*/ig, '<li');
+
+  equal(html.toLowerCase(), "<ul><li>borf</li></ul>");
+});
+
+
 test("it supports {{itemViewClass=}} with in format", function() {
 
   lookup.MyView = Ember.View.extend({
