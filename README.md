@@ -100,8 +100,9 @@ NOTE: Due to the rename, these instructions may be in flux
     builds of Ember.js
 
 If you are building under Linux, you will need a JavaScript runtime for
-minification. You can either install nodejs or `gem install
-therubyracer`.
+minification, for which we recommend installing nodejs.  Alternatively 
+you may have luck with another of the runtimes supported by
+[execjs](https://github.com/sstephenson/execjs).
 
 # How to Run Unit Tests
 
