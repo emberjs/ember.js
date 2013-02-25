@@ -1,5 +1,23 @@
 module("Ember.ObjectProxy");
 
+testBoth("should not proxy properties passed to create", function (get, set) {
+  var Proxy = Ember.ObjectProxy.extend({
+    cp: Ember.computed(function (key, value) {
+      if (value) {
+        this._cp = value;
+      }
+      return this._cp;
+    })
+  });
+  var proxy = Proxy.create({
+    prop: 'Foo',
+    cp: 'Bar'
+  });
+
+  equal(get(proxy, 'prop'), 'Foo', 'should not have tried to proxy set');
+  equal(proxy._cp, 'Bar', 'should use CP setter');
+});
+
 testBoth("should proxy properties to content", function(get, set) {
   var content = {
         firstName: 'Tom',
