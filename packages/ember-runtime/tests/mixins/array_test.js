@@ -66,6 +66,14 @@ Ember.ArrayTests.extend({
 
 }).run();
 
+test("the return value of slice has Ember.Array applied", function(){
+  var x = Ember.Object.createWithMixins(Ember.Array, {
+    length: 0
+  });
+  var y = x.slice(1);
+  equal(Ember.Array.detect(y), true, "mixin should be applied");
+});
+
 // ..........................................................
 // CONTENT DID CHANGE
 //
