@@ -26,14 +26,6 @@ var obj, obj1, don, don1 ; // global variables
 
 var get = Ember.get, set = Ember.set;
 
-function inArray(item, array) {
-  var len = array.length, idx;
-  for (idx=0; idx<len; idx++) {
-    if (array[idx] === item) { return idx; }
-  }
-  return -1;
-}
-
 module("A new Ember.Object instance", {
 
   setup: function() {
