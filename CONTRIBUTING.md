@@ -63,7 +63,7 @@ then that will speed the process along.
 # Building Ember.js
 
 The stack needed to build emberjs can be quite complex to setup for new developers. A VagrantFile is here to ease things for newcomers.
-Using Vagrant to buid latest version of Ember.js is quite simple. Just follow nexts 4 steps:
+Using Vagrant to build latest version of Ember.js is quite simple. Just follow nexts 4 steps:
 
 1. Install Virtual Box - [Download](https://www.virtualbox.org/wiki/Downloads)
 
