@@ -170,6 +170,7 @@ CoreObject.PrototypeMixin = Mixin.create({
     ```javascript
     App.Person = Ember.Object.extend({
       init: function() {
+        this._super();
         alert('Name is ' + this.get('name'));
       }
     });
@@ -181,21 +182,12 @@ CoreObject.PrototypeMixin = Mixin.create({
     // alerts 'Name is Steve'.
     ```
 
-    NOTE: If you do end override init for a framework class like `Ember.View` or
+    NOTE: If you do override `init` for a framework class like `Ember.View` or
     `Ember.ArrayController`, be sure to call `this._super()` in your
     `init` declaration! If you don't, Ember may not have an opportunity to
     do important setup work, and you'll see strange behavior in your
     application.
 
-    ```javascript
-    App.PersonController = Ember.ArrayController.extend({
-      // called when Ember sets up an instance of your PersonController,
-      // or when created using App.PersonController.create()
-      init: function(){
-        this._super();
-        alert('This is how you override init');
-      }
-    });
     ```
 
     @method init
