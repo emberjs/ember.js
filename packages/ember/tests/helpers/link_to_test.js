@@ -119,6 +119,41 @@ test("The {{linkTo}} helper supports URL replacement", function() {
   equal(replaceCount, 1, 'replaceURL should be called once');
 });
 
+test("The {{linkTo}} helper refreshes href element when one of params changes", function() {
+  Router.map(function() {
+    this.route('post', { path: '/posts/:post_id' });
+  });
+
+  var post = Ember.Object.create({id: '1'}),
+      secondPost = Ember.Object.create({id: '2'});
+
+  App.PostRoute = Ember.Route.extend({
+    model: function(params) {
+      return post;
+    },
+
+    serialize: function(post) {
+      return { post_id: post.get('id') };
+    }
+  });
+
+  Ember.TEMPLATES.index = compile('{{#linkTo "post" post id="post"}}post{{/linkTo}}');
+
+  App.IndexController = Ember.Controller.extend();
+  var indexController = container.lookup('controller:index');
+  indexController.set('post', post);
+
+  bootApplication();
+
+  Ember.run(function() { router.handleURL("/"); });
+
+  equal(Ember.$('#post', '#qunit-fixture').attr('href'), '/posts/1', 'precond - Link has rendered href attr properly');
+
+  indexController.set('post', secondPost);
+
+  equal(Ember.$('#post', '#qunit-fixture').attr('href'), '/posts/2', 'href attr was updated after one of the params had been changed');
+});
+
 test("The {{linkTo}} helper supports a custom activeClass", function() {
   Ember.TEMPLATES.index = Ember.Handlebars.compile("<h3>Home</h3>{{#linkTo about id='about-link'}}About{{/linkTo}}{{#linkTo index id='self-link' activeClass='zomg-active'}}Self{{/linkTo}}");
 
