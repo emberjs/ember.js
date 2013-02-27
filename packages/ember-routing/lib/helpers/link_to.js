@@ -66,6 +66,31 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     attributeBindings: ['href', 'title'],
     classNameBindings: 'active',
 
+    init: function() {
+      this._super.apply(this, arguments);
+
+      var params = this.parameters.params,
+          length = params.length,
+          context = this.parameters.context,
+          self = this,
+          path;
+
+      set(this, 'paramsContext', context);
+
+      var observer = function() {
+        this.notifyPropertyChange('href');
+      };
+
+      for(var i=0; i < length; i++) {
+        path = 'paramsContext';
+        if(params[i] !== '') {
+          path += '.' + params[i];
+        }
+
+        Ember.addObserver(this, path, this, observer);
+      }
+    },
+
     // Even though this isn't a virtual view, we want to treat it as if it is
     // so that you can access the parent with {{view.prop}}
     concreteView: Ember.computed(function() {
