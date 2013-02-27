@@ -161,6 +161,45 @@ CoreObject.PrototypeMixin = Mixin.create({
 
   isInstance: true,
 
+  /**
+    An overridable method called when objects are instantiated. By default,
+    does nothing unless it is overridden during class definition.
+
+    Example:
+
+    ```javascript
+    App.Person = Ember.Object.extend({
+      init: function() {
+        alert('Name is ' + this.get('name'));
+      }
+    });
+
+    var steve = App.Person.create({
+      name: "Steve"
+    });
+
+    // alerts 'Name is Steve'.
+    ```
+
+    NOTE: If you do end override init for a framework class like `Ember.View` or
+    `Ember.ArrayController`, be sure to call `this._super()` in your
+    `init` declaration! If you don't, Ember may not have an opportunity to
+    do important setup work, and you'll see strange behavior in your
+    application.
+
+    ```javascript
+    App.PersonController = Ember.ArrayController.extend({
+      // called when Ember sets up an instance of your PersonController,
+      // or when created using App.PersonController.create()
+      init: function(){
+        this._super();
+        alert('This is how you override init');
+      }
+    });
+    ```
+
+    @method init
+  */
   init: function() {},
 
   /**
