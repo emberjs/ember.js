@@ -385,6 +385,38 @@ Mixin.finishPartial = finishPartial;
 Ember.anyUnprocessedMixins = false;
 
 /**
+  Creates an instance of a class. Accepts either no arguments, or an object
+  containing values to initialize the newly instantiated object with.
+  
+  ```javascript
+  App.Person = Ember.Object.extend({
+    helloWorld: function() {
+      alert("Hi, my name is " + this.get('name'));
+    }
+  });
+
+  var tom = App.Person.create({
+    name: 'Tom Dale'
+  });
+
+  tom.helloWorld(); // alerts "Hi, my name is Tom Dale".
+  ```
+
+  `create` will call the `init` function if defined during
+  `Ember.AnyObject.extend`
+
+  If no arguments are passed to `create`, it will not set values to the new
+  instance during initialization:
+
+  ```javascript
+  var noName = App.Person.create();
+  noName.helloWorld(); // alerts undefined
+  ```
+
+  NOTE: For performance reasons, you cannot declare methods or computed
+  properties during `create`. You should instead declare methods and computed
+  properties when using `extend`.
+
   @method create
   @static
   @param arguments*
