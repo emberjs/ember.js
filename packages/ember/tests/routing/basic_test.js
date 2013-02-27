@@ -1552,3 +1552,25 @@ test("Generating a URL should not affect currentModel", function() {
 
   equal(route.modelFor('post'), posts[1]);
 });
+
+
+test("Generated route should be an instance of App.Route if provided", function() {
+  var generatedRoute;
+
+  Router.map(function() {
+    this.route('posts');
+  });
+
+  App.Route = Ember.Route.extend();
+
+  bootApplication();
+
+  Ember.run(function() {
+    router.handleURL("/posts");
+  });
+
+  generatedRoute = container.lookup('route:posts');
+
+  ok(generatedRoute instanceof App.Route, 'should extend the correct route');
+
+});
