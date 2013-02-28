@@ -206,3 +206,51 @@ test("classNameBindings lifecycle test", function(){
 
   equal(Ember.isWatching(view, 'priority'), false);
 });
+
+test("classNameBindings should not fail if view has been removed", function(){
+  Ember.run(function(){
+    view = Ember.View.create({
+      classNameBindings: ['priority'],
+      priority: 'high'
+    });
+  });
+  Ember.run(function(){
+    view.createElement();
+  });
+  var error;
+  try {
+    Ember.run(function(){
+      Ember.changeProperties(function(){
+        view.set('priority', 'low');
+        view.remove();
+      });
+    });
+  } catch(e) {
+    error = e;
+  }
+  ok(!error, error);
+});
+
+test("classNameBindings should not fail if view has been destroyed", function(){
+  Ember.run(function(){
+    view = Ember.View.create({
+      classNameBindings: ['priority'],
+      priority: 'high'
+    });
+  });
+  Ember.run(function(){
+    view.createElement();
+  });
+  var error;
+  try {
+    Ember.run(function(){
+      Ember.changeProperties(function(){
+        view.set('priority', 'low');
+        view.destroy();
+      });
+    });
+  } catch(e) {
+    error = e;
+  }
+  ok(!error, error);
+});
