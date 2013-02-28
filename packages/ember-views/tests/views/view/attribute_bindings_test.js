@@ -206,3 +206,50 @@ test("handles attribute bindings for properties", function() {
 
   equal(view.$().prop('checked'), false, 'changes to unchecked');
 });
+test("attributeBindings should not fail if view has been removed", function(){
+  Ember.run(function(){
+    view = Ember.View.create({
+      attributeBindings: ['checked'],
+      checked: true
+    });
+  });
+  Ember.run(function(){
+    view.createElement();
+  });
+  var error;
+  try {
+    Ember.run(function(){
+      Ember.changeProperties(function(){
+        view.set('checked', false);
+        view.remove();
+      });
+    });
+  } catch(e) {
+    error = e;
+  }
+  ok(!error, error);
+});
+
+test("attributeBindings should not fail if view has been destroyed", function(){
+  Ember.run(function(){
+    view = Ember.View.create({
+      attributeBindings: ['checked'],
+      checked: true
+    });
+  });
+  Ember.run(function(){
+    view.createElement();
+  });
+  var error;
+  try {
+    Ember.run(function(){
+      Ember.changeProperties(function(){
+        view.set('checked', false);
+        view.destroy();
+      });
+    });
+  } catch(e) {
+    error = e;
+  }
+  ok(!error, error);
+});

@@ -1285,7 +1285,6 @@ Ember.View = Ember.CoreView.extend(
       // JavaScript property changes.
       var observer = function() {
         elem = this.$();
-        if (!elem) { return; }
 
         attributeValue = get(this, property);
 
@@ -2153,10 +2152,18 @@ Ember.View = Ember.CoreView.extend(
   },
 
   registerObserver: function(root, path, target, observer) {
-    Ember.addObserver(root, path, target, observer);
+    if (!observer && 'function' === typeof target) {
+      observer = target;
+      target = null;
+    }
+    var view = this,
+        stateCheckedObserver = function(){
+          view.currentState.invokeObserver(this, observer);
+        };
+    Ember.addObserver(root, path, target, stateCheckedObserver);
 
     this.one('willClearRender', function() {
-      Ember.removeObserver(root, path, target, observer);
+      Ember.removeObserver(root, path, target, stateCheckedObserver);
     });
   }
 
