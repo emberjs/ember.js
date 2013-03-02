@@ -20,10 +20,10 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     The default target for `{{action}}`s in the rendered template is the
     named controller.
 
-    @method action
+    @method render
     @for Ember.Handlebars.helpers
-    @param {String} actionName
-    @param {Object?} model
+    @param {String} name
+    @param {Object?} contextString
     @param {Hash} options
   */
   Ember.Handlebars.registerHelper('render', function(name, contextString, options) {
