@@ -216,6 +216,17 @@ var Application = Ember.Application = Ember.Namespace.extend({
 
   isInitialized: false,
 
+  /**
+    Should the application initialize itself after it's created. You can
+    set this to `false` if you'd like to choose when to initialize your 
+    application. This defaults to `!Ember.testing`
+
+    @property autoinit
+    @type Boolean
+    @default true
+  */
+  autoinit: !Ember.testing,
+
   // Start off the number of deferrals at 1. This will be
   // decremented by the Application's own `initialize` method.
   _readinessDeferrals: 1,
@@ -229,7 +240,7 @@ var Application = Ember.Application = Ember.Namespace.extend({
 
     this._super();
 
-    if (!Ember.testing || Ember.testingDeferred) {
+    if (this.autoinit || Ember.testingDeferred) {
       this.scheduleInitialize();
     }
 
