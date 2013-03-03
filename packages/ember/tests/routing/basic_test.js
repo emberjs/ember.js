@@ -800,6 +800,88 @@ asyncTest("Events are triggered on the controller if a matching action name is i
   action.handler(event);
 });
 
+asyncTest("Events can be registered inline on the Route", function() {
+  Router.map(function() {
+    this.route("home", { path: "/" });
+  });
+
+  var model = { name: "Tom Dale" };
+
+  App.HomeRoute = Ember.Route.extend({
+    model: function() {
+      return model;
+    },
+
+    showStuff: Ember.Route.event(function(obj) {
+      ok(this instanceof App.HomeRoute, "the handler is an App.HomeRoute");
+      // Using Ember.copy removes any private Ember vars which older IE would be confused by
+      deepEqual(Ember.copy(obj, true), { name: "Tom Dale" }, "the context is correct");
+      start();
+    })
+  });
+
+  Ember.TEMPLATES.home = Ember.Handlebars.compile(
+    "<a {{action showStuff content}}>{{name}}</a>"
+  );
+
+  bootApplication();
+
+  container.register('controller', 'home', Ember.Controller.extend());
+
+  Ember.run(function() {
+    router.handleURL("/");
+  });
+
+  var actionId = Ember.$("#qunit-fixture a").data("ember-action");
+  var action = Ember.Handlebars.ActionHelper.registeredActions[actionId];
+  var event = new Ember.$.Event("click");
+  action.handler(event);
+});
+
+asyncTest("Inline Route events can be inherited and have _super called", function() {
+  Router.map(function() {
+    this.route("home", { path: "/" });
+  });
+
+  var model = { name: "Tom Dale" };
+  var superWasCalled = false;
+
+  App.BaseRoute = Ember.Route.extend({
+    showStuff: Ember.Route.event(function(obj) {
+      superWasCalled = true;
+    })
+  });
+
+  App.HomeRoute = App.BaseRoute.extend({
+    model: function() {
+      return model;
+    },
+
+    showStuff: Ember.Route.event(function(obj) {
+      this._super(obj);
+      ok(superWasCalled, "event super was called");
+      start();
+    })
+  });
+
+  Ember.TEMPLATES.home = Ember.Handlebars.compile(
+    "<a {{action showStuff content}}>{{name}}</a>"
+  );
+
+  bootApplication();
+
+  container.register('controller', 'home', Ember.Controller.extend());
+
+  Ember.run(function() {
+    router.handleURL("/");
+  });
+
+  var actionId = Ember.$("#qunit-fixture a").data("ember-action");
+  var action = Ember.Handlebars.ActionHelper.registeredActions[actionId];
+  var event = new Ember.$.Event("click");
+  action.handler(event);
+});
+
 asyncTest("Events are triggered on the current state", function() {
   Router.map(function() {
     this.route("home", { path: "/" });
