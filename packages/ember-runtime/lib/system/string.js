@@ -145,13 +145,14 @@ Ember.String = {
   */
   dasherize: function(str) {
     var cache = STRING_DASHERIZE_CACHE,
-        ret   = cache[str];
+        key   = ':' + str,
+        ret   = cache[key];
 
     if (ret) {
       return ret;
     } else {
       ret = Ember.String.decamelize(str).replace(STRING_DASHERIZE_REGEXP,'-');
-      cache[str] = ret;
+      cache[key] = ret;
     }
 
     return ret;
