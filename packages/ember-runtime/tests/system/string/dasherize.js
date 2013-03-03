@@ -28,6 +28,13 @@ test("dasherize camelcased string", function() {
   }
 });
 
+test("dasherize string that is the property name of Object.prototype", function() {
+  deepEqual(Ember.String.dasherize('toString'), 'to-string');
+  if (Ember.EXTEND_PROTOTYPES) {
+    deepEqual('toString'.dasherize(), 'to-string');
+  }
+});
+
 test("after call with the same passed value take object from cache", function() {
   var res = Ember.String.dasherize('innerHTML');
 
