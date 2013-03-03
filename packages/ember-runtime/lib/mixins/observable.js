@@ -3,7 +3,7 @@
 @submodule ember-runtime
 */
 
-var get = Ember.get, set = Ember.set, defineProperty = Ember.defineProperty;
+var get = Ember.get, set = Ember.set;
 
 /**
   ## Overview
