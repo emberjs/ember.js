@@ -231,7 +231,7 @@ var run = Ember.run;
 /**
   Begins a new RunLoop. Any deferred actions invoked after the begin will
   be buffered until you invoke a matching call to `Ember.run.end()`. This is
-  an lower-level way to use a RunLoop instead of using `Ember.run()`.
+  a lower-level way to use a RunLoop instead of using `Ember.run()`.
 
   ```javascript
   Ember.run.begin();
@@ -277,9 +277,9 @@ Ember.run.end = function() {
 
   @property queues
   @type Array
-  @default ['sync', 'actions', 'destroy', 'timers']
+  @default ['sync', 'actions', 'destroy']
 */
-Ember.run.queues = ['sync', 'actions', 'destroy', 'timers'];
+Ember.run.queues = ['sync', 'actions', 'destroy'];
 
 /**
   Adds the passed target/method and any optional arguments to the named
@@ -292,19 +292,19 @@ Ember.run.queues = ['sync', 'actions', 'destroy', 'timers'];
   the `run.queues` property.
 
   ```javascript
-  Ember.run.schedule('timers', this, function(){
-    // this will be executed at the end of the RunLoop, when timers are run
-    console.log("scheduled on timers queue");
+  Ember.run.schedule('sync', this, function(){
+    // this will be executed in the first RunLoop queue, when bindings are synced
+    console.log("scheduled on sync queue");
   });
 
-  Ember.run.schedule('sync', this, function(){
-    // this will be executed at the end of the RunLoop, when bindings are synced
-    console.log("scheduled on sync queue");
+  Ember.run.schedule('actions', this, function(){
+    // this will be executed in the 'actions' queue, after bindings have synced.
+    console.log("scheduled on actions queue");
   });
 
   // Note the functions will be run in order based on the run queues order. Output would be:
   //   scheduled on sync queue
-  //   scheduled on timers queue
+  //   scheduled on actions queue
   ```
 
   @method schedule
@@ -330,7 +330,7 @@ function autorun() {
 
 // Used by global test teardown
 Ember.run.hasScheduledTimers = function() {
-  return !!(scheduledAutorun || scheduledLater || scheduledNext);
+  return !!(scheduledAutorun || scheduledLater);
 };
 
 // Used by global test teardown
@@ -342,10 +342,6 @@ Ember.run.cancelTimers = function () {
   if (scheduledLater) {
     clearTimeout(scheduledLater);
     scheduledLater = null;
-  }
-  if (scheduledNext) {
-    clearTimeout(scheduledNext);
-    scheduledNext = null;
   }
   timers = {};
 };
@@ -381,7 +377,8 @@ Ember.run.autorun = function() {
   bindings in the application to sync.
 
   You should call this method anytime you need any changed state to propagate
-  throughout the app immediately without repainting the UI.
+  throughout the app immediately without repainting the UI (which happens
+  in the later 'render' queue added by the `ember-views` package).
 
   ```javascript
   Ember.run.sync();
@@ -401,25 +398,30 @@ Ember.run.sync = function() {
 
 var timers = {}; // active timers...
 
-var scheduledLater;
+var scheduledLater, scheduledLaterExpires;
 function invokeLaterTimers() {
   scheduledLater = null;
-  var now = (+ new Date()), earliest = -1;
-  for (var key in timers) {
-    if (!timers.hasOwnProperty(key)) { continue; }
-    var timer = timers[key];
-    if (timer && timer.expires) {
-      if (now >= timer.expires) {
-        delete timers[key];
-        invoke(timer.target, timer.method, timer.args, 2);
-      } else {
-        if (earliest<0 || (timer.expires < earliest)) earliest=timer.expires;
+  run(function() {
+    var now = (+ new Date()), earliest = -1;
+    for (var key in timers) {
+      if (!timers.hasOwnProperty(key)) { continue; }
+      var timer = timers[key];
+      if (timer && timer.expires) {
+        if (now >= timer.expires) {
+          delete timers[key];
+          invoke(timer.target, timer.method, timer.args, 2);
+        } else {
+          if (earliest < 0 || (timer.expires < earliest)) { earliest = timer.expires; }
+        }
       }
     }
-  }
 
-  // schedule next timeout to fire...
-  if (earliest > 0) { scheduledLater = setTimeout(invokeLaterTimers, earliest-(+ new Date())); }
+    // schedule next timeout to fire when the earliest timer expires
+    if (earliest > 0) { 
+      scheduledLater = setTimeout(invokeLaterTimers, earliest - now); 
+      scheduledLaterExpires = earliest;
+    }
+  });
 }
 
 /**
@@ -467,7 +469,19 @@ Ember.run.later = function(target, method) {
   timer   = { target: target, method: method, expires: expires, args: args };
   guid    = Ember.guidFor(timer);
   timers[guid] = timer;
-  run.once(timers, invokeLaterTimers);
+    
+  if(scheduledLater && expires < scheduledLaterExpires) {
+    // Cancel later timer (then reschedule earlier timer below)
+    clearTimeout(scheduledLater);
+    scheduledLater = null;
+  }
+
+  if (!scheduledLater) { 
+    // Schedule later timers to be run.
+    scheduledLater = setTimeout(invokeLaterTimers, wait);
+    scheduledLaterExpires = expires;
+  } 
+
   return guid;
 };
 
@@ -554,22 +568,9 @@ Ember.run.scheduleOnce = function(queue, target, method, args) {
   return scheduleOnce(queue, target, method, slice.call(arguments, 3));
 };
 
-var scheduledNext;
-function invokeNextTimers() {
-  scheduledNext = null;
-  for(var key in timers) {
-    if (!timers.hasOwnProperty(key)) { continue; }
-    var timer = timers[key];
-    if (timer.next) {
-      delete timers[key];
-      invoke(timer.target, timer.method, timer.args, 2);
-    }
-  }
-}
-
 /**
   Schedules an item to run after control has been returned to the system.
-  This is often equivalent to calling `setTimeout(function() {}, 1)`.
+  This is equivalent to calling `Ember.run.later` with a wait time of 1ms. 
 
   ```javascript
   Ember.run.next(myContext, function(){
@@ -585,20 +586,10 @@ function invokeNextTimers() {
   @param {Object} [args*] Optional arguments to pass to the timeout.
   @return {Object} timer
 */
-Ember.run.next = function(target, method) {
-  var guid,
-      timer = {
-        target: target,
-        method: method,
-        args: slice.call(arguments),
-        next: true
-      };
-
-  guid = Ember.guidFor(timer);
-  timers[guid] = timer;
-
-  if (!scheduledNext) { scheduledNext = setTimeout(invokeNextTimers, 1); }
-  return guid;
+Ember.run.next = function() {
+  var args = slice.call(arguments);
+  args.push(1); // 1 millisecond wait
+  return run.later.apply(this, args);
 };
 
 /**
