@@ -240,7 +240,7 @@ var Application = Ember.Application = Ember.Namespace.extend({
 
     this._super();
 
-    if (this.autoinit || Ember.testingDeferred) {
+    if (this.autoinit) {
       this.scheduleInitialize();
     }
 
