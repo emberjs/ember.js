@@ -257,3 +257,39 @@ test("event manager should be able to re-dispatch events to view", function() {
   Ember.$('#nestedView').trigger('mousedown');
   equal(receivedEvent, 2, "event should go to manager and not view");
 });
+
+test("should pass along any additional arguments it receives", function() {
+  var viewString1 = "";
+  var viewString2 = "";
+  var managerString1 = "";
+  var managerString2 = "";
+
+  var messageArgument1 = "additional argument1";
+  var messageArgument2 = "additional argument2";
+
+  view = Ember.ContainerView.createWithMixins({
+    elementId: 'containerView',
+    mouseDown: function(evt, additionalArgument1, additionalArgument2) {
+      viewString1 = additionalArgument1;
+      viewString2 = additionalArgument2;
+    },
+    eventManager: Ember.Object.create({
+      click: function(event, view, additionalArgument1, additionalArgument2){
+        managerString1 = additionalArgument1;
+        managerString2 = additionalArgument2;
+      }
+    })
+  });
+
+  Ember.run(function() { view.append(); });
+
+  //Will set the view strings
+  Ember.$('#containerView').trigger('mousedown', [messageArgument1, messageArgument2]);
+  equal(viewString1, messageArgument1, "additional parameters should be passed on");
+  equal(viewString2, messageArgument2, "additional parameters should be passed on");
+
+  //Will set the manager strings
+  Ember.$('#containerView').trigger('click', [messageArgument1, messageArgument2]);
+  equal(managerString1, messageArgument1, "additional parameters should be passed on");
+  equal(managerString2, messageArgument2, "additional parameters should be passed on");
+});
