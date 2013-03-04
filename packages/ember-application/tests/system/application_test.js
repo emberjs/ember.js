@@ -225,8 +225,9 @@ test("Minimal Application initialized with just an application template", functi
   equal(trim(Ember.$('#qunit-fixture').text()), 'Hello World');
 });
 
-test('log version of libraries by default', function() {
+test('enable log  of libraries with an ENV var', function() {
   var debug = Ember.debug;
+  Ember.LOG_VERSION = true;
 
   Ember.debug = function(message) {
     ok(true, 'libraries versions logged');
@@ -246,6 +247,7 @@ test('log version of libraries by default', function() {
     app.initialize();
   });
 
+  Ember.LOG_VERSION = false;
   Ember.debug = debug;
 });
 

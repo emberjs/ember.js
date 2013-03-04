@@ -16,7 +16,7 @@ GIT
 
 GIT
   remote: https://github.com/livingsocial/rake-pipeline.git
-  revision: ee992cbcda5172075062be035bcbef2cf1b0ff5d
+  revision: 65b1e744defa208e313703d89f3453447cc103b2
   specs:
     rake-pipeline (0.8.0)
       json
