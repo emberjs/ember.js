@@ -234,6 +234,7 @@ var Application = Ember.Application = Ember.Namespace.extend({
     }
 
     if ( Ember.LOG_VERSION ) {
+      Ember.LOG_VERSION = false; // we only need to see this once per Application#init
       Ember.debug('-------------------------------');
       Ember.debug('Ember.VERSION : ' + Ember.VERSION);
       Ember.debug('Handlebars.VERSION : ' + Ember.Handlebars.VERSION);
