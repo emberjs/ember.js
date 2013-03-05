@@ -35,6 +35,7 @@ Ember.TextSupport = Ember.Mixin.create({
     this.on("cut", this, this._elementValueDidChange);
     this.on("input", this, this._elementValueDidChange);
     this.on("keyUp", this, this.interpretKeyEvents);
+    this.on("didInsertElement", this, this._updateElementValue);
   },
 
   interpretKeyEvents: function(event) {
@@ -47,8 +48,16 @@ Ember.TextSupport = Ember.Mixin.create({
 
   _elementValueDidChange: function() {
     set(this, 'value', this.$().val());
-  }
+  },
 
+  _updateElementValue: Ember.observer(function() {
+    // We do this check so cursor position doesn't get affected in IE
+    var value = get(this, 'value'),
+        $el = this.$();
+    if ($el && value !== $el.val()) {
+      $el.val(value);
+    }
+  }, 'value')
 });
 
 Ember.TextSupport.KEY_EVENTS = {

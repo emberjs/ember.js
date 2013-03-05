@@ -146,6 +146,27 @@ test("value binding works properly for inputs that haven't been created", functi
   equal(textArea.$().val(), 'ohai', "value is reflected in the input element once it is created");
 });
 
+test("input value is updated when setting content property of view", function() {
+  Ember.run(function() {
+    textArea.destroy();
+    textArea = Ember.TextArea.createWithMixins({
+      valueBinding: 'TestObject.content.value'
+    });
+    set(TestObject, 'content', Ember.Object.create({
+      value: 'foo'
+    }));
+    textArea.append();
+  });
+
+  equal(textArea.$().val(), "foo", "renders text field with value");
+
+  Ember.run(function() {
+    set(TestObject, 'content', Ember.Object.create({}));
+  });
+
+  equal(textArea.$().val(), '', "updates text field after content changes without value property");
+});
+
 [ 'cut', 'paste', 'input' ].forEach(function(eventName) {
   test("should update the value on " + eventName + " events", function() {
 
