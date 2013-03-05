@@ -206,6 +206,24 @@ test("handles attribute bindings for properties", function() {
 
   equal(view.$().prop('checked'), false, 'changes to unchecked');
 });
+
+test("handles `undefined` value for properties", function() {
+  view = Ember.View.create({
+    attributeBindings: ['value'],
+    value: "test"
+  });
+
+  appendView();
+
+  equal(view.$().prop('value'), "test", "value is defined");
+
+  Ember.run(function() {
+    view.set('value', undefined);
+  });
+
+  equal(!!view.$().prop('value'), false, "value is not defined");
+});
+
 test("attributeBindings should not fail if view has been removed", function(){
   Ember.run(function(){
     view = Ember.View.create({
