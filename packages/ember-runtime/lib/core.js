@@ -106,34 +106,6 @@ Ember.isNone = function(obj) {
 };
 Ember.none = Ember.deprecateFunc("Ember.none is deprecated. Please use Ember.isNone instead.", Ember.isNone);
 
-/**
-  Verifies that a value is `null` or an empty string, empty array,
-  or empty function.
-
-  Constrains the rules on `Ember.isNone` by returning false for empty
-  string and empty arrays.
-
-  ```javascript
-  Ember.isEmpty();                // true
-  Ember.isEmpty(null);            // true
-  Ember.isEmpty(undefined);       // true
-  Ember.isEmpty('');              // true
-  Ember.isEmpty([]);              // true
-  Ember.isEmpty('Adam Hawkins');  // false
-  Ember.isEmpty([0,1,2]);         // false
-  ```
-
-  @method isEmpty
-  @for Ember
-  @param {Object} obj Value to test
-  @return {Boolean}
-*/
-Ember.isEmpty = function(obj) {
-  return obj === null || obj === undefined || (obj.length === 0 && typeof obj !== 'function') || (typeof obj === 'object' && Ember.get(obj, 'length') === 0);
-};
-Ember.empty = Ember.deprecateFunc("Ember.empty is deprecated. Please use Ember.isEmpty instead.", Ember.isEmpty) ;
-
-/**
  This will compare two javascript values of possibly different types.
  It will tell you which one is greater than the other by returning:
 
