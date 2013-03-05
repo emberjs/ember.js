@@ -38,7 +38,9 @@ Ember.Router = Ember.Object.extend({
 
   init: function() {
     this.router = this.constructor.router;
-    this.router.loader = this.loader || this.router.loader 
+    if (this.router) {
+      this.router.loader = this.loader || this.router.loader;
+    }
     this._activeViews = {};
     setupLocation(this);
   },
@@ -63,7 +65,7 @@ Ember.Router = Ember.Object.extend({
     location.onUpdateURL(function(url) {
       self.handleURL(url);
     });
-
+debugger;
     this.handleURL(location.getURL());
   },
 
