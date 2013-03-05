@@ -213,7 +213,7 @@ Ember.Route = Ember.Object.extend({
         namespace = this.router.namespace,
         modelClass = namespace[className];
 
-    Ember.assert("You used the dynamic segment " + name + "_id in your router, but " + namespace + "." + className + " did not exist and you did not override your state's `model` hook.", modelClass);
+    Ember.assert("You used the dynamic segment " + name + "_id in your router, but " + namespace + "." + className + " did not exist and you did not override your route's `model` hook.", modelClass);
     return modelClass.find(value);
   },
 
