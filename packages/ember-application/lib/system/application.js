@@ -681,11 +681,11 @@ function normalize(fullName) {
     var result = name;
 
     if (result.indexOf('.') > -1) {
-      result = result.replace(/\.(.)/g, function(m) { return m[1].toUpperCase(); });
+      result = result.replace(/\.(.)/g, function(m) { return m.charAt(1).toUpperCase(); });
     }
 
     if (name.indexOf('_') > -1) {
-      result = result.replace(/_(.)/g, function(m) { return m[1].toUpperCase(); });
+      result = result.replace(/_(.)/g, function(m) { return m.charAt(1).toUpperCase(); });
     }
 
     return type + ':' + result;
