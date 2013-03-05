@@ -1,10 +1,11 @@
 GIT
   remote: https://github.com/emberjs/ember-dev.git
-  revision: 9e2b101001e417cf762ebccb13413515d2788705
+  revision: a0e3e6816bfd093d7a732b77d7f08395ab48a61e
   branch: master
   specs:
     ember-dev (0.1)
       colored
+      ember-source
       execjs
       grit
       handlebars-source
@@ -28,6 +29,8 @@ GEM
   specs:
     colored (1.2)
     diff-lcs (1.2.1)
+    ember-source (0.0.1)
+      handlebars-source (>= 1.0.0.rc3, < 1.0.0.rc4)
     execjs (1.4.0)
       multi_json (~> 1.0)
     grit (2.5.0)
@@ -38,7 +41,7 @@ GEM
     json (1.7.7)
     kicker (2.6.1)
       listen
-    listen (0.7.2)
+    listen (0.7.3)
     mime-types (1.21)
     multi_json (1.6.1)
     posix-spawn (0.3.6)
