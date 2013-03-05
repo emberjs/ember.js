@@ -38,6 +38,7 @@ Ember.Router = Ember.Object.extend({
 
   init: function() {
     this.router = this.constructor.router;
+    this.router.loader = this.loader || this.router.loader 
     this._activeViews = {};
     setupLocation(this);
   },
