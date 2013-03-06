@@ -52,6 +52,49 @@ if (Ember.ENV.EXPERIMENTAL_CONTROL_HELPER) {
     Ember.assert("Could not find controller for path: " + normalizedPath, childController);
     Ember.assert("Could not find view for path: " + normalizedPath, childView);
 
+    var hash = options.hash,
+        data = options.data,
+        controllerHash = {},
+        match, propertyName,
+        propertyPath, bindingOpts;
+
+    // Go through options passed to the {{control}} helper and extract options
+    // that configure the controller instead of the view.
+    for (var prop in hash) {
+      if (hash.hasOwnProperty(prop)) {
+        match = prop.match(/^controller(.)(.*)$/);
+
+        if(match) {
+          // Convert controllerShouldFoo -> shouldFoo
+          propertyName = match[1].toLowerCase() + match[2];
+
+          // Test if the property ends in "Binding"
+          // We can't setup bindings in setProperties so we do that manually here
+          if (Ember.IS_BINDING.test(prop) && typeof hash[prop] === 'string') {
+            propertyPath = Ember.Handlebars.normalizePath(this, hash[prop], data);
+            propertyName = propertyName.replace(/Binding$/, '');
+
+            if (propertyPath) {
+              bindingOpts = {
+                parent: propertyPath.root,
+                child: childController
+              };
+              Ember.bind(bindingOpts, "child."+propertyName, "parent."+propertyPath.path);
+            }
+          } else {
+            controllerHash[propertyName] = hash[prop];
+          }
+
+          // Delete from hash as this will end up getting passed to the
+          // {{view}} helper method.
+          delete hash[prop];
+        }
+      }
+    }
+
+    // set non-binding properties, bindings are done in the above loop
+    childController.setProperties(controllerHash);
+
     set(childController, 'target', controller);
     set(childController, 'model', model);
 

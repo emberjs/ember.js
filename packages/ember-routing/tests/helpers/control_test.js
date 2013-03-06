@@ -248,4 +248,19 @@ if (Ember.ENV.EXPERIMENTAL_CONTROL_HELPER) {
       Ember.set(container.lookup('controller:bro'), 'message', 'grammer');
     });
   });
+
+  test("A control can specify options to be passed to its controller", function(){
+
+    container.register('template:widget', compile("{{name}}"));
+
+    var controller = container.lookup('controller:parent');
+    controller.set('person', { name: "Tom Dale" });
+
+    appendView({
+      controller: controller,
+      template: compile("{{control 'widget' controllerNameBinding='person.name'}}")
+    });
+
+    renderedText("Tom Dale");
+  });
 }
