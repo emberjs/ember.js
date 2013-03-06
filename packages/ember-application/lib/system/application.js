@@ -434,10 +434,12 @@ var Application = Ember.Application = Ember.Namespace.extend({
     this.runInitializers();
     Ember.runLoadHooks('application', this);
 
-    // At this point, any initializers or load hooks that would have wanted
-    // to defer readiness have fired. In general, advancing readiness here
-    // will proceed to didBecomeReady.
-    this.advanceReadiness();
+    Ember.run.next(this, function() {
+      // At this point, any initializers or load hooks that would have wanted
+      // to defer readiness have fired. In general, advancing readiness here
+      // will proceed to didBecomeReady.
+      this.advanceReadiness();
+    });
 
     return this;
   },
