@@ -83,29 +83,6 @@ Ember.typeOf = function(item) {
 };
 
 /**
-  Returns true if the passed value is null or undefined. This avoids errors
-  from JSLint complaining about use of ==, which can be technically
-  confusing.
-
-  ```javascript
-  Ember.isNone();              // true
-  Ember.isNone(null);          // true
-  Ember.isNone(undefined);     // true
-  Ember.isNone('');            // false
-  Ember.isNone([]);            // false
-  Ember.isNone(function(){});  // false
-  ```
-
-  @method isNone
-  @for Ember
-  @param {Object} obj Value to test
-  @return {Boolean}
-*/
-Ember.isNone = function(obj) {
-  return obj === null || obj === undefined;
-};
-Ember.none = Ember.deprecateFunc("Ember.none is deprecated. Please use Ember.isNone instead.", Ember.isNone);
-
  This will compare two javascript values of possibly different types.
  It will tell you which one is greater than the other by returning:
 

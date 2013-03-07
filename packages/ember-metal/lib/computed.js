@@ -430,6 +430,18 @@ Ember.computed.not = function(dependentKey) {
 };
 
 /**
+  @method computed.none
+  @for Ember
+  @param {String} dependentKey
+*/
+Ember.computed.none = function(dependentKey) {
+  return Ember.computed(dependentKey, function(key) {
+    var val = get(this, dependentKey);
+    return Ember.isNone(val);
+  });
+};
+
+/**
   @method computed.empty
   @for Ember
   @param {String} dependentKey
