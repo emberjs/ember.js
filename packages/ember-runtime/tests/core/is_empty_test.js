@@ -1,4 +1,3 @@
-require('ember-metal/core');
 module("Ember.isEmpty");
 
 test("Ember.isEmpty", function() {
