@@ -38,6 +38,14 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     return ret.concat(resolvedPaths(linkView.parameters));
   }
 
+  var _createPath = function(path) {
+    var fullPath = 'paramsContext';
+    if(path !== '') {
+      fullPath += '.' + path;
+    }
+    return fullPath;
+  };
+
   var LinkView = Ember.View.extend({
     tagName: 'a',
     namedRoute: null,
@@ -55,21 +63,28 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
           length = params.length,
           context = this.parameters.context,
           self = this,
-          path;
+          path, paths = Ember.A([]), i;
 
       set(this, 'paramsContext', context);
 
-      var observer = function() {
-        this.notifyPropertyChange('href');
+      for(i=0; i < length; i++) {
+        paths.pushObject(_createPath(params[i]));
+      }
+
+      var observer = function(object, path) {
+        var notify = true, i;
+        for(i=0; i < paths.length; i++) {
+          if(!get(this, paths[i])) {
+            notify = false;
+          }
+        }
+        if(notify) {
+          this.notifyPropertyChange('href');
+        }
       };
 
-      for(var i=0; i < length; i++) {
-        path = 'paramsContext';
-        if(params[i] !== '') {
-          path += '.' + params[i];
-        }
-
-        Ember.addObserver(this, path, this, observer);
+      for(i=0; i < length; i++) {
+        Ember.addObserver(this, paths[i], this, observer);
       }
     },
 
