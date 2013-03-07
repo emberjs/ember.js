@@ -39,6 +39,12 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
       eventName: options.eventName,
       handler: function(event) {
         if (!isSimpleClick(event)) { return true; }
+
+        var element = Ember.$(event.target);
+        if (element.attr("disabled")) {
+          return true;
+        }
+
         event.preventDefault();
 
         if (options.bubbles === false) {
