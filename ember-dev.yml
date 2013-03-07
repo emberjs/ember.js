@@ -3,7 +3,7 @@ name: Ember
 assetfile: 'Assetfile'
 testing_suites:
   built:
-    - "package=all&dist=build"
+    - "package=all&skipPackage=container&dist=build&nojshint=true" # container isn't publicly available in the built version
   runtime:
     - "package=ember-metal,ember-runtime"
   views:
