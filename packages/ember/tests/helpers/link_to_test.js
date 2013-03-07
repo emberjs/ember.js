@@ -150,6 +150,10 @@ test("The {{linkTo}} helper refreshes href element when one of params changes", 
   indexController.set('post', secondPost);
 
   equal(Ember.$('#post', '#qunit-fixture').attr('href'), '/posts/2', 'href attr was updated after one of the params had been changed');
+
+  indexController.set('post', null);
+
+  equal(Ember.$('#post', '#qunit-fixture').attr('href'), '/posts/2', 'href attr does not change when one of the arguments in nullified');
 });
 
 test("The {{linkTo}} helper supports a custom activeClass", function() {
