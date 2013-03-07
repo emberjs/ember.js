@@ -632,4 +632,25 @@ test("it does not trigger action with special clicks", function() {
   checkClick('which', undefined, true); // IE <9
 });
 
+test("it does not trigger action with disabled element", function() {
+  var showCalled = false;
 
+  var controller = Ember.Controller.extend({
+    show: function() {
+      showCalled = true;
+    }
+  }).create();
+
+  view = Ember.View.create({
+    controller: controller,
+    template: Ember.Handlebars.compile("<button {{action show}} disabled>Hi</button>")
+  });
+
+  appendView();
+
+  var event = Ember.$.Event("click");
+  view.$('button').trigger(event);
+
+  ok(!showCalled, "should not call action with disabled element");
+  ok(!event.isDefaultPrevented(), "should not prevent default");
+});
