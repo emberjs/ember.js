@@ -35,7 +35,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
       renderTemplate: function() {
         this.render('favoritePost');
       }
-    })
+    });
     ```
 
     You can create custom named outlets for more control.
@@ -53,9 +53,9 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     App.PostsRoute = Ember.Route.extend({
       renderTemplate: function() {
         this.render('favoritePost', { outlet: 'favoritePost' });
-        this.render('posts', { outlet: 'posts' })
+        this.render('posts', { outlet: 'posts' });
       }
-    })
+    });
     ```
 
     @method outlet
