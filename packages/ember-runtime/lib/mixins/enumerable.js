@@ -70,8 +70,7 @@ function iter(key, value) {
   @extends Ember.Mixin
   @since Ember 0.9
 */
-Ember.Enumerable = Ember.Mixin.create(
-  /** @scope Ember.Enumerable.prototype */ {
+Ember.Enumerable = Ember.Mixin.create({
 
   // compatibility
   isEnumerable: true,
