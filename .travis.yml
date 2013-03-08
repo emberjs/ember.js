@@ -1,18 +1,21 @@
 ---
 rvm:
-- 1.9.3
+  - 1.9.3
 bundler_args: --without development
 before_script:
-- export DISPLAY=:99.0
-- sh -e /etc/init.d/xvfb start
+  - export DISPLAY=:99.0
+  - sh -e /etc/init.d/xvfb start
 script: rake test\[standard]
 notifications:
   campfire:
-  - secure: |-
-      ia5CUz3FeqK+s238B9ApRz1vt/qpM/WtI5HlYS7GH5WPBbC5vsSUIwV9IqM8
-      HKvTwLQKHUP5e+6I7E40/ofbQycsNSeglJ0mRRzdLe2SeN68uPsjuy5AKnpn
-      KpIzGa9OC5tZfN/RqJskLuP8QRvqNCLPyesY1E5GM7lTKYa92PM=
+    rooms:
+      - secure: |-
+          ia5CUz3FeqK+s238B9ApRz1vt/qpM/WtI5HlYS7GH5WPBbC5vsSUIwV9IqM8
+          HKvTwLQKHUP5e+6I7E40/ofbQycsNSeglJ0mRRzdLe2SeN68uPsjuy5AKnpn
+          KpIzGa9OC5tZfN/RqJskLuP8QRvqNCLPyesY1E5GM7lTKYa92PM=
+    on_success: change
+    on_failure: always
 branches:
   except:
-  - latest-builds
-  - release-builds
+    - latest-builds
+    - release-builds
