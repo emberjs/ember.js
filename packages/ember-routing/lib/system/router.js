@@ -65,7 +65,7 @@ Ember.Router = Ember.Object.extend({
     location.onUpdateURL(function(url) {
       self.handleURL(url);
     });
-debugger;
+    
     this.handleURL(location.getURL());
   },
 
