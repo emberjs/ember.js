@@ -7,7 +7,6 @@ before_script:
 - sh -e /etc/init.d/xvfb start
 script: rake test\[standard]
 notifications:
-  webhooks: http://emberjs-master-builds.herokuapp.com/upload/ember.js
   campfire:
   - secure: |-
       ia5CUz3FeqK+s238B9ApRz1vt/qpM/WtI5HlYS7GH5WPBbC5vsSUIwV9IqM8
