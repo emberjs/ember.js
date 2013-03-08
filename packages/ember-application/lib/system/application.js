@@ -459,6 +459,7 @@ var Application = Ember.Application = Ember.Namespace.extend({
 
     graph.topsort(function (vertex) {
       var initializer = vertex.value;
+      Ember.assert("No application initializer named '"+vertex.name+"'", initializer);
       initializer(container, namespace);
     });
   },
