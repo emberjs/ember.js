@@ -8,8 +8,6 @@ var readyWasCalled, domReady, readyCallbacks;
 
 module("Application readiness", {
   setup: function() {
-    Ember.testingDeferred = true;
-
     readyWasCalled = 0;
     readyCallbacks = [];
 
@@ -50,8 +48,6 @@ module("Application readiness", {
     if (application) {
       Ember.run(function() { application.destroy(); });
     }
-
-    Ember.testingDeferred = false;
   }
 });
 
@@ -63,7 +59,10 @@ test("Ember.Application's ready event is called right away if jQuery is already 
   jQuery.isReady = true;
 
   Ember.run(function() {
-    application = Application.create({ router: false });
+    application = Application.create({
+      router: false,
+      autoinit: true
+    });
   });
 
   equal(readyWasCalled, 1, "ready was called");
@@ -77,7 +76,10 @@ test("Ember.Application's ready event is called right away if jQuery is already 
 
 test("Ember.Application's ready event is called after the document becomes ready", function() {
   Ember.run(function() {
-    application = Application.create({ router: false });
+    application = Application.create({
+      router: false,
+      autoinit: true
+    });
   });
 
   equal(readyWasCalled, 0, "ready wasn't called yet");
@@ -109,12 +111,8 @@ test("Ember.Application's ready event is called after the document becomes ready
 test("Ember.Application's ready event can be deferred by other components", function() {
   Ember.run(function() {
     application = Application.create({ router: false });
-  });
-
-  application.deferReadiness();
-
-  Ember.run(function() {
-    application.initialize();
+    application.deferReadiness();
+    application.scheduleInitialize();
   });
 
   equal(readyWasCalled, 0, "ready wasn't called yet");
@@ -136,12 +134,12 @@ test("Ember.Application's ready event can be deferred by other components", func
   jQuery.isReady = false;
 
   Ember.run(function() {
-    application = Application.create({ router: false });
-  });
+    application = Application.create({
+      autoinit: true,
+      router: false
+    });
+    application.deferReadiness();
 
-  application.deferReadiness();
-
-  Ember.run(function() {
     domReady();
   });
 
