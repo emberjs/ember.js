@@ -18,7 +18,7 @@ var FIRST_KEY = /^([^\.\*]+)/;
 // ..........................................................
 // GET AND SET
 //
-// If we are on a platform that supports accessors we can get use those.
+// If we are on a platform that supports accessors we can use those.
 // Otherwise simulate accessors by looking up the property directly on the
 // object.
 
