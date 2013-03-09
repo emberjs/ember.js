@@ -363,6 +363,15 @@ Ember.mixin = function(obj) {
   commentView.edit(); // outputs 'starting to edit'
   ```
 
+  // If a Mixin has a didApply property, it will be called after it is mixed
+  // in:
+  App.Editable.didApply = function(object) {
+    console.log("Editable applied to " + object.ownerConstructor);
+  };
+
+  App.CommentView = Ember.View.extend(App.Editable);
+  // logs "Editable applied to App.CommentView"
+
   Note that Mixins are created with `Ember.Mixin.create`, not
   `Ember.Mixin.extend`.
 
@@ -425,6 +434,10 @@ MixinPrototype.reopen = function() {
       tmp = Mixin.create();
       tmp.properties = mixin;
       mixins.push(tmp);
+    }
+
+    if (mixin.didApply != null) {
+      mixin.didApply(this);
     }
   }
 
