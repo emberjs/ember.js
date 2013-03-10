@@ -103,6 +103,10 @@ Ember.Router = Ember.Object.extend({
     return this.location.formatURL(url);
   },
 
+  pathsForSerialize: function() {
+    return this.router.pathsForSerialize.apply(this.router, arguments);
+  },
+
   isActive: function(routeName) {
     var router = this.router;
     return router.isActive.apply(router, arguments);

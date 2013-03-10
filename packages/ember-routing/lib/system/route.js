@@ -55,6 +55,21 @@ Ember.Route = Ember.Object.extend({
   events: null,
 
   /**
+   The list of paths which are needed to serialize this route
+   and create the URL. It will be used in the places, where
+   the URL may need regeneration.
+
+   @property serializePaths
+   @type Array
+   @default: ['id']
+  */
+  serializePaths: ['id'],
+
+  _getSerializePaths: function() {
+    return this.get('serializePaths');
+  },
+
+  /**
     This hook is executed when the router completely exits this route. It is
     not executed when the model for the route changes.
 

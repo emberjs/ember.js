@@ -38,10 +38,13 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     return ret.concat(resolvedPaths(linkView.parameters));
   }
 
-  function _createPath(path) {
+  function _createPath(path, property) {
     var fullPath = 'paramsContext';
     if(path !== '') {
       fullPath += '.' + path;
+    }
+    if(property && property !== '') {
+      fullPath += '.' + property;
     }
     return fullPath;
   }
@@ -81,12 +84,20 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
           length = params.length,
           context = this.parameters.context,
           self = this,
-          path, paths = Ember.A([]), i;
+          path, paths = Ember.A([]), i, j,
+          router = this.get('router'),
+          serializePaths = router.pathsForSerialize(this.namedRoute);
 
       set(this, 'paramsContext', context);
 
       for(i=0; i < length; i++) {
-        paths.pushObject(_createPath(params[i]));
+        if(serializePaths[i].length) {
+          for(j=0; j < serializePaths[i].length; j++) {
+            paths.pushObject(_createPath(params[i], serializePaths[i][j]));
+          }
+        } else {
+          paths.pushObject(_createPath(params[i]));
+        }
       }
 
       var observer = function(object, path) {

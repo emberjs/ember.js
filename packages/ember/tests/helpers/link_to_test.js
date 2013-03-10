@@ -119,19 +119,21 @@ test("The {{linkTo}} helper supports URL replacement", function() {
 
 test("The {{linkTo}} helper refreshes href element when one of params changes", function() {
   Router.map(function() {
-    this.route('post', { path: '/posts/:post_id' });
+    this.route('post', { path: '/posts/:post_slug' });
   });
 
-  var post = Ember.Object.create({id: '1'}),
-      secondPost = Ember.Object.create({id: '2'});
+  var post = Ember.Object.create({id: '1', slug: 'post'}),
+      secondPost = Ember.Object.create({id: '2', slug: 'second-post'});
 
   App.PostRoute = Ember.Route.extend({
+    serializePaths: ['slug'],
+
     model: function(params) {
       return post;
     },
 
     serialize: function(post) {
-      return { post_id: post.get('id') };
+      return { post_slug: post.get('slug') };
     }
   });
 
@@ -145,15 +147,19 @@ test("The {{linkTo}} helper refreshes href element when one of params changes", 
 
   Ember.run(function() { router.handleURL("/"); });
 
-  equal(Ember.$('#post', '#qunit-fixture').attr('href'), '/posts/1', 'precond - Link has rendered href attr properly');
+  equal(Ember.$('#post', '#qunit-fixture').attr('href'), '/posts/post', 'precond - Link has rendered href attr properly');
 
   indexController.set('post', secondPost);
 
-  equal(Ember.$('#post', '#qunit-fixture').attr('href'), '/posts/2', 'href attr was updated after one of the params had been changed');
+  equal(Ember.$('#post', '#qunit-fixture').attr('href'), '/posts/second-post', 'href attr was updated after one of the params had been changed');
+
+  secondPost.set('slug', 'second-post-changed');
+
+  equal(Ember.$('#post', '#qunit-fixture').attr('href'), '/posts/second-post-changed', 'href attr was updated after one of the properties needed to build URL had been changed');
 
   indexController.set('post', null);
 
-  equal(Ember.$('#post', '#qunit-fixture').attr('href'), '/posts/2', 'href attr does not change when one of the arguments in nullified');
+  equal(Ember.$('#post', '#qunit-fixture').attr('href'), '/posts/second-post-changed', 'href attr does not change when one of the arguments in nullified');
 });
 
 test("The {{linkTo}} helper supports a custom activeClass", function() {
