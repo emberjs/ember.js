@@ -196,7 +196,7 @@ Ember.RunLoop = RunLoop;
 
   ```javascript
   Ember.run(function(){
-    // code to be execute within a RunLoop 
+    // code to be execute within a RunLoop
   });
   ```
 
@@ -235,7 +235,7 @@ var run = Ember.run;
 
   ```javascript
   Ember.run.begin();
-  // code to be execute within a RunLoop 
+  // code to be execute within a RunLoop
   Ember.run.end();
   ```
 
@@ -253,7 +253,7 @@ Ember.run.begin = function() {
 
   ```javascript
   Ember.run.begin();
-  // code to be execute within a RunLoop 
+  // code to be execute within a RunLoop
   Ember.run.end();
   ```
 
@@ -417,8 +417,8 @@ function invokeLaterTimers() {
     }
 
     // schedule next timeout to fire when the earliest timer expires
-    if (earliest > 0) { 
-      scheduledLater = setTimeout(invokeLaterTimers, earliest - now); 
+    if (earliest > 0) {
+      scheduledLater = setTimeout(invokeLaterTimers, earliest - now);
       scheduledLaterExpires = earliest;
     }
   });
@@ -469,18 +469,18 @@ Ember.run.later = function(target, method) {
   timer   = { target: target, method: method, expires: expires, args: args };
   guid    = Ember.guidFor(timer);
   timers[guid] = timer;
-    
+
   if(scheduledLater && expires < scheduledLaterExpires) {
     // Cancel later timer (then reschedule earlier timer below)
     clearTimeout(scheduledLater);
     scheduledLater = null;
   }
 
-  if (!scheduledLater) { 
+  if (!scheduledLater) {
     // Schedule later timers to be run.
     scheduledLater = setTimeout(invokeLaterTimers, wait);
     scheduledLaterExpires = expires;
-  } 
+  }
 
   return guid;
 };
@@ -536,11 +536,11 @@ function scheduleOnce(queue, target, method, args) {
     // doFoo will only be executed once at the end of the RunLoop
   });
   ```
-  
+
   Also note that passing an anonymous function to `Ember.run.once` will
-  not prevent additional calls with an identical anonymous function from 
+  not prevent additional calls with an identical anonymous function from
   scheduling the items multiple times, e.g.:
-  
+
   ```javascript
   function scheduleIt() {
     Ember.run.once(myContext, function() { console.log("Closure"); });
@@ -548,7 +548,7 @@ function scheduleOnce(queue, target, method, args) {
   scheduleIt();
   scheduleIt();
   // "Closure" will print twice, even though we're using `Ember.run.once`,
-  // because the function we pass to it is anonymous and won't match the 
+  // because the function we pass to it is anonymous and won't match the
   // previously scheduled operation.
   ```
 
@@ -570,7 +570,7 @@ Ember.run.scheduleOnce = function(queue, target, method, args) {
 
 /**
   Schedules an item to run after control has been returned to the system.
-  This is equivalent to calling `Ember.run.later` with a wait time of 1ms. 
+  This is equivalent to calling `Ember.run.later` with a wait time of 1ms.
 
   ```javascript
   Ember.run.next(myContext, function(){

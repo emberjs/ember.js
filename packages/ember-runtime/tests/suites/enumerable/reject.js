@@ -25,7 +25,7 @@ suite.test('should be the inverse of filter', function() {
   rejected = obj.reject(isEven);
 
   deepEqual(filtered, [2,4], 'filtered evens');
-  deepEqual(rejected, [1,3], 'rejected evens'); 
+  deepEqual(rejected, [1,3], 'rejected evens');
 });
 
 // ..........................................................
