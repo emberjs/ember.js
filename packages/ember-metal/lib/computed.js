@@ -50,7 +50,6 @@ function keysForDep(obj, depsMeta, depKey) {
   return keys;
 }
 
-/* return obj[META_KEY].deps */
 function metaForDeps(obj, meta) {
   return keysForDep(obj, meta, 'deps');
 }
