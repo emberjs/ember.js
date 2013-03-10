@@ -52,18 +52,7 @@ function keysForDep(obj, depsMeta, depKey) {
 
 /* return obj[META_KEY].deps */
 function metaForDeps(obj, meta) {
-  var deps = meta.deps;
-  // If the current object has no dependencies...
-  if (!deps) {
-    // initialize the dependencies with a pointer back to
-    // the current object
-    deps = meta.deps = {};
-  } else if (!meta.hasOwnProperty('deps')) {
-    // otherwise if the dependencies are inherited from the
-    // object's superclass, clone the deps
-    deps = meta.deps = o_create(deps);
-  }
-  return deps;
+  return keysForDep(obj, meta, 'deps');
 }
 
 function addDependentKeys(desc, obj, keyName, meta) {
