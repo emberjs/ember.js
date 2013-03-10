@@ -103,7 +103,7 @@ Ember.Enumerable = Ember.Mixin.create({
 
     @method nextObject
     @param {Number} index the current index of the iteration
-    @param {Object} previousObject the value returned by the last call to 
+    @param {Object} previousObject the value returned by the last call to
       `nextObject`.
     @param {Object} context a context object you can use to maintain state.
     @return {Object} the next object in the iteration or undefined

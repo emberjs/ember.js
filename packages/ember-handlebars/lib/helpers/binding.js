@@ -375,14 +375,14 @@ EmberHandlebars.registerHelper('unless', function(context, options) {
 
   Result in the following rendered output:
 
-  ```html 
+  ```html
   <img class="aValue">
   ```
 
   A boolean return value will insert a specified class name if the property
   returns `true` and remove the class name if the property returns `false`.
 
-  A class name is provided via the syntax 
+  A class name is provided via the syntax
   `somePropertyName:class-name-if-true`.
 
   ```javascript
@@ -541,9 +541,9 @@ EmberHandlebars.registerHelper('bindAttr', function(options) {
   @method bindClasses
   @for Ember.Handlebars
   @param {Ember.Object} context The context from which to lookup properties
-  @param {String} classBindings A string, space-separated, of class bindings 
+  @param {String} classBindings A string, space-separated, of class bindings
     to use
-  @param {Ember.View} view The view in which observers should look for the 
+  @param {Ember.View} view The view in which observers should look for the
     element to update
   @param {Srting} bindAttrId Optional bindAttr id used to lookup elements
   @return {Array} An array of class names to add

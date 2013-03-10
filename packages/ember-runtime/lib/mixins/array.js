@@ -317,9 +317,9 @@ Ember.Array = Ember.Mixin.create(Ember.Enumerable, /** @scope Ember.Array.protot
 
     @method arrayContentWillChange
     @param {Number} startIdx The starting index in the array that will change.
-    @param {Number} removeAmt The number of items that will be removed. If you 
+    @param {Number} removeAmt The number of items that will be removed. If you
       pass `null` assumes 0
-    @param {Number} addAmt The number of items that will be added  If you 
+    @param {Number} addAmt The number of items that will be added  If you
       pass `null` assumes 0.
     @return {Ember.Array} receiver
   */

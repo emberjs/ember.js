@@ -731,7 +731,7 @@ class:
   * `mouseEnter`
   * `mouseLeave`
 
-  Form events: 
+  Form events:
 
   * `submit`
   * `change`
@@ -739,7 +739,7 @@ class:
   * `focusOut`
   * `input`
 
-  HTML5 drag and drop events: 
+  HTML5 drag and drop events:
 
   * `dragStart`
   * `drag`
@@ -1478,7 +1478,7 @@ Ember.View = Ember.CoreView.extend(
     Appends the view's element to the document body. If the view does
     not have an HTML representation yet, `createElement()` will be called
     automatically.
-    
+
     If your application uses the `rootElement` property, you must append
     the view within that element. Rendering views outside of the `rootElement`
     is not supported.
@@ -2297,14 +2297,14 @@ Ember.View.reopenClass({
     `className` and optional `falsyClassName`.
 
     - if a `className` or `falsyClassName` has been specified:
-      - if the value is truthy and `className` has been specified, 
+      - if the value is truthy and `className` has been specified,
         `className` is returned
-      - if the value is falsy and `falsyClassName` has been specified, 
+      - if the value is falsy and `falsyClassName` has been specified,
         `falsyClassName` is returned
       - otherwise `null` is returned
-    - if the value is `true`, the dasherized last part of the supplied path 
+    - if the value is `true`, the dasherized last part of the supplied path
       is returned
-    - if the value is not `false`, `undefined` or `null`, the `value` 
+    - if the value is not `false`, `undefined` or `null`, the `value`
       is returned
     - if none of the above rules apply, `null` is returned
 

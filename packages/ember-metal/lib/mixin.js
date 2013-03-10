@@ -386,7 +386,7 @@ Ember.anyUnprocessedMixins = false;
 /**
   Creates an instance of a class. Accepts either no arguments, or an object
   containing values to initialize the newly instantiated object with.
-  
+
   ```javascript
   App.Person = Ember.Object.extend({
     helloWorld: function() {
