@@ -60,10 +60,10 @@ asyncTest('should always invoke within a separate runloop', function() {
   var obj = { invoked: 0 }, firstRunLoop, secondRunLoop;
 
   Ember.run(function() {
-    firstRunLoop = Ember.run.currentRunLoop; 
+    firstRunLoop = Ember.run.currentRunLoop;
 
-    Ember.run.later(obj, function(amt) { 
-      this.invoked += amt; 
+    Ember.run.later(obj, function(amt) {
+      this.invoked += amt;
       secondRunLoop = Ember.run.currentRunLoop;
     }, 10, 1);
 
@@ -71,8 +71,8 @@ asyncTest('should always invoke within a separate runloop', function() {
     // after run.later was called but before the run loop
     // has flushed. In previous versions, this would have
     // caused the run.later callback to have run from
-    // within the run loop flush, since by the time the 
-    // run loop has to flush, it would have considered 
+    // within the run loop flush, since by the time the
+    // run loop has to flush, it would have considered
     // the timer already expired.
     var pauseUntil = +new Date() + 100;
     while(+new Date() < pauseUntil) { /* do nothing - sleeping */ }
@@ -143,12 +143,12 @@ asyncTest('inception calls to run.later should run callbacks in separate run loo
     ok(runLoop);
 
     Ember.run.later(function() {
-      ok(Ember.run.currentRunLoop && Ember.run.currentRunLoop !== runLoop, 
+      ok(Ember.run.currentRunLoop && Ember.run.currentRunLoop !== runLoop,
          'first later callback has own run loop');
       runLoop = Ember.run.currentRunLoop;
 
       Ember.run.later(function() {
-        ok(Ember.run.currentRunLoop && Ember.run.currentRunLoop !== runLoop, 
+        ok(Ember.run.currentRunLoop && Ember.run.currentRunLoop !== runLoop,
            'second later callback has own run loop');
         finished = true;
       }, 40);

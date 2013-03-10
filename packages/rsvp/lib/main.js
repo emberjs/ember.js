@@ -245,35 +245,35 @@ define("rsvp",
     }
 
     function all(promises) {
-    	var i, results = [];
-    	var allPromise = new Promise();
-    	var remaining = promises.length;
+      var i, results = [];
+      var allPromise = new Promise();
+      var remaining = promises.length;
 
       if (remaining === 0) {
         allPromise.resolve([]);
       }
 
-    	var resolver = function(index) {
-    		return function(value) {
-    			resolve(index, value);
-    		};
-    	};
+      var resolver = function(index) {
+        return function(value) {
+          resolve(index, value);
+        };
+      };
 
-    	var resolve = function(index, value) {
-    		results[index] = value;
-    		if (--remaining === 0) {
-    			allPromise.resolve(results);
-    		}
-    	};
+      var resolve = function(index, value) {
+        results[index] = value;
+        if (--remaining === 0) {
+          allPromise.resolve(results);
+        }
+      };
 
-    	var reject = function(error) {
-    		allPromise.reject(error);
-    	};
+      var reject = function(error) {
+        allPromise.reject(error);
+      };
 
-    	for (i = 0; i < remaining; i++) {
-    		promises[i].then(resolver(i), reject);
-    	}
-    	return allPromise;
+      for (i = 0; i < remaining; i++) {
+        promises[i].then(resolver(i), reject);
+      }
+      return allPromise;
     }
 
     EventTarget.mixin(Promise.prototype);
