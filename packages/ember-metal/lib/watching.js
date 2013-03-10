@@ -19,7 +19,6 @@ var guidFor = Ember.guidFor, // utils.js
     META_KEY = Ember.META_KEY, // utils.js
     // circular reference observer depends on Ember.watch
     // we should move change events to this file or its own property_events.js
-    notifyObservers = Ember.notifyObservers, // observer.js
     forEach = Ember.ArrayPolyfills.forEach, // array.js
     FIRST_KEY = /^([^\.\*]+)/,
     IS_PATH = /[\.\*]/;

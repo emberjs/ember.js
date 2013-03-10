@@ -16,7 +16,6 @@ var Mixin, REQUIRED, Alias,
     a_indexOf = Ember.ArrayPolyfills.indexOf,
     a_forEach = Ember.ArrayPolyfills.forEach,
     a_slice = [].slice,
-    EMPTY_META = {}, // dummy for non-writable meta
     o_create = Ember.create,
     defineProperty = Ember.defineProperty,
     guidFor = Ember.guidFor;
