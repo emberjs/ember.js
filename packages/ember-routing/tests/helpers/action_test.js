@@ -208,6 +208,32 @@ test("should register an event handler", function() {
   ok(eventHandlerWasCalled, "The event handler was called");
 });
 
+test("handles whitelisted modifier keys", function() {
+  var eventHandlerWasCalled = false;
+
+  var controller = Ember.Controller.extend({
+    edit: function() { eventHandlerWasCalled = true; }
+  }).create();
+
+  view = Ember.View.create({
+    controller: controller,
+    template: Ember.Handlebars.compile('<a href="#" {{action "edit" allowed-keys="alt"}}>click me</a>')
+  });
+
+  appendView();
+
+  var actionId = view.$('a[data-ember-action]').attr('data-ember-action');
+
+  ok(Ember.Handlebars.ActionHelper.registeredActions[actionId], "The action was registered");
+
+  var e = Ember.$.Event('click');
+  e.altKey = true;
+  view.$('a').trigger(e);
+
+  ok(eventHandlerWasCalled, "The event handler was called");
+});
+
+
 test("should be able to use action more than once for the same event within a view", function() {
   var editWasCalled = false,
       deleteWasCalled = false,
