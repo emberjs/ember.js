@@ -25,8 +25,11 @@
 require('ember-metal/array');
 require('ember-metal/utils');
 require('ember-metal/core');
+require('ember-metal/accessors');
 
-var guidFor = Ember.guidFor,
+var get = Ember.get,
+    set = Ember.set,
+    guidFor = Ember.guidFor,
     indexOf = Ember.ArrayPolyfills.indexOf;
 
 var copy = function(obj) {
@@ -45,6 +48,7 @@ var copyMap = function(original, newObject) {
 
   newObject.keys = keys;
   newObject.values = values;
+  newObject.length = original.length;
 
   return newObject;
 };
@@ -205,6 +209,16 @@ Map.create = function() {
 
 Map.prototype = {
   /**
+    This property will change as the number of objects in the map changes.
+   
+    @property length
+    @type number
+    @default 0
+  */
+  length: 0,
+    
+    
+  /**
     Retrieve the value associated with a given key.
 
     @method get
@@ -233,6 +247,7 @@ Map.prototype = {
 
     keys.add(key);
     values[guid] = value;
+    set(this, 'length', keys.list.length);
   },
 
   /**
@@ -254,6 +269,7 @@ Map.prototype = {
       keys.remove(key);
       value = values[guid];
       delete values[guid];
+      set(this, 'length', keys.list.length);
       return true;
     } else {
       return false;
