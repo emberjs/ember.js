@@ -64,6 +64,7 @@ test("Ember.Application's ready event is called right away if jQuery is already 
 
   Ember.run(function() {
     application = Application.create({ router: false });
+    equal(readyWasCalled, 0, "ready is not called until later");
   });
 
   equal(readyWasCalled, 1, "ready was called");
