@@ -7,9 +7,8 @@ var states = {};
 @submodule ember-views
 */
 
-var get = Ember.get, set = Ember.set, addObserver = Ember.addObserver, removeObserver = Ember.removeObserver;
-var meta = Ember.meta, guidFor = Ember.guidFor, fmt = Ember.String.fmt;
-var a_slice = [].slice;
+var get = Ember.get, set = Ember.set;
+var guidFor = Ember.guidFor;
 var a_forEach = Ember.EnumerableUtils.forEach;
 var a_addObject = Ember.EnumerableUtils.addObject;
 

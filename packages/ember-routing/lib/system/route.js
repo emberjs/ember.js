@@ -4,8 +4,7 @@
 */
 
 var get = Ember.get, set = Ember.set,
-    classify = Ember.String.classify,
-    decamelize = Ember.String.decamelize;
+    classify = Ember.String.classify;
 
 /**
   The `Ember.Route` class is used to define individual routes. Refer to
