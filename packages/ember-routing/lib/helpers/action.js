@@ -32,13 +32,14 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     registeredActions: {}
   };
 
+  var keys = ["alt", "shift", "meta", "ctrl"];
+
   var isAllowedClick = function(event, allowedKeys) {
     if (typeof allowedKeys === "undefined") {
       return isSimpleClick(event);
     }
 
-    var keys = ["alt", "shift", "meta", "ctrl"],
-        allowed = true;
+    var allowed = true;
 
     keys.forEach(function(key) {
       if (event[key + "Key"] && allowedKeys.indexOf(key) === -1) {
@@ -191,11 +192,11 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     ### Specifying whitelisted modifier keys
 
     By default the `{{action}}` helper will ignore click event with pressed modifier
-    keys. You can supply an `allowed-keys` option to specify which keys should not be ignored.
+    keys. You can supply an `allowedKeys` option to specify which keys should not be ignored.
 
     ```handlebars
     <script type="text/x-handlebars" data-template-name='a-template'>
-      <div {{action anActionName allowed-keys="alt"}}>
+      <div {{action anActionName allowedKeys="alt"}}>
         click me
       </div>
     </script>
@@ -311,7 +312,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     action.target = { root: root, target: target, options: options };
     action.bubbles = hash.bubbles;
 
-    var actionId = ActionHelper.registerAction(actionName, action, hash["allowed-keys"]);
+    var actionId = ActionHelper.registerAction(actionName, action, hash.allowedKeys);
     return new SafeString('data-ember-action="' + actionId + '"');
   });
 
