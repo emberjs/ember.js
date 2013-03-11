@@ -2,7 +2,7 @@ require('ember-handlebars/ext');
 
 /**
 @module ember
-@submodule ember-handlebars
+@submodule ember-old-router
 */
 
 var EmberHandlebars = Ember.Handlebars,

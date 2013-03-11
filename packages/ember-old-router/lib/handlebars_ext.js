@@ -3,7 +3,7 @@ require('ember-handlebars/helpers/view');
 Ember.onLoad('Ember.Handlebars', function(Handlebars) {
   /**
   @module ember
-  @submodule ember-handlebars
+  @submodule ember-old-router
   */
 
   Handlebars.OutletView = Ember.ContainerView.extend(Ember._Metamorph);

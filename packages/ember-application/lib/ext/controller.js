@@ -1,6 +1,6 @@
 /**
 @module ember
-@submodule ember-routing
+@submodule ember-application
 */
 
 var get = Ember.get, set = Ember.set;
