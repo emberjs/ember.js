@@ -2,7 +2,7 @@ require('ember-runtime/system/object');
 
 /**
 @module ember
-@submodule ember-runtime
+@submodule ember-old-router
 */
 
 var get = Ember.get, set = Ember.set;
