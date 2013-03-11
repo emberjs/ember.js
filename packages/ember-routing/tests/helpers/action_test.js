@@ -217,7 +217,7 @@ test("handles whitelisted modifier keys", function() {
 
   view = Ember.View.create({
     controller: controller,
-    template: Ember.Handlebars.compile('<a href="#" {{action "edit" allowed-keys="alt"}}>click me</a>')
+    template: Ember.Handlebars.compile('<a href="#" {{action "edit" allowedKeys="alt"}}>click me</a>')
   });
 
   appendView();
