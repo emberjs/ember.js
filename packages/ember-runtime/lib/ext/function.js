@@ -124,5 +124,49 @@ if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.Function) {
     return this;
   };
 
+  /**
+    The `inRunLoop` extension of Javascript's Function prototype is
+    available when `Ember.EXTEND_PROTOTYPES` or
+    `Ember.EXTEND_PROTOTYPES.Function` is true, which is the default.
+
+    Adding a call to `inRunLoop` at the end of a function will return
+    a version of that function that gets called within an Ember
+    Run Loop. This is useful when you need to provide a callback
+    to $.ajax queries or third party plugins that won't automatically
+    wrap your callback in an Ember Run Loop.
+
+    ```javascript
+    Ember.$.ajax("/some_url", "GET", {
+      context: this,
+      success: function(json) {
+        this.set('value', json.value);
+      }.inRunLoop()
+    });
+
+    // This expands to:
+    Ember.$.ajax("/some_url", "GET", {
+      context: this,
+      success: function(json) {
+        Ember.run(this, function() { 
+          this.set('value', json.value); 
+        });
+      }
+    });
+    ```
+
+    See {{#crossLink "Ember.run"}}{{/crossLink}}
+
+    @method inRunLoop
+    @for Function
+  */
+  Function.prototype.inRunLoop = function() {
+    var fn = this;
+    return function() {
+      var args = arguments;
+      return Ember.run(this, function() {
+        return fn.apply(this, args);
+      });
+    };
+  };
 }
 
