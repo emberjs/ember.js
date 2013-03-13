@@ -45,3 +45,23 @@ test("groups an array according to property", function() {
 
   equal(2, carGroup.get('length'));
 });
+
+test("regenerates groups when group property changes", function() {
+  var groupedArray = Ember.ArrayProxy.createWithMixins(Ember.GroupableMixin,{
+    groupBy: 'kind',
+    content: Ember.A([
+      Ember.Object.create({kind: "car", name: "Mustang"}),
+      Ember.Object.create({kind: "car", name: "Corvette"}),
+      Ember.Object.create({kind: "fruit", name: "Apple"}),
+      Ember.Object.create({kind: "fruit", name: "Orange"})
+    ])
+  });
+
+  var groups = get(groupedArray, 'groupedContent');
+
+  equal(2, get(groups, 'length'));
+
+  set(groupedArray, 'groupBy', 'name');
+
+  equal(4, get(groups, 'length'), "Groups updated by property change");
+});
