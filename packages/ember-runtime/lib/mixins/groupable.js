@@ -48,7 +48,7 @@ Ember.GroupableMixin = Ember.Mixin.create({
       group = Ember.ArrayProxy.create({
         content: Ember.A([]),
         name: groupName
-      })
+      });
 
       groupsMap[groupName] = group;
       groups.pushObject(group);
@@ -58,6 +58,10 @@ Ember.GroupableMixin = Ember.Mixin.create({
   },
 
   extractGroup: function(object) {
-    return get(object, get(this, 'groupBy'));
+    var propertyName = get(this, 'groupBy');
+
+    if (!propertyName) return;
+
+    return get(object, propertyName);
   }
 });
