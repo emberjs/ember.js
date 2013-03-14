@@ -1103,6 +1103,22 @@ test("{{view}} id attribute should set id on layer", function() {
   equal(view.$('#bar').text(), 'baz', "emits content");
 });
 
+test("{{view}} tag attribute should set tagName of the view", function() {
+  container.register('template', 'foo', Ember.Handlebars.compile('{{#view "TemplateTests.TagView" tag="span"}}baz{{/view}}'));
+
+  TemplateTests.TagView = Ember.View;
+
+  view = Ember.View.create({
+    container: container,
+    templateName: 'foo'
+  });
+
+  appendView();
+
+  equal(view.$('span').length, 1, "renders with tag name");
+  equal(view.$('span').text(), 'baz', "emits content");
+});
+
 test("{{view}} class attribute should set class on layer", function() {
   container.register('template', 'foo', Ember.Handlebars.compile('{{#view "TemplateTests.IdView" class="bar"}}baz{{/view}}'));
 

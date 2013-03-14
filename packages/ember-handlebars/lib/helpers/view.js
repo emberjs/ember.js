@@ -25,6 +25,11 @@ EmberHandlebars.ViewHelper = Ember.Object.create({
       dup = true;
     }
 
+    if (hash.tag) {
+      extensions.tagName = hash.tag;
+      dup = true;
+    }
+
     if (classes) {
       classes = classes.split(' ');
       extensions.classNames = classes;
@@ -51,6 +56,7 @@ EmberHandlebars.ViewHelper = Ember.Object.create({
     if (dup) {
       hash = Ember.$.extend({}, hash);
       delete hash.id;
+      delete hash.tag;
       delete hash['class'];
       delete hash.classBinding;
     }
