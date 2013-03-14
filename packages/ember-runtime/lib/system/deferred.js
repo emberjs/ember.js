@@ -2,7 +2,6 @@ require("ember-runtime/mixins/deferred");
 require("ember-runtime/system/object");
 
 var DeferredMixin = Ember.DeferredMixin, // mixins/deferred
-    EmberObject = Ember.Object,          // system/object
     get = Ember.get;
 
 var Deferred = Ember.Object.extend(DeferredMixin);
