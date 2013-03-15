@@ -606,6 +606,12 @@ Ember.Application.reopenClass({
     container.optionsForType('view', { singleton: false });
     container.optionsForType('template', { instantiate: false });
     container.register('application', 'main', namespace, { instantiate: false });
+
+    container.register('controller:basic', Ember.Controller, { instantiate: false });
+    container.register('controller:object', Ember.ObjectController, { instantiate: false });
+    container.register('controller:array', Ember.ArrayController, { instantiate: false });
+    container.register('route:basic', Ember.Route, { instantiate: false });
+
     container.injection('router:main', 'namespace', 'application:main');
 
     container.typeInjection('controller', 'target', 'router:main');
@@ -654,6 +660,9 @@ function resolverFor(namespace) {
 
     if (type === 'controller' || type === 'route' || type === 'view') {
       name = name.replace(/\./g, '_');
+      if (name === 'basic') {
+        name = '';
+      }
     }
 
     if (type !== 'template' && name.indexOf('/') !== -1) {
