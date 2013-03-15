@@ -64,9 +64,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
           event.stopPropagation();
         }
 
-        var view = options.view,
-            contexts = options.contexts,
-            target = options.target;
+        var target = options.target;
 
         if (target.target) {
           target = handlebarsGet(target.root, target.target, target.options);
@@ -285,7 +283,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
 
     var hash = options.hash,
         view = options.data.view,
-        controller, link;
+        controller;
 
     // create a hash to pass along to registerAction
     var action = {
