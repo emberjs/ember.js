@@ -290,7 +290,7 @@ Ember.CollectionView = Ember.ContainerView.extend(
   */
   arrayDidChange: function(content, start, removed, added) {
     var itemViewClass = get(this, 'itemViewClass'),
-        addedViews = [], view, item, idx, len, itemTagName;
+        addedViews = [], view, item, idx, len;
 
     if ('string' === typeof itemViewClass) {
       itemViewClass = get(itemViewClass);

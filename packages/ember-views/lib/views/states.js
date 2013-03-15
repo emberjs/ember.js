@@ -14,8 +14,6 @@ Ember.View.cloneStates = function(from) {
   into.hasElement = Ember.create(into._default);
   into.inDOM = Ember.create(into.hasElement);
 
-  var viewState;
-
   for (var stateName in from) {
     if (!from.hasOwnProperty(stateName)) { continue; }
     Ember.merge(into[stateName], from[stateName]);

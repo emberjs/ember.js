@@ -27,8 +27,7 @@ Ember.ControllerMixin.reopen({
   },
 
   _modelDidChange: Ember.observer(function() {
-    var containers = get(this, '_childContainers'),
-        container;
+    var containers = get(this, '_childContainers');
 
     for (var prop in containers) {
       if (!containers.hasOwnProperty(prop)) { continue; }

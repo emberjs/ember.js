@@ -450,7 +450,7 @@ var Application = Ember.Application = Ember.Namespace.extend({
         container = this.__container__,
         graph = new Ember.DAG(),
         namespace = this,
-        properties, i, initializer;
+        i, initializer;
 
     for (i=0; i<initializers.length; i++) {
       initializer = initializers[i];

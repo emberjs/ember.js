@@ -18,7 +18,7 @@ var EMPTY = [];
 // HELPERS
 //
 
-var get = Ember.get, set = Ember.set, forEach = Ember.EnumerableUtils.forEach;
+var get = Ember.get, set = Ember.set;
 
 /**
   This mixin defines the API for modifying array-like objects. These methods

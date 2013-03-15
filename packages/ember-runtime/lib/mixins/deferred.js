@@ -9,8 +9,7 @@ RSVP.async = function(callback, binding) {
 @submodule ember-runtime
 */
 
-var get = Ember.get,
-    slice = Array.prototype.slice;
+var get = Ember.get;
 
 /**
   @class Deferred

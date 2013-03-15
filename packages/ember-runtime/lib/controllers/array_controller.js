@@ -7,8 +7,8 @@ require('ember-runtime/mixins/sortable');
 @submodule ember-runtime
 */
 
-var get = Ember.get, set = Ember.set, isGlobalPath = Ember.isGlobalPath,
-    forEach = Ember.EnumerableUtils.forEach, replace = Ember.EnumerableUtils.replace;
+var get = Ember.get, set = Ember.set, forEach = Ember.EnumerableUtils.forEach,
+    replace = Ember.EnumerableUtils.replace;
 
 /**
   `Ember.ArrayController` provides a way for you to publish a collection of
