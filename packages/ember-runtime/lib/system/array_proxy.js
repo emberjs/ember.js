@@ -229,7 +229,6 @@ Ember.ArrayProxy = Ember.Object.extend(Ember.MutableArray,
   },
 
   _insertAt: function(idx, object) {
-    var content = this.get('content');
     if (idx > get(this, 'content.length')) throw new Error(OUT_OF_RANGE_EXCEPTION);
     this._replace(idx, 0, [object]);
     return this;
