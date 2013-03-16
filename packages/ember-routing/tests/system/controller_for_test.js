@@ -4,7 +4,12 @@ var buildContainer = function(namespace) {
   container.set = Ember.set;
   container.resolver = resolverFor(namespace);
   container.optionsForType('view', { singleton: false });
+
   container.register('application', 'main', namespace, { instantiate: false });
+
+  container.register('controller:basic', Ember.Controller, { instantiate: false });
+  container.register('controller:object', Ember.ObjectController, { instantiate: false });
+  container.register('controller:array', Ember.ArrayController, { instantiate: false });
 
   return container;
 };
@@ -14,18 +19,23 @@ function resolverFor(namespace) {
     var nameParts = fullName.split(":"),
         type = nameParts[0], name = nameParts[1];
 
+    if (name === 'basic') {
+      name = '';
+    }
     var className = Ember.String.classify(name) + Ember.String.classify(type);
     var factory = Ember.get(namespace, className);
+
+
 
     if (factory) { return factory; }
   };
 }
 
-var container, appController;
+var container, appController, namespace;
 
 module("Ember.controllerFor", {
   setup: function() {
-    var namespace = Ember.Namespace.create();
+    namespace = Ember.Namespace.create();
     container = buildContainer(namespace);
     container.register('controller', 'app', Ember.Controller.extend());
     appController = container.lookup('controller:app');
@@ -65,4 +75,35 @@ test("controllerFor should create Ember.ArrayController", function() {
 
   ok(controller instanceof Ember.ArrayController, 'should create controller');
   equal(controller.get('content'), context, 'should set content');
+});
+
+test("controllerFor should create App.Controller if provided", function() {
+  var controller;
+  namespace.Controller = Ember.Controller.extend();
+
+  controller = Ember.controllerFor(container, 'home');
+
+  ok(controller instanceof namespace.Controller, 'should create controller');
+});
+
+test("controllerFor should create App.ObjectController if provided", function() {
+  var context = {}, controller;
+  namespace.ObjectController = Ember.ObjectController.extend();
+
+  controller = Ember.controllerFor(container, 'home', context);
+
+  ok(controller instanceof namespace.ObjectController, 'should create controller');
+  equal(controller.get('content'), context, 'should set content');
+
+});
+
+test("controllerFor should create App.ArrayController if provided", function() {
+  var context = Ember.A(), controller;
+  namespace.ArrayController = Ember.ArrayController.extend();
+
+  controller = Ember.controllerFor(container, 'home', context);
+
+  ok(controller instanceof namespace.ArrayController, 'should create controller');
+  equal(controller.get('content'), context, 'should set content');
+
 });

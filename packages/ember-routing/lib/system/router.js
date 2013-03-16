@@ -149,7 +149,8 @@ Ember.Router.reopenClass({
 });
 
 function getHandlerFunction(router) {
-  var seen = {}, container = router.container;
+  var seen = {}, container = router.container,
+      DefaultRoute = container.resolve('route:basic');
 
   return function(name) {
     var handler = container.lookup('route:' + name);
@@ -161,7 +162,7 @@ function getHandlerFunction(router) {
       if (name === 'loading') { return {}; }
       if (name === 'failure') { return router.constructor.defaultFailureHandler; }
 
-      container.register('route', name, Ember.Route.extend());
+      container.register('route', name, DefaultRoute.extend());
       handler = container.lookup('route:' + name);
     }
 
