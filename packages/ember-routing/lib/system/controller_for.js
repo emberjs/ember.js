@@ -9,18 +9,14 @@ Ember.controllerFor = function(container, controllerName, context, lookupOptions
 };
 
 Ember.generateController = function(container, controllerName, context) {
-  var controller;
+  var controller, instance;
 
   if (context && Ember.isArray(context)) {
-    controller = Ember.ArrayController.extend({
-      content: context
-    });
+    controller = Ember.ArrayController;
   } else if (context) {
-    controller = Ember.ObjectController.extend({
-      content: context
-    });
+    controller = Ember.ObjectController;
   } else {
-    controller = Ember.Controller.extend();
+    controller = Ember.Controller;
   }
 
   controller.toString = function() {
@@ -28,5 +24,10 @@ Ember.generateController = function(container, controllerName, context) {
   };
 
   container.register('controller', controllerName, controller);
-  return container.lookup('controller:' + controllerName);
+
+  instance = container.lookup('controller:' + controllerName);
+
+  if (context) { instance.set('content', context); }
+
+  return instance;
 };
