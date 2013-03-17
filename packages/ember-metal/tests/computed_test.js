@@ -675,6 +675,31 @@ testBoth("when setting a value on a computed property that doesn't handle sets",
   ok(observerFired, 'The observer was still notified');
 });
 
+module('Ember.computed - readOnly');
+
+test('is chainable', function() {
+  var computed = Ember.computed(function(){}).readOnly();
+
+  ok(computed instanceof Ember.Descriptor);
+  ok(computed instanceof Ember.ComputedProperty);
+});
+
+testBoth('protects against setting', function(get, set) {
+  var obj = {  };
+
+  Ember.defineProperty(obj, 'bar', Ember.computed(function(key){
+    return 'barValue';
+  }).readOnly());
+
+  equal(get(obj, 'bar'), 'barValue');
+
+  raises(function(){
+    set(obj, 'bar', 'newBar');
+  }, /Cannot Set: bar on:/ );
+
+  equal(get(obj, 'bar'), 'barValue');
+});
+
 module('CP macros');
 
 testBoth('Ember.computed.not', function(get, set) {
@@ -743,41 +768,4 @@ testBoth('Ember.computed.alias', function(get, set) {
   equal(get(obj, 'bar'), 'newBar');
   equal(get(obj, 'baz'), 'newBaz');
   equal(get(obj, 'quz'), null);
-});
-
-testBoth('Ember.computed.alias readOnly: true', function(get, set) {
-  var obj = { bar: 'asdf', baz: null, quz: false};
-  Ember.defineProperty(obj, 'bay', Ember.computed(function(key){
-    return 'apple';
-  }));
-
-  Ember.defineProperty(obj, 'barAlias', Ember.computed.alias('bar', { readOnly: true }));
-  Ember.defineProperty(obj, 'bazAlias', Ember.computed.alias('baz', { readOnly: true }));
-  Ember.defineProperty(obj, 'quzAlias', Ember.computed.alias('quz', { readOnly: true }));
-  Ember.defineProperty(obj, 'bayAlias', Ember.computed.alias('bay', { readOnly: true }));
-
-  equal(get(obj, 'barAlias'), 'asdf');
-  equal(get(obj, 'bazAlias'), null);
-  equal(get(obj, 'quzAlias'), false);
-  equal(get(obj, 'bayAlias'), 'apple');
-
-  raises(function(){
-    set(obj, 'barAlias', 'newBar');
-  }, /Cannot Set: barAlias on:/ );
-
-  raises(function(){
-    set(obj, 'bazAlias', 'newBaz');
-  }, /Cannot Set: bazAlias on:/ );
- 
-  raises(function(){
-    set(obj, 'quzAlias', null);
-  }, /Cannot Set: quzAlias on:/ );
-
-  equal(get(obj, 'barAlias'), 'asdf');
-  equal(get(obj, 'bazAlias'), null);
-  equal(get(obj, 'quzAlias'), false);
-
-  equal(get(obj, 'bar'), 'asdf');
-  equal(get(obj, 'baz'), null);
-  equal(get(obj, 'quz'), false);
 });

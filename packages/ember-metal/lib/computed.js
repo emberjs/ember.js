@@ -103,8 +103,10 @@ function removeDependentKeys(desc, obj, keyName, meta) {
 */
 function ComputedProperty(func, opts) {
   this.func = func;
+
   this._cacheable = (opts && opts.cacheable !== undefined) ? opts.cacheable : true;
   this._dependentKeys = opts && opts.dependentKeys;
+  this._readOnly = opts && (opts.readOnly !== undefined || !!opts.readOnly);
 }
 
 Ember.ComputedProperty = ComputedProperty;
@@ -157,6 +159,28 @@ ComputedPropertyPrototype.cacheable = function(aFlag) {
 */
 ComputedPropertyPrototype.volatile = function() {
   return this.cacheable(false);
+};
+
+/**
+  Call on a computed property to set it into read-only mode. When in this
+  mode the computed property will throw an error when set.
+
+  ```javascript
+  MyApp.person = Ember.Object.create({
+    guid: function() {
+      return 'guid-guid-guid';
+    }.property().readOnly()
+  });
+
+  MyApp.person.set('guid', 'new-guid'); // will throw an exception
+  ```
+
+  @method readOnly
+  @chainable
+*/
+ComputedPropertyPrototype.readOnly = function(readOnly) {
+  this._readOnly = readOnly === undefined || !!readOnly;
+  return this;
 };
 
 /**
@@ -283,9 +307,14 @@ ComputedPropertyPrototype.set = function(obj, keyName, value) {
       cache = meta.cache,
       cachedValue, ret;
 
+  if (this._readOnly) {
+    throw new Error('Cannot Set: ' + keyName + ' on: ' + obj.toString() );
+  }
+
   this._suspended = obj;
 
   try {
+
     if (cacheable && cache.hasOwnProperty(keyName)) {
       cachedValue = cache[keyName];
       hadCachedValue = true;
@@ -376,6 +405,10 @@ Ember.computed = function(func) {
     func = a_slice.call(arguments, -1)[0];
   }
 
+  if ( typeof func !== "function" ) {
+    throw new Error("Computed Property declared without a property function");
+  }
+
   var cp = new ComputedProperty(func);
 
   if (args) {
@@ -455,22 +488,13 @@ Ember.computed.bool = function(dependentKey) {
   @method computed.alias
   @for Ember
 
-  Available options:
-
-  * `readOnly`: `true`
-
   @param {String} dependentKey
-  @param {Object} options
 */
-Ember.computed.alias = function(dependentKey, options) {
+Ember.computed.alias = function(dependentKey) {
   return Ember.computed(dependentKey, function(key, value){
     if (arguments.length > 1) {
-      if (options && options.readOnly){
-        throw new Error('Cannot Set: ' + key + ' on: ' + this.toString() );
-      } else{
-        set(this, dependentKey, value);
-        return value;
-      }
+      set(this, dependentKey, value);
+      return value;
     } else {
       return get(this, dependentKey);
     }
