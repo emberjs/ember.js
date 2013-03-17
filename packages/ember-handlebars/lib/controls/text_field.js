@@ -30,8 +30,8 @@ var get = Ember.get, set = Ember.set;
   ## HTML Attributes
 
   By default `Ember.TextField` provides support for `type`, `value`, `size`,
-  `placeholder`, `disabled`, `maxlength` and `tabindex` attributes on a
-  test field. If you need to support more attributes have a look at the
+  `pattern`, `placeholder`, `disabled`, `maxlength` and `tabindex` attributes
+  on a test field. If you need to support more attributes have a look at the
   `attributeBindings` property in `Ember.View`'s HTML Attributes section.
 
   To globally add support for additional attributes you can reopen
