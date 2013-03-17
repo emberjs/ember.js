@@ -8,8 +8,6 @@ var readyWasCalled, domReady, readyCallbacks;
 
 module("Application readiness", {
   setup: function() {
-    Ember.testingDeferred = true;
-
     readyWasCalled = 0;
     readyCallbacks = [];
 
@@ -50,8 +48,6 @@ module("Application readiness", {
     if (application) {
       Ember.run(function() { application.destroy(); });
     }
-
-    Ember.testingDeferred = false;
   }
 });
 

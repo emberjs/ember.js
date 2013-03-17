@@ -7,7 +7,7 @@ module("Ember.Application", {
   setup: function() {
     Ember.$("#qunit-fixture").html("<div id='one'><div id='one-child'>HI</div></div><div id='two'>HI</div>");
     Ember.run(function() {
-      application = Ember.Application.create({ rootElement: '#one', router: null }).initialize();
+      application = Ember.Application.create({ rootElement: '#one', router: null });
     });
   },
 
@@ -21,7 +21,7 @@ module("Ember.Application", {
 test("you can make a new application in a non-overlapping element", function() {
   var app;
   Ember.run(function() {
-    app = Ember.Application.create({ rootElement: '#two', router: null }).initialize();
+    app = Ember.Application.create({ rootElement: '#two', router: null });
   });
   Ember.run(function() {
     app.destroy();
@@ -32,7 +32,7 @@ test("you can make a new application in a non-overlapping element", function() {
 test("you cannot make a new application that is a parent of an existing application", function() {
   raises(function() {
     Ember.run(function() {
-      Ember.Application.create({ rootElement: '#qunit-fixture' }).initialize();
+      Ember.Application.create({ rootElement: '#qunit-fixture' });
     });
   }, Error);
 });
@@ -40,7 +40,7 @@ test("you cannot make a new application that is a parent of an existing applicat
 test("you cannot make a new application that is a descendent of an existing application", function() {
   raises(function() {
     Ember.run(function() {
-      Ember.Application.create({ rootElement: '#one-child' }).initialize();
+      Ember.Application.create({ rootElement: '#one-child' });
     });
   }, Error);
 });
@@ -48,7 +48,7 @@ test("you cannot make a new application that is a descendent of an existing appl
 test("you cannot make a new application that is a duplicate of an existing application", function() {
   raises(function() {
     Ember.run(function() {
-      Ember.Application.create({ rootElement: '#one' }).initialize();
+      Ember.Application.create({ rootElement: '#one' });
     });
   }, Error);
 });
@@ -60,11 +60,11 @@ test("you cannot make two default applications without a rootElement error", fun
   });
 
   Ember.run(function() {
-    application = Ember.Application.create({ router: false }).initialize();
+    application = Ember.Application.create({ router: false });
   });
   raises(function() {
     Ember.run(function() {
-      Ember.Application.create({ router: false }).initialize();
+      Ember.Application.create({ router: false });
     });
   }, Error);
 });
@@ -75,7 +75,7 @@ test("acts like a namespace", function() {
   try {
     var lookup = Ember.lookup = {}, app;
     Ember.run(function() {
-      app = lookup.TestApp = Ember.Application.create({ rootElement: '#two', router: false }).initialize();
+      app = lookup.TestApp = Ember.Application.create({ rootElement: '#two', router: false });
     });
     Ember.BOOTED = false;
     app.Foo = Ember.Object.extend();
@@ -116,8 +116,6 @@ test('initialized application go to initial route', function() {
     Ember.TEMPLATES.index = Ember.Handlebars.compile(
       "<h1>Hi from index</h1>"
     );
-
-    app.initialize();
   });
 
   equal(Ember.$('#qunit-fixture h1').text(), "Hi from index");
@@ -138,8 +136,6 @@ test("initialize application via initialize call", function() {
     app.ApplicationView = Ember.View.extend({
       template: function() { return "<h1>Hello!</h1>"; }
     });
-
-    app.initialize();
   });
 
   // This is not a public way to access the container; we just
@@ -164,8 +160,6 @@ test("initialize application with stateManager via initialize call from Router c
     app.register('template', 'application', function() {
       return "<h1>Hello!</h1>";
     });
-
-    app.initialize();
   });
 
   var router = app.__container__.lookup('router:main');
@@ -192,8 +186,6 @@ test("ApplicationView is inserted into the page", function() {
     app.Router.reopen({
       location: 'none'
     });
-
-    app.initialize();
   });
 
   equal(Ember.$("#qunit-fixture").text(), "Hello!");
@@ -204,7 +196,7 @@ test("Application initialized twice raises error", function() {
     app = Ember.Application.create({
       router: false,
       rootElement: '#qunit-fixture'
-    }).initialize();
+    });
   });
 
   raises(function(){
@@ -219,7 +211,7 @@ test("Minimal Application initialized with just an application template", functi
   Ember.run(function () {
     app = Ember.Application.create({
       rootElement: '#qunit-fixture'
-    }).initialize();
+    });
   });
 
   equal(trim(Ember.$('#qunit-fixture').text()), 'Hello World');
@@ -243,8 +235,6 @@ test('enable log  of libraries with an ENV var', function() {
     app.Router.reopen({
       location: 'none'
     });
-
-    app.initialize();
   });
 
   Ember.LOG_VERSION = false;
@@ -270,8 +260,6 @@ test('disable log version of libraries with an ENV var', function() {
     app.Router.reopen({
       location: 'none'
     });
-
-    app.initialize();
   });
 
   ok(!logged, 'libraries versions logged');
@@ -285,7 +273,7 @@ module("Ember.Application Depedency Injection", {
   setup: function(){
     Ember.$("#qunit-fixture").html("<div id='one'><div id='one-child'>HI</div></div><div id='two'>HI</div>");
     Ember.run(function(){
-      application = Ember.Application.create({rootElement: '#one'}).initialize();
+      application = Ember.Application.create({rootElement: '#one'});
     });
 
     application.Person              = Ember.Object.extend({});
@@ -383,7 +371,6 @@ test("a resolver can be supplied to application", function() {
         }
       })
     });
-    app.initialize();
   });
   equal(Ember.$("#two h1").text(), "Fallback");
   Ember.run(function(){
