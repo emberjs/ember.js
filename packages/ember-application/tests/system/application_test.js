@@ -283,8 +283,9 @@ var locator, originalLookup = Ember.lookup, lookup;
 
 module("Ember.Application Depedency Injection", {
   setup: function(){
+    Ember.$("#qunit-fixture").html("<div id='one'><div id='one-child'>HI</div></div><div id='two'>HI</div>");
     Ember.run(function(){
-      application = Ember.Application.create().initialize();
+      application = Ember.Application.create({rootElement: '#one'}).initialize();
     });
 
     application.Person              = Ember.Object.extend({});
@@ -343,7 +344,7 @@ test('injections', function() {
   ok(application.Email.detectInstance(user.get('communication')));
 });
 
-test('the default resolver hook can look things up in other namespaces', function() {
+test('the default resolver can look things up in other namespaces', function() {
   var UserInterface = lookup.UserInterface = Ember.Namespace.create();
   UserInterface.NavigationController = Ember.Controller.extend();
 
@@ -351,6 +352,46 @@ test('the default resolver hook can look things up in other namespaces', functio
 
   ok(nav instanceof UserInterface.NavigationController, "the result should be an instance of the specified class");
 });
+
+test('the default resolver looks up templates in Ember.TEMPLATES', function() {
+  var fooTemplate = function() {},
+      fooBarTemplate = function() {},
+      fooBarBazTemplate = function() {};
+  Ember.TEMPLATES['foo'] = fooTemplate;
+  Ember.TEMPLATES['fooBar'] = fooBarTemplate;
+  Ember.TEMPLATES['fooBar/baz'] = fooBarBazTemplate;
+  equal(locator.lookup('template:foo'), fooTemplate, "resolves template:foo");
+  equal(locator.lookup('template:fooBar'), fooBarTemplate, "resolves template:foo_bar");
+  equal(locator.lookup('template:fooBar.baz'), fooBarBazTemplate, "resolves template:foo_bar.baz");
+});
+
+test('the default resolver looks up basic name as no prefix', function() {
+  equal(locator.lookup('controller:basic'), Ember.Controller);
+});
+
+test("a resolver can be supplied to application", function() {
+  Ember.$("#two").empty();
+  var fallbackTemplate = function(){ return "<h1>Fallback</h1>"; };
+  Ember.run(function() {
+    app = Ember.Application.create({
+      rootElement: '#two',
+      resolver: Ember.DefaultResolver.extend({
+        resolveTemplate: function(parsedName) {
+          var resolvedTemplate = this._super(parsedName);
+          if (resolvedTemplate) { return resolvedTemplate; }
+          return fallbackTemplate;
+        }
+      })
+    });
+    app.initialize();
+  });
+  equal(Ember.$("#two h1").text(), "Fallback");
+  Ember.run(function(){
+    app.destroy();
+  });
+  app = null;
+});
+
 
 test('normalization', function() {
   equal(locator.normalize('foo:bar'), 'foo:bar');

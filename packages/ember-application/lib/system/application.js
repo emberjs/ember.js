@@ -543,6 +543,13 @@ var Application = Ember.Application = Ember.Namespace.extend({
   */
   ready: Ember.K,
 
+  /**
+    Set this to provide an alternate class to `Ember.DefaultResolver`
+
+    @property resolver
+  */
+  resolver: null,
+
   willDestroy: function() {
     Ember.BOOTED = false;
 
@@ -640,44 +647,12 @@ Ember.Application.reopenClass({
   @return {any} the resolved value for a given lookup
 */
 function resolverFor(namespace) {
+  var resolverClass = namespace.get('resolver') || Ember.DefaultResolver;
+  var resolver = resolverClass.create({
+    namespace: namespace
+  });
   return function(fullName) {
-    var nameParts = fullName.split(":"),
-        type = nameParts[0], name = nameParts[1],
-        root = namespace;
-
-    if (type === 'template') {
-      var templateName = name.replace(/\./g, '/');
-
-      if (Ember.TEMPLATES[templateName]) {
-        return Ember.TEMPLATES[templateName];
-      }
-
-      templateName = decamelize(templateName);
-      if (Ember.TEMPLATES[templateName]) {
-        return Ember.TEMPLATES[templateName];
-      }
-    }
-
-    if (type === 'controller' || type === 'route' || type === 'view') {
-      name = name.replace(/\./g, '_');
-      if (name === 'basic') {
-        name = '';
-      }
-    }
-
-    if (type !== 'template' && name.indexOf('/') !== -1) {
-      var parts = name.split('/');
-      name = parts[parts.length - 1];
-      var namespaceName = capitalize(parts.slice(0, -1).join('.'));
-      root = Ember.Namespace.byName(namespaceName);
-
-      Ember.assert('You are looking for a ' + name + ' ' + type + ' in the ' + namespaceName + ' namespace, but it could not be found', root);
-    }
-
-    var className = classify(name) + classify(type);
-    var factory = get(root, className);
-
-    if (factory) { return factory; }
+    return resolver.resolve(fullName);
   };
 }
 
