@@ -675,6 +675,31 @@ testBoth("when setting a value on a computed property that doesn't handle sets",
   ok(observerFired, 'The observer was still notified');
 });
 
+module('Ember.computed - readOnly');
+
+test('is chainable', function() {
+  var computed = Ember.computed(function(){}).readOnly();
+
+  ok(computed instanceof Ember.Descriptor);
+  ok(computed instanceof Ember.ComputedProperty);
+});
+
+testBoth('protects against setting', function(get, set) {
+  var obj = {  };
+
+  Ember.defineProperty(obj, 'bar', Ember.computed(function(key){
+    return 'barValue';
+  }).readOnly());
+
+  equal(get(obj, 'bar'), 'barValue');
+
+  raises(function(){
+    set(obj, 'bar', 'newBar');
+  }, /Cannot Set: bar on:/ );
+
+  equal(get(obj, 'bar'), 'barValue');
+});
+
 module('CP macros');
 
 testBoth('Ember.computed.not', function(get, set) {
