@@ -488,22 +488,13 @@ Ember.computed.bool = function(dependentKey) {
   @method computed.alias
   @for Ember
 
-  Available options:
-
-  * `readOnly`: `true`
-
   @param {String} dependentKey
-  @param {Object} options
 */
-Ember.computed.alias = function(dependentKey, options) {
+Ember.computed.alias = function(dependentKey) {
   return Ember.computed(dependentKey, function(key, value){
     if (arguments.length > 1) {
-      if (options && options.readOnly){
-        throw new Error('Cannot Set: ' + key + ' on: ' + this.toString() );
-      } else{
-        set(this, dependentKey, value);
-        return value;
-      }
+      set(this, dependentKey, value);
+      return value;
     } else {
       return get(this, dependentKey);
     }
