@@ -9,7 +9,6 @@ require("ember-handlebars");
 */
 
 var get = Ember.get, set = Ember.set;
-var PARENT_VIEW_PATH = /^parentView\./;
 var EmberHandlebars = Ember.Handlebars;
 
 EmberHandlebars.ViewHelper = Ember.Object.create({
