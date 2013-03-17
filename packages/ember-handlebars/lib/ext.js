@@ -326,7 +326,6 @@ Ember.Handlebars.registerBoundHelper = function(name, fn) {
 */
 function evaluateMultiPropertyBoundHelper(context, fn, normalizedProperties, options) {
   var numProperties = normalizedProperties.length,
-      self = this,
       data = options.data,
       view = data.view,
       hash = options.hash,
