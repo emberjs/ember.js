@@ -369,6 +369,11 @@ test('the default resolver looks up basic name as no prefix', function() {
   equal(locator.lookup('controller:basic'), Ember.Controller);
 });
 
+test('the default resolver looks up arbitrary types on the namespace', function() {
+  application.FooManager = Ember.Object.extend({});
+  equal(locator.resolve('manager:foo'), application.FooManager, "looks up FooManager on application");
+});
+
 test("a resolver can be supplied to application", function() {
   Ember.$("#two").empty();
   var fallbackTemplate = function(){ return "<h1>Fallback</h1>"; };

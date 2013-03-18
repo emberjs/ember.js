@@ -101,7 +101,7 @@ Ember.DefaultResolver = Ember.Object.extend({
       var resolved = typeSpecificResolveMethod.call(this, parsedName);
       if (resolved) { return resolved; }
     }
-    this.resolveOther(parsedName);
+    return this.resolveOther(parsedName);
   },
   /**
     Convert the string name of the form "type:name" to
