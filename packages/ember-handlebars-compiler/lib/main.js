@@ -15,7 +15,7 @@ if(!Handlebars && typeof require === 'function') {
   Handlebars = require('handlebars');
 }
 
-Ember.assert("Ember Handlebars requires Handlebars 1.0.0-rc.3 or greater", Handlebars && Handlebars.VERSION.match(/^1\.0\.[0-9](\.rc\.[23456789]+)?/));
+Ember.assert("Ember Handlebars requires Handlebars 1.0.0-rc.3 or greater", Handlebars && Handlebars.VERSION.match(/^1\.0\.[0-9]\-rc\.[3-9]/));
 
 /**
   Prepares the Handlebars templating library for use inside Ember's view
