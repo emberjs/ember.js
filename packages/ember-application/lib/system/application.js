@@ -229,9 +229,7 @@ var Application = Ember.Application = Ember.Namespace.extend({
 
     this._super();
 
-    if (!Ember.testing || Ember.testingDeferred) {
-      this.scheduleInitialize();
-    }
+    this.scheduleInitialize();
 
     if ( Ember.LOG_VERSION ) {
       Ember.LOG_VERSION = false; // we only need to see this once per Application#init
