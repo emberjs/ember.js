@@ -4,9 +4,8 @@ var suite = Ember.EnumerableTests;
 
 suite.module('compact');
 
-suite.test('removes null values from enumerable', function() {
-  var obj = this.newObject([null, 1, null]);
+suite.test('removes null and undefined values from enumerable', function() {
+  var obj = this.newObject([null, 1, false, '', undefined, 0, null]);
   var ary = obj.compact();
-  equal(ary[0], 1);
-  equal(ary.length, 1);
+  deepEqual(ary, [1, false, '', 0]);
 });

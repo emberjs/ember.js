@@ -38,8 +38,8 @@ test("addObjects - adds to end of 'content' if not present", function() {
   deepEqual(array.get('arrangedContent'), [6,5,4,3,2,1], 'arrangedContent stays sorted');
 });
 
-test("compact - returns arrangedContent without nulls", function() {
-  Ember.run(function() { array.set('content', Ember.A([1,3,null,2])); });
+test("compact - returns arrangedContent without nulls and undefined", function() {
+  Ember.run(function() { array.set('content', Ember.A([1,3,null,2,undefined])); });
   deepEqual(array.compact(), [3,2,1]);
 });
 
