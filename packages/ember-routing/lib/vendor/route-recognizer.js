@@ -377,9 +377,9 @@ define("route-recognizer",
 
         // DEBUG GROUP path
 
-        var pathLen = path.length;
-
         if (path.charAt(0) !== "/") { path = "/" + path; }
+
+        var pathLen = path.length;
 
         if (pathLen > 1 && path.charAt(pathLen - 1) === "/") {
           path = path.substr(0, pathLen - 1);
