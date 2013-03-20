@@ -104,7 +104,9 @@ SimpleHandlebarsView.prototype = {
 
   update: function () {
     this.updateId = null;
-    this.morph.html(this.render());
+    if (this.morph) {
+      this.morph.html(this.render());
+    }
   },
 
   transitionTo: function(state) {

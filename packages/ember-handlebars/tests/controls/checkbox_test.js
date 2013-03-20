@@ -52,12 +52,12 @@ test("should become disabled if the disabled attribute is changed", function() {
 test("should support the tabindex property", function() {
   checkboxView = Ember.Checkbox.create({});
 
-  checkboxView.set('tabindex', 6);
+  Ember.run(function() { checkboxView.set('tabindex', 6); });
   append();
 
   equal(checkboxView.$().prop('tabindex'), '6', 'the initial checkbox tabindex is set in the DOM');
 
-  checkboxView.set('tabindex', 3);
+  Ember.run(function() { checkboxView.set('tabindex', 3); });
   equal(checkboxView.$().prop('tabindex'), '3', 'the checkbox tabindex changes when it is changed in the view');
 });
 
