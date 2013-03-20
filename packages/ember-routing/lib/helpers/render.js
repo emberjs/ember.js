@@ -16,6 +16,9 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     If a view class with the same name exists, uses the view class.
 
     If a `model` is specified, it becomes the model for that controller.
+    
+    `render` is also bound. Changing the model will re-render the template
+    with the same controller. You can use `render` for complex subtemplates.
 
     The default target for `{{action}}`s in the rendered template is the
     named controller.
