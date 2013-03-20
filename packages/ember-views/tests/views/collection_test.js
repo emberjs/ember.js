@@ -2,6 +2,8 @@ var set = Ember.set, get = Ember.get;
 var forEach = Ember.EnumerableUtils.forEach;
 var view;
 
+require("ember-handlebars");
+
 module("Ember.CollectionView", {
   setup: function() {
     Ember.CollectionView.CONTAINER_MAP.del = 'em';
@@ -528,4 +530,37 @@ test("a array_proxy that backs an sorted array_controller that backs a collectio
   Ember.run(function() {
     container.destroy();
   });
+});
+
+test("should be able to clear all child views when the row view has metamorph grand children", function() {
+  var ItemView = Ember.View.extend(), RowView = Ember.ContainerView.extend(), CollectionView = Ember.CollectionView.extend();
+  var items = Ember.A(['A']);
+
+  ItemView.reopen({
+    template: Ember.Handlebars.compile('I am {{#if view.isAlive}}alive{{/if}}')
+  });
+  RowView.reopen({
+    init: function() {
+      this._super.apply(this, arguments);
+      this.set('currentView', ItemView.create());
+    }
+  });
+  CollectionView.reopen({
+    content: items,
+    itemViewClass: RowView
+  });
+
+  view = CollectionView.create();
+  Ember.run(function() {
+    view.appendTo('body');
+  });
+
+  try {
+    Ember.run(function() {
+      items.clear();
+    });
+    ok(true, "All items were cleared from the CollectionView");
+  } catch(ex) {
+    ok(false, "Removing the last item from a CollectionView should not throw an expection");
+  }
 });
