@@ -15,9 +15,13 @@ Ember.Handlebars.EachView = Ember.CollectionView.extend(Ember._Metamorph, {
     var binding;
 
     if (itemController) {
+      var container = get(this, 'controller.container');
+      
+      Ember.assert("Could not find container! This is most likely a problem with ember.", container);
+      
       var controller = Ember.ArrayController.create();
       set(controller, 'itemController', itemController);
-      set(controller, 'container', get(this, 'controller.container'));
+      set(controller, 'container', container);
       set(controller, '_eachView', this);
       set(controller, 'target', get(this, 'controller'));
 
