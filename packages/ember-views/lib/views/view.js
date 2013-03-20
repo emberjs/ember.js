@@ -1219,7 +1219,7 @@ Ember.View = Ember.CoreView.extend(
         elem = this.$();
 
         // If we had previously added a class to the element, remove it.
-        if (oldClass) {
+        if (elem && oldClass) {
           elem.removeClass(oldClass);
           // Also remove from classNames so that if the view gets rerendered,
           // the class doesn't get added back to the DOM.
@@ -1228,7 +1228,7 @@ Ember.View = Ember.CoreView.extend(
 
         // If necessary, add a new class. Make sure we keep track of it so
         // it can be removed in the future.
-        if (newClass) {
+        if (elem && newClass) {
           elem.addClass(newClass);
           oldClass = newClass;
         } else {
@@ -1284,6 +1284,7 @@ Ember.View = Ember.CoreView.extend(
       // JavaScript property changes.
       var observer = function() {
         elem = this.$();
+        if (!elem) { return; }
 
         attributeValue = get(this, property);
 
@@ -2159,10 +2160,15 @@ Ember.View = Ember.CoreView.extend(
       observer = target;
       target = null;
     }
+
     var view = this,
+        scheduledObserver = function() {
+          Ember.run.scheduleOnce('render', this, observer);
+        },
         stateCheckedObserver = function(){
-          view.currentState.invokeObserver(this, observer);
+          view.currentState.invokeObserver(this, scheduledObserver);
         };
+
     Ember.addObserver(root, path, target, stateCheckedObserver);
 
     this.one('willClearRender', function() {

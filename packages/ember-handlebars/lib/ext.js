@@ -383,7 +383,7 @@ function evaluateMultiPropertyBoundHelper(context, fn, normalizedProperties, opt
   connected with the helper.
 */
 function rerenderBoundHelperView() {
-  Ember.run.scheduleOnce('render', this, 'rerender');
+  this.rerender();
 }
 
 /**
