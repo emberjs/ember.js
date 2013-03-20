@@ -191,6 +191,28 @@ test("ApplicationView is inserted into the page", function() {
   equal(Ember.$("#qunit-fixture").text(), "Hello!");
 });
 
+test("ApplicationView template without templateName set", function() {
+  Ember.$("#qunit-fixture").empty();
+
+  Ember.run(function() {
+    app = Ember.Application.create({
+      rootElement: "#qunit-fixture"
+    });
+
+    app.Router.reopen({
+      location: "none"
+    });
+
+    app.ApplicationView = Ember.View.extend({
+      template: function() {
+        return "<h1>DOM DOM DOM DOM</h1>";
+      }
+    });
+  });
+
+  equal(Ember.$("#qunit-fixture h1").text(), "DOM DOM DOM DOM");
+});
+
 test("Application initialized twice raises error", function() {
   Ember.run(function() {
     app = Ember.Application.create({
