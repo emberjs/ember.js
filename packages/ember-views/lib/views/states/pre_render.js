@@ -14,6 +14,14 @@ Ember.merge(preRender, {
     view.createElement();
     view.triggerRecursively('willInsertElement');
     // after createElement, the view will be in the hasElement state.
+
+    if (view.get('hasMoveEvents')) {
+      var dispatcher = view.get('eventDispatcher');
+      if (dispatcher) dispatcher.registerViewForMoveEvents(view);
+
+      view.set('registeredForMoveEvents', true);
+    }
+
     fn.call(view);
     view.transitionTo('inDOM');
     view.triggerRecursively('didInsertElement');

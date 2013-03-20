@@ -508,6 +508,9 @@ var Application = Ember.Application = Ember.Namespace.extend({
         });
 
     set(this, 'eventDispatcher', eventDispatcher);
+
+    this.__container__.register('event_dispatcher', 'main', eventDispatcher);
+
     return eventDispatcher;
   },
 

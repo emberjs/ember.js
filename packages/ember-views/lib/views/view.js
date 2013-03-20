@@ -966,6 +966,26 @@ Ember.View = Ember.CoreView.extend(
   /**
     @private
 
+    A reference to the event dispatcher looked up from the container.
+    For use in registering/deregistering the view for 'mousemove' events.
+
+    @property eventDispatcher
+  */
+  eventDispatcher: Ember.computed(function() {
+    var container = get(this, 'container');
+    return container.lookup('event_dispatcher:main');
+  }),
+
+  hasMoveEvents: Ember.computed(function() {
+    var eventManager = get(this, 'eventManager');
+    return this.has('mouseMove') || (eventManager && eventManager['mouseMove']);
+  }).property('eventManager'),
+
+  registeredForMoveEvents: null,
+
+  /**
+    @private
+
     Array of child views. You should never edit this array directly.
     Instead, use `appendChild` and `removeFromParent`.
 

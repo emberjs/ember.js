@@ -257,3 +257,57 @@ test("event manager should be able to re-dispatch events to view", function() {
   Ember.$('#nestedView').trigger('mousedown');
   equal(receivedEvent, 2, "event should go to manager and not view");
 });
+
+test("dispatches mousemove events if there are properly registered views that need them", function() {
+  var receivedEvent;
+
+  view = Ember.View.createWithMixins({
+    render: function(buffer) {
+      buffer.push('some <span id="awesome">awesome</span> content');
+      this._super(buffer);
+    },
+
+    mouseMove: function () {
+      receivedEvent = true;
+    },
+
+    eventDispatcher: dispatcher
+  });
+
+  Ember.run(function() {
+    view.append();
+  });
+
+  var $element = view.$();
+
+  ok(view.get('registeredForMoveEvents'), "view is registered for move events");
+  $element.trigger('mousemove');
+  ok(receivedEvent, "does pass event to associated event method");
+});
+
+test("should not dispatch mousemove events unless there are properly registered views that need them", function() {
+  var receivedEvent;
+
+  view = Ember.View.createWithMixins({
+    render: function(buffer) {
+      buffer.push('some <span id="awesome">awesome</span> content');
+      this._super(buffer);
+    },
+
+    eventDispatcher: dispatcher
+  });
+
+  Ember.run(function() {
+    view.append();
+  });
+
+  var $element = view.$();
+
+  // Add the handler after the view is already in the DOM so we can verify it is NOT called
+  view.mouseMove = function () { receivedEvent = true; };
+
+  ok(!view.get('registeredForMoveEvents'), "view is not registered for move events");
+  $element.trigger('mousemove');
+  ok(!receivedEvent, "does not pass event to associated event method");
+});
+

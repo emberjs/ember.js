@@ -49,6 +49,13 @@ Ember.merge(hasElement, {
 
   destroyElement: function(view) {
     view._notifyWillDestroyElement();
+
+    if (view.get('registeredForMoveEvents')) {
+      var dispatcher = view.get('eventDispatcher');
+      if (dispatcher) dispatcher.deregisterViewForMoveEvents(view);
+      view.set('registeredForMoveEvents', false);
+    }
+
     view.domManager.remove(view);
     set(view, 'element', null);
     if (view._scheduledInsert) {

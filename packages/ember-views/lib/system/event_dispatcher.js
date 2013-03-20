@@ -63,7 +63,7 @@ Ember.EventDispatcher = Ember.Object.extend(
       contextmenu : 'contextMenu',
       click       : 'click',
       dblclick    : 'doubleClick',
-      mousemove   : 'mouseMove',
+      // mousemove   : 'mouseMove',
       focusin     : 'focusIn',
       focusout    : 'focusOut',
       mouseenter  : 'mouseEnter',
@@ -96,6 +96,47 @@ Ember.EventDispatcher = Ember.Object.extend(
       if (events.hasOwnProperty(event)) {
         this.setupHandler(rootElement, event, events[event]);
       }
+    }
+  },
+
+  /**
+    A count of views that need to receive the mousemove event. When this reaches
+    0, the handler for mousemove is removed. When it is incremented to 1, the
+    handler is added.
+  */
+  _viewsForMoveEvents: 0,
+
+  /*
+    A view should call this on insertion when it requires mousemove or touchmoved
+    events.
+
+    @method registerViewForMoveEvents
+    @param {Ember.View} view
+  */
+  registerViewForMoveEvents: function (view) {
+    this._viewsForMoveEvents += 1;
+
+    if (this._viewsForMoveEvents === 1) {
+      var rootElement = Ember.$(get(this, 'rootElement'));
+
+      this.setupHandler(rootElement, 'mousemove', 'mouseMove');
+    }
+  },
+
+  /*
+    A view should call this on removal when it no longer required mousemove
+    or touchmoved events.
+
+    @method deregisterViewForMoveEvents
+    @param {Ember.View} view
+  */
+  deregisterViewForMoveEvents: function (view) {
+    this._viewsForMoveEvents -= 1;
+
+    if (this._viewsForMoveEvents === 0) {
+      var rootElement = Ember.$(get(this, 'rootElement'));
+
+      this.removeHandler(rootElement, 'mousemove', 'mouseMove');
     }
   },
 
@@ -156,6 +197,13 @@ Ember.EventDispatcher = Ember.Object.extend(
         }
       }, this);
     });
+  },
+
+  removeHandler: function(rootElement, event, eventName) {
+    var self = this;
+
+    rootElement.undelegate('.ember-view', event + '.ember');
+    rootElement.undelegate('[data-ember-action]', event + '.ember');
   },
 
   _findNearestEventManager: function(view, eventName) {
