@@ -121,32 +121,6 @@ test("{{render}} helper should render given template with a supplied model", fun
   deepEqual(postController.get('model'), { title: "Rails is unagi" });
 });
 
-
-test("{{render}} helper should not use singleton controller with a supplied model", function() {
-  var template = "<h1>HI</h1>{{render 'post' post}}{{render 'post' post}}";
-  var post = {
-    title: 'Rails is omakase'
-  };
-
-  var Controller = Ember.Controller.extend({
-    container: container,
-    post: post
-  });
-
-  var controller = Controller.create();
-
-  view = Ember.View.create({
-    controller: controller,
-    template: Ember.Handlebars.compile(template)
-  });
-
-  Ember.TEMPLATES['post'] = compile('<p>{{title}}</p>');
-
-  appendView(view);
-
-  equal(view.$().text(), 'HIRails is omakaseRails is omakase');
-});
-
 test("{{render}} helper should render with given controller", function() {
   var template = '<h1>HI</h1>{{render home controller="posts"}}';
   var controller = Ember.Controller.extend({container: container});
@@ -164,7 +138,7 @@ test("{{render}} helper should render with given controller", function() {
   equal(container.lookup('controller:posts'), renderedView.get('controller'), 'rendered with correct controller');
 });
 
-test("{{render}} helper should render a template only once", function() {
+test("{{render}} helper should render a template without a model only once", function() {
   var template = "<h1>HI</h1>{{render home}}<hr/>{{render home}}";
   var controller = Ember.Controller.extend({container: container});
   view = Ember.View.create({
@@ -177,6 +151,86 @@ test("{{render}} helper should render a template only once", function() {
   raises(function() {
     appendView(view);
   }, 'should raise an exception');
+});
+
+test("{{render}} helper should render templates with models multiple times", function() {
+  var template = "<h1>HI</h1> {{render 'post' post1}} {{render 'post' post2}}";
+  var post1 = {
+    title: "Me first"
+  };
+  var post2 = {
+    title: "Then me"
+  };
+
+  var Controller = Ember.Controller.extend({
+    container: container,
+    post1: post1,
+    post2: post2
+  });
+
+  var controller = Controller.create();
+
+  view = Ember.View.create({
+    controller: controller,
+    template: Ember.Handlebars.compile(template)
+  });
+
+  var PostController = Ember.ObjectController.extend();
+  container.register('controller', 'post', PostController, {singleton: false});
+
+  Ember.TEMPLATES['post'] = compile("<p>{{title}}</p>");
+
+  appendView(view);
+
+  var postController1 = view.get('_childViews')[0].get('controller');
+  var postController2 = view.get('_childViews')[1].get('controller');
+
+  equal(view.$().text(), 'HI Me first Then me');
+  equal(postController1.get('model'), post1);
+  equal(postController2.get('model'), post2);
+
+  set(controller, 'post1', { title: "I am new" });
+
+  equal(view.$().text(), 'HI I am new Then me');
+  deepEqual(postController1.get('model'), { title: "I am new" });
+});
+
+test("{{render}} helper should render templates both with and without models", function() {
+  var template = "<h1>HI</h1> {{render 'post'}} {{render 'post' post}}";
+  var post = {
+    title: "Rails is omakase"
+  };
+
+  var Controller = Ember.Controller.extend({
+    container: container,
+    post: post
+  });
+
+  var controller = Controller.create();
+
+  view = Ember.View.create({
+    controller: controller,
+    template: Ember.Handlebars.compile(template)
+  });
+
+  var PostController = Ember.ObjectController.extend();
+  container.register('controller', 'post', PostController, {singleton: false});
+
+  Ember.TEMPLATES['post'] = compile("<p>Title:{{title}}</p>");
+
+  appendView(view);
+
+  var postController1 = view.get('_childViews')[0].get('controller');
+  var postController2 = view.get('_childViews')[1].get('controller');
+
+  equal(view.$().text(), 'HI Title: Title:Rails is omakase');
+  equal(postController1.get('model'), null);
+  equal(postController2.get('model'), post);
+
+  set(controller, 'post', { title: "Rails is unagi" });
+
+  equal(view.$().text(), 'HI Title: Title:Rails is unagi');
+  deepEqual(postController2.get('model'), { title: "Rails is unagi" });
 });
 
 test("{{render}} helper should link child controllers to the parent controller", function() {
