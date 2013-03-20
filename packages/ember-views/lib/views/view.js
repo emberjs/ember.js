@@ -2159,14 +2159,19 @@ Ember.View = Ember.CoreView.extend(
       observer = target;
       target = null;
     }
+
     var view = this,
         stateCheckedObserver = function(){
           view.currentState.invokeObserver(this, observer);
+        },
+        scheduledObserver = function() {
+          Ember.run.scheduleOnce('render', this, stateCheckedObserver);
         };
-    Ember.addObserver(root, path, target, stateCheckedObserver);
+
+    Ember.addObserver(root, path, target, scheduledObserver);
 
     this.one('willClearRender', function() {
-      Ember.removeObserver(root, path, target, stateCheckedObserver);
+      Ember.removeObserver(root, path, target, scheduledObserver);
     });
   }
 
