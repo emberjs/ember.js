@@ -563,3 +563,29 @@ test("should invalidate `element` on itself and childViews when being rendered b
     root.destroy();
   });
 });
+
+test("should be able to observe properties on `@each` in a subclass", function () {
+  var observerRan = false;
+
+  Ember.run(function() {
+    container = Ember.ContainerView.createWithMixins({
+      childViews: ['displayView'],
+
+      displayView: Ember.View.extend({
+        isDisplayed: true
+      }),
+
+      observer: Ember.observer(function () {
+        observerRan = true;
+      }, '@each.isDisplayed')
+    });
+
+    container.appendTo('#qunit-fixture');
+  });
+
+  Ember.run(function() {
+    container.set('childViews.firstObject.isDisplayed', false);
+  });
+
+  ok(observerRan, "observer was called on change");
+});

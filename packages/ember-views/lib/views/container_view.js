@@ -217,6 +217,8 @@ Ember.ContainerView = Ember.View.extend(Ember.MutableArray, {
     if (currentView) {
       _childViews.push(this.createChildView(currentView));
     }
+
+    this.arrayContentDidChange(0, 0, _childViews.length);
   },
 
   replace: function(idx, removedCount, addedViews) {
