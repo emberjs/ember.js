@@ -17,6 +17,7 @@ define(
 
 
     function HTMLProcessor() {
+      // document fragment
       this.elementStack = [new HTMLElement()];
       this.tokenizer = new Tokenizer('');
     };
@@ -31,15 +32,16 @@ define(
         this.accept(statements[i]);
       }
 
-      processTokens(this, this.elementStack, [this.tokenizer.tokenizeEOF()]);
+      process(this, this.tokenizer.tokenizeEOF());
 
+      // return the children of the top-level document fragment
       return this.elementStack[0].children;
     };
 
     processor.block = function(block) {
       switchToHandlebars(this);
 
-      processToken(this, this.elementStack, block);
+      process(this, block);
 
       if (block.program) {
         this.accept(block.program);
@@ -51,13 +53,16 @@ define(
 
     processor.content = function(content) {
       var tokens = this.tokenizer.tokenizePart(content.string);
-      return processTokens(this, this.elementStack, tokens);
+  
+      return tokens.forEach(function(token) {
+        process(this, token);
+      }, this);
     };
 
     processor.mustache = function(mustache) {
       switchToHandlebars(this);
 
-      pushChild(this, mustache);
+      process(this, mustache);
     };
 
     function switchToHandlebars(compiler) {
@@ -65,38 +70,19 @@ define(
 
       // TODO: Monkey patch Chars.addChar like attributes
       if (token instanceof Chars) {
-        processToken(compiler, compiler.elementStack, token);
+        process(compiler, token);
         compiler.tokenizer.token = null;
       }
     }
 
-    function processTokens(compiler, elementStack, tokens) {
-      tokens.forEach(function(token) {
-        processToken(compiler, elementStack, token);
-      });
+    function process(compiler, token) {
+      var tokenizer = compiler.tokenizer;
+      processToken(tokenizer.state, compiler.elementStack, tokenizer.token, token);
     }
 
     function currentElement(processor) {
       var elementStack = processor.elementStack;
       return elementStack[elementStack.length - 1];
-    }
-
-    function pushChild(processor, token) {
-      var state = processor.tokenizer.state;
-
-      switch(state) {
-        case "attributeValueSingleQuoted":
-        case "attributeValueUnquoted":
-        case "attributeValueDoubleQuoted":
-          processor.tokenizer.token.addToAttributeValue(token);
-          return;
-        case "beforeAttributeName":
-          processor.tokenizer.token.addTagHelper(token);
-          return;
-        default:
-          var element = currentElement(processor);
-          element.children.push(token);
-      }
     }
 
     StartTag.prototype.addToAttributeValue = function(char) {
