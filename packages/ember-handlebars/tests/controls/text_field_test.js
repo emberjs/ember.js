@@ -70,6 +70,19 @@ test("input placeholder is updated when setting placeholder property of view", f
   equal(textField.$().attr('placeholder'), "bar", "updates text field after placeholder changes");
 });
 
+test("input name is updated when setting name property of view", function() {
+  Ember.run(function() {
+    set(textField, 'name', 'foo');
+    textField.append();
+  });
+
+  equal(textField.$().attr('name'), "foo", "renders text field with name");
+
+  Ember.run(function() { set(textField, 'name', 'bar'); });
+
+  equal(textField.$().attr('name'), "bar", "updates text field after name changes");
+});
+
 test("input maxlength is updated when setting maxlength property of view", function() {
   Ember.run(function() {
     set(textField, 'maxlength', '30');
