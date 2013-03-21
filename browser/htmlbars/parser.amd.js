@@ -18,7 +18,6 @@ define(
 
     function HTMLProcessor() {
       this.elementStack = [{ children: [] }];
-      this.pendingTagHelpers = [];
       this.tokenizer = new Tokenizer('');
     };
 
@@ -92,7 +91,7 @@ define(
           processor.tokenizer.token.addToAttributeValue(token);
           return;
         case "beforeAttributeName":
-          processor.pendingTagHelpers.push(token);
+          processor.tokenizer.token.addTagHelper(token);
           return;
         default:
           var element = currentElement(processor);
@@ -109,5 +108,11 @@ define(
         value.push(char);
       }
     };
+
+    StartTag.prototype.addTagHelper = function(helper) {
+      var helpers = this.helpers = this.helpers || [];
+
+      helpers.push(helper);
+    }
     __exports__.preprocess = preprocess;
   });

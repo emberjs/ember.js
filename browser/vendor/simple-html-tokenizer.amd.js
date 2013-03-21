@@ -317,6 +317,8 @@ define(
     }
 
     Tag.prototype = {
+      constructor: Tag,
+
       addToTagName: function(char) {
         this.tagName += char;
       },
@@ -346,6 +348,7 @@ define(
     }
 
     StartTag.prototype = objectCreate(Tag.prototype);
+    StartTag.prototype.type = 'StartTag';
     StartTag.prototype.constructor = StartTag;
 
     StartTag.prototype.toHTML = function() {
@@ -393,6 +396,7 @@ define(
     }
 
     EndTag.prototype = objectCreate(Tag.prototype);
+    EndTag.prototype.type = 'EndTag';
     EndTag.prototype.constructor = EndTag;
 
     EndTag.prototype.toHTML = function() {
@@ -408,6 +412,9 @@ define(
     }
 
     Chars.prototype = {
+      type: 'Chars',
+      constructor: Chars,
+
       addChar: function(char) {
         this.chars += char;
       },
@@ -422,6 +429,9 @@ define(
     }
 
     CommentToken.prototype = {
+      type: 'CommentToken',
+      constructor: CommentToken,
+  
       finalize: function() { return this; },
 
       addChar: function(char) {

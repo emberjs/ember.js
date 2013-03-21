@@ -8,31 +8,45 @@ define(
     var StartTag = __dependency2__.StartTag;
     var EndTag = __dependency2__.EndTag;
 
-    function processToken(processor, elementStack, token) {
-      var currentElement = elementStack[elementStack.length - 1];
-      if (token instanceof Chars) {
-        currentElement.children.push(token.chars);
-      } else if (token instanceof EndTag) {
-        if (currentElement.tag === token.tagName) {
-          var value = config.processHTMLMacros(currentElement)
-          elementStack.pop();
+    function processToken(processor, stack, token) {
+      // EOF
+      if (token === undefined) { return; }
+      return handlers[token.type](token, currentElement(stack), stack);
+    }
 
+    var handlers = {
+      Chars: function(token, current) {
+        current.children.push(token.chars);
+      },
+
+      StartTag: function(tag, current, stack) {
+        var element = new HTMLElement(tag.tagName, tag.attributes, [], tag.helpers);
+        stack.push(element);
+      },
+
+      EndTag: function(tag, current, stack) {
+        if (current.tag === tag.tagName) {
+          var value = config.processHTMLMacros(current)
+          stack.pop();
+
+          var parent = currentElement(stack);
           if (value === undefined) {
-            elementStack[elementStack.length - 1].children.push(currentElement);
+            parent.children.push(currentElement);
           } else if (value instanceof HTMLElement) {
-            elementStack[elementStack.length - 1].children.push(value);
+            parent.children.push(value);
           }
         } else {
           throw new Error("Closing tag " + token.tagName + " did not match last open tag " + currentElement.tag);
         }
-      } else if (token instanceof StartTag) {
-        var element = new HTMLElement(token.tagName, token.attributes);
-        element.helpers = processor.pendingTagHelpers.slice();
-        processor.pendingTagHelpers = [];
-        elementStack.push(element);
-      } else if (token instanceof Handlebars.AST.BlockNode) {
-        elementStack.push(new BlockElement(token.mustache));
+      },
+
+      block: function(block, current, stack) {
+        stack.push(new BlockElement(block.mustache));
       }
+    }
+
+    function currentElement(stack) {
+      return stack[stack.length - 1];
     }
 
 
