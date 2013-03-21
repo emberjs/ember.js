@@ -1,15 +1,15 @@
 define(
-  ["htmlbars/compiler/utils","htmlbars/compiler/stack","htmlbars/compiler/quoting","exports"],
-  function(__dependency1__, __dependency2__, __dependency3__, __exports__) {
+  ["htmlbars/compiler/utils","htmlbars/compiler/invoke","htmlbars/compiler/stack","htmlbars/compiler/quoting","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __exports__) {
     "use strict";
     var processOpcodes = __dependency1__.processOpcodes;
     var prepareHelper = __dependency1__.prepareHelper;
-    var helper = __dependency1__.helper;
-    var popStack = __dependency2__.popStack;
-    var pushStack = __dependency2__.pushStack;
-    var quotedString = __dependency3__.quotedString;
-    var quotedArray = __dependency3__.quotedArray;
-    var hash = __dependency3__.hash;
+    var helper = __dependency2__.helper;
+    var popStack = __dependency3__.popStack;
+    var pushStack = __dependency3__.pushStack;
+    var quotedString = __dependency4__.quotedString;
+    var quotedArray = __dependency4__.quotedArray;
+    var hash = __dependency4__.hash;
 
     function AttrCompiler() {};
 

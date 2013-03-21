@@ -1,22 +1,22 @@
 define(
-  ["htmlbars/compiler/utils","htmlbars/compiler/elements","htmlbars/compiler/stack","htmlbars/compiler/quoting","htmlbars/runtime","htmlbars/helpers","exports"],
-  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __dependency6__, __exports__) {
+  ["htmlbars/compiler/utils","htmlbars/compiler/invoke","htmlbars/compiler/elements","htmlbars/compiler/stack","htmlbars/compiler/quoting","htmlbars/runtime","htmlbars/helpers","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __dependency6__, __dependency7__, __exports__) {
     "use strict";
     var processOpcodes = __dependency1__.processOpcodes;
-    var helper = __dependency1__.helper;
-    var invokeMethod = __dependency1__.invokeMethod;
-    var invokeFunction = __dependency1__.invokeFunction;
     var prepareHelper = __dependency1__.prepareHelper;
-    var pushElement = __dependency2__.pushElement;
-    var popElement = __dependency2__.popElement;
-    var topElement = __dependency2__.topElement;
-    var pushStack = __dependency3__.pushStack;
-    var popStack = __dependency3__.popStack;
-    var quotedString = __dependency4__.quotedString;
-    var quotedArray = __dependency4__.quotedArray;
-    var hash = __dependency4__.hash;
-    var domHelpers = __dependency5__.domHelpers;
-    var helpers = __dependency6__.helpers;
+    var invokeMethod = __dependency2__.invokeMethod;
+    var invokeFunction = __dependency2__.invokeFunction;
+    var helper = __dependency2__.helper;
+    var pushElement = __dependency3__.pushElement;
+    var popElement = __dependency3__.popElement;
+    var topElement = __dependency3__.topElement;
+    var pushStack = __dependency4__.pushStack;
+    var popStack = __dependency4__.popStack;
+    var quotedString = __dependency5__.quotedString;
+    var quotedArray = __dependency5__.quotedArray;
+    var hash = __dependency5__.hash;
+    var domHelpers = __dependency6__.domHelpers;
+    var helpers = __dependency7__.helpers;
 
     function Compiler2() {};
 

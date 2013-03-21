@@ -77,17 +77,17 @@ define("htmlbars/ast",
   });
 
 define("htmlbars/compiler/attr",
-  ["htmlbars/compiler/utils","htmlbars/compiler/stack","htmlbars/compiler/quoting","exports"],
-  function(__dependency1__, __dependency2__, __dependency3__, __exports__) {
+  ["htmlbars/compiler/utils","htmlbars/compiler/invoke","htmlbars/compiler/stack","htmlbars/compiler/quoting","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __exports__) {
     "use strict";
     var processOpcodes = __dependency1__.processOpcodes;
     var prepareHelper = __dependency1__.prepareHelper;
-    var helper = __dependency1__.helper;
-    var popStack = __dependency2__.popStack;
-    var pushStack = __dependency2__.pushStack;
-    var quotedString = __dependency3__.quotedString;
-    var quotedArray = __dependency3__.quotedArray;
-    var hash = __dependency3__.hash;
+    var helper = __dependency2__.helper;
+    var popStack = __dependency3__.popStack;
+    var pushStack = __dependency3__.pushStack;
+    var quotedString = __dependency4__.quotedString;
+    var quotedArray = __dependency4__.quotedArray;
+    var hash = __dependency4__.hash;
 
     function AttrCompiler() {};
 
@@ -191,6 +191,33 @@ define("htmlbars/compiler/elements",
     __exports__.pushElement = pushElement;
     __exports__.popElement = popElement;
     __exports__.topElement = topElement;
+  });
+
+define("htmlbars/compiler/invoke",
+  ["exports"],
+  function(__exports__) {
+    "use strict";
+    function invokeMethod(receiver, method) {
+      var params = [].slice.call(arguments, 2);
+      return receiver + "." + method + "(" + params.join(", ") + ")";
+    }
+
+
+    function invokeFunction(func) {
+      var params = [].slice.call(arguments, 1);
+      return func + "(" + params.join(", ") + ")";
+    }
+
+
+    function helper() {
+      var args = [].slice.call(arguments, 0);
+      args.unshift('dom');
+      return invokeMethod.apply(this, args);
+    }
+
+    __exports__.invokeMethod = invokeMethod;
+    __exports__.invokeFunction = invokeFunction;
+    __exports__.helper = helper;
   });
 
 define("htmlbars/compiler/pass1",
@@ -431,24 +458,24 @@ define("htmlbars/compiler/pass1",
   });
 
 define("htmlbars/compiler/pass2",
-  ["htmlbars/compiler/utils","htmlbars/compiler/elements","htmlbars/compiler/stack","htmlbars/compiler/quoting","htmlbars/runtime","htmlbars/helpers","exports"],
-  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __dependency6__, __exports__) {
+  ["htmlbars/compiler/utils","htmlbars/compiler/invoke","htmlbars/compiler/elements","htmlbars/compiler/stack","htmlbars/compiler/quoting","htmlbars/runtime","htmlbars/helpers","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __dependency6__, __dependency7__, __exports__) {
     "use strict";
     var processOpcodes = __dependency1__.processOpcodes;
-    var helper = __dependency1__.helper;
-    var invokeMethod = __dependency1__.invokeMethod;
-    var invokeFunction = __dependency1__.invokeFunction;
     var prepareHelper = __dependency1__.prepareHelper;
-    var pushElement = __dependency2__.pushElement;
-    var popElement = __dependency2__.popElement;
-    var topElement = __dependency2__.topElement;
-    var pushStack = __dependency3__.pushStack;
-    var popStack = __dependency3__.popStack;
-    var quotedString = __dependency4__.quotedString;
-    var quotedArray = __dependency4__.quotedArray;
-    var hash = __dependency4__.hash;
-    var domHelpers = __dependency5__.domHelpers;
-    var helpers = __dependency6__.helpers;
+    var invokeMethod = __dependency2__.invokeMethod;
+    var invokeFunction = __dependency2__.invokeFunction;
+    var helper = __dependency2__.helper;
+    var pushElement = __dependency3__.pushElement;
+    var popElement = __dependency3__.popElement;
+    var topElement = __dependency3__.topElement;
+    var pushStack = __dependency4__.pushStack;
+    var popStack = __dependency4__.popStack;
+    var quotedString = __dependency5__.quotedString;
+    var quotedArray = __dependency5__.quotedArray;
+    var hash = __dependency5__.hash;
+    var domHelpers = __dependency6__.domHelpers;
+    var helpers = __dependency7__.helpers;
 
     function Compiler2() {};
 
@@ -668,25 +695,6 @@ define("htmlbars/compiler/utils",
     }
 
 
-    function invokeMethod(receiver, method) {
-      var params = [].slice.call(arguments, 2);
-      return receiver + "." + method + "(" + params.join(", ") + ")";
-    }
-
-
-    function invokeFunction(func) {
-      var params = [].slice.call(arguments, 1);
-      return func + "(" + params.join(", ") + ")";
-    }
-
-
-    function helper() {
-      var args = [].slice.call(arguments, 0);
-      args.unshift('dom');
-      return invokeMethod.apply(this, args);
-    }
-
-
     function prepareHelper(compiler, size) {
       var args = [],
           types = [],
@@ -739,9 +747,6 @@ define("htmlbars/compiler/utils",
 
 
     __exports__.processOpcodes = processOpcodes;
-    __exports__.invokeMethod = invokeMethod;
-    __exports__.invokeFunction = invokeFunction;
-    __exports__.helper = helper;
     __exports__.prepareHelper = prepareHelper;
     __exports__.compileAST = compileAST;
   });
