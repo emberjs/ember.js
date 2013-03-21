@@ -1,15 +1,15 @@
 define(
-  ["htmlbars/compiler/utils","htmlbars/compiler/invoke","htmlbars/compiler/stack","htmlbars/compiler/quoting","exports"],
-  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __exports__) {
+  ["htmlbars/compiler/utils","htmlbars/compiler/helpers","htmlbars/compiler/invoke","htmlbars/compiler/stack","htmlbars/compiler/quoting","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __exports__) {
     "use strict";
     var processOpcodes = __dependency1__.processOpcodes;
-    var prepareHelper = __dependency1__.prepareHelper;
-    var helper = __dependency2__.helper;
-    var popStack = __dependency3__.popStack;
-    var pushStack = __dependency3__.pushStack;
-    var string = __dependency4__.string;
-    var hash = __dependency4__.hash;
-    var quotedArray = __dependency4__.quotedArray;
+    var prepareHelper = __dependency2__.prepareHelper;
+    var helper = __dependency3__.helper;
+    var popStack = __dependency4__.popStack;
+    var pushStack = __dependency4__.pushStack;
+    var string = __dependency5__.string;
+    var hash = __dependency5__.hash;
+    var quotedArray = __dependency5__.quotedArray;
 
     function AttrCompiler() {};
 
@@ -50,7 +50,7 @@ define(
     };
 
     attrCompiler.helper = function(name, size, escaped) {
-      var prepared = prepareHelper(this, size);
+      var prepared = prepareHelper(this.stack, size);
 
       prepared.options.push('rerender:options.rerender');
 

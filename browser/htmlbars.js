@@ -77,17 +77,17 @@ define("htmlbars/ast",
   });
 
 define("htmlbars/compiler/attr",
-  ["htmlbars/compiler/utils","htmlbars/compiler/invoke","htmlbars/compiler/stack","htmlbars/compiler/quoting","exports"],
-  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __exports__) {
+  ["htmlbars/compiler/utils","htmlbars/compiler/helpers","htmlbars/compiler/invoke","htmlbars/compiler/stack","htmlbars/compiler/quoting","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __exports__) {
     "use strict";
     var processOpcodes = __dependency1__.processOpcodes;
-    var prepareHelper = __dependency1__.prepareHelper;
-    var helper = __dependency2__.helper;
-    var popStack = __dependency3__.popStack;
-    var pushStack = __dependency3__.pushStack;
-    var string = __dependency4__.string;
-    var hash = __dependency4__.hash;
-    var quotedArray = __dependency4__.quotedArray;
+    var prepareHelper = __dependency2__.prepareHelper;
+    var helper = __dependency3__.helper;
+    var popStack = __dependency4__.popStack;
+    var pushStack = __dependency4__.pushStack;
+    var string = __dependency5__.string;
+    var hash = __dependency5__.hash;
+    var quotedArray = __dependency5__.quotedArray;
 
     function AttrCompiler() {};
 
@@ -128,7 +128,7 @@ define("htmlbars/compiler/attr",
     };
 
     attrCompiler.helper = function(name, size, escaped) {
-      var prepared = prepareHelper(this, size);
+      var prepared = prepareHelper(this.stack, size);
 
       prepared.options.push('rerender:options.rerender');
 
@@ -191,6 +191,53 @@ define("htmlbars/compiler/elements",
     __exports__.pushElement = pushElement;
     __exports__.popElement = popElement;
     __exports__.topElement = topElement;
+  });
+
+define("htmlbars/compiler/helpers",
+  ["htmlbars/compiler/quoting","htmlbars/compiler/stack","exports"],
+  function(__dependency1__, __dependency2__, __exports__) {
+    "use strict";
+    var array = __dependency1__.array;
+    var hash = __dependency1__.hash;
+    var string = __dependency1__.string;
+    var popStack = __dependency2__.popStack;
+
+    function prepareHelper(stack, size) {
+      var args = [],
+          types = [],
+          hashPairs = [],
+          hashTypes = [],
+          keyName,
+          i;
+
+      var hashSize = popStack(stack);
+
+      for (i=0; i<hashSize; i++) {
+        keyName = popStack(stack);
+        hashPairs.push(keyName + ':' + popStack(stack));
+        hashTypes.push(keyName + ':' + popStack(stack));
+      }
+
+      for (var i=0; i<size; i++) {
+        args.push(popStack(stack));
+        types.push(popStack(stack));
+      }
+
+      var programId = popStack(stack);
+
+      var options = ['types:' + array(types), 'hashTypes:' + hash(hashTypes), 'hash:' + hash(hashPairs)];
+
+      if (programId !== null) {
+        options.push('render:child' + programId);
+      }
+
+      return {
+        options: options,
+        args: array(args),
+      };
+    }
+
+    __exports__.prepareHelper = prepareHelper;
   });
 
 define("htmlbars/compiler/invoke",
@@ -455,23 +502,23 @@ define("htmlbars/compiler/pass1",
   });
 
 define("htmlbars/compiler/pass2",
-  ["htmlbars/compiler/utils","htmlbars/compiler/invoke","htmlbars/compiler/elements","htmlbars/compiler/stack","htmlbars/compiler/quoting","htmlbars/runtime","htmlbars/helpers","exports"],
-  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __dependency6__, __dependency7__, __exports__) {
+  ["htmlbars/compiler/utils","htmlbars/compiler/helpers","htmlbars/compiler/invoke","htmlbars/compiler/elements","htmlbars/compiler/stack","htmlbars/compiler/quoting","htmlbars/runtime","htmlbars/helpers","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __dependency6__, __dependency7__, __dependency8__, __exports__) {
     "use strict";
     var processOpcodes = __dependency1__.processOpcodes;
-    var prepareHelper = __dependency1__.prepareHelper;
-    var call = __dependency2__.call;
-    var helper = __dependency2__.helper;
-    var pushElement = __dependency3__.pushElement;
-    var popElement = __dependency3__.popElement;
-    var topElement = __dependency3__.topElement;
-    var pushStack = __dependency4__.pushStack;
-    var popStack = __dependency4__.popStack;
-    var string = __dependency5__.string;
-    var quotedArray = __dependency5__.quotedArray;
-    var hash = __dependency5__.hash;
-    var domHelpers = __dependency6__.domHelpers;
-    var helpers = __dependency7__.helpers;
+    var prepareHelper = __dependency2__.prepareHelper;
+    var call = __dependency3__.call;
+    var helper = __dependency3__.helper;
+    var pushElement = __dependency4__.pushElement;
+    var popElement = __dependency4__.popElement;
+    var topElement = __dependency4__.topElement;
+    var pushStack = __dependency5__.pushStack;
+    var popStack = __dependency5__.popStack;
+    var string = __dependency6__.string;
+    var quotedArray = __dependency6__.quotedArray;
+    var hash = __dependency6__.hash;
+    var domHelpers = __dependency7__.domHelpers;
+    var helpers = __dependency8__.helpers;
 
     function Compiler2() {};
 
@@ -589,12 +636,12 @@ define("htmlbars/compiler/pass2",
     };
 
     compiler2.helper = function(name, size, escaped) {
-      var prepared = prepareHelper(this, size);
+      var prepared = prepareHelper(this.stack, size);
       pushStack(this.stack, helper('helperContents', string(name), this.el(), 'context', prepared.args, hash(prepared.options)));
     };
 
     compiler2.nodeHelper = function(name, size) {
-      var prepared = prepareHelper(this, size);
+      var prepared = prepareHelper(this.stack, size);
       this.push(helper('helperContents', string(name), this.el(), 'context', prepared.args, hash(prepared.options)));
     };
 
@@ -607,7 +654,7 @@ define("htmlbars/compiler/pass2",
     };
 
     compiler2.helperAttr = function(attrName, name, size) {
-      var prepared = prepareHelper(this, size);
+      var prepared = prepareHelper(this.stack, size);
       pushStack(this.stack, helper('helperAttr', string(name), this.el(), string(attrName), 'context', prepared.args, hash(prepared.options)));
     };
 
@@ -676,54 +723,13 @@ define("htmlbars/compiler/stack",
   });
 
 define("htmlbars/compiler/utils",
-  ["htmlbars/compiler/quoting","htmlbars/compiler/stack","exports"],
-  function(__dependency1__, __dependency2__, __exports__) {
+  ["exports"],
+  function(__exports__) {
     "use strict";
-    var array = __dependency1__.array;
-    var hash = __dependency1__.hash;
-    var string = __dependency1__.string;
-    var popStack = __dependency2__.popStack;
-
     function processOpcodes(compiler, opcodes) {
       opcodes.forEach(function(opcode) {
         compiler[opcode.type].apply(compiler, opcode.params);
       });
-    }
-
-
-    function prepareHelper(compiler, size) {
-      var args = [],
-          types = [],
-          hashPairs = [],
-          hashTypes = [],
-          keyName,
-          i;
-
-      var hashSize = popStack(compiler.stack);
-
-      for (i=0; i<hashSize; i++) {
-        keyName = popStack(compiler.stack);
-        hashPairs.push(keyName + ':' + popStack(compiler.stack));
-        hashTypes.push(keyName + ':' + popStack(compiler.stack));
-      }
-
-      for (var i=0; i<size; i++) {
-        args.push(popStack(compiler.stack));
-        types.push(popStack(compiler.stack));
-      }
-
-      var programId = popStack(compiler.stack);
-
-      var options = ['types:' + array(types), 'hashTypes:' + hash(hashTypes), 'hash:' + hash(hashPairs)];
-
-      if (programId !== null) {
-        options.push('render:child' + programId);
-      }
-
-      return {
-        options: options,
-        args: array(args),
-      };
     }
 
 
@@ -743,7 +749,6 @@ define("htmlbars/compiler/utils",
 
 
     __exports__.processOpcodes = processOpcodes;
-    __exports__.prepareHelper = prepareHelper;
     __exports__.compileAST = compileAST;
   });
 

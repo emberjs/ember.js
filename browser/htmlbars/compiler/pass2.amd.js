@@ -1,21 +1,21 @@
 define(
-  ["htmlbars/compiler/utils","htmlbars/compiler/invoke","htmlbars/compiler/elements","htmlbars/compiler/stack","htmlbars/compiler/quoting","htmlbars/runtime","htmlbars/helpers","exports"],
-  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __dependency6__, __dependency7__, __exports__) {
+  ["htmlbars/compiler/utils","htmlbars/compiler/helpers","htmlbars/compiler/invoke","htmlbars/compiler/elements","htmlbars/compiler/stack","htmlbars/compiler/quoting","htmlbars/runtime","htmlbars/helpers","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __dependency6__, __dependency7__, __dependency8__, __exports__) {
     "use strict";
     var processOpcodes = __dependency1__.processOpcodes;
-    var prepareHelper = __dependency1__.prepareHelper;
-    var call = __dependency2__.call;
-    var helper = __dependency2__.helper;
-    var pushElement = __dependency3__.pushElement;
-    var popElement = __dependency3__.popElement;
-    var topElement = __dependency3__.topElement;
-    var pushStack = __dependency4__.pushStack;
-    var popStack = __dependency4__.popStack;
-    var string = __dependency5__.string;
-    var quotedArray = __dependency5__.quotedArray;
-    var hash = __dependency5__.hash;
-    var domHelpers = __dependency6__.domHelpers;
-    var helpers = __dependency7__.helpers;
+    var prepareHelper = __dependency2__.prepareHelper;
+    var call = __dependency3__.call;
+    var helper = __dependency3__.helper;
+    var pushElement = __dependency4__.pushElement;
+    var popElement = __dependency4__.popElement;
+    var topElement = __dependency4__.topElement;
+    var pushStack = __dependency5__.pushStack;
+    var popStack = __dependency5__.popStack;
+    var string = __dependency6__.string;
+    var quotedArray = __dependency6__.quotedArray;
+    var hash = __dependency6__.hash;
+    var domHelpers = __dependency7__.domHelpers;
+    var helpers = __dependency8__.helpers;
 
     function Compiler2() {};
 
@@ -133,12 +133,12 @@ define(
     };
 
     compiler2.helper = function(name, size, escaped) {
-      var prepared = prepareHelper(this, size);
+      var prepared = prepareHelper(this.stack, size);
       pushStack(this.stack, helper('helperContents', string(name), this.el(), 'context', prepared.args, hash(prepared.options)));
     };
 
     compiler2.nodeHelper = function(name, size) {
-      var prepared = prepareHelper(this, size);
+      var prepared = prepareHelper(this.stack, size);
       this.push(helper('helperContents', string(name), this.el(), 'context', prepared.args, hash(prepared.options)));
     };
 
@@ -151,7 +151,7 @@ define(
     };
 
     compiler2.helperAttr = function(attrName, name, size) {
-      var prepared = prepareHelper(this, size);
+      var prepared = prepareHelper(this.stack, size);
       pushStack(this.stack, helper('helperAttr', string(name), this.el(), string(attrName), 'context', prepared.args, hash(prepared.options)));
     };
 
