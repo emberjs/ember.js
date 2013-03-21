@@ -61,6 +61,18 @@ test("should support the tabindex property", function() {
   equal(checkboxView.$().prop('tabindex'), '3', 'the checkbox tabindex changes when it is changed in the view');
 });
 
+test("checkbox name is updated when setting name property of view", function() {
+  checkboxView = Ember.Checkbox.create({});
+
+  Ember.run(function() { checkboxView.set('name', 'foo'); });
+  append();
+
+  equal(checkboxView.$().attr('name'), "foo", "renders checkbox with the name");
+
+  Ember.run(function() { checkboxView.set('name', 'bar'); });
+
+  equal(checkboxView.$().attr('name'), "bar", "updates checkbox after name changes");
+});
 
 test("checked property mirrors input value", function() {
   checkboxView = Ember.Checkbox.create({});
