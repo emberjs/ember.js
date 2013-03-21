@@ -33,21 +33,6 @@ define(
     }
 
 
-    function pushElement(compiler) {
-      return "element" + (++compiler.elementNumber);
-    }
-
-
-    function popElement(compiler) {
-      return "element" + (compiler.elementNumber--);
-    }
-
-
-    function topElement(compiler) {
-      return "element" + compiler.elementNumber;
-    }
-
-
     function prepareHelper(compiler, size) {
       var args = [],
           types = [],
@@ -103,9 +88,6 @@ define(
     __exports__.invokeMethod = invokeMethod;
     __exports__.invokeFunction = invokeFunction;
     __exports__.helper = helper;
-    __exports__.pushElement = pushElement;
-    __exports__.popElement = popElement;
-    __exports__.topElement = topElement;
     __exports__.prepareHelper = prepareHelper;
     __exports__.compileAST = compileAST;
   });

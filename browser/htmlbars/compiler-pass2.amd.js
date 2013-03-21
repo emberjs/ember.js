@@ -1,22 +1,22 @@
 define(
-  ["htmlbars/compiler-utils","htmlbars/compiler/stack","htmlbars/compiler/quoting","htmlbars/runtime","exports"],
-  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __exports__) {
+  ["htmlbars/compiler-utils","htmlbars/compiler/elements","htmlbars/compiler/stack","htmlbars/compiler/quoting","htmlbars/runtime","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __exports__) {
     "use strict";
     var processOpcodes = __dependency1__.processOpcodes;
-    var topElement = __dependency1__.topElement;
     var helper = __dependency1__.helper;
     var invokeMethod = __dependency1__.invokeMethod;
     var invokeFunction = __dependency1__.invokeFunction;
-    var pushElement = __dependency1__.pushElement;
-    var popElement = __dependency1__.popElement;
     var prepareHelper = __dependency1__.prepareHelper;
-    var pushStackLiteral = __dependency2__.pushStackLiteral;
-    var popStack = __dependency2__.popStack;
-    var quotedString = __dependency3__.quotedString;
-    var quotedArray = __dependency3__.quotedArray;
-    var hash = __dependency3__.hash;
-    var domHelpers = __dependency4__.domHelpers;
-    var helpers = __dependency4__.helpers;
+    var pushElement = __dependency2__.pushElement;
+    var popElement = __dependency2__.popElement;
+    var topElement = __dependency2__.topElement;
+    var pushStackLiteral = __dependency3__.pushStackLiteral;
+    var popStack = __dependency3__.popStack;
+    var quotedString = __dependency4__.quotedString;
+    var quotedArray = __dependency4__.quotedArray;
+    var hash = __dependency4__.hash;
+    var domHelpers = __dependency5__.domHelpers;
+    var helpers = __dependency5__.helpers;
 
     function Compiler2() {};
 
