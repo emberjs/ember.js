@@ -131,8 +131,6 @@ define("htmlbars/compiler/attr",
       pushStack(this.stack, helper('resolveInAttr', 'context', quotedArray(parts), 'options'))
     };
 
-    attrCompiler.id = attrCompiler.dynamic;
-
     attrCompiler.ambiguous = function(string, escaped) {
       pushStack(this.stack, helper('ambiguousAttr', 'context', quotedArray([string]), 'options'));
     };
