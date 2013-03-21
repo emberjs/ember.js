@@ -88,6 +88,7 @@ Ember.MutableArray = Ember.Mixin.create(Ember.Array, Ember.MutableEnumerable,
     @method insertAt
     @param {Number} idx index of insert the object at.
     @param {Object} object object to insert
+    @return this
   */
   insertAt: function(idx, object) {
     if (idx > get(this, 'length')) throw new Error(OUT_OF_RANGE_EXCEPTION) ;
@@ -141,6 +142,7 @@ Ember.MutableArray = Ember.Mixin.create(Ember.Array, Ember.MutableEnumerable,
 
     @method pushObject
     @param {anything} obj object to push
+    @return {any} the same obj passed as param
   */
   pushObject: function(obj) {
     this.insertAt(get(this, 'length'), obj) ;
@@ -220,6 +222,7 @@ Ember.MutableArray = Ember.Mixin.create(Ember.Array, Ember.MutableEnumerable,
 
     @method unshiftObject
     @param {anything} obj object to unshift
+    @return {any} the same obj passed as param
   */
   unshiftObject: function(obj) {
     this.insertAt(0, obj) ;

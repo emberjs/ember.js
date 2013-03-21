@@ -191,7 +191,7 @@ if (isDefinePropertySimulated) {
   @param {Object} obj The object to retrieve meta for
   @param {Boolean} [writable=true] Pass `false` if you do not intend to modify
     the meta hash, allowing the method to avoid making an unnecessary copy.
-  @return {Hash}
+  @return {Object} the meta hash for an object
 */
 Ember.meta = function meta(obj, writable) {
 
@@ -343,7 +343,7 @@ Ember.wrap = function(func, superFunc) {
   @method isArray
   @for Ember
   @param {Object} obj The object to test
-  @return {Boolean}
+  @return {Boolean} true if the passed object is an array or Array-like
 */
 Ember.isArray = function(obj) {
   if (!obj || obj.setInterval) { return false; }

@@ -135,6 +135,7 @@ Ember.deprecate = function(message, test) {
   @method deprecateFunc
   @param {String} message A description of the deprecation.
   @param {Function} func The function to be deprecated.
+  @return {Function} a new function that wrapped the original function with a deprecation warning
 */
 Ember.deprecateFunc = function(message, func) {
   return function() {
