@@ -1032,14 +1032,12 @@ define("htmlbars/runtime",
       },
 
       ambiguousAttr: function(context, string, options) {
-        var helper, value, args;
-
-        return this.resolveInAttr(context, [string], options);
+        var helper;
 
         if (helper = helpers[string]) {
           throw new Error("helperAttr is not implemented yet");
         } else {
-          return this.resolveAttr(context, [string], element, attrName)
+          return this.resolveInAttr(context, [string], options)
         }
       },
 
