@@ -128,13 +128,13 @@ define("htmlbars/compiler/attr",
     };
 
     attrCompiler.dynamic = function(parts, escaped) {
-      pushStack(this.stack, helper('resolveAttr', 'context', quotedArray(parts), 'null', 'null', escaped))
+      pushStack(this.stack, helper('resolveInAttr', 'context', quotedArray(parts), 'options'))
     };
 
     attrCompiler.id = attrCompiler.dynamic;
 
     attrCompiler.ambiguous = function(string, escaped) {
-      pushStack(this.stack, helper('resolveInAttr', 'context', quotedArray([string]), 'options'));
+      pushStack(this.stack, helper('ambiguousAttr', 'context', quotedArray([string]), 'options'));
     };
 
     attrCompiler.helper = function(name, size, escaped) {
@@ -142,7 +142,7 @@ define("htmlbars/compiler/attr",
 
       prepared.options.push('rerender:options.rerender');
 
-      pushStack(this.stack, helper('helperAttr', string(name), 'null', 'null', 'context', prepared.args, hash(prepared.options)));
+      pushStack(this.stack, helper('helperAttr', 'context', string(name), prepared.args, hash(prepared.options)));
     };
 
     attrCompiler.appendText = function() {
@@ -1043,24 +1043,10 @@ define("htmlbars/runtime",
         }
       },
 
-      helperAttr: function(name, element, attrName, context, args, options) {
+      helperAttr: function(context, name, args, options) {
         var helper = helpers[name];
-        options.element = element;
-        options.attrName = attrName;
         args.push(options);
         return helper.apply(context, args);
-      },
-
-      resolveAttr: function(context, parts, element, attrName, escaped) {
-        var helper = helpers.RESOLVE_ATTR;
-
-        if (helper) {
-          return helper.apply(context, [parts, { element: element, attrName: attrName }]);
-        }
-
-        return parts.reduce(function(current, part) {
-          return current[part];
-        }, context);
       },
 
       resolveInAttr: function(context, parts, options) {

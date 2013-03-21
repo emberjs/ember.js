@@ -40,13 +40,13 @@ define(
     };
 
     attrCompiler.dynamic = function(parts, escaped) {
-      pushStack(this.stack, helper('resolveAttr', 'context', quotedArray(parts), 'null', 'null', escaped))
+      pushStack(this.stack, helper('resolveInAttr', 'context', quotedArray(parts), 'options'))
     };
 
     attrCompiler.id = attrCompiler.dynamic;
 
     attrCompiler.ambiguous = function(string, escaped) {
-      pushStack(this.stack, helper('resolveInAttr', 'context', quotedArray([string]), 'options'));
+      pushStack(this.stack, helper('ambiguousAttr', 'context', quotedArray([string]), 'options'));
     };
 
     attrCompiler.helper = function(name, size, escaped) {
@@ -54,7 +54,7 @@ define(
 
       prepared.options.push('rerender:options.rerender');
 
-      pushStack(this.stack, helper('helperAttr', string(name), 'null', 'null', 'context', prepared.args, hash(prepared.options)));
+      pushStack(this.stack, helper('helperAttr', 'context', string(name), prepared.args, hash(prepared.options)));
     };
 
     attrCompiler.appendText = function() {
