@@ -118,6 +118,10 @@ Binding.prototype = {
     return this;
   },
 
+  /**
+    @method toString
+    @return {String} string representation of binding
+  */
   toString: function() {
     var oneWay = this._oneWay ? '[oneWay]' : '';
     return "Ember.Binding<" + guidFor(this) + ">(" + this._from + " -> " + this._to + ")" + oneWay;
