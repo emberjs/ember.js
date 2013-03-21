@@ -72,7 +72,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     options.hash.template = container.lookup('template:' + name);
     options.hash.controller = controller;
 
-    if (router) {
+    if (router && !contextString) {
       router._connectActiveView(name, view);
     }
 

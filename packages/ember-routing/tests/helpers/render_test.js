@@ -121,6 +121,32 @@ test("{{render}} helper should render given template with a supplied model", fun
   deepEqual(postController.get('model'), { title: "Rails is unagi" });
 });
 
+
+test("{{render}} helper should not use singleton controller with a supplied model", function() {
+  var template = "<h1>HI</h1>{{render 'post' post}}{{render 'post' post}}";
+  var post = {
+    title: 'Rails is omakase'
+  };
+
+  var Controller = Ember.Controller.extend({
+    container: container,
+    post: post
+  });
+
+  var controller = Controller.create();
+
+  view = Ember.View.create({
+    controller: controller,
+    template: Ember.Handlebars.compile(template)
+  });
+
+  Ember.TEMPLATES['post'] = compile('<p>{{title}}</p>');
+
+  appendView(view);
+
+  equal(view.$().text(), 'HIRails is omakaseRails is omakase');
+});
+
 test("{{render}} helper should render with given controller", function() {
   var template = '<h1>HI</h1>{{render home controller="posts"}}';
   var controller = Ember.Controller.extend({container: container});
