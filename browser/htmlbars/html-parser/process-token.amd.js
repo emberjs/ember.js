@@ -29,12 +29,10 @@ define(
           var value = config.processHTMLMacros(current)
           stack.pop();
 
+          if (value === 'veto') { return; }
+
           var parent = currentElement(stack);
-          if (value === undefined) {
-            parent.children.push(currentElement);
-          } else if (value instanceof HTMLElement) {
-            parent.children.push(value);
-          }
+          parent.appendChild(value || currentElement);
         } else {
           throw new Error("Closing tag " + token.tagName + " did not match last open tag " + currentElement.tag);
         }

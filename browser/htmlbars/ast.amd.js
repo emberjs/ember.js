@@ -8,13 +8,21 @@ define(
       this.children = children || [];
       this.helpers = helpers || [];
 
+      if (!attributes) { return; }
+
       for (var i=0, l=attributes.length; i<l; i++) {
         var attribute = attributes[i];
         attributes[attribute[0]] = attribute[1];
       }
     };
 
+    function appendChild(node) {
+      this.children.push(node);
+    }
+
     HTMLElement.prototype = {
+      appendChild: appendChild,
+
       removeAttr: function(name) {
         var attributes = this.attributes, attribute;
         delete attributes[name];
@@ -38,6 +46,8 @@ define(
       this.helper = helper;
       this.children = children || [];
     };
+
+    BlockElement.prototype.appendChild = appendChild;
 
     __exports__.HTMLElement = HTMLElement;
     __exports__.BlockElement = BlockElement;

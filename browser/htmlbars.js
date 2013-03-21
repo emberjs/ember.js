@@ -41,13 +41,21 @@ define("htmlbars/ast",
       this.children = children || [];
       this.helpers = helpers || [];
 
+      if (!attributes) { return; }
+
       for (var i=0, l=attributes.length; i<l; i++) {
         var attribute = attributes[i];
         attributes[attribute[0]] = attribute[1];
       }
     };
 
+    function appendChild(node) {
+      this.children.push(node);
+    }
+
     HTMLElement.prototype = {
+      appendChild: appendChild,
+
       removeAttr: function(name) {
         var attributes = this.attributes, attribute;
         delete attributes[name];
@@ -71,6 +79,8 @@ define("htmlbars/ast",
       this.helper = helper;
       this.children = children || [];
     };
+
+    BlockElement.prototype.appendChild = appendChild;
 
     __exports__.HTMLElement = HTMLElement;
     __exports__.BlockElement = BlockElement;
@@ -817,12 +827,10 @@ define("htmlbars/html-parser/process-token",
           var value = config.processHTMLMacros(current)
           stack.pop();
 
+          if (value === 'veto') { return; }
+
           var parent = currentElement(stack);
-          if (value === undefined) {
-            parent.children.push(currentElement);
-          } else if (value instanceof HTMLElement) {
-            parent.children.push(value);
-          }
+          parent.appendChild(value || currentElement);
         } else {
           throw new Error("Closing tag " + token.tagName + " did not match last open tag " + currentElement.tag);
         }
@@ -911,7 +919,7 @@ define("htmlbars/parser",
 
 
     function HTMLProcessor() {
-      this.elementStack = [{ children: [] }];
+      this.elementStack = [new HTMLElement()];
       this.tokenizer = new Tokenizer('');
     };
 

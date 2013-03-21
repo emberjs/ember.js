@@ -17,7 +17,7 @@ define(
 
 
     function HTMLProcessor() {
-      this.elementStack = [{ children: [] }];
+      this.elementStack = [new HTMLElement()];
       this.tokenizer = new Tokenizer('');
     };
 
