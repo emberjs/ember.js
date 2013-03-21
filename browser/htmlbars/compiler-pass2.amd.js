@@ -10,7 +10,7 @@ define(
     var pushElement = __dependency2__.pushElement;
     var popElement = __dependency2__.popElement;
     var topElement = __dependency2__.topElement;
-    var pushStackLiteral = __dependency3__.pushStackLiteral;
+    var pushStack = __dependency3__.pushStack;
     var popStack = __dependency3__.popStack;
     var quotedString = __dependency4__.quotedString;
     var quotedArray = __dependency4__.quotedArray;
@@ -56,7 +56,7 @@ define(
     };
 
     compiler2.program = function(programId) {
-      pushStackLiteral(this, programId);
+      pushStack(this, programId);
     };
 
     compiler2.content = function(string) {
@@ -72,22 +72,22 @@ define(
     };
 
     compiler2.id = function(parts) {
-      pushStackLiteral(this, quotedString('id'));
-      pushStackLiteral(this, quotedArray(parts));
+      pushStack(this, quotedString('id'));
+      pushStack(this, quotedArray(parts));
     };
 
     compiler2.literal = function(literal) {
-      pushStackLiteral(this, quotedString(typeof literal));
-      pushStackLiteral(this, literal);
+      pushStack(this, quotedString(typeof literal));
+      pushStack(this, literal);
     };
 
     compiler2.stackLiteral = function(literal) {
-      pushStackLiteral(this, literal);
+      pushStack(this, literal);
     };
 
     compiler2.string = function(string) {
-      pushStackLiteral(this, quotedString('string'));
-      pushStackLiteral(this, quotedString(string));
+      pushStack(this, quotedString('string'));
+      pushStack(this, quotedString(string));
     };
 
     compiler2.appendText = function() {
@@ -115,7 +115,7 @@ define(
       var invokeRererender = invokeMethod('el', 'setAttribute', quotedString(name), invokeFunction('child' + child, 'context', hash(['rerender:rerender'])));
       var rerender = 'function rerender() { ' + invokeRererender + '}';
       var options = hash(['rerender:' + rerender, 'element:el', 'attrName:' + quotedString(name)]);
-      pushStackLiteral(this, invokeFunction('child' + child, 'context', options));
+      pushStack(this, invokeFunction('child' + child, 'context', options));
 
       this.push(invokeMethod('el', 'setAttribute', quotedString(name), popStack(this)));
     };
@@ -126,16 +126,16 @@ define(
     };
 
     compiler2.dynamic = function(parts, escaped) {
-      pushStackLiteral(this, helper('resolveContents', 'context', quotedArray(parts), this.el(), escaped));
+      pushStack(this, helper('resolveContents', 'context', quotedArray(parts), this.el(), escaped));
     };
 
     compiler2.ambiguous = function(string, escaped) {
-      pushStackLiteral(this, helper('ambiguousContents', this.el(), 'context', quotedString(string), escaped));
+      pushStack(this, helper('ambiguousContents', this.el(), 'context', quotedString(string), escaped));
     };
 
     compiler2.helper = function(name, size, escaped) {
       var prepared = prepareHelper(this, size);
-      pushStackLiteral(this, helper('helperContents', quotedString(name), this.el(), 'context', prepared.args, hash(prepared.options)));
+      pushStack(this, helper('helperContents', quotedString(name), this.el(), 'context', prepared.args, hash(prepared.options)));
     };
 
     compiler2.nodeHelper = function(name, size) {
@@ -144,16 +144,16 @@ define(
     };
 
     compiler2.dynamicAttr = function(attrName, parts) {
-      pushStackLiteral(this, helper('resolveAttr', 'context', quotedArray(parts), this.el(), quotedString(attrName)));
+      pushStack(this, helper('resolveAttr', 'context', quotedArray(parts), this.el(), quotedString(attrName)));
     };
 
     compiler2.ambiguousAttr = function(attrName, string) {
-      pushStackLiteral(this, helper('ambiguousAttr', this.el(), 'context', quotedString(attrName), quotedString(string)));
+      pushStack(this, helper('ambiguousAttr', this.el(), 'context', quotedString(attrName), quotedString(string)));
     };
 
     compiler2.helperAttr = function(attrName, name, size) {
       var prepared = prepareHelper(this, size);
-      pushStackLiteral(this, helper('helperAttr', quotedString(name), this.el(), quotedString(attrName), 'context', prepared.args, hash(prepared.options)));
+      pushStack(this, helper('helperAttr', quotedString(name), this.el(), quotedString(attrName), 'context', prepared.args, hash(prepared.options)));
     };
 
     compiler2.applyAttribute = function(attrName) {

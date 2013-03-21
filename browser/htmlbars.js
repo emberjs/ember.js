@@ -84,7 +84,7 @@ define("htmlbars/attr-compiler",
     var prepareHelper = __dependency1__.prepareHelper;
     var helper = __dependency1__.helper;
     var popStack = __dependency2__.popStack;
-    var pushStackLiteral = __dependency2__.pushStackLiteral;
+    var pushStack = __dependency2__.pushStack;
     var quotedString = __dependency3__.quotedString;
     var quotedArray = __dependency3__.quotedArray;
     var hash = __dependency3__.hash;
@@ -118,13 +118,13 @@ define("htmlbars/attr-compiler",
     };
 
     attrCompiler.dynamic = function(parts, escaped) {
-      pushStackLiteral(this, helper('resolveAttr', 'context', quotedArray(parts), 'null', 'null', escaped))
+      pushStack(this, helper('resolveAttr', 'context', quotedArray(parts), 'null', 'null', escaped))
     };
 
     attrCompiler.id = attrCompiler.dynamic;
 
     attrCompiler.ambiguous = function(string, escaped) {
-      pushStackLiteral(this, helper('resolveInAttr', 'context', quotedArray([string]), 'options'));
+      pushStack(this, helper('resolveInAttr', 'context', quotedArray([string]), 'options'));
     };
 
     attrCompiler.helper = function(name, size, escaped) {
@@ -132,7 +132,7 @@ define("htmlbars/attr-compiler",
 
       prepared.options.push('rerender:options.rerender');
 
-      pushStackLiteral(this, helper('helperAttr', quotedString(name), 'null', 'null', 'context', prepared.args, hash(prepared.options)));
+      pushStack(this, helper('helperAttr', quotedString(name), 'null', 'null', 'context', prepared.args, hash(prepared.options)));
     };
 
     attrCompiler.appendText = function() {
@@ -140,26 +140,26 @@ define("htmlbars/attr-compiler",
     }
 
     attrCompiler.program = function() {
-      pushStackLiteral(this, null);
+      pushStack(this, null);
     }
 
     attrCompiler.id = function(parts) {
-      pushStackLiteral(this, quotedString('id'));
-      pushStackLiteral(this, quotedString(parts[0]));
+      pushStack(this, quotedString('id'));
+      pushStack(this, quotedString(parts[0]));
     }
 
     attrCompiler.literal = function(literal) {
-      pushStackLiteral(this, quotedString(typeof literal));
-      pushStackLiteral(this, literal);
+      pushStack(this, quotedString(typeof literal));
+      pushStack(this, literal);
     };
 
     attrCompiler.string = function(string) {
-      pushStackLiteral(this, quotedString(typeof literal));
-      pushStackLiteral(this, quotedString(string));
+      pushStack(this, quotedString(typeof literal));
+      pushStack(this, quotedString(string));
     };
 
     attrCompiler.stackLiteral = function(literal) {
-      pushStackLiteral(this, literal);
+      pushStack(this, literal);
     };
 
     attrCompiler.push = function(string) {
@@ -233,15 +233,7 @@ define("htmlbars/compiler/stack",
   ["exports"],
   function(__exports__) {
     "use strict";
-    function pushStack(compiler) {
-      var stack = compiler.stack,
-          stackNumber = "stack" + (++compiler.stackNumber);
-
-      stack.push({ literal: false, value: stackNumber });
-    }
-
-
-    function pushStackLiteral(compiler, literal) {
+    function pushStack(compiler, literal) {
       compiler.stack.push({ literal: true, value: literal });
     }
 
@@ -265,7 +257,6 @@ define("htmlbars/compiler/stack",
 
 
     __exports__.pushStack = pushStack;
-    __exports__.pushStackLiteral = pushStackLiteral;
     __exports__.popStack = popStack;
     __exports__.topStack = topStack;
   });
@@ -519,7 +510,7 @@ define("htmlbars/compiler-pass2",
     var pushElement = __dependency2__.pushElement;
     var popElement = __dependency2__.popElement;
     var topElement = __dependency2__.topElement;
-    var pushStackLiteral = __dependency3__.pushStackLiteral;
+    var pushStack = __dependency3__.pushStack;
     var popStack = __dependency3__.popStack;
     var quotedString = __dependency4__.quotedString;
     var quotedArray = __dependency4__.quotedArray;
@@ -565,7 +556,7 @@ define("htmlbars/compiler-pass2",
     };
 
     compiler2.program = function(programId) {
-      pushStackLiteral(this, programId);
+      pushStack(this, programId);
     };
 
     compiler2.content = function(string) {
@@ -581,22 +572,22 @@ define("htmlbars/compiler-pass2",
     };
 
     compiler2.id = function(parts) {
-      pushStackLiteral(this, quotedString('id'));
-      pushStackLiteral(this, quotedArray(parts));
+      pushStack(this, quotedString('id'));
+      pushStack(this, quotedArray(parts));
     };
 
     compiler2.literal = function(literal) {
-      pushStackLiteral(this, quotedString(typeof literal));
-      pushStackLiteral(this, literal);
+      pushStack(this, quotedString(typeof literal));
+      pushStack(this, literal);
     };
 
     compiler2.stackLiteral = function(literal) {
-      pushStackLiteral(this, literal);
+      pushStack(this, literal);
     };
 
     compiler2.string = function(string) {
-      pushStackLiteral(this, quotedString('string'));
-      pushStackLiteral(this, quotedString(string));
+      pushStack(this, quotedString('string'));
+      pushStack(this, quotedString(string));
     };
 
     compiler2.appendText = function() {
@@ -624,7 +615,7 @@ define("htmlbars/compiler-pass2",
       var invokeRererender = invokeMethod('el', 'setAttribute', quotedString(name), invokeFunction('child' + child, 'context', hash(['rerender:rerender'])));
       var rerender = 'function rerender() { ' + invokeRererender + '}';
       var options = hash(['rerender:' + rerender, 'element:el', 'attrName:' + quotedString(name)]);
-      pushStackLiteral(this, invokeFunction('child' + child, 'context', options));
+      pushStack(this, invokeFunction('child' + child, 'context', options));
 
       this.push(invokeMethod('el', 'setAttribute', quotedString(name), popStack(this)));
     };
@@ -635,16 +626,16 @@ define("htmlbars/compiler-pass2",
     };
 
     compiler2.dynamic = function(parts, escaped) {
-      pushStackLiteral(this, helper('resolveContents', 'context', quotedArray(parts), this.el(), escaped));
+      pushStack(this, helper('resolveContents', 'context', quotedArray(parts), this.el(), escaped));
     };
 
     compiler2.ambiguous = function(string, escaped) {
-      pushStackLiteral(this, helper('ambiguousContents', this.el(), 'context', quotedString(string), escaped));
+      pushStack(this, helper('ambiguousContents', this.el(), 'context', quotedString(string), escaped));
     };
 
     compiler2.helper = function(name, size, escaped) {
       var prepared = prepareHelper(this, size);
-      pushStackLiteral(this, helper('helperContents', quotedString(name), this.el(), 'context', prepared.args, hash(prepared.options)));
+      pushStack(this, helper('helperContents', quotedString(name), this.el(), 'context', prepared.args, hash(prepared.options)));
     };
 
     compiler2.nodeHelper = function(name, size) {
@@ -653,16 +644,16 @@ define("htmlbars/compiler-pass2",
     };
 
     compiler2.dynamicAttr = function(attrName, parts) {
-      pushStackLiteral(this, helper('resolveAttr', 'context', quotedArray(parts), this.el(), quotedString(attrName)));
+      pushStack(this, helper('resolveAttr', 'context', quotedArray(parts), this.el(), quotedString(attrName)));
     };
 
     compiler2.ambiguousAttr = function(attrName, string) {
-      pushStackLiteral(this, helper('ambiguousAttr', this.el(), 'context', quotedString(attrName), quotedString(string)));
+      pushStack(this, helper('ambiguousAttr', this.el(), 'context', quotedString(attrName), quotedString(string)));
     };
 
     compiler2.helperAttr = function(attrName, name, size) {
       var prepared = prepareHelper(this, size);
-      pushStackLiteral(this, helper('helperAttr', quotedString(name), this.el(), quotedString(attrName), 'context', prepared.args, hash(prepared.options)));
+      pushStack(this, helper('helperAttr', quotedString(name), this.el(), quotedString(attrName), 'context', prepared.args, hash(prepared.options)));
     };
 
     compiler2.applyAttribute = function(attrName) {
@@ -767,38 +758,16 @@ define("htmlbars/compiler-utils",
   });
 
 define("htmlbars/compiler",
-  ["htmlbars/parser","htmlbars/ast","htmlbars/compiler-pass1","htmlbars/compiler-pass2","htmlbars/compiler-utils","exports"],
-  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __exports__) {
+  ["htmlbars/parser","htmlbars/compiler-utils","exports"],
+  function(__dependency1__, __dependency2__, __exports__) {
     "use strict";
     var preprocess = __dependency1__.preprocess;
-    var HTMLElement = __dependency2__.HTMLElement;
-    var BlockElement = __dependency2__.BlockElement;
-    var Compiler1 = __dependency3__.Compiler1;
-    var Compiler2 = __dependency4__.Compiler2;
-    var processOpcodes = __dependency5__.processOpcodes;
-    var prepareHelper = __dependency5__.prepareHelper;
-    var compileAST = __dependency5__.compileAST;
-    var invokeMethod = __dependency5__.invokeMethod;
-    var invokeFunction = __dependency5__.invokeFunction;
-    var helper = __dependency5__.helper;
-    var escapeString = __dependency5__.escapeString;
-    var quotedString = __dependency5__.quotedString;
-    var quotedArray = __dependency5__.quotedArray;
-    var array = __dependency5__.array;
-    var hash = __dependency5__.hash;
-    var pushElement = __dependency5__.pushElement;
-    var popElement = __dependency5__.popElement;
-    var topElement = __dependency5__.topElement;
-    var pushStack = __dependency5__.pushStack;
-    var pushStackLiteral = __dependency5__.pushStackLiteral;
-    var popStack = __dependency5__.popStack;
-    var topStack = __dependency5__.topStack;
+    var compileAST = __dependency2__.compileAST;
 
     function compile(string, options) {
       var ast = preprocess(string);
       return compileAST(ast, options);
     }
-
 
     __exports__.compile = compile;
   });

@@ -2,15 +2,7 @@ define(
   ["exports"],
   function(__exports__) {
     "use strict";
-    function pushStack(compiler) {
-      var stack = compiler.stack,
-          stackNumber = "stack" + (++compiler.stackNumber);
-
-      stack.push({ literal: false, value: stackNumber });
-    }
-
-
-    function pushStackLiteral(compiler, literal) {
+    function pushStack(compiler, literal) {
       compiler.stack.push({ literal: true, value: literal });
     }
 
@@ -34,7 +26,6 @@ define(
 
 
     __exports__.pushStack = pushStack;
-    __exports__.pushStackLiteral = pushStackLiteral;
     __exports__.popStack = popStack;
     __exports__.topStack = topStack;
   });

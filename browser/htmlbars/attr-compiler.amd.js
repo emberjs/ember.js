@@ -6,7 +6,7 @@ define(
     var prepareHelper = __dependency1__.prepareHelper;
     var helper = __dependency1__.helper;
     var popStack = __dependency2__.popStack;
-    var pushStackLiteral = __dependency2__.pushStackLiteral;
+    var pushStack = __dependency2__.pushStack;
     var quotedString = __dependency3__.quotedString;
     var quotedArray = __dependency3__.quotedArray;
     var hash = __dependency3__.hash;
@@ -40,13 +40,13 @@ define(
     };
 
     attrCompiler.dynamic = function(parts, escaped) {
-      pushStackLiteral(this, helper('resolveAttr', 'context', quotedArray(parts), 'null', 'null', escaped))
+      pushStack(this, helper('resolveAttr', 'context', quotedArray(parts), 'null', 'null', escaped))
     };
 
     attrCompiler.id = attrCompiler.dynamic;
 
     attrCompiler.ambiguous = function(string, escaped) {
-      pushStackLiteral(this, helper('resolveInAttr', 'context', quotedArray([string]), 'options'));
+      pushStack(this, helper('resolveInAttr', 'context', quotedArray([string]), 'options'));
     };
 
     attrCompiler.helper = function(name, size, escaped) {
@@ -54,7 +54,7 @@ define(
 
       prepared.options.push('rerender:options.rerender');
 
-      pushStackLiteral(this, helper('helperAttr', quotedString(name), 'null', 'null', 'context', prepared.args, hash(prepared.options)));
+      pushStack(this, helper('helperAttr', quotedString(name), 'null', 'null', 'context', prepared.args, hash(prepared.options)));
     };
 
     attrCompiler.appendText = function() {
@@ -62,26 +62,26 @@ define(
     }
 
     attrCompiler.program = function() {
-      pushStackLiteral(this, null);
+      pushStack(this, null);
     }
 
     attrCompiler.id = function(parts) {
-      pushStackLiteral(this, quotedString('id'));
-      pushStackLiteral(this, quotedString(parts[0]));
+      pushStack(this, quotedString('id'));
+      pushStack(this, quotedString(parts[0]));
     }
 
     attrCompiler.literal = function(literal) {
-      pushStackLiteral(this, quotedString(typeof literal));
-      pushStackLiteral(this, literal);
+      pushStack(this, quotedString(typeof literal));
+      pushStack(this, literal);
     };
 
     attrCompiler.string = function(string) {
-      pushStackLiteral(this, quotedString(typeof literal));
-      pushStackLiteral(this, quotedString(string));
+      pushStack(this, quotedString(typeof literal));
+      pushStack(this, quotedString(string));
     };
 
     attrCompiler.stackLiteral = function(literal) {
-      pushStackLiteral(this, literal);
+      pushStack(this, literal);
     };
 
     attrCompiler.push = function(string) {
