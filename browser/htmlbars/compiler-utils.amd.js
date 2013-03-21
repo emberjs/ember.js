@@ -71,8 +71,8 @@ define(
 
     function compileAST(ast, options) {
       // circular dependency hack
-      var Compiler1 = require('htmlbars/compiler-pass1').Compiler1;
-      var Compiler2 = require('htmlbars/compiler-pass2').Compiler2;
+      var Compiler1 = require('htmlbars/compiler/pass1').Compiler1;
+      var Compiler2 = require('htmlbars/compiler/pass2').Compiler2;
 
       var compiler1 = new Compiler1(options),
           compiler2 = new Compiler2(options);

@@ -76,7 +76,7 @@ define("htmlbars/ast",
     __exports__.BlockElement = BlockElement;
   });
 
-define("htmlbars/attr-compiler",
+define("htmlbars/compiler/attr",
   ["htmlbars/compiler-utils","htmlbars/compiler/stack","htmlbars/compiler/quoting","exports"],
   function(__dependency1__, __dependency2__, __dependency3__, __exports__) {
     "use strict";
@@ -193,65 +193,8 @@ define("htmlbars/compiler/elements",
     __exports__.topElement = topElement;
   });
 
-define("htmlbars/compiler/quoting",
-  ["exports"],
-  function(__exports__) {
-    "use strict";
-    function escapeString(string) {
-      return string.replace(/'/g, "\\'");
-    }
-
-
-    function quotedString(string) {
-      return "'" + escapeString(string) + "'";
-    }
-
-
-    function quotedArray(list) {
-      return array(list.map(quotedString).join(", "));
-    }
-
-
-    function array(array) {
-      return "[" + array + "]";
-    }
-
-
-    function hash(pairs) {
-      return "{" + pairs.join(",") + "}";
-    }
-
-
-    __exports__.escapeString = escapeString;
-    __exports__.quotedString = quotedString;
-    __exports__.quotedArray = quotedArray;
-    __exports__.array = array;
-    __exports__.hash = hash;
-  });
-
-define("htmlbars/compiler/stack",
-  ["exports"],
-  function(__exports__) {
-    "use strict";
-    // this file exists in anticipation of a more involved
-    // stack implementation involving temporary variables
-
-    function pushStack(stack, literal) {
-      stack.push({ literal: true, value: literal });
-    }
-
-
-    function popStack(stack) {
-      var poppedValue = stack.pop();
-      return poppedValue.value;
-    }
-
-    __exports__.pushStack = pushStack;
-    __exports__.popStack = popStack;
-  });
-
-define("htmlbars/compiler-pass1",
-  ["htmlbars/utils","htmlbars/ast","htmlbars/attr-compiler","htmlbars/compiler-utils","exports"],
+define("htmlbars/compiler/pass1",
+  ["htmlbars/utils","htmlbars/ast","htmlbars/compiler/attr","htmlbars/compiler-utils","exports"],
   function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __exports__) {
     "use strict";
     var merge = __dependency1__.merge;
@@ -487,7 +430,7 @@ define("htmlbars/compiler-pass1",
     __exports__.Compiler1 = Compiler1;
   });
 
-define("htmlbars/compiler-pass2",
+define("htmlbars/compiler/pass2",
   ["htmlbars/compiler-utils","htmlbars/compiler/elements","htmlbars/compiler/stack","htmlbars/compiler/quoting","htmlbars/runtime","exports"],
   function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __exports__) {
     "use strict";
@@ -652,6 +595,63 @@ define("htmlbars/compiler-pass2",
     __exports__.Compiler2 = Compiler2;
   });
 
+define("htmlbars/compiler/quoting",
+  ["exports"],
+  function(__exports__) {
+    "use strict";
+    function escapeString(string) {
+      return string.replace(/'/g, "\\'");
+    }
+
+
+    function quotedString(string) {
+      return "'" + escapeString(string) + "'";
+    }
+
+
+    function quotedArray(list) {
+      return array(list.map(quotedString).join(", "));
+    }
+
+
+    function array(array) {
+      return "[" + array + "]";
+    }
+
+
+    function hash(pairs) {
+      return "{" + pairs.join(",") + "}";
+    }
+
+
+    __exports__.escapeString = escapeString;
+    __exports__.quotedString = quotedString;
+    __exports__.quotedArray = quotedArray;
+    __exports__.array = array;
+    __exports__.hash = hash;
+  });
+
+define("htmlbars/compiler/stack",
+  ["exports"],
+  function(__exports__) {
+    "use strict";
+    // this file exists in anticipation of a more involved
+    // stack implementation involving temporary variables
+
+    function pushStack(stack, literal) {
+      stack.push({ literal: true, value: literal });
+    }
+
+
+    function popStack(stack) {
+      var poppedValue = stack.pop();
+      return poppedValue.value;
+    }
+
+    __exports__.pushStack = pushStack;
+    __exports__.popStack = popStack;
+  });
+
 define("htmlbars/compiler-utils",
   ["htmlbars/compiler/quoting","htmlbars/compiler/stack","exports"],
   function(__dependency1__, __dependency2__, __exports__) {
@@ -725,8 +725,8 @@ define("htmlbars/compiler-utils",
 
     function compileAST(ast, options) {
       // circular dependency hack
-      var Compiler1 = require('htmlbars/compiler-pass1').Compiler1;
-      var Compiler2 = require('htmlbars/compiler-pass2').Compiler2;
+      var Compiler1 = require('htmlbars/compiler/pass1').Compiler1;
+      var Compiler2 = require('htmlbars/compiler/pass2').Compiler2;
 
       var compiler1 = new Compiler1(options),
           compiler2 = new Compiler2(options);
