@@ -77,7 +77,7 @@ define("htmlbars/ast",
   });
 
 define("htmlbars/compiler/attr",
-  ["htmlbars/compiler-utils","htmlbars/compiler/stack","htmlbars/compiler/quoting","exports"],
+  ["htmlbars/compiler/utils","htmlbars/compiler/stack","htmlbars/compiler/quoting","exports"],
   function(__dependency1__, __dependency2__, __dependency3__, __exports__) {
     "use strict";
     var processOpcodes = __dependency1__.processOpcodes;
@@ -194,7 +194,7 @@ define("htmlbars/compiler/elements",
   });
 
 define("htmlbars/compiler/pass1",
-  ["htmlbars/utils","htmlbars/ast","htmlbars/compiler/attr","htmlbars/compiler-utils","exports"],
+  ["htmlbars/utils","htmlbars/ast","htmlbars/compiler/attr","htmlbars/compiler/utils","exports"],
   function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __exports__) {
     "use strict";
     var merge = __dependency1__.merge;
@@ -431,7 +431,7 @@ define("htmlbars/compiler/pass1",
   });
 
 define("htmlbars/compiler/pass2",
-  ["htmlbars/compiler-utils","htmlbars/compiler/elements","htmlbars/compiler/stack","htmlbars/compiler/quoting","htmlbars/runtime","exports"],
+  ["htmlbars/compiler/utils","htmlbars/compiler/elements","htmlbars/compiler/stack","htmlbars/compiler/quoting","htmlbars/runtime","exports"],
   function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __exports__) {
     "use strict";
     var processOpcodes = __dependency1__.processOpcodes;
@@ -652,7 +652,7 @@ define("htmlbars/compiler/stack",
     __exports__.popStack = popStack;
   });
 
-define("htmlbars/compiler-utils",
+define("htmlbars/compiler/utils",
   ["htmlbars/compiler/quoting","htmlbars/compiler/stack","exports"],
   function(__dependency1__, __dependency2__, __exports__) {
     "use strict";
@@ -747,7 +747,7 @@ define("htmlbars/compiler-utils",
   });
 
 define("htmlbars/compiler",
-  ["htmlbars/parser","htmlbars/compiler-utils","exports"],
+  ["htmlbars/parser","htmlbars/compiler/utils","exports"],
   function(__dependency1__, __dependency2__, __exports__) {
     "use strict";
     var preprocess = __dependency1__.preprocess;

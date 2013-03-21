@@ -1,5 +1,5 @@
 define(
-  ["htmlbars/parser","htmlbars/compiler-utils","exports"],
+  ["htmlbars/parser","htmlbars/compiler/utils","exports"],
   function(__dependency1__, __dependency2__, __exports__) {
     "use strict";
     var preprocess = __dependency1__.preprocess;

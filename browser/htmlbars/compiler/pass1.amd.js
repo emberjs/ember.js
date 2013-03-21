@@ -1,5 +1,5 @@
 define(
-  ["htmlbars/utils","htmlbars/ast","htmlbars/compiler/attr","htmlbars/compiler-utils","exports"],
+  ["htmlbars/utils","htmlbars/ast","htmlbars/compiler/attr","htmlbars/compiler/utils","exports"],
   function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __exports__) {
     "use strict";
     var merge = __dependency1__.merge;
