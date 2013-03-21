@@ -77,17 +77,18 @@ define("htmlbars/ast",
   });
 
 define("htmlbars/attr-compiler",
-  ["htmlbars/compiler-utils","exports"],
-  function(__dependency1__, __exports__) {
+  ["htmlbars/compiler-utils","htmlbars/compiler/quoting","exports"],
+  function(__dependency1__, __dependency2__, __exports__) {
     "use strict";
     var processOpcodes = __dependency1__.processOpcodes;
     var prepareHelper = __dependency1__.prepareHelper;
-    var quotedString = __dependency1__.quotedString;
-    var quotedArray = __dependency1__.quotedArray;
     var hash = __dependency1__.hash;
     var helper = __dependency1__.helper;
     var popStack = __dependency1__.popStack;
     var pushStackLiteral = __dependency1__.pushStackLiteral;
+    var quotedString = __dependency2__.quotedString;
+    var quotedArray = __dependency2__.quotedArray;
+    var hash = __dependency2__.hash;
 
     function AttrCompiler() {};
 
@@ -167,6 +168,42 @@ define("htmlbars/attr-compiler",
     };
 
     __exports__.AttrCompiler = AttrCompiler;
+  });
+
+define("htmlbars/compiler/quoting",
+  ["exports"],
+  function(__exports__) {
+    "use strict";
+    function escapeString(string) {
+      return string.replace(/'/g, "\\'");
+    }
+
+
+    function quotedString(string) {
+      return "'" + escapeString(string) + "'";
+    }
+
+
+    function quotedArray(list) {
+      return array(list.map(quotedString).join(", "));
+    }
+
+
+    function array(array) {
+      return "[" + array + "]";
+    }
+
+
+    function hash(pairs) {
+      return "{" + pairs.join(",") + "}";
+    }
+
+
+    __exports__.escapeString = escapeString;
+    __exports__.quotedString = quotedString;
+    __exports__.quotedArray = quotedArray;
+    __exports__.array = array;
+    __exports__.hash = hash;
   });
 
 define("htmlbars/compiler-pass1",
@@ -407,14 +444,11 @@ define("htmlbars/compiler-pass1",
   });
 
 define("htmlbars/compiler-pass2",
-  ["htmlbars/compiler-utils","htmlbars/runtime","exports"],
-  function(__dependency1__, __dependency2__, __exports__) {
+  ["htmlbars/compiler-utils","htmlbars/compiler/quoting","htmlbars/runtime","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __exports__) {
     "use strict";
     var processOpcodes = __dependency1__.processOpcodes;
     var topElement = __dependency1__.topElement;
-    var quotedString = __dependency1__.quotedString;
-    var quotedArray = __dependency1__.quotedArray;
-    var hash = __dependency1__.hash;
     var helper = __dependency1__.helper;
     var invokeMethod = __dependency1__.invokeMethod;
     var invokeFunction = __dependency1__.invokeFunction;
@@ -423,8 +457,11 @@ define("htmlbars/compiler-pass2",
     var pushStackLiteral = __dependency1__.pushStackLiteral;
     var popStack = __dependency1__.popStack;
     var prepareHelper = __dependency1__.prepareHelper;
-    var domHelpers = __dependency2__.domHelpers;
-    var helpers = __dependency2__.helpers;
+    var quotedString = __dependency2__.quotedString;
+    var quotedArray = __dependency2__.quotedArray;
+    var hash = __dependency2__.hash;
+    var domHelpers = __dependency3__.domHelpers;
+    var helpers = __dependency3__.helpers;
 
     function Compiler2() {};
 
@@ -572,9 +609,13 @@ define("htmlbars/compiler-pass2",
   });
 
 define("htmlbars/compiler-utils",
-  ["exports"],
-  function(__exports__) {
+  ["htmlbars/compiler/quoting","exports"],
+  function(__dependency1__, __exports__) {
     "use strict";
+    var array = __dependency1__.array;
+    var hash = __dependency1__.hash;
+    var quotedString = __dependency1__.quotedString;
+
     function processOpcodes(compiler, opcodes) {
       opcodes.forEach(function(opcode) {
         compiler[opcode.type].apply(compiler, opcode.params);
@@ -598,31 +639,6 @@ define("htmlbars/compiler-utils",
       var args = [].slice.call(arguments, 0);
       args.unshift('dom');
       return invokeMethod.apply(this, args);
-    }
-
-
-    function escapeString(string) {
-      return string.replace(/'/g, "\\'");
-    }
-
-
-    function quotedString(string) {
-      return "'" + escapeString(string) + "'";
-    }
-
-
-    function quotedArray(list) {
-      return array(list.map(quotedString).join(", "));
-    }
-
-
-    function array(array) {
-      return "[" + array + "]";
-    }
-
-
-    function hash(pairs) {
-      return "{" + pairs.join(",") + "}";
     }
 
 
@@ -727,11 +743,6 @@ define("htmlbars/compiler-utils",
     __exports__.invokeMethod = invokeMethod;
     __exports__.invokeFunction = invokeFunction;
     __exports__.helper = helper;
-    __exports__.escapeString = escapeString;
-    __exports__.quotedString = quotedString;
-    __exports__.quotedArray = quotedArray;
-    __exports__.array = array;
-    __exports__.hash = hash;
     __exports__.pushElement = pushElement;
     __exports__.popElement = popElement;
     __exports__.topElement = topElement;

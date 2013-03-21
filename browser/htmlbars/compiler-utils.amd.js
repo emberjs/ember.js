@@ -1,7 +1,11 @@
 define(
-  ["exports"],
-  function(__exports__) {
+  ["htmlbars/compiler/quoting","exports"],
+  function(__dependency1__, __exports__) {
     "use strict";
+    var array = __dependency1__.array;
+    var hash = __dependency1__.hash;
+    var quotedString = __dependency1__.quotedString;
+
     function processOpcodes(compiler, opcodes) {
       opcodes.forEach(function(opcode) {
         compiler[opcode.type].apply(compiler, opcode.params);
@@ -25,31 +29,6 @@ define(
       var args = [].slice.call(arguments, 0);
       args.unshift('dom');
       return invokeMethod.apply(this, args);
-    }
-
-
-    function escapeString(string) {
-      return string.replace(/'/g, "\\'");
-    }
-
-
-    function quotedString(string) {
-      return "'" + escapeString(string) + "'";
-    }
-
-
-    function quotedArray(list) {
-      return array(list.map(quotedString).join(", "));
-    }
-
-
-    function array(array) {
-      return "[" + array + "]";
-    }
-
-
-    function hash(pairs) {
-      return "{" + pairs.join(",") + "}";
     }
 
 
@@ -154,11 +133,6 @@ define(
     __exports__.invokeMethod = invokeMethod;
     __exports__.invokeFunction = invokeFunction;
     __exports__.helper = helper;
-    __exports__.escapeString = escapeString;
-    __exports__.quotedString = quotedString;
-    __exports__.quotedArray = quotedArray;
-    __exports__.array = array;
-    __exports__.hash = hash;
     __exports__.pushElement = pushElement;
     __exports__.popElement = popElement;
     __exports__.topElement = topElement;
