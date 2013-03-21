@@ -1,5 +1,5 @@
 define(
-  ["htmlbars/parser","htmlbars/ast","exports"],
+  ["htmlbars/html-parser/process-token","htmlbars/ast","exports"],
   function(__dependency1__, __dependency2__, __exports__) {
     "use strict";
     var config = __dependency1__.config;

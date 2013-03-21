@@ -10,6 +10,7 @@ end
 
 directory "browser/htmlbars"
 directory "browser/htmlbars/compiler"
+directory "browser/htmlbars/html-parser"
 directory "browser/vendor"
 
 def amd_module(filename)
@@ -17,7 +18,7 @@ def amd_module(filename)
   output = "browser/#{out_name}"
   input = "lib/#{filename}"
 
-  file output => ["browser/htmlbars/compiler", "browser/vendor", input] do
+  file output => ["browser/htmlbars/compiler", "browser/htmlbars/html-parser", "browser/vendor", input] do
     library = File.read(input)
 
     open output, "w" do |file|

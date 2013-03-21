@@ -786,8 +786,54 @@ define("htmlbars/helpers",
     __exports__.helpers = helpers;
   });
 
+define("htmlbars/html-parser/process-token",
+  ["htmlbars/ast","simple-html-tokenizer","exports"],
+  function(__dependency1__, __dependency2__, __exports__) {
+    "use strict";
+    var HTMLElement = __dependency1__.HTMLElement;
+    var BlockElement = __dependency1__.BlockElement;
+    var Chars = __dependency2__.Chars;
+    var StartTag = __dependency2__.StartTag;
+    var EndTag = __dependency2__.EndTag;
+
+    function processToken(processor, elementStack, token) {
+      var currentElement = elementStack[elementStack.length - 1];
+      if (token instanceof Chars) {
+        currentElement.children.push(token.chars);
+      } else if (token instanceof EndTag) {
+        if (currentElement.tag === token.tagName) {
+          var value = config.processHTMLMacros(currentElement)
+          elementStack.pop();
+
+          if (value === undefined) {
+            elementStack[elementStack.length - 1].children.push(currentElement);
+          } else if (value instanceof HTMLElement) {
+            elementStack[elementStack.length - 1].children.push(value);
+          }
+        } else {
+          throw new Error("Closing tag " + token.tagName + " did not match last open tag " + currentElement.tag);
+        }
+      } else if (token instanceof StartTag) {
+        var element = new HTMLElement(token.tagName, token.attributes);
+        element.helpers = processor.pendingTagHelpers.slice();
+        processor.pendingTagHelpers = [];
+        elementStack.push(element);
+      } else if (token instanceof Handlebars.AST.BlockNode) {
+        elementStack.push(new BlockElement(token.mustache));
+      }
+    }
+
+
+    var config = {
+      processHTMLMacros: function() {}
+    };
+
+    __exports__.processToken = processToken;
+    __exports__.config = config;
+  });
+
 define("htmlbars/macros",
-  ["htmlbars/parser","htmlbars/ast","exports"],
+  ["htmlbars/html-parser/process-token","htmlbars/ast","exports"],
   function(__dependency1__, __dependency2__, __exports__) {
     "use strict";
     var config = __dependency1__.config;
@@ -833,8 +879,8 @@ define("htmlbars/macros",
   });
 
 define("htmlbars/parser",
-  ["simple-html-tokenizer","htmlbars/ast","exports"],
-  function(__dependency1__, __dependency2__, __exports__) {
+  ["simple-html-tokenizer","htmlbars/ast","htmlbars/html-parser/process-token","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __exports__) {
     "use strict";
     var Tokenizer = __dependency1__.Tokenizer;
     var Chars = __dependency1__.Chars;
@@ -842,6 +888,7 @@ define("htmlbars/parser",
     var EndTag = __dependency1__.EndTag;
     var HTMLElement = __dependency2__.HTMLElement;
     var BlockElement = __dependency2__.BlockElement;
+    var processToken = __dependency3__.processToken;
 
     function preprocess(html) {
       var ast = Handlebars.parse(html);
@@ -942,40 +989,7 @@ define("htmlbars/parser",
         value.push(char);
       }
     };
-
-    function processToken(processor, elementStack, token) {
-      var currentElement = elementStack[elementStack.length - 1];
-      if (token instanceof Chars) {
-        currentElement.children.push(token.chars);
-      } else if (token instanceof EndTag) {
-        if (currentElement.tag === token.tagName) {
-          var value = config.processHTMLMacros(currentElement)
-          elementStack.pop();
-
-          if (value === undefined) {
-            elementStack[elementStack.length - 1].children.push(currentElement);
-          } else if (value instanceof HTMLElement) {
-            elementStack[elementStack.length - 1].children.push(value);
-          }
-        } else {
-          throw new Error("Closing tag " + token.tagName + " did not match last open tag " + currentElement.tag);
-        }
-      } else if (token instanceof StartTag) {
-        var element = new HTMLElement(token.tagName, token.attributes);
-        element.helpers = processor.pendingTagHelpers.slice();
-        processor.pendingTagHelpers = [];
-        elementStack.push(element);
-      } else if (token instanceof Handlebars.AST.BlockNode) {
-        elementStack.push(new BlockElement(token.mustache));
-      }
-    }
-
-    var config = {
-      processHTMLMacros: function() {}
-    };
-
     __exports__.preprocess = preprocess;
-    __exports__.config = config;
   });
 
 define("htmlbars/runtime",
