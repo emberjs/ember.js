@@ -331,7 +331,7 @@ define("htmlbars/compiler/pass1",
         } else if (node instanceof BlockElement) {
           compiler.block(node);
         } else {
-          compiler[node.type + "Content"](node);
+          compiler[node.type](node);
         }
       }
     }
@@ -378,21 +378,11 @@ define("htmlbars/compiler/pass1",
       var name = attribute[0],
           value = attribute[1];
 
-      if (value.length > 1) {
-        var program = compileAttr(value);
-        this.children.push(program);
+      var program = compileAttr(value);
+      this.children.push(program);
 
-        this.opcode('blockAttr', name, this.children.length - 1);
-        return;
-      }
-
-      value = value[0];
-
-      if (typeof value === 'string') {
-        this.opcode('attribute', name, value);
-      } else {
-        this[value.type + "Attr"](name, value);
-      }
+      this.opcode('attribute', name, this.children.length - 1);
+      return;
     };
 
     compiler1.nodeHelper = function(mustache) {
@@ -402,24 +392,7 @@ define("htmlbars/compiler/pass1",
       this.opcode('nodeHelper', mustache.id.string, mustache.params.length);
     };
 
-    compiler1.mustacheAttr = function(attrName, mustache) {
-      var type = classifyMustache(mustache, this.options);
-
-      if (type === 'simple') {
-        this.opcode('dynamicAttr', attrName, mustache.id.parts, mustache.escaped);
-      } else if (type === 'ambiguous') {
-        this.opcode('ambiguousAttr', attrName, mustache.id.string, mustache.escaped);
-      } else {
-        this.opcode('program', null);
-        processParams(this, mustache.params);
-        processHash(this, mustache.hash);
-        this.opcode('helperAttr', attrName, mustache.id.string, mustache.params.length);
-      }
-
-      applyAttribute(this, attrName, mustache);
-    };
-
-    compiler1.mustacheContent = function(mustache) {
+    compiler1.mustache = function(mustache) {
       var type = classifyMustache(mustache, this.options);
 
       if (type === 'simple') {
@@ -497,14 +470,6 @@ define("htmlbars/compiler/pass1",
         compiler.opcode('appendText');
       } else {
         compiler.opcode('appendHTML');
-      }
-    }
-
-    function applyAttribute(compiler, attrName, mustache) {
-      if (mustache.escaped) {
-        compiler.opcode('applyAttribute', attrName);
-      } else {
-        throw new Error("Unescaped attributes are not allowed");    
       }
     }
 
@@ -619,11 +584,7 @@ define("htmlbars/compiler/pass2",
       this.push("var " + elRef + " = el = " + call('document.createElement', string(tagName)));
     };
 
-    compiler2.attribute = function(name, value) {
-      this.push(call('el.setAttribute', string(name), string(value)));
-    };
-
-    compiler2.blockAttr = function(name, child) {
+    compiler2.attribute = function(name, child) {
       var invokeRererender = call('el.setAttribute', string(name), call('child' + child, 'context', hash(['rerender:rerender'])));
       var rerender = 'function rerender() { ' + invokeRererender + '}';
       var options = hash(['rerender:' + rerender, 'element:el', 'attrName:' + string(name)]);
@@ -653,23 +614,6 @@ define("htmlbars/compiler/pass2",
     compiler2.nodeHelper = function(name, size) {
       var prepared = prepareHelper(this.stack, size);
       this.push(helper('helperContents', string(name), this.el(), 'context', prepared.args, hash(prepared.options)));
-    };
-
-    compiler2.dynamicAttr = function(attrName, parts) {
-      pushStack(this.stack, helper('resolveAttr', 'context', quotedArray(parts), this.el(), string(attrName)));
-    };
-
-    compiler2.ambiguousAttr = function(attrName, str) {
-      pushStack(this.stack, helper('ambiguousAttr', this.el(), 'context', string(attrName), string(str)));
-    };
-
-    compiler2.helperAttr = function(attrName, name, size) {
-      var prepared = prepareHelper(this.stack, size);
-      pushStack(this.stack, helper('helperAttr', string(name), this.el(), string(attrName), 'context', prepared.args, hash(prepared.options)));
-    };
-
-    compiler2.applyAttribute = function(attrName) {
-      this.push(helper('applyAttribute', this.el(), string(attrName), popStack(this.stack)));
     };
 
     __exports__.Compiler2 = Compiler2;
@@ -1087,8 +1031,10 @@ define("htmlbars/runtime",
         }, context)
       },
 
-      ambiguousAttr: function(element, context, attrName, string) {
+      ambiguousAttr: function(context, string, options) {
         var helper, value, args;
+
+        return this.resolveInAttr(context, [string], options);
 
         if (helper = helpers[string]) {
           throw new Error("helperAttr is not implemented yet");
@@ -1103,11 +1049,6 @@ define("htmlbars/runtime",
         options.attrName = attrName;
         args.push(options);
         return helper.apply(context, args);
-      },
-
-      applyAttribute: function(element, attrName, value) {
-        if (value === undefined) { return; }
-        element.setAttribute(attrName, value);
       },
 
       resolveAttr: function(context, parts, element, attrName, escaped) {

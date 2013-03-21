@@ -20,7 +20,6 @@ module("HTML-based compiler (output)", {
     removeHelper('testing');
     removeHelper('testing2');
     removeHelper('RESOLVE');
-    removeHelper('RESOLVE_ATTR');
     removeHelper('RESOLVE_IN_ATTR');
   }
 });
@@ -268,27 +267,22 @@ test("Attributes can use computed paths", function() {
 });
 
 test("It is possible to override the resolution mechanism for attributes", function() {
-  registerHelper('RESOLVE_ATTR', function(parts, options) {
-    options.element.setAttribute(options.attrName, 'http://google.com/' + this[parts[0]]);
+  registerHelper('RESOLVE_IN_ATTR', function(parts, options) {
+    return 'http://google.com/' + this[parts[0]]
   });
 
   compilesTo('<a href="{{url}}">linky</a>', '<a href="http://google.com/linky.html">linky</a>', { url: 'linky.html' });
 });
 
-test("It is possible to use RESOLVE_ATTR for data binding", function() {
+test("It is possible to use RESOLVE_IN_ATTR for data binding", function() {
   var callback;
 
-  registerHelper('RESOLVE_ATTR', function(parts, options) {
-    var element = options.element,
-        attrName = options.attrName,
-        context = this;
-
+  registerHelper('RESOLVE_IN_ATTR', function(parts, options) {
     callback = function() {
-      var value = context[parts[0]];
-      element.setAttribute(attrName, value);
+      options.rerender();
     }
 
-    element.setAttribute(attrName, context[parts[0]]);
+    return this[parts[0]];
   });
 
   var object = { url: 'linky.html' };
@@ -313,9 +307,9 @@ test("Attributes can be populated with helpers that generate a string", function
   compilesTo('<a href="{{testing url}}">linky</a>', '<a href="linky.html">linky</a>', { url: 'linky.html'});
 });
 
-test("A helper can choose to insert the attribute itself", function() {
+test("A helper can return a value for the attribute", function() {
   registerHelper('testing', function(path, options) {
-    options.element.setAttribute(options.attrName, this[path]);
+    return this[path];
   });
 
   compilesTo('<a href="{{testing url}}">linky</a>', '<a href="linky.html">linky</a>', { url: 'linky.html'});
@@ -323,7 +317,7 @@ test("A helper can choose to insert the attribute itself", function() {
 
 test("Attribute helpers take a hash", function() {
   registerHelper('testing', function(options) {
-    options.element.setAttribute(options.attrName, this[options.hash.path]);
+    return this[options.hash.path];
   });
 
   compilesTo('<a href="{{testing path=url}}">linky</a>', '<a href="linky.html">linky</a>', { url: 'linky.html' });
@@ -333,15 +327,11 @@ test("Attribute helpers can use the hash for data binding", function() {
   var callback;
 
   registerHelper('testing', function(path, options) {
-    var element = options.element,
-        context = this;
-
     callback = function() {
-      var value = context[path];
-      element.setAttribute(options.attrName, value ? options.hash.truthy : options.hash.falsy);
+      options.rerender();
     }
 
-    callback();
+    return this[path] ? options.hash.truthy : options.hash.falsy;
   });
 
   var object = { on: true };

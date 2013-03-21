@@ -50,8 +50,10 @@ define(
         }, context)
       },
 
-      ambiguousAttr: function(element, context, attrName, string) {
+      ambiguousAttr: function(context, string, options) {
         var helper, value, args;
+
+        return this.resolveInAttr(context, [string], options);
 
         if (helper = helpers[string]) {
           throw new Error("helperAttr is not implemented yet");
@@ -66,11 +68,6 @@ define(
         options.attrName = attrName;
         args.push(options);
         return helper.apply(context, args);
-      },
-
-      applyAttribute: function(element, attrName, value) {
-        if (value === undefined) { return; }
-        element.setAttribute(attrName, value);
       },
 
       resolveAttr: function(context, parts, element, attrName, escaped) {

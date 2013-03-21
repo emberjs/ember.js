@@ -106,11 +106,7 @@ define(
       this.push("var " + elRef + " = el = " + call('document.createElement', string(tagName)));
     };
 
-    compiler2.attribute = function(name, value) {
-      this.push(call('el.setAttribute', string(name), string(value)));
-    };
-
-    compiler2.blockAttr = function(name, child) {
+    compiler2.attribute = function(name, child) {
       var invokeRererender = call('el.setAttribute', string(name), call('child' + child, 'context', hash(['rerender:rerender'])));
       var rerender = 'function rerender() { ' + invokeRererender + '}';
       var options = hash(['rerender:' + rerender, 'element:el', 'attrName:' + string(name)]);
@@ -140,23 +136,6 @@ define(
     compiler2.nodeHelper = function(name, size) {
       var prepared = prepareHelper(this.stack, size);
       this.push(helper('helperContents', string(name), this.el(), 'context', prepared.args, hash(prepared.options)));
-    };
-
-    compiler2.dynamicAttr = function(attrName, parts) {
-      pushStack(this.stack, helper('resolveAttr', 'context', quotedArray(parts), this.el(), string(attrName)));
-    };
-
-    compiler2.ambiguousAttr = function(attrName, str) {
-      pushStack(this.stack, helper('ambiguousAttr', this.el(), 'context', string(attrName), string(str)));
-    };
-
-    compiler2.helperAttr = function(attrName, name, size) {
-      var prepared = prepareHelper(this.stack, size);
-      pushStack(this.stack, helper('helperAttr', string(name), this.el(), string(attrName), 'context', prepared.args, hash(prepared.options)));
-    };
-
-    compiler2.applyAttribute = function(attrName) {
-      this.push(helper('applyAttribute', this.el(), string(attrName), popStack(this.stack)));
     };
 
     __exports__.Compiler2 = Compiler2;
