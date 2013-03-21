@@ -135,6 +135,7 @@ var ComputedPropertyPrototype = ComputedProperty.prototype;
 
   @method cacheable
   @param {Boolean} aFlag optional set to `false` to disable caching
+  @return {Ember.ComputedProperty} this
   @chainable
 */
 ComputedPropertyPrototype.cacheable = function(aFlag) {
@@ -155,6 +156,7 @@ ComputedPropertyPrototype.cacheable = function(aFlag) {
   ```
 
   @method volatile
+  @return {Ember.ComputedProperty} this
   @chainable
 */
 ComputedPropertyPrototype.volatile = function() {
@@ -176,6 +178,7 @@ ComputedPropertyPrototype.volatile = function() {
   ```
 
   @method readOnly
+  @return {Ember.ComputedProperty} this
   @chainable
 */
 ComputedPropertyPrototype.readOnly = function(readOnly) {
@@ -200,6 +203,7 @@ ComputedPropertyPrototype.readOnly = function(readOnly) {
 
   @method property
   @param {String} path* zero or more property paths
+  @return {Ember.ComputedProperty} this
   @chainable
 */
 ComputedPropertyPrototype.property = function() {
@@ -429,6 +433,7 @@ Ember.computed = function(func) {
   @param {Object} obj the object whose property you want to check
   @param {String} key the name of the property whose cached value you want
     to return
+  @return {any} the cached value
 */
 Ember.cacheFor = function cacheFor(obj, key) {
   var cache = metaFor(obj, false).cache;
@@ -442,6 +447,7 @@ Ember.cacheFor = function cacheFor(obj, key) {
   @method computed.not
   @for Ember
   @param {String} dependentKey
+  @return {Ember.ComputedProperty} computed property which negate the original value for property
 */
 Ember.computed.not = function(dependentKey) {
   return Ember.computed(dependentKey, function(key) {
@@ -477,6 +483,7 @@ Ember.computed.empty = function(dependentKey) {
   @method computed.bool
   @for Ember
   @param {String} dependentKey
+  @return {Ember.ComputedProperty} computed property which convert to boolean the original value for property
 */
 Ember.computed.bool = function(dependentKey) {
   return Ember.computed(dependentKey, function(key) {
