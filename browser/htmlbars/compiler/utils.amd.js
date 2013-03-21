@@ -4,7 +4,7 @@ define(
     "use strict";
     var array = __dependency1__.array;
     var hash = __dependency1__.hash;
-    var quotedString = __dependency1__.quotedString;
+    var string = __dependency1__.string;
     var popStack = __dependency2__.popStack;
 
     function processOpcodes(compiler, opcodes) {

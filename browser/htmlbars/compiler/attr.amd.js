@@ -7,9 +7,9 @@ define(
     var helper = __dependency2__.helper;
     var popStack = __dependency3__.popStack;
     var pushStack = __dependency3__.pushStack;
-    var quotedString = __dependency4__.quotedString;
-    var quotedArray = __dependency4__.quotedArray;
+    var string = __dependency4__.string;
     var hash = __dependency4__.hash;
+    var quotedArray = __dependency4__.quotedArray;
 
     function AttrCompiler() {};
 
@@ -35,8 +35,8 @@ define(
       this.push("return buffer");
     };
 
-    attrCompiler.content = function(string) {
-      this.push("buffer += " + quotedString(string));
+    attrCompiler.content = function(str) {
+      this.push("buffer += " + string(str));
     };
 
     attrCompiler.dynamic = function(parts, escaped) {
@@ -54,7 +54,7 @@ define(
 
       prepared.options.push('rerender:options.rerender');
 
-      pushStack(this.stack, helper('helperAttr', quotedString(name), 'null', 'null', 'context', prepared.args, hash(prepared.options)));
+      pushStack(this.stack, helper('helperAttr', string(name), 'null', 'null', 'context', prepared.args, hash(prepared.options)));
     };
 
     attrCompiler.appendText = function() {
@@ -66,18 +66,18 @@ define(
     }
 
     attrCompiler.id = function(parts) {
-      pushStack(this.stack, quotedString('id'));
-      pushStack(this.stack, quotedString(parts[0]));
+      pushStack(this.stack, string('id'));
+      pushStack(this.stack, string(parts[0]));
     }
 
     attrCompiler.literal = function(literal) {
-      pushStack(this.stack, quotedString(typeof literal));
+      pushStack(this.stack, string(typeof literal));
       pushStack(this.stack, literal);
     };
 
-    attrCompiler.string = function(string) {
-      pushStack(this.stack, quotedString(typeof literal));
-      pushStack(this.stack, quotedString(string));
+    attrCompiler.string = function(str) {
+      pushStack(this.stack, string(typeof literal));
+      pushStack(this.stack, string(str));
     };
 
     attrCompiler.stackLiteral = function(literal) {
