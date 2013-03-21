@@ -60,7 +60,7 @@ file "browser/htmlbars.js" => browser_dependencies do
     output << named_module(name, filename)
   end
 
-  output << %|window.HTMLBars = requireModule('htmlbars');|
+  output << %|window.HTMLBars = require('htmlbars');|
   output << %|})();|
 
   open("browser/htmlbars.js", "w") do |file|
