@@ -1,6 +1,6 @@
 define(
-  ["htmlbars/compiler/utils","htmlbars/compiler/elements","htmlbars/compiler/stack","htmlbars/compiler/quoting","htmlbars/runtime","exports"],
-  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __exports__) {
+  ["htmlbars/compiler/utils","htmlbars/compiler/elements","htmlbars/compiler/stack","htmlbars/compiler/quoting","htmlbars/runtime","htmlbars/helpers","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __dependency6__, __exports__) {
     "use strict";
     var processOpcodes = __dependency1__.processOpcodes;
     var helper = __dependency1__.helper;
@@ -16,7 +16,7 @@ define(
     var quotedArray = __dependency4__.quotedArray;
     var hash = __dependency4__.hash;
     var domHelpers = __dependency5__.domHelpers;
-    var helpers = __dependency5__.helpers;
+    var helpers = __dependency6__.helpers;
 
     function Compiler2() {};
 

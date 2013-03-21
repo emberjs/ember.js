@@ -1,17 +1,8 @@
 define(
-  ["exports"],
-  function(__exports__) {
+  ["htmlbars/helpers","exports"],
+  function(__dependency1__, __exports__) {
     "use strict";
-    var helpers = {};
-
-    function registerHelper(name, callback) {
-      helpers[name] = callback;
-    }
-
-    function removeHelper(name) {
-      delete helpers[name];
-    }
-
+    var helpers = __dependency1__.helpers;
 
     // These methods are runtime for now. If they are too expensive,
     // I may inline them at compile-time.
@@ -119,8 +110,5 @@ define(
       }
     };
 
-    __exports__.registerHelper = registerHelper;
-    __exports__.removeHelper = removeHelper;
-    __exports__.helpers = helpers;
     __exports__.domHelpers = domHelpers;
   });

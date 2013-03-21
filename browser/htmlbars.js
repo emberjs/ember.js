@@ -431,8 +431,8 @@ define("htmlbars/compiler/pass1",
   });
 
 define("htmlbars/compiler/pass2",
-  ["htmlbars/compiler/utils","htmlbars/compiler/elements","htmlbars/compiler/stack","htmlbars/compiler/quoting","htmlbars/runtime","exports"],
-  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __exports__) {
+  ["htmlbars/compiler/utils","htmlbars/compiler/elements","htmlbars/compiler/stack","htmlbars/compiler/quoting","htmlbars/runtime","htmlbars/helpers","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __dependency6__, __exports__) {
     "use strict";
     var processOpcodes = __dependency1__.processOpcodes;
     var helper = __dependency1__.helper;
@@ -448,7 +448,7 @@ define("htmlbars/compiler/pass2",
     var quotedArray = __dependency4__.quotedArray;
     var hash = __dependency4__.hash;
     var domHelpers = __dependency5__.domHelpers;
-    var helpers = __dependency5__.helpers;
+    var helpers = __dependency6__.helpers;
 
     function Compiler2() {};
 
@@ -761,6 +761,25 @@ define("htmlbars/compiler",
     __exports__.compile = compile;
   });
 
+define("htmlbars/helpers",
+  ["exports"],
+  function(__exports__) {
+    "use strict";
+    var helpers = {};
+
+    function registerHelper(name, callback) {
+      helpers[name] = callback;
+    }
+
+    function removeHelper(name) {
+      delete helpers[name];
+    }
+
+    __exports__.registerHelper = registerHelper;
+    __exports__.removeHelper = removeHelper;
+    __exports__.helpers = helpers;
+  });
+
 define("htmlbars/macros",
   ["htmlbars/parser","htmlbars/ast","exports"],
   function(__dependency1__, __dependency2__, __exports__) {
@@ -954,19 +973,10 @@ define("htmlbars/parser",
   });
 
 define("htmlbars/runtime",
-  ["exports"],
-  function(__exports__) {
+  ["htmlbars/helpers","exports"],
+  function(__dependency1__, __exports__) {
     "use strict";
-    var helpers = {};
-
-    function registerHelper(name, callback) {
-      helpers[name] = callback;
-    }
-
-    function removeHelper(name) {
-      delete helpers[name];
-    }
-
+    var helpers = __dependency1__.helpers;
 
     // These methods are runtime for now. If they are too expensive,
     // I may inline them at compile-time.
@@ -1074,9 +1084,6 @@ define("htmlbars/runtime",
       }
     };
 
-    __exports__.registerHelper = registerHelper;
-    __exports__.removeHelper = removeHelper;
-    __exports__.helpers = helpers;
     __exports__.domHelpers = domHelpers;
   });
 
@@ -1095,7 +1102,7 @@ define("htmlbars/utils",
   });
 
 define("htmlbars",
-  ["htmlbars/parser","htmlbars/ast","htmlbars/compiler","htmlbars/runtime","htmlbars/macros","exports"],
+  ["htmlbars/parser","htmlbars/ast","htmlbars/compiler","htmlbars/helpers","htmlbars/macros","exports"],
   function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __exports__) {
     "use strict";
     var preprocess = __dependency1__.preprocess;
