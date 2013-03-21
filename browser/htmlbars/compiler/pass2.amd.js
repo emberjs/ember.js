@@ -4,8 +4,7 @@ define(
     "use strict";
     var processOpcodes = __dependency1__.processOpcodes;
     var prepareHelper = __dependency1__.prepareHelper;
-    var invokeMethod = __dependency2__.invokeMethod;
-    var invokeFunction = __dependency2__.invokeFunction;
+    var call = __dependency2__.call;
     var helper = __dependency2__.helper;
     var pushElement = __dependency3__.pushElement;
     var popElement = __dependency3__.popElement;
@@ -60,7 +59,7 @@ define(
     };
 
     compiler2.content = function(string) {
-      this.push(invokeMethod(this.el(), 'appendChild', helper('frag', this.el(), quotedString(string))));
+      this.push(call([this.el(), 'appendChild'], helper('frag', this.el(), quotedString(string))));
     };
 
     compiler2.push = function(string) {
@@ -104,25 +103,25 @@ define(
 
     compiler2.openElement = function(tagName) {
       var elRef = pushElement(this);
-      this.push("var " + elRef + " = el = " + invokeMethod('document', 'createElement', quotedString(tagName)));
+      this.push("var " + elRef + " = el = " + call('document.createElement', quotedString(tagName)));
     };
 
     compiler2.attribute = function(name, value) {
-      this.push(invokeMethod('el', 'setAttribute', quotedString(name), quotedString(value)));
+      this.push(call('el.setAttribute', quotedString(name), quotedString(value)));
     };
 
     compiler2.blockAttr = function(name, child) {
-      var invokeRererender = invokeMethod('el', 'setAttribute', quotedString(name), invokeFunction('child' + child, 'context', hash(['rerender:rerender'])));
+      var invokeRererender = call('el.setAttribute', quotedString(name), call('child' + child, 'context', hash(['rerender:rerender'])));
       var rerender = 'function rerender() { ' + invokeRererender + '}';
       var options = hash(['rerender:' + rerender, 'element:el', 'attrName:' + quotedString(name)]);
-      pushStack(this.stack, invokeFunction('child' + child, 'context', options));
+      pushStack(this.stack, call('child' + child, 'context', options));
 
-      this.push(invokeMethod('el', 'setAttribute', quotedString(name), popStack(this.stack)));
+      this.push(call('el.setAttribute', quotedString(name), popStack(this.stack)));
     };
 
     compiler2.closeElement = function() {
       var elRef = popElement(this);
-      this.push(invokeMethod(this.el(), 'appendChild', elRef));
+      this.push(call([this.el(), 'appendChild'], elRef));
     };
 
     compiler2.dynamic = function(parts, escaped) {
