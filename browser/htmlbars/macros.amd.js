@@ -1,9 +1,9 @@
 define(
-  ["htmlbars/parser","exports"],
-  function(__dependency1__, __exports__) {
+  ["htmlbars/parser","htmlbars/ast","exports"],
+  function(__dependency1__, __dependency2__, __exports__) {
     "use strict";
     var config = __dependency1__.config;
-    var HTMLElement = __dependency1__.HTMLElement;
+    var HTMLElement = __dependency2__.HTMLElement;
 
     var htmlMacros = {};
 

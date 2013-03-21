@@ -1,10 +1,10 @@
 define(
-  ["htmlbars/parser","exports"],
-  function(__dependency1__, __exports__) {
+  ["htmlbars/parser","htmlbars/ast","exports"],
+  function(__dependency1__, __dependency2__, __exports__) {
     "use strict";
-    var HTMLElement = __dependency1__.HTMLElement;
-    var BlockElement = __dependency1__.BlockElement;
     var preprocess = __dependency1__.preprocess;
+    var HTMLElement = __dependency2__.HTMLElement;
+    var BlockElement = __dependency2__.BlockElement;
 
     var dom = 'dom';
 
