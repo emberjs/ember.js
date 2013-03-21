@@ -77,18 +77,17 @@ define("htmlbars/ast",
   });
 
 define("htmlbars/attr-compiler",
-  ["htmlbars/compiler-utils","htmlbars/compiler/quoting","exports"],
-  function(__dependency1__, __dependency2__, __exports__) {
+  ["htmlbars/compiler-utils","htmlbars/compiler/stack","htmlbars/compiler/quoting","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __exports__) {
     "use strict";
     var processOpcodes = __dependency1__.processOpcodes;
     var prepareHelper = __dependency1__.prepareHelper;
-    var hash = __dependency1__.hash;
     var helper = __dependency1__.helper;
-    var popStack = __dependency1__.popStack;
-    var pushStackLiteral = __dependency1__.pushStackLiteral;
-    var quotedString = __dependency2__.quotedString;
-    var quotedArray = __dependency2__.quotedArray;
-    var hash = __dependency2__.hash;
+    var popStack = __dependency2__.popStack;
+    var pushStackLiteral = __dependency2__.pushStackLiteral;
+    var quotedString = __dependency3__.quotedString;
+    var quotedArray = __dependency3__.quotedArray;
+    var hash = __dependency3__.hash;
 
     function AttrCompiler() {};
 
@@ -204,6 +203,47 @@ define("htmlbars/compiler/quoting",
     __exports__.quotedArray = quotedArray;
     __exports__.array = array;
     __exports__.hash = hash;
+  });
+
+define("htmlbars/compiler/stack",
+  ["exports"],
+  function(__exports__) {
+    "use strict";
+    function pushStack(compiler) {
+      var stack = compiler.stack,
+          stackNumber = "stack" + (++compiler.stackNumber);
+
+      stack.push({ literal: false, value: stackNumber });
+    }
+
+
+    function pushStackLiteral(compiler, literal) {
+      compiler.stack.push({ literal: true, value: literal });
+    }
+
+
+    function popStack(compiler) {
+      var stack = compiler.stack,
+          poppedValue = stack.pop();
+
+      if (!poppedValue.literal) {
+        stackNumber--;
+      }
+      return poppedValue.value;
+    }
+
+
+    function topStack(compiler) {
+      var stack = compiler.stack;
+
+      return stack[stack.length - 1].value;
+    }
+
+
+    __exports__.pushStack = pushStack;
+    __exports__.pushStackLiteral = pushStackLiteral;
+    __exports__.popStack = popStack;
+    __exports__.topStack = topStack;
   });
 
 define("htmlbars/compiler-pass1",
@@ -444,8 +484,8 @@ define("htmlbars/compiler-pass1",
   });
 
 define("htmlbars/compiler-pass2",
-  ["htmlbars/compiler-utils","htmlbars/compiler/quoting","htmlbars/runtime","exports"],
-  function(__dependency1__, __dependency2__, __dependency3__, __exports__) {
+  ["htmlbars/compiler-utils","htmlbars/compiler/stack","htmlbars/compiler/quoting","htmlbars/runtime","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __exports__) {
     "use strict";
     var processOpcodes = __dependency1__.processOpcodes;
     var topElement = __dependency1__.topElement;
@@ -454,14 +494,14 @@ define("htmlbars/compiler-pass2",
     var invokeFunction = __dependency1__.invokeFunction;
     var pushElement = __dependency1__.pushElement;
     var popElement = __dependency1__.popElement;
-    var pushStackLiteral = __dependency1__.pushStackLiteral;
-    var popStack = __dependency1__.popStack;
     var prepareHelper = __dependency1__.prepareHelper;
-    var quotedString = __dependency2__.quotedString;
-    var quotedArray = __dependency2__.quotedArray;
-    var hash = __dependency2__.hash;
-    var domHelpers = __dependency3__.domHelpers;
-    var helpers = __dependency3__.helpers;
+    var pushStackLiteral = __dependency2__.pushStackLiteral;
+    var popStack = __dependency2__.popStack;
+    var quotedString = __dependency3__.quotedString;
+    var quotedArray = __dependency3__.quotedArray;
+    var hash = __dependency3__.hash;
+    var domHelpers = __dependency4__.domHelpers;
+    var helpers = __dependency4__.helpers;
 
     function Compiler2() {};
 
@@ -609,12 +649,13 @@ define("htmlbars/compiler-pass2",
   });
 
 define("htmlbars/compiler-utils",
-  ["htmlbars/compiler/quoting","exports"],
-  function(__dependency1__, __exports__) {
+  ["htmlbars/compiler/quoting","htmlbars/compiler/stack","exports"],
+  function(__dependency1__, __dependency2__, __exports__) {
     "use strict";
     var array = __dependency1__.array;
     var hash = __dependency1__.hash;
     var quotedString = __dependency1__.quotedString;
+    var popStack = __dependency2__.popStack;
 
     function processOpcodes(compiler, opcodes) {
       opcodes.forEach(function(opcode) {
@@ -654,37 +695,6 @@ define("htmlbars/compiler-utils",
 
     function topElement(compiler) {
       return "element" + compiler.elementNumber;
-    }
-
-
-    function pushStack(compiler) {
-      var stack = compiler.stack,
-          stackNumber = "stack" + (++compiler.stackNumber);
-
-      stack.push({ literal: false, value: stackNumber });
-    }
-
-
-    function pushStackLiteral(compiler, literal) {
-      compiler.stack.push({ literal: true, value: literal });
-    }
-
-
-    function popStack(compiler) {
-      var stack = compiler.stack,
-          poppedValue = stack.pop();
-
-      if (!poppedValue.literal) {
-        stackNumber--;
-      }
-      return poppedValue.value;
-    }
-
-
-    function topStack(compiler) {
-      var stack = compiler.stack;
-
-      return stack[stack.length - 1].value;
     }
 
 
@@ -746,10 +756,6 @@ define("htmlbars/compiler-utils",
     __exports__.pushElement = pushElement;
     __exports__.popElement = popElement;
     __exports__.topElement = topElement;
-    __exports__.pushStack = pushStack;
-    __exports__.pushStackLiteral = pushStackLiteral;
-    __exports__.popStack = popStack;
-    __exports__.topStack = topStack;
     __exports__.prepareHelper = prepareHelper;
     __exports__.compileAST = compileAST;
   });
