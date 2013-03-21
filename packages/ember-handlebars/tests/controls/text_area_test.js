@@ -70,6 +70,19 @@ test("input placeholder is updated when setting placeholder property of view", f
   equal(textArea.$().attr('placeholder'), "bar", "updates text area after placeholder changes");
 });
 
+test("input name is updated when setting name property of view", function() {
+  Ember.run(function() {
+    set(textArea, 'name', 'foo');
+    textArea.append();
+  });
+
+  equal(textArea.$().attr('name'), "foo", "renders text area with name");
+
+  Ember.run(function() { set(textArea, 'name', 'bar'); });
+
+  equal(textArea.$().attr('name'), "bar", "updates text area after name changes");
+});
+
 test("input maxlength is updated when setting maxlength property of view", function() {
   Ember.run(function() {
     set(textArea, 'maxlength', '300');

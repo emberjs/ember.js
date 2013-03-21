@@ -84,6 +84,17 @@ test("select tabindex is updated when setting tabindex property of view", functi
   equal(select.$().attr('tabindex'), "1", "updates select after tabindex changes");
 });
 
+test("select name is updated when setting name property of view", function() {
+  Ember.run(function() { select.set('name', 'foo'); });
+  append();
+
+  equal(select.$().attr('name'), "foo", "renders select with the name");
+
+  Ember.run(function() { select.set('name', 'bar'); });
+
+  equal(select.$().attr('name'), "bar", "updates select after name changes");
+});
+
 test("can specify the property path for an option's label and value", function() {
   select.set('content', Ember.A([
     { id: 1, firstName: 'Yehuda' },
