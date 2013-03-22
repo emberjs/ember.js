@@ -27,6 +27,8 @@ function verifyDependencies(controller) {
       container = get(controller, 'container'),
       dependency, satisfied = true;
 
+  needs = needs.concat(get(controller, 'decorates'));
+
   for (var i=0, l=needs.length; i<l; i++) {
     dependency = needs[i];
     if (dependency.indexOf(':') === -1) {
@@ -42,9 +44,32 @@ function verifyDependencies(controller) {
   return satisfied;
 }
 
+function decoratorProxy(controller, container) {
+  return Ember.computed(function(key) {
+    var decorator = container.lookup('controller:'+key),
+        content = get(controller, 'content:'+key);
+
+    set(decorator, 'content', content);
+
+    return decorator;
+  });
+}
+
+function setupDecorators(controller) {
+  var decorates = get(controller, 'decorates'),
+      container = get(controller, 'container'),
+      decorator;
+
+  for (var i=0, l=decorates.length; i<l; i++) {
+    Ember.defineProperty(controller,
+      decorates[i], decoratorProxy(controller, container));
+  }
+}
+
 Ember.ControllerMixin.reopen({
-  concatenatedProperties: ['needs'],
+  concatenatedProperties: ['needs', 'decorates'],
   needs: [],
+  decorates: [],
 
   init: function() {
     this._super.apply(this, arguments);
@@ -53,6 +78,8 @@ Ember.ControllerMixin.reopen({
     if(!verifyDependencies(this)) {
       Ember.assert("Missing dependencies", false);
     }
+
+    setupDecorators(this);
   },
 
   controllerFor: function(controllerName) {
