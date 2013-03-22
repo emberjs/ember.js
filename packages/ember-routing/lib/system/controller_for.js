@@ -14,7 +14,7 @@ Ember.controllerFor = function(container, controllerName, context, lookupOptions
   `App.ObjectController` and `App.ArrayController`
 */
 Ember.generateController = function(container, controllerName, context) {
-  var controller, DefaultController;
+  var controller, DefaultController, fullName;
 
   if (context && Ember.isArray(context)) {
     DefaultController = container.resolve('controller:array');
@@ -35,6 +35,8 @@ Ember.generateController = function(container, controllerName, context) {
     return "(generated " + controllerName + " controller)";
   };
 
-  container.register('controller', controllerName, controller);
-  return container.lookup('controller:' + controllerName);
+
+  fullName = 'controller:' + controllerName;
+  container.register(fullName, controller);
+  return container.lookup(fullName);
 };

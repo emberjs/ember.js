@@ -109,7 +109,7 @@ test('initialized application go to initial route', function() {
       location: 'none'
     });
 
-    app.register('template', 'application',
+    app.register('template:application',
       Ember.Handlebars.compile("{{outlet}}")
     );
 
@@ -157,7 +157,7 @@ test("initialize application with stateManager via initialize call from Router c
       location: 'none'
     });
 
-    app.register('template', 'application', function() {
+    app.register('template:application', function() {
       return "<h1>Hello!</h1>";
     });
   });
