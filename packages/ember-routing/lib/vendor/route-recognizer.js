@@ -317,7 +317,7 @@ define("route-recognizer",
             regex += segment.regex();
           }
 
-          handlers.push({ handler: route.handler, names: names });
+          handlers.push({ handler: route.handler, names: names, namespace: route.namespace });
         }
 
         if (isEmpty) {
@@ -467,14 +467,14 @@ define("route-recognizer",
       };
     }
 
-    function addRoute(routeArray, path, handler) {
+    function addRoute(routeArray, path, handler, namespace) {
       var len = 0;
       for (var i=0, l=routeArray.length; i<l; i++) {
         len += routeArray[i].path.length;
       }
 
       path = path.substr(len);
-      routeArray.push({ path: path, handler: handler });
+      routeArray.push({ path: path, handler: handler, namespace: namespace });
     }
 
     function eachRoute(baseRoute, matcher, callback, binding) {
@@ -483,7 +483,7 @@ define("route-recognizer",
       for (var path in routes) {
         if (routes.hasOwnProperty(path)) {
           var routeArray = baseRoute.slice();
-          addRoute(routeArray, path, routes[path]);
+          addRoute(routeArray, path, routes[path].handler, routes[path].namespace);
 
           if (matcher.children[path]) {
             eachRoute(routeArray, matcher.children[path], callback, binding);

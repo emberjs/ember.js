@@ -73,6 +73,20 @@ define("container",
         object[key] = value;
       },
 
+      registerNamespace: function(namespace) {
+        // register all 
+        if (namespace instanceof Ember.Namespace) {
+          var nameNS = namespace.toString().replace(/\./g, '::');
+          for (var key in namespace) {
+            var type = key.match(/(.*)(Route|Controller|View)$/), name;
+            if (type && type.length === 3) { // validate if is any of this types
+              name = type[1].toLowerCase(), type = type[2].toLowerCase();
+              this.register(type, nameNS + '::' + name, namespace.get(key));
+            }
+          }          
+        }
+      },
+
       register: function(type, name, factory, options) {
         var fullName;
 
