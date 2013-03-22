@@ -6,7 +6,9 @@
 var get = Ember.get, set = Ember.set,
     classify = Ember.String.classify,
     capitalize = Ember.String.capitalize,
-    decamelize = Ember.String.decamelize;
+    decamelize = Ember.String.decamelize,
+    fmt = Ember.String.fmt,
+    a_slice = Array.prototype.slice;
 
 /**
   An instance of `Ember.Application` is the starting point for every Ember
@@ -221,6 +223,8 @@ var Application = Ember.Application = Ember.Namespace.extend({
   _readinessDeferrals: 1,
 
   init: function() {
+    this.computed = Ember.$.extend({}, Ember.computed);
+
     if (!this.$) { this.$ = Ember.$; }
     this.__container__ = this.buildContainer();
 
@@ -559,6 +563,51 @@ var Application = Ember.Application = Ember.Namespace.extend({
 
   initializer: function(options) {
     this.constructor.initializer(options);
+  },
+
+  /**
+    Defines a computed macro on your application namespace. Macros defined by
+    this method will be available on your application namespace but not on
+    the global Ember namespace. Additionaly the macros defined by the framework
+    will be available on the application namespace, so generaly in your
+    application you should use application namespace.
+
+    The first argument passed to the macro function is dependent key name,
+    the last one is the value, in case the function is called as a setter.
+    Any options passed at the macro creation time will be forwarder to the
+    macro function as additional arguments.
+
+    Example:
+
+    ```javascript
+    App.computedMacro('match', function(dependentKey, regexp) {
+      var val = get(this, dependentKey);
+      return val ? val.match(regexp) : false;
+    });
+
+    App.UserController = Ember.ObjectController.extend({
+      isTom: App.computed.match('firstName', /Tom/),
+      hasFirstName: App.computed.bool('firstName')
+    });
+    ```
+
+    @method computedMacro
+    @param  macro name {String}
+    @param  macro function {Function}
+  **/
+  computedMacro: function(name, macro) {
+    Ember.assert(fmt('Computed macro %@ is already defined by Ember.', name), !Ember.computed[name]);
+
+    this.computed[name] = function(dependentKey) {
+      var args = a_slice.call(arguments);
+      return Ember.computed(dependentKey, function(key, value) {
+        if (arguments.length === 1) {
+          return macro.apply(this, args);
+        } else {
+          return macro.apply(this, args.concat([value]));
+        }
+      });
+    };
   }
 });
 
