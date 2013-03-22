@@ -2,6 +2,8 @@ require('ember-metal/core');
 require('ember-metal/platform');
 require('ember-metal/utils');
 
+var get = Ember.get;
+
 /**
 @module ember-metal
 */
@@ -319,7 +321,9 @@ function sendEvent(obj, eventName, params, actions) {
 
     if (once) { removeListener(obj, eventName, target, method); }
     if (!target) { target = obj; }
-    if ('string' === typeof method) { method = target[method]; }
+    if ('string' === typeof method) {
+      method = get(target, method);
+    }
     if (params) {
       method.apply(target, params);
     } else {
