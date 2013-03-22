@@ -81,7 +81,7 @@ define("container",
           factory = name;
           fullName = type;
         } else {
-          Ember.deprecate('register("'+type +'", "'+ name+'") is now deprecated in-favour of register("'+type+':'+name+'");', true);
+          Ember.deprecate('register("'+type +'", "'+ name+'") is now deprecated in-favour of register("'+type+':'+name+'");', false);
           fullName = type + ":" + name;
         }
 
