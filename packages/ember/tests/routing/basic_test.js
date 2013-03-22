@@ -265,7 +265,7 @@ test("The Homepage with a `setupController` hook", function() {
 
   bootApplication();
 
-  container.register('controller', 'home', Ember.Controller.extend());
+  container.register('controller:home', Ember.Controller.extend());
 
   Ember.run(function() {
     router.handleURL("/");
@@ -286,7 +286,7 @@ test("The route controller is still set when overriding the setupController hook
     }
   });
 
-  container.register('controller', 'home', Ember.Controller.extend());
+  container.register('controller:home', Ember.Controller.extend());
 
   bootApplication();
 
@@ -315,7 +315,7 @@ test("The default controller's model is still set when overriding the setupContr
     "<ul>{{#each entry in hours}}<li>{{entry}}</li>{{/each}}</ul>"
   );
 
-  container.register('controller', 'home', Ember.Controller.extend());
+  container.register('controller:home', Ember.Controller.extend());
 
   bootApplication();
 
@@ -343,7 +343,7 @@ test("The Homepage with a `setupController` hook modifying other controllers", f
 
   bootApplication();
 
-  container.register('controller', 'home', Ember.Controller.extend());
+  container.register('controller:home', Ember.Controller.extend());
 
   Ember.run(function() {
     router.handleURL("/");
@@ -379,7 +379,7 @@ test("The Homepage getting its controller context via model", function() {
 
   bootApplication();
 
-  container.register('controller', 'home', Ember.Controller.extend());
+  container.register('controller:home', Ember.Controller.extend());
 
   Ember.run(function() {
     router.handleURL("/");
@@ -412,7 +412,7 @@ test("The Specials Page getting its controller context by deserializing the para
 
   bootApplication();
 
-  container.register('controller', 'special', Ember.Controller.extend());
+  container.register('controller:special', Ember.Controller.extend());
 
   Ember.run(function() {
     router.handleURL("/specials/1");
@@ -446,7 +446,7 @@ test("The Specials Page defaults to looking models up via `find`", function() {
 
   bootApplication();
 
-  container.register('controller', 'special', Ember.Controller.extend());
+  container.register('controller:special', Ember.Controller.extend());
 
   Ember.run(function() {
     router.handleURL("/specials/1");
@@ -491,7 +491,7 @@ test("The Special Page returning a promise puts the app into a loading state unt
 
   bootApplication();
 
-  container.register('controller', 'special', Ember.Controller.extend());
+  container.register('controller:special', Ember.Controller.extend());
 
   Ember.run(function() {
     router.handleURL("/specials/1");
@@ -637,7 +637,7 @@ test("Moving from one page to another triggers the correct callbacks", function(
 
   bootApplication();
 
-  container.register('controller', 'special', Ember.Controller.extend());
+  container.register('controller:special', Ember.Controller.extend());
 
   Ember.run(function() {
     router.handleURL("/");
@@ -727,7 +727,7 @@ test("Nested callbacks are not exited when moving to siblings", function() {
     bootApplication();
   });
 
-  container.register('controller', 'special', Ember.Controller.extend());
+  container.register('controller:special', Ember.Controller.extend());
 
   equal(Ember.$('h3', '#qunit-fixture').text(), "Home", "The app is now in the initial state");
   equal(rootSetup, 1, "The root setup was triggered");
@@ -783,7 +783,7 @@ asyncTest("Events are triggered on the controller if a matching action name is i
     }
   });
 
-  container.register('controller', 'home', controller);
+  container.register('controller:home', controller);
 
   bootApplication();
 
@@ -826,7 +826,7 @@ asyncTest("Events are triggered on the current state", function() {
 
   bootApplication();
 
-  container.register('controller', 'home', Ember.Controller.extend());
+  container.register('controller:home', Ember.Controller.extend());
 
   //var controller = router._container.controller.home = Ember.Controller.create();
   //controller.target = router;

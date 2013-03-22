@@ -16,7 +16,7 @@ module("Container (sub-containers)", {
     container = new Container();
     var PostController = factory();
 
-    container.register('controller', 'post', PostController);
+    container.register('controller:post', PostController);
   },
 
   teardown: function() {
