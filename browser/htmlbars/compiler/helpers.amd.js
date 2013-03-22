@@ -7,7 +7,7 @@ define(
     var string = __dependency1__.string;
     var popStack = __dependency2__.popStack;
 
-    function prepareHelper(stack, size) {
+    var __export1__ = function prepareHelper(stack, size) {
       var args = [],
           types = [],
           hashPairs = [],
@@ -41,6 +41,5 @@ define(
         args: array(args),
       };
     }
-
-    __exports__.prepareHelper = prepareHelper;
+    __exports__.prepareHelper = __export1__;
   });

@@ -12,12 +12,11 @@ define(
     }
 
 
-    function helper() {
+    var __export1__ = function helper() {
       var args = [].slice.call(arguments, 0);
       args[0] = 'dom.' + args[0];
       return call.apply(this, args);
     }
-
     __exports__.call = call;
-    __exports__.helper = helper;
+    __exports__.helper = __export1__;
   });

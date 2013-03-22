@@ -6,7 +6,7 @@ define(
 
     // These methods are runtime for now. If they are too expensive,
     // I may inline them at compile-time.
-    var domHelpers = {
+    var __export1__ = {
       appendText: function(element, value) {
         if (value === undefined) { return; }
         element.appendChild(document.createTextNode(value));
@@ -90,6 +90,5 @@ define(
         return range.createContextualFragment(string);
       }
     };
-
-    __exports__.domHelpers = domHelpers;
+    __exports__.domHelpers = __export1__;
   });

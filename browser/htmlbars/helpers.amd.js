@@ -4,15 +4,15 @@ define(
     "use strict";
     var helpers = {};
 
-    function registerHelper(name, callback) {
+    var __export1__ = function registerHelper(name, callback) {
       helpers[name] = callback;
     }
 
-    function removeHelper(name) {
+    var __export2__ = function removeHelper(name) {
       delete helpers[name];
     }
 
-    __exports__.registerHelper = registerHelper;
-    __exports__.removeHelper = removeHelper;
+    __exports__.registerHelper = __export1__;
+    __exports__.removeHelper = __export2__;
     __exports__.helpers = helpers;
   });

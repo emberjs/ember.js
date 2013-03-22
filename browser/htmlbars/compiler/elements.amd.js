@@ -2,22 +2,18 @@ define(
   ["exports"],
   function(__exports__) {
     "use strict";
-    function pushElement(compiler) {
+    var __export1__ = function pushElement(compiler) {
       return "element" + (++compiler.elementNumber);
     }
 
-
-    function popElement(compiler) {
+    var __export2__ = function popElement(compiler) {
       return "element" + (compiler.elementNumber--);
     }
 
-
-    function topElement(compiler) {
+    var __export3__ = function topElement(compiler) {
       return "element" + compiler.elementNumber;
     }
-
-
-    __exports__.pushElement = pushElement;
-    __exports__.popElement = popElement;
-    __exports__.topElement = topElement;
+    __exports__.pushElement = __export1__;
+    __exports__.popElement = __export2__;
+    __exports__.topElement = __export3__;
   });

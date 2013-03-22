@@ -186,7 +186,6 @@ define(
       } else {
         compiler.opcode('stackLiteral', 0);
       }
-
     }
 
     function appendMustache(compiler, mustache) {

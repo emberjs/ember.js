@@ -14,7 +14,7 @@ define(
       @token {Token} token the current token being built
       @child {Token|Mustache|Block} child the new token to insert into the AST
     */
-    function processToken(state, stack, token, child) {
+    var __export1__ = function processToken(state, stack, token, child) {
       // EOF
       if (child === undefined) { return; }
       return handlers[child.type](child, currentElement(stack), stack, token, state);
@@ -77,11 +77,10 @@ define(
       }
     };
 
-
     var config = {
       processHTMLMacros: function() {}
     };
 
-    __exports__.processToken = processToken;
+    __exports__.processToken = __export1__;
     __exports__.config = config;
   });

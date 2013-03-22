@@ -7,14 +7,13 @@ define(
 
     var htmlMacros = {};
 
-    function registerMacro(name, test, mutate) {
+    var __export1__ = function registerMacro(name, test, mutate) {
       htmlMacros[name] = { test: test, mutate: mutate };
     };
 
-    function removeMacro(name) {
+    var __export2__ = function removeMacro(name) {
       delete htmlMacros[name];
     }
-
 
     function processHTMLMacros(element) {
       var mutated, newElement;
@@ -40,6 +39,6 @@ define(
 
     // configure the HTML Parser
     config.processHTMLMacros = processHTMLMacros;
-    __exports__.registerMacro = registerMacro;
-    __exports__.removeMacro = removeMacro;
+    __exports__.registerMacro = __export1__;
+    __exports__.removeMacro = __export2__;
   });

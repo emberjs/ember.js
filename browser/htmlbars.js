@@ -181,24 +181,20 @@ define("htmlbars/compiler/elements",
   ["exports"],
   function(__exports__) {
     "use strict";
-    function pushElement(compiler) {
+    var __export1__ = function pushElement(compiler) {
       return "element" + (++compiler.elementNumber);
     }
 
-
-    function popElement(compiler) {
+    var __export2__ = function popElement(compiler) {
       return "element" + (compiler.elementNumber--);
     }
 
-
-    function topElement(compiler) {
+    var __export3__ = function topElement(compiler) {
       return "element" + compiler.elementNumber;
     }
-
-
-    __exports__.pushElement = pushElement;
-    __exports__.popElement = popElement;
-    __exports__.topElement = topElement;
+    __exports__.pushElement = __export1__;
+    __exports__.popElement = __export2__;
+    __exports__.topElement = __export3__;
   });
 
 define("htmlbars/compiler/helpers",
@@ -210,7 +206,7 @@ define("htmlbars/compiler/helpers",
     var string = __dependency1__.string;
     var popStack = __dependency2__.popStack;
 
-    function prepareHelper(stack, size) {
+    var __export1__ = function prepareHelper(stack, size) {
       var args = [],
           types = [],
           hashPairs = [],
@@ -244,8 +240,7 @@ define("htmlbars/compiler/helpers",
         args: array(args),
       };
     }
-
-    __exports__.prepareHelper = prepareHelper;
+    __exports__.prepareHelper = __export1__;
   });
 
 define("htmlbars/compiler/invoke",
@@ -262,14 +257,13 @@ define("htmlbars/compiler/invoke",
     }
 
 
-    function helper() {
+    var __export1__ = function helper() {
       var args = [].slice.call(arguments, 0);
       args[0] = 'dom.' + args[0];
       return call.apply(this, args);
     }
-
     __exports__.call = call;
-    __exports__.helper = helper;
+    __exports__.helper = __export1__;
   });
 
 define("htmlbars/compiler/pass1",
@@ -460,7 +454,6 @@ define("htmlbars/compiler/pass1",
       } else {
         compiler.opcode('stackLiteral', 0);
       }
-
     }
 
     function appendMustache(compiler, mustache) {
@@ -631,26 +624,23 @@ define("htmlbars/compiler/quoting",
     }
 
 
-    function quotedArray(list) {
-      return array(list.map(string).join(", "));
-    }
-
-
     function array(array) {
       return "[" + array + "]";
     }
 
 
-    function hash(pairs) {
-      return "{" + pairs.join(",") + "}";
+    var __export1__ = function quotedArray(list) {
+      return array(list.map(string).join(", "));
     }
 
-
+    var __export2__ = function hash(pairs) {
+      return "{" + pairs.join(",") + "}";
+    }
     __exports__.escapeString = escapeString;
     __exports__.string = string;
-    __exports__.quotedArray = quotedArray;
     __exports__.array = array;
-    __exports__.hash = hash;
+    __exports__.quotedArray = __export1__;
+    __exports__.hash = __export2__;
   });
 
 define("htmlbars/compiler/stack",
@@ -660,32 +650,29 @@ define("htmlbars/compiler/stack",
     // this file exists in anticipation of a more involved
     // stack implementation involving temporary variables
 
-    function pushStack(stack, literal) {
+    var __export1__ = function pushStack(stack, literal) {
       stack.push({ literal: true, value: literal });
     }
 
-
-    function popStack(stack) {
+    var __export2__ = function popStack(stack) {
       var poppedValue = stack.pop();
       return poppedValue.value;
     }
-
-    __exports__.pushStack = pushStack;
-    __exports__.popStack = popStack;
+    __exports__.pushStack = __export1__;
+    __exports__.popStack = __export2__;
   });
 
 define("htmlbars/compiler/utils",
   ["exports"],
   function(__exports__) {
     "use strict";
-    function processOpcodes(compiler, opcodes) {
+    var __export1__ = function processOpcodes(compiler, opcodes) {
       opcodes.forEach(function(opcode) {
         compiler[opcode.type].apply(compiler, opcode.params);
       });
     }
 
-
-    function compileAST(ast, options) {
+    var __export2__ = function compileAST(ast, options) {
       // circular dependency hack
       var Compiler1 = require('htmlbars/compiler/pass1').Compiler1;
       var Compiler2 = require('htmlbars/compiler/pass2').Compiler2;
@@ -698,10 +685,8 @@ define("htmlbars/compiler/utils",
         children: compiler1.children
       });
     }
-
-
-    __exports__.processOpcodes = processOpcodes;
-    __exports__.compileAST = compileAST;
+    __exports__.processOpcodes = __export1__;
+    __exports__.compileAST = __export2__;
   });
 
 define("htmlbars/compiler",
@@ -711,12 +696,11 @@ define("htmlbars/compiler",
     var preprocess = __dependency1__.preprocess;
     var compileAST = __dependency2__.compileAST;
 
-    function compile(string, options) {
+    var __export1__ = function compile(string, options) {
       var ast = preprocess(string);
       return compileAST(ast, options);
     }
-
-    __exports__.compile = compile;
+    __exports__.compile = __export1__;
   });
 
 define("htmlbars/helpers",
@@ -725,16 +709,16 @@ define("htmlbars/helpers",
     "use strict";
     var helpers = {};
 
-    function registerHelper(name, callback) {
+    var __export1__ = function registerHelper(name, callback) {
       helpers[name] = callback;
     }
 
-    function removeHelper(name) {
+    var __export2__ = function removeHelper(name) {
       delete helpers[name];
     }
 
-    __exports__.registerHelper = registerHelper;
-    __exports__.removeHelper = removeHelper;
+    __exports__.registerHelper = __export1__;
+    __exports__.removeHelper = __export2__;
     __exports__.helpers = helpers;
   });
 
@@ -754,7 +738,7 @@ define("htmlbars/html-parser/process-token",
       @token {Token} token the current token being built
       @child {Token|Mustache|Block} child the new token to insert into the AST
     */
-    function processToken(state, stack, token, child) {
+    var __export1__ = function processToken(state, stack, token, child) {
       // EOF
       if (child === undefined) { return; }
       return handlers[child.type](child, currentElement(stack), stack, token, state);
@@ -817,12 +801,11 @@ define("htmlbars/html-parser/process-token",
       }
     };
 
-
     var config = {
       processHTMLMacros: function() {}
     };
 
-    __exports__.processToken = processToken;
+    __exports__.processToken = __export1__;
     __exports__.config = config;
   });
 
@@ -835,14 +818,13 @@ define("htmlbars/macros",
 
     var htmlMacros = {};
 
-    function registerMacro(name, test, mutate) {
+    var __export1__ = function registerMacro(name, test, mutate) {
       htmlMacros[name] = { test: test, mutate: mutate };
     };
 
-    function removeMacro(name) {
+    var __export2__ = function removeMacro(name) {
       delete htmlMacros[name];
     }
-
 
     function processHTMLMacros(element) {
       var mutated, newElement;
@@ -868,8 +850,8 @@ define("htmlbars/macros",
 
     // configure the HTML Parser
     config.processHTMLMacros = processHTMLMacros;
-    __exports__.registerMacro = registerMacro;
-    __exports__.removeMacro = removeMacro;
+    __exports__.registerMacro = __export1__;
+    __exports__.removeMacro = __export2__;
   });
 
 define("htmlbars/parser",
@@ -884,11 +866,10 @@ define("htmlbars/parser",
     var BlockElement = __dependency2__.BlockElement;
     var processToken = __dependency3__.processToken;
 
-    function preprocess(html) {
+    var __export1__ = function preprocess(html) {
       var ast = Handlebars.parse(html);
       return new HTMLProcessor().accept(ast);
     };
-
 
     function HTMLProcessor() {
       // document fragment
@@ -974,7 +955,7 @@ define("htmlbars/parser",
 
       helpers.push(helper);
     }
-    __exports__.preprocess = preprocess;
+    __exports__.preprocess = __export1__;
   });
 
 define("htmlbars/runtime",
@@ -985,7 +966,7 @@ define("htmlbars/runtime",
 
     // These methods are runtime for now. If they are too expensive,
     // I may inline them at compile-time.
-    var domHelpers = {
+    var __export1__ = {
       appendText: function(element, value) {
         if (value === undefined) { return; }
         element.appendChild(document.createTextNode(value));
@@ -1069,22 +1050,21 @@ define("htmlbars/runtime",
         return range.createContextualFragment(string);
       }
     };
-
-    __exports__.domHelpers = domHelpers;
+    __exports__.domHelpers = __export1__;
   });
 
 define("htmlbars/utils",
   ["exports"],
   function(__exports__) {
     "use strict";
-    function merge(options, defaults) {
+    var __export1__ = function merge(options, defaults) {
       for (var prop in defaults) {
         if (options.hasOwnProperty(prop)) { continue; }
         options[prop] = defaults[prop];
       }
     }
 
-    __exports__.merge = merge;
+    __exports__.merge = __export1__;
   });
 
 define("htmlbars",

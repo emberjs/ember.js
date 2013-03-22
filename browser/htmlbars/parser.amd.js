@@ -10,11 +10,10 @@ define(
     var BlockElement = __dependency2__.BlockElement;
     var processToken = __dependency3__.processToken;
 
-    function preprocess(html) {
+    var __export1__ = function preprocess(html) {
       var ast = Handlebars.parse(html);
       return new HTMLProcessor().accept(ast);
     };
-
 
     function HTMLProcessor() {
       // document fragment
@@ -100,5 +99,5 @@ define(
 
       helpers.push(helper);
     }
-    __exports__.preprocess = preprocess;
+    __exports__.preprocess = __export1__;
   });
