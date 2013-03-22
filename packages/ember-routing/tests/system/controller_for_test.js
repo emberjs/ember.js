@@ -5,7 +5,7 @@ var buildContainer = function(namespace) {
   container.resolver = resolverFor(namespace);
   container.optionsForType('view', { singleton: false });
 
-  container.register('application', 'main', namespace, { instantiate: false });
+  container.register('application:main', namespace, { instantiate: false });
 
   container.register('controller:basic', Ember.Controller, { instantiate: false });
   container.register('controller:object', Ember.ObjectController, { instantiate: false });
@@ -37,7 +37,7 @@ module("Ember.controllerFor", {
   setup: function() {
     namespace = Ember.Namespace.create();
     container = buildContainer(namespace);
-    container.register('controller', 'app', Ember.Controller.extend());
+    container.register('controller:app', Ember.Controller.extend());
     appController = container.lookup('controller:app');
   },
   teardown: function() {

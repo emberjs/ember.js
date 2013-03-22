@@ -17,7 +17,7 @@ var buildContainer = function(namespace) {
   container.resolver = resolverFor(namespace);
   container.optionsForType('view', { singleton: false });
   container.optionsForType('template', { instantiate: false });
-  container.register('application', 'main', namespace, { instantiate: false });
+  container.register('application:main', namespace, { instantiate: false });
   container.injection('router:main', 'namespace', 'application:main');
 
   container.register('controller:basic', Ember.Controller, { instantiate: false });
@@ -54,8 +54,8 @@ module("Handlebars {{render}} helper", {
   setup: function() {
     var namespace = Ember.Namespace.create();
     container = buildContainer(namespace);
-    container.register('view', 'default', Ember.View.extend());
-    container.register('router', 'main', Ember.Router.extend());
+    container.register('view:default', Ember.View.extend());
+    container.register('router:main', Ember.Router.extend());
   },
   teardown: function() {
     Ember.run(function () {
@@ -104,7 +104,7 @@ test("{{render}} helper should render given template with a supplied model", fun
   });
 
   var PostController = Ember.ObjectController.extend();
-  container.register('controller', 'post', PostController);
+  container.register('controller:post', PostController);
 
   Ember.TEMPLATES['post'] = compile("<p>{{title}}</p>");
 
@@ -150,7 +150,7 @@ test("{{render}} helper should not use singleton controller with a supplied mode
 test("{{render}} helper should render with given controller", function() {
   var template = '<h1>HI</h1>{{render home controller="posts"}}';
   var controller = Ember.Controller.extend({container: container});
-  container.register('controller', 'posts', Ember.ArrayController.extend());
+  container.register('controller:posts', Ember.ArrayController.extend());
   view = Ember.View.create({
     controller: controller.create(),
     template: Ember.Handlebars.compile(template)
@@ -191,7 +191,7 @@ test("{{render}} helper should link child controllers to the parent controller",
     }
   });
 
-  container.register('controller', 'posts', Ember.ArrayController.extend());
+  container.register('controller:posts', Ember.ArrayController.extend());
 
   view = Ember.View.create({
     controller: controller.create(),
@@ -245,7 +245,7 @@ test("{{render}} works with dot notation", function() {
   var template = '<h1>BLOG</h1>{{render blog.post}}';
 
   var controller = Ember.Controller.extend({container: container});
-  container.register('controller', 'blog.post', Ember.ObjectController.extend());
+  container.register('controller:blog.post', Ember.ObjectController.extend());
 
   view = Ember.View.create({
     controller: controller.create(),
@@ -265,7 +265,7 @@ test("{{render}} works with slash notation", function() {
   var template = '<h1>BLOG</h1>{{render "blog/post"}}';
 
   var controller = Ember.Controller.extend({container: container});
-  container.register('controller', 'blog.post', Ember.ObjectController.extend());
+  container.register('controller:blog.post', Ember.ObjectController.extend());
 
   view = Ember.View.create({
     controller: controller.create(),

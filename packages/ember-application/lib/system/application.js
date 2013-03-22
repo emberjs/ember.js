@@ -110,7 +110,7 @@ var get = Ember.get, set = Ember.set,
     name: "store",
 
     initialize: function(container, application) {
-      container.register('store', 'main', application.Store);
+      container.register('store:main', application.Store);
     }
   });
   ```
@@ -417,7 +417,7 @@ var Application = Ember.Application = Ember.Namespace.extend({
     this.isInitialized = true;
 
     // At this point, the App.Router must already be assigned
-    this.register('router', 'main', this.Router);
+    this.register('router:main', this.Router);
 
     this.runInitializers();
     Ember.runLoadHooks('application', this);
@@ -610,7 +610,7 @@ Ember.Application.reopenClass({
     container.resolver = resolverFor(namespace);
     container.optionsForType('view', { singleton: false });
     container.optionsForType('template', { instantiate: false });
-    container.register('application', 'main', namespace, { instantiate: false });
+    container.register('application:main', namespace, { instantiate: false });
 
     container.register('controller:basic', Ember.Controller, { instantiate: false });
     container.register('controller:object', Ember.ObjectController, { instantiate: false });

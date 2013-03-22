@@ -213,7 +213,7 @@ test("it supports itemController", function() {
     controller: parentController
   });
 
-  container.register('controller', 'person', Controller);
+  container.register('controller:person', Controller);
 
   append(view);
 
@@ -259,7 +259,7 @@ test("it supports itemController when using a custom keyword", function() {
     }
   });
 
-  container.register('controller', 'person', Controller);
+  container.register('controller:person', Controller);
 
   append(view);
 

@@ -56,8 +56,8 @@ Ember.Router = Ember.Object.extend({
 
     setupRouter(this, router, location);
 
-    container.register('view', 'default', DefaultView);
-    container.register('view', 'toplevel', Ember.View.extend());
+    container.register('view:default', DefaultView);
+    container.register('view:toplevel', Ember.View.extend());
 
     location.onUpdateURL(function(url) {
       self.handleURL(url);
@@ -153,7 +153,9 @@ function getHandlerFunction(router) {
       DefaultRoute = container.resolve('route:basic');
 
   return function(name) {
-    var handler = container.lookup('route:' + name);
+    var routeName = 'route:' + name,
+        handler = container.lookup(routeName);
+
     if (seen[name]) { return handler; }
 
     seen[name] = true;
@@ -162,8 +164,8 @@ function getHandlerFunction(router) {
       if (name === 'loading') { return {}; }
       if (name === 'failure') { return router.constructor.defaultFailureHandler; }
 
-      container.register('route', name, DefaultRoute.extend());
-      handler = container.lookup('route:' + name);
+      container.register(routeName, DefaultRoute.extend());
+      handler = container.lookup(routeName);
     }
 
     handler.routeName = name;
@@ -172,7 +174,8 @@ function getHandlerFunction(router) {
 }
 
 function handlerIsActive(router, handlerName) {
-  var handler = router.container.lookup('route:' + handlerName),
+  var routeName = 'route:' + handlerName,
+      handler = router.container.lookup(routeName),
       currentHandlerInfos = router.router.currentHandlerInfos,
       handlerInfo;
 

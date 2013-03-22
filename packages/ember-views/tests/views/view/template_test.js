@@ -13,7 +13,7 @@ module("Ember.View - Template Functionality", {
 });
 
 test("should call the function of the associated template", function() {
-  container.register('template', 'testTemplate', function() {
+  container.register('template:testTemplate', function() {
     return "<h1 id='twas-called'>template was called</h1>";
   });
 
@@ -30,7 +30,7 @@ test("should call the function of the associated template", function() {
 });
 
 test("should call the function of the associated template with itself as the context", function() {
-  container.register('template', 'testTemplate', function(dataSource) {
+  container.register('template:testTemplate', function(dataSource) {
     return "<h1 id='twas-called'>template was called for " + get(dataSource, 'personName') + "</h1>";
   });
 
@@ -89,7 +89,7 @@ test("should not use defaultTemplate if template is provided", function() {
 test("should not use defaultTemplate if template is provided", function() {
   var View;
 
-  container.register('template', 'foobar', function() { return 'foo'; });
+  container.register('template:foobar', function() { return 'foo'; });
 
   View = Ember.View.extend({
     container: container,
