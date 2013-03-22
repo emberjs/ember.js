@@ -217,3 +217,22 @@ test('when watching another object, destroy should remove chain watchers from th
   equal(meta_objB.watching.foo, 0, 'should not be watching foo');
   equal(index, -1, 'should not have chain watcher');
 });
+
+module('Ember.watch.array');
+
+testBoth('watching a chained computed property that depends on array.@each should sync firstObject and lastObject', function(get, set) {
+  var firstObject, lastObject;
+  var obj = { items: Ember.A([]) };
+  var computedProperty = Ember.computed('items.@each', function(keyName, value) {
+    firstObject = get(this, 'items.firstObject');
+    lastObject = get(this, 'items.lastObject');
+  });
+  Ember.defineProperty(obj, 'hasItems', computedProperty);
+
+  Ember.watch(obj, 'hasItems.foo');
+  obj.items.pushObject("A");
+
+  equal(firstObject, "A", 'There should be an item in firstObject');
+  equal(lastObject, "A", 'There should be an item in lastObject');
+});
+
