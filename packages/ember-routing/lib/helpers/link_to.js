@@ -38,7 +38,25 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     return ret.concat(resolvedPaths(linkView.parameters));
   }
 
-  var LinkView = Ember.View.extend({
+  /**
+    Renders a link to the supplied route.
+
+    When the rendered link matches the current route, and the same object instance is passed into the helper,
+    then the link is given class="active" by default.
+
+    You may re-open LinkView in order to change the default active class:
+
+    ``` javascript
+    Ember.LinkView.reopen({
+      activeClass: "is-active"
+    })
+    ```
+
+    @class LinkView
+    @namespace Ember
+    @extends Ember.View
+  **/
+  var LinkView = Ember.LinkView = Ember.View.extend({
     tagName: 'a',
     namedRoute: null,
     currentWhen: null,
