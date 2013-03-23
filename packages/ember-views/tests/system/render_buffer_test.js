@@ -87,6 +87,15 @@ test("handles null props - Issue #2019", function() {
   equal('<span></span><div>', buffer.string());
 });
 
+test("handles browsers like Firefox < 11 that don't support outerHTML Issue #1952", function(){
+  var buffer = new Ember.RenderBuffer('div');
+  buffer.pushOpeningTag();
+  // Make sure element.outerHTML is falsy to trigger the fallback.
+  var elementStub = '<div></div>';
+  buffer.element = function(){ return elementStub; };
+  equal(new XMLSerializer().serializeToString(elementStub), buffer.string());
+});
+
 module("Ember.RenderBuffer - without tagName");
 
 test("It is possible to create a RenderBuffer without a tagName", function() {

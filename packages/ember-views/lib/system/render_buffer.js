@@ -450,7 +450,9 @@ Ember._RenderBuffer.prototype =
   */
   string: function() {
     if (this._element) {
-      return this.element().outerHTML;
+      // Firefox versions < 11 do not have support for element.outerHTML.
+      return this.element().outerHTML ||
+        new XMLSerializer().serializeToString(this.element());
     } else {
       return this.innerString();
     }
