@@ -56,80 +56,120 @@ module("Application readiness", {
 // it was triggered after initialization.
 
 test("Ember.Application's ready event is called right away if jQuery is already ready", function() {
+  var wasResolved = 0;
   jQuery.isReady = true;
 
   Ember.run(function() {
     application = Application.create({ router: false });
+    application.then(function(){
+      wasResolved++;
+    });
+
     equal(readyWasCalled, 0, "ready is not called until later");
+    equal(wasResolved, 0);
   });
 
+  equal(wasResolved, 1);
   equal(readyWasCalled, 1, "ready was called");
 
   Ember.run(function() {
     domReady();
   });
 
+  equal(wasResolved, 1);
   equal(readyWasCalled, 1, "application's ready was not called again");
 });
 
 test("Ember.Application's ready event is called after the document becomes ready", function() {
+  var wasResolved = 0;
   Ember.run(function() {
     application = Application.create({ router: false });
+    application.then(function(){
+      wasResolved++;
+    });
+    equal(wasResolved, 0);
   });
 
   equal(readyWasCalled, 0, "ready wasn't called yet");
+  equal(wasResolved, 0);
 
   Ember.run(function() {
     domReady();
+    equal(wasResolved, 0);
   });
 
+  equal(wasResolved, 1);
   equal(readyWasCalled, 1, "ready was called now that DOM is ready");
 });
 
 test("Ember.Application's ready event is called after the document becomes ready without initialize if autoinit is set", function() {
+  var wasResolved = 0;
   Ember.run(function() {
     application = Application.create({
       router: false,
       autoinit: true
     });
+    application.then(function(){
+      wasResolved++;
+    });
+    equal(wasResolved, 0);
   });
 
   equal(readyWasCalled, 0, "ready wasn't called yet");
+  equal(wasResolved, 0);
 
   Ember.run(function() {
     domReady();
+    equal(wasResolved, 0);
   });
 
+  equal(wasResolved, 1);
   equal(readyWasCalled, 1, "ready was called now that DOM is ready");
 });
 
 test("Ember.Application's ready event can be deferred by other components", function() {
+  var wasResolved = 0;
+
   Ember.run(function() {
     application = Application.create({ router: false });
+    application.then(function(){
+      wasResolved++;
+    });
     application.deferReadiness();
+    equal(wasResolved, 0);
   });
 
   equal(readyWasCalled, 0, "ready wasn't called yet");
 
   Ember.run(function() {
     domReady();
+    equal(wasResolved, 0);
   });
 
   equal(readyWasCalled, 0, "ready wasn't called yet");
+  equal(wasResolved, 0);
 
   Ember.run(function() {
     application.advanceReadiness();
+    equal(readyWasCalled, 0);
+    equal(wasResolved, 0);
   });
 
+  equal(wasResolved, 1);
   equal(readyWasCalled, 1, "ready was called now all readiness deferrals are advanced");
 });
 
 test("Ember.Application's ready event can be deferred by other components", function() {
+  var wasResolved = 0;
   jQuery.isReady = false;
 
   Ember.run(function() {
     application = Application.create({ router: false });
     application.deferReadiness();
+    application.then(function(){
+      wasResolved++;
+    });
+    equal(wasResolved, 0);
   });
 
   Ember.run(function() {
@@ -140,8 +180,10 @@ test("Ember.Application's ready event can be deferred by other components", func
 
   Ember.run(function() {
     application.advanceReadiness();
+    equal(wasResolved, 0);
   });
 
+  equal(wasResolved, 1);
   equal(readyWasCalled, 1, "ready was called now all readiness deferrals are advanced");
 
   raises(function() {
