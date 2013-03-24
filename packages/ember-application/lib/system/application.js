@@ -152,7 +152,8 @@ var get = Ember.get, set = Ember.set,
   @namespace Ember
   @extends Ember.Namespace
 */
-var Application = Ember.Application = Ember.Namespace.extend({
+
+var Application = Ember.Application = Ember.Namespace.extend(Ember.DeferredMixin, {
 
   /**
     The root DOM element of the Application. This can be specified as an
@@ -486,6 +487,8 @@ var Application = Ember.Application = Ember.Namespace.extend({
       Ember.Namespace.processAll();
       Ember.BOOTED = true;
     }
+
+    this.resolve(this);
   },
 
   /**
