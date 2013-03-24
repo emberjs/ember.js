@@ -106,12 +106,7 @@ test("Ember.Application's ready event is called after the document becomes ready
 test("Ember.Application's ready event can be deferred by other components", function() {
   Ember.run(function() {
     application = Application.create({ router: false });
-  });
-
-  application.deferReadiness();
-
-  Ember.run(function() {
-    application.initialize();
+    application.deferReadiness();
   });
 
   equal(readyWasCalled, 0, "ready wasn't called yet");
@@ -134,9 +129,8 @@ test("Ember.Application's ready event can be deferred by other components", func
 
   Ember.run(function() {
     application = Application.create({ router: false });
+    application.deferReadiness();
   });
-
-  application.deferReadiness();
 
   Ember.run(function() {
     domReady();
