@@ -307,7 +307,7 @@ var Application = Ember.Application = Ember.Namespace.extend({
   scheduleInitialize: function() {
     var self = this;
     this.$().ready(function() {
-      if (self.isDestroyed || self.isInitialized) { return; }
+      if (self.isDestroyed || self.isInitialized || Ember.testing) { return; }
       Ember.run.schedule('actions', self, 'initialize');
     });
   },
