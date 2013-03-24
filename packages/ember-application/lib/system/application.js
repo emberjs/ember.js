@@ -439,8 +439,11 @@ var Application = Ember.Application = Ember.Namespace.extend({
     this.buildContainer();
 
     this.isInitialized = false;
-    this.initialize();
-    this.startRouting();
+
+    Em.run.schedule('actions', this, function(){
+      this.initialize();
+      this.startRouting();
+    });
   },
 
   /**
