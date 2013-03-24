@@ -57,7 +57,17 @@ Ember.String = {
     return str.replace(/%@([0-9]+)?/g, function(s, argIndex) {
       argIndex = (argIndex) ? parseInt(argIndex,0) - 1 : idx++ ;
       s = formats[argIndex];
-      return ((s === null) ? '(null)' : (s === undefined) ? '' : s).toString();
+      switch(s) {
+        case null:
+          return '(null)';
+        case undefined:
+          return '';
+        default:
+          if (Ember.typeOf(s) === 'object') {
+              return JSON.stringify(s);
+          }
+          return s.toString();
+      }
     }) ;
   },
 
