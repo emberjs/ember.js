@@ -1,9 +1,11 @@
 
-var originalSetTimeout = window.setTimeout;
+var originalSetTimeout = window.setTimeout,
+    originalDateValueOf = Date.prototype.valueOf;
 
 module('Ember.run.later', {
   teardown: function() {
     window.setTimeout = originalSetTimeout;
+    Date.prototype.valueOf = originalDateValueOf;
   }
 });
 
@@ -113,13 +115,22 @@ asyncTest('callback order', function() {
 
 asyncTest('callbacks coalesce into same run loop if expiring at the same time', function() {
 
+
   var array = [];
   function fn(val) { array.push(Ember.run.currentRunLoop); }
 
   Ember.run(function() {
+
+    // Force +new Date to return the same result while scheduling
+    // run.later timers. Otherwise: non-determinism!
+    var now = +new Date();
+    Date.prototype.valueOf = function() { return now; };
+
     Ember.run.later(this, fn, 10);
     Ember.run.later(this, fn, 100);
     Ember.run.later(this, fn, 100);
+
+    Date.prototype.valueOf = originalDateValueOf;
   });
 
   deepEqual(array, []);
