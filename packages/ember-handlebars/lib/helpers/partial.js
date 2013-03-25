@@ -7,7 +7,7 @@ require('ember-handlebars/ext');
 
 /**
   `partial` renders a template directly using the current context.
-  If needed the context can be set using the `{{#with foo}}` helper. 
+  If needed the context can be set using the `{{#with foo}}` helper.
 
   ```html
   <script type="text/x-handlebars" data-template-name="header_bar">
@@ -36,10 +36,10 @@ Ember.Handlebars.registerHelper('partial', function(name, options) {
 
   nameParts[nameParts.length - 1] = "_" + lastPart;
 
-  var underscoredName = nameParts.join("/");
-
-  var template = Ember.TEMPLATES[underscoredName],
-      deprecatedTemplate = Ember.TEMPLATES[name];
+  var view = options.data.view,
+      underscoredName = nameParts.join("/"),
+      template = view.templateForName(underscoredName),
+      deprecatedTemplate = view.templateForName(name);
 
   Ember.deprecate("You tried to render the partial " + name + ", which should be at '" + underscoredName + "', but Ember found '" + name + "'. Please use a leading underscore in your partials", template);
   Ember.assert("Unable to find partial with name '"+name+"'.", template || deprecatedTemplate);

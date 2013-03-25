@@ -2276,48 +2276,6 @@ test("should not enter an infinite loop when binding an attribute in Handlebars"
   });
 });
 
-test("should render other templates using the {{template}} helper", function() {
-  Ember.TEMPLATES.sub_template = Ember.Handlebars.compile("sub-template");
-
-  view = Ember.View.create({
-    template: Ember.Handlebars.compile('This {{template "sub_template"}} is pretty great.')
-  });
-
-  Ember.run(function() {
-    view.appendTo('#qunit-fixture');
-  });
-
-  equal(Ember.$.trim(view.$().text()), "This sub-template is pretty great.");
-});
-
-test("should render other templates using the {{partial}} helper", function() {
-  Ember.TEMPLATES._subTemplate = Ember.Handlebars.compile("sub-template");
-
-  view = Ember.View.create({
-    template: Ember.Handlebars.compile('This {{partial "subTemplate"}} is pretty great.')
-  });
-
-  Ember.run(function() {
-    view.appendTo('#qunit-fixture');
-  });
-
-  equal(Ember.$.trim(view.$().text()), "This sub-template is pretty great.");
-});
-
-test("should render other slash-separated templates using the {{partial}} helper", function() {
-  Ember.TEMPLATES["child/_subTemplate"] = Ember.Handlebars.compile("sub-template");
-
-  view = Ember.View.create({
-    template: Ember.Handlebars.compile('This {{partial "child/subTemplate"}} is pretty great.')
-  });
-
-  Ember.run(function() {
-    view.appendTo('#qunit-fixture');
-  });
-
-  equal(Ember.$.trim(view.$().text()), "This sub-template is pretty great.");
-});
-
 test("should update bound values after the view is removed and then re-appended", function() {
   view = Ember.View.create({
     template: Ember.Handlebars.compile("{{#if view.showStuff}}{{view.boundValue}}{{else}}Not true.{{/if}}"),
