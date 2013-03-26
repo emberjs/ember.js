@@ -451,25 +451,35 @@ function getProperties(self, propertyNames) {
   return ret;
 }
 
-function registerComputed(name, macro) {
-  Ember.computed[name] = function(dependentKey) {
-    var args = a_slice.call(arguments);
-    return Ember.computed(dependentKey, function() {
-      return macro.apply(this, args);
-    });
-  };
+function registerComputed() {
+  var names = a_slice.call(arguments, 0, -1);
+  var macro = a_slice.call(arguments, -1)[0];
+
+  names.forEach(function(name) {
+    Ember.computed[name] = function(dependentKey) {
+      var args = a_slice.call(arguments);
+      return Ember.computed(dependentKey, function() {
+        return macro.apply(this, args);
+      });
+    };
+  });
 }
 
-function registerComputedWithProperties(name, macro) {
-  Ember.computed[name] = function() {
-    var properties = a_slice.call(arguments);
+function registerComputedWithProperties() {
+  var names = a_slice.call(arguments, 0, -1);
+  var macro = a_slice.call(arguments, -1)[0];
 
-    var computed = Ember.computed(function() {
-      return macro.apply(this, [getProperties(this, properties)]);
-    });
+  names.forEach(function(name) {
+    Ember.computed[name] = function() {
+      var properties = a_slice.call(arguments);
 
-    return computed.property.apply(computed, properties);
-  };
+      var computed = Ember.computed(function() {
+        return macro.apply(this, [getProperties(this, properties)]);
+      });
+
+      return computed.property.apply(computed, properties);
+    };
+  });
 }
 
 /**
@@ -490,7 +500,7 @@ registerComputed('empty', function(dependentKey) {
   @return {Ember.ComputedProperty} computed property which returns true if
   original value for property is not empty.
 */
-registerComputed('notEmpty', function(dependentKey) {
+registerComputed('notEmpty', 'present', function(dependentKey) {
   return !Ember.isEmpty(get(this, dependentKey));
 });
 
@@ -548,7 +558,7 @@ registerComputed('match', function(dependentKey, regexp) {
   @return {Ember.ComputedProperty} computed property which returns true if
   the original value for property is equal to the given value.
 */
-registerComputed('equal', function(dependentKey, value) {
+registerComputed('equal', 'is', function(dependentKey, value) {
   return get(this, dependentKey) === value;
 });
 
@@ -560,7 +570,7 @@ registerComputed('equal', function(dependentKey, value) {
   @return {Ember.ComputedProperty} computed property which returns true if
   the original value for property is greater then given value.
 */
-registerComputed('gt', function(dependentKey, value) {
+registerComputed('gt', 'greaterThan', 'moreThan', function(dependentKey, value) {
   return get(this, dependentKey) > value;
 });
 
@@ -572,7 +582,7 @@ registerComputed('gt', function(dependentKey, value) {
   @return {Ember.ComputedProperty} computed property which returns true if
   the original value for property is greater or equal then given value.
 */
-registerComputed('gte', function(dependentKey, value) {
+registerComputed('gte', 'atLeast', function(dependentKey, value) {
   return get(this, dependentKey) >= value;
 });
 
@@ -584,7 +594,7 @@ registerComputed('gte', function(dependentKey, value) {
   @return {Ember.ComputedProperty} computed property which returns true if
   the original value for property is less then given value.
 */
-registerComputed('lt', function(dependentKey, value) {
+registerComputed('lt', 'lessThan', function(dependentKey, value) {
   return get(this, dependentKey) < value;
 });
 
@@ -596,7 +606,7 @@ registerComputed('lt', function(dependentKey, value) {
   @return {Ember.ComputedProperty} computed property which returns true if
   the original value for property is less or equal then given value.
 */
-registerComputed('lte', function(dependentKey, value) {
+registerComputed('lte', 'atMost', function(dependentKey, value) {
   return get(this, dependentKey) <= value;
 });
 
