@@ -450,7 +450,21 @@ Ember._RenderBuffer.prototype =
   */
   string: function() {
     if (this._element) {
-      return this.element().outerHTML;
+
+      // If there is no outerHTML (eg Firefox <= 10)
+      // use a fallback mechanism.
+      if(Ember.isNone(this.element().outerHTML)) {
+        
+        var div = document.createElement('div');
+          div.appendChild(this.element().cloneNode(true));
+          var contents = div.innerHTML;
+          div = null;
+          return contents;
+
+      } else {
+        return this.element().outerHTML;
+      }
+
     } else {
       return this.innerString();
     }
