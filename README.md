@@ -148,7 +148,7 @@ NOTE: Requires node.js to generate.
 
 See <http://emberjs.com/> for annotated introductory documentation.
 
-## Preview API documenation
+## Preview API documentation
 
 * Clone https://github.com/emberjs/website.git at the same level as the
   main Ember repo.
