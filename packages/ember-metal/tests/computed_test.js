@@ -786,3 +786,154 @@ testBoth('Ember.computed.defaultTo', function(get, set) {
   set(obj, 'copy', null);
   equal(get(obj, 'copy'), 'new source value');
 });
+
+testBoth('Ember.computed.match', function(get, set) {
+  var obj = { name: 'Paul' };
+  Ember.defineProperty(obj, 'isPaul', Ember.computed.match('name', /Paul/));
+
+  equal(get(obj, 'isPaul'), true, 'is Paul');
+
+  set(obj, 'name', 'Pierre');
+
+  equal(get(obj, 'isPaul'), false, 'is not Paul anymore');
+});
+
+testBoth('Ember.computed.notEmpty', function(get, set) {
+  var obj = { items: [1] };
+  Ember.defineProperty(obj, 'hasItems', Ember.computed.notEmpty('items'));
+
+  equal(get(obj, 'hasItems'), true, 'is not empty');
+
+  set(obj, 'items', []);
+
+  equal(get(obj, 'hasItems'), false, 'is empty');
+});
+
+testBoth('Ember.computed.equal', function(get, set) {
+  var obj = { name: 'Paul' };
+  Ember.defineProperty(obj, 'isPaul', Ember.computed.equal('name', 'Paul'));
+
+  equal(get(obj, 'isPaul'), true, 'is Paul');
+
+  set(obj, 'name', 'Pierre');
+
+  equal(get(obj, 'isPaul'), false, 'is not Paul anymore');
+});
+
+testBoth('Ember.computed.gt', function(get, set) {
+  var obj = { number: 2 };
+  Ember.defineProperty(obj, 'isGreaterThenOne', Ember.computed.gt('number', 1));
+
+  equal(get(obj, 'isGreaterThenOne'), true, 'is gt');
+
+  set(obj, 'number', 1);
+
+  equal(get(obj, 'isGreaterThenOne'), false, 'is not gt');
+
+  set(obj, 'number', 0);
+
+  equal(get(obj, 'isGreaterThenOne'), false, 'is not gt');
+});
+
+testBoth('Ember.computed.gte', function(get, set) {
+  var obj = { number: 2 };
+  Ember.defineProperty(obj, 'isGreaterOrEqualThenOne', Ember.computed.gte('number', 1));
+
+  equal(get(obj, 'isGreaterOrEqualThenOne'), true, 'is gte');
+
+  set(obj, 'number', 1);
+
+  equal(get(obj, 'isGreaterOrEqualThenOne'), true, 'is gte');
+
+  set(obj, 'number', 0);
+
+  equal(get(obj, 'isGreaterOrEqualThenOne'), false, 'is not gte');
+});
+
+testBoth('Ember.computed.lt', function(get, set) {
+  var obj = { number: 0 };
+  Ember.defineProperty(obj, 'isLesserThenOne', Ember.computed.lt('number', 1));
+
+  equal(get(obj, 'isLesserThenOne'), true, 'is lt');
+
+  set(obj, 'number', 1);
+
+  equal(get(obj, 'isLesserThenOne'), false, 'is not lt');
+
+  set(obj, 'number', 2);
+
+  equal(get(obj, 'isLesserThenOne'), false, 'is not lt');
+});
+
+testBoth('Ember.computed.lte', function(get, set) {
+  var obj = { number: 0 };
+  Ember.defineProperty(obj, 'isLesserOrEqualThenOne', Ember.computed.lte('number', 1));
+
+  equal(get(obj, 'isLesserOrEqualThenOne'), true, 'is lte');
+
+  set(obj, 'number', 1);
+
+  equal(get(obj, 'isLesserOrEqualThenOne'), true, 'is lte');
+
+  set(obj, 'number', 2);
+
+  equal(get(obj, 'isLesserOrEqualThenOne'), false, 'is not lte');
+});
+
+testBoth('Ember.computed.and', function(get, set) {
+  var obj = { one: true, two: true };
+  Ember.defineProperty(obj, 'oneAndTwo', Ember.computed.and('one', 'two'));
+
+  equal(get(obj, 'oneAndTwo'), true, 'one and two');
+
+  set(obj, 'one', false);
+
+  equal(get(obj, 'oneAndTwo'), false, 'one and not two');
+});
+
+testBoth('Ember.computed.or', function(get, set) {
+  var obj = { one: true, two: true };
+  Ember.defineProperty(obj, 'oneOrTwo', Ember.computed.or('one', 'two'));
+
+  equal(get(obj, 'oneOrTwo'), true, 'one or two');
+
+  set(obj, 'one', false);
+
+  equal(get(obj, 'oneOrTwo'), true, 'one or two');
+
+  set(obj, 'two', false);
+
+  equal(get(obj, 'oneOrTwo'), false, 'nore one nore two');
+
+  set(obj, 'one', true);
+
+  equal(get(obj, 'oneOrTwo'), true, 'one or two');
+});
+
+testBoth('Ember.computed.any', function(get, set) {
+  var obj = { one: 'foo', two: 'bar' };
+  Ember.defineProperty(obj, 'anyOf', Ember.computed.any('one', 'two'));
+
+  equal(get(obj, 'anyOf'), 'foo', 'is foo');
+
+  set(obj, 'one', false);
+
+  equal(get(obj, 'anyOf'), 'bar', 'is bar');
+});
+
+testBoth('Ember.computed.map', function(get, set) {
+  var obj = { one: 'foo', two: 'bar', three: null };
+  Ember.defineProperty(obj, 'all', Ember.computed.map('one', 'two', 'three', 'four'));
+
+  deepEqual(get(obj, 'all'), ['foo', 'bar', null, null], 'have all of them');
+
+  set(obj, 'four', true);
+
+  deepEqual(get(obj, 'all'), ['foo', 'bar', null, true], 'have all of them');
+
+  var a = [];
+  set(obj, 'one', 0);
+  set(obj, 'three', a);
+
+  deepEqual(get(obj, 'all'), [0, 'bar', a, true], 'have all of them');
+});
