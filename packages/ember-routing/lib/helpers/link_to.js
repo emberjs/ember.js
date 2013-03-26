@@ -86,7 +86,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
           self = this,
           path, paths = Ember.A([]), i, j,
           router = this.get('router'),
-          serializePaths = router.pathsForSerialize(this.namedRoute);
+          serializePaths = router.pathsForSerialize(fullRouteName(router, this.namedRoute));
 
       set(this, 'paramsContext', context);
 

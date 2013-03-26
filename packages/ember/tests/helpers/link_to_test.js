@@ -149,15 +149,21 @@ test("The {{linkTo}} helper refreshes href element when one of params changes", 
 
   equal(Ember.$('#post', '#qunit-fixture').attr('href'), '/posts/post', 'precond - Link has rendered href attr properly');
 
-  indexController.set('post', secondPost);
+  Ember.run(function() {
+    indexController.set('post', secondPost);
+  });
 
   equal(Ember.$('#post', '#qunit-fixture').attr('href'), '/posts/second-post', 'href attr was updated after one of the params had been changed');
 
-  secondPost.set('slug', 'second-post-changed');
+  Ember.run(function() {
+    secondPost.set('slug', 'second-post-changed');
+  });
 
   equal(Ember.$('#post', '#qunit-fixture').attr('href'), '/posts/second-post-changed', 'href attr was updated after one of the properties needed to build URL had been changed');
 
-  indexController.set('post', null);
+  Ember.run(function() {
+    indexController.set('post', null);
+  });
 
   equal(Ember.$('#post', '#qunit-fixture').attr('href'), '/posts/second-post-changed', 'href attr does not change when one of the arguments in nullified');
 });
