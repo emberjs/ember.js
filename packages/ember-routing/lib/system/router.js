@@ -173,20 +173,6 @@ function getHandlerFunction(router) {
   };
 }
 
-function handlerIsActive(router, handlerName) {
-  var routeName = 'route:' + handlerName,
-      handler = router.container.lookup(routeName),
-      currentHandlerInfos = router.router.currentHandlerInfos,
-      handlerInfo;
-
-  for (var i=0, l=currentHandlerInfos.length; i<l; i++) {
-    handlerInfo = currentHandlerInfos[i];
-    if (handlerInfo.handler === handler) { return true; }
-  }
-
-  return false;
-}
-
 function routePath(handlerInfos) {
   var path = [];
 
