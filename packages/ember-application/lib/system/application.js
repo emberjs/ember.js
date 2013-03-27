@@ -420,7 +420,7 @@ var Application = Ember.Application = Ember.Namespace.extend(Ember.DeferredMixin
     @method initialize
   */
   initialize: function() {
-    Ember.assert("Application initialize may only be called once", !this.isInitialized);
+    Ember.assert("Application initialize may only be called once. Note: calling initialize in application code is no longer required.", !this.isInitialized);
     Ember.assert("Cannot initialize a destroyed application", !this.isDestroyed);
     this.isInitialized = true;
 
