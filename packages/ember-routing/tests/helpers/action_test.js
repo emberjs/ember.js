@@ -380,6 +380,28 @@ test("should unregister event handlers on rerender", function() {
   ok(Ember.Handlebars.ActionHelper.registeredActions[newActionId], "After rerender completes, a new event handler was added");
 });
 
+test("should unregister event handlers on inside virtual views", function() {
+  var things = Ember.A([
+    {
+      name: 'Thingy'
+    }
+  ]);
+  view = Ember.View.create({
+    template: Ember.Handlebars.compile('{{#each view.things}}<a href="#" {{action "edit"}}>click me</a>{{/each}}'),
+    things: things
+  });
+
+  appendView();
+
+  var actionId = view.$('a[data-ember-action]').attr('data-ember-action');
+
+  Ember.run(function() {
+    things.removeAt(0);
+  });
+
+  ok(!Ember.Handlebars.ActionHelper.registeredActions[actionId], "After the virtual view was destroyed, the action was unregistered");
+});
+
 test("should properly capture events on child elements of a container with an action", function() {
   var eventHandlerWasCalled = false;
 
