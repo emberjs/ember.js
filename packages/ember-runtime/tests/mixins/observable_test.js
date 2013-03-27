@@ -85,3 +85,21 @@ testBoth("should be able to retrieve cached values of computed properties withou
 
   equal(obj.cacheFor('bar'), undefined, "returns undefined if the value is not a computed property");
 });
+
+test('should be able to follow path for targetAction', function() {
+  var model = Ember.Object.create();
+  var Route = Ember.Object.extend({
+    events: {
+      action1: function() {
+        model.addObserver('id', this, 'events.action2');
+        model.set('id', 1);
+      },
+      action2: function() {
+        model.set('id', 2);
+      }
+    }
+  });
+  var route = Route.create();
+  route.events.action1.call(route);
+  equal(model.get('id'), 2, 'Observer should have followed path');
+});
