@@ -170,6 +170,19 @@ var Application = Ember.Application = Ember.Namespace.extend(Ember.DeferredMixin
   */
   rootElement: 'body',
 
+
+  /**
+    The template namespace which will be used as a prefix to all template name lookups.
+
+    For example when templateNamespace is "foo", the application template will become
+    "foo/application".
+
+    @property templateNamespace
+    @type String
+    @default null
+  */
+  templateNamespace: null,
+
   /**
     The `Ember.EventDispatcher` responsible for delegating events to this
     application's views.

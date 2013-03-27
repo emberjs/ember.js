@@ -85,6 +85,7 @@ Ember.DefaultResolver = Ember.Object.extend({
     @property namespace
   */
   namespace: null,
+
   /**
     This method is called via the container's resolver method.
     It parses the provided `fullName` and then looks up and
@@ -145,6 +146,10 @@ Ember.DefaultResolver = Ember.Object.extend({
   resolveTemplate: function(parsedName) {
     var templateName = parsedName.fullNameWithoutType.replace(/\./g, '/');
 
+    if (this.namespace.templateNamespace) {
+      templateName = this.namespace.templateNamespace + '/' + templateName;
+    }
+
     if (Ember.TEMPLATES[templateName]) {
       return Ember.TEMPLATES[templateName];
     }
@@ -154,6 +159,7 @@ Ember.DefaultResolver = Ember.Object.extend({
       return Ember.TEMPLATES[templateName];
     }
   },
+
   /**
     Given a parseName object (output from `parseName`), apply
     the conventions expected by `Ember.Router`
@@ -167,6 +173,7 @@ Ember.DefaultResolver = Ember.Object.extend({
       parsedName.name = '';
     }
   },
+
   /**
     @protected
     @method resolveController
@@ -175,6 +182,7 @@ Ember.DefaultResolver = Ember.Object.extend({
     this.useRouterNaming(parsedName);
     return this.resolveOther(parsedName);
   },
+
   /**
     @protected
     @method resolveRoute
@@ -183,6 +191,7 @@ Ember.DefaultResolver = Ember.Object.extend({
     this.useRouterNaming(parsedName);
     return this.resolveOther(parsedName);
   },
+
   /**
     @protected
     @method resolveView
@@ -191,6 +200,7 @@ Ember.DefaultResolver = Ember.Object.extend({
     this.useRouterNaming(parsedName);
     return this.resolveOther(parsedName);
   },
+
   /**
     Look up the specified object (from parsedName) on the appropriate
     namespace (usually on the Application)
@@ -203,4 +213,5 @@ Ember.DefaultResolver = Ember.Object.extend({
         factory = get(parsedName.root, className);
     if (factory) { return factory; }
   }
+
 });
