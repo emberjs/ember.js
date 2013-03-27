@@ -282,7 +282,6 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
         contexts = a_slice.call(arguments, 1, -1);
 
     var hash = options.hash,
-        view = options.data.view,
         controller;
 
     // create a hash to pass along to registerAction
@@ -296,7 +295,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
       params: contexts
     };
 
-    action.view = view = get(view, 'concreteView');
+    action.view = options.data.view;
 
     var root, target;
 
