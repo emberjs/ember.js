@@ -302,8 +302,13 @@ module("Ember.Application Depedency Injection", {
 });
 
 test('container lookup is normalized', function() {
+  var dotNotationController = locator.lookup('controller:post.index');
+  var camelCaseController = locator.lookup('controller:postIndex');
+
   ok(locator.lookup('controller:post.index') instanceof application.PostIndexController);
   ok(locator.lookup('controller:postIndex') instanceof application.PostIndexController);
+
+  equal(dotNotationController, camelCaseController);
 });
 
 test('registered entities can be looked up later', function(){
