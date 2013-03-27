@@ -112,7 +112,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
         }
       };
 
-      for(i=0; i < length; i++) {
+      for(i=0, length=paths.length; i < length; i++) {
         Ember.addObserver(this, paths[i], this, observer);
       }
     },
