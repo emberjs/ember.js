@@ -309,11 +309,10 @@ var Application = Ember.Application = Ember.Namespace.extend(Ember.DeferredMixin
     var self = this;
 
     if (!this.$ || this.$.isReady) {
-      Ember.run.schedule('actions', self, 'initialize');
+      Ember.run.schedule('actions', self, '_initialize');
     } else {
       this.$().ready(function(){
-        if (self.isDestroyed) { return; }
-        Ember.run(self, 'initialize');
+        Ember.run(self, '_initialize');
       });
     }
   },
@@ -408,6 +407,21 @@ var Application = Ember.Application = Ember.Namespace.extend(Ember.DeferredMixin
 
   /**
     @private
+    @deprecated
+
+    Calling initialize manually is not supported.
+
+    Please see Ember.Application#advanceReadiness and
+    Ember.Application#deferReadiness.
+
+    @method initialize
+   **/
+  initialize: function(){
+    Ember.deprecate('Calling initialize manually is not supported. Please see Ember.Application#advanceReadiness and Ember.Application#deferReadiness');
+    this._initialize();
+  },
+  /**
+    @private
 
     Initialize the application. This happens automatically.
 
@@ -415,11 +429,12 @@ var Application = Ember.Application = Ember.Namespace.extend(Ember.DeferredMixin
     choose to defer readiness. For example, an authentication hook might want
     to defer readiness until the auth token has been retrieved.
 
-    @method initialize
+    @method _initialize
   */
-  initialize: function() {
+  _initialize: function() {
+    if (this.isDestroyed) { return; }
     Ember.assert("Application initialize may only be called once. Note: calling initialize in application code is no longer required.", !this.isInitialized);
-    Ember.assert("Cannot initialize a destroyed application", !this.isDestroyed);
+
     this.isInitialized = true;
 
     // At this point, the App.Router must already be assigned
@@ -443,7 +458,7 @@ var Application = Ember.Application = Ember.Namespace.extend(Ember.DeferredMixin
     this.isInitialized = false;
 
     Ember.run.schedule('actions', this, function(){
-      this.initialize();
+      this._initialize();
       this.startRouting();
     });
   },

@@ -201,7 +201,7 @@ test("Application initialized twice raises error", function() {
 
   raises(function(){
     Ember.run(function() {
-      app.initialize();
+      app._initialize();
     });
   }, Error, 'raises error');
 });
