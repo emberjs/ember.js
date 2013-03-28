@@ -215,8 +215,6 @@ var Application = Ember.Application = Ember.Namespace.extend(Ember.DeferredMixin
   */
   customEvents: null,
 
-  isInitialized: false,
-
   // Start off the number of deferrals at 1. This will be
   // decremented by the Application's own `initialize` method.
   _readinessDeferrals: 1,
@@ -418,7 +416,6 @@ var Application = Ember.Application = Ember.Namespace.extend(Ember.DeferredMixin
    **/
   initialize: function(){
     Ember.deprecate('Calling initialize manually is not supported. Please see Ember.Application#advanceReadiness and Ember.Application#deferReadiness');
-    this._initialize();
   },
   /**
     @private
@@ -433,9 +430,6 @@ var Application = Ember.Application = Ember.Namespace.extend(Ember.DeferredMixin
   */
   _initialize: function() {
     if (this.isDestroyed) { return; }
-    Ember.assert("Application initialize may only be called once. Note: calling initialize in application code is no longer required.", !this.isInitialized);
-
-    this.isInitialized = true;
 
     // At this point, the App.Router must already be assigned
     this.register('router:main', this.Router);
@@ -454,8 +448,6 @@ var Application = Ember.Application = Ember.Namespace.extend(Ember.DeferredMixin
   reset: function() {
     get(this, '__container__').destroy();
     this.buildContainer();
-
-    this.isInitialized = false;
 
     Ember.run.schedule('actions', this, function(){
       this._initialize();
