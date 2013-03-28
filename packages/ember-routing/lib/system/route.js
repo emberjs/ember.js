@@ -112,7 +112,9 @@ Ember.Route = Ember.Object.extend({
     this.redirected = false;
     this._checkingRedirect = true;
 
-    if (context === undefined) {
+    if (Ember.typeOf(this.redirect) === 'string') {
+      this.transitionTo(this.redirect);
+    } else if (context === undefined) {
       this.redirect();
     } else {
       this.redirect(context);
@@ -148,6 +150,9 @@ Ember.Route = Ember.Object.extend({
 
     If you call `this.transitionTo` from inside of this hook, this route
     will not be entered in favor of the other hook.
+
+    If redirect is a String it will be used as name of the route into which
+    it shall be transitioned into.
 
     @method redirect
     @param {Object} model the model for this route

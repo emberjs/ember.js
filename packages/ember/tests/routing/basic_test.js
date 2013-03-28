@@ -1135,6 +1135,29 @@ test("A redirection hook is provided", function() {
   equal(router.container.lookup('controller:application').get('currentPath'), 'home');
 });
 
+test("The redirection hook can be specified as string", function() {
+  Router.map(function() {
+    this.route("choose", { path: "/" });
+    this.route("home");
+  });
+
+  var chooseFollowed = 0, destination;
+
+  App.ChooseRoute = Ember.Route.extend({
+    redirect: 'home',
+
+    setupController: function() {
+      chooseFollowed++;
+    }
+  });
+
+  bootApplication();
+
+  equal(chooseFollowed, 0, "The choose route wasn't entered since a transition occurred");
+  equal(Ember.$("h3:contains(Hours)", "#qunit-fixture").length, 1, "The home template was rendered");
+  equal(router.container.lookup('controller:application').get('currentPath'), 'home');
+});
+
 test("Redirecting from the middle of a route aborts the remainder of the routes", function() {
   expect(2);
 
