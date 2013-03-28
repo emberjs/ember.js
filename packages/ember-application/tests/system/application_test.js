@@ -191,21 +191,6 @@ test("ApplicationView is inserted into the page", function() {
   equal(Ember.$("#qunit-fixture").text(), "Hello!");
 });
 
-test("Application initialized twice raises error", function() {
-  Ember.run(function() {
-    app = Ember.Application.create({
-      router: false,
-      rootElement: '#qunit-fixture'
-    });
-  });
-
-  raises(function(){
-    Ember.run(function() {
-      app._initialize();
-    });
-  }, Error, 'raises error');
-});
-
 test("Minimal Application initialized with just an application template", function() {
   Ember.$('#qunit-fixture').html('<script type="text/x-handlebars">Hello World</script>');
   Ember.run(function () {
