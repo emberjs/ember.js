@@ -176,7 +176,7 @@ test("{{render}} helper should render templates with models multiple times", fun
   });
 
   var PostController = Ember.ObjectController.extend();
-  container.register('controller', 'post', PostController, {singleton: false});
+  container.register('controller:post', PostController, {singleton: false});
 
   Ember.TEMPLATES['post'] = compile("<p>{{title}}</p>");
 
@@ -214,7 +214,7 @@ test("{{render}} helper should render templates both with and without models", f
   });
 
   var PostController = Ember.ObjectController.extend();
-  container.register('controller', 'post', PostController, {singleton: false});
+  container.register('controller:post', PostController, {singleton: false});
 
   Ember.TEMPLATES['post'] = compile("<p>Title:{{title}}</p>");
 
