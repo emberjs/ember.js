@@ -1572,3 +1572,25 @@ test("Generated route should be an instance of App.Route if provided", function(
   ok(generatedRoute instanceof App.Route, 'should extend the correct route');
 
 });
+
+test("Nested index route is not overriden by parent's implicit index route", function() {
+  Router.map(function() {
+    this.resource('posts', function() {
+      this.route('index', { path: ':category' } );
+    });
+  });
+
+  App.Route = Ember.Route.extend({
+    serialize: function(model) {
+      return { category: model.category };
+    }
+  });
+
+  bootApplication();
+
+  Ember.run(function() {
+    router.transitionTo('posts', { category: 'emberjs' });
+  });
+
+  deepEqual(router.location.path, '/posts/emberjs');
+});
