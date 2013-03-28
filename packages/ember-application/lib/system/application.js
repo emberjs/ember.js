@@ -308,15 +308,13 @@ var Application = Ember.Application = Ember.Namespace.extend(Ember.DeferredMixin
   scheduleInitialize: function() {
     var self = this;
 
-    function initialize(){
-      if (self.isDestroyed) { return; }
-      Ember.run.schedule('actions', self, 'initialize');
-    }
-
     if (!this.$ || this.$.isReady) {
-      initialize();
+      Ember.run.schedule('actions', self, 'initialize');
     } else {
-      this.$().ready(initialize);
+      this.$().ready(function(){
+        if (self.isDestroyed) { return; }
+        Ember.run(self, 'initialize');
+      });
     }
   },
 
