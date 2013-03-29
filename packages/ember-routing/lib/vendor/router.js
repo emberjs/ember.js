@@ -165,6 +165,7 @@ define("router",
             toSetup = [],
             startIdx = handlers.length,
             objectsToMatch = objects.length,
+            parentObjectChanged = false,
             object, objectChanged, handlerObj, handler, names, i, len;
 
         // Find out which handler to start matching at
@@ -191,7 +192,9 @@ define("router",
             // If we have objects, use them
             if (i >= startIdx) {
               object = objects.shift();
-              objectChanged = true;
+              if (object !== handler.context) {
+                objectChanged = true;
+              }
             // Otherwise use existing context
             } else {
               object = handler.context;
@@ -204,8 +207,9 @@ define("router",
           // If it's not a dynamic segment and we're updating
           } else if (doUpdate) {
             // If we've passed the match point we need to deserialize again
-            // or if we never had a context
-            if (i > startIdx || !handler.hasOwnProperty('context')) {
+            // if any preceeding objects have changed or if we never had a
+            // context
+            if ((i > startIdx && parentObjectChanged) || !handler.hasOwnProperty('context')) {
               if (handler.deserialize) {
                 object = handler.deserialize({});
                 objectChanged = true;
@@ -219,6 +223,7 @@ define("router",
           // Make sure that we update the context here so it's available to
           // subsequent deserialize calls
           if (doUpdate && objectChanged) {
+            parentObjectChanged = true;
             // TODO: It's a bit awkward to set the context twice, see if we can DRY things up
             setContext(handler, object);
           }
