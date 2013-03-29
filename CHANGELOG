@@ -1,3 +1,41 @@
+*Ember 1.0.0-rc.2 (March 29, 2013)*
+
+* Improved the App initialization process and deprecated Ember.Application#initialize. If you were using this, use deferReadiness and advanceReadiness instead.
+* Added support for Ember.Application#then which fires similarly to the isReady hook
+* Added more Ember.computed macros
+* Added readOnly flag for computed properties
+* Enumerable#compact now removes undefined values
+* Fixed issue with unregistering actions on virtual views
+* Make Ember.LinkView public
+* Add support for jQuery 2.0
+* Support browsers (FF 10 or less) that don't support domElement.outerHTML
+* Made it easier to augment the Application's container's resolver
+* Support tag as an alias for tagName in the {{view}} helper
+* Add 'name' to attributeBinding for Ember.textField and Ember.Select
+* Return merged object from Ember.merge
+* Deprecate setting tagNames on Metamorphs - Refs #2248
+* Avoid parent's implicit index route clobbering child's explicit index.
+* App#reset behaves more closely to App#create
+* Make Evented#on, #off, and #one chainable
+* Add basic implementation of allowedKeys for the {{action}} helper
+* Improved Ember.Array#slice implementation
+* Fix ArrayProxy arrangedObject handling - Fixes #2120, #2138
+* Added ability to customize default generated controllers and routes
+* Better HistoryLocation popstate handling - Fixes #2234
+* Fix an issue with IE7
+* Normalized Ember.run.later and Ember.run.next behavior.
+* Fix issue where classNameBindings can try to update removed DOM element.
+* Ember.Array methods always return Ember.Arrays
+* RSVP is now exposed as Ember.RSVP
+* ObjectProxy does not attempt to proxy unknown properties on create
+* Can now set ENV.LOG_VERSION to false to disable version logging
+* Ember.ArrayController#lastObject no longer raises when empty
+* Fixes to {{render}} helper when used with model
+* Improvements to {{linkTo}} controller handling
+* Fix {{bindAttr}} when targeting prop in {{#each prop in array}} - #1523
+* String#camelize lowercases the first letter
+* Other miscellaneous bug fixes and documentation improvements
+
 *Ember 1.0.0-rc.1 (February 15, 2013)*
 
 * Upgrade to Handlebars 1.0.0-rc.3
