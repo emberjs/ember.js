@@ -13,7 +13,6 @@ namespace :release do
 
   namespace :starter_kit do
     ember_output = "tmp/starter-kit/js/libs/ember-#{EMBER_VERSION}.js"
-    ember_min_output = "tmp/starter-kit/js/libs/ember-#{EMBER_VERSION}.min.js"
 
     task :pull => "tmp/starter-kit" do
       Dir.chdir("tmp/starter-kit") do
@@ -42,10 +41,6 @@ namespace :release do
       sh "cp dist/ember.js #{ember_output}"
     end
 
-    file ember_min_output => [:clean, "tmp/starter-kit", "dist/ember.min.js"] do
-      sh "cp dist/ember.min.js #{ember_min_output}"
-    end
-
     file "tmp/starter-kit" do
       mkdir_p "tmp"
 
@@ -54,10 +49,10 @@ namespace :release do
       end
     end
 
-    file "tmp/starter-kit/index.html" => [ember_output, ember_min_output] do
+    file "tmp/starter-kit/index.html" => [ember_output] do
       index = File.read("tmp/starter-kit/index.html")
       index.gsub! %r{<script src="js/libs/ember-\d\.\d.*</script>},
-        %{<script src="js/libs/ember-#{EMBER_VERSION}.min.js"></script>}
+        %{<script src="js/libs/ember-#{EMBER_VERSION}.js"></script>}
 
       File.open("tmp/starter-kit/index.html", "w") { |f| f.write index }
     end
@@ -218,10 +213,10 @@ namespace :release do
   end
 
   desc "Prepare Ember for new release"
-  task :prepare => ['ember:clean', 'ember:release:prepare', 'website:prepare']
+  task :prepare => ['ember:clean', 'ember:release:prepare', 'starter_kit:prepare', 'website:prepare']
 
   desc "Deploy a new Ember release"
-  task :deploy => ['ember:release:deploy', 'website:deploy']
+  task :deploy => ['ember:release:deploy', 'starter_kit:deploy', 'website:deploy']
 end
 
 task :clean => "ember:clean"
