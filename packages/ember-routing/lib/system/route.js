@@ -482,6 +482,24 @@ Ember.Route.reopenClass({
       args.unshift(path);
       this.transitionTo.apply(this, args);
     };
+  },
+
+  /**
+    Transition into another route while replacing the current URL if
+    possible. Identical to `transitionTo` in all other respects.
+
+    ```javascript
+    App.PostsIndexRoute = Ember.Route.extend({
+      redirect: Ember.Route.replaceWith('posts.all')
+    });
+    ```
+  */
+  replaceWith: function(path) {
+    return function() {
+      var args = slice.call(arguments);
+      args.unshift(path);
+      this.replaceWith.apply(this, args);
+    };
   }
 });
 
