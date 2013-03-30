@@ -11,7 +11,7 @@
 * Support browsers (FF 10 or less) that don't support domElement.outerHTML
 * Made it easier to augment the Application's container's resolver
 * Support tag as an alias for tagName in the {{view}} helper
-* Add 'name' to attributeBinding for Ember.textField and Ember.Select
+* Add 'name' to attributeBinding for Ember.TextField and Ember.Select
 * Return merged object from Ember.merge
 * Deprecate setting tagNames on Metamorphs - Refs #2248
 * Avoid parent's implicit index route clobbering child's explicit index.
