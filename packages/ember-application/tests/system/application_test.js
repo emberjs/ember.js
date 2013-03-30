@@ -252,6 +252,27 @@ test('disable log version of libraries with an ENV var', function() {
   Ember.debug = debug;
 });
 
+test("the EventDispatcher#setup method is invoked", function() {
+  expect(2);
+
+  var customEvents = {};
+  Ember.run(function() {
+    app = Ember.Application.create({
+      customEvents: customEvents,
+
+      // mock creation of EventDispatcher
+      createEventDispatcher: function() {
+        return {
+          setup: function(addedEvents) {
+            ok(true, "EventDispatcher#setup has been invoked");
+            equal(addedEvents, customEvents, "the applications' customEvents property is passed");
+          }
+        };
+      }
+    });
+  });
+});
+
 var locator, originalLookup = Ember.lookup, lookup;
 
 module("Ember.Application Depedency Injection", {
