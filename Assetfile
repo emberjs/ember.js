@@ -1,3 +1,5 @@
+require 'ember-dev'
+
 distros = {
   "runtime"           => %w(ember-metal rsvp container ember-runtime),
   "template-compiler" => %w(ember-handlebars-compiler),
