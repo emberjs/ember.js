@@ -5,7 +5,7 @@
 
 var Router = requireModule("router");
 var get = Ember.get, set = Ember.set;
-
+var slice = [].slice;
 var DefaultView = Ember._MetamorphView;
 
 require("ember-routing/system/dsl");
@@ -89,12 +89,12 @@ Ember.Router = Ember.Object.extend({
   },
 
   transitionTo: function(name) {
-    var args = [].slice.call(arguments);
+    var args = slice.call(arguments);
     doTransition(this, 'transitionTo', args);
   },
 
   replaceWith: function() {
-    var args = [].slice.call(arguments);
+    var args = slice.call(arguments);
     doTransition(this, 'replaceWith', args);
   },
 
