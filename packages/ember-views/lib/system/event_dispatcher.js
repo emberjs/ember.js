@@ -48,8 +48,9 @@ Ember.EventDispatcher = Ember.Object.extend(
 
     @method setup
     @param addedEvents {Hash}
+    @param addedActionEvents {Hash}
   */
-  setup: function(addedEvents) {
+  setup: function(addedEvents, addedActionEvents) {
     var event, events = {
       touchstart  : 'touchStart',
       touchmove   : 'touchMove',
@@ -82,6 +83,13 @@ Ember.EventDispatcher = Ember.Object.extend(
 
     Ember.$.extend(events, addedEvents || {});
 
+    var allowedActionEvents = ['change', 'click', 'contextMenu', 'doubleClick', 'input', 'mouseDown', 'mouseUp', 'submit'];
+    if (addedActionEvents) {
+      for (var i=0; i < addedActionEvents.length; i++) {
+        allowedActionEvents.push(addedActionEvents[i]);
+      }
+    }
+
     var rootElement = Ember.$(get(this, 'rootElement'));
 
     Ember.assert(fmt('You cannot use the same root element (%@) multiple times in an Ember.Application', [rootElement.selector || rootElement[0].tagName]), !rootElement.is('.ember-application'));
@@ -94,7 +102,7 @@ Ember.EventDispatcher = Ember.Object.extend(
 
     for (event in events) {
       if (events.hasOwnProperty(event)) {
-        this.setupHandler(rootElement, event, events[event]);
+        this.setupHandler(rootElement, event, events[event], allowedActionEvents);
       }
     }
   },
@@ -120,8 +128,9 @@ Ember.EventDispatcher = Ember.Object.extend(
     @param {Element} rootElement
     @param {String} event the browser-originated event to listen to
     @param {String} eventName the name of the method to call on the view
+    @param {Array} allowedActionEvents an array of allowed events which can be specified on an {{action}} helper
   */
-  setupHandler: function(rootElement, event, eventName) {
+  setupHandler: function(rootElement, event, eventName, allowedActionEvents) {
     var self = this;
 
     rootElement.delegate('.ember-view', event + '.ember', function(evt, triggeringManager) {
@@ -152,6 +161,7 @@ Ember.EventDispatcher = Ember.Object.extend(
         // an event on `removeChild` (i.e. focusout) after we've already torn down the
         // action handlers for the view.
         if (action && action.eventName === eventName) {
+          Ember.assert("You tried to handle event '" + eventName + "' with an {{action}} helper but this type of event is not supported to be handled with an {{action}} helper. Handle this type of event on a custom Ember.View", allowedActionEvents.indexOf(eventName) !== -1);
           return action.handler(evt);
         }
       }, this);

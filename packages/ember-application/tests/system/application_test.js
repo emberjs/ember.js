@@ -253,19 +253,22 @@ test('disable log version of libraries with an ENV var', function() {
 });
 
 test("the EventDispatcher#setup method is invoked", function() {
-  expect(2);
+  expect(3);
 
   var customEvents = {};
+  var customActionEvents = [];
   Ember.run(function() {
     app = Ember.Application.create({
       customEvents: customEvents,
+      customActionEvents: customActionEvents,
 
       // mock creation of EventDispatcher
       createEventDispatcher: function() {
         return {
-          setup: function(addedEvents) {
+          setup: function(addedEvents, addedActionEvents) {
             ok(true, "EventDispatcher#setup has been invoked");
             equal(addedEvents, customEvents, "the applications' customEvents property is passed");
+            equal(addedActionEvents, customActionEvents, "the applications' customActionEvents property is passed");
           }
         };
       }
