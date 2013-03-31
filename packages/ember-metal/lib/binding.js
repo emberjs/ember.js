@@ -1,5 +1,6 @@
 require('ember-metal/core'); // Ember.Logger
-require('ember-metal/accessors'); // get, set, trySet
+require('ember-metal/accessors'); // get
+require('ember-metal/property_set'); // set
 require('ember-metal/utils'); // guidFor, isArray, meta
 require('ember-metal/observer'); // addObserver, removeObserver
 require('ember-metal/run_loop'); // Ember.run.schedule

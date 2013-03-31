@@ -2,10 +2,8 @@
 
 require('ember-metal/~tests/props_helper');
 
-var willCount = 0 , didCount = 0,
-    willKeys = [] , didKeys = [],
-    willChange = Ember.propertyWillChange,
-    didChange = Ember.propertyDidChange,
+var willCount, didCount,
+    willKeys, didKeys,
     indexOf = Ember.EnumerableUtils.indexOf;
 
 module('Ember.watch', {
@@ -13,24 +11,19 @@ module('Ember.watch', {
     willCount = didCount = 0;
     willKeys = [];
     didKeys = [];
-    Ember.propertyWillChange = function(cur, keyName) {
-      willCount++;
-      willKeys.push(keyName);
-      willChange.call(this, cur, keyName);
-    };
-
-    Ember.propertyDidChange = function(cur, keyName) {
-      didCount++;
-      didKeys.push(keyName);
-      didChange.call(this, cur, keyName);
-    };
-  },
-
-  teardown: function() {
-    Ember.propertyWillChange = willChange;
-    Ember.propertyDidChange  = didChange;
   }
 });
+
+function addListeners(obj, keyPath) {
+  Ember.addListener(obj, keyPath + ':before', function() {
+    willCount++;
+    willKeys.push(keyPath);
+  });
+  Ember.addListener(obj, keyPath + ':change', function() {
+    didCount++;
+    didKeys.push(keyPath);
+  });
+}
 
 testBoth('watching a computed property', function(get, set) {
 
@@ -39,6 +32,7 @@ testBoth('watching a computed property', function(get, set) {
     if (value !== undefined) this.__foo = value;
     return this.__foo;
   }));
+  addListeners(obj, 'foo');
 
   Ember.watch(obj, 'foo');
   set(obj, 'foo', 'bar');
@@ -49,6 +43,7 @@ testBoth('watching a computed property', function(get, set) {
 testBoth('watching a regular defined property', function(get, set) {
 
   var obj = { foo: 'baz' };
+  addListeners(obj, 'foo');
 
   Ember.watch(obj, 'foo');
   equal(get(obj, 'foo'), 'baz', 'should have original prop');
@@ -64,6 +59,7 @@ testBoth('watching a regular defined property', function(get, set) {
 testBoth('watching a regular undefined property', function(get, set) {
 
   var obj = { };
+  addListeners(obj, 'foo');
 
   Ember.watch(obj, 'foo');
 
@@ -83,6 +79,7 @@ testBoth('watches should inherit', function(get, set) {
   var obj = { foo: 'baz' };
   var objB = Ember.create(obj);
 
+  addListeners(obj, 'foo');
   Ember.watch(obj, 'foo');
   equal(get(obj, 'foo'), 'baz', 'should have original prop');
 
@@ -95,6 +92,8 @@ testBoth('watches should inherit', function(get, set) {
 test("watching an object THEN defining it should work also", function() {
 
   var obj = {};
+  addListeners(obj, 'foo');
+
   Ember.watch(obj, 'foo');
 
   Ember.defineProperty(obj, 'foo');
@@ -109,13 +108,16 @@ test("watching an object THEN defining it should work also", function() {
 test("watching a chain then defining the property", function () {
   var obj = {};
   var foo = {bar: 'bar'};
+  addListeners(obj, 'foo.bar');
+  addListeners(foo, 'bar');
+
   Ember.watch(obj, 'foo.bar');
 
   Ember.defineProperty(obj, 'foo', undefined, foo);
   Ember.set(foo, 'bar', 'baz');
 
-  deepEqual(willKeys, ['bar', 'foo.bar'], 'should have invoked willChange with bar, foo.bar');
-  deepEqual(didKeys, ['bar', 'foo.bar'], 'should have invoked didChange with bar, foo.bar');
+  deepEqual(willKeys, ['foo.bar', 'bar'], 'should have invoked willChange with bar, foo.bar');
+  deepEqual(didKeys, ['foo.bar', 'bar'], 'should have invoked didChange with bar, foo.bar');
   equal(willCount, 2, 'should have invoked willChange twice');
   equal(didCount, 2, 'should have invoked didChange twice');
 });
@@ -124,13 +126,16 @@ test("watching a chain then defining the nested property", function () {
   var bar = {};
   var obj = {foo: bar};
   var baz = {baz: 'baz'};
+  addListeners(obj, 'foo.bar.baz');
+  addListeners(baz, 'baz');
+
   Ember.watch(obj, 'foo.bar.baz');
 
   Ember.defineProperty(bar, 'bar', undefined, baz);
   Ember.set(baz, 'baz', 'BOO');
 
-  deepEqual(willKeys, ['baz', 'foo.bar.baz'], 'should have invoked willChange with bar, foo.bar');
-  deepEqual(didKeys, ['baz', 'foo.bar.baz'], 'should have invoked didChange with bar, foo.bar');
+  deepEqual(willKeys, ['foo.bar.baz', 'baz'], 'should have invoked willChange with bar, foo.bar');
+  deepEqual(didKeys, ['foo.bar.baz', 'baz'], 'should have invoked didChange with bar, foo.bar');
   equal(willCount, 2, 'should have invoked willChange twice');
   equal(didCount, 2, 'should have invoked didChange twice');
 });
@@ -138,6 +143,8 @@ test("watching a chain then defining the nested property", function () {
 testBoth('watching an object value then unwatching should restore old value', function(get, set) {
 
   var obj = { foo: { bar: { baz: { biff: 'BIFF' } } } };
+  addListeners(obj, 'foo.bar.baz.biff');
+
   Ember.watch(obj, 'foo.bar.baz.biff');
 
   var foo = Ember.get(obj, 'foo');
@@ -148,16 +155,19 @@ testBoth('watching an object value then unwatching should restore old value', fu
 });
 
 testBoth('watching a global object that does not yet exist should queue', function(get, set) {
-
   Global = null;
 
   var obj = {};
+  addListeners(obj, 'Global.foo');
+
   Ember.watch(obj, 'Global.foo'); // only works on global chained props
 
   equal(willCount, 0, 'should not have fired yet');
   equal(didCount, 0, 'should not have fired yet');
 
   Global = { foo: 'bar' };
+  addListeners(Global, 'foo');
+
   Ember.watch.flushPending(); // this will also be invoked automatically on ready
 
   equal(willCount, 0, 'should not have fired yet');
@@ -177,6 +187,7 @@ test('when watching a global object, destroy should remove chain watchers from t
 
   Global = { foo: 'bar' };
   var obj = {};
+  addListeners(obj, 'Global.foo');
 
   Ember.watch(obj, 'Global.foo');
 
@@ -201,6 +212,7 @@ test('when watching another object, destroy should remove chain watchers from th
   var objA = {};
   var objB = {foo: 'bar'};
   objA.b = objB;
+  addListeners(objA, 'b.foo');
 
   Ember.watch(objA, 'b.foo');
 

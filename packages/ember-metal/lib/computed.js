@@ -1,8 +1,11 @@
 require('ember-metal/core');
 require('ember-metal/platform');
 require('ember-metal/utils');
+require('ember-metal/accessors');
+require('ember-metal/property_set');
 require('ember-metal/properties');
 require('ember-metal/watching');
+require('ember-metal/property_events');
 
 /**
 @module ember-metal
