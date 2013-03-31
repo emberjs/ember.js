@@ -47,6 +47,8 @@ Ember._RenderBuffer.prototype =
   // The root view's element
   _element: null,
 
+  _hasElement: true,
+
   /**
     @private
 
@@ -295,7 +297,7 @@ Ember._RenderBuffer.prototype =
     var tagName = this.currentTagName();
     if (!tagName) { return; }
 
-    if (!this._element && this.buffer.length === 0) {
+    if (this._hasElement && !this._element && this.buffer.length === 0) {
       this._element = this.generateElement();
       return;
     }
@@ -449,7 +451,7 @@ Ember._RenderBuffer.prototype =
     @return {String} The generated HTML
   */
   string: function() {
-    if (this._element) {
+    if (this._hasElement && this._element) {
       // Firefox versions < 11 do not have support for element.outerHTML.
       return this.element().outerHTML ||
         new XMLSerializer().serializeToString(this.element());

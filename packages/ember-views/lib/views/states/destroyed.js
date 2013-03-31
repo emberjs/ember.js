@@ -28,7 +28,7 @@ Ember.merge(destroyed, {
   },
 
   renderToBufferIfNeeded: function() {
-    throw fmt(destroyedError, ["renderToBufferIfNeeded"]);
+    return false;
   },
 
   // Since element insertion is scheduled, don't do anything if

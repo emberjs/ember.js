@@ -19,8 +19,9 @@ Ember.merge(preRender, {
     view.triggerRecursively('didInsertElement');
   },
 
-  renderToBufferIfNeeded: function(view) {
-    return view.renderToBuffer();
+  renderToBufferIfNeeded: function(view, buffer) {
+    view.renderToBuffer(buffer);
+    return true;
   },
 
   empty: Ember.K,
