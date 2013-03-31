@@ -48,8 +48,8 @@ test("Should propagate bindings after the RunLoop completes (using Ember.RunLoop
     binding2 = Ember.Binding.from("second.output")
       .to("third.input").connect(MyApp) ;
 
-    Ember.run.sync();
-
+  });
+  Ember.run(function () {
     // Based on the above binding if you change the output of MyApp.first
     // object it should change the all the variable of
     //  MyApp.first,MyApp.second and MyApp.third object

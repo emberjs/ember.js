@@ -188,15 +188,12 @@ test("changing first output should propograte to third after flush", function() 
     set(first, "output", "change") ;
     equal("change", get(first, "output"), "first.output") ;
     ok("change" !== get(third, "input"), "third.input") ;
-
-    var didChange = true;
-    while(didChange) didChange = Ember.run.sync() ;
-
-    equal("change", get(first, "output"), "first.output") ;
-    equal("change", get(second, "input"), "second.input") ;
-    equal("change", get(second, "output"), "second.output") ;
-    equal("change", get(third,"input"), "third.input") ;
   });
+
+  equal("change", get(first, "output"), "first.output") ;
+  equal("change", get(second, "input"), "second.input") ;
+  equal("change", get(second, "output"), "second.output") ;
+  equal("change", get(third,"input"), "third.input") ;
 });
 
 // ..........................................................
