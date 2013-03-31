@@ -9,7 +9,7 @@ var appendView = function() {
 };
 
 var registerRepeatHelper = function() {
-  Ember.Handlebars.registerBoundHelper('repeat', function(value, options) {
+  Ember.Handlebars.helper('repeat', function(value, options) {
     var count = options.hash.count;
     var a = [];
     while(a.length < count){
@@ -34,7 +34,7 @@ module("Handlebars bound helpers", {
 });
 
 test("should update bound helpers when properties change", function() {
-  Ember.Handlebars.registerBoundHelper('capitalize', function(value) {
+  Ember.Handlebars.helper('capitalize', function(value) {
     return value.toUpperCase();
   });
 
@@ -55,7 +55,7 @@ test("should update bound helpers when properties change", function() {
 });
 
 test("should allow for computed properties with dependencies", function() {
-  Ember.Handlebars.registerBoundHelper('capitalizeName', function(value) {
+  Ember.Handlebars.helper('capitalizeName', function(value) {
     return get(value, 'name').toUpperCase();
   }, 'name');
 
@@ -94,7 +94,7 @@ test("bound helpers should support options", function() {
 });
 
 test("bound helpers should support keywords", function() {
-  Ember.Handlebars.registerBoundHelper('capitalize', function(value) {
+  Ember.Handlebars.helper('capitalize', function(value) {
     return value.toUpperCase();
   });
 
@@ -109,7 +109,7 @@ test("bound helpers should support keywords", function() {
 });
 
 test("bound helpers should support global paths", function() {
-  Ember.Handlebars.registerBoundHelper('capitalize', function(value) {
+  Ember.Handlebars.helper('capitalize', function(value) {
     return value.toUpperCase();
   });
 
@@ -125,7 +125,7 @@ test("bound helpers should support global paths", function() {
 });
 
 test("bound helper should support this keyword", function() {
-  Ember.Handlebars.registerBoundHelper('capitalize', function(value) {
+  Ember.Handlebars.helper('capitalize', function(value) {
     return get(value, 'text').toUpperCase();
   });
 
@@ -169,7 +169,7 @@ test("bound helpers should support bound options", function() {
 
 test("bound helpers should support multiple bound properties", function() {
 
-  Ember.Handlebars.registerBoundHelper('concat', function() {
+  Ember.Handlebars.helper('concat', function() {
     return [].slice.call(arguments, 0, -1).join('');
   });
 
@@ -199,7 +199,7 @@ test("bound helpers should support multiple bound properties", function() {
 });
 
 test("bound helpers should expose property names in options.data.properties", function() {
-  Ember.Handlebars.registerBoundHelper('echo', function() {
+  Ember.Handlebars.helper('echo', function() {
     var options = arguments[arguments.length - 1];
     var values = [].slice.call(arguments, 0, -1);
     var a = [];
@@ -227,7 +227,7 @@ test("bound helpers should expose property names in options.data.properties", fu
 });
 
 test("bound helpers can be invoked with zero args", function() {
-  Ember.Handlebars.registerBoundHelper('troll', function(options) {
+  Ember.Handlebars.helper('troll', function(options) {
     return options.hash.text || "TROLOLOL";
   });
 
