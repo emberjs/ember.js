@@ -1,7 +1,6 @@
 module("Ember.DeferredMixin");
 
 test("can resolve deferred", function() {
-
   var deferred, count = 0;
 
   Ember.run(function() {
@@ -12,15 +11,11 @@ test("can resolve deferred", function() {
     count++;
   });
 
-  stop();
   Ember.run(function() {
     deferred.resolve();
   });
 
-  setTimeout(function() {
-    start();
-    equal(count, 1, "done callback was called");
-  }, 20);
+  equal(count, 1, "done callback was called");
 });
 
 test("can reject deferred", function() {
@@ -35,15 +30,11 @@ test("can reject deferred", function() {
     count++;
   });
 
-  stop();
   Ember.run(function() {
     deferred.reject();
   });
 
-  setTimeout(function() {
-    start();
-    equal(count, 1, "fail callback was called");
-  }, 20);
+  equal(count, 1, "fail callback was called");
 });
 
 test("can resolve with then", function() {
@@ -60,16 +51,12 @@ test("can resolve with then", function() {
     count2++;
   });
 
-  stop();
   Ember.run(function() {
     deferred.resolve();
   });
 
-  setTimeout(function() {
-    start();
-    equal(count1, 1, "then were resolved");
-    equal(count2, 0, "then was not rejected");
-  }, 20);
+  equal(count1, 1, "then were resolved");
+  equal(count2, 0, "then was not rejected");
 });
 
 test("can reject with then", function() {
@@ -86,16 +73,12 @@ test("can reject with then", function() {
     count2++;
   });
 
-  stop();
   Ember.run(function() {
     deferred.reject();
   });
 
-  setTimeout(function() {
-    start();
-    equal(count1, 0, "then was not resolved");
-    equal(count2, 1, "then were rejected");
-  }, 20);
+  equal(count1, 0, "then was not resolved");
+  equal(count2, 1, "then were rejected");
 });
 
 test("can call resolve multiple times", function() {
@@ -110,17 +93,13 @@ test("can call resolve multiple times", function() {
     count++;
   });
 
-  stop();
   Ember.run(function() {
     deferred.resolve();
     deferred.resolve();
     deferred.resolve();
   });
 
-  setTimeout(function() {
-    start();
-    equal(count, 1, "calling resolve multiple times has no effect");
-  }, 20);
+  equal(count, 1, "calling resolve multiple times has no effect");
 });
 
 test("resolve prevent reject", function() {
@@ -136,19 +115,16 @@ test("resolve prevent reject", function() {
     rejected = true;
   });
 
-  stop();
   Ember.run(function() {
     deferred.resolve();
   });
+
   Ember.run(function() {
     deferred.reject();
   });
 
-  setTimeout(function() {
-    start();
-    equal(resolved, true, "is resolved");
-    equal(rejected, false, "is not rejected");
-  }, 20);
+  equal(resolved, true, "is resolved");
+  equal(rejected, false, "is not rejected");
 });
 
 test("reject prevent resolve", function() {
@@ -164,7 +140,6 @@ test("reject prevent resolve", function() {
     rejected = true;
   });
 
-  stop();
   Ember.run(function() {
     deferred.reject();
   });
@@ -172,11 +147,8 @@ test("reject prevent resolve", function() {
     deferred.resolve();
   });
 
-  setTimeout(function() {
-    start();
-    equal(resolved, false, "is not resolved");
-    equal(rejected, true, "is rejected");
-  }, 20);
+  equal(resolved, false, "is not resolved");
+  equal(rejected, true, "is rejected");
 });
 
 test("will call callbacks if they are added after resolution", function() {
@@ -187,7 +159,6 @@ test("will call callbacks if they are added after resolution", function() {
     deferred = Ember.Object.createWithMixins(Ember.DeferredMixin);
   });
 
-  stop();
   Ember.run(function() {
     deferred.resolve('toto');
   });
@@ -206,10 +177,7 @@ test("will call callbacks if they are added after resolution", function() {
     });
   });
 
-  setTimeout(function() {
-    start();
-    equal(count1, 2, "callbacks called after resolution");
-  }, 20);
+  equal(count1, 2, "callbacks called after resolution");
 });
 
 test("then is chainable", function() {
@@ -225,14 +193,9 @@ test("then is chainable", function() {
     count++;
   });
 
-  stop();
   Ember.run(function() {
     deferred.resolve();
   });
 
-  setTimeout(function() {
-    start();
-    equal(count, 1, "chained callback was called");
-  }, 20);
-
+  equal(count, 1, "chained callback was called");
 });
