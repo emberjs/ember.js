@@ -1,7 +1,58 @@
 /*globals TestObject:true */
 
-var textArea;
-var get = Ember.get, set = Ember.set;
+var textArea, controller;
+var get = Ember.get, set = function(object, key, value) {
+  Ember.run(function() { Ember.set(object, key, value); });
+};
+
+var compile = Ember.Handlebars.compile;
+
+function append() {
+  Ember.run(function() {
+    textArea.appendTo('#qunit-fixture');
+  });
+}
+
+function destroy(object) {
+  Ember.run(function() {
+    object.destroy();
+  });
+}
+
+module("{{textarea}}", {
+  setup: function() {
+    controller = {
+      val: 'Lorem ipsum dolor'
+    };
+
+    textArea = Ember.View.extend({
+      controller: controller,
+      template: compile('{{textarea disabled=disabled value=val}}')
+    }).create();
+
+    append();
+  },
+
+  teardown: function() {
+    destroy(textArea);
+  }
+});
+
+test("Should insert a textarea", function() {
+  equal(textArea.$('textarea').length, 1, "There is a single textarea");
+});
+
+test("Should become disabled when the controller changes", function() {
+  equal(textArea.$('textarea:disabled').length, 0, "Nothing is disabled yet");
+  set(controller, 'disabled', true); 
+  equal(textArea.$('textarea:disabled').length, 1, "The disabled attribute is updated");
+});
+
+test("Should bind its contents to the specified value", function() {
+  equal(textArea.$('textarea').val(), "Lorem ipsum dolor", "The contents are included");
+  set(controller, 'val', "sit amet");
+  equal(textArea.$('textarea').val(), "sit amet", "The new contents are included");
+});
 
 module("Ember.TextArea", {
   setup: function() {
@@ -19,12 +70,6 @@ module("Ember.TextArea", {
     TestObject = textArea = null;
   }
 });
-
-function append() {
-  Ember.run(function() {
-    textArea.appendTo('#qunit-fixture');
-  });
-}
 
 test("should become disabled if the disabled attribute is true", function() {
   textArea.set('disabled', true);

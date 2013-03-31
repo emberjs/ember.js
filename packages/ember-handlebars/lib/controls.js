@@ -34,3 +34,13 @@ Ember.Handlebars.registerHelper('input', function(options) {
     return Ember.Handlebars.helpers.view.call(this, Ember.TextField, options);
   }
 });
+
+Ember.Handlebars.registerHelper('textarea', function(options) {
+  Ember.assert('You can only pass attributes to the `input` helper, not arguments', arguments.length < 2);
+
+  var hash = options.hash,
+      types = options.hashTypes;
+
+  normalizeHash(hash, types);
+  return Ember.Handlebars.helpers.view.call(this, Ember.TextArea, options);
+});
