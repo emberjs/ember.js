@@ -47,7 +47,7 @@ Ember.merge(inBuffer, {
   destroyElement: function(view) {
     view.clearBuffer();
     var viewCollection = view._notifyWillDestroyElement();
-    viewCollection.transitionTo('preRender');
+    viewCollection.transitionTo('preRender', false);
 
     return view;
   },

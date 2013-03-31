@@ -17,7 +17,7 @@ Ember.merge(preRender, {
     viewCollection.trigger('willInsertElement');
     // after createElement, the view will be in the hasElement state.
     fn.call(view);
-    viewCollection.transitionTo('inDOM');
+    viewCollection.transitionTo('inDOM', false);
     viewCollection.trigger('didInsertElement');
   },
 

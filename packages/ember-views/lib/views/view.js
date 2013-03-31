@@ -228,10 +228,10 @@ ViewCollection.prototype = {
     }
   },
 
-  transitionTo: function(state) {
+  transitionTo: function(state, children) {
     var views = this.views;
     for (var i = 0, l = views.length; i < l; i++) {
-      views[i].transitionTo(state, false);
+      views[i].transitionTo(state, children);
     }
   },
 
