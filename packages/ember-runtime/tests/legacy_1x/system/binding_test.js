@@ -136,20 +136,18 @@ module("one way binding", {
 
 test("fromObject change should propagate after flush", function() {
   Ember.run(function() {
-    set(fromObject, "value", "change") ;
-    equal(get(toObject, "value"), "start") ;
-    Ember.run.sync() ;
-    equal(get(toObject, "value"), "change") ;
+    set(fromObject, "value", "change");
+    equal(get(toObject, "value"), "start");
   });
+  equal(get(toObject, "value"), "change");
 });
 
 test("toObject change should NOT propagate", function() {
   Ember.run(function() {
-    set(toObject, "value", "change") ;
-    equal(get(fromObject, "value"), "start") ;
-    Ember.run.sync() ;
-    equal(get(fromObject, "value"), "start") ;
+    set(toObject, "value", "change");
+    equal(get(fromObject, "value"), "start");
   });
+  equal(get(fromObject, "value"), "start");
 });
 
 var first, second, third, binding1, binding2; // global variables

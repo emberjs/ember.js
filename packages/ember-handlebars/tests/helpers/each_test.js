@@ -340,18 +340,11 @@ test("it supports {{else}}", function() {
 
   assertHTML(view, "onetwo");
 
-  stop();
-
-  // We really need to make sure we get to the re-render
-  Ember.run.next(function() {
-    Ember.run(function() {
-      view.set('items', Ember.A([]));
-    });
-
-    start();
-
-    assertHTML(view, "Nothing");
+  Ember.run(function() {
+    view.set('items', Ember.A([]));
   });
+
+  assertHTML(view, "Nothing");
 });
 
 test("it works with the controller keyword", function() {
