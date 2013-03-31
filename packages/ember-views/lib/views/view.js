@@ -205,12 +205,21 @@ Ember.CoreView = Ember.Object.extend(Ember.Evented, {
   destroyElement: Ember.K
 });
 
-var ViewCollection = Ember._ViewCollection = function(views) {
-  this.views = views || [];
+var ViewCollection = Ember._ViewCollection = function(initialViews) {
+  var views = this.views = initialViews || [];
+  this.length = views.length;
 };
 
 ViewCollection.prototype = {
   length: 0,
+
+  trigger: function(eventName) {
+    var views = this.views, view;
+    for (var i = 0, l = views.length; i < l; i++) {
+      view = views[i];
+      if (view.trigger) { view.trigger(eventName); }
+    }
+  },
 
   triggerRecursively: function(eventName) {
     var views = this.views;
@@ -226,9 +235,14 @@ ViewCollection.prototype = {
     }
   },
 
-  push: function(el) {
-    this.length++;
-    return this.views.push(el);
+  push: function() {
+    this.length += arguments.length;
+    var views = this.views;
+    return views.push.apply(views, arguments);
+  },
+
+  objectAt: function(idx) {
+    return this.views[idx];
   },
 
   forEach: function() {
@@ -1652,6 +1666,19 @@ Ember.View = Ember.CoreView.extend(
     }
   },
 
+  viewHierarchyCollection: function() {
+    var currentView, viewCollection = new ViewCollection([this]);
+
+    for (var i = 0; i < viewCollection.length; i++) {
+      currentView = viewCollection.objectAt(i);
+      if (currentView._childViews) {
+        viewCollection.push.apply(viewCollection, currentView._childViews);
+      }
+    }
+
+    return viewCollection;
+  },
+
   /**
     Destroys any existing element along with the element for any child views
     as well. If the view does not currently have a element, then this method
@@ -1696,8 +1723,10 @@ Ember.View = Ember.CoreView.extend(
     @method _notifyWillDestroyElement
   */
   _notifyWillDestroyElement: function() {
-    this.triggerRecursively('willClearRender');
-    this.triggerRecursively('willDestroyElement');
+    var viewCollection = this.viewHierarchyCollection();
+    viewCollection.trigger('willClearRender');
+    viewCollection.trigger('willDestroyElement');
+    return viewCollection;
   },
 
   _elementWillChange: Ember.beforeObserver(function() {
