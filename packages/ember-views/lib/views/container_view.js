@@ -11,6 +11,7 @@ var states = Ember.View.cloneStates(Ember.View.states);
 
 var get = Ember.get, set = Ember.set;
 var forEach = Ember.EnumerableUtils.forEach;
+var ViewCollection = Ember._ViewCollection;
 
 /**
   A `ContainerView` is an `Ember.View` subclass that implements `Ember.MutableArray`
@@ -373,27 +374,21 @@ Ember.merge(states.hasElement, {
   },
 
   ensureChildrenAreInDOM: function(view) {
-    var childViews = view._childViews, i, len, childView, previous, buffer, viewCollection = [];
-
-    function willInsertElement(v) {
-      v.triggerRecursively('willInsertElement');
-    }
-
-    function didInsertElement(v) {
-      v.transitionTo('inDOM');
-      v.propertyDidChange('element');
-      v.triggerRecursively('didInsertElement');
-    }
+    var childViews = view._childViews, i, len, childView, previous, buffer, viewCollection = new ViewCollection();
 
     function insertViewCollection() {
-      viewCollection.forEach(willInsertElement);
+      viewCollection.triggerRecursively('willInsertElement');
       if (previous) {
         previous.domManager.after(previous, buffer.string());
       } else {
         view.domManager.prepend(view, buffer.string());
       }
       buffer = null;
-      viewCollection.forEach(didInsertElement);
+      viewCollection.forEach(function(v) {
+        v.transitionTo('inDOM');
+        v.propertyDidChange('element');
+        v.triggerRecursively('didInsertElement');
+      });
     }
 
     for (i = 0, len = childViews.length; i < len; i++) {
@@ -406,7 +401,7 @@ Ember.merge(states.hasElement, {
       } else if (viewCollection.length) {
         insertViewCollection();
         previous = childView;
-        viewCollection = [];
+        viewCollection.clear();
       } else {
         previous = childView;
       }

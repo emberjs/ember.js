@@ -205,6 +205,43 @@ Ember.CoreView = Ember.Object.extend(Ember.Evented, {
   destroyElement: Ember.K
 });
 
+var ViewCollection = Ember._ViewCollection = function(views) {
+  this.views = views || [];
+};
+
+ViewCollection.prototype = {
+  length: 0,
+
+  triggerRecursively: function(eventName) {
+    var views = this.views;
+    for (var i = 0, l = views.length; i < l; i++) {
+      views[i].triggerRecursively(eventName);
+    }
+  },
+
+  transitionTo: function(state) {
+    var views = this.views;
+    for (var i = 0, l = views.length; i < l; i++) {
+      views[i].transitionTo(state);
+    }
+  },
+
+  push: function(el) {
+    this.length++;
+    return this.views.push(el);
+  },
+
+  forEach: function() {
+    var views = this.views;
+    return views.forEach.apply(views, arguments);
+  },
+
+  clear: function() {
+    this.length = 0;
+    this.views.length = 0;
+  }
+};
+
 /**
   `Ember.View` is the class in Ember responsible for encapsulating templates of
   HTML content, combining templates with data to render as sections of a page's
