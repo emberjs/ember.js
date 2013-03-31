@@ -18,15 +18,20 @@ Ember.Handlebars.registerHelper('input', function(options) {
 
   var hash = options.hash,
       types = options.hashTypes,
-      inputType = hash.type;
+      inputType = hash.type,
+      onEvent = hash.on;
 
   delete hash.type;
+  delete hash.on;
+
+  hash.onEvent = onEvent;
 
   normalizeHash(hash, types);
 
   if (inputType === 'checkbox') {
     return Ember.Handlebars.helpers.view.call(this, Ember.Checkbox, options);
   } else {
+    hash.type = inputType;
     return Ember.Handlebars.helpers.view.call(this, Ember.TextField, options);
   }
 });
