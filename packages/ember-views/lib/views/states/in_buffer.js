@@ -29,10 +29,11 @@ Ember.merge(inBuffer, {
   // view will render that view and append the resulting
   // buffer into its buffer.
   appendChild: function(view, childView, options) {
-    var buffer = view.buffer;
+    var buffer = view.buffer, _childViews = view._childViews;
 
     childView = view.createChildView(childView, options);
-    view._childViews.push(childView);
+    if (!_childViews.length) { _childViews = view._childViews = _childViews.slice(); }
+    _childViews.push(childView);
 
     childView.renderToBuffer(buffer);
 

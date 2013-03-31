@@ -245,6 +245,8 @@ ViewCollection.prototype = {
   }
 };
 
+var EMPTY_ARRAY = [];
+
 /**
   `Ember.View` is the class in Ember responsible for encapsulating templates of
   HTML content, combining templates with data to render as sections of a page's
@@ -1015,7 +1017,7 @@ Ember.View = Ember.CoreView.extend(
   */
   childViews: childViewsProperty,
 
-  _childViews: [],
+  _childViews: EMPTY_ARRAY,
 
   // When it's a virtual view, we need to notify the parent that their
   // childViews will change.
@@ -1890,7 +1892,7 @@ Ember.View = Ember.CoreView.extend(
     @type Array
     @default []
   */
-  classNameBindings: [],
+  classNameBindings: EMPTY_ARRAY,
 
   /**
     A list of properties of the view to apply as attributes. If the property is
@@ -1918,7 +1920,7 @@ Ember.View = Ember.CoreView.extend(
 
     @property attributeBindings
   */
-  attributeBindings: [],
+  attributeBindings: EMPTY_ARRAY,
 
   // .......................................................
   // CORE DISPLAY METHODS

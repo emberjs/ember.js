@@ -216,6 +216,7 @@ Ember.ContainerView = Ember.View.extend(Ember.MutableArray, {
 
     var currentView = get(this, 'currentView');
     if (currentView) {
+      if (!_childViews.length) { _childViews = this._childViews = this._childViews.slice(); }
       _childViews.push(this.createChildView(currentView));
     }
   },
@@ -230,6 +231,7 @@ Ember.ContainerView = Ember.View.extend(Ember.MutableArray, {
       this._childViews.splice(idx, removedCount) ;
     } else {
       var args = [idx, removedCount].concat(addedViews);
+      if (addedViews.length && !this._childViews.length) { this._childViews = this._childViews.slice(); }
       this._childViews.splice.apply(this._childViews, args);
     }
 
