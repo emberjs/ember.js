@@ -372,6 +372,12 @@ Ember.Mixin = function() { return initMixin(this, arguments); };
 
 Mixin = Ember.Mixin;
 
+Mixin.prototype = {
+  properties: null,
+  mixins: null,
+  ownerConstructor: null
+};
+
 Mixin._apply = applyMixin;
 
 Mixin.applyPartial = function(obj) {
