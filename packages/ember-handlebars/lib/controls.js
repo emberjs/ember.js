@@ -24,5 +24,9 @@ Ember.Handlebars.registerHelper('input', function(options) {
 
   normalizeHash(hash, types);
 
-  return Ember.Handlebars.helpers.view.call(this, Ember.TextField, options);
+  if (inputType === 'checkbox') {
+    return Ember.Handlebars.helpers.view.call(this, Ember.Checkbox, options);
+  } else {
+    return Ember.Handlebars.helpers.view.call(this, Ember.TextField, options);
+  }
 });
