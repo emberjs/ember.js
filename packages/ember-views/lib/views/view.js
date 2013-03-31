@@ -121,8 +121,6 @@ Ember.CoreView = Ember.Object.extend(Ember.Evented, {
   },
 
   _renderToBuffer: function(parentBuffer, bufferOperation) {
-    Ember.run.sync();
-
     // If this is the top-most view, start a new buffer. Otherwise,
     // create a new buffer relative to the original using the
     // provided buffer operation (for example, `insertAfter` will
