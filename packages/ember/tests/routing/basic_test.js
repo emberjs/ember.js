@@ -456,8 +456,6 @@ test("The Specials Page defaults to looking models up via `find`", function() {
 });
 
 test("The Special Page returning a promise puts the app into a loading state until the promise is resolved", function() {
-  stop();
-
   Router.map(function() {
     this.route("home", { path: "/" });
     this.resource("special", { path: "/specials/:menu_item_id" });
@@ -503,15 +501,10 @@ test("The Special Page returning a promise puts the app into a loading state unt
     menuItem.resolve(menuItem);
   });
 
-  setTimeout(function() {
-    equal(Ember.$('p', '#qunit-fixture').text(), "1", "The app is now in the specials state");
-    start();
-  }, 100);
+  equal(Ember.$('p', '#qunit-fixture').text(), "1", "The app is now in the specials state");
 });
 
 test("The Special page returning an error puts the app into the failure state", function() {
-  stop();
-
   Router.map(function() {
     this.route("home", { path: "/" });
     this.resource("special", { path: "/specials/:menu_item_id" });
@@ -545,15 +538,10 @@ test("The Special page returning an error puts the app into the failure state", 
     menuItem.resolve(menuItem);
   });
 
-  setTimeout(function() {
-    equal(Ember.$('p', '#qunit-fixture').text(), "FAILURE!", "The app is now in the failure state");
-    start();
-  }, 100);
+  equal(Ember.$('p', '#qunit-fixture').text(), "FAILURE!", "The app is now in the failure state");
 });
 
 test("The Special page returning an error puts the app into a default failure state if none provided", function() {
-  stop();
-
   Router.map(function() {
     this.route("home", { path: "/" });
     this.resource("special", { path: "/specials/:menu_item_id" });
@@ -589,10 +577,7 @@ test("The Special page returning an error puts the app into a default failure st
     menuItem.resolve(menuItem);
   });
 
-  setTimeout(function() {
-    equal(lastFailure, 'Setup error');
-    start();
-  }, 100);
+  equal(lastFailure, 'Setup error');
 });
 
 test("Moving from one page to another triggers the correct callbacks", function() {
