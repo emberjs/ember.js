@@ -305,6 +305,8 @@ CoreObject.PrototypeMixin = Mixin.create({
     return this;
   },
 
+  willDestroy: Ember.K,
+
   /**
     @private
 
