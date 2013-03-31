@@ -231,7 +231,7 @@ ViewCollection.prototype = {
   transitionTo: function(state) {
     var views = this.views;
     for (var i = 0, l = views.length; i < l; i++) {
-      views[i].transitionTo(state);
+      views[i].transitionTo(state, false);
     }
   },
 
