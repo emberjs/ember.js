@@ -1,12 +1,12 @@
 require('ember-metal/utils');
-require('ember-metal/accessors');
+require('ember-metal/property_get');
 require('ember-metal/array');
 require('ember-metal/property_events');
 require('ember-metal/watch_key');
 
 var metaFor = Ember.meta, // utils.js
-    get = Ember.get, // accessors.js
-    normalizeTuple = Ember.normalizeTuple, // accessors.js
+    get = Ember.get, // property_get.js
+    normalizeTuple = Ember.normalizeTuple, // property_get.js
     forEach = Ember.ArrayPolyfills.forEach, // array.js
     warn = Ember.warn,
     watchKey = Ember.watchKey,

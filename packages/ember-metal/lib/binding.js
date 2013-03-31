@@ -1,5 +1,5 @@
 require('ember-metal/core'); // Ember.Logger
-require('ember-metal/accessors'); // get
+require('ember-metal/property_get'); // get
 require('ember-metal/property_set'); // set
 require('ember-metal/utils'); // guidFor, isArray, meta
 require('ember-metal/observer'); // addObserver, removeObserver
@@ -29,8 +29,21 @@ Ember.LOG_BINDINGS = false || !!Ember.ENV.LOG_BINDINGS;
 var get     = Ember.get,
     set     = Ember.set,
     guidFor = Ember.guidFor,
-    isGlobalPath = Ember.isGlobalPath;
+    IS_GLOBAL = /^([A-Z$]|([0-9][A-Z$]))/;
 
+/**
+  Returns true if the provided path is global (e.g., `MyApp.fooController.bar`)
+  instead of local (`foo.bar.baz`).
+
+  @method isGlobalPath
+  @for Ember
+  @private
+  @param {String} path
+  @return Boolean
+*/
+var isGlobalPath = Ember.isGlobalPath = function(path) {
+  return IS_GLOBAL.test(path);
+};
 
 function getWithGlobals(obj, path) {
   return get(isGlobalPath(path) ? Ember.lookup : obj, path);

@@ -1,5 +1,5 @@
 require('ember-metal/core');
-require('ember-metal/accessors');
+require('ember-metal/property_get');
 require('ember-metal/computed');
 require('ember-metal/properties');
 require('ember-metal/observer');

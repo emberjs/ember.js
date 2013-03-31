@@ -10,7 +10,6 @@ var META_KEY = Ember.META_KEY, get;
 
 var MANDATORY_SETTER = Ember.ENV.MANDATORY_SETTER;
 
-var IS_GLOBAL = /^([A-Z$]|([0-9][A-Z$]))/;
 var IS_GLOBAL_PATH = /^([A-Z$]|([0-9][A-Z$])).*[\.\*]/;
 var HAS_THIS  = /^this[\.\*]/;
 var FIRST_KEY = /^([^\.\*]+)/;
@@ -170,18 +169,3 @@ Ember.getWithDefault = function(root, key, defaultValue) {
 
 Ember.get = get;
 Ember.getPath = Ember.deprecateFunc('getPath is deprecated since get now supports paths', Ember.get);
-
-/**
-  Returns true if the provided path is global (e.g., `MyApp.fooController.bar`)
-  instead of local (`foo.bar.baz`).
-
-  @method isGlobalPath
-  @for Ember
-  @private
-  @param {String} path
-  @return Boolean
-*/
-Ember.isGlobalPath = function(path) {
-  return IS_GLOBAL.test(path);
-};
-

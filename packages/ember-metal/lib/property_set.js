@@ -1,5 +1,5 @@
 require('ember-metal/utils'); // META_KEY
-require('ember-metal/accessors'); // _getPath
+require('ember-metal/property_get'); // _getPath
 require('ember-metal/property_events'); // propertyWillChange, propertyDidChange
 
 var META_KEY = Ember.META_KEY,
