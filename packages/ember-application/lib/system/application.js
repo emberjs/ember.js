@@ -446,7 +446,10 @@ var Application = Ember.Application = Ember.Namespace.extend(Ember.DeferredMixin
   },
 
   reset: function() {
-    get(this, '__container__').destroy();
+    var oldContainer = get(this, '__container__')
+    set(this, '__container__', null);
+    oldContainer.destroy();
+
     this.buildContainer();
 
     Ember.run.schedule('actions', this, function(){
