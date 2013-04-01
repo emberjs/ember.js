@@ -872,14 +872,6 @@ Ember.View = Ember.CoreView.extend(
     return template || get(this, 'defaultTemplate');
   }).property('templateName'),
 
-  container: Ember.computed(function() {
-    var parentView = get(this, '_parentView');
-
-    if (parentView) { return get(parentView, 'container'); }
-
-    return Ember.Container && Ember.Container.defaultContainer;
-  }),
-
   /**
     The controller managing this view. If this property is set, it will be
     made available for use by the template.
@@ -917,14 +909,9 @@ Ember.View = Ember.CoreView.extend(
 
   templateForName: function(name, type) {
     if (!name) { return; }
-
     Ember.assert("templateNames are not allowed to contain periods: "+name, name.indexOf('.') === -1);
-
-    var container = get(this, 'container');
-
-    if (container) {
-      return container.lookup('template:' + name);
-    }
+    var container = this.container || (Ember.Container && Ember.Container.defaultContainer);
+    return container && container.lookup('template:' + name);
   },
 
   /**
@@ -2076,6 +2063,7 @@ Ember.View = Ember.CoreView.extend(
     if (Ember.CoreView.detect(view)) {
       attrs = attrs || {};
       attrs._parentView = this;
+      attrs.container = this.container;
       attrs.templateData = attrs.templateData || get(this, 'templateData');
 
       view = view.create(attrs);
