@@ -144,7 +144,7 @@ Ember.HistoryLocation = Ember.Object.extend({
       // Ignore initial page load popstate event in Chrome
       if(!popstateFired) {
         popstateFired = true;
-        if (self.getURL() === self._initialUrl) { return; }
+        if (self.formatURL(self.getURL()) === self._initialUrl) { return; }
       }
       callback(self.getURL());
     });
