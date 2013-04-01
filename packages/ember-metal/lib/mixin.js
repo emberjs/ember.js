@@ -299,7 +299,7 @@ function applyMixin(obj, mixins, partial) {
   mergeMixins(mixins, mixinsMeta(obj), descs, values, obj);
 
   for(key in values) {
-    if (key === 'contructor' || !values.hasOwnProperty(key)) { continue; }
+    if (key === 'constructor' || !values.hasOwnProperty(key)) { continue; }
 
     desc = descs[key];
     value = values[key];
