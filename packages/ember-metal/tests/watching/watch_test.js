@@ -229,3 +229,37 @@ test('when watching another object, destroy should remove chain watchers from th
   equal(meta_objB.watching.foo, 0, 'should not be watching foo');
   equal(index, -1, 'should not have chain watcher');
 });
+
+// TESTS for length property
+
+testBoth('watching "length" property on an object', function(get, set) {
+
+  var obj = { length: '26.2 miles' };
+  addListeners(obj, 'length');
+
+  Ember.watch(obj, 'length');
+  equal(get(obj, 'length'), '26.2 miles', 'should have original prop');
+
+  set(obj, 'length', '10k');
+  equal(willCount, 1, 'should have invoked willCount');
+  equal(didCount, 1, 'should have invoked didCount');
+
+  equal(get(obj, 'length'), '10k', 'should get new value');
+  equal(obj.length, '10k', 'property should be accessible on obj');
+});
+
+testBoth('watching "length" property on an array', function(get, set) {
+
+  var arr = [];
+  addListeners(arr, 'length');
+
+  Ember.watch(arr, 'length');
+  equal(get(arr, 'length'), 0, 'should have original prop');
+
+  set(arr, 'length', '10');
+  equal(willCount, 0, 'should NOT have invoked willCount');
+  equal(didCount, 0, 'should NOT have invoked didCount');
+
+  equal(get(arr, 'length'), 10, 'should get new value');
+  equal(arr.length, 10, 'property should be accessible on arr');
+});
