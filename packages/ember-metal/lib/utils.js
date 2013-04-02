@@ -1,5 +1,6 @@
 require('ember-metal/core');
 require('ember-metal/platform');
+require('ember-metal/array');
 
 /**
 @module ember-metal
@@ -527,3 +528,76 @@ if (needsFinallyFix) {
     return (finalResult === undefined) ? result : finalResult;
   };
 }
+
+// ........................................
+// TYPING & ARRAY MESSAGING
+//
+
+var TYPE_MAP = {};
+var t = "Boolean Number String Function Array Date RegExp Object".split(" ");
+Ember.ArrayPolyfills.forEach.call(t, function(name) {
+  TYPE_MAP[ "[object " + name + "]" ] = name.toLowerCase();
+});
+
+var toString = Object.prototype.toString;
+
+/**
+  Returns a consistent type for the passed item.
+
+  Use this instead of the built-in `typeof` to get the type of an item.
+  It will return the same result across all browsers and includes a bit
+  more detail. Here is what will be returned:
+
+      | Return Value  | Meaning                                              |
+      |---------------|------------------------------------------------------|
+      | 'string'      | String primitive                                     |
+      | 'number'      | Number primitive                                     |
+      | 'boolean'     | Boolean primitive                                    |
+      | 'null'        | Null value                                           |
+      | 'undefined'   | Undefined value                                      |
+      | 'function'    | A function                                           |
+      | 'array'       | An instance of Array                                 |
+      | 'class'       | An Ember class (created using Ember.Object.extend()) |
+      | 'instance'    | An Ember object instance                             |
+      | 'error'       | An instance of the Error object                      |
+      | 'object'      | A JavaScript object not inheriting from Ember.Object |
+
+  Examples:
+
+  ```javascript
+  Ember.typeOf();                       // 'undefined'
+  Ember.typeOf(null);                   // 'null'
+  Ember.typeOf(undefined);              // 'undefined'
+  Ember.typeOf('michael');              // 'string'
+  Ember.typeOf(101);                    // 'number'
+  Ember.typeOf(true);                   // 'boolean'
+  Ember.typeOf(Ember.makeArray);        // 'function'
+  Ember.typeOf([1,2,90]);               // 'array'
+  Ember.typeOf(Ember.Object.extend());  // 'class'
+  Ember.typeOf(Ember.Object.create());  // 'instance'
+  Ember.typeOf(new Error('teamocil'));  // 'error'
+
+  // "normal" JavaScript object
+  Ember.typeOf({a: 'b'});              // 'object'
+  ```
+
+  @method typeOf
+  @for Ember
+  @param {Object} item the item to check
+  @return {String} the type
+*/
+Ember.typeOf = function(item) {
+  var ret;
+
+  ret = (item === null || item === undefined) ? String(item) : TYPE_MAP[toString.call(item)] || 'object';
+
+  if (ret === 'function') {
+    if (Ember.Object && Ember.Object.detect(item)) ret = 'class';
+  } else if (ret === 'object') {
+    if (item instanceof Error) ret = 'error';
+    else if (Ember.Object && item instanceof Ember.Object) ret = 'instance';
+    else ret = 'object';
+  }
+
+  return ret;
+};

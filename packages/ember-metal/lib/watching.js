@@ -18,7 +18,7 @@ var metaFor = Ember.meta, // utils.js
     unwatchKey = Ember.unwatchKey,
     watchPath = Ember.watchPath, // watch_path.js
     unwatchPath = Ember.unwatchPath,
-    typeOf = Ember.typeOf, // FIXME: defined in runtime
+    typeOf = Ember.typeOf, // utils.js
     generateGuid = Ember.generateGuid,
     IS_PATH = /[\.\*]/;
 

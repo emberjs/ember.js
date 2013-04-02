@@ -1,8 +1,8 @@
 require('ember-metal/utils');
 require('ember-metal/chains');
 
-var metaFor = Ember.meta,
-    typeOf = Ember.typeOf, // FIXME: defined in runtime
+var metaFor = Ember.meta, // utils.js
+    typeOf = Ember.typeOf, // utils.js
     ChainNode = Ember._ChainNode; // chains.js
 
 // get the chains for the current object. If the current object has

@@ -2,7 +2,7 @@ require('ember-metal/utils');
 require('ember-metal/platform');
 
 var metaFor = Ember.meta, // utils.js
-    typeOf = Ember.typeOf, // FIXME: defined in runtime
+    typeOf = Ember.typeOf, // utils.js
     MANDATORY_SETTER = Ember.ENV.MANDATORY_SETTER,
     o_defineProperty = Ember.platform.defineProperty;
 
