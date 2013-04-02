@@ -2,13 +2,13 @@ require('ember-metal/utils');
 require('ember-metal/platform');
 
 var metaFor = Ember.meta, // utils.js
-    isArray = Ember.isArray,
+    typeOf = Ember.typeOf, // FIXME: defined in runtime
     MANDATORY_SETTER = Ember.ENV.MANDATORY_SETTER,
     o_defineProperty = Ember.platform.defineProperty;
 
 Ember.watchKey = function(obj, keyName) {
   // can't watch length on Array - it is special...
-  if (keyName === 'length' && isArray(obj)) { return this; }
+  if (keyName === 'length' && typeOf(obj) === 'array') { return; }
 
   var m = metaFor(obj), watching = m.watching, desc;
 
@@ -62,6 +62,4 @@ Ember.unwatchKey = function(obj, keyName) {
   } else if (watching[keyName] > 1) {
     watching[keyName]--;
   }
-
-  return this;
 };

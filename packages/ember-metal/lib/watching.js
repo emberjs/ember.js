@@ -18,7 +18,7 @@ var metaFor = Ember.meta, // utils.js
     unwatchKey = Ember.unwatchKey,
     watchPath = Ember.watchPath, // watch_path.js
     unwatchPath = Ember.unwatchPath,
-    isArray = Ember.isArray,
+    typeOf = Ember.typeOf, // FIXME: defined in runtime
     generateGuid = Ember.generateGuid,
     IS_PATH = /[\.\*]/;
 
@@ -43,7 +43,7 @@ function isKeyName(path) {
 */
 Ember.watch = function(obj, keyPath) {
   // can't watch length on Array - it is special...
-  if (keyPath === 'length' && isArray(obj)) { return; }
+  if (keyPath === 'length' && typeOf(obj) === 'array') { return; }
 
   if (isKeyName(keyPath)) {
     watchKey(obj, keyPath);
@@ -61,7 +61,7 @@ Ember.watch.flushPending = Ember.flushPendingChains;
 
 Ember.unwatch = function(obj, keyPath) {
   // can't watch length on Array - it is special...
-  if (keyPath === 'length' && isArray(obj)) { return this; }
+  if (keyPath === 'length' && typeOf(obj) === 'array') { return; }
 
   if (isKeyName(keyPath)) {
     unwatchKey(obj, keyPath);
@@ -93,8 +93,6 @@ Ember.rewatch = function(obj) {
   if (chains && chains.value() !== obj) {
     m.chains = chains.copy(obj);
   }
-
-  return this;
 };
 
 var NODE_STACK = [];
