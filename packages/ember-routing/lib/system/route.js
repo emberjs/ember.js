@@ -4,7 +4,8 @@
 */
 
 var get = Ember.get, set = Ember.set,
-    classify = Ember.String.classify;
+    classify = Ember.String.classify,
+    slice = [].slice;
 
 /**
   The `Ember.Route` class is used to define individual routes. Refer to
@@ -451,6 +452,58 @@ Ember.Route = Ember.Object.extend({
 
   willDestroy: function() {
     teardownView(this);
+  }
+});
+
+Ember.Route.reopenClass({
+  /**
+    Transition into another route.
+
+    ```javascript
+    App.PostNewRoute = Ember.Route.extend({
+      events: {
+        didSave: Ember.Route.transitionTo("post.show")
+      }
+    });
+
+    // or a more concise DSL
+
+    transitionTo = Ember.Route.transitionTo;
+
+    App.PostEditRoute = Ember.Route.extend({
+      events: {
+        didSave: transitionTo("post.show")
+      }
+    });
+    ```
+
+    @method transitionTo
+    @param {String} name the name of the route
+  */
+  transitionTo: function(path){
+    return function() {
+      var args = slice.call(arguments);
+      args.unshift(path);
+      this.transitionTo.apply(this, args);
+    };
+  },
+
+  /**
+    Transition into another route while replacing the current URL if
+    possible. Identical to `transitionTo` in all other respects.
+
+    ```javascript
+    App.PostsIndexRoute = Ember.Route.extend({
+      redirect: Ember.Route.replaceWith('posts.all')
+    });
+    ```
+  */
+  replaceWith: function(path) {
+    return function() {
+      var args = slice.call(arguments);
+      args.unshift(path);
+      this.replaceWith.apply(this, args);
+    };
   }
 });
 

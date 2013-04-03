@@ -1120,6 +1120,44 @@ test("A redirection hook is provided", function() {
   equal(router.container.lookup('controller:application').get('currentPath'), 'home');
 });
 
+test("Ember.Route.transitionTo works as shorthand for this.transitionTo", function() {
+  expect(1);
+
+  Router.map(function() {
+    this.route("choose", { path: "/" });
+    this.route("home");
+  });
+
+  App.ChooseRoute = Ember.Route.extend({
+    redirect: Ember.Route.transitionTo('home'),
+
+    transitionTo: function(destination) {
+      equal("home", destination, "transitionTo has been invoked on the route");
+    }
+  });
+
+  bootApplication();
+});
+
+test("Ember.Route.transitionTo works as shorthand for this.replaceWith", function() {
+  expect(1);
+
+  Router.map(function() {
+    this.route("choose", { path: "/" });
+    this.route("home");
+  });
+
+  App.ChooseRoute = Ember.Route.extend({
+    redirect: Ember.Route.replaceWith('home'),
+
+    replaceWith: function(destination) {
+      equal("home", destination, "replaceWith has been invoked on the route");
+    }
+  });
+
+  bootApplication();
+});
+
 test("Redirecting from the middle of a route aborts the remainder of the routes", function() {
   expect(2);
 
