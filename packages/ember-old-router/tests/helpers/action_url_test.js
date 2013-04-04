@@ -50,7 +50,7 @@ test("it does not generate the URL when href property is not specified", functio
     template: compile("<a {{action show}}>Hi</a>")
   });
 
-  var controller = Ember.Object.create(Ember.ControllerMixin, {
+  var controller = Ember.Object.createWithMixins(Ember.ControllerMixin, {
     target: {
       urlForEvent: function(event, context) {
         return "/foo/bar";
