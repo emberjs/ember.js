@@ -1,13 +1,14 @@
 module('Ember.isWatching');
 
-var testObserver = function(setup, teardown) {
-  var obj = {}, key = 'foo', fn = function() {};
+var testObserver = function(setup, teardown, key) {
+  var obj = {}, fn = function() {};
+  key = key || 'foo';
 
-  equal(Ember.isWatching(obj, 'foo'), false, "precond - isWatching is false by default");
+  equal(Ember.isWatching(obj, key), false, "precond - isWatching is false by default");
   setup(obj, key, fn);
-  equal(Ember.isWatching(obj, 'foo'), true, "isWatching is true when observers are added");
+  equal(Ember.isWatching(obj, key), true, "isWatching is true when observers are added");
   teardown(obj, key, fn);
-  equal(Ember.isWatching(obj, 'foo'), false, "isWatching is false after observers are removed");
+  equal(Ember.isWatching(obj, key), false, "isWatching is false after observers are removed");
 };
 
 test("isWatching is true for regular local observers", function() {
@@ -52,4 +53,15 @@ test("isWatching is true for chained computed properties", function() {
   }, function(obj, key, fn) {
     Ember.defineProperty(obj, 'computed', null);
   });
+});
+
+// can't watch length on Array - it is special...
+// But you should be able to watch a length property of an object
+test("isWatching is true for 'length' property on object", function() {
+  testObserver(function(obj, key, fn) {
+    Ember.defineProperty(obj, 'length', null, '26.2 miles');
+    Ember.addObserver(obj, 'length', obj, fn);
+  }, function(obj, key, fn) {
+    Ember.removeObserver(obj, 'length', obj, fn);
+  }, 'length');
 });
