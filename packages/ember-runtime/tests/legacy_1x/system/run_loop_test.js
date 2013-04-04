@@ -17,7 +17,7 @@ var MyApp, binding1, binding2, previousPreventRunloop;
 module("System:run_loop() - chained binding", {
   setup: function() {
     MyApp = {};
-    MyApp.first = Ember.Object.create(Ember.Observable, {
+    MyApp.first = Ember.Object.createWithMixins(Ember.Observable, {
       output: 'MyApp.first'
     }) ;
 
@@ -31,7 +31,7 @@ module("System:run_loop() - chained binding", {
 
     }) ;
 
-    MyApp.third = Ember.Object.create(Ember.Observable, {
+    MyApp.third = Ember.Object.createWithMixins(Ember.Observable, {
       input: "MyApp.third"
     }) ;
   }

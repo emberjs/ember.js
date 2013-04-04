@@ -76,6 +76,18 @@ test("throws if you try to call _super in a method", function() {
   }, 'should warn that a method that calls _super was passed to create');
 });
 
+test("throws if you try to 'mixin' a definition", function(){
+  var myMixin = Ember.Mixin.create({
+    adder: function(arg1, arg2){
+      return arg1 + arg2;
+    }
+  });
+
+  raises(function(){
+    var o = Ember.Object.create(myMixin);
+  }, "should warn that you passed in a mixin");
+});
+
 module('Ember.Object.createWithMixins');
 
 test("Creates a new object that contains passed properties", function() {
