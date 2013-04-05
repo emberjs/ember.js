@@ -1674,6 +1674,8 @@ Ember.View = Ember.CoreView.extend(
     @return {Ember.View} receiver
   */
   destroyElement: function() {
+    if(this.isDestroyed || this.isDestroying) { return; }
+
     return this.currentState.destroyElement(this);
   },
 
