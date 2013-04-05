@@ -307,7 +307,7 @@ Ember.ContainerView = Ember.View.extend(Ember.MutableArray, {
     appropriate place in the buffer.
 
     @method childViewsDidChange
-    @param {Ember.Array} views the array of child views afte the mutation has occurred
+    @param {Ember.Array} views the array of child views after the mutation has occurred
     @param {Number} start the start position of the mutation
     @param {Number} removed the number of child views removed
     @param {Number} the number of child views added
