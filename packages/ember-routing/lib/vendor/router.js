@@ -155,6 +155,30 @@ define("router",
       },
 
       /**
+        Take a named route and context objects and return
+        an array of paths that would be used for URL generation.
+
+        @param {String} name the name of the route
+        @param {...Object} objects a list of objects to get serialize
+          paths for
+
+        @return {Array} a list of paths, each element is an Array itself
+      */
+      pathsForSerialize: function(handlerName) {
+        var handlers = this.recognizer.handlersFor(handlerName),
+            handler, i, paths = [], len;
+
+        for (i=0, len=handlers.length; i<len; i++) {
+          handler = this.getHandler(handlers[i].handler);
+          if(handlers[i].names.length) {
+            paths.push(handler._getSerializePaths());
+          }
+        }
+
+        return paths;
+      },
+
+      /**
         @private
 
         Used internally by `generate` and `transitionTo`.

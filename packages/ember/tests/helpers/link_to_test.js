@@ -117,6 +117,57 @@ test("The {{linkTo}} helper supports URL replacement", function() {
   equal(replaceCount, 1, 'replaceURL should be called once');
 });
 
+test("The {{linkTo}} helper refreshes href element when one of params changes", function() {
+  Router.map(function() {
+    this.route('post', { path: '/posts/:post_id/:post_slug' });
+  });
+
+  var post = Ember.Object.create({id: '1', slug: 'post'}),
+      secondPost = Ember.Object.create({id: '2', slug: 'second-post'});
+
+  App.PostRoute = Ember.Route.extend({
+    serializePaths: ['id', 'slug'],
+
+    model: function(params) {
+      return post;
+    },
+
+    serialize: function(post) {
+      return { post_id: post.get('id'), post_slug: post.get('slug') };
+    }
+  });
+
+  Ember.TEMPLATES.index = compile('{{#linkTo "post" post id="post"}}post{{/linkTo}}');
+
+  App.IndexController = Ember.Controller.extend();
+  var indexController = container.lookup('controller:index');
+  indexController.set('post', post);
+
+  bootApplication();
+
+  Ember.run(function() { router.handleURL("/"); });
+
+  equal(Ember.$('#post', '#qunit-fixture').attr('href'), '/posts/1/post', 'precond - Link has rendered href attr properly');
+
+  Ember.run(function() {
+    indexController.set('post', secondPost);
+  });
+
+  equal(Ember.$('#post', '#qunit-fixture').attr('href'), '/posts/2/second-post', 'href attr was updated after one of the params had been changed');
+
+  Ember.run(function() {
+    secondPost.set('slug', 'second-post-changed');
+  });
+
+  equal(Ember.$('#post', '#qunit-fixture').attr('href'), '/posts/2/second-post-changed', 'href attr was updated after one of the properties needed to build URL had been changed');
+
+  Ember.run(function() {
+    indexController.set('post', null);
+  });
+
+  equal(Ember.$('#post', '#qunit-fixture').attr('href'), '/posts/2/second-post-changed', 'href attr does not change when one of the arguments in nullified');
+});
+
 test("The {{linkTo}} helper supports a custom activeClass", function() {
   Ember.TEMPLATES.index = Ember.Handlebars.compile("<h3>Home</h3>{{#linkTo about id='about-link'}}About{{/linkTo}}{{#linkTo index id='self-link' activeClass='zomg-active'}}Self{{/linkTo}}");
 

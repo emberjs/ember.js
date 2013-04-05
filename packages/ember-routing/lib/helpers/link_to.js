@@ -38,6 +38,17 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     return ret.concat(resolvedPaths(linkView.parameters));
   }
 
+  function _createPath(path, property) {
+    var fullPath = 'paramsContext';
+    if(path !== '') {
+      fullPath += '.' + path;
+    }
+    if(property && property !== '') {
+      fullPath += '.' + property;
+    }
+    return fullPath;
+  }
+
   /**
     Renders a link to the supplied route.
 
@@ -65,6 +76,46 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     replace: false,
     attributeBindings: ['href', 'title'],
     classNameBindings: 'active',
+
+    init: function() {
+      this._super.apply(this, arguments);
+
+      var params = this.parameters.params,
+          length = params.length,
+          context = this.parameters.context,
+          self = this,
+          path, paths = Ember.A([]), i, j,
+          router = this.get('router'),
+          serializePaths = router.pathsForSerialize(fullRouteName(router, this.namedRoute));
+
+      set(this, 'paramsContext', context);
+
+      for(i=0; i < length; i++) {
+        if(serializePaths[i].length) {
+          for(j=0; j < serializePaths[i].length; j++) {
+            paths.pushObject(_createPath(params[i], serializePaths[i][j]));
+          }
+        } else {
+          paths.pushObject(_createPath(params[i]));
+        }
+      }
+
+      var observer = function(object, path) {
+        var notify = true, i;
+        for(i=0; i < paths.length; i++) {
+          if(!get(this, paths[i])) {
+            notify = false;
+          }
+        }
+        if(notify) {
+          this.notifyPropertyChange('href');
+        }
+      };
+
+      for(i=0, length=paths.length; i < length; i++) {
+        Ember.addObserver(this, paths[i], this, observer);
+      }
+    },
 
     // Even though this isn't a virtual view, we want to treat it as if it is
     // so that you can access the parent with {{view.prop}}
