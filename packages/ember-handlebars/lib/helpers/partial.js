@@ -15,6 +15,7 @@ require('ember-handlebars/ext');
       {{partial user_info}}
     {{/with}}
   </script>
+  ```
 
   The `data-template-name` attribute of a partial template
   is prefixed with an underscore.
