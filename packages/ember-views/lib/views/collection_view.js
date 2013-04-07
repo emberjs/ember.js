@@ -268,11 +268,15 @@ Ember.CollectionView = Ember.ContainerView.extend(
 
     if (removingAll) {
       this.currentState.empty(this);
+      var priorRemovedFromDOM = this.removedFromDOM;
+      this.invokeRecursively(function(view) {
+        view.removedFromDOM = true;
+      });
+      this.removedFromDOM = priorRemovedFromDOM;
     }
 
     for (idx = start + removedCount - 1; idx >= start; idx--) {
       childView = childViews[idx];
-      if (removingAll) { childView.removedFromDOM = true; }
       childView.destroy();
     }
   },
