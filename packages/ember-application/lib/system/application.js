@@ -657,7 +657,7 @@ Ember.Application.reopenClass({
   that could be overridden by the normal naming convention.
 
   @param {Ember.Namespace} namespace the namespace to look for classes
-  @return {any} the resolved value for a given lookup
+  @return {*} the resolved value for a given lookup
 */
 function resolverFor(namespace) {
   var resolverClass = namespace.get('resolver') || Ember.DefaultResolver;

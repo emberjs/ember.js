@@ -141,8 +141,8 @@ Ember.MutableArray = Ember.Mixin.create(Ember.Array, Ember.MutableEnumerable,
     ```
 
     @method pushObject
-    @param {anything} obj object to push
-    @return {any} the same obj passed as param
+    @param {*} obj object to push
+    @return {*} the same obj passed as param
   */
   pushObject: function(obj) {
     this.insertAt(get(this, 'length'), obj) ;
@@ -221,8 +221,8 @@ Ember.MutableArray = Ember.Mixin.create(Ember.Array, Ember.MutableEnumerable,
     ```
 
     @method unshiftObject
-    @param {anything} obj object to unshift
-    @return {any} the same obj passed as param
+    @param {*} obj object to unshift
+    @return {*} the same obj passed as param
   */
   unshiftObject: function(obj) {
     this.insertAt(0, obj) ;

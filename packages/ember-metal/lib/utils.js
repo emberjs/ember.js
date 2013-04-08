@@ -403,7 +403,7 @@ Ember.canInvoke = canInvoke;
   @param {Object} obj The object to check for the method
   @param {String} methodName The method name to check for
   @param {Array} [args] The arguments to pass to the method
-  @return {anything} the return value of the invoked method or undefined if it cannot be invoked
+  @return {*} the return value of the invoked method or undefined if it cannot be invoked
 */
 Ember.tryInvoke = function(obj, methodName, args) {
   if (canInvoke(obj, methodName)) {
@@ -434,7 +434,7 @@ var needsFinallyFix = (function() {
   @param {Function} tryable The function to run the try callback
   @param {Function} finalizer The function to run the finally callback
   @param [binding]
-  @return {anything} The return value is the that of the finalizer,
+  @return {*} The return value is the that of the finalizer,
   unless that valueis undefined, in which case it is the return value
   of the tryable
 */
@@ -485,7 +485,7 @@ if (needsFinallyFix) {
   @param {Function} catchable The function to run the catchable callback
   @param {Function} finalizer The function to run the finally callback
   @param [binding]
-  @return {anything} The return value is the that of the finalizer,
+  @return {*} The return value is the that of the finalizer,
   unless that value is undefined, in which case it is the return value
   of the tryable.
 */
