@@ -190,8 +190,6 @@ CoreObject.PrototypeMixin = Mixin.create({
     do important setup work, and you'll see strange behavior in your
     application.
 
-    ```
-
     @method init
   */
   init: function() {},
