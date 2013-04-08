@@ -1579,3 +1579,27 @@ test("Nested index route is not overriden by parent's implicit index route", fun
 
   deepEqual(router.location.path, '/posts/emberjs');
 });
+
+test("Application template does not duplicate when re-rendered", function() {
+  Ember.TEMPLATES.application = compile("<h3>I Render Once</h3>{{outlet}}");
+
+  Router.map(function() {
+    this.route('posts');
+  });
+
+  App.ApplicationRoute = Ember.Route.extend({
+    model: function() {
+      return Ember.A();
+    }
+  });
+
+
+  bootApplication();
+
+  // should cause application template to re-render
+  Ember.run(function() {
+    router.handleURL('/posts');
+  });
+
+  equal(Ember.$('h3:contains(I Render Once)').size(), 1);
+});
