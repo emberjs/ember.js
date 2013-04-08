@@ -177,8 +177,8 @@ Ember.ArrayController = Ember.ArrayProxy.extend(Ember.ControllerMixin,
   },
 
   init: function() {
-    this._super();
     if (!this.get('content')) { Ember.defineProperty(this, 'content', undefined, Ember.A()); }
+    this._super();
     this.set('_subControllers', Ember.A());
   },
 
