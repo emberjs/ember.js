@@ -1603,13 +1603,15 @@ Ember.View = Ember.CoreView.extend(
   /**
     @private
 
-    Run this callback on the current view and recursively on child views.
+    Run this callback on the current view (unless includeSelf is false) and recursively on child views.
 
     @method invokeRecursively
     @param fn {Function}
+    @param includeSelf (optional, default true)
   */
-  invokeRecursively: function(fn) {
-    var childViews = [this], currentViews, view;
+  invokeRecursively: function(fn, includeSelf) {
+    var childViews = (includeSelf === false) ? this._childViews : [this];
+    var currentViews, view;
 
     while (childViews.length) {
       currentViews = childViews.slice();

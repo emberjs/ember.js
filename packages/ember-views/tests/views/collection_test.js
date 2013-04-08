@@ -539,3 +539,43 @@ test("a array_proxy that backs an sorted array_controller that backs a collectio
     container.destroy();
   });
 });
+
+test("when a collection view is emptied, deeply nested views elements are not removed from the DOM and then destroyed again", function() {
+  var assertProperDestruction = Ember.Mixin.create({
+    destroyElement: function() {
+      if ( this.state === 'inDOM' ) {
+        ok(this.get('element'), this + ' still exists in DOM');
+      }
+      return this._super();
+    }
+  });
+
+  var ChildView = Ember.View.extend(assertProperDestruction, {
+    render: function(buf) {
+      // emulate nested template
+      this.appendChild(Ember.View.createWithMixins(assertProperDestruction, {
+        template: function() { return "<div class='inner_element'></div>"; }
+      }));
+    }
+  });
+
+  var view = Ember.CollectionView.create({
+    content: Ember.A([1]),
+    itemViewClass: ChildView
+  });
+
+
+  Ember.run(function() {
+    view.append();
+  });
+  equal(Ember.$('.inner_element').length, 1, "precond - generates inner element");
+
+  Ember.run(function() {
+    view.get('content').clear();
+  });
+  equal(Ember.$('.inner_element').length, 0, "elements removed");
+
+  Ember.run(function() {
+    view.remove();
+  });
+});
