@@ -82,7 +82,7 @@ Ember.Array = Ember.Mixin.create(Ember.Enumerable, /** @scope Ember.Array.protot
 
     @method objectAt
     @param {Number} idx The index of the item to return.
-    @return {any} item at index or undefined
+    @return {*} item at index or undefined
   */
   objectAt: function(idx) {
     if ((idx < 0) || (idx>=get(this, 'length'))) return undefined ;

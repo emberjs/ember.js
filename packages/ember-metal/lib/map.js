@@ -208,8 +208,8 @@ Map.prototype = {
     Retrieve the value associated with a given key.
 
     @method get
-    @param {anything} key
-    @return {anything} the value associated with the key, or `undefined`
+    @param {*} key
+    @return {*} the value associated with the key, or `undefined`
   */
   get: function(key) {
     var values = this.values,
@@ -223,8 +223,8 @@ Map.prototype = {
     provided, the new value will replace the old value.
 
     @method set
-    @param {anything} key
-    @param {anything} value
+    @param {*} key
+    @param {*} value
   */
   set: function(key, value) {
     var keys = this.keys,
@@ -239,7 +239,7 @@ Map.prototype = {
     Removes a value from the map for an associated key.
 
     @method remove
-    @param {anything} key
+    @param {*} key
     @return {Boolean} true if an item was removed, false otherwise
   */
   remove: function(key) {
@@ -264,7 +264,7 @@ Map.prototype = {
     Check whether a key is present.
 
     @method has
-    @param {anything} key
+    @param {*} key
     @return {Boolean} true if the item was present, false otherwise
   */
   has: function(key) {
@@ -282,7 +282,7 @@ Map.prototype = {
 
     @method forEach
     @param {Function} callback
-    @param {anything} self if passed, the `this` value inside the
+    @param {*} self if passed, the `this` value inside the
       callback. By default, `this` is the map.
   */
   forEach: function(callback, self) {
@@ -311,7 +311,7 @@ Map.prototype = {
   @private
   @constructor
   @param [options]
-    @param {anything} [options.defaultValue]
+    @param {*} [options.defaultValue]
 */
 var MapWithDefault = Ember.MapWithDefault = function(options) {
   Map.call(this);
@@ -322,7 +322,7 @@ var MapWithDefault = Ember.MapWithDefault = function(options) {
   @method create
   @static
   @param [options]
-    @param {anything} [options.defaultValue]
+    @param {*} [options.defaultValue]
   @return {Ember.MapWithDefault|Ember.Map} If options are passed, returns
     `Ember.MapWithDefault` otherwise returns `Ember.Map`
 */
@@ -340,8 +340,8 @@ MapWithDefault.prototype = Ember.create(Map.prototype);
   Retrieve the value associated with a given key.
 
   @method get
-  @param {anything} key
-  @return {anything} the value associated with the key, or the default value
+  @param {*} key
+  @return {*} the value associated with the key, or the default value
 */
 MapWithDefault.prototype.get = function(key) {
   var hasValue = this.has(key);
