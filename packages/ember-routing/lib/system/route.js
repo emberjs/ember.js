@@ -532,6 +532,10 @@ function appendView(route, view, options) {
     parentView.connectOutlet(options.outlet, view);
   } else {
     var rootElement = get(route, 'router.namespace.rootElement');
+    // tear down view if one is already rendered
+    if (route.teardownView) {
+      route.teardownView();
+    }
     route.router._connectActiveView(options.name, view);
     route.teardownView = teardownTopLevel(view);
     view.appendTo(rootElement);
