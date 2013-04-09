@@ -346,6 +346,7 @@ var Application = Ember.Application = Ember.Namespace.extend(Ember.DeferredMixin
   */
   advanceReadiness: function() {
     this._readinessDeferrals--;
+    Ember.assert('_readinessDeferrals is ' + this._readinessDeferrals + ' (must be >= 0); was advanceReadiness() called without a matching deferReadiness()?', this._readinessDeferrals >= 0);
 
     if (this._readinessDeferrals === 0) {
       Ember.run.once(this, this.didBecomeReady);
