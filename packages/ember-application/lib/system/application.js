@@ -446,6 +446,9 @@ var Application = Ember.Application = Ember.Namespace.extend(Ember.DeferredMixin
     get(this, '__container__').destroy();
     this.buildContainer();
 
+    this._readinessDeferrals = 1;
+    this.$(this.rootElement).removeClass('ember-application');
+
     Ember.run.schedule('actions', this, function(){
       this._initialize();
       this.startRouting();
