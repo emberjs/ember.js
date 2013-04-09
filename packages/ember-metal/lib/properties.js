@@ -88,7 +88,7 @@ var DEFAULT_GETTER_FUNCTION = Ember.DEFAULT_GETTER_FUNCTION = function(name) {
   @param {Ember.Descriptor} [desc] an instance of `Ember.Descriptor` (typically a
     computed property) or an ES5 descriptor.
     You must provide this or `data` but not both.
-  @param {anything} [data] something other than a descriptor, that will
+  @param {*} [data] something other than a descriptor, that will
     become the explicit value of this property.
 */
 Ember.defineProperty = function(obj, keyName, desc, data, meta) {

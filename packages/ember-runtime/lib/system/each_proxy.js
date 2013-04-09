@@ -100,7 +100,7 @@ Ember.EachProxy = Ember.Object.extend({
 
     @method unknownProperty
     @param keyName {String}
-    @param value {anything}
+    @param value {*}
   */
   unknownProperty: function(keyName, value) {
     var ret;
