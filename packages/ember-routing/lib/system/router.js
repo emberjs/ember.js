@@ -33,7 +33,7 @@ function setupLocation(router) {
   @namespace Ember
   @extends Ember.Object
 */
-Ember.Router = Ember.Object.extend({
+Ember.Router = Ember.Object.extend(Ember.Filters, {
   location: 'hash',
 
   init: function() {
@@ -47,6 +47,8 @@ Ember.Router = Ember.Object.extend({
   }),
 
   startRouting: function() {
+    this.fbefore('startRouting', this, arguments);
+
     this.router = this.router || this.constructor.map(Ember.K);
 
     var router = this.router,
@@ -67,6 +69,8 @@ Ember.Router = Ember.Object.extend({
   },
 
   didTransition: function(infos) {
+    this.fbefore('didTransition', this, arguments);
+
     // Don't do any further action here if we redirected
     for (var i=0, l=infos.length; i<l; i++) {
       if (infos[i].handler.redirected) { return; }
@@ -84,26 +88,36 @@ Ember.Router = Ember.Object.extend({
   },
 
   handleURL: function(url) {
+    this.fbefore('handleURL', this, arguments);
+
     this.router.handleURL(url);
     this.notifyPropertyChange('url');
   },
 
   transitionTo: function(name) {
+    this.fbefore('transitionTo', this, arguments);
+
     var args = [].slice.call(arguments);
     doTransition(this, 'transitionTo', args);
   },
 
   replaceWith: function() {
+    this.fbefore('replaceWith', this, arguments);
+
     var args = [].slice.call(arguments);
     doTransition(this, 'replaceWith', args);
   },
 
   generate: function() {
+    this.fbefore('generate', this, arguments);
+
     var url = this.router.generate.apply(this.router, arguments);
     return this.location.formatURL(url);
   },
 
   isActive: function(routeName) {
+    this.fbefore('isActive', this, arguments);
+
     var router = this.router;
     return router.isActive.apply(router, arguments);
   },

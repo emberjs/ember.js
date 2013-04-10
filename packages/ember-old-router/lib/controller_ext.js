@@ -11,7 +11,7 @@ Additional methods for the ControllerMixin
 @class ControllerMixin
 @namespace Ember
 */
-Ember.ControllerMixin.reopen({
+Ember.ControllerMixin.reopen(Ember.Filters, {
   controllers: null,
 
   /**
@@ -115,6 +115,8 @@ Ember.ControllerMixin.reopen({
     //     controller's `content` and thus the
     //     template's context.
 
+    this.fbefore('connectOutlet', arguments);
+
     var outletName, viewClass, view, controller, options;
 
     if (Ember.typeOf(context) === 'string') {
@@ -179,6 +181,8 @@ Ember.ControllerMixin.reopen({
     @param {String...} controllerNames the controllers to make available
   */
   connectControllers: function() {
+    this.fbefore('connectControllers', this, arguments);
+
     var controllers = get(this, 'controllers'),
         controllerNames = Array.prototype.slice.apply(arguments),
         controllerName;
@@ -196,6 +200,8 @@ Ember.ControllerMixin.reopen({
     @param  {String} outletName the outlet name. (optional)
    */
   disconnectOutlet: function(outletName) {
+    this.fbefore('disconnectOutlet', this, arguments);
+    
     outletName = outletName || 'view';
 
     set(this, outletName, null);
