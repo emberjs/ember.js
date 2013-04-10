@@ -4,7 +4,8 @@
 */
 
 var get = Ember.get, set = Ember.set,
-    classify = Ember.String.classify;
+    classify = Ember.String.classify,
+    fmt = Ember.String.fmt;
 
 /**
   The `Ember.Route` class is used to define individual routes. Refer to
@@ -471,7 +472,7 @@ function parentTemplate(route, isRecursive) {
 
   if (!parent) { return; }
 
-  Ember.warn("The immediate parent route ('%@') did not render into the main outlet and the default 'into' option ('%@') may not be expected".fmt(get(parent, 'routeName'), get(route, 'routeName')), !isRecursive);
+  Ember.warn(fmt("The immediate parent route ('%@') did not render into the main outlet and the default 'into' option ('%@') may not be expected", get(parent, 'routeName'), get(route, 'routeName')), !isRecursive);
 
   if (template = parent.lastRenderedTemplate) {
     return template;
