@@ -247,12 +247,10 @@ Map.prototype = {
     // to use in browsers that are not ES6 friendly;
     var keys = this.keys,
         values = this.values,
-        guid = guidFor(key),
-        value;
+        guid = guidFor(key);
 
     if (values.hasOwnProperty(guid)) {
       keys.remove(key);
-      value = values[guid];
       delete values[guid];
       return true;
     } else {
