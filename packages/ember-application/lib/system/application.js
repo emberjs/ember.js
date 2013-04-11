@@ -442,7 +442,15 @@ var Application = Ember.Application = Ember.Namespace.extend(Ember.DeferredMixin
     return this;
   },
 
-  reset: function() {
+  /**
+   * Reset the application by destroying the main container and rebuilding
+   * the application.
+   *
+   * @returns {Ember.RSVP.Promise} which you can wait on until the reset
+   *                               has completed.
+   */
+  reset: function(){
+    this.set('promise', new Ember.RSVP.Promise());
     get(this, '__container__').destroy();
     this.buildContainer();
 
@@ -450,6 +458,8 @@ var Application = Ember.Application = Ember.Namespace.extend(Ember.DeferredMixin
       this._initialize();
       this.startRouting();
     });
+    
+    return this;
   },
 
   /**

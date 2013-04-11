@@ -18,6 +18,18 @@ module("Ember.Application - resetting", {
   }
 });
 
+test("When an application is reset, a new promise is created", function() {
+  Ember.run(function() {
+    application = Application.create();
+  });
+  var promise1 = get(application, 'promise');
+  Ember.run(function(){
+    application.reset();
+  });
+  var promise2 = get(application, 'promise');
+  notStrictEqual(promise1, promise2, "application reset replaces the existing promise with a new promise");
+});
+
 test("When an application is reset, new instances of controllers are generated", function() {
   Ember.run(function() {
     application = Application.create();
