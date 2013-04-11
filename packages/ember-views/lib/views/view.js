@@ -2036,7 +2036,7 @@ Ember.View = Ember.CoreView.extend(
 
     // remove from non-virtual parent view if viewName was specified
     if (viewName && nonVirtualParentView) {
-      nonVirtualParentView[viewName] = null;
+      nonVirtualParentView.set(viewName, null);
     }
 
     childLen = childViews.length;
