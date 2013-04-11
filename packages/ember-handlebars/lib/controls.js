@@ -36,7 +36,7 @@ Ember.Handlebars.registerHelper('input', function(options) {
 });
 
 Ember.Handlebars.registerHelper('textarea', function(options) {
-  Ember.assert('You can only pass attributes to the `input` helper, not arguments', arguments.length < 2);
+  Ember.assert('You can only pass attributes to the `textarea` helper, not arguments', arguments.length < 2);
 
   var hash = options.hash,
       types = options.hashTypes;
