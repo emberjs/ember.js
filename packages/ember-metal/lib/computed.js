@@ -118,8 +118,11 @@ ComputedProperty.prototype = new Ember.Descriptor();
 var ComputedPropertyPrototype = ComputedProperty.prototype;
 
 /**
-  Call on a computed property with `false` flag to set it into non-cached mode. When in this
-  mode the computed property will not automatically cache the return value.
+  Properties are cacheable by default. Computed property will automatically
+  cache the return value of your function until one of the dependent keys changes.
+
+  Call ```volatile()``` to set it into non-cached mode. When in this mode
+  the computed property will not automatically cache the return value.
 
   ```javascript
   MyApp.President = Ember.Object.extend({
@@ -128,11 +131,9 @@ var ComputedPropertyPrototype = ComputedProperty.prototype;
 
       // Ember will execute this function without caching the
       // return value.
-    }.property('firstName', 'lastName').cacheable(false)
+    }.property('firstName', 'lastName').volatile()
   });
   ```
-
-  Properties are cacheable by default.
 
   @method cacheable
   @param {Boolean} aFlag optional set to `false` to disable caching
