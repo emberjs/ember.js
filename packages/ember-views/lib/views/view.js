@@ -127,7 +127,7 @@ Ember.CoreView = Ember.Object.extend(Ember.Evented, {
     // insert a new buffer after the "parent buffer").
     var tagName = this.tagName;
 
-    if (tagName === null || tagName === undefined) {
+    if (Ember.isNone(tagName)) {
       tagName = 'div';
     }
 
