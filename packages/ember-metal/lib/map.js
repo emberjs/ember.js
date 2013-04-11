@@ -141,7 +141,7 @@ OrderedSet.prototype = {
   */
   forEach: function(fn, self) {
     // allow mutation during iteration
-    var list = this.list.slice();
+    var list = this.toArray();
 
     for (var i = 0, j = list.length; i < j; i++) {
       fn.call(self, list[i]);
@@ -164,7 +164,7 @@ OrderedSet.prototype = {
     var set = new OrderedSet();
 
     set.presenceSet = copy(this.presenceSet);
-    set.list = this.list.slice();
+    set.list = this.toArray();
 
     return set;
   }
