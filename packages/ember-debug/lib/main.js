@@ -143,3 +143,51 @@ Ember.deprecateFunc = function(message, func) {
     return func.apply(this, arguments);
   };
 };
+
+
+/**
+  Throw a useful exception if an attempt to call `DS` related
+  methods was made.  This should be completely
+  overriden by ember-data when included.
+**/
+
+if ('undefined' !== typeof window) {
+    // wrap in try in case defineProperty is not supported
+    try {
+      var errorMessage = "DS is part of Ember Data which is currently not included. You can find it at: http://builds.emberjs.com/ember-data-latest.js";
+
+      // only define if we can redefine later (Android < 3.2 can't redefine)
+      var obj = {};
+
+      Object.defineProperty(obj, 'a', {
+        configurable: true,
+        enumerable: true,
+        get: function() { },
+        set: function() { }
+      });
+
+      Object.defineProperty(obj, 'a', {
+        configurable: true,
+        enumerable: true,
+        writable: true,
+        value: true
+      });
+
+      if (obj.a === true) {
+        Object.defineProperty(window, 'DS', {
+          configurable: true,
+          get : function(){ Ember.assert(errorMessage); },
+          set : function(newVal){
+            Object.defineProperty(window, 'DS', {
+              value: newVal,
+              writable: true,
+              configurable: true,
+              enumerable: true
+            });
+          }
+        });
+      }
+
+    }
+    catch(e) { }
+  }
