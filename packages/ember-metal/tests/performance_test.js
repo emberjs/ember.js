@@ -16,6 +16,10 @@ test("computed properties that depend on multiple properties should run only onc
     return 'computed '+key;
   }).property('a', 'b', 'c'));
 
+  Ember.get(obj, 'abc');
+
+  cpCount = 0;
+
   Ember.addObserver(obj, 'abc', function() {
     obsCount++;
   });

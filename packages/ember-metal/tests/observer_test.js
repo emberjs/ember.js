@@ -28,6 +28,8 @@ testBoth('observer should fire when dependent property is modified', function(ge
     return get(this,'bar').toUpperCase();
   }).property('bar'));
 
+  get(obj, 'foo');
+
   var count = 0;
   Ember.addObserver(obj, 'foo', function() {
     equal(get(obj, 'foo'), 'BAZ', 'should have invoked after prop change');
@@ -471,6 +473,8 @@ testBoth('observer should fire before dependent property is modified', function(
     return get(this,'bar').toUpperCase();
   }).property('bar'));
 
+  get(obj, 'foo');
+
   var count = 0;
   Ember.addBeforeObserver(obj, 'foo', function() {
     equal(get(obj, 'foo'), 'BAR', 'should have invoked after prop change');
@@ -573,6 +577,24 @@ module('Ember.addObserver - dependentkey with chained properties', {
     obj = count = null;
     Ember.lookup = originalLookup;
   }
+});
+
+
+testBoth('depending on a chain with a computed property', function (get, set){
+  Ember.defineProperty(obj, 'computed', Ember.computed(function () {
+    return {foo: 'bar'};
+  }));
+
+  var changed = 0;
+  Ember.addObserver(obj, 'computed.foo', function () {
+    changed++;
+  });
+
+  equal(undefined, Ember.cacheFor(obj, 'computed'), 'addObserver should not compute CP');
+
+  set(obj, 'computed.foo', 'baz');
+
+  equal(changed, 1, 'should fire observer');
 });
 
 testBoth('depending on a simple chain', function(get, set) {
