@@ -1464,6 +1464,39 @@ test("Router accounts for rootURL on page load when using history location", fun
   delete Ember.Location.implementations['historyTest'];
 });
 
+test("HistoryLocation has the correct rootURL on initState and webkit doesn't fire popstate on page load", function() {
+  expect(2);
+  var rootURL = window.location.pathname + 'app',
+      history,
+      HistoryTestLocation;
+
+  history = { replaceState: function() {} };
+
+  HistoryTestLocation = Ember.HistoryLocation.extend({
+    history: history,
+    initState: function() {
+      equal(this.get('rootURL'), rootURL);
+      this._super();
+      // these two should be equal to be able
+      // to successfully detect webkit initial popstate
+      equal(this._previousURL, this.getURL());
+    }
+  });
+
+  Ember.Location.registerImplementation('historyTest', HistoryTestLocation);
+
+  Router.reopen({
+    location: 'historyTest',
+    rootURL: rootURL
+  });
+
+  bootApplication();
+
+  // clean after test
+  delete Ember.Location.implementations['historyTest'];
+});
+
+
 test("Only use route rendered into main outlet for default into property on child", function() {
   Ember.TEMPLATES.application = compile("{{outlet menu}}{{outlet}}");
   Ember.TEMPLATES.posts = compile("{{outlet}}");
