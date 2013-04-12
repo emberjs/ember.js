@@ -76,6 +76,41 @@ var setInnerHTMLWithoutFix = function(element, html) {
   }
 };
 
+/**
+ * This code is mostly taken from jQuery, with one exception. In jQuery's case, we
+ * have some HTML and we need to figure out how to convert it into some nodes.
+ *
+ * In this case, jQuery needs to scan the HTML looking for an opening tag and use
+ * that as the key for the wrap map. In our case, we know the parent node, and
+ * can use its type as the key for the wrap map.
+ **/
+var wrapMap = {
+  select: [ 1, "<select multiple='multiple'>", "</select>", "<option>testing</option>" ],
+  fieldset: [ 1, "<fieldset>", "</fieldset>", "<legend>testing</legend>" ],
+  table: [ 1, "<table>", "</table>", "<tbody><tr><td>testing</td></tr></tbody>" ],
+  thead: [ 2, "<table><thead>", "</thead></table>", "<tr><th>testing</th></tr>" ],
+  tfoot: [ 2, "<table><tfoot>", "</tfoot></table>", "<tr><td>testing</td></tr>" ],
+  tbody: [ 2, "<table><tbody>", "</tbody></table>", "<tr><td>testing</td></tr>" ],
+  tr: [ 3, "<table><tbody><tr>", "</tr></tbody></table>", "<td>testing</td>" ],
+  colgroup: [ 2, "<table><tbody></tbody><colgroup>", "</colgroup></table>", "<col>" ],
+  map: [ 1, "<map>", "</map>", "<area>" ]
+};
+
+/**
+ * Given a parent node and some HTML, generate a set of nodes. Return the first
+ * node, which will allow us to traverse the rest using nextSibling.
+ *
+ * We need to do this because innerHTML in IE does not really parse the nodes.
+ **/
+var firstNodeFor = function(parentNode, html) {
+  var arr = wrapMap[parentNode.tagName.toLowerCase()] || wrapMap._default;
+  var depth = arr[0], start = arr[1], end = arr[2];
+  var element = document.createElement('div');
+  setInnerHTMLWithoutFix(element, start + html + end);
+  element = element.getElementsByTagName(parentNode.tagName)[0].firstChild;
+  return element;
+};
+
 /*** END METAMORPH HELPERS */
 
 
@@ -85,13 +120,20 @@ var canSetInnerHTML = function(tagName) {
     return innerHTMLTags[tagName];
   }
 
+  var tagNameLowerCase = tagName.toLowerCase();
   var canSet = true;
 
-  // IE 8 and earlier don't allow us to do innerHTML on select
-  if (tagName.toLowerCase() === 'select') {
-    var el = document.createElement('select');
-    setInnerHTMLWithoutFix(el, '<option value="test">Test</option>');
-    canSet = el.options.length === 1;
+  if (wrapMap[tagNameLowerCase] !== undefined) {
+    var arr = wrapMap[tagNameLowerCase];
+    var testHTML = arr[3];
+    var testEl = document.createElement(tagName);
+    try {
+      setInnerHTMLWithoutFix(testEl, testHTML);
+    } catch (e) {
+      canSet = false;
+    }
+
+    canSet = canSet ? testEl.innerHTML === testHTML: false;
   }
 
   innerHTMLTags[tagName] = canSet;
@@ -101,22 +143,20 @@ var canSetInnerHTML = function(tagName) {
 
 var setInnerHTML = function(element, html) {
   var tagName = element.tagName;
+  var node, nextSibling;
 
   if (canSetInnerHTML(tagName)) {
     setInnerHTMLWithoutFix(element, html);
   } else {
-    // Firefox versions < 11 do not have support for element.outerHTML.
-    var outerHTML = element.outerHTML || new XMLSerializer().serializeToString(element);
-    Ember.assert("Can't set innerHTML on "+element.tagName+" in this browser", outerHTML);
+    // get the first node for the HTML string, even in cases like
+    // tables and lists where a simple innerHTML on a div would
+    // swallow some of the content.
+    node = firstNodeFor(element, html);
 
-    var startTag = outerHTML.match(new RegExp("<"+tagName+"([^>]*)>", 'i'))[0],
-        endTag = '</'+tagName+'>';
-
-    var wrapper = document.createElement('div');
-    setInnerHTMLWithoutFix(wrapper, startTag + html + endTag);
-    element = wrapper.firstChild;
-    while (element.tagName !== tagName) {
-      element = element.nextSibling;
+    while (node) {
+      nextSibling = node.nextSibling;
+      element.appendChild(node);
+      node = nextSibling;
     }
   }
 
