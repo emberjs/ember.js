@@ -12,16 +12,17 @@ require("ember-routing/system/dsl");
 
 function setupLocation(router) {
   var location = get(router, 'location'),
-      rootURL = get(router, 'rootURL');
+      rootURL = get(router, 'rootURL'),
+      options = {};
+
+  if (typeof rootURL === 'string') {
+    options.rootURL = rootURL;
+  }
 
   if ('string' === typeof location) {
-    location = set(router, 'location', Ember.Location.create({
-      implementation: location
-    }));
+    options.implementation = location;
+    location = set(router, 'location', Ember.Location.create(options));
 
-    if (typeof rootURL === 'string') {
-      set(location, 'rootURL', rootURL);
-    }
   }
 }
 

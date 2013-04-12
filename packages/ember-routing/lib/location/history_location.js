@@ -18,7 +18,6 @@ Ember.HistoryLocation = Ember.Object.extend({
 
   init: function() {
     set(this, 'location', get(this, 'location') || window.location);
-    this._initialUrl = this.getURL();
     this.initState();
   },
 
@@ -30,8 +29,8 @@ Ember.HistoryLocation = Ember.Object.extend({
     @method initState
   */
   initState: function() {
+    set(this, 'history', get(this, 'history') || window.history);
     this.replaceState(this.formatURL(this.getURL()));
-    set(this, 'history', window.history);
   },
 
   /**
@@ -112,7 +111,9 @@ Ember.HistoryLocation = Ember.Object.extend({
    @param path {String}
   */
   pushState: function(path) {
-    window.history.pushState({ path: path }, null, path);
+    get(this, 'history').pushState({ path: path }, null, path);
+    // used for webkit workaround
+    this._previousURL = this.getURL();
   },
 
   /**
@@ -124,7 +125,9 @@ Ember.HistoryLocation = Ember.Object.extend({
    @param path {String}
   */
   replaceState: function(path) {
-    window.history.replaceState({ path: path }, null, path);
+    get(this, 'history').replaceState({ path: path }, null, path);
+    // used for webkit workaround
+    this._previousURL = this.getURL();
   },
 
   /**
@@ -144,7 +147,7 @@ Ember.HistoryLocation = Ember.Object.extend({
       // Ignore initial page load popstate event in Chrome
       if(!popstateFired) {
         popstateFired = true;
-        if (self.formatURL(self.getURL()) === self._initialUrl) { return; }
+        if (self.getURL() === self._previousURL) { return; }
       }
       callback(self.getURL());
     });
