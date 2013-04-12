@@ -15,13 +15,14 @@ var get = Ember.get, set = Ember.set,
   @namespace Ember
   @extends Ember.Object
 */
-Ember.Route = Ember.Object.extend({
+Ember.Route = Ember.Object.extend(Ember.Filters, {
   /**
     @private
 
     @method exit
   */
   exit: function() {
+    this.fbefore('exit', this);
     this.deactivate();
     teardownView(this);
   },
@@ -32,6 +33,7 @@ Ember.Route = Ember.Object.extend({
     @method enter
   */
   enter: function() {
+    this.fbefore('enter', this);
     this.activate();
   },
 
@@ -81,6 +83,7 @@ Ember.Route = Ember.Object.extend({
     @param {...Object} models the
   */
   transitionTo: function() {
+    this.fbefore('transitionTo', this, arguments);
     if (this._checkingRedirect) { this.redirected = true; }
     return this.router.transitionTo.apply(this.router, arguments);
   },
@@ -94,6 +97,7 @@ Ember.Route = Ember.Object.extend({
     @param {...Object} models the
   */
   replaceWith: function() {
+    this.fbefore('replaceWith', this, arguments);
     if (this._checkingRedirect) { this.redirected = true; }
     return this.router.replaceWith.apply(this.router, arguments);
   },
@@ -110,6 +114,8 @@ Ember.Route = Ember.Object.extend({
     @method setup
   */
   setup: function(context) {
+    this.fbefore('setup', this, arguments);
+
     this.redirected = false;
     this._checkingRedirect = true;
 
@@ -142,6 +148,8 @@ Ember.Route = Ember.Object.extend({
     } else {
       this.renderTemplate(controller, context);
     }
+    
+    this.fafter('setup', this, arguments);
   },
 
   /**
@@ -164,6 +172,8 @@ Ember.Route = Ember.Object.extend({
     @method deserialize
   */
   deserialize: function(params) {
+    this.fbefore('deserialize', this, arguments);
+
     var model = this.model(params);
     return this.currentModel = model;
   },
@@ -174,6 +184,8 @@ Ember.Route = Ember.Object.extend({
     Called when the context is changed by router.js.
   */
   contextDidChange: function() {
+    this.fbefore('contextDidChange', this, arguments);
+
     this.currentModel = this.context;
   },
 
@@ -207,6 +219,8 @@ Ember.Route = Ember.Object.extend({
     @param {Object} params the parameters extracted from the URL
   */
   model: function(params) {
+    this.fbefore('model', this, arguments);
+
     var match, name, sawParams, value;
 
     for (var prop in params) {
@@ -263,6 +277,8 @@ Ember.Route = Ember.Object.extend({
     @return {Object} the serialized parameters
   */
   serialize: function(model, params) {
+    this.fbefore('serialize', this, arguments);
+
     if (params.length !== 1) { return; }
 
     var name = params[0], object = {};
@@ -328,6 +344,8 @@ Ember.Route = Ember.Object.extend({
     @return {Ember.Controller}
   */
   controllerFor: function(name, model) {
+    this.fbefore('controllerFor', this, arguments);
+
     var container = this.router.container,
         controller = container.lookup('controller:' + name);
 
@@ -353,6 +371,8 @@ Ember.Route = Ember.Object.extend({
     @return {Object} the model object
   */
   modelFor: function(name) {
+    this.fbefore('modelFor', this, arguments);
+
     var route = this.container.lookup('route:' + name);
     return route && route.currentModel;
   },
@@ -372,6 +392,8 @@ Ember.Route = Ember.Object.extend({
     @param {Object} model the route's model
   */
   renderTemplate: function(controller, model) {
+    this.fbefore('renderTemplate', this, arguments);
+
     this.render();
   },
 
@@ -427,6 +449,8 @@ Ember.Route = Ember.Object.extend({
     @param {Object} options the options
   */
   render: function(name, options) {
+    this.fbefore('render', this, arguments);
+
     Ember.assert("The name in the given arguments is undefined", arguments.length > 0 ? !Ember.isNone(arguments[0]) : true);
 
     if (typeof name === 'object' && !options) {

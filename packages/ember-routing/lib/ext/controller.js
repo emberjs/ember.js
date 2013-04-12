@@ -5,8 +5,10 @@
 
 var get = Ember.get, set = Ember.set;
 
-Ember.ControllerMixin.reopen({
+Ember.ControllerMixin.reopen(Ember.Filters, {
   transitionToRoute: function() {
+    this.fbefore('transitionToRoute', this);
+
     // target may be either another controller or a router
     var target = get(this, 'target'),
         method = target.transitionToRoute || target.transitionTo;
@@ -19,6 +21,8 @@ Ember.ControllerMixin.reopen({
   },
 
   replaceRoute: function() {
+    this.fbefore('replaceRoute', this, arguments);
+    
     // target may be either another controller or a router
     var target = get(this, 'target'),
         method = target.replaceRoute || target.replaceWith;
@@ -30,3 +34,5 @@ Ember.ControllerMixin.reopen({
     return this.replaceRoute.apply(this, arguments);
   }
 });
+
+
