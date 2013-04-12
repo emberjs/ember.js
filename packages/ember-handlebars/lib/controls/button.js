@@ -22,7 +22,7 @@ Ember.Button = Ember.View.extend(Ember.TargetActionSupport, {
 
   propagateEvents: false,
 
-  attributeBindings: ['type', 'disabled', 'href', 'tabindex'],
+  attributeBindings: ['type', 'disabled', 'href', 'tabindex', 'hidden', 'style'],
 
   /**
     @private

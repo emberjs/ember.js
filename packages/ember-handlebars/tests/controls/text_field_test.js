@@ -266,6 +266,24 @@ test("input type is configurable when creating view", function() {
   equal(textField.$().attr('type'), 'password', "renders text field with type");
 });
 
+test("input hidden is configurable when creating view", function() {
+  Ember.run(function() {
+    set(textField, 'hidden', 'hidden');
+    textField.append();
+  });
+
+  equal(textField.$().attr('hidden'), 'hidden', "renders text field with the hidden attribute");
+});
+
+test("input style is configurable when creating view", function() {
+  Ember.run(function() {
+    set(textField, 'style', 'display: none');
+    textField.append();
+  });
+
+  equal(textField.$().attr('style'), 'display: none', "renders text field with the style attribute");
+});
+
 test("value binding works properly for inputs that haven't been created", function() {
 
   Ember.run(function() {
