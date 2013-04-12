@@ -13,7 +13,7 @@ var guidFor = Ember.guidFor,
       keyName: keyName,
       eventName: eventName,
       listeners: [
-        [target, method, onceFlag, suspendedFlag]
+        [target, method, flags]
       ]
     },
     ...

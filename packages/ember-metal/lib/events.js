@@ -8,7 +8,9 @@ require('ember-metal/utils');
 
 var o_create = Ember.create,
     metaFor = Ember.meta,
-    META_KEY = Ember.META_KEY;
+    META_KEY = Ember.META_KEY,
+    /* listener flags */
+    ONCE = 1, SUSPENDED = 2, IMMEDIATE = 4;
 
 /*
   The event system uses a series of nested hashes to store listeners on an
@@ -21,7 +23,7 @@ var o_create = Ember.create,
       {
         listeners: {       // variable name: `listenerSet`
           "foo:changed": [ // variable name: `actions`
-            [target, method, onceFlag, suspendedFlag]
+            [target, method, flags]
           ]
         }
       }
@@ -67,12 +69,11 @@ function actionsUnion(obj, eventName, otherActions) {
   for (var i = actions.length - 1; i >= 0; i--) {
     var target = actions[i][0],
         method = actions[i][1],
-        once = actions[i][2],
-        suspended = actions[i][3],
+        flags = actions[i][2],
         actionIndex = indexOf(otherActions, target, method);
 
     if (actionIndex === -1) {
-      otherActions.push([target, method, once, suspended]);
+      otherActions.push([target, method, flags]);
     }
   }
 }
@@ -86,14 +87,13 @@ function actionsDiff(obj, eventName, otherActions) {
   for (var i = actions.length - 1; i >= 0; i--) {
     var target = actions[i][0],
         method = actions[i][1],
-        once = actions[i][2],
-        suspended = actions[i][3],
+        flags = actions[i][2],
         actionIndex = indexOf(otherActions, target, method);
 
     if (actionIndex !== -1) { continue; }
 
-    otherActions.push([target, method, once, suspended]);
-    diffActions.push([target, method, once, suspended]);
+    otherActions.push([target, method, flags]);
+    diffActions.push([target, method, flags]);
   }
 
   return diffActions;
@@ -119,11 +119,14 @@ function addListener(obj, eventName, target, method, once) {
   }
 
   var actions = actionsFor(obj, eventName),
-      actionIndex = indexOf(actions, target, method);
+      actionIndex = indexOf(actions, target, method),
+      flags = 0;
+
+  if (once) flags |= ONCE;
 
   if (actionIndex !== -1) { return; }
 
-  actions.push([target, method, once, undefined]);
+  actions.push([target, method, flags]);
 
   if ('function' === typeof obj.didAddListener) {
     obj.didAddListener(eventName, target, method);
@@ -150,7 +153,7 @@ function removeListener(obj, eventName, target, method) {
     target = null;
   }
 
-  function _removeListener(target, method, once) {
+  function _removeListener(target, method) {
     var actions = actionsFor(obj, eventName),
         actionIndex = indexOf(actions, target, method);
 
@@ -207,12 +210,12 @@ function suspendListener(obj, eventName, target, method, callback) {
 
   if (actionIndex !== -1) {
     action = actions[actionIndex].slice(); // copy it, otherwise we're modifying a shared object
-    action[3] = true; // mark the action as suspended
+    action[2] |= SUSPENDED; // mark the action as suspended
     actions[actionIndex] = action; // replace the shared object with our copy
   }
 
   function tryable()   { return callback.call(target); }
-  function finalizer() { if (action) { action[3] = undefined; } }
+  function finalizer() { if (action) { action[2] &= ~SUSPENDED; } }
 
   return Ember.tryFinally(tryable, finalizer);
 }
@@ -251,7 +254,7 @@ function suspendListeners(obj, eventNames, target, method, callback) {
 
     if (actionIndex !== -1) {
       action = actions[actionIndex].slice();
-      action[3] = true;
+      action[2] |= SUSPENDED;
       actions[actionIndex] = action;
       suspendedActions.push(action);
     }
@@ -261,7 +264,7 @@ function suspendListeners(obj, eventNames, target, method, callback) {
 
   function finalizer() {
     for (i = 0, l = suspendedActions.length; i < l; i++) {
-      suspendedActions[i][3] = undefined;
+      suspendedActions[i][2] &= ~SUSPENDED;
     }
   }
 
@@ -311,13 +314,11 @@ function sendEvent(obj, eventName, params, actions) {
   if (!actions) { return; }
 
   for (var i = actions.length - 1; i >= 0; i--) { // looping in reverse for once listeners
-    if (!actions[i] || actions[i][3] === true) { continue; }
-
-    var target = actions[i][0],
-        method = actions[i][1],
-        once = actions[i][2];
-
-    if (once) { removeListener(obj, eventName, target, method); }
+    var action = actions[i];
+    if (!action) { continue; }
+    var target = action[0], method = action[1], flags = action[2];
+    if (flags & SUSPENDED) { continue; }
+    if (flags & ONCE) { removeListener(obj, eventName, target, method); }
     if (!target) { target = obj; }
     if ('string' === typeof method) { method = target[method]; }
     if (params) {
