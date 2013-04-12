@@ -67,10 +67,6 @@ var removeChainWatcher = Ember.removeChainWatcher = function(obj, keyName, node)
   unwatchKey(obj, keyName);
 };
 
-function isProto(pvalue) {
-  return metaFor(pvalue, false).proto === pvalue;
-}
-
 // A ChainNode watches a single key on an object. If you provide a starting
 // value for the key then the node won't actually watch it. For a root node
 // pass null for parent and key and object for value.
@@ -105,10 +101,32 @@ var ChainNode = Ember._ChainNode = function(parent, key, value) {
 
 var ChainNodePrototype = ChainNode.prototype;
 
+function lazyGet(obj, key) {
+  if (!obj) return undefined;
+
+  var meta = metaFor(obj, false);
+  // check if object meant only to be a prototype
+  if (meta.proto === obj) return undefined;
+
+  if (key === "@each") return get(obj, key);
+
+  // if a CP only return cached value
+  var desc = meta.descs[key];
+  if (desc && desc._cacheable) {
+    if (key in meta.cache) {
+      return meta.cache[key];
+    } else {
+      return undefined;
+    }
+  }
+
+  return get(obj, key);
+}
+
 ChainNodePrototype.value = function() {
   if (this._value === undefined && this._watching) {
     var obj = this._parent.value();
-    this._value = (obj && !isProto(obj)) ? get(obj, this._key) : undefined;
+    this._value = lazyGet(obj, this._key);
   }
   return this._value;
 };
