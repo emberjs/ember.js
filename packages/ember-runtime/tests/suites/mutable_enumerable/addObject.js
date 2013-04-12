@@ -19,6 +19,8 @@ suite.test("[A,B].addObject(C) => [A,B,C] + notify", function() {
   after  = [before[0], before[1], item];
   obj = this.newObject(before);
   observer = this.newObserver(obj, '[]', 'length', 'firstObject', 'lastObject');
+  Ember.get(obj, 'firstObject');
+  Ember.get(obj, 'lastObject');
 
   obj.addObject(item);
 

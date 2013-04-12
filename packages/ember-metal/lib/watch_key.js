@@ -10,13 +10,11 @@ Ember.watchKey = function(obj, keyName) {
   // can't watch length on Array - it is special...
   if (keyName === 'length' && typeOf(obj) === 'array') { return; }
 
-  var m = metaFor(obj), watching = m.watching, desc;
+  var m = metaFor(obj), watching = m.watching;
 
   // activate watching first time
   if (!watching[keyName]) {
     watching[keyName] = 1;
-    desc = m.descs[keyName];
-    if (desc && desc.willWatch) { desc.willWatch(obj, keyName); }
 
     if ('function' === typeof obj.willWatchProperty) {
       obj.willWatchProperty(keyName);
@@ -38,13 +36,10 @@ Ember.watchKey = function(obj, keyName) {
 
 
 Ember.unwatchKey = function(obj, keyName) {
-  var m = metaFor(obj), watching = m.watching, desc;
+  var m = metaFor(obj), watching = m.watching;
 
   if (watching[keyName] === 1) {
     watching[keyName] = 0;
-    desc = m.descs[keyName];
-
-    if (desc && desc.didUnwatch) { desc.didUnwatch(obj, keyName); }
 
     if ('function' === typeof obj.didUnwatchProperty) {
       obj.didUnwatchProperty(keyName);
