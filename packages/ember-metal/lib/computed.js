@@ -256,14 +256,23 @@ ComputedPropertyPrototype.didChange = function(obj, keyName) {
   }
 };
 
+function finishChains(chainNodes)
+{
+  for (var i=0, l=chainNodes.length; i<l; i++) {
+    chainNodes[i].didChange(true);
+  }
+}
+
 /* impl descriptor API */
 ComputedPropertyPrototype.get = function(obj, keyName) {
-  var ret, cache, meta;
+  var ret, cache, meta, chainNodes;
   if (this._cacheable) {
     meta = metaFor(obj);
     cache = meta.cache;
     if (keyName in cache) { return cache[keyName]; }
     ret = cache[keyName] = this.func.call(obj, keyName);
+    chainNodes = meta.chainWatchers && meta.chainWatchers[keyName];
+    if (chainNodes) { finishChains(chainNodes); }
     addDependentKeys(this, obj, keyName, meta);
   } else {
     ret = this.func.call(obj, keyName);
