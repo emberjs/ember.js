@@ -362,6 +362,36 @@ test("Ember.SelectedOption knows when it is selected when multiple=false", funct
   deepEqual(selectedOptions(), [false, false, false, true], "After changing it, selection should be correct");
 });
 
+test("Ember.SelectedOption knows when it is selected when content has changed and value is reused", function() {
+  var a = Ember.Object.create({
+    value: 2,
+    choices: Ember.A([{id: 1, label: 'One'}, {id: 2, label: 'Two'}])
+  }),
+  b = Ember.Object.create({
+    value: 2,
+    choices: Ember.A([{id: 1, label: 'First'}, {id: 2, label: 'Second'}])
+  });
+
+  select = Ember.Select.create({
+    target: a,
+    contentBinding: 'target.choices',
+    valueBinding: 'target.value',
+    optionLabelPath: 'content.label',
+    optionValuePath: 'content.id'
+  });
+
+  append();
+
+  deepEqual(selectedOptions(), [false, true], "Initial selection should be correct");
+
+  Ember.run(function() { 
+    select.set('target', b);
+  });
+
+  deepEqual(selectedOptions(), [false, true], "After changing it, selection should be correct");
+});
+
+
 test("Ember.SelectedOption knows when it is selected when multiple=true", function() {
   var yehuda = { id: 1, firstName: 'Yehuda' },
       tom = { id: 2, firstName: 'Tom' },
