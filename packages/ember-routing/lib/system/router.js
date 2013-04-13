@@ -37,15 +37,13 @@ function setupLocation(router) {
 Ember.Router = Ember.Object.extend({
   location: 'hash',
 
+  url: null,
+
   init: function() {
     this.router = this.constructor.router;
     this._activeViews = {};
     setupLocation(this);
   },
-
-  url: Ember.computed(function() {
-    return get(this, 'location').getURL();
-  }),
 
   startRouting: function() {
     this.router = this.router || this.constructor.map(Ember.K);
@@ -77,7 +75,6 @@ Ember.Router = Ember.Object.extend({
         path = routePath(infos);
 
     set(appController, 'currentPath', path);
-    this.notifyPropertyChange('url');
 
     if (get(this, 'namespace').LOG_TRANSITIONS) {
       Ember.Logger.log("Transitioned into '" + path + "'");
@@ -86,7 +83,7 @@ Ember.Router = Ember.Object.extend({
 
   handleURL: function(url) {
     this.router.handleURL(url);
-    this.notifyPropertyChange('url');
+    set(this, 'url', url);
   },
 
   transitionTo: function(name) {
@@ -194,6 +191,7 @@ function setupRouter(emberRouter, router, location) {
 
   var doUpdateURL = function() {
     location.setURL(lastURL);
+    set(emberRouter, 'url', location.getURL());
   };
 
   router.updateURL = function(path) {
@@ -204,6 +202,7 @@ function setupRouter(emberRouter, router, location) {
   if (location.replaceURL) {
     var doReplaceURL = function() {
       location.replaceURL(lastURL);
+      set(emberRouter, 'url', location.getURL());
     };
 
     router.replaceURL = function(path) {
@@ -229,7 +228,6 @@ function doTransition(router, method, args) {
   Ember.assert("The route " + passedName + " was not found", router.router.hasRoute(name));
 
   router.router[method].apply(router.router, args);
-  router.notifyPropertyChange('url');
 }
 
 Ember.Router.reopenClass({

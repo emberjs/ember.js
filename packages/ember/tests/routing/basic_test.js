@@ -956,17 +956,47 @@ test('navigating away triggers a url property change', function() {
   Ember.run(function() {
     router.handleURL("/");
   });
+  equal(urlPropertyChangeCount, 1, 'triggered a single url property change');
 
-  equal(urlPropertyChangeCount, 2);
+  // Trigger the callback that would otherwise be triggered
+  // when a user clicks the back or forward button.
+  Ember.run(function() {
+    router.router.transitionTo('foo');
+  });
+  equal(urlPropertyChangeCount, 2, 'triggered url property change');
 
   Ember.run(function() {
-    // Trigger the callback that would otherwise be triggered
-    // when a user clicks the back or forward button.
-    router.router.transitionTo('foo');
+    router.router.transitionTo('bar');
+  });
+  equal(urlPropertyChangeCount, 3, 'triggered url property change');
+});
+
+test('the url property should be the current location url', function() {
+  Router.map(function() {
+    this.route('root', { path: '/' });
+    this.route('foo', { path: '/foo' });
+    this.route('bar', { path: '/bar-baz' });
+  });
+
+  bootApplication();
+
+  Ember.run(function() {
+    router.handleURL("/");
+  });
+
+  equal(get(router, 'url'), '/');
+
+  Ember.run(function() {
+    router.handleURL("/foo");
+  });
+
+  equal(get(router, 'url'), '/foo');
+
+  Ember.run(function() {
     router.router.transitionTo('bar');
   });
 
-  equal(urlPropertyChangeCount, 4, 'triggered url property change');
+  equal(get(router, 'url'), '/bar-baz');
 });
 
 
