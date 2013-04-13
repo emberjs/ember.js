@@ -419,7 +419,7 @@ EmberHandlebars.registerHelper('unless', function(context, options) {
   Results in the following rendered output:
 
   ```html
-  <img class=":class-name-to-always-apply">
+  <img class="class-name-to-always-apply">
   ```
 
   All three strategies - string return value, boolean return value, and
