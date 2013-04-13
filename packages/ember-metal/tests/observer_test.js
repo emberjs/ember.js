@@ -579,6 +579,24 @@ module('Ember.addObserver - dependentkey with chained properties', {
   }
 });
 
+
+testBoth('depending on a chain with a computed property', function (get, set){
+  Ember.defineProperty(obj, 'computed', Ember.computed(function () {
+    return {foo: 'bar'};
+  }));
+
+  var changed = 0;
+  Ember.addObserver(obj, 'computed.foo', function () {
+    changed++;
+  });
+
+  equal(undefined, Ember.cacheFor(obj, 'computed'), 'addObserver should not compute CP');
+
+  set(obj, 'computed.foo', 'baz');
+
+  equal(changed, 1, 'should fire observer');
+});
+
 testBoth('depending on a simple chain', function(get, set) {
 
   var val ;
