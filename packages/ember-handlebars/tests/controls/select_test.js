@@ -307,6 +307,93 @@ test("multiple selections can be set indirectly via bindings and in-place when m
   deepEqual(select.get('selection'), [cyril], "After updating bound selection, selection should be correct");
 });
 
+test("select with group can groupe options", function() {
+  var content = Ember.A([
+    { firstName: 'Yehuda', organization: 'Tilde' },
+    { firstName: 'Tom', organization: 'Tilde' },
+    { firstName: 'Keith', organization: 'Envato' }
+  ]);
+
+  Ember.run(function() {
+    select.set('content', content),
+    select.set('optionGroupPath', 'organization');
+    select.set('optionLabelPath', 'content.firstName');
+  });
+
+  append();
+
+  equal(select.$('optgroup').length, 2);
+
+  var labels = [];
+  select.$('optgroup').each(function() {
+    labels.push(this.label);
+  });
+  equal(labels.join(''), ['TildeEnvato']);
+
+  equal(select.$('optgroup').first().text().replace(/\s+/g,''), 'YehudaTom');
+  equal(select.$('optgroup').last().text().replace(/\s+/g,''), 'Keith');
+});
+
+test("select with group doesn't break options", function() {
+  var content = Ember.A([
+    { id: 1, firstName: 'Yehuda', organization: 'Tilde' },
+    { id: 2, firstName: 'Tom', organization: 'Tilde' },
+    { id: 3, firstName: 'Keith', organization: 'Envato' }
+  ]);
+
+  Ember.run(function() {
+    select.set('content', content),
+    select.set('optionGroupPath', 'organization');
+    select.set('optionLabelPath', 'content.firstName');
+    select.set('optionValuePath', 'content.id');
+  });
+
+  append();
+
+  equal(select.$('option').length, 3);
+  equal(select.$().text().replace(/\s+/g,''), 'YehudaTomKeith');
+
+  Ember.run(function() {
+    content.set('firstObject.firstName', 'Peter');
+  });
+  equal(select.$().text(), 'PeterTomKeith');
+
+  select.$('option').get(0).selected = true;
+  select.$().trigger('change');
+  deepEqual(select.get('selection'), content.get('firstObject'));
+});
+
+test("select with group observs its content", function() {
+  var wycats = { firstName: 'Yehuda', organization: 'Tilde' };
+  var content = Ember.A([
+    wycats
+  ]);
+
+  Ember.run(function() {
+    select.set('content', content),
+    select.set('optionGroupPath', 'organization');
+    select.set('optionLabelPath', 'content.firstName');
+  });
+
+  append();
+
+  Ember.run(function() {
+    content.pushObject({ firstName: 'Keith', organization: 'Envato' });
+  });
+
+  equal(select.$('optgroup').length, 2);
+  equal(select.$('optgroup[label=Envato]').length, 1);
+
+  Ember.run(function() {
+    select.set('optionGroupPath', 'firstName');
+  });
+  var labels = [];
+  select.$('optgroup').each(function() {
+    labels.push(this.label);
+  });
+  equal(labels.join(''), 'YehudaKeith');
+});
+
 test("selection uses the same array when multiple=true", function() {
   var yehuda = { id: 1, firstName: 'Yehuda' },
       tom = { id: 2, firstName: 'Tom' },
