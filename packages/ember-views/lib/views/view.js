@@ -215,6 +215,15 @@ ViewCollection.prototype = {
     }
   },
 
+  invokeRecursively: function(fn) {
+    var views = this.views, view;
+
+    for (var i = 0, l = views.length; i < l; i++) {
+      view = views[i];
+      fn.call(view, view);
+    }
+  },
+
   transitionTo: function(state, children) {
     var views = this.views;
     for (var i = 0, l = views.length; i < l; i++) {
