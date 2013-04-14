@@ -319,6 +319,7 @@ Ember.Handlebars.registerBoundHelper = function(name, fn) {
 
   Renders the unbound form of an otherwise bound helper function.
 
+  @method evaluateMultiPropertyBoundHelper
   @param {Function} fn
   @param {Object} context
   @param {Array} normalizedProperties
@@ -380,6 +381,7 @@ function evaluateMultiPropertyBoundHelper(context, fn, normalizedProperties, opt
 
   Renders the unbound form of an otherwise bound helper function.
 
+  @method evaluateUnboundHelper
   @param {Function} fn
   @param {Object} context
   @param {Array} normalizedProperties

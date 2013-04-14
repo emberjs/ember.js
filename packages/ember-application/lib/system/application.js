@@ -656,6 +656,7 @@ Ember.Application.reopenClass({
   This allows the application to register default injections in the container
   that could be overridden by the normal naming convention.
 
+  @method resolverFor
   @param {Ember.Namespace} namespace the namespace to look for classes
   @return {*} the resolved value for a given lookup
 */
