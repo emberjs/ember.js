@@ -15,3 +15,4 @@ Ember Views
 require("ember-views/core");
 require("ember-views/system");
 require("ember-views/views");
+require("ember-views/mixins");
