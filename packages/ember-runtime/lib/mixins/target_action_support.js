@@ -11,24 +11,9 @@ var get = Ember.get, set = Ember.set;
 @extends Ember.Mixin
 */
 Ember.TargetActionSupport = Ember.Mixin.create({
-  target: null,
-  action: null,
-
-  targetObject: Ember.computed(function() {
-    var target = get(this, 'target');
-
-    if (Ember.typeOf(target) === "string") {
-      var value = get(this, target);
-      if (value === undefined) { value = get(Ember.lookup, target); }
-      return value;
-    } else {
-      return target;
-    }
-  }).property('target'),
-
-  triggerAction: function() {
-    var action = get(this, 'action'),
-        target = get(this, 'targetObject');
+  triggerAction: function(name) {
+    var action = getAction.call(this, name),
+        target = getTarget.call(this, name);
 
     if (target && action) {
       var ret;
@@ -49,3 +34,17 @@ Ember.TargetActionSupport = Ember.Mixin.create({
     }
   }
 });
+
+function getAction(name) {
+  var propName = name ? name+'Action' : 'action';
+  return get(this, propName);
+}
+
+function getTarget(name) {
+  var propName = name ? name+'Target' : 'target';
+  var target = get(this, propName);
+  if (Ember.typeOf(target) === "string") {
+    return get(this, target) || get(Ember.lookup, target);
+  }
+  return target || get(this, 'controller');
+}
