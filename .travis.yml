@@ -5,6 +5,7 @@ bundler_args: --without development
 before_script:
   - export DISPLAY=:99.0
   - sh -e /etc/init.d/xvfb start
+after_success: 'bundle exec rake publish_build'
 script: rake test\[standard]
 notifications:
   campfire:
@@ -19,3 +20,6 @@ branches:
   except:
     - latest-builds
     - release-builds
+env:
+  global:
+    - S3_BUCKET_NAME=builds.emberjs.com
