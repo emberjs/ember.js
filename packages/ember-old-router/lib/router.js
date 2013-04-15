@@ -10,15 +10,6 @@ require('ember-metal/utils'); // Ember.tryFinally
 
 var get = Ember.get, set = Ember.set;
 
-var merge = function(original, hash) {
-  for (var prop in hash) {
-    if (!hash.hasOwnProperty(prop)) { continue; }
-    if (original.hasOwnProperty(prop)) { continue; }
-
-    original[prop] = hash[prop];
-  }
-};
-
 /**
   `Ember.Router` is the subclass of `Ember.StateManager` responsible for
   providing URL-based application state detection. The `Ember.Router` instance
