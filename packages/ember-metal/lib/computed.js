@@ -124,6 +124,9 @@ var ComputedPropertyPrototype = ComputedProperty.prototype;
   Call ```volatile()``` to set it into non-cached mode. When in this mode
   the computed property will not automatically cache the return value.
 
+  However, if a property is properly observable, there is no reason to disable
+  caching. Use ```volatile()``` for exposing properties that aren't observable.
+
   ```javascript
   MyApp.President = Ember.Object.extend({
     fullName: function() {
