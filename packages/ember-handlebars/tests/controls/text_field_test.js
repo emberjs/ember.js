@@ -1,7 +1,148 @@
 /*globals TestObject:true */
 
 var textField;
-var get = Ember.get, set = Ember.set;
+var get = Ember.get, set = function(obj, key, value) {
+  Ember.run(function() { Ember.set(obj, key, value); });
+};
+
+function append() {
+  Ember.run(function() {
+    textField.appendTo('#qunit-fixture');
+  });
+}
+
+function destroy(view) {
+  Ember.run(function() {
+    view.destroy();
+  });
+}
+
+var controller;
+
+module("{{input type='text'}}", {
+  setup: function() {
+    controller = {
+      val: "hello",
+      place: "Enter some text",
+      name: "some-name",
+      max: 30,
+      size: 30,
+      tab: 5
+    };
+
+    textField = Ember.View.extend({
+      controller: controller,
+      template: compile('{{input type="text" disabled=disabled value=val placeholder=place name=name maxlength=max size=size tabindex=tab}}')
+    }).create();
+
+    append();
+  },
+
+  teardown: function() {
+    destroy(textField);
+  }
+});
+
+var compile = Ember.Handlebars.compile;
+
+test("should insert a text field into DOM", function() {
+  equal(textField.$('input').length, 1, "A single text field was inserted");
+});
+
+test("should become disabled if the disabled attribute is true", function() {
+  equal(textField.$('input:disabled').length, 0, "There are no disabled text fields");
+
+  set(controller, 'disabled', true);
+  equal(textField.$('input:disabled').length, 1, "The text field is disabled");
+
+  set(controller, 'disabled', false);
+  equal(textField.$('input:disabled').length, 0, "There are no disabled text fields");
+});
+
+test("input value is updated when setting value property of view", function() {
+  equal(textField.$('input').val(), "hello", "renders text field with value");
+  set(controller, 'val', 'bye!');
+  equal(textField.$('input').val(), "bye!", "updates text field after value changes");
+});
+
+test("input placeholder is updated when setting placeholder property of view", function() {
+  equal(textField.$('input').attr('placeholder'), "Enter some text", "renders text field with placeholder");
+  set(controller, 'place', 'Text, please enter it');
+  equal(textField.$('input').attr('placeholder'), "Text, please enter it", "updates text field after placeholder changes");
+});
+
+test("input name is updated when setting name property of view", function() {
+  equal(textField.$('input').attr('name'), "some-name", "renders text field with name");
+  set(controller, 'name', 'other-name');
+  equal(textField.$('input').attr('name'), "other-name", "updates text field after name changes");
+});
+
+test("input maxlength is updated when setting maxlength property of view", function() {
+  equal(textField.$('input').attr('maxlength'), "30", "renders text field with maxlength");
+  set(controller, 'max', 40);
+  equal(textField.$('input').attr('maxlength'), "40", "updates text field after maxlength changes");
+});
+
+test("input size is updated when setting size property of view", function() {
+  equal(textField.$('input').attr('size'), "30", "renders text field with size");
+  set(controller, 'size', 40);
+  equal(textField.$('input').attr('size'), "40", "updates text field after size changes");
+});
+
+test("input tabindex is updated when setting tabindex property of view", function() {
+  equal(textField.$('input').attr('tabindex'), "5", "renders text field with the tabindex");
+  set(controller, 'tab', 3);
+  equal(textField.$('input').attr('tabindex'), "3", "updates text field after tabindex changes");
+});
+
+module("{{input type='text'}} - static values", {
+  setup: function() {
+    controller = {};
+
+    textField = Ember.View.extend({
+      controller: controller,
+      template: compile('{{input type="text" disabled=true value="hello" placeholder="Enter some text" name="some-name" maxlength=30 size=30 tabindex=5}}')
+    }).create();
+
+    append();
+  },
+
+  teardown: function() {
+    destroy(textField);
+  }
+});
+
+test("should insert a text field into DOM", function() {
+  equal(textField.$('input').length, 1, "A single text field was inserted");
+});
+
+test("should become disabled if the disabled attribute is true", function() {
+  equal(textField.$('input:disabled').length, 1, "The text field is disabled");
+});
+
+test("input value is updated when setting value property of view", function() {
+  equal(textField.$('input').val(), "hello", "renders text field with value");
+});
+
+test("input placeholder is updated when setting placeholder property of view", function() {
+  equal(textField.$('input').attr('placeholder'), "Enter some text", "renders text field with placeholder");
+});
+
+test("input name is updated when setting name property of view", function() {
+  equal(textField.$('input').attr('name'), "some-name", "renders text field with name");
+});
+
+test("input maxlength is updated when setting maxlength property of view", function() {
+  equal(textField.$('input').attr('maxlength'), "30", "renders text field with maxlength");
+});
+
+test("input size is updated when setting size property of view", function() {
+  equal(textField.$('input').attr('size'), "30", "renders text field with size");
+});
+
+test("input tabindex is updated when setting tabindex property of view", function() {
+  equal(textField.$('input').attr('tabindex'), "5", "renders text field with the tabindex");
+});
 
 module("Ember.TextField", {
   setup: function() {
@@ -19,12 +160,6 @@ module("Ember.TextField", {
     TestObject = textField = null;
   }
 });
-
-function append() {
-  Ember.run(function() {
-    textField.appendTo('#qunit-fixture');
-  });
-}
 
 test("should become disabled if the disabled attribute is true", function() {
   textField.set('disabled', true);
@@ -68,6 +203,19 @@ test("input placeholder is updated when setting placeholder property of view", f
   Ember.run(function() { set(textField, 'placeholder', 'bar'); });
 
   equal(textField.$().attr('placeholder'), "bar", "updates text field after placeholder changes");
+});
+
+test("input name is updated when setting name property of view", function() {
+  Ember.run(function() {
+    set(textField, 'name', 'foo');
+    textField.append();
+  });
+
+  equal(textField.$().attr('name'), "foo", "renders text field with name");
+
+  Ember.run(function() { set(textField, 'name', 'bar'); });
+
+  equal(textField.$().attr('name'), "bar", "updates text field after name changes");
 });
 
 test("input maxlength is updated when setting maxlength property of view", function() {
@@ -228,6 +376,33 @@ test("should send an action if one is defined when the return key is pressed", f
 
   textField.trigger('keyUp', event);
 });
+
+test("should send an action on keyPress if one is defined with onEvent=keyPress", function() {
+  expect(3);
+
+  var StubController = Ember.Object.extend({
+    send: function(actionName, value, sender) {
+      equal(actionName, 'didTriggerAction', "text field sent correct action name");
+      equal(value, "textFieldValue", "text field sent its current value as first argument");
+      equal(sender, textField, "text field sent itself as second argument");
+    }
+  });
+
+  textField.set('action', 'didTriggerAction');
+  textField.set('onEvent', 'keyPress');
+  textField.set('value', "textFieldValue");
+  textField.set('controller', StubController.create());
+
+  Ember.run(function() { textField.append(); });
+
+  var event = {
+    keyCode: 48,
+    stopPropagation: Ember.K
+  };
+
+  textField.trigger('keyPress', event);
+});
+
 
 test("bubbling of handled actions can be enabled via bubbles property", function() {
   textField.set('bubbles', true);

@@ -1,9 +1,11 @@
 
-var originalSetTimeout = window.setTimeout;
+var originalSetTimeout = window.setTimeout,
+    originalDateValueOf = Date.prototype.valueOf;
 
 module('Ember.run.later', {
   teardown: function() {
     window.setTimeout = originalSetTimeout;
+    Date.prototype.valueOf = originalDateValueOf;
   }
 });
 
@@ -60,10 +62,10 @@ asyncTest('should always invoke within a separate runloop', function() {
   var obj = { invoked: 0 }, firstRunLoop, secondRunLoop;
 
   Ember.run(function() {
-    firstRunLoop = Ember.run.currentRunLoop; 
+    firstRunLoop = Ember.run.currentRunLoop;
 
-    Ember.run.later(obj, function(amt) { 
-      this.invoked += amt; 
+    Ember.run.later(obj, function(amt) {
+      this.invoked += amt;
       secondRunLoop = Ember.run.currentRunLoop;
     }, 10, 1);
 
@@ -71,8 +73,8 @@ asyncTest('should always invoke within a separate runloop', function() {
     // after run.later was called but before the run loop
     // has flushed. In previous versions, this would have
     // caused the run.later callback to have run from
-    // within the run loop flush, since by the time the 
-    // run loop has to flush, it would have considered 
+    // within the run loop flush, since by the time the
+    // run loop has to flush, it would have considered
     // the timer already expired.
     var pauseUntil = +new Date() + 100;
     while(+new Date() < pauseUntil) { /* do nothing - sleeping */ }
@@ -113,13 +115,22 @@ asyncTest('callback order', function() {
 
 asyncTest('callbacks coalesce into same run loop if expiring at the same time', function() {
 
+
   var array = [];
   function fn(val) { array.push(Ember.run.currentRunLoop); }
 
   Ember.run(function() {
+
+    // Force +new Date to return the same result while scheduling
+    // run.later timers. Otherwise: non-determinism!
+    var now = +new Date();
+    Date.prototype.valueOf = function() { return now; };
+
     Ember.run.later(this, fn, 10);
     Ember.run.later(this, fn, 100);
     Ember.run.later(this, fn, 100);
+
+    Date.prototype.valueOf = originalDateValueOf;
   });
 
   deepEqual(array, []);
@@ -143,12 +154,12 @@ asyncTest('inception calls to run.later should run callbacks in separate run loo
     ok(runLoop);
 
     Ember.run.later(function() {
-      ok(Ember.run.currentRunLoop && Ember.run.currentRunLoop !== runLoop, 
+      ok(Ember.run.currentRunLoop && Ember.run.currentRunLoop !== runLoop,
          'first later callback has own run loop');
       runLoop = Ember.run.currentRunLoop;
 
       Ember.run.later(function() {
-        ok(Ember.run.currentRunLoop && Ember.run.currentRunLoop !== runLoop, 
+        ok(Ember.run.currentRunLoop && Ember.run.currentRunLoop !== runLoop,
            'second later callback has own run loop');
         finished = true;
       }, 40);

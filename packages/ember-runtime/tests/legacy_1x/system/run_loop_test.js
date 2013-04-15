@@ -17,7 +17,7 @@ var MyApp, binding1, binding2, previousPreventRunloop;
 module("System:run_loop() - chained binding", {
   setup: function() {
     MyApp = {};
-    MyApp.first = Ember.Object.create(Ember.Observable, {
+    MyApp.first = Ember.Object.createWithMixins(Ember.Observable, {
       output: 'MyApp.first'
     }) ;
 
@@ -31,15 +31,13 @@ module("System:run_loop() - chained binding", {
 
     }) ;
 
-    MyApp.third = Ember.Object.create(Ember.Observable, {
+    MyApp.third = Ember.Object.createWithMixins(Ember.Observable, {
       input: "MyApp.third"
     }) ;
   }
 });
 
 test("Should propagate bindings after the RunLoop completes (using Ember.RunLoop)", function() {
-  Ember.TESTING_DEPRECATION = true;
-
   Ember.run(function () {
 
     //Binding of output of MyApp.first object to input of MyApp.second object
@@ -50,8 +48,8 @@ test("Should propagate bindings after the RunLoop completes (using Ember.RunLoop
     binding2 = Ember.Binding.from("second.output")
       .to("third.input").connect(MyApp) ;
 
-    Ember.run.sync();
-
+  });
+  Ember.run(function () {
     // Based on the above binding if you change the output of MyApp.first
     // object it should change the all the variable of
     //  MyApp.first,MyApp.second and MyApp.third object
@@ -70,14 +68,9 @@ test("Should propagate bindings after the RunLoop completes (using Ember.RunLoop
 
   //Since binding triggered after the end loop the value changed to 'change'.
   equal(MyApp.second.get("output"), "change") ;
-
-  Ember.TESTING_DEPRECATION = false;
-
 });
 
 test("Should propagate bindings after the RunLoop completes", function() {
-  Ember.TESTING_DEPRECATION = false;
-
   Ember.run(function () {
     //Binding of output of MyApp.first object to input of MyApp.second object
     binding1 = Ember.Binding.from("first.output")
@@ -105,6 +98,4 @@ test("Should propagate bindings after the RunLoop completes", function() {
 
   //Since binding triggered after the end loop the value changed to 'change'.
   equal(MyApp.second.get("output"), "change") ;
-
-  Ember.TESTING_DEPRECATION = false;
 });

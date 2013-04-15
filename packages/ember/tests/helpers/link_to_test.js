@@ -42,10 +42,8 @@ module("The {{linkTo}} helper", {
 
       container = App.__container__;
 
-      container.register('view', 'app');
-      container.register('router', 'main', Router);
-
-      App.initialize();
+      container.register('view:app');
+      container.register('router:main', Router);
     });
   },
 

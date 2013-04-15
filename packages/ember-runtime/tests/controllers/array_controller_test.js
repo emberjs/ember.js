@@ -28,3 +28,10 @@ test("defaults it's `content` to an empty array", function () {
   equal(Controller.create().get('firstObject'), undefined, 'can fetch firstObject');
   equal(Controller.create().get('lastObject'), undefined, 'can fetch lastObject');
 });
+
+
+test("Ember.ArrayController length property works even if content was not set initially", function() {
+  var controller = Ember.ArrayController.create();
+  controller.pushObject('item');
+  equal(controller.get('length'), 1);
+});

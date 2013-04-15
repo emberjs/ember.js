@@ -213,7 +213,7 @@ test("it supports itemController", function() {
     controller: parentController
   });
 
-  container.register('controller', 'person', Controller);
+  container.register('controller:person', Controller);
 
   append(view);
 
@@ -259,7 +259,7 @@ test("it supports itemController when using a custom keyword", function() {
     }
   });
 
-  container.register('controller', 'person', Controller);
+  container.register('controller:person', Controller);
 
   append(view);
 
@@ -286,24 +286,29 @@ test("it supports {{itemViewClass=}}", function() {
 });
 
 test("it supports {{itemViewClass=}} with tagName", function() {
-  Ember.run(function() { view.destroy(); }); // destroy existing view
-  view = Ember.View.create({
-      template: templateFor('{{each view.people itemViewClass="MyView" tagName="ul"}}'),
-      people: people
-  });
+  Ember.TESTING_DEPRECATION = true;
 
-  append(view);
+  try {
+    Ember.run(function() { view.destroy(); }); // destroy existing view
+    view = Ember.View.create({
+        template: templateFor('{{each view.people itemViewClass="MyView" tagName="ul"}}'),
+        people: people
+    });
 
-  var html = view.$().html();
+    append(view);
 
-  // IE 8 (and prior?) adds the \r\n
-  html = html.replace(/<script[^>]*><\/script>/ig, '').replace(/[\r\n]/g, '');
-  html = html.replace(/<div[^>]*><\/div>/ig, '').replace(/[\r\n]/g, '');
-  html = html.replace(/<li[^>]*/ig, '<li');
+    var html = view.$().html();
 
-  // Use lowercase since IE 8 make tagnames uppercase
-  equal(html.toLowerCase(), "<ul><li>steve holt</li><li>annabelle</li></ul>");
+    // IE 8 (and prior?) adds the \r\n
+    html = html.replace(/<script[^>]*><\/script>/ig, '').replace(/[\r\n]/g, '');
+    html = html.replace(/<div[^>]*><\/div>/ig, '').replace(/[\r\n]/g, '');
+    html = html.replace(/<li[^>]*/ig, '<li');
 
+    // Use lowercase since IE 8 make tagnames uppercase
+    equal(html.toLowerCase(), "<ul><li>steve holt</li><li>annabelle</li></ul>");
+  } finally {
+    Ember.TESTING_DEPRECATION = false;
+  }
 });
 
 test("it supports {{itemViewClass=}} with in format", function() {
@@ -335,18 +340,11 @@ test("it supports {{else}}", function() {
 
   assertHTML(view, "onetwo");
 
-  stop();
-
-  // We really need to make sure we get to the re-render
-  Ember.run.next(function() {
-    Ember.run(function() {
-      view.set('items', Ember.A([]));
-    });
-
-    start();
-
-    assertHTML(view, "Nothing");
+  Ember.run(function() {
+    view.set('items', Ember.A([]));
   });
+
+  assertHTML(view, "Nothing");
 });
 
 test("it works with the controller keyword", function() {

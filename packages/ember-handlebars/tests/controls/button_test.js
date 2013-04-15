@@ -59,12 +59,12 @@ test("should become disabled if the disabled attribute is changed", function() {
 });
 
 test("should support the tabindex property", function() {
-  button.set('tabindex', 6);
+  Ember.run(function() { button.set('tabindex', 6); });
   append();
 
   equal(button.$().prop('tabindex'), '6', 'the initial button tabindex is set in the DOM');
 
-  button.set('tabindex', 3);
+  Ember.run(function() { button.set('tabindex', 3); });
   equal(button.$().prop('tabindex'), '3', 'the button tabindex changes when it is changed in the view');
 });
 

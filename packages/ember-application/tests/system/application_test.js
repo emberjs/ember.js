@@ -7,7 +7,7 @@ module("Ember.Application", {
   setup: function() {
     Ember.$("#qunit-fixture").html("<div id='one'><div id='one-child'>HI</div></div><div id='two'>HI</div>");
     Ember.run(function() {
-      application = Ember.Application.create({ rootElement: '#one', router: null }).initialize();
+      application = Ember.Application.create({ rootElement: '#one', router: null });
     });
   },
 
@@ -21,7 +21,7 @@ module("Ember.Application", {
 test("you can make a new application in a non-overlapping element", function() {
   var app;
   Ember.run(function() {
-    app = Ember.Application.create({ rootElement: '#two', router: null }).initialize();
+    app = Ember.Application.create({ rootElement: '#two', router: null });
   });
   Ember.run(function() {
     app.destroy();
@@ -32,7 +32,7 @@ test("you can make a new application in a non-overlapping element", function() {
 test("you cannot make a new application that is a parent of an existing application", function() {
   raises(function() {
     Ember.run(function() {
-      Ember.Application.create({ rootElement: '#qunit-fixture' }).initialize();
+      Ember.Application.create({ rootElement: '#qunit-fixture' });
     });
   }, Error);
 });
@@ -40,7 +40,7 @@ test("you cannot make a new application that is a parent of an existing applicat
 test("you cannot make a new application that is a descendent of an existing application", function() {
   raises(function() {
     Ember.run(function() {
-      Ember.Application.create({ rootElement: '#one-child' }).initialize();
+      Ember.Application.create({ rootElement: '#one-child' });
     });
   }, Error);
 });
@@ -48,7 +48,7 @@ test("you cannot make a new application that is a descendent of an existing appl
 test("you cannot make a new application that is a duplicate of an existing application", function() {
   raises(function() {
     Ember.run(function() {
-      Ember.Application.create({ rootElement: '#one' }).initialize();
+      Ember.Application.create({ rootElement: '#one' });
     });
   }, Error);
 });
@@ -60,11 +60,11 @@ test("you cannot make two default applications without a rootElement error", fun
   });
 
   Ember.run(function() {
-    application = Ember.Application.create({ router: false }).initialize();
+    application = Ember.Application.create({ router: false });
   });
   raises(function() {
     Ember.run(function() {
-      Ember.Application.create({ router: false }).initialize();
+      Ember.Application.create({ router: false });
     });
   }, Error);
 });
@@ -75,7 +75,7 @@ test("acts like a namespace", function() {
   try {
     var lookup = Ember.lookup = {}, app;
     Ember.run(function() {
-      app = lookup.TestApp = Ember.Application.create({ rootElement: '#two', router: false }).initialize();
+      app = lookup.TestApp = Ember.Application.create({ rootElement: '#two', router: false });
     });
     Ember.BOOTED = false;
     app.Foo = Ember.Object.extend();
@@ -109,15 +109,13 @@ test('initialized application go to initial route', function() {
       location: 'none'
     });
 
-    app.register('template', 'application',
+    app.register('template:application',
       Ember.Handlebars.compile("{{outlet}}")
     );
 
     Ember.TEMPLATES.index = Ember.Handlebars.compile(
       "<h1>Hi from index</h1>"
     );
-
-    app.initialize();
   });
 
   equal(Ember.$('#qunit-fixture h1').text(), "Hi from index");
@@ -138,8 +136,6 @@ test("initialize application via initialize call", function() {
     app.ApplicationView = Ember.View.extend({
       template: function() { return "<h1>Hello!</h1>"; }
     });
-
-    app.initialize();
   });
 
   // This is not a public way to access the container; we just
@@ -161,11 +157,9 @@ test("initialize application with stateManager via initialize call from Router c
       location: 'none'
     });
 
-    app.register('template', 'application', function() {
+    app.register('template:application', function() {
       return "<h1>Hello!</h1>";
     });
-
-    app.initialize();
   });
 
   var router = app.__container__.lookup('router:main');
@@ -192,26 +186,9 @@ test("ApplicationView is inserted into the page", function() {
     app.Router.reopen({
       location: 'none'
     });
-
-    app.initialize();
   });
 
   equal(Ember.$("#qunit-fixture").text(), "Hello!");
-});
-
-test("Application initialized twice raises error", function() {
-  Ember.run(function() {
-    app = Ember.Application.create({
-      router: false,
-      rootElement: '#qunit-fixture'
-    }).initialize();
-  });
-
-  raises(function(){
-    Ember.run(function() {
-      app.initialize();
-    });
-  }, Error, 'raises error');
 });
 
 test("Minimal Application initialized with just an application template", function() {
@@ -219,7 +196,7 @@ test("Minimal Application initialized with just an application template", functi
   Ember.run(function () {
     app = Ember.Application.create({
       rootElement: '#qunit-fixture'
-    }).initialize();
+    });
   });
 
   equal(trim(Ember.$('#qunit-fixture').text()), 'Hello World');
@@ -243,8 +220,6 @@ test('enable log  of libraries with an ENV var', function() {
     app.Router.reopen({
       location: 'none'
     });
-
-    app.initialize();
   });
 
   Ember.LOG_VERSION = false;
@@ -270,8 +245,6 @@ test('disable log version of libraries with an ENV var', function() {
     app.Router.reopen({
       location: 'none'
     });
-
-    app.initialize();
   });
 
   ok(!logged, 'libraries versions logged');
@@ -283,8 +256,9 @@ var locator, originalLookup = Ember.lookup, lookup;
 
 module("Ember.Application Depedency Injection", {
   setup: function(){
+    Ember.$("#qunit-fixture").html("<div id='one'><div id='one-child'>HI</div></div><div id='two'>HI</div>");
     Ember.run(function(){
-      application = Ember.Application.create().initialize();
+      application = Ember.Application.create({rootElement: '#one'});
     });
 
     application.Person              = Ember.Object.extend({});
@@ -313,8 +287,13 @@ module("Ember.Application Depedency Injection", {
 });
 
 test('container lookup is normalized', function() {
-  ok(locator.lookup('controller:post.index') instanceof application.PostIndexController);
-  ok(locator.lookup('controller:postIndex') instanceof application.PostIndexController);
+  var dotNotationController = locator.lookup('controller:post.index');
+  var camelCaseController = locator.lookup('controller:postIndex');
+
+  ok(dotNotationController instanceof application.PostIndexController);
+  ok(camelCaseController instanceof application.PostIndexController);
+
+  equal(dotNotationController, camelCaseController);
 });
 
 test('registered entities can be looked up later', function(){
@@ -343,7 +322,7 @@ test('injections', function() {
   ok(application.Email.detectInstance(user.get('communication')));
 });
 
-test('the default resolver hook can look things up in other namespaces', function() {
+test('the default resolver can look things up in other namespaces', function() {
   var UserInterface = lookup.UserInterface = Ember.Namespace.create();
   UserInterface.NavigationController = Ember.Controller.extend();
 
@@ -351,6 +330,50 @@ test('the default resolver hook can look things up in other namespaces', functio
 
   ok(nav instanceof UserInterface.NavigationController, "the result should be an instance of the specified class");
 });
+
+test('the default resolver looks up templates in Ember.TEMPLATES', function() {
+  var fooTemplate = function() {},
+      fooBarTemplate = function() {},
+      fooBarBazTemplate = function() {};
+  Ember.TEMPLATES['foo'] = fooTemplate;
+  Ember.TEMPLATES['fooBar'] = fooBarTemplate;
+  Ember.TEMPLATES['fooBar/baz'] = fooBarBazTemplate;
+  equal(locator.lookup('template:foo'), fooTemplate, "resolves template:foo");
+  equal(locator.lookup('template:fooBar'), fooBarTemplate, "resolves template:foo_bar");
+  equal(locator.lookup('template:fooBar.baz'), fooBarBazTemplate, "resolves template:foo_bar.baz");
+});
+
+test('the default resolver looks up basic name as no prefix', function() {
+  equal(locator.lookup('controller:basic'), Ember.Controller);
+});
+
+test('the default resolver looks up arbitrary types on the namespace', function() {
+  application.FooManager = Ember.Object.extend({});
+  equal(locator.resolve('manager:foo'), application.FooManager, "looks up FooManager on application");
+});
+
+test("a resolver can be supplied to application", function() {
+  Ember.$("#two").empty();
+  var fallbackTemplate = function(){ return "<h1>Fallback</h1>"; };
+  Ember.run(function() {
+    app = Ember.Application.create({
+      rootElement: '#two',
+      resolver: Ember.DefaultResolver.extend({
+        resolveTemplate: function(parsedName) {
+          var resolvedTemplate = this._super(parsedName);
+          if (resolvedTemplate) { return resolvedTemplate; }
+          return fallbackTemplate;
+        }
+      })
+    });
+  });
+  equal(Ember.$("#two h1").text(), "Fallback");
+  Ember.run(function(){
+    app.destroy();
+  });
+  app = null;
+});
+
 
 test('normalization', function() {
   equal(locator.normalize('foo:bar'), 'foo:bar');

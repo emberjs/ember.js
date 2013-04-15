@@ -3,7 +3,7 @@ name: Ember
 assetfile: 'Assetfile'
 testing_suites:
   built:
-    - "package=all&dist=build"
+    - "package=all&skipPackage=container&dist=build&nojshint=true" # container isn't publicly available in the built version
   runtime:
     - "package=ember-metal,ember-runtime"
   views:
@@ -18,8 +18,10 @@ testing_suites:
     - "package=all&jquery=1.7.2&nojshint=true"
     - "package=all&jquery=1.8.3&nojshint=true"
     - "package=all&jquery=git&nojshint=true"
+    - "package=all&jquery=git2&nojshint=true"
     - "package=all&extendprototypes=true&nojshint=true"
     - "package=all&extendprototypes=true&jquery=git&nojshint=true"
+    - "package=all&extendprototypes=true&jquery=git2&nojshint=true"
     - "package=all&skipPackage=container&dist=build&nojshint=true" # container isn't publicly available in the built version
 testing_packages:
   - container

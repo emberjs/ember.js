@@ -136,20 +136,18 @@ module("one way binding", {
 
 test("fromObject change should propagate after flush", function() {
   Ember.run(function() {
-    set(fromObject, "value", "change") ;
-    equal(get(toObject, "value"), "start") ;
-    Ember.run.sync() ;
-    equal(get(toObject, "value"), "change") ;
+    set(fromObject, "value", "change");
+    equal(get(toObject, "value"), "start");
   });
+  equal(get(toObject, "value"), "change");
 });
 
 test("toObject change should NOT propagate", function() {
   Ember.run(function() {
-    set(toObject, "value", "change") ;
-    equal(get(fromObject, "value"), "start") ;
-    Ember.run.sync() ;
-    equal(get(fromObject, "value"), "start") ;
+    set(toObject, "value", "change");
+    equal(get(fromObject, "value"), "start");
   });
+  equal(get(fromObject, "value"), "start");
 });
 
 var first, second, third, binding1, binding2; // global variables
@@ -190,15 +188,12 @@ test("changing first output should propograte to third after flush", function() 
     set(first, "output", "change") ;
     equal("change", get(first, "output"), "first.output") ;
     ok("change" !== get(third, "input"), "third.input") ;
-
-    var didChange = true;
-    while(didChange) didChange = Ember.run.sync() ;
-
-    equal("change", get(first, "output"), "first.output") ;
-    equal("change", get(second, "input"), "second.input") ;
-    equal("change", get(second, "output"), "second.output") ;
-    equal("change", get(third,"input"), "third.input") ;
   });
+
+  equal("change", get(first, "output"), "first.output") ;
+  equal("change", get(second, "input"), "second.input") ;
+  equal("change", get(second, "output"), "second.output") ;
+  equal("change", get(third,"input"), "third.input") ;
 });
 
 // ..........................................................

@@ -357,20 +357,21 @@ test("if a ContainerView starts with a currentView and then a different currentV
 
   Ember.run(function() {
     set(container, 'currentView', secondaryView);
-    equal(get(container, 'length'), 1, "should have one child view");
-    equal(container.objectAt(0), secondaryView, "should have the currentView as the only child view");
   });
 
+
+  equal(get(container, 'length'), 1, "should have one child view");
+  equal(container.objectAt(0), secondaryView, "should have the currentView as the only child view");
   equal(mainView.isDestroyed, true, 'should destroy the previous currentView: mainView.');
 
   equal(Ember.$.trim(container.$().text()), "This is the secondary view.", "should render its child");
 
   Ember.run(function() {
     set(container, 'currentView', tertiaryView);
-    equal(get(container, 'length'), 1, "should have one child view");
-    equal(container.objectAt(0), tertiaryView, "should have the currentView as the only child view");
   });
 
+  equal(get(container, 'length'), 1, "should have one child view");
+  equal(container.objectAt(0), tertiaryView, "should have the currentView as the only child view");
   equal(secondaryView.isDestroyed, true, 'should destroy the previous currentView: secondaryView.');
 
   equal(Ember.$.trim(container.$().text()), "This is the tertiary view.", "should render its child");

@@ -6,4 +6,5 @@ require("ember-handlebars/helpers/unbound");
 require("ember-handlebars/helpers/debug");
 require("ember-handlebars/helpers/each");
 require("ember-handlebars/helpers/template");
+require("ember-handlebars/helpers/partial");
 require("ember-handlebars/helpers/yield");

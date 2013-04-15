@@ -1,6 +1,6 @@
 /**
 @module ember
-@submodule ember-application
+@submodule ember-old-router
 */
 
 var get = Ember.get, set = Ember.set;
@@ -254,7 +254,7 @@ Ember.Application = Ember.Namespace.extend(
 
   /**
     Should the application initialize itself after it's created. You can
-    set this to `false` if you'd like to choose when to initialize your 
+    set this to `false` if you'd like to choose when to initialize your
     application. This defaults to `!Ember.testing`
 
     @property autoinit

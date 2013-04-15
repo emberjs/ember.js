@@ -1,6 +1,5 @@
 require('ember-runtime/mixins/observable');
 require('ember-runtime/system/core_object');
-require('ember-runtime/system/set');
 
 /**
 @module ember

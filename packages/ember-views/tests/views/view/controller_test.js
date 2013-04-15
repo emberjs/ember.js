@@ -15,21 +15,27 @@ test("controller property should be inherited from nearest ancestor with control
 
     grandparent.pushObject(parent);
     parent.pushObject(child);
-
-    strictEqual(grandparent.get('controller'), grandparentController);
-    strictEqual(parent.get('controller'), parentController);
-    strictEqual(child.get('controller'), parentController);
-    strictEqual(grandchild.get('controller'), null);
-
-    child.pushObject(grandchild);
-    strictEqual(grandchild.get('controller'), parentController);
-
-    var newController = {};
-    parent.set('controller', newController);
-    strictEqual(parent.get('controller'), newController);
-    strictEqual(child.get('controller'), newController);
-    strictEqual(grandchild.get('controller'), newController);
   });
+
+  strictEqual(grandparent.get('controller'), grandparentController);
+  strictEqual(parent.get('controller'), parentController);
+  strictEqual(child.get('controller'), parentController);
+  strictEqual(grandchild.get('controller'), null);
+
+  Ember.run(function() {
+    child.pushObject(grandchild);
+  });
+
+  strictEqual(grandchild.get('controller'), parentController);
+
+  var newController = {};
+  Ember.run(function() {
+    parent.set('controller', newController);
+  });
+
+  strictEqual(parent.get('controller'), newController);
+  strictEqual(child.get('controller'), newController);
+  strictEqual(grandchild.get('controller'), newController);
 
   Ember.run(function() {
     grandparent.destroy();

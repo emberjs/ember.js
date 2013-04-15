@@ -2,8 +2,7 @@ module("Ember.isEmpty");
 
 test("Ember.isEmpty", function() {
   var string = "string", fn = function() {},
-      object = {length: 0},
-      arrayProxy = Ember.ArrayProxy.create({ content: Ember.A([]) });
+      object = {length: 0};
 
   equal(true,  Ember.isEmpty(null),      "for null");
   equal(true,  Ember.isEmpty(undefined), "for undefined");
@@ -16,5 +15,4 @@ test("Ember.isEmpty", function() {
   equal(true,  Ember.isEmpty([]),        "for an empty Array");
   equal(false, Ember.isEmpty({}),        "for an empty Object");
   equal(true,  Ember.isEmpty(object),     "for an Object that has zero 'length'");
-  equal(true,  Ember.isEmpty(arrayProxy), "for an ArrayProxy that has empty content");
 });

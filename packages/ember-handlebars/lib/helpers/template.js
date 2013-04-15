@@ -49,28 +49,10 @@ require('ember-handlebars/ext');
 */
 
 Ember.Handlebars.registerHelper('template', function(name, options) {
-  var template = Ember.TEMPLATES[name];
+  var view = options.data.view,
+      template = view.templateForName(name);
 
   Ember.assert("Unable to find template with name '"+name+"'.", !!template);
-
-  Ember.TEMPLATES[name](this, { data: options.data });
-});
-
-Ember.Handlebars.registerHelper('partial', function(name, options) {
-  var nameParts = name.split("/"),
-      lastPart = nameParts[nameParts.length - 1];
-
-  nameParts[nameParts.length - 1] = "_" + lastPart;
-
-  var underscoredName = nameParts.join("/");
-
-  var template = Ember.TEMPLATES[underscoredName],
-      deprecatedTemplate = Ember.TEMPLATES[name];
-
-  Ember.deprecate("You tried to render the partial " + name + ", which should be at '" + underscoredName + "', but Ember found '" + name + "'. Please use a leading underscore in your partials", template);
-  Ember.assert("Unable to find partial with name '"+name+"'.", template || deprecatedTemplate);
-
-  template = template || deprecatedTemplate;
 
   template(this, { data: options.data });
 });

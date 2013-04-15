@@ -61,7 +61,7 @@ test("initializers can be registered in a specified order", function() {
     app = Ember.Application.create({
       router: false,
       rootElement: '#qunit-fixture'
-    }).initialize();
+    });
   });
 
   deepEqual(order, ['first', 'second', 'third', 'fourth', 'fifth']);
@@ -117,7 +117,7 @@ test("initializers can have multiple dependencies", function () {
     app = Ember.Application.create({
       router: false,
       rootElement: '#qunit-fixture'
-    }).initialize();
+    });
   });
 
   ok(indexOf.call(order, a.name) < indexOf.call(order, b.name), 'a < b');

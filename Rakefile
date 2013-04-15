@@ -13,7 +13,6 @@ namespace :release do
 
   namespace :starter_kit do
     ember_output = "tmp/starter-kit/js/libs/ember-#{EMBER_VERSION}.js"
-    ember_min_output = "tmp/starter-kit/js/libs/ember-#{EMBER_VERSION}.min.js"
 
     task :pull => "tmp/starter-kit" do
       Dir.chdir("tmp/starter-kit") do
@@ -42,10 +41,6 @@ namespace :release do
       sh "cp dist/ember.js #{ember_output}"
     end
 
-    file ember_min_output => [:clean, "tmp/starter-kit", "dist/ember.min.js"] do
-      sh "cp dist/ember.min.js #{ember_min_output}"
-    end
-
     file "tmp/starter-kit" do
       mkdir_p "tmp"
 
@@ -54,10 +49,10 @@ namespace :release do
       end
     end
 
-    file "tmp/starter-kit/index.html" => [ember_output, ember_min_output] do
+    file "tmp/starter-kit/index.html" => [ember_output] do
       index = File.read("tmp/starter-kit/index.html")
       index.gsub! %r{<script src="js/libs/ember-\d\.\d.*</script>},
-        %{<script src="js/libs/ember-#{EMBER_VERSION}.min.js"></script>}
+        %{<script src="js/libs/ember-#{EMBER_VERSION}.js"></script>}
 
       File.open("tmp/starter-kit/index.html", "w") { |f| f.write index }
     end
@@ -179,10 +174,10 @@ namespace :release do
       about = File.read("tmp/website/source/about.html.erb")
       min_gz = Zlib::Deflate.deflate(File.read("dist/ember.min.js")).bytes.count / 1024
 
-      about.gsub! %r{https://raw\.github\.com/emberjs/ember\.js/release-builds/ember-\d(?:[\.-](?:(?:\d+)|pre))*?(\.min)?\.js},
+      about.gsub! %r{https://raw\.github\.com/emberjs/ember\.js/release-builds/ember-\d(?:[\.-](?:(?:\d+)|pre|rc))*?(\.min)?\.js},
         %{https://raw.github.com/emberjs/ember.js/release-builds/ember-#{EMBER_VERSION}\\1.js}
 
-      about.gsub!(/Ember \d([\.-]((\d+)|pre))*/, "Ember #{EMBER_VERSION}")
+      about.gsub!(/Ember \d([\.-]((\d+)|pre|rc))*/, "Ember #{EMBER_VERSION}")
 
       about.gsub!(/\d+k min\+gzip/, "#{min_gz}k min+gzip")
 
@@ -218,10 +213,20 @@ namespace :release do
   end
 
   desc "Prepare Ember for new release"
-  task :prepare => ['ember:clean', 'ember:release:prepare', 'website:prepare']
+  task :prepare => ['ember:clean', 'ember:release:prepare', 'starter_kit:prepare', 'website:prepare']
 
   desc "Deploy a new Ember release"
-  task :deploy => ['ember:release:deploy', 'website:deploy']
+  task :deploy => ['ember:release:deploy', 'starter_kit:deploy', 'website:deploy']
+end
+
+task :publish_build do
+  root = File.dirname(__FILE__) + '/dist/'
+  EmberDev::Publish.to_s3({
+    :access_key_id => ENV['S3_ACCESS_KEY_ID'],
+    :secret_access_key => ENV['S3_SECRET_ACCESS_KEY'],
+    :bucket_name => ENV['S3_BUCKET_NAME'],
+    :files => ['ember.js', 'ember-runtime.js'].map { |f| root + f }
+  })
 end
 
 task :clean => "ember:clean"

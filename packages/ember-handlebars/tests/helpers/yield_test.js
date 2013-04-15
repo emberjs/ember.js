@@ -39,8 +39,8 @@ test("a view with a layout set renders its template where the {{yield}} helper a
 });
 
 test("block should work properly even when templates are not hard-coded", function() {
-  container.register('template', 'nester', Ember.Handlebars.compile('<div class="wrapper"><h1>{{title}}</h1>{{yield}}</div>'));
-  container.register('template', 'nested', Ember.Handlebars.compile('{{#view TemplateTests.ViewWithLayout title="My Fancy Page"}}<div class="page-body">Show something interesting here</div>{{/view}}'));
+  container.register('template:nester', Ember.Handlebars.compile('<div class="wrapper"><h1>{{title}}</h1>{{yield}}</div>'));
+  container.register('template:nested', Ember.Handlebars.compile('{{#view TemplateTests.ViewWithLayout title="My Fancy Page"}}<div class="page-body">Show something interesting here</div>{{/view}}'));
 
   TemplateTests.ViewWithLayout = Ember.View.extend({
     container: container,

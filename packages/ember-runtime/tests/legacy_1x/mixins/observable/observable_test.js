@@ -556,7 +556,7 @@ test("nested dependent keys should propagate after they update", function() {
 
       price: Ember.computed(function() {
         return this.get('restaurant.menu.price');
-      }).property('restaurant.menu.price').volatile()
+      }).property('restaurant.menu.price')
     });
 
     bindObj = ObservableObject.createWithMixins({

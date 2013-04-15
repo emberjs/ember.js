@@ -122,3 +122,17 @@ test("a listener registered with one can be removed with off", function() {
 
   equal(obj.has('event!'), false, 'has no more events');
 });
+
+test("adding and removing listeners should be chainable", function() {
+  var obj = Ember.Object.createWithMixins(Ember.Evented);
+  var F = function() {};
+
+  var ret = obj.on('event!', F);
+  equal(ret, obj, '#on returns self');
+
+  ret = obj.off('event!', F);
+  equal(ret, obj, '#off returns self');
+
+  ret = obj.one('event!', F);
+  equal(ret, obj, '#one returns self');
+});

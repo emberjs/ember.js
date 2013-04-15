@@ -17,8 +17,12 @@ var buildContainer = function(namespace) {
   container.resolver = resolverFor(namespace);
   container.optionsForType('view', { singleton: false });
   container.optionsForType('template', { instantiate: false });
-  container.register('application', 'main', namespace, { instantiate: false });
+  container.register('application:main', namespace, { instantiate: false });
   container.injection('router:main', 'namespace', 'application:main');
+
+  container.register('controller:basic', Ember.Controller, { instantiate: false });
+  container.register('controller:object', Ember.ObjectController, { instantiate: false });
+  container.register('controller:array', Ember.ArrayController, { instantiate: false });
 
   container.typeInjection('route', 'router', 'router:main');
 
@@ -50,8 +54,8 @@ module("Handlebars {{render}} helper", {
   setup: function() {
     var namespace = Ember.Namespace.create();
     container = buildContainer(namespace);
-    container.register('view', 'default', Ember.View.extend());
-    container.register('router', 'main', Ember.Router.extend());
+    container.register('view:default', Ember.View.extend());
+    container.register('router:main', Ember.Router.extend());
   },
   teardown: function() {
     Ember.run(function () {
@@ -100,7 +104,7 @@ test("{{render}} helper should render given template with a supplied model", fun
   });
 
   var PostController = Ember.ObjectController.extend();
-  container.register('controller', 'post', PostController);
+  container.register('controller:post', PostController);
 
   Ember.TEMPLATES['post'] = compile("<p>{{title}}</p>");
 
@@ -120,7 +124,7 @@ test("{{render}} helper should render given template with a supplied model", fun
 test("{{render}} helper should render with given controller", function() {
   var template = '<h1>HI</h1>{{render home controller="posts"}}';
   var controller = Ember.Controller.extend({container: container});
-  container.register('controller', 'posts', Ember.ArrayController.extend());
+  container.register('controller:posts', Ember.ArrayController.extend());
   view = Ember.View.create({
     controller: controller.create(),
     template: Ember.Handlebars.compile(template)
@@ -134,7 +138,7 @@ test("{{render}} helper should render with given controller", function() {
   equal(container.lookup('controller:posts'), renderedView.get('controller'), 'rendered with correct controller');
 });
 
-test("{{render}} helper should render a template only once", function() {
+test("{{render}} helper should render a template without a model only once", function() {
   var template = "<h1>HI</h1>{{render home}}<hr/>{{render home}}";
   var controller = Ember.Controller.extend({container: container});
   view = Ember.View.create({
@@ -149,6 +153,86 @@ test("{{render}} helper should render a template only once", function() {
   }, 'should raise an exception');
 });
 
+test("{{render}} helper should render templates with models multiple times", function() {
+  var template = "<h1>HI</h1> {{render 'post' post1}} {{render 'post' post2}}";
+  var post1 = {
+    title: "Me first"
+  };
+  var post2 = {
+    title: "Then me"
+  };
+
+  var Controller = Ember.Controller.extend({
+    container: container,
+    post1: post1,
+    post2: post2
+  });
+
+  var controller = Controller.create();
+
+  view = Ember.View.create({
+    controller: controller,
+    template: Ember.Handlebars.compile(template)
+  });
+
+  var PostController = Ember.ObjectController.extend();
+  container.register('controller:post', PostController, {singleton: false});
+
+  Ember.TEMPLATES['post'] = compile("<p>{{title}}</p>");
+
+  appendView(view);
+
+  var postController1 = view.get('_childViews')[0].get('controller');
+  var postController2 = view.get('_childViews')[1].get('controller');
+
+  equal(view.$().text(), 'HI Me first Then me');
+  equal(postController1.get('model'), post1);
+  equal(postController2.get('model'), post2);
+
+  set(controller, 'post1', { title: "I am new" });
+
+  equal(view.$().text(), 'HI I am new Then me');
+  deepEqual(postController1.get('model'), { title: "I am new" });
+});
+
+test("{{render}} helper should render templates both with and without models", function() {
+  var template = "<h1>HI</h1> {{render 'post'}} {{render 'post' post}}";
+  var post = {
+    title: "Rails is omakase"
+  };
+
+  var Controller = Ember.Controller.extend({
+    container: container,
+    post: post
+  });
+
+  var controller = Controller.create();
+
+  view = Ember.View.create({
+    controller: controller,
+    template: Ember.Handlebars.compile(template)
+  });
+
+  var PostController = Ember.ObjectController.extend();
+  container.register('controller:post', PostController, {singleton: false});
+
+  Ember.TEMPLATES['post'] = compile("<p>Title:{{title}}</p>");
+
+  appendView(view);
+
+  var postController1 = view.get('_childViews')[0].get('controller');
+  var postController2 = view.get('_childViews')[1].get('controller');
+
+  equal(view.$().text(), 'HI Title: Title:Rails is omakase');
+  equal(postController1.get('model'), null);
+  equal(postController2.get('model'), post);
+
+  set(controller, 'post', { title: "Rails is unagi" });
+
+  equal(view.$().text(), 'HI Title: Title:Rails is unagi');
+  deepEqual(postController2.get('model'), { title: "Rails is unagi" });
+});
+
 test("{{render}} helper should link child controllers to the parent controller", function() {
   var parentTriggered = 0;
 
@@ -161,7 +245,7 @@ test("{{render}} helper should link child controllers to the parent controller",
     }
   });
 
-  container.register('controller', 'posts', Ember.ArrayController.extend());
+  container.register('controller:posts', Ember.ArrayController.extend());
 
   view = Ember.View.create({
     controller: controller.create(),
@@ -215,7 +299,7 @@ test("{{render}} works with dot notation", function() {
   var template = '<h1>BLOG</h1>{{render blog.post}}';
 
   var controller = Ember.Controller.extend({container: container});
-  container.register('controller', 'blog.post', Ember.ObjectController.extend());
+  container.register('controller:blog.post', Ember.ObjectController.extend());
 
   view = Ember.View.create({
     controller: controller.create(),
@@ -235,7 +319,7 @@ test("{{render}} works with slash notation", function() {
   var template = '<h1>BLOG</h1>{{render "blog/post"}}';
 
   var controller = Ember.Controller.extend({container: container});
-  container.register('controller', 'blog.post', Ember.ObjectController.extend());
+  container.register('controller:blog.post', Ember.ObjectController.extend());
 
   view = Ember.View.create({
     controller: controller.create(),
