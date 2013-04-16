@@ -12,16 +12,10 @@ define("router",
       * `{String} handler`: A handler name
       * `{Object} params`: A hash of recognized parameters
 
-      ## `UnresolvedHandlerInfo`
-
-      * `{Boolean} isDynamic`: whether a handler has any dynamic segments
-      * `{String} name`: the name of a handler
-      * `{Object} context`: the active context for the handler
-
       ## `HandlerInfo`
 
       * `{Boolean} isDynamic`: whether a handler has any dynamic segments
-      * `{String} name`: the original unresolved handler name
+      * `{String} name`: the name of a handler
       * `{Object} handler`: a handler object
       * `{Object} context`: the active context for the handler
     */
@@ -164,7 +158,7 @@ define("router",
             toSetup = [],
             startIdx = handlers.length,
             objectsToMatch = objects.length,
-            object, objectChanged, handlerObj, handler, names, i, len;
+            object, objectChanged, handlerObj, handler, names, i;
 
         // Find out which handler to start matching at
         for (i=handlers.length-1; i>=0 && objectsToMatch>0; i--) {
@@ -175,11 +169,11 @@ define("router",
         }
 
         if (objectsToMatch > 0) {
-          throw "More objects were passed than dynamic segments";
+          throw "More context objects were passed than there are dynamic segments for the route: "+handlerName;
         }
 
         // Connect the objects to the routes
-        for (i=0, len=handlers.length; i<len; i++) {
+        for (i=0; i<handlers.length; i++) {
           handlerObj = handlers[i];
           handler = this.getHandler(handlerObj.handler);
           names = handlerObj.names;
@@ -224,10 +218,22 @@ define("router",
 
           toSetup.push({
             isDynamic: !!handlerObj.names.length,
-            handler: handlerObj.handler,
-            name: handlerObj.name,
+            name: handlerObj.handler,
+            handler: handler,
             context: object
           });
+
+          if (i === handlers.length - 1) {
+            var lastHandler = toSetup[toSetup.length - 1],
+                additionalHandler;
+
+            if (additionalHandler = lastHandler.handler.additionalHandler) {
+              handlers.push({
+                handler: additionalHandler.call(lastHandler.handler),
+                names: []
+              });
+            }
+          }
         }
 
         return { params: params, toSetup: toSetup };
@@ -366,9 +372,21 @@ define("router",
     */
     function collectObjects(router, results, index, objects) {
       if (results.length === index) {
-        loaded(router);
-        setupContexts(router, objects);
-        return;
+        var lastObject = objects[objects.length - 1],
+            lastHandler = lastObject && lastObject.handler;
+
+        if (lastHandler && lastHandler.additionalHandler) {
+          var additionalResult = {
+            handler: lastHandler.additionalHandler(),
+            params: {},
+            isDynamic: false
+          };
+          results.push(additionalResult);
+        } else {
+          loaded(router);
+          setupContexts(router, objects);
+          return;
+        }
       }
 
       var result = results[index];
@@ -393,7 +411,8 @@ define("router",
 
         var updatedObjects = objects.concat([{
           context: value,
-          handler: result.handler,
+          name: result.handler,
+          handler: router.getHandler(result.handler),
           isDynamic: result.isDynamic
         }]);
         collectObjects(router, results, index + 1, updatedObjects);
@@ -403,8 +422,9 @@ define("router",
     /**
       @private
 
-      Takes an Array of `UnresolvedHandlerInfo`s, resolves the handler names
-      into handlers, and then figures out what to do with each of the handlers.
+      Takes an Array of `HandlerInfo`s, figures out which ones are
+      exiting, entering, or changing contexts, and calls the
+      proper handler hooks.
 
       For example, consider the following tree of handlers. Each handler is
       followed by the URL segment it handles.
@@ -438,11 +458,9 @@ define("router",
          4. Triggers the `setup` callback on `about`
 
       @param {Router} router
-      @param {Array[UnresolvedHandlerInfo]} handlerInfos
+      @param {Array[HandlerInfo]} handlerInfos
     */
     function setupContexts(router, handlerInfos) {
-      resolveHandlers(router, handlerInfos);
-
       var partition =
         partitionHandlers(router.currentHandlerInfos || [], handlerInfos);
 
@@ -470,7 +488,7 @@ define("router",
         }
       });
 
-      if (router.didTransition) {
+      if (!aborted && router.didTransition) {
         router.didTransition(handlerInfos);
       }
     }
@@ -491,28 +509,6 @@ define("router",
             context = handlerInfo.context;
 
         callback(handler, context);
-      }
-    }
-
-    /**
-      @private
-
-      Updates the `handler` field in each element in an Array of
-      `UnresolvedHandlerInfo`s from a handler name to a resolved handler.
-
-      When done, the Array will contain `HandlerInfo` structures.
-
-      @param {Router} router
-      @param {Array[UnresolvedHandlerInfo]} handlerInfos
-    */
-    function resolveHandlers(router, handlerInfos) {
-      var handlerInfo;
-
-      for (var i=0, l=handlerInfos.length; i<l; i++) {
-        handlerInfo = handlerInfos[i];
-
-        handlerInfo.name = handlerInfo.handler;
-        handlerInfo.handler = router.getHandler(handlerInfo.handler);
       }
     }
 
@@ -616,3 +612,4 @@ define("router",
     }
     return Router;
   });
+

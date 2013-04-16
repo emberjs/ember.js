@@ -1157,6 +1157,83 @@ test("Redirecting from the middle of a route aborts the remainder of the routes"
   equal(router.get('location').getURL(), "/home");
 });
 
+test("Redirecting to the current target in the middle of a route does not abort initial routing", function() {
+  expect(3);
+
+  Router.map(function() {
+    this.route("home");
+    this.resource("foo", function() {
+      this.resource("bar", function() {
+        this.route("baz");
+      });
+    });
+  });
+
+  App.BarRoute = Ember.Route.extend({
+    redirect: function() {
+      this.transitionTo("bar.baz");
+    },
+
+    setupController: function() {
+      ok(true, "Should still invoke setupController");
+    }
+  });
+
+  App.BarBazRoute = Ember.Route.extend({
+    setupController: function() {
+      ok(true, "Should still invoke setupController");
+    }
+  });
+
+  bootApplication();
+
+  Ember.run(function() {
+    router.handleURL("/foo/bar/baz");
+  });
+
+  equal(router.container.lookup('controller:application').get('currentPath'), 'foo.bar.baz');
+});
+
+test("Redirecting to the current target with a different context aborts the remainder of the routes", function() {
+  expect(3);
+
+  Router.map(function() {
+    this.route("home");
+    this.resource("foo", function() {
+      this.resource("bar", { path: "bar/:id" }, function() {
+        this.route("baz");
+      });
+    });
+  });
+
+  var model = { id: 2 };
+
+  App.BarRoute = Ember.Route.extend({
+    redirect: function(context) {
+      this.transitionTo("bar.baz",  model);
+    },
+
+    serialize: function(params) {
+      return params;
+    }
+  });
+
+  App.BarBazRoute = Ember.Route.extend({
+    setupController: function() {
+      ok(true, "Should still invoke setupController");
+    }
+  });
+
+  bootApplication();
+
+  Ember.run(function() {
+    router.handleURL("/foo/bar/1/baz");
+  });
+
+  equal(router.container.lookup('controller:application').get('currentPath'), 'foo.bar.baz');
+  equal(router.get('location').getURL(), "/foo/bar/2/baz");
+});
+
 test("Transitioning from a parent event does not prevent currentPath from being set", function() {
   Router.map(function() {
     this.resource("foo", function() {

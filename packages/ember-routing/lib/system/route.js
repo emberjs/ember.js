@@ -80,9 +80,16 @@ Ember.Route = Ember.Object.extend({
     @param {String} name the name of the route
     @param {...Object} models the
   */
-  transitionTo: function() {
-    if (this._checkingRedirect) { this.redirected = true; }
-    return this.router.transitionTo.apply(this.router, arguments);
+  transitionTo: function(name, context) {
+    var router = this.router;
+
+    // If the transition is a no-op, just bail.
+    if (router.isActive.apply(router, arguments)) {
+      return;
+    }
+
+    if (this._checkingRedirect) { this._redirected[this._redirectDepth] = true; }
+    return router.transitionTo.apply(router, arguments);
   },
 
   /**
@@ -94,13 +101,29 @@ Ember.Route = Ember.Object.extend({
     @param {...Object} models the
   */
   replaceWith: function() {
-    if (this._checkingRedirect) { this.redirected = true; }
+    var router = this.router;
+
+    // If the transition is a no-op, just bail.
+    if (router.isActive.apply(router, arguments)) {
+      return;
+    }
+
+    if (this._checkingRedirect) { this._redirected[this._redirectDepth] = true; }
     return this.router.replaceWith.apply(this.router, arguments);
   },
 
   send: function() {
     return this.router.send.apply(this.router, arguments);
   },
+
+  /**
+   @private
+
+   Internal counter for tracking whether a route handler has
+   called transitionTo or replaceWith inside its redirect hook.
+
+  */
+  _redirectDepth: 0,
 
   /**
     @private
@@ -110,17 +133,57 @@ Ember.Route = Ember.Object.extend({
     @method setup
   */
   setup: function(context) {
-    this.redirected = false;
-    this._checkingRedirect = true;
+    // Determine if this is the top-most transition.
+    // If so, we'll set up a data structure to track
+    // whether `transitionTo` or replaceWith gets called
+    // inside our `redirect` hook.
+    //
+    // This is necessary because we set a flag on the route
+    // inside transitionTo/replaceWith to determine afterwards
+    // if they were called, but `setup` can be called
+    // recursively and we need to disambiguate where in the
+    // call stack the redirect happened.
 
+    // Are we the first call to setup? If so, set up the
+    // redirect tracking data structure, and remember that
+    // we're the top-most so we can clean it up later.
+    var isTop;
+    if (!this._redirected) {
+      isTop = true;
+      this._redirected = [];
+    }
+
+    // Set a flag on this route saying that we are interested in
+    // tracking redirects, and increment the depth count.
+    this._checkingRedirect = true;
+    var depth = ++this._redirectDepth;
+
+    // Check to see if context is set. This check preserves
+    // the correct arguments.length inside the `redirect` hook.
     if (context === undefined) {
       this.redirect();
     } else {
       this.redirect(context);
     }
 
+    // After the call to `redirect` returns, decrement the depth count.
+    this._redirectDepth--;
     this._checkingRedirect = false;
-    if (this.redirected) { return false; }
+
+    // Save off the data structure so we can reset it on the route but
+    // still reference it later in this method.
+    var redirected = this._redirected;
+
+    // If this is the top `setup` call in the call stack, clear the
+    // redirect tracking data structure.
+    if (isTop) { this._redirected = null; }
+
+    // If we were redirected, there is nothing left for us to do.
+    // Returning false tells router.js not to continue calling setup
+    // on any children route handlers.
+    if (redirected[depth]) {
+      return false;
+    }
 
     var controller = this.controllerFor(this.routeName, context);
 
