@@ -155,7 +155,7 @@ test("a metamorph view calls its childrens' willInsertElement and didInsertEleme
 });
 
 test("replacing a Metamorph should invalidate childView elements", function() {
-  var insertedElement;
+  var elementOnDidChange, elementOnDidInsert;
 
   view = Ember.View.create({
     show: false,
@@ -169,8 +169,12 @@ test("replacing a Metamorph should invalidate childView elements", function() {
         this.get('element');
       },
 
+      elementDidChange: Ember.observer(function() {
+        elementOnDidChange = this.get('element');
+      }, 'element'),
+
       didInsertElement: function(){
-        insertedElement = this.get('element');
+        elementOnDidInsert = this.get('element');
       }
     }),
 
@@ -181,7 +185,8 @@ test("replacing a Metamorph should invalidate childView elements", function() {
 
   Ember.run(function(){ view.set('show', true); });
 
-  ok(insertedElement, "should have an element");
+  ok(elementOnDidChange, "should have an element on change");
+  ok(elementOnDidInsert, "should have an element on insert");
 
   Ember.run(function(){ view.destroy(); });
 });
