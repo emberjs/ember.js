@@ -100,3 +100,33 @@ test("When an application is reset, the router URL is reset to `/`", function() 
 
   equal(get(applicationController, 'currentPath'), "one");
 });
+
+test("When an application with advance/deferReadiness is reset, the app does correct become ready after reset", function() {
+  var location, router, readyCallCount;
+
+  readyCallCount = 0;
+
+  Ember.run(function() {
+    application = Application.create({
+      ready: function(){
+        readyCallCount++;
+      }
+    });
+
+    application.deferReadiness();
+    equal(readyCallCount, 0, 'ready has not yet been called');
+  });
+
+  Ember.run(function(){
+    application.advanceReadiness();
+  });
+
+  equal(readyCallCount, 1, 'ready was called once');
+
+  Ember.run(function() {
+    application.reset();
+    equal(readyCallCount, 1, 'ready was called still only once');
+  });
+
+  equal(readyCallCount, 2, 'ready was called twice');
+});
