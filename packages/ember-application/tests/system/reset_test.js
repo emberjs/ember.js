@@ -130,3 +130,49 @@ test("When an application with advance/deferReadiness is reset, the app does cor
 
   equal(readyCallCount, 2, 'ready was called twice');
 });
+
+test("With ember-data like initializer and constant", function() {
+  var location, router, readyCallCount;
+
+  readyCallCount = 0;
+
+  var DS = {
+    Store: Ember.Object.extend({
+      init: function(){
+         if (!get(DS, 'defaultStore')) {
+          set(DS, 'defaultStore', this);
+         }
+
+         this._super();
+      },
+      willDestroy: function() {
+        if (get(DS, 'defaultStore') === this) {
+          set(DS, 'defaultStore', null);
+        }
+      }
+    })
+  };
+
+  Application.initializer({
+    name: "store",
+    initialize: function(container, application){
+      application.register('store:main', application.Store);
+
+      container.lookup('store:main');
+    }
+  });
+
+  Ember.run(function() {
+    application = Application.create();
+    application.Store = DS.Store;
+  });
+
+  ok(DS.defaultStore, 'has defaultStore');
+
+  Ember.run(function(){
+    application.reset();
+  });
+
+  ok(DS.defaultStore, 'still has defaultStore');
+  ok(application.__container__.lookup("store:main"), 'store is still present');
+});
