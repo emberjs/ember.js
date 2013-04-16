@@ -1988,6 +1988,31 @@ test("should be able to explicitly set a view's context", function() {
   equal(view.$().text(), "test");
 });
 
+test("should perform container lookup is context lookup fails", function() {
+
+  TemplateTests.WidgetView = Ember.View.extend({
+    template: Ember.Handlebars.compile("woot")
+  });
+
+  TemplateTests.MainView = Ember.View.extend({
+    template: Ember.Handlebars.compile("{{view widget}}{{view 'view:widget'}}"),
+    context: Ember.Object.create({
+      widget: "I am not a view! Ignore me!"
+    })
+  });
+
+  container.register('view:main', TemplateTests.MainView);
+  container.register('view:widget', TemplateTests.WidgetView);
+
+  view = container.lookup('view:main');
+
+  Ember.run(function() {
+    view.appendTo('#qunit-fixture');
+  });
+
+  equal(view.$().text(), "wootwoot");
+});
+
 module("Ember.View - handlebars integration", {
   setup: function() {
     Ember.lookup = lookup = { Ember: Ember };

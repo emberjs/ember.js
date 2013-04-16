@@ -118,10 +118,21 @@ EmberHandlebars.ViewHelper = Ember.Object.create({
   helper: function(thisContext, path, options) {
     var data = options.data,
         fn = options.fn,
+        currentView = data.view,
         newView;
 
     if ('string' === typeof path) {
       newView = EmberHandlebars.get(thisContext, path, options);
+
+      if (!Ember.View.detect(newView) && !Ember.View.detectInstance(newView)) {
+
+        // Context lookup failed. Try container lookup.
+        var container = currentView.get('container');
+        if (container) {
+          newView = container.lookup('view:' + path) || container.lookup(path);
+        }
+      }
+
       Ember.assert("Unable to find view at path '" + path + "'", !!newView);
     } else {
       newView = path;
@@ -130,7 +141,6 @@ EmberHandlebars.ViewHelper = Ember.Object.create({
     Ember.assert(Ember.String.fmt('You must pass a view to the #view helper, not %@ (%@)', [path, newView]), Ember.View.detect(newView) || Ember.View.detectInstance(newView));
 
     var viewOptions = this.propertiesFromHTMLOptions(options, thisContext);
-    var currentView = data.view;
     viewOptions.templateData = data;
     var newViewProto = newView.proto ? newView.proto() : newView;
 
