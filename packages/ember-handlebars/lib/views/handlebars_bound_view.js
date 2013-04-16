@@ -39,6 +39,8 @@ SimpleHandlebarsView.prototype = {
     this.morph = null;
   },
 
+  propertyWillChange: Ember.K,
+
   propertyDidChange: Ember.K,
 
   normalizedValue: function() {
