@@ -443,7 +443,8 @@ var Application = Ember.Application = Ember.Namespace.extend(Ember.DeferredMixin
   },
 
   reset: function() {
-    get(this, '__container__').destroy();
+    Ember.run(get(this,'__container__'), 'destroy');
+
     this.buildContainer();
 
     this._readinessDeferrals = 1;
