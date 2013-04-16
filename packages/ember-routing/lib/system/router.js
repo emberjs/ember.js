@@ -234,15 +234,27 @@ function doTransition(router, method, args) {
 
 Ember.Router.reopenClass({
   map: function(callback) {
-    var router = this.router = new Router();
+      // Make sure the mapCallbacks exists
+      if (this.mapCallbacks == null) {
+          this.mapCallbacks = [];
+      }
+      this.mapCallbacks.push(callback);
 
-    var dsl = Ember.RouterDSL.map(function() {
-      this.resource('application', { path: "/" }, function() {
-        callback.call(this);
+      var router = this.router,
+          self = this;
+      if (this.router === undefined) {
+          router = this.router = new Router();
+      }
+
+      var dsl = Ember.RouterDSL.map(function() {
+          this.resource('application', { path: "/" }, function() {
+              for (var cb_i = 0, cb_l = self.mapCallbacks.length; cb_i < cb_l; cb_i++) {
+                  self.mapCallbacks[cb_i].call(this);
+              }
+          });
       });
-    });
 
-    router.map(dsl.generate());
-    return router;
+      router.map(dsl.generate());
+      return router;
   }
 });

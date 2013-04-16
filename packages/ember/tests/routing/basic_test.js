@@ -35,6 +35,7 @@ module("Basic Routing", {
       Ember.TEMPLATES.application = compile("{{outlet}}");
       Ember.TEMPLATES.home = compile("<h3>Hours</h3>");
       Ember.TEMPLATES.homepage = compile("<h3>Megatroll</h3><p>{{home}}</p>");
+      Ember.TEMPLATES.camelot = compile('<section><h3>Is a silly place</h3></section>');
     });
   },
 
@@ -65,6 +66,53 @@ test("The Homepage", function() {
   });
 
   bootApplication();
+
+  Ember.run(function() {
+    router.handleURL("/");
+  });
+
+  equal(currentPath, 'home');
+  equal(Ember.$('h3:contains(Hours)', '#qunit-fixture').length, 1, "The home template was rendered");
+});
+
+test("The Home page and the Camelot page with multiple Router.map calls", function() {
+  Router.map(function() {
+    this.route("home", { path: "/" });
+  });
+
+  Router.map(function() {
+    this.route("camelot", {path: "/camelot"});
+  });
+
+  App.HomeRoute = Ember.Route.extend({
+  });
+
+  App.CamelotRoute = Ember.Route.extend({
+  });
+
+  var currentPath;
+
+  App.ApplicationController = Ember.Controller.extend({
+    currentPathDidChange: Ember.observer(function() {
+      currentPath = get(this, 'currentPath');
+    }, 'currentPath')
+  });
+
+  App.CamelotController = Ember.Controller.extend({
+    currentPathDidChange: Ember.observer(function() {
+      currentPath = get(this, 'currentPath');
+    }, 'currentPath')
+  });
+
+  bootApplication();
+
+  Ember.run(function() {
+    router.handleURL("/camelot");
+  });
+
+  equal(currentPath, 'camelot');
+  equal(Ember.$('h3:contains(silly)', '#qunit-fixture').length, 1, "The camelot template was rendered");
+
 
   Ember.run(function() {
     router.handleURL("/");
