@@ -1,8 +1,8 @@
 var RSVP = requireModule("rsvp");
 
-RSVP.async = function(callback, binding) {
+RSVP.configure('async', function(callback, binding) {
   Ember.run.schedule('actions', binding, callback);
-};
+});
 
 /**
 @module ember
@@ -24,9 +24,22 @@ Ember.DeferredMixin = Ember.Mixin.create({
     @param {Function} doneCallback a callback function to be called when done
     @param {Function} failCallback a callback function to be called when failed
   */
-  then: function(doneCallback, failCallback) {
-    var promise = get(this, 'promise');
-    return promise.then.apply(promise, arguments);
+  then: function(resolve, reject) {
+    var deferred, promise, entity;
+
+    entity = this;
+    deferred = get(this, '_deferred');
+    promise = deferred.promise;
+
+    return promise.then(function(fulfillment) {
+      if (fulfillment === promise) {
+        return resolve(entity);
+      } else {
+        return resolve(fulfillment);
+      }
+    }, function(reason) {
+      return reject(reason);
+    });
   },
 
   /**
@@ -35,7 +48,16 @@ Ember.DeferredMixin = Ember.Mixin.create({
     @method resolve
   */
   resolve: function(value) {
-    get(this, 'promise').resolve(value);
+    var deferred, promise;
+
+    deferred = get(this, '_deferred');
+    promise = deferred.promise;
+
+    if (value === this){
+      deferred.resolve(promise);
+    } else {
+      deferred.resolve(value);
+    }
   },
 
   /**
@@ -44,11 +66,11 @@ Ember.DeferredMixin = Ember.Mixin.create({
     @method reject
   */
   reject: function(value) {
-    get(this, 'promise').reject(value);
+    get(this, '_deferred').reject(value);
   },
 
-  promise: Ember.computed(function() {
-    return new RSVP.Promise();
+  _deferred: Ember.computed(function() {
+    return new RSVP.defer();
   })
 });
 

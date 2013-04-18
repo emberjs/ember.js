@@ -7,7 +7,7 @@ test("can resolve deferred", function() {
     deferred = Ember.Object.createWithMixins(Ember.DeferredMixin);
   });
 
-  deferred.then(function() {
+  deferred.then(function(a) {
     count++;
   });
 
@@ -15,7 +15,7 @@ test("can resolve deferred", function() {
     deferred.resolve();
   });
 
-  equal(count, 1, "done callback was called");
+  equal(count, 1, "was fulfilled");
 });
 
 test("can reject deferred", function() {
