@@ -1637,7 +1637,7 @@ Ember.View = Ember.CoreView.extend(
   */
   invokeRecursively: function(fn, includeSelf) {
     var childViews = (includeSelf === false) ? this._childViews : [this];
-    var currentViews, view;
+    var currentViews, view, currentChildViews;
 
     while (childViews.length) {
       currentViews = childViews.slice();
@@ -1645,16 +1645,17 @@ Ember.View = Ember.CoreView.extend(
 
       for (var i=0, l=currentViews.length; i<l; i++) {
         view = currentViews[i];
+        currentChildViews = view._childViews ? view._childViews.slice(0) : null;
         fn(view);
-        if (view._childViews) {
-          childViews.push.apply(childViews, view._childViews);
+        if (currentChildViews) {
+          childViews.push.apply(childViews, currentChildViews);
         }
       }
     }
   },
 
   triggerRecursively: function(eventName) {
-    var childViews = [this], currentViews, view;
+    var childViews = [this], currentViews, view, currentChildViews;
 
     while (childViews.length) {
       currentViews = childViews.slice();
@@ -1662,10 +1663,12 @@ Ember.View = Ember.CoreView.extend(
 
       for (var i=0, l=currentViews.length; i<l; i++) {
         view = currentViews[i];
+        currentChildViews = view._childViews ? view._childViews.slice(0) : null;
         if (view.trigger) { view.trigger(eventName); }
-        if (view._childViews) {
-          childViews.push.apply(childViews, view._childViews);
+        if (currentChildViews) {
+          childViews.push.apply(childViews, currentChildViews);
         }
+
       }
     }
   },
