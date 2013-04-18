@@ -1,7 +1,8 @@
 /*globals EMBER_APP_BEING_TESTED */
 
 var Promise = Ember.RSVP.Promise,
-    pendingAjaxRequests = 0;
+    pendingAjaxRequests = 0,
+    originalFind;
 
 function visit(url) {
   var promise = new Promise();
@@ -63,17 +64,25 @@ Ember.Application.reopen({
   },
 
   injectTestHelpers: function() {
-    Ember.$.ajaxStart(function() {
+    Ember.$(document).ajaxStart(function() {
       pendingAjaxRequests++;
     });
 
-    Ember.$.ajaxStop(function() {
+    Ember.$(document).ajaxStop(function() {
       pendingAjaxRequests--;
     });
 
     window.visit = visit;
     window.click = click;
     window.fillIn = fillIn;
+    originalFind = window.find;
     window.find = find;
+  },
+
+  removeTestHelpers: function() {
+    window.visit = null;
+    window.click = null;
+    window.fillIn = null;
+    window.find = originalFind;
   }
 });

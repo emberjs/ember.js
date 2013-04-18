@@ -7,17 +7,26 @@ module("ember-testing", {
   }
 });
 
-test("Ember.Application#injectTestHelpers", function() {
+test("Ember.Application#injectTestHelpers/#removeTestHelpers", function() {
   App = Ember.run(Ember.Application, Ember.Application.create);
   ok(!window.visit);
   ok(!window.click);
   ok(!window.fillIn);
-  // ok(!window.find); // window.find already exists
-  Ember.run(App, App.injectTestHelpers);
+  var originalFind = window.find; // window.find already exists
+
+  App.injectTestHelpers();
+
   ok(window.visit);
   ok(window.click);
   ok(window.fillIn);
   ok(window.find);
+
+  App.removeTestHelpers();
+
+  ok(!window.visit);
+  ok(!window.click);
+  ok(!window.fillIn);
+  equal(window.find, originalFind); // window.find already exists
 });
 
 test("Ember.Application#setupForTesting", function() {
