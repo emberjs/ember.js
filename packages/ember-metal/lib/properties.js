@@ -18,7 +18,7 @@ var MANDATORY_SETTER = Ember.ENV.MANDATORY_SETTER;
 //
 
 /**
-  Objects of this type can implement an interface to responds requests to
+  Objects of this type can implement an interface to respond to requests to
   get and set. The default implementation handles simple properties.
 
   You generally won't need to create or subclass this directly.
