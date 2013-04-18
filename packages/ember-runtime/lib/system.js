@@ -13,3 +13,5 @@ require('ember-runtime/system/string');
 require('ember-runtime/system/deferred');
 
 require('ember-runtime/system/lazy_load');
+
+require('ember-runtime/system/control');
