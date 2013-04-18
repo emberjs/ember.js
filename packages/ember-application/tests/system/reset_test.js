@@ -101,7 +101,7 @@ test("When an application is reset, the router URL is reset to `/`", function() 
   equal(get(applicationController, 'currentPath'), "one");
 });
 
-test("When an application with advance/deferReadiness is reset, the app does correct become ready after reset", function() {
+test("When an application with advance/deferReadiness is reset, the app does correctly become ready after reset", function() {
   var location, router, readyCallCount;
 
   readyCallCount = 0;
