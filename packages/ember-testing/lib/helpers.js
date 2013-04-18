@@ -24,12 +24,8 @@ function fillIn(selector, text) {
   var $el = find(selector);
   Ember.run(function() {
     $el.val(text);
-    $el.simulate('keyup', {keyCode: 13});
   });
 
-  Ember.run(function() {
-    $el.simulate('keyup', {keyCode: 13}); // hit enter
-  });
   wait(promise, promise.resolve);
   return promise;
 }
@@ -67,13 +63,13 @@ Ember.Application.reopen({
   },
 
   injectTestHelpers: function() {
-    Ember.$.ajaxStart = function() {
+    Ember.$.ajaxStart(function() {
       pendingAjaxRequests++;
-    };
+    });
 
-    Ember.$.ajaxStop = function() {
+    Ember.$.ajaxStop(function() {
       pendingAjaxRequests--;
-    };
+    });
 
     window.visit = visit;
     window.click = click;
