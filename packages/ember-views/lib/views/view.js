@@ -241,9 +241,9 @@ ViewCollection.prototype = {
     return this.views[idx];
   },
 
-  forEach: function() {
+  forEach: function(callback) {
     var views = this.views;
-    return views.forEach.apply(views, arguments);
+    return a_forEach(views, callback);
   },
 
   clear: function() {
