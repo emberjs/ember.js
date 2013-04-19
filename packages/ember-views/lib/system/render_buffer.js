@@ -454,8 +454,11 @@ Ember._RenderBuffer.prototype =
   string: function() {
     if (this._hasElement && this._element) {
       // Firefox versions < 11 do not have support for element.outerHTML.
-      return this.element().outerHTML ||
-        new XMLSerializer().serializeToString(this.element());
+      var thisElement = this.element(), outerHTML = thisElement.outerHTML;
+      if (typeof outerHTML === 'undefined'){
+        return Ember.$('<div/>').append(thisElement).html();
+      }
+      return outerHTML;
     } else {
       return this.innerString();
     }
