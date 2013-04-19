@@ -810,3 +810,41 @@ test("nothing happens if transitioning to a parent state when the current state 
   equal(stateManager.get('currentState.path'), 'start.first', 'does not change state');
 
 });
+
+test("StateManagers can use `create`d states from mixins", function() {
+  var statesMixin,
+    firstManagerClass, secondManagerClass,
+    firstManager, secondManager,
+    firstCount = 0, secondCount = 0;
+
+  statesMixin = Ember.Mixin.create({
+    initialState: 'ready',
+    ready: Ember.State.create({
+      startUpload: function(manager) {
+        manager.transitionTo('uploading');
+      }
+    })
+  });
+
+  firstManagerClass = Ember.StateManager.extend(statesMixin, {
+    uploading: Ember.State.create({
+      enter: function() { firstCount++; }
+    })
+  });
+
+  secondManagerClass = Ember.StateManager.extend(statesMixin, {
+    uploading: Ember.State.create({
+      enter: function() { secondCount++; }
+    })
+  });
+
+  firstManager  = firstManagerClass.create();
+  firstManager.send('startUpload');
+
+  secondManager = secondManagerClass.create();
+  secondManager.send('startUpload');
+
+  equal(firstCount, 1, "The first state manager's uploading state was entered once");
+  equal(secondCount, 1, "The second state manager's uploading state was entered once");
+});
+
