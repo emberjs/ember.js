@@ -1,6 +1,4 @@
 /*jshint newcap:false*/
-require('ember-metal/enumerable_utils');
-
 /**
 @module ember-metal
 */
