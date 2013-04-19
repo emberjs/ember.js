@@ -93,7 +93,7 @@ test("handles browsers like Firefox < 11 that don't support outerHTML Issue #195
   // Make sure element.outerHTML is falsy to trigger the fallback.
   var elementStub = '<div></div>';
   buffer.element = function(){ return elementStub; };
-  equal(new XMLSerializer().serializeToString(elementStub), buffer.string());
+  equal(elementStub, buffer.string());
 });
 
 module("Ember.RenderBuffer - without tagName");
