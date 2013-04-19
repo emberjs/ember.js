@@ -22,7 +22,7 @@
   `Ember.Map.create()` for symmetry with other Ember classes.
 */
 
-require('ember-metal/array');
+require('ember-metal/enumerable_utils');
 require('ember-metal/utils');
 require('ember-metal/core');
 
