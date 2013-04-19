@@ -39,8 +39,6 @@ function invoke(target, method, args, ignore) {
 // RUNLOOP
 //
 
-var timerMark; // used by timers...
-
 /**
 Ember RunLoop (Private)
 
@@ -170,8 +168,6 @@ RunLoop.prototype = {
         idx++;
       }
     }
-
-    timerMark = null;
 
     return this;
   }
