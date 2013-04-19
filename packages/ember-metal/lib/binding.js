@@ -335,7 +335,7 @@ mixinProperties(Binding, {
   Properties ending in a `Binding` suffix will be converted to `Ember.Binding`
   instances. The value of this property should be a string representing a path
   to another object or a custom binding instanced created using Binding helpers
-  (see "Customizing Your Bindings"):
+  (see "One Way Bindings"):
 
   ```
   valueBinding: "MyApp.someController.title"
