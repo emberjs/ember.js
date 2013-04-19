@@ -126,9 +126,9 @@ Ember.ArrayController = Ember.ArrayProxy.extend(Ember.ControllerMixin,
     });
     ```
 
-    @method
-    @type String
-    @default null
+    @method lookupItemController
+    @param {Object} object
+    @return {String}
   */
   lookupItemController: function(object) {
     return get(this, 'itemController');

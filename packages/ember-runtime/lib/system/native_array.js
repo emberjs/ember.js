@@ -117,9 +117,8 @@ if (ignore.length>0) {
   @namespace Ember
   @extends Ember.Mixin
   @uses Ember.MutableArray
-  @uses Ember.MutableEnumerable
+  @uses Ember.Observable
   @uses Ember.Copyable
-  @uses Ember.Freezable
 */
 Ember.NativeArray = NativeArray;
 
