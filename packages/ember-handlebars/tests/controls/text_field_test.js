@@ -50,13 +50,13 @@ test("should insert a text field into DOM", function() {
 });
 
 test("should become disabled if the disabled attribute is true", function() {
-  equal(textField.$('input:disabled').length, 0, "There are no disabled text fields");
+  ok(textField.$('input').is(':not(:disabled)'), "There are no disabled text fields");
 
   set(controller, 'disabled', true);
-  equal(textField.$('input:disabled').length, 1, "The text field is disabled");
+  ok(textField.$('input').is(':disabled'), "The text field is disabled");
 
   set(controller, 'disabled', false);
-  equal(textField.$('input:disabled').length, 0, "There are no disabled text fields");
+  ok(textField.$('input').is(':not(:disabled)'), "There are no disabled text fields");
 });
 
 test("input value is updated when setting value property of view", function() {
@@ -117,7 +117,7 @@ test("should insert a text field into DOM", function() {
 });
 
 test("should become disabled if the disabled attribute is true", function() {
-  equal(textField.$('input:disabled').length, 1, "The text field is disabled");
+  ok(textField.$('input').is(':disabled'), "The text field is disabled");
 });
 
 test("input value is updated when setting value property of view", function() {
