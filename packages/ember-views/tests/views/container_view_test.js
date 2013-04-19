@@ -564,3 +564,42 @@ test("should invalidate `element` on itself and childViews when being rendered b
     root.destroy();
   });
 });
+
+test("if a containerView appends a child in its didInsertElement event, the didInsertElement event of the child view should be fired once", function () {
+ 
+  var counter = 0,
+      root = Ember.ContainerView.create({});
+ 
+  container = Ember.ContainerView.create({
+ 
+    didInsertElement: function() {
+      
+      var view = Ember.ContainerView.create({
+        didInsertElement: function() {
+          counter++;
+        }
+      });
+ 
+      this.pushObject(view);
+ 
+    }
+  
+  });
+ 
+ 
+  Ember.run(function() {
+    root.appendTo('#qunit-fixture');
+  });
+ 
+  Ember.run(function() {
+    root.pushObject(container);
+  });
+ 
+  equal(container.get('childViews').get('length'), 1 , "containerView should only have a child");
+  equal(counter, 1 , "didInsertElement should be fired once");
+ 
+  Ember.run(function() {
+    root.destroy();
+  });
+ 
+});
