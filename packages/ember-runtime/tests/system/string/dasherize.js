@@ -21,6 +21,14 @@ test("dasherize underscored string", function() {
   }
 });
 
+test("dasherize string with special chars", function() {
+  deepEqual(Ember.String.dasherize('A Cool String; no really it is'), 'a-cool-string-no-really-it-is');
+});
+
+test("dasherize string with repeated separators", function() {
+  deepEqual(Ember.String.dasherize('A Cool--://String; no really it is'), 'a-cool-string-no-really-it-is');
+});
+
 test("dasherize camelcased string", function() {
   deepEqual(Ember.String.dasherize('innerHTML'), 'inner-html');
   if (Ember.EXTEND_PROTOTYPES) {
