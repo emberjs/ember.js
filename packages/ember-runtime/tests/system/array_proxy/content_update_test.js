@@ -17,7 +17,7 @@ test("The `contentArrayDidChange` method is invoked after `content` is updated."
       // setup arrangedContent as a different object than content,
       // which is the default
       return Ember.A(this.get('content').slice());
-    }).cacheable(),
+    }),
 
     contentArrayDidChange: function(array, idx, removedCount, addedCount) {
       observerCalled = true;
