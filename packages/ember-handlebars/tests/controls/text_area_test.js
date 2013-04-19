@@ -43,9 +43,9 @@ test("Should insert a textarea", function() {
 });
 
 test("Should become disabled when the controller changes", function() {
-  equal(textArea.$('textarea:disabled').length, 0, "Nothing is disabled yet");
-  set(controller, 'disabled', true); 
-  equal(textArea.$('textarea:disabled').length, 1, "The disabled attribute is updated");
+  ok(textArea.$('textarea').is(':not(:disabled)'), "Nothing is disabled yet");
+  set(controller, 'disabled', true);
+  ok(textArea.$('textarea').is(':disabled'), "The disabled attribute is updated");
 });
 
 test("Should bind its contents to the specified value", function() {

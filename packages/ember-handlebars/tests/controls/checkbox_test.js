@@ -40,9 +40,9 @@ test("should append a checkbox", function() {
 });
 
 test("should begin disabled if the disabled attribute is true", function() {
-  equal(checkboxView.$('input[type=checkbox]:disabled').length, 0, "The checkbox isn't disabled");
+  ok(checkboxView.$('input').is(':not(:disabled)'), "The checkbox isn't disabled");
   set(controller, 'disabled', true);
-  equal(checkboxView.$('input[type=checkbox]:disabled').length, 1, "The checkbox is now disabled");
+  ok(checkboxView.$('input').is(':disabled'), "The checkbox is now disabled");
 });
 
 test("should support the tabindex property", function() {
@@ -85,7 +85,7 @@ module("{{input type='checkbox'}} - static values", {
 });
 
 test("should begin disabled if the disabled attribute is true", function() {
-  equal(checkboxView.$('input[type=checkbox]:disabled').length, 1, "The checkbox isn't disabled");
+  ok(checkboxView.$().is(':not(:disabled)'), "The checkbox isn't disabled");
 });
 
 test("should support the tabindex property", function() {
