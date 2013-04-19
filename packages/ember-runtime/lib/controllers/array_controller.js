@@ -206,10 +206,11 @@ Ember.ArrayController = Ember.ArrayProxy.extend(Ember.ControllerMixin,
 
   _resetSubControllers: function() {
     var subControllers = get(this, '_subControllers');
-
-    forEach(subControllers, function(subController) {
-      if (subController) { subController.destroy(); }
-    });
+    if (subControllers) {
+      forEach(subControllers, function(subController) {
+        if (subController) { subController.destroy(); }
+      });
+    }
 
     this.set('_subControllers', Ember.A());
   }
