@@ -336,6 +336,25 @@ test("should call the insertNewline method when return key is pressed", function
   ok(wasCalled, "invokes insertNewline method");
 });
 
+test("should clear the text field when insertNewLine is called if clearOnEnter attribute is true", function() {
+
+  textField.set('value', "the glass is half full");
+  textField.set('clearOnEnter', true );
+
+  textField.insertNewline();
+
+  equal(get(textField, 'value'), null, "value was cleared sucesfully" );
+});
+
+test("should not clear the text field when insertNewLine is called if clearOnEnter attribute is false", function() {
+
+  textField.set('value', "the glass is half full");
+
+  textField.insertNewline();
+
+  equal(get(textField, 'value'), "the glass is half full", "value was cleared sucesfully" );
+});
+
 test("should call the cancel method when escape key is pressed", function() {
   var wasCalled;
   var event = Ember.Object.create({
