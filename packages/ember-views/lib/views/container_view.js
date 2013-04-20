@@ -378,21 +378,6 @@ Ember.merge(states.hasElement, {
   ensureChildrenAreInDOM: function(view) {
     var childViews = view._childViews, i, len, childView, previous, buffer, viewCollection = new ViewCollection();
 
-    function insertViewCollection() {
-      viewCollection.triggerRecursively('willInsertElement');
-      if (previous) {
-        previous.domManager.after(previous, buffer.string());
-      } else {
-        view.domManager.prepend(view, buffer.string());
-      }
-      buffer = null;
-      viewCollection.forEach(function(v) {
-        v.transitionTo('inDOM');
-        v.propertyDidChange('element');
-        v.triggerRecursively('didInsertElement');
-      });
-    }
-
     for (i = 0, len = childViews.length; i < len; i++) {
       childView = childViews[i];
 
@@ -401,7 +386,8 @@ Ember.merge(states.hasElement, {
       if (childView.renderToBufferIfNeeded(buffer)) {
         viewCollection.push(childView);
       } else if (viewCollection.length) {
-        insertViewCollection();
+        insertViewCollection(view, viewCollection, previous, buffer);
+        buffer = null;
         previous = childView;
         viewCollection.clear();
       } else {
@@ -409,6 +395,25 @@ Ember.merge(states.hasElement, {
       }
     }
 
-    if (viewCollection.length) { insertViewCollection(); }
+    if (viewCollection.length) {
+      insertViewCollection(view, viewCollection, previous, buffer);
+    }
   }
 });
+
+function insertViewCollection(view, viewCollection, previous, buffer) {
+  viewCollection.triggerRecursively('willInsertElement');
+
+  if (previous) {
+    previous.domManager.after(previous, buffer.string());
+  } else {
+    view.domManager.prepend(view, buffer.string());
+  }
+
+  viewCollection.forEach(function(v) {
+    v.transitionTo('inDOM');
+    v.propertyDidChange('element');
+    v.triggerRecursively('didInsertElement');
+  });
+}
+
