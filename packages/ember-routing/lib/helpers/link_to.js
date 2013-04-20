@@ -84,8 +84,8 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     routers's configured `Location` scheme, which defaults
     to Ember.HashLocation.
 
-    ## Handling 'current'
-    `{{linkTo}}` will apply a CSS class name of 'current'
+    ## Handling current route
+    `{{linkTo}}` will apply a CSS class name of 'active'
     when the application's current route matches
     the supplied routeName. For example, if the application's
     current route is 'photoGallery.recent' the following
@@ -105,7 +105,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     </a>
     ```
 
-    The CSS class name use for active classes can be customized
+    The CSS class name used for active classes can be customized
     for a single use of `{{linkTo}}` by passing an `activeClass`
     option:
 
@@ -149,8 +149,8 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
 
     ## Supplying multiple models
     For deep-linking to route paths that contain multiple
-    dynamic segments multiple model arguments can be used.
-    As the router transitions through the route path each
+    dynamic segments, multiple model arguments can be used.
+    As the router transitions through the route path, each
     supplied model argument will become the context for the
     route with the dynamic segments:
 
