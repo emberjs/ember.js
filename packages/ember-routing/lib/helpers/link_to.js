@@ -238,6 +238,8 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     },
 
     href: Ember.computed(function() {
+      if (this.get('tagName') !== 'a') { return false; }
+
       var router = this.get('router');
       return router.generate.apply(router, args(this, router));
     })
