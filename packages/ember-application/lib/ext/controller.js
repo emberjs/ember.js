@@ -46,8 +46,9 @@ Ember.ControllerMixin.reopen({
   concatenatedProperties: ['needs'],
 
   /**
-    The controller that will be made available inside of the context
-    of current one.
+    An array of other controller objects available inside
+    instances of this controller via the `controllers`
+    property:
 
     For example, when you define a controller:
 
@@ -56,11 +57,13 @@ Ember.ControllerMixin.reopen({
       needs: ['post']
     });
     ```
-
-    Then you will be able to call in its context:
-
+    
+    The application's single instance of these other
+    controllers are accessible by name through the
+    `controllers` property:
+    
     ```javascript
-    this.get('controllers.post');
+    this.get('controllers.post'); // instance of App.PostController
     ```
 
     @property {Array} needs
