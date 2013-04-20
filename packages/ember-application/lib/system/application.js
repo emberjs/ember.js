@@ -502,15 +502,16 @@ var Application = Ember.Application = Ember.Namespace.extend(Ember.DeferredMixin
 
     Setup up the event dispatcher to receive events on the
     application's `rootElement` with any registered
-    `customEvents`.
+    `customEvents` and `customActionEvents`.
 
     @method setupEventDispatcher
   */
   setupEventDispatcher: function() {
-    var eventDispatcher = this.createEventDispatcher(),
-        customEvents    = get(this, 'customEvents');
+    var eventDispatcher    = this.createEventDispatcher(),
+        customEvents       = get(this, 'customEvents'),
+        customActionEvents = get(this, 'customActionEvents');
 
-    eventDispatcher.setup(customEvents);
+    eventDispatcher.setup(customEvents, customActionEvents);
   },
 
   /**

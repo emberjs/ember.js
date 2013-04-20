@@ -368,7 +368,7 @@ test("should only trigger actions for the event they were registered on", functi
 
   appendView();
 
-  view.$('a').trigger('mouseover');
+  view.$('a').trigger('dblclick');
 
   ok(!editWasCalled, "The action wasn't called");
 });
@@ -525,3 +525,50 @@ test("it does not trigger action with special clicks", function() {
   checkClick('which', undefined, true); // IE <9
 });
 
+module("Ember.Handlebars - added allowed action events", {
+  setup: function() {
+    dispatcher = Ember.EventDispatcher.create();
+
+    // add keyDown to allwed events which can be handled with an {{action}} helper
+    dispatcher.setup({}, ['keyDown']);
+  },
+
+  teardown: function() {
+    Ember.run(function() {
+      dispatcher.destroy();
+      if (view) { view.destroy(); }
+    });
+  }
+});
+
+test("should raise an exception when an event is tried to be handled with an action helper, but this event is not allowed", function() {
+  var editWasCalled = false;
+
+  view = Ember.View.create({
+    template: Ember.Handlebars.compile('<a href="#" {{action "edit" target="view" on="touchStart" }}>edit</a>'),
+    edit: function() { editWasCalled = true; }
+  });
+
+  appendView();
+
+  raises(function() {
+    view.$('a').trigger('touchstart');
+  }, Error);
+
+  ok(!editWasCalled, "The action wasn't called");
+});
+
+test("it is possible to add additional allowed events which can be handled by the action helper", function() {
+  var editWasCalled = false;
+
+  view = Ember.View.create({
+    template: Ember.Handlebars.compile('<a href="#" {{action "edit" target="view" on="keyDown" }}>edit</a>'),
+    edit: function() { editWasCalled = true; }
+  });
+
+  appendView();
+
+  view.$('a').trigger('keydown');
+
+  ok(editWasCalled, "The action has been called");
+});
