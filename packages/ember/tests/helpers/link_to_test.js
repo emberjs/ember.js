@@ -117,6 +117,22 @@ test("The {{linkTo}} helper supports URL replacement", function() {
   equal(replaceCount, 1, 'replaceURL should be called once');
 });
 
+test("the {{linkTo}} helper doesn't add an href when the tagName isn't 'a'", function(){
+  Ember.TEMPLATES.index = Ember.Handlebars.compile("{{#linkTo about id='about-link' tagName='div'}}About{{/linkTo}}");
+
+  Router.map(function() {
+    this.route("about");
+  });
+
+  bootApplication();
+
+  Ember.run(function() {
+    router.handleURL("/");
+  });
+
+  equal(Ember.$('#about-link').attr('href'), undefined, "there is no href attribute");
+});
+
 test("The {{linkTo}} helper supports a custom activeClass", function() {
   Ember.TEMPLATES.index = Ember.Handlebars.compile("<h3>Home</h3>{{#linkTo about id='about-link'}}About{{/linkTo}}{{#linkTo index id='self-link' activeClass='zomg-active'}}Self{{/linkTo}}");
 
