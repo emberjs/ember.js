@@ -220,7 +220,7 @@ ViewCollection.prototype = {
 
     for (var i = 0, l = views.length; i < l; i++) {
       view = views[i];
-      fn.call(view, view);
+      fn(view);
     }
   },
 
@@ -1400,7 +1400,7 @@ Ember.View = Ember.CoreView.extend(
 
     while(--idx >= 0) {
       view = childViews[idx];
-      callback.call(this, view, idx);
+      callback(this, view, idx);
     }
 
     return this;
@@ -1414,9 +1414,9 @@ Ember.View = Ember.CoreView.extend(
     var len = childViews.length,
         view, idx;
 
-    for(idx = 0; idx < len; idx++) {
+    for (idx = 0; idx < len; idx++) {
       view = childViews[idx];
-      callback.call(this, view);
+      callback(view);
     }
 
     return this;
@@ -1628,7 +1628,7 @@ Ember.View = Ember.CoreView.extend(
 
       for (var i=0, l=currentViews.length; i<l; i++) {
         view = currentViews[i];
-        fn.call(view, view);
+        fn(view);
         if (view._childViews) {
           childViews.push.apply(childViews, view._childViews);
         }
@@ -1992,13 +1992,13 @@ Ember.View = Ember.CoreView.extend(
     @return {Ember.View} receiver
   */
   removeAllChildren: function() {
-    return this.mutateChildViews(function(view) {
-      this.removeChild(view);
+    return this.mutateChildViews(function(parentView, view) {
+      parentView.removeChild(view);
     });
   },
 
   destroyAllChildren: function() {
-    return this.mutateChildViews(function(view) {
+    return this.mutateChildViews(function(parentView, view) {
       view.destroy();
     });
   },
