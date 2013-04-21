@@ -297,6 +297,8 @@ CoreObject.PrototypeMixin = Mixin.create({
   destroy: function() {
     if (this._didCallDestroy) { return; }
 
+    if (this.willDestroy) { this.willDestroy(); }
+
     this.isDestroying = true;
     this._didCallDestroy = true;
 
@@ -304,6 +306,13 @@ CoreObject.PrototypeMixin = Mixin.create({
     return this;
   },
 
+  /**
+    Called before the object is destroyed, but before anything has
+    been torn down. This is a good opportunity to clean up manually
+    bindings.
+
+    @method willDestroy
+  */
   willDestroy: Ember.K,
 
   /**
@@ -315,7 +324,6 @@ CoreObject.PrototypeMixin = Mixin.create({
     @method _scheduledDestroy
   */
   _scheduledDestroy: function() {
-    if (this.willDestroy) { this.willDestroy(); }
     destroy(this);
     this.isDestroyed = true;
     if (this.didDestroy) { this.didDestroy(); }

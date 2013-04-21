@@ -1,4 +1,5 @@
 /*globals raises TestObject */
+/*globals MyApp:true */
 
 module('ember-runtime/system/object/destroy_test');
 
@@ -57,3 +58,43 @@ test("observers should not fire after an object has been destroyed", function() 
 
   equal(count, 1, "observer was not called after object was destroyed");
 });
+
+test("bindings should be synced when are updated in the willDestroy hook", function() {
+
+  var foo = Ember.Object.create({
+    value: true
+  });
+
+  var bar = Ember.Object.create({
+    value: null,
+    willDestroy: function() {
+      this.set('value', true);
+    }
+  });
+
+  MyApp = {
+    foo: foo,
+    bar: bar
+  };
+
+  Ember.run(function(){
+    Ember.bind(bar, 'value', 'MyApp.foo.value');
+  });
+
+  ok(bar.get('value'), 'the initial value has been bound'); 
+
+  Ember.run(function(){
+    bar.set('value', false);
+  });
+
+
+  ok(!foo.get('value'), 'foo synced'); 
+
+  Ember.run(function() {
+    bar.destroy();
+  });
+
+  ok(foo.get('value'), 'foo is synced when the binding is updated in the willDestroy hook'); 
+  MyApp = null;
+});
+
