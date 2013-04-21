@@ -24,6 +24,13 @@ var platform = Ember.platform = {};
 */
 Ember.create = Object.create;
 
+// IE8 has Object.create but it couldn't treat property descripters.
+if (Ember.create) {
+  if (Ember.create({a: 1}, {a: {value: 2}}).a !== 2) {
+    Ember.create = null;
+  }
+}
+
 // STUB_OBJECT_CREATE allows us to override other libraries that stub
 // Object.create different than we would prefer
 if (!Ember.create || Ember.ENV.STUB_OBJECT_CREATE) {
