@@ -443,16 +443,19 @@ var Application = Ember.Application = Ember.Namespace.extend(Ember.DeferredMixin
   },
 
   reset: function() {
-    Ember.run(get(this,'__container__'), 'destroy');
+    Ember.assert('App#reset no longer rneeds to be wrapped in a run-loop', !Ember.run.currentRunLoop);
+    Ember.run(this, function(){
+      Ember.run(get(this,'__container__'), 'destroy');
 
-    this.buildContainer();
+      this.buildContainer();
 
-    this._readinessDeferrals = 1;
-    this.$(this.rootElement).removeClass('ember-application');
+      this._readinessDeferrals = 1;
+      this.$(this.rootElement).removeClass('ember-application');
 
-    Ember.run.schedule('actions', this, function(){
-      this._initialize();
-      this.startRouting();
+      Ember.run.schedule('actions', this, function(){
+        this._initialize();
+        this.startRouting();
+      });
     });
   },
 
