@@ -5,7 +5,8 @@ var get = Ember.get, set = function(object, key, value) {
   Ember.run(function() { Ember.set(object, key, value); });
 };
 
-var compile = Ember.Handlebars.compile;
+var compile = Ember.Handlebars.compile,
+    forEach = Ember.ArrayPolyfills.forEach;
 
 function append() {
   Ember.run(function() {
@@ -204,7 +205,7 @@ test("value binding works properly for inputs that haven't been created", functi
   equal(textArea.$().val(), 'ohai', "value is reflected in the input element once it is created");
 });
 
-[ 'cut', 'paste', 'input' ].forEach(function(eventName) {
+forEach.call([ 'cut', 'paste', 'input' ], function(eventName) {
   test("should update the value on " + eventName + " events", function() {
 
     Ember.run(function() {
