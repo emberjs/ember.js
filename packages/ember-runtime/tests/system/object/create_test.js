@@ -29,6 +29,13 @@ test("sets up mandatory setters for watched simple properties", function() {
   var o = MyClass.create({foo: 'bar', bar: 'baz'});
   equal(o.get('foo'), 'bar');
 
+  // Catch IE8 where Object.getOwnPropertyDescriptor exists but only works on DOM elements
+  try {
+    Object.getOwnPropertyDescriptor({}, 'foo');
+  } catch(e) {
+    return;
+  }
+
   var descriptor = Object.getOwnPropertyDescriptor(o, 'foo');
   ok(descriptor.set, 'Mandatory setter was setup');
 
