@@ -1,5 +1,6 @@
 # -*- encoding: utf-8 -*-
 require 'json'
+require "./lib/ember/version"
 
 Gem::Specification.new do |gem|
   gem.name          = "ember-source"
@@ -9,7 +10,7 @@ Gem::Specification.new do |gem|
   gem.summary       = %q{Ember.js source code wrapper.}
   gem.description   = %q{Ember.js source code wrapper for use with Ruby libs.}
   gem.homepage      = "https://github.com/emberjs/ember.js"
-  gem.version       = "1.0.0.rc1.2"
+  gem.version       = Ember::VERSION.gsub('-','.')
 
   # Note: can't use the squiggly ~> operator the way we'd expect
   # so long as we're referencing pre-release versions.

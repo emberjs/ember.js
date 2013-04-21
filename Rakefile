@@ -1,9 +1,7 @@
-require "bundler/setup"
-require "ember-dev/tasks"
-
+require 'bundler/setup'
+require 'ember-dev/tasks'
+require './lib/ember/version'
 ### RELEASE TASKS ###
-
-EMBER_VERSION = File.read("VERSION").strip
 
 namespace :release do
 
@@ -11,8 +9,14 @@ namespace :release do
     ENV['PRETEND']
   end
 
+  task :gem do
+    sh 'rakep'
+    sh 'gem build ember-source.gemspec'
+    sh "gem push ember-source-#{Ember::VERSION.gsub('-','.')}.gem"
+  end
+
   namespace :starter_kit do
-    ember_output = "tmp/starter-kit/js/libs/ember-#{EMBER_VERSION}.js"
+    ember_output = "tmp/starter-kit/js/libs/ember-#{Ember::VERSION}.js"
 
     task :pull => "tmp/starter-kit" do
       Dir.chdir("tmp/starter-kit") do
@@ -29,11 +33,11 @@ namespace :release do
     file "dist/ember.js" => :dist
     file "dist/ember.min.js" => :dist
 
-    task "dist/starter-kit.#{EMBER_VERSION}.zip" => ["tmp/starter-kit/index.html"] do
+    task "dist/starter-kit.#{Ember::VERSION}.zip" => ["tmp/starter-kit/index.html"] do
       mkdir_p "dist"
 
       Dir.chdir("tmp") do
-        sh %{zip -r ../dist/starter-kit.#{EMBER_VERSION}.zip starter-kit -x "starter-kit/.git/*"}
+        sh %{zip -r ../dist/starter-kit.#{Ember::VERSION}.zip starter-kit -x "starter-kit/.git/*"}
       end
     end
 
@@ -52,7 +56,7 @@ namespace :release do
     file "tmp/starter-kit/index.html" => [ember_output] do
       index = File.read("tmp/starter-kit/index.html")
       index.gsub! %r{<script src="js/libs/ember-\d\.\d.*</script>},
-        %{<script src="js/libs/ember-#{EMBER_VERSION}.js"></script>}
+        %{<script src="js/libs/ember-#{Ember::VERSION}.js"></script>}
 
       File.open("tmp/starter-kit/index.html", "w") { |f| f.write index }
     end
@@ -65,8 +69,8 @@ namespace :release do
       unless pretend?
         Dir.chdir("tmp/starter-kit") do
           sh "git add -A"
-          sh "git commit -m 'Updated to #{EMBER_VERSION}'"
-          sh "git tag v#{EMBER_VERSION}"
+          sh "git commit -m 'Updated to #{Ember::VERSION}'"
+          sh "git tag v#{Ember::VERSION}"
 
           print "Are you sure you want to push the starter-kit repo to github? (y/N) "
           res = STDIN.gets.chomp
@@ -85,11 +89,11 @@ namespace :release do
       uploader = setup_uploader("tmp/starter-kit")
 
       # Upload minified first, so non-minified shows up on top
-      upload_file(uploader, "starter-kit.#{EMBER_VERSION}.zip", "Ember.js #{EMBER_VERSION} Starter Kit", "dist/starter-kit.#{EMBER_VERSION}.zip")
+      upload_file(uploader, "starter-kit.#{Ember::VERSION}.zip", "Ember.js #{EMBER_VERSION} Starter Kit", "dist/starter-kit.#{EMBER_VERSION}.zip")
     end
 
     desc "Build the Ember.js starter kit"
-    task :build => "dist/starter-kit.#{EMBER_VERSION}.zip"
+    task :build => "dist/starter-kit.#{Ember::VERSION}.zip"
 
     desc "Prepare starter-kit for release"
     task :prepare => []
@@ -131,7 +135,7 @@ namespace :release do
       unless pretend?
         Dir.chdir("tmp/examples") do
           sh "git add -A"
-          sh "git commit -m 'Updated to #{EMBER_VERSION}'"
+          sh "git commit -m 'Updated to #{Ember::VERSION}'"
 
           print "Are you sure you want to push the examples repo to github? (y/N) "
           res = STDIN.gets.chomp
@@ -175,9 +179,9 @@ namespace :release do
       min_gz = Zlib::Deflate.deflate(File.read("dist/ember.min.js")).bytes.count / 1024
 
       about.gsub! %r{https://raw\.github\.com/emberjs/ember\.js/release-builds/ember-\d(?:[\.-](?:(?:\d+)|pre|rc))*?(\.min)?\.js},
-        %{https://raw.github.com/emberjs/ember.js/release-builds/ember-#{EMBER_VERSION}\\1.js}
+        %{https://raw.github.com/emberjs/ember.js/release-builds/ember-#{Ember::VERSION}\\1.js}
 
-      about.gsub!(/Ember \d([\.-]((\d+)|pre|rc))*/, "Ember #{EMBER_VERSION}")
+      about.gsub!(/Ember \d([\.-]((\d+)|pre|rc))*/, "Ember #{Ember::VERSION}")
 
       about.gsub!(/\d+k min\+gzip/, "#{min_gz}k min+gzip")
 
@@ -190,7 +194,7 @@ namespace :release do
       unless pretend?
         Dir.chdir("tmp/website") do
           sh "git add -A"
-          sh "git commit -m 'Updated to #{EMBER_VERSION}'"
+          sh "git commit -m 'Updated to #{Ember::VERSION}'"
 
           print "Are you sure you want to push the website repo to github? (y/N) "
           res = STDIN.gets.chomp
