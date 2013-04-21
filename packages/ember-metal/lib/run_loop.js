@@ -393,23 +393,37 @@ Ember.run.sync = function() {
 
 var timers = {}; // active timers...
 
+function sortByExpires(timerA, timerB) {
+  var a = timerA.expires,
+      b = timerB.expires;
+
+  if (a > b) { return  1; }
+  if (a < b) { return -1; }
+  return 0;
+}
+
 var scheduledLater, scheduledLaterExpires;
 function invokeLaterTimers() {
   scheduledLater = null;
   run(function() {
     var now = (+ new Date()), earliest = -1;
+    var timersToBeInvoked = [];
     for (var key in timers) {
       if (!timers.hasOwnProperty(key)) { continue; }
       var timer = timers[key];
       if (timer && timer.expires) {
         if (now >= timer.expires) {
           delete timers[key];
-          invoke(timer.target, timer.method, timer.args, 2);
+          timersToBeInvoked.push(timer);
         } else {
           if (earliest < 0 || (timer.expires < earliest)) { earliest = timer.expires; }
         }
       }
     }
+
+    forEach.call(timersToBeInvoked.sort(sortByExpires), function(timer) {
+      invoke(timer.target, timer.method, timer.args, 2);
+    });
 
     // schedule next timeout to fire when the earliest timer expires
     if (earliest > 0) {
