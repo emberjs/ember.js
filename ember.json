@@ -2,7 +2,7 @@
   "name": "ember",
   "bpm": "1.0.0",
   "dependencies": {
-    "ember": "1.0.0-rc.2"
+    "ember": "1.0.0-rc.3"
   },
   "dependencies:development": {
     "spade-qunit": "~> 1.0.0"

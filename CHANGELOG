@@ -1,3 +1,98 @@
+*Ember 1.0.0-rc.3 (April 19, 2013)*
+
+* fn.call is wasteful when the thisArg is not needed.
+* dont needlessly close-over and rebuild insertViewCollection
+* Don't apply href to LinkView that isn't using 'a' tag
+* Documents {{linkTo}}
+* Include ember-testing in full build
+* Use `jQuery.is(':disabled')` instead of `jQuery(':disbled').length` for Opera
+* Remove assigned but unused variable
+* Document run.scheduleOnce, truncate run.once docs. Fixes #2132.
+* fix failing tests for outerHTML fallback
+* don't rely on EXTEND_PROTOTYPES == true
+* Fixes Ember.EnumerableUtils without extend prototypes
+* Do not flag .generateController for documentation.
+* Do not build the docs for `.cachable`. Fixes #2329.
+* cleanup MutableEnumerable documentation
+* Add Ember.Application#removeTestHelpers
+* Fix a couple issues
+* First pass of work for the ember-testing package
+* Fixes error in documentation referring to non-existent 'Customizing Your Bindings' section
+* Fix method comments
+* Fix redirecting to child routes
+* Fixes to MetamorphView's DOMManager replace
+* Fixes #870 Lazy destruction + App#reset issues
+* Eliminate unused variables
+* Point to updated preconfigured starting points for JSFiddle/JSBin with latest Ember build that is now being auto-posted to builds.emberjs.com
+* Fixes #2388: Added if statement to _resetSubControllers
+* scope cached state transition hashes to the state manager class, so extending and mixins work with StateMangers as expected
+* Fixes for upload of published builds.
+* Update to latest ember-dev so that publish task can work properly
+* Configure Travis for automatic deploy to AWS
+* Add missing item type
+* Do no emit Ember.alias deprecation warnings during alias tests
+* add invokeRecursively to ViewCollection
+* Failing test showing StateManagers using mixins to get some of their states have unexpected behavior
+* Fix HistoryLocation rootURL handling and webkit workaround
+* Remove unused argument from helper functions
+* Use `toArray` to remove duplication
+* Allow option view for Ember.Select overwritable
+* Actually make Ember.alias() print deprecation warnings.
+* use ``Ember.String.fmt`` instead of String extension
+* automatically upload all passing builds to s3
+* [Fixes #2424] App#reset
+* s/nexts/these (nexts is not a word)
+* More verbose error message on failed linkTo routing attempts
+* viewName is a property
+* remove uneeded closures
+* JSDoc should use {*} for mixed types instead of {anything} and {any}
+* add an "includeSelf" parameter to "invokeRecursively"
+* Fix ArrayController#length when content is not explicitly set
+* Close #2043 - fix issue with removing last element in collection
+* Stop application template from duplicating on re-render
+* assertion to catch mixins being passed to Object.create
+* Enhance Ember.TargetActionSupport and introduce Ember.ViewTargetActionSupport
+* fix {{textarea}} assert message
+* Test for unwatch methods on object length property
+* Tests for watch methods on length properties
+* Test for isWatching on length property of an object
+* Move Ember.typeOf to metal
+* Fix array watching issue. Was affecting more than just plain arrays due to differences between typeOf and isArray.
+* Remove mention of passing mixins to create.
+* Revert "Fix Application#reset destroy issue"
+* Fix view helper documentation and example to reflect context
+* Ignore webkitStorageInfo during namespace lookup to avoid warning
+* Fix Application#reset destroy issue
+* Make Chrome initial popstate workaround account for rootURL
+* Use a string instead of an array in RenderBuffer
+* Convert a for in loop to a plain for loop
+* Improve view container lookup performance
+* remove uneeded asynchrony from Ember.Deferred tests
+* remove unneeded asynchrony from routing tests
+* Add {{text area}}
+* Default text input action to 'enter'
+* Add {{input action="foo" on="keyPress"}}
+* More metal cleanup
+* Better organize ember-metal and cache function lookups.
+* remove sync from render to buffer
+* make tests not depend on synchronous change events
+* fix test not to expect synchronous observers
+* Define Mixin properties in prototype
+* Update ember-dev gem to latest version
+* Share empty arrays in Ember.View prototype. Lazily slice it upon manipulation.
+* Add views to Ember.View.views upon insertion in DOM rather than on init. Fixes #1553
+* Make object destruction async so we can reduce churn when destroying interconnected object graphs.
+* Define Ember.CoreObject#willDestroy. Fixes #1438.
+* cleanup unneeded volatile()
+* Match the transitionTo APIs.
+* Avoid recursively calling transitionTo.
+* Improve the performance of view notifications and transitions.
+* Extract a private ViewCollection class to aid in manipulating several views at once.
+* Add support for {{input type="checkbox"}}
+* Add Ember.Handlebars.helper
+* Add {{input type="text"}}
+* Insert adjacent child views in batches rather than individually.
+
 *Ember 1.0.0-rc.2 (March 29, 2013)*
 
 * Improved the App initialization process and deprecated Ember.Application#initialize. If you were using this, use deferReadiness and advanceReadiness instead.
