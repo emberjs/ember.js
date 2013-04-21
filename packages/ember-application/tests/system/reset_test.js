@@ -27,9 +27,7 @@ test("When an application is reset, new instances of controllers are generated",
   var firstController = application.__container__.lookup('controller:academic');
   var secondController = application.__container__.lookup('controller:academic');
 
-  Ember.run(function() {
-    application.reset();
-  });
+  application.reset();
 
   var thirdController = application.__container__.lookup('controller:academic');
 
@@ -52,9 +50,7 @@ test("When an application is reset, the ApplicationView is torn down", function(
 
   var originalView = Ember.View.views['application-view'];
 
-  Ember.run(function() {
-    application.reset();
-  });
+  application.reset();
 
   var resettedView = Ember.View.views['application-view'];
 
@@ -83,9 +79,7 @@ test("When an application is reset, the router URL is reset to `/`", function() 
   location = router.get('location');
   location.handleURL('/one');
 
-  Ember.run(function() {
-    application.reset();
-  });
+  application.reset();
 
   var applicationController = application.__container__.lookup('controller:application');
   router = application.__container__.lookup('router:main');
@@ -123,10 +117,7 @@ test("When an application with advance/deferReadiness is reset, the app does cor
 
   equal(readyCallCount, 1, 'ready was called once');
 
-  Ember.run(function() {
-    application.reset();
-    equal(readyCallCount, 1, 'ready was called still only once');
-  });
+  application.reset();
 
   equal(readyCallCount, 2, 'ready was called twice');
 });
@@ -169,9 +160,7 @@ test("With ember-data like initializer and constant", function() {
 
   ok(DS.defaultStore, 'has defaultStore');
 
-  Ember.run(function(){
-    application.reset();
-  });
+  application.reset();
 
   ok(DS.defaultStore, 'still has defaultStore');
   ok(application.__container__.lookup("store:main"), 'store is still present');
