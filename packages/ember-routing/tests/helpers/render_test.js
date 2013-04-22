@@ -118,7 +118,11 @@ test("{{render}} helper should render given template with a supplied model", fun
   set(controller, 'post', { title: "Rails is unagi" });
 
   equal(view.$().text(), 'HIRails is unagi');
-  deepEqual(postController.get('model'), { title: "Rails is unagi" });
+  if (Ember.create.isSimulated) {
+    equal(postController.get('model').title, "Rails is unagi");
+  } else {
+    deepEqual(postController.get('model'), { title: "Rails is unagi" });
+  }
 });
 
 test("{{render}} helper should render with given controller", function() {
@@ -192,7 +196,11 @@ test("{{render}} helper should render templates with models multiple times", fun
   set(controller, 'post1', { title: "I am new" });
 
   equal(view.$().text(), 'HI I am new Then me');
-  deepEqual(postController1.get('model'), { title: "I am new" });
+  if (Ember.create.isSimulated) {
+    equal(postController1.get('model').title, "I am new");
+  } else {
+    deepEqual(postController1.get('model'), { title: "I am new" });
+  }
 });
 
 test("{{render}} helper should render templates both with and without models", function() {
@@ -230,7 +238,11 @@ test("{{render}} helper should render templates both with and without models", f
   set(controller, 'post', { title: "Rails is unagi" });
 
   equal(view.$().text(), 'HI Title: Title:Rails is unagi');
-  deepEqual(postController2.get('model'), { title: "Rails is unagi" });
+  if (Ember.create.isSimulated) {
+    equal(postController2.get('model').title, "Rails is unagi");
+  } else {
+    deepEqual(postController2.get('model'), { title: "Rails is unagi" });
+  }
 });
 
 test("{{render}} helper should link child controllers to the parent controller", function() {
