@@ -1,6 +1,7 @@
 var view;
 var application;
 var set = Ember.set, get = Ember.get;
+var forEach = Ember.ArrayPolyfills.forEach;
 var trim = Ember.$.trim;
 
 module("Ember.Application", {
@@ -396,7 +397,7 @@ test('normalization', function() {
 test('normalization is indempotent', function() {
   var examples = ['controller:posts', 'controller:posts.post.index', 'controller:blog/posts.post_index', 'template:foo_bar'];
 
-  examples.forEach(function (example) {
+  forEach.call(examples, function (example) {
     equal(locator.normalize(locator.normalize(example)), locator.normalize(example));
   });
 });
