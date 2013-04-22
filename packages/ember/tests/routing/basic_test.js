@@ -1591,7 +1591,7 @@ test("Only use route rendered into main outlet for default into property on chil
   });
 
   App.PostsIndexView = Ember.View.extend({
-    tagName: 'section',
+    tagName: 'p',
     classNames: ['posts-index']
   });
 
@@ -1612,7 +1612,7 @@ test("Only use route rendered into main outlet for default into property on chil
   });
 
   equal(Ember.$('div.posts-menu:contains(postsMenu)', '#qunit-fixture').length, 1, "The posts/menu template was rendered");
-  equal(Ember.$('section.posts-index:contains(postsIndex)', '#qunit-fixture').length, 1, "The posts/index template was rendered");
+  equal(Ember.$('p.posts-index:contains(postsIndex)', '#qunit-fixture').length, 1, "The posts/index template was rendered");
 });
 
 test("Generating a URL should not affect currentModel", function() {
