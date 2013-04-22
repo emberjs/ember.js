@@ -124,8 +124,8 @@ asyncTest('callbacks coalesce into same run loop if expiring at the same time', 
     Date.prototype.valueOf = function() { return now; };
 
     Ember.run.later(this, fn, 10);
-    Ember.run.later(this, fn, 100);
-    Ember.run.later(this, fn, 100);
+    Ember.run.later(this, fn, 200);
+    Ember.run.later(this, fn, 200);
 
     Date.prototype.valueOf = originalDateValueOf;
   });
@@ -139,7 +139,7 @@ asyncTest('callbacks coalesce into same run loop if expiring at the same time', 
     ok(array[0], 'first runloop present');
     ok(array[1], 'second runloop present');
     equal(array[1], array[2], 'last two callbacks got the same run loop');
-  }, 200);
+  }, 500);
 });
 
 asyncTest('inception calls to run.later should run callbacks in separate run loops', function() {
@@ -166,7 +166,7 @@ asyncTest('inception calls to run.later should run callbacks in separate run loo
   setTimeout(function() {
     start();
     ok(finished, 'all .later callbacks run');
-  }, 150);
+  }, 250);
 });
 
 asyncTest('setTimeout should never run with a negative wait', function() {
