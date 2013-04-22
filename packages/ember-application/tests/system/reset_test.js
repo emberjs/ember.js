@@ -38,6 +38,43 @@ test("When an application is reset, new instances of controllers are generated",
   notStrictEqual(firstController, thirdController, "controllers looked up after the application is reset should not be the same instance");
 });
 
+test("When an application is reset, the eventDispatcher is destroyed and recreated", function() {
+  var eventDispatcherWasSetup, eventDispatcherWasDestroyed,
+  stubEventDispatcher;
+
+  eventDispatcherWasSetup = 0;
+  eventDispatcherWasDestroyed = 0;
+
+  stubEventDispatcher = {
+    setup: function(){
+      eventDispatcherWasSetup++;
+    },
+    destroy: function(){
+      eventDispatcherWasDestroyed++;
+    }
+  };
+
+  Ember.run(function() {
+    application = Application.create();
+
+    application.createEventDispatcher = function (){
+      set(this, 'eventDispatcher', stubEventDispatcher);
+      return stubEventDispatcher;
+    };
+
+    equal(eventDispatcherWasSetup, 0);
+    equal(eventDispatcherWasDestroyed, 0);
+  });
+
+  equal(eventDispatcherWasSetup, 1);
+  equal(eventDispatcherWasDestroyed, 0);
+
+  application.reset();
+
+  equal(eventDispatcherWasSetup, 2);
+  equal(eventDispatcherWasDestroyed, 1);
+});
+
 test("When an application is reset, the ApplicationView is torn down", function() {
   Ember.run(function() {
     application = Application.create();

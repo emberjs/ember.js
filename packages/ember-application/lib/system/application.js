@@ -450,7 +450,7 @@ var Application = Ember.Application = Ember.Namespace.extend(Ember.DeferredMixin
       this.buildContainer();
 
       this._readinessDeferrals = 1;
-      this.$(this.rootElement).removeClass('ember-application');
+      this.teardownEventDispatcher();
 
       Ember.run.schedule('actions', this, function(){
         this._initialize();
@@ -514,6 +514,19 @@ var Application = Ember.Application = Ember.Namespace.extend(Ember.DeferredMixin
         customEvents    = get(this, 'customEvents');
 
     eventDispatcher.setup(customEvents);
+  },
+
+  /**
+    @private
+
+    Teardown the eventDispatcher
+
+    @method teardownEventDispatcher
+  */
+  teardownEventDispatcher: function() {
+    var eventDispatcher = get(this, 'eventDispatcher');
+
+    eventDispatcher.destroy();
   },
 
   /**
