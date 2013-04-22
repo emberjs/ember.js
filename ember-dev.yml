@@ -19,6 +19,7 @@ testing_suites:
     - "package=all&jquery=1.8.3&nojshint=true"
     - "package=all&jquery=git&nojshint=true"
     - "package=all&jquery=git2&nojshint=true"
+    - "package=all&enablerouteto&nojshint=true"
     - "package=all&extendprototypes=true&nojshint=true"
     - "package=all&extendprototypes=true&jquery=git&nojshint=true"
     - "package=all&extendprototypes=true&jquery=git2&nojshint=true"
