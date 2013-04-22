@@ -39,155 +39,6 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
   }
 
   /**
-    The `{{linkTo}}` helper renders a link to the supplied
-    `routeName` passing an optionally supplied model to the
-    route as its `model` context of the route. The block
-    for `{{linkTo}}` becomes the innerHTML of the rendered
-    element:
-
-    ```handlebars
-    {{#linkTo photoGallery}}
-      Great Hamster Photos
-    {{/linkTo}}
-    ```
-
-    ```html
-    <a href="/hamster-photos">
-      Great Hamster Photos
-    </a>
-    ```
-
-    ## Supplying a tagName
-    By default `{{linkTo}} renders an `<a>` element. This can
-    be overridden for a single use of `{{linkTo}}` by supplying
-    a `tagName` option:
-
-    ```
-    {{#linkTo photoGallery tagName="li"}}
-      Great Hamster Photos
-    {{/linkTo}}
-    ```
-
-    ```html
-    <li>
-      Great Hamster Photos
-    </li>
-    ```
-
-    To override this option for your entire application, see 
-    "Overriding Application-wide Defaults".
-
-    ## Handling `href`
-    `{{linkTo}}` will use your application's Router to
-    fill the element's `href` property with a url that
-    matches the path to the supplied `routeName` for your
-    routers's configured `Location` scheme, which defaults
-    to Ember.HashLocation.
-
-    ## Handling current route
-    `{{linkTo}}` will apply a CSS class name of 'active'
-    when the application's current route matches
-    the supplied routeName. For example, if the application's
-    current route is 'photoGallery.recent' the following
-    use of `{{linkTo}}`:
-
-    ```
-    {{#linkTo photoGallery.recent}}
-      Great Hamster Photos from the last week
-    {{/linkTo}}
-    ```
-
-    will result in
-
-    ```html
-    <a href="/hamster-photos/this-week" class="active">
-      Great Hamster Photos
-    </a>
-    ```
-
-    The CSS class name used for active classes can be customized
-    for a single use of `{{linkTo}}` by passing an `activeClass`
-    option:
-
-    ```
-    {{#linkTo photoGallery.recent activeClass="current-url"}}
-      Great Hamster Photos from the last week
-    {{/linkTo}}
-    ```
-
-    ```html
-    <a href="/hamster-photos/this-week" class="current-url">
-      Great Hamster Photos
-    </a>
-    ```
-
-    To override this option for your entire application, see 
-    "Overriding Application-wide Defaults".
-
-    ## Supplying a model
-    An optional model argument can be used for routes whose
-    paths contain dynamic segments. This argument will become
-    the model context of the linked route:
-
-    ```javascript
-    App.Router.map(function(){
-      this.resource("photoGallery", {path: "hamster-photos/:photo_id"});
-    })
-    ```
-
-    ```handlebars
-    {{#linkTo photoGallery aPhoto}}
-      {{aPhoto.title}}
-    {{/linkTo}}
-    ```
-
-    ```html
-    <a href="/hamster-photos/42">
-      Tomster
-    </a>
-    ```
-
-    ## Supplying multiple models
-    For deep-linking to route paths that contain multiple
-    dynamic segments, multiple model arguments can be used.
-    As the router transitions through the route path, each
-    supplied model argument will become the context for the
-    route with the dynamic segments:
-
-    ```javascript
-    App.Router.map(function(){
-      this.resource("photoGallery", {path: "hamster-photos/:photo_id"}, function(){
-        this.route("comment", {path: "comments/:comment_id"});
-      });
-    });
-    ```
-    This argument will become the model context of the linked route:
-
-    ```handlebars
-    {{#linkTo photoGallery.comment aPhoto comment}}
-      {{comment.body}}
-    {{/linkTo}}
-    ```
-
-    ```html
-    <a href="/hamster-photos/42/comment/718">
-      A+++ would snuggle again.
-    </a>
-    ```
-
-    ## Overriding Application-wide Defaults
-    ``{{linkTo}}`` creates an instance of Ember.LinkView
-    for rendering. To override options for your entire
-    application, reopen Ember.LinkView and supply the
-    desired values:
-
-    ``` javascript
-    Ember.LinkView.reopen({
-      activeClass: "is-active",
-      tagName: 'li'
-    })
-    ```
-    
     @class LinkView
     @namespace Ember
     @extends Ember.View
@@ -248,6 +99,155 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
   LinkView.toString = function() { return "LinkView"; };
 
   /**
+    The `{{linkTo}}` helper renders a link to the supplied
+    `routeName` passing an optionally supplied model to the
+    route as its `model` context of the route. The block
+    for `{{linkTo}}` becomes the innerHTML of the rendered
+    element:
+
+    ```handlebars
+    {{#linkTo photoGallery}}
+      Great Hamster Photos
+    {{/linkTo}}
+    ```
+
+    ```html
+    <a href="/hamster-photos">
+      Great Hamster Photos
+    </a>
+    ```
+
+    ### Supplying a tagName
+    By default `{{linkTo}}` renders an `<a>` element. This can
+    be overridden for a single use of `{{linkTo}}` by supplying
+    a `tagName` option:
+
+    ```handlebars
+    {{#linkTo photoGallery tagName="li"}}
+      Great Hamster Photos
+    {{/linkTo}}
+    ```
+
+    ```html
+    <li>
+      Great Hamster Photos
+    </li>
+    ```
+
+    To override this option for your entire application, see 
+    "Overriding Application-wide Defaults".
+
+    ### Handling `href`
+    `{{linkTo}}` will use your application's Router to
+    fill the element's `href` property with a url that
+    matches the path to the supplied `routeName` for your
+    routers's configured `Location` scheme, which defaults
+    to Ember.HashLocation.
+
+    ### Handling current route
+    `{{linkTo}}` will apply a CSS class name of 'active'
+    when the application's current route matches
+    the supplied routeName. For example, if the application's
+    current route is 'photoGallery.recent' the following
+    use of `{{linkTo}}`:
+
+    ```handlebars
+    {{#linkTo photoGallery.recent}}
+      Great Hamster Photos from the last week
+    {{/linkTo}}
+    ```
+
+    will result in
+
+    ```html
+    <a href="/hamster-photos/this-week" class="active">
+      Great Hamster Photos
+    </a>
+    ```
+
+    The CSS class name used for active classes can be customized
+    for a single use of `{{linkTo}}` by passing an `activeClass`
+    option:
+
+    ```handlebars
+    {{#linkTo photoGallery.recent activeClass="current-url"}}
+      Great Hamster Photos from the last week
+    {{/linkTo}}
+    ```
+
+    ```html
+    <a href="/hamster-photos/this-week" class="current-url">
+      Great Hamster Photos
+    </a>
+    ```
+
+    To override this option for your entire application, see 
+    "Overriding Application-wide Defaults".
+
+    ### Supplying a model
+    An optional model argument can be used for routes whose
+    paths contain dynamic segments. This argument will become
+    the model context of the linked route:
+
+    ```javascript
+    App.Router.map(function(){
+      this.resource("photoGallery", {path: "hamster-photos/:photo_id"});
+    })
+    ```
+
+    ```handlebars
+    {{#linkTo photoGallery aPhoto}}
+      {{aPhoto.title}}
+    {{/linkTo}}
+    ```
+
+    ```html
+    <a href="/hamster-photos/42">
+      Tomster
+    </a>
+    ```
+
+    ### Supplying multiple models
+    For deep-linking to route paths that contain multiple
+    dynamic segments, multiple model arguments can be used.
+    As the router transitions through the route path, each
+    supplied model argument will become the context for the
+    route with the dynamic segments:
+
+    ```javascript
+    App.Router.map(function(){
+      this.resource("photoGallery", {path: "hamster-photos/:photo_id"}, function(){
+        this.route("comment", {path: "comments/:comment_id"});
+      });
+    });
+    ```
+    This argument will become the model context of the linked route:
+
+    ```handlebars
+    {{#linkTo photoGallery.comment aPhoto comment}}
+      {{comment.body}}
+    {{/linkTo}}
+    ```
+
+    ```html
+    <a href="/hamster-photos/42/comment/718">
+      A+++ would snuggle again.
+    </a>
+    ```
+
+    ### Overriding Application-wide Defaults
+    ``{{linkTo}}`` creates an instance of Ember.LinkView
+    for rendering. To override options for your entire
+    application, reopen Ember.LinkView and supply the
+    desired values:
+
+    ``` javascript
+    Ember.LinkView.reopen({
+      activeClass: "is-active",
+      tagName: 'li'
+    })
+    ```
+
     @method linkTo
     @for Ember.Handlebars.helpers
     @param {String} routeName
