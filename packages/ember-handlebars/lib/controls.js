@@ -15,7 +15,7 @@ function normalizeHash(hash, hashTypes) {
 
 /**
  * `{{input}}` inserts a new instance of either Ember.TextField or
- * Ember.Checkbox, depending on the `inputType` passed in. If no `inputType`
+ * Ember.Checkbox, depending on the `type` option passed in. If no `type`
  * is supplied it defaults to Ember.TextField.
  *
  * @method input
