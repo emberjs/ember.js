@@ -445,12 +445,14 @@ var Application = Ember.Application = Ember.Namespace.extend(Ember.DeferredMixin
   reset: function() {
     Ember.assert('App#reset no longer needs to be wrapped in a run-loop', !Ember.run.currentRunLoop);
     Ember.run(this, function(){
-      Ember.run(get(this,'__container__'), 'destroy');
+      Ember.run(this, function(){
+        this.teardownEventDispatcher();
+        get(this,'__container__').destroy();
+      });
 
       this.buildContainer();
 
       this._readinessDeferrals = 1;
-      this.teardownEventDispatcher();
 
       Ember.run.schedule('actions', this, function(){
         this._initialize();
