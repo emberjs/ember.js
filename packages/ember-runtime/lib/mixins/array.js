@@ -355,8 +355,21 @@ Ember.Array = Ember.Mixin.create(Ember.Enumerable, /** @scope Ember.Array.protot
 
     return this;
   },
+  /**
+    Invoke this method when the contents of the array has changed.
+    This will notify any observers watching for content changes. Pass the start
+    and end values where the content changed so that it can be used to notify
+    range observers.
 
-  arrayContentDidChange: function(startIdx, removeAmt, addAmt) {
+    @method arrayContentDidChange
+    @param {Number} startIdx The starting index in the array that will change.
+    @param {Number} removeAmt The number of items that will be removed. If you
+      pass `null` assumes 0
+    @param {Number} addAmt The number of items that will be added  If you
+      pass `null` assumes 0.
+    @return {Ember.Array} receiver
+   */
+   arrayContentDidChange: function(startIdx, removeAmt, addAmt) {
 
     // if no args are passed assume everything changes
     if (startIdx===undefined) {
