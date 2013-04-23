@@ -45,6 +45,8 @@ test("When an application is reset, the eventDispatcher is destroyed and recreat
   eventDispatcherWasSetup = 0;
   eventDispatcherWasDestroyed = 0;
 
+  var originalDispatcher = Ember.EventDispatcher;
+
   stubEventDispatcher = {
     setup: function(){
       eventDispatcherWasSetup++;
@@ -54,25 +56,30 @@ test("When an application is reset, the eventDispatcher is destroyed and recreat
     }
   };
 
-  Ember.run(function() {
-    application = Application.create();
-
-    application.createEventDispatcher = function (){
-      set(this, 'eventDispatcher', stubEventDispatcher);
+  Ember.EventDispatcher = {
+    create: function() {
       return stubEventDispatcher;
-    };
+    }
+  };
 
-    equal(eventDispatcherWasSetup, 0);
+  try {
+    Ember.run(function() {
+      application = Application.create();
+
+      equal(eventDispatcherWasSetup, 0);
+      equal(eventDispatcherWasDestroyed, 0);
+    });
+
+    equal(eventDispatcherWasSetup, 1);
     equal(eventDispatcherWasDestroyed, 0);
-  });
 
-  equal(eventDispatcherWasSetup, 1);
-  equal(eventDispatcherWasDestroyed, 0);
+    application.reset();
 
-  application.reset();
+    equal(eventDispatcherWasSetup, 2);
+    equal(eventDispatcherWasDestroyed, 1);
+  } catch (error) { }
 
-  equal(eventDispatcherWasSetup, 2);
-  equal(eventDispatcherWasDestroyed, 1);
+  Ember.EventDispatcher = originalDispatcher;
 });
 
 test("When an application is reset, the ApplicationView is torn down", function() {

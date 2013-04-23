@@ -56,7 +56,7 @@ test("you cannot make a new application that is a duplicate of an existing appli
 
 test("you cannot make two default applications without a rootElement error", function() {
   // Teardown existing
-  Ember.run(function() {
+  Ember.run(function(){
     application.destroy();
   });
 
