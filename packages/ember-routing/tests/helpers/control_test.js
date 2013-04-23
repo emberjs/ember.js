@@ -215,7 +215,12 @@ if (Ember.ENV.EXPERIMENTAL_CONTROL_HELPER) {
     var childController = view.get('childViews').objectAt(0).get('controller');
 
     ok(view.$().text().match(/^.*Tom Dale.*$/), "The view rendered");
-    deepEqual(childController.get('model'), { name: "Tom Dale" });
+
+    if (Ember.create.isSimulated) {
+      equal(childController.get('model').name, "Tom Dale");
+    } else {
+      deepEqual(childController.get('model'), { name: "Tom Dale" });
+    }
 
     Ember.run(function() {
       controller.set('model', { name: "Yehuda Katz" });
