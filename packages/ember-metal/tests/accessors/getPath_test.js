@@ -7,8 +7,8 @@ var obj, moduleOpts = {
         bar: {
           baz: { biff: 'BIFF' }
         }
-      }
-
+      },
+      falseValue: false
     };
 
     window.Foo = {
@@ -55,6 +55,10 @@ test('[obj, this.foo.bar] -> obj.foo.bar', function() {
 
 test('[obj, this.Foo.bar] -> (null)', function() {
   deepEqual(Ember.get(obj, 'this.Foo.bar'), undefined);
+});
+
+test('[obj, falseValue.notDefined] -> (null)', function() {
+  deepEqual(Ember.get(obj, 'falseValue.notDefined'), undefined);
 });
 
 // ..........................................................
