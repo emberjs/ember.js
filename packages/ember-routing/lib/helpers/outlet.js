@@ -13,8 +13,6 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
   @submodule ember-routing
   */
 
-  Handlebars.OutletView = Ember.ContainerView.extend(Ember._Metamorph);
-
   /**
     The `outlet` helper is a placeholder that the router will fill in with
     the appropriate template based on the current state of the application.
@@ -58,6 +56,28 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     });
     ```
 
+
+    By default, outlet will create an `Ember.OutletView` instance to show the
+    view content based on the route state.
+
+    But you can also define how this content can be shown based on the view property.
+
+    ``` handlebars
+      {{outlet view="App.NavigationView"}}
+    ```
+
+    ``` handlebars
+
+    App.NavigationView = Em.View.extend({
+
+      // you can observe `outletContent` changes to represent
+      // as you desire the new route content
+      outletContent: null
+
+    });
+
+    ```
+
     @method outlet
     @for Ember.Handlebars.helpers
     @param {String} property the property on the controller
@@ -65,10 +85,17 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
   */
   Handlebars.registerHelper('outlet', function(property, options) {
     var outletSource;
-
     if (property && property.data && property.data.isRenderData) {
       options = property;
       property = 'main';
+    }
+    
+    var viewClass = options.hash.view; 
+    if ( viewClass ) {
+      viewClass = Ember.get(viewClass);
+      delete options.hash.view;
+    } else {
+      viewClass = Ember.OutletView;
     }
 
     outletSource = options.data.view;
@@ -77,8 +104,10 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     }
 
     options.data.view.set('outletSource', outletSource);
-    options.hash.currentViewBinding = '_view.outletSource._outlets.' + property;
 
-    return Handlebars.helpers.view.call(this, Handlebars.OutletView, options);
+    options.hash.outletName = property;
+    options.hash.outletContentBinding = '_view.outletSource._outlets.' + property;
+
+    return Handlebars.helpers.view.call(this, viewClass, options);
   });
 });

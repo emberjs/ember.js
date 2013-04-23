@@ -73,6 +73,37 @@ test("outlet should support an optional name", function() {
   equal(view.$().text().replace(/\s+/,''), 'HIBYE');
 });
 
+test("by default, outlet should insert an instance of Ember.OutletView", function() {
+
+  var template = "<h1>HI</h1>{{outlet}}";
+  view = Ember.View.create({
+    template: Ember.Handlebars.compile(template)
+  });
+
+  appendView(view);
+  var outletView = view._childViews[0];
+
+  ok(outletView instanceof Ember.OutletView, 'the outletView is instance of Ember.OutletView' );
+
+});
+
+test("outlet should insert an instance of view whose type is based on the view property", function() {
+
+  var template = "<h1>HI</h1>{{outlet view=Ember.View}}";
+  view = Ember.View.create({
+    template: Ember.Handlebars.compile(template)
+  });
+
+  appendView(view);
+  var outletView = view._childViews[0];
+
+  ok(!Ember._Metamorph.detect(outletView), 'the outletView has not _Metamorph mixin' );
+
+  ok(outletView instanceof Ember.View, 'the outletView is an instance of the view type defined in view option' );
+  ok(!(outletView instanceof Ember.ContainerView), 'the outletView is an instance of the view type defined in view option' );
+
+});
+
 test("Outlets bind to the current view, not the current concrete view", function() {
   var parentTemplate = "<h1>HI</h1>{{outlet}}";
   var middleTemplate = "<h2>MIDDLE</h2>{{outlet}}";
