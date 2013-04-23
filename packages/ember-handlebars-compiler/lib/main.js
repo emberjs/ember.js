@@ -35,7 +35,7 @@ Ember.Handlebars = objectCreate(Handlebars);
 
 Ember.Handlebars.helper = function(name, value) {
   if (Ember.View.detect(value)) {
-    Ember.Handlebars.registerHelper(name, function(name, options) {
+    Ember.Handlebars.registerHelper(name, function(options) {
       Ember.assert("You can only pass attributes as parameters to a application-defined helper", arguments.length < 3);
       return Ember.Handlebars.helpers.view.call(this, value, options);
     });
