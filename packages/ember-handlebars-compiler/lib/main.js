@@ -33,11 +33,25 @@ Ember.assert("Ember Handlebars requires Handlebars 1.0.0-rc.3 or greater. Includ
 */
 Ember.Handlebars = objectCreate(Handlebars);
 
+function makeBindings(options) {
+  var hash = options.hash,
+      hashType = options.hashTypes;
+
+  for (var prop in hash) {
+    if (hashType[prop] === 'ID') {
+      hash[prop + 'Binding'] = hash[prop];
+      hashType[prop + 'Binding'] = 'STRING';
+      delete hash[prop];
+      delete hashType[prop];
+    }
+  }
+}
+
 Ember.Handlebars.helper = function(name, value) {
   if (Ember.View.detect(value)) {
     Ember.Handlebars.registerHelper(name, function(options) {
       Ember.assert("You can only pass attributes as parameters to a application-defined helper", arguments.length < 3);
-      options.hash = Ember.Handlebars.resolveHash(this, options.hash, options);
+      makeBindings(options);
       return Ember.Handlebars.helpers.view.call(this, value, options);
     });
   } else {
