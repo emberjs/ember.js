@@ -9,9 +9,7 @@ require('ember-runtime/mixins/enumerable');
 // HELPERS
 //
 
-var get = Ember.get, set = Ember.set, map = Ember.EnumerableUtils.map, cacheFor = Ember.cacheFor;
-
-function none(obj) { return obj===null || obj===undefined; }
+var get = Ember.get, set = Ember.set, isNone = Ember.isNone, map = Ember.EnumerableUtils.map, cacheFor = Ember.cacheFor;
 
 // ..........................................................
 // ARRAY
@@ -161,8 +159,8 @@ Ember.Array = Ember.Mixin.create(Ember.Enumerable, /** @scope Ember.Array.protot
   slice: function(beginIndex, endIndex) {
     var ret = Ember.A([]);
     var length = get(this, 'length') ;
-    if (none(beginIndex)) beginIndex = 0 ;
-    if (none(endIndex) || (endIndex > length)) endIndex = length ;
+    if (isNone(beginIndex)) beginIndex = 0 ;
+    if (isNone(endIndex) || (endIndex > length)) endIndex = length ;
 
     if (beginIndex < 0) beginIndex = length + beginIndex;
     if (endIndex < 0) endIndex = length + endIndex;
