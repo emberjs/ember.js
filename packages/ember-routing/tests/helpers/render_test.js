@@ -189,13 +189,13 @@ test("{{render}} helper should render templates with models multiple times", fun
   var postController1 = view.get('_childViews')[0].get('controller');
   var postController2 = view.get('_childViews')[1].get('controller');
 
-  equal(view.$().text(), 'HI Me first Then me');
+  ok(view.$().text().match(/^HI ?Me first ?Then me$/));
   equal(postController1.get('model'), post1);
   equal(postController2.get('model'), post2);
 
   set(controller, 'post1', { title: "I am new" });
 
-  equal(view.$().text(), 'HI I am new Then me');
+  ok(view.$().text().match(/^HI ?I am new ?Then me$/));
   if (Ember.create.isSimulated) {
     equal(postController1.get('model').title, "I am new");
   } else {
@@ -231,13 +231,13 @@ test("{{render}} helper should render templates both with and without models", f
   var postController1 = view.get('_childViews')[0].get('controller');
   var postController2 = view.get('_childViews')[1].get('controller');
 
-  equal(view.$().text(), 'HI Title: Title:Rails is omakase');
+  ok(view.$().text().match(/^HI ?Title: ?Title:Rails is omakase$/));
   equal(postController1.get('model'), null);
   equal(postController2.get('model'), post);
 
   set(controller, 'post', { title: "Rails is unagi" });
 
-  equal(view.$().text(), 'HI Title: Title:Rails is unagi');
+  ok(view.$().text().match(/^HI ?Title: ?Title:Rails is unagi$/));
   if (Ember.create.isSimulated) {
     equal(postController2.get('model').title, "Rails is unagi");
   } else {
