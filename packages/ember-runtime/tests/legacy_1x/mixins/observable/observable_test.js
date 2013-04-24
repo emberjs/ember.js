@@ -686,8 +686,20 @@ test('incrementProperty and decrementProperty',function(){
   newValue = object.incrementProperty('numberVal', 5);
   equal(30,newValue,'numerical value incremented by specified increment');
   object.numberVal = 25;
+  newValue = object.incrementProperty('numberVal', -5);
+  equal(20,newValue,'minus numerical value incremented by specified increment');
+  object.numberVal = 25;
+  newValue = object.incrementProperty('numberVal', 0);
+  equal(25,newValue,'zero numerical value incremented by specified increment');
+  object.numberVal = 25;
   newValue = object.decrementProperty('numberVal',5);
   equal(20,newValue,'numerical value decremented by specified increment');
+  object.numberVal = 25;
+  newValue = object.decrementProperty('numberVal', -5);
+  equal(30,newValue,'minus numerical value decremented by specified increment');
+  object.numberVal = 25;
+  newValue = object.decrementProperty('numberVal', 0);
+  equal(25,newValue,'zero numerical value decremented by specified increment');
 });
 
 test('toggle function, should be boolean',function(){
