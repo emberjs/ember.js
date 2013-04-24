@@ -63,13 +63,16 @@ Ember.HistoryLocation = Ember.Object.extend({
 
     Uses `history.pushState` to update the url without a page reload.
 
+    `history.state` is not supported in safari <6, so instead use
+    get(this, 'location').pathname
+
     @method setURL
     @param path {String}
   */
   setURL: function(path) {
     path = this.formatURL(path);
 
-    if (this.getState() && this.getState().path !== path) {
+    if(get(this, 'location').pathname !== path) { //if(this.getState() && this.getState().path !== path) {
       this.pushState(path);
     }
   },
@@ -80,26 +83,18 @@ Ember.HistoryLocation = Ember.Object.extend({
     Uses `history.replaceState` to update the url without a page reload
     or history modification.
 
+    `history.state` is not supported in safari <6, so instead use
+    get(this, 'location').pathname
+
     @method replaceURL
     @param path {String}
   */
   replaceURL: function(path) {
     path = this.formatURL(path);
 
-    if (this.getState() && this.getState().path !== path) {
+    if(get(this, 'location').pathname !== path) { //if (this.getState() && this.getState().path !== path) {
       this.replaceState(path);
     }
-  },
-
-  /**
-   @private
-
-   Get the current `history.state`
-
-   @method getState
-  */
-  getState: function() {
-    return get(this, 'history').state;
   },
 
   /**
@@ -111,7 +106,7 @@ Ember.HistoryLocation = Ember.Object.extend({
    @param path {String}
   */
   pushState: function(path) {
-    get(this, 'history').pushState({ path: path }, null, path);
+    get(this, 'history').pushState({}, null, path);
     // used for webkit workaround
     this._previousURL = this.getURL();
   },
@@ -125,7 +120,7 @@ Ember.HistoryLocation = Ember.Object.extend({
    @param path {String}
   */
   replaceState: function(path) {
-    get(this, 'history').replaceState({ path: path }, null, path);
+    get(this, 'history').replaceState({}, null, path);
     // used for webkit workaround
     this._previousURL = this.getURL();
   },
