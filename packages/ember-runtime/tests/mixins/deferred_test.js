@@ -7,15 +7,15 @@ test("can resolve deferred", function() {
     deferred = Ember.Object.createWithMixins(Ember.DeferredMixin);
   });
 
-  deferred.then(function() {
+  deferred.then(function(a) {
     count++;
   });
 
   Ember.run(function() {
-    deferred.resolve();
+    deferred.resolve(deferred);
   });
 
-  equal(count, 1, "done callback was called");
+  equal(count, 1, "was fulfilled");
 });
 
 test("can reject deferred", function() {
@@ -52,7 +52,7 @@ test("can resolve with then", function() {
   });
 
   Ember.run(function() {
-    deferred.resolve();
+    deferred.resolve(deferred);
   });
 
   equal(count1, 1, "then were resolved");
@@ -94,9 +94,9 @@ test("can call resolve multiple times", function() {
   });
 
   Ember.run(function() {
-    deferred.resolve();
-    deferred.resolve();
-    deferred.resolve();
+    deferred.resolve(deferred);
+    deferred.resolve(deferred);
+    deferred.resolve(deferred);
   });
 
   equal(count, 1, "calling resolve multiple times has no effect");
@@ -116,7 +116,7 @@ test("resolve prevent reject", function() {
   });
 
   Ember.run(function() {
-    deferred.resolve();
+    deferred.resolve(deferred);
   });
 
   Ember.run(function() {
@@ -144,7 +144,7 @@ test("reject prevent resolve", function() {
     deferred.reject();
   });
   Ember.run(function() {
-    deferred.resolve();
+    deferred.resolve(deferred);
   });
 
   equal(resolved, false, "is not resolved");
@@ -194,8 +194,96 @@ test("then is chainable", function() {
   });
 
   Ember.run(function() {
-    deferred.resolve();
+    deferred.resolve(deferred);
   });
 
   equal(count, 1, "chained callback was called");
 });
+
+
+test("can self fulfill", function() {
+  expect(1);
+  var deferred;
+
+  Ember.run(function() {
+    deferred = Ember.Object.createWithMixins(Ember.DeferredMixin);
+  });
+
+  deferred.then(function(value) {
+    equal(value, deferred, "successfully resolved to itself");
+  });
+
+  Ember.run(function() {
+    deferred.resolve(deferred);
+  });
+});
+
+
+
+test("can fulfill to a custom value", function() {
+  expect(1);
+  var deferred, obj = {};
+
+  Ember.run(function() {
+    deferred = Ember.Object.createWithMixins(Ember.DeferredMixin);
+  });
+
+  deferred.then(function(value) {
+    equal(value, obj, "successfully resolved to given value");
+  });
+
+  Ember.run(function() {
+    deferred.resolve(obj);
+  });
+});
+
+
+test("can chain self fulfilling objects", function() {
+  expect(2);
+  var firstDeferred, secondDeferred;
+
+  Ember.run(function() {
+    firstDeferred = Ember.Object.createWithMixins(Ember.DeferredMixin);
+    secondDeferred = Ember.Object.createWithMixins(Ember.DeferredMixin);
+  });
+
+  firstDeferred.then(function(value) {
+    equal(value, firstDeferred, "successfully resolved to the first deferred");
+    return secondDeferred;
+  })
+  .then(function(value) {
+    equal(value, secondDeferred, "successfully resolved to the second deferred");
+  });
+
+  Ember.run(function() {
+    firstDeferred.resolve(firstDeferred);
+    secondDeferred.resolve(secondDeferred);
+  });
+});
+
+test("can do multi level assimilation", function() {
+  expect(1);
+  var firstDeferred, secondDeferred, firstDeferredResolved = false;
+
+  Ember.run(function() {
+    firstDeferred = Ember.Object.createWithMixins(Ember.DeferredMixin);
+    secondDeferred = Ember.Object.createWithMixins(Ember.DeferredMixin);
+  });
+
+  firstDeferred.then(function() {
+    firstDeferredResolved = true;
+  });
+
+  secondDeferred.then(function() {
+    ok(firstDeferredResolved, "first deferred already resolved");
+  });
+
+  Ember.run(function() {
+    secondDeferred.resolve(firstDeferred);
+  });
+
+  Ember.run(function() {
+    firstDeferred.resolve(firstDeferred);
+  });
+});
+
