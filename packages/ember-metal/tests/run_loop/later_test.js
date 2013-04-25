@@ -182,7 +182,9 @@ asyncTest('setTimeout should never run with a negative wait', function() {
     var wait = arguments[arguments.length - 1];
     newSetTimeoutUsed = true;
     ok(!isNaN(wait) && wait >= 0, 'wait is a non-negative number');
-    originalSetTimeout.apply(this, arguments);
+    // In IE8, `setTimeout.apply` is `undefined`.
+    var apply = Function.prototype.apply;
+    return apply.apply(originalSetTimeout, [this, arguments]);
   };
 
   var count = 0;
