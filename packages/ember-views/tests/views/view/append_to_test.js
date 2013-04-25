@@ -14,7 +14,7 @@ module("Ember.View - append() and appendTo()", {
   }
 });
 
-test("should be added to the specified element when calling append()", function() {
+test("should be added to the specified element when calling appendTo()", function() {
   Ember.$("#qunit-fixture").html('<div id="menu"></div>');
 
   view = View.create();
@@ -29,7 +29,7 @@ test("should be added to the specified element when calling append()", function(
   ok(viewElem.length > 0, "creates and appends the view's element");
 });
 
-test("should be added to the document body when calling appendTo()", function() {
+test("should be added to the document body when calling append()", function() {
   view = View.create({
     render: function(buffer) {
       buffer.push("foo bar baz");
