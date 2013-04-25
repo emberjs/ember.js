@@ -143,7 +143,7 @@ merge(states.inDOM, {
   @private
 */
 Ember._HandlebarsBoundView = Ember._MetamorphView.extend({
-  instrumentName: 'render.boundHandlebars',
+  instrumentName: 'boundHandlebars',
   states: states,
 
   /**
