@@ -427,7 +427,10 @@ function invokeLaterTimers() {
 
     // schedule next timeout to fire when the earliest timer expires
     if (earliest > 0) {
-      scheduledLater = setTimeout(invokeLaterTimers, earliest - now);
+      // To allow overwrite `setTimeout` as stub from test code.
+      // The assignment to `window.setTimeout` doesn't equal to `setTimeout` in older IE.
+      // So `window` is required.
+      scheduledLater = window.setTimeout(invokeLaterTimers, earliest - now);
       scheduledLaterExpires = earliest;
     }
   });
