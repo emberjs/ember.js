@@ -70,7 +70,7 @@ Ember.DeferredMixin = Ember.Mixin.create({
   },
 
   _deferred: Ember.computed(function() {
-    return new RSVP.defer();
+    return RSVP.defer();
   })
 });
 
