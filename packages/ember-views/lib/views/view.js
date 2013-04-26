@@ -919,7 +919,7 @@ Ember.View = Ember.CoreView.extend(
   templateForName: function(name, type) {
     if (!name) { return; }
     Ember.assert("templateNames are not allowed to contain periods: "+name, name.indexOf('.') === -1);
-    var container = this.container || (Ember.Container && Ember.Container.defaultContainer);
+    var container = this.container;
     return container && container.lookup('template:' + name);
   },
 
