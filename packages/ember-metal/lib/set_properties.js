@@ -18,7 +18,7 @@ var changeProperties = Ember.changeProperties,
 Ember.setProperties = function(self, hash, value) {
   changeProperties(function(){
    
-    if(Array.isArray(hash) && value !== undefined){
+    if(Ember.isArray(hash) && value !== undefined){
         for(var i = 0; i < hash.length; i++) {
         set(self, hash[i], value); 
     }
