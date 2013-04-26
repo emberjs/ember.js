@@ -19,16 +19,14 @@ Ember.setProperties = function(self, hash, value) {
   changeProperties(function(){
    
    if(Array.isArray(hash) && value !== undefined){
-       for(var i = 0; i < hash.length; i++) {
+      for(var i = 0; i < hash.length; i++) {
    	    set(self, hash[i], value); 
    	  }
    }else{
-   
    	 for(var prop in hash) {
    	   if (hash.hasOwnProperty(prop)) { set(self, prop, hash[prop]); }
    	  }
    }
-    
   });
   return self;
 };
