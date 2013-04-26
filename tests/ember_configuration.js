@@ -30,6 +30,10 @@
 
   ENV['EXPERIMENTAL_CONTROL_HELPER'] = true;
 
+  QUnit.config.urlConfig.push('enablerouteto');
+  var enableRouteTo = QUnit.urlParams.enablerouteto;
+  ENV['ENABLE_ROUTE_TO'] = !!enableRouteTo;
+
   EmberDev.distros = {
     spade:   'ember-spade.js',
     build:   'ember.js',
