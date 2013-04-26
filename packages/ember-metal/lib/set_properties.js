@@ -12,6 +12,7 @@ var changeProperties = Ember.changeProperties,
   @method setProperties
   @param target
   @param {Hash} properties
+  @param {Object} value The value to set or `null`.
   @return target
 */
 Ember.setProperties = function(self, hash, value) {
