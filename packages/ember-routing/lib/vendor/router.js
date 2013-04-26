@@ -242,11 +242,11 @@ define("router",
       isActive: function(handlerName) {
         var contexts = [].slice.call(arguments, 1);
 
-        var currentHandlerInfos = this.currentHandlerInfos,
-            found = false, object, handlerInfo;
+        var targetHandlerInfos = this.targetHandlerInfos,
+            found = false, names, object, handlerInfo, handlerObj;
 
-        for (var i=currentHandlerInfos.length-1; i>=0; i--) {
-          handlerInfo = currentHandlerInfos[i];
+        for (var i=targetHandlerInfos.length-1; i>=0; i--) {
+          handlerInfo = targetHandlerInfos[i];
           if (handlerInfo.name === handlerName) { found = true; }
 
           if (found) {
@@ -467,27 +467,37 @@ define("router",
       var partition =
         partitionHandlers(router.currentHandlerInfos || [], handlerInfos);
 
-      router.currentHandlerInfos = handlerInfos;
+      router.targetHandlerInfos = handlerInfos;
 
-      eachHandler(partition.exited, function(handler, context) {
+      eachHandler(partition.exited, function(handler, context, handlerInfo) {
         delete handler.context;
         if (handler.exit) { handler.exit(); }
       });
 
-      eachHandler(partition.updatedContext, function(handler, context) {
+      var currentHandlerInfos = partition.unchanged.slice();
+      router.currentHandlerInfos = currentHandlerInfos;
+
+      eachHandler(partition.updatedContext, function(handler, context, handlerInfo) {
         setContext(handler, context);
         if (handler.setup) { handler.setup(context); }
+        currentHandlerInfos.push(handlerInfo);
       });
 
       var aborted = false;
-      eachHandler(partition.entered, function(handler, context) {
+      eachHandler(partition.entered, function(handler, context, handlerInfo) {
         if (aborted) { return; }
         if (handler.enter) { handler.enter(); }
+
         setContext(handler, context);
+
         if (handler.setup) {
           if (false === handler.setup(context)) {
             aborted = true;
           }
+        }
+
+        if (!aborted) {
+          currentHandlerInfos.push(handlerInfo);
         }
       });
 
@@ -511,7 +521,7 @@ define("router",
             handler = handlerInfo.handler,
             context = handlerInfo.context;
 
-        callback(handler, context);
+        callback(handler, context, handlerInfo);
       }
     }
 
@@ -537,7 +547,7 @@ define("router",
       * entered: the handler was not active in the old URL, but
         is now active.
 
-      The PartitionedHandlers structure has three fields:
+      The PartitionedHandlers structure has four fields:
 
       * `updatedContext`: a list of `HandlerInfo` objects that
         represent handlers that remain active but have a changed
@@ -546,6 +556,7 @@ define("router",
         handlers that are newly active
       * `exited`: a list of `HandlerInfo` objects that are no
         longer active.
+      * `unchanged`: a list of `HanderInfo` objects that remain active.
 
       @param {Array[HandlerInfo]} oldHandlers a list of the handler
         information for the previous URL (or `[]` if this is the
@@ -559,7 +570,8 @@ define("router",
       var handlers = {
             updatedContext: [],
             exited: [],
-            entered: []
+            entered: [],
+            unchanged: []
           };
 
       var handlerChanged, contextChanged, i, l;
@@ -577,6 +589,8 @@ define("router",
         } else if (contextChanged || oldHandler.context !== newHandler.context) {
           contextChanged = true;
           handlers.updatedContext.push(newHandler);
+        } else {
+          handlers.unchanged.push(oldHandler);
         }
       }
 
@@ -615,4 +629,3 @@ define("router",
     }
     return Router;
   });
-

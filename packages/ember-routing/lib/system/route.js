@@ -521,7 +521,7 @@ Ember.Route = Ember.Object.extend({
 });
 
 function parentRoute(route) {
-  var handlerInfos = route.router.router.currentHandlerInfos;
+  var handlerInfos = route.router.router.targetHandlerInfos;
 
   var parent, current;
 

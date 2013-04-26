@@ -1744,7 +1744,6 @@ test("Application template does not duplicate when re-rendered", function() {
     }
   });
 
-
   bootApplication();
 
   // should cause application template to re-render
@@ -1753,4 +1752,24 @@ test("Application template does not duplicate when re-rendered", function() {
   });
 
   equal(Ember.$('h3:contains(I Render Once)').size(), 1);
+});
+
+test("Child routes should render inside the application template if the application template causes a redirect", function() {
+  Ember.TEMPLATES.application = compile("<h3>App</h3> {{outlet}}");
+  Ember.TEMPLATES.posts = compile("posts");
+
+  Router.map(function() {
+    this.route('posts');
+    this.route('photos');
+  });
+
+  App.ApplicationRoute = Ember.Route.extend({
+    redirect: function() {
+      this.transitionTo('posts');
+    }
+  });
+
+  bootApplication();
+
+  equal(Ember.$('#qunit-fixture > div').text(), "App posts");
 });
