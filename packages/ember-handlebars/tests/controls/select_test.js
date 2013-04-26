@@ -442,6 +442,7 @@ test("handles null content", function() {
   Ember.run(function() {
     select.set('content', null);
     select.set('selection', 'invalid');
+    select.set('value', 'also_invalid');
   });
 
   equal(select.get('element').selectedIndex, -1, "should have no selection");
