@@ -81,10 +81,21 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
 
       var router = this.get('router');
 
-      if (this.get('replace')) {
-        router.replaceWith.apply(router, args(this, router));
+      if (Ember.ENV.ENABLE_ROUTE_TO) {
+
+        var routeArgs = args(this, router);
+
+        router.routeTo(Ember.TransitionEvent.create({
+          transitionMethod: this.get('replace') ? 'replaceWith' : 'transitionTo',
+          destinationRouteName: routeArgs[0],
+          contexts: routeArgs.slice(1)
+        }));
       } else {
-        router.transitionTo.apply(router, args(this, router));
+        if (this.get('replace')) {
+          router.replaceWith.apply(router, args(this, router));
+        } else {
+          router.transitionTo.apply(router, args(this, router));
+        }
       }
     },
 
