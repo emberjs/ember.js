@@ -198,14 +198,25 @@ Ember.Route = Ember.Object.extend({
     } else {
       this.setupController(controller, context);
     }
+  },
 
+  /**
+    @private
+
+    This hook is an entry point for router.js. It is invoked when
+    we're entering a route, after the route's context has been setup.
+
+    @method setupTemplate
+  */
+  setupTemplate: function(context) {
     if (this.renderTemplates) {
       Ember.deprecate("Ember.Route.renderTemplates is deprecated. Please use Ember.Route.renderTemplate(controller, model) instead.");
       this.renderTemplates(context);
     } else {
-      this.renderTemplate(controller, context);
+      this.renderTemplate(this.controller, context);
     }
   },
+
 
   /**
     A hook you can implement to optionally redirect to another route.
