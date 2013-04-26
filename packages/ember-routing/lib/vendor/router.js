@@ -337,7 +337,10 @@ define("router",
     function failure(router, error) {
       loaded(router);
       var handler = router.getHandler('failure');
-      if (handler && handler.setup) { handler.setup(error); }
+      if (handler){
+        if (handler.enter) { handler.enter(); }
+        if (handler.setup) { handler.setup(error); }
+      }
     }
 
     /**

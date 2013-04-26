@@ -541,6 +541,47 @@ test("The Special page returning an error puts the app into the failure state", 
   equal(Ember.$('p', '#qunit-fixture').text(), "FAILURE!", "The app is now in the failure state");
 });
 
+test("The Special page returning an error invokes the failure state's enter handler", function() {
+  Router.map(function() {
+    this.route("home", { path: "/" });
+    this.resource("special", { path: "/specials/:menu_item_id" });
+  });
+
+  var menuItem;
+
+  App.MenuItem = Ember.Object.extend(Ember.DeferredMixin);
+  App.MenuItem.find = function(id) {
+    menuItem = App.MenuItem.create({ id: id });
+    return menuItem;
+  };
+
+  App.SpecialRoute = Ember.Route.extend({
+    setup: function() {
+      throw 'Setup error';
+    }
+  });
+
+  App.FailureRoute = Ember.Route.extend({
+    activate: function() {
+      this.controllerFor('failure').set('gotActivated', true);
+    }
+  });
+
+  Ember.TEMPLATES.failure = Ember.Handlebars.compile(
+    "<p>{{#if gotActivated}}FAILURE!{{else}}Failure route was not activated.{{/if}}</p>"
+  );
+
+  bootApplication();
+
+  Ember.run(function() {
+    router.handleURL("/specials/1");
+    menuItem.resolve(menuItem);
+  });
+
+  equal(Ember.$('p', '#qunit-fixture').text(), "FAILURE!", "The failure state was properly activated");
+});
+
+
 test("The Special page returning an error puts the app into a default failure state if none provided", function() {
   Router.map(function() {
     this.route("home", { path: "/" });
