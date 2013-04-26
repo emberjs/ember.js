@@ -373,14 +373,14 @@ define("route-recognizer",
       },
 
       recognize: function(path) {
-        var states = [ this.rootState ], i, l;
+        var states = [ this.rootState ],
+            pathLen, i, l;
 
         // DEBUG GROUP path
 
-        var pathLen = path.length;
-
         if (path.charAt(0) !== "/") { path = "/" + path; }
 
+        pathLen = path.length;
         if (pathLen > 1 && path.charAt(pathLen - 1) === "/") {
           path = path.substr(0, pathLen - 1);
         }
