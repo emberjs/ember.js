@@ -49,7 +49,7 @@ function wait(target, method) {
     clearInterval(watcher);
     start();
     Ember.run(target, method);
-  }, 200);
+  }, 10);
 }
 
 Ember.Application.reopen({
