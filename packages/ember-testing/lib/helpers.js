@@ -1,34 +1,34 @@
 /*globals EMBER_APP_BEING_TESTED */
 
-var Promise = Ember.RSVP.Promise,
+var Defer = Ember.RSVP.defer,
     pendingAjaxRequests = 0,
     originalFind;
 
 function visit(url) {
-  var promise = new Promise();
+  var defer = new Defer();
   Ember.run(EMBER_APP_BEING_TESTED, EMBER_APP_BEING_TESTED.handleURL, url);
-  wait(promise, promise.resolve);
-  return promise;
+  wait(defer, defer.resolve);
+  return defer.promise;
 }
 
 function click(selector) {
-  var promise = new Promise();
+  var defer = new Defer();
   Ember.run(function() {
     Ember.$(selector).click();
   });
-  wait(promise, promise.resolve);
-  return promise;
+  wait(defer, defer.resolve);
+  return defer.promise;
 }
 
 function fillIn(selector, text) {
-  var promise = new Promise();
+  var defer = new Defer();
   var $el = find(selector);
   Ember.run(function() {
     $el.val(text);
   });
 
-  wait(promise, promise.resolve);
-  return promise;
+  wait(defer, defer.resolve);
+  return defer.promise;
 }
 
 function find(selector) {
