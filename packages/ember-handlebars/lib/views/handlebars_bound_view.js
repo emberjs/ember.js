@@ -63,6 +63,14 @@ SimpleHandlebarsView.prototype = {
   },
 
   renderToBuffer: function(buffer) {
+
+    return Ember.instrument('render.simpleBoundHandlebars', {}, function() {
+      return this._renderToBuffer(buffer);
+    }, this);
+
+  },
+
+  _renderToBuffer: function(buffer) {
     var string = '';
 
     string += this.morph.startTag();
