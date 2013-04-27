@@ -1820,4 +1820,59 @@ test("The template is not re-rendered when the route's context changes", functio
   equal(insertionCount, 1, "view should still have inserted only once");
 });
 
+test("transitionToURL can be called from both route and controller", function() {
+  var postsTemplateRendered = false,
+      postTemplateRendered = false,
+      postsController = null,
+      postParams = null;
 
+  Router.map(function() {
+    this.resource('posts', { path: '/posts-url' }, function() {
+      this.route('post', { path: '/post/:post_id' });
+    });
+  });
+
+  App.IndexRoute = Ember.Route.extend({
+    redirect: function() {
+      this.transitionToURL('/posts-url');
+    }
+  });
+
+  App.PostsRoute = Ember.Route.extend({
+    setupController: function(controller) {
+      postsController = controller;
+    },
+    renderTemplate: function() {
+      postsTemplateRendered = true;
+    }
+  });
+
+  App.PostsController = Ember.Controller.extend({
+    goToPost: function() {
+      this.transitionToURL('/posts-url/post/50');
+    }
+  });
+
+  App.PostsPostRoute = Ember.Route.extend({
+    model: function(params) {
+      postParams = params;
+    },
+    renderTemplate: function() {
+      postTemplateRendered = true;
+    }
+  });
+
+  bootApplication();
+
+  ok(postsTemplateRendered);
+  equal(router.get('url'), '/posts-url');
+
+  Ember.run(function() {
+    postsController.send('goToPost');
+  });
+
+  ok(postTemplateRendered);
+  equal(+postParams.post_id, 50);
+  equal(router.get('url'), '/posts-url/post/50');
+
+});

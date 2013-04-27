@@ -87,9 +87,9 @@ Ember.Router = Ember.Object.extend({
   /**
     Transition to another route via the `routeTo` event which
     will by default be handled by ApplicationRoute.
-   
+
     @method routeTo
-    @param {TransitionEvent} transitionEvent 
+    @param {TransitionEvent} transitionEvent
    */
   routeTo: function(transitionEvent) {
     var handlerInfos = this.router.currentHandlerInfos;
@@ -109,6 +109,16 @@ Ember.Router = Ember.Object.extend({
     var args = [].slice.call(arguments);
     doTransition(this, 'replaceWith', args);
   },
+
+  transitionToURL: function(url) {
+    var self = this;
+    Ember.run.once(function() {
+      self.get('location').setURL(url);
+      self.notifyPropertyChange('url');
+    });
+    this.router.handleURL(url);
+  },
+
 
   generate: function() {
     var url = this.router.generate.apply(this.router, arguments);

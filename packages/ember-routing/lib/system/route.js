@@ -74,9 +74,9 @@ Ember.Route = Ember.Object.extend({
   /**
     Transition to another route via the `routeTo` event which
     will by default be handled by ApplicationRoute.
-   
+
     @method routeTo
-    @param {TransitionEvent} transitionEvent 
+    @param {TransitionEvent} transitionEvent
    */
   routeTo: function(transitionEvent) {
     this.router.routeTo(transitionEvent);
@@ -121,6 +121,19 @@ Ember.Route = Ember.Object.extend({
 
     if (this._checkingRedirect) { this._redirected[this._redirectDepth] = true; }
     return this.router.replaceWith.apply(this.router, arguments);
+  },
+
+  /**
+    Transition into a URL.  This is used if we have
+    the final URL to transition to, but don't know the
+    exact route and models.
+
+    @method transitionToURL
+    @param {String} url
+  */
+  transitionToURL: function(url) {
+    if (this._checkingRedirect) { this.redirected = true; }
+    return this.router.transitionToURL(url);
   },
 
   send: function() {
