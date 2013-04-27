@@ -38,5 +38,4 @@ test("Ember.Application#setupForTesting", function() {
   });
 
   equal(App.__container__.lookup('router:main').location.implementation, 'none');
-  equal(window.EMBER_APP_BEING_TESTED, App);
 });

@@ -2,37 +2,39 @@
 
 var Promise = Ember.RSVP.Promise,
     pendingAjaxRequests = 0,
-    originalFind;
+    originalFind,
+    slice = [].slice,
+    get = Ember.get;
 
-function visit(url) {
-  Ember.run(EMBER_APP_BEING_TESTED, EMBER_APP_BEING_TESTED.handleURL, url);
-  return wait();
+function visit(app, url) {
+  Ember.run(app, app.handleURL, url);
+  return wait(app);
 }
 
-function click(selector) {
+function click(app, selector) {
   Ember.run(function() {
-    Ember.$(selector).click();
+    app.$(selector).click();
   });
-  return wait();
+  return wait(app);
 }
 
-function fillIn(selector, text) {
-  var $el = find(selector);
+function fillIn(app, selector, text) {
+  var $el = find(app, selector);
   Ember.run(function() {
     $el.val(text);
   });
-  return wait();
+  return wait(app);
 }
 
-function find(selector) {
-  return Ember.$('.ember-application').find(selector);
+function find(app, selector) {
+  return app.$(get(app, 'rootElement')).find(selector);
 }
 
-function wait(value) {
+function wait(app, value) {
   return new Promise(function(resolve) {
     stop();
     var watcher = setInterval(function() {
-      var routerIsLoading = EMBER_APP_BEING_TESTED.__container__.lookup('router:main').router.isLoading;
+      var routerIsLoading = app.__container__.lookup('router:main').router.isLoading;
       if (routerIsLoading) { return; }
       if (pendingAjaxRequests) { return; }
       if (Ember.run.hasScheduledTimers() || Ember.run.currentRunLoop) { return; }
@@ -45,6 +47,14 @@ function wait(value) {
   });
 }
 
+function curry(app, fn) {
+  return function() {
+    var args = slice.call(arguments);
+    args.unshift(app);
+    return fn.apply(app, args);
+  };
+}
+
 Ember.Application.reopen({
   setupForTesting: function() {
     this.deferReadiness();
@@ -52,8 +62,6 @@ Ember.Application.reopen({
     this.Router.reopen({
       location: 'none'
     });
-
-    window.EMBER_APP_BEING_TESTED = this;
   },
 
   injectTestHelpers: function() {
@@ -65,19 +73,20 @@ Ember.Application.reopen({
       pendingAjaxRequests--;
     });
 
-    window.visit = visit;
-    window.click = click;
-    window.fillIn = fillIn;
+    // todo do this safer.
+    window.visit  = curry(this, visit);
+    window.click  = curry(this, click);
+    window.fillIn = curry(this, fillIn);
     originalFind = window.find;
-    window.find = find;
-    window.wait = wait;
+    window.find   = curry(this, find);
+    window.wait   = curry(this, wait);
   },
 
   removeTestHelpers: function() {
     window.visit = null;
     window.click = null;
     window.fillIn = null;
-    window.find = originalFind;
     window.wait = null;
+    window.find = originalFind;
   }
 });
