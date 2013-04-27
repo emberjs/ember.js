@@ -49,7 +49,7 @@ testBoth('observer on subclass', function(get, set) {
   equal(get(obj, 'count'), 0, 'should not invoke observer after change');
 
   set(obj, 'baz', "BAZ");
-  equal(get(obj, 'count'), 1, 'should not invoke observer after change');
+  equal(get(obj, 'count'), 1, 'should invoke observer after change');
 
 });
 
@@ -96,7 +96,7 @@ testBoth('observer on instance overridding class', function(get, set) {
   equal(get(obj, 'count'), 0, 'should not invoke observer after change');
 
   set(obj, 'baz', "BAZ");
-  equal(get(obj, 'count'), 1, 'should not invoke observer after change');
+  equal(get(obj, 'count'), 1, 'should invoke observer after change');
 
 });
 
