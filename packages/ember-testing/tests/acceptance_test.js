@@ -53,7 +53,7 @@ module("ember-testing Acceptance", {
 
   teardown: function(){
     App.removeTestHelpers();
-    Ember.$('#ember-testing-container, #ember-testing>').remove();
+    Ember.$('#ember-testing-container, #ember-testing').remove();
     Ember.run(App, App.destroy);
     App = null;
   }
