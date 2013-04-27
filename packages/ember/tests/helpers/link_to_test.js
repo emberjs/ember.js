@@ -106,14 +106,14 @@ test("The {{linkTo}} helper supports URL replacement", function() {
     router.handleURL("/");
   });
 
-  equal(setCount, 0, 'precond: setURL has not been called');
+  equal(setCount, 2, 'precond: setURL has been called twice');
   equal(replaceCount, 0, 'precond: replaceURL has not been called');
 
   Ember.run(function() {
     Ember.$('#about-link', '#qunit-fixture').click();
   });
 
-  equal(setCount, 0, 'setURL should not be called');
+  equal(setCount, 2, 'setURL should not be called');
   equal(replaceCount, 1, 'replaceURL should be called once');
 });
 

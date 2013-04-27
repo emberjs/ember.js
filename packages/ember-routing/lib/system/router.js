@@ -37,13 +37,15 @@ function setupLocation(router) {
 Ember.Router = Ember.Object.extend({
   location: 'hash',
 
-  url: null,
-
   init: function() {
     this.router = this.constructor.router;
     this._activeViews = {};
     setupLocation(this);
   },
+
+  url: Ember.computed(function() {
+    return get(this, 'location').getURL();
+  }),
 
   startRouting: function() {
     this.router = this.router || this.constructor.map(Ember.K);
@@ -82,8 +84,8 @@ Ember.Router = Ember.Object.extend({
   },
 
   handleURL: function(url) {
+    this.router.updateURL(url);
     this.router.handleURL(url);
-    set(this, 'url', url);
   },
 
   transitionTo: function(name) {
@@ -190,8 +192,9 @@ function setupRouter(emberRouter, router, location) {
   router.getHandler = getHandlerFunction(emberRouter);
 
   var doUpdateURL = function() {
+    emberRouter.propertyWillChange('url');
     location.setURL(lastURL);
-    set(emberRouter, 'url', location.getURL());
+    emberRouter.propertyDidChange('url');
   };
 
   router.updateURL = function(path) {
@@ -201,8 +204,9 @@ function setupRouter(emberRouter, router, location) {
 
   if (location.replaceURL) {
     var doReplaceURL = function() {
+      emberRouter.propertyWillChange('url');
       location.replaceURL(lastURL);
-      set(emberRouter, 'url', location.getURL());
+      emberRouter.propertyDidChange('url');
     };
 
     router.replaceURL = function(path) {

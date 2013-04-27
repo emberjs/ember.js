@@ -81,7 +81,9 @@ test("When an application is reset, the router URL is reset to `/`", function() 
   router = application.__container__.lookup('router:main');
 
   location = router.get('location');
-  location.handleURL('/one');
+  Ember.run(function() {
+    location.handleURL('/one');
+  });
 
   Ember.run(function() {
     application.reset();
@@ -96,7 +98,9 @@ test("When an application is reset, the router URL is reset to `/`", function() 
   equal(get(applicationController, 'currentPath'), "index");
 
   location = application.__container__.lookup('router:main').get('location');
-  location.handleURL('/one');
+  Ember.run(function() {
+    location.handleURL('/one');
+  });
 
   equal(get(applicationController, 'currentPath'), "one");
 });
