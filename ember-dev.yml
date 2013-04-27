@@ -34,6 +34,7 @@ testing_packages:
   - ember-routing
   - ember-application
   - ember
+  - ember-testing
 testing_additional_requires:
   - ember-debug
   - rsvp
