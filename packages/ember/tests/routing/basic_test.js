@@ -824,6 +824,56 @@ asyncTest("Events are triggered on the controller if a matching action name is i
   action.handler(event);
 });
 
+asyncTest("Events triggered on the controller can bubble up to routes if the controller handler returns true", function() {
+  expect(2);
+  Router.map(function() {
+    this.route("home", { path: "/" });
+  });
+
+  var model = { name: "Tom Dale" };
+
+  App.HomeRoute = Ember.Route.extend({
+    model: function() {
+      return model;
+    },
+
+    events: {
+      showStuff: function(obj) {
+        deepEqual(obj, { name: "Tom Dale" }, "context correctly bubbles up");
+        start();
+      }
+    }
+  });
+
+  Ember.TEMPLATES.home = Ember.Handlebars.compile(
+    "<a {{action showStuff content}}>{{name}}</a>"
+  );
+
+  var controller = Ember.Controller.extend({
+    showStuff: function(context){
+      deepEqual(context, { name: "Tom Dale" }, "an event with context is passed");
+
+      // Bubble the event.
+      return true;
+    }
+  });
+
+  container.register('controller:home', controller);
+
+  bootApplication();
+
+
+  Ember.run(function() {
+    router.handleURL("/");
+  });
+
+  var actionId = Ember.$("#qunit-fixture a").data("ember-action");
+  var action = Ember.Handlebars.ActionHelper.registeredActions[actionId];
+  var event = new Ember.$.Event("click");
+  action.handler(event);
+});
+
+
 asyncTest("Events are triggered on the current state", function() {
   Router.map(function() {
     this.route("home", { path: "/" });
