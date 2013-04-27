@@ -12,6 +12,7 @@ test("Ember.Application#injectTestHelpers/#removeTestHelpers", function() {
   ok(!window.visit);
   ok(!window.click);
   ok(!window.fillIn);
+  ok(!window.wait);
   var originalFind = window.find; // window.find already exists
 
   App.injectTestHelpers();
@@ -20,6 +21,7 @@ test("Ember.Application#injectTestHelpers/#removeTestHelpers", function() {
   ok(window.click);
   ok(window.fillIn);
   ok(window.find);
+  ok(window.wait);
 
   App.removeTestHelpers();
 
@@ -27,6 +29,7 @@ test("Ember.Application#injectTestHelpers/#removeTestHelpers", function() {
   ok(!window.click);
   ok(!window.fillIn);
   equal(window.find, originalFind); // window.find already exists
+  ok(!window.wait);
 });
 
 test("Ember.Application#setupForTesting", function() {
@@ -42,7 +45,7 @@ test("Ember.Application#setupForTesting", function() {
 test("helpers can be chained", function() {
   expect(3);
 
-  var visit, currentRoute;
+  var currentRoute;
 
   Ember.run(function(){
     Ember.$('<style>#ember-testing-container { position: absolute; background: white; bottom: 0; right: 0; width: 640px; height: 384px; overflow: auto; z-index: 9999; border: 1px solid #ccc; } #ember-testing { zoom: 50%; }</style>').appendTo('head');
@@ -88,7 +91,9 @@ test("helpers can be chained", function() {
 
   currentRoute = 'index';
 
-  window.visit('/posts').then(function() {
+  window.wait().then(function() {
+    return window.visit('/posts');
+  }).then(function() {
     equal(currentRoute, 'posts', "Successfully visited posts route");
     return window.click('a:contains("Comments")');
   }).then(function() {
