@@ -18,7 +18,7 @@ Ember.ControllerMixin.reopen({
     Optionally supply a model for the route in question. The model
     will be serialized into the URL using the `serialize` hook of
     the route:
-    
+
     ```javascript
       aController.transitionToRoute('blogPost', aPost);
     ```
@@ -60,5 +60,14 @@ Ember.ControllerMixin.reopen({
   replaceWith: function() {
     Ember.deprecate("replaceWith is deprecated. Please use replaceRoute.");
     return this.replaceRoute.apply(this, arguments);
+  },
+
+  /**
+    @param {String} URL to transition to
+    @for Ember.ControllerMixin
+    @method transitionToURL
+  */
+  transitionToURL: function(url) {
+    get(this, 'target').transitionToURL(url);
   }
 });
