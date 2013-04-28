@@ -288,9 +288,10 @@ Ember.CollectionView = Ember.ContainerView.extend(
     This array observer is added in `contentDidChange`.
 
     @method arrayDidChange
-    @param {Array} addedObjects the objects that were added to the content
-    @param {Array} removedObjects the objects that were removed from the content
-    @param {Number} changeIndex the index at which the changes occurred
+    @param {Array} content the managed collection of objects
+    @param {Number} start the index at which the changes occurred
+    @param {Number} removed number of object removed from content
+    @param {Number} added number of object added to content
   */
   arrayDidChange: function(content, start, removed, added) {
     var itemViewClass = get(this, 'itemViewClass'),
