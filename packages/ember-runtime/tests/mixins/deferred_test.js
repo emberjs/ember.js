@@ -11,9 +11,7 @@ test("can resolve deferred", function() {
     count++;
   });
 
-  Ember.run(function() {
-    deferred.resolve(deferred);
-  });
+  Ember.run(deferred, 'resolve', deferred);
 
   equal(count, 1, "was fulfilled");
 });
@@ -26,13 +24,11 @@ test("can reject deferred", function() {
     deferred = Ember.Object.createWithMixins(Ember.DeferredMixin);
   });
 
-  deferred.then(function() {}, function() {
+  deferred.then(null, function() {
     count++;
   });
 
-  Ember.run(function() {
-    deferred.reject();
-  });
+  Ember.run(deferred, 'reject');
 
   equal(count, 1, "fail callback was called");
 });
@@ -51,9 +47,7 @@ test("can resolve with then", function() {
     count2++;
   });
 
-  Ember.run(function() {
-    deferred.resolve(deferred);
-  });
+  Ember.run(deferred, 'resolve', deferred);
 
   equal(count1, 1, "then were resolved");
   equal(count2, 0, "then was not rejected");
@@ -73,9 +67,7 @@ test("can reject with then", function() {
     count2++;
   });
 
-  Ember.run(function() {
-    deferred.reject();
-  });
+  Ember.run(deferred, 'reject');
 
   equal(count1, 0, "then was not resolved");
   equal(count2, 1, "then were rejected");
@@ -115,13 +107,8 @@ test("resolve prevent reject", function() {
     rejected = true;
   });
 
-  Ember.run(function() {
-    deferred.resolve(deferred);
-  });
-
-  Ember.run(function() {
-    deferred.reject();
-  });
+  Ember.run(deferred, 'resolve', deferred);
+  Ember.run(deferred, 'reject');
 
   equal(resolved, true, "is resolved");
   equal(rejected, false, "is not rejected");
@@ -140,12 +127,8 @@ test("reject prevent resolve", function() {
     rejected = true;
   });
 
-  Ember.run(function() {
-    deferred.reject();
-  });
-  Ember.run(function() {
-    deferred.resolve(deferred);
-  });
+  Ember.run(deferred, 'reject');
+  Ember.run(deferred, 'reject', deferred);
 
   equal(resolved, false, "is not resolved");
   equal(rejected, true, "is rejected");
@@ -159,9 +142,7 @@ test("will call callbacks if they are added after resolution", function() {
     deferred = Ember.Object.createWithMixins(Ember.DeferredMixin);
   });
 
-  Ember.run(function() {
-    deferred.resolve('toto');
-  });
+  Ember.run(deferred, 'resolve', 'toto');
 
   Ember.run(function() {
     deferred.then(function(context) {
@@ -193,12 +174,11 @@ test("then is chainable", function() {
     count++;
   });
 
-  Ember.run(function() {
-    deferred.resolve(deferred);
-  });
+  Ember.run(deferred, 'resolve', deferred);
 
   equal(count, 1, "chained callback was called");
 });
+
 
 
 test("can self fulfill", function() {
@@ -213,12 +193,26 @@ test("can self fulfill", function() {
     equal(value, deferred, "successfully resolved to itself");
   });
 
-  Ember.run(function() {
-    deferred.resolve(deferred);
-  });
+  Ember.run(deferred, 'resolve', deferred);
 });
 
 
+test("can self reject", function() {
+  expect(1);
+  var deferred;
+
+  Ember.run(function() {
+    deferred = Ember.Object.createWithMixins(Ember.DeferredMixin);
+  });
+
+  deferred.then(function(){
+    ok(false, 'should not fulfill'); 
+  },function(value) {
+    equal(value, deferred, "successfully rejected to itself");
+  });
+
+  Ember.run(deferred, 'reject', deferred);
+});
 
 test("can fulfill to a custom value", function() {
   expect(1);
@@ -232,9 +226,7 @@ test("can fulfill to a custom value", function() {
     equal(value, obj, "successfully resolved to given value");
   });
 
-  Ember.run(function() {
-    deferred.resolve(obj);
-  });
+  Ember.run(deferred, 'resolve', obj);
 });
 
 
@@ -250,8 +242,7 @@ test("can chain self fulfilling objects", function() {
   firstDeferred.then(function(value) {
     equal(value, firstDeferred, "successfully resolved to the first deferred");
     return secondDeferred;
-  })
-  .then(function(value) {
+  }).then(function(value) {
     equal(value, secondDeferred, "successfully resolved to the second deferred");
   });
 
@@ -278,12 +269,7 @@ test("can do multi level assimilation", function() {
     ok(firstDeferredResolved, "first deferred already resolved");
   });
 
-  Ember.run(function() {
-    secondDeferred.resolve(firstDeferred);
-  });
-
-  Ember.run(function() {
-    firstDeferred.resolve(firstDeferred);
-  });
+  Ember.run(secondDeferred, 'resolve', firstDeferred);
+  Ember.run(firstDeferred, 'resolve', firstDeferred);
 });
 
