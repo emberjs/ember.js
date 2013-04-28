@@ -213,12 +213,22 @@ test("can self fulfill", function() {
     equal(value, deferred, "successfully resolved to itself");
   });
 
+test("can self reject", function() {
+  expect(1);
+  var deferred;
+
   Ember.run(function() {
-    deferred.resolve(deferred);
+    deferred = Ember.Object.createWithMixins(Ember.DeferredMixin);
   });
+
+  deferred.then(function(){
+    ok(false, 'should not fulfill'); 
+  },function(value) {
+    equal(value, deferred, "successfully rejected to itself");
+  });
+
+  Ember.run(deferred, 'reject', deferred);
 });
-
-
 
 test("can fulfill to a custom value", function() {
   expect(1);
