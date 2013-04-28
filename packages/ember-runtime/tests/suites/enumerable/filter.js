@@ -26,7 +26,15 @@ suite.test('filter should invoke on each item', function() {
 
 suite.module('filterProperty');
 
-suite.test('should filter based on object', function() {
+function withMethods(methodNames, testFunc) {
+  return function() {
+    methodNames.forEach(function(methodName) {
+      testFunc.call(this, methodName);
+    }, this);
+  };
+}
+
+suite.test('should filter based on object', withMethods(['filterProperty', 'filterByProperty'], function(methodName) {
   var obj, ary;
 
   ary = [
@@ -36,9 +44,9 @@ suite.test('should filter based on object', function() {
 
   obj = this.newObject(ary);
 
-  deepEqual(obj.filterProperty('foo', 'foo'), ary, 'filterProperty(foo)');
-  deepEqual(obj.filterProperty('bar', 'bar'), [ary[1]], 'filterProperty(bar)');
-});
+  deepEqual(obj[methodName]('foo', 'foo'), ary, methodName + '(foo)');
+  deepEqual(obj[methodName]('bar', 'bar'), [ary[1]],  methodName + '(bar)');
+}));
 
 suite.test('should include in result if property is true', function() {
   var obj, ary;
