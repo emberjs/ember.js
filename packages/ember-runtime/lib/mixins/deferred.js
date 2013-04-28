@@ -38,11 +38,7 @@ Ember.DeferredMixin = Ember.Mixin.create({
         return resolve(fulfillment);
       }
     }, function(reason) {
-      if (reason === promise) {
-        return reject(entity);
-      } else {
-        return reject(reason);
-      }
+      return reject(reason);
     });
   },
 
