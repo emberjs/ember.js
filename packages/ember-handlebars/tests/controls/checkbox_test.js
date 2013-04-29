@@ -2,9 +2,7 @@ var get = Ember.get, set = function(obj, key, value) {
   Ember.run(function() { Ember.set(obj, key, value); });
 };
 
-var isInternetExplorer = window.navigator.userAgent.match(/msie/i),
-    checkboxView, dispatcher, controller;
-
+var checkboxView, dispatcher, controller;
 
 var compile = Ember.Handlebars.compile;
 
@@ -203,14 +201,10 @@ test("checking the checkbox updates the value", function() {
   equal(get(checkboxView, 'checked'), true, "precond - initially starts with a true value");
   equal(!!checkboxView.$().prop('checked'), true, "precond - the initial checked property is true");
 
-  // Can't find a way to programatically trigger a checkbox in IE and have it generate the
-  // same events as if a user actually clicks.
-  if (!isInternetExplorer) {
-    checkboxView.$()[0].click();
-  } else {
-    checkboxView.$().trigger('click');
-    checkboxView.$().removeAttr('checked').trigger('change');
-  }
+  // IE fires 'change' event on blur.
+  checkboxView.$()[0].focus();
+  checkboxView.$()[0].click();
+  checkboxView.$()[0].blur();
 
   equal(!!checkboxView.$().prop('checked'), false, "after clicking a checkbox, the checked property changed");
   equal(get(checkboxView, 'checked'), false, "changing the checkbox causes the view's value to get updated");
