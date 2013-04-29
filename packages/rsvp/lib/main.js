@@ -376,7 +376,11 @@ define("rsvp/promise",
         this.trigger('error', { detail: event.detail });
       }, this);
 
-      resolver(resolvePromise, rejectPromise);
+      try {
+        resolver(resolvePromise, rejectPromise);
+      } catch(e) {
+        rejectPromise(e);
+      }
     };
 
     var invokeCallback = function(type, promise, callback, event) {
