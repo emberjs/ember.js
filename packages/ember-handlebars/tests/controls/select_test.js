@@ -18,12 +18,6 @@ module("Ember.Select", {
   }
 });
 
-function setAndFlush(view, key, value) {
-  Ember.run(function() {
-    Ember.set(view, key, value);
-  });
-}
-
 function append() {
   Ember.run(function() {
     select.appendTo('#qunit-fixture');
