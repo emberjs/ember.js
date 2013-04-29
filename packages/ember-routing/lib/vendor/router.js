@@ -298,7 +298,6 @@ define("router",
         if (handler) {
           if (handler.enter) { handler.enter(); }
           if (handler.setup) { handler.setup(); }
-          if (handler.setupTemplate) { handler.setupTemplate(); }
         }
       }
     }
@@ -341,7 +340,6 @@ define("router",
       if (handler){
         if (handler.enter) { handler.enter(); }
         if (handler.setup) { handler.setup(error); }
-        if (handler.setupTemplate) { handler.setupTemplate(error); }
       }
     }
 
@@ -497,12 +495,10 @@ define("router",
             aborted = true;
           }
         }
+
         if (!aborted) {
-          if (handler.setupTemplate) {
-            handler.setupTemplate(context);
-          }
           currentHandlerInfos.push(handlerInfo);
-	}
+        }
       });
 
       if (!aborted && router.didTransition) {
