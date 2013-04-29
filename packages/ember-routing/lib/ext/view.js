@@ -50,7 +50,10 @@ Ember.View.reopen({
 
   _finishDisconnections: function() {
     var outlets = get(this, '_outlets');
-    for (var outletName in this._pendingDisconnections) {
+    var pendingDisconnections = this._pendingDisconnections;
+    this._pendingDisconnections = null;
+
+    for (var outletName in pendingDisconnections) {
       set(outlets, outletName, null);
     }
   }
