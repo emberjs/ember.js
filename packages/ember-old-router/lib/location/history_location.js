@@ -116,7 +116,7 @@ Ember.HistoryLocation = Ember.Object.extend({
   onUpdateURL: function(callback) {
     var guid = Ember.guidFor(this);
 
-    Ember.$(window).bind('popstate.ember-location-'+guid, function(e) {
+    Ember.$(window).on('popstate.ember-location-'+guid, function(e) {
       if(!popstateReady) {
         return;
       }
