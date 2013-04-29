@@ -114,12 +114,6 @@ module("Ember.Checkbox", {
   }
 });
 
-function setAndFlush(view, key, value) {
-  Ember.run(function() {
-    Ember.set(view, key, value);
-  });
-}
-
 function append() {
   Ember.run(function() {
     checkboxView.appendTo('#qunit-fixture');
@@ -180,7 +174,7 @@ test("checked property mirrors input value", function() {
   equal(get(checkboxView, 'checked'), false, "initially starts with a false value");
   equal(!!checkboxView.$().prop('checked'), false, "the initial checked property is false");
 
-  setAndFlush(checkboxView, 'checked', true);
+  set(checkboxView, 'checked', true);
 
   equal(checkboxView.$().prop('checked'), true, "changing the value property changes the DOM");
 
