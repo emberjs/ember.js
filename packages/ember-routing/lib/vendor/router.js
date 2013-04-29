@@ -337,7 +337,7 @@ define("router",
     function failure(router, error) {
       loaded(router);
       var handler = router.getHandler('failure');
-      if (handler){
+      if (handler) {
         if (handler.enter) { handler.enter(); }
         if (handler.setup) { handler.setup(error); }
       }
@@ -469,7 +469,7 @@ define("router",
 
       router.targetHandlerInfos = handlerInfos;
 
-      eachHandler(partition.exited, function(handler, context, handlerInfo) {
+      eachHandler(partition.exited, function(handler, context) {
         delete handler.context;
         if (handler.exit) { handler.exit(); }
       });
@@ -487,9 +487,7 @@ define("router",
       eachHandler(partition.entered, function(handler, context, handlerInfo) {
         if (aborted) { return; }
         if (handler.enter) { handler.enter(); }
-
         setContext(handler, context);
-
         if (handler.setup) {
           if (false === handler.setup(context)) {
             aborted = true;
@@ -610,17 +608,24 @@ define("router",
         throw new Error("Could not trigger event '" + name + "'. There are no active handlers");
       }
 
+      var eventWasHandled = false;
+
       for (var i=currentHandlerInfos.length-1; i>=0; i--) {
         var handlerInfo = currentHandlerInfos[i],
             handler = handlerInfo.handler;
 
         if (handler.events && handler.events[name]) {
-          handler.events[name].apply(handler, args);
-          return;
+          if (handler.events[name].apply(handler, args) === true) {
+            eventWasHandled = true;
+          } else {
+            return;
+          }
         }
       }
 
-      throw new Error("Nothing handled the event '" + name + "'.");
+      if (!eventWasHandled) {
+        throw new Error("Nothing handled the event '" + name + "'.");
+      }
     }
 
     function setContext(handler, context) {
@@ -629,3 +634,4 @@ define("router",
     }
     return Router;
   });
+
