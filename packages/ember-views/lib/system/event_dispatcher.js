@@ -129,7 +129,7 @@ Ember.EventDispatcher = Ember.Object.extend(
   setupHandler: function(rootElement, event, eventName) {
     var self = this;
 
-    rootElement.delegate('.ember-view', event + '.ember', function(evt, triggeringManager) {
+    rootElement.on(event + '.ember', '.ember-view', function(evt, triggeringManager) {
       return Ember.handleErrors(function() {
         var view = Ember.View.views[this.id],
             result = true, manager = null;
@@ -148,7 +148,7 @@ Ember.EventDispatcher = Ember.Object.extend(
       }, this);
     });
 
-    rootElement.delegate('[data-ember-action]', event + '.ember', function(evt) {
+    rootElement.on(event + '.ember', '[data-ember-action]', function(evt) {
       return Ember.handleErrors(function() {
         var actionId = Ember.$(evt.currentTarget).attr('data-ember-action'),
             action   = Ember.Handlebars.ActionHelper.registeredActions[actionId];
@@ -200,7 +200,7 @@ Ember.EventDispatcher = Ember.Object.extend(
 
   destroy: function() {
     var rootElement = get(this, 'rootElement');
-    Ember.$(rootElement).undelegate('.ember').removeClass('ember-application');
+    Ember.$(rootElement).off('.ember', '**').removeClass('ember-application');
     return this._super();
   }
 });
