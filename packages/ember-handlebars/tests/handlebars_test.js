@@ -14,47 +14,41 @@ var firstChild = nthChild;
 
 var originalLog, logCalls;
 
-(function() {
+var caretPosition = function (element) {
+  var ctrl = element[0];
+  var caretPos = 0;
 
-  Ember.$.fn.caretPosition = function() {
-      var ctrl = this[0];
+  // IE Support
+  if (document.selection) {
+    ctrl.focus();
+    var selection = document.selection.createRange();
 
-      var CaretPos = 0;
-      // IE Support
-      if (document.selection) {
+    selection.moveStart('character', -ctrl.value.length);
 
-          ctrl.focus();
-          var Sel = document.selection.createRange ();
+    caretPos = selection.text.length;
+  }
+  // Firefox support
+  else if (ctrl.selectionStart || ctrl.selectionStart === '0') {
+    caretPos = ctrl.selectionStart;
+  }
 
-          Sel.moveStart ('character', -ctrl.value.length);
+  return caretPos;
+};
 
-          CaretPos = Sel.text.length;
-      }
-      // Firefox support
-      else if (ctrl.selectionStart || ctrl.selectionStart === '0') {
-          CaretPos = ctrl.selectionStart;
-      }
+var setCaretPosition = function (element, pos) {
+  var ctrl = element[0];
 
-      return (CaretPos);
-  };
-
-
-  Ember.$.fn.setCaretPosition = function(pos) {
-      var ctrl = this[0];
-
-      if(ctrl.setSelectionRange) {
-          ctrl.focus();
-          ctrl.setSelectionRange(pos,pos);
-      } else if (ctrl.createTextRange) {
-          var range = ctrl.createTextRange();
-          range.collapse(true);
-          range.moveEnd('character', pos);
-          range.moveStart('character', pos);
-          range.select();
-      }
-  };
-
-})();
+  if (ctrl.setSelectionRange) {
+    ctrl.focus();
+    ctrl.setSelectionRange(pos,pos);
+  } else if (ctrl.createTextRange) {
+    var range = ctrl.createTextRange();
+    range.collapse(true);
+    range.moveEnd('character', pos);
+    range.moveStart('character', pos);
+    range.select();
+  }
+};
 
 var view;
 
@@ -1505,13 +1499,13 @@ test("should not reset cursor position when text field receives keyUp event", fu
   });
 
   view.$().val('Brosiedoon, King of the Brocean');
-  view.$().setCaretPosition(5);
+  setCaretPosition(view.$(), 5);
 
   Ember.run(function() {
     view.trigger('keyUp', {});
   });
 
-  equal(view.$().caretPosition(), 5, "The keyUp event should not result in the cursor being reset due to the bindAttr observers");
+  equal(caretPosition(view.$()), 5, "The keyUp event should not result in the cursor being reset due to the bindAttr observers");
 
   Ember.run(function() {
     view.destroy();
