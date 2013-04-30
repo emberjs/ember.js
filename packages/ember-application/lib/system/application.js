@@ -607,9 +607,9 @@ Ember.Application.reopenClass({
   buildContainer: function(namespace) {
     var container = new Ember.Container();
     Ember.Container.defaultContainer = Ember.Container.defaultContainer || container;
-    Ember.Container.defaultContainer.lookup = Ember.deprecate('Using defaultContainer is not supported.', Ember.Container.defaultContainer.lookup);
-    Ember.Container.defaultContainer.register = Ember.deprecate('Using defaultContainer is not supported.', Ember.Container.defaultContainer.register);
-    Ember.Container.defaultContainer.resolve = Ember.deprecate('Using defaultContainer is not supported.', Ember.Container.defaultContainer.resolve);
+    Ember.Container.defaultContainer.lookup = Ember.deprecateFunc('Using defaultContainer is not supported.', Ember.Container.defaultContainer.lookup);
+    Ember.Container.defaultContainer.register = Ember.deprecateFunc('Using defaultContainer is not supported.', Ember.Container.defaultContainer.register);
+    Ember.Container.defaultContainer.resolve = Ember.deprecateFunc('Using defaultContainer is not supported.', Ember.Container.defaultContainer.resolve);
 
     container.set = Ember.set;
     container.normalize = normalize;
