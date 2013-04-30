@@ -69,11 +69,11 @@ asyncTest('should always invoke within a separate runloop', function() {
   var obj = { invoked: 0 }, firstRunLoop, secondRunLoop;
 
   Ember.run(function() {
-    firstRunLoop = Ember.run.currentRunLoop;
+    firstRunLoop = Ember.run.backburner.currentInstance;
 
     Ember.run.later(obj, function(amt) {
       this.invoked += amt;
-      secondRunLoop = Ember.run.currentRunLoop;
+      secondRunLoop = Ember.run.backburner.currentInstance;
     }, 10, 1);
 
     // Synchronous "sleep". This simulates work being done
@@ -88,7 +88,7 @@ asyncTest('should always invoke within a separate runloop', function() {
   });
 
   ok(firstRunLoop, "first run loop captured");
-  ok(!Ember.run.currentRunLoop, "shouldn't be in a run loop after flush");
+  ok(!Ember.run.backburner.currentInstance, "shouldn't be in a run loop after flush");
   equal(obj.invoked, 0, "shouldn't have invoked later item yet");
 
   wait(function() {
@@ -121,7 +121,7 @@ asyncTest('callback order', function() {
 
 asyncTest('callbacks coalesce into same run loop if expiring at the same time', function() {
   var array = [];
-  function fn(val) { array.push(Ember.run.currentRunLoop); }
+  function fn(val) { array.push(Ember.run.backburner.currentInstance); }
 
   Ember.run(function() {
 
@@ -154,16 +154,16 @@ asyncTest('inception calls to run.later should run callbacks in separate run loo
   var runLoop, finished;
 
   Ember.run(function() {
-    runLoop = Ember.run.currentRunLoop;
+    runLoop = Ember.run.backburner.currentInstance;
     ok(runLoop);
 
     Ember.run.later(function() {
-      ok(Ember.run.currentRunLoop && Ember.run.currentRunLoop !== runLoop,
+      ok(Ember.run.backburner.currentInstance && Ember.run.backburner.currentInstance !== runLoop,
          'first later callback has own run loop');
-      runLoop = Ember.run.currentRunLoop;
+      runLoop = Ember.run.backburner.currentInstance;
 
       Ember.run.later(function() {
-        ok(Ember.run.currentRunLoop && Ember.run.currentRunLoop !== runLoop,
+        ok(Ember.run.backburner.currentInstance && Ember.run.backburner.currentInstance !== runLoop,
            'second later callback has own run loop');
         finished = true;
       }, 40);

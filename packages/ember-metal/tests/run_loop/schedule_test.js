@@ -35,30 +35,30 @@ test('prior queues should be flushed before moving on to next queue', function()
   var order = [];
 
   Ember.run(function() {
-    var runLoop = Ember.run.currentRunLoop;
+    var runLoop = Ember.run.backburner.currentInstance;
     ok(runLoop, 'run loop present');
 
     Ember.run.schedule('sync', function() {
       order.push('sync');
-      equal(runLoop, Ember.run.currentRunLoop, 'same run loop used');
+      equal(runLoop, Ember.run.backburner.currentInstance, 'same run loop used');
     });
     Ember.run.schedule('actions', function() {
       order.push('actions');
-      equal(runLoop, Ember.run.currentRunLoop, 'same run loop used');
+      equal(runLoop, Ember.run.backburner.currentInstance, 'same run loop used');
 
       Ember.run.schedule('actions', function() {
         order.push('actions');
-        equal(runLoop, Ember.run.currentRunLoop, 'same run loop used');
+        equal(runLoop, Ember.run.backburner.currentInstance, 'same run loop used');
       });
 
       Ember.run.schedule('sync', function() {
         order.push('sync');
-        equal(runLoop, Ember.run.currentRunLoop, 'same run loop used');
+        equal(runLoop, Ember.run.backburner.currentInstance, 'same run loop used');
       });
     });
     Ember.run.schedule('destroy', function() {
       order.push('destroy');
-      equal(runLoop, Ember.run.currentRunLoop, 'same run loop used');
+      equal(runLoop, Ember.run.backburner.currentInstance, 'same run loop used');
     });
   });
 
