@@ -190,7 +190,7 @@ test("checked property mirrors input value", function() {
 
 test("checking the checkbox updates the value", function() {
   checkboxView = Ember.Checkbox.create({ checked: true });
-  Ember.run(function() { checkboxView.appendTo('#qunit-fixture'); });
+  append();
 
   equal(get(checkboxView, 'checked'), true, "precond - initially starts with a true value");
   equal(!!checkboxView.$().prop('checked'), true, "precond - the initial checked property is true");
