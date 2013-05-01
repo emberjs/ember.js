@@ -153,6 +153,22 @@ test("the {{linkTo}} applies a 'disabled' class when disabled", function () {
   equal(Ember.$('#about-link.disabled', '#qunit-fixture').length, 1, "The link is disabled when its disabledWhen is true");
 });
 
+test("the {{linkTo}} doesn't apply a 'disabled' class if disabledWhen is not provided", function () {
+  Ember.TEMPLATES.index = Ember.Handlebars.compile('{{#linkTo about id="about-link"}}About{{/linkTo}}');
+
+  Router.map(function() {
+    this.route("about");
+  });
+
+  bootApplication();
+
+  Ember.run(function() {
+    router.handleURL("/");
+  });
+
+  ok(!Ember.$('#about-link', '#qunit-fixture').hasClass("disabled"), "The link is not disabled if disabledWhen not provided");
+});
+
 test("the {{linkTo}} helper supports a custom disabledClass", function () {
   Ember.TEMPLATES.index = Ember.Handlebars.compile('{{#linkTo about id="about-link" disabledWhen="shouldDisable" disabledClass="do-not-want"}}About{{/linkTo}}');
   App.IndexController = Ember.Controller.extend({

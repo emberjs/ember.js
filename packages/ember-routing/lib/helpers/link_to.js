@@ -64,7 +64,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     disabled: Ember.computed(function(key, value) {
       if (value !== undefined) { this.set('_isDisabled', value); }
       
-      return value === false ? false : this.get('disabledClass');
+      return value ? this.get('disabledClass') : false;
     }),
 
     active: Ember.computed(function() {
