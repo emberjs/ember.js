@@ -40,6 +40,8 @@ function addObserverForContentKey(content, keyName, proxy, idx, loc) {
   while(--loc>=idx) {
     var item = content.objectAt(loc);
     if (item) {
+      var type = Ember.typeOf(item);
+      Ember.assert('When using @each to observe the array ' + content + ', the array must return an object', type === 'instance' || type === 'object');
       Ember.addBeforeObserver(item, keyName, proxy, 'contentKeyWillChange');
       Ember.addObserver(item, keyName, proxy, 'contentKeyDidChange');
 
