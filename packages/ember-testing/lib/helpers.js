@@ -2,7 +2,20 @@ require('ember-testing/test');
 
 var Promise = Ember.RSVP.Promise,
     get = Ember.get,
-    helper = Ember.Test.registerHelper;
+    helper = Ember.Test.registerHelper,
+    pendingAjaxRequests = 0;
+
+
+Ember.Test.onInjectHelpers(function() {
+  Ember.$(document).ajaxStart(function() {
+    pendingAjaxRequests++;
+  });
+
+  Ember.$(document).ajaxStop(function() {
+    pendingAjaxRequests--;
+  });
+});
+
 
 function visit(app, url) {
   Ember.run(app, app.handleURL, url);
@@ -34,7 +47,7 @@ function wait(app, value) {
     var watcher = setInterval(function() {
       var routerIsLoading = app.__container__.lookup('router:main').router.isLoading;
       if (routerIsLoading) { return; }
-      if (Ember.Test.pendingAjaxRequests) { return; }
+      if (pendingAjaxRequests) { return; }
       if (Ember.run.hasScheduledTimers() || Ember.run.currentRunLoop) { return; }
       clearInterval(watcher);
       start();

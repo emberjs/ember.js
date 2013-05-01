@@ -1,6 +1,7 @@
 var slice = [].slice,
     helpers = {},
-    originalMethods = {};
+    originalMethods = {},
+    injectHelpersCallbacks = [];
 
 /**
   @class Test
@@ -53,6 +54,7 @@ Ember.Test = {
     helpers[name] = helperMethod;
   },
   /**
+    @public
     @method unregisterHelper
     @param name {String}
   */
@@ -64,7 +66,21 @@ Ember.Test = {
     delete originalMethods[name];
   },
 
-  pendingAjaxRequests: 0
+  /**
+    @public
+
+    Used to register callbacks to be fired
+    whenever `App.injectTestHelpers` is called
+
+    The callback will receive the current application
+    as an argument.
+
+    @method unregisterHelper
+    @param name {String}
+  */
+  onInjectHelpers: function(callback) {
+    injectHelpersCallbacks.push(callback);
+  }
 };
 
 
@@ -90,18 +106,13 @@ Ember.Application.reopen({
 
   injectTestHelpers: function() {
     this.testHelpers = {};
-
-    Ember.$(document).ajaxStart(function() {
-      Ember.Test.pendingAjaxRequests++;
-    });
-
-    Ember.$(document).ajaxStop(function() {
-      Ember.Test.pendingAjaxRequests--;
-    });
-
     for (var name in helpers) {
       originalMethods[name] = window[name];
       this.testHelpers[name] = window[name] = curry(this, helpers[name]);
+    }
+
+    for(var i = 0, l = injectHelpersCallbacks.length; i < l; i++) {
+      injectHelpersCallbacks[i](this);
     }
   },
 
