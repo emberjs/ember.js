@@ -49,15 +49,23 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     currentWhen: null,
     title: null,
     activeClass: 'active',
+    disabledClass: 'disabled',
+    _isDisabled: false,
     replace: false,
     attributeBindings: ['href', 'title'],
-    classNameBindings: 'active',
+    classNameBindings: ['active', 'disabled'],
 
     // Even though this isn't a virtual view, we want to treat it as if it is
     // so that you can access the parent with {{view.prop}}
     concreteView: Ember.computed(function() {
       return get(this, 'parentView');
     }).property('parentView'),
+
+    disabled: Ember.computed(function(key, value) {
+      if (value !== undefined) { this.set('_isDisabled', value); }
+      
+      return value === false ? false : this.get('disabledClass');
+    }),
 
     active: Ember.computed(function() {
       var router = this.get('router'),
@@ -78,6 +86,8 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
 
       event.preventDefault();
       if (this.bubbles === false) { event.stopPropagation(); }
+      
+      if (get(this, '_isDisabled')) { return false; }
 
       var router = this.get('router');
 
@@ -273,6 +283,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
 
     hash.namedRoute = name;
     hash.currentWhen = hash.currentWhen || name;
+    hash.disabledBinding = hash.disabledWhen;
 
     hash.parameters = {
       context: this,

@@ -133,6 +133,69 @@ test("the {{linkTo}} helper doesn't add an href when the tagName isn't 'a'", fun
   equal(Ember.$('#about-link').attr('href'), undefined, "there is no href attribute");
 });
 
+
+test("the {{linkTo}} applies a 'disabled' class when disabled", function () {
+  Ember.TEMPLATES.index = Ember.Handlebars.compile('{{#linkTo about id="about-link" disabledWhen="shouldDisable"}}About{{/linkTo}}');
+  App.IndexController = Ember.Controller.extend({
+    shouldDisable: true
+  });
+
+  Router.map(function() {
+    this.route("about");
+  });
+
+  bootApplication();
+
+  Ember.run(function() {
+    router.handleURL("/");
+  });
+
+  equal(Ember.$('#about-link.disabled', '#qunit-fixture').length, 1, "The link is disabled when its disabledWhen is true");
+});
+
+test("the {{linkTo}} helper supports a custom disabledClass", function () {
+  Ember.TEMPLATES.index = Ember.Handlebars.compile('{{#linkTo about id="about-link" disabledWhen="shouldDisable" disabledClass="do-not-want"}}About{{/linkTo}}');
+  App.IndexController = Ember.Controller.extend({
+    shouldDisable: true
+  });
+
+  Router.map(function() {
+    this.route("about");
+  });
+
+  bootApplication();
+
+  Ember.run(function() {
+    router.handleURL("/");
+  });
+
+  equal(Ember.$('#about-link.do-not-want', '#qunit-fixture').length, 1, "The link can apply a custom disabled class");
+
+});
+
+test("the {{linkTo}} helper does not respond to clicks when disabled", function () {
+  Ember.TEMPLATES.index = Ember.Handlebars.compile('{{#linkTo about id="about-link" disabledWhen="shouldDisable"}}About{{/linkTo}}');
+  App.IndexController = Ember.Controller.extend({
+    shouldDisable: true
+  });
+
+  Router.map(function() {
+    this.route("about");
+  });
+
+  bootApplication();
+
+  Ember.run(function() {
+    router.handleURL("/");
+  });
+
+  Ember.run(function() {
+    Ember.$('#about-link', '#qunit-fixture').click();
+  });
+
+  equal(Ember.$('h3:contains(About)', '#qunit-fixture').length, 0, "Transitioning did not occur");
+});
+
 test("The {{linkTo}} helper supports a custom activeClass", function() {
   Ember.TEMPLATES.index = Ember.Handlebars.compile("<h3>Home</h3>{{#linkTo about id='about-link'}}About{{/linkTo}}{{#linkTo index id='self-link' activeClass='zomg-active'}}Self{{/linkTo}}");
 
