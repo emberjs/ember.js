@@ -16,6 +16,5 @@ Gem::Specification.new do |gem|
   # so long as we're referencing pre-release versions.
   gem.add_dependency "handlebars-source", [">= 1.0.0.rc3", "< 1.0.0.rc4"]
 
-  gem.files = Dir['dist/*.js']
-  gem.files << 'lib/ember/source.rb'
+  gem.files = %w(VERSION) + Dir['dist/*.js', 'lib/ember/*.rb']
 end
