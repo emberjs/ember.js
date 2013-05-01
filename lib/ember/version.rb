@@ -1,3 +1,3 @@
 module Ember
-  VERSION = File.read("VERSION").strip
+  VERSION = File.read(File.expand_path('../../../VERSION', __FILE__)).strip
 end
