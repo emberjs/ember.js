@@ -5,6 +5,26 @@
 
 var get = Ember.get, set = Ember.set;
 
+function DeprecatedContainer(container) {
+  this._container = container;
+}
+
+DeprecatedContainer.deprecate = function(method) {
+  return function() {
+    var container = this._container;
+
+    Ember.deprecate('Using the defaultContainer is no longer supported. [defaultContainer#' + method + ']', false);
+    container[method].apply(container, arguments);
+  };
+};
+
+DeprecatedContainer.prototype = {
+  _container: null,
+  lookup: DeprecatedContainer.deprecate('lookup'),
+  resolve: DeprecatedContainer.deprecate('resolve'),
+  register: DeprecatedContainer.deprecate('register')
+};
+
 /**
   An instance of `Ember.Application` is the starting point for every Ember
   application. It helps to instantiate, initialize and coordinate the many
@@ -606,10 +626,8 @@ Ember.Application.reopenClass({
   */
   buildContainer: function(namespace) {
     var container = new Ember.Container();
-    Ember.Container.defaultContainer = Ember.Container.defaultContainer || container;
-    Ember.Container.defaultContainer.lookup = Ember.deprecateFunc('Using defaultContainer is not supported.', Ember.Container.defaultContainer.lookup);
-    Ember.Container.defaultContainer.register = Ember.deprecateFunc('Using defaultContainer is not supported.', Ember.Container.defaultContainer.register);
-    Ember.Container.defaultContainer.resolve = Ember.deprecateFunc('Using defaultContainer is not supported.', Ember.Container.defaultContainer.resolve);
+
+    Ember.Container.defaultContainer = new DeprecatedContainer(container);
 
     container.set = Ember.set;
     container.normalize = normalize;
