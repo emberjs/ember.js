@@ -448,7 +448,7 @@ test("controller is assignable inside an #each", function() {
 
   view = Ember.View.create({
     controller: controller,
-    template: templateFor('{{#each itemController in this}}{{#view controllerBinding="itemController"}}{{name}}{{/view}}{{/each}}')
+    template: templateFor('{{#each personController in this}}{{#view controllerBinding="personController"}}{{name}}{{/view}}{{/each}}')
   });
 
   append(view);
