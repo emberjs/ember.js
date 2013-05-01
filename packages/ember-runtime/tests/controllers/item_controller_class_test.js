@@ -110,6 +110,14 @@ test("the target of item controllers is the parent controller", function() {
   equal(jaimeController.get('target'), arrayController, "Item controllers' targets are their parent controller");
 });
 
+test("the parentController property of item controllers is set to the parent controller", function() {
+  createArrayController();
+
+  var jaimeController = arrayController.objectAtContent(1);
+
+  equal(jaimeController.get('parentController'), arrayController, "Item controllers' targets are their parent controller");
+});
+
 test("when the underlying object has not changed, `objectAtContent` always returns the same instance", function() {
   createArrayController();
 
