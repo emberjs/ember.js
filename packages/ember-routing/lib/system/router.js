@@ -239,9 +239,10 @@ function doTransition(router, method, args) {
   }
 
   Ember.assert("The route " + passedName + " was not found", router.router.hasRoute(name));
-
-  router.router[method].apply(router.router, args);
-  router.notifyPropertyChange('url');
+  router.loader(name, function() {
+    router.router[method].apply(router.router, args);
+    router.notifyPropertyChange('url');
+  });
 }
 
 Ember.Router.reopenClass({
