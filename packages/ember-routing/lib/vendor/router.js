@@ -27,6 +27,9 @@ define("router",
 
 
     Router.prototype = {
+      loader: function(handler, done) {
+        done();
+      },
       /**
         The main entry point into the router. The API is essentially
         the same as the `map` method in `route-recognizer`.
@@ -418,7 +421,9 @@ define("router",
           handler: router.getHandler(result.handler),
           isDynamic: result.isDynamic
         }]);
-        collectObjects(router, results, index + 1, updatedObjects);
+        router.loader(result, function() {
+          collectObjects(router, results, index + 1, updatedObjects);
+        });
       }
     }
 
