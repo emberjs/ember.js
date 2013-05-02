@@ -386,6 +386,18 @@ Ember.Enumerable = Ember.Mixin.create({
   },
 
   /**
+    Alias for filterProperty
+
+    @method filterByProperty
+    @param {String} key the property to test
+    @param {String} [value] optional value to test against.
+    @return {Array} filtered array
+  */
+  filterByProperty: function(key, value) {
+    return this.filterProperty.apply(this, arguments);
+  },
+
+  /**
     Returns an array with the items that do not have truthy values for
     key.  You can pass an optional second argument with the target value.  Otherwise
     this will match any property that evaluates to false.
