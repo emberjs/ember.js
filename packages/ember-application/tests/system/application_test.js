@@ -297,6 +297,13 @@ test('container lookup is normalized', function() {
   equal(dotNotationController, camelCaseController);
 });
 
+test('Ember.Container.defaultContainer is the same as the Apps container, but emits deprecation warnings', function() {
+  var routerFromContainer = locator.lookup('router:main'),
+    routerFromDefaultCOntainer = Ember.Container.defaultContainer.lookup('router:main');
+
+  equal(routerFromContainer, routerFromDefaultCOntainer, 'routers from both containers are equal');
+});
+
 test('registered entities can be looked up later', function(){
   equal(locator.resolve('model:person'), application.Person);
   equal(locator.resolve('model:user'), application.User);
