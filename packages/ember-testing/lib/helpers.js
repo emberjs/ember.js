@@ -1,10 +1,21 @@
-/*globals EMBER_APP_BEING_TESTED */
+require('ember-testing/test');
 
 var Promise = Ember.RSVP.Promise,
-    pendingAjaxRequests = 0,
-    originalFind,
-    slice = [].slice,
-    get = Ember.get;
+    get = Ember.get,
+    helper = Ember.Test.registerHelper,
+    pendingAjaxRequests = 0;
+
+
+Ember.Test.onInjectHelpers(function() {
+  Ember.$(document).ajaxStart(function() {
+    pendingAjaxRequests++;
+  });
+
+  Ember.$(document).ajaxStop(function() {
+    pendingAjaxRequests--;
+  });
+});
+
 
 function visit(app, url) {
   Ember.run(app, app.handleURL, url);
@@ -47,46 +58,9 @@ function wait(app, value) {
   });
 }
 
-function curry(app, fn) {
-  return function() {
-    var args = slice.call(arguments);
-    args.unshift(app);
-    return fn.apply(app, args);
-  };
-}
-
-Ember.Application.reopen({
-  setupForTesting: function() {
-    this.deferReadiness();
-
-    this.Router.reopen({
-      location: 'none'
-    });
-  },
-
-  injectTestHelpers: function() {
-    Ember.$(document).ajaxStart(function() {
-      pendingAjaxRequests++;
-    });
-
-    Ember.$(document).ajaxStop(function() {
-      pendingAjaxRequests--;
-    });
-
-    // todo do this safer.
-    window.visit  = curry(this, visit);
-    window.click  = curry(this, click);
-    window.fillIn = curry(this, fillIn);
-    originalFind = window.find;
-    window.find   = curry(this, find);
-    window.wait   = curry(this, wait);
-  },
-
-  removeTestHelpers: function() {
-    window.visit = null;
-    window.click = null;
-    window.fillIn = null;
-    window.wait = null;
-    window.find = originalFind;
-  }
-});
+// expose these methods as test helpers
+helper('visit', visit);
+helper('click', click);
+helper('fillIn', fillIn);
+helper('find', find);
+helper('wait', wait);
