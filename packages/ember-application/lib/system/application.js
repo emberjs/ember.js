@@ -14,7 +14,7 @@ DeprecatedContainer.deprecate = function(method) {
     var container = this._container;
 
     Ember.deprecate('Using the defaultContainer is no longer supported. [defaultContainer#' + method + ']', false);
-    container[method].apply(container, arguments);
+    return container[method].apply(container, arguments);
   };
 };
 
