@@ -2,8 +2,6 @@
 
 require('ember-metal/~tests/props_helper');
 
-var previousPreventRunloop;
-
 function performTest(binding, a, b, get, set, connect) {
   if (connect === undefined) connect = function(){binding.connect(a);};
 
