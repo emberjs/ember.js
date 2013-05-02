@@ -9,8 +9,6 @@ module('Ember.run.later', {
   }
 });
 
-var previousPreventRunloop;
-
 asyncTest('should invoke after specified period of time - function only', function() {
 
   var invoked = false;
