@@ -20,6 +20,7 @@ Ember.Handlebars.EachView = Ember.CollectionView.extend(Ember._Metamorph, {
       set(controller, 'container', get(this, 'controller.container'));
       set(controller, '_eachView', this);
       set(controller, 'target', get(this, 'controller'));
+      set(controller, 'parentController', get(this, 'controller'));
 
       this.disableContentObservers(function() {
         set(this, 'content', controller);
@@ -292,6 +293,9 @@ GroupedEach.prototype = {
     {{person.name}} {{#if person.isAvailableForHire}}Hire me!{{/if}}
   {{/each}}
   ```
+
+  Each itemController will receive a reference to the current controller as
+  a `parentController` property.
 
   @method each
   @for Ember.Handlebars.helpers

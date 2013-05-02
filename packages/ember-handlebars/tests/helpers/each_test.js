@@ -241,6 +241,35 @@ test("it supports itemController", function() {
   strictEqual(view.get('_childViews')[0].get('_arrayController.target'), parentController, "the target property of the child controllers are set correctly");
 });
 
+test("itemController gets a parentController property", function() {
+  // using an ObjectController for this test to verify that parentController does accidentally get set
+  // on the proxied model.
+  var Controller = Ember.ObjectController.extend({
+        controllerName: Ember.computed(function() {
+          return "controller:"+this.get('content.name') + ' of ' + this.get('parentController.company');
+        })
+      }),
+      container = new Ember.Container(),
+      parentController = {
+        container: container,
+        company: 'Yapp'
+      };
+
+  Ember.run(function() { view.destroy(); }); // destroy existing view
+
+  view = Ember.View.create({
+    template: templateFor('{{#each view.people itemController="person"}}{{controllerName}}{{/each}}'),
+    people: people,
+    controller: parentController
+  });
+
+  container.register('controller:person', Controller);
+
+  append(view);
+
+  equal(view.$().text(), "controller:Steve Holt of Yappcontroller:Annabelle of Yapp");
+});
+
 test("it supports itemController when using a custom keyword", function() {
   var Controller = Ember.Controller.extend({
     controllerName: Ember.computed(function() {
