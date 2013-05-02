@@ -2,6 +2,20 @@
 var originalSetTimeout = window.setTimeout,
     originalDateValueOf = Date.prototype.valueOf;
 
+var wait = function(callback, maxWaitCount) {
+  maxWaitCount = Ember.isNone(maxWaitCount) ? 100 : maxWaitCount;
+
+  originalSetTimeout(function() {
+    if (maxWaitCount > 0 && (Ember.run.hasScheduledTimers() || Ember.run.currentRunLoop)) {
+      wait(callback, maxWaitCount - 1);
+
+      return;
+    }
+
+    callback();
+  }, 10);
+};
+
 module('Ember.run.later', {
   teardown: function() {
     window.setTimeout = originalSetTimeout;
@@ -19,13 +33,11 @@ asyncTest('should invoke after specified period of time - function only', functi
     Ember.run.later(function() { invoked = true; }, 100);
   });
 
-  setTimeout(function() {
+  wait(function() {
     start();
     equal(invoked, true, 'should have invoked later item');
-  }, 150);
-
+  });
 });
-
 
 asyncTest('should invoke after specified period of time - target/method', function() {
 
@@ -35,13 +47,11 @@ asyncTest('should invoke after specified period of time - target/method', functi
     Ember.run.later(obj, function() { this.invoked = true; }, 100);
   });
 
-  setTimeout(function() {
+  wait(function() {
     start();
     equal(obj.invoked, true, 'should have invoked later item');
-  }, 150);
-
+  });
 });
-
 
 asyncTest('should invoke after specified period of time - target/method/args', function() {
 
@@ -51,11 +61,10 @@ asyncTest('should invoke after specified period of time - target/method/args', f
     Ember.run.later(obj, function(amt) { this.invoked += amt; }, 10, 100);
   });
 
-  setTimeout(function() {
+  wait(function() {
     start();
     equal(obj.invoked, 10, 'should have invoked later item');
-  }, 150);
-
+  });
 });
 
 asyncTest('should always invoke within a separate runloop', function() {
@@ -84,12 +93,12 @@ asyncTest('should always invoke within a separate runloop', function() {
   ok(!Ember.run.currentRunLoop, "shouldn't be in a run loop after flush");
   equal(obj.invoked, 0, "shouldn't have invoked later item yet");
 
-  setTimeout(function() {
+  wait(function() {
     start();
     equal(obj.invoked, 10, "should have invoked later item");
     ok(secondRunLoop, "second run loop took place");
     ok(secondRunLoop !== firstRunLoop, "two different run loops took place");
-  }, 150);
+  });
 });
 
 asyncTest('callback order', function() {
@@ -106,10 +115,10 @@ asyncTest('callback order', function() {
 
   deepEqual(array, []);
 
-  setTimeout(function() {
+  wait(function() {
     start();
     deepEqual(array, [1,2,3,4,5], 'callbacks were called in expected order');
-  }, 100);
+  });
 });
 
 asyncTest('callbacks coalesce into same run loop if expiring at the same time', function() {
@@ -132,14 +141,14 @@ asyncTest('callbacks coalesce into same run loop if expiring at the same time', 
 
   deepEqual(array, []);
 
-  setTimeout(function() {
+  wait(function() {
     start();
     equal(array.length, 3, 'all callbacks called');
     ok(array[0] !== array[1], 'first two callbacks have different run loops');
     ok(array[0], 'first runloop present');
     ok(array[1], 'second runloop present');
     equal(array[1], array[2], 'last two callbacks got the same run loop');
-  }, 500);
+  });
 });
 
 asyncTest('inception calls to run.later should run callbacks in separate run loops', function() {
@@ -163,10 +172,10 @@ asyncTest('inception calls to run.later should run callbacks in separate run loo
     }, 40);
   });
 
-  setTimeout(function() {
+  wait(function() {
     start();
     ok(finished, 'all .later callbacks run');
-  }, 250);
+  });
 });
 
 asyncTest('setTimeout should never run with a negative wait', function() {
@@ -208,9 +217,9 @@ asyncTest('setTimeout should never run with a negative wait', function() {
     }, 50);
   });
 
-  originalSetTimeout(function() {
+  wait(function() {
     window.setTimeout = originalSetTimeout;
     start();
     ok(newSetTimeoutUsed, 'stub setTimeout was used');
-  }, 200);
+  });
 });
