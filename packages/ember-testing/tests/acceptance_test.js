@@ -1,4 +1,4 @@
-var App, find, click, fillIn, currentRoute, visit;
+var App, find, click, fillIn, currentRoute, visit, originalFailure;
 
 module("ember-testing Acceptance", {
   setup: function(){
@@ -49,6 +49,8 @@ module("ember-testing Acceptance", {
     click = window.click;
     fillIn = window.fillIn;
     visit = window.visit;
+
+    originalFailure = Ember.Test.failure;
   },
 
   teardown: function(){
@@ -56,15 +58,16 @@ module("ember-testing Acceptance", {
     Ember.$('#ember-testing-container, #ember-testing').remove();
     Ember.run(App, App.destroy);
     App = null;
+    Ember.Test.failure = originalFailure;
   }
 });
 
-function fail(error) {
-  ok(false, error);
-}
-
 test("helpers can be chained", function() {
-  expect(3);
+  expect(4);
+
+  Ember.Test.failure = function(error) {
+    equal(error, "exception", "Exception successfully caught and passed to Ember.test.failure");
+  };
 
   currentRoute = 'index';
 
@@ -76,5 +79,11 @@ test("helpers can be chained", function() {
     return fillIn('.ember-text-field', "yeah");
   }).then(function(){
     equal(Ember.$('.ember-text-field').val(), 'yeah', "chained with fillIn");
-  }).then(null, fail);
+    throw "exception";
+  }).then(function() {
+    // This is needed in this test
+    // so we can assert that thrown exceptions
+    // do not fire multiple times
+  });
+
 });
