@@ -284,14 +284,17 @@ var sendEvent = function(eventName, sendRecursiveArguments, isUnhandledPass) {
   to derive an `initialState` programmatically:
 
   ```javascript
-  managerC = Ember.StateManager.create({
+  managerC = Ember.StateManager.extend({
     initialState: function(){
       if (someLogic) {
         return 'active';
       } else {
         return 'passive';
       }
-    }.property(),
+    }.property()
+  });
+
+  managerC = managerC.create({
     active: Ember.State.create({}),
     passive: Ember.State.create({})
   })
