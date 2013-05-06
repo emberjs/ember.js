@@ -1,7 +1,8 @@
 var slice = [].slice,
     helpers = {},
     originalMethods = {},
-    injectHelpersCallbacks = [];
+    injectHelpersCallbacks = [],
+    has = {}.hasOwnProperty;
 
 /**
   @class Test
@@ -60,7 +61,7 @@ Ember.Test = {
   */
   unregisterHelper: function(name) {
     delete helpers[name];
-    if (originalMethods[name]) {
+    if (has.call(originalMethods, name)) {
       window[name] = originalMethods[name];
     }
     delete originalMethods[name];
@@ -107,7 +108,9 @@ Ember.Application.reopen({
   injectTestHelpers: function() {
     this.testHelpers = {};
     for (var name in helpers) {
-      originalMethods[name] = window[name];
+      if (has.call(window, name)) {
+        originalMethods[name] = window[name];
+      }
       this.testHelpers[name] = window[name] = curry(this, helpers[name]);
     }
 
@@ -118,7 +121,11 @@ Ember.Application.reopen({
 
   removeTestHelpers: function() {
     for (var name in helpers) {
-      window[name] = originalMethods[name];
+      if (has.call(originalMethods, name)) {
+        window[name] = originalMethods[name];
+      } else {
+        delete window[name];
+      }
       delete this.testHelpers[name];
       delete originalMethods[name];
     }
