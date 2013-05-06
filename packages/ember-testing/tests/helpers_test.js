@@ -1,4 +1,5 @@
-var App;
+var App,
+    has = {}.hasOwnProperty;
 
 module("ember-testing", {
   teardown: function() {
@@ -32,14 +33,14 @@ test("Ember.Application#injectTestHelpers/#removeTestHelpers", function() {
 
   App.removeTestHelpers();
 
-  ok(!window.visit);
-  ok(!App.testHelpers.visit);
-  ok(!window.click);
-  ok(!App.testHelpers.click);
-  ok(!window.fillIn);
-  ok(!App.testHelpers.fillIn);
-  ok(!window.wait);
-  ok(!App.testHelpers.wait);
+  ok(!has.call(window, 'visit'));
+  ok(!has.call(App.testHelpers, 'visit'));
+  ok(!has.call(window, 'click'));
+  ok(!has.call(App.testHelpers, 'click'));
+  ok(!has.call(window, 'fillIn'));
+  ok(!has.call(App.testHelpers, 'fillIn'));
+  ok(!has.call(window, 'wait'));
+  ok(!has.call(App.testHelpers, 'wait'));
 });
 
 test("Ember.Application#setupForTesting", function() {
@@ -76,5 +77,5 @@ test("Ember.Test.registerHelper/unregisterHelper", function() {
   App.removeTestHelpers();
   Ember.Test.unregisterHelper('boot');
 
-  ok(!window.boot);
+  ok(!has.call(window, 'boot'));
 });
