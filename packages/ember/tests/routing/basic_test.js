@@ -621,6 +621,32 @@ test("The Special page returning an error puts the app into a default failure st
   equal(lastFailure, 'Setup error');
 });
 
+
+test("The application route model function will move into the loading state if it exists", function() {
+  var promise = new Ember.RSVP.Promise(function() { });
+
+  App.ApplicationRoute = Ember.Route.extend({
+    model: function() {
+      return promise;
+    }
+  });
+
+  App.LoadingRoute = Ember.Route.extend({});
+
+  Ember.TEMPLATES.loading = Ember.Handlebars.compile(
+    "<p>LOADING!</p>"
+  );
+
+  bootApplication();
+
+  Ember.run(function() {
+    router.handleURL("/");
+  });
+
+  equal(Ember.$('p', '#qunit-fixture').text(), "LOADING!", "The app is in the loading state");
+});
+
+
 test("Moving from one page to another triggers the correct callbacks", function() {
   Router.map(function() {
     this.route("home", { path: "/" });
