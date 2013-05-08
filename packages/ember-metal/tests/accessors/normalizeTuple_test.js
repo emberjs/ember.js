@@ -64,10 +64,6 @@ test('[obj, this.foo.bar] -> [obj, foo.bar]', function() {
   deepEqual(Ember.normalizeTuple(obj, 'this.foo.bar'), [obj, 'foo.bar']);
 });
 
-test('[obj, .foo.bar] -> [obj, foo.bar]', function() {
-  deepEqual(Ember.normalizeTuple(obj, 'this.foo.bar'), [obj, 'foo.bar']);
-});
-
 test('[obj, this.Foo.bar] -> [obj, Foo.bar]', function() {
   deepEqual(Ember.normalizeTuple(obj, 'this.Foo.bar'), [obj, 'Foo.bar']);
 });
