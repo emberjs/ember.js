@@ -40,7 +40,7 @@ Ember.Handlebars.registerHelper('partial', function(name, options) {
   var view = options.data.view,
       underscoredName = nameParts.join("/"),
       template = view.templateForName(underscoredName),
-      deprecatedTemplate = view.templateForName(name);
+      deprecatedTemplate = !template && view.templateForName(name);
 
   Ember.deprecate("You tried to render the partial " + name + ", which should be at '" + underscoredName + "', but Ember found '" + name + "'. Please use a leading underscore in your partials", template);
   Ember.assert("Unable to find partial with name '"+name+"'.", template || deprecatedTemplate);
