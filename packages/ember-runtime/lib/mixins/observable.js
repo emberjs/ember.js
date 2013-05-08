@@ -59,8 +59,8 @@ var get = Ember.get, set = Ember.set;
   object.addObserver('propertyKey', targetObject, targetAction)
   ```
 
-  This will call the `targetAction` method on the `targetObject` to be called
-  whenever the value of the `propertyKey` changes.
+  This will call the `targetAction` method on the `targetObject` whenever 
+  the value of the `propertyKey` changes.
 
   Note that if `propertyKey` is a computed property, the observer will be
   called when any of the property dependencies are changed, even if the
@@ -479,7 +479,7 @@ Ember.Observable = Ember.Mixin.create(/** @scope Ember.Observable.prototype */ {
     current value.
 
     ```javascript
-    starship.toggleProperty('warpDriveEnaged');
+    starship.toggleProperty('warpDriveEngaged');
     ```
 
     @method toggleProperty
