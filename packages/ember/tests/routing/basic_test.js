@@ -581,6 +581,38 @@ test("The Special page returning an error invokes the failure state's enter hand
   equal(Ember.$('p', '#qunit-fixture').text(), "FAILURE!", "The failure state was properly activated");
 });
 
+test("The home page returning an error puts the app into the failure state and redirect", function() {
+  Router.map(function() {
+    this.route("home", { path: "/" });
+    this.route("redirected", { path: "/redirected" });
+  });
+
+  var deferredObject = Ember.Object.createWithMixins(Ember.DeferredMixin);
+
+  App.HomeRoute = Ember.Route.extend({
+    model: function() {
+      return deferredObject;
+    }
+  });
+
+  App.FailureRoute = Ember.Route.extend({
+    redirect: function() {
+      this.transitionTo("redirected");
+    }
+  });
+
+  Ember.TEMPLATES.redirected = Ember.Handlebars.compile(
+    "<p>FAILURE!</p>"
+  );
+
+  bootApplication();
+
+  Ember.run(function() {
+    deferredObject.reject(deferredObject);
+  });
+
+  equal(Ember.$('p', '#qunit-fixture').text(), "FAILURE!", "The app had redirected from failure state");
+});
 
 test("The Special page returning an error puts the app into a default failure state if none provided", function() {
   Router.map(function() {
