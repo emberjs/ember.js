@@ -1,4 +1,4 @@
-module('system/run_loop/schedule_test');
+module('system/run_loop/sync_test');
 
 test('sync() will immediately flush the sync queue only', function() {
   var cnt = 0;
