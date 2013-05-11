@@ -89,7 +89,7 @@ namespace :release do
       uploader = setup_uploader("tmp/starter-kit")
 
       # Upload minified first, so non-minified shows up on top
-      upload_file(uploader, "starter-kit.#{Ember::VERSION}.zip", "Ember.js #{EMBER_VERSION} Starter Kit", "dist/starter-kit.#{EMBER_VERSION}.zip")
+      upload_file(uploader, "starter-kit.#{Ember::VERSION}.zip", "Ember.js #{Ember::VERSION} Starter Kit", "dist/starter-kit.#{Ember::VERSION}.zip")
     end
 
     desc "Build the Ember.js starter kit"
