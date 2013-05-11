@@ -11,8 +11,6 @@ require('ember-metal/array');
 var AFTER_OBSERVERS = ':change';
 var BEFORE_OBSERVERS = ':before';
 
-var guidFor = Ember.guidFor;
-
 function changeEvent(keyName) {
   return keyName+AFTER_OBSERVERS;
 }

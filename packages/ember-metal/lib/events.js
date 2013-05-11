@@ -10,7 +10,7 @@ var o_create = Ember.create,
     metaFor = Ember.meta,
     META_KEY = Ember.META_KEY,
     /* listener flags */
-    ONCE = 1, SUSPENDED = 2, IMMEDIATE = 4;
+    ONCE = 1, SUSPENDED = 2;
 
 /*
   The event system uses a series of nested hashes to store listeners on an

@@ -199,14 +199,6 @@ function mergeMixins(mixins, m, descs, values, base, keys) {
   }
 }
 
-function writableReq(obj) {
-  var m = Ember.meta(obj), req = m.required;
-  if (!req || !m.hasOwnProperty('required')) {
-    req = m.required = req ? o_create(req) : {};
-  }
-  return req;
-}
-
 var IS_BINDING = Ember.IS_BINDING = /^.+Binding$/;
 
 function detectBinding(obj, key, value, m) {

@@ -28,7 +28,7 @@ var MANDATORY_SETTER = Ember.ENV.MANDATORY_SETTER;
   @private
   @constructor
 */
-var Descriptor = Ember.Descriptor = function() {};
+Ember.Descriptor = function() {};
 
 // ..........................................................
 // DEFINING PROPERTIES API
