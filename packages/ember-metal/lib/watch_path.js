@@ -33,7 +33,7 @@ Ember.watchPath = function(obj, keyPath) {
 };
 
 Ember.unwatchPath = function(obj, keyPath) {
-  var m = metaFor(obj), watching = m.watching, desc;
+  var m = metaFor(obj), watching = m.watching;
 
   if (watching[keyPath] === 1) {
     watching[keyPath] = 0;
