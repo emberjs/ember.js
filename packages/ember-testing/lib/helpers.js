@@ -1,7 +1,6 @@
 require('ember-testing/test');
 
-var Promise = Ember.RSVP.Promise,
-    get = Ember.get,
+var get = Ember.get,
     helper = Ember.Test.registerHelper,
     pendingAjaxRequests = 0;
 
@@ -43,7 +42,7 @@ function find(app, selector) {
 }
 
 function wait(app, value) {
-  return new Promise(function(resolve) {
+  return Ember.Test.promise(function(resolve) {
     stop();
     var watcher = setInterval(function() {
       var routerIsLoading = app.__container__.lookup('router:main').router.isLoading;
