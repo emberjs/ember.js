@@ -90,7 +90,7 @@ Ember.guidFor = function guidFor(obj) {
   if (obj === undefined) return "(undefined)";
   if (obj === null) return "(null)";
 
-  var cache, ret;
+  var ret;
   var type = typeof obj;
 
   // Don't allow prototype changes to String etc. to change the guidFor
@@ -491,7 +491,7 @@ if (needsFinallyFix) {
 */
 if (needsFinallyFix) {
   Ember.tryCatchFinally = function(tryable, catchable, finalizer, binding) {
-    var result, finalResult, finalError, finalReturn;
+    var result, finalResult, finalError;
 
     binding = binding || this;
 
