@@ -1805,3 +1805,115 @@ test("Child routes should render inside the application template if the applicat
 
   equal(Ember.$('#qunit-fixture > div').text(), "App posts");
 });
+
+test("The template is not re-rendered when the route's context changes", function() {
+  Router.map(function() {
+    this.route("page", { path: "/page/:name" });
+  });
+
+  App.PageRoute = Ember.Route.extend({
+    model: function(params) {
+      return Ember.Object.create({name: params.name});
+    }
+  });
+
+  var insertionCount = 0;
+  App.PageView = Ember.View.extend({
+    didInsertElement: function() {
+      insertionCount += 1;
+    }
+  });
+
+  Ember.TEMPLATES.page = Ember.Handlebars.compile(
+    "<p>{{name}}</p>"
+  );
+
+  bootApplication();
+
+  Ember.run(function() {
+    router.handleURL("/page/first");
+  });
+
+  equal(Ember.$('p', '#qunit-fixture').text(), "first");
+  equal(insertionCount, 1);
+
+  Ember.run(function() {
+    router.handleURL("/page/second");
+  });
+
+  equal(Ember.$('p', '#qunit-fixture').text(), "second");
+  equal(insertionCount, 1, "view should have inserted only once");
+
+  Ember.run(function() {
+    router.transitionTo('page', Ember.Object.create({name: 'third'}));
+  });
+
+  equal(Ember.$('p', '#qunit-fixture').text(), "third");
+  equal(insertionCount, 1, "view should still have inserted only once");
+});
+
+
+test("The template is not re-rendered when two routes present the exact same template & controller", function() {
+  Router.map(function() {
+    this.route("first");
+    this.route("second");
+    this.route("third");
+  });
+
+  App.SharedRoute = Ember.Route.extend({
+    setupController: function(controller) {
+      this.controllerFor('shared').set('message', "This is the " + this.routeName + " message");
+    },
+
+    renderTemplate: function(controller, context) {
+      this.render('shared', { controller: 'shared' } );
+    }
+  });
+
+  App.FirstRoute = App.SharedRoute.extend();
+  App.SecondRoute = App.SharedRoute.extend();
+  App.ThirdRoute = App.SharedRoute.extend();
+
+  App.SharedController = Ember.Controller.extend();
+
+  var insertionCount = 0;
+  App.SharedView = Ember.View.extend({
+    didInsertElement: function() {
+      insertionCount += 1;
+    }
+  });
+  App.FirstView = App.SharedView;
+  App.SecondView = App.SharedView;
+  App.ThirdView = App.SharedView;
+
+  Ember.TEMPLATES.shared = Ember.Handlebars.compile(
+    "<p>{{message}}</p>"
+  );
+
+  bootApplication();
+
+  Ember.run(function() {
+    router.handleURL("/first");
+  });
+
+  equal(Ember.$('p', '#qunit-fixture').text(), "This is the first message");
+  equal(insertionCount, 1);
+
+  // Transition by URL
+  Ember.run(function() {
+    router.handleURL("/second");
+  });
+
+  equal(Ember.$('p', '#qunit-fixture').text(), "This is the second message");
+  equal(insertionCount, 1, "view should have inserted only once");
+
+  // Then transition directly by route name
+  Ember.run(function() {
+    router.transitionTo('third');
+  });
+
+  equal(Ember.$('p', '#qunit-fixture').text(), "This is the third message");
+  equal(insertionCount, 1, "view should still have inserted only once");
+});
+
+
