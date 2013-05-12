@@ -245,6 +245,8 @@ define("router",
         var targetHandlerInfos = this.targetHandlerInfos,
             found = false, names, object, handlerInfo, handlerObj;
 
+        if (!targetHandlerInfos) { return; }
+
         for (var i=targetHandlerInfos.length-1; i>=0; i--) {
           handlerInfo = targetHandlerInfos[i];
           if (handlerInfo.name === handlerName) { found = true; }
