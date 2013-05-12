@@ -23,6 +23,7 @@ define("router",
 
     function Router() {
       this.recognizer = new RouteRecognizer();
+      this.targetHandlerInfos = [];
     }
 
 

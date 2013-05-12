@@ -48,7 +48,7 @@ test('should be inside of a runloop when running', function() {
 
   Ember.run(function() {
     Ember.run.once(function() {
-      ok(!!Ember.run.currentRunLoop, 'should have a runloop');
+      ok(!!Ember.run.backburner.currentInstance, 'should have a runloop');
     });
   });
 });
