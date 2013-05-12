@@ -1,4 +1,4 @@
-var App, find, click, fillIn, currentRoute, visit, originalFailure;
+var App, find, click, fillIn, currentRoute, visit, originalAdapter;
 
 module("ember-testing Acceptance", {
   setup: function(){
@@ -50,7 +50,7 @@ module("ember-testing Acceptance", {
     fillIn = window.fillIn;
     visit = window.visit;
 
-    originalFailure = Ember.Test.failure;
+    originalAdapter = Ember.Test.adapter;
   },
 
   teardown: function(){
@@ -58,16 +58,17 @@ module("ember-testing Acceptance", {
     Ember.$('#ember-testing-container, #ember-testing').remove();
     Ember.run(App, App.destroy);
     App = null;
-    Ember.Test.failure = originalFailure;
+    Ember.Test.adapter = originalAdapter;
   }
 });
 
 test("helpers can be chained", function() {
   expect(5);
-
-  Ember.Test.failure = function(error) {
-    equal(error, "Element .does-not-exist not found.", "Exception successfully caught and passed to Ember.test.failure");
-  };
+  Ember.Test.adapter = Ember.Test.QUnitAdapter.create({
+    exception: function(error) {
+      equal(error, "Element .does-not-exist not found.", "Exception successfully caught and passed to Ember.Test.adapter.exception");
+    }
+  });
 
   currentRoute = 'index';
 
@@ -84,7 +85,7 @@ test("helpers can be chained", function() {
     equal(Ember.$('.ember-text-field').val(), 'context working', "chained with fillIn");
     click(".does-not-exist");
   }).then(function() {
-    // This is needed in this test
+    // This redundant `then` is needed in this test
     // so we can assert that thrown exceptions
     // do not fire multiple times
   });
