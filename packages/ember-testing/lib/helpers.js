@@ -32,7 +32,7 @@ function click(app, selector) {
 function fillIn(app, selector, text) {
   var $el = find(app, selector);
   Ember.run(function() {
-    $el.val(text);
+    $el.val(text).change();
   });
   return wait(app);
 }
