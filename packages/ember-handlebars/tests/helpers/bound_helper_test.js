@@ -241,3 +241,15 @@ test("bound helpers can be invoked with zero args", function() {
   equal(view.$().text(), 'TROLOLOL and bork', "helper output is correct");
 });
 
+test("bound helpers should not be invoked with blocks", function() {
+  registerRepeatHelper();
+  view = Ember.View.create({
+    controller: Ember.Object.create({}),
+    template: Ember.Handlebars.compile("{{#repeat}}Sorry, Charlie{{/repeat}}")
+  });
+
+  raises(function() {
+    appendView();
+  }, Error, "raises error when using block helper with #block form");
+});
+
