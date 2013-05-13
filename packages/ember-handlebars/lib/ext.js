@@ -236,6 +236,10 @@ Ember.Handlebars.registerHelper('helperMissing', function(path, options) {
   In this example, if the name property changes, the helper
   will not re-render.
 
+  ## Use with blocks not supported
+
+  Bound helpers do not support use with Handlebars blocks or
+  the addition of child views of any kind.
 
   @method registerBoundHelper
   @for Ember.Handlebars
@@ -258,6 +262,8 @@ Ember.Handlebars.registerBoundHelper = function(name, fn) {
       normalized,
       pathRoot, path,
       loc, hashOption;
+
+    Ember.assert("registerBoundHelper-generated helpers do not support use with Handlebars blocks.", !options.fn);
 
     // Detect bound options (e.g. countBinding="otherCount")
     hash.boundOptions = {};
