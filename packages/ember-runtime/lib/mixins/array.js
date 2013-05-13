@@ -49,9 +49,6 @@ var get = Ember.get, set = Ember.set, isNone = Ember.isNone, map = Ember.Enumera
 */
 Ember.Array = Ember.Mixin.create(Ember.Enumerable, /** @scope Ember.Array.prototype */ {
 
-  // compatibility
-  isSCArray: true,
-
   /**
     Your array must support the `length` property. Your replace methods should
     set this property whenever it changes.
