@@ -4,7 +4,7 @@
 */
 
 
-/**
+/*
   A TransitionEvent is passed as the argument for `transitionTo`
   events and contains information about an attempted transition 
   that can be modified or decorated by leafier `transitionTo` event
@@ -16,7 +16,7 @@
  */
 Ember.TransitionEvent = Ember.Object.extend({
 
-  /**
+  /*
     The Ember.Route method used to perform the transition.  Presently, 
     the only valid values are 'transitionTo' and 'replaceWith'.
    */
@@ -30,7 +30,7 @@ Ember.TransitionEvent = Ember.Object.extend({
     this.contexts = this.contexts || [];
   },
 
-  /**
+  /*
     Convenience method that returns an array that can be used for
     legacy `transitionTo` and `replaceWith`.
    */
@@ -41,7 +41,7 @@ Ember.TransitionEvent = Ember.Object.extend({
 
 
 Ember.TransitionEvent.reopenClass({
-  /**
+  /*
     This is the default transition event handler that will be injected
     into ApplicationRoute. The context, like all route event handlers in
     the events hash, will be an `Ember.Route`.
