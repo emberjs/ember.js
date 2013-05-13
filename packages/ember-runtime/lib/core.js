@@ -288,7 +288,7 @@ var errorProps = ['description', 'fileName', 'lineNumber', 'message', 'name', 'n
   @constructor
 */
 Ember.Error = function() {
-  var tmp = Error.prototype.constructor.apply(this, arguments);
+  var tmp = Error.apply(this, arguments);
 
   // Unfortunately errors are not enumerable in Chrome (at least), so `for prop in tmp` doesn't work.
   for (var idx = 0; idx < errorProps.length; idx++) {
