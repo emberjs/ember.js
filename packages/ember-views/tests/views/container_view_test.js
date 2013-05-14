@@ -564,3 +564,37 @@ test("should invalidate `element` on itself and childViews when being rendered b
     root.destroy();
   });
 });
+
+test("Child view can only be added to one container at a time", function () {
+  expect(2);
+
+  container = Ember.ContainerView.create();
+  var secondContainer = Ember.ContainerView.create();
+
+  Ember.run(function() {
+    container.appendTo('#qunit-fixture');
+  });
+
+  var view = Ember.View.create();
+
+  Ember.run(function() {
+    container.set('currentView', view);
+  });
+
+  throws(function() {
+    Ember.run(function() {
+        secondContainer.set('currentView', view);
+    });
+  });
+
+  throws(function() {
+    Ember.run(function() {
+        secondContainer.pushObject(view);
+    });
+  });
+
+  Ember.run(function() {
+    secondContainer.destroy();
+  });
+
+});
