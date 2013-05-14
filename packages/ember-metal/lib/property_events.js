@@ -178,7 +178,7 @@ var endPropertyChanges = Ember.endPropertyChanges = function() {
   });
   ```
 
-  @method changePropertiess
+  @method changeProperties
   @param {Function} callback
   @param [binding]
 */
