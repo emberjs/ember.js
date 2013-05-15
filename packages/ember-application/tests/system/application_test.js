@@ -408,3 +408,43 @@ test('normalization is indempotent', function() {
     equal(locator.normalize(locator.normalize(example)), locator.normalize(example));
   });
 });
+
+module("Ember.Application templateNamespace");
+
+test("you can specify a templateNamespace", function() {
+  var app;
+
+  Ember.run(function() {
+    app = Ember.Application.create({ rootElement: '#qunit-fixture', templateNamespace: 'foo' });
+    Ember.TEMPLATES["foo/application"] = Ember.Handlebars.compile("<h1>hello ember</h1>");
+  });
+
+  equal(Ember.$("#qunit-fixture h1").text(), "hello ember");
+
+  Ember.run(function() {
+    app.destroy();
+  });
+});
+
+test("two apps can co-exist with different templateNamespace", function() {
+  Ember.$('#qunit-fixture').append(Ember.$('<div id="app1"></div>'));
+  Ember.$('#qunit-fixture').append(Ember.$('<div id="app2"></div>'));
+
+  var app1, app2;
+
+  Ember.run(function() {
+    app1 = Ember.Application.create({ rootElement: '#app1', templateNamespace: 'app1' });
+    Ember.TEMPLATES['app1/application'] = Ember.Handlebars.compile('<h1>hello app1</h1>');
+
+    app2 = Ember.Application.create({ rootElement: '#app2', templateNamespace: 'app2' });
+    Ember.TEMPLATES['app2/application'] = Ember.Handlebars.compile('<h2>hello app2</h2>');
+  });
+
+  equal(Ember.$("#qunit-fixture h1").text(), "hello app1");
+  equal(Ember.$("#qunit-fixture h2").text(), "hello app2");
+
+  Ember.run(function() {
+    app1.destroy();
+    app2.destroy();
+  });
+});
