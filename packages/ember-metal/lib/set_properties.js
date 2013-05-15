@@ -12,13 +12,21 @@ var changeProperties = Ember.changeProperties,
   @method setProperties
   @param target
   @param {Hash} properties
+  @param {Object} value The value to set or `null`.
   @return target
 */
-Ember.setProperties = function(self, hash) {
+Ember.setProperties = function(self, hash, value) {
   changeProperties(function(){
-    for(var prop in hash) {
-      if (hash.hasOwnProperty(prop)) { set(self, prop, hash[prop]); }
+   
+    if(Ember.isArray(hash) && value !== undefined){
+        for(var i = 0; i < hash.length; i++) {
+        set(self, hash[i], value); 
     }
+   }else{
+    for(var prop in hash) {
+        if (hash.hasOwnProperty(prop)) { set(self, prop, hash[prop]); }
+    }
+   }
   });
   return self;
 };

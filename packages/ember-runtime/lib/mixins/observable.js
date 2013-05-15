@@ -204,14 +204,16 @@ Ember.Observable = Ember.Mixin.create(/** @scope Ember.Observable.prototype */ {
 
     ```javascript
     record.setProperties({ firstName: 'Charles', lastName: 'Jolley' });
+    record.setProperties(['prop1', 'prop2'], 'value');
     ```
 
     @method setProperties
     @param {Hash} hash the hash of keys and values to set
+    @param {Object} value The value to set or `null`.
     @return {Ember.Observable}
   */
-  setProperties: function(hash) {
-    return Ember.setProperties(this, hash);
+  setProperties: function(hash, value) {
+    return Ember.setProperties(this, hash, value);
   },
 
   /**
