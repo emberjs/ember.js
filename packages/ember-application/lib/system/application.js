@@ -476,7 +476,7 @@ var Application = Ember.Application = Ember.Namespace.extend(Ember.DeferredMixin
     });
 
     module("acceptance test", {
-      setup: funciton() {
+      setup: function() {
         App.reset();
       }
     });
@@ -505,7 +505,7 @@ var Application = Ember.Application = Ember.Namespace.extend(Ember.DeferredMixin
     });
 
     module("acceptance test", {
-      setup: funciton() {
+      setup: function() {
         Ember.run(function() {
           App.reset();
           App.deferReadiness();
