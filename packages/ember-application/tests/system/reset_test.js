@@ -18,6 +18,40 @@ module("Ember.Application - resetting", {
   }
 });
 
+test("Brings it's own run-loop if not provided", function() {
+  application = Ember.run(Application, 'create');
+
+  application.reset();
+
+  Ember.run(application,'then', function(){
+    ok(true, 'app booted');
+  });
+});
+
+test("does not bring it's own run loop if one is already provided", function() {
+  expect(3);
+
+  var didBecomeReady = false;
+
+  application = Ember.run(Application, 'create');
+
+  Ember.run(function(){
+
+    application.ready = function(){
+      didBecomeReady = true;
+    };
+
+    application.reset();
+
+    application.deferReadiness();
+    ok(!didBecomeReady, 'app is not ready');
+  });
+
+  ok(!didBecomeReady, 'app is not ready');
+  Ember.run(application, 'advanceReadiness');
+  ok(didBecomeReady, 'app is ready');
+});
+
 test("When an application is reset, new instances of controllers are generated", function() {
   Ember.run(function() {
     application = Application.create();

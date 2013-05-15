@@ -462,9 +462,71 @@ var Application = Ember.Application = Ember.Namespace.extend(Ember.DeferredMixin
     return this;
   },
 
+  /**
+    Reset the application. This is typically used only in tests.
+
+    Typical Example:
+
+    ```javascript
+
+    var App;
+
+    Ember.run(function(){
+      App = Ember.Application.create();
+    });
+
+    module("acceptance test", {
+      setup: funciton() {
+        App.reset();
+      }
+    });
+
+    test("first test", function(){
+      // App is freshly reset
+    });
+
+    test("first test", function(){
+      // App is again freshly reset
+    });
+    ```
+
+    Advanced Example:
+
+    Occasionally you may want to prevent the app from initializing during
+    setup. This could enable extra configuration, or enable asserting prior
+    to the app becoming ready.
+
+    ```javascript
+
+    var App;
+
+    Ember.run(function(){
+      App = Ember.Application.create();
+    });
+
+    module("acceptance test", {
+      setup: funciton() {
+        Ember.run(function() {
+          App.reset();
+          App.deferReadiness();
+        });
+      }
+    });
+
+    test("first test", function(){
+      ok(true, 'something before app is initialized');
+
+      Ember.run(function(){
+        App.advanceReadiness();
+      });
+      ok(true, 'something after app is initialized');
+    });
+    ```
+
+    @method reset
+  **/
   reset: function() {
-    Ember.assert('App#reset no longer needs to be wrapped in a run-loop', !Ember.run.currentRunLoop);
-    Ember.run(this, function(){
+    function handleReset() {
       Ember.run(this.__container__, 'destroy');
 
       this.buildContainer();
@@ -475,7 +537,13 @@ var Application = Ember.Application = Ember.Namespace.extend(Ember.DeferredMixin
         this._initialize();
         this.startRouting();
       });
-    });
+    }
+
+    if (Ember.run.currentRunLoop) {
+      handleReset.call(this);
+    } else {
+      Ember.run(this, handleReset);
+    }
   },
 
   /**
