@@ -36,15 +36,16 @@ Ember.Route = Ember.Object.extend({
   },
 
   /**
-    The collection of functions keyed by name available on this route as
+    The collection of functions, keyed by name, available on this route as
     action targets.
 
     These functions will be invoked when a matching `{{action}}` is triggered
     from within a template and the application's current route is this route.
 
-    Events can also be invoked from other parts of your application via `Route#send`.
+    Events can also be invoked from other parts of your application via `Route#send`
+    or `Controller#send`.
 
-    The context of event will be the this route.
+    The context of the event will be this route.
 
     @see {Ember.Route#send}
     @see {Handlebars.helpers.action}
