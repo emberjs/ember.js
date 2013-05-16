@@ -52,7 +52,7 @@ test("Ember.Application#setupForTesting", function() {
 });
 
 test("Ember.Test.registerHelper/unregisterHelper", function() {
-  expect(3);
+  expect(5);
   var appBooted = false;
 
   Ember.Test.registerHelper('boot', function(app) {
@@ -67,14 +67,17 @@ test("Ember.Test.registerHelper/unregisterHelper", function() {
     App.injectTestHelpers();
   });
 
+  ok(App.testHelpers.boot);
   ok(window.boot);
 
   window.boot().then(function() {
     ok(appBooted);
+
+    App.removeTestHelpers();
+    Ember.Test.unregisterHelper('boot');
+
+    ok(!App.testHelpers.boot);
+    ok(!window.boot);
   });
 
-  App.removeTestHelpers();
-  Ember.Test.unregisterHelper('boot');
-
-  ok(!window.boot);
 });
