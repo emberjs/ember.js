@@ -644,7 +644,7 @@ registerComputedWithProperties('or', function(properties) {
   @for Ember
   @param {String} dependentKey, [dependentKey...]
   @return {Ember.ComputedProperty} computed property which returns
-  the first trouthy value of given list of properties.
+  the first truthy value of given list of properties.
 */
 registerComputedWithProperties('any', function(properties) {
   for (var key in properties) {
