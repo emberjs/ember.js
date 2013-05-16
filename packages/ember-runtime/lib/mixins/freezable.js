@@ -63,8 +63,7 @@ var get = Ember.get, set = Ember.set;
   @extends Ember.Mixin
   @since Ember 0.9
 */
-Ember.Freezable = Ember.Mixin.create(
-/** @scope Ember.Freezable.prototype */ {
+Ember.Freezable = Ember.Mixin.create(/** @scope Ember.Freezable.prototype */ {
 
   /**
     Set to `true` when the object is frozen. Use this property to detect

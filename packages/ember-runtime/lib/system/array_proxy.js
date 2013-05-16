@@ -49,8 +49,7 @@ var get = Ember.get, set = Ember.set;
   @extends Ember.Object
   @uses Ember.MutableArray
 */
-Ember.ArrayProxy = Ember.Object.extend(Ember.MutableArray,
-/** @scope Ember.ArrayProxy.prototype */ {
+Ember.ArrayProxy = Ember.Object.extend(Ember.MutableArray,/** @scope Ember.ArrayProxy.prototype */ {
 
   /**
     The content array. Must be an object that implements `Ember.Array` and/or
@@ -325,4 +324,3 @@ Ember.ArrayProxy = Ember.Object.extend(Ember.MutableArray,
     this._teardownContent();
   }
 });
-
