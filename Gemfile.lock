@@ -23,6 +23,12 @@ GIT
       rake (~> 10.0.0)
       thor
 
+PATH
+  remote: .
+  specs:
+    ember-source (1.0.0.rc3)
+      handlebars-source (= 1.0.0.rc4)
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -39,7 +45,7 @@ GEM
       diff-lcs (~> 1.1)
       mime-types (~> 1.15)
       posix-spawn (~> 0.3.6)
-    handlebars-source (1.0.0.rc3)
+    handlebars-source (1.0.0.rc4)
     json (1.8.0)
     kicker (2.6.1)
       listen
@@ -72,5 +78,5 @@ PLATFORMS
 
 DEPENDENCIES
   ember-dev!
-  handlebars-source (= 1.0.0.rc3)
+  ember-source!
   rake-pipeline!
