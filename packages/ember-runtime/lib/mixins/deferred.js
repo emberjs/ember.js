@@ -31,15 +31,15 @@ Ember.DeferredMixin = Ember.Mixin.create({
     deferred = get(this, '_deferred');
     promise = deferred.promise;
 
-    return promise.then(function(fulfillment) {
+    function fulfillmentHandler(fulfillment) {
       if (fulfillment === promise) {
         return resolve(entity);
       } else {
         return resolve(fulfillment);
       }
-    }, function(reason) {
-      return reject(reason);
-    });
+    }
+
+    return promise.then(resolve && fulfillmentHandler, reject);
   },
 
   /**
