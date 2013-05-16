@@ -1,12 +1,11 @@
 GIT
   remote: https://github.com/emberjs/ember-dev.git
-  revision: b010d4809fac6e5bea6a99d800d825b804b5ba39
+  revision: 56b5ac50dfea95c704d79b1db2b42ed8fc4e5970
   branch: master
   specs:
     ember-dev (0.1)
       aws-sdk
       colored
-      ember-source
       execjs
       grit
       kicker
@@ -27,14 +26,12 @@ GIT
 GEM
   remote: https://rubygems.org/
   specs:
-    aws-sdk (1.9.5)
+    aws-sdk (1.10.0)
       json (~> 1.4)
       nokogiri (>= 1.4.4)
       uuidtools (~> 2.1)
     colored (1.2)
     diff-lcs (1.2.4)
-    ember-source (0.0.8)
-      handlebars-source (>= 1.0.0.rc3, < 1.0.0.rc4)
     execjs (1.4.0)
       multi_json (~> 1.0)
     ffi (1.8.1)
