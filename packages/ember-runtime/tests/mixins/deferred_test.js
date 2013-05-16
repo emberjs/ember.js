@@ -273,3 +273,41 @@ test("can do multi level assimilation", function() {
   Ember.run(firstDeferred, 'resolve', firstDeferred);
 });
 
+
+test("can handle rejection without rejection handler", function(){
+  expect(2);
+
+  var reason = 'some reason';
+
+  var deferred = Ember.run(function() {
+    return Ember.Object.createWithMixins(Ember.DeferredMixin);
+  });
+
+  deferred.then().then(function(){
+    ok(false, 'expected rejection, got fulfillment');
+  }, function(actualReason){
+    ok(true, 'expected fulfillment');
+    equal(actualReason, reason);
+  });
+
+  Ember.run(deferred, 'reject', reason);
+});
+
+test("can handle fulfillment without  fulfillment handler", function(){
+  expect(2);
+
+  var fulfillment = 'some fulfillment';
+
+  var deferred = Ember.run(function() {
+    return Ember.Object.createWithMixins(Ember.DeferredMixin);
+  });
+
+  deferred.then().then(function(actualFulfillment) {
+    ok(true, 'expected fulfillment');
+    equal(fulfillment, actualFulfillment);
+  }, function(reason) {
+    ok(false, 'expected fulfillment, got reason' + reason);
+  });
+
+  Ember.run(deferred, 'resolve', fulfillment);
+});
