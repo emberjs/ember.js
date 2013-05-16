@@ -483,8 +483,7 @@ var get = Ember.get, set = Ember.set;
   @namespace Ember
   @extends Ember.StateManager
 */
-Ember.Router = Ember.StateManager.extend(
-/** @scope Ember.Router.prototype */ {
+Ember.Router = Ember.StateManager.extend(/** @scope Ember.Router.prototype */ {
 
   /**
     @property initialState
