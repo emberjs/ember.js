@@ -5,5 +5,4 @@ gem "ember-dev", :git => "https://github.com/emberjs/ember-dev.git", :branch => 
 
 # Require the specific version of handlebars-source that
 # we'll be precompiling and performing tests with.
-gem "handlebars-source", "1.0.0.rc3"
-
+gemspec
