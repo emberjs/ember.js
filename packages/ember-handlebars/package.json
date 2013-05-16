@@ -7,7 +7,7 @@
   "version": "1.0.0-rc.3",
   "dependencies": {
     "spade":              "~> 1.0.0",
-    "ember-handlebars-compiler", "1.0.0-pre.2",
+    "ember-handlebars-compiler": "1.0.0-rc.3",
     "ember-views": "1.0.0-rc.3",
     "metamorph": "~> 1.0.0"
   },
