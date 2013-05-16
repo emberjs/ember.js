@@ -32,7 +32,7 @@ var get = Ember.get, set = Ember.set, isNone = Ember.isNone, map = Ember.Enumera
 
   You can use the methods defined in this module to access and modify array
   contents in a KVO-friendly way. You can also be notified whenever the
-  membership if an array changes by changing the syntax of the property to
+  membership of an array changes by changing the syntax of the property to
   `.observes('*myProperty.[]')`.
 
   To support `Ember.Array` in your own class, you must override two

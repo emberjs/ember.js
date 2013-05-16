@@ -368,7 +368,7 @@ mixinProperties(Binding, {
 
   You should consider using one way bindings anytime you have an object that
   may be created frequently and you do not intend to change a property; only
-  to monitor it for changes. (such as in the example above).
+  to monitor it for changes (such as in the example above).
 
   ## Adding Bindings Manually
 
