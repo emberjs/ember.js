@@ -115,7 +115,7 @@ developers struggle with every day.
 # Getting Started
 
 For new users, we recommend downloading the [Ember.js Starter
-Kit](https://github.com/emberjs/starter-kit/downloads), which includes
+Kit](https://github.com/emberjs/starter-kit/tags), which includes
 everything you need to get started.
 
 # Building Ember.js
