@@ -22,23 +22,35 @@ function visit(app, url) {
   return wait(app);
 }
 
-function click(app, selector) {
+function click(app, selector, context) {
+  var $el = find(app, selector, context);
   Ember.run(function() {
     app.$(selector).click();
   });
   return wait(app);
 }
 
-function fillIn(app, selector, text) {
-  var $el = find(app, selector);
+function fillIn(app, selector, context, text) {
+  var $el;
+  if (typeof text === 'undefined') {
+    text = context;
+    context = null;
+  }
+  $el = find(app, selector, context);
   Ember.run(function() {
     $el.val(text).change();
   });
   return wait(app);
 }
 
-function find(app, selector) {
-  return app.$(get(app, 'rootElement')).find(selector);
+function find(app, selector, context) {
+  var $el;
+  context = context || get(app, 'rootElement');
+  $el = app.$(selector, context);
+  if ($el.length === 0) {
+    throw("Element " + selector + " not found.");
+  }
+  return $el;
 }
 
 function wait(app, value) {

@@ -63,10 +63,10 @@ module("ember-testing Acceptance", {
 });
 
 test("helpers can be chained", function() {
-  expect(4);
+  expect(5);
 
   Ember.Test.failure = function(error) {
-    equal(error, "exception", "Exception successfully caught and passed to Ember.test.failure");
+    equal(error, "Element .does-not-exist not found.", "Exception successfully caught and passed to Ember.test.failure");
   };
 
   currentRoute = 'index';
@@ -77,9 +77,12 @@ test("helpers can be chained", function() {
   }).then(function() {
     equal(currentRoute, 'comments', "visit chained with click");
     return fillIn('.ember-text-field', "yeah");
-  }).then(function(){
+  }).then(function() {
     equal(Ember.$('.ember-text-field').val(), 'yeah', "chained with fillIn");
-    throw "exception";
+    return fillIn('.ember-text-field', '#ember-testing-container', "context working");
+  }).then(function(){
+    equal(Ember.$('.ember-text-field').val(), 'context working', "chained with fillIn");
+    click(".does-not-exist");
   }).then(function() {
     // This is needed in this test
     // so we can assert that thrown exceptions
