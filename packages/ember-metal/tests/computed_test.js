@@ -937,3 +937,27 @@ testBoth('Ember.computed.map', function(get, set) {
 
   deepEqual(get(obj, 'all'), [0, 'bar', a, true], 'have all of them');
 });
+
+testBoth('Ember.computed.oneWay', function(get, set) {
+  var obj = {
+    firstName: 'Teddy',
+    lastName: 'Zeenny'
+  };
+
+  Ember.defineProperty(obj, 'nickName', Ember.computed.oneWay('firstName'));
+
+  equal(get(obj, 'firstName'), 'Teddy');
+  equal(get(obj, 'lastName'), 'Zeenny');
+  equal(get(obj, 'nickName'), 'Teddy');
+
+  set(obj, 'nickName', 'TeddyBear');
+
+  equal(get(obj, 'firstName'), 'Teddy');
+  equal(get(obj, 'lastName'), 'Zeenny');
+
+  equal(get(obj, 'nickName'), 'TeddyBear');
+
+  set(obj, 'firstName', 'TEDDDDDDDDYYY');
+
+  equal(get(obj, 'nickName'), 'TeddyBear');
+});
