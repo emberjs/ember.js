@@ -284,10 +284,10 @@ var Application = Ember.Application = Ember.Namespace.extend(Ember.DeferredMixin
     This allows application developers to do:
 
     ```javascript
-    App = Ember.Application.create();
+    var App = Ember.Application.create();
 
-    App.Router.map(function(match) {
-      match("/").to("index");
+    App.Router.map(function() {
+      this.resource('posts');
     });
     ```
 
