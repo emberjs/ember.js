@@ -25,7 +25,8 @@
 require('ember-metal/enumerable_utils');
 require('ember-metal/utils');
 require('ember-metal/core');
-require('ember-metal/accessors');
+require('ember-metal/property_set');
+require('ember-metal/property_get');
 
 var get = Ember.get,
     set = Ember.set,
