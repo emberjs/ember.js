@@ -35,6 +35,25 @@ Ember.Route = Ember.Object.extend({
     this.activate();
   },
 
+  init: function() {
+    this._super();
+
+    var proto = this.constructor.proto(),
+        descs = Ember.meta(proto).descs,
+        handler;
+
+    if (this.events === null) {
+      this.events = {};
+    }
+
+    for (var name in proto) {
+      handler = descs[name];
+      if (handler instanceof EventHandler) {
+        this.events[name] = handler.func;
+      }
+    }
+  },
+
   /**
     The collection of functions, keyed by name, available on this route as
     action targets.
@@ -633,4 +652,28 @@ function teardownView(route) {
 
   delete route.teardownView;
   delete route.lastRenderedTemplate;
+}
+
+/**
+  @class EventHandler
+  @namespace Ember
+  @extends Ember.Descriptor
+  @constructor
+*/
+function EventHandler(func) {
+  this.func = func;
+}
+
+EventHandler.prototype = new Ember.Descriptor();
+EventHandler.prototype.setup = Ember.K;
+EventHandler.prototype.teardown = Ember.K;
+
+Ember.Route.event = function(handler) {
+  return new EventHandler(handler);
+};
+
+if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.Function) {
+  Function.prototype.event = function() {
+    return Ember.Route.event(this);
+  };
 }

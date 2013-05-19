@@ -92,7 +92,7 @@ function giveDescriptorSuper(meta, key, property, values, descs) {
   // it on the original object.
   superProperty = superProperty || meta.descs[key];
 
-  if (!superProperty || !(superProperty instanceof Ember.ComputedProperty)) {
+  if (!superProperty || !(superProperty instanceof property.constructor)) {
     return property;
   }
 
