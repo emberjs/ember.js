@@ -1,3 +1,5 @@
+var get = Ember.get;
+
 /**
 @module ember
 @submodule ember-routing
@@ -14,7 +16,7 @@ Ember.controllerFor = function(container, controllerName, context, lookupOptions
   `App.ObjectController` and `App.ArrayController`
 */
 Ember.generateController = function(container, controllerName, context) {
-  var controller, DefaultController, fullName;
+  var controller, DefaultController, fullName, instance;
 
   if (context && Ember.isArray(context)) {
     DefaultController = container.resolve('controller:array');
@@ -35,8 +37,14 @@ Ember.generateController = function(container, controllerName, context) {
     return "(generated " + controllerName + " controller)";
   };
 
-
   fullName = 'controller:' + controllerName;
   container.register(fullName, controller);
-  return container.lookup(fullName);
+
+  instance = container.lookup(fullName);
+
+  if (get(instance, 'namespace.LOG_ACTIVE_GENERATION')) {
+    Ember.Logger.info("generated -> " + fullName, { fullName: fullName });
+  }
+
+  return instance;
 };
