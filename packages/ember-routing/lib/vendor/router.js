@@ -51,6 +51,21 @@ define("router",
       },
 
       /**
+        Clears the current and target route handlers and triggers exit
+        on each of them starting at the leaf and traversing up through
+        its ancestors.
+      */
+      reset: function() {
+        eachHandler(this.currentHandlerInfos, function(handler) {
+          if (handler.exit) {
+            handler.exit();
+          }
+        });
+        this.currentHandlerInfos = null;
+        this.targetHandlerInfos = null;
+      },
+
+      /**
         The entry point for handling a change to the URL (usually
         via the back and forward button).
 

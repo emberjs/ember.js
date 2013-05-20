@@ -128,6 +128,18 @@ Ember.Router = Ember.Object.extend({
     return this.router.hasRoute(route);
   },
 
+  /**
+    @private
+
+    Resets the state of the router by clearing the current route
+    handlers and deactivating them.
+
+    @method reset
+   */
+  reset: function() {
+    this.router.reset();
+  },
+
   _lookupActiveView: function(templateName) {
     var active = this._activeViews[templateName];
     return active && active[0];
