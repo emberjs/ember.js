@@ -463,7 +463,13 @@ var Application = Ember.Application = Ember.Namespace.extend(Ember.DeferredMixin
   },
 
   /**
-    Reset the application. This is typically used only in tests.
+    Reset the application. This is typically used only in tests. It cleans up
+    the application in the following order:
+
+    1. Deactivate existing routes
+    2. Destroy all objects in the container
+    3. Create a new application container
+    4. Re-route to the existing url
 
     Typical Example:
 
@@ -527,6 +533,9 @@ var Application = Ember.Application = Ember.Namespace.extend(Ember.DeferredMixin
   **/
   reset: function() {
     function handleReset() {
+      var router = this.__container__.lookup('router:main');
+      router.reset();
+
       Ember.run(this.__container__, 'destroy');
 
       this.buildContainer();
