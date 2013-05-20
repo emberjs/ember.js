@@ -46,7 +46,10 @@ Ember.TextSupport = Ember.Mixin.create({
   },
 
   _elementValueDidChange: function() {
-    set(this, 'value', this.$().val());
+    var previousValue = get(this, 'value') || "";
+    var currentValue = this.$().val();
+    if(currentValue !== previousValue)
+      set(this, 'value', currentValue);
   }
 
 });

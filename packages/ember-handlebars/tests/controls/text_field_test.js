@@ -449,6 +449,27 @@ test("bubbling of handled actions can be enabled via bubbles property", function
   equal(stopPropagationCount, 1, "propagation was prevented if bubbles is false");
 });
 
+test("should not set the value property when the text is empty", function() {
+  var wasCalled;
+  var event = Ember.Object.create({
+    keyCode: 9
+  });
+
+  Ember.run(function() { textField.append(); });
+
+  set(textField, 'value', null);
+
+  textField.addObserver('value', textField, function(){
+    wasCalled = true;
+  });
+
+  textField.$().val('');
+  textField.trigger('keyUp', event);
+
+  ok(!wasCalled, "doesn't change the value");
+});
+
+
 // test("listens for focus and blur events", function() {
 //   var focusCalled = 0;
 //   var blurCalled = 0;
