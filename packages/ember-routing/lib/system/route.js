@@ -197,12 +197,9 @@ Ember.Route = Ember.Object.extend({
       return false;
     }
 
-    var controller = this.controllerFor(this.routeName, context);
+    var controller = this.controller = this.controllerFor(this.routeName, context);
 
-    if (controller) {
-      this.controller = controller;
-      set(controller, 'model', context);
-    }
+    this.setupControllerModel(controller, context);
 
     if (this.setupControllers) {
       Ember.deprecate("Ember.Route.setupControllers is deprecated. Please use Ember.Route.setupController(controller, model) instead.");
@@ -216,6 +213,17 @@ Ember.Route = Ember.Object.extend({
       this.renderTemplates(context);
     } else {
       this.renderTemplate(controller, context);
+    }
+  },
+
+  /**
+    This hook sets the `model` property of the controller to the model.
+
+    @method setupControllerModel
+  */
+  setupControllerModel: function(controller, model) {
+    if (controller) {
+      set(controller, 'model', model);
     }
   },
 
@@ -366,9 +374,6 @@ Ember.Route = Ember.Object.extend({
     ```
 
     For the `post` route, the controller is `App.PostController`.
-
-    By default, the `setupController` hook sets the `content` property of
-    the controller to the `model`.
 
     If no explicit controller is defined, the route will automatically create
     an appropriate controller for the model:
