@@ -55,14 +55,14 @@ function find(app, selector, context) {
 
 function wait(app, value) {
   return Ember.Test.promise(function(resolve) {
-    stop();
+    Ember.Test.adapter.asyncStart();
     var watcher = setInterval(function() {
       var routerIsLoading = app.__container__.lookup('router:main').router.isLoading;
       if (routerIsLoading) { return; }
       if (pendingAjaxRequests) { return; }
       if (Ember.run.hasScheduledTimers() || Ember.run.backburner.currentInstance) { return; }
       clearInterval(watcher);
-      start();
+      Ember.Test.adapter.asyncEnd();
       Ember.run(function() {
         resolve(value);
       });
