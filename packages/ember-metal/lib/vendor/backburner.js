@@ -13,18 +13,23 @@ define("backburner",
     function Backburner(queueNames, options) {
       this.queueNames = queueNames;
       this.options = options || {};
+      if (!this.options.defaultQueue) {
+        this.options.defaultQueue = queueNames[0];
+      }
+      this.instanceStack = [];
     }
 
     Backburner.prototype = {
       queueNames: null,
       options: null,
       currentInstance: null,
-      previousInstance: null,
+      instanceStack: null,
 
       begin: function() {
         if (this.currentInstance) {
-          this.previousInstance = this.currentInstance;
+          this.instanceStack.push(this.currentInstance);
         }
+
         this.currentInstance = new DeferredActionQueues(this.queueNames, this.options);
       },
 
@@ -33,9 +38,9 @@ define("backburner",
           this.currentInstance.flush();
         } finally {
           this.currentInstance = null;
-          if (this.previousInstance) {
-            this.currentInstance = this.previousInstance;
-            this.previousInstance = null;
+
+          if (this.instanceStack.length) {
+            this.currentInstance = this.instanceStack.pop();
           }
         }
       },
@@ -197,11 +202,14 @@ define("backburner",
         }
         timers = [];
 
-        if (autorun) { clearTimeout(autorun); }
+        if (autorun) {
+          clearTimeout(autorun);
+          autorun = null;
+        }
       },
 
       hasTimers: function() {
-        return !!timers.length && !autorun;
+        return !!timers.length || autorun;
       },
 
       cancel: function(timer) {
@@ -243,13 +251,15 @@ define("backburner",
         fns = timers.splice(0, i);
 
         for (i = 1, l = fns.length; i < l; i += 2) {
-          self.schedule(self.queueNames[0], null, fns[i]); // TODO: make default queue configurable
+          self.schedule(self.options.defaultQueue, null, fns[i]);
         }
       });
 
       if (timers.length) {
         laterTimer = setTimeout(function() {
           executeTimers(self);
+          laterTimer = null;
+          laterTimerExpiresAt = null;
         }, timers[0] - now);
         laterTimerExpiresAt = timers[0];
       }
@@ -380,9 +390,9 @@ define("backburner/queue",
       },
 
       pushUnique: function(target, method, args, stack) {
-        var queue = this._queue, currentTarget, currentMethod;
+        var queue = this._queue, currentTarget, currentMethod, i, l;
 
-        for (var i = 0, l = queue.length; i < l; i += 4) {
+        for (i = 0, l = queue.length; i < l; i += 4) {
           currentTarget = queue[i];
           currentMethod = queue[i+1];
 
