@@ -1916,4 +1916,32 @@ test("The template is not re-rendered when two routes present the exact same tem
   equal(insertionCount, 1, "view should still have inserted only once");
 });
 
+/*
+test("Rendering a leaf route without a template displays a helpful debug message", function() {
+  Router.map(function() {
+    this.route("home", { path: "/" });
+    this.resource("foo", function() {
+      this.route("bar");
+    });
+  });
 
+  Ember.TEMPLATES = { omg: null, alex: null };
+
+  bootApplication();
+
+  Ember.run(function() {
+    router.handleURL("/");
+  });
+
+  equal(Ember.$('h3', '#qunit-fixture').text(), "Expected to find template named \"home\"");
+  equal(Ember.$('p', '#qunit-fixture').text(), "Found templates: alex, omg");
+
+  Ember.run(function() {
+    router.handleURL("/foo/bar");
+  });
+
+  equal(Ember.$('h3', '#qunit-fixture').text(), "Expected to find template named \"foo/bar\"");
+  equal(Ember.$('p', '#qunit-fixture').text(), "Found templates: alex, omg");
+
+});
+*/

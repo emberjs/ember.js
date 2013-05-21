@@ -169,6 +169,20 @@ Ember.Router.reopenClass({
       // Using setTimeout allows us to escape from the Promise's try/catch block
       setTimeout(function() { throw error; });
     }
+  },
+
+  getDebugTemplate: function(templateName) {
+
+    var templateNames = [];
+    for(var name in Ember.TEMPLATES) {
+      templateNames.push(name);
+    }
+    templateNames.sort();
+
+    return function() {
+      return '<h3>Expected to find template named "' + templateName + '"</h3>' +
+             '<p>Found templates: ' + templateNames.join(', ') + '</p>';
+    };
   }
 });
 

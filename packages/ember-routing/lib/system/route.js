@@ -517,7 +517,14 @@ Ember.Route = Ember.Object.extend({
         view = container.lookup('view:' + name),
         template = container.lookup('template:' + name);
 
-    if (!view && !template) { return; }
+    if (!view && !template) { 
+      if (this.router.hasRoute(name)) {
+        // This is a template-less leaf route; display a debug template.
+        template = Ember.Router.getDebugTemplate(name.replace(/\./, '/'));
+      } else {
+        return;
+      }
+    }
 
     options = normalizeOptions(this, name, template, options);
     view = setupView(view, container, options);
