@@ -484,3 +484,26 @@ test("controller is assignable inside an #each", function() {
 
   equal(view.$().text(), "AdamSteve");
 });
+
+test("single-arg each defaults to current context", function() {
+  view = Ember.View.create({
+    context: Ember.A([ { name: "Adam" }, { name: "Steve" } ]),
+    template: templateFor('{{#each}}{{name}}{{/each}}')
+  });
+
+  append(view);
+
+  equal(view.$().text(), "AdamSteve");
+});
+
+test("single-arg each will iterate over controller if present", function() {
+  view = Ember.View.create({
+    controller: Ember.A([ { name: "Adam" }, { name: "Steve" } ]),
+    template: templateFor('{{#each}}{{name}}{{/each}}')
+  });
+
+  append(view);
+
+  equal(view.$().text(), "AdamSteve");
+});
+

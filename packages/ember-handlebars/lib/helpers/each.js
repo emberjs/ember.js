@@ -318,6 +318,11 @@ Ember.Handlebars.registerHelper('each', function(path, options) {
     options.hash.keyword = keywordName;
   }
 
+  if (arguments.length === 1) {
+    options = path;
+    path = 'this';
+  }
+
   options.hash.dataSourceBinding = path;
   // Set up emptyView as a metamorph with no tag
   //options.hash.emptyViewClass = Ember._MetamorphView;
