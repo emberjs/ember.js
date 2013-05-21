@@ -5,7 +5,8 @@ var Backburner = requireModule('backburner').Backburner,
       sync: {
         before: Ember.beginPropertyChanges,
         after: Ember.endPropertyChanges
-      }
+      },
+      defaultQueue: 'actions'
     }),
     slice = [].slice;
 
