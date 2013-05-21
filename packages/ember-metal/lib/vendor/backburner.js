@@ -26,21 +26,36 @@ define("backburner",
       instanceStack: null,
 
       begin: function() {
-        if (this.currentInstance) {
-          this.instanceStack.push(this.currentInstance);
+        var onBegin = this.options && this.options.onBegin,
+            previousInstance = this.currentInstance;
+
+        if (previousInstance) {
+          this.instanceStack.push(previousInstance);
         }
 
         this.currentInstance = new DeferredActionQueues(this.queueNames, this.options);
+        if (onBegin) {
+          onBegin(this.currentInstance, previousInstance);
+        }
       },
 
       end: function() {
+        var onEnd = this.options && this.options.onEnd,
+            currentInstance = this.currentInstance,
+            nextInstance = null;
+
         try {
-          this.currentInstance.flush();
+          currentInstance.flush();
         } finally {
           this.currentInstance = null;
 
           if (this.instanceStack.length) {
-            this.currentInstance = this.instanceStack.pop();
+            nextInstance = this.instanceStack.pop();
+            this.currentInstance = nextInstance;
+          }
+
+          if (onEnd) {
+            onEnd(currentInstance, nextInstance);
           }
         }
       },
@@ -319,7 +334,7 @@ define("backburner/deferred_action_queues",
           var options = queue.options,
               before = options && options.before,
               after = options && options.after,
-              target, method, args,
+              target, method, args, stack,
               queueIndex = 0, numberOfQueueItems = queueItems.length;
 
           if (numberOfQueueItems && before) { before(); }
@@ -327,6 +342,7 @@ define("backburner/deferred_action_queues",
             target = queueItems[queueIndex];
             method = queueItems[queueIndex+1];
             args   = queueItems[queueIndex+2];
+            stack  = queueItems[queueIndex+3]; // Debugging assistance
 
             if (typeof method === 'string') { method = target[method]; }
 
@@ -413,15 +429,21 @@ define("backburner/queue",
             options = this.options,
             before = options && options.before,
             after = options && options.after,
-            action, target, method, args, i, l = queue.length;
+            target, method, args, stack, i, l = queue.length;
 
         if (l && before) { before(); }
         for (i = 0; i < l; i += 4) {
           target = queue[i];
           method = queue[i+1];
           args   = queue[i+2];
+          stack  = queue[i+3]; // Debugging assistance
 
-          method.apply(target, args); // TODO: error handling
+          // TODO: error handling
+          if (args && args.length > 0) {
+            method.apply(target, args);
+          } else {
+            method.call(target);
+          }
         }
         if (l && after) { after(); }
 
