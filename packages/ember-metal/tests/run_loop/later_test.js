@@ -6,7 +6,7 @@ var wait = function(callback, maxWaitCount) {
   maxWaitCount = Ember.isNone(maxWaitCount) ? 100 : maxWaitCount;
 
   originalSetTimeout(function() {
-    if (maxWaitCount > 0 && (Ember.run.hasScheduledTimers() || Ember.run.currentRunLoop)) {
+    if (maxWaitCount > 0 && (Ember.run.hasScheduledTimers() || Ember.run.backburner.currentInstance)) {
       wait(callback, maxWaitCount - 1);
 
       return;
