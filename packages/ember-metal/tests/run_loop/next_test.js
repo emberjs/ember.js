@@ -21,8 +21,8 @@ asyncTest('should invoke immediately on next timeout', function() {
 asyncTest('callback should be called from within separate loop', function() {
   var firstRunLoop, secondRunLoop;
   Ember.run(function() {
-    firstRunLoop = Ember.run.currentRunLoop;
-    Ember.run.next(function() { secondRunLoop = Ember.run.currentRunLoop; });
+    firstRunLoop = Ember.run.backburner.currentInstance;
+    Ember.run.next(function() { secondRunLoop = Ember.run.backburner.currentInstance; });
   });
 
   setTimeout(function() {
@@ -35,9 +35,9 @@ asyncTest('callback should be called from within separate loop', function() {
 asyncTest('multiple calls to Ember.run.next share coalesce callbacks into same run loop', function() {
   var firstRunLoop, secondRunLoop, thirdRunLoop;
   Ember.run(function() {
-    firstRunLoop = Ember.run.currentRunLoop;
-    Ember.run.next(function() { secondRunLoop = Ember.run.currentRunLoop; });
-    Ember.run.next(function() { thirdRunLoop  = Ember.run.currentRunLoop; });
+    firstRunLoop = Ember.run.backburner.currentInstance;
+    Ember.run.next(function() { secondRunLoop = Ember.run.backburner.currentInstance; });
+    Ember.run.next(function() { thirdRunLoop  = Ember.run.backburner.currentInstance; });
   });
 
   setTimeout(function() {

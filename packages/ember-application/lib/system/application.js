@@ -548,7 +548,7 @@ var Application = Ember.Application = Ember.Namespace.extend(Ember.DeferredMixin
       });
     }
 
-    if (Ember.run.currentRunLoop) {
+    if (Ember.run.backburner.currentInstance) {
       handleReset.call(this);
     } else {
       Ember.run(this, handleReset);

@@ -60,7 +60,7 @@ function wait(app, value) {
       var routerIsLoading = app.__container__.lookup('router:main').router.isLoading;
       if (routerIsLoading) { return; }
       if (pendingAjaxRequests) { return; }
-      if (Ember.run.hasScheduledTimers() || Ember.run.currentRunLoop) { return; }
+      if (Ember.run.hasScheduledTimers() || Ember.run.backburner.currentInstance) { return; }
       clearInterval(watcher);
       start();
       Ember.run(function() {
