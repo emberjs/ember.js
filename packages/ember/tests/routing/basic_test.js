@@ -293,35 +293,6 @@ test("The route controller is still set when overriding the setupController hook
   deepEqual(container.lookup('route:home').controller, container.lookup('controller:home'), "route controller is the home controller");
 });
 
-test("The default controller's model is still set when overriding the setupController hook", function() {
-  Router.map(function() {
-    this.route("home", { path: "/" });
-  });
-
-  App.HomeRoute = Ember.Route.extend({
-    model: function() {
-      return {
-        isModel: true
-      };
-    },
-
-    setupController: function(controller) {
-      // no-op
-      // importantly, we are not calling this._super here
-    }
-  });
-
-  Ember.TEMPLATES.home = Ember.Handlebars.compile(
-    "<ul>{{#each entry in hours}}<li>{{entry}}</li>{{/each}}</ul>"
-  );
-
-  container.register('controller:home', Ember.Controller.extend());
-
-  bootApplication();
-
-  deepEqual(container.lookup('controller:home').get('model'), { isModel: true }, "model is still set on controller");
-});
-
 test("The Homepage with a `setupController` hook modifying other controllers", function() {
   Router.map(function() {
     this.route("home", { path: "/" });
@@ -350,6 +321,34 @@ test("The Homepage with a `setupController` hook modifying other controllers", f
   });
 
   equal(Ember.$('ul li', '#qunit-fixture').eq(2).text(), "Sunday: Noon to 6pm", "The template was rendered with the hours context");
+});
+
+test("The Homepage with a computed context that does not get overridden", function() {
+  Router.map(function() {
+    this.route("home", { path: "/" });
+  });
+
+  App.HomeController = Ember.ArrayController.extend({
+    content: Ember.computed(function(){
+      return Ember.A([
+        "Monday through Friday: 9am to 5pm",
+        "Saturday: Noon to Midnight",
+        "Sunday: Noon to 6pm"
+      ]);
+    })
+  });
+
+  Ember.TEMPLATES.home = Ember.Handlebars.compile(
+    "<ul>{{#each}}<li>{{this}}</li>{{/each}}</ul>"
+  );
+
+  bootApplication();
+
+  Ember.run(function() {
+    router.handleURL("/");
+  });
+
+  equal(Ember.$('ul li', '#qunit-fixture').eq(2).text(), "Sunday: Noon to 6pm", "The template was rendered with the context intact");
 });
 
 test("The Homepage getting its controller context via model", function() {
