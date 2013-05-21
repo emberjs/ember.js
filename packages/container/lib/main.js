@@ -137,7 +137,33 @@ define("container",
         this.optionsForType(type, options);
       },
 
-      typeInjection: function(type, property, fullName) {
+      /**
+        Registers a type injection. When an object of type `type` is instantiated by
+        the container, a property with name `property` will be set on the new object
+        with the value obtained by looking up `fullName` on the container.
+
+        ```javascript
+        container.typeInjection('model', 'source', 'source:main');
+        ```
+
+        An optional `options` hash allows the method of injection to be customized.
+        Beyond the default, single value injection, currently only supports `array`:
+        instead of injecting a single value into `property`, setting `array:true` will
+        inject an array of all values registered on this `type`-`property` pair:
+
+        ```javascript
+        container.typeInjection('model', 'plugins', 'plugin:one', {array:true});
+        container.typeInjection('model', 'plugins', 'plugin:two', {array:true});
+        ```
+
+        @method typeInjection
+        @param {String} type the type name for which to define the injection
+        @param {String} property the name of the property on the target type to set
+          with the injected value
+        @param {String} fullName the full container name of the object to inject
+        @param {Object} options (optional) a hash of injection options
+      */
+      typeInjection: function(type, property, fullName, options) {
         if (this.parent) { illegalChildOperation('typeInjection'); }
 
         var injections = this.typeInjections.get(type);
@@ -145,18 +171,48 @@ define("container",
           injections = [];
           this.typeInjections.set(type, injections);
         }
-        injections.push({ property: property, fullName: fullName });
+        injections.push( merge({ property: property, fullName: fullName }, options) );
       },
 
-      injection: function(factoryName, property, injectionName) {
+      /**
+        Registers an injection either on a specific `factoryName`, in the format
+        `type:name`, or on an entire type of objects, in the format `type`
+        (in which case this call is deferred to `typeInjection`).
+        When an object registered with `factoryName` is instantiated by
+        the container, a property with name `property` will be set on the new object
+        with the value obtained by looking up `injectionName` on the container.
+
+        ```javascript
+        container.injection('model:user', 'email', 'model:email');
+        ```
+
+        An optional `options` hash allows the method of injection to be customized.
+        Beyond the default, single value injection, currently only supports `array`:
+        instead of injecting a single value into `property`, setting `array:true` will
+        inject an array of all values registered on this `type`-`property` pair:
+
+        ```javascript
+        container.injection('source:main', 'plugins', 'plugin:one', {array:true});
+        container.injection('source:main', 'plugins', 'plugin:two', {array:true});
+        ```
+
+        @method typeInjection
+        @param {String} factoryName the full factory name of the object for which to
+          define the injection
+        @param {String} property the name of the property on the target object to set
+          with the injected value
+        @param {String} injectionName the full container name of the object to inject
+        @param {Object} options (optional) a hash of injection options
+      */
+      injection: function(factoryName, property, injectionName, options) {
         if (this.parent) { illegalChildOperation('injection'); }
 
         if (factoryName.indexOf(':') === -1) {
-          return this.typeInjection(factoryName, property, injectionName);
+          return this.typeInjection(factoryName, property, injectionName, options);
         }
 
         var injections = this.injections[factoryName] = this.injections[factoryName] || [];
-        injections.push({ property: property, fullName: injectionName });
+        injections.push( merge({ property: property, fullName: injectionName }, options) );
       },
 
       destroy: function() {
@@ -208,7 +264,12 @@ define("container",
       for (var i=0, l=injections.length; i<l; i++) {
         injection = injections[i];
         lookup = container.lookup(injection.fullName);
-        hash[injection.property] = lookup;
+        if (injection.array) {
+          // Combine all injections on this property into an array
+          hash[injection.property] = [].concat(hash[injection.property] || [], lookup);
+        } else {
+          hash[injection.property] = lookup;
+        }
       }
 
       return hash;
@@ -273,6 +334,14 @@ define("container",
         value.destroy();
       });
       container.cache.dict = {};
+    }
+
+    function merge(original, updates) {
+      for (var prop in updates) {
+        if (!updates.hasOwnProperty(prop)) { continue; }
+        original[prop] = updates[prop];
+      }
+      return original;
     }
 
     return Container;
