@@ -239,7 +239,13 @@ Ember.Route = Ember.Object.extend({
     @method deserialize
   */
   deserialize: function(params) {
-    var model = this.model(params);
+    var model;
+    if (this.model) {
+      Ember.deprecate("Ember.Route.model is deprecated. Please use Ember.Route.deserializedModel instead.");
+      model = this.model(params);
+    } else {
+      model = this.deserializedModel(params);
+    }
     return this.currentModel = model;
   },
 
@@ -271,7 +277,6 @@ Ember.Route = Ember.Object.extend({
     * The model class is determined from the segment (`post_id`'s
       class is `App.Post`)
     * The find method is called on the model class with the value of
-      the dynamic segment.
 
     Note that for routes with dynamic segments, this hook is only
     executed when entered via the URL. If the route is entered
@@ -283,7 +288,7 @@ Ember.Route = Ember.Object.extend({
     @method model
     @param {Object} params the parameters extracted from the URL
   */
-  model: function(params) {
+  deserializedModel: function(params) {
     var match, name, sawParams, value;
 
     for (var prop in params) {

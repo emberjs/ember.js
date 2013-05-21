@@ -299,7 +299,7 @@ test("The default controller's model is still set when overriding the setupContr
   });
 
   App.HomeRoute = Ember.Route.extend({
-    model: function() {
+    deserializedModel: function() {
       return {
         isModel: true
       };
@@ -358,7 +358,7 @@ test("The Homepage getting its controller context via model", function() {
   });
 
   App.HomeRoute = Ember.Route.extend({
-    model: function() {
+    deserializedModel: function() {
       return Ember.A([
         "Monday through Friday: 9am to 5pm",
         "Saturday: Noon to Midnight",
@@ -395,7 +395,7 @@ test("The Specials Page getting its controller context by deserializing the para
   });
 
   App.SpecialRoute = Ember.Route.extend({
-    model: function(params) {
+    deserializedModel: function(params) {
       return Ember.Object.create({
         menuItemId: params.menu_item_id
       });
@@ -738,7 +738,7 @@ test("Nested callbacks are not exited when moving to siblings", function() {
   });
 
   App.RootRoute = Ember.Route.extend({
-    model: function() {
+    deserializedModel: function() {
       rootModel++;
       return this._super.apply(this, arguments);
     },
@@ -818,7 +818,7 @@ asyncTest("Events are triggered on the controller if a matching action name is i
   var stateIsNotCalled = true;
 
   App.HomeRoute = Ember.Route.extend({
-    model: function() {
+    deserializedModel: function() {
       return model;
     },
 
@@ -864,7 +864,7 @@ asyncTest("Events are triggered on the current state", function() {
   var model = { name: "Tom Dale" };
 
   App.HomeRoute = Ember.Route.extend({
-    model: function() {
+    deserializedModel: function() {
       return model;
     },
 
@@ -920,7 +920,7 @@ asyncTest("Events are triggered on the current state when routes are nested", fu
   });
 
   App.RootIndexRoute = Ember.Route.extend({
-    model: function() {
+    deserializedModel: function() {
       return model;
     }
   });
@@ -1135,13 +1135,13 @@ test("It is possible to get the model from a parent route", function() {
   };
 
   App.PostRoute = Ember.Route.extend({
-    model: function(params) {
+    deserializedModel: function(params) {
       return posts[params.post_id];
     }
   });
 
   App.CommentsRoute = Ember.Route.extend({
-    model: function() {
+    deserializedModel: function() {
       equal(this.modelFor('post'), currentPost);
     }
   });
@@ -1498,7 +1498,7 @@ test("Parent route context change", function() {
   });
 
   App.PostRoute = Ember.Route.extend({
-    model: function(params) {
+    deserializedModel: function(params) {
       return {id: params.postId};
     },
 
@@ -1510,7 +1510,7 @@ test("Parent route context change", function() {
   });
 
   App.PostEditRoute = Ember.Route.extend({
-    model: function(params) {
+    deserializedModel: function(params) {
       var postId = this.modelFor("post").id;
       editedPostIds.push(postId);
       return null;
@@ -1600,7 +1600,7 @@ test("Router accounts for rootURL on page load when using history location", fun
   });
 
   App.PostsRoute = Ember.Route.extend({
-    model: function() {},
+    deserializedModel: function() {},
     renderTemplate: function() {
       postsTemplateRendered = true;
     }
