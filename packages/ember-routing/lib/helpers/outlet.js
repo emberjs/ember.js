@@ -58,13 +58,27 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     });
     ```
 
+    You can specify the view class that the outlet uses to contain and manage the
+    templates rendered into it.
+
+    ``` handlebars
+    {{outlet viewClass=App.SectionContainer}}
+    ```
+
+    ``` javascript
+    App.SectionContainer = Ember.ContainerView.extend({
+      tagName: 'section',
+      classNames: ['special']
+    });
+    ```
+
     @method outlet
     @for Ember.Handlebars.helpers
     @param {String} property the property on the controller
       that holds the view for this outlet
   */
   Handlebars.registerHelper('outlet', function(property, options) {
-    var outletSource;
+    var outletSource, outletContainerClass;
 
     if (property && property.data && property.data.isRenderData) {
       options = property;
@@ -76,9 +90,11 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
       outletSource = outletSource.get('_parentView');
     }
 
+    outletContainerClass = options.hash.viewClass || Handlebars.OutletView;
+
     options.data.view.set('outletSource', outletSource);
     options.hash.currentViewBinding = '_view.outletSource._outlets.' + property;
 
-    return Handlebars.helpers.view.call(this, Handlebars.OutletView, options);
+    return Handlebars.helpers.view.call(this, outletContainerClass, options);
   });
 });

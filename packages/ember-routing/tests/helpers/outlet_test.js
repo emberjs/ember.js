@@ -73,6 +73,33 @@ test("outlet should support an optional name", function() {
   equal(view.$().text().replace(/\s+/,''), 'HIBYE');
 });
 
+
+test("outlet should support an optional view class", function() {
+  var template = "<h1>HI</h1>{{outlet viewClass=view.outletView}}";
+  view = Ember.View.create({
+    template: Ember.Handlebars.compile(template),
+    outletView: Ember.ContainerView.extend()
+  });
+
+  appendView(view);
+
+  equal(view.$().text(), 'HI');
+
+  var childView = Ember.View.create({
+    template: compile("<p>BYE</p>")
+  });
+
+  Ember.run(function() {
+    view.connectOutlet('main', childView);
+  });
+
+  ok(view.outletView.detectInstance(childView.get('_parentView')), "The custom view class should be used for the outlet");
+
+  // Replace whitespace for older IE
+  equal(view.$().text().replace(/\s+/,''), 'HIBYE');
+});
+
+
 test("Outlets bind to the current view, not the current concrete view", function() {
   var parentTemplate = "<h1>HI</h1>{{outlet}}";
   var middleTemplate = "<h2>MIDDLE</h2>{{outlet}}";
