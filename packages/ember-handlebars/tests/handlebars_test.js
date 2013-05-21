@@ -56,7 +56,6 @@ var appendView = function() {
   Ember.run(function() { view.appendTo('#qunit-fixture'); });
 };
 
-var additionalTeardown;
 var originalLookup = Ember.lookup, lookup;
 var TemplateTests, container;
 
@@ -151,7 +150,7 @@ test("should escape HTML in normal mustaches", function() {
     output: "you need to be more <b>bold</b>"
   });
 
-  Ember.run(function() { view.appendTo('#qunit-fixture'); });
+  appendView();
   equal(view.$('b').length, 0, "does not create an element");
   equal(view.$().text(), 'you need to be more <b>bold</b>', "inserts entities, not elements");
 
@@ -166,9 +165,7 @@ test("should not escape HTML in triple mustaches", function() {
     output: "you need to be more <b>bold</b>"
   });
 
-  Ember.run(function() {
-    view.appendTo('#qunit-fixture');
-  });
+  appendView();
 
   equal(view.$('b').length, 1, "creates an element");
 
@@ -185,9 +182,7 @@ test("should not escape HTML if string is a Handlebars.SafeString", function() {
     output: new Handlebars.SafeString("you need to be more <b>bold</b>")
   });
 
-  Ember.run(function() {
-    view.appendTo('#qunit-fixture');
-  });
+  appendView();
 
   equal(view.$('b').length, 1, "creates an element");
 
@@ -293,9 +288,7 @@ test("Ember.View should bind properties in the parent context", function() {
     template: Ember.Handlebars.compile('<h1 id="first">{{#with content}}{{wham}}-{{../blam}}{{/with}}</h1>')
   });
 
-  Ember.run(function() {
-    view.appendTo('#qunit-fixture');
-  });
+  appendView();
 
   equal(view.$('#first').text(), "bam-shazam", "renders parent properties");
 });
@@ -318,9 +311,7 @@ test("Ember.View should bind properties in the grandparent context", function() 
     template: Ember.Handlebars.compile('<h1 id="first">{{#with content}}{{#with thankYou}}{{value}}-{{../wham}}-{{../../blam}}{{/with}}{{/with}}</h1>')
   });
 
-  Ember.run(function() {
-    view.appendTo('#qunit-fixture');
-  });
+  appendView();
 
   equal(view.$('#first').text(), "ma'am-bam-shazam", "renders grandparent properties");
 });
@@ -338,9 +329,7 @@ test("Ember.View should update when a property changes and the bind helper is us
     })
   });
 
-  Ember.run(function() {
-    view.appendTo('#qunit-fixture');
-  });
+  appendView();
 
   equal(view.$('#first').text(), "bam", "precond - view renders Handlebars template");
 
@@ -362,9 +351,7 @@ test("Ember.View should not use keyword incorrectly - Issue #1315", function() {
     ])
   });
 
-  Ember.run(function() {
-    view.appendTo('#qunit-fixture');
-  });
+  appendView();
 
   equal(view.$().text(), 'X-1:One 2:Two Y-1:One 2:Two ');
 });
@@ -386,9 +373,7 @@ test("Ember.View should update when a property changes and no bind helper is use
     })
   });
 
-  Ember.run(function() {
-    view.appendTo('#qunit-fixture');
-  });
+  appendView();
 
   equal(view.$('#first').text(), "bam", "precond - view renders Handlebars template");
 
@@ -1763,9 +1748,7 @@ test("should allow standard Handlebars template usage", function() {
     template: Handlebars.compile("Hello, {{name}}")
   });
 
-  Ember.run(function() {
-    view.appendTo('#qunit-fixture');
-  });
+  appendView();
 
   equal(view.$().text(), "Hello, Erik");
 });
@@ -1776,9 +1759,7 @@ test("should be able to use standard Handlebars #each helper", function() {
     template: Handlebars.compile("{{#each items}}{{this}}{{/each}}")
   });
 
-  Ember.run(function() {
-    view.appendTo('#qunit-fixture');
-  });
+  appendView();
 
   equal(view.$().html(), "abc");
 });
@@ -1837,9 +1818,7 @@ test("should expose a controller keyword when present on the view", function() {
     template: Ember.Handlebars.compile(templateString)
   });
 
-  Ember.run(function() {
-    view.appendTo("#qunit-fixture");
-  });
+  appendView();
 
   equal(view.$().text(), "barbang", "renders values from controller and parent controller");
 
@@ -1861,9 +1840,7 @@ test("should expose a controller keyword when present on the view", function() {
     template: Ember.Handlebars.compile("{{controller}}")
   });
 
-  Ember.run(function() {
-    view.appendTo('#qunit-fixture');
-  });
+  appendView();
 
   equal(view.$().text(), "aString", "renders the controller itself if no additional path is specified");
 });
@@ -1878,9 +1855,7 @@ test("should expose a controller keyword that can be used in conditionals", func
     template: Ember.Handlebars.compile(templateString)
   });
 
-  Ember.run(function() {
-    view.appendTo("#qunit-fixture");
-  });
+  appendView();
 
   equal(view.$().text(), "bar", "renders values from controller and parent controller");
 
@@ -1901,9 +1876,7 @@ test("should expose a controller keyword that persists through Ember.ContainerVi
     template: Ember.Handlebars.compile(templateString)
   });
 
-  Ember.run(function() {
-    view.appendTo("#qunit-fixture");
-  });
+  appendView();
 
   var containerView = get(view, 'childViews.firstObject');
   var viewInstanceToBeInserted = Ember.View.create({
@@ -1932,9 +1905,7 @@ test("should expose a view keyword", function() {
     template: Ember.Handlebars.compile(templateString)
   });
 
-  Ember.run(function() {
-    view.appendTo("#qunit-fixture");
-  });
+  appendView();
 
   equal(view.$().text(), "barbang", "renders values from view and child view");
 });
@@ -1952,9 +1923,7 @@ test("Ember.Button targets should respect keywords", function() {
       }
     });
 
-    Ember.run(function() {
-      view.appendTo('#qunit-fixture');
-    });
+    appendView();
 
     var button = view.get('childViews').objectAt(0);
     equal(button.get('targetObject'), "bar", "resolves the target");
@@ -2171,9 +2140,7 @@ test("bindings should be relative to the current context", function() {
     template: Ember.Handlebars.compile('{{#if view.museumOpen}} {{view view.museumView nameBinding="view.museumDetails.name" dollarsBinding="view.museumDetails.price"}} {{/if}}')
   });
 
-  Ember.run(function() {
-    view.appendTo('#qunit-fixture');
-  });
+  appendView();
 
   equal(Ember.$.trim(view.$().text()), "Name: SFMoMA Price: $20", "should print baz twice");
 });
@@ -2197,9 +2164,7 @@ test("bindings should respect keywords", function() {
     template: Ember.Handlebars.compile('{{#if view.museumOpen}}{{view view.museumView nameBinding="controller.museumDetails.name" dollarsBinding="controller.museumDetails.price"}}{{/if}}')
   });
 
-  Ember.run(function() {
-    view.appendTo('#qunit-fixture');
-  });
+  appendView();
 
   equal(Ember.$.trim(view.$().text()), "Name: SFMoMA Price: $20", "should print baz twice");
 });
@@ -2220,9 +2185,7 @@ test("bindings can be 'this', in which case they *are* the current context", fun
     template: Ember.Handlebars.compile('{{#if view.museumOpen}} {{#with view.museumDetails}}{{view museumView museumBinding="this"}} {{/with}}{{/if}}')
   });
 
-  Ember.run(function() {
-    view.appendTo('#qunit-fixture');
-  });
+  appendView();
 
   equal(Ember.$.trim(view.$().text()), "Name: SFMoMA Price: $20", "should print baz twice");
 });
@@ -2277,9 +2240,7 @@ test("should update bound values after the view is removed and then re-appended"
     boundValue: "foo"
   });
 
-  Ember.run(function() {
-    view.appendTo('#qunit-fixture');
-  });
+  appendView();
 
   equal(Ember.$.trim(view.$().text()), "foo");
   Ember.run(function() {
@@ -2299,9 +2260,7 @@ test("should update bound values after the view is removed and then re-appended"
   Ember.run(function() {
     set(view, 'showStuff', true);
   });
-  Ember.run(function() {
-    view.appendTo('#qunit-fixture');
-  });
+  appendView();
 
   Ember.run(function() {
     set(view, 'boundValue', "bar");
