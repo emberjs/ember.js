@@ -88,8 +88,8 @@ Ember.Test = {
     This returns a thenable tailored
     for testing.  It catches failed
     `onSuccess` callbacks and invokes
-    the `Ember.Test.failure` function
-    in the last chained then.
+    the `Ember.Test.adapter.exception`
+    callback in the last chained then.
 
     This method should be returned
     by async helpers such as `wait`.
@@ -116,7 +116,7 @@ Ember.Test = {
         // if not, ignore and the exception will propagate
         // this prevents the same error from being fired multiple times
         if (!nextPromise.chained) {
-          Ember.Test.failure(reason);
+          Ember.Test.adapter.exception(reason);
         }
       });
       return nextPromise;
@@ -125,32 +125,23 @@ Ember.Test = {
   },
 
   /**
-    @public
+   @public
 
-    Override this method with your
-    testing framework's false assertion
-    This function is called whenever
-    an exception occurs causing the testing
-    promise to fail.
+   Used to allow ember-testing
+   to communicate with a specific
+   testing framework.
 
-    QUnit example:
+   You can manually set it before calling
+   `App.setupForTesting()`.
 
-    ```javascript
-    Ember.Test.failure = function(reason) {
-      ok(false, reason);
-    }
-    ```
+   Example:
+   'Ember.Test.adapter = MyCustomAdapter.create()'
 
-    @method failure
-    @param reason {String}
+   If you do not set it, ember-testing
+   will default to `Ember.Test.QUnitAdapter`.
   */
-  failure: function(error) {
-    setTimeout(function() {
-      throw error;
-    });
-  }
+  adapter: null
 };
-
 
 function curry(app, fn) {
   return function() {
@@ -159,7 +150,6 @@ function curry(app, fn) {
     return fn.apply(app, args);
   };
 }
-
 
 Ember.Application.reopen({
   testHelpers: {},
@@ -170,6 +160,12 @@ Ember.Application.reopen({
     this.Router.reopen({
       location: 'none'
     });
+
+   // if adapter is not manually set
+    // default to QUnit
+    if (!Ember.Test.adapter) {
+       Ember.Test.adapter = Ember.Test.QUnitAdapter.create();
+    }
   },
 
   injectTestHelpers: function() {
