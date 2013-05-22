@@ -1,12 +1,22 @@
 require('ember-metal/vendor/backburner');
 
+var onBegin = function(current) {
+  Ember.run.currentRunLoop = current;
+};
+
+var onEnd = function(current, next) {
+  Ember.run.currentRunLoop = next;
+};
+
 var Backburner = requireModule('backburner').Backburner,
     backburner = new Backburner(['sync', 'actions', 'destroy'], {
       sync: {
         before: Ember.beginPropertyChanges,
         after: Ember.endPropertyChanges
       },
-      defaultQueue: 'actions'
+      defaultQueue: 'actions',
+      onBegin: onBegin,
+      onEnd: onEnd
     }),
     slice = [].slice;
 
@@ -58,6 +68,10 @@ Ember.run = function(target, method) {
 Ember.run.backburner = backburner;
 
 var run = Ember.run;
+
+Ember.run.currentRunLoop = null;
+
+Ember.run.queues = backburner.queueNames;
 
 /**
   Begins a new RunLoop. Any deferred actions invoked after the begin will
