@@ -10,7 +10,14 @@ test("should return the same hash for an object", function() {
   equal(Ember.meta(obj).foo, "bar", "returns same hash with multiple calls to Ember.meta()");
 });
 
-module("Ember.metaPath");
+module("Ember.metaPath", {
+  setup: function() {
+    Ember.TESTING_DEPRECATION = true;
+  },
+  teardown: function() {
+    Ember.TESTING_DEPRECATION = false;
+  }
+});
 
 test("should not create nested objects if writable is false", function() {
   var obj = {};
