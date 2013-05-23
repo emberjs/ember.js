@@ -54,7 +54,9 @@ function find(app, selector, context) {
 }
 
 function wait(app, value) {
-  return Ember.Test.promise(function(resolve) {
+  var promise, obj = {}, helperName;
+
+  promise = Ember.Test.promise(function(resolve) {
     Ember.Test.adapter.asyncStart();
     var watcher = setInterval(function() {
       var routerIsLoading = app.__container__.lookup('router:main').router.isLoading;
@@ -68,6 +70,51 @@ function wait(app, value) {
       });
     }, 10);
   });
+
+  return buildChainObject(app, promise);
+}
+
+/**
+ Builds an object that contains
+ all helper methods. This object will be
+ returned by helpers and then-promises.
+
+ This allows us to chain helpers:
+
+ ```javascript
+  visit('posts/new')
+  .click('.add-btn')
+  .fillIn('.title', 'Post')
+  .click('.submit')
+  .then(function() {
+    equal('.post-title', 'Post');
+  })
+  .visit('comments')
+  .then(function() {
+    equal(find('.comments'),length, 0);
+  });
+ ```
+*/
+function buildChainObject(app, promise) {
+  var helperName, obj = {};
+  for(helperName in app.testHelpers) {
+    obj[helperName] = chain(app, promise, app.testHelpers[helperName]);
+  }
+  obj.then = function(fn) {
+    var thenPromise = promise.then(fn);
+    return buildChainObject(app, thenPromise);
+  };
+  return obj;
+}
+
+function chain(app, promise, fn) {
+  return function() {
+    var args = arguments, chainedPromise;
+    chainedPromise = promise.then(function() {
+      return fn.apply(null, args);
+    });
+    return buildChainObject(app, chainedPromise);
+  };
 }
 
 // expose these methods as test helpers
