@@ -157,6 +157,7 @@ Ember.run.end = function() {
   @return {void}
 */
 Ember.run.schedule = function(queue, target, method) {
+  checkAutoRun();
   backburner.schedule.apply(backburner, arguments);
 };
 
@@ -233,6 +234,7 @@ Ember.run.later = function(target, method) {
   @return {Object} timer
 */
 Ember.run.once = function(target, method) {
+  checkAutoRun();
   var args = slice.call(arguments);
   args.unshift('actions');
   return backburner.scheduleOnce.apply(backburner, args);
@@ -283,6 +285,7 @@ Ember.run.once = function(target, method) {
   @return {Object} timer
 */
 Ember.run.scheduleOnce = function(queue, target, method) {
+  checkAutoRun();
   return backburner.scheduleOnce.apply(backburner, arguments);
 };
 
@@ -377,3 +380,10 @@ Ember.run.next = function() {
 Ember.run.cancel = function(timer) {
   return backburner.cancel(timer);
 };
+
+// Make sure it's not an autorun during testing
+function checkAutoRun() {
+  if (!Ember.run.currentRunLoop) {
+    Ember.assert("You have turned on testing mode, which disabled the run-loop's autorun. You will need to wrap any code with asynchronous side-effects in an Ember.run", !Ember.testing);
+  }
+}

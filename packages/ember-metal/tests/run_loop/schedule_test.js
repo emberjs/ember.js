@@ -64,3 +64,13 @@ test('prior queues should be flushed before moving on to next queue', function()
 
   deepEqual(order, ['sync', 'actions', 'sync', 'actions', 'destroy']);
 });
+
+test('makes sure it does not trigger an autorun during testing', function() {
+  throws(function() {
+    Ember.run.schedule('actions', function() {});
+  });
+
+  throws(function() {
+    Ember.run.scheduleOnce('actions', function() {});
+  });
+});
