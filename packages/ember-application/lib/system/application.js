@@ -152,17 +152,6 @@ DeprecatedContainer.prototype = {
   If there is any setup required before routing begins, you can implement a
   `ready()` method on your app that will be invoked immediately before routing
   begins.
-
-  To begin routing, you must have at a minimum a top-level controller and view.
-  You define these as `App.ApplicationController` and `App.ApplicationView`,
-  respectively. Your application will not work if you do not define these two
-  mandatory classes. For example:
-
-  ```javascript
-  App.ApplicationView = Ember.View.extend({
-    templateName: 'application'
-  });
-  App.ApplicationController = Ember.Controller.extend();
   ```
 
   @class Application
