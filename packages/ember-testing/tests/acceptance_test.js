@@ -62,7 +62,7 @@ module("ember-testing Acceptance", {
   }
 });
 
-test("helpers can be chained", function() {
+test("helpers can be chained with then", function() {
   expect(5);
   Ember.Test.adapter = Ember.Test.QUnitAdapter.create({
     exception: function(error) {
@@ -90,4 +90,23 @@ test("helpers can be chained", function() {
     // do not fire multiple times
   });
 
+});
+
+
+
+test("helpers can be chained to each other", function() {
+  expect(3);
+
+  currentRoute = 'index';
+
+  visit('/posts').click('a:contains("Comments")')
+  .fillIn('.ember-text-field', "hello")
+  .then(function() {
+    equal(currentRoute, 'comments', "Successfully visited posts route");
+    equal(Ember.$('.ember-text-field').val(), 'hello', "Fillin successfully works");
+  })
+  .visit('/posts')
+  .then(function() {
+    equal(currentRoute, 'posts', "Thens can also be chained to helpers");
+  });
 });
