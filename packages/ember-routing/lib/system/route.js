@@ -75,9 +75,9 @@ Ember.Route = Ember.Object.extend({
   /**
     Transition to another route via the `routeTo` event which
     will by default be handled by ApplicationRoute.
-   
+
     @method routeTo
-    @param {TransitionEvent} transitionEvent 
+    @param {TransitionEvent} transitionEvent
    */
   routeTo: function(transitionEvent) {
     this.router.routeTo(transitionEvent);
@@ -199,10 +199,9 @@ Ember.Route = Ember.Object.extend({
 
     var controller = this.controllerFor(this.routeName, context);
 
-    if (controller) {
-      this.controller = controller;
-      set(controller, 'model', context);
-    }
+    // Assign the route's controller so that it can more easily be
+    // referenced in event handlers
+    this.controller = controller;
 
     if (this.setupControllers) {
       Ember.deprecate("Ember.Route.setupControllers is deprecated. Please use Ember.Route.setupController(controller, model) instead.");
@@ -359,30 +358,41 @@ Ember.Route = Ember.Object.extend({
     This method is called with the controller for the current route and the
     model supplied by the `model` hook.
 
+    By default, the `setupController` hook sets the `content` property of
+    the controller to the `model`.
+
+    This means that your template will get a proxy for the model as its
+    context, and you can act as though the model itself was the context.
+
+    The provided controller will be one resolved based on the name
+    of this route.
+
+    If no explicit controller is defined, Ember will automatically create
+    an appropriate controller for the model.
+
+    * if the model is an `Ember.Array` (including record arrays from Ember
+      Data), the controller is an `Ember.ArrayController`.
+    * otherwise, the controller is an `Ember.ObjectController`.
+
+    As an example, consider the router:
+
     ```js
     App.Router.map(function() {
       this.resource('post', {path: '/posts/:post_id'});
     });
     ```
 
-    For the `post` route, the controller is `App.PostController`.
-
-    By default, the `setupController` hook sets the `content` property of
-    the controller to the `model`.
-
-    If no explicit controller is defined, the route will automatically create
-    an appropriate controller for the model:
-
-    * if the model is an `Ember.Array` (including record arrays from Ember
-      Data), the controller is an `Ember.ArrayController`.
-    * otherwise, the controller is an `Ember.ObjectController`.
-
-    This means that your template will get a proxy for the model as its
-    context, and you can act as though the model itself was the context.
+    For the `post` route, a controller named `App.PostController` would
+    be used if it is defined. If it is not defined, an `Ember.ObjectController`
+    instance would be used.
 
     @method setupController
   */
-  setupController: Ember.K,
+  setupController: function(controller, context){
+    if (controller && (context !== undefined)) {
+      set(controller, 'model', context);
+    }
+  },
 
   /**
     Returns the controller for a particular route.
