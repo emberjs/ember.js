@@ -118,3 +118,44 @@ test("QUnitAdapter is used by default", function() {
 
   Ember.Test.adapter = originalAdapter;
 });
+
+test("Concurrent wait calls are supported", function() {
+  expect(4);
+  var originalAdapter = Ember.Test.adapter,
+      CustomAdapter,
+      asyncStartCalled = 0,
+      asyncEndCalled = 0;
+
+  CustomAdapter = Ember.Test.QUnitAdapter.extend({
+    asyncStart: function() {
+      asyncStartCalled++;
+      this._super();
+    },
+    asyncEnd: function() {
+      asyncEndCalled++;
+      this._super();
+    }
+  });
+
+  Ember.Test.adapter = CustomAdapter.create();
+
+  Ember.run(function() {
+    App = Ember.Application.create();
+    App.setupForTesting();
+  });
+
+  App.injectTestHelpers();
+
+  Ember.run(App, App.advanceReadiness);
+
+  App.testHelpers.wait().then(function() {
+    equal(asyncStartCalled, 1, "asyncStart was called once");
+    equal(asyncEndCalled, 0, "asyncEnd hasn't been called yet");
+  });
+  App.testHelpers.wait().then(function() {
+    equal(asyncStartCalled, 1, "asyncStart was called once");
+    equal(asyncEndCalled, 1, "asyncEnd was called once");
+    Ember.Test.adapter = originalAdapter;
+  });
+
+});

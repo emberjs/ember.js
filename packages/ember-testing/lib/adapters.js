@@ -29,7 +29,7 @@ Test.Adapter = Ember.Object.extend({
     whenever an async operation
     has completed.
 
-    @method asyncStart
+    @method asyncEnd
   */
   asyncEnd: Ember.K,
 

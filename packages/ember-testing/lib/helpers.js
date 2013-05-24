@@ -2,7 +2,8 @@ require('ember-testing/test');
 
 var get = Ember.get,
     helper = Ember.Test.registerHelper,
-    pendingAjaxRequests = 0;
+    pendingAjaxRequests = 0,
+    countAsync = 0;
 
 
 Ember.Test.onInjectHelpers(function() {
@@ -57,14 +58,18 @@ function wait(app, value) {
   var promise, obj = {}, helperName;
 
   promise = Ember.Test.promise(function(resolve) {
-    Ember.Test.adapter.asyncStart();
+    if (++countAsync === 1) {
+      Ember.Test.adapter.asyncStart();
+    }
     var watcher = setInterval(function() {
       var routerIsLoading = app.__container__.lookup('router:main').router.isLoading;
       if (routerIsLoading) { return; }
       if (pendingAjaxRequests) { return; }
       if (Ember.run.hasScheduledTimers() || Ember.run.currentRunLoop) { return; }
       clearInterval(watcher);
-      Ember.Test.adapter.asyncEnd();
+      if (--countAsync === 0) {
+        Ember.Test.adapter.asyncEnd();
+      }
       Ember.run(function() {
         resolve(value);
       });
