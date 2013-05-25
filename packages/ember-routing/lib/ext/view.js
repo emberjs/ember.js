@@ -17,6 +17,7 @@ Ember.View.reopen({
     }
 
     if (this._hasEquivalentView(outletName, view)) {
+      view.destroy();
       return;
     }
 
