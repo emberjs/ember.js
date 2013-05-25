@@ -122,9 +122,9 @@ test("destroyed objects should not see each others changes during teardown but a
   var longLivedObject = new LongLivedObject();
 
   Ember.run(function () {
-    for (var key in objs) {
-      if (!objs.hasOwnProperty(key)) continue;
-      objs[key].destroy();
+    var keys = Ember.keys(objs);
+    for (var i = 0, l = keys.length; i < l; i++) {
+      objs[keys[i]].destroy();
     }
   });
 
