@@ -332,9 +332,7 @@ test("The {{linkTo}} helper supports bubbles=false", function() {
     router.handleURL("/about");
   });
 
-  Ember.run(function() {
-    Ember.$('#about-contact', '#qunit-fixture').click();
-  });
+  Ember.$('#about-contact', '#qunit-fixture').click();
 
   equal(Ember.$("#contact", "#qunit-fixture").text(), "Contact", "precond - the link worked");
 
