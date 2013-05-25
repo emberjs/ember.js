@@ -521,6 +521,8 @@ var Application = Ember.Application = Ember.Namespace.extend(Ember.DeferredMixin
     @method reset
   **/
   reset: function() {
+    this._readinessDeferrals = 1;
+
     function handleReset() {
       var router = this.__container__.lookup('router:main');
       router.reset();
@@ -529,19 +531,13 @@ var Application = Ember.Application = Ember.Namespace.extend(Ember.DeferredMixin
 
       this.buildContainer();
 
-      this._readinessDeferrals = 1;
-
       Ember.run.schedule('actions', this, function(){
         this._initialize();
         this.startRouting();
       });
     }
 
-    if (Ember.run.currentRunLoop) {
-      handleReset.call(this);
-    } else {
-      Ember.run(this, handleReset);
-    }
+    Ember.run.join(this, handleReset);
   },
 
   /**

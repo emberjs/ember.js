@@ -65,6 +65,54 @@ Ember.run = function(target, method) {
   return ret;
 };
 
+/**
+
+  If no run-loop is present, it creates a new one. If a run loop is
+  present it will queue itself to run on the existing run-loops action
+  queue.
+
+  Please note: This is not for normal usage, and should be used sparingly.
+
+  If invoked when not within a run loop:
+
+  ```javascript
+  Ember.run.join(function(){
+    // creates a new run-loop
+  });
+  ```
+
+  Alternatively, if called within an existing run loop:
+
+  ```javascript
+  Ember.run(function(){
+    // creates a new run-loop
+    Ember.run.join(function(){
+      // joins with the existing run-loop, and queues for invocation on
+      // the existing run-loops action queue.
+    });
+  });
+  ```
+
+  @method join
+  @namespace Ember
+  @param {Object} [target] target of method to call
+  @param {Function|String} method Method to invoke.
+    May be a function or a string. If you pass a string
+    then it will be looked up on the passed target.
+  @param {Object} [args*] Any additional arguments you wish to pass to the method.
+  @return {Object} return value from invoking the passed function. Please note, 
+  when called within an existing loop, no return value is possible.
+*/
+Ember.run.join = function(target, method) {
+  if (!Ember.run.currentRunLoop) {
+    return Ember.run.apply(Ember.run, arguments);
+  }
+
+  var args = slice.call(arguments);
+  args.unshift('actions');
+  Ember.run.schedule.apply(Ember.run, args);
+};
+
 Ember.run.backburner = backburner;
 
 var run = Ember.run;
