@@ -12,7 +12,19 @@ test("should get a key array for a specified object", function() {
   object1.age = "23";
   object1.place = "Mangalore";
 
-  var object2 = [];
-  object2 = Ember.keys(object1);
-  deepEqual(object2,['names','age','place']);
+  var object2 = Ember.keys(object1);
+
+  deepEqual(object2, ['names','age','place']);
+});
+
+test("should get a key array for a specified Ember.Object", function() {
+  var object1 = Ember.Object.create({
+    names: "Rahul",
+    age: "23",
+    place: "Mangalore"
+  });
+
+  var object2 = Ember.keys(object1);
+
+  deepEqual(object2, ['names','age','place']);
 });

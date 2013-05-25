@@ -267,6 +267,11 @@ if (!Ember.keys) {
   Ember.keys = function(obj) {
     var ret = [];
     for(var key in obj) {
+      // Prevents browsers that don't respect non-enumerability from
+      // copying internal Ember properties
+      if (key.substring(0,2) === '__') continue;
+      if (key === '_super') continue;
+
       if (obj.hasOwnProperty(key)) { ret.push(key); }
     }
     return ret;
