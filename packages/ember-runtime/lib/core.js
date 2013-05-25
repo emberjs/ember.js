@@ -263,7 +263,7 @@ Ember.ORDER_DEFINITION = Ember.ENV.ORDER_DEFINITION || [
 */
 Ember.keys = Object.keys;
 
-if (!Ember.keys) {
+if (!Ember.keys || Ember.create.isSimulated) {
   Ember.keys = function(obj) {
     var ret = [];
     for(var key in obj) {
