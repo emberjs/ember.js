@@ -169,10 +169,6 @@ define("container",
         this.children = [];
 
         eachDestroyable(this, function(item) {
-          item.isDestroying = true;
-        });
-
-        eachDestroyable(this, function(item) {
           item.destroy();
         });
 

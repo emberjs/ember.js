@@ -289,21 +289,23 @@ CoreObject.PrototypeMixin = Mixin.create({
     raised.
 
     Note that destruction is scheduled for the end of the run loop and does not
-    happen immediately.
+    happen immediately.  It will set an isDestroying flag immediately.
 
     @method destroy
     @return {Ember.Object} receiver
   */
   destroy: function() {
-    if (this._didCallDestroy) { return; }
-
+    if (this.isDestroying) { return; }
     this.isDestroying = true;
-    this._didCallDestroy = true;
 
+    schedule('actions', this, this.willDestroy);
     schedule('destroy', this, this._scheduledDestroy);
     return this;
   },
 
+  /**
+    Override to implement teardown.
+   */
   willDestroy: Ember.K,
 
   /**
@@ -315,10 +317,9 @@ CoreObject.PrototypeMixin = Mixin.create({
     @method _scheduledDestroy
   */
   _scheduledDestroy: function() {
-    if (this.willDestroy) { this.willDestroy(); }
+    if (this.isDestroyed) { return; }
     destroy(this);
     this.isDestroyed = true;
-    if (this.didDestroy) { this.didDestroy(); }
   },
 
   bind: function(to, from) {
