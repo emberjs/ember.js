@@ -1,4 +1,4 @@
-var App, logs, originalLogger, visit;
+var App, logs, originalLogger;
 
 module("Ember.Application – logging of generated classes", {
   setup: function(){
@@ -27,13 +27,10 @@ module("Ember.Application – logging of generated classes", {
       });
 
       App.deferReadiness();
-      App.injectTestHelpers();
-      visit = App.testHelpers.visit;
     });
   },
 
   teardown: function(){
-    App.removeTestHelpers();
     Ember.Logger.info = originalLogger;
 
     Ember.run(App, 'destroy');
@@ -41,6 +38,26 @@ module("Ember.Application – logging of generated classes", {
     logs = App = null;
   }
 });
+
+function visit(path) {
+  stop();
+
+  var promise = new Ember.RSVP.Promise(function(resolve, reject){
+    var router = App.__container__.lookup('router:main');
+
+    Ember.run(App, 'handleURL', path);
+    Ember.run(router, router.location.setURL, path);
+
+    Ember.run(resolve);
+    start();
+  });
+
+  return {
+    then: function(resolve, reject){
+      Ember.run(promise, 'then', resolve, reject);
+    }
+  };
+}
 
 test("log class generation if logging enabled", function() {
   Ember.run(App, 'advanceReadiness');
@@ -119,13 +136,10 @@ module("Ember.Application – logging of view lookups", {
       });
 
       App.deferReadiness();
-      App.injectTestHelpers();
-      visit = App.testHelpers.visit;
     });
   },
 
   teardown: function(){
-    App.removeTestHelpers();
     Ember.Logger.info = originalLogger;
 
     Ember.run(App, 'destroy');
@@ -181,4 +195,3 @@ test("do not log which views are used with templates when flag is not true", fun
     equal(Ember.keys(logs).length, 0, 'expected no logs');
   });
 });
-
