@@ -189,22 +189,14 @@ Ember.EventDispatcher = Ember.Object.extend(/** @scope Ember.EventDispatcher.pro
   },
 
   _bubbleEvent: function(view, evt, eventName) {
-    if (Ember.run.currentRunLoop){
-      // this works around an issue caused when simulated events
-      // are triggerd. Simulated events occure synchronously rather
-      // then on next tick. This causes an unexpected nested run-loop,
-      // resulting in negative behaviour.
-      //
-      // for reference:
-      // https://github.com/emberjs/ember.js/commit/aafb5eb5693dccf04dd0951385b4c6bb6db7ae46
-      return Ember.run.schedule('actions', function(){
-        return view.handleEvent(eventName, evt);
-      });
-    } else {
-      return Ember.run(function() {
-        return view.handleEvent(eventName, evt);
-      });
-    }
+    // this works around an issue caused when simulated events
+    // are triggerd. Simulated events occure synchronously rather
+    // then on next tick. This causes an unexpected nested run-loop,
+    // resulting in negative behaviour.
+    //
+    // for reference:
+    // https://github.com/emberjs/ember.js/commit/aafb5eb5693dccf04dd0951385b4c6bb6db7ae46
+    return Ember.run.join(view, 'handleEvent', eventName, evt);
   },
 
   destroy: function() {
