@@ -527,7 +527,12 @@ Ember.Route = Ember.Object.extend({
         view = container.lookup('view:' + name),
         template = container.lookup('template:' + name);
 
-    if (!view && !template) { return; }
+    if (!view && !template) {
+      if (get(this.router, 'namespace.LOG_VIEW_LOOKUPS')) {
+        Ember.Logger.info("Could not find \"" + name + "\" template or view. Nothing will be rendered", { fullName: 'template:' + name });
+      }
+      return;
+    }
 
     options = normalizeOptions(this, name, template, options);
     view = setupView(view, container, options);
@@ -574,6 +579,7 @@ function normalizeOptions(route, name, template, options) {
   options.outlet = options.outlet || 'main';
   options.name = name;
   options.template = template;
+  options.LOG_VIEW_LOOKUPS = get(route.router, 'namespace.LOG_VIEW_LOOKUPS');
 
   Ember.assert("An outlet ("+options.outlet+") was specified but this view will render at the root level.", options.outlet === 'main' || options.into);
 
@@ -597,9 +603,17 @@ function normalizeOptions(route, name, template, options) {
 }
 
 function setupView(view, container, options) {
-  var defaultView = options.into ? 'view:default' : 'view:toplevel';
-
-  view = view || container.lookup(defaultView);
+  if (view) {
+    if (options.LOG_VIEW_LOOKUPS) {
+      Ember.Logger.info("Rendering " + options.name + " with " + view, { fullName: 'view:' + options.name });
+    }
+  } else {
+    var defaultView = options.into ? 'view:default' : 'view:toplevel';
+    view = container.lookup(defaultView);
+    if (options.LOG_VIEW_LOOKUPS) {
+      Ember.Logger.info("Rendering " + options.name + " with default view " + view, { fullName: 'view:' + options.name });
+    }
+  }
 
   if (!get(view, 'templateName')) {
     set(view, 'template', options.template);
