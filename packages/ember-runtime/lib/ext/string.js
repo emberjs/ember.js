@@ -21,7 +21,7 @@ var fmt = Ember.String.fmt,
 if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.String) {
 
   /**
-    See `Ember.String.fmt`
+    See `Ember.String.fmt`.
 
     @method fmt
     @for String
@@ -31,7 +31,7 @@ if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.String) {
   };
 
   /**
-    See `Ember.String.w`
+    See `Ember.String.w`.
 
     @method w
     @for String
@@ -41,7 +41,7 @@ if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.String) {
   };
 
   /**
-    See `Ember.String.loc`
+    See `Ember.String.loc`.
 
     @method loc
     @for String
@@ -51,7 +51,7 @@ if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.String) {
   };
 
   /**
-    See `Ember.String.camelize`
+    See `Ember.String.camelize`.
 
     @method camelize
     @for String
@@ -61,7 +61,7 @@ if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.String) {
   };
 
   /**
-    See `Ember.String.decamelize`
+    See `Ember.String.decamelize`.
 
     @method decamelize
     @for String
@@ -71,7 +71,7 @@ if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.String) {
   };
 
   /**
-    See `Ember.String.dasherize`
+    See `Ember.String.dasherize`.
 
     @method dasherize
     @for String
@@ -81,7 +81,7 @@ if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.String) {
   };
 
   /**
-    See `Ember.String.underscore`
+    See `Ember.String.underscore`.
 
     @method underscore
     @for String
@@ -91,7 +91,7 @@ if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.String) {
   };
 
   /**
-    See `Ember.String.classify`
+    See `Ember.String.classify`.
 
     @method classify
     @for String
@@ -101,7 +101,7 @@ if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.String) {
   };
 
   /**
-    See `Ember.String.capitalize`
+    See `Ember.String.capitalize`.
 
     @method capitalize
     @for String
