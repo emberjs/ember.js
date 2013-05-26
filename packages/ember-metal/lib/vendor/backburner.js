@@ -249,6 +249,7 @@ define("backburner",
       backburner.begin();
       autorun = setTimeout(function() {
         backburner.end();
+        autorun = null;
       });
     }
 
