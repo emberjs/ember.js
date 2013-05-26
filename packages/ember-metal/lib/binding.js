@@ -279,7 +279,7 @@ function mixinProperties(to, from) {
 mixinProperties(Binding, {
 
   /**
-    See {{#crossLink "Ember.Binding/from"}}{{/crossLink}}
+    See `Ember.Binding.from`.
 
     @method from
     @static
@@ -290,7 +290,7 @@ mixinProperties(Binding, {
   },
 
   /**
-    See {{#crossLink "Ember.Binding/to"}}{{/crossLink}}
+    See `Ember.Binding.to`.
 
     @method to
     @static
@@ -307,7 +307,7 @@ mixinProperties(Binding, {
     This means that if you change the "to" side directly, the "from" side may have
     a different value.
 
-    See {{#crossLink "Binding/oneWay"}}{{/crossLink}}
+    See `Binding.oneWay`.
 
     @method oneWay
     @param {String} from from path.
