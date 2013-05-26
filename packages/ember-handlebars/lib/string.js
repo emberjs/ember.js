@@ -12,7 +12,7 @@ var htmlSafe = Ember.String.htmlSafe;
 if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.String) {
 
   /**
-    See {{#crossLink "Ember.String/htmlSafe"}}{{/crossLink}}
+    See `Ember.String.htmlSafe`.
 
     @method htmlSafe
     @for String
