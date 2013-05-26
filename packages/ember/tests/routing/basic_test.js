@@ -1915,4 +1915,26 @@ test("The template is not re-rendered when two routes present the exact same tem
   equal(insertionCount, 1, "view should still have inserted only once");
 });
 
+test("ApplicationRoute with model does not proxy the currentPath", function() {
+  var model = {};
+  var currentPath;
 
+  App.ApplicationRoute = Ember.Route.extend({
+    model: function () { return model; }
+  });
+
+  App.ApplicationController = Ember.ObjectController.extend({
+    currentPathDidChange: Ember.observer(function() {
+      currentPath = get(this, 'currentPath');
+    }, 'currentPath')
+  });
+
+  bootApplication();
+
+  Ember.run(function() {
+    router.handleURL("/");
+  });
+
+  equal(currentPath, 'index', 'currentPath is index');
+  equal('currentPath' in model, false, 'should have defined currentPath on controller');
+});

@@ -5,6 +5,7 @@
 
 var Router = requireModule("router");
 var get = Ember.get, set = Ember.set;
+var defineProperty = Ember.defineProperty;
 
 var DefaultView = Ember._MetamorphView;
 
@@ -71,6 +72,9 @@ Ember.Router = Ember.Object.extend({
     var appController = this.container.lookup('controller:application'),
         path = routePath(infos);
 
+    if (!('currentPath' in appController)) {
+      defineProperty(appController, 'currentPath');
+    }
     set(appController, 'currentPath', path);
     this.notifyPropertyChange('url');
 
@@ -87,9 +91,9 @@ Ember.Router = Ember.Object.extend({
   /**
     Transition to another route via the `routeTo` event which
     will by default be handled by ApplicationRoute.
-   
+
     @method routeTo
-    @param {TransitionEvent} transitionEvent 
+    @param {TransitionEvent} transitionEvent
    */
   routeTo: function(transitionEvent) {
     var handlerInfos = this.router.currentHandlerInfos;
