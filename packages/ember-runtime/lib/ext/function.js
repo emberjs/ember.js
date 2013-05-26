@@ -59,8 +59,7 @@ if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.Function) {
     will instead clear the cache so that it is updated when the next `get`
     is called on the property.
 
-    See {{#crossLink "Ember.ComputedProperty"}}{{/crossLink}},
-      {{#crossLink "Ember/computed"}}{{/crossLink}}
+    See `Ember.ComputedProperty`, `Ember.computed`.
 
     @method property
     @for Function
@@ -87,7 +86,7 @@ if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.Function) {
     });
     ```
 
-    See {{#crossLink "Ember.Observable/observes"}}{{/crossLink}}
+    See `Ember.Observable.observes`.
 
     @method observes
     @for Function
@@ -114,7 +113,7 @@ if (Ember.EXTEND_PROTOTYPES === true || Ember.EXTEND_PROTOTYPES.Function) {
     });
     ```
 
-    See {{#crossLink "Ember.Observable/observesBefore"}}{{/crossLink}}
+    See `Ember.Observable.observesBefore`.
 
     @method observesBefore
     @for Function

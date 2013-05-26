@@ -136,7 +136,7 @@ function addListener(obj, eventName, target, method, once) {
 /**
   Remove an event listener
 
-  Arguments should match those passed to {{#crossLink "Ember/addListener"}}{{/crossLink}}
+  Arguments should match those passed to `Ember.addListener`.
 
   @method removeListener
   @for Ember
