@@ -725,7 +725,7 @@ class:
     eventManager: Ember.Object.create({
       mouseEnter: function(event, view){
         // view might be instance of either
-        // OutsideView or InnerView depending on
+        // OuterView or InnerView depending on
         // where on the page the user interaction occured
       }
     })
