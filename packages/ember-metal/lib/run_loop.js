@@ -53,15 +53,17 @@ var Backburner = requireModule('backburner').Backburner,
 */
 Ember.run = function(target, method) {
   var ret;
-  try {
-    ret = backburner.run.apply(backburner, arguments);
-  } catch (e) {
-    if (Ember.onerror) {
+
+  if (Ember.onerror) {
+    try {
+      ret = backburner.run.apply(backburner, arguments);
+    } catch (e) {
       Ember.onerror(e);
-    } else {
-      throw e;
     }
+  } else {
+    ret = backburner.run.apply(backburner, arguments);
   }
+
   return ret;
 };
 
