@@ -11,11 +11,18 @@ var define, requireModule;
     if (seen[name]) { return seen[name]; }
     seen[name] = {};
 
-    var mod = registry[name],
-        deps = mod.deps,
-        callback = mod.callback,
-        reified = [],
-        exports;
+    var mod, deps, callback, reified, exports;
+
+    mod = registry[name];
+
+    if (!mod) {
+      throw new Error("Module '" + name + "' not found.");
+    }
+
+    deps = mod.deps;
+    callback = mod.callback;
+    reified = [];
+    exports;
 
     for (var i=0, l=deps.length; i<l; i++) {
       if (deps[i] === 'exports') {
