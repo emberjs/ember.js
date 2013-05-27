@@ -26,7 +26,7 @@ function visit(app, url) {
 function click(app, selector, context) {
   var $el = find(app, selector, context);
   Ember.run(function() {
-    app.$(selector).click();
+    $el.click();
   });
   return wait(app);
 }
