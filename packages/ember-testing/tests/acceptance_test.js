@@ -22,7 +22,8 @@ module("ember-testing Acceptance", {
       });
 
       App.PostsView = Ember.View.extend({
-        defaultTemplate: Ember.Handlebars.compile("{{#linkTo 'comments'}}Comments{{/linkTo}}")
+        defaultTemplate: Ember.Handlebars.compile("<a class=\"dummy-link\"></a><div id=\"comments-link\">{{#linkTo 'comments'}}Comments{{/linkTo}}</div>"),
+        classNames: ['posts-view']
       });
 
       App.CommentsRoute = Ember.Route.extend({
@@ -99,7 +100,7 @@ test("helpers can be chained to each other", function() {
 
   currentRoute = 'index';
 
-  visit('/posts').click('a:contains("Comments")')
+  visit('/posts').click('a:first', '#comments-link')
   .fillIn('.ember-text-field', "hello")
   .then(function() {
     equal(currentRoute, 'comments', "Successfully visited posts route");
