@@ -247,7 +247,7 @@ test("The {{linkTo}} helper supports leaving off .index for nested routes", func
     router.handleURL("/about/item");
   });
 
-  equal(Ember.$('#item a', '#qunit-fixture').attr('href'), '/about');
+  equal(normalizeUrl(Ember.$('#item a', '#qunit-fixture').attr('href')), '/about');
 });
 
 test("The {{linkTo}} helper supports custom, nested, currentWhen", function() {
@@ -429,7 +429,7 @@ test("The {{linkTo}} helper accepts string arguments", function() {
 
   Ember.run(function() { router.handleURL("/filters/popular"); });
 
-  equal(Ember.$('#link', '#qunit-fixture').attr('href'), "/filters/unpopular");
+  equal(normalizeUrl(Ember.$('#link', '#qunit-fixture').attr('href')), "/filters/unpopular");
 });
 
 test("The {{linkTo}} helper unwraps controllers", function() {
