@@ -1,6 +1,8 @@
 require 'bundler/setup'
 require 'ember-dev/tasks'
 require './lib/ember/version'
+require 'zlib'
+
 ### RELEASE TASKS ###
 
 namespace :release do
@@ -86,10 +88,7 @@ namespace :release do
 
     desc "Upload release"
     task :upload do
-      uploader = setup_uploader("tmp/starter-kit")
-
-      # Upload minified first, so non-minified shows up on top
-      upload_file(uploader, "starter-kit.#{Ember::VERSION}.zip", "Ember.js #{Ember::VERSION} Starter Kit", "dist/starter-kit.#{Ember::VERSION}.zip")
+      puts 'upload the starter kit manually'
     end
 
     desc "Build the Ember.js starter kit"
@@ -118,16 +117,10 @@ namespace :release do
     end
 
     task :about => [:pull, :dist] do
-      require 'zlib'
-
       about = File.read("tmp/website/source/about.html.erb")
       min_gz = Zlib::Deflate.deflate(File.read("dist/ember.min.js")).bytes.count / 1024
 
-      about.gsub! %r{https://raw\.github\.com/emberjs/ember\.js/release-builds/ember-\d(?:[\.-](?:(?:\d+)|pre|rc))*?(\.min)?\.js},
-        %{https://raw.github.com/emberjs/ember.js/release-builds/ember-#{Ember::VERSION}\\1.js}
-
-      about.gsub!(/Ember \d([\.-]((\d+)|pre|rc))*/, "Ember #{Ember::VERSION}")
-
+      about.gsub!(/(\d+\.\d+\.\d+-rc(?:\.?\d+)?)/, Ember::VERSION)
       about.gsub!(/\d+k min\+gzip/, "#{min_gz}k min+gzip")
 
       open("tmp/website/source/about.html.erb", "w") { |f| f.write about }
