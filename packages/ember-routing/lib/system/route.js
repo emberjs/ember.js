@@ -108,6 +108,9 @@ Ember.Route = Ember.Object.extend({
     Transition into another route while replacing the current URL if
     possible. Identical to `transitionTo` in all other respects.
 
+    Of the bundled location types, only `history` currently supports
+    this behavior.
+
     @method replaceWith
     @param {String} name the name of the route
     @param {...Object} models the
