@@ -46,27 +46,28 @@ Ember.AutoLocation = {
     if (supportsHistory) {
       historyPath = this.getHistoryPath();
 
-      // Since we support history paths, let's switch over to it if we're not
-      // already.
-      if (currentPath !== historyPath) {
+      // Since we support history paths, let's be sure we're using them else 
+      // switch the location over to it.
+      if (currentPath === historyPath) {
+        implementationClass = Ember.HistoryLocation;
+      } else {
         location.replace(historyPath);
-        return;
       }
-
-      implementationClass = Ember.HistoryLocation;
 
     } else if (supportsHashChange) {
       hashPath = this.getHashPath();
 
-      // If we're not yet using hash paths, let's switch over it to so we start
-      // off clean and consistent.
-      if (currentPath !== hashPath) {
+      // Be sure we're using a hashed path, otherwise let's switch over it to so
+      // we start off clean and consistent.
+      if (currentPath === hashPath) {
+        implementationClass = Ember.HashLocation;
+      } else {
         location.replace(hashPath);
-        return;
       }
+    }
 
-      implementationClass = Ember.HashLocation;
-    } else {
+    // If none has been set
+    if (!implementationClass) {
       implementationClass = Ember.NoneLocation;
     }
 
