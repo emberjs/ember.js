@@ -108,6 +108,10 @@ Ember.Route = Ember.Object.extend({
     Transition into another route while replacing the current URL if
     possible. Identical to `transitionTo` in all other respects.
 
+    When using `replaceWith` to transition through routes, the previous
+    transitions are accessible via the browser back button, unless
+    you are using `history` location type.
+
     @method replaceWith
     @param {String} name the name of the route
     @param {...Object} models the
