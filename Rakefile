@@ -86,11 +86,6 @@ namespace :release do
       end
     end
 
-    desc "Upload release"
-    task :upload do
-      puts 'upload the starter kit manually'
-    end
-
     desc "Build the Ember.js starter kit"
     task :build => "dist/starter-kit.#{Ember::VERSION}.zip"
 
@@ -98,7 +93,7 @@ namespace :release do
     task :prepare => []
 
     desc "Release starter-kit"
-    task :deploy => [:build, :update, :upload]
+    task :deploy => [:build, :update]
   end
 
   namespace :website do
