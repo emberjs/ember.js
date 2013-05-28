@@ -100,7 +100,7 @@ define("backburner",
           method = target[method];
         }
 
-        var stack = new Error().stack,
+        var stack = this.DEBUG ? new Error().stack : undefined,
             args = arguments.length > 3 ? slice.call(arguments, 3) : undefined;
         if (!this.currentInstance) { createAutorun(this); }
         return this.currentInstance.schedule(queueName, target, method, args, false, stack);
@@ -116,7 +116,7 @@ define("backburner",
           method = target[method];
         }
 
-        var stack = new Error().stack,
+        var stack = this.DEBUG ? new Error().stack : undefined,
             args = arguments.length > 3 ? slice.call(arguments, 3) : undefined;
         if (!this.currentInstance) { createAutorun(this); }
         return this.currentInstance.schedule(queueName, target, method, args, true, stack);
