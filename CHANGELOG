@@ -1,4 +1,5 @@
-*Ember 1.0.0-rc4 (May 27, 2013)*
+*Ember 1.0.0-rc.4 (May 27, 2013)*
+
 * Loader: improve missing module error message
 * Fix click test helper selector context
 * fixes #2737: 'In the Router, if ApplicationController is an ObjectController, currentPath is proxied to the content.'
