@@ -56,7 +56,7 @@ define("router",
         its ancestors.
       */
       reset: function() {
-        eachHandler(this.currentHandlerInfos, function(handler) {
+        eachHandler(this.currentHandlerInfos || [], function(handler) {
           if (handler.exit) {
             handler.exit();
           }
