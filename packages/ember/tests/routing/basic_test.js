@@ -1938,3 +1938,31 @@ test("ApplicationRoute with model does not proxy the currentPath", function() {
   equal(currentPath, 'index', 'currentPath is index');
   equal('currentPath' in model, false, 'should have defined currentPath on controller');
 });
+
+asyncTest("Promises encountered on app load put app into loading state until resolved", function() {
+
+  expect(2);
+
+  App.IndexRoute = Ember.Route.extend({
+    model: function() {
+      return new Ember.RSVP.Promise(function(resolve) {
+        setTimeout(function() {
+          Ember.run(function() {
+            resolve();
+          });
+          equal(Ember.$('p', '#qunit-fixture').text(), "INDEX", "The index route is display.");
+          start();
+        }, 20);
+      });
+    }
+  });
+
+  Ember.TEMPLATES.index = Ember.Handlebars.compile("<p>INDEX</p>");
+  Ember.TEMPLATES.loading = Ember.Handlebars.compile("<p>LOADING</p>");
+
+  bootApplication();
+
+  equal(Ember.$('p', '#qunit-fixture').text(), "LOADING", "The loading state is displaying.");
+});
+
+
