@@ -4,7 +4,7 @@ distros = {
   "runtime"           => %w(ember-metal rsvp container ember-runtime),
   "template-compiler" => %w(ember-handlebars-compiler),
   "data-deps"         => %w(ember-metal rsvp container ember-runtime ember-states),
-  "full"              => %w(ember-metal rsvp container ember-runtime ember-views metamorph handlebars ember-handlebars-compiler ember-handlebars ember-routing ember-application ember-states ember-testing),
+  "full"              => %w(ember-metal rsvp container ember-runtime ember-views metamorph handlebars ember-handlebars-compiler ember-handlebars ember-routing ember-application ember-states),
   "old-router"        => %w(ember-metal rsvp container ember-runtime ember-views ember-states ember-viewstates metamorph handlebars ember-handlebars-compiler ember-handlebars ember-old-router)
 }
 
@@ -42,9 +42,20 @@ distros.each do |name, modules|
   name = name == "full" ? "ember" : "ember-#{name}"
 
   input "dist/modules" do
+
+    # Add ember-testing to ember distro
+    if name == "ember"
+      match "{ember-testing.js}" do
+        concat ["ember-testing.js"], "#{name}.js"
+      end
+    end
+
     module_paths = modules.map{|m| "#{m}.js" }
     match "{#{module_paths.join(',')}}" do
       concat(module_paths){ ["#{name}.js", "#{name}.prod.js"] }
+    end
+
+    match "{#{name}.js,#{name}.prod.js}" do
       filter HandlebarsPrecompiler
       filter AddMicroLoader unless name == "ember-template-compiler"
     end
