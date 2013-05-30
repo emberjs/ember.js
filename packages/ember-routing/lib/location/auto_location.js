@@ -12,7 +12,7 @@ var supportsHashChange = (function () {
 
   // IE8 Compatibility Mode provides false positive
   return (document.documentMode === undefined || document.documentMode > 7);
-});
+})();
 
 /**
   Ember.AutoLocation will select the best location option based off browser
