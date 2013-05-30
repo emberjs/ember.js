@@ -657,6 +657,29 @@ Ember.immediateObserver = function() {
 };
 
 /**
+  When observers fire, they are called with the arguments `obj`, `keyName`
+  and `value`. In a typical observer, value is the new, post-change value.
+
+  A `beforeObserver` fires before a property changes. The `value` argument contains
+  the pre-change value.
+
+  A `beforeObserver` is an alternative form of `.observesBefore()`.
+
+  ```javascript
+  App.PersonView = Ember.View.extend({
+    valueWillChange: function (obj, keyName, value) {
+      this.changingFrom = value;
+    }.observesBefore('content.value'),
+    valueDidChange: function(obj, keyName, value) {
+        // only run if updating a value already in the DOM
+        if(this.get('state') === 'inDOM') {
+            var color = value > this.changingFrom ? 'green' : 'red';
+            // logic
+        }
+    }.observes('content.value')
+  });
+  ```
+
   @method beforeObserver
   @for Ember
   @param {Function} func
