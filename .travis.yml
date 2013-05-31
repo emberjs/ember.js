@@ -5,13 +5,13 @@ branches:
 env:
   global:
   - S3_BUCKET_NAME=builds.emberjs.com
-  - secure: ! 'fj7yZnEPvvlt2bptq8/fanO3W9dN0YEm9xKj07Bp4dMCsuRzZrTTIvGVUtou
+  - secure: ! 'gzplcAByqYwCNtAOdrZX+nbvr4EnpU4xVLVyU9Zc9Oel6nS9xycvoP1f187R
 
-      87NudBPoQeKeyaQB5rZInldx1/vZb8H6hZzp9HRFUXVDzgPhOBjOdYCbBOYN
+      9df/yVtaXJEaPe0kEwHtYllFInOGUQrnXR05q6IMi7BqzO96MVhuxy355IzK
 
-      t52RqwLUrhmTRdzu6rLKpqlLMuKCy5L6dpMqskxDTf4runCymro='
-  - secure: ! 'NzRwrq2Lh5bDhENF71Ruf4ldamf78MN0kEEXC+nLnxE70ryxiJ1a7Y9eO3zW
+      Cs6WUIk44qwJK6SSI/ZpWYiCrmsFwkVpf7EUAlY9L/WnJXaJ6eM='
+  - secure: ! 'Bx+u3wbfj5nTtJ61kRzZIIVOVjrXYLiPkGoFdNrqXXWu8soYsd3aejz53EEo
 
-      ca5iWqSSrrCOKw6Xv/W1SBPRaN+9JGkpF3tYFhp0UuENCjuBlkWJSW0OfRED
+      gjN9LSsoGrGZTkgj1wptmeWhqjZlVoG8KOShNckxvo3UAhI70ov5SwxJXy2v
 
-      M0bX3GnSvuEgs/znJGwkUxpz3ET8xTcfuoefCWfPhWVB5sA34TA='
+      jMH8teLbjogdaIMqts+goaeMy/PrrS1meSwp2uglbxiEwNYL3xA='
