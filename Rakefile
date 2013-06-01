@@ -143,7 +143,7 @@ namespace :release do
     end
 
     desc "Prepare website for release"
-    task :prepare => []
+    task :prepare => [:update]
 
     desc "Update website repo"
     task :deploy => [:update]
