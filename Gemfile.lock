@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/emberjs/ember-dev.git
-  revision: d7ddb58d2727981bf4c7a95a2681e1a2d41808a2
+  revision: 3fb81a5083369dded728d7e3a90985d18919522e
   branch: master
   specs:
     ember-dev (0.1)
@@ -32,7 +32,7 @@ PATH
 GEM
   remote: https://rubygems.org/
   specs:
-    aws-sdk (1.10.0)
+    aws-sdk (1.11.0)
       json (~> 1.4)
       nokogiri (>= 1.4.4)
       uuidtools (~> 2.1)
@@ -49,7 +49,7 @@ GEM
     json (1.8.0)
     kicker (2.6.1)
       listen
-    listen (1.1.3)
+    listen (1.1.4)
       rb-fsevent (>= 0.9.3)
       rb-inotify (>= 0.9)
       rb-kqueue (>= 0.2)
