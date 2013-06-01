@@ -4,15 +4,15 @@
   "summary": "Ember - JavaScript Application Framework",
   "homepage": "http://github.com/emberjs/ember.js",
   "author": "Charles Jolley",
-  "version": "1.0.0-rc.4",
+  "version": "1.0.0-rc.5",
 
   "dependencies": {
     "spade":                 "~> 1.0.0",
-    "ember-runtime": "1.0.0-rc.4",
-    "ember-views": "1.0.0-rc.4",
-    "ember-states": "1.0.0-rc.4",
-    "ember-routing": "1.0.0-rc.4",
-    "ember-handlebars": "1.0.0-rc.4"
+    "ember-runtime": "1.0.0-rc.5",
+    "ember-views": "1.0.0-rc.5",
+    "ember-states": "1.0.0-rc.5",
+    "ember-routing": "1.0.0-rc.5",
+    "ember-handlebars": "1.0.0-rc.5"
   },
 
   "directories": {

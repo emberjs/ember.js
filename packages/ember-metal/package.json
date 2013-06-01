@@ -4,7 +4,7 @@
   "summary": "JavaScript on Steroids",
   "homepage": "http://github.com/emberjs/ember.js",
   "author": "Charles Jolley",
-  "version": "1.0.0-rc.4",
+  "version": "1.0.0-rc.5",
 
   "dependencies": {
     "spade": "~> 1.0.0"
