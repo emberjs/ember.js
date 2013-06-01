@@ -995,14 +995,14 @@ test("transitioning multiple times in a single run loop only sets the URL once",
     router.handleURL("/");
   });
 
-  equal(urlSetCount, 0);
+  equal(urlSetCount, 1);
 
   Ember.run(function() {
     router.transitionTo("foo");
     router.transitionTo("bar");
   });
 
-  equal(urlSetCount, 1);
+  equal(urlSetCount, 2);
   equal(router.get('location').getURL(), "/bar");
 });
 
@@ -1028,17 +1028,47 @@ test('navigating away triggers a url property change', function() {
   Ember.run(function() {
     router.handleURL("/");
   });
+  equal(urlPropertyChangeCount, 1, 'triggered a single url property change');
 
-  equal(urlPropertyChangeCount, 2);
+  // Trigger the callback that would otherwise be triggered
+  // when a user clicks the back or forward button.
+  Ember.run(function() {
+    router.router.transitionTo('foo');
+  });
+  equal(urlPropertyChangeCount, 2, 'triggered url property change');
 
   Ember.run(function() {
-    // Trigger the callback that would otherwise be triggered
-    // when a user clicks the back or forward button.
-    router.router.transitionTo('foo');
+    router.router.transitionTo('bar');
+  });
+  equal(urlPropertyChangeCount, 3, 'triggered url property change');
+});
+
+test('the url property should be the current location url', function() {
+  Router.map(function() {
+    this.route('root', { path: '/' });
+    this.route('foo', { path: '/foo' });
+    this.route('bar', { path: '/bar-baz' });
+  });
+
+  bootApplication();
+
+  Ember.run(function() {
+    router.handleURL("/");
+  });
+
+  equal(get(router, 'url'), '/');
+
+  Ember.run(function() {
+    router.handleURL("/foo");
+  });
+
+  equal(get(router, 'url'), '/foo');
+
+  Ember.run(function() {
     router.router.transitionTo('bar');
   });
 
-  equal(urlPropertyChangeCount, 4, 'triggered url property change');
+  equal(get(router, 'url'), '/bar-baz');
 });
 
 
@@ -1071,14 +1101,14 @@ test("using replaceWith calls location.replaceURL if available", function() {
     router.handleURL("/");
   });
 
-  equal(setCount, 0);
+  equal(setCount, 2);
   equal(replaceCount, 0);
 
   Ember.run(function() {
     router.replaceWith("foo");
   });
 
-  equal(setCount, 0, 'should not call setURL');
+  equal(setCount, 2, 'should not call setURL');
   equal(replaceCount, 1, 'should call replaceURL once');
   equal(router.get('location').getURL(), "/foo");
 });
@@ -1105,14 +1135,15 @@ test("using replaceWith calls setURL if location.replaceURL is not defined", fun
   Ember.run(function() {
     router.handleURL("/");
   });
+  equal(router.get('location').getURL(), "/");
 
-  equal(setCount, 0);
+  equal(setCount, 2);
 
   Ember.run(function() {
     router.replaceWith("foo");
   });
 
-  equal(setCount, 1, 'should call setURL once');
+  equal(setCount, 3, 'should call setURL once');
   equal(router.get('location').getURL(), "/foo");
 });
 
