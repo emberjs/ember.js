@@ -167,6 +167,6 @@ task :publish_build do
 end
 
 task :clean => "ember:clean"
-task :dist => [:clean, "ember:dist"]
+task :dist => "ember:dist"
 task :test, [:suite] => "ember:test"
 task :default => "ember:test"
