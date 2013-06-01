@@ -90,7 +90,7 @@ namespace :release do
     task :build => "dist/starter-kit.#{Ember::VERSION}.zip"
 
     desc "Prepare starter-kit for release"
-    task :prepare => []
+    task :prepare => [:clean, :build]
 
     desc "Release starter-kit"
     task :deploy => [:build, :update]
