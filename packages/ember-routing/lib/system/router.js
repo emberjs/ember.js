@@ -39,7 +39,7 @@ Ember.Router = Ember.Object.extend({
   location: 'hash',
 
   init: function() {
-    this.router = this.constructor.router;
+    this.router = this.constructor.router || this.constructor.map(Ember.K);
     this._activeViews = {};
     setupLocation(this);
   },
