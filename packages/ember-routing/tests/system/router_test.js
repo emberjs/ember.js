@@ -9,7 +9,7 @@ module("Ember Router", {
   }
 });
 
-test("should create a router if one does not exist on the consturctor", function() {
+test("should create a router if one does not exist on the constructor", function() {
   var router = Router.create();
   ok(router.router);
 });
