@@ -37,15 +37,15 @@ testBoth("should call unknownProperty on watched values if the value is undefine
 });
 
 test('warn on attempts to get a property of undefined', function(){
-  raises(function() {
+  expectAssertion(function() {
     Ember.get(undefined, 'aProperty');
-  });
+  }, /Cannot call get with 'aProperty' on an undefined object/i);
 });
 
 test('warn on attempts to get a property path of undefined', function(){
-  raises(function() {
+  expectAssertion(function(){
     Ember.get(undefined, 'aProperty.on.aPath');
-  });
+  }, /Cannot call get with 'aProperty.on.aPath' on an undefined object/);
 });
 
 // ..........................................................

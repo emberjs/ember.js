@@ -31,27 +31,27 @@ test("you can make a new application in a non-overlapping element", function() {
 });
 
 test("you cannot make a new application that is a parent of an existing application", function() {
-  raises(function() {
+  expectAssertion(function() {
     Ember.run(function() {
       Ember.Application.create({ rootElement: '#qunit-fixture' });
     });
-  }, Error);
+  });
 });
 
 test("you cannot make a new application that is a descendent of an existing application", function() {
-  raises(function() {
+  expectAssertion(function() {
     Ember.run(function() {
       Ember.Application.create({ rootElement: '#one-child' });
     });
-  }, Error);
+  });
 });
 
 test("you cannot make a new application that is a duplicate of an existing application", function() {
-  raises(function() {
+  expectAssertion(function() {
     Ember.run(function() {
       Ember.Application.create({ rootElement: '#one' });
     });
-  }, Error);
+  });
 });
 
 test("you cannot make two default applications without a rootElement error", function() {
@@ -63,11 +63,11 @@ test("you cannot make two default applications without a rootElement error", fun
   Ember.run(function() {
     application = Ember.Application.create({ router: false });
   });
-  raises(function() {
+  expectAssertion(function() {
     Ember.run(function() {
       Ember.Application.create({ router: false });
     });
-  }, Error);
+  });
 });
 
 test("acts like a namespace", function() {

@@ -156,9 +156,9 @@ test("raise if the provided object is null", function() {
 */
 
 test("raise if the provided object is undefined", function() {
-  raises(function() {
+  expectAssertion(function() {
     Ember.get(undefined, 'key');
-  });
+  }, /Cannot call get with 'key' on an undefined object/i);
 });
 
 test("should work when object is Ember (used in Ember.get)", function() {

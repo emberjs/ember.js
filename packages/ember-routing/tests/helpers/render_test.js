@@ -168,9 +168,9 @@ test("{{render}} helper should render a template without a model only once", fun
 
   Ember.TEMPLATES['home'] = compile("<p>BYE</p>");
 
-  raises(function() {
+  expectAssertion(function() {
     appendView(view);
-  }, 'should raise an exception');
+  }, /\{\{render\}\} helper once/i);
 });
 
 test("{{render}} helper should render templates with models multiple times", function() {

@@ -66,11 +66,12 @@ test('prior queues should be flushed before moving on to next queue', function()
 });
 
 test('makes sure it does not trigger an autorun during testing', function() {
-  throws(function() {
+  expectAssertion(function() {
     Ember.run.schedule('actions', function() {});
-  });
+  }, /wrap any code with asynchronous side-effects in an Ember.run/);
 
-  throws(function() {
-    Ember.run.scheduleOnce('actions', function() {});
-  });
+  // make sure not just the first violation is asserted.
+  expectAssertion(function() {
+    Ember.run.schedule('actions', function() {});
+  }, /wrap any code with asynchronous side-effects in an Ember.run/);
 });

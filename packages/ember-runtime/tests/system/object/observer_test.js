@@ -114,9 +114,9 @@ testBoth('observer should not fire after being destroyed', function(get, set) {
   Ember.run(function() { obj.destroy(); });
 
   if (Ember.assert) {
-    raises(function() {
+    expectAssertion(function() {
       set(obj, 'bar', "BAZ");
-    }, Error, "raises error when setting a property");
+    }, "calling set on destroyed object");
   } else {
     set(obj, 'bar', "BAZ");
   }

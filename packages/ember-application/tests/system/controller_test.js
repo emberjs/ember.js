@@ -22,7 +22,7 @@ test("If a controller specifies an unavailable dependency, it raises", function(
     needs: 'posts'
   }));
 
-  raises(function() {
+  expectAssertion(function() {
     container.lookup('controller:post');
   }, /controller:posts/);
 });
