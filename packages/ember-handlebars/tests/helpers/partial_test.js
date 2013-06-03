@@ -49,7 +49,7 @@ test("should render other slash-separated templates registered with the containe
 });
 
 test("should use the current view's context", function(){
-  container.register('template:_person_name', Ember.Handlebars.compile("{{{firstName}} {{lastName}}"));
+  container.register('template:_person_name', Ember.Handlebars.compile("{{firstName}} {{lastName}}"));
 
   view = Ember.View.create({
     container: container,

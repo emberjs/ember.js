@@ -23,11 +23,18 @@ GIT
       rake (~> 10.0.0)
       thor
 
+GIT
+  remote: https://github.com/wycats/handlebars.js.git
+  revision: 1585f917498f47263f3cd6dc4343ac377e93ad22
+  tag: v1.0.12
+  specs:
+    handlebars-source (1.0.12)
+
 PATH
   remote: .
   specs:
     ember-source (1.0.0.rc6)
-      handlebars-source (= 1.0.0.rc4)
+      handlebars-source (= 1.0.12)
 
 GEM
   remote: https://rubygems.org/
@@ -45,7 +52,6 @@ GEM
       diff-lcs (~> 1.1)
       mime-types (~> 1.15)
       posix-spawn (~> 0.3.6)
-    handlebars-source (1.0.0.rc4)
     json (1.8.0)
     kicker (2.6.1)
       listen
@@ -79,4 +85,5 @@ PLATFORMS
 DEPENDENCIES
   ember-dev!
   ember-source!
+  handlebars-source!
   rake-pipeline!
