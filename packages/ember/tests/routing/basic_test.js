@@ -1852,11 +1852,12 @@ test("The template is not re-rendered when the route's context changes", functio
 });
 
 
-test("The template is not re-rendered when two routes present the exact same template & controller", function() {
+test("The template is not re-rendered when two routes present the exact same template, view, & controller", function() {
   Router.map(function() {
     this.route("first");
     this.route("second");
     this.route("third");
+    this.route("fourth");
   });
 
   App.SharedRoute = Ember.Route.extend({
@@ -1865,18 +1866,20 @@ test("The template is not re-rendered when two routes present the exact same tem
     },
 
     renderTemplate: function(controller, context) {
-      this.render('shared', { controller: 'shared' } );
+      this.render({ controller: 'shared' });
     }
   });
 
   App.FirstRoute = App.SharedRoute.extend();
   App.SecondRoute = App.SharedRoute.extend();
   App.ThirdRoute = App.SharedRoute.extend();
-
+  App.FourthRoute = App.SharedRoute.extend();
+  
   App.SharedController = Ember.Controller.extend();
 
   var insertionCount = 0;
   App.SharedView = Ember.View.extend({
+    templateName: 'shared',
     didInsertElement: function() {
       insertionCount += 1;
     }
@@ -1884,6 +1887,7 @@ test("The template is not re-rendered when two routes present the exact same tem
   App.FirstView = App.SharedView;
   App.SecondView = App.SharedView;
   App.ThirdView = App.SharedView;
+  App.FourthView = App.SharedView.extend(); // Extending, in essence, creates a different view
 
   Ember.TEMPLATES.shared = Ember.Handlebars.compile(
     "<p>{{message}}</p>"
@@ -1913,6 +1917,15 @@ test("The template is not re-rendered when two routes present the exact same tem
 
   equal(Ember.$('p', '#qunit-fixture').text(), "This is the third message");
   equal(insertionCount, 1, "view should still have inserted only once");
+  
+  // Lastly transition to a different view, with the same controller and template
+  Ember.run(function() {
+    router.handleURL("/fourth");
+  });
+
+  equal(Ember.$('p', '#qunit-fixture').text(), "This is the fourth message");
+  equal(insertionCount, 2, "view should have inserted a second time");
+  
 });
 
 test("ApplicationRoute with model does not proxy the currentPath", function() {
