@@ -125,6 +125,22 @@ test("{{render}} helper should render given template with a supplied model", fun
   }
 });
 
+test("{{render}} helper should raise an error when a given controller name does not resolve to a controller", function() {
+  var template = '<h1>HI</h1>{{render home controller="postss"}}';
+  var controller = Ember.Controller.extend({container: container});
+  container.register('controller:posts', Ember.ArrayController.extend());
+  view = Ember.View.create({
+    controller: controller.create(),
+    template: Ember.Handlebars.compile(template)
+  });
+
+  Ember.TEMPLATES['home'] = compile("<p>BYE</p>");
+
+  raises(function() {
+    appendView(view);
+  }, 'should raise an exception');
+});
+
 test("{{render}} helper should render with given controller", function() {
   var template = '<h1>HI</h1>{{render home controller="posts"}}';
   var controller = Ember.Controller.extend({container: container});
