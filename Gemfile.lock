@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/emberjs/ember-dev.git
-  revision: 9d286fd9d992b7f20a44b947fb251a09b3aff746
+  revision: dc8ccef24323fb3026301f32addfcdd1de53e949
   branch: master
   specs:
     ember-dev (0.1)
@@ -49,12 +49,12 @@ GEM
     json (1.8.0)
     kicker (2.6.1)
       listen
-    listen (1.1.4)
+    listen (1.1.5)
       rb-fsevent (>= 0.9.3)
       rb-inotify (>= 0.9)
       rb-kqueue (>= 0.2)
     mime-types (1.23)
-    multi_json (1.7.4)
+    multi_json (1.7.5)
     nokogiri (1.5.9)
     posix-spawn (0.3.6)
     rack (1.5.2)
