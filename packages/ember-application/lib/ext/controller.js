@@ -66,6 +66,8 @@ Ember.ControllerMixin.reopen({
     this.get('controllers.post'); // instance of App.PostController
     ```
 
+    This is only available for singleton controllers.
+
     @property {Array} needs
     @default []
   */
