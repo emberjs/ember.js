@@ -55,7 +55,7 @@ function find(app, selector, context) {
 }
 
 function wait(app, value) {
-  var promise, obj = {}, helperName;
+  var promise;
 
   promise = Ember.Test.promise(function(resolve) {
     if (++countAsync === 1) {

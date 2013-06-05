@@ -103,7 +103,7 @@ Ember.Test = {
       chained: false
     };
     thenable.then = function(onSuccess, onFailure) {
-      var self = this, thenPromise, nextPromise;
+      var thenPromise, nextPromise;
       thenable.chained = true;
       thenPromise = promise.then(onSuccess, onFailure);
       // this is to ensure all downstream fulfillment
