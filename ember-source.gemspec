@@ -1,5 +1,4 @@
 # -*- encoding: utf-8 -*-
-require 'json'
 require "./lib/ember/version"
 
 Gem::Specification.new do |gem|
