@@ -19,6 +19,47 @@ var get = Ember.get, set = Ember.set, fmt = Ember.String.fmt;
 Ember.EventDispatcher = Ember.Object.extend(/** @scope Ember.EventDispatcher.prototype */{
 
   /**
+    The set of events names (and associated handler function names) to be setup
+    and dispatched by the `EventDispatcher`. Custom events can added to this list at setup
+    time, generally via the `Ember.Application.customEvents` hash. Only override this
+    default set to prevent the EventDispatcher from listening on some events all together.
+
+    This set will be modified by `setup` to also include any events added at that time.
+
+    @property events
+    @type Object
+  */
+  events: {
+    touchstart  : 'touchStart',
+    touchmove   : 'touchMove',
+    touchend    : 'touchEnd',
+    touchcancel : 'touchCancel',
+    keydown     : 'keyDown',
+    keyup       : 'keyUp',
+    keypress    : 'keyPress',
+    mousedown   : 'mouseDown',
+    mouseup     : 'mouseUp',
+    contextmenu : 'contextMenu',
+    click       : 'click',
+    dblclick    : 'doubleClick',
+    mousemove   : 'mouseMove',
+    focusin     : 'focusIn',
+    focusout    : 'focusOut',
+    mouseenter  : 'mouseEnter',
+    mouseleave  : 'mouseLeave',
+    submit      : 'submit',
+    input       : 'input',
+    change      : 'change',
+    dragstart   : 'dragStart',
+    drag        : 'drag',
+    dragenter   : 'dragEnter',
+    dragleave   : 'dragLeave',
+    dragover    : 'dragOver',
+    drop        : 'drop',
+    dragend     : 'dragEnd'
+  },
+
+  /**
     @private
 
     The root DOM element to which event listeners should be attached. Event
@@ -49,35 +90,7 @@ Ember.EventDispatcher = Ember.Object.extend(/** @scope Ember.EventDispatcher.pro
     @param addedEvents {Hash}
   */
   setup: function(addedEvents, rootElement) {
-    var event, events = {
-      touchstart  : 'touchStart',
-      touchmove   : 'touchMove',
-      touchend    : 'touchEnd',
-      touchcancel : 'touchCancel',
-      keydown     : 'keyDown',
-      keyup       : 'keyUp',
-      keypress    : 'keyPress',
-      mousedown   : 'mouseDown',
-      mouseup     : 'mouseUp',
-      contextmenu : 'contextMenu',
-      click       : 'click',
-      dblclick    : 'doubleClick',
-      mousemove   : 'mouseMove',
-      focusin     : 'focusIn',
-      focusout    : 'focusOut',
-      mouseenter  : 'mouseEnter',
-      mouseleave  : 'mouseLeave',
-      submit      : 'submit',
-      input       : 'input',
-      change      : 'change',
-      dragstart   : 'dragStart',
-      drag        : 'drag',
-      dragenter   : 'dragEnter',
-      dragleave   : 'dragLeave',
-      dragover    : 'dragOver',
-      drop        : 'drop',
-      dragend     : 'dragEnd'
-    };
+    var event, events = get(this, 'events');
 
     Ember.$.extend(events, addedEvents || {});
 
