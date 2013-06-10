@@ -670,7 +670,7 @@ test("if a leaf state has a redirectsTo, it automatically transitions into that 
 });
 
 test("you cannot define connectOutlets AND redirectsTo", function() {
-  raises(function() {
+  expectAssertion(function() {
     Ember.Router.create({
       location: 'none',
       root: Ember.Route.create({
@@ -685,7 +685,7 @@ test("you cannot define connectOutlets AND redirectsTo", function() {
 });
 
 test("you cannot have a redirectsTo in a non-leaf state", function () {
-  raises(function() {
+  expectAssertion(function() {
     Ember.Router.create({
       location: 'none',
       root: Ember.Route.create({
@@ -736,7 +736,7 @@ test("urlFor raises an error when route property is not defined", function() {
     })
   });
 
-  raises(function (){
+  expectAssertion(function (){
     router.urlFor('root.dashboard');
   });
 });
