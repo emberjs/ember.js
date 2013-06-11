@@ -18,8 +18,8 @@ Ember.Test.onInjectHelpers(function() {
 
 
 function visit(app, url) {
-  Ember.run(app, app.handleURL, url);
   app.__container__.lookup('router:main').location.setURL(url);
+  Ember.run(app, app.handleURL, url);
   return wait(app);
 }
 
