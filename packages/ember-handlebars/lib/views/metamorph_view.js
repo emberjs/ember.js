@@ -124,7 +124,7 @@ Ember._MetamorphView = Ember.View.extend(Ember._Metamorph);
 /**
   @class _SimpleMetamorphView
   @namespace Ember
-  @extends Ember.View
+  @extends Ember.CoreView
   @uses Ember._Metamorph
   @private
 */
