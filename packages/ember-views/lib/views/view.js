@@ -47,6 +47,15 @@ Ember.warn("The VIEW_PRESERVES_CONTEXT flag has been removed and the functionali
 */
 Ember.TEMPLATES = {};
 
+/**
+  `Ember.CoreView` is
+
+  @class CoreView
+  @namespace Ember
+  @extends Ember.Object
+  @uses Ember.Evented
+*/
+
 Ember.CoreView = Ember.Object.extend(Ember.Evented, {
   isView: true,
 
@@ -804,8 +813,7 @@ class:
 
   @class View
   @namespace Ember
-  @extends Ember.Object
-  @uses Ember.Evented
+  @extends Ember.CoreView
 */
 Ember.View = Ember.CoreView.extend(
 /** @scope Ember.View.prototype */ {
