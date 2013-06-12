@@ -248,8 +248,8 @@ test("bound helpers should not be invoked with blocks", function() {
     template: Ember.Handlebars.compile("{{#repeat}}Sorry, Charlie{{/repeat}}")
   });
 
-  raises(function() {
+  expectAssertion(function() {
     appendView();
-  }, Error, "raises error when using block helper with #block form");
+  }, /registerBoundHelper-generated helpers do not support use with Handlebars blocks/i);
 });
 

@@ -144,13 +144,13 @@ test("can retrieve metadata for a computed property", function() {
 
   equal(typeof ClassWithNoMetadata.metaForProperty('computedProperty'), "object", "returns empty hash if no metadata has been saved");
 
-  raises(function() {
+  expectAssertion(function() {
     ClassWithNoMetadata.metaForProperty('nonexistentProperty');
-  }, Error, "throws an error if metadata for a non-existent property is requested");
+  }, "metaForProperty() could not find a computed property with key 'nonexistentProperty'.");
 
-  raises(function() {
+  expectAssertion(function() {
     ClassWithNoMetadata.metaForProperty('staticProperty');
-  }, Error, "throws an error if metadata for a non-computed property is requested");
+  }, "metaForProperty() could not find a computed property with key 'staticProperty'.");
 });
 
 testBoth("can iterate over a list of computed properties for a class", function(get, set) {

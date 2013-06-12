@@ -739,9 +739,9 @@ testBoth("immediate observers should fire synchronously", function(get, set) {
 });
 
 testBoth("immediate observers are for internal properties only", function(get, set) {
-  raises(function() {
+  expectAssertion(function() {
     Ember.immediateObserver(Ember.K, 'foo.bar');
-  });
+  }, 'Immediate observers must observe internal properties only, not properties on other objects.');
 });
 
 module("Ember.changeProperties");

@@ -46,7 +46,7 @@ if (Ember.ENV.EXPERIMENTAL_CONTROL_HELPER) {
     container.register('controller:widget', Ember.Controller.extend());
     container.register('template:widget', compile("Hello"));
 
-    throws(function() {
+    expectAssertion(function() {
       appendView({
         controller: container.lookup('controller:parent'),
         template: compile("{{control widget}}")
@@ -62,7 +62,7 @@ if (Ember.ENV.EXPERIMENTAL_CONTROL_HELPER) {
     container.register('view:widget', Ember.View.extend());
     container.register('template:widget', compile("Hello"));
 
-    throws(function() {
+    expectAssertion(function() {
       appendView({
         controller: container.lookup('controller:parent'),
         template: compile("{{control widget}}")

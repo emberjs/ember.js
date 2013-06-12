@@ -136,9 +136,9 @@ test("{{render}} helper should raise an error when a given controller name does 
 
   Ember.TEMPLATES['home'] = compile("<p>BYE</p>");
 
-  raises(function() {
+  expectAssertion(function(){
     appendView(view);
-  }, 'should raise an exception');
+  }, 'The controller name you supplied \'postss\' did not resolve to a controller.');
 });
 
 test("{{render}} helper should render with given controller", function() {
@@ -168,9 +168,9 @@ test("{{render}} helper should render a template without a model only once", fun
 
   Ember.TEMPLATES['home'] = compile("<p>BYE</p>");
 
-  raises(function() {
+  expectAssertion(function() {
     appendView(view);
-  }, 'should raise an exception');
+  }, /\{\{render\}\} helper once/i);
 });
 
 test("{{render}} helper should render templates with models multiple times", function() {

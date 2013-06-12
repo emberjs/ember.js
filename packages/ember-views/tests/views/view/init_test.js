@@ -38,23 +38,23 @@ test("registers itself with a controller if the viewController property is set",
 module("Ember.View.createWithMixins");
 
 test("should warn if a non-array is used for classNames", function() {
-  raises(function() {
+  expectAssertion(function() {
     Ember.View.createWithMixins({
       elementId: 'test',
       classNames: Ember.computed(function() {
         return ['className'];
       }).volatile()
     });
-  }, /Only arrays are allowed/i, 'should warn that an array was not used');
+  }, /Only arrays are allowed/i);
 });
 
 test("should warn if a non-array is used for classNamesBindings", function() {
-  raises(function() {
+  expectAssertion(function() {
     Ember.View.createWithMixins({
       elementId: 'test',
       classNameBindings: Ember.computed(function() {
         return ['className'];
       }).volatile()
     });
-  }, /Only arrays are allowed/i, 'should warn that an array was not used');
+  }, /Only arrays are allowed/i);
 });

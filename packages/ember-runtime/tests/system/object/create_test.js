@@ -66,21 +66,21 @@ test("calls setUnknownProperty if defined", function() {
 });
 
 test("throws if you try to define a computed property", function() {
-  raises(function() {
-    var obj = Ember.Object.create({
+  expectAssertion(function() {
+    Ember.Object.create({
       foo: Ember.computed(function(){})
     });
-  }, 'should warn that a computed property was passed to create');
+  }, 'Ember.Object.create no longer supports defining computed properties.');
 });
 
 test("throws if you try to call _super in a method", function() {
-  raises(function() {
-    var obj = Ember.Object.create({
+  expectAssertion(function(){
+     Ember.Object.create({
       foo: function() {
         this._super();
       }
     });
-  }, 'should warn that a method that calls _super was passed to create');
+  }, 'Ember.Object.create no longer supports defining methods that call _super.');
 });
 
 test("throws if you try to 'mixin' a definition", function(){
@@ -90,9 +90,9 @@ test("throws if you try to 'mixin' a definition", function(){
     }
   });
 
-  raises(function(){
+  expectAssertion(function(){
     var o = Ember.Object.create(myMixin);
-  }, "should warn that you passed in a mixin");
+  }, "Ember.Object.create no longer supports mixing in other definitions, use createWithMixins instead.");
 });
 
 module('Ember.Object.createWithMixins');
@@ -108,7 +108,6 @@ test("Creates a new object that contains passed properties", function() {
   equal(Ember.get(obj, 'prop'), 'FOO', 'obj.prop');
   obj.method();
   ok(called, 'method executed');
-
 });
 
 // ..........................................................

@@ -135,7 +135,7 @@ test("it does not enter an infinite loop in transitionTo", function() {
   stateManager.transitionTo('');
   ok(stateManager.get('currentState') === emptyState, "transitionTo does nothing when given empty name");
 
-  raises(function() {
+  expectAssertion(function() {
     stateManager.transitionTo('nonexistentState');
   }, 'Could not find state for path: "nonexistentState"');
 
@@ -288,12 +288,12 @@ test("it triggers setup on initialSubstate", function() {
 });
 
 test("it throws an assertion error when the initialState does not exist", function() {
-  raises(function() {
+  expectAssertion(function() {
     Ember.StateManager.create({
       initialState: 'foo',
       bar: Ember.State.create()
     });
-  }, Error, 'raises an exception');
+  });
 });
 
 module("Ember.StateManager - Transitions on Complex State Managers");
