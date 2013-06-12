@@ -25,9 +25,9 @@ test('applying anonymous properties', function() {
 });
 
 test('applying null values', function() {
-  raises(function() {
+  expectAssertion(function() {
     Ember.mixin({}, null);
-  }, Error);
+  });
 });
 
 test('applying a property with an undefined value', function() {

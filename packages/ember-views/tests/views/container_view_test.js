@@ -581,20 +581,19 @@ test("Child view can only be added to one container at a time", function () {
     container.set('currentView', view);
   });
 
-  throws(function() {
+  expectAssertion(function(){
     Ember.run(function() {
-        secondContainer.set('currentView', view);
+      secondContainer.set('currentView', view);
     });
   });
 
-  throws(function() {
+  expectAssertion(function(){
     Ember.run(function() {
-        secondContainer.pushObject(view);
+      secondContainer.pushObject(view);
     });
   });
 
   Ember.run(function() {
     secondContainer.destroy();
   });
-
 });

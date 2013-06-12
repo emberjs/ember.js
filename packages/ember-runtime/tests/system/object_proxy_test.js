@@ -27,9 +27,9 @@ testBoth("should proxy properties to content", function(get, set) {
       proxy = Ember.ObjectProxy.create();
 
   equal(get(proxy, 'firstName'), undefined, 'get on proxy without content should return undefined');
-  raises(function () {
+  expectAssertion(function () {
     set(proxy, 'firstName', 'Foo');
-  }, 'set on proxy without content should raise');
+  }, /Cannot delegate set\('firstName', Foo\) to the 'content'/i);
 
   set(proxy, 'content', content);
 

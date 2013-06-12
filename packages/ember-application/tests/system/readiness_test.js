@@ -151,7 +151,7 @@ test("Ember.Application's ready event can be deferred by other components", func
   equal(wasResolved, 1);
   equal(readyWasCalled, 1, "ready was called now all readiness deferrals are advanced");
 
-  raises(function() {
+  expectAssertion(function() {
     application.deferReadiness();
-  }, Error);
+  });
 });

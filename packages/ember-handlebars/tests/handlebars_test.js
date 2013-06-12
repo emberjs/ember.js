@@ -715,7 +715,7 @@ test("Template views return throw if their template cannot be found", function()
     templateName: 'cantBeFound'
   });
 
-  throws(function() {
+  expectAssertion(function() {
     get(view, 'template');
   }, /cantBeFound/);
 });
@@ -725,7 +725,7 @@ test("Layout views return throw if their layout cannot be found", function() {
     layoutName: 'cantBeFound'
   });
 
-  throws(function() {
+  expectAssertion(function() {
     get(view, 'layout');
   }, /cantBeFound/);
 });
@@ -835,9 +835,9 @@ test("should warn if setting a template on a view with a templateName already sp
     template: Ember.Handlebars.compile('{{#view childView}}test{{/view}}')
   });
 
-  raises(function() {
+  expectAssertion(function() {
     appendView();
-  }, Error, "raises if conflicting template and templateName are provided");
+  }, "Unable to find view at path 'childView'");
 
   Ember.run(function() {
     view.destroy();
@@ -848,9 +848,9 @@ test("should warn if setting a template on a view with a templateName already sp
     template: Ember.Handlebars.compile('{{#view childView templateName="foo"}}test{{/view}}')
   });
 
-  raises(function() {
+  expectAssertion(function() {
     appendView();
-  }, Error, "raises if conflicting template and templateName are provided via a Handlebars template");
+  }, "Unable to find view at path 'childView'");
 });
 
 test("Child views created using the view helper should have their parent view set properly", function() {
@@ -1115,12 +1115,12 @@ test("{{view}} class attribute should set class on layer", function() {
 });
 
 test("{{view}} should not allow attributeBindings to be set", function() {
-  raises(function() {
+  expectAssertion(function() {
     view = Ember.View.create({
       template: Ember.Handlebars.compile('{{view "Ember.View" attributeBindings="one two"}}')
     });
     appendView();
-  }, /Setting 'attributeBindings' via Handlebars is not allowed/, "should raise attributeBindings error");
+  }, /Setting 'attributeBindings' via Handlebars is not allowed/);
 });
 
 test("{{view}} should be able to point to a local view", function() {
