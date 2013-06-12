@@ -232,3 +232,46 @@ test("you can set content later and it will be sorted", function() {
   equal(sortedArrayController.get('length'), 3, 'array has 3 items');
   equal(sortedArrayController.objectAt(0).name, 'Scumbag Bryn', 'array is sorted by name');
 });
+
+module("Ember.Sortable with sortFunction and sortProperties", {
+  setup: function() {
+    Ember.run(function() {
+      sortedArrayController = Ember.ArrayController.create({
+        sortProperties: ['name'],
+        sortFunction: function(v, w){
+            var lowerV = v.toLowerCase(),
+                lowerW = w.toLowerCase();
+
+            if(lowerV < lowerW){
+              return -1;
+            }
+            if(lowerV > lowerW){
+              return 1;
+            }
+            return 0;
+        }
+      });
+      var array = [{ id: 1, name: "Scumbag Dale" },
+                   { id: 2, name: "Scumbag Katz" },
+                   { id: 3, name: "Scumbag bryn" }];
+      unsortedArray = Ember.A(Ember.A(array).copy());
+    });
+  },
+
+  teardown: function() {
+    Ember.run(function() {
+      sortedArrayController.destroy();
+    });
+  }
+});
+
+test("you can sort with custom sorting function", function() {
+  equal(sortedArrayController.get('length'), 0, 'array has 0 items');
+
+  Ember.run(function() {
+    sortedArrayController.set('content', unsortedArray);
+  });
+
+  equal(sortedArrayController.get('length'), 3, 'array has 3 items');
+  equal(sortedArrayController.objectAt(0).name, 'Scumbag bryn', 'array is sorted by custom sort');
+});
