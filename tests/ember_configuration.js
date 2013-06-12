@@ -49,7 +49,6 @@
     var AssertionFailedError = new Error('AssertionFailed');
 
     try {
-
       Ember.assert = function(message, test) {
         arity = arguments.length;
         actualMessage = message;
