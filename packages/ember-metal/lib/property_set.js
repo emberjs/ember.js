@@ -38,6 +38,8 @@ var set = function set(obj, keyName, value, tolerant) {
     obj = null;
   }
 
+  Ember.assert("Cannot call set with "+ keyName +" key.", !!keyName);
+
   if (!obj || keyName.indexOf('.') !== -1) {
     return setPath(obj, keyName, value, tolerant);
   }
