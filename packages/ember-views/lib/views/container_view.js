@@ -326,6 +326,7 @@ Ember.ContainerView = Ember.View.extend(Ember.MutableArray, {
   initializeViews: function(views, parentView, templateData) {
     forEach(views, function(view) {
       set(view, '_parentView', parentView);
+      set(view, 'container', parentView && parentView.container);
 
       if (!get(view, 'templateData')) {
         set(view, 'templateData', templateData);
