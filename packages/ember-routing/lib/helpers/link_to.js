@@ -39,18 +39,60 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
   }
 
   /**
+    `Ember.LinkView` renders an element whose `click` event triggers a
+    transition of the application's instance of `Ember.Router` to
+    a supplied route by name.
+    
+    Instances of `LinkView` will most likely be created through
+    the `linkTo` Handlebars helper, but properties of this class
+    can be overridedn to customize application-wide behavior.
+
     @class LinkView
     @namespace Ember
     @extends Ember.View
+    @see {Handlebars.helpers.linkTo}
   **/
   var LinkView = Ember.LinkView = Ember.View.extend({
     tagName: 'a',
     namedRoute: null,
     currentWhen: null,
+
+    /**
+      Sets the `title` attribute of the `LinkView`'s HTML element.
+
+      @property title
+      @default null
+    **/
     title: null,
+
+    /**
+      The CSS class to apply to `LinkView`'s element when its `active`
+      property is `true`.
+
+      @property activeClass
+      @type String
+      @default active
+    **/
     activeClass: 'active',
+
+    /**
+      The CSS class to apply to a `LinkView`'s element when its `disabled`
+      property is `true`.
+      
+      @property disabledClass
+      @type String
+      @default disabled
+    **/
     disabledClass: 'disabled',
     _isDisabled: false,
+
+    /**
+      Determines whether the `LinkView` will trigger routing via
+      the `replaceWith` routing strategy. 
+
+      @type Boolean
+      @default false
+    **/
     replace: false,
     attributeBindings: ['href', 'title'],
     classNameBindings: ['active', 'disabled'],
@@ -69,6 +111,18 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     */
     eventName: 'click',
 
+    // this is doc'ed here so it shows up in the events
+    // section of the API documentation, which is where
+    // people will likely go looking for it.
+    /**
+      Triggers the `LinkView`'s routing behavior. If
+      `eventName` is changed to a value other than `click`
+      the routing behavior will trigger on that custom event
+      instead.
+
+      @event click
+    **/
+
     init: function() {
       this._super();
       // Map desired event name to invoke function
@@ -76,18 +130,42 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
       this.on(eventName, this, this._invoke);
     },
 
-    // Even though this isn't a virtual view, we want to treat it as if it is
-    // so that you can access the parent with {{view.prop}}
+    /**
+      @private
+      
+      Even though this isn't a virtual view, we want to treat it as if it is
+      so that you can access the parent with {{view.prop}}
+      
+      @method concreteView
+    **/
     concreteView: Ember.computed(function() {
       return get(this, 'parentView');
     }).property('parentView'),
 
+    /**
+      
+      Accessed as a classname binding to apply the `LinkView`'s `disabledClass`
+      CSS `class` to the element when the link is disabled.
+      
+      When `true` interactions with the element will not trigger route changes.
+      @property disabled
+    */
     disabled: Ember.computed(function(key, value) {
       if (value !== undefined) { this.set('_isDisabled', value); }
       
       return value ? this.get('disabledClass') : false;
     }),
 
+    /**
+      Accessed as a classname binding to apply the `LinkView`'s `activeClass`
+      CSS `class` to the element when the link is active.
+
+      A `LinkView` is considered active when its `currentWhen` property is `true`
+      or the application's current route is the route the `LinkView` would trigger
+      transitions into.
+
+      @property active
+    **/
     active: Ember.computed(function() {
       var router = this.get('router'),
           params = resolvedPaths(this.parameters),
@@ -138,6 +216,15 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
       }
     },
 
+    /**
+      Sets the element's `href` attribute to the url for
+      the `LinkView`'s targeted route.
+
+      If the `LinkView`'s `tagName` is changed to a value other
+      than `a`, this property will be ignored.
+
+      @property href
+    **/
     href: Ember.computed(function() {
       if (this.get('tagName') !== 'a') { return false; }
 
