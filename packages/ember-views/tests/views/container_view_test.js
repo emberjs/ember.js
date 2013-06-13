@@ -12,7 +12,8 @@ module("ember-views/views/container_view_test", {
 test("should be able to insert views after the DOM representation is created", function() {
   container = Ember.ContainerView.create({
     classNameBindings: ['name'],
-    name: 'foo'
+    name: 'foo',
+    container: {}
   });
 
   Ember.run(function() {
@@ -29,6 +30,8 @@ test("should be able to insert views after the DOM representation is created", f
     container.pushObject(view);
   });
 
+  equal(view.container, container.container, 'view gains its containerViews container');
+  equal(view._parentView, container, 'view\'s _parentView is the container');
   equal(Ember.$.trim(container.$().text()), "This is my moment");
 
   Ember.run(function(){
