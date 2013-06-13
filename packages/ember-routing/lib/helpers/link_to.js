@@ -54,6 +54,14 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     replace: false,
     attributeBindings: ['href', 'title'],
     classNameBindings: ['active', 'disabled'],
+    eventName: 'click',
+
+    init: function() {
+      this._super();
+      // Map desired event name to invoke function
+      var eventName = get(this, 'eventName');
+      this.on(eventName, this, this._invoke);
+    },
 
     // Even though this isn't a virtual view, we want to treat it as if it is
     // so that you can access the parent with {{view.prop}}
@@ -81,7 +89,15 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
       return this.get('controller').container.lookup('router:main');
     }),
 
-    click: function(event) {
+    /**
+      @private
+
+      Event handler that invokes the link, activating the associated route.
+
+      @method _invoke
+      @param {Event} event
+    */
+    _invoke: function(event) {
       if (!isSimpleClick(event)) { return true; }
 
       event.preventDefault();
