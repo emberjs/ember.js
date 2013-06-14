@@ -54,6 +54,19 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     replace: false,
     attributeBindings: ['href', 'title'],
     classNameBindings: ['active', 'disabled'],
+
+    /**
+      By default the `{{linkTo}}` helper responds to the `click` event. You
+      can override this globally by setting this property to your custom
+      event name. 
+
+      This is particularly useful on mobile when one wants to avoid the 300ms
+      click delay using some sort of custom `tap` event.
+
+      @property eventName
+      @type String
+      @default click
+    */
     eventName: 'click',
 
     init: function() {
@@ -283,6 +296,15 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
       activeClass: "is-active",
       tagName: 'li'
     })
+    ```
+
+    It is also possible to override the default event in
+    this manner:
+
+    ``` javascript
+    Ember.LinkView.reopen({
+      eventName: 'customEventName'
+    });
     ```
 
     @method linkTo
