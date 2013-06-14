@@ -759,8 +759,10 @@ class:
 
   ### Event Names
 
-  Possible events names for any of the responding approaches described above
-  are:
+  All of the event handling approaches described above respond to the same set
+  of events. The names of the built-in events are listed below. (The hash of
+  built-in events exists in `Ember.EventDispatcher`.) Additional, custom events
+  can be registered by using `Ember.Application.customEvents`.
 
   Touch events:
 
