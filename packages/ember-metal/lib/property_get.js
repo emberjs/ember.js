@@ -89,10 +89,6 @@ if (Ember.config.overrideAccessors) {
   get = Ember.get;
 }
 
-function firstKey(path) {
-  return path.match(FIRST_KEY)[0];
-}
-
 /**
   @private
 
@@ -116,7 +112,7 @@ var normalizeTuple = Ember.normalizeTuple = function(target, path) {
   if (hasThis) path = path.slice(5);
 
   if (target === Ember.lookup) {
-    key = firstKey(path);
+    key = path.match(FIRST_KEY)[0];
     target = get(target, key);
     path   = path.slice(key.length+1);
   }
