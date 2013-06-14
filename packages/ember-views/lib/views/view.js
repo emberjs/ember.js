@@ -1397,9 +1397,9 @@ Ember.View = Ember.CoreView.extend(
     For example, calling `view.$('li')` will return a jQuery object containing
     all of the `li` elements inside the DOM element of this view.
 
-    @property $
+    @method $
     @param {String} [selector] a jQuery-compatible selector string
-    @return {jQuery} the CoreQuery object for the DOM node
+    @return {jQuery} the jQuery object for the DOM node
   */
   $: function(sel) {
     return this.currentState.$(this, sel);
