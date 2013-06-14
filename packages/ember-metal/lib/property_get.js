@@ -93,8 +93,21 @@ function firstKey(path) {
   return path.match(FIRST_KEY)[0];
 }
 
-// assumes path is already normalized
-function normalizeTuple(target, path) {
+/**
+  @private
+
+  Normalizes a target/path pair to reflect that actual target/path that should
+  be observed, etc. This takes into account passing in global property
+  paths (i.e. a path beginning with a captial letter not defined on the
+  target) and * separators.
+
+  @method normalizeTuple
+  @for Ember
+  @param {Object} target The current target. May be `null`.
+  @param {String} path A path on the target or a global property path.
+  @return {Array} a temporary array with the normalized target/path pair.
+*/
+var normalizeTuple = Ember.normalizeTuple = function(target, path) {
   var hasThis  = HAS_THIS.test(path),
       isGlobal = !hasThis && IS_GLOBAL_PATH.test(path),
       key;
@@ -112,7 +125,7 @@ function normalizeTuple(target, path) {
   if (!path || path.length===0) throw new Error('Invalid Path');
 
   return [ target, path ];
-}
+};
 
 var getPath = Ember._getPath = function(root, path) {
   var hasThis, parts, tuple, idx, len;
@@ -139,24 +152,6 @@ var getPath = Ember._getPath = function(root, path) {
     if (root && root.isDestroyed) { return undefined; }
   }
   return root;
-};
-
-/**
-  @private
-
-  Normalizes a target/path pair to reflect that actual target/path that should
-  be observed, etc. This takes into account passing in global property
-  paths (i.e. a path beginning with a captial letter not defined on the
-  target) and * separators.
-
-  @method normalizeTuple
-  @for Ember
-  @param {Object} target The current target. May be `null`.
-  @param {String} path A path on the target or a global property path.
-  @return {Array} a temporary array with the normalized target/path pair.
-*/
-Ember.normalizeTuple = function(target, path) {
-  return normalizeTuple(target, path);
 };
 
 Ember.getWithDefault = function(root, key, defaultValue) {
