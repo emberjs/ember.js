@@ -10,9 +10,9 @@ var changeProperties = Ember.changeProperties,
   observers will be buffered.
 
   @method setProperties
-  @param target
-  @param {Hash} properties
-  @return target
+  @param self
+  @param {Object} hash
+  @return self
 */
 Ember.setProperties = function(self, hash) {
   changeProperties(function(){
