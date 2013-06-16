@@ -2410,6 +2410,30 @@ Ember.View.reopenClass({
     } else {
       return null;
     }
+  },
+  
+  /**
+    @private
+
+    Registers this view class as a handlebars helper.
+
+    ```javascript
+      App.UserControlView = Ember.View.extend({
+        templateName: 'user-control',
+        user: null
+      }).registerHelper('userControl')
+    ```
+  
+    ```handlebars
+      {{userControl userBinding="createdBy"}}
+    ```
+
+    @method registerHelper
+    @static
+  */
+  registerHelper: function(name) {
+    Ember.Handlebars.helper(name, this);
+    return this;
   }
 });
 
