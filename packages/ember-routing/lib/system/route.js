@@ -47,6 +47,104 @@ Ember.Route = Ember.Object.extend({
 
     The context of the event will be this route.
 
+    ## Bubbling
+
+    By default, an event will stop bubbling once a handler defined
+    on the `events` hash handles it. To continue bubbling the event,
+    you must return `true` from the handler.
+
+    ## Built-in events
+
+    There are a few built-in events pertaining to transitions that you
+    can use to customize transition behavior: `willTransition` and
+    `error`.
+
+    ### `willTransition`
+
+    The `willTransition` event is fired at the beginning of any
+    attempted transition with a `Transition` object as the sole
+    argument. This event can be used for aborting, redirecting,
+    or decorating the transition from the currently active routes.
+
+    A good example is preventing navigation when a form is
+    half-filled out:
+
+    ```js
+    App.ContactFormRoute = Ember.Route.extend({
+      events: {
+        willTransition: function(transition) {
+          if (this.controller.get('userHasEnteredData')) {
+            this.controller.displayNavigationConfirm();
+            transition.abort();
+          }
+        }
+      }
+    });
+    ```
+
+    You can also redirect elsewhere by calling 
+    `this.transitionTo('elsewhere')` from within `willTransition`.
+    Note that `willTransition` will not be fired for the
+    redirecting `transitionTo`, since `willTransition` doesn't
+    fire when there is already a transition underway. If you want
+    subsequent `willTransition` events to fire for the redirecting
+    transition, you must first explicitly call
+    `transition.abort()`.
+
+    ### `error`
+
+    When attempting to transition into a route, any of the hooks
+    may throw an error, or return a promise that rejects, at which
+    point an `error` event will be fired on the partially-entered
+    routes, allowing for per-route error handling logic, or shared
+    error handling logic defined on a parent route. 
+    
+    Here is an example of an error handler that will be invoked
+    for rejected promises / thrown errors from the various hooks
+    on the route, as well as any unhandled errors from child
+    routes:
+
+    ```js
+    App.AdminRoute = Ember.Route.extend({
+      beforeModel: function() {
+        throw "bad things!";
+        // ...or, equivalently:
+        return Ember.RSVP.reject("bad things!");
+      },
+
+      events: {
+        error: function(error, transition) {
+          // Assuming we got here due to the error in `beforeModel`,
+          // we can expect that error === "bad things!",
+          // but a promise model rejecting would also 
+          // call this hook, as would any errors encountered
+          // in `afterModel`. 
+
+          // The `error` hook is also provided the failed
+          // `transition`, which can be stored and later
+          // `.retry()`d if desired.
+
+          this.transitionTo('login');
+        }
+      }
+    });
+    ```
+
+    `error` events that bubble up all the way to `ApplicationRoute` 
+    will fire a default error handler that logs the error. You can
+    specify your own global default error handler by overriding the 
+    `error` handler on `ApplicationRoute`:
+
+    ```js
+    App.ApplicationRoute = Ember.Route.extend({
+      events: {
+        error: function(error, transition) {
+          this.controllerFor('banner').displayError(error.message);
+        }
+      }
+    });
+    ```
+
     @see {Ember.Route#send}
     @see {Handlebars.helpers.action}
 
@@ -73,17 +171,6 @@ Ember.Route = Ember.Object.extend({
   activate: Ember.K,
 
   /**
-    Transition to another route via the `routeTo` event which
-    will by default be handled by ApplicationRoute.
-
-    @method routeTo
-    @param {TransitionEvent} transitionEvent
-   */
-  routeTo: function(transitionEvent) {
-    this.router.routeTo(transitionEvent);
-  },
-
-  /**
     Transition into another route. Optionally supply a model for the
     route in question. The model will be serialized into the URL
     using the `serialize` hook.
@@ -94,13 +181,6 @@ Ember.Route = Ember.Object.extend({
   */
   transitionTo: function(name, context) {
     var router = this.router;
-
-    // If the transition is a no-op, just bail.
-    if (router.isActive.apply(router, arguments)) {
-      return;
-    }
-
-    if (this._checkingRedirect) { this._redirected[this._redirectDepth] = true; }
     return router.transitionTo.apply(router, arguments);
   },
 
@@ -117,28 +197,12 @@ Ember.Route = Ember.Object.extend({
   */
   replaceWith: function() {
     var router = this.router;
-
-    // If the transition is a no-op, just bail.
-    if (router.isActive.apply(router, arguments)) {
-      return;
-    }
-
-    if (this._checkingRedirect) { this._redirected[this._redirectDepth] = true; }
     return this.router.replaceWith.apply(this.router, arguments);
   },
 
   send: function() {
     return this.router.send.apply(this.router, arguments);
   },
-
-  /**
-   @private
-
-   Internal counter for tracking whether a route handler has
-   called transitionTo or replaceWith inside its redirect hook.
-
-  */
-  _redirectDepth: 0,
 
   /**
     @private
@@ -148,58 +212,6 @@ Ember.Route = Ember.Object.extend({
     @method setup
   */
   setup: function(context) {
-    // Determine if this is the top-most transition.
-    // If so, we'll set up a data structure to track
-    // whether `transitionTo` or replaceWith gets called
-    // inside our `redirect` hook.
-    //
-    // This is necessary because we set a flag on the route
-    // inside transitionTo/replaceWith to determine afterwards
-    // if they were called, but `setup` can be called
-    // recursively and we need to disambiguate where in the
-    // call stack the redirect happened.
-
-    // Are we the first call to setup? If so, set up the
-    // redirect tracking data structure, and remember that
-    // we're the top-most so we can clean it up later.
-    var isTop;
-    if (!this._redirected) {
-      isTop = true;
-      this._redirected = [];
-    }
-
-    // Set a flag on this route saying that we are interested in
-    // tracking redirects, and increment the depth count.
-    this._checkingRedirect = true;
-    var depth = ++this._redirectDepth;
-
-    // Check to see if context is set. This check preserves
-    // the correct arguments.length inside the `redirect` hook.
-    if (context === undefined) {
-      this.redirect();
-    } else {
-      this.redirect(context);
-    }
-
-    // After the call to `redirect` returns, decrement the depth count.
-    this._redirectDepth--;
-    this._checkingRedirect = false;
-
-    // Save off the data structure so we can reset it on the route but
-    // still reference it later in this method.
-    var redirected = this._redirected;
-
-    // If this is the top `setup` call in the call stack, clear the
-    // redirect tracking data structure.
-    if (isTop) { this._redirected = null; }
-
-    // If we were redirected, there is nothing left for us to do.
-    // Returning false tells router.js not to continue calling setup
-    // on any children route handlers.
-    if (redirected[depth]) {
-      return false;
-    }
-
     var controller = this.controllerFor(this.routeName, context);
 
     // Assign the route's controller so that it can more easily be
@@ -222,10 +234,15 @@ Ember.Route = Ember.Object.extend({
   },
 
   /**
+    @deprecated
+
     A hook you can implement to optionally redirect to another route.
 
     If you call `this.transitionTo` from inside of this hook, this route
     will not be entered in favor of the other hook.
+
+    This hook is deprecated in favor of using the `afterModel` hook
+    for performing redirects after the model has resolved.
 
     @method redirect
     @param {Object} model the model for this route
@@ -233,17 +250,114 @@ Ember.Route = Ember.Object.extend({
   redirect: Ember.K,
 
   /**
-    @private
+    This hook is the first of the route entry validation hooks
+    called when an attempt is made to transition into a route
+    or one of its children. It is called before `model` and
+    `afterModel`, and is appropriate for cases when:
 
-    The hook called by `router.js` to convert parameters into the context
-    for this handler. The public Ember hook is `model`.
+    1) A decision can be made to redirect elsewhere without
+       needing to resolve the model first.
+    2) Any async operations need to occur first before the 
+       model is attempted to be resolved.
 
-    @method deserialize
+    This hook is provided the current `transition` attempt
+    as a parameter, which can be used to `.abort()` the transition,
+    save it for a later `.retry()`, or retrieve values set
+    on it from a previous hook. You can also just call
+    `this.transitionTo` to another route to implicitly 
+    abort the `transition`. 
+
+    You can return a promise from this hook to pause the
+    transition until the promise resolves (or rejects). This could
+    be useful, for instance, for retrieving async code from 
+    the server that is required to enter a route. 
+
+    ```js
+    App.PostRoute = Ember.Route.extend({
+      beforeModel: function(transition) {
+        if (!App.Post) {
+          return Ember.$.getScript('/models/post.js');
+        }
+      }
+    });
+    ```
+
+    If `App.Post` doesn't exist in the above example, 
+    `beforeModel` will use jQuery's `getScript`, which
+    returns a promise that resolves after the server has
+    successfully retrieved and executed the code from the
+    server. Note that if an error were to occur, it would 
+    be passed to the `error` hook on `Ember.Route`, but 
+    it's also possible to handle errors specific to 
+    `beforeModel` right from within the hook (to distinguish
+    from the shared error handling behavior of the `error`
+    hook):
+
+    ```js
+    App.PostRoute = Ember.Route.extend({
+      beforeModel: function(transition) {
+        if (!App.Post) {
+          var self = this;
+          return Ember.$.getScript('post.js').then(null, function(e) {
+            self.transitionTo('help');
+
+            // Note that the above transitionTo will implicitly
+            // halt the transition. If you were to return
+            // nothing from this promise reject handler, 
+            // according to promise semantics, that would
+            // convert the reject into a resolve and the 
+            // transition would continue. To propagate the
+            // error so that it'd be handled by the `error` 
+            // hook, you would have to either
+            return Ember.RSVP.reject(e);
+            // or
+            throw e;
+          });
+        }
+      }
+    });
+    ```
+
+    @param {Transition} transition 
+    @return {Promise} if the value returned from this hook is
+      a promise, the transition will pause until the transition
+      resolves. Otherwise, non-promise return values are not 
+      utilized in any way.
   */
-  deserialize: function(params) {
-    var model = this.model(params);
-    return this.currentModel = model;
+  beforeModel: Ember.K,
+
+  /**
+    This hook is called after this route's model has resolved.
+    It follows identical async/promise semantics to `beforeModel` 
+    but is provided the route's resolved model in addition to 
+    the `transition`, and is therefore suited to performing
+    logic that can only take place after the model has already
+    resolved.
+
+    ```js
+    App.PostRoute = Ember.Route.extend({
+      afterModel: function(posts, transition) {
+        if (posts.length === 1) {
+          this.transitionTo('post.show', posts[0]);
+        }
+      }
+    });
+    ```
+
+    Refer to documentation for `beforeModel` for a description
+    of transition-pausing semantics when a promise is returned
+    from this hook. 
+
+    @param {Transition} transition 
+    @return {Promise} if the value returned from this hook is
+      a promise, the transition will pause until the transition
+      resolves. Otherwise, non-promise return values are not 
+      utilized in any way.
+   */
+  afterModel: function(resolvedModel, transition) {
+    this.redirect(resolvedModel, transition);
   },
+
 
   /**
     @private
@@ -282,10 +396,15 @@ Ember.Route = Ember.Object.extend({
     is not called. Routes without dynamic segments will always
     execute the model hook.
 
+    This hook follows the asynchronous/promise semantics
+    described in the documentation for `beforeModel`. In particular,
+    if a promise returned from `model` fails, the error will be 
+    handled by the `error` hook on `Ember.Route`.
+
     @method model
     @param {Object} params the parameters extracted from the URL
   */
-  model: function(params) {
+  model: function(params, resolvedParentModels) {
     var match, name, sawParams, value;
 
     for (var prop in params) {
@@ -443,6 +562,14 @@ Ember.Route = Ember.Object.extend({
     @return {Object} the model object
   */
   modelFor: function(name) {
+
+    // If we are mid-transition, we want to try and look up
+    // resolved parent contexts on the current transitionEvent.
+    var transition = this.router.router.activeTransition;
+    if (transition) {
+      return transition.resolvedModels[name];
+    }
+
     var route = this.container.lookup('route:' + name);
     return route && route.currentModel;
   },
