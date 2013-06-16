@@ -1,18 +1,19 @@
 require('ember-testing/test');
 
 var get = Ember.get,
-    helper = Ember.Test.registerHelper,
-    pendingAjaxRequests = 0,
+    Test = Ember.Test,
+    helper = Test.registerHelper,
     countAsync = 0;
 
+Test.pendingAjaxRequests = 0;
 
-Ember.Test.onInjectHelpers(function() {
+Test.onInjectHelpers(function() {
   Ember.$(document).ajaxStart(function() {
-    pendingAjaxRequests++;
+    Test.pendingAjaxRequests++;
   });
 
   Ember.$(document).ajaxStop(function() {
-    pendingAjaxRequests--;
+    Test.pendingAjaxRequests--;
   });
 });
 
@@ -25,9 +26,7 @@ function visit(app, url) {
 
 function click(app, selector, context) {
   var $el = find(app, selector, context);
-  Ember.run(function() {
-    $el.click();
-  });
+  Ember.run($el, 'click');
   return wait(app);
 }
 
@@ -57,22 +56,23 @@ function find(app, selector, context) {
 function wait(app, value) {
   var promise;
 
-  promise = Ember.Test.promise(function(resolve) {
+  promise = Test.promise(function(resolve) {
     if (++countAsync === 1) {
-      Ember.Test.adapter.asyncStart();
+      Test.adapter.asyncStart();
     }
     var watcher = setInterval(function() {
       var routerIsLoading = app.__container__.lookup('router:main').router.isLoading;
       if (routerIsLoading) { return; }
-      if (pendingAjaxRequests) { return; }
+      if (Test.pendingAjaxRequests) { return; }
       if (Ember.run.hasScheduledTimers() || Ember.run.currentRunLoop) { return; }
+
       clearInterval(watcher);
+
       if (--countAsync === 0) {
-        Ember.Test.adapter.asyncEnd();
+        Test.adapter.asyncEnd();
       }
-      Ember.run(function() {
-        resolve(value);
-      });
+
+      Ember.run(resolve, value);
     }, 10);
   });
 
