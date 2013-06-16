@@ -25,7 +25,7 @@ function visit(app, url) {
 }
 
 function click(app, selector, context) {
-  var $el = find(app, selector, context);
+  var $el = findWithAssert(app, selector, context);
   Ember.run($el, 'click');
   return wait(app);
 }
@@ -36,20 +36,26 @@ function fillIn(app, selector, context, text) {
     text = context;
     context = null;
   }
-  $el = find(app, selector, context);
+  $el = findWithAssert(app, selector, context);
   Ember.run(function() {
     $el.val(text).change();
   });
   return wait(app);
 }
 
+function findWithAssert(app, selector, context) {
+  var $el = find(app, selector, context);
+  if ($el.length === 0) {
+    throw("Element " + selector + " not found.");
+  }
+  return $el;
+}
+
 function find(app, selector, context) {
   var $el;
   context = context || get(app, 'rootElement');
   $el = app.$(selector, context);
-  if ($el.length === 0) {
-    throw("Element " + selector + " not found.");
-  }
+
   return $el;
 }
 
@@ -127,4 +133,5 @@ helper('visit', visit);
 helper('click', click);
 helper('fillIn', fillIn);
 helper('find', find);
+helper('findWithAssert', findWithAssert);
 helper('wait', wait);
