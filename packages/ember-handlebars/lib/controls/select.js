@@ -441,6 +441,10 @@ Ember.Select = Ember.View.extend(
   }, 'selection.@each'),
 
   valueDidChange: Ember.observer(function() {
+    this.updateDom();
+  }, 'value'),
+
+  updateDom: function() {
     var content = get(this, 'content'),
         value = get(this, 'value'),
         valuePath = get(this, 'optionValuePath').replace(/^content\.?/, ''),
@@ -454,7 +458,7 @@ Ember.Select = Ember.View.extend(
 
       this.set('selection', selection);
     }
-  }, 'value'),
+  },
 
 
   _triggerChange: function() {
