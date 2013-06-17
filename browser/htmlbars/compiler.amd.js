@@ -5,9 +5,9 @@ define(
     var preprocess = __dependency1__.preprocess;
     var compileAST = __dependency2__.compileAST;
 
-    var __export1__ = function compile(string, options) {
+    function compile(string, options) {
       var ast = preprocess(string);
       return compileAST(ast, options);
     }
-    __exports__.compile = __export1__;
+    __exports__.compile = compile;
   });

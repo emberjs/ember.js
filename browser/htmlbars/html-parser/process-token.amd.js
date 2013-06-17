@@ -14,7 +14,7 @@ define(
       @token {Token} token the current token being built
       @child {Token|Mustache|Block} child the new token to insert into the AST
     */
-    var __export1__ = function processToken(state, stack, token, child) {
+    function processToken(state, stack, token, child) {
       // EOF
       if (child === undefined) { return; }
       return handlers[child.type](child, currentElement(stack), stack, token, state);
@@ -33,6 +33,13 @@ define(
       "beforeAttributeName": "in-tag"
     }
 
+    var voidTagNames = "area base br col command embed hr img input keygen link meta param source track wbr";
+    var voidMap = {};
+
+    voidTagNames.split(" ").forEach(function(tagName) {
+      voidMap[tagName] = true;
+    });
+
     // Except for `mustache`, all tokens are only allowed outside of
     // a start or end tag.
     var handlers = {
@@ -43,6 +50,10 @@ define(
       StartTag: function(tag, current, stack) {
         var element = new HTMLElement(tag.tagName, tag.attributes, [], tag.helpers);
         stack.push(element);
+
+        if (voidMap.hasOwnProperty(tag.tagName)) {
+          this.EndTag(tag, element, stack);
+        }
       },
 
       block: function(block, current, stack) {
@@ -81,6 +92,7 @@ define(
       processHTMLMacros: function() {}
     };
 
-    __exports__.processToken = __export1__;
+
+    __exports__.processToken = processToken;
     __exports__.config = config;
   });

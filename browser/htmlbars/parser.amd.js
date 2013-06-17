@@ -10,7 +10,7 @@ define(
     var BlockElement = __dependency2__.BlockElement;
     var processToken = __dependency3__.processToken;
 
-    var __export1__ = function preprocess(html) {
+    function preprocess(html) {
       var ast = Handlebars.parse(html);
       return new HTMLProcessor().accept(ast);
     };
@@ -52,7 +52,7 @@ define(
 
     processor.content = function(content) {
       var tokens = this.tokenizer.tokenizePart(content.string);
-  
+
       return tokens.forEach(function(token) {
         process(this, token);
       }, this);
@@ -99,5 +99,6 @@ define(
 
       helpers.push(helper);
     }
-    __exports__.preprocess = __export1__;
+
+    __exports__.preprocess = preprocess;
   });

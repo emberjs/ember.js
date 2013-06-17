@@ -17,16 +17,16 @@ define(
     }
 
 
-    var __export1__ = function quotedArray(list) {
+    function quotedArray(list) {
       return array(list.map(string).join(", "));
     }
 
-    var __export2__ = function hash(pairs) {
+    function hash(pairs) {
       return "{" + pairs.join(",") + "}";
     }
     __exports__.escapeString = escapeString;
     __exports__.string = string;
     __exports__.array = array;
-    __exports__.quotedArray = __export1__;
-    __exports__.hash = __export2__;
+    __exports__.quotedArray = quotedArray;
+    __exports__.hash = hash;
   });

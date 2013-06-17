@@ -52,6 +52,31 @@ test("Simple elements can have attributes", function() {
   equalHTML(fragment, '<div class="foo" id="bar">content</div>');
 });
 
+function shouldBeVoid(tagName) {
+  var html = "<" + tagName + " data-foo='bar'><p>hello</p>";
+  var template = compile(html);
+  var fragment = template();
+
+
+  var div = document.createElement("div");
+  div.appendChild(fragment.cloneNode(true));
+
+  var tag = '<' + tagName + ' data-foo="bar">';
+  var closing = '</' + tagName + '>';
+  var extra = "<p>hello</p>";
+  var html = div.innerHTML;
+
+  QUnit.push((html === tag + extra) || (html === tag + closing + extra), html, tag + closing + extra, tagName + "should be a void element");
+}
+
+test("Void elements are self-closing", function() {
+  var voidElements = "area base br col command embed hr img input keygen link meta param source track wbr";
+
+  voidElements.split(" ").forEach(function(tagName) {
+    shouldBeVoid(tagName);
+  });
+});
+
 test("The compiler can handle nesting", function() {
   var html = '<div class="foo"><p><span id="bar" data-foo="bar">hi!</span></p></div> More content';
   var template = compile(html);
