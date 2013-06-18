@@ -92,7 +92,6 @@ test("should by default target the state manager on the controller if it exists"
   view = Ember.View.create({
     controller: Ember.Controller.create({
       target: Ember.Object.create({
-        isState: true,
         send: function(context) {
           sent++;
         }
@@ -291,7 +290,6 @@ test("should be compatible with sending events to a state manager", function() {
   var eventNameCalled,
       eventObjectSent,
       manager = {
-        isState: true,
         send: function(eventName, eventObject) { eventNameCalled = eventName; eventObjectSent = eventObject; }
       };
 
