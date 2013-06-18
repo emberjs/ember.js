@@ -78,7 +78,7 @@ function wait(app, value) {
         Test.adapter.asyncEnd();
       }
 
-      Ember.run(resolve, value);
+      Ember.run(null, resolve, value);
     }, 10);
   });
 
