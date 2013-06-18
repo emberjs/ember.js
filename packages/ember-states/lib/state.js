@@ -13,8 +13,6 @@ var get = Ember.get, set = Ember.set;
 */
 Ember.State = Ember.Object.extend(Ember.Evented,
 /** @scope Ember.State.prototype */{
-  isState: true,
-
   /**
     A reference to the parent state.
 
@@ -126,7 +124,7 @@ Ember.State = Ember.Object.extend(Ember.Evented,
     if (!value) { return false; }
     var instance;
 
-    if (value.isState) {
+    if (value instanceof Ember.State) {
       set(value, 'name', name);
       instance = value;
       instance.container = this.container;
@@ -137,7 +135,7 @@ Ember.State = Ember.Object.extend(Ember.Evented,
       });
     }
 
-    if (instance && instance.isState) {
+    if (instance instanceof Ember.State) {
       set(instance, 'parentState', this);
       get(this, 'childStates').pushObject(instance);
       states[name] = instance;
