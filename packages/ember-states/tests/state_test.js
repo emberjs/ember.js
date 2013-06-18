@@ -181,6 +181,27 @@ test("the isLeaf property is false when a state has child states", function() {
   equal(definitelyInside.get('isLeaf'), true);
 });
 
+test("propagates its container to its child states", function(){
+  var container = { lookup: Ember.K },
+      manager = Ember.StateManager.create({
+        container: container,
+        states: {
+          first: Ember.State.extend({
+            insideFirst: Ember.State.extend()
+          }),
+          second: Ember.State.create()
+        }
+      });
+
+  var first = manager.get('states.first'),
+      insideFirst = first.get('states.insideFirst'),
+      second = manager.get('states.second');
+
+  equal(first.container, container, 'container should be given to a `create`ed child state');
+  equal(insideFirst.container, container, 'container should be given to a nested child state');
+  equal(second.container, container, 'container should be given to a `extend`ed child state after creation');
+});
+
 module("Ember.State.transitionTo", {
   setup: function(){
     _$ = Ember.$;
