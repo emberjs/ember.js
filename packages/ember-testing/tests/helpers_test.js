@@ -159,3 +159,38 @@ test("Concurrent wait calls are supported", function() {
   });
 
 });
+
+test("`wait` helper can be passed a resolution value", function() {
+  expect(4);
+
+  var promise, wait;
+
+  promise = Ember.RSVP.Promise(function(resolve) {
+    Ember.run(null, resolve, 'promise');
+  });
+
+  Ember.run(function() {
+    App = Ember.Application.create();
+    App.setupForTesting();
+  });
+
+  App.injectTestHelpers();
+
+  Ember.run(App, App.advanceReadiness);
+
+  wait = App.testHelpers.wait;
+
+  wait('text').then(function(val) {
+    equal(val, 'text', 'can resolve to a string');
+    return wait(1);
+  }).then(function(val) {
+    equal(val, 1, 'can resolve to an integer');
+    return wait({ age: 10 });
+  }).then(function(val) {
+    deepEqual(val, { age: 10 }, 'can resolve to an object');
+    return wait(promise);
+  }).then(function(val) {
+    equal(val, 'promise', 'can resolve to a promise resolution value');
+  });
+
+});
