@@ -1121,10 +1121,10 @@ test("using replaceWith calls setURL if location.replaceURL is not defined", fun
 });
 
 test("It is possible to get the model from a parent route", function() {
-  expect(3);
+  expect(6);
 
   Router.map(function() {
-    this.resource("post", { path: "/posts/:post_id" }, function() {
+    this.resource("the_post", { path: "/posts/:post_id" }, function() {
       this.resource("comments");
     });
   });
@@ -1137,7 +1137,7 @@ test("It is possible to get the model from a parent route", function() {
     3: post3
   };
 
-  App.PostRoute = Ember.Route.extend({
+  App.ThePostRoute = Ember.Route.extend({
     model: function(params) {
       return posts[params.post_id];
     }
@@ -1145,7 +1145,9 @@ test("It is possible to get the model from a parent route", function() {
 
   App.CommentsRoute = Ember.Route.extend({
     model: function() {
-      equal(this.modelFor('post'), currentPost);
+      // Allow both underscore / camelCase format.
+      equal(this.modelFor('thePost'), currentPost);
+      equal(this.modelFor('the_post'), currentPost);
     }
   });
 
