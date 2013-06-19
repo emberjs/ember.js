@@ -64,4 +64,14 @@ function bootstrap() {
   from the DOM after processing.
 */
 
-Ember.onLoad('application', bootstrap);
+Ember.onLoad('Ember.Application', function(Application) {
+  if (Application.initializer) {
+    Application.initializer({
+      name: 'domTemplates',
+      initialize: bootstrap
+    });
+  } else {
+    // for ember-old-router
+    Ember.onLoad('application', bootstrap);
+  }
+});
