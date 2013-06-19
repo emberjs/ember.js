@@ -4,15 +4,6 @@
 */
 
 var get = Ember.get, set = Ember.set, location = window.location;
-var supportsHistory = !!(window.history && history.pushState);
-var supportsHashChange = (function () {
-  if ('onhashchange' in window === false) {
-    return false;
-  }
-
-  // IE8 Compatibility Mode provides false positive
-  return (document.documentMode === undefined || document.documentMode > 7);
-})();
 
 /**
   Ember.AutoLocation will select the best location option based off browser
@@ -25,7 +16,7 @@ var supportsHashChange = (function () {
   @namespace Ember
   @static
 */
-Ember.AutoLocation = {
+Ember.AutoLocation = Ember.Object.createWithMixins({
 
   /**
     Base path that should always be pretty; i.e. before hash state. Helpful when
@@ -39,12 +30,50 @@ Ember.AutoLocation = {
   */
   rootPath: '/',
 
+  window: window,
+  document: document,
+  userAgent: navigator.userAgent,
+
+  history: Ember.computed(function () {
+    return get(this, 'window').history;
+  }).property('window'),
+
+  supportsHistory: Ember.computed(function () {
+    // The stock browser on Android 2.2 & 2.3 returns positive on history support
+    // Unfortunately support is really buggy and there is no clean way to detect
+    // these bugs, so we fall back to a user agent sniff :(
+    var userAgent = get(this, 'userAgent'),
+        history = get(this, 'history');
+
+    // We only want Android 2, stock browser, not Chrome which identifies
+    // itself as 'Mobile Safari' as well
+    if (userAgent.indexOf('Android 2') !== -1 &&
+        userAgent.indexOf('Mobile Safari') !== -1 &&
+        userAgent.indexOf('Chrome') === -1) {
+      return false;
+    }
+
+    return (history && 'pushState' in history);
+  }).property('userAgent', 'history'),
+
+  supportsHashChange: Ember.computed(function () {
+    var window = get(this, 'window'),
+        document = get(this, 'document');
+
+    if ('onhashchange' in window === false) {
+      return false;
+    }
+
+    // IE8 Compatibility Mode provides false positive
+    return (document.documentMode === undefined || document.documentMode > 7);
+  }).property('window', 'document'),
+
   create: function () {
     var implementationClass, historyPath, hashPath,
-        currentPath = this.getFullPath();
+        currentPath = get(this, 'fullPath');
 
-    if (supportsHistory) {
-      historyPath = this.getHistoryPath();
+    if (get(this, 'supportsHistory')) {
+      historyPath = get(this, 'historyPath');
 
       // Since we support history paths, let's be sure we're using them else 
       // switch the location over to it.
@@ -54,8 +83,8 @@ Ember.AutoLocation = {
         location.replace(historyPath);
       }
 
-    } else if (supportsHashChange) {
-      hashPath = this.getHashPath();
+    } else if (get(this, 'supportsHashChange')) {
+      hashPath = get(this, 'hashPath');
 
       // Be sure we're using a hashed path, otherwise let's switch over it to so
       // we start off clean and consistent.
@@ -81,7 +110,7 @@ Ember.AutoLocation = {
 
     @method getPath
   */
-  getPath: function () {
+  path: Ember.computed(function () {
     var pathname = location.pathname;
     // IE8 inconsistency check
     if (pathname.charAt(0) !== '/') {
@@ -89,7 +118,7 @@ Ember.AutoLocation = {
     }
 
     return pathname;
-  },
+  }).property(),
 
   /**
     @private
@@ -98,9 +127,9 @@ Ember.AutoLocation = {
 
     @method getFullPath
   */
-  getFullPath: function () {
-    return this.getPath() + location.hash;
-  },
+  fullPath: Ember.computed(function () {
+    return get(this, 'path') + location.hash;
+  }).property('path'),
 
   /**
     @private
@@ -110,8 +139,8 @@ Ember.AutoLocation = {
 
     @method getHistoryPath
   */
-  getHistoryPath: function () {
-    var path = this.getPath(),  
+  historyPath: Ember.computed(function () {
+    var path = get(this, 'path'),  
         hashPath = location.hash.substr(1),
         url = path + hashPath;
 
@@ -119,7 +148,7 @@ Ember.AutoLocation = {
     url = url.replace(/\/\//, '/');
 
     return url;
-  },
+  }).property('path'),
 
   /**
     @private
@@ -129,8 +158,8 @@ Ember.AutoLocation = {
 
     @method getHashPath
   */
-  getHashPath: function () {
-    var historyPath = this.getHistoryPath(),
+  hashPath: Ember.computed(function () {
+    var historyPath = get(this, 'historyPath'),
         rootPath = get(this, 'rootPath'),
         exp = new RegExp('(' + rootPath + ')(.+)'),
         url = historyPath.replace(exp, '$1#/$2');
@@ -139,7 +168,7 @@ Ember.AutoLocation = {
     url = url.replace(/\/\//, '/');
 
     return url;
-  }
-};
+  }).property('historyPath', 'rootPath')
+});
 
 Ember.Location.registerImplementation('auto', Ember.AutoLocation);
