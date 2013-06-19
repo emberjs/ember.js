@@ -70,7 +70,19 @@ file "browser/htmlbars.js" => browser_dependencies do
   end
 end
 
-task :dist => [:install_transpiler, "browser/htmlbars.js"]
+file "browser/htmlbars.all.amd.js" => amd_modules.values do
+  output = []
+
+  amd_modules.each do |name, filename|
+    output << named_module(name, filename)
+  end
+
+  open("browser/htmlbars.all.amd.js", "w") do |file|
+    file.puts output.join("\n")
+  end
+end
+
+task :dist => [:install_transpiler, "browser/htmlbars.js", "browser/htmlbars.all.amd.js"]
 
 desc "compile htmlbars"
 task :default => :dist
