@@ -119,6 +119,10 @@ define("container",
         return value;
       },
 
+      lookupFactory: function(fullName) {
+        return factoryFor(this, fullName);
+      },
+
       has: function(fullName) {
         if (this.cache.has(fullName)) {
           return true;

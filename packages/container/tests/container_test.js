@@ -48,6 +48,15 @@ test("A registered factory returns the same instance each time", function() {
   equal(postController, container.lookup('controller:post'));
 });
 
+test("A registered factory is returned from lookupFactory", function() {
+  var container = new Container();
+  var PostController = factory();
+
+  container.register('controller:post', PostController);
+
+  equal(container.lookupFactory('controller:post'), PostController, "The factory is returned from lookupFactory");
+});
+
 test("A registered factory returns a fresh instance if singleton: false is passed as an option", function() {
   var container = new Container();
   var PostController = factory();
