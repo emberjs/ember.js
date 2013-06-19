@@ -849,7 +849,7 @@ define("htmlbars/parser",
 
     processor.content = function(content) {
       var tokens = this.tokenizer.tokenizePart(content.string);
-  
+
       return tokens.forEach(function(token) {
         process(this, token);
       }, this);
@@ -896,6 +896,7 @@ define("htmlbars/parser",
 
       helpers.push(helper);
     }
+
     __exports__.preprocess = preprocess;
   });
 
