@@ -1939,23 +1939,20 @@ test("ApplicationRoute with model does not proxy the currentPath", function() {
   equal('currentPath' in model, false, 'should have defined currentPath on controller');
 });
 
-
 var supportsHistoryOverride = null,
     supportsHashChangeOverride = null;
 
 module('Ember.AutoLocation', {
   setup: function() {
-    //window.history = undefined;
-
     Ember.run(function() {
       App = Ember.Application.create({
         name: 'App',
         rootElement: '#qunit-fixture'
       });
 
-      App.deferReadiness();
-
-      container = App.__container__;
+      App.Router.reopen({
+        location: 'auto'
+      });
 
       Ember.AutoLocation.reopen({
         supportsHistory: Ember.computed(function () {
@@ -1992,20 +1989,12 @@ module('Ember.AutoLocation', {
 });
 
 test('Ember.AutoLocation detects history.pushState support', function () {
-  Ember.$("#qunit-fixture").empty();
-
-  Ember.run(function() {
-    App = Ember.Application.create({
-      rootElement: '#qunit-fixture'
-    });
-
-    App.Router.reopen({
-      location: 'auto'
-    });
-  });
+  var window = get(Ember.AutoLocation, 'window'),
+      document = get(Ember.AutoLocation, 'document'),
+      userAgent = get(Ember.AutoLocation, 'userAgent');
 
   // Mocking modern browser
-  Ember.AutoLocation.set('window', {
+  set(Ember.AutoLocation, 'window', {
     history: {
       pushState: function () {}
     }
@@ -2014,78 +2003,62 @@ test('Ember.AutoLocation detects history.pushState support', function () {
   equal(get(Ember.AutoLocation, 'supportsHistory'), true, 'supportsHistory is true if a history object and history.pushState exist');
 
   // Mocking broken/partial support
-  Ember.AutoLocation.set('window', {
+  set(Ember.AutoLocation, 'window', {
     history: {}
   });
 
   equal(get(Ember.AutoLocation, 'supportsHistory'), false, 'supportsHistory is false if a history object exists but pushState does not');
 
   // Mocking Android 2's (broken support)
-  Ember.AutoLocation
-    .set('userAgent', 'Mozilla/5.0 (Linux; U; Android 2.2; fr-lu; HTC Legend Build/FRF91) AppleWebKit/533.1 (KHTML, like Gecko) Version/4.0 Mobile Safari/533.1')
-    .set('window', {
-      history: {
-        pushState: function () {}
-      }
-    });
+  set(Ember.AutoLocation, 'userAgent', 'Mozilla/5.0 (Linux; U; Android 2.2; fr-lu; HTC Legend Build/FRF91) AppleWebKit/533.1 (KHTML, like Gecko) Version/4.0 Mobile Safari/533.1');
+  set(Ember.AutoLocation, 'window', {
+    history: {
+      pushState: function () {}
+    }
+  });
 
   equal(get(Ember.AutoLocation, 'supportsHistory'), false, 'supportsHistory is false for Android 2\'s broken support');
+
+  // Revert
+  set(Ember.AutoLocation, 'window', window);
+  set(Ember.AutoLocation, 'document', document);
+  set(Ember.AutoLocation, 'userAgent', userAgent);
 });
 
 test('Ember.AutoLocation detects hashchange support', function () {
-  Ember.$("#qunit-fixture").empty();
-
-  Ember.run(function() {
-    App = Ember.Application.create({
-      rootElement: '#qunit-fixture'
-    });
-
-    App.Router.reopen({
-      location: 'auto'
-    });
-  });
+  var window = get(Ember.AutoLocation, 'window'),
+      document = get(Ember.AutoLocation, 'document');
 
   // Mocking browser that has support
-  Ember.AutoLocation
-    .set('window', {
-      onhashchange: function () {}
-    })
-    .set('document', {});
+  set(Ember.AutoLocation, 'document', {});
+  set(Ember.AutoLocation, 'window', {
+    onhashchange: function () {}
+  });
 
   equal(get(Ember.AutoLocation, 'supportsHashChange'), true, 'supportsHashChange is true if onhashchange in window exists');
 
   // Mocking browser that doesn't have hashchange event
-  Ember.AutoLocation
-    .set('window', {})
-    .set('document', {});
+  set(Ember.AutoLocation, 'document', {});
+  set(Ember.AutoLocation, 'window', {});
 
   equal(get(Ember.AutoLocation, 'supportsHashChange'), false, 'supportsHashChange is false if onhashchange in window doesn\'t exist');
 
   // Mocking IE8 Compatibility Mode
-  Ember.AutoLocation
-    .set('window', {
-      onhashchange: function () {}
-    })
-    .set('document', {
-      documentMode: 7
-    });
+  set(Ember.AutoLocation, 'window', {
+    onhashchange: function () {}
+  });
+  set(Ember.AutoLocation, 'document', {
+    documentMode: 7
+  });
 
   equal(get(Ember.AutoLocation, 'supportsHashChange'), false, 'supportsHashChange is false if in IE8 Compatibility Mode');
+
+  // Revert
+  set(Ember.AutoLocation, 'window', window);
+  set(Ember.AutoLocation, 'document', document);
 });
 
 test('Ember.AutoLocation.create() returns the best supported Location class', function () {
-  Ember.$("#qunit-fixture").empty();
-
-  Ember.run(function() {
-    App = Ember.Application.create({
-      rootElement: '#qunit-fixture'
-    });
-
-    App.Router.reopen({
-      location: 'auto'
-    });
-  });
-
   supportsHistoryOverride = true;
   supportsHashChangeOverride = true;
 
