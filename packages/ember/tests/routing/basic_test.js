@@ -1938,3 +1938,170 @@ test("ApplicationRoute with model does not proxy the currentPath", function() {
   equal(currentPath, 'index', 'currentPath is index');
   equal('currentPath' in model, false, 'should have defined currentPath on controller');
 });
+
+
+var supportsHistoryOverride = null,
+    supportsHashChangeOverride = null;
+
+module('Ember.AutoLocation', {
+  setup: function() {
+    //window.history = undefined;
+
+    Ember.run(function() {
+      App = Ember.Application.create({
+        name: 'App',
+        rootElement: '#qunit-fixture'
+      });
+
+      App.deferReadiness();
+
+      container = App.__container__;
+
+      Ember.AutoLocation.reopen({
+        supportsHistory: Ember.computed(function () {
+          if (supportsHistoryOverride !== null) {
+            return supportsHistoryOverride;
+          } else {
+            return this._super();
+          }
+        }).property('userAgent', 'history').volatile(),
+
+        supportsHashChange: Ember.computed(function () {
+          if (supportsHashChangeOverride !== null) {
+            return supportsHashChangeOverride;
+          } else {
+            return this._super();
+          }
+        }).property('window', 'document').volatile()
+      });
+
+    });
+  },
+
+  teardown: function () {
+    supportsHistoryOverride = null,
+    supportsHashChangeOverride = null;
+
+    if (App) {
+      Ember.run(function () {
+        App.destroy();
+        App = null;
+      });
+    }
+  }
+});
+
+test('Ember.AutoLocation detects history.pushState support', function () {
+  Ember.$("#qunit-fixture").empty();
+
+  Ember.run(function() {
+    App = Ember.Application.create({
+      rootElement: '#qunit-fixture'
+    });
+
+    App.Router.reopen({
+      location: 'auto'
+    });
+  });
+
+  // Mocking modern browser
+  Ember.AutoLocation.set('window', {
+    history: {
+      pushState: function () {}
+    }
+  });
+
+  equal(get(Ember.AutoLocation, 'supportsHistory'), true, 'supportsHistory is true if a history object and history.pushState exist');
+
+  // Mocking broken/partial support
+  Ember.AutoLocation.set('window', {
+    history: {}
+  });
+
+  equal(get(Ember.AutoLocation, 'supportsHistory'), false, 'supportsHistory is false if a history object exists but pushState does not');
+
+  // Mocking Android 2's (broken support)
+  Ember.AutoLocation
+    .set('userAgent', 'Mozilla/5.0 (Linux; U; Android 2.2; fr-lu; HTC Legend Build/FRF91) AppleWebKit/533.1 (KHTML, like Gecko) Version/4.0 Mobile Safari/533.1')
+    .set('window', {
+      history: {
+        pushState: function () {}
+      }
+    });
+
+  equal(get(Ember.AutoLocation, 'supportsHistory'), false, 'supportsHistory is false for Android 2\'s broken support');
+});
+
+test('Ember.AutoLocation detects hashchange support', function () {
+  Ember.$("#qunit-fixture").empty();
+
+  Ember.run(function() {
+    App = Ember.Application.create({
+      rootElement: '#qunit-fixture'
+    });
+
+    App.Router.reopen({
+      location: 'auto'
+    });
+  });
+
+  // Mocking browser that has support
+  Ember.AutoLocation
+    .set('window', {
+      onhashchange: function () {}
+    })
+    .set('document', {});
+
+  equal(get(Ember.AutoLocation, 'supportsHashChange'), true, 'supportsHashChange is true if onhashchange in window exists');
+
+  // Mocking browser that doesn't have hashchange event
+  Ember.AutoLocation
+    .set('window', {})
+    .set('document', {});
+
+  equal(get(Ember.AutoLocation, 'supportsHashChange'), false, 'supportsHashChange is false if onhashchange in window doesn\'t exist');
+
+  // Mocking IE8 Compatibility Mode
+  Ember.AutoLocation
+    .set('window', {
+      onhashchange: function () {}
+    })
+    .set('document', {
+      documentMode: 7
+    });
+
+  equal(get(Ember.AutoLocation, 'supportsHashChange'), false, 'supportsHashChange is false if in IE8 Compatibility Mode');
+});
+
+test('Ember.AutoLocation.create() returns the best supported Location class', function () {
+  Ember.$("#qunit-fixture").empty();
+
+  Ember.run(function() {
+    App = Ember.Application.create({
+      rootElement: '#qunit-fixture'
+    });
+
+    App.Router.reopen({
+      location: 'auto'
+    });
+  });
+
+  supportsHistoryOverride = true;
+  supportsHashChangeOverride = true;
+
+  ok(Ember.AutoLocation.create() instanceof Ember.HistoryLocation, 'When supportsHistory and supportsHashChange are both true, returns an Ember.HistoryLocation instance');
+
+  supportsHistoryOverride = false;
+  supportsHashChangeOverride = true;
+  
+  ok(Ember.AutoLocation.create() instanceof Ember.HashLocation, 'When supportsHistory is false and supportsHashChange is true, returns an Ember.HashLocation instance');
+
+  supportsHistoryOverride = false;
+  supportsHashChangeOverride = false;
+  
+  ok(Ember.AutoLocation.create() instanceof Ember.NoneLocation, 'When supportsHistory and supportsHashChange are both false, returns an Ember.NoneLocation instance');
+
+  // Remove overrides
+  supportsHistoryOverride = null;
+  supportsHashChangeOverride = null;
+});
