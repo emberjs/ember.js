@@ -2059,19 +2059,25 @@ test('Ember.AutoLocation detects hashchange support', function () {
 });
 
 test('Ember.AutoLocation.create() returns the best supported Location class', function () {
+
+  // Modern browsers
   supportsHistoryOverride = true;
   supportsHashChangeOverride = true;
-
   ok(Ember.AutoLocation.create() instanceof Ember.HistoryLocation, 'When supportsHistory and supportsHashChange are both true, returns an Ember.HistoryLocation instance');
 
+  // Unheard of, but what the hey
+  supportsHistoryOverride = true;
+  supportsHashChangeOverride = false;
+  ok(Ember.AutoLocation.create() instanceof Ember.HistoryLocation, 'When supportsHistory is true and supportsHashChange is false, returns an Ember.HistoryLocation instance');
+  
+  // Most older browsers (IE9/8, etc)
   supportsHistoryOverride = false;
   supportsHashChangeOverride = true;
-  
   ok(Ember.AutoLocation.create() instanceof Ember.HashLocation, 'When supportsHistory is false and supportsHashChange is true, returns an Ember.HashLocation instance');
 
+  // Super old or ghetto browser. No soup for you.
   supportsHistoryOverride = false;
   supportsHashChangeOverride = false;
-  
   ok(Ember.AutoLocation.create() instanceof Ember.NoneLocation, 'When supportsHistory and supportsHashChange are both false, returns an Ember.NoneLocation instance');
 
   // Remove overrides
