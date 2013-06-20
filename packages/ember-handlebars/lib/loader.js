@@ -53,6 +53,43 @@ function bootstrap() {
   Ember.Handlebars.bootstrap( Ember.$(document) );
 }
 
+function registerControls(container) {
+  var templates = Ember.TEMPLATES, match;
+  if (!templates) { return; }
+
+  for (var prop in templates) {
+    if (match = prop.match(/^controls\/(.*)$/)) {
+      registerControl(container, match[1]);
+    }
+  }
+}
+
+function registerControl(container, name) {
+  Ember.assert("You provided a template named 'controls/" + name + "', but custom controls must include a '-'", name.match(/-/));
+
+  var className = name.replace(/-/g, '_');
+  var Control = container.lookupFactory('control:' + className) || container.lookupFactory('control:' + name);
+  var View = Control || Ember.Control.extend();
+
+  View.reopen({
+    layoutName: 'controls/' + name
+  });
+
+  Ember.Handlebars.helper(name, View);
+}
+
+// Analogous to document.register in Web Components
+Ember.register = function(name, Class) {
+  var proto = Class.proto();
+  if (!proto.layoutName && !proto().templateName) {
+    Class.reopen({
+      layoutName: 'controls/' + name
+    });
+  }
+
+  Ember.Handlebars.helper(name, Class);
+};
+
 /*
   We tie this to application.load to ensure that we've at least
   attempted to bootstrap at the point that the application is loaded.
@@ -69,6 +106,12 @@ Ember.onLoad('Ember.Application', function(Application) {
     Application.initializer({
       name: 'domTemplates',
       initialize: bootstrap
+    });
+
+    Application.initializer({
+      name: 'registerControls',
+      after: 'domTemplates',
+      initialize: registerControls
     });
   } else {
     // for ember-old-router
