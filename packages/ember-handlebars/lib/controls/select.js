@@ -158,7 +158,6 @@ Ember.SelectOption = Ember.View.extend({
 
   ```html
   <select class="ember-select">
-    <option value>Please Select</option>
     <option value="1">Yehuda</option>
     <option value="2">Tom</option>
   </select>
@@ -191,7 +190,6 @@ Ember.SelectOption = Ember.View.extend({
 
   ```html
   <select class="ember-select">
-    <option value>Please Select</option>
     <option value="1">Yehuda</option>
     <option value="2" selected="selected">Tom</option>
   </select>
@@ -229,7 +227,6 @@ Ember.SelectOption = Ember.View.extend({
 
   ```html
   <select class="ember-select">
-    <option value>Please Select</option>
     <option value="1">Yehuda</option>
     <option value="2" selected="selected">Tom</option>
   </select>
