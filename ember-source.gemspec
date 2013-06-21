@@ -12,9 +12,7 @@ Gem::Specification.new do |gem|
 
   gem.version       = Ember.rubygems_version_string
 
-  # Note: can't use the squiggly ~> operator the way we'd expect
-  # so long as we're referencing pre-release versions.
-  gem.add_dependency "handlebars-source", ["1.0.0.rc4"]
+  gem.add_dependency "handlebars-source", ["1.0.12"]
 
   gem.files = %w(VERSION) + Dir['dist/*.js', 'lib/ember/*.rb']
 end

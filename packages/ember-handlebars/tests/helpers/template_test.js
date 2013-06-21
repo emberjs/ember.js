@@ -34,7 +34,7 @@ test("should render other templates via the container", function() {
 });
 
 test("should use the current view's context", function(){
-  container.register('template:person_name', Ember.Handlebars.compile("{{{firstName}} {{lastName}}"));
+  container.register('template:person_name', Ember.Handlebars.compile("{{firstName}} {{lastName}}"));
 
   view = Ember.View.create({
     container: container,
