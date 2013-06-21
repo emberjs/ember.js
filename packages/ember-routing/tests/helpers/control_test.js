@@ -27,9 +27,11 @@ if (Ember.ENV.EXPERIMENTAL_CONTROL_HELPER) {
       container = new Ember.Container();
       container.options('template', { instantiate: false });
       container.options('view', { singleton: false });
-      container.register('controller:parent', Ember.Controller.extend());
+      container.register('controller:parent', Ember.ObjectController.extend());
       container.register('controller:widget', Ember.Controller.extend());
       container.register('view:widget', Ember.View.extend());
+
+      container.lookup('controller:parent').set('content', {});
     },
 
     teardown: function() {
@@ -251,6 +253,32 @@ if (Ember.ENV.EXPERIMENTAL_CONTROL_HELPER) {
 
     Ember.run(function() {
       Ember.set(container.lookup('controller:bro'), 'message', 'grammer');
+    });
+  });
+
+  test("If no `modelPath` is specified, changing the model on the controller does not result in an error (#2268)", function() {
+    expect(0);
+
+    container.register('template:widget', compile("{{randomValue}}{{name}}"));
+
+    var controller = container.lookup('controller:parent');
+    controller.set('model', { name: "Tom Dale" });
+
+    container.register('controller:widget', Ember.Controller.extend({
+      randomValue: Ember.computed(function() {
+        return Math.random() + '' + (+new Date());
+      })
+    }));
+
+    appendView({
+      controller: controller,
+      template: compile("{{control 'widget'}}")
+    });
+
+    Ember.addObserver(controller, 'content.name', function () {});
+
+    Ember.run(function() {
+      controller.set('model', { name: "Yehuda Katz" });
     });
   });
 }
