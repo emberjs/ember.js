@@ -114,6 +114,29 @@ test("should set the parentView property on views that are added to the child vi
   });
 });
 
+test("should trigger parentViewDidChange when parentView is changed", function() {
+  container = Ember.ContainerView.create();
+
+  var secondContainer = Ember.ContainerView.create();
+  var parentViewChanged = 0;
+
+  var View = Ember.View.extend({
+    parentViewDidChange: function() { parentViewChanged++; }
+  });
+
+  view = View.create();
+
+  container.pushObject(view);
+  container.removeChild(view);
+  secondContainer.pushObject(view);
+
+  equal(parentViewChanged, 3);
+
+  Ember.run(function() {
+    secondContainer.destroy();
+  });
+});
+
 test("views that are removed from a ContainerView should have their child views cleared", function() {
   container = Ember.ContainerView.create();
   view = Ember.View.createWithMixins({
