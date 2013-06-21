@@ -64,10 +64,12 @@ if (Ember.ENV.EXPERIMENTAL_CONTROL_HELPER) {
       childView.rerender();
     }
 
-    Ember.addObserver(this, modelPath, observer);
-    childView.one('willDestroyElement', this, function() {
-      Ember.removeObserver(this, modelPath, observer);
-    });
+    if (modelPath) {
+      Ember.addObserver(this, modelPath, observer);
+      childView.one('willDestroyElement', this, function() {
+        Ember.removeObserver(this, modelPath, observer);
+      });
+    }
 
     Ember.Handlebars.helpers.view.call(this, childView, options);
   });
