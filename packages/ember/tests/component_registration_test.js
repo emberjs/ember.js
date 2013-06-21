@@ -1,10 +1,10 @@
 var App, container, originalTemplates;
 var compile = Ember.Handlebars.compile;
 
-module("Application Lifecycle - Control Registration", {
+module("Application Lifecycle - Component Registration", {
   setup: function() {
     originalTemplates = Ember.$.extend({}, Ember.TEMPLATES);
-    Ember.TEMPLATES["controls/expand-it"] = compile("<p>hello {{yield}}</p>");
+    Ember.TEMPLATES["components/expand-it"] = compile("<p>hello {{yield}}</p>");
     Ember.TEMPLATES.application = compile("Hello world {{#expand-it}}world{{/expand-it}}");
   },
 
@@ -55,7 +55,7 @@ test("The helper becomes the body of the control", function() {
 
 test("If a control is registered, it is used", function() {
   boot(function() {
-    container.register('control:expand-it', Ember.Control.extend({
+    container.register('component:expand-it', Ember.Component.extend({
       classNames: 'testing123'
     }));
   });

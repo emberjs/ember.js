@@ -6,14 +6,14 @@ require("ember-views/views/view");
 */
 
 /**
-  An `Ember.Control` is a view that is completely
+  An `Ember.Component` is a view that is completely
   isolated. Property access in its templates go
   to the view object and actions are targeted at
   the view object. There is no access to the
   surrounding context or outer controller; all
   contextual information is passed in.
 
-  The easiest way to create an `Ember.Control` is via
+  The easiest way to create an `Ember.Component` is via
   a template. If you name a template
   `controls/my-foo`, you will be able to use
   `{{my-foo}}` in other templates, which will make
@@ -48,14 +48,14 @@ require("ember-views/views/view");
 
   If you want to customize the control, in order to
   handle events or actions, you implement a subclass
-  of `Ember.Control` named after the name of the
+  of `Ember.Component` named after the name of the
   control.
 
   For example, you could implement the action
   `hello` for the `app-profile` control:
 
   ```js
-  App.AppProfileControl = Ember.Control.extend({
+  App.AppProfileComponent = Ember.Component.extend({
     hello: function(name) {
       console.log("Hello", name)
     }
@@ -75,16 +75,16 @@ require("ember-views/views/view");
   </button>
   ```
 
-  Controls must have a `-` in their name to avoid
+  Components must have a `-` in their name to avoid
   conflicts with built-in controls that wrap HTML
   elements. This is consistent with the same
   requirement in web components.
 
-  @class Control
+  @class Component
   @namespace Ember
   @extends Ember.View
 */
-Ember.Control = Ember.View.extend({
+Ember.Component = Ember.View.extend({
   init: function() {
     this._super();
     this.set('context', this);

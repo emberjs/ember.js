@@ -53,42 +53,30 @@ function bootstrap() {
   Ember.Handlebars.bootstrap( Ember.$(document) );
 }
 
-function registerControls(container) {
+function registerComponents(container) {
   var templates = Ember.TEMPLATES, match;
   if (!templates) { return; }
 
   for (var prop in templates) {
-    if (match = prop.match(/^controls\/(.*)$/)) {
-      registerControl(container, match[1]);
+    if (match = prop.match(/^components\/(.*)$/)) {
+      registerComponent(container, match[1]);
     }
   }
 }
 
-function registerControl(container, name) {
-  Ember.assert("You provided a template named 'controls/" + name + "', but custom controls must include a '-'", name.match(/-/));
+function registerComponent(container, name) {
+  Ember.assert("You provided a template named 'components/" + name + "', but custom components must include a '-'", name.match(/-/));
 
   var className = name.replace(/-/g, '_');
-  var Control = container.lookupFactory('control:' + className) || container.lookupFactory('control:' + name);
-  var View = Control || Ember.Control.extend();
+  var Component = container.lookupFactory('component:' + className) || container.lookupFactory('component:' + name);
+  var View = Component || Ember.Component.extend();
 
   View.reopen({
-    layoutName: 'controls/' + name
+    layoutName: 'components/' + name
   });
 
   Ember.Handlebars.helper(name, View);
 }
-
-// Analogous to document.register in Web Components
-Ember.register = function(name, Class) {
-  var proto = Class.proto();
-  if (!proto.layoutName && !proto().templateName) {
-    Class.reopen({
-      layoutName: 'controls/' + name
-    });
-  }
-
-  Ember.Handlebars.helper(name, Class);
-};
 
 /*
   We tie this to application.load to ensure that we've at least
@@ -109,9 +97,9 @@ Ember.onLoad('Ember.Application', function(Application) {
     });
 
     Application.initializer({
-      name: 'registerControls',
+      name: 'registerComponents',
       after: 'domTemplates',
-      initialize: registerControls
+      initialize: registerComponents
     });
   } else {
     // for ember-old-router
