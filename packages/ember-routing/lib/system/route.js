@@ -563,14 +563,18 @@ Ember.Route = Ember.Object.extend({
   */
   modelFor: function(name) {
 
+    var route = this.container.lookup('route:' + name),
+        transition = this.router.router.activeTransition;
+
     // If we are mid-transition, we want to try and look up
     // resolved parent contexts on the current transitionEvent.
-    var transition = this.router.router.activeTransition;
     if (transition) {
-      return transition.resolvedModels[name];
+      var modelLookupName = (route && route.routeName) || name;
+      if (transition.resolvedModels.hasOwnProperty(modelLookupName)) {
+        return transition.resolvedModels[modelLookupName];
+      }
     }
 
-    var route = this.container.lookup('route:' + name);
     return route && route.currentModel;
   },
 
