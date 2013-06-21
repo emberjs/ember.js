@@ -1116,6 +1116,8 @@ Ember.View = Ember.CoreView.extend(
   _parentViewDidChange: Ember.observer(function() {
     if (this.isDestroying) { return; }
 
+    this.trigger('parentViewDidChange');
+
     if (get(this, 'parentView.controller') && !get(this, 'controller')) {
       this.notifyPropertyChange('controller');
     }
