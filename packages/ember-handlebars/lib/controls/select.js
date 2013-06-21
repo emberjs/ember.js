@@ -458,8 +458,8 @@ Ember.Select = Ember.View.extend(
     var selection = get(this, 'selection');
     var value = get(this, 'value');
 
-    if (selection) { this.selectionDidChange(); }
-    if (value) { this.valueDidChange(); }
+    if (!Ember.isNone(selection)) { this.selectionDidChange(); }
+    if (!Ember.isNone(value)) { this.valueDidChange(); }
 
     this._change();
   },

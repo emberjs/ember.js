@@ -449,6 +449,25 @@ test("handles null content", function() {
   equal(select.get('element').selectedIndex, -1, "should have no selection");
 });
 
+test("valueBinding handles 0 as initiated value (issue #2763)", function() {
+  var indirectData = Ember.Object.create({
+    value: 0
+  });
+
+  Ember.run(function() {
+    select.destroy(); // Destroy the existing select
+
+    select = Ember.Select.extend({
+      content: Ember.A([1,0]),
+      indirectData: indirectData,
+      valueBinding: 'indirectData.value'
+    }).create();
+
+    append();
+  });
+
+  equal(select.get('value'), 0, "Value property should equal 0");
+});
 
 test("should be able to select an option and then reselect the prompt", function() {
   Ember.run(function() {
