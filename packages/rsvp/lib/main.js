@@ -1,42 +1,46 @@
 define("rsvp/all",
-  ["rsvp/defer","exports"],
+  ["rsvp/promise","exports"],
   function(__dependency1__, __exports__) {
     "use strict";
-    var defer = __dependency1__.defer;
+    var Promise = __dependency1__.Promise;
 
     function all(promises) {
-      var results = [], deferred = defer(), remaining = promises.length;
-
-      if (remaining === 0) {
-        deferred.resolve([]);
+      if(toString.call(promises) !== "[object Array]") {
+        throw new TypeError('You must pass an array to all.');
       }
+      return new Promise(function(resolve, reject) {
+        var results = [], remaining = promises.length,
+        promise;
 
-      var resolver = function(index) {
-        return function(value) {
-          resolveAll(index, value);
-        };
-      };
-
-      var resolveAll = function(index, value) {
-        results[index] = value;
-        if (--remaining === 0) {
-          deferred.resolve(results);
+        if (remaining === 0) {
+          resolve([]);
         }
-      };
 
-      var rejectAll = function(error) {
-        deferred.reject(error);
-      };
-
-      for (var i = 0; i < promises.length; i++) {
-        if (promises[i] && typeof promises[i].then === 'function') {
-          promises[i].then(resolver(i), rejectAll);
-        } else {
-          resolveAll(i, promises[i]);
+        function resolver(index) {
+          return function(value) {
+            resolveAll(index, value);
+          };
         }
-      }
-      return deferred.promise;
+
+        function resolveAll(index, value) {
+          results[index] = value;
+          if (--remaining === 0) {
+            resolve(results);
+          }
+        }
+
+        for (var i = 0; i < promises.length; i++) {
+          promise = promises[i];
+
+          if (promise && typeof promise.then === 'function') {
+            promise.then(resolver(i), reject);
+          } else {
+            resolveAll(i, promise);
+          }
+        }
+      });
     }
+
 
     __exports__.all = all;
   });
@@ -306,6 +310,7 @@ define("rsvp/node",
     function denodeify(nodeFunc) {
       return function()  {
         var nodeArgs = Array.prototype.slice.call(arguments), resolve, reject;
+        var thisArg = this;
 
         var promise = new Promise(function(nodeResolve, nodeReject) {
           resolve = nodeResolve;
@@ -316,7 +321,7 @@ define("rsvp/node",
           nodeArgs.push(makeNodeCallbackFor(resolve, reject));
 
           try {
-            nodeFunc.apply(this, nodeArgs);
+            nodeFunc.apply(thisArg, nodeArgs);
           } catch(e) {
             reject(e);
           }
@@ -376,12 +381,20 @@ define("rsvp/promise",
         this.trigger('error', { detail: event.detail });
       }, this);
 
+      this.on('error', onerror);
+
       try {
         resolver(resolvePromise, rejectPromise);
       } catch(e) {
         rejectPromise(e);
       }
     };
+
+    function onerror(event) {
+      if (config.onerror) {
+        config.onerror(event.detail);
+      }
+    }
 
     var invokeCallback = function(type, promise, callback, event) {
       var hasCallback = isFunction(callback),
@@ -417,7 +430,9 @@ define("rsvp/promise",
       constructor: Promise,
 
       then: function(done, fail) {
-        var thenPromise = new Promise(function() {});
+        this.off('error', onerror);
+
+        var thenPromise = new this.constructor(function() {});
 
         if (this.isFulfilled) {
           config.async(function() {
@@ -533,13 +548,16 @@ define("rsvp/resolve",
     "use strict";
     var Promise = __dependency1__.Promise;
 
-
     function objectOrFunction(x) {
       return typeof x === "function" || (typeof x === "object" && x !== null);
     }
 
-    function resolve(thenable){
-      var promise = new Promise(function(resolve, reject){
+    function resolve(thenable) {
+      if (thenable instanceof Promise) {
+        return thenable;
+      }
+
+      var promise = new Promise(function(resolve, reject) {
         var then;
 
         try {
@@ -597,5 +615,3 @@ define("rsvp",
     __exports__.resolve = resolve;
     __exports__.reject = reject;
   });
-
-

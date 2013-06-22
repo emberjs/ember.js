@@ -100,7 +100,8 @@ test("helpers can be chained to each other", function() {
 
   currentRoute = 'index';
 
-  visit('/posts').click('a:first', '#comments-link')
+  visit('/posts')
+  .click('a:first', '#comments-link')
   .fillIn('.ember-text-field', "hello")
   .then(function() {
     equal(currentRoute, 'comments', "Successfully visited posts route");
