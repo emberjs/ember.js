@@ -89,73 +89,38 @@ function find(app, selector, context) {
 }
 
 function wait(app, value) {
-  var promise;
-
-  promise = Test.promise(function(resolve) {
+  return Test.promise(function(resolve) {
+    // If this is the first async promise, kick off the async test
     if (++countAsync === 1) {
       Test.adapter.asyncStart();
     }
+
+    // Every 10ms, poll for the async thing to have finished
     var watcher = setInterval(function() {
+      // 1. If the router is loading, keep polling
       var routerIsLoading = app.__container__.lookup('router:main').router.isLoading;
       if (routerIsLoading) { return; }
+
+      // 2. If there are pending Ajax requests, keep polling
       if (Test.pendingAjaxRequests) { return; }
+
+      // 3. If there are scheduled timers or we are inside of a run loop, keep polling
       if (Ember.run.hasScheduledTimers() || Ember.run.currentRunLoop) { return; }
 
+      // Stop polling
       clearInterval(watcher);
 
+      // If this is the last async promise, end the async test
       if (--countAsync === 0) {
         Test.adapter.asyncEnd();
       }
 
+      // Synchronously resolve the promise
       Ember.run(null, resolve, value);
     }, 10);
   });
-
-  return buildChainObject(app, promise);
 }
 
-/**
- Builds an object that contains
- all helper methods. This object will be
- returned by helpers and then-promises.
-
- This allows us to chain helpers:
-
- ```javascript
-  visit('posts/new')
-  .click('.add-btn')
-  .fillIn('.title', 'Post')
-  .click('.submit')
-  .then(function() {
-    equal('.post-title', 'Post');
-  })
-  .visit('comments')
-  .then(function() {
-    equal(find('.comments'),length, 0);
-  });
- ```
-*/
-function buildChainObject(app, promise) {
-  var helperName, obj = {};
-  for(helperName in app.testHelpers) {
-    obj[helperName] = chain(app, promise, app.testHelpers[helperName]);
-  }
-  obj.then = function(fn) {
-    var thenPromise = promise.then(fn);
-    return buildChainObject(app, thenPromise);
-  };
-  return obj;
-}
-
-function chain(app, promise, fn) {
-  return function() {
-    var args = arguments, chainedPromise;
-    chainedPromise = promise.then(function() {
-      return fn.apply(null, args);
-    });
-    return buildChainObject(app, chainedPromise);
-  };
-}
 
 /**
 * Loads a route, sets up any controllers, and renders any templates associated
