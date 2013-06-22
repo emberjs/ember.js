@@ -76,6 +76,7 @@ Ember.Test = {
       window[name] = originalMethods[name];
     }
     delete originalMethods[name];
+    delete Ember.Test.Promise.prototype[name];
   },
 
   /**
@@ -117,30 +118,7 @@ Ember.Test = {
     @param {Function} resolver The function used to resolve the promise.
   */
   promise: function(resolver) {
-    var promise = new Ember.RSVP.Promise(resolver);
-    var thenable = {
-      chained: false
-    };
-    thenable.then = function(onSuccess, onFailure) {
-      var thenPromise, nextPromise;
-      thenable.chained = true;
-      thenPromise = promise.then(onSuccess, onFailure);
-      // this is to ensure all downstream fulfillment
-      // handlers are wrapped in the error handling
-      nextPromise = Ember.Test.promise(function(resolve) {
-        resolve(thenPromise);
-      });
-      thenPromise.then(null, function(reason) {
-        // ensure this is the last promise in the chain
-        // if not, ignore and the exception will propagate
-        // this prevents the same error from being fired multiple times
-        if (!nextPromise.chained) {
-          Ember.Test.adapter.exception(reason);
-        }
-      });
-      return nextPromise;
-    };
-    return thenable;
+    return new Ember.Test.Promise(resolver);
   },
 
   /**
@@ -288,6 +266,7 @@ Ember.Application.reopen({
     for (var name in helpers) {
       originalMethods[name] = window[name];
       this.testHelpers[name] = window[name] = curry(this, helpers[name]);
+      protoWrap(Ember.Test.Promise.prototype, name, curry(this, helpers[name]));
     }
 
     for(var i = 0, l = injectHelpersCallbacks.length; i < l; i++) {
@@ -315,3 +294,25 @@ Ember.Application.reopen({
     }
   }
 });
+
+function protoWrap(proto, name, callback) {
+  proto[name] = function() {
+    var args = arguments;
+    return this.then(function() {
+      callback.apply(this, args);
+    });
+  };
+}
+
+Ember.Test.Promise = function() {
+  Ember.RSVP.Promise.apply(this, arguments);
+};
+
+Ember.Test.Promise.prototype = Ember.create(Ember.RSVP.Promise.prototype);
+Ember.Test.Promise.prototype.constructor = Ember.Test.Promise;
+
+
+Ember.RSVP.configure('onerror', function(error) {
+  Ember.Test.adapter.exception(error);
+});
+
