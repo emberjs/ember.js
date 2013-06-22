@@ -5,7 +5,9 @@
 
 var get = Ember.get, set = Ember.set,
     classify = Ember.String.classify,
-    fmt = Ember.String.fmt;
+    fmt = Ember.String.fmt,
+    a_forEach = Ember.EnumerableUtils.forEach,
+    a_replace = Ember.EnumerableUtils.replace;
 
 /**
   The `Ember.Route` class is used to define individual routes. Refer to
@@ -23,7 +25,7 @@ Ember.Route = Ember.Object.extend({
   */
   exit: function() {
     this.deactivate();
-    teardownView(this);
+    this.teardownViews();
   },
 
   /**
@@ -677,7 +679,22 @@ Ember.Route = Ember.Object.extend({
   },
 
   willDestroy: function() {
-    teardownView(this);
+    this.teardownViews();
+  },
+  
+  teardownViews: function() {
+    // Tear down the top level view
+    if (this.teardownTopLevelView) { this.teardownTopLevelView(); }
+    
+    // Tear down any outlets rendered with 'into'
+    var teardownOutletViews = this.teardownOutletViews || [];
+    a_forEach(teardownOutletViews, function(teardownOutletView) { 
+      teardownOutletView();
+    });
+    
+    delete this.teardownTopLevelView;
+    delete this.teardownOutletViews;
+    delete this.lastRenderedTemplate;
   }
 });
 
@@ -766,31 +783,26 @@ function setupView(view, container, options) {
 function appendView(route, view, options) {
   if (options.into) {
     var parentView = route.router._lookupActiveView(options.into);
-    route.teardownView = teardownOutlet(parentView, options.outlet);
+    var teardownOutletView = generateOutletTeardown(parentView, options.outlet);
+    if (!route.teardownOutletViews) { route.teardownOutletViews = []; }
+    a_replace(route.teardownOutletViews, 0, 0, [teardownOutletView]);
     parentView.connectOutlet(options.outlet, view);
   } else {
     var rootElement = get(route, 'router.namespace.rootElement');
     // tear down view if one is already rendered
-    if (route.teardownView) {
-      route.teardownView();
+    if (route.teardownTopLevelView) {
+      route.teardownTopLevelView();
     }
     route.router._connectActiveView(options.name, view);
-    route.teardownView = teardownTopLevel(view);
+    route.teardownTopLevelView = generateTopLevelTeardown(view);
     view.appendTo(rootElement);
   }
 }
 
-function teardownTopLevel(view) {
+function generateTopLevelTeardown(view) {
   return function() { view.destroy(); };
 }
 
-function teardownOutlet(parentView, outlet) {
+function generateOutletTeardown(parentView, outlet) {
   return function() { parentView.disconnectOutlet(outlet); };
-}
-
-function teardownView(route) {
-  if (route.teardownView) { route.teardownView(); }
-
-  delete route.teardownView;
-  delete route.lastRenderedTemplate;
 }
