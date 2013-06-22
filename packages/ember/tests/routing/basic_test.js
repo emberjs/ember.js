@@ -1999,4 +1999,70 @@ asyncTest("Promises encountered on app load put app into loading state until res
 
 });
 
+test("Route should tear down multiple outlets.", function() {
+  Ember.TEMPLATES.application = compile("{{outlet menu}}{{outlet}}{{outlet footer}}");
+  Ember.TEMPLATES.posts = compile("{{outlet}}");
+  Ember.TEMPLATES.users = compile("users");
+  Ember.TEMPLATES['posts/index'] = compile("postsIndex");
+  Ember.TEMPLATES['posts/menu'] = compile("postsMenu");
+  Ember.TEMPLATES['posts/footer'] = compile("postsFooter");
+
+  Router.map(function() {
+    this.resource("posts", function() {});
+    this.resource("users", function() {});
+  });
+
+  App.PostsMenuView = Ember.View.extend({
+    tagName: 'div',
+    templateName: 'posts/menu',
+    classNames: ['posts-menu']
+  });
+
+  App.PostsIndexView = Ember.View.extend({
+    tagName: 'p',
+    classNames: ['posts-index']
+  });
+  
+  App.PostsFooterView = Ember.View.extend({
+    tagName: 'div',
+    templateName: 'posts/footer',
+    classNames: ['posts-footer']
+  });
+
+  App.PostsRoute = Ember.Route.extend({
+    renderTemplate: function() {
+      this.render('postsMenu', {
+        into: 'application',
+        outlet: 'menu'
+      });
+      
+      this.render();
+      
+      this.render('postsFooter', {
+        into: 'application',
+        outlet: 'footer'
+      });
+    }
+  });
+
+  bootApplication();
+
+  Ember.run(function() {
+    router.handleURL("/posts");
+  });
+
+  equal(Ember.$('div.posts-menu:contains(postsMenu)', '#qunit-fixture').length, 1, "The posts/menu template was rendered");
+  equal(Ember.$('p.posts-index:contains(postsIndex)', '#qunit-fixture').length, 1, "The posts/index template was rendered");
+  equal(Ember.$('div.posts-footer:contains(postsFooter)', '#qunit-fixture').length, 1, "The posts/footer template was rendered");
+
+  Ember.run(function() {
+    router.handleURL("/users");
+  });
+  
+  equal(Ember.$('div.posts-menu:contains(postsMenu)', '#qunit-fixture').length, 0, "The posts/menu template was removed");
+  equal(Ember.$('p.posts-index:contains(postsIndex)', '#qunit-fixture').length, 0, "The posts/index template was removed"); 
+  equal(Ember.$('div.posts-footer:contains(postsFooter)', '#qunit-fixture').length, 0, "The posts/footer template was removed");
+   
+});
+
 
