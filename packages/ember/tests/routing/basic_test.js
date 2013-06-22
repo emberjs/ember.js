@@ -806,7 +806,7 @@ asyncTest("Nested callbacks are not exited when moving to siblings", function() 
 
       deepEqual(router.location.path, '/specials/1');
       equal(currentPath, 'root.special');
-      
+
       start();
     });
   });
@@ -1891,7 +1891,7 @@ test("The template is not re-rendered when two routes present the exact same tem
   App.SecondRoute = App.SharedRoute.extend();
   App.ThirdRoute = App.SharedRoute.extend();
   App.FourthRoute = App.SharedRoute.extend();
-  
+
   App.SharedController = Ember.Controller.extend();
 
   var insertionCount = 0;
@@ -1934,7 +1934,7 @@ test("The template is not re-rendered when two routes present the exact same tem
 
   equal(Ember.$('p', '#qunit-fixture').text(), "This is the third message");
   equal(insertionCount, 1, "view should still have inserted only once");
-  
+
   // Lastly transition to a different view, with the same controller and template
   Ember.run(function() {
     router.handleURL("/fourth");
@@ -1942,7 +1942,7 @@ test("The template is not re-rendered when two routes present the exact same tem
 
   equal(Ember.$('p', '#qunit-fixture').text(), "This is the fourth message");
   equal(insertionCount, 2, "view should have inserted a second time");
-  
+
 });
 
 test("ApplicationRoute with model does not proxy the currentPath", function() {
@@ -1999,4 +1999,36 @@ asyncTest("Promises encountered on app load put app into loading state until res
 
 });
 
+test("Internal redirects do not call model hook of parent route", function() {
 
+  var modelCalled = 0;
+
+  Router.map(function() {
+    this.resource('post', function() {
+      this.route('index', { path: '/' });
+      this.route('new');
+    });
+  });
+
+  App.PostRoute = Ember.Route.extend({
+    model: function() {
+      modelCalled++;
+      return { title: 'Hello world' };
+    }
+  });
+
+  App.PostIndexRoute = Ember.Route.extend({
+    redirect: function() {
+      this.transitionTo('post.new');
+    }
+  });
+
+  bootApplication();
+
+  Ember.run(function() {
+    router.handleURL("/post");
+  });
+
+  equal(modelCalled, 1, "model hook was called only once");
+
+});
