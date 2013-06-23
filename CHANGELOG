@@ -1,3 +1,61 @@
+*Ember 1.0.0-rc.6 (June 23, 2013)*
+
+* Refactored `Ember.Route`s teardown mechanism for rendered views. This fixes #2857, previously multiple outlets were not tore down.
+* Rename Control to Component. This avoids conflicts with the existing (behind-a-flag) control and is clearer about intent.
+* Remove Ember.register to avoid introducing yet-another registration mechanism and move the logic into Ember.Handlebars.helper.
+* Add test for parentViewDidChange event.
+* Trigger parentViewDidChange event.[Fixes #2423]
+* Make `control` helper more resilient.
+* Ember.Select 0 can now be the selected value [Fixes #2763]
+* Fix Ember.Select example.
+* Ember.Control add inline docs.
+* Add Ember.Control
+* Make template loader an initializer
+* Add lookupFactory
+* Fix to support jQuery 1.7
+* In mid-transition, `modelFor` accepts both camelCase and underscore naming
+* In StateManager, use instanceof check instead of the legacy isState attribute. This is potentially breaking, but very unlikely to affect real-world code.
+* StateManager and states now pass their `container` to child states.
+* Ember.Test tests refactor
+* Ember.Test fix wait helper resolution value
+* Router facelift – Async transitions
+* Ember.Test find helper no longer throws an error if the selector is not found.
+* Additional API docs for LinkView
+* [Fixes #2840] - textfield binding issue with null
+* Update Backburner.js
+* Make sure we are inside a run loop before syncing
+* Inline helper function, remove uneeded function call.
+* Remove unnecessary function call from `Ember.normalizeTuple`
+* Ember.SortableMixin: new option sortFunction
+* Update docs so that `Ember.View.$` is a method, not a property.
+* Add documentation to cover LinkView's `eventName` property
+* Improve docs for event names
+* Remove expectAssertion in favor of ember-dev
+* Added ability to change event type on which Ember.LinkView is triggered
+* ContainerView#initializeViews learns about the container
+* Improve Ember.View#createChildView container support
+* Ensure assertion failures are test failures.
+* Fix failing tests for non-blocking assertions
+* Make the test suite work with non-blocking assertions
+* Utilize the browser console.assert when possible
+* Added custom test helper for testing assertions: expectAssertion
+* Ember assertions work more like console.assert e.g. they are now uncatchable
+* Update ember-dev
+* Visit helper update router url before handling it
+* Moved set of events to listen on by default to a property of EventDispatcher so it can be overridden
+* Fix typo in array mixin docs
+* Clarify subclasses of Ember.CoreView #2556
+* Fix naming of _displayPropertyDidChange in comment
+* Assert keyName not null and not undefined in get() and set()
+* Add `debounce` to Ember.run. Uses `backburner.debounce`
+* Cleaned up a bad check inside of `Ember.View._hasEquivalentView` that was causing routes with the same template and controller, but different view classes, not to render.
+* Add documentation and test for Ember.Handlebars.helper
+* Fix ember-dev s3 push.
+* Fix App#reset to correctly reset even when Router.map was never called.
+* Added test case that the render helper throws when a controller name doesn't resolve
+* Release tooling improvements
+* Adds assertion for misnamed controller name provided to render helper. [Fixes #2385]
+
 *Ember 1.0.0-rc.5 (June 01, 2013)*
 
 * Added assertion for incorrect container lookup names

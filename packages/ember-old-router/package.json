@@ -4,7 +4,7 @@
   "description": "The Ember routing system",
   "homepage": "http://emberjs.com",
   "author": "Yehuda Katz",
-  "version": "1.0.0-rc.5",
+  "version": "1.0.0-rc.6",
 
   "directories": {
     "lib": "lib"
@@ -12,8 +12,8 @@
 
   "dependencies": {
     "spade":             "~> 1.0",
-    "ember-views": "1.0.0-rc.5",
-    "ember-states": "1.0.0-rc.5"
+    "ember-views": "1.0.0-rc.6",
+    "ember-states": "1.0.0-rc.6"
   },
 
   "dependencies:development": {
