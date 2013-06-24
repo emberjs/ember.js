@@ -15,7 +15,7 @@ require("ember-views/views/view");
 
   The easiest way to create an `Ember.Component` is via
   a template. If you name a template
-  `controls/my-foo`, you will be able to use
+  `components/my-foo`, you will be able to use
   `{{my-foo}}` in other templates, which will make
   an instance of the isolated control.
 
@@ -34,9 +34,9 @@ require("ember-views/views/view");
   include the **contents** of the custom tag:
 
   ```html
-  {{#my-profile person=currentUser}}
+  {{#app-profile person=currentUser}}
   <p>Admin mode</p>
-  {{/my-profile}}
+  {{/app-profile}}
   ```
 
   ```html
