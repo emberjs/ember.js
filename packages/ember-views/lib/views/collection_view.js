@@ -272,7 +272,7 @@ Ember.CollectionView = Ember.ContainerView.extend(/** @scope Ember.CollectionVie
       }, false);
     }
 
-    for (idx = start + removedCount - 1; idx >= start; idx--) {
+    for (idx = start + removedCount - 1; idx < len && idx >= start; idx--) {
       childView = childViews[idx];
       childView.destroy();
     }
