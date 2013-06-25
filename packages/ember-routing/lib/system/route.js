@@ -680,6 +680,13 @@ Ember.Route = Ember.Object.extend({
     appendView(this, view, options);
   },
 
+  /**
+    @see {Ember#control}
+  */
+  control: function(name, model, properties) {
+    return Ember.control(this, name, model, properties);
+  },
+
   willDestroy: function() {
     this.teardownViews();
   },

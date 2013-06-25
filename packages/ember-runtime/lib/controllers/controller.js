@@ -74,6 +74,13 @@ Ember.ControllerMixin = Ember.Mixin.create({
       Ember.assert("The target for controller " + this + " (" + target + ") did not define a `send` method", typeof target.send === 'function');
       target.send.apply(target, arguments);
     }
+  },
+
+  /**
+    @see {Ember#control} 
+  */
+  control: function(name, model, properties) {
+    return Ember.control(this, name, model, properties);
   }
 });
 
