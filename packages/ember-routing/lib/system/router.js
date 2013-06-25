@@ -301,6 +301,7 @@ function transitionCompleted(router) {
 }
 
 Ember.Router.reopenClass({
+  callbacks: [],
   map: function(callback) {
     var router = this.router = new Router();
 
@@ -310,10 +311,14 @@ Ember.Router.reopenClass({
 
     var dsl = Ember.RouterDSL.map(function() {
       this.resource('application', { path: "/" }, function() {
+        for (var i=0; Ember.Router.callbacks.length < i; i++){
+          Ember.Router.callbacks[i].call(this);
+        }
         callback.call(this);
       });
     });
 
+    this.callbacks.push(callback);
     router.map(dsl.generate());
     return router;
   }
