@@ -320,6 +320,7 @@ Ember.Route = Ember.Object.extend({
     });
     ```
 
+    @method beforeModel
     @param {Transition} transition 
     @return {Promise} if the value returned from this hook is
       a promise, the transition will pause until the transition
@@ -350,6 +351,7 @@ Ember.Route = Ember.Object.extend({
     of transition-pausing semantics when a promise is returned
     from this hook. 
 
+    @method afterModel
     @param {Transition} transition 
     @return {Promise} if the value returned from this hook is
       a promise, the transition will pause until the transition
