@@ -91,7 +91,7 @@ Ember.HashLocation = Ember.Object.extend({
   willDestroy: function() {
     var guid = Ember.guidFor(this);
 
-    Ember.$(window).unbind('hashchange.ember-location-'+guid);
+    Ember.$(window).off('hashchange.ember-location-'+guid);
   }
 });
 

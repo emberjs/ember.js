@@ -145,7 +145,7 @@ Ember.HistoryLocation = Ember.Object.extend({
   willDestroy: function() {
     var guid = Ember.guidFor(this);
 
-    Ember.$(window).unbind('popstate.ember-location-'+guid);
+    Ember.$(window).off('popstate.ember-location-'+guid);
   }
 });
 
