@@ -136,6 +136,62 @@ test("An individual factory with a registered injection receives the injection",
   });
 });
 
+test("A factory type with registered array injections receives an array of injections", function() {
+  var container = new Container();
+  var PostController = factory();
+  var PluginA = factory();
+  var PluginB = factory();
+  var PluginC = factory();
+
+  container.register('controller:post', PostController);
+  container.register('plugin:a', PluginA);
+  container.register('plugin:b', PluginB);
+  container.register('plugin:c', PluginC);
+
+  container.typeInjection('controller', 'plugins', 'plugin:a', {array:true});
+  container.typeInjection('controller', 'plugins', 'plugin:b', {array:true});
+  container.typeInjection('controller', 'plugins', 'plugin:c', {array:true});
+
+  var postController = container.lookup('controller:post');
+  var pluginA = container.lookup('plugin:a');
+  var pluginB = container.lookup('plugin:b');
+  var pluginC = container.lookup('plugin:c');
+
+  ok(postController.plugins instanceof Array);
+  equal(postController.plugins.length, 3);
+  ok(postController.plugins.indexOf(pluginA) >= 0);
+  ok(postController.plugins.indexOf(pluginB) >= 0);
+  ok(postController.plugins.indexOf(pluginC) >= 0);
+});
+
+test("An individual factory with registered array injections receives an array of injections", function() {
+  var container = new Container();
+  var PostController = factory();
+  var PluginA = factory();
+  var PluginB = factory();
+  var PluginC = factory();
+
+  container.register('controller:post', PostController);
+  container.register('plugin:a', PluginA);
+  container.register('plugin:b', PluginB);
+  container.register('plugin:c', PluginC);
+
+  container.injection('controller:post', 'plugins', 'plugin:a', {array:true});
+  container.injection('controller:post', 'plugins', 'plugin:b', {array:true});
+  container.injection('controller:post', 'plugins', 'plugin:c', {array:true});
+
+  var postController = container.lookup('controller:post');
+  var pluginA = container.lookup('plugin:a');
+  var pluginB = container.lookup('plugin:b');
+  var pluginC = container.lookup('plugin:c');
+
+  ok(postController.plugins instanceof Array);
+  equal(postController.plugins.length, 3);
+  ok(postController.plugins.indexOf(pluginA) >= 0);
+  ok(postController.plugins.indexOf(pluginB) >= 0);
+  ok(postController.plugins.indexOf(pluginC) >= 0);
+});
+
 test("A factory with both type and individual injections", function() {
   var container = new Container();
   var PostController = factory();
