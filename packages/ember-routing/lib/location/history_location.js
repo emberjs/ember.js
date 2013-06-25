@@ -5,6 +5,9 @@
 
 var get = Ember.get, set = Ember.set;
 var popstateFired = false;
+var supportsHistoryState = (function(){
+  return !!(window.history && history.hasOwnProperty('state'));
+})();
 
 /**
   Ember.HistoryLocation implements the location API using the browser's
@@ -67,9 +70,10 @@ Ember.HistoryLocation = Ember.Object.extend({
     @param path {String}
   */
   setURL: function(path) {
+    var state = this.getState();
     path = this.formatURL(path);
 
-    if (this.getState() && this.getState().path !== path) {
+    if (state && state.path !== path) {
       this.pushState(path);
     }
   },
@@ -84,9 +88,10 @@ Ember.HistoryLocation = Ember.Object.extend({
     @param path {String}
   */
   replaceURL: function(path) {
+    var state = this.getState();
     path = this.formatURL(path);
 
-    if (this.getState() && this.getState().path !== path) {
+    if (state && state.path !== path) {
       this.replaceState(path);
     }
   },
@@ -95,11 +100,13 @@ Ember.HistoryLocation = Ember.Object.extend({
    @private
 
    Get the current `history.state`
+   Polyfill checks for native browser support and falls back to retrieving
+   from a private _historyState variable
 
    @method getState
   */
   getState: function() {
-    return get(this, 'history').state;
+    return supportsHistoryState ? get(this, 'history').state : this._historyState;
   },
 
   /**
@@ -111,7 +118,15 @@ Ember.HistoryLocation = Ember.Object.extend({
    @param path {String}
   */
   pushState: function(path) {
-    get(this, 'history').pushState({ path: path }, null, path);
+    var state = { path: path };
+
+    get(this, 'history').pushState(state, null, path);
+
+    // store state if browser doesn't support `history.state`
+    if(!supportsHistoryState) {
+      this._historyState = state;
+    }
+
     // used for webkit workaround
     this._previousURL = this.getURL();
   },
@@ -125,7 +140,15 @@ Ember.HistoryLocation = Ember.Object.extend({
    @param path {String}
   */
   replaceState: function(path) {
-    get(this, 'history').replaceState({ path: path }, null, path);
+    var state = { path: path };
+
+    get(this, 'history').replaceState(state, null, path);
+
+    // store state if browser doesn't support `history.state`
+    if(!supportsHistoryState) {
+      this._historyState = state;
+    }
+
     // used for webkit workaround
     this._previousURL = this.getURL();
   },
