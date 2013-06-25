@@ -5,9 +5,7 @@
 
 var get = Ember.get, set = Ember.set;
 var popstateFired = false;
-var supportsHistoryState = (function(){
-  return !!(window.history && history.hasOwnProperty('state'));
-})();
+var supportsHistoryState = window.history && 'state' in window.history;
 
 /**
   Ember.HistoryLocation implements the location API using the browser's
