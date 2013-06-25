@@ -9,6 +9,7 @@ var set = Ember.set,
     get = Ember.get,
     indexOf = Ember.EnumerableUtils.indexOf,
     indexesOf = Ember.EnumerableUtils.indexesOf,
+    forEach = Ember.EnumerableUtils.forEach,
     replace = Ember.EnumerableUtils.replace,
     isArray = Ember.isArray,
     precompileTemplate = Ember.Handlebars.compile;
@@ -60,6 +61,18 @@ Ember.SelectOption = Ember.View.extend({
       return get(this, valuePath);
     }).property(valuePath));
   }, 'parentView.optionValuePath')
+});
+
+Ember.SelectOptgroup = Ember.CollectionView.extend({
+  tagName: 'optgroup',
+  attributeBindings: ['label'],
+
+  selectionBinding: 'parentView.selection',
+  multipleBinding: 'parentView.multiple',
+  optionLabelPathBinding: 'parentView.optionLabelPath',
+  optionValuePathBinding: 'parentView.optionValuePath',
+
+  itemViewClassBinding: 'parentView.optionView'
 });
 
 /**
@@ -311,7 +324,7 @@ Ember.Select = Ember.View.extend(
 
   tagName: 'select',
   classNames: ['ember-select'],
-  defaultTemplate: precompileTemplate('{{#if view.prompt}}<option value="">{{view.prompt}}</option>{{/if}}{{#each view.content}}{{view view.optionView contentBinding="this"}}{{/each}}'),
+  defaultTemplate: precompileTemplate('{{#if view.prompt}}<option value="">{{view.prompt}}</option>{{/if}}{{#if view.optionGroupPath}}{{#each view.groupedContent}}{{view view.groupView contentBinding=this.content labelBinding=this.label}}{{/each}}{{else}}{{#each view.content}}{{view view.optionView contentBinding="this"}}{{/each}}{{/if}}'),
   attributeBindings: ['multiple', 'disabled', 'tabindex', 'name'],
 
   /**
@@ -406,6 +419,45 @@ Ember.Select = Ember.View.extend(
     @default 'content'
   */
   optionValuePath: 'content',
+
+  /**
+    The path of the option group.
+    When this property is used, `content` should be sorted by `optionGroupPath`.
+
+    @property optionGroupPath
+    @type String
+    @default null
+  */
+  optionGroupPath: null,
+
+  /**
+    The view class for optgroup.
+
+    @property groupView
+    @type Ember.View
+    @default Ember.SelectOptgroup
+  */
+  groupView: Ember.SelectOptgroup,
+
+  groupedContent: Ember.computed(function() {
+    var groupPath = get(this, 'optionGroupPath');
+    var groupedContent = Ember.A([]);
+
+    forEach(get(this, 'content'), function(item) {
+      var label = get(item, groupPath);
+
+      if (get(groupedContent, 'lastObject.label') !== label) {
+        groupedContent.pushObject({
+          label: label,
+          content: Ember.A([])
+        });
+      }
+
+      get(groupedContent, 'lastObject.content').push(item);
+    });
+
+    return groupedContent;
+  }).property('optionGroupPath', 'content.@each'),
 
   /**
     The view class for option.
