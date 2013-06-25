@@ -60,8 +60,12 @@ if (Ember.ENV.EXPERIMENTAL_CONTROL_HELPER) {
 
     function observer() {
       var model = Ember.Handlebars.get(this, modelPath, options);
-      set(childController, 'model', model);
-      childView.rerender();
+      if (!get(childController, "isDestroyed")) {
+        set(childController, 'model', model);
+      }
+      if (!get(childView, "isDestroyed")) {
+        childView.rerender();
+      }
     }
 
     if (modelPath) {
