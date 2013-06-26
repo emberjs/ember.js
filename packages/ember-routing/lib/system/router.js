@@ -302,7 +302,11 @@ function transitionCompleted(router) {
 
 Ember.Router.reopenClass({
   map: function(callback) {
-    var router = this.router = new Router();
+    var router = this.router;
+    if (!router){
+      router = this.router = new Router();
+      router.callbacks = [];
+    }
 
     if (get(this, 'namespace.LOG_TRANSITIONS_INTERNAL')) {
       router.log = Ember.Logger.debug;
@@ -310,10 +314,14 @@ Ember.Router.reopenClass({
 
     var dsl = Ember.RouterDSL.map(function() {
       this.resource('application', { path: "/" }, function() {
+        for (var i=0; i < router.callbacks.length; i++){
+          router.callbacks[i].call(this);
+        }
         callback.call(this);
       });
     });
 
+    router.callbacks.push(callback);
     router.map(dsl.generate());
     return router;
   }
