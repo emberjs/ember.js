@@ -2113,4 +2113,36 @@ test("Route should tear down multiple outlets.", function() {
    
 });
 
+test("Internal redirects do not call model hook of parent route", function() {
 
+  var modelCalled = 0;
+
+  Router.map(function() {
+    this.resource('post', function() {
+      this.route('index', { path: '/' });
+      this.route('new');
+    });
+  });
+
+  App.PostRoute = Ember.Route.extend({
+    model: function() {
+      modelCalled++;
+      return { title: 'Hello world' };
+    }
+  });
+
+  App.PostIndexRoute = Ember.Route.extend({
+    redirect: function() {
+      this.transitionTo('post.new');
+    }
+  });
+
+  bootApplication();
+
+  Ember.run(function() {
+    router.handleURL("/post");
+  });
+
+  equal(modelCalled, 1, "model hook was called only once");
+
+});
