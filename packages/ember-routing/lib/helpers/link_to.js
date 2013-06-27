@@ -28,7 +28,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
   }
 
   function args(linkView, router, route) {
-    var passedRouteName = route || linkView.namedRoute, routeName;
+    var passedRouteName = route || get(linkView, 'namedRoute'), routeName;
 
     routeName = fullRouteName(router, passedRouteName);
 
@@ -169,8 +169,9 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     active: Ember.computed(function() {
       var router = this.get('router'),
           params = resolvedPaths(this.parameters),
-          currentWithIndex = this.currentWhen + '.index',
-          isActive = router.isActive.apply(router, [this.currentWhen].concat(params)) ||
+          currentWhen = this.currentWhen || get(this, 'namedRoute'),
+          currentWithIndex = currentWhen + '.index',
+          isActive = router.isActive.apply(router, [currentWhen].concat(params)) ||
                      router.isActive.apply(router, [currentWithIndex].concat(params));
 
       if (isActive) { return get(this, 'activeClass'); }
@@ -220,7 +221,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
 
       var router = this.get('router');
       return router.generate.apply(router, args(this, router));
-    })
+    }).property('namedRoute')
   });
 
   LinkView.toString = function() { return "LinkView"; };
@@ -391,13 +392,22 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     @return {String} HTML string
   */
   Ember.Handlebars.registerHelper('linkTo', function(name) {
-    var options = [].slice.call(arguments, -1)[0];
-    var params = [].slice.call(arguments, 1, -1);
+    var options = [].slice.call(arguments, -1)[0],
+        params = [].slice.call(arguments, 1, -1);
 
     var hash = options.hash;
+      
+    if (options.types[0] === "ID") {
+      if (Ember.ENV.HELPER_PARAM_LOOKUPS) {
+        hash.namedRouteBinding = name;
+      } else {
+        Ember.deprecate("You provided a quoteless destination route parameter of " + name + " to the linkTo helper. Soon, this will perform a property lookup, rather than be treated as a string. To get rid of this warning, wrap " + name + " in quotes. To opt in to this new behavior, set ENV.HELPER_PARAM_LOOKUPS = true");
+        hash.namedRoute = name;
+      }
+    } else {
+      hash.namedRoute = name;
+    }
 
-    hash.namedRoute = name;
-    hash.currentWhen = hash.currentWhen || name;
     hash.disabledBinding = hash.disabledWhen;
 
     hash.parameters = {
@@ -408,6 +418,5 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
 
     return Ember.Handlebars.helpers.view.call(this, LinkView, options);
   });
-
 });
 
