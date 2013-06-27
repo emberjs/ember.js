@@ -233,7 +233,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     element:
 
     ```handlebars
-    {{#linkTo photoGallery}}
+    {{#linkTo 'photoGallery'}}
       Great Hamster Photos
     {{/linkTo}}
     ```
@@ -250,7 +250,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     a `tagName` option:
 
     ```handlebars
-    {{#linkTo photoGallery tagName="li"}}
+    {{#linkTo 'photoGallery' tagName="li"}}
       Great Hamster Photos
     {{/linkTo}}
     ```
@@ -279,7 +279,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     use of `{{linkTo}}`:
 
     ```handlebars
-    {{#linkTo photoGallery.recent}}
+    {{#linkTo 'photoGallery.recent'}}
       Great Hamster Photos from the last week
     {{/linkTo}}
     ```
@@ -297,7 +297,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     option:
 
     ```handlebars
-    {{#linkTo photoGallery.recent activeClass="current-url"}}
+    {{#linkTo 'photoGallery.recent' activeClass="current-url"}}
       Great Hamster Photos from the last week
     {{/linkTo}}
     ```
@@ -323,7 +323,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     ```
 
     ```handlebars
-    {{#linkTo photoGallery aPhoto}}
+    {{#linkTo 'photoGallery' aPhoto}}
       {{aPhoto.title}}
     {{/linkTo}}
     ```
@@ -351,7 +351,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     This argument will become the model context of the linked route:
 
     ```handlebars
-    {{#linkTo photoGallery.comment aPhoto comment}}
+    {{#linkTo 'photoGallery.comment' aPhoto comment}}
       {{comment.body}}
     {{/linkTo}}
     ```
