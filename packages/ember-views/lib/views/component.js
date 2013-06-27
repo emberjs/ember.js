@@ -17,7 +17,7 @@ require("ember-views/views/view");
   a template. If you name a template
   `components/my-foo`, you will be able to use
   `{{my-foo}}` in other templates, which will make
-  an instance of the isolated control.
+  an instance of the isolated component.
 
   ```html
   {{app-profile person=currentUser}}
@@ -35,24 +35,23 @@ require("ember-views/views/view");
 
   ```html
   {{#app-profile person=currentUser}}
-  <p>Admin mode</p>
+    <p>Admin mode</p>
   {{/app-profile}}
   ```
 
   ```html
   <!-- app-profile template -->
-
   <h1>{{person.title}}</h1>
   {{yield}} <!-- block contents -->
   ```
 
-  If you want to customize the control, in order to
+  If you want to customize the component, in order to
   handle events or actions, you implement a subclass
   of `Ember.Component` named after the name of the
-  control.
+  component.
 
   For example, you could implement the action
-  `hello` for the `app-profile` control:
+  `hello` for the `app-profile` component:
 
   ```js
   App.AppProfileComponent = Ember.Component.extend({
@@ -62,7 +61,7 @@ require("ember-views/views/view");
   });
   ```
 
-  And then use it in the control's template:
+  And then use it in the component's template:
 
   ```html
   <!-- app-profile template -->
