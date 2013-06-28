@@ -116,3 +116,73 @@ test("`wait` helper can be passed a resolution value", function() {
   });
 
 });
+
+test("`click` triggers appropriate events in order", function() {
+  expect(4);
+
+  var click, wait, events;
+
+  Ember.run(function() {
+    App = Ember.Application.create();
+    App.setupForTesting();
+  });
+
+  App.IndexView = Ember.View.extend({
+    classNames: 'index-view',
+
+    didInsertElement: function() {
+      this.$().on('mousedown focusin mouseup click', function(e) {
+        events.push(e.type);
+      });
+    },
+
+    Checkbox: Ember.Checkbox.extend({
+      click: function() {
+        events.push('click:' + this.get('checked'));
+      },
+
+      change: function() {
+        events.push('change:' + this.get('checked'));
+      }
+    })
+  });
+
+  Ember.TEMPLATES.index = Ember.Handlebars.compile('{{input type="text"}} {{view view.Checkbox}} {{textarea}}');
+
+  App.injectTestHelpers();
+
+  Ember.run(App, App.advanceReadiness);
+
+  click = App.testHelpers.click;
+  wait  = App.testHelpers.wait;
+
+  wait().then(function() {
+    events = [];
+    return click('.index-view');
+  }).then(function() {
+    deepEqual(events,
+      ['mousedown', 'mouseup', 'click'],
+      'fires events in order');
+  }).then(function() {
+    events = [];
+    return click('.index-view input[type=text]');
+  }).then(function() {
+    deepEqual(events,
+      ['mousedown', 'focusin', 'mouseup', 'click'],
+      'fires focus events on inputs');
+  }).then(function() {
+    events = [];
+    return click('.index-view textarea');
+  }).then(function() {
+    deepEqual(events,
+      ['mousedown', 'focusin', 'mouseup', 'click'],
+      'fires focus events on textareas');
+  }).then(function() {
+    events = [];
+    return click('.index-view input[type=checkbox]');
+  }).then(function() {
+    deepEqual(events,
+      ['mousedown', 'mouseup', 'change:true', 'click', 'click:true'],
+      'fires change on checkboxes with the right checked state');
+  });
+});

@@ -31,7 +31,18 @@ function visit(app, url) {
 
 function click(app, selector, context) {
   var $el = findWithAssert(app, selector, context);
+  Ember.run($el, 'mousedown');
+
+  if ($el.is(':input')) {
+    var type = $el.prop('type');
+    if (type !== 'checkbox' && type !== 'radio' && type !== 'hidden') {
+      Ember.run($el, 'focus');
+    }
+  }
+
+  Ember.run($el, 'mouseup');
   Ember.run($el, 'click');
+
   return wait(app);
 }
 
