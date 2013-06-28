@@ -197,6 +197,23 @@ test("handles null value for attributes on text fields", function() {
   equal(!!view.$().prop('value'), false, "value is not defined");
 });
 
+test("handles a 0 value attribute on text fields", function() {
+  view = Ember.View.create({
+    tagName: 'input',
+    attributeBindings: ['value']
+  });
+
+  appendView();
+
+  view.$().attr('value', 'test');
+  equal(view.$().attr('value'), "test", "value is defined");
+
+  Ember.run(function() {
+    view.set('value', 0);
+  });
+  strictEqual(view.$().prop('value'), "0", "value should be 0");
+});
+
 test("attributeBindings should not fail if view has been removed", function(){
   Ember.run(function(){
     view = Ember.View.create({
