@@ -2455,7 +2455,7 @@ Ember.View.applyAttributeBindings = function(elem, name, value) {
     }
   } else if (name === 'value' || type === 'boolean') {
     // We can't set properties to undefined or null
-    if (Ember.none(value)) { value = ''; }
+    if (Ember.isNone(value)) { value = ''; }
 
     if (value !== elem.prop(name)) {
       // value and booleans should always be properties
