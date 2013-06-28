@@ -1,4 +1,4 @@
-var Router, App, AppView, templates, router, eventDispatcher, container;
+var Router, App, AppView, templates, router, eventDispatcher, container, originalTemplates;
 var get = Ember.get, set = Ember.set;
 
 function bootApplication() {
@@ -31,6 +31,7 @@ module("The {{linkTo}} helper", {
 
       Router = App.Router;
 
+      originalTemplates = Ember.$.extend({}, Ember.TEMPLATES);
       Ember.TEMPLATES.app = Ember.Handlebars.compile("{{outlet}}");
       Ember.TEMPLATES.index = Ember.Handlebars.compile("<h3>Home</h3>{{#linkTo 'about' id='about-link'}}About{{/linkTo}}{{#linkTo 'index' id='self-link'}}Self{{/linkTo}}");
       Ember.TEMPLATES.about = Ember.Handlebars.compile("<h3>About</h3>{{#linkTo 'index' id='home-link'}}Home{{/linkTo}}{{#linkTo 'about' id='self-link'}}Self{{/linkTo}}");
@@ -49,6 +50,7 @@ module("The {{linkTo}} helper", {
 
   teardown: function() {
     Ember.run(function() { App.destroy(); });
+    Ember.TEMPLATES = originalTemplates;
   }
 });
 
@@ -486,3 +488,49 @@ test("The {{linkTo}} helper doesn't change view context", function() {
 
   equal(Ember.$('#index', '#qunit-fixture').text(), 'test-Link: test', "accesses correct view");
 });
+
+test("Quoteless route param performs property lookup", function() {
+  Ember.TEMPLATES.index = Ember.Handlebars.compile("{{#linkTo 'index' id='string-link'}}string{{/linkTo}}{{#linkTo foo id='path-link'}}path{{/linkTo}}{{#linkTo view.foo id='view-link'}}{{view.foo}}{{/linkTo}}");
+
+  var oldFlagValue = Ember.ENV.HELPER_PARAM_LOOKUPS;
+  Ember.ENV.HELPER_PARAM_LOOKUPS = true;
+
+  function assertEquality(href) {
+    equal(normalizeUrl(Ember.$('#string-link', '#qunit-fixture').attr('href')), '/');
+    equal(normalizeUrl(Ember.$('#path-link', '#qunit-fixture').attr('href')), href);
+    equal(normalizeUrl(Ember.$('#view-link', '#qunit-fixture').attr('href')), href);
+  }
+
+  App.IndexView = Ember.View.extend({
+    foo: 'index',
+    elementId: 'index-view'
+  });
+
+  App.IndexController = Ember.Controller.extend({
+    foo: 'index'
+  });
+
+  App.Router.map(function() {
+    this.route('about');
+  });
+  
+  bootApplication();
+
+  Ember.run(function() {
+    router.handleURL("/");
+  });
+
+  assertEquality('/');
+
+  var controller = container.lookup('controller:index'),
+      view = Ember.View.views['index-view'];
+  Ember.run(function() {
+    controller.set('foo', 'about');
+    view.set('foo', 'about');
+  });
+
+  assertEquality('/about');
+
+  Ember.ENV.HELPER_PARAM_LOOKUPS = oldFlagValue;
+});
+

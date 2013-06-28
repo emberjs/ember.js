@@ -365,7 +365,7 @@ function evaluateMultiPropertyBoundHelper(context, fn, normalizedProperties, opt
 
   view.appendChild(bindView);
 
-  // Assemble liast of watched properties that'll re-render this helper.
+  // Assemble list of watched properties that'll re-render this helper.
   watchedProperties = [];
   for (boundOption in boundOptions) {
     if (boundOptions.hasOwnProperty(boundOption)) {
