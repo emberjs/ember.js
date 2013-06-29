@@ -540,6 +540,32 @@ test("a array_proxy that backs an sorted array_controller that backs a collectio
   });
 });
 
+test("when a collection view's computed content is emptied it shouldn't throw an exception", function() { 
+  view = Ember.CollectionView.create({
+    array1: Ember.A([1,2,3]),
+    array2: Ember.A([10,20,30]),
+    itemViewClass: Ember.View
+  }); 
+
+  Ember.defineProperty(view, 'content', 
+    Ember.computed(function(key) {
+      var a1a2 = this.get('array1').concat(this.get('array2'));
+      return Ember.A(a1a2); 
+    }).property('array1','array2')
+  );
+
+  Ember.run(function() { 
+    view.append(); 
+  }); 
+  
+  Ember.run(function() { 
+    view.set('array1', Ember.A([ ])); 
+    view.set('array2', Ember.A([ ])); 
+  });
+
+  ok(Ember.isEmpty(view.get('content')), 'CollectionView content array should be empty.');
+});
+
 test("when a collection view is emptied, deeply nested views elements are not removed from the DOM and then destroyed again", function() {
   var assertProperDestruction = Ember.Mixin.create({
     destroyElement: function() {
