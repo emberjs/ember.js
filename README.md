@@ -135,7 +135,7 @@ you may have luck with another of the runtimes supported by
 
 ## Setup
 
-1. Install Ruby 1.9.2+. There are many resources on the web can help;
+1. Install Ruby 1.9.3+. There are many resources on the web can help;
 one of the best is [rvm](https://rvm.io/).
 
 2. Install Bundler: `gem install bundler`
