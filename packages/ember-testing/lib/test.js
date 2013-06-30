@@ -46,6 +46,14 @@ Ember.Test = {
     Whenever you register a helper that performs async operations, make sure
     you `return wait();` at the end of the helper.
 
+   If a helper is not async and needs to return
+    a value immediately (such as `find`), pass
+    `{ wait: false }` as an option parameter.
+    ```javascript
+    Ember.Test.registerHelper('findPost', function() {
+      return find('.post');
+    }, { wait: false });
+
     If an async helper also needs to return a value, pass it to the `wait`
     helper as a first argument:
     `return wait(val);`
@@ -54,9 +62,17 @@ Ember.Test = {
     @method registerHelper
     @param {String} name The name of the helper method to add.
     @param {Function} helperMethod
+    @param options {Object}
   */
-  registerHelper: function(name, helperMethod) {
-    helpers[name] = helperMethod;
+  registerHelper: function(name, helperMethod, meta) {
+    meta = meta || {};
+    if (meta.wait === undefined) {
+      meta.wait = true;
+    }
+    helpers[name] = {
+      method: helperMethod,
+      meta: meta
+    };
   },
   /**
     Remove a previously added helper method.
@@ -122,29 +138,7 @@ Ember.Test = {
   },
 
   /**
-   Used to allow ember-testing to communicate with a specific testing
-   framework.
-
-   You can manually set it before calling `App.setupForTesting()`.
-
-   Example:
-   ```
-   Ember.Test.adapter = MyCustomAdapter.create()
-   ```
-
-   If you do not set it, ember-testing will default to `Ember.Test.QUnitAdapter`.
-
    @public
-   @property adapter
-   @type {Class} The adapter to be used.
-   @default Ember.Test.QUnitAdapter
-  */
-  adapter: null,
-  /**
-     `registerWaiter` is used to register a callback that will check
-     for additional in-progress actions whenever `wait()` is
-     called. `wait()` will not resolve until your callback returns
-     true.
 
      This allows ember-testing to play nicely with other asynchronous
      events, such as an application that is waiting for a CSS3
@@ -201,12 +195,47 @@ Ember.Test = {
   }
 };
 
-function curry(app, fn) {
+function helper(app, name) {
+  var fn = helpers[name].method,
+      meta = helpers[name].meta;
+
   return function() {
-    var args = slice.call(arguments);
+    var args = slice.call(arguments),
+        wait = app.testHelpers.wait,
+        lastPromise = Ember.Test.lastPromise;
+
     args.unshift(app);
-    return fn.apply(app, args);
+
+    // some helpers are not async and
+    // need to return a value immediately.
+    // example: `find`
+    if (!meta.wait) {
+      return fn.apply(app, args);
+    }
+
+    if (!lastPromise) {
+      // It's the first async helper in current context
+      lastPromise = fn.apply(app, args);
+    } else {
+      // wait for last helper's promise to resolve
+      // and then execute
+      run(function() {
+        lastPromise = lastPromise.then(function() {
+          return fn.apply(app, args);
+        });
+      });
+    }
+
+    return lastPromise;
   };
+}
+
+function run(fn) {
+  if (!Ember.run.currentRunLoop) {
+    Ember.run(fn);
+  } else {
+    fn();
+  }
 }
 
 Ember.Application.reopen({
@@ -265,8 +294,8 @@ Ember.Application.reopen({
     this.testHelpers = {};
     for (var name in helpers) {
       originalMethods[name] = window[name];
-      this.testHelpers[name] = window[name] = curry(this, helpers[name]);
-      protoWrap(Ember.Test.Promise.prototype, name, curry(this, helpers[name]));
+      this.testHelpers[name] = window[name] = helper(this, name);
+      protoWrap(Ember.Test.Promise.prototype, name, helper(this, name));
     }
 
     for(var i = 0, l = injectHelpersCallbacks.length; i < l; i++) {
@@ -299,22 +328,67 @@ Ember.Application.reopen({
 
 });
 
+// This method is no longer needed
+// But still here for backwards compatibility
 function protoWrap(proto, name, callback) {
   proto[name] = function() {
     var args = arguments;
-    return this.then(function() {
-      callback.apply(this, args);
-    });
+    return callback.apply(this, args);
   };
 }
 
 Ember.Test.Promise = function() {
   Ember.RSVP.Promise.apply(this, arguments);
+  Ember.Test.lastPromise = this;
 };
 
 Ember.Test.Promise.prototype = Ember.create(Ember.RSVP.Promise.prototype);
 Ember.Test.Promise.prototype.constructor = Ember.Test.Promise;
 
+// Patch `then` to isolate async methods
+// specifically `Ember.Test.lastPromise`
+var originalThen = Ember.RSVP.Promise.prototype.then;
+Ember.Test.Promise.prototype.then = function(onSuccess, onFailure) {
+  return originalThen.call(this, function(val) {
+    return isolate(onSuccess, val);
+  }, onFailure);
+};
+
+// This method isolates nested async methods
+// so that they don't conflict with other last promises.
+//
+// 1. Set `Ember.Test.lastPromise` to null
+// 2. Invoke method
+// 3. Return the last promise created during method
+// 4. Restore `Ember.Test.lastPromise` to original value
+function isolate(fn, val) {
+  var value, lastPromise,
+      prevPromise = Ember.Test.lastPromise;
+
+  // Reset lastPromise for nested helpers
+  Ember.Test.lastPromise = null;
+
+  value = fn.call(null, val);
+
+  lastPromise = Ember.Test.lastPromise;
+
+  // If the method returned a promise
+  // return that promise. If not,
+  // return the last async helper's promise
+  if ((value && value.then) || !lastPromise) {
+    return value;
+  } else {
+    run(function() {
+      lastPromise = lastPromise.then(function() {
+        return value;
+      });
+    });
+    return lastPromise;
+  }
+
+  // Reset last promise to what it was before the isolation
+  Ember.Test.lastPromise = prevPromise;
+}
 
 function onerror(error) {
   Ember.Test.adapter.exception(error);
