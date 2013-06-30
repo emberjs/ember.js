@@ -272,6 +272,8 @@ Ember.Application.reopen({
     for(var i = 0, l = injectHelpersCallbacks.length; i < l; i++) {
       injectHelpersCallbacks[i](this);
     }
+
+    Ember.RSVP.configure('onerror', onerror);
   },
 
   /**
@@ -292,7 +294,9 @@ Ember.Application.reopen({
       delete this.testHelpers[name];
       delete originalMethods[name];
     }
+    Ember.RSVP.configure('onerror', null);
   }
+
 });
 
 function protoWrap(proto, name, callback) {
@@ -312,7 +316,6 @@ Ember.Test.Promise.prototype = Ember.create(Ember.RSVP.Promise.prototype);
 Ember.Test.Promise.prototype.constructor = Ember.Test.Promise;
 
 
-Ember.RSVP.configure('onerror', function(error) {
+function onerror(error) {
   Ember.Test.adapter.exception(error);
-});
-
+}
