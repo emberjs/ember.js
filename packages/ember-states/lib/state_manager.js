@@ -565,10 +565,10 @@ var sendEvent = function(eventName, sendRecursiveArguments, isUnhandledPass) {
       })
     }),
     stateTwo: Ember.State.create({
-     anAction: function(manager, context){
-       // will not be called below because it is
-       // not a parent of the current state
-     }
+      anAction: function(manager, context){
+        // will not be called below because it is
+        // not a parent of the current state
+      }
     })
   })
 
