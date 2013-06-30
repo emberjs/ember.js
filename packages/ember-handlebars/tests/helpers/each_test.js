@@ -370,7 +370,7 @@ test("it supports {{else}}", function() {
   assertHTML(view, "onetwo");
 
   Ember.run(function() {
-    view.set('items', Ember.A([]));
+    view.set('items', Ember.A());
   });
 
   assertHTML(view, "Nothing");
