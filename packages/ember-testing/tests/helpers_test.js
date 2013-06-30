@@ -178,6 +178,8 @@ test("`click` triggers appropriate events in order", function() {
       ['mousedown', 'focusin', 'mouseup', 'click'],
       'fires focus events on textareas');
   }).then(function() {
+    // In IE (< 8), the change event only fires when the value changes before element focused.
+    Ember.$('.index-view input[type=checkbox]').focus();
     events = [];
     return click('.index-view input[type=checkbox]');
   }).then(function() {
