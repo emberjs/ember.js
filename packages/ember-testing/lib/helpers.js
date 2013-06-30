@@ -59,6 +59,10 @@ function find(app, selector, context) {
   return $el;
 }
 
+function andThen(app, callback) {
+  return wait(app, callback(app));
+}
+
 function wait(app, value) {
   return Test.promise(function(resolve) {
     // If this is the first async promise, kick off the async test
@@ -97,6 +101,8 @@ function wait(app, value) {
 helper('visit', visit);
 helper('click', click);
 helper('fillIn', fillIn);
-helper('find', find);
-helper('findWithAssert', findWithAssert);
-helper('wait', wait);
+helper('andThen', andThen);
+
+helper('find', find, { wait: false });
+helper('findWithAssert', findWithAssert, { wait: false});
+helper('wait', wait, { wait: false });
