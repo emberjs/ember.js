@@ -67,8 +67,8 @@ function fillIn(app, selector, context, text) {
   }
   $el = findWithAssert(app, selector, context);
   Ember.run(function() {
-    $el.val(text).change();
   });
+    $el.val(text).change();
   return wait(app);
 }
 
@@ -86,6 +86,10 @@ function find(app, selector, context) {
   $el = app.$(selector, context);
 
   return $el;
+}
+
+function andThen(app, callback) {
+  return wait(app, callback(app));
 }
 
 function wait(app, value) {
@@ -231,3 +235,4 @@ helper('find', find);
 */
 helper('findWithAssert', findWithAssert);
 helper('wait', wait);
+helper('andThen', andThen);
