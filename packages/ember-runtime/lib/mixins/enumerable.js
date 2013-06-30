@@ -284,7 +284,7 @@ Ember.Enumerable = Ember.Mixin.create({
     @return {Array} The mapped array.
   */
   map: function(callback, target) {
-    var ret = Ember.A([]);
+    var ret = Ember.A();
     this.forEach(function(x, idx, i) {
       ret[idx] = callback.call(target, x, idx,i);
     });
@@ -334,7 +334,7 @@ Ember.Enumerable = Ember.Mixin.create({
     @return {Array} A filtered array.
   */
   filter: function(callback, target) {
-    var ret = Ember.A([]);
+    var ret = Ember.A();
     this.forEach(function(x, idx, i) {
       if (callback.call(target, x, idx, i)) ret.push(x);
     });
@@ -623,7 +623,7 @@ Ember.Enumerable = Ember.Mixin.create({
     @return {Array} return values from calling invoke.
   */
   invoke: function(methodName) {
-    var args, ret = Ember.A([]);
+    var args, ret = Ember.A();
     if (arguments.length>1) args = a_slice.call(arguments, 1);
 
     this.forEach(function(x, idx) {
@@ -644,7 +644,7 @@ Ember.Enumerable = Ember.Mixin.create({
     @return {Array} the enumerable as an array.
   */
   toArray: function() {
-    var ret = Ember.A([]);
+    var ret = Ember.A();
     this.forEach(function(o, idx) { ret[idx] = o; });
     return ret ;
   },
@@ -680,7 +680,7 @@ Ember.Enumerable = Ember.Mixin.create({
   */
   without: function(value) {
     if (!this.contains(value)) return this; // nothing to do
-    var ret = Ember.A([]);
+    var ret = Ember.A();
     this.forEach(function(k) {
       if (k !== value) ret[ret.length] = k;
     }) ;
@@ -700,7 +700,7 @@ Ember.Enumerable = Ember.Mixin.create({
     @return {Ember.Enumerable}
   */
   uniq: function() {
-    var ret = Ember.A([]);
+    var ret = Ember.A();
     this.forEach(function(k){
       if (a_indexOf(ret, k)<0) ret.push(k);
     });

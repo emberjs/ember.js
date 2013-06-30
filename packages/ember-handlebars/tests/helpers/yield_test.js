@@ -65,7 +65,7 @@ test("templates should yield to block, when the yield is embedded in a hierarchy
     layout: Ember.Handlebars.compile('<div class="times">{{#each view.index}}{{yield}}{{/each}}</div>'),
     n: null,
     index: Ember.computed(function() {
-      var n = Ember.get(this, 'n'), indexArray = Ember.A([]);
+      var n = Ember.get(this, 'n'), indexArray = Ember.A();
       for (var i=0; i < n; i++) {
         indexArray[i] = i;
       }

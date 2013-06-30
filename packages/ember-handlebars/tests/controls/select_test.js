@@ -725,7 +725,7 @@ test("upon content change with Array-like content, the DOM should reflect the se
       sylvain = {id: 5, name: 'Sylvain'};
 
   var proxy = Ember.ArrayProxy.create({
-    content: Ember.A([]),
+    content: Ember.A(),
     selectedOption: sylvain
   });
 
