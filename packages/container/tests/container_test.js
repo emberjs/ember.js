@@ -183,6 +183,19 @@ test("A failed lookup returns undefined", function() {
   equal(container.lookup("doesnot:exist"), undefined);
 });
 
+test("Injecting a failed lookup raises an error", function(){
+  var container = new Container();
+  var Foo = { create: function(){ }};
+
+  container.register('model:foo', Foo);
+
+  container.injection('model:foo', 'store', 'store:main');
+
+  throws(function(){
+    container.lookup('model:foo');
+  });
+});
+
 test("Destroying the container destroys any cached singletons", function() {
   var container = new Container();
   var PostController = factory();
