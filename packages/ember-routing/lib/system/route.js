@@ -465,14 +465,16 @@ Ember.Route = Ember.Object.extend({
     @return {Object} the serialized parameters
   */
   serialize: function(model, params) {
-    if (params.length !== 1) { return; }
+    if (params.length === 0) { return; }
 
     var name = params[0], object = {};
 
     if (/_id$/.test(name)) {
       object[name] = get(model, 'id');
     } else {
-      object[name] = model;
+      for (var segment in params) {
+        object[segment] = get(model, segment);
+      }
     }
 
     return object;
