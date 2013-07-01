@@ -2047,7 +2047,7 @@ asyncTest("Promises encountered on app load put app into loading state until res
 
 });
 
-test("Route should tear down multiple outlets.", function() {
+test("Route should tear down multiple outlets", function() {
   Ember.TEMPLATES.application = compile("{{outlet menu}}{{outlet}}{{outlet footer}}");
   Ember.TEMPLATES.posts = compile("{{outlet}}");
   Ember.TEMPLATES.users = compile("users");
@@ -2111,6 +2111,93 @@ test("Route should tear down multiple outlets.", function() {
   equal(Ember.$('p.posts-index:contains(postsIndex)', '#qunit-fixture').length, 0, "The posts/index template was removed"); 
   equal(Ember.$('div.posts-footer:contains(postsFooter)', '#qunit-fixture').length, 0, "The posts/footer template was removed");
    
+});
+
+
+test("Route supports clearing outlet explicitly", function() {
+  Ember.TEMPLATES.application = compile("{{outlet}}{{outlet modal}}");
+  Ember.TEMPLATES.posts = compile("{{outlet}}");
+  Ember.TEMPLATES.users = compile("users");
+  Ember.TEMPLATES['posts/index'] = compile("postsIndex {{outlet}}");
+  Ember.TEMPLATES['posts/modal'] = compile("postsModal");
+  Ember.TEMPLATES['posts/extra'] = compile("postsExtra");
+
+  Router.map(function() {
+    this.resource("posts", function() {});
+    this.resource("users", function() {});
+  });
+
+  App.PostsIndexView = Ember.View.extend({
+    classNames: ['posts-index']
+  });
+
+  App.PostsModalView = Ember.View.extend({
+    templateName: 'posts/modal',
+    classNames: ['posts-modal']
+  });
+
+  App.PostsExtraView = Ember.View.extend({
+    templateName: 'posts/extra',
+    classNames: ['posts-extra']
+  });
+
+  App.PostsRoute = Ember.Route.extend({
+    events: {
+      showModal: function(){
+        this.render('postsModal', {
+          into: 'application',
+          outlet: 'modal'
+        });
+      },
+      hideModal: function(){
+        this.disconnectOutlet({outlet: 'modal', parentView: 'application'});
+      }
+    }
+  });
+
+  App.PostsIndexRoute = Ember.Route.extend({
+    events: {
+      showExtra: function(){
+        this.render('postsExtra', {
+          into: 'posts/index'
+        });
+      },
+      hideExtra: function(){
+        this.disconnectOutlet({parentView: 'posts/index'});
+      }
+    }
+  });
+
+  bootApplication();
+
+  Ember.run(function() {
+    router.handleURL("/posts");
+  });
+  equal(Ember.$('div.posts-index:contains(postsIndex)', '#qunit-fixture').length, 1, "The posts/index template was rendered");
+  Ember.run(function() {
+    router.send('showModal');
+  });
+  equal(Ember.$('div.posts-modal:contains(postsModal)', '#qunit-fixture').length, 1, "The posts/modal template was rendered");
+  Ember.run(function() {
+    router.send('showExtra');
+  });
+  equal(Ember.$('div.posts-extra:contains(postsExtra)', '#qunit-fixture').length, 1, "The posts/extra template was rendered");
+  Ember.run(function() {
+    router.send('hideModal');
+  });
+  equal(Ember.$('div.posts-modal:contains(postsModal)', '#qunit-fixture').length, 0, "The posts/modal template was removed");
+  Ember.run(function() {
+    router.send('hideExtra');
+  });
+  equal(Ember.$('div.posts-extra:contains(postsExtra)', '#qunit-fixture').length, 0, "The posts/extra template was removed");
+
+  Ember.run(function() {
+    router.handleURL("/users");
+  });
+
+  equal(Ember.$('div.posts-index:contains(postsIndex)', '#qunit-fixture').length, 0, "The posts/index template was removed");
+  equal(Ember.$('div.posts-modal:contains(postsModal)', '#qunit-fixture').length, 0, "The posts/modal template was removed");
+  equal(Ember.$('div.posts-extra:contains(postsExtra)', '#qunit-fixture').length, 0, "The posts/extra template was removed");
 });
 
 
