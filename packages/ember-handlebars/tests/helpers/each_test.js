@@ -317,7 +317,7 @@ test("it supports {{itemView=}}", function() {
     }
   });
 
-  container.register('view:AnItemView', itemView);
+  container.register('view:anItemView', itemView);
 
   append(view);
 

@@ -166,7 +166,8 @@ Ember.Handlebars.registerHelper('collection', function(path, options) {
     var controller = data.keywords.controller;
     Ember.assert('itemView given, but no container is available', controller && controller.container);
     var container = controller.container;
-    itemViewClass = container.resolve('view:' + hash.itemView) || container.resolve('view:default');
+    itemViewClass = container.resolve('view:' + Ember.String.camelize(hash.itemView));
+    Ember.assert('itemView not found in container', !!itemViewClass);
   } else if (hash.itemViewClass) {
     itemViewClass = handlebarsGet(collectionPrototype, hash.itemViewClass, options);
   } else {
