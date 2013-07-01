@@ -419,12 +419,19 @@ test("The {{linkTo}} helper binds some anchor html tag common attributes", funct
   equal(Ember.$('#self-link', '#qunit-fixture').attr('title'), 'title-attr', "The self-link contains title attribute");
 });
 
-test("The {{linkTo}} helper accepts string arguments", function() {
+test("The {{linkTo}} helper accepts string/numeric arguments", function() {
   Router.map(function() {
     this.route('filter', { path: '/filters/:filter' });
+    this.route('post',   { path: '/post/:post_id' });
   });
 
-  Ember.TEMPLATES.filter = compile('<p>{{filter}}</p>{{#linkTo "filter" "unpopular" id="link"}}Unpopular{{/linkTo}}');
+  App.FilterController = Ember.Controller.extend({
+    filter: "unpopular",
+    post_id: 123
+  });
+
+  Ember.TEMPLATES.filter = compile('<p>{{filter}}</p>{{#linkTo "filter" "unpopular" id="link"}}Unpopular{{/linkTo}}{{#linkTo "filter" filter id="path-link"}}Unpopular{{/linkTo}}{{#linkTo "post" post_id id="post-path-link"}}Post{{/linkTo}}{{#linkTo "post" 123 id="post-number-link"}}Post{{/linkTo}}');
+
   Ember.TEMPLATES.index = compile('');
 
   bootApplication();
@@ -432,6 +439,9 @@ test("The {{linkTo}} helper accepts string arguments", function() {
   Ember.run(function() { router.handleURL("/filters/popular"); });
 
   equal(normalizeUrl(Ember.$('#link', '#qunit-fixture').attr('href')), "/filters/unpopular");
+  equal(normalizeUrl(Ember.$('#path-link', '#qunit-fixture').attr('href')), "/filters/unpopular");
+  equal(normalizeUrl(Ember.$('#post-path-link', '#qunit-fixture').attr('href')), "/post/123");
+  equal(normalizeUrl(Ember.$('#post-number-link', '#qunit-fixture').attr('href')), "/post/123");
 });
 
 test("The {{linkTo}} helper unwraps controllers", function() {
