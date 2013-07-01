@@ -159,11 +159,24 @@ Ember.Handlebars.registerHelper('collection', function(path, options) {
   var hash = options.hash, itemHash = {}, match;
 
   // Extract item view class if provided else default to the standard class
-  var itemViewClass, itemViewPath = hash.itemViewClass;
-  var collectionPrototype = collectionClass.proto();
+  var collectionPrototype = collectionClass.proto(),
+      itemViewClass;
+
+  if (hash.itemView) {
+    var controller = data.keywords.controller;
+    Ember.assert('itemView given, but no container is available', controller && controller.container);
+    var container = controller.container;
+    itemViewClass = container.resolve('view:' + hash.itemView) || container.resolve('view:default');
+  } else if (hash.itemViewClass) {
+    itemViewClass = handlebarsGet(collectionPrototype, hash.itemViewClass, options);
+  } else {
+    itemViewClass = collectionPrototype.itemViewClass;
+  }
+
+  Ember.assert(fmt("%@ #collection: Could not find itemViewClass %@", [data.view, itemViewClass]), !!itemViewClass);
+
   delete hash.itemViewClass;
-  itemViewClass = itemViewPath ? handlebarsGet(collectionPrototype, itemViewPath, options) : collectionPrototype.itemViewClass;
-  Ember.assert(fmt("%@ #collection: Could not find itemViewClass %@", [data.view, itemViewPath]), !!itemViewClass);
+  delete hash.itemView;
 
   // Go through options passed to the {{collection}} helper and extract options
   // that configure item views instead of the collection itself.
