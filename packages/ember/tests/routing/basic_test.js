@@ -1628,7 +1628,11 @@ test("Router accounts for rootURL on page load when using history location", fun
       HistoryTestLocation;
 
   setHistory = function(obj, path) {
-    obj.set('history', { state: { path: path } });
+
+    //obj.set('history', { state: { path: path } });
+    obj.set('location', {
+      pathname: path
+    });
   };
 
   // Create new implementation that extends HistoryLocation
@@ -1637,7 +1641,6 @@ test("Router accounts for rootURL on page load when using history location", fun
     initState: function() {
       var path = rootURL + '/posts';
 
-      setHistory(this, path);
       this.set('location', {
         pathname: path
       });
