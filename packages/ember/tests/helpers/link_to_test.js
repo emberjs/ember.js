@@ -1,5 +1,6 @@
 var Router, App, AppView, templates, router, eventDispatcher, container, originalTemplates;
 var get = Ember.get, set = Ember.set;
+var oldParamFlagValue;
 
 function bootApplication() {
   router = container.lookup('router:main');
@@ -17,6 +18,9 @@ function compile(template) {
 
 module("The {{linkTo}} helper", {
   setup: function() {
+    oldParamFlagValue = Ember.ENV.HELPER_PARAM_LOOKUPS;
+    Ember.ENV.HELPER_PARAM_LOOKUPS = true;
+
     Ember.run(function() {
       App = Ember.Application.create({
         name: "App",
@@ -51,6 +55,7 @@ module("The {{linkTo}} helper", {
   teardown: function() {
     Ember.run(function() { App.destroy(); });
     Ember.TEMPLATES = originalTemplates;
+    Ember.ENV.HELPER_PARAM_LOOKUPS = oldParamFlagValue;
   }
 });
 
@@ -502,7 +507,6 @@ test("The {{linkTo}} helper doesn't change view context", function() {
 test("Quoteless route param performs property lookup", function() {
   Ember.TEMPLATES.index = Ember.Handlebars.compile("{{#linkTo 'index' id='string-link'}}string{{/linkTo}}{{#linkTo foo id='path-link'}}path{{/linkTo}}{{#linkTo view.foo id='view-link'}}{{view.foo}}{{/linkTo}}");
 
-  var oldFlagValue = Ember.ENV.HELPER_PARAM_LOOKUPS;
   Ember.ENV.HELPER_PARAM_LOOKUPS = true;
 
   function assertEquality(href) {
@@ -540,7 +544,133 @@ test("Quoteless route param performs property lookup", function() {
   });
 
   assertEquality('/about');
+});
 
-  Ember.ENV.HELPER_PARAM_LOOKUPS = oldFlagValue;
+test("linkTo with null/undefined dynamic parameters are put in a loading state", function() {
+
+  expect(17);
+
+  var oldWarn = Ember.Logger.warn, warnCalled = false;
+  Ember.Logger.warn = function() { warnCalled = true; }; 
+  Ember.TEMPLATES.index = Ember.Handlebars.compile("{{#linkTo destinationRoute routeContext loadingClass='i-am-loading' id='context-link'}}string{{/linkTo}}{{#linkTo secondRoute loadingClass='i-am-loading' id='static-link'}}string{{/linkTo}}");
+
+  Ember.ENV.HELPER_PARAM_LOOKUPS = true;
+
+  var thing = Ember.Object.create({ id: 123 });
+
+  App.IndexController = Ember.Controller.extend({
+    destinationRoute: null,
+    routeContext: null
+  });
+
+  App.AboutRoute = Ember.Route.extend({
+    activate: function() {
+      ok(true, "About was entered");
+    }
+  });
+
+  App.Router.map(function() {
+    this.route('thing', { path: '/thing/:thing_id' });
+    this.route('about');
+  });
+  
+  bootApplication();
+
+  Ember.run(function() {
+    router.handleURL("/");
+  });
+
+  function assertLinkStatus($link, url) {
+    if (url) {
+      equal(normalizeUrl($link.attr('href')), url, "loaded linkTo has expected href");
+      ok(!$link.hasClass('i-am-loading'), "loaded linkView has no loadingClass");
+    } else {
+      equal(normalizeUrl($link.attr('href')), '#', "unloaded linkTo has href='#'");
+      ok($link.hasClass('i-am-loading'), "loading linkView has loadingClass");
+    }
+  }
+
+  var $contextLink = Ember.$('#context-link', '#qunit-fixture'),
+      $staticLink = Ember.$('#static-link', '#qunit-fixture'),
+      controller = container.lookup('controller:index');
+
+  assertLinkStatus($contextLink);
+  assertLinkStatus($staticLink);
+
+  Ember.run(function() {
+    warnCalled = false;
+    $contextLink.click();
+    ok(warnCalled, "Logger.warn was called from clicking loading link");
+  });
+
+  // Set the destinationRoute (context is still null).
+  Ember.run(function() { controller.set('destinationRoute', 'thing'); });
+  assertLinkStatus($contextLink);
+
+  // Set the routeContext to an id
+  Ember.run(function() { controller.set('routeContext', '456'); });
+  assertLinkStatus($contextLink, '/thing/456');
+
+  // Set the routeContext to an object
+  Ember.run(function() { controller.set('routeContext', thing); });
+  assertLinkStatus($contextLink, '/thing/123');
+
+  // Set the destinationRoute back to null.
+  Ember.run(function() { controller.set('destinationRoute', null); });
+  assertLinkStatus($contextLink);
+
+  Ember.run(function() {
+    warnCalled = false;
+    $staticLink.click();
+    ok(warnCalled, "Logger.warn was called from clicking loading link");
+  });
+
+  Ember.run(function() { controller.set('secondRoute', 'about'); });
+  assertLinkStatus($staticLink, '/about');
+
+  // Click the now-active link
+  Ember.run(function() { $staticLink.click(); });
+
+  Ember.Logger.warn = oldWarn;
+});
+
+test("The {{linkTo}} helper refreshes href element when one of params changes", function() {
+  Router.map(function() {
+    this.route('post', { path: '/posts/:post_id' });
+  });
+
+  var post = Ember.Object.create({id: '1'}),
+      secondPost = Ember.Object.create({id: '2'});
+
+  App.PostRoute = Ember.Route.extend({
+    model: function(params) {
+      return post;
+    },
+
+    serialize: function(post) {
+      return { post_id: post.get('id') };
+    }
+  });
+
+  Ember.TEMPLATES.index = compile('{{#linkTo "post" post id="post"}}post{{/linkTo}}');
+
+  App.IndexController = Ember.Controller.extend();
+  var indexController = container.lookup('controller:index');
+
+  Ember.run(function() { indexController.set('post', post); });
+
+  bootApplication();
+
+  Ember.run(function() { router.handleURL("/"); });
+
+  equal(Ember.$('#post', '#qunit-fixture').attr('href'), '/posts/1', 'precond - Link has rendered href attr properly');
+
+  Ember.run(function() { indexController.set('post', secondPost); });
+
+  equal(Ember.$('#post', '#qunit-fixture').attr('href'), '/posts/2', 'href attr was updated after one of the params had been changed');
+
+  Ember.run(function() { indexController.set('post', null); });
+
+  equal(Ember.$('#post', '#qunit-fixture').attr('href'), '/posts/2', 'href attr does not change when one of the arguments in nullified');
 });
 
