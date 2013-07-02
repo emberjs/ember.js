@@ -72,9 +72,6 @@ function iter(key, value) {
 */
 Ember.Enumerable = Ember.Mixin.create({
 
-  // compatibility
-  isEnumerable: true,
-
   /**
     Implement this method to make your class enumerable.
 
