@@ -1,0 +1,29 @@
+{
+  "name": "ember-http",
+  "summary": "Ember HTTP Lib",
+  "description": "A fin wrapper around jQuery.ajax that wraps http requests in RSVP promises.",
+  "homepage": "http://emberjs.com",
+  "authors": ["Paul Chavard"],
+  "version": "1.0.0",
+  "dependencies": {
+    "jquery":        "~> 1.7",
+    "ember-runtime": "1.0.0"
+  },
+
+  "directories": {
+    "lib": "lib"
+  },
+
+  "dependencies:development": {
+    "spade-qunit": "~> 1.0.0"
+  },
+
+  "bpm:build": {
+
+    "bpm_libs.js": {
+      "files": ["lib"],
+      "modes": "*"
+    }
+  }
+
+}
