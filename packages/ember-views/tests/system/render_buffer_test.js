@@ -77,6 +77,19 @@ test("prevents XSS injection via `style`", function() {
   equal('<span></span><div style="color:blue;&quot; xss=&quot;true&quot; style=&quot;color:red;">', buffer.string());
 });
 
+test("prevents XSS injection via `tagName`", function() {
+  var buffer = new Ember.RenderBuffer('cool-div><div xss="true"');
+
+  buffer.push('<span></span>'); // We need the buffer to not be empty so we use the string path
+  buffer.pushOpeningTag();
+  buffer.begin('span><span xss="true"');
+  buffer.pushOpeningTag();
+  buffer.pushClosingTag();
+  buffer.pushClosingTag();
+
+  equal('<span></span><cool-divdivxsstrue><spanspanxsstrue></spanspanxsstrue></cool-divdivxsstrue>', buffer.string());
+});
+
 test("handles null props - Issue #2019", function() {
   var buffer = new Ember.RenderBuffer('div');
 
