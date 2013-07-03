@@ -154,7 +154,7 @@ Ember.MutableArray = Ember.Mixin.create(Ember.Array, Ember.MutableEnumerable,/**
 
     ```javascript
     var colors = ["red", "green", "blue"];
-    colors.pushObjects("black");               // ["red", "green", "blue", "black"]
+    colors.pushObjects(["black"]);               // ["red", "green", "blue", "black"]
     colors.pushObjects(["yellow", "orange"]);  // ["red", "green", "blue", "black", "yellow", "orange"]
     ```
 
@@ -163,6 +163,9 @@ Ember.MutableArray = Ember.Mixin.create(Ember.Array, Ember.MutableEnumerable,/**
     @return {Ember.Array} receiver
   */
   pushObjects: function(objects) {
+    if(!(Ember.Enumerable.detect(objects) || Ember.isArray(objects))) {
+      throw new TypeError("Must pass Ember.Enumerable to Ember.MutableArray#pushObjects");
+    }
     this.replace(get(this, 'length'), 0, objects);
     return this;
   },
