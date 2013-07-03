@@ -536,7 +536,6 @@ var Application = Ember.Application = Ember.Namespace.extend(Ember.DeferredMixin
 
       Ember.run.schedule('actions', this, function(){
         this._initialize();
-        this.startRouting();
       });
     }
 
