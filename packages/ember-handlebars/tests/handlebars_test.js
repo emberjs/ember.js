@@ -712,7 +712,8 @@ test("edge case: child conditional should not render children if parent conditio
 
 test("Template views return throw if their template cannot be found", function() {
   view = Ember.View.create({
-    templateName: 'cantBeFound'
+    templateName: 'cantBeFound',
+    container: { lookup: function(){ }}
   });
 
   expectAssertion(function() {
