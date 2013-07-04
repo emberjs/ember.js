@@ -46,3 +46,7 @@ test('the default resolver looks up arbitrary types on the namespace', function(
   equal(locator.resolve('manager:foo'), application.FooManager, "looks up FooManager on application");
 });
 
+test("the default resolver resolves models on the namespace", function() {
+  application.Post = Ember.Object.extend({});
+  equal(locator.lookupFactory('model:post'), application.Post, "looks up Post model on application");
+});

@@ -71,6 +71,7 @@ var get = Ember.get,
   'view:blog/post' //=> Blog.PostView
   'view:basic' //=> Ember.View
   'foo:post' //=> App.PostFoo
+  'model:post' //=> App.Post
   ```
 
   @class DefaultResolver
@@ -190,6 +191,17 @@ Ember.DefaultResolver = Ember.Object.extend({
   resolveView: function(parsedName) {
     this.useRouterNaming(parsedName);
     return this.resolveOther(parsedName);
+  },
+
+  /**
+    @protected
+    @method resolveModel
+  */
+  resolveModel: function(parsedName){
+    var className = classify(parsedName.name),
+        factory = get(parsedName.root, className);
+
+     if (factory) { return factory; }
   },
   /**
     Look up the specified object (from parsedName) on the appropriate
