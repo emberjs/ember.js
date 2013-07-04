@@ -36,5 +36,21 @@ test("default model utilizes the container to acquire the model factory", functi
 
     return Post;
   }
+});
 
+test("Route#viewFor", function(){
+  ok(route.viewFor, 'function is present');
+
+  var lookup = {
+    'view:application': {}
+  };
+
+  route.container = {
+    lookup: function(fullName) {
+      return lookup[fullName];
+    }
+  };
+
+  equal(route.viewFor('unknown'), undefined, 'returns undefined for unknown for lookup');
+  equal(route.viewFor('application'), lookup['view:application'], 'return the correct view on valid lookup');
 });
