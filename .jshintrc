@@ -26,11 +26,15 @@
         "module",
         "expect",
         "minispade",
-        "expectAssertion"
+        "expectAssertion",
+
+        // A safe subset of "browser:true":
+        "window", "location", "document", "XMLSerializer",
+        "setTimeout", "clearTimeout", "setInterval", "clearInterval"
     ],
 
     "node" : false,
-    "browser" : true,
+    "browser" : false,
 
     "boss" : true,
     "curly": false,
