@@ -63,6 +63,16 @@ define("container",
       },
 
       /**
+        Delete the given key
+
+        @method delete
+        @param {String} key
+      */
+      remove: function(key) {
+        delete this.dict[key];
+      },
+
+      /**
         Check for the existence of given a key, if the key is present at the current
         level return true, otherwise walk up the parent hierarchy and try again. If
         no matching key is found, return false.
@@ -247,6 +257,29 @@ define("container",
 
         this.registry.set(normalizedName, factory);
         this._options.set(normalizedName, options || {});
+      },
+
+      /**
+        Unregister a fullName
+
+        ```javascript
+        var container = new Container();
+        container.register('model:user', User);
+
+        container.lookup('model:user') instanceof User //=> true
+
+        container.unregister('model:user')
+        container.lookup('model:user') === undefined //=> true
+
+        @method unregister
+        @param {String} fullName
+       */
+      unregister: function(fullName) {
+        var normalizedName = this.normalize(fullName);
+
+        this.registry.remove(normalizedName);
+        this.cache.remove(normalizedName);
+        this._options.remove(normalizedName);
       },
 
       /**
