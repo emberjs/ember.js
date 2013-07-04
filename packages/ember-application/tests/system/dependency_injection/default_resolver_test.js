@@ -50,3 +50,11 @@ test("the default resolver resolves models on the namespace", function() {
   application.Post = Ember.Object.extend({});
   equal(locator.lookupFactory('model:post'), application.Post, "looks up Post model on application");
 });
+
+test("the default resolver throws an error if the fullName to resolve is invalid", function(){
+  raises(function(){ locator.resolve('');       }, TypeError, /Invalid fullName/ );
+  raises(function(){ locator.resolve(':');      }, TypeError, /Invalid fullName/ );
+  raises(function(){ locator.resolve('model');  }, TypeError, /Invalid fullName/ );
+  raises(function(){ locator.resolve('model:'); }, TypeError, /Invalid fullName/ );
+  raises(function(){ locator.resolve(':type');  }, TypeError, /Invalid fullName/ );
+});
