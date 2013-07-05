@@ -89,6 +89,29 @@ test("A registered factory returns true for `has` if an item is registered", fun
   equal(container.has('controller:posts'), false, "The `has` method returned false for unregistered factories");
 });
 
+test("A Registered factory can be unregistered, and all cached instances are removed", function(){
+  var container = new Container();
+  var PostController = factory();
+
+  container.register('controller:post', PostController);
+
+  equal(container.has('controller:post'), true, "container is aware of the PostController");
+
+  ok(container.lookup("controller:post") instanceof PostController, 'lookup is correct instance');
+
+  container.unregister("controller:post");
+
+  equal(container.has('controller:post'), false, "container is no-longer aware of the PostController");
+  equal(container.lookup("controller:post"), undefined, 'lookup no longer returns a controller');
+
+  // re-registration continues to work
+  container.register('controller:post', PostController);
+
+  equal(container.has('controller:post'), true, "container is aware of the PostController");
+
+  ok(container.lookup("controller:post") instanceof PostController, 'lookup is correct instance');
+});
+
 test("A container lookup has access to the container", function() {
   var container = new Container();
   var PostController = factory();
