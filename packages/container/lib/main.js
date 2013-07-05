@@ -65,7 +65,7 @@ define("container",
       /**
         Delete the given key
 
-        @method delete
+        @method remove
         @param {String} key
       */
       remove: function(key) {
@@ -285,8 +285,8 @@ define("container",
       /**
         Given a fullName return the corresponding factory.
 
-        By default `resolve` will retreive the factory from
-        it's containers registry.
+        By default `resolve` will retrieve the factory from
+        its container's registry.
 
         ```javascript
         var container = new Container();
