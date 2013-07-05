@@ -341,6 +341,22 @@ test("The route controller is still set when overriding the setupController hook
   deepEqual(container.lookup('route:home').controller, container.lookup('controller:home'), "route controller is the home controller");
 });
 
+test("The route controller can be specified via controllerName", function() {
+  Router.map(function() {
+    this.route("home", { path: "/" });
+  });
+
+  App.HomeRoute = Ember.Route.extend({
+    controllerName: 'myController'
+  });
+
+  container.register('controller:myController', Ember.Controller.extend());
+
+  bootApplication();
+
+  deepEqual(container.lookup('route:home').controller, container.lookup('controller:myController'), "route controller is set by controllerName");
+});
+
 test("The Homepage with a `setupController` hook modifying other controllers", function() {
   Router.map(function() {
     this.route("home", { path: "/" });
