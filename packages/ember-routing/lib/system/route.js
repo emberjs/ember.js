@@ -214,7 +214,7 @@ Ember.Route = Ember.Object.extend({
     @method setup
   */
   setup: function(context) {
-    var controller = this.controllerFor(this.routeName, context);
+    var controller = this.controllerFor(this.controllerName || this.routeName, context);
 
     // Assign the route's controller so that it can more easily be
     // referenced in event handlers
