@@ -346,6 +346,26 @@ test('adding an object should notify (@each)', function() {
 
 });
 
+test('changing a value of a nested property should notify (@each.isDone.maybe)', function() {
+  ary = new TestArray([
+    { isDone: { maybe: true },  desc: 'Todo 1' },
+    { isDone: { maybe: false }, desc: 'Todo 2' }
+  ]);
+
+  var called = 0;
+
+  var observerObject = Ember.Object.create({
+    wasCalled: function() {
+      called++;
+    }
+  });
+
+  Ember.addObserver(ary, '@each.isDone.maybe', observerObject, 'wasCalled');
+
+  ary.set("firstObject.isDone.maybe", false);
+  equal(called, 1, "calls observer when nested object is changed");
+});
+
 test('adding an object should notify (@each.isDone)', function() {
 
   var get = Ember.get, set = Ember.set;
