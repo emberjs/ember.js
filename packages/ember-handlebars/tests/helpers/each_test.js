@@ -301,6 +301,29 @@ test("it supports itemController when using a custom keyword", function() {
   equal(view.$().text(), "controller:Steve Holtcontroller:Annabelle");
 });
 
+test("it supports {{itemView=}}", function() {
+  var container = new Ember.Container();
+
+  var itemView = Ember.View.extend({
+    template: templateFor('itemView:{{name}}')
+  });
+
+  Ember.run(function() { view.destroy(); }); // destroy existing view
+  view = Ember.View.create({
+    template: templateFor('{{each view.people itemView="AnItemView"}}'),
+    people: people,
+    controller: {
+      container: container
+    }
+  });
+
+  container.register('view:anItemView', itemView);
+
+  append(view);
+
+  assertText(view, "itemView:Steve HoltitemView:Annabelle");
+});
+
 test("it supports {{itemViewClass=}}", function() {
   Ember.run(function() { view.destroy(); }); // destroy existing view
   view = Ember.View.create({
@@ -311,7 +334,6 @@ test("it supports {{itemViewClass=}}", function() {
   append(view);
 
   assertText(view, "Steve HoltAnnabelle");
-
 });
 
 test("it supports {{itemViewClass=}} with tagName", function() {
