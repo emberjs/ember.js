@@ -31,10 +31,10 @@ $('<input type="checkbox">')
   .click();
 
 /**
- * Try again to verify that the patch took effect or blow up.
+ * Try again to verify that the patch took effect or print a warning.
  */
 $('<input type="checkbox">')
   .on('click', function() {
-    Ember.assert("clicked checkboxes should be checked! the jQuery patch didn't work", this.checked);
+    Ember.warn("clicked checkboxes should be checked! the jQuery patch didn't work", this.checked);
   })
   .click();
