@@ -16,9 +16,9 @@ var childViewsProperty = Ember.computed(function() {
   var childViews = this._childViews, ret = Ember.A(), view = this;
 
   a_forEach(childViews, function(view) {
-    var currentChildViews = get(view, 'childViews');
+    var currentChildViews;
     if (view.isVirtual) {
-      if(Ember.Enumerable.detect(currentChildViews) || Ember.isArray(currentChildViews)) {
+      if(currentChildViews = get(view, 'childViews')) {
         ret.pushObjects(currentChildViews);
       }
     } else {
