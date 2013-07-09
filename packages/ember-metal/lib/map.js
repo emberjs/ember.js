@@ -26,10 +26,8 @@ require('ember-metal/enumerable_utils');
 require('ember-metal/utils');
 require('ember-metal/core');
 require('ember-metal/property_set');
-require('ember-metal/property_get');
 
-var get = Ember.get,
-    set = Ember.set,
+var set = Ember.set,
     guidFor = Ember.guidFor,
     indexOf = Ember.ArrayPolyfills.indexOf;
 
