@@ -434,8 +434,15 @@ Ember.run.cancel = function(timer) {
 };
 
 /**
-  Execute the passed method in a specified amount of time, reset timer
-  upon additional calls.
+  Delay calling the target method until the debounce period has elapsed
+  with no additional debounce calls. If `debounce` is called again before
+  the specified time has elapsed, the timer is reset and the entire period
+  must pass again before the target method is called.
+
+  This method should be used when an event may be called multiple times
+  but the action should only be called once when the event is done firing.
+  A common example is for scroll events where you only want updates to
+  happen once scrolling has ceased.
 
   ```javascript
     var myFunc = function() { console.log(this.name + ' ran.'); };
@@ -466,9 +473,9 @@ Ember.run.debounce = function() {
   return backburner.debounce.apply(backburner, arguments);
 };
 
-/**  
-  Execute the passed method in a specified amount of time, reset timer
-  upon additional calls.
+/**
+  Ensure that the target method is never called more frequently than
+  the specified spacing period.
 
   ```javascript
     var myFunc = function() { console.log(this.name + ' ran.'); };
@@ -476,13 +483,18 @@ Ember.run.debounce = function() {
 
     Ember.run.throttle(myContext, myFunc, 150);
 
-    // less than 150ms passes
+    // 50ms passes
+    Ember.run.throttle(myContext, myFunc, 150);
 
+    // 50ms passes
+    Ember.run.throttle(myContext, myFunc, 150);
+
+    // 50ms passes
     Ember.run.throttle(myContext, myFunc, 150);
 
     // 150ms passes
     // myFunc is invoked with context myContext
-    // console logs 'throttle ran.' one time.
+    // console logs 'throttle ran.' twice, 150ms apart.
   ```
 
   @method throttle
@@ -491,7 +503,7 @@ Ember.run.debounce = function() {
     May be a function or a string. If you pass a string
     then it will be looked up on the passed target.
   @param {Object} [args*] Optional arguments to pass to the timeout.
-  @param {Number} wait Number of milliseconds to wait.
+  @param {Number} spacing Number of milliseconds to space out requests.
   @return {void}
 */
 Ember.run.throttle = function() {
