@@ -662,14 +662,10 @@ Ember.Route = Ember.Object.extend({
 
     var container = this.container,
         view = container.lookup('view:' + name),
-        template = container.lookup('template:' + name);
+        template = container.lookup('template:' + name),
+        hasTemplateAndView = !!(template && view);
 
-    if (!view && !template) {
-      if (get(this.router, 'namespace.LOG_VIEW_LOOKUPS')) {
-        Ember.Logger.info("Could not find \"" + name + "\" template or view. Nothing will be rendered", { fullName: 'template:' + name });
-      }
-      return;
-    }
+    Ember.assert("Could not find \"" + name + "\" template or view. Nothing will be rendered", hasTemplateAndView);
 
     options = normalizeOptions(this, name, template, options);
     view = setupView(view, container, options);
