@@ -152,16 +152,19 @@ Ember.uuid = 0;
 //
 
 function consoleMethod(name) {
-  if (imports.console && imports.console[name]) {
+  var console = imports.console,
+      method = typeof console === 'object' ? console[name] : null;
+
+  if (method) {
     // Older IE doesn't support apply, but Chrome needs it
-    if (imports.console[name].apply) {
+    if (method.apply) {
       return function() {
-        imports.console[name].apply(imports.console, arguments);
+        method.apply(console, arguments);
       };
     } else {
       return function() {
         var message = Array.prototype.join.call(arguments, ', ');
-        imports.console[name](message);
+        method(message);
       };
     }
   }
