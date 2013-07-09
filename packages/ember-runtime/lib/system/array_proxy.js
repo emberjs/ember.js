@@ -227,12 +227,6 @@ Ember.ArrayProxy = Ember.Object.extend(Ember.MutableArray,/** @scope Ember.Array
     }
   },
 
-  _insertAt: function(idx, object) {
-    if (idx > get(this, 'content.length')) throw new Error(OUT_OF_RANGE_EXCEPTION);
-    this._replace(idx, 0, [object]);
-    return this;
-  },
-
   insertAt: function(idx, object) {
     if (get(this, 'arrangedContent') === get(this, 'content')) {
       return this._insertAt(idx, object);
@@ -270,37 +264,6 @@ Ember.ArrayProxy = Ember.Object.extend(Ember.MutableArray,/** @scope Ember.Array
     }
 
     return this ;
-  },
-
-  pushObject: function(obj) {
-    this._insertAt(get(this, 'content.length'), obj) ;
-    return obj ;
-  },
-
-  pushObjects: function(objects) {
-    if(!(Ember.Enumerable.detect(objects) || Ember.isArray(objects))) {
-      throw new TypeError("Must pass Ember.Enumerable to Ember.MutableArray#pushObjects");
-    }
-    this._replace(get(this, 'length'), 0, objects);
-    return this;
-  },
-
-  setObjects: function(objects) {
-    if (objects.length === 0) return this.clear();
-
-    var len = get(this, 'length');
-    this._replace(0, len, objects);
-    return this;
-  },
-
-  unshiftObject: function(obj) {
-    this._insertAt(0, obj) ;
-    return obj ;
-  },
-
-  unshiftObjects: function(objects) {
-    this._replace(0, 0, objects);
-    return this;
   },
 
   slice: function() {
