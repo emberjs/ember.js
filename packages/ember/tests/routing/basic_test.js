@@ -353,15 +353,48 @@ test("The route controller can be specified via controllerName", function() {
     this.route("home", { path: "/" });
   });
 
+  Ember.TEMPLATES.home = Ember.Handlebars.compile(
+    "<p>{{myValue}}</p>"
+  );
+
   App.HomeRoute = Ember.Route.extend({
     controllerName: 'myController'
   });
 
-  container.register('controller:myController', Ember.Controller.extend());
+  container.register('controller:myController', Ember.Controller.extend({
+    myValue: "foo"
+  }));
 
   bootApplication();
 
   deepEqual(container.lookup('route:home').controller, container.lookup('controller:myController'), "route controller is set by controllerName");
+  equal(Ember.$('p', '#qunit-fixture').text(), "foo", "The homepage template was rendered with data from the custom controller");
+});
+
+test("The route controller specified via controllerName is used in render", function() {
+  Router.map(function() {
+    this.route("home", { path: "/" });
+  });
+
+  Ember.TEMPLATES.alternative_home = Ember.Handlebars.compile(
+    "<p>alternative home: {{myValue}}</p>"
+  );
+
+  App.HomeRoute = Ember.Route.extend({
+    controllerName: 'myController',
+    renderTemplate: function() {
+      this.render("alternative_home");
+    }
+  });
+
+  container.register('controller:myController', Ember.Controller.extend({
+    myValue: "foo"
+  }));
+
+  bootApplication();
+
+  deepEqual(container.lookup('route:home').controller, container.lookup('controller:myController'), "route controller is set by controllerName");
+  equal(Ember.$('p', '#qunit-fixture').text(), "alternative home: foo", "The homepage template was rendered with data from the custom controller");
 });
 
 test("The Homepage with a `setupController` hook modifying other controllers", function() {
