@@ -261,6 +261,8 @@ function doTransition(router, method, args) {
   var transitionPromise = router.router[method].apply(router.router, args);
   transitionPromise.then(function() {
     transitionCompleted(router);
+  }, function() {
+    exitLoadingState(router);
   });
 
   // We want to return the configurable promise object
