@@ -728,10 +728,12 @@ Ember.Route = Ember.Object.extend({
     }
 
     name = name ? name.replace(/\//g, '.') : this.routeName;
+    var viewName = this.viewName || name;
+    var templateName = this.templateName || name;
 
     var container = this.container,
-        view = container.lookup('view:' + name),
-        template = container.lookup('template:' + name);
+        view = container.lookup('view:' + viewName),
+        template = container.lookup('template:' + templateName);
 
     if (!view && !template) {
       Ember.assert("Could not find \"" + name + "\" template or view.", !namePassed);
