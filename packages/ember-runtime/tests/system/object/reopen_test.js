@@ -1,4 +1,4 @@
-module('system/core_object/reopenClass');
+module('system/core_object/reopen');
 
 test('adds new properties to subclass instance', function() {
 
