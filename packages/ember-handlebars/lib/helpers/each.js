@@ -269,6 +269,12 @@ GroupedEach.prototype = {
   </div>
   ```
 
+  If an `itemViewClass` is defined on the helper, and therefore the helper is not
+  being used as a block, an `emptyViewClass` can also be provided optionally.
+  The `emptyViewClass` will match the behavior of the `{{else}}` condition
+  described above. That is, the `emptyViewClass` will render if the collection
+  is empty.
+
   ### Representing each item with a Controller.
   By default the controller lookup within an `{{#each}}` block will be
   the controller of the template where the `{{#each}}` was used. If each
