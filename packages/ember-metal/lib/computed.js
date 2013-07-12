@@ -492,7 +492,7 @@ registerComputed('notEmpty', function(dependentKey) {
   @for Ember
   @param {String} dependentKey
   @return {Ember.ComputedProperty} computed property which
-  rturns true if original value for property is null or undefined.
+  returns true if original value for property is null or undefined.
 */
 registerComputed('none', function(dependentKey) {
   return Ember.isNone(get(this, dependentKey));
