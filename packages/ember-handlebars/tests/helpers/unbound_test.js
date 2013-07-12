@@ -175,3 +175,58 @@ test("should be able to render an unbound helper invocation with bound hash opti
   equal(view.$().text(), "SALLY SHOOBY sallytaylor shoobytaylor", "only bound values change");
 });
 
+test("should unshift the `types` property so helper don't need to detect whether it's unbound or not", function () {
+  var SmileyFaceView = Ember._MetamorphView.extend({
+    init: function () {
+      this._super();
+      this.addObserver('smiley', this, this.rerender);
+    },
+
+    render: function (buffer) {
+      var smiley;
+
+      switch (get(this, 'smiley')) {
+      case 'awesome':
+        smiley = ':D';
+        break;
+      case 'wtf':
+        smiley = 'ಠ_ಠ';
+        break;
+      default:
+        smiley = ':)';
+      }
+
+      buffer.push(smiley);
+    }
+  });
+
+  Ember.Handlebars.registerHelper('smiley', function (type, options) {
+    var hash    = options.hash,
+        context = this;
+
+    if (options.types[0] === 'ID') {
+      if (!options.data.isUnbound) {
+        hash.smileyBinding = type;
+      }
+      hash.smiley = get(context, type);
+    }
+    equal(options.types.length, 1, 'options.types should be length 1 independent of whether the helper is unbound or not');
+
+    Ember.Handlebars.helpers.view.call(context, SmileyFaceView, options);
+  });
+
+  view = Ember.View.create({
+    template: Ember.Handlebars.compile("Ember is {{unbound smiley 'awesome'}}. Tom's feeling {{smiley feeling}}"),
+    context: Ember.Object.create({
+      feeling: 'happy'
+    })
+  });
+  appendView(view);
+
+  equal(view.$().text(), "Ember is :D. Tom's feeling :)");
+  Ember.run(function() {
+    set(view, 'context.feeling', 'wtf');
+  });
+
+  equal(view.$().text(), "Ember is :D. Tom's feeling ಠ_ಠ");
+});
