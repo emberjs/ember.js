@@ -42,14 +42,20 @@ module("Ember.Application – logging of generated classes", {
 function visit(path) {
   stop();
 
-  var promise = new Ember.RSVP.Promise(function(resolve, reject){
-    var router = App.__container__.lookup('router:main');
+  var promise = Ember.run(function(){
+    return new Ember.RSVP.Promise(function(resolve, reject){
+      var router = App.__container__.lookup('router:main');
 
-    Ember.run(App, 'handleURL', path);
-    Ember.run(router, router.location.setURL, path);
-
-    Ember.run(resolve);
-    start();
+      resolve(router.handleURL(path).then(function(value){
+        start();
+        ok(true, 'visited: `' + path + '`');
+        return value;
+      }, function(reason) {
+        start();
+        ok(false, 'failed to visit:`' + path + '` reason: `' + QUnit.jsDump.parse(reason));
+        throw reason;
+      }));
+    });
   });
 
   return {
