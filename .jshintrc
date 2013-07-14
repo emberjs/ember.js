@@ -1,5 +1,6 @@
 {
     "predef": [
+        "QUnit",
         "define",
         "console",
         "Ember",
