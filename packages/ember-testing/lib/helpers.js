@@ -189,7 +189,7 @@ helper('visit', visit);
 * ```
 *
 * @method click
-* @param {String} selcetor jQuery selector for finding element on the DOM
+* @param {String} selector jQuery selector for finding element on the DOM
 * @returns {RSVP.Promise}
 */
 helper('click', click);
@@ -205,8 +205,8 @@ helper('click', click);
 * });
 * ```
 *
-* @method click
-* @param {String} selcetor jQuery selector for finding element on the DOM
+* @method keyEvent
+* @param {String} selector jQuery selector for finding element on the DOM
 * @param {String} the type of key event, e.g. `keypress`, `keydown`, `keyup`
 * @param {Number} the keyCode of the simulated key event
 * @returns {RSVP.Promise}
