@@ -53,6 +53,14 @@ Ember.MutableArray = Ember.Mixin.create(Ember.Array, Ember.MutableEnumerable,/**
   */
   replace: Ember.required(),
 
+  _replace: function() {
+    return this.replace.apply(this, arguments);
+  },
+
+  _length: Ember.computed(function(){
+    return get(this, 'content.length') || get(this, 'length');
+  }).property('length','content.length'),
+
   /**
     Remove all elements from self. This is useful if you
     want to reuse an existing array without having to recreate it.
@@ -68,7 +76,7 @@ Ember.MutableArray = Ember.Mixin.create(Ember.Array, Ember.MutableEnumerable,/**
     @return {Ember.Array} An empty Array.
   */
   clear: function () {
-    var len = get(this, 'length');
+    var len = get(this, '_length');
     if (len === 0) return this;
     this.replace(0, len, EMPTY);
     return this;
@@ -89,9 +97,13 @@ Ember.MutableArray = Ember.Mixin.create(Ember.Array, Ember.MutableEnumerable,/**
     @param {Object} object object to insert
     @return this
   */
-  insertAt: function(idx, object) {
-    if (idx > get(this, 'length')) throw new Error(OUT_OF_RANGE_EXCEPTION) ;
-    this.replace(idx, 0, [object]) ;
+  insertAt: function() {
+    return this._insertAt.apply(this,arguments);
+  },
+
+  _insertAt: function(idx, object) {
+    if (idx > get(this, '_length')) throw new Error(OUT_OF_RANGE_EXCEPTION) ;
+    this._replace(idx, 0, [object]) ;
     return this ;
   },
 
@@ -117,7 +129,7 @@ Ember.MutableArray = Ember.Mixin.create(Ember.Array, Ember.MutableEnumerable,/**
   removeAt: function(start, len) {
     if ('number' === typeof start) {
 
-      if ((start < 0) || (start >= get(this, 'length'))) {
+      if ((start < 0) || (start >= get(this, '_length'))) {
         throw new Error(OUT_OF_RANGE_EXCEPTION);
       }
 
@@ -144,7 +156,7 @@ Ember.MutableArray = Ember.Mixin.create(Ember.Array, Ember.MutableEnumerable,/**
     @return {*} the same obj passed as param
   */
   pushObject: function(obj) {
-    this.insertAt(get(this, 'length'), obj) ;
+    this._insertAt(get(this, '_length'), obj) ;
     return obj ;
   },
 
@@ -166,7 +178,7 @@ Ember.MutableArray = Ember.Mixin.create(Ember.Array, Ember.MutableEnumerable,/**
     if(!(Ember.Enumerable.detect(objects) || Ember.isArray(objects))) {
       throw new TypeError("Must pass Ember.Enumerable to Ember.MutableArray#pushObjects");
     }
-    this.replace(get(this, 'length'), 0, objects);
+    this._replace(get(this, '_length'), 0, objects);
     return this;
   },
 
@@ -184,7 +196,7 @@ Ember.MutableArray = Ember.Mixin.create(Ember.Array, Ember.MutableEnumerable,/**
     @return object
   */
   popObject: function() {
-    var len = get(this, 'length') ;
+    var len = get(this, '_length') ;
     if (len === 0) return null ;
 
     var ret = this.objectAt(len-1) ;
@@ -206,7 +218,7 @@ Ember.MutableArray = Ember.Mixin.create(Ember.Array, Ember.MutableEnumerable,/**
     @return object
   */
   shiftObject: function() {
-    if (get(this, 'length') === 0) return null ;
+    if (get(this, '_length') === 0) return null ;
     var ret = this.objectAt(0) ;
     this.removeAt(0) ;
     return ret ;
@@ -227,7 +239,7 @@ Ember.MutableArray = Ember.Mixin.create(Ember.Array, Ember.MutableEnumerable,/**
     @return {*} the same obj passed as param
   */
   unshiftObject: function(obj) {
-    this.insertAt(0, obj) ;
+    this._insertAt(0, obj) ;
     return obj ;
   },
 
@@ -246,7 +258,7 @@ Ember.MutableArray = Ember.Mixin.create(Ember.Array, Ember.MutableEnumerable,/**
     @return {Ember.Array} receiver
   */
   unshiftObjects: function(objects) {
-    this.replace(0, 0, objects);
+    this._replace(0, 0, objects);
     return this;
   },
 
@@ -258,7 +270,7 @@ Ember.MutableArray = Ember.Mixin.create(Ember.Array, Ember.MutableEnumerable,/**
     @return {Ember.Array} receiver
    */
   reverseObjects: function() {
-    var len = get(this, 'length');
+    var len = get(this, '_length');
     if (len === 0) return this;
     var objects = this.toArray().reverse();
     this.replace(0, len, objects);
@@ -283,8 +295,8 @@ Ember.MutableArray = Ember.Mixin.create(Ember.Array, Ember.MutableEnumerable,/**
   setObjects: function(objects) {
     if (objects.length === 0) return this.clear();
 
-    var len = get(this, 'length');
-    this.replace(0, len, objects);
+    var len = get(this, '_length');
+    this._replace(0, len, objects);
     return this;
   },
 
@@ -293,7 +305,7 @@ Ember.MutableArray = Ember.Mixin.create(Ember.Array, Ember.MutableEnumerable,/**
   //
 
   removeObject: function(obj) {
-    var loc = get(this, 'length') || 0;
+    var loc = get(this, '_length') || 0;
     while(--loc >= 0) {
       var curObject = this.objectAt(loc) ;
       if (curObject === obj) this.removeAt(loc) ;
