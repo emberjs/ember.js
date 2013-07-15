@@ -220,7 +220,7 @@ Ember.State.reopenClass({
 
     bManager = Ember.StateManager.create({
       stateOne: Ember.State.create({
-        changeToStateTwo: function(manager, context){
+        changeToStateTwo: function(manager, context) {
           manager.transitionTo('stateTwo', context)
         }
       }),

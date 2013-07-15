@@ -36,7 +36,7 @@ test("if it has a element, calls willDestroyElement on receiver and child views 
     })]
   });
 
-  Ember.run(function(){
+  Ember.run(function() {
     view.createElement();
   });
 
@@ -56,7 +56,7 @@ test("returns receiver", function() {
   var ret;
   view = Ember.View.create();
 
-  Ember.run(function(){
+  Ember.run(function() {
     view.createElement();
     ret = view.destroyElement();
   });

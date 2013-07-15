@@ -60,8 +60,8 @@ Ember.SortableMixin = Ember.Mixin.create(Ember.MutableEnumerable, {
       return a positive value otherwise:
 
     ```javascript
-    function(x,y){ // These are assumed to be integers
-      if(x === y)
+    function(x,y) { // These are assumed to be integers
+      if (x === y)
         return 0;
       return x < y ? -1 : 1;
     }

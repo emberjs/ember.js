@@ -29,7 +29,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
 
   function createPath(path) {
     var fullPath = 'paramsContext';
-    if(path !== '') {
+    if (path !== '') {
       fullPath += '.' + path;
     }
     return fullPath;
@@ -152,11 +152,11 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
       var observer = function(object, path) {
         var notify = true, i;
         for(i=0; i < paths.length; i++) {
-          if(!get(this, paths[i])) {
+          if (!get(this, paths[i])) {
             notify = false;
           }
         }
-        if(notify) {
+        if (notify) {
           this.notifyPropertyChange('routeArgs');
         }
       };
@@ -411,7 +411,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     the model context of the linked route:
 
     ```javascript
-    App.Router.map(function(){
+    App.Router.map(function() {
       this.resource("photoGallery", {path: "hamster-photos/:photo_id"});
     })
     ```
@@ -436,8 +436,8 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     route with the dynamic segments:
 
     ```javascript
-    App.Router.map(function(){
-      this.resource("photoGallery", {path: "hamster-photos/:photo_id"}, function(){
+    App.Router.map(function() {
+      this.resource("photoGallery", {path: "hamster-photos/:photo_id"}, function() {
         this.route("comment", {path: "comments/:comment_id"});
       });
     });

@@ -205,7 +205,7 @@ test("can self reject", function() {
     deferred = Ember.Object.createWithMixins(Ember.DeferredMixin);
   });
 
-  deferred.then(function(){
+  deferred.then(function() {
     ok(false, 'should not fulfill'); 
   },function(value) {
     equal(value, deferred, "successfully rejected to itself");
@@ -274,7 +274,7 @@ test("can do multi level assimilation", function() {
 });
 
 
-test("can handle rejection without rejection handler", function(){
+test("can handle rejection without rejection handler", function() {
   expect(2);
 
   var reason = 'some reason';
@@ -283,9 +283,9 @@ test("can handle rejection without rejection handler", function(){
     return Ember.Object.createWithMixins(Ember.DeferredMixin);
   });
 
-  deferred.then().then(function(){
+  deferred.then().then(function() {
     ok(false, 'expected rejection, got fulfillment');
-  }, function(actualReason){
+  }, function(actualReason) {
     ok(true, 'expected fulfillment');
     equal(actualReason, reason);
   });
@@ -293,7 +293,7 @@ test("can handle rejection without rejection handler", function(){
   Ember.run(deferred, 'reject', reason);
 });
 
-test("can handle fulfillment without  fulfillment handler", function(){
+test("can handle fulfillment without  fulfillment handler", function() {
   expect(2);
 
   var fulfillment = 'some fulfillment';

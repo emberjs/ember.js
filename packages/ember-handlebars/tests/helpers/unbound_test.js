@@ -25,7 +25,7 @@ module("Handlebars {{#unbound}} helper -- classic single-property usage", {
   },
 
   teardown: function() {
-    Ember.run(function(){
+    Ember.run(function() {
       view.destroy();
     });
     Ember.lookup = originalLookup;
@@ -66,7 +66,7 @@ module("Handlebars {{#unbound boundHelper arg1 arg2... argN}} form: render unbou
   },
 
   teardown: function() {
-    Ember.run(function(){
+    Ember.run(function() {
       view.destroy();
     });
     Ember.lookup = originalLookup;
@@ -79,7 +79,7 @@ test("should be able to render an unbound helper invocation", function() {
   Ember.Handlebars.registerBoundHelper('repeat', function(value, options) {
     var count = options.hash.count;
     var a = [];
-    while(a.length < count){
+    while(a.length < count) {
         a.push(value);
     }
     return a.join('');

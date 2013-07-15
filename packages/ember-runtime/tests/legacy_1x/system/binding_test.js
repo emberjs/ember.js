@@ -129,7 +129,7 @@ module("one way binding", {
       binding = Ember.oneWay(root, 'toObject.value', 'fromObject.value');
     });
   },
-  teardown: function(){
+  teardown: function() {
     Ember.run.cancelTimers();
   }
 });
@@ -178,7 +178,7 @@ module("chained binding", {
       binding2 = Ember.bind(root, 'second.output', 'third.input');
     });
   },
-  teardown: function(){
+  teardown: function() {
     Ember.run.cancelTimers();
   }
 });
@@ -263,7 +263,7 @@ test("two bindings to the same value should sync in the order they are initializ
 //
 
 module("propertyNameBinding with longhand", {
-  setup: function(){
+  setup: function() {
     TestNamespace = {};
     Ember.run(function () {
       TestNamespace.fromObject = Ember.Object.create({
@@ -277,12 +277,12 @@ module("propertyNameBinding with longhand", {
       });
     });
   },
-  teardown: function(){
+  teardown: function() {
     TestNamespace = undefined;
   }
 });
 
-test("works with full path", function(){
+test("works with full path", function() {
   Ember.run(function () {
     set(TestNamespace.fromObject, 'value', "updatedValue");
   });
@@ -296,7 +296,7 @@ test("works with full path", function(){
   equal(get(TestNamespace.toObject, 'value'), "newerValue");
 });
 
-test("works with local path", function(){
+test("works with local path", function() {
   Ember.run(function () {
     set(TestNamespace.toObject, 'localValue', "updatedValue");
   });

@@ -17,7 +17,7 @@
     },
 
     teardown: function() {
-      Ember.run(function(){
+      Ember.run(function() {
         parentView.destroy();
         childView.destroy();
       });

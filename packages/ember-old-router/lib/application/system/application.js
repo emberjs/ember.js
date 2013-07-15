@@ -523,7 +523,7 @@ Ember.Application.registerInjection({
     var name = property.charAt(0).toLowerCase() + property.substr(1),
         controllerClass = app[property], controller;
 
-    if(!Ember.Object.detect(controllerClass)){ return; }
+    if (!Ember.Object.detect(controllerClass)) { return; }
     controller = app[property].create();
 
     router.set(name, controller);

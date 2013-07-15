@@ -11,7 +11,7 @@ module("Metamorph views", {
   },
 
   teardown: function() {
-    Ember.run(function(){
+    Ember.run(function() {
       view.destroy();
       if (childView && !childView.isDestroyed) {
         childView.destroy();
@@ -75,7 +75,7 @@ module("Metamorph views correctly handle DOM", {
   },
 
   teardown: function() {
-    Ember.run(function(){
+    Ember.run(function() {
       view.destroy();
       if (!metamorphView.isDestroyed) {
         metamorphView.destroy();
@@ -114,7 +114,7 @@ test("a metamorph view can be rerendered", function() {
 // Redefining without setup/teardown
 module("Metamorph views correctly handle DOM");
 
-test("a metamorph view calls its childrens' willInsertElement and didInsertElement", function(){
+test("a metamorph view calls its childrens' willInsertElement and didInsertElement", function() {
   var parentView;
   var willInsertElementCalled = false;
   var didInsertElementCalled = false;
@@ -124,10 +124,10 @@ test("a metamorph view calls its childrens' willInsertElement and didInsertEleme
     ViewWithCallback: Ember.View.extend({
       template: Ember.Handlebars.compile('<div id="do-i-exist"></div>'),
 
-      willInsertElement: function(){
+      willInsertElement: function() {
         willInsertElementCalled = true;
       },
-      didInsertElement: function(){
+      didInsertElement: function() {
         didInsertElementCalled = true;
         didInsertElementSawElement = (this.$('div').length === 1);
       }
@@ -148,7 +148,7 @@ test("a metamorph view calls its childrens' willInsertElement and didInsertEleme
   ok(didInsertElementCalled, "didInsertElement called");
   ok(didInsertElementSawElement, "didInsertElement saw element");
 
-  Ember.run(function(){
+  Ember.run(function() {
     parentView.destroy();
   });
 
@@ -173,7 +173,7 @@ test("replacing a Metamorph should invalidate childView elements", function() {
         elementOnDidChange = this.get('element');
       }, 'element'),
 
-      didInsertElement: function(){
+      didInsertElement: function() {
         elementOnDidInsert = this.get('element');
       }
     }),
@@ -181,14 +181,14 @@ test("replacing a Metamorph should invalidate childView elements", function() {
     template: Ember.Handlebars.compile("{{#if view.show}}{{view view.CustomView}}{{/if}}")
   });
 
-  Ember.run(function(){ view.append(); });
+  Ember.run(function() { view.append(); });
 
-  Ember.run(function(){ view.set('show', true); });
+  Ember.run(function() { view.set('show', true); });
 
   ok(elementOnDidChange, "should have an element on change");
   ok(elementOnDidInsert, "should have an element on insert");
 
-  Ember.run(function(){ view.destroy(); });
+  Ember.run(function() { view.destroy(); });
 });
 
 test("trigger rerender of parent and SimpleHandlebarsView", function () {
@@ -198,11 +198,11 @@ test("trigger rerender of parent and SimpleHandlebarsView", function () {
     template: Ember.Handlebars.compile("{{#if view.show}}{{#if view.foo}}{{view.foo}}{{/if}}{{/if}}")
   });
 
-  Ember.run(function(){ view.append(); });
+  Ember.run(function() { view.append(); });
 
   equal(view.$().text(), 'bar');
 
-  Ember.run(function(){
+  Ember.run(function() {
     view.set('foo', 'baz'); // schedule render of simple bound
     view.set('show', false); // destroy tree
   });
@@ -222,11 +222,11 @@ test("re-rendering and then changing the property does not raise an exception", 
     template: Ember.Handlebars.compile("{{#view view.metamorphView}}truth{{/view}}")
   });
 
-  Ember.run(function(){ view.appendTo('#qunit-fixture'); });
+  Ember.run(function() { view.appendTo('#qunit-fixture'); });
 
   equal(view.$().text(), 'truth');
 
-  Ember.run(function(){
+  Ember.run(function() {
     view.get('_childViews')[0].rerender();
     view.get('_childViews')[0].rerender();
   });

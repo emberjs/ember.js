@@ -11,7 +11,7 @@ module("Handlebars custom view helpers", {
     window.TemplateTests = Ember.Namespace.create();
   },
   teardown: function() {
-    Ember.run(function(){
+    Ember.run(function() {
       if (view) {
         view.destroy();
       }

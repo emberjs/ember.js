@@ -67,7 +67,7 @@ test("toString on a namespace finds the namespace in Ember.lookup", function() {
 
 test('toString includes toStringExtension if defined', function() {
   var Foo = Ember.Object.extend({
-        toStringExtension: function(){
+        toStringExtension: function() {
           return "fooey";
         }
       }),

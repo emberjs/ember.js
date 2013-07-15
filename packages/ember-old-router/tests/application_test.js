@@ -3,7 +3,7 @@ var app;
 
 module("Ember.Application initialization", {
   teardown: function() {
-    Ember.run(function(){ app.destroy(); });
+    Ember.run(function() { app.destroy(); });
   }
 });
 

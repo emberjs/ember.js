@@ -698,7 +698,7 @@ Ember.Enumerable = Ember.Mixin.create({
   */
   uniq: function() {
     var ret = Ember.A();
-    this.forEach(function(k){
+    this.forEach(function(k) {
       if (a_indexOf(ret, k)<0) ret.push(k);
     });
     return ret;

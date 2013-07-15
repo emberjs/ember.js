@@ -24,7 +24,7 @@ test("should call the function of the associated layout", function() {
     templateName: 'template'
   });
 
-  Ember.run(function(){
+  Ember.run(function() {
     view.createElement();
   });
 
@@ -46,7 +46,7 @@ test("should call the function of the associated template with itself as the con
     }
   });
 
-  Ember.run(function(){
+  Ember.run(function() {
     view.createElement();
   });
 
@@ -66,7 +66,7 @@ test("should fall back to defaultTemplate if neither template nor templateName a
     }
   });
 
-  Ember.run(function(){
+  Ember.run(function() {
     view.createElement();
   });
 
@@ -82,7 +82,7 @@ test("should not use defaultLayout if layout is provided", function() {
   });
 
   view = View.create();
-  Ember.run(function(){
+  Ember.run(function() {
     view.createElement();
   });
 
@@ -102,7 +102,7 @@ test("the template property is available to the layout template", function() {
     }
   });
 
-  Ember.run(function(){
+  Ember.run(function() {
     view.createElement();
   });
 

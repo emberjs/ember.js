@@ -1,14 +1,14 @@
 var locator, application, lookup, originalLookup;
 
 module("Ember.Application Depedency Injection", {
-  setup: function(){
+  setup: function() {
     originalLookup = Ember.lookup;
     application = Ember.run(Ember.Application, 'create');
 
     locator = application.__container__;
   },
 
-  teardown: function(){
+  teardown: function() {
     Ember.lookup = originalLookup;
     Ember.run(application, 'destroy');
   }
@@ -51,10 +51,10 @@ test("the default resolver resolves models on the namespace", function() {
   equal(locator.lookupFactory('model:post'), application.Post, "looks up Post model on application");
 });
 
-test("the default resolver throws an error if the fullName to resolve is invalid", function(){
-  raises(function(){ locator.resolve('');       }, TypeError, /Invalid fullName/ );
-  raises(function(){ locator.resolve(':');      }, TypeError, /Invalid fullName/ );
-  raises(function(){ locator.resolve('model');  }, TypeError, /Invalid fullName/ );
-  raises(function(){ locator.resolve('model:'); }, TypeError, /Invalid fullName/ );
-  raises(function(){ locator.resolve(':type');  }, TypeError, /Invalid fullName/ );
+test("the default resolver throws an error if the fullName to resolve is invalid", function() {
+  raises(function() { locator.resolve('');       }, TypeError, /Invalid fullName/ );
+  raises(function() { locator.resolve(':');      }, TypeError, /Invalid fullName/ );
+  raises(function() { locator.resolve('model');  }, TypeError, /Invalid fullName/ );
+  raises(function() { locator.resolve('model:'); }, TypeError, /Invalid fullName/ );
+  raises(function() { locator.resolve(':type');  }, TypeError, /Invalid fullName/ );
 });

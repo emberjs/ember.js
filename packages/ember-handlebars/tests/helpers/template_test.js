@@ -2,13 +2,13 @@ var MyApp;
 var originalLookup = Ember.lookup, lookup, TemplateTests, view, container;
 
 module("Support for {{template}} helper", {
-  setup: function(){
+  setup: function() {
     Ember.lookup = lookup = { Ember: Ember };
     MyApp = lookup.MyApp = Ember.Object.create({});
     container = new Ember.Container();
     container.optionsForType('template', { instantiate: false });
   },
-  teardown: function(){
+  teardown: function() {
     Ember.run(function() {
       if (view) {
         view.destroy();
@@ -33,7 +33,7 @@ test("should render other templates via the container", function() {
   equal(Ember.$.trim(view.$().text()), "This sub-template is pretty great.");
 });
 
-test("should use the current view's context", function(){
+test("should use the current view's context", function() {
   container.register('template:person_name', Ember.Handlebars.compile("{{firstName}} {{lastName}}"));
 
   view = Ember.View.create({

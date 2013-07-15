@@ -244,7 +244,7 @@ define("container",
       register: function(type, name, factory, options) {
         var fullName;
 
-        if (type.indexOf(':') !== -1){
+        if (type.indexOf(':') !== -1) {
           options = factory;
           factory = name;
           fullName = type;

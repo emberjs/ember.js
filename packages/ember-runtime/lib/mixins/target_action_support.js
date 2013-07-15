@@ -57,7 +57,7 @@ Ember.TargetActionSupport = Ember.Mixin.create({
     target: Ember.computed.alias('controller'),
     action: 'save',
     actionContext: Ember.computed.alias('context'),
-    click: function(){
+    click: function() {
       this.triggerAction(); // Sends the `save` action, along with the current context
                             // to the current controller
     }
@@ -69,7 +69,7 @@ Ember.TargetActionSupport = Ember.Mixin.create({
 
   ```javascript
   App.SaveButtonView = Ember.View.extend(Ember.TargetActionSupport, {
-    click: function(){
+    click: function() {
       this.triggerAction({
         action: 'save',
         target: this.get('controller'),
@@ -87,7 +87,7 @@ Ember.TargetActionSupport = Ember.Mixin.create({
   ```javascript
   App.SaveButtonView = Ember.View.extend(Ember.TargetActionSupport, {
     target: Ember.computed.alias('controller'),
-    click: function(){
+    click: function() {
       this.triggerAction({
         action: 'save'
       }); // Sends the `save` action, along with a reference to `this`,

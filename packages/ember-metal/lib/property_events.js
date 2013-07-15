@@ -182,7 +182,7 @@ var endPropertyChanges = Ember.endPropertyChanges = function() {
   @param {Function} callback
   @param [binding]
 */
-Ember.changeProperties = function(cb, binding){
+Ember.changeProperties = function(cb, binding) {
   beginPropertyChanges();
   tryFinally(cb, endPropertyChanges, binding);
 };

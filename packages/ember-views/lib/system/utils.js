@@ -9,7 +9,7 @@
 // is a "zero-scope" element. This problem can be worked around by making
 // the first node an invisible text node. We, like Modernizr, use &shy;
 
-var needsShy = this.document && (function(){
+var needsShy = this.document && (function() {
   var testEl = document.createElement('div');
   testEl.innerHTML = "<div></div>";
   testEl.firstChild.innerHTML = "<script></script>";

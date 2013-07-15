@@ -23,7 +23,7 @@ test("Brings it's own run-loop if not provided", function() {
 
   application.reset();
 
-  Ember.run(application,'then', function(){
+  Ember.run(application,'then', function() {
     ok(true, 'app booted');
   });
 });
@@ -35,9 +35,9 @@ test("does not bring it's own run loop if one is already provided", function() {
 
   application = Ember.run(Application, 'create');
 
-  Ember.run(function(){
+  Ember.run(function() {
 
-    application.ready = function(){
+    application.ready = function() {
       didBecomeReady = true;
     };
 
@@ -82,10 +82,10 @@ test("When an application is reset, the eventDispatcher is destroyed and recreat
   var originalDispatcher = Ember.EventDispatcher;
 
   stubEventDispatcher = {
-    setup: function(){
+    setup: function() {
       eventDispatcherWasSetup++;
     },
-    destroy: function(){
+    destroy: function() {
       eventDispatcherWasDestroyed++;
     }
   };
@@ -185,7 +185,7 @@ test("When an application with advance/deferReadiness is reset, the app does cor
 
   Ember.run(function() {
     application = Application.create({
-      ready: function(){
+      ready: function() {
         readyCallCount++;
       }
     });
@@ -194,7 +194,7 @@ test("When an application with advance/deferReadiness is reset, the app does cor
     equal(readyCallCount, 0, 'ready has not yet been called');
   });
 
-  Ember.run(function(){
+  Ember.run(function() {
     application.advanceReadiness();
   });
 
@@ -212,7 +212,7 @@ test("With ember-data like initializer and constant", function() {
 
   var DS = {
     Store: Ember.Object.extend({
-      init: function(){
+      init: function() {
          if (!get(DS, 'defaultStore')) {
           set(DS, 'defaultStore', this);
          }
@@ -229,7 +229,7 @@ test("With ember-data like initializer and constant", function() {
 
   Application.initializer({
     name: "store",
-    initialize: function(container, application){
+    initialize: function(container, application) {
       application.register('store:main', application.Store);
 
       container.lookup('store:main');

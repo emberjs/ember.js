@@ -61,7 +61,7 @@ test("Ember.Application's ready event is called right away if jQuery is already 
 
   Ember.run(function() {
     application = Application.create({ router: false });
-    application.then(function(){
+    application.then(function() {
       wasResolved++;
     });
 
@@ -82,7 +82,7 @@ test("Ember.Application's ready event is called after the document becomes ready
   var wasResolved = 0;
   Ember.run(function() {
     application = Application.create({ router: false });
-    application.then(function(){
+    application.then(function() {
       wasResolved++;
     });
     equal(wasResolved, 0);
@@ -102,7 +102,7 @@ test("Ember.Application's ready event can be deferred by other components", func
 
   Ember.run(function() {
     application = Application.create({ router: false });
-    application.then(function(){
+    application.then(function() {
       wasResolved++;
     });
     application.deferReadiness();
@@ -133,7 +133,7 @@ test("Ember.Application's ready event can be deferred by other components", func
   Ember.run(function() {
     application = Application.create({ router: false });
     application.deferReadiness();
-    application.then(function(){
+    application.then(function() {
       wasResolved++;
     });
     equal(wasResolved, 0);

@@ -84,7 +84,7 @@ ActionHelper.registerAction = function(actionName, options) {
   ```javascript
   AView = Ember.View.extend({
     templateName: 'a-template',
-    anActionName: function(event){}
+    anActionName: function(event) {}
   });
 
   aView = AView.create();
@@ -210,7 +210,7 @@ ActionHelper.registerAction = function(actionName, options) {
   AView = Ember.View.extend({
     templateName; 'a-template',
     // note: no method 'aMethodNameThatIsMissing'
-    anActionName: function(event){}
+    anActionName: function(event) {}
   });
 
   aView = AView.create();

@@ -34,7 +34,7 @@ test("should be able to insert views after the DOM representation is created", f
   equal(view._parentView, container, 'view\'s _parentView is the container');
   equal(Ember.$.trim(container.$().text()), "This is my moment");
 
-  Ember.run(function(){
+  Ember.run(function() {
     container.destroy();
   });
 
@@ -79,7 +79,7 @@ test("should set the parentView property on views that are added to the child vi
     container.appendTo('#qunit-fixture');
   });
 
-  Ember.run(function(){
+  Ember.run(function() {
     container.pushObject(view);
   });
 
@@ -89,7 +89,7 @@ test("should set the parentView property on views that are added to the child vi
       thirdView = View.create(),
       fourthView = View.create();
 
-  Ember.run(function(){
+  Ember.run(function() {
     container.pushObject(secondView);
     container.replace(1, 0, [thirdView, fourthView]);
   });
@@ -607,13 +607,13 @@ test("Child view can only be added to one container at a time", function () {
     container.set('currentView', view);
   });
 
-  expectAssertion(function(){
+  expectAssertion(function() {
     Ember.run(function() {
       secondContainer.set('currentView', view);
     });
   });
 
-  expectAssertion(function(){
+  expectAssertion(function() {
     Ember.run(function() {
       secondContainer.pushObject(view);
     });

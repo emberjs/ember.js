@@ -136,7 +136,7 @@ test("{{render}} helper should raise an error when a given controller name does 
 
   Ember.TEMPLATES['home'] = compile("<p>BYE</p>");
 
-  expectAssertion(function(){
+  expectAssertion(function() {
     appendView(view);
   }, 'The controller name you supplied \'postss\' did not resolve to a controller.');
 });

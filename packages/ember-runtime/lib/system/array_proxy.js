@@ -278,7 +278,7 @@ Ember.ArrayProxy = Ember.Object.extend(Ember.MutableArray,/** @scope Ember.Array
   },
 
   pushObjects: function(objects) {
-    if(!(Ember.Enumerable.detect(objects) || Ember.isArray(objects))) {
+    if (!(Ember.Enumerable.detect(objects) || Ember.isArray(objects))) {
       throw new TypeError("Must pass Ember.Enumerable to Ember.MutableArray#pushObjects");
     }
     this._replace(get(this, 'length'), 0, objects);

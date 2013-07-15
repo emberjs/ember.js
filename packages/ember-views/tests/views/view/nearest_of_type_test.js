@@ -41,7 +41,7 @@ module("Ember.View#nearest*", {
     equal(child.nearestOfType(Mixin), parentView, "finds closest view in the hierarchy by class");
   });
 
-test("nearestWithProperty should search immediate parent", function(){
+test("nearestWithProperty should search immediate parent", function() {
   var childView;
 
   view = Ember.View.create({

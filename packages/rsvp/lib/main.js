@@ -74,7 +74,7 @@ define("rsvp/async",
       observer.observe(element, { attributes: true });
 
       // Chrome Memory Leak: https://bugs.webkit.org/show_bug.cgi?id=93661
-      window.addEventListener('unload', function(){
+      window.addEventListener('unload', function() {
         observer.disconnect();
         observer = null;
       });
@@ -340,7 +340,7 @@ define("rsvp/promise",
       return isFunction(x) || (typeof x === "object" && x !== null);
     }
 
-    function isFunction(x){
+    function isFunction(x) {
       return typeof x === "function";
     }
 
@@ -538,12 +538,12 @@ define("rsvp/resolve",
       return typeof x === "function" || (typeof x === "object" && x !== null);
     }
 
-    function resolve(thenable){
-      var promise = new Promise(function(resolve, reject){
+    function resolve(thenable) {
+      var promise = new Promise(function(resolve, reject) {
         var then;
 
         try {
-          if ( objectOrFunction(thenable) ) {
+          if (objectOrFunction(thenable)) {
             then = thenable.then;
 
             if (typeof then === "function") {

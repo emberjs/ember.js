@@ -176,7 +176,7 @@ function assertPolyfill(test, message) {
       // attempt to preserve the stack
       throw new Error("assertion failed: " + message);
     } catch(error) {
-      setTimeout(function(){
+      setTimeout(function() {
         throw error;
       }, 0);
     }
@@ -258,7 +258,7 @@ Ember.merge = function(original, updates) {
   Ember.isNone(undefined);     // true
   Ember.isNone('');            // false
   Ember.isNone([]);            // false
-  Ember.isNone(function(){});  // false
+  Ember.isNone(function() {});  // false
   ```
 
   @method isNone
