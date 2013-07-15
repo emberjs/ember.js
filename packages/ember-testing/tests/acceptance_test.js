@@ -96,7 +96,7 @@ test("helpers can be chained with then", function() {
 
 
 test("helpers can be chained to each other", function() {
-  expect(3);
+  expect(4);
 
   currentRoute = 'index';
 
@@ -105,7 +105,11 @@ test("helpers can be chained to each other", function() {
   .then(function() {
     equal(currentRoute, 'comments', "Successfully visited posts route");
     equal(Ember.$('.ember-text-field').val(), 'hello', "Fillin successfully works");
+    find('.ember-text-field').one('keypress', function(e){
+      equal(e.keyCode, 13, "keyevent chained with correct keyCode.");
+    });
   })
+  .keyEvent('.ember-text-field', 'keypress', 13)
   .visit('/posts')
   .then(function() {
     equal(currentRoute, 'posts', "Thens can also be chained to helpers");

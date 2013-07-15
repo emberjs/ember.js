@@ -46,6 +46,19 @@ function click(app, selector, context) {
   return wait(app);
 }
 
+function keyEvent(app, selector, context, type, keyCode) {
+  var $el;
+  if(typeof keyCode === 'undefined'){
+    keyCode = type;
+    type = context;
+    context = null;
+  }
+  $el = findWithAssert(app, selector, context);
+  var event = Ember.$.Event(type, { keyCode: keyCode });
+  Ember.run($el, 'trigger', event);
+  return wait(app);
+}
+
 function fillIn(app, selector, context, text) {
   var $el;
   if (typeof text === 'undefined') {
@@ -180,6 +193,25 @@ helper('visit', visit);
 * @returns {RSVP.Promise}
 */
 helper('click', click);
+
+/**
+* Simulates a key event, e.g. `keypress`, `keydown`, `keyup` with the desired keyCode
+*
+* Example:
+*
+* ```
+* keyEvent('.some-jQuery-selector', 'keypress', 13).then(function(){
+*  // assert something
+* });
+* ```
+*
+* @method click
+* @param {String} selcetor jQuery selector for finding element on the DOM
+* @param {String} the type of key event, e.g. `keypress`, `keydown`, `keyup`
+* @param {Number} the keyCode of the simulated key event
+* @returns {RSVP.Promise}
+*/
+helper('keyEvent', keyEvent);
 
 /**
 * Fills in an input element with some text.

@@ -14,6 +14,8 @@ test("Ember.Application#injectTestHelpers/#removeTestHelpers", function() {
   ok(!App.testHelpers.visit);
   ok(!window.click);
   ok(!App.testHelpers.click);
+  ok(!window.keyEvent);
+  ok(!App.testHelpers.keyEvent);
   ok(!window.fillIn);
   ok(!App.testHelpers.fillIn);
   ok(!window.wait);
@@ -25,6 +27,8 @@ test("Ember.Application#injectTestHelpers/#removeTestHelpers", function() {
   ok(App.testHelpers.visit);
   ok(window.click);
   ok(App.testHelpers.click);
+  ok(window.keyEvent);
+  ok(App.testHelpers.keyEvent);
   ok(window.fillIn);
   ok(App.testHelpers.fillIn);
   ok(window.wait);
@@ -36,6 +40,8 @@ test("Ember.Application#injectTestHelpers/#removeTestHelpers", function() {
   ok(!App.testHelpers.visit);
   ok(!window.click);
   ok(!App.testHelpers.click);
+  ok(!window.keyEvent);
+  ok(!App.testHelpers.keyEvent);
   ok(!window.fillIn);
   ok(!App.testHelpers.fillIn);
   ok(!window.wait);
