@@ -14,7 +14,7 @@ For example:
 ```javascript
 App.SaveButtonView = Ember.View.extend(Ember.ViewTargetActionSupport, {
   action: 'save',
-  click: function(){
+  click: function() {
     this.triggerAction(); // Sends the `save` action, along with the current context
                           // to the current controller
   }
@@ -26,7 +26,7 @@ to `triggerAction` as well.
 
 ```javascript
 App.SaveButtonView = Ember.View.extend(Ember.ViewTargetActionSupport, {
-  click: function(){
+  click: function() {
     this.triggerAction({
       action: 'save'
     }); // Sends the `save` action, along with the current context

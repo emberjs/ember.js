@@ -76,7 +76,7 @@ module("Ember.Object observers", {
       prop1: null,
 
       // normal observer
-      observer: Ember.observer(function(){
+      observer: Ember.observer(function() {
         this._normal = true;
       }, "prop1"),
 
@@ -134,7 +134,7 @@ module("Ember.Object superclass and subclasses", {
   }
 });
 
-test("Checking the detect() function on an object and its subclass", function(){
+test("Checking the detect() function on an object and its subclass", function() {
 	equal(obj.detect(obj1), true);
 	equal(obj1.detect(obj), false);
 });

@@ -452,7 +452,7 @@ if (needsFinallyFix) {
     } finally {
       try {
         finalResult = finalizer.call(binding);
-      } catch (e){
+      } catch (e) {
         finalError = e;
       }
     }
@@ -504,7 +504,7 @@ if (needsFinallyFix) {
     } finally {
       try {
         finalResult = finalizer.call(binding);
-      } catch (e){
+      } catch (e) {
         finalError = e;
       }
     }

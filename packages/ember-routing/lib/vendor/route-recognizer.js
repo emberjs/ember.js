@@ -101,7 +101,7 @@ define("route-recognizer",
           results.push(new StarSegment(match[1]));
           names.push(match[1]);
           types.stars++;
-        } else if(segment === "") {
+        } else if (segment === "") {
           results.push(new EpsilonSegment());
         } else {
           results.push(new StaticSegment(segment));

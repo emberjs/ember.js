@@ -121,7 +121,7 @@ Ember.HistoryLocation = Ember.Object.extend({
     get(this, 'history').pushState(state, null, path);
 
     // store state if browser doesn't support `history.state`
-    if(!supportsHistoryState) {
+    if (!supportsHistoryState) {
       this._historyState = state;
     }
 
@@ -143,7 +143,7 @@ Ember.HistoryLocation = Ember.Object.extend({
     get(this, 'history').replaceState(state, null, path);
 
     // store state if browser doesn't support `history.state`
-    if(!supportsHistoryState) {
+    if (!supportsHistoryState) {
       this._historyState = state;
     }
 
@@ -166,7 +166,7 @@ Ember.HistoryLocation = Ember.Object.extend({
 
     Ember.$(window).on('popstate.ember-location-'+guid, function(e) {
       // Ignore initial page load popstate event in Chrome
-      if(!popstateFired) {
+      if (!popstateFired) {
         popstateFired = true;
         if (self.getURL() === self._previousURL) { return; }
       }

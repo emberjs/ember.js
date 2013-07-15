@@ -1,7 +1,7 @@
 var App, find, click, fillIn, currentRoute, visit, originalAdapter;
 
 module("ember-testing Acceptance", {
-  setup: function(){
+  setup: function() {
     Ember.$('<style>#ember-testing-container { position: absolute; background: white; bottom: 0; right: 0; width: 640px; height: 384px; overflow: auto; z-index: 9999; border: 1px solid #ccc; } #ember-testing { zoom: 50%; }</style>').appendTo('head');
     Ember.$('<div id="ember-testing-container"><div id="ember-testing"></div></div>').appendTo('body');
     Ember.run(function() {
@@ -40,7 +40,7 @@ module("ember-testing Acceptance", {
       App.setupForTesting();
     });
 
-    Ember.run(function(){
+    Ember.run(function() {
       App.advanceReadiness();
     });
 
@@ -54,7 +54,7 @@ module("ember-testing Acceptance", {
     originalAdapter = Ember.Test.adapter;
   },
 
-  teardown: function(){
+  teardown: function() {
     App.removeTestHelpers();
     Ember.$('#ember-testing-container, #ember-testing').remove();
     Ember.run(App, App.destroy);
@@ -82,7 +82,7 @@ test("helpers can be chained with then", function() {
   }).then(function() {
     equal(Ember.$('.ember-text-field').val(), 'yeah', "chained with fillIn");
     return fillIn('.ember-text-field', '#ember-testing-container', "context working");
-  }).then(function(){
+  }).then(function() {
     equal(Ember.$('.ember-text-field').val(), 'context working', "chained with fillIn");
     click(".does-not-exist");
   }).then(function() {
@@ -105,7 +105,7 @@ test("helpers can be chained to each other", function() {
   .then(function() {
     equal(currentRoute, 'comments', "Successfully visited posts route");
     equal(Ember.$('.ember-text-field').val(), 'hello', "Fillin successfully works");
-    find('.ember-text-field').one('keypress', function(e){
+    find('.ember-text-field').one('keypress', function(e) {
       equal(e.keyCode, 13, "keyevent chained with correct keyCode.");
     });
   })

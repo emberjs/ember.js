@@ -15,7 +15,7 @@
   var klass, get = Ember.get, set = Ember.set;
 
   module("Ember.Object Concatenated Properties", {
-    setup: function(){
+    setup: function() {
       klass = Ember.Object.extend({
         concatenatedProperties: ['values'],
         values: ['a', 'b', 'c']

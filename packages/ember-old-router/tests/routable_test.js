@@ -736,7 +736,7 @@ test("urlFor raises an error when route property is not defined", function() {
     })
   });
 
-  expectAssertion(function (){
+  expectAssertion(function () {
     router.urlFor('root.dashboard');
   });
 });

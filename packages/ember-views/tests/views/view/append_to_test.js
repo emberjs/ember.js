@@ -8,7 +8,7 @@ module("Ember.View - append() and appendTo()", {
   },
 
   teardown: function() {
-    Ember.run(function(){
+    Ember.run(function() {
       if (!view.isDestroyed) { view.destroy(); }
     });
   }
@@ -46,16 +46,16 @@ test("should be added to the document body when calling append()", function() {
   ok(viewElem.length > 0, "creates and appends the view's element");
 });
 
-test("append calls willInsertElement and didInsertElement callbacks", function(){
+test("append calls willInsertElement and didInsertElement callbacks", function() {
   var willInsertElementCalled = false;
   var willInsertElementCalledInChild = false;
   var didInsertElementCalled = false;
 
   var ViewWithCallback = View.extend({
-    willInsertElement: function(){
+    willInsertElement: function() {
       willInsertElementCalled = true;
     },
-    didInsertElement: function(){
+    didInsertElement: function() {
       didInsertElementCalled = true;
     },
     render: function(buffer) {
@@ -144,7 +144,7 @@ module("Ember.View - append() and appendTo() in a view hierarchy", {
   },
 
   teardown: function() {
-    Ember.run(function(){
+    Ember.run(function() {
       if (!view.isDestroyed) { view.destroy(); }
     });
   }
@@ -197,7 +197,7 @@ module("Ember.View - removing views in a view hierarchy", {
   },
 
   teardown: function() {
-    Ember.run(function(){
+    Ember.run(function() {
       if (!view.isDestroyed) { view.destroy(); }
     });
   }

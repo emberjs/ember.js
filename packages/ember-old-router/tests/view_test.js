@@ -23,7 +23,7 @@ test("should load named templates from View.templates", function() {
     templateName: 'testTemplate'
   });
 
-  Ember.run(function(){
+  Ember.run(function() {
     view.createElement();
   });
 

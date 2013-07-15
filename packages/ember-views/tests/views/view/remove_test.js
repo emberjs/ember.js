@@ -48,7 +48,7 @@ module("Ember.View#removeAllChildren", {
   },
   teardown: function() {
     Ember.run(function() {
-      childViews.forEach(function(v){ v.destroy(); });
+      childViews.forEach(function(v) { v.destroy(); });
       view.destroy();
     });
   }
@@ -83,7 +83,7 @@ test("removes view from parent view", function() {
   child = get(parentView, 'childViews').objectAt(0);
   ok(get(child, 'parentView'), 'precond - has parentView');
 
-  Ember.run(function(){
+  Ember.run(function() {
     parentView.createElement();
   });
 

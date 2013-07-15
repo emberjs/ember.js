@@ -536,9 +536,9 @@ Ember.Select = Ember.View.extend(
         content = get(this, 'content'),
         selection = get(this, 'selection');
 
-    if (!content){ return; }
+    if (!content) { return; }
     if (options) {
-      var selectedIndexes = options.map(function(){
+      var selectedIndexes = options.map(function() {
         return this.index - offset;
       }).toArray();
       var newSelection = content.objectsAt(selectedIndexes);

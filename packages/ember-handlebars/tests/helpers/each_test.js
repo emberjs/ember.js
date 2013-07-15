@@ -29,7 +29,7 @@ module("the #each helper", {
   },
 
   teardown: function() {
-    Ember.run(function(){
+    Ember.run(function() {
       view.destroy();
       view = null;
     });

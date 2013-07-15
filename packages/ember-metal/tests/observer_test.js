@@ -220,7 +220,7 @@ testBoth('deferring property change notifications safely despite exceptions', fu
   Ember.addObserver(obj, 'foo' ,function() { fooCount++; });
 
   try {
-    Ember.changeProperties(function(){
+    Ember.changeProperties(function() {
       set(obj, 'foo', 'BIFF');
       set(obj, 'foo', 'BAZ');
       throw exc;
@@ -232,7 +232,7 @@ testBoth('deferring property change notifications safely despite exceptions', fu
 
   equal(fooCount, 1, 'foo should have fired once');
 
-  Ember.changeProperties(function(){
+  Ember.changeProperties(function() {
     set(obj, 'foo', 'BIFF2');
     set(obj, 'foo', 'BAZ2');
   });
@@ -297,7 +297,7 @@ testBoth('addObserver should propagate through prototype', function(get,set) {
   equal(obj2.count, 0, 'should not have invoked observer on inherited');
 });
 
-testBoth('addObserver should respect targets with methods', function(get,set){
+testBoth('addObserver should respect targets with methods', function(get,set) {
   var observed = { foo: 'foo' };
 
   var target1 = {
@@ -410,7 +410,7 @@ testBoth('local observers can be removed', function(get, set) {
   equal(barObserved, 1, 'removed observers should not be called');
 });
 
-testBoth('removeObserver should respect targets with methods', function(get,set){
+testBoth('removeObserver should respect targets with methods', function(get,set) {
   var observed = { foo: 'foo' };
 
   var target1 = {
@@ -497,7 +497,7 @@ testBoth('addBeforeObserver should propagate through prototype', function(get,se
   equal(obj2.count, 0, 'should not have invoked observer on inherited');
 });
 
-testBoth('addBeforeObserver should respect targets with methods', function(get,set){
+testBoth('addBeforeObserver should respect targets with methods', function(get,set) {
   var observed = { foo: 'foo' };
 
   var target1 = {
@@ -616,7 +616,7 @@ testBoth('depending on a simple chain', function(get, set) {
 testBoth('depending on a Global chain', function(get, set) {
   var Global = lookup.Global, val;
 
-  Ember.addObserver(obj, 'Global.foo.bar.baz.biff', function(target, key){
+  Ember.addObserver(obj, 'Global.foo.bar.baz.biff', function(target, key) {
     val = Ember.get(lookup, key);
     count++;
   });

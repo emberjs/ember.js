@@ -33,7 +33,7 @@ module("Ember.View#isVisible", {
 
   teardown: function() {
     if (view) {
-      Ember.run(function(){ view.destroy(); });
+      Ember.run(function() { view.destroy(); });
     }
   }
 });
@@ -89,7 +89,7 @@ test("should hide element if isVisible is false before element is created", func
 });
 
 test("view should be notified after isVisible is set to false and the element has been hidden", function() {
-  Ember.run(function(){
+  Ember.run(function() {
     view = View.create({ isVisible: false });
     view.append();
   });

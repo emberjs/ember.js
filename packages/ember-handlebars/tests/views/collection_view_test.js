@@ -17,7 +17,7 @@ module("ember-handlebars/tests/views/collection_view_test", {
     lookup.TemplateTests = TemplateTests = Ember.Namespace.create();
   },
   teardown: function() {
-    Ember.run(function(){
+    Ember.run(function() {
       if (view) {
         view.destroy();
       }
@@ -102,7 +102,7 @@ test("empty views should be removed when content is added to the collection (reg
   equal(view.$('tr').length, 1, 'has one row');
   equal(view.$('tr:nth-child(1) td').text(), 'Go Away, Placeholder Row!', 'The content is the updated data.');
 
-  Ember.run(function(){ App.destroy(); });
+  Ember.run(function() { App.destroy(); });
 });
 
 test("should be able to specify which class should be used for the empty view", function() {
@@ -297,7 +297,7 @@ test("should give its item views the property specified by itemPropertyBinding",
 
     equal(view.$('ul li').length, 3, "adds 3 itemView");
 
-    view.$('ul li').each(function(i, li){
+    view.$('ul li').each(function(i, li) {
       equal(Ember.$(li).text(), "baz", "creates the li with the property = baz");
     });
 
@@ -544,10 +544,10 @@ test("should allow view objects to be swapped out without throwing an error (#78
   });
 });
 
-test("context should be content", function(){
+test("context should be content", function() {
   var App, view;
 
-  Ember.run(function(){
+  Ember.run(function() {
     lookup.App = App = Ember.Application.create();
   });
 
@@ -565,17 +565,17 @@ test("context should be content", function(){
     template: Ember.Handlebars.compile('{{collection contentBinding="App.items" itemViewClass="App.AnItemView"}}')
   });
 
-  Ember.run(function(){
+  Ember.run(function() {
     view = App.AView.create();
   });
 
-  Ember.run(function(){
+  Ember.run(function() {
     view.appendTo('#qunit-fixture');
   });
 
   equal(view.$().text(), "Greetings DaveGreetings MaryGreetings Sara");
 
-  Ember.run(function(){
+  Ember.run(function() {
     view.destroy();
     App.destroy();
   });

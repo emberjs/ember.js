@@ -234,7 +234,7 @@ test("should remove a bools and reduce length", function() {
   equal(set.length, oldLength-2, "should be 2 shorter") ;
 });
 
-test("should remove 0 and reduce length", function(){
+test("should remove 0 and reduce length", function() {
   var oldLength = set.length;
   set.remove(0) ;
   equal(set.contains(0), false, "should be removed") ;
@@ -294,7 +294,7 @@ test("the pop() should remove an arbitrary object from the set", function() {
   equal(set.length, oldLength-1, 'length shorter by 1');
 });
 
-test("should pop false and 0", function(){
+test("should pop false and 0", function() {
   set = new Ember.Set(Ember.A([false]));
   ok(set.pop() === false, "should pop false");
 

@@ -8,7 +8,7 @@ module("Ember.CollectionView", {
   },
   teardown: function() {
     delete Ember.CollectionView.CONTAINER_MAP.del;
-    Ember.run(function(){
+    Ember.run(function() {
       if (view) { view.destroy(); }
     });
   }
@@ -543,7 +543,7 @@ test("a array_proxy that backs an sorted array_controller that backs a collectio
 test("when a collection view is emptied, deeply nested views elements are not removed from the DOM and then destroyed again", function() {
   var assertProperDestruction = Ember.Mixin.create({
     destroyElement: function() {
-      if ( this.state === 'inDOM' ) {
+      if (this.state === 'inDOM') {
         ok(this.get('element'), this + ' still exists in DOM');
       }
       return this._super();

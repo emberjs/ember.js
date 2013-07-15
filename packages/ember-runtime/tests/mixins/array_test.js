@@ -61,7 +61,7 @@ Ember.ArrayTests.extend({
 
 }).run();
 
-test("the return value of slice has Ember.Array applied", function(){
+test("the return value of slice has Ember.Array applied", function() {
   var x = Ember.Object.createWithMixins(Ember.Array, {
     length: 0
   });
@@ -69,7 +69,7 @@ test("the return value of slice has Ember.Array applied", function(){
   equal(Ember.Array.detect(y), true, "mixin should be applied");
 });
 
-test("slice supports negative index arguments", function(){
+test("slice supports negative index arguments", function() {
   var testArray = new TestArray([1,2,3,4]);
 
   deepEqual(testArray.slice(-2),      [3, 4],     'slice(-2)');

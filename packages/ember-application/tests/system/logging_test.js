@@ -1,19 +1,19 @@
 var App, logs, originalLogger;
 
 module("Ember.Application – logging of generated classes", {
-  setup: function(){
+  setup: function() {
     logs = {};
 
     originalLogger = Ember.Logger.info;
 
-    Ember.Logger.info = function(){
+    Ember.Logger.info = function() {
       var fullName = arguments[1].fullName;
 
       logs[fullName] = logs[fullName] || 0;
       logs[fullName]++;
     };
 
-    Ember.run(function(){
+    Ember.run(function() {
       App = Ember.Application.create({
         LOG_ACTIVE_GENERATION: true
       });
@@ -30,7 +30,7 @@ module("Ember.Application – logging of generated classes", {
     });
   },
 
-  teardown: function(){
+  teardown: function() {
     Ember.Logger.info = originalLogger;
 
     Ember.run(App, 'destroy');
@@ -42,11 +42,11 @@ module("Ember.Application – logging of generated classes", {
 function visit(path) {
   stop();
 
-  var promise = Ember.run(function(){
-    return new Ember.RSVP.Promise(function(resolve, reject){
+  var promise = Ember.run(function() {
+    return new Ember.RSVP.Promise(function(resolve, reject) {
       var router = App.__container__.lookup('router:main');
 
-      resolve(router.handleURL(path).then(function(value){
+      resolve(router.handleURL(path).then(function(value) {
         start();
         ok(true, 'visited: `' + path + '`');
         return value;
@@ -59,7 +59,7 @@ function visit(path) {
   });
 
   return {
-    then: function(resolve, reject){
+    then: function(resolve, reject) {
       Ember.run(promise, 'then', resolve, reject);
     }
   };
@@ -68,7 +68,7 @@ function visit(path) {
 test("log class generation if logging enabled", function() {
   Ember.run(App, 'advanceReadiness');
 
-  visit('/posts').then(function(){
+  visit('/posts').then(function() {
     equal(Ember.keys(logs).length, 6, 'expected logs');
   });
 });
@@ -80,7 +80,7 @@ test("do NOT log class generation if logging disabled", function() {
 
   Ember.run(App, 'advanceReadiness');
 
-  visit('/posts').then(function(){
+  visit('/posts').then(function() {
     equal(Ember.keys(logs).length, 0, 'expected no logs');
   });
 });
@@ -88,7 +88,7 @@ test("do NOT log class generation if logging disabled", function() {
 test("actively generated classes get logged", function() {
   Ember.run(App, 'advanceReadiness');
 
-  visit('/posts').then(function(){
+  visit('/posts').then(function() {
     equal(logs['controller:application'], 1, 'expected: ApplicationController was generated');
     equal(logs['controller:posts'], 1, 'expected: PostsController was generated');
 
@@ -106,7 +106,7 @@ test("predefined classes do not get logged", function() {
 
   Ember.run(App, 'advanceReadiness');
 
-  visit('/posts').then(function(){
+  visit('/posts').then(function() {
     ok(!logs['controller:application'], 'did not expect: ApplicationController was generated');
     ok(!logs['controller:posts'], 'did not expect: PostsController was generated');
 
@@ -116,19 +116,19 @@ test("predefined classes do not get logged", function() {
 });
 
 module("Ember.Application – logging of view lookups", {
-  setup: function(){
+  setup: function() {
     logs = {};
 
     originalLogger = Ember.Logger.info;
 
-    Ember.Logger.info = function(){
+    Ember.Logger.info = function() {
       var fullName = arguments[1].fullName;
 
       logs[fullName] = logs[fullName] || 0;
       logs[fullName]++;
     };
 
-    Ember.run(function(){
+    Ember.run(function() {
       App = Ember.Application.create({
         LOG_VIEW_LOOKUPS: true
       });
@@ -145,7 +145,7 @@ module("Ember.Application – logging of view lookups", {
     });
   },
 
-  teardown: function(){
+  teardown: function() {
     Ember.Logger.info = originalLogger;
 
     Ember.run(App, 'destroy');
@@ -155,10 +155,10 @@ module("Ember.Application – logging of view lookups", {
 });
 
 test("log when template and view are missing when flag is active", function() {
-  App.register('template:application', function(){ return ''; });
+  App.register('template:application', function() { return ''; });
   Ember.run(App, 'advanceReadiness');
 
-  visit('/posts').then(function(){
+  visit('/posts').then(function() {
     equal(logs['template:application'], undefined, 'expected: Should not log template:application since it exists.');
     equal(logs['template:index'], 1, 'expected: Could not find "index" template or view.');
     equal(logs['template:posts'], 1, 'expected: Could not find "posts" template or view.');
@@ -172,18 +172,18 @@ test("do not log when template and view are missing when flag is not true", func
 
   Ember.run(App, 'advanceReadiness');
 
-  visit('/posts').then(function(){
+  visit('/posts').then(function() {
     equal(Ember.keys(logs).length, 0, 'expected no logs');
   });
 });
 
 test("log which view is used with a template", function() {
-  App.register('template:application', function(){ return 'Template with default view'; });
-  App.register('template:foo', function(){ return 'Template with custom view'; });
+  App.register('template:application', function() { return 'Template with default view'; });
+  App.register('template:foo', function() { return 'Template with custom view'; });
   App.register('view:posts', Ember.View.extend({templateName: 'foo'}));
   Ember.run(App, 'advanceReadiness');
 
-  visit('/posts').then(function(){
+  visit('/posts').then(function() {
     equal(logs['view:application'], 1, 'expected: Should log use of default view');
     equal(logs['view:index'], undefined, 'expected: Should not log when index is not present.');
     equal(logs['view:posts'], 1, 'expected: Rendering posts with PostsView.');
@@ -197,7 +197,7 @@ test("do not log which views are used with templates when flag is not true", fun
 
   Ember.run(App, 'advanceReadiness');
 
-  visit('/posts').then(function(){
+  visit('/posts').then(function() {
     equal(Ember.keys(logs).length, 0, 'expected no logs');
   });
 });

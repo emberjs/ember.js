@@ -1,8 +1,8 @@
 module('Ember.alias',{
-  setup: function(){
+  setup: function() {
     Ember.TESTING_DEPRECATION = true;
   },
-  teardown: function(){
+  teardown: function() {
     Ember.TESTING_DEPRECATION = false;
   }
 });

@@ -35,7 +35,7 @@ var Backburner = requireModule('backburner').Backburner,
   call.
 
   ```javascript
-  Ember.run(function(){
+  Ember.run(function() {
     // code to be execute within a RunLoop
   });
   ```
@@ -78,7 +78,7 @@ Ember.run = function(target, method) {
   If invoked when not within a run loop:
 
   ```javascript
-  Ember.run.join(function(){
+  Ember.run.join(function() {
     // creates a new run-loop
   });
   ```
@@ -86,9 +86,9 @@ Ember.run = function(target, method) {
   Alternatively, if called within an existing run loop:
 
   ```javascript
-  Ember.run(function(){
+  Ember.run(function() {
     // creates a new run-loop
-    Ember.run.join(function(){
+    Ember.run.join(function() {
       // joins with the existing run-loop, and queues for invocation on
       // the existing run-loops action queue.
     });
@@ -181,12 +181,12 @@ Ember.run.end = function() {
   the `Ember.run.queues` property.
 
   ```javascript
-  Ember.run.schedule('sync', this, function(){
+  Ember.run.schedule('sync', this, function() {
     // this will be executed in the first RunLoop queue, when bindings are synced
     console.log("scheduled on sync queue");
   });
 
-  Ember.run.schedule('actions', this, function(){
+  Ember.run.schedule('actions', this, function() {
     // this will be executed in the 'actions' queue, after bindings have synced.
     console.log("scheduled on actions queue");
   });
@@ -254,7 +254,7 @@ Ember.run.sync = function() {
   together, which is often more efficient than using a real setTimeout.
 
   ```javascript
-  Ember.run.later(myContext, function(){
+  Ember.run.later(myContext, function() {
     // code here will execute within a RunLoop in about 500ms with this == myContext
   }, 500);
   ```
@@ -302,7 +302,7 @@ Ember.run.once = function(target, method) {
   calls.
 
   ```javascript
-  Ember.run(function(){
+  Ember.run(function() {
     var sayHi = function() { console.log('hi'); }
     Ember.run.scheduleOnce('afterRender', myContext, sayHi);
     Ember.run.scheduleOnce('afterRender', myContext, sayHi);
@@ -347,7 +347,7 @@ Ember.run.scheduleOnce = function(queue, target, method) {
   `Ember.run.later` with a wait time of 1ms.
 
   ```javascript
-  Ember.run.next(myContext, function(){
+  Ember.run.next(myContext, function() {
     // code to be executed in the next run loop, which will be scheduled after the current one
   });
   ```
@@ -409,17 +409,17 @@ Ember.run.next = function() {
   `Ember.run.once()`, or `Ember.run.next()`.
 
   ```javascript
-  var runNext = Ember.run.next(myContext, function(){
+  var runNext = Ember.run.next(myContext, function() {
     // will not be executed
   });
   Ember.run.cancel(runNext);
 
-  var runLater = Ember.run.later(myContext, function(){
+  var runLater = Ember.run.later(myContext, function() {
     // will not be executed
   }, 500);
   Ember.run.cancel(runLater);
 
-  var runOnce = Ember.run.once(myContext, function(){
+  var runOnce = Ember.run.once(myContext, function() {
     // will not be executed
   });
   Ember.run.cancel(runOnce);

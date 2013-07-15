@@ -150,7 +150,7 @@ Ember.Set = Ember.CoreObject.extend(Ember.MutableEnumerable, Ember.Copyable, Emb
     Ember.propertyWillChange(this, 'firstObject');
     Ember.propertyWillChange(this, 'lastObject');
 
-    for (var i=0; i < len; i++){
+    for (var i=0; i < len; i++) {
       guid = guidFor(this[i]);
       delete this[guid];
       delete this[i];

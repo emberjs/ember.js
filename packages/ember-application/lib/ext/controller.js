@@ -77,7 +77,7 @@ Ember.ControllerMixin.reopen({
     this._super.apply(this, arguments);
 
     // Structure asserts to still do verification but not string concat in production
-    if(!verifyDependencies(this)) {
+    if (!verifyDependencies(this)) {
       Ember.assert("Missing dependencies", false);
     }
   },

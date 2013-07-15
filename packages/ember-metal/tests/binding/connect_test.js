@@ -3,7 +3,7 @@
 require('ember-metal/~tests/props_helper');
 
 function performTest(binding, a, b, get, set, connect) {
-  if (connect === undefined) connect = function(){binding.connect(a);};
+  if (connect === undefined) connect = function() {binding.connect(a);};
 
   ok(!Ember.run.currentRunLoop, 'performTest should not have a currentRunLoop');
 
@@ -64,7 +64,7 @@ testBoth('Connecting a binding to path', function(get, set) {
   // make sure modifications update
   b = { bar: 'BIFF' };
 
-  Ember.run(function(){
+  Ember.run(function() {
     set(GlobalB, 'b', b);
   });
 

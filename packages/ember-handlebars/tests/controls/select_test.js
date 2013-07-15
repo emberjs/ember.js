@@ -231,7 +231,7 @@ test("multiple selections can be set when multiple=true", function() {
   Ember.run(function() { select.set('selection', Ember.A([tom, brennain])); });
 
   deepEqual(
-    select.$(':selected').map(function(){ return trim(Ember.$(this).text());}).toArray(),
+    select.$(':selected').map(function() { return trim(Ember.$(this).text());}).toArray(),
     ['Tom', 'Brennain'],
     "After changing it, selection should be correct");
 });
@@ -259,7 +259,7 @@ test("multiple selections can be set by changing in place the selection array wh
   });
 
   deepEqual(
-    select.$(':selected').map(function(){ return trim(Ember.$(this).text());}).toArray(),
+    select.$(':selected').map(function() { return trim(Ember.$(this).text());}).toArray(),
     ['David', 'Brennain'],
     "After updating the selection array in-place, selection should be correct");
 });
@@ -676,12 +676,12 @@ test("works from a template with bindings", function() {
   equal(select.$().text(), "Pick a person:Yehuda KatzTom DalePeter WagenetErik Bryn", "Option values were rendered");
   equal(select.get('selection'), null, "Nothing has been selected");
 
-  Ember.run(function(){
+  Ember.run(function() {
     application.selectedPersonController.set('person', erik);
   });
 
   equal(select.get('selection'), erik, "Selection was updated through binding");
-  Ember.run(function(){
+  Ember.run(function() {
     application.peopleController.pushObject(Person.create({id: 5, firstName: "James", lastName: "Rosen"}));
   });
 

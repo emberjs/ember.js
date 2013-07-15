@@ -531,9 +531,9 @@ testBoth('depending on Global chain', function(get, set) {
 
 });
 
-testBoth('chained dependent keys should evaluate computed properties lazily', function(get,set){
+testBoth('chained dependent keys should evaluate computed properties lazily', function(get,set) {
   Ember.defineProperty(obj.foo.bar, 'b', Ember.computed(func));
-  Ember.defineProperty(obj.foo, 'c', Ember.computed(function(){}).property('bar.b'));
+  Ember.defineProperty(obj.foo, 'c', Ember.computed(function() {}).property('bar.b'));
   equal(count, 0, 'b should not run');
 });
 
@@ -678,7 +678,7 @@ testBoth("when setting a value on a computed property that doesn't handle sets",
 module('Ember.computed - readOnly');
 
 test('is chainable', function() {
-  var computed = Ember.computed(function(){}).readOnly();
+  var computed = Ember.computed(function() {}).readOnly();
 
   ok(computed instanceof Ember.Descriptor);
   ok(computed instanceof Ember.ComputedProperty);
@@ -687,13 +687,13 @@ test('is chainable', function() {
 testBoth('protects against setting', function(get, set) {
   var obj = {  };
 
-  Ember.defineProperty(obj, 'bar', Ember.computed(function(key){
+  Ember.defineProperty(obj, 'bar', Ember.computed(function(key) {
     return 'barValue';
   }).readOnly());
 
   equal(get(obj, 'bar'), 'barValue');
 
-  raises(function(){
+  raises(function() {
     set(obj, 'bar', 'newBar');
   }, /Cannot Set: bar on:/ );
 
@@ -730,7 +730,7 @@ testBoth('Ember.computed.empty', function(get, set) {
 });
 
 testBoth('Ember.computed.bool', function(get, set) {
-  var obj = {foo: function(){}, bar: 'asdf', baz: null, quz: false};
+  var obj = {foo: function() {}, bar: 'asdf', baz: null, quz: false};
   Ember.defineProperty(obj, 'fooBool', Ember.computed.bool('foo'));
   Ember.defineProperty(obj, 'barBool', Ember.computed.bool('bar'));
   Ember.defineProperty(obj, 'bazBool', Ember.computed.bool('baz'));
@@ -743,7 +743,7 @@ testBoth('Ember.computed.bool', function(get, set) {
 
 testBoth('Ember.computed.alias', function(get, set) {
   var obj = { bar: 'asdf', baz: null, quz: false};
-  Ember.defineProperty(obj, 'bay', Ember.computed(function(key){
+  Ember.defineProperty(obj, 'bay', Ember.computed(function(key) {
     return 'apple';
   }));
 

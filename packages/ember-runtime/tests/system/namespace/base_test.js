@@ -13,12 +13,12 @@ module('Ember.Namespace', {
   teardown: function() {
     Ember.BOOTED = false;
 
-    if (lookup.NamespaceA) { Ember.run(function(){ lookup.NamespaceA.destroy(); }); }
-    if (lookup.NamespaceB) { Ember.run(function(){ lookup.NamespaceB.destroy(); }); }
+    if (lookup.NamespaceA) { Ember.run(function() { lookup.NamespaceA.destroy(); }); }
+    if (lookup.NamespaceB) { Ember.run(function() { lookup.NamespaceB.destroy(); }); }
     if (lookup.namespaceC) {
       try {
         Ember.TESTING_DEPRECATION = true;
-        Ember.run(function(){
+        Ember.run(function() {
           lookup.namespaceC.destroy();
         });
       } finally {

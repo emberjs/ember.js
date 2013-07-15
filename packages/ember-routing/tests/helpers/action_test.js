@@ -369,7 +369,7 @@ test("should unregister event handlers on rerender", function() {
 
   var previousActionId = view.$('a[data-ember-action]').attr('data-ember-action');
 
-  Ember.run(function(){
+  Ember.run(function() {
     view.rerender();
   });
 

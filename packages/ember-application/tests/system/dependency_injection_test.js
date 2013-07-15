@@ -3,7 +3,7 @@ var locator, originalLookup = Ember.lookup, lookup,
     forEach = Ember.ArrayPolyfills.forEach;
 
 module("Ember.Application Depedency Injection", {
-  setup: function(){
+  setup: function() {
     application = Ember.run(Ember.Application, 'create');
 
     application.Person              = Ember.Object.extend({});
@@ -51,7 +51,7 @@ test('Ember.Container.defaultContainer is the same as the Apps container, but em
   }
 });
 
-test('registered entities can be looked up later', function(){
+test('registered entities can be looked up later', function() {
   equal(locator.resolve('model:person'), application.Person);
   equal(locator.resolve('model:user'), application.User);
   equal(locator.resolve('fruit:favorite'), application.Orange);

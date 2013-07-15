@@ -3,7 +3,7 @@ module('system/run_loop/unwind_test');
 test('RunLoop unwinds despite unhandled exception', function() {
   var initialRunLoop = Ember.run.currentRunLoop;
 
-  raises(function(){
+  raises(function() {
     Ember.run(function() {
       Ember.run.schedule('actions', function() { throw new Error("boom!"); });
     });
@@ -23,7 +23,7 @@ test('RunLoop unwinds despite unhandled exception', function() {
 test('Ember.run unwinds despite unhandled exception', function() {
   var initialRunLoop = Ember.run.currentRunLoop;
 
-  raises(function(){
+  raises(function() {
     Ember.run(function() {
       throw new Error("boom!");
     });

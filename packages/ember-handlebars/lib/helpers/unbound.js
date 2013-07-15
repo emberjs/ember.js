@@ -32,7 +32,7 @@ var handlebarsGet = Ember.Handlebars.get;
 Ember.Handlebars.registerHelper('unbound', function(property, fn) {
   var options = arguments[arguments.length - 1], helper, context, out;
 
-  if(arguments.length > 2) {
+  if (arguments.length > 2) {
     // Unbound helper call.
     options.data.isUnbound = true;
     helper = Ember.Handlebars.helpers[arguments[0]] || Ember.Handlebars.helperMissing;

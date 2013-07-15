@@ -163,7 +163,7 @@ Ember.MutableArray = Ember.Mixin.create(Ember.Array, Ember.MutableEnumerable,/**
     @return {Ember.Array} receiver
   */
   pushObjects: function(objects) {
-    if(!(Ember.Enumerable.detect(objects) || Ember.isArray(objects))) {
+    if (!(Ember.Enumerable.detect(objects) || Ember.isArray(objects))) {
       throw new TypeError("Must pass Ember.Enumerable to Ember.MutableArray#pushObjects");
     }
     this.replace(get(this, 'length'), 0, objects);

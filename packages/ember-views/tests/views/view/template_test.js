@@ -22,7 +22,7 @@ test("should call the function of the associated template", function() {
     templateName: 'testTemplate'
   });
 
-  Ember.run(function(){
+  Ember.run(function() {
     view.createElement();
   });
 
@@ -43,7 +43,7 @@ test("should call the function of the associated template with itself as the con
     }
   });
 
-  Ember.run(function(){
+  Ember.run(function() {
     view.createElement();
   });
 
@@ -63,7 +63,7 @@ test("should fall back to defaultTemplate if neither template nor templateName a
     }
   });
 
-  Ember.run(function(){
+  Ember.run(function() {
     view.createElement();
   });
 
@@ -79,7 +79,7 @@ test("should not use defaultTemplate if template is provided", function() {
   });
 
   view = View.create();
-  Ember.run(function(){
+  Ember.run(function() {
     view.createElement();
   });
 
@@ -98,7 +98,7 @@ test("should not use defaultTemplate if template is provided", function() {
   });
 
   view = View.create();
-  Ember.run(function(){
+  Ember.run(function() {
     view.createElement();
   });
 
@@ -107,7 +107,7 @@ test("should not use defaultTemplate if template is provided", function() {
 
 test("should render an empty element if no template is specified", function() {
   view = Ember.View.create();
-  Ember.run(function(){
+  Ember.run(function() {
     view.createElement();
   });
 
@@ -146,7 +146,7 @@ test("should provide a controller to the template if a controller is specified o
 
   strictEqual(optionsDataKeywordsControllerForView, controller1, "passes the controller in the data");
 
-  Ember.run(function(){
+  Ember.run(function() {
     view.destroy();
   });
 
@@ -173,7 +173,7 @@ test("should provide a controller to the template if a controller is specified o
   strictEqual(optionsDataKeywordsControllerForView, controller1, "passes the controller in the data");
   strictEqual(optionsDataKeywordsControllerForChildView, controller2, "passes the child view's controller in the data");
 
-  Ember.run(function(){
+  Ember.run(function() {
     parentView.destroy();
   });
 

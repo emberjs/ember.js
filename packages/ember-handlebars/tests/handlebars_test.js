@@ -713,7 +713,7 @@ test("edge case: child conditional should not render children if parent conditio
 test("Template views return throw if their template cannot be found", function() {
   view = Ember.View.create({
     templateName: 'cantBeFound',
-    container: { lookup: function(){ }}
+    container: { lookup: function() { }}
   });
 
   expectAssertion(function() {
@@ -804,7 +804,7 @@ test("views make a view keyword available that allows template to reference view
   equal(view.$('h1').text(), "Brodele del Heeeyyyyyy", "renders properties from parent context");
 });
 
-test("a view helper's bindings are to the parent context", function(){
+test("a view helper's bindings are to the parent context", function() {
   var Subview = Ember.View.extend({
     classNameBindings: ['color'],
     controller: Ember.Object.create({
@@ -1046,7 +1046,7 @@ test("should not update boundIf if truthiness does not change", function() {
   equal(view.$('#first').text(), "bam", "renders block when condition is true");
 });
 
-test("boundIf should support parent access", function(){
+test("boundIf should support parent access", function() {
   view = Ember.View.create({
     template: Ember.Handlebars.compile(
       '<h1 id="first">{{#with view.content}}{{#with thankYou}}'+
@@ -1720,7 +1720,7 @@ test("should be able to bindAttr to var in {{#each var in list}} block", functio
   ok(/three\.gif$/.test(images[1].src));
 });
 
-test("should be able to output a property without binding", function(){
+test("should be able to output a property without binding", function() {
   var context = {
     content: Ember.Object.create({
       anUnboundString: "No spans here, son."
@@ -1974,7 +1974,7 @@ module("Ember.View - handlebars integration", {
   }
 });
 
-test("should be able to log a property", function(){
+test("should be able to log a property", function() {
   var context = {
     value: 'one',
     valueTwo: 'two',
@@ -2022,11 +2022,11 @@ test("should be able to log `this`", function() {
 var MyApp;
 
 module("Templates redrawing and bindings", {
-  setup: function(){
+  setup: function() {
     Ember.lookup = lookup = { Ember: Ember };
     MyApp = lookup.MyApp = Ember.Object.create({});
   },
-  teardown: function(){
+  teardown: function() {
     Ember.run(function() {
       if (view) view.destroy();
     });
@@ -2034,24 +2034,24 @@ module("Templates redrawing and bindings", {
   }
 });
 
-test("should be able to update when bound property updates", function(){
+test("should be able to update when bound property updates", function() {
   MyApp.set('controller', Ember.Object.create({name: 'first'}));
 
   var View = Ember.View.extend({
     template: Ember.Handlebars.compile('<i>{{view.value.name}}, {{view.computed}}</i>'),
     valueBinding: 'MyApp.controller',
-    computed: Ember.computed(function(){
+    computed: Ember.computed(function() {
       return this.get('value.name') + ' - computed';
     }).property('value')
   });
 
-  Ember.run(function(){
+  Ember.run(function() {
     view = View.create();
   });
 
   appendView();
 
-  Ember.run(function(){
+  Ember.run(function() {
     MyApp.set('controller', Ember.Object.create({
       name: 'second'
     }));
@@ -2061,7 +2061,7 @@ test("should be able to update when bound property updates", function(){
   equal(view.$('i').text(), 'second, second - computed', "view rerenders when bound properties change");
 });
 
-test("properties within an if statement should not fail on re-render", function(){
+test("properties within an if statement should not fail on re-render", function() {
   view = Ember.View.create({
     template: Ember.Handlebars.compile('{{#if view.value}}{{view.value}}{{/if}}'),
     value: null
@@ -2071,20 +2071,20 @@ test("properties within an if statement should not fail on re-render", function(
 
   equal(view.$().text(), '');
 
-  Ember.run(function(){
+  Ember.run(function() {
     view.set('value', 'test');
   });
 
   equal(view.$().text(), 'test');
 
-  Ember.run(function(){
+  Ember.run(function() {
     view.set('value', null);
   });
 
   equal(view.$().text(), '');
 });
 
-test("views within an if statement should be sane on re-render", function(){
+test("views within an if statement should be sane on re-render", function() {
   view = Ember.View.create({
     template: Ember.Handlebars.compile('{{#if view.display}}{{view Ember.TextField}}{{/if}}'),
     display: false
@@ -2094,7 +2094,7 @@ test("views within an if statement should be sane on re-render", function(){
 
   equal(view.$('input').length, 0);
 
-  Ember.run(function(){
+  Ember.run(function() {
     // Setting twice will trigger the observer twice, this is intentional
     view.set('display', true);
     view.set('display', 'yes');
@@ -2107,7 +2107,7 @@ test("views within an if statement should be sane on re-render", function(){
   ok(Ember.View.views[textfield.attr('id')]);
 });
 
-test("the {{this}} helper should not fail on removal", function(){
+test("the {{this}} helper should not fail on removal", function() {
   view = Ember.View.create({
     template: Ember.Handlebars.compile('{{#if view.show}}{{#each view.list}}{{this}}{{/each}}{{/if}}'),
     show: true,
@@ -2118,7 +2118,7 @@ test("the {{this}} helper should not fail on removal", function(){
 
   equal(view.$().text(), 'abc', "should start property - precond");
 
-  Ember.run(function(){
+  Ember.run(function() {
     view.set('show', false);
   });
 

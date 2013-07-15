@@ -32,7 +32,7 @@ test("default implementation does not render child views", function() {
     })
   });
 
-  Ember.run(function(){
+  Ember.run(function() {
     view.createElement();
   });
   equal(rendered, 1, 'rendered the child once');
@@ -76,7 +76,7 @@ test("should invoke renderChildViews if layer is destroyed then re-rendered", fu
   equal(parentRendered, 2);
   equal(view.$('div').length, 1);
 
-  Ember.run(function(){
+  Ember.run(function() {
     view.destroy();
   });
 });
@@ -92,7 +92,7 @@ test("should render child views with a different tagName", function() {
     })
   });
 
-  Ember.run(function(){
+  Ember.run(function() {
     view.createElement();
   });
 
@@ -102,7 +102,7 @@ test("should render child views with a different tagName", function() {
 test("should add ember-view to views", function() {
   view = Ember.View.create();
 
-  Ember.run(function(){
+  Ember.run(function() {
     view.createElement();
   });
 
@@ -112,7 +112,7 @@ test("should add ember-view to views", function() {
 test("should not add role attribute unless one is specified", function() {
   view = Ember.View.create();
 
-  Ember.run(function(){
+  Ember.run(function() {
     view.createElement();
   });
 

@@ -17,7 +17,7 @@ module("Ember.tryFinally", {
   }
 });
 
-function callTryFinallyWithError(){
+function callTryFinallyWithError() {
   var errorWasThrown;
   try {
     Ember.tryFinally(tryable, finalizer);

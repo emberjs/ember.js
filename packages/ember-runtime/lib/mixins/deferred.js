@@ -53,7 +53,7 @@ Ember.DeferredMixin = Ember.Mixin.create({
     deferred = get(this, '_deferred');
     promise = deferred.promise;
 
-    if (value === this){
+    if (value === this) {
       deferred.resolve(promise);
     } else {
       deferred.resolve(value);

@@ -400,7 +400,7 @@ test("The Homepage with a computed context that does not get overridden", functi
   });
 
   App.HomeController = Ember.ArrayController.extend({
-    content: Ember.computed(function(){
+    content: Ember.computed(function() {
       return Ember.A([
         "Monday through Friday: 9am to 5pm",
         "Saturday: Noon to Midnight",
@@ -899,7 +899,7 @@ asyncTest("Events are triggered on the controller if a matching action name is i
   );
 
   var controller = Ember.Controller.extend({
-    showStuff: function(context){
+    showStuff: function(context) {
       ok (stateIsNotCalled, "an event on the state is not triggered");
       deepEqual(context, { name: "Tom Dale" }, "an event with context is passed");
       start();
@@ -1086,7 +1086,7 @@ test('navigating away triggers a url property change', function() {
 
   var transition = handleURL("/");
 
-  Ember.run(function(){
+  Ember.run(function() {
     transition.then(function() {
       equal(urlPropertyChangeCount, 2);
 
@@ -2100,13 +2100,13 @@ test("Route supports clearing outlet explicitly", function() {
 
   App.PostsRoute = Ember.Route.extend({
     events: {
-      showModal: function(){
+      showModal: function() {
         this.render('postsModal', {
           into: 'application',
           outlet: 'modal'
         });
       },
-      hideModal: function(){
+      hideModal: function() {
         this.disconnectOutlet({outlet: 'modal', parentView: 'application'});
       }
     }
@@ -2114,12 +2114,12 @@ test("Route supports clearing outlet explicitly", function() {
 
   App.PostsIndexRoute = Ember.Route.extend({
     events: {
-      showExtra: function(){
+      showExtra: function() {
         this.render('postsExtra', {
           into: 'posts/index'
         });
       },
-      hideExtra: function(){
+      hideExtra: function() {
         this.disconnectOutlet({parentView: 'posts/index'});
       }
     }
