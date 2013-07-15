@@ -155,6 +155,8 @@ Ember.Application.reopen({
   testHelpers: {},
 
   setupForTesting: function() {
+    Ember.testing = true;
+
     this.deferReadiness();
 
     this.Router.reopen({
