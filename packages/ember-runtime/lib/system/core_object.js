@@ -348,7 +348,7 @@ CoreObject.PrototypeMixin = Mixin.create({
     included in the output.
 
         App.Teacher = App.Person.extend({
-          toStringExtension: function(){
+          toStringExtension: function() {
             return this.get('fullName');
           }
         });

@@ -99,7 +99,7 @@ Ember.Array = Ember.Mixin.create(Ember.Enumerable, /** @scope Ember.Array.protot
    */
   objectsAt: function(indexes) {
     var self = this;
-    return map(indexes, function(idx){ return self.objectAt(idx); });
+    return map(indexes, function(idx) { return self.objectAt(idx); });
   },
 
   // overrides Ember.Enumerable version
@@ -131,7 +131,7 @@ Ember.Array = Ember.Mixin.create(Ember.Enumerable, /** @scope Ember.Array.protot
   }),
 
   // optimized version from Enumerable
-  contains: function(obj){
+  contains: function(obj) {
     return this.indexOf(obj) >= 0;
   },
 

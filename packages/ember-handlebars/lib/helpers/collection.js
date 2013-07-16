@@ -185,7 +185,7 @@ Ember.Handlebars.registerHelper('collection', function(path, options) {
     if (hash.hasOwnProperty(prop)) {
       match = prop.match(/^item(.)(.*)$/);
 
-      if(match && prop !== 'itemController') {
+      if (match && prop !== 'itemController') {
         // Convert itemShouldFoo -> shouldFoo
         itemHash[match[1].toLowerCase() + match[2]] = hash[prop];
         // Delete from hash as this will end up getting passed to the
@@ -212,7 +212,7 @@ Ember.Handlebars.registerHelper('collection', function(path, options) {
   }
   if (emptyViewClass) { hash.emptyView = emptyViewClass; }
 
-  if(!hash.keyword){
+  if (!hash.keyword) {
     itemHash._context = Ember.computed.alias('content');
   }
 

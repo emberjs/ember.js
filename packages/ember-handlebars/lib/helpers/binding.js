@@ -13,7 +13,7 @@ var forEach = Ember.ArrayPolyfills.forEach;
 
 var EmberHandlebars = Ember.Handlebars, helpers = EmberHandlebars.helpers;
 
-function exists(value){
+function exists(value) {
   return !Ember.isNone(value);
 }
 
@@ -363,7 +363,7 @@ EmberHandlebars.registerHelper('unless', function(context, options) {
 
   ```javascript
     AView = Ember.View.extend({
-      someProperty: function(){
+      someProperty: function() {
         return "aValue";
       }.property()
     })

@@ -48,7 +48,7 @@ function click(app, selector, context) {
 
 function keyEvent(app, selector, context, type, keyCode) {
   var $el;
-  if(typeof keyCode === 'undefined'){
+  if (typeof keyCode === 'undefined') {
     keyCode = type;
     type = context;
     context = null;
@@ -165,7 +165,7 @@ function chain(app, promise, fn) {
 * Example:
 * 
 * ```
-* visit('posts/index').then(function(){
+* visit('posts/index').then(function() {
 *   // assert something
 * });
 * ```
@@ -183,7 +183,7 @@ helper('visit', visit);
 * Example:
 *
 * ```
-* click('.some-jQuery-selector').then(function(){
+* click('.some-jQuery-selector').then(function() {
 *  // assert something
 * });
 * ```
@@ -200,7 +200,7 @@ helper('click', click);
 * Example:
 *
 * ```
-* keyEvent('.some-jQuery-selector', 'keypress', 13).then(function(){
+* keyEvent('.some-jQuery-selector', 'keypress', 13).then(function() {
 *  // assert something
 * });
 * ```
@@ -219,7 +219,7 @@ helper('keyEvent', keyEvent);
 * Example:
 *
 * ```
-* fillIn('#email', 'you@example.com').then(function(){
+* fillIn('#email', 'you@example.com').then(function() {
 *   // assert something
 * });
 * ```

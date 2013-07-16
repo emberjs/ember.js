@@ -239,7 +239,7 @@ var Application = Ember.Application = Ember.Namespace.extend(Ember.DeferredMixin
 
     this.scheduleInitialize();
 
-    if ( Ember.LOG_VERSION ) {
+    if (Ember.LOG_VERSION) {
       Ember.LOG_VERSION = false; // we only need to see this once per Application#init
       Ember.debug('-------------------------------');
       Ember.debug('Ember.VERSION : ' + Ember.VERSION);
@@ -318,7 +318,7 @@ var Application = Ember.Application = Ember.Namespace.extend(Ember.DeferredMixin
     if (!this.$ || this.$.isReady) {
       Ember.run.schedule('actions', self, '_initialize');
     } else {
-      this.$().ready(function(){
+      this.$().ready(function() {
         Ember.run(self, '_initialize');
       });
     }
@@ -407,7 +407,7 @@ var Application = Ember.Application = Ember.Namespace.extend(Ember.DeferredMixin
     @param  property {String}
     @param  injectionName {String}
   **/
-  inject: function(){
+  inject: function() {
     var container = this.__container__;
     container.injection.apply(container, arguments);
   },
@@ -423,7 +423,7 @@ var Application = Ember.Application = Ember.Namespace.extend(Ember.DeferredMixin
 
     @method initialize
    **/
-  initialize: function(){
+  initialize: function() {
     Ember.deprecate('Calling initialize manually is not supported. Please see Ember.Application#advanceReadiness and Ember.Application#deferReadiness');
   },
   /**
@@ -469,7 +469,7 @@ var Application = Ember.Application = Ember.Namespace.extend(Ember.DeferredMixin
 
     var App;
 
-    Ember.run(function(){
+    Ember.run(function() {
       App = Ember.Application.create();
     });
 
@@ -479,11 +479,11 @@ var Application = Ember.Application = Ember.Namespace.extend(Ember.DeferredMixin
       }
     });
 
-    test("first test", function(){
+    test("first test", function() {
       // App is freshly reset
     });
 
-    test("first test", function(){
+    test("first test", function() {
       // App is again freshly reset
     });
     ```
@@ -498,7 +498,7 @@ var Application = Ember.Application = Ember.Namespace.extend(Ember.DeferredMixin
 
     var App;
 
-    Ember.run(function(){
+    Ember.run(function() {
       App = Ember.Application.create();
     });
 
@@ -511,10 +511,10 @@ var Application = Ember.Application = Ember.Namespace.extend(Ember.DeferredMixin
       }
     });
 
-    test("first test", function(){
+    test("first test", function() {
       ok(true, 'something before app is initialized');
 
-      Ember.run(function(){
+      Ember.run(function() {
         App.advanceReadiness();
       });
       ok(true, 'something after app is initialized');
@@ -534,7 +534,7 @@ var Application = Ember.Application = Ember.Namespace.extend(Ember.DeferredMixin
 
       this.buildContainer();
 
-      Ember.run.schedule('actions', this, function(){
+      Ember.run.schedule('actions', this, function() {
         this._initialize();
       });
     }

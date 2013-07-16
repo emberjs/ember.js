@@ -145,12 +145,12 @@ test("toArray - returns copy of arrangedContent", function() {
 });
 
 test("unshiftObject - adds to start of content", function() {
-  Ember.run(function(){ array.unshiftObject(6); });
+  Ember.run(function() { array.unshiftObject(6); });
   deepEqual(array.get('content'), [6,1,2,4,5], 'adds to start of content');
 });
 
 test("unshiftObjects - adds to start of content", function() {
-  Ember.run(function(){ array.unshiftObjects([6,7]); });
+  Ember.run(function() { array.unshiftObjects([6,7]); });
   deepEqual(array.get('content'), [6,7,1,2,4,5], 'adds to start of content');
 });
 

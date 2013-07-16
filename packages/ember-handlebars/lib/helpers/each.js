@@ -288,7 +288,7 @@ GroupedEach.prototype = {
 
   ```javascript
   App.DeveloperController = Ember.ObjectController.extend({
-    isAvailableForHire: function(){
+    isAvailableForHire: function() {
       return !this.get('content.isEmployed') && this.get('content.isSeekingWork');
     }.property('isEmployed', 'isSeekingWork')
   })

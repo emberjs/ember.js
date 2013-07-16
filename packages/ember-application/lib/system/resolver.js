@@ -202,7 +202,7 @@ Ember.DefaultResolver = Ember.Object.extend({
     @protected
     @method resolveModel
   */
-  resolveModel: function(parsedName){
+  resolveModel: function(parsedName) {
     var className = classify(parsedName.name),
         factory = get(parsedName.root, className);
 

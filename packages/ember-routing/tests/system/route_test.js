@@ -10,7 +10,7 @@ module("Ember.Route", {
   }
 });
 
-test("default model utilizes the container to acquire the model factory", function(){
+test("default model utilizes the container to acquire the model factory", function() {
   var container, Post, post;
 
   expect(2);

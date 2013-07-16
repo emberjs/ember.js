@@ -575,7 +575,7 @@ Alias.prototype = new Ember.Descriptor();
   App.PaintSample = Ember.Object.extend({
     color: 'red',
     colour: Ember.alias('color'),
-    name: function(){
+    name: function() {
       return "Zed";
     },
     moniker: Ember.alias("name")
@@ -603,7 +603,7 @@ Ember.alias = Ember.deprecateFunc("Ember.alias is deprecated. Please use Ember.a
 
   ```javascript
   App.Person = Ember.Object.extend({
-    name: function(){
+    name: function() {
       return 'Tomhuda Katzdale';
     },
     moniker: Ember.aliasMethod('name')
@@ -672,7 +672,7 @@ Ember.immediateObserver = function() {
     }.observesBefore('content.value'),
     valueDidChange: function(obj, keyName, value) {
         // only run if updating a value already in the DOM
-        if(this.get('state') === 'inDOM') {
+        if (this.get('state') === 'inDOM') {
             var color = value > this.changingFrom ? 'green' : 'red';
             // logic
         }

@@ -132,7 +132,7 @@ Ember.Handlebars.registerHelper('helperMissing', function(path, options) {
   var error, view = "";
 
   error = "%@ Handlebars error: Could not find property '%@' on object %@.";
-  if (options.data){
+  if (options.data) {
     view = options.data.view;
   }
   throw new Ember.Error(Ember.String.fmt(error, [view, path, this]));
@@ -169,7 +169,7 @@ Ember.Handlebars.registerHelper('helperMissing', function(path, options) {
   Ember.Handlebars.registerBoundHelper('repeat', function(value, options) {
     var count = options.hash.count;
     var a = [];
-    while(a.length < count){
+    while(a.length < count) {
         a.push(value);
     }
     return a.join('');
@@ -419,7 +419,7 @@ function evaluateUnboundHelper(context, fn, normalizedProperties, options) {
   @for Ember.Handlebars
   @param {String} template spec
 */
-Ember.Handlebars.template = function(spec){
+Ember.Handlebars.template = function(spec) {
   var t = Handlebars.template(spec);
   t.isTop = true;
   return t;

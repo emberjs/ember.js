@@ -8,7 +8,7 @@ var view;
 
 module("Handlebars {{#if}} and {{#unless}} helpers", {
   teardown: function() {
-    Ember.run(function(){
+    Ember.run(function() {
       if (view) {
         view.destroy();
       }

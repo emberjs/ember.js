@@ -12,7 +12,7 @@ module("Support for {{yield}} helper (#307)", {
     container.optionsForType('template', { instantiate: false });
   },
   teardown: function() {
-    Ember.run(function(){
+    Ember.run(function() {
       if (view) {
         view.destroy();
       }}

@@ -38,7 +38,7 @@ test('Ember.run.join returns undefined if joining another run-loop', function() 
   var value = 'returned value',
   result;
 
-  Ember.run(function(){
+  Ember.run(function() {
     var result = Ember.run.join(function() {
       return value;
     });

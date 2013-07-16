@@ -22,7 +22,7 @@ module("Ember.tryFinally", {
   }
 });
 
-function callTryCatchFinallyWithError(){
+function callTryCatchFinallyWithError() {
   var errorWasThrown;
   try {
     Ember.tryCatchFinally(tryable, catchable, finalizer);

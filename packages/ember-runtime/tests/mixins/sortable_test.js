@@ -238,14 +238,14 @@ module("Ember.Sortable with sortFunction and sortProperties", {
     Ember.run(function() {
       sortedArrayController = Ember.ArrayController.create({
         sortProperties: ['name'],
-        sortFunction: function(v, w){
+        sortFunction: function(v, w) {
             var lowerV = v.toLowerCase(),
                 lowerW = w.toLowerCase();
 
-            if(lowerV < lowerW){
+            if (lowerV < lowerW) {
               return -1;
             }
-            if(lowerV > lowerW){
+            if (lowerV > lowerW) {
               return 1;
             }
             return 0;

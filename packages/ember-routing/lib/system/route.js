@@ -513,7 +513,7 @@ Ember.Route = Ember.Object.extend({
 
     @method setupController
   */
-  setupController: function(controller, context){
+  setupController: function(controller, context) {
     if (controller && (context !== undefined)) {
       set(controller, 'model', context);
     }

@@ -145,7 +145,7 @@ test("bindings should be synced when are updated in the willDestroy hook", funct
     bar: bar
   });
 
-  Ember.run(function(){
+  Ember.run(function() {
     Ember.bind(foo, 'value', 'bar.value');
   });
 

@@ -15,7 +15,7 @@ var changeProperties = Ember.changeProperties,
   @return self
 */
 Ember.setProperties = function(self, hash) {
-  changeProperties(function(){
+  changeProperties(function() {
     for(var prop in hash) {
       if (hash.hasOwnProperty(prop)) { set(self, prop, hash[prop]); }
     }

@@ -7,7 +7,7 @@ define("metamorph",
     // Copyright: ©2011 My Company Inc. All rights reserved.
     // ==========================================================================
 
-    var K = function(){},
+    var K = function() {},
         guid = 0,
         document = this.document,
 
@@ -17,7 +17,7 @@ define("metamorph",
         // Internet Explorer prior to 9 does not allow setting innerHTML if the first element
         // is a "zero-scope" element. This problem can be worked around by making
         // the first node an invisible text node. We, like Modernizr, use &shy;
-        needsShy = document && (function(){
+        needsShy = document && (function() {
           var testEl = document.createElement('div');
           testEl.innerHTML = "<div></div>";
           testEl.firstChild.innerHTML = "<script></script>";

@@ -12,7 +12,7 @@ var appendView = function(view) {
 };
 
 var destroyView = function(view) {
-  Ember.run(function(){
+  Ember.run(function() {
     view.destroy();
   });
 };

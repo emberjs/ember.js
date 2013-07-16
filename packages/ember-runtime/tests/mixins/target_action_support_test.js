@@ -72,7 +72,7 @@ test("it should find targets specified using a property path", function() {
   ok(true === myObj.triggerAction(), "a valid target and action were specified");
 });
 
-test("it should use an actionContext object specified as a property on the object", function(){
+test("it should use an actionContext object specified as a property on the object", function() {
   expect(2);
   var obj = Ember.Object.createWithMixins(Ember.TargetActionSupport,{
         action: 'anEvent',
@@ -86,7 +86,7 @@ test("it should use an actionContext object specified as a property on the objec
   ok(true === obj.triggerAction(), "a valid target and action were specified");
 });
 
-test("it should find an actionContext specified as a property path", function(){
+test("it should find an actionContext specified as a property path", function() {
   expect(2);
 
   var Test = {};
@@ -105,7 +105,7 @@ test("it should find an actionContext specified as a property path", function(){
   ok(true === obj.triggerAction(), "a valid target and action were specified");
 });
 
-test("it should use the target specified in the argument", function(){
+test("it should use the target specified in the argument", function() {
   expect(2);
   var targetObj = Ember.Object.create({
         anEvent: function() {
@@ -118,7 +118,7 @@ test("it should use the target specified in the argument", function(){
   ok(true === obj.triggerAction({target: targetObj}), "a valid target and action were specified");
 });
 
-test("it should use the action specified in the argument", function(){
+test("it should use the action specified in the argument", function() {
   expect(2);
 
   var obj = Ember.Object.createWithMixins(Ember.TargetActionSupport,{
@@ -131,7 +131,7 @@ test("it should use the action specified in the argument", function(){
   ok(true === obj.triggerAction({action: 'anEvent'}), "a valid target and action were specified");
 });
 
-test("it should use the actionContext specified in the argument", function(){
+test("it should use the actionContext specified in the argument", function() {
   expect(2);
   var context = {},
       obj = Ember.Object.createWithMixins(Ember.TargetActionSupport,{

@@ -15,7 +15,7 @@ module("Ember.View#$", {
   },
 
   teardown: function() {
-    Ember.run(function(){
+    Ember.run(function() {
       view.destroy();
     });
   }

@@ -10,12 +10,12 @@ module("Ember.Location, hash implementation", {
     // make sure the onhashchange event fires
     stop();
     // There are weird issues in FF 3.6 if we pass start itself as the parameter
-    setTimeout(function(){ start(); }, 1);
+    setTimeout(function() { start(); }, 1);
   },
 
   teardown: function() {
     window.location.hash = "";
-    Ember.run(function(){
+    Ember.run(function() {
       locationObject.destroy();
     });
   }

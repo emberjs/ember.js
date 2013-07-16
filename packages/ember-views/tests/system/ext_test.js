@@ -7,7 +7,7 @@ test("View hierarchy is done rendering to DOM when functions queued in afterRend
     render: function(buffer) {
       buffer.push('child');
     },
-    didInsertElement: function(){
+    didInsertElement: function() {
       this.$().addClass('extra-class');
     }
   });
@@ -19,7 +19,7 @@ test("View hierarchy is done rendering to DOM when functions queued in afterRend
     },
     didInsertElement: function() {
       lookup1 = this.$('.extra-class');
-      Ember.run.scheduleOnce('afterRender', this, function(){
+      Ember.run.scheduleOnce('afterRender', this, function() {
         lookup2 = this.$('.extra-class');
       });
     }
@@ -32,7 +32,7 @@ test("View hierarchy is done rendering to DOM when functions queued in afterRend
   equal(lookup1.length, 0, "doesn't not find child in DOM on didInsertElement");
   equal(lookup2.length, 1, "finds child in DOM afterRender");
 
-  Ember.run(function(){
+  Ember.run(function() {
     parentView.destroy();
   });
 });

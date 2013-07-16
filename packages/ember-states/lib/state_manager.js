@@ -285,7 +285,7 @@ var sendEvent = function(eventName, sendRecursiveArguments, isUnhandledPass) {
 
   ```javascript
   managerC = Ember.StateManager.create({
-    initialState: function(){
+    initialState: function() {
       if (someLogic) {
         return 'active';
       } else {
@@ -328,12 +328,12 @@ var sendEvent = function(eventName, sendRecursiveArguments, isUnhandledPass) {
   robotManager = Ember.StateManager.create({
     initialState: 'poweredDown',
     poweredDown: Ember.State.create({
-      exit: function(stateManager){
+      exit: function(stateManager) {
         console.log("exiting the poweredDown state")
       }
     }),
     poweredUp: Ember.State.create({
-      enter: function(stateManager){
+      enter: function(stateManager) {
         console.log("entering the poweredUp state. Destroy all humans.")
       }
     })
@@ -356,12 +356,12 @@ var sendEvent = function(eventName, sendRecursiveArguments, isUnhandledPass) {
   robotManager = Ember.StateManager.create({
     initialState: 'poweredDown',
     poweredDown: Ember.State.create({
-      exit: function(stateManager){
+      exit: function(stateManager) {
         console.log("exiting the poweredDown state")
       }
     }),
     poweredUp: Ember.State.create({
-      enter: function(stateManager){
+      enter: function(stateManager) {
         console.log("entering the poweredUp state. Destroy all humans.")
       }
     })
@@ -424,37 +424,37 @@ var sendEvent = function(eventName, sendRecursiveArguments, isUnhandledPass) {
   robotManager = Ember.StateManager.create({
     initialState: 'poweredDown',
     poweredDown: Ember.State.create({
-      enter: function(){},
-      exit: function(){
+      enter: function() {},
+      exit: function() {
         console.log("exited poweredDown state")
       },
       charging: Ember.State.create({
-        enter: function(){},
-        exit: function(){}
+        enter: function() {},
+        exit: function() {}
       }),
       charged: Ember.State.create({
-        enter: function(){
+        enter: function() {
           console.log("entered charged state")
         },
-        exit: function(){
+        exit: function() {
           console.log("exited charged state")
         }
       })
     }),
     poweredUp: Ember.State.create({
-      enter: function(){
+      enter: function() {
         console.log("entered poweredUp state")
       },
-      exit: function(){},
+      exit: function() {},
       mobile: Ember.State.create({
-        enter: function(){
+        enter: function() {
           console.log("entered mobile state")
         },
-        exit: function(){}
+        exit: function() {}
       }),
       stationary: Ember.State.create({
-        enter: function(){},
-        exit: function(){}
+        enter: function() {},
+        exit: function() {}
       })
     })
   })
@@ -502,7 +502,7 @@ var sendEvent = function(eventName, sendRecursiveArguments, isUnhandledPass) {
     initialState: 'stateOne.substateOne.subsubstateOne',
     stateOne: Ember.State.create({
       substateOne: Ember.State.create({
-        anAction: function(manager, context){
+        anAction: function(manager, context) {
           console.log("an action was called")
         },
         subsubstateOne: Ember.State.create({})
@@ -565,7 +565,7 @@ var sendEvent = function(eventName, sendRecursiveArguments, isUnhandledPass) {
       })
     }),
     stateTwo: Ember.State.create({
-      anAction: function(manager, context){
+      anAction: function(manager, context) {
         // will not be called below because it is
         // not a parent of the current state
       }
@@ -586,18 +586,18 @@ var sendEvent = function(eventName, sendRecursiveArguments, isUnhandledPass) {
     initialState: 'poweredDown.charging',
     poweredDown: Ember.State.create({
       charging: Ember.State.create({
-        chargeComplete: function(manager, context){
+        chargeComplete: function(manager, context) {
           manager.transitionTo('charged')
         }
       }),
       charged: Ember.State.create({
-        boot: function(manager, context){
+        boot: function(manager, context) {
           manager.transitionTo('poweredUp')
         }
       })
     }),
     poweredUp: Ember.State.create({
-      beginExtermination: function(manager, context){
+      beginExtermination: function(manager, context) {
         manager.transitionTo('rampaging')
       },
       rampaging: Ember.State.create()
@@ -636,7 +636,7 @@ var sendEvent = function(eventName, sendRecursiveArguments, isUnhandledPass) {
 
   bManager = Ember.StateManager.create({
     stateOne: Ember.State.create({
-      changeToStateTwo: function(manager, context){
+      changeToStateTwo: function(manager, context) {
         manager.transitionTo('stateTwo', context)
       }
     }),

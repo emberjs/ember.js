@@ -55,33 +55,33 @@ Ember.EnumerableTests.extend({
 
 }).run();
 
-test("should apply Ember.Array to return value of map", function(){
+test("should apply Ember.Array to return value of map", function() {
   var x = Ember.Object.createWithMixins(Ember.Enumerable);
   var y = x.map(Ember.K);
   equal(Ember.Array.detect(y), true, "should have mixin applied");
 });
 
-test("should apply Ember.Array to return value of filter", function(){
+test("should apply Ember.Array to return value of filter", function() {
   var x = Ember.Object.createWithMixins(Ember.Enumerable);
   var y = x.filter(Ember.K);
   equal(Ember.Array.detect(y), true, "should have mixin applied");
 });
 
-test("should apply Ember.Array to return value of invoke", function(){
+test("should apply Ember.Array to return value of invoke", function() {
   var x = Ember.Object.createWithMixins(Ember.Enumerable);
   var y = x.invoke(Ember.K);
   equal(Ember.Array.detect(y), true, "should have mixin applied");
 });
 
-test("should apply Ember.Array to return value of toArray", function(){
+test("should apply Ember.Array to return value of toArray", function() {
   var x = Ember.Object.createWithMixins(Ember.Enumerable);
   var y = x.toArray(Ember.K);
   equal(Ember.Array.detect(y), true, "should have mixin applied");
 });
 
-test("should apply Ember.Array to return value of without", function(){
+test("should apply Ember.Array to return value of without", function() {
   var x = Ember.Object.createWithMixins(Ember.Enumerable, {
-    contains: function(){
+    contains: function() {
       return true;
     }
   });
@@ -89,7 +89,7 @@ test("should apply Ember.Array to return value of without", function(){
   equal(Ember.Array.detect(y), true, "should have mixin applied");
 });
 
-test("should apply Ember.Array to return value of uniq", function(){
+test("should apply Ember.Array to return value of uniq", function() {
   var x = Ember.Object.createWithMixins(Ember.Enumerable);
   var y = x.uniq(Ember.K);
   equal(Ember.Array.detect(y), true, "should have mixin applied");

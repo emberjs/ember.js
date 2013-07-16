@@ -11,7 +11,7 @@ var objectCreate = Object.create || function(parent) {
 };
 
 var Handlebars = this.Handlebars || (Ember.imports && Ember.imports.Handlebars);
-if(!Handlebars && typeof require === 'function') {
+if (!Handlebars && typeof require === 'function') {
   Handlebars = require('handlebars');
 }
 
@@ -208,7 +208,7 @@ Ember.Handlebars.Compiler.prototype.mustache = function(mustache) {
     // Update the mustache node to include a hash value indicating whether the original node
     // was escaped. This will allow us to properly escape values when the underlying value
     // changes and we need to re-render the value.
-    if(!mustache.escaped) {
+    if (!mustache.escaped) {
       mustache.hash = mustache.hash || new Handlebars.AST.HashNode([]);
       mustache.hash.pairs.push(["unescaped", new Handlebars.AST.StringNode("true")]);
     }

@@ -12,7 +12,7 @@ var registerRepeatHelper = function() {
   Ember.Handlebars.helper('repeat', function(value, options) {
     var count = options.hash.count;
     var a = [];
-    while(a.length < count){
+    while(a.length < count) {
         a.push(value);
     }
     return a.join('');
@@ -24,7 +24,7 @@ module("Handlebars bound helpers", {
     window.TemplateTests = Ember.Namespace.create();
   },
   teardown: function() {
-    Ember.run(function(){
+    Ember.run(function() {
       if (view) {
         view.destroy();
       }

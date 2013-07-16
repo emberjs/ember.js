@@ -9,7 +9,7 @@ module("views/view/view_lifecycle_test - pre-render", {
 
   teardown: function() {
     if (view) {
-      Ember.run(function(){
+      Ember.run(function() {
         view.destroy();
       });
     }
@@ -92,7 +92,7 @@ module("views/view/view_lifecycle_test - in render", {
 
   teardown: function() {
     if (view) {
-      Ember.run(function(){
+      Ember.run(function() {
         view.destroy();
       });
     }
@@ -154,7 +154,7 @@ test("rerender should throw inside a template", function() {
 module("views/view/view_lifecycle_test - in DOM", {
   teardown: function() {
     if (view) {
-      Ember.run(function(){
+      Ember.run(function() {
         view.destroy();
       });
     }

@@ -124,7 +124,7 @@ test("The {{linkTo}} helper supports URL replacement", function() {
   equal(replaceCount, 1, 'replaceURL should be called once');
 });
 
-test("the {{linkTo}} helper doesn't add an href when the tagName isn't 'a'", function(){
+test("the {{linkTo}} helper doesn't add an href when the tagName isn't 'a'", function() {
   Ember.TEMPLATES.index = Ember.Handlebars.compile("{{#linkTo 'about' id='about-link' tagName='div'}}About{{/linkTo}}");
 
   Router.map(function() {

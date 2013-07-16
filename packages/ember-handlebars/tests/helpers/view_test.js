@@ -1,10 +1,10 @@
 var view, originalLookup;
 
 var container = {
-  lookupFactory: function(){ }
+  lookupFactory: function() { }
 };
 
-function viewClass(options){
+function viewClass(options) {
   options.container = options.container || container;
   return Ember.View.extend(options);
 }
@@ -22,7 +22,7 @@ module("Handlebars {{#view}} helper", {
 });
 
 
-test("View lookup - App.FuView", function(){
+test("View lookup - App.FuView", function() {
   Ember.lookup = {
     App: {
       FuView: viewClass({
@@ -41,7 +41,7 @@ test("View lookup - App.FuView", function(){
   equal(Ember.$('#fu').text(), 'bro');
 });
 
-test("View lookup - 'App.FuView'", function(){
+test("View lookup - 'App.FuView'", function() {
   Ember.lookup = {
     App: {
       FuView: viewClass({
@@ -60,7 +60,7 @@ test("View lookup - 'App.FuView'", function(){
   equal(Ember.$('#fu').text(), 'bro');
 });
 
-test("View lookup - 'fu'", function(){
+test("View lookup - 'fu'", function() {
   var FuView = viewClass({
     elementId: "fu",
     template: Ember.Handlebars.compile("bro")

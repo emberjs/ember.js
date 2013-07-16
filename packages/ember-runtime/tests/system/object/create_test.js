@@ -68,13 +68,13 @@ test("calls setUnknownProperty if defined", function() {
 test("throws if you try to define a computed property", function() {
   expectAssertion(function() {
     Ember.Object.create({
-      foo: Ember.computed(function(){})
+      foo: Ember.computed(function() {})
     });
   }, 'Ember.Object.create no longer supports defining computed properties.');
 });
 
 test("throws if you try to call _super in a method", function() {
-  expectAssertion(function(){
+  expectAssertion(function() {
      Ember.Object.create({
       foo: function() {
         this._super();
@@ -83,14 +83,14 @@ test("throws if you try to call _super in a method", function() {
   }, 'Ember.Object.create no longer supports defining methods that call _super.');
 });
 
-test("throws if you try to 'mixin' a definition", function(){
+test("throws if you try to 'mixin' a definition", function() {
   var myMixin = Ember.Mixin.create({
-    adder: function(arg1, arg2){
+    adder: function(arg1, arg2) {
       return arg1 + arg2;
     }
   });
 
-  expectAssertion(function(){
+  expectAssertion(function() {
     var o = Ember.Object.create(myMixin);
   }, "Ember.Object.create no longer supports mixing in other definitions, use createWithMixins instead.");
 });

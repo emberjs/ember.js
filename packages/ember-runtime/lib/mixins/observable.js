@@ -269,7 +269,7 @@ Ember.Observable = Ember.Mixin.create(/** @scope Ember.Observable.prototype */ {
     @param {String} keyName The property key that is about to change.
     @return {Ember.Observable}
   */
-  propertyWillChange: function(keyName){
+  propertyWillChange: function(keyName) {
     Ember.propertyWillChange(this, keyName);
     return this;
   },

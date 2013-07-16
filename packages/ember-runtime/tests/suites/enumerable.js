@@ -209,7 +209,7 @@ var EnumerableTests = Ember.Object.extend({
 
     @returns {void}
   */
-  mutate: function(){},
+  mutate: function() {},
 
   /**
     Becomes true when you define a new mutate() method, indicating that

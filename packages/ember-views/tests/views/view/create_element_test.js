@@ -13,7 +13,7 @@ test("returns the receiver", function() {
 
   view = Ember.View.create();
 
-  Ember.run(function(){
+  Ember.run(function() {
     ret = view.createElement();
   });
 
@@ -30,7 +30,7 @@ test("calls render and turns resultant string into element", function() {
   });
 
   equal(get(view, 'element'), null, 'precondition - has no element');
-  Ember.run(function(){
+  Ember.run(function() {
     view.createElement();
   });
 
@@ -46,7 +46,7 @@ test("generated element include HTML from child views as well", function() {
     childViews: [ Ember.View.create({ elementId: "foo" })]
   });
 
-  Ember.run(function(){
+  Ember.run(function() {
     view.createElement();
   });
 

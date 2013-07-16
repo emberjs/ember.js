@@ -92,7 +92,7 @@ Ember.Instrumentation.instrument = function(name, payload, callback, binding) {
 
   var beforeValues = [], listener, i, l;
 
-  function tryable(){
+  function tryable() {
     for (i=0, l=listeners.length; i<l; i++) {
       listener = listeners[i];
       beforeValues[i] = listener.before(name, time(), payload);
@@ -101,7 +101,7 @@ Ember.Instrumentation.instrument = function(name, payload, callback, binding) {
     return callback.call(binding);
   }
 
-  function catchable(e){
+  function catchable(e) {
     payload = payload || {};
     payload.exception = e;
   }

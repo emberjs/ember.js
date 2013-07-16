@@ -23,7 +23,7 @@ module("Handlebars {{#with}} helper", {
   },
 
   teardown: function() {
-    Ember.run(function(){
+    Ember.run(function() {
       view.destroy();
     });
     Ember.lookup = originalLookup;
@@ -73,7 +73,7 @@ module("Handlebars {{#with}} globals helper", {
   },
 
   teardown: function() {
-    Ember.run(function(){
+    Ember.run(function() {
       view.destroy();
     });
     Ember.lookup = originalLookup;
