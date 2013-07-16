@@ -1712,7 +1712,7 @@ Ember.View = Ember.CoreView.extend(
 
     @event willDestroyElement
   */
-  willDestroyElement: function() {},
+  willDestroyElement: Ember.K,
 
   /**
     @private
