@@ -140,6 +140,29 @@ test("should become disabled if the disabled attribute is changed", function() {
   ok(checkboxView.$().is(":not(:disabled)"));
 });
 
+test("should begin indeterminate if the indeterminate attribute is true", function() {
+  checkboxView = Ember.Checkbox.create({});
+
+  checkboxView.set('indeterminate', true);
+  append();
+
+  equal(checkboxView.$().prop('indeterminate'), true, "Checkbox should be indeterminate");
+});
+
+test("should become indeterminate if the indeterminate attribute is changed", function() {
+  checkboxView = Ember.Checkbox.create({});
+
+  append();
+
+  equal(checkboxView.$().prop('indeterminate'), false, "Checkbox should not be indeterminate");
+
+  Ember.run(function() { checkboxView.set('indeterminate', true); });
+  equal(checkboxView.$().prop('indeterminate'), true, "Checkbox should be indeterminate");
+
+  Ember.run(function() { checkboxView.set('indeterminate', false); });
+  equal(checkboxView.$().prop('indeterminate'), false, "Checkbox should not be indeterminate");
+});
+
 test("should support the tabindex property", function() {
   checkboxView = Ember.Checkbox.create({});
 
