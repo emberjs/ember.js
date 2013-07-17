@@ -213,7 +213,7 @@ Ember.Handlebars.registerHelper('helperMissing', function(path, options) {
 
   ```javascript
   Ember.Handlebars.registerBoundHelper('concatenate', function() {
-    var values = arguments[arguments.length - 1];
+    var values = Array.prototype.slice.call(arguments, 0, -1);
     return values.join('||');
   });
   ```
