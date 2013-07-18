@@ -303,7 +303,7 @@ ComputedPropertyPrototype.set = function(obj, keyName, value) {
       oldSuspended = this._suspended,
       hadCachedValue = false,
       cache = meta.cache,
-      cachedValue, ret;
+      funcArgLength, cachedValue, ret;
 
   if (this._readOnly) {
     throw new Error('Cannot Set: ' + keyName + ' on: ' + obj.toString() );
@@ -318,17 +318,18 @@ ComputedPropertyPrototype.set = function(obj, keyName, value) {
       hadCachedValue = true;
     }
 
-    // Check if the CP has been wrapped
-    if (func.wrappedFunction) { func = func.wrappedFunction; }
+    // Check if the CP has been wrapped. If if has, use the
+    // length from the wrapped function.
+    funcArgLength = (func.wrappedFunction ? func.wrappedFunction.length : func.length);
 
     // For backwards-compatibility with computed properties
     // that check for arguments.length === 2 to determine if
     // they are being get or set, only pass the old cached
     // value if the computed property opts into a third
     // argument.
-    if (func.length === 3) {
+    if (funcArgLength === 3) {
       ret = func.call(obj, keyName, value, cachedValue);
-    } else if (func.length === 2) {
+    } else if (funcArgLength === 2) {
       ret = func.call(obj, keyName, value);
     } else {
       Ember.defineProperty(obj, keyName, null, cachedValue);
