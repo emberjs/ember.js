@@ -1,7 +1,7 @@
 var RSVP = requireModule("rsvp");
 
-RSVP.configure('async', function(callback, binding) {
-  Ember.run.schedule('actions', binding, callback);
+RSVP.configure('async', function(callback, promise) {
+  Ember.run.schedule('actions', promise, callback, promise);
 });
 
 /**
