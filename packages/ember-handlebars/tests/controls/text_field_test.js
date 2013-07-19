@@ -144,6 +144,27 @@ test("input tabindex is updated when setting tabindex property of view", functio
   equal(textField.$('input').attr('tabindex'), "5", "renders text field with the tabindex");
 });
 
+module("{{input}} - default type", {
+  setup: function() {
+    controller = {};
+
+    textField = Ember.View.extend({
+      controller: controller,
+      template: compile('{{input}}')
+    }).create();
+
+    append();
+  },
+
+  teardown: function() {
+    destroy(textField);
+  }
+});
+
+test("should have the default type", function() {
+  equal(textField.$('input').attr('type'), 'text', "Has a default text type");
+});
+
 module("Ember.TextField", {
   setup: function() {
     TestObject = Ember.Object.create({
