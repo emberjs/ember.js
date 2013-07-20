@@ -21,3 +21,10 @@ test("'%@08 %@07 %@06 %@05 %@04 %@03 %@02 %@01'.fmt('One', 'Two', 'Three', 'Four
     equal('%@08 %@07 %@06 %@05 %@04 %@03 %@02 %@01'.fmt('One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight'), 'Eight Seven Six Five Four Three Two One');
   }
 });
+
+test("'data: %@'.fmt({id: 3}) => 'data: {id: 3}'", function() {
+  equal(Ember.String.fmt('data: %@', [{id: 3}]), 'data: {id: 3}');
+  if (Ember.EXTEND_PROTOTYPES) {
+    equal('data: %@'.fmt({id: 3}), 'data: {id: 3}');
+  }
+});

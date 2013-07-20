@@ -58,7 +58,7 @@ Ember.String = {
     return str.replace(/%@([0-9]+)?/g, function(s, argIndex) {
       argIndex = (argIndex) ? parseInt(argIndex, 10) - 1 : idx++;
       s = formats[argIndex];
-      return ((s === null) ? '(null)' : (s === undefined) ? '' : s).toString();
+      return (s === null) ? '(null)' : (s === undefined) ? '' : Ember.inspect(s);
     }) ;
   },
 
