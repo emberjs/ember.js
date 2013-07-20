@@ -33,8 +33,5 @@ test("object", function() {
 });
 
 test("array", function() {
-  // this could be better, but let's not let this method get
-  // out of control unless we want to go all the way, a la
-  // JSDump
-  equal(inspect([1,2,3]), "{0: 1, 1: 2, 2: 3}");
+  equal(inspect([1,2,3]), "[1,2,3]");
 });

@@ -197,6 +197,9 @@ Ember.copy = function(obj, deep) {
   @return {String} A description of the object
 */
 Ember.inspect = function(obj) {
+  if (Ember.typeOf(obj) === 'array') {
+    return '[' + obj + ']';
+  }
   if (typeof obj !== 'object' || obj === null) {
     return obj + '';
   }
