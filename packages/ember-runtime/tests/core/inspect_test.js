@@ -35,3 +35,15 @@ test("object", function() {
 test("array", function() {
   equal(inspect([1,2,3]), "[1,2,3]");
 });
+
+test("regexp", function() {
+  equal(inspect(/regexp/), "/regexp/");
+});
+
+test("date", function() {
+  equal(inspect(new Date("Sat Apr 30 2011 13:24:11")).substring(0, 24), "Sat Apr 30 2011 13:24:11"); // Ignore assertion about timezone.
+});
+
+test("error", function() {
+  equal(inspect(new Error("Oops")), "Error: Oops");
+});
