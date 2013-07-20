@@ -33,8 +33,17 @@ test("object", function() {
 });
 
 test("array", function() {
-  // this could be better, but let's not let this method get
-  // out of control unless we want to go all the way, a la
-  // JSDump
-  equal(inspect([1,2,3]), "{0: 1, 1: 2, 2: 3}");
+  equal(inspect([1,2,3]), "[1,2,3]");
+});
+
+test("regexp", function() {
+  equal(inspect(/regexp/), "/regexp/");
+});
+
+test("date", function() {
+  equal(inspect(new Date("Sat Apr 30 2011 13:24:11")).substring(0, 24), "Sat Apr 30 2011 13:24:11"); // Ignore assertion about timezone.
+});
+
+test("error", function() {
+  equal(inspect(new Error("Oops")), "Error: Oops");
 });
