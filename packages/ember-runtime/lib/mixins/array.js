@@ -196,7 +196,7 @@ Ember.Array = Ember.Mixin.create(Ember.Enumerable, /** @scope Ember.Array.protot
     if (startAt < 0) startAt += len;
 
     for(idx=startAt;idx<len;idx++) {
-      if (this.objectAt(idx, true) === object) return idx ;
+      if (this.objectAt(idx) === object) return idx ;
     }
     return -1;
   },
