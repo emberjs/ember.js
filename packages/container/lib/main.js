@@ -319,6 +319,20 @@ define("container",
       },
 
       /**
+        A hook that can be used to describe how the resolver will
+        attempt to find the factory.
+
+        For example, the default Ember `.describe` returns the full
+        class name (including namespace) where Ember's resolver expects
+        to find the `fullName`.
+
+        @method describe
+      */
+      describe: function(fullName) {
+        return fullName;
+      },
+
+      /**
         A hook to enable custom fullName normalization behaviour
 
         @method normalize

@@ -696,6 +696,7 @@ Ember.Application.reopenClass({
     container.set = Ember.set;
     container.normalize = normalize;
     container.resolver = resolverFor(namespace);
+    container.describe = container.resolver.describe;
     container.optionsForType('view', { singleton: false });
     container.optionsForType('template', { instantiate: false });
     container.register('application:main', namespace, { instantiate: false });
@@ -739,9 +740,16 @@ function resolverFor(namespace) {
   var resolver = resolverClass.create({
     namespace: namespace
   });
-  return function(fullName) {
+
+  function resolve(fullName) {
     return resolver.resolve(fullName);
+  }
+
+  resolve.describe = function(fullName) {
+    return resolver.lookupDescription(fullName);
   };
+
+  return resolve;
 }
 
 function normalize(fullName) {

@@ -219,5 +219,18 @@ Ember.DefaultResolver = Ember.Object.extend({
     var className = classify(parsedName.name) + classify(parsedName.type),
         factory = get(parsedName.root, className);
     if (factory) { return factory; }
+  },
+
+  lookupDescription: function(name) {
+    var parsedName = this.parseName(name);
+
+    if (parsedName.type === 'template') {
+      return "template at " + parsedName.fullNameWithoutType.replace(/\./g, '/');
+    }
+
+    var description = parsedName.root + "." + classify(parsedName.name);
+    if (parsedName.type !== 'model') { description += classify(parsedName.type); }
+
+    return description;
   }
 });
