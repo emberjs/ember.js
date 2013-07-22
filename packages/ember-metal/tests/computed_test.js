@@ -961,3 +961,13 @@ testBoth('Ember.computed.oneWay', function(get, set) {
 
   equal(get(obj, 'nickName'), 'TeddyBear');
 });
+
+testBoth('Ember.computed.join', function(get, set) {
+  var obj = { firstName: 'Jean-Luc', lastName: 'Picard' };
+  Ember.defineProperty(obj, 'fullName', Ember.computed.join(' ', 'firstName', 'lastName'));
+  equal(get(obj, 'fullName'), 'Jean-Luc Picard');
+
+  set(obj, 'firstName', 'Locutus');
+  set(obj, 'lastName', 'of Borg');
+  equal(get(obj, 'fullName'), 'Locutus of Borg');
+});

@@ -738,3 +738,25 @@ Ember.computed.defaultTo = function(defaultPath) {
     return newValue != null ? newValue : get(this, defaultPath);
   });
 };
+
+/**
+  @method computed.join
+  @for Ember
+  @param {String} separator
+  @param {String} dependentKey, [dependentKey...]
+  @return {Ember.ComputedProperty} computed property which returns
+  the each dependent property joined by the separator.
+*/
+Ember.computed.join = function(separator) {
+  var properties = a_slice.call(arguments, 1);
+
+  var computed = Ember.computed(function() {
+    var res = [];
+    for (var idx in properties) {
+      res.push(get(this, properties[idx]));
+    }
+    return res.join(separator);
+  });
+
+  return computed.property.apply(computed, properties);
+};
