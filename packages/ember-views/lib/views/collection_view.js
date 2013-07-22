@@ -227,13 +227,17 @@ Ember.CollectionView = Ember.ContainerView.extend(/** @scope Ember.CollectionVie
     var content = get(this, 'content');
 
     if (content) {
-      Ember.assert(fmt("an Ember.CollectionView's content must implement Ember.Array. You passed %@", [content]), Ember.Array.detect(content));
+      this._assertArrayLike(content);
       content.addArrayObserver(this);
     }
 
     var len = content ? get(content, 'length') : 0;
     this.arrayDidChange(content, 0, null, len);
   }, 'content'),
+
+  _assertArrayLike: function(content) {
+    Ember.assert(fmt("an Ember.CollectionView's content must implement Ember.Array. You passed %@", [content]), Ember.Array.detect(content));
+  },
 
   destroy: function() {
     if (!this._super()) { return; }

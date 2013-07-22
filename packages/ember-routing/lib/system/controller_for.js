@@ -21,21 +21,27 @@ Ember.generateController = function(container, controllerName, context) {
   if (context && Ember.isArray(context)) {
     DefaultController = container.resolve('controller:array');
     controller = DefaultController.extend({
+      isGenerated: true,
       content: context
     });
   } else if (context) {
     DefaultController = container.resolve('controller:object');
     controller = DefaultController.extend({
+      isGenerated: true,
       content: context
     });
   } else {
     DefaultController = container.resolve('controller:basic');
-    controller = DefaultController.extend();
+    controller = DefaultController.extend({
+      isGenerated: true
+    });
   }
 
   controller.toString = function() {
     return "(generated " + controllerName + " controller)";
   };
+
+  controller.isGenerated = true;
 
   fullName = 'controller:' + controllerName;
   container.register(fullName, controller);
