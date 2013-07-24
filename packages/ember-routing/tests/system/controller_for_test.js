@@ -66,7 +66,6 @@ test("controllerFor should create Ember.ObjectController", function() {
   var controller = Ember.controllerFor(container, 'home', context);
 
   ok(controller instanceof Ember.ObjectController, 'should create controller');
-  equal(controller.get('content'), context, 'should set content');
 });
 
 test("controllerFor should create Ember.ArrayController", function() {
@@ -74,7 +73,6 @@ test("controllerFor should create Ember.ArrayController", function() {
   var controller = Ember.controllerFor(container, 'home', context);
 
   ok(controller instanceof Ember.ArrayController, 'should create controller');
-  equal(controller.get('content'), context, 'should set content');
 });
 
 test("controllerFor should create App.Controller if provided", function() {
@@ -93,7 +91,6 @@ test("controllerFor should create App.ObjectController if provided", function() 
   controller = Ember.controllerFor(container, 'home', context);
 
   ok(controller instanceof namespace.ObjectController, 'should create controller');
-  equal(controller.get('content'), context, 'should set content');
 
 });
 
@@ -104,6 +101,5 @@ test("controllerFor should create App.ArrayController if provided", function() {
   controller = Ember.controllerFor(container, 'home', context);
 
   ok(controller instanceof namespace.ArrayController, 'should create controller');
-  equal(controller.get('content'), context, 'should set content');
 
 });
