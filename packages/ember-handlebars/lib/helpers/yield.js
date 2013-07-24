@@ -67,5 +67,5 @@ Ember.Handlebars.registerHelper('yield', function(options) {
 
   template = get(view, 'template');
 
-  if (template) { template(this, options); }
+  if (template) { template(view.parentContext(), options); }
 });

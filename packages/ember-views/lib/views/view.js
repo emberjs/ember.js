@@ -960,6 +960,14 @@ Ember.View = Ember.CoreView.extend(
   }).volatile(),
 
   /**
+    The parent context for this template.
+  */
+  parentContext: function() {
+    var parentView = get(this, '_parentView');
+    return parentView && get(parentView, '_context');
+  },
+
+  /**
     @private
 
     Private copy of the view's template context. This can be set directly

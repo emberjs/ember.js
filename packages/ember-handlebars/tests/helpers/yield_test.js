@@ -116,3 +116,20 @@ test("block should not be required", function() {
   equal(view.$('div#container div.yielding').length, 1, 'yielding view is rendered as expected');
 });
 
+test("yield uses the outer context", function() {
+  var component = Ember.Component.extend({
+    boundText: "inner",
+    layout: Ember.Handlebars.compile("<p>{{boundText}}</p><p>{{yield}}</p>")
+  });
+
+  view = Ember.View.create({
+    controller: { boundText: "outer", component: component },
+    template: Ember.Handlebars.compile('{{#view component}}{{boundText}}{{/view}}')
+  });
+
+  Ember.run(function() {
+    view.appendTo('#qunit-fixture');
+  });
+
+  equal(view.$('div p:contains(inner) + p:contains(outer)').length, 1, "Yield points at the right context");
+});

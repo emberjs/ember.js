@@ -1,5 +1,7 @@
 require("ember-views/views/view");
 
+var set = Ember.set;
+
 /**
 @module ember
 @submodule ember-views
@@ -86,7 +88,7 @@ require("ember-views/views/view");
 Ember.Component = Ember.View.extend({
   init: function() {
     this._super();
-    this.set('context', this);
-    this.set('controller', this);
+    set(this, 'context', this);
+    set(this, 'controller', this);
   }
 });
