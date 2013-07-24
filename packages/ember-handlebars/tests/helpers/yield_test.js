@@ -133,3 +133,23 @@ test("yield uses the outer context", function() {
 
   equal(view.$('div p:contains(inner) + p:contains(outer)').length, 1, "Yield points at the right context");
 });
+
+test("yield inside a conditional uses the outer context", function() {
+  var component = Ember.Component.extend({
+    boundText: "inner",
+    truthy: true,
+    obj: {},
+    layout: Ember.Handlebars.compile("<p>{{boundText}}</p><p>{{#if truthy}}{{#with obj}}{{yield}}{{/with}}{{/if}}</p>")
+  });
+
+  view = Ember.View.create({
+    controller: { boundText: "outer", truthy: true, obj: { component: component, truthy: true, boundText: 'insideWith' } },
+    template: Ember.Handlebars.compile('{{#with obj}}{{#if truthy}}{{#view component}}{{#if truthy}}{{boundText}}{{/if}}{{/view}}{{/if}}{{/with}}')
+  });
+
+  Ember.run(function() {
+    view.appendTo('#qunit-fixture');
+  });
+
+  equal(view.$('div p:contains(inner) + p:contains(insideWith)').length, 1, "Yield points at the right context");
+});
