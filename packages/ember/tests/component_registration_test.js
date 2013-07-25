@@ -43,22 +43,22 @@ function boot(callback) {
   });
 }
 
-test("A helper is registered for templates under the controls/ directory", function() {
+test("A helper is registered for templates under the components/ directory", function() {
   boot();
   ok(Ember.Handlebars.helpers['expand-it'], "The helper is registered");
 });
 
-test("The helper becomes the body of the control", function() {
+test("The helper becomes the body of the component", function() {
   boot();
-  equal(Ember.$('div.ember-view > div.ember-view', '#qunit-fixture').text(), "hello world", "The control is composed correctly");
+  equal(Ember.$('div.ember-view > div.ember-view', '#qunit-fixture').text(), "hello world", "The component is composed correctly");
 });
 
-test("If a control is registered, it is used", function() {
+test("If a component is registered, it is used", function() {
   boot(function() {
     container.register('component:expand-it', Ember.Component.extend({
       classNames: 'testing123'
     }));
   });
 
-  equal(Ember.$('div.testing123', '#qunit-fixture').text(), "hello world", "The control is composed correctly");
+  equal(Ember.$('div.testing123', '#qunit-fixture').text(), "hello world", "The component is composed correctly");
 });
