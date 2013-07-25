@@ -69,6 +69,13 @@ test("the return value of slice has Ember.Array applied", function() {
   equal(Ember.Array.detect(y), true, "mixin should be applied");
 });
 
+test("the return value of proxy is an array proxy whose content is the array", function(){
+  var x = Ember.Object.createWithMixins(Ember.Array);
+  var y = x.proxy();
+  ok(y instanceof Ember.ArrayProxy, 'creates ArrayProxy');
+  strictEqual(y.get('content'), x, 'sets content to self');
+});
+
 test("slice supports negative index arguments", function() {
   var testArray = new TestArray([1,2,3,4]);
 

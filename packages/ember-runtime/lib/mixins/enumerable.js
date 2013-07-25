@@ -288,6 +288,27 @@ Ember.Enumerable = Ember.Mixin.create({
     return ret ;
   },
 
+  /** 
+   Returns a new array of `Ember.Object` given an array of non-Ember objects.
+   If an item is already an Ember.Object, it will not be recreated.
+   Similar to enumerable.map(function(item){
+     return Ember.Object.create(item);
+   });
+   @method toEmberObjects
+   @return {Array} Array of `Ember.Object`s
+  */
+  toEmberObjects: function(){
+    var ret = Ember.A();
+    this.forEach(function(x, idx, i){
+      if (x instanceof Ember.Object){
+        ret[idx] = x;
+      } else {
+        ret[idx] = Ember.Object.create(x);
+      }
+    });
+    return ret;
+  },
+
   /**
     Similar to map, this specialized function returns the value of the named
     property on all items in the enumeration.

@@ -61,6 +61,22 @@ test("should apply Ember.Array to return value of map", function() {
   equal(Ember.Array.detect(y), true, "should have mixin applied");
 });
 
+test("wraps each non-ember object in an Ember.Object", function(){
+  function Stub(){}
+  var stub = function(value){
+    return new Stub(value);
+  };
+  var oldCreate = Ember.Object.create;
+  var objects = Ember.A();
+  objects[0] = { foo: 'bar' };
+  objects[1] = Ember.Object.create({baz: 'bar'});
+  Ember.Object.create = stub;
+  var mapped = objects.toEmberObjects();
+  Ember.Object.create = oldCreate;
+  ok(mapped[0] instanceof Stub, 'creates Ember.Object for non-Em Objects');
+  ok(mapped[1] instanceof Ember.Object, 'Does not create new Em.Object for existing Em.Objects');
+});
+
 test("should apply Ember.Array to return value of filter", function() {
   var x = Ember.Object.createWithMixins(Ember.Enumerable);
   var y = x.filter(Ember.K);
