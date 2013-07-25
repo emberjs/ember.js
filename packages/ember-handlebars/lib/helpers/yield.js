@@ -57,7 +57,7 @@ var get = Ember.get, set = Ember.set;
   @return {String} HTML string
 */
 Ember.Handlebars.registerHelper('yield', function(options) {
-  var view = options.data.view, template;
+  var currentView = options.data.view, view = currentView, template;
 
   while (view && !get(view, 'layout')) {
     view = get(view, 'parentView');
@@ -67,5 +67,13 @@ Ember.Handlebars.registerHelper('yield', function(options) {
 
   template = get(view, 'template');
 
-  if (template) { template(view.parentContext(), options); }
+  var keywords = view._parentView.cloneKeywords();
+
+  currentView.appendChild(Ember.View, {
+    tagName: '',
+    template: template,
+    context: get(view._parentView, 'context'),
+    controller: get(view._parentView, 'controller'),
+    templateData: {keywords: keywords}
+  });
 });

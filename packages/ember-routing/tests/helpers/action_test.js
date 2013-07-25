@@ -85,6 +85,41 @@ test("should by default target the view's controller", function() {
   ActionHelper.registerAction = originalRegisterAction;
 });
 
+test("Inside a yield, the target points at the original target", function() {
+  var controller = {}, watted = false;
+
+  var component = Ember.Component.extend({
+    boundText: "inner",
+    truthy: true,
+    obj: {},
+    layout: Ember.Handlebars.compile("<p>{{boundText}}</p><p>{{#if truthy}}{{#with obj}}{{yield}}{{/with}}{{/if}}</p>")
+  });
+
+  view = Ember.View.create({
+    controller: {
+      boundText: "outer",
+      truthy: true,
+      wat: function() {
+        watted = true;
+      },
+      obj: {
+        component: component,
+        truthy: true,
+        boundText: 'insideWith'
+      }
+    },
+    template: Ember.Handlebars.compile('{{#with obj}}{{#if truthy}}{{#view component}}{{#if truthy}}<p {{action "wat"}} class="wat">{{boundText}}</p>{{/if}}{{/view}}{{/if}}{{/with}}')
+  });
+
+  appendView();
+
+  Ember.run(function() {
+    view.$(".wat").click();
+  });
+
+  equal(watted, true, "The action was called on the right context");
+});
+
 test("should target the current controller inside an {{each}} loop", function() {
   var registeredTarget;
 

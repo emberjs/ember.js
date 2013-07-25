@@ -90,5 +90,6 @@ Ember.Component = Ember.View.extend({
     this._super();
     set(this, 'context', this);
     set(this, 'controller', this);
+    set(this, 'templateData', {keywords: {}});
   }
 });
