@@ -551,7 +551,7 @@ test("linkTo with null/undefined dynamic parameters are put in a loading state",
   expect(17);
 
   var oldWarn = Ember.Logger.warn, warnCalled = false;
-  Ember.Logger.warn = function() { warnCalled = true; }; 
+  Ember.Logger.warn = function() { warnCalled = true; };
   Ember.TEMPLATES.index = Ember.Handlebars.compile("{{#linkTo destinationRoute routeContext loadingClass='i-am-loading' id='context-link'}}string{{/linkTo}}{{#linkTo secondRoute loadingClass='i-am-loading' id='static-link'}}string{{/linkTo}}");
 
   Ember.ENV.HELPER_PARAM_LOOKUPS = true;
@@ -573,7 +573,7 @@ test("linkTo with null/undefined dynamic parameters are put in a loading state",
     this.route('thing', { path: '/thing/:thing_id' });
     this.route('about');
   });
-  
+
   bootApplication();
 
   Ember.run(function() {
@@ -663,7 +663,7 @@ test("The {{linkTo}} helper refreshes href element when one of params changes", 
 
   Ember.run(function() { router.handleURL("/"); });
 
-  equal(Ember.$('#post', '#qunit-fixture').attr('href'), '/posts/1', 'precond - Link has rendered href attr properly');
+  equal(normalizeUrl(Ember.$('#post', '#qunit-fixture').attr('href')), '/posts/1', 'precond - Link has rendered href attr properly');
 
   Ember.run(function() { indexController.set('post', secondPost); });
 
@@ -673,4 +673,3 @@ test("The {{linkTo}} helper refreshes href element when one of params changes", 
 
   equal(Ember.$('#post', '#qunit-fixture').attr('href'), '/posts/2', 'href attr does not change when one of the arguments in nullified');
 });
-
