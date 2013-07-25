@@ -41,7 +41,10 @@ test("regexp", function() {
 });
 
 test("date", function() {
-  equal(inspect(new Date("Sat Apr 30 2011 13:24:11")).substring(0, 24), "Sat Apr 30 2011 13:24:11"); // Ignore assertion about timezone.
+  var inspected = inspect(new Date("Sat Apr 30 2011 13:24:11"));
+  ok(inspected.match(/Sat Apr 30/), "The inspected date has its date");
+  ok(inspected.match(/2011/), "The inspected date has its year");
+  ok(inspected.match(/13:24:11/), "The inspected date has its time");
 });
 
 test("error", function() {
