@@ -46,7 +46,3 @@ test("date", function() {
   ok(inspected.match(/2011/), "The inspected date has its year");
   ok(inspected.match(/13:24:11/), "The inspected date has its time");
 });
-
-test("error", function() {
-  equal(inspect(new Error("Oops")), "Error: Oops");
-});
