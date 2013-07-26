@@ -109,6 +109,23 @@ test("should add ember-view to views", function() {
   ok(view.$().hasClass('ember-view'), "the view has ember-view");
 });
 
+test("should allow hX tags as tagName", function() {
+
+  view = Ember.ContainerView.create({
+    childViews: ["child"],
+
+    child: Ember.View.create({
+      tagName: 'h3'
+    })
+  });
+
+  Ember.run(function() {
+    view.createElement();
+  });
+
+  ok(view.$('h3').length, "does not render the h3 tag correctly");
+});
+
 test("should not add role attribute unless one is specified", function() {
   view = Ember.View.create();
 
