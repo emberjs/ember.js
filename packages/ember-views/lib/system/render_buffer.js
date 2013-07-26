@@ -23,8 +23,8 @@ ClassSet.prototype = {
   }
 };
 
-var BAD_TAG_NAME_TEST_REGEXP = /[^a-zA-Z\-]/;
-var BAD_TAG_NAME_REPLACE_REGEXP = /[^a-zA-Z\-]/g;
+var BAD_TAG_NAME_TEST_REGEXP = /[^a-zA-Z0-9\-]/;
+var BAD_TAG_NAME_REPLACE_REGEXP = /[^a-zA-Z0-9\-]/g;
 
 function stripTagName(tagName) {
   if (!tagName) {
