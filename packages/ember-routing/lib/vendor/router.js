@@ -911,8 +911,7 @@ define("router",
           handlerInfo = handlerInfos[index],
           handler = handlerInfo.handler,
           handlerName = handlerInfo.name,
-          seq = transition.sequence,
-          errorAlreadyHandled = false;
+          seq = transition.sequence;
 
       if (index < matchPoint) {
         log(router, seq, handlerName + ": using context from already-active handler");
@@ -925,21 +924,17 @@ define("router",
 
       return RSVP.resolve().then(handleAbort)
                            .then(beforeModel)
-                           .then(null, handleError)
                            .then(handleAbort)
                            .then(model)
-                           .then(null, handleError)
                            .then(handleAbort)
                            .then(afterModel)
-                           .then(null, handleError)
                            .then(handleAbort)
-                           .then(proceed);
+                           .then(proceed)
+                           .then(null, handleError);
 
       function handleAbort(result) {
-
-        if (transition.isAborted) { 
+        if (transition.isAborted) {
           log(transition.router, transition.sequence, "detected abort.");
-          errorAlreadyHandled = true;
           return RSVP.reject(new Router.TransitionAborted());
         }
 
@@ -947,9 +942,13 @@ define("router",
       }
 
       function handleError(reason) {
+        if (reason instanceof Router.TransitionAborted) {
+          // if the transition was aborted and *no additional* error was thrown,
+          // reject with the Router.TransitionAborted instance
+          return RSVP.reject(reason);
+        }
 
-        if (errorAlreadyHandled) { return RSVP.reject(reason); }
-        errorAlreadyHandled = true;
+        // otherwise, we're here because of a different error
         transition.abort();
 
         log(router, seq, handlerName + ": handling error: " + reason);
