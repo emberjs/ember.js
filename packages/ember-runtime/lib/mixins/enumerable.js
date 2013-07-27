@@ -543,7 +543,7 @@ Ember.Enumerable = Ember.Mixin.create({
     @method some
     @param {Function} callback The callback to execute
     @param {Object} [target] The target object to use
-    @return {Array} A filtered array.
+    @return {Boolean} `true` if the passed function returns `true` for any item
   */
   some: function(callback, target) {
     return !!this.find(function(x, idx, i) {
@@ -558,7 +558,7 @@ Ember.Enumerable = Ember.Mixin.create({
     @method someProperty
     @param {String} key the property to test
     @param {String} [value] optional value to test against.
-    @return {Boolean} `true`
+    @return {Boolean} `true` if the passed function returns `true` for any item
   */
   someProperty: function(key, value) {
     return this.some(iter.apply(this, arguments));
