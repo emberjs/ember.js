@@ -507,6 +507,22 @@ test("controller is assignable inside an #each", function() {
   equal(view.$().text(), "AdamSteve");
 });
 
+test("the @index variable can be used inside an #each", function() {
+
+  var controller = Ember.ArrayController.create({
+    content: Ember.A(["foo", "bar", "baz"])
+  });
+
+  var view = Ember.View.create({
+    controller: controller,
+    template: templateFor("{{#each controller}}{{@index}}{{/each}}")
+  });
+
+  append(view);
+
+  equal(view.$().text(), "012");
+});
+
 test("single-arg each defaults to current context", function() {
   view = Ember.View.create({
     context: Ember.A([ { name: "Adam" }, { name: "Steve" } ]),

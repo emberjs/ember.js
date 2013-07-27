@@ -1808,6 +1808,20 @@ test("should work with precompiled templates", function() {
   equal(view.$().text(), "updated", "the precompiled template was updated");
 });
 
+test("should precompile with custom variables", function() {
+  var templateString = Ember.Handlebars.precompile("{{@customVar}}"),
+      compiledTemplate = Ember.Handlebars.template(eval(templateString));
+
+  view = Ember.View.create({
+    value: "rendered",
+    template: compiledTemplate
+  });
+
+  appendView();
+
+  equal(view.$().text(), "rendered", "the precompiled template was rendered");
+});
+
 test("should expose a controller keyword when present on the view", function() {
   var templateString = "{{controller.foo}}{{#view}}{{controller.baz}}{{/view}}";
   view = Ember.View.create({
