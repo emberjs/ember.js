@@ -410,6 +410,7 @@
 
 *Ember 1.0.0-pre.2 (October 25, 2012)*
 
+* Hook to override default toggle visibility in _isVisibleDidChange
 * Ember.SortableMixin: don't remove and reinsert items when their sort order doesn't change.  Fixes #1486.
 * Fix edge cases with adding/removing observers
 * Added 'disabled' attribute binding to Select

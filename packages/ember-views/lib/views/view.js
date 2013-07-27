@@ -2142,18 +2142,37 @@ Ember.View = Ember.CoreView.extend(
     var $el = this.$();
     if (!$el) { return; }
 
+    var self = this;
+
+    this.toggleVisibility(function(){
+      if (self._isAncestorHidden()) { return; }
+
+      self._notifyVisibilityChanged();
+    });
+
+  }, 'isVisible'),
+
+
+  /**
+    Override to provide different toggle visibility behaviour
+   **/
+  toggleVisibility: function(callback){
     var isVisible = get(this, 'isVisible');
 
-    $el.toggle(isVisible);
+    this.$().toggle(isVisible);
 
-    if (this._isAncestorHidden()) { return; }
+    callback();
+  },
+
+  _notifyVisibilityChanged: function(){
+    var isVisible = get(this, 'isVisible');
 
     if (isVisible) {
       this._notifyBecameVisible();
     } else {
       this._notifyBecameHidden();
     }
-  }, 'isVisible'),
+  },
 
   _notifyBecameVisible: function() {
     this.trigger('becameVisible');

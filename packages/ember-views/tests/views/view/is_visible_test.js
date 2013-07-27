@@ -205,3 +205,30 @@ test("if a child view becomes visible while its parent is hidden, if its parent 
   equal(childBecameVisible, 1);
   equal(grandchildBecameVisible, 1);
 });
+
+test("the default toggle visibility can be overriden and notifications delayed until animation has completed", function(){
+  view = View.create({
+    becameHidden: function() { parentBecameHidden++; },
+
+    toggleVisibility: function(callback){
+      this.$().hide('fast', function(){
+        start();
+        callback();
+
+        ok(view.$().is(':hidden'), "view is now hidden");
+        equal(parentBecameHidden, 1);
+      });
+    }
+  });
+
+  Ember.run(function() {
+    view.append();
+  });
+
+  ok(view.$().is(':visible'), "precond - view is visible when appended");
+
+  stop();
+  Ember.run(function(){
+    view.set('isVisible', false);
+  });
+});
