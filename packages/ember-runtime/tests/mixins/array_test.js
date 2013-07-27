@@ -368,6 +368,35 @@ test('adding an object should notify (@each.isDone)', function() {
 
 });
 
+test('using @each to observe arrays that does not return objects raise error', function() {
+
+  var get = Ember.get, set = Ember.set;
+  var called = 0;
+
+  var observerObject = Ember.Object.create({
+    wasCalled: function() {
+      called++;
+    }
+  });
+
+  ary = TestArray.create({
+    objectAt: function(idx) {
+      return get(this._content[idx], 'desc');
+    }
+  });
+
+  Ember.addObserver(ary, '@each.isDone', observerObject, 'wasCalled');
+
+  expectAssertion(function() {
+    ary.addObject(Ember.Object.create({
+      desc: "foo",
+      isDone: false
+    }));
+  }, /When using @each to observe the array/);
+
+  equal(called, 0, 'not calls observer when object is pushed');
+});
+
 test('modifying the array should also indicate the isDone prop itself has changed', function() {
   // NOTE: we never actually get the '@each.isDone' property here.  This is
   // important because it tests the case where we don't have an isDone
