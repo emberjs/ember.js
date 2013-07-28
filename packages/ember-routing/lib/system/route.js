@@ -653,6 +653,8 @@ Ember.Route = Ember.Object.extend({
   render: function(name, options) {
     Ember.assert("The name in the given arguments is undefined", arguments.length > 0 ? !Ember.isNone(arguments[0]) : true);
 
+    var namePassed = !!name;
+
     if (typeof name === 'object' && !options) {
       options = name;
       name = this.routeName;
@@ -665,6 +667,7 @@ Ember.Route = Ember.Object.extend({
         template = container.lookup('template:' + name);
 
     if (!view && !template) {
+      Ember.assert("Could not find \"" + name + "\" template or view.", !namePassed);
       if (get(this.router, 'namespace.LOG_VIEW_LOOKUPS')) {
         Ember.Logger.info("Could not find \"" + name + "\" template or view. Nothing will be rendered", { fullName: 'template:' + name });
       }
@@ -777,7 +780,7 @@ function normalizeOptions(route, name, template, options) {
   options.template = template;
   options.LOG_VIEW_LOOKUPS = get(route.router, 'namespace.LOG_VIEW_LOOKUPS');
 
-  Ember.assert("An outlet ("+options.outlet+") was specified but this view will render at the root level.", options.outlet === 'main' || options.into);
+  Ember.assert("An outlet ("+options.outlet+") was specified but was not found.", options.outlet === 'main' || options.into);
 
   var controller = options.controller, namedController;
 
