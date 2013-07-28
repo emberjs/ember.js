@@ -22,17 +22,20 @@ app more and more Ember-1.0-compatible.
 ## `get` and `getPath`
 
 In Ember 1.0, `get` works on property paths like `"foo.bar.baz"`; in Ember 0.9,
-it does not. This fork introduces a flag, `ENV.DOTTED_GETS`, with four
+it does not. This fork introduces a flag, `ENV.DOTTED_PATH_METHODS`, with four
 allowed values:
 
- * `"0.9"` (the default) -- `getPath` works normally
- * `"0.9+warn"` -- `getPath` emits a warning via `Ember.warn`
- * `"0.9+deprecate"` -- `getPath` emits a deprecation warning via
+ * `"0.9"` (the default) -- `getPath` and `setPath` work normally
+ * `"0.9+warn"` -- `getPath` and `setPath` emit a warning via `Ember.warn`
+ * `"0.9+deprecate"` -- `getPath` and `setPath` emit a deprecation warning via
    `Ember.deprecate`
- * `"1.0"` -- `getPath` raises an exception
+ * `"1.0"` -- `getPath` and `setPath` raise exceptions
 
 Regardless of the value of the flag, `get` now works on both dotted- and
 non-dotted paths, just as in 1.0.
+
+See [issue #1](https://github.com/zendesk/ember.js/issues/1) for more
+information.
 
 ## `Ember.Object.create`
 
@@ -65,3 +68,6 @@ has four possible values:
  * `"1.0"`: Ember 1.0 compatibility; `Ember.Obect.create` will throw an
    exception if passed an `Ember.Mixin` or an object that contains an
    `Ember.ComputedProperty` or `Function` that calls `_super`.
+
+See [issue #2](https://github.com/zendesk/ember.js/issues/2) for more
+information.
