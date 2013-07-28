@@ -78,7 +78,6 @@ var DOMManager = {
 /**
   @class _Metamorph
   @namespace Ember
-  @extends Ember.Mixin
   @private
 */
 Ember._Metamorph = Ember.Mixin.create({

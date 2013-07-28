@@ -13,7 +13,6 @@ var get = Ember.get, set = Ember.set;
 
   @class TextSupport
   @namespace Ember
-  @extends Ember.Mixin
   @private
 */
 Ember.TextSupport = Ember.Mixin.create({

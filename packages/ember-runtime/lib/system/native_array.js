@@ -115,7 +115,6 @@ if (ignore.length>0) {
 
   @class NativeArray
   @namespace Ember
-  @extends Ember.Mixin
   @uses Ember.MutableArray
   @uses Ember.Observable
   @uses Ember.Copyable

@@ -32,7 +32,6 @@ var get = Ember.get, set = Ember.set, forEach = Ember.EnumerableUtils.forEach;
 
   @class SortableMixin
   @namespace Ember
-  @extends Ember.Mixin
   @uses Ember.MutableEnumerable
 */
 Ember.SortableMixin = Ember.Mixin.create(Ember.MutableEnumerable, {
@@ -50,7 +49,7 @@ Ember.SortableMixin = Ember.Mixin.create(Ember.MutableEnumerable, {
     @property {Boolean} sortAscending
   */
   sortAscending: true,
-  
+
   /**
     The function used to compare two values. You can override this if you
     want to do custom comparisons.Functions must be of the type expected by
@@ -72,7 +71,7 @@ Ember.SortableMixin = Ember.Mixin.create(Ember.MutableEnumerable, {
     @default Ember.compare
   */
   sortFunction: Ember.compare,
-  
+
   orderBy: function(item1, item2) {
     var result = 0,
         sortProperties = get(this, 'sortProperties'),

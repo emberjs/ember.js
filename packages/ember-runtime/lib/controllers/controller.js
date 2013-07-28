@@ -36,7 +36,6 @@ var get = Ember.get;
 
   @class ControllerMixin
   @namespace Ember
-  @extends Ember.Mixin
 */
 Ember.ControllerMixin = Ember.Mixin.create({
   /* ducktype as a controller */

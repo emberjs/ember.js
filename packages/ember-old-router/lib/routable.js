@@ -36,7 +36,6 @@ var merge = function(original, hash) {
 /**
   @class Routable
   @namespace Ember
-  @extends Ember.Mixin
 */
 Ember.Routable = Ember.Mixin.create({
   init: function() {
