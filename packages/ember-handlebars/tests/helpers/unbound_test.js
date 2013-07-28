@@ -66,6 +66,11 @@ module("Handlebars {{#unbound boundHelper arg1 arg2... argN}} form: render unbou
   },
 
   teardown: function() {
+    delete Ember.Handlebars.helpers['capitalize'];
+    delete Ember.Handlebars.helpers['capitalizeName'];
+    delete Ember.Handlebars.helpers['concat'];
+    delete Ember.Handlebars.helpers['concatNames'];
+
     Ember.run(function() {
       view.destroy();
     });
@@ -75,33 +80,36 @@ module("Handlebars {{#unbound boundHelper arg1 arg2... argN}} form: render unbou
 
 
 test("should be able to render an unbound helper invocation", function() {
+  try {
+    Ember.Handlebars.registerBoundHelper('repeat', function(value, options) {
+      var count = options.hash.count;
+      var a = [];
+      while(a.length < count) {
+          a.push(value);
+      }
+      return a.join('');
+    });
 
-  Ember.Handlebars.registerBoundHelper('repeat', function(value, options) {
-    var count = options.hash.count;
-    var a = [];
-    while(a.length < count) {
-        a.push(value);
-    }
-    return a.join('');
-  });
+    view = Ember.View.create({
+      template: Ember.Handlebars.compile('{{unbound repeat foo countBinding="bar"}} {{repeat foo countBinding="bar"}} {{unbound repeat foo count=2}} {{repeat foo count=4}}'),
+      context: Ember.Object.create({
+        foo: "X",
+        numRepeatsBinding: "bar",
+        bar: 5
+      })
+    });
+    appendView(view);
 
-  view = Ember.View.create({
-    template: Ember.Handlebars.compile('{{unbound repeat foo countBinding="bar"}} {{repeat foo countBinding="bar"}} {{unbound repeat foo count=2}} {{repeat foo count=4}}'),
-    context: Ember.Object.create({
-      foo: "X",
-      numRepeatsBinding: "bar",
-      bar: 5
-    })
-  });
-  appendView(view);
+    equal(view.$().text(), "XXXXX XXXXX XX XXXX", "first render is correct");
 
-  equal(view.$().text(), "XXXXX XXXXX XX XXXX", "first render is correct");
+    Ember.run(function() {
+      set(view, 'context.bar', 1);
+    });
 
-  Ember.run(function() {
-    set(view, 'context.bar', 1);
-  });
-
-  equal(view.$().text(), "XXXXX X XX XXXX", "only unbound bound options changed");
+    equal(view.$().text(), "XXXXX X XX XXXX", "only unbound bound options changed");
+  } finally {
+    delete Ember.Handlebars.helpers['repeat'];
+  }
 });
 
 
@@ -149,29 +157,32 @@ test("should be able to render an unbound helper invocation for helpers with dep
 
 
 test("should be able to render an unbound helper invocation with bound hash options", function() {
+  try {
+    Ember.Handlebars.registerBoundHelper('repeat', function(value) {
+      return [].slice.call(arguments, 0, -1).join('');
+    });
 
-  Ember.Handlebars.registerBoundHelper('repeat', function(value) {
-    return [].slice.call(arguments, 0, -1).join('');
-  });
 
-
-  view = Ember.View.create({
-    template: Ember.Handlebars.compile("{{capitalizeName person}} {{unbound capitalizeName person}} {{concatNames person}} {{unbound concatNames person}}"),
-    context: Ember.Object.create({
-      person: Ember.Object.create({
-        firstName: 'shooby',
-        lastName:  'taylor'
+    view = Ember.View.create({
+      template: Ember.Handlebars.compile("{{capitalizeName person}} {{unbound capitalizeName person}} {{concatNames person}} {{unbound concatNames person}}"),
+      context: Ember.Object.create({
+        person: Ember.Object.create({
+          firstName: 'shooby',
+          lastName:  'taylor'
+        })
       })
-    })
-  });
-  appendView(view);
+    });
+    appendView(view);
 
-  equal(view.$().text(), "SHOOBY SHOOBY shoobytaylor shoobytaylor", "first render is correct");
+    equal(view.$().text(), "SHOOBY SHOOBY shoobytaylor shoobytaylor", "first render is correct");
 
-  Ember.run(function() {
-    set(view, 'context.person.firstName', 'sally');
-  });
+    Ember.run(function() {
+      set(view, 'context.person.firstName', 'sally');
+    });
 
-  equal(view.$().text(), "SALLY SHOOBY sallytaylor shoobytaylor", "only bound values change");
+    equal(view.$().text(), "SALLY SHOOBY sallytaylor shoobytaylor", "only bound values change");
+  } finally {
+    delete Ember.Handlebars.registerBoundHelper['repeat'];
+  }
 });
 
