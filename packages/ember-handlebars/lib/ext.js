@@ -260,7 +260,7 @@ Ember.Handlebars.registerBoundHelper = function(name, fn) {
       view = data.view,
       currentContext = (options.contexts && options.contexts[0]) || this,
       normalized,
-      pathRoot, path,
+      pathRoot, path, prefixPathForDependentKeys = '',
       loc, hashOption;
 
     Ember.assert("registerBoundHelper-generated helpers do not support use with Handlebars blocks.", !options.fn);
@@ -311,8 +311,11 @@ Ember.Handlebars.registerBoundHelper = function(name, fn) {
 
     view.registerObserver(pathRoot, path, bindView, bindView.rerender);
 
+    if(!Ember.isEmpty(path)) {
+      prefixPathForDependentKeys = path + '.';
+    }
     for (var i=0, l=dependentKeys.length; i<l; i++) {
-      view.registerObserver(pathRoot, path + '.' + dependentKeys[i], bindView, bindView.rerender);
+      view.registerObserver(pathRoot, prefixPathForDependentKeys + dependentKeys[i], bindView, bindView.rerender);
     }
   }
 
