@@ -72,6 +72,6 @@ Test.QUnitAdapter = Test.Adapter.extend({
     start();
   },
   exception: function(error) {
-    ok(false, error);
+    ok(false, Ember.inspect(error));
   }
 });
