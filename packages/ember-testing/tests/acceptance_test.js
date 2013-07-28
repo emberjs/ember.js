@@ -67,7 +67,7 @@ test("helpers can be chained with then", function() {
   expect(5);
   Ember.Test.adapter = Ember.Test.QUnitAdapter.create({
     exception: function(error) {
-      equal(error, "Element .does-not-exist not found.", "Exception successfully caught and passed to Ember.Test.adapter.exception");
+      equal(error.message, "Element .does-not-exist not found.", "Exception successfully caught and passed to Ember.Test.adapter.exception");
     }
   });
 
