@@ -43,16 +43,13 @@ require('ember-handlebars/ext');
   Ember.TEMPLATES["my_cool_template"] = Ember.Handlebars.compile('<b>{{user}}</b>');
   ```
 
+  @deprecated
   @method template
   @for Ember.Handlebars.helpers
   @param {String} templateName the template to render
 */
 
 Ember.Handlebars.registerHelper('template', function(name, options) {
-  var view = options.data.view,
-      template = view.templateForName(name);
-
-  Ember.assert("Unable to find template with name '"+name+"'.", !!template);
-
-  template(this, { data: options.data });
+  Ember.deprecate("The `template` helper has been deprecated in favor of the `partial` helper. Please use `partial` instead, which will work the same way.");
+  return Ember.Handlebars.helpers.partial.apply(this, arguments);
 });
