@@ -555,6 +555,16 @@ Ember.Route = Ember.Object.extend({
   },
 
   /**
+    Return a new view instance for the given name
+
+    @method viewFor
+    @param {String} name of the view
+    @return {Ember.View} instance of the view
+  */
+  viewFor: function(name) {
+    return this.container.lookup('view:' + name);
+  },
+  /**
     Returns the current model for a given route.
 
     This is the object returned by the `model` hook of the route
