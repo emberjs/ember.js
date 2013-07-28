@@ -84,7 +84,7 @@ Ember.Route = Ember.Object.extend({
     });
     ```
 
-    You can also redirect elsewhere by calling 
+    You can also redirect elsewhere by calling
     `this.transitionTo('elsewhere')` from within `willTransition`.
     Note that `willTransition` will not be fired for the
     redirecting `transitionTo`, since `willTransition` doesn't
@@ -99,8 +99,8 @@ Ember.Route = Ember.Object.extend({
     may throw an error, or return a promise that rejects, at which
     point an `error` event will be fired on the partially-entered
     routes, allowing for per-route error handling logic, or shared
-    error handling logic defined on a parent route. 
-    
+    error handling logic defined on a parent route.
+
     Here is an example of an error handler that will be invoked
     for rejected promises / thrown errors from the various hooks
     on the route, as well as any unhandled errors from child
@@ -118,9 +118,9 @@ Ember.Route = Ember.Object.extend({
         error: function(error, transition) {
           // Assuming we got here due to the error in `beforeModel`,
           // we can expect that error === "bad things!",
-          // but a promise model rejecting would also 
+          // but a promise model rejecting would also
           // call this hook, as would any errors encountered
-          // in `afterModel`. 
+          // in `afterModel`.
 
           // The `error` hook is also provided the failed
           // `transition`, which can be stored and later
@@ -132,9 +132,9 @@ Ember.Route = Ember.Object.extend({
     });
     ```
 
-    `error` events that bubble up all the way to `ApplicationRoute` 
+    `error` events that bubble up all the way to `ApplicationRoute`
     will fire a default error handler that logs the error. You can
-    specify your own global default error handler by overriding the 
+    specify your own global default error handler by overriding the
     `error` handler on `ApplicationRoute`:
 
     ```js
@@ -259,20 +259,20 @@ Ember.Route = Ember.Object.extend({
 
     1) A decision can be made to redirect elsewhere without
        needing to resolve the model first.
-    2) Any async operations need to occur first before the 
+    2) Any async operations need to occur first before the
        model is attempted to be resolved.
 
     This hook is provided the current `transition` attempt
     as a parameter, which can be used to `.abort()` the transition,
     save it for a later `.retry()`, or retrieve values set
     on it from a previous hook. You can also just call
-    `this.transitionTo` to another route to implicitly 
-    abort the `transition`. 
+    `this.transitionTo` to another route to implicitly
+    abort the `transition`.
 
     You can return a promise from this hook to pause the
     transition until the promise resolves (or rejects). This could
-    be useful, for instance, for retrieving async code from 
-    the server that is required to enter a route. 
+    be useful, for instance, for retrieving async code from
+    the server that is required to enter a route.
 
     ```js
     App.PostRoute = Ember.Route.extend({
@@ -284,13 +284,13 @@ Ember.Route = Ember.Object.extend({
     });
     ```
 
-    If `App.Post` doesn't exist in the above example, 
+    If `App.Post` doesn't exist in the above example,
     `beforeModel` will use jQuery's `getScript`, which
     returns a promise that resolves after the server has
     successfully retrieved and executed the code from the
-    server. Note that if an error were to occur, it would 
-    be passed to the `error` hook on `Ember.Route`, but 
-    it's also possible to handle errors specific to 
+    server. Note that if an error were to occur, it would
+    be passed to the `error` hook on `Ember.Route`, but
+    it's also possible to handle errors specific to
     `beforeModel` right from within the hook (to distinguish
     from the shared error handling behavior of the `error`
     hook):
@@ -305,11 +305,11 @@ Ember.Route = Ember.Object.extend({
 
             // Note that the above transitionTo will implicitly
             // halt the transition. If you were to return
-            // nothing from this promise reject handler, 
+            // nothing from this promise reject handler,
             // according to promise semantics, that would
-            // convert the reject into a resolve and the 
+            // convert the reject into a resolve and the
             // transition would continue. To propagate the
-            // error so that it'd be handled by the `error` 
+            // error so that it'd be handled by the `error`
             // hook, you would have to either
             return Ember.RSVP.reject(e);
             // or
@@ -321,18 +321,18 @@ Ember.Route = Ember.Object.extend({
     ```
 
     @method beforeModel
-    @param {Transition} transition 
+    @param {Transition} transition
     @return {Promise} if the value returned from this hook is
       a promise, the transition will pause until the transition
-      resolves. Otherwise, non-promise return values are not 
+      resolves. Otherwise, non-promise return values are not
       utilized in any way.
   */
   beforeModel: Ember.K,
 
   /**
     This hook is called after this route's model has resolved.
-    It follows identical async/promise semantics to `beforeModel` 
-    but is provided the route's resolved model in addition to 
+    It follows identical async/promise semantics to `beforeModel`
+    but is provided the route's resolved model in addition to
     the `transition`, and is therefore suited to performing
     logic that can only take place after the model has already
     resolved.
@@ -349,13 +349,13 @@ Ember.Route = Ember.Object.extend({
 
     Refer to documentation for `beforeModel` for a description
     of transition-pausing semantics when a promise is returned
-    from this hook. 
+    from this hook.
 
     @method afterModel
-    @param {Transition} transition 
+    @param {Transition} transition
     @return {Promise} if the value returned from this hook is
       a promise, the transition will pause until the transition
-      resolves. Otherwise, non-promise return values are not 
+      resolves. Otherwise, non-promise return values are not
       utilized in any way.
    */
   afterModel: function(resolvedModel, transition) {
@@ -402,7 +402,7 @@ Ember.Route = Ember.Object.extend({
 
     This hook follows the asynchronous/promise semantics
     described in the documentation for `beforeModel`. In particular,
-    if a promise returned from `model` fails, the error will be 
+    if a promise returned from `model` fails, the error will be
     handled by the `error` hook on `Ember.Route`.
 
     @method model
@@ -724,17 +724,17 @@ Ember.Route = Ember.Object.extend({
   willDestroy: function() {
     this.teardownViews();
   },
-  
+
   teardownViews: function() {
     // Tear down the top level view
     if (this.teardownTopLevelView) { this.teardownTopLevelView(); }
-    
+
     // Tear down any outlets rendered with 'into'
     var teardownOutletViews = this.teardownOutletViews || [];
-    a_forEach(teardownOutletViews, function(teardownOutletView) { 
+    a_forEach(teardownOutletViews, function(teardownOutletView) {
       teardownOutletView();
     });
-    
+
     delete this.teardownTopLevelView;
     delete this.teardownOutletViews;
     delete this.lastRenderedTemplate;
