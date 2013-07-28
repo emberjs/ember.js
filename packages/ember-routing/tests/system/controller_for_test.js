@@ -42,9 +42,8 @@ module("Ember.controllerFor", {
   },
   teardown: function() {
     Ember.run(function () {
-      if (container) {
-        container.destroy();
-      }
+      container.destroy();
+      namespace.destroy();
     });
   }
 });
@@ -55,50 +54,63 @@ test("controllerFor should lookup for registered controllers", function() {
   equal(appController, controller, 'should find app controller');
 });
 
-test("controllerFor should create Ember.Controller", function() {
-  var controller = Ember.controllerFor(container, 'home');
+module("Ember.generateController", {
+  setup: function() {
+    namespace = Ember.Namespace.create();
+    container = buildContainer(namespace);
+  },
+  teardown: function() {
+    Ember.run(function () {
+      container.destroy();
+      namespace.destroy();
+    });
+  }
+});
+
+test("generateController should create Ember.Controller", function() {
+  var controller = Ember.generateController(container, 'home');
 
   ok(controller instanceof Ember.Controller, 'should create controller');
 });
 
-test("controllerFor should create Ember.ObjectController", function() {
+test("generateController should create Ember.ObjectController", function() {
   var context = {};
-  var controller = Ember.controllerFor(container, 'home', context);
+  var controller = Ember.generateController(container, 'home', context);
 
   ok(controller instanceof Ember.ObjectController, 'should create controller');
 });
 
-test("controllerFor should create Ember.ArrayController", function() {
+test("generateController should create Ember.ArrayController", function() {
   var context = Ember.A();
-  var controller = Ember.controllerFor(container, 'home', context);
+  var controller = Ember.generateController(container, 'home', context);
 
   ok(controller instanceof Ember.ArrayController, 'should create controller');
 });
 
-test("controllerFor should create App.Controller if provided", function() {
+test("generateController should create App.Controller if provided", function() {
   var controller;
   namespace.Controller = Ember.Controller.extend();
 
-  controller = Ember.controllerFor(container, 'home');
+  controller = Ember.generateController(container, 'home');
 
   ok(controller instanceof namespace.Controller, 'should create controller');
 });
 
-test("controllerFor should create App.ObjectController if provided", function() {
+test("generateController should create App.ObjectController if provided", function() {
   var context = {}, controller;
   namespace.ObjectController = Ember.ObjectController.extend();
 
-  controller = Ember.controllerFor(container, 'home', context);
+  controller = Ember.generateController(container, 'home', context);
 
   ok(controller instanceof namespace.ObjectController, 'should create controller');
 
 });
 
-test("controllerFor should create App.ArrayController if provided", function() {
+test("generateController should create App.ArrayController if provided", function() {
   var context = Ember.A(), controller;
   namespace.ArrayController = Ember.ArrayController.extend();
 
-  controller = Ember.controllerFor(container, 'home', context);
+  controller = Ember.generateController(container, 'home', context);
 
   ok(controller instanceof namespace.ArrayController, 'should create controller');
 

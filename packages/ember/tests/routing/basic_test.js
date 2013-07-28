@@ -1588,20 +1588,6 @@ test("Parent route context change", function() {
   deepEqual(editedPostIds, ['1', '2'], 'modelFor posts.post returns the right context');
 });
 
-test("Calling controllerFor for a non-route controller returns a controller", function() {
-  var controller;
-
-  App.ApplicationRoute = Ember.Route.extend({
-    setupController: function() {
-      controller = this.controllerFor('nonDefinedRoute', {});
-    }
-  });
-
-  bootApplication();
-
-  ok(controller instanceof Ember.ObjectController, "controller was able to be retrieved");
-});
-
 test("Router accounts for rootURL on page load when using history location", function() {
   var rootURL = window.location.pathname + '/app',
       postsTemplateRendered = false,

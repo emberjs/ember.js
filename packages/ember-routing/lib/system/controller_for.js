@@ -5,9 +5,8 @@ var get = Ember.get;
 @submodule ember-routing
 */
 
-Ember.controllerFor = function(container, controllerName, context, lookupOptions) {
-  return container.lookup('controller:' + controllerName, lookupOptions) ||
-         Ember.generateController(container, controllerName, context);
+Ember.controllerFor = function(container, controllerName, lookupOptions) {
+  return container.lookup('controller:' + controllerName, lookupOptions);
 };
 /*
   Generates a controller automatically if none was provided.

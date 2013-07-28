@@ -57,11 +57,11 @@ Ember.ControllerMixin.reopen({
       needs: ['post']
     });
     ```
-    
+
     The application's single instance of these other
     controllers are accessible by name through the
     `controllers` property:
-    
+
     ```javascript
     this.get('controllers.post'); // instance of App.PostController
     ```
@@ -84,8 +84,7 @@ Ember.ControllerMixin.reopen({
 
   controllerFor: function(controllerName) {
     Ember.deprecate("Controller#controllerFor is deprecated, please use Controller#needs instead");
-    var container = get(this, 'container');
-    return container.lookup('controller:' + controllerName);
+    return Ember.controllerFor(get(this, 'container'), controllerName);
   },
 
   controllers: Ember.computed(function() {

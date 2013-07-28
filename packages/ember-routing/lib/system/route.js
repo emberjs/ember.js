@@ -214,7 +214,11 @@ Ember.Route = Ember.Object.extend({
     @method setup
   */
   setup: function(context) {
-    var controller = this.controllerFor(this.controllerName || this.routeName, context);
+    var controllerName = this.controllerName || this.routeName,
+        controller = this.controllerFor(controllerName, true);
+    if (!controller) {
+      controller =  this.generateController(controllerName, context);
+    }
 
     // Assign the route's controller so that it can more easily be
     // referenced in event handlers
@@ -531,27 +535,40 @@ Ember.Route = Ember.Object.extend({
     });
     ```
 
-    By default, the controller for `post` is the shared instance of
-    `App.PostController`.
-
     @method controllerFor
     @param {String} name the name of the route
-    @param {Object} model the model associated with the route (optional)
     @return {Ember.Controller}
   */
-  controllerFor: function(name, model) {
+  controllerFor: function(name, _skipAssert) {
     var container = this.router.container,
         controller = container.lookup('controller:' + name);
 
-    if (!controller) {
-      model = model || this.modelFor(name);
-
-      Ember.assert("You are trying to look up a controller that you did not define, and for which Ember does not know the model.\n\nThis is not a controller for a route, so you must explicitly define the controller ("+this.router.namespace.toString() + "." + Ember.String.capitalize(Ember.String.camelize(name))+"Controller) or pass a model as the second parameter to `controllerFor`, so that Ember knows which type of controller to create for you.", model || this.container.lookup('route:' + name));
-
-      controller = Ember.generateController(container, name, model);
-    }
+    // NOTE: We're specifically checking that skipAssert is true, because according
+    //   to the old API the second parameter was model. We do not want people who
+    //   passed a model to skip the assertion.
+    Ember.assert("The controller "+name+" could not be found. Make sure the controller has been generated first. This will happen the first time the associated route is entered.", controller || _skipAssert === true);
 
     return controller;
+  },
+
+  /**
+    Generates a controller for a route.
+
+    If the optional model is passed then the controller type is determined automatically,
+    e.g., an ArrayController for arrays.
+
+    @method generateController
+    @param {String} name the name of the controller
+    @param {Object} model the model to infer the type of the controller (optional)
+  */
+  generateController: function(name, model) {
+    var container = this.router.container;
+
+    model = model || this.modelFor(name);
+
+    Ember.assert("You are trying to look up a controller that you did not define, and for which Ember does not know the model.\n\nThis is not a controller for a route, so you must explicitly define the controller ("+this.router.namespace.toString() + "." + Ember.String.capitalize(Ember.String.camelize(name))+"Controller) or pass a model as the second parameter to `controllerFor`, so that Ember knows which type of controller to create for you.", model || this.container.lookup('route:' + name));
+
+    return Ember.generateController(container, name, model);
   },
 
   /**

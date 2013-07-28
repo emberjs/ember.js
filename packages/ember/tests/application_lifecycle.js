@@ -26,7 +26,7 @@ test("Resetting the application allows controller properties to be set when a ro
     this.route('home', { path: '/' });
   });
   App.HomeRoute = Ember.Route.extend({
-    activate: function() {
+    setupController: function() {
       this.controllerFor('home').set('selectedMenuItem', 'home');
     },
     deactivate: function() {
@@ -34,7 +34,7 @@ test("Resetting the application allows controller properties to be set when a ro
     }
   });
   App.ApplicationRoute = Ember.Route.extend({
-    activate: function() {
+    setupController: function() {
       this.controllerFor('application').set('selectedMenuItem', 'home');
     },
     deactivate: function() {
@@ -42,18 +42,16 @@ test("Resetting the application allows controller properties to be set when a ro
     }
   });
 
-  var homeController = Ember.controllerFor(container, 'home');
-  var applicationController = Ember.controllerFor(container, 'application');
   var router = container.lookup('router:main');
 
   Ember.run(App, 'advanceReadiness');
   Ember.run(function() {
     router.handleURL('/');
   });
-  equal(homeController.get('selectedMenuItem'), 'home');
-  equal(applicationController.get('selectedMenuItem'), 'home');
+  equal(Ember.controllerFor(container, 'home').get('selectedMenuItem'), 'home');
+  equal(Ember.controllerFor(container, 'application').get('selectedMenuItem'), 'home');
 
   App.reset();
-  equal(homeController.get('selectedMenuItem'), null);
-  equal(applicationController.get('selectedMenuItem'), null);
+  equal(Ember.controllerFor(container, 'home').get('selectedMenuItem'), null);
+  equal(Ember.controllerFor(container, 'application').get('selectedMenuItem'), null);
 });

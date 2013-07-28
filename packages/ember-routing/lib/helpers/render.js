@@ -63,7 +63,8 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
       controller = container.lookup('controller:' + controllerName, lookupOptions);
       Ember.assert("The controller name you supplied '" + controllerName + "' did not resolve to a controller.", !!controller);
     } else {
-      controller = Ember.controllerFor(container, name, context, lookupOptions);
+      controller = container.lookup('controller:' + name, lookupOptions) ||
+                      Ember.generateController(container, name, context);
     }
 
     if (controller && context) {
