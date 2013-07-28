@@ -75,7 +75,7 @@ function fillIn(app, selector, context, text) {
 function findWithAssert(app, selector, context) {
   var $el = find(app, selector, context);
   if ($el.length === 0) {
-    throw("Element " + selector + " not found.");
+    throw new Error("Element " + selector + " not found.");
   }
   return $el;
 }
