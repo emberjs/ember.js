@@ -8,7 +8,8 @@ require('ember-metal/array');
 require('ember-metal/binding');
 
 /**
-@module ember-metal
+@module ember
+@submodule ember-metal
 */
 
 var Mixin, REQUIRED, Alias,

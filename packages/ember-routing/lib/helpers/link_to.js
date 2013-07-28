@@ -39,7 +39,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     `Ember.LinkView` renders an element whose `click` event triggers a
     transition of the application's instance of `Ember.Router` to
     a supplied route by name.
-    
+
     Instances of `LinkView` will most likely be created through
     the `linkTo` Handlebars helper, but properties of this class
     can be overridden to customize application-wide behavior.
@@ -85,7 +85,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     /**
       The CSS class to apply to a `LinkView`'s element when its `disabled`
       property is `true`.
-      
+
       @property disabledClass
       @type String
       @default disabled
@@ -95,8 +95,9 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
 
     /**
       Determines whether the `LinkView` will trigger routing via
-      the `replaceWith` routing strategy. 
+      the `replaceWith` routing strategy.
 
+      @property replace
       @type Boolean
       @default false
     **/
@@ -107,7 +108,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     /**
       By default the `{{linkTo}}` helper responds to the `click` event. You
       can override this globally by setting this property to your custom
-      event name. 
+      event name.
 
       This is particularly useful on mobile when one wants to avoid the 300ms
       click delay using some sort of custom `tap` event.
@@ -168,10 +169,10 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
 
     /**
       @private
-      
+
       Even though this isn't a virtual view, we want to treat it as if it is
       so that you can access the parent with {{view.prop}}
-      
+
       @method concreteView
     **/
     concreteView: Ember.computed(function() {
@@ -179,16 +180,16 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     }).property('parentView'),
 
     /**
-      
+
       Accessed as a classname binding to apply the `LinkView`'s `disabledClass`
       CSS `class` to the element when the link is disabled.
-      
+
       When `true` interactions with the element will not trigger route changes.
       @property disabled
     */
     disabled: Ember.computed(function(key, value) {
       if (value !== undefined) { this.set('_isDisabled', value); }
-      
+
       return value ? this.get('disabledClass') : false;
     }),
 
@@ -245,12 +246,12 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
 
       event.preventDefault();
       if (this.bubbles === false) { event.stopPropagation(); }
-      
+
       if (get(this, '_isDisabled')) { return false; }
 
-      if (get(this, 'loading')) { 
+      if (get(this, 'loading')) {
         Ember.Logger.warn("This linkTo's parameters are either not yet loaded or point to an invalid route.");
-        return false; 
+        return false;
       }
 
       var router = get(this, 'router'),
@@ -265,7 +266,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
 
     routeArgs: Ember.computed(function() {
 
-      var router = get(this, 'router'), 
+      var router = get(this, 'router'),
           namedRoute = get(this, 'namedRoute'), routeName;
 
       if (!namedRoute && this.namedRouteBinding) {
@@ -355,7 +356,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     </li>
     ```
 
-    To override this option for your entire application, see 
+    To override this option for your entire application, see
     "Overriding Application-wide Defaults".
 
     ### Handling `href`
@@ -402,7 +403,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     </a>
     ```
 
-    To override this option for your entire application, see 
+    To override this option for your entire application, see
     "Overriding Application-wide Defaults".
 
     ### Supplying a model
@@ -489,7 +490,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
         params = [].slice.call(arguments, 1, -1);
 
     var hash = options.hash;
-      
+
     if (options.types[0] === "ID") {
       if (Ember.ENV.HELPER_PARAM_LOOKUPS) {
         hash.namedRouteBinding = name;

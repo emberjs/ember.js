@@ -152,6 +152,10 @@ function makeCtor() {
 
 }
 
+/**
+  @class CoreObject
+  @namespace Ember
+*/
 var CoreObject = makeCtor();
 CoreObject.toString = function() { return "Ember.CoreObject"; };
 
@@ -561,8 +565,4 @@ if (Ember.config.overrideClassMixin) {
 CoreObject.ClassMixin = ClassMixin;
 ClassMixin.apply(CoreObject);
 
-/**
-  @class CoreObject
-  @namespace Ember
-*/
 Ember.CoreObject = CoreObject;
