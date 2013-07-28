@@ -665,9 +665,7 @@ Ember.Route = Ember.Object.extend({
         template = container.lookup('template:' + name);
 
     if (!view && !template) {
-      if (get(this.router, 'namespace.LOG_VIEW_LOOKUPS')) {
-        Ember.Logger.info("Could not find \"" + name + "\" template or view. Nothing will be rendered", { fullName: 'template:' + name });
-      }
+      Ember.Logger.warn("Could not find \"" + name + "\" template or view. Nothing will be rendered", { fullName: 'template:' + name });
       return;
     }
 
