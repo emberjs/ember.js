@@ -253,6 +253,26 @@ test("should call the cancel method when escape key is pressed", function() {
   ok(wasCalled, "invokes cancel method");
 });
 
+test("should not set the value property when the text is empty", function() {
+  var wasCalled;
+  var event = Ember.Object.create({
+    keyCode: 9
+  });
+
+  Ember.run(function() { textArea.append(); });
+
+  set(textArea, 'value', null);
+
+  textArea.addObserver('value', textArea, function(){
+    wasCalled = true;
+  });
+
+  textArea.$().val('');
+  textArea.trigger('keyUp', event);
+
+  ok(!wasCalled, "doesn't change the value");
+});
+
 // test("listens for focus and blur events", function() {
 //   var focusCalled = 0;
 //   var blurCalled = 0;
