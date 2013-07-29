@@ -678,6 +678,7 @@ module("Observable objects & object properties ", {
 
 test('incrementProperty and decrementProperty',function() {
   var newValue = object.incrementProperty('numberVal');
+
   equal(25,newValue,'numerical value incremented');
   object.numberVal = 24;
   newValue = object.decrementProperty('numberVal');
@@ -691,6 +692,21 @@ test('incrementProperty and decrementProperty',function() {
   object.numberVal = 25;
   newValue = object.incrementProperty('numberVal', 0);
   equal(25,newValue,'zero numerical value incremented by specified increment');
+
+  expectAssertion(function() {
+    newValue = object.incrementProperty('numberVal', (0 - void(0))); // Increment by NaN
+  }, /Must pass a numeric value to incrementProperty/i);
+
+  expectAssertion(function() {
+    newValue = object.incrementProperty('numberVal', 'Ember'); // Increment by non-numeric String
+  }, /Must pass a numeric value to incrementProperty/i);
+
+  expectAssertion(function() {
+    newValue = object.incrementProperty('numberVal', 1/0); // Increment by Infinity
+  }, /Must pass a numeric value to incrementProperty/i);
+
+  equal(25,newValue,'Attempting to increment by non-numeric values should not increment value');
+
   object.numberVal = 25;
   newValue = object.decrementProperty('numberVal',5);
   equal(20,newValue,'numerical value decremented by specified increment');
@@ -700,6 +716,20 @@ test('incrementProperty and decrementProperty',function() {
   object.numberVal = 25;
   newValue = object.decrementProperty('numberVal', 0);
   equal(25,newValue,'zero numerical value decremented by specified increment');
+
+  expectAssertion(function() {
+    newValue = object.decrementProperty('numberVal', (0 - void(0))); // Decrement by NaN
+  }, /Must pass a numeric value to decrementProperty/i);
+
+  expectAssertion(function() {
+    newValue = object.decrementProperty('numberVal', 'Ember'); // Decrement by non-numeric String
+  }, /Must pass a numeric value to decrementProperty/i);
+
+  expectAssertion(function() {
+    newValue = object.decrementProperty('numberVal', 1/0); // Decrement by Infinity
+  }, /Must pass a numeric value to decrementProperty/i);
+
+  equal(25,newValue,'Attempting to decrement by non-numeric values should not decrement value');
 });
 
 test('toggle function, should be boolean',function() {
