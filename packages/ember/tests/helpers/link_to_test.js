@@ -548,7 +548,7 @@ test("Quoteless route param performs property lookup", function() {
 
 test("linkTo with null/undefined dynamic parameters are put in a loading state", function() {
 
-  expect(17);
+  expect(19);
 
   var oldWarn = Ember.Logger.warn, warnCalled = false;
   Ember.Logger.warn = function() { warnCalled = true; };
@@ -611,6 +611,10 @@ test("linkTo with null/undefined dynamic parameters are put in a loading state",
   Ember.run(function() { controller.set('routeContext', '456'); });
   assertLinkStatus($contextLink, '/thing/456');
 
+  // Test that 0 isn't interpreted as falsy.
+  Ember.run(function() { controller.set('routeContext', 0); });
+  assertLinkStatus($contextLink, '/thing/0');
+
   // Set the routeContext to an object
   Ember.run(function() { controller.set('routeContext', thing); });
   assertLinkStatus($contextLink, '/thing/123');
@@ -671,5 +675,5 @@ test("The {{linkTo}} helper refreshes href element when one of params changes", 
 
   Ember.run(function() { indexController.set('post', null); });
 
-  equal(Ember.$('#post', '#qunit-fixture').attr('href'), '/posts/2', 'href attr does not change when one of the arguments in nullified');
+  equal(Ember.$('#post', '#qunit-fixture').attr('href'), '#', 'href attr becomes # when one of the arguments in nullified');
 });

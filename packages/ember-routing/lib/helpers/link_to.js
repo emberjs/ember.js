@@ -151,15 +151,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
       }
 
       var observer = function(object, path) {
-        var notify = true, i;
-        for(i=0; i < paths.length; i++) {
-          if (!get(this, paths[i])) {
-            notify = false;
-          }
-        }
-        if (notify) {
-          this.notifyPropertyChange('routeArgs');
-        }
+        this.notifyPropertyChange('routeArgs');
       };
 
       for(i=0; i < length; i++) {
