@@ -180,3 +180,19 @@ test("yield view should be a virtual view", function() {
     view.appendTo('#qunit-fixture');
   });
 });
+test("yield view should work even if _parentView is null", function() {
+  var AView = Ember.View.extend({
+  didInsertElement: function() {
+     equal(view.$('.someclass > .tempClass').length, 1, "rendered correctly with the absence of a prentView");
+  }
+});
+  var template ='<div class="tempClass">Hello</div>';
+  view = AView.create({
+    layout:Ember.Handlebars.compile('<div class="someclass">{{yield}}</div>'),
+    template:Ember.Handlebars.compile(template)
+  });
+
+  Ember.run(function() {
+    view.appendTo('#qunit-fixture');
+  });
+});
