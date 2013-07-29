@@ -242,7 +242,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
       if (get(this, '_isDisabled')) { return false; }
 
       if (get(this, 'loading')) {
-        Ember.Logger.warn("This linkTo's parameters are either not yet loaded or point to an invalid route.");
+        Ember.Logger.warn("This linkTo is in an inactive loading state because at least one of its parameters' presently has a null/undefined value, or the provided route name is invalid.");
         return false;
       }
 
