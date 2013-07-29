@@ -21,7 +21,7 @@ var o_create = Ember.platform.create,
 
 function checkForDeprecations(initMixins) {
   var level = Ember.ENV.CREATE_WITH_MIXINS,
-      op = {warn: Ember.warn, error: Ember.error}[level];
+      op = {warn: Ember.warn, error: Ember.assert}[level];
   if (!level || level === '0.9') { return; }
 
   var currentMixin, currentValue;

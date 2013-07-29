@@ -53,7 +53,7 @@ test("passing a mixin with errors on", function() {
   Ember.ENV.CREATE_WITH_MIXINS = 'error';
   raises(function() {
     Ember.Object.create(Ember.Mixin.create());
-  }, "Ember.Object.create no longer supports mixing in other definitions, use createWithMixins instead.");
+  }, /Ember\.Object\.create no longer supports mixing in other definitions, use createWithMixins instead\./);
 });
 
 test("passing computed properties with warnings off", function() {
@@ -81,7 +81,7 @@ test("passing a computed property with errors on", function() {
     Ember.Object.create({
       aProp: Ember.computed(function() { return 'three'; })
     });
-  }, "Ember.Object.create no longer supports defining computed properties.");
+  }, /Ember\.Object\.create no longer supports defining computed properties\./);
 });
 
 test("passing methods that use _super with warnings off", function() {
@@ -119,6 +119,6 @@ test("passing methods that use _super with errors on", function() {
     Ember.Object.create({
       aProp: function() { return this._super(); }
     });
-  });
+  }, /Ember\.Object\.create no longer supports defining methods that call _super\./);
 });
 
