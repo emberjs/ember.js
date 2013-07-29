@@ -22,6 +22,13 @@ Ember.State = Ember.Object.extend(Ember.Evented, {
     Override the default event firing from Ember.Evented to
     also call methods with the given name.
   */
+  trigger: function(name) {
+    if (this[name]) {
+      this[name].apply(this, [].slice.call(arguments, 1));
+    }
+    this._super.apply(this, arguments);
+  },
+
   fire: function(name) {
     if (this[name]) {
       this[name].apply(this, [].slice.call(arguments, 1));

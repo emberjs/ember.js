@@ -527,7 +527,7 @@ Ember.StateManager = Ember.State.extend(
       state = this.findStatesByRoute(state, path);
       state = state[state.length-1];
 
-      state.fire('setupControllers', this, context);
+      state.trigger('setupControllers', this, context);
     }, this);
     //getPath(root, path).setupControllers(this, context);
   },
@@ -573,11 +573,11 @@ Ember.StateManager = Ember.State.extend(
 
     exitStates = exitStates.slice(0).reverse();
     this.asyncEach(exitStates, function(state, transition) {
-      state.fire('exit', stateManager, transition);
+      state.trigger('exit', stateManager, transition);
     }, function() {
       this.asyncEach(enterStates, function(state, transition) {
         if (log) { Ember.Logger.log("STATEMANAGER: Entering " + get(state, 'path')); }
-        state.fire('enter', stateManager, transition);
+        state.trigger('enter', stateManager, transition);
       }, function() {
         var startState = state, enteredState, initialState;
 
@@ -592,7 +592,7 @@ Ember.StateManager = Ember.State.extend(
           enteredState = startState;
 
           if (log) { Ember.Logger.log("STATEMANAGER: Entering " + get(startState, 'path')); }
-          startState.fire('enter', stateManager);
+          startState.trigger('enter', stateManager);
 
           initialState = get(startState, 'initialState');
 

@@ -24,3 +24,4 @@ app more and more Ember-1.0-compatible.
  * [Accessors](doc/accessors.md)
  * [Ember.Object.create](doc/object_create.md)
  * [Ember.ViewState](doc/view_state.md)
+ * [Ember.Evented#fire](doc/evented_fire.md)

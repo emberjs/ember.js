@@ -17,6 +17,11 @@ Ember.Evented = Ember.Mixin.create({
   },
 
   fire: function(name) {
+    Ember.deprecate("Ember.Evented#fire() has been deprecated in favor of trigger() for compatibility with jQuery. It will be removed in 1.0. Please update your code to call trigger() instead.", Ember.ENV.EVENTED_FIRE !== '1.0');
+    this.trigger.apply(this, arguments);
+  },
+
+  trigger: function(name) {
     Ember.sendEvent.apply(null, [this, name].concat(a_slice.call(arguments, 1)));
   },
 

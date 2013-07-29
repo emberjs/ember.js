@@ -1323,7 +1323,7 @@ Ember.View = Ember.Object.extend(Ember.Evented,
   */
   _notifyWillInsertElement: function() {
     this.invokeRecursively(function(view) {
-      view.fire('willInsertElement');
+      view.trigger('willInsertElement');
     });
   },
 
@@ -1335,7 +1335,7 @@ Ember.View = Ember.Object.extend(Ember.Evented,
   */
   _notifyDidInsertElement: function() {
     this.invokeRecursively(function(view) {
-      view.fire('didInsertElement');
+      view.trigger('didInsertElement');
     });
   },
 
@@ -1347,7 +1347,7 @@ Ember.View = Ember.Object.extend(Ember.Evented,
   */
   _notifyWillRerender: function() {
     this.invokeRecursively(function(view) {
-      view.fire('willRerender');
+      view.trigger('willRerender');
     });
   },
 
@@ -1386,7 +1386,7 @@ Ember.View = Ember.Object.extend(Ember.Evented,
   */
   _notifyWillDestroyElement: function() {
     this.invokeRecursively(function(view) {
-      view.fire('willDestroyElement');
+      view.trigger('willDestroyElement');
     });
   },
 
@@ -1822,7 +1822,7 @@ Ember.View = Ember.Object.extend(Ember.Evented,
   }, 'isVisible'),
 
   _notifyBecameVisible: function() {
-    this.fire('becameVisible');
+    this.trigger('becameVisible');
 
     this.forEachChildView(function(view) {
       var isVisible = get(view, 'isVisible');
@@ -1834,7 +1834,7 @@ Ember.View = Ember.Object.extend(Ember.Evented,
   },
 
   _notifyBecameHidden: function() {
-    this.fire('becameHidden');
+    this.trigger('becameHidden');
     this.forEachChildView(function(view) {
       var isVisible = get(view, 'isVisible');
 
@@ -1878,6 +1878,13 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     Override the default event firing from Ember.Evented to
     also call methods with the given name.
   */
+  trigger: function(name) {
+    if (this[name]) {
+      this[name].apply(this, [].slice.call(arguments, 1));
+    }
+    this._super.apply(this, arguments);
+  },
+
   fire: function(name) {
     if (this[name]) {
       this[name].apply(this, [].slice.call(arguments, 1));
