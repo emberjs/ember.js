@@ -1,7 +1,7 @@
 var originalFlag, originalWarn, warnings;
 
 function matches(msg, substr) {
-  return msg.indexOf(substr) !== -1;
+  ok(msg.indexOf(substr) !== -1);
 }
 
 module("Backported accessors", {
@@ -47,7 +47,7 @@ test("getPath warns on the 1.0 mode", function() {
   var o = { foo: {bar: 'baz'} };
   equal(Ember.getPath(o, 'foo.bar'), 'baz');
   equal(warnings.length, 1);
-  ok(matches(warnings[0], "DEPRECATION: getPath is deprecated since get now supports paths"));
+  matches(warnings[0], "DEPRECATION: getPath is deprecated since get now supports paths");
 });
 
 test("setPath warns on the 1.0 mode", function() {
@@ -55,7 +55,7 @@ test("setPath warns on the 1.0 mode", function() {
   var o = { foo: {bar: 'baz'} };
   Ember.setPath(o, 'foo.bar', 'qux');
   equal(warnings.length, 1);
-  ok(matches(warnings[0], "DEPRECATION: setPath is deprecated since set now supports paths"));
+  matches(warnings[0], "DEPRECATION: setPath is deprecated since set now supports paths");
 });
 
 test("get follows paths on the 1.0 mode", function() {
@@ -79,7 +79,7 @@ test("trySetPath warns on the 1.0 mode", function() {
   Ember.trySetPath(o, 'foo.bar', 'qux');
   equal(o.foo.bar, 'qux');
   equal(warnings.length, 1);
-  ok(matches(warnings[0], "DEPRECATION: trySetPath has been renamed to trySet"));
+  matches(warnings[0], "DEPRECATION: trySetPath has been renamed to trySet");
 });
 
 test("trySet exists and follows paths", function() {
