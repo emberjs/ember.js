@@ -48,7 +48,6 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
       lookupOptions = { singleton: false };
     }
 
-    name = name.replace(/\//g, '.');
     container = options.data.keywords.controller.container;
     router = container.lookup('router:main');
 
