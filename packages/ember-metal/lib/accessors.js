@@ -22,11 +22,20 @@ var meta = Ember.meta;
 
 var get, set;
 
+var LEVEL_09_WITH_WARNINGS = '0.9-dotted-properties',
+    LEVEL_10               = '1.0';
+
 /** @private */
 get = function get(obj, keyName) {
   if (keyName === undefined && 'string' === typeof obj) {
     keyName = obj;
     obj = Ember;
+  }
+
+  if (Ember.ENV.ACCESSORS === LEVEL_09_WITH_WARNINGS) {
+    Ember.warn("The behavior of `get` has changed in Ember 1.0. It will no longer support keys with periods in them.", keyName.indexOf('.') === -1);
+  } else if (Ember.ENV.ACCESSORS === LEVEL_10 && keyName.indexOf('.') !== -1) {
+    return getPathWithoutDeprecation(obj, keyName);
   }
 
   if (!obj) return undefined;
@@ -39,6 +48,12 @@ get = function get(obj, keyName) {
 
 /** @private */
 set = function set(obj, keyName, value) {
+  if (Ember.ENV.ACCESSORS === LEVEL_09_WITH_WARNINGS) {
+    Ember.warn("The behavior of `set` has changed in Ember 1.0. It will no longer support keys with periods in them.", keyName.indexOf('.') === -1);
+  } else if (Ember.ENV.ACCESSORS === LEVEL_10 && keyName.indexOf('.') !== -1) {
+    return setPath(obj, keyName, value);
+  }
+
   if (('object'===typeof obj) && !(keyName in obj)) {
     if ('function' === typeof obj.setUnknownProperty) {
       obj.setUnknownProperty(keyName, value);
@@ -266,7 +281,7 @@ Ember.getWithDefault = function(root, key, defaultValue) {
   return value;
 };
 
-Ember.getPath = function(root, path) {
+function getPathWithoutDeprecation(root, path) {
   var hasThis, isGlobal, ret;
 
   // Helpers that operate with 'this' within an #each
@@ -298,9 +313,17 @@ Ember.getPath = function(root, path) {
   }
 
   return getPath(root, path);
+}
+
+Ember.getPath = function(root, path) {
+  if (Ember.ENV.ACCESSORS === LEVEL_10) {
+    Ember.deprecate("getPath is deprecated since get now supports paths");
+  }
+
+  return getPathWithoutDeprecation(root, path);
 };
 
-Ember.setPath = function(root, path, value, tolerant) {
+function setPath(root, path, value, tolerant) {
   var keyName;
 
   if (arguments.length===2 && 'string' === typeof root) {
@@ -315,7 +338,7 @@ Ember.setPath = function(root, path, value, tolerant) {
     keyName = path.slice(path.lastIndexOf('.')+1);
     path    = path.slice(0, path.length-(keyName.length+1));
     if (path !== 'this') {
-      root = Ember.getPath(root, path);
+      root = getPathWithoutDeprecation(root, path);
     }
 
   } else {
@@ -333,6 +356,14 @@ Ember.setPath = function(root, path, value, tolerant) {
   }
 
   return Ember.set(root, keyName, value);
+}
+
+Ember.setPath = function(root, path, value, tolerant) {
+  if (Ember.ENV.ACCESSORS === LEVEL_10) {
+    Ember.deprecate("setPath is deprecated since set now supports paths");
+  }
+
+  return setPath.apply(Ember, arguments);
 };
 
 /**
@@ -342,14 +373,22 @@ Ember.setPath = function(root, path, value, tolerant) {
   This is primarily used when syncing bindings, which may try to update after
   an object has been destroyed.
 */
-Ember.trySetPath = function(root, path, value) {
+var trySet = Ember.trySet = function(root, path, value) {
   if (arguments.length===2 && 'string' === typeof root) {
     value = path;
     path = root;
     root = null;
   }
 
-  return Ember.setPath(root, path, value, true);
+  return setPath(root, path, value, true);
+};
+
+Ember.trySetPath = function(root, path, value) {
+  if (Ember.ENV.ACCESSORS === LEVEL_10) {
+    Ember.deprecate("trySetPath has been renamed to trySet");
+  }
+
+  return trySet(root, path, value);
 };
 
 /**
