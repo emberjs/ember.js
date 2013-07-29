@@ -230,10 +230,12 @@ Ember.Enumerable = Ember.Mixin.create({
 
     @method getEach
     @param {String} key name of the property
-    @return {Array} The mapped array.
-  */
-  getEach: function(key) {
-    return this.mapProperty(key);
+    @param {Function} filter A filter function returning a boolean
+    @param {Object} [target] An object used as context by the filter function
+    @return {Array} An array of the values corresponding to key
+   */
+  getEach: function(key, filter, target) {
+    return this.mapProperty(key, filter, target);
   },
 
   /**
@@ -288,17 +290,31 @@ Ember.Enumerable = Ember.Mixin.create({
   },
 
   /**
-    Similar to map, this specialized function returns the value of the named
-    property on all items in the enumeration.
+    If called with only a key parameter, returns an array of the values
+    corresponding to key for all items in the enumeration. If also passed a
+    filter parameter, returns an array of values only for those items for
+    which the filter function returns true.  If using a filter, you can set
+    the context of the filter function through the optional target object.
 
     @method mapProperty
     @param {String} key name of the property
-    @return {Array} The mapped array.
+    @param {Function} filter A filter function returning a boolean
+    @param {Object} [target] An object used as context by the filter function
+    @return {Array} An array of the values corresponding to key
   */
-  mapProperty: function(key) {
-    return this.map(function(next) {
-      return get(next, key);
+
+  mapProperty: function(key, filter, target) {
+    if (typeof filter !== "function") {
+      return this.map(function(next) {
+        return get(next, key);
+      });
+    }
+
+    var ret = Ember.A();
+    this.forEach(function(x, idx, i) {
+      if (filter.call(target, x, idx, i)) ret.push(get(x, key));
     });
+    return ret ;
   },
 
   /**
