@@ -84,9 +84,7 @@ Ember.Router = Ember.Object.extend({
   },
 
   handleURL: function(url) {
-    scheduleLoadingStateEntry(this);
-
-    return this.router.handleURL(url).then(transitionCompleted);
+    return doTransition(this, 'handleURL', [url]);
   },
 
   transitionTo: function() {
@@ -252,9 +250,13 @@ function doTransition(router, method, args) {
     Ember.assert("The route " + passedName + " was not found", router.router.hasRoute(name));
   }
 
-  scheduleLoadingStateEntry(router);
-
   var transitionPromise = router.router[method].apply(router.router, args);
+
+  // Don't schedule loading state entry if user has already aborted the transition.
+  if (router.router.activeTransition) {
+    scheduleLoadingStateEntry(router);
+  }
+
   transitionPromise.then(transitionCompleted);
 
   // We want to return the configurable promise object

@@ -2140,3 +2140,74 @@ test("Route supports clearing outlet explicitly", function() {
   equal(Ember.$('div.posts-extra:contains(postsExtra)', '#qunit-fixture').length, 0, "The posts/extra template was removed");
 });
 
+
+test("Aborting/redirecting the transition in `willTransition` prevents LoadingRoute from being entered", function() {
+
+  expect(8);
+
+  Router.map(function() {
+    this.route("nork");
+    this.route("about");
+  });
+
+  var redirect = false;
+
+  App.IndexRoute = Ember.Route.extend({
+    events: {
+      willTransition: function(transition) {
+        ok(true, "willTransition was called");
+        if (redirect) {
+          // router.js won't refire `willTransition` for this redirect
+          this.transitionTo('about');
+        } else {
+          transition.abort();
+        }
+      }
+    }
+  });
+
+  var deferred = null;
+
+  App.LoadingRoute = Ember.Route.extend({
+    activate: function() {
+      ok(deferred, "LoadingRoute should be entered at this time");
+    },
+    deactivate: function() {
+      ok(true, "LoadingRoute was exited");
+    }
+  });
+
+  App.NorkRoute = Ember.Route.extend({
+    activate: function() {
+      ok(true, "NorkRoute was entered");
+    }
+  });
+
+  App.AboutRoute = Ember.Route.extend({
+    activate: function() {
+      ok(true, "AboutRoute was entered");
+    },
+    model: function() {
+      if (deferred) { return deferred.promise; }
+    }
+  });
+
+  bootApplication();
+
+  // Attempted transitions out of index should abort.
+  Ember.run(router, 'transitionTo', 'nork');
+  Ember.run(router, 'handleURL', '/nork');
+
+  // Attempted transitions out of index should redirect to about
+  redirect = true;
+  Ember.run(router, 'transitionTo', 'nork');
+  Ember.run(router, 'transitionTo', 'index');
+
+  // Redirected transitions out of index to a route with a
+  // promise model should pause the transition and
+  // activate LoadingRoute
+  deferred = Ember.RSVP.defer();
+  Ember.run(router, 'transitionTo', 'nork');
+  Ember.run(deferred.resolve);
+});
+
