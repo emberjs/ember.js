@@ -24,7 +24,7 @@ has four possible values:
    accepts `Ember.Mixin`s and `Object`s that contain
    `Ember.ComputedProperty`s or `Function`s that call `_super`.
  * `"warn"`: Ember 0.9.8.1 compatibility with warnings.
- * `"error"`: Ember 1.0 compatibility; `Ember.Object.create` will throw an
+ * `"1.0"`: Ember 1.0 compatibility; `Ember.Object.create` will throw an
    exception if passed an `Ember.Mixin` or an object that contains an
    `Ember.ComputedProperty` or `Function` that calls `_super`.
 
