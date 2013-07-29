@@ -19,6 +19,26 @@ var o_create = Ember.platform.create,
     a_slice = Array.prototype.slice,
     meta = Ember.meta;
 
+function checkForDeprecations(initMixins) {
+  var level = Ember.ENV.CREATE_WITH_MIXINS,
+      op = {warn: Ember.warn, error: Ember.error}[level];
+  if (!level || level === '0.9') { return; }
+
+  var currentMixin, currentValue;
+  for (var i = 0, l = initMixins.length; i < l; i++) {
+    currentMixin = initMixins[i];
+    op("Ember.Object.create no longer supports mixing in other definitions, use createWithMixins instead.", !(currentMixin instanceof Ember.Mixin));
+
+    for (var key in currentMixin) {
+      currentValue = currentMixin[key];
+      op("Ember.Object.create no longer supports defining computed properties.", !(currentValue instanceof Ember.ComputedProperty));
+
+      var usesSuper = typeof currentValue === 'function' && currentValue.toString().indexOf('._super') !== -1;
+      op("Ember.Object.create no longer supports defining methods that call _super.", !usesSuper);
+    }
+  }
+}
+
 /** @private */
 function makeCtor() {
 
@@ -31,6 +51,8 @@ function makeCtor() {
   var Class = function() {
     if (!wasApplied) { Class.proto(); } // prepare prototype...
     if (initMixins) {
+      checkForDeprecations(initMixins);
+
       this.reopen.apply(this, initMixins);
       initMixins = null;
       rewatch(this); // always rewatch just in case
@@ -186,6 +208,12 @@ var ClassMixin = Ember.Mixin.create({
   },
 
   create: function() {
+    var C = this;
+    if (arguments.length>0) { this._initMixins(arguments); }
+    return new C();
+  },
+
+  createWithMixins: function() {
     var C = this;
     if (arguments.length>0) { this._initMixins(arguments); }
     return new C();
