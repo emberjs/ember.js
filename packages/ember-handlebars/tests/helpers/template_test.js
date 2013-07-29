@@ -9,8 +9,10 @@ module("Support for {{template}} helper", {
     MyApp = lookup.MyApp = Ember.Object.create({});
     container = new Ember.Container();
     container.optionsForType('template', { instantiate: false });
+    Ember.TESTING_DEPRECATION = true;
   },
   teardown: function() {
+    Ember.TESTING_DEPRECATION = false;
     Ember.run(function() {
       if (view) {
         view.destroy();
