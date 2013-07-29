@@ -153,3 +153,30 @@ test("yield inside a conditional uses the outer context", function() {
 
   equal(view.$('div p:contains(inner) + p:contains(insideWith)').length, 1, "Yield points at the right context");
 });
+
+test("yield view should be a virtual view", function() {
+  var component = Ember.Component.extend({
+    isParentComponent: true,
+
+    template: Ember.Handlebars.compile('{{view includedComponent}}'),
+    layout: Ember.Handlebars.compile('{{yield}}')
+  });
+
+  view = Ember.View.create({
+    template: Ember.Handlebars.compile('{{view component}}'),
+    controller: {
+      component: component,
+      includedComponent: Ember.Component.extend({
+        didInsertElement: function() {
+          var parentView = this.get('parentView');
+
+          ok(parentView.get('isParentComponent'), "parent view is the parent component");
+        }
+      })
+    }
+  });
+
+  Ember.run(function() {
+    view.appendTo('#qunit-fixture');
+  });
+});

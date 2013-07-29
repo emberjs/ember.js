@@ -70,6 +70,7 @@ Ember.Handlebars.registerHelper('yield', function(options) {
   var keywords = view._parentView.cloneKeywords();
 
   currentView.appendChild(Ember.View, {
+    isVirtual: true,
     tagName: '',
     template: template,
     context: get(view._parentView, 'context'),
