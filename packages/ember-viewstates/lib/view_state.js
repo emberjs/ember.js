@@ -46,3 +46,23 @@ Ember.ViewState = Ember.State.extend({
     }
   }
 });
+
+function ensureViewStateAvailable() {
+  var op = {
+    warn: Ember.warn,
+    "1.0": Ember.assert
+  }[Ember.ENV.VIEW_STATE] || Ember.K;
+  op("Ember.ViewState has been removed from Ember 1.0.");
+}
+
+Ember.ViewState.reopenClass({
+  extend: function() {
+    ensureViewStateAvailable();
+    return this._super.apply(this, arguments);
+  },
+
+  create: function() {
+    ensureViewStateAvailable();
+    return this._super.apply(this, arguments);
+  }
+});
