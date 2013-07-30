@@ -303,6 +303,26 @@ test('render does not replace templateName if user provided', function() {
   equal(Ember.$('p', '#qunit-fixture').text(), "THIS IS THE REAL HOME", "The homepage template was rendered");
 });
 
+test('render does not replace template if user provided', function () {
+  Router.map(function () {
+    this.route("home", { path: "/" });
+  });
+
+  App.HomeView = Ember.View.extend({
+    template: Ember.Handlebars.compile("<p>THIS IS THE REAL HOME</p>")
+  });
+  App.HomeController = Ember.Controller.extend();
+  App.HomeRoute = Ember.Route.extend();
+
+  bootApplication();
+
+  Ember.run(function () {
+    router.handleURL("/");
+  });
+
+  equal(Ember.$('p', '#qunit-fixture').text(), "THIS IS THE REAL HOME", "The homepage template was rendered");
+});
+
 test("The Homepage with a `setupController` hook", function() {
   Router.map(function() {
     this.route("home", { path: "/" });
