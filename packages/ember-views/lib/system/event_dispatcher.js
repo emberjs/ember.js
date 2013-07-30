@@ -142,16 +142,25 @@ Ember.EventDispatcher = Ember.Object.extend(/** @scope Ember.EventDispatcher.pro
     var self = this;
 
     rootElement.on(event + '.ember', '.ember-view', function(evt, triggeringManager) {
+      var delegateArguments = arguments;
+
       return Ember.handleErrors(function() {
         var view = Ember.View.views[this.id],
-            result = true, manager = null;
+          result = true, manager = null;
+
+        // If triggeringManager is actually a triggeringManager, we probably want to
+        // exclude it from the additional arguments array.
+        // BUT: How do we know if triggeringManager is a triggeringManager or
+        // just an additional argument?
+        // For now, it will just get passed on as an additional argument
+        var additionalArguments = Array.prototype.slice.call(delegateArguments, 1);
 
         manager = self._findNearestEventManager(view,eventName);
 
         if (manager && manager !== triggeringManager) {
-          result = self._dispatchEvent(manager, evt, eventName, view);
+          result = self._dispatchEvent.apply(self, [manager, evt, eventName, view].concat(additionalArguments));
         } else if (view) {
-          result = self._bubbleEvent(view,evt,eventName);
+          result = self._bubbleEvent.apply(self, [view, evt, eventName].concat(additionalArguments));
         } else {
           evt.stopPropagation();
         }
@@ -189,24 +198,27 @@ Ember.EventDispatcher = Ember.Object.extend(/** @scope Ember.EventDispatcher.pro
   },
 
   _dispatchEvent: function(object, evt, eventName, view) {
-    var result = true;
+    var result = true,
+        additionalArguments = Array.prototype.slice.call(arguments, 4);
 
     var handler = object[eventName];
     if (Ember.typeOf(handler) === 'function') {
-      result = handler.call(object, evt, view);
+      result = handler.apply(object, [evt, view].concat(additionalArguments));
       // Do not preventDefault in eventManagers.
       evt.stopPropagation();
     }
     else {
-      result = this._bubbleEvent(view, evt, eventName);
+      result = this._bubbleEvent.apply(this, [view,evt,eventName].concat(additionalArguments));
     }
 
     return result;
   },
 
   _bubbleEvent: function(view, evt, eventName) {
+    var additionalArguments = Array.prototype.slice.call(arguments, 3);
+
     return Ember.run(function() {
-      return view.handleEvent(eventName, evt);
+      return view.handleEvent.apply(view, [eventName, evt].concat(additionalArguments));
     });
   },
 
