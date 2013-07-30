@@ -2225,7 +2225,9 @@ Ember.View = Ember.CoreView.extend(
     @param evt {Event}
   */
   handleEvent: function(eventName, evt) {
-    return this.currentState.handleEvent(this, eventName, evt);
+    var additionalArguments = Array.prototype.slice.call(arguments, 2);
+
+    return this.currentState.handleEvent.apply(this, [this, eventName, evt].concat(additionalArguments));
   },
 
   registerObserver: function(root, path, target, observer) {
