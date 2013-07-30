@@ -146,7 +146,7 @@ Ember.EventDispatcher = Ember.Object.extend(/** @scope Ember.EventDispatcher.pro
 
       return Ember.handleErrors(function() {
         var view = Ember.View.views[this.id],
-          result = true, manager = null;
+            result = true, manager = null;
 
         // If triggeringManager is actually a triggeringManager, we probably want to
         // exclude it from the additional arguments array.
