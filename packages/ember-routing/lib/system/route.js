@@ -546,7 +546,7 @@ Ember.Route = Ember.Object.extend({
     // NOTE: We're specifically checking that skipAssert is true, because according
     //   to the old API the second parameter was model. We do not want people who
     //   passed a model to skip the assertion.
-    Ember.assert("The controller "+name+" could not be found. Make sure the controller has been generated first. This will happen the first time the associated route is entered.", controller || _skipAssert === true);
+    Ember.assert("The controller for route '"+name+"'' could not be found. Make sure that this route exists and has already been entered at least once. If you must intialize the controller without entering a route, use `generateController`.", controller || _skipAssert === true);
 
     return controller;
   },
@@ -565,8 +565,6 @@ Ember.Route = Ember.Object.extend({
     var container = this.router.container;
 
     model = model || this.modelFor(name);
-
-    Ember.assert("You are trying to look up a controller that you did not define, and for which Ember does not know the model.\n\nThis is not a controller for a route, so you must explicitly define the controller ("+this.router.namespace.toString() + "." + Ember.String.capitalize(Ember.String.camelize(name))+"Controller) or pass a model as the second parameter to `controllerFor`, so that Ember knows which type of controller to create for you.", model || this.container.lookup('route:' + name));
 
     return Ember.generateController(container, name, model);
   },
