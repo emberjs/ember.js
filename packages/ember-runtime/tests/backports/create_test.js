@@ -2,29 +2,9 @@ function matches(msg, substr) {
   ok(msg.indexOf(substr) !== -1);
 }
 
-module("Ember.Object.createWithMixins");
-
-test("it exists", function() {
-  ok(Ember.Object.createWithMixins);
-});
-
-test("it instantiates objects", function() {
-  var obj = Ember.Object.createWithMixins({ foo: 'bar' });
-  ok(obj);
-  equal(obj.get('foo'), 'bar');
-});
-
-test('it works on subclasses', function() {
-  var Klass = Ember.Object.extend({
-    foo: 'bar'
-  });
-  var obj = Klass.createWithMixins({ foo: 'baz' });
-  equal(obj.get('foo'), 'baz');
-});
-
 var originalFlag, originalWarn, warnings;
 
-module("Backported Ember.Object.create", {
+module("Backported Ember.Object.create / createWithMixins", {
   setup: function() {
     originalFlag = Ember.ENV.CREATE_WITH_MIXINS;
     originalWarn = Ember.Logger.warn;
@@ -37,6 +17,31 @@ module("Backported Ember.Object.create", {
     Ember.ENV.CREATE_WITH_MIXINS = originalFlag;
     Ember.Logger.warn = originalWarn;
   }
+});
+
+test("createWithMixins exists", function() {
+  ok(Ember.Object.createWithMixins);
+});
+
+test("createWithMixins instantiates objects", function() {
+  var obj = Ember.Object.createWithMixins({ foo: 'bar' });
+  ok(obj);
+  equal(obj.get('foo'), 'bar');
+});
+
+test('createWithMixins works on subclasses', function() {
+  var Klass = Ember.Object.extend({
+    foo: 'bar'
+  });
+  var obj = Klass.createWithMixins({ foo: 'baz' });
+  equal(obj.get('foo'), 'baz');
+});
+
+test("createWithMixins doesn't warn with warnings on", function() {
+  Ember.ENV.CREATE_WITH_MIXINS = 'warn';
+
+  Ember.Object.createWithMixins(Ember.Mixin.create());
+  equal(warnings.length, 0);
 });
 
 test("passing a mixin with warnings off", function() {

@@ -46,13 +46,16 @@ function makeCtor() {
   // method a lot faster.  This is glue code so we want it to be as fast as
   // possible.
 
-  var wasApplied = false, initMixins, init = false, hasChains = false;
+  var wasApplied = false, initMixins, init = false, hasChains = false, skipDeprecations = false;
 
   var Class = function() {
     if (!wasApplied) { Class.proto(); } // prepare prototype...
     if (initMixins) {
-      checkForDeprecations(initMixins);
-
+      if (!skipDeprecations) {
+        checkForDeprecations(initMixins);
+      } else {
+        skipDeprecations = false;
+      }
       this.reopen.apply(this, initMixins);
       initMixins = null;
       rewatch(this); // always rewatch just in case
@@ -82,6 +85,7 @@ function makeCtor() {
     wasApplied = false;
   };
   Class._initMixins = function(args) { initMixins = args; };
+  Class._skipDeprecations = function() { skipDeprecations = true; };
 
   Class.proto = function() {
     var superclass = Class.superclass;
@@ -215,6 +219,7 @@ var ClassMixin = Ember.Mixin.create({
 
   createWithMixins: function() {
     var C = this;
+    this._skipDeprecations();
     if (arguments.length>0) { this._initMixins(arguments); }
     return new C();
   },
