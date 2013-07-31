@@ -73,7 +73,7 @@ function makeBindings(options) {
 
   ## Custom view helper example
 
-  Assuming a view subclass named `App.CalenderView` were defined, a helper
+  Assuming a view subclass named `App.CalendarView` were defined, a helper
   for rendering instances of this view could be registered as follows:
 
   ```javascript
