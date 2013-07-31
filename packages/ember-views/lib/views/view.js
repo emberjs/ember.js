@@ -961,6 +961,9 @@ Ember.View = Ember.CoreView.extend(
 
   /**
     The parent context for this template.
+
+    @method parentContext
+    @return {Ember.View}
   */
   parentContext: function() {
     var parentView = get(this, '_parentView');

@@ -99,32 +99,33 @@ Ember.Component = Ember.View.extend(Ember.TargetActionSupport, {
   }).property('_parentView'),
 
   /**
-   Sends an action to component's controller. A component inherits its
-   controller from the context in which it is used.
+    Sends an action to component's controller. A component inherits its
+    controller from the context in which it is used.
 
-   By default, calling `sendAction()` will send an action with the name
-   of the component's `action` property.
+    By default, calling `sendAction()` will send an action with the name
+    of the component's `action` property.
 
-   For example, if the component had a property `action` with the value
-   `"addItem"`, calling `sendAction()` would send the `addItem` action
-   to the component's controller.
+    For example, if the component had a property `action` with the value
+    `"addItem"`, calling `sendAction()` would send the `addItem` action
+    to the component's controller.
 
-   If you provide an argument to `sendAction()`, that key will be used to look
-   up the action name.
+    If you provide an argument to `sendAction()`, that key will be used to look
+    up the action name.
 
-   For example, if the component had a property `playing` with the value
-   `didStartPlaying`, calling `sendAction('playing')` would send the
-   `didStartPlaying` action to the component's controller.
+    For example, if the component had a property `playing` with the value
+    `didStartPlaying`, calling `sendAction('playing')` would send the
+    `didStartPlaying` action to the component's controller.
 
-   Whether or not you are using the default action or a named action, if
-   the action name is not defined on the component, calling `sendAction()`
-   does not have any effect.
+    Whether or not you are using the default action or a named action, if
+    the action name is not defined on the component, calling `sendAction()`
+    does not have any effect.
 
-   For example, if you call `sendAction()` on a component that does not have
-   an `action` property defined, no action will be sent to the controller,
-   nor will an exception be raised.
+    For example, if you call `sendAction()` on a component that does not have
+    an `action` property defined, no action will be sent to the controller,
+    nor will an exception be raised.
 
-   @param [action] {String} the action to trigger
+    @method sendAction
+    @param [action] {String} the action to trigger
   */
   sendAction: function(action) {
     var actionName;
