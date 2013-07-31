@@ -108,7 +108,7 @@ var NOT = {
 };
 
 var get     = Ember.get,
-    getPath = Ember.getPath,
+    getPath = Ember.getPathWithoutDeprecation,
     setPath = Ember.setPath,
     guidFor = Ember.guidFor,
     isGlobalPath = Ember.isGlobalPath;

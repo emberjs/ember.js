@@ -7,7 +7,7 @@
 
 require("ember-views/system/render_buffer");
 var get = Ember.get, set = Ember.set, addObserver = Ember.addObserver;
-var getPath = Ember.getPath, meta = Ember.meta, fmt = Ember.String.fmt;
+var getPath = Ember.getPathWithoutDeprecation, meta = Ember.meta, fmt = Ember.String.fmt;
 var a_slice = Array.prototype.slice;
 var a_forEach = Ember.ArrayUtils.forEach;
 
@@ -992,9 +992,9 @@ Ember.View = Ember.Object.extend(Ember.Evented,
     property = split[0];
 
     // TODO: Remove this `false` when the `getPath` globals support is removed
-    var val = Ember.getPath(this, property, false);
+    var val = Ember.getPathWithoutDeprecation(this, property, false);
     if (val === undefined && Ember.isGlobalPath(property)) {
-      val = Ember.getPath(window, property);
+      val = Ember.getPathWithoutDeprecation(window, property);
     }
 
     // If the value is truthy and we're using the colon syntax,
@@ -1644,7 +1644,7 @@ Ember.View = Ember.Object.extend(Ember.Evented,
 
     var viewController = get(this, 'viewController');
     if (viewController) {
-      viewController = Ember.getPath(viewController);
+      viewController = Ember.getPathWithoutDeprecation(viewController);
       if (viewController) {
         set(viewController, 'view', this);
       }

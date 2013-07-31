@@ -1,6 +1,6 @@
 /*jshint eqeqeq:false */
 
-var set = Ember.set, get = Ember.get, getPath = Ember.getPath;
+var set = Ember.set, get = Ember.get, getPath = Ember.getPathWithoutDeprecation;
 var indexOf = Ember.ArrayUtils.indexOf, indexesOf = Ember.ArrayUtils.indexesOf;
 
 /**

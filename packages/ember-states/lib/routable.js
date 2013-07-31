@@ -1,4 +1,4 @@
-var get = Ember.get, getPath = Ember.getPath;
+var get = Ember.get, getPath = Ember.getPathWithoutDeprecation;
 
 // The Ember Routable mixin assumes the existance of a simple
 // routing shim that supports the following three behaviors:

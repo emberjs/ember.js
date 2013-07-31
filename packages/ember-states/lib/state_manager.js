@@ -1,4 +1,4 @@
-var get = Ember.get, set = Ember.set, getPath = Ember.getPath, fmt = Ember.String.fmt;
+var get = Ember.get, set = Ember.set, getPath = Ember.getPathWithoutDeprecation, fmt = Ember.String.fmt;
 
 require('ember-states/state');
 

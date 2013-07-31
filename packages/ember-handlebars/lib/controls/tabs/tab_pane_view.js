@@ -1,4 +1,4 @@
-var get = Ember.get, getPath = Ember.getPath;
+var get = Ember.get, getPath = Ember.getPathWithoutDeprecation;
 
 Ember.TabPaneView = Ember.View.extend({
   tabsContainer: Ember.computed(function() {

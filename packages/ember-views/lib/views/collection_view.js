@@ -250,7 +250,7 @@ Ember.CollectionView = Ember.ContainerView.extend(
         addedViews = [], view, item, idx, len, itemTagName;
 
     if ('string' === typeof itemViewClass) {
-      itemViewClass = Ember.getPath(itemViewClass);
+      itemViewClass = Ember.getPathWithoutDeprecation(itemViewClass);
     }
 
     Ember.assert(fmt("itemViewClass must be a subclass of Ember.View, not %@", [itemViewClass]), Ember.View.detect(itemViewClass));

@@ -162,7 +162,7 @@ var normalizePath = Ember.Handlebars.normalizePath = function(root, path, data) 
   @param {Object} options The template's option hash
 */
 
-Ember.Handlebars.getPath = function(root, path, options) {
+Ember.Handlebars.get = function(root, path, options) {
   var data = options && options.data,
       normalizedPath = normalizePath(root, path, data),
       value;
@@ -173,12 +173,20 @@ Ember.Handlebars.getPath = function(root, path, options) {
   root = normalizedPath.root;
   path = normalizedPath.path;
 
-  value = Ember.getPath(root, path);
+  value = Ember.getPathWithoutDeprecation(root, path);
 
   if (value === undefined && root !== window && Ember.isGlobalPath(path)) {
-    value = Ember.getPath(window, path);
+    value = Ember.getPathWithoutDeprecation(window, path);
   }
   return value;
+};
+
+Ember.Handlebars.getPath = function(root, path, options) {
+  if (Ember.ENV.ACCESSORS === "1.0") {
+    Ember.deprecate("getPath is deprecated since get now supports paths");
+  }
+
+  return Ember.Handlebars.get(root, path, options);
 };
 
 /**

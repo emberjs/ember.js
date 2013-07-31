@@ -3,7 +3,7 @@
 require("metamorph");
 require("ember-views/views/view");
 
-var set = Ember.set, get = Ember.get, getPath = Ember.getPath;
+var set = Ember.set, get = Ember.get, getPath = Ember.getPathWithoutDeprecation;
 
 var DOMManager = {
   remove: function(view) {

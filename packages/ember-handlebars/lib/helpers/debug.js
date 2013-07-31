@@ -8,7 +8,7 @@
 
 require('ember-handlebars/ext');
 
-var getPath = Ember.getPath;
+var getPath = Ember.getPathWithoutDeprecation;
 
 /**
   `log` allows you to output the value of a value in the current rendering

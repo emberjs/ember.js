@@ -281,7 +281,7 @@ Ember.getWithDefault = function(root, key, defaultValue) {
   return value;
 };
 
-function getPathWithoutDeprecation(root, path) {
+var getPathWithoutDeprecation = Ember.getPathWithoutDeprecation = function(root, path) {
   var hasThis, isGlobal, ret;
 
   // Helpers that operate with 'this' within an #each
@@ -313,7 +313,7 @@ function getPathWithoutDeprecation(root, path) {
   }
 
   return getPath(root, path);
-}
+};
 
 Ember.getPath = function(root, path) {
   if (Ember.ENV.ACCESSORS === LEVEL_10) {
