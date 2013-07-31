@@ -180,3 +180,61 @@ test("yield view should be a virtual view", function() {
     view.appendTo('#qunit-fixture');
   });
 });
+
+test("adding a layout should not affect the context of normal views", function() {
+  var parentView = Ember.View.create({
+    context: "ParentContext"
+  });
+
+  view = Ember.View.create({
+    template:     Ember.Handlebars.compile("View context: {{this}}"),
+    context:      "ViewContext",
+    _parentView:  parentView
+  });
+
+  Ember.run(function() {
+    view.createElement();
+  });
+
+  equal(view.$().text(), "View context: ViewContext");
+
+
+  set(view, 'layout', Ember.Handlebars.compile("Layout: {{yield}}"));
+
+  Ember.run(function() {
+    view.destroyElement();
+    view.createElement();
+  });
+
+  equal(view.$().text(), "Layout: View context: ViewContext");
+
+  Ember.run(function() {
+    parentView.destroy();
+  });
+});
+
+test("yield should work for views and components even if _parentView is null", function() {
+  view = Ember.View.create({
+    layout:   Ember.Handlebars.compile('Layout: {{yield}}'),
+    template: Ember.Handlebars.compile("View Content")
+  });
+
+  var component = Ember.Component.create({
+    boundText:  "Component Content",
+    layout:     Ember.Handlebars.compile("Layout: {{yield}}"),
+    template:   Ember.Handlebars.compile("{{boundText}}")
+  });
+
+  Ember.run(function() {
+    view.createElement();
+    component.createElement();
+  });
+
+  equal(view.$().text(), "Layout: View Content");
+  equal(component.$().text(), "Layout: Component Content");
+
+  Ember.run(function() {
+    component.destroy();
+  });
+
+});

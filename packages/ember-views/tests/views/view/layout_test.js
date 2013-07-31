@@ -108,3 +108,4 @@ test("the template property is available to the layout template", function() {
 
   equal("Herp derp", view.$().text(), "the layout has access to the template");
 });
+
