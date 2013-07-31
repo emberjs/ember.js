@@ -11,22 +11,6 @@ var DefaultView = Ember._MetamorphView;
 
 require("ember-routing/system/dsl");
 
-function setupLocation(router) {
-  var location = get(router, 'location'),
-      rootURL = get(router, 'rootURL'),
-      options = {};
-
-  if (typeof rootURL === 'string') {
-    options.rootURL = rootURL;
-  }
-
-  if ('string' === typeof location) {
-    options.implementation = location;
-    location = set(router, 'location', Ember.Location.create(options));
-
-  }
-}
-
 /**
   The `Ember.Router` class manages the application state and URLs. Refer to
   the [routing guide](http://emberjs.com/guides/routing/) for documentation.
@@ -41,7 +25,7 @@ Ember.Router = Ember.Object.extend({
   init: function() {
     this.router = this.constructor.router || this.constructor.map(Ember.K);
     this._activeViews = {};
-    setupLocation(this);
+    this._setupLocation();
   },
 
   url: Ember.computed(function() {
@@ -56,7 +40,7 @@ Ember.Router = Ember.Object.extend({
         container = this.container,
         self = this;
 
-    setupRouter(this, router, location);
+    this._setupRouter(router, location);
 
     container.register('view:default', DefaultView);
     container.register('view:toplevel', Ember.View.extend());
@@ -70,7 +54,7 @@ Ember.Router = Ember.Object.extend({
 
   didTransition: function(infos) {
     var appController = this.container.lookup('controller:application'),
-        path = routePath(infos);
+        path = Ember.Router._routePath(infos);
 
     if (!('currentPath' in appController)) {
       defineProperty(appController, 'currentPath');
@@ -84,15 +68,15 @@ Ember.Router = Ember.Object.extend({
   },
 
   handleURL: function(url) {
-    return doTransition(this, 'handleURL', [url]);
+    return this._doTransition('handleURL', [url]);
   },
 
   transitionTo: function() {
-    return doTransition(this, 'transitionTo', arguments);
+    return this._doTransition('transitionTo', arguments);
   },
 
   replaceWith: function() {
-    return doTransition(this, 'replaceWith', arguments);
+    return this._doTransition('replaceWith', arguments);
   },
 
   generate: function() {
@@ -143,159 +127,155 @@ Ember.Router = Ember.Object.extend({
 
     this._activeViews[templateName] = [view, disconnect];
     view.one('willDestroyElement', this, disconnect);
-  }
-});
+  },
 
-function getHandlerFunction(router) {
-  var seen = {}, container = router.container,
-      DefaultRoute = container.resolve('route:basic');
+  _setupLocation: function() {
+    var location = get(this, 'location'),
+        rootURL = get(this, 'rootURL'),
+        options = {};
 
-  return function(name) {
-    var routeName = 'route:' + name,
+    if (typeof rootURL === 'string') {
+      options.rootURL = rootURL;
+    }
+
+    if ('string' === typeof location) {
+      options.implementation = location;
+      location = set(this, 'location', Ember.Location.create(options));
+    }
+  },
+
+  _getHandlerFunction: function() {
+    var seen = {}, container = this.container,
+        DefaultRoute = container.resolve('route:basic'),
+        self = this;
+
+    return function(name) {
+      var routeName = 'route:' + name,
+          handler = container.lookup(routeName);
+
+      if (seen[name]) { return handler; }
+
+      seen[name] = true;
+
+      if (!handler) {
+        if (name === 'loading') { return {}; }
+
+        container.register(routeName, DefaultRoute.extend());
         handler = container.lookup(routeName);
 
-    if (seen[name]) { return handler; }
-
-    seen[name] = true;
-
-    if (!handler) {
-      if (name === 'loading') { return {}; }
-
-      container.register(routeName, DefaultRoute.extend());
-      handler = container.lookup(routeName);
-
-      if (get(router, 'namespace.LOG_ACTIVE_GENERATION')) {
-        Ember.Logger.info("generated -> " + routeName, { fullName: routeName });
+        if (get(self, 'namespace.LOG_ACTIVE_GENERATION')) {
+          Ember.Logger.info("generated -> " + routeName, { fullName: routeName });
+        }
       }
-    }
 
-    if (name === 'application') {
-      // Inject default `error` handler.
-      handler.events = handler.events || {};
-      handler.events.error = handler.events.error || defaultErrorHandler;
-    }
+      if (name === 'application') {
+        // Inject default `error` handler.
+        handler.events = handler.events || {};
+        handler.events.error = handler.events.error || Ember.Router._defaultErrorHandler;
+      }
 
-    handler.routeName = name;
-    return handler;
-  };
-}
+      handler.routeName = name;
+      return handler;
+    };
+  },
 
-function defaultErrorHandler(error, transition) {
-  Ember.Logger.error('Error while loading route:', error);
+  _setupRouter: function(router, location) {
+    var lastURL, emberRouter = this;
 
-  // Using setTimeout allows us to escape from the Promise's try/catch block
-  setTimeout(function() { throw error; });
-}
+    router.getHandler = this._getHandlerFunction();
 
-
-function routePath(handlerInfos) {
-  var path = [];
-
-  for (var i=1, l=handlerInfos.length; i<l; i++) {
-    var name = handlerInfos[i].name,
-        nameParts = name.split(".");
-
-    path.push(nameParts[nameParts.length - 1]);
-  }
-
-  return path.join(".");
-}
-
-function setupRouter(emberRouter, router, location) {
-  var lastURL;
-
-  router.getHandler = getHandlerFunction(emberRouter);
-
-  var doUpdateURL = function() {
-    location.setURL(lastURL);
-  };
-
-  router.updateURL = function(path) {
-    lastURL = path;
-    Ember.run.once(doUpdateURL);
-  };
-
-  if (location.replaceURL) {
-    var doReplaceURL = function() {
-      location.replaceURL(lastURL);
+    var doUpdateURL = function() {
+      location.setURL(lastURL);
     };
 
-    router.replaceURL = function(path) {
+    router.updateURL = function(path) {
       lastURL = path;
-      Ember.run.once(doReplaceURL);
+      Ember.run.once(doUpdateURL);
     };
-  }
 
-  router.didTransition = function(infos) {
-    emberRouter.didTransition(infos);
-  };
-}
+    if (location.replaceURL) {
+      var doReplaceURL = function() {
+        location.replaceURL(lastURL);
+      };
 
-function doTransition(router, method, args) {
-  // Normalize blank route to root URL.
-  args = [].slice.call(args);
-  args[0] = args[0] || '/';
-
-  var passedName = args[0], name;
-
-  if (passedName.charAt(0) === '/') {
-    name = passedName;
-  } else {
-    if (!router.router.hasRoute(passedName)) {
-      name = args[0] = passedName + '.index';
-    } else {
-      name = passedName;
+      router.replaceURL = function(path) {
+        lastURL = path;
+        Ember.run.once(doReplaceURL);
+      };
     }
 
-    Ember.assert("The route " + passedName + " was not found", router.router.hasRoute(name));
+    router.didTransition = function(infos) {
+      emberRouter.didTransition(infos);
+    };
+  },
+
+  _doTransition: function(method, args) {
+    // Normalize blank route to root URL.
+    args = [].slice.call(args);
+    args[0] = args[0] || '/';
+
+    var passedName = args[0], name, self = this;
+
+    if (passedName.charAt(0) === '/') {
+      name = passedName;
+    } else {
+      if (!this.router.hasRoute(passedName)) {
+        name = args[0] = passedName + '.index';
+      } else {
+        name = passedName;
+      }
+
+      Ember.assert("The route " + passedName + " was not found", this.router.hasRoute(name));
+    }
+
+    var transitionPromise = this.router[method].apply(this.router, args);
+
+    // Don't schedule loading state entry if user has already aborted the transition.
+    if (this.router.activeTransition) {
+      this._scheduleLoadingStateEntry();
+    }
+
+    transitionPromise.then(function(route) {
+      self._transitionCompleted(route);
+    });
+
+    // We want to return the configurable promise object
+    // so that callers of this function can use `.method()` on it,
+    // which obviously doesn't exist for normal RSVP promises.
+    return transitionPromise;
+  },
+
+  _scheduleLoadingStateEntry: function() {
+    if (this._loadingStateActive) { return; }
+    this._shouldEnterLoadingState = true;
+    Ember.run.scheduleOnce('routerTransitions', this, this._enterLoadingState);
+  },
+
+  _enterLoadingState: function() {
+    if (this._loadingStateActive || !this._shouldEnterLoadingState) { return; }
+
+    var loadingRoute = this.router.getHandler('loading');
+    if (loadingRoute) {
+      if (loadingRoute.enter) { loadingRoute.enter(); }
+      if (loadingRoute.setup) { loadingRoute.setup(); }
+      this._loadingStateActive = true;
+    }
+  },
+
+  _exitLoadingState: function () {
+    this._shouldEnterLoadingState = false;
+    if (!this._loadingStateActive) { return; }
+
+    var loadingRoute = this.router.getHandler('loading');
+    if (loadingRoute && loadingRoute.exit) { loadingRoute.exit(); }
+    this._loadingStateActive = false;
+  },
+
+  _transitionCompleted: function(route) {
+    this.notifyPropertyChange('url');
+    this._exitLoadingState();
   }
-
-  var transitionPromise = router.router[method].apply(router.router, args);
-
-  // Don't schedule loading state entry if user has already aborted the transition.
-  if (router.router.activeTransition) {
-    scheduleLoadingStateEntry(router);
-  }
-
-  transitionPromise.then(transitionCompleted);
-
-  // We want to return the configurable promise object
-  // so that callers of this function can use `.method()` on it,
-  // which obviously doesn't exist for normal RSVP promises.
-  return transitionPromise;
-}
-
-function scheduleLoadingStateEntry(router) {
-  if (router._loadingStateActive) { return; }
-  router._shouldEnterLoadingState = true;
-  Ember.run.scheduleOnce('routerTransitions', null, enterLoadingState, router);
-}
-
-function enterLoadingState(router) {
-  if (router._loadingStateActive || !router._shouldEnterLoadingState) { return; }
-
-  var loadingRoute = router.router.getHandler('loading');
-  if (loadingRoute) {
-    if (loadingRoute.enter) { loadingRoute.enter(); }
-    if (loadingRoute.setup) { loadingRoute.setup(); }
-    router._loadingStateActive = true;
-  }
-}
-
-function exitLoadingState(router) {
-  router._shouldEnterLoadingState = false;
-  if (!router._loadingStateActive) { return; }
-
-  var loadingRoute = router.router.getHandler('loading');
-  if (loadingRoute && loadingRoute.exit) { loadingRoute.exit(); }
-  router._loadingStateActive = false;
-}
-
-function transitionCompleted(route) {
-  var router = route.router;
-  router.notifyPropertyChange('url');
-  exitLoadingState(router);
-}
+});
 
 Ember.Router.reopenClass({
   map: function(callback) {
@@ -321,6 +301,26 @@ Ember.Router.reopenClass({
     router.callbacks.push(callback);
     router.map(dsl.generate());
     return router;
+  },
+
+  _defaultErrorHandler: function(error, transition) {
+    Ember.Logger.error('Error while loading route:', error);
+
+    // Using setTimeout allows us to escape from the Promise's try/catch block
+    setTimeout(function() { throw error; });
+  },
+
+  _routePath: function(handlerInfos) {
+    var path = [];
+
+    for (var i=1, l=handlerInfos.length; i<l; i++) {
+      var name = handlerInfos[i].name,
+          nameParts = name.split(".");
+
+      path.push(nameParts[nameParts.length - 1]);
+    }
+
+    return path.join(".");
   }
 });
 
