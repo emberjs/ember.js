@@ -1,6 +1,6 @@
 # Action Helper
 
-In Ember 0.9, `{{action "foo"}}` will pass a jQuery event object too `foo`. In Ember 1.0, it does not, but does allow passing other arguments. This fork introduces a flag, `ENV.ACTION_ARGUMENTS`, with three
+In Ember 0.9, `{{action "foo"}}` will pass a jQuery event object to `foo`. In Ember 1.0, it does not, but does allow passing other arguments. This fork introduces a flag, `ENV.ACTION_ARGUMENTS`, with three
 allowed values:
 
  * `null` (the default) -- `{{action "foo"}}` calls `foo(event)`
