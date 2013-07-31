@@ -1,3 +1,12 @@
+*Ember 0.9.9-zendesk (July 31, 2013)*
+* Remove internal usage of Ember.getPath. Instead use Ember.getPathWithoutDeprecation.
+* Add ACTION_ARGUMENTS flag
+* Add ENV.BINDING_TRANSFORMS to implement warnings and errors upon usage.
+* Add ENV.EVENTED_FIRE flag to back port Ember.Evented#fire deprecation warning. Also implemented Ember.Evented#trigger.
+* Add ENV.VIEW_STATE to warn or throw on ViewState usage.
+* Backport accessor behaviour from 1.0 as ENV.ACCESSOR flag.
+* Backport warnings and errors for 1.0's Ember.Object.create() behaviour.
+
 *Ember 0.9.8.1 (May 22, 2012)*
 
 * Fix bindAttr with global paths

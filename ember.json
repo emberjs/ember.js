@@ -2,7 +2,7 @@
   "name": "ember",
   "bpm": "1.0.0",
   "dependencies": {
-    "ember": "0.9.8.1"
+    "ember": "0.9.9-zendesk"
   },
   "dependencies:development": {
     "spade-qunit": "~> 1.0.0"

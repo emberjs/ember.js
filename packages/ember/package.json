@@ -4,14 +4,14 @@
   "summary": "Ember - JavaScript Application Framework",
   "homepage": "http://github.com/emberjs/ember.js",
   "author": "Charles Jolley",
-  "version": "0.9.8.1",
+  "version": "0.9.9-zendesk",
 
   "dependencies": {
     "spade":                 "~> 1.0.0",
-    "ember-runtime": "0.9.8.1",
-    "ember-views": "0.9.8.1",
-    "ember-states": "0.9.8.1",
-    "ember-handlebars": "0.9.8.1"
+    "ember-runtime": "0.9.9-zendesk",
+    "ember-views": "0.9.9-zendesk",
+    "ember-states": "0.9.9-zendesk",
+    "ember-handlebars": "0.9.9-zendesk"
   },
 
   "directories": {

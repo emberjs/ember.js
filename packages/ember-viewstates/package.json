@@ -4,7 +4,7 @@
   "description": "The Ember state-enhanced views",
   "homepage": "http://emberjs.com",
   "author": "Yehuda Katz",
-  "version": "0.9.8.1",
+  "version": "0.9.9-zendesk",
 
   "directories": {
     "lib": "lib"
@@ -13,8 +13,8 @@
   "dependencies": {
     "spade":              "~> 1.0",
     "jquery":             "~> 1.7",
-    "ember-views": "0.9.8.1",
-    "ember-states": "0.9.8.1"
+    "ember-views": "0.9.9-zendesk",
+    "ember-states": "0.9.9-zendesk"
   },
 
   "dependencies:development": {

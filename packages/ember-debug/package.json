@@ -4,7 +4,7 @@
   "description": "Debugging helpers for Ember",
   "homepage": "http://www.emberjs.com",
   "author": "Peter Wagenet",
-  "version": "0.9.8.1",
+  "version": "0.9.9-zendesk",
 
   "directories": {
     "lib": "lib"

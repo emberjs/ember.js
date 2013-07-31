@@ -4,10 +4,10 @@
   "description": "Extensions to the Handlebars templating engine for use with Ember. These extensions make Handlebars aware of property observing, which allows it to automatically update the DOM when the referenced properties change. It also provides Handlebars helpers for creating Ember views and working with collections.",
   "homepage": "http://emberjs.com",
   "author": "Yehuda Katz",
-  "version": "0.9.8.1",
+  "version": "0.9.9-zendesk",
   "dependencies": {
-    "ember-views": "0.9.8.1",
-    "ember-states": "0.9.8.1"
+    "ember-views": "0.9.9-zendesk",
+    "ember-states": "0.9.9-zendesk"
   },
 
   "directories": {

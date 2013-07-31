@@ -5,7 +5,7 @@
 
   "homepage": "http://emberjs.com",
   "author": "Charles Jolley",
-  "version": "0.9.8.1",
+  "version": "0.9.9-zendesk",
 
   "directories": {
     "lib": "lib"
@@ -13,7 +13,7 @@
 
   "dependencies": {
     "spade":            "~> 1.0",
-    "ember-metal": "0.9.8.1"
+    "ember-metal": "0.9.9-zendesk"
   },
 
   "dependencies:development": {

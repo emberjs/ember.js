@@ -9,7 +9,7 @@ if ('undefined' === typeof Ember) {
 /**
   @namespace
   @name Ember
-  @version 0.9.8.1
+  @version 0.9.9-zendesk
 
   All Ember methods and functions are defined inside of this namespace.
   You generally should not add new properties to this namespace as it may be
@@ -48,10 +48,10 @@ Ember.toString = function() { return "Ember"; };
 /**
   @static
   @type String
-  @default '0.9.8.1'
+  @default '0.9.9-zendesk'
   @constant
 */
-Ember.VERSION = '0.9.8.1';
+Ember.VERSION = '0.9.9-zendesk';
 
 /**
   @static
