@@ -12,3 +12,36 @@ allowed values:
 
 See [issue #1](https://github.com/zendesk/ember.js/issues/1) for more
 information.
+
+## Upgrade Guide
+
+First, ensure you don't have any properties that have dots in them. To do this,
+set `ENV.ACCESSORS` to `"0.9-dotted-properties"`. This will warn you if you do
+use `get` or `set` to access a property that has a dot in its name:
+
+```javascript
+var pam = Ember.Object.create({
+  "my.name": function() {
+    return 'Pam';
+  }.property()
+});
+pam.get('my.name');
+```
+
+Ember 1.0's `get` won't work with those properties. Change `"my.name"` to
+`myName` or `my-name`.
+
+After you have eliminated any single properties with dots, you can upgrade to
+Ember 1.0 behavior by setting `ENV.ACCESSORS` to `"1.0"`. This will tell you
+to use `get` instead of `getPath` in the following case:
+
+```javascript
+var pam = Ember.Object.create({
+  address: Ember.Object.create({
+    street: '503 Oxford Ln.'
+  });
+});
+pam.getPath('address.street');
+```
+
+Simply change `getPath` to `get` and `setPath` to `set` in these cases.

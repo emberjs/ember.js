@@ -30,3 +30,22 @@ has four possible values:
 
 See [issue #2](https://github.com/zendesk/ember.js/issues/2) for more
 information.
+
+## Upgrade Guide
+
+If your app passes mixins, computed properties, or functions that call
+`_super` directly to `.create()`, you can make it Ember-1.0-compatible in one
+of two ways:
+
+ 1. Change `.create(...)` to `.createWithMixins(...)`.
+ 1. Create subclasses with `.extend(...)` and then instantiate the subclasses.
+
+That is, either of the following are fine in Ember 1.0:
+
+```javascript
+Ember.Object.createWithMixins( Ember.Mixin.create() );
+```
+
+```javascript
+Ember.Object.extend( Ember.Mixin.create() ).create();
+```
