@@ -626,26 +626,33 @@ Ember.immediateObserver = function() {
 };
 
 /**
-  When observers fire, they are called with the arguments `obj`, `keyName`
-  and `value`. In a typical observer, value is the new, post-change value.
+  When observers fire, they are called with the arguments `obj`, `keyName`.
+  Value is not passed as a parameter anymore since it may be lazily computed.
 
-  A `beforeObserver` fires before a property changes. The `value` argument contains
-  the pre-change value.
+  Note, `@each.property` observer is called per each add or replace of an element
+  and it's not called with a specific enumeration item.
+
+  A `beforeObserver` fires before a property changes.
 
   A `beforeObserver` is an alternative form of `.observesBefore()`.
 
   ```javascript
   App.PersonView = Ember.View.extend({
-    valueWillChange: function (obj, keyName, value) {
-      this.changingFrom = value;
+    friends: [{ name: 'Tom' }, { name: 'Stefan' }, { name: 'Kris' }],
+    valueWillChange: function (obj, keyName) {
+      this.changingFrom = obj.get(keyName);
     }.observesBefore('content.value'),
-    valueDidChange: function(obj, keyName, value) {
+    valueDidChange: function(obj, keyName) {
         // only run if updating a value already in the DOM
         if (this.get('state') === 'inDOM') {
-            var color = value > this.changingFrom ? 'green' : 'red';
+            var color = obj.get(keyName) > this.changingFrom ? 'green' : 'red';
             // logic
         }
-    }.observes('content.value')
+    }.observes('content.value'),
+    friendsDidChange: function(obj, keyName) {
+      // some logic
+      // obj.get(keyName) returns friends array
+    }.observes('friends.@each.name')
   });
   ```
 
