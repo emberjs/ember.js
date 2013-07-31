@@ -6,6 +6,24 @@ var ActionHelper = EmberHandlebars.ActionHelper = {
   registeredActions: {}
 };
 
+function triggerAction(target, actionName, event) {
+  var level = Ember.ENV.ACTION_ARGUMENTS,
+      op = { warn: Ember.warn, '1.0-compat': Ember.assert }[level] || Ember.K,
+      args = [],
+      action;
+
+  if (target.isState && typeof target.send === 'function') {
+    action = target.send;
+    args.push(actionName);
+  } else {
+    action = target[actionName];
+  }
+
+  op("The action helper will not pass a jQuery event in Ember 1.0.", action.length === 0);
+  if (level !== '1.0-compat') { args.push(event); }
+  return action.apply(target, args);
+}
+
 ActionHelper.registerAction = function(actionName, eventName, target, view, context) {
   var actionId = (++Ember.$.uuid).toString();
 
@@ -14,13 +32,7 @@ ActionHelper.registerAction = function(actionName, eventName, target, view, cont
     handler: function(event) {
       event.view = view;
       event.context = context;
-
-      // Check for StateManager (or compatible object)
-      if (target.isState && typeof target.send === 'function') {
-        return target.send(actionName, event);
-      } else {
-        return target[actionName].call(target, event);
-      }
+      return triggerAction(target, actionName, event);
     }
   };
 
@@ -63,7 +75,7 @@ ActionHelper.registerAction = function(actionName, eventName, target, view, cont
         </div>
       </div>
 
-  Clicking "click me" will trigger the `anActionName` method of the `aView` object with a 
+  Clicking "click me" will trigger the `anActionName` method of the `aView` object with a
   `jQuery.Event` object as its argument. The `jQuery.Event` object will be extended to include
   a `view` property that is set to the original view interacted with (in this case the `aView` object).
 
@@ -78,9 +90,9 @@ ActionHelper.registerAction = function(actionName, eventName, target, view, cont
         </div>
       </script>
 
-  Clicking "click me" in the rendered HTML of the above template will trigger the 
-  `anActionName` method of the object at `MyApplication.someObject`.  The first argument 
-  to this method will be a `jQuery.Event` extended to include a `view` property that is 
+  Clicking "click me" in the rendered HTML of the above template will trigger the
+  `anActionName` method of the object at `MyApplication.someObject`.  The first argument
+  to this method will be a `jQuery.Event` extended to include a `view` property that is
   set to the original view interacted with.
 
   A path relative to the template's `Ember.View` instance can also be used as a target:
@@ -91,7 +103,7 @@ ActionHelper.registerAction = function(actionName, eventName, target, view, cont
         </div>
       </script>
 
-  Clicking "click me" in the rendered HTML of the above template will trigger the 
+  Clicking "click me" in the rendered HTML of the above template will trigger the
   `anActionName` method of the view's parent view.
 
   The `{{action}}` helper is `Ember.StateManager` aware. If the target of
@@ -135,7 +147,7 @@ ActionHelper.registerAction = function(actionName, eventName, target, view, cont
   See `Ember.EventDispatcher` for a list of acceptable DOM event names.
 
   Because `{{action}}` depends on Ember's event dispatch system it will only function if
-  an `Ember.EventDispatcher` instance is available. An `Ember.EventDispatcher` instance 
+  an `Ember.EventDispatcher` instance is available. An `Ember.EventDispatcher` instance
   will be created when a new `Ember.Application` is created. Having an instance of
   `Ember.Application` will satisfy this requirement.
 
