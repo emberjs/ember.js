@@ -49,7 +49,7 @@ Ember.ViewState = Ember.State.extend({
 
 function ensureViewStateAvailable() {
   var op = {
-    warn: Ember.warn,
+    warn: Ember.deprecate,
     "1.0": Ember.assert
   }[Ember.ENV.VIEW_STATE] || Ember.K;
   op("Ember.ViewState has been removed from Ember 1.0.");

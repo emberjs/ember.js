@@ -33,7 +33,7 @@ get = function get(obj, keyName) {
   }
 
   if (Ember.ENV.ACCESSORS === LEVEL_09_WITH_WARNINGS) {
-    Ember.warn("The behavior of `get` has changed in Ember 1.0. It will no longer support keys with periods in them.", keyName.indexOf('.') === -1);
+    Ember.deprecate("The behavior of `get` has changed in Ember 1.0. It will no longer support keys with periods in them.", keyName.indexOf('.') === -1);
   } else if (Ember.ENV.ACCESSORS === LEVEL_10 && keyName.indexOf('.') !== -1) {
     return getPathWithoutDeprecation(obj, keyName);
   }
@@ -49,7 +49,7 @@ get = function get(obj, keyName) {
 /** @private */
 set = function set(obj, keyName, value) {
   if (Ember.ENV.ACCESSORS === LEVEL_09_WITH_WARNINGS) {
-    Ember.warn("The behavior of `set` has changed in Ember 1.0. It will no longer support keys with periods in them.", keyName.indexOf('.') === -1);
+    Ember.deprecate("The behavior of `set` has changed in Ember 1.0. It will no longer support keys with periods in them.", keyName.indexOf('.') === -1);
   } else if (Ember.ENV.ACCESSORS === LEVEL_10 && keyName.indexOf('.') !== -1) {
     return setPath(obj, keyName, value);
   }

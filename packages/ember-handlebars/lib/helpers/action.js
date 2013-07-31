@@ -8,7 +8,7 @@ var ActionHelper = EmberHandlebars.ActionHelper = {
 
 function triggerAction(target, actionName, event) {
   var level = Ember.ENV.ACTION_ARGUMENTS,
-      op = { warn: Ember.warn, '1.0-compat': Ember.assert }[level] || Ember.K,
+      op = { warn: Ember.deprecate, '1.0-compat': Ember.assert }[level] || Ember.K,
       args = [],
       action;
 

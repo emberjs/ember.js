@@ -31,7 +31,7 @@ test("get warns with dots in key name on the 0.9 mode with warnings", function()
   var o = { 'foo.bar': 'baz' };
   equal(Ember.get(o, 'foo.bar'), 'baz');
   equal(warnings.length, 1);
-  equal(warnings[0], "The behavior of `get` has changed in Ember 1.0. It will no longer support keys with periods in them.");
+  matches(warnings[0], "The behavior of `get` has changed in Ember 1.0. It will no longer support keys with periods in them.");
 });
 
 test("set warns with dots in key name on the 0.9 mode with warnings", function() {
@@ -39,7 +39,7 @@ test("set warns with dots in key name on the 0.9 mode with warnings", function()
   var o = { 'foo.bar': 'baz' };
   Ember.set(o, 'foo.bar', 'baz');
   equal(warnings.length, 1);
-  equal(warnings[0], "The behavior of `set` has changed in Ember 1.0. It will no longer support keys with periods in them.");
+  matches(warnings[0], "The behavior of `set` has changed in Ember 1.0. It will no longer support keys with periods in them.");
 });
 
 test("getPath warns on the 1.0 mode", function() {

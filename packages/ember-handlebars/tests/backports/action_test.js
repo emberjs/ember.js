@@ -1,5 +1,9 @@
 var originalFlag, originalWarn, warnings, dispatcher, view, actionCalledWith;
 
+function matches(msg, substr) {
+  ok(msg.indexOf(substr) !== -1);
+}
+
 module("Backported action helper arguments", {
   setup: function() {
     originalFlag = Ember.ENV.ACTION_ARGUMENTS;
@@ -41,7 +45,7 @@ test("on warn level, warns and passes an event", function() {
   Ember.ENV.ACTION_ARGUMENTS = 'warn';
   view.$('a').trigger('click');
   equal(warnings.length, 1);
-  equal(warnings[0], "The action helper will not pass a jQuery event in Ember 1.0.");
+  matches(warnings[0], "The action helper will not pass a jQuery event in Ember 1.0.");
   equal(actionCalledWith.length, 1);
   ok(actionCalledWith[0] instanceof Ember.$.Event);
 });

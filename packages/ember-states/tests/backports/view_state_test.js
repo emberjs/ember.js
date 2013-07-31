@@ -1,5 +1,9 @@
 var originalFlag, originalWarn, warnings;
 
+function matches(msg, substr) {
+  ok(msg.indexOf(substr) !== -1);
+}
+
 module("Backported Ember.ViewState", {
   setup: function() {
     originalFlag = Ember.ENV.VIEW_STATE;
@@ -28,10 +32,10 @@ test("warns on warn level", function() {
 
   Ember.ViewState.extend();
   equal(warnings.length, 1);
-  equal(warnings[0], "Ember.ViewState has been removed from Ember 1.0.");
+  matches(warnings[0], "Ember.ViewState has been removed from Ember 1.0.");
   Ember.ViewState.create();
   equal(warnings.length, 2);
-  equal(warnings[1], "Ember.ViewState has been removed from Ember 1.0.");
+  matches(warnings[1], "Ember.ViewState has been removed from Ember 1.0.");
 });
 
 test("throws on error level", function() {
