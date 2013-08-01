@@ -401,7 +401,7 @@ class:
 
   ```javascript
   // Applies 'enabled' class when isEnabled is true and 'disabled' when isEnabled is false
-  Ember.View.create({
+  Ember.View.extend({
     classNameBindings: ['isEnabled:enabled:disabled']
     isEnabled: true
   });
@@ -424,7 +424,7 @@ class:
 
   ```javascript
   // Applies no class when isEnabled is true and class 'disabled' when isEnabled is false
-  Ember.View.create({
+  Ember.View.extend({
     classNameBindings: ['isEnabled::disabled']
     isEnabled: true
   });
@@ -1885,7 +1885,7 @@ Ember.View = Ember.CoreView.extend(
 
     ```javascript
     // Applies the 'high' class to the view element
-    Ember.View.create({
+    Ember.View.extend({
       classNameBindings: ['priority']
       priority: 'high'
     });
@@ -1896,7 +1896,7 @@ Ember.View = Ember.CoreView.extend(
 
     ```javascript
     // Applies the 'is-urgent' class to the view element
-    Ember.View.create({
+    Ember.View.extend({
       classNameBindings: ['isUrgent']
       isUrgent: true
     });
@@ -1907,7 +1907,7 @@ Ember.View = Ember.CoreView.extend(
 
     ```javascript
     // Applies the 'urgent' class to the view element
-    Ember.View.create({
+    Ember.View.extend({
       classNameBindings: ['isUrgent:urgent']
       isUrgent: true
     });
@@ -1928,7 +1928,7 @@ Ember.View = Ember.CoreView.extend(
     ```javascript
     // Applies the type attribute to the element
     // with the value "button", like <div type="button">
-    Ember.View.create({
+    Ember.View.extend({
       attributeBindings: ['type'],
       type: 'button'
     });
@@ -1939,7 +1939,7 @@ Ember.View = Ember.CoreView.extend(
 
     ```javascript
     // Renders something like <div enabled="enabled">
-    Ember.View.create({
+    Ember.View.extend({
       attributeBindings: ['enabled'],
       enabled: true
     });
