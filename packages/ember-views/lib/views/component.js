@@ -98,6 +98,10 @@ Ember.Component = Ember.View.extend(Ember.TargetActionSupport, {
     return parentView ? get(parentView, 'controller') : null;
   }).property('_parentView'),
 
+  _viewForYield: Ember.computed(function(){
+    return get(this, '_parentView') || this;
+  }).property('_parentView'),
+
   /**
     Sends an action to component's controller. A component inherits its
     controller from the context in which it is used.

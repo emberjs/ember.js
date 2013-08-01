@@ -57,7 +57,7 @@ var get = Ember.get, set = Ember.set;
   @return {String} HTML string
 */
 Ember.Handlebars.registerHelper('yield', function(options) {
-  var currentView = options.data.view, view = currentView, template, contextObject;
+  var currentView = options.data.view, view = currentView;
 
   while (view && !get(view, 'layout')) {
     view = get(view, 'parentView');
@@ -65,19 +65,16 @@ Ember.Handlebars.registerHelper('yield', function(options) {
 
   Ember.assert("You called yield in a template that was not a layout", !!view);
 
-  template = get(view, 'template');
-
-  contextObject = Ember.Component.detectInstance(view) ?
-    (view._parentView || view) : view;
-
-  var keywords = contextObject.cloneKeywords();
+  var template    = get(view, 'template'),
+    contextView   = get(view, '_viewForYield'),
+    keywords      = contextView.cloneKeywords();
 
   currentView.appendChild(Ember.View, {
-    isVirtual: true,
-    tagName: '',
-    template: template,
-    context: get(contextObject, 'context'),
-    controller: get(contextObject, 'controller'),
+    isVirtual:    true,
+    tagName:      '',
+    template:     template,
+    context:      get(contextView, 'context'),
+    controller:   get(contextView, 'controller'),
     templateData: {keywords: keywords}
   });
 });
