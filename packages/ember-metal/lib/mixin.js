@@ -627,7 +627,6 @@ Ember.immediateObserver = function() {
 
 /**
   When observers fire, they are called with the arguments `obj`, `keyName`.
-  Value is not passed as a parameter anymore since it may be lazily computed.
 
   Note, `@each.property` observer is called per each add or replace of an element
   and it's not called with a specific enumeration item.
