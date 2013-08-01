@@ -697,6 +697,7 @@ Ember.Application.reopenClass({
     container.normalize = normalize;
     container.resolver = resolverFor(namespace);
     container.describe = container.resolver.describe;
+    container.optionsForType('component', { singleton: false });
     container.optionsForType('view', { singleton: false });
     container.optionsForType('template', { instantiate: false });
     container.register('application:main', namespace, { instantiate: false });
