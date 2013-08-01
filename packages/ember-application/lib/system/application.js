@@ -136,9 +136,9 @@ DeprecatedContainer.prototype = {
 
   In addition to creating your application's router, `Ember.Application` is
   also responsible for telling the router when to start routing. Transitions
-  between routes can be logged with the LOG_TRANSITIONS flag, and more
+  between routes can be logged with the `LOG_TRANSITIONS` flag, and more
   detailed intra-transition logging can be logged with
-  the LOG_TRANSITIONS_INTERNAL flag:
+  the `LOG_TRANSITIONS_INTERNAL` flag:
 
   ```javascript
   window.App = Ember.Application.create({
