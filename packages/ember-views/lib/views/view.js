@@ -87,6 +87,10 @@ Ember.CoreView = Ember.Object.extend(Ember.Evented, {
     }
   }).property('_parentView'),
 
+  _viewForYield: Ember.computed(function(){
+    return this;
+  }).property(),
+
   state: null,
 
   _parentView: null,
