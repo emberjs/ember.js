@@ -2211,3 +2211,78 @@ test("Aborting/redirecting the transition in `willTransition` prevents LoadingRo
   Ember.run(deferred.resolve);
 });
 
+test("this.route is nestable, and child routes preserve / append to namespace", function() {
+
+  expect(33);
+
+  Router.map(function() {
+    this.route('foo', function() {
+      this.route('bar', { path: '/' });
+      this.route('baz');
+
+
+      this.route('woot', { path: '/woot/:woot_id' }, function() {
+        // implicit .index
+
+        this.route('blorg');
+
+        this.resource('nork', function() {
+          this.route('narsty');
+        });
+      });
+    });
+  });
+
+  var model = { id: 123 };
+  var MyRoute = Ember.Route.extend({
+    activate: function() {
+      ok(true, '' + this.constructor + '#activate for ' + this.routeName);
+    },
+    model: function() { return model; }
+  });
+
+  var names = 'Foo FooBar FooBaz FooWoot FooWootBlorg Nork NorkIndex NorkNarsty'.split(' ');
+  Ember.EnumerableUtils.forEach(names, function(name) {
+    App[name + 'Route'] = MyRoute.extend();
+  });
+
+  var currentPath;
+
+  App.ApplicationController = Ember.Controller.extend({
+    currentPathDidChange: Ember.observer(function() {
+      currentPath = get(this, 'currentPath');
+    }, 'currentPath')
+  });
+
+  bootApplication();
+
+  function handleURLAndVerify(url, expectedPath) {
+    handleURL(url);
+    equal(currentPath, expectedPath, "current path updated to " + expectedPath);
+  }
+
+  // URL tests
+  handleURLAndVerify('/foo', 'foo.bar');
+  handleURLAndVerify('/foo/baz', 'foo.baz');
+  handleURLAndVerify('/foo/woot/123', 'foo.woot.index');
+  handleURLAndVerify('/foo/woot/123/blorg', 'foo.woot.blorg');
+  handleURLAndVerify('/foo/woot/123/nork', 'foo.woot.nork.index');
+  handleURLAndVerify('/foo/woot/123/nork/narsty', 'foo.woot.nork.narsty');
+
+  function transitionAndVerify() {
+    var transitionArgs = [].slice.call(arguments, 0, -1);
+    Ember.run(function() {
+      router.transitionTo.apply(router, transitionArgs);
+    });
+    var url = arguments[arguments.length-1];
+    equal(router.get('url'), url, "URL changed to " + url);
+  }
+
+  transitionAndVerify('foo.bar', '/foo');
+  transitionAndVerify('foo.baz', '/foo/baz');
+  transitionAndVerify('foo.woot', model, '/foo/woot/123'); 
+  transitionAndVerify('foo.woot.blorg', '/foo/woot/123/blorg');
+  transitionAndVerify('nork.index', '/foo/woot/123/nork');
+  transitionAndVerify('nork.narsty', '/foo/woot/123/nork/narsty');
+});
+

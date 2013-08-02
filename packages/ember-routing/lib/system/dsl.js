@@ -10,26 +10,7 @@ function DSL(name) {
 
 DSL.prototype = {
   resource: function(name, options, callback) {
-    if (arguments.length === 2 && typeof options === 'function') {
-      callback = options;
-      options = {};
-    }
-
-    if (arguments.length === 1) {
-      options = {};
-    }
-
-    if (typeof options.path !== 'string') {
-      options.path = "/" + name;
-    }
-
-    if (callback) {
-      var dsl = new DSL(name);
-      callback.call(dsl);
-      this.push(options.path, name, dsl.generate());
-    } else {
-      this.push(options.path, name);
-    }
+    declareRoute(this, name, options, callback, false);
   },
 
   push: function(url, name, callback) {
@@ -39,20 +20,8 @@ DSL.prototype = {
     this.matches.push([url, name, callback]);
   },
 
-  route: function(name, options) {
-    Ember.assert("You must use `this.resource` to nest", typeof options !== 'function');
-
-    options = options || {};
-
-    if (typeof options.path !== 'string') {
-      options.path = "/" + name;
-    }
-
-    if (this.parent && this.parent !== 'application') {
-      name = this.parent + "." + name;
-    }
-
-    this.push(options.path, name);
+  route: function(name, options, callback) {
+    declareRoute(this, name, options, callback, true);
   },
 
   generate: function() {
@@ -70,6 +39,31 @@ DSL.prototype = {
     };
   }
 };
+
+function declareRoute(dsl, name, options, callback, preserveNamespace) {
+  if (typeof options === 'function') {
+    callback = options;
+    options = null;
+  }
+
+  options = options || {};
+
+  if (typeof options.path !== 'string') {
+    options.path = "/" + name;
+  }
+
+  if (preserveNamespace && dsl.parent && dsl.parent !== 'application') {
+    name = dsl.parent + "." + name;
+  }
+
+  if (callback) {
+    var childDSL = new DSL(name);
+    callback.call(childDSL);
+    dsl.push(options.path, name, childDSL.generate());
+  } else {
+    dsl.push(options.path, name);
+  }
+}
 
 DSL.map = function(callback) {
   var dsl = new DSL();
