@@ -21,7 +21,7 @@ var get = Ember.get, set = Ember.set, fmt = Ember.String.fmt;
   instance's `content` property.
 
   ```javascript
-  someItemsView = Ember.CollectionView.create({
+  someItemsView = Ember.CollectionView.extend({
     content: ['A', 'B','C']
   })
   ```
@@ -38,7 +38,7 @@ var get = Ember.get, set = Ember.set, fmt = Ember.String.fmt;
   Given an empty `<body>` and the following code:
 
   ```javascript
-  someItemsView = Ember.CollectionView.create({
+  someItemsView = Ember.CollectionView.extend({
     classNames: ['a-collection'],
     content: ['A','B','C'],
     itemViewClass: Ember.View.extend({
@@ -68,7 +68,7 @@ var get = Ember.get, set = Ember.set, fmt = Ember.String.fmt;
   Given an empty `<body>` and the following code:
 
   ```javascript
-  anUndorderedListView = Ember.CollectionView.create({
+  anUndorderedListView = Ember.CollectionView.extend({
     tagName: 'ul',
     content: ['A','B','C'],
     itemViewClass: Ember.View.extend({
@@ -123,7 +123,7 @@ var get = Ember.get, set = Ember.set, fmt = Ember.String.fmt;
   will be the `CollectionView`s only child.
 
   ```javascript
-  aListWithNothing = Ember.CollectionView.create({
+  aListWithNothing = Ember.CollectionView.extend({
     classNames: ['nothing']
     content: null,
     emptyView: Ember.View.extend({
