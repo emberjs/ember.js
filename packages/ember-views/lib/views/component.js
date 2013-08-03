@@ -113,8 +113,8 @@ Ember.Component = Ember.View.extend(Ember.TargetActionSupport, {
     `"addItem"`, calling `sendAction()` would send the `addItem` action
     to the component's controller.
 
-    If you provide an argument to `sendAction()`, that key will be used to look
-    up the action name.
+    If you provide the `action` argument to `sendAction()`, that key will
+    be used to look up the action name.
 
     For example, if the component had a property `playing` with the value
     `didStartPlaying`, calling `sendAction('playing')` would send the
@@ -128,10 +128,34 @@ Ember.Component = Ember.View.extend(Ember.TargetActionSupport, {
     an `action` property defined, no action will be sent to the controller,
     nor will an exception be raised.
 
+    You can send a context object with the action by supplying the `context`
+    argument. The context will be supplied as the first argument in the
+    target's action method. Example:
+
+    ```javascript
+    App.MyTree = Ember.Component.extend({
+      click: function() {
+        this.sendAction('didClickTreeNode', this.get('node'));
+      }
+    });
+   
+    App.CategoriesController = Ember.Controller.extend({
+      didClickCategory: function(category) {
+        //Do something with the node/category that was clicked
+      }
+    });
+    ```
+
+    ```handlebars
+    {{! categories.hbs}}
+    {{my-tree didClickTreeNode=didClickCategory}}
+    ```
+
     @method sendAction
     @param [action] {String} the action to trigger
+    @param [context] {*} a context to send with the action
   */
-  sendAction: function(action) {
+  sendAction: function(action, context) {
     var actionName;
 
     // Send the default action
@@ -143,12 +167,12 @@ Ember.Component = Ember.View.extend(Ember.TargetActionSupport, {
       Ember.assert("The " + action + " action was triggered on the component " + this.toString() + ", but the action name (" + actionName + ") was not a string.", isNone(actionName) || typeof actionName === 'string');
     }
 
-
     // If no action name for that action could be found, just abort.
     if (actionName === undefined) { return; }
 
     this.triggerAction({
-      action: actionName
+      action: actionName,
+      actionContext: context
     });
   }
 });

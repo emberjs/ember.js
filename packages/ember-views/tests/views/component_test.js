@@ -14,18 +14,20 @@ test("The controller (target of `action`) of an Ember.Component is itself", func
   strictEqual(control, control.get('controller'), "A control's controller is itself");
 });
 
-var component, controller, actionCounts, sendCount;
+var component, controller, actionCounts, sendCount, actionContext;
 
 module("Ember.Component - Actions", {
   setup: function() {
     actionCounts = {};
     sendCount = 0;
+    actionContext = null;
 
     controller = Ember.Object.create({
-      send: function(actionName) {
+      send: function(actionName, context) {
         sendCount++;
         actionCounts[actionName] = actionCounts[actionName] || 0;
         actionCounts[actionName]++;
+        actionContext = context;
       }
     });
 
@@ -89,4 +91,14 @@ test("Calling sendAction when the action name is not a string raises an exceptio
   expectAssertion(function() {
     component.sendAction('playing');
   });
+});
+
+test("Calling sendAction on a component with a context", function() {
+  set(component, 'playing', "didStartPlaying");
+
+  var testContext = {song: 'She Broke My Ember'};
+
+  component.sendAction('playing', testContext);
+
+  strictEqual(actionContext, testContext, "context was sent with the action");
 });
