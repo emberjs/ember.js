@@ -10,7 +10,7 @@ require('ember-handlebars/ext');
 var handlebarsGet = Ember.Handlebars.get, normalizePath = Ember.Handlebars.normalizePath;
 
 /**
-  `log` allows you to output the value of a value in the current rendering
+  `log` allows you to output the value of a variable in the current rendering
   context.
 
   ```handlebars
