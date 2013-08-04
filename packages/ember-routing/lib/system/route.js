@@ -45,9 +45,42 @@ Ember.Route = Ember.Object.extend({
     from within a template and the application's current route is this route.
 
     Events can also be invoked from other parts of your application via `Route#send`
-    or `Controller#send`.
+    or `Controller#send`. 
 
-    The context of the event will be this route.
+    The `events` hash will inherit event handlers from
+    the `events` hash defined on extended Route parent classes
+    or mixins rather than just replace the entire hash, e.g.:
+
+    ```js
+    App.CanDisplayBanner = Ember.Mixin.create({
+      events: {
+        displayBanner: function(msg) {
+          // ...
+        }
+      }
+    });
+
+    App.WelcomeRoute = Ember.Route.extend(App.CanDisplayBanner, {
+      events: {
+        playMusic: function() {
+          // ...
+        }
+      }
+    });
+
+    // `WelcomeRoute`, when active, will be able to respond
+    // to both events, since the events hash is merged rather
+    // then replaced when extending mixins / parent classes.
+    this.send('displayBanner');
+    this.send('playMusic');
+    ```
+
+    It is also possible to call `this._super()` from within an
+    event handler if it overrides a handle defined on a parent
+    class or mixin.
+
+    Within a route's event handler, the value of the `this` context 
+    is the Route object.
 
     ## Bubbling
 
@@ -155,6 +188,8 @@ Ember.Route = Ember.Object.extend({
     @default null
   */
   events: null,
+
+  mergedProperties: ['events'],
 
   /**
     This hook is executed when the router completely exits this route. It is
