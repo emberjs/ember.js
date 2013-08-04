@@ -165,8 +165,6 @@ CoreObject.PrototypeMixin = Mixin.create({
     return this;
   },
 
-  isInstance: true,
-
   /**
     An overridable method called when objects are instantiated. By default,
     does nothing unless it is overridden during class definition.
