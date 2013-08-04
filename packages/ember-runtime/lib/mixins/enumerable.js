@@ -69,10 +69,6 @@ Ember.Enumerable = Ember.Mixin.create({
     always check the value and start from the beginning when you see the
     requested index is 0.
 
-    The `previousObject` is the object that was returned from the last call
-    to `nextObject` for the current iteration. This is a useful way to
-    manage iteration if you are tracing a linked list, for example.
-
     Generally iterators will continue to call `nextObject` until the index
     reaches the your current length-1. If you run out of data before this
     time for some reason, you should simply return undefined.
@@ -82,8 +78,6 @@ Ember.Enumerable = Ember.Mixin.create({
 
     @method nextObject
     @param {Number} index the current index of the iteration
-    @param {Object} previousObject the value returned by the last call to
-      `nextObject`.
     @return {Object} the next object in the iteration or undefined
   */
   nextObject: Ember.required(Function),
@@ -113,7 +107,7 @@ Ember.Enumerable = Ember.Mixin.create({
     if (get(this, 'length')===0) return undefined;
 
     // handle generic enumerables
-    return this.nextObject(0, null);
+    return this.nextObject(0);
   }).property('[]'),
 
   /**
@@ -138,7 +132,7 @@ Ember.Enumerable = Ember.Mixin.create({
     var idx=0, cur, last = null;
     do {
       last = cur;
-      cur = this.nextObject(idx++, last);
+      cur = this.nextObject(idx++);
     } while (cur !== undefined);
     return last;
   }).property('[]'),
@@ -189,14 +183,13 @@ Ember.Enumerable = Ember.Mixin.create({
   */
   forEach: function(callback, target) {
     if (typeof callback !== "function") throw new TypeError();
-    var len = get(this, 'length'), last = null;
+    var len = get(this, 'length');
 
     if (target === undefined) target = null;
 
     for(var idx=0;idx<len;idx++) {
-      var next = this.nextObject(idx, last);
+      var next = this.nextObject(idx);
       callback.call(target, next, idx, this);
-      last = next;
     }
     return this;
   },
@@ -407,11 +400,10 @@ Ember.Enumerable = Ember.Mixin.create({
     var len = get(this, 'length');
     if (target === undefined) target = null;
 
-    var last = null, next, found = false, ret;
+    var next, found = false, ret;
     for(var idx=0;idx<len && !found;idx++) {
-      next = this.nextObject(idx, last);
+      next = this.nextObject(idx);
       if (found = callback.call(target, next, idx, this)) ret = next;
-      last = next;
     }
     return ret;
   },
