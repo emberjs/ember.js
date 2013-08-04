@@ -356,6 +356,8 @@ Ember.Route = Ember.Object.extend({
     from this hook.
 
     @method afterModel
+    @param {Object} resolvedModel the value returned from `model`,
+      or its resolved value if it was a promise
     @param {Transition} transition
     @return {Promise} if the value returned from this hook is
       a promise, the transition will pause until the transition
@@ -411,8 +413,13 @@ Ember.Route = Ember.Object.extend({
 
     @method model
     @param {Object} params the parameters extracted from the URL
+    @param {Transition} transition
+    @return {Object|Promise} the model for this route. If
+      a promise is returned, the transition will pause until 
+      the promise resolves, and the resolved value of the promise
+      will be used as the model for this route.
   */
-  model: function(params, resolvedParentModels) {
+  model: function(params, transition) {
     var match, name, sawParams, value;
 
     for (var prop in params) {
