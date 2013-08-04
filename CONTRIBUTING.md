@@ -61,8 +61,16 @@ then that will speed the process along.
 
 # Building Ember.js
 
-The stack needed to build Ember.js can be quite complex to set up for new
-developers. A VagrantFile is here to ease things for newcomers.
+With a relatively new ruby ( > 1.9.x) installed, building ember is quite simple.
+
+```sh
+cd ember.js
+bundle install
+rake dist
+rake test
+```
+
+For those having issues with some of the build tool dependencies, an optional VagrantFile is provided.
 
 Using Vagrant to build latest version of Ember.js is quite simple. Just
 follow these 4 steps:
