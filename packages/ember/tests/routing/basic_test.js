@@ -2140,7 +2140,6 @@ test("Route supports clearing outlet explicitly", function() {
   equal(Ember.$('div.posts-extra:contains(postsExtra)', '#qunit-fixture').length, 0, "The posts/extra template was removed");
 });
 
-
 test("Aborting/redirecting the transition in `willTransition` prevents LoadingRoute from being entered", function() {
 
   expect(8);
@@ -2209,5 +2208,44 @@ test("Aborting/redirecting the transition in `willTransition` prevents LoadingRo
   deferred = Ember.RSVP.defer();
   Ember.run(router, 'transitionTo', 'nork');
   Ember.run(deferred.resolve);
+});
+
+test("Events can be handled by inherited event handlers", function() {
+
+  expect(4);
+
+  App.SuperRoute = Ember.Route.extend({
+    events: {
+      foo: function() {
+        ok(true, 'foo');
+      },
+      bar: function(msg) {
+        equal(msg, "HELLO");
+      }
+    }
+  });
+
+  App.RouteMixin = Ember.Mixin.create({
+    events: {
+      bar: function(msg) {
+        equal(msg, "HELLO");
+        this._super(msg);
+      }
+    }
+  });
+
+  App.IndexRoute = App.SuperRoute.extend(App.RouteMixin, {
+    events: {
+      baz: function() {
+        ok(true, 'baz');
+      }
+    }
+  });
+
+  bootApplication();
+
+  router.send("foo");
+  router.send("bar", "HELLO");
+  router.send("baz");
 });
 
