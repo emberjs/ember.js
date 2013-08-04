@@ -5,7 +5,6 @@ test('Basic extend', function() {
   ok(SomeClass.isClass, "A class has isClass of true");
   var obj = new SomeClass();
   equal(obj.foo, 'BAR');
-  ok(obj.isInstance, "An instance of a class has isInstance of true");
 });
 
 test('Sub-subclass', function() {
