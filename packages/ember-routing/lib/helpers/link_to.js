@@ -110,7 +110,24 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
       @default false
     **/
     replace: false,
+
+    /**
+      By default the `{{linkTo}}` helper will bind to the `href` and
+      `title` attributes. It's discourage that you override these defaults,
+      however you can push onto the array if needed.
+
+      @type Array | String
+      @default ['href', 'title', 'rel']
+     **/
     attributeBindings: ['href', 'title', 'rel'],
+
+    /**
+      By default the `{{linkTo}}` helper will bind to the `active`, `loading`, and
+      `disabled` classes. It is discouraged to override these directly.
+
+      @type Array
+      @default ['active', 'loading', 'disabled']
+     **/
     classNameBindings: ['active', 'loading', 'disabled'],
 
     /**
@@ -214,19 +231,24 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
       if (isActive) { return get(this, 'activeClass'); }
     }).property('namedRoute', 'router.url'),
 
+    /**
+      Accessed as a classname binding to apply the `LinkView`'s `loadingClass`
+      CSS `class` to the element when the link is active.
+
+      A `LinkView` is considered loading when its `routeArgs` property is `false`.
+
+      @property loading
+    **/
     loading: Ember.computed(function() {
       if (!get(this, 'routeArgs')) { return get(this, 'loadingClass'); }
     }).property('routeArgs'),
 
     /**
-      Accessed as a classname binding to apply the `LinkView`'s `activeClass`
-      CSS `class` to the element when the link is active.
+      @private
 
-      A `LinkView` is considered active when its `currentWhen` property is `true`
-      or the application's current route is the route the `LinkView` would trigger
-      transitions into.
+      Returns the application's main router from the container.
 
-      @property active
+      @property router
     **/
 
     router: Ember.computed(function() {
@@ -264,6 +286,15 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
       }
     },
 
+    /**
+      @private
+
+      Computed property that returns the current route name and
+      any dynamic segments.
+
+      @property
+      @return {Array} An array with the route name and any dynamic segments
+     */
     routeArgs: Ember.computed(function() {
 
       var router = get(this, 'router'),
