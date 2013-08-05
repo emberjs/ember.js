@@ -18,7 +18,6 @@ var set = Ember.set, get = Ember.get,
     generateGuid = Ember.generateGuid,
     meta = Ember.meta,
     rewatch = Ember.rewatch,
-    finishChains = Ember.finishChains,
     destroy = Ember.destroy,
     schedule = Ember.run.schedule,
     Mixin = Ember.Mixin,
@@ -119,8 +118,16 @@ function makeCtor() {
       }
     }
     finishPartial(this, m);
+    var hasChains = (typeof m.chains) !== "undefined";
     delete m.proto;
-    finishChains(this);
+
+    if (hasChains) {
+      if (m.chains.value() !== this) {
+        m.chains = m.chains.copy(this);
+      }
+      m.chains.didChange(true);
+    }
+
     this.init.apply(this, arguments);
   };
 
