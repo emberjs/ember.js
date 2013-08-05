@@ -348,6 +348,7 @@ var Application = Ember.Application = Ember.Namespace.extend(Ember.DeferredMixin
     @method deferReadiness
   */
   deferReadiness: function() {
+    Ember.assert("You must call deferReadiness on an instance of Ember.Application", this instanceof Ember.Application);
     Ember.assert("You cannot defer readiness since the `ready()` hook has already been called.", this._readinessDeferrals > 0);
     this._readinessDeferrals++;
   },
@@ -357,6 +358,7 @@ var Application = Ember.Application = Ember.Namespace.extend(Ember.DeferredMixin
     @see {Ember.Application#deferReadiness}
   */
   advanceReadiness: function() {
+    Ember.assert("You must call advanceReadiness on an instance of Ember.Application", this instanceof Ember.Application);
     this._readinessDeferrals--;
 
     if (this._readinessDeferrals === 0) {
