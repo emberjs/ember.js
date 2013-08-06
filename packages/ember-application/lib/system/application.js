@@ -354,6 +354,10 @@ var Application = Ember.Application = Ember.Namespace.extend(Ember.DeferredMixin
   },
 
   /**
+    Call `advanceReadiness` after any asynchronous setup logic has completed.
+    Each call to `deferReadiness` must be matched by a call to `advanceReadiness`
+    or the application will never become ready and routing will not begin.
+    
     @method advanceReadiness
     @see {Ember.Application#deferReadiness}
   */
