@@ -90,7 +90,14 @@ Ember.Component = Ember.View.extend(Ember.TargetActionSupport, {
     this._super();
     set(this, 'context', this);
     set(this, 'controller', this);
-    set(this, 'templateData', {keywords: {}});
+  },
+
+  // during render, isolate keywords
+  cloneKeywords: function() {
+    return {
+      view: this,
+      controller: this
+    };
   },
 
   targetObject: Ember.computed(function(key) {
@@ -138,7 +145,7 @@ Ember.Component = Ember.View.extend(Ember.TargetActionSupport, {
         this.sendAction('didClickTreeNode', this.get('node'));
       }
     });
-   
+
     App.CategoriesController = Ember.Controller.extend({
       didClickCategory: function(category) {
         //Do something with the node/category that was clicked

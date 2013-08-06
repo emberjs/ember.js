@@ -154,6 +154,66 @@ test("yield inside a conditional uses the outer context", function() {
   equal(view.$('div p:contains(inner) + p:contains(insideWith)').length, 1, "Yield points at the right context");
 });
 
+test("outer keyword doesn't mask inner component property", function () {
+  var component = Ember.Component.extend({
+    item: "inner",
+    layout: Ember.Handlebars.compile("<p>{{item}}</p><p>{{yield}}</p>")
+  });
+
+  view = Ember.View.create({
+    controller: { boundText: "outer", component: component },
+    template: Ember.Handlebars.compile('{{#with boundText as item}}{{#view component}}{{item}}{{/view}}{{/with}}')
+  });
+
+  Ember.run(function() {
+    view.appendTo('#qunit-fixture');
+  });
+
+  equal(view.$('div p:contains(inner) + p:contains(outer)').length, 1, "inner component property isn't masked by outer keyword");
+});
+
+test("inner keyword doesn't mask yield property", function() {
+  var component = Ember.Component.extend({
+    boundText: "inner",
+    layout: Ember.Handlebars.compile("{{#with boundText as item}}<p>{{item}}</p><p>{{yield}}</p>{{/with}}")
+  });
+
+  view = Ember.View.create({
+    controller: { item: "outer", component: component },
+    template: Ember.Handlebars.compile('{{#view component}}{{item}}{{/view}}')
+  });
+
+  Ember.run(function() {
+    view.appendTo('#qunit-fixture');
+  });
+
+  equal(view.$('div p:contains(inner) + p:contains(outer)').length, 1, "outer property isn't masked by inner keyword");
+});
+
+test("can bind a keyword to a component and use it in yield", function() {
+  var component = Ember.Component.extend({
+    content: null,
+    layout: Ember.Handlebars.compile("<p>{{content}}</p><p>{{yield}}</p>")
+  });
+
+  view = Ember.View.create({
+    controller: { boundText: "outer", component: component },
+    template: Ember.Handlebars.compile('{{#with boundText as item}}{{#view component contentBinding="item"}}{{item}}{{/view}}{{/with}}')
+  });
+
+  Ember.run(function() {
+    view.appendTo('#qunit-fixture');
+  });
+
+  equal(view.$('div p:contains(outer) + p:contains(outer)').length, 1, "component and yield have keyword");
+
+  Ember.run(function() {
+    view.set('controller.boundText', 'update');
+  });
+
+  equal(view.$('div p:contains(update) + p:contains(update)').length, 1, "keyword has correctly propagated update");
+});
+
 test("yield view should be a virtual view", function() {
   var component = Ember.Component.extend({
     isParentComponent: true,
