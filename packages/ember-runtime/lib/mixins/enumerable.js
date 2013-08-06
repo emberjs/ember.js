@@ -11,17 +11,6 @@ var get = Ember.get, set = Ember.set;
 var a_slice = Array.prototype.slice;
 var a_indexOf = Ember.EnumerableUtils.indexOf;
 
-var contexts = [];
-
-function popCtx() {
-  return contexts.length===0 ? {} : contexts.pop();
-}
-
-function pushCtx(ctx) {
-  contexts.push(ctx);
-  return null;
-}
-
 function iter(key, value) {
   var valueProvided = arguments.length === 2;
 
@@ -29,7 +18,7 @@ function iter(key, value) {
     var cur = get(item, key);
     return valueProvided ? value===cur : !!cur;
   }
-  return i ;
+  return i;
 }
 
 /**
@@ -80,16 +69,6 @@ Ember.Enumerable = Ember.Mixin.create({
     always check the value and start from the beginning when you see the
     requested index is 0.
 
-    The `previousObject` is the object that was returned from the last call
-    to `nextObject` for the current iteration. This is a useful way to
-    manage iteration if you are tracing a linked list, for example.
-
-    Finally the context parameter will always contain a hash you can use as
-    a "scratchpad" to maintain any other state you need in order to iterate
-    properly. The context object is reused and is not reset between
-    iterations so make sure you setup the context with a fresh state whenever
-    the index parameter is 0.
-
     Generally iterators will continue to call `nextObject` until the index
     reaches the your current length-1. If you run out of data before this
     time for some reason, you should simply return undefined.
@@ -99,9 +78,6 @@ Ember.Enumerable = Ember.Mixin.create({
 
     @method nextObject
     @param {Number} index the current index of the iteration
-    @param {Object} previousObject the value returned by the last call to
-      `nextObject`.
-    @param {Object} context a context object you can use to maintain state.
     @return {Object} the next object in the iteration or undefined
   */
   nextObject: Ember.required(Function),
@@ -128,13 +104,10 @@ Ember.Enumerable = Ember.Mixin.create({
     @return {Object} the object or undefined
   */
   firstObject: Ember.computed(function() {
-    if (get(this, 'length')===0) return undefined ;
+    if (get(this, 'length')===0) return undefined;
 
     // handle generic enumerables
-    var context = popCtx(), ret;
-    ret = this.nextObject(0, null, context);
-    pushCtx(context);
-    return ret ;
+    return this.nextObject(0);
   }).property('[]'),
 
   /**
@@ -155,13 +128,12 @@ Ember.Enumerable = Ember.Mixin.create({
   */
   lastObject: Ember.computed(function() {
     var len = get(this, 'length');
-    if (len===0) return undefined ;
-    var context = popCtx(), idx=0, cur, last = null;
+    if (len===0) return undefined;
+    var idx=0, cur, last = null;
     do {
       last = cur;
-      cur = this.nextObject(idx++, last, context);
+      cur = this.nextObject(idx++);
     } while (cur !== undefined);
-    pushCtx(context);
     return last;
   }).property('[]'),
 
@@ -210,19 +182,16 @@ Ember.Enumerable = Ember.Mixin.create({
     @return {Object} receiver
   */
   forEach: function(callback, target) {
-    if (typeof callback !== "function") throw new TypeError() ;
-    var len = get(this, 'length'), last = null, context = popCtx();
+    if (typeof callback !== "function") throw new TypeError();
+    var len = get(this, 'length');
 
     if (target === undefined) target = null;
 
     for(var idx=0;idx<len;idx++) {
-      var next = this.nextObject(idx, last, context) ;
+      var next = this.nextObject(idx);
       callback.call(target, next, idx, this);
-      last = next ;
     }
-    last = null ;
-    context = pushCtx(context);
-    return this ;
+    return this;
   },
 
   /**
@@ -284,7 +253,7 @@ Ember.Enumerable = Ember.Mixin.create({
     this.forEach(function(x, idx, i) {
       ret[idx] = callback.call(target, x, idx,i);
     });
-    return ret ;
+    return ret;
   },
 
   /**
@@ -334,7 +303,7 @@ Ember.Enumerable = Ember.Mixin.create({
     this.forEach(function(x, idx, i) {
       if (callback.call(target, x, idx, i)) ret.push(x);
     });
-    return ret ;
+    return ret;
   },
 
   /**
@@ -428,19 +397,15 @@ Ember.Enumerable = Ember.Mixin.create({
     @return {Object} Found item or `undefined`.
   */
   find: function(callback, target) {
-    var len = get(this, 'length') ;
+    var len = get(this, 'length');
     if (target === undefined) target = null;
 
-    var last = null, next, found = false, ret ;
-    var context = popCtx();
+    var next, found = false, ret;
     for(var idx=0;idx<len && !found;idx++) {
-      next = this.nextObject(idx, last, context) ;
-      if (found = callback.call(target, next, idx, this)) ret = next ;
-      last = next ;
+      next = this.nextObject(idx);
+      if (found = callback.call(target, next, idx, this)) ret = next;
     }
-    next = last = null ;
-    context = pushCtx(context);
-    return ret ;
+    return ret;
   },
 
   /**
@@ -642,7 +607,7 @@ Ember.Enumerable = Ember.Mixin.create({
   toArray: function() {
     var ret = Ember.A();
     this.forEach(function(o, idx) { ret[idx] = o; });
-    return ret ;
+    return ret;
   },
 
   /**
@@ -679,8 +644,8 @@ Ember.Enumerable = Ember.Mixin.create({
     var ret = Ember.A();
     this.forEach(function(k) {
       if (k !== value) ret[ret.length] = k;
-    }) ;
-    return ret ;
+    });
+    return ret;
   },
 
   /**
@@ -848,7 +813,7 @@ Ember.Enumerable = Ember.Mixin.create({
     if (hasDelta) Ember.propertyDidChange(this, 'length');
     Ember.propertyDidChange(this, '[]');
 
-    return this ;
+    return this;
   }
 
-}) ;
+});
