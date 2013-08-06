@@ -71,6 +71,7 @@ Ember.Handlebars.registerHelper('yield', function(options) {
 
   currentView.appendChild(Ember.View, {
     isVirtual:    true,
+    isYield:      true,
     tagName:      '',
     template:     template,
     context:      get(contextView, 'context'),

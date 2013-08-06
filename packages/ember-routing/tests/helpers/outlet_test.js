@@ -180,3 +180,24 @@ test("Outlets bind to the current template's view, not inner contexts", function
   var output = Ember.$('#qunit-fixture h1 ~ h3').text();
   equal(output, "BOTTOM", "all templates were rendered");
 });
+
+test("should support layouts", function() {
+  var template = "{{outlet}}",
+      layout = "<h1>HI</h1>{{yield}}";
+  view = Ember.View.create({
+    template: Ember.Handlebars.compile(template),
+    layout: Ember.Handlebars.compile(layout)
+  });
+
+  appendView(view);
+
+  equal(view.$().text(), 'HI');
+
+  Ember.run(function() {
+    view.connectOutlet('main', Ember.View.create({
+      template: compile("<p>BYE</p>")
+    }));
+  });
+  // Replace whitespace for older IE
+  equal(view.$().text().replace(/\s+/,''), 'HIBYE');
+});
