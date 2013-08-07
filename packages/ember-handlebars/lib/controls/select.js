@@ -94,11 +94,13 @@ Ember.SelectOptgroup = Ember.CollectionView.extend({
   Example:
 
   ```javascript
-  App.names = ["Yehuda", "Tom"];
+  App.ApplicationController = Ember.Controller.extend({
+    names: ["Yehuda", "Tom"]
+  });
   ```
 
   ```handlebars
-  {{view Ember.Select contentBinding="App.names"}}
+  {{view Ember.Select contentBinding="names"}}
   ```
 
   Would result in the following HTML:
@@ -114,16 +116,16 @@ Ember.SelectOptgroup = Ember.CollectionView.extend({
   `value` property directly or as a binding:
 
   ```javascript
-  App.names = Ember.Object.create({
-    selected: 'Tom',
-    content: ["Yehuda", "Tom"]
+  App.ApplicationController = Ember.Controller.extend({
+    selectedName: 'Tom',
+    names: ["Yehuda", "Tom"]
   });
   ```
 
   ```handlebars
   {{view Ember.Select
-         contentBinding="App.names.content"
-         valueBinding="App.names.selected"
+         contentBinding="names"
+         valueBinding="selectedName"
   }}
   ```
 
@@ -137,7 +139,7 @@ Ember.SelectOptgroup = Ember.CollectionView.extend({
   ```
 
   A user interacting with the rendered `<select>` to choose "Yehuda" would
-  update the value of `App.names.selected` to "Yehuda".
+  update the value of `selectedName` to "Yehuda".
 
   ### `content` as an Array of Objects
 
@@ -154,15 +156,17 @@ Ember.SelectOptgroup = Ember.CollectionView.extend({
   element's text. Both paths must reference each object itself as `content`:
 
   ```javascript
-  App.programmers = [
-    Ember.Object.create({firstName: "Yehuda", id: 1}),
-    Ember.Object.create({firstName: "Tom",    id: 2})
-  ];
+  App.ApplicationController = Ember.Controller.extend({
+    programmers: [
+      {firstName: "Yehuda", id: 1},
+      {firstName: "Tom",    id: 2}
+    ]
+  });
   ```
 
   ```handlebars
   {{view Ember.Select
-         contentBinding="App.programmers"
+         contentBinding="programmers"
          optionValuePath="content.id"
          optionLabelPath="content.firstName"}}
   ```
@@ -181,22 +185,23 @@ Ember.SelectOptgroup = Ember.CollectionView.extend({
   `valueBinding` option:
 
   ```javascript
-  App.programmers = [
-    Ember.Object.create({firstName: "Yehuda", id: 1}),
-    Ember.Object.create({firstName: "Tom",    id: 2})
-  ];
-
-  App.currentProgrammer = Ember.Object.create({
-    id: 2
+  App.ApplicationController = Ember.Controller.extend({
+    programmers: [
+      {firstName: "Yehuda", id: 1},
+      {firstName: "Tom",    id: 2}
+    ],
+    currentProgrammer: {
+      id: 2
+    }
   });
   ```
 
   ```handlebars
   {{view Ember.Select
-         contentBinding="App.programmers"
+         contentBinding="programmers"
          optionValuePath="content.id"
          optionLabelPath="content.firstName"
-         valueBinding="App.currentProgrammer.id"}}
+         valueBinding="currentProgrammer.id"}}
   ```
 
   Would result in the following HTML with a selected option:
@@ -209,7 +214,7 @@ Ember.SelectOptgroup = Ember.CollectionView.extend({
   ```
 
   Interacting with the rendered element by selecting the first option
-  ('Yehuda') will update the `id` value of `App.currentProgrammer`
+  ('Yehuda') will update the `id` of `currentProgrammer`
   to match the `value` property of the newly selected `<option>`.
 
   Alternatively, you can control selection through the underlying objects
@@ -219,21 +224,21 @@ Ember.SelectOptgroup = Ember.CollectionView.extend({
   element:
 
   ```javascript
-  App.controller = Ember.Object.create({
+  App.ApplicationController = Ember.Controller.extend({
     selectedPerson: null,
-    content: [
-      Ember.Object.create({firstName: "Yehuda", id: 1}),
-      Ember.Object.create({firstName: "Tom",    id: 2})
+    programmers: [
+      {firstName: "Yehuda", id: 1},
+      {firstName: "Tom",    id: 2}
     ]
   });
   ```
 
   ```handlebars
   {{view Ember.Select
-         contentBinding="App.controller.content"
+         contentBinding="programmers"
          optionValuePath="content.id"
          optionLabelPath="content.firstName"
-         selectionBinding="App.controller.selectedPerson"}}
+         selectionBinding="selectedPerson"}}
   ```
 
   Would result in the following HTML with a selected option:
@@ -246,9 +251,9 @@ Ember.SelectOptgroup = Ember.CollectionView.extend({
   ```
 
   Interacting with the rendered element by selecting the first option
-  ('Yehuda') will update the `selectedPerson` value of `App.controller`
-  to match the content object of the newly selected `<option>`. In this
-  case it is the first object in the `App.controller.content`
+  ('Yehuda') will update the `selectedPerson` to match the object of 
+  the newly selected `<option>`. In this case it is the first object
+  in the `programmers`
 
   ### Supplying a Prompt
 
@@ -256,9 +261,9 @@ Ember.SelectOptgroup = Ember.CollectionView.extend({
   results in there being no `<option>` with a `selected` attribute:
 
   ```javascript
-  App.controller = Ember.Object.create({
-    selected: null,
-    content: [
+  App.ApplicationController = Ember.Controller.extend({
+    selectedProgrammer: null,
+    programmers: [
       "Yehuda",
       "Tom"
     ]
@@ -267,8 +272,8 @@ Ember.SelectOptgroup = Ember.CollectionView.extend({
 
   ``` handlebars
   {{view Ember.Select
-         contentBinding="App.controller.content"
-         valueBinding="App.controller.selected"
+         contentBinding="programmers"
+         valueBinding="selectedProgrammer"
   }}
   ```
 
@@ -281,16 +286,16 @@ Ember.SelectOptgroup = Ember.CollectionView.extend({
   </select>
   ```
 
-  Although `App.controller.selected` is `null` and no `<option>`
+  Although `selectedProgrammer` is `null` and no `<option>`
   has a `selected` attribute the rendered HTML will display the
   first item as though it were selected. You can supply a string
   value for the `Ember.Select` to display when there is no selection
   with the `prompt` option:
 
   ```javascript
-  App.controller = Ember.Object.create({
-    selected: null,
-    content: [
+  App.ApplicationController = Ember.Controller.extend({
+    selectedProgrammer: null,
+    programmers: [
       "Yehuda",
       "Tom"
     ]
@@ -299,8 +304,8 @@ Ember.SelectOptgroup = Ember.CollectionView.extend({
 
   ```handlebars
   {{view Ember.Select
-         contentBinding="App.controller.content"
-         valueBinding="App.controller.selected"
+         contentBinding="programmers"
+         valueBinding="selectedProgrammer"
          prompt="Please select a name"
   }}
   ```
@@ -337,6 +342,14 @@ Ember.Select = Ember.View.extend(
   */
   multiple: false,
 
+  /**
+    The `disabled` attribute of the select element. Indicates whether
+    the element is disabled from interactions.
+
+    @property multiple
+    @type Boolean
+    @default false
+  */
   disabled: false,
 
   /**
