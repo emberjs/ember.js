@@ -4,6 +4,11 @@ require("ember-handlebars/controls/button");
 require("ember-handlebars/controls/text_area");
 require("ember-handlebars/controls/select");
 
+/**
+@module ember
+@submodule ember-handlebars
+*/
+
 function normalizeHash(hash, hashTypes) {
   for (var prop in hash) {
     if (hashTypes[prop] === 'ID') {
