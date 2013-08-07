@@ -722,7 +722,7 @@ class:
     },
     eventManager: Ember.Object.create({
       mouseEnter: function(event, view) {
-        // takes presedence over AView#mouseEnter
+        // takes precedence over AView#mouseEnter
       }
     })
   });
