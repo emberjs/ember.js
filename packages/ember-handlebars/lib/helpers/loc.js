@@ -8,15 +8,24 @@ require('ember-handlebars/ext');
 /**
   `loc` looks up the string in the localized strings hash.
   This is a convenient way to localize text. For example:
+  
+  ```javascript
+  App.ApplicationController = Ember.Controller.extend({
+    welcomeMessage: '_Hello World'
+  });
 
-  ```html
-  <script type="text/x-handlebars" data-template-name="home">
-    {{loc welcome}}
-  </script>
+  Ember.STRINGS = {
+    '_Hello World': 'Bonjour le monde',
+  };
   ```
 
-  Take note that `welcome` is a string and not an object
-  reference.
+  ```handlebars
+  <span>{{loc welcomeMessage}}<span>
+  ```
+  
+  ```html
+  <span>Bonjour le monde</span>
+  ```
 
   @method loc
   @for Ember.Handlebars.helpers
