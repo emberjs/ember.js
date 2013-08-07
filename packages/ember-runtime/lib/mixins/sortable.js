@@ -29,6 +29,9 @@ var get = Ember.get, set = Ember.set, forEach = Ember.EnumerableUtils.forEach;
   songsController.addObject({trackNumber: 1, title: 'Dear Prudence'});
   songsController.get('firstObject');  // {trackNumber: 1, title: 'Dear Prudence'}
   ```
+  
+  `Ember.ArrayController` already includes this Mixin. You can access the ordered
+  content with the `arrangedContent` property.
 
   @class SortableMixin
   @namespace Ember
