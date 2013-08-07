@@ -2249,3 +2249,37 @@ test("Events can be handled by inherited event handlers", function() {
   router.send("baz");
 });
 
+test("calling route.render can leave you with an undesirable lastRenderedTemplate", function() {
+  Router.map(function() {
+    this.route("post");
+  });
+
+  App.ApplicationRoute = Ember.Route.extend({
+    showModal: function() {
+      this.render('add_post', { into: 'modal'} );
+    }
+  });
+
+  Ember.TEMPLATES.application =  compile("<div class='main'>{{outlet}}</div><div>{{render 'modal'}}</div>");
+  Ember.TEMPLATES.modal = compile("Modal:<div class='modal'>{{outlet}}</div>");
+
+  Ember.TEMPLATES.index = compile('index');
+  Ember.TEMPLATES.post = compile('post');
+  Ember.TEMPLATES.add_post = compile('add_post');
+
+
+  bootApplication();
+
+  handleURL('/post');
+
+  Ember.run(function() {
+    App.__container__.lookup('route:application').showModal();
+  });
+
+  equal(Ember.$('#qunit-fixture .modal').text(), 'add_post');
+
+  handleURL('/');
+
+  equal(Ember.$('#qunit-fixture .main').text(), 'index');
+
+});
