@@ -155,7 +155,7 @@ Ember.Component = Ember.View.extend(Ember.TargetActionSupport, {
 
     ```handlebars
     {{! categories.hbs}}
-    {{my-tree didClickTreeNode=didClickCategory}}
+    {{my-tree didClickTreeNode='didClickCategory'}}
     ```
 
     @method sendAction
