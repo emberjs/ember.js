@@ -294,13 +294,3 @@ ChainNodePrototype.didChange = function(suppressEvent) {
   // and finally tell parent about my path changing...
   if (this._parent) { this._parent.chainDidChange(this, this._key, 1); }
 };
-
-Ember.finishChains = function(obj) {
-  var m = metaFor(obj, false), chains = m.chains;
-  if (chains) {
-    if (chains.value() !== obj) {
-      m.chains = chains = chains.copy(obj);
-    }
-    chains.didChange(true);
-  }
-};
