@@ -140,6 +140,26 @@ test("the {{linkTo}} helper doesn't add an href when the tagName isn't 'a'", fun
   equal(Ember.$('#about-link').attr('href'), undefined, "there is no href attribute");
 });
 
+test("the {{linkTo}} helper doesn't propagate click event when there is no href", function() {
+  Ember.TEMPLATES.index = Ember.Handlebars.compile("{{#linkTo 'about' id='about-link' href=false}}About{{/linkTo}}");
+
+  Router.map(function() {
+    this.route("about");
+  });
+
+  bootApplication();
+
+  Ember.run(function() {
+    router.handleURL("/");
+  });
+
+  Ember.run(function() {
+    Ember.$('#about-link', '#qunit-fixture').click();
+  });
+
+  equal(Ember.$('h3:contains(About)', '#qunit-fixture').length, 0, "Transitioning did not occur");
+});
+
 
 test("the {{linkTo}} applies a 'disabled' class when disabled", function () {
   Ember.TEMPLATES.index = Ember.Handlebars.compile('{{#linkTo "about" id="about-link" disabledWhen="shouldDisable"}}About{{/linkTo}}');
