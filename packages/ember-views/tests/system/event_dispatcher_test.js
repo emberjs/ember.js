@@ -257,3 +257,21 @@ test("event manager should be able to re-dispatch events to view", function() {
   Ember.$('#nestedView').trigger('mousedown');
   equal(receivedEvent, 2, "event should go to manager and not view");
 });
+
+test("event handlers should be wrapped in a run loop", function() {
+  expect(1);
+
+  view = Ember.View.createWithMixins({
+    elementId: 'test-view',
+
+    eventManager: Ember.Object.create({
+      mouseDown: function() {
+        ok(Ember.run.currentRunLoop, 'a run loop should have started');
+      }
+    })
+  });
+
+  Ember.run(function() { view.append(); });
+
+  Ember.$('#test-view').trigger('mousedown');
+});
