@@ -13,7 +13,9 @@
       "../packages/ember-views/lib",
       "../packages/ember-handlebars/lib",
       "../packages/ember-routing/lib",
-      "../packages/ember-application/lib"
+      "../packages/ember-application/lib",
+      "../packages/ember-testing/lib",
+      "../packages/ember-handlebars-compiler/lib"
     ],
     "exclude": "vendor",
     "outdir":   "./build"
