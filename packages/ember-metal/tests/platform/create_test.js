@@ -28,3 +28,13 @@ test("passing additional property descriptors should define", function() {
   equal(obj2.repl, 'obj2', 'should have replaced parent');
 });
 
+test("passing additional property descriptors should not pollute parent object", function() {
+  var obj = { foo: 'FOO', repl: 'obj' };
+  var obj2 = Ember.create(obj, {
+    repl: {
+      value: 'obj2'
+    }
+  });
+
+  notEqual(obj.repl, obj2.repl, 'should not pollute parent object');
+});
