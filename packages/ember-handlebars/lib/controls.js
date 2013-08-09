@@ -19,9 +19,23 @@ function normalizeHash(hash, hashTypes) {
 }
 
 /**
-  `{{input}}` inserts a new instance of either Ember.TextField or
-  Ember.Checkbox, depending on the `type` option passed in. If no `type`
+  `{{input}}` inserts a new instance of either `Ember.TextField` or
+  `Ember.Checkbox`, depending on the `type` option passed in. If no `type`
   is supplied it defaults to Ember.TextField.
+  
+  ```javascript
+  App.ApplicationController = Ember.Controller.extend({
+    firstName: "Stanley"
+  });
+  ```
+
+  ```handlebars
+  {{input value="firstName"}}
+  ```
+  
+  ```html
+  <input type="textfield" class="ember-text-field" value="Stanley" />
+  ```
 
   @method input
   @for Ember.Handlebars.helpers
@@ -50,8 +64,23 @@ Ember.Handlebars.registerHelper('input', function(options) {
 });
 
 /**
-  `{{textarea}}` inserts a new instance of Ember.TextArea into the template
-  passing its options to `Ember.TextArea`'s `create` method.
+  `{{textarea}}` inserts a new instance of `Ember.TextArea` into the template.
+  
+  ```javascript
+  App.ApplicationController = Ember.Controller.extend({
+    writtenWords: "lorem ipsum dolor sit amet"
+  });
+  ```
+
+  ```handlebars
+  {{textarea value="writtenWords"}}
+  ```
+  
+  ```html
+  <textarea class="ember-text-area"> 
+    written words
+  </textarea>
+  ```
 
   @method textarea
   @for Ember.Handlebars.helpers
