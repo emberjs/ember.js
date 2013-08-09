@@ -392,7 +392,7 @@ test("select tagName on collection helper automatically sets child tagName to op
   });
 
   Ember.run(function() {
-    view.appendTo('qunit-fixture');
+    view.appendTo('#qunit-fixture');
   });
 
   equal(view.$('option').length, 1, "renders the correct child tag name");

@@ -46,6 +46,16 @@ test("should be added to the document body when calling append()", function() {
   ok(viewElem.length > 0, "creates and appends the view's element");
 });
 
+test("raises an assert when a target does not exist in the DOM", function() {
+  view = View.create();
+
+  expectAssertion(function() {
+    Ember.run(function() {
+      view.appendTo('does-not-exist-in-dom');
+    });
+  });
+});
+
 test("append calls willInsertElement and didInsertElement callbacks", function() {
   var willInsertElementCalled = false;
   var willInsertElementCalledInChild = false;

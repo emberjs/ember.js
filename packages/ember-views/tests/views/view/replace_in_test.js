@@ -29,6 +29,17 @@ test("should be added to the specified element when calling replaceIn()", functi
   ok(viewElem.length > 0, "creates and replaces the view's element");
 });
 
+test("raises an assert when a target does not exist in the DOM", function() {
+  view = View.create();
+
+  expectAssertion(function() {
+    Ember.run(function() {
+      view.replaceIn('made-up-target');
+    });
+  });
+});
+
+
 test("should remove previous elements when calling replaceIn()", function() {
   Ember.$("#qunit-fixture").html('<div id="menu"><p>Foo</p></div>');
   var viewElem = Ember.$('#menu').children();
