@@ -389,16 +389,31 @@ function canInvoke(obj, methodName) {
 /**
   Checks to see if the `methodName` exists on the `obj`.
 
+  ```javascript
+  var foo = {bar: Ember.K, baz: null};
+  Ember.canInvoke(foo, 'bar'); // true
+  Ember.canInvoke(foo, 'baz'); // false
+  Ember.canInvoke(foo, 'bat'); // false
+  ```
+
   @method canInvoke
   @for Ember
   @param {Object} obj The object to check for the method
   @param {String} methodName The method name to check for
+  @return {Boolean}
 */
 Ember.canInvoke = canInvoke;
 
 /**
   Checks to see if the `methodName` exists on the `obj`,
   and if it does, invokes it with the arguments passed.
+
+  ```javascript
+  var d = new Date('03/15/2013');
+  Ember.tryInvoke(d, 'getTime'); // 1363320000000
+  Ember.tryInvoke(d, 'setFullYear', [2014]); // 1394856000000
+  Ember.tryInvoke(d, 'noSuchMethod', [2014]); // undefined
+  ```
 
   @method tryInvoke
   @for Ember
@@ -430,6 +445,17 @@ var needsFinallyFix = (function() {
 /**
   Provides try { } finally { } functionality, while working
   around Safari's double finally bug.
+
+  ```javascript
+  var tryable = function() {
+    someResource.lock();
+    runCallback(); // May throw error.
+  };
+  var finalizer = function() {
+    someResource.unlock();
+  };
+  Ember.tryFinally(tryable, finalizer);
+  ```
 
   @method tryFinally
   @for Ember
@@ -480,6 +506,30 @@ if (needsFinallyFix) {
 /**
   Provides try { } catch finally { } functionality, while working
   around Safari's double finally bug.
+
+  ```javascript
+  var tryable = function() {
+    for (i=0, l=listeners.length; i<l; i++) {
+      listener = listeners[i];
+      beforeValues[i] = listener.before(name, time(), payload);
+    }
+
+    return callback.call(binding);
+  };
+
+  var catchable = function(e) {
+    payload = payload || {};
+    payload.exception = e;
+  };
+
+  var finalizer = function() {
+    for (i=0, l=listeners.length; i<l; i++) {
+      listener = listeners[i];
+      listener.after(name, time(), payload, beforeValues[i]);
+    }
+  };
+  Ember.tryCatchFinally(tryable, catchable, finalizer);
+  ```
 
   @method tryCatchFinally
   @for Ember
