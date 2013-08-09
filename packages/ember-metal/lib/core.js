@@ -129,7 +129,7 @@ Ember.SHIM_ES5 = (Ember.ENV.SHIM_ES5 === false) ? false : Ember.EXTEND_PROTOTYPE
 Ember.LOG_VERSION = (Ember.ENV.LOG_VERSION === false) ? false : true;
 
 /**
-  Empty function. Useful for some operations.
+  Empty function. Useful for some operations. Always returns `this`.
 
   @method K
   @private
@@ -208,11 +208,87 @@ function assertPolyfill(test, message) {
   @namespace Ember
 */
 Ember.Logger = {
+  /**
+   Logs the arguments to the console.
+   You can pass as many arguments as you want and they will be joined together with a space.
+
+    ```javascript
+    var foo = 1;
+    Ember.Logger.log('log value of foo:', foo); // "log value of foo: 1" will be printed to the console
+    ```
+
+   @method log
+   @for Ember.Logger
+   @param {*} arguments
+  */
   log:   consoleMethod('log')   || Ember.K,
+  /**
+   Prints the arguments to the console with a warning icon.
+   You can pass as many arguments as you want and they will be joined together with a space.
+
+    ```javascript
+    Ember.Logger.warn('Something happened!'); // "Something happened!" will be printed to the console with a warning icon.
+    ```
+
+   @method warn
+   @for Ember.Logger
+   @param {*} arguments
+  */
   warn:  consoleMethod('warn')  || Ember.K,
+  /**
+   Prints the arguments to the console with an error icon, red text and a stack race.
+   You can pass as many arguments as you want and they will be joined together with a space.
+
+    ```javascript
+    Ember.Logger.error('Danger! Danger!'); // "Danger! Danger!" will be printed to the console in red text.
+    ```
+
+   @method error
+   @for Ember.Logger
+   @param {*} arguments
+  */
   error: consoleMethod('error') || Ember.K,
+  /**
+   Logs the arguments to the console.
+   You can pass as many arguments as you want and they will be joined together with a space.
+
+    ```javascript
+    var foo = 1;
+    Ember.Logger.info('log value of foo:', foo); // "log value of foo: 1" will be printed to the console
+    ```
+
+   @method info
+   @for Ember.Logger
+   @param {*} arguments
+  */
   info:  consoleMethod('info')  || Ember.K,
+  /**
+   Logs the arguments to the console in blue text.
+   You can pass as many arguments as you want and they will be joined together with a space.
+
+    ```javascript
+    var foo = 1;
+    Ember.Logger.debug('log value of foo:', foo); // "log value of foo: 1" will be printed to the console
+    ```
+
+   @method debug
+   @for Ember.Logger
+   @param {*} arguments
+  */
   debug: consoleMethod('debug') || consoleMethod('info') || Ember.K,
+  /**
+
+   If the value passed into Ember.Logger.assert is not truthy it will throw an error with a stack trace.
+
+    ```javascript
+    Ember.Logger.assert(true); // undefined
+    Ember.Logger.assert(true === false); // Throws an Assertion failed error.
+    ```
+
+   @method assert
+   @for Ember.Logger
+   @param @param {Boolean} bool Value to test
+  */
   assert: consoleMethod('assert') || assertPolyfill
 };
 
@@ -225,6 +301,15 @@ Ember.Logger = {
   A function may be assigned to `Ember.onerror` to be called when Ember
   internals encounter an error. This is useful for specialized error handling
   and reporting code.
+
+  ```javascript
+  Ember.onerror = function(error) {
+    Em.$.ajax('/report-error', 'POST', {
+      stack: error.stack,
+      otherInformation: 'whatever app state you want to provide'
+    });
+  };
+  ```
 
   @event onerror
   @for Ember
@@ -256,6 +341,21 @@ Ember.handleErrors = function(func, context) {
   }
 };
 
+/**
+  Merge the contents of two objects together into the first object.
+
+  ```javascript
+  Ember.merge({first: 'Tom'}, {last: 'Dale'}); // {first: 'Tom', last: 'Dale'}
+  var a = {first: 'Yehuda'}, b = {last: 'Katz'};
+  Ember.merge(a, b); // a == {first: 'Yehuda', last: 'Katz'}, b == {last: 'Katz'}
+  ```
+
+  @method merge
+  @for Ember
+  @param {Object} original The object to merge into
+  @param {Object} updates The object to copy properties from
+  @return {Object}
+*/
 Ember.merge = function(original, updates) {
   for (var prop in updates) {
     if (!updates.hasOwnProperty(prop)) { continue; }
