@@ -105,7 +105,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
 
     ```handlebars
     <script type="text/x-handlebars" data-template-name='a-template'>
-      <div {{action anActionName}}>
+      <div {{action 'anActionName'}}>
         click me
       </div>
     </script>
@@ -172,7 +172,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
 
     ```handlebars
     <script type="text/x-handlebars" data-template-name='a-template'>
-      <div {{action anActionName on="doubleClick"}}>
+      <div {{action 'anActionName' on="doubleClick"}}>
         click me
       </div>
     </script>
@@ -194,7 +194,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
 
     ```handlebars
     <script type="text/x-handlebars" data-template-name='a-template'>
-      <div {{action anActionName allowedKeys="alt"}}>
+      <div {{action 'anActionName' allowedKeys="alt"}}>
         click me
       </div>
     </script>
@@ -216,7 +216,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
 
     ```handlebars
     <script type="text/x-handlebars" data-template-name='a-template'>
-      <div {{action anActionName target="MyApplication.someObject"}}>
+      <div {{action 'anActionName' target="MyApplication.someObject"}}>
         click me
       </div>
     </script>
@@ -230,7 +230,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
 
     ```handlebars
     <script type="text/x-handlebars" data-template-name='a-template'>
-      <div {{action aMethodNameThatIsMissing}}>
+      <div {{action 'aMethodNameThatIsMissing'}}>
         click me
       </div>
     </script>
@@ -261,7 +261,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     ```handlebars
     <script type="text/x-handlebars" data-template-name='a-template'>
       {{#each person in people}}
-        <div {{action edit person}}>
+        <div {{action 'edit' person}}>
           click me
         </div>
       {{/each}}
