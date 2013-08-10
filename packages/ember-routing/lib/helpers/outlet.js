@@ -41,8 +41,8 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     You can create custom named outlets for more control.
 
     ``` handlebars
-    {{outlet favoritePost}}
-    {{outlet posts}}
+    {{outlet 'favoritePost'}}
+    {{outlet 'posts'}}
     ```
 
     Then you can define what template is rendered into each outlet in your
@@ -76,6 +76,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     @for Ember.Handlebars.helpers
     @param {String} property the property on the controller
       that holds the view for this outlet
+    @return {String} HTML string
   */
   Handlebars.registerHelper('outlet', function(property, options) {
     var outletSource, outletContainerClass;
