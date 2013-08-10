@@ -67,9 +67,14 @@ function escapeAttribute(value) {
   final representation. `Ember.RenderBuffer` will generate HTML which can be pushed
   to the DOM.
 
+   ```javascript
+   var buffer = Ember.RenderBuffer('div');
+  ```
+
   @class RenderBuffer
   @namespace Ember
   @constructor
+  @param {String} tagName tag name (such as 'div' or 'p') used for the buffer
 */
 Ember.RenderBuffer = function(tagName) {
   return new Ember._RenderBuffer(tagName);
