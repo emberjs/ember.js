@@ -131,7 +131,7 @@ Ember.String = {
   },
 
   /**
-    Replaces underscores or spaces with dashes.
+    Replaces underscores, spaces, or camelCase with dashes.
 
     ```javascript
     'innerHTML'.dasherize();          // 'inner-html'
