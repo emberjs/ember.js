@@ -137,15 +137,14 @@ Ember.TextField = Ember.View.extend(Ember.TextSupport,
   bubbles: false,
 
   insertNewline: function(event) {
-    sendAction('enter', this, event);
+    this.sendAction('enter', this, event);
   },
 
   keyPress: function(event) {
-    sendAction('keyPress', this, event);
-  }
-});
+    this.sendAction('keyPress', this, event);
+  },
 
-function sendAction(eventName, view, event) {
+  sendAction: function(eventName, view, event) {
   var action = get(view, 'action'),
       on = get(view, 'onEvent');
 
@@ -160,4 +159,5 @@ function sendAction(eventName, view, event) {
       event.stopPropagation();
     }
   }
-}
+  }
+});
