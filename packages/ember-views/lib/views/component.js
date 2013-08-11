@@ -50,7 +50,8 @@ var get = Ember.get, set = Ember.set, isNone = Ember.isNone;
   If you want to customize the component, in order to
   handle events or actions, you implement a subclass
   of `Ember.Component` named after the name of the
-  component.
+  component. Note that `Component` needs to be appended to the name of 
+  your subclass like `AppProfileComponent`.
 
   For example, you could implement the action
   `hello` for the `app-profile` component:
@@ -163,7 +164,7 @@ Ember.Component = Ember.View.extend(Ember.TargetActionSupport, {
     target's action method. Example:
 
     ```javascript
-    App.MyTree = Ember.Component.extend({
+    App.MyTreeComponent = Ember.Component.extend({
       click: function() {
         this.sendAction('didClickTreeNode', this.get('node'));
       }
