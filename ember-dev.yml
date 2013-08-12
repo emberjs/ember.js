@@ -34,6 +34,7 @@ testing_packages:
   - ember-routing
   - ember-application
   - ember
+  - ember-extension-support
   - ember-testing
 testing_additional_requires:
   - ember-debug
