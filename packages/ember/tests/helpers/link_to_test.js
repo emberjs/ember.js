@@ -414,14 +414,16 @@ test("The {{linkTo}} helper moves into the named route with context", function()
 });
 
 test("The {{linkTo}} helper binds some anchor html tag common attributes", function() {
-  Ember.TEMPLATES.index = Ember.Handlebars.compile("<h3>Home</h3>{{#linkTo 'index' id='self-link' title='title-attr'}}Self{{/linkTo}}");
+  Ember.TEMPLATES.index = Ember.Handlebars.compile("<h3>Home</h3>{{#linkTo 'index' id='self-link' title='title-attr' rel='rel-attr'}}Self{{/linkTo}}");
   bootApplication();
 
   Ember.run(function() {
     router.handleURL("/");
   });
-
-  equal(Ember.$('#self-link', '#qunit-fixture').attr('title'), 'title-attr', "The self-link contains title attribute");
+  
+  var link = Ember.$('#self-link', '#qunit-fixture');
+  equal(link.attr('title'), 'title-attr', "The self-link contains title attribute");
+  equal(link.attr('rel'), 'rel-attr', "The self-link contains rel attribute");
 });
 
 test("The {{linkTo}} helper accepts string/numeric arguments", function() {
