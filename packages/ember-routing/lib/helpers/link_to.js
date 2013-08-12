@@ -235,6 +235,7 @@ Ember.onLoad('Ember.Handlebars', function(Handlebars) {
     */
     _invoke: function(event) {
       if (!isSimpleClick(event)) { return true; }
+      if (get(this, 'href') === false) { return true; }
 
       event.preventDefault();
       if (this.bubbles === false) { event.stopPropagation(); }
