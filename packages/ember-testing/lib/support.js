@@ -23,7 +23,7 @@ function testCheckboxClick(handler) {
 }
 
 $(function() {
-  /**
+  /*
     Determine whether a checkbox checked using jQuery's "click" method will have
     the correct value for its checked property.
 
