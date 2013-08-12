@@ -29,6 +29,17 @@ var get = Ember.get, set = Ember.set, forEach = Ember.EnumerableUtils.forEach;
   songsController.addObject({trackNumber: 1, title: 'Dear Prudence'});
   songsController.get('firstObject');  // {trackNumber: 1, title: 'Dear Prudence'}
   ```
+  SortableMixin works by sorting the arrangedContent array, which is the array that
+  arrayProxy displays. Due to the fact that the underlying 'content' array is not changed, that
+  array will not display the sorted list:
+
+   ```javascript
+  songsController.get('content').get('firstObject'); //Retuns the unsorted original content
+  songsController.get('firstObject'); //Retuns the sorted content.
+  ``` 
+  
+  Although the sorted content can also be accessed through the arrangedContent property,
+  it is preferable to use the proxied class and not the arrangedContent array directly.
 
   @class SortableMixin
   @namespace Ember
@@ -108,6 +119,13 @@ Ember.SortableMixin = Ember.Mixin.create(Ember.MutableEnumerable, {
   },
 
   isSorted: Ember.computed.bool('sortProperties'),
+
+  /**
+    Overrides the default arrangedContent from arrayProxy in order to sort by sortFunction.
+    Also sets up observers for each sortProperty on each item in the content Array.
+    
+    @property arrangedContent
+  */
 
   arrangedContent: Ember.computed('content', 'sortProperties.@each', function(key, value) {
     var content = get(this, 'content'),
