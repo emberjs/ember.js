@@ -467,6 +467,25 @@ function registerComputedWithProperties(name, macro) {
 }
 
 /**
+  A computed property that returns true of the value of the dependent
+  property is null, an empty string, empty array, or empty function.
+
+  Note: When using `Ember.computed.empty` to watch an array make sure to
+  use the `array.length` or `array.@each` syntax so the computed can
+  subscribe to transitions from empty to non-empty states.
+
+  Example
+
+```javascript
+  var ToDoList = Ember.Object.extend({
+    done: Ember.computed.empty('todos.length')
+  });
+  var todoList = ToDoList.create({todoList: ['Unit Test', 'Documentation', 'Release']});
+  todoList.get('done'); // false
+  todoList.get('todoList').clear(); // []
+  todoList.get('done'); // true
+  ```
+
   @method computed.empty
   @for Ember
   @param {String} dependentKey
@@ -478,6 +497,21 @@ registerComputed('empty', function(dependentKey) {
 });
 
 /**
+  A computed property that returns true of the value of the dependent
+  property is NOT null, an empty string, empty array, or empty function.
+
+  Example
+
+  ```javascript
+  var Hampster = Ember.Object.extend({
+    hasStuff: Ember.computed.notEmpty('backpack')
+  });
+  var hampster = Hampster.create({backpack: ['Food', 'Sleeping Bag', 'Tent']});
+  hampster.get('hasStuff'); // true
+  hampster.get('backpack').clear(); // []
+  hampster.get('hasStuff'); // false
+  ```
+
   @method computed.notEmpty
   @for Ember
   @param {String} dependentKey
@@ -489,6 +523,24 @@ registerComputed('notEmpty', function(dependentKey) {
 });
 
 /**
+  A computed property that returns true of the value of the dependent
+  property is null or undefined. This avoids errors from JSLint complaining
+  about use of ==, which can be technically confusing.
+
+  Example
+
+  ```javascript
+  var Hampster = Ember.Object.extend({
+    isHungry: Ember.computed.none('food')
+  });
+  var hampster = Hampster.create();
+  hampster.get('isHungry'); // true
+  hampster.set('food', 'Banana');
+  hampster.get('isHungry'); // false
+  hampster.set('food', null);
+  hampster.get('isHungry'); // true
+  ```
+
   @method computed.none
   @for Ember
   @param {String} dependentKey
@@ -500,6 +552,21 @@ registerComputed('none', function(dependentKey) {
 });
 
 /**
+  A computed property that returns the inverse of the original value
+  for the dependent property.
+
+  Example
+
+  ```javascript
+  var User = Ember.Object.extend({
+    isAnonymous: Ember.computed.not('loggedIn')
+  });
+  var user = User.create({loggedIn: false});
+  user.get('isAnonymous'); // false
+  user.set('loggedIn', true);
+  user.get('isAnonymous'); // true
+  ```
+
   @method computed.not
   @for Ember
   @param {String} dependentKey
@@ -511,6 +578,22 @@ registerComputed('not', function(dependentKey) {
 });
 
 /**
+  A computed property that which convert the dependent propery to a boolean.
+
+  ```javascript
+  var Hampster = Ember.Object.extend({
+    hasBananas: Ember.computed.bool('numBananas')
+  });
+  var hampster = Hampster.create();
+  hampster.get('hasBananas'); // false
+  hampster.set('numBananas', 0);
+  hampster.get('hasBananas'); // false
+  hampster.set('numBananas', 1);
+  hampster.get('hasBananas'); // true
+  hampster.set('numBananas', null);
+  hampster.get('hasBananas'); // false
+  ```
+
   @method computed.bool
   @for Ember
   @param {String} dependentKey
@@ -522,6 +605,23 @@ registerComputed('bool', function(dependentKey) {
 });
 
 /**
+  A computed property which matchs the original value for dependent property
+  against a given RegExp.
+
+  Example
+
+  ```javascript
+  var User = Ember.Object.extend({
+    hasValidEmail: Ember.computed.match('email', /^.+@.+\..+$/)
+  });
+  var user = User.create({loggedIn: false});
+  user.get('hasValidEmail'); // false
+  user.set('email', '');
+  user.get('hasValidEmail'); // false
+  user.set('email', 'ember_hampster@example.com');
+  user.get('hasValidEmail'); // true
+  ```
+
   @method computed.match
   @for Ember
   @param {String} dependentKey
@@ -535,6 +635,23 @@ registerComputed('match', function(dependentKey, regexp) {
 });
 
 /**
+  A computed property that which returns true if dependent property is
+  equal to the given value.
+
+  Example
+
+  ```javascript
+  var Hampster = Ember.Object.extend({
+    napTime: Ember.computed.equal('state', 'sleepy')
+  });
+  var hampster = Hampster.create();
+  hampster.get('napTime'); // false
+  hampster.set('state', 'sleepy');
+  hampster.get('napTime'); // false
+  hampster.set('state', 'hungry');
+  hampster.get('napTime'); // false
+  ```
+
   @method computed.equal
   @for Ember
   @param {String} dependentKey
@@ -547,6 +664,23 @@ registerComputed('equal', function(dependentKey, value) {
 });
 
 /**
+  A computed property that which returns true if dependent property is
+  greater than the given value.
+
+  Example
+
+  ```javascript
+  var Hampster = Ember.Object.extend({
+    hasTooManyBananas: Ember.computed.gt('numBananas', 10)
+  });
+  var hampster = Hampster.create();
+  hampster.get('hasTooManyBananas'); // false
+  hampster.set('numBananas', 3);
+  hampster.get('hasTooManyBananas'); // false
+  hampster.set('numBananas', 11);
+  hampster.get('hasTooManyBananas'); // true
+  ```
+
   @method computed.gt
   @for Ember
   @param {String} dependentKey
@@ -559,6 +693,23 @@ registerComputed('gt', function(dependentKey, value) {
 });
 
 /**
+  A computed property that which returns true if dependent property is
+  greater than or equal to the given value.
+
+  Example
+
+  ```javascript
+  var Hampster = Ember.Object.extend({
+    hasTooManyBananas: Ember.computed.gte('numBananas', 10)
+  });
+  var hampster = Hampster.create();
+  hampster.get('hasTooManyBananas'); // false
+  hampster.set('numBananas', 3);
+  hampster.get('hasTooManyBananas'); // false
+  hampster.set('numBananas', 10);
+  hampster.get('hasTooManyBananas'); // true
+  ```
+
   @method computed.gte
   @for Ember
   @param {String} dependentKey
@@ -571,6 +722,23 @@ registerComputed('gte', function(dependentKey, value) {
 });
 
 /**
+  A computed property that which returns true if dependent property is
+  less than the given value.
+
+  Example
+
+  ```javascript
+  var Hampster = Ember.Object.extend({
+    needsMoreBananas: Ember.computed.lt('numBananas', 3)
+  });
+  var hampster = Hampster.create();
+  hampster.get('needsMoreBananas'); // true
+  hampster.set('numBananas', 3);
+  hampster.get('needsMoreBananas'); // false
+  hampster.set('numBananas', 2);
+  hampster.get('needsMoreBananas'); // true
+  ```
+
   @method computed.lt
   @for Ember
   @param {String} dependentKey
@@ -583,6 +751,23 @@ registerComputed('lt', function(dependentKey, value) {
 });
 
 /**
+  A computed property that which returns true if dependent property is
+  less than or equal to the given value.
+
+  Example
+
+  ```javascript
+  var Hampster = Ember.Object.extend({
+    needsMoreBananas: Ember.computed.lte('numBananas', 3)
+  });
+  var hampster = Hampster.create();
+  hampster.get('needsMoreBananas'); // true
+  hampster.set('numBananas', 5);
+  hampster.get('needsMoreBananas'); // false
+  hampster.set('numBananas', 3);
+  hampster.get('needsMoreBananas'); // true
+  ```
+
   @method computed.lte
   @for Ember
   @param {String} dependentKey
@@ -595,10 +780,27 @@ registerComputed('lte', function(dependentKey, value) {
 });
 
 /**
+  A computed property that which performs a logical `and` on the
+  values of all the original values for dependent properties.
+
+  Example
+
+  ```javascript
+  var Hampster = Ember.Object.extend({
+    readyForCamp: Ember.computed.and('hasTent', 'hasBackpack')
+  });
+  var hampster = Hampster.create();
+  hampster.get('readyForCamp'); // false
+  hampster.set('hasTent', true);
+  hampster.get('readyForCamp'); // false
+  hampster.set('hasBackpack', true);
+  hampster.get('readyForCamp'); // true
+  ```
+
   @method computed.and
   @for Ember
   @param {String} dependentKey, [dependentKey...]
-  @return {Ember.ComputedProperty} computed property which peforms
+  @return {Ember.ComputedProperty} computed property which performs
   a logical `and` on the values of all the original values for properties.
 */
 registerComputedWithProperties('and', function(properties) {
@@ -611,10 +813,25 @@ registerComputedWithProperties('and', function(properties) {
 });
 
 /**
+  A computed property that which performs a logical `or` on the
+  values of all the original values for dependent properties.
+
+  Example
+
+  ```javascript
+  var Hampster = Ember.Object.extend({
+    readyForRain: Ember.computed.or('hasJacket', 'hasUmbrella')
+  });
+  var hampster = Hampster.create();
+  hampster.get('readyForRain'); // false
+  hampster.set('hasJacket', true);
+  hampster.get('readyForRain'); // true
+  ```
+
   @method computed.or
   @for Ember
   @param {String} dependentKey, [dependentKey...]
-  @return {Ember.ComputedProperty} computed property which peforms
+  @return {Ember.ComputedProperty} computed property which performs
   a logical `or` on the values of all the original values for properties.
 */
 registerComputedWithProperties('or', function(properties) {
@@ -627,6 +844,21 @@ registerComputedWithProperties('or', function(properties) {
 });
 
 /**
+  A computed property that which returns the first truthy value
+  of a given list of dependent properties.
+
+  Example
+
+  ```javascript
+  var Hampster = Ember.Object.extend({
+    hasClothes: Ember.computed.any('hat', 'shirt')
+  });
+  var hampster = Hampster.create();
+  hampster.get('hasClothes'); // null
+  hampster.set('shirt', 'Hawaiian Shirt');
+  hampster.get('hasClothes'); // 'Hawaiian Shirt'
+  ```
+
   @method computed.any
   @for Ember
   @param {String} dependentKey, [dependentKey...]
@@ -643,6 +875,22 @@ registerComputedWithProperties('any', function(properties) {
 });
 
 /**
+  A computed property that which returns the first truthy value
+  of a given list of dependent properties.
+
+  Example
+
+  ```javascript
+  var Hampster = Ember.Object.extend({
+    clothes: Ember.computed.map('hat', 'shirt')
+  });
+  var hampster = Hampster.create();
+  hampster.get('clothes'); // [null, null]
+  hampster.set('hat', 'Camp Hat');
+  hampster.set('shirt', 'Camp Shirt');
+  hampster.get('clothes'); // ['Camp Hat', 'Camp Shirt']
+  ```
+
   @method computed.map
   @for Ember
   @param {String} dependentKey, [dependentKey...]
@@ -699,17 +947,13 @@ Ember.computed.alias = function(dependentKey) {
 };
 
 /**
-  @method computed.oneWay
-  @for Ember
-  @param {String} dependentKey
-  @return {Ember.ComputedProperty} computed property which creates an
-  one way computed property to the original value for property.
-
-  Where `computed.alias` aliases `get` and `set`, and allows for bidirectional 
+  Where `computed.alias` aliases `get` and `set`, and allows for bidirectional
   data flow, `computed.oneWay` only provides an aliased `get`. The `set` will
   not mutate the upstream property, rather causes the current property to
   become the value set. This causes the downstream property to permentantly
   diverge from the upstream property.
+
+  Example
 
   ```javascript
   User = Ember.Object.extend({
@@ -732,6 +976,12 @@ Ember.computed.alias = function(dependentKey) {
   user.get('firstName');
   # 'Teddy'
   ```
+
+  @method computed.oneWay
+  @for Ember
+  @param {String} dependentKey
+  @return {Ember.ComputedProperty} computed property which creates an
+  one way computed property to the original value for property.
 */
 Ember.computed.oneWay = function(dependentKey) {
   return Ember.computed(dependentKey, function() {
@@ -741,6 +991,22 @@ Ember.computed.oneWay = function(dependentKey) {
 
 
 /**
+  A computed property that which  acts like a standard getter
+  and setter, but defaults to the value from `defaultPath`.
+
+  Example
+
+  ```javascript
+  var Hampster = Ember.Object.extend({
+    wishList: Ember.computed.defaultTo('favoriteFood')
+  });
+  var hampster = Hampster.create({favoriteFood: 'Banana'});
+  hampster.get('wishList'); // 'Banana'
+  hampster.set('wishList', 'More Unit Tests');
+  hampster.get('wishList'); // 'More Unit Tests'
+  hampster.get('favoriteFood'); // 'Banana'
+  ```
+
   @method computed.defaultTo
   @for Ember
   @param {String} defaultPath
