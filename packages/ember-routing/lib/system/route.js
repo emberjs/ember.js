@@ -18,6 +18,8 @@ var get = Ember.get, set = Ember.set,
   @extends Ember.Object
 */
 Ember.Route = Ember.Object.extend({
+  title: '',
+  
   /**
     @private
 

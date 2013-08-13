@@ -5,7 +5,9 @@
 
 var Router = requireModule("router");
 var get = Ember.get, set = Ember.set;
-var defineProperty = Ember.defineProperty;
+var defineProperty = Ember.defineProperty,
+    removeObserver = Ember.removeObserver,
+    addObserver = Ember.addObserver;
 
 var DefaultView = Ember._MetamorphView;
 
@@ -21,6 +23,7 @@ require("ember-routing/system/dsl");
 */
 Ember.Router = Ember.Object.extend({
   location: 'hash',
+  titleDivider: ' - ',
 
   init: function() {
     this.router = this.constructor.router || this.constructor.map(Ember.K);
@@ -52,9 +55,53 @@ Ember.Router = Ember.Object.extend({
     this.handleURL(location.getURL());
   },
 
+  /**
+    @private
+
+    Updates the current document's title based off the title properties in all
+    the current route handlers.
+
+    @method updateTitle
+  */
+  updateTitle: (function () {
+    var originalTitle = document.title;
+
+    return function () {
+      var currentHandlerInfos = get(this, 'router.currentHandlerInfos'),
+          parts = [];
+
+      for (var part, i = 0, l = currentHandlerInfos.length; i < l; i++) {
+          part = get(currentHandlerInfos[i].handler, 'title');
+          if (part) {
+              parts.push(part);
+          }
+      }
+
+      var newTitle = parts.reverse().join(get(this, 'titleDivider'));
+
+      document.title = newTitle || originalTitle;
+    };
+  })(),
+
+  willTransition: function(infos) {
+    var oldInfos = get(this, 'router.currentHandlerInfos');
+    
+    if (oldInfos) {
+      for (var part, i = 0, l = oldInfos.length; i < l; i++) {
+        removeObserver(oldInfos[i].handler, 'title', this, this.updateTitle);
+      }
+    }
+  },
+
   didTransition: function(infos) {
     var appController = this.container.lookup('controller:application'),
         path = Ember.Router._routePath(infos);
+
+    for (var part, i = 0, l = infos.length; i < l; i++) {
+      addObserver(infos[i].handler, 'title', this, this.updateTitle);
+    }
+
+    this.updateTitle();
 
     if (!('currentPath' in appController)) {
       defineProperty(appController, 'currentPath');
@@ -203,6 +250,10 @@ Ember.Router = Ember.Object.extend({
         Ember.run.once(doReplaceURL);
       };
     }
+
+    router.willTransition = function(infos) {
+      emberRouter.willTransition(infos);
+    };
 
     router.didTransition = function(infos) {
       emberRouter.didTransition(infos);

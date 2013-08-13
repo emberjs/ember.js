@@ -559,6 +559,10 @@ define("router",
       var router = transition.router,
           partition = partitionHandlers(router.currentHandlerInfos || [], handlerInfos);
 
+      if (router.willTransition) {
+        router.willTransition(handlerInfos);
+      }
+
       router.targetHandlerInfos = handlerInfos;
 
       eachHandler(partition.exited, function(handlerInfo) {
