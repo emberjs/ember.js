@@ -1,10 +1,11 @@
-var get = Ember.get, set = Ember.set, container, view;
+var get = Ember.get, set = Ember.set, container, view, otherContainer;
 
 module("ember-views/views/container_view_test", {
   teardown: function() {
     Ember.run(function() {
       container.destroy();
       if (view) { view.destroy(); }
+      if (otherContainer) { otherContainer.destroy(); }
     });
   }
 });
@@ -54,6 +55,32 @@ test("should be able to observe properties that contain child views", function()
     container.appendTo('#qunit-fixture');
   });
   ok(container.get('displayIsDisplayed'), "can bind to child view");
+});
+
+test("childViews inherit their parents iocContainer, and retain the original container even when moved", function() {
+  container = Ember.ContainerView.create({
+    container: {}
+  });
+
+  otherContainer = Ember.ContainerView.create({
+    container: {}
+  });
+
+  view = Ember.View.create();
+
+  container.pushObject(view);
+
+  equal(view.get('parentView'), container, "sets the parent view after the childView is appended");
+  equal(get(view, 'container'), container.container, "inherits its parentViews iocContainer");
+
+  container.removeObject(view);
+
+  equal(get(view, 'container'), container.container, "leaves existing iocContainer alone");
+
+  otherContainer.pushObject(view);
+
+  equal(view.get('parentView'), otherContainer, "sets the new parent view after the childView is appended");
+  equal(get(view, 'container'), container.container, "still inherits its original parentViews iocContainer");
 });
 
 test("should set the parentView property on views that are added to the child views array", function() {
