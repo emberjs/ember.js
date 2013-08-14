@@ -4,7 +4,7 @@
   "description": "The Ember state management system",
   "homepage": "http://emberjs.com",
   "author": "Yehuda Katz",
-  "version": "1.0.0-rc.6",
+  "version": "1.0.0-rc.7",
 
   "directories": {
     "lib": "lib"
@@ -12,7 +12,7 @@
 
   "dependencies": {
     "spade":         "~> 1.0",
-    "ember-runtime": "1.0.0-rc.6"
+    "ember-runtime": "1.0.0-rc.7"
   },
 
   "dependencies:development": {
