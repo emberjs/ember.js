@@ -97,19 +97,19 @@ test("A Registered factory can be unregistered, and all cached instances are rem
 
   equal(container.has('controller:post'), true, "container is aware of the PostController");
 
-  ok(container.look('controller:post') instanceof PostController, "lookup is correct instance");
+  ok(container.lookup('controller:post') instanceof PostController, "lookup is correct instance");
 
   container.unregister("controller:post");
 
   equal(container.has('controller:post'), false, "container is no-longer aware of the PostController");
-  equal(container.look('controller:post'), undefined, "lookup no longer returns a controller");
+  equal(container.lookup('controller:post'), undefined, "lookup no longer returns a controller");
 
   // re-registration continues to work
   container.register('controller:post', PostController);
 
   equal(container.has('controller:post'), true, "container is aware of the PostController");
 
-  ok(container.look('controller:post') instanceof PostController, "lookup is correct instance");
+  ok(container.lookup('controller:post') instanceof PostController, "lookup is correct instance");
 });
 
 test("A container lookup has access to the container", function() {
@@ -203,7 +203,7 @@ test("A non-instantiated property is not instantiated", function() {
 test("A failed lookup returns undefined", function() {
   var container = new Container();
 
-  equal(container.look('doesnot:exist'), undefined);
+  equal(container.lookup('doesnot:exist'), undefined);
 });
 
 test("Injecting a failed lookup raises an error", function() {
