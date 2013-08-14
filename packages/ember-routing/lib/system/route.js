@@ -566,7 +566,10 @@ Ember.Route = Ember.Object.extend({
   },
 
   /**
-    Returns the controller for a particular route.
+    Returns the controller for a particular route or name.
+
+    The controller instance must already have been created, either through entering the
+    associated route or using `generateController`.
 
     ```js
     App.PostRoute = Ember.Route.extend({
@@ -578,17 +581,24 @@ Ember.Route = Ember.Object.extend({
     ```
 
     @method controllerFor
-    @param {String} name the name of the route
+    @param {String} name the name of the route or controller
     @return {Ember.Controller}
   */
   controllerFor: function(name, _skipAssert) {
-    var container = this.router.container,
-        controller = container.lookup('controller:' + name);
+    var container = this.container,
+        route = container.lookup('route:'+name),
+        controller;
+
+    if (route && route.controllerName) {
+      name = route.controllerName;
+    }
+
+    controller = container.lookup('controller:' + name);
 
     // NOTE: We're specifically checking that skipAssert is true, because according
     //   to the old API the second parameter was model. We do not want people who
     //   passed a model to skip the assertion.
-    Ember.assert("The controller for route '"+name+"'' could not be found. Make sure that this route exists and has already been entered at least once. If you must intialize the controller without entering a route, use `generateController`.", controller || _skipAssert === true);
+    Ember.assert("The controller named '"+name+"' could not be found. Make sure that this route exists and has already been entered at least once. If you must intialize the controller without entering a route, use `generateController`.", controller || _skipAssert === true);
 
     return controller;
   },

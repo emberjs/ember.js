@@ -1,4 +1,4 @@
-var route;
+var route, routeOne, routeTwo, router, container, lookupHash;
 
 module("Ember.Route", {
   setup: function() {
@@ -11,7 +11,7 @@ module("Ember.Route", {
 });
 
 test("default model utilizes the container to acquire the model factory", function() {
-  var container, Post, post;
+  var Post, post;
 
   expect(2);
 
@@ -37,4 +37,38 @@ test("default model utilizes the container to acquire the model factory", functi
     return Post;
   }
 
+});
+
+module("Ember.Route interaction", {
+  setup: function() {
+    container = {
+      lookup: function(fullName) {
+        return lookupHash[fullName];
+      }
+    };
+
+    routeOne = Ember.Route.create({ container: container, routeName: 'one' });
+    routeTwo = Ember.Route.create({ container: container, routeName: 'two' });
+
+    lookupHash = {
+      'route:one': routeOne,
+      'route:two': routeTwo
+    };
+  },
+
+  teardown: function() {
+    Ember.run(function() {
+      routeOne.destroy();
+      routeTwo.destroy();
+    });
+  }
+});
+
+test("controllerFor uses route's controllerName if specified", function() {
+  var testController = {};
+  lookupHash['controller:test'] = testController;
+
+  routeOne.controllerName = 'test';
+
+  equal(routeTwo.controllerFor('one'), testController);
 });
