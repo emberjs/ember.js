@@ -87,10 +87,6 @@ Ember.CoreView = Ember.Object.extend(Ember.Evented, {
     }
   }).property('_parentView'),
 
-  _viewForYield: Ember.computed(function(){
-    return this;
-  }).property(),
-
   state: null,
 
   _parentView: null,
@@ -933,6 +929,11 @@ Ember.View = Ember.CoreView.extend(
     return layout || get(this, 'defaultLayout');
   }).property('layoutName'),
 
+  _yield: function(context, options) {
+    var template = get(this, 'template');
+    if (template) { template(context, options); }
+  },
+
   templateForName: function(name, type) {
     if (!name) { return; }
     Ember.assert("templateNames are not allowed to contain periods: "+name, name.indexOf('.') === -1);
@@ -962,17 +963,6 @@ Ember.View = Ember.CoreView.extend(
       return get(this, '_context');
     }
   }).volatile(),
-
-  /**
-    The parent context for this template.
-
-    @method parentContext
-    @return {Ember.View}
-  */
-  parentContext: function() {
-    var parentView = get(this, '_parentView');
-    return parentView && get(parentView, '_context');
-  },
 
   /**
     @private

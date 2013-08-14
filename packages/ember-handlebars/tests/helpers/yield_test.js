@@ -1,3 +1,4 @@
+
 var set = Ember.set, get = Ember.get;
 
 var originalLookup = Ember.lookup, lookup, TemplateTests, view, container;
@@ -214,6 +215,25 @@ test("can bind a keyword to a component and use it in yield", function() {
   equal(view.$('div p:contains(update) + p:contains(update)').length, 1, "keyword has correctly propagated update");
 });
 
+test("yield uses the layout context for non component", function() {
+  view = Ember.View.create({
+    controller: {
+      boundText: "outer",
+      inner: {
+        boundText: "inner"
+      }
+    },
+    layout: Ember.Handlebars.compile("<p>{{boundText}}</p>{{#with inner}}<p>{{yield}}</p>{{/with}}"),
+    template: Ember.Handlebars.compile('{{boundText}}')
+  });
+
+  Ember.run(function() {
+    view.appendTo('#qunit-fixture');
+  });
+
+  equal('outerinner', view.$('p').text(), "Yield points at the right context");
+});
+
 test("yield view should be a virtual view", function() {
   var component = Ember.Component.extend({
     isParentComponent: true,
@@ -240,6 +260,7 @@ test("yield view should be a virtual view", function() {
     view.appendTo('#qunit-fixture');
   });
 });
+
 
 test("adding a layout should not affect the context of normal views", function() {
   var parentView = Ember.View.create({
@@ -273,28 +294,16 @@ test("adding a layout should not affect the context of normal views", function()
   });
 });
 
-test("yield should work for views and components even if _parentView is null", function() {
+test("yield should work for views even if _parentView is null", function() {
   view = Ember.View.create({
     layout:   Ember.Handlebars.compile('Layout: {{yield}}'),
     template: Ember.Handlebars.compile("View Content")
   });
 
-  var component = Ember.Component.create({
-    boundText:  "Component Content",
-    layout:     Ember.Handlebars.compile("Layout: {{yield}}"),
-    template:   Ember.Handlebars.compile("{{boundText}}")
-  });
-
   Ember.run(function() {
     view.createElement();
-    component.createElement();
   });
 
   equal(view.$().text(), "Layout: View Content");
-  equal(component.$().text(), "Layout: Component Content");
-
-  Ember.run(function() {
-    component.destroy();
-  });
 
 });

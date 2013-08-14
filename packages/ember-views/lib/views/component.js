@@ -100,13 +100,24 @@ Ember.Component = Ember.View.extend(Ember.TargetActionSupport, {
     };
   },
 
+  _yield: function(context, options) {
+    var view = options.data.view, parentView = this._parentView;
+
+    Ember.assert("A Component must have a parent view in order to yield.", parentView);
+
+    view.appendChild(Ember.View, {
+      isVirtual: true,
+      tagName: '',
+      template: get(this, 'template'),
+      context: get(parentView, 'context'),
+      controller: get(parentView, 'controller'),
+      templateData: { keywords: parentView.cloneKeywords() }
+    });
+  },
+
   targetObject: Ember.computed(function(key) {
     var parentView = get(this, '_parentView');
     return parentView ? get(parentView, 'controller') : null;
-  }).property('_parentView'),
-
-  _viewForYield: Ember.computed(function(){
-    return get(this, '_parentView') || this;
   }).property('_parentView'),
 
   /**
