@@ -212,9 +212,30 @@ Ember.Route = Ember.Object.extend({
     route in question. The model will be serialized into the URL
     using the `serialize` hook.
 
+    Example
+
+    ```javascript
+    App.Router.map(function() {
+      this.route("index");
+      this.route("secret");
+      this.route("fourOhFour", { path: "*:"});
+    });
+
+    App.IndexRoute = Ember.Route.extend({
+      events: {
+        moveToSecret: function(context){
+          if (authorized()){
+            this.transitionTo('secret', context);
+          }
+            this.transitionTo('fourOhFour');
+        }
+      }
+    });
+    ```
+
     @method transitionTo
     @param {String} name the name of the route
-    @param {...Object} models the
+    @param {...Object} models
   */
   transitionTo: function(name, context) {
     var router = this.router;
@@ -228,15 +249,65 @@ Ember.Route = Ember.Object.extend({
     Of the bundled location types, only `history` currently supports
     this behavior.
 
+    Example
+
+    ```javascript
+    App.Router.map(function() {
+      this.route("index");
+      this.route("secret");
+    });
+
+    App.SecretRoute = Ember.Route.extend({
+      afterModel: function() {
+        if (!authorized()){
+          this.replaceWith('index');
+        }
+      }
+    });
+    ```
+
     @method replaceWith
     @param {String} name the name of the route
-    @param {...Object} models the
+    @param {...Object} models
   */
   replaceWith: function() {
     var router = this.router;
     return this.router.replaceWith.apply(this.router, arguments);
   },
 
+  /**
+    Triggers and event on a parent route.
+
+    Example
+
+    ```javascript
+    App.Router.map(function() {
+      this.route("index");
+    });
+
+    App.ApplicationRoute = Ember.Route.extend({
+      events: {
+        track: function(arg) {
+          console.log(arg, 'was clicked');
+        }
+      }
+    });
+
+    App.IndexRoute = Ember.Route.extend({
+      events: {
+        trackIfDebug: function(arg) {
+          if (debug) {
+            this.send('track', arg);
+          }
+        }
+      }
+    });
+    ```
+
+    @method send
+    @param {String} name the name of the event to trigger
+    @param {...*} args
+  */
   send: function() {
     return this.router.send.apply(this.router, arguments);
   },
@@ -446,6 +517,16 @@ Ember.Route = Ember.Object.extend({
     if a promise returned from `model` fails, the error will be
     handled by the `error` hook on `Ember.Route`.
 
+    Example
+
+    ```js
+    App.PostRoute = Ember.Route.extend({
+      model: function(params) {
+        return App.Post.find(params.post_id);
+      }
+    });
+    ```
+
     @method model
     @param {Object} params the parameters extracted from the URL
     @param {Transition} transition
@@ -557,7 +638,18 @@ Ember.Route = Ember.Object.extend({
     be used if it is defined. If it is not defined, an `Ember.ObjectController`
     instance would be used.
 
+    Example
+    ```js
+    App.PostRoute = Ember.Route.extend({
+      setupController: function(controller, model) {
+        controller.set('model', model);
+      }
+    });
+    ```
+
     @method setupController
+    @param {Controller} controller instance
+    @param {Object} model
   */
   setupController: function(controller, context) {
     if (controller && (context !== undefined)) {
@@ -609,6 +701,17 @@ Ember.Route = Ember.Object.extend({
     If the optional model is passed then the controller type is determined automatically,
     e.g., an ArrayController for arrays.
 
+    Example
+
+    ```js
+    App.PostRoute = Ember.Route.extend({
+      setupController: function(controller, post) {
+        this._super(controller, post);
+        this.generateController('posts', post);
+      }
+    });
+    ```
+
     @method generateController
     @param {String} name the name of the controller
     @param {Object} model the model to infer the type of the controller (optional)
@@ -626,6 +729,22 @@ Ember.Route = Ember.Object.extend({
 
     This is the object returned by the `model` hook of the route
     in question.
+
+    Example
+
+    ```js
+    App.Router.map(function() {
+        this.resource('post', { path: '/post/:post_id' }, function() {
+            this.resource('comments');
+        });
+    });
+
+    App.CommentsRoute = Ember.Route.extend({
+        afterModel: function() {
+            this.set('post', this.modelFor('post'));
+        }
+    });
+    ```
 
     @method modelFor
     @param {String} name the name of the route
@@ -657,6 +776,22 @@ Ember.Route = Ember.Object.extend({
 
     This method can be overridden to set up and render additional or
     alternative templates.
+
+    ```js
+    App.PostsRoute = Ember.Route.extend({
+      renderTemplate: function(controller, model) {
+        var favController = this.controllerFor('favoritePost');
+
+        // Render the `favoritePost` template into
+        // the outlet `posts`, and display the `favoritePost`
+        // controller.
+        this.render('favoritePost', {
+          outlet: 'posts',
+          controller: favController
+        });
+      }
+    });
+    ```
 
     @method renderTemplate
     @param {Object} controller the route's controller
@@ -795,6 +930,11 @@ Ember.Route = Ember.Object.extend({
     this.teardownViews();
   },
 
+  /**
+    @private
+
+    @method teardownViews
+  */
   teardownViews: function() {
     // Tear down the top level view
     if (this.teardownTopLevelView) { this.teardownTopLevelView(); }
