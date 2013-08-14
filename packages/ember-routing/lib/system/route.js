@@ -45,7 +45,7 @@ Ember.Route = Ember.Object.extend({
     from within a template and the application's current route is this route.
 
     Events can also be invoked from other parts of your application via `Route#send`
-    or `Controller#send`. 
+    or `Controller#send`.
 
     The `events` hash will inherit event handlers from
     the `events` hash defined on extended Route parent classes
@@ -79,7 +79,7 @@ Ember.Route = Ember.Object.extend({
     event handler if it overrides a handle defined on a parent
     class or mixin.
 
-    Within a route's event handler, the value of the `this` context 
+    Within a route's event handler, the value of the `this` context
     is the Route object.
 
     ## Bubbling
@@ -450,7 +450,7 @@ Ember.Route = Ember.Object.extend({
     @param {Object} params the parameters extracted from the URL
     @param {Transition} transition
     @return {Object|Promise} the model for this route. If
-      a promise is returned, the transition will pause until 
+      a promise is returned, the transition will pause until
       the promise resolves, and the resolved value of the promise
       will be used as the model for this route.
   */
@@ -614,7 +614,7 @@ Ember.Route = Ember.Object.extend({
     @param {Object} model the model to infer the type of the controller (optional)
   */
   generateController: function(name, model) {
-    var container = this.router.container;
+    var container = this.container;
 
     model = model || this.modelFor(name);
 
