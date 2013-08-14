@@ -307,7 +307,7 @@ test("multiple selections can be set indirectly via bindings and in-place when m
   deepEqual(select.get('selection'), [cyril], "After updating bound selection, selection should be correct");
 });
 
-test("select with group can groupe options", function() {
+test("select with group can group options", function() {
   var content = Ember.A([
     { firstName: 'Yehuda', organization: 'Tilde' },
     { firstName: 'Tom', organization: 'Tilde' },
@@ -363,7 +363,7 @@ test("select with group doesn't break options", function() {
   deepEqual(select.get('selection'), content.get('firstObject'));
 });
 
-test("select with group observs its content", function() {
+test("select with group observes its content", function() {
   var wycats = { firstName: 'Yehuda', organization: 'Tilde' };
   var content = Ember.A([
     wycats
