@@ -151,6 +151,42 @@ test("rerender should throw inside a template", function() {
   }, /Something you did caused a view to re-render after it rendered but before it was inserted into the DOM./);
 });
 
+module("views/view/view_lifecycle_test - hasElement", {
+  teardown: function() {
+    if (view) {
+      Ember.run(function() {
+        view.destroy();
+      });
+    }
+  }
+});
+
+test("createElement puts the view into the hasElement state", function() {
+  view = Ember.View.create({
+    render: function(buffer) { buffer.push('hello'); }
+  });
+
+  Ember.run(function() {
+    view.createElement();
+  });
+
+  equal(view.currentState, Ember.View.states.hasElement, "the view is in the hasElement state");
+});
+
+test("trigger rerender on a view in the hasElement state doesn't change its state to inDOM", function() {
+  view = Ember.View.create({
+    render: function(buffer) { buffer.push('hello'); }
+  });
+
+  Ember.run(function() {
+    view.createElement();
+    view.rerender();
+  });
+
+  equal(view.currentState, Ember.View.states.hasElement, "the view is still in the hasElement state");
+});
+
+
 module("views/view/view_lifecycle_test - in DOM", {
   teardown: function() {
     if (view) {
@@ -315,5 +351,25 @@ test("should throw an exception when destroyElement is called after view is dest
   raises(function() {
     view.destroyElement();
   }, null, "throws an exception when calling destroyElement");
+});
+
+test("trigger rerender on a view in the inDOM state keeps its state as inDOM", function() {
+  Ember.run(function() {
+    view = Ember.View.create({
+      template: tmpl('foo')
+    });
+
+    view.append();
+  });
+
+  Ember.run(function() {
+    view.rerender();
+  });
+
+  equal(view.currentState, Ember.View.states.inDOM, "the view is still in the inDOM state");
+
+  Ember.run(function() {
+    view.destroy();
+  });
 });
 
