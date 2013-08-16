@@ -375,10 +375,6 @@ test("The {{linkTo}} helper moves into the named route with context", function()
   App.ItemRoute = Ember.Route.extend({
     serialize: function(object) {
       return { id: object.id };
-    },
-
-    deserialize: function(params) {
-      return { id: params.id, name: people[params.id] };
     }
   });
 
