@@ -315,6 +315,7 @@ GroupedEach.prototype = {
   @param [options] {Object} Handlebars key/value pairs of options
   @param [options.itemViewClass] {String} a path to a view class used for each item
   @param [options.itemController] {String} name of a controller to be created for each item
+  @param [options.groupedRows] {boolean} something about grouping ... rows?
 */
 Ember.Handlebars.registerHelper('each', function(path, options) {
   if (arguments.length === 4) {
