@@ -22,7 +22,6 @@ var define, requireModule;
     deps = mod.deps;
     callback = mod.callback;
     reified = [];
-    exports;
 
     for (var i=0, l=deps.length; i<l; i++) {
       if (deps[i] === 'exports') {
